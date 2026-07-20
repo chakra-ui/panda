@@ -1,7 +1,13 @@
 import { defineCommand } from 'citty'
 import { type ParseFileReport } from '@pandacss/compiler'
+import {
+  diagnosticsPass,
+  type CssOutputOptions,
+  type LayerCssOptions,
+  type WriteLayerCssOptions,
+  type WriteSplitCssOptions,
+} from '@pandacss/compiler-shared'
 import type { StylesheetLayerName } from '@pandacss/types'
-import { diagnosticsPass } from '@pandacss/compiler-shared'
 import { baseArgs, includeArgs, outputArgs, parseCliFlags, traceArgs } from '../args'
 import { checkExpectedFiles, formatCheckSummary, isCheckClean } from '../check'
 import { cssgenFlagsSchema } from '../schema'
@@ -27,6 +33,10 @@ export const cssgenCommand = defineCommand({
     splitting: { type: 'boolean', description: 'Emit split CSS files' },
     minimal: { type: 'boolean', description: 'Emit usage CSS only (recipes and utilities)' },
     minify: { type: 'boolean', description: 'Minify emitted CSS (overrides config minify)' },
+    polyfill: {
+      type: 'boolean',
+      description: 'Polyfill cascade layers with :not(#\\#) (overrides config polyfill)',
+    },
     ...outputArgs(),
     ...traceArgs(),
     'watch-debounce': { type: 'string', description: 'Watch rebuild debounce in milliseconds' },
@@ -135,26 +145,45 @@ type CssgenOnceResult = Pick<
   'parsed' | 'cssBytes' | 'diagnosticCount' | 'diagnostics' | 'missing' | 'stale'
 > & { cssFiles: number }
 
-const MINIMAL_LAYERS = ['recipes', 'utilities'] satisfies StylesheetLayerName[]
+const MINIMAL_LAYERS: StylesheetLayerName[] = ['recipes', 'utilities']
 
 function resolveMinify(ctx: RunContext, flags: CssgenFlags): boolean {
   return flags.minify ?? ctx.driver.config.minify === true
 }
 
-function splitCssOptions(ctx: RunContext, flags: CssgenFlags) {
+function resolvePolyfill(ctx: RunContext, flags: CssgenFlags): boolean {
+  return flags.polyfill ?? ctx.driver.config.polyfill === true
+}
+
+function splitCssOptions(ctx: RunContext, flags: CssgenFlags): WriteSplitCssOptions {
   return {
     outdir: ctx.outdir,
     layers: flags.minimal ? MINIMAL_LAYERS : undefined,
     emitLayerDeclaration: flags.minimal ? false : undefined,
     minify: resolveMinify(ctx, flags),
+    polyfill: resolvePolyfill(ctx, flags),
   }
 }
 
-function layerCssOptions(ctx: RunContext, flags: CssgenFlags) {
+function layerCssOptions(ctx: RunContext, flags: CssgenFlags): LayerCssOptions {
   return {
     layers: MINIMAL_LAYERS,
     emitLayerDeclaration: false,
     minify: resolveMinify(ctx, flags),
+    polyfill: resolvePolyfill(ctx, flags),
+  }
+}
+
+function writeLayerCssOptions(ctx: RunContext, flags: CssgenFlags, outfile: string): WriteLayerCssOptions {
+  return { outfile, ...layerCssOptions(ctx, flags) }
+}
+
+function cssOutputOptions(ctx: RunContext, flags: CssgenFlags): CssOutputOptions {
+  return {
+    layers: flags.minimal ? MINIMAL_LAYERS : undefined,
+    emitLayerDeclaration: flags.minimal ? false : undefined,
+    minify: resolveMinify(ctx, flags),
+    polyfill: resolvePolyfill(ctx, flags),
   }
 }
 
@@ -213,8 +242,12 @@ export async function writeCssgenOutput(
     phase: 'write',
     run: () =>
       flags.minimal
-        ? ctx.driver.writeLayerCss({ outfile, ...layerCssOptions(ctx, flags) })
-        : ctx.driver.writeCss({ outfile, minify: resolveMinify(ctx, flags) }),
+        ? ctx.driver.writeLayerCss(writeLayerCssOptions(ctx, flags, outfile))
+        : ctx.driver.writeCss({
+            outfile,
+            minify: resolveMinify(ctx, flags),
+            polyfill: resolvePolyfill(ctx, flags),
+          }),
   })
 
   const cssBytes = Buffer.byteLength(output.css)
@@ -249,7 +282,7 @@ function checkCssgenOutput(
     const files = time({
       timings: ctx.timings,
       phase: 'emit',
-      run: () => ctx.driver.getSplitCss(splitCssOptions(ctx, flags)),
+      run: () => ctx.driver.getSplitCss(cssOutputOptions(ctx, flags)),
     })
 
     const check = checkExpectedFiles(
@@ -281,7 +314,10 @@ function checkCssgenOutput(
     run: () =>
       flags.minimal
         ? ctx.driver.getLayerCss(layerCssOptions(ctx, flags))
-        : ctx.driver.cssgen({ minify: resolveMinify(ctx, flags) }),
+        : ctx.driver.cssgen({
+            minify: resolveMinify(ctx, flags),
+            polyfill: resolvePolyfill(ctx, flags),
+          }),
   })
 
   const cssBytes = Buffer.byteLength(output.css)

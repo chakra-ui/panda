@@ -21,6 +21,7 @@ pub struct CompileInput {
 pub struct CompileOptions {
     pub emit_layer_declaration: Option<bool>,
     pub minify: Option<bool>,
+    pub polyfill: Option<bool>,
 }
 
 impl CompileOptions {
@@ -35,6 +36,7 @@ pub struct CssOutputOptions {
     pub layers: Option<Vec<String>>,
     pub emit_layer_declaration: Option<bool>,
     pub minify: Option<bool>,
+    pub polyfill: Option<bool>,
 }
 
 #[napi(object)]
@@ -42,6 +44,7 @@ pub struct LayerCssOptions {
     pub layers: Vec<String>,
     pub emit_layer_declaration: Option<bool>,
     pub minify: Option<bool>,
+    pub polyfill: Option<bool>,
 }
 
 #[napi(object)]
@@ -51,6 +54,7 @@ pub struct WriteLayerCssOptions {
     pub cwd: Option<String>,
     pub emit_layer_declaration: Option<bool>,
     pub minify: Option<bool>,
+    pub polyfill: Option<bool>,
 }
 
 #[napi(object)]
@@ -169,9 +173,14 @@ pub fn compile(input: Option<CompileInput>) -> CompileOutput {
         emit_layer_declaration,
         None,
         None,
+        None,
     )
 }
 
+#[allow(
+    clippy::too_many_arguments,
+    reason = "compile orchestration mirrors host options; a bag struct would only relocate the same inputs"
+)]
 pub(crate) fn build_compile_output(
     project: &mut pandacss_project::Project,
     user_config: &UserConfig,
@@ -180,6 +189,7 @@ pub(crate) fn build_compile_output(
     emit_layer_declaration: bool,
     utility_transform: Option<&mut pandacss_project::UtilityTransformFn<'_>>,
     minify_override: Option<bool>,
+    polyfill_override: Option<bool>,
 ) -> CompileOutput {
     // No span here — `manifest` and `stylesheet` (below) are the two real
     // pieces of work; this is thin orchestration around them.
@@ -193,6 +203,7 @@ pub(crate) fn build_compile_output(
         emit_layer_declaration,
         utility_transform,
         minify_override,
+        polyfill_override,
     );
     CompileOutput {
         css: output.css,
@@ -226,6 +237,7 @@ pub(crate) fn build_layer_compile_output(
         .and_then(|options| options.emit_layer_declaration)
         .unwrap_or(false);
     let minify_override = css_options.and_then(|options| options.minify);
+    let polyfill_override = css_options.and_then(|options| options.polyfill);
     let output = build_stylesheet_output(
         project,
         user_config,
@@ -234,13 +246,15 @@ pub(crate) fn build_layer_compile_output(
         false,
         utility_transform,
         minify_override,
+        polyfill_override,
     );
     let selected: Vec<pandacss_stylesheet::StylesheetLayer> = layers
         .iter()
         .filter_map(|name| pandacss_stylesheet::StylesheetLayer::from_name(name))
         .collect();
     let mut css = output.get_layer_css(&selected);
-    if emit_layer_declaration {
+    let polyfill = resolve_polyfill(user_config, polyfill_override);
+    if emit_layer_declaration && !polyfill {
         let preamble =
             pandacss_stylesheet::layer_order_declaration(&user_config.layers, Some(&selected));
         if !preamble.is_empty() {
@@ -293,13 +307,16 @@ pub(crate) fn build_split_css(
                 .collect::<Vec<_>>()
         })
     });
+    let polyfill = resolve_polyfill(user_config, options.and_then(|options| options.polyfill));
     let stylesheet_options = pandacss_stylesheet::StylesheetOptions {
         minify: resolve_minify(user_config, options.and_then(|options| options.minify)),
         include_static: pandacss_stylesheet::has_static_css(user_config),
         source_map: false,
         emit_layer_declaration: options
             .and_then(|options| options.emit_layer_declaration)
-            .unwrap_or(true),
+            .unwrap_or(true)
+            && !polyfill,
+        polyfill,
         layers: selected_layers,
     };
     pandacss_stylesheet::split_css(
@@ -325,6 +342,10 @@ pub(crate) fn build_split_css(
 
 /// Compile the project's atoms + recipes into a raw stylesheet (css + layer
 /// ranges). Shared by `build_compile_output` and `css_for_layers`.
+#[allow(
+    clippy::too_many_arguments,
+    reason = "stylesheet options are independent toggles shared by compile and css_for_layers"
+)]
 pub(crate) fn build_stylesheet_output(
     project: &mut pandacss_project::Project,
     user_config: &UserConfig,
@@ -333,6 +354,7 @@ pub(crate) fn build_stylesheet_output(
     emit_layer_declaration: bool,
     utility_transform: Option<&mut pandacss_project::UtilityTransformFn<'_>>,
     minify_override: Option<bool>,
+    polyfill_override: Option<bool>,
 ) -> pandacss_stylesheet::StylesheetOutput {
     let span =
         tracing::trace_span!(target: "css", "stylesheet", atom_count = tracing::field::Empty);
@@ -343,11 +365,13 @@ pub(crate) fn build_stylesheet_output(
         project.stylesheet_snapshots(user_config)
     };
     span.record("atom_count", snapshots.atoms.len());
+    let polyfill = resolve_polyfill(user_config, polyfill_override);
     let options = pandacss_stylesheet::StylesheetOptions {
         minify: resolve_minify(user_config, minify_override),
         include_static: pandacss_stylesheet::has_static_css(user_config),
         source_map: false,
-        emit_layer_declaration,
+        emit_layer_declaration: emit_layer_declaration && !polyfill,
+        polyfill,
         layers: None,
     };
     pandacss_stylesheet::compile(
@@ -370,6 +394,16 @@ fn resolve_minify(user_config: &UserConfig, minify_override: Option<bool>) -> bo
         user_config
             .extra
             .get("minify")
+            .and_then(serde_json::Value::as_bool)
+            .unwrap_or(false)
+    })
+}
+
+fn resolve_polyfill(user_config: &UserConfig, polyfill_override: Option<bool>) -> bool {
+    polyfill_override.unwrap_or_else(|| {
+        user_config
+            .extra
+            .get("polyfill")
             .and_then(serde_json::Value::as_bool)
             .unwrap_or(false)
     })

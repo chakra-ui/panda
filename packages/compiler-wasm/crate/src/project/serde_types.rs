@@ -34,6 +34,7 @@ pub(super) struct WriteFilesResultSerde {
 pub(super) struct CompileOptionsSerde {
     pub(super) emit_layer_declaration: Option<bool>,
     pub(super) minify: Option<bool>,
+    pub(super) polyfill: Option<bool>,
 }
 
 #[derive(Default, Deserialize)]
@@ -64,6 +65,7 @@ pub(super) struct LayerCssOptionsSerde {
     pub(super) layers: Vec<String>,
     pub(super) emit_layer_declaration: Option<bool>,
     pub(super) minify: Option<bool>,
+    pub(super) polyfill: Option<bool>,
 }
 
 #[derive(Default, Deserialize)]
@@ -72,6 +74,7 @@ pub(super) struct CssOutputOptionsSerde {
     pub(super) layers: Option<Vec<String>>,
     pub(super) emit_layer_declaration: Option<bool>,
     pub(super) minify: Option<bool>,
+    pub(super) polyfill: Option<bool>,
 }
 
 #[derive(Deserialize)]
@@ -81,6 +84,7 @@ pub(super) struct WriteCssOptionsSerde {
     pub(super) cwd: Option<String>,
     pub(super) emit_layer_declaration: Option<bool>,
     pub(super) minify: Option<bool>,
+    pub(super) polyfill: Option<bool>,
 }
 
 #[derive(Deserialize)]
@@ -91,6 +95,7 @@ pub(super) struct WriteLayerCssOptionsSerde {
     pub(super) layers: Vec<String>,
     pub(super) emit_layer_declaration: Option<bool>,
     pub(super) minify: Option<bool>,
+    pub(super) polyfill: Option<bool>,
 }
 
 #[derive(Deserialize)]
@@ -101,6 +106,7 @@ pub(super) struct WriteSplitCssOptionsSerde {
     pub(super) layers: Option<Vec<String>>,
     pub(super) emit_layer_declaration: Option<bool>,
     pub(super) minify: Option<bool>,
+    pub(super) polyfill: Option<bool>,
 }
 
 #[derive(serde::Serialize)]

@@ -41,6 +41,8 @@ use crate::writer::CssWriter;
 pub struct EmitOutput {
     pub css: String,
     pub layer_ranges: StylesheetLayerRanges,
+    /// Merged-sheet analyze for polyfill recipe split (same step/ranks).
+    pub(crate) polyfill_analyze: Option<crate::polyfill::AnalyzeResult>,
 }
 
 #[derive(Clone, Copy)]
@@ -62,13 +64,18 @@ pub fn emit<'a>(
     utility_styles: &'a UtilityStyleOverrides,
     minify: bool,
     emit_layer_declaration: bool,
+    polyfill: bool,
 ) -> EmitOutput {
     let cx = EmitContext::new(config, utility, utility_styles, tokens.dictionary);
     let layers = &config.layers;
-    let mut writer = CssWriter::new(minify, capacity_hint(&atoms, recipes));
+    let mut writer = if polyfill {
+        CssWriter::recording(minify)
+    } else {
+        CssWriter::new(minify, capacity_hint(&atoms, recipes))
+    };
     let mut layer_ranges = StylesheetLayerRanges::default();
 
-    if emit_layer_declaration {
+    if emit_layer_declaration && !polyfill {
         write_layer_order(&mut writer, layers, minify);
         writer.newline();
     }
@@ -163,9 +170,30 @@ pub fn emit<'a>(
         }
     }
 
+    finish_emit(writer, polyfill, layers, minify, layer_ranges)
+}
+
+fn finish_emit(
+    writer: CssWriter,
+    polyfill: bool,
+    layers: &pandacss_config::CascadeLayers,
+    minify: bool,
+    layer_ranges: StylesheetLayerRanges,
+) -> EmitOutput {
+    if !polyfill {
+        return EmitOutput {
+            css: writer.finish(),
+            layer_ranges,
+            polyfill_analyze: None,
+        };
+    }
+    let ops = writer.into_ops();
+    let analyze = crate::polyfill::analyze(&ops, layers);
+    let flat = crate::polyfill::flatten(&ops, &analyze, layers, minify);
     EmitOutput {
-        css: writer.finish(),
-        layer_ranges,
+        css: flat.css,
+        layer_ranges: flat.layer_ranges,
+        polyfill_analyze: Some(analyze),
     }
 }
 
@@ -280,6 +308,8 @@ pub fn emit_recipe_split<'a>(
     utility: &'a Utility,
     recipes: &'a EncodedRecipesSnapshot,
     minify: bool,
+    polyfill: bool,
+    polyfill_analyze: Option<&crate::polyfill::AnalyzeResult>,
 ) -> Vec<(String, String)> {
     let empty_utility_styles = UtilityStyleOverrides::default();
     let cx = EmitContext::new(config, utility, &empty_utility_styles, None);
@@ -309,7 +339,11 @@ pub fn emit_recipe_split<'a>(
     grouped
         .into_iter()
         .map(|(name, groups)| {
-            let mut writer = CssWriter::new(minify, 256);
+            let mut writer = if polyfill {
+                CssWriter::recording(minify)
+            } else {
+                CssWriter::new(minify, 256)
+            };
             cx.write_recipe_group_refs(
                 &mut writer,
                 recipes_layer,
@@ -317,7 +351,15 @@ pub fn emit_recipe_split<'a>(
                 &groups.variants,
                 &groups.compounds,
             );
-            (name.to_owned(), writer.finish())
+            let css = if polyfill {
+                let analyze =
+                    polyfill_analyze.expect("polyfill recipe split needs full-sheet analyze");
+                let ops = writer.into_ops();
+                crate::polyfill::flatten(&ops, analyze, &config.layers, minify).css
+            } else {
+                writer.finish()
+            };
+            (name.to_owned(), css)
         })
         .collect()
 }

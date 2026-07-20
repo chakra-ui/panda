@@ -69,6 +69,14 @@ impl WasmCompiler {
         pandacss_stylesheet::has_layer_declaration(css, &names)
     }
 
+    /// Remove Panda `@layer a, b;` order statements; leave unrelated ones.
+    #[wasm_bindgen(js_name = stripLayerOrderStatements)]
+    #[must_use]
+    pub fn strip_layer_order_statements(&self, css: &str) -> String {
+        let names = self.user_config.layers.ordered().map(|(_, name)| name);
+        pandacss_stylesheet::strip_layer_order_statements(css, &names)
+    }
+
     /// Rust-built token dictionary projected into the small JS interop shape.
     #[wasm_bindgen(js_name = token_dictionary)]
     pub fn token_dictionary(&self) -> Result<JsValue, JsValue> {

@@ -7,8 +7,10 @@ const INPUT = '@layer reset, base, tokens, recipes, utilities;'
 interface MockDriver {
   compiler: {
     hasLayerDeclaration: ReturnType<typeof vi.fn>
+    stripLayerOrderStatements: ReturnType<typeof vi.fn>
     sources: ReturnType<typeof vi.fn>
   }
+  config: { polyfill?: boolean }
   applyChanges: ReturnType<typeof vi.fn>
   configDependencies: string[]
   configPath: string
@@ -89,7 +91,7 @@ describe('@pandacss/postcss', () => {
     expect(driver.applyChanges).toHaveBeenCalledWith([{ path: '/project/src/App.tsx', kind: 'add' }])
     expect(driver.syncDesignSystemSources).toHaveBeenCalledTimes(1)
     expect(driver.parseFiles).not.toHaveBeenCalled()
-    expect(driver.cssgen).toHaveBeenCalledWith({ emitLayerDeclaration: false })
+    expect(driver.cssgen).toHaveBeenCalledWith({ emitLayerDeclaration: false, polyfill: false })
     expect(result.css).toMatchInlineSnapshot(
       `"@layer reset, base, tokens, recipes, utilities;.text_red { color: red }"`,
     )
@@ -387,9 +389,13 @@ function createMockDriver(): MockDriver {
   return {
     compiler: {
       hasLayerDeclaration: vi.fn((css: string) => css.includes(INPUT)),
+      stripLayerOrderStatements: vi.fn((css: string) =>
+        css.replace(/@layer\s+reset,\s*base,\s*tokens,\s*recipes,\s*utilities;/g, ''),
+      ),
       // `sources()` returns `pattern` relative to `base` — a coherent (dir, glob) pair.
       sources: vi.fn(() => [{ base: '/project/src', pattern: '**/*.tsx' }]),
     },
+    config: {},
     applyChanges: vi.fn(() => [true]),
     configDependencies: ['panda.config.ts', 'panda.tokens.ts'],
     configPath: '/project/panda.config.ts',

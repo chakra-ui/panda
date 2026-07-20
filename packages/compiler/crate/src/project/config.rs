@@ -43,6 +43,18 @@ impl Compiler {
         pandacss_stylesheet::has_layer_declaration(&css, &names)
     }
 
+    /// Remove Panda `@layer a, b;` order statements; leave unrelated ones.
+    #[napi(js_name = stripLayerOrderStatements)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    #[must_use]
+    pub fn strip_layer_order_statements(&self, css: String) -> String {
+        let names = self.user_config.layers.ordered().map(|(_, name)| name);
+        pandacss_stylesheet::strip_layer_order_statements(&css, &names)
+    }
+
     /// Tooling introspection snapshot (read once, index on the host).
     ///
     /// # Errors

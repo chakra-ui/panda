@@ -256,6 +256,7 @@ export abstract class BaseDriver implements Driver {
       outdir: this.getConfiguredOutdir(options?.outdir),
       layers: options?.layers,
       minify: options?.minify,
+      polyfill: options?.polyfill,
       emitLayerDeclaration: options?.emitLayerDeclaration,
       cwd: options?.cwd,
     })

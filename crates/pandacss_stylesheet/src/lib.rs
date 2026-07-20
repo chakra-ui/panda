@@ -3,6 +3,7 @@ mod emitter;
 mod grouped;
 mod layers;
 mod numeric_value;
+mod polyfill;
 mod preflight;
 mod selector;
 mod sort;
@@ -12,7 +13,7 @@ mod style_rules;
 mod writer;
 
 pub use emitter::UtilityStyleOverrides;
-pub use layers::has_layer_declaration;
+pub use layers::{has_layer_declaration, strip_layer_order_statements};
 pub use selector::{PREFLIGHT_ROOT, ScopeMode, scope_selector, split_selector_list};
 pub use sort::order_properties;
 
@@ -36,6 +37,7 @@ pub struct StylesheetOptions {
     pub include_static: bool,
     pub source_map: bool,
     pub emit_layer_declaration: bool,
+    pub polyfill: bool,
     /// When set, `split_css` emits only the selected layers (and rebuilds the
     /// index `@layer` preamble + `@import` lines to match).
     pub layers: Option<Vec<StylesheetLayer>>,
@@ -48,6 +50,7 @@ impl Default for StylesheetOptions {
             include_static: false,
             source_map: false,
             emit_layer_declaration: true,
+            polyfill: false,
             layers: None,
         }
     }
@@ -218,6 +221,7 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
     };
 
     let recipes = encoded_recipes.as_ref().unwrap_or(input.encoded_recipes);
+    let emit_layer_declaration = options.emit_layer_declaration && !options.polyfill;
     let emitted = emitter::emit(
         input.config,
         &utility,
@@ -229,7 +233,8 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
         recipes,
         input.utility_styles,
         options.minify,
-        options.emit_layer_declaration,
+        emit_layer_declaration,
+        options.polyfill,
     );
 
     StylesheetOutput {
@@ -298,7 +303,8 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
         recipes,
         input.utility_styles,
         options.minify,
-        true,
+        options.emit_layer_declaration && !options.polyfill,
+        options.polyfill,
     );
 
     let selected = options.layers.as_deref();
@@ -332,8 +338,14 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
     }
 
     if layer_selected(StylesheetLayer::Recipes) {
-        let recipe_files =
-            emitter::emit_recipe_split(input.config, &utility, recipes, options.minify);
+        let recipe_files = emitter::emit_recipe_split(
+            input.config,
+            &utility,
+            recipes,
+            options.minify,
+            options.polyfill,
+            full.polyfill_analyze.as_ref(),
+        );
         if !recipe_files.is_empty() {
             let mut recipe_imports = Vec::with_capacity(recipe_files.len());
             for (name, css) in &recipe_files {
@@ -368,7 +380,7 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
     }
 
     // `styles.css` entry: the @layer order declaration + the imports above.
-    let mut index = if options.emit_layer_declaration {
+    let mut index = if options.emit_layer_declaration && !options.polyfill {
         layer_order_declaration(&input.config.layers, selected)
     } else {
         String::new()

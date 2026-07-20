@@ -50,6 +50,7 @@ export const cssgenFlagsSchema = commonFlagsSchema.extend({
   check: booleanFlag,
   minimal: booleanFlag,
   minify: booleanFlag,
+  polyfill: booleanFlag,
 })
 
 export const buildFlagsSchema = commonFlagsSchema.extend({
@@ -58,6 +59,7 @@ export const buildFlagsSchema = commonFlagsSchema.extend({
   splitting: booleanFlag,
   clean: booleanFlag,
   check: booleanFlag,
+  polyfill: booleanFlag,
 })
 
 export const initFlagsSchema = commonFlagsSchema

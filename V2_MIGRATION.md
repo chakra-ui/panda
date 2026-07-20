@@ -167,6 +167,9 @@ module.exports = {
 }
 ```
 
+For older browsers, set `polyfill: true` (or `--polyfill`). v2 polyfills layers in the emitter — you don't need
+`@csstools/postcss-cascade-layers` for Panda CSS.
+
 ### 5. Write styles
 
 ```tsx

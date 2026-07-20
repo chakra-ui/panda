@@ -329,6 +329,11 @@ interface CssgenOptions {
    * @default false
    */
   minify?: boolean
+  /**
+   * Polyfill cascade layers for older browsers. `--polyfill` overrides this.
+   * @default false
+   */
+  polyfill?: boolean
 }
 
 export interface OptimizeOptions {

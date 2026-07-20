@@ -158,6 +158,9 @@ importers:
       '@pandacss/config':
         specifier: workspace:*
         version: link:../config
+      '@pandacss/types':
+        specifier: workspace:*
+        version: link:../types
       '@parcel/watcher':
         specifier: 2.5.1
         version: 2.5.1

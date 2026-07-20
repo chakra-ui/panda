@@ -125,6 +125,7 @@ export declare class WasmCompiler {
   parseFiles(paths: string[]): ParseFileReport[]
   layers(): LayerNames
   hasLayerDeclaration(css: string): boolean
+  stripLayerOrderStatements(css: string): string
   spec(): Spec
   sources(): SourceEntry[]
   inspectFileSource(path: string, source: string): Omit<FileInspectionResult, 'path'>

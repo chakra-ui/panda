@@ -160,6 +160,9 @@ class FallbackCompiler implements Compiler {
   hasLayerDeclaration() {
     return false
   }
+  stripLayerOrderStatements(css: string) {
+    return css
+  }
   spec() {
     return {
       conditions: { keys: [], breakpoints: [], containers: [] },

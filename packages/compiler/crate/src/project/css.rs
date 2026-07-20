@@ -97,6 +97,7 @@ impl Compiler {
             has_utility_transforms
                 .then_some(&mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>),
             options.as_ref().and_then(|options| options.minify),
+            options.as_ref().and_then(|options| options.polyfill),
         );
         span.record("file_count", output.manifest.files.len());
         crate::flush_tracing();
@@ -194,6 +195,7 @@ impl Compiler {
             layers: None,
             emit_layer_declaration: options.emit_layer_declaration,
             minify: options.minify,
+            polyfill: options.polyfill,
         };
         let output = crate::compile::build_layer_compile_output(
             inner,
@@ -225,6 +227,7 @@ impl Compiler {
                 layers: options.layers,
                 emit_layer_declaration: options.emit_layer_declaration,
                 minify: options.minify,
+                polyfill: options.polyfill,
             },
         )?;
         let target = self.paths.resolve(
@@ -296,6 +299,7 @@ fn compile_options_from_write_css(options: &WriteCssOptions) -> CompileOptions {
     CompileOptions {
         emit_layer_declaration: options.emit_layer_declaration,
         minify: options.minify,
+        polyfill: options.polyfill,
     }
 }
 
@@ -304,5 +308,6 @@ fn css_output_options_from_write_split(options: &WriteSplitCssOptions) -> CssOut
         layers: options.layers.clone(),
         emit_layer_declaration: options.emit_layer_declaration,
         minify: options.minify,
+        polyfill: options.polyfill,
     }
 }

@@ -215,6 +215,8 @@ export interface Compiler {
   config(): SerializedConfig
   layers(): LayerNames
   hasLayerDeclaration(css: string): boolean
+  /** Remove Panda `@layer …;` order statements; leave unrelated ones. */
+  stripLayerOrderStatements(css: string): string
   spec(): Spec
   sources(): SourceEntry[]
   diagnostics(): Diagnostic[]
