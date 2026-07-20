@@ -41,13 +41,13 @@ Break a rule only when demonstrably harmful to productivity or satisfaction — 
 
 Show the minimum needed for the current context; reveal complexity only when the user asks or when it matters:
 
-| Context                    | Default surface            | Deeper detail                                                           |
-| -------------------------- | -------------------------- | ----------------------------------------------------------------------- |
-| `panda` / `panda build`    | Brief success, errors only | `--log-level debug`, `--trace` for compiler internals                   |
-| `panda init`               | Guided prompts in TTY      | `--no-input` + flags for CI/scaffold scripts                            |
-| `panda doctor`             | Pass/fail summary          | Actionable fix hints per failure; verbose lists behind higher log level |
-| `panda info` / `buildinfo` | Human tables               | `--json` for tooling                                                    |
-| Help                       | Concise on empty invoke    | Full flag list on `--help`                                              |
+| Context                 | Default surface             | Deeper detail                                         |
+| ----------------------- | --------------------------- | ----------------------------------------------------- |
+| `panda` / `panda build` | Brief success, errors only  | `--log-level debug`, `--trace` for compiler internals |
+| `panda init`            | Guided prompts in TTY       | `--no-input` + flags for CI/scaffold scripts          |
+| `panda doctor`          | Pass/fail + project summary | Actionable fix hints; `--json` for tooling            |
+| `panda buildinfo`       | Human tables                | `--json` for tooling                                  |
+| Help                    | Concise on empty invoke     | Full flag list on `--help`                            |
 
 Design for **beginners** (discoverable defaults, examples, suggestions) and **power users** (stable `--json`, composable
 flags, no prompts in CI) at the same time — not either/or.
@@ -285,7 +285,7 @@ Use subcommands when the tool is complex enough that a flat flag space hurts dis
 
 ### Panda subcommands today
 
-`init`, `dev`, `build`, `check`, `info`, `doctor`, `debug`, `buildinfo`, `codegen`, `cssgen`
+`init`, `dev`, `build`, `check`, `doctor`, `debug`, `buildinfo`, `codegen`, `cssgen`
 
 **Documented Panda exceptions:**
 
@@ -298,15 +298,15 @@ Use subcommands when the tool is complex enough that a flat flag space hurts dis
 
 Use **action-oriented verbs** users already know from other JS/CSS tooling:
 
-| Verb                        | Use for                           |
-| --------------------------- | --------------------------------- |
-| `init`                      | First-time project setup          |
-| `build`                     | Full codegen + CSS emit           |
-| `dev` / watch               | Long-running file watcher         |
-| `codegen`                   | Styled-system output only         |
-| `cssgen`                    | CSS output only                   |
-| `check`                     | Validate without writing (CI)     |
-| `info` / `doctor` / `debug` | Introspection and troubleshooting |
+| Verb               | Use for                           |
+| ------------------ | --------------------------------- |
+| `init`             | First-time project setup          |
+| `build`            | Full codegen + CSS emit           |
+| `dev` / watch      | Long-running file watcher         |
+| `codegen`          | Styled-system output only         |
+| `cssgen`           | CSS output only                   |
+| `check`            | Validate without writing (CI)     |
+| `doctor` / `debug` | Introspection and troubleshooting |
 
 Avoid vague names (`generate-system`, `run-pipeline`). Group related commands under clear subcommands; design them to
 **compose in scripts** without wrapper tools:
@@ -438,13 +438,13 @@ Understand what `panda` does — not just how CLIs work in general:
 | Setup    | Config, presets, PostCSS stub, codegen paths      | `init`, `doctor`                                       |
 | Dev loop | Watch sources, incremental codegen/CSS            | `dev`, `build`, `--watch`                              |
 | CI       | Deterministic check, no writes                    | `codegen --check`, `cssgen --check`, `check`, `--json` |
-| Debug    | Config resolution, extraction, emit introspection | `debug`, `info`, `buildinfo`, `--trace`                |
+| Debug    | Config resolution, extraction, emit introspection | `debug`, `doctor`, `buildinfo`, `--trace`              |
 
 **Static extraction:** commands orchestrate scan → encode → emit via `@pandacss/compiler`. CLI UX should reflect that
 pipeline (timings per phase in `--json`, trace spans for slow steps).
 
 **Design-system concepts** surfacing in CLI output: tokens, recipes, conditions, presets, `outdir` / `outfile`. Users
-think in those terms — error messages and `info` should too.
+think in those terms — error messages and `doctor` should too.
 
 **Framework integrations:** Vite (`@pandacss/vite`), PostCSS (`@pandacss/postcss`), Next and other sandboxes invoke
 Panda differently. Flags and docs should align with how those tools call the compiler — don’t design CLI options that

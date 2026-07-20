@@ -127,9 +127,9 @@ panda init --outdir src/styled-system
 panda init -i                     # interactive wizard (TTY only; not a log mode)
 ```
 
-The wizard asks for PostCSS, `outExtension` (`js` / `mjs` / `ts`), JSX framework (or none),
-`jsxStyleProps` (`all` / `minimal` / `none` when a framework is chosen), `strictTokens`, and `.gitignore`.
-Template-literal `syntax` stays a flag/config option only.
+The wizard asks for PostCSS, `outExtension` (`js` / `mjs` / `ts`), JSX framework (or none), `jsxStyleProps` (`all` /
+`minimal` / `none` when a framework is chosen), `strictTokens`, and `.gitignore`. Template-literal `syntax` stays a
+flag/config option only.
 
 ### 3. Tell Panda what to scan
 
@@ -212,8 +212,8 @@ The engine aims for the same CSS as v1. These are the differences you'll notice,
 - **Grouped `@media` / `@supports`.** Rules that share a wrapper are grouped before they're written.
 - **Modern breakpoint syntax.** Responsive conditions use range syntax, `@media (width >= Nrem)`, with px and em
   normalized to `rem`.
-- **Container queries sort by size.** Theme container conditions keep mobile-first order across `width`,
-  `inline-size`, `height`, and `block-size` (modern and legacy forms).
+- **Container queries sort by size.** Theme container conditions keep mobile-first order across `width`, `inline-size`,
+  `height`, and `block-size` (modern and legacy forms).
 - **Eager compound variants.** Compound variants emit at build time as named classes in
   `@layer recipes.compound_variants` (v1 atomized them into utilities). Runtime combo classes still apply for dynamic
   usage. Set `optimize.smartCompoundVariants: true` to emit only extracted combinations.
@@ -285,8 +285,8 @@ production.
 
 ### Types: smaller `.d.ts` and `isolatedDeclarations`
 
-`cva` / `sva` return types are keyed by a clean props type, not the full variant record. Annotate an exported recipe with
-only its variant keys and keep the CSS out of your `.d.ts`:
+`cva` / `sva` return types are keyed by a clean props type, not the full variant record. Annotate an exported recipe
+with only its variant keys and keep the CSS out of your `.d.ts`:
 
 ```tsx
 import { cva } from 'styled-system/css'
@@ -439,8 +439,8 @@ export default defineConfig({
 })
 ```
 
-Used v1 `cssgen:done` to strip unused tokens or keyframes? Use `optimize.removeUnusedTokens` /
-`removeUnusedKeyframes` instead. For other CSS transforms, run PostCSS after Panda.
+Used v1 `cssgen:done` to strip unused tokens or keyframes? Use `optimize.removeUnusedTokens` / `removeUnusedKeyframes`
+instead. For other CSS transforms, run PostCSS after Panda.
 
 ### `createStyleContext` is now two helpers
 
@@ -479,21 +479,20 @@ const Button = withContext('button')
 
 ## CLI commands
 
-| Command           | What it does                                                                                 |
-| ----------------- | -------------------------------------------------------------------------------------------- |
-| `panda init`      | Scaffold `panda.config.ts` and run the first codegen.                                        |
-| `panda dev`       | Watch files and rebuild the generated system and CSS.                                        |
-| `panda build`     | Generate the system and CSS once. Bare `panda` still runs this default build.                |
-| `panda check`     | Check generated files without writing. Use this in CI.                                       |
-| `panda info`      | Print project/compiler info: config path, sources, artifacts, conditions, tokens, utilities. |
-| `panda doctor`    | Check config loading and compiler diagnostics.                                               |
-| `panda debug`     | Write bug-report artifacts under `<outdir>/debug`.                                           |
-| `panda codegen`   | Advanced: generate the `styled-system` output only.                                          |
-| `panda cssgen`    | Advanced: generate CSS only.                                                                 |
+| Command           | What it does                                                                                             |
+| ----------------- | -------------------------------------------------------------------------------------------------------- |
+| `panda init`      | Scaffold `panda.config.ts` and run the first codegen.                                                    |
+| `panda dev`       | Watch files and rebuild the generated system and CSS.                                                    |
+| `panda build`     | Generate the system and CSS once. Bare `panda` still runs this default build.                            |
+| `panda check`     | Check generated files without writing. Use this in CI.                                                   |
+| `panda doctor`    | Validate config/diagnostics and print a project summary (sources, artifacts, tokens, …).                 |
+| `panda debug`     | Write bug-report artifacts under `<outdir>/debug`.                                                       |
+| `panda codegen`   | Advanced: generate the `styled-system` output only.                                                      |
+| `panda cssgen`    | Advanced: generate CSS only.                                                                             |
 | `panda lib`       | Publish a design system (`panda/lib.json` + build info + preset). See [Design systems](#design-systems). |
-| `panda buildinfo` | Write build-info JSON only. Prefer `panda lib` for libraries.                                |
+| `panda buildinfo` | Write build-info JSON only. Prefer `panda lib` for libraries.                                            |
 
-`panda inspect` and `panda validate` are removed in v2. Use `panda info` and `panda doctor`.
+`panda inspect`, `panda validate`, and `panda info` are removed in v2. Use `panda doctor` (add `--json` for scripts).
 
 Logging flags are consolidated: use `--log-level silent|error|warn|info|debug` instead of `--silent`, `--quiet`, or
 `--verbose`. Shared CLI flags use kebab-case, including `--max-warnings`, `--watch-debounce`, `--trace-output`, and
@@ -506,8 +505,8 @@ output can use ANSI colors; pass `--no-color` or set `NO_COLOR` to disable. Use 
 
 ## CSS output for monorepos
 
-`panda cssgen --minimal` emits package usage CSS (recipes + utilities) without duplicating reset, base, and tokens.
-Emit the full stylesheet once from the app/root.
+`panda cssgen --minimal` emits package usage CSS (recipes + utilities) without duplicating reset, base, and tokens. Emit
+the full stylesheet once from the app/root.
 
 1. **App/root:** `panda build` or `panda cssgen` for the full stylesheet.
 2. **Per package:** `panda cssgen --minimal` for local usage CSS.
@@ -547,15 +546,15 @@ dist/panda/preset.mjs
 - styled-system roots the package actually emitted (`./css`, `./recipes`, `./patterns`, `./jsx`, …) for overlay
   re-exports
 
-Build info is what consumers hydrate; the preset carries tokens, recipes, and patterns. Manifest `preset` /
-`buildInfo` paths are relative to `panda/`; fallback `files` are relative to the lib outdir (`dist/`).
+Build info is what consumers hydrate; the preset carries tokens, recipes, and patterns. Manifest `preset` / `buildInfo`
+paths are relative to `panda/`; fallback `files` are relative to the lib outdir (`dist/`).
 
 Fallback `files` are only used when build info is missing or stale. Without `--files`, they're inferred from the scan.
 If package.json only publishes `dist`, inferred `../src/...` paths won't ship — `panda lib` drops them and warns.
 `--files` skips that filter. You own the source→dist mapping; Panda won't guess it.
 
-Do not point a public `./preset` export at these machine files. Keep authoring presets as your own package API;
-Panda only owns `./panda/*`.
+Do not point a public `./preset` export at these machine files. Keep authoring presets as your own package API; Panda
+only owns `./panda/*`.
 
 ### Using it in an app
 

@@ -25,7 +25,6 @@ panda init
 panda dev
 panda build
 panda check
-panda info
 panda doctor
 panda debug
 panda analyze
@@ -202,17 +201,16 @@ Watch mode keeps tracing active until the returned `stop()` function runs.
 
 ## Lifecycle commands
 
-- `panda init` scaffolds a v2-ready config and optional PostCSS wiring. `panda init -i` runs a TTY wizard;
-  `--no-input` forbids prompts. Human TTY output may use ANSI color (`--no-color` / `NO_COLOR` to disable).
+- `panda init` scaffolds a v2-ready config and optional PostCSS wiring. `panda init -i` runs a TTY wizard; `--no-input`
+  forbids prompts. Human TTY output may use ANSI color (`--no-color` / `NO_COLOR` to disable).
 - `panda build` generates artifacts and CSS once.
 - `panda dev` watches and rebuilds.
 - `panda check` verifies generated output without writing.
-- `panda info` prints project/compiler summary data.
-- `panda doctor` checks config loading and compiler diagnostics.
+- `panda doctor` validates config/diagnostics and prints a project summary (sources, artifacts, tokens, …).
 - `panda debug` writes bug-report artifacts.
 - `panda analyze` reports Panda usage across project sources.
 
-`panda inspect` and `panda validate` are removed. Use `panda info` and `panda doctor`.
+`panda inspect`, `panda validate`, and `panda info` are removed. Use `panda doctor`.
 
 ## Debug command
 

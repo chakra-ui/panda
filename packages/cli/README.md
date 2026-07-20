@@ -18,8 +18,7 @@ panda init      # scaffold a config
 panda dev       # watch files and rebuild
 panda build     # generate the styled-system and CSS
 panda check     # check generated files without writing
-panda info      # show project and compiler info
-panda doctor    # check config + diagnostics
+panda doctor    # validate setup and print a project summary
 panda debug     # write debug artifacts for bug reports
 
 # Advanced

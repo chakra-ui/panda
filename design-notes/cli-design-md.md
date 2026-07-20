@@ -123,7 +123,7 @@ Kebab-case, matches the file name. Skip these:
 
 ## Where the export reads from
 
-Same boundary as `panda info`, `panda analyze`, and MCP — after config load:
+Same boundary as `panda doctor`, `panda analyze`, and MCP — after config load:
 
 | Source                   | Export uses it for                                          |
 | ------------------------ | ----------------------------------------------------------- |

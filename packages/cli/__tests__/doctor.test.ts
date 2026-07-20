@@ -12,18 +12,27 @@ describe('doctor command', () => {
     dir = undefined
   })
 
-  it('succeeds for a valid config', async () => {
+  it('succeeds for a valid config and prints a project summary', async () => {
     dir = createFixture()
 
     const logs: string[] = []
     const result = await runDoctor({ cwd: dir }, { log: (message) => logs.push(message) })
 
-    expect(result).toMatchObject({ ok: true, command: 'doctor', exitCode: 0, diagnosticCount: 0, errors: 0 })
+    expect(result).toMatchObject({
+      ok: true,
+      command: 'doctor',
+      exitCode: 0,
+      diagnosticCount: 0,
+      errors: 0,
+      sourceCount: 1,
+    })
 
-    expect(logs[0]).toBe('doctor: ok (0 diagnostics)')
+    expect(logs[0]).toContain('doctor: ok (0 diagnostics)')
+    expect(logs[0]).toContain('sources: 1')
+    expect(logs[0]).toContain('utilities:')
   })
 
-  it('--json emits the command result envelope', async () => {
+  it('--json emits the command result envelope with summary fields', async () => {
     dir = createFixture()
 
     const logs: string[] = []
@@ -35,6 +44,8 @@ describe('doctor command', () => {
       command: 'doctor',
       exitCode: 0,
       diagnostics: [],
+      sourceCount: 1,
+      timings: { config: expect.any(Number) },
     })
   })
 

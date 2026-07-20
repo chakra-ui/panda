@@ -9,11 +9,11 @@
     "preview": "vite preview",
     "codegen": "panda codegen",
     "cssgen": "panda cssgen",
-    "info": "panda info --cwd . --json",
+    "doctor": "panda doctor --cwd . --json",
     "buildinfo": "panda buildinfo --cwd .",
     "lint": "eslint src",
     "lint:oxlint": "oxlint src",
-    "test": "pnpm run info && pnpm buildinfo && pnpm build"
+    "test": "pnpm run doctor && pnpm buildinfo && pnpm build"
   },
   "dependencies": {
     "react": "19.2.0",

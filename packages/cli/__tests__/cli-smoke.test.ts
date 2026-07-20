@@ -40,7 +40,7 @@ describe('cli smoke', () => {
     expect(normalizeCliOutput(result.stdout)).toMatchInlineSnapshot(`
       "Generate the panda system and CSS. Run with no subcommand for the full build. (panda v<version>)
 
-      USAGE \`panda [OPTIONS] init|dev|build|check|info|doctor|debug|buildinfo|lib|analyze|codegen|cssgen\`
+      USAGE \`panda [OPTIONS] init|dev|build|check|doctor|debug|buildinfo|lib|analyze|codegen|cssgen\`
 
       OPTIONS
 
@@ -72,8 +72,7 @@ describe('cli smoke', () => {
       \`dev\` Start Panda in watch mode
       \`build\` Generate the panda system and CSS
       \`check\` Check generated files without writing
-      \`info\` Show project and compiler info
-      \`doctor\` Validate Panda setup and diagnostics
+      \`doctor\` Validate Panda setup and print a project summary
       \`debug\` Dump resolved config and per-file extraction for bug reports
       \`buildinfo\` Build a portable panda.buildinfo.json for a design-system library
       \`lib\` Publish a design system: write machine artifacts under panda/, and sync package.json exports
@@ -85,13 +84,14 @@ describe('cli smoke', () => {
 
       "
     `)
-    expect(result.stdout).toContain('init|dev|build|check|info|doctor|debug|buildinfo|lib|analyze|codegen|cssgen')
+    expect(result.stdout).toContain('init|dev|build|check|doctor|debug|buildinfo|lib|analyze|codegen|cssgen')
     expect(result.stdout).toContain(`panda v${version}`)
     expect(result.stdout).not.toContain('inspect')
     expect(result.stdout).not.toContain('validate')
+    expect(result.stdout).not.toContain('`info`')
   })
 
-  it.each(['build', 'dev', 'check', 'info', 'doctor', 'analyze', 'cssgen'])('prints help for panda %s', (command) => {
+  it.each(['build', 'dev', 'check', 'doctor', 'analyze', 'cssgen'])('prints help for panda %s', (command) => {
     const result = runCli([command, '--help'])
 
     expect(result.exitCode).toBe(0)
@@ -107,7 +107,7 @@ describe('cli smoke', () => {
     expect(result.stdout).toContain('Emit usage CSS only')
   })
 
-  it.each(['inspect', 'validate', 'frobnicate'])('rejects unknown command %s', (command) => {
+  it.each(['inspect', 'validate', 'info', 'frobnicate'])('rejects unknown command %s', (command) => {
     const result = runCli([command])
 
     expect(result.exitCode).toBe(1)
@@ -164,15 +164,16 @@ describe('cli smoke', () => {
     expect(existsSync(join(dir, 'styled-system', 'debug', 'trace.json'))).toBe(false)
   })
 
-  it('emits info and doctor JSON against a fixture project', () => {
+  it('emits doctor JSON against a fixture project', () => {
     dir = createFixture()
-
-    const info = runCli(['info', '--cwd', dir, '--json'])
-    expect(info.exitCode).toBe(0)
-    expect(JSON.parse(info.stdout)).toMatchObject({ ok: true, command: 'info', sourceCount: 1 })
 
     const doctor = runCli(['doctor', '--cwd', dir, '--json'])
     expect(doctor.exitCode).toBe(0)
-    expect(JSON.parse(doctor.stdout)).toMatchObject({ ok: true, command: 'doctor', diagnosticCount: 0 })
+    expect(JSON.parse(doctor.stdout)).toMatchObject({
+      ok: true,
+      command: 'doctor',
+      diagnosticCount: 0,
+      sourceCount: 1,
+    })
   })
 })
