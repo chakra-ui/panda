@@ -1,6 +1,11 @@
 import { defaultConfig, type Diagnostic } from '@pandacss/compiler-shared'
-import { loadConfig, type LoadConfigResult } from '@pandacss/config'
-import { hydrateDesignSystem } from '../design-system'
+import {
+  collectExportMissingDiagnostics,
+  collectNameCollisionDiagnostics,
+  loadConfig,
+  type LoadConfigResult,
+} from '@pandacss/config'
+import { artifactConflictDiagnostics, hydrateDesignSystem } from '../design-system'
 import { createCompilerFromSnapshot } from '../index'
 import type { NativeCompiler } from '../types'
 
@@ -37,12 +42,18 @@ export function createProjectFromLoadedConfig(loaded: LoadConfigResult): Project
     consumerTokenPaths: loaded.metadata?.userTokenPaths ?? [],
     treeshake: treeshakeDesignSystemEnabled(loaded.config),
   })
+  const designSystemDiagnostics = [
+    ...hydrated.diagnostics,
+    ...artifactConflictDiagnostics(loaded.metadata),
+    ...collectExportMissingDiagnostics(loaded.metadata),
+    ...collectNameCollisionDiagnostics(loaded.metadata),
+  ]
   return {
     compiler,
     configPath: loaded.path,
     dependencies: loaded.dependencies,
     outdir: (loaded.config.outdir as string | undefined) ?? defaultConfig.outdir,
-    designSystemDiagnostics: hydrated.diagnostics,
+    designSystemDiagnostics,
     designSystemTreeshakeKey: hydrated.treeshakeKey,
   }
 }

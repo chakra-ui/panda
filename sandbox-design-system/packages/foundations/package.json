@@ -4,12 +4,40 @@
   "version": "1.0.0",
   "type": "module",
   "exports": {
-    "./panda.lib.json": "./dist/panda.lib.json",
-    "./preset": "./dist/panda.preset.mjs",
-    "./css": "./styled-system/css/index.js",
-    "./tokens": "./styled-system/tokens/index.js",
-    "./patterns": "./styled-system/patterns/index.js",
-    "./types": "./styled-system/types/index.d.ts"
+    "./panda/*": "./dist/panda/*",
+    "./css": {
+      "types": "./styled-system/css/index.d.ts",
+      "default": "./styled-system/css/index.js"
+    },
+    "./tokens": {
+      "types": "./styled-system/tokens/index.d.ts",
+      "default": "./styled-system/tokens/index.js"
+    },
+    "./patterns": {
+      "types": "./styled-system/patterns/index.d.ts",
+      "default": "./styled-system/patterns/index.js"
+    },
+    "./types": "./styled-system/types/index.d.ts",
+    "./css/*": {
+      "types": "./styled-system/css/*.d.ts",
+      "default": "./styled-system/css/*.js"
+    },
+    "./patterns/*": {
+      "types": "./styled-system/patterns/*.d.ts",
+      "default": "./styled-system/patterns/*.js"
+    },
+    "./helpers": {
+      "types": "./styled-system/helpers.d.ts",
+      "default": "./styled-system/helpers.js"
+    },
+    "./jsx": {
+      "types": "./styled-system/jsx/index.d.ts",
+      "default": "./styled-system/jsx/index.js"
+    },
+    "./jsx/*": {
+      "types": "./styled-system/jsx/*.d.ts",
+      "default": "./styled-system/jsx/*.js"
+    }
   },
   "scripts": {
     "codegen": "panda codegen",
@@ -17,10 +45,13 @@
     "watch": "pnpm codegen && panda lib --watch"
   },
   "peerDependencies": {
-    "@pandacss/dev": "^2.0.0"
+    "@pandacss/dev": "^2.0.0",
+    "react": ">=18"
   },
   "devDependencies": {
     "@pandacss/dev": "workspace:*",
-    "@pandacss/preset-base": "workspace:*"
+    "@pandacss/preset-base": "workspace:*",
+    "@types/react": "19.2.7",
+    "react": "19.2.0"
   }
 }

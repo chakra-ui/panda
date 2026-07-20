@@ -1,10 +1,9 @@
 export {
-  infoDriver,
+  projectSummary,
   runBuildinfo,
   runCodegen,
   runCssgen,
   runDoctor,
-  runInfo,
   runInit,
   setupGitIgnore,
   writeCssgenOutput,
@@ -21,9 +20,8 @@ export type {
   CssgenResult,
   DoctorFlags,
   DoctorResult,
-  InfoFlags,
-  InfoResult,
   InitFlags,
   InitResult,
   LogLevel,
+  ProjectSummary,
 } from '@pandacss/cli'

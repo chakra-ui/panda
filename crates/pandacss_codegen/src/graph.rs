@@ -255,6 +255,9 @@ impl ArtifactGraph {
             dependencies: DependencySet::from_slice(&[
                 ConfigDependency::CodegenFormat,
                 ConfigDependency::CodegenImportExtensions,
+                // `toCssVar` bakes `prefix` / `hash` into the helpers module.
+                ConfigDependency::Hash,
+                ConfigDependency::Prefix,
             ]),
         },
         ArtifactNode {
@@ -429,8 +432,7 @@ impl ArtifactGraph {
             dependencies: DependencySet::from_slice(&[
                 ConfigDependency::CodegenFormat,
                 ConfigDependency::CodegenImportExtensions,
-                ConfigDependency::Hash,
-                ConfigDependency::Prefix,
+                // Prefix/hash live in helpers (`toCssVar`); tokens only owns the value map.
                 ConfigDependency::Tokens,
             ]),
         },
@@ -624,8 +626,8 @@ fn generate_node_inner(
         ArtifactId::Sva => crate::artifacts::sva::generate(ctx, options, node.dependencies),
         ArtifactId::Themes => crate::artifacts::themes::generate(ctx, options, node.dependencies),
         ArtifactId::Tokens => crate::artifacts::tokens::generate(ctx, options, node.dependencies),
-        ArtifactId::Cx => crate::artifacts::cx::generate(options, node.dependencies),
-        ArtifactId::Helpers => crate::artifacts::helpers::generate(options, node.dependencies),
+        ArtifactId::Cx => crate::artifacts::cx::generate(ctx, options, node.dependencies),
+        ArtifactId::Helpers => crate::artifacts::helpers::generate(ctx, options, node.dependencies),
         ArtifactId::JsxCreateRecipeContext => {
             crate::artifacts::jsx::generate_create_recipe_context(ctx, options, node.dependencies)
         }

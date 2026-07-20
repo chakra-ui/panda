@@ -3,7 +3,7 @@ import { existsSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileS
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { runLib } from '../src'
+import { runCodegen, runLib } from '../src'
 import { CONFIG } from './helpers'
 
 function createLibFixture(extraConfig = ''): string {
@@ -19,7 +19,7 @@ function createLibFixture(extraConfig = ''): string {
 }
 
 function readManifest(dir: string): DesignSystemManifest {
-  return JSON.parse(readFileSync(join(dir, 'dist', 'panda.lib.json'), 'utf8'))
+  return JSON.parse(readFileSync(join(dir, 'dist', 'panda', 'lib.json'), 'utf8'))
 }
 
 describe('lib command', () => {
@@ -39,7 +39,7 @@ describe('lib command', () => {
     const manifest = readManifest(dir)
     expect(manifest).toMatchInlineSnapshot(`
       {
-        "buildInfo": "./panda.buildinfo.json",
+        "buildInfo": "./buildinfo.json",
         "files": [
           "../button.tsx",
         ],
@@ -52,24 +52,91 @@ describe('lib command', () => {
         },
         "name": "@acme/ds",
         "panda": "^2.0.0",
-        "preset": "./panda.preset.mjs",
+        "preset": "./preset.mjs",
         "schemaVersion": 1,
         "version": "1.2.3",
       }
     `)
 
-    const buildInfo = JSON.parse(readFileSync(join(dir, 'dist', 'panda.buildinfo.json'), 'utf8'))
+    const buildInfo = JSON.parse(readFileSync(join(dir, 'dist', 'panda', 'buildinfo.json'), 'utf8'))
     expect(Object.keys(buildInfo.modules).length).toBeGreaterThan(0)
-    expect(readFileSync(join(dir, 'dist', 'panda.preset.mjs'), 'utf8')).toMatch(/as default|export default/)
+    expect(readFileSync(join(dir, 'dist', 'panda', 'preset.mjs'), 'utf8')).toMatch(/as default|export default/)
 
     const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
     expect(pkg.exports).toMatchInlineSnapshot(`
       {
-        "./panda.lib.json": "./dist/panda.lib.json",
-        "./preset": "./dist/panda.preset.mjs",
+        "./panda/*": "./dist/panda/*",
       }
     `)
     expect(result.exportsChanged).toBe(true)
+  })
+
+  it('replaces an unpublishable catalog: peer range with the running major', async () => {
+    dir = createLibFixture()
+    writeFileSync(
+      join(dir, 'package.json'),
+      JSON.stringify(
+        { name: '@acme/ds', version: '1.2.3', peerDependencies: { '@pandacss/dev': 'catalog:' } },
+        null,
+        2,
+      ),
+    )
+
+    const result = await runLib({ cwd: dir, logLevel: 'silent' })
+    expect(result.ok).toBe(true)
+
+    const manifest = readManifest(dir)
+    expect(manifest.panda).not.toBe('catalog:')
+    expect(manifest.panda).toMatch(/^\^\d+\.0\.0$/)
+  })
+
+  it('honors an explicit --panda range over an unpublishable peer', async () => {
+    dir = createLibFixture()
+    writeFileSync(
+      join(dir, 'package.json'),
+      JSON.stringify(
+        { name: '@acme/ds', version: '1.2.3', peerDependencies: { '@pandacss/dev': 'workspace:*' } },
+        null,
+        2,
+      ),
+    )
+
+    const result = await runLib({ cwd: dir, panda: '2.0.0-beta.8', logLevel: 'silent' })
+    expect(result.ok).toBe(true)
+
+    expect(readManifest(dir).panda).toBe('2.0.0-beta.8')
+  })
+
+  it('ignores an unpublishable --panda value instead of stamping it', async () => {
+    dir = createLibFixture()
+
+    const result = await runLib({ cwd: dir, panda: 'catalog:', logLevel: 'silent' })
+    expect(result.ok).toBe(true)
+
+    const manifest = readManifest(dir)
+    expect(manifest.panda).not.toBe('catalog:')
+    expect(manifest.panda).toMatch(/^\^\d+\.0\.0$/)
+  })
+
+  it('syncs styled-system subpath exports for categories the codegen emitted', async () => {
+    dir = createLibFixture()
+    await runCodegen({ cwd: dir, logLevel: 'silent' })
+
+    const result = await runLib({ cwd: dir, logLevel: 'silent' })
+    expect(result.ok).toBe(true)
+
+    const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
+    expect(pkg.exports['./css']).toEqual({
+      types: './styled-system/css/index.d.ts',
+      default: './styled-system/css/index.js',
+    })
+    expect(pkg.exports['./tokens']).toEqual({
+      types: './styled-system/tokens/index.d.ts',
+      default: './styled-system/tokens/index.js',
+    })
+    expect(pkg.exports['./panda/*']).toBe('./dist/panda/*')
+    expect(pkg.exports['./recipes']).toBeUndefined()
+    expect(pkg.exports['./jsx']).toBeUndefined()
   })
 
   it.each(['workspace:*', 'workspace:^', 'catalog:', 'npm:@pandacss/dev@^2.0.0'])(
@@ -92,7 +159,7 @@ describe('lib command', () => {
     dir = createLibFixture()
     writeFileSync(
       join(dir, 'package.json'),
-      JSON.stringify({ name: '@acme/ds', version: '1.2.3', exports: { './preset': './custom/preset.js' } }, null, 2),
+      JSON.stringify({ name: '@acme/ds', version: '1.2.3', exports: { './panda/*': './custom/panda/*' } }, null, 2),
     )
 
     const result = await runLib({ cwd: dir, logLevel: 'silent' })
@@ -100,7 +167,7 @@ describe('lib command', () => {
     expect(result.ok).toBe(true)
     expect(result.diagnostics.some((d) => d.code === 'design_system_export_overwritten')).toBe(true)
     const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
-    expect(pkg.exports['./preset']).toBe('./dist/panda.preset.mjs')
+    expect(pkg.exports['./panda/*']).toBe('./dist/panda/*')
   })
 
   it('preserves an existing string root export when syncing package exports', async () => {
@@ -117,8 +184,7 @@ describe('lib command', () => {
     expect(pkg.exports).toMatchInlineSnapshot(`
       {
         ".": "./dist/index.js",
-        "./panda.lib.json": "./dist/panda.lib.json",
-        "./preset": "./dist/panda.preset.mjs",
+        "./panda/*": "./dist/panda/*",
       }
     `)
   })
@@ -129,9 +195,9 @@ describe('lib command', () => {
 
     const result = await runLib({ cwd: dir, logLevel: 'silent', maxWarnings: 0 })
     expect(result.ok).toBe(false)
-    expect(existsSync(join(dir, 'dist', 'panda.lib.json'))).toBe(false)
-    expect(existsSync(join(dir, 'dist', 'panda.buildinfo.json'))).toBe(false)
-    expect(existsSync(join(dir, 'dist', 'panda.preset.mjs'))).toBe(false)
+    expect(existsSync(join(dir, 'dist', 'panda', 'lib.json'))).toBe(false)
+    expect(existsSync(join(dir, 'dist', 'panda', 'buildinfo.json'))).toBe(false)
+    expect(existsSync(join(dir, 'dist', 'panda', 'preset.mjs'))).toBe(false)
 
     const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
     expect(pkg.exports).toBeUndefined()
@@ -141,10 +207,10 @@ describe('lib command', () => {
     dir = createLibFixture()
 
     await runLib({ cwd: dir, logLevel: 'silent' })
-    const first = readFileSync(join(dir, 'dist', 'panda.lib.json'), 'utf8')
+    const first = readFileSync(join(dir, 'dist', 'panda', 'lib.json'), 'utf8')
 
     const second = await runLib({ cwd: dir, logLevel: 'silent' })
-    expect(readFileSync(join(dir, 'dist', 'panda.lib.json'), 'utf8')).toBe(first)
+    expect(readFileSync(join(dir, 'dist', 'panda', 'lib.json'), 'utf8')).toBe(first)
     expect(second.exportsChanged).toBe(false)
   })
 
@@ -160,7 +226,7 @@ describe('lib command', () => {
     const result = await runLib({ cwd: dir, watch: true, logLevel: 'silent' })
     expect(result.ok).toBe(true)
     expect(typeof result.stop).toBe('function')
-    expect(existsSync(join(dir, 'dist', 'panda.lib.json'))).toBe(true)
+    expect(existsSync(join(dir, 'dist', 'panda', 'lib.json'))).toBe(true)
     await result.stop!()
   })
 })

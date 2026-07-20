@@ -661,13 +661,13 @@ fn snapshot_token_vars(dict: &TokenDictionary) -> std::collections::BTreeMap<Str
         .collect()
 }
 
-// --- runtime `toVar` parity ---
+// --- runtime `toCssVar` parity ---
 //
-// The generated `tokens/index` runtime derives every var-ref from the path via
-// a `toVar` helper instead of storing it. This mirrors that helper in Rust and
-// asserts it reproduces the dictionary's real `token.var` for tricky names
-// (uppercase, escape-needing `/`) across prefix + hash settings. If the runtime
-// JS drifts from `css_var_variable`/`push_css_var_name`, this fails.
+// Generated helpers `toCssVar` derives every var-ref from the path instead of
+// storing it on the token map. This mirrors that helper in Rust and asserts it
+// reproduces the dictionary's real `token.var` for tricky names (uppercase,
+// escape-needing `/`) across prefix + hash settings. If the runtime JS drifts
+// from `css_var_variable`/`push_css_var_name`, this fails.
 
 fn mirror_sanitize(out: &mut String, value: &str) {
     for ch in value.chars() {

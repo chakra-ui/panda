@@ -14,8 +14,8 @@ use crate::artifacts::ts_string::is_identifier;
 
 use crate::{
     Artifact, ArtifactFile, ArtifactId, Block, CodegenContext, ConfigDependency, ConstDecl,
-    DependencySet, ExportDecl, Expr, FunctionDecl, ImportDecl, InterfaceDecl, Item, ItemNode,
-    JsDoc, Module, Param, PatternCodegenMeta, Stmt, TsMember, TsMemberName, TsType,
+    DependencySet, Expr, FunctionDecl, ImportDecl, InterfaceDecl, Item, ItemNode, JsDoc, Module,
+    Param, PatternCodegenMeta, RuntimeImport, Stmt, TsMember, TsMemberName, TsType,
     graph::{GenerateOptions, emit_module_files},
 };
 
@@ -42,13 +42,48 @@ pub fn files(
         return Vec::new();
     }
 
-    let mut files = Vec::new();
+    let mut module_files = Vec::new();
     let mut names = Vec::new();
 
-    if !ctx.config.patterns.is_empty() {
+    for (name, pattern) in &ctx.config.patterns {
+        if ctx
+            .overlay
+            .is_some_and(|overlay| overlay.owns_pattern(name))
+        {
+            continue;
+        }
+        names.push(file_stem(name));
+        let meta = ctx.patterns.get(name);
+        let definition = ctx.types.patterns.patterns.get(name);
+        module_files.extend(emit_module_files(
+            &format!("patterns/{}", file_stem(name)),
+            &module_with_type_data(ctx, name, pattern, definition, meta),
+            options.format,
+            false,
+            options.import_extensions,
+            dependencies,
+        ));
+    }
+
+    let mut files = Vec::new();
+
+    let emit_runtime = if ctx.overlay.is_some() {
+        !names.is_empty()
+    } else {
+        !ctx.config.patterns.is_empty()
+    };
+    if emit_runtime {
+        let body = if ctx.virtualizes(RuntimeImport::CssIndex)
+            && let Some(overlay) = ctx.overlay
+            && !overlay.owned_patterns.is_empty()
+        {
+            crate::overlay::star_reexport(format!("{}/runtime", overlay.patterns))
+        } else {
+            runtime_module(ctx)
+        };
         files.extend(emit_module_files(
             "patterns/runtime",
-            &runtime_module(),
+            &body,
             options.format,
             false,
             options.import_extensions,
@@ -59,24 +94,16 @@ pub fn files(
         ));
     }
 
-    for (name, pattern) in &ctx.config.patterns {
-        names.push(file_stem(name));
-        let meta = ctx.patterns.get(name);
-        let definition = ctx.types.patterns.patterns.get(name);
-        files.extend(emit_module_files(
-            &format!("patterns/{}", file_stem(name)),
-            &module_with_type_data(name, pattern, definition, meta),
-            options.format,
-            false,
-            options.import_extensions,
-            dependencies,
-        ));
-    }
+    files.append(&mut module_files);
 
-    if !names.is_empty() {
+    if !names.is_empty()
+        || ctx
+            .overlay
+            .is_some_and(|overlay| !overlay.owned_patterns.is_empty())
+    {
         files.extend(emit_module_files(
             "patterns/index",
-            &index_module(&names),
+            &index_module(ctx, &names),
             options.format,
             false,
             options.import_extensions,
@@ -89,6 +116,7 @@ pub fn files(
 
 #[must_use]
 pub fn module_with_type_data(
+    ctx: CodegenContext<'_>,
     name: &str,
     pattern: &PatternConfig,
     definition: Option<&PatternTypeDefinition>,
@@ -108,9 +136,15 @@ pub fn module_with_type_data(
             ["getPatternStyles", "patternFns"],
             "./runtime",
         ))
-        .with_import(ImportDecl::value(["memo"], "../helpers"))
-        // Public fn pipes styles through `css()` to return a className.
-        .with_import(ImportDecl::value(["css"], "../css/index"));
+        .with_import(ImportDecl::value(
+            ["memo"],
+            &ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
+        ))
+        // The public fn pipes styles through `css()` to return a className.
+        .with_import(ImportDecl::value(
+            ["css"],
+            &ctx.runtime_import(RuntimeImport::CssIndex, "../css/index"),
+        ));
 
     let pattern_imports = filtered_type_imports(&type_imports, &["PatternRuntimeConfig"]);
     if !pattern_imports.is_empty() {
@@ -172,10 +206,15 @@ fn type_import(specifiers: Vec<String>, source: &str) -> ImportDecl {
     }
 }
 
-/// Shared by every generated pattern file — the pattern analogue of `recipes/runtime`.
-fn runtime_module() -> Module {
+/// Pattern runtime shared by every generated pattern file — the analogue of
+/// `recipes/runtime`. Holds the value-resolution helpers (`getPatternStyles`,
+/// `patternFns`) so they live with patterns rather than in the global helpers.
+fn runtime_module(ctx: CodegenContext<'_>) -> Module {
     Module::new()
-        .with_import(ImportDecl::value(["mapObject", "withDefaults"], "../helpers"))
+        .with_import(ImportDecl::value(
+            ["mapObject", "withDefaults"],
+            &ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
+        ))
         .with_item(runtime_function(
             "isCssFunction",
             vec![Param::typed("v", TsType::Unknown)],
@@ -235,12 +274,11 @@ fn runtime_function(name: &str, params: Vec<Param>, return_type: TsType, body: &
     }))
 }
 
-fn index_module(names: &[String]) -> Module {
-    names.iter().fold(Module::new(), |module, name| {
-        module.with_item(Item::both(ItemNode::Export(ExportDecl::Star {
-            source: format!("./{name}"),
-        })))
-    })
+fn index_module(ctx: CodegenContext<'_>, names: &[String]) -> Module {
+    let ds_sources = ctx
+        .overlay
+        .map_or_else(Vec::new, crate::CodegenOverlay::owned_pattern_sources);
+    crate::overlay::index_barrel(&ds_sources, names)
 }
 
 fn type_imports(

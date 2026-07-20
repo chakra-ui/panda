@@ -20,7 +20,7 @@ version guard falls back to re-extraction when the two sides can't safely share.
 ## Canonical scope
 
 This note owns the build-info payload, token identity, hydration, module/export tree-shaking, and stacked hydrate
-semantics. The `designSystem` field, `panda.lib.json`, parent-chain resolution, and diagnostics are owned by
+semantics. The `designSystem` field, `panda/lib.json`, parent-chain resolution, and diagnostics are owned by
 [design-system-manifest.md](./design-system-manifest.md). Dual importMap and overlay codegen are owned by
 [virtual-styled-system.md](./virtual-styled-system.md).
 

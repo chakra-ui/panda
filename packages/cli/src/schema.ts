@@ -117,8 +117,8 @@ export const infoFlagsSchema = commonFlagsSchema.pick({
   traceFile: true,
 })
 
-// `doctor` validates config/diagnostics and never scans sources, so it must not
-// inherit `--include` from the shared info schema.
+// `doctor` reports config-resolved watch targets and never takes a one-off
+// `--include` override (that belongs on scan commands).
 export const doctorFlagsSchema = infoFlagsSchema.omit({ include: true })
 
 export const debugFlagsSchema = infoFlagsSchema.extend({
@@ -158,7 +158,6 @@ export type BuildinfoFlags = FlagsInfer<typeof buildinfoFlagsSchema>
 export type LibFlags = FlagsInfer<typeof libFlagsSchema>
 export type StudioGenerateFlags = FlagsInfer<typeof studioGenerateFlagsSchema>
 export type StudioServeFlags = FlagsInfer<typeof studioServeFlagsSchema>
-export type InfoFlags = FlagsInfer<typeof infoFlagsSchema>
 export type DoctorFlags = FlagsInfer<typeof doctorFlagsSchema>
 export type DebugFlags = FlagsInfer<typeof debugFlagsSchema>
 type AnalyzeScopeRaw = FlagsInfer<typeof analyzeFlagsSchema>['scope']
@@ -246,20 +245,16 @@ export interface InitResult extends CommandResult {
   presetsInstalled: string[]
 }
 
-export interface InfoResult extends CliResult {
+export interface DoctorResult extends CommandResult {
   configPath?: string
+  diagnosticCount: number
+  errors: number
   sourceCount: number
   watchDirs: string[]
   artifactIds: string[]
   conditionCount: number
   tokenCategoryCount: number
   utilityCount: number
-}
-
-export interface DoctorResult extends CommandResult {
-  configPath?: string
-  diagnosticCount: number
-  errors: number
 }
 
 export interface RunContext {
@@ -276,5 +271,4 @@ export interface CheckOutput {
   stale: string[]
 }
 
-export type InfoSummary = Omit<InfoResult, keyof CliResult>
 export type PhaseTimings = Record<string, number>

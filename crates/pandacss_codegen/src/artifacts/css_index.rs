@@ -4,21 +4,34 @@ use pandacss_config::CssSyntaxKind;
 
 use crate::{
     Artifact, ArtifactFile, ArtifactId, CodegenContext, DependencySet, ExportDecl, Item, ItemNode,
-    Module,
+    Module, RuntimeImport,
     graph::{GenerateOptions, emit_module_files},
 };
 
 #[must_use]
 pub fn module(ctx: CodegenContext<'_>) -> Module {
-    let sources: &[&str] = if matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
-        &["./css", "./cx"]
+    let stems: &[&str] = if matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
+        &["css", "cx"]
     } else {
-        &["./css", "./cva", "./cx", "./sva"]
+        &["css", "cva", "cx", "sva"]
     };
 
-    sources.iter().fold(Module::new(), |module, source| {
+    // Deep `export *` per module so both runtime values and their `.d.ts` companions
+    // flow through (same shape as recipes/patterns/jsx overlay barrels).
+    if let Some(overlay) = ctx.overlay
+        && ctx.virtualizes(RuntimeImport::CssIndex)
+        && !overlay.css.is_empty()
+    {
+        return stems.iter().fold(Module::new(), |module, stem| {
+            module.with_item(Item::both(ItemNode::Export(ExportDecl::Star {
+                source: format!("{}/{stem}", overlay.css),
+            })))
+        });
+    }
+
+    stems.iter().fold(Module::new(), |module, stem| {
         module.with_item(Item::both(ItemNode::Export(ExportDecl::Star {
-            source: (*source).into(),
+            source: format!("./{stem}"),
         })))
     })
 }

@@ -89,17 +89,16 @@ function writeDesignSystemPackage(options: { dir: string; name: string; designSy
       name,
       version: '1.0.0',
       exports: {
-        './panda.lib.json': './dist/panda.lib.json',
-        './preset': './dist/panda.preset.mjs',
+        './panda/*': './dist/panda/*',
       },
     }),
-    'dist/panda.lib.json': json({
+    'dist/panda/lib.json': json({
       schemaVersion: 1,
       name,
       version: '1.0.0',
       panda: '^2.0.0',
-      preset: './panda.preset.mjs',
-      buildInfo: './panda.buildinfo.json',
+      preset: './preset.mjs',
+      buildInfo: './buildinfo.json',
       importMap: {
         css: `${name}/css`,
         recipes: `${name}/recipes`,
@@ -109,8 +108,8 @@ function writeDesignSystemPackage(options: { dir: string; name: string; designSy
       },
       ...(designSystem ? { designSystem } : {}),
     }),
-    'dist/panda.preset.mjs': preset,
-    'dist/panda.buildinfo.json': json({
+    'dist/panda/preset.mjs': preset,
+    'dist/panda/buildinfo.json': json({
       schemaVersion: 4,
       panda: '^2.0.0',
       configFingerprint: 'cfg-test',

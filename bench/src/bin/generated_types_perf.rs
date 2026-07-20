@@ -74,6 +74,7 @@ fn generate_fixture(name: &str, fixture: Value) {
             format: CodegenFormat::Js,
             import_extensions: false,
         },
+        None,
     );
 
     let out_dir = fixtures_dir()

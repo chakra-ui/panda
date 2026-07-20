@@ -35,6 +35,6 @@ describeBinSmoke('cli bin smoke', () => {
 
     const help = runBin(['--help'])
     expect(help.exitCode).toBe(0)
-    expect(help.stdout).toContain('init|dev|build|check|info|doctor|debug|buildinfo|codegen|cssgen')
+    expect(help.stdout).toContain('init|dev|build|check|doctor|debug|buildinfo|lib|analyze|codegen|cssgen|studio')
   })
 })

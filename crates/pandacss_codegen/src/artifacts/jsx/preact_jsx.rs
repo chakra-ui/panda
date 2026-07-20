@@ -1,11 +1,19 @@
 use super::jsx_helper::{raw_runtime, raw_type, type_import, value_import};
-use crate::{ImportDecl, Module};
+use crate::{CodegenContext, ImportDecl, Module, RuntimeImport};
 
-pub(super) fn module(factory: &str, component: &str, upper: &str) -> Module {
+pub(super) fn module(
+    ctx: CodegenContext<'_>,
+    factory: &str,
+    component: &str,
+    upper: &str,
+) -> Module {
     Module::new()
         .with_import(value_import(&["h"], "preact"))
         .with_import(value_import(&["forwardRef"], "preact/compat"))
-        .with_import(ImportDecl::value(["cx", "cva"], "../css/index"))
+        .with_import(ImportDecl::value(
+            ["cx", "cva"],
+            &ctx.runtime_import(RuntimeImport::CssIndex, "../css/index"),
+        ))
         .with_import(ImportDecl::value(
             [
                 "composeCvaFn",

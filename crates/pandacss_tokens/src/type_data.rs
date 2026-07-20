@@ -53,7 +53,7 @@ impl TokenDictionary {
         let values = raw_values
             .into_iter()
             .map(|(path, value)| {
-                // Empty means the value equals the var-ref; `token.var` derives it via `toVar(path)`.
+                // Empty means the value equals the var-ref; `token.var` derives it via helpers `toCssVar(path)`.
                 if vars.get(&path).is_some_and(|var| *var == value) {
                     (path, String::new())
                 } else {

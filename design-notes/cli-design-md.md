@@ -23,12 +23,12 @@ You get deterministic YAML tokens and scaffolded prose. You still write brand vo
 
 ## What this note owns
 
-Command shape, Panda → DESIGN.md mapping, prose scaffold patterns, drift/CI contracts, and hooks into `panda lib` /
-agent context files.
+Command shape, Panda → DESIGN.md mapping, prose scaffold patterns, drift/CI contracts, and hooks into agent context
+files.
 
 Not in scope here:
 
-- [Design-system manifest](./design-system-manifest.md) — `panda.lib.json`
+- [Design-system manifest](./design-system-manifest.md) — `panda/lib.json`
 - [CLI v2 direction](./cli.md) — shared flags, exit codes
 - `@pandacss/mcp` tool surface
 
@@ -53,13 +53,12 @@ prose you fill in.
 3. Same config → same YAML every time
 4. Prose sections get headers and `TODO` blocks; `--merge` keeps your edits
 5. `--check` for CI when the file drifts from config
-6. Optional `panda lib --design-md` so design-system packages ship it
-7. `## Agent Instructions` for Panda conventions (`css()`, recipes, `importMap`)
+6. `## Agent Instructions` for Panda conventions (`css()`, recipes, `importMap`)
 
 ## What we're not building
 
 - Not a replacement for `@pandacss/mcp` — file on disk vs live lookup
-- Not a replacement for `panda.lib.json` — compiler still uses JSON
+- Not a replacement for `panda/lib.json` — compiler still uses JSON
 - Not auto-generated brand voice — you write do's/don'ts
 - Not import from Figma / Tailwind / DTCG — export only in v1
 - Not our own parallel format — no `panda.design.md` schema
@@ -71,7 +70,7 @@ prose you fill in.
 | ----------------- | ---------------------------- | ------------ | ----------------- |
 | Code conventions  | `AGENTS.md`, `.cursor/rules` | Agents       | You edit          |
 | Design brief      | `DESIGN.md`                  | Agents       | `panda design-md` |
-| Compiler contract | `panda.lib.json`, build info | Panda        | `panda lib`       |
+| Compiler contract | `panda/lib.json`, build info | Panda        | `panda lib`       |
 | Live lookup       | `@pandacss/mcp`              | MCP agents   | Runtime           |
 
 Stub for `AGENTS.md` (also in CLI help and init):
@@ -109,7 +108,7 @@ panda design-md --json
 
 Also: `--cwd`, `--config`, `--json`, `--format`, `--log-level`, `--max-warnings` from [CLI v2](./cli.md).
 
-Does not run on every build. You run it explicitly, or opt in with `panda lib --design-md`.
+Does not run on every build. You run it explicitly when you want the file refreshed.
 
 ### Why `design-md`
 
@@ -124,7 +123,7 @@ Kebab-case, matches the file name. Skip these:
 
 ## Where the export reads from
 
-Same boundary as `panda info`, `panda analyze`, and MCP — after config load:
+Same boundary as `panda doctor`, `panda analyze`, and MCP — after config load:
 
 | Source                   | Export uses it for                                          |
 | ------------------------ | ----------------------------------------------------------- |
@@ -411,12 +410,7 @@ Or `panda design-md --validate` for both.
 `--check` catches token drift. Google's linter catches broken refs and contrast. Prose-only edits survive `--merge`;
 YAML changes under edited prose still fail `--check` unless you full regen.
 
-## Hooking into lib and init
-
-### `panda lib --design-md`
-
-Writes `{outdir}/DESIGN.md` next to `panda.lib.json`. Document the path in the package README. Doesn't change the
-manifest schema — sibling file for agents, not compiler input.
+## Hooking into init
 
 ### `panda init`
 
@@ -461,10 +455,9 @@ Golden snapshot from a sandbox preset; review when mapping changes.
 - Scaffold prose + Agent Instructions
 - `--out`, `--scaffold-only`, `--json`
 
-**P2 — CI and packaging**
+**P2 — CI and init**
 
 - `--check`, `--merge`
-- `panda lib --design-md`
 - Init prompt
 
 **P3 — richer export**

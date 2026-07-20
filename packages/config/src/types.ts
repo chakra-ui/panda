@@ -1,6 +1,7 @@
 import type { ProjectCallbacks, ProjectHooks, SerializedConfig } from '@pandacss/compiler-shared'
 import type { HostHooks } from './hooks'
 import type { ResolvedDesignSystem } from './design-system/chain'
+import type { DesignSystemOverlayInput } from './design-system/overlay-input'
 import type { ConfigSources } from './sources'
 
 export interface LoadConfigOptions {
@@ -28,5 +29,8 @@ export interface LoadConfigResult {
     sources?: ConfigSources
     designSystem?: ResolvedDesignSystem[]
     userTokenPaths?: string[]
+    userRecipeNames?: string[]
+    userPatternNames?: string[]
+    overlayInput?: DesignSystemOverlayInput
   }
 }

@@ -14,8 +14,7 @@ const DEFAULT_OUTDIR = 'dist'
 export const libCommand = defineCommand({
   meta: {
     name: 'lib',
-    description:
-      'Publish a design system: write panda.lib.json, portable build info, and a compiled preset, and sync package.json exports',
+    description: 'Publish a design system: write machine artifacts under panda/, and sync package.json exports',
   },
   args: () => ({
     ...baseArgs(),
@@ -27,7 +26,8 @@ export const libCommand = defineCommand({
     },
     panda: {
       type: 'string',
-      description: "Peer Panda version range to stamp (defaults to the package's @pandacss/dev peer, or '*')",
+      description:
+        "Peer Panda version range to stamp (defaults to the package's @pandacss/dev peer, or the running Panda's major)",
     },
     files: {
       type: 'string',

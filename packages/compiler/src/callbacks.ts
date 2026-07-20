@@ -1,9 +1,9 @@
 import type { ProjectCallbacks, ProjectHooks, TokenLookup } from '@pandacss/compiler-shared'
 import {
-  createPatternHelpers,
-  createTransformArgs,
+  createTransformHelpers,
   getPatternDefaultValueRefsByTransformId,
   mergePatternDefaultValues,
+  PATTERN_HELPERS,
 } from '@pandacss/compiler-shared'
 import type { RawCompiler } from './index'
 
@@ -27,6 +27,7 @@ export function registerCallbacks(
   const patternDefaultValues = callbacks['pattern.defaultValues']
   const patternDefaultValueRefs =
     config && patternDefaultValues ? getPatternDefaultValueRefsByTransformId(config) : new Map<string, string>()
+  const { token, utils } = createTransformHelpers(tokenDictionary)
 
   if (hasPatternTransforms && !project.registerPatternTransform) {
     throw new Error('Native project does not support pattern.transform callbacks')
@@ -42,7 +43,7 @@ export function registerCallbacks(
           string,
           any
         >
-        return callback(nextProps, createPatternHelpers())
+        return callback(nextProps, PATTERN_HELPERS)
       })
     }
   }
@@ -55,7 +56,7 @@ export function registerCallbacks(
     for (const [id, callback] of Object.entries(utilityTransforms)) {
       // Native passes the resolved value first, the original alias second (`args.raw`).
       project.registerUtilityTransform(id, (resolved, original) => {
-        return callback(resolved as string, createTransformArgs(original, tokenDictionary))
+        return callback(resolved as string, { raw: original, token, utils })
       })
     }
   }

@@ -62,31 +62,33 @@ export function writeDesignSystemAt(dir: string, fallbackName: string, fixture: 
     schemaVersion: 1,
     name: fallbackName,
     panda: '^2.0.0',
-    preset: './panda.preset.mjs',
-    buildInfo: './panda.buildinfo.json',
+    preset: './preset.mjs',
+    buildInfo: './buildinfo.json',
     ...fixture.manifest,
   }
-  const presetPath = typeof manifest.preset === 'string' ? manifest.preset.replace(/^\.\//, '') : 'panda.preset.mjs'
-  const buildInfoPath =
-    typeof manifest.buildInfo === 'string' ? manifest.buildInfo.replace(/^\.\//, '') : 'panda.buildinfo.json'
+  const presetFile = typeof manifest.preset === 'string' ? manifest.preset.replace(/^\.\//, '') : 'preset.mjs'
+  const buildInfoFile =
+    typeof manifest.buildInfo === 'string' ? manifest.buildInfo.replace(/^\.\//, '') : 'buildinfo.json'
   const packageName = typeof manifest.name === 'string' ? manifest.name : fallbackName
+  const { exports: authoredExports, ...packageJsonRest } = fixture.packageJson ?? {}
+  const exports =
+    authoredExports === undefined
+      ? { './panda/*': './panda/*' }
+      : (authoredExports as Record<string, unknown> | string | unknown[])
 
   const files: Record<string, string> = {
     'package.json': json({
       name: packageName,
       version: '1.0.0',
-      exports: {
-        './panda.lib.json': './panda.lib.json',
-        './preset': `./${presetPath}`,
-      },
-      ...fixture.packageJson,
+      ...packageJsonRest,
+      exports,
     }),
-    'panda.lib.json': json(manifest),
-    [presetPath]: presetModule(fixture.preset ?? { name: packageName }),
+    'panda/lib.json': json(manifest),
+    [`panda/${presetFile}`]: presetModule(fixture.preset ?? { name: packageName }),
   }
 
   if (fixture.writeBuildInfo !== false && typeof manifest.buildInfo === 'string') {
-    files[buildInfoPath] = '{}\n'
+    files[`panda/${buildInfoFile}`] = '{}\n'
   }
 
   writeFileTree(dir, files)

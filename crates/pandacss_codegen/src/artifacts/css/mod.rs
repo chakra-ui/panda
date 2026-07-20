@@ -7,8 +7,8 @@ use std::collections::BTreeMap;
 use pandacss_config::CssSyntaxKind;
 
 use crate::{
-    Artifact, ArtifactId, CodegenContext, ConstDecl, DependencySet, Expr, ImportDecl, Item,
-    ItemNode, Module, TsType,
+    Artifact, ArtifactFile, ArtifactId, CodegenContext, ConstDecl, DependencySet, Expr, ImportDecl,
+    Item, ItemNode, Module, RuntimeImport, TsType,
     graph::{GenerateOptions, emit_module_files},
 };
 
@@ -21,15 +21,28 @@ pub fn generate(
     Artifact {
         id: ArtifactId::Css,
         dependencies,
-        files: emit_module_files(
-            "css/css",
-            &module(ctx),
-            options.format,
-            false,
-            options.import_extensions,
-            dependencies,
-        ),
+        files: files(ctx, options, dependencies),
     }
+}
+
+#[must_use]
+pub fn files(
+    ctx: CodegenContext<'_>,
+    options: GenerateOptions,
+    dependencies: DependencySet,
+) -> Vec<ArtifactFile> {
+    if ctx.virtualizes(RuntimeImport::CssCss) {
+        return Vec::new();
+    }
+
+    emit_module_files(
+        "css/css",
+        &module(ctx),
+        options.format,
+        false,
+        options.import_extensions,
+        dependencies,
+    )
 }
 
 fn module(ctx: CodegenContext<'_>) -> Module {
@@ -45,7 +58,7 @@ fn module(ctx: CodegenContext<'_>) -> Module {
                 "isObject",
                 "withoutSpace",
             ],
-            "../helpers",
+            &ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
         ))
         .with_import(ImportDecl::value(
             ["breakpointKeys", "finalizeConditions", "sortConditions"],

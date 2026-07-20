@@ -38,7 +38,6 @@ export async function main(argv = process.argv): Promise<void> {
         dev: () => import('./commands/build').then((m) => m.devCommand),
         build: () => import('./commands/build').then((m) => m.buildSubcommand),
         check: () => import('./commands/build').then((m) => m.checkCommand),
-        info: () => import('./commands/info').then((m) => m.infoCommand),
         doctor: () => import('./commands/doctor').then((m) => m.doctorCommand),
         debug: () => import('./commands/debug').then((m) => m.debugCommand),
         buildinfo: () => import('./commands/buildinfo').then((m) => m.buildinfoCommand),

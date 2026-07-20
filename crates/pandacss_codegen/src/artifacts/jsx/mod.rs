@@ -29,7 +29,7 @@ use pandacss_shared::{file_stem, pascal_case};
 
 use crate::{
     Artifact, ArtifactFile, ArtifactId, CodegenContext, DependencySet, ExportDecl, ImportDecl,
-    Item, ItemNode, Module,
+    Item, ItemNode, Module, RuntimeImport,
     graph::{GenerateOptions, emit_module_files},
 };
 
@@ -172,7 +172,7 @@ pub fn generate_index(
 // Factory/helper/pattern/index modules are server-safe (no hooks or context) —
 // no "use client" directive, so the `export *` index stays RSC-legal. Only
 // recipe-context modules call `createContext`; they declare "use client"
-// themselves via `Module::with_directive`.
+// themselves via `Module::with_directive` (on the DS copy when virtualized).
 fn framework_files(
     ctx: CodegenContext<'_>,
     options: GenerateOptions,
@@ -195,7 +195,7 @@ fn framework_files(
 
     emit_module_files(
         stem,
-        &module(ctx),
+        &jsx_module(ctx, stem, module),
         options.format,
         false,
         options.import_extensions,
@@ -219,12 +219,36 @@ fn context_files(
 
     emit_module_files(
         stem,
-        &module(ctx),
+        &jsx_module(ctx, stem, module),
         options.format,
         false,
         options.import_extensions,
         dependencies,
     )
+}
+
+/// Shared runtime modules virtualize together when css/ is virtualized. `jsx/index`
+/// stays local — it mixes DS deep-stars with app delta.
+fn jsx_module(
+    ctx: CodegenContext<'_>,
+    stem: &str,
+    module: fn(CodegenContext<'_>) -> Module,
+) -> Module {
+    if matches!(
+        stem,
+        "jsx/factory"
+            | "jsx/helper"
+            | "jsx/is-valid-prop"
+            | "jsx/create-recipe-context"
+            | "jsx/create-slot-recipe-context"
+    ) && ctx.virtualizes(RuntimeImport::CssIndex)
+        && let Some(overlay) = ctx.overlay
+        && !overlay.jsx.is_empty()
+    {
+        let name = stem.strip_prefix("jsx/").unwrap_or(stem);
+        return crate::overlay::star_reexport(format!("{}/{name}", overlay.jsx));
+    }
+    module(ctx)
 }
 
 fn pattern_files(
@@ -234,6 +258,12 @@ fn pattern_files(
 ) -> Vec<ArtifactFile> {
     let mut files = Vec::new();
     for (name, pattern) in &ctx.config.patterns {
+        if ctx
+            .overlay
+            .is_some_and(|overlay| overlay.owns_pattern(name))
+        {
+            continue;
+        }
         let stem = file_stem(name);
         let module = match ctx.config.jsx_framework.as_ref() {
             Some(JsxFramework::React) => react_pattern_jsx::module(ctx, name, pattern),
@@ -298,7 +328,10 @@ pub(super) fn html_props_name(ctx: CodegenContext<'_>) -> String {
 
 fn is_valid_prop_module(ctx: CodegenContext<'_>) -> Module {
     Module::new()
-        .with_import(ImportDecl::value(["splitProps"], "../helpers"))
+        .with_import(ImportDecl::value(
+            ["splitProps"],
+            &ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
+        ))
         .with_import(type_import(
             &["DistributiveOmit", "JsxStyleProps"],
             "../types/system",
@@ -361,21 +394,27 @@ fn factory_module(ctx: CodegenContext<'_>) -> Module {
 
     if matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
         return match ctx.config.jsx_framework.as_ref() {
-            Some(JsxFramework::React) => react_jsx_literal::module(&factory, &component, &upper),
-            Some(JsxFramework::Preact) => preact_jsx_literal::module(&factory, &component, &upper),
-            Some(JsxFramework::Qwik) => qwik_jsx_literal::module(&factory, &component, &upper),
-            Some(JsxFramework::Solid) => solid_jsx_literal::module(&factory, &component, &upper),
-            Some(JsxFramework::Vue) => vue_jsx_literal::module(&factory, &component, &upper),
+            Some(JsxFramework::React) => {
+                react_jsx_literal::module(ctx, &factory, &component, &upper)
+            }
+            Some(JsxFramework::Preact) => {
+                preact_jsx_literal::module(ctx, &factory, &component, &upper)
+            }
+            Some(JsxFramework::Qwik) => qwik_jsx_literal::module(ctx, &factory, &component, &upper),
+            Some(JsxFramework::Solid) => {
+                solid_jsx_literal::module(ctx, &factory, &component, &upper)
+            }
+            Some(JsxFramework::Vue) => vue_jsx_literal::module(ctx, &factory, &component, &upper),
             _ => Module::new(),
         };
     }
 
     match ctx.config.jsx_framework.as_ref() {
-        Some(JsxFramework::React) => react_jsx::module(&factory, &component, &upper),
-        Some(JsxFramework::Preact) => preact_jsx::module(&factory, &component, &upper),
-        Some(JsxFramework::Qwik) => qwik_jsx::module(&factory, &component, &upper),
-        Some(JsxFramework::Solid) => solid_jsx::module(&factory, &component, &upper),
-        Some(JsxFramework::Vue) => vue_jsx::module(&factory, &component, &upper),
+        Some(JsxFramework::React) => react_jsx::module(ctx, &factory, &component, &upper),
+        Some(JsxFramework::Preact) => preact_jsx::module(ctx, &factory, &component, &upper),
+        Some(JsxFramework::Qwik) => qwik_jsx::module(ctx, &factory, &component, &upper),
+        Some(JsxFramework::Solid) => solid_jsx::module(ctx, &factory, &component, &upper),
+        Some(JsxFramework::Vue) => vue_jsx::module(ctx, &factory, &component, &upper),
         _ => Module::new(),
     }
 }
@@ -402,24 +441,28 @@ fn slot_recipe_context_module(ctx: CodegenContext<'_>) -> Module {
 
 fn index_module(ctx: CodegenContext<'_>) -> Module {
     let template_literal = matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral);
-    let mut sources = vec!["./factory".to_owned()];
+    let mut module = Module::new();
+
+    // Owned DS pattern components: deep `export *` so values + Props types both flow through.
+    if !template_literal && let Some(overlay) = ctx.overlay {
+        for source in overlay.owned_jsx_sources() {
+            module = module.with_item(Item::both(ItemNode::Export(ExportDecl::Star { source })));
+        }
+    }
+
+    let mut local_sources = vec!["./factory".to_owned()];
     if !template_literal {
-        sources.push("./is-valid-prop".to_owned());
+        local_sources.push("./is-valid-prop".to_owned());
         if has_context_framework(ctx) {
-            sources.extend([
+            local_sources.extend([
                 "./create-recipe-context".to_owned(),
                 "./create-slot-recipe-context".to_owned(),
             ]);
         }
-        sources.extend(
-            ctx.config
-                .patterns
-                .keys()
-                .map(|name| format!("./{}", file_stem(name))),
-        );
+        local_sources.extend(app_pattern_jsx_stems(ctx));
     }
 
-    let mut module = sources.into_iter().fold(Module::new(), |module, source| {
+    module = local_sources.into_iter().fold(module, |module, source| {
         module.with_item(Item::both(ItemNode::Export(ExportDecl::Star { source })))
     });
 
@@ -442,10 +485,21 @@ fn index_module(ctx: CodegenContext<'_>) -> Module {
         ]
     };
 
-    module = module.with_item(Item::ty(ItemNode::Export(ExportDecl::TypeNamed {
+    module.with_item(Item::ty(ItemNode::Export(ExportDecl::TypeNamed {
         names: type_names,
         source: "../types/jsx".into(),
-    })));
+    })))
+}
 
-    module
+/// Local `./{stem}` re-exports for app-owned pattern components (not virtualized from the DS).
+fn app_pattern_jsx_stems(ctx: CodegenContext<'_>) -> Vec<String> {
+    ctx.config
+        .patterns
+        .keys()
+        .filter(|name| {
+            !ctx.overlay
+                .is_some_and(|overlay| overlay.owns_pattern(name))
+        })
+        .map(|name| format!("./{}", file_stem(name)))
+        .collect()
 }

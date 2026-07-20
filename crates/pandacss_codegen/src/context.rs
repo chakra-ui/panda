@@ -7,6 +7,8 @@ use pandacss_config::{DEFAULT_PATTERN_JSX_ELEMENT, PatternConfig, TypeData, User
 use pandacss_shared::{file_stem, js_ident, pascal_case};
 use pandacss_tokens::TokenDictionary;
 
+use crate::{CodegenOverlay, RuntimeImport};
+
 #[derive(Debug, Clone, Copy)]
 pub struct CodegenContext<'a> {
     pub config: &'a UserConfig,
@@ -14,6 +16,7 @@ pub struct CodegenContext<'a> {
     pub patterns: &'a BTreeMap<String, PatternCodegenMeta>,
     pub token_dictionary: Option<&'a TokenDictionary>,
     pub token_dictionary_provided: bool,
+    pub overlay: Option<&'a CodegenOverlay>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -23,6 +26,7 @@ pub struct CodegenInput {
     pub patterns: BTreeMap<String, PatternCodegenMeta>,
     pub token_dictionary: Option<Arc<TokenDictionary>>,
     pub token_dictionary_provided: bool,
+    pub overlay: Option<CodegenOverlay>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -51,6 +55,7 @@ impl<'a> CodegenContext<'a> {
             patterns: empty_patterns(),
             token_dictionary: None,
             token_dictionary_provided: false,
+            overlay: None,
         }
     }
 
@@ -63,6 +68,7 @@ impl<'a> CodegenContext<'a> {
             token_dictionary: input.token_dictionary.as_deref(),
             token_dictionary_provided: input.token_dictionary_provided
                 || input.token_dictionary.is_some(),
+            overlay: input.overlay.as_ref(),
         }
     }
 
@@ -84,6 +90,20 @@ impl<'a> CodegenContext<'a> {
     #[must_use]
     pub fn separator(&self) -> &str {
         self.config.separator()
+    }
+
+    #[must_use]
+    pub fn runtime_import(&self, import: RuntimeImport, local: &'static str) -> String {
+        self.overlay
+            .and_then(|overlay| overlay.resolve(import))
+            .unwrap_or_else(|| local.to_owned())
+    }
+
+    #[must_use]
+    pub fn virtualizes(&self, import: RuntimeImport) -> bool {
+        self.overlay
+            .and_then(|overlay| overlay.resolve(import))
+            .is_some()
     }
 
     #[must_use]
@@ -137,4 +157,37 @@ fn empty_patterns() -> &'static BTreeMap<String, PatternCodegenMeta> {
     static EMPTY: std::sync::OnceLock<BTreeMap<String, PatternCodegenMeta>> =
         std::sync::OnceLock::new();
     EMPTY.get_or_init(BTreeMap::new)
+}
+
+#[cfg(test)]
+mod tests {
+    use pandacss_config::UserConfig;
+
+    use crate::{CodegenContext, CodegenOverlay, RuntimeImport};
+
+    #[test]
+    fn runtime_import_falls_back_to_local_without_overlay() {
+        let config = UserConfig::default();
+        let ctx = CodegenContext::new(&config);
+        assert_eq!(
+            ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
+            "../helpers"
+        );
+    }
+
+    #[test]
+    fn runtime_import_uses_overlay_when_virtualized() {
+        let config = UserConfig::default();
+        let overlay = CodegenOverlay {
+            helpers: "@acme/ui/helpers".into(),
+            virtualize_helpers: true,
+            ..Default::default()
+        };
+        let mut ctx = CodegenContext::new(&config);
+        ctx.overlay = Some(&overlay);
+        assert_eq!(
+            ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
+            "@acme/ui/helpers"
+        );
+    }
 }

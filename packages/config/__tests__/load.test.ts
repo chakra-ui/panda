@@ -207,16 +207,16 @@ describe('loadConfig preset resolution', () => {
       'node_modules/@acme/ds/package.json': JSON.stringify({
         name: '@acme/ds',
         version: '1.0.0',
-        exports: { './panda.lib.json': './panda.lib.json' },
+        exports: { './panda/*': './panda/*' },
       }),
-      'node_modules/@acme/ds/panda.lib.json': JSON.stringify({
+      'node_modules/@acme/ds/panda/lib.json': JSON.stringify({
         schemaVersion: 1,
         name: '@acme/ds',
         panda: '^2.0.0',
-        preset: './panda.preset.mjs',
-        buildInfo: './panda.buildinfo.json',
+        preset: './preset.mjs',
+        buildInfo: './buildinfo.json',
       }),
-      'node_modules/@acme/ds/panda.preset.mjs': `export default {
+      'node_modules/@acme/ds/panda/preset.mjs': `export default {
         theme: { tokens: { colors: { brand: { value: '#123' }, dsOnly: { value: '#456' } } } },
       }`,
     })

@@ -184,7 +184,10 @@ export interface CompilerConstructor {
   fromConfig(
     config: SerializedConfig,
     options?: NativeCompilerOptions,
-    utilityValuesCallbacks?: Record<string, (tokenDictionary: TokenDictionary | undefined) => unknown>,
+    utilityValuesCallbacks?: Record<
+      string,
+      (theme: (category: string) => Record<string, string> | undefined) => unknown
+    >,
   ): RawCompiler
 }
 

@@ -20,9 +20,8 @@ helpers) on npm. Consuming apps should **not** regenerate and re-alias a full co
 registers one DS package; parent design systems are discovered through each manifest's `designSystem` field. The host
 resolves each manifest → **preset + buildInfo + styled-system import roots**, merges presets without a duplicate
 `presets: ['@acme/ds/preset']` entry, and sets **`importMap` to both the DS package paths and the app's local
-`outdir`**. App `panda codegen` still needs the planned **overlay** mode: emit only the artifacts required when the app
-extends the merged config in ways that need new JS/TS modules (patterns with transforms, app JSX names, callbacks,
-merged types).
+`outdir`**. App `panda codegen` emits only the **overlay** artifacts required when the app extends the merged config in
+ways that need new JS/TS modules (patterns with transforms, app JSX names, callbacks, merged types).
 
 This note is the consume-side companion to [build-info.md](./build-info.md) (portable extraction) and
 [config-loading-design.md](./config-loading-design.md) (config snapshot). Discussion context:
@@ -31,7 +30,7 @@ This note is the consume-side companion to [build-info.md](./build-info.md) (por
 ## Canonical scope
 
 This note owns the canonical design-system `styled-system` package surface, dual importMap behavior, and overlay codegen
-plan. The `designSystem` field, `panda.lib.json`, manifest parent chains, and diagnostics are owned by
+plan. The `designSystem` field, `panda/lib.json`, manifest parent chains, and diagnostics are owned by
 [design-system-manifest.md](./design-system-manifest.md). Build-info hydration and tree-shaking are owned by
 [build-info.md](./build-info.md).
 
@@ -54,7 +53,7 @@ where every package owns its codegen. It breaks for npm-published design systems
    `./styled-system/...` (app overlay).
 4. **Overlay codegen** — app runs codegen only for config extensions that require new JS/TS files; not a duplicate of
    the DS tree.
-5. **Build-info hydrate** — DS component CSS travels via `panda.buildinfo.json`; app does not re-extract DS source.
+5. **Build-info hydrate** — DS component CSS travels via `panda/buildinfo.json`; app does not re-extract DS source.
 
 Non-goals (for now): npm/pnpm **overrides** of a global `styled-system` package name; bundler-specific alias generation
 (Panda-owned `importMap` is the primary contract).
@@ -63,7 +62,7 @@ Non-goals (for now): npm/pnpm **overrides** of a global `styled-system` package 
 
 The consumer entrypoint is `designSystem: '@acme/ui'`. The manifest schema, preset merge order, parent-chain walk, and
 fallback behavior live in [design-system-manifest.md](./design-system-manifest.md). This note starts after that: once
-the host has resolved the manifest chain, it needs a dual import map and, later, app-only overlay codegen.
+the host has resolved the manifest chain, it needs a dual import map and app-only overlay codegen.
 
 ## `importMap` input shapes (v1 parity)
 
@@ -228,14 +227,18 @@ String/array/object are equivalent ways to author that; `designSystem` auto-wiri
 Full styled-system for **DS config at publish time**:
 
 ```txt
-@acme/ui/styled-system/
-  css/          ← css(), cva(), cx(), …
-  recipes/
-  patterns/
-  jsx/
-  types/        ← SystemStyleObject for DS contract
-  tokens/
-  panda.buildinfo.json
+@acme/ui/
+  styled-system/
+    css/          ← css(), cva(), cx(), …
+    recipes/
+    patterns/
+    jsx/
+    types/        ← SystemStyleObject for DS contract
+    tokens/
+  dist/panda/
+    lib.json
+    buildinfo.json
+    preset.mjs
 ```
 
 ### App generates (overlay, when needed)
@@ -316,9 +319,10 @@ not covered by ui's artifact (see
 {
   "name": "@acme/ui",
   "exports": {
-    "./preset": "./panda.preset.js",
-    "./manifest.json": "./panda.manifest.json",
+    "./panda/*": "./dist/panda/*",
     "./css": "./styled-system/css/index.mjs",
+    "./css/*": "./styled-system/css/*",
+    "./helpers": "./styled-system/helpers.mjs",
     "./recipes/*": "./styled-system/recipes/*",
     "./patterns/*": "./styled-system/patterns/*",
     "./jsx/*": "./styled-system/jsx/*",
@@ -332,27 +336,125 @@ not covered by ui's artifact (see
 - ✅ **Build info** — produce, hydrate, tree-shake, token identity ([build-info.md](./build-info.md)).
 - ✅ **importMap** as substring arrays — extractor supports multiple paths per category today (normalized
   `ImportMapOutput` only).
-- ✅ **Singular `designSystem` consume** — resolve `panda.lib.json`, merge manifest presets, prepend DS import-map
-  roots, hydrate build info, and fall back to manifest `files` when build info is stale.
+- ✅ **Singular `designSystem` consume** — resolve `panda/lib.json`, merge manifest presets, prepend DS import-map
+  roots, hydrate build info, and fall back to manifest `files` when build info is stale (singular field; see
+  [design-system-manifest.md](./design-system-manifest.md)).
 - ✅ **Preset merge** — `config` resolves authored presets and manifest presets.
 - ✅ **importMap normalization** — `normalizeImportMap` / `prepareCompilerConfig` in
   [`packages/compiler-shared/src/import-map.ts`](../packages/compiler-shared/src/import-map.ts); applied in `config`
   snapshots and native/wasm compiler bindings before Rust.
-- ✅ **Full consumer re-emit (interim type path)** — app `panda codegen` emits a complete local `outdir` from the merged
-  effective config (DS + parents + app), including token types. Apps should import from that outdir for TypeScript until
-  overlay / DS-published styled-system ships. Dual `importMap` still matches DS package roots for extraction.
-- ⬜ **Plural `designSystems` config field** — consume multiple independent DS packages without a parent-chain relation.
+- ✅ **importMap auto-wiring** — `withDesignSystemImportMap` prepends each DS manifest root, appends the local `outdir`
+  basename, then the user's own `importMap`.
+- ✅ **Manifest wire format** — `panda/lib.json` (via `./panda/*`) with `preset`, `buildInfo`, `importMap`,
+  `designSystem` (parent), `files`.
+- ✅ **Overlay codegen (single-level)** — see [v1 overlay shape](#v1-overlay-shape-single-level) below.
+- ✅ **Runtime virtualization (single-level)** — every runtime import specifier (`helpers`, `css`/`cx`/`cva`/`sva`/
+  `conditions`/`index`, not just recipe/pattern/jsx definitions) resolves through `CodegenContext::runtime_import` /
+  `CodegenOverlay::resolve` to either the DS package or the local path. With no overlay, output stays byte-identical.
 - ✅ **Import-based hydration narrowing** — `optimize.treeshakeDesignSystem` (see
   [build-info.md](./build-info.md#opt-in-consume-narrowing)).
-- ⬜ **Expanded manifest wire format** — package-export `importMap` paths, optional dependency lists, and virtual
-  overlay metadata. The implemented `panda.lib.json` uses `importMap` and singular `designSystem` parent links today.
-- ⬜ **Overlay codegen** — emit only app delta; skip DS-owned modules; keep merged types from effective config. Deferred
-  optimization over full local re-emit.
-- ⬜ **Virtual styled-system DX** — no bundler aliases required for DS consume; TS `paths` generation optional.
+- ⬜ **Overlay codegen (nested chains)** — multi-root barrel disambiguation across a DS-on-DS chain.
+- ✅ **Recipe/pattern runtime factory virtualization** — when `virtualizeCss`, `recipes/runtime` /
+  `patterns/runtime` are thin star barrels onto `<ds>/recipes/runtime` and `<ds>/patterns/runtime`; delta modules keep
+  `./runtime`.
+- ⬜ **Plural `designSystems` config field** — consume multiple independent DS packages without a parent-chain relation.
+- ✅ **Virtual styled-system DX** — `panda lib` publishes the design system's styled-system subpath exports (`./css`,
+  `./css/*`, `./helpers`, `./recipes`, `./patterns`, `./jsx`, `./tokens`, plus `/*` wildcards for deep imports), so the
+  consumer's overlay barrels resolve with no bundler aliases. Only categories the codegen emitted are exported. A
+  consume-side diagnostic, `design_system_export_missing` (error), fires when a DS `package.json` is missing a subpath
+  the overlay needs to virtualize. TS `paths` generation stays optional.
+
+## v1 overlay shape (single-level)
+
+When the app declares a single-level `designSystem`, the host builds a `CodegenOverlay` (`buildCodegenOverlay` in
+`@pandacss/config`) from the resolved manifest: the DS `jsx`/`recipes`/`patterns` import roots plus the DS-owned recipe
+and pattern names (minus any the app redefined). It rides `GenerateArtifactOptions.overlay` through the driver into the
+Rust codegen graph. When absent, codegen output is byte-identical to today.
+
+The overlay re-exports the design system's recipe, pattern, and jsx-component **definitions** and skips re-emitting
+them. It also virtualizes the runtime: every generated module's runtime import specifier is routed through
+`ctx.runtime_import(RuntimeImport::…, "../local/path")`, which asks `CodegenOverlay::resolve` whether that import should
+point at the DS package or fall back to the local relative path. With no overlay, `resolve` never fires and output is
+byte-identical to today.
+
+**Overlay input + gate.** At `loadConfig`, the host records `metadata.overlayInput` (`DesignSystemOverlayInput`):
+
+- `authored` — whether the app (config **or** a non-DS preset) authored `conditions` / `breakpoints` /
+  `utilities` / `tokens`
+- `compatible` — whether every app-authored runtime option matches the leaf DS preset after the same defaults
+  (`prefix` / `hash` / `separator` / `jsxFramework` / `jsxFactory` / `jsxStyleProps` / `syntax` /
+  `strictTokens` / `strictPropertyValues` / `shorthands`)
+
+`buildCodegenOverlay` is a pure projection of that input:
+
+| Situation | Overlay? | helpers | css/ |
+|---|---|---|---|
+| Pure consumer | yes | yes | yes |
+| App adds a recipe | yes | yes | yes |
+| App authors utilities/tokens | yes | yes | **no** |
+| App changes `prefix` / `jsxFramework` / `jsxFactory` | **no** | — | — |
+| Nested DS chain | **no** | — | — |
+
+When `compatible` is false, the overlay is **absent** (full local tree) — never “runtime local + DS recipe
+re-exports.” Class-name mismatches (`hash` / `prefix` / `separator`) also feed hydrate `optionMismatch` from the same
+diff.
+
+Virtualization is coarse by design, not per-file:
+
+- `helpers` is a standalone module (not pulled through `css/`), so it virtualizes whenever an overlay exists
+  (`virtualizeHelpers`) as a local star barrel onto `<ds>/helpers`.
+- The whole `css/` directory (`css`, `cx`, `cva`, `sva`, `conditions`, `index`) is one unit. Its files cross-import as
+  siblings, so it virtualizes together or stays local together: `virtualizeCss = !authored.conditions &&
+  !authored.breakpoints && !authored.utilities && !authored.tokens`.
+- "Redeclare" means the app **authors** that config field (config or non-DS preset), not merely inherits it through the
+  merged design-system preset.
+
+When `css/` is virtualized, `css/index` becomes a deep star barrel (values + types):
+
+```js
+export * from '<ds>/css/css'
+export * from '<ds>/css/cva'
+export * from '<ds>/css/cx'
+export * from '<ds>/css/sva'
+```
+
+`helpers` stays a single-module star: `export * from "<ds>/helpers"`.
+
+With an overlay, `panda codegen` writes into the app `styled-system`:
+
+- **recipes / patterns** — only app-added (and app-redefined) modules are emitted; the index deep-stars each owned DS
+  module (`export * from '<ds>/recipes/chip'`, `export * from '<ds>/patterns/stack'`) and `export *`s the local app
+  modules. Deep stars pull both runtime values and companion types (`ChipVariantProps`, `StackProperties`, …). Owned
+  and app sets are disjoint, so there is no ambiguous export.
+- **jsx pattern components** — only app patterns are emitted; the index deep-stars owned DS components
+  (`export * from '<ds>/jsx/rail'`) and star-exports the app's own from `./<stem>`. A redefined pattern is app-owned, so
+  it stays local and the DS one isn't re-exported — no collision. Package `./jsx/*` exports must exist for these deep
+  paths (required by `design_system_export_missing`).
+- **jsx runtime helpers** — `factory`, `helper`, `is-valid-prop`, `create-recipe-context`, and
+  `create-slot-recipe-context` virtualize together when `virtualizeCss` (they cross-import as siblings / share css).
+  Emitted as `export * from '<ds>/jsx/<stem>'`. `"use client"` stays on the DS recipe-context modules; local barrels are
+  directive-free re-exports. Kept local when css stays local so `is-valid-prop`'s utility property set stays correct.
+- **helpers** — virtualized independently; re-exports `<ds>/helpers` whenever the overlay is present.
+- **css / cva / cx / sva / conditions / index** — virtualized together as the `css/` unit (see overlay input above), or
+  all emitted locally together. The local `css/index` deep-stars each sibling from the DS when virtualized.
+- **tokens, types** — emitted locally as normal (per-app merged config, not DS-owned runtime).
+- **recipes/runtime, patterns/runtime** — when `virtualizeCss` **and** the DS owns that category, emitted as
+  `export * from '<ds>/recipes/runtime'` (resp. patterns) so app delta modules can keep importing `./runtime`. When the
+  DS owns none (app-only delta) or css stays local, the full factory emits locally.
+
+Name collisions between the app and the design system surface as `design_system_artifact_conflict` (warning); the app
+wins. A DS `package.json` missing an `exports` subpath the overlay needs (`./helpers`, `./css`, `./css/*`, `./recipes`,
+`./patterns`, `./jsx`, `./jsx/*`, …) surfaces `design_system_export_missing` (error) instead of a silent bundler
+failure. `panda lib` syncs those styled-system category exports (including `./jsx` / `./jsx/*` when JSX artifacts
+exist). Nested chains skip the overlay entirely and emit the full local tree — merge and hydrate from the earlier
+phases still apply.
+
+Verified end-to-end in `sandbox-design-system`: the DS ships a `tag` recipe, the app adds a `panel` recipe and consumes
+both, and a Vite build resolves the re-exports.
 
 ## Unresolved questions
 
-- Manifest location for the virtual overlay layer: reuse `panda.lib.json`, add a second manifest, or derive from
+- Manifest location for the virtual overlay layer: reuse `panda/lib.json`, add a second manifest, or derive from
   `package.json` exports.
 - importMap merge: append-only vs user override wins vs explicit `importMap.designSystem: false` opt-out.
 - Overlay codegen conflict when app redefines a DS pattern/recipe name.
