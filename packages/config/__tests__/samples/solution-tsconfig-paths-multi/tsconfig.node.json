@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@node/*": ["./node-lib/*"]
+    }
+  },
+  "include": ["panda.config.ts", "panda.config.app-alias.ts", "vite.config.ts"]
+}

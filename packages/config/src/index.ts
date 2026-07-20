@@ -8,4 +8,12 @@ export { resolveConfig } from './resolve-config'
 export { mergeConfigs } from './merge-config'
 export { mergeHooks } from './merge-hooks'
 export { convertTsPathsToRegexes } from './ts-config-paths'
+export { resolveTsconfigForConfigBundle } from './resolve-tsconfig'
+export {
+  findClosestTsconfig,
+  isSourceFileIncludedInTsconfig,
+  resolveBaseUrlForCompilerOptions,
+  resolveDirectTsconfigJson,
+  resolveSolutionTsconfigForFile,
+} from './tsconfig-utils'
 export type { BundleConfigResult } from './types'

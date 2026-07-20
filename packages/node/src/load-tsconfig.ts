@@ -1,13 +1,12 @@
-import { convertTsPathsToRegexes } from '@pandacss/config'
-import type { LoadConfigResult, LoadTsConfigResult } from '@pandacss/types'
-import path from 'node:path'
-
 import {
+  convertTsPathsToRegexes,
   findClosestTsconfig,
   resolveBaseUrlForCompilerOptions,
   resolveDirectTsconfigJson,
   resolveSolutionTsconfigForFile,
-} from './tsconfig-utils'
+} from '@pandacss/config'
+import type { LoadConfigResult, LoadTsConfigResult } from '@pandacss/types'
+import path from 'node:path'
 
 export async function loadTsConfig(conf: LoadConfigResult, cwd: string): Promise<LoadTsConfigResult | undefined> {
   const root = cwd

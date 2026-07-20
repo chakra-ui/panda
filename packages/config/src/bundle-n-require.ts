@@ -2,6 +2,7 @@ import { realpathSync } from 'node:fs'
 import { createRequire, Module } from 'node:module'
 import { dirname, extname, join } from 'node:path'
 import { build, type BuildOptions } from 'esbuild'
+import { resolveTsconfigForConfigBundle } from './resolve-tsconfig'
 
 type ConfigModule = { default?: unknown } & Record<string, unknown>
 
@@ -21,6 +22,8 @@ export interface BundleNRequireResult {
 }
 
 async function bundleConfigFile(file: string, cwd: string, options?: BuildOptions) {
+  const tsconfig = options?.tsconfig ?? (await resolveTsconfigForConfigBundle(file, cwd))
+
   const result = await build({
     platform: 'node',
     format: 'cjs',
@@ -33,6 +36,7 @@ async function bundleConfigFile(file: string, cwd: string, options?: BuildOption
     bundle: true,
     sourcemap: false,
     metafile: true,
+    ...(tsconfig ? { tsconfig } : {}),
   })
 
   const { text } = result.outputFiles[0]

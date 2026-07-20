@@ -48,6 +48,111 @@ describe('bundle config', () => {
     `)
   })
 
+  test('should resolve path aliases from referenced tsconfig (Vite solution-style, config at root)', async () => {
+    const sampleCwd = path.resolve(_dirname, './samples/solution-tsconfig-paths')
+    const filePath = path.join(sampleCwd, 'panda.config.ts')
+    const { config, dependencies } = await bundle(filePath, sampleCwd)
+
+    expect(config).toMatchObject({
+      theme: {
+        extend: {
+          tokens: {
+            colors: {
+              brand: { value: '#2f81f7' },
+            },
+          },
+        },
+      },
+    })
+    expect(dependencies.some((dep) => dep.endsWith('src/theme/tokens.ts'))).toBe(true)
+  })
+
+  test('should resolve path aliases from referenced tsconfig when config is under src/', async () => {
+    const sampleCwd = path.resolve(_dirname, './samples/solution-tsconfig-paths-src')
+    const filePath = path.join(sampleCwd, 'src/panda.config.ts')
+    const { config, dependencies } = await bundle(filePath, sampleCwd)
+
+    expect(config).toMatchObject({
+      theme: {
+        extend: {
+          tokens: {
+            colors: {
+              accent: { value: '#76e3ea' },
+            },
+          },
+        },
+      },
+    })
+    expect(dependencies.some((dep) => dep.endsWith('src/theme/tokens.ts'))).toBe(true)
+  })
+
+  test('should resolve path aliases used by transitive config imports', async () => {
+    const sampleCwd = path.resolve(_dirname, './samples/solution-tsconfig-paths-transitive')
+    const filePath = path.join(sampleCwd, 'panda.config.ts')
+    const { config, dependencies } = await bundle(filePath, sampleCwd)
+
+    expect(config).toMatchObject({
+      theme: {
+        extend: {
+          tokens: {
+            colors: {
+              transitive: { value: '#ff00aa' },
+            },
+          },
+        },
+      },
+    })
+    expect(dependencies.some((dep) => dep.endsWith('theme.ts'))).toBe(true)
+    expect(dependencies.some((dep) => dep.endsWith('src/theme/tokens.ts'))).toBe(true)
+  })
+
+  test('should resolve path aliases inherited via tsconfig extends', async () => {
+    const sampleCwd = path.resolve(_dirname, './samples/solution-tsconfig-paths-extends')
+    const filePath = path.join(sampleCwd, 'panda.config.ts')
+    const { config, dependencies } = await bundle(filePath, sampleCwd)
+
+    expect(config).toMatchObject({
+      theme: {
+        extend: {
+          tokens: {
+            colors: {
+              viaExtends: { value: '#00b894' },
+            },
+          },
+        },
+      },
+    })
+    expect(dependencies.some((dep) => dep.endsWith('src/theme/tokens.ts'))).toBe(true)
+  })
+
+  test('should prefer owning project paths over an earlier referenced project with different paths', async () => {
+    // Vite order: app first (~/*), node second (@node/*). Config is owned by node.
+    const sampleCwd = path.resolve(_dirname, './samples/solution-tsconfig-paths-multi')
+    const filePath = path.join(sampleCwd, 'panda.config.ts')
+    const { config, dependencies } = await bundle(filePath, sampleCwd)
+
+    expect(config).toMatchObject({
+      theme: {
+        extend: {
+          tokens: {
+            colors: {
+              fromNode: { value: '#6c5ce7' },
+            },
+          },
+        },
+      },
+    })
+    expect(dependencies.some((dep) => dep.endsWith('node-lib/tokens.ts'))).toBe(true)
+  })
+
+  test('should not fall back to another project when the owning project already defines paths', async () => {
+    // Owned by node (@node/*). App has ~/*, but we do not merge path maps.
+    const sampleCwd = path.resolve(_dirname, './samples/solution-tsconfig-paths-multi')
+    const filePath = path.join(sampleCwd, 'panda.config.app-alias.ts')
+
+    await expect(bundle(filePath, sampleCwd)).rejects.toThrow(/Could not resolve "~\/theme\/tokens"/)
+  })
+
   test('should bundle .ts config wits nested files and barrels', async () => {
     const filePath = path.resolve(cwd, _dirname, './samples/nested-files/panda.config.ts')
     const { config, dependencies } = await bundle(filePath, cwd)
