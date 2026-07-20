@@ -5,7 +5,7 @@ use pandacss_config::CssSyntaxKind;
 
 use crate::{
     Artifact, ArtifactFile, ArtifactId, CodegenContext, ConstDecl, DependencySet, Expr, ImportDecl,
-    Item, ItemNode, Module, TsType,
+    Item, ItemNode, Module, RuntimeImport, TsType,
     graph::{GenerateOptions, emit_module_files},
 };
 
@@ -32,9 +32,13 @@ pub fn files(
         return Vec::new();
     }
 
+    if ctx.virtualizes(RuntimeImport::CssIndex) {
+        return Vec::new();
+    }
+
     emit_module_files(
         "css/sva",
-        &module(),
+        &module(ctx),
         options.format,
         false,
         options.import_extensions,
@@ -42,7 +46,7 @@ pub fn files(
     )
 }
 
-fn module() -> Module {
+fn module(ctx: CodegenContext<'_>) -> Module {
     Module::new()
         .with_import(ImportDecl::value(
             [
@@ -52,7 +56,7 @@ fn module() -> Module {
                 "toVariantMap",
                 "withDefaults",
             ],
-            "../helpers",
+            &ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
         ))
         .with_import(ImportDecl::value(["cva"], "./cva"))
         .with_import(ImportDecl::value(["cx"], "./cx"))

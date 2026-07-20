@@ -1,11 +1,13 @@
-use crate::{CodegenContext, ConstDecl, Expr, ImportDecl, Item, ItemNode, Module, TsType};
+use crate::{
+    CodegenContext, ConstDecl, Expr, ImportDecl, Item, ItemNode, Module, RuntimeImport, TsType,
+};
 
 #[must_use]
 pub fn module(ctx: CodegenContext<'_>) -> Module {
     Module::new()
         .with_import(ImportDecl::value(
             ["createCssRuntime", "isObject", "mergeProps", "withoutSpace"],
-            "../helpers",
+            &ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
         ))
         .with_import(ImportDecl::value(
             ["finalizeConditions", "sortConditions"],

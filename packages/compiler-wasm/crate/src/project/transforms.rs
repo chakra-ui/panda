@@ -3,8 +3,10 @@ use super::{SourceTransformCallback, WasmCompiler};
 use lru::LruCache;
 use pandacss_encoder::AtomValue;
 use pandacss_extractor::{DiagnosticSeverity, Literal, diagnostic_codes};
+use pandacss_tokens::TokenCategory;
 use serde::Serialize as _;
 use std::collections::HashMap;
+use std::sync::Arc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::*;
 
@@ -70,20 +72,15 @@ impl WasmCompiler {
  */
 pub(super) fn resolve_utility_values_callbacks(
     config: &mut UserConfig,
-    token_dictionary: Option<&pandacss_tokens::TokenDictionary>,
+    token_dictionary: Option<&Arc<pandacss_tokens::TokenDictionary>>,
     callbacks: &HashMap<String, js_sys::Function>,
 ) -> Result<(), JsValue> {
     if callbacks.is_empty() {
         return Ok(());
     }
 
-    let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
-    let token_dictionary = match token_dictionary {
-        Some(dictionary) => crate::matcher::from_core_token_dictionary(dictionary)
-            .serialize(&serializer)
-            .map_err(|err| JsValue::from_str(&err.to_string()))?,
-        None => JsValue::UNDEFINED,
-    };
+    // Keep theme closures alive for the duration of this resolve pass.
+    let mut theme_closures = Vec::new();
 
     for (prop, utility) in &mut config.utilities {
         let Some(id) = utility_values_callback_id(utility).map(str::to_owned) else {
@@ -92,13 +89,12 @@ pub(super) fn resolve_utility_values_callbacks(
         let Some(callback) = callbacks.get(&id) else {
             continue;
         };
-        let result = callback
-            .call1(&JsValue::UNDEFINED, &token_dictionary)
-            .map_err(|err| {
-                JsValue::from_str(&format!(
-                    "Utility values callback `{id}` for `{prop}` threw: {err:?}"
-                ))
-            })?;
+        let theme = create_theme_function(token_dictionary.cloned(), &mut theme_closures);
+        let result = callback.call1(&JsValue::UNDEFINED, &theme).map_err(|err| {
+            JsValue::from_str(&format!(
+                "Utility values callback `{id}` for `{prop}` threw: {err:?}"
+            ))
+        })?;
         utility.values = Some(serde_wasm_bindgen::from_value(result).map_err(|err| {
             JsValue::from_str(&format!(
                 "Utility values callback `{id}` for `{prop}` returned invalid values: {err}"
@@ -107,6 +103,36 @@ pub(super) fn resolve_utility_values_callbacks(
     }
 
     Ok(())
+}
+
+fn create_theme_function(
+    token_dictionary: Option<Arc<pandacss_tokens::TokenDictionary>>,
+    keep_alive: &mut Vec<Closure<dyn Fn(String) -> JsValue>>,
+) -> js_sys::Function {
+    let closure = Closure::new(move |category: String| -> JsValue {
+        let Some(dictionary) = token_dictionary.as_ref() else {
+            return JsValue::UNDEFINED;
+        };
+        let cat = TokenCategory::from_path_segment(&category);
+        let Some(values) = dictionary.category_values_str(&cat) else {
+            return JsValue::UNDEFINED;
+        };
+        if values.is_empty() {
+            return JsValue::UNDEFINED;
+        }
+        let out = js_sys::Object::new();
+        for (key, value) in values {
+            let _ = js_sys::Reflect::set(
+                &out,
+                &JsValue::from_str(key.as_ref()),
+                &JsValue::from_str(value.as_ref()),
+            );
+        }
+        out.into()
+    });
+    let function = closure.as_ref().unchecked_ref::<js_sys::Function>().clone();
+    keep_alive.push(closure);
+    function
 }
 
 pub(super) fn utility_value_callbacks_from_options(

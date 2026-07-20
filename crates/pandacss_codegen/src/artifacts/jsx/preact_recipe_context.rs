@@ -1,7 +1,7 @@
 use pandacss_config::JsxStylePropsConfig;
 
 use super::jsx_helper::{raw_runtime, raw_type, type_import, value_import};
-use crate::{CodegenContext, ImportDecl, Module};
+use crate::{CodegenContext, ImportDecl, Module, RuntimeImport};
 
 pub(super) fn recipe_module(ctx: CodegenContext<'_>) -> Module {
     let factory = factory_name(ctx);
@@ -54,7 +54,10 @@ pub(super) fn slot_recipe_module(ctx: CodegenContext<'_>) -> Module {
             &["createElement", "forwardRef"],
             "preact/compat",
         ))
-        .with_import(value_import(&css_imports, "../css/index"))
+        .with_import(value_import(
+            &css_imports,
+            &ctx.runtime_import(RuntimeImport::CssIndex, "../css/index"),
+        ))
         .with_import(value_import(&[factory.as_str()], "./factory"))
         .with_import(ImportDecl::value(["getDisplayName"], "./helper"))
         .with_import(type_import(

@@ -63,9 +63,9 @@ describe('loadConfig / designSystem consume', () => {
     })
     expect(toRelativePaths(cwd, result.dependencies)).toEqual(
       expect.arrayContaining([
-        'node_modules/@acme/ds/panda.buildinfo.json',
-        'node_modules/@acme/ds/panda.lib.json',
-        'node_modules/@acme/ds/panda.preset.mjs',
+        'node_modules/@acme/ds/panda/buildinfo.json',
+        'node_modules/@acme/ds/panda/lib.json',
+        'node_modules/@acme/ds/panda/preset.mjs',
       ]),
     )
     expect(result.dependencies.some((dep) => dep.endsWith('panda.config.ts'))).toBe(true)
@@ -151,7 +151,7 @@ describe('loadConfig / designSystem consume', () => {
     expect(tokenColors(result.config)).toEqual({ brand: 'ds' })
   })
 
-  test('rejects a package installed without a ./panda.lib.json export', async ({ cwd }) => {
+  test('rejects a package installed without a ./panda/* export', async ({ cwd }) => {
     writeDesignSystemPackage({
       cwd,
       name: '@acme/no-export',
@@ -179,10 +179,10 @@ describe('loadConfig / designSystem consume', () => {
     })
   })
 
-  test('rejects a malformed panda.lib.json with a parse diagnostic', async ({ cwd }) => {
+  test('rejects a malformed panda/lib.json with a parse diagnostic', async ({ cwd }) => {
     writeDesignSystemPackage({ cwd, name: '@acme/bad-json', writeBuildInfo: false })
     writeFileTree(moduleDir(cwd, '@acme/bad-json'), {
-      'panda.lib.json': '{ not valid json',
+      'panda/lib.json': '{ not valid json',
     })
     writeFileTree(cwd, {
       'panda.config.ts': `export default { designSystem: '@acme/bad-json' }`,

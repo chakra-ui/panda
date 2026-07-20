@@ -57,7 +57,7 @@ export interface CompilerPathSystem {
 }
 
 /**
- * Portable design-system encoder state (`panda.buildinfo.json`).
+ * Portable design-system encoder state (`panda/buildinfo.json`).
  */
 export interface BuildAtom {
   p: number
@@ -142,7 +142,7 @@ export type BuildInfoHydrateResult =
   | { ok: false; reason: BuildInfoIncompatibility; modules: [] }
 
 /**
- * Design-system manifest (`panda.lib.json`).
+ * Design-system manifest (`panda/lib.json`).
  */
 export interface DesignSystemManifestImportMap {
   css?: string

@@ -11,7 +11,7 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 
 Some topics span several notes. Keep the detailed contract in one place and link to it elsewhere.
 
-- `design-system-manifest.md` owns the `designSystem` config field, `panda.lib.json`, manifest parent chains,
+- `design-system-manifest.md` owns the `designSystem` config field, `panda/lib.json`, manifest parent chains,
   diagnostics, and current built/deferred status.
 - `build-info.md` owns the portable build-info payload, token identity, hydration, module/export tree-shaking, and
   stacked hydrate semantics.
@@ -21,8 +21,8 @@ Some topics span several notes. Keep the detailed contract in one place and link
   design-system architecture.
 - `stylesheet.md` owns CSS emission, writer minification, adjacent rule merging, and the missing CSS-aware optimizer
   boundary. Other notes should summarize and link to it.
-- `cli-design-md.md` owns `panda design-md`, the Panda → DESIGN.md mapping, drift/CI contracts, and optional
-  `panda lib --design-md`. Not the Google spec or MCP tools.
+- `cli-design-md.md` owns `panda design-md`, the Panda → DESIGN.md mapping, and drift/CI contracts. Not the Google
+  spec or MCP tools.
 - `agent-skills.md` owns the official end-user Agent Skills pack (inventory, format, layering vs DESIGN.md / MCP /
   `AGENTS.md`). Not contributor/Rust subagents under `.claude/agents/`.
 
@@ -63,12 +63,16 @@ Some topics span several notes. Keep the detailed contract in one place and link
 - [Build info](./build-info.md) — `panda.buildinfo.json`: the portable encoder state a design system ships, its
   condensed format, per-module tree-shaking + import resolution, stacked DS-on-DS consume sketch, the version guard, and
   the engine/JS/CLI layering.
-- [Design-system manifest](./design-system-manifest.md) — `designSystem: '@acme/ds'`: the `panda.lib.json` manifest,
+- [Design-system manifest](./design-system-manifest.md) — `designSystem: '@acme/ds'`: the `panda/lib.json` manifest,
   gen + load as fs-free compiler methods (`compiler.designSystem.*`), the parent-chain walk for nested design systems,
   module/type resolution, setup diagnostics, and the incremental PR breakdown.
-- [Virtual styled-system](./virtual-styled-system.md) — DS publishes canonical `styled-system/`; `designSystem` resolves
-  the manifest preset and dual importMap (DS + app overlay), with overlay codegen still planned for app extensions that
-  need JS/TS modules.
+- [Virtual styled-system](./virtual-styled-system.md) — DS publishes canonical `styled-system/`; `designSystems`
+  resolves manifest preset + dual importMap (DS + app overlay) + overlay codegen for app extensions that need JS/TS
+  modules.
+- [Design systems — deferred and open questions](./design-system-deferred.md) — the ledger of what `designSystem` does
+  not do yet and why: deferred pieces (nested-chain overlay, wasm overlay, build-info tree-shaking), known limitations
+  (unresolved-token dead CSS, jsx conflict props type), and non-goals (plural `designSystem`, registry, runtime
+  manifest).
 - [Chakra UI design-system migration](./chakra-ui-design-system-migration.md) — Chakra-specific plan for replacing
   Emotion with a Panda v2 design-system package using a real Chakra-owned styled-system package, one app-composed
   `styled-system`, build info, component extraction metadata, framework aliases, and TypeScript path resolution.
@@ -86,7 +90,7 @@ Some topics span several notes. Keep the detailed contract in one place and link
 - [CLI analyze command](./cli-analyze.md) — implemented `panda analyze` usage-report command: naming, scopes,
   JSON/report outputs, UI mode, and the `inspectFileSource` aggregation boundary.
 - [CLI DESIGN.md export](./cli-design-md.md) — planned `panda design-md`: export resolved theme/recipes to Google's
-  DESIGN.md, prose scaffold patterns (reference corpus + tiers), `--check` drift gate, optional `panda lib --design-md`.
+  DESIGN.md, prose scaffold patterns (reference corpus + tiers), `--check` drift gate.
 - [Official Panda agent skills](./agent-skills.md) — job-shaped Agent Skills for end-user Panda usage (`panda-styling`,
   recipes, tokens, setup, design-system, migrate-v2): format contract, layering vs DESIGN.md/MCP, ship phases.
 - [CLI studio generate command](./cli-studio-generate.md) — proposed `panda studio generate`: emit Storybook token

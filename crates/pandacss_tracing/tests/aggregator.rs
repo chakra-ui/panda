@@ -105,18 +105,36 @@ fn spans_without_path_field_have_empty_slowest() {
 #[test]
 fn slowest_instances_are_capped_at_five() {
     let timings = SpanTimings::new();
-    let subscriber = tracing_subscriber::registry().with(timings.layer());
-    let _guard = subscriber.set_default();
 
+    // Fixed durations keep ordering deterministic — real elapsed time flakes under CI jitter.
     for i in 0..8u64 {
-        let path = format!("file-{i}.tsx");
-        let _entered = tracing::trace_span!("extraction", path = path.as_str()).entered();
+        timings.record(
+            "extraction",
+            u128::from(i + 1),
+            Some(format!("file-{i}.tsx")),
+        );
     }
 
     let snap = timings.snapshot();
     let extraction = snap.iter().find(|s| s.name == "extraction").expect("span");
     assert_eq!(extraction.count, 8);
     assert_eq!(extraction.slowest.len(), 5);
+    // Slowest overall (file-7 through file-3) survive the cap, in descending order.
+    let labels: Vec<&str> = extraction
+        .slowest
+        .iter()
+        .map(|instance| instance.label.as_str())
+        .collect();
+    assert_eq!(
+        labels,
+        [
+            "file-7.tsx",
+            "file-6.tsx",
+            "file-5.tsx",
+            "file-4.tsx",
+            "file-3.tsx"
+        ]
+    );
 }
 
 #[test]

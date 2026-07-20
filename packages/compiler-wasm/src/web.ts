@@ -23,7 +23,6 @@ import {
   BuildInfo,
   DesignSystem,
   createUsageReport,
-  getTokenCategoryValues,
   inspectFile,
   inspectFiles,
   mergeCallbacks,
@@ -39,6 +38,7 @@ import type {
   SerializedConfig,
   SourceFileInput,
   CompilerPathSystem,
+  UtilityValuesCallback,
 } from '@pandacss/compiler-shared'
 import { registerCallbacks } from './callbacks'
 import type { TokenDictionaryInput, WasmCompiler, WasmFileSystem } from './types'
@@ -59,7 +59,7 @@ export type * from '@pandacss/compiler-shared'
  */
 interface WasmFromConfigOptions {
   configCallbacks?: {
-    utilityValues?: Record<string, (tokenDictionary: TokenDictionaryInput | undefined) => unknown>
+    utilityValues?: Record<string, UtilityValuesCallback>
   }
 }
 
@@ -156,15 +156,10 @@ export function buildFromConfigOptions(callbacks: ProjectCallbacks): WasmFromCon
   const utilityValues = callbacks['utility.values']
   if (!utilityValues || Object.keys(utilityValues).length === 0) return undefined
 
+  // Wasm injects a Rust-backed `theme(category)` — pass author callbacks through as-is.
   return {
     configCallbacks: {
-      utilityValues: Object.fromEntries(
-        Object.entries(utilityValues).map(([id, callback]) => [
-          id,
-          (tokenDictionary: TokenDictionaryInput | undefined) =>
-            callback((category: string) => getTokenCategoryValues(category, tokenDictionary)),
-        ]),
-      ),
+      utilityValues,
     },
   }
 }

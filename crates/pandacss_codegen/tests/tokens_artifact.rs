@@ -47,6 +47,7 @@ fn emits_ts_source_tokens() {
 
     assert_eq!(paths(tokens), vec!["tokens/index.ts"]);
     assert_snapshot!(file(tokens, "tokens/index.ts"), @r##"
+    import { colorMix, toCssVar } from '../helpers';
     import type { Token, TokenPath } from '../types/tokens';
 
     interface TokenFn {
@@ -56,42 +57,14 @@ fn emits_ts_source_tokens() {
 
     const tokens: Record<string, string> = {"colors.primary":"","colors.red.500":"#ef4444","opacity.half":"0.5","spacing.4":"1rem"}
 
-    function toVar(path: string): string {
-      let out = ""
-      for (const ch of path.replaceAll(".", "-")) {
-        if (ch >= "A" && ch <= "Z") out += "-" + ch.toLowerCase()
-        else if (/[a-z0-9_-]/.test(ch) || ch >= "\u0081") out += ch
-        else out += "\\" + ch
-      }
-      return "var(--pd-" + out + ")"
-    }
-
-    function colorMix(path: string): string | undefined {
-      const colorPrefix = "colors."
-      if (!path.startsWith(colorPrefix)) return
-
-      const index = path.indexOf("/", colorPrefix.length)
-      if (index === -1 || index === path.length - 1) return
-
-      const colorPath = path.slice(0, index)
-      if (tokens[colorPath] === undefined) return
-
-      const rawOpacity = path.slice(index + 1)
-      const opacity = tokens["opacity." + rawOpacity]
-      const percent = opacity === undefined ? Number(rawOpacity) : Number(opacity) * 100
-      if (Number.isNaN(percent)) return
-
-      return "color-mix(in oklab, " + toVar(colorPath) + " " + percent + "%, transparent)"
-    }
-
     export const token: TokenFn = /* @__PURE__ */ Object.assign(
       function token(path: string, fallback?: string) {
         const value = tokens[path]
-        return value === undefined ? colorMix(path) || fallback : value || toVar(path)
+        return value === undefined ? colorMix(tokens, path) || fallback : value || toCssVar(path)
       },
       {
         var: function tokenVar(path: string, fallback?: string) {
-          return tokens[path] === undefined ? fallback : toVar(path)
+          return tokens[path] === undefined ? fallback : toCssVar(path)
         },
       },
     )
@@ -114,44 +87,18 @@ fn emits_js_runtime_and_declarations() {
         vec!["tokens/index.mjs", "tokens/index.d.mts"]
     );
     assert_snapshot!(file(tokens, "tokens/index.mjs"), @r##"
+    import { colorMix, toCssVar } from '../helpers.mjs';
+
     const tokens = {"colors.primary":"","colors.red.500":"#ef4444","opacity.half":"0.5","spacing.4":"1rem"}
-
-    function toVar(path){
-      let out = ""
-      for (const ch of path.replaceAll(".", "-")) {
-        if (ch >= "A" && ch <= "Z") out += "-" + ch.toLowerCase()
-        else if (/[a-z0-9_-]/.test(ch) || ch >= "\u0081") out += ch
-        else out += "\\" + ch
-      }
-      return "var(--pd-" + out + ")"
-    }
-
-    function colorMix(path){
-      const colorPrefix = "colors."
-      if (!path.startsWith(colorPrefix)) return
-
-      const index = path.indexOf("/", colorPrefix.length)
-      if (index === -1 || index === path.length - 1) return
-
-      const colorPath = path.slice(0, index)
-      if (tokens[colorPath] === undefined) return
-
-      const rawOpacity = path.slice(index + 1)
-      const opacity = tokens["opacity." + rawOpacity]
-      const percent = opacity === undefined ? Number(rawOpacity) : Number(opacity) * 100
-      if (Number.isNaN(percent)) return
-
-      return "color-mix(in oklab, " + toVar(colorPath) + " " + percent + "%, transparent)"
-    }
 
     export const token = /* @__PURE__ */ Object.assign(
       function token(path, fallback) {
         const value = tokens[path]
-        return value === undefined ? colorMix(path) || fallback : value || toVar(path)
+        return value === undefined ? colorMix(tokens, path) || fallback : value || toCssVar(path)
       },
       {
         var: function tokenVar(path, fallback) {
-          return tokens[path] === undefined ? fallback : toVar(path)
+          return tokens[path] === undefined ? fallback : toCssVar(path)
         },
       },
     )

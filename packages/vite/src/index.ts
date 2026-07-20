@@ -44,8 +44,9 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
   let cwd = ''
   let outdir: string | undefined
   let resolvedConfig: ResolvedConfig | undefined
-  let designSystemDiagnosticsKey = ''
+  let designSystemDiagnosticsRef: readonly Diagnostic[] | undefined
   let sourceTransformer: SourceTransformer | undefined
+  const watchedFiles = new Set<string>()
   const rootIds = new Set<string>()
   const sourceHooks = createPandaSourcePluginHooks(() => ({
     ...transformerOptions,
@@ -60,10 +61,9 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
   const addPandaWatchFiles = (addWatchFile: (file: string) => void, inputId: string) => {
     if (!driver) return
 
-    const seen = new Set<string>()
     const watch = (file: string) => {
-      if (seen.has(file)) return
-      seen.add(file)
+      if (watchedFiles.has(file)) return
+      watchedFiles.add(file)
       addWatchFile(file)
     }
     const inputFile = inputId.split('?')[0]
@@ -88,10 +88,9 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
 
   const warnDesignSystemDiagnostics = (warn: (message: string) => void) => {
     const diagnostics = driver?.designSystemDiagnostics ?? []
-    const key = JSON.stringify(diagnostics)
-    if (key === designSystemDiagnosticsKey) return
+    if (diagnostics === designSystemDiagnosticsRef) return
 
-    designSystemDiagnosticsKey = key
+    designSystemDiagnosticsRef = diagnostics
     warnDiagnostics(warn, diagnostics, 'while loading the design system')
   }
 
@@ -180,7 +179,10 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
           kind: 'change',
           ...(designSystemFile === 'source' ? { content: await ctx.read() } : {}),
         })
-        if (changed) warnDesignSystemDiagnostics((message) => ctx.server.config.logger.warn(message))
+        if (changed) {
+          if (designSystemFile === 'artifact') watchedFiles.clear()
+          warnDesignSystemDiagnostics((message) => ctx.server.config.logger.warn(message))
+        }
         return withInvalidatedRoots(ctx.server, ctx.modules)
       }
 
@@ -188,6 +190,7 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
         const diff = await driver.reload()
         if (!diff.hasChanged) return
 
+        watchedFiles.clear()
         codegen()
         driver.parseFiles()
         warnDesignSystemDiagnostics((message) => ctx.server.config.logger.warn(message))

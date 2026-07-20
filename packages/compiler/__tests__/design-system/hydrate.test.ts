@@ -251,10 +251,10 @@ describe('hydrateDesignSystem (consumer)', () => {
       {
         "severity": "warning",
         "category": "designSystem",
-        "file": "panda.buildinfo.json",
+        "file": "buildinfo.json",
         "message": ""@acme/ds" build info uses schemaVersion 999; expected 4. Re-extracted 1 source file.",
         "help": [
-          "Run \`panda lib\` in "@acme/ds" to rebuild panda.buildinfo.json.",
+          "Run \`panda lib\` in "@acme/ds" to rebuild panda/buildinfo.json.",
         ],
       }
     `)
@@ -1246,22 +1246,22 @@ function createFixture(options: DesignSystemFixture = {}): string {
     'node_modules/@acme/ds/package.json': json({
       name: '@acme/ds',
       version: '1.0.0',
-      exports: { './panda.lib.json': './dist/panda.lib.json', './preset': './dist/panda.preset.mjs' },
+      exports: { './panda/*': './dist/panda/*' },
     }),
-    'node_modules/@acme/ds/dist/panda.lib.json': json({
+    'node_modules/@acme/ds/dist/panda/lib.json': json({
       schemaVersion: 1,
       name: '@acme/ds',
       version: '1.0.0',
       panda: '^2.0.0',
-      preset: './panda.preset.mjs',
-      buildInfo: './panda.buildinfo.json',
+      preset: './preset.mjs',
+      buildInfo: './buildinfo.json',
       importMap: { css: '@acme/ds/css' },
       ...options.manifest,
     }),
-    'node_modules/@acme/ds/dist/panda.preset.mjs': options.preset ?? `export default { theme: { tokens: {} } }`,
+    'node_modules/@acme/ds/dist/panda/preset.mjs': options.preset ?? `export default { theme: { tokens: {} } }`,
     'node_modules/@acme/ds/dist/button.js':
       options.source ?? "import { css } from '@acme/ds/css'\ncss({ color: 'rebeccapurple' })",
-    'node_modules/@acme/ds/dist/panda.buildinfo.json': buildInfo,
+    'node_modules/@acme/ds/dist/panda/buildinfo.json': buildInfo,
   })
 
   return root

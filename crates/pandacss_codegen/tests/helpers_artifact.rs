@@ -830,6 +830,52 @@ fn emits_ts_source() {
 }
 
 #[test]
+fn emits_ts_to_css_var_and_color_mix() {
+    let artifacts = ArtifactGraph.generate_with_input(
+        &pandacss_codegen::CodegenInput {
+            config: serde_json::from_value(serde_json::json!({ "prefix": { "cssVar": "pd" } }))
+                .expect("config"),
+            ..pandacss_codegen::CodegenInput::default()
+        },
+        GenerateOptions {
+            format: CodegenFormat::Ts,
+            import_extensions: false,
+        },
+    );
+    let source = file(artifact(&artifacts, ArtifactId::Helpers), "helpers.ts");
+    assert_snapshot!(function_block(source, "toCssVar"), @r#"
+    export function toCssVar(path: string): string {
+      let out = ""
+      for (const ch of path.replaceAll(".", "-")) {
+        if (ch >= "A" && ch <= "Z") out += "-" + ch.toLowerCase()
+        else if (/[a-z0-9_-]/.test(ch) || ch >= "\u0081") out += ch
+        else out += "\\" + ch
+      }
+      return "var(--pd-" + out + ")"
+    }
+    "#);
+    assert_snapshot!(function_block(source, "colorMix"), @r#"
+    export function colorMix(tokens: Record<string, string>, path: string): string | undefined {
+      const colorPrefix = "colors."
+      if (!path.startsWith(colorPrefix)) return
+
+      const index = path.indexOf("/", colorPrefix.length)
+      if (index === -1 || index === path.length - 1) return
+
+      const colorPath = path.slice(0, index)
+      if (tokens[colorPath] === undefined) return
+
+      const rawOpacity = path.slice(index + 1)
+      const opacity = tokens["opacity." + rawOpacity]
+      const percent = opacity === undefined ? Number(rawOpacity) : Number(opacity) * 100
+      if (Number.isNaN(percent)) return
+
+      return "color-mix(in oklab, " + toCssVar(colorPath) + " " + percent + "%, transparent)"
+    }
+    "#);
+}
+
+#[test]
 fn emits_ts_with_defaults() {
     let graph = ArtifactGraph;
     let artifacts = graph.generate(GenerateOptions {

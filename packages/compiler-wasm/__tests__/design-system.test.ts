@@ -8,8 +8,8 @@ const fullInput: DesignSystemManifestInput = {
   name: '@acme/ds',
   version: '1.2.3',
   panda: '^2.0.0',
-  preset: './panda.preset.mjs',
-  buildInfo: './panda.buildinfo.json',
+  preset: './preset.mjs',
+  buildInfo: './buildinfo.json',
   importMap: { css: '@acme/ds/css', recipes: '@acme/ds/recipes' },
   designSystem: '@acme/foundations',
   files: ['./dist/**/*.mjs'],
@@ -25,8 +25,8 @@ describeIfBuilt('@pandacss/compiler-wasm designSystem', () => {
       name: '@acme/ds',
       version: '1.2.3',
       panda: '^2.0.0',
-      preset: './panda.preset.mjs',
-      buildInfo: './panda.buildinfo.json',
+      preset: './preset.mjs',
+      buildInfo: './buildinfo.json',
       importMap: { css: '@acme/ds/css', recipes: '@acme/ds/recipes' },
       designSystem: '@acme/foundations',
       files: ['./dist/**/*.mjs'],
@@ -48,8 +48,8 @@ describeIfBuilt('@pandacss/compiler-wasm designSystem', () => {
     const manifest = app.designSystem.create({
       name: '@acme/ds',
       panda: '^2.0.0',
-      preset: './panda.preset.mjs',
-      buildInfo: './panda.buildinfo.json',
+      preset: './preset.mjs',
+      buildInfo: './buildinfo.json',
     })
 
     expect(manifest.version).toBeUndefined()
@@ -62,7 +62,7 @@ describeIfBuilt('@pandacss/compiler-wasm designSystem', () => {
     const app = await createCompiler(baseConfig)
     expect(() =>
       // @ts-expect-error - missing required `panda`
-      app.designSystem.create({ name: '@acme/ds', preset: './panda.preset.mjs', buildInfo: './panda.buildinfo.json' }),
+      app.designSystem.create({ name: '@acme/ds', preset: './preset.mjs', buildInfo: './buildinfo.json' }),
     ).toThrow()
   })
 

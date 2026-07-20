@@ -3,8 +3,8 @@
 use indoc::indoc;
 
 use crate::{
-    Artifact, ArtifactFile, ArtifactId, DependencySet, FunctionDecl, Item, ItemNode, JsDoc, Module,
-    Param, Stmt, TsType, TypeAliasDecl,
+    Artifact, ArtifactFile, ArtifactId, CodegenContext, DependencySet, FunctionDecl, Item,
+    ItemNode, JsDoc, Module, Param, RuntimeImport, Stmt, TsType, TypeAliasDecl,
     graph::{GenerateOptions, emit_module_files},
 };
 
@@ -51,7 +51,15 @@ pub fn module() -> Module {
 }
 
 #[must_use]
-pub fn files(options: GenerateOptions, dependencies: DependencySet) -> Vec<ArtifactFile> {
+pub fn files(
+    ctx: CodegenContext<'_>,
+    options: GenerateOptions,
+    dependencies: DependencySet,
+) -> Vec<ArtifactFile> {
+    if ctx.virtualizes(RuntimeImport::CssCx) {
+        return Vec::new();
+    }
+
     emit_module_files(
         "css/cx",
         &module(),
@@ -63,10 +71,14 @@ pub fn files(options: GenerateOptions, dependencies: DependencySet) -> Vec<Artif
 }
 
 #[must_use]
-pub fn generate(options: GenerateOptions, dependencies: DependencySet) -> Artifact {
+pub fn generate(
+    ctx: CodegenContext<'_>,
+    options: GenerateOptions,
+    dependencies: DependencySet,
+) -> Artifact {
     Artifact {
         id: ArtifactId::Cx,
         dependencies,
-        files: files(options, dependencies),
+        files: files(ctx, options, dependencies),
     }
 }

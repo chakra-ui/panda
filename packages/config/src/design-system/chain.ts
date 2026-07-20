@@ -1,4 +1,9 @@
-import { outdirBasename, type DesignSystemManifest } from '@pandacss/compiler-shared'
+import {
+  outdirBasename,
+  type CodegenOverlay,
+  type DesignSystemManifest,
+  type Diagnostic,
+} from '@pandacss/compiler-shared'
 import type { ImportMapInput, ImportMapOption, UserConfig } from '@pandacss/types'
 import { readFileSync, statSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
@@ -6,6 +11,8 @@ import { pathToFileURL } from 'node:url'
 import { createConfigDiagnostic, createConfigError, PandaError } from '../error'
 import { resolveFrom, type ResolveOutcome } from '../resolve'
 import { ensureConfigObject, errorMessage, isPlainObject, type ExtendableConfig } from '../shared'
+import type { DesignSystemOverlayInput } from './overlay-input'
+import { nearestPackageJson } from './package'
 
 const SPECIFIER_PROTOCOL = /^([a-z][a-z0-9+.-]*):/i
 
@@ -17,9 +24,10 @@ export interface ResolvedDesignSystem {
   buildInfoPath: string
   files: string[]
   tokenPaths: string[]
+  recipeNames: string[]
+  patternNames: string[]
   importMap?: DesignSystemManifest['importMap']
-  /** Class-name options (`hash`/`prefix`/`separator`) the consumer overrode away
-   * from this design system's, which would break its prebuilt class names. */
+  packageExports?: Record<string, unknown>
   optionMismatch?: string[]
 }
 
@@ -81,13 +89,163 @@ export function withDesignSystemImportMap(config: UserConfig, infos: ResolvedDes
   return { ...config, importMap: [...roots, outdirBasename(config.outdir ?? 'styled-system'), ...existing] }
 }
 
+export interface DesignSystemMetadata {
+  designSystem?: ResolvedDesignSystem[]
+  userRecipeNames?: string[]
+  userPatternNames?: string[]
+  overlayInput?: DesignSystemOverlayInput
+}
+
+export function buildCodegenOverlay(metadata: DesignSystemMetadata | undefined): CodegenOverlay | undefined {
+  const chain = metadata?.designSystem
+  if (!chain || chain.length !== 1) return undefined
+  if (metadata?.overlayInput && !metadata.overlayInput.compatible) return undefined
+
+  const [ds] = chain
+  const appRecipes = new Set(metadata?.userRecipeNames ?? [])
+  const appPatterns = new Set(metadata?.userPatternNames ?? [])
+  const authored = metadata?.overlayInput?.authored
+  const runtimeDirty = !!(authored?.conditions || authored?.breakpoints || authored?.utilities || authored?.tokens)
+
+  return {
+    ...overlayRoots(ds),
+    ownedRecipes: ds.recipeNames.filter((name) => !appRecipes.has(name)),
+    ownedPatterns: ds.patternNames.filter((name) => !appPatterns.has(name)),
+    virtualizeHelpers: true,
+    virtualizeCss: !runtimeDirty,
+  }
+}
+
+export interface DesignSystemArtifactConflict {
+  name: string
+  recipes: string[]
+  patterns: string[]
+}
+
+export function collectArtifactConflicts(metadata: DesignSystemMetadata | undefined): DesignSystemArtifactConflict[] {
+  const appRecipes = new Set(metadata?.userRecipeNames ?? [])
+  const appPatterns = new Set(metadata?.userPatternNames ?? [])
+  return (metadata?.designSystem ?? [])
+    .map((ds) => ({
+      name: ds.name,
+      recipes: ds.recipeNames.filter((name) => appRecipes.has(name)),
+      patterns: ds.patternNames.filter((name) => appPatterns.has(name)),
+    }))
+    .filter((entry) => entry.recipes.length > 0 || entry.patterns.length > 0)
+}
+
+export function collectExportMissingDiagnostics(metadata: DesignSystemMetadata | undefined): Diagnostic[] {
+  const overlay = buildCodegenOverlay(metadata)
+  if (!overlay) return []
+
+  const [ds] = metadata!.designSystem!
+  const required: string[] = []
+  if (overlay.virtualizeHelpers) required.push('./helpers')
+  if (overlay.virtualizeCss) {
+    required.push('./css', './css/*')
+  }
+  if (overlay.ownedRecipes.length > 0) {
+    required.push('./recipes', './recipes/*')
+  }
+  if (overlay.ownedPatterns.length > 0) {
+    required.push('./patterns', './patterns/*')
+  }
+  const appPatterns = metadata?.userPatternNames?.length ?? 0
+  const dsPatterns = ds.patternNames?.length ?? 0
+  if (overlay.ownedPatterns.length > 0 || (overlay.virtualizeCss && (appPatterns > 0 || dsPatterns > 0))) {
+    required.push('./jsx', './jsx/*')
+  }
+
+  return required
+    .filter((subpath) => !hasExport(ds.packageExports, subpath))
+    .map((subpath) => exportMissingDiagnostic(ds.name, subpath))
+}
+
+export function collectNameCollisionDiagnostics(metadata: DesignSystemMetadata | undefined): Diagnostic[] {
+  const overlay = buildCodegenOverlay(metadata)
+  if (!overlay) return []
+  return [
+    ...identCollisions('recipe', [...overlay.ownedRecipes, ...(metadata?.userRecipeNames ?? [])]),
+    ...identCollisions('pattern', [...overlay.ownedPatterns, ...(metadata?.userPatternNames ?? [])]),
+  ]
+}
+
+// Names that survive as distinct config keys but collapse to the same generated
+// export identifier (`my-stack` and `my_stack` -> `my_stack`) would produce a
+// duplicate/overwriting barrel export. Mirrors `pandacss_shared::js_ident`.
+function jsIdent(value: string): string {
+  let out = ''
+  for (let i = 0; i < value.length; i++) {
+    const code = value.charCodeAt(i)
+    const isIdent =
+      code === 36 || // $
+      code === 95 || // _
+      (code >= 48 && code <= 57) || // 0-9
+      (code >= 65 && code <= 90) || // A-Z
+      (code >= 97 && code <= 122) // a-z
+    if (isIdent) {
+      if (i === 0 && code >= 48 && code <= 57) out += '_'
+      out += value[i]
+    } else {
+      out += '_'
+    }
+  }
+  return out === '' ? '_' : out
+}
+
+function identCollisions(kind: 'recipe' | 'pattern', names: string[]): Diagnostic[] {
+  const byIdent = new Map<string, Set<string>>()
+  for (const name of names) {
+    const ident = jsIdent(name)
+    const set = byIdent.get(ident) ?? new Set<string>()
+    set.add(name)
+    byIdent.set(ident, set)
+  }
+  const collisions: Diagnostic[] = []
+  for (const [ident, raw] of byIdent) {
+    if (raw.size < 2) continue
+    const list = [...raw].map((name) => JSON.stringify(name)).join(', ')
+    const message = `${kind} names ${list} both generate the export ${JSON.stringify(ident)}; one would overwrite the other in the generated barrel. Rename one so they produce distinct identifiers.`
+    collisions.push(createConfigDiagnostic('design_system_name_collision', message))
+  }
+  return collisions
+}
+
+function hasExport(packageExports: Record<string, unknown> | undefined, subpath: string): boolean {
+  return packageExports != null && Object.prototype.hasOwnProperty.call(packageExports, subpath)
+}
+
+function exportMissingDiagnostic(dsName: string, subpath: string): Diagnostic {
+  const message = `designSystem ${JSON.stringify(dsName)} doesn't export ${JSON.stringify(subpath)}, which this app's codegen needs. Rebuild it with \`panda lib\`.`
+  return createConfigDiagnostic('design_system_export_missing', message, [
+    `Rebuild ${JSON.stringify(dsName)} with \`panda lib\` to add the ${JSON.stringify(subpath)} export.`,
+  ])
+}
+
+function overlayRoots(
+  ds: ResolvedDesignSystem,
+): Pick<CodegenOverlay, 'jsx' | 'recipes' | 'patterns' | 'css' | 'helpers'> {
+  const map = ds.importMap
+  const root = (value: string | string[] | undefined, subpath: string): string => {
+    const resolved = Array.isArray(value) ? value[0] : value
+    return resolved ?? `${ds.specifier}/${subpath}`
+  }
+  return {
+    jsx: root(map?.jsx, 'jsx'),
+    recipes: root(map?.recipes, 'recipes'),
+    patterns: root(map?.patterns, 'patterns'),
+    css: root(map?.css, 'css'),
+    helpers: `${ds.specifier}/helpers`,
+  }
+}
+
 function resolveManifestPath(spec: string, fromDir: string): string | undefined {
   const protocol = specifierProtocol(spec)
   if (protocol) throw unsupportedSpecifierError(spec, protocol)
 
   let outcome: ResolveOutcome
   try {
-    outcome = resolveFrom(`${spec}/panda.lib.json`, fromDir)
+    outcome = resolveFrom(`${spec}/panda/lib.json`, fromDir)
   } catch (error) {
     const message = `Failed to resolve designSystem ${JSON.stringify(spec)} from ${JSON.stringify(fromDir)}: ${errorMessage(error)}`
     throw createConfigError(message, [createConfigDiagnostic('design_system_resolve_failed', message)])
@@ -98,10 +256,10 @@ function resolveManifestPath(spec: string, fromDir: string): string | undefined 
 }
 
 function manifestNotExportedError(spec: string): PandaError {
-  const message = `designSystem ${JSON.stringify(spec)} is installed but doesn't expose \`./panda.lib.json\`. If it's a Panda design system, rebuild it with \`panda lib\`; otherwise it can't be consumed as a design system.`
+  const message = `designSystem ${JSON.stringify(spec)} is installed but doesn't expose \`./panda/*\` (missing \`panda/lib.json\`). If it's a Panda design system, rebuild it with \`panda lib\`; otherwise it can't be consumed as a design system.`
   return createConfigError(message, [
     createConfigDiagnostic('design_system_manifest_not_exported', message, [
-      `Rebuild ${JSON.stringify(spec)} with \`panda lib\`, or check its package.json \`exports\` includes \`./panda.lib.json\`.`,
+      `Rebuild ${JSON.stringify(spec)} with \`panda lib\`, or check its package.json \`exports\` includes \`./panda/*\`.`,
     ]),
   ])
 }
@@ -143,6 +301,7 @@ async function loadManifestLevel(
 
   const parent =
     typeof manifest.designSystem === 'string' && manifest.designSystem.length > 0 ? manifest.designSystem : undefined
+  const packageExports = readPackageExports(manifestPath)
 
   return {
     parent,
@@ -156,10 +315,28 @@ async function loadManifestLevel(
         buildInfoPath,
         files: manifest.files ?? [],
         tokenPaths: [],
+        recipeNames: [],
+        patternNames: [],
         ...(manifest.importMap ? { importMap: manifest.importMap } : {}),
+        ...(packageExports ? { packageExports } : {}),
       },
     },
   }
+}
+
+function readPackageExports(manifestPath: string): Record<string, unknown> | undefined {
+  try {
+    const packageJsonPath = nearestPackageJson(dirname(manifestPath))
+    if (packageJsonPath === undefined) return undefined
+    const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as { exports?: unknown }
+    return isExportsMap(pkg.exports) ? pkg.exports : undefined
+  } catch {
+    return undefined
+  }
+}
+
+function isExportsMap(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 function presetImportUrl(path: string): string {
@@ -286,6 +463,6 @@ function specifierProtocol(spec: string): string | undefined {
 }
 
 function unsupportedSpecifierError(spec: string, protocol: string): PandaError {
-  const message = `designSystem ${JSON.stringify(spec)} uses the "${protocol}:" protocol, which isn't supported. Use the published package name (e.g. "@acme/design-system") that resolves to its \`panda.lib.json\`.`
+  const message = `designSystem ${JSON.stringify(spec)} uses the "${protocol}:" protocol, which isn't supported. Use the published package name (e.g. "@acme/design-system") that resolves to its \`panda/lib.json\`.`
   return createConfigError(message, [createConfigDiagnostic('design_system_unsupported_specifier', message)])
 }

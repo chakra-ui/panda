@@ -1,5 +1,26 @@
 import { type BuildInfoArtifact, type Compiler, type Diagnostic } from '@pandacss/compiler-shared'
-import { readPandaVersion, type ResolvedDesignSystem } from '@pandacss/config'
+import {
+  collectArtifactConflicts,
+  readPandaVersion,
+  type LoadConfigResult,
+  type ResolvedDesignSystem,
+} from '@pandacss/config'
+
+export function artifactConflictDiagnostics(metadata: LoadConfigResult['metadata']): Diagnostic[] {
+  return collectArtifactConflicts(metadata).flatMap((conflict) => [
+    ...conflict.recipes.map((name) => artifactConflict('Recipe', name, conflict.name)),
+    ...conflict.patterns.map((name) => artifactConflict('Pattern', name, conflict.name)),
+  ])
+}
+
+function artifactConflict(kind: 'Recipe' | 'Pattern', name: string, designSystem: string): Diagnostic {
+  return {
+    code: 'design_system_artifact_conflict',
+    severity: 'warning',
+    category: 'designSystem',
+    message: `${kind} ${JSON.stringify(name)} is defined by both ${JSON.stringify(designSystem)} and this config; your definition is merged over the design system's.`,
+  }
+}
 
 type BuildInfoIssue =
   | { kind: 'read'; detail: string }
@@ -191,7 +212,8 @@ function extractFallbackSources(compiler: Compiler, ds: ResolvedDesignSystem) {
     return []
   }
 
-  return compiler.scan({ include: ds.files, cwd: compiler.path.dirname(ds.manifestPath) })
+  const filesCwd = compiler.path.resolve(compiler.path.join([compiler.path.dirname(ds.manifestPath), '..']))
+  return compiler.scan({ include: ds.files, cwd: filesCwd })
 }
 
 function buildInfoDiagnostic(
@@ -212,7 +234,7 @@ function buildInfoDiagnostic(
     category: 'designSystem',
     file: ds.buildInfoPath,
     message: `${JSON.stringify(ds.name)} build info ${reason}.${outcome}`,
-    help: [`Run \`panda lib\` in ${JSON.stringify(ds.name)} to rebuild panda.buildinfo.json.`],
+    help: [`Run \`panda lib\` in ${JSON.stringify(ds.name)} to rebuild panda/buildinfo.json.`],
   }
 }
 
@@ -290,7 +312,7 @@ function incompatibleManifestError(
       severity: 'error',
       category: 'designSystem',
       file: ds.manifestPath,
-      message: `${JSON.stringify(ds.name)} panda.lib.json uses schemaVersion ${ds.manifest.schemaVersion}; expected ${compiler.designSystem.schemaVersion}.`,
+      message: `${JSON.stringify(ds.name)} panda/lib.json uses schemaVersion ${ds.manifest.schemaVersion}; expected ${compiler.designSystem.schemaVersion}.`,
       help: [`Upgrade ${JSON.stringify(ds.name)}, or rebuild it with a compatible version of Panda.`],
     })
   }

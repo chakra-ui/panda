@@ -490,7 +490,7 @@ const Button = withContext('button')
 | `panda debug`     | Write bug-report artifacts under `<outdir>/debug`.                                           |
 | `panda codegen`   | Advanced: generate the `styled-system` output only.                                          |
 | `panda cssgen`    | Advanced: generate CSS only.                                                                 |
-| `panda lib`       | Publish a design system (`panda.lib.json` + build info + preset). See [Design systems](#design-systems). |
+| `panda lib`       | Publish a design system (`panda/lib.json` + build info + preset). See [Design systems](#design-systems). |
 | `panda buildinfo` | Write build-info JSON only. Prefer `panda lib` for libraries.                                |
 
 `panda inspect` and `panda validate` are removed in v2. Use `panda info` and `panda doctor`.
@@ -533,12 +533,29 @@ panda lib
 panda lib --files './**/*.{js,mjs}'
 ```
 
-Writes `panda.lib.json`, `panda.buildinfo.json`, and `panda.preset.mjs` under `dist` (default), and syncs package
-`exports`. Build info is what consumers hydrate; the preset carries tokens, recipes, and patterns.
+Default outdir is `dist`. Machine artifacts land under `panda/`:
+
+```txt
+dist/panda/lib.json
+dist/panda/buildinfo.json
+dist/panda/preset.mjs
+```
+
+`panda lib` syncs package `exports` for:
+
+- `./panda/*` → machine artifacts (consumers resolve `@acme/ds/panda/lib.json`)
+- styled-system roots the package actually emitted (`./css`, `./recipes`, `./patterns`, `./jsx`, …) for overlay
+  re-exports
+
+Build info is what consumers hydrate; the preset carries tokens, recipes, and patterns. Manifest `preset` /
+`buildInfo` paths are relative to `panda/`; fallback `files` are relative to the lib outdir (`dist/`).
 
 Fallback `files` are only used when build info is missing or stale. Without `--files`, they're inferred from the scan.
 If package.json only publishes `dist`, inferred `../src/...` paths won't ship — `panda lib` drops them and warns.
 `--files` skips that filter. You own the source→dist mapping; Panda won't guess it.
+
+Do not point a public `./preset` export at these machine files. Keep authoring presets as your own package API;
+Panda only owns `./panda/*`.
 
 ### Using it in an app
 
@@ -551,22 +568,18 @@ export default defineConfig({
 })
 ```
 
-Panda loads `panda.lib.json`, merges the preset (and any parent), and applies the build info. You don't set `importMap`
-separately.
+Panda resolves `@acme/design-system/panda/lib.json`, merges the preset (and any parent), and applies the build info. You
+don't set `importMap` or put build info in `include` — `designSystem` is enough.
 
-Don't put `panda.buildinfo.json` in `include` — that globs source, and JSON fails to parse. `designSystem` is enough.
-
-Run `panda build` (or `panda codegen`) after wiring it. Import from your local `outdir`, not the design-system package.
-Local codegen re-emits merged types (including parent tokens); the published package may not ship a typed styled-system
-yet:
+Run `panda build` (or `panda codegen`) after wiring it. Import from your local `outdir`:
 
 ```ts
-import { css } from '../styled-system/css' // local outdir (merged types)
-// not: import { css } from '@acme/design-system/css'
+import { css } from '../styled-system/css'
 ```
 
-Extraction still matches both package roots and the local outdir. Local imports are the beta convention for types until
-a published styled-system lands. See [`design-notes/virtual-styled-system.md`](design-notes/virtual-styled-system.md).
+With a compatible design system, local codegen can virtualize DS-owned modules (re-export from the package) and only
+emit app deltas. Prefer the local outdir import either way — that path carries merged types when you extend tokens or
+recipes. See [`design-notes/virtual-styled-system.md`](design-notes/virtual-styled-system.md).
 
 ### Chaining libraries
 

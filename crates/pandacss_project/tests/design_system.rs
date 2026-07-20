@@ -1,4 +1,4 @@
-//! `Project::design_system_manifest` — produce a `panda.lib.json` value from
+//! `Project::design_system_manifest` — produce a `panda/lib.json` value from
 //! host-supplied identity + paths, stamping the engine-owned schema version, and
 //! round-trip it through JSON. Pure (no fs).
 
@@ -11,11 +11,11 @@ fn full_input() -> ManifestInput {
         "name": "@acme/ds",
         "version": "1.2.3",
         "panda": "^2.0.0",
-        "preset": "./panda.preset.mjs",
-        "buildInfo": "./panda.buildinfo.json",
+        "preset": "./preset.mjs",
+        "buildInfo": "./buildinfo.json",
         "importMap": { "css": "@acme/ds/css", "recipes": "@acme/ds/recipes" },
         "designSystem": "@acme/foundations",
-        "files": ["./dist/**/*.mjs"],
+        "files": ["../src/**/*.{js,mjs}"],
     }))
     .expect("deserialize manifest input")
 }
@@ -34,7 +34,7 @@ fn stamps_schema_version_and_carries_input_fields() {
         manifest.import_map.as_ref().and_then(|m| m.css.as_deref()),
         Some("@acme/ds/css")
     );
-    assert_eq!(manifest.files, ["./dist/**/*.mjs"]);
+    assert_eq!(manifest.files, ["../src/**/*.{js,mjs}"]);
 }
 
 #[test]
@@ -43,8 +43,8 @@ fn omits_optional_fields_when_absent() {
     let input: ManifestInput = from_value(json!({
         "name": "@acme/ds",
         "panda": "^2.0.0",
-        "preset": "./panda.preset.mjs",
-        "buildInfo": "./panda.buildinfo.json",
+        "preset": "./preset.mjs",
+        "buildInfo": "./buildinfo.json",
     }))
     .expect("deserialize minimal input");
 

@@ -1,5 +1,5 @@
 use super::{
-    Compiler, SourceTransformCallback, SourceTransformRef, UtilityTransformRef,
+    Compiler, JsCallbackArg, SourceTransformCallback, SourceTransformRef, UtilityTransformRef,
     UtilityValueCallbacks,
 };
 
@@ -7,16 +7,17 @@ use super::interop::{atom_value_to_json, capitalize, json_value_to_literal};
 use crate::cache::{
     MAX_TRANSFORM_CACHE_KEY_BYTES, PatternTransformCacheKey, UtilityTransformCacheKey,
 };
-use crate::matcher::from_core_token_dictionary;
 use lru::LruCache;
-use napi::bindgen_prelude::{FnArgs, FunctionRef};
+use napi::bindgen_prelude::{FnArgs, FunctionRef, JsValue};
 use napi_derive::napi;
 use pandacss_config::{
     CallbackRef, JsxSpecifier, PatternConfig, UserConfig, UtilityConfig, UtilityValues,
 };
 use pandacss_encoder::AtomValue;
 use pandacss_extractor::{DiagnosticSeverity, Literal, diagnostic_codes};
+use pandacss_tokens::TokenCategory;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 /*
  * Callback registration.
@@ -86,7 +87,7 @@ impl Compiler {
  */
 pub(super) fn resolve_utility_values_callbacks(
     config: &mut UserConfig,
-    token_dictionary: Option<&pandacss_tokens::TokenDictionary>,
+    token_dictionary: Option<&Arc<pandacss_tokens::TokenDictionary>>,
     callbacks: Option<&UtilityValueCallbacks>,
     env: &napi::Env,
 ) -> napi::Result<()> {
@@ -97,7 +98,6 @@ pub(super) fn resolve_utility_values_callbacks(
         return Ok(());
     }
 
-    let token_dictionary = token_dictionary.map(from_core_token_dictionary);
     for (prop, utility) in &mut config.utilities {
         let Some(id) = utility_values_callback_id(utility).map(str::to_owned) else {
             continue;
@@ -105,8 +105,7 @@ pub(super) fn resolve_utility_values_callbacks(
         let Some(callback) = callbacks.get(&id) else {
             continue;
         };
-        let token_dictionary_json =
-            serde_json::to_value(&token_dictionary).unwrap_or(serde_json::Value::Null);
+        let theme = create_theme_function(env, token_dictionary.cloned())?;
         let result = callback
             .borrow_back(env)
             .map_err(|err| {
@@ -114,7 +113,7 @@ pub(super) fn resolve_utility_values_callbacks(
                     "Failed to borrow utility values callback `{id}` for `{prop}`: {err}"
                 ))
             })?
-            .call(FnArgs::from((token_dictionary_json,)))
+            .call(FnArgs::from((JsCallbackArg(theme.value().value),)))
             .map_err(|err| {
                 napi::Error::from_reason(format!(
                     "Utility values callback `{id}` for `{prop}` threw: {}",
@@ -128,6 +127,34 @@ pub(super) fn resolve_utility_values_callbacks(
         })?);
     }
     Ok(())
+}
+
+type ThemeFn<'a> =
+    napi::bindgen_prelude::Function<'a, FnArgs<(String,)>, Option<HashMap<String, String>>>;
+
+fn create_theme_function(
+    env: &napi::Env,
+    token_dictionary: Option<Arc<pandacss_tokens::TokenDictionary>>,
+) -> napi::Result<ThemeFn<'_>> {
+    env.create_function_from_closure("theme", move |ctx| {
+        let category = ctx.get::<String>(0)?;
+        let Some(dictionary) = token_dictionary.as_ref() else {
+            return Ok(None);
+        };
+        let cat = TokenCategory::from_path_segment(&category);
+        let Some(values) = dictionary.category_values_str(&cat) else {
+            return Ok(None);
+        };
+        if values.is_empty() {
+            return Ok(None);
+        }
+        Ok(Some(
+            values
+                .iter()
+                .map(|(key, value)| (key.to_string(), value.to_string()))
+                .collect(),
+        ))
+    })
 }
 
 fn utility_values_callback_id(utility: &UtilityConfig) -> Option<&str> {

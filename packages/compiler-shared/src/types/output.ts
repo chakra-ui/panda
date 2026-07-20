@@ -35,6 +35,19 @@ export type CodegenDependency =
 
 export interface GenerateArtifactOptions {
   forceImportExtension?: boolean
+  overlay?: CodegenOverlay
+}
+
+export interface CodegenOverlay {
+  jsx: string
+  recipes: string
+  patterns: string
+  css: string
+  helpers: string
+  ownedRecipes: string[]
+  ownedPatterns: string[]
+  virtualizeHelpers: boolean
+  virtualizeCss: boolean
 }
 
 export interface CodegenOptions extends GenerateArtifactOptions {

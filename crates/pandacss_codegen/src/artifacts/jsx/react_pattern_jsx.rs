@@ -2,7 +2,7 @@ use pandacss_config::{JsxStylePropsConfig, PatternConfig};
 use pandacss_shared::js_ident;
 
 use super::jsx_helper::{raw_runtime, raw_type, type_import, value_import};
-use crate::{CodegenContext, ImportDecl, Module};
+use crate::{CodegenContext, ImportDecl, Module, RuntimeImport};
 
 pub(super) fn module(ctx: CodegenContext<'_>, name: &str, pattern: &PatternConfig) -> Module {
     let factory = factory_name(ctx);
@@ -15,7 +15,10 @@ pub(super) fn module(ctx: CodegenContext<'_>, name: &str, pattern: &PatternConfi
             &[pattern_fn.as_str()],
             &format!("../patterns/{}", meta.stem),
         ))
-        .with_import(value_import(&["splitProps"], "../helpers"))
+        .with_import(value_import(
+            &["splitProps"],
+            &ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
+        ))
         .with_import(value_import(&[factory.as_str()], "./factory"))
         .with_import(type_import(&["FunctionComponent"], "react"))
         .with_import(type_import(
@@ -26,7 +29,10 @@ pub(super) fn module(ctx: CodegenContext<'_>, name: &str, pattern: &PatternConfi
         .with_import(type_import(&["DistributiveOmit"], "../types/system"));
 
     if matches!(style_props(ctx), JsxStylePropsConfig::Minimal) {
-        module = module.with_import(ImportDecl::value(["mergeCss"], "../css/css"));
+        module = module.with_import(ImportDecl::value(
+            ["mergeCss"],
+            &ctx.runtime_import(RuntimeImport::CssCss, "../css/css"),
+        ));
     }
 
     module

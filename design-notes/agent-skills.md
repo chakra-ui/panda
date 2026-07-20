@@ -33,7 +33,7 @@ This note is the implementation brief. When you add or change a skill, update th
 Not in scope here:
 
 - [CLI DESIGN.md export](./cli-design-md.md) — project-specific token brief (`panda design-md`)
-- [Design-system manifest](./design-system-manifest.md) — `panda.lib.json` / `designSystem` compiler contract
+- [Design-system manifest](./design-system-manifest.md) — `panda/lib.json` / `designSystem` compiler contract
 - `@pandacss/mcp` tool schemas — live lookup API
 - Contributor / Rust-engine skills (`rust-engineer`, etc.) — those live under `.claude/agents/` for **this** repo
 
@@ -92,7 +92,7 @@ Plus:
 | Procedural usage     | Official Agent Skills (this note) | Any agent    | Release with docs/skills |
 | Project design brief | `DESIGN.md`                       | Agents       | `panda design-md`        |
 | Code conventions     | `AGENTS.md`, `.cursor/rules`      | Agents       | Humans edit              |
-| Compiler contract    | `panda.lib.json`, build info      | Panda        | `panda lib`              |
+| Compiler contract    | `panda/lib.json`, build info      | Panda        | `panda lib`              |
 | Live lookup          | `@pandacss/mcp`                   | MCP agents   | Runtime                  |
 
 Stub for consumer `AGENTS.md` (also useful in `panda init` help):
@@ -343,7 +343,7 @@ panda lib
 panda lib --files './**/*.{js,mjs}'
 ```
 
-- Artifacts: `panda.lib.json`, `panda.buildinfo.json`, `panda.preset.mjs`.
+- Artifacts: `panda/lib.json`, `panda/buildinfo.json`, `panda/preset.mjs`.
 - Consume with `designSystem: '@acme/ds'` — **never** put buildinfo in `include`.
 - Import styles from **local** `outdir` after `panda build` / `codegen` (merged types); package-root `/css` typing may
   fail.

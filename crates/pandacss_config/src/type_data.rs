@@ -78,7 +78,7 @@ pub struct TokenTypeData {
     pub categories: BTreeMap<String, TokenCategoryTypeData>,
     pub color_palettes: Vec<String>,
     /// Runtime `token()` map: `path -> value`, empty when the value equals the
-    /// token's CSS var (`token.var` derives it via `toVar(path)` instead).
+    /// token's CSS var (`token.var` derives it via helpers `toCssVar(path)` instead).
     #[serde(default)]
     pub values: BTreeMap<String, String>,
     /// Deprecated token paths -> deprecation (`true` or an author message).

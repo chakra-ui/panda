@@ -15,7 +15,7 @@ repository = "https://github.com/chakra-ui/panda"
 rust-version = "1.93"
 
 [workspace.dependencies]
-napi = { version = "3.3.0", default-features = false, features = ["napi4", "serde-json"] }
+napi = { version = "3.3.0", default-features = false, features = ["napi4", "napi5", "serde-json"] }
 napi-build = "2.2.3"
 napi-derive = "3.3.0"
 oxc_allocator = "0.130.0"

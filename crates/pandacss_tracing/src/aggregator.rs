@@ -107,7 +107,7 @@ impl SpanTimings {
         }
     }
 
-    fn add(&self, name: &'static str, nanos: u128, label: Option<String>) {
+    pub fn record(&self, name: &'static str, nanos: u128, label: Option<String>) {
         if let Ok(mut map) = self.inner.lock() {
             let entry = map.entry(name).or_default();
             entry.total_nanos = entry.total_nanos.saturating_add(nanos);
@@ -211,7 +211,7 @@ where
             .extensions()
             .get::<InstanceLabel>()
             .map(|InstanceLabel(label)| label.clone());
-        self.timings.add(name, elapsed, label);
+        self.timings.record(name, elapsed, label);
     }
 }
 
@@ -222,8 +222,8 @@ mod tests {
     #[test]
     fn snapshot_orders_spans_by_total_time_descending() {
         let timings = SpanTimings::new();
-        timings.add("beta", 2_000, None);
-        timings.add("alpha", 5_000, None);
+        timings.record("beta", 2_000, None);
+        timings.record("alpha", 5_000, None);
 
         let names: Vec<&str> = timings.snapshot().iter().map(|s| s.name).collect();
         assert_eq!(names, ["alpha", "beta"]);
@@ -232,9 +232,9 @@ mod tests {
     #[test]
     fn snapshot_orders_slowest_instances_by_duration_descending() {
         let timings = SpanTimings::new();
-        timings.add("extraction", 5, Some("a.tsx".into()));
-        timings.add("extraction", 30, Some("b.tsx".into()));
-        timings.add("extraction", 15, Some("c.tsx".into()));
+        timings.record("extraction", 5, Some("a.tsx".into()));
+        timings.record("extraction", 30, Some("b.tsx".into()));
+        timings.record("extraction", 15, Some("c.tsx".into()));
 
         let snap = timings.snapshot();
         let extraction = snap.iter().find(|s| s.name == "extraction").expect("span");
@@ -250,7 +250,7 @@ mod tests {
     fn snapshot_caps_slowest_instances_at_five_in_descending_order() {
         let timings = SpanTimings::new();
         for i in 0..8u128 {
-            timings.add("extraction", (i + 1) * 15, Some(format!("file-{i}.tsx")));
+            timings.record("extraction", (i + 1) * 15, Some(format!("file-{i}.tsx")));
         }
 
         let snap = timings.snapshot();

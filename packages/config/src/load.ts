@@ -5,6 +5,7 @@ import { PandaError } from './error'
 import { findConfig } from './find'
 import { configResolvedUtils } from './hook-utils'
 import { collectPluginHookHandlers, normalizeHook } from './hooks'
+import { buildOverlayInput } from './design-system/overlay-input'
 import { diffClassNameOptions } from './normalize'
 import { resolveAuthoredPresetsForLoad, type DesignSystemCompatibilityContext } from './preset'
 import { createConfigSnapshot } from './serialize'
@@ -47,14 +48,15 @@ export async function loadConfig(options: LoadConfigOptions): Promise<LoadConfig
 
   const userConfig = await runConfigResolvedHooks(authored.config, path, authoredDependencies)
 
+  const resolved = applyConfigDefaults(userConfig, cwd) as UserConfig
+
   refreshDesignSystemMetadata(
     authored.metadata,
     authored.designSystemCompatibility,
-    userConfig,
+    resolved,
     tokenEntriesBeforeHooks,
+    cwd,
   )
-
-  const resolved = applyConfigDefaults(userConfig, cwd) as UserConfig
 
   // Explicit `config.dependencies` escape hatch, on top of bundled module ids.
   const dependencyList = Array.from(
@@ -83,6 +85,7 @@ function refreshDesignSystemMetadata(
   designSystemCompatibility: DesignSystemCompatibilityContext[],
   config: UserConfig,
   tokenEntriesBeforeHooks: TokenEntries,
+  cwd: string,
 ): void {
   if (!metadata?.designSystem?.length) return
 
@@ -92,13 +95,27 @@ function refreshDesignSystemMetadata(
     config,
   )
 
+  const chain = metadata.designSystem
+  const sources = metadata.sources
+  const leaf = designSystemCompatibility[designSystemCompatibility.length - 1]
+
+  // Hydrate still uses effective classname compare (hooks can change hash/prefix without
+  // updating ConfigSources). Overlay `compatible` also requires the leaf classname match.
   for (const { designSystem, classNameOptions } of designSystemCompatibility) {
     const mismatch = diffClassNameOptions(config, classNameOptions, 'effective')
-
     if (mismatch.length > 0) {
       designSystem.optionMismatch = mismatch
     } else {
       delete designSystem.optionMismatch
+    }
+  }
+
+  if (sources && leaf) {
+    const input = buildOverlayInput(sources, config, chain, leaf.presetConfig, cwd)
+    const leafClassMismatch = leaf.designSystem.optionMismatch ?? []
+    metadata.overlayInput = {
+      authored: input.authored,
+      compatible: input.compatible && leafClassMismatch.length === 0,
     }
   }
 }

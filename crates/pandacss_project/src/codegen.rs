@@ -1,8 +1,8 @@
 use std::collections::BTreeMap;
 
 use pandacss_codegen::{
-    Artifact, ArtifactGraph, ArtifactId, CodegenInput, DependencySet, GenerateOptions,
-    PatternCodegenMeta,
+    Artifact, ArtifactGraph, ArtifactId, CodegenInput, CodegenOverlay, DependencySet,
+    GenerateOptions, PatternCodegenMeta,
 };
 use pandacss_config::{SelectorTypeData, TypeData, UserConfig};
 use pandacss_tokens::TokenDictionary;
@@ -12,7 +12,11 @@ use crate::Project;
 
 impl Project {
     #[must_use]
-    pub fn codegen_input(&self, user_config: &UserConfig) -> CodegenInput {
+    pub fn codegen_input(
+        &self,
+        user_config: &UserConfig,
+        overlay: Option<CodegenOverlay>,
+    ) -> CodegenInput {
         let _span = tracing::trace_span!(target: "codegen", "codegen_input").entered();
         let token_dictionary = self.config().token_dictionary();
         let types = self.type_data_with_token_dictionary(user_config, token_dictionary.as_deref());
@@ -32,6 +36,7 @@ impl Project {
             patterns,
             token_dictionary,
             token_dictionary_provided: true,
+            overlay,
         }
     }
 
@@ -99,6 +104,7 @@ impl Project {
         &self,
         user_config: &UserConfig,
         options: GenerateOptions,
+        overlay: Option<CodegenOverlay>,
     ) -> Vec<Artifact> {
         let span = tracing::trace_span!(
             target: "codegen",
@@ -107,7 +113,7 @@ impl Project {
         );
         let _entered = span.enter();
         let artifacts =
-            ArtifactGraph.generate_with_input(&self.codegen_input(user_config), options);
+            ArtifactGraph.generate_with_input(&self.codegen_input(user_config, overlay), options);
         span.record("artifact_count", artifacts.len());
         artifacts
     }
@@ -118,9 +124,10 @@ impl Project {
         user_config: &UserConfig,
         id: ArtifactId,
         options: GenerateOptions,
+        overlay: Option<CodegenOverlay>,
     ) -> Option<Artifact> {
         let _span = tracing::trace_span!(target: "codegen", "artifact", id = id.as_str()).entered();
-        self.generate_artifacts(user_config, options)
+        self.generate_artifacts(user_config, options, overlay)
             .into_iter()
             .find(|artifact| artifact.id == id)
     }
@@ -132,6 +139,7 @@ impl Project {
         user_config: &UserConfig,
         changed: DependencySet,
         options: GenerateOptions,
+        overlay: Option<CodegenOverlay>,
     ) -> Vec<Artifact> {
         let span = tracing::trace_span!(
             target: "codegen",
@@ -140,7 +148,7 @@ impl Project {
         );
         let _entered = span.enter();
         let artifacts = ArtifactGraph.generate_affected_with_input(
-            &self.codegen_input(user_config),
+            &self.codegen_input(user_config, overlay),
             changed,
             options,
         );

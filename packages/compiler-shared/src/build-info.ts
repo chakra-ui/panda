@@ -44,7 +44,7 @@ export class BuildInfo {
 
   modulesFor(info: BuildInfoArtifact, exportNames: string[]): string[] {
     const exports = isRecord(info.exports) ? info.exports : {}
-    const moduleKeys = isRecord(info.modules) ? Object.keys(info.modules) : []
+    const moduleKeys = isRecord(info.modules) ? new Set(Object.keys(info.modules)) : new Set<string>()
     const modules = new Set<string>()
 
     for (const name of exportNames) {
@@ -130,11 +130,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 const MODULE_KEY_EXTENSIONS = ['.tsx', '.ts', '.jsx', '.js', '.mjs', '.cjs'] as const
 
 /** Resolve a subpath stem (`badge`) or key (`badge.tsx`) against `modules` keys. */
-function resolveModuleKey(name: string, moduleKeys: string[]): string | undefined {
-  if (moduleKeys.includes(name)) return name
+function resolveModuleKey(name: string, moduleKeys: Set<string>): string | undefined {
+  if (moduleKeys.has(name)) return name
   for (const ext of MODULE_KEY_EXTENSIONS) {
     const key = name.endsWith(ext) ? name : `${name}${ext}`
-    if (moduleKeys.includes(key)) return key
+    if (moduleKeys.has(key)) return key
   }
   return undefined
 }
