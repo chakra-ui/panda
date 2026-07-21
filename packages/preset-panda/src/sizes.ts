@@ -13,7 +13,7 @@ const largeSizes = {
   '6xl': { value: '72rem' },
   '7xl': { value: '80rem' },
   '8xl': { value: '90rem' },
-  prose: { value: '65ch' },
+  prose: { value: '60ch' },
 }
 
 export const sizes = {

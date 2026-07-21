@@ -1,0 +1,46 @@
+{
+  "name": "@pandacss/preset-typography",
+  "version": "2.0.0-beta.9",
+  "description": "Prose typography preset for Panda CSS — style Markdown and CMS HTML with a size-aware recipe",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "license": "MIT",
+  "sideEffects": false,
+  "homepage": "https://panda-css.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chakra-ui/panda.git",
+    "directory": "packages/preset-typography"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format=esm,cjs --dts",
+    "build:fast": "tsup src/index.ts --format=esm,cjs --no-dts",
+    "dev": "pnpm build:fast --watch"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@pandacss/types": "workspace:*"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
