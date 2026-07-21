@@ -650,3 +650,78 @@ fn ternary_with_object_branches() {
         end: 112
     ");
 }
+
+#[test]
+fn nested_const_spread_keeps_conditional_encode_data() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const styles = {
+          _hover: {
+            ...(isActive ? { color: 'red' } : { color: 'blue' }),
+          },
+        };
+        css({ ...styles });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @r"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - _hover:
+            color:
+              kind: conditional
+              branches:
+                - red
+                - blue
+      span:
+        start: 129
+        end: 147
+    ");
+}
+
+#[test]
+fn array_mid_slot_ternary_projects_conditional_at_index() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        css({ padding: [2, condensed ? 2 : 3, 4] });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @r"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - padding:
+            - 2
+            - kind: conditional
+              branches:
+                - 2
+                - 3
+            - 4
+      span:
+        start: 34
+        end: 77
+    ");
+}
+
+#[test]
+fn member_hop_projects_nested_conditional() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const styles = { hover: { color: isActive ? 'red' : 'blue' } };
+        css({ ...styles.hover });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @r"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color:
+            kind: conditional
+            branches:
+              - red
+              - blue
+      span:
+        start: 98
+        end: 122
+    ");
+}

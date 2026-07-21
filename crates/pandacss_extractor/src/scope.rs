@@ -27,6 +27,9 @@ use crate::matcher::{MatchCategory, MatchedImport, Matchers};
 use crate::pure_fn::{
     OwnedPureFn, apply_pure_fn, fold_call_args, lower_callable_expr, lower_function,
 };
+use crate::style_tree::{
+    StyleTree, expression_to_style_tree, literal_to_style_tree, project_literal,
+};
 use crate::{ImportSpecifierKind, Literal, TokenRef};
 
 pub(crate) type PatternRawTransformFn<'a> =
@@ -41,6 +44,9 @@ pub(crate) struct Resolver<'a, 'cb> {
     semantic: Semantic<'a>,
     // PERF(port): FxHashMap keys are u32 newtypes — SipHash overhead is waste.
     cache: RefCell<FxHashMap<SymbolId, ResolutionState>>,
+    /// Same-file [`StyleTree`] memo (spans). Literal cache stays encode-shaped.
+    /// Cross-file stays Literal-only — see `design-notes/style-tree.md`.
+    style_cache: RefCell<FxHashMap<SymbolId, StyleResolutionState>>,
     /// Memo of lowered pure callables. Separate from [`Self::cache`] so a bare
     /// function binding stays non-Literal while `f()` can still fold.
     fn_cache: RefCell<FxHashMap<SymbolId, PureFnResolutionState>>,
@@ -70,6 +76,14 @@ struct TokenCallResolution {
 enum ResolutionState {
     InProgress,
     Resolved(Literal),
+    Unresolvable,
+}
+
+/// Cycle-guarded [`StyleTree`] memo state.
+#[derive(Clone)]
+enum StyleResolutionState {
+    InProgress,
+    Resolved(StyleTree),
     Unresolvable,
 }
 
@@ -156,6 +170,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         Self {
             semantic,
             cache: RefCell::default(),
+            style_cache: RefCell::default(),
             fn_cache: RefCell::default(),
             aliases: matched.iter().map(|m| (m.alias.as_str(), m)).collect(),
             matchers,
@@ -452,6 +467,15 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         self.resolve_symbol(symbol_id)
     }
 
+    /// Same-file [`StyleTree`] for a binding (keeps conditional spans).
+    pub(crate) fn resolve_identifier_style_tree(
+        &self,
+        ident: &IdentifierReference<'_>,
+    ) -> Option<StyleTree> {
+        let symbol_id = self.symbol_for_identifier(ident)?;
+        self.resolve_symbol_style_tree(symbol_id)
+    }
+
     pub(crate) fn resolve_root_name(&self, name: &str) -> Option<Literal> {
         let symbol_id = self.semantic.scoping().get_root_binding(name.into())?;
         self.resolve_symbol(symbol_id)
@@ -474,6 +498,54 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         };
         self.cache.borrow_mut().insert(symbol_id, state);
         result
+    }
+
+    fn resolve_symbol_style_tree(&self, symbol_id: SymbolId) -> Option<StyleTree> {
+        if let Some(state) = self.style_cache.borrow().get(&symbol_id).cloned() {
+            return match state {
+                StyleResolutionState::Resolved(tree) => Some(tree),
+                StyleResolutionState::InProgress | StyleResolutionState::Unresolvable => None,
+            };
+        }
+        self.style_cache
+            .borrow_mut()
+            .insert(symbol_id, StyleResolutionState::InProgress);
+        let result = self.compute_symbol_style_tree(symbol_id);
+        let state = match &result {
+            Some(tree) => StyleResolutionState::Resolved(tree.clone()),
+            None => StyleResolutionState::Unresolvable,
+        };
+        self.style_cache.borrow_mut().insert(symbol_id, state);
+        result
+    }
+
+    fn compute_symbol_style_tree(&self, symbol_id: SymbolId) -> Option<StyleTree> {
+        let scoping = self.semantic.scoping();
+        let flags = scoping.symbol_flags(symbol_id);
+
+        if flags.contains(SymbolFlags::Import) {
+            // Rehydrate from Literal (`Conditional` → `Branches`, no foreign spans).
+            return self
+                .resolve_import_symbol(symbol_id)
+                .map(literal_to_style_tree);
+        }
+        if scoping.symbol_is_mutated(symbol_id) {
+            return None;
+        }
+
+        let decl_node = self.semantic.symbol_declaration(symbol_id);
+        match decl_node.kind() {
+            AstKind::VariableDeclarator(declarator) if flags.intersects(SymbolFlags::Variable) => {
+                self.resolve_declarator_style_tree(declarator, symbol_id)
+            }
+            AstKind::TSEnumDeclaration(decl) => {
+                Some(literal_to_style_tree(resolve_enum_as_object(decl)))
+            }
+            AstKind::FormalParameter(param) => {
+                resolve_param_as_type_literal(param).map(literal_to_style_tree)
+            }
+            _ => None,
+        }
     }
 
     fn compute_symbol(&self, symbol_id: SymbolId) -> Option<Literal> {
@@ -552,6 +624,63 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
     }
 
     pub(crate) fn resolve_raw_style_call(&self, call: &CallExpression<'_>) -> Option<Literal> {
+        let (name, category) = self.match_raw_style_call(call)?;
+        let style = call
+            .arguments
+            .first()?
+            .as_expression()
+            .and_then(|expr| expression_to_literal(expr, Some(self)))?;
+
+        if category != MatchCategory::Pattern {
+            return Some(style);
+        }
+
+        let Some(transform) = self.pattern_raw_transform else {
+            return Some(style);
+        };
+
+        match (transform.borrow_mut())(name, &style) {
+            Ok(Some(transformed)) => Some(transformed),
+            Ok(None) => None,
+            Err(diagnostic) => {
+                self.diagnostics.borrow_mut().push(diagnostic);
+                None
+            }
+        }
+    }
+
+    /// [`StyleTree`] for a `.raw(...)` arg. Pattern transform: project → transform → rehydrate.
+    pub(crate) fn resolve_raw_style_call_style_tree(
+        &self,
+        call: &CallExpression<'_>,
+    ) -> Option<StyleTree> {
+        let (name, category) = self.match_raw_style_call(call)?;
+        let style_arg = call.arguments.first()?.as_expression()?;
+        let tree = expression_to_style_tree(style_arg, Some(self))?;
+
+        if category != MatchCategory::Pattern {
+            return Some(tree);
+        }
+
+        let Some(transform) = self.pattern_raw_transform else {
+            return Some(tree);
+        };
+        let style = project_literal(&tree)?;
+        match (transform.borrow_mut())(name, &style) {
+            Ok(Some(transformed)) => Some(literal_to_style_tree(transformed)),
+            Ok(None) => None,
+            Err(diagnostic) => {
+                self.diagnostics.borrow_mut().push(diagnostic);
+                None
+            }
+        }
+    }
+
+    /// Match a Panda `.raw(...)` call → `(name, category)`.
+    fn match_raw_style_call<'s>(
+        &'s self,
+        call: &'s CallExpression<'_>,
+    ) -> Option<(&'s str, MatchCategory)> {
         let matchers = self.matchers?;
         let Expression::StaticMemberExpression(_) = &call.callee else {
             return None;
@@ -583,29 +712,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
                 return None;
             }
         };
-
-        let style = call
-            .arguments
-            .first()?
-            .as_expression()
-            .and_then(|expr| expression_to_literal(expr, Some(self)))?;
-
-        if matched.category != MatchCategory::Pattern {
-            return Some(style);
-        }
-
-        let Some(transform) = self.pattern_raw_transform else {
-            return Some(style);
-        };
-
-        match (transform.borrow_mut())(name, &style) {
-            Ok(Some(transformed)) => Some(transformed),
-            Ok(None) => None,
-            Err(diagnostic) => {
-                self.diagnostics.borrow_mut().push(diagnostic);
-                None
-            }
-        }
+        Some((name, matched.category))
     }
 
     fn resolve_declarator(
@@ -624,6 +731,39 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             BindingPattern::ObjectPattern(_) | BindingPattern::ArrayPattern(_) => {
                 let source = expression_to_literal(init, Some(self))?;
                 resolve_pattern_path(&declarator.id, &source, target_symbol, Some(self))
+            }
+            BindingPattern::AssignmentPattern(_) => None,
+        }
+    }
+
+    fn resolve_declarator_style_tree(
+        &self,
+        declarator: &'a VariableDeclarator<'a>,
+        target_symbol: SymbolId,
+    ) -> Option<StyleTree> {
+        let init = declarator.init.as_ref()?;
+        match &declarator.id {
+            BindingPattern::BindingIdentifier(id) => {
+                if id.symbol_id.get() != Some(target_symbol) {
+                    return None;
+                }
+                expression_to_style_tree(init, Some(self))
+            }
+            BindingPattern::ObjectPattern(_) | BindingPattern::ArrayPattern(_) => {
+                if let Some(source) = expression_to_style_tree(init, Some(self))
+                    && let Some(tree) = resolve_pattern_path_style_tree(
+                        &declarator.id,
+                        &source,
+                        target_symbol,
+                        Some(self),
+                    )
+                {
+                    return Some(tree);
+                }
+                // Spread-merged keys: Literal path (may become Open).
+                let source = expression_to_literal(init, Some(self))?;
+                resolve_pattern_path(&declarator.id, &source, target_symbol, Some(self))
+                    .map(literal_to_style_tree)
             }
             BindingPattern::AssignmentPattern(_) => None,
         }
@@ -701,6 +841,94 @@ pub(crate) fn flatten_static_member_path<'a>(
                 return Some((ident, path));
             }
             _ => return None,
+        }
+    }
+}
+
+/// Destructuring over a [`StyleTree`] (static entries only; no spread merge).
+fn resolve_pattern_path_style_tree(
+    pattern: &BindingPattern<'_>,
+    source: &StyleTree,
+    target: SymbolId,
+    resolver: Option<&Resolver<'_, '_>>,
+) -> Option<StyleTree> {
+    match pattern {
+        BindingPattern::BindingIdentifier(id) => {
+            if id.symbol_id.get() == Some(target) {
+                Some(source.clone())
+            } else {
+                None
+            }
+        }
+        BindingPattern::ObjectPattern(obj) => {
+            let StyleTree::Object(style_obj) = source else {
+                return None;
+            };
+            let mut consumed = Vec::with_capacity(obj.properties.len());
+            for prop in &obj.properties {
+                let key = binding_property_key(&prop.key, prop.computed, resolver)?;
+                consumed.push(key.clone());
+                let slice = style_obj
+                    .entries
+                    .iter()
+                    .find(|(k, _)| k == &key)
+                    .map_or(&StyleTree::Null, |(_, v)| v);
+                if let Some(found) =
+                    resolve_pattern_path_style_tree(&prop.value, slice, target, resolver)
+                {
+                    return Some(found);
+                }
+            }
+            if let Some(rest) = &obj.rest {
+                let rest_entries = style_obj
+                    .entries
+                    .iter()
+                    .filter(|(key, _)| !consumed.iter().any(|consumed| consumed == key))
+                    .map(|(key, value)| (key.clone(), value.clone()))
+                    .collect();
+                let rest_source = StyleTree::Object(crate::StyleObject {
+                    entries: rest_entries,
+                    spreads: Vec::new(),
+                });
+                if let Some(found) =
+                    resolve_pattern_path_style_tree(&rest.argument, &rest_source, target, resolver)
+                {
+                    return Some(found);
+                }
+            }
+            None
+        }
+        BindingPattern::ArrayPattern(arr) => {
+            let StyleTree::Array(items) = source else {
+                return None;
+            };
+            for (i, elem) in arr.elements.iter().enumerate() {
+                let Some(pat) = elem else {
+                    continue;
+                };
+                let slice = items.get(i).unwrap_or(&StyleTree::Null);
+                if let Some(found) = resolve_pattern_path_style_tree(pat, slice, target, resolver) {
+                    return Some(found);
+                }
+            }
+            if let Some(rest) = &arr.rest {
+                let rest_source =
+                    StyleTree::Array(items.iter().skip(arr.elements.len()).cloned().collect());
+                if let Some(found) =
+                    resolve_pattern_path_style_tree(&rest.argument, &rest_source, target, resolver)
+                {
+                    return Some(found);
+                }
+            }
+            None
+        }
+        BindingPattern::AssignmentPattern(asgn) => {
+            if matches!(source, StyleTree::Null) {
+                let default_value = expression_to_style_tree(&asgn.right, resolver)?;
+                resolve_pattern_path_style_tree(&asgn.left, &default_value, target, resolver)
+            } else {
+                resolve_pattern_path_style_tree(&asgn.left, source, target, resolver)
+            }
         }
     }
 }

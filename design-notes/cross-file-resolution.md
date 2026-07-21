@@ -100,7 +100,15 @@ config.
 the empty map so subsequent references to the same module short-circuit. Strict correctness consumers can detect the
 empty case at the call site — the resolver itself stays best-effort, matching the JS extractor's recovery behavior.
 
+## StyleTree hand-off
+
+Imported style bindings rehydrate through `literal_to_style_tree`. `Literal::Conditional`
+becomes `StyleTree::Branches` (no foreign spans). Encode still expands every arm; transform
+cannot emit a runtime ternary for the foreign test — it uses the static Conditional path
+(both branch classes). Same-file conditionals keep `Ternary` / `And` with local spans.
+
 ## Related
 
 - [literal-evaluator](./literal-evaluator.md)
+- [style-tree](./style-tree.md)
 - [extraction-pipeline](./extraction-pipeline.md)

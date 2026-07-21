@@ -5,12 +5,9 @@
 //! class-name resolution and [`ParseTransforms`] bag as [`Project::parse_file_with`].
 
 mod apply;
-mod css_conditional;
 mod helper;
 mod imports;
 mod jsx;
-#[path = "jsx-conditional.rs"]
-mod jsx_conditional;
 #[path = "jsx-element.rs"]
 mod jsx_element;
 #[path = "jsx-parse.rs"]
@@ -19,9 +16,11 @@ mod jsx_parse;
 mod jsx_runtime;
 #[path = "jsx-shared.rs"]
 mod jsx_shared;
+mod jsx_skip;
 mod plan;
 mod recipe_inline;
 mod resolve;
+mod style_lower;
 
 use pandacss_extractor::extract;
 

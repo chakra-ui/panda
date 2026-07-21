@@ -1,16 +1,12 @@
-use oxc_ast::ast::{
-    BindingPattern, CallExpression, Expression, ObjectExpression, ObjectPropertyKind, Program,
-    PropertyKey, PropertyKind, VariableDeclarator,
-};
+use oxc_ast::ast::{BindingPattern, CallExpression, Expression, Program, VariableDeclarator};
 use oxc_ast_visit::Visit;
-use pandacss_shared::number_to_js_string;
 use rustc_hash::FxHashSet;
 
 use crate::{
     ImportSpecifier, ImportSpecifierKind, Literal, VisitorContext,
-    jsx::{ExtractedJsx, Extractor, merge_style_props},
-    literal::expression_to_literal,
+    jsx::{ExtractedJsx, Extractor},
     span_from_oxc,
+    style_tree::project_literal,
 };
 
 #[derive(Default)]
@@ -142,10 +138,18 @@ pub(crate) fn extract_call(
     let resolved = extractor.resolve_runtime_tag(component)?;
 
     let tag_name = resolved.name.as_ref();
-    let entries = props_to_entries(props, ctx.resolver).unwrap_or_default();
-    let mut out = Vec::with_capacity(entries.len());
-    merge_style_props(&mut out, &ctx.config.jsx, tag_name, entries);
-    if out.is_empty() && !resolved.emit_empty {
+    let style = crate::style_tree::props_expression_to_style_tree(
+        props,
+        ctx.resolver,
+        &ctx.config.jsx,
+        tag_name,
+    );
+    let data = style
+        .as_ref()
+        .and_then(project_literal)
+        .unwrap_or_else(|| Literal::Object(vec![]));
+    let data_empty = matches!(&data, Literal::Object(entries) if entries.is_empty());
+    if data_empty && !resolved.emit_empty {
         return None;
     }
 
@@ -155,11 +159,12 @@ pub(crate) fn extract_call(
         kind,
         name: resolved.name.into_owned(),
         alias: resolved.alias.into_owned(),
-        data: Literal::Object(out),
+        data,
         span: span_from_oxc(call.span),
         closing_span: None,
         attributes: Vec::new(),
         panda_owned: resolved.panda_owned,
+        style,
     })
 }
 
@@ -216,85 +221,4 @@ fn is_react_require(init: &Expression<'_>) -> bool {
 fn is_likely_bundled_jsx_runtime_name(name: &str) -> bool {
     let lower = name.to_ascii_lowercase();
     lower.contains("jsx") && (lower.contains("runtime") || lower.contains("exports"))
-}
-
-fn props_to_entries(
-    props: &Expression<'_>,
-    resolver: Option<&crate::Resolver<'_, '_>>,
-) -> Option<Vec<(String, Literal)>> {
-    if let Expression::ObjectExpression(obj) = props {
-        return Some(object_props_to_entries(obj, resolver));
-    }
-    let Literal::Object(entries) = expression_to_literal(props, resolver)? else {
-        return None;
-    };
-    Some(filter_react_props(entries))
-}
-
-fn object_props_to_entries(
-    obj: &ObjectExpression<'_>,
-    resolver: Option<&crate::Resolver<'_, '_>>,
-) -> Vec<(String, Literal)> {
-    let mut entries = Vec::with_capacity(obj.properties.len());
-    for prop in &obj.properties {
-        match prop {
-            ObjectPropertyKind::ObjectProperty(prop) => {
-                if prop.method || prop.kind != PropertyKind::Init {
-                    continue;
-                }
-                let Some(key) = property_key_to_string(&prop.key, prop.computed, resolver) else {
-                    continue;
-                };
-                if is_react_only_prop(&key) {
-                    continue;
-                }
-                let Some(value) = expression_to_literal(&prop.value, resolver) else {
-                    continue;
-                };
-                Literal::upsert_object_entry(&mut entries, key, value);
-            }
-            ObjectPropertyKind::SpreadProperty(spread) => {
-                if let Some(Literal::Object(inner_entries)) =
-                    expression_to_literal(&spread.argument, resolver)
-                {
-                    for (key, value) in filter_react_props(inner_entries) {
-                        Literal::upsert_object_entry(&mut entries, key, value);
-                    }
-                }
-            }
-        }
-    }
-    entries
-}
-
-fn filter_react_props(entries: Vec<(String, Literal)>) -> Vec<(String, Literal)> {
-    entries
-        .into_iter()
-        .filter(|(key, _)| !is_react_only_prop(key))
-        .collect()
-}
-
-fn is_react_only_prop(key: &str) -> bool {
-    matches!(key, "children" | "key" | "ref")
-}
-
-fn property_key_to_string(
-    key: &PropertyKey<'_>,
-    computed: bool,
-    resolver: Option<&crate::Resolver<'_, '_>>,
-) -> Option<String> {
-    if !computed {
-        return match key {
-            PropertyKey::StaticIdentifier(id) => Some(id.name.to_string()),
-            PropertyKey::StringLiteral(s) => Some(s.value.to_string()),
-            PropertyKey::NumericLiteral(n) => Some(number_to_js_string(n.value)),
-            _ => None,
-        };
-    }
-    let expr = key.as_expression()?;
-    match expression_to_literal(expr, resolver)? {
-        Literal::String(s) => Some(s),
-        Literal::Number(n) => Some(number_to_js_string(n)),
-        _ => None,
-    }
 }

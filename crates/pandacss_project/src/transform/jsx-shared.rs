@@ -11,12 +11,12 @@ use super::helper::{
     ClassNamePrint, format_object_class_name, merge_class_name_fragments,
     merge_class_name_with_expression,
 };
-use super::jsx_conditional::{class_expression_for_jsx_data, class_expression_for_runtime_props};
 use super::jsx_parse::{
     ParsedAttribute, ParsedObjectLiteral, ParsedOpeningElement, ParsedProperty,
 };
 use super::plan::HelperCxMode;
 use super::resolve::is_static_style_literal;
+use super::style_lower::{self, LowerResult};
 
 pub(super) fn should_skip_style_prop(key: &str) -> bool {
     matches!(key, "children" | "key" | "ref")
@@ -45,22 +45,42 @@ pub(super) fn style_prop_keys(data: &Literal) -> HashSet<&str> {
 
 pub(super) fn plan_opening_class_name(
     project: &Project,
+    file_source: &str,
     jsx: &ExtractedJsx,
     parsed: &ParsedOpeningElement,
     helper_cx: HelperCxMode,
     mut pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> Option<ClassNamePrint> {
     let class_attr = project.config().extractor_config().class_attribute;
-    if let Some(expression) =
-        class_expression_for_jsx_data(project, jsx, parsed, pattern_transform.as_deref_mut())
+    if let Some(tree) = jsx.style.as_ref()
+        && style_lower::style_tree_has_rewrite_sites(tree)
     {
-        return Some(merge_class_name_with_expression(
-            class_attr,
-            helper_cx,
-            parsed.static_class_name(class_attr).as_deref(),
-            parsed.dynamic_class_name_expression(class_attr).as_deref(),
-            &expression,
-        ));
+        return match style_lower::lower_style_tree(
+            project,
+            file_source,
+            tree,
+            Some(jsx),
+            pattern_transform.as_deref_mut(),
+        ) {
+            LowerResult::Expr(expr) => {
+                let expression = style_lower::print_class_expr(&expr);
+                Some(merge_class_name_with_expression(
+                    class_attr,
+                    helper_cx,
+                    parsed.static_class_name(class_attr).as_deref(),
+                    parsed.dynamic_class_name_expression(class_attr).as_deref(),
+                    &expression,
+                ))
+            }
+            LowerResult::Static(classes) => Some(merge_class_name_fragments(
+                class_attr,
+                helper_cx,
+                parsed.static_class_name(class_attr).as_deref(),
+                parsed.dynamic_class_name_expression(class_attr).as_deref(),
+                &classes,
+            )),
+            LowerResult::Bail => None,
+        };
     }
 
     let classes = project.class_names_for_jsx_usage(jsx, pattern_transform)?;
@@ -75,26 +95,52 @@ pub(super) fn plan_opening_class_name(
 
 pub(super) fn plan_runtime_class_name(
     project: &Project,
+    file_source: &str,
     jsx: &ExtractedJsx,
     parsed: &ParsedObjectLiteral,
-    props_source: &str,
     helper_cx: HelperCxMode,
     mut pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> Option<ClassNamePrint> {
     let class_attr = project.config().extractor_config().class_attribute;
-    if let Some(expression) = class_expression_for_runtime_props(
-        project,
-        jsx,
-        props_source,
-        pattern_transform.as_deref_mut(),
-    ) {
-        return Some(merge_class_name_with_expression(
-            class_attr,
-            helper_cx,
-            parsed.static_class_name(class_attr).as_deref(),
-            parsed.dynamic_class_name_expression(class_attr).as_deref(),
-            &expression,
-        ));
+    if let Some(tree) = jsx.style.as_ref()
+        && style_lower::style_tree_has_rewrite_sites(tree)
+    {
+        return match style_lower::lower_style_tree(
+            project,
+            file_source,
+            tree,
+            Some(jsx),
+            pattern_transform.as_deref_mut(),
+        ) {
+            LowerResult::Expr(expr) => {
+                let expression = style_lower::print_class_expr(&expr);
+                let print = merge_class_name_with_expression(
+                    class_attr,
+                    helper_cx,
+                    parsed.static_class_name(class_attr).as_deref(),
+                    parsed.dynamic_class_name_expression(class_attr).as_deref(),
+                    &expression,
+                );
+                Some(ClassNamePrint {
+                    attribute: format_object_class_name(class_attr, &print),
+                    needs_cx: print.needs_cx,
+                })
+            }
+            LowerResult::Static(classes) => {
+                let print = merge_class_name_fragments(
+                    class_attr,
+                    helper_cx,
+                    parsed.static_class_name(class_attr).as_deref(),
+                    parsed.dynamic_class_name_expression(class_attr).as_deref(),
+                    &classes,
+                );
+                Some(ClassNamePrint {
+                    attribute: format_object_class_name(class_attr, &print),
+                    needs_cx: print.needs_cx,
+                })
+            }
+            LowerResult::Bail => None,
+        };
     }
 
     let classes = project.class_names_for_jsx_usage(jsx, pattern_transform)?;

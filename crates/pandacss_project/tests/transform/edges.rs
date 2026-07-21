@@ -78,7 +78,7 @@ edge_snapshot!(
     ),
     @r#"
 export const el = (
-  <div className={isDark ? "hover:dark:color_white" : "hover:dark:color_black"} />
+  <div className={isDark ? "hover:color_blue hover:dark:color_white" : "hover:color_blue hover:dark:color_black"} />
 );
 "#
 );
@@ -96,7 +96,7 @@ edge_snapshot!(
     ),
     @r#"
 export const el = (
-  <div className={t ? "hover:md:color_white" : "hover:md:color_black"} />
+  <div className={t ? "md:color_blue hover:md:color_white" : "md:color_blue hover:md:color_black"} />
 );
 "#
 );
@@ -114,7 +114,7 @@ edge_snapshot!(
     ),
     @r#"
 export const el = (
-  <div className={isWide ? "hover:md:color_blue" : "hover:md:color_green"} />
+  <div className={isWide ? "color_red hover:md:color_blue" : "color_red hover:md:color_green"} />
 );
 "#
 );
@@ -304,6 +304,20 @@ fn jsx_skips_logical_and_style_prop() {
 }
 
 #[test]
+fn jsx_skips_nested_logical_or_spread_under_hover() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box _hover={{ ...(on || { color: 'red' }) }} />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(!output.changed);
+    assert!(!output.bailed);
+    assert_eq!(output.code, source);
+}
+
+#[test]
 fn jsx_skips_logical_or_style_prop() {
     let source = indoc! {r#"
         import { Box } from '@panda/jsx';
@@ -394,6 +408,148 @@ fn jsx_runtime_skips_logical_and_style_prop() {
     assert!(!output.bailed);
     assert_eq!(output.code, source);
 }
+
+// --- property-level && (Bug 1) ---
+
+edge_snapshot!(
+    css_property_logical_and_emits_conditional,
+    transform(
+        "src/styles.tsx",
+        indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({ color: isError && 'red' });
+        "#},
+    ),
+    @r#"export const cls = isError ? "color_red" : "";"#
+);
+
+edge_snapshot!(
+    css_property_logical_and_with_static_sibling,
+    transform(
+        "src/styles.tsx",
+        indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({ color: isError && 'red', padding: '4px' });
+        "#},
+    ),
+    @r#"export const cls = isError ? "color_red padding_4px" : "padding_4px";"#
+);
+
+edge_snapshot!(
+    css_property_logical_and_under_hover,
+    transform(
+        "src/styles.tsx",
+        indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({ _hover: { color: isError && 'red' } });
+        "#},
+    ),
+    @r#"export const cls = isError ? "hover:color_red" : "";"#
+);
+
+edge_snapshot!(
+    jsx_property_logical_and_under_hover,
+    transform_jsx(
+        "src/app.tsx",
+        indoc! {r#"
+            import { Box } from '@panda/jsx';
+            export const el = <Box color="blue" _hover={{ color: isError && 'red' }} />;
+        "#},
+    ),
+    @r#"export const el = <div className={isError ? "color_blue hover:color_red" : "color_blue"} />;"#
+);
+
+edge_snapshot!(
+    jsx_property_logical_and_under_hover_only,
+    transform_jsx(
+        "src/app.tsx",
+        indoc! {r#"
+            import { Box } from '@panda/jsx';
+            export const el = <Box _hover={{ color: isError && 'red' }} />;
+        "#},
+    ),
+    @r#"export const el = <div className={isError ? "hover:color_red" : ""} />;"#
+);
+
+// --- nested conditional spreads under condition blocks (Bug 3) ---
+
+edge_snapshot!(
+    css_nested_ternary_spread_under_hover,
+    transform(
+        "src/styles.tsx",
+        indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({ _hover: { ...(on ? { color: 'red' } : {}) } });
+        "#},
+    ),
+    @r#"export const cls = on ? "hover:color_red" : "";"#
+);
+
+edge_snapshot!(
+    css_nested_logical_and_spread_under_hover,
+    transform(
+        "src/styles.tsx",
+        indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({ _hover: { ...(on && { color: 'red' }) } });
+        "#},
+    ),
+    @r#"export const cls = on ? "hover:color_red" : "";"#
+);
+
+edge_snapshot!(
+    jsx_nested_ternary_spread_under_hover,
+    transform_jsx(
+        "src/app.tsx",
+        indoc! {r#"
+            import { Box } from '@panda/jsx';
+            export const el = <Box _hover={{ ...(on ? { color: 'red' } : {}) }} />;
+        "#},
+    ),
+    @r#"export const el = <div className={on ? "hover:color_red" : ""} />;"#
+);
+
+edge_snapshot!(
+    jsx_nested_logical_and_spread_under_hover,
+    transform_jsx(
+        "src/app.tsx",
+        indoc! {r#"
+            import { Box } from '@panda/jsx';
+            export const el = <Box _hover={{ ...(on && { color: 'red' }) }} />;
+        "#},
+    ),
+    @r#"export const el = <div className={on ? "hover:color_red" : ""} />;"#
+);
+
+edge_snapshot!(
+    jsx_nested_ternary_spread_under_hover_with_static_sibling,
+    transform_jsx(
+        "src/app.tsx",
+        indoc! {r#"
+            import { Box } from '@panda/jsx';
+            export const el = (
+              <Box color="blue" _hover={{ padding: '4px', ...(on ? { color: 'red' } : {}) }} />
+            );
+        "#},
+    ),
+    @r#"
+export const el = (
+  <div className={on ? "color_blue hover:color_red hover:padding_4px" : "color_blue hover:padding_4px"} />
+);
+"#
+);
+
+edge_snapshot!(
+    css_nested_ternary_spread_under_hover_with_static_sibling,
+    transform(
+        "src/styles.tsx",
+        indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({ _hover: { padding: '4px', ...(on ? { color: 'red' } : {}) } });
+        "#},
+    ),
+    @r#"export const cls = on ? "hover:color_red hover:padding_4px" : "hover:padding_4px";"#
+);
 
 edge_snapshot!(
     css_multi_prop_finite_ternary_with_nested_hover,
@@ -494,3 +650,314 @@ fn styled_member_call_rewrites_style_object_to_string_branch_cva() {
     export const Card = styled.div(__pcva({ base: 'color_red' }));
     ");
 }
+
+// --- nested ternaries (property-level, not unioned false branch) ---
+
+edge_snapshot!(
+    css_nested_ternary_property_preserves_structure,
+    transform(
+        "src/styles.tsx",
+        indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({ color: isDark ? 'red' : isPrimary ? 'blue' : 'green' });
+        "#},
+    ),
+    @r#"export const cls = isDark ? "color_red" : isPrimary ? "color_blue" : "color_green";"#
+);
+
+edge_snapshot!(
+    jsx_nested_ternary_property_preserves_structure,
+    transform_jsx(
+        "src/app.tsx",
+        indoc! {r#"
+            import { Box } from '@panda/jsx';
+            export const el = <Box color={isDark ? 'red' : isPrimary ? 'blue' : 'green'} />;
+        "#},
+    ),
+    @r#"export const el = <div className={isDark ? "color_red" : isPrimary ? "color_blue" : "color_green"} />;"#
+);
+
+edge_snapshot!(
+    css_object_valued_ternary_branches,
+    transform(
+        "src/styles.tsx",
+        indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({ color: isDark ? { base: 'white', _hover: 'gray' } : { base: 'black' } });
+        "#},
+    ),
+    @r#"export const cls = isDark ? "color_white hover:color_gray" : "color_black";"#
+);
+
+edge_snapshot!(
+    css_opacity_zero_branch_emits_both_arms,
+    transform(
+        "src/styles.tsx",
+        indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({ opacity: isHovered ? 1 : 0 });
+        "#},
+    ),
+    @r#"export const cls = isHovered ? "opacity_1" : "opacity_0";"#
+);
+
+#[test]
+fn css_property_dynamic_logical_or_bails() {
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        export const cls = css({ color: maybeColor || 'gray' });
+    "#};
+    let output = transform("src/styles.tsx", source);
+    assert!(!output.changed);
+    assert_eq!(output.code, source);
+}
+
+#[test]
+fn css_unparseable_ternary_branch_bails() {
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        export const cls = css({ color: dark ? maybeFn() : 'black' });
+    "#};
+    let output = transform("src/styles.tsx", source);
+    assert!(!output.changed);
+    assert_eq!(output.code, source);
+}
+
+edge_snapshot!(
+    css_spread_wins_over_static_same_key,
+    transform(
+        "src/styles.tsx",
+        indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({ padding: '0', ...(unk ? { padding: '1' } : { padding: '2' }) });
+        "#},
+    ),
+    @r#"export const cls = unk ? "padding_1" : "padding_2";"#
+);
+
+// --- StyleTree extensions ---
+
+edge_snapshot!(
+    css_responsive_array_slot_ternary,
+    transform(
+        "src/styles.tsx",
+        indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({ padding: [isWide ? '8px' : '4px', '16px'] });
+        "#},
+    ),
+    @r#"export const cls = isWide ? "padding_8px sm:padding_16px" : "padding_4px sm:padding_16px";"#
+);
+
+edge_snapshot!(
+    css_raw_ident_ternary_spread_both_arms,
+    transform(
+        "src/styles.tsx",
+        indoc! {r#"
+            import { css } from '@panda/css';
+            const primary = css.raw({ color: 'red', padding: '8px' });
+            const secondary = css.raw({ color: 'blue', padding: '4px' });
+            export const cls = css({ ...(isActive ? primary : secondary) });
+        "#},
+    ),
+    @r#"
+const primary = "color_red padding_8px";
+const secondary = "color_blue padding_4px";
+export const cls = isActive ? "color_red padding_8px" : "color_blue padding_4px";
+"#
+);
+
+edge_snapshot!(
+    css_nested_const_object_spread_preserves_conditionals,
+    transform(
+        "src/styles.tsx",
+        indoc! {r#"
+            import { css } from '@panda/css';
+            const styles = {
+              _hover: {
+                ...(isActive ? { color: 'red' } : { color: 'blue' }),
+              },
+            };
+            export const cls = css({ ...styles });
+        "#},
+    ),
+    @r#"
+const styles = {
+  _hover: {
+    ...(isActive ? { color: 'red' } : { color: 'blue' }),
+  },
+};
+export const cls = isActive ? "hover:color_red" : "hover:color_blue";
+"#
+);
+
+edge_snapshot!(
+    jsx_css_prop_conditional_keeps_static_sibling,
+    transform_jsx(
+        "src/app.tsx",
+        indoc! {r#"
+            import { Box } from '@panda/jsx';
+            export const el = (
+              <Box css={{ color: isDark ? 'white' : 'black', marginTop: '4px' }} />
+            );
+        "#},
+    ),
+    @r#"
+export const el = (
+  <div className={isDark ? "color_white margin-top_4px" : "color_black margin-top_4px"} />
+);
+"#
+);
+
+edge_snapshot!(
+    jsx_sprinkles_object_or_string_ternary,
+    transform_jsx(
+        "src/app.tsx",
+        indoc! {r#"
+            import { Box } from '@panda/jsx';
+            export const el = (
+              <Box color={isDark ? { base: 'white', _hover: 'gray' } : 'black'} />
+            );
+        "#},
+    ),
+    @r#"
+export const el = (
+  <div className={isDark ? "color_white hover:color_gray" : "color_black"} />
+);
+"#
+);
+
+// --- v1 kitchen-sink (parser output / css.raw edge cases) ---
+
+edge_snapshot!(
+    jsx_array_whole_arm_ternary,
+    transform_jsx(
+        "src/app.tsx",
+        indoc! {r#"
+            import { Box } from '@panda/jsx';
+            export const el = <Box padding={hasIcon ? ['0'] : ['4']} />;
+        "#},
+    ),
+    @r#"export const el = <div className={hasIcon ? "padding_0" : "padding_4"} />;"#
+);
+
+edge_snapshot!(
+    jsx_array_mid_slot_ternary,
+    transform_jsx(
+        "src/app.tsx",
+        indoc! {r#"
+            import { Box } from '@panda/jsx';
+            export const el = (
+              <Box padding={[2, verticallyCondensed ? 2 : 3, 4]} />
+            );
+        "#},
+    ),
+    @r#"
+export const el = (
+  <div className={verticallyCondensed ? "padding_2 md:padding_4 sm:padding_2" : "padding_2 md:padding_4 sm:padding_3"} />
+);
+"#
+);
+
+edge_snapshot!(
+    css_array_mid_slot_ternary,
+    transform(
+        "src/styles.tsx",
+        indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({ padding: [2, condensed ? 2 : 3, 4] });
+        "#},
+    ),
+    @r#"export const cls = condensed ? "padding_2 md:padding_4 sm:padding_2" : "padding_2 md:padding_4 sm:padding_3";"#
+);
+
+edge_snapshot!(
+    css_member_hop_preserves_nested_conditional,
+    transform(
+        "src/styles.tsx",
+        indoc! {r#"
+            import { css } from '@panda/css';
+            const styles = {
+              hover: {
+                color: isActive ? 'red' : 'blue',
+              },
+            };
+            export const cls = css({ ...styles.hover });
+        "#},
+    ),
+    @r#"
+const styles = {
+  hover: {
+    color: isActive ? 'red' : 'blue',
+  },
+};
+export const cls = isActive ? "color_red" : "color_blue";
+"#
+);
+
+edge_snapshot!(
+    css_nested_member_under_condition_key,
+    transform(
+        "src/styles.tsx",
+        indoc! {r#"
+            import { css } from '@panda/css';
+            const styles = {
+              hover: {
+                ...(isActive ? { color: 'red' } : { color: 'blue' }),
+              },
+            };
+            export const cls = css({ _hover: styles.hover });
+        "#},
+    ),
+    @r#"
+const styles = {
+  hover: {
+    ...(isActive ? { color: 'red' } : { color: 'blue' }),
+  },
+};
+export const cls = isActive ? "hover:color_red" : "hover:color_blue";
+"#
+);
+
+edge_snapshot!(
+    css_raw_ab_with_static_siblings_and_nested_hover,
+    transform(
+        "src/styles.tsx",
+        indoc! {r#"
+            import { css } from '@panda/css';
+            const primary = css.raw({ backgroundColor: 'blue', color: 'white' });
+            const secondary = css.raw({ backgroundColor: 'gray', color: 'black' });
+            export const cls = css({
+              padding: '8px',
+              ...(variant === 'primary' ? primary : secondary),
+              _hover: {
+                ...(variant === 'primary' ? primary : {}),
+                opacity: 0.9,
+              },
+            });
+        "#},
+    ),
+    @r#"
+const primary = "background-color_blue color_white";
+const secondary = "background-color_gray color_black";
+export const cls = (variant === 'primary' ? "background-color_blue color_white padding_8px hover:opacity_0.9" : "background-color_gray color_black padding_8px hover:opacity_0.9") + " " + (variant === 'primary' ? "padding_8px hover:background-color_blue hover:color_white hover:opacity_0.9" : "padding_8px hover:opacity_0.9");
+"#
+);
+
+edge_snapshot!(
+    jsx_sprinkles_responsive_object_ternary,
+    transform_jsx(
+        "src/app.tsx",
+        indoc! {r#"
+            import { Box } from '@panda/jsx';
+            export const el = (
+              <Box color={isShown ? { base: 'white', md: 'gray' } : 'black'} />
+            );
+        "#},
+    ),
+    @r#"
+export const el = (
+  <div className={isShown ? "color_white md:color_gray" : "color_black"} />
+);
+"#
+);

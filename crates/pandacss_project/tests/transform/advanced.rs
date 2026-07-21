@@ -105,7 +105,7 @@ advanced_snapshot!(
         "#};
         transform("src/styles.tsx", source)
     },
-    @r#"export const cls = "color_red padding_1";"#
+    @r#"export const cls = unk ? "color_red padding_1" : "color_red";"#
 );
 
 advanced_snapshot!(
@@ -117,7 +117,7 @@ advanced_snapshot!(
         "#};
         transform("src/styles.tsx", source)
     },
-    @r#"export const cls = "color_red padding_1 padding_2";"#
+    @r#"export const cls = unk ? "color_red padding_1" : "color_red padding_2";"#
 );
 
 advanced_snapshot!(
@@ -129,7 +129,19 @@ advanced_snapshot!(
         "#};
         transform("src/styles.tsx", source)
     },
-    @r#"export const cls = "color_red margin-top_2 padding_1";"#
+    @r#"export const cls = unk ? "color_red padding_1" : "color_red margin-top_2";"#
+);
+
+advanced_snapshot!(
+    ternary_spread_empty_alternate_emits_conditional,
+    {
+        let source = indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({ mx: 'auto', ...(fullWidth ? { maxW: 'none' } : {}) });
+        "#};
+        transform("src/styles.tsx", source)
+    },
+    @r#"export const cls = fullWidth ? "max-w_none mx_auto" : "mx_auto";"#
 );
 
 advanced_snapshot!(
@@ -212,6 +224,29 @@ advanced_snapshot!(
     @r#"
 import { hover } from './styles';
 export const cls = "hover:background-color_blue hover:color_red";
+"#
+);
+
+advanced_snapshot!(
+    imported_conditional_spreads_emit_both_branch_classes,
+    {
+        let source = indoc! {r"
+            import { colors } from './tokens';
+            import { css } from '@panda/css';
+            export const cls = css({ ...colors });
+        "};
+        transform_cross_file(
+            "main.tsx",
+            source,
+            &[(
+                "tokens.ts",
+                "export const colors = { color: isDark ? 'red' : 'blue' };\n",
+            )],
+        )
+    },
+    @r#"
+import { colors } from './tokens';
+export const cls = "color_blue color_red";
 "#
 );
 
@@ -404,6 +439,30 @@ advanced_snapshot!(
     @r#"export const cls = "hover:bg-c_yellow.200";"#
 );
 
+// --- || / ?? spreads bail when left is dynamic (Bug 2) ---
+
+#[test]
+fn logical_or_spread_with_dynamic_left_bails() {
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        export const cls = css({ color: 'red', ...(fallback || { padding: '1' }) });
+    "#};
+    let output = transform("src/styles.tsx", source);
+    assert!(!output.changed);
+    assert!(output.bailed);
+}
+
+#[test]
+fn logical_nullish_spread_with_dynamic_left_bails() {
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        export const cls = css({ color: 'red', ...(fallback ?? { padding: '1' }) });
+    "#};
+    let output = transform("src/styles.tsx", source);
+    assert!(!output.changed);
+    assert!(output.bailed);
+}
+
 // --- still skips unresolved identifier spreads ---
 
 advanced_snapshot!(dynamic_identifier_spread_stays_unchanged, unchanged, {
@@ -424,4 +483,20 @@ advanced_snapshot!(
         transform("src/styles.tsx", source)
     },
     @r#"export const cls = isDark ? "hover:dark:color_white" : "hover:dark:color_black";"#
+);
+
+advanced_snapshot!(
+    dynamic_ident_conditional_spread_of_css_raw,
+    {
+        let source = indoc! {r#"
+            import { css } from '@panda/css';
+            const baseStyles = css.raw({ color: 'blue', padding: '8px' });
+            export const cls = css({ ...(cond ? baseStyles : {}) });
+        "#};
+        transform("src/styles.tsx", source)
+    },
+    @r#"
+const baseStyles = "color_blue padding_8px";
+export const cls = cond ? "color_blue padding_8px" : "";
+"#
 );

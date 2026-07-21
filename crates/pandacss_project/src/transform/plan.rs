@@ -144,9 +144,14 @@ pub(crate) fn build_plan(
                     if resolve::call_is_raw_member(source, call.span) {
                         continue;
                     }
-                    if let Some(rewrite) =
-                        super::recipe_inline::rewrite_for_cva_call(project, call.span, &call.data)
-                    {
+                    if let Some(rewrite) = super::recipe_inline::rewrite_for_cva_call(
+                        project,
+                        source,
+                        call.span,
+                        &call.data,
+                        &call.arg_spans,
+                        &call.style_args,
+                    ) {
                         plan.rewrites.push(rewrite);
                         plan.helper.needs_cva = true;
                     }
@@ -168,20 +173,14 @@ pub(crate) fn build_plan(
                     call.span,
                     &call.data,
                     &call.arg_spans,
+                    &call.style_args,
                     options.helper_cx,
                 ) {
                     Some(rewrite) => {
                         plan.helper.needs_cx |= rewrite.content.contains(CX_HELPER_LOCAL);
                         plan.rewrites.push(rewrite);
                     }
-                    None if super::css_conditional::args_need_conditional_rewrite(
-                        source,
-                        &call.arg_spans,
-                        &call.data,
-                    ) =>
-                    {
-                        plan.bailed = true;
-                    }
+                    None if css_style_tree_should_bail(&call.style_args) => plan.bailed = true,
                     None if resolve::css_call_should_bail(&call.data) => plan.bailed = true,
                     None => {}
                 },
@@ -206,7 +205,8 @@ pub(crate) fn build_plan(
                 }
             }
             MatchCategory::Jsx if targets.jsx_enabled() => {
-                if let Some(rewrite) = super::recipe_inline::rewrite_for_styled_call(project, call)
+                if let Some(rewrite) =
+                    super::recipe_inline::rewrite_for_styled_call(project, source, call)
                 {
                     plan.rewrites.push(rewrite);
                     plan.helper.needs_cva = true;
@@ -238,6 +238,16 @@ pub(crate) fn build_plan(
     }
 
     plan
+}
+
+fn css_style_tree_should_bail(style_args: &[Option<pandacss_extractor::StyleTree>]) -> bool {
+    let Some(tree) = style_args.first().and_then(|value| value.as_ref()) else {
+        return false;
+    };
+    tree.is_open()
+        || super::style_lower::style_tree_has_rewrite_sites(tree)
+        || super::style_lower::style_tree_has_open_spread(tree)
+        || super::style_lower::style_tree_has_open_value(tree)
 }
 
 /// Inlines standalone `token()`/`token.var()` calls to their resolved value.

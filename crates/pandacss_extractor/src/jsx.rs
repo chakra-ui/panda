@@ -4,21 +4,21 @@
 
 use crate::{
     CssSyntaxKind, Diagnostic, ExtractorConfig, ImportSpecifierKind, JsxKind, Literal,
-    MatchCategory, MatchedImport, Matchers, Span, VisitorContext,
-    css_template::css_template_to_object,
+    MatchCategory, MatchedImport, Matchers, Span, StyleTree, VisitorContext,
+    css_template::css_template_to_style_tree,
     jsx_react_runtime,
-    literal::{collapse_whitespace, expression_to_literal},
     matcher::member_display,
     source_refs::{
         StyleSourceOwner, StyleSourceOwnerKind, StyleSourceRef, collect_jsx_attribute_source_refs,
     },
     span_from_oxc,
+    style_tree::{jsx_attributes_to_style_tree, project_literal},
 };
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     CallExpression, Expression, IdentifierReference, JSXAttributeItem, JSXAttributeName,
-    JSXAttributeValue, JSXElement, JSXElementName, JSXExpression, JSXMemberExpression,
-    JSXMemberExpressionObject, Program, StaticMemberExpression, TaggedTemplateExpression,
+    JSXAttributeValue, JSXElement, JSXElementName, JSXMemberExpression, JSXMemberExpressionObject,
+    Program, StaticMemberExpression, TaggedTemplateExpression,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
@@ -74,6 +74,9 @@ pub struct ExtractedJsx {
     /// JSX is left untouched.
     #[serde(skip)]
     pub panda_owned: bool,
+    /// Transform-facing IR (span-backed conditionals). Skipped from serde/NAPI.
+    #[serde(skip)]
+    pub style: Option<StyleTree>,
 }
 
 /// One opening-element attribute located from the AST.
@@ -474,26 +477,19 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
             let alias = resolved.alias.into_owned();
             let emit_empty = resolved.emit_empty;
             let panda_owned = resolved.panda_owned;
-            let mut entries: Vec<(String, Literal)> = Vec::with_capacity(element.attributes.len());
 
-            // Conditional-spread branches accumulate here and fold in after every
-            // attribute (node's `spreadConditions`), surviving a colliding prop.
-            let mut spread_conditions: Vec<(String, Literal)> = Vec::new();
-            for item in &element.attributes {
-                merge_attribute(
-                    item,
-                    &mut entries,
-                    &mut spread_conditions,
-                    self.ctx.resolver,
-                    &self.ctx.config.jsx,
-                    &tag_name,
-                );
-            }
-            for (key, value) in spread_conditions {
-                Literal::combine_object_entry(&mut entries, key, value);
-            }
-
-            if entries.is_empty() && !emit_empty {
+            let style = jsx_attributes_to_style_tree(
+                &element.attributes,
+                self.ctx.resolver,
+                &self.ctx.config.jsx,
+                &tag_name,
+            );
+            let data = style
+                .as_ref()
+                .and_then(project_literal)
+                .unwrap_or_else(|| Literal::Object(vec![]));
+            let data_empty = matches!(&data, Literal::Object(entries) if entries.is_empty());
+            if data_empty && !emit_empty {
                 walk::walk_jsx_element(self, jsx_el);
                 return;
             }
@@ -520,7 +516,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 kind,
                 name: tag_name,
                 alias,
-                data: Literal::Object(entries),
+                data,
                 span: span_from_oxc(element.span),
                 closing_span: jsx_el
                     .closing_element
@@ -528,6 +524,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                     .map(|c| span_from_oxc(c.span)),
                 attributes: collect_jsx_attrs(&element.attributes),
                 panda_owned,
+                style,
             });
         }
         walk::walk_jsx_element(self, jsx_el);
@@ -540,10 +537,11 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
         }
 
         if let Some(resolved) = self.resolve_tagged_tag(&tagged.tag)
-            && let Some(data @ Literal::Object(_)) =
-                css_template_to_object(&tagged.quasi, self.ctx.resolver)
+            && let Some(tree) = css_template_to_style_tree(&tagged.quasi, self.ctx.resolver)
+            && matches!(tree, StyleTree::Object(_))
         {
             let kind = jsx_kind(&self.ctx.config.matchers, &resolved.name, &resolved.alias);
+            let data = project_literal(&tree).unwrap_or(Literal::Object(vec![]));
             self.out.push(ExtractedJsx {
                 category: resolved.category,
                 kind,
@@ -554,6 +552,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 closing_span: None,
                 attributes: Vec::new(),
                 panda_owned: resolved.panda_owned,
+                style: Some(tree),
             });
         }
         walk::walk_tagged_template_expression(self, tagged);
@@ -618,55 +617,6 @@ fn join_path(path: &[&str]) -> String {
     out
 }
 
-fn merge_attribute(
-    item: &JSXAttributeItem<'_>,
-    out: &mut Vec<(String, Literal)>,
-    spread_conditions: &mut Vec<(String, Literal)>,
-    resolver: Option<&crate::Resolver<'_, '_>>,
-    jsx: &crate::JsxExtractionConfig,
-    tag_name: &str,
-) {
-    match item {
-        JSXAttributeItem::Attribute(attr) => {
-            let JSXAttributeName::Identifier(name) = &attr.name else {
-                return;
-            };
-            let key = name.name.as_str();
-            if !jsx.should_extract_prop(tag_name, key) {
-                return;
-            }
-            let value = match attr.value.as_ref() {
-                None => Literal::Bool(true),
-                Some(v) => match attribute_value(v, resolver) {
-                    Some(v) => v,
-                    None => return,
-                },
-            };
-            merge_style_prop(out, jsx, tag_name, key, value);
-        }
-        JSXAttributeItem::SpreadAttribute(spread) => {
-            match expression_to_literal(&spread.argument, resolver) {
-                // A static object spread merges last-wins.
-                Some(Literal::Object(entries)) => merge_style_props(out, jsx, tag_name, entries),
-                // A conditional spread (`{...(cond ? a : b)}`) contributes each
-                // branch's keys as separately-applicable styles.
-                Some(Literal::Conditional(branches)) => {
-                    for branch in branches {
-                        if let Literal::Object(entries) = branch {
-                            for (key, value) in entries {
-                                if jsx.should_extract_prop(tag_name, &key) {
-                                    Literal::combine_object_entry(spread_conditions, key, value);
-                                }
-                            }
-                        }
-                    }
-                }
-                _ => {}
-            }
-        }
-    }
-}
-
 pub(crate) fn merge_style_prop(
     out: &mut Vec<(String, Literal)>,
     jsx: &crate::JsxExtractionConfig,
@@ -687,21 +637,5 @@ pub(crate) fn merge_style_props(
 ) {
     for (key, value) in entries {
         merge_style_prop(out, jsx, tag_name, &key, value);
-    }
-}
-
-fn attribute_value(
-    value: &JSXAttributeValue<'_>,
-    resolver: Option<&crate::Resolver<'_, '_>>,
-) -> Option<Literal> {
-    match value {
-        JSXAttributeValue::StringLiteral(s) => Some(Literal::String(collapse_whitespace(&s.value))),
-        JSXAttributeValue::ExpressionContainer(container) => match &container.expression {
-            JSXExpression::EmptyExpression(_) => None,
-            other => other
-                .as_expression()
-                .and_then(|e| expression_to_literal(e, resolver)),
-        },
-        JSXAttributeValue::Element(_) | JSXAttributeValue::Fragment(_) => None,
     }
 }

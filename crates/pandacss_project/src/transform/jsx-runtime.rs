@@ -1,26 +1,23 @@
 //! React runtime call rewrites (`jsx`, `jsxs`, `createElement`, …).
 
-use pandacss_extractor::ExtractedJsx;
+use pandacss_extractor::{ExtractedJsx, StyleSpread, StyleTree};
 
 use crate::PatternTransformFn;
 use crate::Project;
 
 use super::helper;
 use super::helper::format_object_class_name;
-use super::jsx_conditional::{
-    class_expression_for_runtime_props, dynamic_class_name_expression_should_skip,
-    dynamic_style_expression_should_skip, jsx_data_has_finite_conditional,
-    jsx_data_within_branch_budget,
-};
-use super::jsx_parse::{
-    ParsedObjectLiteral, ParsedProperty, parse_call_expression, parse_object_literal,
-};
+use super::jsx_parse::{ParsedObjectLiteral, parse_call_expression, parse_object_literal};
 use super::jsx_shared::{
     data_is_static, plan_runtime_class_name, resolve_element_tag, should_skip_style_prop,
     style_prop_keys,
 };
+use super::jsx_skip::{
+    dynamic_class_name_expression_should_skip, dynamic_style_expression_should_skip,
+};
 use super::plan::{HelperCxMode, Rewrite};
 use super::resolve::span_slice;
+use super::style_lower::{self, LowerResult};
 
 pub(super) fn rewrites_for_jsx_runtime_call(
     project: &Project,
@@ -49,14 +46,9 @@ pub(super) fn rewrites_for_jsx_runtime_call(
     let Some(tag) = resolve_element_tag(jsx, None, Some(&props.properties)) else {
         return Vec::new();
     };
-    let Some(class_name) = plan_runtime_class_name(
-        project,
-        jsx,
-        &props,
-        &call.args[1],
-        helper_cx,
-        pattern_transform,
-    ) else {
+    let Some(class_name) =
+        plan_runtime_class_name(project, source, jsx, &props, helper_cx, pattern_transform)
+    else {
         return Vec::new();
     };
 
@@ -96,24 +88,30 @@ fn runtime_call_should_skip(
         return true;
     };
 
-    if props.properties.iter().any(ParsedProperty::is_spread) {
+    if props
+        .properties
+        .iter()
+        .any(|prop| prop.is_spread() && !style_tree_spread_rewritable(jsx.style.as_ref()))
+    {
         return true;
     }
     if props.has_unresolved_as_prop() {
         return true;
     }
-    if !data_is_static(&jsx.data) {
-        return true;
-    }
-    if jsx_data_has_finite_conditional(&jsx.data) {
-        if !jsx_data_within_branch_budget(&jsx.data) {
-            return true;
-        }
-        if class_expression_for_runtime_props(project, jsx, &call.args[1], pattern_transform)
-            .is_none()
+    if let Some(tree) = jsx.style.as_ref() {
+        if style_lower::style_tree_has_rewrite_sites(tree) {
+            match style_lower::lower_style_tree(project, source, tree, Some(jsx), pattern_transform)
+            {
+                LowerResult::Bail => return true,
+                LowerResult::Static(_) | LowerResult::Expr(_) => {}
+            }
+        } else if style_lower::style_tree_has_open_spread(tree)
+            || (!data_is_static(&jsx.data) && !matches!(tree, StyleTree::Object(_)))
         {
             return true;
         }
+    } else if !data_is_static(&jsx.data) {
+        return true;
     }
 
     let tag_name = &jsx.name;
@@ -151,6 +149,17 @@ fn runtime_call_should_skip(
     }
 
     false
+}
+
+fn style_tree_spread_rewritable(style: Option<&StyleTree>) -> bool {
+    let Some(StyleTree::Object(obj)) = style else {
+        return false;
+    };
+    !obj.spreads.is_empty()
+        && obj
+            .spreads
+            .iter()
+            .all(|s| matches!(s, StyleSpread::Ternary { .. } | StyleSpread::And { .. }))
 }
 
 fn format_props_object(

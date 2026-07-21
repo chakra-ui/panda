@@ -3,15 +3,15 @@
 use std::collections::HashSet;
 
 use pandacss_encoder::{Atom, Encoder, compare_atoms_by_emit_order};
-use pandacss_extractor::Literal;
+use pandacss_extractor::{Literal, StyleTree};
 use pandacss_utility::ShorthandPolicy;
 
 use crate::PatternTransformFn;
 use crate::Project;
 
-use super::css_conditional;
 use super::helper::CX_HELPER_LOCAL;
 use super::plan::{HelperCxMode, Rewrite};
+use super::style_lower::{self, LowerResult};
 
 /// Returns `None` when the literal cannot be encoded to stable class strings.
 pub(crate) fn classes_for_css_args(
@@ -113,23 +113,49 @@ pub(crate) fn rewrite_for_css_call(
     span: pandacss_shared::Span,
     args: &[Option<Literal>],
     arg_spans: &[pandacss_shared::Span],
+    style_args: &[Option<StyleTree>],
     helper_cx: HelperCxMode,
 ) -> Option<Rewrite> {
     if css_call_has_unresolved_identifier_spread(source, span) {
         return None;
     }
-    if css_conditional::args_need_conditional_rewrite(source, arg_spans, args) {
-        let expression =
-            css_conditional::class_expression_for_css_call(project, source, arg_spans, args)?;
-        return Some(Rewrite {
-            start: span.start,
-            end: span.end,
-            content: expression,
-        });
+    // StyleTree is the sole conditional rewrite path. Bail leaves the call;
+    // open spreads must not fall through to a silent-static rewrite.
+    if let Some(tree) = style_args.first().and_then(|value| value.as_ref()) {
+        if style_lower::style_tree_has_rewrite_sites(tree) {
+            return match style_lower::lower_style_tree(project, source, tree, None, None) {
+                LowerResult::Static(classes) => Some(Rewrite {
+                    start: span.start,
+                    end: span.end,
+                    content: js_string_literal(&classes),
+                }),
+                LowerResult::Expr(expr) => Some(Rewrite {
+                    start: span.start,
+                    end: span.end,
+                    content: style_lower::print_class_expr(&expr),
+                }),
+                LowerResult::Bail => None,
+            };
+        }
+        if tree.is_open() || style_lower::style_tree_has_open_spread(tree) {
+            return None;
+        }
     }
     let classes = classes_for_css_args(project, args)?;
     match analyze_css_arg(source, args, arg_spans) {
-        CssArgShape::AllStatic => Some(rewrite_for_class_names(span, &classes)),
+        CssArgShape::AllStatic => {
+            // StyleTree `Open` leaves (e.g. `a || 'gray'`) must not silent-rewrite
+            // from encode-peeled Literal data. Top-level mixed uses Open props via
+            // the branch below instead.
+            if style_args
+                .first()
+                .and_then(|value| value.as_ref())
+                .is_some_and(style_lower::style_tree_has_open_value)
+            {
+                return None;
+            }
+            Some(rewrite_for_class_names(span, &classes))
+        }
         // A dynamic prop is nested (or otherwise unclean); leave the call so
         // nothing is silently dropped.
         CssArgShape::NeedsBail => None,

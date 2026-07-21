@@ -124,6 +124,7 @@ live, then applied at the call site with local args.
 
 - Per-symbol memo of resolved literals (`FxHashMap<SymbolId, …>`). Keys are u32 newtypes — `SipHash` overhead would be
   pure waste.
+- A parallel StyleTree memo (`style_cache`) for same-file style bindings — see [style-tree](./style-tree.md).
 - A `ResolutionState::InProgress` cycle guard against `const a = b; const b = a;`.
 - An alias table mapping local names back to their matched Panda import, used by `resolve_token_call`.
 
@@ -160,5 +161,6 @@ whole-value token paths — survive folding as text and are classified directly 
 ## Related
 
 - [extraction-pipeline](./extraction-pipeline.md)
+- [style-tree](./style-tree.md) — transform-facing IR (`Ternary` / `And` / spans); encode still uses `Literal` via `project_literal`
 - [cross-file-resolution](./cross-file-resolution.md)
 - [performance-budget](./performance-budget.md)
