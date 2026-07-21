@@ -1753,12 +1753,15 @@ fn transform_atoms(
 ) -> FxHashSet<Atom> {
     let mut out = FxHashSet::default();
     for atom in atoms {
-        let resolved = resolved_atom_value(utility, atom.prop(), atom.value());
-        match transform(atom.prop(), &resolved, atom.value()) {
+        let prop = utility.map_or(atom.prop(), |utility| {
+            utility.resolve_shorthand(atom.prop())
+        });
+        let resolved = resolved_atom_value(utility, prop, atom.value());
+        match transform(prop, &resolved, atom.value()) {
             // A `{}` result drops the atom — matches node's behavior.
             Ok(Some(styles)) if is_empty_style_object(&styles) => {}
             Ok(Some(styles)) => {
-                overrides.insert((Box::from(atom.prop()), atom.value().clone()), styles);
+                overrides.insert((Box::from(prop), atom.value().clone()), styles);
                 out.insert(atom);
             }
             // No transform registered for this prop — keep the atom verbatim.
@@ -1769,7 +1772,7 @@ fn transform_atoms(
                 diagnostics.push(with_callback_target(
                     diagnostic,
                     "utility",
-                    atom.prop(),
+                    prop,
                     Some(&atom_value_summary(atom.value())),
                 ));
             }

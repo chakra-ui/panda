@@ -1187,6 +1187,11 @@ struct RecipeTransformCtx<'a> {
 }
 
 impl RecipeTransformCtx<'_> {
+    fn canonical_prop<'a>(&'a self, prop: &'a str) -> &'a str {
+        self.utility
+            .map_or(prop, |utility| utility.resolve_shorthand(prop))
+    }
+
     /// Runs a transform's style object through the normal encoder path, so
     /// nested conditions/selectors resolve instead of becoming junk props.
     fn encode(&self, styles: &Literal) -> FxHashSet<Atom> {
@@ -1239,8 +1244,9 @@ fn transform_atoms(
 ) -> FxHashSet<Atom> {
     let mut out = FxHashSet::default();
     for atom in atoms {
-        let resolved = crate::resolved_atom_value(ctx.utility, atom.prop(), atom.value());
-        match transform(atom.prop(), &resolved, atom.value()) {
+        let prop = ctx.canonical_prop(atom.prop());
+        let resolved = crate::resolved_atom_value(ctx.utility, prop, atom.value());
+        match transform(prop, &resolved, atom.value()) {
             // Empty result drops the carrier atom (parity with node).
             Ok(Some(styles)) if crate::is_empty_style_object(&styles) => {}
             Ok(Some(styles)) => {
@@ -1292,8 +1298,9 @@ fn transform_recipe_entries(
 ) -> FxHashSet<RecipeStyleEntry> {
     let mut out = FxHashSet::default();
     for entry in entries {
-        let resolved = crate::resolved_atom_value(ctx.utility, entry.prop.as_ref(), &entry.value);
-        match transform(entry.prop.as_ref(), &resolved, &entry.value) {
+        let prop = ctx.canonical_prop(entry.prop.as_ref());
+        let resolved = crate::resolved_atom_value(ctx.utility, prop, &entry.value);
+        match transform(prop, &resolved, &entry.value) {
             Ok(Some(styles)) if crate::is_empty_style_object(&styles) => {}
             Ok(Some(styles)) => {
                 if let Some(entries) =

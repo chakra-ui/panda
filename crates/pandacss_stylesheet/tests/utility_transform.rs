@@ -319,6 +319,61 @@ fn override_styles_are_refcounted_across_files() {
 }
 
 #[test]
+fn shorthand_in_recipe_dispatches_utility_transform() {
+    let cfg = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/css"], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": { "tokens": { "colors": { "red": { "value": "#f00" }, "blue": { "value": "#00f" }, "green": { "value": "#0f0" }, "amber": { "value": "#fb0" } } } },
+        "utilities": {
+            "colorVariable": {
+                "shorthand": "colorVar",
+                "className": "color-variable",
+                "values": "colors",
+                "transform": { "kind": "js-callback", "id": "colorVariable" }
+            }
+        }
+    }));
+
+    let source = indoc::indoc! {r"
+        import { css, cva, sva } from '@panda/css';
+        css({ colorVar: 'red' });
+        export const box = cva({ base: { colorVar: 'blue' }, variants: { tone: { warm: { colorVar: 'amber' } } } });
+        export const panel = sva({ slots: ['root'], base: { root: { colorVar: 'green' } } });
+    "};
+
+    let css = compile_layer_with_transform(
+        &cfg,
+        source,
+        &[StylesheetLayer::Utilities, StylesheetLayer::Recipes],
+        |prop, resolved, _original| {
+            if prop != "colorVariable" {
+                return Ok(None);
+            }
+            Ok(Some(Literal::Object(vec![decl(
+                "--color-var",
+                &atom_value_str(resolved),
+            )])))
+        },
+    );
+
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .color-variable_amber {
+        --color-var: var(--colors-amber);
+      }
+      .color-variable_blue {
+        --color-var: var(--colors-blue);
+      }
+      .color-variable_green {
+        --color-var: var(--colors-green);
+      }
+      .color-variable_red {
+        --color-var: var(--colors-red);
+      }
+    }
+    ");
+}
+
+#[test]
 fn empty_transform_result_emits_nothing() {
     let cfg = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
