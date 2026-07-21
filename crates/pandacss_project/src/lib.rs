@@ -136,6 +136,10 @@ pub struct Project {
     static_encoded_recipes_snapshot_cache:
         Option<(serde_json::Value, bool, EncodedRecipesSnapshot)>,
     token_refs_snapshot_cache: Option<Vec<String>>,
+    /// Transform overrides for config-authored styles (`globalCss`, compositions);
+    /// the `bool` is whether a transform was present.
+    config_utility_styles_cache: Option<(bool, FxHashMap<UtilityStyleKey, Literal>)>,
+    merged_utility_styles_snapshot_cache: Option<FxHashMap<UtilityStyleKey, Literal>>,
     parse_epoch: u64,
     /// Recipes keyed by `(file, span)` so re-parsing a path drops every
     /// matching entry and span shifts don't leave orphans.
@@ -221,6 +225,8 @@ impl Project {
             encoded_recipes_snapshot_cache: None,
             static_encoded_recipes_snapshot_cache: None,
             token_refs_snapshot_cache: None,
+            config_utility_styles_cache: None,
+            merged_utility_styles_snapshot_cache: None,
             parse_epoch: 0,
             config_recipes,
             config_slot_recipes,
@@ -445,7 +451,7 @@ impl Project {
                         tracing::trace_span!(target: "encode", "recipe_resolution", kind = "cva")
                             .entered();
                     if let Some(recipe) = Recipe::from_literal_owned(arg) {
-                        encoder.process_atomic_recipe(&recipe);
+                        self.process_recipe_atoms(&mut encoder, &recipe);
                         self.inline_recipes.insert(
                             RecipeKey {
                                 file: Arc::clone(&path_key),
@@ -468,7 +474,7 @@ impl Project {
                         tracing::trace_span!(target: "encode", "recipe_resolution", kind = "sva")
                             .entered();
                     if let Some(recipe) = SlotRecipe::from_literal_owned(arg) {
-                        encoder.process_atomic_slot_recipe(&recipe);
+                        self.process_slot_recipe_atoms(&mut encoder, &recipe);
                         self.inline_slot_recipes.insert(
                             RecipeKey {
                                 file: Arc::clone(&path_key),
@@ -576,7 +582,7 @@ impl Project {
                             let Some(recipe) = Recipe::from_literal(config) else {
                                 continue;
                             };
-                            encoder.process_atomic_recipe(&recipe);
+                            self.process_recipe_atoms(&mut encoder, &recipe);
                             self.inline_recipes.insert(
                                 RecipeKey {
                                     file: Arc::clone(&path_key),
@@ -900,6 +906,7 @@ impl Project {
         self.atoms_snapshot_cache = None;
         self.encoded_recipes_snapshot_cache = None;
         self.token_refs_snapshot_cache = None;
+        self.merged_utility_styles_snapshot_cache = None;
     }
 
     fn drop_recipes_for(&mut self, path: &str) -> bool {
@@ -936,6 +943,31 @@ impl Project {
             policy,
         );
         encoder.process_atomic_with(style, &normalizer);
+    }
+
+    /// Normalizes inline `cva`/`sva` styles like `css()`, so a shorthand key
+    /// reaches its canonical form before the (canonically-keyed) transform runs.
+    fn process_recipe_atoms(
+        &self,
+        encoder: &mut Encoder<ProjectConditionMatcher>,
+        recipe: &Recipe,
+    ) {
+        for style in recipe.atomic_styles() {
+            self.process_style_props(encoder, style, ShorthandPolicy::UserFacing);
+        }
+    }
+
+    /// Slot-recipe counterpart to [`Self::process_recipe_atoms`].
+    fn process_slot_recipe_atoms(
+        &self,
+        encoder: &mut Encoder<ProjectConditionMatcher>,
+        recipe: &SlotRecipe,
+    ) {
+        for (_slot, styles) in recipe.atomic_styles_per_slot() {
+            for style in styles {
+                self.process_style_props(encoder, style, ShorthandPolicy::UserFacing);
+            }
+        }
     }
 
     /// One `css()` arg. Here an array is a merge-list, not a responsive array,
@@ -1138,6 +1170,9 @@ impl Project {
             ));
         }
 
+        self.refresh_config_utility_styles(user_config, utility_transform);
+        let use_merged_utility_styles = self.prepare_snapshot_utility_styles();
+
         ProjectStylesheetSnapshots {
             atoms: self
                 .atoms_snapshot_cache
@@ -1156,7 +1191,160 @@ impl Project {
                 .token_refs_snapshot_cache
                 .as_deref()
                 .expect("token refs snapshot was initialized"),
-            utility_styles: &self.utility_styles_cache,
+            utility_styles: if use_merged_utility_styles {
+                self.merged_utility_styles_snapshot_cache
+                    .as_ref()
+                    .expect("merged utility styles prepared")
+            } else {
+                &self.utility_styles_cache
+            },
+        }
+    }
+
+    /// Recomputes `config_utility_styles_cache` when the transform presence changes.
+    fn refresh_config_utility_styles(
+        &mut self,
+        user_config: &UserConfig,
+        mut utility_transform: Option<&mut UtilityTransformFn<'_>>,
+    ) {
+        let cache_matches = self
+            .config_utility_styles_cache
+            .as_ref()
+            .is_some_and(|(transformed, _)| *transformed == utility_transform.is_some());
+        if cache_matches {
+            return;
+        }
+        let mut overrides = FxHashMap::default();
+        if let Some(transform) = utility_transform.as_deref_mut() {
+            let theme = &user_config.theme;
+            self.collect_style_object_overrides(&user_config.global_css, transform, &mut overrides);
+            self.collect_composition_overrides(&theme.text_styles, transform, &mut overrides);
+            self.collect_composition_overrides(&theme.layer_styles, transform, &mut overrides);
+            self.collect_composition_overrides(&theme.animation_styles, transform, &mut overrides);
+        }
+        self.config_utility_styles_cache = Some((utility_transform.is_some(), overrides));
+    }
+
+    /// Walks a composition config (`{ name: { value: styleObject } }`, nestable),
+    /// running the transform over each `value` style object's leaf declarations.
+    fn collect_composition_overrides(
+        &self,
+        value: &serde_json::Value,
+        transform: &mut UtilityTransformFn<'_>,
+        out: &mut FxHashMap<UtilityStyleKey, Literal>,
+    ) {
+        let serde_json::Value::Object(entries) = value else {
+            return;
+        };
+        for (key, child) in entries {
+            if key == "value" {
+                self.collect_style_object_overrides(child, transform, out);
+            } else {
+                self.collect_composition_overrides(child, transform, out);
+            }
+        }
+    }
+
+    /// Merges config-authored overrides into `utility_styles_cache`; returns
+    /// `false` (use the cache directly) when there are none.
+    fn prepare_snapshot_utility_styles(&mut self) -> bool {
+        let has_global = self
+            .config_utility_styles_cache
+            .as_ref()
+            .is_some_and(|(_, overrides)| !overrides.is_empty());
+        if !has_global {
+            self.merged_utility_styles_snapshot_cache = None;
+            return false;
+        }
+
+        let mut merged = self.utility_styles_cache.clone();
+        if let Some((_, overrides)) = &self.config_utility_styles_cache {
+            for (key, styles) in overrides {
+                merged.entry(key.clone()).or_insert_with(|| styles.clone());
+            }
+        }
+        self.merged_utility_styles_snapshot_cache = Some(merged);
+        true
+    }
+
+    /// Runs the utility transform over every leaf declaration in a config-authored
+    /// style object, which never flows through the file-atom transform pass.
+    fn collect_style_object_overrides(
+        &self,
+        value: &serde_json::Value,
+        transform: &mut UtilityTransformFn<'_>,
+        out: &mut FxHashMap<UtilityStyleKey, Literal>,
+    ) {
+        let serde_json::Value::Object(entries) = value else {
+            return;
+        };
+        for (key, child) in entries {
+            self.collect_style_entry_overrides(key, child, transform, out);
+        }
+    }
+
+    fn collect_style_entry_overrides(
+        &self,
+        key: &str,
+        value: &serde_json::Value,
+        transform: &mut UtilityTransformFn<'_>,
+        out: &mut FxHashMap<UtilityStyleKey, Literal>,
+    ) {
+        match value {
+            // An object under a transform utility is condition→value pairs
+            // (`shadowColor: { _hover: 'red' }`), so descend keeping `key`;
+            // otherwise it's a nested selector/condition scope.
+            serde_json::Value::Object(entries) => {
+                if self.is_transform_utility(key) {
+                    for (_condition, child) in entries {
+                        self.collect_style_entry_overrides(key, child, transform, out);
+                    }
+                } else {
+                    self.collect_style_object_overrides(value, transform, out);
+                }
+            }
+            serde_json::Value::Array(items) => {
+                for item in items {
+                    self.collect_style_entry_overrides(key, item, transform, out);
+                }
+            }
+            serde_json::Value::String(_) | serde_json::Value::Number(_) => {
+                self.transform_style_leaf(key, value, transform, out);
+            }
+            serde_json::Value::Bool(_) | serde_json::Value::Null => {}
+        }
+    }
+
+    fn is_transform_utility(&self, key: &str) -> bool {
+        self.config.utility.as_ref().is_some_and(|utility| {
+            utility
+                .callback_transform_id(utility.resolve_shorthand(key))
+                .is_some()
+        })
+    }
+
+    fn transform_style_leaf(
+        &self,
+        key: &str,
+        value: &serde_json::Value,
+        transform: &mut UtilityTransformFn<'_>,
+        out: &mut FxHashMap<UtilityStyleKey, Literal>,
+    ) {
+        let Some(utility) = self.config.utility.as_ref() else {
+            return;
+        };
+        let canonical = utility.resolve_shorthand(key);
+        if utility.callback_transform_id(canonical).is_none() {
+            return;
+        }
+        let Some(original) = json_scalar_to_atom_value(value) else {
+            return;
+        };
+        let resolved = resolved_atom_value(Some(utility), canonical, &original);
+        if let Ok(Some(styles)) = transform(canonical, &resolved, &original)
+            && !is_empty_style_object(&styles)
+        {
+            out.insert((Box::from(canonical), original), styles);
         }
     }
 
@@ -1417,6 +1605,20 @@ pub(crate) fn condition_style_key(config: &UserConfig, condition: &str) -> Strin
 
 fn is_css_prop(key: &str) -> bool {
     key == "css" || key.ends_with("Css")
+}
+
+/// Mirrors the emitter's `value_to_atom_value` so override keys match at lookup.
+fn json_scalar_to_atom_value(value: &serde_json::Value) -> Option<AtomValue> {
+    match value {
+        serde_json::Value::String(value) => Some(AtomValue::String(value.clone().into_boxed_str())),
+        serde_json::Value::Number(value) => Some(AtomValue::Number(
+            value
+                .as_f64()
+                .map_or_else(|| value.to_string(), pandacss_shared::number_to_js_string)
+                .into_boxed_str(),
+        )),
+        _ => None,
+    }
 }
 
 fn atom_value_to_transform_literal(value: &pandacss_encoder::AtomValue) -> Option<Literal> {

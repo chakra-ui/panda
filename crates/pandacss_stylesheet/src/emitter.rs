@@ -1939,7 +1939,9 @@ impl<'a> EmitContext<'a> {
     ) -> Option<Vec<Declaration>> {
         let raw = atom_value_to_string(value);
         let raw = raw.as_deref()?;
-        let result = self.transform_atom(prop, raw, Some(value));
+        // `_styles` variant so a `globalCss` custom-utility transform is applied
+        // via the override map; falls back to the built-in when none exists.
+        let result = self.transform_atom_styles(prop, raw, value);
         let Literal::Object(entries) = &result.styles else {
             return None;
         };
