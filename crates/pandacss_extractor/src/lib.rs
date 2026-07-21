@@ -22,6 +22,7 @@ mod jsx;
 mod jsx_react_runtime;
 mod literal;
 mod matcher;
+mod pure_fn;
 mod scope;
 mod source;
 mod source_refs;

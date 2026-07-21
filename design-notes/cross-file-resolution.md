@@ -10,39 +10,45 @@ the batch.
 ## Cache shape
 
 ```rust
-Mutex<FxHashMap<PathBuf, FxHashMap<String, Literal>>>
+Mutex<FxHashMap<PathBuf, FxHashMap<String, ExportEntry>>>
+
+enum ExportEntry {
+    Literal(Literal),
+    PureFn(OwnedPureFn),
+}
 ```
 
-`path → (exported_name → folded literal)`.
+`path → (exported_name → folded literal or pure-fn descriptor)`.
 
-Each file is parsed once. The AST is dropped after exports are extracted — we keep the exports map but not the
-`Program`, so the resolver doesn't pin every imported file's allocator. For a medium-sized app with hundreds of imports,
-this is the difference between a few MB and tens of MB of live AST memory at steady state.
+Each file is parsed once. Pure function exports are lowered to a closed owned IR **while the AST is live**, then the
+AST is dropped. The cache keeps descriptors, not `Program`s, so the resolver doesn't pin every imported file's
+allocator.
 
 The cache is behind a `Mutex`, not `RefCell`, so the resolver can be shared by `ExtractorConfig` in future
 parallel/bulk-file paths. The public type is `Send + Sync`.
 
 ## What folds
 
-Top-level named exports where the exported value resolves to a static literal:
+Top-level named exports where the exported value resolves to a static literal **or** a simple pure callable:
 
 - `export const x = <foldable>`
 - `export let x = <foldable>` / `export var x = <foldable>` when the binding is not mutated
+- `export const f = (name) => \`.${name}:hover &\`` / `export function f() { return '…' }` when the body lowers
 - exported aliases, e.g. `const button = base; export { button }`
-- re-exports, e.g. `export { button } from './base'`
+- re-exports, e.g. `export { button } from './base'` (literals and pure fns)
 - file-local alias chains, e.g. `const button = base; export const primary = button`
 - imported aliases inside the exported file
 - `css.raw(...)`, `cva.raw(...)`, and pattern raw calls when their imports match the configured Panda matchers
 
 The loaded file gets its own `Resolver`, so export collection uses the same identifier/member/spread/destructuring
-semantics as same-file extraction.
+semantics as same-file extraction. Call sites apply `OwnedPureFn` with folded arguments via `resolve_pure_call`.
 
 ## What doesn't fold (yet)
 
 - `export default …` — same surface as named exports but currently skipped to keep the v1 contract narrow.
 - Namespace/default imports in the importing file — they don't map cleanly to one named export.
-- Dynamic values: function calls other than Panda `.raw()` helpers, runtime-computed keys that don't fold, functions,
-  classes, and anything the literal evaluator intentionally rejects.
+- Impure or unsupported callables, bare function values used without a call, classes, and anything the literal
+  evaluator intentionally rejects.
 
 ## Resolver hand-off
 

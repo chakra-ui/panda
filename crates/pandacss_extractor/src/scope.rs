@@ -5,7 +5,8 @@
 //!
 //! Member access and array indexing happen in `literal::expression_to_literal`
 //! once an identifier resolves to an Object/Array — this module only resolves
-//! whole identifiers.
+//! whole identifiers. Pure callables (`f()`, IIFEs, imported helpers) are
+//! lowered/applied via [`crate::pure_fn`] from [`Resolver::resolve_pure_call`].
 
 use std::cell::RefCell;
 use std::path::PathBuf;
@@ -20,9 +21,12 @@ use pandacss_tokens::{TokenCategory, TokenDictionary};
 use rustc_hash::{FxHashMap, FxHashSet};
 use smallvec::SmallVec;
 
-use crate::cross_file::{CrossFileLookup, CrossFileResolver};
+use crate::cross_file::{CrossFileLookup, CrossFileResolver, ExportEntry};
 use crate::literal::expression_to_literal;
 use crate::matcher::{MatchCategory, MatchedImport, Matchers};
+use crate::pure_fn::{
+    OwnedPureFn, apply_pure_fn, fold_call_args, lower_callable_expr, lower_function,
+};
 use crate::{ImportSpecifierKind, Literal, TokenRef};
 
 pub(crate) type PatternRawTransformFn<'a> =
@@ -37,6 +41,9 @@ pub(crate) struct Resolver<'a, 'cb> {
     semantic: Semantic<'a>,
     // PERF(port): FxHashMap keys are u32 newtypes — SipHash overhead is waste.
     cache: RefCell<FxHashMap<SymbolId, ResolutionState>>,
+    /// Memo of lowered pure callables. Separate from [`Self::cache`] so a bare
+    /// function binding stays non-Literal while `f()` can still fold.
+    fn_cache: RefCell<FxHashMap<SymbolId, PureFnResolutionState>>,
     aliases: FxHashMap<&'a str, &'a MatchedImport>,
     matchers: Option<&'a Matchers>,
     tokens: Option<&'a TokenDictionary>,
@@ -63,6 +70,15 @@ struct TokenCallResolution {
 enum ResolutionState {
     InProgress,
     Resolved(Literal),
+    Unresolvable,
+}
+
+/// `InProgress` guards against a pure fn calling itself (directly, or once
+/// pure-fn bodies are allowed to contain calls, transitively).
+#[derive(Clone)]
+enum PureFnResolutionState {
+    InProgress,
+    Resolved(OwnedPureFn),
     Unresolvable,
 }
 
@@ -140,6 +156,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         Self {
             semantic,
             cache: RefCell::default(),
+            fn_cache: RefCell::default(),
             aliases: matched.iter().map(|m| (m.alias.as_str(), m)).collect(),
             matchers,
             tokens,
@@ -179,6 +196,91 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
 
     pub(crate) fn matchers(&self) -> Option<&'a Matchers> {
         self.matchers
+    }
+
+    /// Fold a pure local/imported callable: `f()`, `(() => 'x')()`, etc.
+    pub(crate) fn resolve_pure_call(&self, call: &CallExpression<'_>) -> Option<Literal> {
+        if call.optional {
+            return None;
+        }
+        let func = self.lookup_callable(&call.callee)?;
+        let args = fold_call_args(call, Some(self))?;
+        apply_pure_fn(&func, &args)
+    }
+
+    /// Root-scope pure fn lookup used when collecting re-exports.
+    pub(crate) fn lookup_root_pure_fn(&self, name: &str) -> Option<OwnedPureFn> {
+        let symbol_id = self.semantic.scoping().get_root_binding(name.into())?;
+        self.lookup_pure_fn_symbol(symbol_id)
+    }
+
+    fn lookup_callable(&self, callee: &Expression<'_>) -> Option<OwnedPureFn> {
+        match callee {
+            Expression::Identifier(ident) => {
+                let symbol_id = self.symbol_for_identifier(ident)?;
+                self.lookup_pure_fn_symbol(symbol_id)
+            }
+            Expression::ArrowFunctionExpression(_)
+            | Expression::FunctionExpression(_)
+            | Expression::ParenthesizedExpression(_) => lower_callable_expr(callee, Some(self)),
+            _ => None,
+        }
+    }
+
+    fn lookup_pure_fn_symbol(&self, symbol_id: SymbolId) -> Option<OwnedPureFn> {
+        if let Some(state) = self.fn_cache.borrow().get(&symbol_id).cloned() {
+            return match state {
+                PureFnResolutionState::Resolved(func) => Some(func),
+                PureFnResolutionState::InProgress | PureFnResolutionState::Unresolvable => None,
+            };
+        }
+        self.fn_cache
+            .borrow_mut()
+            .insert(symbol_id, PureFnResolutionState::InProgress);
+        let result = self.compute_pure_fn_symbol(symbol_id);
+        let state = match &result {
+            Some(func) => PureFnResolutionState::Resolved(func.clone()),
+            None => PureFnResolutionState::Unresolvable,
+        };
+        self.fn_cache.borrow_mut().insert(symbol_id, state);
+        result
+    }
+
+    fn compute_pure_fn_symbol(&self, symbol_id: SymbolId) -> Option<OwnedPureFn> {
+        let scoping = self.semantic.scoping();
+        let flags = scoping.symbol_flags(symbol_id);
+
+        if flags.contains(SymbolFlags::Import) {
+            return self.resolve_import_pure_fn(symbol_id);
+        }
+        if scoping.symbol_is_mutated(symbol_id) {
+            return None;
+        }
+
+        let decl_node = self.semantic.symbol_declaration(symbol_id);
+        match decl_node.kind() {
+            AstKind::VariableDeclarator(declarator) => {
+                let init = declarator.init.as_ref()?;
+                match &declarator.id {
+                    BindingPattern::BindingIdentifier(id)
+                        if id.symbol_id.get() == Some(symbol_id) =>
+                    {
+                        lower_callable_expr(init, Some(self))
+                    }
+                    _ => None,
+                }
+            }
+            AstKind::Function(func) => lower_function(func, Some(self)),
+            _ => None,
+        }
+    }
+
+    fn resolve_import_pure_fn(&self, symbol_id: SymbolId) -> Option<OwnedPureFn> {
+        self.resolve_import_entry(symbol_id)
+            .and_then(|entry| match entry {
+                ExportEntry::PureFn(func) => Some(func),
+                ExportEntry::Literal(_) => None,
+            })
     }
 
     /// `Some(symbol_id)` when the identifier binds to a declaration in
@@ -403,6 +505,13 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
     /// recover `(specifier, imported_name)`, then delegate to the cross-file
     /// resolver. Default/namespace imports return `None`.
     fn resolve_import_symbol(&self, symbol_id: SymbolId) -> Option<Literal> {
+        match self.resolve_import_entry(symbol_id)? {
+            ExportEntry::Literal(lit) => Some(lit),
+            ExportEntry::PureFn(_) => None,
+        }
+    }
+
+    fn resolve_import_entry(&self, symbol_id: SymbolId) -> Option<ExportEntry> {
         let cross_file = self.cross_file?;
         let from_file = self.source_path.as_ref()?;
 
@@ -439,7 +548,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         if let Some(path) = resolution.path {
             self.cross_file_deps.borrow_mut().insert(path);
         }
-        resolution.value
+        resolution.entry
     }
 
     pub(crate) fn resolve_raw_style_call(&self, call: &CallExpression<'_>) -> Option<Literal> {

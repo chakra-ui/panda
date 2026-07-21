@@ -326,9 +326,10 @@ fn no_dictionary_means_no_token_folding() {
 }
 
 #[test]
-fn shadowed_token_function_is_not_resolved() {
-    // Local `const token = (_) => 'override'` shadows the import; the
-    // resolver detects the non-import binding and refuses to fold.
+fn shadowed_token_function_does_not_use_dictionary() {
+    // Local `const token = (_) => 'override'` shadows the import. The
+    // TokenDictionary path must not win — but the local arrow is a pure
+    // helper, so the call folds to its return value.
     let src = indoc! {r"
         import { token } from '@panda/tokens';
         import { css } from '@panda/css';
@@ -337,8 +338,16 @@ fn shadowed_token_function_is_not_resolved() {
           return css({ color: token('colors.red.500') });
         }
     "};
-    let calls = run_with_tokens(src).calls;
-    assert!(calls.is_empty(), "shadowed token must drop: {calls:#?}");
+    assert_yaml_snapshot!(run_with_tokens(src).calls, @r##"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: override
+      span:
+        start: 140
+        end: 179
+    "##);
 }
 
 #[test]
@@ -573,6 +582,23 @@ fn color_palette_token_resolves_with_config_built_dictionary() {
         start: 88
         end: 120
     ");
+}
+
+#[test]
+fn pure_helper_treats_equal_tokens_as_strict_equal() {
+    // `token()` folds to `Literal::Token`, which behaves like a string for
+    // `===`/`==` (see `is_string_like`). A pure helper comparing two equal
+    // token captures must fold to `true`, not drop to `false` because
+    // `Token` isn't `String`.
+    let src = indoc! {r"
+        import { token } from '@panda/tokens';
+        import { css } from '@panda/css';
+        const isSame = (a: string, b: string) => a === b;
+        const left = token('colors.red.500');
+        const right = token('colors.red.500');
+        css({ color: isSame(left, right) ? 'match' : 'no-match' });
+    "};
+    assert_yaml_snapshot!(css_string_prop(&run_with_tokens(src), "color"), @"match");
 }
 
 #[test]
