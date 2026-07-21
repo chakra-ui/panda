@@ -1266,7 +1266,7 @@ fn transform_atoms(
             Err(diagnostic) => diagnostics.push(crate::with_callback_target(
                 diagnostic,
                 "utility",
-                atom.prop(),
+                prop,
                 Some(&crate::atom_value_summary(atom.value())),
             )),
         }
@@ -1327,7 +1327,7 @@ fn transform_recipe_entries(
             Err(diagnostic) => diagnostics.push(crate::with_callback_target(
                 diagnostic,
                 "utility",
-                entry.prop.as_ref(),
+                prop,
                 Some(&crate::atom_value_summary(&entry.value)),
             )),
         }
