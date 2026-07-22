@@ -3,10 +3,11 @@
 //! Per file, one parse drives the pipeline: [`scan_imports`] reads imports →
 //! [`match_imports`] matches them against the configured import map →
 //! [`extract_calls`]/[`extract_jsx`] find `css()`/`cva()`/styled-prop usages →
-//! the [`literal`] evaluator folds each argument to a static [`Literal`], using
-//! [`scope`] for same-file identifier resolution and [`cross_file`] for
-//! imported references. [`extract`] runs the whole thing; the individual
-//! entrypoints exist for tooling and parity tests.
+//! style objects fold through [`style_tree`] (encode `data` via [`project_literal`]),
+//! with [`literal`] for token/pure-fn/leaf fallback and non-style contexts, using
+//! [`scope`] for same-file identifier resolution and [`cross_file`] for imported
+//! references. [`extract`] runs the whole thing; the individual entrypoints exist
+//! for tooling and parity tests.
 
 mod adapter;
 mod astro_adapter;
@@ -26,6 +27,7 @@ mod pure_fn;
 mod scope;
 mod source;
 mod source_refs;
+mod style_tree;
 mod svelte_adapter;
 mod template_styles;
 mod vue_adapter;
@@ -49,8 +51,9 @@ pub use cross_file::CrossFileResolver;
 pub(crate) use export_names::collect_export_info;
 pub use export_names::{ExportInfo, ReExport};
 pub use fragment::{
-    FragmentCall, FragmentProperty, FragmentTernary, is_logical_expression, parse_call_fragment,
-    parse_object_fragment, parse_ternary_fragment,
+    FragmentCall, FragmentLogicalAnd, FragmentLogicalOrNullish, FragmentProperty, FragmentTernary,
+    LogicalOrNullishOp, is_logical_expression, parse_call_fragment, parse_logical_and_fragment,
+    parse_logical_or_nullish_fragment, parse_object_fragment, parse_ternary_fragment,
 };
 pub(crate) use imports::{collect_imports, collect_parser_diagnostics};
 pub use jsx::{ExtractedJsx, ExtractedJsxResult, JsxAttr, extract_jsx};
@@ -64,6 +67,7 @@ pub use pandacss_shared::{
     Diagnostic, DiagnosticLabel, DiagnosticSeverity, SourceLocation, SourceRange, Span,
     diagnostic_codes,
 };
+pub use style_tree::{StyleObject, StyleSpread, StyleTree, project_literal};
 
 // Internal-only: keep `VisitorContext` accessible to sibling modules but out
 // of the public API.

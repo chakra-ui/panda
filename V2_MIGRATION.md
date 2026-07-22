@@ -611,6 +611,8 @@ Known gaps in the beta. Expect them to change before stable:
   a separate Storybook) is planned.
 - **Some presets and plugins.** A few v1 community presets (`preset-atlaskit`, `preset-open-props`) and standalone
   plugins aren't in the beta. Check Rust-engine coverage before you rely on them.
+- **Typography preset.** Use first-party `@pandacss/preset-typography` instead of community
+  `pandacss-preset-typography`. Default size is `md` (not `base`).
 - **CSS minification.** `minify: true` works in the native emitter; full parity with the v1 LightningCSS path is still
   open.
 - **PostCSS plugin.** Experimental (above).

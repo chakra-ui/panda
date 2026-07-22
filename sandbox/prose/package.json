@@ -1,0 +1,32 @@
+{
+  "name": "sandbox-prose",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter @pandacss/preset-typography build && pnpm codegen && vite",
+    "build": "pnpm --filter @pandacss/preset-typography build && pnpm codegen && tsc && vite build",
+    "preview": "vite preview",
+    "codegen": "panda codegen",
+    "cssgen": "panda cssgen"
+  },
+  "dependencies": {
+    "@tanstack/react-router": "1.170.18",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "devDependencies": {
+    "@pandacss/dev": "workspace:*",
+    "@pandacss/preset-base": "workspace:*",
+    "@pandacss/preset-panda": "workspace:*",
+    "@pandacss/preset-typography": "workspace:*",
+    "@pandacss/vite": "workspace:*",
+    "@tanstack/react-router-devtools": "1.167.0",
+    "@tanstack/router-plugin": "1.168.23",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "5.1.1",
+    "typescript": "6.0.2",
+    "vite": "7.2.6"
+  }
+}

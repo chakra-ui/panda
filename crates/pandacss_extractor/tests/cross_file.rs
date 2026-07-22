@@ -697,3 +697,29 @@ fn imported_pure_helper_object_return_spreads() {
             padding: 4px
     "##);
 }
+
+#[test]
+fn imported_conditional_object_keeps_encode_branches() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { colors } from './tokens';
+            import { css } from '@panda/css';
+            css({ ...colors });
+        "},
+        &[(
+            "tokens.ts",
+            "export const colors = { color: isDark ? 'red' : 'blue' };\n",
+        )],
+    );
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
+    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r"
+    calls:
+      - name: css
+        data:
+          - color:
+              kind: conditional
+              branches:
+                - red
+                - blue
+    ");
+}

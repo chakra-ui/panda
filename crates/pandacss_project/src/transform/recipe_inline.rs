@@ -1,23 +1,28 @@
 //! Inline `cva()` / `sva()` call transforms to string-branch runtime configs.
 
 use crate::Project;
-use pandacss_extractor::Literal;
+use pandacss_extractor::{Literal, StyleTree};
 use pandacss_recipes::{CompoundVariant, Recipe, SlotCompoundVariant, SlotRecipe};
 
 use super::helper::{CVA_HELPER_LOCAL, SVA_HELPER_LOCAL};
 use super::plan::Rewrite;
-use super::resolve::is_static_style_literal;
+use super::resolve::{is_static_style_literal, js_string_literal};
+use super::style_lower::{self, LowerResult};
 
 pub(crate) fn rewrite_for_cva_call(
     project: &Project,
+    source: &str,
     span: pandacss_shared::Span,
     args: &[Option<Literal>],
+    _arg_spans: &[pandacss_shared::Span],
+    style_args: &[Option<StyleTree>],
 ) -> Option<Rewrite> {
     let config = args.first().and_then(|arg| arg.as_ref())?;
     if !is_static_style_literal(config) {
         return None;
     }
-    let encoded = encode_cva_config(project, config)?;
+    let style = style_args.first().and_then(|value| value.as_ref());
+    let encoded = encode_cva_config(project, source, config, style)?;
     Some(Rewrite {
         start: span.start,
         end: span.end,
@@ -43,22 +48,29 @@ pub(crate) fn rewrite_for_sva_call(
 }
 
 /// `__pcva({ … })` for a static style object or cva config, or `None` if it
-/// has no resolvable styles.
+/// has no resolvable styles. Without `StyleTree`, conditionals are rejected (not unioned).
 pub(crate) fn styled_config_call(project: &Project, config: &Literal) -> Option<String> {
+    if style_literal_has_conditional(config) {
+        return None;
+    }
     if !is_static_style_literal(config) {
         return None;
     }
-    let encoded = encode_cva_config(project, config)?;
+    let encoded = encode_cva_config(project, "", config, None)?;
     Some(format!("{CVA_HELPER_LOCAL}({encoded})"))
 }
 
-pub(crate) fn encode_cva_config(project: &Project, config: &Literal) -> Option<String> {
+pub(crate) fn encode_cva_config(
+    project: &Project,
+    source: &str,
+    config: &Literal,
+    style: Option<&StyleTree>,
+) -> Option<String> {
     if is_recipe_config(config) {
         let recipe = Recipe::from_literal(config)?;
-        print_recipe_config(project, &recipe)
+        print_recipe_config(project, source, &recipe, style)
     } else {
-        let classes = project.class_names_for_style_literal(config)?;
-        Some(format!("{{ base: '{}' }}", escape_js(&classes.join(" "))))
+        print_plain_style_as_base(project, source, config, style)
     }
 }
 
@@ -103,17 +115,34 @@ fn is_static_slot_config(config: &Literal) -> bool {
         })
 }
 
-fn print_recipe_config(project: &Project, recipe: &Recipe) -> Option<String> {
+fn print_plain_style_as_base(
+    project: &Project,
+    source: &str,
+    config: &Literal,
+    style: Option<&StyleTree>,
+) -> Option<String> {
+    if let Some(expr) = style_tree_class_expression(project, source, style) {
+        return Some(format!("{{ base: {expr} }}"));
+    }
+    if style_literal_has_conditional(config) {
+        return None;
+    }
+    let classes = project.class_names_for_style_literal(config)?;
+    Some(format!("{{ base: '{}' }}", escape_js(&classes.join(" "))))
+}
+
+fn print_recipe_config(
+    project: &Project,
+    source: &str,
+    recipe: &Recipe,
+    style: Option<&StyleTree>,
+) -> Option<String> {
     let mut parts = Vec::new();
 
     if let Some(base) = &recipe.base {
-        if !is_static_style_literal(base) {
-            return None;
-        }
-        let classes = project.class_names_for_style_literal(base)?;
-        if !classes.is_empty() {
-            parts.push(format!("base: '{}'", escape_js(&classes.join(" "))));
-        }
+        let base_tree = style.and_then(|tree| style_lower::style_tree_object_entry(tree, "base"));
+        let base_part = print_recipe_base(project, source, base, base_tree)?;
+        parts.push(format!("base: {base_part}"));
     }
 
     if !recipe.variants.is_empty() {
@@ -121,6 +150,9 @@ fn print_recipe_config(project: &Project, recipe: &Recipe) -> Option<String> {
         for group in &recipe.variants {
             let mut options = Vec::new();
             for option in &group.options {
+                if style_literal_has_conditional(&option.style) {
+                    return None;
+                }
                 if !is_static_style_literal(&option.style) {
                     return None;
                 }
@@ -158,6 +190,56 @@ fn print_recipe_config(project: &Project, recipe: &Recipe) -> Option<String> {
     Some(format!("{{ {} }}", parts.join(", ")))
 }
 
+/// `base` value as a JS expression: quoted class string, or unquoted ternary.
+fn print_recipe_base(
+    project: &Project,
+    source: &str,
+    base: &Literal,
+    base_tree: Option<&StyleTree>,
+) -> Option<String> {
+    if let Some(expr) = style_tree_class_expression(project, source, base_tree) {
+        return Some(expr);
+    }
+    if style_literal_has_conditional(base) {
+        return None;
+    }
+    if !is_static_style_literal(base) {
+        return None;
+    }
+    let classes = project.class_names_for_style_literal(base)?;
+    if classes.is_empty() {
+        return None;
+    }
+    Some(format!("'{}'", escape_js(&classes.join(" "))))
+}
+
+fn style_tree_class_expression(
+    project: &Project,
+    source: &str,
+    tree: Option<&StyleTree>,
+) -> Option<String> {
+    let tree = tree?;
+    if !style_lower::style_tree_has_rewrite_sites(tree) {
+        return None;
+    }
+    match style_lower::lower_style_tree(project, source, tree, None, None) {
+        LowerResult::Expr(expr) => Some(style_lower::print_class_expr(&expr)),
+        LowerResult::Static(classes) => Some(js_string_literal(&classes)),
+        LowerResult::Bail => None,
+    }
+}
+
+fn style_literal_has_conditional(value: &Literal) -> bool {
+    match value {
+        Literal::Conditional(_) => true,
+        Literal::Object(entries) => entries
+            .iter()
+            .any(|(_, nested)| style_literal_has_conditional(nested)),
+        Literal::Array(items) => items.iter().any(style_literal_has_conditional),
+        _ => false,
+    }
+}
+
 fn print_slot_recipe_config(project: &Project, recipe: &SlotRecipe) -> Option<String> {
     let mut parts = Vec::new();
 
@@ -174,6 +256,9 @@ fn print_slot_recipe_config(project: &Project, recipe: &SlotRecipe) -> Option<St
     if !recipe.base.is_empty() {
         let mut base_parts = Vec::new();
         for (slot, style) in &recipe.base {
+            if style_literal_has_conditional(style) {
+                return None;
+            }
             let classes = project.class_names_for_style_literal(style)?;
             base_parts.push(format!(
                 "{}: '{}'",
@@ -243,6 +328,9 @@ fn encode_shared_slot_variant_option(
 ) -> Option<String> {
     let mut encoded: Vec<String> = Vec::new();
     for (_, style) in &option.styles {
+        if style_literal_has_conditional(style) {
+            return None;
+        }
         encoded.push(project.class_names_for_style_literal(style)?.join(" "));
     }
     if encoded.is_empty() {
@@ -257,6 +345,9 @@ fn encode_shared_slot_variant_option(
 }
 
 fn print_compound_variant(project: &Project, compound: &CompoundVariant) -> Option<String> {
+    if style_literal_has_conditional(&compound.css) {
+        return None;
+    }
     let mut parts = print_compound_conditions(&compound.conditions);
     let classes = if let Some(class_name) = &compound.class_name {
         class_name.clone()
@@ -276,6 +367,9 @@ fn print_slot_compound_variant(
     let mut parts = print_compound_conditions(&compound.conditions);
     let mut css_parts = Vec::new();
     for (slot, style) in &compound.css {
+        if style_literal_has_conditional(style) {
+            return None;
+        }
         let classes = project.class_names_for_style_literal(style)?;
         css_parts.push(format!(
             "{}: '{}'",
@@ -330,12 +424,17 @@ fn escape_js_key(key: &str) -> String {
 
 pub(crate) fn rewrite_styled_config_arg(
     project: &Project,
+    source: &str,
     arg_spans: &[pandacss_shared::Span],
     config_arg_index: usize,
     config: &Literal,
+    style: Option<&StyleTree>,
 ) -> Option<Rewrite> {
     let arg = arg_spans.get(config_arg_index)?;
-    let content = styled_config_call(project, config)?;
+    let content = {
+        let encoded = encode_cva_config(project, source, config, style)?;
+        format!("{CVA_HELPER_LOCAL}({encoded})")
+    };
     Some(Rewrite {
         start: arg.start,
         end: arg.end,
@@ -346,6 +445,7 @@ pub(crate) fn rewrite_styled_config_arg(
 /// `styled('tag', config)` / `styled.tag(config)` factory call transforms.
 pub(crate) fn rewrite_for_styled_call(
     project: &Project,
+    source: &str,
     call: &pandacss_extractor::ExtractedCall,
 ) -> Option<Rewrite> {
     if call.category != pandacss_extractor::MatchCategory::Jsx || call.jsx_recipe_ident.is_some() {
@@ -356,7 +456,18 @@ pub(crate) fn rewrite_for_styled_call(
     }
 
     let (config_index, config) = styled_config_arg(call)?;
-    rewrite_styled_config_arg(project, &call.arg_spans, config_index, config)
+    let style = call
+        .style_args
+        .get(config_index)
+        .and_then(|value| value.as_ref());
+    rewrite_styled_config_arg(
+        project,
+        source,
+        &call.arg_spans,
+        config_index,
+        config,
+        style,
+    )
 }
 
 fn is_jsx_factory_call(call: &pandacss_extractor::ExtractedCall) -> bool {

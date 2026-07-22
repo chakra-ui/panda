@@ -703,20 +703,17 @@ fn mixed_jsx_file_handles_conditional_static_skip_and_open_ended() {
 }
 
 #[test]
-fn skips_conditional_spread_on_jsx_element() {
+fn rewrites_conditional_spread_on_jsx_element() {
     let source = indoc! {r#"
         import { Box } from '@panda/jsx';
-        export const el = <Box {...(cond ? { color: 'red' } : { color: 'blue' })} />;
+        export const el = <Box {...(cond ? { color: 'a' } : { color: 'b' })} />;
     "#};
 
     let output = transform_jsx("src/app.tsx", source);
 
-    assert!(!output.changed);
+    assert!(output.changed);
     assert!(!output.bailed);
-    assert_snapshot!(output.code, @r#"
-    import { Box } from '@panda/jsx';
-    export const el = <Box {...(cond ? { color: 'red' } : { color: 'blue' })} />;
-    "#);
+    assert_snapshot!(output.code, @r#"export const el = <div className={cond ? "color_a" : "color_b"} />;"#);
 }
 
 #[test]

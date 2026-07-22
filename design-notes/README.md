@@ -50,6 +50,7 @@ Some topics span several notes. Keep the detailed contract in one place and link
 
 - [Filesystem](./filesystem.md) — `pandacss_fs` trait, os/memory impls, glob via `fast-glob`, WASM compat.
 - [Literal evaluator](./literal-evaluator.md) — what folds vs what doesn't (literals, pure helpers, token/raw calls).
+- [StyleTree](./style-tree.md) — span-backed transform IR for `css()` / JSX conditionals; `project_literal` for encode.
 - [Cross-file resolution](./cross-file-resolution.md) — `CrossFileResolver`, cache shape (`Literal` | `PureFn`), cycle guard.
 - [JSX tag matching](./jsx-tag-matching.md) — `jsxMatchTag`: declarative successor to v1 `matchTag`/`matchTagProp`;
   match/ignore JSX tags by name, pattern, or import source, plus per-rule prop control. Why it's data, not a callback.

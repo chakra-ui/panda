@@ -1,22 +1,21 @@
 //! JSX opening-element rewrites.
 
-use pandacss_extractor::ExtractedJsx;
+use pandacss_extractor::{ExtractedJsx, StyleSpread, StyleTree};
 
 use crate::PatternTransformFn;
 use crate::Project;
 
 use super::helper;
-use super::jsx_conditional::{
-    class_expression_for_jsx_data, dynamic_class_name_expression_should_skip,
-    dynamic_style_expression_should_skip, jsx_data_has_finite_conditional,
-    jsx_data_within_branch_budget,
-};
-use super::jsx_parse::{ParsedAttribute, ParsedOpeningElement};
+use super::jsx_parse::ParsedOpeningElement;
 use super::jsx_shared::{
     ElementTag, data_is_static, plan_opening_class_name, resolve_element_tag,
     should_skip_style_prop, style_prop_keys,
 };
+use super::jsx_skip::{
+    dynamic_class_name_expression_should_skip, dynamic_style_expression_should_skip,
+};
 use super::plan::{HelperCxMode, Rewrite};
+use super::style_lower::{self, LowerResult};
 
 pub(super) fn rewrites_for_jsx_opening_element(
     project: &Project,
@@ -33,7 +32,7 @@ pub(super) fn rewrites_for_jsx_opening_element(
     let parsed =
         ParsedOpeningElement::from_ast(source, &jsx.attributes, jsx.closing_span.is_none());
     let Some(class_name) =
-        plan_opening_class_name(project, jsx, &parsed, helper_cx, pattern_transform)
+        plan_opening_class_name(project, source, jsx, &parsed, helper_cx, pattern_transform)
     else {
         return Vec::new();
     };
@@ -67,22 +66,30 @@ fn opening_element_should_skip(
     let parsed =
         ParsedOpeningElement::from_ast(source, &jsx.attributes, jsx.closing_span.is_none());
 
-    if parsed.attributes.iter().any(ParsedAttribute::is_spread) {
+    if parsed
+        .attributes
+        .iter()
+        .any(|attr| attr.is_spread() && !style_tree_spread_rewritable(jsx.style.as_ref()))
+    {
         return true;
     }
     if parsed.has_unresolved_as_prop() {
         return true;
     }
-    if !data_is_static(&jsx.data) {
+    if let Some(tree) = jsx.style.as_ref() {
+        if style_lower::style_tree_has_rewrite_sites(tree) {
+            match style_lower::lower_style_tree(project, source, tree, Some(jsx), pattern_transform)
+            {
+                LowerResult::Bail => return true,
+                LowerResult::Static(_) | LowerResult::Expr(_) => {}
+            }
+        } else if style_lower::style_tree_has_open_spread(tree)
+            || (!data_is_static(&jsx.data) && !matches!(tree, StyleTree::Object(_)))
+        {
+            return true;
+        }
+    } else if !data_is_static(&jsx.data) {
         return true;
-    }
-    if jsx_data_has_finite_conditional(&jsx.data) {
-        if !jsx_data_within_branch_budget(&jsx.data) {
-            return true;
-        }
-        if class_expression_for_jsx_data(project, jsx, &parsed, pattern_transform).is_none() {
-            return true;
-        }
     }
 
     let tag_name = &jsx.name;
@@ -120,6 +127,18 @@ fn opening_element_should_skip(
     }
 
     false
+}
+
+/// `StyleTree` has only rewritable spreads (`Ternary`/`And`) — bare `{...rest}` is `Open`.
+fn style_tree_spread_rewritable(style: Option<&StyleTree>) -> bool {
+    let Some(StyleTree::Object(obj)) = style else {
+        return false;
+    };
+    !obj.spreads.is_empty()
+        && obj
+            .spreads
+            .iter()
+            .all(|s| matches!(s, StyleSpread::Ternary { .. } | StyleSpread::And { .. }))
 }
 
 fn format_opening_element(

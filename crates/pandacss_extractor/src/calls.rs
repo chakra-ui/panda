@@ -1,17 +1,18 @@
 //! Extract Panda function-call usages (`css({…})`, `cva({…})`, `p.css({…})`,
-//! pattern/recipe calls) and fold each argument to a [`Literal`].
+//! pattern/recipe calls). Style args build a [`StyleTree`] first; encode
+//! [`Literal`] `data` comes from [`project_literal`].
 
 use crate::{
     CssSyntaxKind, Diagnostic, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory,
-    MatchedImport, Span, TokenRef,
-    css_template::css_template_to_object,
-    literal::expression_to_literal,
+    MatchedImport, Span, StyleTree, TokenRef,
+    css_template::css_template_to_style_tree,
     matcher::member_display,
     scope::flatten_static_member_path,
     source_refs::{
         StyleSourceOwner, StyleSourceOwnerKind, StyleSourceRef, collect_object_source_refs,
     },
     span_from_oxc,
+    style_tree::{expression_to_style_tree, project_literal},
 };
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Argument, CallExpression, Expression, TaggedTemplateExpression};
@@ -45,6 +46,9 @@ pub struct ExtractedCall {
     /// argument to rewrite without re-scanning the call for commas/parens.
     #[serde(skip)]
     pub arg_spans: Vec<Span>,
+    /// Transform-facing IR (span-backed conditionals). Skipped from serde/NAPI.
+    #[serde(skip)]
+    pub style_args: Vec<Option<StyleTree>>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, PartialEq)]
@@ -343,10 +347,14 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 .then(|| self.jsx_recipe_identifier(call))
                 .flatten();
 
-            let data: Vec<Option<Literal>> = call
+            let style_args: Vec<Option<StyleTree>> = call
                 .arguments
                 .iter()
-                .map(|arg| argument_to_literal(arg, resolver))
+                .map(|arg| argument_to_style_tree(arg, resolver))
+                .collect();
+            let data: Vec<Option<Literal>> = style_args
+                .iter()
+                .map(|tree| tree.as_ref().and_then(project_literal))
                 .collect();
             let arg_spans: Vec<Span> = call
                 .arguments
@@ -376,6 +384,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                     jsx_recipe_ident,
                     span: span_from_oxc(call.span),
                     arg_spans,
+                    style_args,
                 });
             } else if category != MatchCategory::Jsx
                 && !data.is_empty()
@@ -401,34 +410,36 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
         if let Expression::CallExpression(call) = &tagged.tag
             && let Some(resolved) = self.resolve_callee_expr(&call.callee)
             && resolved.category == MatchCategory::Jsx
-            && let Some(object @ Literal::Object(_)) =
-                css_template_to_object(&tagged.quasi, self.ctx.resolver)
+            && let Some(tree) = css_template_to_style_tree(&tagged.quasi, self.ctx.resolver)
+            && matches!(tree, StyleTree::Object(_))
         {
             self.out.push(ExtractedCall {
                 category: MatchCategory::Css,
                 name: "css".to_owned(),
                 alias: resolved.alias.to_owned(),
-                data: vec![Some(object)],
+                data: vec![project_literal(&tree)],
                 jsx_recipe_ident: None,
                 span: span_from_oxc(tagged.span),
                 arg_spans: vec![span_from_oxc(tagged.span)],
+                style_args: vec![Some(tree)],
             });
         }
 
         if let Some(resolved) = self.resolve_callee_expr(&tagged.tag)
             && resolved.category == MatchCategory::Css
             && resolved.name.as_ref() == "css"
-            && let Some(object @ Literal::Object(_)) =
-                css_template_to_object(&tagged.quasi, self.ctx.resolver)
+            && let Some(tree) = css_template_to_style_tree(&tagged.quasi, self.ctx.resolver)
+            && matches!(tree, StyleTree::Object(_))
         {
             self.out.push(ExtractedCall {
                 category: resolved.category,
                 name: resolved.name.into_owned(),
                 alias: resolved.alias.to_owned(),
-                data: vec![Some(object)],
+                data: vec![project_literal(&tree)],
                 jsx_recipe_ident: None,
                 span: span_from_oxc(tagged.span),
                 arg_spans: vec![span_from_oxc(tagged.span)],
+                style_args: vec![Some(tree)],
             });
         }
         walk::walk_tagged_template_expression(self, tagged);
@@ -465,10 +476,10 @@ impl Extractor<'_, '_, '_> {
     }
 }
 
-fn argument_to_literal(
+fn argument_to_style_tree(
     arg: &Argument<'_>,
     resolver: Option<&crate::Resolver<'_, '_>>,
-) -> Option<Literal> {
+) -> Option<StyleTree> {
     arg.as_expression()
-        .and_then(|e| expression_to_literal(e, resolver))
+        .and_then(|e| expression_to_style_tree(e, resolver))
 }

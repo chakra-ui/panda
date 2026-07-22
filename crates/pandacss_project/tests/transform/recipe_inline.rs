@@ -180,6 +180,23 @@ fn injects_cx_cva_and_sva_symbols_in_one_import() {
 }
 
 #[test]
+fn rewrites_cva_base_with_property_conditional() {
+    let source = indoc! {r#"
+        import { cva } from '@panda/css';
+        export const button = cva({ base: { color: cond ? 'red' : 'blue' } });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert!(output.changed);
+    assert!(output.helper.needs_cva);
+    assert_snapshot!(output.code, @r#"
+    import { cva as __pcva } from '@pandacss-internal/css';
+    export const button = __pcva({ base: cond ? "color_red" : "color_blue" });
+    "#);
+}
+
+#[test]
 fn injects_both_cva_and_sva_symbols_when_needed() {
     let source = indoc! {r#"
         import { cva, sva } from '@panda/css';

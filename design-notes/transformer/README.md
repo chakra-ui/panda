@@ -61,6 +61,7 @@ Related notes:
 - [Compiler lifecycle](../compiler-lifecycle.md)
 - [Output & host layer (Driver)](../output-and-host-layer.md)
 - [Extraction pipeline](../extraction-pipeline.md)
+- [StyleTree](../style-tree.md) — span-backed extract IR for conditional class lowering (dual-read with source parse)
 - [Prototype logic](./prototype-logic.md)
 
 ## Problem
@@ -155,7 +156,7 @@ The recommended architecture is:
 pandacss_project::transform
   - plan / apply / resolve / imports / helper
   - recipe_inline (cva/sva/styled)
-  - css_conditional, jsx.rs + jsx-*.rs
+  - style_lower (StyleTree conditionals), jsx.rs + jsx-*.rs
   - Project::transform_source / transform_source_with (+ ParseTransforms)
 
 @pandacss/transformer  (packages/transformer)
@@ -184,8 +185,8 @@ Implemented layout:
 ```txt
 crates/pandacss_project/src/transform/
   mod.rs, plan.rs, apply.rs, resolve.rs, imports.rs, helper.rs
-  recipe_inline.rs, css_conditional.rs
-  jsx.rs, jsx-element.rs, jsx-runtime.rs, jsx-conditional.rs,
+  recipe_inline.rs, style_lower.rs, jsx_skip.rs
+  jsx.rs, jsx-element.rs, jsx-runtime.rs,
   jsx-parse.rs, jsx-shared.rs
 
 packages/transformer/src/
@@ -522,6 +523,9 @@ That gives us one clean rule:
 - printer decides size
 
 ## Dynamic input policy
+
+See also [StyleTree](../style-tree.md) for the extract-time IR that replaces source re-parse for finite
+conditionals (`Ternary` / `And` / spreads); open-ended dynamic remains `Open` → bail.
 
 Yes, this needs to be considered explicitly. The transformer should not use one blanket rule for every dynamic input.
 

@@ -204,17 +204,6 @@ impl ParsedProperty {
         (!inner.is_empty()).then(|| inner.to_owned())
     }
 
-    pub(crate) fn spread_expression(&self) -> Option<String> {
-        if !self.spread {
-            return None;
-        }
-        self.raw
-            .strip_prefix("...")
-            .map(str::trim)
-            .filter(|expr| !expr.is_empty())
-            .map(ToOwned::to_owned)
-    }
-
     pub(crate) fn expression_source(&self) -> Option<String> {
         if self.spread {
             return None;
@@ -262,10 +251,6 @@ pub(crate) fn parse_object_literal(slice: &str) -> Option<ParsedObjectLiteral> {
     Some(ParsedObjectLiteral { properties })
 }
 
-pub(crate) fn parse_static_string(value: &str) -> Option<String> {
-    parse_static_jsx_string(value)
-}
-
 fn parse_static_jsx_string(value: &str) -> Option<String> {
     if (value.starts_with('"') && value.ends_with('"'))
         || (value.starts_with('\'') && value.ends_with('\''))
@@ -289,42 +274,4 @@ fn unquote(value: &str) -> String {
         .trim_matches('\'')
         .replace("\\\"", "\"")
         .replace("\\'", "'")
-}
-
-#[derive(Debug, Clone)]
-pub(crate) struct ParsedTernary {
-    pub condition: String,
-    #[allow(dead_code, reason = "reserved for branch source validation")]
-    pub consequent: String,
-    #[allow(dead_code, reason = "reserved for branch source validation")]
-    pub alternate: String,
-}
-
-pub(crate) fn parse_top_level_ternary(expression: &str) -> Option<ParsedTernary> {
-    let ternary = pandacss_extractor::parse_ternary_fragment(expression.trim())?;
-    Some(ParsedTernary {
-        condition: ternary.condition,
-        consequent: ternary.consequent,
-        alternate: ternary.alternate,
-    })
-}
-
-#[cfg(test)]
-mod tests {
-    use super::parse_top_level_ternary;
-
-    #[test]
-    fn parses_simple_ternary() {
-        let parsed = parse_top_level_ternary("isError ? 'red' : 'blue'").expect("ternary");
-        assert_eq!(parsed.condition, "isError");
-        assert_eq!(parsed.consequent, "'red'");
-        assert_eq!(parsed.alternate, "'blue'");
-    }
-
-    #[test]
-    fn parses_ternary_with_parenthesized_condition() {
-        let parsed =
-            parse_top_level_ternary("(isReady && isError) ? 'red' : 'blue'").expect("ternary");
-        assert_eq!(parsed.condition, "(isReady && isError)");
-    }
 }

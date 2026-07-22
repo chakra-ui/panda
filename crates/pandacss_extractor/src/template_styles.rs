@@ -269,12 +269,14 @@ fn collect_tag(
 
     if !entries.is_empty() || resolved.emit_empty {
         let kind = crate::jsx::jsx_kind(&scan.config.matchers, &resolved.name, &resolved.alias);
+        let data = Literal::Object(entries);
+        let style = Some(crate::style_tree::literal_to_style_tree(data.clone()));
         out.push(ExtractedJsx {
             category: resolved.category,
             kind,
             name: resolved.name.into_owned(),
             alias: resolved.alias.into_owned(),
-            data: Literal::Object(entries),
+            data,
             span: Span {
                 start: u32::try_from(tag_start).unwrap_or(u32::MAX),
                 end: u32::try_from(tag_end + 1).unwrap_or(u32::MAX),
@@ -282,6 +284,7 @@ fn collect_tag(
             closing_span: None,
             attributes: Vec::new(),
             panda_owned: resolved.panda_owned,
+            style,
         });
     }
 

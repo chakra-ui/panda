@@ -3,7 +3,7 @@
 //! hand-scanning strings.
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{Expression, ObjectPropertyKind, PropertyKey};
+use oxc_ast::ast::{Expression, LogicalOperator, ObjectPropertyKind, PropertyKey};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType, Span};
 
@@ -34,6 +34,26 @@ pub struct FragmentTernary {
     pub alternate: String,
 }
 
+/// A parsed `cond && obj` fragment.
+pub struct FragmentLogicalAnd {
+    pub condition: String,
+    pub consequent: String,
+}
+
+/// A parsed `left || right` or `left ?? right` fragment.
+pub struct FragmentLogicalOrNullish {
+    pub left: String,
+    pub right: String,
+    pub operator: LogicalOrNullishOp,
+}
+
+/// Top-level `||` vs `??` (not `&&`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LogicalOrNullishOp {
+    Or,
+    Coalesce,
+}
+
 fn parse_fragment<'a>(allocator: &'a Allocator, source: &'a str) -> Option<Expression<'a>> {
     Parser::new(allocator, source, SourceType::tsx())
         .parse_expression()
@@ -44,6 +64,15 @@ fn slice(source: &str, span: Span) -> Option<String> {
     let start = usize::try_from(span.start).ok()?;
     let end = usize::try_from(span.end).ok()?;
     Some(source.get(start..end)?.to_owned())
+}
+
+/// Oxc keeps `(…)` as `ParenthesizedExpression` — peel one layer for matching.
+fn peel_paren<'a>(expr: &'a Expression<'a>) -> &'a Expression<'a> {
+    if let Expression::ParenthesizedExpression(p) = expr {
+        &p.expression
+    } else {
+        expr
+    }
 }
 
 /// Parse an object-literal fragment (`{ … }`) and return its properties.
@@ -96,23 +125,61 @@ pub fn parse_call_fragment(source: &str) -> Option<FragmentCall> {
 #[must_use]
 pub fn is_logical_expression(source: &str) -> bool {
     let allocator = Allocator::default();
-    matches!(
-        parse_fragment(&allocator, source),
-        Some(Expression::LogicalExpression(_))
-    )
+    let Some(expr) = parse_fragment(&allocator, source) else {
+        return false;
+    };
+    matches!(peel_paren(&expr), Expression::LogicalExpression(_))
 }
 
 /// Parse a ternary fragment (`test ? a : b`) and return its three parts.
 #[must_use]
 pub fn parse_ternary_fragment(source: &str) -> Option<FragmentTernary> {
     let allocator = Allocator::default();
-    let Expression::ConditionalExpression(ternary) = parse_fragment(&allocator, source)? else {
+    let expr = parse_fragment(&allocator, source)?;
+    let Expression::ConditionalExpression(ternary) = peel_paren(&expr) else {
         return None;
     };
     Some(FragmentTernary {
         condition: slice(source, ternary.test.span())?,
         consequent: slice(source, ternary.consequent.span())?,
         alternate: slice(source, ternary.alternate.span())?,
+    })
+}
+
+/// Parse a `cond && obj` fragment. Returns `None` when the operator is not `&&`.
+#[must_use]
+pub fn parse_logical_and_fragment(source: &str) -> Option<FragmentLogicalAnd> {
+    let allocator = Allocator::default();
+    let expr = parse_fragment(&allocator, source)?;
+    let Expression::LogicalExpression(logical) = peel_paren(&expr) else {
+        return None;
+    };
+    if !matches!(logical.operator, LogicalOperator::And) {
+        return None;
+    }
+    Some(FragmentLogicalAnd {
+        condition: slice(source, logical.left.span())?,
+        consequent: slice(source, logical.right.span())?,
+    })
+}
+
+/// Parse a top-level `left || right` or `left ?? right` fragment.
+#[must_use]
+pub fn parse_logical_or_nullish_fragment(source: &str) -> Option<FragmentLogicalOrNullish> {
+    let allocator = Allocator::default();
+    let expr = parse_fragment(&allocator, source)?;
+    let Expression::LogicalExpression(logical) = peel_paren(&expr) else {
+        return None;
+    };
+    let operator = match logical.operator {
+        LogicalOperator::Or => LogicalOrNullishOp::Or,
+        LogicalOperator::Coalesce => LogicalOrNullishOp::Coalesce,
+        LogicalOperator::And => return None,
+    };
+    Some(FragmentLogicalOrNullish {
+        left: slice(source, logical.left.span())?,
+        right: slice(source, logical.right.span())?,
+        operator,
     })
 }
 

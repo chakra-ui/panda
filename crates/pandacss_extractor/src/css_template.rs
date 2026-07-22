@@ -4,7 +4,8 @@
 //! port of the small `astish` JS library Panda uses for the same job: a flat
 //! scan that builds a tree of selector/declaration nodes via a parent stack.
 
-use crate::{Literal, Resolver, literal::template_literal_to_literal};
+use crate::style_tree::literal_to_style_tree;
+use crate::{Literal, Resolver, StyleTree, literal::template_literal_to_literal};
 use oxc_ast::ast::TemplateLiteral;
 use rustc_hash::FxHashMap;
 use std::borrow::Cow;
@@ -19,6 +20,14 @@ pub(crate) fn css_template_to_object(
         return None;
     };
     Some(css_to_object(&text))
+}
+
+/// Static tagged-template `css` → [`StyleTree`].
+pub(crate) fn css_template_to_style_tree(
+    t: &TemplateLiteral<'_>,
+    resolver: Option<&Resolver<'_, '_>>,
+) -> Option<StyleTree> {
+    css_template_to_object(t, resolver).map(literal_to_style_tree)
 }
 
 /// Scan cleaned CSS token-by-token with a stack of open selector nodes: a
