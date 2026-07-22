@@ -1,5 +1,17 @@
 # @pandacss/generator
 
+## 1.11.5
+
+### Patch Changes
+
+- 366ac89: remove redundant HTMLPandaProps type
+  - @pandacss/core@1.11.5
+  - @pandacss/is-valid-prop@1.11.5
+  - @pandacss/logger@1.11.5
+  - @pandacss/shared@1.11.5
+  - @pandacss/token-dictionary@1.11.5
+  - @pandacss/types@1.11.5
+
 ## 1.11.4
 
 ### Patch Changes

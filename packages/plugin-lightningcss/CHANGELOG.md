@@ -1,5 +1,12 @@
 # @pandacss/plugin-lightningcss
 
+## 1.11.5
+
+### Patch Changes
+
+- @pandacss/logger@1.11.5
+- @pandacss/types@1.11.5
+
 ## 1.11.4
 
 ### Patch Changes
