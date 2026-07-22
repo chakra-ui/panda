@@ -30,7 +30,7 @@ describe('compiler.buildInfo', () => {
     // modules; `padding`/`margin` are module-local.
     expect(libBuildInfo()).toMatchInlineSnapshot(`
       {
-        "schemaVersion": 4,
+        "schemaVersion": 5,
         "panda": "^2.0.0",
         "configFingerprint": "cfg1-343a1d7a20956a6a",
         "strings": [
@@ -647,5 +647,58 @@ describe('compiler.buildInfo', () => {
     const result = app.buildInfo.hydrate(withUnsupportedSchemaVersion(libBuildInfo()), { name: '@acme/ds' })
     expect(result).toEqual({ ok: false, reason: 'schemaVersion', modules: [] })
     expect(app.getLayerCss({ layers: ['utilities'] }).css).toBe('')
+  })
+
+  // --- viewTransition() bags through hydrate ---
+
+  it('hydrate() emits viewTransition bag CSS and tree-shakes unused modules', () => {
+    const lib = createProject({})
+    lib.parseFileSource(
+      'slide.ts',
+      `import { viewTransition } from '@panda/css'
+       export const slide = viewTransition({
+         group: { animationDuration: '0.4s' },
+         old: { opacity: 0 },
+         new: { opacity: 1 },
+       })`,
+    )
+    lib.parseFileSource(
+      'fade.ts',
+      `import { viewTransition } from '@panda/css'
+       export const fade = viewTransition({
+         group: { animationDuration: '200ms' },
+       })`,
+    )
+    const info = lib.buildInfo.create({ panda: '^2.0.0' })
+
+    expect(info.viewTransitions?.length).toBe(2)
+    expect(info.modules['slide.ts']?.viewTransitions?.length).toBe(1)
+    expect(info.modules['fade.ts']?.viewTransitions?.length).toBe(1)
+
+    const app = createProject({})
+    expect(app.buildInfo.hydrate(info, { name: '@acme/ds', only: ['slide.ts'] })).toEqual({
+      ok: true,
+      modules: ['slide.ts'],
+    })
+
+    const utilities = app.getLayerCss({ layers: ['utilities'] }).css
+    expect(utilities).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .vt_kXwuyX {
+          view-transition-class: vt_kXwuyX;
+        }
+        ::view-transition-group(.vt_kXwuyX) {
+          animation-duration: 0.4s;
+        }
+        ::view-transition-old(.vt_kXwuyX) {
+          opacity: 0;
+        }
+        ::view-transition-new(.vt_kXwuyX) {
+          opacity: 1;
+        }
+      }
+      "
+    `)
+    expect(utilities).not.toContain('200ms')
   })
 })

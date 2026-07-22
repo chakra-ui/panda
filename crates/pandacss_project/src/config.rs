@@ -89,6 +89,7 @@ pub(crate) fn compile_config_with_token_dictionary(
     Ok(Config {
         extractor_config,
         utility,
+        class_name_prefix: config.prefix.class_name().unwrap_or_default().to_owned(),
         conditions,
         breakpoints: entries.breakpoints,
         patterns,
@@ -319,7 +320,7 @@ fn matchers_from_definitions(config: &ConfigDefinitions) -> Matchers {
     Matchers {
         css: ExtractorMatcher {
             modules: config.import_map.css.clone(),
-            names: ExtractorNameMatcher::only(["css", "cva", "sva"]),
+            names: ExtractorNameMatcher::only(["css", "cva", "sva", "viewTransition"]),
         },
         recipe: ExtractorMatcher {
             modules: config.import_map.recipe.clone(),

@@ -27,7 +27,7 @@ pub enum MatchCategory {
 
 impl MatchCategory {
     /// Categories whose factory exposes a `.raw()` escape hatch (`css.raw`,
-    /// `cva.raw`, pattern `.raw`). Tokens and JSX tags don't have one.
+    /// `cva.raw`, pattern `.raw`). Tokens and JSX tags don't.
     #[must_use]
     pub(crate) fn supports_raw(self) -> bool {
         matches!(self, Self::Css | Self::Recipe | Self::Pattern)
@@ -49,7 +49,7 @@ pub enum JsxKind {
 }
 
 /// `Any` matches anything (recipes/patterns where names are user-defined);
-/// `Only(set)` restricts to an allowlist (css → css/cva/sva).
+/// `Only(set)` restricts to an allowlist (css → css/cva/sva/viewTransition).
 // PERF(port): FxHashSet on short trusted keys like "css" is ~2× faster
 // than std::HashSet's SipHash.
 #[derive(Debug, Clone)]

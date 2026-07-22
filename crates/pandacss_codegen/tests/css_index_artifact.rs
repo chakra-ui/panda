@@ -20,6 +20,7 @@ fn reexports_css_modules() {
         export * from './cva';
         export * from './cx';
         export * from './sva';
+        export * from './view-transition';
         "}
         .trim()
     );
@@ -41,6 +42,7 @@ fn can_emit_import_extensions() {
         export * from './cva.js';
         export * from './cx.js';
         export * from './sva.js';
+        export * from './view-transition.js';
         "}
         .trim()
     );
@@ -51,6 +53,7 @@ fn can_emit_import_extensions() {
         export * from './cva.d.ts';
         export * from './cx.d.ts';
         export * from './sva.d.ts';
+        export * from './view-transition.d.ts';
         "}
         .trim()
     );
@@ -67,6 +70,7 @@ fn can_emit_import_extensions() {
         export * from './cva.mjs';
         export * from './cx.mjs';
         export * from './sva.mjs';
+        export * from './view-transition.mjs';
         "}
         .trim()
     );
@@ -77,6 +81,7 @@ fn can_emit_import_extensions() {
         export * from './cva.d.mts';
         export * from './cx.d.mts';
         export * from './sva.d.mts';
+        export * from './view-transition.d.mts';
         "}
         .trim()
     );

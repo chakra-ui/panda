@@ -167,6 +167,19 @@ pub(crate) fn build_plan(
                         plan.helper.needs_sva = true;
                     }
                 }
+                "viewTransition" => {
+                    if resolve::call_is_raw_member(source, call.span) {
+                        continue;
+                    }
+                    match resolve::rewrite_for_view_transition_call(project, call.span, &call.data)
+                    {
+                        Some(rewrite) => plan.rewrites.push(rewrite),
+                        None if call.data.first().is_some_and(Option::is_none) => {
+                            plan.bailed = true;
+                        }
+                        None => {}
+                    }
+                }
                 _ => match resolve::rewrite_for_css_call(
                     project,
                     source,

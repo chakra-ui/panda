@@ -91,13 +91,15 @@ impl Compiler {
             user_config,
             &static_pattern_atoms,
             static_pattern_diagnostics,
-            options
-                .as_ref()
-                .is_none_or(CompileOptions::should_emit_layer_declaration),
             has_utility_transforms
                 .then_some(&mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>),
-            options.as_ref().and_then(|options| options.minify),
-            options.as_ref().and_then(|options| options.polyfill),
+            crate::compile::StylesheetEmitOptions {
+                emit_layer_declaration: options
+                    .as_ref()
+                    .is_none_or(CompileOptions::should_emit_layer_declaration),
+                minify_override: options.as_ref().and_then(|options| options.minify),
+                polyfill_override: options.as_ref().and_then(|options| options.polyfill),
+            },
         );
         span.record("file_count", output.manifest.files.len());
         crate::flush_tracing();

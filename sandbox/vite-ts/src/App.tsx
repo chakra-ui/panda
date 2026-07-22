@@ -7,6 +7,7 @@ import { Badge, badge } from './Badge'
 import { AnotherButtonWithRegex, Button, ListedButton } from './Button'
 import { Card } from './Card'
 import { SourceTransformProof } from './SourceTransformProof'
+import { ViewTransitionDemo } from './ViewTransitionDemo'
 
 const SomeRecipe = panda('div', someRecipe)
 
@@ -28,6 +29,8 @@ function App() {
 
   return (
     <div className={stack({ padding: '40px', align: 'stretch', color: 'red.300' })}>
+      <ViewTransitionDemo />
+
       <section className={css({ padding: '5', borderWidth: '1px' })}>
         <p className={css({ fontWeight: 'semibold', mb: '2' })}>CSS - Function</p>
         <div className={css({ maxWidth: '840px', marginX: 'auto', textAlign: 'center' })}>

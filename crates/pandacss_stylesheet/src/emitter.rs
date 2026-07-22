@@ -13,8 +13,8 @@ use pandacss_encoder::{
 };
 use pandacss_extractor::Literal;
 use pandacss_shared::{
-    css_escape, find_matching_paren, hyphenate_property, number_to_js_string, split_important,
-    to_hash, without_space,
+    ViewTransitionStyle, css_escape, find_matching_paren, hyphenate_property, number_to_js_string,
+    split_important, to_hash, without_space,
 };
 use pandacss_tokens::{TokenCssConditionVars, TokenCssVar, TokenCssVars, TokenDictionary};
 use pandacss_utility::{
@@ -51,21 +51,52 @@ pub struct EmitTokenContext<'a> {
     pub refs: &'a [String],
 }
 
+/// Inputs shared by [`emit`] and [`emit_keyframes`].
+pub struct EmitInput<'a> {
+    pub config: &'a UserConfig,
+    pub utility: &'a Utility,
+    pub tokens: EmitTokenContext<'a>,
+    pub atoms: Vec<&'a Atom>,
+    pub recipes: &'a EncodedRecipesSnapshot,
+    pub utility_styles: &'a UtilityStyleOverrides,
+    pub view_transitions: &'a [ViewTransitionStyle],
+}
+
+/// Toggle flags for full stylesheet [`emit`].
+#[derive(Clone, Copy)]
+pub struct EmitOptions {
+    pub minify: bool,
+    pub emit_layer_declaration: bool,
+    pub polyfill: bool,
+}
+
+/// Toggle flags for keyframes-only [`emit_keyframes`].
+#[derive(Clone, Copy)]
+pub struct EmitKeyframesOptions {
+    pub minify: bool,
+    pub wrap_in_layer: bool,
+    pub polyfill: bool,
+}
+
 #[allow(
-    clippy::too_many_arguments,
-    reason = "emit is the single CSS assembly entry point; a context struct would only relocate the same inputs"
+    clippy::too_many_lines,
+    reason = "emit is the single CSS assembly entry point"
 )]
-pub fn emit<'a>(
-    config: &'a UserConfig,
-    utility: &'a Utility,
-    tokens: EmitTokenContext<'a>,
-    mut atoms: Vec<&'a Atom>,
-    recipes: &'a EncodedRecipesSnapshot,
-    utility_styles: &'a UtilityStyleOverrides,
-    minify: bool,
-    emit_layer_declaration: bool,
-    polyfill: bool,
-) -> EmitOutput {
+pub fn emit(input: EmitInput<'_>, options: EmitOptions) -> EmitOutput {
+    let EmitInput {
+        config,
+        utility,
+        tokens,
+        mut atoms,
+        recipes,
+        utility_styles,
+        view_transitions,
+    } = input;
+    let EmitOptions {
+        minify,
+        emit_layer_declaration,
+        polyfill,
+    } = options;
     let cx = EmitContext::new(config, utility, utility_styles, tokens.dictionary);
     let layers = &config.layers;
     let mut writer = if polyfill {
@@ -108,7 +139,14 @@ pub fn emit<'a>(
 
     let keyframes = as_non_empty_object(&config.theme.keyframes);
     let usage = if config.optimize.remove_unused_tokens || config.optimize.remove_unused_keyframes {
-        Some(cx.collect_usage(tokens.dictionary, tokens.refs, &atoms, recipes, keyframes))
+        Some(cx.collect_usage(
+            tokens.dictionary,
+            tokens.refs,
+            &atoms,
+            recipes,
+            view_transitions,
+            keyframes,
+        ))
     } else {
         None
     };
@@ -145,7 +183,8 @@ pub fn emit<'a>(
         layer_ranges.recipes = Some(cx.write_recipes_layer(&mut writer, recipes, &layers.recipes));
     }
 
-    if !atoms.is_empty() {
+    let has_view_transitions = view_transitions.iter().any(|style| !style.is_empty());
+    if !atoms.is_empty() || has_view_transitions {
         let sorted = cx.sort.sorted_atoms(atoms);
         let buckets = bucket_atoms_by_layer(&cx, sorted);
         let mut default_grouped = cx.group_atoms(&buckets.default);
@@ -156,8 +195,11 @@ pub fn emit<'a>(
                 custom_grouped.insert(*name, grouped);
             }
         }
-        if !default_grouped.is_empty() || !custom_grouped.is_empty() {
+        if !default_grouped.is_empty() || !custom_grouped.is_empty() || has_view_transitions {
             layer_ranges.utilities = Some(write_layer(&mut writer, &layers.utilities, |writer| {
+                if has_view_transitions {
+                    cx.write_view_transitions(writer, view_transitions);
+                }
                 if !default_grouped.is_empty() {
                     write_grouped_rules(writer, &mut default_grouped);
                 }
@@ -203,21 +245,21 @@ fn finish_emit(
 /// (same cascade placement as the full stylesheet). With `polyfill`, the layer
 /// is recorded then flattened like a normal emit.
 #[must_use]
-#[allow(
-    clippy::too_many_arguments,
-    reason = "mirrors emit(); a context struct would only relocate the same inputs"
-)]
-pub fn emit_keyframes<'a>(
-    config: &'a UserConfig,
-    utility: &'a Utility,
-    tokens: EmitTokenContext<'a>,
-    mut atoms: Vec<&'a Atom>,
-    recipes: &'a EncodedRecipesSnapshot,
-    utility_styles: &'a UtilityStyleOverrides,
-    minify: bool,
-    wrap_in_layer: bool,
-    polyfill: bool,
-) -> EmitOutput {
+pub fn emit_keyframes(input: EmitInput<'_>, options: EmitKeyframesOptions) -> EmitOutput {
+    let EmitInput {
+        config,
+        utility,
+        tokens,
+        mut atoms,
+        recipes,
+        utility_styles,
+        view_transitions,
+    } = input;
+    let EmitKeyframesOptions {
+        minify,
+        wrap_in_layer,
+        polyfill,
+    } = options;
     let cx = EmitContext::new(config, utility, utility_styles, tokens.dictionary);
     let layers = &config.layers;
     let mut writer = if polyfill && wrap_in_layer {
@@ -234,7 +276,14 @@ pub fn emit_keyframes<'a>(
 
     let keyframes = as_non_empty_object(&config.theme.keyframes);
     let usage = if config.optimize.remove_unused_keyframes {
-        Some(cx.collect_usage(tokens.dictionary, tokens.refs, &atoms, recipes, keyframes))
+        Some(cx.collect_usage(
+            tokens.dictionary,
+            tokens.refs,
+            &atoms,
+            recipes,
+            view_transitions,
+            keyframes,
+        ))
     } else {
         None
     };
@@ -974,6 +1023,7 @@ impl<'a> EmitContext<'a> {
         token_refs: &[String],
         atoms: &[&Atom],
         recipes: &EncodedRecipesSnapshot,
+        view_transitions: &[ViewTransitionStyle],
         keyframes: Option<&serde_json::Map<String, Value>>,
     ) -> UsageMarks {
         let mut marks = UsageMarks::default();
@@ -1013,7 +1063,31 @@ impl<'a> EmitContext<'a> {
             }
         }
 
+        self.collect_view_transitions_usage(
+            view_transitions,
+            token_dictionary,
+            keyframes,
+            &mut marks,
+        );
+
         marks
+    }
+
+    fn collect_view_transitions_usage(
+        &self,
+        styles: &[ViewTransitionStyle],
+        token_dictionary: Option<&TokenDictionary>,
+        keyframes: Option<&serde_json::Map<String, Value>>,
+        marks: &mut UsageMarks,
+    ) {
+        for style in styles {
+            for (_, body) in style.slot_bodies() {
+                let Some(body) = body else {
+                    continue;
+                };
+                self.collect_styles_usage(body, token_dictionary, keyframes, marks);
+            }
+        }
     }
 
     fn collect_atom_usage(
@@ -1384,6 +1458,33 @@ impl<'a> EmitContext<'a> {
         self.collect_styles(&mut grouped, value);
         if !grouped.is_empty() {
             write_grouped_rules(writer, &mut grouped);
+        }
+    }
+
+    fn write_view_transitions(&self, writer: &mut CssWriter, styles: &[ViewTransitionStyle]) {
+        for style in styles {
+            if style.is_empty() {
+                continue;
+            }
+            let class_selector = format!(".{}", css_escape(&style.class_name));
+            writer.rule(&class_selector, |writer| {
+                writer.declaration("view-transition-class", &style.class_name, false);
+            });
+            for (pseudo, body) in style.slot_bodies() {
+                let Some(body) = body else {
+                    continue;
+                };
+                let selector = format!(
+                    "::view-transition-{pseudo}(.{})",
+                    css_escape(&style.class_name)
+                );
+                let mut grouped = GroupNode::default();
+                let mut conditions = Vec::new();
+                self.collect_style_object(&mut grouped, &selector, body, &mut conditions);
+                if !grouped.is_empty() {
+                    write_grouped_rules(writer, &mut grouped);
+                }
+            }
         }
     }
 

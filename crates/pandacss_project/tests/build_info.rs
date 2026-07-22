@@ -31,7 +31,7 @@ fn build_info_emits_interned_atoms_with_per_module_provenance() {
     // `color: red` is shared, so it appears once in `atoms` and is referenced by
     // both modules; `padding`/`margin` are module-local.
     assert_yaml_snapshot!(info, @"
-    schemaVersion: 4
+    schemaVersion: 5
     panda: ^2.0.0
     configFingerprint: cfg1-0130e6407f607c4d
     strings:
@@ -1094,4 +1094,174 @@ fn hydrate_round_trips_inline_cva_as_atoms() {
       value: 12px
       conditions: []
     "#);
+}
+
+#[test]
+fn build_info_serializes_view_transitions_with_per_module_provenance() {
+    let mut project = create_project(json!({}));
+    project.parse_file(
+        "slide.ts",
+        indoc! {r"
+            import { viewTransition } from '@panda/css';
+            export const slide = viewTransition({
+              old: { opacity: 0 },
+              new: { opacity: 1 },
+            });
+        "},
+    );
+    project.parse_file(
+        "fade.ts",
+        indoc! {r"
+            import { viewTransition } from '@panda/css';
+            export const fade = viewTransition({
+              group: { animationDuration: '200ms' },
+            });
+        "},
+    );
+    project.parse_file(
+        "slide-again.ts",
+        indoc! {r"
+            import { viewTransition } from '@panda/css';
+            export const slide2 = viewTransition({
+              old: { opacity: 0 },
+              new: { opacity: 1 },
+            });
+        "},
+    );
+
+    let info = project.build_info("^2.0.0".into());
+    assert_eq!(info.view_transitions.len(), 2);
+    assert_eq!(info.modules["slide.ts"].view_transitions.len(), 1);
+    assert_eq!(info.modules["fade.ts"].view_transitions.len(), 1);
+    assert_eq!(
+        info.modules["slide.ts"].view_transitions,
+        info.modules["slide-again.ts"].view_transitions
+    );
+    assert_ne!(
+        info.modules["slide.ts"].view_transitions,
+        info.modules["fade.ts"].view_transitions
+    );
+
+    let slide_cls = pandacss_shared::view_transition_class_name(
+        &json!({ "old": { "opacity": 0 }, "new": { "opacity": 1 } }),
+        "",
+    );
+    let fade_cls = pandacss_shared::view_transition_class_name(
+        &json!({ "group": { "animationDuration": "200ms" } }),
+        "",
+    );
+    let class_names: Vec<&str> = info
+        .view_transitions
+        .iter()
+        .map(|vt| info.strings[vt.cls as usize].as_str())
+        .collect();
+    assert!(class_names.contains(&slide_cls.as_str()));
+    assert!(class_names.contains(&fade_cls.as_str()));
+}
+
+#[test]
+fn hydrate_round_trips_view_transitions_with_tree_shake() {
+    let mut source = create_project(json!({}));
+    source.parse_file(
+        "slide.ts",
+        indoc! {r"
+            import { viewTransition } from '@panda/css';
+            export const slide = viewTransition({
+              old: { opacity: 0 },
+              new: { opacity: 1 },
+            });
+        "},
+    );
+    source.parse_file(
+        "fade.ts",
+        indoc! {r"
+            import { viewTransition } from '@panda/css';
+            export const fade = viewTransition({
+              group: { animationDuration: '200ms' },
+            });
+        "},
+    );
+    let info = source.build_info("^2.0.0".into());
+    let json = serde_json::to_string(&info).expect("serialize");
+    let restored: BuildInfo = serde_json::from_str(&json).expect("deserialize");
+
+    let mut consumer = create_project(json!({}));
+    assert!(consumer.hydrate("@acme/ds", &restored, Some(&["slide.ts".into()])));
+
+    let config = create_config(json!({}));
+    let snaps = consumer.stylesheet_snapshots(&config);
+    let slide_cls = pandacss_shared::view_transition_class_name(
+        &json!({ "old": { "opacity": 0 }, "new": { "opacity": 1 } }),
+        "",
+    );
+    let fade_cls = pandacss_shared::view_transition_class_name(
+        &json!({ "group": { "animationDuration": "200ms" } }),
+        "",
+    );
+    let names: Vec<&str> = snaps
+        .view_transitions
+        .iter()
+        .map(|style| style.class_name.as_str())
+        .collect();
+    assert_eq!(names, [slide_cls.as_str()]);
+    assert!(!names.contains(&fade_cls.as_str()));
+}
+
+#[test]
+fn build_info_excludes_hydrated_parent_view_transitions() {
+    let mut parent = create_project(json!({}));
+    parent.parse_file(
+        "slide.ts",
+        indoc! {r"
+            import { viewTransition } from '@panda/css';
+            export const slide = viewTransition({
+              old: { opacity: 0 },
+              new: { opacity: 1 },
+            });
+        "},
+    );
+    let parent_info = parent.build_info("^2.0.0".into());
+
+    let mut middle = create_project(json!({}));
+    assert!(middle.hydrate("@acme/base", &parent_info, None));
+    middle.parse_file(
+        "local.ts",
+        indoc! {r"
+            import { viewTransition } from '@panda/css';
+            export const local = viewTransition({
+              group: { animationDuration: '100ms' },
+            });
+        "},
+    );
+    let middle_info = middle.build_info("^2.0.0".into());
+
+    assert_eq!(middle_info.view_transitions.len(), 1);
+    let local_cls = pandacss_shared::view_transition_class_name(
+        &json!({ "group": { "animationDuration": "100ms" } }),
+        "",
+    );
+    assert_eq!(
+        middle_info.strings[middle_info.view_transitions[0].cls as usize],
+        local_cls
+    );
+}
+
+#[test]
+fn hydrate_rejects_corrupt_view_transition_class_index() {
+    let mut source = create_project(json!({}));
+    source.parse_file(
+        "slide.ts",
+        indoc! {r"
+            import { viewTransition } from '@panda/css';
+            export const slide = viewTransition({
+              old: { opacity: 0 },
+            });
+        "},
+    );
+    let mut info = source.build_info("^2.0.0".into());
+    assert!(!info.view_transitions.is_empty());
+    info.view_transitions[0].cls = 999_999;
+
+    let mut consumer = create_project(json!({}));
+    assert!(!consumer.hydrate("@acme/ds", &info, None));
 }

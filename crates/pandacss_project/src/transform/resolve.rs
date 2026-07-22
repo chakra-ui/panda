@@ -4,6 +4,7 @@ use std::collections::HashSet;
 
 use pandacss_encoder::{Atom, Encoder, compare_atoms_by_emit_order};
 use pandacss_extractor::{Literal, StyleTree};
+use pandacss_shared::view_transition_class_name;
 use pandacss_utility::ShorthandPolicy;
 
 use crate::PatternTransformFn;
@@ -289,6 +290,24 @@ fn css_callee(
             .trim_end()
             .to_owned(),
     )
+}
+
+pub(crate) fn rewrite_for_view_transition_call(
+    project: &Project,
+    span: pandacss_shared::Span,
+    args: &[Option<Literal>],
+) -> Option<Rewrite> {
+    let arg = args.first()?.as_ref()?;
+    if !matches!(arg, Literal::Object(_)) {
+        return None;
+    }
+    let class_name =
+        view_transition_class_name(&arg.to_json(), &project.config().class_name_prefix);
+    Some(Rewrite {
+        start: span.start,
+        end: span.end,
+        content: js_string_literal(&class_name),
+    })
 }
 
 pub(crate) fn rewrite_for_recipe_call(

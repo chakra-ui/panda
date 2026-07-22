@@ -10,6 +10,7 @@ pub mod important;
 pub mod regex;
 pub mod strings;
 pub mod unit_conversion;
+pub mod view_transition;
 
 pub use css_escape::css_escape;
 pub use diagnostic::{
@@ -26,3 +27,7 @@ pub use strings::{
     push_number_to_js_string,
 };
 pub use unit_conversion::to_rem;
+pub use view_transition::{
+    ViewTransitionStyle, filter_view_transition_slots, stable_stringify,
+    stable_stringify_view_transition, view_transition_base_class, view_transition_class_name,
+};

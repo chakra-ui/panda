@@ -6,6 +6,10 @@ type CssRuntime = {
   css: (styles: Record<string, unknown>) => string
 }
 
+type ViewTransitionRuntime = {
+  viewTransition: (options: Record<string, unknown>) => string
+}
+
 describe('generated runtime/cssgen parity', () => {
   it('uses the same important class names as cssgen', async () => {
     const compiler = createProject({
@@ -260,5 +264,90 @@ describe('generated runtime/cssgen parity', () => {
     expect(generatedCss).toContain(String.raw`.\--welcome-x_20`)
     expect(generatedCss).toContain('--ring: 2px;')
     expect(generatedCss).toContain('--welcome-x: 20;')
+  })
+
+  it('uses the same viewTransition bag class as cssgen', async () => {
+    const compiler = createProject({ outExtension: 'mjs' })
+    const options = {
+      group: { animationDuration: '0.4s' },
+      old: { opacity: 0 },
+      new: { opacity: 1 },
+    }
+
+    compiler.parseFileSource(
+      '/virtual/app.ts',
+      `import { viewTransition } from '@panda/css';
+       viewTransition({
+         group: { animationDuration: '0.4s' },
+         old: { opacity: 0 },
+         new: { opacity: 1 },
+       })`,
+    )
+
+    const runtime = await loadGeneratedModule<ViewTransitionRuntime>(compiler, {
+      entry: 'css/view-transition.mjs',
+    })
+    const className = runtime.viewTransition(options)
+    const utilitiesCss = compiler.getLayerCss({ layers: ['utilities'] }).css
+
+    expect(className).toBe('vt_kXwuyX')
+    expect(utilitiesCss).toContain(`.${className}`)
+    expect(utilitiesCss).toContain(`view-transition-class: ${className};`)
+    expect(utilitiesCss).toContain(`::view-transition-group(.${className})`)
+    expect(utilitiesCss).toContain(`::view-transition-old(.${className})`)
+    expect(utilitiesCss).toContain(`::view-transition-new(.${className})`)
+  })
+
+  it('uses the same prefixed viewTransition bag class as cssgen', async () => {
+    const compiler = createProject({ outExtension: 'mjs', prefix: 'pd' })
+    const options = {
+      old: { opacity: 0 },
+      new: { opacity: 1 },
+    }
+
+    compiler.parseFileSource(
+      '/virtual/app.ts',
+      `import { viewTransition } from '@panda/css';
+       viewTransition({ old: { opacity: 0 }, new: { opacity: 1 } })`,
+    )
+
+    const runtime = await loadGeneratedModule<ViewTransitionRuntime>(compiler, {
+      entry: 'css/view-transition.mjs',
+    })
+    const className = runtime.viewTransition(options)
+    const utilitiesCss = compiler.getLayerCss({ layers: ['utilities'] }).css
+
+    expect(className).toBe('pd-vt_gnOaDr')
+    expect(utilitiesCss).toContain(`.${className}`)
+    expect(utilitiesCss).toContain(`view-transition-class: ${className};`)
+  })
+
+  it('viewTransition runtime hash ignores unknown keys like the compiler', async () => {
+    const compiler = createProject({ outExtension: 'mjs' })
+    const options = {
+      old: { opacity: 0 },
+      new: { opacity: 1 },
+      ignored: true,
+    }
+
+    compiler.parseFileSource(
+      '/virtual/app.ts',
+      `import { viewTransition } from '@panda/css';
+       viewTransition({
+         old: { opacity: 0 },
+         new: { opacity: 1 },
+         ignored: true,
+       })`,
+    )
+
+    const runtime = await loadGeneratedModule<ViewTransitionRuntime>(compiler, {
+      entry: 'css/index.mjs',
+    })
+    const className = runtime.viewTransition(options)
+    const utilitiesCss = compiler.getLayerCss({ layers: ['utilities'] }).css
+
+    expect(className).toBe('vt_gnOaDr')
+    expect(className).toBe(runtime.viewTransition({ old: { opacity: 0 }, new: { opacity: 1 } }))
+    expect(utilitiesCss).toContain(`.${className}`)
   })
 })

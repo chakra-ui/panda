@@ -94,6 +94,15 @@ export interface BuildModuleEntry {
   atoms?: number[]
   recipes?: number[]
   tokenRefs?: number[]
+  viewTransitions?: number[]
+}
+
+export interface BuildViewTransition {
+  cls: number
+  group?: unknown
+  imagePair?: unknown
+  old?: unknown
+  new?: unknown
 }
 
 /**
@@ -107,6 +116,7 @@ export interface BuildInfoArtifact {
   atoms: BuildAtom[]
   tokenRefs?: number[]
   recipes?: BuildRecipes
+  viewTransitions?: BuildViewTransition[]
   modules: Record<string, BuildModuleEntry>
   exports?: Record<string, string>
 }

@@ -14,6 +14,7 @@ mod writer;
 
 pub use emitter::{UtilityStyleOverrides, emit_keyframes};
 pub use layers::{has_layer_declaration, strip_layer_order_statements};
+pub use pandacss_shared::ViewTransitionStyle;
 pub use selector::{PREFLIGHT_ROOT, ScopeMode, scope_selector, split_selector_list};
 pub use sort::order_properties;
 
@@ -148,6 +149,7 @@ pub struct StylesheetInput<'a> {
     pub token_refs: &'a [String],
     /// Custom-utility transform styles by `(prop, value)`, from the snapshot.
     pub utility_styles: &'a emitter::UtilityStyleOverrides,
+    pub view_transitions: &'a [ViewTransitionStyle],
 }
 
 /// Whether the config requests any static CSS: top-level `staticCss.*` or
@@ -223,18 +225,23 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
     let recipes = encoded_recipes.as_ref().unwrap_or(input.encoded_recipes);
     let emit_layer_declaration = options.emit_layer_declaration && !options.polyfill;
     let emitted = emitter::emit(
-        input.config,
-        &utility,
-        emitter::EmitTokenContext {
-            dictionary: token_dictionary.as_deref(),
-            refs: input.token_refs,
+        emitter::EmitInput {
+            config: input.config,
+            utility: &utility,
+            tokens: emitter::EmitTokenContext {
+                dictionary: token_dictionary.as_deref(),
+                refs: input.token_refs,
+            },
+            atoms,
+            recipes,
+            utility_styles: input.utility_styles,
+            view_transitions: input.view_transitions,
         },
-        atoms,
-        recipes,
-        input.utility_styles,
-        options.minify,
-        emit_layer_declaration,
-        options.polyfill,
+        emitter::EmitOptions {
+            minify: options.minify,
+            emit_layer_declaration,
+            polyfill: options.polyfill,
+        },
     );
 
     StylesheetOutput {
@@ -301,18 +308,23 @@ pub fn compile_keyframes(
     let recipes = encoded_recipes.as_ref().unwrap_or(input.encoded_recipes);
     let wrap_in_layer = options.emit_layer_declaration;
     let emitted = emitter::emit_keyframes(
-        input.config,
-        &utility,
-        emitter::EmitTokenContext {
-            dictionary: token_dictionary.as_deref(),
-            refs: input.token_refs,
+        emitter::EmitInput {
+            config: input.config,
+            utility: &utility,
+            tokens: emitter::EmitTokenContext {
+                dictionary: token_dictionary.as_deref(),
+                refs: input.token_refs,
+            },
+            atoms,
+            recipes,
+            utility_styles: input.utility_styles,
+            view_transitions: input.view_transitions,
         },
-        atoms,
-        recipes,
-        input.utility_styles,
-        options.minify,
-        wrap_in_layer,
-        options.polyfill,
+        emitter::EmitKeyframesOptions {
+            minify: options.minify,
+            wrap_in_layer,
+            polyfill: options.polyfill,
+        },
     );
 
     StylesheetOutput {
@@ -371,18 +383,23 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
     let recipes = merged_recipes.as_ref().unwrap_or(input.encoded_recipes);
 
     let full = emitter::emit(
-        input.config,
-        &utility,
-        emitter::EmitTokenContext {
-            dictionary: token_dictionary.as_deref(),
-            refs: input.token_refs,
+        emitter::EmitInput {
+            config: input.config,
+            utility: &utility,
+            tokens: emitter::EmitTokenContext {
+                dictionary: token_dictionary.as_deref(),
+                refs: input.token_refs,
+            },
+            atoms,
+            recipes,
+            utility_styles: input.utility_styles,
+            view_transitions: input.view_transitions,
         },
-        atoms,
-        recipes,
-        input.utility_styles,
-        options.minify,
-        options.emit_layer_declaration && !options.polyfill,
-        options.polyfill,
+        emitter::EmitOptions {
+            minify: options.minify,
+            emit_layer_declaration: options.emit_layer_declaration && !options.polyfill,
+            polyfill: options.polyfill,
+        },
     );
 
     let selected = options.layers.as_deref();

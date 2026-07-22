@@ -117,6 +117,7 @@ function hasBuildInfoShape(info: Record<string, unknown>): boolean {
     Array.isArray(info.strings) &&
     Array.isArray(info.atoms) &&
     (info.tokenRefs === undefined || Array.isArray(info.tokenRefs)) &&
+    (info.viewTransitions === undefined || Array.isArray(info.viewTransitions)) &&
     isRecord(info.modules) &&
     (info.exports === undefined || isRecord(info.exports)) &&
     (info.recipes === undefined || isRecord(info.recipes))

@@ -51,7 +51,7 @@ use pandacss_extractor::{
     MatchCategory, extract,
 };
 use pandacss_recipes::{Recipe, SlotRecipe};
-use pandacss_shared::diagnostic_codes;
+use pandacss_shared::{ViewTransitionStyle, diagnostic_codes};
 use pandacss_utility::{ShorthandPolicy, StyleNormalizer, Utility};
 
 /// Key into the utility-transform override map: `(prop, original_value)`. The
@@ -59,7 +59,9 @@ use pandacss_utility::{ShorthandPolicy, StyleNormalizer, Utility};
 /// atom), so the map refcounts as a plain key→value union.
 pub type UtilityStyleKey = (Box<str>, AtomValue);
 
-pub use build_info::{BuildAtom, BuildInfo, BuildValue, ModuleEntry, SCHEMA_VERSION};
+pub use build_info::{
+    BuildAtom, BuildInfo, BuildValue, BuildViewTransition, ModuleEntry, SCHEMA_VERSION,
+};
 pub use design_system::{
     DesignSystemManifest, MANIFEST_SCHEMA_VERSION, ManifestImportMap, ManifestInput,
 };
@@ -149,12 +151,17 @@ pub struct Project {
     inline_slot_recipes: BTreeMap<RecipeKey, SlotRecipe>,
     inline_recipe_spans: FxHashMap<Arc<str>, SmallVec<[u32; 4]>>,
     inline_slot_recipe_spans: FxHashMap<Arc<str>, SmallVec<[u32; 4]>>,
+    view_transitions: BTreeMap<RecipeKey, ViewTransitionStyle>,
+    view_transition_spans: FxHashMap<Arc<str>, SmallVec<[u32; 4]>>,
+    view_transitions_snapshot_cache: Option<Vec<ViewTransitionStyle>>,
     config_diagnostics: Vec<Diagnostic>,
     /// Recipe snapshots hydrated from build info, keyed by source library
     /// name and merged into [`Self::stylesheet_snapshots`].
     hydrated_recipes: FxHashMap<Arc<str>, EncodedRecipesSnapshot>,
     /// Root-first hydration order. Local recipes are emitted after these entries.
     hydrated_recipe_order: Vec<Arc<str>>,
+    hydrated_view_transitions: FxHashMap<Arc<str>, Vec<ViewTransitionStyle>>,
+    hydrated_view_transition_order: Vec<Arc<str>>,
 }
 
 pub struct ProjectStylesheetSnapshots<'a> {
@@ -165,6 +172,7 @@ pub struct ProjectStylesheetSnapshots<'a> {
     /// Custom-utility transform styles by `(prop, value)`; `transform_atom`
     /// looks these up to emit one class per usage.
     pub utility_styles: &'a FxHashMap<UtilityStyleKey, Literal>,
+    pub view_transitions: &'a [ViewTransitionStyle],
 }
 
 // Private so the bucket shape can change freely — [`ParsedFile`] is the public view.
@@ -234,9 +242,14 @@ impl Project {
             inline_slot_recipes: BTreeMap::new(),
             inline_recipe_spans: FxHashMap::default(),
             inline_slot_recipe_spans: FxHashMap::default(),
+            view_transitions: BTreeMap::new(),
+            view_transition_spans: FxHashMap::default(),
+            view_transitions_snapshot_cache: None,
             config_diagnostics,
             hydrated_recipes: FxHashMap::default(),
             hydrated_recipe_order: Vec::new(),
+            hydrated_view_transitions: FxHashMap::default(),
+            hydrated_view_transition_order: Vec::new(),
         }
     }
 
@@ -488,6 +501,32 @@ impl Project {
                             .push(call.span.start);
                         report.sva_calls += 1;
                     }
+                }
+                (MatchCategory::Css, "viewTransition") => {
+                    let Some(arg) = data.into_iter().next().flatten() else {
+                        continue;
+                    };
+                    if !matches!(arg, Literal::Object(_)) {
+                        continue;
+                    }
+                    let style = ViewTransitionStyle::from_options(
+                        &arg.to_json(),
+                        &self.config.class_name_prefix,
+                    );
+                    if style.is_empty() {
+                        continue;
+                    }
+                    self.view_transitions.insert(
+                        RecipeKey {
+                            file: Arc::clone(&path_key),
+                            span_start: call.span.start,
+                        },
+                        style,
+                    );
+                    self.view_transition_spans
+                        .entry(Arc::clone(&path_key))
+                        .or_default()
+                        .push(call.span.start);
                 }
                 (MatchCategory::Pattern, _) => {
                     // A missing/non-object arg (`center()`, dynamic props) still
@@ -774,6 +813,10 @@ impl Project {
         self.inline_slot_recipes.clear();
         self.inline_recipe_spans.clear();
         self.inline_slot_recipe_spans.clear();
+        self.view_transitions.clear();
+        self.view_transition_spans.clear();
+        self.hydrated_view_transitions.clear();
+        self.hydrated_view_transition_order.clear();
     }
 
     /// Forces the next `parse_file` for any path to recompute, even if its
@@ -804,6 +847,25 @@ impl Project {
                 self.hydrated_recipe_order.push(Arc::from(name));
             }
             self.hydrated_recipes.insert(Arc::from(name), snapshot);
+        }
+    }
+
+    pub(crate) fn set_hydrated_view_transitions(
+        &mut self,
+        name: &str,
+        styles: Vec<ViewTransitionStyle>,
+    ) {
+        self.invalidate_stylesheet_snapshots();
+        if styles.is_empty() {
+            self.hydrated_view_transitions.remove(name);
+            self.hydrated_view_transition_order
+                .retain(|existing| existing.as_ref() != name);
+        } else {
+            if !self.hydrated_view_transitions.contains_key(name) {
+                self.hydrated_view_transition_order.push(Arc::from(name));
+            }
+            self.hydrated_view_transitions
+                .insert(Arc::from(name), styles);
         }
     }
 
@@ -907,10 +969,13 @@ impl Project {
         self.encoded_recipes_snapshot_cache = None;
         self.token_refs_snapshot_cache = None;
         self.merged_utility_styles_snapshot_cache = None;
+        self.view_transitions_snapshot_cache = None;
     }
 
     fn drop_recipes_for(&mut self, path: &str) -> bool {
-        let before = self.inline_recipes.len() + self.inline_slot_recipes.len();
+        let before = self.inline_recipes.len()
+            + self.inline_slot_recipes.len()
+            + self.view_transitions.len();
         if let Some((file, spans)) = self.inline_recipe_spans.remove_entry(path) {
             for span_start in spans {
                 self.inline_recipes.remove(&RecipeKey {
@@ -927,7 +992,18 @@ impl Project {
                 });
             }
         }
-        before != self.inline_recipes.len() + self.inline_slot_recipes.len()
+        if let Some((file, spans)) = self.view_transition_spans.remove_entry(path) {
+            for span_start in spans {
+                self.view_transitions.remove(&RecipeKey {
+                    file: Arc::clone(&file),
+                    span_start,
+                });
+            }
+        }
+        before
+            != self.inline_recipes.len()
+                + self.inline_slot_recipes.len()
+                + self.view_transitions.len()
     }
 
     fn process_atomic(
@@ -1096,82 +1172,13 @@ impl Project {
         user_config: &UserConfig,
         mut utility_transform: Option<&mut UtilityTransformFn<'_>>,
     ) -> ProjectStylesheetSnapshots<'_> {
-        if self.atoms_snapshot_cache.is_none() {
-            let mut atoms = self.atoms_cache.iter().cloned().collect::<Vec<_>>();
-            atoms.sort_by(compare_atoms_by_emit_order);
-            self.atoms_snapshot_cache = Some(atoms);
-        }
-
-        if self.encoded_recipes_snapshot_cache.is_none() {
-            let local = self.encoded_recipes_cache.view().snapshot();
-            let mut snapshot = EncodedRecipesSnapshot {
-                base: Vec::new(),
-                variants: Vec::new(),
-                compounds: Vec::new(),
-                atomic: Vec::new(),
-            };
-            for name in &self.hydrated_recipe_order {
-                let Some(hydrated) = self.hydrated_recipes.get(name) else {
-                    continue;
-                };
-                snapshot.base.extend(hydrated.base.iter().cloned());
-                snapshot.variants.extend(hydrated.variants.iter().cloned());
-                snapshot
-                    .compounds
-                    .extend(hydrated.compounds.iter().cloned());
-                snapshot.atomic.extend(hydrated.atomic.iter().cloned());
-            }
-            snapshot.base.extend(local.base);
-            snapshot.variants.extend(local.variants);
-            snapshot.compounds.extend(local.compounds);
-            snapshot.atomic.extend(local.atomic);
-            self.encoded_recipes_snapshot_cache = Some(snapshot);
-        }
-
-        if self.token_refs_snapshot_cache.is_none() {
-            let mut token_refs = self
-                .files
-                .values()
-                .flat_map(|entry| entry.token_refs.iter().cloned())
-                .collect::<Vec<_>>();
-            token_refs.sort();
-            token_refs.dedup();
-            self.token_refs_snapshot_cache = Some(token_refs);
-        }
-
-        let static_cache_matches = self
-            .static_encoded_recipes_snapshot_cache
-            .as_ref()
-            .is_some_and(|(static_css, transformed, _)| {
-                static_css == &user_config.static_css && *transformed == utility_transform.is_some()
-            });
-        if !static_cache_matches {
-            let mut encoded = EncodedRecipes::default();
-            self.config.recipes.process_static_css(
-                &mut encoded,
-                user_config,
-                &self.config.conditions,
-                &self.config.breakpoints,
-            );
-            if let Some(transform) = utility_transform.as_deref_mut() {
-                let mut diagnostics = Vec::new();
-                encoded.transform_utilities(
-                    self.config.utility.as_ref(),
-                    &self.config.conditions,
-                    &self.config.breakpoints,
-                    transform,
-                    &mut diagnostics,
-                );
-            }
-            self.static_encoded_recipes_snapshot_cache = Some((
-                user_config.static_css.clone(),
-                utility_transform.is_some(),
-                encoded.snapshot(),
-            ));
-        }
-
+        self.refresh_atoms_snapshot();
+        self.refresh_encoded_recipes_snapshot();
+        self.refresh_token_refs_snapshot();
+        self.refresh_static_encoded_recipes_snapshot(user_config, utility_transform.as_deref_mut());
         self.refresh_config_utility_styles(user_config, utility_transform);
         let use_merged_utility_styles = self.prepare_snapshot_utility_styles();
+        self.refresh_view_transitions_snapshot();
 
         ProjectStylesheetSnapshots {
             atoms: self
@@ -1198,7 +1205,124 @@ impl Project {
             } else {
                 &self.utility_styles_cache
             },
+            view_transitions: self
+                .view_transitions_snapshot_cache
+                .as_deref()
+                .expect("view transition snapshot was initialized"),
         }
+    }
+
+    fn refresh_atoms_snapshot(&mut self) {
+        if self.atoms_snapshot_cache.is_some() {
+            return;
+        }
+        let mut atoms = self.atoms_cache.iter().cloned().collect::<Vec<_>>();
+        atoms.sort_by(compare_atoms_by_emit_order);
+        self.atoms_snapshot_cache = Some(atoms);
+    }
+
+    fn refresh_encoded_recipes_snapshot(&mut self) {
+        if self.encoded_recipes_snapshot_cache.is_some() {
+            return;
+        }
+        let local = self.encoded_recipes_cache.view().snapshot();
+        let mut snapshot = EncodedRecipesSnapshot {
+            base: Vec::new(),
+            variants: Vec::new(),
+            compounds: Vec::new(),
+            atomic: Vec::new(),
+        };
+        for name in &self.hydrated_recipe_order {
+            let Some(hydrated) = self.hydrated_recipes.get(name) else {
+                continue;
+            };
+            snapshot.base.extend(hydrated.base.iter().cloned());
+            snapshot.variants.extend(hydrated.variants.iter().cloned());
+            snapshot
+                .compounds
+                .extend(hydrated.compounds.iter().cloned());
+            snapshot.atomic.extend(hydrated.atomic.iter().cloned());
+        }
+        snapshot.base.extend(local.base);
+        snapshot.variants.extend(local.variants);
+        snapshot.compounds.extend(local.compounds);
+        snapshot.atomic.extend(local.atomic);
+        self.encoded_recipes_snapshot_cache = Some(snapshot);
+    }
+
+    fn refresh_token_refs_snapshot(&mut self) {
+        if self.token_refs_snapshot_cache.is_some() {
+            return;
+        }
+        let mut token_refs = self
+            .files
+            .values()
+            .flat_map(|entry| entry.token_refs.iter().cloned())
+            .collect::<Vec<_>>();
+        token_refs.sort();
+        token_refs.dedup();
+        self.token_refs_snapshot_cache = Some(token_refs);
+    }
+
+    fn refresh_static_encoded_recipes_snapshot(
+        &mut self,
+        user_config: &UserConfig,
+        mut utility_transform: Option<&mut UtilityTransformFn<'_>>,
+    ) {
+        let static_cache_matches = self
+            .static_encoded_recipes_snapshot_cache
+            .as_ref()
+            .is_some_and(|(static_css, transformed, _)| {
+                static_css == &user_config.static_css && *transformed == utility_transform.is_some()
+            });
+        if static_cache_matches {
+            return;
+        }
+        let mut encoded = EncodedRecipes::default();
+        self.config.recipes.process_static_css(
+            &mut encoded,
+            user_config,
+            &self.config.conditions,
+            &self.config.breakpoints,
+        );
+        if let Some(transform) = utility_transform.as_deref_mut() {
+            let mut diagnostics = Vec::new();
+            encoded.transform_utilities(
+                self.config.utility.as_ref(),
+                &self.config.conditions,
+                &self.config.breakpoints,
+                transform,
+                &mut diagnostics,
+            );
+        }
+        self.static_encoded_recipes_snapshot_cache = Some((
+            user_config.static_css.clone(),
+            utility_transform.is_some(),
+            encoded.snapshot(),
+        ));
+    }
+
+    fn refresh_view_transitions_snapshot(&mut self) {
+        if self.view_transitions_snapshot_cache.is_some() {
+            return;
+        }
+        let mut by_class = BTreeMap::<String, ViewTransitionStyle>::new();
+        for name in &self.hydrated_view_transition_order {
+            let Some(styles) = self.hydrated_view_transitions.get(name) else {
+                continue;
+            };
+            for style in styles {
+                by_class
+                    .entry(style.class_name.clone())
+                    .or_insert_with(|| style.clone());
+            }
+        }
+        for style in self.view_transitions.values() {
+            by_class
+                .entry(style.class_name.clone())
+                .or_insert_with(|| style.clone());
+        }
+        self.view_transitions_snapshot_cache = Some(by_class.into_values().collect());
     }
 
     /// Recomputes `config_utility_styles_cache` when the transform presence changes.
@@ -1374,7 +1498,10 @@ impl Project {
             && self.inline_slot_recipes.is_empty()
             && self.inline_recipe_spans.is_empty()
             && self.inline_slot_recipe_spans.is_empty()
+            && self.view_transitions.is_empty()
+            && self.view_transition_spans.is_empty()
             && self.hydrated_recipes.is_empty()
+            && self.hydrated_view_transitions.is_empty()
     }
 
     /// Every `cva()` recipe, keyed by `(file, span_start)`. Stable order
