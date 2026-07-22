@@ -304,9 +304,9 @@ fn build_keyframes_compile_output(
     let token_dictionary = project.config().token_dictionary();
     let manifest = compile_manifest_serde(project, token_dictionary.as_ref());
     let snapshots = project.stylesheet_snapshots(user_config);
-    let polyfill = resolve_polyfill(user_config, options.polyfill);
+    let polyfill = pandacss_stylesheet::resolve_polyfill(user_config, options.polyfill);
     let stylesheet_options = pandacss_stylesheet::StylesheetOptions {
-        minify: resolve_minify(user_config, options.minify),
+        minify: pandacss_stylesheet::resolve_minify(user_config, options.minify),
         include_static: pandacss_stylesheet::has_static_css(user_config),
         source_map: false,
         emit_layer_declaration: options.emit_layer_declaration.unwrap_or(true),
@@ -352,7 +352,7 @@ fn build_layer_compile_output(
 ) -> CompileOutputSerde {
     let token_dictionary = project.config().token_dictionary();
     let manifest = compile_manifest_serde(project, token_dictionary.as_ref());
-    let polyfill = resolve_polyfill(user_config, options.polyfill);
+    let polyfill = pandacss_stylesheet::resolve_polyfill(user_config, options.polyfill);
     let output = build_stylesheet_output(
         project,
         user_config,
@@ -405,9 +405,9 @@ fn build_split_css(
             .filter_map(|name| pandacss_stylesheet::StylesheetLayer::from_name(name))
             .collect::<Vec<_>>()
     });
-    let polyfill = resolve_polyfill(user_config, css_options.polyfill);
+    let polyfill = pandacss_stylesheet::resolve_polyfill(user_config, css_options.polyfill);
     let options = pandacss_stylesheet::StylesheetOptions {
-        minify: resolve_minify(user_config, css_options.minify),
+        minify: pandacss_stylesheet::resolve_minify(user_config, css_options.minify),
         include_static: pandacss_stylesheet::has_static_css(user_config),
         source_map: false,
         emit_layer_declaration: css_options.emit_layer_declaration.unwrap_or(true) && !polyfill,
@@ -446,9 +446,9 @@ fn build_stylesheet_output(
     polyfill_override: Option<bool>,
 ) -> pandacss_stylesheet::StylesheetOutput {
     let snapshots = project.stylesheet_snapshots(user_config);
-    let polyfill = resolve_polyfill(user_config, polyfill_override);
+    let polyfill = pandacss_stylesheet::resolve_polyfill(user_config, polyfill_override);
     let options = pandacss_stylesheet::StylesheetOptions {
-        minify: resolve_minify(user_config, minify_override),
+        minify: pandacss_stylesheet::resolve_minify(user_config, minify_override),
         include_static: pandacss_stylesheet::has_static_css(user_config),
         source_map: false,
         emit_layer_declaration: emit_layer_declaration && !polyfill,
@@ -469,32 +469,6 @@ fn build_stylesheet_output(
         },
         &options,
     )
-}
-
-fn resolve_minify(
-    user_config: &pandacss_config::UserConfig,
-    minify_override: Option<bool>,
-) -> bool {
-    minify_override.unwrap_or_else(|| {
-        user_config
-            .extra
-            .get("minify")
-            .and_then(serde_json::Value::as_bool)
-            .unwrap_or(false)
-    })
-}
-
-fn resolve_polyfill(
-    user_config: &pandacss_config::UserConfig,
-    polyfill_override: Option<bool>,
-) -> bool {
-    polyfill_override.unwrap_or_else(|| {
-        user_config
-            .extra
-            .get("polyfill")
-            .and_then(serde_json::Value::as_bool)
-            .unwrap_or(false)
-    })
 }
 
 /*

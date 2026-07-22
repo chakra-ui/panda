@@ -27,6 +27,7 @@ use pandacss_encoder::{Atom, EncodedRecipesSnapshot, RecipeStyleGroupSnapshot};
 use pandacss_shared::{Diagnostic, diagnostic_codes, file_stem};
 use pandacss_tokens::TokenDictionary;
 use pandacss_utility::{Utility, UtilityOptions};
+use serde_json::Value;
 
 #[derive(Debug, Clone)]
 #[allow(
@@ -157,6 +158,30 @@ pub struct StylesheetInput<'a> {
 #[must_use]
 pub fn has_static_css(config: &UserConfig) -> bool {
     static_css::has_static_css(config)
+}
+
+/// `minify_override` wins over `UserConfig.extra.minify` (default `false`); shared so NAPI/wasm can't drift.
+#[must_use]
+pub fn resolve_minify(config: &UserConfig, minify_override: Option<bool>) -> bool {
+    minify_override.unwrap_or_else(|| {
+        config
+            .extra
+            .get("minify")
+            .and_then(Value::as_bool)
+            .unwrap_or(false)
+    })
+}
+
+/// `polyfill_override` wins over `UserConfig.extra.polyfill` (default `false`); shared so NAPI/wasm can't drift.
+#[must_use]
+pub fn resolve_polyfill(config: &UserConfig, polyfill_override: Option<bool>) -> bool {
+    polyfill_override.unwrap_or_else(|| {
+        config
+            .extra
+            .get("polyfill")
+            .and_then(Value::as_bool)
+            .unwrap_or(false)
+    })
 }
 
 /// Compile the project's atoms + recipes (plus the static-CSS subset when

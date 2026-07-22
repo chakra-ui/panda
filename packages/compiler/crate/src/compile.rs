@@ -243,9 +243,9 @@ pub(crate) fn build_keyframes_compile_output(
     } else {
         project.stylesheet_snapshots(user_config)
     };
-    let polyfill = resolve_polyfill(user_config, polyfill_override);
+    let polyfill = pandacss_stylesheet::resolve_polyfill(user_config, polyfill_override);
     let stylesheet_options = pandacss_stylesheet::StylesheetOptions {
-        minify: resolve_minify(user_config, minify_override),
+        minify: pandacss_stylesheet::resolve_minify(user_config, minify_override),
         include_static: pandacss_stylesheet::has_static_css(user_config),
         source_map: false,
         emit_layer_declaration,
@@ -316,7 +316,7 @@ pub(crate) fn build_layer_compile_output(
         .filter_map(|name| pandacss_stylesheet::StylesheetLayer::from_name(name))
         .collect();
     let mut css = output.get_layer_css(&selected);
-    let polyfill = resolve_polyfill(user_config, polyfill_override);
+    let polyfill = pandacss_stylesheet::resolve_polyfill(user_config, polyfill_override);
     if emit_layer_declaration && !polyfill {
         let preamble =
             pandacss_stylesheet::layer_order_declaration(&user_config.layers, Some(&selected));
@@ -370,9 +370,15 @@ pub(crate) fn build_split_css(
                 .collect::<Vec<_>>()
         })
     });
-    let polyfill = resolve_polyfill(user_config, options.and_then(|options| options.polyfill));
+    let polyfill = pandacss_stylesheet::resolve_polyfill(
+        user_config,
+        options.and_then(|options| options.polyfill),
+    );
     let stylesheet_options = pandacss_stylesheet::StylesheetOptions {
-        minify: resolve_minify(user_config, options.and_then(|options| options.minify)),
+        minify: pandacss_stylesheet::resolve_minify(
+            user_config,
+            options.and_then(|options| options.minify),
+        ),
         include_static: pandacss_stylesheet::has_static_css(user_config),
         source_map: false,
         emit_layer_declaration: options
@@ -423,9 +429,9 @@ pub(crate) fn build_stylesheet_output(
         project.stylesheet_snapshots(user_config)
     };
     span.record("atom_count", snapshots.atoms.len());
-    let polyfill = resolve_polyfill(user_config, options.polyfill_override);
+    let polyfill = pandacss_stylesheet::resolve_polyfill(user_config, options.polyfill_override);
     let stylesheet_options = pandacss_stylesheet::StylesheetOptions {
-        minify: resolve_minify(user_config, options.minify_override),
+        minify: pandacss_stylesheet::resolve_minify(user_config, options.minify_override),
         include_static: pandacss_stylesheet::has_static_css(user_config),
         source_map: false,
         emit_layer_declaration: options.emit_layer_declaration && !polyfill,
@@ -446,26 +452,6 @@ pub(crate) fn build_stylesheet_output(
         },
         &stylesheet_options,
     )
-}
-
-fn resolve_minify(user_config: &UserConfig, minify_override: Option<bool>) -> bool {
-    minify_override.unwrap_or_else(|| {
-        user_config
-            .extra
-            .get("minify")
-            .and_then(serde_json::Value::as_bool)
-            .unwrap_or(false)
-    })
-}
-
-fn resolve_polyfill(user_config: &UserConfig, polyfill_override: Option<bool>) -> bool {
-    polyfill_override.unwrap_or_else(|| {
-        user_config
-            .extra
-            .get("polyfill")
-            .and_then(serde_json::Value::as_bool)
-            .unwrap_or(false)
-    })
 }
 
 fn compile_manifest(
