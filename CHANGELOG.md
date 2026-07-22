@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [1.11.5](#1.11.5) - 2026-07-22
+
+### Fixed
+
+- Emit `-webkit-backdrop-filter` before `backdrop-filter` so Lightning CSS keeps the unprefixed declaration.
+
+- Resolve tsconfig `paths` from referenced projects when bundling the config file (Vite solution-style setups).
+
+### Changed
+
+- Remove redundant `HTMLPandaProps` type.
+
 ## [1.11.4](#1.11.4) - 2026-06-27
 
 ### Fixed
