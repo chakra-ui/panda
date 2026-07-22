@@ -6,7 +6,7 @@ const ANALYZE = !!process.env.ANALYZE
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [pandacss(), react()],
+  plugins: [pandacss({ transform: true }), react()],
   build: {
     sourcemap: ANALYZE,
   },

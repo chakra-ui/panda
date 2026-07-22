@@ -65,6 +65,46 @@ describe('@pandacss/webpack design-system watch', () => {
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('while loading the design system'))
   })
 
+  it('does not apply the source transformer by default', async () => {
+    const webpackApply = vi.fn()
+    const driver = createMockDriver()
+
+    vi.doMock('@pandacss/compiler', () => ({
+      createNodeDriver: vi.fn(async () => driver),
+    }))
+    vi.doMock('@pandacss/transformer', () => ({
+      pandaTransformer: {
+        webpack: () => ({
+          apply: webpackApply,
+        }),
+      },
+    }))
+
+    const { PandaWebpackPlugin } = await import('../src')
+    applyPlugin(new PandaWebpackPlugin({ cwd: '/project' }))
+    expect(webpackApply).not.toHaveBeenCalled()
+  })
+
+  it('applies the source transformer when transform is enabled', async () => {
+    const webpackApply = vi.fn()
+    const driver = createMockDriver()
+
+    vi.doMock('@pandacss/compiler', () => ({
+      createNodeDriver: vi.fn(async () => driver),
+    }))
+    vi.doMock('@pandacss/transformer', () => ({
+      pandaTransformer: {
+        webpack: () => ({
+          apply: webpackApply,
+        }),
+      },
+    }))
+
+    const { PandaWebpackPlugin } = await import('../src')
+    applyPlugin(new PandaWebpackPlugin({ cwd: '/project', transform: true }))
+    expect(webpackApply).toHaveBeenCalledTimes(1)
+  })
+
   it('prefers design-system sync over config reload for artifact paths', async () => {
     const { driver, PandaWebpackPlugin } = await setupPlugin()
     driver.isConfigFile.mockImplementation((file?: string): boolean => {

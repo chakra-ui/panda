@@ -1,25 +1,30 @@
 import { createNodeDriver, type Diagnostic, type Driver } from '@pandacss/compiler'
 import { formatDiagnostic, withDiagnosticFile } from '@pandacss/compiler-shared'
-import { pandaTransformer, type PandaTransformerOptions } from '@pandacss/transformer'
+import { pandaTransformer } from '@pandacss/transformer'
 import type { Compiler } from 'webpack'
 import type { PandaCssLoaderOptions } from './css-loader'
 
-export interface PandaWebpackPluginOptions extends PandaTransformerOptions {
+export interface PandaWebpackPluginOptions {
   /** Project root. Defaults to the webpack compiler `context`. */
   cwd?: string
   /** Explicit config file (relative to `cwd`); otherwise discovered upward. */
   configPath?: string
   /** Where codegen artifacts are written. Defaults to the config `outdir`. */
   outdir?: string
+  /**
+   * Opt-in source rewrite (`css()` → class strings, etc.). Default: `false`.
+   * CSS injection, codegen, and watch sync always run.
+   */
+  transform?: boolean
 }
 
 const NAME = 'PandaWebpackPlugin'
 
 /**
- * webpack plugin for Panda CSS. Runs codegen and rewrites source via the native
- * transform loader (shared `@pandacss/transformer` unplugin, which also resolves
- * the `@pandacss-internal/css` runtime module). Generated CSS is injected
- * in-memory into any stylesheet that declares Panda layers — no file is written.
+ * webpack plugin for Panda CSS. Runs codegen and injects generated CSS
+ * in-memory into any stylesheet that declares Panda layers — no file is
+ * written. Pass `transform: true` to also rewrite source via the shared
+ * `@pandacss/transformer` unplugin (and resolve `@pandacss-internal/css`).
  */
 export class PandaWebpackPlugin {
   readonly #options: PandaWebpackPluginOptions
@@ -99,18 +104,18 @@ export class PandaWebpackPlugin {
 
   apply(compiler: Compiler) {
     const cwd = this.#options.cwd ?? compiler.context ?? process.cwd()
-    const { cwd: _cwd, configPath: _configPath, outdir: _outdir, ...transformerOptions } = this.#options
     const logger = compiler.getInfrastructureLogger?.(NAME)
 
-    // Source transform loader + `@pandacss-internal/css` virtual module (shared
-    // unplugin). Skip node_modules — third-party code is never Panda source.
-    pandaTransformer
-      .webpack({
-        exclude: [/node_modules/],
-        ...transformerOptions,
-        getCompiler: () => this.#driver?.compiler,
-      })
-      .apply(compiler)
+    if (this.#options.transform) {
+      // Source transform loader + `@pandacss-internal/css` virtual module (shared
+      // unplugin). Skip node_modules — third-party code is never Panda source.
+      pandaTransformer
+        .webpack({
+          exclude: [/node_modules/],
+          getCompiler: () => this.#driver?.compiler,
+        })
+        .apply(compiler)
+    }
 
     // Inject generated CSS in-memory: a `pre` loader on layer-declaring `.css`,
     // handed a live getter for the driver.

@@ -16,7 +16,7 @@ export default {
   plugins: [
     // Panda must run before esbuild compiles the TSX away: the unplugin sets
     // `enforce: 'pre'`, so its transform sees the original `css()` / `styled` source.
-    pandacss(),
+    pandacss({ transform: true }),
     nodeResolve({ extensions: ['.mjs', '.js', '.ts', '.tsx', '.json'] }),
     esbuild({ target: 'es2020', jsx: 'automatic' }),
   ],

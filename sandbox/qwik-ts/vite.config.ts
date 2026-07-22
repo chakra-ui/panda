@@ -6,7 +6,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig(() => {
   return {
-    plugins: [pandacss(), qwikCity(), qwikVite(), tsconfigPaths()],
+    plugins: [pandacss({ transform: true }), qwikCity(), qwikVite(), tsconfigPaths()],
     preview: {
       headers: {
         'Cache-Control': 'public, max-age=600',

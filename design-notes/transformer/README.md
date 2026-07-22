@@ -22,15 +22,14 @@ runtime module contract, and how bundler adapters plug in.
 
 What ships on the v2 branch today:
 
-| Piece                                         | Status                                                                               |
-| --------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `pandacss_project::transform`                 | Inspect, plan, print, dead-import cleanup, helper import sync                        |
-| `Project::transform_source_with`              | Same `ParseTransforms` bag as `parse_file_with` (pattern / source / utility)         |
-| Rust printer                                  | Single `string_wizard::MagicString` pass; v3 source map on changed output            |
-| `@pandacss/transformer`                       | `transformSource`, host-neutral hooks, internal runtime, optional `unplugin` exports |
-| `@pandacss/vite`                              | Transform hooks from `@pandacss/transformer`; CSS-root and HMR stay in Vite          |
-| Internal runtime module                       | `@pandacss-internal/css` → `\0pandacss:internal:css`; symbols injected on demand     |
-| Rollup / webpack / Rspack / Rolldown adapters | Not shipped yet                                                                      |
+| Piece                                   | Status                                                                               |
+| --------------------------------------- | ------------------------------------------------------------------------------------ |
+| `pandacss_project::transform`           | Inspect, plan, print, dead-import cleanup, helper import sync                        |
+| `Project::transform_source_with`        | Same `ParseTransforms` bag as `parse_file_with` (pattern / source / utility)         |
+| Rust printer                            | Single `string_wizard::MagicString` pass; v3 source map on changed output            |
+| `@pandacss/transformer`                 | `transformSource`, host-neutral hooks, internal runtime, optional `unplugin` exports |
+| `@pandacss/vite` / `webpack` / `rollup` | CSS-root, codegen, and HMR by default; source rewrite via `transform: true`          |
+| Internal runtime module                 | `@pandacss-internal/css` → `\0pandacss:internal:css`; symbols injected on demand     |
 
 Runtime symbols today: `cx as __pcx`, `cva as __pcva`, `sva as __psva`. Inline `cva()` / `sva()` / `styled()` rewrites
 bail when per-slot variant classes would diverge (runtime expects one shared string per option).
@@ -339,13 +338,27 @@ It should not know:
 - how webpack injects a synthetic module
 - how Rollup caches module loads
 
+## Host plugins vs transformer options
+
+Bundler plugins (`@pandacss/vite`, `@pandacss/webpack`, `@pandacss/rollup`) default to CSS injection, codegen, and
+HMR/watch only. Source rewrite is opt-in:
+
+```ts
+pandacss() // CSS + codegen + HMR
+pandacss({ transform: true }) // also rewrite source
+```
+
+The host option is a boolean. Advanced knobs (`targets`, `helper`, `include` / `exclude`) stay on
+`@pandacss/transformer` / `transformSource`. Do not confuse the unused internal `TransformerOptions.mode`
+(`'build' | 'serve'`) with Vite `command` / `mode` or webpack `mode` — hosts do not expose or auto-map it.
+
 ## The transformer options
 
-Suggested shape:
+Suggested shape for the low-level transformer (not the host plugin flag):
 
 ```ts
 interface TransformerOptions {
-  mode: 'build' | 'serve'
+  mode: 'build' | 'serve' // internal; unused by the planner today
   helper: {
     cx: false | true | 'auto'
   }
@@ -364,8 +377,8 @@ interface TransformerOptions {
 `targets` gates which categories rewrite. When the object is omitted (or every flag is unset), all of `css`, `jsx`,
 `patterns`, and `recipes` are on by default — `grid()` / `stack()` and static `button()` calls inline alongside `css()`.
 Setting any flag switches to opt-in: only the categories you enable run. Every category still bails to the runtime call
-on anything dynamic, so the default is safe. `tokens` inlines static `token()` / `token.var()` calls to their
-resolved value.
+on anything dynamic, so the default is safe. `tokens` inlines static `token()` / `token.var()` calls to their resolved
+value.
 
 The helper flag starts simple:
 
@@ -524,8 +537,8 @@ That gives us one clean rule:
 
 ## Dynamic input policy
 
-See also [StyleTree](../style-tree.md) for the extract-time IR that replaces source re-parse for finite
-conditionals (`Ternary` / `And` / spreads); open-ended dynamic remains `Open` → bail.
+See also [StyleTree](../style-tree.md) for the extract-time IR that replaces source re-parse for finite conditionals
+(`Ternary` / `And` / spreads); open-ended dynamic remains `Open` → bail.
 
 Yes, this needs to be considered explicitly. The transformer should not use one blanket rule for every dynamic input.
 

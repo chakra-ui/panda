@@ -1,9 +1,9 @@
 import { createNodeDriver, type NodeDriver } from '@pandacss/compiler'
-import { pandaTransformer, type PandaTransformerOptions } from '@pandacss/transformer'
+import { pandaTransformer } from '@pandacss/transformer'
 import { dirname } from 'node:path'
 import type { Plugin } from 'rollup'
 
-export interface PandaRollupOptions extends PandaTransformerOptions {
+export interface PandaRollupOptions {
   /** Project root. Defaults to `process.cwd()`. */
   cwd?: string
   /** Explicit config file (relative to `cwd`); otherwise discovered upward. */
@@ -18,19 +18,30 @@ export interface PandaRollupOptions extends PandaTransformerOptions {
    * `panda lib`. Defaults to `false`.
    */
   lib?: boolean
+  /**
+   * Opt-in source rewrite (`css()` → class strings, etc.). Default: `false`.
+   * Codegen and stylesheet emit always run.
+   */
+  transform?: boolean
 }
 
 /**
- * Rollup plugin for Panda CSS. Returns two plugins:
+ * Rollup plugin for Panda CSS. Returns one or two plugins:
  *
- * - the shared `@pandacss/transformer` unplugin — source transform plus the
- *   `@pandacss-internal/css` runtime module (`resolveId` / `load` / `transform`,
- *   mirroring the Vite adapter), and
  * - a driver-orchestration plugin that runs codegen and emits the stylesheet as
- *   a Rollup asset, since Rollup has no built-in CSS handling.
+ *   a Rollup asset, since Rollup has no built-in CSS handling, and
+ * - when `transform: true`, the shared `@pandacss/transformer` unplugin — source
+ *   rewrite plus the `@pandacss-internal/css` runtime module.
  */
 export function pandacss(options: PandaRollupOptions = {}): Plugin[] {
-  const { cwd: cwdOption, configPath, outdir, fileName = 'panda.css', lib = false, ...transformerOptions } = options
+  const {
+    cwd: cwdOption,
+    configPath,
+    outdir,
+    fileName = 'panda.css',
+    lib = false,
+    transform: transformEnabled = false,
+  } = options
   const cwd = cwdOption ?? process.cwd()
   let driver: NodeDriver | undefined
   let ready: Promise<void> | undefined
@@ -75,8 +86,8 @@ export function pandacss(options: PandaRollupOptions = {}): Plugin[] {
       this.emitFile({ type: 'asset', fileName, source: css })
 
       if (!lib) return
-      // Empty `files`: the bundle is transformed, so a source re-scan can't work —
-      // buildinfo is authoritative and stale means "rebuild".
+      // Empty `files`: when transform is on the bundle is rewritten, so a source
+      // re-scan can't work — buildinfo is authoritative and stale means "rebuild".
       const libOutdir = output.dir ?? (output.file ? dirname(output.file) : undefined)
       const result = await driver.writeDesignSystemLib({ outdir: libOutdir, files: [] })
       for (const diagnostic of result.diagnostics) {
@@ -85,8 +96,9 @@ export function pandacss(options: PandaRollupOptions = {}): Plugin[] {
     },
   }
 
+  if (!transformEnabled) return [orchestrator]
+
   const transform = pandaTransformer.rollup({
-    ...transformerOptions,
     getCompiler: () => driver?.compiler,
   })
 

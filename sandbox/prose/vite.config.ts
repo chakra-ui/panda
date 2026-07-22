@@ -10,7 +10,7 @@ export default defineConfig({
       autoCodeSplitting: true,
     }),
     react(),
-    pandacss(),
+    pandacss({ transform: true }),
   ],
   resolve: {
     conditions: ['source'],

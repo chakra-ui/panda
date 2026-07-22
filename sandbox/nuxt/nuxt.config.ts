@@ -4,7 +4,7 @@ import pandacss from '@pandacss/vite'
 export default defineNuxtConfig({
   telemetry: false,
   vite: {
-    plugins: [pandacss()],
+    plugins: [pandacss({ transform: true })],
   },
   css: ['~/assets/main.css'],
   compatibilityDate: '2025-04-25',

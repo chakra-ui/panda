@@ -5,7 +5,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [pandacss(), tsconfigPaths(), preact()],
+  plugins: [pandacss({ transform: true }), tsconfigPaths(), preact()],
   resolve: {
     conditions: ['source'],
   },

@@ -4,5 +4,5 @@ import { defineConfig } from 'vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [pandacss(), react()],
+  plugins: [pandacss({ transform: true }), react()],
 })
