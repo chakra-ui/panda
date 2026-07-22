@@ -25,18 +25,18 @@ import type {
   CompileFileManifest,
   CompileOptions,
   CompileOutput,
-  CssFile,
   GenerateArtifactOptions,
   LayerCssOptions,
   LayerNames,
   ScanOptions,
   SourceEntry,
   SplitCssOptions,
+  SplitCssResult,
   Spec,
   WriteArtifactsOptions,
   WriteCssOptions,
   WriteCssResult,
-  WriteFilesResult,
+  WriteSplitCssResult,
   WriteLayerCssOptions,
   WriteSplitCssOptions,
 } from './output'
@@ -258,7 +258,8 @@ export interface Compiler {
   getLayerCss(options: LayerCssOptions): CompileOutput
   /** Theme `@keyframes` CSS only (no token vars or other layers). */
   getKeyframeCss(options?: CompileOptions): CompileOutput
-  getSplitCss(options?: SplitCssOptions): CssFile[]
+  /** Generate split stylesheet files and the complete output diagnostics in memory. */
+  getSplitCss(options?: SplitCssOptions): SplitCssResult
 
   readonly buildInfo: BuildInfo
   readonly designSystem: DesignSystem
@@ -269,7 +270,7 @@ export interface Compiler {
   writeArtifacts(options: WriteArtifactsOptions): string[]
   writeCss(options: WriteCssOptions): WriteCssResult
   writeLayerCss(options: WriteLayerCssOptions): WriteCssResult
-  writeSplitCss(options: WriteSplitCssOptions): WriteFilesResult
+  writeSplitCss(options: WriteSplitCssOptions): WriteSplitCssResult
   generateArtifacts(options?: GenerateArtifactOptions): CodegenArtifact[]
   generateArtifact(id: CodegenArtifactId, options?: GenerateArtifactOptions): CodegenArtifact | undefined
   generateAffectedArtifacts(dependencies: CodegenDependency[], options?: GenerateArtifactOptions): CodegenArtifact[]

@@ -33,7 +33,7 @@ pub(crate) fn condition_raw_paths(config: &UserConfig, condition: &str) -> Vec<C
         return vec![vec![raw]];
     }
 
-    if condition.starts_with('@') || condition.contains('&') {
+    if condition.starts_with('@') || crate::css_syntax::contains_code_byte(condition, b'&') {
         return normalize_condition_paths(config, vec![vec![condition.to_owned()]]);
     }
 
@@ -64,13 +64,9 @@ pub(crate) fn lower_token_conditions(
     base: &str,
     conditions: &[ConditionPaths],
 ) -> Vec<LoweredTarget> {
-    lower_conditions_with(
-        LoweredTarget::new(base),
-        conditions,
-        |selector, wrappers, raw| {
-            apply_token_raw_condition(base, selector, wrappers, raw);
-        },
-    )
+    lower_conditions_with(LoweredTarget::new(base), conditions, |target, raw| {
+        apply_token_raw_condition(base, target, raw);
+    })
 }
 
 /// Path-product expansion: each condition key may resolve to multiple raw
@@ -79,7 +75,7 @@ pub(crate) fn lower_token_conditions(
 fn lower_conditions_with(
     base: LoweredTarget,
     conditions: &[ConditionPaths],
-    mut apply: impl FnMut(&mut String, &mut Vec<String>, &str),
+    mut apply: impl FnMut(&mut LoweredTarget, &str),
 ) -> Vec<LoweredTarget> {
     let mut targets = vec![base];
     for paths in conditions {
@@ -88,7 +84,7 @@ fn lower_conditions_with(
             for path in paths {
                 let mut target = target.clone();
                 for raw in path {
-                    apply(&mut target.selector, &mut target.wrappers, raw);
+                    apply(&mut target, raw);
                 }
                 next.push(target);
             }
@@ -99,7 +95,7 @@ fn lower_conditions_with(
 }
 
 pub(crate) fn is_nested_selector_key(key: &str) -> bool {
-    key.contains('&')
+    crate::css_syntax::contains_code_byte(key, b'&')
         || key.contains(',')
         || key.contains(' ')
         || key.contains('>')
@@ -164,49 +160,48 @@ fn expand_breakpoint_at_rule(config: &UserConfig, raw: &str) -> Option<String> {
     config.breakpoint_condition(params)
 }
 
-fn apply_raw_condition(selector: &mut String, wrappers: &mut Vec<String>, raw: &str) {
+fn apply_raw_condition(target: &mut LoweredTarget, raw: &str) {
     if raw.starts_with('@') {
-        wrappers.push(raw.to_owned());
-    } else if raw.contains('&') {
-        *selector = crate::selector::replace_selector_parent(raw, selector);
+        target.wrappers.push(raw.to_owned());
+    } else if crate::css_syntax::contains_code_byte(raw, b'&') {
+        target.selector = crate::selector::replace_selector_parent(raw, &target.selector);
+        target.merge_safe &= crate::css_syntax::selector_is_merge_safe(&target.selector);
     } else {
-        *selector = format!("{raw} {selector}");
+        target.selector = format!("{raw} {}", target.selector);
+        target.merge_safe &= crate::css_syntax::selector_is_merge_safe(&target.selector);
     }
 }
 
 /// Token-var version of [`apply_raw_condition`]: starts from `cssVarRoot`,
 /// where a ` &` parent condition replaces or nests into the root and the
 /// stray root gets cleaned up afterward.
-fn apply_token_raw_condition(
-    css_var_root: &str,
-    selector: &mut String,
-    wrappers: &mut Vec<String>,
-    raw: &str,
-) {
+fn apply_token_raw_condition(css_var_root: &str, target: &mut LoweredTarget, raw: &str) {
     if raw.starts_with('@') {
-        wrappers.push(raw.to_owned());
+        target.wrappers.push(raw.to_owned());
         return;
     }
 
     if let Some(parent) = token_parent_selector(raw) {
-        *selector = if selector == css_var_root {
+        target.selector = if target.selector == css_var_root {
             parent
-        } else if parent.contains('&') {
-            crate::selector::replace_selector_parent(&parent, selector)
+        } else if crate::css_syntax::contains_code_byte(&parent, b'&') {
+            crate::selector::replace_selector_parent(&parent, &target.selector)
         } else {
-            format!("{selector}{parent}")
+            format!("{}{parent}", target.selector)
         };
+        target.merge_safe &= crate::css_syntax::selector_is_merge_safe(&target.selector);
         return;
     }
 
-    if raw.contains('&') {
-        *selector = crate::selector::replace_selector_parent(raw, selector);
-        cleanup_token_selector(css_var_root, selector);
-    } else if selector == css_var_root {
-        raw.clone_into(selector);
+    if crate::css_syntax::contains_code_byte(raw, b'&') {
+        target.selector = crate::selector::replace_selector_parent(raw, &target.selector);
+        cleanup_token_selector(css_var_root, &mut target.selector);
+    } else if target.selector == css_var_root {
+        raw.clone_into(&mut target.selector);
     } else {
-        *selector = format!("{selector} {raw}");
+        target.selector = format!("{} {raw}", target.selector);
     }
+    target.merge_safe &= crate::css_syntax::selector_is_merge_safe(&target.selector);
 }
 
 /// Extract the parent of a ` &` condition (`.dark &` -> `.dark`); multiple collapse into `:where(a, b)`.
@@ -215,9 +210,7 @@ fn token_parent_selector(raw: &str) -> Option<String> {
         .into_iter()
         .filter_map(|selector| {
             let selector = selector.trim();
-            selector
-                .contains(" &")
-                .then(|| selector.replace(" &", "").trim().to_owned())
+            crate::css_syntax::strip_spaced_code_byte(selector, b'&')
         })
         .filter(|selector| !selector.is_empty())
         .collect::<Vec<_>>();

@@ -978,6 +978,32 @@ fn emits_conditions_and_breakpoints() {
 }
 
 #[test]
+fn configured_condition_ignores_ampersand_inside_attribute_value() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": {
+            "music": "[data-category=\"sound & vision\"]"
+        },
+        "utilities": {
+            "color": { "className": "c" }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ _music: { color: 'red' } })",
+        &[StylesheetLayer::Utilities],
+    );
+
+    assert_snapshot!(css, @r#"
+    @layer utilities {
+      [data-category="sound & vision"] .music\:c_red {
+        color: red;
+      }
+    }
+    "#);
+}
+
+#[test]
 fn emits_breakpoint_range_conditions() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
@@ -1400,21 +1426,19 @@ fn minified_output_preserves_significant_spaces() {
 }
 
 #[test]
-fn merges_adjacent_selectors_that_share_a_declaration_block() {
-    // N3: distinct selectors with identical declarations collapse into one
-    // comma-joined rule (parity with node's merge-rules pass).
+fn merges_baseline_selector_conditions() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
         "conditions": { "hover": "&:hover" }
     }));
     let css = compile_layer_css(
         &config,
-        "import { css } from '@panda/css'; css({ _hover: { color: 'red' } }); css({ '[data-x] &': { color: 'red' } });",
+        "import { css } from '@panda/css'; css({ color: 'red', _hover: { color: 'red' } });",
         &[StylesheetLayer::Utilities],
     );
     assert_snapshot!(css, @r"
     @layer utilities {
-      [data-x] .\[\[data-x\]_\&\]\:color_red, .hover\:color_red:hover {
+      .color_red, .hover\:color_red:hover {
         color: red;
       }
     }

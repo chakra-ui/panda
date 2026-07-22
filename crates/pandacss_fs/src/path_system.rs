@@ -7,6 +7,18 @@ pub trait PathSystem: Send + Sync {
     fn join(&self, parts: &[&str]) -> String;
     fn dirname(&self, path: &str) -> String;
 
+    fn is_safe_relative(&self, path: &str) -> bool {
+        if path.is_empty()
+            || self.is_absolute(path)
+            || path.bytes().any(|byte| byte.is_ascii_control())
+            || matches!(path.as_bytes(), [drive, b':', ..] if drive.is_ascii_alphabetic())
+        {
+            return false;
+        }
+        path.split(['/', '\\'])
+            .all(|part| !part.is_empty() && !matches!(part, "." | ".."))
+    }
+
     fn resolve(&self, cwd: &str, path: &str) -> String {
         if self.is_absolute(path) {
             path.to_owned()

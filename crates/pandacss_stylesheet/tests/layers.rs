@@ -261,3 +261,27 @@ fn strip_layer_order_statements_leaves_comments_untouched() {
         "/* note */\n\n.x {}"
     );
 }
+
+#[test]
+fn layer_order_detection_and_stripping_ignore_strings() {
+    let quoted_only = r#".x { content: "@layer reset, base, tokens, recipes, utilities;"; }"#;
+
+    let with_statement = r".x { content: '@layer reset, base, tokens, recipes, utilities;'; }
+@layer reset, base, tokens, recipes, utilities;";
+
+    assert_snapshot!(
+        format!(
+            "quoted-only detected: {}\nquoted-only stripped: {}\nstatement detected: {}\nstatement stripped: {}",
+            has_layer_declaration(quoted_only, &LAYERS),
+            strip_layer_order_statements(quoted_only, &LAYERS),
+            has_layer_declaration(with_statement, &LAYERS),
+            strip_layer_order_statements(with_statement, &LAYERS),
+        ),
+        @r#"
+    quoted-only detected: false
+    quoted-only stripped: .x { content: "@layer reset, base, tokens, recipes, utilities;"; }
+    statement detected: true
+    statement stripped: .x { content: '@layer reset, base, tokens, recipes, utilities;'; }
+    "#
+    );
+}

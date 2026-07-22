@@ -14,7 +14,7 @@ import {
   type SourceChange,
   type WriteCssOptions,
   type WriteCssResult,
-  type WriteFilesResult,
+  type WriteSplitCssResult,
   type WriteLayerCssOptions,
   type WriteSplitCssOptions,
   collectParseDiagnostics,
@@ -382,7 +382,7 @@ export class NodeDriver extends BaseDriver {
     return result
   }
 
-  override writeSplitCss(options?: WriteSplitCssOptions): WriteFilesResult {
+  override writeSplitCss(options?: WriteSplitCssOptions): WriteSplitCssResult {
     const result = super.writeSplitCss(options)
     const cwd = options?.cwd ?? this.#options.cwd
     const outdir = result.root

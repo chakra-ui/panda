@@ -13,7 +13,7 @@ import type {
   WriteArtifactsOptions,
   WriteCssOptions,
   WriteCssResult,
-  WriteFilesResult,
+  WriteSplitCssResult,
   WriteLayerCssOptions,
   WriteSplitCssOptions,
 } from '@pandacss/compiler-shared'
@@ -218,7 +218,7 @@ class FallbackCompiler implements Compiler {
     return emptyWriteCssResult(options.outfile)
   }
   writeSplitCss(options: WriteSplitCssOptions) {
-    return emptyWriteFilesResult(options.outdir ?? '')
+    return emptyWriteSplitCssResult(options.outdir ?? '')
   }
   isEmpty() {
     return true
@@ -257,7 +257,7 @@ class FallbackCompiler implements Compiler {
     return emptyCompileOutput()
   }
   getSplitCss(_options?: SplitCssOptions) {
-    return []
+    return { files: [], diagnostics: [] }
   }
   readonly buildInfo = fallbackBuildInfo
   readonly designSystem = fallbackDesignSystem
@@ -332,10 +332,11 @@ function emptyWriteCssResult(path: string): WriteCssResult {
   }
 }
 
-function emptyWriteFilesResult(root: string): WriteFilesResult {
+function emptyWriteSplitCssResult(root: string): WriteSplitCssResult {
   return {
     root,
     paths: [],
     files: [],
+    diagnostics: [],
   }
 }

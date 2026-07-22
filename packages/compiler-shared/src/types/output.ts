@@ -130,6 +130,11 @@ export interface CssFile {
   code: string
 }
 
+export interface SplitCssResult {
+  files: CssFile[]
+  diagnostics: Diagnostic[]
+}
+
 export interface CompileFileManifest {
   path: string
   hash: string
@@ -165,10 +170,9 @@ export interface WriteCssResult extends CompileOutput {
   path: string
 }
 
-export interface WriteFilesResult {
+export interface WriteSplitCssResult extends SplitCssResult {
   root: string
   paths: string[]
-  files: CssFile[]
 }
 
 export interface ScanOptions {

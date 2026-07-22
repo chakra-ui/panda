@@ -824,7 +824,7 @@ fn polyfill_boosts_selectors_inside_supports() {
 }
 
 #[test]
-fn polyfill_custom_utility_sublayer_outranks_default_utilities() {
+fn polyfill_default_utilities_outrank_custom_utility_sublayer() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
         "utilities": {
@@ -852,11 +852,85 @@ fn polyfill_custom_utility_sublayer_outranks_default_utilities() {
         .find(|l| l.contains(".d_flex"))
         .expect(".d_flex");
     assert!(
-        boost_amount(custom_sublayer_line) > boost_amount(default_line),
-        "custom sublayer {} > default utilities {}",
+        boost_amount(default_line) > boost_amount(custom_sublayer_line),
+        "default utilities {} > custom sublayer {}",
+        boost_amount(default_line),
         boost_amount(custom_sublayer_line),
-        boost_amount(default_line)
     );
+}
+
+#[test]
+fn polyfill_important_custom_utility_sublayer_outranks_default_utilities() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "color": { "className": "c" },
+            "display": { "className": "d", "layer": "compositions" }
+        }
+    }));
+    let output = compile_output(
+        &config,
+        "import { css } from '@panda/css'\ncss({ color: 'red !important', display: 'flex !important' })",
+        StylesheetOptions {
+            polyfill: true,
+            emit_layer_declaration: false,
+            ..StylesheetOptions::default()
+        },
+    );
+    let default_line = output
+        .css
+        .lines()
+        .find(|line| line.contains(".c_red"))
+        .expect(".c_red");
+    let custom_line = output
+        .css
+        .lines()
+        .find(|line| line.contains(".d_flex"))
+        .expect(".d_flex");
+
+    assert!(boost_amount(custom_line) > boost_amount(default_line));
+}
+
+#[test]
+fn polyfill_respects_implicit_parent_order_for_dotted_utility_layers() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "color": { "className": "c", "layer": "theme" },
+            "display": { "className": "d", "layer": "theme.inner" }
+        }
+    }));
+
+    let normal = compile_output(
+        &config,
+        "import { css } from '@panda/css'\ncss({ color: 'red', display: 'flex' })",
+        StylesheetOptions {
+            polyfill: true,
+            emit_layer_declaration: false,
+            ..StylesheetOptions::default()
+        },
+    )
+    .css;
+    let important = compile_output(
+        &config,
+        "import { css } from '@panda/css'\ncss({ color: 'red !important', display: 'flex !important' })",
+        StylesheetOptions {
+            polyfill: true,
+            emit_layer_declaration: false,
+            ..StylesheetOptions::default()
+        },
+    )
+    .css;
+    let amount = |css: &str, class_name: &str| {
+        boost_amount(
+            css.lines()
+                .find(|line| line.contains(class_name))
+                .expect("utility class"),
+        )
+    };
+
+    assert!(amount(&normal, ".c_red") > amount(&normal, ".d_flex"));
+    assert!(amount(&important, ".d_flex") > amount(&important, ".c_red"));
 }
 
 #[test]

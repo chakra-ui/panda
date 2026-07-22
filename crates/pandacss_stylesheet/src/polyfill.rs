@@ -52,43 +52,13 @@ pub(crate) struct FlattenOutput {
     pub layer_ranges: StylesheetLayerRanges,
 }
 
-/// Preamble ranks; wrapper paths share their first child's rank.
-#[must_use]
-pub(crate) fn layer_rank_map(layers: &CascadeLayers) -> HashMap<String, u32> {
-    let mut ranks = HashMap::new();
-    let mut rank = 0_u32;
-    for name in [&layers.reset, &layers.base, &layers.tokens] {
-        ranks.insert(name.clone(), rank);
-        rank += 1;
-    }
-
-    let recipes = &layers.recipes;
-    ranks.insert(recipes.clone(), rank);
-    ranks.insert(format!("{recipes}.base"), rank);
-    rank += 1;
-    ranks.insert(format!("{recipes}.slots"), rank);
-    ranks.insert(format!("{recipes}.slots.base"), rank);
-    rank += 1;
-    ranks.insert(format!("{recipes}.slots.variants"), rank);
-    rank += 1;
-    ranks.insert(format!("{recipes}.slots.compound_variants"), rank);
-    rank += 1;
-    ranks.insert(format!("{recipes}.variants"), rank);
-    rank += 1;
-    ranks.insert(format!("{recipes}.compound_variants"), rank);
-    rank += 1;
-
-    ranks.insert(layers.utilities.clone(), rank);
-    ranks
-}
-
 #[must_use]
 pub(crate) fn analyze(ops: &[SheetOp], layers: &CascadeLayers) -> AnalyzeResult {
-    let mut ranks = layer_rank_map(layers);
-    let mut next_rank = ranks.values().copied().max().unwrap_or(0).saturating_add(1);
     let mut max_ids = 0_u32;
     let mut stack = Vec::new();
-    walk_analyze(ops, &mut stack, &mut ranks, &mut next_rank, &mut max_ids);
+    let mut discovered = Vec::new();
+    walk_analyze(ops, &mut stack, &mut discovered, &mut max_ids);
+    let ranks = crate::cascade::CascadePlan::with_discovered(layers, &discovered).rank_map();
     let max_rank = ranks.values().copied().max().unwrap_or(0);
     AnalyzeResult {
         ranks,
@@ -100,31 +70,32 @@ pub(crate) fn analyze(ops: &[SheetOp], layers: &CascadeLayers) -> AnalyzeResult 
 fn walk_analyze(
     ops: &[SheetOp],
     stack: &mut Vec<String>,
-    ranks: &mut HashMap<String, u32>,
-    next_rank: &mut u32,
+    discovered: &mut Vec<Vec<String>>,
     max_ids: &mut u32,
 ) {
     for op in ops {
         match op {
             SheetOp::LayerEnter(name) => {
                 stack.push(name.clone());
-                let path = stack.join(".");
-                ranks.entry(path).or_insert_with(|| {
-                    let rank = *next_rank;
-                    *next_rank = next_rank.saturating_add(1);
-                    rank
-                });
             }
             SheetOp::LayerExit => {
                 stack.pop();
             }
             SheetOp::Rule { selector, .. } => {
+                if !stack.is_empty() {
+                    discovered.push(stack.clone());
+                }
                 *max_ids = (*max_ids).max(count_id_selectors(selector));
             }
             SheetOp::AtRule { ops, .. } => {
-                walk_analyze(ops, stack, ranks, next_rank, max_ids);
+                walk_analyze(ops, stack, discovered, max_ids);
             }
-            SheetOp::Declaration(_) | SheetOp::Raw(_) => {}
+            SheetOp::Declaration(_) => {
+                if !stack.is_empty() {
+                    discovered.push(stack.clone());
+                }
+            }
+            SheetOp::Raw(_) => {}
         }
     }
 }
@@ -766,18 +737,13 @@ mod tests {
 
     #[test]
     fn nested_recipe_layers_have_distinct_increasing_ranks() {
-        let ranks = layer_rank_map(&CascadeLayers::default());
+        let ranks =
+            crate::cascade::CascadePlan::with_discovered(&CascadeLayers::default(), &[]).rank_map();
         assert!(ranks["recipes.base"] < ranks["recipes.variants"]);
         assert!(ranks["recipes.variants"] < ranks["recipes.compound_variants"]);
         assert!(ranks["recipes.slots.base"] < ranks["recipes.slots.variants"]);
         assert!(ranks["recipes.compound_variants"] < ranks["utilities"]);
         assert!(ranks["base"] < ranks["recipes.base"]);
-    }
-
-    #[test]
-    fn unknown_utility_sublayer_outranks_utilities() {
-        let ranks = layer_rank_map(&CascadeLayers::default());
-        assert!(rank_for_path(&ranks, "utilities.foo") > ranks["utilities"]);
     }
 
     #[test]
@@ -822,7 +788,8 @@ mod tests {
 
     #[test]
     fn later_layer_beats_earlier_even_with_ids() {
-        let ranks = layer_rank_map(&CascadeLayers::default());
+        let ranks =
+            crate::cascade::CascadePlan::with_discovered(&CascadeLayers::default(), &[]).rank_map();
         let step = 3; // maxIds 2
         let base = ranks["base"] * step;
         let utilities = ranks["utilities"] * step;
@@ -854,7 +821,7 @@ mod tests {
         let result = analyze(&ops, &layers);
         let util = result.ranks[&layers.utilities];
         let comp = result.ranks["utilities.compositions"];
-        assert!(comp > util);
+        assert!(comp < util);
     }
 
     // --- insertion point edge cases ---

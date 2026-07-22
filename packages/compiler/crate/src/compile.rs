@@ -188,6 +188,22 @@ pub(crate) struct StylesheetEmitOptions {
     pub polyfill_override: Option<bool>,
 }
 
+pub(crate) fn collect_output_diagnostics(
+    project: &pandacss_project::Project,
+    static_pattern_diagnostics: Vec<pandacss_extractor::Diagnostic>,
+    stylesheet_diagnostics: Vec<pandacss_shared::Diagnostic>,
+) -> Vec<crate::Diagnostic> {
+    project
+        .diagnostics()
+        .iter()
+        .cloned()
+        .chain(project.file_diagnostics().into_iter().cloned())
+        .chain(static_pattern_diagnostics)
+        .chain(stylesheet_diagnostics)
+        .map(crate::convert::convert_diagnostic)
+        .collect()
+}
+
 pub(crate) fn build_compile_output(
     project: &mut pandacss_project::Project,
     user_config: &UserConfig,
@@ -213,15 +229,11 @@ pub(crate) fn build_compile_output(
         source_map: output.source_map,
         manifest,
         layer_ranges: layer_ranges_from(&output.layer_ranges),
-        diagnostics: project
-            .diagnostics()
-            .iter()
-            .cloned()
-            .chain(project.file_diagnostics().into_iter().cloned())
-            .chain(static_pattern_diagnostics)
-            .chain(output.diagnostics)
-            .map(crate::convert::convert_diagnostic)
-            .collect(),
+        diagnostics: collect_output_diagnostics(
+            project,
+            static_pattern_diagnostics,
+            output.diagnostics,
+        ),
     }
 }
 
@@ -252,7 +264,8 @@ pub(crate) fn build_keyframes_compile_output(
         polyfill,
         layers: None,
     };
-    let output = pandacss_stylesheet::compile_keyframes(
+    let mut snapshot_diagnostics = snapshots.diagnostics;
+    let mut output = pandacss_stylesheet::compile_keyframes(
         pandacss_stylesheet::StylesheetInput {
             config: user_config,
             token_dictionary,
@@ -266,20 +279,18 @@ pub(crate) fn build_keyframes_compile_output(
         },
         &stylesheet_options,
     );
+    snapshot_diagnostics.append(&mut output.diagnostics);
+    output.diagnostics = snapshot_diagnostics;
     CompileOutput {
         css: output.css,
         source_map: output.source_map,
         manifest,
         layer_ranges: empty_layer_ranges(),
-        diagnostics: project
-            .diagnostics()
-            .iter()
-            .cloned()
-            .chain(project.file_diagnostics().into_iter().cloned())
-            .chain(static_pattern_diagnostics)
-            .chain(output.diagnostics)
-            .map(crate::convert::convert_diagnostic)
-            .collect(),
+        diagnostics: collect_output_diagnostics(
+            project,
+            static_pattern_diagnostics,
+            output.diagnostics,
+        ),
     }
 }
 
@@ -329,15 +340,11 @@ pub(crate) fn build_layer_compile_output(
         source_map: output.source_map,
         manifest,
         layer_ranges: empty_layer_ranges(),
-        diagnostics: project
-            .diagnostics()
-            .iter()
-            .cloned()
-            .chain(project.file_diagnostics().into_iter().cloned())
-            .chain(static_pattern_diagnostics)
-            .chain(output.diagnostics)
-            .map(crate::convert::convert_diagnostic)
-            .collect(),
+        diagnostics: collect_output_diagnostics(
+            project,
+            static_pattern_diagnostics,
+            output.diagnostics,
+        ),
     }
 }
 
@@ -348,6 +355,11 @@ pub struct SplitCssFile {
     pub code: String,
 }
 
+pub(crate) struct SplitCssBuildOutput {
+    pub files: Vec<SplitCssFile>,
+    pub diagnostics: Vec<pandacss_shared::Diagnostic>,
+}
+
 /// Split the stylesheet into per-file outputs (layers + recipes + indexes).
 pub(crate) fn build_split_css(
     project: &mut pandacss_project::Project,
@@ -355,7 +367,7 @@ pub(crate) fn build_split_css(
     static_pattern_atoms: &[CoreAtom],
     utility_transform: Option<&mut pandacss_project::UtilityTransformFn<'_>>,
     options: Option<&CssOutputOptions>,
-) -> Vec<SplitCssFile> {
+) -> SplitCssBuildOutput {
     let token_dictionary = project.config().token_dictionary();
     let snapshots = if let Some(transform) = utility_transform {
         project.stylesheet_snapshots_with_utility_transform(user_config, transform)
@@ -388,7 +400,8 @@ pub(crate) fn build_split_css(
         polyfill,
         layers: selected_layers,
     };
-    pandacss_stylesheet::split_css(
+    let mut snapshot_diagnostics = snapshots.diagnostics;
+    let mut output = pandacss_stylesheet::split_css(
         &pandacss_stylesheet::StylesheetInput {
             config: user_config,
             token_dictionary,
@@ -401,13 +414,20 @@ pub(crate) fn build_split_css(
             token_refs: snapshots.token_refs,
         },
         &stylesheet_options,
-    )
-    .into_iter()
-    .map(|file| SplitCssFile {
-        path: file.path,
-        code: file.code,
-    })
-    .collect()
+    );
+    snapshot_diagnostics.append(&mut output.diagnostics);
+    let files = output
+        .files
+        .into_iter()
+        .map(|file| SplitCssFile {
+            path: file.path,
+            code: file.code,
+        })
+        .collect();
+    SplitCssBuildOutput {
+        files,
+        diagnostics: snapshot_diagnostics,
+    }
 }
 
 /// Compile the project's atoms + recipes into a raw stylesheet (css + layer
@@ -438,7 +458,8 @@ pub(crate) fn build_stylesheet_output(
         polyfill,
         layers: None,
     };
-    pandacss_stylesheet::compile(
+    let mut snapshot_diagnostics = snapshots.diagnostics;
+    let mut output = pandacss_stylesheet::compile(
         pandacss_stylesheet::StylesheetInput {
             config: user_config,
             token_dictionary,
@@ -451,7 +472,10 @@ pub(crate) fn build_stylesheet_output(
             token_refs: snapshots.token_refs,
         },
         &stylesheet_options,
-    )
+    );
+    snapshot_diagnostics.append(&mut output.diagnostics);
+    output.diagnostics = snapshot_diagnostics;
+    output
 }
 
 fn compile_manifest(

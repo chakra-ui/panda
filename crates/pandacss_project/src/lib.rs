@@ -124,6 +124,9 @@ pub struct Project {
     config: Arc<Config>,
     config_fingerprint: Arc<str>,
     files: FxHashMap<Arc<str>, FileEntry>,
+    /// Diagnostics from a source-transform attempt that failed before a new
+    /// [`FileEntry`] could replace the last-good file state.
+    parse_attempt_diagnostics: FxHashMap<Arc<str>, Vec<Diagnostic>>,
     /// Deduplicated union of every file's atoms, refcounted so [`Self::atoms`]
     /// is O(1) instead of re-walking every file on each save.
     atoms_cache: FxHashSet<Atom>,
@@ -135,12 +138,17 @@ pub struct Project {
     encoded_recipes_cache: EncodedRecipesCache,
     atoms_snapshot_cache: Option<Vec<Atom>>,
     encoded_recipes_snapshot_cache: Option<EncodedRecipesSnapshot>,
-    static_encoded_recipes_snapshot_cache:
-        Option<(serde_json::Value, bool, EncodedRecipesSnapshot)>,
+    static_encoded_recipes_snapshot_cache: Option<(
+        serde_json::Value,
+        bool,
+        EncodedRecipesSnapshot,
+        Vec<Diagnostic>,
+    )>,
     token_refs_snapshot_cache: Option<Vec<String>>,
     /// Transform overrides for config-authored styles (`globalCss`, compositions);
     /// the `bool` is whether a transform was present.
-    config_utility_styles_cache: Option<(bool, FxHashMap<UtilityStyleKey, Literal>)>,
+    config_utility_styles_cache:
+        Option<(bool, FxHashMap<UtilityStyleKey, Literal>, Vec<Diagnostic>)>,
     merged_utility_styles_snapshot_cache: Option<FxHashMap<UtilityStyleKey, Literal>>,
     parse_epoch: u64,
     /// Recipes keyed by `(file, span)` so re-parsing a path drops every
@@ -173,6 +181,7 @@ pub struct ProjectStylesheetSnapshots<'a> {
     /// looks these up to emit one class per usage.
     pub utility_styles: &'a FxHashMap<UtilityStyleKey, Literal>,
     pub view_transitions: &'a [ViewTransitionStyle],
+    pub diagnostics: Vec<Diagnostic>,
 }
 
 // Private so the bucket shape can change freely — [`ParsedFile`] is the public view.
@@ -224,6 +233,7 @@ impl Project {
             config,
             config_fingerprint,
             files: FxHashMap::default(),
+            parse_attempt_diagnostics: FxHashMap::default(),
             atoms_cache: FxHashSet::default(),
             atom_counts: FxHashMap::default(),
             utility_styles_cache: FxHashMap::default(),
@@ -337,10 +347,12 @@ impl Project {
                     transformed_source.as_str()
                 }
                 Ok(None) => source,
-                Err(diagnostic) => {
-                    if matches!(mode, ParseMode::Replace) {
-                        self.drop_file_state(path);
+                Err(mut diagnostic) => {
+                    if diagnostic.file.is_none() {
+                        diagnostic.file = Some(path.to_owned());
                     }
+                    self.parse_attempt_diagnostics
+                        .insert(Arc::from(path), vec![diagnostic.clone()]);
                     return ParseFileReport {
                         css_calls: 0,
                         cva_calls: 0,
@@ -711,6 +723,12 @@ impl Project {
             );
         }
 
+        for diagnostic in &mut report.diagnostics {
+            if diagnostic.file.is_none() {
+                diagnostic.file = Some(path.to_owned());
+            }
+        }
+
         let entry = FileEntry {
             source: Arc::from(source),
             source_hash,
@@ -727,6 +745,7 @@ impl Project {
             diagnostics: report.diagnostics.clone(),
             report: report.clone(),
         };
+        self.parse_attempt_diagnostics.remove(path);
         match mode {
             ParseMode::Replace => self.add_file_state(path_key, entry),
             ParseMode::Additive => self.add_file_state_additive(path_key, entry),
@@ -771,7 +790,10 @@ impl Project {
         Some(ParsedFile {
             path,
             atoms: &entry.atoms,
-            diagnostics: &entry.diagnostics,
+            diagnostics: self
+                .parse_attempt_diagnostics
+                .get(path)
+                .map_or(entry.diagnostics.as_slice(), Vec::as_slice),
             recipes: &self.inline_recipes,
             slot_recipes: &self.inline_slot_recipes,
         })
@@ -790,8 +812,9 @@ impl Project {
 
     pub fn remove_file(&mut self, path: &str) -> bool {
         let had_file = self.remove_file_entry(path).is_some();
+        let had_parse_attempt = self.parse_attempt_diagnostics.remove(path).is_some();
         let recipes_dropped = self.drop_recipes_for(path);
-        if had_file {
+        if had_file || had_parse_attempt {
             true
         } else {
             // A path can carry recipes without a file entry; only report a
@@ -803,6 +826,7 @@ impl Project {
     /// Clears every path's state. Keeps the compiled [`Config`].
     pub fn clear(&mut self) {
         self.files.clear();
+        self.parse_attempt_diagnostics.clear();
         self.atoms_cache.clear();
         self.atom_counts.clear();
         self.utility_styles_cache.clear();
@@ -826,6 +850,7 @@ impl Project {
     }
 
     fn drop_file_state(&mut self, path: &str) {
+        self.parse_attempt_diagnostics.remove(path);
         self.remove_file_entry(path);
         self.drop_recipes_for(path);
     }
@@ -1180,6 +1205,14 @@ impl Project {
         let use_merged_utility_styles = self.prepare_snapshot_utility_styles();
         self.refresh_view_transitions_snapshot();
 
+        let mut diagnostics = self
+            .static_encoded_recipes_snapshot_cache
+            .as_ref()
+            .map_or_else(Vec::new, |(_, _, _, diagnostics)| diagnostics.clone());
+        if let Some((_, _, config_diagnostics)) = &self.config_utility_styles_cache {
+            diagnostics.extend(config_diagnostics.iter().cloned());
+        }
+
         ProjectStylesheetSnapshots {
             atoms: self
                 .atoms_snapshot_cache
@@ -1192,7 +1225,7 @@ impl Project {
             static_encoded_recipes: self
                 .static_encoded_recipes_snapshot_cache
                 .as_ref()
-                .map(|(_, _, snapshot)| snapshot)
+                .map(|(_, _, snapshot, _)| snapshot)
                 .expect("static recipe snapshot was initialized"),
             token_refs: self
                 .token_refs_snapshot_cache
@@ -1209,6 +1242,7 @@ impl Project {
                 .view_transitions_snapshot_cache
                 .as_deref()
                 .expect("view transition snapshot was initialized"),
+            diagnostics,
         }
     }
 
@@ -1272,8 +1306,10 @@ impl Project {
         let static_cache_matches = self
             .static_encoded_recipes_snapshot_cache
             .as_ref()
-            .is_some_and(|(static_css, transformed, _)| {
-                static_css == &user_config.static_css && *transformed == utility_transform.is_some()
+            .is_some_and(|(static_css, transformed, _, diagnostics)| {
+                static_css == &user_config.static_css
+                    && *transformed == utility_transform.is_some()
+                    && diagnostics.is_empty()
             });
         if static_cache_matches {
             return;
@@ -1285,8 +1321,8 @@ impl Project {
             &self.config.conditions,
             &self.config.breakpoints,
         );
+        let mut diagnostics = Vec::new();
         if let Some(transform) = utility_transform.as_deref_mut() {
-            let mut diagnostics = Vec::new();
             encoded.transform_utilities(
                 self.config.utility.as_ref(),
                 &self.config.conditions,
@@ -1299,6 +1335,7 @@ impl Project {
             user_config.static_css.clone(),
             utility_transform.is_some(),
             encoded.snapshot(),
+            diagnostics,
         ));
     }
 
@@ -1331,22 +1368,45 @@ impl Project {
         user_config: &UserConfig,
         mut utility_transform: Option<&mut UtilityTransformFn<'_>>,
     ) {
-        let cache_matches = self
-            .config_utility_styles_cache
-            .as_ref()
-            .is_some_and(|(transformed, _)| *transformed == utility_transform.is_some());
+        let cache_matches = self.config_utility_styles_cache.as_ref().is_some_and(
+            |(transformed, _, diagnostics)| {
+                *transformed == utility_transform.is_some() && diagnostics.is_empty()
+            },
+        );
         if cache_matches {
             return;
         }
         let mut overrides = FxHashMap::default();
+        let mut diagnostics = Vec::new();
         if let Some(transform) = utility_transform.as_deref_mut() {
             let theme = &user_config.theme;
-            self.collect_style_object_overrides(&user_config.global_css, transform, &mut overrides);
-            self.collect_composition_overrides(&theme.text_styles, transform, &mut overrides);
-            self.collect_composition_overrides(&theme.layer_styles, transform, &mut overrides);
-            self.collect_composition_overrides(&theme.animation_styles, transform, &mut overrides);
+            self.collect_style_object_overrides(
+                &user_config.global_css,
+                transform,
+                &mut overrides,
+                &mut diagnostics,
+            );
+            self.collect_composition_overrides(
+                &theme.text_styles,
+                transform,
+                &mut overrides,
+                &mut diagnostics,
+            );
+            self.collect_composition_overrides(
+                &theme.layer_styles,
+                transform,
+                &mut overrides,
+                &mut diagnostics,
+            );
+            self.collect_composition_overrides(
+                &theme.animation_styles,
+                transform,
+                &mut overrides,
+                &mut diagnostics,
+            );
         }
-        self.config_utility_styles_cache = Some((utility_transform.is_some(), overrides));
+        self.config_utility_styles_cache =
+            Some((utility_transform.is_some(), overrides, diagnostics));
     }
 
     /// Walks a composition config (`{ name: { value: styleObject } }`, nestable),
@@ -1356,15 +1416,16 @@ impl Project {
         value: &serde_json::Value,
         transform: &mut UtilityTransformFn<'_>,
         out: &mut FxHashMap<UtilityStyleKey, Literal>,
+        diagnostics: &mut Vec<Diagnostic>,
     ) {
         let serde_json::Value::Object(entries) = value else {
             return;
         };
         for (key, child) in entries {
             if key == "value" {
-                self.collect_style_object_overrides(child, transform, out);
+                self.collect_style_object_overrides(child, transform, out, diagnostics);
             } else {
-                self.collect_composition_overrides(child, transform, out);
+                self.collect_composition_overrides(child, transform, out, diagnostics);
             }
         }
     }
@@ -1375,14 +1436,14 @@ impl Project {
         let has_global = self
             .config_utility_styles_cache
             .as_ref()
-            .is_some_and(|(_, overrides)| !overrides.is_empty());
+            .is_some_and(|(_, overrides, _)| !overrides.is_empty());
         if !has_global {
             self.merged_utility_styles_snapshot_cache = None;
             return false;
         }
 
         let mut merged = self.utility_styles_cache.clone();
-        if let Some((_, overrides)) = &self.config_utility_styles_cache {
+        if let Some((_, overrides, _)) = &self.config_utility_styles_cache {
             for (key, styles) in overrides {
                 merged.entry(key.clone()).or_insert_with(|| styles.clone());
             }
@@ -1398,12 +1459,13 @@ impl Project {
         value: &serde_json::Value,
         transform: &mut UtilityTransformFn<'_>,
         out: &mut FxHashMap<UtilityStyleKey, Literal>,
+        diagnostics: &mut Vec<Diagnostic>,
     ) {
         let serde_json::Value::Object(entries) = value else {
             return;
         };
         for (key, child) in entries {
-            self.collect_style_entry_overrides(key, child, transform, out);
+            self.collect_style_entry_overrides(key, child, transform, out, diagnostics);
         }
     }
 
@@ -1413,6 +1475,7 @@ impl Project {
         value: &serde_json::Value,
         transform: &mut UtilityTransformFn<'_>,
         out: &mut FxHashMap<UtilityStyleKey, Literal>,
+        diagnostics: &mut Vec<Diagnostic>,
     ) {
         match value {
             // An object under a transform utility is condition→value pairs
@@ -1421,19 +1484,19 @@ impl Project {
             serde_json::Value::Object(entries) => {
                 if self.is_transform_utility(key) {
                     for (_condition, child) in entries {
-                        self.collect_style_entry_overrides(key, child, transform, out);
+                        self.collect_style_entry_overrides(key, child, transform, out, diagnostics);
                     }
                 } else {
-                    self.collect_style_object_overrides(value, transform, out);
+                    self.collect_style_object_overrides(value, transform, out, diagnostics);
                 }
             }
             serde_json::Value::Array(items) => {
                 for item in items {
-                    self.collect_style_entry_overrides(key, item, transform, out);
+                    self.collect_style_entry_overrides(key, item, transform, out, diagnostics);
                 }
             }
             serde_json::Value::String(_) | serde_json::Value::Number(_) => {
-                self.transform_style_leaf(key, value, transform, out);
+                self.transform_style_leaf(key, value, transform, out, diagnostics);
             }
             serde_json::Value::Bool(_) | serde_json::Value::Null => {}
         }
@@ -1453,6 +1516,7 @@ impl Project {
         value: &serde_json::Value,
         transform: &mut UtilityTransformFn<'_>,
         out: &mut FxHashMap<UtilityStyleKey, Literal>,
+        diagnostics: &mut Vec<Diagnostic>,
     ) {
         let Some(utility) = self.config.utility.as_ref() else {
             return;
@@ -1465,10 +1529,17 @@ impl Project {
             return;
         };
         let resolved = resolved_atom_value(Some(utility), canonical, &original);
-        if let Ok(Some(styles)) = transform(canonical, &resolved, &original)
-            && !is_empty_style_object(&styles)
-        {
-            out.insert((Box::from(canonical), original), styles);
+        match transform(canonical, &resolved, &original) {
+            Ok(Some(styles)) if !is_empty_style_object(&styles) => {
+                out.insert((Box::from(canonical), original), styles);
+            }
+            Ok(_) => {}
+            Err(diagnostic) => diagnostics.push(with_callback_target(
+                diagnostic,
+                "utility",
+                canonical,
+                Some(&atom_value_summary(&original)),
+            )),
         }
     }
 
@@ -1479,17 +1550,32 @@ impl Project {
 
     #[must_use]
     pub fn file_diagnostics(&self) -> Vec<&Diagnostic> {
-        let mut files = self.files.iter().collect::<Vec<_>>();
-        files.sort_by(|(left, _), (right, _)| left.cmp(right));
-        files
+        let mut paths = self
+            .files
+            .keys()
+            .chain(self.parse_attempt_diagnostics.keys())
+            .collect::<Vec<_>>();
+        paths.sort_unstable();
+        paths.dedup();
+        paths
             .into_iter()
-            .flat_map(|(_, entry)| entry.diagnostics.iter())
+            .flat_map(|path| {
+                self.parse_attempt_diagnostics.get(path).map_or_else(
+                    || {
+                        self.files
+                            .get(path)
+                            .map_or([].as_slice(), |entry| entry.diagnostics.as_slice())
+                    },
+                    Vec::as_slice,
+                )
+            })
             .collect()
     }
 
     #[must_use]
     pub fn is_empty(&self) -> bool {
         self.files.is_empty()
+            && self.parse_attempt_diagnostics.is_empty()
             && self.atoms_cache.is_empty()
             && self.encoded_recipes_cache.is_empty()
             && self.config_recipes.is_empty()

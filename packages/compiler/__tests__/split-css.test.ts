@@ -1,3 +1,6 @@
+import { mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createProject } from './test-utils'
 
@@ -24,7 +27,7 @@ describe('compiler.getSplitCss()', () => {
       'app.tsx',
       "import { css } from '@panda/css'\nimport { button } from '@panda/recipes'\ncss({ color: 'red' })\nbutton({ size: 'sm' })",
     )
-    expect(compiler.getSplitCss().map((file) => file.path)).toMatchInlineSnapshot(`
+    expect(compiler.getSplitCss().files.map((file) => file.path)).toMatchInlineSnapshot(`
       [
         "styles.css",
         "styles/global.css",
@@ -34,7 +37,7 @@ describe('compiler.getSplitCss()', () => {
         "styles/recipes.css",
       ]
     `)
-    expect(compiler.getSplitCss().find((file) => file.path === 'styles/recipes/button.css')?.code)
+    expect(compiler.getSplitCss().files.find((file) => file.path === 'styles/recipes/button.css')?.code)
       .toMatchInlineSnapshot(`
       "@layer recipes {
         @layer base {
@@ -50,15 +53,49 @@ describe('compiler.getSplitCss()', () => {
       }
       "
     `)
-    expect(compiler.getSplitCss().find((file) => file.path === 'styles.css')?.code).toMatchInlineSnapshot(`
+    expect(compiler.getSplitCss().files.find((file) => file.path === 'styles.css')?.code).toMatchInlineSnapshot(`
       "@layer reset, base, tokens,
              recipes,
              utilities;
+      @layer recipes.base, recipes.slots, recipes.variants, recipes.compound_variants;
+      @layer recipes.slots.base, recipes.slots.variants, recipes.slots.compound_variants;
       @import './styles/global.css';
       @import './styles/tokens.css';
       @import './styles/utilities.css';
       @import './styles/recipes.css';
       "
     `)
+  })
+
+  it('returns split diagnostics', () => {
+    const compiler = createProject({
+      staticCss: { css: [{ properties: { colr: 'red' } }] },
+    })
+
+    expect(compiler.getSplitCss().diagnostics.map((diagnostic) => diagnostic.code)).toMatchInlineSnapshot(`
+      [
+        "static_css_property_unknown",
+      ]
+    `)
+  })
+
+  it('defaults writeSplitCss to the configured outdir', () => {
+    const cwd = mkdtempSync(join(tmpdir(), 'panda-split-default-'))
+    try {
+      const compiler = createProject({ cwd, outdir: 'styled-system' })
+      const result = compiler.writeSplitCss({})
+
+      expect({
+        root: result.root === join(cwd, 'styled-system'),
+        pathsAreContained: result.paths.every((path) => path.startsWith(`${result.root}/`)),
+      }).toMatchInlineSnapshot(`
+        {
+          "root": true,
+          "pathsAreContained": true,
+        }
+      `)
+    } finally {
+      rmSync(cwd, { recursive: true, force: true })
+    }
   })
 })

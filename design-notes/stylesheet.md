@@ -6,7 +6,8 @@
 CSS emission, supported static CSS expansion, layer slicing metadata, and writer formatting. It runs one CSS-aware pass
 at the IR level — adjacent rules sharing a declaration block are coalesced into a selector list (`grouped.rs`) — but no
 full optimizer (no parsing, prefixing, shorthand folding, or value minification); if those land, they belong in a
-CSS-aware optimizer such as `lightningcss`, not a raw whitespace pass.
+CSS-aware optimizer such as `lightningcss`, not a raw whitespace pass. Selectors using compatibility-sensitive syntax
+stay isolated because one unsupported selector invalidates its entire selector list.
 
 ## Scope
 
@@ -21,8 +22,9 @@ Owned:
 - Supported native `staticCss`: `css`, `recipes`, `patterns`, global recipe wildcard, recipe-level `staticCss`, recipe
   wildcards, base recipe styles, slot recipes, compound variants, responsive values, and configured conditions.
 - Layer preamble/ranges, custom layer names, modern breakpoint media syntax, and writer-level minification.
-- Adjacent rule merging: consecutive rules with an identical declaration block collapse into one comma-joined selector
-  list (cascade-safe, adjacency-only — mirrors lightningcss's `CssRuleList::minify`).
+- Adjacent rule merging: consecutive compatibility-safe selectors with an identical declaration block collapse into
+  one comma-joined selector list. Selectors using `:has()`, pseudo-elements, vendor pseudos, or other explicitly
+  compatibility-sensitive syntax remain isolated. Merging is adjacency-only.
 
 Not owned:
 
@@ -37,10 +39,17 @@ would be valid: `syntax` and `inherits` are required, and `initialValue` is requ
 
 The durable private concepts are intentionally few:
 
+- `CascadePlan`: one ordered model for native preambles, split preambles, and polyfill ranks. Explicit nested layers
+  precede the implicit final sublayer represented by direct rules in their parent.
 - `Target`: rule identity before condition lowering, either a Panda class target or an explicit selector.
 - `ConditionPath`: one raw condition chain, ordered outer-to-inner.
 - `Declaration`: one CSS property/value/important tuple.
 - `StyleRule`: one lowered target plus declarations, used for coalescing and writing.
+- `SplitNameRegistry`: deterministic safe filenames, including collision handling after normalization.
+
+`css_syntax.rs` is a small lexical scanner shared by string-based boundary operations. It identifies syntax outside
+strings and comments for nesting-parent substitution, layer marker handling, and nested `var()` usage collection. It
+is not a general CSS parser.
 
 `LoweredTarget` is an implementation detail: selector plus at-rule wrappers after condition lowering. It should not grow
 into a separate public stylesheet concept.
@@ -98,6 +107,10 @@ selectors become ancestors, and pseudo-elements are emitted after pseudo-classes
 - `TokenDictionary` and `Utility` are built once per compile and shared by static expansion and emission.
 - Sort keys are precomputed once per atom or recipe entry, avoiding allocation inside the comparator.
 - Empty static recipe snapshots skip `merge_encoded_recipes()`.
+- Successful config/static utility-transform snapshots stay cached across CSS methods. Callback failures carry
+  diagnostics and retry on the next emission instead of caching partial output.
+- Every CSS result carries the complete canonical output diagnostics. Host layers consume that set directly and do
+  not merge earlier parse reports into it.
 - Current emit cost is `O(total atoms log total atoms)`. Incremental watch-mode CSS patching would require a different
   API with per-bucket output and stable invalidation.
 
@@ -111,6 +124,10 @@ With `polyfill` / `--polyfill`, emit is two-phase (csstools: boosts need the ful
 2. **Analyze + flatten** — `step = maxIds + 1` over every recorded selector; nested preamble ranks; flat CSS with
    `rank * step` as one `:not(#\##\#…)`.
 
+`CascadePlan` assigns explicit nested layers before direct rules in the parent layer. Those direct rules form CSS's
+implicit final sublayer. Empty container layers do not consume a polyfill rank because only relative order among
+emitted rules matters.
+
 `!important` reverses layer priority per spec, so a rule mixing important and non-important declarations splits into
 two blocks: normal gets `rank * step`, important gets `(max_rank - rank) * step` (`write_rule` in `polyfill.rs`).
 `@keyframes` step selectors (`from`/`to`/`50%`) are never boosted — they aren't real selectors, and a `:not()` there
@@ -118,14 +135,20 @@ drops the whole block in every browser.
 
 Native `@layer` emit is unchanged when polyfill is off. Split reuses the merged analyze result. Hosts keep the entry
 `@layer …;` as the injection marker, then call `compiler.stripLayerOrderStatements(css)` (Panda order lines only,
-comment-aware).
+quote- and comment-aware).
 
 ## Output Modes
 
 - **Merged**: `compile()` returns one CSS string plus UTF-8 byte ranges for reset/base/tokens/recipes/utilities. Layer
   slicing must happen in Rust, not JS, because JS string indices are UTF-16.
-- **Split**: `split_css()` returns file artifacts. Non-recipe layers split by file; recipes are re-emitted per recipe
-  name because the merged recipes layer is not byte-sliceable into recipe files.
+- **Split**: `split_css()` returns file artifacts plus diagnostics. Non-recipe layers split by file; recipes are
+  re-emitted per recipe name because the merged recipes layer is not byte-sliceable into recipe files. The entry file
+  declares recipe and slot-recipe sublayer order before imports. Logical recipe/theme names are normalized to unique,
+  contained filenames before crossing the host boundary.
+
+Every CSS-producing binding method returns the same diagnostic sources: config validation, latest file parse attempts,
+static-pattern expansion, config/static utility transforms, and stylesheet emission. Write methods forward the exact
+diagnostics returned by their in-memory counterpart.
 
 Only the five top-level layers are sliceable today. Keyframes/static output share layers and would need sub-ranges to
 split independently.

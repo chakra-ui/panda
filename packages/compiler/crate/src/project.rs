@@ -201,10 +201,17 @@ pub struct WriteCssResult {
 }
 
 #[napi(object)]
-pub struct WriteFilesResult {
+pub struct WriteSplitCssResult {
     pub root: String,
     pub paths: Vec<String>,
     pub files: Vec<crate::compile::SplitCssFile>,
+    pub diagnostics: Vec<Diagnostic>,
+}
+
+#[napi(object)]
+pub struct SplitCssResult {
+    pub files: Vec<crate::compile::SplitCssFile>,
+    pub diagnostics: Vec<Diagnostic>,
 }
 
 #[napi(object)]
@@ -218,7 +225,7 @@ pub struct WriteCssOptions {
 
 #[napi(object)]
 pub struct WriteSplitCssOptions {
-    pub outdir: String,
+    pub outdir: Option<String>,
     pub cwd: Option<String>,
     pub layers: Option<Vec<String>>,
     pub emit_layer_declaration: Option<bool>,

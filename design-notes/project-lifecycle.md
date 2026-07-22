@@ -7,7 +7,8 @@
 owns the mutable per-file buckets and caches. Source files flow in through `parse_file`; the project extracts usages,
 decomposes `cva()` / `sva()` recipes, and feeds the results into a shared atomic encoder. The contract is **per-file
 replacement**: re-adding a path drops its previous contribution before re-encoding, so removed or renamed styles can't
-linger as ghost atoms in watch mode.
+linger as ghost atoms in watch mode. If `parser:before` fails before extraction, the project keeps the last-good style
+bucket but records that latest-attempt diagnostic; a later successful parse replaces both.
 
 ## Construction
 
@@ -39,7 +40,7 @@ still accepting Panda's open-ended CSS object shapes. The compiled runtime confi
 | `parse_file(path, source)`     | Extract + encode. Replaces any prior bucket for `path`. Returns a `ParseFileReport` with per-call counts. |
 | `refresh_file(path, source)`   | Re-parses _only if_ `path` is already known. Returns `false` for unknown paths.                           |
 | `remove_file(path)`            | Drops atoms + recipes + diagnostics for `path`. Idempotent; returns `true` if the path was known.         |
-| `get_file(path)`               | Returns a borrowed `ParsedFile<'_>` view, or `None`.                                                      |
+| `get_file(path)`               | Returns a borrowed `ParsedFile<'_>` view with latest-attempt diagnostics, or `None`.                      |
 | `clear()`                      | Drops every path's state but keeps the compiled config.                                                   |
 | `atoms()`                      | Deduplicated union across every currently-known file.                                                     |
 | `recipes()` / `slot_recipes()` | Stable-order iterators keyed by `(file, span_start)`.                                                     |

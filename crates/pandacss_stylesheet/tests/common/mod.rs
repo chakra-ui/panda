@@ -97,6 +97,15 @@ pub fn split_output(
     source: &str,
     options: StylesheetOptions,
 ) -> Vec<pandacss_stylesheet::SplitCssFile> {
+    split_result(config, source, options).files
+}
+
+#[allow(dead_code)]
+pub fn split_result(
+    config: &UserConfig,
+    source: &str,
+    options: StylesheetOptions,
+) -> pandacss_stylesheet::SplitCssOutput {
     let system = System::new(config.clone()).expect("valid project");
     let mut project = Project::new(system);
     project.parse_file("/style.ts", source);

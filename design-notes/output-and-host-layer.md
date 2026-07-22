@@ -77,7 +77,9 @@ Three principles fall out of this:
    `panda codegen`. Artifacts regenerate rarely (config change); CSS regenerates every build. The Driver exposes them as
    separate methods, never a combined "build everything." CSS itself has three forms: `compile()` (the merged
    stylesheet), `compiler.getLayerCss(options)` (a merged subset string — `cssgen --minimal`), and
-   `compiler.getSplitCss()` (the `{path,code}[]` file set — `cssgen --splitting`; written like artifacts). See
+   `compiler.getSplitCss()` (the `{ files: {path,code}[], diagnostics }` split result — `cssgen --splitting`; written
+   like artifacts). Its `diagnostics` field is the complete canonical output set, not an emission-only delta; hosts
+   consume it directly instead of merging parse reports. See
    [stylesheet](./stylesheet.md).
 3. **Reads + artifact writes via the engine; CSS routing via the host.** Source discovery + reading run through the Rust
    `pandacss_fs` engine (`scan`/`glob`/`sources`). Artifact _writing_ also goes through the engine fs
@@ -174,6 +176,10 @@ the user didn't rename them. The engine exposes `compiler.layers()` → `{ reset
 (overrides merged over defaults) so the host reads them from one source instead of re-deriving Rust's defaults in JS.
 (Reset CSS itself, incl. `preflight.scope`/`level`, is fully emitted by `compile()` — see
 [stylesheet](./stylesheet.md).)
+
+**Split-path containment.** The stylesheet compiler maps logical recipe/theme names to safe unique relative paths.
+Native and wasm writers validate those paths again and reject absolute paths, parent components, platform-specific
+roots, and control characters before joining them to the requested output directory.
 
 ## Config diffing
 

@@ -660,3 +660,64 @@ fn resolves_global_css_token_references_in_raw_at_rules() {
 }
 ");
 }
+#[test]
+fn global_css_normal_declaration_does_not_override_important_composition() {
+    let config = config(serde_json::json!({
+        "theme": {
+            "textStyles": {
+                "strong": { "value": { "color": "red !important" } }
+            }
+        },
+        "utilities": {
+            "color": { "className": "c" }
+        },
+        "globalCss": {
+            ".message": {
+                "textStyle": "strong",
+                "color": "blue"
+            }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
+
+    assert_snapshot!(css, @r"
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      .message {
+        color: red !important;
+      }
+    }
+    ");
+}
+
+#[test]
+fn feature_selector_does_not_invalidate_a_duplicate_fallback_rule() {
+    let config = config(serde_json::json!({
+        "globalCss": {
+            ".enhanced:has(.child)": { "color": "red" },
+            ".fallback": { "color": "red" }
+        },
+        "utilities": {
+            "color": { "className": "c" }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
+
+    assert_snapshot!(css, @r"
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      .enhanced:has(.child) {
+        color: red;
+      }
+      .fallback {
+        color: red;
+      }
+    }
+    ");
+}

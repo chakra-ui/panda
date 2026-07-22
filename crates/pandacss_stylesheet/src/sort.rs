@@ -465,7 +465,7 @@ fn condition_is_raw_selector(config: &UserConfig, condition: &str) -> bool {
     if config.conditions.contains_key(condition) || config.conditions.contains_key(key) {
         return false;
     }
-    condition.contains('&')
+    crate::css_syntax::contains_code_byte(condition, b'&')
 }
 
 /// Scan for a combinator at bracket/paren depth zero. ` `/`>`/`+`/`~` separating
@@ -554,7 +554,7 @@ fn collect_condition_parts(
         return;
     }
 
-    if condition.starts_with('@') || condition.contains('&') {
+    if condition.starts_with('@') || crate::css_syntax::contains_code_byte(condition, b'&') {
         collect_raw_part(condition, at_rules, selectors);
     }
 }

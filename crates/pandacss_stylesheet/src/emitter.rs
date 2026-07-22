@@ -38,7 +38,7 @@ use crate::style_rules::{
 };
 use crate::writer::CssWriter;
 
-pub struct EmitOutput {
+pub(crate) struct EmitOutput {
     pub css: String,
     pub layer_ranges: StylesheetLayerRanges,
     /// Merged-sheet analyze for polyfill recipe split (same step/ranks).
@@ -46,13 +46,13 @@ pub struct EmitOutput {
 }
 
 #[derive(Clone, Copy)]
-pub struct EmitTokenContext<'a> {
+pub(crate) struct EmitTokenContext<'a> {
     pub dictionary: Option<&'a TokenDictionary>,
     pub refs: &'a [String],
 }
 
 /// Inputs shared by [`emit`] and [`emit_keyframes`].
-pub struct EmitInput<'a> {
+pub(crate) struct EmitInput<'a> {
     pub config: &'a UserConfig,
     pub utility: &'a Utility,
     pub tokens: EmitTokenContext<'a>,
@@ -64,7 +64,7 @@ pub struct EmitInput<'a> {
 
 /// Toggle flags for full stylesheet [`emit`].
 #[derive(Clone, Copy)]
-pub struct EmitOptions {
+pub(crate) struct EmitOptions {
     pub minify: bool,
     pub emit_layer_declaration: bool,
     pub polyfill: bool,
@@ -72,7 +72,7 @@ pub struct EmitOptions {
 
 /// Toggle flags for keyframes-only [`emit_keyframes`].
 #[derive(Clone, Copy)]
-pub struct EmitKeyframesOptions {
+pub(crate) struct EmitKeyframesOptions {
     pub minify: bool,
     pub wrap_in_layer: bool,
     pub polyfill: bool,
@@ -82,7 +82,7 @@ pub struct EmitKeyframesOptions {
     clippy::too_many_lines,
     reason = "emit is the single CSS assembly entry point"
 )]
-pub fn emit(input: EmitInput<'_>, options: EmitOptions) -> EmitOutput {
+pub(crate) fn emit(input: EmitInput<'_>, options: EmitOptions) -> EmitOutput {
     let EmitInput {
         config,
         utility,
@@ -245,7 +245,7 @@ fn finish_emit(
 /// (same cascade placement as the full stylesheet). With `polyfill`, the layer
 /// is recorded then flattened like a normal emit.
 #[must_use]
-pub fn emit_keyframes(input: EmitInput<'_>, options: EmitKeyframesOptions) -> EmitOutput {
+pub(crate) fn emit_keyframes(input: EmitInput<'_>, options: EmitKeyframesOptions) -> EmitOutput {
     let EmitInput {
         config,
         utility,
@@ -429,7 +429,7 @@ fn seed_static_theme_token_vars(
 /// entries by recipe name (first-seen order) and re-emits each as its own
 /// `@layer recipes { … }` block. Returns `(recipe_name, css)`.
 #[must_use]
-pub fn emit_recipe_split<'a>(
+pub(crate) fn emit_recipe_split<'a>(
     config: &'a UserConfig,
     utility: &'a Utility,
     recipes: &'a EncodedRecipesSnapshot,
@@ -542,11 +542,13 @@ fn write_layer_order(
     if !minify {
         writer.newline();
     }
-    write_layer_declaration(writer, &layers.recipe_declaration_names());
-    if !minify {
-        writer.newline();
+    let declarations = crate::cascade::CascadePlan::internal_declarations(layers);
+    for (index, declaration) in declarations.iter().enumerate() {
+        write_layer_declaration(writer, declaration);
+        if !minify && index + 1 < declarations.len() {
+            writer.newline();
+        }
     }
-    write_layer_declaration(writer, &layers.slot_recipe_declaration_names());
 }
 
 fn write_layer_declaration(writer: &mut CssWriter, names: &[String]) {
@@ -797,20 +799,12 @@ struct UsageMarks {
 }
 
 fn collect_css_var_refs(value: &str, refs: &mut FxHashSet<String>) {
-    let mut rest = value;
-    while let Some(start) = rest.find("var(") {
-        let after_open = &rest[start + "var(".len()..];
-        let Some(end) = find_matching_paren(after_open) else {
-            return;
-        };
-        if let Some(name) = after_open[..end]
-            .split_once(',')
-            .map_or(after_open[..end].trim(), |(name, _)| name.trim())
-            .strip_prefix("--")
-        {
+    for start in crate::css_syntax::code_matches(value, "var(") {
+        let after_open = &value[start + "var(".len()..];
+        let end = after_open.find([',', ')']).unwrap_or(after_open.len());
+        if let Some(name) = after_open[..end].trim().strip_prefix("--") {
             refs.insert(format!("--{name}"));
         }
-        rest = &after_open[end + 1..];
     }
 }
 
@@ -2098,8 +2092,14 @@ impl<'a> EmitContext<'a> {
     }
 
     fn lower_target(&self, target: Target<'_>, conditions: &[&str]) -> Vec<LoweredTarget> {
+        let merge_safe = matches!(&target, Target::Class { .. });
         let selector = self.selector_for_target(target);
-        self.lower_rule_conditions(&LoweredTarget::new(selector), conditions)
+        let target = if merge_safe {
+            LoweredTarget::generated_class(selector)
+        } else {
+            LoweredTarget::new(selector)
+        };
+        self.lower_rule_conditions(&target, conditions)
     }
 
     fn lower_resolved_selector(
@@ -2481,7 +2481,7 @@ fn condition_prefixed_name(config: &UserConfig, class_name: &str, conditions: &[
 
 fn push_finalized_condition(config: &UserConfig, out: &mut String, condition: &str) {
     if config.container_condition(condition).is_none()
-        && (condition.contains('&') || condition.contains('@'))
+        && (crate::css_syntax::contains_code_byte(condition, b'&') || condition.contains('@'))
     {
         out.push('[');
         out.push_str(&without_space(condition.trim()));

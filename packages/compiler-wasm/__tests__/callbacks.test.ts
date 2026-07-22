@@ -5,6 +5,59 @@ import type { Atom } from '../src'
 import { baseConfig, describeIfBuilt, describeMissingWasm } from './helpers'
 
 describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
+  it('reports the latest parser failure while retaining last-good stylesheet state', async () => {
+    let shouldFail = false
+    const hookId = 'plugins.0.hooks.parser:before.0'
+    const compiler = await createCompilerFromSnapshot({
+      config: {
+        ...baseConfig,
+        utilities: { color: { className: 'c' } },
+      },
+      hooks: {
+        'parser:before': [{ id: hookId, hash: 'parser-latest-attempt' }],
+      },
+      callbacks: {
+        'parser:before': {
+          [hookId]: ({ content }) => {
+            if (shouldFail) throw new Error('boom')
+            return content
+          },
+        },
+      },
+    })
+    const path = '/virtual/Button.tsx'
+    compiler.parseFileSource(path, `import { css } from '@panda/css'; css({ color: 'red' })`)
+    shouldFail = true
+    compiler.parseFileSource(path, `import { css } from '@panda/css'; css({ color: 'blue' })`)
+    const failed = compiler.compile()
+    const failedFile = compiler.getFile(path)
+    shouldFail = false
+    compiler.parseFileSource(path, `import { css } from '@panda/css'; css({ color: 'blue' })`)
+    const recovered = compiler.compile()
+
+    expect({
+      failedDiagnostics: failed.diagnostics.map((diagnostic: any) => diagnostic.code),
+      failedFileDiagnostics: failedFile?.diagnostics.map((diagnostic: any) => diagnostic.code),
+      retainedRed: failed.css.includes('color: red'),
+      ignoredBlue: !failed.css.includes('color: blue'),
+      recoveredDiagnostics: recovered.diagnostics,
+      recoveredBlue: recovered.css.includes('color: blue'),
+    }).toMatchInlineSnapshot(`
+      {
+        "failedDiagnostics": [
+          "transform_callback_failed",
+        ],
+        "failedFileDiagnostics": [
+          "transform_callback_failed",
+        ],
+        "retainedRed": true,
+        "ignoredBlue": true,
+        "recoveredDiagnostics": [],
+        "recoveredBlue": true,
+      }
+    `)
+  })
+
   it('applies utility transform callbacks in the JS host', async () => {
     const compiler = await createCompilerFromSnapshot({
       config: {
@@ -43,6 +96,75 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
           "conditions": [],
         },
       ]
+    `)
+  })
+
+  it('retries failed config-authored utility transforms and caches the recovered stylesheet snapshot', async () => {
+    let calls = 0
+    const compiler = await createCompilerFromSnapshot({
+      config: {
+        ...baseConfig,
+        utilities: {
+          size: {
+            transform: { kind: 'js-callback', id: 'utilities.size.transform' },
+          },
+        },
+        globalCss: {
+          html: { size: '4px' },
+        },
+      },
+      callbacks: {
+        'utility.transform': {
+          'utilities.size.transform': (value) => {
+            calls += 1
+            if (calls === 1) throw new Error('boom')
+            return { width: value, height: value }
+          },
+        },
+      },
+    })
+
+    const failed = compiler.compile()
+    const recovered = compiler.compile()
+    const cached = compiler.compile()
+
+    expect({
+      failedDiagnostics: failed.diagnostics.map((diagnostic: any) => diagnostic.code),
+      recoveredDiagnostics: recovered.diagnostics,
+      recoveredDeclarations: {
+        width: recovered.css.includes('width: 4px'),
+        height: recovered.css.includes('height: 4px'),
+      },
+      cachedCssMatches: cached.css === recovered.css,
+      calls,
+    }).toMatchInlineSnapshot(`
+      {
+        "failedDiagnostics": [
+          "transform_callback_failed",
+        ],
+        "recoveredDiagnostics": [],
+        "recoveredDeclarations": {
+          "width": true,
+          "height": true,
+        },
+        "cachedCssMatches": true,
+        "calls": 2,
+      }
+    `)
+  })
+
+  it('defaults writeSplitCss to the configured outdir', async () => {
+    const compiler = await createCompilerFromSnapshot({ config: baseConfig })
+    const result = compiler.writeSplitCss({})
+
+    expect({
+      root: result.root,
+      pathsAreContained: result.paths.every((path) => path.startsWith(`${result.root}/`)),
+    }).toMatchInlineSnapshot(`
+      {
+        "root": "/virtual/styled-system",
+        "pathsAreContained": true,
+      }
     `)
   })
 
