@@ -21,6 +21,7 @@
     "clean": "pnpm -r --parallel exec rimraf dist .turbo *.log",
     "reset": "pnpm -r --parallel exec rimraf node_modules && rimraf node_modules",
     "test": "vitest",
+    "test:compiler": "pnpm --filter @pandacss/compiler test:native",
     "codegen": "pnpm --filter=./sandbox/codegen",
     "test:codegen": "pnpm codegen test && pnpm codegen typecheck",
     "test-watch": "vitest --watch -u",

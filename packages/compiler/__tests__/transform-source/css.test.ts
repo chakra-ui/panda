@@ -536,7 +536,7 @@ describe('compiler.transformSource: css', () => {
     `)
   })
 
-  test('merges a logical-and spread into the object', () => {
+  test('rewrites a logical-and spread to a conditional class expression', () => {
     const source = lines(
       "import { css } from '@panda/css'",
       "export const cls = css({ color: 'red', ...(unk && { padding: '1' }) })",
@@ -547,19 +547,21 @@ describe('compiler.transformSource: css', () => {
       {
         "changed": true,
         "bailed": false,
-        "code": "export const cls = "color_red padding_1"",
+        "code": "export const cls = unk ? "color_red padding_1" : "color_red"",
       }
     `)
   })
 
-  test('emits both branches of a same-key ternary spread', () => {
+  test('rewrites a same-key ternary spread to branch class strings', () => {
     const source = lines(
       "import { css } from '@panda/css'",
       "export const cls = css({ color: 'red', ...(unk ? { padding: '1' } : { padding: '2' }) })",
     )
 
     const result = compiler.transformSource({ path: 'src/button.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`"export const cls = "color_red padding_1 padding_2""`)
+    expect(result.code).toMatchInlineSnapshot(
+      `"export const cls = unk ? "color_red padding_1" : "color_red padding_2""`,
+    )
   })
 
   test('resolves a token-reference string value', () => {

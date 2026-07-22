@@ -148,6 +148,7 @@ Run from the repo root:
 | If you changed…                                                  | Run before commit                                                    |
 | ---------------------------------------------------------------- | -------------------------------------------------------------------- |
 | `crates/**`, `packages/compiler/**`, `packages/compiler-wasm/**` | `pnpm rust:fmt` and `pnpm rust:clippy` (Rust Quality CI)             |
+| Rust engine / NAPI / `transformSource` behavior                  | `pnpm test:compiler` (rebuilds the `.node`, then compiler Vitest)    |
 | TypeScript packages under `packages/**`                          | `pnpm test <affected-package-or-path>`                               |
 | CSS output (Rust stylesheet emit)                                | `cargo nextest run -p pandacss_stylesheet` + `sandbox/codegen` first |
 
@@ -344,7 +345,8 @@ pnpm rust:fmt        # cargo fmt --all --check
 pnpm rust:clippy     # cargo clippy --all-targets --locked -- -D warnings
 pnpm bench:rust-spike                          # TS baseline benchmark
 pnpm --filter @pandacss/compiler build:native   # build the NAPI .node artifact
-pnpm --filter @pandacss/compiler test           # binding round-trip Vitest tests
+pnpm --filter @pandacss/compiler test           # Vitest against the current .node (may be stale)
+pnpm test:compiler                              # build:native then compiler Vitest (use after Rust/NAPI/transform changes)
 ```
 
 **Bench / legacy comparison tests:**
