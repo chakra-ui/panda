@@ -79,16 +79,19 @@ pub fn extract_calls(
         .with_options(crate::adapter::parse_options_for(path))
         .parse();
 
-    let resolver = crate::Resolver::build(
-        &parser_return.program,
+    let resolver = crate::Resolver::build(crate::scope::ResolverBuildInput {
+        program: &parser_return.program,
         matched,
-        Some(&config.matchers),
-        config.token_dictionary.as_deref(),
-        config.cross_file.as_ref(),
-        Some(std::path::PathBuf::from(path)),
-        None,
-        None,
-    );
+        matchers: Some(&config.matchers),
+        tokens: config.token_dictionary.as_deref(),
+        cross_file: config
+            .cross_file
+            .as_ref()
+            .map(crate::CrossFileResolver::as_lookup),
+        source_path: Some(std::path::PathBuf::from(path)),
+        line_index: None,
+        pattern_raw_transform: None,
+    });
     let ctx = crate::VisitorContext::new(matched, config).with_resolver(&resolver);
     let line_index = crate::LineIndex::new(source);
     let (calls, diagnostics) = collect_calls_inner(&parser_return.program, &ctx, Some(&line_index));

@@ -272,16 +272,19 @@ fn run_extract<'cb>(
     let line_index = crate::LineIndex::new(source);
     let resolver = {
         let _span = tracing::trace_span!(target: "parse", "resolve_scopes", path = path).entered();
-        Resolver::build(
-            &parser_return.program,
-            &matched,
-            Some(&config.matchers),
-            config.token_dictionary.as_deref(),
-            config.cross_file.as_ref(),
-            Some(std::path::PathBuf::from(path)),
-            Some(&line_index),
+        Resolver::build(crate::scope::ResolverBuildInput {
+            program: &parser_return.program,
+            matched: &matched,
+            matchers: Some(&config.matchers),
+            tokens: config.token_dictionary.as_deref(),
+            cross_file: config
+                .cross_file
+                .as_ref()
+                .map(crate::CrossFileResolver::as_lookup),
+            source_path: Some(std::path::PathBuf::from(path)),
+            line_index: Some(&line_index),
             pattern_raw_transform,
-        )
+        })
     };
     let ctx = VisitorContext::new(&matched, config).with_resolver(&resolver);
 

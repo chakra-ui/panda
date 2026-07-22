@@ -174,16 +174,16 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
             let imports = collect_imports(&parser_return.program);
             match_import_records(&imports, matchers)
         });
-        let resolver = Resolver::build_with_cross_file_lookup(
-            &parser_return.program,
-            &matched,
-            tokens,
-            Some(self),
+        let resolver = Resolver::build_with_cross_file_lookup(crate::scope::ResolverBuildInput {
+            program: &parser_return.program,
+            matched: &matched,
             matchers,
-            Some(path.to_path_buf()),
-            None,
-            None,
-        );
+            tokens,
+            cross_file: Some(self),
+            source_path: Some(path.to_path_buf()),
+            line_index: None,
+            pattern_raw_transform: None,
+        });
 
         // Oxc returns a partial AST on parse errors — walk what we get.
         Some(collect_exports(

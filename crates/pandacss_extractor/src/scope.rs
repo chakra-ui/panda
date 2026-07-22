@@ -21,7 +21,7 @@ use pandacss_tokens::{TokenCategory, TokenDictionary};
 use rustc_hash::{FxHashMap, FxHashSet};
 use smallvec::SmallVec;
 
-use crate::cross_file::{CrossFileLookup, CrossFileResolver, ExportEntry};
+use crate::cross_file::{CrossFileLookup, ExportEntry};
 use crate::literal::expression_to_literal;
 use crate::matcher::{MatchCategory, MatchedImport, Matchers};
 use crate::pure_fn::{
@@ -96,51 +96,31 @@ enum PureFnResolutionState {
     Unresolvable,
 }
 
+/// Construction bag for [`Resolver::build`] / [`Resolver::build_with_cross_file_lookup`].
+pub(crate) struct ResolverBuildInput<'a, 'cb> {
+    pub program: &'a oxc_ast::ast::Program<'a>,
+    pub matched: &'a [MatchedImport],
+    pub matchers: Option<&'a Matchers>,
+    pub tokens: Option<&'a TokenDictionary>,
+    pub cross_file: Option<&'a dyn CrossFileLookup>,
+    pub source_path: Option<PathBuf>,
+    pub line_index: Option<&'a crate::LineIndex<'a>>,
+    pub pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
+}
+
 impl<'a, 'cb> Resolver<'a, 'cb> {
-    #[allow(
-        clippy::too_many_arguments,
-        reason = "resolver construction mirrors the extraction pipeline state"
-    )]
-    pub(crate) fn build(
-        program: &'a oxc_ast::ast::Program<'a>,
-        matched: &'a [MatchedImport],
-        matchers: Option<&'a Matchers>,
-        tokens: Option<&'a TokenDictionary>,
-        cross_file: Option<&'a CrossFileResolver>,
-        source_path: Option<PathBuf>,
-        line_index: Option<&'a crate::LineIndex<'a>>,
-        pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
-    ) -> Self {
-        Self::build_from_lookup(
-            program,
-            matched,
-            matchers,
-            tokens,
-            cross_file.map(CrossFileResolver::as_lookup),
-            source_path,
-            line_index,
-            pattern_raw_transform,
-        )
+    pub(crate) fn build(input: ResolverBuildInput<'a, 'cb>) -> Self {
+        Self::build_from_input(input)
     }
 
-    /// Like [`Self::build`], but for callers that already have a type-erased
-    /// `&dyn CrossFileLookup` — used when resolving an imported file's own
-    /// exports (see `cross_file.rs`).
-    #[allow(
-        clippy::too_many_arguments,
-        reason = "cross-file resolver construction mirrors the extraction pipeline state"
-    )]
-    pub(crate) fn build_with_cross_file_lookup(
-        program: &'a oxc_ast::ast::Program<'a>,
-        matched: &'a [MatchedImport],
-        tokens: Option<&'a TokenDictionary>,
-        cross_file: Option<&'a dyn CrossFileLookup>,
-        matchers: Option<&'a Matchers>,
-        source_path: Option<PathBuf>,
-        line_index: Option<&'a crate::LineIndex<'a>>,
-        pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
-    ) -> Self {
-        Self::build_from_lookup(
+    /// Like [`Self::build`], but named for callers that already have a
+    /// type-erased `&dyn CrossFileLookup` (see `cross_file.rs`).
+    pub(crate) fn build_with_cross_file_lookup(input: ResolverBuildInput<'a, 'cb>) -> Self {
+        Self::build_from_input(input)
+    }
+
+    fn build_from_input(input: ResolverBuildInput<'a, 'cb>) -> Self {
+        let ResolverBuildInput {
             program,
             matched,
             matchers,
@@ -149,23 +129,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             source_path,
             line_index,
             pattern_raw_transform,
-        )
-    }
-
-    #[allow(
-        clippy::too_many_arguments,
-        reason = "shared constructor body for the two `build*` entrypoints above"
-    )]
-    fn build_from_lookup(
-        program: &'a oxc_ast::ast::Program<'a>,
-        matched: &'a [MatchedImport],
-        matchers: Option<&'a Matchers>,
-        tokens: Option<&'a TokenDictionary>,
-        cross_file: Option<&'a dyn CrossFileLookup>,
-        source_path: Option<PathBuf>,
-        line_index: Option<&'a crate::LineIndex<'a>>,
-        pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
-    ) -> Self {
+        } = input;
         let semantic = SemanticBuilder::new().build(program).semantic;
         Self {
             semantic,

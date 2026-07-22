@@ -560,16 +560,20 @@ fn parse_expression_literal(
     let allocator = Allocator::default();
     let parser_return = Parser::new(&allocator, &wrapped, SourceType::tsx()).parse();
     let resolver = context.map(|context| {
-        crate::Resolver::build(
-            &parser_return.program,
-            context.matched,
-            Some(&context.config.matchers),
-            context.config.token_dictionary.as_deref(),
-            context.config.cross_file.as_ref(),
-            Some(std::path::PathBuf::from(context.path)),
-            None,
-            None,
-        )
+        crate::Resolver::build(crate::scope::ResolverBuildInput {
+            program: &parser_return.program,
+            matched: context.matched,
+            matchers: Some(&context.config.matchers),
+            tokens: context.config.token_dictionary.as_deref(),
+            cross_file: context
+                .config
+                .cross_file
+                .as_ref()
+                .map(crate::CrossFileResolver::as_lookup),
+            source_path: Some(std::path::PathBuf::from(context.path)),
+            line_index: None,
+            pattern_raw_transform: None,
+        })
     });
     for stmt in parser_return.program.body.iter().rev() {
         let Statement::VariableDeclaration(var) = stmt else {

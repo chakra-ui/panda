@@ -140,18 +140,16 @@ pub(crate) fn flatten(
     let mut layer_ranges = StylesheetLayerRanges::default();
     let mut stack = Vec::new();
     let mut top_level_start: Option<(String, usize)> = None;
-    flatten_ops(
-        ops,
+    let mut walk = FlattenWalk {
         analyze,
         layers,
         minify,
-        0,
-        true,
-        &mut out,
-        &mut stack,
-        &mut top_level_start,
-        &mut layer_ranges,
-    );
+        out: &mut out,
+        stack: &mut stack,
+        top_level_start: &mut top_level_start,
+        layer_ranges: &mut layer_ranges,
+    };
+    flatten_ops(ops, &mut walk, 0, true);
     FlattenOutput {
         css: out,
         layer_ranges,
@@ -164,96 +162,81 @@ fn is_non_selector_block_at_rule(prelude: &str) -> bool {
     prelude.starts_with("@keyframes")
 }
 
-#[allow(
-    clippy::too_many_arguments,
-    reason = "flatten walker shares one mutable CSS buffer and range state"
-)]
-fn flatten_ops(
-    ops: &[SheetOp],
-    analyze: &AnalyzeResult,
-    layers: &CascadeLayers,
+/// Mutable CSS buffer + layer-range state threaded through the flatten walker.
+struct FlattenWalk<'a> {
+    analyze: &'a AnalyzeResult,
+    layers: &'a CascadeLayers,
     minify: bool,
-    indent: usize,
-    boost: bool,
-    out: &mut String,
-    stack: &mut Vec<String>,
-    top_level_start: &mut Option<(String, usize)>,
-    layer_ranges: &mut StylesheetLayerRanges,
-) {
+    out: &'a mut String,
+    stack: &'a mut Vec<String>,
+    top_level_start: &'a mut Option<(String, usize)>,
+    layer_ranges: &'a mut StylesheetLayerRanges,
+}
+
+fn flatten_ops(ops: &[SheetOp], walk: &mut FlattenWalk<'_>, indent: usize, boost: bool) {
     for op in ops {
         match op {
             SheetOp::LayerEnter(name) => {
-                if stack.is_empty() {
-                    *top_level_start = Some((name.clone(), out.len()));
+                if walk.stack.is_empty() {
+                    *walk.top_level_start = Some((name.clone(), walk.out.len()));
                 }
-                stack.push(name.clone());
+                walk.stack.push(name.clone());
             }
             SheetOp::LayerExit => {
-                stack.pop();
-                if stack.is_empty()
-                    && let Some((name, start)) = top_level_start.take()
+                walk.stack.pop();
+                if walk.stack.is_empty()
+                    && let Some((name, start)) = walk.top_level_start.take()
                 {
-                    assign_top_level_range(layer_ranges, layers, &name, start..out.len());
+                    assign_top_level_range(
+                        walk.layer_ranges,
+                        walk.layers,
+                        &name,
+                        start..walk.out.len(),
+                    );
                 }
             }
             SheetOp::Rule { selector, decls } => {
                 if boost {
-                    write_rule(out, minify, indent, analyze, stack, selector, decls);
+                    write_rule(walk, indent, selector, decls);
                 } else {
-                    write_rule_block(out, minify, indent, selector, decls);
+                    write_rule_block(walk.out, walk.minify, indent, selector, decls);
                 }
             }
-            SheetOp::Declaration(decl) => write_declaration(out, minify, indent, decl),
+            SheetOp::Declaration(decl) => {
+                write_declaration(walk.out, walk.minify, indent, decl);
+            }
             SheetOp::AtRule { prelude, ops } => {
-                write_indent(out, minify, indent);
-                out.push_str(prelude);
-                open_block(out, minify);
+                write_indent(walk.out, walk.minify, indent);
+                walk.out.push_str(prelude);
+                open_block(walk.out, walk.minify);
                 flatten_ops(
                     ops,
-                    analyze,
-                    layers,
-                    minify,
+                    walk,
                     indent + 1,
                     boost && !is_non_selector_block_at_rule(prelude),
-                    out,
-                    stack,
-                    top_level_start,
-                    layer_ranges,
                 );
-                write_indent(out, minify, indent);
-                out.push('}');
-                if !minify {
-                    out.push('\n');
+                write_indent(walk.out, walk.minify, indent);
+                walk.out.push('}');
+                if !walk.minify {
+                    walk.out.push('\n');
                 }
             }
-            SheetOp::Raw(raw) => out.push_str(raw),
+            SheetOp::Raw(raw) => walk.out.push_str(raw),
         }
     }
 }
 
 /// `!important` inverts layer priority, so a rule mixing important and
 /// non-important decls splits into two blocks with opposite amounts.
-#[allow(
-    clippy::too_many_arguments,
-    reason = "rule writer shares the flatten walker's buffer and range state"
-)]
-fn write_rule(
-    out: &mut String,
-    minify: bool,
-    indent: usize,
-    analyze: &AnalyzeResult,
-    stack: &[String],
-    selector: &str,
-    decls: &[Decl],
-) {
+fn write_rule(walk: &mut FlattenWalk<'_>, indent: usize, selector: &str, decls: &[Decl]) {
     if decls.iter().any(|decl| decl.important) {
         let normal: Vec<&Decl> = decls.iter().filter(|decl| !decl.important).collect();
         let important: Vec<&Decl> = decls.iter().filter(|decl| decl.important).collect();
         if !normal.is_empty() {
-            let amount = specificity_amount(analyze, stack);
+            let amount = specificity_amount(walk.analyze, walk.stack);
             write_rule_with_amount(
-                out,
-                minify,
+                walk.out,
+                walk.minify,
                 indent,
                 selector,
                 amount,
@@ -261,10 +244,10 @@ fn write_rule(
             );
         }
         if !important.is_empty() {
-            let amount = important_specificity_amount(analyze, stack);
+            let amount = important_specificity_amount(walk.analyze, walk.stack);
             write_rule_with_amount(
-                out,
-                minify,
+                walk.out,
+                walk.minify,
                 indent,
                 selector,
                 amount,
@@ -273,8 +256,8 @@ fn write_rule(
         }
         return;
     }
-    let amount = specificity_amount(analyze, stack);
-    write_rule_with_amount(out, minify, indent, selector, amount, decls);
+    let amount = specificity_amount(walk.analyze, walk.stack);
+    write_rule_with_amount(walk.out, walk.minify, indent, selector, amount, decls);
 }
 
 fn write_rule_with_amount<'a>(

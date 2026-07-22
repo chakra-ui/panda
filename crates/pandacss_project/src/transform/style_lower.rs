@@ -212,16 +212,9 @@ pub fn lower_style_tree(
 
     let base = projected_base(obj);
     let mut exprs = Vec::with_capacity(sites.len());
+    let encode = LowerEncodeCtx { project, for_jsx };
     for site in &sites {
-        match lower_site(
-            project,
-            source,
-            obj,
-            &base,
-            site,
-            for_jsx,
-            pattern_transform.as_deref_mut(),
-        ) {
+        match lower_site(source, obj, &base, site, &encode, &mut pattern_transform) {
             Some(expr) => exprs.push(expr),
             None => return LowerResult::Bail,
         }
@@ -505,19 +498,25 @@ fn lower_whole_arg_ternary(
     })
 }
 
+/// Shared encode refs for site/property-arm lowering (`pattern_transform` stays
+/// a separate reborrowable param — packing `&mut dyn FnMut` into this struct
+/// fights borrowck across sequential arm encodes).
+struct LowerEncodeCtx<'a> {
+    project: &'a Project,
+    for_jsx: Option<&'a ExtractedJsx>,
+}
+
 #[allow(
-    clippy::too_many_arguments,
     clippy::too_many_lines,
     reason = "each Site arm builds an independent class expression"
 )]
 fn lower_site(
-    project: &Project,
     source: &str,
     obj: &StyleObject,
     base: &[(String, Literal)],
     site: &Site,
-    for_jsx: Option<&ExtractedJsx>,
-    mut pattern_transform: Option<&mut PatternTransformFn<'_>>,
+    encode: &LowerEncodeCtx<'_>,
+    pattern_transform: &mut Option<&mut PatternTransformFn<'_>>,
 ) -> Option<ClassExpr> {
     match site {
         Site::PropertyTernary {
@@ -527,24 +526,9 @@ fn lower_site(
             alternate,
         } => {
             let test_src = span_slice(source, *test)?.to_owned();
-            let yes = lower_property_arm(
-                project,
-                source,
-                base,
-                path,
-                consequent,
-                for_jsx,
-                pattern_transform.as_deref_mut(),
-            )?;
-            let no = lower_property_arm(
-                project,
-                source,
-                base,
-                path,
-                alternate,
-                for_jsx,
-                pattern_transform.as_deref_mut(),
-            )?;
+            let yes =
+                lower_property_arm(source, base, path, consequent, encode, pattern_transform)?;
+            let no = lower_property_arm(source, base, path, alternate, encode, pattern_transform)?;
             Some(ClassExpr::Ternary {
                 test: test_src,
                 yes: Box::new(yes),
@@ -556,10 +540,18 @@ fn lower_site(
             let lit = project_literal(value)?;
             let mut truthy = base.to_vec();
             apply_branch(&mut truthy, path, lit);
-            let yes =
-                encode_literal_object(project, &truthy, for_jsx, pattern_transform.as_deref_mut());
-            let no =
-                encode_literal_object(project, base, for_jsx, pattern_transform.as_deref_mut());
+            let yes = encode_literal_object(
+                encode.project,
+                &truthy,
+                encode.for_jsx,
+                pattern_transform.as_deref_mut(),
+            );
+            let no = encode_literal_object(
+                encode.project,
+                base,
+                encode.for_jsx,
+                pattern_transform.as_deref_mut(),
+            );
             Some(ClassExpr::Ternary {
                 test: test_src,
                 yes: Box::new(ClassExpr::Lit(yes)),
@@ -575,21 +567,21 @@ fn lower_site(
             let test_src = span_slice(source, *test)?.to_owned();
             let affected = affected_keys_from_arms(consequent, alternate);
             let yes = encode_spread_branch(
-                project,
+                encode.project,
                 obj,
                 path,
                 &affected,
                 consequent,
-                for_jsx,
+                encode.for_jsx,
                 pattern_transform.as_deref_mut(),
             )?;
             let no = encode_spread_branch(
-                project,
+                encode.project,
                 obj,
                 path,
                 &affected,
                 alternate,
-                for_jsx,
+                encode.for_jsx,
                 pattern_transform.as_deref_mut(),
             )?;
             Some(ClassExpr::Ternary {
@@ -602,23 +594,23 @@ fn lower_site(
             let test_src = span_slice(source, *test)?.to_owned();
             let affected = affected_keys_from_arm(value);
             let yes = encode_spread_branch(
-                project,
+                encode.project,
                 obj,
                 path,
                 &affected,
                 value,
-                for_jsx,
+                encode.for_jsx,
                 pattern_transform.as_deref_mut(),
             )?;
             let empty = StyleTree::Object(StyleObject::default());
             let no = encode_spread_branch(
-                project,
+                encode.project,
                 obj,
                 path,
                 &affected,
                 &empty,
-                for_jsx,
-                pattern_transform,
+                encode.for_jsx,
+                pattern_transform.as_deref_mut(),
             )?;
             Some(ClassExpr::Ternary {
                 test: test_src,
@@ -629,18 +621,13 @@ fn lower_site(
     }
 }
 
-#[allow(
-    clippy::too_many_arguments,
-    reason = "nested ternary arms need full encode context"
-)]
 fn lower_property_arm(
-    project: &Project,
     source: &str,
     base: &[(String, Literal)],
     path: &[PathSeg],
     arm: &StyleTree,
-    for_jsx: Option<&ExtractedJsx>,
-    mut pattern_transform: Option<&mut PatternTransformFn<'_>>,
+    encode: &LowerEncodeCtx<'_>,
+    pattern_transform: &mut Option<&mut PatternTransformFn<'_>>,
 ) -> Option<ClassExpr> {
     if let StyleTree::Ternary {
         test,
@@ -649,24 +636,8 @@ fn lower_property_arm(
     } = arm
     {
         let test_src = span_slice(source, *test)?.to_owned();
-        let yes = lower_property_arm(
-            project,
-            source,
-            base,
-            path,
-            consequent,
-            for_jsx,
-            pattern_transform.as_deref_mut(),
-        )?;
-        let no = lower_property_arm(
-            project,
-            source,
-            base,
-            path,
-            alternate,
-            for_jsx,
-            pattern_transform.as_deref_mut(),
-        )?;
+        let yes = lower_property_arm(source, base, path, consequent, encode, pattern_transform)?;
+        let no = lower_property_arm(source, base, path, alternate, encode, pattern_transform)?;
         return Some(ClassExpr::Ternary {
             test: test_src,
             yes: Box::new(yes),
@@ -676,7 +647,12 @@ fn lower_property_arm(
     let lit = project_literal(arm)?;
     let mut next = base.to_vec();
     apply_branch(&mut next, path, lit);
-    let classes = encode_literal_object(project, &next, for_jsx, pattern_transform);
+    let classes = encode_literal_object(
+        encode.project,
+        &next,
+        encode.for_jsx,
+        pattern_transform.as_deref_mut(),
+    );
     Some(ClassExpr::Lit(classes))
 }
 
