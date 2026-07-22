@@ -31,15 +31,19 @@ recomputed on hydrate.
 
 ```jsonc
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "panda": "^2.0.0",                               // peer range (collision guard); author-supplied
   "configFingerprint": "cfg1-…",                          // engine fingerprint of output-affecting config
-  "strings": ["color", "red", "padding", "4px", "colors.brand"], // intern table
+  "strings": ["color", "red", "padding", "4px", "colors.brand", "vt_xxx"], // intern table
   "atoms": [{ "p": 0, "v": 1 }],                   // [propIdx, valueIdx]; token values use `{ t, v }`
   "tokenRefs": [4],                                  // string indices for runtime token CSS-var usage
   "recipes": { "base": [...], "variants": [...] }, // interned EncodedRecipesSnapshot groups
-  "modules": { "button": { "atoms": [0], "recipes": [0], "tokenRefs": [0] } }, // per-module indices
-  "exports": { "Button": "button" }                // export name → module key (added by panda buildinfo)
+  "viewTransitions": [{ "cls": 5, "old": { "opacity": 0 }, "new": { "opacity": 1 } }],
+  "modules": {
+    "button": { "atoms": [0], "recipes": [0], "tokenRefs": [0] },
+    "transitions": { "viewTransitions": [0] }
+  },
+  "exports": { "Button": "button", "slide": "transitions" }
 }
 ```
 
@@ -135,10 +139,21 @@ Two paths, by how the engine encodes each:
   emitter consumes the flat `EncodedRecipesSnapshot`, so there's no `RecipePartKey`/`RecipeVariantKey` reconstruction or
   refcount surgery.
 
+## View transitions
+
+`viewTransition({…})` is a third path — not atoms, not config recipes. Build info carries a top-level
+`viewTransitions` array (deduped by finalized `class_name`) plus per-module indices. Slot bodies stay opaque JSON.
+Hydrate merges into the consumer emit snapshot (hydrated libs first, then local). Middle design systems that hydrate a
+parent and re-publish must not re-emit the parent's bags — only local `view_transitions` are serialized (same rule as
+excluding `buildinfo:*` atom files).
+
+See [view-transition-api.md](./view-transition-api.md).
+
 ## Collision safety
 
 `validate` is pure and checks the wire `schemaVersion` and required top-level shape. `hydrate` validates first, and the
-engine rejects invalid intern and per-module atom/recipe/token-ref indices atomically; malformed input returns
+engine rejects invalid intern and per-module atom/recipe/token-ref/view-transition indices atomically; malformed input
+returns
 `{ ok: false, reason: 'corrupt' }` instead of throwing or hydrating partial CSS. The host handles build-info failures by
 re-extracting the library source when `files` is available. Manifest schema and Panda-range checks are separate
 package-contract gates and remain fail-closed.

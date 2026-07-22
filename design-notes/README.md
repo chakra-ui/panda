@@ -21,8 +21,8 @@ Some topics span several notes. Keep the detailed contract in one place and link
   design-system architecture.
 - `stylesheet.md` owns CSS emission, writer minification, adjacent rule merging, and the missing CSS-aware optimizer
   boundary. Other notes should summarize and link to it.
-- `cli-design-md.md` owns `panda design-md`, the Panda → DESIGN.md mapping, and drift/CI contracts. Not the Google
-  spec or MCP tools.
+- `cli-design-md.md` owns `panda design-md`, the Panda → DESIGN.md mapping, and drift/CI contracts. Not the Google spec
+  or MCP tools.
 - `agent-skills.md` owns the official end-user Agent Skills pack (inventory, format, layering vs DESIGN.md / MCP /
   `AGENTS.md`). Not contributor/Rust subagents under `.claude/agents/`.
 
@@ -51,7 +51,8 @@ Some topics span several notes. Keep the detailed contract in one place and link
 - [Filesystem](./filesystem.md) — `pandacss_fs` trait, os/memory impls, glob via `fast-glob`, WASM compat.
 - [Literal evaluator](./literal-evaluator.md) — what folds vs what doesn't (literals, pure helpers, token/raw calls).
 - [StyleTree](./style-tree.md) — span-backed transform IR for `css()` / JSX conditionals; `project_literal` for encode.
-- [Cross-file resolution](./cross-file-resolution.md) — `CrossFileResolver`, cache shape (`Literal` | `PureFn`), cycle guard.
+- [Cross-file resolution](./cross-file-resolution.md) — `CrossFileResolver`, cache shape (`Literal` | `PureFn`), cycle
+  guard.
 - [JSX tag matching](./jsx-tag-matching.md) — `jsxMatchTag`: declarative successor to v1 `matchTag`/`matchTagProp`;
   match/ignore JSX tags by name, pattern, or import source, plus per-rule prop control. Why it's data, not a callback.
 - [Recipe variant dynamic diagnostics](./recipe-variant-diagnostics.md) — `recipe_variant_dynamic`: warn when config
@@ -82,6 +83,8 @@ Some topics span several notes. Keep the detailed contract in one place and link
   migration guidance for legacy `containerSizes`/`cq` concepts.
 - [Token reference syntax](./token-reference-syntax.md) — `tokenSyntax: '$'`: Stitches-style `$` token syntax in style
   values, replacing the v1 `tokens:created` rename hook. Includes the v1 → v2 migration guide.
+- [View Transition API](./view-transition-api.md) — `viewTransition()` bag class from the css barrel,
+  `view-transition-class` emission, hash contract, transform rewrite, and what's still out of scope.
 
 ### Boundary
 
