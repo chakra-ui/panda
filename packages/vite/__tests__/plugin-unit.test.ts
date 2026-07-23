@@ -159,6 +159,42 @@ describe('@pandacss/vite design-system HMR', () => {
       }
     `)
   })
+
+  it('rebuilds the cached source transformer after a compiler reload', async () => {
+    const { createSourceTransformer, driver, pandacss } = await setup()
+    const plugin = pandacss({ transform: true }) as unknown as TestPlugin
+    const nextCompiler = { ...driver.compiler }
+    const nextTransformer = {
+      transformSource: vi.fn(() => ({
+        code: "export const cls = 'next'",
+        map: null,
+        changed: true,
+        bailed: false,
+        diagnostics: [],
+        dependencies: [],
+        helper: { needsCx: false, needsCva: false, needsSva: false },
+      })),
+    }
+
+    await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
+    createSourceTransformer.mockReturnValueOnce(nextTransformer)
+    driver.compiler = nextCompiler
+
+    const result = plugin.transform.call(
+      { addWatchFile: vi.fn(), warn: vi.fn() },
+      "import { css } from '@panda/css'\nexport const cls = css({ color: 'red' })",
+      '/project/src/app.tsx',
+    )
+
+    expect(createSourceTransformer).toHaveBeenLastCalledWith(nextCompiler)
+    expect(nextTransformer.transformSource).toHaveBeenCalledOnce()
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "code": "export const cls = 'next'",
+        "map": null,
+      }
+    `)
+  })
 })
 
 async function setup() {

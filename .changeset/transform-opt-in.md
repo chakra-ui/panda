@@ -4,4 +4,5 @@
 '@pandacss/rollup': minor
 ---
 
-Source transform is opt-in via `transform: true`. By default the plugins only handle CSS, codegen, and HMR.
+Source transforms remain opt-in with `transform: true`. Vite rebuilds its transformer after compiler reloads, and
+Rollup reports compiler diagnostics.

@@ -1,7 +1,8 @@
 import { createNodeDriver, type NodeDriver } from '@pandacss/compiler'
+import { formatDiagnostic, type Diagnostic } from '@pandacss/compiler-shared'
 import { pandaTransformer } from '@pandacss/transformer'
 import { dirname } from 'node:path'
-import type { Plugin } from 'rollup'
+import type { Plugin, PluginContext } from 'rollup'
 
 export interface PandaRollupOptions {
   /** Project root. Defaults to `process.cwd()`. */
@@ -82,7 +83,9 @@ export function pandacss(options: PandaRollupOptions = {}): Plugin[] {
 
     async generateBundle(output) {
       if (!driver) return
-      const { css } = driver.cssgen()
+      const { css, diagnostics } = driver.cssgen()
+      reportDiagnostics(this, driver.designSystemDiagnostics ?? [])
+      reportDiagnostics(this, diagnostics)
       this.emitFile({ type: 'asset', fileName, source: css })
 
       if (!lib) return
@@ -90,9 +93,7 @@ export function pandacss(options: PandaRollupOptions = {}): Plugin[] {
       // re-scan can't work — buildinfo is authoritative and stale means "rebuild".
       const libOutdir = output.dir ?? (output.file ? dirname(output.file) : undefined)
       const result = await driver.writeDesignSystemLib({ outdir: libOutdir, files: [] })
-      for (const diagnostic of result.diagnostics) {
-        if (diagnostic.severity === 'error') this.warn(diagnostic.message)
-      }
+      reportDiagnostics(this, result.diagnostics)
     },
   }
 
@@ -103,6 +104,18 @@ export function pandacss(options: PandaRollupOptions = {}): Plugin[] {
   })
 
   return [orchestrator, ...(Array.isArray(transform) ? transform : [transform])]
+}
+
+function reportDiagnostics(context: PluginContext, diagnostics: readonly Diagnostic[]) {
+  for (const diagnostic of diagnostics) {
+    const message = formatDiagnostic(diagnostic)
+    if (diagnostic.severity === 'error') context.error(message)
+    if (diagnostic.severity === 'warning') context.warn(message)
+    if (diagnostic.severity === 'info') {
+      if (typeof context.info === 'function') context.info(message)
+      else context.warn(message)
+    }
+  }
 }
 
 export default pandacss

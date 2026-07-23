@@ -50,12 +50,23 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
   let resolvedConfig: ResolvedConfig | undefined
   let designSystemDiagnosticsRef: readonly Diagnostic[] | undefined
   let sourceTransformer: SourceTransformer | undefined
+  let sourceTransformerCompiler: Driver['compiler'] | undefined
   const watchedFiles = new Set<string>()
   const rootIds = new Set<string>()
+
+  const resolveSourceTransformer = () => {
+    const compiler = driver?.compiler
+    if (!compiler) return undefined
+    if (sourceTransformerCompiler !== compiler) {
+      sourceTransformer = createSourceTransformer(compiler)
+      sourceTransformerCompiler = compiler
+    }
+    return sourceTransformer
+  }
   const sourceHooks = transformEnabled
     ? createPandaSourcePluginHooks(() => ({
         getCompiler: () => driver?.compiler,
-        getTransformer: () => sourceTransformer,
+        getTransformer: () => resolveSourceTransformer(),
       }))
     : undefined
 
@@ -124,7 +135,7 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
       cwd = cwdOption ?? config.root
       driver = await createNodeDriver({ cwd, configPath })
       if (transformEnabled) {
-        sourceTransformer = createSourceTransformer(driver.compiler)
+        resolveSourceTransformer()
       }
       outdir = outdirOption
       codegen()
@@ -140,12 +151,13 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
     },
 
     transform(code, id) {
-      if (transformEnabled && sourceTransformer) {
+      const transformer = transformEnabled ? resolveSourceTransformer() : undefined
+      if (transformer) {
         const sourceResult = runSourceTransform(
           this,
           {
             getCompiler: () => driver?.compiler,
-            getTransformer: () => sourceTransformer,
+            getTransformer: () => transformer,
           },
           code,
           id,
