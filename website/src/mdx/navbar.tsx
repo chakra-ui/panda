@@ -4,6 +4,7 @@ import { CourseBanner } from '@/components/course-banner'
 import { CommandMenu } from '@/components/docs/command-menu'
 import { SearchButton } from '@/components/docs/search'
 import { Sidebar } from '@/components/docs/sidebar'
+import { TAB_ICONS } from '@/components/docs/tab-bar'
 import { Anchor } from '@/components/ui/anchor'
 import { drawerSlotRecipe } from '@/components/ui/drawer'
 import { docsConfig, docsTabs } from '@/docs.config'
@@ -195,25 +196,32 @@ const MobileTabSwitcher = ({ pathname }: MobileTabSwitcherProps) => {
         borderColor: 'border'
       })}
     >
-      {docsTabs.map(tab => (
-        <Anchor
-          key={tab.key}
-          href={`/docs/${tab.key}`}
-          className={css({
-            textStyle: 'sm',
-            fontWeight: 'medium',
-            px: '3',
-            py: '1.5',
-            rounded: 'full',
-            borderWidth: '1px',
-            borderColor: tab.key === activeKey ? 'accent' : 'border',
-            bg: tab.key === activeKey ? 'accent.subtle' : 'transparent',
-            color: tab.key === activeKey ? 'fg' : 'fg.muted'
-          })}
-        >
-          {tab.title}
-        </Anchor>
-      ))}
+      {docsTabs.map(tab => {
+        const Icon = TAB_ICONS[tab.key]
+        return (
+          <Anchor
+            key={tab.key}
+            href={`/docs/${tab.key}`}
+            className={css({
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '1.5',
+              textStyle: 'sm',
+              fontWeight: 'semibold',
+              px: '3',
+              py: '1.5',
+              rounded: 'full',
+              borderWidth: '1px',
+              borderColor: tab.key === activeKey ? 'accent' : 'border',
+              bg: tab.key === activeKey ? 'accent.subtle' : 'transparent',
+              color: tab.key === activeKey ? 'fg' : 'fg.muted'
+            })}
+          >
+            {Icon && <Icon size={14} />}
+            {tab.title}
+          </Anchor>
+        )
+      })}
     </div>
   )
 }

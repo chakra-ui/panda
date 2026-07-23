@@ -67,7 +67,7 @@ export default async function DocsPage(props: DocsPageProps) {
 
   return (
     <>
-      <Box maxW="90rem" mx="auto" display="flex" position="relative">
+      <Box display="flex" position="relative">
         {/* Sidebar */}
         <Box
           as="aside"
@@ -78,7 +78,7 @@ export default async function DocsPage(props: DocsPageProps) {
           top="calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height) + 1rem)"
           height="calc(100vh - var(--navbar-height) - var(--banner-height) - var(--tabbar-height) - 1rem)"
         >
-          <Box overflowY="auto" height="100%" className="scroll-area" p="4">
+          <Box overflowY="auto" height="100%" className="scroll-area" py="4" px="6">
             <Sidebar slug={slug} />
           </Box>
         </Box>
@@ -88,7 +88,7 @@ export default async function DocsPage(props: DocsPageProps) {
           as="article"
           flex="1"
           minW="0"
-          px={{ base: '4', lg: '10' }}
+          px="6"
           pt="10"
         >
           <Breadcrumb slug={slug} />
@@ -113,6 +113,7 @@ export default async function DocsPage(props: DocsPageProps) {
           position="sticky"
           top="calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height))"
           pt="10"
+          pr="6"
           maxH="calc(100vh - var(--navbar-height) - var(--banner-height) - var(--tabbar-height) - 1rem)"
         >
           <Box overflowY="auto" height="100%" className="scroll-area">
