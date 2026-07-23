@@ -29,17 +29,17 @@ pnpm panda init --postcss
 | `--interactive, -i`           | Whether to run the interactive mode                           | -                                                             |
 | `--force, -f`                 | Whether to overwrite existing files                           | -                                                             |
 | `--postcss, -p`               | Whether to emit a [postcss](https://postcss.org/) config file | -                                                             |
-| `--config, -c <path>`         | Path to Panda config file                                     | [`config`](/docs/references/config)                           |
+| `--config, -c <path>`         | Path to Panda config file                                     | [`config`](/docs/reference/config)                           |
 | `--cwd <dir>`                 | Path to current working directory                             | -                                                             |
 | `--silent`                    | Whether to suppress all output                                | -                                                             |
 | `--no-gitignore`              | Whether to update gitignore with the output directory         | -                                                             |
 | `--no-codegen`                | Whether to run the codegen process                            | -                                                             |
-| `--out-extension <ext>`       | The extension of the generated js files (default: 'mjs')      | [`config.outExtension`](/docs/references/config#outextension) |
-| `--outdir <dir>`              | The output directory for the generated files                  | [`config.outdir`](/docs/references/config#outdir)             |
-| `--jsx-framework <framework>` | The jsx framework to use                                      | [`config.jsxFramework`](/docs/references/config#jsxframework) |
-| `--syntax <syntax>`           | The css syntax preference                                     | [`config.syntax`](/docs/references/config#syntax)             |
-| `--strict-tokens`             | Set strictTokens to true                                      | [`config.strictTokens`](/docs/references/config#stricttokens) |
-| `--logfile <file>`            | Outputs logs to a file                                        | [Debugging](/docs/references/debugging)                           |
+| `--out-extension <ext>`       | The extension of the generated js files (default: 'mjs')      | [`config.outExtension`](/docs/reference/config#outextension) |
+| `--outdir <dir>`              | The output directory for the generated files                  | [`config.outdir`](/docs/reference/config#outdir)             |
+| `--jsx-framework <framework>` | The jsx framework to use                                      | [`config.jsxFramework`](/docs/reference/config#jsxframework) |
+| `--syntax <syntax>`           | The css syntax preference                                     | [`config.syntax`](/docs/reference/config#syntax)             |
+| `--strict-tokens`             | Set strictTokens to true                                      | [`config.strictTokens`](/docs/reference/config#stricttokens) |
+| `--logfile <file>`            | Outputs logs to a file                                        | [Debugging](/docs/reference/debugging)                           |
 
 ---
 
@@ -60,22 +60,22 @@ pnpm panda "./src/components/**"
 
 | Flag                    | Description                                                            | Related                                                           |
 | ----------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `--outdir, -o [dir]`    | The output directory for the generated CSS utilities                   | [`config.outdir`](/docs/references/config#outdir)                 |
-| `--minify, -m`          | Whether to minify the generated CSS                                    | [`config.minify`](/docs/references/config#minify)                 |
-| `--watch, -w`           | Whether to watch for changes in the project                            | [`config.watch`](/docs/references/config#watch)                   |
-| `--poll`                | Whether to poll for file changes                                       | [`config.poll`](/docs/references/config#poll)                     |
-| `--config, -c <path>`   | The path to the config file                                            | [`config`](/docs/references/config.md)                            |
-| `--cwd <path>`          | The current working directory                                          | [`config.cwd`](/docs/references/config#cwd)                       |
-| `--preflight`           | Whether to emit the preflight or reset CSS                             | [`config.preflight`](/docs/references/config#preflight)           |
-| `--silent`              | Whether to suppress all output                                         | [`config.logLevel`](/docs/references/config#log-level)            |
-| `--exclude, -e <files>` | Files to exclude from the extract process                              | [`config`](/docs/references/config.md)                            |
-| `--clean`               | Whether to clean the output directory before emitting                  | [`config.clean`](/docs/references/config#clean)                   |
-| `--hash`                | Whether to hash the output classnames                                  | [`config.hash`](/docs/references/config#hash)                     |
-| `--lightningcss`        | Use `lightningcss` instead of `postcss` for css optimization           | [`config.lightningcss`](/docs/references/config#lightningcss)     |
-| `--polyfill`            | Polyfill CSS @layers at-rules for older browsers                       | [`config.polyfill`](/docs/references/config#polyfill)             |
-| `--emitTokensOnly`      | Whether to only emit the `tokens` directory                            | [`config.emitTokensOnly`](/docs/references/config#emittokensonly) |
-| `--cpu-prof`            | Generate a `panda-{command}-{timestamp}.cpuprofile` file for profiling | [Debugging](/docs/references/debugging)                               |
-| `--logfile <file>`      | Outputs logs to a file                                                 | [Debugging](/docs/references/debugging)                               |
+| `--outdir, -o [dir]`    | The output directory for the generated CSS utilities                   | [`config.outdir`](/docs/reference/config#outdir)                 |
+| `--minify, -m`          | Whether to minify the generated CSS                                    | [`config.minify`](/docs/reference/config#minify)                 |
+| `--watch, -w`           | Whether to watch for changes in the project                            | [`config.watch`](/docs/reference/config#watch)                   |
+| `--poll`                | Whether to poll for file changes                                       | [`config.poll`](/docs/reference/config#poll)                     |
+| `--config, -c <path>`   | The path to the config file                                            | [`config`](/docs/reference/config.md)                            |
+| `--cwd <path>`          | The current working directory                                          | [`config.cwd`](/docs/reference/config#cwd)                       |
+| `--preflight`           | Whether to emit the preflight or reset CSS                             | [`config.preflight`](/docs/reference/config#preflight)           |
+| `--silent`              | Whether to suppress all output                                         | [`config.logLevel`](/docs/reference/config#log-level)            |
+| `--exclude, -e <files>` | Files to exclude from the extract process                              | [`config`](/docs/reference/config.md)                            |
+| `--clean`               | Whether to clean the output directory before emitting                  | [`config.clean`](/docs/reference/config#clean)                   |
+| `--hash`                | Whether to hash the output classnames                                  | [`config.hash`](/docs/reference/config#hash)                     |
+| `--lightningcss`        | Use `lightningcss` instead of `postcss` for css optimization           | [`config.lightningcss`](/docs/reference/config#lightningcss)     |
+| `--polyfill`            | Polyfill CSS @layers at-rules for older browsers                       | [`config.polyfill`](/docs/reference/config#polyfill)             |
+| `--emitTokensOnly`      | Whether to only emit the `tokens` directory                            | [`config.emitTokensOnly`](/docs/reference/config#emittokensonly) |
+| `--cpu-prof`            | Generate a `panda-{command}-{timestamp}.cpuprofile` file for profiling | [Debugging](/docs/reference/debugging)                               |
+| `--logfile <file>`      | Outputs logs to a file                                                 | [Debugging](/docs/reference/debugging)                               |
 
 ---
 
@@ -95,14 +95,14 @@ pnpm panda codegen --watch
 
 | Flag                  | Description                                                            | Related                                                |
 | --------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------ |
-| `--silent`            | Whether to suppress all output                                         | [`config.logLevel`](/docs/references/config#log-level) |
-| `--clean`             | Whether to clean the output directory before emitting                  | [`config.clean`](/docs/references/config#clean)        |
-| `--config, -c <path>` | Path to Panda config file                                              | [`config`](/docs/references/config.md)                 |
-| `--watch, -w`         | Whether to watch for changes in the project                            | [`config.watch`](/docs/references/config#watch)        |
-| `--poll, -p`          | Whether to poll for file changes                                       | [`config.poll`](/docs/references/config#poll)          |
-| `--cwd <path>`        | Current working directory                                              | [`config.cwd`](/docs/references/config#cwd)            |
-| `--cpu-prof`          | Generate a `panda-{command}-{timestamp}.cpuprofile` file for profiling | [Debugging](/docs/references/debugging)                    |
-| `--logfile <file>`    | Outputs logs to a file                                                 | [Debugging](/docs/references/debugging)                    |
+| `--silent`            | Whether to suppress all output                                         | [`config.logLevel`](/docs/reference/config#log-level) |
+| `--clean`             | Whether to clean the output directory before emitting                  | [`config.clean`](/docs/reference/config#clean)        |
+| `--config, -c <path>` | Path to Panda config file                                              | [`config`](/docs/reference/config.md)                 |
+| `--watch, -w`         | Whether to watch for changes in the project                            | [`config.watch`](/docs/reference/config#watch)        |
+| `--poll, -p`          | Whether to poll for file changes                                       | [`config.poll`](/docs/reference/config#poll)          |
+| `--cwd <path>`        | Current working directory                                              | [`config.cwd`](/docs/reference/config#cwd)            |
+| `--cpu-prof`          | Generate a `panda-{command}-{timestamp}.cpuprofile` file for profiling | [Debugging](/docs/reference/debugging)                    |
+| `--logfile <file>`    | Outputs logs to a file                                                 | [Debugging](/docs/reference/debugging)                    |
 
 ## cssgen
 
@@ -186,19 +186,19 @@ You can then choose how to import these files:
 | Flag                   | Description                                                                            | Related                                                       |
 | ---------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
 | `--outfile, -o <file>` | Output file for extracted css, default to './styled-system/styles.css'                 | -                                                             |
-| `--silent`             | Whether to suppress all output                                                         | [`config.logLevel`](/docs/references/config#log-level)        |
-| `--minify, -m`         | Whether to minify the generated CSS                                                    | [`config.minify`](/docs/references/config#minify)             |
-| `--clean`              | Whether to clean the output directory before emitting                                  | [`config.clean`](/docs/references/config#clean)               |
-| `--config, -c <path>`  | Path to Panda config file                                                              | [`config`](/docs/references/config.md)                        |
-| `--watch, -w`          | Whether to watch for changes in the project                                            | [`config.watch`](/docs/references/config#watch)               |
+| `--silent`             | Whether to suppress all output                                                         | [`config.logLevel`](/docs/reference/config#log-level)        |
+| `--minify, -m`         | Whether to minify the generated CSS                                                    | [`config.minify`](/docs/reference/config#minify)             |
+| `--clean`              | Whether to clean the output directory before emitting                                  | [`config.clean`](/docs/reference/config#clean)               |
+| `--config, -c <path>`  | Path to Panda config file                                                              | [`config`](/docs/reference/config.md)                        |
+| `--watch, -w`          | Whether to watch for changes in the project                                            | [`config.watch`](/docs/reference/config#watch)               |
 | `--minimal`            | Skip generating CSS for theme tokens, preflight, keyframes, static and global css      | -                                                             |
 | `--splitting`          | Emit CSS as separate files per layer (reset, global, tokens, utilities) and per recipe | -                                                             |
-| `--poll, -p`           | Whether to poll for file changes                                                       | [`config.poll`](/docs/references/config#poll)                 |
-| `--cwd <path>`         | Current working directory                                                              | [`config.cwd`](/docs/references/config#cwd)                   |
-| `--lightningcss`       | Use `lightningcss` instead of `postcss` for css optimization                           | [`config.lightningcss`](/docs/references/config#lightningcss) |
-| `--polyfill`           | Polyfill CSS @layers at-rules for older browsers                                       | [`config.polyfill`](/docs/references/config#polyfill)         |
-| `--cpu-prof`           | Generate a `panda-{command}-{timestamp}.cpuprofile` file for profiling                 | [Debugging](/docs/references/debugging)                           |
-| `--logfile <file>`     | Outputs logs to a file                                                                 | [Debugging](/docs/references/debugging)                           |
+| `--poll, -p`           | Whether to poll for file changes                                                       | [`config.poll`](/docs/reference/config#poll)                 |
+| `--cwd <path>`         | Current working directory                                                              | [`config.cwd`](/docs/reference/config#cwd)                   |
+| `--lightningcss`       | Use `lightningcss` instead of `postcss` for css optimization                           | [`config.lightningcss`](/docs/reference/config#lightningcss) |
+| `--polyfill`           | Polyfill CSS @layers at-rules for older browsers                                       | [`config.polyfill`](/docs/reference/config#polyfill)         |
+| `--cpu-prof`           | Generate a `panda-{command}-{timestamp}.cpuprofile` file for profiling                 | [Debugging](/docs/reference/debugging)                           |
+| `--logfile <file>`     | Outputs logs to a file                                                                 | [Debugging](/docs/reference/debugging)                           |
 
 ## studio
 
@@ -223,8 +223,8 @@ pnpm panda studio --port 3000
 | `--preview`           | Preview                           | -                                           |
 | `--port <port>`       | Use custom port                   | -                                           |
 | `--host`              | Expose to custom host             | -                                           |
-| `--config, -c <path>` | Path to Panda config file         | [`config`](/docs/references/config.md)      |
-| `--cwd <path>`        | Current working directory         | [`config.cwd`](/docs/references/config#cwd) |
+| `--config, -c <path>` | Path to Panda config file         | [`config`](/docs/reference/config.md)      |
+| `--cwd <path>`        | Current working directory         | [`config.cwd`](/docs/reference/config#cwd) |
 | `--outdir <dir>`      | Output directory for static files | -                                           |
 | `--base <path>`       | Base path of project              | -                                           |
 
@@ -241,14 +241,14 @@ pnpm panda spec --outdir ./theme-specs
 
 | Flag                  | Description                     | Related                                                |
 | --------------------- | ------------------------------- | ------------------------------------------------------ |
-| `--silent`            | Whether to suppress all output  | [`config.logLevel`](/docs/references/config#log-level) |
+| `--silent`            | Whether to suppress all output  | [`config.logLevel`](/docs/reference/config#log-level) |
 | `--outdir <dir>`      | Output directory for spec files | -                                                      |
-| `--config, -c <path>` | Path to Panda config file       | [`config`](/docs/references/config.md)                 |
-| `--cwd <path>`        | Current working directory       | [`config.cwd`](/docs/references/config#cwd)            |
+| `--config, -c <path>` | Path to Panda config file       | [`config`](/docs/reference/config.md)                 |
+| `--cwd <path>`        | Current working directory       | [`config.cwd`](/docs/reference/config#cwd)            |
 
 > The spec output represents your entire design system, everything available in your Panda setup. If you want to
 > understand which tokens or recipes your app is actually using, you should use the
-> [Panda Analyze](/docs/references/cli#analyze), not the spec.
+> [Panda Analyze](/docs/reference/cli#analyze), not the spec.
 
 ## analyze
 
@@ -275,16 +275,16 @@ pnpm panda analyze --scope recipe
 | Flag                   | Description                                  | Related                                                |
 | ---------------------- | -------------------------------------------- | ------------------------------------------------------ |
 | `--outfile <filepath>` | Output analyze report in given JSON filepath | -                                                      |
-| `--silent`             | Whether to suppress all output               | [`config.logLevel`](/docs/references/config#log-level) |
+| `--silent`             | Whether to suppress all output               | [`config.logLevel`](/docs/reference/config#log-level) |
 | `--scope <type>`       | Select analysis scope (token or recipe)      | -                                                      |
-| `--config, -c <path>`  | Path to Panda config file                    | [`config`](/docs/references/config.md)                 |
-| `--cwd <path>`         | Current working directory                    | [`config.cwd`](/docs/references/config#cwd)            |
+| `--config, -c <path>`  | Path to Panda config file                    | [`config`](/docs/reference/config.md)                 |
+| `--cwd <path>`         | Current working directory                    | [`config.cwd`](/docs/reference/config#cwd)            |
 
 ## debug
 
 Debug design token extraction & CSS generated from files in glob.
 
-More details in [Debugging](/docs/references/debugging) docs.
+More details in [Debugging](/docs/reference/debugging) docs.
 
 ```bash
 pnpm panda debug
@@ -305,10 +305,10 @@ pnpm panda debug --only-config
 | `--dry`               | Output debug files in stdout without writing to disk                   | -                                                         |
 | `--outdir <dir>`      | Output directory for debug files, defaults to `../styled-system/debug` | -                                                         |
 | `--only-config`       | Should only output the config file, default to 'false'                 | -                                                         |
-| `--config, -c <path>` | Path to Panda config file                                              | [`config`](/docs/references/config.md)                    |
-| `--cwd <path>`        | Current working directory                                              | [`config.cwd`](/docs/references/config#cwd)               |
-| `--cpu-prof`          | Generate a `panda-{command}-{timestamp}.cpuprofile` file for profiling | [Debugging](/docs/references/debugging#performance-profiling) |
-| `--logfile <file>`    | Outputs logs to a file                                                 | [Debugging](/docs/references/debugging)                       |
+| `--config, -c <path>` | Path to Panda config file                                              | [`config`](/docs/reference/config.md)                    |
+| `--cwd <path>`        | Current working directory                                              | [`config.cwd`](/docs/reference/config#cwd)               |
+| `--cpu-prof`          | Generate a `panda-{command}-{timestamp}.cpuprofile` file for profiling | [Debugging](/docs/reference/debugging#performance-profiling) |
+| `--logfile <file>`    | Outputs logs to a file                                                 | [Debugging](/docs/reference/debugging)                       |
 
 ## ship
 
@@ -327,18 +327,18 @@ pnpm panda ship "./src/components/**"
 | Flag                   | Description                                                                                 | Related                                                |
 | ---------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
 | `--outfile <filepath>` | Output path for the JSON build info file, default to './styled-system/panda.buildinfo.json' | -                                                      |
-| `--silent`             | Whether to suppress all output                                                              | [`config.logLevel`](/docs/references/config#log-level) |
+| `--silent`             | Whether to suppress all output                                                              | [`config.logLevel`](/docs/reference/config#log-level) |
 | `--minify, -m`         | Whether to minify the generated JSON                                                        | -                                                      |
-| `--config, -c <path>`  | Path to Panda config file                                                                   | [`config`](/docs/references/config.md)                 |
-| `--cwd <path>`         | Current working directory                                                                   | [`config.cwd`](/docs/references/config#cwd)            |
-| `--watch, -w`          | Whether to watch for changes in the project                                                 | [`config.watch`](/docs/references/config#watch)        |
-| `--poll, -p`           | Whether to poll for file changes                                                            | [`config.poll`](/docs/references/config#poll)          |
+| `--config, -c <path>`  | Path to Panda config file                                                                   | [`config`](/docs/reference/config.md)                 |
+| `--cwd <path>`         | Current working directory                                                                   | [`config.cwd`](/docs/reference/config#cwd)            |
+| `--watch, -w`          | Whether to watch for changes in the project                                                 | [`config.watch`](/docs/reference/config#watch)        |
+| `--poll, -p`           | Whether to poll for file changes                                                            | [`config.poll`](/docs/reference/config#poll)          |
 
 ## emit-pkg
 
 Emit package.json with entrypoints, can be used to create a workspace package dedicated to the
-[`config.outdir`](/docs/references/config#outdir), in combination with
-[`config.importMap`](/docs/references/config#importmap)
+[`config.outdir`](/docs/reference/config#outdir), in combination with
+[`config.importMap`](/docs/reference/config#importmap)
 
 ```bash
 pnpm panda emit-pkg
@@ -349,10 +349,10 @@ pnpm panda emit-pkg --outdir styled-system
 
 | Flag             | Description                                          | Related                                                |
 | ---------------- | ---------------------------------------------------- | ------------------------------------------------------ |
-| `--outdir <dir>` | The output directory for the generated CSS utilities | [`config.outdir`](/docs/references/config#outdir)      |
+| `--outdir <dir>` | The output directory for the generated CSS utilities | [`config.outdir`](/docs/reference/config#outdir)      |
 | `--base <path>`  | The base directory of the package.json entrypoints   | -                                                      |
-| `--silent`       | Whether to suppress all output                       | [`config.logLevel`](/docs/references/config#log-level) |
-| `--cwd <path>`   | Current working directory                            | [`config.cwd`](/docs/references/config#cwd)            |
+| `--silent`       | Whether to suppress all output                       | [`config.logLevel`](/docs/reference/config#log-level) |
+| `--cwd <path>`   | Current working directory                            | [`config.cwd`](/docs/reference/config#cwd)            |
 
 ## mcp
 
@@ -371,10 +371,10 @@ pnpm panda mcp --cwd ./my-project
 
 | Flag                  | Description               | Related                                     |
 | --------------------- | ------------------------- | ------------------------------------------- |
-| `--config, -c <path>` | Path to Panda config file | [`config`](/docs/references/config.md)      |
-| `--cwd <path>`        | Current working directory | [`config.cwd`](/docs/references/config#cwd) |
+| `--config, -c <path>` | Path to Panda config file | [`config`](/docs/reference/config.md)      |
+| `--cwd <path>`        | Current working directory | [`config.cwd`](/docs/reference/config#cwd) |
 
-> Note: This command is typically started automatically by AI clients. See the [MCP Server guide](/docs/ai/mcp-server)
+> Note: This command is typically started automatically by AI clients. See the [MCP Server guide](/docs/styling/mcp-server)
 > for setup instructions.
 
 ## init-mcp
@@ -396,8 +396,8 @@ pnpm panda init-mcp --cwd ./my-project
 | Flag               | Description                               | Related                                     |
 | ------------------ | ----------------------------------------- | ------------------------------------------- |
 | `--client <names>` | AI clients to configure (comma-separated) | -                                           |
-| `--cwd <path>`     | Current working directory                 | [`config.cwd`](/docs/references/config#cwd) |
+| `--cwd <path>`     | Current working directory                 | [`config.cwd`](/docs/reference/config#cwd) |
 
 Supported clients: `claude`, `cursor`, `vscode`, `windsurf`, `codex`
 
-See the [MCP Server guide](/docs/ai/mcp-server) for detailed usage and available tools.
+See the [MCP Server guide](/docs/styling/mcp-server) for detailed usage and available tools.

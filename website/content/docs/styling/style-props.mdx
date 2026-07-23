@@ -147,7 +147,7 @@ The same principles apply to all style props, recipe variants, and pattern props
 
 ### Custom component props
 
-Panda can't map custom prop names to CSS properties — there's no config that turns `elementWidth` into `width`. Styles
+Panda can't map custom prop names to CSS properties. There's no config that turns `elementWidth` into `width`. Styles
 are extracted at the call site, on props the compiler recognizes: CSS utilities (`width`, `padding`, …) when
 `jsxStyleProps` is `'all'`, the `css` prop, props ending in `Css` (`trackCss`, `wrapperCss`), and pattern or recipe
 props on tracked components.
@@ -163,12 +163,12 @@ props on tracked components.
 ```
 
 One override → `css`. Named parts → `trackCss`, `slideCss`, etc. Other prop names → `css.raw()`. See
-[passing styles to custom components](/docs/concepts/merging-styles#passing-styles-to-custom-components).
+[passing styles to custom components](/docs/styling/merging-styles#passing-styles-to-custom-components).
 
 ### Recipe
 
 You can use recipe variants as JSX props to quickly change the styles of your components, as long as
-[you're tracking those components in your recipe config](/docs/concepts/recipes#advanced-jsx-tracking).
+[you're tracking those components in your recipe config](/docs/styling/recipes#advanced-jsx-tracking).
 
 ```tsx
 import { styled } from '../styled-system/jsx'
@@ -197,7 +197,7 @@ const App = () => (
 )
 ```
 
-> You can configure the `styled` function name using the [`config.jsxFactory`](/docs/references/config#jsxfactory)
+> You can configure the `styled` function name using the [`config.jsxFactory`](/docs/reference/config#jsxfactory)
 > option.
 
 ### Factory Recipe
@@ -320,7 +320,7 @@ const App = () => <Input size={4} />
 ```
 
 > **Note:** A forwarded prop becomes a plain HTML prop, so it no longer feeds recipe styling. To keep a prop styling
-> _and_ pass it to your component, see [forwarding props](/docs/concepts/jsx-style-context#forwarding-props) in
+> _and_ pass it to your component, see [forwarding props](/docs/styling/jsx-style-context#forwarding-props) in
 > `createStyleContext`.
 
 ### Unstyled prop
@@ -350,7 +350,7 @@ const App = () => (
 ### Reducing the allowed style props
 
 You can reduce the allowed JSX properties on the factory using
-[`config.jsxStyleProps`](/docs/references/config#jsxstyleprops):
+[`config.jsxStyleProps`](/docs/reference/config#jsxstyleprops):
 
 - When set to 'all', all style props are allowed.
 - When set to 'minimal', only the `css` prop and props ending in `Css` are allowed as style objects.
@@ -368,7 +368,7 @@ as a way to avoid repetitive layout styles.
 
 All the patterns provided by Panda are available as JSX components.
 
-> Learn more about the [patterns](/docs/customization/patterns) we provide.
+> Learn more about the [patterns](/docs/design-systems/patterns) we provide.
 
 ```jsx
 import { Stack, Circle } from '../styled-system/jsx'

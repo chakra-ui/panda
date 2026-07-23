@@ -204,7 +204,7 @@ function Card({ title, description, css: cssProp }) {
 <Card title="Hello World" description="This is a card component" css={{ bg: 'blue' }} />
 ```
 
-Props ending in `Css` work the same way — useful for named slots:
+Props ending in `Css` work the same way, which is useful for named slots:
 
 ```jsx
 function Card({ title, description, rootCss, bodyCss }) {
@@ -234,4 +234,4 @@ function Card({ title, description, style }) {
 <Card title="Hello World" description="This is a card component" style={css.raw({ bg: 'blue' })} />
 ```
 
-See [custom component props](/docs/concepts/style-props#custom-component-props).
+See [custom component props](/docs/styling/style-props#custom-component-props).

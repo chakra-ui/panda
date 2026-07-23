@@ -4,11 +4,11 @@ description: What is the styled-system folder and how does it work?
 ---
 
 While Panda generates your CSS at **build-time** using static extraction, we still need a lightweight runtime to
-transform the CSS-in-JS syntax (either [`object`](/docs/concepts/writing-styles#atomic-styles) or
-[`template-literal`](/docs/concepts/template-literals)) to class names strings. This is where the `styled-system` folder
+transform the CSS-in-JS syntax (either [`object`](/docs/styling/writing-styles#atomic-styles) or
+[`template-literal`](/docs/styling/template-literals)) to class names strings. This is where the `styled-system` folder
 comes in.
 
-When running the `panda` or `panda codegen` commands, the [`config.outdir`](/docs/references/config#outdir) will be used
+When running the `panda` or `panda codegen` commands, the [`config.outdir`](/docs/reference/config#outdir) will be used
 as output path to generate the `styled-system` in.
 
 This is the core of what the `styled-system` does:

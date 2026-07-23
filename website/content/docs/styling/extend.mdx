@@ -10,15 +10,15 @@ It will (deeply) merge your customizations with the default ones, instead of rep
 
 The `extend` keyword allows you to extend the following parts of Panda:
 
-- [conditions](/docs/customization/conditions)
+- [conditions](/docs/design-systems/conditions)
 - [theme](/docs/theming/theme)
-- [recipes](/docs/concepts/recipes) (included in theme)
-- [patterns](/docs/customization/patterns)
-- [utilities](/docs/customization/utilities)
-- [globalCss](/docs/concepts/writing-styles#global-styles)
-- [staticCss](/docs/distribution/static)
+- [recipes](/docs/styling/recipes) (included in theme)
+- [patterns](/docs/design-systems/patterns)
+- [utilities](/docs/design-systems/utilities)
+- [globalCss](/docs/styling/writing-styles#global-styles)
+- [staticCss](/docs/design-systems/static)
 
-> These keys are all allowed in [presets](/docs/customization/presets).
+> These keys are all allowed in [presets](/docs/design-systems/presets).
 
 ## Example
 
@@ -132,7 +132,7 @@ export default defineConfig({
   presets: ['@pandacss/preset-panda'], // 👈 we still want the tokens, breakpoints and textStyles from this preset
 
   // ⚠️ we need to eject to prevent the `@pandacss/preset-base` from being resolved
-  // https://panda-css.com/docs/customization/presets#which-panda-presets-will-be-included-
+  // https://panda-css.com/docs/design-systems/presets#which-panda-presets-will-be-included-
   eject: true,
   patterns: {
     extend: {
@@ -146,7 +146,7 @@ export default defineConfig({
 ## Minimal setup
 
 If you want to use Panda with the bare minimum, without any of the defaults, you can read more about it
-[here](/docs/distribution/minimal-setup)
+[here](/docs/design-systems/minimal-setup)
 
 ## FAQ
 

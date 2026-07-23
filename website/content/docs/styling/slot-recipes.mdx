@@ -18,7 +18,7 @@ A slot recipe consists of these properties:
 > [Chakra UI](https://chakra-ui.com/docs/styled-system/component-style) and slot variants in
 > [Tailwind Variants](https://tailwind-variants.org)
 
-[See the comparison table between atomic recipes (`cva`) and `config recipes` here.](/docs/concepts/recipes#should-i-use-atomic-or-config-recipes-)
+[See the comparison table between atomic recipes (`cva`) and `config recipes` here.](/docs/styling/recipes#should-i-use-atomic-or-config-recipes-)
 The same comparison applies to `sva` and `slot recipes`.
 
 ## Atomic Slot Recipe (or sva)
@@ -418,7 +418,7 @@ const Checkbox = () => {
 }
 ```
 
-The generated css is registered under the `recipe` [cascade layer](/docs/concepts/cascade-layers.mdx) with the class
+The generated css is registered under the `recipe` [cascade layer](/docs/styling/cascade-layers.mdx) with the class
 name that matches the recipe-slot-variant name pattern `<recipe-className>__<slot-name>--<variant-name>`.
 
 ```css
@@ -462,7 +462,7 @@ name that matches the recipe-slot-variant name pattern `<recipe-className>__<slo
 
 ### Dynamic variant props
 
-Same rules as [config recipes](/docs/concepts/recipes#dynamic-variant-props). The runtime function returns slot class
+Same rules as [config recipes](/docs/styling/recipes#dynamic-variant-props). The runtime function returns slot class
 names; build time only sees static variant values.
 
 ```tsx filename="Media.tsx"
@@ -490,7 +490,7 @@ function Media({
 }
 ```
 
-`layout` is dynamic — Panda only emits CSS for `defaultVariants` unless you pre-generate the rest.
+`layout` is dynamic: Panda only emits CSS for `defaultVariants` unless you pre-generate the rest.
 
 When variants come from props, add `staticCss`:
 
@@ -509,7 +509,7 @@ export const mediaGridRecipe = defineSlotRecipe({
 })
 ```
 
-Register as `theme.slotRecipes.mediaGrid` — import `mediaGrid` and `MediaGridVariant` from `<outdir>/recipes`.
+Register as `theme.slotRecipes.mediaGrid`, then import `mediaGrid` and `MediaGridVariant` from `<outdir>/recipes`.
 
 ### Using compound variants
 
@@ -585,7 +585,7 @@ First extracted use atomizes every compound slot `css` into `@layer utilities`:
 }
 ```
 
-Only slots listed in `css` are matched at runtime. Adding `compoundVariants` drops responsive variant props — compare
+Only slots listed in `css` are matched at runtime. Adding `compoundVariants` drops responsive variant props. Compare
 **`accordion`** without compounds:
 
 ```ts
@@ -619,10 +619,10 @@ const { root, trigger } = tabs({ size: 'md', active: true })
 // trigger → "tabs__trigger tabs__trigger--active_true text_red.500"
 ```
 
-Runtime-only combos need [`staticCss`](/docs/distribution/static#generating-recipes). Run `pnpm panda codegen` after editing
+Runtime-only combos need [`staticCss`](/docs/design-systems/static#generating-recipes). Run `pnpm panda codegen` after editing
 the recipe.
 
-[`sva`](/docs/concepts/slot-recipes#compound-variants) — all compound combos ship as atomic classes when the recipe is
+[`sva`](/docs/styling/slot-recipes#compound-variants), all compound combos ship as atomic classes when the recipe is
 defined.
 
 ### TypeScript Guide

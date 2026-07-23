@@ -241,11 +241,11 @@ export const Tabs = withProvider(TabsRoot, 'root', {
 ```
 
 `forwardProps` works on `withContext` too. Since context consumers don't take variant props, it's mainly useful for
-forwarding props that share a name with a CSS property — otherwise they'd be turned into styles instead of reaching your
+forwarding props that share a name with a CSS property, since otherwise they'd be turned into styles instead of reaching your
 component.
 
 ```tsx
-// `width` would normally become a style — forward it to the component instead
+// `width` would normally become a style. Forward it to the component instead
 const TabIndicator = withContext(Indicator, 'indicator', {
   forwardProps: ['width']
 })

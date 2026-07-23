@@ -85,7 +85,7 @@ const styles = css({
 })
 ```
 
-> Shorthands are documented alongside their respective properties in the [utilities](/docs/utilities/background)
+> Shorthands are documented alongside their respective properties in the [utilities](/docs/reference/background)
 > section.
 
 ### Type safety
@@ -288,7 +288,7 @@ For example, to create a hover style, you can use the `_hover` pseudo prop.
 />
 ```
 
-> See the [pseudo props](/docs/concepts/conditional-styles#reference) section for a list of all available pseudo props.
+> See the [pseudo props](/docs/styling/conditional-styles#reference) section for a list of all available pseudo props.
 
 ## Global styles
 
@@ -297,7 +297,7 @@ Global styles are useful for applying additional global resets or font faces. Us
 
 Global styles are inserted at the top of the stylesheet and are scoped to the `@layer base` cascade layer.
 
-> For resets, global variables, theming patterns, and more examples, see [Global styles](/docs/concepts/global-styles).
+> For resets, global variables, theming patterns, and more examples, see [Global styles](/docs/styling/global-styles).
 
 ```js filename="panda.config.ts"
 import { defineConfig, defineGlobalStyles } from '@pandacss/dev'
@@ -544,8 +544,8 @@ The hash generated css will look like:
 }
 ```
 
-> Use [`hash`](/docs/references/config#hash) in production only — it makes debugging harder. See
-> [Environment-specific config](/docs/distribution/environment-specific-config) for branching on `process.env`.
+> Use [`hash`](/docs/reference/config#hash) in production only. It makes debugging harder. See
+> [Environment-specific config](/docs/design-systems/environment-specific-config) for branching on `process.env`.
 
 ## Important styles
 
@@ -614,7 +614,7 @@ You can use the `globalVars` property to define global
 
 Panda will automatically generate the corresponding CSS variables and suggest them in your style objects.
 
-> They will be generated in the [`cssVarRoot`](/docs/references/config#cssvarroot) near your tokens.
+> They will be generated in the [`cssVarRoot`](/docs/reference/config#cssvarroot) near your tokens.
 
 This can be especially useful when using a 3rd party library that provides custom CSS variables, like a popper library
 that exposes a `--popper-reference-width`.

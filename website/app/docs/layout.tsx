@@ -1,3 +1,4 @@
+import { TabBar } from '@/components/docs/tab-bar'
 import { Footer } from '@/mdx/footer'
 import { Navbar } from '@/mdx/navbar'
 import { css } from '@/styled-system/css'
@@ -5,14 +6,29 @@ import { css } from '@/styled-system/css'
 export default function DocsLayout(props: React.PropsWithChildren) {
   const { children } = props
   return (
-    <div id="__next">
+    <div
+      id="__next"
+      className={css({
+        '--navbar-height': '4rem',
+        '--menu-height': '3.75rem',
+        '--banner-height': '2.5rem',
+        '--tabbar-height': '2.75rem'
+      })}
+    >
       <Navbar />
+      <div
+        className={css({
+          position: 'sticky',
+          top: 'calc(var(--navbar-height) + var(--banner-height))',
+          zIndex: '10',
+          bg: 'bg.default'
+        })}
+      >
+        <TabBar />
+      </div>
       <main
         className={css({
-          '--navbar-height': '4rem',
-          '--menu-height': '3.75rem',
-          '--banner-height': '2.5rem',
-          pt: 'calc(var(--navbar-height) + var(--banner-height))',
+          pt: 'calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height))',
           pb: '32'
         })}
       >

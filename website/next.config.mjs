@@ -12,7 +12,28 @@ const config = {
     return [
       {
         source: '/(docs|docs/getting-started)',
-        destination: '/docs/overview/getting-started',
+        destination: '/docs/styling/getting-started',
+        permanent: true
+      },
+      // Bare tab roots: the [...slug] catch-all needs at least one page segment.
+      {
+        source: '/docs/styling',
+        destination: '/docs/styling/getting-started',
+        permanent: true
+      },
+      {
+        source: '/docs/theming',
+        destination: '/docs/theming/tokens',
+        permanent: true
+      },
+      {
+        source: '/docs/design-systems',
+        destination: '/docs/design-systems/overview',
+        permanent: true
+      },
+      {
+        source: '/docs/reference',
+        destination: '/docs/reference/cli',
         permanent: true
       },
       {
@@ -32,12 +53,16 @@ const config = {
       },
       {
         source: '/docs/overview/llms-txt',
-        destination: '/docs/ai/llms-txt',
+        destination: '/docs/styling/llms-txt',
         permanent: true
       },
+
+      // --- Phase 2: tab-directory flattening. Specific overrides MUST come
+      // before the wildcard rules below, since a handful of pages moved to a
+      // different tab than the rest of their old directory. ---
       {
         source: '/docs/concepts/hooks',
-        destination: '/docs/customization/hooks',
+        destination: '/docs/design-systems/hooks',
         permanent: true
       },
       {
@@ -47,17 +72,17 @@ const config = {
       },
       {
         source: '/docs/customization/deprecations',
-        destination: '/docs/references/deprecations',
+        destination: '/docs/reference/deprecations',
         permanent: true
       },
       {
         source: '/docs/guides/debugging',
-        destination: '/docs/references/debugging',
+        destination: '/docs/reference/debugging',
         permanent: true
       },
       {
         source: '/docs/guides/dynamic-styling',
-        destination: '/docs/concepts/dynamic-styling',
+        destination: '/docs/styling/dynamic-styling',
         permanent: true
       },
       {
@@ -72,27 +97,80 @@ const config = {
       },
       {
         source: '/docs/guides/environment-specific-config',
-        destination: '/docs/distribution/environment-specific-config',
+        destination: '/docs/design-systems/environment-specific-config',
         permanent: true
       },
       {
         source: '/docs/guides/federated-microfrontends',
-        destination: '/docs/distribution/federated-microfrontends',
+        destination: '/docs/design-systems/federated-microfrontends',
         permanent: true
       },
       {
         source: '/docs/guides/minimal-setup',
-        destination: '/docs/distribution/minimal-setup',
+        destination: '/docs/design-systems/minimal-setup',
         permanent: true
       },
       {
         source: '/docs/guides/static',
-        destination: '/docs/distribution/static',
+        destination: '/docs/design-systems/static',
         permanent: true
       },
       {
         source: '/docs/guides/component-library',
-        destination: '/docs/component-library/overview',
+        destination: '/docs/design-systems/overview',
+        permanent: true
+      },
+
+      // --- directory-level wildcards: everything else in these old
+      // directories moved uniformly to the same new tab, same basename ---
+      {
+        source: '/docs/overview/:path*',
+        destination: '/docs/styling/:path*',
+        permanent: true
+      },
+      {
+        source: '/docs/ai/:path*',
+        destination: '/docs/styling/:path*',
+        permanent: true
+      },
+      {
+        source: '/docs/installation/:path*',
+        destination: '/docs/styling/:path*',
+        permanent: true
+      },
+      {
+        source: '/docs/concepts/:path*',
+        destination: '/docs/styling/:path*',
+        permanent: true
+      },
+      {
+        source: '/docs/migration/:path*',
+        destination: '/docs/styling/:path*',
+        permanent: true
+      },
+      {
+        source: '/docs/component-library/:path*',
+        destination: '/docs/design-systems/:path*',
+        permanent: true
+      },
+      {
+        source: '/docs/customization/:path*',
+        destination: '/docs/design-systems/:path*',
+        permanent: true
+      },
+      {
+        source: '/docs/distribution/:path*',
+        destination: '/docs/design-systems/:path*',
+        permanent: true
+      },
+      {
+        source: '/docs/utilities/:path*',
+        destination: '/docs/reference/:path*',
+        permanent: true
+      },
+      {
+        source: '/docs/references/:path*',
+        destination: '/docs/reference/:path*',
         permanent: true
       }
     ]

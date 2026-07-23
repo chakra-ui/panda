@@ -29,7 +29,7 @@ Here are some examples of what you can do with hooks:
 
 ### Prefixing token names
 
-This is especially useful when migrating from other css-in-js libraries, [like Stitches.](/docs/migration/stitches)
+This is especially useful when migrating from other css-in-js libraries, [like Stitches.](/docs/styling/stitches)
 
 ```ts
 import { defineConfig } from '@pandacss/dev'
@@ -48,7 +48,7 @@ export default defineConfig({
 
 ### Customizing the hash function
 
-When using the [`hash: true`](/docs/concepts/writing-styles) config property, you can customize the function used to
+When using the [`hash: true`](/docs/styling/writing-styles) config property, you can customize the function used to
 hash the classnames.
 
 ```ts
@@ -165,8 +165,8 @@ Get the snippets for the removal logic from our Github Sandbox in the
 [remove-unused-keyframes](https://github.com/chakra-ui/panda/blob/main/sandbox/vite-ts/remove-unused-keyframes.ts)
 files.
 
-> Note: Using this means you can't use the JS function [`token.var`](/docs/concepts/dynamic-styling#using-tokenvar) (or
-> [token(xxx)](/docs/concepts/dynamic-styling#using-token) where `xxx` is the path to a
+> Note: Using this means you can't use the JS function [`token.var`](/docs/styling/dynamic-styling#using-tokenvar) (or
+> [token(xxx)](/docs/styling/dynamic-styling#using-token) where `xxx` is the path to a
 > [semanticToken](/docs/theming/tokens#semantic-tokens)) from `styled-system/tokens` as the CSS variables will be
 > removed based on the usage found in the generated CSS
 

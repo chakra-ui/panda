@@ -99,7 +99,7 @@ Open your `package.json` file and update the `scripts` section as follows:
 ```
 
 - `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about
-  [codegen](/docs/references/cli#panda-codegen) in the CLI section.
+  [codegen](/docs/reference/cli#panda-codegen) in the CLI section.
 
 > This step ensures that the panda output directory is regenerated after each dependency installation. So you can add
 > the output directory to your `.gitignore` file and not worry about it.
@@ -298,7 +298,7 @@ module.exports = {
 ### HMR not triggered
 
 If you are having issues with HMR not being triggered after a `panda.config.ts` change (or one of its
-[dependencies](/docs/references/config#dependencies), you can manually specify the files that should trigger a rebuild
+[dependencies](/docs/reference/config#dependencies), you can manually specify the files that should trigger a rebuild
 by adding the following to your `panda.config.ts`:
 
 ```js filename="panda.config.ts"
@@ -314,10 +314,10 @@ export default defineConfig({
 
 If you are having issues with your `args` not generating the expected CSS, it's probably because of:
 
-- you didn't add a file glob for the Storybook files in your [`config.include`](/docs/references/config#include) like
+- you didn't add a file glob for the Storybook files in your [`config.include`](/docs/reference/config#include) like
   `"./stories/**/*.{js,jsx,ts,tsx}"`
 - you didn't wrap your `args` object (or some part of it) with the
-  [`.raw()` marker that helps Panda find style usage](https://panda-css.com/docs/concepts/dynamic-styling#alternative)
+  [`.raw()` marker that helps Panda find style usage](https://panda-css.com/docs/styling/dynamic-styling#alternative)
 
 ```tsx filename="stories/Button.stories.tsx"
 import type { Meta, StoryObj } from '@storybook/react'
@@ -338,10 +338,10 @@ export const Funky: Story = {
 If you are having issues with your config `recipes` or `slotRecipes` not generating the expected CSS, it's probably
 because of:
 
-- you didn't add a file glob for the Storybook files in your [`config.include`](/docs/references/config#include) like
+- you didn't add a file glob for the Storybook files in your [`config.include`](/docs/reference/config#include) like
   `"./stories/**/*.{js,jsx,ts,tsx}"`
 - you haven't used every recipes variants in your app, so you might want to pre-generate it (only for storybook usage)
-  with [`staticCss`](/docs/distribution/static)
+  with [`staticCss`](/docs/design-systems/static)
 
 ```tsx filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'

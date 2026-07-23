@@ -3,7 +3,7 @@ title: Color opacity modifier
 description: Append /{opacity} to color tokens so Panda emits color-mix; omit it for plain token references.
 ---
 
-Append `/{opacity}` to a color token — `red.300/40`, `{colors.black/50}`, or `red/half`. Panda emits
+Append `/{opacity}` to a color token, for example `red.300/40`, `{colors.black/50}`, or `red/half`. Panda emits
 [`color-mix`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix) only when the suffix is present;
 plain values like `white` stay as token references. Works on color-connected utilities from `@pandacss/preset-base`:
 `background`, `color`, `borderColor`, and others. Browsers without `color-mix` use the solid token.
@@ -53,7 +53,7 @@ css({
 
 ### Usage with virtual colors
 
-See [virtual colors](/docs/concepts/virtual-color) for the full `colorPalette` API:
+See [virtual colors](/docs/styling/virtual-color) for the full `colorPalette` API:
 
 ```ts
 css({

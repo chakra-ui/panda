@@ -52,7 +52,7 @@ Whether to opt-out of the defaults config presets: [`@pandacss/preset-base`, `@p
 
 **Default**: `false`
 
-Whether to enable css reset styles. See also [Global styles](/docs/concepts/global-styles) for how reset interacts with
+Whether to enable css reset styles. See also [Global styles](/docs/styling/global-styles) for how reset interacts with
 global variables and layering.
 
 Enable preflight:
@@ -233,7 +233,7 @@ would result in:
 
 Whether to minify the generated css. This can be set to `true` to reduce the size of the generated css.
 
-Often enabled only in production — see [Environment-specific config](/docs/distribution/environment-specific-config).
+Often enabled only in production. See [Environment-specific config](/docs/design-systems/environment-specific-config).
 
 ```json
 {
@@ -250,7 +250,7 @@ Often enabled only in production — see [Environment-specific config](/docs/dis
 Whether to hash the generated class names / css variables. This is useful if want to shorten the class names or css
 variables.
 
-Often enabled only in production — see [Environment-specific config](/docs/distribution/environment-specific-config).
+Often enabled only in production. See [Environment-specific config](/docs/design-systems/environment-specific-config).
 
 Hash the class names and css variables:
 
@@ -419,7 +419,7 @@ is the equivalent of:
 }
 ```
 
-Check out the [Component Library](/docs/component-library/overview) guide for more information on how to use the
+Check out the [Component Library](/docs/design-systems/overview) guide for more information on how to use the
 `importMap` option.
 
 ### include
@@ -848,7 +848,7 @@ Used to generate css utility classes for your project.
 **Default**: `false`
 
 Only allow token values and prevent custom or raw CSS values. Will only affect properties that have config tokens, such
-as `color`, `bg`, `borderColor`, etc. [Learn more.](/docs/concepts/writing-styles#type-safety)
+as `color`, `bg`, `borderColor`, etc. [Learn more.](/docs/styling/writing-styles#type-safety)
 
 ```json
 {
@@ -864,7 +864,7 @@ as `color`, `bg`, `borderColor`, etc. [Learn more.](/docs/concepts/writing-style
 
 Only use valid CSS values for properties that do have a predefined list of values. Will throw for properties that do not
 have config tokens, such as `display`, `content`, `willChange`, etc.
-[Learn more.](/docs/concepts/writing-styles#type-safety)
+[Learn more.](/docs/styling/writing-styles#type-safety)
 
 ```json
 {
@@ -1022,7 +1022,7 @@ The validation strictness to use when validating the config.
 **Type**: `PandaHooks`
 
 Panda provides a set of callbacks that you can hook into for more advanced use cases. Check the
-[Hooks](/docs/customization/hooks) docs for more information.
+[Hooks](/docs/design-systems/hooks) docs for more information.
 
 ### Plugins
 

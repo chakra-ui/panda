@@ -6,7 +6,7 @@ import { SearchButton } from '@/components/docs/search'
 import { Sidebar } from '@/components/docs/sidebar'
 import { Anchor } from '@/components/ui/anchor'
 import { drawerSlotRecipe } from '@/components/ui/drawer'
-import { docsConfig } from '@/docs.config'
+import { docsConfig, docsTabs } from '@/docs.config'
 import { GithubIcon, MenuIcon } from '@/icons'
 import { useMatchMedia } from '@/lib/use-match-media'
 import { css, cx } from '@/styled-system/css'
@@ -119,6 +119,7 @@ export const Navbar = () => {
           }
         >
           <div className={css({ pt: '8' })}>
+            <MobileTabSwitcher pathname={pathname} />
             <Sidebar slug={pathname} />
           </div>
         </MobileNavDrawer>
@@ -168,5 +169,51 @@ const MobileNavDrawer = (props: MobileNavDrawerProps) => {
         </Dialog.Content>
       </Dialog.Positioner>
     </Dialog.RootProvider>
+  )
+}
+
+interface MobileTabSwitcherProps {
+  pathname: string | null
+}
+
+/**
+ * Lets a reader switch docs tabs from inside the mobile drawer, without closing
+ * it first, since the sticky TabBar sits behind the drawer's backdrop on mobile.
+ */
+const MobileTabSwitcher = ({ pathname }: MobileTabSwitcherProps) => {
+  const activeKey = pathname?.split('/')[2]
+
+  return (
+    <div
+      className={css({
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: '2',
+        pb: '6',
+        mb: '6',
+        borderBottomWidth: '1px',
+        borderColor: 'border'
+      })}
+    >
+      {docsTabs.map(tab => (
+        <Anchor
+          key={tab.key}
+          href={`/docs/${tab.key}`}
+          className={css({
+            textStyle: 'sm',
+            fontWeight: 'medium',
+            px: '3',
+            py: '1.5',
+            rounded: 'full',
+            borderWidth: '1px',
+            borderColor: tab.key === activeKey ? 'accent' : 'border',
+            bg: tab.key === activeKey ? 'accent.subtle' : 'transparent',
+            color: tab.key === activeKey ? 'fg' : 'fg.muted'
+          })}
+        >
+          {tab.title}
+        </Anchor>
+      ))}
+    </div>
   )
 }

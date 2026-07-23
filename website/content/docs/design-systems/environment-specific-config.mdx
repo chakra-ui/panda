@@ -30,13 +30,13 @@ hash: isProd ? { className: true, cssVar: true } : false
 
 | Option                                     | Development                                | Production              |
 | ------------------------------------------ | ------------------------------------------ | ----------------------- |
-| [`hash`](/docs/references/config#hash)     | `false` — readable class names in DevTools | `true` — shorter output |
-| [`minify`](/docs/references/config#minify) | `false`                                    | `true`                  |
+| [`hash`](/docs/reference/config#hash)     | `false` (readable class names in DevTools) | `true` (shorter output) |
+| [`minify`](/docs/reference/config#minify) | `false`                                    | `true`                  |
 
 ## Keep dev and prod in sync
 
-[`hash`](/docs/concepts/writing-styles#hashing) changes class names in **both** generated CSS and `styled-system`
-output. Run `panda codegen` and cssgen with the same config you ship — if production enables `hash`, your production
+[`hash`](/docs/styling/writing-styles#hashing) changes class names in **both** generated CSS and `styled-system`
+output. Run `panda codegen` and cssgen with the same config you ship. If production enables `hash`, your production
 build step should run Panda with `NODE_ENV=production`.
 
 If `NODE_ENV` is unreliable in your toolchain, use your own flag:
@@ -48,4 +48,4 @@ const isProd = (process.env.PANDA_ENV ?? process.env.NODE_ENV) === 'production'
 ## Verify the resolved config
 
 Inspect `styled-system/debug/config.json` after running `panda debug` and confirm `hash` and `minify` match what you
-expect for that run. See [Debugging](/docs/references/debugging#panda-debug).
+expect for that run. See [Debugging](/docs/reference/debugging#panda-debug).

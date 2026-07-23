@@ -6,7 +6,7 @@ description: How to set up Panda in a component library
 When creating a component library that uses Panda which can be used in a variety of different projects, you have four
 options:
 
-1. Ship a Panda [preset](/docs/customization/presets)
+1. Ship a Panda [preset](/docs/design-systems/presets)
 2. Ship a static CSS file
 3. Use Panda as external package, and ship the src files
 4. Use Panda as external package, and ship the build info file
@@ -28,7 +28,7 @@ options:
 ## Ship a Panda Preset
 
 This is the simplest approach. You can include the token, semantic tokens, text styles, etc. within a preset and consume
-them in your projects. See the [end-to-end preset example](/docs/customization/presets#end-to-end-example) for the full
+them in your projects. See the [end-to-end preset example](/docs/design-systems/presets#end-to-end-example) for the full
 create-and-consume flow.
 
 **Library code**
@@ -99,7 +99,7 @@ tsup src/index.tsx
 panda cssgen --outfile dist/styles.css
 ```
 
-Finally, don't forget to include the [cascade layers](/docs/concepts/cascade-layers) as well in your app code:
+Finally, don't forget to include the [cascade layers](/docs/styling/cascade-layers) as well in your app code:
 
 **App code**
 
@@ -124,7 +124,7 @@ export function App() {
 This approach comes with a few downsides:
 
 - You can't customize the styles since the css is already generated
-- You might need add the [prefix](/docs/references/config#prefix) option to avoid className conflicts
+- You might need add the [prefix](/docs/reference/config#prefix) option to avoid className conflicts
 
   ```tsx filename="panda.config.ts"
   import { defineConfig } from '@pandacss/dev'
@@ -141,7 +141,7 @@ This approach comes with a few downsides:
 
 ### Summary
 
-- create a Panda [preset](/docs/customization/presets) so that you (and your users) can share the same design system
+- create a Panda [preset](/docs/design-systems/presets) so that you (and your users) can share the same design system
   tokens
 - create a workspace package for your outdir (`@acme-org/styled-system`) and use that package name as the `importMap` in
   your app code
@@ -155,9 +155,9 @@ Let's make a dedicated workspace package for your `outdir`:
 2. Install `@pandacss/dev` as a dev dependency
 3. Run the `panda init` command in there to generate a `panda.config.ts` file, don't forget to set the `jsxFramework` if
    needed
-4. [optional] you might want to install and import your [preset](/docs/customization/presets) in this `panda.config.ts`
+4. [optional] you might want to install and import your [preset](/docs/design-systems/presets) in this `panda.config.ts`
    file as well
-5. Run the [`panda emit-pkg`](/docs/references/cli#emit-pkg) command to set the entrypoints in
+5. Run the [`panda emit-pkg`](/docs/reference/cli#emit-pkg) command to set the entrypoints in
    [`exports`](https://nodejs.org/api/packages.html#exports)
 
 This should look similar to this:

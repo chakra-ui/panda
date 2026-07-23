@@ -75,8 +75,8 @@ export default async function DocsPage(props: DocsPageProps) {
           flexShrink="0"
           w="64"
           position="sticky"
-          top="calc(var(--navbar-height) + var(--banner-height) + 1rem)"
-          height="calc(100vh - var(--navbar-height) - var(--banner-height) - 1rem)"
+          top="calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height) + 1rem)"
+          height="calc(100vh - var(--navbar-height) - var(--banner-height) - var(--tabbar-height) - 1rem)"
         >
           <Box overflowY="auto" height="100%" className="scroll-area" p="4">
             <Sidebar slug={slug} />
@@ -111,9 +111,9 @@ export default async function DocsPage(props: DocsPageProps) {
           flexShrink="0"
           w="56"
           position="sticky"
-          top="calc(var(--navbar-height) + var(--banner-height))"
+          top="calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height))"
           pt="10"
-          maxH="calc(100vh - var(--navbar-height) - var(--banner-height) - 1rem)"
+          maxH="calc(100vh - var(--navbar-height) - var(--banner-height) - var(--tabbar-height) - 1rem)"
         >
           <Box overflowY="auto" height="100%" className="scroll-area">
             <Toc data={doc.toc} />

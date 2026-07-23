@@ -132,7 +132,7 @@ This will ensure that the paths are resolved correctly, and HMR works as expecte
 ## HMR not triggered
 
 If you are having issues with HMR not being triggered after a `panda.config.ts` change (or one of its
-[dependencies](/docs/references/config#dependencies)), you can manually specify the files that should trigger a rebuild
+[dependencies](/docs/reference/config#dependencies)), you can manually specify the files that should trigger a rebuild
 by adding the following to your `panda.config.ts`:
 
 ```js filename="panda.config.ts"
@@ -148,8 +148,8 @@ export default defineConfig({
 
 ## Why are my styles not applied?
 
-Check that the [`@layer` rules](/docs/concepts/cascade-layers#layer-css) are set and the corresponding `.css` file is
-included. [If you're not using `postcss`](/docs/installation/cli), ensure that `styled-system/styles.css` is imported
+Check that the [`@layer` rules](/docs/styling/cascade-layers#layer-css) are set and the corresponding `.css` file is
+included. [If you're not using `postcss`](/docs/styling/cli), ensure that `styled-system/styles.css` is imported
 and that the `panda` command has been run (or is running with `--watch`).
 
 ---
@@ -173,7 +173,7 @@ tsconfig.json file.
 
 ## How do I get a type with each recipe properties?
 
-You can get a [`config recipe`](/docs/concepts/recipes#config-recipe) properties types by using `XXXVariantProps`. Let's
+You can get a [`config recipe`](/docs/styling/recipes#config-recipe) properties types by using `XXXVariantProps`. Let's
 say you have a `config recipe` named `button`, you can import its type like this:
 
 ```ts
@@ -182,7 +182,7 @@ import { button, type ButtonVariantProps } from '../styled-system/recipes'
 
 ---
 
-You can get an [`atomic recipe`](/docs/concepts/recipes#atomic-recipe) properties types by using `RecipeVariantProps`.
+You can get an [`atomic recipe`](/docs/styling/recipes#atomic-recipe) properties types by using `RecipeVariantProps`.
 Let's say you have a `atomic recipe` named `button`, you can get its type like this:
 
 ```ts
@@ -262,14 +262,14 @@ When running `pnpm panda`, here's what's happening under the hood:
 
 ## I'm seeing a "Could not resolve xxx" error with esbuild/tsup. What should I do?
 
-In such a case, check the [`outExtension`](/docs/references/config#outextension) in your `panda.config` and set it to
+In such a case, check the [`outExtension`](/docs/reference/config#outextension) in your `panda.config` and set it to
 "js". This will ensure your modules are resolved correctly.
 
 ---
 
 ## Why does importing `styled` not exist?
 
-You should use [`config.jsxFramework`](/docs/concepts/style-props#configure-jsx) when you need to import styled
+You should use [`config.jsxFramework`](/docs/styling/style-props#configure-jsx) when you need to import styled
 components. You can then use the [`jsxFactory`](/references/config#jsxfactory) option to set the name of the factory
 component.
 
@@ -311,22 +311,22 @@ specifically pick what you need in there (or use the JS spread operator `...` an
 
 ## How do I make a design system / component library with Panda?
 
-There is a detailed guide on how to do this [here](/docs/component-library/overview).
+There is a detailed guide on how to do this [here](/docs/design-systems/overview).
 
 ---
 
 ## Can I use dynamic styles with Panda?
 
-Yes, you can use dynamic styles with Panda. More on that [here](/docs/concepts/dynamic-styling#runtime-conditions).
+Yes, you can use dynamic styles with Panda. More on that [here](/docs/styling/dynamic-styling#runtime-conditions).
 
 ---
 
 ## Should I use atomic or config recipes ?
 
-[Config recipes](/docs/concepts/recipes#config-recipe) are generated just in time, meaning that only the recipes and
+[Config recipes](/docs/styling/recipes#config-recipe) are generated just in time, meaning that only the recipes and
 variants you use will exist in the generated CSS, regardless of the number of recipes in the config.
 
-This contrasts with [Atomic recipes](/docs/concepts/recipes#atomic-recipe) (cva), which generates all of the variants
+This contrasts with [Atomic recipes](/docs/styling/recipes#atomic-recipe) (cva), which generates all of the variants
 regardless of what was used in your code. The reason for this difference is that all `config.recipes` are known at the
 start of the panda process when we evaluate your config. In contrast, the CVA recipes are scattered throughout your
 code. To get all of them and find their usage across your code, we would need to scan your app code multiple times,
@@ -356,7 +356,7 @@ yet", update your tsconfig to use es6 or higher:
 ## How can I generate all possible CSS variants at build time?
 
 While it's possible to generate all variants, even unused ones, by using
-[`config.staticCss`](https://panda-css.com/docs/concepts/dynamic-styling#using-static-css), it's generally **not
+[`config.staticCss`](https://panda-css.com/docs/styling/dynamic-styling#using-static-css), it's generally **not
 recommended** to use it for more than a few values. However, keep in mind this approach compromises one of Panda's
 strengths: lean, usage-based CSS generation.
 

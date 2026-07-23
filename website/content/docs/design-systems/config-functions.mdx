@@ -12,7 +12,7 @@ To help defining config in a type-safe way, you can use the following helpers:
 
 ### `defineConfig`
 
-Function for [config](/docs/references/config) definitions.
+Function for [config](/docs/reference/config) definitions.
 
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -25,7 +25,7 @@ export default defineConfig({
 
 ### `defineRecipe`
 
-Function for [recipe](/docs/concepts/recipes#config-recipe) definitions.
+Function for [recipe](/docs/styling/recipes#config-recipe) definitions.
 
 ```ts
 import { defineRecipe } from '@pandacss/dev'
@@ -51,7 +51,7 @@ export const buttonRecipe = defineRecipe({
 
 ### `defineSlotRecipe`
 
-Function for [slot recipe](/docs/concepts/slot-recipes#config-slot-recipe) definitions.
+Function for [slot recipe](/docs/styling/slot-recipes#config-slot-recipe) definitions.
 
 ```ts
 import { defineSlotRecipe } from '@pandacss/dev'
@@ -129,7 +129,7 @@ export const checkboxRecipe = defineRecipe({
 
 ### `definePattern`
 
-Function for [pattern](/docs/customization/patterns) definitions.
+Function for [pattern](/docs/design-systems/patterns) definitions.
 
 ```ts
 import { definePattern } from '@pandacss/dev'
@@ -146,7 +146,7 @@ const visuallyHidden = definePattern({
 
 ### `definePreset`
 
-Function for [preset](/docs/customization/presets#creating-a-preset) definitions.
+Function for [preset](/docs/design-systems/presets#creating-a-preset) definitions.
 
 ```ts
 import { definePreset } from '@pandacss/dev'
@@ -164,7 +164,7 @@ export const pandaPreset = definePreset({
 
 ### `definePlugin`
 
-Function for [plugin](/docs/references/config#plugins) definitions.
+Function for [plugin](/docs/reference/config#plugins) definitions.
 
 ```ts
 import { definePlugin } from '@pandacss/dev'
@@ -198,7 +198,7 @@ export const keyframes = defineKeyframes({
 
 ### `defineGlobalStyles`
 
-Function for [global styles](/docs/concepts/writing-styles#global-styles) definitions.
+Function for [global styles](/docs/styling/writing-styles#global-styles) definitions.
 
 ```ts
 import { defineGlobalStyles } from '@pandacss/dev'
@@ -213,7 +213,7 @@ const globalCss = defineGlobalStyles({
 
 ### `defineUtility`
 
-Function for [utility](/docs/customization/utilities) definitions.
+Function for [utility](/docs/design-systems/utilities) definitions.
 
 ```ts
 import { defineUtility } from '@pandacss/dev'
@@ -275,7 +275,7 @@ Function for style definitions.
 
 This comes in handy when you want to define reusable styles in the config.
 
-E.g. a set of styles to be used in multiple variants within a [recipe](/docs/concepts/recipes#config-recipe).
+E.g. a set of styles to be used in multiple variants within a [recipe](/docs/styling/recipes#config-recipe).
 
 ```ts {3, 14, 18} filename="recipes/button.ts"
 import { defineRecipe, defineStyles } from '@pandacss/dev'
