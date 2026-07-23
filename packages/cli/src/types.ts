@@ -101,11 +101,12 @@ export interface EmitPackageCommandFlags {
 export interface McpCommandFlags {
   cwd?: string
   config?: string
+  silent?: boolean
 }
 
 export interface McpInitCommandFlags {
   cwd?: string
-  client?: string[]
+  client?: string | string[]
 }
 
 export interface SpecCommandFlags {

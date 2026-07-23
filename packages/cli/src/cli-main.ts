@@ -23,6 +23,7 @@ import { cac } from 'cac'
 import { join, resolve } from 'path'
 import { version } from '../package.json'
 import { interactive } from './interactive'
+import { runMcpViaNpx } from './mcp-shim'
 import type {
   AnalyzeCommandFlags,
   CodegenCommandFlags,
@@ -635,31 +636,33 @@ export async function main() {
     })
 
   cli
-    .command('mcp', 'Start MCP server for AI assistants')
+    .command('mcp', 'Start MCP server for AI assistants (via npx @pandacss/mcp)')
     .option('-c, --config <path>', 'Path to panda config file')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
+    .option('--silent', 'Suppress startup logs')
     .action(async (mcpFlags: McpCommandFlags) => {
-      const { startMcpServer } = await import('@pandacss/mcp')
-      await startMcpServer(mcpFlags)
+      const code = await runMcpViaNpx('start', {
+        cwd: mcpFlags.cwd,
+        config: mcpFlags.config,
+        silent: mcpFlags.silent,
+      })
+      if (code !== 0) {
+        process.exitCode = code
+      }
     })
 
   cli
-    .command('init-mcp', 'Initialize MCP configuration for AI clients')
+    .command('init-mcp', 'Initialize MCP configuration for AI clients (via npx @pandacss/mcp)')
     .option('--cwd <cwd>', 'Current working directory', { default: cwd })
     .option('--client <clients>', 'AI clients to configure (claude, cursor, vscode, windsurf, codex)')
     .action(async (mcpInitFlags: McpInitCommandFlags) => {
-      const { initMcpConfig } = await import('@pandacss/mcp')
-      const resolvedCwd = resolve(mcpInitFlags.cwd ?? cwd)
-
-      // Parse comma-separated clients if provided
-      let clients: string[] | undefined
-      if (mcpInitFlags.client) {
-        clients = (Array.isArray(mcpInitFlags.client) ? mcpInitFlags.client : [mcpInitFlags.client])
-          .flatMap((c) => c.split(','))
-          .map((c) => c.trim())
+      const code = await runMcpViaNpx('init', {
+        cwd: resolve(mcpInitFlags.cwd ?? cwd),
+        client: mcpInitFlags.client,
+      })
+      if (code !== 0) {
+        process.exitCode = code
       }
-
-      await initMcpConfig({ cwd: resolvedCwd, clients: clients as any })
     })
 
   cli.help()
