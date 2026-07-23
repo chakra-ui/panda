@@ -50,7 +50,7 @@ describe('init command', () => {
 
     expect(result.ok).toBe(false)
     expect(result.exitCode).toBe(2)
-    expect(logs.join('\n')).toContain('--interactive cannot be used with --json')
+    expect(logs.join('\n')).toContain("--interactive can't be used with JSON output")
     expect(existsSync(join(dir, 'panda.config.ts'))).toBe(false)
   })
 
@@ -230,8 +230,8 @@ describe('init command', () => {
       expect(result.presetsInstalled).toEqual([])
     })
 
-    it('--no-install scaffolds a bare config (presets: []) and installs nothing', async () => {
-      const result = await initWithPkg({ name: 'app' }, { install: false })
+    it('--skip-presets scaffolds a bare config and installs nothing', async () => {
+      const result = await initWithPkg({ name: 'app' }, { skipPresets: true })
 
       expect(execSync).not.toHaveBeenCalled()
       expect(result.presetsInstalled).toEqual([])
@@ -242,7 +242,7 @@ describe('init command', () => {
       dir = createFixture(undefined, { config: false, source: false })
       writePkg(dir)
 
-      const result = await runInit({ cwd: dir, install: false, logLevel: 'silent' })
+      const result = await runInit({ cwd: dir, skipPresets: true, logLevel: 'silent' })
 
       expect(result.ok).toBe(false)
       expect(result.configWritten).toBe(true)

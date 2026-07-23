@@ -19,7 +19,7 @@ export function outputArgs(): ArgsDef {
     },
     'max-warnings': { type: 'string', description: 'Fail when warning diagnostics exceed this count' },
     logfile: { type: 'string', description: 'Write human output to a log file' },
-    'no-color': { type: 'boolean', description: 'Disable ANSI colors in human output' },
+    color: { type: 'boolean', description: 'Disable ANSI colors in human output', default: true },
   }
 }
 
@@ -91,8 +91,9 @@ export function normalizeCliFlags(args: unknown): Record<string, unknown> {
   }
   if (flags['ui-host'] !== undefined && flags.uiHost === undefined) flags.uiHost = flags['ui-host']
   if (flags['ui-port'] !== undefined && flags.uiPort === undefined) flags.uiPort = flags['ui-port']
+  if (flags.color === false && flags.noColor === undefined) flags.noColor = true
+  // Preserve kebab-case flags passed through the programmatic API.
   if (flags['no-color'] !== undefined && flags.noColor === undefined) flags.noColor = flags['no-color']
-  if (flags['no-input'] !== undefined && flags.noInput === undefined) flags.noInput = flags['no-input']
   if (flags['jsx-style-props'] !== undefined && flags.jsxStyleProps === undefined) {
     flags.jsxStyleProps = flags['jsx-style-props']
   }
@@ -105,6 +106,9 @@ export function normalizeCliFlags(args: unknown): Record<string, unknown> {
   if (flags['strict-tokens'] !== undefined && flags.strictTokens === undefined) {
     flags.strictTokens = flags['strict-tokens']
   }
+  if (flags['skip-presets'] !== undefined && flags.skipPresets === undefined) {
+    flags.skipPresets = flags['skip-presets']
+  }
 
   return omitKeys(flags, [
     'log-level',
@@ -114,12 +118,13 @@ export function normalizeCliFlags(args: unknown): Record<string, unknown> {
     'watch-debounce',
     'ui-host',
     'ui-port',
+    'color',
     'no-color',
-    'no-input',
     'jsx-style-props',
     'out-extension',
     'jsx-framework',
     'strict-tokens',
+    'skip-presets',
   ])
 }
 

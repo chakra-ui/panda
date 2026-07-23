@@ -39,11 +39,10 @@ export function mergeInteractiveFlags(flags: InitFlags, answers: InteractiveAnsw
   }
 }
 
-export type InteractiveGuardFailure = { kind: 'no-input' } | { kind: 'json' } | { kind: 'non-tty' }
+export type InteractiveGuardFailure = { kind: 'json' } | { kind: 'non-tty' }
 
 /** Why interactive init cannot run, or `undefined` when it can. */
 export function interactiveGuardFailure(flags: InitFlags): InteractiveGuardFailure | undefined {
-  if (flags.noInput) return { kind: 'no-input' }
   if (shouldPrintJson(flags)) return { kind: 'json' }
   if (!process.stdin.isTTY || !process.stdout.isTTY) return { kind: 'non-tty' }
   return undefined
@@ -51,12 +50,10 @@ export function interactiveGuardFailure(flags: InitFlags): InteractiveGuardFailu
 
 export function formatInteractiveGuardFailure(failure: InteractiveGuardFailure): string {
   switch (failure.kind) {
-    case 'no-input':
-      return 'init: --interactive cannot be used with --no-input. Pass flags explicitly instead.'
     case 'json':
-      return 'init: --interactive cannot be used with --json. Pass flags explicitly instead.'
+      return "--interactive can't be used with JSON output. Pass the init options as flags instead."
     case 'non-tty':
-      return 'init: --interactive requires an interactive terminal. Pass flags explicitly instead.'
+      return '--interactive needs an interactive terminal. Pass the init options as flags instead.'
   }
 }
 

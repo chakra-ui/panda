@@ -76,6 +76,7 @@ export function renderCommandDiagnostics(
     cwd,
     format: commandFormat(flags),
     noColor: flags.noColor,
+    stream: output.error ? process.stderr : process.stdout,
   })
 
   if (!message) {

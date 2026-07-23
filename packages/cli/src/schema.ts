@@ -84,9 +84,8 @@ export const initFlagsSchema = commonFlagsSchema
     jsxStyleProps: enumOf(['all', 'minimal', 'none']),
     syntax: enumOf(['template-literal', 'object-literal']),
     strictTokens: booleanFlag,
-    install: booleanFlag,
+    skipPresets: booleanFlag,
     interactive: booleanFlag,
-    noInput: booleanFlag,
   })
 
 export const buildinfoFlagsSchema = commonFlagsSchema.omit({ watch: true, watchDebounce: true }).extend({

@@ -153,7 +153,8 @@ export default defineConfig({
 ```
 
 > v2 doesn't auto-inject presets — without them you get a bare system (no `bg`/`color` utilities, no `fontSizes`/spacing
-> scales, no `_hover`/`_active` conditions). `panda init` scaffolds this line and installs both presets for you.
+> scales, no `_hover`/`_active` conditions). `panda init` scaffolds this line and installs both presets for you. Pass
+> `--skip-presets` to scaffold a bare config instead.
 
 ### 4. Add Panda to your CSS
 
@@ -536,8 +537,8 @@ Logging flags are consolidated: use `--log-level silent|error|warn|info|debug` i
 `--verbose`. Shared CLI flags use kebab-case, including `--max-warnings`, `--watch-debounce`, `--trace-output`, and
 `--trace-file`. `--profile` replaces v1's `--cpu-prof` (see [above](#--cpu-prof-is-now---profile)).
 
-`panda init -i` / `--interactive` is the init wizard only (same as v1) — it does not toggle “fancy” logs. Human TTY
-output can use ANSI colors; pass `--no-color` or set `NO_COLOR` to disable. Use `--no-input` to forbid prompts.
+`panda init -i` and `panda init --interactive` run the setup wizard, as they did in v1. They do not change log
+formatting. Use `--no-color` or `NO_COLOR` to disable colors in terminal output.
 
 ---
 

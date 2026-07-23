@@ -41,13 +41,13 @@ Break a rule only when demonstrably harmful to productivity or satisfaction — 
 
 Show the minimum needed for the current context; reveal complexity only when the user asks or when it matters:
 
-| Context                 | Default surface             | Deeper detail                                         |
-| ----------------------- | --------------------------- | ----------------------------------------------------- |
-| `panda` / `panda build` | Brief success, errors only  | `--log-level debug`, `--trace` for compiler internals |
-| `panda init`            | Guided prompts in TTY       | `--no-input` + flags for CI/scaffold scripts          |
-| `panda doctor`          | Pass/fail + project summary | Actionable fix hints; `--json` for tooling            |
-| `panda buildinfo`       | Human tables                | `--json` for tooling                                  |
-| Help                    | Concise on empty invoke     | Full flag list on `--help`                            |
+| Context                 | Default surface               | Deeper detail                                         |
+| ----------------------- | ----------------------------- | ----------------------------------------------------- |
+| `panda` / `panda build` | Brief success, errors only    | `--log-level debug`, `--trace` for compiler internals |
+| `panda init`            | Creates files without prompts | `--interactive` starts the terminal wizard            |
+| `panda doctor`          | Pass/fail + project summary   | Actionable fix hints; `--json` for tooling            |
+| `panda buildinfo`       | Human tables                  | `--json` for tooling                                  |
+| Help                    | Concise on empty invoke       | Full flag list on `--help`                            |
 
 Design for **beginners** (discoverable defaults, examples, suggestions) and **power users** (stable `--json`, composable
 flags, no prompts in CI) at the same time — not either/or.
@@ -227,7 +227,7 @@ Invite usability feedback from people new to the project — they spot what you�
 | Optional flag values               | Use explicit sentinels like `none`, not ambiguous empty strings                             |
 | stdin/stdout as files              | Support `-` (`tar xvf -`, `curl … \| panda …`)                                              |
 | Secrets                            | **Never** `--password` (leaks to `ps`, shell history). Use `--password-file`, stdin, or IPC |
-| Dangerous actions                  | Confirm interactively; require `-f`/`--force` in scripts; `--no-input` must fail clearly    |
+| Dangerous actions                  | Confirm interactively; require `-f`/`--force` in scripts                                    |
 
 ### Standard flag names (reuse before inventing)
 
@@ -239,7 +239,6 @@ Invite usability feedback from people new to the project — they spot what you�
 | `--json`          | JSON output                                                                                   |
 | `-h`, `--help`    | Help only — never overload `-h`                                                               |
 | `-n`, `--dry-run` | Describe changes without applying                                                             |
-| `--no-input`      | Disable all prompts (fail if input required)                                                  |
 | `-o`, `--output`  | Output file                                                                                   |
 | `-q`, `--quiet`   | Less output                                                                                   |
 | `-v`              | Often verbose **or** version — avoid ambiguity; use `-d` for verbose, `--version` for version |
@@ -263,7 +262,6 @@ Default to what **most users** need. If the better UX isn’t default, most user
 
 - Prompt **only** when stdin is an interactive TTY.
 - Non-TTY stdin: **fail** with message explaining which flag to pass.
-- `--no-input`: never prompt; fail if required input missing.
 - Password prompts: turn off echo.
 - Always allow escape — document how (Ctrl-C must work; network hangs must not trap the user).
 
@@ -552,7 +550,7 @@ Use in review mode — block merge on unchecked **basics** unless justified:
 - [ ] Exit codes correct (`0` / `1` / `2` / `3`)
 - [ ] stdout vs stderr split respected
 - [ ] `--json` / `--format` stable for CI; human output can change
-- [ ] No prompts when stdin is not a TTY; `--no-input` honored
+- [ ] No prompts when stdin is not a TTY
 
 **Help & discovery**
 

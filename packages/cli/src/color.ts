@@ -13,6 +13,7 @@ export function shouldUseColor(options: ColorOptions = {}): boolean {
   if (process.env.NO_COLOR) return false
   if (process.env.FORCE_COLOR === '0') return false
   if (process.env.FORCE_COLOR) return true
+  if (process.env.TERM === 'dumb') return false
 
   const stream = options.stream ?? process.stdout
   return Boolean(stream.isTTY)
@@ -48,16 +49,18 @@ export function createColors(options: ColorOptions = {}): CliColors {
     }
   }
 
+  const colors = pc.createColors(true)
+
   return {
     enabled: true,
-    bold: pc.bold,
-    dim: pc.dim,
-    cyan: pc.cyan,
-    blue: pc.blue,
-    yellow: pc.yellow,
-    red: pc.red,
-    green: pc.green,
-    magenta: pc.magenta,
+    bold: colors.bold,
+    dim: colors.dim,
+    cyan: colors.cyan,
+    blue: colors.blue,
+    yellow: colors.yellow,
+    red: colors.red,
+    green: colors.green,
+    magenta: colors.magenta,
   }
 }
 
