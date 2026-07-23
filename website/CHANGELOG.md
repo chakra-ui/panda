@@ -1,5 +1,13 @@
 # website
 
+## 1.0.1-beta.10
+
+### Patch Changes
+
+- Updated dependencies [d697a8e]
+  - @pandacss/preset-base@2.0.0-beta.10
+  - @pandacss/preset-panda@2.0.0-beta.10
+
 ## 1.0.1-beta.9
 
 ### Patch Changes

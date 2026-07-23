@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/webpack",
-  "version": "2.0.0-beta.9",
+  "version": "2.0.0-beta.10",
   "description": "webpack plugin for Panda CSS (Next.js compatible)",
   "type": "module",
   "main": "./dist/index.js",

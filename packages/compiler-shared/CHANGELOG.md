@@ -1,5 +1,77 @@
 # @pandacss/compiler-shared
 
+## 2.0.0-beta.10
+
+### Minor Changes
+
+- 05e085d: With a single-level `designSystem`, `panda codegen` reuses the library's styled-system instead of copying it.
+  Your app only generates the delta (extra tokens, recipes, patterns). Missing library exports fail with
+  `design_system_export_missing` instead of a silent bundler error.
+
+  ```ts
+  export default defineConfig({
+    designSystem: '@acme/ds',
+  })
+  ```
+
+- f8027f3: Fix CSS cascade order, token pruning, and conditional JSX spreads where a later static prop overrides a
+  spread. Design-system tree-shaking now runs before every CSS read/write path, not only `cssgen` / `writeCss`.
+
+  `getSplitCss()` is a breaking shape change for direct callers:
+
+  ```ts
+  // before
+  const files = compiler.getSplitCss()
+
+  // after
+  const { files, diagnostics } = compiler.getSplitCss()
+  ```
+
+- ebe9f5b: Add `getKeyframeCss()` to emit theme `@keyframes` without token vars or other layers.
+- 52e84e6: Add native cascade-layer polyfill via `polyfill` / `--polyfill` (no PostCSS plugin required).
+- a79c917: Opt into `optimize.treeshakeDesignSystem` to hydrate only the design-system modules your app imports, instead
+  of the whole build-info artifact.
+- 2714583: Add `viewTransition()` for the View Transitions API. Pass slot styles, get a stable `vt_*` bag class, and
+  Panda emits the matching `::view-transition-*` rules. Import from `styled-system/css`. You still set unique
+  `view-transition-name` values at runtime — Panda only owns the shared CSS. Design-system build info carries the bags
+  so apps hydrate them without re-extracting.
+
+  ```ts
+  import { viewTransition } from 'styled-system/css'
+
+  const slide = viewTransition({
+    group: { animationDuration: '0.4s' },
+    old: { opacity: 0 },
+    new: { opacity: 1 },
+  })
+  ```
+
+  ```tsx
+  // React / Next
+  import { ViewTransition } from 'react'
+
+  ;<ViewTransition name="hero" share={slide}>
+    <img src="…" alt="…" />
+  </ViewTransition>
+  ```
+
+  ```html
+  <!-- Astro -->
+  <img class="{slide}" transition:name="hero" src="…" alt="…" />
+  ```
+
+  ```tsx
+  // Solid / Nuxt — framework starts the transition; you attach name + bag class
+  <img class={slide} style={{ viewTransitionName: 'hero' }} src="…" alt="…" />
+  ```
+
+### Patch Changes
+
+- Updated dependencies [52e84e6]
+- Updated dependencies [a79c917]
+- Updated dependencies [2714583]
+  - @pandacss/types@2.0.0-beta.10
+
 ## 2.0.0-beta.9
 
 ### Patch Changes
