@@ -19,7 +19,7 @@ const style2 = {
   bg: 'blue'
 }
 
-const className = css(style1, style2) // => 'bg_blue text_white'
+const className = css(style1, style2) // => 'bg_blue c_white'
 ```
 
 In some cases though, the style object might not be colocated in the same file as the component. In this case, you can
@@ -45,7 +45,7 @@ const style2 = css.raw({
   bg: 'blue'
 })
 
-const className = css(style1, style2) // => 'bg_blue text_white'
+const className = css(style1, style2) // => 'bg_blue c_white'
 ```
 
 ## Spreading `css.raw` objects
