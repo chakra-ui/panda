@@ -81,7 +81,7 @@ export const docsNavigation: NavItem = {
   url: 'docs',
   items: [
     {
-      title: 'Overview',
+      title: 'Get Started',
       url: 'overview',
       items: [
         { title: 'Getting Started', url: 'getting-started' },
@@ -135,30 +135,36 @@ export const docsNavigation: NavItem = {
       ]
     },
     {
-      title: 'Concepts',
+      title: 'Core Concepts',
       url: 'concepts',
       items: [
-        { title: 'Cascade Layers', url: 'cascade-layers' },
         { title: 'Writing Styles', url: 'writing-styles' },
-        { title: 'Merging Styles', url: 'merging-styles' },
-        { title: 'Global Styles', url: 'global-styles' },
-        { title: 'Template Literals', url: 'template-literals' },
         { title: 'Conditional Styles', url: 'conditional-styles' },
         { title: 'Responsive Design', url: 'responsive-design' },
+        { title: 'Merging Styles', url: 'merging-styles' },
+        { title: 'Global Styles', url: 'global-styles' },
+        { title: 'Cascade Layers', url: 'cascade-layers' },
+        { title: 'Dynamic Styles', url: 'dynamic-styling' },
         { title: 'Virtual Color', url: 'virtual-color' },
+        { title: 'Color opacity modifier', url: 'color-opacity-modifier' }
+      ]
+    },
+    {
+      title: 'Styling APIs',
+      url: 'concepts',
+      items: [
         { title: 'Patterns', url: 'patterns' },
         { title: 'Recipes', url: 'recipes' },
         { title: 'Slot Recipes', url: 'slot-recipes' },
+        { title: 'Template Literals', url: 'template-literals' },
         { title: 'JSX Style Props', url: 'style-props' },
         { title: 'JSX Style Context', url: 'jsx-style-context' },
-        { title: 'Color opacity modifier', url: 'color-opacity-modifier' },
-        { title: 'Hooks', url: 'hooks' },
         { title: 'Styled System', url: 'styled-system' },
         { title: 'The extend keyword', url: 'extend' }
       ]
     },
     {
-      title: 'Migration',
+      title: 'Coming from another tool',
       url: 'migration',
       items: [
         { title: 'Stitches', url: 'stitches' },
@@ -175,24 +181,42 @@ export const docsNavigation: NavItem = {
         { title: 'Text Styles', url: 'text-styles' },
         { title: 'Layer Styles', url: 'layer-styles' },
         { title: 'Animation Styles', url: 'animation-styles' },
+        { title: 'Theme', url: 'theme' },
+        { title: 'Custom Fonts', url: 'fonts' },
+        { title: 'Multiple Themes', url: 'multiple-themes' },
         { title: 'Spec', url: 'spec', tag: 'new' },
         { title: 'Panda Studio', url: 'studio' }
       ]
     },
     {
+      title: 'Component Library',
+      url: 'component-library',
+      items: [{ title: 'Overview', url: 'overview' }]
+    },
+    {
       title: 'Customization',
       url: 'customization',
       items: [
-        { title: 'Patterns', url: 'patterns' },
-        { title: 'Conditions', url: 'conditions' },
         { title: 'Utilities', url: 'utilities' },
+        { title: 'Conditions', url: 'conditions' },
+        { title: 'Patterns', url: 'patterns' },
         { title: 'Presets', url: 'presets' },
-        { title: 'Theme', url: 'theme' },
+        { title: 'Hooks', url: 'hooks' },
         { title: 'Config Functions', url: 'config-functions' }
       ]
     },
     {
-      title: 'Utilities',
+      title: 'Distribution & Scale',
+      url: 'distribution',
+      items: [
+        { title: 'Federated Micro-Frontends', url: 'federated-microfrontends' },
+        { title: 'Static CSS Generation', url: 'static' },
+        { title: 'Minimal Setup', url: 'minimal-setup' },
+        { title: 'Environment-specific config', url: 'environment-specific-config' }
+      ]
+    },
+    {
+      title: 'Utility Reference',
       url: 'utilities',
       items: [
         { title: 'Background', url: 'background' },
@@ -218,26 +242,13 @@ export const docsNavigation: NavItem = {
       ]
     },
     {
-      title: 'Guides',
-      url: 'guides',
-      items: [
-        { title: 'Minimal Setup', url: 'minimal-setup' },
-        { title: 'Component Library', url: 'component-library' },
-        { title: 'Federated Micro-Frontends', url: 'federated-microfrontends' },
-        { title: 'Multiple Themes', url: 'multiple-themes' },
-        { title: 'Custom Fonts', url: 'fonts' },
-        { title: 'Dynamic Styles', url: 'dynamic-styling' },
-        { title: 'Static Generator', url: 'static' },
-        { title: 'Environment-specific config', url: 'environment-specific-config' },
-        { title: 'Debugging', url: 'debugging' }
-      ]
-    },
-    {
-      title: 'References',
+      title: 'Reference',
       url: 'references',
       items: [
         { title: 'CLI', url: 'cli' },
-        { title: 'Config', url: 'config' }
+        { title: 'Config', url: 'config' },
+        { title: 'Deprecations', url: 'deprecations' },
+        { title: 'Debugging', url: 'debugging' }
       ]
     }
   ]

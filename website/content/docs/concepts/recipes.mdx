@@ -456,7 +456,7 @@ export const buttonRecipe = defineRecipe({
 Or add literal calls in stories/tests, or use string literals in the call itself.
 
 Slot recipes follow the same rules — see [slot recipes](/docs/concepts/slot-recipes#dynamic-variant-props). More in
-[static CSS](/docs/guides/static#generating-recipes).
+[static CSS](/docs/distribution/static#generating-recipes).
 
 ### Using compound variants
 
@@ -576,7 +576,7 @@ input({ size: 'md', variant: 'outline' })
 // "input input--size_md input--variant_outline px_3 py_2"
 ```
 
-Runtime-only combos need [`staticCss`](/docs/guides/static#generating-recipes). Run `pnpm panda codegen` after editing
+Runtime-only combos need [`staticCss`](/docs/distribution/static#generating-recipes). Run `pnpm panda codegen` after editing
 the recipe.
 
 ### Responsive and Conditional variants
@@ -832,7 +832,7 @@ export const Demo = {
 
 ## Static CSS
 
-Use `staticCss` to pre-generate recipe CSS Panda can't extract — including [dynamic variant props](/docs/concepts/recipes#dynamic-variant-props). See [Generating recipes](/docs/guides/static#generating-recipes).
+Use `staticCss` to pre-generate recipe CSS Panda can't extract — including [dynamic variant props](/docs/concepts/recipes#dynamic-variant-props). See [Generating recipes](/docs/distribution/static#generating-recipes).
 
 ## Should I use atomic or config recipes ?
 

@@ -14,10 +14,10 @@ Use a preset when you want to share tokens, theme, utilities, patterns, or recip
 - **Design system package** — one npm package for your tokens and theme
 - **Multiple apps** — the same colors, spacing, and breakpoints everywhere
 - **Component libraries** — consumers add your preset in `panda.config.ts`
-  ([component library guide](/docs/guides/component-library#ship-a-panda-preset))
+  ([component library guide](/docs/component-library/overview#ship-a-panda-preset))
 
 If the app does not use Panda, ship static CSS instead. See the
-[component library guide](/docs/guides/component-library) for other options.
+[component library guide](/docs/component-library/overview) for other options.
 
 You can specify a preset in your `panda.config.js` file by using the `presets` option:
 
@@ -71,7 +71,7 @@ export default defineConfig({
 ## End-to-end example
 
 This walks through publishing a preset and using it in an app. For library build details, see
-[Ship a Panda preset](/docs/guides/component-library#ship-a-panda-preset).
+[Ship a Panda preset](/docs/component-library/overview#ship-a-panda-preset).
 
 <Steps>
 
@@ -164,10 +164,10 @@ The available keys for a preset are:
 
 - [`conditions`](/docs/concepts/conditional-styles)
 - [`globalCss`](/docs/concepts/writing-styles#global-styles)
-- [`globalFontface`](/docs/guides/fonts#global-font-face)
+- [`globalFontface`](/docs/theming/fonts#global-font-face)
 - [`patterns`](/docs/concepts/patterns)
-- [`staticCss`](/docs/guides/static)
-- [`theme`](/docs/customization/theme)
+- [`staticCss`](/docs/distribution/static)
+- [`theme`](/docs/theming/theme)
 - [`utilities`](/docs/customization/utilities)
 
 ### Asynchronous presets
@@ -227,4 +227,4 @@ export default defineConfig({
 ## Minimal setup
 
 If you want to use Panda with the bare minimum, without any of the defaults, you can read more about it
-[here](/docs/guides/minimal-setup)
+[here](/docs/distribution/minimal-setup)

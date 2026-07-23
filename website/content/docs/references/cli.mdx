@@ -39,7 +39,7 @@ pnpm panda init --postcss
 | `--jsx-framework <framework>` | The jsx framework to use                                      | [`config.jsxFramework`](/docs/references/config#jsxframework) |
 | `--syntax <syntax>`           | The css syntax preference                                     | [`config.syntax`](/docs/references/config#syntax)             |
 | `--strict-tokens`             | Set strictTokens to true                                      | [`config.strictTokens`](/docs/references/config#stricttokens) |
-| `--logfile <file>`            | Outputs logs to a file                                        | [Debugging](/docs/guides/debugging)                           |
+| `--logfile <file>`            | Outputs logs to a file                                        | [Debugging](/docs/references/debugging)                           |
 
 ---
 
@@ -74,8 +74,8 @@ pnpm panda "./src/components/**"
 | `--lightningcss`        | Use `lightningcss` instead of `postcss` for css optimization           | [`config.lightningcss`](/docs/references/config#lightningcss)     |
 | `--polyfill`            | Polyfill CSS @layers at-rules for older browsers                       | [`config.polyfill`](/docs/references/config#polyfill)             |
 | `--emitTokensOnly`      | Whether to only emit the `tokens` directory                            | [`config.emitTokensOnly`](/docs/references/config#emittokensonly) |
-| `--cpu-prof`            | Generate a `panda-{command}-{timestamp}.cpuprofile` file for profiling | [Debugging](/docs/guides/debugging)                               |
-| `--logfile <file>`      | Outputs logs to a file                                                 | [Debugging](/docs/guides/debugging)                               |
+| `--cpu-prof`            | Generate a `panda-{command}-{timestamp}.cpuprofile` file for profiling | [Debugging](/docs/references/debugging)                               |
+| `--logfile <file>`      | Outputs logs to a file                                                 | [Debugging](/docs/references/debugging)                               |
 
 ---
 
@@ -101,8 +101,8 @@ pnpm panda codegen --watch
 | `--watch, -w`         | Whether to watch for changes in the project                            | [`config.watch`](/docs/references/config#watch)        |
 | `--poll, -p`          | Whether to poll for file changes                                       | [`config.poll`](/docs/references/config#poll)          |
 | `--cwd <path>`        | Current working directory                                              | [`config.cwd`](/docs/references/config#cwd)            |
-| `--cpu-prof`          | Generate a `panda-{command}-{timestamp}.cpuprofile` file for profiling | [Debugging](/docs/guides/debugging)                    |
-| `--logfile <file>`    | Outputs logs to a file                                                 | [Debugging](/docs/guides/debugging)                    |
+| `--cpu-prof`          | Generate a `panda-{command}-{timestamp}.cpuprofile` file for profiling | [Debugging](/docs/references/debugging)                    |
+| `--logfile <file>`    | Outputs logs to a file                                                 | [Debugging](/docs/references/debugging)                    |
 
 ## cssgen
 
@@ -197,8 +197,8 @@ You can then choose how to import these files:
 | `--cwd <path>`         | Current working directory                                                              | [`config.cwd`](/docs/references/config#cwd)                   |
 | `--lightningcss`       | Use `lightningcss` instead of `postcss` for css optimization                           | [`config.lightningcss`](/docs/references/config#lightningcss) |
 | `--polyfill`           | Polyfill CSS @layers at-rules for older browsers                                       | [`config.polyfill`](/docs/references/config#polyfill)         |
-| `--cpu-prof`           | Generate a `panda-{command}-{timestamp}.cpuprofile` file for profiling                 | [Debugging](/docs/guides/debugging)                           |
-| `--logfile <file>`     | Outputs logs to a file                                                                 | [Debugging](/docs/guides/debugging)                           |
+| `--cpu-prof`           | Generate a `panda-{command}-{timestamp}.cpuprofile` file for profiling                 | [Debugging](/docs/references/debugging)                           |
+| `--logfile <file>`     | Outputs logs to a file                                                                 | [Debugging](/docs/references/debugging)                           |
 
 ## studio
 
@@ -284,7 +284,7 @@ pnpm panda analyze --scope recipe
 
 Debug design token extraction & CSS generated from files in glob.
 
-More details in [Debugging](/docs/guides/debugging) docs.
+More details in [Debugging](/docs/references/debugging) docs.
 
 ```bash
 pnpm panda debug
@@ -307,8 +307,8 @@ pnpm panda debug --only-config
 | `--only-config`       | Should only output the config file, default to 'false'                 | -                                                         |
 | `--config, -c <path>` | Path to Panda config file                                              | [`config`](/docs/references/config.md)                    |
 | `--cwd <path>`        | Current working directory                                              | [`config.cwd`](/docs/references/config#cwd)               |
-| `--cpu-prof`          | Generate a `panda-{command}-{timestamp}.cpuprofile` file for profiling | [Debugging](/docs/guides/debugging#performance-profiling) |
-| `--logfile <file>`    | Outputs logs to a file                                                 | [Debugging](/docs/guides/debugging)                       |
+| `--cpu-prof`          | Generate a `panda-{command}-{timestamp}.cpuprofile` file for profiling | [Debugging](/docs/references/debugging#performance-profiling) |
+| `--logfile <file>`    | Outputs logs to a file                                                 | [Debugging](/docs/references/debugging)                       |
 
 ## ship
 
