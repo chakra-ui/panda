@@ -97,9 +97,8 @@ export async function main(argv = process.argv.slice(2)) {
 
   switch (args.command) {
     case undefined:
+      // Stdio transport keeps the process alive; lifecycle watch exits on disconnect.
       await startMcpServer({ cwd: args.cwd, config: args.config, silent: args.silent })
-      // Keep the process alive for stdio transport; lifecycle watch exits on disconnect.
-      await new Promise(() => {})
       break
     case 'init':
       await initMcpConfig({ cwd: args.cwd, clients: args.clients })
