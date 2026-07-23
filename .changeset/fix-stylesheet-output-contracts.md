@@ -5,6 +5,15 @@
 '@pandacss/cli': patch
 ---
 
-Fix CSS ordering, selector emission, token pruning, conditional JSX spreads, and design-system tree-shaking.
-`getSplitCss()` now returns `{ files, diagnostics }` instead of `CssFile[]` and includes the same diagnostics as merged
-builds.
+Fix CSS cascade order, token pruning, and conditional JSX spreads where a later static prop overrides a spread. Design-system
+tree-shaking now runs before every CSS read/write path, not only `cssgen` / `writeCss`.
+
+`getSplitCss()` is a breaking shape change for direct callers:
+
+```ts
+// before
+const files = compiler.getSplitCss()
+
+// after
+const { files, diagnostics } = compiler.getSplitCss()
+```
