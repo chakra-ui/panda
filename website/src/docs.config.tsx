@@ -81,6 +81,7 @@ export const docsNavigation: NavItem = {
       items: [
         { title: 'Getting Started', url: 'getting-started' },
         { title: 'Why Panda?', url: 'why-panda' },
+        { title: 'How Panda works', url: 'how-panda-works' },
         { title: 'FAQs', url: 'faq' },
         { title: 'Browser Support', url: 'browser-support' },
         {

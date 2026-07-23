@@ -248,15 +248,11 @@ that is auto-generated and can be re-generated at any time.
 
 ## How does Panda work?
 
-When running `pnpm panda`, here's what's happening under the hood:
+At build time, Panda parses your source with a Rust and Oxc engine, extracts the styles you use, and emits the CSS
+natively — one parse per file, no PostCSS in the hot path. It also generates a small runtime and types in your
+`styled-system` folder.
 
-- **Load Panda context**:
-  - Find and evaluate app config, merge result with presets.
-  - Create panda context: prepare code generator from config, parse user's file as AST.
-- **Generating artifacts**:
-  - Write lightweight JS runtime and types to output directory
-- **Extracting used styles in app code**:
-  - Run parser on each user's file: identify and extract styles, compute CSS, write to styles.css.
+For the full pipeline, see [how Panda works](/docs/overview/how-panda-works).
 
 ---
 

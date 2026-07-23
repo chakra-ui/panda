@@ -1,0 +1,195 @@
+---
+title: How Panda works
+description: What happens between your source files and the CSS Panda ships — extract, encode, emit.
+---
+
+Panda reads your source at build time, finds the styles you actually use, and writes the exact CSS for them. Nothing is
+computed in the browser, and nothing is injected into the `<head>` at runtime.
+
+v2 rewrites the compiler's hot path in Rust. One parse per file, native CSS emission, no PostCSS in the hot path. The CSS
+it produces is the same as v1 — that output is locked down by snapshot tests.
+
+## The build pipeline
+
+Every build runs the same three steps:
+
+```
+source files  →  extract  →  encode  →  emit  →  styles.css
+```
+
+### Extract
+
+Panda parses each source file once with [Oxc](https://oxc.rs), a Rust-based JavaScript and TypeScript parser. From that
+single parse it:
+
+- Matches your Panda imports — `css`, `cva`, `sva`, patterns, `styled`, and the rest.
+- Walks the call sites and JSX to collect the style objects you pass.
+- Folds each object to static values so it can read the real style.
+
+If a file imports nothing from Panda, it's skipped before any of this runs. That's why scanning a large `node_modules`
+stays cheap — most files never match. `.vue`, `.svelte`, and `.astro` files are unwrapped to their script and template
+before parsing.
+
+What "fold to static values" means, and where it stops, is the one thing worth understanding well —
+see [writing styles Panda can extract](#writing-styles-panda-can-extract) below.
+
+### Encode
+
+Each style becomes an **atomic rule** — one rule per property, value, and condition. This style object:
+
+```tsx
+css({
+  backgroundColor: 'gainsboro',
+  borderRadius: '9999px',
+  padding: '10px 15px'
+})
+```
+
+encodes to three atoms, each its own class:
+
+```css
+@layer utilities {
+  .bg_gainsboro {
+    background-color: gainsboro;
+  }
+  .rounded_9999px {
+    border-radius: 9999px;
+  }
+  .p_10px_15px {
+    padding: 10px 15px;
+  }
+}
+```
+
+Atoms are shared. `css({ color: 'red.500' })` and `<Box color="red.500" />` encode to the same atom, so they emit one
+class, once, no matter how many files use it. Recipes decompose into atoms the same way. Panda holds a running set of
+atoms across your whole project, so in watch mode a changed file only re-encodes its own styles.
+
+### Emit
+
+Panda writes the CSS itself — no PostCSS or LightningCSS in this step. It lowers conditions to selectors and at-rules,
+sorts rules for correct cascade order, and organizes everything into [cascade layers](/docs/concepts/cascade-layers).
+
+Conditions become selectors:
+
+```tsx
+css({ color: 'red.500', _hover: { color: 'red.700' } })
+```
+
+```css
+@layer utilities {
+  .text_red\.500 {
+    color: var(--colors-red-500);
+  }
+  .hover\:text_red\.700:hover {
+    color: var(--colors-red-700);
+  }
+}
+```
+
+Responsive conditions become media queries, using modern range syntax:
+
+```tsx
+css({ color: { base: 'red.500', md: 'red.700' } })
+```
+
+```css
+@layer utilities {
+  .text_red\.500 {
+    color: var(--colors-red-500);
+  }
+  @media (width >= 48rem) {
+    .md\:text_red\.700 {
+      color: var(--colors-red-700);
+    }
+  }
+}
+```
+
+## Writing styles Panda can extract
+
+Panda reads a style by folding it to a static value at build time. It can only generate CSS for values it can see. Keep
+style objects statically analyzable and everything works; reach outside that and Panda has nothing to emit.
+
+This is the main thing to get right — and it matters most when a tool or an AI agent writes the code.
+
+**Panda can read:**
+
+- Literal style objects, arrays, and primitives.
+- Local constants that never change: `const brand = 'blue.500'`.
+- Ternaries and logical expressions: `condition ? 'red.500' : 'blue.500'`.
+- Template literals with static parts.
+- `token('colors.red.500')` and `token.var(...)` calls.
+- Values imported from another file — Panda follows the import and reads the value:
+
+```tsx
+// theme.ts
+export const brand = 'blue.500'
+
+// button.tsx
+import { brand } from './theme'
+const styles = css({ color: brand }) // Panda reads 'blue.500'
+```
+
+**Panda can't read** values that only exist when the app runs. A prop with an unknown value, a variable that gets
+reassigned, `Math.random()`, data from a fetch — none of it is on the page at build time:
+
+```tsx
+// ❌ Panda can't see `shade` — it's only known at runtime
+function Text({ shade }: { shade: number }) {
+  return <p className={css({ color: `red.${shade}` })} />
+}
+```
+
+Map the runtime value to styles Panda can see, and index into them at runtime:
+
+```tsx
+// ✅ every class exists at build time
+const byShade = {
+  300: css({ color: 'red.300' }),
+  500: css({ color: 'red.500' })
+}
+
+function Text({ shade }: { shade: 300 | 500 }) {
+  return <p className={byShade[shade]} />
+}
+```
+
+When a value is genuinely dynamic — a user-picked color, a computed length — use CSS variables. See
+[dynamic styling](/docs/guides/dynamic-styling) for the pattern.
+
+## What changed from v1
+
+v1 extracted styles with `ts-morph` and `ts-evaluator`, then ran a chain of PostCSS plugins to produce CSS. v2 replaces
+both halves.
+
+| Step            | v1                          | v2                             |
+| --------------- | --------------------------- | ------------------------------ |
+| Parse & extract | ts-morph + ts-evaluator     | Rust + Oxc, one parse per file |
+| CSS generation  | PostCSS plugins             | Native emission in Rust        |
+| In the hot path | TypeScript program, PostCSS | Neither                        |
+
+The engine ships as a native binding, `@pandacss/compiler`, that the CLI and bundler plugins load for you. You don't
+install or import it directly.
+
+## Where PostCSS fits now
+
+PostCSS no longer generates Panda's CSS. It's still supported as a way to wire Panda into a build: the
+[`@pandacss/postcss`](/docs/installation/postcss) plugin lets any PostCSS-based tool — Vite, webpack, and others —
+trigger a Panda build and drop the generated CSS into your stylesheet. The CSS still comes from the Rust engine; PostCSS
+is the delivery path, not the compiler.
+
+`autoprefixer` still has a place if you need vendor prefixes. Run it as a normal PostCSS step after Panda.
+
+## The generated runtime
+
+Panda generates a small runtime in your [`styled-system`](/docs/concepts/styled-system) folder — the `css`, `cva`,
+pattern, and JSX functions you import. They join your style objects into class name strings. They don't compute CSS or
+inject it. When you pre-render (RSC, Astro, or a bundler transform), static calls are replaced with their class names, so
+the runtime can drop out of your bundle entirely.
+
+## Known limitations
+
+**CSS minification is basic.** With `minify: true`, Panda's emitter strips whitespace and merges adjacent rules that
+share a declaration block. It doesn't yet do full CSS-aware minification — value folding, shorthand collapsing, or
+vendor prefixing. If you need that, run a dedicated minifier after Panda. Deeper optimization is a planned follow-up.

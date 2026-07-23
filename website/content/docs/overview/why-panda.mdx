@@ -23,11 +23,9 @@ So, the question is, **is CSS-in-JS dead?** The answer is **no, but it needs to 
 Panda is a new CSS-in-JS engine that aims to solve the challenges of CSS-in-JS in the server-first era. It provides
 styling primitives to create, organize, and manage CSS styles in a type-safe and readable manner.
 
-- **Static Analysis:** Panda uses static analysis to parse and analyze your styles at build time, and generate CSS files
-  that can be used in any JavaScript framework.
-
-- **PostCSS:** After static analysis, Panda uses a set of PostCSS plugins to convert the parsed data to atomic css at
-  build time. **This makes Panda compatible with any framework that supports PostCSS.**
+- **Build-time extraction:** Panda parses your source with a Rust and Oxc engine, reads the styles you use, and
+  generates atomic CSS — one parse per file, no styles computed in the browser. See
+  [how Panda works](/docs/overview/how-panda-works) for the full pipeline.
 
 - **Codegen:** Panda generates a lightweight runtime JS code that is used to author styles. **Think of it as an
   optimized function that joins key-value pairs of an object**. It doesn't generate styles in the browser nor inject
