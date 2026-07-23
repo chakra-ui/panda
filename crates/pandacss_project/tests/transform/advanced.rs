@@ -121,6 +121,162 @@ advanced_snapshot!(
 );
 
 advanced_snapshot!(
+    static_property_after_conditional_spread_wins_and_condition_still_runs,
+    {
+        let source = indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({ ...(recordAccess() ? { padding: '1' } : { padding: '2' }), padding: '0' });
+        "#};
+        transform("src/styles.tsx", source)
+    },
+    @r#"export const cls = recordAccess() ? "padding_0" : "padding_0";"#
+);
+
+advanced_snapshot!(
+    static_property_after_logical_spread_wins_and_condition_still_runs,
+    {
+        let source = indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({ ...(recordAccess() && { padding: '1' }), padding: '0' });
+        "#};
+        transform("src/styles.tsx", source)
+    },
+    @r#"export const cls = recordAccess() ? "padding_0" : "padding_0";"#
+);
+
+advanced_snapshot!(
+    interleaved_conditional_sites_keep_source_evaluation_order,
+    {
+        let source = indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({
+              color: first() ? 'red' : 'blue',
+              ...(second() ? { padding: '1' } : { padding: '2' }),
+            });
+        "#};
+        transform("src/styles.tsx", source)
+    },
+    @r#"export const cls = (first() ? "color_red" : "color_blue") + " " + (second() ? "padding_1" : "padding_2");"#
+);
+
+#[test]
+fn dynamic_property_after_conditional_spread_bails() {
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        export const cls = css({ ...(cond ? { padding: '1' } : { padding: '2' }), padding: getPadding() });
+    "#};
+    let output = transform("src/styles.tsx", source);
+
+    assert!(!output.changed);
+    assert!(output.bailed);
+    assert_eq!(output.code, source);
+}
+
+#[test]
+fn dynamic_property_before_static_duplicate_still_bails() {
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        export const cls = css({ padding: getPadding(), ...(cond ? { color: 'red' } : { color: 'blue' }), padding: '0' });
+    "#};
+    let output = transform("src/styles.tsx", source);
+
+    assert!(!output.changed);
+    assert!(output.bailed);
+    assert_eq!(output.code, source);
+}
+
+#[test]
+fn overlapping_conditional_spreads_bail() {
+    for source in [
+        "import { css } from '@panda/css';\nexport const cls = css({ ...(a ? { color: 'red' } : { color: 'blue' }), ...(b ? { color: 'green' } : { color: 'yellow' }) });\n",
+        "import { css } from '@panda/css';\nexport const cls = css({ ...(a ? { color: 'red' } : { color: 'blue' }), ...(b && { color: 'green' }) });\n",
+        "import { css } from '@panda/css';\nexport const cls = css({ _hover: { ...(a ? { color: 'red' } : { color: 'blue' }), ...(b ? { color: 'green' } : { color: 'yellow' }) } });\n",
+        "import { css } from '@panda/css';\nexport const cls = css({ color: a ? 'red' : 'blue', ...(b ? { color: 'green' } : { color: 'yellow' }) });\n",
+        "import { css } from '@panda/css';\nexport const cls = css({ _hover: { color: a ? 'red' : 'blue' }, ...(b ? { _hover: { padding: '1' } } : {}) });\n",
+    ] {
+        let output = transform("src/styles.tsx", source);
+        assert!(!output.changed, "{}", output.code);
+        assert!(output.bailed);
+        assert_eq!(output.code, source);
+    }
+}
+
+advanced_snapshot!(
+    disjoint_conditional_spreads_still_lower,
+    {
+        let source = indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({ ...(a ? { color: 'red' } : { color: 'blue' }), ...(b && { padding: '1' }) });
+        "#};
+        transform("src/styles.tsx", source)
+    },
+    @r#"export const cls = (a ? "color_red" : "color_blue") + " " + (b ? "padding_1" : "");"#
+);
+
+advanced_snapshot!(
+    disjoint_conditional_spreads_remove_overridden_base_values,
+    {
+        let source = indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({
+              marginTop: '1',
+              color: 'green',
+              ...(a ? { color: 'red' } : { color: 'blue' }),
+              ...(b ? { padding: '1' } : { padding: '2' }),
+            });
+        "#};
+        transform("src/styles.tsx", source)
+    },
+    @r#"export const cls = (a ? "color_red margin-top_1" : "color_blue margin-top_1") + " " + (b ? "margin-top_1 padding_1" : "margin-top_1 padding_2");"#
+);
+
+#[test]
+fn opaque_object_members_keep_conditional_calls_unchanged() {
+    for source in [
+        "import { css } from '@panda/css';\nexport const cls = css({ ...getStyles(), ...(cond ? { color: 'red' } : { color: 'blue' }) });\n",
+        "import { css } from '@panda/css';\nexport const cls = css({ [recordKey()]: 'value', ...(cond ? { color: 'red' } : { color: 'blue' }) });\n",
+    ] {
+        let output = transform("src/styles.tsx", source);
+        assert!(!output.changed, "{}", output.code);
+        assert!(output.bailed);
+        assert_eq!(output.code, source);
+    }
+}
+
+#[test]
+fn statically_selected_spread_arm_keeps_nested_opaque_spreads() {
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        export const cls = css({
+          ...(true ? { ...getStyles(), ...(cond ? { color: 'red' } : { color: 'blue' }) } : {}),
+        });
+    "#};
+    let output = transform("src/styles.tsx", source);
+    assert!(!output.changed);
+    assert!(output.bailed);
+    assert_snapshot!(output.code, @r#"
+import { css } from '@panda/css';
+export const cls = css({
+  ...(true ? { ...getStyles(), ...(cond ? { color: 'red' } : { color: 'blue' }) } : {}),
+});
+"#);
+}
+
+advanced_snapshot!(
+    statically_selected_spread_arm_lowers_nested_conditional_spread,
+    {
+        let source = indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({
+              ...(true ? { padding: '1', ...(cond ? { color: 'red' } : { color: 'blue' }) } : {}),
+            });
+        "#};
+        transform("src/styles.tsx", source)
+    },
+    @r#"export const cls = cond ? "color_red padding_1" : "color_blue padding_1";"#
+);
+
+advanced_snapshot!(
     ternary_spread_distinct_keys_merge_both_branches,
     {
         let source = indoc! {r#"
@@ -463,15 +619,22 @@ fn logical_nullish_spread_with_dynamic_left_bails() {
     assert!(output.bailed);
 }
 
-// --- still skips unresolved identifier spreads ---
+// --- opaque spreads stay in source ---
 
-advanced_snapshot!(dynamic_identifier_spread_stays_unchanged, unchanged, {
+#[test]
+fn dynamic_identifier_spread_stays_unchanged() {
     let source = indoc! {r#"
-            import { css } from '@panda/css';
-            export const cls = css({ ...styles, color: 'red' });
-        "#};
-    transform("src/styles.tsx", source)
-});
+        import { css } from '@panda/css';
+        export const cls = css({ ...styles, color: 'red' });
+    "#};
+    let output = transform("src/styles.tsx", source);
+    assert!(!output.changed);
+    assert!(output.bailed);
+    assert_snapshot!(output.code, @r#"
+import { css } from '@panda/css';
+export const cls = css({ ...styles, color: 'red' });
+"#);
+}
 
 advanced_snapshot!(
     deeply_nested_hover_dark_conditional_css_emits_both_branches,

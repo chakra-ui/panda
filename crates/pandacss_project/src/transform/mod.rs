@@ -22,7 +22,7 @@ mod recipe_inline;
 mod resolve;
 mod style_lower;
 
-use pandacss_extractor::extract;
+use pandacss_extractor::extract_for_transform;
 
 use crate::ParseTransforms;
 use crate::Project;
@@ -82,7 +82,7 @@ impl Project {
             None => source,
         };
 
-        let extracted = extract(source, path, self.config().extractor_config());
+        let extracted = extract_for_transform(source, path, self.config().extractor_config());
         let plan = plan::build_plan(self, source, &extracted, options, transforms.pattern);
         let diagnostics = extracted.diagnostics;
 

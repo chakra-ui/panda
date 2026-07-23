@@ -263,10 +263,7 @@ describe('compiler.transformSource: jsx', () => {
     const source = lines("import { Box } from '@panda/jsx'", 'export const el = <Box color="red">{"</Box>"}</Box>')
 
     const result = styledJsxCompiler.transformSource({ path: 'src/app.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`
-      "import { Box } from '@panda/jsx'
-      export const el = <div className="color_red">{"</Box>"}</div>"
-    `)
+    expect(result.code).toMatchInlineSnapshot(`"export const el = <div className="color_red">{"</Box>"}</div>"`)
   })
 
   // --- className merging ---

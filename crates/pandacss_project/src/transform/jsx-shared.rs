@@ -64,19 +64,20 @@ pub(super) fn plan_opening_class_name(
         ) {
             LowerResult::Expr(expr) => {
                 let expression = style_lower::print_class_expr(&expr);
-                Some(merge_class_name_with_expression(
+                let mut print = merge_class_name_with_expression(
                     class_attr,
                     helper_cx,
-                    parsed.static_class_name(class_attr).as_deref(),
-                    parsed.dynamic_class_name_expression(class_attr).as_deref(),
+                    parsed.existing_class_name(class_attr),
                     &expression,
-                ))
+                    matches!(expr, style_lower::ClassExpr::Ternary { .. }),
+                );
+                print.ternary = top_level_ternary(&expr).filter(|_| print.expression == expression);
+                Some(print)
             }
             LowerResult::Static(classes) => Some(merge_class_name_fragments(
                 class_attr,
                 helper_cx,
-                parsed.static_class_name(class_attr).as_deref(),
-                parsed.dynamic_class_name_expression(class_attr).as_deref(),
+                parsed.existing_class_name(class_attr),
                 &classes,
             )),
             LowerResult::Bail => None,
@@ -87,8 +88,7 @@ pub(super) fn plan_opening_class_name(
     Some(merge_class_name_fragments(
         class_attr,
         helper_cx,
-        parsed.static_class_name(class_attr).as_deref(),
-        parsed.dynamic_class_name_expression(class_attr).as_deref(),
+        parsed.existing_class_name(class_attr),
         &classes.join(" "),
     ))
 }
@@ -114,15 +114,18 @@ pub(super) fn plan_runtime_class_name(
         ) {
             LowerResult::Expr(expr) => {
                 let expression = style_lower::print_class_expr(&expr);
-                let print = merge_class_name_with_expression(
+                let mut print = merge_class_name_with_expression(
                     class_attr,
                     helper_cx,
-                    parsed.static_class_name(class_attr).as_deref(),
-                    parsed.dynamic_class_name_expression(class_attr).as_deref(),
+                    parsed.existing_class_name(class_attr),
                     &expression,
+                    matches!(expr, style_lower::ClassExpr::Ternary { .. }),
                 );
+                print.ternary = top_level_ternary(&expr).filter(|_| print.expression == expression);
                 Some(ClassNamePrint {
                     attribute: format_object_class_name(class_attr, &print),
+                    expression: print.expression,
+                    ternary: print.ternary,
                     needs_cx: print.needs_cx,
                 })
             }
@@ -130,12 +133,13 @@ pub(super) fn plan_runtime_class_name(
                 let print = merge_class_name_fragments(
                     class_attr,
                     helper_cx,
-                    parsed.static_class_name(class_attr).as_deref(),
-                    parsed.dynamic_class_name_expression(class_attr).as_deref(),
+                    parsed.existing_class_name(class_attr),
                     &classes,
                 );
                 Some(ClassNamePrint {
                     attribute: format_object_class_name(class_attr, &print),
+                    expression: print.expression,
+                    ternary: print.ternary,
                     needs_cx: print.needs_cx,
                 })
             }
@@ -147,13 +151,25 @@ pub(super) fn plan_runtime_class_name(
     let print = merge_class_name_fragments(
         class_attr,
         helper_cx,
-        parsed.static_class_name(class_attr).as_deref(),
-        parsed.dynamic_class_name_expression(class_attr).as_deref(),
+        parsed.existing_class_name(class_attr),
         &classes.join(" "),
     );
     Some(ClassNamePrint {
         attribute: format_object_class_name(class_attr, &print),
+        expression: print.expression,
+        ternary: print.ternary,
         needs_cx: print.needs_cx,
+    })
+}
+
+fn top_level_ternary(expr: &style_lower::ClassExpr) -> Option<super::helper::ClassNameTernary> {
+    let style_lower::ClassExpr::Ternary { test, yes, no } = expr else {
+        return None;
+    };
+    Some(super::helper::ClassNameTernary {
+        condition: test.clone(),
+        consequent: style_lower::print_class_expr(yes),
+        alternate: style_lower::print_class_expr(no),
     })
 }
 
@@ -178,27 +194,16 @@ impl ElementTag {
     }
 }
 
-pub(super) fn is_simple_identifier(expression: &str) -> bool {
-    let expression = expression.trim();
-    let mut chars = expression.chars();
-    let Some(first) = chars.next() else {
-        return false;
-    };
-    if !(first == '_' || first.is_ascii_alphabetic()) {
-        return false;
-    }
-    chars.all(|ch| ch == '_' || ch.is_ascii_alphanumeric())
-}
-
 pub(super) fn parse_as_attribute(attr: &ParsedAttribute) -> Option<ElementTag> {
     if attr.name.as_deref() != Some("as") {
         return None;
     }
     if let Some(value) = attr.static_string_value() {
-        return Some(ElementTag::Intrinsic(value));
+        return Some(ElementTag::Intrinsic(value.to_owned()));
     }
-    let expr = attr.braced_expression_value()?;
-    is_simple_identifier(&expr).then_some(ElementTag::Component(expr))
+    let expression = attr.expression.as_ref()?;
+    (expression.facts.kind == pandacss_extractor::ExpressionKind::Identifier)
+        .then(|| ElementTag::Component(expression.source.clone()))
 }
 
 pub(super) fn parse_as_property(prop: &ParsedProperty) -> Option<ElementTag> {
@@ -206,13 +211,12 @@ pub(super) fn parse_as_property(prop: &ParsedProperty) -> Option<ElementTag> {
         return None;
     }
     if let Some(value) = prop.static_string_value() {
-        return Some(ElementTag::Intrinsic(value));
+        return Some(ElementTag::Intrinsic(value.to_owned()));
     }
     if let Some(ident) = prop.static_identifier_value() {
-        return Some(ElementTag::Component(ident));
+        return Some(ElementTag::Component(ident.to_owned()));
     }
-    let expr = prop.braced_expression_value()?;
-    is_simple_identifier(&expr).then_some(ElementTag::Component(expr))
+    None
 }
 
 pub(super) fn resolve_element_tag(
@@ -248,12 +252,10 @@ pub(super) fn resolve_element_tag(
         }
     }
 
-    if jsx.kind == JsxKind::Factory && jsx.name.contains('.') {
-        return jsx
-            .name
-            .rsplit('.')
-            .next()
-            .map(|segment| ElementTag::Intrinsic(segment.to_owned()));
+    if jsx.kind == JsxKind::Factory
+        && let Some(intrinsic) = &jsx.source.factory_intrinsic
+    {
+        return Some(ElementTag::Intrinsic(intrinsic.clone()));
     }
 
     Some(ElementTag::Intrinsic("div".to_owned()))

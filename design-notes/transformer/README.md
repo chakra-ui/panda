@@ -60,7 +60,7 @@ Related notes:
 - [Compiler lifecycle](../compiler-lifecycle.md)
 - [Output & host layer (Driver)](../output-and-host-layer.md)
 - [Extraction pipeline](../extraction-pipeline.md)
-- [StyleTree](../style-tree.md) — span-backed extract IR for conditional class lowering (dual-read with source parse)
+- [StyleTree](../style-tree.md) — span-backed extract IR for conditional class lowering
 - [Prototype logic](./prototype-logic.md)
 
 ## Problem
@@ -213,6 +213,12 @@ This should reuse the compiler's existing source of truth, not build a second pa
 The first implementation should lean on the compiler inspection boundary we already have instead of re-parsing in a JS
 package. In practice that means extending the compiler boundary with a transform-facing entry point or reusing
 `inspectFileSource(path, source)` plus resolved config metadata from the existing host pipeline.
+
+The current Rust implementation carries transform-only module, call, JSX, property, and expression facts beside the
+serialized extraction result. They are compact owned records backed by original-source spans, not cloned AST nodes.
+Planning uses those facts for call shape, precedence, static keys, import liveness, and helper placement. Source slicing
+is reserved for copying text at an Oxc-provided span. Only `extract_for_transform` retains this payload; normal
+extraction avoids the extra allocations.
 
 ### Phase 2: plan
 

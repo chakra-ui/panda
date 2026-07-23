@@ -221,3 +221,16 @@ fn escapes_class_names_containing_quotes() {
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"export const cls = "content_\"x\"";"#);
 }
+
+#[test]
+fn raw_member_text_inside_a_value_does_not_change_call_classification() {
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        export const cls = css({ content: '.raw(' });
+    "#};
+
+    let output = transform("src/styles.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const cls = "content_.raw(";"#);
+}

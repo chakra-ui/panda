@@ -27,6 +27,9 @@ pub(crate) fn rewrite_for_cva_call(
         start: span.start,
         end: span.end,
         content: format!("{CVA_HELPER_LOCAL}({encoded})"),
+        preserved: style
+            .map(style_lower::preserved_source_spans)
+            .unwrap_or_default(),
     })
 }
 
@@ -44,6 +47,7 @@ pub(crate) fn rewrite_for_sva_call(
         start: span.start,
         end: span.end,
         content: format!("{SVA_HELPER_LOCAL}({encoded})"),
+        preserved: Vec::new(),
     })
 }
 
@@ -439,6 +443,9 @@ pub(crate) fn rewrite_styled_config_arg(
         start: arg.start,
         end: arg.end,
         content,
+        preserved: style
+            .map(style_lower::preserved_source_spans)
+            .unwrap_or_default(),
     })
 }
 
@@ -471,23 +478,26 @@ pub(crate) fn rewrite_for_styled_call(
 }
 
 fn is_jsx_factory_call(call: &pandacss_extractor::ExtractedCall) -> bool {
-    call.name == call.alias || call.name.starts_with(&format!("{}.", call.alias))
+    matches!(
+        call.facts.callee_kind,
+        pandacss_extractor::CallCalleeKind::Direct
+            | pandacss_extractor::CallCalleeKind::StaticMember
+    )
 }
 
 fn styled_config_arg(call: &pandacss_extractor::ExtractedCall) -> Option<(usize, &Literal)> {
-    if call.name == call.alias {
-        let tag = call.data.first().and_then(|arg| arg.as_ref())?;
-        if !matches!(tag, Literal::String(_)) {
-            return None;
+    match call.facts.callee_kind {
+        pandacss_extractor::CallCalleeKind::Direct => {
+            let tag = call.data.first().and_then(|arg| arg.as_ref())?;
+            if !matches!(tag, Literal::String(_)) {
+                return None;
+            }
+            let config = call.data.get(1).and_then(|arg| arg.as_ref())?;
+            Some((1, config))
         }
-        let config = call.data.get(1).and_then(|arg| arg.as_ref())?;
-        return Some((1, config));
+        pandacss_extractor::CallCalleeKind::StaticMember => {
+            let config = call.data.first().and_then(|arg| arg.as_ref())?;
+            Some((0, config))
+        }
     }
-
-    if call.name.starts_with(&format!("{}.", call.alias)) {
-        let config = call.data.first().and_then(|arg| arg.as_ref())?;
-        return Some((0, config));
-    }
-
-    None
 }

@@ -49,10 +49,7 @@ fn default_targets_enable_recipe_transforms() {
     let output = transform_with_project(&project_with_recipes(), "src/button.tsx", source);
 
     assert!(output.changed);
-    assert_snapshot!(output.code, @r#"
-    import { button } from '@panda/recipes';
-    export const cls = "button button--size_sm";
-    "#);
+    assert_snapshot!(output.code, @r#"export const cls = "button button--size_sm";"#);
 }
 
 #[test]

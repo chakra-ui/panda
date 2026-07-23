@@ -46,27 +46,28 @@ pub(crate) fn build_transform_edits(
         });
     }
 
-    let projected = project_rewrites(source, &rewrites);
-
-    if !plan.bailed {
+    if !plan.bailed && plan.module.symbols_resolved {
         edits.extend(imports::plan_panda_import_edits(
             project,
             path,
             source,
-            projected.as_str(),
+            &plan.module,
+            &rewrites,
         ));
     }
 
-    edits.extend(imports::plan_internal_css_import_removals(source, path));
-
-    let analysis_source = imports::source_without_internal_css_import(projected.as_str(), path);
-    if let Some(content) =
-        helper::plan_internal_css_import_line(&analysis_source, &plan.helper, helper_cx)
-    {
-        edits.push(Edit::Insert {
-            at: imports::internal_css_import_insertion_point(source, path),
-            content,
-        });
+    if plan.module.symbols_resolved || helper_facts_required(&plan.helper) {
+        edits.extend(imports::plan_internal_css_import_removals(
+            source,
+            &plan.module,
+        ));
+        let helper = helper_facts_with_live_references(&plan.helper, &plan.module, &rewrites);
+        if let Some(content) = helper::plan_internal_css_import_line(&helper, helper_cx) {
+            edits.push(Edit::Insert {
+                at: imports::internal_css_import_insertion_point(&plan.module),
+                content: separated_import(source, &plan.module, content),
+            });
+        }
     }
 
     edits
@@ -139,30 +140,9 @@ pub(crate) fn apply_edits(source: &str, path: &str, edits: &[Edit]) -> (String, 
     (code, Some(map))
 }
 
-/// Project rewrites onto a copy of `source` for post-transform binding analysis.
-#[must_use]
-pub(crate) fn project_rewrites(source: &str, rewrites: &[Rewrite]) -> String {
-    if rewrites.is_empty() {
-        return source.to_owned();
-    }
-
-    let mut ordered = rewrites.to_vec();
-    ordered.sort_by(|left, right| right.start.cmp(&left.start));
-
-    let mut out = source.to_owned();
-    for rewrite in ordered {
-        let start = usize::try_from(rewrite.start).unwrap_or(out.len());
-        let end = usize::try_from(rewrite.end).unwrap_or(out.len());
-        if start > end || end > out.len() {
-            continue;
-        }
-        out.replace_range(start..end, &rewrite.content);
-    }
-    out
-}
-
 /// Project edits onto a copy of `source` (no source map).
 #[must_use]
+#[cfg(test)]
 pub(crate) fn project_edits(source: &str, edits: &[Edit]) -> String {
     apply_edits(source, "project.ts", edits).0
 }
@@ -175,13 +155,209 @@ pub(crate) fn apply_helper_sync(
     helper: &super::plan::TransformHelperFacts,
     helper_cx: HelperCxMode,
 ) -> String {
-    let mut edits = imports::plan_internal_css_import_removals(source, path);
-    let analysis = imports::source_without_internal_css_import(source, path);
-    if let Some(content) = helper::plan_internal_css_import_line(&analysis, helper, helper_cx) {
+    let module = pandacss_extractor::analyze_module(source, path);
+    let mut edits = imports::plan_internal_css_import_removals(source, &module);
+    let helper = helper_facts_with_live_references(helper, &module, &[]);
+    if let Some(content) = helper::plan_internal_css_import_line(&helper, helper_cx) {
         edits.push(Edit::Insert {
-            at: imports::internal_css_import_insertion_point(source, path),
-            content,
+            at: imports::internal_css_import_insertion_point(&module),
+            content: separated_import(source, &module, content),
         });
     }
     apply_edits(source, path, &edits).0
+}
+
+fn helper_facts_required(helper: &super::plan::TransformHelperFacts) -> bool {
+    helper.needs_cx || helper.needs_cva || helper.needs_sva
+}
+
+fn helper_facts_with_live_references(
+    helper: &super::plan::TransformHelperFacts,
+    module: &pandacss_extractor::ModuleFacts,
+    rewrites: &[Rewrite],
+) -> super::plan::TransformHelperFacts {
+    if !module.symbols_resolved {
+        return helper.clone();
+    }
+
+    super::plan::TransformHelperFacts {
+        needs_cx: helper.needs_cx
+            || imports::binding_has_live_reference(module, helper::CX_HELPER_LOCAL, rewrites),
+        needs_cva: helper.needs_cva
+            || imports::binding_has_live_reference(module, helper::CVA_HELPER_LOCAL, rewrites),
+        needs_sva: helper.needs_sva
+            || imports::binding_has_live_reference(module, helper::SVA_HELPER_LOCAL, rewrites),
+    }
+}
+
+fn separated_import(
+    source: &str,
+    module: &pandacss_extractor::ModuleFacts,
+    content: String,
+) -> String {
+    let at = usize::try_from(imports::internal_css_import_insertion_point(module))
+        .unwrap_or(source.len())
+        .min(source.len());
+    if at == 0
+        || source
+            .get(..at)
+            .is_some_and(|prefix| prefix.ends_with([';', '\n', '\r']))
+    {
+        content
+    } else {
+        format!("\n{content}")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use pandacss_extractor::{
+        ImportBindingFacts, ImportKind, ImportRecord, ImportSpecifier, ImportSpecifierKind,
+        ModuleFacts,
+    };
+    use pandacss_shared::Span;
+    use serde_json::json;
+
+    use super::*;
+    use crate::{Project, System, TransformHelperFacts};
+
+    fn test_project() -> Project {
+        let config: pandacss_config::UserConfig = serde_json::from_value(json!({
+            "outdir": "styled-system",
+            "importMap": {
+                "css": ["@panda/css"],
+                "recipe": ["@panda/recipes"],
+                "pattern": ["@panda/patterns"],
+                "jsx": ["@panda/jsx"],
+                "tokens": ["@panda/tokens"]
+            }
+        }))
+        .expect("config");
+        Project::new(System::new(config).expect("system"))
+    }
+
+    fn css_import_record() -> ImportRecord {
+        ImportRecord {
+            module: "@panda/css".to_owned(),
+            kind: ImportKind::Value,
+            type_only: false,
+            specifiers: vec![ImportSpecifier {
+                kind: ImportSpecifierKind::Named,
+                imported: "css".to_owned(),
+                local: "css".to_owned(),
+                type_only: false,
+                span: Span { start: 9, end: 12 },
+            }],
+            span: Span { start: 0, end: 32 },
+        }
+    }
+
+    #[test]
+    fn unresolved_symbols_skip_dead_import_cleanup_even_when_rewrites_cover_refs() {
+        let project = test_project();
+        let source =
+            "import { css } from '@panda/css';\nexport const cls = css({ color: 'red' });\n";
+        let call_span = Span { start: 51, end: 72 };
+        let plan = TransformPlan {
+            rewrites: vec![Rewrite {
+                start: call_span.start,
+                end: call_span.end,
+                content: "\"color_red\"".to_owned(),
+                preserved: Vec::new(),
+            }],
+            dependencies: Vec::new(),
+            helper: TransformHelperFacts::default(),
+            module: ModuleFacts {
+                imports: vec![css_import_record()],
+                import_bindings: vec![ImportBindingFacts {
+                    local: "css".to_owned(),
+                    references: vec![Span {
+                        start: call_span.start,
+                        end: call_span.start + 3,
+                    }],
+                }],
+                after_directives: 0,
+                symbols_resolved: false,
+            },
+            bailed: false,
+        };
+
+        let edits =
+            build_transform_edits(&project, "src/styles.ts", source, &plan, HelperCxMode::Auto);
+        let out = project_edits(source, &edits);
+
+        assert!(out.contains("import { css } from '@panda/css';"));
+        assert!(out.contains("\"color_red\""));
+    }
+
+    #[test]
+    fn unresolved_symbols_still_insert_helper_import_when_plan_requires_it() {
+        let project = test_project();
+        let source = "export const cls = \"color_red\";\n";
+        let plan = TransformPlan {
+            rewrites: Vec::new(),
+            dependencies: Vec::new(),
+            helper: TransformHelperFacts {
+                needs_cx: true,
+                needs_cva: false,
+                needs_sva: false,
+            },
+            module: ModuleFacts {
+                imports: Vec::new(),
+                import_bindings: Vec::new(),
+                after_directives: 0,
+                symbols_resolved: false,
+            },
+            bailed: false,
+        };
+
+        let edits =
+            build_transform_edits(&project, "src/styles.ts", source, &plan, HelperCxMode::Auto);
+        let out = project_edits(source, &edits);
+
+        assert!(out.contains("import { cx as __pcx } from '@pandacss-internal/css';"));
+    }
+
+    #[test]
+    fn unresolved_symbols_do_not_infer_helper_demand_from_live_references() {
+        let project = test_project();
+        let source = concat!(
+            "import { cx as __pcx } from '@pandacss-internal/css';\n",
+            "export const cls = __pcx('a', 'b');\n",
+        );
+        let plan = TransformPlan {
+            rewrites: Vec::new(),
+            dependencies: Vec::new(),
+            helper: TransformHelperFacts::default(),
+            module: ModuleFacts {
+                imports: vec![ImportRecord {
+                    module: helper::INTERNAL_CSS_MODULE.to_owned(),
+                    kind: ImportKind::Value,
+                    type_only: false,
+                    specifiers: vec![ImportSpecifier {
+                        kind: ImportSpecifierKind::Named,
+                        imported: "cx".to_owned(),
+                        local: helper::CX_HELPER_LOCAL.to_owned(),
+                        type_only: false,
+                        span: Span { start: 9, end: 20 },
+                    }],
+                    span: Span { start: 0, end: 52 },
+                }],
+                import_bindings: vec![ImportBindingFacts {
+                    local: helper::CX_HELPER_LOCAL.to_owned(),
+                    references: vec![Span { start: 72, end: 77 }],
+                }],
+                after_directives: 0,
+                symbols_resolved: false,
+            },
+            bailed: false,
+        };
+
+        let edits =
+            build_transform_edits(&project, "src/styles.ts", source, &plan, HelperCxMode::Auto);
+
+        // Without resolved symbols and without plan helper demand, import sync is skipped
+        // entirely — including removal of the existing internal import.
+        assert!(edits.is_empty());
+    }
 }

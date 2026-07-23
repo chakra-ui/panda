@@ -25,6 +25,23 @@ fn removes_fully_inlined_css_import() {
 }
 
 #[test]
+fn string_and_comment_text_do_not_keep_an_inlined_import_live() {
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        export const label = 'css'; // css is only text here
+        export const cls = css({ color: 'red' });
+    "#};
+
+    let output = transform("src/styles.ts", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    export const label = 'css'; // css is only text here
+    export const cls = "color_red";
+    "#);
+}
+
+#[test]
 fn removes_fully_inlined_css_import_from_relative_styled_system_path() {
     // A design-system build imports the generated runtime by relative path.
     // Cleanup must match it the way the extractor does (substring), or the dead
@@ -161,4 +178,19 @@ fn inject_cx_import_still_idempotent() {
     "#};
 
     assert_eq!(inject_cx_import(source), source);
+}
+
+#[test]
+fn leaves_imports_alone_when_transform_skips_symbol_resolution() {
+    // No jsxFramework → extract_for_transform skips visitor walks and sets
+    // symbols_resolved=false. Dead-import cleanup must not run on empty binding facts.
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box color="red" />;
+    "#};
+
+    let output = transform("src/app.tsx", source);
+
+    assert!(!output.changed);
+    assert_eq!(output.code, source);
 }

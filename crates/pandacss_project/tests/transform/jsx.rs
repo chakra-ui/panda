@@ -62,10 +62,7 @@ fn does_not_match_a_closing_tag_inside_a_string_child() {
     let output = transform_jsx("src/app.tsx", source);
 
     assert!(output.changed);
-    assert_snapshot!(output.code, @r#"
-    import { Box } from '@panda/jsx';
-    export const el = <div className="color_red">{"</Box>"}</div>;
-    "#);
+    assert_snapshot!(output.code, @r#"export const el = <div className="color_red">{"</Box>"}</div>;"#);
 }
 
 #[test]
@@ -717,6 +714,179 @@ fn rewrites_conditional_spread_on_jsx_element() {
 }
 
 #[test]
+fn static_object_spread_does_not_shift_conditional_jsx_spread() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box {...({ color: 'red' } as const)} {...(cond ? { padding: '1' } : { padding: '2' })} />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert!(!output.bailed);
+    assert_snapshot!(output.code, @r#"export const el = <div className={cond ? "color_red padding_1" : "color_red padding_2"} />;"#);
+}
+
+#[test]
+fn static_object_spread_does_not_shift_conditional_runtime_spread() {
+    let source = indoc! {r#"
+        import { jsx } from 'react/jsx-runtime';
+        import { Box } from '@panda/jsx';
+
+        export const el = jsx(Box, {
+          ...({ color: 'red' }),
+          ...(cond ? { padding: '1' } : { padding: '2' }),
+          children: 'hi',
+        });
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert!(!output.bailed);
+    assert_snapshot!(output.code, @r#"
+    import { jsx } from 'react/jsx-runtime';
+
+    export const el = jsx('div', { children: 'hi', className: cond ? "color_red padding_1" : "color_red padding_2" });
+    "#);
+}
+
+#[test]
+fn mixed_spreads_with_static_runtime_or_opaque_props_stay_unchanged() {
+    let source = indoc! {r#"
+        import { jsx } from 'react/jsx-runtime';
+        import { Box } from '@panda/jsx';
+
+        export const staticRuntime = <Box {...{ color: 'red', onClick: handle }} {...(cond ? { padding: '1' } : { padding: '2' })} />;
+        export const opaque = jsx(Box, { ...props, ...(cond ? { padding: '1' } : { padding: '2' }) });
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(!output.changed);
+    assert!(!output.bailed);
+    assert_snapshot!(output.code, @r#"
+    import { jsx } from 'react/jsx-runtime';
+    import { Box } from '@panda/jsx';
+
+    export const staticRuntime = <Box {...{ color: 'red', onClick: handle }} {...(cond ? { padding: '1' } : { padding: '2' })} />;
+    export const opaque = jsx(Box, { ...props, ...(cond ? { padding: '1' } : { padding: '2' }) });
+    "#);
+}
+
+#[test]
+fn conditional_jsx_spread_preserves_runtime_props_in_each_branch() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = (
+          <Box
+            data-before="kept"
+            {...(active
+              ? { id: 'on', 'aria-label': 'enabled', onClick: enable, color: 'red' }
+              : { id: 'off', 'aria-label': 'disabled', onClick: disable, color: 'blue' })}
+            title="after"
+          />
+        );
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert!(!output.bailed);
+    assert_snapshot!(output.code, @r#"
+    export const el = (
+      <div data-before="kept" {...(active ? { id: 'on', 'aria-label': 'enabled', onClick: enable, className: "color_red" } : { id: 'off', 'aria-label': 'disabled', onClick: disable, className: "color_blue" })} title="after" />
+    );
+    "#);
+}
+
+#[test]
+fn conditional_runtime_spread_preserves_runtime_props_in_each_branch() {
+    let source = indoc! {r#"
+        import { jsx } from 'react/jsx-runtime';
+        import { Box } from '@panda/jsx';
+
+        export const el = jsx(Box, {
+          'data-before': 'kept',
+          ...(active
+            ? { id: 'on', 'aria-label': 'enabled', onClick: enable, color: 'red' }
+            : { id: 'off', 'aria-label': 'disabled', onClick: disable, color: 'blue' }),
+          title: 'after',
+        });
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert!(!output.bailed);
+    assert_snapshot!(output.code, @r#"
+    import { jsx } from 'react/jsx-runtime';
+
+    export const el = jsx('div', { 'data-before': 'kept', ...(active ? { id: 'on', 'aria-label': 'enabled', onClick: enable, className: "color_red" } : { id: 'off', 'aria-label': 'disabled', onClick: disable, className: "color_blue" }), title: 'after' });
+    "#);
+}
+
+#[test]
+fn conditional_jsx_spread_preserves_runtime_prop_overrides() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const before = <Box id="before" color="green" {...(active ? { id: 'on', color: 'red' } : { id: 'off', color: 'blue' })} />;
+        export const after = <Box {...(active ? { id: 'on', color: 'red' } : { id: 'off', color: 'blue' })} id="after" color="green" />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    export const before = <div id="before" {...(active ? { id: 'on', className: "color_red" } : { id: 'off', className: "color_blue" })} />;
+    export const after = <div {...(active ? { id: 'on', className: "color_green" } : { id: 'off', className: "color_green" })} id="after" />;
+    "#);
+}
+
+#[test]
+fn style_only_jsx_spread_keeps_condition_evaluation_after_static_override() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box {...(recordAccess() ? { padding: '1' } : { padding: '2' })} padding="0" />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert!(!output.bailed);
+    assert_snapshot!(output.code, @r#"export const el = <div className={recordAccess() ? "padding_0" : "padding_0"} />;"#);
+}
+
+#[test]
+fn conditional_jsx_spread_with_dynamic_duplicate_style_prop_stays_unchanged() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box {...(active
+          ? { color: 'red', color: getColor(), id: 'on' }
+          : { color: 'blue', id: 'off' })} />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(!output.changed);
+    assert!(!output.bailed);
+    assert_eq!(output.code, source);
+}
+
+#[test]
+fn direct_runtime_jsx_props_are_preserved_during_style_lowering() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box color="red" ref={ref} key="item" children="child" />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const el = <div ref={ref} key="item" children="child" className="color_red" />;"#);
+}
+
+#[test]
 fn skips_complex_as_ternary_on_styled_element() {
     let source = indoc! {r#"
         import { styled } from '@panda/jsx';
@@ -940,6 +1110,63 @@ fn rewrites_jsx_runtime_call_solid() {
 }
 
 #[test]
+fn runtime_call_with_a_computed_property_stays_unchanged() {
+    let source = indoc! {r#"
+        import { jsx } from 'react/jsx-runtime';
+        import { Box } from '@panda/jsx';
+        export const el = jsx(Box, { color: 'red', [runtimeKey]: value });
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(!output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { jsx } from 'react/jsx-runtime';
+    import { Box } from '@panda/jsx';
+    export const el = jsx(Box, { color: 'red', [runtimeKey]: value });
+    "#);
+}
+
+#[test]
+fn similarly_named_class_helper_does_not_block_a_rewrite() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box className={notclsx(value)} color="red" />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const el = <div className={notclsx(value) + " color_red"} />;"#);
+}
+
+#[test]
+fn helper_text_inside_a_string_class_does_not_block_a_rewrite() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box className={'clsx('} color="red" />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const el = <div className={'clsx(' + " color_red"} />;"#);
+}
+
+#[test]
+fn dollar_prefixed_as_identifier_is_preserved_as_a_component() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box as={$Component} color="red" />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const el = <$Component className="color_red" />;"#);
+}
+
+#[test]
 fn rewrites_box_to_intrinsic_with_class_name_qwik() {
     let source = indoc! {r#"
         import { Box } from '@panda/jsx';
@@ -989,6 +1216,25 @@ fn merges_resolved_class_into_qwik_mixed_array_expression() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"export const el = <div class={[styles.container, 'p-8', flag ? 'a' : 'b', { active: true }, "color_red"]} />;"#);
+}
+
+#[test]
+fn merges_qwik_class_collections_from_oxc_spans() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const withTrailingComma = <Box class={([styles.container,] as const)} color="red" />;
+        export const empty = <Box class={([] as const)} color="blue" />;
+        export const record = <Box class={({ active: true } as const)} color="green" />;
+    "#};
+
+    let output = transform_jsx_qwik("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    export const withTrailingComma = <div class={([styles.container, "color_red",] as const)} />;
+    export const empty = <div class={(["color_blue"] as const)} />;
+    export const record = <div class={[({ active: true } as const), "color_green"]} />;
+    "#);
 }
 
 #[test]

@@ -642,7 +642,7 @@ describe('compiler.transformSource: css', () => {
     expect({ changed: result.changed, bailed: result.bailed, code: result.code }).toMatchInlineSnapshot(`
       {
         "changed": false,
-        "bailed": false,
+        "bailed": true,
         "code": "import { css } from '@panda/css'
       export const cls = css({ _hover: { _dark: { color: 'red', margin: props.m } } })",
       }

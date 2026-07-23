@@ -2,12 +2,13 @@
 
 use crate::Project;
 use pandacss_extractor::{
-    ImportKind, ImportRecord, ImportSpecifier, ImportSpecifierKind, scan_imports,
+    ImportKind, ImportRecord, ImportSpecifier, ImportSpecifierKind, ModuleFacts,
 };
 use pandacss_shared::Span;
 
 use super::apply::Edit;
 use super::helper::INTERNAL_CSS_MODULE;
+use super::plan::Rewrite;
 
 /// Plan remove/narrow edits for Panda imports whose bindings are unused in `usage_source`.
 #[must_use]
@@ -15,7 +16,8 @@ pub(crate) fn plan_panda_import_edits(
     project: &Project,
     path: &str,
     source: &str,
-    usage_source: &str,
+    module: &ModuleFacts,
+    rewrites: &[Rewrite],
 ) -> Vec<Edit> {
     let config = project.config().extractor_config();
     let matchers = &config.matchers;
@@ -23,11 +25,10 @@ pub(crate) fn plan_panda_import_edits(
         return Vec::new();
     }
 
-    let scan = scan_imports(source, path);
     let file_path = std::path::Path::new(path);
     let mut edits = Vec::new();
 
-    for record in &scan.imports {
+    for record in &module.imports {
         if record.type_only {
             continue;
         }
@@ -42,7 +43,7 @@ pub(crate) fn plan_panda_import_edits(
             continue;
         }
         if let ImportKind::Value = record.kind
-            && let Some(edit) = plan_import_edit(source, usage_source, record)
+            && let Some(edit) = plan_import_edit(source, module, rewrites, record)
         {
             edits.push(edit);
         }
@@ -53,28 +54,20 @@ pub(crate) fn plan_panda_import_edits(
 
 /// Plan removal of any existing `@pandacss-internal/css` import lines.
 #[must_use]
-pub(crate) fn plan_internal_css_import_removals(source: &str, path: &str) -> Vec<Edit> {
-    let scan = scan_imports(source, path);
-    scan.imports
-        .into_iter()
+pub(crate) fn plan_internal_css_import_removals(source: &str, module: &ModuleFacts) -> Vec<Edit> {
+    module
+        .imports
+        .iter()
         .filter(|record| record.module == INTERNAL_CSS_MODULE)
         .map(|record| import_line_remove(source, record.span))
         .collect()
 }
 
-/// Strip internal css imports from `source` for helper binding analysis.
-#[must_use]
-pub(crate) fn source_without_internal_css_import(source: &str, path: &str) -> String {
-    let edits = plan_internal_css_import_removals(source, path);
-    super::apply::project_edits(source, &edits)
-}
-
 /// Insertion point for a helper value import: after shebang/directive prologue,
 /// before the first non-internal import when one exists.
 #[must_use]
-pub(crate) fn internal_css_import_insertion_point(source: &str, path: &str) -> u32 {
-    let scan = scan_imports(source, path);
-    if let Some(record) = scan
+pub(crate) fn internal_css_import_insertion_point(module: &ModuleFacts) -> u32 {
+    if let Some(record) = module
         .imports
         .iter()
         .find(|record| record.module != INTERNAL_CSS_MODULE)
@@ -82,15 +75,20 @@ pub(crate) fn internal_css_import_insertion_point(source: &str, path: &str) -> u
         return record.span.start;
     }
 
-    u32::try_from(directive_prologue_end(source)).unwrap_or(0)
+    module.after_directives
 }
 
-fn plan_import_edit(source: &str, usage_source: &str, record: &ImportRecord) -> Option<Edit> {
+fn plan_import_edit(
+    source: &str,
+    module: &ModuleFacts,
+    rewrites: &[Rewrite],
+    record: &ImportRecord,
+) -> Option<Edit> {
     let live_specifiers: Vec<&ImportSpecifier> = record
         .specifiers
         .iter()
         .filter(|specifier| {
-            specifier.type_only || local_binding_used(usage_source, &specifier.local, record.span)
+            specifier.type_only || !binding_was_consumed(module, &specifier.local, rewrites)
         })
         .collect();
 
@@ -181,183 +179,60 @@ fn format_named_specifier(specifier: &ImportSpecifier) -> String {
     }
 }
 
-pub(crate) fn local_binding_used(source: &str, local: &str, import_span: Span) -> bool {
-    if local.is_empty() {
+pub(crate) fn binding_has_live_reference(
+    module: &ModuleFacts,
+    local: &str,
+    rewrites: &[Rewrite],
+) -> bool {
+    if !module.symbols_resolved {
         return true;
     }
-
-    let skip_start = usize::try_from(import_span.start).unwrap_or(0);
-    let skip_end = usize::try_from(import_span.end)
-        .unwrap_or(source.len())
-        .min(source.len());
-    let local_len = local.len();
-    let bytes = source.as_bytes();
-    let local_bytes = local.as_bytes();
-    let mut index = 0usize;
-
-    // Byte comparison: `local` is an ASCII identifier, and slicing `source`
-    // directly panics when `index` lands inside a multibyte char.
-    while index + local_len <= bytes.len() {
-        if &bytes[index..index + local_len] != local_bytes {
-            index += 1;
-            continue;
-        }
-
-        let overlaps_import = index < skip_end && index + local_len > skip_start;
-        if !overlaps_import && identifier_boundary(source, index, index + local_len) {
-            return true;
-        }
-        index += 1;
-    }
-
-    false
+    module
+        .import_bindings
+        .iter()
+        .find(|binding| binding.local == local)
+        .is_some_and(|binding| {
+            binding.references.iter().any(|reference| {
+                rewrites.iter().all(|rewrite| {
+                    let covered = rewrite.start <= reference.start && rewrite.end >= reference.end;
+                    let preserved = rewrite
+                        .preserved
+                        .iter()
+                        .any(|span| span.start <= reference.start && span.end >= reference.end);
+                    !covered || preserved
+                })
+            })
+        })
 }
 
-fn identifier_boundary(source: &str, start: usize, end: usize) -> bool {
-    let before_ok = start == 0
-        || source
-            .get(..start)
-            .and_then(|prefix| prefix.chars().next_back())
-            .is_none_or(|ch| !is_identifier_part(ch));
-    let after_ok = end >= source.len()
-        || source
-            .get(end..)
-            .and_then(|suffix| suffix.chars().next())
-            .is_none_or(|ch| !is_identifier_part(ch));
-    before_ok && after_ok
-}
-
-fn is_identifier_part(ch: char) -> bool {
-    ch.is_ascii_alphanumeric() || ch == '_' || ch == '$'
-}
-
-fn directive_prologue_end(source: &str) -> usize {
-    let mut index = skip_bom_and_shebang(source);
-
-    loop {
-        let stmt_start = skip_whitespace_and_comments(source, index);
-        if stmt_start >= source.len() {
-            return index;
-        }
-
-        let Some(after_directive) = directive_statement_end(source, stmt_start) else {
-            return index;
-        };
-
-        index = after_directive;
+fn binding_was_consumed(module: &ModuleFacts, local: &str, rewrites: &[Rewrite]) -> bool {
+    if !module.symbols_resolved {
+        return false;
     }
-}
-
-fn skip_bom_and_shebang(source: &str) -> usize {
-    let mut index = source
-        .strip_prefix('\u{feff}')
-        .map_or(0, |rest| source.len() - rest.len());
-    if source
-        .get(index..)
-        .is_some_and(|rest| rest.starts_with("#!"))
-    {
-        index = source[index..]
-            .find('\n')
-            .map_or(source.len(), |offset| index + offset + 1);
-    }
-    index
-}
-
-fn skip_whitespace_and_comments(source: &str, mut index: usize) -> usize {
-    while index < source.len() {
-        let Some(rest) = source.get(index..) else {
-            break;
-        };
-
-        if rest.starts_with("//") {
-            index = rest
-                .find('\n')
-                .map_or(source.len(), |offset| index + offset + 1);
-            continue;
-        }
-        if rest.starts_with("/*") {
-            index = rest
-                .find("*/")
-                .map_or(source.len(), |offset| index + offset + 2);
-            continue;
-        }
-
-        let Some(ch) = rest.chars().next() else {
-            break;
-        };
-        if ch.is_whitespace() {
-            index += ch.len_utf8();
-            continue;
-        }
-
-        break;
-    }
-
-    index
-}
-
-fn directive_statement_end(source: &str, start: usize) -> Option<usize> {
-    let quote = source.get(start..)?.chars().next()?;
-    if quote != '"' && quote != '\'' {
-        return None;
-    }
-
-    let mut index = start + quote.len_utf8();
-    let mut escaped = false;
-    while index < source.len() {
-        let ch = source.get(index..)?.chars().next()?;
-        index += ch.len_utf8();
-
-        if escaped {
-            escaped = false;
-            continue;
-        }
-        if ch == '\\' {
-            escaped = true;
-            continue;
-        }
-        if ch == quote {
-            break;
-        }
-        if ch == '\n' || ch == '\r' {
-            return None;
-        }
-    }
-
-    let line_end = source
-        .get(index..)?
-        .find(['\n', '\r'])
-        .map_or(source.len(), |offset| index + offset);
-    let trailing = source.get(index..line_end)?.trim_start();
-    if !(trailing.is_empty()
-        || trailing == ";"
-        || trailing.starts_with("//")
-        || trailing.starts_with("; //")
-        || trailing.starts_with("/*")
-        || trailing.starts_with(";/*")
-        || trailing.starts_with("; /*"))
-    {
-        return None;
-    }
-
-    Some(line_terminator_end(source, line_end))
-}
-
-fn line_terminator_end(source: &str, line_end: usize) -> usize {
-    let Some(rest) = source.get(line_end..) else {
-        return line_end;
-    };
-    if rest.starts_with("\r\n") {
-        line_end + 2
-    } else if rest.starts_with('\n') || rest.starts_with('\r') {
-        line_end + 1
-    } else {
-        line_end
-    }
+    module
+        .import_bindings
+        .iter()
+        .find(|binding| binding.local == local)
+        .is_some_and(|binding| {
+            !binding.references.is_empty()
+                && binding.references.iter().all(|reference| {
+                    rewrites.iter().any(|rewrite| {
+                        let covered =
+                            rewrite.start <= reference.start && rewrite.end >= reference.end;
+                        let preserved = rewrite
+                            .preserved
+                            .iter()
+                            .any(|span| span.start <= reference.start && span.end >= reference.end);
+                        covered && !preserved
+                    })
+                })
+        })
 }
 
 #[cfg(test)]
 mod tests {
+    use pandacss_extractor::ImportBindingFacts;
+
     use super::*;
 
     fn specifier(kind: ImportSpecifierKind, imported: &str, local: &str) -> ImportSpecifier {
@@ -368,6 +243,52 @@ mod tests {
             type_only: false,
             span: Span { start: 0, end: 0 },
         }
+    }
+
+    fn module_with_css_binding(symbols_resolved: bool) -> ModuleFacts {
+        ModuleFacts {
+            imports: vec![ImportRecord {
+                module: "@panda/css".to_owned(),
+                kind: ImportKind::Value,
+                type_only: false,
+                specifiers: vec![specifier(ImportSpecifierKind::Named, "css", "css")],
+                span: Span { start: 0, end: 32 },
+            }],
+            import_bindings: vec![ImportBindingFacts {
+                local: "css".to_owned(),
+                references: vec![Span { start: 50, end: 53 }],
+            }],
+            after_directives: 0,
+            symbols_resolved,
+        }
+    }
+
+    #[test]
+    fn unresolved_symbols_never_mark_a_binding_as_consumed() {
+        let module = module_with_css_binding(false);
+        let rewrites = [Rewrite {
+            start: 50,
+            end: 80,
+            content: "\"color_red\"".to_owned(),
+            preserved: Vec::new(),
+        }];
+
+        assert!(!binding_was_consumed(&module, "css", &rewrites));
+        assert!(binding_has_live_reference(&module, "css", &rewrites));
+    }
+
+    #[test]
+    fn resolved_symbols_treat_fully_covered_references_as_consumed() {
+        let module = module_with_css_binding(true);
+        let rewrites = [Rewrite {
+            start: 50,
+            end: 80,
+            content: "\"color_red\"".to_owned(),
+            preserved: Vec::new(),
+        }];
+
+        assert!(binding_was_consumed(&module, "css", &rewrites));
+        assert!(!binding_has_live_reference(&module, "css", &rewrites));
     }
 
     #[test]
