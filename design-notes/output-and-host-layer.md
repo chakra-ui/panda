@@ -79,8 +79,9 @@ Three principles fall out of this:
    stylesheet), `compiler.getLayerCss(options)` (a merged subset string — `cssgen --minimal`), and
    `compiler.getSplitCss()` (the `{ files: {path,code}[], diagnostics }` split result — `cssgen --splitting`; written
    like artifacts). Its `diagnostics` field is the complete canonical output set, not an emission-only delta; hosts
-   consume it directly instead of merging parse reports. See
-   [stylesheet](./stylesheet.md).
+   consume it directly instead of merging parse reports. See [stylesheet](./stylesheet.md). Before any CSS read or
+   write, the Driver runs the same preparation hook. The Node host uses it to sync design-system tree-shaking for
+   merged, layer, keyframe, and split output.
 3. **Reads + artifact writes via the engine; CSS routing via the host.** Source discovery + reading run through the Rust
    `pandacss_fs` engine (`scan`/`glob`/`sources`). Artifact _writing_ also goes through the engine fs
    (`compiler.writeArtifacts(outdir)` — disk on native, the in-memory fs on wasm), so there's no JS `node:fs` and the

@@ -232,19 +232,27 @@ export abstract class BaseDriver implements Driver {
     return undefined
   }
 
+  protected prepareCssOutput(): void {
+    // Host drivers can refresh state before a CSS output operation.
+  }
+
   cssgen(options?: CompileOptions): CompileOutput {
+    this.prepareCssOutput()
     return this.#compiler.compile(options)
   }
 
   getLayerCss(options: LayerCssOptions): CompileOutput {
+    this.prepareCssOutput()
     return this.#compiler.getLayerCss(options)
   }
 
   getKeyframeCss(options?: CompileOptions): CompileOutput {
+    this.prepareCssOutput()
     return this.#compiler.getKeyframeCss(options)
   }
 
   getSplitCss(options?: SplitCssOptions): SplitCssResult {
+    this.prepareCssOutput()
     return this.#compiler.getSplitCss(options)
   }
 
@@ -262,14 +270,17 @@ export abstract class BaseDriver implements Driver {
   }
 
   writeCss(options: WriteCssOptions): WriteCssResult {
+    this.prepareCssOutput()
     return this.#compiler.writeCss(options)
   }
 
   writeLayerCss(options: WriteLayerCssOptions): WriteCssResult {
+    this.prepareCssOutput()
     return this.#compiler.writeLayerCss(options)
   }
 
   writeSplitCss(options?: WriteSplitCssOptions): WriteSplitCssResult {
+    this.prepareCssOutput()
     return this.#compiler.writeSplitCss({
       outdir: this.getConfiguredOutdir(options?.outdir),
       layers: options?.layers,

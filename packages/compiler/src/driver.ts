@@ -271,6 +271,10 @@ export class NodeDriver extends BaseDriver {
     return true
   }
 
+  protected override prepareCssOutput(): void {
+    this.syncDesignSystemTreeShake()
+  }
+
   applyChange(change: SourceChange): boolean {
     this.#sourceGeneration++
     this.#treeshakeSyncedGeneration = -1
@@ -341,7 +345,6 @@ export class NodeDriver extends BaseDriver {
   }
 
   override cssgen(options?: CompileOptions): CompileOutput {
-    this.syncDesignSystemTreeShake()
     const output = super.cssgen(options)
     this.runCssgenDone({
       artifact: 'styles.css',
@@ -354,7 +357,6 @@ export class NodeDriver extends BaseDriver {
   }
 
   override writeCss(options: WriteCssOptions): WriteCssResult {
-    this.syncDesignSystemTreeShake()
     const result = super.writeCss(options)
     this.runCssgenDone({
       artifact: 'styles.css',

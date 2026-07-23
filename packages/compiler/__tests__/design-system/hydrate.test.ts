@@ -1018,7 +1018,6 @@ describe('hydrateDesignSystem (consumer)', () => {
         "import { Alert } from '@acme/ds'\nexport const App = () => <Alert title='Heads up' description='Details' />"
       driver.applyChange({ path: appPath, kind: 'change', content: next })
 
-      expect(driver.syncDesignSystemTreeShake()).toBe(true)
       expect(styleLayers(driver)).toMatchInlineSnapshot(`
         {
           "recipes": "",
@@ -1058,6 +1057,43 @@ describe('hydrateDesignSystem (consumer)', () => {
         }
       `)
       expect(driver.syncDesignSystemTreeShake()).toBe(false)
+    })
+
+    const cssOutputs: Array<[string, (driver: NodeDriver, root: string) => unknown]> = [
+      ['cssgen', (driver) => driver.cssgen()],
+      ['getLayerCss', (driver) => driver.getLayerCss({ layers: ['utilities'] })],
+      ['getKeyframeCss', (driver) => driver.getKeyframeCss()],
+      ['getSplitCss', (driver) => driver.getSplitCss()],
+      ['writeCss', (driver, root) => driver.writeCss({ outfile: join(root, 'styles.css') })],
+      [
+        'writeLayerCss',
+        (driver, root) => driver.writeLayerCss({ outfile: join(root, 'utilities.css'), layers: ['utilities'] }),
+      ],
+      ['writeSplitCss', (driver, root) => driver.writeSplitCss({ outdir: join(root, 'split') })],
+    ]
+
+    it.each(cssOutputs)('%s syncs changed design-system imports before CSS output', async (_, emit) => {
+      cwd = createFixture({
+        config: TREESHAKE_CONFIG,
+        app: "import { Badge } from '@acme/ds'\nexport const App = () => <Badge>New</Badge>",
+        buildInfo: componentLibBuildInfo(),
+      })
+      const driver = await createNodeDriver({ cwd })
+      const appPath = join(cwd, 'App.tsx')
+
+      driver.cssgen()
+      driver.applyChange({
+        path: appPath,
+        kind: 'change',
+        content:
+          "import { Alert } from '@acme/ds'\nexport const App = () => <Alert title='Heads up' description='Details' />",
+      })
+
+      emit(driver, cwd)
+
+      expect(driver.syncDesignSystemTreeShake()).toBe(false)
+      expect(driver.getLayerCss({ layers: ['utilities'] }).css).toContain('.background_aliceblue')
+      expect(driver.getLayerCss({ layers: ['utilities'] }).css).not.toContain('.color_crimson')
     })
 
     it('does not treat styled-system subpath imports as design-system components', async () => {

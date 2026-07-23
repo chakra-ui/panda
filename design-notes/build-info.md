@@ -107,9 +107,9 @@ native/wasm compiler). Export names go to `designSystem.load({ imports })` → `
 | no DS imports                                                    | nothing                                       |
 | `@acme/ds/css`, `/tokens`, `/recipes`, `/patterns`, `/jsx`       | ignored (styled-system subpaths)              |
 
-Watch sync (`NodeDriver.syncDesignSystemTreeShake` on `cssgen` / `writeCss`) re-scans when the import set changes. The
-scan prefers the project's in-memory source from `applyChange` over disk, so Vite HMR doesn't treeshake against a stale
-file.
+Every merged, layer, keyframe, or split CSS read/write runs the shared Driver preparation hook. `NodeDriver` uses that
+hook to call `syncDesignSystemTreeShake`. The scan prefers in-memory source from `applyChange` over disk, so watch hosts
+generate CSS from the latest imports.
 
 If `imports` is non-empty but nothing resolves (missing `exports` map, typo), load **fails open** to full hydrate —
 better over-include CSS than ship an empty sheet. Modules that only publish `tokenRefs` stay selected under narrowing so
@@ -141,22 +141,23 @@ Two paths, by how the engine encodes each:
 
 ## View transitions
 
-`viewTransition({…})` is a third path — not atoms, not config recipes. Build info carries a top-level
-`viewTransitions` array (deduped by finalized `class_name`) plus per-module indices. Slot bodies stay opaque JSON.
-Hydrate merges into the consumer emit snapshot (hydrated libs first, then local). Middle design systems that hydrate a
-parent and re-publish must not re-emit the parent's bags — only local `view_transitions` are serialized (same rule as
-excluding `buildinfo:*` atom files).
+`viewTransition({…})` has its own path, separate from atoms and config recipes. Build info stores a top-level
+`viewTransitions` array, deduplicated by final `class_name`, plus per-module indices. Slot bodies remain opaque JSON.
+
+During hydration, library entries merge before local entries. A design system that hydrates and republishes a parent
+serializes only its own `view_transitions`. It must not emit the parent's data again. This matches the rule that
+excludes `buildinfo:*` atom files.
 
 See [view-transition-api.md](./view-transition-api.md).
 
 ## Collision safety
 
-`validate` is pure and checks the wire `schemaVersion` and required top-level shape. `hydrate` validates first, and the
-engine rejects invalid intern and per-module atom/recipe/token-ref/view-transition indices atomically; malformed input
-returns
-`{ ok: false, reason: 'corrupt' }` instead of throwing or hydrating partial CSS. The host handles build-info failures by
-re-extracting the library source when `files` is available. Manifest schema and Panda-range checks are separate
-package-contract gates and remain fail-closed.
+`validate` checks the wire `schemaVersion` and required top-level shape without changing state. `hydrate` calls it
+first. If any intern, atom, recipe, token-ref, or view-transition index is invalid, the engine rejects the entire input
+and returns `{ ok: false, reason: 'corrupt' }`. It does not throw or hydrate partial CSS.
+
+When `files` is available, the host recovers by extracting the library source again. Manifest schema and Panda version
+range checks are separate package-contract gates and remain fail-closed.
 
 `configFingerprint` is the **engine's own** fingerprint (`Project::config_fingerprint`, also exposed on the NAPI binding
 as `configFingerprint()`), not a JS re-derivation. It hashes the resolved `UserConfig` with machine-local IO / codegen
