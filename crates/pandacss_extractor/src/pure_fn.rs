@@ -110,10 +110,9 @@ pub(crate) fn lower_callable_expr(
     expr: &Expression<'_>,
     resolver: Option<&Resolver<'_, '_>>,
 ) -> Option<OwnedPureFn> {
-    match expr {
+    match expr.get_inner_expression() {
         Expression::ArrowFunctionExpression(arrow) => lower_arrow(arrow, resolver),
         Expression::FunctionExpression(func) => lower_function(func, resolver),
-        Expression::ParenthesizedExpression(p) => lower_callable_expr(&p.expression, resolver),
         _ => None,
     }
 }

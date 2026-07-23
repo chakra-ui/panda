@@ -26,6 +26,7 @@ oxc_parser = { workspace = true }
 oxc_resolver = { workspace = true }
 oxc_semantic = { workspace = true }
 oxc_span = { workspace = true }
+oxc_syntax = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 rustc-hash = { workspace = true }

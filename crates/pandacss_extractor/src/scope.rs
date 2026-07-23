@@ -17,6 +17,7 @@ use oxc_ast::ast::{
     VariableDeclarator,
 };
 use oxc_semantic::{Semantic, SemanticBuilder, SymbolFlags, SymbolId};
+use oxc_span::GetSpan;
 use pandacss_tokens::{TokenCategory, TokenDictionary};
 use rustc_hash::{FxHashMap, FxHashSet};
 use smallvec::SmallVec;
@@ -30,7 +31,7 @@ use crate::pure_fn::{
 use crate::style_tree::{
     StyleTree, expression_to_style_tree, literal_to_style_tree, project_literal,
 };
-use crate::{ImportSpecifierKind, Literal, TokenRef};
+use crate::{ImportBindingFacts, ImportRecord, ImportSpecifierKind, Literal, TokenRef};
 
 pub(crate) type PatternRawTransformFn<'a> =
     dyn FnMut(&str, &Literal) -> Result<Option<Literal>, crate::Diagnostic> + 'a;
@@ -169,6 +170,38 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             .collect()
     }
 
+    pub(crate) fn import_binding_facts(&self, imports: &[ImportRecord]) -> Vec<ImportBindingFacts> {
+        imports
+            .iter()
+            .flat_map(|record| &record.specifiers)
+            .map(|specifier| {
+                let references = self
+                    .semantic
+                    .scoping()
+                    .get_root_binding(specifier.local.as_str().into())
+                    .map(|symbol_id| {
+                        self.semantic
+                            .symbol_references(symbol_id)
+                            .map(|reference| {
+                                crate::span_from_oxc(
+                                    self.semantic
+                                        .nodes()
+                                        .get_node(reference.node_id())
+                                        .kind()
+                                        .span(),
+                                )
+                            })
+                            .collect()
+                    })
+                    .unwrap_or_default();
+                ImportBindingFacts {
+                    local: specifier.local.clone(),
+                    references,
+                }
+            })
+            .collect()
+    }
+
     pub(crate) fn tokens(&self) -> Option<&'a TokenDictionary> {
         self.tokens
     }
@@ -194,14 +227,14 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
     }
 
     fn lookup_callable(&self, callee: &Expression<'_>) -> Option<OwnedPureFn> {
-        match callee {
+        match callee.get_inner_expression() {
             Expression::Identifier(ident) => {
                 let symbol_id = self.symbol_for_identifier(ident)?;
                 self.lookup_pure_fn_symbol(symbol_id)
             }
-            Expression::ArrowFunctionExpression(_)
-            | Expression::FunctionExpression(_)
-            | Expression::ParenthesizedExpression(_) => lower_callable_expr(callee, Some(self)),
+            Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_) => {
+                lower_callable_expr(callee, Some(self))
+            }
             _ => None,
         }
     }

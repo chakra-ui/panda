@@ -1,5 +1,6 @@
 use oxc_ast::ast::{BindingPattern, CallExpression, Expression, Program, VariableDeclarator};
 use oxc_ast_visit::Visit;
+use oxc_span::GetSpan;
 use rustc_hash::FxHashSet;
 
 use crate::{
@@ -154,6 +155,7 @@ pub(crate) fn extract_call(
     }
 
     let kind = crate::jsx::jsx_kind(&ctx.config.matchers, &resolved.name, &resolved.alias);
+    let retain = extractor.retain_transform_facts;
     Some(ExtractedJsx {
         category: resolved.category,
         kind,
@@ -164,15 +166,28 @@ pub(crate) fn extract_call(
         closing_span: None,
         attributes: Vec::new(),
         panda_owned: resolved.panda_owned,
-        style,
+        style: if retain { style } else { None },
+        source: if retain {
+            crate::JsxSourceFacts {
+                kind: crate::JsxSourceKind::RuntimeCall,
+                callee_span: Some(span_from_oxc(call.callee.span())),
+                factory_intrinsic: crate::jsx::factory_intrinsic_from_expression(component),
+                args: call
+                    .arguments
+                    .iter()
+                    .filter_map(|argument| argument.as_expression())
+                    .map(crate::transform_facts::expression_facts)
+                    .collect(),
+            }
+        } else {
+            crate::JsxSourceFacts::default()
+        },
     })
 }
 
 fn normalize_callee<'a>(callee: &'a Expression<'a>) -> &'a Expression<'a> {
+    let callee = callee.get_inner_expression();
     match callee {
-        Expression::ParenthesizedExpression(parenthesized) => {
-            normalize_callee(&parenthesized.expression)
-        }
         Expression::SequenceExpression(sequence) => sequence
             .expressions
             .last()
