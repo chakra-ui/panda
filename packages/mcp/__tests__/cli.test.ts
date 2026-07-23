@@ -50,7 +50,7 @@ describe('main', () => {
     expect(String(log.mock.calls[0]?.[0])).toContain('panda-mcp')
   })
 
-  test('init writes npx panda mcp client config', async () => {
+  test('init writes npx -y @pandacss/mcp client config', async () => {
     const cwd = await mkdtemp(join(tmpdir(), 'panda-mcp-init-'))
     dirs.push(cwd)
     await mkdir(join(cwd, '.cursor'), { recursive: true })
@@ -62,7 +62,7 @@ describe('main', () => {
       mcpServers: {
         panda: {
           command: 'npx',
-          args: ['panda', 'mcp'],
+          args: ['-y', '@pandacss/mcp'],
         },
       },
     })
