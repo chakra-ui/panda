@@ -2,13 +2,13 @@ import { describe, expect, test } from 'vitest'
 import { MCP_CLIENTS, generateMcpConfig } from '../src/clients'
 
 describe('generateMcpConfig', () => {
-  test('points every client at npx -y @pandacss/mcp', () => {
+  test('points every client at npx panda mcp', () => {
     for (const client of Object.values(MCP_CLIENTS)) {
       const config = generateMcpConfig(client)
       expect(config[client.configKey]).toEqual({
         panda: {
           command: 'npx',
-          args: ['-y', '@pandacss/mcp'],
+          args: ['panda', 'mcp'],
         },
       })
     }
