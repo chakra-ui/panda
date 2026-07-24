@@ -1,0 +1,141 @@
+---
+title: Diagnostics
+description: What Panda's diagnostic codes mean, how they surface, and how to investigate them.
+---
+
+Panda reports problems as diagnostics while it loads your config and extracts styles. Each one has a code, a severity,
+and a message. This page explains how they surface and what every code means.
+
+## Errors and warnings
+
+Diagnostics come at two severities:
+
+- **Errors** stop Panda from continuing — a malformed config, a design system it can't resolve. The command fails with a
+  non-zero exit code.
+- **Warnings** flag something worth fixing that doesn't block the build — a deprecated token, a call Panda couldn't
+  extract. The command still succeeds.
+
+To treat warnings as a failure past a threshold, pass `--max-warnings <n>`. The command then fails when the warning
+count goes over `n`.
+
+## How diagnostics surface
+
+Every command that reads your config and sources reports diagnostics: `panda`, `panda build`, `panda cssgen`,
+`panda codegen`, and `panda lib`. Two flags shape the output:
+
+- `--log-level` sets how much Panda prints.
+- `--json` prints structured diagnostics (code, severity, message, file, and location) for editors and CI to parse.
+
+## Investigate with panda debug
+
+When a diagnostic isn't obvious (a style that won't extract, a token that won't resolve), run `panda debug`. It dumps
+your resolved config and the per-file extraction result, so you can see exactly what Panda parsed and matched. The
+[debugging guide](/docs/guides/debugging) covers the full workflow and its flags, like `--dry` and `--only-config`.
+
+## Config validation
+
+These fire while validating `panda.config.ts`. All are warnings.
+
+| Code                                  | What it means                                                       |
+| ------------------------------------- | ------------------------------------------------------------------- |
+| `config_token_missing_value`          | A token has no `value`. Every token needs one.                      |
+| `config_token_nested_value`           | You wrote `value` twice, producing `value.value`.                   |
+| `config_token_self_reference`         | A token references itself.                                          |
+| `config_token_circular_reference`     | Two or more tokens reference each other in a loop.                  |
+| `config_token_missing_reference`      | A token points at another token that doesn't exist.                 |
+| `config_token_unknown_reference`      | A token value references an unknown token.                          |
+| `config_token_key_contains_space`     | A token key contains a space.                                       |
+| `config_artifact_name_conflict`       | A recipe name is already used by a slot recipe.                     |
+| `config_breakpoint_units_mixed`       | Your breakpoints mix units (for example `px` and `em`).             |
+| `config_container_invalid`            | `theme.containerNames` must be an array.                            |
+| `config_container_name_invalid`       | `theme.containerNames` entries must be strings.                     |
+| `config_container_units_mixed`        | A container query mixes units.                                      |
+| `config_container_condition_conflict` | A container condition resolves to conflicting queries.              |
+| `config_condition_array_unsupported`  | Array conditions aren't supported. Use the block form with `@slot`. |
+| `config_condition_selector_invalid`   | A condition block must end in `@slot`.                              |
+| `config_utility_values_invalid`       | A utility's `values` has entries that aren't strings or numbers.    |
+| `preflight_options_unsupported`       | The `preflight` options you passed aren't supported.                |
+
+## Styles at usage
+
+These fire when Panda reads the styles you write. All are warnings.
+
+| Code                             | What it means                                                                    |
+| -------------------------------- | -------------------------------------------------------------------------------- |
+| `deprecated_token_used`          | You used a token marked deprecated in the config.                                |
+| `deprecated_utility_used`        | You used a utility marked deprecated in the config.                              |
+| `invalid_color_opacity_modifier` | A color's opacity modifier isn't a valid number, like `red/40`.                  |
+| `unknown_condition`              | You used a condition that isn't defined. The message suggests the closest match. |
+| `layer_name_collision`           | A generated cascade layer name collides with another.                            |
+
+## Extraction
+
+These fire while scanning your source files. All are warnings.
+
+| Code                       | What it means                                                                                                                                                   |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `js_parse_error`           | Panda couldn't fully parse a file. It extracts what it can and reports the rest.                                                                                |
+| `panda_call_unextractable` | A `css()` or recipe call got a dynamic argument, so no static CSS was generated for it. Use a literal, or pre-generate with [`staticCss`](/docs/guides/static). |
+
+## Static CSS
+
+These fire when `staticCss` references something that doesn't exist in your config. All are warnings.
+
+| Code                                      | What it means                                                           |
+| ----------------------------------------- | ----------------------------------------------------------------------- |
+| `static_css_pattern_unknown`              | `staticCss.patterns` references a pattern you haven't defined.          |
+| `static_css_pattern_missing_transform`    | A `staticCss` pattern is missing its transform.                         |
+| `static_css_property_unknown`             | `staticCss.css` references an unknown property.                         |
+| `static_css_recipe_unknown`               | `staticCss.recipes` references a recipe you haven't defined.            |
+| `static_css_recipe_variant_unknown`       | A `staticCss` recipe references an unknown variant.                     |
+| `static_css_recipe_variant_value_unknown` | A `staticCss` recipe variant references an unknown value.               |
+| `static_css_recipes_missing_snapshot`     | `staticCss.recipes` needs a precomputed recipe snapshot that's missing. |
+| `static_css_token_reference_unknown`      | A `staticCss.css` value references an unknown token.                    |
+| `static_css_wildcard_empty`               | A `staticCss` wildcard (`*`) matched no values.                         |
+
+## Design system
+
+These fire when an app consumes a design system with [`designSystem`](/docs/guides/design-system). Resolution problems
+are errors; override conflicts are warnings.
+
+| Code                                  | Severity | What it means                                                                                     |
+| ------------------------------------- | -------- | ------------------------------------------------------------------------------------------------- |
+| `design_system_manifest_not_found`    | Error    | The package has no `panda lib` manifest. Build it with `panda lib`.                               |
+| `design_system_manifest_invalid`      | Error    | The manifest is malformed. Rebuild with `panda lib`.                                              |
+| `design_system_manifest_not_exported` | Error    | The package doesn't export its manifest. Rebuild with `panda lib`.                                |
+| `design_system_export_missing`        | Error    | The package is missing an export the overlay needs. Rebuild with `panda lib`, then reinstall.     |
+| `design_system_resolve_failed`        | Error    | Panda couldn't resolve the `designSystem` package. Check it's installed.                          |
+| `design_system_preset_load_failed`    | Error    | The design system's preset failed to load.                                                        |
+| `design_system_unsupported_specifier` | Error    | The `designSystem` value isn't a supported package specifier.                                     |
+| `design_system_parent_not_found`      | Error    | A nested design system references a parent that isn't installed.                                  |
+| `design_system_cycle`                 | Error    | A nested design-system chain references itself in a loop.                                         |
+| `design_system_duplicate_name`        | Error    | Two design systems in the chain share a name.                                                     |
+| `design_system_name_collision`        | Error    | A design system name collides with another.                                                       |
+| `design_system_in_include`            | Error    | The design system is also listed in `include`. Drop it from `include`; `designSystem` handles it. |
+| `design_system_token_conflict`        | Warning  | You redefined a token the design system owns. Yours wins.                                         |
+| `design_system_artifact_conflict`     | Warning  | You redefined a recipe or pattern the design system owns. Yours wins.                             |
+| `design_system_export_overwritten`    | Warning  | A re-exported artifact was replaced by a local one.                                               |
+
+## Config loading
+
+These fire while resolving your config and its dependencies. All are errors.
+
+| Code                                | What it means                                                     |
+| ----------------------------------- | ----------------------------------------------------------------- |
+| `config_hooks_removed`              | You used a config hook that no longer exists.                     |
+| `preset_resolution_failed`          | A preset in `presets` couldn't be resolved. Check it's installed. |
+| `include_package_resolution_failed` | A package referenced in `include` couldn't be resolved.           |
+
+## Internal
+
+You shouldn't see these in normal use. If one appears, it usually points to a bug worth reporting with your
+`panda debug` output.
+
+| Code                            | What it means                                              |
+| ------------------------------- | ---------------------------------------------------------- |
+| `compile_placeholder`           | An internal placeholder surfaced instead of a real result. |
+| `token_dictionary_build_failed` | Panda failed to build the token dictionary.                |
+| `transform_callback_failed`     | A config `transform` callback threw.                       |
+
+New codes are added as Panda grows. If you hit one that isn't here, `--json` prints its code and message, and
+`panda debug` shows the context around it.
