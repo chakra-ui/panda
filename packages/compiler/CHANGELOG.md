@@ -1,5 +1,15 @@
 # @pandacss/compiler
 
+## 2.0.0-beta.11
+
+### Patch Changes
+
+- c7f949a: Fix `pos` and other shorthands for value-less native properties (like `position`) missing from the generated
+  types. Use them as style props, in `css()`, and on pattern components.
+  - @pandacss/compiler-shared@2.0.0-beta.11
+  - @pandacss/config@2.0.0-beta.11
+  - @pandacss/types@2.0.0-beta.11
+
 ## 2.0.0-beta.10
 
 ### Minor Changes

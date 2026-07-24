@@ -1,5 +1,13 @@
 # @pandacss/transformer
 
+## 2.0.0-beta.11
+
+### Patch Changes
+
+- Updated dependencies [c7f949a]
+  - @pandacss/compiler@2.0.0-beta.11
+  - @pandacss/compiler-shared@2.0.0-beta.11
+
 ## 2.0.0-beta.10
 
 ### Patch Changes

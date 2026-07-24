@@ -109,6 +109,7 @@
     "panda-v2-beta",
     "parse-errors-non-fatal",
     "pattern-runtime-memo",
+    "pos-shorthand-system-properties",
     "postcss-hmr-atoms",
     "postcss-hmr-source-glob",
     "postcss-v2-plugin",
