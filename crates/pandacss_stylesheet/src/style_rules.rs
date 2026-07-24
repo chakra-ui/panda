@@ -26,14 +26,23 @@ pub(crate) enum Target<'a> {
 pub(crate) struct LoweredTarget {
     pub selector: String,
     pub wrappers: Vec<String>,
+    /// False when merging this selector into a comma list could make a
+    /// baseline-compatible neighbor invalid in older engines.
+    pub merge_safe: bool,
 }
 
 impl LoweredTarget {
     pub(crate) fn new(selector: impl Into<String>) -> Self {
+        let selector = selector.into();
         Self {
-            selector: selector.into(),
+            merge_safe: crate::css_syntax::selector_is_merge_safe(&selector),
+            selector,
             wrappers: Vec::new(),
         }
+    }
+
+    pub(crate) fn generated_class(selector: impl Into<String>) -> Self {
+        Self::new(selector)
     }
 }
 
@@ -92,6 +101,7 @@ pub(crate) fn push_grouped_rule(
         &rule.wrappers,
         RuleBody {
             selector: rule.selector.clone(),
+            merge_safe: rule.merge_safe,
             declarations: declarations
                 .into_iter()
                 .map(|declaration| GroupedDeclaration {
@@ -149,9 +159,71 @@ pub(crate) fn append_declaration(target: &mut Vec<Declaration>, declaration: Dec
         .iter_mut()
         .find(|existing| existing.prop == declaration.prop)
     {
-        // Later declarations for the same CSS property win inside one block.
+        // Importance outranks source order within one declaration block.
+        if existing.important && !declaration.important {
+            return;
+        }
         *existing = declaration;
         return;
     }
     target.push(declaration);
+}
+
+#[cfg(test)]
+mod tests {
+    use insta::assert_yaml_snapshot;
+
+    use super::{Declaration, append_declaration};
+
+    fn declaration(value: &str, important: bool) -> Declaration {
+        Declaration {
+            prop: "color".to_owned(),
+            value: value.to_owned(),
+            important,
+        }
+    }
+
+    #[test]
+    fn normal_declaration_does_not_replace_important_declaration() {
+        let mut declarations = vec![declaration("red", true)];
+        append_declaration(&mut declarations, declaration("blue", false));
+
+        assert_yaml_snapshot!(
+            declarations
+                .iter()
+                .map(|declaration| serde_json::json!({
+                    "prop": declaration.prop,
+                    "value": declaration.value,
+                    "important": declaration.important,
+                }))
+                .collect::<Vec<_>>(),
+            @r"
+        - prop: color
+          value: red
+          important: true
+        "
+        );
+    }
+
+    #[test]
+    fn important_declaration_replaces_normal_declaration() {
+        let mut declarations = vec![declaration("red", false)];
+        append_declaration(&mut declarations, declaration("blue", true));
+
+        assert_yaml_snapshot!(
+            declarations
+                .iter()
+                .map(|declaration| serde_json::json!({
+                    "prop": declaration.prop,
+                    "value": declaration.value,
+                    "important": declaration.important,
+                }))
+                .collect::<Vec<_>>(),
+            @r"
+        - prop: color
+          value: blue
+          important: true
+        "
+        );
+    }
 }

@@ -536,7 +536,7 @@ describe('compiler.transformSource: css', () => {
     `)
   })
 
-  test('lowers a logical-and spread to a runtime conditional', () => {
+  test('rewrites a logical-and spread to a conditional class expression', () => {
     const source = lines(
       "import { css } from '@panda/css'",
       "export const cls = css({ color: 'red', ...(unk && { padding: '1' }) })",
@@ -552,7 +552,7 @@ describe('compiler.transformSource: css', () => {
     `)
   })
 
-  test('lowers a same-key ternary spread to a runtime conditional', () => {
+  test('rewrites a same-key ternary spread to branch class strings', () => {
     const source = lines(
       "import { css } from '@panda/css'",
       "export const cls = css({ color: 'red', ...(unk ? { padding: '1' } : { padding: '2' }) })",
@@ -642,7 +642,7 @@ describe('compiler.transformSource: css', () => {
     expect({ changed: result.changed, bailed: result.bailed, code: result.code }).toMatchInlineSnapshot(`
       {
         "changed": false,
-        "bailed": false,
+        "bailed": true,
         "code": "import { css } from '@panda/css'
       export const cls = css({ _hover: { _dark: { color: 'red', margin: props.m } } })",
       }

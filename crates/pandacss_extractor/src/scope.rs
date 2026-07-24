@@ -17,11 +17,12 @@ use oxc_ast::ast::{
     VariableDeclarator,
 };
 use oxc_semantic::{Semantic, SemanticBuilder, SymbolFlags, SymbolId};
+use oxc_span::GetSpan;
 use pandacss_tokens::{TokenCategory, TokenDictionary};
 use rustc_hash::{FxHashMap, FxHashSet};
 use smallvec::SmallVec;
 
-use crate::cross_file::{CrossFileLookup, CrossFileResolver, ExportEntry};
+use crate::cross_file::{CrossFileLookup, ExportEntry};
 use crate::literal::expression_to_literal;
 use crate::matcher::{MatchCategory, MatchedImport, Matchers};
 use crate::pure_fn::{
@@ -30,7 +31,7 @@ use crate::pure_fn::{
 use crate::style_tree::{
     StyleTree, expression_to_style_tree, literal_to_style_tree, project_literal,
 };
-use crate::{ImportSpecifierKind, Literal, TokenRef};
+use crate::{ImportBindingFacts, ImportRecord, ImportSpecifierKind, Literal, TokenRef};
 
 pub(crate) type PatternRawTransformFn<'a> =
     dyn FnMut(&str, &Literal) -> Result<Option<Literal>, crate::Diagnostic> + 'a;
@@ -96,51 +97,31 @@ enum PureFnResolutionState {
     Unresolvable,
 }
 
+/// Construction bag for [`Resolver::build`] / [`Resolver::build_with_cross_file_lookup`].
+pub(crate) struct ResolverBuildInput<'a, 'cb> {
+    pub program: &'a oxc_ast::ast::Program<'a>,
+    pub matched: &'a [MatchedImport],
+    pub matchers: Option<&'a Matchers>,
+    pub tokens: Option<&'a TokenDictionary>,
+    pub cross_file: Option<&'a dyn CrossFileLookup>,
+    pub source_path: Option<PathBuf>,
+    pub line_index: Option<&'a crate::LineIndex<'a>>,
+    pub pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
+}
+
 impl<'a, 'cb> Resolver<'a, 'cb> {
-    #[allow(
-        clippy::too_many_arguments,
-        reason = "resolver construction mirrors the extraction pipeline state"
-    )]
-    pub(crate) fn build(
-        program: &'a oxc_ast::ast::Program<'a>,
-        matched: &'a [MatchedImport],
-        matchers: Option<&'a Matchers>,
-        tokens: Option<&'a TokenDictionary>,
-        cross_file: Option<&'a CrossFileResolver>,
-        source_path: Option<PathBuf>,
-        line_index: Option<&'a crate::LineIndex<'a>>,
-        pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
-    ) -> Self {
-        Self::build_from_lookup(
-            program,
-            matched,
-            matchers,
-            tokens,
-            cross_file.map(CrossFileResolver::as_lookup),
-            source_path,
-            line_index,
-            pattern_raw_transform,
-        )
+    pub(crate) fn build(input: ResolverBuildInput<'a, 'cb>) -> Self {
+        Self::build_from_input(input)
     }
 
-    /// Like [`Self::build`], but for callers that already have a type-erased
-    /// `&dyn CrossFileLookup` — used when resolving an imported file's own
-    /// exports (see `cross_file.rs`).
-    #[allow(
-        clippy::too_many_arguments,
-        reason = "cross-file resolver construction mirrors the extraction pipeline state"
-    )]
-    pub(crate) fn build_with_cross_file_lookup(
-        program: &'a oxc_ast::ast::Program<'a>,
-        matched: &'a [MatchedImport],
-        tokens: Option<&'a TokenDictionary>,
-        cross_file: Option<&'a dyn CrossFileLookup>,
-        matchers: Option<&'a Matchers>,
-        source_path: Option<PathBuf>,
-        line_index: Option<&'a crate::LineIndex<'a>>,
-        pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
-    ) -> Self {
-        Self::build_from_lookup(
+    /// Like [`Self::build`], but named for callers that already have a
+    /// type-erased `&dyn CrossFileLookup` (see `cross_file.rs`).
+    pub(crate) fn build_with_cross_file_lookup(input: ResolverBuildInput<'a, 'cb>) -> Self {
+        Self::build_from_input(input)
+    }
+
+    fn build_from_input(input: ResolverBuildInput<'a, 'cb>) -> Self {
+        let ResolverBuildInput {
             program,
             matched,
             matchers,
@@ -149,23 +130,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             source_path,
             line_index,
             pattern_raw_transform,
-        )
-    }
-
-    #[allow(
-        clippy::too_many_arguments,
-        reason = "shared constructor body for the two `build*` entrypoints above"
-    )]
-    fn build_from_lookup(
-        program: &'a oxc_ast::ast::Program<'a>,
-        matched: &'a [MatchedImport],
-        matchers: Option<&'a Matchers>,
-        tokens: Option<&'a TokenDictionary>,
-        cross_file: Option<&'a dyn CrossFileLookup>,
-        source_path: Option<PathBuf>,
-        line_index: Option<&'a crate::LineIndex<'a>>,
-        pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
-    ) -> Self {
+        } = input;
         let semantic = SemanticBuilder::new().build(program).semantic;
         Self {
             semantic,
@@ -205,6 +170,38 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             .collect()
     }
 
+    pub(crate) fn import_binding_facts(&self, imports: &[ImportRecord]) -> Vec<ImportBindingFacts> {
+        imports
+            .iter()
+            .flat_map(|record| &record.specifiers)
+            .map(|specifier| {
+                let references = self
+                    .semantic
+                    .scoping()
+                    .get_root_binding(specifier.local.as_str().into())
+                    .map(|symbol_id| {
+                        self.semantic
+                            .symbol_references(symbol_id)
+                            .map(|reference| {
+                                crate::span_from_oxc(
+                                    self.semantic
+                                        .nodes()
+                                        .get_node(reference.node_id())
+                                        .kind()
+                                        .span(),
+                                )
+                            })
+                            .collect()
+                    })
+                    .unwrap_or_default();
+                ImportBindingFacts {
+                    local: specifier.local.clone(),
+                    references,
+                }
+            })
+            .collect()
+    }
+
     pub(crate) fn tokens(&self) -> Option<&'a TokenDictionary> {
         self.tokens
     }
@@ -230,14 +227,14 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
     }
 
     fn lookup_callable(&self, callee: &Expression<'_>) -> Option<OwnedPureFn> {
-        match callee {
+        match callee.get_inner_expression() {
             Expression::Identifier(ident) => {
                 let symbol_id = self.symbol_for_identifier(ident)?;
                 self.lookup_pure_fn_symbol(symbol_id)
             }
-            Expression::ArrowFunctionExpression(_)
-            | Expression::FunctionExpression(_)
-            | Expression::ParenthesizedExpression(_) => lower_callable_expr(callee, Some(self)),
+            Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_) => {
+                lower_callable_expr(callee, Some(self))
+            }
             _ => None,
         }
     }

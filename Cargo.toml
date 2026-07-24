@@ -26,6 +26,7 @@ oxc_parser = "0.130.0"
 oxc_resolver = "11.19.1"
 oxc_semantic = "0.130.0"
 oxc_span = "0.130.0"
+oxc_syntax = "0.130.0"
 pandacss_config = { path = "crates/pandacss_config" }
 pandacss_codegen = { path = "crates/pandacss_codegen" }
 pandacss_encoder = { path = "crates/pandacss_encoder" }

@@ -13,7 +13,7 @@ pub fn module(ctx: CodegenContext<'_>) -> Module {
     let stems: &[&str] = if matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
         &["css", "cx"]
     } else {
-        &["css", "cva", "cx", "sva"]
+        &["css", "cva", "cx", "sva", "view-transition"]
     };
 
     // Deep `export *` per module so both runtime values and their `.d.ts` companions

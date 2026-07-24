@@ -156,6 +156,23 @@ fn rewrites_styled_with_full_recipe_config() {
 }
 
 #[test]
+fn rewrites_an_aliased_styled_factory_from_its_callee_shape() {
+    let source = indoc! {r#"
+        import { styled as s } from '@panda/jsx';
+        export const Card = s('div', { color: 'red' });
+    "#};
+
+    let output = transform_with_project(&project_with_jsx(), "src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { cva as __pcva } from '@pandacss-internal/css';
+    import { styled as s } from '@panda/jsx';
+    export const Card = s('div', __pcva({ base: 'color_red' }));
+    "#);
+}
+
+#[test]
 fn injects_cx_cva_and_sva_symbols_in_one_import() {
     let source = indoc! {r#"
         import { Box, styled } from '@panda/jsx';

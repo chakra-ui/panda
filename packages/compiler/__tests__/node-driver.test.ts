@@ -254,6 +254,90 @@ describe('createNodeDriver', () => {
     expect(cssgenDone.map((entry) => entry.path)).toEqual(expect.arrayContaining(result.paths))
   })
 
+  it('carries file diagnostics through every CSS output method', async () => {
+    const diagnosticsDir = mkdtempSync(join(tmpdir(), 'panda-driver-diagnostics-'))
+    try {
+      writeFileTree(diagnosticsDir, {
+        'panda.config.ts': CONFIG,
+        'App.tsx': "import { css } from '@panda/css'; css({ color: ",
+      })
+      const driver = await createNodeDriver({ cwd: diagnosticsDir })
+      driver.parseFiles()
+
+      const outputs = [
+        driver.cssgen(),
+        driver.getLayerCss({ layers: ['utilities'] }),
+        driver.getKeyframeCss(),
+        driver.getSplitCss(),
+        driver.writeCss({ outfile: 'styled-system/styles.css' }),
+        driver.writeLayerCss({ outfile: 'styled-system/layers.css', layers: ['utilities'] }),
+        driver.writeSplitCss(),
+      ]
+
+      expect(
+        outputs.map((output, index) => ({
+          method: [
+            'cssgen',
+            'getLayerCss',
+            'getKeyframeCss',
+            'getSplitCss',
+            'writeCss',
+            'writeLayerCss',
+            'writeSplitCss',
+          ][index],
+          diagnostics: output.diagnostics.map((diagnostic) => diagnostic.code),
+        })),
+      ).toMatchInlineSnapshot(`
+        [
+          {
+            "method": "cssgen",
+            "diagnostics": [
+              "js_parse_error",
+            ],
+          },
+          {
+            "method": "getLayerCss",
+            "diagnostics": [
+              "js_parse_error",
+            ],
+          },
+          {
+            "method": "getKeyframeCss",
+            "diagnostics": [
+              "js_parse_error",
+            ],
+          },
+          {
+            "method": "getSplitCss",
+            "diagnostics": [
+              "js_parse_error",
+            ],
+          },
+          {
+            "method": "writeCss",
+            "diagnostics": [
+              "js_parse_error",
+            ],
+          },
+          {
+            "method": "writeLayerCss",
+            "diagnostics": [
+              "js_parse_error",
+            ],
+          },
+          {
+            "method": "writeSplitCss",
+            "diagnostics": [
+              "js_parse_error",
+            ],
+          },
+        ]
+      `)
+    } finally {
+      rmSync(diagnosticsDir, { recursive: true, force: true })
+    }
+  })
+
   it('skips rewriting unchanged split stylesheet outputs', async () => {
     const driver = await createNodeDriver({ cwd: dir })
     driver.parseFiles()

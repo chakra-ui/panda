@@ -148,6 +148,7 @@ Run from the repo root:
 | If you changed…                                                  | Run before commit                                                    |
 | ---------------------------------------------------------------- | -------------------------------------------------------------------- |
 | `crates/**`, `packages/compiler/**`, `packages/compiler-wasm/**` | `pnpm rust:fmt` and `pnpm rust:clippy` (Rust Quality CI)             |
+| Rust engine / NAPI / `transformSource` behavior                  | `pnpm test:compiler` (rebuilds the `.node`, then compiler Vitest)    |
 | TypeScript packages under `packages/**`                          | `pnpm test <affected-package-or-path>`                               |
 | CSS output (Rust stylesheet emit)                                | `cargo nextest run -p pandacss_stylesheet` + `sandbox/codegen` first |
 
@@ -212,6 +213,30 @@ follow [`TONE_OF_VOICE.md`](TONE_OF_VOICE.md).
 2. Style usage → atomic rules → `crates/encoder`
 3. Native CSS emission → `crates/stylesheet` (replaces the old PostCSS/lightningcss optimize path)
 4. Orchestration + caching → `crates/engine`, `crates/cache`
+
+### Adding a new styled-system function
+
+A new factory in generated `styled-system` (`css`, `cva`, `sva`, `viewTransition`, …) is not a codegen-only change. Wire
+every stage that sees call sites, or extract / transform / CSS emit will miss them. Use `viewTransition` or `cva` as a
+reference.
+
+| Stage                   | Where                                                                      | What to do                                                                                                                                                                                                      |
+| ----------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Allowlist / `importMap` | `pandacss_project` extractor config + `normalizeImportMap`                 | Add the call name under the right `MatchCategory`. New entrypoint → new `importMap` key + matcher; shared barrel → extend an existing category (like `viewTransition` on the css allowlist). |
+| Types                   | `packages/types` (+ codegen types if mirrored)                             | Public options / return types.                                                                                                                                                                                  |
+| Codegen                 | `pandacss_codegen` artifact + `css/index` barrel                           | Emit the factory. Reuse helpers (`toHash`, `memo`, …). Skip the artifact for syntaxes that don't support it.                                                                                                    |
+| Hash contract           | `pandacss_shared`                                                          | If runtime class names must match Rust emit, share one serialize/hash — don't fork two algorithms.                                                                                                              |
+| Extract / encode        | `pandacss_project` parse arm                                               | Turn matched calls into project IR.                                                                                                                                                                             |
+| Usages                  | `pandacss_project` usages walk                                             | Visit style slots so unused-keyframe / unused-token pruning still sees them.                                                                                                                                    |
+| Transform               | `pandacss_project/src/transform`                                           | Rewrite static calls. Leave the runtime import for dynamic ones. Clean up dead imports when fully inlined.                                                                                                      |
+| Stylesheet              | `pandacss_stylesheet` (+ `StylesheetInput` in project/compiler/wasm/bench) | Emit CSS. Add insta snapshots.                                                                                                                                                                                  |
+| Design note             | `design-notes/` + index                                                    | API shape, non-goals, pipeline.                                                                                                                                                                                 |
+| Tests                   | crate tests + `sandbox/codegen` when user-facing                           | Extract, transform (rewrite + dead import), stylesheet, codegen artifact, sandbox.                                                                                                                              |
+| Changeset               | `.changeset/`                                                              | Short user-facing copy when the API ships.                                                                                                                                                                      |
+
+Codegen alone ships a runtime function that Panda never extracts or emits CSS for. Extract/emit without transform leaves
+the factory call in the bundle. Full path: allowlist → types → codegen → extract → usages → transform → stylesheet →
+tests → design note.
 
 ### Test Fixtures
 
@@ -344,7 +369,8 @@ pnpm rust:fmt        # cargo fmt --all --check
 pnpm rust:clippy     # cargo clippy --all-targets --locked -- -D warnings
 pnpm bench:rust-spike                          # TS baseline benchmark
 pnpm --filter @pandacss/compiler build:native   # build the NAPI .node artifact
-pnpm --filter @pandacss/compiler test           # binding round-trip Vitest tests
+pnpm --filter @pandacss/compiler test           # Vitest against the current .node (may be stale)
+pnpm test:compiler                              # build:native then compiler Vitest (use after Rust/NAPI/transform changes)
 ```
 
 **Bench / legacy comparison tests:**
@@ -509,6 +535,8 @@ side). All crates are `publish = false` today. See `design-notes/publish-namespa
 8. **Write concise changesets and comments**: Changesets are user-facing — keep them to one or two sentences and follow
    [`TONE_OF_VOICE.md`](TONE_OF_VOICE.md). In code, keep comments minimal — prefer clearer names and structure over
    narration; only comment non-obvious invariants or business rules, in one short line.
+9. **New styled-system functions need the full pipeline**: see
+   [Adding a new styled-system function](#adding-a-new-styled-system-function). Codegen alone is not enough.
 
 ## Emergency Rollback
 
@@ -522,4 +550,4 @@ pnpm test packages/core         # Verify tests pass
 
 ---
 
-**Last Updated**: 2026-06-05 **Project Version**: v2 branch (Rust/Oxc migration in progress)
+**Last Updated**: 2026-07-22 **Project Version**: v2 branch (Rust/Oxc migration in progress)

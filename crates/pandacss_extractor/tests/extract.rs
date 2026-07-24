@@ -1,7 +1,9 @@
 use crate::common::{extract_shape, panda_config, panda_config_with_jsx, panda_jsx_config};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
-use pandacss_extractor::{CssSyntaxKind, JsxExtractionConfig, extract, extract_debug};
+use pandacss_extractor::{
+    CssSyntaxKind, JsxExtractionConfig, extract, extract_debug, extract_for_transform,
+};
 
 #[test]
 fn single_pass_extract_combines_calls_and_jsx() {
@@ -356,4 +358,40 @@ fn uppercase_component_extracts_with_jsx_framework() {
           width: "900"
           height: "800"
     "#);
+}
+
+#[test]
+fn extract_for_transform_marks_symbols_unresolved_when_extraction_is_skipped() {
+    // JSX-only matches without a jsx framework skip visitor walks. Transform still
+    // gets import records, but must not treat empty binding facts as authoritative.
+    let source = indoc! {r#"
+        import { Box } from "@panda/jsx"
+        export const el = <Box color="red" />
+    "#};
+    let result = extract_for_transform(source, "fixture.tsx", &panda_config());
+
+    assert!(!result.module.symbols_resolved);
+    assert!(result.module.import_bindings.is_empty());
+    assert_eq!(result.module.imports.len(), 1);
+    assert!(result.calls.is_empty());
+    assert!(result.jsx.is_empty());
+}
+
+#[test]
+fn extract_for_transform_resolves_symbols_for_normal_css_files() {
+    let source = indoc! {r#"
+        import { css } from "@panda/css"
+        export const cls = css({ color: "red" })
+    "#};
+    let result = extract_for_transform(source, "fixture.tsx", &panda_config());
+
+    assert!(result.module.symbols_resolved);
+    assert!(
+        result
+            .module
+            .import_bindings
+            .iter()
+            .any(|binding| binding.local == "css" && !binding.references.is_empty())
+    );
+    assert_eq!(result.calls.len(), 1);
 }

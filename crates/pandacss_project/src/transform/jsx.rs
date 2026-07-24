@@ -1,12 +1,11 @@
 //! JSX opening-element and React runtime call rewrites.
 
-use pandacss_extractor::{ExtractedJsx, JsxKind};
+use pandacss_extractor::{ExtractedJsx, JsxKind, JsxSourceKind};
 
 use crate::PatternTransformFn;
 use crate::Project;
 
 use super::jsx_element;
-use super::jsx_parse;
 use super::jsx_runtime;
 use super::plan::{HelperCxMode, Rewrite};
 use super::recipe_inline;
@@ -29,37 +28,37 @@ pub(crate) fn rewrites_for_jsx_element(
         return Vec::new();
     }
 
-    let Some(slice) = span_slice(source, jsx.span) else {
-        return Vec::new();
-    };
-
     // A factory-member tagged-template definition (`styled.div`color: red``)
     // desugars to `styled.div(__pcva({ base: '…' }))` — static, no `${…}`
     // interpolation, so the style object is fully known at build time.
-    if jsx.kind == JsxKind::Factory
-        && let Some(rewrite) = styled_template_definition_rewrite(project, jsx, slice)
-    {
-        return vec![rewrite];
+    if jsx.source.kind == JsxSourceKind::TaggedTemplate {
+        return (jsx.kind == JsxKind::Factory)
+            .then(|| styled_template_definition_rewrite(project, source, jsx))
+            .flatten()
+            .into_iter()
+            .collect();
     }
 
-    if jsx_parse::is_jsx_element_syntax(slice) {
-        jsx_element::rewrites_for_jsx_opening_element(
+    match jsx.source.kind {
+        JsxSourceKind::Element | JsxSourceKind::FrameworkTemplate => {
+            jsx_element::rewrites_for_jsx_opening_element(
+                project,
+                source,
+                jsx,
+                helper_cx,
+                needs_cx,
+                pattern_transform,
+            )
+        }
+        JsxSourceKind::RuntimeCall => jsx_runtime::rewrites_for_jsx_runtime_call(
             project,
             source,
             jsx,
             helper_cx,
             needs_cx,
             pattern_transform,
-        )
-    } else {
-        jsx_runtime::rewrites_for_jsx_runtime_call(
-            project,
-            source,
-            jsx,
-            helper_cx,
-            needs_cx,
-            pattern_transform,
-        )
+        ),
+        JsxSourceKind::TaggedTemplate => Vec::new(),
     }
 }
 
@@ -68,18 +67,16 @@ pub(crate) fn rewrites_for_jsx_element(
 /// member tagged template with resolvable styles.
 fn styled_template_definition_rewrite(
     project: &Project,
+    source: &str,
     jsx: &ExtractedJsx,
-    slice: &str,
 ) -> Option<Rewrite> {
-    let backtick = slice.find('`')?;
-    let member = slice[..backtick].trim_end();
-    if member.is_empty() || member.contains(['<', '(']) {
-        return None;
-    }
+    let callee_span = jsx.source.callee_span?;
+    let member = span_slice(source, callee_span)?;
     let config = recipe_inline::styled_config_call(project, &jsx.data)?;
     Some(Rewrite {
         start: jsx.span.start,
         end: jsx.span.end,
         content: format!("{member}({config})"),
+        preserved: vec![callee_span],
     })
 }

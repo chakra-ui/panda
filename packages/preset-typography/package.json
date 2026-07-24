@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/preset-typography",
-  "version": "2.0.0-beta.9",
+  "version": "2.0.0-beta.10",
   "description": "Prose typography preset for Panda CSS — style Markdown and CMS HTML with a size-aware recipe",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

@@ -3,7 +3,7 @@ import { defineConfig } from 'vite'
 import solidPlugin from 'vite-plugin-solid'
 
 export default defineConfig({
-  plugins: [pandacss(), solidPlugin()],
+  plugins: [pandacss({ transform: true }), solidPlugin()],
   server: {
     port: 3000,
   },

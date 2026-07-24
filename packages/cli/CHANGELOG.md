@@ -1,5 +1,57 @@
 # @pandacss/cli
 
+## 2.0.0-beta.10
+
+### Minor Changes
+
+- adc2142: Fold `panda info` into `panda doctor`. Doctor now prints the project summary and remains the pass/fail health
+  check; `panda info` is removed.
+- 2fa2373: `panda init -i` runs the setup wizard again, including prompts for `outExtension` and `jsxStyleProps`, with
+  colored terminal output and next-step hints.
+- 52e84e6: Add native cascade-layer polyfill via `polyfill` / `--polyfill` (no PostCSS plugin required).
+- 45bcfc1: `panda init --no-install` is now `--skip-presets`. Same idea: scaffold a bare config without adding the
+  default preset packages. Programmatic callers use `skipPresets` instead of `install: false`.
+
+  ```bash
+  panda init --skip-presets
+  ```
+
+### Patch Changes
+
+- 05e085d: Fix `panda lib` / `panda buildinfo` writing `panda: "*"` when the design system has no `@pandacss/dev` peer.
+  That range couldn't hydrate (`manifest requires Panda *`). Both commands now fall back to the running Panda major (for
+  example `^2.0.0`). Pass `--panda` to set the range yourself.
+- f8027f3: Fix CSS cascade order, token pruning, and conditional JSX spreads where a later static prop overrides a
+  spread. Design-system tree-shaking now runs before every CSS read/write path, not only `cssgen` / `writeCss`.
+
+  `getSplitCss()` is a breaking shape change for direct callers:
+
+  ```ts
+  // before
+  const files = compiler.getSplitCss()
+
+  // after
+  const { files, diagnostics } = compiler.getSplitCss()
+  ```
+
+- 05e085d: `panda lib` publishes machine artifacts under `./panda/*`, with manifest `files` paths relative to the lib
+  outdir. Recipe/pattern runtime overlays only kick in when the design system owns that category.
+- Updated dependencies [05e085d]
+- Updated dependencies [05e085d]
+- Updated dependencies [d2bea8a]
+- Updated dependencies [f8027f3]
+- Updated dependencies [ebe9f5b]
+- Updated dependencies [05e085d]
+- Updated dependencies [52e84e6]
+- Updated dependencies [05e085d]
+- Updated dependencies [5c060e7]
+- Updated dependencies [a79c917]
+- Updated dependencies [2714583]
+  - @pandacss/compiler-shared@2.0.0-beta.10
+  - @pandacss/compiler@2.0.0-beta.10
+  - @pandacss/config@2.0.0-beta.10
+  - @pandacss/types@2.0.0-beta.10
+
 ## 2.0.0-beta.9
 
 ### Minor Changes

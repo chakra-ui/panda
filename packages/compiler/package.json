@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/compiler",
-  "version": "2.0.0-beta.9",
+  "version": "2.0.0-beta.10",
   "description": "Native Rust binding for the Panda compiler engine",
   "type": "module",
   "main": "./dist/index.js",
@@ -42,6 +42,7 @@
     "build:native": "napi build --platform --release --manifest-path crate/Cargo.toml --output-dir . --js binding.cjs --dts native.d.ts",
     "dev": "pnpm build:fast --watch",
     "test": "vitest run",
+    "test:native": "pnpm build:native && vitest run",
     "verify:webcontainer": "node scripts/verify-webcontainer-api.mjs"
   },
   "files": [

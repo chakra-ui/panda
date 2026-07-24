@@ -15,6 +15,7 @@ use crate::{
     collect_parser_diagnostics, match_import_records_resolved,
 };
 use oxc_allocator::Allocator;
+use oxc_ast::ast::{Comment, Program};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use serde::Serialize;
@@ -35,6 +36,27 @@ pub struct TokenRef {
     /// Resolved value the source transform inlines; `None` keeps the runtime call.
     #[serde(skip)]
     pub value: Option<String>,
+}
+
+/// One imported local binding and every Oxc-resolved reference to it.
+///
+/// This is transform-only IR. It stays off the serialized extraction result so
+/// import cleanup can use symbol identity without adding binding payload.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct ImportBindingFacts {
+    pub local: String,
+    pub references: Vec<Span>,
+}
+
+/// Module facts retained from the extractor's original Oxc parse.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct ModuleFacts {
+    pub imports: Vec<ImportRecord>,
+    pub import_bindings: Vec<ImportBindingFacts>,
+    /// Safe helper-import insertion point after a hashbang/directive prologue.
+    pub after_directives: u32,
+    /// Whether `import_bindings` came from an Oxc semantic pass.
+    pub symbols_resolved: bool,
 }
 
 /// Lean extraction result for the production hot path — strips `imports`
@@ -58,6 +80,9 @@ pub struct ExtractUsage {
     /// as transform build dependencies for watch invalidation. Project-side only.
     #[serde(skip)]
     pub dependencies: Vec<String>,
+    /// Original-parse module and symbol facts used by source transforms.
+    #[serde(skip)]
+    pub module: ModuleFacts,
 }
 
 /// Verbose extraction result for on-demand tooling. Includes the same core
@@ -101,7 +126,25 @@ pub fn extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsa
     let _span =
         tracing::trace_span!(target: "extract", "extract", path = path, source_len = source.len())
             .entered();
-    let outcome = run_extract(source, path, config, None, false);
+    let outcome = run_extract(source, path, config, None, false, false);
+    extract_usage(outcome)
+}
+
+/// Extract source while retaining the Oxc facts required by source transforms.
+#[must_use]
+pub fn extract_for_transform(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsage {
+    let _span = tracing::trace_span!(
+        target: "extract",
+        "extract_for_transform",
+        path = path,
+        source_len = source.len()
+    )
+    .entered();
+    let outcome = run_extract(source, path, config, None, false, true);
+    extract_usage(outcome)
+}
+
+fn extract_usage(outcome: ExtractResult) -> ExtractUsage {
     ExtractUsage {
         calls: outcome.calls,
         jsx: outcome.jsx,
@@ -109,6 +152,7 @@ pub fn extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsa
         token_refs: outcome.token_refs,
         exports: outcome.exports,
         dependencies: outcome.dependencies,
+        module: outcome.module,
     }
 }
 
@@ -131,24 +175,17 @@ where
     .entered();
     let erased: &mut PatternRawTransformFn<'_> = pattern_transform;
     let transform_cell: PatternRawTransformCell<'_> = RefCell::new(erased);
-    let outcome = run_extract(source, path, config, Some(&transform_cell), false);
-    ExtractUsage {
-        calls: outcome.calls,
-        jsx: outcome.jsx,
-        diagnostics: outcome.diagnostics,
-        token_refs: outcome.token_refs,
-        exports: outcome.exports,
-        dependencies: outcome.dependencies,
-    }
+    let outcome = run_extract(source, path, config, Some(&transform_cell), false, false);
+    extract_usage(outcome)
 }
 
 #[must_use]
 pub fn extract_debug(source: &str, path: &str, config: &ExtractorConfig) -> ExtractDebugResult {
     let _span = tracing::trace_span!(target: "extract", "extract_debug", path = path, source_len = source.len())
         .entered();
-    let outcome = run_extract(source, path, config, None, false);
+    let outcome = run_extract(source, path, config, None, false, true);
     ExtractDebugResult {
-        imports: outcome.imports,
+        imports: outcome.module.imports,
         matched: outcome.matched,
         calls: outcome.calls,
         jsx: outcome.jsx,
@@ -165,7 +202,7 @@ pub fn extract_verbose(source: &str, path: &str, config: &ExtractorConfig) -> Ex
         source_len = source.len()
     )
     .entered();
-    let outcome = run_extract(source, path, config, None, true);
+    let outcome = run_extract(source, path, config, None, true, false);
     ExtractVerboseResult {
         calls: outcome.calls,
         jsx: outcome.jsx,
@@ -179,7 +216,7 @@ pub fn extract_verbose(source: &str, path: &str, config: &ExtractorConfig) -> Ex
 /// Everything the extraction pipeline produces. Public entrypoints project
 /// this into their narrower result shape — the work is shared.
 struct ExtractResult {
-    imports: Vec<ImportRecord>,
+    module: ModuleFacts,
     matched: Vec<MatchedImport>,
     calls: Vec<ExtractedCall>,
     jsx: Vec<ExtractedJsx>,
@@ -215,6 +252,7 @@ fn run_extract<'cb>(
     config: &ExtractorConfig,
     pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
     verbose: bool,
+    retain_transform_facts: bool,
 ) -> ExtractResult {
     let allocator = Allocator::default();
     let raw_source = source;
@@ -235,6 +273,7 @@ fn run_extract<'cb>(
         span.record("import_count", imports.len());
         imports
     };
+    let after_directives = module_after_directives(&parser_return.program, source);
     let matched = {
         let span = tracing::trace_span!(target: "extract", "match_imports", matched_count = tracing::field::Empty);
         let _entered = span.enter();
@@ -256,8 +295,18 @@ fn run_extract<'cb>(
     };
 
     if should_skip_extraction(&matched, config) {
+        let module = if retain_transform_facts {
+            ModuleFacts {
+                imports,
+                import_bindings: Vec::new(),
+                after_directives,
+                symbols_resolved: false,
+            }
+        } else {
+            ModuleFacts::default()
+        };
         return ExtractResult {
-            imports,
+            module,
             matched,
             calls: Vec::new(),
             jsx: Vec::new(),
@@ -272,16 +321,19 @@ fn run_extract<'cb>(
     let line_index = crate::LineIndex::new(source);
     let resolver = {
         let _span = tracing::trace_span!(target: "parse", "resolve_scopes", path = path).entered();
-        Resolver::build(
-            &parser_return.program,
-            &matched,
-            Some(&config.matchers),
-            config.token_dictionary.as_deref(),
-            config.cross_file.as_ref(),
-            Some(std::path::PathBuf::from(path)),
-            Some(&line_index),
+        Resolver::build(crate::scope::ResolverBuildInput {
+            program: &parser_return.program,
+            matched: &matched,
+            matchers: Some(&config.matchers),
+            tokens: config.token_dictionary.as_deref(),
+            cross_file: config
+                .cross_file
+                .as_ref()
+                .map(crate::CrossFileResolver::as_lookup),
+            source_path: Some(std::path::PathBuf::from(path)),
+            line_index: Some(&line_index),
             pattern_raw_transform,
-        )
+        })
     };
     let ctx = VisitorContext::new(&matched, config).with_resolver(&resolver);
 
@@ -293,8 +345,12 @@ fn run_extract<'cb>(
         let result = if verbose {
             collect_calls_verbose(&parser_return.program, &ctx, &line_index)
         } else {
-            let (calls, diagnostics, token_refs) =
-                collect_calls_with_token_refs(&parser_return.program, &ctx, &line_index);
+            let (calls, diagnostics, token_refs) = collect_calls_with_token_refs(
+                &parser_return.program,
+                &ctx,
+                &line_index,
+                retain_transform_facts,
+            );
             (calls, diagnostics, token_refs, Vec::new())
         };
         span.record("call_count", result.0.len());
@@ -311,7 +367,7 @@ fn run_extract<'cb>(
             style_source_refs.extend(refs);
             jsx
         } else {
-            collect_jsx(&parser_return.program, &ctx)
+            collect_jsx(&parser_return.program, &ctx, retain_transform_facts)
         };
         span.record("jsx_count", jsx.len());
         jsx
@@ -325,8 +381,15 @@ fn run_extract<'cb>(
             template_count = tracing::field::Empty
         );
         let _entered = span.enter();
-        let templates =
-            crate::template_styles::collect_template_styles(raw_source, path, &matched, config);
+        let templates = crate::template_styles::collect_template_styles(
+            raw_source,
+            path,
+            &matched,
+            config,
+            &parser_return.program,
+            &resolver,
+            retain_transform_facts,
+        );
         span.record("template_count", templates.len());
         jsx.extend(templates);
     }
@@ -336,9 +399,19 @@ fn run_extract<'cb>(
     token_refs.extend(resolver.take_token_refs());
     let token_refs = dedupe_token_refs(token_refs);
     let dependencies = resolver.take_cross_file_deps();
+    let module = if retain_transform_facts {
+        ModuleFacts {
+            import_bindings: resolver.import_binding_facts(&imports),
+            imports,
+            after_directives,
+            symbols_resolved: true,
+        }
+    } else {
+        ModuleFacts::default()
+    };
 
     ExtractResult {
-        imports,
+        module,
         matched,
         calls,
         jsx,
@@ -348,6 +421,98 @@ fn run_extract<'cb>(
         exports,
         dependencies,
     }
+}
+
+/// Parse only module layout and import-reference facts.
+///
+/// Source transforms normally receive these facts through [`ExtractUsage`].
+/// This entrypoint supports standalone helper-import synchronization without
+/// routing through the full Panda extraction pipeline.
+#[must_use]
+pub fn analyze_module(source: &str, path: &str) -> ModuleFacts {
+    let allocator = Allocator::default();
+    let adapted = crate::adapt_source(source, path);
+    let source = adapted.as_ref();
+    let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
+    let parser_return = Parser::new(&allocator, source, source_type)
+        .with_options(crate::adapter::parse_options_for(path))
+        .parse();
+    let imports = collect_imports(&parser_return.program);
+    let after_directives = module_after_directives(&parser_return.program, source);
+    let matched = Vec::new();
+    let resolver = Resolver::build(crate::scope::ResolverBuildInput {
+        program: &parser_return.program,
+        matched: &matched,
+        matchers: None,
+        tokens: None,
+        cross_file: None,
+        source_path: None,
+        line_index: None,
+        pattern_raw_transform: None,
+    });
+    let import_bindings = resolver.import_binding_facts(&imports);
+    ModuleFacts {
+        imports,
+        import_bindings,
+        after_directives,
+        symbols_resolved: true,
+    }
+}
+
+fn module_after_directives(program: &Program<'_>, source: &str) -> u32 {
+    if let Some(directive) = program.directives.last() {
+        return after_statement_line(directive.span.end, &program.comments, source);
+    }
+    if let Some(hashbang) = &program.hashbang {
+        return after_line_terminator(hashbang.span.end, source);
+    }
+    0
+}
+
+fn after_statement_line(start: u32, comments: &[Comment], source: &str) -> u32 {
+    let mut cursor = usize::try_from(start)
+        .unwrap_or(source.len())
+        .min(source.len());
+
+    loop {
+        cursor = skip_horizontal_whitespace(source, cursor);
+        let Some(comment) = comments
+            .iter()
+            .find(|comment| usize::try_from(comment.span.start).ok() == Some(cursor))
+        else {
+            break;
+        };
+        cursor = usize::try_from(comment.span.end)
+            .unwrap_or(source.len())
+            .min(source.len());
+    }
+
+    after_line_terminator(u32::try_from(cursor).unwrap_or(start), source)
+}
+
+fn skip_horizontal_whitespace(source: &str, mut cursor: usize) -> usize {
+    while let Some(ch) = source.get(cursor..).and_then(|rest| rest.chars().next()) {
+        if !matches!(ch, ' ' | '\t') {
+            break;
+        }
+        cursor += ch.len_utf8();
+    }
+    cursor
+}
+
+fn after_line_terminator(start: u32, source: &str) -> u32 {
+    let cursor = usize::try_from(start)
+        .unwrap_or(source.len())
+        .min(source.len());
+    let rest = source.get(cursor..).unwrap_or_default();
+    let end = if rest.starts_with("\r\n") {
+        cursor + 2
+    } else if rest.starts_with(['\n', '\r']) {
+        cursor + 1
+    } else {
+        cursor
+    };
+    u32::try_from(end).unwrap_or(start)
 }
 
 fn should_collect_calls(matched: &[MatchedImport], config: &ExtractorConfig) -> bool {

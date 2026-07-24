@@ -66,20 +66,12 @@ fn slice(source: &str, span: Span) -> Option<String> {
     Some(source.get(start..end)?.to_owned())
 }
 
-/// Oxc keeps `(…)` as `ParenthesizedExpression` — peel one layer for matching.
-fn peel_paren<'a>(expr: &'a Expression<'a>) -> &'a Expression<'a> {
-    if let Expression::ParenthesizedExpression(p) = expr {
-        &p.expression
-    } else {
-        expr
-    }
-}
-
 /// Parse an object-literal fragment (`{ … }`) and return its properties.
 #[must_use]
 pub fn parse_object_fragment(source: &str) -> Option<Vec<FragmentProperty>> {
     let allocator = Allocator::default();
-    let Expression::ObjectExpression(object) = parse_fragment(&allocator, source)? else {
+    let expression = parse_fragment(&allocator, source)?;
+    let Expression::ObjectExpression(object) = expression.get_inner_expression() else {
         return None;
     };
     let mut properties = Vec::with_capacity(object.properties.len());
@@ -128,7 +120,10 @@ pub fn is_logical_expression(source: &str) -> bool {
     let Some(expr) = parse_fragment(&allocator, source) else {
         return false;
     };
-    matches!(peel_paren(&expr), Expression::LogicalExpression(_))
+    matches!(
+        expr.get_inner_expression(),
+        Expression::LogicalExpression(_)
+    )
 }
 
 /// Parse a ternary fragment (`test ? a : b`) and return its three parts.
@@ -136,7 +131,7 @@ pub fn is_logical_expression(source: &str) -> bool {
 pub fn parse_ternary_fragment(source: &str) -> Option<FragmentTernary> {
     let allocator = Allocator::default();
     let expr = parse_fragment(&allocator, source)?;
-    let Expression::ConditionalExpression(ternary) = peel_paren(&expr) else {
+    let Expression::ConditionalExpression(ternary) = expr.get_inner_expression() else {
         return None;
     };
     Some(FragmentTernary {
@@ -151,7 +146,7 @@ pub fn parse_ternary_fragment(source: &str) -> Option<FragmentTernary> {
 pub fn parse_logical_and_fragment(source: &str) -> Option<FragmentLogicalAnd> {
     let allocator = Allocator::default();
     let expr = parse_fragment(&allocator, source)?;
-    let Expression::LogicalExpression(logical) = peel_paren(&expr) else {
+    let Expression::LogicalExpression(logical) = expr.get_inner_expression() else {
         return None;
     };
     if !matches!(logical.operator, LogicalOperator::And) {
@@ -168,7 +163,7 @@ pub fn parse_logical_and_fragment(source: &str) -> Option<FragmentLogicalAnd> {
 pub fn parse_logical_or_nullish_fragment(source: &str) -> Option<FragmentLogicalOrNullish> {
     let allocator = Allocator::default();
     let expr = parse_fragment(&allocator, source)?;
-    let Expression::LogicalExpression(logical) = peel_paren(&expr) else {
+    let Expression::LogicalExpression(logical) = expr.get_inner_expression() else {
         return None;
     };
     let operator = match logical.operator {
@@ -184,9 +179,5 @@ pub fn parse_logical_or_nullish_fragment(source: &str) -> Option<FragmentLogical
 }
 
 fn static_key(key: &PropertyKey<'_>) -> Option<String> {
-    match key {
-        PropertyKey::StaticIdentifier(id) => Some(id.name.to_string()),
-        PropertyKey::StringLiteral(s) => Some(s.value.to_string()),
-        _ => None,
-    }
+    key.static_name().map(std::borrow::Cow::into_owned)
 }

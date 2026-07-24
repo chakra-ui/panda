@@ -125,12 +125,8 @@ fn descend_value(
 }
 
 fn array_expression<'a>(expr: &'a Expression<'a>) -> Option<&'a ArrayExpression<'a>> {
-    match expr {
+    match expr.get_inner_expression() {
         Expression::ArrayExpression(arr) => Some(arr),
-        Expression::ParenthesizedExpression(p) => array_expression(&p.expression),
-        Expression::TSAsExpression(ts) => array_expression(&ts.expression),
-        Expression::TSSatisfiesExpression(ts) => array_expression(&ts.expression),
-        Expression::TSNonNullExpression(ts) => array_expression(&ts.expression),
         _ => None,
     }
 }
@@ -217,16 +213,8 @@ fn jsx_attribute_expression<'a>(value: &'a JSXAttributeValue<'a>) -> Option<&'a 
 }
 
 fn object_expression<'a>(expr: &'a Expression<'a>) -> Option<&'a ObjectExpression<'a>> {
-    match expr {
+    match expr.get_inner_expression() {
         Expression::ObjectExpression(obj) => Some(obj),
-        Expression::ParenthesizedExpression(parenthesized) => {
-            object_expression(&parenthesized.expression)
-        }
-        Expression::TSAsExpression(ts) => object_expression(&ts.expression),
-        Expression::TSSatisfiesExpression(ts) => object_expression(&ts.expression),
-        Expression::TSNonNullExpression(ts) => object_expression(&ts.expression),
-        Expression::TSTypeAssertion(ts) => object_expression(&ts.expression),
-        Expression::TSInstantiationExpression(ts) => object_expression(&ts.expression),
         _ => None,
     }
 }

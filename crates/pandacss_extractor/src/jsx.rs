@@ -3,8 +3,8 @@
 //! `{...spread}` attributes in source order.
 
 use crate::{
-    CssSyntaxKind, Diagnostic, ExtractorConfig, ImportSpecifierKind, JsxKind, Literal,
-    MatchCategory, MatchedImport, Matchers, Span, StyleTree, VisitorContext,
+    CssSyntaxKind, Diagnostic, ExpressionFacts, ExtractorConfig, ImportSpecifierKind, JsxKind,
+    Literal, MatchCategory, MatchedImport, Matchers, Span, StyleTree, VisitorContext,
     css_template::css_template_to_style_tree,
     jsx_react_runtime,
     matcher::member_display,
@@ -22,7 +22,7 @@ use oxc_ast::ast::{
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
-use oxc_span::SourceType;
+use oxc_span::{GetSpan, SourceType};
 use serde::Serialize;
 use smallvec::SmallVec;
 use std::borrow::Cow;
@@ -77,6 +77,26 @@ pub struct ExtractedJsx {
     /// Transform-facing IR (span-backed conditionals). Skipped from serde/NAPI.
     #[serde(skip)]
     pub style: Option<StyleTree>,
+    /// Original Oxc site shape. Skipped from serde/NAPI.
+    #[serde(skip)]
+    pub source: JsxSourceFacts,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum JsxSourceKind {
+    #[default]
+    Element,
+    RuntimeCall,
+    TaggedTemplate,
+    FrameworkTemplate,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct JsxSourceFacts {
+    pub kind: JsxSourceKind,
+    pub callee_span: Option<Span>,
+    pub args: Vec<ExpressionFacts>,
+    pub factory_intrinsic: Option<String>,
 }
 
 /// One opening-element attribute located from the AST.
@@ -89,6 +109,15 @@ pub struct JsxAttr {
     pub spread: bool,
     /// Value is an expression container (`={…}`) or JSX, not a string literal.
     pub dynamic: bool,
+    /// Oxc-cooked static string value.
+    #[serde(skip)]
+    pub static_value: Option<String>,
+    /// Oxc expression facts for an expression-container value.
+    #[serde(skip)]
+    pub value: Option<ExpressionFacts>,
+    /// Oxc expression facts for `{...spread}`.
+    #[serde(skip)]
+    pub spread_argument: Option<ExpressionFacts>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, PartialEq)]
@@ -124,20 +153,29 @@ pub fn extract_jsx(
         .with_options(crate::adapter::parse_options_for(path))
         .parse();
 
-    let resolver = crate::Resolver::build(
-        &parser_return.program,
+    let resolver = crate::Resolver::build(crate::scope::ResolverBuildInput {
+        program: &parser_return.program,
         matched,
-        Some(&config.matchers),
-        config.token_dictionary.as_deref(),
-        config.cross_file.as_ref(),
-        Some(std::path::PathBuf::from(path)),
-        None,
-        None,
-    );
+        matchers: Some(&config.matchers),
+        tokens: config.token_dictionary.as_deref(),
+        cross_file: config
+            .cross_file
+            .as_ref()
+            .map(crate::CrossFileResolver::as_lookup),
+        source_path: Some(std::path::PathBuf::from(path)),
+        line_index: None,
+        pattern_raw_transform: None,
+    });
     let ctx = VisitorContext::new(matched, config).with_resolver(&resolver);
-    let mut jsx = collect_jsx(&parser_return.program, &ctx);
+    let mut jsx = collect_jsx(&parser_return.program, &ctx, true);
     jsx.extend(crate::template_styles::collect_template_styles(
-        raw_source, path, matched, config,
+        raw_source,
+        path,
+        matched,
+        config,
+        &parser_return.program,
+        &resolver,
+        true,
     ));
     ExtractedJsxResult {
         jsx,
@@ -148,6 +186,7 @@ pub fn extract_jsx(
 pub(crate) fn collect_jsx(
     program: &Program<'_>,
     ctx: &VisitorContext<'_, '_>,
+    retain_transform_facts: bool,
 ) -> Vec<ExtractedJsx> {
     let mut out = Vec::new();
     let react_runtime = jsx_react_runtime::ReactRuntimeImports::from_program(program);
@@ -156,6 +195,7 @@ pub(crate) fn collect_jsx(
         out: &mut out,
         react_runtime,
         style_source_refs: None,
+        retain_transform_facts,
     };
     extractor.visit_program(program);
     out
@@ -173,6 +213,7 @@ pub(crate) fn collect_jsx_verbose(
         out: &mut out,
         react_runtime,
         style_source_refs: Some(&mut style_source_refs),
+        retain_transform_facts: false,
     };
     extractor.visit_program(program);
     (out, style_source_refs)
@@ -187,20 +228,46 @@ fn collect_jsx_attrs(attributes: &[JSXAttributeItem<'_>]) -> Vec<JsxAttr> {
                 span: span_from_oxc(spread.span),
                 spread: true,
                 dynamic: true,
+                static_value: None,
+                value: None,
+                spread_argument: Some(crate::transform_facts::expression_facts(&spread.argument)),
             },
-            JSXAttributeItem::Attribute(attr) => JsxAttr {
-                name: Some(jsx_attribute_name(&attr.name)),
-                span: span_from_oxc(attr.span),
-                spread: false,
-                dynamic: matches!(
-                    attr.value.as_ref(),
-                    Some(
-                        JSXAttributeValue::ExpressionContainer(_)
-                            | JSXAttributeValue::Element(_)
-                            | JSXAttributeValue::Fragment(_)
-                    )
-                ),
-            },
+            JSXAttributeItem::Attribute(attr) => {
+                let static_value = match attr.value.as_ref() {
+                    Some(JSXAttributeValue::StringLiteral(value)) => Some(value.value.to_string()),
+                    Some(JSXAttributeValue::ExpressionContainer(container)) => container
+                        .expression
+                        .as_expression()
+                        .and_then(|expression| match expression.get_inner_expression() {
+                            Expression::StringLiteral(value) => Some(value.value.to_string()),
+                            _ => None,
+                        }),
+                    _ => None,
+                };
+                let value = attr.value.as_ref().and_then(|value| match value {
+                    JSXAttributeValue::ExpressionContainer(container) => container
+                        .expression
+                        .as_expression()
+                        .map(crate::transform_facts::expression_facts),
+                    _ => None,
+                });
+                JsxAttr {
+                    name: Some(jsx_attribute_name(&attr.name)),
+                    span: span_from_oxc(attr.span),
+                    spread: false,
+                    dynamic: matches!(
+                        attr.value.as_ref(),
+                        Some(
+                            JSXAttributeValue::ExpressionContainer(_)
+                                | JSXAttributeValue::Element(_)
+                                | JSXAttributeValue::Fragment(_)
+                        )
+                    ),
+                    static_value,
+                    value,
+                    spread_argument: None,
+                }
+            }
         })
         .collect()
 }
@@ -219,6 +286,7 @@ pub(crate) struct Extractor<'walk, 'ctx, 'cb> {
     out: &'walk mut Vec<ExtractedJsx>,
     react_runtime: jsx_react_runtime::ReactRuntimeImports,
     style_source_refs: Option<&'walk mut Vec<StyleSourceRef>>,
+    pub(crate) retain_transform_facts: bool,
 }
 
 pub(crate) struct ResolvedTag<'a> {
@@ -511,6 +579,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 );
             }
 
+            let retain = self.retain_transform_facts;
             self.out.push(ExtractedJsx {
                 category,
                 kind,
@@ -518,13 +587,30 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 alias,
                 data,
                 span: span_from_oxc(element.span),
-                closing_span: jsx_el
-                    .closing_element
-                    .as_ref()
-                    .map(|c| span_from_oxc(c.span)),
-                attributes: collect_jsx_attrs(&element.attributes),
+                closing_span: if retain {
+                    jsx_el
+                        .closing_element
+                        .as_ref()
+                        .map(|closing| span_from_oxc(closing.span))
+                } else {
+                    None
+                },
+                attributes: if retain {
+                    collect_jsx_attrs(&element.attributes)
+                } else {
+                    Vec::new()
+                },
                 panda_owned,
-                style,
+                style: if retain { style } else { None },
+                source: if retain {
+                    JsxSourceFacts {
+                        kind: JsxSourceKind::Element,
+                        factory_intrinsic: factory_intrinsic_from_jsx_name(&element.name),
+                        ..Default::default()
+                    }
+                } else {
+                    JsxSourceFacts::default()
+                },
             });
         }
         walk::walk_jsx_element(self, jsx_el);
@@ -542,6 +628,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
         {
             let kind = jsx_kind(&self.ctx.config.matchers, &resolved.name, &resolved.alias);
             let data = project_literal(&tree).unwrap_or(Literal::Object(vec![]));
+            let retain = self.retain_transform_facts;
             self.out.push(ExtractedJsx {
                 category: resolved.category,
                 kind,
@@ -552,7 +639,17 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 closing_span: None,
                 attributes: Vec::new(),
                 panda_owned: resolved.panda_owned,
-                style: Some(tree),
+                style: if retain { Some(tree) } else { None },
+                source: if retain {
+                    JsxSourceFacts {
+                        kind: JsxSourceKind::TaggedTemplate,
+                        callee_span: Some(span_from_oxc(tagged.tag.span())),
+                        args: Vec::new(),
+                        factory_intrinsic: factory_intrinsic_from_expression(&tagged.tag),
+                    }
+                } else {
+                    JsxSourceFacts::default()
+                },
             });
         }
         walk::walk_tagged_template_expression(self, tagged);
@@ -580,6 +677,20 @@ fn flatten_member<'a>(
             }
             JSXMemberExpressionObject::ThisExpression(_) => return None,
         }
+    }
+}
+
+fn factory_intrinsic_from_jsx_name(name: &JSXElementName<'_>) -> Option<String> {
+    match name {
+        JSXElementName::MemberExpression(member) => Some(member.property.name.to_string()),
+        _ => None,
+    }
+}
+
+pub(crate) fn factory_intrinsic_from_expression(expression: &Expression<'_>) -> Option<String> {
+    match expression.get_inner_expression() {
+        Expression::StaticMemberExpression(member) => Some(member.property.name.to_string()),
+        _ => None,
     }
 }
 

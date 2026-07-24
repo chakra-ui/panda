@@ -3,7 +3,8 @@
 use std::collections::HashSet;
 
 use pandacss_encoder::{Atom, Encoder, compare_atoms_by_emit_order};
-use pandacss_extractor::{Literal, StyleTree};
+use pandacss_extractor::{CallFacts, CallSyntax, Literal, StyleTree};
+use pandacss_shared::view_transition_class_name;
 use pandacss_utility::ShorthandPolicy;
 
 use crate::PatternTransformFn;
@@ -112,13 +113,10 @@ pub(crate) fn rewrite_for_css_call(
     source: &str,
     span: pandacss_shared::Span,
     args: &[Option<Literal>],
-    arg_spans: &[pandacss_shared::Span],
     style_args: &[Option<StyleTree>],
+    facts: &CallFacts,
     helper_cx: HelperCxMode,
 ) -> Option<Rewrite> {
-    if css_call_has_unresolved_identifier_spread(source, span) {
-        return None;
-    }
     // StyleTree is the sole conditional rewrite path. Bail leaves the call;
     // open spreads must not fall through to a silent-static rewrite.
     if let Some(tree) = style_args.first().and_then(|value| value.as_ref()) {
@@ -128,11 +126,13 @@ pub(crate) fn rewrite_for_css_call(
                     start: span.start,
                     end: span.end,
                     content: js_string_literal(&classes),
+                    preserved: Vec::new(),
                 }),
                 LowerResult::Expr(expr) => Some(Rewrite {
                     start: span.start,
                     end: span.end,
                     content: style_lower::print_class_expr(&expr),
+                    preserved: style_lower::preserved_source_spans(tree),
                 }),
                 LowerResult::Bail => None,
             };
@@ -142,7 +142,7 @@ pub(crate) fn rewrite_for_css_call(
         }
     }
     let classes = classes_for_css_args(project, args)?;
-    match analyze_css_arg(source, args, arg_spans) {
+    match analyze_css_arg(source, args, facts) {
         CssArgShape::AllStatic => {
             // StyleTree `Open` leaves (e.g. `a || 'gray'`) must not silent-rewrite
             // from encode-peeled Literal data. Top-level mixed uses Open props via
@@ -161,11 +161,15 @@ pub(crate) fn rewrite_for_css_call(
         CssArgShape::NeedsBail => None,
         // Inline the static props and keep the open-ended dynamic ones in a
         // runtime `css()` call, merged by `cx` — matches the runtime output.
-        CssArgShape::TopLevelMixed(dynamic) => {
+        CssArgShape::TopLevelMixed {
+            dynamic,
+            mut preserved,
+        } => {
             if helper_cx == HelperCxMode::False {
                 return None;
             }
-            let callee = css_callee(source, span, arg_spans)?;
+            let callee = css_callee(source, facts)?;
+            preserved.push(facts.callee_span);
             Some(Rewrite {
                 start: span.start,
                 end: span.end,
@@ -174,6 +178,7 @@ pub(crate) fn rewrite_for_css_call(
                     js_string_literal(&classes.join(" ")),
                     dynamic.join(", ")
                 ),
+                preserved,
             })
         }
     }
@@ -183,16 +188,15 @@ enum CssArgShape {
     AllStatic,
     NeedsBail,
     /// Source of each open-ended dynamic top-level prop (`width: props.w`).
-    TopLevelMixed(Vec<String>),
+    TopLevelMixed {
+        dynamic: Vec<String>,
+        preserved: Vec<pandacss_shared::Span>,
+    },
 }
 
 /// Classify a single-object `css()` arg into fully static, a clean top-level
 /// static+dynamic mix, or "needs bail" (nested drop / spread / unparseable).
-fn analyze_css_arg(
-    source: &str,
-    args: &[Option<Literal>],
-    arg_spans: &[pandacss_shared::Span],
-) -> CssArgShape {
+fn analyze_css_arg(source: &str, args: &[Option<Literal>], facts: &CallFacts) -> CssArgShape {
     // When the arg can't be analyzed cleanly, fall back to the plain rewrite
     // (unchanged behavior); only a *detected* nested drop bails.
     if args.len() != 1 {
@@ -201,34 +205,40 @@ fn analyze_css_arg(
     let Some(Some(Literal::Object(folded))) = args.first() else {
         return CssArgShape::AllStatic;
     };
-    let Some(arg_span) = arg_spans.first() else {
-        return CssArgShape::AllStatic;
-    };
-    let Some(arg_src) = span_slice(source, *arg_span) else {
-        return CssArgShape::AllStatic;
-    };
-    let Some(props) = pandacss_extractor::parse_object_fragment(arg_src.trim()) else {
+    let Some(object) = facts
+        .args
+        .first()
+        .and_then(Option::as_ref)
+        .and_then(|argument| argument.object.as_ref())
+    else {
         return CssArgShape::AllStatic;
     };
 
     let mut dynamic = Vec::new();
-    for prop in &props {
+    let mut preserved = Vec::new();
+    for prop in &object.properties {
         // A spread reaching here already folded in (unresolvable bare-identifier
         // spreads bailed earlier); its props are already in `folded`.
-        if prop.spread {
+        if prop.is_spread() {
             continue;
         }
         let Some(key) = prop.key.as_deref() else {
-            return CssArgShape::AllStatic;
+            return CssArgShape::NeedsBail;
         };
         match folded.iter().find(|(folded_key, _)| folded_key == key) {
-            None => dynamic.push(prop.raw.clone()),
+            None => {
+                let Some(raw) = span_slice(source, prop.span) else {
+                    return CssArgShape::NeedsBail;
+                };
+                dynamic.push(raw.to_owned());
+                preserved.push(prop.span);
+            }
             Some((_, folded_value)) => {
-                if prop.value_is_dynamic
-                    && prop
-                        .value_raw
-                        .as_deref()
-                        .is_none_or(|value| object_value_has_drop(value, folded_value))
+                if prop
+                    .value
+                    .as_ref()
+                    .and_then(|value| value.object.as_ref())
+                    .is_some_and(|value| object_value_has_drop(value, folded_value))
                 {
                     return CssArgShape::NeedsBail;
                 }
@@ -239,21 +249,18 @@ fn analyze_css_arg(
     if dynamic.is_empty() {
         CssArgShape::AllStatic
     } else {
-        CssArgShape::TopLevelMixed(dynamic)
+        CssArgShape::TopLevelMixed { dynamic, preserved }
     }
 }
 
 /// `true` when the source object literal has any prop the folded value dropped
 /// (recursively) — i.e. folding lost a nested dynamic prop.
-fn object_value_has_drop(source_obj: &str, folded: &Literal) -> bool {
+fn object_value_has_drop(object: &pandacss_extractor::ObjectFacts, folded: &Literal) -> bool {
     let Literal::Object(folded) = folded else {
         return true;
     };
-    let Some(props) = pandacss_extractor::parse_object_fragment(source_obj.trim()) else {
-        return true;
-    };
-    props.iter().any(|prop| {
-        if prop.spread {
+    object.properties.iter().any(|prop| {
+        if prop.is_spread() {
             return false;
         }
         let Some(key) = prop.key.as_deref() else {
@@ -261,44 +268,48 @@ fn object_value_has_drop(source_obj: &str, folded: &Literal) -> bool {
         };
         match folded.iter().find(|(folded_key, _)| folded_key == key) {
             None => true,
-            Some((_, folded_value)) => {
-                prop.value_is_dynamic
-                    && prop
-                        .value_raw
-                        .as_deref()
-                        .is_none_or(|value| object_value_has_drop(value, folded_value))
-            }
+            Some((_, folded_value)) => prop
+                .value
+                .as_ref()
+                .and_then(|value| value.object.as_ref())
+                .is_some_and(|value| object_value_has_drop(value, folded_value)),
         }
     })
 }
 
 /// The callee text of a call, e.g. `css` or `p.css`, from between the call
 /// start and its first argument.
-fn css_callee(
-    source: &str,
+fn css_callee(source: &str, facts: &CallFacts) -> Option<String> {
+    span_slice(source, facts.callee_span).map(str::to_owned)
+}
+
+pub(crate) fn rewrite_for_view_transition_call(
+    project: &Project,
     span: pandacss_shared::Span,
-    arg_spans: &[pandacss_shared::Span],
-) -> Option<String> {
-    let arg_start = usize::try_from(arg_spans.first()?.start).ok()?;
-    let start = usize::try_from(span.start).ok()?;
-    let prefix = source.get(start..arg_start)?;
-    Some(
-        prefix
-            .trim_end()
-            .trim_end_matches('(')
-            .trim_end()
-            .to_owned(),
-    )
+    args: &[Option<Literal>],
+) -> Option<Rewrite> {
+    let arg = args.first()?.as_ref()?;
+    if !matches!(arg, Literal::Object(_)) {
+        return None;
+    }
+    let class_name =
+        view_transition_class_name(&arg.to_json(), &project.config().class_name_prefix);
+    Some(Rewrite {
+        start: span.start,
+        end: span.end,
+        content: js_string_literal(&class_name),
+        preserved: Vec::new(),
+    })
 }
 
 pub(crate) fn rewrite_for_recipe_call(
     project: &Project,
-    source: &str,
     recipe_name: &str,
     span: pandacss_shared::Span,
     args: &[Option<Literal>],
+    facts: &CallFacts,
 ) -> Option<Rewrite> {
-    if recipe_call_has_unextractable_args(source, span, args) {
+    if recipe_call_has_unextractable_args(args, facts) {
         return None;
     }
     let classes = project.class_names_for_recipe_call(recipe_name, args)?;
@@ -307,13 +318,13 @@ pub(crate) fn rewrite_for_recipe_call(
 
 pub(crate) fn rewrite_for_pattern_call(
     project: &Project,
-    source: &str,
     pattern_name: &str,
     span: pandacss_shared::Span,
     args: &[Option<Literal>],
+    facts: &CallFacts,
     pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> Option<Rewrite> {
-    if pattern_call_has_unextractable_args(source, span, args) {
+    if pattern_call_has_unextractable_args(args, facts) {
         return None;
     }
     let classes = project.class_names_for_pattern_call(pattern_name, args, pattern_transform)?;
@@ -325,6 +336,7 @@ fn rewrite_for_class_names(span: pandacss_shared::Span, classes: &[String]) -> R
         start: span.start,
         end: span.end,
         content: js_string_literal(&classes.join(" ")),
+        preserved: Vec::new(),
     }
 }
 
@@ -340,105 +352,16 @@ pub(crate) fn span_slice(source: &str, span: pandacss_shared::Span) -> Option<&s
     source.get(start..end)
 }
 
-pub(crate) fn call_is_raw_member(source: &str, span: pandacss_shared::Span) -> bool {
-    span_slice(source, span).is_some_and(|slice| slice.contains(".raw("))
-}
-
-fn is_tagged_template_span(slice: &str) -> bool {
-    slice.contains('`')
-}
-
-fn call_args_inner(source: &str, span: pandacss_shared::Span) -> Option<&str> {
-    let slice = span_slice(source, span)?;
-    if is_tagged_template_span(slice) {
-        return None;
-    }
-    let open = slice.find('(')?;
-    let close = slice.rfind(')')?;
-    Some(slice[open + 1..close].trim())
-}
-
-fn css_call_has_unresolved_identifier_spread(source: &str, span: pandacss_shared::Span) -> bool {
-    let Some(slice) = span_slice(source, span) else {
-        return true;
-    };
-    if is_tagged_template_span(slice) {
-        return false;
-    }
-    let Some(inner) = call_args_inner(source, span) else {
-        return true;
-    };
-
-    let mut rest = inner;
-    while let Some(index) = rest.find("...") {
-        let after = rest[index + 3..].trim_start();
-        if after.starts_with('{') {
-            rest = &rest[index + 3..];
-            continue;
-        }
-        let Some(ident) = take_identifier(after) else {
-            rest = &rest[index + 3..];
-            continue;
-        };
-        let after_ident = after[ident.len()..].trim_start();
-        if !(after_ident.is_empty() || after_ident.starts_with(',') || after_ident.starts_with('}'))
-        {
-            // Expression spread (`...(cond && obj)`, `...(a ? b : c)`) — not a bare identifier.
-            rest = &rest[index + 3..];
-            continue;
-        }
-        if !is_resolvable_style_spread_binding(source, ident) {
-            return true;
-        }
-        rest = &rest[index + 3 + ident.len()..];
-    }
-    false
-}
-
-fn take_identifier(input: &str) -> Option<&str> {
-    let first = input.chars().next()?;
-    if !(first == '_' || first.is_ascii_alphabetic()) {
-        return None;
-    }
-    let mut len = first.len_utf8();
-    for ch in input[len..].chars() {
-        if ch == '_' || ch.is_ascii_alphanumeric() {
-            len += ch.len_utf8();
-        } else {
-            break;
-        }
-    }
-    Some(&input[..len])
-}
-
-fn is_resolvable_style_spread_binding(source: &str, name: &str) -> bool {
-    let patterns = [
-        format!("const {name} = css.raw"),
-        format!("const {name} = {{"),
-        format!("let {name} = css.raw"),
-        format!("let {name} = {{"),
-        format!("import {{ {name} }}"),
-        format!("import {{ {name},"),
-        format!("import {name} from"),
-        format!("import {name},"),
-    ];
-    patterns
-        .iter()
-        .any(|pattern| source.contains(pattern.as_str()))
-}
-
-fn recipe_call_has_unextractable_args(
-    source: &str,
-    span: pandacss_shared::Span,
-    args: &[Option<Literal>],
-) -> bool {
-    if args.iter().any(Option::is_none) {
+fn recipe_call_has_unextractable_args(args: &[Option<Literal>], facts: &CallFacts) -> bool {
+    if facts.syntax != CallSyntax::Call || args.iter().any(Option::is_none) {
         return true;
     }
-    let Some(inner) = call_args_inner(source, span) else {
-        return true;
-    };
-    if inner.is_empty() || inner == "{}" {
+    if args.is_empty()
+        || facts
+            .direct_empty_object_args
+            .first()
+            .is_some_and(|is_empty| *is_empty)
+    {
         return false;
     }
     matches!(
@@ -447,18 +370,16 @@ fn recipe_call_has_unextractable_args(
     )
 }
 
-fn pattern_call_has_unextractable_args(
-    source: &str,
-    span: pandacss_shared::Span,
-    args: &[Option<Literal>],
-) -> bool {
-    if args.iter().any(Option::is_none) {
+fn pattern_call_has_unextractable_args(args: &[Option<Literal>], facts: &CallFacts) -> bool {
+    if facts.syntax != CallSyntax::Call || args.iter().any(Option::is_none) {
         return true;
     }
-    let Some(inner) = call_args_inner(source, span) else {
-        return true;
-    };
-    if inner.is_empty() || inner == "{}" {
+    if args.is_empty()
+        || facts
+            .direct_empty_object_args
+            .first()
+            .is_some_and(|is_empty| *is_empty)
+    {
         return false;
     }
     !matches!(

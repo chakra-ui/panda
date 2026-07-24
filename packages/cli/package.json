@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/cli",
-  "version": "2.0.0-beta.9",
+  "version": "2.0.0-beta.10",
   "description": "CLI for Panda CSS, powered by the Rust compiler",
   "type": "module",
   "main": "./dist/index.js",

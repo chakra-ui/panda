@@ -170,26 +170,47 @@ pub fn compile(input: Option<CompileInput>) -> CompileOutput {
         &user_config,
         &static_pattern_atoms,
         static_pattern_diagnostics,
-        emit_layer_declaration,
         None,
-        None,
-        None,
+        StylesheetEmitOptions {
+            emit_layer_declaration,
+            minify_override: None,
+            polyfill_override: None,
+        },
     )
 }
 
-#[allow(
-    clippy::too_many_arguments,
-    reason = "compile orchestration mirrors host options; a bag struct would only relocate the same inputs"
-)]
+/// Emit toggles shared by [`build_compile_output`] / [`build_stylesheet_output`].
+/// Kept separate from `&mut` project/transform refs so lifetimes stay independent.
+#[derive(Clone, Copy)]
+pub(crate) struct StylesheetEmitOptions {
+    pub emit_layer_declaration: bool,
+    pub minify_override: Option<bool>,
+    pub polyfill_override: Option<bool>,
+}
+
+pub(crate) fn collect_output_diagnostics(
+    project: &pandacss_project::Project,
+    static_pattern_diagnostics: Vec<pandacss_extractor::Diagnostic>,
+    stylesheet_diagnostics: Vec<pandacss_shared::Diagnostic>,
+) -> Vec<crate::Diagnostic> {
+    project
+        .diagnostics()
+        .iter()
+        .cloned()
+        .chain(project.file_diagnostics().into_iter().cloned())
+        .chain(static_pattern_diagnostics)
+        .chain(stylesheet_diagnostics)
+        .map(crate::convert::convert_diagnostic)
+        .collect()
+}
+
 pub(crate) fn build_compile_output(
     project: &mut pandacss_project::Project,
     user_config: &UserConfig,
     static_pattern_atoms: &[CoreAtom],
     static_pattern_diagnostics: Vec<pandacss_extractor::Diagnostic>,
-    emit_layer_declaration: bool,
     utility_transform: Option<&mut pandacss_project::UtilityTransformFn<'_>>,
-    minify_override: Option<bool>,
-    polyfill_override: Option<bool>,
+    options: StylesheetEmitOptions,
 ) -> CompileOutput {
     // No span here — `manifest` and `stylesheet` (below) are the two real
     // pieces of work; this is thin orchestration around them.
@@ -200,25 +221,19 @@ pub(crate) fn build_compile_output(
         user_config,
         token_dictionary,
         static_pattern_atoms,
-        emit_layer_declaration,
         utility_transform,
-        minify_override,
-        polyfill_override,
+        options,
     );
     CompileOutput {
         css: output.css,
         source_map: output.source_map,
         manifest,
         layer_ranges: layer_ranges_from(&output.layer_ranges),
-        diagnostics: project
-            .diagnostics()
-            .iter()
-            .cloned()
-            .chain(project.file_diagnostics().into_iter().cloned())
-            .chain(static_pattern_diagnostics)
-            .chain(output.diagnostics)
-            .map(crate::convert::convert_diagnostic)
-            .collect(),
+        diagnostics: collect_output_diagnostics(
+            project,
+            static_pattern_diagnostics,
+            output.diagnostics,
+        ),
     }
 }
 
@@ -240,21 +255,23 @@ pub(crate) fn build_keyframes_compile_output(
     } else {
         project.stylesheet_snapshots(user_config)
     };
-    let polyfill = resolve_polyfill(user_config, polyfill_override);
+    let polyfill = pandacss_stylesheet::resolve_polyfill(user_config, polyfill_override);
     let stylesheet_options = pandacss_stylesheet::StylesheetOptions {
-        minify: resolve_minify(user_config, minify_override),
+        minify: pandacss_stylesheet::resolve_minify(user_config, minify_override),
         include_static: pandacss_stylesheet::has_static_css(user_config),
         source_map: false,
         emit_layer_declaration,
         polyfill,
         layers: None,
     };
-    let output = pandacss_stylesheet::compile_keyframes(
+    let mut snapshot_diagnostics = snapshots.diagnostics;
+    let mut output = pandacss_stylesheet::compile_keyframes(
         pandacss_stylesheet::StylesheetInput {
             config: user_config,
             token_dictionary,
             atoms: snapshots.atoms,
             utility_styles: snapshots.utility_styles,
+            view_transitions: snapshots.view_transitions,
             encoded_recipes: snapshots.encoded_recipes,
             static_encoded_recipes: Some(snapshots.static_encoded_recipes),
             static_pattern_atoms,
@@ -262,20 +279,18 @@ pub(crate) fn build_keyframes_compile_output(
         },
         &stylesheet_options,
     );
+    snapshot_diagnostics.append(&mut output.diagnostics);
+    output.diagnostics = snapshot_diagnostics;
     CompileOutput {
         css: output.css,
         source_map: output.source_map,
         manifest,
         layer_ranges: empty_layer_ranges(),
-        diagnostics: project
-            .diagnostics()
-            .iter()
-            .cloned()
-            .chain(project.file_diagnostics().into_iter().cloned())
-            .chain(static_pattern_diagnostics)
-            .chain(output.diagnostics)
-            .map(crate::convert::convert_diagnostic)
-            .collect(),
+        diagnostics: collect_output_diagnostics(
+            project,
+            static_pattern_diagnostics,
+            output.diagnostics,
+        ),
     }
 }
 
@@ -300,17 +315,19 @@ pub(crate) fn build_layer_compile_output(
         user_config,
         token_dictionary,
         static_pattern_atoms,
-        false,
         utility_transform,
-        minify_override,
-        polyfill_override,
+        StylesheetEmitOptions {
+            emit_layer_declaration: false,
+            minify_override,
+            polyfill_override,
+        },
     );
     let selected: Vec<pandacss_stylesheet::StylesheetLayer> = layers
         .iter()
         .filter_map(|name| pandacss_stylesheet::StylesheetLayer::from_name(name))
         .collect();
     let mut css = output.get_layer_css(&selected);
-    let polyfill = resolve_polyfill(user_config, polyfill_override);
+    let polyfill = pandacss_stylesheet::resolve_polyfill(user_config, polyfill_override);
     if emit_layer_declaration && !polyfill {
         let preamble =
             pandacss_stylesheet::layer_order_declaration(&user_config.layers, Some(&selected));
@@ -323,15 +340,11 @@ pub(crate) fn build_layer_compile_output(
         source_map: output.source_map,
         manifest,
         layer_ranges: empty_layer_ranges(),
-        diagnostics: project
-            .diagnostics()
-            .iter()
-            .cloned()
-            .chain(project.file_diagnostics().into_iter().cloned())
-            .chain(static_pattern_diagnostics)
-            .chain(output.diagnostics)
-            .map(crate::convert::convert_diagnostic)
-            .collect(),
+        diagnostics: collect_output_diagnostics(
+            project,
+            static_pattern_diagnostics,
+            output.diagnostics,
+        ),
     }
 }
 
@@ -342,6 +355,11 @@ pub struct SplitCssFile {
     pub code: String,
 }
 
+pub(crate) struct SplitCssBuildOutput {
+    pub files: Vec<SplitCssFile>,
+    pub diagnostics: Vec<pandacss_shared::Diagnostic>,
+}
+
 /// Split the stylesheet into per-file outputs (layers + recipes + indexes).
 pub(crate) fn build_split_css(
     project: &mut pandacss_project::Project,
@@ -349,7 +367,7 @@ pub(crate) fn build_split_css(
     static_pattern_atoms: &[CoreAtom],
     utility_transform: Option<&mut pandacss_project::UtilityTransformFn<'_>>,
     options: Option<&CssOutputOptions>,
-) -> Vec<SplitCssFile> {
+) -> SplitCssBuildOutput {
     let token_dictionary = project.config().token_dictionary();
     let snapshots = if let Some(transform) = utility_transform {
         project.stylesheet_snapshots_with_utility_transform(user_config, transform)
@@ -364,9 +382,15 @@ pub(crate) fn build_split_css(
                 .collect::<Vec<_>>()
         })
     });
-    let polyfill = resolve_polyfill(user_config, options.and_then(|options| options.polyfill));
+    let polyfill = pandacss_stylesheet::resolve_polyfill(
+        user_config,
+        options.and_then(|options| options.polyfill),
+    );
     let stylesheet_options = pandacss_stylesheet::StylesheetOptions {
-        minify: resolve_minify(user_config, options.and_then(|options| options.minify)),
+        minify: pandacss_stylesheet::resolve_minify(
+            user_config,
+            options.and_then(|options| options.minify),
+        ),
         include_static: pandacss_stylesheet::has_static_css(user_config),
         source_map: false,
         emit_layer_declaration: options
@@ -376,42 +400,45 @@ pub(crate) fn build_split_css(
         polyfill,
         layers: selected_layers,
     };
-    pandacss_stylesheet::split_css(
+    let mut snapshot_diagnostics = snapshots.diagnostics;
+    let mut output = pandacss_stylesheet::split_css(
         &pandacss_stylesheet::StylesheetInput {
             config: user_config,
             token_dictionary,
             atoms: snapshots.atoms,
             utility_styles: snapshots.utility_styles,
+            view_transitions: snapshots.view_transitions,
             encoded_recipes: snapshots.encoded_recipes,
             static_encoded_recipes: Some(snapshots.static_encoded_recipes),
             static_pattern_atoms,
             token_refs: snapshots.token_refs,
         },
         &stylesheet_options,
-    )
-    .into_iter()
-    .map(|file| SplitCssFile {
-        path: file.path,
-        code: file.code,
-    })
-    .collect()
+    );
+    snapshot_diagnostics.append(&mut output.diagnostics);
+    let files = output
+        .files
+        .into_iter()
+        .map(|file| SplitCssFile {
+            path: file.path,
+            code: file.code,
+        })
+        .collect();
+    SplitCssBuildOutput {
+        files,
+        diagnostics: snapshot_diagnostics,
+    }
 }
 
 /// Compile the project's atoms + recipes into a raw stylesheet (css + layer
 /// ranges). Shared by `build_compile_output` and `css_for_layers`.
-#[allow(
-    clippy::too_many_arguments,
-    reason = "stylesheet options are independent toggles shared by compile and css_for_layers"
-)]
 pub(crate) fn build_stylesheet_output(
     project: &mut pandacss_project::Project,
     user_config: &UserConfig,
     token_dictionary: Option<std::sync::Arc<pandacss_tokens::TokenDictionary>>,
     static_pattern_atoms: &[CoreAtom],
-    emit_layer_declaration: bool,
     utility_transform: Option<&mut pandacss_project::UtilityTransformFn<'_>>,
-    minify_override: Option<bool>,
-    polyfill_override: Option<bool>,
+    options: StylesheetEmitOptions,
 ) -> pandacss_stylesheet::StylesheetOutput {
     let span =
         tracing::trace_span!(target: "css", "stylesheet", atom_count = tracing::field::Empty);
@@ -422,48 +449,33 @@ pub(crate) fn build_stylesheet_output(
         project.stylesheet_snapshots(user_config)
     };
     span.record("atom_count", snapshots.atoms.len());
-    let polyfill = resolve_polyfill(user_config, polyfill_override);
-    let options = pandacss_stylesheet::StylesheetOptions {
-        minify: resolve_minify(user_config, minify_override),
+    let polyfill = pandacss_stylesheet::resolve_polyfill(user_config, options.polyfill_override);
+    let stylesheet_options = pandacss_stylesheet::StylesheetOptions {
+        minify: pandacss_stylesheet::resolve_minify(user_config, options.minify_override),
         include_static: pandacss_stylesheet::has_static_css(user_config),
         source_map: false,
-        emit_layer_declaration: emit_layer_declaration && !polyfill,
+        emit_layer_declaration: options.emit_layer_declaration && !polyfill,
         polyfill,
         layers: None,
     };
-    pandacss_stylesheet::compile(
+    let mut snapshot_diagnostics = snapshots.diagnostics;
+    let mut output = pandacss_stylesheet::compile(
         pandacss_stylesheet::StylesheetInput {
             config: user_config,
             token_dictionary,
             atoms: snapshots.atoms,
             utility_styles: snapshots.utility_styles,
+            view_transitions: snapshots.view_transitions,
             encoded_recipes: snapshots.encoded_recipes,
             static_encoded_recipes: Some(snapshots.static_encoded_recipes),
             static_pattern_atoms,
             token_refs: snapshots.token_refs,
         },
-        &options,
-    )
-}
-
-fn resolve_minify(user_config: &UserConfig, minify_override: Option<bool>) -> bool {
-    minify_override.unwrap_or_else(|| {
-        user_config
-            .extra
-            .get("minify")
-            .and_then(serde_json::Value::as_bool)
-            .unwrap_or(false)
-    })
-}
-
-fn resolve_polyfill(user_config: &UserConfig, polyfill_override: Option<bool>) -> bool {
-    polyfill_override.unwrap_or_else(|| {
-        user_config
-            .extra
-            .get("polyfill")
-            .and_then(serde_json::Value::as_bool)
-            .unwrap_or(false)
-    })
+        &stylesheet_options,
+    );
+    snapshot_diagnostics.append(&mut output.diagnostics);
+    output.diagnostics = snapshot_diagnostics;
+    output
 }
 
 fn compile_manifest(

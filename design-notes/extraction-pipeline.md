@@ -25,8 +25,8 @@ source ─→ Oxc Parser ─→ Program ─┬─→ collect_imports  ─→ Imp
 Each visitor walks the program _once_. They share a `VisitorContext` that owns the alias lookup and an optional
 `Resolver` for same-file scope. Two distinct return shapes:
 
-- `ExtractUsage` — lean (`calls`, `jsx`, `diagnostics`). Production hot path; strips `imports` and `matched` so callers
-  don't pay NAPI serialization cost.
+- `ExtractUsage` — lean (`calls`, `jsx`, `diagnostics`). Production hot path; strips serialized `imports` and `matched`
+  while retaining transform-only facts in Rust.
 - `ExtractDebugResult` — kitchen sink (`imports`, `matched`, `calls`, `jsx`, `diagnostics`). For tooling and
   parity-compare flows.
 
@@ -69,6 +69,23 @@ positives on shadowed names.
 
 Unresolved symbols (free variables) conservatively count as imports. Such names typically refer to globals or implicit
 imports the binder can't see; downstream alias lookup by name is authoritative.
+
+## Transform facts
+
+The project transformer consumes compact owned facts from this parse instead of parsing source fragments again:
+
+- `ModuleFacts` keeps imports, resolved import-reference spans, and the directive-prologue boundary.
+- `CallFacts` keeps callee shape, argument spans, and expression facts.
+- `JsxSourceFacts` and `JsxAttr` keep element/runtime shape, property facts, and cooked values.
+- `ExpressionFacts` keeps only the kinds, precedence, static keys, and branch structure needed by rewrites.
+
+These records use spans and small enums rather than cloned Oxc nodes, so the allocator still drops after extraction.
+`extract_for_transform` retains them; the regular extraction path skips their recursive payload and semantic
+import-reference list. Import cleanup compares semantic reference spans with rewrite spans; a rewrite also lists source
+spans copied into its output so nested live references are preserved.
+
+Vue, Svelte, and Astro still scan their markup grammar in native adapters because Oxc parses JavaScript, not the outer
+template language. Expressions copied into the adapted program reuse the original parse and resolver.
 
 ## Parse-error contract
 

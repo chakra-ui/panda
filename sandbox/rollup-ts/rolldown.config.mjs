@@ -8,5 +8,5 @@ export default {
   output: { dir: 'dist-rolldown', format: 'es', sourcemap: true },
   external: ['react', 'react-dom', 'react/jsx-runtime'],
   jsx: 'react-jsx',
-  plugins: [pandacss()],
+  plugins: [pandacss({ transform: true })],
 }

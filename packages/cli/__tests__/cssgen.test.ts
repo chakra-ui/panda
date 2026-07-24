@@ -256,6 +256,23 @@ describe('cssgen command', () => {
     expect(readFileSync(utilitiesFile, 'utf8')).toContain('red')
   })
 
+  it('surfaces split stylesheet diagnostics in write mode', async () => {
+    dir = createFixture(
+      MINIMAL_CSS_CONFIG.replace(
+        'export default {',
+        "export default {\n  staticCss: { css: [{ properties: { colr: 'red' } }] },",
+      ),
+    )
+
+    const result = await runCssgen({ cwd: dir, splitting: true, logLevel: 'silent' })
+
+    expect(result.diagnostics.map((diagnostic) => diagnostic.code)).toMatchInlineSnapshot(`
+      [
+        "static_css_property_unknown",
+      ]
+    `)
+  })
+
   it('--check passes after generated CSS exists', async () => {
     dir = createFixture()
 

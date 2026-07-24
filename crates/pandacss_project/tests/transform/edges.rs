@@ -254,11 +254,7 @@ fn recipe_object_arg_finite_variant_ternary_emits_static_branches() {
 
     assert!(output.changed);
     assert!(!output.bailed);
-    assert_snapshot!(output.code, @r#"
-    import { button } from '@panda/recipes';
-    export const cls = "button button--size_sm";
-    "#
-    );
+    assert_snapshot!(output.code, @r#"export const cls = "button button--size_sm";"#);
 }
 
 // --- css vs jsx semantic pair for the same nested conditional ---

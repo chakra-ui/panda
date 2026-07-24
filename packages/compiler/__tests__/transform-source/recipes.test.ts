@@ -136,10 +136,9 @@ describe('compiler.transformSource: config recipe calls', () => {
     )
 
     const result = recipeCompiler.transformSource({ path: 'src/button.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`
-      "import { button } from '@panda/recipes'
-      export const cls = "button button--size_sm button--variant_outline button--compound__size_sm__variant_outline""
-    `)
+    expect(result.code).toMatchInlineSnapshot(
+      `"export const cls = "button button--size_sm button--variant_outline button--compound__size_sm__variant_outline""`,
+    )
   })
 
   test('omits a config recipe compound class when the combination does not match in eager mode', () => {
@@ -149,20 +148,14 @@ describe('compiler.transformSource: config recipe calls', () => {
     )
 
     const result = recipeCompiler.transformSource({ path: 'src/button.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`
-      "import { button } from '@panda/recipes'
-      export const cls = "button button--size_lg button--variant_outline""
-    `)
+    expect(result.code).toMatchInlineSnapshot(`"export const cls = "button button--size_lg button--variant_outline""`)
   })
 
   test('applies default variants for a single explicit variant', () => {
     const source = lines("import { button } from '@panda/recipes'", "export const cls = button({ size: 'sm' })")
 
     const result = recipeCompiler.transformSource({ path: 'src/button.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`
-      "import { button } from '@panda/recipes'
-      export const cls = "button button--size_sm button--variant_solid""
-    `)
+    expect(result.code).toMatchInlineSnapshot(`"export const cls = "button button--size_sm button--variant_solid""`)
   })
 
   test('selects multiple variants in one call', () => {
@@ -172,60 +165,44 @@ describe('compiler.transformSource: config recipe calls', () => {
     )
 
     const result = recipeCompiler.transformSource({ path: 'src/button.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`
-      "import { button } from '@panda/recipes'
-      export const cls = "button button--size_lg button--variant_outline""
-    `)
+    expect(result.code).toMatchInlineSnapshot(`"export const cls = "button button--size_lg button--variant_outline""`)
   })
 
   test('applies all default variants for a no-arg call', () => {
     const source = lines("import { button } from '@panda/recipes'", 'export const cls = button()')
 
     const result = recipeCompiler.transformSource({ path: 'src/button.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`
-      "import { button } from '@panda/recipes'
-      export const cls = "button button--size_md button--variant_solid""
-    `)
+    expect(result.code).toMatchInlineSnapshot(`"export const cls = "button button--size_md button--variant_solid""`)
   })
 
   test('applies all default variants for an empty-object call', () => {
     const source = lines("import { button } from '@panda/recipes'", 'export const cls = button({})')
 
     const result = recipeCompiler.transformSource({ path: 'src/button.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`
-      "import { button } from '@panda/recipes'
-      export const cls = "button button--size_md button--variant_solid""
-    `)
+    expect(result.code).toMatchInlineSnapshot(`"export const cls = "button button--size_md button--variant_solid""`)
   })
 
   test('overrides a single default variant', () => {
     const source = lines("import { button } from '@panda/recipes'", "export const cls = button({ variant: 'outline' })")
 
     const result = recipeCompiler.transformSource({ path: 'src/button.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`
-      "import { button } from '@panda/recipes'
-      export const cls = "button button--size_md button--variant_outline""
-    `)
+    expect(result.code).toMatchInlineSnapshot(`"export const cls = "button button--size_md button--variant_outline""`)
   })
 
   test('applies a boolean variant set to true', () => {
     const source = lines("import { button } from '@panda/recipes'", 'export const cls = button({ block: true })')
 
     const result = recipeCompiler.transformSource({ path: 'src/button.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`
-      "import { button } from '@panda/recipes'
-      export const cls = "button button--block_true button--size_md button--variant_solid""
-    `)
+    expect(result.code).toMatchInlineSnapshot(
+      `"export const cls = "button button--block_true button--size_md button--variant_solid""`,
+    )
   })
 
   test('applies a boolean variant on a recipe without default variants', () => {
     const source = lines("import { card } from '@panda/recipes'", 'export const cls = card({ raised: true })')
 
     const result = recipeCompiler.transformSource({ path: 'src/card.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`
-      "import { card } from '@panda/recipes'
-      export const cls = "card card--raised_true""
-    `)
+    expect(result.code).toMatchInlineSnapshot(`"export const cls = "card card--raised_true""`)
   })
 
   test('uses the recipe key as class name when no className is configured', () => {
@@ -235,10 +212,9 @@ describe('compiler.transformSource: config recipe calls', () => {
     )
 
     const result = recipeCompiler.transformSource({ path: 'src/badge.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`
-      "import { badge } from '@panda/recipes'
-      export const cls = "badge badge--raised_true badge--size_sm badge--compound__raised_true__size_sm""
-    `)
+    expect(result.code).toMatchInlineSnapshot(
+      `"export const cls = "badge badge--raised_true badge--size_sm badge--compound__raised_true__size_sm""`,
+    )
   })
 
   test('includes only the matching compound among several', () => {
@@ -248,10 +224,9 @@ describe('compiler.transformSource: config recipe calls', () => {
     )
 
     const result = recipeCompiler.transformSource({ path: 'src/badge.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`
-      "import { badge } from '@panda/recipes'
-      export const cls = "badge badge--raised_true badge--size_md badge--compound__raised_true__size_md""
-    `)
+    expect(result.code).toMatchInlineSnapshot(
+      `"export const cls = "badge badge--raised_true badge--size_md badge--compound__raised_true__size_md""`,
+    )
   })
 
   test('omits all compounds when the boolean side does not match', () => {
@@ -261,10 +236,7 @@ describe('compiler.transformSource: config recipe calls', () => {
     )
 
     const result = recipeCompiler.transformSource({ path: 'src/badge.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`
-      "import { badge } from '@panda/recipes'
-      export const cls = "badge badge--raised_false badge--size_sm""
-    `)
+    expect(result.code).toMatchInlineSnapshot(`"export const cls = "badge badge--raised_false badge--size_sm""`)
   })
 
   test('rewrites two recipe calls in one file', () => {
@@ -276,8 +248,7 @@ describe('compiler.transformSource: config recipe calls', () => {
 
     const result = recipeCompiler.transformSource({ path: 'src/button.tsx', source })
     expect(result.code).toMatchInlineSnapshot(`
-      "import { button } from '@panda/recipes'
-      export const small = "button button--size_sm button--variant_solid"
+      "export const small = "button button--size_sm button--variant_solid"
       export const large = "button button--size_lg button--variant_solid""
     `)
   })
@@ -336,10 +307,9 @@ describe('compiler.transformSource: config recipe calls', () => {
 
     const result = recipeCompiler.transformSource({ path: 'src/button.tsx', source })
     expect(result.changed).toBe(true)
-    expect(result.code).toMatchInlineSnapshot(`
-      "import { button } from '@panda/recipes'
-      export const cls = "button button--size_sm button--size_lg button--variant_solid""
-    `)
+    expect(result.code).toMatchInlineSnapshot(
+      `"export const cls = "button button--size_sm button--size_lg button--variant_solid""`,
+    )
   })
 
   test('applies compound only when defaults are overridden into the combo', () => {
@@ -352,8 +322,7 @@ describe('compiler.transformSource: config recipe calls', () => {
 
     const result = recipeCompiler.transformSource({ path: 'src/button.tsx', source })
     expect(result.code).toMatchInlineSnapshot(`
-      "import { button } from '@panda/recipes'
-      export const a = "button button--size_md button--variant_outline"
+      "export const a = "button button--size_md button--variant_outline"
       export const b = "button button--size_sm button--variant_outline button--compound__size_sm__variant_outline""
     `)
   })
@@ -367,10 +336,9 @@ describe('compiler.transformSource: smartCompoundVariants recipe calls', () => {
     )
 
     const result = smartCompiler.transformSource({ path: 'src/badge.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`
-      "import { badge } from '@panda/recipes'
-      export const cls = "badge badge--raised_true badge--size_sm badge--compound__raised_true__size_sm""
-    `)
+    expect(result.code).toMatchInlineSnapshot(
+      `"export const cls = "badge badge--raised_true badge--size_sm badge--compound__raised_true__size_sm""`,
+    )
   })
 
   test('omits the compound class for a non-matching combo', () => {
@@ -380,10 +348,7 @@ describe('compiler.transformSource: smartCompoundVariants recipe calls', () => {
     )
 
     const result = smartCompiler.transformSource({ path: 'src/badge.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`
-      "import { badge } from '@panda/recipes'
-      export const cls = "badge badge--raised_true badge--size_lg""
-    `)
+    expect(result.code).toMatchInlineSnapshot(`"export const cls = "badge badge--raised_true badge--size_lg""`)
   })
 })
 
@@ -392,10 +357,7 @@ describe('compiler.transformSource: recipe calls under prefix/hash config', () =
     const source = lines("import { button } from '@panda/recipes'", "export const cls = button({ size: 'sm' })")
 
     const result = prefixCompiler.transformSource({ path: 'src/button.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`
-      "import { button } from '@panda/recipes'
-      export const cls = "button button--size_sm""
-    `)
+    expect(result.code).toMatchInlineSnapshot(`"export const cls = "button button--size_sm""`)
   })
 
   // SUSPECT: under `hash.className: true`, the compound class is hashed
@@ -410,10 +372,9 @@ describe('compiler.transformSource: recipe calls under prefix/hash config', () =
     )
 
     const result = prefixCompiler.transformSource({ path: 'src/button.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`
-      "import { button } from '@panda/recipes'
-      export const cls = "button button--size_sm button--variant_outline button--efyQHr""
-    `)
+    expect(result.code).toMatchInlineSnapshot(
+      `"export const cls = "button button--size_sm button--variant_outline button--efyQHr""`,
+    )
   })
 })
 

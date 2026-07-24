@@ -8,6 +8,7 @@ use crate::writer::CssWriter;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct RuleBody {
     pub selector: String,
+    pub merge_safe: bool,
     pub declarations: Vec<GroupedDeclaration>,
 }
 
@@ -55,14 +56,18 @@ fn sort_children(node: &mut GroupNode) {
 /// Collapse consecutive rules with identical declaration blocks into one
 /// comma-joined selector list (`.a {…} .b {…}` → `.a, .b {…}`). Only adjacent
 /// rules merge, preserving the cascade; at-rule wrappers are separate
-/// children and act as barriers. Mirrors lightningcss's adjacent
-/// `CssRuleList::minify` merge.
+/// children and act as barriers. Compatibility-sensitive selectors also act
+/// as barriers so one unsupported selector cannot invalidate a fallback.
 fn merge_adjacent_rules(node: &mut GroupNode) {
     if node.rules.len() > 1 {
         let mut merged: Vec<RuleBody> = Vec::with_capacity(node.rules.len());
         for body in node.rules.drain(..) {
             match merged.last_mut() {
-                Some(last) if last.declarations == body.declarations => {
+                Some(last)
+                    if last.declarations == body.declarations
+                        && last.merge_safe
+                        && body.merge_safe =>
+                {
                     last.selector.push_str(", ");
                     last.selector.push_str(&body.selector);
                 }
@@ -93,10 +98,12 @@ fn write_group_node(writer: &mut CssWriter, node: &GroupNode) {
 mod tests {
     use super::*;
     use crate::writer::CssWriter;
+    use insta::assert_snapshot;
 
     fn rule(selector: &str, prop: &str, value: &str) -> RuleBody {
         RuleBody {
             selector: selector.to_owned(),
+            merge_safe: true,
             declarations: vec![GroupedDeclaration {
                 prop: prop.to_owned(),
                 value: value.to_owned(),
@@ -177,6 +184,27 @@ mod tests {
             css,
             ".a {\n  color: red;\n}\n@media (width >= 48rem) {\n  .b {\n    color: red;\n  }\n}\n"
         );
+    }
+
+    #[test]
+    fn does_not_merge_compatibility_sensitive_selectors() {
+        let mut root = GroupNode::default();
+        let mut feature_selector = rule(".x:has(.y)", "color", "gray");
+        feature_selector.merge_safe =
+            crate::css_syntax::selector_is_merge_safe(&feature_selector.selector);
+        let fallback_selector = rule(".fallback", "color", "gray");
+        root.push_rule(&[], feature_selector);
+        root.push_rule(&[], fallback_selector);
+
+        let css = write_css(&mut root);
+        assert_snapshot!(css, @r"
+        .x:has(.y) {
+          color: gray;
+        }
+        .fallback {
+          color: gray;
+        }
+        ");
     }
 
     #[test]

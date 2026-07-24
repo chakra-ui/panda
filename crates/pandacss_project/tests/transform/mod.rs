@@ -37,3 +37,4 @@ mod tokens;
     reason = "core transform suite mirrors the crate's original tests/transform.rs filename"
 )]
 mod transform;
+mod view_transition;

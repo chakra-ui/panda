@@ -3,6 +3,7 @@ import { buildCommand, buildSubcommand, checkCommand, devCommand } from '../src/
 import { doctorCommand } from '../src/commands/doctor'
 import { analyzeCommand } from '../src/commands/analyze'
 import { studioCommand, studioGenerateCommand } from '../src/commands/studio'
+import { normalizeCliFlags } from '../src/args'
 
 describe('cli main', () => {
   it('defines the default build command route', () => {
@@ -21,5 +22,14 @@ describe('cli main', () => {
     expect(studioCommand.meta).toMatchObject({ name: 'studio' })
     expect(studioGenerateCommand.meta).toMatchObject({ name: 'studio generate' })
     expect(studioCommand.subCommands).toBeUndefined()
+  })
+
+  it('normalizes Citty flags for schema validation', () => {
+    expect(normalizeCliFlags({ color: false, 'skip-presets': true })).toMatchInlineSnapshot(`
+      {
+        "noColor": true,
+        "skipPresets": true,
+      }
+    `)
   })
 })

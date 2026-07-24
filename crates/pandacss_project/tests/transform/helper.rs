@@ -3,7 +3,10 @@
 use super::common::{transform_jsx, transform_jsx_with_helper};
 use indoc::indoc;
 use insta::assert_snapshot;
-use pandacss_project::{CX_HELPER_LOCAL, CX_HELPER_MODULE, HelperCxMode, inject_cx_import};
+use pandacss_project::{
+    CX_HELPER_LOCAL, CX_HELPER_MODULE, HelperCxMode, TransformHelperFacts, inject_cx_import,
+    sync_internal_css_import,
+};
 
 #[test]
 fn helper_module_constants_match_injected_import() {
@@ -92,6 +95,36 @@ fn inject_cx_import_respects_directive_prologue() {
     import { cx as __pcx } from '@pandacss-internal/css';
 
     export const cls = __pcx('a');
+    "#);
+}
+
+#[test]
+fn inject_cx_import_stays_outside_a_multiline_directive_comment() {
+    let source = "\"use client\" /* keep\nthis comment */\nexport const cls = __pcx('a');\n";
+
+    assert_snapshot!(inject_cx_import(source), @r#"
+    "use client" /* keep
+    this comment */
+    import { cx as __pcx } from '@pandacss-internal/css';
+    export const cls = __pcx('a');
+    "#);
+}
+
+#[test]
+fn inject_cx_import_separates_an_unterminated_directive() {
+    let output = sync_internal_css_import(
+        "\"use client\"",
+        "fixture.ts",
+        &TransformHelperFacts {
+            needs_cx: true,
+            ..Default::default()
+        },
+        HelperCxMode::Auto,
+    );
+
+    assert_snapshot!(output, @r#"
+    "use client"
+    import { cx as __pcx } from '@pandacss-internal/css';
     "#);
 }
 

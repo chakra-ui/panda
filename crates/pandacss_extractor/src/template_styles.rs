@@ -15,9 +15,11 @@ use crate::{
     literal::expression_to_literal,
 };
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{BindingPattern, Statement, VariableDeclaration};
+use oxc_ast::ast::{BindingPattern, Expression, Program, Statement, VariableDeclaration};
+use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
-use oxc_span::SourceType;
+use oxc_span::{GetSpan, SourceType};
+use rustc_hash::FxHashMap;
 use std::borrow::Cow;
 
 #[derive(Clone, Copy)]
@@ -44,17 +46,29 @@ pub(crate) fn collect_template_styles(
     path: &str,
     matched: &[MatchedImport],
     config: &ExtractorConfig,
+    program: &Program<'_>,
+    resolver: &crate::Resolver<'_, '_>,
+    retain_transform_facts: bool,
 ) -> Vec<ExtractedJsx> {
     if !config.has_jsx_framework {
         return Vec::new();
     }
 
     let context_source = template_context_source(source, path);
+    let mut literal_index = TemplateLiteralIndex {
+        resolver,
+        ranges: template_markup_ranges(source, path),
+        literals: FxHashMap::default(),
+    };
+    literal_index.visit_program(program);
     let context = TemplateContext {
         source: context_source.as_ref(),
+        raw_source: source,
         path,
         matched,
         config,
+        literals: literal_index.literals,
+        retain_transform_facts,
     };
     if has_extension(path, "vue") {
         return collect_vue_template_styles(source, matched, config, &context);
@@ -127,9 +141,33 @@ fn mask_script_blocks(source: &str) -> String {
 
 struct TemplateContext<'a> {
     source: &'a str,
+    raw_source: &'a str,
     path: &'a str,
     matched: &'a [MatchedImport],
     config: &'a ExtractorConfig,
+    literals: FxHashMap<(u32, u32), Literal>,
+    retain_transform_facts: bool,
+}
+
+struct TemplateLiteralIndex<'resolver, 'ast, 'callback> {
+    resolver: &'resolver crate::Resolver<'ast, 'callback>,
+    ranges: Vec<(u32, u32)>,
+    literals: FxHashMap<(u32, u32), Literal>,
+}
+
+impl<'ast> Visit<'ast> for TemplateLiteralIndex<'_, 'ast, '_> {
+    fn visit_expression(&mut self, expression: &Expression<'ast>) {
+        let span = expression.span();
+        if self
+            .ranges
+            .iter()
+            .any(|(start, end)| *start <= span.start && *end >= span.end)
+            && let Some(literal) = expression_to_literal(expression, Some(self.resolver))
+        {
+            self.literals.insert((span.start, span.end), literal);
+        }
+        walk::walk_expression(self, expression);
+    }
 }
 
 struct TemplateScan<'a> {
@@ -270,7 +308,8 @@ fn collect_tag(
     if !entries.is_empty() || resolved.emit_empty {
         let kind = crate::jsx::jsx_kind(&scan.config.matchers, &resolved.name, &resolved.alias);
         let data = Literal::Object(entries);
-        let style = Some(crate::style_tree::literal_to_style_tree(data.clone()));
+        let retain = scan.context.retain_transform_facts;
+        let style = retain.then(|| crate::style_tree::literal_to_style_tree(data.clone()));
         out.push(ExtractedJsx {
             category: resolved.category,
             kind,
@@ -285,6 +324,17 @@ fn collect_tag(
             attributes: Vec::new(),
             panda_owned: resolved.panda_owned,
             style,
+            source: if retain {
+                crate::JsxSourceFacts {
+                    kind: crate::JsxSourceKind::FrameworkTemplate,
+                    factory_intrinsic: (kind == crate::JsxKind::Factory)
+                        .then(|| tag_name.rsplit('.').next().map(str::to_owned))
+                        .flatten(),
+                    ..Default::default()
+                }
+            } else {
+                crate::JsxSourceFacts::default()
+            },
         });
     }
 
@@ -552,6 +602,13 @@ fn parse_expression_literal(
     source: &str,
     context: Option<&TemplateContext<'_>>,
 ) -> Option<Literal> {
+    if let Some(context) = context
+        && let Some(span) = source_span(context.raw_source, source)
+        && let Some(literal) = context.literals.get(&(span.start, span.end))
+    {
+        return Some(literal.clone());
+    }
+
     let wrapped = if let Some(context) = context {
         format!("{}\n;const __p = ({source});", context.source)
     } else {
@@ -560,16 +617,20 @@ fn parse_expression_literal(
     let allocator = Allocator::default();
     let parser_return = Parser::new(&allocator, &wrapped, SourceType::tsx()).parse();
     let resolver = context.map(|context| {
-        crate::Resolver::build(
-            &parser_return.program,
-            context.matched,
-            Some(&context.config.matchers),
-            context.config.token_dictionary.as_deref(),
-            context.config.cross_file.as_ref(),
-            Some(std::path::PathBuf::from(context.path)),
-            None,
-            None,
-        )
+        crate::Resolver::build(crate::scope::ResolverBuildInput {
+            program: &parser_return.program,
+            matched: context.matched,
+            matchers: Some(&context.config.matchers),
+            tokens: context.config.token_dictionary.as_deref(),
+            cross_file: context
+                .config
+                .cross_file
+                .as_ref()
+                .map(crate::CrossFileResolver::as_lookup),
+            source_path: Some(std::path::PathBuf::from(context.path)),
+            line_index: None,
+            pattern_raw_transform: None,
+        })
     });
     for stmt in parser_return.program.body.iter().rev() {
         let Statement::VariableDeclaration(var) = stmt else {
@@ -580,6 +641,65 @@ fn parse_expression_literal(
         }
     }
     None
+}
+
+fn template_markup_ranges(source: &str, path: &str) -> Vec<(u32, u32)> {
+    let mut ranges = Vec::new();
+    if has_extension(path, "vue") {
+        for block in tag_blocks(source, "template") {
+            if !has_non_html_lang(source, block.open_start, block.open_end) {
+                push_range(&mut ranges, block.content_start, block.content_end);
+            }
+        }
+        return ranges;
+    }
+
+    let mut excluded = Vec::new();
+    if has_extension(path, "astro")
+        && let Some(end) = crate::astro_adapter::frontmatter_end(source)
+    {
+        excluded.push((0, end));
+    }
+    for tag in ["script", "style"] {
+        excluded.extend(
+            tag_blocks(source, tag)
+                .into_iter()
+                .map(|block| (block.open_start, block.close_end)),
+        );
+    }
+    excluded.sort_unstable();
+
+    let mut cursor = 0;
+    for (start, end) in excluded {
+        if cursor < start {
+            push_range(&mut ranges, cursor, start);
+        }
+        cursor = cursor.max(end);
+    }
+    if cursor < source.len() {
+        push_range(&mut ranges, cursor, source.len());
+    }
+    ranges
+}
+
+fn push_range(ranges: &mut Vec<(u32, u32)>, start: usize, end: usize) {
+    if let (Ok(start), Ok(end)) = (u32::try_from(start), u32::try_from(end)) {
+        ranges.push((start, end));
+    }
+}
+
+fn source_span(full_source: &str, source: &str) -> Option<Span> {
+    let full_start = full_source.as_ptr() as usize;
+    let full_end = full_start.checked_add(full_source.len())?;
+    let source_start = source.as_ptr() as usize;
+    let source_end = source_start.checked_add(source.len())?;
+    if source_start < full_start || source_end > full_end {
+        return None;
+    }
+    Some(Span {
+        start: u32::try_from(source_start - full_start).ok()?,
+        end: u32::try_from(source_end - full_start).ok()?,
+    })
 }
 
 fn template_initializer_literal(

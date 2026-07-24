@@ -101,9 +101,27 @@ describe('@pandacss/vite design-system HMR', () => {
     `)
   })
 
-  it('warns on source-transform diagnostics and returns transformed code', async () => {
-    const { createSourceTransformer, driver, pandacss } = await setup()
+  it('skips source rewrite by default', async () => {
+    const { createSourceTransformer, pandacss } = await setup()
     const plugin = pandacss() as unknown as TestPlugin
+    const warn = vi.fn()
+
+    await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
+    expect(createSourceTransformer).not.toHaveBeenCalled()
+
+    const result = plugin.transform.call(
+      { addWatchFile: vi.fn(), warn },
+      "import { css } from '@panda/css'\nexport const cls = css({ color: 'red' })",
+      '/project/src/app.tsx',
+    )
+
+    expect(result).toBeNull()
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('warns on source-transform diagnostics and returns transformed code when enabled', async () => {
+    const { createSourceTransformer, driver, pandacss } = await setup()
+    const plugin = pandacss({ transform: true }) as unknown as TestPlugin
     const warn = vi.fn()
 
     driver.sourceTransformer.transformSource.mockReturnValueOnce({
@@ -138,6 +156,42 @@ describe('@pandacss/vite design-system HMR', () => {
       {
         "code": "export const cls = "color_red"",
         "map": "source-map",
+      }
+    `)
+  })
+
+  it('rebuilds the cached source transformer after a compiler reload', async () => {
+    const { createSourceTransformer, driver, pandacss } = await setup()
+    const plugin = pandacss({ transform: true }) as unknown as TestPlugin
+    const nextCompiler = { ...driver.compiler }
+    const nextTransformer = {
+      transformSource: vi.fn(() => ({
+        code: "export const cls = 'next'",
+        map: null,
+        changed: true,
+        bailed: false,
+        diagnostics: [],
+        dependencies: [],
+        helper: { needsCx: false, needsCva: false, needsSva: false },
+      })),
+    }
+
+    await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
+    createSourceTransformer.mockReturnValueOnce(nextTransformer)
+    driver.compiler = nextCompiler
+
+    const result = plugin.transform.call(
+      { addWatchFile: vi.fn(), warn: vi.fn() },
+      "import { css } from '@panda/css'\nexport const cls = css({ color: 'red' })",
+      '/project/src/app.tsx',
+    )
+
+    expect(createSourceTransformer).toHaveBeenLastCalledWith(nextCompiler)
+    expect(nextTransformer.transformSource).toHaveBeenCalledOnce()
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "code": "export const cls = 'next'",
+        "map": null,
       }
     `)
   })

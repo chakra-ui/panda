@@ -1569,6 +1569,71 @@ fn explicit_then_spread_then_explicit_keeps_first_position() {
     );
 }
 
+#[test]
+fn static_jsx_spreads_follow_strict_component_prop_policy() {
+    let mut jsx = JsxExtractionConfig::default();
+    jsx.component_names.insert("Panel".into());
+    jsx.component_strict.insert("Panel".into());
+    jsx.component_props
+        .insert("Panel".into(), ["color".into()].into_iter().collect());
+
+    assert_yaml_snapshot!(
+        extract_with_jsx_config(
+            "<Panel background='direct' {...{ background: 'spread', color: 'red' }} padding='4' />",
+            &[],
+            jsx,
+        ),
+        @r#"
+    jsx:
+      - category: jsx
+        kind: component
+        name: Panel
+        alias: Panel
+        data:
+          color: red
+        span:
+          start: 0
+          end: 85
+    diagnostics: []
+    "#,
+    );
+}
+
+#[test]
+fn static_jsx_spreads_follow_component_blocklist_policy() {
+    let mut jsx = JsxExtractionConfig {
+        valid_style_props: ["background".into(), "color".into(), "padding".into()]
+            .into_iter()
+            .collect(),
+        ..Default::default()
+    };
+    jsx.component_names.insert("Panel".into());
+    jsx.component_blocklist
+        .insert("Panel".into(), ["background".into()].into_iter().collect());
+
+    assert_yaml_snapshot!(
+        extract_with_jsx_config(
+            "<Panel background='direct' {...{ background: 'spread', color: 'red' }} padding='4' />",
+            &[],
+            jsx,
+        ),
+        @r#"
+    jsx:
+      - category: jsx
+        kind: component
+        name: Panel
+        alias: Panel
+        data:
+          color: red
+          padding: "4"
+        span:
+          start: 0
+          end: 85
+    diagnostics: []
+    "#,
+    );
+}
+
 // --- JSX-inside-JSX attribute values ---
 
 #[test]

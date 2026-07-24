@@ -18,7 +18,6 @@ import type {
   CodegenArtifact,
   CodegenArtifactId,
   CodegenDependency,
-  CssFile,
   CompileFileManifest,
   CompileOptions,
   CompileOutput,
@@ -28,6 +27,7 @@ import type {
   LayerNames,
   LayerCssOptions,
   SplitCssOptions,
+  SplitCssResult,
   ScanOptions,
   ParseFileReport,
   ParsedFileView,
@@ -44,7 +44,7 @@ import type {
   WriteArtifactsOptions,
   WriteCssOptions,
   WriteCssResult,
-  WriteFilesResult,
+  WriteSplitCssResult,
   WriteLayerCssOptions,
   WriteSplitCssOptions,
 } from '@pandacss/compiler-shared'
@@ -135,7 +135,7 @@ export declare class WasmCompiler {
   writeArtifacts(options: WriteArtifactsOptions): string[]
   writeCss(options: WriteCssOptions): WriteCssResult
   writeLayerCss(options: WriteLayerCssOptions): WriteCssResult
-  writeSplitCss(options: WriteSplitCssOptions): WriteFilesResult
+  writeSplitCss(options: WriteSplitCssOptions): WriteSplitCssResult
   isEmpty(): boolean
   registerUtilityTransform?(id: string, callback: (resolved: unknown, original: unknown) => unknown): void
   registerPatternTransform?(id: string, callback: (props: unknown, helpers: Record<string, unknown>) => unknown): void
@@ -152,7 +152,7 @@ export declare class WasmCompiler {
   compile(options?: CompileOptions): CompileOutput
   getLayerCss(options: LayerCssOptions): CompileOutput
   getKeyframeCss(options?: CompileOptions): CompileOutput
-  getSplitCss(options?: SplitCssOptions): CssFile[]
+  getSplitCss(options?: SplitCssOptions): SplitCssResult
   generateArtifacts(options?: GenerateArtifactOptions): CodegenArtifact[]
   generateArtifact(id: CodegenArtifactId, options?: GenerateArtifactOptions): CodegenArtifact | undefined
   generateAffectedArtifacts(dependencies: CodegenDependency[], options?: GenerateArtifactOptions): CodegenArtifact[]

@@ -89,6 +89,15 @@ export type NestedCssProperties = Nested<CssProperties>
 
 export type SystemStyleObject = Nested<(SystemProperties | GenericProperties) & CssVarProperties>
 
+export interface ViewTransitionStyleObject {
+  group?: SystemStyleObject
+  imagePair?: SystemStyleObject
+  old?: SystemStyleObject
+  new?: SystemStyleObject
+}
+
+export type ViewTransitionFn = (options: ViewTransitionStyleObject) => string
+
 export interface GlobalStyleObject {
   [selector: string]: SystemStyleObject
 }

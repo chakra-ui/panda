@@ -1,0 +1,155 @@
+---
+title: viewTransition()
+description: Style shared View Transitions API animations with a hashed bag class. You still set unique view-transition-name values at runtime.
+---
+
+`viewTransition()` returns a stable bag class (`vt_*`) and emits CSS for the View Transitions API slots —
+`::view-transition-group`, `::view-transition-image-pair`, `::view-transition-old`, and `::view-transition-new`.
+
+Panda owns that shared animation CSS through `view-transition-class`. You still set unique `view-transition-name` values
+yourself — React `<ViewTransition>`, Astro `transition:name`, or a plain style.
+
+Import from `styled-system/css`.
+
+## Examples
+
+### Basic example
+
+```ts
+import { viewTransition } from 'styled-system/css'
+
+const slide = viewTransition({
+  group: {
+    animationDuration: '0.4s',
+    animationTimingFunction: 'ease-in-out'
+  },
+  old: { opacity: 0 },
+  new: { opacity: 1 }
+})
+// → "vt_…"
+```
+
+Generated CSS:
+
+```css
+@layer utilities {
+  .vt_xxx {
+    view-transition-class: vt_xxx;
+  }
+
+  ::view-transition-group(.vt_xxx) {
+    animation-duration: 0.4s;
+    animation-timing-function: ease-in-out;
+  }
+
+  ::view-transition-old(.vt_xxx) {
+    opacity: 0;
+  }
+
+  ::view-transition-new(.vt_xxx) {
+    opacity: 1;
+  }
+}
+```
+
+### Usage with React
+
+Pass the bag class into React's View Transition Class props (`enter`, `exit`, `share`, `update`, `default`). Use `name`
+only for shared-element transitions.
+
+```tsx
+import { ViewTransition } from 'react'
+import { viewTransition } from 'styled-system/css'
+
+const slide = viewTransition({
+  group: { animationDuration: '0.4s' },
+  old: { opacity: 0 },
+  new: { opacity: 1 }
+})
+
+export function HeroImage() {
+  return (
+    <ViewTransition name="hero" share={slide}>
+      <img src="/hero.jpg" alt="Hero" />
+    </ViewTransition>
+  )
+}
+```
+
+> `<ViewTransition>` needs a React build that exports it (Canary / Experimental today). Next.js can opt in with
+> `experimental.viewTransition: true`.
+
+### Usage with Astro
+
+Astro owns the name via `transition:name`. Put the bag class on the element:
+
+```astro
+---
+import { viewTransition } from '../styled-system/css'
+
+const slide = viewTransition({
+  group: { animationDuration: '0.4s' },
+  old: { opacity: 0 },
+  new: { opacity: 1 }
+})
+---
+
+<img class={slide} transition:name="hero" src="/hero.jpg" alt="Hero" />
+```
+
+Enable client routing with `<ClientRouter />` from `astro:transitions` in your layout.
+
+### Usage with Solid or Nuxt
+
+The framework (or you) starts the transition. Attach the bag class and set the name:
+
+```tsx
+import { viewTransition } from 'styled-system/css'
+
+const slide = viewTransition({
+  group: { animationDuration: '0.4s' },
+  old: { opacity: 0 },
+  new: { opacity: 1 }
+})
+
+<img
+  class={slide}
+  style={{ viewTransitionName: 'hero' }}
+  src="/hero.jpg"
+  alt="Hero"
+/>
+```
+
+## Why we use `view-transition-class`
+
+`view-transition-name` must be unique per element. Duplicates break the transition, so Panda can't extract or share it.
+
+`view-transition-class` is the shared styling hook — like a CSS class — so it can be deduplicated across callsites and
+shipped through design-system build info.
+
+## API Reference
+
+### Slots
+
+| Option      | CSS selector                          |
+| ----------- | ------------------------------------- |
+| `group`     | `::view-transition-group(.vt_*)`      |
+| `imagePair` | `::view-transition-image-pair(.vt_*)` |
+| `old`       | `::view-transition-old(.vt_*)`        |
+| `new`       | `::view-transition-new(.vt_*)`        |
+
+Each slot accepts a style object (same shape as `css()`). Use `animationName` for theme keyframes or custom names.
+
+### Shipping from a design system
+
+Export shared bags from library source:
+
+```ts
+export const slide = viewTransition({
+  old: { opacity: 0 },
+  new: { opacity: 1 }
+})
+```
+
+`panda lib` serializes them into build info so apps hydrate the CSS without re-scanning the library. Tree-shake follows
+imported modules, same as recipes. There is no `theme.viewTransitions` registry.

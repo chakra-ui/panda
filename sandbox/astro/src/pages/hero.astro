@@ -1,0 +1,54 @@
+---
+import Layout from '../layouts/Layout.astro'
+import { css, viewTransition } from '../../styled-system/css'
+
+const slide = viewTransition({
+  group: {
+    animationDuration: '0.45s',
+    animationTimingFunction: 'ease-in-out',
+  },
+  old: { opacity: 0 },
+  new: { opacity: 1 },
+})
+---
+
+<Layout title="Hero — Astro viewTransition">
+  <main
+    class={css({
+      padding: '40px',
+      minHeight: '100vh',
+      display: 'grid',
+      alignContent: 'start',
+      justifyItems: 'end',
+      gap: '6',
+      background: 'gray.50',
+    })}
+  >
+    <a href="/" class={css({ color: 'teal.700', fontWeight: 'medium' })}>← Back</a>
+
+    <div
+      class={[
+        slide,
+        css({
+          display: 'grid',
+          placeItems: 'center',
+          width: '320px',
+          height: '220px',
+          background: 'teal.600',
+          color: 'white',
+          borderRadius: '20px',
+          fontWeight: 'bold',
+          fontSize: '3xl',
+          boxShadow: 'xl',
+        }),
+      ].join(' ')}
+      transition:name="panda-hero"
+    >
+      Hero
+    </div>
+
+    <p class={css({ color: 'fg.muted', fontSize: 'sm' })}>
+      Same <code>transition:name="panda-hero"</code> + bag class <code>{slide}</code>
+    </p>
+  </main>
+</Layout>

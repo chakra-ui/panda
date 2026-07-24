@@ -1,5 +1,8 @@
 use super::transforms::apply_utility_transform;
-use super::{Compiler, WriteCssOptions, WriteCssResult, WriteFilesResult, WriteSplitCssOptions};
+use super::{
+    Compiler, SplitCssResult, WriteCssOptions, WriteCssResult, WriteSplitCssOptions,
+    WriteSplitCssResult,
+};
 
 use napi::bindgen_prelude::Env;
 use napi_derive::napi;
@@ -23,9 +26,9 @@ impl Compiler {
     ) -> napi::Result<Vec<String>> {
         let mut written = Vec::new();
         for (path, code) in files {
-            if self.paths.is_absolute(path) {
+            if !self.paths.is_safe_relative(path) {
                 return Err(napi::Error::from_reason(format!(
-                    "{label} output path must be relative: {path}"
+                    "{label} output path must be a contained relative path: {path}"
                 )));
             }
             let target = self.paths.join(&[root, path]);
@@ -91,13 +94,15 @@ impl Compiler {
             user_config,
             &static_pattern_atoms,
             static_pattern_diagnostics,
-            options
-                .as_ref()
-                .is_none_or(CompileOptions::should_emit_layer_declaration),
             has_utility_transforms
                 .then_some(&mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>),
-            options.as_ref().and_then(|options| options.minify),
-            options.as_ref().and_then(|options| options.polyfill),
+            crate::compile::StylesheetEmitOptions {
+                emit_layer_declaration: options
+                    .as_ref()
+                    .is_none_or(CompileOptions::should_emit_layer_declaration),
+                minify_override: options.as_ref().and_then(|options| options.minify),
+                polyfill_override: options.as_ref().and_then(|options| options.polyfill),
+            },
         );
         span.record("file_count", output.manifest.files.len());
         crate::flush_tracing();
@@ -139,11 +144,15 @@ impl Compiler {
         &mut self,
         env: Env,
         options: WriteSplitCssOptions,
-    ) -> napi::Result<WriteFilesResult> {
+    ) -> napi::Result<WriteSplitCssResult> {
         let css_options = css_output_options_from_write_split(&options);
-        let files = self.get_split_css(env, Some(css_options))?;
+        let result = self.get_split_css(env, Some(css_options))?;
+        let files = result.files;
         let cwd = options.cwd.unwrap_or_else(|| self.user_config.cwd.clone());
-        let root = self.paths.resolve(&cwd, &options.outdir);
+        let outdir = options
+            .outdir
+            .unwrap_or_else(|| self.user_config.outdir.clone());
+        let root = self.paths.resolve(&cwd, &outdir);
         let paths = self.write_relative_files(
             &root,
             files
@@ -151,7 +160,12 @@ impl Compiler {
                 .map(|file| (file.path.as_str(), file.code.as_str())),
             "split css",
         )?;
-        Ok(WriteFilesResult { root, paths, files })
+        Ok(WriteSplitCssResult {
+            root,
+            paths,
+            files,
+            diagnostics: result.diagnostics,
+        })
     }
 
     /// Theme `@keyframes` CSS only (no token vars or other layers).
@@ -303,10 +317,11 @@ impl Compiler {
         &mut self,
         env: Env,
         options: Option<CssOutputOptions>,
-    ) -> napi::Result<Vec<crate::compile::SplitCssFile>> {
+    ) -> napi::Result<SplitCssResult> {
         crate::init_tracing();
         let _span = tracing::trace_span!(target: "css", "get_split_css").entered();
-        let (static_pattern_atoms, _diagnostics) = self.collect_static_pattern_atoms(env);
+        let (static_pattern_atoms, static_pattern_diagnostics) =
+            self.collect_static_pattern_atoms(env);
         let has_utility_transforms = self.callbacks.has_utility_transforms();
         let Compiler {
             inner,
@@ -326,7 +341,7 @@ impl Compiler {
                 &env,
             )
         };
-        let files = crate::compile::build_split_css(
+        let output = crate::compile::build_split_css(
             inner,
             user_config,
             &static_pattern_atoms,
@@ -334,8 +349,16 @@ impl Compiler {
                 .then_some(&mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>),
             options.as_ref(),
         );
+        let diagnostics = crate::compile::collect_output_diagnostics(
+            inner,
+            static_pattern_diagnostics,
+            output.diagnostics,
+        );
         crate::flush_tracing();
-        Ok(files)
+        Ok(SplitCssResult {
+            files: output.files,
+            diagnostics,
+        })
     }
 }
 

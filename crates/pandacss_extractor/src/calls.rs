@@ -22,6 +22,45 @@ use oxc_span::{GetSpan, SourceType};
 use serde::Serialize;
 use std::borrow::Cow;
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum CallSyntax {
+    #[default]
+    Call,
+    TaggedTemplate,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum CallCalleeKind {
+    #[default]
+    Direct,
+    StaticMember,
+}
+
+/// Oxc-derived source facts consumed by the project transformer.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CallFacts {
+    pub syntax: CallSyntax,
+    pub callee_kind: CallCalleeKind,
+    pub callee_span: Span,
+    pub raw: bool,
+    /// One entry per argument; `true` only for a direct empty object literal.
+    pub direct_empty_object_args: Vec<bool>,
+    pub args: Vec<Option<crate::ExpressionFacts>>,
+}
+
+impl Default for CallFacts {
+    fn default() -> Self {
+        Self {
+            syntax: CallSyntax::default(),
+            callee_kind: CallCalleeKind::default(),
+            callee_span: Span { start: 0, end: 0 },
+            raw: false,
+            direct_empty_object_args: Vec::new(),
+            args: Vec::new(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ExtractedCall {
@@ -49,6 +88,9 @@ pub struct ExtractedCall {
     /// Transform-facing IR (span-backed conditionals). Skipped from serde/NAPI.
     #[serde(skip)]
     pub style_args: Vec<Option<StyleTree>>,
+    /// Original Oxc call shape. Skipped from serde/NAPI.
+    #[serde(skip)]
+    pub facts: CallFacts,
 }
 
 #[derive(Debug, Clone, Default, Serialize, PartialEq)]
@@ -79,16 +121,19 @@ pub fn extract_calls(
         .with_options(crate::adapter::parse_options_for(path))
         .parse();
 
-    let resolver = crate::Resolver::build(
-        &parser_return.program,
+    let resolver = crate::Resolver::build(crate::scope::ResolverBuildInput {
+        program: &parser_return.program,
         matched,
-        Some(&config.matchers),
-        config.token_dictionary.as_deref(),
-        config.cross_file.as_ref(),
-        Some(std::path::PathBuf::from(path)),
-        None,
-        None,
-    );
+        matchers: Some(&config.matchers),
+        tokens: config.token_dictionary.as_deref(),
+        cross_file: config
+            .cross_file
+            .as_ref()
+            .map(crate::CrossFileResolver::as_lookup),
+        source_path: Some(std::path::PathBuf::from(path)),
+        line_index: None,
+        pattern_raw_transform: None,
+    });
     let ctx = crate::VisitorContext::new(matched, config).with_resolver(&resolver);
     let line_index = crate::LineIndex::new(source);
     let (calls, diagnostics) = collect_calls_inner(&parser_return.program, &ctx, Some(&line_index));
@@ -114,6 +159,7 @@ fn collect_calls_inner(
         line_index,
         token_refs: None,
         style_source_refs: None,
+        retain_transform_facts: true,
     };
     extractor.visit_program(program);
     (out, diagnostics)
@@ -123,6 +169,7 @@ pub(crate) fn collect_calls_with_token_refs(
     program: &oxc_ast::ast::Program<'_>,
     ctx: &crate::VisitorContext<'_, '_>,
     line_index: &crate::LineIndex<'_>,
+    retain_transform_facts: bool,
 ) -> (Vec<ExtractedCall>, Vec<Diagnostic>, Vec<TokenRef>) {
     let mut calls = Vec::new();
     let mut diagnostics = Vec::new();
@@ -134,6 +181,7 @@ pub(crate) fn collect_calls_with_token_refs(
         line_index: Some(line_index),
         token_refs: Some(&mut token_refs),
         style_source_refs: None,
+        retain_transform_facts,
     };
     extractor.visit_program(program);
     (calls, diagnostics, token_refs)
@@ -160,6 +208,7 @@ pub(crate) fn collect_calls_verbose(
         line_index: Some(line_index),
         token_refs: Some(&mut token_refs),
         style_source_refs: Some(&mut style_source_refs),
+        retain_transform_facts: false,
     };
     extractor.visit_program(program);
     (calls, diagnostics, token_refs, style_source_refs)
@@ -172,6 +221,7 @@ struct Extractor<'walk, 'ctx, 'cb> {
     line_index: Option<&'walk crate::LineIndex<'walk>>,
     token_refs: Option<&'walk mut Vec<TokenRef>>,
     style_source_refs: Option<&'walk mut Vec<StyleSourceRef>>,
+    retain_transform_facts: bool,
 }
 
 /// `name` borrows from either the matched import or the AST so we don't
@@ -180,6 +230,7 @@ struct ResolvedCallee<'a> {
     category: MatchCategory,
     name: Cow<'a, str>,
     alias: &'a str,
+    raw: bool,
 }
 
 impl Extractor<'_, '_, '_> {
@@ -210,6 +261,7 @@ impl Extractor<'_, '_, '_> {
                     category: matched.category,
                     name: Cow::Borrowed(&matched.name),
                     alias: &matched.alias,
+                    raw: false,
                 })
             }
             Expression::StaticMemberExpression(_) => {
@@ -232,6 +284,7 @@ impl Extractor<'_, '_, '_> {
                             category: matched.category,
                             name: Cow::Owned(member_display(&matched.name, &path)),
                             alias: &matched.alias,
+                            raw: false,
                         });
                     }
                     if path.as_slice() != ["raw"] || !matched.category.supports_raw() {
@@ -241,6 +294,7 @@ impl Extractor<'_, '_, '_> {
                         category: matched.category,
                         name: Cow::Borrowed(&matched.name),
                         alias: &matched.alias,
+                        raw: true,
                     });
                 }
 
@@ -267,6 +321,7 @@ impl Extractor<'_, '_, '_> {
                     category: matched.category,
                     name: Cow::Borrowed(property),
                     alias: &matched.alias,
+                    raw: raw_tail == ["raw"],
                 })
             }
             _ => None,
@@ -341,6 +396,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
         if let Some(resolved) = self.resolve_callee(call) {
             let resolver = self.ctx.resolver;
             let category = resolved.category;
+            let raw = resolved.raw;
             let name = resolved.name.into_owned();
             let alias = resolved.alias.to_owned();
             let jsx_recipe_ident = (category == MatchCategory::Jsx)
@@ -356,11 +412,14 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 .iter()
                 .map(|tree| tree.as_ref().and_then(project_literal))
                 .collect();
-            let arg_spans: Vec<Span> = call
-                .arguments
-                .iter()
-                .map(|arg| span_from_oxc(arg.span()))
-                .collect();
+            let arg_spans = if self.retain_transform_facts {
+                call.arguments
+                    .iter()
+                    .map(|arg| span_from_oxc(arg.span()))
+                    .collect()
+            } else {
+                Vec::new()
+            };
 
             if should_emit_call(category, &data, jsx_recipe_ident.as_deref()) {
                 if let Some(style_source_refs) = self.style_source_refs.as_deref_mut() {
@@ -384,7 +443,16 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                     jsx_recipe_ident,
                     span: span_from_oxc(call.span),
                     arg_spans,
-                    style_args,
+                    style_args: if self.retain_transform_facts {
+                        style_args
+                    } else {
+                        Vec::new()
+                    },
+                    facts: if self.retain_transform_facts {
+                        call_facts(call, raw)
+                    } else {
+                        CallFacts::default()
+                    },
                 });
             } else if category != MatchCategory::Jsx
                 && !data.is_empty()
@@ -420,8 +488,28 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 data: vec![project_literal(&tree)],
                 jsx_recipe_ident: None,
                 span: span_from_oxc(tagged.span),
-                arg_spans: vec![span_from_oxc(tagged.span)],
-                style_args: vec![Some(tree)],
+                arg_spans: if self.retain_transform_facts {
+                    vec![span_from_oxc(tagged.span)]
+                } else {
+                    Vec::new()
+                },
+                style_args: if self.retain_transform_facts {
+                    vec![Some(tree)]
+                } else {
+                    Vec::new()
+                },
+                facts: if self.retain_transform_facts {
+                    CallFacts {
+                        syntax: CallSyntax::TaggedTemplate,
+                        callee_kind: call_callee_kind(&call.callee),
+                        callee_span: span_from_oxc(tagged.tag.span()),
+                        raw: resolved.raw,
+                        direct_empty_object_args: Vec::new(),
+                        args: Vec::new(),
+                    }
+                } else {
+                    CallFacts::default()
+                },
             });
         }
 
@@ -438,11 +526,69 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 data: vec![project_literal(&tree)],
                 jsx_recipe_ident: None,
                 span: span_from_oxc(tagged.span),
-                arg_spans: vec![span_from_oxc(tagged.span)],
-                style_args: vec![Some(tree)],
+                arg_spans: if self.retain_transform_facts {
+                    vec![span_from_oxc(tagged.span)]
+                } else {
+                    Vec::new()
+                },
+                style_args: if self.retain_transform_facts {
+                    vec![Some(tree)]
+                } else {
+                    Vec::new()
+                },
+                facts: if self.retain_transform_facts {
+                    CallFacts {
+                        syntax: CallSyntax::TaggedTemplate,
+                        callee_kind: call_callee_kind(&tagged.tag),
+                        callee_span: span_from_oxc(tagged.tag.span()),
+                        raw: resolved.raw,
+                        direct_empty_object_args: Vec::new(),
+                        args: Vec::new(),
+                    }
+                } else {
+                    CallFacts::default()
+                },
             });
         }
         walk::walk_tagged_template_expression(self, tagged);
+    }
+}
+
+fn call_callee_kind(callee: &Expression<'_>) -> CallCalleeKind {
+    if matches!(
+        callee.get_inner_expression(),
+        Expression::StaticMemberExpression(_)
+    ) {
+        CallCalleeKind::StaticMember
+    } else {
+        CallCalleeKind::Direct
+    }
+}
+
+fn call_facts(call: &CallExpression<'_>, raw: bool) -> CallFacts {
+    CallFacts {
+        syntax: CallSyntax::Call,
+        callee_kind: call_callee_kind(&call.callee),
+        callee_span: span_from_oxc(call.callee.span()),
+        raw,
+        direct_empty_object_args: call
+            .arguments
+            .iter()
+            .map(|arg| {
+                matches!(
+                    arg.as_expression().map(Expression::get_inner_expression),
+                    Some(Expression::ObjectExpression(object)) if object.properties.is_empty()
+                )
+            })
+            .collect(),
+        args: call
+            .arguments
+            .iter()
+            .map(|arg| {
+                arg.as_expression()
+                    .map(crate::transform_facts::expression_facts)
+            })
+            .collect(),
     }
 }
 

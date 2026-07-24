@@ -3,28 +3,12 @@
 //! [`has_layer_declaration`] finds the injection marker (statement, not block);
 //! a sub-layer like `recipes.base` counts for `recipes`.
 //! [`strip_layer_order_statements`] removes only statements that cover every
-//! configured layer name — unrelated `@layer` orders stay. Both skip
-//! `/* … */` comments.
+//! configured layer name — unrelated `@layer` orders stay. Both ignore
+//! syntax inside strings and comments.
 
-/// Byte index of the next `@layer` in `css` that isn't inside a `/* … */`
-/// comment.
-fn find_at_layer(css: &str) -> Option<usize> {
-    let mut search_from = 0;
-    loop {
-        let layer_pos = css[search_from..].find("@layer").map(|p| search_from + p);
-        let comment_pos = css[search_from..].find("/*").map(|p| search_from + p);
-        match (layer_pos, comment_pos) {
-            (Some(layer), Some(comment)) if comment < layer => {
-                let comment_end = css[comment + 2..]
-                    .find("*/")
-                    .map_or(css.len(), |end| comment + 2 + end + 2);
-                search_from = comment_end;
-            }
-            (Some(layer), _) => return Some(layer),
-            (None, _) => return None,
-        }
-    }
-}
+use std::ops::Range;
+
+use crate::css_syntax::{code_matches, first_code_delimiter};
 
 /// Remove Panda `@layer a, b;` order statements (not `@layer a { … }` blocks).
 /// Only statements that cover every name in `layers` — same match as
@@ -32,28 +16,12 @@ fn find_at_layer(css: &str) -> Option<usize> {
 #[must_use]
 pub fn strip_layer_order_statements(css: &str, layers: &[&str]) -> String {
     let mut out = String::with_capacity(css.len());
-    let mut rest = css;
-    while let Some(idx) = find_at_layer(rest) {
-        out.push_str(&rest[..idx]);
-        let after = &rest[idx + "@layer".len()..];
-        if !after.starts_with(char::is_whitespace) {
-            out.push_str("@layer");
-            rest = after;
-            continue;
-        }
-        let semi = after.find(';');
-        let brace = after.find('{');
-        if let Some(semi) = semi.filter(|s| brace.is_none_or(|b| *s < b)) {
-            let declared: Vec<&str> = after[..semi].split(',').map(str::trim).collect();
-            if is_panda_layer_order(&declared, layers) {
-                rest = &after[semi + 1..];
-                continue;
-            }
-        }
-        out.push_str("@layer");
-        rest = after;
+    let mut copied_until = 0;
+    for range in panda_layer_order_ranges(css, layers) {
+        out.push_str(&css[copied_until..range.start]);
+        copied_until = range.end;
     }
-    out.push_str(rest);
+    out.push_str(&css[copied_until..]);
     out
 }
 
@@ -61,24 +29,28 @@ pub fn strip_layer_order_statements(css: &str, layers: &[&str]) -> String {
 /// `layers`. A sub-layer (`recipes.base`) counts for its root (`recipes`).
 #[must_use]
 pub fn has_layer_declaration(css: &str, layers: &[&str]) -> bool {
-    let mut rest = css;
-    while let Some(idx) = find_at_layer(rest) {
-        let after = &rest[idx + "@layer".len()..];
+    !panda_layer_order_ranges(css, layers).is_empty()
+}
+
+fn panda_layer_order_ranges(css: &str, layers: &[&str]) -> Vec<Range<usize>> {
+    let mut ranges = Vec::new();
+    for idx in code_matches(css, "@layer") {
+        let after = &css[idx + "@layer".len()..];
         if !after.starts_with(char::is_whitespace) {
-            rest = after;
             continue;
         }
-        let semi = after.find(';');
-        let brace = after.find('{');
-        if let Some(semi) = semi.filter(|s| brace.is_none_or(|b| *s < b)) {
-            let declared: Vec<&str> = after[..semi].split(',').map(str::trim).collect();
-            if is_panda_layer_order(&declared, layers) {
-                return true;
-            }
+        let Some((end, delimiter)) = first_code_delimiter(after, b";{") else {
+            continue;
+        };
+        if delimiter != b';' {
+            continue;
         }
-        rest = after;
+        let declared: Vec<&str> = after[..end].split(',').map(str::trim).collect();
+        if is_panda_layer_order(&declared, layers) {
+            ranges.push(idx..idx + "@layer".len() + end + 1);
+        }
     }
-    false
+    ranges
 }
 
 fn is_panda_layer_order(declared: &[&str], layers: &[&str]) -> bool {

@@ -19,6 +19,7 @@ fn compile_project_output(
             token_dictionary: None,
             atoms: snapshots.atoms,
             utility_styles: snapshots.utility_styles,
+            view_transitions: &[],
             encoded_recipes: snapshots.encoded_recipes,
             static_encoded_recipes: Some(snapshots.static_encoded_recipes),
             static_pattern_atoms: &[],
@@ -592,6 +593,46 @@ fn emits_semantic_token_conditions() {
 }
 
 #[test]
+fn semantic_token_condition_preserves_quoted_ampersand() {
+    let config = config(serde_json::json!({
+        "conditions": {
+            "music": "[data-category=\"sound & vision\"]"
+        },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "value": "#f00" },
+                    "blue": { "value": "#00f" }
+                }
+            },
+            "semanticTokens": {
+                "colors": {
+                    "fg": {
+                        "value": {
+                            "base": "{colors.red}",
+                            "_music": "{colors.blue}"
+                        }
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Tokens]);
+
+    let relevant = css
+        .lines()
+        .filter(|line| line.contains("data-category") || line.contains("--colors-fg"))
+        .collect::<Vec<_>>()
+        .join("\n");
+    assert_snapshot!(relevant, @r#"
+      --colors-fg: var(--colors-red);
+    [data-category="sound & vision"] {
+      --colors-fg: var(--colors-blue);
+    "#);
+}
+
+#[test]
 fn block_conditions_emit_each_semantic_token_slot_path() {
     let config = config(serde_json::json!({
         "conditions": {
@@ -719,6 +760,7 @@ fn get_layer_css_concatenates_layers_without_extra_blank_line() {
             token_dictionary: None,
             atoms: &[],
             utility_styles: &empty_utility_styles,
+            view_transitions: &[],
             encoded_recipes: &recipes,
             static_encoded_recipes: None,
             static_pattern_atoms: &[],
@@ -769,6 +811,7 @@ fn token_build_errors_are_reported_as_diagnostics() {
             token_dictionary: None,
             atoms: &[],
             utility_styles: &empty_utility_styles,
+            view_transitions: &[],
             encoded_recipes: &recipes,
             static_encoded_recipes: None,
             static_pattern_atoms: &[],
@@ -1003,6 +1046,35 @@ fn static_css_themes_survives_remove_unused_tokens() {
         --colors-body: var(--colors-red-600);
       }
     }
+    ");
+}
+
+#[test]
+fn nested_var_fallback_survives_remove_unused_tokens() {
+    let config = config(serde_json::json!({
+        "optimize": { "removeUnusedTokens": true },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "value": "#f00" },
+                    "unused": { "value": "#0f0" }
+                }
+            }
+        },
+        "globalCss": {
+            ".fallback": { "color": "var(--missing, var(--colors-red))" }
+        }
+    }));
+    let css = compile_css(&config, "");
+
+    let relevant = css
+        .lines()
+        .filter(|line| line.contains("--colors-") || line.contains("color:"))
+        .collect::<Vec<_>>()
+        .join("\n");
+    assert_snapshot!(relevant, @r"
+    color: var(--missing, var(--colors-red));
+    --colors-red: #f00;
     ");
 }
 

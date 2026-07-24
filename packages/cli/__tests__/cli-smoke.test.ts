@@ -127,6 +127,65 @@ describe('cli smoke', () => {
     `)
   })
 
+  it('returns interactive usage errors as JSON', () => {
+    const results = [
+      ['--json', ['--json']],
+      ['--format json', ['--format', 'json']],
+    ] as const
+
+    expect(
+      results.map(([mode, args]) => {
+        const result = runCli(['init', '--interactive', ...args])
+        const payload = JSON.parse(result.stdout)
+
+        return {
+          mode,
+          exitCode: result.exitCode,
+          stderr: result.stderr,
+          command: payload.command,
+          ok: payload.ok,
+          resultExitCode: payload.exitCode,
+          diagnostics: payload.diagnostics,
+        }
+      }),
+    ).toMatchInlineSnapshot(`
+      [
+        {
+          "command": "init",
+          "diagnostics": [
+            {
+              "category": "cli",
+              "code": "invalid_cli_options",
+              "message": "--interactive can't be used with JSON output. Pass the init options as flags instead.",
+              "severity": "error",
+            },
+          ],
+          "exitCode": 2,
+          "mode": "--json",
+          "ok": false,
+          "resultExitCode": 2,
+          "stderr": "",
+        },
+        {
+          "command": "init",
+          "diagnostics": [
+            {
+              "category": "cli",
+              "code": "invalid_cli_options",
+              "message": "--interactive can't be used with JSON output. Pass the init options as flags instead.",
+              "severity": "error",
+            },
+          ],
+          "exitCode": 2,
+          "mode": "--format json",
+          "ok": false,
+          "resultExitCode": 2,
+          "stderr": "",
+        },
+      ]
+    `)
+  })
+
   it('runs build and check against a fixture project', async () => {
     dir = createFixture()
 

@@ -1,6 +1,6 @@
-use insta::assert_snapshot;
+use insta::{assert_snapshot, assert_yaml_snapshot};
 
-use crate::common::{config, split_output};
+use crate::common::{config, split_output, split_result};
 use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
 /// Render the split file set as `=== path ===\n<code>` blocks for snapshotting.
@@ -42,6 +42,8 @@ fn splits_layers_and_recipes_into_files_with_indexes() {
     @layer reset, base, tokens,
            recipes,
            utilities;
+    @layer recipes.base, recipes.slots, recipes.variants, recipes.compound_variants;
+    @layer recipes.slots.base, recipes.slots.variants, recipes.slots.compound_variants;
     @import './styles/global.css';
     @import './styles/tokens.css';
     @import './styles/utilities.css';
@@ -85,6 +87,43 @@ fn splits_layers_and_recipes_into_files_with_indexes() {
     === styles/recipes.css ===
     @import './recipes/button.css';
     ");
+}
+
+#[test]
+fn split_css_declares_recipe_sublayers_before_imports() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": [], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "recipes": {
+                "alpha": {
+                    "className": "alpha",
+                    "variants": { "tone": { "quiet": { "color": "gray" } } }
+                },
+                "zeta": {
+                    "className": "zeta",
+                    "base": { "color": "red" }
+                }
+            }
+        },
+        "utilities": { "color": { "className": "c" } }
+    }));
+    let files = split_output(
+        &config,
+        "import { alpha, zeta } from '@panda/recipes'; alpha({ tone: 'quiet' }); zeta({});",
+        StylesheetOptions::default(),
+    );
+    let index = files
+        .iter()
+        .find(|file| file.path == "styles.css")
+        .expect("styles.css");
+
+    let base = index.code.find("recipes.base").expect("base preamble");
+    let variants = index
+        .code
+        .find("recipes.variants")
+        .expect("variants preamble");
+    let imports = index.code.find("@import").expect("imports");
+    assert!(base < variants && variants < imports);
 }
 
 #[test]
@@ -148,5 +187,59 @@ fn split_css_emits_theme_files() {
         files
             .iter()
             .any(|file| file.path == "styles/themes/primary-theme.css")
+    );
+}
+
+#[test]
+fn split_css_sanitizes_and_disambiguates_recipe_paths() {
+    let config = config(serde_json::json!({
+        "staticCss": { "recipes": "*" },
+        "theme": {
+            "recipes": {
+                "../../../outside": {
+                    "className": "unsafe",
+                    "base": { "color": "red" }
+                },
+                "outside": {
+                    "className": "safe",
+                    "base": { "color": "blue" }
+                }
+            }
+        },
+        "utilities": { "color": { "className": "c" } }
+    }));
+    let files = split_output(&config, "", StylesheetOptions::default());
+    let recipe_paths = files
+        .iter()
+        .filter(|file| {
+            file.path.starts_with("styles/recipes/") && file.path != "styles/recipes.css"
+        })
+        .map(|file| file.path.as_str())
+        .collect::<Vec<_>>();
+
+    assert_yaml_snapshot!(recipe_paths, @r"
+    - styles/recipes/outside.css
+    - styles/recipes/outside-kchoyq.css
+    ");
+}
+
+#[test]
+fn split_css_returns_static_css_diagnostics() {
+    let config = config(serde_json::json!({
+        "staticCss": {
+            "css": [{ "properties": { "colr": "red" } }]
+        }
+    }));
+    let output = split_result(&config, "", StylesheetOptions::default());
+
+    assert_yaml_snapshot!(
+        output
+            .diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.code.as_str())
+            .collect::<Vec<_>>(),
+        @r"
+    - static_css_property_unknown
+    "
     );
 }

@@ -14,7 +14,7 @@ import {
   type SourceChange,
   type WriteCssOptions,
   type WriteCssResult,
-  type WriteFilesResult,
+  type WriteSplitCssResult,
   type WriteLayerCssOptions,
   type WriteSplitCssOptions,
   collectParseDiagnostics,
@@ -271,6 +271,10 @@ export class NodeDriver extends BaseDriver {
     return true
   }
 
+  protected override prepareCssOutput(): void {
+    this.syncDesignSystemTreeShake()
+  }
+
   applyChange(change: SourceChange): boolean {
     this.#sourceGeneration++
     this.#treeshakeSyncedGeneration = -1
@@ -341,7 +345,6 @@ export class NodeDriver extends BaseDriver {
   }
 
   override cssgen(options?: CompileOptions): CompileOutput {
-    this.syncDesignSystemTreeShake()
     const output = super.cssgen(options)
     this.runCssgenDone({
       artifact: 'styles.css',
@@ -354,7 +357,6 @@ export class NodeDriver extends BaseDriver {
   }
 
   override writeCss(options: WriteCssOptions): WriteCssResult {
-    this.syncDesignSystemTreeShake()
     const result = super.writeCss(options)
     this.runCssgenDone({
       artifact: 'styles.css',
@@ -382,7 +384,7 @@ export class NodeDriver extends BaseDriver {
     return result
   }
 
-  override writeSplitCss(options?: WriteSplitCssOptions): WriteFilesResult {
+  override writeSplitCss(options?: WriteSplitCssOptions): WriteSplitCssResult {
     const result = super.writeSplitCss(options)
     const cwd = options?.cwd ?? this.#options.cwd
     const outdir = result.root

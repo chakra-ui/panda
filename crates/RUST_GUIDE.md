@@ -5,14 +5,16 @@ Coding standards and review checklist for the v2 Oxc compiler engine (`crates/*`
 
 **Elsewhere (do not duplicate here):**
 
-| Topic                                            | Doc                                                                           |
-| ------------------------------------------------ | ----------------------------------------------------------------------------- |
-| Monorepo workflows, Rust commands, CSS contracts | [`AGENTS.md`](../AGENTS.md) — Rust / Oxc Engine section                       |
-| Architecture (why, not how)                      | [`design-notes/README.md`](../design-notes/README.md)                         |
-| Crate tiers (full rationale)                     | [`design-notes/crate-layering.md`](../design-notes/crate-layering.md)         |
-| Testing harness, insta, iteration                | [`design-notes/rust-testing.md`](../design-notes/rust-testing.md)             |
-| NAPI / WASM boundary                             | [`design-notes/bindings.md`](../design-notes/bindings.md)                     |
-| Performance defaults                             | [`design-notes/performance-budget.md`](../design-notes/performance-budget.md) |
+| Topic                                            | Doc                                                                             |
+| ------------------------------------------------ | ------------------------------------------------------------------------------- |
+| Monorepo workflows, Rust commands, CSS contracts | [`AGENTS.md`](../AGENTS.md) — Rust / Oxc Engine section                         |
+| Architecture (why, not how)                      | [`design-notes/README.md`](../design-notes/README.md)                           |
+| Crate tiers (full rationale)                     | [`design-notes/crate-layering.md`](../design-notes/crate-layering.md)           |
+| Testing harness, insta, iteration                | [`design-notes/rust-testing.md`](../design-notes/rust-testing.md)               |
+| NAPI / WASM boundary                             | [`design-notes/bindings.md`](../design-notes/bindings.md)                       |
+| Performance defaults                             | [`design-notes/performance-budget.md`](../design-notes/performance-budget.md)   |
+| Extraction pipeline and transform facts          | [`design-notes/extraction-pipeline.md`](../design-notes/extraction-pipeline.md) |
+| Source transformer                               | [`design-notes/transformer/README.md`](../design-notes/transformer/README.md)   |
 
 ---
 
@@ -77,6 +79,7 @@ When reviewing Rust code in this repo, check each item.
   plumbing only.
 - **Never** import upward across crate tiers — see `design-notes/crate-layering.md`.
 - **Never** accept CSS snapshot changes without explicit review — see `AGENTS.md` Critical Rules.
+- **Never** infer JavaScript or TypeScript syntax from source strings when Oxc already exposes the AST or semantic fact.
 - **Always** use port markers where applicable: `TODO(port):`, `PERF(port):`, `PORT NOTE:`, `SAFETY:`.
 - Public integration tests belong in `crates/<name>/tests/`, not `#[cfg(test)]` in `src/` (except private helpers).
 
@@ -119,17 +122,45 @@ Non-obvious rules beyond "run rustfmt" (see `AGENTS.md` for fmt/clippy commands)
 
 ---
 
+## Oxc extraction and source transforms
+
+Use Oxc as the source of truth for JavaScript and TypeScript structure.
+
+- Parse once. Share the resulting program and resolver across import scanning, extraction, and transform-fact
+  collection.
+- Carry only the owned facts needed after the allocator drops: spans, small enums, static keys, precedence, callee
+  shape, and finite branch structure. Do not retain or clone the full AST.
+- Keep transform facts off the normal extraction path. `extract_for_transform` opts into recursive expression facts, JSX
+  source metadata, and semantic import-reference lists.
+- Slice source only at an Oxc-provided span to preserve authored text. Do not use `starts_with`, `contains`, delimiter
+  matching, or identifier-name scans to recover syntax already represented by the AST.
+- Use semantic symbol references for import liveness. Text search cannot distinguish bindings from comments, strings,
+  generated class names, or shadowed identifiers.
+- Record both consumed and preserved spans. An outer rewrite can reproduce nested original source, so containment alone
+  does not prove that a reference was removed.
+- Fail closed for syntax the transformer cannot model. Continue transforming fully understood shapes such as extracted
+  static spreads mixed with finite conditional spreads.
+- Manual scanners are appropriate only outside Oxc's grammar boundary, such as Vue, Svelte, or Astro markup and CSS
+  template syntax. Embedded JavaScript should reuse the adapted program and resolver.
+- Prefer inline snapshots for rewrite output. Use direct shape assertions when rendered text is not the contract.
+- Validate stylesheet behavior independently from transform behavior. Source-transform refactors must not weaken CSS
+  snapshots or duplicate-rule coalescing tests.
+
+---
+
 ## Anti-patterns
 
-| Anti-pattern                         | Why it's bad here                     | Better                                               |
-| ------------------------------------ | ------------------------------------- | ---------------------------------------------------- |
-| `.clone()` to silence borrow checker | Hides ownership design; hot-path cost | Restructure borrows; `Arc` only when sharing is real |
-| `.unwrap()` in `crates/*`            | Panics in compiler pipeline           | `?`, typed errors, or test-only unwrap               |
-| Logic in NAPI crate                  | Duplicates core; breaks WASM parity   | Implement in `pandacss_*`, mirror at boundary        |
-| Tier violation import                | Couples layers                        | Move shared types down a tier                        |
-| Bulk insta accept                    | Masks CSS regressions                 | `cargo insta review -p <crate>` per diff             |
-| `std::HashMap` for hot internal keys | Slower than needed                    | `FxHashMap` (standard here)                          |
-| Re-parse per entrypoint in prod      | `extract()` is single-parse           | Use combined `extract()` on hot path                 |
+| Anti-pattern                             | Why it's bad here                          | Better                                               |
+| ---------------------------------------- | ------------------------------------------ | ---------------------------------------------------- |
+| `.clone()` to silence borrow checker     | Hides ownership design; hot-path cost      | Restructure borrows; `Arc` only when sharing is real |
+| `.unwrap()` in `crates/*`                | Panics in compiler pipeline                | `?`, typed errors, or test-only unwrap               |
+| Logic in NAPI crate                      | Duplicates core; breaks WASM parity        | Implement in `pandacss_*`, mirror at boundary        |
+| Tier violation import                    | Couples layers                             | Move shared types down a tier                        |
+| Bulk insta accept                        | Masks CSS regressions                      | `cargo insta review -p <crate>` per diff             |
+| `std::HashMap` for hot internal keys     | Slower than needed                         | `FxHashMap` (standard here)                          |
+| Re-parse per entrypoint in prod          | `extract()` is single-parse                | Use combined `extract()` on hot path                 |
+| Infer JS syntax from source text         | Misreads comments, strings, and wrappers   | Carry compact Oxc facts across the parse boundary    |
+| Retain transform facts for every extract | Adds recursive allocations to the hot path | Opt in through `extract_for_transform`               |
 
 | Smell                            | Action                                  |
 | -------------------------------- | --------------------------------------- |

@@ -4,19 +4,23 @@ import {
   createPandaSourcePluginHooks,
   createSourceTransformer,
   runSourceTransform,
-  type PandaTransformerOptions,
   type SourceTransformer,
 } from '@pandacss/transformer'
 import { extname } from 'node:path'
 import type { HmrContext, ModuleNode, Plugin, ResolvedConfig, ViteDevServer } from 'vite'
 
-export interface PandaPluginOptions extends PandaTransformerOptions {
+export interface PandaPluginOptions {
   /** Project root. Defaults to Vite's resolved `root`. */
   cwd?: string
   /** Explicit config file (relative to `cwd`); otherwise discovered upward. */
   configPath?: string
   /** Where codegen artifacts are written. Defaults to the config `outdir`. */
   outdir?: string
+  /**
+   * Opt-in source rewrite (`css()` → class strings, etc.). Default: `false`.
+   * CSS injection, codegen, and HMR always run.
+   */
+  transform?: boolean
 }
 
 function warnDiagnostics(
@@ -39,20 +43,32 @@ function warnDiagnostics(
  * The CSS file declaring Panda layers is treated as the generated CSS root.
  */
 export function pandacss(options: PandaPluginOptions = {}): Plugin {
-  const { cwd: cwdOption, configPath, outdir: outdirOption, ...transformerOptions } = options
+  const { cwd: cwdOption, configPath, outdir: outdirOption, transform: transformEnabled = false } = options
   let driver: Driver | undefined
   let cwd = ''
   let outdir: string | undefined
   let resolvedConfig: ResolvedConfig | undefined
   let designSystemDiagnosticsRef: readonly Diagnostic[] | undefined
   let sourceTransformer: SourceTransformer | undefined
+  let sourceTransformerCompiler: Driver['compiler'] | undefined
   const watchedFiles = new Set<string>()
   const rootIds = new Set<string>()
-  const sourceHooks = createPandaSourcePluginHooks(() => ({
-    ...transformerOptions,
-    getCompiler: () => driver?.compiler,
-    getTransformer: () => sourceTransformer,
-  }))
+
+  const resolveSourceTransformer = () => {
+    const compiler = driver?.compiler
+    if (!compiler) return undefined
+    if (sourceTransformerCompiler !== compiler) {
+      sourceTransformer = createSourceTransformer(compiler)
+      sourceTransformerCompiler = compiler
+    }
+    return sourceTransformer
+  }
+  const sourceHooks = transformEnabled
+    ? createPandaSourcePluginHooks(() => ({
+        getCompiler: () => driver?.compiler,
+        getTransformer: () => resolveSourceTransformer(),
+      }))
+    : undefined
 
   const codegen = () => {
     driver?.codegen({ cwd, outdir })
@@ -66,7 +82,7 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
       watchedFiles.add(file)
       addWatchFile(file)
     }
-    const inputFile = inputId.split('?')[0]
+    const inputFile = inputId.split('?')[0] ?? inputId
     for (const file of driver.scan()) {
       if (file !== inputFile) watch(file)
     }
@@ -118,37 +134,41 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
       resolvedConfig = config
       cwd = cwdOption ?? config.root
       driver = await createNodeDriver({ cwd, configPath })
-      sourceTransformer = createSourceTransformer(driver.compiler)
+      if (transformEnabled) {
+        resolveSourceTransformer()
+      }
       outdir = outdirOption
       codegen()
       driver.parseFiles()
     },
 
     resolveId(id) {
-      return sourceHooks.resolveId(id)
+      return sourceHooks?.resolveId(id) ?? null
     },
 
     load(id) {
-      return sourceHooks.load(id)
+      return sourceHooks?.load(id) ?? null
     },
 
     transform(code, id) {
-      const sourceResult = runSourceTransform(
-        this,
-        {
-          ...transformerOptions,
-          getCompiler: () => driver?.compiler,
-          getTransformer: () => sourceTransformer,
-        },
-        code,
-        id,
-      )
-      if (sourceResult) {
-        warnDiagnostics((message) => this.warn(message), sourceResult.diagnostics, 'while transforming source', id)
-        return { code: sourceResult.code, map: sourceResult.map }
+      const transformer = transformEnabled ? resolveSourceTransformer() : undefined
+      if (transformer) {
+        const sourceResult = runSourceTransform(
+          this,
+          {
+            getCompiler: () => driver?.compiler,
+            getTransformer: () => transformer,
+          },
+          code,
+          id,
+        )
+        if (sourceResult) {
+          warnDiagnostics((message) => this.warn(message), sourceResult.diagnostics, 'while transforming source', id)
+          return { code: sourceResult.code, map: sourceResult.map }
+        }
       }
 
-      if (!driver || extname(id.split('?')[0]) !== '.css') return null
+      if (!driver || extname(id.split('?')[0] ?? id) !== '.css') return null
       if (!driver.compiler.hasLayerDeclaration(code)) return null
 
       rootIds.add(id)

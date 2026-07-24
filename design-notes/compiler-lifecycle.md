@@ -57,7 +57,10 @@ is owned by [stylesheet.md](./stylesheet.md).
 
 ### 6 · Output — ✅ built · `compiler_napi` + `pandacss_stylesheet`
 
-`compile()` returns `{ css, sourceMap, manifest, diagnostics }`.
+`compile()`, layer/keyframe CSS, and their write variants return `{ css, …, diagnostics }`; `getSplitCss()` returns
+`{ files, diagnostics }`. In every result, `diagnostics` is the complete canonical output set: config, latest file
+parse attempt, static pattern, config/static utility transform, and stylesheet diagnostics. Hosts must not merge old
+parse reports back into it.
 
 > CSS output = **static** (config-derived: tokens, reset, base, global) **+ dynamic** (extraction-derived: atoms,
 > recipes). Emission merges both, so it is _not_ a pure function of the extraction registry.
@@ -86,7 +89,8 @@ registering nothing.
   built yet.
 - **Contract across it:** a resolved config snapshot + callback refs in; `generateArtifacts()` yields
   `{ path, code }[]`, `compile()` yields `{ css, sourceMap, manifest, diagnostics }` out. Diagnostics flow back at every
-  phase (parse errors already do — see the parse-error contract in [extraction-pipeline](./extraction-pipeline.md)).
+  phase, including source/config/static callback failures (see the parse-error contract in
+  [extraction-pipeline](./extraction-pipeline.md)).
 
 ## The manifest
 

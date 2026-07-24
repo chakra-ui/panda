@@ -59,3 +59,18 @@ fn os_path_system_resolves_and_joins() {
             .into_owned()
     );
 }
+
+#[test]
+fn safe_relative_paths_reject_root_escape_on_every_host() {
+    for paths in [
+        &OsPathSystem as &dyn PathSystem,
+        &PosixPathSystem as &dyn PathSystem,
+    ] {
+        assert!(paths.is_safe_relative("styles/recipes/button.css"));
+        assert!(!paths.is_safe_relative("../outside.css"));
+        assert!(!paths.is_safe_relative("styles/../../outside.css"));
+        assert!(!paths.is_safe_relative("styles\\..\\outside.css"));
+        assert!(!paths.is_safe_relative("/tmp/outside.css"));
+        assert!(!paths.is_safe_relative("C:\\tmp\\outside.css"));
+    }
+}

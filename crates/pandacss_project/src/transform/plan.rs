@@ -97,6 +97,7 @@ pub(crate) struct TransformPlan {
     pub rewrites: Vec<Rewrite>,
     pub dependencies: Vec<String>,
     pub helper: TransformHelperFacts,
+    pub module: pandacss_extractor::ModuleFacts,
     pub bailed: bool,
 }
 
@@ -105,6 +106,8 @@ pub(crate) struct Rewrite {
     pub start: u32,
     pub end: u32,
     pub content: String,
+    /// Original source regions deliberately re-emitted by this rewrite.
+    pub preserved: Vec<pandacss_shared::Span>,
 }
 
 #[allow(
@@ -124,6 +127,7 @@ pub(crate) fn build_plan(
         // module read to fold an imported value changes.
         dependencies: extracted.dependencies.clone(),
         helper: TransformHelperFacts::default(),
+        module: extracted.module.clone(),
         bailed: false,
     };
 
@@ -141,7 +145,7 @@ pub(crate) fn build_plan(
         match call.category {
             MatchCategory::Css if targets.css_enabled() => match call.name.as_str() {
                 "cva" => {
-                    if resolve::call_is_raw_member(source, call.span) {
+                    if call.facts.raw {
                         continue;
                     }
                     if let Some(rewrite) = super::recipe_inline::rewrite_for_cva_call(
@@ -157,7 +161,7 @@ pub(crate) fn build_plan(
                     }
                 }
                 "sva" => {
-                    if resolve::call_is_raw_member(source, call.span) {
+                    if call.facts.raw {
                         continue;
                     }
                     if let Some(rewrite) =
@@ -167,13 +171,26 @@ pub(crate) fn build_plan(
                         plan.helper.needs_sva = true;
                     }
                 }
+                "viewTransition" => {
+                    if call.facts.raw {
+                        continue;
+                    }
+                    match resolve::rewrite_for_view_transition_call(project, call.span, &call.data)
+                    {
+                        Some(rewrite) => plan.rewrites.push(rewrite),
+                        None if call.data.first().is_some_and(Option::is_none) => {
+                            plan.bailed = true;
+                        }
+                        None => {}
+                    }
+                }
                 _ => match resolve::rewrite_for_css_call(
                     project,
                     source,
                     call.span,
                     &call.data,
-                    &call.arg_spans,
                     &call.style_args,
+                    &call.facts,
                     options.helper_cx,
                 ) {
                     Some(rewrite) => {
@@ -187,7 +204,11 @@ pub(crate) fn build_plan(
             },
             MatchCategory::Recipe if targets.recipes_enabled() => {
                 if let Some(rewrite) = resolve::rewrite_for_recipe_call(
-                    project, source, &call.name, call.span, &call.data,
+                    project,
+                    &call.name,
+                    call.span,
+                    &call.data,
+                    &call.facts,
                 ) {
                     plan.rewrites.push(rewrite);
                 }
@@ -195,10 +216,10 @@ pub(crate) fn build_plan(
             MatchCategory::Pattern if targets.patterns_enabled() => {
                 if let Some(rewrite) = resolve::rewrite_for_pattern_call(
                     project,
-                    source,
                     &call.name,
                     call.span,
                     &call.data,
+                    &call.facts,
                     pattern_transform.as_deref_mut(),
                 ) {
                     plan.rewrites.push(rewrite);
@@ -270,6 +291,7 @@ fn push_token_rewrites(plan: &mut TransformPlan, extracted: &ExtractUsage) {
             start,
             end,
             content: serde_json::to_string(value).expect("string serializes as JSON"),
+            preserved: Vec::new(),
         });
     }
 }

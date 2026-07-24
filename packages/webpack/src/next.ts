@@ -7,9 +7,10 @@ type NextConfig = {
 }
 
 /**
- * Wrap a Next.js config to run Panda's webpack transform. Composes with any
+ * Wrap a Next.js config to run Panda's webpack plugin. Composes with any
  * existing `webpack` function. Only affects the webpack build — Turbopack needs
- * its own integration.
+ * its own integration. Pass `transform: true` in `pandaOptions` to enable
+ * source rewrite.
  */
 export function withPandaCss(nextConfig: NextConfig = {}, pandaOptions: PandaWebpackPluginOptions = {}): NextConfig {
   // One instance shared across Next's server/client/edge compilers so the

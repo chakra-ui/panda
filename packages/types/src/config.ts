@@ -216,6 +216,7 @@ interface FileSystemOptions {
    *    recipes: 'styled-system/recipes',
    *    patterns: 'styled-system/patterns',
    *    jsx: 'styled-system/jsx',
+   *    tokens: 'styled-system/tokens',
    * }
    * ```
    */

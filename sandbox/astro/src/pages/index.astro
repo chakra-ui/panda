@@ -1,13 +1,53 @@
 ---
 import Layout from '../layouts/Layout.astro'
 import { Button } from '../components/button.jsx'
-import Card from '../components/Card.astro';
-import { css } from '../../styled-system/css'
+import Card from '../components/Card.astro'
+import { css, viewTransition } from '../../styled-system/css'
 import { circle, hstack } from '../../styled-system/patterns'
+
+const slide = viewTransition({
+  group: {
+    animationDuration: '0.45s',
+    animationTimingFunction: 'ease-in-out',
+  },
+  old: { opacity: 0 },
+  new: { opacity: 1 },
+})
 ---
 
 <Layout title="Welcome to Astro.">
-  <main>
+  <main class={css({ padding: '40px', display: 'grid', gap: '6' })}>
+    <section class={css({ display: 'grid', gap: '3' })}>
+      <p class={css({ fontWeight: 'semibold', fontSize: 'lg' })}>viewTransition() + Astro</p>
+      <p class={css({ color: 'fg.muted', fontSize: 'sm' })}>
+        Bag class: <code class={css({ fontFamily: 'mono' })}>{slide}</code>
+      </p>
+
+      <a
+        href="/hero"
+        class={[
+          slide,
+          css({
+            display: 'grid',
+            placeItems: 'center',
+            width: '140px',
+            height: '90px',
+            background: 'teal.600',
+            color: 'white',
+            borderRadius: '16px',
+            fontWeight: 'bold',
+            textDecoration: 'none',
+            boxShadow: 'lg',
+          }),
+        ].join(' ')}
+        transition:name="panda-hero"
+      >
+        Hero
+      </a>
+
+      <p class={css({ fontSize: 'sm' })}>Click the card → shared-element transition to /hero</p>
+    </section>
+
     <Button>Welcome</Button>
     <div
       class={css({
@@ -18,7 +58,7 @@ import { circle, hstack } from '../../styled-system/patterns'
       })}
     >
       <div class={hstack({ gap: '10' })}>
-        <span> Welcome home</span>
+        <span>Welcome home</span>
         <span
           class={circle({
             size: '10',
@@ -30,11 +70,11 @@ import { circle, hstack } from '../../styled-system/patterns'
         >
       </div>
       <Card
-				href="https://docs.astro.build/"
-				title="Documentation"
-				body="Learn how Astro works and explore the official API docs."
-				position="Test 12345"
-			/>
+        href="https://docs.astro.build/"
+        title="Documentation"
+        body="Learn how Astro works and explore the official API docs."
+        position="Test 12345"
+      />
     </div>
   </main>
 </Layout>

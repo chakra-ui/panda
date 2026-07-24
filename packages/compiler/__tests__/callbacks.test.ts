@@ -83,6 +83,64 @@ describe('Compiler callbacks', () => {
     expect(compiler.atoms()).toEqual([])
   })
 
+  it('reports the latest parser failure while retaining last-good stylesheet state', () => {
+    let shouldFail = false
+    const hookId = 'plugins.0.hooks.parser:before.0'
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          utilities: { color: { className: 'c' } },
+        },
+        hooks: {
+          'parser:before': [{ id: hookId, hash: 'parser-latest-attempt' }],
+        },
+        callbacks: {
+          'parser:before': {
+            [hookId]: ({ content }) => {
+              if (shouldFail) throw new Error('boom')
+              return content
+            },
+          },
+        },
+      },
+      { crossFile: false },
+    )
+    const path = '/virtual/Button.tsx'
+    compiler.parseFileSource(path, `import { css } from '@panda/css'; css({ color: 'red' })`)
+    shouldFail = true
+    compiler.parseFileSource(path, `import { css } from '@panda/css'; css({ color: 'blue' })`)
+    const failed = compiler.compile()
+    const failedFile = compiler.getFile(path)
+    shouldFail = false
+    compiler.parseFileSource(path, `import { css } from '@panda/css'; css({ color: 'blue' })`)
+    const recovered = compiler.compile()
+
+    expect({
+      failedDiagnostics: failed.diagnostics.map(({ code }) => code),
+      failedFileDiagnostics: failedFile?.diagnostics.map(({ code }) => code),
+      retainedRed: failed.css.includes('color: red'),
+      ignoredBlue: !failed.css.includes('color: blue'),
+      recoveredDiagnostics: recovered.diagnostics,
+      recoveredBlue: recovered.css.includes('color: blue'),
+    }).toMatchInlineSnapshot(`
+      {
+        "failedDiagnostics": [
+          "transform_callback_failed",
+        ],
+        "failedFileDiagnostics": [
+          "transform_callback_failed",
+        ],
+        "retainedRed": true,
+        "ignoredBlue": true,
+        "recoveredDiagnostics": [],
+        "recoveredBlue": true,
+      }
+    `)
+  })
+
   it('applies js-backed utility transform callbacks from a config bundle', () => {
     const compiler = createCompilerFromSnapshot(
       {
@@ -131,6 +189,65 @@ describe('Compiler callbacks', () => {
           "conditions": [],
         },
       ]
+    `)
+  })
+
+  it('retries failed config-authored utility transforms and caches the recovered stylesheet snapshot', () => {
+    let calls = 0
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          utilities: {
+            size: {
+              transform: { kind: 'js-callback', id: 'utilities.size.transform' },
+            },
+          },
+          globalCss: {
+            html: { size: '4px' },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.size.transform': (value) => {
+              calls += 1
+              if (calls === 1) throw new Error('boom')
+              return { width: value, height: value }
+            },
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    const failed = compiler.compile()
+    const recovered = compiler.compile()
+    const cached = compiler.compile()
+
+    expect({
+      failedDiagnostics: failed.diagnostics.map(({ code }) => code),
+      recoveredDiagnostics: recovered.diagnostics,
+      recoveredDeclarations: {
+        width: recovered.css.includes('width: 4px'),
+        height: recovered.css.includes('height: 4px'),
+      },
+      cachedCssMatches: cached.css === recovered.css,
+      calls,
+    }).toMatchInlineSnapshot(`
+      {
+        "failedDiagnostics": [
+          "transform_callback_failed",
+        ],
+        "recoveredDiagnostics": [],
+        "recoveredDeclarations": {
+          "width": true,
+          "height": true,
+        },
+        "cachedCssMatches": true,
+        "calls": 2,
+      }
     `)
   })
 

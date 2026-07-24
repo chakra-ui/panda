@@ -1,6 +1,7 @@
 ---
-import "../../panda.css"
-// import "../../styled-system/styles.css"
+import { ClientRouter } from 'astro:transitions'
+import '../../panda.css'
+
 export interface Props {
   title: string
 }
@@ -8,13 +9,14 @@ export interface Props {
 const { title } = Astro.props
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    <ClientRouter />
   </head>
   <body>
     <slot />

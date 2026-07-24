@@ -22,6 +22,8 @@ use crate::{ProjectConditionMatcher, RecipeKey, Result};
 pub struct Config {
     pub(crate) extractor_config: ExtractorConfig,
     pub(crate) utility: Option<Utility>,
+    /// Kept when [`Self::utility`] is dropped (empty utilities map).
+    pub(crate) class_name_prefix: String,
     pub(crate) conditions: ProjectConditionMatcher,
     pub(crate) breakpoints: Vec<String>,
     pub(crate) patterns: PatternRegistry,

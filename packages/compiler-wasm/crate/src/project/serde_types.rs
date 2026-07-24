@@ -23,10 +23,18 @@ pub(super) struct WriteCssResultSerde {
 
 #[derive(serde::Serialize)]
 #[serde(rename_all = "camelCase")]
-pub(super) struct WriteFilesResultSerde {
+pub(super) struct WriteSplitCssResultSerde {
     pub(super) root: String,
     pub(super) paths: Vec<String>,
     pub(super) files: Vec<SplitCssFileSerde>,
+    pub(super) diagnostics: Vec<pandacss_shared::Diagnostic>,
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(super) struct SplitCssResultSerde {
+    pub(super) files: Vec<SplitCssFileSerde>,
+    pub(super) diagnostics: Vec<pandacss_shared::Diagnostic>,
 }
 
 #[derive(Default, Deserialize)]
@@ -101,7 +109,7 @@ pub(super) struct WriteLayerCssOptionsSerde {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(super) struct WriteSplitCssOptionsSerde {
-    pub(super) outdir: String,
+    pub(super) outdir: Option<String>,
     pub(super) cwd: Option<String>,
     pub(super) layers: Option<Vec<String>>,
     pub(super) emit_layer_declaration: Option<bool>,

@@ -13,6 +13,7 @@ use pandacss_encoder::{
     RecipeStyleGroupSnapshot,
 };
 use pandacss_extractor::ExportInfo;
+use pandacss_shared::ViewTransitionStyle;
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde::{Deserialize, Serialize};
 
@@ -21,7 +22,7 @@ use crate::{FileEntry, ParseFileReport};
 
 /// Bumped when the on-disk shape changes; a consumer with a different
 /// `SCHEMA_VERSION` falls back to re-extracting the library's source.
-pub const SCHEMA_VERSION: u32 = 4;
+pub const SCHEMA_VERSION: u32 = 5;
 
 /// Synthetic file-key prefix for atoms hydrated from a parent design system.
 /// Excluded from serialized build info so a published artifact carries only
@@ -45,14 +46,30 @@ pub struct BuildInfo {
     /// Interned recipe / slot-recipe styles. Omitted when the library has none.
     #[serde(default, skip_serializing_if = "BuildRecipes::is_empty")]
     pub recipes: BuildRecipes,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub view_transitions: Vec<BuildViewTransition>,
     /// Per published module (source-file key) → indices into `atoms` /
-    /// `recipes`. Lets the consumer hydrate only imported modules.
+    /// `recipes` / `viewTransitions`. Lets the consumer hydrate only imported modules.
     pub modules: BTreeMap<String, ModuleEntry>,
     /// Exported component name -> module key, so a consumer can resolve a
     /// barrel import (`import { Button } from '@acme/ds'`) to the module it
     /// must hydrate. Omitted when empty.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub exports: BTreeMap<String, String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct BuildViewTransition {
+    pub cls: u32,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub group: Option<serde_json::Value>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub image_pair: Option<serde_json::Value>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub old: Option<serde_json::Value>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub new: Option<serde_json::Value>,
 }
 
 /// Recipe + slot-recipe groups, mirroring `EncodedRecipesSnapshot` but interned.
@@ -134,6 +151,8 @@ pub struct ModuleEntry {
     /// Indices into the top-level `tokenRefs` array this module uses.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub token_refs: Vec<u32>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub view_transitions: Vec<u32>,
 }
 
 #[allow(
@@ -360,6 +379,72 @@ fn atom_from_build(build: &BuildAtom, strings: &[String]) -> Option<Atom> {
     ))
 }
 
+#[allow(
+    clippy::cast_possible_truncation,
+    reason = "a project never holds u32::MAX view transitions"
+)]
+fn collect_build_view_transitions<'a>(
+    view_transitions: &'a BTreeMap<super::RecipeKey, ViewTransitionStyle>,
+    interner: &mut Interner,
+) -> (Vec<BuildViewTransition>, FxHashMap<&'a str, Vec<u32>>) {
+    let mut by_class = BTreeMap::<String, &ViewTransitionStyle>::new();
+    for style in view_transitions.values() {
+        by_class.entry(style.class_name.clone()).or_insert(style);
+    }
+    let list: Vec<&ViewTransitionStyle> = by_class.into_values().collect();
+    let index: FxHashMap<&str, u32> = list
+        .iter()
+        .enumerate()
+        .map(|(i, style)| (style.class_name.as_str(), i as u32))
+        .collect();
+    let mut file_indices: FxHashMap<&str, Vec<u32>> = FxHashMap::default();
+    for (key, style) in view_transitions {
+        let Some(&idx) = index.get(style.class_name.as_str()) else {
+            continue;
+        };
+        file_indices.entry(key.file.as_ref()).or_default().push(idx);
+    }
+    for indices in file_indices.values_mut() {
+        indices.sort_unstable();
+        indices.dedup();
+    }
+    let entries = list
+        .iter()
+        .map(|style| BuildViewTransition {
+            cls: interner.intern(&style.class_name),
+            group: style.group.clone(),
+            image_pair: style.image_pair.clone(),
+            old: style.old.clone(),
+            new: style.new.clone(),
+        })
+        .collect();
+    (entries, file_indices)
+}
+
+fn view_transitions_from_build(
+    builds: &[BuildViewTransition],
+    strings: &[String],
+    selected: Option<&FxHashSet<u32>>,
+) -> Option<Vec<ViewTransitionStyle>> {
+    let mut out = Vec::new();
+    for (index, build) in builds.iter().enumerate() {
+        let keep =
+            selected.is_none_or(|set| u32::try_from(index).is_ok_and(|index| set.contains(&index)));
+        if !keep {
+            continue;
+        }
+        let class_name = string_at(strings, build.cls)?;
+        out.push(ViewTransitionStyle {
+            class_name: class_name.into(),
+            group: build.group.clone(),
+            image_pair: build.image_pair.clone(),
+            old: build.old.clone(),
+            new: build.new.clone(),
+        });
+    }
+    Some(out)
+}
+
 impl super::Project {
     /// Serializes the project's encoded atoms into a [`BuildInfo`], with
     /// per-module provenance for tree-shaking. Producer-side only
@@ -425,9 +510,42 @@ impl super::Project {
             .map(|path| interner.intern(path))
             .collect();
 
+        let (build_view_transitions, file_view_transitions) =
+            collect_build_view_transitions(&self.view_transitions, &mut interner);
+
+        let (modules, styled_modules) = Self::build_module_entries(
+            &self.files,
+            &position,
+            &recipe_index,
+            &token_ref_position,
+            &file_view_transitions,
+        );
+        let exports = ExportResolver::new(&self.files, styled_modules).resolve_all();
+
+        BuildInfo {
+            schema_version: SCHEMA_VERSION,
+            panda,
+            config_fingerprint,
+            strings: interner.table,
+            atoms: build_atoms,
+            token_refs,
+            recipes,
+            view_transitions: build_view_transitions,
+            modules,
+            exports,
+        }
+    }
+
+    fn build_module_entries(
+        files: &FxHashMap<Arc<str>, FileEntry>,
+        position: &FxHashMap<&Atom, u32>,
+        recipe_index: &FxHashMap<&str, u32>,
+        token_ref_position: &FxHashMap<&str, u32>,
+        file_view_transitions: &FxHashMap<&str, Vec<u32>>,
+    ) -> (BTreeMap<String, ModuleEntry>, FxHashSet<String>) {
         let mut modules = BTreeMap::new();
         let mut styled_modules = FxHashSet::default();
-        for (path, entry) in &self.files {
+        for (path, entry) in files {
             if path.starts_with(HYDRATED_FILE_PREFIX) {
                 continue;
             }
@@ -457,9 +575,15 @@ impl super::Project {
             token_ref_indices.sort_unstable();
             token_ref_indices.dedup();
 
+            let view_transition_indices = file_view_transitions
+                .get(path.as_ref())
+                .cloned()
+                .unwrap_or_default();
+
             if !atom_indices.is_empty()
                 || !recipe_indices.is_empty()
                 || !token_ref_indices.is_empty()
+                || !view_transition_indices.is_empty()
             {
                 styled_modules.insert(path.to_string());
             }
@@ -470,23 +594,11 @@ impl super::Project {
                     atoms: atom_indices,
                     recipes: recipe_indices,
                     token_refs: token_ref_indices,
+                    view_transitions: view_transition_indices,
                 },
             );
         }
-        // Barrel resolution: flatten per-file export facts to name -> styled module.
-        let exports = ExportResolver::new(&self.files, styled_modules).resolve_all();
-
-        BuildInfo {
-            schema_version: SCHEMA_VERSION,
-            panda,
-            config_fingerprint,
-            strings: interner.table,
-            atoms: build_atoms,
-            token_refs,
-            recipes,
-            modules,
-            exports,
-        }
+        (modules, styled_modules)
     }
 
     /// Hydrates a library's pre-extracted atoms into this project (additive),
@@ -512,6 +624,8 @@ impl super::Project {
         let selected_recipes = selected_module_indices(info, only_modules, |entry| &entry.recipes);
         let selected_token_refs =
             selected_module_indices(info, only_modules, |entry| &entry.token_refs);
+        let selected_view_transitions =
+            selected_module_indices(info, only_modules, |entry| &entry.view_transitions);
 
         let Some(recipe_count) = info
             .recipes
@@ -526,6 +640,10 @@ impl super::Project {
         if !selected_indices_in_bounds(selected_atoms.as_ref(), info.atoms.len())
             || !selected_indices_in_bounds(selected_recipes.as_ref(), recipe_count)
             || !selected_indices_in_bounds(selected_token_refs.as_ref(), info.token_refs.len())
+            || !selected_indices_in_bounds(
+                selected_view_transitions.as_ref(),
+                info.view_transitions.len(),
+            )
         {
             return false;
         }
@@ -569,6 +687,15 @@ impl super::Project {
             token_refs.push(path.into());
         }
         self.set_hydrated_recipes(name, recipes);
+
+        let Some(view_transitions) = view_transitions_from_build(
+            &info.view_transitions,
+            &info.strings,
+            selected_view_transitions.as_ref(),
+        ) else {
+            return false;
+        };
+        self.set_hydrated_view_transitions(name, view_transitions);
 
         let key: Arc<str> = Arc::from(format!("{HYDRATED_FILE_PREFIX}{name}").as_str());
         if self.files.contains_key(&key) {

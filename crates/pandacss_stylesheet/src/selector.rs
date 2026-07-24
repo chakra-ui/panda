@@ -21,30 +21,11 @@ pub enum ScopeMode {
 #[must_use]
 pub fn split_selector_list(selector: &str) -> Vec<&str> {
     let mut parts = Vec::new();
-    let mut depth = 0i32;
     let mut start = 0usize;
-    let mut escaped = false;
-
-    for (index, ch) in selector.char_indices() {
-        if escaped {
-            escaped = false;
-            continue;
-        }
-        if ch == '\\' {
-            escaped = true;
-            continue;
-        }
-
-        match ch {
-            '(' | '[' => depth += 1,
-            ')' | ']' => depth -= 1,
-            ',' if depth == 0 => {
-                push_part(selector, start, index, &mut parts);
-                start = index + ch.len_utf8();
-            }
-            _ => {}
-        }
-    }
+    crate::css_syntax::visit_top_level_code_byte(selector, b',', |index| {
+        push_part(selector, start, index, &mut parts);
+        start = index + 1;
+    });
 
     push_part(selector, start, selector.len(), &mut parts);
     parts
@@ -164,29 +145,7 @@ fn trailing_pseudo_element_start(input: &str) -> Option<usize> {
 }
 
 fn depth_zero_at(input: &str, index: usize) -> bool {
-    let mut depth = 0i32;
-    let mut escaped = false;
-
-    for (offset, ch) in input.char_indices() {
-        if offset >= index {
-            return depth == 0;
-        }
-        if escaped {
-            escaped = false;
-            continue;
-        }
-        if ch == '\\' {
-            escaped = true;
-            continue;
-        }
-        match ch {
-            '(' | '[' => depth += 1,
-            ')' | ']' => depth -= 1,
-            _ => {}
-        }
-    }
-
-    depth == 0
+    crate::css_syntax::code_depth_zero_at(input, index)
 }
 
 fn is_pseudo_name_byte(byte: u8) -> bool {
@@ -205,74 +164,11 @@ fn join_scoped(parts: impl Iterator<Item = String>) -> String {
 }
 
 fn parent_has_top_level_combinator(parent: &str) -> bool {
-    let mut depth = 0u32;
-    let mut in_double = false;
-    let mut in_single = false;
-    let mut escaped = false;
-
-    for ch in parent.chars() {
-        if escaped {
-            escaped = false;
-            continue;
-        }
-        if ch == '\\' {
-            escaped = true;
-            continue;
-        }
-        if ch == '"' && !in_single {
-            in_double = !in_double;
-            continue;
-        }
-        if ch == '\'' && !in_double {
-            in_single = !in_single;
-            continue;
-        }
-        if in_double || in_single {
-            continue;
-        }
-        match ch {
-            '(' | '[' => depth += 1,
-            ')' | ']' => depth = depth.saturating_sub(1),
-            '>' | '+' | '~' | ' ' if depth == 0 => return true,
-            _ => {}
-        }
-    }
-
-    false
+    crate::css_syntax::contains_top_level_combinator(parent)
 }
 
 fn selector_has_multiple_ampersands(selector: &str) -> bool {
-    let mut count = 0u32;
-    let mut in_double = false;
-    let mut in_single = false;
-    let mut escaped = false;
-
-    for ch in selector.chars() {
-        if escaped {
-            escaped = false;
-            continue;
-        }
-        if ch == '\\' {
-            escaped = true;
-            continue;
-        }
-        if ch == '"' && !in_single {
-            in_double = !in_double;
-            continue;
-        }
-        if ch == '\'' && !in_double {
-            in_single = !in_single;
-            continue;
-        }
-        if ch == '&' && !in_double && !in_single {
-            count += 1;
-            if count >= 2 {
-                return true;
-            }
-        }
-    }
-
-    false
+    crate::css_syntax::contains_multiple_code_bytes(selector, b'&')
 }
 
 fn nesting_parent_substitution(parent: &str, selector: &str) -> String {
@@ -285,44 +181,11 @@ fn nesting_parent_substitution(parent: &str, selector: &str) -> String {
 
 /// Replace nesting `&` tokens with `parent` in one complex selector.
 ///
-/// Ampersands inside quoted attribute strings are left untouched.
+/// Ampersands inside strings and comments are left untouched.
 #[must_use]
 pub(crate) fn replace_nesting_parent(selector: &str, parent: &str) -> String {
     let substitution = nesting_parent_substitution(parent, selector);
-    let mut out = String::with_capacity(selector.len() + substitution.len());
-    let mut in_double = false;
-    let mut in_single = false;
-    let mut escaped = false;
-
-    for ch in selector.chars() {
-        if escaped {
-            out.push(ch);
-            escaped = false;
-            continue;
-        }
-        if ch == '\\' {
-            out.push(ch);
-            escaped = true;
-            continue;
-        }
-        if ch == '"' && !in_single {
-            in_double = !in_double;
-            out.push(ch);
-            continue;
-        }
-        if ch == '\'' && !in_double {
-            in_single = !in_single;
-            out.push(ch);
-            continue;
-        }
-        if ch == '&' && !in_double && !in_single {
-            out.push_str(&substitution);
-            continue;
-        }
-        out.push(ch);
-    }
-
-    out
+    crate::css_syntax::replace_code_byte(selector, b'&', &substitution)
 }
 
 /// Cartesian-product `&` substitution for comma-separated selector lists.
@@ -333,7 +196,7 @@ pub(crate) fn replace_selector_parent(raw: &str, parent: &str) -> String {
     let mut out = Vec::new();
     for parent in &parent_selectors {
         for raw in &raw_selectors {
-            out.push(if raw.contains('&') {
+            out.push(if crate::css_syntax::contains_code_byte(raw, b'&') {
                 replace_nesting_parent(raw, parent)
             } else {
                 format!("{parent} {raw}")
@@ -345,6 +208,8 @@ pub(crate) fn replace_selector_parent(raw: &str, parent: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+    use insta::assert_snapshot;
+
     use super::{
         ScopeMode, peel_trailing_pseudo_elements, replace_nesting_parent, replace_selector_parent,
         scope_selector, split_selector_list,
@@ -363,6 +228,27 @@ mod tests {
         assert_eq!(
             replace_nesting_parent(r"&[data-category='Sound & Vision']", ".room"),
             r".room[data-category='Sound & Vision']"
+        );
+    }
+
+    #[test]
+    fn replace_scopes_selector_when_ampersand_only_appears_inside_quotes() {
+        assert_snapshot!(
+            replace_selector_parent(r#"[data-category="sound & vision"]"#, ".a"),
+            @r#".a [data-category="sound & vision"]"#
+        );
+    }
+
+    #[test]
+    fn replace_preserves_comments_and_ignores_their_ampersands_and_combinators() {
+        assert_snapshot!(replace_nesting_parent("&/* & > */", ".a"), @".a/* & > */");
+        assert_snapshot!(
+            replace_nesting_parent("&/* & */&", ".a .b"),
+            @":is(.a .b)/* & */:is(.a .b)"
+        );
+        assert_snapshot!(
+            replace_selector_parent("&/* , & */:hover", ".a"),
+            @".a/* , & */:hover"
         );
     }
 

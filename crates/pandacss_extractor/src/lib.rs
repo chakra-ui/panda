@@ -30,16 +30,20 @@ mod source_refs;
 mod style_tree;
 mod svelte_adapter;
 mod template_styles;
+mod transform_facts;
 mod vue_adapter;
 
-pub use calls::{ExtractedCall, ExtractedCallsResult, extract_calls};
+pub use calls::{
+    CallCalleeKind, CallFacts, CallSyntax, ExtractedCall, ExtractedCallsResult, extract_calls,
+};
 pub use design_system_imports::{
     DesignSystemImportSelection, DesignSystemPackageQuery, collect_design_system_imports,
     collect_design_system_imports_for_packages, selection_from_import_records,
 };
 pub use extract::{
-    ExtractDebugResult, ExtractUsage, ExtractVerboseResult, TokenRef, extract, extract_debug,
-    extract_verbose, extract_with_pattern_raw_transform,
+    ExtractDebugResult, ExtractUsage, ExtractVerboseResult, ImportBindingFacts, ModuleFacts,
+    TokenRef, analyze_module, extract, extract_debug, extract_for_transform, extract_verbose,
+    extract_with_pattern_raw_transform,
 };
 pub use imports::{
     ImportKind, ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind,
@@ -56,7 +60,9 @@ pub use fragment::{
     parse_logical_or_nullish_fragment, parse_object_fragment, parse_ternary_fragment,
 };
 pub(crate) use imports::{collect_imports, collect_parser_diagnostics};
-pub use jsx::{ExtractedJsx, ExtractedJsxResult, JsxAttr, extract_jsx};
+pub use jsx::{
+    ExtractedJsx, ExtractedJsxResult, JsxAttr, JsxSourceFacts, JsxSourceKind, extract_jsx,
+};
 pub use literal::Literal;
 pub use matcher::{
     CssSyntaxKind, ExtractorConfig, JsxExtractionConfig, JsxKind, JsxStyleProps, MatchCategory,
@@ -68,6 +74,10 @@ pub use pandacss_shared::{
     diagnostic_codes,
 };
 pub use style_tree::{StyleObject, StyleSpread, StyleTree, project_literal};
+pub use transform_facts::{
+    ConditionalExpressionFacts, ExpressionFacts, ExpressionKind, LogicalExpressionFacts,
+    LogicalExpressionOperator, ObjectFacts, ObjectPropertyFacts,
+};
 
 // Internal-only: keep `VisitorContext` accessible to sibling modules but out
 // of the public API.

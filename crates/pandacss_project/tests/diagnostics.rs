@@ -1,8 +1,10 @@
-use crate::common::create_project;
+use crate::common::{create_config, create_project, sorted_atoms};
 use indoc::indoc;
-use insta::assert_snapshot;
+use insta::{assert_snapshot, assert_yaml_snapshot};
 use pandacss_encoder::AtomValue;
-use pandacss_project::{Diagnostic, ParseTransforms};
+use pandacss_project::{
+    Diagnostic, ExtractedLiteral, ParseTransforms, Project, SourceTransformFn, System,
+};
 use pandacss_shared::diagnostic_codes;
 use serde_json::json;
 
@@ -90,6 +92,200 @@ fn utility_callback_failure_includes_target_context() {
     );
 
     assert_snapshot!(summary(&report.diagnostics), @"Warning transform_callback_failed transform callback failed (utility `color` with value `red`)");
+}
+
+#[test]
+fn source_transform_failure_is_output_diagnostic_without_dropping_last_good_styles() {
+    let mut project = create_project(json!({}));
+    project.parse_file(
+        "style.ts",
+        "import { css } from '@panda/css'; css({ color: 'red' });",
+    );
+    project.bump_parse_epoch();
+    let mut fail = |_path: &str, _source: &str| {
+        Err(Diagnostic::warning(
+            diagnostic_codes::TRANSFORM_CALLBACK_FAILED,
+            "parser callback failed",
+        ))
+    };
+
+    project.parse_file_with(
+        "style.ts",
+        "import { css } from '@panda/css'; css({ color: 'blue' });",
+        ParseTransforms {
+            source: Some(&mut fail as &mut SourceTransformFn<'_>),
+            ..Default::default()
+        },
+    );
+
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: red
+      conditions: []
+    ");
+    assert_yaml_snapshot!(
+        project
+            .file_diagnostics()
+            .into_iter()
+            .map(|diagnostic| (
+                diagnostic.code.as_str(),
+                diagnostic.file.as_deref(),
+                diagnostic.message.as_str(),
+            ))
+            .collect::<Vec<_>>()
+        , @r#"
+    - - transform_callback_failed
+      - style.ts
+      - parser callback failed
+    "#
+    );
+
+    let mut recover = |_path: &str, source: &str| Ok(Some(source.to_owned()));
+    project.parse_file_with(
+        "style.ts",
+        "import { css } from '@panda/css'; css({ color: 'blue' });",
+        ParseTransforms {
+            source: Some(&mut recover as &mut SourceTransformFn<'_>),
+            ..Default::default()
+        },
+    );
+    assert_yaml_snapshot!(json!({
+        "diagnostics": project
+            .file_diagnostics()
+            .into_iter()
+            .map(|diagnostic| diagnostic.code.as_str())
+            .collect::<Vec<_>>(),
+        "atoms": sorted_atoms(&project),
+    }), @r#"
+    diagnostics: []
+    atoms:
+      - prop: color
+        value: blue
+        conditions: []
+    "#);
+}
+
+#[test]
+fn config_utility_transform_failures_are_reported_and_retried_but_success_is_cached() {
+    let user_config = create_config(json!({
+        "utilities": {
+            "size": {
+                "className": "size",
+                "transform": { "kind": "js-callback", "id": "utilities.size.transform" }
+            }
+        },
+        "globalCss": {
+            "html": { "size": "4px" }
+        }
+    }));
+    let system = System::new(user_config.clone()).expect("valid project config");
+    let mut project = Project::new(system);
+    let mut calls = 0;
+    let mut transform = |_prop: &str, _resolved: &AtomValue, _original: &AtomValue| {
+        calls += 1;
+        if calls < 3 {
+            Err(Diagnostic::warning(
+                diagnostic_codes::TRANSFORM_CALLBACK_FAILED,
+                "utility callback failed",
+            ))
+        } else {
+            Ok(None::<ExtractedLiteral>)
+        }
+    };
+
+    let first = project
+        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform)
+        .diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.code.clone())
+        .collect::<Vec<_>>();
+    let second = project
+        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform)
+        .diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.code.clone())
+        .collect::<Vec<_>>();
+    let recovered = project
+        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform)
+        .diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.code.clone())
+        .collect::<Vec<_>>();
+    let cached = project
+        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform)
+        .diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.code.clone())
+        .collect::<Vec<_>>();
+
+    assert_yaml_snapshot!(json!({
+        "first": first,
+        "second": second,
+        "recovered": recovered,
+        "cached": cached,
+        "calls": calls,
+    }), @r#"
+    first:
+      - transform_callback_failed
+    second:
+      - transform_callback_failed
+    recovered: []
+    cached: []
+    calls: 3
+    "#);
+}
+
+#[test]
+fn static_recipe_utility_transform_failures_are_reported_and_retried() {
+    let user_config = create_config(json!({
+        "utilities": {
+            "size": {
+                "className": "size",
+                "transform": { "kind": "js-callback", "id": "utilities.size.transform" }
+            }
+        },
+        "theme": {
+            "recipes": {
+                "button": { "base": { "size": "4px" } }
+            }
+        },
+        "staticCss": { "recipes": "*" }
+    }));
+    let system = System::new(user_config.clone()).expect("valid project config");
+    let mut project = Project::new(system);
+    let mut calls = 0;
+    let mut transform = |_prop: &str, _resolved: &AtomValue, _original: &AtomValue| {
+        calls += 1;
+        Err::<Option<ExtractedLiteral>, _>(Diagnostic::warning(
+            diagnostic_codes::TRANSFORM_CALLBACK_FAILED,
+            "utility callback failed",
+        ))
+    };
+
+    let first = project
+        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform)
+        .diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.code.clone())
+        .collect::<Vec<_>>();
+    let second = project
+        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform)
+        .diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.code.clone())
+        .collect::<Vec<_>>();
+
+    assert_yaml_snapshot!(json!({
+        "first": first,
+        "second": second,
+        "calls": calls,
+    }), @r#"
+    first:
+      - transform_callback_failed
+    second:
+      - transform_callback_failed
+    calls: 2
+    "#);
 }
 
 #[test]

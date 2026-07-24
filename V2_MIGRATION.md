@@ -78,6 +78,8 @@ Add integrations on the same `@beta` tag when you need them:
 ```bash
 pnpm add -D @pandacss/postcss@beta   # standalone PostCSS plugin
 pnpm add -D @pandacss/vite@beta      # Vite plugin
+pnpm add -D @pandacss/webpack@beta   # webpack plugin (Next.js compatible)
+pnpm add -D @pandacss/rollup@beta    # Rollup plugin
 ```
 
 You can wire up PostCSS two ways:
@@ -151,7 +153,8 @@ export default defineConfig({
 ```
 
 > v2 doesn't auto-inject presets — without them you get a bare system (no `bg`/`color` utilities, no `fontSizes`/spacing
-> scales, no `_hover`/`_active` conditions). `panda init` scaffolds this line and installs both presets for you.
+> scales, no `_hover`/`_active` conditions). `panda init` scaffolds this line and installs both presets for you. Pass
+> `--skip-presets` to scaffold a bare config instead.
 
 ### 4. Add Panda to your CSS
 
@@ -311,6 +314,41 @@ The same works for `styled(tag, {...})` via `StyledComponent<Tag, Props>` and fo
 unblocks `isolatedDeclarations` and shrinks declaration files when you export components with variants. See the
 [Isolated declarations guide](https://panda-css.com/docs/guides/isolated-declarations) for the full set of patterns.
 
+### `viewTransition()`
+
+New: style the View Transitions API and get a stable bag class back.
+
+```ts
+import { viewTransition } from 'styled-system/css'
+
+const slide = viewTransition({
+  group: { animationDuration: '0.4s' },
+  old: { opacity: 0 },
+  new: { opacity: 1 },
+})
+```
+
+```tsx
+<ViewTransition name="hero" share={slide}>
+  <img src="…" alt="…" />
+</ViewTransition>
+```
+
+Panda owns the shared CSS; you still set `view-transition-name` yourself.
+
+### Source transformation
+
+Bundler plugins can now rewrite static `css()` / `cva()` calls in your source. It's opt-in:
+
+```ts
+// vite.config.ts
+import pandacss from '@pandacss/vite'
+
+pandacss({ transform: true })
+```
+
+Same flag in `@pandacss/webpack` and `@pandacss/rollup`. Without it, the plugins only handle CSS, codegen, and HMR.
+
 ---
 
 ## Breaking changes & migration
@@ -373,8 +411,9 @@ packages, and the Astro `@pandacss/studio`.
 If you only use `@pandacss/dev` plus Vite or PostCSS, you're fine.
 
 Still published on beta: `@pandacss/dev`, `@pandacss/cli`, `@pandacss/compiler`, `@pandacss/compiler-wasm`,
-`@pandacss/compiler-shared`, `@pandacss/config`, `@pandacss/postcss`, `@pandacss/vite`, `@pandacss/types`,
-`@pandacss/preset-base`, `@pandacss/preset-panda`, `@pandacss/mcp`.
+`@pandacss/compiler-shared`, `@pandacss/config`, `@pandacss/postcss`, `@pandacss/vite`, `@pandacss/webpack`,
+`@pandacss/rollup`, `@pandacss/types`, `@pandacss/preset-base`, `@pandacss/preset-panda`, `@pandacss/preset-typography`,
+`@pandacss/mcp`.
 
 ### PostCSS plugin is experimental
 
@@ -498,8 +537,8 @@ Logging flags are consolidated: use `--log-level silent|error|warn|info|debug` i
 `--verbose`. Shared CLI flags use kebab-case, including `--max-warnings`, `--watch-debounce`, `--trace-output`, and
 `--trace-file`. `--profile` replaces v1's `--cpu-prof` (see [above](#--cpu-prof-is-now---profile)).
 
-`panda init -i` / `--interactive` is the init wizard only (same as v1) — it does not toggle “fancy” logs. Human TTY
-output can use ANSI colors; pass `--no-color` or set `NO_COLOR` to disable. Use `--no-input` to forbid prompts.
+`panda init -i` and `panda init --interactive` run the setup wizard, as they did in v1. They do not change log
+formatting. Use `--no-color` or `NO_COLOR` to disable colors in terminal output.
 
 ---
 

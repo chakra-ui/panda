@@ -1,4 +1,6 @@
+mod cascade;
 mod conditions;
+mod css_syntax;
 mod emitter;
 mod grouped;
 mod layers;
@@ -7,13 +9,15 @@ mod polyfill;
 mod preflight;
 mod selector;
 mod sort;
+mod split_names;
 mod static_css;
 mod static_css_diagnostics;
 mod style_rules;
 mod writer;
 
-pub use emitter::{UtilityStyleOverrides, emit_keyframes};
+pub use emitter::UtilityStyleOverrides;
 pub use layers::{has_layer_declaration, strip_layer_order_statements};
+pub use pandacss_shared::ViewTransitionStyle;
 pub use selector::{PREFLIGHT_ROOT, ScopeMode, scope_selector, split_selector_list};
 pub use sort::order_properties;
 
@@ -23,9 +27,10 @@ use rustc_hash::{FxHashMap, FxHashSet};
 
 use pandacss_config::UserConfig;
 use pandacss_encoder::{Atom, EncodedRecipesSnapshot, RecipeStyleGroupSnapshot};
-use pandacss_shared::{Diagnostic, diagnostic_codes, file_stem};
+use pandacss_shared::{Diagnostic, diagnostic_codes};
 use pandacss_tokens::TokenDictionary;
 use pandacss_utility::{Utility, UtilityOptions};
+use serde_json::Value;
 
 #[derive(Debug, Clone)]
 #[allow(
@@ -69,6 +74,12 @@ pub struct StylesheetOutput {
 pub struct SplitCssFile {
     pub path: String,
     pub code: String,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct SplitCssOutput {
+    pub files: Vec<SplitCssFile>,
+    pub diagnostics: Vec<Diagnostic>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -148,6 +159,7 @@ pub struct StylesheetInput<'a> {
     pub token_refs: &'a [String],
     /// Custom-utility transform styles by `(prop, value)`, from the snapshot.
     pub utility_styles: &'a emitter::UtilityStyleOverrides,
+    pub view_transitions: &'a [ViewTransitionStyle],
 }
 
 /// Whether the config requests any static CSS: top-level `staticCss.*` or
@@ -155,6 +167,30 @@ pub struct StylesheetInput<'a> {
 #[must_use]
 pub fn has_static_css(config: &UserConfig) -> bool {
     static_css::has_static_css(config)
+}
+
+/// `minify_override` wins over `UserConfig.extra.minify` (default `false`); shared so NAPI/wasm can't drift.
+#[must_use]
+pub fn resolve_minify(config: &UserConfig, minify_override: Option<bool>) -> bool {
+    minify_override.unwrap_or_else(|| {
+        config
+            .extra
+            .get("minify")
+            .and_then(Value::as_bool)
+            .unwrap_or(false)
+    })
+}
+
+/// `polyfill_override` wins over `UserConfig.extra.polyfill` (default `false`); shared so NAPI/wasm can't drift.
+#[must_use]
+pub fn resolve_polyfill(config: &UserConfig, polyfill_override: Option<bool>) -> bool {
+    polyfill_override.unwrap_or_else(|| {
+        config
+            .extra
+            .get("polyfill")
+            .and_then(Value::as_bool)
+            .unwrap_or(false)
+    })
 }
 
 /// Compile the project's atoms + recipes (plus the static-CSS subset when
@@ -170,19 +206,8 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
 
     // Use the caller's token dictionary, else build one from config (a build
     // failure degrades to no tokens + a diagnostic rather than aborting).
-    let token_dictionary = match input.token_dictionary {
-        Some(dictionary) => Some(dictionary),
-        None => match TokenDictionary::from_config(input.config) {
-            Ok(dictionary) => dictionary.map(Arc::new),
-            Err(error) => {
-                diagnostics.push(Diagnostic::error(
-                    diagnostic_codes::TOKEN_DICTIONARY_BUILD_FAILED,
-                    format!("Failed to build token dictionary: {error}"),
-                ));
-                None
-            }
-        },
-    };
+    let token_dictionary =
+        resolve_token_dictionary(input.config, input.token_dictionary, &mut diagnostics);
     let utility = utility_from_config(input.config, token_dictionary.clone());
 
     let mut atoms = input.atoms.iter().collect::<Vec<_>>();
@@ -223,18 +248,23 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
     let recipes = encoded_recipes.as_ref().unwrap_or(input.encoded_recipes);
     let emit_layer_declaration = options.emit_layer_declaration && !options.polyfill;
     let emitted = emitter::emit(
-        input.config,
-        &utility,
-        emitter::EmitTokenContext {
-            dictionary: token_dictionary.as_deref(),
-            refs: input.token_refs,
+        emitter::EmitInput {
+            config: input.config,
+            utility: &utility,
+            tokens: emitter::EmitTokenContext {
+                dictionary: token_dictionary.as_deref(),
+                refs: input.token_refs,
+            },
+            atoms,
+            recipes,
+            utility_styles: input.utility_styles,
+            view_transitions: input.view_transitions,
         },
-        atoms,
-        recipes,
-        input.utility_styles,
-        options.minify,
-        emit_layer_declaration,
-        options.polyfill,
+        emitter::EmitOptions {
+            minify: options.minify,
+            emit_layer_declaration,
+            polyfill: options.polyfill,
+        },
     );
 
     StylesheetOutput {
@@ -255,19 +285,8 @@ pub fn compile_keyframes(
     options: &StylesheetOptions,
 ) -> StylesheetOutput {
     let mut diagnostics = Vec::new();
-    let token_dictionary = match input.token_dictionary {
-        Some(dictionary) => Some(dictionary),
-        None => match TokenDictionary::from_config(input.config) {
-            Ok(dictionary) => dictionary.map(Arc::new),
-            Err(error) => {
-                diagnostics.push(Diagnostic::error(
-                    diagnostic_codes::TOKEN_DICTIONARY_BUILD_FAILED,
-                    format!("Failed to build token dictionary: {error}"),
-                ));
-                None
-            }
-        },
-    };
+    let token_dictionary =
+        resolve_token_dictionary(input.config, input.token_dictionary, &mut diagnostics);
     let utility = utility_from_config(input.config, token_dictionary.clone());
 
     let mut atoms = input.atoms.iter().collect::<Vec<_>>();
@@ -301,18 +320,23 @@ pub fn compile_keyframes(
     let recipes = encoded_recipes.as_ref().unwrap_or(input.encoded_recipes);
     let wrap_in_layer = options.emit_layer_declaration;
     let emitted = emitter::emit_keyframes(
-        input.config,
-        &utility,
-        emitter::EmitTokenContext {
-            dictionary: token_dictionary.as_deref(),
-            refs: input.token_refs,
+        emitter::EmitInput {
+            config: input.config,
+            utility: &utility,
+            tokens: emitter::EmitTokenContext {
+                dictionary: token_dictionary.as_deref(),
+                refs: input.token_refs,
+            },
+            atoms,
+            recipes,
+            utility_styles: input.utility_styles,
+            view_transitions: input.view_transitions,
         },
-        atoms,
-        recipes,
-        input.utility_styles,
-        options.minify,
-        wrap_in_layer,
-        options.polyfill,
+        emitter::EmitKeyframesOptions {
+            minify: options.minify,
+            wrap_in_layer,
+            polyfill: options.polyfill,
+        },
     );
 
     StylesheetOutput {
@@ -331,17 +355,16 @@ pub fn compile_keyframes(
     clippy::too_many_lines,
     reason = "split output orchestration is easier to audit as one ordered pipeline"
 )]
-pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Vec<SplitCssFile> {
+pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> SplitCssOutput {
     let _span =
         tracing::trace_span!(target: "css", "split_css", atom_count = input.atoms.len()).entered();
     let mut diagnostics = Vec::new();
-    let token_dictionary = match input.token_dictionary.clone() {
-        Some(dictionary) => Some(dictionary),
-        None => TokenDictionary::from_config(input.config)
-            .ok()
-            .flatten()
-            .map(Arc::new),
-    };
+    push_layer_collision_diagnostics(&input.config.layers, &mut diagnostics);
+    let token_dictionary = resolve_token_dictionary(
+        input.config,
+        input.token_dictionary.clone(),
+        &mut diagnostics,
+    );
     let utility = utility_from_config(input.config, token_dictionary.clone());
 
     let mut atoms = input.atoms.iter().collect::<Vec<_>>();
@@ -361,6 +384,12 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
     }
 
     let merged_recipes = if options.include_static {
+        if input.static_encoded_recipes.is_none() && static_css::has_static_recipes(input.config) {
+            diagnostics.push(Diagnostic::warning(
+                diagnostic_codes::STATIC_CSS_RECIPES_MISSING_SNAPSHOT,
+                "staticCss.recipes requires a precomputed Project static recipe snapshot",
+            ));
+        }
         input.static_encoded_recipes.and_then(|static_recipes| {
             (!is_empty_encoded_recipes(static_recipes))
                 .then(|| merge_encoded_recipes(input.encoded_recipes, static_recipes))
@@ -371,18 +400,23 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
     let recipes = merged_recipes.as_ref().unwrap_or(input.encoded_recipes);
 
     let full = emitter::emit(
-        input.config,
-        &utility,
-        emitter::EmitTokenContext {
-            dictionary: token_dictionary.as_deref(),
-            refs: input.token_refs,
+        emitter::EmitInput {
+            config: input.config,
+            utility: &utility,
+            tokens: emitter::EmitTokenContext {
+                dictionary: token_dictionary.as_deref(),
+                refs: input.token_refs,
+            },
+            atoms,
+            recipes,
+            utility_styles: input.utility_styles,
+            view_transitions: input.view_transitions,
         },
-        atoms,
-        recipes,
-        input.utility_styles,
-        options.minify,
-        options.emit_layer_declaration && !options.polyfill,
-        options.polyfill,
+        emitter::EmitOptions {
+            minify: options.minify,
+            emit_layer_declaration: options.emit_layer_declaration && !options.polyfill,
+            polyfill: options.polyfill,
+        },
     );
 
     let selected = options.layers.as_deref();
@@ -426,10 +460,12 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
         );
         if !recipe_files.is_empty() {
             let mut recipe_imports = Vec::with_capacity(recipe_files.len());
+            let mut recipe_names = split_names::SplitNameRegistry::default();
             for (name, css) in &recipe_files {
-                recipe_imports.push(format!("@import './recipes/{name}.css';"));
+                let file_name = recipe_names.allocate(name);
+                recipe_imports.push(format!("@import './recipes/{file_name}.css';"));
                 files.push(SplitCssFile {
-                    path: format!("styles/recipes/{name}.css"),
+                    path: format!("styles/recipes/{file_name}.css"),
                     code: ensure_trailing_newline(css),
                 });
             }
@@ -442,6 +478,7 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
     }
 
     if layer_selected(StylesheetLayer::Tokens) {
+        let mut theme_names = split_names::SplitNameRegistry::default();
         for (theme_name, css) in theme_css_entries_from_dictionary(
             input.config,
             token_dictionary.as_deref(),
@@ -450,8 +487,9 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
             if css.trim().is_empty() {
                 continue;
             }
+            let file_name = theme_names.allocate(&theme_name);
             files.push(SplitCssFile {
-                path: format!("styles/themes/{}.css", file_stem(&theme_name)),
+                path: format!("styles/themes/{file_name}.css"),
                 code: ensure_trailing_newline(&css),
             });
         }
@@ -466,6 +504,16 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
     if !index.is_empty() {
         index.push('\n');
     }
+    if options.emit_layer_declaration
+        && !options.polyfill
+        && layer_selected(StylesheetLayer::Recipes)
+    {
+        for declaration in cascade::CascadePlan::internal_declarations(&input.config.layers) {
+            index.push_str("@layer ");
+            index.push_str(&declaration.join(", "));
+            index.push_str(";\n");
+        }
+    }
     if !imports.is_empty() {
         index.push_str(&imports.join("\n"));
         index.push('\n');
@@ -478,7 +526,7 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
         },
     );
 
-    files
+    SplitCssOutput { files, diagnostics }
 }
 
 /// Generate CSS custom-property overrides for a single configured theme.
@@ -556,6 +604,26 @@ fn ensure_trailing_newline(css: &str) -> String {
         css.to_owned()
     } else {
         format!("{css}\n")
+    }
+}
+
+fn resolve_token_dictionary(
+    config: &UserConfig,
+    provided: Option<Arc<TokenDictionary>>,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Option<Arc<TokenDictionary>> {
+    if provided.is_some() {
+        return provided;
+    }
+    match TokenDictionary::from_config(config) {
+        Ok(dictionary) => dictionary.map(Arc::new),
+        Err(error) => {
+            diagnostics.push(Diagnostic::error(
+                diagnostic_codes::TOKEN_DICTIONARY_BUILD_FAILED,
+                format!("Failed to build token dictionary: {error}"),
+            ));
+            None
+        }
     }
 }
 

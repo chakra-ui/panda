@@ -147,6 +147,7 @@ export const docsNavigation: NavItem = {
         { title: 'JSX Style Props', url: 'style-props' },
         { title: 'JSX Style Context', url: 'jsx-style-context' },
         { title: 'Color opacity modifier', url: 'color-opacity-modifier' },
+        { title: 'viewTransition()', url: 'view-transition', tag: 'new' },
         { title: 'Hooks', url: 'hooks' },
         { title: 'Styled System', url: 'styled-system' },
         { title: 'The extend keyword', url: 'extend' }

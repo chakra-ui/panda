@@ -3,5 +3,5 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  plugins: [pandacss(), react()],
+  plugins: [pandacss({ transform: true }), react()],
 })

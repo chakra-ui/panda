@@ -42,10 +42,10 @@ pub enum StyleTree {
     /// Span-less alternatives (`Literal::Conditional`, cross-file imports).
     /// Encode expands all branches; transform cannot rewrite (no local test).
     Branches(Vec<StyleTree>),
-    /// Transform-strict bail with no encodeable fallback.
+    /// Transform cannot rewrite this value, and encode has no fallback.
     Open,
-    /// Dynamic `||` / `??` left: transform bails; encode peels [`project_literal`] of the
-    /// right operand (same as today's literal fold).
+    /// A runtime-unknown value with a known fallback. Transform bails; encode
+    /// uses the fallback.
     OpenWithFallback(Box<StyleTree>),
 }
 
@@ -69,18 +69,20 @@ pub enum StyleSpread {
         test: Span,
         consequent: StyleTree,
         alternate: StyleTree,
+        /// Keys overwritten by a later static entry.
+        overridden: Vec<String>,
     },
     And {
         test: Span,
         value: StyleTree,
+        /// Keys overwritten by a later static entry.
+        overridden: Vec<String>,
     },
-    /// Bare / unresolvable rest spread — transform bail; encode skips.
+    /// Opaque object member or spread. Transform bails; encode skips it.
     Open,
-    /// `...(a || b)` / `...(a ?? b)` with dynamic left — transform bail; encode
-    /// last-wins merges the fallback object (like `And` peel).
-    OpenWithFallback {
-        fallback: StyleTree,
-    },
+    /// Dynamic `...(a || b)` or `...(a ?? b)` with a known fallback. Transform
+    /// bails; encode merges the fallback.
+    OpenWithFallback { fallback: StyleTree },
 }
 
 impl StyleSpread {
@@ -413,15 +415,18 @@ fn object_to_style_tree(
         match prop {
             ObjectPropertyKind::ObjectProperty(prop) => {
                 if prop.method || prop.kind != PropertyKind::Init {
+                    spreads.push(StyleSpread::Open);
                     continue;
                 }
                 let Some(key) = property_key_to_string(&prop.key, prop.computed, resolver) else {
+                    spreads.push(StyleSpread::Open);
                     continue;
                 };
-                let Some(value) = expression_to_style_tree(&prop.value, resolver) else {
-                    continue;
-                };
-                upsert_style_entry(&mut entries, key, value);
+                mark_spreads_overridden(&mut spreads, &key);
+                match expression_to_style_tree(&prop.value, resolver) {
+                    Some(value) => upsert_style_entry(&mut entries, key, value),
+                    None => upsert_open_style_entry(&mut entries, key),
+                }
             }
             ObjectPropertyKind::SpreadProperty(spread) => {
                 push_style_spread(&mut entries, &mut spreads, &spread.argument, resolver);
@@ -441,7 +446,7 @@ fn push_style_spread(
     argument: &Expression<'_>,
     resolver: Option<&Resolver<'_, '_>>,
 ) {
-    let argument = unwrap_ts(argument);
+    let argument = argument.get_inner_expression();
     match argument {
         Expression::ConditionalExpression(c) => {
             if let Some(test) = expression_to_literal(&c.test, resolver) {
@@ -450,7 +455,7 @@ fn push_style_spread(
                 } else {
                     &c.alternate
                 };
-                merge_static_spread_object(entries, branch, resolver);
+                merge_static_spread_object(entries, spreads, branch, resolver);
                 return;
             }
             let consequent =
@@ -461,6 +466,7 @@ fn push_style_spread(
                 test: span_from_oxc(c.test.span()),
                 consequent,
                 alternate,
+                overridden: Vec::new(),
             });
         }
         Expression::LogicalExpression(l) => {
@@ -468,21 +474,21 @@ fn push_style_spread(
                 match l.operator {
                     LogicalOperator::And => {
                         if truthy(&left) {
-                            merge_static_spread_object(entries, &l.right, resolver);
+                            merge_static_spread_object(entries, spreads, &l.right, resolver);
                         }
                     }
                     LogicalOperator::Or => {
                         if truthy(&left) {
-                            merge_static_spread_object(entries, &l.left, resolver);
+                            merge_static_spread_object(entries, spreads, &l.left, resolver);
                         } else {
-                            merge_static_spread_object(entries, &l.right, resolver);
+                            merge_static_spread_object(entries, spreads, &l.right, resolver);
                         }
                     }
                     LogicalOperator::Coalesce => {
                         if matches!(left, Literal::Null) {
-                            merge_static_spread_object(entries, &l.right, resolver);
+                            merge_static_spread_object(entries, spreads, &l.right, resolver);
                         } else {
-                            merge_static_spread_object(entries, &l.left, resolver);
+                            merge_static_spread_object(entries, spreads, &l.left, resolver);
                         }
                     }
                 }
@@ -495,6 +501,7 @@ fn push_style_spread(
                     spreads.push(StyleSpread::And {
                         test: span_from_oxc(l.left.span()),
                         value,
+                        overridden: Vec::new(),
                     });
                 }
                 LogicalOperator::Or | LogicalOperator::Coalesce => {
@@ -510,53 +517,76 @@ fn push_style_spread(
         _ => match expression_to_style_tree(argument, resolver) {
             Some(StyleTree::Object(inner)) => {
                 for (k, v) in inner.entries {
+                    mark_spreads_overridden(spreads, &k);
                     upsert_style_entry(entries, k, v);
                 }
                 spreads.extend(inner.spreads);
             }
-            Some(StyleTree::Open) => spreads.push(StyleSpread::Open),
+            Some(StyleTree::Open) | None => spreads.push(StyleSpread::Open),
             Some(StyleTree::OpenWithFallback(inner)) => {
                 spreads.push(StyleSpread::OpenWithFallback { fallback: *inner });
             }
-            // Ident / other that folds to a non-object: ignore (same as literal).
-            Some(_) | None => {}
+            // Ignore known non-object values. Keep unknown expressions opaque
+            // so transforms preserve their evaluation.
+            Some(_) => {}
         },
     }
 }
 
 fn merge_static_spread_object(
     entries: &mut Vec<(String, StyleTree)>,
+    spreads: &mut Vec<StyleSpread>,
     expr: &Expression<'_>,
     resolver: Option<&Resolver<'_, '_>>,
 ) {
     if let Some(StyleTree::Object(inner)) = expression_to_style_tree(expr, resolver) {
         for (k, v) in inner.entries {
+            mark_spreads_overridden(spreads, &k);
             upsert_style_entry(entries, k, v);
         }
+        spreads.extend(inner.spreads);
     } else if let Some(Literal::Object(inner)) = expression_to_literal(expr, resolver) {
         for (k, v) in inner {
+            mark_spreads_overridden(spreads, &k);
             upsert_style_entry(entries, k, literal_to_style_tree(v));
         }
     }
 }
 
-fn unwrap_ts<'a>(expr: &'a Expression<'a>) -> &'a Expression<'a> {
-    match expr {
-        Expression::ParenthesizedExpression(p) => unwrap_ts(&p.expression),
-        Expression::TSAsExpression(e) => unwrap_ts(&e.expression),
-        Expression::TSSatisfiesExpression(e) => unwrap_ts(&e.expression),
-        Expression::TSNonNullExpression(e) => unwrap_ts(&e.expression),
-        Expression::TSTypeAssertion(e) => unwrap_ts(&e.expression),
-        Expression::TSInstantiationExpression(e) => unwrap_ts(&e.expression),
-        other => other,
+fn mark_spreads_overridden(spreads: &mut [StyleSpread], key: &str) {
+    for spread in spreads {
+        let overridden = match spread {
+            StyleSpread::Ternary { overridden, .. } | StyleSpread::And { overridden, .. } => {
+                overridden
+            }
+            StyleSpread::Open | StyleSpread::OpenWithFallback { .. } => continue,
+        };
+        if !overridden.iter().any(|existing| existing == key) {
+            overridden.push(key.to_owned());
+        }
     }
 }
 
 fn upsert_style_entry(entries: &mut Vec<(String, StyleTree)>, key: String, value: StyleTree) {
     if let Some(entry) = entries.iter_mut().find(|(existing, _)| existing == &key) {
-        entry.1 = value;
+        entry.1 = if entry.1.is_open() {
+            StyleTree::OpenWithFallback(Box::new(value))
+        } else {
+            value
+        };
     } else {
         entries.push((key, value));
+    }
+}
+
+fn upsert_open_style_entry(entries: &mut Vec<(String, StyleTree)>, key: String) {
+    if let Some(entry) = entries.iter_mut().find(|(existing, _)| existing == &key) {
+        if !entry.1.is_open() {
+            let fallback = std::mem::replace(&mut entry.1, StyleTree::Open);
+            entry.1 = StyleTree::OpenWithFallback(Box::new(fallback));
+        }
+    } else {
+        entries.push((key, StyleTree::Open));
     }
 }
 
@@ -619,10 +649,7 @@ pub(crate) fn jsx_attributes_to_style_tree(
                                 let Some(expr) = other.as_expression() else {
                                     continue;
                                 };
-                                let Some(tree) = expression_to_style_tree(expr, resolver) else {
-                                    continue;
-                                };
-                                tree
+                                expression_to_style_tree(expr, resolver).unwrap_or(StyleTree::Open)
                             }
                         }
                     }
@@ -630,6 +657,7 @@ pub(crate) fn jsx_attributes_to_style_tree(
                         continue;
                     }
                 };
+                mark_spreads_overridden(&mut spreads, key);
                 upsert_style_entry(&mut entries, key.to_owned(), value);
             }
             oxc_ast::ast::JSXAttributeItem::SpreadAttribute(spread) => {
@@ -642,6 +670,10 @@ pub(crate) fn jsx_attributes_to_style_tree(
             }
         }
     }
+
+    // Static spreads merge into `entries`, so apply the component prop policy
+    // after all source-order merges.
+    entries.retain(|(key, _)| jsx.should_extract_prop(tag_name, key));
 
     if entries.is_empty() && spreads.is_empty() {
         return None;

@@ -2,4 +2,5 @@
 '@pandacss/cli': minor
 ---
 
-Restore `panda init -i` with v2-aware prompts (`outExtension`, `jsxStyleProps`), plus TTY colors and next-steps.
+`panda init -i` runs the setup wizard again, including prompts for `outExtension` and `jsxStyleProps`, with colored
+terminal output and next-step hints.

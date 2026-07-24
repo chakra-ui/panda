@@ -16,7 +16,6 @@ import type {
   Compiler,
   CompileOutput,
   CompileOptions,
-  CssFile,
   Diagnostic,
   LayerCssOptions,
   ParseFileReport,
@@ -24,10 +23,11 @@ import type {
   SerializedConfig,
   WriteCssOptions,
   WriteCssResult,
-  WriteFilesResult,
+  WriteSplitCssResult,
   WriteLayerCssOptions,
   WriteSplitCssOptions,
   SplitCssOptions,
+  SplitCssResult,
 } from './types'
 
 /** Result of diffing two serialized configs — produced by config's
@@ -125,14 +125,14 @@ export interface Driver {
   getLayerCss(options: LayerCssOptions): CompileOutput
   /** Theme `@keyframes` CSS only (no token vars or other layers). */
   getKeyframeCss(options?: CompileOptions): CompileOutput
-  /** Generate split stylesheet files in memory without writing. */
-  getSplitCss(options?: SplitCssOptions): CssFile[]
+  /** Generate split stylesheet files and the complete output diagnostics in memory. */
+  getSplitCss(options?: SplitCssOptions): SplitCssResult
   /** Generate + write stylesheet CSS through the host filesystem. Returns the compile output plus written path. */
   writeCss(options: WriteCssOptions): WriteCssResult
   /** Generate + write CSS for selected layers through the host filesystem. */
   writeLayerCss(options: WriteLayerCssOptions): WriteCssResult
   /** Generate + write split stylesheet files under the configured `outdir`. */
-  writeSplitCss(options?: WriteSplitCssOptions): WriteFilesResult
+  writeSplitCss(options?: WriteSplitCssOptions): WriteSplitCssResult
   /** Watch targets for the host watcher: matched files, their base dirs, config deps. */
   watchTargets(): { sources: string[]; dirs: string[]; config: string[] }
   /** Watch targets for hydrated design-system artifacts and source fallback files. */
@@ -232,19 +232,27 @@ export abstract class BaseDriver implements Driver {
     return undefined
   }
 
+  protected prepareCssOutput(): void {
+    // Host drivers can refresh state before a CSS output operation.
+  }
+
   cssgen(options?: CompileOptions): CompileOutput {
+    this.prepareCssOutput()
     return this.#compiler.compile(options)
   }
 
   getLayerCss(options: LayerCssOptions): CompileOutput {
+    this.prepareCssOutput()
     return this.#compiler.getLayerCss(options)
   }
 
   getKeyframeCss(options?: CompileOptions): CompileOutput {
+    this.prepareCssOutput()
     return this.#compiler.getKeyframeCss(options)
   }
 
-  getSplitCss(options?: SplitCssOptions): CssFile[] {
+  getSplitCss(options?: SplitCssOptions): SplitCssResult {
+    this.prepareCssOutput()
     return this.#compiler.getSplitCss(options)
   }
 
@@ -262,14 +270,17 @@ export abstract class BaseDriver implements Driver {
   }
 
   writeCss(options: WriteCssOptions): WriteCssResult {
+    this.prepareCssOutput()
     return this.#compiler.writeCss(options)
   }
 
   writeLayerCss(options: WriteLayerCssOptions): WriteCssResult {
+    this.prepareCssOutput()
     return this.#compiler.writeLayerCss(options)
   }
 
-  writeSplitCss(options?: WriteSplitCssOptions): WriteFilesResult {
+  writeSplitCss(options?: WriteSplitCssOptions): WriteSplitCssResult {
+    this.prepareCssOutput()
     return this.#compiler.writeSplitCss({
       outdir: this.getConfiguredOutdir(options?.outdir),
       layers: options?.layers,

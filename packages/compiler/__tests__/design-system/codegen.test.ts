@@ -110,7 +110,7 @@ function writeDesignSystemPackage(options: { dir: string; name: string; designSy
     }),
     'dist/panda/preset.mjs': preset,
     'dist/panda/buildinfo.json': json({
-      schemaVersion: 4,
+      schemaVersion: 5,
       panda: '^2.0.0',
       configFingerprint: 'cfg-test',
       strings: [],

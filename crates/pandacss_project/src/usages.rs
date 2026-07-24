@@ -46,16 +46,19 @@ impl Project {
         let mut component_entries = Vec::new();
         let source_refs = source_ref_map(&result.style_source_refs);
 
-        for (index, call) in result.calls.iter().enumerate() {
-            collect_call_styles(
-                call,
-                index,
-                &cx,
-                &line_index,
-                &source_refs,
-                &mut sites,
-                &mut style_entries,
-            );
+        {
+            let call_ctx = CallStyleCtx {
+                cx: &cx,
+                line_index: &line_index,
+                source_refs: &source_refs,
+            };
+            let mut accum = InspectAccum {
+                sites: &mut sites,
+                style_entries: &mut style_entries,
+            };
+            for (index, call) in result.calls.iter().enumerate() {
+                collect_call_styles(call, index, &call_ctx, &mut accum);
+            }
         }
 
         for (index, jsx) in result.jsx.iter().enumerate() {
@@ -168,25 +171,38 @@ fn source_ref_map(refs: &[StyleSourceRef]) -> FxHashMap<SourceRefKey, &StyleSour
     map
 }
 
+/// Shared lookup context for classifying one extracted call.
+struct CallStyleCtx<'a, 'source> {
+    cx: &'a Cx<'a>,
+    line_index: &'a LineIndex<'source>,
+    source_refs: &'a FxHashMap<SourceRefKey, &'a StyleSourceRef>,
+}
+
+/// Mutable inspection outputs threaded through call/recipe walkers.
+struct InspectAccum<'a> {
+    sites: &'a mut Vec<UsageSite>,
+    style_entries: &'a mut Vec<StyleEntryRef>,
+}
+
 /// Classifies one extracted call and collects its usages + style entries:
 /// `css({...})`, the recipe factories, and recipe/pattern call sites.
-#[allow(clippy::too_many_arguments, reason = "threads inspection accumulators")]
+#[allow(
+    clippy::too_many_lines,
+    reason = "each MatchCategory arm is an independent style walk"
+)]
 fn collect_call_styles(
     call: &ExtractedCall,
     index: usize,
-    cx: &Cx,
-    line_index: &LineIndex,
-    source_refs: &FxHashMap<SourceRefKey, &StyleSourceRef>,
-    sites: &mut Vec<UsageSite>,
-    style_entries: &mut Vec<StyleEntryRef>,
+    ctx: &CallStyleCtx<'_, '_>,
+    accum: &mut InspectAccum<'_>,
 ) {
-    let range = line_index.locate_range(call.span.start, call.span.end);
+    let range = ctx.line_index.locate_range(call.span.start, call.span.end);
     let collector = StyleEntryCollector {
-        cx,
+        cx: ctx.cx,
         span: call.span,
         range,
-        line_index,
-        source_refs,
+        line_index: ctx.line_index,
+        source_refs: ctx.source_refs,
         owner_kind: StyleSourceOwnerKind::Call,
         owner_index: u32::try_from(index).unwrap_or(u32::MAX),
     };
@@ -195,12 +211,12 @@ fn collect_call_styles(
             // `css(a, b, …)` merges every arg, so inspect them all.
             for index in 0..call.data.len() {
                 if let Some(entries) = call_object(call, index) {
-                    walk_object(entries, cx, &range, sites);
+                    walk_object(entries, ctx.cx, &range, accum.sites);
                     collector.collect(
                         entries,
                         StyleEntrySyntax::CssCall,
                         &mut Vec::new(),
-                        style_entries,
+                        accum.style_entries,
                     );
                 }
             }
@@ -210,23 +226,44 @@ fn collect_call_styles(
             collect_recipe(
                 call_object(call, 0),
                 false,
-                cx,
-                &range,
-                &collector,
-                sites,
-                style_entries,
+                &RecipeWalkCtx {
+                    cx: ctx.cx,
+                    range: &range,
+                    collector: &collector,
+                },
+                accum,
             );
         }
         (MatchCategory::Css, "sva") => {
             collect_recipe(
                 call_object(call, 0),
                 true,
-                cx,
-                &range,
-                &collector,
-                sites,
-                style_entries,
+                &RecipeWalkCtx {
+                    cx: ctx.cx,
+                    range: &range,
+                    collector: &collector,
+                },
+                accum,
             );
+        }
+        (MatchCategory::Css, "viewTransition") => {
+            if let Some(entries) = call_object(call, 0) {
+                for (key, value) in entries {
+                    if !matches!(key.as_str(), "group" | "imagePair" | "old" | "new") {
+                        continue;
+                    }
+                    let Literal::Object(slot) = value else {
+                        continue;
+                    };
+                    walk_object(slot, ctx.cx, &range, accum.sites);
+                    collector.collect(
+                        slot,
+                        StyleEntrySyntax::CssCall,
+                        &mut Vec::new(),
+                        accum.style_entries,
+                    );
+                }
+            }
         }
         // `styled('div', config)` puts config at arg 1; `styled.div(config)` at
         // arg 0. A config with recipe keys is walked as a recipe, else flat.
@@ -236,25 +273,34 @@ fn collect_call_styles(
                     collect_recipe(
                         Some(config),
                         false,
-                        cx,
-                        &range,
-                        &collector,
-                        sites,
-                        style_entries,
+                        &RecipeWalkCtx {
+                            cx: ctx.cx,
+                            range: &range,
+                            collector: &collector,
+                        },
+                        accum,
                     );
                 } else {
-                    walk_object(config, cx, &range, sites);
+                    walk_object(config, ctx.cx, &range, accum.sites);
                     collector.collect(
                         config,
                         StyleEntrySyntax::CssCall,
                         &mut Vec::new(),
-                        style_entries,
+                        accum.style_entries,
                     );
                 }
             }
         }
-        (MatchCategory::Recipe, _) => sites.push(site(UsageKind::Recipe, &call.name, &range)),
-        (MatchCategory::Pattern, _) => sites.push(site(UsageKind::Pattern, &call.name, &range)),
+        (MatchCategory::Recipe, _) => {
+            accum
+                .sites
+                .push(site(UsageKind::Recipe, &call.name, &range));
+        }
+        (MatchCategory::Pattern, _) => {
+            accum
+                .sites
+                .push(site(UsageKind::Pattern, &call.name, &range));
+        }
         _ => {}
     }
 }
@@ -278,32 +324,26 @@ fn has_recipe_keys(config: &[(String, Literal)]) -> bool {
     })
 }
 
+/// Shared context for walking a recipe config's style objects.
+struct RecipeWalkCtx<'a, 'source> {
+    cx: &'a Cx<'a>,
+    range: &'a SourceRange,
+    collector: &'a StyleEntryCollector<'a, 'source>,
+}
+
 /// Walks a recipe config and collects the style objects it holds: `base`,
 /// every `variants.<key>.<value>`, and each `compoundVariants[].css`. Slotted
 /// recipes (`sva`) nest a slot level inside each style object.
-#[allow(clippy::too_many_arguments, reason = "threads inspection accumulators")]
 fn collect_recipe(
     config: Option<&[(String, Literal)]>,
     slotted: bool,
-    cx: &Cx,
-    range: &SourceRange,
-    collector: &StyleEntryCollector,
-    sites: &mut Vec<UsageSite>,
-    style_entries: &mut Vec<StyleEntryRef>,
+    walk: &RecipeWalkCtx<'_, '_>,
+    accum: &mut InspectAccum<'_>,
 ) {
     let Some(config) = config else { return };
     for (key, value) in config {
         match key.as_str() {
-            "base" => recipe_style(
-                value,
-                slotted,
-                &["base".to_owned()],
-                cx,
-                range,
-                collector,
-                sites,
-                style_entries,
-            ),
+            "base" => recipe_style(value, slotted, &["base".to_owned()], walk, accum),
             "variants" => {
                 if let Literal::Object(variants) = value {
                     for (variant, options) in variants {
@@ -313,11 +353,8 @@ fn collect_recipe(
                                     style,
                                     slotted,
                                     &["variants".to_owned(), variant.clone(), option.clone()],
-                                    cx,
-                                    range,
-                                    collector,
-                                    sites,
-                                    style_entries,
+                                    walk,
+                                    accum,
                                 );
                             }
                         }
@@ -338,11 +375,8 @@ fn collect_recipe(
                                     index.to_string(),
                                     "css".to_owned(),
                                 ],
-                                cx,
-                                range,
-                                collector,
-                                sites,
-                                style_entries,
+                                walk,
+                                accum,
                             );
                         }
                     }
@@ -355,16 +389,12 @@ fn collect_recipe(
 
 /// Collects one recipe style object at `base_path`. A slotted value is
 /// `{ slot: styleObject }`; otherwise it's the style object directly.
-#[allow(clippy::too_many_arguments, reason = "threads inspection accumulators")]
 fn recipe_style(
     value: &Literal,
     slotted: bool,
     base_path: &[String],
-    cx: &Cx,
-    range: &SourceRange,
-    collector: &StyleEntryCollector,
-    sites: &mut Vec<UsageSite>,
-    style_entries: &mut Vec<StyleEntryRef>,
+    walk: &RecipeWalkCtx<'_, '_>,
+    accum: &mut InspectAccum<'_>,
 ) {
     let Literal::Object(entries) = value else {
         return;
@@ -374,23 +404,23 @@ fn recipe_style(
             if let Literal::Object(style) = slot_value {
                 let mut path = base_path.to_vec();
                 path.push(slot.clone());
-                walk_object(style, cx, range, sites);
-                collector.collect(
+                walk_object(style, walk.cx, walk.range, accum.sites);
+                walk.collector.collect(
                     style,
                     StyleEntrySyntax::RecipeCall,
                     &mut path,
-                    style_entries,
+                    accum.style_entries,
                 );
             }
         }
     } else {
         let mut path = base_path.to_vec();
-        walk_object(entries, cx, range, sites);
-        collector.collect(
+        walk_object(entries, walk.cx, walk.range, accum.sites);
+        walk.collector.collect(
             entries,
             StyleEntrySyntax::RecipeCall,
             &mut path,
-            style_entries,
+            accum.style_entries,
         );
     }
 }

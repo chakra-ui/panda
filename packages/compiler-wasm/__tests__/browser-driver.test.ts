@@ -102,6 +102,84 @@ describe('createBrowserDriver', () => {
     expect(driver.compiler.fs.readFile('/proj/styled-system/styles/utilities.css')).toContain('blue')
   })
 
+  it('carries file diagnostics through every CSS output method', async () => {
+    const driver = await createBrowserDriver({
+      snapshot,
+      sources: { '/proj/App.tsx': "import { css } from '@panda/css'; css({ color: " },
+    })
+    driver.parseFiles()
+
+    const outputs = [
+      driver.cssgen(),
+      driver.getLayerCss({ layers: ['utilities'] }),
+      driver.getKeyframeCss(),
+      driver.getSplitCss(),
+      driver.writeCss({ outfile: '/proj/styled-system/styles.css' }),
+      driver.writeLayerCss({ outfile: '/proj/styled-system/layers.css', layers: ['utilities'] }),
+      driver.writeSplitCss(),
+    ]
+
+    expect(
+      outputs.map((output, index) => ({
+        method: [
+          'cssgen',
+          'getLayerCss',
+          'getKeyframeCss',
+          'getSplitCss',
+          'writeCss',
+          'writeLayerCss',
+          'writeSplitCss',
+        ][index],
+        diagnostics: output.diagnostics.map((diagnostic) => diagnostic.code),
+      })),
+    ).toMatchInlineSnapshot(`
+      [
+        {
+          "method": "cssgen",
+          "diagnostics": [
+            "js_parse_error",
+          ],
+        },
+        {
+          "method": "getLayerCss",
+          "diagnostics": [
+            "js_parse_error",
+          ],
+        },
+        {
+          "method": "getKeyframeCss",
+          "diagnostics": [
+            "js_parse_error",
+          ],
+        },
+        {
+          "method": "getSplitCss",
+          "diagnostics": [
+            "js_parse_error",
+          ],
+        },
+        {
+          "method": "writeCss",
+          "diagnostics": [
+            "js_parse_error",
+          ],
+        },
+        {
+          "method": "writeLayerCss",
+          "diagnostics": [
+            "js_parse_error",
+          ],
+        },
+        {
+          "method": "writeSplitCss",
+          "diagnostics": [
+            "js_parse_error",
+          ],
+        },
+      ]
+    `)
+  })
+
   it('resolves the configured outdir through the driver host', async () => {
     const driver = await createBrowserDriver({ snapshot })
 

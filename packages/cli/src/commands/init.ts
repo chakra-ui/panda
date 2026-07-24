@@ -54,13 +54,11 @@ export const initCommand = defineCommand({
     },
     syntax: { type: 'string', description: 'CSS syntax: object-literal or template-literal' },
     'strict-tokens': { type: 'boolean', description: 'Set strictTokens to true' },
-    install: {
+    'skip-presets': {
       type: 'boolean',
-      description: 'Install the default presets (use --no-install to skip)',
-      default: true,
+      description: "Skip adding and installing Panda's default presets",
     },
     interactive: { type: 'boolean', description: 'Run the init wizard', alias: 'i' },
-    'no-input': { type: 'boolean', description: 'Disable prompts (fail if interactive is required)' },
     json: { type: 'boolean', description: 'Print JSON' },
     format: { type: 'string', description: 'Diagnostic output format: human, pretty, json, or github' },
     'log-level': {
@@ -69,7 +67,7 @@ export const initCommand = defineCommand({
       description: 'Set output level: silent, error, warn, info, or debug',
     },
     logfile: { type: 'string', description: 'Write human output to a log file' },
-    'no-color': { type: 'boolean', description: 'Disable ANSI colors in human output' },
+    color: { type: 'boolean', description: 'Disable ANSI colors in human output', default: true },
   }),
   run: async ({ args }) => setExitCode(await runInit(parseCliFlags(initFlagsSchema, args))),
 })
@@ -81,19 +79,28 @@ export async function runInit(flags: InitFlags = {}, output: OutputSink = consol
   if (flags.interactive) {
     const failure = interactiveGuardFailure(flags)
     if (failure) {
+      const cwd = resolveCwd(flags.cwd)
       const message = formatInteractiveGuardFailure(failure)
-      if (output.error) output.error(message)
-      else output.log(message)
-      return {
+      const result: InitResult = {
         ...createResult({
           command: 'init',
           startedAt,
-          data: emptyInitData(resolveCwd(flags.cwd), flags),
-          diagnostics: [],
+          data: emptyInitData(cwd, flags),
+          diagnostics: [{ code: 'invalid_cli_options', severity: 'error', category: 'cli', message }],
           ok: false,
         }),
         exitCode: ExitCode.UsageError,
       }
+
+      if (shouldPrintJson(flags)) {
+        output.log(JSON.stringify(toJsonPayload(result), null, 2))
+      } else {
+        const guardOutput = createCommandOutput(output, flags, cwd)
+        if (guardOutput.error) guardOutput.error(message)
+        else guardOutput.log(message)
+      }
+
+      return result
     }
 
     try {
@@ -128,11 +135,8 @@ export async function runInit(flags: InitFlags = {}, output: OutputSink = consol
   let codegenFiles: string[] = []
   let presetsInstalled: string[] = []
 
-  // Decide once: presets are only referenced in the scaffold if we can actually install
-  // them (a usable package.json exists and the user didn't opt out). Otherwise scaffold a
-  // bare system so codegen still succeeds.
-  const installedDeps = flags.install === false ? undefined : readInstalledDeps(cwd)
-  const willInstall = flags.install !== false && installedDeps !== undefined
+  const installedDeps = flags.skipPresets ? undefined : readInstalledDeps(cwd)
+  const includeDefaultPresets = !flags.skipPresets && installedDeps !== undefined
 
   try {
     configWritten = await timeAsync({
@@ -148,7 +152,7 @@ export async function runInit(flags: InitFlags = {}, output: OutputSink = consol
           jsxStyleProps: flags.jsxStyleProps,
           syntax: flags.syntax,
           strictTokens: flags.strictTokens,
-          presets: willInstall ? DEFAULT_PRESETS : [],
+          presets: includeDefaultPresets ? DEFAULT_PRESETS : [],
         }),
     })
     configPath = resolveConfigTarget(cwd, flags.config)
@@ -163,13 +167,12 @@ export async function runInit(flags: InitFlags = {}, output: OutputSink = consol
 
     // Only install when we just scaffolded the config — re-running init on an existing
     // project must not impose deps. Presets must resolve before codegen loads the config.
-    if (configWritten) {
+    if (configWritten && !flags.skipPresets) {
       presetsInstalled = await timeAsync({
         timings,
         phase: 'install',
         run: async () =>
           setupDependencies(cwd, {
-            optedOut: flags.install === false,
             deps: installedDeps,
             silent: flags.logLevel === 'silent',
             notify: shouldPrintHumanSummary(flags),
@@ -384,8 +387,6 @@ function configSource(options: SetupConfigOptions): string {
 }
 
 interface SetupDependenciesOptions {
-  /** User passed `--no-install`. */
-  optedOut: boolean
   /** Installed dep names, or `undefined` when there's no usable package.json. */
   deps: Set<string> | undefined
   silent?: boolean
@@ -396,8 +397,6 @@ interface SetupDependenciesOptions {
 // Install presets as direct devDeps so the config's string specifiers resolve from the
 // project root — a transitive dep of `@pandacss/dev` isn't reachable from cwd under pnpm.
 function setupDependencies(cwd: string, options: SetupDependenciesOptions): string[] {
-  if (options.optedOut) return []
-
   if (!options.deps) {
     // No usable package.json — the config was scaffolded bare, so tell the user what to add.
     if (options.notify) {

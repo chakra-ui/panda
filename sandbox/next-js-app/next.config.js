@@ -5,4 +5,4 @@ const nextConfig = {
   reactStrictMode: true,
 }
 
-module.exports = withPandaCss(nextConfig)
+module.exports = withPandaCss(nextConfig, { transform: true })
