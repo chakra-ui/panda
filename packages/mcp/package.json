@@ -38,7 +38,7 @@
     "dist"
   ],
   "dependencies": {
-    "@clack/prompts": "0.11.0",
+    "@clack/prompts": "1.6.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@pandacss/logger": "workspace:*",
     "@pandacss/node": "workspace:*",
@@ -47,6 +47,6 @@
     "zod": "^4.0.0"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20.12.0"
   }
 }

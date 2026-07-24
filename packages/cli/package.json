@@ -57,7 +57,7 @@
     "postcss.js"
   ],
   "dependencies": {
-    "@clack/prompts": "0.11.0",
+    "@clack/prompts": "1.6.0",
     "@pandacss/config": "workspace:*",
     "@pandacss/logger": "workspace:*",
     "@pandacss/mcp": "workspace:*",
@@ -76,6 +76,6 @@
     "update-notifier": "7.3.1"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20.12.0"
   }
 }
