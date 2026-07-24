@@ -233,7 +233,8 @@ export const docsNavigation: NavItem = {
       url: 'references',
       items: [
         { title: 'CLI', url: 'cli' },
-        { title: 'Config', url: 'config' }
+        { title: 'Config', url: 'config' },
+        { title: 'Diagnostics', url: 'diagnostics' }
       ]
     }
   ]
