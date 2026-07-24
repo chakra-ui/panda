@@ -78,11 +78,5 @@
       "pnpm prettier-fix"
     ]
   },
-  "packageManager": "pnpm@11.17.0",
-  "pnpm": {
-    "overrides": {
-      "@swc/helpers@~0.4": "0.4.36",
-      "picomatch@4.0.3": "4.0.4"
-    }
-  }
+  "packageManager": "pnpm@11.17.0"
 }
