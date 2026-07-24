@@ -10,3 +10,19 @@ packages:
   # wasm-pack output dirs get a minimal package.json for CJS/ESM typing; not workspace packages.
   - '!packages/compiler-wasm/pkg-node/**'
   - '!packages/compiler-wasm/pkg-web/**'
+allowBuilds:
+  '@parcel/watcher': true
+  '@prisma/client': true
+  '@prisma/engines': true
+  '@swc/core': true
+  core-js: true
+  core-js-pure: true
+  es5-ext: true
+  esbuild: true
+  gatsby: true
+  gatsby-cli: true
+  lmdb: true
+  msgpackr-extract: true
+  prisma: true
+  sharp: true
+  unrs-resolver: true
