@@ -126,10 +126,9 @@ straight from its recipe with `RecipeVariantProps`.
 
 ## Fast, native builds
 
-v2 rewrites the compiler's hot path in Rust on the [Oxc](https://oxc.rs) toolchain. It parses each file once, with no
-TypeScript program in the hot path, and produces the same CSS as v1 from a smaller install — the `ts-morph` and
-`ts-evaluator` dependency tree is gone. The same engine compiles to WebAssembly, which is how the playground runs Panda
-in your browser.
+Panda compiles your styles with a Rust engine built on the [Oxc](https://oxc.rs) toolchain. It parses each file once,
+with no TypeScript program in the hot path, so builds stay fast and the install stays small. The same engine compiles to
+WebAssembly, which is how the playground runs Panda in your browser.
 
 ## Works with your stack
 
