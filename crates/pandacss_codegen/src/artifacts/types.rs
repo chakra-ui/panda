@@ -428,6 +428,9 @@ fn is_native_strict_mirror(property: &UtilityPropertyTypeData) -> bool {
         .css_property
         .as_deref()
         .unwrap_or(property.name.as_str());
+    if css_property != property.name {
+        return false;
+    }
     strict_props::property_value_entry(css_property).is_some()
 }
 

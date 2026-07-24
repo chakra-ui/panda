@@ -1070,6 +1070,54 @@ fn utility_shorthand_unions_css_property_value_in_default_mode() {
 }
 
 #[test]
+fn shorthand_of_valueless_native_property_emits_member() {
+    let input = CodegenInput {
+        types: TypeData {
+            utilities: UtilityTypeData {
+                properties: BTreeMap::from([
+                    (
+                        "position".into(),
+                        UtilityPropertyTypeData {
+                            name: "position".into(),
+                            css_property: Some("position".into()),
+                            alias: "PositionValue".into(),
+                            ..UtilityPropertyTypeData::default()
+                        },
+                    ),
+                    (
+                        "pos".into(),
+                        UtilityPropertyTypeData {
+                            name: "pos".into(),
+                            css_property: Some("position".into()),
+                            alias: "PositionValue".into(),
+                            ..UtilityPropertyTypeData::default()
+                        },
+                    ),
+                ]),
+                shorthands: BTreeMap::from([("pos".into(), "position".into())]),
+                ..UtilityTypeData::default()
+            },
+            ..TypeData::default()
+        },
+        ..CodegenInput::default()
+    };
+
+    let artifacts = ArtifactGraph.generate_with_input(
+        &input,
+        GenerateOptions {
+            format: CodegenFormat::Ts,
+            ..GenerateOptions::default()
+        },
+    );
+    let system = file(artifact(&artifacts, ArtifactId::Types), "types/system.ts");
+
+    assert!(
+        system.contains("  pos?: ConditionalValue<"),
+        "missing `pos` member:\n{system}"
+    );
+}
+
+#[test]
 fn utility_shorthand_omits_css_property_value_under_strict_tokens() {
     let mut input = CodegenInput {
         types: TypeData {
