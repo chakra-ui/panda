@@ -218,6 +218,7 @@ export const docsNavigation: NavItem = {
       url: 'guides',
       items: [
         { title: 'Minimal Setup', url: 'minimal-setup' },
+        { title: 'Design System', url: 'design-system' },
         { title: 'Component Library', url: 'component-library' },
         { title: 'Multiple Themes', url: 'multiple-themes' },
         { title: 'Custom Fonts', url: 'fonts' },
