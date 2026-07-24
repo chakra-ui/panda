@@ -4,6 +4,7 @@ export type PandaErrorCode =
   | 'NOT_FOUND'
   | 'CONDITION'
   | 'MISSING_STUDIO'
+  | 'MCP_MOVED'
   | 'INVALID_LAYER'
   | 'UNKNOWN_RECIPE'
   | 'INVALID_RECIPE'
