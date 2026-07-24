@@ -32,20 +32,6 @@ as a set of overrides and extensions.
 }
 ```
 
-### eject
-
-**Type**: `boolean`
-
-**Default**: `false`
-
-Whether to opt-out of the defaults config presets: [`@pandacss/preset-base`, `@pandacss/preset-panda`]
-
-```json
-{
-  "eject": true
-}
-```
-
 ### preflight
 
 **Type**: `boolean` | `{ scope: string; }`
@@ -231,6 +217,8 @@ would result in:
 **Default**: `false`
 
 Whether to minify the generated css. This can be set to `true` to reduce the size of the generated css.
+
+Panda emits and optimizes CSS natively, so the old `lightningcss` and `browserslist` options no longer apply.
 
 Often enabled only in production — see [Environment-specific config](/docs/guides/environment-specific-config).
 
@@ -533,34 +521,6 @@ const Container = styled.div`
   background-color: gainsboro;
   padding: 10px 15px;
 `
-```
-
-### lightningcss
-
-**Type**: `boolean`
-
-**Default**: `false`
-
-Whether to use `lightningcss` instead of `postcss` for css optimization.
-
-```json
-{
-  "lightningcss": true
-}
-```
-
-### browserslist
-
-**Type**: `string[]`
-
-**Default**: `[]`
-
-Browserslist query to target specific browsers. Only used when `lightningcss` is set to `true`.
-
-```json
-{
-  "browserslist": ["last 2 versions", "not dead", "not < 2%"]
-}
 ```
 
 ### polyfill
@@ -942,23 +902,6 @@ Ex with 'none':
 ```
 
 ## Documentation options
-
-### studio
-
-**Type**: `Partial<Studio>`
-
-**Default**: `{ title: 'Panda', logo: '🐼' }`
-
-Used to customize the design system studio
-
-```json
-{
-  "studio": {
-    "logo": "🐼",
-    "title": "Panda"
-  }
-}
-```
 
 ### log level
 
