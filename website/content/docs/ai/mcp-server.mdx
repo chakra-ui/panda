@@ -19,15 +19,16 @@ AI assistants can use to:
 
 ## Quick Start
 
-> Prefer running the MCP package directly with `npx -y @pandacss/mcp` (or `pnpm dlx @pandacss/mcp`).
-> `panda mcp` / `panda init-mcp` still work and shell out to the same package.
+MCP ships as a separate package so `@pandacss/dev` installs do not pull the MCP SDK (and Hono) into every project.
+
+> `panda mcp` / `panda init-mcp` from `@pandacss/dev` now exit with a migration error. Use `@pandacss/mcp` directly.
 
 ### 1. Initialize MCP Configuration
 
 Run the interactive setup command in your project:
 
 ```bash
-pnpm panda init-mcp
+npx -y @pandacss/mcp init
 ```
 
 This will prompt you to select which AI clients to configure:
@@ -54,19 +55,19 @@ Once configured, your AI assistant will automatically have access to Panda CSS t
 
 ## CLI Commands
 
-### init-mcp
+### init
 
 Initialize MCP configuration for one or more AI clients.
 
 ```bash
 # Interactive mode - select clients from a list
-pnpm panda init-mcp
+npx -y @pandacss/mcp init
 
 # Configure specific clients directly
-pnpm panda init-mcp --client claude,cursor
+npx -y @pandacss/mcp init --client claude,cursor
 
 # Specify working directory
-pnpm panda init-mcp --cwd ./my-project
+npx -y @pandacss/mcp init --cwd ./my-project
 ```
 
 | Flag               | Description                               |
@@ -74,18 +75,18 @@ pnpm panda init-mcp --cwd ./my-project
 | `--client <names>` | AI clients to configure (comma-separated) |
 | `--cwd <path>`     | Current working directory                 |
 
-### mcp
+### start
 
 Start the MCP server manually (usually not needed - clients start it automatically).
 
 ```bash
-pnpm panda mcp
+npx -y @pandacss/mcp
 
 # With custom config path
-pnpm panda mcp --config ./panda.config.ts
+npx -y @pandacss/mcp --config ./panda.config.ts
 
 # Specify working directory
-pnpm panda mcp --cwd ./my-project
+npx -y @pandacss/mcp --cwd ./my-project
 ```
 
 | Flag                  | Description               |
@@ -129,7 +130,7 @@ and finding missing definitions.
 
 ## Generated Configuration
 
-When you run `panda init-mcp`, the following configuration is generated for each selected client:
+When you run `npx -y @pandacss/mcp init`, the following configuration is generated for each selected client:
 
 ```json
 {
@@ -244,7 +245,7 @@ If the MCP server fails to start:
 
 1. Ensure Panda CSS is installed: `pnpm add -D @pandacss/dev`
 2. Verify you have a valid `panda.config.ts` in your project
-3. Check that `npx -y @pandacss/mcp` (or `npx panda mcp`) runs without errors
+3. Check that `npx -y @pandacss/mcp` runs without errors
 
 ### Tools Not Available
 

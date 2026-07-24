@@ -98,17 +98,6 @@ export interface EmitPackageCommandFlags {
   base?: string
 }
 
-export interface McpCommandFlags {
-  cwd?: string
-  config?: string
-  silent?: boolean
-}
-
-export interface McpInitCommandFlags {
-  cwd?: string
-  client?: string | string[]
-}
-
 export interface SpecCommandFlags {
   silent?: boolean
   outdir?: string

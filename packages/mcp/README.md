@@ -7,4 +7,4 @@ npx -y @pandacss/mcp
 npx -y @pandacss/mcp init --client cursor
 ```
 
-`panda mcp` / `panda init-mcp` from `@pandacss/dev` shell out to this package.
+MCP lives in this package on purpose so `@pandacss/dev` installs do not pull the MCP SDK (and Hono) into every project.

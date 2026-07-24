@@ -1,6 +1,7 @@
 ---
 '@pandacss/dev': minor
 '@pandacss/mcp': minor
+'@pandacss/shared': patch
 ---
 
-Ship MCP as its own CLI (`npx -y @pandacss/mcp`) and remove it from `@pandacss/dev` dependencies. `panda mcp` / `panda init-mcp` still work as shims. Generated MCP configs now call `@pandacss/mcp` directly.
+Move MCP out of `@pandacss/dev` so installs no longer pull the MCP SDK and Hono, which kept triggering security vulnerability reports. Use `npx -y @pandacss/mcp` instead. `panda mcp` / `panda init-mcp` now error with a migration message.
