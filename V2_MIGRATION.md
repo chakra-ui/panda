@@ -349,6 +349,28 @@ pandacss({ transform: true })
 
 Same flag in `@pandacss/webpack` and `@pandacss/rollup`. Without it, the plugins only handle CSS, codegen, and HMR.
 
+### Linting
+
+The ESLint plugin is rebuilt on the v2 engine. It loads your config and the compiler once, so rules lint against the same extraction the build uses.
+
+```ts
+// eslint.config.mjs
+import panda from '@pandacss/eslint-plugin'
+
+export default [await panda.configs.recommended({ configPath: './panda.config.ts' })]
+```
+
+The same rules run under [oxlint](https://oxc.rs) through its JS plugin API. Point `jsPlugins` at the oxlint entry in `.oxlintrc.json`:
+
+```json
+{
+  "jsPlugins": ["@pandacss/eslint-plugin/oxlint"],
+  "rules": { "@pandacss/no-invalid-nesting": "error" }
+}
+```
+
+Install with `@pandacss/eslint-plugin@beta`. ESLint needs v9 flat config; oxlint needs `oxlint` and `@oxlint/plugins` (alpha).
+
 ---
 
 ## Breaking changes & migration
