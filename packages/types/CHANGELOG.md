@@ -25,7 +25,6 @@
   ```tsx
   // React / Next
   import { ViewTransition } from 'react'
-
   ;<ViewTransition name="hero" share={slide}>
     <img src="…" alt="…" />
   </ViewTransition>
