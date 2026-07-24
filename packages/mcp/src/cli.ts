@@ -1,109 +1,56 @@
+import { cac } from 'cac'
+import { resolve } from 'path'
+import { version } from '../package.json'
+import type { McpClient } from './clients'
 import { initMcpConfig } from './init'
 import { startMcpServer } from './server'
-import type { McpClient } from './clients'
 
-interface ParsedArgs {
-  command?: string
-  cwd?: string
-  config?: string
-  clients?: McpClient[]
-  silent?: boolean
-  help?: boolean
-}
+function parseClients(value?: string | string[]) {
+  if (!value) return undefined
 
-function usage() {
-  return `Panda CSS MCP server
-
-Usage:
-  panda-mcp [--cwd <path>] [--config <path>] [--silent]
-  panda-mcp init [--cwd <path>] [--client <names>]
-
-Options:
-  --cwd <path>             Current working directory
-  --config, -c <path>      Path to panda config file
-  --client, --clients      Comma-separated client list for init
-  --silent                 Suppress startup logs
-  --help, -h               Show help
-`
-}
-
-function readValue(args: string[], index: number, flag: string) {
-  const value = args[index + 1]
-  if (!value || value.startsWith('-')) {
-    throw new Error(`Missing value for ${flag}`)
-  }
-  return value
-}
-
-function parseClients(value: string) {
-  return value
-    .split(',')
+  const values = Array.isArray(value) ? value : [value]
+  return values
+    .flatMap((client) => client.split(','))
     .map((client) => client.trim())
     .filter(Boolean) as McpClient[]
 }
 
-export function parseArgs(argv: string[]): ParsedArgs {
-  const parsed: ParsedArgs = {}
-  let index = 0
-
-  while (index < argv.length) {
-    const arg = argv[index]
-
-    if (!parsed.command && !arg.startsWith('-')) {
-      parsed.command = arg
-      index += 1
-      continue
-    }
-
-    switch (arg) {
-      case '--cwd':
-        parsed.cwd = readValue(argv, index, arg)
-        index += 2
-        break
-      case '--config':
-      case '-c':
-        parsed.config = readValue(argv, index, arg)
-        index += 2
-        break
-      case '--client':
-      case '--clients':
-        parsed.clients = parseClients(readValue(argv, index, arg))
-        index += 2
-        break
-      case '--silent':
-        parsed.silent = true
-        index += 1
-        break
-      case '--help':
-      case '-h':
-        parsed.help = true
-        index += 1
-        break
-      default:
-        throw new Error(`Unknown option: ${arg}`)
-    }
-  }
-
-  return parsed
-}
-
 export async function main(argv = process.argv.slice(2)) {
-  const args = parseArgs(argv)
+  const cli = cac('panda-mcp')
+  const cwd = process.cwd()
 
-  if (args.help) {
-    console.log(usage())
-    return
-  }
+  // Default command: `npx @pandacss/mcp` (no subcommand) must keep starting the server.
+  cli
+    .command('[command]', 'Start MCP server for AI assistants')
+    .option('-c, --config <path>', 'Path to panda config file')
+    .option('--cwd <cwd>', 'Current working directory', { default: cwd })
+    .option('--silent', 'Suppress startup logs')
+    .action(async (command: string | undefined, flags: { cwd?: string; config?: string; silent?: boolean }) => {
+      if (command) {
+        throw new Error(`Unknown command: ${command}`)
+      }
 
-  switch (args.command) {
-    case undefined:
-      // Stdio transport keeps the process alive; lifecycle watch exits on disconnect.
-      await startMcpServer({ cwd: args.cwd, config: args.config, silent: args.silent })
-      break
-    case 'init':
-      await initMcpConfig({ cwd: args.cwd, clients: args.clients })
-      break
-    default:
-      throw new Error(`Unknown command: ${args.command}`)
-  }
+      await startMcpServer({
+        cwd: resolve(flags.cwd ?? cwd),
+        config: flags.config,
+        silent: flags.silent,
+      })
+    })
+
+  cli
+    .command('init', 'Initialize MCP configuration for AI clients')
+    .option('--cwd <cwd>', 'Current working directory', { default: cwd })
+    .option('--client <clients>', 'AI clients to configure (claude, cursor, vscode, windsurf, codex)')
+    .action(async (flags: { cwd?: string; client?: string | string[] }) => {
+      await initMcpConfig({
+        cwd: resolve(flags.cwd ?? cwd),
+        clients: parseClients(flags.client),
+      })
+    })
+
+  cli.help()
+  cli.version(version)
+
+  cli.parse(['node', 'panda-mcp', ...argv], { run: false })
+  await cli.runMatchedCommand()
 }

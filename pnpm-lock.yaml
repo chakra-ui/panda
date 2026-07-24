@@ -445,6 +445,9 @@ importers:
       '@pandacss/types':
         specifier: workspace:*
         version: link:../types
+      cac:
+        specifier: 6.7.14
+        version: 6.7.14
       zod:
         specifier: ^4.0.0
         version: 4.1.12
