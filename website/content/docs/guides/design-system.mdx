@@ -1,25 +1,26 @@
 ---
 title: Build a design system with Panda
-description: Ship your tokens, recipes, and components as one package, and consume it in any app with a single config line.
+description:
+  Ship your tokens, recipes, and components as one package, and consume it in any app with a single config line.
 ---
 
 Panda lets you ship a design system as its own package: tokens, recipes, patterns, and components. Any app consumes it
-with one line of config. You build the design system once, run `panda lib`, and apps opt in with `designSystem`. Each app
-generates only the styles it adds and reuses the design system's build output for the rest, so nothing is scanned or
+with one line of config. You build the design system once, run `panda lib`, and apps opt in with `designSystem`. Each
+app generates only the styles it adds and reuses the design system's build output for the rest, so nothing is scanned or
 emitted twice.
 
-Sharing only part of your system, or styling apps that don't use Panda? See [when to use each](#choose-how-to-distribute)
-below.
+Sharing only part of your system, or styling apps that don't use Panda? See
+[when to use each](#choose-how-to-distribute) below.
 
 ## Choose how to distribute
 
 There's more than one way to share styles. Pick based on who uses Panda:
 
-| You want to… | Use | Guide |
-| --- | --- | --- |
-| Share a full design system between apps that all use Panda | `panda lib` + `designSystem` | This guide |
-| Share only tokens, recipes, or patterns (no components) | A [preset](/docs/customization/presets) | [Presets](/docs/customization/presets) |
-| Style apps that don't use Panda | A prebuilt static CSS file | [Component library](/docs/guides/component-library) |
+| You want to…                                               | Use                                     | Guide                                               |
+| ---------------------------------------------------------- | --------------------------------------- | --------------------------------------------------- |
+| Share a full design system between apps that all use Panda | `panda lib` + `designSystem`            | This guide                                          |
+| Share only tokens, recipes, or patterns (no components)    | A [preset](/docs/customization/presets) | [Presets](/docs/customization/presets)              |
+| Style apps that don't use Panda                            | A prebuilt static CSS file              | [Component library](/docs/guides/component-library) |
 
 This guide covers the first case: you own the design system and the apps, and both run Panda. You get type-safe tokens,
 tree-shaking, and no duplicated config.
@@ -45,13 +46,14 @@ export default defineConfig({
 })
 ```
 
-`designSystem` wires up both artifacts for you: the preset, so the app knows your tokens and recipes, and the build info,
-so the app reuses what the design system already generated. You never reference `preset.mjs` or `buildinfo.json` by hand.
+`designSystem` wires up both artifacts for you: the preset, so the app knows your tokens and recipes, and the build
+info, so the app reuses what the design system already generated. You never reference `preset.mjs` or `buildinfo.json`
+by hand.
 
-The app also generates less. When it runs `panda codegen`, it emits only the styles it adds. Everything the design system
-already owns (its recipes, patterns, JSX components, and the generic runtime like `css`, `cva`, and `cx`) is re-exported
-from the design system package instead of copied. Your app's `styled-system` becomes a thin overlay, not a second copy.
-[Extend the design system](#extend-the-design-system) shows what that looks like in practice.
+The app also generates less. When it runs `panda codegen`, it emits only the styles it adds. Everything the design
+system already owns (its recipes, patterns, JSX components, and the generic runtime like `css`, `cva`, and `cx`) is
+re-exported from the design system package instead of copied. Your app's `styled-system` becomes a thin overlay, not a
+second copy. [Extend the design system](#extend-the-design-system) shows what that looks like in practice.
 
 ## Set up the monorepo
 
@@ -176,8 +178,8 @@ fresh without committing generated output.
 
 ### Point the app at the design system
 
-Add the design system as a dependency, then reference it with `designSystem`. Anything under `theme.extend` layers on top
-of the design system's theme.
+Add the design system as a dependency, then reference it with `designSystem`. Anything under `theme.extend` layers on
+top of the design system's theme.
 
 ```json filename="packages/app/package.json"
 {
@@ -347,14 +349,14 @@ export default defineConfig({
 })
 ```
 
-Each consumer picks its own prefix by its own identity, not by design system version, so their output can't clash even on
-different versions of the same design system. A prefix that differs from the design system's regenerates the runtime
+Each consumer picks its own prefix by its own identity, not by design system version, so their output can't clash even
+on different versions of the same design system. A prefix that differs from the design system's regenerates the runtime
 locally rather than re-exporting it, which is what you want when the goal is isolated output.
 
 ## Develop with watch mode
 
-While building the design system and an app together, run both in watch mode so the app picks up design system changes as
-you make them:
+While building the design system and an app together, run both in watch mode so the app picks up design system changes
+as you make them:
 
 ```bash
 pnpm --filter @acme/ds watch   # panda lib --watch
@@ -383,8 +385,8 @@ Two things to know about versions:
 
 ## Troubleshooting
 
-- **`design_system_export_missing`** means the design system's `package.json` doesn't export something the overlay needs.
-  Rebuild the design system with `panda lib` so its exports are in sync, then reinstall.
+- **`design_system_export_missing`** means the design system's `package.json` doesn't export something the overlay
+  needs. Rebuild the design system with `panda lib` so its exports are in sync, then reinstall.
 - **`design_system_token_conflict` / `design_system_artifact_conflict`** are expected when you override on purpose. They
   fire so an unintended shadow of a design system value doesn't pass silently.
 - **Nested design systems** (a design system that extends another) work, but a nested consumer emits its full local tree
@@ -392,8 +394,8 @@ Two things to know about versions:
 
 ## Worked example
 
-The [design system example](https://github.com/chakra-ui/panda/tree/v2/sandbox-design-system) in the Panda repo wires the
-full setup together: the design system, a Vite app, a PostCSS app, and an app that extends the design system.
+The [design system example](https://github.com/chakra-ui/panda/tree/v2/sandbox-design-system) in the Panda repo wires
+the full setup together: the design system, a Vite app, a PostCSS app, and an app that extends the design system.
 
 ## Next steps
 
@@ -402,4 +404,7 @@ full setup together: the design system, a Vite app, a PostCSS app, and an app th
   file directly.
 - [Cascade layers](/docs/concepts/cascade-layers) — how Panda orders output, and why overrides stay predictable.
 - [Tokens](/docs/theming/tokens) and [Recipes](/docs/concepts/recipes) — the building blocks your design system defines.
+
+```
+
 ```
