@@ -3,7 +3,9 @@
 use std::collections::HashSet;
 
 use pandacss_encoder::{Atom, Encoder, compare_atoms_by_emit_order};
-use pandacss_extractor::{CallFacts, CallSyntax, Literal, StyleTree};
+use pandacss_extractor::{
+    CallFacts, CallSyntax, ExpressionKind, ExtractedCall, Literal, StyleTree,
+};
 use pandacss_shared::view_transition_class_name;
 use pandacss_utility::ShorthandPolicy;
 
@@ -321,14 +323,147 @@ pub(crate) fn rewrite_for_pattern_call(
     pattern_name: &str,
     span: pandacss_shared::Span,
     args: &[Option<Literal>],
+    style_args: &[Option<StyleTree>],
     facts: &CallFacts,
     pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> Option<Rewrite> {
-    if pattern_call_has_unextractable_args(args, facts) {
+    if pattern_call_has_unextractable_args(args, style_args, facts) {
         return None;
     }
     let classes = project.class_names_for_pattern_call(pattern_name, args, pattern_transform)?;
     Some(rewrite_for_class_names(span, &classes))
+}
+
+/// Unwrap an identity `.raw({ … })` call to its object literal.
+///
+/// Callers decide which `.raw` qualifies; this only enforces the shape a
+/// wrapper-strip needs — one object-literal argument, call syntax. Multiple
+/// args are rejected because `css.raw(a, b)` deep-merges and normalizes.
+///
+/// Emitted as two edits around the argument rather than one call-wide rewrite so
+/// nested rewrites (token folding) inside the object still apply.
+pub(crate) fn rewrites_for_identity_raw_call(
+    source: &str,
+    span: pandacss_shared::Span,
+    arg_spans: &[pandacss_shared::Span],
+    facts: &CallFacts,
+) -> Option<[Rewrite; 2]> {
+    if facts.syntax != CallSyntax::Call {
+        return None;
+    }
+    let [arg] = arg_spans else {
+        return None;
+    };
+    if facts.args.first()?.as_ref()?.kind != ExpressionKind::Object {
+        return None;
+    }
+
+    let (open, close) = if object_literal_needs_parens(source, span.start) {
+        ("(", ")")
+    } else {
+        ("", "")
+    };
+    Some([
+        Rewrite {
+            start: span.start,
+            end: arg.start,
+            content: open.to_owned(),
+            preserved: Vec::new(),
+        },
+        Rewrite {
+            start: arg.end,
+            end: span.end,
+            content: close.to_owned(),
+            preserved: Vec::new(),
+        },
+    ])
+}
+
+/// Fold `css.raw(a, b, …)` to the single object the runtime would build.
+///
+/// Only static object arguments qualify. `Literal::Conditional` is a runtime
+/// branch rather than data, so anything carrying one is left alone.
+pub(crate) fn rewrite_for_merged_raw_call(
+    project: &Project,
+    source: &str,
+    span: pandacss_shared::Span,
+    args: &[Option<Literal>],
+    facts: &CallFacts,
+) -> Option<Rewrite> {
+    if facts.syntax != CallSyntax::Call {
+        return None;
+    }
+    let merged = project.merged_style_literal(args)?;
+    rewrite_for_style_literal(source, span, &merged)
+}
+
+/// Fold `pattern.raw(props)` to the style object the pattern's transform
+/// returns — the same value the runtime would hand back.
+pub(crate) fn rewrite_for_pattern_raw_call(
+    project: &Project,
+    source: &str,
+    call: &ExtractedCall,
+    pattern_transform: Option<&mut PatternTransformFn<'_>>,
+) -> Option<Rewrite> {
+    if call.facts.syntax != CallSyntax::Call
+        || pattern_call_has_unextractable_args(&call.data, &call.style_args, &call.facts)
+    {
+        return None;
+    }
+    let styles =
+        project.style_literal_for_pattern_call(&call.name, &call.data, pattern_transform)?;
+    rewrite_for_style_literal(source, call.span, &styles)
+}
+
+/// Replace a whole call with the object literal it evaluates to.
+///
+/// `Literal::Conditional` is a runtime branch rather than data, so anything
+/// carrying one is left alone.
+pub(crate) fn rewrite_for_style_literal(
+    source: &str,
+    span: pandacss_shared::Span,
+    styles: &Literal,
+) -> Option<Rewrite> {
+    if !matches!(styles, Literal::Object(_)) || literal_has_conditional(styles) {
+        return None;
+    }
+    let object = serde_json::to_string(styles).ok()?;
+    let content = if object_literal_needs_parens(source, span.start) {
+        format!("({object})")
+    } else {
+        object
+    };
+    Some(Rewrite {
+        start: span.start,
+        end: span.end,
+        content,
+        preserved: Vec::new(),
+    })
+}
+
+fn literal_has_conditional(literal: &Literal) -> bool {
+    match literal {
+        Literal::Conditional(_) => true,
+        Literal::Object(entries) => entries
+            .iter()
+            .any(|(_, value)| literal_has_conditional(value)),
+        Literal::Array(items) => items.iter().any(literal_has_conditional),
+        _ => false,
+    }
+}
+
+/// A bare object literal needs parentheses wherever `{` would open a block —
+/// a concise arrow body or statement position.
+fn object_literal_needs_parens(source: &str, at: u32) -> bool {
+    let Some(before) = usize::try_from(at).ok().and_then(|at| source.get(..at)) else {
+        return true;
+    };
+    let before = before.trim_end();
+    match before.chars().next_back() {
+        Some('>') => before.ends_with("=>"),
+        None | Some(';' | '{' | '}') => true,
+        Some(_) => false,
+    }
 }
 
 fn rewrite_for_class_names(span: pandacss_shared::Span, classes: &[String]) -> Rewrite {
@@ -370,8 +505,23 @@ fn recipe_call_has_unextractable_args(args: &[Option<Literal>], facts: &CallFact
     )
 }
 
-fn pattern_call_has_unextractable_args(args: &[Option<Literal>], facts: &CallFacts) -> bool {
+fn pattern_call_has_unextractable_args(
+    args: &[Option<Literal>],
+    style_args: &[Option<StyleTree>],
+    facts: &CallFacts,
+) -> bool {
     if facts.syntax != CallSyntax::Call || args.iter().any(Option::is_none) {
+        return true;
+    }
+    // A pattern call collapses to one value, so anything the literal can't
+    // carry on its own — a dropped dynamic spread, or a branch only the
+    // runtime can pick — has to stay a runtime call.
+    if style_args.iter().flatten().any(|tree| {
+        tree.is_open()
+            || super::style_lower::style_tree_has_open_spread(tree)
+            || super::style_lower::style_tree_has_open_value(tree)
+            || super::style_lower::style_tree_has_runtime_branch(tree)
+    }) {
         return true;
     }
     if args.is_empty()

@@ -757,8 +757,8 @@ edge_snapshot!(
         "#},
     ),
     @r#"
-const primary = "color_red padding_8px";
-const secondary = "color_blue padding_4px";
+const primary = { color: 'red', padding: '8px' };
+const secondary = { color: 'blue', padding: '4px' };
 export const cls = isActive ? "color_red padding_8px" : "color_blue padding_4px";
 "#
 );
@@ -934,8 +934,8 @@ edge_snapshot!(
         "#},
     ),
     @r#"
-const primary = "background-color_blue color_white";
-const secondary = "background-color_gray color_black";
+const primary = { backgroundColor: 'blue', color: 'white' };
+const secondary = { backgroundColor: 'gray', color: 'black' };
 export const cls = (variant === 'primary' ? "background-color_blue color_white padding_8px hover:opacity_0.9" : "background-color_gray color_black padding_8px hover:opacity_0.9") + " " + (variant === 'primary' ? "padding_8px hover:background-color_blue hover:color_white hover:opacity_0.9" : "padding_8px hover:opacity_0.9");
 "#
 );

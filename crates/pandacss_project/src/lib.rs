@@ -1686,6 +1686,19 @@ impl Project {
         args: &[Option<Literal>],
         pattern_transform: Option<&mut PatternTransformFn<'_>>,
     ) -> Option<Vec<String>> {
+        let styles = self.style_literal_for_pattern_call(pattern_name, args, pattern_transform)?;
+        self.class_names_for_style_literal(&styles)
+    }
+
+    /// Run a pattern call through its transform and return the style object it
+    /// produces — the value `pattern.raw(…)` resolves to at runtime.
+    #[must_use]
+    pub fn style_literal_for_pattern_call(
+        &self,
+        pattern_name: &str,
+        args: &[Option<Literal>],
+        pattern_transform: Option<&mut PatternTransformFn<'_>>,
+    ) -> Option<Literal> {
         let requires_transform = self.config.patterns.requires_transform(pattern_name);
         if requires_transform && pattern_transform.is_none() {
             return None;
@@ -1697,15 +1710,14 @@ impl Project {
             Some(_) => return None,
         };
         let prepared = self.config.patterns.transform_input(pattern_name, arg);
-        let styles = if let Some(transform) = pattern_transform {
+        if let Some(transform) = pattern_transform {
             match transform(prepared.name, prepared.styles.as_ref()) {
-                Ok(Some(style)) => style,
-                Ok(None) | Err(_) => return None,
+                Ok(Some(style)) => Some(style),
+                Ok(None) | Err(_) => None,
             }
         } else {
-            prepared.styles.into_owned()
-        };
-        self.class_names_for_style_literal(&styles)
+            Some(prepared.styles.into_owned())
+        }
     }
 
     /// Resolve one encoded atom to the runtime `css()` class string.
@@ -1723,7 +1735,52 @@ impl Project {
         )
     }
 
-    /// Resolve one static style object to atomic utility class names.
+    /// Merge multi-argument `css.raw(a, b, …)` into the single object the
+    /// runtime would build.
+    ///
+    /// Mirrors `mergeCss`: `resolve()` drops empty objects, then normalizes
+    /// (shorthand keys, responsive arrays) only when two or more survive.
+    /// A lone survivor is returned as authored.
+    #[must_use]
+    pub fn merged_style_literal(&self, args: &[Option<Literal>]) -> Option<Literal> {
+        if args.len() < 2 {
+            return None;
+        }
+        let mut contributing = Vec::with_capacity(args.len());
+        for arg in args {
+            let Some(style @ Literal::Object(entries)) = arg.as_ref() else {
+                return None;
+            };
+            if !entries.is_empty() {
+                contributing.push(style);
+            }
+        }
+        if contributing.len() < 2 {
+            return Some(
+                contributing
+                    .first()
+                    .map_or_else(|| Literal::Object(Vec::new()), |style| (*style).clone()),
+            );
+        }
+
+        let normalizer = StyleNormalizer::new(
+            self.config.utility.as_ref(),
+            &self.config.breakpoints,
+            ShorthandPolicy::UserFacing,
+        );
+        let mut merged = Vec::new();
+        for style in contributing {
+            let Literal::Object(entries) = normalizer.normalize(style).into_owned() else {
+                return None;
+            };
+            for (key, value) in entries {
+                merge_style_entry(&mut merged, key, value);
+            }
+        }
+        Some(Literal::Object(merged))
+    }
+
+
     #[must_use]
     pub fn class_names_for_style_literal(&self, style: &Literal) -> Option<Vec<String>> {
         let mut encoder = Encoder::with_conditions(self.config.conditions.clone());
@@ -1832,6 +1889,34 @@ fn json_scalar_to_atom_value(value: &serde_json::Value) -> Option<AtomValue> {
         )),
         _ => None,
     }
+}
+
+/// `mergeProps` — deep merge left to right, no normalization.
+#[must_use]
+pub fn merge_style_props(objects: &[&Literal]) -> Literal {
+    let mut merged = Vec::new();
+    for object in objects {
+        if let Literal::Object(entries) = object {
+            for (key, value) in entries {
+                merge_style_entry(&mut merged, key.clone(), value.clone());
+            }
+        }
+    }
+    Literal::Object(merged)
+}
+
+/// One `mergeProps` step: nested objects merge, everything else is replaced.
+/// Arrays count as values, matching the runtime `isObject`.
+fn merge_style_entry(entries: &mut Vec<(String, Literal)>, key: String, value: Literal) {
+    if let Some((_, existing)) = entries.iter_mut().find(|(name, _)| name == &key)
+        && let (Literal::Object(target), Literal::Object(incoming)) = (&mut *existing, &value)
+    {
+        for (nested_key, nested_value) in incoming.clone() {
+            merge_style_entry(target, nested_key, nested_value);
+        }
+        return;
+    }
+    Literal::upsert_object_entry(entries, key, value);
 }
 
 fn atom_value_to_transform_literal(value: &pandacss_encoder::AtomValue) -> Option<Literal> {

@@ -90,6 +90,37 @@ pub(crate) fn style_tree_has_open_spread(tree: &StyleTree) -> bool {
     }
 }
 
+/// True when the tree contains a branch only the runtime can decide.
+///
+/// Callers that collapse a whole call to one value — pattern calls, which emit
+/// a single class string or a single object — can't express a branch, so they
+/// have to leave the call to the runtime.
+#[must_use]
+pub(crate) fn style_tree_has_runtime_branch(tree: &StyleTree) -> bool {
+    match tree {
+        StyleTree::Ternary { .. } | StyleTree::And { .. } | StyleTree::Branches(_) => true,
+        StyleTree::Object(obj) => {
+            obj.spreads.iter().any(|spread| {
+                matches!(
+                    spread,
+                    StyleSpread::Ternary { .. } | StyleSpread::And { .. }
+                )
+            }) || obj
+                .entries
+                .iter()
+                .any(|(_, v)| style_tree_has_runtime_branch(v))
+        }
+        StyleTree::Array(items) => items.iter().any(style_tree_has_runtime_branch),
+        StyleTree::Open
+        | StyleTree::OpenWithFallback(_)
+        | StyleTree::String(_)
+        | StyleTree::Number(_)
+        | StyleTree::Bool(_)
+        | StyleTree::Null
+        | StyleTree::Token { .. } => false,
+    }
+}
+
 /// True when any leaf/`Open` value is present (including property-level `||` / `??`).
 #[must_use]
 pub(crate) fn style_tree_has_open_value(tree: &StyleTree) -> bool {

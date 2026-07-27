@@ -1,6 +1,6 @@
 //! Transform planning: match sites, bailouts, and rewrite decisions.
 
-use pandacss_extractor::{ExtractUsage, MatchCategory};
+use pandacss_extractor::{ExtractUsage, ExtractedCall, MatchCategory};
 
 use crate::PatternTransformFn;
 use crate::Project;
@@ -142,12 +142,23 @@ pub(crate) fn build_plan(
     }
 
     for call in &extracted.calls {
+        // `.raw()` returns a style object, never a class string. Rewriting it
+        // to classes hands composition sites a string where they expect styles.
+        // Where `.raw` is an identity the wrapper can still go; the rest stay.
+        if call.facts.raw {
+            push_raw_rewrites(
+                &mut plan,
+                project,
+                source,
+                call,
+                targets,
+                pattern_transform.as_deref_mut(),
+            );
+            continue;
+        }
         match call.category {
             MatchCategory::Css if targets.css_enabled() => match call.name.as_str() {
                 "cva" => {
-                    if call.facts.raw {
-                        continue;
-                    }
                     if let Some(rewrite) = super::recipe_inline::rewrite_for_cva_call(
                         project,
                         source,
@@ -161,9 +172,6 @@ pub(crate) fn build_plan(
                     }
                 }
                 "sva" => {
-                    if call.facts.raw {
-                        continue;
-                    }
                     if let Some(rewrite) =
                         super::recipe_inline::rewrite_for_sva_call(project, call.span, &call.data)
                     {
@@ -172,9 +180,6 @@ pub(crate) fn build_plan(
                     }
                 }
                 "viewTransition" => {
-                    if call.facts.raw {
-                        continue;
-                    }
                     match resolve::rewrite_for_view_transition_call(project, call.span, &call.data)
                     {
                         Some(rewrite) => plan.rewrites.push(rewrite),
@@ -219,6 +224,7 @@ pub(crate) fn build_plan(
                     &call.name,
                     call.span,
                     &call.data,
+                    &call.style_args,
                     &call.facts,
                     pattern_transform.as_deref_mut(),
                 ) {
@@ -259,6 +265,63 @@ pub(crate) fn build_plan(
     }
 
     plan
+}
+
+/// Fold a `.raw()` call to the style object it evaluates to.
+///
+/// `css.raw(o)` is `mergeCss(o)`, which skips normalization for a single
+/// object, and `recipe.raw` is `props => props` — both unwrap to their
+/// argument, edited around it so nested rewrites still apply. `css.raw(a, b)`
+/// normalizes and deep-merges, and `pattern.raw(props)` runs the pattern
+/// transform, so both are replaced by the computed object.
+fn push_raw_rewrites(
+    plan: &mut TransformPlan,
+    project: &Project,
+    source: &str,
+    call: &ExtractedCall,
+    targets: &TransformTargets,
+    pattern_transform: Option<&mut PatternTransformFn<'_>>,
+) {
+    match call.category {
+        MatchCategory::Pattern if targets.patterns_enabled() => {
+            if let Some(rewrite) =
+                resolve::rewrite_for_pattern_raw_call(project, source, call, pattern_transform)
+            {
+                plan.rewrites.push(rewrite);
+            }
+        }
+        MatchCategory::Css if targets.css_enabled() && call.name == "css" => {
+            push_identity_or_merged_raw(plan, project, source, call);
+        }
+        MatchCategory::Recipe if targets.recipes_enabled() => {
+            if let Some(rewrites) = resolve::rewrites_for_identity_raw_call(
+                source,
+                call.span,
+                &call.arg_spans,
+                &call.facts,
+            ) {
+                plan.rewrites.extend(rewrites);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn push_identity_or_merged_raw(
+    plan: &mut TransformPlan,
+    project: &Project,
+    source: &str,
+    call: &ExtractedCall,
+) {
+    if let Some(rewrites) =
+        resolve::rewrites_for_identity_raw_call(source, call.span, &call.arg_spans, &call.facts)
+    {
+        plan.rewrites.extend(rewrites);
+    } else if let Some(rewrite) =
+        resolve::rewrite_for_merged_raw_call(project, source, call.span, &call.data, &call.facts)
+    {
+        plan.rewrites.push(rewrite);
+    }
 }
 
 fn css_style_tree_should_bail(style_args: &[Option<pandacss_extractor::StyleTree>]) -> bool {

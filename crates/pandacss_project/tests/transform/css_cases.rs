@@ -90,13 +90,13 @@ transform_snapshot!(
 );
 
 transform_snapshot!(
-    css_raw_static_object,
+    css_raw_static_object_unwraps_to_the_object,
     r#"
         import { css } from '@panda/css';
         export const raw = css.raw({ color: 'red', padding: '4px' });
     "#,
     true,
-    @r#"export const raw = "color_red padding_4px";"#
+    @"export const raw = { color: 'red', padding: '4px' };"
 );
 
 transform_snapshot!(
