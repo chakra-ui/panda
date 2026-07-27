@@ -6,7 +6,14 @@ use crate::{
 pub fn module(ctx: CodegenContext<'_>) -> Module {
     Module::new()
         .with_import(ImportDecl::value(
-            ["createCssRuntime", "isObject", "mergeProps", "withoutSpace"],
+            [
+                "createAssignCss",
+                "createMergeCss",
+                "createSerializeCss",
+                "isObject",
+                "mergeProps",
+                "withoutSpace",
+            ],
             &ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
         ))
         .with_import(ImportDecl::value(
@@ -24,7 +31,7 @@ pub fn module(ctx: CodegenContext<'_>) -> Module {
             js_doc: None,
         })))
         .with_item(Item::runtime(ItemNode::RawStmt(
-            "export { mergeCss, assignCss }".into(),
+            "export const assignCss = /* @__PURE__ */ createAssignCss(cssContext)".into(),
         )))
 }
 
@@ -90,27 +97,33 @@ const astish = (val: string, tree: Array<Record<string, any>> = [{}]) => {
   return tree[0]
 }
 
-const { serializeCss, mergeCss, assignCss } = createCssRuntime({
-  hash: __HASH__,
-  conditions: {
-    shift: sortConditions,
-    finalize: finalizeConditions,
-    breakpoints: { keys: [] },
-  },
-  utility: {
-    prefix: __PREFIX__,
-    hasShorthand: false,
-    toHash(path: string[], hashFn: any) {
-      return hashFn(path.join(":"))
+function createCssContext() {
+  return {
+    hash: __HASH__,
+    conditions: {
+      shift: sortConditions,
+      finalize: finalizeConditions,
+      breakpoints: { keys: [] },
     },
-    transform(prop: string, value: string) {
-      return { className: `${prop}__SEPARATOR__${withoutSpace(value)}` }
+    utility: {
+      prefix: __PREFIX__,
+      hasShorthand: false,
+      toHash(path: string[], hashFn: any) {
+        return hashFn(path.join(":"))
+      },
+      transform(prop: string, value: string) {
+        return { className: `${prop}__SEPARATOR__${withoutSpace(value)}` }
+      },
+      resolveShorthand(prop: string) {
+        return prop
+      },
     },
-    resolveShorthand(prop: string) {
-      return prop
-    },
-  },
-})
+  }
+}
+
+const cssContext = /* @__PURE__ */ createCssContext()
+const serializeCss = /* @__PURE__ */ createSerializeCss(cssContext)
+export const mergeCss = /* @__PURE__ */ createMergeCss(cssContext)
 const templateCache = new WeakMap<object, Record<string, any>>()
 const toStyleObject = (style: any) => {
   if (isObject(style)) return style

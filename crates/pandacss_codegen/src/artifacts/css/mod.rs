@@ -53,7 +53,10 @@ fn module(ctx: CodegenContext<'_>) -> Module {
     Module::new()
         .with_import(ImportDecl::value(
             [
-                "createCssRuntime",
+                "createAssignCss",
+                "createMergeCss",
+                "createSerializeCss",
+                "createSerializeCssArgs",
                 "hypenateProperty",
                 "isObject",
                 "withoutSpace",
@@ -76,7 +79,7 @@ fn module(ctx: CodegenContext<'_>) -> Module {
             js_doc: None,
         })))
         .with_item(Item::runtime(ItemNode::RawStmt(
-            "export { mergeCss, assignCss }".into(),
+            "export const assignCss = /* @__PURE__ */ createAssignCss(cssContext)".into(),
         )))
 }
 
@@ -213,42 +216,52 @@ const CSS_EXPORT: &str = r"/* @__PURE__ */ Object.assign(
   },
 )";
 
+// Every `@__PURE__` call below binds a plain identifier. Bundlers only drop a
+// pure call in that shape, so destructuring here would pin the whole serializer
+// into any bundle that imports anything at all from `css/index`.
 const CSS_RUNTIME_TEMPLATE: &str = r#"const utilities = "__UTILITIES__"
 
-const classNameByProp = new Map<string, string>()
-const shorthands = new Map<string, string>()
-if (utilities) {
-  utilities.split(",").forEach((utility: string) => {
-    const [prop, meta] = utility.split(":")
-    const [className, ...shorthandList] = meta.split("/")
-    if (className) classNameByProp.set(prop, className)
-    shorthandList.forEach((shorthand: string) => {
-      const key = shorthand === "1" ? className : shorthand
-      shorthands.set(key, prop)
+function createCssContext() {
+  const classNameByProp = new Map<string, string>()
+  const shorthands = new Map<string, string>()
+  if (utilities) {
+    utilities.split(",").forEach((utility: string) => {
+      const [prop, meta] = utility.split(":")
+      const [className, ...shorthandList] = meta.split("/")
+      if (className) classNameByProp.set(prop, className)
+      shorthandList.forEach((shorthand: string) => {
+        const key = shorthand === "1" ? className : shorthand
+        shorthands.set(key, prop)
+      })
     })
-  })
+  }
+
+  const resolveShorthand = (prop: string) => shorthands.get(prop) || prop
+
+  return {
+    hash: __HASH__,
+    conditions: {
+      shift: sortConditions,
+      finalize: finalizeConditions,
+      breakpoints: { keys: breakpointKeys },
+    },
+    utility: {
+      prefix: __PREFIX__,
+      hasShorthand: __HAS_SHORTHAND__,
+      toHash(path: string[], hashFn: any) {
+        return hashFn(path.join(":"))
+      },
+      transform(prop: string, value: string) {
+        const key = resolveShorthand(prop)
+        const propKey = classNameByProp.get(key) || hypenateProperty(key)
+        return { className: `${propKey}__SEPARATOR__${withoutSpace(value)}` }
+      },
+      resolveShorthand,
+    },
+  }
 }
 
-const resolveShorthand = (prop: string) => shorthands.get(prop) || prop
-
-const { serializeCss, serializeCssArgs, mergeCss, assignCss } = createCssRuntime({
-  hash: __HASH__,
-  conditions: {
-    shift: sortConditions,
-    finalize: finalizeConditions,
-    breakpoints: { keys: breakpointKeys },
-  },
-  utility: {
-    prefix: __PREFIX__,
-    hasShorthand: __HAS_SHORTHAND__,
-    toHash(path: string[], hashFn: any) {
-      return hashFn(path.join(":"))
-    },
-    transform(prop: string, value: string) {
-      const key = resolveShorthand(prop)
-      const propKey = classNameByProp.get(key) || hypenateProperty(key)
-      return { className: `${propKey}__SEPARATOR__${withoutSpace(value)}` }
-    },
-    resolveShorthand,
-  },
-})"#;
+const cssContext = /* @__PURE__ */ createCssContext()
+const serializeCss = /* @__PURE__ */ createSerializeCss(cssContext)
+export const mergeCss = /* @__PURE__ */ createMergeCss(cssContext)
+const serializeCssArgs = /* @__PURE__ */ createSerializeCssArgs(serializeCss, mergeCss)"#;

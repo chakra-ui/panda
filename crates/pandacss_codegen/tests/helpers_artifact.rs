@@ -17,7 +17,7 @@ fn function_block(source: &str, name: &str) -> String {
 fn declaration_lines(source: &str) -> String {
     source
         .lines()
-        .filter(|line| line.contains("createCss") || line.contains("createMergeCss"))
+        .filter(|line| line.contains("function create") || line.contains("resolveStyleArgs"))
         .collect::<Vec<_>>()
         .join("\n")
 }
@@ -686,7 +686,7 @@ fn emits_ts_source() {
         ),
         "multiline value sanitizer should reuse a module-scope regex"
     );
-    assert_snapshot!(function_block(source, "memo"), @r#"
+    assert_snapshot!(function_block(source, "memo"), @"
     export function memo<T extends (...args: any[]) => any>(fn: T): T {
       const cache = new Map<number, Array<{ args: Parameters<T>; out: ReturnType<T> }>>()
       const stringCache = new Map<string, ReturnType<T>>()
@@ -747,7 +747,7 @@ fn emits_ts_source() {
         return out
       }) as T
     }
-    "#);
+    ");
     assert_snapshot!(function_block(source, "weakMemo"), @r#"
     export function weakMemo<T extends (arg: any) => any>(fn: T): T {
       const cache: WeakMap<object, ReturnType<T>> = new WeakMap()
@@ -760,16 +760,18 @@ fn emits_ts_source() {
       }) as T
     }
     "#);
-    assert_snapshot!(function_block(source, "createCss"), @r#"
-    export function createCssRuntime(context: Record<string, any>): { serializeCss: (...styles: any[]) => string; serializeCssArgs: (...styles: any[]) => string; mergeCss: (...styles: any[]) => any; assignCss: (...styles: any[]) => any } {
-      const { utility: u, hash, conditions: c } = context
+    assert_snapshot!(function_block(source, "createSerializeCss"), @r#"
+    export function createSerializeCss(context: Record<string, any>): (...styles: any[]) => string {
+      const u = context.utility
+      const c = context.conditions
+      const hash = context.hash
       const fmt = (s: string) => u.prefix ? u.prefix + "-" + s : s
       const toClass = (paths: string[], name: string) => {
         const parts = c.finalize(paths)
         parts.push(hash ? name : fmt(name))
         return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
       }
-      const serializeCss = weakMemo(memo(function serializeCss({ base, ...styles }: Record<string, any> = {}) {
+      return weakMemo(memo(function serializeCss({ base, ...styles }: Record<string, any> = {}) {
         const obj = normalizeStyleObject(base ? Object.assign(styles, base) : styles, context)
         const set = new Set<string>()
         walkObject(obj, (value: any, paths: string[]) => {
@@ -786,46 +788,7 @@ fn emits_ts_source() {
         for (const name of set) out += out ? " " + name : name
         return out
       }))
-      const resolve = (styles: Array<any> | IArguments) => {
-        const out: any[] = []
-        const visit = (items: Array<any> | IArguments) => {
-          for (let i = 0; i < items.length; i++) {
-            const style = items[i]
-            if (Array.isArray(style)) {
-              visit(style)
-              continue
-            }
-            if (!isObject(style)) continue
-            for (const key in style) {
-              if (style[key] !== void 0) {
-                out.push(style)
-                break
-              }
-            }
-          }
-        }
-        visit(styles)
-        if (out.length < 2) return out
-        for (let i = 0; i < out.length; i++) out[i] = normalizeStyleObject(out[i], context)
-        return out
-      }
-      const mergeCss: (...styles: any[]) => any = function() {
-        return mergeProps(...resolve(arguments))
-      }
-      const serializeCssArgs = memo(function serializeCssArgs(...styles: any[]) {
-        return serializeCss(mergeCss(...styles))
-      })
-      const assignCss: (...styles: any[]) => any = function() {
-        const out: Record<string, any> = {}
-        const resolved = resolve(arguments)
-        for (let i = 0; i < resolved.length; i++) Object.assign(out, resolved[i])
-        return out
-      }
-      return { serializeCss, serializeCssArgs, mergeCss, assignCss }
     }
-
-    const HYPHENATE_PROPERTY_REGEX = /[A-Z]/g
-    const MS_PROPERTY_REGEX = /^ms-/
     "#);
 }
 
@@ -1041,7 +1004,7 @@ fn emits_js_runtime() {
             .contains("const WHITESPACE_REGEX = /[\\n\\s]+/g\nconst sanitizeStyleValue = (value)"),
         "multiline value sanitizer should reuse a module-scope regex"
     );
-    assert_snapshot!(function_block(source, "memo"), @r#"
+    assert_snapshot!(function_block(source, "memo"), @"
     export function memo(fn) {
       const cache = new Map()
       const stringCache = new Map()
@@ -1102,7 +1065,7 @@ fn emits_js_runtime() {
         return out
       })
     }
-    "#);
+    ");
     assert_snapshot!(function_block(source, "weakMemo"), @r#"
     export function weakMemo(fn) {
       const cache = new WeakMap()
@@ -1115,73 +1078,36 @@ fn emits_js_runtime() {
       })
     }
     "#);
-    assert_snapshot!(function_block(source, "createCss"), @r#"
-export function createCssRuntime(context) {
-  const { utility: u, hash, conditions: c } = context
-  const fmt = (s) => u.prefix ? u.prefix + "-" + s : s
-  const toClass = (paths, name) => {
-    const parts = c.finalize(paths)
-    parts.push(hash ? name : fmt(name))
-    return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
-  }
-  const serializeCss = weakMemo(memo(function serializeCss({ base, ...styles } = {}) {
-    const obj = normalizeStyleObject(base ? Object.assign(styles, base) : styles, context)
-    const set = new Set()
-    walkObject(obj, (value, paths) => {
-      if (value == null) return
-      const important = isImportant(value)
-      const [prop, ...all] = c.shift(paths)
-      const cond = filterBaseConditions(all)
-      const res = u.transform(prop, withoutSpace(withoutImportant(sanitizeStyleValue(value))))
-      let name = toClass(cond, res.className)
-      if (important) name += "!"
-      set.add(name)
-    })
-    let out = ""
-    for (const name of set) out += out ? " " + name : name
-    return out
-  }))
-  const resolve = (styles) => {
-    const out = []
-    const visit = (items) => {
-      for (let i = 0; i < items.length; i++) {
-        const style = items[i]
-        if (Array.isArray(style)) {
-          visit(style)
-          continue
-        }
-        if (!isObject(style)) continue
-        for (const key in style) {
-          if (style[key] !== void 0) {
-            out.push(style)
-            break
-          }
-        }
+    assert_snapshot!(function_block(source, "createSerializeCss"), @r#"
+    export function createSerializeCss(context) {
+      const u = context.utility
+      const c = context.conditions
+      const hash = context.hash
+      const fmt = (s) => u.prefix ? u.prefix + "-" + s : s
+      const toClass = (paths, name) => {
+        const parts = c.finalize(paths)
+        parts.push(hash ? name : fmt(name))
+        return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
       }
+      return weakMemo(memo(function serializeCss({ base, ...styles } = {}) {
+        const obj = normalizeStyleObject(base ? Object.assign(styles, base) : styles, context)
+        const set = new Set()
+        walkObject(obj, (value, paths) => {
+          if (value == null) return
+          const important = isImportant(value)
+          const [prop, ...all] = c.shift(paths)
+          const cond = filterBaseConditions(all)
+          const res = u.transform(prop, withoutSpace(withoutImportant(sanitizeStyleValue(value))))
+          let name = toClass(cond, res.className)
+          if (important) name += "!"
+          set.add(name)
+        })
+        let out = ""
+        for (const name of set) out += out ? " " + name : name
+        return out
+      }))
     }
-    visit(styles)
-    if (out.length < 2) return out
-    for (let i = 0; i < out.length; i++) out[i] = normalizeStyleObject(out[i], context)
-    return out
-  }
-  const mergeCss = function() {
-    return mergeProps(...resolve(arguments))
-  }
-  const serializeCssArgs = memo(function serializeCssArgs(...styles) {
-    return serializeCss(mergeCss(...styles))
-  })
-  const assignCss = function() {
-    const out = {}
-    const resolved = resolve(arguments)
-    for (let i = 0; i < resolved.length; i++) Object.assign(out, resolved[i])
-    return out
-  }
-  return { serializeCss, serializeCssArgs, mergeCss, assignCss }
-}
-
-const HYPHENATE_PROPERTY_REGEX = /[A-Z]/g
-const MS_PROPERTY_REGEX = /^ms-/
-"#);
+    "#);
 }
 
 #[test]
@@ -1194,5 +1120,11 @@ fn emits_declarations() {
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
     assert_eq!(paths(helpers), vec!["helpers.js", "helpers.d.ts"]);
-    assert_snapshot!(declaration_lines(file(helpers, "helpers.d.ts")), @"export declare function createCssRuntime(context: Record<string, any>): { serializeCss: (...styles: any[]) => string; serializeCssArgs: (...styles: any[]) => string; mergeCss: (...styles: any[]) => any; assignCss: (...styles: any[]) => any };");
+    assert_snapshot!(declaration_lines(file(helpers, "helpers.d.ts")), @"
+    export declare function resolveStyleArgs(styles: Array<any> | IArguments, context: Record<string, any>): any[];
+    export declare function createSerializeCss(context: Record<string, any>): (...styles: any[]) => string;
+    export declare function createMergeCss(context: Record<string, any>): (...styles: any[]) => any;
+    export declare function createSerializeCssArgs(serializeCss: (...styles: any[]) => string, mergeCss: (...styles: any[]) => any): (...styles: any[]) => string;
+    export declare function createAssignCss(context: Record<string, any>): (...styles: any[]) => any;
+    ");
 }
