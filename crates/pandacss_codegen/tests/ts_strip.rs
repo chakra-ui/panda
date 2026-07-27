@@ -55,6 +55,66 @@ fn keeps_ternary_colon_after_call() {
 }
 
 #[test]
+fn keeps_a_ternary_used_as_a_call_argument() {
+    assert_eq!(
+        strip_typescript("const C = forwardRef(isPlain ? plainRender : render)"),
+        "const C = forwardRef(isPlain ? plainRender : render)"
+    );
+    assert_eq!(
+        strip_typescript("createElement(props.as === void 0 ? Default : props.as, rest)"),
+        "createElement(props.as === void 0 ? Default : props.as, rest)"
+    );
+}
+
+#[test]
+fn keeps_an_object_literal_inside_a_ternary() {
+    assert_eq!(
+        strip_typescript("const x = cond ? { a: 1, b: 2 } : fallback"),
+        "const x = cond ? { a: 1, b: 2 } : fallback"
+    );
+}
+
+#[test]
+fn keeps_nullish_and_optional_chaining() {
+    assert_eq!(
+        strip_typescript("const x = a?.b ?? (c ? d : e)"),
+        "const x = a?.b ?? (c ? d : e)"
+    );
+}
+
+#[test]
+fn keeps_a_nested_ternary_in_a_call_argument() {
+    assert_eq!(
+        strip_typescript("cx(a ? b : c ? d : e, f)"),
+        "cx(a ? b : c ? d : e, f)"
+    );
+}
+
+#[test]
+fn keeps_a_ternary_nested_in_an_object_inside_a_call() {
+    assert_eq!(
+        strip_typescript("createElement(El, { className: on ? 'a' : 'b', ref })"),
+        "createElement(El, { className: on ? 'a' : 'b', ref })"
+    );
+}
+
+#[test]
+fn strips_a_parameter_type_after_a_ternary_in_the_same_function() {
+    assert_eq!(
+        strip_typescript("function f(a: string) { return a ? 1 : 2 }\nfunction g(b: number) { return b }"),
+        "function f(a) { return a ? 1 : 2 }\nfunction g(b) { return b }"
+    );
+}
+
+#[test]
+fn strips_a_return_type_but_keeps_a_ternary_that_looks_like_one() {
+    assert_eq!(
+        strip_typescript("function f(): string { return cond ? go(x) : stop }"),
+        "function f(){ return cond ? go(x) : stop }"
+    );
+}
+
+#[test]
 fn strips_optional_parameter() {
     assert_eq!(
         strip_typescript("const f = (path: string, fallback?: string) => path"),

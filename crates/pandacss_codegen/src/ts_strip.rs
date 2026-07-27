@@ -7,8 +7,7 @@ pub fn strip_typescript(code: &str) -> String {
     let chars = code.chars().collect::<Vec<_>>();
     let mut out = String::with_capacity(code.len());
     let mut index = 0;
-    let mut paren_brace_depths = Vec::new();
-    let mut brace_depth = 0usize;
+    let mut frames = Frames::default();
     let mut string_quote = None;
 
     while index < chars.len() {
@@ -35,54 +34,47 @@ pub fn strip_typescript(code: &str) -> String {
             continue;
         }
 
-        if ch == '(' {
-            paren_brace_depths.push(brace_depth);
+        if matches!(ch, '(' | '{') {
+            frames.open(ch);
             out.push(ch);
             index += 1;
             continue;
         }
 
-        if ch == ')' {
-            paren_brace_depths.pop();
+        if matches!(ch, ')' | '}') {
+            frames.close(ch);
             out.push(ch);
             index += 1;
             continue;
         }
 
-        if ch == '{' {
-            brace_depth += 1;
-            out.push(ch);
-            index += 1;
-            continue;
-        }
-
-        if ch == '}' {
-            brace_depth = brace_depth.saturating_sub(1);
-            out.push(ch);
-            index += 1;
-            continue;
-        }
-
-        // Optional-parameter marker `name?: T`. Requiring an identifier before
-        // the `?` rules out regex non-capturing groups `(?:…)` and ternaries.
-        if ch == '?'
-            && previous_significant(&chars, index)
-                .is_some_and(|c| c.is_alphanumeric() || c == '_' || c == '$')
-        {
-            let colon = index
-                + 1
-                + chars[index + 1..]
-                    .iter()
-                    .take_while(|c| c.is_whitespace())
-                    .count();
-            if chars.get(colon) == Some(&':') {
-                index = skip_type_annotation(&chars, colon + 1);
-                push_space_before_delimiter(&mut out, chars.get(index).copied());
-                continue;
+        if ch == '?' {
+            match classify_question_mark(&chars, index) {
+                QuestionMark::Operator { len } => {
+                    out.extend(&chars[index..index + len]);
+                    index += len;
+                }
+                QuestionMark::OptionalParam { type_start } => {
+                    index = skip_type_annotation(&chars, type_start);
+                    push_space_before_delimiter(&mut out, chars.get(index).copied());
+                }
+                QuestionMark::Ternary => {
+                    frames.ternary_depth += 1;
+                    out.push(ch);
+                    index += 1;
+                }
             }
+            continue;
         }
 
-        if ch == ':' && should_strip_param_type(&chars, index, &paren_brace_depths, brace_depth) {
+        if ch == ':' && frames.ternary_depth > 0 {
+            frames.ternary_depth -= 1;
+            out.push(ch);
+            index += 1;
+            continue;
+        }
+
+        if ch == ':' && frames.should_strip_param_type(&chars, index) {
             index = skip_type_annotation(&chars, index + 1);
             push_space_before_delimiter(&mut out, chars.get(index).copied());
             continue;
@@ -119,6 +111,89 @@ pub fn strip_typescript(code: &str) -> String {
     out
 }
 
+/// Paren/brace nesting. Ternary depth is tracked per frame so that a `:` inside
+/// a nested object literal or call never closes an outer ternary.
+#[derive(Default)]
+struct Frames {
+    paren_brace_depths: Vec<usize>,
+    brace_depth: usize,
+    ternary_stack: Vec<usize>,
+    ternary_depth: usize,
+}
+
+impl Frames {
+    fn open(&mut self, ch: char) {
+        if ch == '(' {
+            self.paren_brace_depths.push(self.brace_depth);
+        } else {
+            self.brace_depth += 1;
+        }
+        self.ternary_stack.push(self.ternary_depth);
+        self.ternary_depth = 0;
+    }
+
+    fn close(&mut self, ch: char) {
+        if ch == ')' {
+            self.paren_brace_depths.pop();
+        } else {
+            self.brace_depth = self.brace_depth.saturating_sub(1);
+        }
+        self.ternary_depth = self.ternary_stack.pop().unwrap_or(0);
+    }
+
+    fn should_strip_param_type(&self, chars: &[char], colon: usize) -> bool {
+        if self.paren_brace_depths.last().copied() != Some(self.brace_depth) {
+            return false;
+        }
+
+        if !previous_significant(chars, colon)
+            .is_some_and(|ch| ch.is_alphanumeric() || ch == '_' || ch == '}')
+        {
+            return false;
+        }
+
+        let candidate_end = skip_type_annotation(chars, colon + 1);
+        is_type_annotation_candidate(&chars[colon + 1..candidate_end])
+    }
+}
+
+enum QuestionMark {
+    /// `??`, `?.`, or a regex `(?…` — copy `len` chars through untouched.
+    Operator { len: usize },
+    /// `name?: T` — the annotation to skip starts here.
+    OptionalParam { type_start: usize },
+    /// Opens a ternary, so the matching `:` is not a type annotation.
+    Ternary,
+}
+
+fn classify_question_mark(chars: &[char], index: usize) -> QuestionMark {
+    match chars.get(index + 1) {
+        Some('?') => return QuestionMark::Operator { len: 2 },
+        Some('.') => return QuestionMark::Operator { len: 1 },
+        _ => {}
+    }
+
+    // Requiring an identifier before the `?` rules out regex non-capturing
+    // groups `(?:…)`, which would otherwise look like an optional parameter.
+    if !previous_significant(chars, index).is_some_and(is_ident_char) {
+        return QuestionMark::Operator { len: 1 };
+    }
+
+    let colon = index
+        + 1
+        + chars[index + 1..]
+            .iter()
+            .take_while(|c| c.is_whitespace())
+            .count();
+    if chars.get(colon) == Some(&':') {
+        QuestionMark::OptionalParam {
+            type_start: colon + 1,
+        }
+    } else {
+        QuestionMark::Ternary
+    }
+}
+
 fn should_strip_return_type(chars: &[char], colon: usize) -> bool {
     if previous_significant(chars, colon) != Some(')') {
         return false;
@@ -132,26 +207,6 @@ fn should_strip_return_type(chars: &[char], colon: usize) -> bool {
         return false;
     }
 
-    is_type_annotation_candidate(&chars[colon + 1..candidate_end])
-}
-
-fn should_strip_param_type(
-    chars: &[char],
-    colon: usize,
-    paren_brace_depths: &[usize],
-    brace_depth: usize,
-) -> bool {
-    if paren_brace_depths.last().copied() != Some(brace_depth) {
-        return false;
-    }
-
-    if !previous_significant(chars, colon)
-        .is_some_and(|ch| ch.is_alphanumeric() || ch == '_' || ch == '}')
-    {
-        return false;
-    }
-
-    let candidate_end = skip_type_annotation(chars, colon + 1);
     is_type_annotation_candidate(&chars[colon + 1..candidate_end])
 }
 
