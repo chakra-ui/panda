@@ -832,6 +832,43 @@ of the map and the runtime chain stays:
 The `styled()` definition itself still desugars to `__pcva(…)` as before. After the fold it is
 unreferenced, so bundlers drop it.
 
+### Same-file `styled()` chain fold
+
+`const Button = styled('button', { base: … })` renders through `forwardRef`. That extra component
+level is the dominant cost even when the class string never changes: a bare `forwardRef` that returns
+nothing but a `<button>` measures the same as the full factory, while inlining the tag is ~45%
+faster. So when the chain's class is provably constant, `<Button>` folds to the host element.
+
+```tsx
+const L0 = styled('button', { base: { color: 'red' } })
+const L1 = styled(L0, { base: { color: 'blue' } })
+export const el = <L1>hi</L1>
+// →
+export const el = <button className="color_blue">hi</button>
+```
+
+`collect_styled_bindings` (`pandacss_extractor/src/styled_bindings.rs`) walks top-level `const`
+declarations and records `name → { intrinsic, base }`, following `styled(Parent, …)` chains and
+`const Alias = Button`. The JSX visitor then resolves such a tag to `styled.{intrinsic}` and prepends
+the composed `base` under the element's own props, so the element reaches the existing
+`<styled.button>` machinery — `as`, the `css` prop, conditionals, spreads and the partial fold all
+apply unchanged, and precedence falls out of entry order.
+
+A binding is recorded only when the fold can prove the class is constant. Anything else is left out
+of the map and the runtime chain stays:
+
+- `variants` / `compoundVariants` / `defaultVariants`, or any config key other than `base` — the
+  class would depend on props
+- a third `options` argument (`defaultProps`, `shouldForwardProp`), which the fold does not reproduce
+- a base that is not a string tag or an already-recorded local binding, so imported components and
+  `styled(motion.div, …)` keep their wrapper
+- `let` / `var`, which can be reassigned between definition and use
+- declarations inside a function or block — only module-level chains are recorded, and a tag folds
+  only when it resolves to the recorded symbol, so a local binding that shadows one is left alone
+
+The `styled()` definition itself still desugars to `__pcva(…)` as before. After the fold it is
+unreferenced, so bundlers drop it.
+
 ### JSX pattern props
 
 JSX pattern elements such as `<HStack gap="4" />` behave like JSX style props, not like function calls.

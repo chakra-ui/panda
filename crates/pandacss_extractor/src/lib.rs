@@ -29,6 +29,7 @@ mod scope;
 mod source;
 mod source_refs;
 mod style_tree;
+mod styled_bindings;
 mod svelte_adapter;
 mod template_styles;
 mod transform_facts;

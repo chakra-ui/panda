@@ -128,7 +128,7 @@ pub(crate) fn style_tree_has_open_value(tree: &StyleTree) -> bool {
         StyleTree::Open | StyleTree::OpenWithFallback(_) => true,
         StyleTree::Object(obj) => {
             obj.spreads.iter().any(|s| match s {
-                StyleSpread::Open | StyleSpread::OpenWithFallback { .. } => true,
+                StyleSpread::Open { .. } | StyleSpread::OpenWithFallback { .. } => true,
                 StyleSpread::Ternary {
                     consequent,
                     alternate,
@@ -227,7 +227,7 @@ fn collect_preserved_source_spans(tree: &StyleTree, spans: &mut Vec<Span>) {
                         spans.push(*test);
                         collect_preserved_source_spans(value, spans);
                     }
-                    StyleSpread::Open | StyleSpread::OpenWithFallback { .. } => {}
+                    StyleSpread::Open { .. } | StyleSpread::OpenWithFallback { .. } => {}
                 }
             }
             for (_, value) in &object.entries {
@@ -388,7 +388,7 @@ fn collect_sites(
 ) -> CollectOutcome {
     for spread in &obj.spreads {
         match spread {
-            StyleSpread::Open | StyleSpread::OpenWithFallback { .. } => {
+            StyleSpread::Open { .. } | StyleSpread::OpenWithFallback { .. } => {
                 return CollectOutcome::Bail;
             }
             StyleSpread::Ternary {
@@ -569,7 +569,7 @@ fn tree_has_open(tree: &StyleTree) -> bool {
         StyleTree::Object(obj) => {
             obj.entries.iter().any(|(_, v)| tree_has_open(v))
                 || obj.spreads.iter().any(|s| match s {
-                    StyleSpread::Open | StyleSpread::OpenWithFallback { .. } => true,
+                    StyleSpread::Open { .. } | StyleSpread::OpenWithFallback { .. } => true,
                     StyleSpread::Ternary {
                         consequent,
                         alternate,
