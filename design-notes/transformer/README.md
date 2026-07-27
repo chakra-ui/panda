@@ -880,11 +880,15 @@ resolver, recording each site so the transform pins it. The project supplies the
 (`extract_with_raw_resolvers`), the way it already supplies the pattern transform — merging styles needs config the
 extractor doesn't own.
 
-Two gaps remain. A file that imports nothing from Panda is skipped before extraction runs, so an imported `.raw` there is
-never folded. And an importer whose props aren't static leaves the call in place, where the desugared definition still
+A consumer often imports the recipe and nothing else from Panda, which the no-Panda-imports fast path would skip. So the
+skip test also asks whether the file calls `.raw(...)` on a binding it imported — a syntactic check over the AST already
+parsed, with no resolution and no filesystem. A false positive costs that one file's extraction, which then finds
+nothing. Everything else still skips.
+
+One gap remains: an importer whose props aren't static leaves the call in place, where the desugared definition still
 hands back a string — the definition file can't see its consumers.
 
-That second gap warns rather than fails silently: an unfoldable `.raw` on a known imported recipe emits
+That gap warns rather than fails silently: an unfoldable `.raw` on a known imported recipe emits
 `imported_recipe_raw_dynamic`. Warning is deliberate over the two fixes. Materializing a real recipe at the consumer
 pulls the full `cva` runtime back into that file, and refusing to desugar exported recipes taxes every app to protect a
 corner. The warning can over-fire in one narrow band — the definition's own local `.raw` usage can block its desugar,
