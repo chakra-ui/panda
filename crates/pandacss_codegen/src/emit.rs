@@ -1,14 +1,14 @@
 //! Prints an [`ast::Module`](crate::ast) to source text: a single `.ts` file,
-//! or split into runtime `.js`/`.mjs` (types stripped via [`strip_typescript`])
+//! or split into runtime `.js`/`.mjs` (types erased via [`erase_typescript_program`])
 //! plus a `.d.ts`. [`EmitTarget`] picks which projection a print pass produces.
 
+use crate::Module;
 use crate::ast::{
     Assignment, Block, ConstDecl, ExportDecl, Expr, FunctionDecl, ImportDecl, ImportKind,
     ImportSpecifier, InterfaceDecl, Item, ItemNode, ItemRole, JsDoc, JsxAttr, JsxElement, JsxName,
     ObjectProp, Param, Stmt, TsMember, TsMemberName, TsType, TypeAliasDecl,
 };
 use crate::ts_erase::{erase_typescript_block, erase_typescript_expr, erase_typescript_program};
-use crate::Module;
 use pandacss_config::CodegenFormat;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

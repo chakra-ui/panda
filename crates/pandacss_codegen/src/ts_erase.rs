@@ -11,7 +11,8 @@
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     Declaration, ExportNamedDeclaration, Expression, FormalParameter, ImportDeclaration,
-    ImportOrExportKind, Program, Statement, TSTypeAnnotation, VariableDeclarator,
+    ImportDeclarationSpecifier, ImportOrExportKind, Program, Statement, TSTypeAnnotation,
+    VariableDeclarator,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
@@ -34,11 +35,11 @@ impl Fragment {
             Self::Program => (code.to_owned(), 0),
             Self::Expression => {
                 let prefix = "const __x__ = (";
-                (format!("{prefix}{code})"), prefix.len() as u32)
+                (format!("{prefix}{code})"), to_u32(prefix.len()))
             }
             Self::Block => {
                 let prefix = "function __x__() ";
-                (format!("{prefix}{code}"), prefix.len() as u32)
+                (format!("{prefix}{code}"), to_u32(prefix.len()))
             }
         }
     }
@@ -95,7 +96,13 @@ fn apply_cuts(source: &str, cuts: &[Span], offset: u32, original: &str) -> Strin
     // The wrapper never contains type syntax, so its bytes survive verbatim.
     let start = offset as usize;
     let end = out.len() - usize::from(offset != 0 && out.ends_with(')'));
-    out.get(start..end).map_or_else(|| original.to_owned(), str::to_owned)
+    out.get(start..end)
+        .map_or_else(|| original.to_owned(), str::to_owned)
+}
+
+/// Byte offsets in a source Oxc already parsed, so they fit in `u32`.
+fn to_u32(value: usize) -> u32 {
+    u32::try_from(value).unwrap_or(u32::MAX)
 }
 
 fn slice(source: &str, start: u32, end: u32) -> Option<&str> {
@@ -130,12 +137,39 @@ impl Eraser<'_> {
         self.cut_marker(from, limit, '!');
     }
 
+    /// Cut a list entry along with the comma that separates it, so
+    /// `{ memo, type Options }` closes up instead of leaving a dangling comma.
+    fn cut_list_item(&mut self, span: Span) {
+        let bytes = self.source.as_bytes();
+        let mut index = span.end as usize;
+        while bytes.get(index).is_some_and(u8::is_ascii_whitespace) {
+            index += 1;
+        }
+        if bytes.get(index) == Some(&b',') {
+            index += 1;
+            while matches!(bytes.get(index), Some(b' ' | b'\t')) {
+                index += 1;
+            }
+            self.cut(Span::new(span.start, to_u32(index)));
+            return;
+        }
+
+        let mut start = span.start as usize;
+        while start > 0 && bytes[start - 1].is_ascii_whitespace() {
+            start -= 1;
+        }
+        if start > 0 && bytes[start - 1] == b',' {
+            start -= 1;
+        }
+        self.cut(Span::new(to_u32(start), span.end));
+    }
+
     fn cut_marker(&mut self, from: u32, limit: u32, marker: char) {
         let Some(text) = slice(self.source, from, limit) else {
             return;
         };
         if let Some(index) = text.find(marker) {
-            let at = from + index as u32;
+            let at = from + to_u32(index);
             self.cut(Span::new(at, at + 1));
         }
     }
@@ -146,13 +180,28 @@ impl Eraser<'_> {
             Statement::TSInterfaceDeclaration(_)
             | Statement::TSTypeAliasDeclaration(_)
             | Statement::TSImportEqualsDeclaration(_) => true,
-            Statement::ImportDeclaration(import) => import.import_kind == ImportOrExportKind::Type,
+            Statement::ImportDeclaration(import) => {
+                import.import_kind == ImportOrExportKind::Type || import_is_all_type(import)
+            }
+            // `declare` bodies exist only for the type system.
+            Statement::FunctionDeclaration(func) => func.declare,
+            Statement::VariableDeclaration(decl) => decl.declare,
+            Statement::ClassDeclaration(class) => class.declare,
+            Statement::TSModuleDeclaration(module) => module.declare,
             Statement::ExportNamedDeclaration(export) => {
                 export.export_kind == ImportOrExportKind::Type
+                    || export_is_all_type(export)
                     || matches!(
                         export.declaration,
-                        Some(Declaration::TSInterfaceDeclaration(_) | Declaration::TSTypeAliasDeclaration(_))
+                        Some(
+                            Declaration::TSInterfaceDeclaration(_)
+                                | Declaration::TSTypeAliasDeclaration(_)
+                        )
                     )
+                    || export
+                        .declaration
+                        .as_ref()
+                        .is_some_and(Declaration::declare)
             }
             _ => false,
         }
@@ -244,20 +293,57 @@ impl<'a> Visit<'a> for Eraser<'_> {
     }
 
     fn visit_import_declaration(&mut self, import: &ImportDeclaration<'a>) {
-        if import.import_kind == ImportOrExportKind::Type {
+        if import.import_kind == ImportOrExportKind::Type || import_is_all_type(import) {
             self.cut(import.span);
             return;
+        }
+        for specifier in import.specifiers.iter().flatten() {
+            if let ImportDeclarationSpecifier::ImportSpecifier(specifier) = specifier
+                && specifier.import_kind == ImportOrExportKind::Type
+            {
+                self.cut_list_item(specifier.span);
+            }
         }
         walk::walk_import_declaration(self, import);
     }
 
     fn visit_export_named_declaration(&mut self, export: &ExportNamedDeclaration<'a>) {
-        if export.export_kind == ImportOrExportKind::Type {
+        if export.export_kind == ImportOrExportKind::Type || export_is_all_type(export) {
             self.cut(export.span);
             return;
         }
+        for specifier in &export.specifiers {
+            if specifier.export_kind == ImportOrExportKind::Type {
+                self.cut_list_item(specifier.span);
+            }
+        }
         walk::walk_export_named_declaration(self, export);
     }
+}
+
+/// True when every named binding is type-only, which makes the whole statement
+/// type-only — matching how `tsc` elides an import whose bindings all vanish.
+fn import_is_all_type(import: &ImportDeclaration<'_>) -> bool {
+    let Some(specifiers) = import.specifiers.as_ref() else {
+        return false;
+    };
+    !specifiers.is_empty()
+        && specifiers.iter().all(|specifier| {
+            matches!(
+                specifier,
+                ImportDeclarationSpecifier::ImportSpecifier(specifier)
+                    if specifier.import_kind == ImportOrExportKind::Type
+            )
+        })
+}
+
+fn export_is_all_type(export: &ExportNamedDeclaration<'_>) -> bool {
+    export.declaration.is_none()
+        && !export.specifiers.is_empty()
+        && export
+            .specifiers
+            .iter()
+            .all(|specifier| specifier.export_kind == ImportOrExportKind::Type)
 }
 
 /// Erase types from a whole module.

@@ -14,7 +14,6 @@ mod emit;
 mod graph;
 mod overlay;
 mod ts_erase;
-mod ts_strip;
 
 pub use ast::{
     Assignment, Block, ConstDecl, ExportDecl, Expr, FunctionDecl, ImportDecl, ImportKind,
@@ -29,4 +28,3 @@ pub use graph::{
 };
 pub use overlay::{CodegenOverlay, RuntimeImport};
 pub use ts_erase::{erase_typescript_block, erase_typescript_expr, erase_typescript_program};
-pub use ts_strip::strip_typescript;
