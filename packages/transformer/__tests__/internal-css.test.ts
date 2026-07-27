@@ -28,6 +28,37 @@ describe('@pandacss-internal/css runtime', () => {
     expect(button.__cva__).toBe(true)
   })
 
+  it('cva resolves boolean variant keys (JS coerces true → "true")', () => {
+    const button = cva({
+      base: 'd_inline-flex',
+      variants: {
+        disabled: { true: 'opacity_0.5' },
+        block: { true: 'w_100%' },
+      },
+    })
+
+    expect(button({ disabled: true })).toBe('d_inline-flex opacity_0.5')
+    expect(button({ disabled: false, block: true })).toBe('d_inline-flex w_100%')
+    expect(button({ disabled: true, block: true })).toBe('d_inline-flex opacity_0.5 w_100%')
+  })
+
+  it('cva applies a boolean defaultVariant until the prop overrides it', () => {
+    const button = cva({
+      base: 'd_flex',
+      variants: {
+        muted: { true: 'opacity_0.5' },
+        block: { true: 'w_100%' },
+      },
+      defaultVariants: { muted: true },
+    })
+
+    expect(button()).toBe('d_flex opacity_0.5')
+    expect(button({ block: true })).toBe('d_flex opacity_0.5 w_100%')
+    expect(button({ muted: false })).toBe('d_flex')
+    // an absent prop is not a choice — the default stands
+    expect(button({ muted: undefined })).toBe('d_flex opacity_0.5')
+  })
+
   it('sva resolves per-slot string branches', () => {
     const tabs = sva({
       slots: ['root', 'trigger'],
@@ -45,6 +76,25 @@ describe('@pandacss-internal/css runtime', () => {
     expect(tabs({ size: 'sm' })).toEqual({
       root: 'd_flex fs_sm',
       trigger: 'cursor_pointer fs_sm',
+    })
+  })
+
+  it('sva resolves a boolean variant across every slot', () => {
+    const card = sva({
+      slots: ['root', 'title'],
+      base: { root: 'd_flex', title: 'fw_bold' },
+      variants: {
+        muted: { true: 'opacity_0.5' },
+      },
+    })
+
+    expect(card({ muted: true })).toEqual({
+      root: 'd_flex opacity_0.5',
+      title: 'fw_bold opacity_0.5',
+    })
+    expect(card({ muted: false })).toEqual({
+      root: 'd_flex',
+      title: 'fw_bold',
     })
   })
 
