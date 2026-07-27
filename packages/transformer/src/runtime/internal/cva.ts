@@ -2,16 +2,18 @@ import {
   compoundMatches,
   splitVariantProps,
   toVariantMap,
+  variantClass,
   withDefaults,
   type CompoundVariant,
   type VariantMap,
+  type VariantValue,
 } from './shared'
 import { cx } from './cx'
 
 export interface StringCvaConfig {
   base?: string
   variants?: VariantMap
-  defaultVariants?: Record<string, string>
+  defaultVariants?: Record<string, VariantValue>
   compoundVariants?: CompoundVariant[]
 }
 
@@ -44,10 +46,8 @@ export function cva(config: StringCvaConfig) {
     const parts: string[] = []
     if (base) parts.push(base)
     for (const key of variantKeys) {
-      const value = computed[key]
-      if (typeof value === 'string' && variants[key]?.[value]) {
-        parts.push(variants[key][value]!)
-      }
+      const cls = variantClass(variants, key, computed[key])
+      if (cls) parts.push(cls)
     }
     for (const compound of compoundVariants) {
       if (!compoundMatches(compound, computed)) continue

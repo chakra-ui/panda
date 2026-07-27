@@ -1,11 +1,12 @@
 export type VariantMap = Record<string, Record<string, string>>
+export type VariantValue = string | number | boolean
 export type CompoundVariant = Record<string, unknown> & {
   css?: string
   className?: string
 }
 
 export function withDefaults(
-  defaults: Record<string, string>,
+  defaults: Record<string, VariantValue>,
   props: Record<string, unknown>,
 ): Record<string, unknown> {
   const out: Record<string, unknown> = { ...defaults }
@@ -46,4 +47,11 @@ export function compoundMatches(compound: CompoundVariant, variants: Record<stri
     }
   }
   return true
+}
+
+/** JS coerces `true` → `"true"` on property access — same as generated cva. */
+export function variantClass(variants: VariantMap, key: string, value: unknown): string | undefined {
+  if (value == null) return undefined
+  const cls = variants[key]?.[value as string | number]
+  return typeof cls === 'string' && cls ? cls : undefined
 }
