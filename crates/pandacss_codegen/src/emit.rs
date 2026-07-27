@@ -7,7 +7,8 @@ use crate::ast::{
     ImportSpecifier, InterfaceDecl, Item, ItemNode, ItemRole, JsDoc, JsxAttr, JsxElement, JsxName,
     ObjectProp, Param, Stmt, TsMember, TsMemberName, TsType, TypeAliasDecl,
 };
-use crate::{Module, ts_strip::strip_typescript};
+use crate::ts_erase::{erase_typescript_block, erase_typescript_expr, erase_typescript_program};
+use crate::Module;
 use pandacss_config::CodegenFormat;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -296,24 +297,12 @@ fn print_item(
         ItemNode::Export(decl) => print_export(decl, target, import_extensions, format),
         ItemNode::RawStmt(code) => {
             if matches!(target, EmitTarget::RuntimeJs) {
-                strip_typescript_fixpoint(code)
+                erase_typescript_program(code)
             } else {
                 code.clone()
             }
         }
     }
-}
-
-fn strip_typescript_fixpoint(code: &str) -> String {
-    let mut current = code.to_owned();
-    for _ in 0..8 {
-        let next = strip_typescript(&current);
-        if next == current {
-            return next;
-        }
-        current = next;
-    }
-    current
 }
 
 fn print_export(
@@ -378,7 +367,7 @@ fn print_const(decl: &ConstDecl, target: EmitTarget) -> String {
         decl.init.as_ref().map_or_else(String::new, |expr| {
             let code = print_expr(expr);
             let code = if matches!(target, EmitTarget::RuntimeJs) {
-                strip_typescript(&code)
+                erase_typescript_expr(&code)
             } else {
                 code
             };
@@ -427,7 +416,7 @@ fn print_function(decl: &FunctionDecl, target: EmitTarget) -> String {
     } else {
         let body = decl.body.as_ref().map_or_else(|| "{}".into(), print_block);
         let body = if matches!(target, EmitTarget::RuntimeJs) {
-            strip_typescript(&body)
+            erase_typescript_block(&body)
         } else {
             body
         };

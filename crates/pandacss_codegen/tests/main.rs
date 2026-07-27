@@ -14,6 +14,7 @@ mod react_jsx_artifact;
 mod recipes_artifact;
 mod sva_artifact;
 mod tokens_artifact;
+mod ts_erase;
 mod ts_strip;
 mod types_artifact;
 mod view_transition_artifact;

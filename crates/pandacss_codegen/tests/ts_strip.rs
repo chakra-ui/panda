@@ -1,4 +1,4 @@
-use pandacss_codegen::strip_typescript;
+use pandacss_codegen::erase_typescript_program as strip_typescript;
 
 #[test]
 fn strips_generated_type_annotations() {
