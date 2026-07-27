@@ -501,9 +501,7 @@ describe('compiler.transformSource: css', () => {
       {
         "changed": true,
         "bailed": false,
-        "code": "import { cx as __pcx } from '@pandacss-internal/css';
-      import { css } from '@panda/css'
-      export const cls = __pcx("color_red", css({ width: undefined }))",
+        "code": "export const cls = "color_red"",
       }
     `)
   })

@@ -9,7 +9,7 @@ use oxc_ast::ast::{
     ChainElement, ChainExpression, ComputedMemberExpression, ConditionalExpression, Expression,
     LogicalExpression, LogicalOperator, ObjectExpression, ObjectPropertyKind, PropertyKey,
     PropertyKind, StaticMemberExpression, TaggedTemplateExpression, TemplateLiteral,
-    UnaryExpression, UnaryOperator,
+    IdentifierReference, UnaryExpression, UnaryOperator,
 };
 use serde::ser::{SerializeMap, SerializeSeq};
 use serde::{Serialize, Serializer};
@@ -224,7 +224,7 @@ pub(crate) fn expression_to_literal(
         Expression::ConditionalExpression(c) => eval_conditional(c, resolver),
         Expression::TemplateLiteral(t) => template_literal_to_literal(t, resolver),
 
-        Expression::Identifier(ident) => resolver?.resolve_identifier(ident),
+        Expression::Identifier(ident) => fold_identifier(ident, resolver),
         Expression::StaticMemberExpression(member) => static_member_to_literal(member, resolver),
         Expression::ComputedMemberExpression(member) => {
             computed_member_to_literal(member, resolver)
@@ -462,6 +462,27 @@ fn call_to_literal(
 
 fn number_as_key(value: f64) -> String {
     number_to_js_string(value)
+}
+
+/// Fold an identifier. Bound locals use [`Resolver`]; free global `undefined`
+/// is modeled as [`Literal::Null`] (same as array slots / `null == undefined`).
+/// A local binding named `undefined` that fails to resolve stays open.
+fn fold_identifier(
+    ident: &IdentifierReference<'_>,
+    resolver: Option<&Resolver<'_, '_>>,
+) -> Option<Literal> {
+    if let Some(r) = resolver {
+        if let Some(lit) = r.resolve_identifier(ident) {
+            return Some(lit);
+        }
+        if r.symbol_for_identifier(ident).is_some() {
+            return None;
+        }
+    }
+    if ident.name.as_str() == "undefined" {
+        return Some(Literal::Null);
+    }
+    None
 }
 
 fn eval_unary(u: &UnaryExpression<'_>, resolver: Option<&Resolver<'_, '_>>) -> Option<Literal> {
