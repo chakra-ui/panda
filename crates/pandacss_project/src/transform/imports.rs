@@ -258,6 +258,7 @@ mod tests {
                 local: "css".to_owned(),
                 references: vec![Span { start: 50, end: 53 }],
             }],
+            local_call_bindings: Vec::new(),
             after_directives: 0,
             symbols_resolved,
         }

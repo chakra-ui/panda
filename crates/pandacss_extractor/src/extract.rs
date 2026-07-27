@@ -53,6 +53,9 @@ pub struct ImportBindingFacts {
 pub struct ModuleFacts {
     pub imports: Vec<ImportRecord>,
     pub import_bindings: Vec<ImportBindingFacts>,
+    /// Local bindings initialized from a collected Panda call site.
+    /// Populated only by [`extract_for_transform`].
+    pub local_call_bindings: Vec<crate::LocalCallBinding>,
     /// Safe helper-import insertion point after a hashbang/directive prologue.
     pub after_directives: u32,
     /// Whether `import_bindings` came from an Oxc semantic pass.
@@ -299,6 +302,7 @@ fn run_extract<'cb>(
             ModuleFacts {
                 imports,
                 import_bindings: Vec::new(),
+                local_call_bindings: Vec::new(),
                 after_directives,
                 symbols_resolved: false,
             }
@@ -400,9 +404,20 @@ fn run_extract<'cb>(
     let token_refs = dedupe_token_refs(token_refs);
     let dependencies = resolver.take_cross_file_deps();
     let module = if retain_transform_facts {
+        let local_call_bindings = if calls.is_empty() {
+            Vec::new()
+        } else {
+            let init_spans = calls.iter().map(|call| call.span).collect();
+            crate::local_bindings::collect_local_call_bindings(
+                &parser_return.program,
+                resolver.semantic(),
+                &init_spans,
+            )
+        };
         ModuleFacts {
             import_bindings: resolver.import_binding_facts(&imports),
             imports,
+            local_call_bindings,
             after_directives,
             symbols_resolved: true,
         }
@@ -454,6 +469,7 @@ pub fn analyze_module(source: &str, path: &str) -> ModuleFacts {
     ModuleFacts {
         imports,
         import_bindings,
+        local_call_bindings: Vec::new(),
         after_directives,
         symbols_resolved: true,
     }

@@ -42,7 +42,7 @@ pub mod codes {
 }
 
 /// UTF-8 byte offsets.
-#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq, Hash)]
 #[serde(rename_all = "camelCase")]
 pub struct Span {
     pub start: u32,

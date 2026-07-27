@@ -170,6 +170,10 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             .collect()
     }
 
+    pub(crate) fn semantic(&self) -> &Semantic<'a> {
+        &self.semantic
+    }
+
     pub(crate) fn import_binding_facts(&self, imports: &[ImportRecord]) -> Vec<ImportBindingFacts> {
         imports
             .iter()

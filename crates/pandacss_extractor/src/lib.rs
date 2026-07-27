@@ -22,6 +22,7 @@ mod imports;
 mod jsx;
 mod jsx_react_runtime;
 mod literal;
+mod local_bindings;
 mod matcher;
 mod pure_fn;
 mod scope;
@@ -49,6 +50,7 @@ pub use imports::{
     ImportKind, ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind,
     ScanImportsOptions, scan_imports, scan_imports_with,
 };
+pub use local_bindings::{LocalBindingCall, LocalCallBinding, LocalDeclarationKind};
 // Internal helpers that take Oxc-shaped inputs — kept out of the public
 // surface so consumers don't accidentally couple to oxc_ast / oxc_diagnostics.
 pub use cross_file::CrossFileResolver;

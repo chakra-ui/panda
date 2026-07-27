@@ -276,6 +276,7 @@ mod tests {
                         end: call_span.start + 3,
                     }],
                 }],
+                local_call_bindings: Vec::new(),
                 after_directives: 0,
                 symbols_resolved: false,
             },
@@ -305,6 +306,7 @@ mod tests {
             module: ModuleFacts {
                 imports: Vec::new(),
                 import_bindings: Vec::new(),
+                local_call_bindings: Vec::new(),
                 after_directives: 0,
                 symbols_resolved: false,
             },
@@ -347,6 +349,7 @@ mod tests {
                     local: helper::CX_HELPER_LOCAL.to_owned(),
                     references: vec![Span { start: 72, end: 77 }],
                 }],
+                local_call_bindings: Vec::new(),
                 after_directives: 0,
                 symbols_resolved: false,
             },
