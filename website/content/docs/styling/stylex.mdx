@@ -28,9 +28,10 @@ extraction plus atomic output, but doesn't require you to reason about call-site
 
 ## Theming
 
-StyleX defines theme values with `stylex.defineVars`, which compiles to real CSS custom properties:
+StyleX defines theme values with `stylex.defineVars`, which compiles to real CSS custom properties. The call has to
+live in a file with a `.stylex.js`/`.stylex.ts` extension and be a named export, StyleX's compiler enforces this:
 
-```ts
+```ts filename="vars.stylex.ts"
 import * as stylex from '@stylexjs/stylex'
 
 export const colors = stylex.defineVars({
@@ -170,9 +171,11 @@ media-query-only switching (a manually toggled class or attribute, for example).
 ## Global Styles
 
 This is the one place StyleX and Panda genuinely disagree, not just in syntax. StyleX deliberately has no global
-styles and no descendant or nested selectors targeting other elements, every rule is scoped to the exact element
-`stylex.props()` is spread onto. This is a core design constraint, not a missing feature, it's what lets StyleX
-guarantee predictable specificity at scale.
+styles and no descendant or nested selectors targeting other elements, styles on an element have to come from class
+names on that element itself. The only exception is ordinary CSS inheritance (a `color` cascading to children the
+normal CSS way), and StyleX offers a separate `stylex.when` API for the controlled cases where you do need one
+element's state to affect another, rather than reaching for an implicit descendant selector. This is a core design
+constraint, not a missing feature, it's what lets StyleX guarantee predictable specificity at scale.
 
 Panda does support global styles, through `globalCss` in `panda.config.ts`:
 
