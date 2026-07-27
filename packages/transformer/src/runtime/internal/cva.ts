@@ -1,6 +1,7 @@
 import {
   compoundMatches,
   splitVariantProps,
+  memoProps,
   toVariantMap,
   variantClass,
   withDefaults,
@@ -40,24 +41,28 @@ export function cva(config: StringCvaConfig) {
   const compoundVariants = config.compoundVariants ?? []
   const variantKeys = Object.keys(variants)
   const variantKeySet = new Set(variantKeys)
+  const hasDefaults = Object.keys(defaultVariants).length > 0
+  const hasCompounds = compoundVariants.length > 0
 
   const resolve = (props: Record<string, unknown> = {}) => {
-    const computed = withDefaults(defaultVariants, props)
+    const computed = hasDefaults ? withDefaults(defaultVariants, props) : props
     const parts: string[] = []
     if (base) parts.push(base)
     for (const key of variantKeys) {
       const cls = variantClass(variants, key, computed[key])
       if (cls) parts.push(cls)
     }
-    for (const compound of compoundVariants) {
-      if (!compoundMatches(compound, computed)) continue
-      const cls = compound.className ?? compound.css
-      if (typeof cls === 'string' && cls) parts.push(cls)
+    if (hasCompounds) {
+      for (const compound of compoundVariants) {
+        if (!compoundMatches(compound, computed)) continue
+        const cls = compound.className ?? compound.css
+        if (typeof cls === 'string' && cls) parts.push(cls)
+      }
     }
     return cx(...parts)
   }
 
-  const cvaFn = (props: Record<string, unknown> = {}) => resolve(props)
+  const cvaFn = memoProps(resolve)
 
   // `styled(Parent, styles)` fuses the two recipes here, once, at definition
   // time. The generated runtime merges style objects with `mergeCss`; on string

@@ -59,6 +59,31 @@ describe('@pandacss-internal/css runtime', () => {
     expect(button({ muted: undefined })).toBe('d_flex opacity_0.5')
   })
 
+  it('cva returns the same string for a repeated prop tuple', () => {
+    const button = cva({
+      base: 'd_flex',
+      variants: {
+        size: { sm: 'fs_sm', md: 'fs_md' },
+      },
+    })
+
+    const first = button({ size: 'sm' })
+    expect(button({ size: 'sm' })).toBe(first)
+    expect(button({ size: 'md' })).toBe('d_flex fs_md')
+    // raw stays uncached and agrees with the memoized call
+    expect(button.raw({ size: 'sm' })).toBe(first)
+  })
+
+  it('sva returns the same slot map for a repeated prop tuple', () => {
+    const card = sva({
+      slots: ['root', 'title'],
+      base: { root: 'd_flex', title: 'fw_bold' },
+      variants: { muted: { true: 'opacity_0.5' } },
+    })
+
+    expect(card({ muted: true })).toBe(card({ muted: true }))
+  })
+
   it('sva resolves per-slot string branches', () => {
     const tabs = sva({
       slots: ['root', 'trigger'],

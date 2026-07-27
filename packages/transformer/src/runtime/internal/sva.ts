@@ -1,6 +1,6 @@
 import { cva, type StringCvaConfig } from './cva'
 import { cx } from './cx'
-import { splitVariantProps, withDefaults, type CompoundVariant } from './shared'
+import { memoProps, splitVariantProps, withDefaults, type CompoundVariant } from './shared'
 
 type SvaCompound = Record<string, unknown> & {
   css?: Record<string, string> | string
@@ -69,7 +69,7 @@ export function sva(config: SvaConfig) {
     return result
   }
 
-  return Object.assign(resolve, {
+  return Object.assign(memoProps(resolve), {
     __cva__: false as const,
     raw,
     config,

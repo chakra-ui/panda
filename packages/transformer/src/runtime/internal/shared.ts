@@ -55,3 +55,34 @@ export function variantClass(variants: VariantMap, key: string, value: unknown):
   const cls = variants[key]?.[value as string | number]
   return typeof cls === 'string' && cls ? cls : undefined
 }
+
+/** Memoize flat prop → result. Mirrors generated `styled-system` `memo(cvaFn)`. */
+export function memoProps<T>(resolve: (props: Record<string, unknown>) => T): (props?: Record<string, unknown>) => T {
+  const cache = new Map<string, T>()
+  let lastKey = ''
+  let lastValue: T | undefined
+  let hasLast = false
+
+  return (props: Record<string, unknown> = {}) => {
+    let key = ''
+    for (const k in props) {
+      const value = props[k]
+      if (value !== undefined) key += `${k}:${String(value)}|`
+    }
+    if (hasLast && key === lastKey) return lastValue as T
+    const hit = cache.get(key)
+    if (hit !== undefined) {
+      lastKey = key
+      lastValue = hit
+      hasLast = true
+      return hit
+    }
+    const out = resolve(props)
+    cache.set(key, out)
+    if (cache.size > 500) cache.delete(cache.keys().next().value!)
+    lastKey = key
+    lastValue = out
+    hasLast = true
+    return out
+  }
+}
