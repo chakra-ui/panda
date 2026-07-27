@@ -170,3 +170,100 @@ export function booleanBitset(
     return (table[mask] ??= build(mask))
   }
 }
+
+/** Largest table a recipe may index. Past this, the memo path is cheaper than the array. */
+const MAX_VARIANT_STATES = 4096
+
+/**
+ * Option lookups keyed by the value as authored and by its non-string
+ * spellings, so `{ disabled: true }` and `{ size: 2 }` hit without coercing
+ * on every call.
+ */
+function optionIndex(options: string[]): Map<unknown, number> {
+  const index = new Map<unknown, number>()
+  for (let i = 0; i < options.length; i++) {
+    const option = options[i]!
+    const slot = i + 1
+    index.set(option, slot)
+    if (option === 'true') index.set(true, slot)
+    else if (option === 'false') index.set(false, slot)
+    else {
+      const numeric = Number(option)
+      if (option !== '' && !Number.isNaN(numeric)) index.set(numeric, slot)
+    }
+  }
+  return index
+}
+
+interface VariantSlot {
+  key: string
+  options: string[]
+  index: Map<unknown, number>
+  radix: number
+  stride: number
+}
+
+/**
+ * Dispatch any compound-free recipe through a mixed-radix index: each variant
+ * owns `options.length + 1` states, where 0 means unset or unmatched. Entries
+ * are built on first use.
+ *
+ * Boolean-only recipes go through [`booleanBitset`] instead, which is cheaper
+ * still. This covers the rest — `size` / `tone` and friends.
+ */
+export function variantTable(
+  base: string,
+  variants: VariantMap,
+  keys: string[],
+  defaults: Record<string, VariantValue>,
+  hasCompounds: boolean,
+): ((props?: Record<string, unknown>) => string) | undefined {
+  if (hasCompounds || keys.length === 0) return undefined
+
+  const slots: VariantSlot[] = []
+  let states = 1
+  for (const key of keys) {
+    const options = Object.keys(variants[key] ?? {})
+    if (options.length === 0) return undefined
+    slots.push({ key, options, index: optionIndex(options), radix: options.length + 1, stride: states })
+    states *= options.length + 1
+    if (states > MAX_VARIANT_STATES) return undefined
+  }
+
+  let defaultState = 0
+  for (const key in defaults) {
+    const slot = slots.find((candidate) => candidate.key === key)
+    if (!slot) return undefined
+    const chosen = slot.index.get(defaults[key])
+    // An unknown default selects nothing, which only `resolve` models.
+    if (chosen === undefined) return undefined
+    defaultState += chosen * slot.stride
+  }
+
+  const table = new Array<string | undefined>(states)
+  const build = (state: number) => {
+    const parts: string[] = []
+    if (base) parts.push(base)
+    for (const slot of slots) {
+      const chosen = Math.floor(state / slot.stride) % slot.radix
+      if (chosen === 0) continue
+      const cls = variants[slot.key]![slot.options[chosen - 1]!]
+      if (cls) parts.push(cls)
+    }
+    return joinClasses(parts)
+  }
+
+  return (props: Record<string, unknown> = {}) => {
+    let state = defaultState
+    for (let i = 0; i < slots.length; i++) {
+      const slot = slots[i]!
+      // An absent prop is not a choice — the default stands.
+      const value = props[slot.key]
+      if (value === undefined) continue
+      const chosen = slot.index.get(value) ?? 0
+      const current = Math.floor(state / slot.stride) % slot.radix
+      state += (chosen - current) * slot.stride
+    }
+    return (table[state] ??= build(state))
+  }
+}

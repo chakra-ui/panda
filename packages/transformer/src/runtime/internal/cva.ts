@@ -6,6 +6,7 @@ import {
   memoProps,
   toVariantMap,
   variantClass,
+  variantTable,
   withDefaults,
   type CompoundVariant,
   type VariantMap,
@@ -64,7 +65,10 @@ export function cva(config: StringCvaConfig) {
     return joinClasses(parts)
   }
 
-  const cvaFn = booleanBitset(base, variants, variantKeys, defaultVariants, hasCompounds) ?? memoProps(resolve)
+  const cvaFn =
+    booleanBitset(base, variants, variantKeys, defaultVariants, hasCompounds) ??
+    variantTable(base, variants, variantKeys, defaultVariants, hasCompounds) ??
+    memoProps(resolve)
 
   // `styled(Parent, styles)` fuses the two recipes here, once, at definition
   // time. The generated runtime merges style objects with `mergeCss`; on string

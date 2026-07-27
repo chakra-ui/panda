@@ -134,6 +134,48 @@ describe('@pandacss-internal/css runtime', () => {
     expect(button({ muted: true })).toBe('d_flex opacity_0.5 cursor_not-allowed')
   })
 
+  it('cva agrees with raw for every prop shape on a mixed recipe', () => {
+    const button = cva({
+      base: 'd_inline-flex',
+      variants: {
+        size: { sm: 'fs_sm', md: 'fs_md', lg: 'fs_lg' },
+        tone: { solid: 'bg_blue', ghost: 'bg_transparent' },
+        disabled: { true: 'opacity_0.5' },
+      },
+      defaultVariants: { size: 'md', tone: 'solid' },
+    })
+
+    // the table path must not drift from `resolve` on string variants either
+    for (const props of [
+      {},
+      { size: 'sm' },
+      { size: 'sm', tone: 'ghost' },
+      { size: undefined },
+      { size: null },
+      { size: 'nope' },
+      { disabled: true },
+      { disabled: 'true' },
+      { disabled: 1 },
+      { size: 'lg', tone: 'ghost', disabled: true },
+    ] as Array<Record<string, unknown>>) {
+      expect(button(props)).toBe(button.raw(props))
+    }
+
+    expect(button()).toBe('d_inline-flex fs_md bg_blue')
+    expect(button({ size: 'lg', disabled: true })).toBe('d_inline-flex fs_lg bg_blue opacity_0.5')
+  })
+
+  it('cva keeps the memo path when a default names an unknown option', () => {
+    const button = cva({
+      base: 'd_flex',
+      variants: { size: { sm: 'fs_sm' } },
+      defaultVariants: { size: 'xl' },
+    })
+
+    expect(button()).toBe('d_flex')
+    expect(button({ size: 'sm' })).toBe('d_flex fs_sm')
+  })
+
   it('sva resolves per-slot string branches', () => {
     const tabs = sva({
       slots: ['root', 'trigger'],
