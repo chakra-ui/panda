@@ -185,7 +185,7 @@ edge_snapshot!(
     ),
     @r#"
 export const el = (
-  <div className={(isMobile ? "button button--size_sm" : "button button--size_lg") + " " + (isPrimary ? "button button--size_md button--visual_solid" : "button button--size_md button--visual_outline")} />
+  <div className={"button" + " " + (isMobile ? "button--size_sm" : "button--size_lg") + " " + (isPrimary ? "button--size_md button--visual_solid" : "button--size_md button--visual_outline")} />
 );
 "#
 );
@@ -936,7 +936,7 @@ edge_snapshot!(
     @r#"
 const primary = { backgroundColor: 'blue', color: 'white' };
 const secondary = { backgroundColor: 'gray', color: 'black' };
-export const cls = (variant === 'primary' ? "background-color_blue color_white padding_8px hover:opacity_0.9" : "background-color_gray color_black padding_8px hover:opacity_0.9") + " " + (variant === 'primary' ? "padding_8px hover:background-color_blue hover:color_white hover:opacity_0.9" : "padding_8px hover:opacity_0.9");
+export const cls = "padding_8px hover:opacity_0.9" + " " + (variant === 'primary' ? "background-color_blue color_white" : "background-color_gray color_black") + (variant === 'primary' ? " hover:background-color_blue hover:color_white" : "");
 "#
 );
 
