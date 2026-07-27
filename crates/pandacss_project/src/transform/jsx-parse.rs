@@ -4,7 +4,7 @@ use std::collections::HashSet;
 
 use pandacss_extractor::{
     ExpressionFacts, ExpressionKind, JsxExtractionConfig, LogicalExpressionOperator, ObjectFacts,
-    StyleSpread, StyleTree,
+    StyleObject, StyleSpread, StyleTree,
 };
 
 use super::helper::{ClassNamePrint, ExistingClassName};
@@ -411,7 +411,11 @@ pub(super) fn plan_conditional_spreads<'a>(
             .flatten()
         });
         let Some(parts) = parts else {
-            if is_style_only_object_spread(source, expression, jsx, tag_name, class_attr) {
+            // Static style spreads are already folded into `style.entries` by
+            // extract. Skip them here so they don't shift conditional pairing.
+            if is_style_only_object_spread(source, expression, jsx, tag_name, class_attr)
+                || is_absorbed_resolved_spread(expression, style)
+            {
                 continue;
             }
             return None;
@@ -436,8 +440,10 @@ pub(super) fn plan_conditional_spreads<'a>(
     if style_spreads.next().is_some() {
         return None;
     }
+    // Every source spread was style-only (inline object or extract-resolved
+    // identifier/member). Safe to rewrite — styles already live in entries.
     if count == 0 {
-        return None;
+        return Some(ConditionalSpreadPlan::StyleOnly);
     }
 
     let Some(runtime) = runtime else {
@@ -480,6 +486,31 @@ fn is_style_only_object_spread(
     })
 }
 
+/// Identifier / member spreads that extract folded into `style.entries`.
+///
+/// Opaque spreads (`{...props}`) leave `StyleSpread::Open`. When any Open
+/// remains, we cannot tell which source spread produced it, so bail.
+///
+/// Inline objects are handled by [`is_style_only_object_spread`] — they can
+/// mix runtime props without producing Open.
+fn is_absorbed_resolved_spread(expression: &ParsedExpression, style: &StyleObject) -> bool {
+    if style.spreads.iter().any(|spread| {
+        matches!(
+            spread,
+            StyleSpread::Open { .. } | StyleSpread::OpenWithFallback { .. }
+        )
+    }) {
+        return false;
+    }
+    if expression.facts.object.is_some()
+        || expression.facts.conditional.is_some()
+        || expression.facts.logical.is_some()
+    {
+        return false;
+    }
+    true
+}
+
 fn spread_arms_are_static(spread: &StyleSpread) -> bool {
     match spread {
         StyleSpread::Ternary {
@@ -496,7 +527,7 @@ fn spread_arms_are_static(spread: &StyleSpread) -> bool {
             !super::style_lower::style_tree_has_rewrite_sites(value)
                 && !super::style_lower::style_tree_has_open_value(value)
         }
-        StyleSpread::Open | StyleSpread::OpenWithFallback { .. } => false,
+        StyleSpread::Open { .. } | StyleSpread::OpenWithFallback { .. } => false,
     }
 }
 
@@ -552,7 +583,7 @@ fn conditional_spread_parts(
                 )?,
             })
         }
-        StyleSpread::Open | StyleSpread::OpenWithFallback { .. } => None,
+        StyleSpread::Open { .. } | StyleSpread::OpenWithFallback { .. } => None,
     }
 }
 

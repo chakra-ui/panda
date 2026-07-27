@@ -78,8 +78,9 @@ pub enum StyleSpread {
         /// Keys overwritten by a later static entry.
         overridden: Vec<String>,
     },
-    /// Opaque object member or spread. Transform bails; encode skips it.
-    Open,
+    /// Opaque object member or spread. Encode skips it; transform needs the
+    /// span to tell which source spread it came from.
+    Open { span: Span },
     /// Dynamic `...(a || b)` or `...(a ?? b)` with a known fallback. Transform
     /// bails; encode merges the fallback.
     OpenWithFallback { fallback: StyleTree },
@@ -89,7 +90,7 @@ impl StyleSpread {
     /// True for rewrite-critical open spreads.
     #[must_use]
     pub const fn is_open(&self) -> bool {
-        matches!(self, Self::Open | Self::OpenWithFallback { .. })
+        matches!(self, Self::Open { .. } | Self::OpenWithFallback { .. })
     }
 }
 
@@ -181,7 +182,7 @@ fn project_object(obj: &StyleObject) -> Option<Literal> {
                     }
                 }
             }
-            StyleSpread::Open => {}
+            StyleSpread::Open { .. } => {}
         }
     }
 
@@ -196,7 +197,7 @@ fn project_object(obj: &StyleObject) -> Option<Literal> {
             .iter()
             .all(|(_, v)| project_literal(v).is_none())
             && obj.spreads.iter().all(|s| match s {
-                StyleSpread::Open => true,
+                StyleSpread::Open { .. } => true,
                 StyleSpread::Ternary {
                     consequent,
                     alternate,
@@ -415,11 +416,15 @@ fn object_to_style_tree(
         match prop {
             ObjectPropertyKind::ObjectProperty(prop) => {
                 if prop.method || prop.kind != PropertyKind::Init {
-                    spreads.push(StyleSpread::Open);
+                    spreads.push(StyleSpread::Open {
+                        span: span_from_oxc(prop.span),
+                    });
                     continue;
                 }
                 let Some(key) = property_key_to_string(&prop.key, prop.computed, resolver) else {
-                    spreads.push(StyleSpread::Open);
+                    spreads.push(StyleSpread::Open {
+                        span: span_from_oxc(prop.span),
+                    });
                     continue;
                 };
                 mark_spreads_overridden(&mut spreads, &key);
@@ -446,6 +451,8 @@ fn push_style_spread(
     argument: &Expression<'_>,
     resolver: Option<&Resolver<'_, '_>>,
 ) {
+    // Before `get_inner_expression`, so it lines up with `ExpressionFacts::span`.
+    let open_span = span_from_oxc(argument.span());
     let argument = argument.get_inner_expression();
     match argument {
         Expression::ConditionalExpression(c) => {
@@ -509,7 +516,7 @@ fn push_style_spread(
                         Some(fallback) => {
                             spreads.push(StyleSpread::OpenWithFallback { fallback });
                         }
-                        None => spreads.push(StyleSpread::Open),
+                        None => spreads.push(StyleSpread::Open { span: open_span }),
                     }
                 }
             }
@@ -522,7 +529,7 @@ fn push_style_spread(
                 }
                 spreads.extend(inner.spreads);
             }
-            Some(StyleTree::Open) | None => spreads.push(StyleSpread::Open),
+            Some(StyleTree::Open) | None => spreads.push(StyleSpread::Open { span: open_span }),
             Some(StyleTree::OpenWithFallback(inner)) => {
                 spreads.push(StyleSpread::OpenWithFallback { fallback: *inner });
             }
@@ -559,7 +566,7 @@ fn mark_spreads_overridden(spreads: &mut [StyleSpread], key: &str) {
             StyleSpread::Ternary { overridden, .. } | StyleSpread::And { overridden, .. } => {
                 overridden
             }
-            StyleSpread::Open | StyleSpread::OpenWithFallback { .. } => continue,
+            StyleSpread::Open { .. } | StyleSpread::OpenWithFallback { .. } => continue,
         };
         if !overridden.iter().any(|existing| existing == key) {
             overridden.push(key.to_owned());
@@ -694,7 +701,7 @@ fn filter_spread_props(spread: &mut StyleSpread, jsx: &crate::JsxExtractionConfi
         StyleSpread::And { value, .. } | StyleSpread::OpenWithFallback { fallback: value } => {
             filter_object_props(value, jsx, tag_name);
         }
-        StyleSpread::Open => {}
+        StyleSpread::Open { .. } => {}
     }
 }
 
@@ -743,7 +750,7 @@ fn filter_react_runtime_props_in_spread(spread: &mut StyleSpread) {
         StyleSpread::And { value, .. } | StyleSpread::OpenWithFallback { fallback: value } => {
             filter_react_runtime_props_in_tree(value);
         }
-        StyleSpread::Open => {}
+        StyleSpread::Open { .. } => {}
     }
 }
 

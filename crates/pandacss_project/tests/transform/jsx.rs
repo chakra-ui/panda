@@ -1,7 +1,8 @@
 use super::common::{
     project_with_jsx, transform_jsx, transform_jsx_patterns, transform_jsx_qwik,
-    transform_jsx_recipes, transform_jsx_solid, transform_jsx_with_project, transform_panda_jsx,
-    transform_panda_jsx_patterns, transform_with_project,
+    transform_jsx_recipes, transform_jsx_solid, transform_jsx_with_helper,
+    transform_jsx_with_project, transform_panda_jsx, transform_panda_jsx_patterns,
+    transform_with_project,
 };
 use indoc::indoc;
 use insta::assert_snapshot;
@@ -595,6 +596,33 @@ fn rewrites_finite_conditional_style_prop_to_ternary_class_name() {
 }
 
 #[test]
+fn rewrites_optional_style_prop_with_undefined_alternate() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box width={full ? '100%' : undefined} />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert!(!output.bailed);
+    assert_snapshot!(output.code, @r#"export const el = <div className={full ? "width_100%" : ""} />;"#);
+}
+
+#[test]
+fn shadowed_undefined_alternate_still_bails_jsx_rewrite() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        let undefined = dynamic;
+        export const el = <Box width={full ? '100%' : undefined} />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(!output.changed || output.code.contains("<Box"));
+}
+
+#[test]
 fn rewrites_conditional_style_prop_with_static_class_name_peel() {
     let source = indoc! {r#"
         import { Box } from '@panda/jsx';
@@ -725,6 +753,105 @@ fn static_object_spread_does_not_shift_conditional_jsx_spread() {
     assert!(output.changed);
     assert!(!output.bailed);
     assert_snapshot!(output.code, @r#"export const el = <div className={cond ? "color_red padding_1" : "color_red padding_2"} />;"#);
+}
+
+#[test]
+fn rewrites_style_only_inline_object_spread() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box {...({ color: 'red' } as const)} />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert!(!output.bailed);
+    assert_snapshot!(output.code, @r#"export const el = <div className="color_red" />;"#);
+}
+
+#[test]
+fn rewrites_style_only_identifier_spread_and_css_prop() {
+    let source = indoc! {r#"
+        import { styled } from '@panda/jsx';
+
+        const buttonBase = {
+          display: 'inline-flex',
+          alignItems: 'center',
+          fontWeight: '600',
+        } as const;
+
+        const buttonPrimaryCss = {
+          backgroundColor: 'blue.600',
+          color: 'white',
+        } as const;
+
+        export const PrimaryButton = (props: { children?: React.ReactNode }) => (
+          <styled.button type="button" {...buttonBase} css={buttonPrimaryCss}>
+            {props.children}
+          </styled.button>
+        );
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert!(!output.bailed);
+    assert_snapshot!(output.code, @r#"
+    const buttonBase = {
+      display: 'inline-flex',
+      alignItems: 'center',
+      fontWeight: '600',
+    } as const;
+
+    const buttonPrimaryCss = {
+      backgroundColor: 'blue.600',
+      color: 'white',
+    } as const;
+
+    export const PrimaryButton = (props: { children?: React.ReactNode }) => (
+      <button type="button" className="align-items_center bg_blue.600 color_white d_inline-flex font-weight_600">
+        {props.children}
+      </button>
+    );
+    "#);
+}
+
+#[test]
+fn opaque_identifier_spread_stays_unchanged() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box {...props} color="red" />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(!output.changed);
+    assert!(!output.bailed);
+    assert_snapshot!(output.code, @r#"
+    import { Box } from '@panda/jsx';
+    export const el = <Box {...props} color="red" />;
+    "#);
+}
+
+#[test]
+fn identifier_spread_before_conditional_spread_rewrites() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+
+        const base = { color: 'red' } as const;
+
+        export const el = <Box {...base} {...(cond ? { padding: '1' } : { padding: '2' })} />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert!(!output.bailed);
+    assert_snapshot!(output.code, @r#"
+    const base = { color: 'red' } as const;
+
+    export const el = <div className={cond ? "color_red padding_1" : "color_red padding_2"} />;
+    "#);
 }
 
 #[test]
