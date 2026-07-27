@@ -187,18 +187,19 @@ fn js_hyphenate_property(property: &str) -> String {
 // (same as v1) — it keeps tsc's error on the offending property instead of a
 // call-site "No overload matches", which `@ts-expect-error` directives rely on.
 const CSS_TYPES: &str = r"type Styles = SystemStyleObject | undefined | null | false
+type StyleList = Styles | StyleList[]
 
 interface CssRawFunction {
   (styles: Styles): SystemStyleObject
-  (styles: Styles[]): SystemStyleObject
-  (...styles: Array<Styles | Styles[]>): SystemStyleObject
+  (styles: StyleList[]): SystemStyleObject
+  (...styles: StyleList[]): SystemStyleObject
   (styles: Styles): SystemStyleObject
 }
 
 interface CssFunction {
   (styles: Styles): string
-  (styles: Styles[]): string
-  (...styles: Array<Styles | Styles[]>): string
+  (styles: StyleList[]): string
+  (...styles: StyleList[]): string
   (styles: Styles): string
 
   raw: CssRawFunction

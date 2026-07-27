@@ -690,12 +690,14 @@ fn emits_ts_source() {
     export function memo<T extends (...args: any[]) => any>(fn: T): T {
       const cache = new Map<number, Array<{ args: Parameters<T>; out: ReturnType<T> }>>()
       const stringCache = new Map<string, ReturnType<T>>()
+      const seen = new WeakSet<object>()
       const newNode = (): any => ({ objects: new WeakMap(), prims: new Map(), out: void 0, has: false })
       const root = newNode()
       let lastHash: number | undefined
       let lastKey: Parameters<T> | string | undefined
       let lastValue: ReturnType<T>
       let hasLast = false
+      let misses = 0
 
       const step = (node: any, v: any) => {
         if (v !== null && typeof v === "object") {
@@ -711,7 +713,7 @@ fn emits_ts_source() {
         }
         return next
       }
-      const walk = (node: any, v: any) => {
+      const walk = (node: any, v: any): any => {
         if (Array.isArray(v)) {
           node = step(node, "\u0000[")
           for (let i = 0; i < v.length; i++) node = walk(node, v[i])
@@ -719,18 +721,61 @@ fn emits_ts_source() {
         }
         return step(node, v)
       }
+      const readWalk = (node: any, v: any): any => {
+        if (node === void 0) return void 0
+        if (Array.isArray(v)) {
+          node = node.prims.get("\u0000[")
+          for (let i = 0; i < v.length && node !== void 0; i++) node = readWalk(node, v[i])
+          return node === void 0 ? void 0 : node.prims.get("\u0000]")
+        }
+        return v !== null && typeof v === "object" ? node.objects.get(v) : node.prims.get(v)
+      }
+      const markSeen = (v: any): boolean => {
+        if (Array.isArray(v)) {
+          let all = true
+          for (let i = 0; i < v.length; i++) if (!markSeen(v[i])) all = false
+          return all
+        }
+        if (v === null || typeof v !== "object") return true
+        if (seen.has(v)) return true
+        seen.add(v)
+        return false
+      }
 
       return ((...args: Parameters<T>) => {
         let composed = false
         for (let i = 0; i < args.length; i++) if (Array.isArray(args[i])) { composed = true; break }
+
         if (composed) {
           let node = root
-          for (let i = 0; i < args.length; i++) node = walk(node, args[i])
-          if (node.has) return node.out
-          const out = fn(...args)
-          node.out = out
-          node.has = true
-          return out
+          for (let i = 0; i < args.length && node !== void 0; i++) node = readWalk(node, args[i])
+          if (node !== void 0 && node.has) return node.out
+
+          const composedKey = JSON.stringify(args)
+          let composedOut =
+            hasLast && lastHash === void 0 && composedKey === lastKey ? lastValue : stringCache.get(composedKey)
+          if (composedOut === void 0) {
+            composedOut = fn(...args)
+            stringCache.set(composedKey, composedOut)
+            if (stringCache.size > 500) stringCache.delete(stringCache.keys().next().value as string)
+          }
+
+          let reused = false
+          if ((++misses & 3) === 0) {
+            reused = true
+            for (let i = 0; i < args.length; i++) if (!markSeen(args[i])) reused = false
+          }
+          if (reused) {
+            let insert = root
+            for (let i = 0; i < args.length; i++) insert = walk(insert, args[i])
+            insert.out = composedOut
+            insert.has = true
+          }
+          lastHash = void 0
+          lastKey = composedKey
+          lastValue = composedOut
+          hasLast = true
+          return composedOut
         }
 
         const hash = flatHashOrNull(args)
@@ -1044,12 +1089,14 @@ fn emits_js_runtime() {
     export function memo(fn) {
       const cache = new Map()
       const stringCache = new Map()
+      const seen = new WeakSet()
       const newNode = () => ({ objects: new WeakMap(), prims: new Map(), out: void 0, has: false })
       const root = newNode()
       let lastHash
       let lastKey
       let lastValue
       let hasLast = false
+      let misses = 0
 
       const step = (node, v) => {
         if (v !== null && typeof v === "object") {
@@ -1073,18 +1120,61 @@ fn emits_js_runtime() {
         }
         return step(node, v)
       }
+      const readWalk = (node, v) => {
+        if (node === void 0) return void 0
+        if (Array.isArray(v)) {
+          node = node.prims.get("\u0000[")
+          for (let i = 0; i < v.length && node !== void 0; i++) node = readWalk(node, v[i])
+          return node === void 0 ? void 0 : node.prims.get("\u0000]")
+        }
+        return v !== null && typeof v === "object" ? node.objects.get(v) : node.prims.get(v)
+      }
+      const markSeen = (v) => {
+        if (Array.isArray(v)) {
+          let all = true
+          for (let i = 0; i < v.length; i++) if (!markSeen(v[i])) all = false
+          return all
+        }
+        if (v === null || typeof v !== "object") return true
+        if (seen.has(v)) return true
+        seen.add(v)
+        return false
+      }
 
       return ((...args) => {
         let composed = false
         for (let i = 0; i < args.length; i++) if (Array.isArray(args[i])) { composed = true; break }
+
         if (composed) {
           let node = root
-          for (let i = 0; i < args.length; i++) node = walk(node, args[i])
-          if (node.has) return node.out
-          const out = fn(...args)
-          node.out = out
-          node.has = true
-          return out
+          for (let i = 0; i < args.length && node !== void 0; i++) node = readWalk(node, args[i])
+          if (node !== void 0 && node.has) return node.out
+
+          const composedKey = JSON.stringify(args)
+          let composedOut =
+            hasLast && lastHash === void 0 && composedKey === lastKey ? lastValue : stringCache.get(composedKey)
+          if (composedOut === void 0) {
+            composedOut = fn(...args)
+            stringCache.set(composedKey, composedOut)
+            if (stringCache.size > 500) stringCache.delete(stringCache.keys().next().value)
+          }
+
+          let reused = false
+          if ((++misses & 3) === 0) {
+            reused = true
+            for (let i = 0; i < args.length; i++) if (!markSeen(args[i])) reused = false
+          }
+          if (reused) {
+            let insert = root
+            for (let i = 0; i < args.length; i++) insert = walk(insert, args[i])
+            insert.out = composedOut
+            insert.has = true
+          }
+          lastHash = void 0
+          lastKey = composedKey
+          lastValue = composedOut
+          hasLast = true
+          return composedOut
         }
 
         const hash = flatHashOrNull(args)
