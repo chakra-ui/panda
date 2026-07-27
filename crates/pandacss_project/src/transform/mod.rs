@@ -18,11 +18,11 @@ mod jsx_runtime;
 mod jsx_shared;
 mod jsx_skip;
 mod plan;
-mod recipe_inline;
+pub(crate) mod recipe_inline;
 mod resolve;
 mod style_lower;
 
-use pandacss_extractor::extract_for_transform;
+use pandacss_extractor::{Literal, extract_for_transform_with_recipe_resolver};
 
 use crate::ParseTransforms;
 use crate::Project;
@@ -82,7 +82,18 @@ impl Project {
             None => source,
         };
 
-        let extracted = extract_for_transform(source, path, self.config().extractor_config());
+        let extracted = {
+            let mut resolve_recipe_raw = |factory: &str, config: &Literal, props: &Literal| {
+                let props = recipe_inline::literal_variant_props(props)?;
+                recipe_inline::resolve_inline_recipe_raw(self, factory, config, &props)
+            };
+            extract_for_transform_with_recipe_resolver(
+                source,
+                path,
+                self.config().extractor_config(),
+                &mut resolve_recipe_raw,
+            )
+        };
         let plan = plan::build_plan(self, source, &extracted, options, transforms.pattern);
         let diagnostics = extracted.diagnostics;
 

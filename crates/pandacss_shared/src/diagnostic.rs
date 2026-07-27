@@ -36,6 +36,7 @@ pub mod codes {
     pub const STATIC_CSS_WILDCARD_LARGE: &str = "static_css_wildcard_large";
     pub const STATIC_CSS_WILDCARD_EMPTY: &str = "static_css_wildcard_empty";
     pub const PANDA_CALL_UNEXTRACTABLE: &str = "panda_call_unextractable";
+    pub const IMPORTED_RECIPE_RAW_DYNAMIC: &str = "imported_recipe_raw_dynamic";
     pub const TOKEN_DICTIONARY_BUILD_FAILED: &str = "token_dictionary_build_failed";
     pub const TRANSFORM_CALLBACK_FAILED: &str = "transform_callback_failed";
     pub const UNKNOWN_CONDITION: &str = "unknown_condition";

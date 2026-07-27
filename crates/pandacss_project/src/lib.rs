@@ -365,8 +365,9 @@ impl Project {
             None => source,
         };
 
-        let result = if pattern_transform.is_some() {
+        let result = {
             let compiled = self.config.as_ref();
+            let has_pattern_transform = pattern_transform.is_some();
             let mut raw_transform = |name: &str, styles: &Literal| {
                 let pattern = compiled.patterns.transform_input(name, styles);
                 let Some(transform) = pattern_transform.as_deref_mut() else {
@@ -376,14 +377,17 @@ impl Project {
                     with_callback_target(diagnostic, "pattern", pattern.name, None)
                 })
             };
-            pandacss_extractor::extract_with_pattern_raw_transform(
+            let mut resolve_recipe_raw = |factory: &str, config: &Literal, props: &Literal| {
+                let props = transform::recipe_inline::literal_variant_props(props)?;
+                transform::recipe_inline::resolve_inline_recipe_raw(self, factory, config, &props)
+            };
+            pandacss_extractor::extract_with_raw_resolvers(
                 source,
                 path,
                 &self.config.extractor_config,
-                &mut raw_transform,
+                has_pattern_transform.then_some(&mut raw_transform),
+                &mut resolve_recipe_raw,
             )
-        } else {
-            extract(source, path, &self.config.extractor_config)
         };
         let token_refs = result
             .token_refs
@@ -1780,7 +1784,7 @@ impl Project {
         Some(Literal::Object(merged))
     }
 
-
+    /// Resolve one static style object to atomic utility class names.
     #[must_use]
     pub fn class_names_for_style_literal(&self, style: &Literal) -> Option<Vec<String>> {
         let mut encoder = Encoder::with_conditions(self.config.conditions.clone());
