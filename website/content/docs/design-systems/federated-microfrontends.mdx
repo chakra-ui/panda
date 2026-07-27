@@ -109,7 +109,7 @@ the remote's identity. See [Model 2: Library ships build info +
 preset](#model-2-library-ships-build-info--preset) below.
 
 > If the lib and every consumer all use Panda, the build-info model is the
-> one the [Component Library guide](/docs/design-systems/overview#ship-the-build-info-file)
+> one the [Component Library guide](/docs/design-systems/ship-styled-system#ship-the-build-info-file)
 > already recommends. It tree-shakes the output down to the styles each app
 > actually uses. Federation doesn't change that recommendation; it just adds
 > the `prefix` requirement on the consumer side.
@@ -306,7 +306,7 @@ export default defineConfig({
 ## Model 2: Library ships build info + preset
 
 Everything above assumes the lib publishes prebuilt CSS. The other shape is
-[shipping build info](/docs/design-systems/overview#ship-the-build-info-file)
+[shipping build info](/docs/design-systems/ship-styled-system#ship-the-build-info-file)
 and a preset: each consuming remote generates the final stylesheet during its
 own build. The collision is identical, and `prefix` is still the fix. It
 just moves to the **consumer's** config, keyed to the remote's identity

@@ -182,7 +182,7 @@ import { button, type ButtonVariantProps } from '../styled-system/recipes'
 
 ---
 
-You can get an [`atomic recipe`](/docs/styling/recipes#atomic-recipe) properties types by using `RecipeVariantProps`.
+You can get an [`atomic recipe`](/docs/styling/recipes#atomic-recipe-or-cva) properties types by using `RecipeVariantProps`.
 Let's say you have a `atomic recipe` named `button`, you can get its type like this:
 
 ```ts
@@ -326,7 +326,7 @@ Yes, you can use dynamic styles with Panda. More on that [here](/docs/styling/dy
 [Config recipes](/docs/styling/recipes#config-recipe) are generated just in time, meaning that only the recipes and
 variants you use will exist in the generated CSS, regardless of the number of recipes in the config.
 
-This contrasts with [Atomic recipes](/docs/styling/recipes#atomic-recipe) (cva), which generates all of the variants
+This contrasts with [Atomic recipes](/docs/styling/recipes#atomic-recipe-or-cva) (cva), which generates all of the variants
 regardless of what was used in your code. The reason for this difference is that all `config.recipes` are known at the
 start of the panda process when we evaluate your config. In contrast, the CVA recipes are scattered throughout your
 code. To get all of them and find their usage across your code, we would need to scan your app code multiple times,
