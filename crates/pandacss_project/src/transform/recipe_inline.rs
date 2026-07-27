@@ -320,10 +320,25 @@ fn push_default_variants_part(parts: &mut Vec<String>, default_variants: &[(Stri
     }
     let defaults = default_variants
         .iter()
-        .map(|(key, value)| format!("{}: '{}'", escape_js_key(key), escape_js(value)))
+        .map(|(key, value)| {
+            format!(
+                "{}: {}",
+                escape_js_key(key),
+                format_default_variant_value(value)
+            )
+        })
         .collect::<Vec<_>>()
         .join(", ");
     parts.push(format!("defaultVariants: {{ {defaults} }}"));
+}
+
+/// `true` / `false` are printed unquoted so the runtime sees the boolean the
+/// user authored, not the string `'true'`.
+fn format_default_variant_value(value: &str) -> String {
+    match value {
+        "true" | "false" => value.to_owned(),
+        other => format!("'{}'", escape_js(other)),
+    }
 }
 
 fn encode_shared_slot_variant_option(
