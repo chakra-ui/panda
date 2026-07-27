@@ -458,11 +458,18 @@ fn object_literal_needs_parens(source: &str, at: u32) -> bool {
     let Some(before) = usize::try_from(at).ok().and_then(|at| source.get(..at)) else {
         return true;
     };
-    let before = before.trim_end();
-    match before.chars().next_back() {
-        Some('>') => before.ends_with("=>"),
+    let trimmed = before.trim_end();
+    // Without a semicolon, a line break ends the previous statement, so this
+    // call starts one and `{` would open a block.
+    let starts_a_line = before[trimmed.len()..].contains('\n');
+    match trimmed.chars().next_back() {
+        Some('>') => trimmed.ends_with("=>"),
         None | Some(';' | '{' | '}') => true,
-        Some(_) => false,
+        // These can only continue an expression, so the literal is unambiguous.
+        Some(
+            '(' | '[' | ',' | '=' | ':' | '?' | '+' | '-' | '*' | '/' | '%' | '&' | '|' | '!' | '~',
+        ) => false,
+        Some(_) => starts_a_line,
     }
 }
 

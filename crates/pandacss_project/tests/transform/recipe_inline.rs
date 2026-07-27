@@ -1004,3 +1004,39 @@ fn a_file_with_no_panda_import_is_still_skipped() {
 
     assert!(!output.changed, "{}", output.code);
 }
+
+#[test]
+fn folds_a_raw_call_with_no_arguments() {
+    // The shape the changeset documents: `.raw()` with nothing passed resolves
+    // to the recipe's base styles, not to a class string.
+    let source = indoc! {r#"
+        import { css, cva } from '@panda/css';
+        const button = cva({ base: { color: 'red' } });
+        export const cls = css(button.raw(), { color: 'blue' });
+    "#};
+    assert_snapshot!(transform("src/styles.tsx", source).code, @r#"
+    import { cva as __pcva } from '@pandacss-internal/css';
+    import { css } from '@panda/css';
+    const button = __pcva({ base: 'color_red' });
+    export const cls = css({"color":"red"}, { color: 'blue' });
+    "#);
+}
+
+#[test]
+fn folds_a_raw_call_with_no_arguments_on_a_recipe_with_defaults() {
+    let source = indoc! {r#"
+        import { cva } from '@panda/css';
+        const button = cva({
+          base: { color: 'red' },
+          variants: { size: { sm: { fontSize: '12px' }, lg: { fontSize: '20px' } } },
+          defaultVariants: { size: 'lg' },
+        });
+        export const styles = button.raw();
+    "#};
+    let output = transform("src/styles.tsx", source);
+    assert!(
+        output.code.contains(r#""fontSize":"20px""#),
+        "default variant should be applied: {}",
+        output.code
+    );
+}
