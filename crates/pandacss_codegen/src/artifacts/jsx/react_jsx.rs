@@ -53,7 +53,70 @@ const FACTORY_RUNTIME: &str = r"function styledFn(BaseComponent, recipeOrConfig 
   const shouldForward = composeShouldForwardProps(BaseComponent, shouldForwardProp)
   const DefaultElement = BaseComponent.__base__ || BaseComponent
 
-  const __COMPONENT__ = /* @__PURE__ */ forwardRef(function __COMPONENT__(props, ref) {
+  // Without variants, custom forwarding, defaults or a config recipe, the class
+  // is constant and `shouldForwardProp` is just `!isCssProperty`. That collapses
+  // the six prop buckets into one and the recipe call into a precomputed string.
+  const isPlain =
+    variantKeys.length === 0 &&
+    !hasDefaultProps &&
+    !recipeOrConfig.__recipe__ &&
+    !options.shouldForwardProp &&
+    !forwardPropSet &&
+    !BaseComponent.__shouldForwardProps__
+  const plainClassName = isPlain ? cx(composedRecipeFn({})) : ''
+  const plainStyles = isPlain ? getRaw({}) : void 0
+
+  function plainRender(props, ref) {
+    const Element = props.as === void 0 ? DefaultElement : props.as
+    const elementProps = { ref }
+    let htmlProps
+    let propStyles
+    let cssStyles
+    for (const key in props) {
+      const value = props[key]
+      if (value === void 0) continue
+      switch (key) {
+        case 'as':
+        case 'unstyled':
+        case 'children':
+        case 'className':
+          continue
+        case 'css':
+          cssStyles = value
+          continue
+        case 'htmlWidth':
+          (htmlProps ||= {}).width = value
+          continue
+        case 'htmlHeight':
+          (htmlProps ||= {}).height = value
+          continue
+        case 'htmlTranslate':
+          (htmlProps ||= {}).translate = value
+          continue
+        case 'htmlContent':
+          (htmlProps ||= {}).content = value
+          continue
+      }
+      if (isCssProperty(key)) (propStyles ||= {})[key] = value
+      else elementProps[key] = value
+    }
+    // `htmlWidth` & co. win over a same-named forwarded prop, as in `splitJsxProps`.
+    if (htmlProps) Object.assign(elementProps, htmlProps)
+
+    const hasStyles = propStyles || cssStyles !== void 0
+    if (props.unstyled) {
+      elementProps.className = cx(hasStyles && serializeSplitStyles(propStyles, cssStyles), props.className)
+    } else if (hasStyles) {
+      elementProps.className = cx(serializeSplitStyles(propStyles, cssStyles, plainStyles), props.className)
+    } else {
+      // `plainClassName` is already merged, so `cx` would only re-tokenize it.
+      elementProps.className = props.className == null ? plainClassName : cx(plainClassName, props.className)
+    }
+
+    return createElement(Element, elementProps, props.children)
+  }
+
+  function render(props, ref) {
     const Element = props.as === void 0 ? DefaultElement : props.as
     const unstyled = props.unstyled
     const children = props.children
@@ -94,7 +157,9 @@ const FACTORY_RUNTIME: &str = r"function styledFn(BaseComponent, recipeOrConfig 
       ...htmlProps,
       className,
     }, children ?? combinedProps.children)
-  })
+  }
+
+  const __COMPONENT__ = /* @__PURE__ */ forwardRef(isPlain ? plainRender : render)
 
   const name = getDisplayName(DefaultElement)
   __COMPONENT__.displayName = `__FACTORY__.${name}`
