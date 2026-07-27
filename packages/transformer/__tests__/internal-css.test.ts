@@ -91,3 +91,84 @@ describe('virtual internal css ids', () => {
     expect(INTERNAL_CSS_RESOLVED_ID.startsWith('\0pandacss:internal:css')).toBe(true)
   })
 })
+
+describe('cva.merge — styled(Parent, styles) chains', () => {
+  it('exposes merge so composeCvaFn can fuse a chain', () => {
+    expect(typeof cva({ base: 'a' }).merge).toBe('function')
+  })
+
+  it('concatenates the two bases', () => {
+    const merged = cva({ base: 'color_red' }).merge(cva({ base: 'padding-left_2px' }))
+
+    expect(merged.raw({})).toBe('color_red padding-left_2px')
+  })
+
+  it('lets the override win when both bases set the same property', () => {
+    const merged = cva({ base: 'border-left_1px' }).merge(cva({ base: 'border-left_2px' }))
+
+    expect(merged.raw({})).toBe('border-left_2px')
+  })
+
+  it('merges options of a shared variant key, override last', () => {
+    const merged = cva({ variants: { size: { sm: 'padding_4px' } } }).merge(
+      cva({ variants: { size: { sm: 'padding_8px', lg: 'padding_12px' } } }),
+    )
+
+    expect(merged.raw({ size: 'sm' })).toBe('padding_8px')
+    expect(merged.raw({ size: 'lg' })).toBe('padding_12px')
+  })
+
+  it('keeps variant keys that only one side declares', () => {
+    const merged = cva({ variants: { size: { sm: 'padding_4px' } } }).merge(
+      cva({ variants: { tone: { a: 'color_blue' } } }),
+    )
+
+    expect(merged.variantKeys.sort()).toEqual(['size', 'tone'])
+    expect(merged.raw({ size: 'sm', tone: 'a' })).toBe('padding_4px color_blue')
+  })
+
+  it('lets the override default variants win', () => {
+    const merged = cva({
+      variants: { size: { sm: 'padding_4px', lg: 'padding_8px' } },
+      defaultVariants: { size: 'sm' },
+    }).merge(cva({ defaultVariants: { size: 'lg' } }))
+
+    expect(merged.raw({})).toBe('padding_8px')
+  })
+
+  it('carries compound variants from both sides', () => {
+    const merged = cva({
+      variants: { size: { sm: 'padding_4px' } },
+      compoundVariants: [{ size: 'sm', css: 'margin_1px' }],
+    }).merge(
+      cva({
+        variants: { tone: { a: 'color_blue' } },
+        compoundVariants: [{ tone: 'a', css: 'outline_2px' }],
+      }),
+    )
+
+    // Variant keys follow the generated `uniq(other.variantKeys, variantKeys)`
+    // order — the override's keys first — so `tone` leads `size` here.
+    expect(merged.raw({ size: 'sm', tone: 'a' })).toBe('color_blue padding_4px margin_1px outline_2px')
+  })
+
+  it('keeps a conditional class distinct from the same property unconditioned', () => {
+    const merged = cva({ base: 'color_red hover:color_blue' }).merge(cva({ base: 'color_green' }))
+
+    expect(merged.raw({})).toBe('color_green hover:color_blue')
+  })
+
+  it('lets the override win on a matching condition', () => {
+    const merged = cva({ base: 'hover:color_blue' }).merge(cva({ base: 'hover:color_green' }))
+
+    expect(merged.raw({})).toBe('hover:color_green')
+  })
+
+  it('is chainable, so a three-level chain collapses to one recipe', () => {
+    const l0 = cva({ base: 'color_red padding-left_1px' })
+    const l1 = l0.merge(cva({ base: 'padding-left_2px' }))
+    const l2 = l1.merge(cva({ base: 'padding-left_3px' }))
+
+    expect(l2.raw({})).toBe('color_red padding-left_3px')
+  })
+})
