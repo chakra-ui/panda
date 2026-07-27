@@ -65,18 +65,19 @@ fn emits_ts_source_css() {
     import type { SystemStyleObject } from '../types/system';
 
     type Styles = SystemStyleObject | undefined | null | false
+    type StyleList = Styles | StyleList[]
 
     interface CssRawFunction {
       (styles: Styles): SystemStyleObject
-      (styles: Styles[]): SystemStyleObject
-      (...styles: Array<Styles | Styles[]>): SystemStyleObject
+      (styles: StyleList[]): SystemStyleObject
+      (...styles: StyleList[]): SystemStyleObject
       (styles: Styles): SystemStyleObject
     }
 
     interface CssFunction {
       (styles: Styles): string
-      (styles: Styles[]): string
-      (...styles: Array<Styles | Styles[]>): string
+      (styles: StyleList[]): string
+      (...styles: StyleList[]): string
       (styles: Styles): string
 
       raw: CssRawFunction
@@ -242,18 +243,19 @@ fn emits_js_runtime_and_declarations() {
     import type { SystemStyleObject } from '../types/system.d.mts';
 
     type Styles = SystemStyleObject | undefined | null | false
+    type StyleList = Styles | StyleList[]
 
     interface CssRawFunction {
       (styles: Styles): SystemStyleObject
-      (styles: Styles[]): SystemStyleObject
-      (...styles: Array<Styles | Styles[]>): SystemStyleObject
+      (styles: StyleList[]): SystemStyleObject
+      (...styles: StyleList[]): SystemStyleObject
       (styles: Styles): SystemStyleObject
     }
 
     interface CssFunction {
       (styles: Styles): string
-      (styles: Styles[]): string
-      (...styles: Array<Styles | Styles[]>): string
+      (styles: StyleList[]): string
+      (...styles: StyleList[]): string
       (styles: Styles): string
 
       raw: CssRawFunction
