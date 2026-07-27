@@ -610,6 +610,36 @@ fn rewrites_optional_style_prop_with_undefined_alternate() {
 }
 
 #[test]
+fn rewrites_styled_button_with_nested_ternaries_and_undefined_width() {
+    // css-in-js-bench panda-props btn-variant shape: nested value ternaries plus
+    // an optional width that used to bail the whole element on free `undefined`.
+    // Use r## so hex `#…` strings don't terminate the raw literal.
+    let source = indoc! {r##"
+        import { styled } from '@panda/jsx';
+        export const Button = ({ $active, $fullWidth, $variant, children }) => (
+          <styled.button
+            display="inline-flex"
+            backgroundColor={$variant === "ghost" ? "transparent" : $variant === "secondary" ? "#f3f4f6" : !$active ? "#d1d5db" : "#2563eb"}
+            color={$variant === "ghost" ? "#2563eb" : $variant === "secondary" ? "#111827" : !$active ? "#6b7280" : "#ffffff"}
+            width={$fullWidth ? "100%" : undefined}
+          >{children}</styled.button>
+        );
+    "##};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert!(!output.bailed);
+    assert!(!output.code.contains("styled.button"));
+    assert!(output.code.contains("<button"));
+    assert_snapshot!(output.code, @r#"
+    export const Button = ({ $active, $fullWidth, $variant, children }) => (
+      <button className={($variant === "ghost" ? "bg_transparent d_inline-flex" : $variant === "secondary" ? "bg_#f3f4f6 d_inline-flex" : !$active ? "bg_#d1d5db d_inline-flex" : "bg_#2563eb d_inline-flex") + " " + ($variant === "ghost" ? "color_#2563eb d_inline-flex" : $variant === "secondary" ? "color_#111827 d_inline-flex" : !$active ? "color_#6b7280 d_inline-flex" : "color_#ffffff d_inline-flex") + " " + ($fullWidth ? "d_inline-flex width_100%" : "d_inline-flex")}>{children}</button>
+    );
+    "#);
+}
+
+#[test]
 fn shadowed_undefined_alternate_still_bails_jsx_rewrite() {
     let source = indoc! {r#"
         import { Box } from '@panda/jsx';
@@ -1375,4 +1405,225 @@ fn merges_resolved_class_into_qwik_record_expression() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"export const el = <div class={[{ 'text-red-500': isError, 'p-4': true }, "color_blue"]} />;"#);
+}
+
+#[test]
+fn rewrites_identifier_spread_with_overriding_ternary_props() {
+    // The `<styled.li>` shape from css-in-js-bench multifile-composition: a
+    // static spread, a ternary that overrides one of its keys, and two more
+    // ternaries whose alternate is `undefined`.
+    let source = indoc! {r#"
+        import { styled } from '@panda/jsx';
+
+        const tabListItemStyle = {
+          display: 'block',
+          margin: '0',
+          padding: '0',
+          width: 'min-content',
+          flexShrink: '0',
+          minWidth: '40px',
+        } as const;
+
+        export const Tab = ({ fullWidth }: { fullWidth?: boolean }) => (
+          <styled.li
+            role="presentation"
+            {...tabListItemStyle}
+            display={fullWidth ? 'flex' : 'block'}
+            flex={fullWidth ? '1' : undefined}
+            justifyContent={fullWidth ? 'center' : undefined}
+          />
+        );
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert!(!output.bailed);
+    assert_snapshot!(output.code, @r#"
+
+    const tabListItemStyle = {
+      display: 'block',
+      margin: '0',
+      padding: '0',
+      width: 'min-content',
+      flexShrink: '0',
+      minWidth: '40px',
+    } as const;
+
+    export const Tab = ({ fullWidth }: { fullWidth?: boolean }) => (
+      <li role="presentation" className={(fullWidth ? "d_flex flex-shrink_0 margin_0 min-width_40px padding_0 width_min-content" : "d_block flex-shrink_0 margin_0 min-width_40px padding_0 width_min-content") + " " + (fullWidth ? "flex_1 flex-shrink_0 margin_0 min-width_40px padding_0 width_min-content" : "flex-shrink_0 margin_0 min-width_40px padding_0 width_min-content") + " " + (fullWidth ? "flex-shrink_0 justify-content_center margin_0 min-width_40px padding_0 width_min-content" : "flex-shrink_0 margin_0 min-width_40px padding_0 width_min-content")} />
+    );
+    "#);
+}
+
+#[test]
+fn folds_static_styles_past_an_opaque_rest_props_spread() {
+    // The `<styled.button>` shape from css-in-js-bench multifile-composition:
+    // an opaque rest-props spread sits *before* every style prop, so the props
+    // it carries lose to them. The factory and the spread stay for runtime
+    // style props; everything else is precomputed.
+    let source = indoc! {r#"
+        import { styled } from '@panda/jsx';
+
+        const tabBaseStyle = { borderStyle: 'none' } as const;
+        const normalTabStyle = { height: '40px', color: 'rgba(0, 0, 0, 0.6)' } as const;
+        const activeTabStyle = { color: '#000' } as const;
+        const activeTabCss = { _hover: { borderBottomColor: '#eeb524' } } as const;
+
+        export const Tab = ({ disabled, fullWidth, ...props }) => (
+          <styled.button
+            {...props}
+            type="button"
+            role="tab"
+            disabled={disabled}
+            tabIndex={0}
+            flex={fullWidth ? '1' : undefined}
+            {...tabBaseStyle}
+            {...normalTabStyle}
+            {...activeTabStyle}
+            css={activeTabCss}
+          />
+        );
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert!(!output.bailed);
+    assert_snapshot!(output.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    import { styled } from '@panda/jsx';
+
+    const tabBaseStyle = { borderStyle: 'none' } as const;
+    const normalTabStyle = { height: '40px', color: 'rgba(0, 0, 0, 0.6)' } as const;
+    const activeTabStyle = { color: '#000' } as const;
+    const activeTabCss = { _hover: { borderBottomColor: '#eeb524' } } as const;
+
+    export const Tab = ({ disabled, fullWidth, ...props }) => (
+      <styled.button {...props} type="button" role="tab" disabled={disabled} tabIndex={0} className={__pcx(fullWidth ? "border-style_none color_#000 flex_1 height_40px hover:border-bottom-color_#eeb524" : "border-style_none color_#000 height_40px hover:border-bottom-color_#eeb524", props?.className)} />
+    );
+    "#);
+}
+
+#[test]
+fn partial_fold_keeps_children_and_the_closing_tag() {
+    let source = indoc! {r#"
+        import { styled } from '@panda/jsx';
+        export const Btn = (props) => <styled.button {...props} color="red">Go</styled.button>;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    import { styled } from '@panda/jsx';
+    export const Btn = (props) => <styled.button {...props} className={__pcx('color_red', props?.className)}>Go</styled.button>;
+    ");
+}
+
+#[test]
+fn a_style_prop_before_the_opaque_spread_blocks_the_partial_fold() {
+    // `color="red"` loses to `props.color` at runtime, but a precomputed class
+    // would beat it. Nothing to fold that keeps that order.
+    let source = indoc! {r#"
+        import { styled } from '@panda/jsx';
+        export const Btn = (props) => <styled.button color="red" {...props} padding="4px" />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(!output.changed);
+    assert!(!output.bailed);
+}
+
+#[test]
+fn two_opaque_spreads_block_the_partial_fold() {
+    let source = indoc! {r#"
+        import { styled } from '@panda/jsx';
+        export const Btn = (props) => <styled.button {...props} {...rest} color="red" />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(!output.changed);
+}
+
+#[test]
+fn a_non_identifier_opaque_spread_blocks_the_partial_fold() {
+    // Re-reading `.className` off a call result would run it twice.
+    let source = indoc! {r#"
+        import { styled } from '@panda/jsx';
+        export const Btn = () => <styled.button {...getProps()} color="red" />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(!output.changed);
+}
+
+#[test]
+fn an_existing_class_name_blocks_the_partial_fold() {
+    let source = indoc! {r#"
+        import { styled } from '@panda/jsx';
+        export const Btn = (props) => <styled.button {...props} className="mine" color="red" />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(!output.changed);
+}
+
+#[test]
+fn helper_cx_false_blocks_the_partial_fold() {
+    use pandacss_project::HelperCxMode;
+
+    let source = indoc! {r#"
+        import { styled } from '@panda/jsx';
+        export const Btn = (props) => <styled.button {...props} color="red" />;
+    "#};
+
+    let output = transform_jsx_with_helper("src/app.tsx", source, HelperCxMode::False);
+
+    assert!(!output.changed);
+}
+
+#[test]
+fn partial_fold_uses_the_frameworks_class_attribute() {
+    let source = indoc! {r#"
+        import { styled } from '@panda/jsx';
+        export const Btn = (props) => <styled.button {...props} color="red" />;
+    "#};
+
+    let output = transform_jsx_solid("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    import { styled } from '@panda/jsx';
+    export const Btn = (props) => <styled.button {...props} class={__pcx('color_red', props?.class)} />;
+    ");
+}
+
+// --- same-file `styled()` chain fold ------------------------------------------
+// A base-only chain rooted in an intrinsic tag has a constant class string, so
+// every `<Chain>` site collapses to the host element and skips a whole
+// `forwardRef` component level at runtime.
+
+#[test]
+fn the_partial_fold_reads_the_spread_class_name_defensively() {
+    // `{...props}` with a nullish value is a legal no-op in JSX, so reading
+    // `.className` off it has to be optional or the element throws.
+    let source = indoc! {r#"
+        import { styled } from '@panda/jsx';
+        export const El = ({ ...props }) => <styled.div {...props} color="red" />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(
+        output.code.contains("props?.className"),
+        "expected an optional read, got: {}",
+        output.code
+    );
 }
