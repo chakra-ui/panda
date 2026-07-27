@@ -139,6 +139,60 @@ fn function_param_without_annotation_still_drops() {
 }
 
 #[test]
+fn destructured_param_type_literal_binds_the_member_not_the_wrapper() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function paint({ color }: { color: 'red' }) {
+          return css({ color });
+        }
+    "};
+    assert_yaml_snapshot!(run(src).calls, @r"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: red
+      span:
+        start: 89
+        end: 103
+    ");
+}
+
+#[test]
+fn optional_type_literal_member_does_not_fold() {
+    // `{ color?: 'red' }` may be absent at runtime, so the literal type is
+    // not a value.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function paint(props: { color?: 'red' }) {
+          return css({ color: props.color });
+        }
+    "};
+    let calls = run(src).calls;
+    assert!(
+        calls.is_empty(),
+        "optional member shouldn't fold to its literal type: {calls:#?}"
+    );
+}
+
+#[test]
+fn unfoldable_type_literal_member_leaves_siblings_unresolved() {
+    // `children` doesn't fold, so the annotation can't answer for `color`
+    // either — a partial object would report the missing keys as undefined.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function paint({ color, children }: { color: 'red'; children: unknown }) {
+          return css({ color, content: children });
+        }
+    "};
+    let calls = run(src).calls;
+    assert!(
+        calls.is_empty(),
+        "partial type literal shouldn't resolve any member: {calls:#?}"
+    );
+}
+
+#[test]
 fn function_param_with_non_literal_type_drops() {
     // `string` type annotation — not a literal type. We need a
     // `TSLiteralType('red')` to extract a value; bare `string` provides
@@ -271,4 +325,44 @@ fn destructure_default_with_object_literal_value() {
         start: 98
         end: 127
     ");
+}
+
+#[test]
+fn an_undefined_property_does_not_block_the_object() {
+    // `width: cond ? '100%' : undefined` is everyday React. The undefined arm
+    // must fold like a null so the rest of the object still extracts.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        export const cls = css({ color: 'red', width: undefined });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: red
+          width: ~
+      span:
+        start: 53
+        end: 92
+    ");
+}
+
+#[test]
+fn a_local_binding_named_undefined_stays_open() {
+    // Shadowing `undefined` is legal in a function scope; a binding we cannot
+    // resolve must not be mistaken for the global.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        export function paint(undefined) {
+          return css({ color: undefined });
+        }
+    "};
+    let calls = run(src).calls;
+    assert!(
+        calls
+            .iter()
+            .all(|call| call.data.iter().flatten().count() == 0),
+        "shadowed undefined should stay unresolved: {calls:#?}"
+    );
 }
