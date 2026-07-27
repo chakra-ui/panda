@@ -634,7 +634,7 @@ fn rewrites_styled_button_with_nested_ternaries_and_undefined_width() {
     assert!(output.code.contains("<button"));
     assert_snapshot!(output.code, @r#"
     export const Button = ({ $active, $fullWidth, $variant, children }) => (
-      <button className={($variant === "ghost" ? "bg_transparent d_inline-flex" : $variant === "secondary" ? "bg_#f3f4f6 d_inline-flex" : !$active ? "bg_#d1d5db d_inline-flex" : "bg_#2563eb d_inline-flex") + " " + ($variant === "ghost" ? "color_#2563eb d_inline-flex" : $variant === "secondary" ? "color_#111827 d_inline-flex" : !$active ? "color_#6b7280 d_inline-flex" : "color_#ffffff d_inline-flex") + " " + ($fullWidth ? "d_inline-flex width_100%" : "d_inline-flex")}>{children}</button>
+      <button className={"d_inline-flex" + " " + ($variant === "ghost" ? "bg_transparent" : $variant === "secondary" ? "bg_#f3f4f6" : !$active ? "bg_#d1d5db" : "bg_#2563eb") + " " + ($variant === "ghost" ? "color_#2563eb" : $variant === "secondary" ? "color_#111827" : !$active ? "color_#6b7280" : "color_#ffffff") + ($fullWidth ? " width_100%" : "")}>{children}</button>
     );
     "#);
 }
@@ -1451,7 +1451,7 @@ fn rewrites_identifier_spread_with_overriding_ternary_props() {
     } as const;
 
     export const Tab = ({ fullWidth }: { fullWidth?: boolean }) => (
-      <li role="presentation" className={(fullWidth ? "d_flex flex-shrink_0 margin_0 min-width_40px padding_0 width_min-content" : "d_block flex-shrink_0 margin_0 min-width_40px padding_0 width_min-content") + " " + (fullWidth ? "flex_1 flex-shrink_0 margin_0 min-width_40px padding_0 width_min-content" : "flex-shrink_0 margin_0 min-width_40px padding_0 width_min-content") + " " + (fullWidth ? "flex-shrink_0 justify-content_center margin_0 min-width_40px padding_0 width_min-content" : "flex-shrink_0 margin_0 min-width_40px padding_0 width_min-content")} />
+      <li role="presentation" className={"flex-shrink_0 margin_0 min-width_40px padding_0 width_min-content" + " " + (fullWidth ? "d_flex" : "d_block") + (fullWidth ? " flex_1" : "") + (fullWidth ? " justify-content_center" : "")} />
     );
     "#);
 }

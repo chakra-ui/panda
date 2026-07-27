@@ -180,11 +180,65 @@ pub fn print_class_expr(expr: &ClassExpr) -> String {
                 print_class_expr(no)
             )
         }
-        ClassExpr::Join(parts) => parts
-            .iter()
-            .map(|part| format!("({})", print_class_expr(part)))
-            .collect::<Vec<_>>()
-            .join(" + \" \" + "),
+        ClassExpr::Join(parts) => print_join(parts),
+    }
+}
+
+/// Print `a + " " + b`, except that a part which can be empty carries its own
+/// separator inside each branch — otherwise an empty branch leaves a stray
+/// space in the class attribute.
+fn print_join(parts: &[ClassExpr]) -> String {
+    let mut out = String::new();
+    for (index, part) in parts.iter().enumerate() {
+        if index == 0 {
+            out.push_str(&print_operand(part));
+            continue;
+        }
+        if has_empty_leaf(part) {
+            out.push_str(" + ");
+            out.push_str(&print_operand(&with_leading_separator(part)));
+        } else {
+            out.push_str(" + \" \" + ");
+            out.push_str(&print_operand(part));
+        }
+    }
+    out
+}
+
+fn print_operand(expr: &ClassExpr) -> String {
+    match expr {
+        // A string literal needs no grouping as a `+` operand.
+        ClassExpr::Lit(value) => js_string_literal(value),
+        _ => format!("({})", print_class_expr(expr)),
+    }
+}
+
+fn has_empty_leaf(expr: &ClassExpr) -> bool {
+    match expr {
+        ClassExpr::Lit(value) => value.is_empty(),
+        ClassExpr::Ternary { yes, no, .. } => has_empty_leaf(yes) || has_empty_leaf(no),
+        ClassExpr::Join(parts) => parts.iter().any(has_empty_leaf),
+    }
+}
+
+/// Push a leading space into every non-empty leaf, so an empty branch
+/// contributes nothing at all.
+fn with_leading_separator(expr: &ClassExpr) -> ClassExpr {
+    match expr {
+        ClassExpr::Lit(value) if value.is_empty() => ClassExpr::Lit(String::new()),
+        ClassExpr::Lit(value) => ClassExpr::Lit(format!(" {value}")),
+        ClassExpr::Ternary { test, yes, no } => ClassExpr::Ternary {
+            test: test.clone(),
+            yes: Box::new(with_leading_separator(yes)),
+            no: Box::new(with_leading_separator(no)),
+        },
+        ClassExpr::Join(parts) => {
+            let mut parts = parts.clone();
+            if let Some(first) = parts.first_mut() {
+                *first = with_leading_separator(first);
+            }
+            ClassExpr::Join(parts)
+        }
     }
 }
 
@@ -323,9 +377,84 @@ pub fn lower_style_tree(
     }
 
     if exprs.len() == 1 {
-        LowerResult::Expr(exprs.pop().expect("one expr"))
-    } else {
-        LowerResult::Expr(ClassExpr::Join(exprs))
+        return LowerResult::Expr(exprs.pop().expect("one expr"));
+    }
+
+    let mut parts = Vec::with_capacity(exprs.len() + 1);
+    if let Some(shared) = hoist_shared_classes(&mut exprs) {
+        parts.push(ClassExpr::Lit(shared));
+    }
+    parts.append(&mut exprs);
+    LowerResult::Expr(ClassExpr::Join(parts))
+}
+
+/// Every site encodes the object's static base alongside its own branch, so a
+/// class list with N sites repeats that base N times at runtime. Class order
+/// doesn't affect the cascade, so tokens present in every branch of every site
+/// are pulled out and emitted once.
+///
+/// Only worth doing for multiple sites: with one site the base appears twice in
+/// the source but only once in the rendered string.
+fn hoist_shared_classes(exprs: &mut [ClassExpr]) -> Option<String> {
+    let mut shared: Option<Vec<String>> = None;
+    for expr in exprs.iter() {
+        let mut bail = false;
+        for_each_leaf(expr, &mut |leaf| {
+            if bail {
+                return;
+            }
+            match &mut shared {
+                None => shared = Some(leaf.split_whitespace().map(str::to_owned).collect()),
+                Some(shared) => shared
+                    .retain(|token| leaf.split_whitespace().any(|candidate| candidate == token)),
+            }
+            bail = shared.as_ref().is_some_and(Vec::is_empty);
+        });
+        if bail {
+            return None;
+        }
+    }
+
+    let shared = shared.filter(|shared| !shared.is_empty())?;
+    for expr in exprs.iter_mut() {
+        for_each_leaf_mut(expr, &mut |leaf| {
+            let kept: Vec<&str> = leaf
+                .split_whitespace()
+                .filter(|token| !shared.iter().any(|s| s == token))
+                .collect();
+            *leaf = kept.join(" ");
+        });
+    }
+    Some(shared.join(" "))
+}
+
+fn for_each_leaf<'a>(expr: &'a ClassExpr, visit: &mut impl FnMut(&'a str)) {
+    match expr {
+        ClassExpr::Lit(value) => visit(value),
+        ClassExpr::Ternary { yes, no, .. } => {
+            for_each_leaf(yes, visit);
+            for_each_leaf(no, visit);
+        }
+        ClassExpr::Join(parts) => {
+            for part in parts {
+                for_each_leaf(part, visit);
+            }
+        }
+    }
+}
+
+fn for_each_leaf_mut(expr: &mut ClassExpr, visit: &mut impl FnMut(&mut String)) {
+    match expr {
+        ClassExpr::Lit(value) => visit(value),
+        ClassExpr::Ternary { yes, no, .. } => {
+            for_each_leaf_mut(yes, visit);
+            for_each_leaf_mut(no, visit);
+        }
+        ClassExpr::Join(parts) => {
+            for part in parts {
+                for_each_leaf_mut(part, visit);
+            }
+        }
     }
 }
 

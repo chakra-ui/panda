@@ -309,7 +309,7 @@ conditional_snapshot!(
         });
     "#,
     true,
-    @r#"export const cls = (wide ? "color_red d_flex padding_8px" : "color_red d_flex padding_4px") + " " + (tall ? "color_red d_flex margin_2px" : "color_red d_flex margin_1px");"#
+    @r#"export const cls = "color_red d_flex" + " " + (wide ? "padding_8px" : "padding_4px") + " " + (tall ? "margin_2px" : "margin_1px");"#
 );
 
 conditional_snapshot!(
@@ -353,3 +353,27 @@ conditional_snapshot!(
     "#,
     unchanged
 );
+
+#[test]
+fn a_conditional_with_nothing_to_add_leaves_no_stray_space() {
+    // Hoisting the shared classes can empty one branch. If the separator
+    // stayed outside the ternary, every element without the optional class
+    // would carry a trailing space in its class attribute.
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        export const cls = css({
+          display: 'flex',
+          width: wide ? '100%' : undefined,
+          margin: tall ? '2px' : '1px',
+        });
+    "#};
+
+    let output = transform("src/styles.tsx", source);
+
+    assert!(
+        !output.code.contains(r#"" " + (wide ? " "#),
+        "separator should move inside the branch: {}",
+        output.code
+    );
+    assert_snapshot!(output.code, @r#"export const cls = "d_flex" + (wide ? " width_100%" : "") + " " + (tall ? "margin_2px" : "margin_1px");"#);
+}

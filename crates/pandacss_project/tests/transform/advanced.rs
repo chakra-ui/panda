@@ -210,7 +210,7 @@ advanced_snapshot!(
         "#};
         transform("src/styles.tsx", source)
     },
-    @r#"export const cls = (a ? "color_red" : "color_blue") + " " + (b ? "padding_1" : "");"#
+    @r#"export const cls = (a ? "color_red" : "color_blue") + (b ? " padding_1" : "");"#
 );
 
 advanced_snapshot!(
@@ -227,7 +227,7 @@ advanced_snapshot!(
         "#};
         transform("src/styles.tsx", source)
     },
-    @r#"export const cls = (a ? "color_red margin-top_1" : "color_blue margin-top_1") + " " + (b ? "margin-top_1 padding_1" : "margin-top_1 padding_2");"#
+    @r#"export const cls = "margin-top_1" + " " + (a ? "color_red" : "color_blue") + " " + (b ? "padding_1" : "padding_2");"#
 );
 
 #[test]
