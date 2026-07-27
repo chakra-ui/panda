@@ -987,25 +987,6 @@ fn an_imported_plain_object_is_unaffected() {
 }
 
 #[test]
-fn a_file_with_no_panda_import_is_still_skipped() {
-    // Extraction skips files that import nothing from Panda, so an imported
-    // recipe's `.raw` can't be folded there. Documents the boundary.
-    let button = indoc! {r#"
-        import { cva } from '@panda/css';
-        export const button = cva({ base: { color: 'red' } });
-    "#};
-    let source = indoc! {r#"
-        import { button } from './button';
-        export const styles = button.raw({});
-    "#};
-
-    let output =
-        super::common::transform_cross_file("src/a.tsx", source, &[("src/button.ts", button)]);
-
-    assert!(!output.changed, "{}", output.code);
-}
-
-#[test]
 fn folds_a_raw_call_with_no_arguments() {
     // The shape the changeset documents: `.raw()` with nothing passed resolves
     // to the recipe's base styles, not to a class string.
@@ -1037,6 +1018,56 @@ fn folds_a_raw_call_with_no_arguments_on_a_recipe_with_defaults() {
     assert!(
         output.code.contains(r#""fontSize":"20px""#),
         "default variant should be applied: {}",
+        output.code
+    );
+}
+
+// --- a consumer that imports the recipe but nothing from Panda ---
+
+#[test]
+fn folds_a_raw_call_in_a_file_that_imports_no_panda_api() {
+    // The component only imports the recipe. Panda skips files with no Panda
+    // imports, which is exactly how this call used to survive unfolded — and
+    // the desugared definition's `raw` hands back a class string.
+    let source = indoc! {r#"
+        import { button } from './recipes';
+        export const styles = button.raw({ size: 'sm' });
+    "#};
+    let recipes = indoc! {r#"
+        import { cva } from '@panda/css';
+        export const button = cva({
+          base: { color: 'red' },
+          variants: { size: { sm: { fontSize: '12px' } } },
+        });
+    "#};
+
+    let output =
+        super::common::transform_cross_file("main.tsx", source, &[("recipes.ts", recipes)]);
+
+    assert!(output.changed, "the raw call should fold: {}", output.code);
+    assert!(
+        output.code.contains(r#""fontSize":"12px""#),
+        "expected resolved styles, got: {}",
+        output.code
+    );
+}
+
+#[test]
+fn leaves_a_file_with_no_panda_api_and_no_raw_call_alone() {
+    // The fast path that skips unrelated files has to survive.
+    let source = indoc! {r#"
+        import { helper } from './helper';
+        export const value = helper(1);
+    "#};
+    let helper = indoc! {r#"
+        export const helper = (n) => n + 1;
+    "#};
+
+    let output = super::common::transform_cross_file("main.tsx", source, &[("helper.ts", helper)]);
+
+    assert!(
+        !output.changed,
+        "unrelated file should be untouched: {}",
         output.code
     );
 }

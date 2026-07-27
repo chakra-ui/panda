@@ -19,8 +19,10 @@ use crate::{
 };
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Comment, Program};
+use oxc_ast_visit::Visit as _;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
+use rustc_hash::FxHashSet;
 use serde::Serialize;
 
 /// A folded `imported.raw(props)` call on an inline `cva`/`sva` exported from
@@ -357,7 +359,16 @@ fn run_extract<'cb>(
         exports
     };
 
-    if should_skip_extraction(&matched, config) {
+    // A file with no Panda imports can still consume one: `button.raw(...)` on
+    // a recipe imported from another module. The definition file desugars
+    // independently, so skipping here would leave the call reading a class
+    // string. Only relevant when the project supplied a recipe resolver.
+    let would_skip = should_skip_extraction(&matched, config);
+    let consumes_imported_recipe = would_skip
+        && recipe_raw_resolve.is_some()
+        && calls_raw_on_an_imported_binding(&parser_return.program, &imports);
+
+    if would_skip && !consumes_imported_recipe {
         let module = if retain_transform_facts {
             ModuleFacts {
                 imports,
@@ -403,27 +414,26 @@ fn run_extract<'cb>(
     };
     let ctx = VisitorContext::new(&matched, config).with_resolver(&resolver);
 
-    let (calls, call_diagnostics, mut token_refs, mut style_source_refs) = if should_collect_calls(
-        &matched, config,
-    ) {
-        let span = tracing::trace_span!(target: "extract", "extract_calls", call_count = tracing::field::Empty);
-        let _entered = span.enter();
-        let result = if verbose {
-            collect_calls_verbose(&parser_return.program, &ctx, &line_index)
+    let (calls, call_diagnostics, mut token_refs, mut style_source_refs) =
+        if consumes_imported_recipe || should_collect_calls(&matched, config) {
+            let span = tracing::trace_span!(target: "extract", "extract_calls", call_count = tracing::field::Empty);
+            let _entered = span.enter();
+            let result = if verbose {
+                collect_calls_verbose(&parser_return.program, &ctx, &line_index)
+            } else {
+                let (calls, diagnostics, token_refs) = collect_calls_with_token_refs(
+                    &parser_return.program,
+                    &ctx,
+                    &line_index,
+                    retain_transform_facts,
+                );
+                (calls, diagnostics, token_refs, Vec::new())
+            };
+            span.record("call_count", result.0.len());
+            result
         } else {
-            let (calls, diagnostics, token_refs) = collect_calls_with_token_refs(
-                &parser_return.program,
-                &ctx,
-                &line_index,
-                retain_transform_facts,
-            );
-            (calls, diagnostics, token_refs, Vec::new())
+            (Vec::new(), Vec::new(), Vec::new(), Vec::new())
         };
-        span.record("call_count", result.0.len());
-        result
-    } else {
-        (Vec::new(), Vec::new(), Vec::new(), Vec::new())
-    };
 
     let mut jsx = if should_collect_jsx(config) {
         let span = tracing::trace_span!(target: "extract", "extract_jsx", jsx_count = tracing::field::Empty);
@@ -594,6 +604,51 @@ fn after_line_terminator(start: u32, source: &str) -> u32 {
         cursor
     };
     u32::try_from(end).unwrap_or(start)
+}
+
+/// True when the file calls `.raw(...)` on a binding it imported.
+///
+/// Deliberately syntactic: no resolution, no filesystem. A false positive
+/// costs one file's extraction, which then finds nothing.
+fn calls_raw_on_an_imported_binding(program: &Program<'_>, imports: &[ImportRecord]) -> bool {
+    let locals: FxHashSet<&str> = imports
+        .iter()
+        .filter(|record| !record.type_only)
+        .flat_map(|record| record.specifiers.iter())
+        .filter(|specifier| !specifier.type_only)
+        .map(|specifier| specifier.local.as_str())
+        .collect();
+    if locals.is_empty() {
+        return false;
+    }
+
+    let mut finder = ImportedRawCallFinder {
+        locals: &locals,
+        found: false,
+    };
+    finder.visit_program(program);
+    finder.found
+}
+
+struct ImportedRawCallFinder<'a> {
+    locals: &'a FxHashSet<&'a str>,
+    found: bool,
+}
+
+impl<'a> oxc_ast_visit::Visit<'a> for ImportedRawCallFinder<'_> {
+    fn visit_call_expression(&mut self, call: &oxc_ast::ast::CallExpression<'a>) {
+        if !self.found
+            && let oxc_ast::ast::Expression::StaticMemberExpression(member) =
+                call.callee.get_inner_expression()
+            && member.property.name == "raw"
+            && let oxc_ast::ast::Expression::Identifier(object) =
+                member.object.get_inner_expression()
+            && self.locals.contains(object.name.as_str())
+        {
+            self.found = true;
+        }
+        oxc_ast_visit::walk::walk_call_expression(self, call);
+    }
 }
 
 fn should_collect_calls(matched: &[MatchedImport], config: &ExtractorConfig) -> bool {
