@@ -401,10 +401,11 @@ The class-merge helper is `cx`. Transformed source aliases it to `__pcx` so user
 
 Recipe inlines use `cva as __pcva` and `sva as __psva` from the same internal module when those rewrites run.
 
-Boolean-only inline `cva` (`variants: { x: { true: … } }`, no compounds, ≤12 keys) uses the internal
-`booleanBitset` + memo path at runtime. Same-file call-site → `__pcx` lowering exists as infrastructure
-(`local_call_bindings` / `cva_call_lower`) but is **off by default** — reused prop tuples are faster through
-`__pcva` than uncached `__pcx(cond && class)` (css-in-js-bench `btn-variant`).
+Boolean-only inline `cva` (`variants: { x: { true: … } }`, no compounds, ≤12 keys) dispatches through the internal
+`booleanBitset`; anything else compound-free goes through the mixed-radix `variantTable`. Lowering call sites to
+`__pcx(cond && class)` instead was measured and rejected — a reused prop tuple resolves faster through the memoized
+table than through an uncached `cx` (css-in-js-bench `btn-variant`). `local_call_bindings` remains, because the
+`.raw()` interlock needs it.
 
 Import shape in transformed code:
 

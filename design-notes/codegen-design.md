@@ -346,6 +346,27 @@ The graph emits the full `ArtifactId` set today, including:
 Remaining work is mostly polish: import-map-aware package entrypoints and using the tracked recipe/pattern names to
 scope watch-mode writes more narrowly.
 
+## Keeping the generated runtime tree-shakeable
+
+A bundler only drops a `/* @__PURE__ */` call when it initializes a **plain identifier**. Destructuring the result pins
+everything the call returns, in every bundle that imports anything from the module.
+
+That is why `css/index` binds each piece of the serializer on its own:
+
+```ts
+const cssContext = /* @__PURE__ */ createCssContext()
+const serializeCss = /* @__PURE__ */ createSerializeCss(cssContext)
+export const mergeCss = /* @__PURE__ */ createMergeCss(cssContext)
+```
+
+and not `const { serializeCss, mergeCss } = createCssRuntime(ctx)`, which pins the serializer everywhere.
+
+A pure call is also only droppable when its arguments are, so a wrapped factory needs the annotation on both:
+`Object.assign(/* @__PURE__ */ memo(fn), { … })`.
+
+`sandbox/codegen/__tests__/tree-shaking.test.ts` bundles the generated output with rollup and asserts that a
+`mergeCss`-only entry drops `serializeCss`. It fails against the destructured shape.
+
 ## Design Principles
 
 - Keep public config simple until a second real use case forces more shape.

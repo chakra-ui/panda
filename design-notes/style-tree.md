@@ -24,7 +24,7 @@ pub enum StyleTree {
     Ternary { test: Span, consequent: Box<StyleTree>, alternate: Box<StyleTree> },
     And { test: Span, value: Box<StyleTree> },
     Branches(Vec<StyleTree>), // span-less (cross-file / Literal::Conditional)
-    Open,
+    Open { span: Span },
     OpenWithFallback(Box<StyleTree>),
 }
 ```
@@ -36,7 +36,8 @@ pub enum StyleTree {
 - **`Branches`** — encode expands all arms (`Literal::Conditional`). Transform cannot rewrite them without a local
   condition span. Used for cross-file imports and `Literal` rehydration.
 - **`Open`** — transform cannot rewrite it, and encode has no fallback. Used for unresolvable arms, computed properties,
-  methods, accessors, and opaque spreads. `project_literal(Open)` returns `None`, so encode skips the property.
+  methods, accessors, and opaque spreads. `project_literal(Open)` returns `None`, so encode skips the property. Carries
+  the span of the source spread that produced it, which is how the partial fold tells one `{...props}` from another.
 - **`OpenWithFallback`** — transform cannot rewrite it, but encode can use a known fallback. Used for dynamic left
   operands of `||` and `??`, and duplicate properties with an unresolved value. `project_literal(inner)` returns the
   fallback.
