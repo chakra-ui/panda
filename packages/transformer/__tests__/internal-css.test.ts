@@ -84,6 +84,56 @@ describe('@pandacss-internal/css runtime', () => {
     expect(card({ muted: true })).toBe(card({ muted: true }))
   })
 
+  it('cva agrees with raw for every boolean prop shape', () => {
+    const button = cva({
+      base: 'd_flex',
+      variants: {
+        muted: { true: 'opacity_0.5' },
+        block: { true: 'w_100%' },
+      },
+      defaultVariants: { muted: true },
+    })
+
+    // the fast path for boolean-only recipes must not drift from `resolve`
+    for (const props of [
+      {},
+      { muted: true },
+      { muted: false },
+      { muted: undefined },
+      { muted: 'true' },
+      { muted: 'false' },
+      { muted: 1 },
+      { muted: 0 },
+      { block: true },
+      { muted: false, block: true },
+    ] as Array<Record<string, unknown>>) {
+      expect(button(props)).toBe(button.raw(props))
+    }
+  })
+
+  it('cva keeps the memo path when a variant is not boolean-only', () => {
+    const button = cva({
+      base: 'd_flex',
+      variants: {
+        muted: { true: 'opacity_0.5' },
+        size: { sm: 'fs_sm' },
+      },
+    })
+
+    expect(button({ muted: true, size: 'sm' })).toBe('d_flex opacity_0.5 fs_sm')
+    expect(button({ size: 'sm' })).toBe('d_flex fs_sm')
+  })
+
+  it('cva keeps the memo path when the recipe has compound variants', () => {
+    const button = cva({
+      base: 'd_flex',
+      variants: { muted: { true: 'opacity_0.5' } },
+      compoundVariants: [{ muted: true, css: 'cursor_not-allowed' }],
+    })
+
+    expect(button({ muted: true })).toBe('d_flex opacity_0.5 cursor_not-allowed')
+  })
+
   it('sva resolves per-slot string branches', () => {
     const tabs = sva({
       slots: ['root', 'trigger'],
