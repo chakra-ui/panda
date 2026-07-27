@@ -1,0 +1,168 @@
+---
+title: Set up a library package
+description: Give your component library its own styled-system package so users share one runtime with your components.
+---
+
+Most component libraries built on Panda split into two packages: the components themselves, and a `styled-system`
+package that both the library and its users import. This page walks through creating that `styled-system`
+package. It's the setup step behind [Ship the styled-system vs the CSS](/docs/design-systems/ship-styled-system),
+[Wrap headless UI](/docs/design-systems/wrap-headless-ui), and [forwardProps & the styled factory](/docs/design-systems/forward-props).
+
+## Why a dedicated package
+
+If your library generates its own `styled-system` and an app using it generates a separate one, you end up with two
+copies of the same runtime code (`css()`, `cva()`, the JSX factory) in the final bundle, and no shared token contract
+between them. A dedicated workspace package fixes both: the library and the app import the exact same generated code,
+and the package's `panda.config.ts` becomes the one place your design tokens live.
+
+## Create the package
+
+1. Create a new directory, for example `packages/styled-system`.
+2. Install `@pandacss/dev` as a dev dependency.
+3. Run `panda init` to generate a `panda.config.ts`. Set `jsxFramework` if your components use JSX style props.
+4. If your library has custom tokens, recipes, or patterns, install and import your [preset](/docs/design-systems/presets)
+   here too.
+5. Run [`panda emit-pkg`](/docs/reference/cli#emit-pkg) to wire up the package's `exports` map.
+
+The generated `package.json` looks roughly like this:
+
+```json
+{
+  "name": "@acme-org/styled-system",
+  "version": "1.0.0",
+  "exports": {
+    "./css": {
+      "types": "./css/index.d.ts",
+      "require": "./css/index.mjs",
+      "import": "./css/index.mjs"
+    },
+    "./tokens": {
+      "types": "./tokens/index.d.ts",
+      "require": "./tokens/index.mjs",
+      "import": "./tokens/index.mjs"
+    },
+    "./types": {
+      "types": "./types/index.d.ts",
+      "require": "./types/index.mjs",
+      "import": "./types/index.mjs"
+    },
+    "./patterns": {
+      "types": "./patterns/index.d.ts",
+      "require": "./patterns/index.mjs",
+      "import": "./patterns/index.mjs"
+    },
+    "./recipes": {
+      "types": "./recipes/index.d.ts",
+      "require": "./recipes/index.mjs",
+      "import": "./recipes/index.mjs"
+    },
+    "./jsx": {
+      "types": "./jsx/index.d.ts",
+      "require": "./jsx/index.mjs",
+      "import": "./jsx/index.mjs"
+    },
+    "./styles.css": "./styles.css"
+  },
+  "devDependencies": {
+    "@pandacss/dev": "^1.4.2",
+    "@types/react": "19.2.2",
+    "react": "^19.2.0"
+  },
+  "peerDependencies": {
+    "react": ">=19"
+  }
+}
+```
+
+Keep `react` and `@types/react` in both `devDependencies` and `peerDependencies` so the package's own types resolve
+correctly while leaving the actual React instance to the user.
+
+## Point your library at it
+
+In the component library's own `panda.config.ts`, set `importMap` to the package name and `outdir` to match:
+
+```tsx filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  //...
+  importMap: '@acme-org/styled-system',
+  outdir: 'styled-system'
+})
+```
+
+Now your library code imports from the shared package instead of a local `styled-system`:
+
+```tsx
+import { css } from '@acme-org/styled-system/css'
+
+export function Button({ children }) {
+  return (
+    <button type="button" className={css({ bg: 'red.300', px: '2', py: '3' })}>
+      {children}
+    </button>
+  )
+}
+```
+
+Mark the package as external in your build tool so its runtime code is bundled once, not duplicated into every
+library build:
+
+```bash
+tsup src/index.tsx --external @acme-org/styled-system
+```
+
+## Point your app at it
+
+Install the same package in the app using your library:
+
+```bash
+pnpm add @acme-org/styled-system
+```
+
+Set the same `importMap` there too, so Panda recognizes which imports belong to the shared package:
+
+```tsx filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  //...
+  importMap: '@acme-org/styled-system'
+})
+```
+
+From here, the app and the library both call the same `css`, `cva`, and JSX factory functions under the hood, and
+share one token contract:
+
+```tsx
+import { css } from '@acme-org/styled-system/css'
+
+export function App() {
+  return <div className={css({ padding: '4' })} />
+}
+```
+
+## Overriding tokens
+
+An app using your library can still extend or override the shared tokens locally, without touching the package:
+
+```tsx filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  //...
+  presets: ['@acme-org/preset'],
+  theme: {
+    extend: {
+      tokens: {
+        colors: { primary: { value: 'blue.500' } }
+      }
+    }
+  }
+})
+```
+
+## What's next
+
+Once the package exists, you still need to tell Panda how to extract styles from your library's own source. See
+[Ship the styled-system vs the CSS](/docs/design-systems/ship-styled-system) for the three ways to do that.

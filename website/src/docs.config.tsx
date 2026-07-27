@@ -229,7 +229,15 @@ export const docsTabs: TabItem[] = [
     items: [
       {
         title: 'Component Library',
-        items: [{ title: 'Overview', url: 'overview' }]
+        items: [
+          { title: 'Overview', url: 'overview' },
+          { title: 'Set up a library package', url: 'setup' },
+          { title: 'Wrap headless UI', url: 'wrap-headless-ui' },
+          { title: 'forwardProps & the styled factory', url: 'forward-props' },
+          { title: 'Ship the styled-system vs the CSS', url: 'ship-styled-system' },
+          { title: 'Track usage in wrapped components', url: 'track-usage' },
+          { title: 'Troubleshooting', url: 'troubleshooting' }
+        ]
       },
       {
         title: 'Customization',
