@@ -94,3 +94,79 @@ export function joinClasses(parts: string[]): string {
   if (parts.length === 1) return parts[0]!
   return cx(...parts)
 }
+
+function isBooleanBranch(branch: Record<string, string> | undefined): branch is { true: string } {
+  if (!branch) return false
+  const keys = Object.keys(branch)
+  return keys.length === 1 && keys[0] === 'true' && typeof branch.true === 'string'
+}
+
+/**
+ * Boolean-only `{ true: class }` variants, optionally with boolean defaults.
+ * Compounds are out — the table would have to expand them.
+ */
+function booleanKeys(
+  variants: VariantMap,
+  keys: string[],
+  defaults: Record<string, VariantValue>,
+  hasCompounds: boolean,
+): string[] | undefined {
+  if (hasCompounds || keys.length === 0 || keys.length > 12) return undefined
+  for (const key of keys) {
+    if (!isBooleanBranch(variants[key])) return undefined
+  }
+  for (const key in defaults) {
+    if (!keys.includes(key)) return undefined
+    const value = defaults[key]
+    if (value !== true && value !== false && value !== 'true' && value !== 'false') return undefined
+  }
+  return keys
+}
+
+/** Only `true` / `"true"` select the branch — the same key lookup `variantClass` does. */
+function selectsTrue(value: unknown): boolean {
+  return value === true || value === 'true'
+}
+
+/**
+ * Dispatch a boolean-only recipe through a bit mask instead of a memo key.
+ * Entries are built on first use, so a wide recipe costs nothing up front.
+ */
+export function booleanBitset(
+  base: string,
+  variants: VariantMap,
+  keys: string[],
+  defaults: Record<string, VariantValue>,
+  hasCompounds: boolean,
+): ((props?: Record<string, unknown>) => string) | undefined {
+  const boolKeys = booleanKeys(variants, keys, defaults, hasCompounds)
+  if (!boolKeys) return undefined
+
+  const n = boolKeys.length
+  let defaultMask = 0
+  for (let i = 0; i < n; i++) {
+    if (selectsTrue(defaults[boolKeys[i]!])) defaultMask |= 1 << i
+  }
+
+  const table = new Array<string | undefined>(1 << n)
+  const build = (mask: number) => {
+    const parts: string[] = []
+    if (base) parts.push(base)
+    for (let i = 0; i < n; i++) {
+      if (mask & (1 << i)) parts.push(variants[boolKeys[i]!]!.true!)
+    }
+    return joinClasses(parts)
+  }
+
+  return (props: Record<string, unknown> = {}) => {
+    let mask = defaultMask
+    for (let i = 0; i < n; i++) {
+      // An absent prop is not a choice — the default stands.
+      const value = props[boolKeys[i]!]
+      if (value === undefined) continue
+      if (selectsTrue(value)) mask |= 1 << i
+      else mask &= ~(1 << i)
+    }
+    return (table[mask] ??= build(mask))
+  }
+}
