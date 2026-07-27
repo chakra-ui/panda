@@ -7,9 +7,9 @@
 use oxc_ast::ast::{
     ArrayExpression, ArrayExpressionElement, BinaryExpression, BinaryOperator, CallExpression,
     ChainElement, ChainExpression, ComputedMemberExpression, ConditionalExpression, Expression,
-    LogicalExpression, LogicalOperator, ObjectExpression, ObjectPropertyKind, PropertyKey,
-    PropertyKind, StaticMemberExpression, TaggedTemplateExpression, TemplateLiteral,
-    IdentifierReference, UnaryExpression, UnaryOperator,
+    IdentifierReference, LogicalExpression, LogicalOperator, ObjectExpression, ObjectPropertyKind,
+    PropertyKey, PropertyKind, StaticMemberExpression, TaggedTemplateExpression, TemplateLiteral,
+    UnaryExpression, UnaryOperator,
 };
 use serde::ser::{SerializeMap, SerializeSeq};
 use serde::{Serialize, Serializer};

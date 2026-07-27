@@ -538,9 +538,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             AstKind::TSEnumDeclaration(decl) => {
                 Some(literal_to_style_tree(resolve_enum_as_object(decl)))
             }
-            AstKind::FormalParameter(param) => {
-                resolve_param_as_type_literal(param).map(literal_to_style_tree)
-            }
+            AstKind::FormalParameter(param) => self.resolve_param_style_tree(param, symbol_id),
             _ => None,
         }
     }
@@ -565,7 +563,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
                 self.resolve_declarator(declarator, symbol_id)
             }
             AstKind::TSEnumDeclaration(decl) => Some(resolve_enum_as_object(decl)),
-            AstKind::FormalParameter(param) => resolve_param_as_type_literal(param),
+            AstKind::FormalParameter(param) => self.resolve_param(param, symbol_id),
             _ => None,
         }
     }
@@ -764,6 +762,38 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             }
             BindingPattern::AssignmentPattern(_) => None,
         }
+    }
+
+    /// Resolve one symbol bound by a parameter against its `TSTypeLiteral`
+    /// annotation. A destructured parameter binds several symbols, so the
+    /// pattern is walked for the slice belonging to `target_symbol`.
+    fn resolve_param(
+        &self,
+        param: &oxc_ast::ast::FormalParameter<'a>,
+        target_symbol: SymbolId,
+    ) -> Option<Literal> {
+        let source = resolve_param_as_type_literal(param)?;
+        match &param.pattern {
+            BindingPattern::BindingIdentifier(id) => {
+                if id.symbol_id.get() != Some(target_symbol) {
+                    return None;
+                }
+                Some(source)
+            }
+            BindingPattern::ObjectPattern(_) | BindingPattern::ArrayPattern(_) => {
+                resolve_pattern_path(&param.pattern, &source, target_symbol, Some(self))
+            }
+            BindingPattern::AssignmentPattern(_) => None,
+        }
+    }
+
+    fn resolve_param_style_tree(
+        &self,
+        param: &oxc_ast::ast::FormalParameter<'a>,
+        target_symbol: SymbolId,
+    ) -> Option<StyleTree> {
+        self.resolve_param(param, target_symbol)
+            .map(literal_to_style_tree)
     }
 }
 
@@ -1060,6 +1090,10 @@ fn resolve_enum_as_object(decl: &oxc_ast::ast::TSEnumDeclaration<'_>) -> Literal
 
 /// Fold a parameter's `TSTypeLiteral` annotation into a synthetic object
 /// so `function f(x: { color: 'red' })` lets `x.color` resolve.
+///
+/// All-or-nothing: a member that doesn't fold to a literal makes the whole
+/// annotation unresolvable. A partial object would answer `undefined` for keys
+/// the type says nothing about, silently dropping the caller's real value.
 fn resolve_param_as_type_literal(param: &oxc_ast::ast::FormalParameter<'_>) -> Option<Literal> {
     let annotation = param.type_annotation.as_ref()?;
     let oxc_ast::ast::TSType::TSTypeLiteral(type_lit) = &annotation.type_annotation else {
@@ -1068,19 +1102,20 @@ fn resolve_param_as_type_literal(param: &oxc_ast::ast::FormalParameter<'_>) -> O
     let mut entries: Vec<(String, Literal)> = Vec::with_capacity(type_lit.members.len());
     for member in &type_lit.members {
         let oxc_ast::ast::TSSignature::TSPropertySignature(prop) = member else {
-            continue;
+            return None;
         };
+        // `{ color?: 'red' }` may be absent at runtime, so the literal type
+        // isn't a value.
+        if prop.optional {
+            return None;
+        }
         let key = match &prop.key {
             PropertyKey::StaticIdentifier(id) => id.name.to_string(),
             PropertyKey::StringLiteral(s) => s.value.to_string(),
-            _ => continue,
+            _ => return None,
         };
-        let Some(ann) = prop.type_annotation.as_ref() else {
-            continue;
-        };
-        if let Some(value) = ts_type_to_literal(&ann.type_annotation) {
-            entries.push((key, value));
-        }
+        let ann = prop.type_annotation.as_ref()?;
+        entries.push((key, ts_type_to_literal(&ann.type_annotation)?));
     }
     Some(Literal::Object(entries))
 }
