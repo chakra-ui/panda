@@ -40,7 +40,7 @@ advanced_snapshot!(
         transform("src/styles.tsx", source)
     },
     @r#"
-const baseStyles = "color_red padding_8px";
+const baseStyles = { color: 'red', padding: '8px' };
 export const cls = "color_red margin-top_4px padding_8px";
 "#
 );
@@ -65,7 +65,7 @@ advanced_snapshot!(
         transform("src/styles.tsx", source)
     },
     @r#"
-const baseStyles = "padding_10px";
+const baseStyles = { padding: '10px' };
 export const cls = "padding_10px hover:padding_10px hover:[&:focus]:outline_2px_solid_blue hover:[&:focus]:padding_10px";
 "#
 );
@@ -88,7 +88,7 @@ advanced_snapshot!(
         transform("src/styles.tsx", source)
     },
     @r#"
-const baseStyles = "color_blue padding_8px";
+const baseStyles = { color: 'blue', padding: '8px' };
 const isActive = true;
 export const cls = "color_blue padding_8px hover:color_blue hover:opacity_0.9 hover:padding_8px";
 "#
@@ -659,7 +659,7 @@ advanced_snapshot!(
         transform("src/styles.tsx", source)
     },
     @r#"
-const baseStyles = "color_blue padding_8px";
+const baseStyles = { color: 'blue', padding: '8px' };
 export const cls = cond ? "color_blue padding_8px" : "";
 "#
 );

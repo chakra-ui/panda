@@ -7,7 +7,10 @@ use crate::calls::{collect_calls_verbose, collect_calls_with_token_refs};
 use crate::jsx::{collect_jsx, collect_jsx_verbose};
 use std::cell::RefCell;
 
-use crate::scope::{PatternRawTransformCell, PatternRawTransformFn, Resolver};
+use crate::scope::{
+    PatternRawTransformCell, PatternRawTransformFn, RecipeRawResolveCell, RecipeRawResolveFn,
+    Resolver,
+};
 use crate::source_refs::StyleSourceRef;
 use crate::{
     Diagnostic, ExportInfo, ExtractedCall, ExtractedJsx, ExtractorConfig, ImportRecord, Literal,
@@ -19,6 +22,15 @@ use oxc_ast::ast::{Comment, Program};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use serde::Serialize;
+
+/// A folded `imported.raw(props)` call on an inline `cva`/`sva` exported from
+/// another file. The definition file precomputes its class strings, so the
+/// transform must rewrite this site to the styles it resolved to.
+#[derive(Debug, Clone, PartialEq)]
+pub struct ImportedRecipeRawCall {
+    pub span: Span,
+    pub styles: Literal,
+}
 
 /// A resolved `token()` / `token.var()` call site: the referenced token path and
 /// its span. Token-call resolution lowers the call to its value/var, erasing the
@@ -53,6 +65,9 @@ pub struct ImportBindingFacts {
 pub struct ModuleFacts {
     pub imports: Vec<ImportRecord>,
     pub import_bindings: Vec<ImportBindingFacts>,
+    /// Local bindings initialized from a collected Panda call site.
+    /// Populated only by [`extract_for_transform`].
+    pub local_call_bindings: Vec<crate::LocalCallBinding>,
     /// Safe helper-import insertion point after a hashbang/directive prologue.
     pub after_directives: u32,
     /// Whether `import_bindings` came from an Oxc semantic pass.
@@ -83,6 +98,9 @@ pub struct ExtractUsage {
     /// Original-parse module and symbol facts used by source transforms.
     #[serde(skip)]
     pub module: ModuleFacts,
+    /// Folded `.raw(...)` calls on recipes imported from another file.
+    #[serde(skip)]
+    pub imported_recipe_raw_calls: Vec<ImportedRecipeRawCall>,
 }
 
 /// Verbose extraction result for on-demand tooling. Includes the same core
@@ -126,7 +144,7 @@ pub fn extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsa
     let _span =
         tracing::trace_span!(target: "extract", "extract", path = path, source_len = source.len())
             .entered();
-    let outcome = run_extract(source, path, config, None, false, false);
+    let outcome = run_extract(source, path, config, None, None, false, false);
     extract_usage(outcome)
 }
 
@@ -140,7 +158,31 @@ pub fn extract_for_transform(source: &str, path: &str, config: &ExtractorConfig)
         source_len = source.len()
     )
     .entered();
-    let outcome = run_extract(source, path, config, None, false, true);
+    let outcome = run_extract(source, path, config, None, None, false, true);
+    extract_usage(outcome)
+}
+
+/// [`extract_for_transform`] plus the project-supplied resolver for imported
+/// inline `cva`/`sva` recipes, so `imported.raw(props)` folds to its styles.
+pub fn extract_for_transform_with_recipe_resolver<R>(
+    source: &str,
+    path: &str,
+    config: &ExtractorConfig,
+    recipe_resolve: &mut R,
+) -> ExtractUsage
+where
+    R: FnMut(&str, &Literal, &Literal) -> Option<Literal>,
+{
+    let _span = tracing::trace_span!(
+        target: "extract",
+        "extract_for_transform",
+        path = path,
+        source_len = source.len()
+    )
+    .entered();
+    let erased: &mut RecipeRawResolveFn<'_> = recipe_resolve;
+    let cell: RecipeRawResolveCell<'_> = RefCell::new(erased);
+    let outcome = run_extract(source, path, config, None, Some(&cell), false, true);
     extract_usage(outcome)
 }
 
@@ -153,29 +195,48 @@ fn extract_usage(outcome: ExtractResult) -> ExtractUsage {
         exports: outcome.exports,
         dependencies: outcome.dependencies,
         module: outcome.module,
+        imported_recipe_raw_calls: outcome.imported_recipe_raw_calls,
     }
 }
 
-pub fn extract_with_pattern_raw_transform<F>(
+/// [`extract`] plus the project-supplied hooks that resolve `.raw(...)` calls:
+/// the pattern transform, and the resolver for imported inline `cva`/`sva`
+/// recipes. Both need config the extractor doesn't own.
+pub fn extract_with_raw_resolvers<P, R>(
     source: &str,
     path: &str,
     config: &ExtractorConfig,
-    pattern_transform: &mut F,
+    pattern_transform: Option<&mut P>,
+    recipe_resolve: &mut R,
 ) -> ExtractUsage
 where
-    F: FnMut(&str, &Literal) -> Result<Option<Literal>, Diagnostic>,
+    P: FnMut(&str, &Literal) -> Result<Option<Literal>, Diagnostic>,
+    R: FnMut(&str, &Literal, &Literal) -> Option<Literal>,
 {
+    let has_pattern_transform = pattern_transform.is_some();
     let _span = tracing::trace_span!(
         target: "extract",
         "extract",
         path = path,
         source_len = source.len(),
-        pattern_raw_transform = true
+        pattern_raw_transform = has_pattern_transform
     )
     .entered();
-    let erased: &mut PatternRawTransformFn<'_> = pattern_transform;
-    let transform_cell: PatternRawTransformCell<'_> = RefCell::new(erased);
-    let outcome = run_extract(source, path, config, Some(&transform_cell), false, false);
+    let pattern_cell = pattern_transform.map(|transform| {
+        let erased: &mut PatternRawTransformFn<'_> = transform;
+        RefCell::new(erased)
+    });
+    let recipe_erased: &mut RecipeRawResolveFn<'_> = recipe_resolve;
+    let recipe_cell: RecipeRawResolveCell<'_> = RefCell::new(recipe_erased);
+    let outcome = run_extract(
+        source,
+        path,
+        config,
+        pattern_cell.as_ref(),
+        Some(&recipe_cell),
+        false,
+        false,
+    );
     extract_usage(outcome)
 }
 
@@ -183,7 +244,7 @@ where
 pub fn extract_debug(source: &str, path: &str, config: &ExtractorConfig) -> ExtractDebugResult {
     let _span = tracing::trace_span!(target: "extract", "extract_debug", path = path, source_len = source.len())
         .entered();
-    let outcome = run_extract(source, path, config, None, false, true);
+    let outcome = run_extract(source, path, config, None, None, false, true);
     ExtractDebugResult {
         imports: outcome.module.imports,
         matched: outcome.matched,
@@ -202,7 +263,7 @@ pub fn extract_verbose(source: &str, path: &str, config: &ExtractorConfig) -> Ex
         source_len = source.len()
     )
     .entered();
-    let outcome = run_extract(source, path, config, None, true, false);
+    let outcome = run_extract(source, path, config, None, None, true, false);
     ExtractVerboseResult {
         calls: outcome.calls,
         jsx: outcome.jsx,
@@ -225,6 +286,7 @@ struct ExtractResult {
     style_source_refs: Vec<StyleSourceRef>,
     exports: ExportInfo,
     dependencies: Vec<String>,
+    imported_recipe_raw_calls: Vec<ImportedRecipeRawCall>,
 }
 
 fn match_file_imports(
@@ -251,6 +313,7 @@ fn run_extract<'cb>(
     path: &str,
     config: &ExtractorConfig,
     pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
+    recipe_raw_resolve: Option<&'cb RecipeRawResolveCell<'cb>>,
     verbose: bool,
     retain_transform_facts: bool,
 ) -> ExtractResult {
@@ -299,6 +362,7 @@ fn run_extract<'cb>(
             ModuleFacts {
                 imports,
                 import_bindings: Vec::new(),
+                local_call_bindings: Vec::new(),
                 after_directives,
                 symbols_resolved: false,
             }
@@ -315,6 +379,7 @@ fn run_extract<'cb>(
             style_source_refs: Vec::new(),
             exports,
             dependencies: Vec::new(),
+            imported_recipe_raw_calls: Vec::new(),
         };
     }
 
@@ -333,6 +398,7 @@ fn run_extract<'cb>(
             source_path: Some(std::path::PathBuf::from(path)),
             line_index: Some(&line_index),
             pattern_raw_transform,
+            recipe_raw_resolve,
         })
     };
     let ctx = VisitorContext::new(&matched, config).with_resolver(&resolver);
@@ -399,10 +465,22 @@ fn run_extract<'cb>(
     token_refs.extend(resolver.take_token_refs());
     let token_refs = dedupe_token_refs(token_refs);
     let dependencies = resolver.take_cross_file_deps();
+    let imported_recipe_raw_calls = resolver.take_imported_recipe_raw_calls();
     let module = if retain_transform_facts {
+        let local_call_bindings = if calls.is_empty() {
+            Vec::new()
+        } else {
+            let init_spans = calls.iter().map(|call| call.span).collect();
+            crate::local_bindings::collect_local_call_bindings(
+                &parser_return.program,
+                resolver.semantic(),
+                &init_spans,
+            )
+        };
         ModuleFacts {
             import_bindings: resolver.import_binding_facts(&imports),
             imports,
+            local_call_bindings,
             after_directives,
             symbols_resolved: true,
         }
@@ -420,6 +498,7 @@ fn run_extract<'cb>(
         style_source_refs,
         exports,
         dependencies,
+        imported_recipe_raw_calls,
     }
 }
 
@@ -449,11 +528,13 @@ pub fn analyze_module(source: &str, path: &str) -> ModuleFacts {
         source_path: None,
         line_index: None,
         pattern_raw_transform: None,
+        recipe_raw_resolve: None,
     });
     let import_bindings = resolver.import_binding_facts(&imports);
     ModuleFacts {
         imports,
         import_bindings,
+        local_call_bindings: Vec::new(),
         after_directives,
         symbols_resolved: true,
     }

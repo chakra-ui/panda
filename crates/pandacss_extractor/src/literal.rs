@@ -457,6 +457,7 @@ fn call_to_literal(
     resolver
         .resolve_token_call(call)
         .or_else(|| resolver.resolve_raw_style_call(call))
+        .or_else(|| resolver.resolve_imported_recipe_raw_call(call))
         .or_else(|| resolver.resolve_pure_call(call))
 }
 

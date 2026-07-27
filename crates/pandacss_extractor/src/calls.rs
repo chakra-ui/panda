@@ -133,6 +133,7 @@ pub fn extract_calls(
         source_path: Some(std::path::PathBuf::from(path)),
         line_index: None,
         pattern_raw_transform: None,
+        recipe_raw_resolve: None,
     });
     let ctx = crate::VisitorContext::new(matched, config).with_resolver(&resolver);
     let line_index = crate::LineIndex::new(source);
@@ -391,6 +392,11 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                     value: resolver.token_call_value(call),
                 });
             }
+        }
+
+        // Records the fold so the transform can pin the styles at this site.
+        if let Some(resolver) = self.ctx.resolver {
+            resolver.resolve_imported_recipe_raw_call(call);
         }
 
         if let Some(resolved) = self.resolve_callee(call) {

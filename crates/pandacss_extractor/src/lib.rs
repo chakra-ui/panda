@@ -22,6 +22,7 @@ mod imports;
 mod jsx;
 mod jsx_react_runtime;
 mod literal;
+mod local_bindings;
 mod matcher;
 mod pure_fn;
 mod scope;
@@ -41,14 +42,16 @@ pub use design_system_imports::{
     collect_design_system_imports_for_packages, selection_from_import_records,
 };
 pub use extract::{
-    ExtractDebugResult, ExtractUsage, ExtractVerboseResult, ImportBindingFacts, ModuleFacts,
-    TokenRef, analyze_module, extract, extract_debug, extract_for_transform, extract_verbose,
-    extract_with_pattern_raw_transform,
+    ExtractDebugResult, ExtractUsage, ExtractVerboseResult, ImportBindingFacts,
+    ImportedRecipeRawCall, ModuleFacts, TokenRef, analyze_module, extract, extract_debug,
+    extract_for_transform, extract_for_transform_with_recipe_resolver, extract_verbose,
+    extract_with_raw_resolvers,
 };
 pub use imports::{
     ImportKind, ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind,
     ScanImportsOptions, scan_imports, scan_imports_with,
 };
+pub use local_bindings::{LocalBindingCall, LocalCallBinding, LocalDeclarationKind};
 // Internal helpers that take Oxc-shaped inputs — kept out of the public
 // surface so consumers don't accidentally couple to oxc_ast / oxc_diagnostics.
 pub use cross_file::CrossFileResolver;

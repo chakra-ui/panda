@@ -1,5 +1,6 @@
 use oxc_ast::ast::{
     CallExpression, Expression, LogicalOperator, ObjectExpression, ObjectPropertyKind, PropertyKey,
+    PropertyKind,
 };
 use oxc_span::GetSpan;
 use oxc_syntax::precedence::{GetPrecedence, Precedence};
@@ -37,6 +38,8 @@ pub struct ExpressionFacts {
     pub array_append_at: Option<u32>,
     pub array_has_elements: bool,
     pub parenthesize_for_addition: bool,
+    /// Wrap when re-emitted as the left operand of `&&` (e.g. `a || b`, `a ? b : c`).
+    pub parenthesize_for_logical_and: bool,
 }
 
 impl Default for ExpressionFacts {
@@ -53,6 +56,7 @@ impl Default for ExpressionFacts {
             array_append_at: None,
             array_has_elements: false,
             parenthesize_for_addition: false,
+            parenthesize_for_logical_and: false,
         }
     }
 }
@@ -89,6 +93,8 @@ pub struct ObjectPropertyFacts {
     pub key: Option<String>,
     pub value: Option<ExpressionFacts>,
     pub spread_argument: Option<ExpressionFacts>,
+    /// `{ k() {} }` / `{ get k() {} }` — value is not a re-emittable expression.
+    pub is_accessor_or_method: bool,
 }
 
 impl Default for ObjectPropertyFacts {
@@ -98,6 +104,7 @@ impl Default for ObjectPropertyFacts {
             key: None,
             value: None,
             spread_argument: None,
+            is_accessor_or_method: false,
         }
     }
 }
@@ -115,6 +122,7 @@ pub(crate) fn expression_facts(expression: &Expression<'_>) -> ExpressionFacts {
     let mut facts = ExpressionFacts {
         span: span_from_oxc(expression.span()),
         parenthesize_for_addition: needs_addition_parentheses(expression),
+        parenthesize_for_logical_and: needs_logical_and_parentheses(expression),
         ..Default::default()
     };
 
@@ -197,12 +205,15 @@ pub(crate) fn object_facts(object: &ObjectExpression<'_>) -> ObjectFacts {
                     key: static_key(&property.key),
                     value: Some(expression_facts(&property.value)),
                     spread_argument: None,
+                    is_accessor_or_method: property.method
+                        || !matches!(property.kind, PropertyKind::Init),
                 },
                 ObjectPropertyKind::SpreadProperty(spread) => ObjectPropertyFacts {
                     span: span_from_oxc(spread.span),
                     key: None,
                     value: None,
                     spread_argument: Some(expression_facts(&spread.argument)),
+                    is_accessor_or_method: false,
                 },
             })
             .collect(),
@@ -227,6 +238,14 @@ fn needs_addition_parentheses(expression: &Expression<'_>) -> bool {
     }
     let inner = expression.get_inner_expression();
     expression_precedence(inner).is_some_and(|precedence| precedence < Precedence::Add)
+}
+
+fn needs_logical_and_parentheses(expression: &Expression<'_>) -> bool {
+    if matches!(expression, Expression::ParenthesizedExpression(_)) {
+        return false;
+    }
+    let inner = expression.get_inner_expression();
+    expression_precedence(inner).is_some_and(|precedence| precedence < Precedence::LogicalAnd)
 }
 
 fn expression_precedence(expression: &Expression<'_>) -> Option<Precedence> {

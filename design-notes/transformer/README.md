@@ -401,6 +401,11 @@ The class-merge helper is `cx`. Transformed source aliases it to `__pcx` so user
 
 Recipe inlines use `cva as __pcva` and `sva as __psva` from the same internal module when those rewrites run.
 
+Boolean-only inline `cva` (`variants: { x: { true: … } }`, no compounds, ≤12 keys) uses the internal
+`booleanBitset` + memo path at runtime. Same-file call-site → `__pcx` lowering exists as infrastructure
+(`local_call_bindings` / `cva_call_lower`) but is **off by default** — reused prop tuples are faster through
+`__pcva` than uncached `__pcx(cond && class)` (css-in-js-bench `btn-variant`).
+
 Import shape in transformed code:
 
 ```ts
@@ -507,10 +512,16 @@ The helper does not justify unsafe transforms.
 
 Still bail on:
 
-- JSX spread props we cannot reason about
+- JSX spread props we cannot reason about (opaque `{...props}` leaves `StyleSpread::Open`) — except the
+  [partial fold](#partial-fold-past-an-opaque-spread), which keeps the spread and the factory
 - complex `as={condition ? A : B}` rewrites
 - dynamic style arguments we cannot fold
 - source shapes that would need object-class semantics
+
+Style-only spreads are safe to rewrite: inline `{...({ color: 'red' })}` and extract-resolved
+identifier/member spreads (`{...buttonBase}`) that fold into `style.entries` with no `Open`.
+When every source spread is style-only, the planner returns `StyleOnly` and the printer drops
+those spreads in favor of the resolved `className`.
 
 Also do not use the helper when:
 
@@ -658,13 +669,18 @@ isError ? 'c_red.500' : 'c_green.500'
 
 or a concatenated expression if several fragments are involved.
 
+`css.raw(...)` is not a class-string surface — it yields a style object for later composition, so it folds to that
+object instead. A single object argument is an identity (`mergeCss` skips normalization for one object), so the wrapper
+is stripped and the literal is left in place. Two or more arguments normalize and deep-merge, so the whole call is
+replaced by the merged object literal.
+
 #### Must bail
 
 - `props.color`, `themeColor`, `someMap[key]`, or any other open-ended runtime value
 - object spreads the planner cannot fully resolve
 - dynamic keys
-- `.raw()` forms
 - normalized branch trees that exceed the branch budget
+- `css.raw(...)` carrying a runtime branch — there is no object to print
 
 Important rule:
 
@@ -715,16 +731,106 @@ Pattern function calls such as `hstack(...)` follow the same broad rule as `css(
 - finite conditional props whose branches each resolve to known pattern output
 - conditional object props when normalization stays within the branch budget
 
+`pattern.raw(...)` runs the pattern transform and folds to the style object it returns, defaults included.
+
+A pattern call collapses to a single value — one class string, or one object for `.raw` — so unlike `css(...)` it
+cannot print a runtime ternary. Any branch the runtime has to decide bails the call. The literal alone can't show this
+(a dropped spread and a folded `&&` both look like a plain object), so the planner consults the `StyleTree`.
+
 #### Must bail
 
 - open-ended runtime props such as `hstack({ gap: props.gap })`
-- `.raw()` forms
 - unresolved spreads or dynamic keys
+- any runtime branch: a ternary, a logical `&&`, or span-less `Branches`
+- `.raw()` whose pattern needs a JS transform when no callback is supplied
 - normalized branch trees that exceed the branch budget
 
 Important rule:
 
 - for pattern function calls, open-ended dynamic should preserve the original pattern call
+
+### Partial fold past an opaque spread
+
+An opaque spread (`{...props}`) sets `StyleSpread::Open`, which used to bail the whole element. That
+is costly in the common wrapper shape, where every other style source is a static module const.
+
+Dropping to a plain tag and merging with `cx(static, props.className)` is **not** sound. Later static
+props only dominate *colliding* keys; the spread can still introduce style keys nothing overrides,
+which would be silently dropped and would also leak onto the DOM as attributes that the factory
+would have stripped. Panda's style-prop API is what creates the ambiguity — template-literal
+libraries fold the same component because their `styled` accepts no style props.
+
+So the fold keeps the factory and precomputes everything under it. `{...props}` and the factory tag
+stay; every statically resolvable style prop and spread — including conditional ones like
+`flex={cond ? '1' : undefined}` and the `css` prop — lifts into one `className`, and the runtime
+handles only the unknown spread. Style-prop extraction and DOM filtering stay exactly correct, and
+the per-render cost drops from merging N style objects to merging a string with a usually-empty
+spread.
+
+```tsx
+<styled.button {...props} type="button" {...tabBaseStyle} css={activeTabCss} />
+// →
+<styled.button {...props} type="button" className={__pcx('border-style_none hover:…', props.className)} />
+```
+
+Merge order mirrors the factory rather than guessing. JSX collapses every spread into one props
+object before the component runs, so `splitJsxProps` serializes the style half and `cx` puts
+`combinedProps.className` last (`react_jsx.rs`). Static props therefore beat props' style props (they
+overwrite in the merged object) while `props.className` beats both. Emitting
+`className={cx(<static>, props.className)}` reproduces both precedences, since the factory expands it
+to `cx(propsDerived, static, propsClassName)`. When the spread carries no style props at all the
+factory takes `composedRecipeFn(variantProps)` instead of the serialize path, which is `''` for a
+bare `styled.*`, so the fold lands on the same string there too.
+
+`partial_fold_rewrite` in `transform/jsx-element.rs` runs before the normal planner and requires:
+
+- a `JsxKind::Factory` tag (`styled.*`), so `variantSet` is empty and every style prop is a css prop
+- exactly one `StyleSpread::Open`, from a bare identifier — re-reading `.className` off a call result
+  would run it twice
+- no style source *before* that spread; one would lose to `props` at runtime but win in the
+  precomputed string
+- no explicit `className`, and `helper.cx` not `false` — without `cx` there is no sound merge
+
+One accepted deviation: `<C {...props} css={x} />` used to drop `props.css` outright, because JSX
+overwrites the whole key. After the fold the `css` attribute is gone, so `props.css` reaches the
+factory and its non-colliding keys apply. Colliding ones still lose to the precomputed class.
+
+### Same-file `styled()` chain fold
+
+`const Button = styled('button', { base: … })` renders through `forwardRef`. That extra component
+level is the dominant cost even when the class string never changes: a bare `forwardRef` that returns
+nothing but a `<button>` measures the same as the full factory, while inlining the tag is ~45%
+faster. So when the chain's class is provably constant, `<Button>` folds to the host element.
+
+```tsx
+const L0 = styled('button', { base: { color: 'red' } })
+const L1 = styled(L0, { base: { color: 'blue' } })
+export const el = <L1>hi</L1>
+// →
+export const el = <button className="color_blue">hi</button>
+```
+
+`collect_styled_bindings` (`pandacss_extractor/src/styled_bindings.rs`) walks top-level `const`
+declarations and records `name → { intrinsic, base }`, following `styled(Parent, …)` chains and
+`const Alias = Button`. The JSX visitor then resolves such a tag to `styled.{intrinsic}` and prepends
+the composed `base` under the element's own props, so the element reaches the existing
+`<styled.button>` machinery — `as`, the `css` prop, conditionals, spreads and the partial fold all
+apply unchanged, and precedence falls out of entry order.
+
+A binding is recorded only when the fold can prove the class is constant. Anything else is left out
+of the map and the runtime chain stays:
+
+- `variants` / `compoundVariants` / `defaultVariants`, or any config key other than `base` — the
+  class would depend on props
+- a third `options` argument (`defaultProps`, `shouldForwardProp`), which the fold does not reproduce
+- a base that is not a string tag or an already-recorded local binding, so imported components and
+  `styled(motion.div, …)` keep their wrapper
+- `let` / `var`, which can be reassigned between definition and use
+- declarations inside a function or block, where the visitor has no scope information to tell
+  per-call shadowing apart
+
+The `styled()` definition itself still desugars to `__pcva(…)` as before. After the fold it is
+unreferenced, so bundlers drop it.
 
 ### JSX pattern props
 
@@ -757,12 +863,39 @@ Recipe function calls sit between `css(...)` and JSX recipe elements.
 - conditional variant objects when normalization stays within the branch budget
 - static leftover style props on recipes when those leftovers can be encoded as atomic classes
 
+`recipe.raw(...)` is `props => props` for config recipes and slot recipes alike — the generated `attach()` gives both the
+same identity `raw` — so a single object argument has its wrapper stripped and the literal stays. It hands back variant
+props, not styles; a config slot recipe never yields style objects per slot.
+
+Inline `cva()` / `sva()` are the opposite: their `raw` is `resolve`, which layers base, matching variants and compound
+css through `mergeCss`. `sva` does that per slot. Desugaring the definition to string branches would silently change
+`raw` to return class strings, so `binding.raw(props)` is resolved at build time to the object the real runtime would
+produce, and the desugar only proceeds once every `.raw` call site is folded away. Binding identity and the `.raw` call
+sites come from `pandacss_extractor::LocalCallBinding`.
+
+The same hazard crosses files: `export const button = cva({…})` is desugared on its own, so an importer's
+`button.raw(props)` would meet a runtime that returns class strings. The cross-file resolver classifies such an export as
+`ExportEntry::Recipe`, and the importing file folds `button.raw(staticProps)` to the style object through the same
+resolver, recording each site so the transform pins it. The project supplies the resolution through a callback
+(`extract_with_raw_resolvers`), the way it already supplies the pattern transform — merging styles needs config the
+extractor doesn't own.
+
+Two gaps remain. A file that imports nothing from Panda is skipped before extraction runs, so an imported `.raw` there is
+never folded. And an importer whose props aren't static leaves the call in place, where the desugared definition still
+hands back a string — the definition file can't see its consumers.
+
+That second gap warns rather than fails silently: an unfoldable `.raw` on a known imported recipe emits
+`imported_recipe_raw_dynamic`. Warning is deliberate over the two fixes. Materializing a real recipe at the consumer
+pulls the full `cva` runtime back into that file, and refusing to desugar exported recipes taxes every app to protect a
+corner. The warning can over-fire in one narrow band — the definition's own local `.raw` usage can block its desugar,
+which the consumer can't see — so it stays a warning.
+
 #### Must bail or preserve runtime call
 
 - open-ended variant values such as `button({ size: props.size })`
 - unresolved spreads
-- `.raw()` forms
 - normalized branch trees that exceed the branch budget
+- a `.raw` call on an inline `cva`/`sva` whose props aren't static — the whole definition keeps its runtime recipe
 
 Important rule:
 

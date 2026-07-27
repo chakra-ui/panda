@@ -90,13 +90,13 @@ transform_snapshot!(
 );
 
 transform_snapshot!(
-    css_raw_static_object,
+    css_raw_static_object_unwraps_to_the_object,
     r#"
         import { css } from '@panda/css';
         export const raw = css.raw({ color: 'red', padding: '4px' });
     "#,
     true,
-    @r#"export const raw = "color_red padding_4px";"#
+    @"export const raw = { color: 'red', padding: '4px' };"
 );
 
 transform_snapshot!(
@@ -233,4 +233,66 @@ fn raw_member_text_inside_a_value_does_not_change_call_classification() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"export const cls = "content_.raw(";"#);
+}
+
+// A `.raw()` call folds to a bare object literal, which needs parentheses
+// wherever `{` would start a block instead of an expression.
+
+#[test]
+fn raw_in_a_concise_arrow_body_is_parenthesized() {
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        export const make = () => css.raw({ color: 'red' });
+    "#};
+    assert_snapshot!(transform("src/styles.tsx", source).code, @"export const make = () => ({ color: 'red' });");
+}
+
+#[test]
+fn raw_in_statement_position_without_semicolons_is_parenthesized() {
+    // ASI: the previous line ends without `;`, so a bare `{` here would parse
+    // as a block, not an object.
+    let source = indoc! {r#"
+        import { css } from '@panda/css'
+        const first = 1
+        css.raw({ color: 'red' })
+    "#};
+    let output = transform("src/styles.tsx", source);
+    assert_snapshot!(output.code, @r"
+    const first = 1
+    ({ color: 'red' })
+    ");
+}
+
+#[test]
+fn raw_after_return_keeps_the_object_bare() {
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        export function make() {
+          return css.raw({ color: 'red' });
+        }
+    "#};
+    assert_snapshot!(transform("src/styles.tsx", source).code, @r"
+    export function make() {
+      return { color: 'red' };
+    }
+    ");
+}
+
+#[test]
+fn raw_as_a_call_argument_keeps_the_object_bare() {
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        export const cls = css(css.raw({ color: 'red' }), { color: 'blue' });
+    "#};
+    // the whole call folds, so the object never reaches the output
+    assert_snapshot!(transform("src/styles.tsx", source).code, @r#"export const cls = "color_blue";"#);
+}
+
+#[test]
+fn raw_as_an_object_property_value_keeps_the_object_bare() {
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        export const styles = { button: css.raw({ color: 'red' }) };
+    "#};
+    assert_snapshot!(transform("src/styles.tsx", source).code, @"export const styles = { button: { color: 'red' } };");
 }

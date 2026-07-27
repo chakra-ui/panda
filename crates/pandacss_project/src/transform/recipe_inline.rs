@@ -1,8 +1,10 @@
 //! Inline `cva()` / `sva()` call transforms to string-branch runtime configs.
 
 use crate::Project;
-use pandacss_extractor::{Literal, StyleTree};
-use pandacss_recipes::{CompoundVariant, Recipe, SlotCompoundVariant, SlotRecipe};
+use pandacss_extractor::{ExpressionFacts, ExpressionKind, Literal, StyleTree};
+use pandacss_recipes::{
+    CompoundVariant, Recipe, SlotCompoundVariant, SlotRecipe, VariantGroup, VariantOption,
+};
 
 use super::helper::{CVA_HELPER_LOCAL, SVA_HELPER_LOCAL};
 use super::plan::Rewrite;
@@ -332,8 +334,6 @@ fn push_default_variants_part(parts: &mut Vec<String>, default_variants: &[(Stri
     parts.push(format!("defaultVariants: {{ {defaults} }}"));
 }
 
-/// `true` / `false` are printed unquoted so the runtime sees the boolean the
-/// user authored, not the string `'true'`.
 fn format_default_variant_value(value: &str) -> String {
     match value {
         "true" | "false" => value.to_owned(),
@@ -424,7 +424,7 @@ fn print_compound_conditions(conditions: &[(String, Vec<String>)]) -> Vec<String
         .collect()
 }
 
-fn escape_js(value: &str) -> String {
+pub(crate) fn escape_js(value: &str) -> String {
     value.replace('\\', "\\\\").replace('\'', "\\'")
 }
 
@@ -515,4 +515,224 @@ fn styled_config_arg(call: &pandacss_extractor::ExtractedCall) -> Option<(usize,
             Some((0, config))
         }
     }
+}
+
+// ---------------------------------------------------------------------------
+// `binding.raw(props)` on an inline cva/sva — folds to the resolved styles.
+// ---------------------------------------------------------------------------
+
+/// Static variant selection from a `.raw({ … })` argument.
+///
+/// `None` means the call can't be resolved at build time, which also blocks the
+/// string-branch desugar of the definition — the runtime `raw` returns style
+/// objects and the desugared one returns class strings.
+pub(crate) fn raw_call_variant_props(
+    source: &str,
+    args: &[Option<ExpressionFacts>],
+) -> Option<Vec<(String, String)>> {
+    if args.len() > 1 {
+        return None;
+    }
+    let Some(arg) = args.first() else {
+        return Some(Vec::new());
+    };
+    let facts = arg.as_ref()?;
+    if facts.kind != ExpressionKind::Object {
+        return None;
+    }
+    let object = facts.object.as_ref()?;
+
+    let mut props = Vec::with_capacity(object.properties.len());
+    for prop in &object.properties {
+        if prop.is_spread() || prop.is_accessor_or_method {
+            return None;
+        }
+        let key = prop.key.as_ref()?;
+        let value = prop.value.as_ref()?;
+        let value = static_variant_value(source, value)?;
+        upsert_prop(&mut props, key.clone(), value);
+    }
+    Some(props)
+}
+
+/// Variant values are looked up as object keys at runtime, so every static
+/// literal reduces to its string form.
+fn static_variant_value(source: &str, facts: &ExpressionFacts) -> Option<String> {
+    if let Some(value) = facts.string_value.as_ref() {
+        return Some(value.clone());
+    }
+    if facts.kind != ExpressionKind::Static {
+        return None;
+    }
+    let start = usize::try_from(facts.span.start).ok()?;
+    let end = usize::try_from(facts.span.end).ok()?;
+    let text = source.get(start..end)?.trim();
+    match text {
+        "true" | "false" => Some(text.to_owned()),
+        _ if text.parse::<f64>().is_ok() => Some(text.to_owned()),
+        _ => None,
+    }
+}
+
+fn upsert_prop(props: &mut Vec<(String, String)>, key: String, value: String) {
+    if let Some(entry) = props.iter_mut().find(|(name, _)| name == &key) {
+        entry.1 = value;
+    } else {
+        props.push((key, value));
+    }
+}
+
+/// `withDefaults(defaultVariants, props)` — defaults first, props override.
+fn computed_variants(
+    default_variants: &[(String, String)],
+    props: &[(String, String)],
+) -> Vec<(String, String)> {
+    let mut computed = default_variants.to_vec();
+    for (key, value) in props {
+        upsert_prop(&mut computed, key.clone(), value.clone());
+    }
+    computed
+}
+
+fn compound_matches(conditions: &[(String, Vec<String>)], computed: &[(String, String)]) -> bool {
+    conditions.iter().all(|(key, expected)| {
+        computed
+            .iter()
+            .find(|(name, _)| name == key)
+            .is_some_and(|(_, actual)| expected.iter().any(|value| value == actual))
+    })
+}
+
+/// Mirror of the generated `cva(...).raw` — base, matching variants, then
+/// compound css, merged by `mergeCss`.
+pub(crate) fn resolve_cva_raw_styles(
+    project: &Project,
+    recipe: &Recipe,
+    props: &[(String, String)],
+) -> Option<Literal> {
+    let computed = computed_variants(&recipe.default_variants, props);
+    let empty = Literal::Object(Vec::new());
+
+    let mut styles = vec![Some(recipe.base.clone().unwrap_or_else(|| empty.clone()))];
+    for (key, value) in &computed {
+        let Some(group) = recipe.variants.iter().find(|group| &group.name == key) else {
+            continue;
+        };
+        if let Some(option) = group.options.iter().find(|option| &option.key == value) {
+            styles.push(Some(option.style.clone()));
+        }
+    }
+
+    let compounds: Vec<&Literal> = recipe
+        .compound_variants
+        .iter()
+        .filter(|compound| compound_matches(&compound.conditions, &computed))
+        .map(|compound| &compound.css)
+        .collect();
+    styles.push(Some(crate::merge_style_props(&compounds)));
+
+    project.merged_style_literal(&styles)
+}
+
+/// Mirror of the generated `sva(...).raw` — one resolved style object per slot.
+pub(crate) fn resolve_sva_raw_styles(
+    project: &Project,
+    recipe: &SlotRecipe,
+    props: &[(String, String)],
+) -> Option<Literal> {
+    let mut slots = Vec::with_capacity(recipe.slots.len());
+    for slot in &recipe.slots {
+        let per_slot = slot_recipe_for(recipe, slot);
+        slots.push((
+            slot.clone(),
+            resolve_cva_raw_styles(project, &per_slot, props)?,
+        ));
+    }
+    Some(Literal::Object(slots))
+}
+
+/// The per-slot `cva` config `sva` builds internally via `getSlotRecipes`.
+fn slot_recipe_for(recipe: &SlotRecipe, slot: &str) -> Recipe {
+    let pick = |entries: &[(String, Literal)]| {
+        entries
+            .iter()
+            .find(|(name, _)| name == slot)
+            .map(|(_, style)| style.clone())
+    };
+
+    Recipe {
+        base: pick(&recipe.base),
+        variants: recipe
+            .variants
+            .iter()
+            .map(|group| VariantGroup {
+                name: group.name.clone(),
+                options: group
+                    .options
+                    .iter()
+                    .filter_map(|option| {
+                        pick(&option.styles).map(|style| VariantOption {
+                            key: option.key.clone(),
+                            style,
+                        })
+                    })
+                    .collect(),
+            })
+            .collect(),
+        compound_variants: recipe
+            .compound_variants
+            .iter()
+            .filter_map(|compound| {
+                pick(&compound.css).map(|css| CompoundVariant {
+                    conditions: compound.conditions.clone(),
+                    css,
+                    class_name: compound.class_name.clone(),
+                })
+            })
+            .collect(),
+        default_variants: recipe.default_variants.clone(),
+    }
+}
+
+/// Resolve `binding.raw(props)` for an inline `cva` or `sva` definition.
+/// Variant props folded from an expression, as `resolve_inline_recipe_raw`
+/// wants them. `None` if any value isn't a static scalar.
+pub(crate) fn literal_variant_props(props: &Literal) -> Option<Vec<(String, String)>> {
+    let Literal::Object(entries) = props else {
+        return None;
+    };
+    let mut out = Vec::with_capacity(entries.len());
+    for (key, value) in entries {
+        let text = match value {
+            Literal::String(text) => text.clone(),
+            Literal::Bool(flag) => flag.to_string(),
+            Literal::Number(number) => pandacss_shared::number_to_js_string(*number),
+            // An explicitly absent variant falls back to `defaultVariants`.
+            Literal::Null => continue,
+            _ => return None,
+        };
+        upsert_prop(&mut out, key.clone(), text);
+    }
+    Some(out)
+}
+
+pub(crate) fn resolve_inline_recipe_raw(
+    project: &Project,
+    factory: &str,
+    config: &Literal,
+    props: &[(String, String)],
+) -> Option<Literal> {
+    if factory == "sva" {
+        let recipe = SlotRecipe::from_literal(config)?;
+        return resolve_sva_raw_styles(project, &recipe, props);
+    }
+    let recipe = if is_recipe_config(config) {
+        Recipe::from_literal(config)?
+    } else {
+        Recipe {
+            base: Some(config.clone()),
+            ..Recipe::default()
+        }
+    };
+    resolve_cva_raw_styles(project, &recipe, props)
 }

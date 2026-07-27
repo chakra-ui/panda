@@ -165,6 +165,7 @@ pub fn extract_jsx(
         source_path: Some(std::path::PathBuf::from(path)),
         line_index: None,
         pattern_raw_transform: None,
+        recipe_raw_resolve: None,
     });
     let ctx = VisitorContext::new(matched, config).with_resolver(&resolver);
     let mut jsx = collect_jsx(&parser_return.program, &ctx, true);
