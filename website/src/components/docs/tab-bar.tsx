@@ -1,11 +1,12 @@
 'use client'
 
-import { docsTabs, type TabItem } from '@/docs.config'
+import { communityLinks, docsTabs, type TabItem } from '@/docs.config'
 import { css } from '@/styled-system/css'
 import { Box, HStack } from '@/styled-system/jsx'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LuBlocks, LuBookOpen, LuPaintbrush, LuPalette } from 'react-icons/lu'
+import { useEffect, useRef, useState } from 'react'
+import { LuBlocks, LuBookOpen, LuChevronDown, LuPaintbrush, LuPalette, LuUsers } from 'react-icons/lu'
 import type { IconType } from 'react-icons'
 
 export const TAB_ICONS: Record<string, IconType> = {
@@ -49,6 +50,7 @@ export function TabBar() {
           {right.map(tab => (
             <TabLink key={tab.key} tab={tab} active={tab.key === activeKey} />
           ))}
+          <CommunityMenu />
           <a
             href="/blog"
             className={css({
@@ -70,6 +72,107 @@ export function TabBar() {
           </a>
         </HStack>
       </HStack>
+    </Box>
+  )
+}
+
+/**
+ * "Community" is a dropdown, not a routed tab: Team and Showcase are full
+ * marketing pages at their own routes, and the rest (Discord, GitHub, Roadmap,
+ * Changelog, Contributing) are external links. There's no `/docs/community`
+ * content for it to route to.
+ */
+function CommunityMenu() {
+  const [open, setOpen] = useState(false)
+  const rootRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+
+    function onPointerDown(event: MouseEvent) {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) {
+        setOpen(false)
+      }
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setOpen(false)
+    }
+
+    document.addEventListener('mousedown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [open])
+
+  return (
+    <Box ref={rootRef} position="relative" flexShrink="0">
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen(v => !v)}
+        className={css({
+          display: 'flex',
+          alignItems: 'center',
+          gap: '2',
+          textStyle: 'sm',
+          fontWeight: 'semibold',
+          px: '3',
+          py: '3',
+          h: 'full',
+          rounded: 'md',
+          whiteSpace: 'nowrap',
+          color: open ? 'fg' : 'fg.muted',
+          transitionProperty: 'color, background',
+          transitionDuration: '200ms',
+          _hover: { color: 'fg', bg: 'bg.subtle' }
+        })}
+      >
+        <LuUsers size={16} />
+        Community
+        <LuChevronDown size={14} />
+      </button>
+      {open && (
+        <Box
+          role="menu"
+          position="absolute"
+          top="full"
+          right="0"
+          mt="1"
+          minW="12rem"
+          bg="bg"
+          borderWidth="1px"
+          borderColor="border"
+          rounded="md"
+          shadow="lg"
+          py="1"
+          zIndex="20"
+        >
+          {communityLinks.map(link => (
+            <a
+              key={link.title}
+              role="menuitem"
+              href={link.href}
+              target={link.external ? '_blank' : undefined}
+              rel={link.external ? 'noopener noreferrer' : undefined}
+              onClick={() => setOpen(false)}
+              className={css({
+                display: 'block',
+                textStyle: 'sm',
+                color: 'fg.muted',
+                px: '3',
+                py: '2',
+                _hover: { color: 'fg', bg: 'bg.subtle' }
+              })}
+            >
+              {link.title}
+            </a>
+          ))}
+        </Box>
+      )}
     </Box>
   )
 }

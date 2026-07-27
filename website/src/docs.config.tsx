@@ -103,17 +103,7 @@ export const docsTabs: TabItem[] = [
           { title: 'Getting Started', url: 'getting-started' },
           { title: 'Why Panda?', url: 'why-panda' },
           { title: 'FAQs', url: 'faq' },
-          { title: 'Browser Support', url: 'browser-support' },
-          {
-            title: 'Roadmap',
-            href: 'https://panda-css.canny.io/',
-            external: true
-          },
-          {
-            title: 'Changelog',
-            href: 'https://github.com/chakra-ui/panda/blob/main/CHANGELOG.md',
-            external: true
-          }
+          { title: 'Browser Support', url: 'browser-support' }
         ]
       },
       {
@@ -178,9 +168,14 @@ export const docsTabs: TabItem[] = [
       {
         title: 'Coming from another tool',
         items: [
+          { title: 'Migration strategy', url: 'migration-strategy' },
+          { title: 'Tailwind CSS', url: 'tailwind' },
+          { title: 'Chakra UI', url: 'chakra-ui' },
           { title: 'Stitches', url: 'stitches' },
           { title: 'Styled Components', url: 'styled-components' },
-          { title: 'Theme UI', url: 'theme-ui' }
+          { title: 'Emotion', url: 'emotion' },
+          { title: 'Theme UI', url: 'theme-ui' },
+          { title: 'StyleX', url: 'stylex' }
         ]
       }
     ]
@@ -322,3 +317,31 @@ export function getTab(key: string): TabItem | undefined {
 }
 
 export const defaultTabKey = 'styling'
+
+/**
+ * Links shown in the TabBar's "Community" dropdown. Team and Showcase are full
+ * bespoke marketing pages (their own layout, data-fetching, OG images), not docs
+ * content, so they stay at their existing routes rather than moving into the
+ * `/docs/:tab/:page` content pipeline.
+ */
+export const communityLinks: NavItem[] = [
+  { title: 'Team', href: '/team' },
+  { title: 'Showcase', href: '/showcase' },
+  {
+    title: 'Contributing',
+    href: 'https://github.com/chakra-ui/panda/blob/main/CONTRIBUTING.md',
+    external: true
+  },
+  {
+    title: 'Roadmap',
+    href: 'https://panda-css.canny.io/',
+    external: true
+  },
+  {
+    title: 'Changelog',
+    href: 'https://github.com/chakra-ui/panda/blob/main/CHANGELOG.md',
+    external: true
+  },
+  { title: 'Discord', href: docsConfig.discordUrl, external: true },
+  { title: 'GitHub', href: docsConfig.docsRepositoryBase, external: true }
+]
