@@ -686,25 +686,61 @@ fn emits_ts_source() {
         ),
         "multiline value sanitizer should reuse a module-scope regex"
     );
-    assert_snapshot!(function_block(source, "memo"), @"
+    assert_snapshot!(function_block(source, "memo"), @r#"
     export function memo<T extends (...args: any[]) => any>(fn: T): T {
       const cache = new Map<number, Array<{ args: Parameters<T>; out: ReturnType<T> }>>()
       const stringCache = new Map<string, ReturnType<T>>()
+      const newNode = (): any => ({ objects: new WeakMap(), prims: new Map(), out: void 0, has: false })
+      const root = newNode()
       let lastHash: number | undefined
-      let lastIsFlat = false
       let lastKey: Parameters<T> | string | undefined
       let lastValue: ReturnType<T>
       let hasLast = false
+
+      const step = (node: any, v: any) => {
+        if (v !== null && typeof v === "object") {
+          let next = node.objects.get(v)
+          if (next === void 0) { next = newNode(); node.objects.set(v, next) }
+          return next
+        }
+        let next = node.prims.get(v)
+        if (next === void 0) {
+          if (node.prims.size > 64) node.prims.clear()
+          next = newNode()
+          node.prims.set(v, next)
+        }
+        return next
+      }
+      const walk = (node: any, v: any) => {
+        if (Array.isArray(v)) {
+          node = step(node, "\u0000[")
+          for (let i = 0; i < v.length; i++) node = walk(node, v[i])
+          return step(node, "\u0000]")
+        }
+        return step(node, v)
+      }
+
       return ((...args: Parameters<T>) => {
+        let composed = false
+        for (let i = 0; i < args.length; i++) if (Array.isArray(args[i])) { composed = true; break }
+        if (composed) {
+          let node = root
+          for (let i = 0; i < args.length; i++) node = walk(node, args[i])
+          if (node.has) return node.out
+          const out = fn(...args)
+          node.out = out
+          node.has = true
+          return out
+        }
+
         const hash = flatHashOrNull(args)
         if (hash !== null) {
-          if (hasLast && lastIsFlat && hash === lastHash && flatArgsEqual(args, lastKey as Parameters<T>)) return lastValue
+          if (hasLast && lastHash === hash && flatArgsEqual(args, lastKey as Parameters<T>)) return lastValue
           let bucket = cache.get(hash)
           if (bucket) {
             for (let i = 0; i < bucket.length; i++) {
               if (flatArgsEqual(args, bucket[i].args)) {
                 lastHash = hash
-                lastIsFlat = true
                 lastKey = args
                 lastValue = bucket[i].out
                 hasLast = true
@@ -721,33 +757,33 @@ fn emits_ts_source() {
           if (bucket.length > 8) bucket.shift()
           if (cache.size > 500) cache.delete(cache.keys().next().value as number)
           lastHash = hash
-          lastIsFlat = true
           lastKey = args
           lastValue = out
           hasLast = true
           return out
         }
+
         const key = JSON.stringify(args)
-        if (hasLast && !lastIsFlat && key === lastKey) return lastValue
-        if (stringCache.has(key)) {
-          const out = stringCache.get(key) as ReturnType<T>
-          lastIsFlat = false
+        if (hasLast && lastHash === void 0 && key === lastKey) return lastValue
+        const cached = stringCache.get(key)
+        if (cached !== void 0) {
+          lastHash = void 0
           lastKey = key
-          lastValue = out
+          lastValue = cached
           hasLast = true
-          return out
+          return cached
         }
         const out = fn(...args)
         stringCache.set(key, out)
         if (stringCache.size > 500) stringCache.delete(stringCache.keys().next().value as string)
-        lastIsFlat = false
+        lastHash = void 0
         lastKey = key
         lastValue = out
         hasLast = true
         return out
       }) as T
     }
-    ");
+    "#);
     assert_snapshot!(function_block(source, "weakMemo"), @r#"
     export function weakMemo<T extends (arg: any) => any>(fn: T): T {
       const cache: WeakMap<object, ReturnType<T>> = new WeakMap()
@@ -1004,25 +1040,61 @@ fn emits_js_runtime() {
             .contains("const WHITESPACE_REGEX = /[\\n\\s]+/g\nconst sanitizeStyleValue = (value)"),
         "multiline value sanitizer should reuse a module-scope regex"
     );
-    assert_snapshot!(function_block(source, "memo"), @"
+    assert_snapshot!(function_block(source, "memo"), @r#"
     export function memo(fn) {
       const cache = new Map()
       const stringCache = new Map()
+      const newNode = () => ({ objects: new WeakMap(), prims: new Map(), out: void 0, has: false })
+      const root = newNode()
       let lastHash
-      let lastIsFlat = false
       let lastKey
       let lastValue
       let hasLast = false
+
+      const step = (node, v) => {
+        if (v !== null && typeof v === "object") {
+          let next = node.objects.get(v)
+          if (next === void 0) { next = newNode(); node.objects.set(v, next) }
+          return next
+        }
+        let next = node.prims.get(v)
+        if (next === void 0) {
+          if (node.prims.size > 64) node.prims.clear()
+          next = newNode()
+          node.prims.set(v, next)
+        }
+        return next
+      }
+      const walk = (node, v) => {
+        if (Array.isArray(v)) {
+          node = step(node, "\u0000[")
+          for (let i = 0; i < v.length; i++) node = walk(node, v[i])
+          return step(node, "\u0000]")
+        }
+        return step(node, v)
+      }
+
       return ((...args) => {
+        let composed = false
+        for (let i = 0; i < args.length; i++) if (Array.isArray(args[i])) { composed = true; break }
+        if (composed) {
+          let node = root
+          for (let i = 0; i < args.length; i++) node = walk(node, args[i])
+          if (node.has) return node.out
+          const out = fn(...args)
+          node.out = out
+          node.has = true
+          return out
+        }
+
         const hash = flatHashOrNull(args)
         if (hash !== null) {
-          if (hasLast && lastIsFlat && hash === lastHash && flatArgsEqual(args, lastKey)) return lastValue
+          if (hasLast && lastHash === hash && flatArgsEqual(args, lastKey)) return lastValue
           let bucket = cache.get(hash)
           if (bucket) {
             for (let i = 0; i < bucket.length; i++) {
               if (flatArgsEqual(args, bucket[i].args)) {
                 lastHash = hash
-                lastIsFlat = true
                 lastKey = args
                 lastValue = bucket[i].out
                 hasLast = true
@@ -1039,33 +1111,33 @@ fn emits_js_runtime() {
           if (bucket.length > 8) bucket.shift()
           if (cache.size > 500) cache.delete(cache.keys().next().value)
           lastHash = hash
-          lastIsFlat = true
           lastKey = args
           lastValue = out
           hasLast = true
           return out
         }
+
         const key = JSON.stringify(args)
-        if (hasLast && !lastIsFlat && key === lastKey) return lastValue
-        if (stringCache.has(key)) {
-          const out = stringCache.get(key)
-          lastIsFlat = false
+        if (hasLast && lastHash === void 0 && key === lastKey) return lastValue
+        const cached = stringCache.get(key)
+        if (cached !== void 0) {
+          lastHash = void 0
           lastKey = key
-          lastValue = out
+          lastValue = cached
           hasLast = true
-          return out
+          return cached
         }
         const out = fn(...args)
         stringCache.set(key, out)
         if (stringCache.size > 500) stringCache.delete(stringCache.keys().next().value)
-        lastIsFlat = false
+        lastHash = void 0
         lastKey = key
         lastValue = out
         hasLast = true
         return out
       })
     }
-    ");
+    "#);
     assert_snapshot!(function_block(source, "weakMemo"), @r#"
     export function weakMemo(fn) {
       const cache = new WeakMap()
