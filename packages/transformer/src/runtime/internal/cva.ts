@@ -1,5 +1,6 @@
 import {
   compoundMatches,
+  joinClasses,
   splitVariantProps,
   memoProps,
   toVariantMap,
@@ -59,7 +60,7 @@ export function cva(config: StringCvaConfig) {
         if (typeof cls === 'string' && cls) parts.push(cls)
       }
     }
-    return cx(...parts)
+    return joinClasses(parts)
   }
 
   const cvaFn = memoProps(resolve)

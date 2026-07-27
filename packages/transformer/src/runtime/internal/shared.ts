@@ -1,3 +1,5 @@
+import { cx } from './cx'
+
 export type VariantMap = Record<string, Record<string, string>>
 export type VariantValue = string | number | boolean
 export type CompoundVariant = Record<string, unknown> & {
@@ -85,4 +87,10 @@ export function memoProps<T>(resolve: (props: Record<string, unknown>) => T): (p
     hasLast = true
     return out
   }
+}
+
+export function joinClasses(parts: string[]): string {
+  if (parts.length === 0) return ''
+  if (parts.length === 1) return parts[0]!
+  return cx(...parts)
 }
