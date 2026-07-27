@@ -202,7 +202,7 @@ fn runtime_module(ctx: CodegenContext<'_>) -> Module {
     Module::new()
         .with_import(ImportDecl::value(
             [
-                "createCssRuntime",
+                "createSerializeCss",
                 "getCompoundVariantClassNames",
                 "getSlotCompoundVariant",
                 "memo",
@@ -438,7 +438,7 @@ export function createRecipe(config: Record<string, any>) {
   const { name, className, variantMap, variantKeys, defaults, compounds } = normalize(config)
   const classPrefix = __PREFIX__
 
-  const { serializeCss: recipeCss } = createCssRuntime({
+  const recipeCss = /* @__PURE__ */ createSerializeCss({
     hash: __HASH__,
     conditions: {
       shift: sortConditions,

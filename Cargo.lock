@@ -1138,6 +1138,11 @@ version = "0.0.0"
 dependencies = [
  "indoc",
  "insta",
+ "oxc_allocator",
+ "oxc_ast",
+ "oxc_ast_visit",
+ "oxc_parser",
+ "oxc_span",
  "pandacss_config",
  "pandacss_shared",
  "pandacss_stylesheet",

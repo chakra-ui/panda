@@ -66,7 +66,7 @@ describe('loadCompiler', () => {
         return stackConfig.transform(s, patternFns)
       }
 
-      export const stack = /* @__PURE__ */ Object.assign(memo(function stack(styles = {}) {
+      export const stack = /* @__PURE__ */ Object.assign(/* @__PURE__ */ memo(function stack(styles = {}) {
         return css(stackRaw(styles))
       }), { raw: stackRaw, propKeys: ["gap"] })"
     `)
