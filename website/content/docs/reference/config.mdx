@@ -380,7 +380,7 @@ The output directory for the generated css.
 
 ### importMap
 
-**Type**: `string | Partial<OutdirImportMap>`
+**Type**: `string | Partial<OutdirImportMap> | Array<string | Partial<OutdirImportMap>>`
 
 **Default**:
 `{ "css": "styled-system/css", "recipes": "styled-system/recipes", "patterns": "styled-system/patterns", "jsx": "styled-system/jsx" }`
@@ -419,8 +419,29 @@ is the equivalent of:
 }
 ```
 
-Check out the [Component Library](/docs/design-systems/overview) guide for more information on how to use the
-`importMap` option.
+Pass an array to match imports from more than one root, for example a shared design system package alongside the
+app's own local `styled-system` output:
+
+```json
+{
+  "importMap": ["@acme/styled-system", "./styled-system"]
+}
+```
+
+Individual fields also accept an array of paths when only some categories need more than one root:
+
+```json
+{
+  "importMap": {
+    "css": ["@acme/styled-system/css", "./styled-system/css"],
+    "recipes": "@acme/styled-system/recipes"
+  }
+}
+```
+
+Check out [Shared styled-system in a monorepo](/docs/design-systems/shared-styled-system) for a full example of
+using multiple `importMap` roots, or the [Component Library](/docs/design-systems/overview) guide for the
+external-package case.
 
 ### include
 

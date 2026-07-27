@@ -261,6 +261,10 @@ export const docsTabs: TabItem[] = [
       {
         title: 'Distribution & Scale',
         items: [
+          { title: 'Shared styled-system in a monorepo', url: 'shared-styled-system' },
+          { title: 'Publishing to npm', url: 'publishing-to-npm' },
+          { title: 'Avoiding CSS collisions', url: 'avoiding-collisions' },
+          { title: 'Monorepo dev workflow', url: 'monorepo-dev-workflow' },
           { title: 'Federated Micro-Frontends', url: 'federated-microfrontends' },
           { title: 'Static CSS Generation', url: 'static' },
           { title: 'Minimal Setup', url: 'minimal-setup' },
