@@ -250,6 +250,239 @@ describe('@pandacss-internal/css runtime', () => {
   })
 })
 
+describe('design system recipes', () => {
+  // Every scenario asserts the fast path agrees with `raw`, so a recipe that
+  // lands on the table can never drift from the one that lands on memo.
+  const agreesWithRaw = (
+    recipe: { (props?: Record<string, unknown>): string; raw: (props?: Record<string, unknown>) => string },
+    shapes: Array<Record<string, unknown>>,
+  ) => {
+    for (const props of shapes) expect(recipe(props)).toBe(recipe.raw(props))
+  }
+
+  const button = cva({
+    base: 'd_inline-flex items_center justify_center rounded_6px fw_500 cursor_pointer',
+    variants: {
+      size: { sm: 'px_3 py_1 fs_sm', md: 'px_4 py_2 fs_md', lg: 'px_6 py_3 fs_lg' },
+      variant: { solid: 'bg_blue.500 c_white', outline: 'bd_1px_solid c_blue.500', ghost: 'bg_transparent c_blue.500' },
+      loading: { true: 'opacity_0.6 pointer-events_none' },
+    },
+    defaultVariants: { size: 'md', variant: 'solid' },
+  })
+
+  it('renders a button with its default size and variant', () => {
+    expect(button()).toBe(
+      'd_inline-flex items_center justify_center rounded_6px fw_500 cursor_pointer px_4 py_2 fs_md bg_blue.500 c_white',
+    )
+  })
+
+  it('renders a button with one variant overridden', () => {
+    expect(button({ variant: 'ghost' })).toBe(
+      'd_inline-flex items_center justify_center rounded_6px fw_500 cursor_pointer px_4 py_2 fs_md bg_transparent c_blue.500',
+    )
+  })
+
+  it('renders a button with every variant set', () => {
+    expect(button({ size: 'lg', variant: 'outline', loading: true })).toBe(
+      'd_inline-flex items_center justify_center rounded_6px fw_500 cursor_pointer px_6 py_3 fs_lg bd_1px_solid c_blue.500 opacity_0.6 pointer-events_none',
+    )
+  })
+
+  it('keeps the button default when a variant prop is undefined', () => {
+    // <Button size={props.size} /> with nothing passed
+    expect(button({ size: undefined, variant: undefined })).toBe(button())
+    expect(button({ size: undefined, variant: 'ghost' })).toBe(button({ variant: 'ghost' }))
+  })
+
+  it('ignores a button variant value that no option declares', () => {
+    expect(button({ size: 'xxl' })).toBe(
+      'd_inline-flex items_center justify_center rounded_6px fw_500 cursor_pointer bg_blue.500 c_white',
+    )
+  })
+
+  it('agrees with raw across the button prop matrix', () => {
+    agreesWithRaw(button, [
+      {},
+      { size: 'sm' },
+      { size: 'sm', variant: 'ghost' },
+      { size: 'lg', variant: 'outline', loading: true },
+      { loading: false },
+      { loading: 'true' },
+      { size: undefined },
+      { size: null },
+      { size: 'xxl' },
+      { variant: 'solid', size: 'md' },
+    ])
+  })
+
+  it('exposes the button variant map for splitting props', () => {
+    expect(button.variantKeys).toEqual(['size', 'variant', 'loading'])
+    expect(button.variantMap).toEqual({
+      size: ['sm', 'md', 'lg'],
+      variant: ['solid', 'outline', 'ghost'],
+      loading: ['true'],
+    })
+    expect(button.splitVariantProps({ size: 'sm', onClick: 'fn', id: 'save' })).toEqual([
+      { onClick: 'fn', id: 'save' },
+      { size: 'sm' },
+    ])
+    expect(button.getVariantProps({ variant: 'ghost' })).toEqual({ size: 'md', variant: 'ghost' })
+  })
+
+  const input = cva({
+    base: 'w_100% bd_1px_solid rounded_4px',
+    variants: {
+      size: { sm: 'h_8 fs_sm', md: 'h_10 fs_md' },
+      invalid: { true: 'bd-c_red.500' },
+      disabled: { true: 'opacity_0.5 cursor_not-allowed' },
+    },
+    defaultVariants: { size: 'md' },
+  })
+
+  it('renders an input in its error state', () => {
+    expect(input({ invalid: true })).toBe('w_100% bd_1px_solid rounded_4px h_10 fs_md bd-c_red.500')
+  })
+
+  it('renders a disabled input at a non-default size', () => {
+    expect(input({ size: 'sm', disabled: true })).toBe(
+      'w_100% bd_1px_solid rounded_4px h_8 fs_sm opacity_0.5 cursor_not-allowed',
+    )
+  })
+
+  it('agrees with raw across the input prop matrix', () => {
+    agreesWithRaw(input, [
+      {},
+      { invalid: true },
+      { invalid: false },
+      { invalid: undefined },
+      { size: 'sm', invalid: true, disabled: true },
+      { disabled: 0 },
+      { disabled: 1 },
+    ])
+  })
+
+  const alert = cva({
+    base: 'p_4 rounded_4px',
+    variants: {
+      status: { info: 'bg_blue.50', success: 'bg_green.50', warning: 'bg_orange.50', error: 'bg_red.50' },
+      emphasis: { subtle: 'c_gray.800', solid: 'c_white' },
+    },
+    compoundVariants: [
+      { status: 'error', emphasis: 'solid', css: 'bg_red.600' },
+      { status: ['warning', 'error'], emphasis: 'subtle', css: 'bd-l_4px_solid' },
+    ],
+    defaultVariants: { status: 'info', emphasis: 'subtle' },
+  })
+
+  it('applies a compound variant when both conditions match', () => {
+    expect(alert({ status: 'error', emphasis: 'solid' })).toBe('p_4 rounded_4px bg_red.600 c_white')
+  })
+
+  it('applies a compound variant declared with a list of values', () => {
+    expect(alert({ status: 'warning' })).toBe('p_4 rounded_4px bg_orange.50 c_gray.800 bd-l_4px_solid')
+    expect(alert({ status: 'success' })).toBe('p_4 rounded_4px bg_green.50 c_gray.800')
+  })
+
+  it('agrees with raw across the alert prop matrix', () => {
+    agreesWithRaw(alert, [
+      {},
+      { status: 'error' },
+      { status: 'error', emphasis: 'solid' },
+      { status: 'warning', emphasis: 'subtle' },
+      { status: undefined, emphasis: 'solid' },
+    ])
+  })
+
+  it('renders a spacing scale keyed by number', () => {
+    const stack = cva({
+      base: 'd_flex flex-d_column',
+      variants: {
+        gap: { 1: 'gap_1', 2: 'gap_2', 4: 'gap_4' },
+      },
+      defaultVariants: { gap: 2 },
+    })
+
+    expect(stack()).toBe('d_flex flex-d_column gap_2')
+    expect(stack({ gap: 4 })).toBe('d_flex flex-d_column gap_4')
+    expect(stack({ gap: '4' })).toBe('d_flex flex-d_column gap_4')
+    agreesWithRaw(stack, [{}, { gap: 1 }, { gap: '2' }, { gap: 4 }, { gap: 8 }, { gap: undefined }])
+  })
+
+  it('lets a later variant override a class the base already set', () => {
+    const heading = cva({
+      base: 'fs_md fw_400',
+      variants: { level: { h1: 'fs_2xl fw_700', h2: 'fs_xl fw_600' } },
+    })
+
+    expect(heading({ level: 'h1' })).toBe('fs_2xl fw_700')
+    expect(heading({ level: 'h2' })).toBe('fs_xl fw_600')
+    expect(heading()).toBe('fs_md fw_400')
+  })
+
+  it('resolves a recipe wide enough to fall back to the memo path', () => {
+    // 6 variants x 5 options is 46656 states — past the table ceiling
+    const variants: Record<string, Record<string, string>> = {}
+    for (let i = 0; i < 6; i++) {
+      variants[`v${i}`] = { a: `a_${i}`, b: `b_${i}`, c: `c_${i}`, d: `d_${i}`, e: `e_${i}` }
+    }
+    const wide = cva({ base: 'base_x', variants })
+
+    expect(wide({ v0: 'a', v5: 'e' })).toBe('base_x a_0 e_5')
+    agreesWithRaw(wide, [{}, { v0: 'a' }, { v3: 'd', v4: 'e' }, { v0: undefined }])
+  })
+
+  it('composes a styled(Button, …) chain into one recipe', () => {
+    const danger = button.merge(
+      cva({
+        base: 'bg_red.500',
+        variants: { size: { sm: 'px_2' } },
+        defaultVariants: { variant: 'outline' },
+      }),
+    )
+
+    expect(danger.raw({ size: 'sm' })).toContain('px_2')
+    expect(danger.raw({})).toContain('bg_red.500')
+    agreesWithRaw(danger, [{}, { size: 'sm' }, { size: 'lg', loading: true }])
+  })
+
+  const card = sva({
+    slots: ['root', 'header', 'body'],
+    base: { root: 'rounded_8px bg_white', header: 'p_4 fw_600', body: 'p_4' },
+    variants: {
+      density: { compact: 'p_2', cozy: 'p_6' },
+      raised: { true: 'shadow_md' },
+    },
+    defaultVariants: { density: 'cozy' },
+  })
+
+  it('renders every card slot with the shared variant applied', () => {
+    expect(card()).toEqual({
+      root: 'rounded_8px bg_white p_6',
+      header: 'p_6 fw_600',
+      body: 'p_6',
+    })
+  })
+
+  it('renders a raised, compact card', () => {
+    expect(card({ density: 'compact', raised: true })).toEqual({
+      root: 'rounded_8px bg_white p_2 shadow_md',
+      header: 'p_2 fw_600 shadow_md',
+      body: 'p_2 shadow_md',
+    })
+  })
+
+  it('agrees with raw across the card prop matrix', () => {
+    for (const props of [{}, { raised: true }, { density: 'compact' }, { density: undefined }, { raised: false }]) {
+      expect(card(props)).toEqual(card.raw(props))
+    }
+  })
+
+  it('exposes card slot metadata for splitting props', () => {
+    expect(card.variantKeys).toEqual(['density', 'raised'])
+    expect(card.splitVariantProps({ raised: true, onClick: 'fn' })).toEqual([{ onClick: 'fn' }, { raised: true }])
+  })
+})
+
 describe('virtual internal css ids', () => {
   it('uses stable internal import and resolved ids', async () => {
     const { INTERNAL_CSS_IMPORT, INTERNAL_CSS_RESOLVED_ID } = await import('../src/runtime/internal/ids')
