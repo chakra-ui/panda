@@ -103,7 +103,10 @@ export const docsTabs: TabItem[] = [
           { title: 'Getting Started', url: 'getting-started' },
           { title: 'Why Panda?', url: 'why-panda' },
           { title: 'FAQs', url: 'faq' },
-          { title: 'Browser Support', url: 'browser-support' }
+          { title: 'Browser Support', url: 'browser-support' },
+          { title: 'How Panda works', url: 'how-panda-works' },
+          { title: 'Upgrading to v2', url: 'upgrading-to-v2' },
+          { title: 'The Compiler Engine', url: 'compiler-engine' }
         ]
       },
       {
@@ -111,7 +114,8 @@ export const docsTabs: TabItem[] = [
         tag: 'new',
         items: [
           { title: 'LLMs.txt', url: 'llms-txt' },
-          { title: 'MCP Server', url: 'mcp-server' }
+          { title: 'MCP Server', url: 'mcp-server' },
+          { title: 'Agent Skills', url: 'agent-skills' }
         ]
       },
       {
@@ -149,7 +153,8 @@ export const docsTabs: TabItem[] = [
           { title: 'Cascade Layers', url: 'cascade-layers' },
           { title: 'Dynamic Styles', url: 'dynamic-styling' },
           { title: 'Virtual Color', url: 'virtual-color' },
-          { title: 'Color opacity modifier', url: 'color-opacity-modifier' }
+          { title: 'Color opacity modifier', url: 'color-opacity-modifier' },
+          { title: 'Performance & Optimization', url: 'performance-optimization' }
         ]
       },
       {
@@ -212,7 +217,8 @@ export const docsTabs: TabItem[] = [
         title: 'Tooling',
         items: [
           { title: 'Spec', url: 'spec', tag: 'new' },
-          { title: 'Panda Studio', url: 'studio' }
+          { title: 'Panda Studio', url: 'studio' },
+          { title: 'Panda Studio in v2', url: 'studio-v2' }
         ]
       }
     ]
@@ -304,7 +310,10 @@ export const docsTabs: TabItem[] = [
           { title: 'CLI', url: 'cli' },
           { title: 'Config', url: 'config' },
           { title: 'Deprecations', url: 'deprecations' },
-          { title: 'Debugging', url: 'debugging' }
+          { title: 'Debugging', url: 'debugging' },
+          { title: 'Diagnostics Reference', url: 'diagnostics' },
+          { title: 'ESLint & OXLint Plugin', url: 'eslint-oxlint-plugin' },
+          { title: 'Editor & IDE Tooling', url: 'editor-tooling' }
         ]
       }
     ]

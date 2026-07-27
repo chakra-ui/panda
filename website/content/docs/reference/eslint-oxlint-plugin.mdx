@@ -1,0 +1,66 @@
+---
+title: ESLint & OXLint Plugin
+description: A shared lint rule set for Panda, catching mistakes the compiler itself doesn't error on, planned, not yet shipped.
+---
+
+> **This page describes a feature that isn't available yet.** It's part of the v2 rewrite covered in
+> [Upgrading to v2](/docs/styling/upgrading-to-v2), still marked as a draft internally, so treat the details below as
+> directional. A package named `@pandacss/eslint-plugin` already exists on npm, but as of this writing it has no
+> public README or rule documentation, so it isn't covered here, check npm directly if you want to inspect it
+> yourself.
+
+## Why this needs to be Panda-specific
+
+Generic ESLint rules can't see what Panda's compiler already knows: which values resolve to real tokens, which
+recipe variants actually exist, which conditions are typos. A style object that silently produces no CSS today,
+because a condition key is misspelled or a token reference doesn't resolve, passes both `tsc` and a generic linter
+without a warning. The planned plugin is built directly on Panda's own compiler output instead of pattern-matching
+source text, so it can catch that class of mistake specifically.
+
+## One rule set, two entry points
+
+Rather than a separate ESLint package and a separate Oxlint package (which would drift out of sync with each other),
+the plan is one package with two entry points sharing the same rule implementations and the same underlying project
+metadata (token paths, recipe variants, deprecated entries, resolved import map):
+
+```txt
+@pandacss/eslint-plugin            # ESLint flat config
+@pandacss/eslint-plugin/oxlint     # Oxlint entry, reuses the same rules
+```
+
+## Representative rules
+
+Not exhaustive, and some of these are more settled than others, but they give a sense of what the rule set covers:
+
+**Correctness, things that silently produce no CSS today**
+
+- `no-unknown-condition`, catching a typo'd condition key (`_hver` instead of `_hover`) that the compiler currently
+  just ignores.
+- `no-invalid-token-paths`, an unresolved token reference.
+- `no-dynamic-styling`, a value the compiler can't statically extract, the lint-time version of the constraint
+  covered in [Dynamic Styles](/docs/styling/dynamic-styling).
+- `file-not-included`, a file that calls Panda's style functions but sits outside the config's `include` globs, so
+  none of its styles are actually being extracted at all.
+
+**Deprecation**
+
+- A single configurable `no-deprecated` rule (rather than one rule per entity type) covering deprecated tokens,
+  utilities, recipes, and patterns, scoped with a `kinds` option.
+
+**Design-system enforcement (opt-in)**
+
+- `prefer-token`, a raw value where a token exists for that category, suggesting the specific token to use instead
+  of just flagging the raw value.
+- `prefer-text-style`, a style object setting several typography properties individually that should collapse into
+  one `textStyle` token.
+- `no-physical-properties`, nudging physical properties/values (`marginLeft`, `textAlign: 'left'`) toward their
+  logical equivalents (`marginInlineStart`, `textAlign: 'start'`) for better RTL support.
+- `no-important`, flagging `!important` in a style value.
+
+## See also
+
+- [Upgrading to v2](/docs/styling/upgrading-to-v2) for the broader rewrite this belongs to.
+- [Diagnostics Reference](/docs/reference/diagnostics) for the compiler-level diagnostic codes this plugin builds on
+  top of.
+- [Dynamic Styles](/docs/styling/dynamic-styling) for the extraction constraint `no-dynamic-styling` enforces at
+  lint time.

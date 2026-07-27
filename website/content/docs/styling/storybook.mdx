@@ -75,9 +75,9 @@ Install panda and create your `panda.config.ts` file.
 </Tabs>
 
 If you are using Storybook with the Vite builder, you will have to update your PostCSS config file to use the array
-syntax for the plugins instead of the object syntax. Simply change `postcss.config.[c]js`:
+syntax for the plugins instead of the object syntax. Simply change `postcss.config.cjs`:
 
-```diff filename="postcss.config.js"
+```diff filename="postcss.config.cjs"
 module.exports = {
 -  plugins: {
 -   '@pandacss/dev/postcss': {}
@@ -289,7 +289,7 @@ With that in place, you should see the light/dark switcher in Storybook's toolba
 If you are having issues with the PostCSS plugin similar to `Cannot find module '@pandacss/dev/postcss'`, update the
 PostCSS config as follows:
 
-```js filename="postcss.config.js"
+```js filename="postcss.config.cjs"
 module.exports = {
   plugins: [require('@pandacss/dev/postcss')]
 }

@@ -97,9 +97,9 @@ import '../index.css';
 
 ### Update the postcss config
 
-Astro requires a little change for the `postcss.config.[c]js`:
+Astro requires a little change for the `postcss.config.cjs` that `panda init --postcss` generated:
 
-```diff {3} filename="postcss.config.js"
+```diff {3} filename="postcss.config.cjs"
 module.exports = {
 -  plugins: {
 -   '@pandacss/dev/postcss': {}

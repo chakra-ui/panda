@@ -35,7 +35,7 @@ Respond to the prompts as follows:
 
 ### Install Panda
 
-Install panda and generate the `panda.config.ts` and `postcss.config.js` file.
+Install panda and generate the `panda.config.ts` and `postcss.config.cjs` file.
 
 ```bash
 cd web
@@ -45,18 +45,18 @@ yarn panda init --postcss
 
 ### Move to config folder
 
-Redwood uses a `config` folder for all of the configuration files. Move the `panda.config.ts` and `postcss.config.js`
+Redwood uses a `config` folder for all of the configuration files. Move the `panda.config.ts` and `postcss.config.cjs`
 files to the `config` folder.
 
 ```bash
-mv panda.config.ts postcss.config.js config/
+mv panda.config.ts postcss.config.cjs config/
 ```
 
 ### Update configs
 
 Update the postcss config file to use the `panda.config.ts` file.
 
-```diff filename="web/config/postcss.config.js"
+```diff filename="web/config/postcss.config.cjs"
 + const path = require('path')
 
 module.exports = {

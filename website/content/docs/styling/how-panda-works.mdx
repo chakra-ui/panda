@@ -1,0 +1,49 @@
+---
+title: How Panda works
+description: The mental model behind Panda's static extraction, why css() calls don't cost anything at runtime.
+---
+
+Panda looks like a normal CSS-in-JS library at the call site, `css({ bg: 'red.500' })` returns a class name. What
+makes it different is that nothing runs in the browser to produce that class name. This page is the mental model for
+why, useful before you hit [Dynamic Styles](/docs/styling/dynamic-styling) and wonder why some patterns don't work.
+
+## Two separate steps, not one
+
+It's easy to assume "generating my styled-system" and "generating my CSS" are the same step. They're not, and Panda
+actually runs them in this order every time you build:
+
+1. **Codegen.** Panda reads `panda.config.ts`, resolves your tokens, utilities, conditions, and recipes, and writes
+   the `styled-system` package, the actual `css()`, `cva()`, pattern, and token files you import from. This step
+   doesn't look at your application code at all, it only depends on your config.
+2. **Extraction.** Panda then scans your source files (everything matched by [`include`](/docs/reference/config#include))
+   for calls to the functions codegen just produced, `css()`, `cva()`, JSX style props, and so on. Only the styles
+   your code actually calls get turned into CSS rules. Everything else in the generated `styled-system` package stays
+   unused code that never reaches a stylesheet.
+
+The output of step 2, one CSS file, is the only thing that ships to the browser. There's no client-side style engine
+reading your `css()` calls at runtime, by the time your app runs, the class names are already plain strings and the
+CSS already exists.
+
+## Why "extractable" is the constraint that matters
+
+Because step 2 works by reading your source code as text (not by running it), Panda needs your style calls to be
+statically analyzable, values it can determine by looking at the code, not by executing it. `css({ bg: 'red.500' })`
+is extractable, `css({ bg: someVariableComputedAtRuntime })` generally isn't, because Panda can't know what that
+variable will be without running your program. This is the root cause behind most "why isn't my style showing up"
+questions, see [Dynamic Styles](/docs/styling/dynamic-styling) for the specific patterns that work around it.
+
+## What this buys you, and what it costs
+
+The payoff is that Panda adds zero runtime, no style computation, no context reads, no re-render cost from styling
+itself, since everything is already resolved into a static CSS file before the browser ever sees your app. The
+tradeoff is the one above: styles have to be discoverable by static analysis, which is a real constraint compared to
+a runtime library that can compute anything a JavaScript expression can compute.
+
+## See also
+
+- [Writing Styles](/docs/styling/writing-styles) for the `css()` API this pipeline is built around.
+- [Dynamic Styles](/docs/styling/dynamic-styling) for the specific escape hatches when a value truly can't be known
+  at build time.
+- [Cascade Layers](/docs/styling/cascade-layers) for how the generated CSS file is organized once extraction
+  produces it.
+- [Debugging](/docs/reference/debugging) to inspect what extraction actually saw for a given file.
