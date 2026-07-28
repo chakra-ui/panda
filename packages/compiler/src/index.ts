@@ -5,6 +5,7 @@ import type {
   DesignSystemBinding,
   SourceFileInput,
   ProjectCallbacks,
+  ProjectHooks,
   SerializedConfig,
 } from '@pandacss/compiler-shared'
 import {
@@ -83,6 +84,23 @@ export function getBindingInfo() {
   }
 }
 
+/** The fallback implements no `register*` methods, so callback configs would
+ *  otherwise fail as if the native build lacked support for them. */
+function assertNativeBinding(callbacks: ProjectCallbacks, hooks: ProjectHooks | undefined) {
+  if (binding !== fallback) return
+
+  const needed: string[] = (['pattern.transform', 'utility.transform'] as const).filter(
+    (key) => Object.keys(callbacks[key] ?? {}).length > 0,
+  )
+  if (hooks?.['parser:before']?.length) needed.push('parser:before')
+  if (needed.length === 0) return
+
+  throw new Error(
+    `Could not load the native @pandacss/compiler binding for ${process.platform}-${process.arch}, which ${needed.join(', ')} callbacks require. ` +
+      `Reinstall your dependencies to fetch the platform package, or open an issue if your platform is unsupported.`,
+  )
+}
+
 function build(config: SerializedConfig, callbacks: ProjectCallbacks, options?: CompilerOptions): NativeCompiler {
   assertProjectCallbacks(config, callbacks)
   assertProjectHooks(options?.hooks, callbacks)
@@ -90,6 +108,8 @@ function build(config: SerializedConfig, callbacks: ProjectCallbacks, options?: 
   if (!nativeCompilerFromConfig) {
     throw new Error('createCompiler is not available in this binding')
   }
+
+  assertNativeBinding(callbacks, options?.hooks)
 
   const prepared = prepareCompilerConfig(config)
   const compiler = nativeCompilerFromConfig(prepared, toNativeOptions(options), createUtilityValuesCallbacks(callbacks))
