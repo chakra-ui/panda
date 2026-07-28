@@ -1,6 +1,7 @@
 import { diffConfigs, loadConfig } from '@pandacss/config'
 import { Generator } from '@pandacss/generator'
 import type { Config, LoadConfigResult } from '@pandacss/types'
+import { applyAutoPlugins } from './auto-plugins'
 
 export class DiffEngine {
   private prevConfig: Config | undefined
@@ -18,6 +19,8 @@ export class DiffEngine {
     // attach tsconfig options from previous config
     const { tsconfig, tsconfigFile, tsOptions } = this.ctx.conf
     Object.assign(conf, { tsconfig, tsconfigFile, tsOptions })
+
+    applyAutoPlugins(conf, this.ctx.config.cwd)
 
     return this.refresh(conf, fn)
   }
