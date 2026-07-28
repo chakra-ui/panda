@@ -50,12 +50,17 @@ const styles = {
   })
 }
 
-export const SearchButton = (props: React.ComponentProps<'button'>) => {
-  const { className, ...rest } = props
+interface SearchButtonProps extends React.ComponentProps<'button'> {
+  /** Applied to the outer container div, not the button itself, use this to control overall width/flex from a parent that needs the search bar to grow. */
+  containerClassName?: string
+}
+
+export const SearchButton = (props: SearchButtonProps) => {
+  const { className, containerClassName, ...rest } = props
   const key = useCommandOrControl()
   return (
     <>
-      <div className={cx(styles.container, css({ hideBelow: 'sm' }))}>
+      <div className={cx(styles.container, css({ hideBelow: 'sm' }), containerClassName)}>
         <button
           spellCheck={false}
           className={cx(className, styles.input)}

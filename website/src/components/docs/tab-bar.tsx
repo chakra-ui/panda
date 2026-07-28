@@ -6,7 +6,15 @@ import { Box, HStack } from '@/styled-system/jsx'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
-import { LuBlocks, LuBookOpen, LuChevronDown, LuPaintbrush, LuPalette, LuUsers } from 'react-icons/lu'
+import { createPortal } from 'react-dom'
+import {
+  LuBlocks,
+  LuBookOpen,
+  LuChevronDown,
+  LuPaintbrush,
+  LuPalette,
+  LuUsers
+} from 'react-icons/lu'
 import type { IconType } from 'react-icons'
 
 export const TAB_ICONS: Record<string, IconType> = {
@@ -39,8 +47,20 @@ export function TabBar() {
   const right = docsTabs.filter(tab => tab.side === 'right')
 
   return (
-    <Box as="nav" aria-label="Docs sections" borderBottomWidth="1px" borderColor="border">
-      <HStack gap="1" px="6" overflowX="auto" className="scroll-area" alignItems="stretch">
+    <Box
+      as="nav"
+      aria-label="Docs sections"
+      borderBottomWidth="1px"
+      borderColor="border"
+      bg="bg"
+    >
+      <HStack
+        gap="1"
+        px="6"
+        overflowX="auto"
+        className="scroll-area"
+        alignItems="stretch"
+      >
         <HStack gap="1" flexShrink="0" alignItems="stretch">
           {left.map(tab => (
             <TabLink key={tab.key} tab={tab} active={tab.key === activeKey} />
@@ -81,16 +101,31 @@ export function TabBar() {
  * marketing pages at their own routes, and the rest (Discord, GitHub, Roadmap,
  * Changelog, Contributing) are external links. There's no `/docs/community`
  * content for it to route to.
+ *
+ * The panel renders through a portal into `document.body`, positioned via the
+ * button's own bounding rect. The tab bar's row has `overflowX: auto` for
+ * horizontal scrolling on mobile, and per the CSS spec, setting overflow-x to
+ * anything but `visible` forces overflow-y to clip too, so an absolutely
+ * positioned panel nested inside that row gets silently cut off. Portaling it
+ * out avoids that ancestor entirely.
  */
 function CommunityMenu() {
   const [open, setOpen] = useState(false)
-  const rootRef = useRef<HTMLDivElement>(null)
+  const [coords, setCoords] = useState({ top: 0, right: 0 })
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!open) return
 
     function onPointerDown(event: MouseEvent) {
-      if (rootRef.current && !rootRef.current.contains(event.target as Node)) {
+      const target = event.target as Node
+      if (
+        buttonRef.current &&
+        !buttonRef.current.contains(target) &&
+        panelRef.current &&
+        !panelRef.current.contains(target)
+      ) {
         setOpen(false)
       }
     }
@@ -99,21 +134,38 @@ function CommunityMenu() {
       if (event.key === 'Escape') setOpen(false)
     }
 
+    function onViewportChange() {
+      setOpen(false)
+    }
+
     document.addEventListener('mousedown', onPointerDown)
     document.addEventListener('keydown', onKeyDown)
+    window.addEventListener('scroll', onViewportChange, true)
+    window.addEventListener('resize', onViewportChange)
     return () => {
       document.removeEventListener('mousedown', onPointerDown)
       document.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('scroll', onViewportChange, true)
+      window.removeEventListener('resize', onViewportChange)
     }
   }, [open])
 
+  function toggleOpen() {
+    if (!open && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect()
+      setCoords({ top: rect.bottom + 4, right: window.innerWidth - rect.right })
+    }
+    setOpen(v => !v)
+  }
+
   return (
-    <Box ref={rootRef} position="relative" flexShrink="0">
+    <Box position="relative" flexShrink="0">
       <button
+        ref={buttonRef}
         type="button"
         aria-haspopup="menu"
         aria-expanded={open}
-        onClick={() => setOpen(v => !v)}
+        onClick={toggleOpen}
         className={css({
           display: 'flex',
           alignItems: 'center',
@@ -135,44 +187,46 @@ function CommunityMenu() {
         Community
         <LuChevronDown size={14} />
       </button>
-      {open && (
-        <Box
-          role="menu"
-          position="absolute"
-          top="full"
-          right="0"
-          mt="1"
-          minW="12rem"
-          bg="bg"
-          borderWidth="1px"
-          borderColor="border"
-          rounded="md"
-          shadow="lg"
-          py="1"
-          zIndex="20"
-        >
-          {communityLinks.map(link => (
-            <a
-              key={link.title}
-              role="menuitem"
-              href={link.href}
-              target={link.external ? '_blank' : undefined}
-              rel={link.external ? 'noopener noreferrer' : undefined}
-              onClick={() => setOpen(false)}
-              className={css({
-                display: 'block',
-                textStyle: 'sm',
-                color: 'fg.muted',
-                px: '3',
-                py: '2',
-                _hover: { color: 'fg', bg: 'bg.subtle' }
-              })}
-            >
-              {link.title}
-            </a>
-          ))}
-        </Box>
-      )}
+      {open &&
+        createPortal(
+          <div
+            ref={panelRef}
+            role="menu"
+            style={{ position: 'fixed', top: coords.top, right: coords.right }}
+            className={css({
+              minW: '12rem',
+              bg: 'bg',
+              borderWidth: '1px',
+              borderColor: 'border',
+              rounded: 'md',
+              shadow: 'lg',
+              py: '1',
+              zIndex: '20'
+            })}
+          >
+            {communityLinks.map(link => (
+              <a
+                key={link.title}
+                role="menuitem"
+                href={link.href}
+                target={link.external ? '_blank' : undefined}
+                rel={link.external ? 'noopener noreferrer' : undefined}
+                onClick={() => setOpen(false)}
+                className={css({
+                  display: 'block',
+                  textStyle: 'sm',
+                  color: 'fg.muted',
+                  px: '3',
+                  py: '2',
+                  _hover: { color: 'fg', bg: 'bg.subtle' }
+                })}
+              >
+                {link.title}
+              </a>
+            ))}
+          </div>,
+          document.body
+        )}
     </Box>
   )
 }

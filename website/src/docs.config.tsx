@@ -106,7 +106,17 @@ export const docsTabs: TabItem[] = [
           { title: 'Browser Support', url: 'browser-support' },
           { title: 'How Panda works', url: 'how-panda-works' },
           { title: 'Upgrading to v2', url: 'upgrading-to-v2' },
-          { title: 'The Compiler Engine', url: 'compiler-engine' }
+          { title: 'The Compiler Engine', url: 'compiler-engine' },
+          {
+            title: 'Roadmap',
+            href: 'https://panda-css.canny.io/',
+            external: true
+          },
+          {
+            title: 'Changelog',
+            href: 'https://github.com/chakra-ui/panda/blob/main/CHANGELOG.md',
+            external: true
+          }
         ]
       },
       {
@@ -171,7 +181,7 @@ export const docsTabs: TabItem[] = [
         ]
       },
       {
-        title: 'Coming from another tool',
+        title: 'Migration',
         items: [
           { title: 'Migration strategy', url: 'migration-strategy' },
           { title: 'Tailwind CSS', url: 'tailwind' },
@@ -328,10 +338,13 @@ export function getTab(key: string): TabItem | undefined {
 export const defaultTabKey = 'styling'
 
 /**
- * Links shown in the TabBar's "Community" dropdown. Team and Showcase are full
- * bespoke marketing pages (their own layout, data-fetching, OG images), not docs
- * content, so they stay at their existing routes rather than moving into the
- * `/docs/:tab/:page` content pipeline.
+ * Links shown in the TabBar's "Community" dropdown. Team and Showcase also
+ * exist in the persistent top-level site nav today, that's expected to be
+ * reworked/scrapped later, so they stay here deliberately rather than being
+ * treated as a duplicate to remove. GitHub is left out since it's a permanent
+ * icon link in the top nav with no plan to change that. Roadmap and Changelog
+ * live in Styling ▸ Get Started instead, they're product tracking, not
+ * community.
  */
 export const communityLinks: NavItem[] = [
   { title: 'Team', href: '/team' },
@@ -341,16 +354,5 @@ export const communityLinks: NavItem[] = [
     href: 'https://github.com/chakra-ui/panda/blob/main/CONTRIBUTING.md',
     external: true
   },
-  {
-    title: 'Roadmap',
-    href: 'https://panda-css.canny.io/',
-    external: true
-  },
-  {
-    title: 'Changelog',
-    href: 'https://github.com/chakra-ui/panda/blob/main/CHANGELOG.md',
-    external: true
-  },
-  { title: 'Discord', href: docsConfig.discordUrl, external: true },
-  { title: 'GitHub', href: docsConfig.docsRepositoryBase, external: true }
+  { title: 'Discord', href: docsConfig.discordUrl, external: true }
 ]

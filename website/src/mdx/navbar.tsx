@@ -134,7 +134,7 @@ interface MobileNavDrawerProps {
   children: React.ReactNode
 }
 
-const MobileNavDrawer = (props: MobileNavDrawerProps) => {
+export const MobileNavDrawer = (props: MobileNavDrawerProps) => {
   const { trigger, children } = props
   const dialog = useDialog()
   const classes = drawerSlotRecipe({ size: 'md', placement: 'start' })
@@ -181,7 +181,7 @@ interface MobileTabSwitcherProps {
  * Lets a reader switch docs tabs from inside the mobile drawer, without closing
  * it first, since the sticky TabBar sits behind the drawer's backdrop on mobile.
  */
-const MobileTabSwitcher = ({ pathname }: MobileTabSwitcherProps) => {
+export const MobileTabSwitcher = ({ pathname }: MobileTabSwitcherProps) => {
   const activeKey = pathname?.split('/')[2]
 
   return (
