@@ -36,6 +36,16 @@ describe('css', () => {
     assertType(css({ display: 'var(--button-color)' }))
   })
 
+  test('position values, not `position` keywords', () => {
+    assertType(css({ objectPosition: 'center' }))
+    assertType(css({ objectPosition: 'top 0 right 25%' }))
+    assertType(css({ backgroundPosition: 'center' }))
+    assertType(css({ maskPosition: 'center' }))
+    assertType(css({ perspectiveOrigin: 'left' }))
+    assertType(css({ position: 'relative' }))
+    assertType(css({ zIndex: 'auto' }))
+  })
+
   test('utility prop', () => {
     assertType(
       css({

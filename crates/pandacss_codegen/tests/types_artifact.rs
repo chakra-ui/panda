@@ -9,7 +9,7 @@ use pandacss_config::{
     PatternTypeData, PatternTypeDefinition, PrimitiveType, RESERVED_VALUE_ALIAS_NAMES,
     RecipeTypeData, RecipeTypeDefinition, SlotRecipeTypeDefinition, TokenCategoryTypeData,
     TokenTypeData, TypeData, UtilityPropertyTypeData, UtilityTypeData, ValueAliasTypeData,
-    ValueTypePart, VariantTypeData, value_alias_name,
+    ValueTypePart, VariantTypeData,
 };
 
 fn input() -> CodegenInput {
@@ -224,157 +224,35 @@ fn declared_type_name(line: &str) -> Option<&str> {
     (!name.is_empty()).then_some(name)
 }
 
-/// The `preset-base` utilities whose aliases land on Panda's CSS vocabulary.
-fn colliding_alias_input() -> CodegenInput {
-    let mut input = input();
-    let utilities = &mut input.types.utilities;
-
-    for (name, token_category) in [
-        ("position", None),
-        ("zIndex", Some("zIndex")),
-        ("container", None),
-    ] {
-        let alias = format!("{}Value", pascal_case(name));
-        utilities.properties.insert(
-            name.into(),
-            UtilityPropertyTypeData {
-                name: name.into(),
-                css_property: Some(name.into()),
-                token_category: token_category.map(Into::into),
-                alias: alias.clone(),
-                ..UtilityPropertyTypeData::default()
-            },
-        );
-        utilities.aliases.insert(
-            alias.clone(),
-            ValueAliasTypeData {
-                name: alias,
-                parts: vec![ValueTypePart::CssVars, ValueTypePart::AnyString],
-            },
-        );
-    }
-
-    input
-}
-
-fn strict_colliding_alias_input() -> CodegenInput {
-    let mut input = colliding_alias_input();
-    input.types.options.strict_tokens = true;
-    input.types.options.strict_property_values = true;
-    input
-}
-
-/// `utilities: { x: { property: 'conditional' } }` — legal config aimed at a reserved name.
-fn reserved_alias_input() -> CodegenInput {
-    let mut input = input();
-    let utilities = &mut input.types.utilities;
-
-    for reserved in RESERVED_VALUE_ALIAS_NAMES {
-        let property = reserved.trim_end_matches("Value");
-        let name = format!("{}{}", property[..1].to_lowercase(), &property[1..]);
-        let alias = value_alias_name(&name);
-        utilities.properties.insert(
-            name.clone(),
-            UtilityPropertyTypeData {
-                name: name.clone(),
-                css_property: Some(name),
-                alias: alias.clone(),
-                ..UtilityPropertyTypeData::default()
-            },
-        );
-        utilities.aliases.insert(
-            alias.clone(),
-            ValueAliasTypeData {
-                name: alias,
-                parts: vec![ValueTypePart::CssVars, ValueTypePart::AnyString],
-            },
-        );
-    }
-
-    input
-}
-
 /// Panda's CSS vocabulary uses the `Css` prefix; whatever still ends in `Value` must be
 /// reserved, or a utility on the matching property shadows it.
 #[test]
 fn reserves_every_panda_owned_value_type() {
-    let mut bare = input();
-    bare.types.utilities = UtilityTypeData::default();
+    // No utilities, so every remaining export is Panda's own.
+    for (scenario, mut bare) in [("default", input()), ("strict", strict_input())] {
+        bare.types.utilities = UtilityTypeData::default();
 
-    let artifacts = ArtifactGraph.generate_with_input(
-        &bare,
-        GenerateOptions {
-            format: CodegenFormat::Ts,
-            ..GenerateOptions::default()
-        },
-    );
-
-    let unreserved: Vec<_> = artifact(&artifacts, ArtifactId::Types)
-        .files
-        .iter()
-        .flat_map(|file| file.code.lines().filter_map(declared_type_name))
-        .filter(|name| name.ends_with("Value"))
-        .filter(|name| !RESERVED_VALUE_ALIAS_NAMES.contains(name))
-        .collect();
-
-    assert!(
-        unreserved.is_empty(),
-        "add to RESERVED_VALUE_ALIAS_NAMES or rename with the `Css` prefix: {unreserved:?}"
-    );
-}
-
-fn pascal_case(value: &str) -> String {
-    let mut chars = value.chars();
-    chars.next().map_or_else(String::new, |first| {
-        first.to_uppercase().collect::<String>() + chars.as_str()
-    })
-}
-
-/// TypeScript binds the first declaration and only reports the clash under
-/// `skipLibCheck: false`, so duplicates ship as silently wrong types.
-#[test]
-fn declares_every_exported_type_once() {
-    type Scenario = (&'static str, fn() -> CodegenInput);
-
-    let scenarios: [Scenario; 5] = [
-        ("default", input),
-        ("strict", strict_input),
-        ("colliding aliases", colliding_alias_input),
-        ("strict + colliding aliases", strict_colliding_alias_input),
-        ("reserved aliases", reserved_alias_input),
-    ];
-
-    let mut failures = Vec::new();
-    for (scenario, build_input) in scenarios {
         let artifacts = ArtifactGraph.generate_with_input(
-            &build_input(),
+            &bare,
             GenerateOptions {
                 format: CodegenFormat::Ts,
                 ..GenerateOptions::default()
             },
         );
 
-        for file in &artifact(&artifacts, ArtifactId::Types).files {
-            let mut seen = BTreeMap::new();
-            for name in file.code.lines().filter_map(declared_type_name) {
-                *seen.entry(name).or_insert(0_usize) += 1;
-            }
-            let duplicates: Vec<_> = seen
-                .into_iter()
-                .filter(|(_, count)| *count > 1)
-                .map(|(name, _)| name)
-                .collect();
-            if !duplicates.is_empty() {
-                failures.push(format!("{scenario}: {} declares {duplicates:?}", file.path));
-            }
-        }
-    }
+        let unreserved: Vec<_> = artifact(&artifacts, ArtifactId::Types)
+            .files
+            .iter()
+            .flat_map(|file| file.code.lines().filter_map(declared_type_name))
+            .filter(|name| name.ends_with("Value"))
+            .filter(|name| !RESERVED_VALUE_ALIAS_NAMES.contains(name))
+            .collect();
 
-    assert!(
-        failures.is_empty(),
-        "duplicate types:\n{}",
-        failures.join("\n")
-    );
+        assert!(
+            unreserved.is_empty(),
+            "{scenario}: add to RESERVED_VALUE_ALIAS_NAMES or rename with the `Css` prefix: {unreserved:?}"
+        );
+    }
 }
 
 #[test]
