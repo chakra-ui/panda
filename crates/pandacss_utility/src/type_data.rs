@@ -7,7 +7,7 @@ use pandacss_config::{
     ValueTypePart, value_alias_name,
 };
 use pandacss_extractor::Literal;
-use pandacss_shared::{hyphenate_property, pascal_case};
+use pandacss_shared::hyphenate_property;
 use pandacss_tokens::{TokenCategory, TokenDictionary};
 use rustc_hash::FxHashMap;
 
@@ -236,7 +236,7 @@ fn utility_value_alias_name(
     }
 
     let alias_property = property.css_property.as_deref().unwrap_or(name);
-    format!("{}Value", pascal_case(alias_property))
+    value_alias_name(alias_property)
 }
 
 /// `values: { type: 'boolean' }` is a primitive type hint, not a values map.

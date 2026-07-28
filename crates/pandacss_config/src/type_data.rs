@@ -409,9 +409,23 @@ impl PatternPropertyConfig {
     }
 }
 
+/// Panda's own `{X}Value` exports. A `pandacss_codegen` test keeps this complete.
+pub const RESERVED_VALUE_ALIAS_NAMES: &[&str] = &[
+    "ConditionalValue",
+    "CssVarValue",
+    "PatternPropertyValue",
+    "PatternTokenValue",
+    "TokenValue",
+];
+
+/// Names a config-derived alias, moving it aside when it would shadow a reserved type.
 #[must_use]
 pub fn value_alias_name(category: &str) -> String {
-    format!("{}Value", pascal_case(category))
+    let name = pascal_case(category);
+    if RESERVED_VALUE_ALIAS_NAMES.contains(&format!("{name}Value").as_str()) {
+        return format!("{name}UtilityValue");
+    }
+    format!("{name}Value")
 }
 
 #[must_use]

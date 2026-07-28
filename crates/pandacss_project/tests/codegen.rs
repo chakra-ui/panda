@@ -61,7 +61,7 @@ fn generates_artifacts_from_resolved_project_state() {
     // `types/system` is the merged surface (own csstype + properties + selectors +
     // system-types) — ~540 members, so assert its shape rather than full content.
     let code = &system.code;
-    assert!(code.contains("export type CssValue = Globals | (string & {}) | number"));
+    assert!(code.contains("export type CssAny = CssGlobals | (string & {}) | number"));
     assert!(code.contains("export interface SystemProperties {"));
     assert!(!code.contains("export interface CssProperties {"));
     assert!(

@@ -182,7 +182,7 @@ fn condition_type_parts(
         "export interface Conditions {{\n{condition_members}\n}}\n\n\
          export interface Breakpoints {{\n{breakpoint_members}\n}}\n\n\
          export type ContainerName = {container_name}\n\
-         export type ContainerValue = ContainerName | `${{ContainerName}} / inline-size` | `${{ContainerName}} / size` | AnyString\n\n\
+         export type CssContainer = ContainerName | `${{ContainerName}} / inline-size` | `${{ContainerName}} / size` | AnyString\n\n\
          export type Condition = keyof Conditions\n\n\
          export type ConditionalValue<T> =\n  | T\n  | {array_member}\n  | {{ [K in Condition]?: ConditionalValue<T> }}"
     )]
@@ -337,7 +337,7 @@ fn strict_alias_entries(
 
 fn native_css_property_value_type(name: &str, options: pandacss_config::TypegenOptions) -> String {
     let Some(entry) = strict_props::property_value_entry(name) else {
-        return "CssValue".into();
+        return "CssAny".into();
     };
 
     if should_strict_narrow_native_property(name, entry, options) {
@@ -397,7 +397,7 @@ fn utility_system_property_type(
         return alias.to_owned();
     }
 
-    render_ts_union([alias.to_owned(), "CssValue".into()])
+    render_ts_union([alias.to_owned(), "CssAny".into()])
 }
 
 /// v1 `cssFallback` — unions the native `PropertyValueMap` entry for a known CSS property.
@@ -480,7 +480,7 @@ fn build_system_properties_members(
         }
     }
 
-    overrides.insert("container", "ContainerValue".into());
+    overrides.insert("container", "CssContainer".into());
     overrides.insert("containerName", "ContainerName".into());
 
     if options.strict_property_values || options.strict_tokens {
@@ -533,10 +533,10 @@ fn render_ts_union(parts: impl IntoIterator<Item = String>) -> String {
     if rendered.iter().any(|part| {
         matches!(
             part.as_str(),
-            "ColorGlobals" | "DimensionGlobals" | "AutoGlobals"
+            "CssColorGlobals" | "CssDimensionGlobals" | "CssAutoGlobals"
         )
     }) {
-        rendered.retain(|part| part != "Globals");
+        rendered.retain(|part| part != "CssGlobals");
     }
 
     if rendered.iter().any(|part| part == "number") {
@@ -549,77 +549,77 @@ fn render_ts_union(parts: impl IntoIterator<Item = String>) -> String {
 /// Shared CSS value aliases and `PropertyValueMap` sourced from csstype `DataType.*`.
 fn css_datatype_type_parts() -> Vec<String> {
     vec![
-        r#"export type Globals = "inherit" | "initial" | "revert" | "revert-layer" | "unset""#.into(),
-        r#"export type ColorGlobals = Globals | "currentColor" | "transparent""#.into(),
-        r#"export type DimensionGlobals = Globals | "auto" | "fit-content" | "max-content" | "min-content""#.into(),
-        r#"export type AutoGlobals = Globals | "auto""#.into(),
-        "export type LengthValue = DimensionGlobals | (string & {}) | number".into(),
+        r#"export type CssGlobals = "inherit" | "initial" | "revert" | "revert-layer" | "unset""#.into(),
+        r#"export type CssColorGlobals = CssGlobals | "currentColor" | "transparent""#.into(),
+        r#"export type CssDimensionGlobals = CssGlobals | "auto" | "fit-content" | "max-content" | "min-content""#.into(),
+        r#"export type CssAutoGlobals = CssGlobals | "auto""#.into(),
+        "export type CssLength = CssDimensionGlobals | (string & {}) | number".into(),
         format!(
-            "export type NamedColor = {}",
+            "export type CssNamedColor = {}",
             data_type::literals_union(data_type::NAMED_COLORS)
         ),
         format!(
-            "export type SystemColor = {}",
+            "export type CssSystemColor = {}",
             data_type::literals_union(data_type::SYSTEM_COLORS)
         ),
-        "export type ColorCssValue = ColorGlobals | NamedColor | SystemColor | (string & {})".into(),
+        "export type CssColor = CssColorGlobals | CssNamedColor | CssSystemColor | (string & {})".into(),
         format!(
-            "export type AbsoluteSize = {}",
+            "export type CssAbsoluteSize = {}",
             data_type::literals_union(data_type::ABSOLUTE_SIZES)
         ),
         format!(
-            "export type BgSizeValue = LengthValue | {}",
+            "export type CssBgSize = CssLength | {}",
             data_type::literals_union(data_type::BG_SIZE_KEYWORDS)
         ),
-        "export type FontSizeValue = LengthValue | AbsoluteSize | \"larger\" | \"smaller\" | \"math\"".into(),
+        "export type CssFontSize = CssLength | CssAbsoluteSize | \"larger\" | \"smaller\" | \"math\"".into(),
         format!(
-            "export type FontWeightValue = Globals | {} | (string & {{}}) | number",
+            "export type CssFontWeight = CssGlobals | {} | (string & {{}}) | number",
             data_type::literals_union(data_type::FONT_WEIGHT_KEYWORDS)
         ),
         format!(
-            "export type LineWidthValue = LengthValue | {}",
+            "export type CssLineWidth = CssLength | {}",
             data_type::literals_union(data_type::LINE_WIDTH_KEYWORDS)
         ),
         format!(
-            "export type LineStyleValue = Globals | {}",
+            "export type CssLineStyle = CssGlobals | {}",
             data_type::literals_union(data_type::LINE_STYLE_KEYWORDS)
         ),
-        "export type OpenLineStyleValue = LineStyleValue | (string & {})".into(),
+        "export type CssLineStyleOpen = CssLineStyle | (string & {})".into(),
         format!(
-            "export type RepeatStyleValue = Globals | {} | (string & {{}})",
+            "export type CssRepeatStyle = CssGlobals | {} | (string & {{}})",
             data_type::literals_union(data_type::REPEAT_STYLE_KEYWORDS)
         ),
         format!(
-            "export type FontStretchValue = Globals | {} | (string & {{}})",
+            "export type CssFontStretch = CssGlobals | {} | (string & {{}})",
             data_type::literals_union(data_type::FONT_STRETCH_KEYWORDS)
         ),
         format!(
-            "export type OverflowCssValue = Globals | {}",
+            "export type CssOverflow = CssGlobals | {}",
             data_type::literals_union(data_type::OVERFLOW_KEYWORDS)
         ),
-        "export type OpenOverflowCssValue = OverflowCssValue | (string & {})".into(),
+        "export type CssOverflowOpen = CssOverflow | (string & {})".into(),
         format!(
-            "export type OverflowShortCssValue = Globals | {}",
+            "export type CssOverflowShort = CssGlobals | {}",
             data_type::literals_union(data_type::OVERFLOW_SHORT_KEYWORDS)
         ),
         format!(
-            "export type OverscrollBehaviorCssValue = Globals | {}",
+            "export type CssOverscrollBehavior = CssGlobals | {}",
             data_type::literals_union(data_type::OVERSCROLL_BEHAVIOR_KEYWORDS)
         ),
-        "export type OpenOverscrollBehaviorCssValue = OverscrollBehaviorCssValue | (string & {})"
+        "export type CssOverscrollBehaviorOpen = CssOverscrollBehavior | (string & {})"
             .into(),
         format!(
-            "export type PositionValue = LengthValue | {}",
+            "export type CssPosition = CssLength | {}",
             data_type::literals_union(data_type::POSITION_KEYWORDS)
         ),
         format!(
-            "export type GenericFamily = {}",
+            "export type CssGenericFamily = {}",
             data_type::literals_union(data_type::GENERIC_FAMILIES)
         ),
-        "export type FontFamilyValue = Globals | GenericFamily | (string & {})".into(),
-        "export type NumericCssValue = Globals | (string & {}) | number".into(),
-        "export type ZIndexValue = AutoGlobals | (string & {}) | number".into(),
-        "export type CssValue = Globals | (string & {}) | number".into(),
+        "export type CssFontFamily = CssGlobals | CssGenericFamily | (string & {})".into(),
+        "export type CssNumeric = CssGlobals | (string & {}) | number".into(),
+        "export type CssZIndex = CssAutoGlobals | (string & {}) | number".into(),
+        "export type CssAny = CssGlobals | (string & {}) | number".into(),
         property_value_map_declaration(),
     ]
 }
@@ -727,38 +727,38 @@ fn property_value_raw_type(entry: &strict_props::PropertyValueEntry) -> String {
         strict_props::PropertyValueKind::Keywords { keywords, open } => {
             keywords_value_type(keywords, open)
         }
-        strict_props::PropertyValueKind::Length => "LengthValue".into(),
-        strict_props::PropertyValueKind::Color => "ColorCssValue".into(),
-        strict_props::PropertyValueKind::Numeric => "NumericCssValue".into(),
-        strict_props::PropertyValueKind::ZIndex => "ZIndexValue".into(),
-        strict_props::PropertyValueKind::BgSize => "BgSizeValue".into(),
-        strict_props::PropertyValueKind::FontSize => "FontSizeValue".into(),
-        strict_props::PropertyValueKind::FontWeight => "FontWeightValue".into(),
-        strict_props::PropertyValueKind::LineWidth => "LineWidthValue".into(),
-        strict_props::PropertyValueKind::Position => "PositionValue".into(),
-        strict_props::PropertyValueKind::FontFamily => "FontFamilyValue".into(),
+        strict_props::PropertyValueKind::Length => "CssLength".into(),
+        strict_props::PropertyValueKind::Color => "CssColor".into(),
+        strict_props::PropertyValueKind::Numeric => "CssNumeric".into(),
+        strict_props::PropertyValueKind::ZIndex => "CssZIndex".into(),
+        strict_props::PropertyValueKind::BgSize => "CssBgSize".into(),
+        strict_props::PropertyValueKind::FontSize => "CssFontSize".into(),
+        strict_props::PropertyValueKind::FontWeight => "CssFontWeight".into(),
+        strict_props::PropertyValueKind::LineWidth => "CssLineWidth".into(),
+        strict_props::PropertyValueKind::Position => "CssPosition".into(),
+        strict_props::PropertyValueKind::FontFamily => "CssFontFamily".into(),
         strict_props::PropertyValueKind::LineStyle { open } => {
             if open {
-                "OpenLineStyleValue".into()
+                "CssLineStyleOpen".into()
             } else {
-                "LineStyleValue".into()
+                "CssLineStyle".into()
             }
         }
-        strict_props::PropertyValueKind::RepeatStyle => "RepeatStyleValue".into(),
-        strict_props::PropertyValueKind::FontStretch => "FontStretchValue".into(),
+        strict_props::PropertyValueKind::RepeatStyle => "CssRepeatStyle".into(),
+        strict_props::PropertyValueKind::FontStretch => "CssFontStretch".into(),
         strict_props::PropertyValueKind::Overflow { open } => {
             if open {
-                "OpenOverflowCssValue".into()
+                "CssOverflowOpen".into()
             } else {
-                "OverflowCssValue".into()
+                "CssOverflow".into()
             }
         }
-        strict_props::PropertyValueKind::OverflowShort => "OverflowShortCssValue".into(),
+        strict_props::PropertyValueKind::OverflowShort => "CssOverflowShort".into(),
         strict_props::PropertyValueKind::OverscrollBehavior { open } => {
             if open {
-                "OpenOverscrollBehaviorCssValue".into()
+                "CssOverscrollBehaviorOpen".into()
             } else {
-                "OverscrollBehaviorCssValue".into()
+                "CssOverscrollBehavior".into()
             }
         }
     }
@@ -766,7 +766,7 @@ fn property_value_raw_type(entry: &strict_props::PropertyValueEntry) -> String {
 
 fn keywords_value_type(keywords: &[&str], open: bool) -> String {
     if keywords.is_empty() {
-        return "Globals".into();
+        return "CssGlobals".into();
     }
 
     let rendered = keywords
@@ -776,9 +776,9 @@ fn keywords_value_type(keywords: &[&str], open: bool) -> String {
         .join(" | ");
 
     if open {
-        format!("Globals | {rendered} | (string & {{}})")
+        format!("CssGlobals | {rendered} | (string & {{}})")
     } else {
-        format!("Globals | {rendered}")
+        format!("CssGlobals | {rendered}")
     }
 }
 
@@ -795,7 +795,7 @@ fn css_property_value_ref(property: &str) -> String {
     if strict_props::property_value_entry(property).is_some() {
         format!("PropertyValueMap[{}]", string_literal(property))
     } else {
-        "CssValue".into()
+        "CssAny".into()
     }
 }
 
@@ -938,7 +938,7 @@ fn value_alias_type(
             .collect::<Vec<_>>();
 
         if !strict_parts.is_empty() {
-            return format!("WithEscapeHatch<Globals | {}>", strict_parts.join(" | "));
+            return format!("WithEscapeHatch<CssGlobals | {}>", strict_parts.join(" | "));
         }
     }
 
@@ -1049,16 +1049,16 @@ fn strict_property_value_type(
         strict_props::PropertyValueKind::Keywords { keywords, .. } => {
             strict_keywords_type(keywords, literals, mapped_css_property)
         }
-        strict_props::PropertyValueKind::Length => "WithEscapeHatch<LengthValue>".into(),
-        strict_props::PropertyValueKind::Color => "WithEscapeHatch<ColorCssValue>".into(),
-        strict_props::PropertyValueKind::Numeric => "WithEscapeHatch<NumericCssValue>".into(),
-        strict_props::PropertyValueKind::ZIndex => "WithEscapeHatch<ZIndexValue>".into(),
-        strict_props::PropertyValueKind::BgSize => "WithEscapeHatch<BgSizeValue>".into(),
-        strict_props::PropertyValueKind::FontSize => "WithEscapeHatch<FontSizeValue>".into(),
-        strict_props::PropertyValueKind::FontWeight => "WithEscapeHatch<FontWeightValue>".into(),
-        strict_props::PropertyValueKind::LineWidth => "WithEscapeHatch<LineWidthValue>".into(),
-        strict_props::PropertyValueKind::Position => "WithEscapeHatch<PositionValue>".into(),
-        strict_props::PropertyValueKind::FontFamily => "WithEscapeHatch<FontFamilyValue>".into(),
+        strict_props::PropertyValueKind::Length => "WithEscapeHatch<CssLength>".into(),
+        strict_props::PropertyValueKind::Color => "WithEscapeHatch<CssColor>".into(),
+        strict_props::PropertyValueKind::Numeric => "WithEscapeHatch<CssNumeric>".into(),
+        strict_props::PropertyValueKind::ZIndex => "WithEscapeHatch<CssZIndex>".into(),
+        strict_props::PropertyValueKind::BgSize => "WithEscapeHatch<CssBgSize>".into(),
+        strict_props::PropertyValueKind::FontSize => "WithEscapeHatch<CssFontSize>".into(),
+        strict_props::PropertyValueKind::FontWeight => "WithEscapeHatch<CssFontWeight>".into(),
+        strict_props::PropertyValueKind::LineWidth => "WithEscapeHatch<CssLineWidth>".into(),
+        strict_props::PropertyValueKind::Position => "WithEscapeHatch<CssPosition>".into(),
+        strict_props::PropertyValueKind::FontFamily => "WithEscapeHatch<CssFontFamily>".into(),
         strict_props::PropertyValueKind::LineStyle { .. } => strict_keywords_type(
             data_type::LINE_STYLE_KEYWORDS,
             literals,
@@ -1109,11 +1109,11 @@ fn strict_keywords_type(
     }
 
     if rendered.is_empty() {
-        return "WithEscapeHatch<Globals | CssVars>".into();
+        return "WithEscapeHatch<CssGlobals | CssVars>".into();
     }
 
     format!(
-        "WithEscapeHatch<Globals | CssVars | OnlyKnown<{}>>",
+        "WithEscapeHatch<CssGlobals | CssVars | OnlyKnown<{}>>",
         rendered.join(" | ")
     )
 }
@@ -1153,13 +1153,13 @@ fn has_token_part(parts: &[ValueTypePart]) -> bool {
 }
 
 /// The CSS-wide keywords plus the non-tokenizable keywords `category`'s
-/// properties accept (per csstype). No extras falls back to bare `Globals`.
+/// properties accept (per csstype). No extras falls back to bare `CssGlobals`.
 fn category_globals(category: &str) -> &'static str {
     match category {
-        "colors" => "ColorGlobals",
-        "sizes" => "DimensionGlobals",
-        "spacing" | "zIndex" | "aspectRatios" => "AutoGlobals",
-        _ => "Globals",
+        "colors" => "CssColorGlobals",
+        "sizes" => "CssDimensionGlobals",
+        "spacing" | "zIndex" | "aspectRatios" => "CssAutoGlobals",
+        _ => "CssGlobals",
     }
 }
 
@@ -1174,13 +1174,13 @@ fn strict_token_globals(parts: &[ValueTypePart]) -> String {
     names.sort_unstable();
     names.dedup();
 
-    // Every category alias already includes `Globals` — drop the bare one once a richer alias is present.
+    // Every category alias already includes `CssGlobals` — drop the bare one once a richer alias is present.
     if names.len() > 1 {
-        names.retain(|name| *name != "Globals");
+        names.retain(|name| *name != "CssGlobals");
     }
 
     if names.is_empty() {
-        "Globals".to_owned()
+        "CssGlobals".to_owned()
     } else {
         names.join(" | ")
     }

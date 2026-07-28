@@ -19,10 +19,10 @@ pub use theme::{
 };
 pub use type_data::{
     ConditionTypeData, PatternPropertyTypeData, PatternPropertyTypeKind, PatternTypeData,
-    PatternTypeDefinition, PrimitiveType, RecipeTypeData, RecipeTypeDefinition, SelectorTypeData,
-    SlotRecipeTypeDefinition, Spec, TokenCategoryTypeData, TokenTypeData, TypeData, TypegenOptions,
-    UtilityPropertyTypeData, UtilityTypeData, ValueAliasTypeData, ValueTypePart, VariantTypeData,
-    token_category_type_name, value_alias_name,
+    PatternTypeDefinition, PrimitiveType, RESERVED_VALUE_ALIAS_NAMES, RecipeTypeData,
+    RecipeTypeDefinition, SelectorTypeData, SlotRecipeTypeDefinition, Spec, TokenCategoryTypeData,
+    TokenTypeData, TypeData, TypegenOptions, UtilityPropertyTypeData, UtilityTypeData,
+    ValueAliasTypeData, ValueTypePart, VariantTypeData, token_category_type_name, value_alias_name,
 };
 pub use validate::{validate_config, validate_config_value, validation_mode_from_value};
 
