@@ -23,7 +23,7 @@ use super::jsx_shared::{
 use super::jsx_skip::{
     dynamic_class_name_expression_should_skip, dynamic_style_expression_should_skip,
 };
-use super::plan::{HelperCxMode, Rewrite};
+use super::plan::{HelperCxMode, Rewrite, TransformHelperFacts};
 use super::style_lower::{self, LowerResult};
 
 pub(super) fn rewrites_for_jsx_opening_element(
@@ -31,7 +31,6 @@ pub(super) fn rewrites_for_jsx_opening_element(
     source: &str,
     jsx: &ExtractedJsx,
     helper_cx: HelperCxMode,
-    needs_cx: &mut bool,
     mut pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> Vec<Rewrite> {
     let parsed =
@@ -44,7 +43,6 @@ pub(super) fn rewrites_for_jsx_opening_element(
         helper_cx,
         pattern_transform.as_deref_mut(),
     ) {
-        *needs_cx = true;
         return vec![rewrite];
     }
     let Some(spread_plan) = opening_spread_plan(project, source, jsx, &parsed) else {
@@ -77,14 +75,15 @@ pub(super) fn rewrites_for_jsx_opening_element(
     else {
         return Vec::new();
     };
-    if class_name.needs_cx {
-        *needs_cx = true;
-    }
     let mut rewrites = vec![Rewrite {
         start: jsx.span.start,
         end: jsx.span.end,
         content,
         preserved,
+        helper: TransformHelperFacts {
+            needs_cx: class_name.needs_cx,
+            ..TransformHelperFacts::default()
+        },
     }];
 
     if let Some(closing) = closing_tag_rewrite(jsx, &tag) {
@@ -251,6 +250,7 @@ fn partial_fold_rewrite(
         end: jsx.span.end,
         content: out,
         preserved,
+        helper: TransformHelperFacts::cx(),
     })
 }
 
@@ -434,5 +434,6 @@ fn closing_tag_rewrite(jsx: &ExtractedJsx, tag: &ElementTag) -> Option<Rewrite> 
         end: closing.end,
         content: format!("</{}>", tag.opening_name()),
         preserved: Vec::new(),
+        ..Default::default()
     })
 }

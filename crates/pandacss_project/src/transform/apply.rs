@@ -264,6 +264,7 @@ mod tests {
                 end: call_span.end,
                 content: "\"color_red\"".to_owned(),
                 preserved: Vec::new(),
+                ..Default::default()
             }],
             dependencies: Vec::new(),
             helper: TransformHelperFacts::default(),

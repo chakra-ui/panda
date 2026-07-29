@@ -7,7 +7,7 @@ use pandacss_recipes::{
 };
 
 use super::helper::{CVA_HELPER_LOCAL, SVA_HELPER_LOCAL};
-use super::plan::Rewrite;
+use super::plan::{Rewrite, TransformHelperFacts};
 use super::resolve::{is_static_style_literal, js_string_literal};
 use super::style_lower::{self, LowerResult};
 
@@ -32,6 +32,7 @@ pub(crate) fn rewrite_for_cva_call(
         preserved: style
             .map(style_lower::preserved_source_spans)
             .unwrap_or_default(),
+        helper: TransformHelperFacts::cva(),
     })
 }
 
@@ -50,6 +51,7 @@ pub(crate) fn rewrite_for_sva_call(
         end: span.end,
         content: format!("{SVA_HELPER_LOCAL}({encoded})"),
         preserved: Vec::new(),
+        helper: TransformHelperFacts::sva(),
     })
 }
 
@@ -461,6 +463,7 @@ pub(crate) fn rewrite_styled_config_arg(
         preserved: style
             .map(style_lower::preserved_source_spans)
             .unwrap_or_default(),
+        helper: TransformHelperFacts::cva(),
     })
 }
 

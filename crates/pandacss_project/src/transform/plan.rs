@@ -1,11 +1,11 @@
 //! Transform planning: match sites, bailouts, and rewrite decisions.
 
 use pandacss_extractor::{ExtractUsage, ExtractedCall, MatchCategory};
+use rustc_hash::FxHashSet;
 
 use crate::PatternTransformFn;
 use crate::Project;
 
-use super::helper::{CVA_HELPER_LOCAL, CX_HELPER_LOCAL};
 use super::resolve;
 
 #[derive(Debug, Clone, Default)]
@@ -13,6 +13,38 @@ pub struct TransformHelperFacts {
     pub needs_cx: bool,
     pub needs_cva: bool,
     pub needs_sva: bool,
+}
+
+impl TransformHelperFacts {
+    pub(crate) fn merge(&mut self, other: &Self) {
+        self.needs_cx |= other.needs_cx;
+        self.needs_cva |= other.needs_cva;
+        self.needs_sva |= other.needs_sva;
+    }
+
+    pub(crate) const fn cx() -> Self {
+        Self {
+            needs_cx: true,
+            needs_cva: false,
+            needs_sva: false,
+        }
+    }
+
+    pub(crate) const fn cva() -> Self {
+        Self {
+            needs_cx: false,
+            needs_cva: true,
+            needs_sva: false,
+        }
+    }
+
+    pub(crate) const fn sva() -> Self {
+        Self {
+            needs_cx: false,
+            needs_cva: false,
+            needs_sva: true,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -101,19 +133,32 @@ pub(crate) struct TransformPlan {
     pub bailed: bool,
 }
 
-#[derive(Debug, Clone)]
+impl TransformPlan {
+    /// Records a rewrite and the internal runtime symbols it declared.
+    fn push(&mut self, rewrite: Rewrite) {
+        self.helper.merge(&rewrite.helper);
+        self.rewrites.push(rewrite);
+    }
+
+    fn extend(&mut self, rewrites: impl IntoIterator<Item = Rewrite>) {
+        for rewrite in rewrites {
+            self.push(rewrite);
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default)]
 pub(crate) struct Rewrite {
     pub start: u32,
     pub end: u32,
     pub content: String,
     /// Original source regions deliberately re-emitted by this rewrite.
     pub preserved: Vec<pandacss_shared::Span>,
+    /// Internal runtime symbols this rewrite's content calls. Declared by the
+    /// producer — `content` re-emits user source, so it can't be scanned for them.
+    pub helper: TransformHelperFacts,
 }
 
-#[allow(
-    clippy::too_many_lines,
-    reason = "single dispatch over every matched call/jsx/token kind"
-)]
 pub(crate) fn build_plan(
     project: &Project,
     source: &str,
@@ -147,7 +192,7 @@ pub(crate) fn build_plan(
         if let Some(rewrite) =
             resolve::rewrite_for_style_literal(source, raw_call.span, &raw_call.styles)
         {
-            plan.rewrites.push(rewrite);
+            plan.push(rewrite);
         }
     }
 
@@ -167,64 +212,16 @@ pub(crate) fn build_plan(
             continue;
         }
         match call.category {
-            MatchCategory::Css if targets.css_enabled() => match call.name.as_str() {
-                "cva" | "sva"
-                    if !push_inline_recipe_raw_rewrites(
-                        &mut plan, project, source, extracted, call,
-                    ) => {}
-                "cva" => {
-                    if let Some(rewrite) = super::recipe_inline::rewrite_for_cva_call(
-                        project,
-                        source,
-                        call.span,
-                        &call.data,
-                        &call.arg_spans,
-                        &call.style_args,
-                    ) {
-                        // Keep call sites as `__pcva` runtime — boolean bitset
-                        // + memo beats `__pcx(cond && slot)` when prop tuples
-                        // reuse (css-in-js-bench btn-variant). Call-site
-                        // lowering must stay opt-in, never the default.
-                        plan.rewrites.push(rewrite);
-                        plan.helper.needs_cva = true;
-                    }
-                }
-                "sva" => {
-                    if let Some(rewrite) =
-                        super::recipe_inline::rewrite_for_sva_call(project, call.span, &call.data)
-                    {
-                        plan.rewrites.push(rewrite);
-                        plan.helper.needs_sva = true;
-                    }
-                }
-                "viewTransition" => {
-                    match resolve::rewrite_for_view_transition_call(project, call.span, &call.data)
-                    {
-                        Some(rewrite) => plan.rewrites.push(rewrite),
-                        None if call.data.first().is_some_and(Option::is_none) => {
-                            plan.bailed = true;
-                        }
-                        None => {}
-                    }
-                }
-                _ => match resolve::rewrite_for_css_call(
+            MatchCategory::Css if targets.css_enabled() => {
+                push_css_call_rewrites(
+                    &mut plan,
                     project,
                     source,
-                    call.span,
-                    &call.data,
-                    &call.style_args,
-                    &call.facts,
+                    extracted,
+                    call,
                     options.helper_cx,
-                ) {
-                    Some(rewrite) => {
-                        plan.helper.needs_cx |= rewrite.content.contains(CX_HELPER_LOCAL);
-                        plan.rewrites.push(rewrite);
-                    }
-                    None if css_style_tree_should_bail(&call.style_args) => plan.bailed = true,
-                    None if resolve::css_call_should_bail(&call.data) => plan.bailed = true,
-                    None => {}
-                },
-            },
+                );
+            }
             MatchCategory::Recipe if targets.recipes_enabled() => {
                 if let Some(rewrite) = resolve::rewrite_for_recipe_call(
                     project,
@@ -233,7 +230,7 @@ pub(crate) fn build_plan(
                     &call.data,
                     &call.facts,
                 ) {
-                    plan.rewrites.push(rewrite);
+                    plan.push(rewrite);
                 }
             }
             MatchCategory::Pattern if targets.patterns_enabled() => {
@@ -246,15 +243,14 @@ pub(crate) fn build_plan(
                     &call.facts,
                     pattern_transform.as_deref_mut(),
                 ) {
-                    plan.rewrites.push(rewrite);
+                    plan.push(rewrite);
                 }
             }
             MatchCategory::Jsx if targets.jsx_enabled() => {
                 if let Some(rewrite) =
                     super::recipe_inline::rewrite_for_styled_call(project, source, call)
                 {
-                    plan.rewrites.push(rewrite);
-                    plan.helper.needs_cva = true;
+                    plan.push(rewrite);
                 }
             }
             _ => {}
@@ -268,13 +264,9 @@ pub(crate) fn build_plan(
                 source,
                 jsx,
                 options.helper_cx,
-                &mut plan.helper.needs_cx,
                 pattern_transform.as_deref_mut(),
             );
-            for rewrite in &rewrites {
-                plan.helper.needs_cva |= rewrite.content.contains(CVA_HELPER_LOCAL);
-            }
-            plan.rewrites.extend(rewrites);
+            plan.extend(rewrites);
         }
     }
 
@@ -283,6 +275,68 @@ pub(crate) fn build_plan(
     }
 
     plan
+}
+
+/// Dispatch one `css`-entrypoint call: the inline recipe factories, the
+/// `viewTransition` helper, or a plain `css()`.
+fn push_css_call_rewrites(
+    plan: &mut TransformPlan,
+    project: &Project,
+    source: &str,
+    extracted: &ExtractUsage,
+    call: &ExtractedCall,
+    helper_cx: HelperCxMode,
+) {
+    match call.name.as_str() {
+        "cva" | "sva"
+            if !push_inline_recipe_raw_rewrites(plan, project, source, extracted, call) => {}
+        "cva" => {
+            if let Some(rewrite) = super::recipe_inline::rewrite_for_cva_call(
+                project,
+                source,
+                call.span,
+                &call.data,
+                &call.arg_spans,
+                &call.style_args,
+            ) {
+                // Keep call sites as `__pcva` runtime — boolean bitset
+                // + memo beats `__pcx(cond && slot)` when prop tuples
+                // reuse (css-in-js-bench btn-variant). Call-site
+                // lowering must stay opt-in, never the default.
+                plan.push(rewrite);
+            }
+        }
+        "sva" => {
+            if let Some(rewrite) =
+                super::recipe_inline::rewrite_for_sva_call(project, call.span, &call.data)
+            {
+                plan.push(rewrite);
+            }
+        }
+        "viewTransition" => {
+            match resolve::rewrite_for_view_transition_call(project, call.span, &call.data) {
+                Some(rewrite) => plan.push(rewrite),
+                None if call.data.first().is_some_and(Option::is_none) => {
+                    plan.bailed = true;
+                }
+                None => {}
+            }
+        }
+        _ => match resolve::rewrite_for_css_call(
+            project,
+            source,
+            call.span,
+            &call.data,
+            &call.style_args,
+            &call.facts,
+            helper_cx,
+        ) {
+            Some(rewrite) => plan.push(rewrite),
+            None if css_style_tree_should_bail(&call.style_args) => plan.bailed = true,
+            None if resolve::css_call_should_bail(&call.data) => plan.bailed = true,
+            None => {}
+        },
+    }
 }
 
 /// Fold `binding.raw(props)` for an inline `cva`/`sva` definition, and report
@@ -335,7 +389,7 @@ fn push_inline_recipe_raw_rewrites(
         };
         rewrites.push(rewrite);
     }
-    plan.rewrites.extend(rewrites);
+    plan.extend(rewrites);
     true
 }
 
@@ -359,7 +413,7 @@ fn push_raw_rewrites(
             if let Some(rewrite) =
                 resolve::rewrite_for_pattern_raw_call(project, source, call, pattern_transform)
             {
-                plan.rewrites.push(rewrite);
+                plan.push(rewrite);
             }
         }
         MatchCategory::Css if targets.css_enabled() && call.name == "css" => {
@@ -372,7 +426,7 @@ fn push_raw_rewrites(
                 &call.arg_spans,
                 &call.facts,
             ) {
-                plan.rewrites.extend(rewrites);
+                plan.extend(rewrites);
             }
         }
         _ => {}
@@ -388,11 +442,11 @@ fn push_identity_or_merged_raw(
     if let Some(rewrites) =
         resolve::rewrites_for_identity_raw_call(source, call.span, &call.arg_spans, &call.facts)
     {
-        plan.rewrites.extend(rewrites);
+        plan.extend(rewrites);
     } else if let Some(rewrite) =
         resolve::rewrite_for_merged_raw_call(project, source, call.span, &call.data, &call.facts)
     {
-        plan.rewrites.push(rewrite);
+        plan.push(rewrite);
     }
 }
 
@@ -410,23 +464,30 @@ fn css_style_tree_should_bail(style_args: &[Option<pandacss_extractor::StyleTree
 /// Skips calls already covered by another rewrite (e.g. inside a rewritten
 /// `css()`), and calls that don't resolve.
 fn push_token_rewrites(plan: &mut TransformPlan, extracted: &ExtractUsage) {
-    let claimed: Vec<(u32, u32)> = plan.rewrites.iter().map(|r| (r.start, r.end)).collect();
-    let mut seen: Vec<u32> = Vec::new();
+    let mut seen: FxHashSet<u32> = FxHashSet::default();
+    // Buffered so the claim check reads the pre-token rewrites only.
+    let mut token_rewrites = Vec::new();
 
     for token_ref in &extracted.token_refs {
         let (start, end) = (token_ref.span.start, token_ref.span.end);
         let Some(value) = token_ref.value.as_deref() else {
             continue;
         };
-        if claimed.iter().any(|(s, e)| start >= *s && end <= *e) || seen.contains(&start) {
+        let claimed = plan
+            .rewrites
+            .iter()
+            .any(|rewrite| start >= rewrite.start && end <= rewrite.end);
+        if claimed || !seen.insert(start) {
             continue;
         }
-        seen.push(start);
-        plan.rewrites.push(Rewrite {
+        token_rewrites.push(Rewrite {
             start,
             end,
             content: serde_json::to_string(value).expect("string serializes as JSON"),
             preserved: Vec::new(),
+            ..Default::default()
         });
     }
+
+    plan.extend(token_rewrites);
 }

@@ -1,6 +1,6 @@
 //! Integration tests for helper import injection and `needs_cx` metadata.
 
-use super::common::{transform_jsx, transform_jsx_with_helper};
+use super::common::{transform, transform_jsx, transform_jsx_with_helper};
 use indoc::indoc;
 use insta::assert_snapshot;
 use pandacss_project::{
@@ -322,4 +322,25 @@ fn cn_false_never_injects_helper_import() {
     assert!(!output.helper.needs_cx);
     assert!(!output.code.contains("@pandacss-internal/css"));
     assert_snapshot!(output.code, @r#"export const el = <div className={props.className + " " + (isError ? "color_red" : "color_blue")} />;"#);
+}
+
+/// Helper demand is declared by the rewrite that emits the call, not inferred
+/// from its text — the content re-emits user source verbatim, so a user symbol
+/// that merely looks like the helper must not pull in the import.
+#[test]
+fn a_user_symbol_named_like_the_helper_does_not_request_the_import() {
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        export const make = (__pcx) => css({ color: __pcx ? 'red' : 'blue' });
+    "#};
+
+    let output = transform("src/app.ts", source);
+
+    assert!(output.changed);
+    assert!(!output.helper.needs_cx);
+    assert!(!output.code.contains("@pandacss-internal/css"));
+    assert_snapshot!(
+        output.code,
+        @r#"export const make = (__pcx) => __pcx ? "color_red" : "color_blue";"#
+    );
 }

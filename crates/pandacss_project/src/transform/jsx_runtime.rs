@@ -18,7 +18,7 @@ use super::jsx_shared::{
 use super::jsx_skip::{
     dynamic_class_name_expression_should_skip, dynamic_style_expression_should_skip,
 };
-use super::plan::{HelperCxMode, Rewrite};
+use super::plan::{HelperCxMode, Rewrite, TransformHelperFacts};
 use super::resolve::span_slice;
 use super::style_lower::{self, LowerResult};
 
@@ -27,7 +27,6 @@ pub(super) fn rewrites_for_jsx_runtime_call(
     source: &str,
     jsx: &ExtractedJsx,
     helper_cx: HelperCxMode,
-    needs_cx: &mut bool,
     mut pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> Vec<Rewrite> {
     let Some(callee_span) = jsx.source.callee_span else {
@@ -88,10 +87,6 @@ pub(super) fn rewrites_for_jsx_runtime_call(
     args[1] = formatted_props;
     preserved.push(callee_span);
     preserved.extend(jsx.source.args.iter().skip(2).map(|argument| argument.span));
-    if class_name.needs_cx {
-        *needs_cx = true;
-    }
-
     let content = format!("{callee}({})", args.join(", "));
 
     vec![Rewrite {
@@ -99,6 +94,10 @@ pub(super) fn rewrites_for_jsx_runtime_call(
         end: jsx.span.end,
         content,
         preserved,
+        helper: TransformHelperFacts {
+            needs_cx: class_name.needs_cx,
+            ..TransformHelperFacts::default()
+        },
     }]
 }
 

@@ -272,6 +272,7 @@ mod tests {
             end: 80,
             content: "\"color_red\"".to_owned(),
             preserved: Vec::new(),
+            ..Default::default()
         }];
 
         assert!(!binding_was_consumed(&module, "css", &rewrites));
@@ -286,6 +287,7 @@ mod tests {
             end: 80,
             content: "\"color_red\"".to_owned(),
             preserved: Vec::new(),
+            ..Default::default()
         }];
 
         assert!(binding_was_consumed(&module, "css", &rewrites));
