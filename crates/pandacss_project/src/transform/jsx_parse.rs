@@ -396,9 +396,13 @@ struct ResidualObject {
     has_runtime_props: bool,
 }
 
+/// What a site's conditional spreads require of the rewrite. `None` from the
+/// planner means the site must stay unchanged; this says what to do otherwise.
 pub(super) enum ConditionalSpreadPlan {
-    None,
+    /// The spreads carry styles only, already folded into the style tree, so
+    /// the rewritten site simply drops them.
     StyleOnly,
+    /// A spread also carries runtime props, so it stays and absorbs the class.
     Runtime(ConditionalSpreadRewrite),
 }
 
@@ -480,7 +484,7 @@ pub(super) fn plan_conditional_spreads<'a>(
 ) -> Option<ConditionalSpreadPlan> {
     let mut source_spreads = source_spreads.peekable();
     if source_spreads.peek().is_none() {
-        return Some(ConditionalSpreadPlan::None);
+        return Some(ConditionalSpreadPlan::StyleOnly);
     }
     let StyleTree::Object(style) = style? else {
         return None;

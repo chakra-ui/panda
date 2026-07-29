@@ -16,7 +16,7 @@ use super::jsx_parse::{
     ConditionalSpreadPlan, ParsedAttribute, ParsedOpeningElement, SpreadSyntax,
 };
 use super::jsx_shared::{
-    ElementTag, SelectedSlots, plan_opening_class_name, plan_slot_spreads, resolve_element_tag,
+    ElementTag, SelectedSlots, plan_class_name, plan_slot_spreads, resolve_element_tag,
     select_slots, should_skip_style_prop, style_slots_should_skip,
 };
 use super::plan::{HelperCxMode, Rewrite, TransformHelperFacts};
@@ -61,9 +61,15 @@ pub(super) fn rewrites_for_jsx_opening_element(
     {
         return Vec::new();
     }
-    let Some(class_name) =
-        plan_opening_class_name(project, source, jsx, &parsed, helper_cx, pattern_transform)
-    else {
+    let class_attr = project.config().extractor_config().class_attribute;
+    let Some(class_name) = plan_class_name(
+        project,
+        source,
+        jsx,
+        parsed.existing_class_name(class_attr),
+        helper_cx,
+        pattern_transform,
+    ) else {
         return Vec::new();
     };
     let Some(tag) = resolve_element_tag(jsx, Some(&parsed.attributes), None) else {
@@ -72,7 +78,7 @@ pub(super) fn rewrites_for_jsx_opening_element(
 
     let runtime_spread = match &spread_plan {
         ConditionalSpreadPlan::Runtime(rewrite) => Some(rewrite),
-        ConditionalSpreadPlan::None | ConditionalSpreadPlan::StyleOnly => None,
+        ConditionalSpreadPlan::StyleOnly => None,
     };
     let Some(selected) = select_slots(
         project,
@@ -155,11 +161,11 @@ fn partial_fold_rewrite(
         style: Some(folded.clone()),
         ..jsx.clone()
     };
-    let class_name = plan_opening_class_name(
+    let class_name = plan_class_name(
         project,
         source,
         &folded_jsx,
-        parsed,
+        parsed.existing_class_name(class_attr),
         helper_cx,
         pattern_transform,
     )?;

@@ -8,20 +8,18 @@ use crate::PatternTransformFn;
 use crate::Project;
 
 use super::helper::{
-    ClassNamePrint, format_object_class_name, merge_class_name_fragments,
-    merge_class_name_with_expression,
+    ClassNamePrint, ExistingClassName, merge_class_name_fragments, merge_class_name_with_expression,
 };
 use super::jsx_parse::{
-    ConditionalSpreadPlan, ConditionalSpreadRewrite, ParsedAttribute, ParsedObjectLiteral,
-    ParsedOpeningElement, ParsedProperty, SlotName, SpreadSyntax, StyleSlot,
-    plan_conditional_spreads,
+    ConditionalSpreadPlan, ConditionalSpreadRewrite, ParsedAttribute, ParsedProperty, SlotName,
+    SpreadSyntax, StyleSlot, plan_conditional_spreads,
 };
 use super::jsx_skip::{
     dynamic_class_name_expression_should_skip, dynamic_style_expression_should_skip,
 };
 use super::plan::HelperCxMode;
 use super::resolve::is_static_style_literal;
-use super::style_lower::{self, LowerResult};
+use super::style_lower::{self, ClassExpr};
 
 pub(super) fn should_skip_style_prop(key: &str) -> bool {
     matches!(key, "children" | "key" | "ref")
@@ -48,127 +46,56 @@ pub(super) fn style_prop_keys(data: &Literal) -> HashSet<&str> {
     keys
 }
 
-pub(super) fn plan_opening_class_name(
+/// Merges the site's lowered classes into whatever class value the source
+/// already carried. `existing` is the only thing the two JSX syntaxes disagree
+/// on, so both go through here.
+pub(super) fn plan_class_name(
     project: &Project,
     file_source: &str,
     jsx: &ExtractedJsx,
-    parsed: &ParsedOpeningElement,
+    existing: ExistingClassName<'_>,
     helper_cx: HelperCxMode,
     mut pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> Option<ClassNamePrint> {
     let class_attr = project.config().extractor_config().class_attribute;
-    if let Some(tree) = jsx.style.as_ref()
-        && style_lower::style_tree_has_rewrite_sites(tree)
-    {
-        return match style_lower::lower_style_tree(
-            project,
-            file_source,
-            tree,
-            Some(jsx),
-            pattern_transform.as_deref_mut(),
-        ) {
-            LowerResult::Expr(expr) => {
-                let expression = style_lower::print_class_expr(&expr);
-                let mut print = merge_class_name_with_expression(
-                    class_attr,
-                    helper_cx,
-                    parsed.existing_class_name(class_attr),
-                    &expression,
-                    matches!(expr, style_lower::ClassExpr::Ternary { .. }),
-                );
-                print.ternary = top_level_ternary(&expr).filter(|_| print.expression == expression);
-                Some(print)
-            }
-            LowerResult::Static(classes) => Some(merge_class_name_fragments(
-                class_attr,
-                helper_cx,
-                parsed.existing_class_name(class_attr),
-                &classes,
-            )),
-            LowerResult::Bail => None,
-        };
-    }
+    let lowered = match jsx.style.as_ref() {
+        Some(tree) if style_lower::style_tree_has_rewrite_sites(tree) => {
+            style_lower::lower_style_tree(
+                project,
+                file_source,
+                tree,
+                Some(jsx),
+                pattern_transform.as_deref_mut(),
+            )?
+        }
+        _ => ClassExpr::Lit(
+            project
+                .class_names_for_jsx_usage(jsx, pattern_transform)?
+                .join(" "),
+        ),
+    };
 
-    let classes = project.class_names_for_jsx_usage(jsx, pattern_transform)?;
+    // A plain class list still merges as a static fragment, so it can land in a
+    // quoted attribute instead of a concatenation.
+    let ClassExpr::Lit(classes) = &lowered else {
+        let expression = style_lower::print_class_expr(&lowered);
+        let mut print = merge_class_name_with_expression(
+            class_attr,
+            helper_cx,
+            existing,
+            &expression,
+            matches!(lowered, ClassExpr::Ternary { .. }),
+        );
+        print.ternary = top_level_ternary(&lowered).filter(|_| print.expression == expression);
+        return Some(print);
+    };
     Some(merge_class_name_fragments(
-        class_attr,
-        helper_cx,
-        parsed.existing_class_name(class_attr),
-        &classes.join(" "),
+        class_attr, helper_cx, existing, classes,
     ))
 }
 
-pub(super) fn plan_runtime_class_name(
-    project: &Project,
-    file_source: &str,
-    jsx: &ExtractedJsx,
-    parsed: &ParsedObjectLiteral,
-    helper_cx: HelperCxMode,
-    mut pattern_transform: Option<&mut PatternTransformFn<'_>>,
-) -> Option<ClassNamePrint> {
-    let class_attr = project.config().extractor_config().class_attribute;
-    if let Some(tree) = jsx.style.as_ref()
-        && style_lower::style_tree_has_rewrite_sites(tree)
-    {
-        return match style_lower::lower_style_tree(
-            project,
-            file_source,
-            tree,
-            Some(jsx),
-            pattern_transform.as_deref_mut(),
-        ) {
-            LowerResult::Expr(expr) => {
-                let expression = style_lower::print_class_expr(&expr);
-                let mut print = merge_class_name_with_expression(
-                    class_attr,
-                    helper_cx,
-                    parsed.existing_class_name(class_attr),
-                    &expression,
-                    matches!(expr, style_lower::ClassExpr::Ternary { .. }),
-                );
-                print.ternary = top_level_ternary(&expr).filter(|_| print.expression == expression);
-                Some(ClassNamePrint {
-                    attribute: format_object_class_name(class_attr, &print),
-                    expression: print.expression,
-                    ternary: print.ternary,
-                    needs_cx: print.needs_cx,
-                })
-            }
-            LowerResult::Static(classes) => {
-                let print = merge_class_name_fragments(
-                    class_attr,
-                    helper_cx,
-                    parsed.existing_class_name(class_attr),
-                    &classes,
-                );
-                Some(ClassNamePrint {
-                    attribute: format_object_class_name(class_attr, &print),
-                    expression: print.expression,
-                    ternary: print.ternary,
-                    needs_cx: print.needs_cx,
-                })
-            }
-            LowerResult::Bail => None,
-        };
-    }
-
-    let classes = project.class_names_for_jsx_usage(jsx, pattern_transform)?;
-    let print = merge_class_name_fragments(
-        class_attr,
-        helper_cx,
-        parsed.existing_class_name(class_attr),
-        &classes.join(" "),
-    );
-    Some(ClassNamePrint {
-        attribute: format_object_class_name(class_attr, &print),
-        expression: print.expression,
-        ternary: print.ternary,
-        needs_cx: print.needs_cx,
-    })
-}
-
-fn top_level_ternary(expr: &style_lower::ClassExpr) -> Option<super::helper::ClassNameTernary> {
-    let style_lower::ClassExpr::Ternary { test, yes, no } = expr else {
+fn top_level_ternary(expr: &ClassExpr) -> Option<super::helper::ClassNameTernary> {
+    let ClassExpr::Ternary { test, yes, no } = expr else {
         return None;
     };
     Some(super::helper::ClassNameTernary {
@@ -278,10 +205,8 @@ fn style_tree_should_skip(
         return !data_is_static(&jsx.data);
     };
     if style_lower::style_tree_has_rewrite_sites(tree) {
-        return matches!(
-            style_lower::lower_style_tree(project, source, tree, Some(jsx), pattern_transform),
-            LowerResult::Bail
-        );
+        return style_lower::lower_style_tree(project, source, tree, Some(jsx), pattern_transform)
+            .is_none();
     }
     style_lower::style_tree_has_open_spread(tree)
         || (!data_is_static(&jsx.data) && !matches!(tree, StyleTree::Object(_)))

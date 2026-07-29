@@ -8,7 +8,7 @@ use crate::Project;
 use super::helper::format_object_class_name;
 use super::jsx_parse::{ConditionalSpreadPlan, SpreadSyntax, parsed_object_from_facts};
 use super::jsx_shared::{
-    SelectedSlots, plan_runtime_class_name, plan_slot_spreads, resolve_element_tag, select_slots,
+    SelectedSlots, plan_class_name, plan_slot_spreads, resolve_element_tag, select_slots,
     style_slots_should_skip,
 };
 use super::plan::{HelperCxMode, Rewrite, TransformHelperFacts};
@@ -59,9 +59,14 @@ pub(super) fn rewrites_for_jsx_runtime_call(
     let Some(tag) = resolve_element_tag(jsx, None, Some(&props.properties)) else {
         return Vec::new();
     };
-    let Some(class_name) =
-        plan_runtime_class_name(project, source, jsx, &props, helper_cx, pattern_transform)
-    else {
+    let Some(class_name) = plan_class_name(
+        project,
+        source,
+        jsx,
+        props.existing_class_name(project.config().extractor_config().class_attribute),
+        helper_cx,
+        pattern_transform,
+    ) else {
         return Vec::new();
     };
 
@@ -77,7 +82,7 @@ pub(super) fn rewrites_for_jsx_runtime_call(
     args[0] = tag.runtime_first_arg();
     let runtime_spread = match &spread_plan {
         ConditionalSpreadPlan::Runtime(rewrite) => Some(rewrite),
-        ConditionalSpreadPlan::None | ConditionalSpreadPlan::StyleOnly => None,
+        ConditionalSpreadPlan::StyleOnly => None,
     };
     let Some(selected) = select_slots(project, jsx, &props.properties, &class_name, runtime_spread)
     else {

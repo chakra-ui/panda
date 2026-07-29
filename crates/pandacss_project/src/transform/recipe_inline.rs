@@ -8,8 +8,8 @@ use pandacss_recipes::{
 
 use super::helper::{CVA_HELPER_LOCAL, SVA_HELPER_LOCAL};
 use super::plan::{Rewrite, TransformHelperFacts};
-use super::resolve::{is_static_style_literal, js_string_literal};
-use super::style_lower::{self, LowerResult};
+use super::resolve::is_static_style_literal;
+use super::style_lower;
 
 pub(crate) fn rewrite_for_cva_call(
     project: &Project,
@@ -230,11 +230,8 @@ fn style_tree_class_expression(
     if !style_lower::style_tree_has_rewrite_sites(tree) {
         return None;
     }
-    match style_lower::lower_style_tree(project, source, tree, None, None) {
-        LowerResult::Expr(expr) => Some(style_lower::print_class_expr(&expr)),
-        LowerResult::Static(classes) => Some(js_string_literal(&classes)),
-        LowerResult::Bail => None,
-    }
+    style_lower::lower_style_tree(project, source, tree, None, None)
+        .map(|expr| style_lower::print_class_expr(&expr))
 }
 
 fn style_literal_has_conditional(value: &Literal) -> bool {

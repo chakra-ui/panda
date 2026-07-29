@@ -14,7 +14,7 @@ use crate::Project;
 
 use super::helper::CX_HELPER_LOCAL;
 use super::plan::{HelperCxMode, Rewrite, TransformHelperFacts};
-use super::style_lower::{self, LowerResult};
+use super::style_lower;
 
 /// Returns `None` when the literal cannot be encoded to stable class strings.
 pub(crate) fn classes_for_css_args(
@@ -123,23 +123,15 @@ pub(crate) fn rewrite_for_css_call(
     // open spreads must not fall through to a silent-static rewrite.
     if let Some(tree) = style_args.first().and_then(|value| value.as_ref()) {
         if style_lower::style_tree_has_rewrite_sites(tree) {
-            return match style_lower::lower_style_tree(project, source, tree, None, None) {
-                LowerResult::Static(classes) => Some(Rewrite {
-                    start: span.start,
-                    end: span.end,
-                    content: js_string_literal(&classes),
-                    preserved: Vec::new(),
-                    helper: TransformHelperFacts::none(),
-                }),
-                LowerResult::Expr(expr) => Some(Rewrite {
+            return style_lower::lower_style_tree(project, source, tree, None, None).map(|expr| {
+                Rewrite {
                     start: span.start,
                     end: span.end,
                     content: style_lower::print_class_expr(&expr),
                     preserved: style_lower::preserved_source_spans(tree),
                     helper: TransformHelperFacts::none(),
-                }),
-                LowerResult::Bail => None,
-            };
+                }
+            });
         }
         if tree.is_open() || style_lower::style_tree_has_open_spread(tree) {
             return None;
