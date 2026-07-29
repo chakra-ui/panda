@@ -1,6 +1,6 @@
 //! Merging Panda classes into an existing `className`, including escaping.
 
-use super::common::transform_jsx;
+use super::common::{assert_reparses, transform_jsx, transform_jsx_with_helper};
 use indoc::indoc;
 use insta::assert_snapshot;
 
@@ -69,6 +69,85 @@ fn wraps_a_leading_ternary_class_name_before_appending() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"export const el = <div className={(ok ? 'a' : 'b') + " color_red"} />;"#);
+}
+
+/// Arbitrary values carry their punctuation into the class name, so a class
+/// concatenated after a dynamic `className` has to be escaped like any other
+/// JS string literal — otherwise the emitted file stops parsing.
+#[test]
+fn escapes_a_quoted_class_name_appended_after_an_expression() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box className={props.className} color={'[var(--x, "red")]'} />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const el = <div className={props.className + " color_[var(--x,_\"red\")]"} />;"#);
+    assert_reparses(&output.code);
+}
+
+#[test]
+fn escapes_a_backslash_in_a_class_name_appended_after_an_expression() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box className={props.className} color={'[calc(1px\\2)]'} />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const el = <div className={props.className + " color_[calc(1px\\2)]"} />;"#);
+    assert_reparses(&output.code);
+}
+
+#[test]
+fn escapes_a_quoted_class_name_without_the_cx_helper() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box className={props.className} color={'[var(--x, "red")]'} css={{ padding: '2' }} />;
+    "#};
+
+    let output =
+        transform_jsx_with_helper("src/app.tsx", source, pandacss_project::HelperCxMode::False);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const el = <div className={props.className + " color_[var(--x,_\"red\")] padding_2"} />;"#);
+    assert_reparses(&output.code);
+}
+
+#[test]
+fn escapes_a_quoted_class_name_through_the_cx_helper() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box className={props.className} color={'[var(--x, "red")]'} css={{ padding: '2' }} />;
+    "#};
+
+    let output =
+        transform_jsx_with_helper("src/app.tsx", source, pandacss_project::HelperCxMode::True);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    export const el = <div className={__pcx(props.className, "color_[var(--x,_\"red\")] padding_2")} />;
+    "#);
+    assert_reparses(&output.code);
+}
+
+/// Extracted class values are raw source, so an entity has to stay in the
+/// attribute form for JSX to keep decoding it.
+#[test]
+fn keeps_an_entity_class_name_in_the_attribute_form() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box className="a&amp;b" color="red" />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const el = <div className="a&amp;b color_red" />;"#);
 }
 
 #[test]

@@ -700,3 +700,14 @@ pub fn transform_jsx_qwik(path: &str, source: &str) -> pandacss_project::Transfo
 pub fn transform_template_literal(path: &str, source: &str) -> pandacss_project::TransformOutput {
     transform_with_project(&template_literal_project(), path, source)
 }
+
+/// Transform output has to be valid source. Feeding it back through the
+/// transform surfaces any Oxc parse error as a diagnostic.
+pub fn assert_reparses(code: &str) {
+    let reparsed = transform_jsx("src/app.tsx", code);
+    assert!(
+        reparsed.diagnostics.is_empty(),
+        "transformed output does not parse: {:?}\n{code}",
+        reparsed.diagnostics,
+    );
+}
