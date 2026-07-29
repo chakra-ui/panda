@@ -1,5 +1,22 @@
 # @pandacss/mcp
 
+## 1.12.0
+
+### Minor Changes
+
+- 76a997b: Move MCP out of `@pandacss/dev` so installs no longer pull the MCP SDK and Hono, which kept triggering
+  security vulnerability reports. Use `npx -y @pandacss/mcp` instead. `panda mcp` / `panda init-mcp` now error with a
+  migration message.
+
+### Patch Changes
+
+- 2654bb4: updates outdated `@clack/prompts` dependency
+- Updated dependencies [0ad3371]
+  - @pandacss/node@1.12.0
+  - @pandacss/token-dictionary@1.12.0
+  - @pandacss/types@1.12.0
+  - @pandacss/logger@1.12.0
+
 ## 1.11.5
 
 ### Patch Changes
