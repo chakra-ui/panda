@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [1.12.0](#1.12.0) - 2026-07-28
+
+### Changed
+
+- Move the MCP server out of `@pandacss/dev` into a standalone `@pandacss/mcp` package, so installing Panda no longer pulls in the MCP SDK and Hono (which kept triggering security vulnerability reports). Use `npx -y @pandacss/mcp` instead. `panda mcp` and `panda init-mcp` now error with a migration message.
+
+- Update outdated `@clack/prompts` dependency.
+
+### Fixed
+
+- Fix styles disappearing after a config change in Vue and Svelte projects. Editing your config rebuilt the context without the built-in Vue/Svelte plugins, so those files stopped producing CSS until you restarted the dev server. The reload now keeps them.
+
 ## [1.11.5](#1.11.5) - 2026-07-22
 
 ### Fixed
