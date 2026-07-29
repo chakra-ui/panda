@@ -22,6 +22,15 @@ impl TransformHelperFacts {
         self.needs_sva |= other.needs_sva;
     }
 
+    /// Content that calls no internal runtime symbol.
+    pub(crate) const fn none() -> Self {
+        Self {
+            needs_cx: false,
+            needs_cva: false,
+            needs_sva: false,
+        }
+    }
+
     pub(crate) const fn cx() -> Self {
         Self {
             needs_cx: true,
@@ -134,20 +143,39 @@ pub(crate) struct TransformPlan {
 }
 
 impl TransformPlan {
-    /// Records a rewrite and the internal runtime symbols it declared.
     fn push(&mut self, rewrite: Rewrite) {
-        self.helper.merge(&rewrite.helper);
         self.rewrites.push(rewrite);
     }
 
     fn extend(&mut self, rewrites: impl IntoIterator<Item = Rewrite>) {
-        for rewrite in rewrites {
-            self.push(rewrite);
+        self.rewrites.extend(rewrites);
+    }
+
+    /// Drops rewrites overlapping an earlier, wider one — `MagicString`
+    /// silently discards overlapping edits, so a nested site has to stay as-is
+    /// inside the outer rewrite's output — then derives helper demand from the
+    /// rewrites that survived. A dropped rewrite's symbols are never emitted.
+    fn settle(&mut self) {
+        self.rewrites
+            .sort_by(|a, b| a.start.cmp(&b.start).then(b.end.cmp(&a.end)));
+        let mut covered_end = 0;
+        self.rewrites.retain(|rewrite| {
+            let kept = rewrite.start >= covered_end;
+            if kept {
+                covered_end = rewrite.end;
+            }
+            kept
+        });
+
+        let mut helper = TransformHelperFacts::none();
+        for rewrite in &self.rewrites {
+            helper.merge(&rewrite.helper);
         }
+        self.helper = helper;
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub(crate) struct Rewrite {
     pub start: u32,
     pub end: u32,
@@ -155,7 +183,9 @@ pub(crate) struct Rewrite {
     /// Original source regions deliberately re-emitted by this rewrite.
     pub preserved: Vec<pandacss_shared::Span>,
     /// Internal runtime symbols this rewrite's content calls. Declared by the
-    /// producer — `content` re-emits user source, so it can't be scanned for them.
+    /// producer — `content` re-emits user source, so it can't be scanned for
+    /// them. Deliberately has no `Default`: a new producer must state its
+    /// demand or fail to compile.
     pub helper: TransformHelperFacts,
 }
 
@@ -274,6 +304,7 @@ pub(crate) fn build_plan(
         push_token_rewrites(&mut plan, extracted);
     }
 
+    plan.settle();
     plan
 }
 
@@ -485,7 +516,7 @@ fn push_token_rewrites(plan: &mut TransformPlan, extracted: &ExtractUsage) {
             end,
             content: serde_json::to_string(value).expect("string serializes as JSON"),
             preserved: Vec::new(),
-            ..Default::default()
+            helper: TransformHelperFacts::none(),
         });
     }
 

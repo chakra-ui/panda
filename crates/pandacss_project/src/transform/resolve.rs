@@ -129,14 +129,14 @@ pub(crate) fn rewrite_for_css_call(
                     end: span.end,
                     content: js_string_literal(&classes),
                     preserved: Vec::new(),
-                    ..Default::default()
+                    helper: TransformHelperFacts::none(),
                 }),
                 LowerResult::Expr(expr) => Some(Rewrite {
                     start: span.start,
                     end: span.end,
                     content: style_lower::print_class_expr(&expr),
                     preserved: style_lower::preserved_source_spans(tree),
-                    ..Default::default()
+                    helper: TransformHelperFacts::none(),
                 }),
                 LowerResult::Bail => None,
             };
@@ -304,7 +304,7 @@ pub(crate) fn rewrite_for_view_transition_call(
         end: span.end,
         content: js_string_literal(&class_name),
         preserved: Vec::new(),
-        ..Default::default()
+        helper: TransformHelperFacts::none(),
     })
 }
 
@@ -373,14 +373,14 @@ pub(crate) fn rewrites_for_identity_raw_call(
             end: arg.start,
             content: open.to_owned(),
             preserved: Vec::new(),
-            ..Default::default()
+            helper: TransformHelperFacts::none(),
         },
         Rewrite {
             start: arg.end,
             end: span.end,
             content: close.to_owned(),
             preserved: Vec::new(),
-            ..Default::default()
+            helper: TransformHelperFacts::none(),
         },
     ])
 }
@@ -444,7 +444,7 @@ pub(crate) fn rewrite_for_style_literal(
         end: span.end,
         content,
         preserved: Vec::new(),
-        ..Default::default()
+        helper: TransformHelperFacts::none(),
     })
 }
 
@@ -486,7 +486,7 @@ fn rewrite_for_class_names(span: pandacss_shared::Span, classes: &[String]) -> R
         end: span.end,
         content: js_string_literal(&classes.join(" ")),
         preserved: Vec::new(),
-        ..Default::default()
+        helper: TransformHelperFacts::none(),
     }
 }
 

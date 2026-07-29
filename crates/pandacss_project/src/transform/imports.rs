@@ -233,6 +233,7 @@ fn binding_was_consumed(module: &ModuleFacts, local: &str, rewrites: &[Rewrite])
 mod tests {
     use pandacss_extractor::ImportBindingFacts;
 
+    use super::super::plan::TransformHelperFacts;
     use super::*;
 
     fn specifier(kind: ImportSpecifierKind, imported: &str, local: &str) -> ImportSpecifier {
@@ -272,7 +273,7 @@ mod tests {
             end: 80,
             content: "\"color_red\"".to_owned(),
             preserved: Vec::new(),
-            ..Default::default()
+            helper: TransformHelperFacts::none(),
         }];
 
         assert!(!binding_was_consumed(&module, "css", &rewrites));
@@ -287,7 +288,7 @@ mod tests {
             end: 80,
             content: "\"color_red\"".to_owned(),
             preserved: Vec::new(),
-            ..Default::default()
+            helper: TransformHelperFacts::none(),
         }];
 
         assert!(binding_was_consumed(&module, "css", &rewrites));

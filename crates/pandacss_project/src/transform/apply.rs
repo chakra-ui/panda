@@ -37,8 +37,7 @@ pub(crate) fn build_transform_edits(
 ) -> Vec<Edit> {
     let mut edits = Vec::new();
 
-    let rewrites = dedup_overlapping_rewrites(&plan.rewrites);
-    for rewrite in &rewrites {
+    for rewrite in &plan.rewrites {
         edits.push(Edit::Update {
             start: rewrite.start,
             end: rewrite.end,
@@ -52,7 +51,7 @@ pub(crate) fn build_transform_edits(
             path,
             source,
             &plan.module,
-            &rewrites,
+            &plan.rewrites,
         ));
     }
 
@@ -61,7 +60,7 @@ pub(crate) fn build_transform_edits(
             source,
             &plan.module,
         ));
-        let helper = helper_facts_with_live_references(&plan.helper, &plan.module, &rewrites);
+        let helper = helper_facts_with_live_references(&plan.helper, &plan.module, &plan.rewrites);
         if let Some(content) = helper::plan_internal_css_import_line(&helper, helper_cx) {
             edits.push(Edit::Insert {
                 at: imports::internal_css_import_insertion_point(&plan.module),
@@ -71,24 +70,6 @@ pub(crate) fn build_transform_edits(
     }
 
     edits
-}
-
-/// Drops rewrites overlapping an earlier, wider one — `MagicString` silently
-/// discards overlapping edits. Keeps the outermost; a nested site stays as-is
-/// inside the outer rewrite's output.
-fn dedup_overlapping_rewrites(rewrites: &[Rewrite]) -> Vec<Rewrite> {
-    let mut sorted: Vec<&Rewrite> = rewrites.iter().collect();
-    sorted.sort_by(|a, b| a.start.cmp(&b.start).then(b.end.cmp(&a.end)));
-    let mut kept: Vec<Rewrite> = Vec::new();
-    let mut covered_end = 0u32;
-    for rewrite in sorted {
-        if rewrite.start < covered_end {
-            continue;
-        }
-        covered_end = rewrite.end;
-        kept.push(rewrite.clone());
-    }
-    kept
 }
 
 /// Apply edits and emit transformed code plus an optional source map JSON string.
@@ -264,7 +245,7 @@ mod tests {
                 end: call_span.end,
                 content: "\"color_red\"".to_owned(),
                 preserved: Vec::new(),
-                ..Default::default()
+                helper: TransformHelperFacts::none(),
             }],
             dependencies: Vec::new(),
             helper: TransformHelperFacts::default(),

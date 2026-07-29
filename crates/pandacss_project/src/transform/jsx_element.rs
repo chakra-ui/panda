@@ -434,6 +434,6 @@ fn closing_tag_rewrite(jsx: &ExtractedJsx, tag: &ElementTag) -> Option<Rewrite> 
         end: closing.end,
         content: format!("</{}>", tag.opening_name()),
         preserved: Vec::new(),
-        ..Default::default()
+        helper: TransformHelperFacts::none(),
     })
 }
