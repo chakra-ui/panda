@@ -2,7 +2,7 @@
 
 use std::collections::HashSet;
 
-use pandacss_extractor::{ExtractedJsx, JsxKind, Literal};
+use pandacss_extractor::{ExtractedJsx, JsxKind, Literal, StyleTree};
 
 use crate::PatternTransformFn;
 use crate::Project;
@@ -12,7 +12,12 @@ use super::helper::{
     merge_class_name_with_expression,
 };
 use super::jsx_parse::{
-    ParsedAttribute, ParsedObjectLiteral, ParsedOpeningElement, ParsedProperty,
+    ConditionalSpreadPlan, ConditionalSpreadRewrite, ParsedAttribute, ParsedObjectLiteral,
+    ParsedOpeningElement, ParsedProperty, SlotName, SpreadSyntax, StyleSlot,
+    plan_conditional_spreads,
+};
+use super::jsx_skip::{
+    dynamic_class_name_expression_should_skip, dynamic_style_expression_should_skip,
 };
 use super::plan::HelperCxMode;
 use super::resolve::is_static_style_literal;
@@ -259,4 +264,173 @@ pub(super) fn resolve_element_tag(
     }
 
     Some(ElementTag::Intrinsic("div".to_owned()))
+}
+
+/// Whether the site's own style tree rules out a rewrite, independent of how
+/// its props are spelled.
+fn style_tree_should_skip(
+    project: &Project,
+    source: &str,
+    jsx: &ExtractedJsx,
+    pattern_transform: Option<&mut PatternTransformFn<'_>>,
+) -> bool {
+    let Some(tree) = jsx.style.as_ref() else {
+        return !data_is_static(&jsx.data);
+    };
+    if style_lower::style_tree_has_rewrite_sites(tree) {
+        return matches!(
+            style_lower::lower_style_tree(project, source, tree, Some(jsx), pattern_transform),
+            LowerResult::Bail
+        );
+    }
+    style_lower::style_tree_has_open_spread(tree)
+        || (!data_is_static(&jsx.data) && !matches!(tree, StyleTree::Object(_)))
+}
+
+/// Whether any slot carries something the transform can't account for. A skip
+/// leaves the whole site untouched, so this stays conservative.
+pub(super) fn style_slots_should_skip(
+    project: &Project,
+    source: &str,
+    jsx: &ExtractedJsx,
+    slots: &[impl StyleSlot],
+    pattern_transform: Option<&mut PatternTransformFn<'_>>,
+) -> bool {
+    if style_tree_should_skip(project, source, jsx, pattern_transform) {
+        return true;
+    }
+
+    let extractor_config = project.config().extractor_config();
+    let jsx_config = &extractor_config.jsx;
+    let class_attr = extractor_config.class_attribute;
+    let tag_name = &jsx.name;
+    let data_keys = style_prop_keys(&jsx.data);
+
+    for slot in slots {
+        let name = match slot.name() {
+            SlotName::Spread => continue,
+            SlotName::Computed => return true,
+            SlotName::Named(name) => name,
+        };
+        if should_skip_style_prop(name) {
+            continue;
+        }
+        if let Some(expression) = slot.expression_facts() {
+            if name == class_attr && dynamic_class_name_expression_should_skip(expression) {
+                return true;
+            }
+            if jsx_config.should_extract_prop(tag_name, name)
+                && dynamic_style_expression_should_skip(expression)
+            {
+                return true;
+            }
+        }
+        if !jsx_config.should_extract_prop(tag_name, name) {
+            continue;
+        }
+        if data_keys.contains(name) {
+            continue;
+        }
+        if slot.value_is_dynamic() {
+            return true;
+        }
+    }
+
+    false
+}
+
+/// Plans conditional spread rewrites for a site. `None` means the site must
+/// stay unchanged.
+pub(super) fn plan_slot_spreads(
+    project: &Project,
+    source: &str,
+    jsx: &ExtractedJsx,
+    slots: &[impl StyleSlot],
+    syntax: SpreadSyntax,
+) -> Option<ConditionalSpreadPlan> {
+    let extractor = project.config().extractor_config();
+    let class_attr = extractor.class_attribute;
+    let plan = plan_conditional_spreads(
+        source,
+        slots.iter().filter_map(StyleSlot::spread_expression),
+        jsx.style.as_ref(),
+        syntax,
+        &extractor.jsx,
+        &jsx.name,
+        class_attr,
+    )?;
+    // A runtime spread embeds the class into each branch, which an explicit
+    // class prop would then silently override.
+    if matches!(plan, ConditionalSpreadPlan::Runtime(_))
+        && slots
+            .iter()
+            .any(|slot| matches!(slot.name(), SlotName::Named(name) if name == class_attr))
+    {
+        return None;
+    }
+    Some(plan)
+}
+
+/// Slots that survive into the rewritten site, in source order.
+pub(super) struct SelectedSlots {
+    /// Raw source of each kept slot. The class is already embedded when a
+    /// conditional spread absorbed it.
+    pub parts: Vec<String>,
+    pub preserved: Vec<pandacss_shared::Span>,
+    pub embedded_class: bool,
+}
+
+/// Drops the slots that folded into the class name and keeps the rest as-is.
+pub(super) fn select_slots(
+    project: &Project,
+    jsx: &ExtractedJsx,
+    slots: &[impl StyleSlot],
+    class_name: &ClassNamePrint,
+    runtime_spread: Option<&ConditionalSpreadRewrite>,
+) -> Option<SelectedSlots> {
+    let extractor_config = project.config().extractor_config();
+    let jsx_config = &extractor_config.jsx;
+    let class_attr = extractor_config.class_attribute;
+    let tag_name = &jsx.name;
+
+    let mut selected = SelectedSlots {
+        parts: Vec::new(),
+        preserved: jsx
+            .style
+            .as_ref()
+            .map(style_lower::preserved_source_spans)
+            .unwrap_or_default(),
+        embedded_class: false,
+    };
+
+    for slot in slots {
+        let name = match slot.name() {
+            SlotName::Spread => {
+                if let Some(rewrite) = runtime_spread {
+                    selected
+                        .parts
+                        .push(rewrite.embed_class(class_attr, class_name)?);
+                    selected.embedded_class = true;
+                    selected.preserved.push(slot.span());
+                }
+                continue;
+            }
+            SlotName::Computed => return None,
+            SlotName::Named(name) => name,
+        };
+        // The class is rebuilt from scratch, and `as` was resolved into the tag.
+        if name == "as" || name == class_attr {
+            if slot.has_expression() {
+                selected.preserved.push(slot.span());
+            }
+            continue;
+        }
+        if !should_skip_style_prop(name) && jsx_config.should_extract_prop(tag_name, name) {
+            continue;
+        }
+        selected.parts.push(slot.raw().to_owned());
+        selected.preserved.push(slot.span());
+    }
+
+    Some(selected)
 }

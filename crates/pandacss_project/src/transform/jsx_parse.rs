@@ -185,10 +185,6 @@ pub(crate) struct ParsedProperty {
 }
 
 impl ParsedProperty {
-    pub(super) fn is_spread(&self) -> bool {
-        self.spread_expression.is_some()
-    }
-
     pub(super) fn as_is_resolvable(&self) -> bool {
         if self.key.as_deref() != Some("as") {
             return true;
@@ -224,6 +220,100 @@ impl ParsedProperty {
 
     pub(super) fn expression_facts(&self) -> Option<&ExpressionFacts> {
         self.value.as_ref().map(|value| &value.facts)
+    }
+}
+
+/// How a slot names the prop it sets.
+pub(super) enum SlotName<'a> {
+    Named(&'a str),
+    Spread,
+    /// A computed key — nothing can be assumed about which prop it sets.
+    Computed,
+}
+
+/// One style-carrying slot of a JSX site: an opening-element attribute, or a
+/// property of a runtime call's props object. The two syntaxes differ only in
+/// how a slot is spelled, so the skip, spread, and selection rules take this
+/// instead of either concrete type.
+pub(super) trait StyleSlot {
+    fn name(&self) -> SlotName<'_>;
+    fn span(&self) -> pandacss_shared::Span;
+    /// Original source, re-emitted verbatim when the slot survives.
+    fn raw(&self) -> &str;
+    fn spread_expression(&self) -> Option<&ParsedExpression>;
+    fn expression_facts(&self) -> Option<&ExpressionFacts>;
+    fn value_is_dynamic(&self) -> bool;
+    /// Whether the slot carries a value expression whose source must be kept.
+    fn has_expression(&self) -> bool;
+}
+
+impl StyleSlot for ParsedAttribute {
+    fn name(&self) -> SlotName<'_> {
+        if self.spread {
+            return SlotName::Spread;
+        }
+        self.name
+            .as_deref()
+            .map_or(SlotName::Computed, SlotName::Named)
+    }
+
+    fn span(&self) -> pandacss_shared::Span {
+        self.span
+    }
+
+    fn raw(&self) -> &str {
+        &self.raw
+    }
+
+    fn spread_expression(&self) -> Option<&ParsedExpression> {
+        self.spread_expression.as_ref()
+    }
+
+    fn expression_facts(&self) -> Option<&ExpressionFacts> {
+        Self::expression_facts(self)
+    }
+
+    fn value_is_dynamic(&self) -> bool {
+        self.dynamic
+    }
+
+    fn has_expression(&self) -> bool {
+        self.expression.is_some()
+    }
+}
+
+impl StyleSlot for ParsedProperty {
+    fn name(&self) -> SlotName<'_> {
+        if self.spread_expression.is_some() {
+            return SlotName::Spread;
+        }
+        self.key
+            .as_deref()
+            .map_or(SlotName::Computed, SlotName::Named)
+    }
+
+    fn span(&self) -> pandacss_shared::Span {
+        self.span
+    }
+
+    fn raw(&self) -> &str {
+        &self.raw
+    }
+
+    fn spread_expression(&self) -> Option<&ParsedExpression> {
+        self.spread_expression.as_ref()
+    }
+
+    fn expression_facts(&self) -> Option<&ExpressionFacts> {
+        Self::expression_facts(self)
+    }
+
+    fn value_is_dynamic(&self) -> bool {
+        Self::value_is_dynamic(self)
+    }
+
+    fn has_expression(&self) -> bool {
+        self.value.is_some()
     }
 }
 
