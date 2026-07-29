@@ -155,7 +155,7 @@ The recommended architecture is:
 pandacss_project::transform
   - plan / apply / resolve / imports / helper
   - recipe_inline (cva/sva/styled)
-  - style_lower (StyleTree conditionals), jsx.rs + jsx-*.rs
+  - style_lower (StyleTree conditionals), jsx.rs + jsx_*.rs
   - Project::transform_source / transform_source_with (+ ParseTransforms)
 
 @pandacss/transformer  (packages/transformer)
@@ -185,8 +185,8 @@ Implemented layout:
 crates/pandacss_project/src/transform/
   mod.rs, plan.rs, apply.rs, resolve.rs, imports.rs, helper.rs
   recipe_inline.rs, style_lower.rs, jsx_skip.rs
-  jsx.rs, jsx-element.rs, jsx-runtime.rs,
-  jsx-parse.rs, jsx-shared.rs
+  jsx.rs, jsx_element.rs, jsx_runtime.rs,
+  jsx_parse.rs, jsx_shared.rs
 
 packages/transformer/src/
   index.ts, transform.ts, hooks.ts, plugin.ts
@@ -783,7 +783,7 @@ to `cx(propsDerived, static, propsClassName)`. When the spread carries no style 
 factory takes `composedRecipeFn(variantProps)` instead of the serialize path, which is `''` for a
 bare `styled.*`, so the fold lands on the same string there too.
 
-`partial_fold_rewrite` in `transform/jsx-element.rs` runs before the normal planner and requires:
+`partial_fold_rewrite` in `transform/jsx_element.rs` runs before the normal planner and requires:
 
 - a `JsxKind::Factory` tag (`styled.*`), so `variantSet` is empty and every style prop is a css prop
 - exactly one `StyleSpread::Open`, from a bare identifier — re-reading `.className` off a call result

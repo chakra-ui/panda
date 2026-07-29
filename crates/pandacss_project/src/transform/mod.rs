@@ -8,13 +8,9 @@ mod apply;
 mod helper;
 mod imports;
 mod jsx;
-#[path = "jsx-element.rs"]
 mod jsx_element;
-#[path = "jsx-parse.rs"]
 mod jsx_parse;
-#[path = "jsx-runtime.rs"]
 mod jsx_runtime;
-#[path = "jsx-shared.rs"]
 mod jsx_shared;
 mod jsx_skip;
 mod plan;
