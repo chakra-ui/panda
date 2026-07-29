@@ -10,6 +10,7 @@ import { walkObject } from './walk-object'
 
 export interface CreateCssContext {
   hash?: boolean
+  grouped?: boolean
   /**
    * Partial properties from the Utility class
    */
@@ -38,8 +39,11 @@ const fallbackCondition: NonNullable<CreateCssContext['conditions']> = {
 
 const sanitize = (value: any) => (typeof value === 'string' ? value.replaceAll(/[\n\s]+/g, ' ') : value)
 
+const ENTRY_SEP = ']___['
+const COND_SEP = '<___>'
+
 export function createCss(context: CreateCssContext) {
-  const { utility, hash, conditions: conds = fallbackCondition } = context
+  const { utility, hash, grouped, conditions: conds = fallbackCondition } = context
 
   const formatClassName = (str: string) => [utility.prefix, str].filter(Boolean).join('-')
 
@@ -53,6 +57,34 @@ export function createCss(context: CreateCssContext) {
       result = baseArray.join(':')
     }
     return result
+  }
+
+  if (grouped) {
+    return memo(({ base, ...styles }: Record<string, any> = {}) => {
+      const styleObject = Object.assign(styles, base)
+      const normalizedObject = normalizeStyleObject(styleObject, context)
+      const hashes: string[] = []
+
+      walkObject(normalizedObject, (value, paths) => {
+        if (value == null) return
+
+        const [prop, ...allConditions] = conds.shift(paths)
+        const conditions = filterBaseConditions(allConditions)
+
+        const parts = [`${prop}${ENTRY_SEP}value:${value}`]
+        if (conditions.length) {
+          parts.push(`cond:${conditions.join(COND_SEP)}`)
+        }
+        hashes.push(parts.join(ENTRY_SEP))
+      })
+
+      if (hashes.length === 0) return ''
+
+      hashes.sort()
+      const groupId = hashes.join('|')
+      const shortHash = utility.toHash(['grouped', groupId], toHash)
+      return formatClassName(shortHash)
+    })
   }
 
   return memo(({ base, ...styles }: Record<string, any> = {}) => {
