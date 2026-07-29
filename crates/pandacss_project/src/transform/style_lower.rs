@@ -363,14 +363,21 @@ pub fn lower_style_tree(
         return LowerResult::Bail;
     }
 
-    let mut base = projected_base(obj);
+    let full_base = projected_base(obj);
+    let mut shared_base = full_base.clone();
     for path in affected_paths.iter().flatten() {
-        remove_base_path(&mut base, path);
+        remove_base_path(&mut shared_base, path);
     }
     let mut exprs = Vec::with_capacity(sites.len());
-    let encode = LowerEncodeCtx { project, for_jsx };
+    let ctx = LowerCtx {
+        source,
+        shared_base: &shared_base,
+        full_base: &full_base,
+        project,
+        for_jsx,
+    };
     for site in &sites {
-        match lower_site(source, &base, site, &encode, &mut pattern_transform) {
+        match lower_site(site, &ctx, &mut pattern_transform) {
             Some(expr) => exprs.push(expr),
             None => return LowerResult::Bail,
         }
@@ -485,12 +492,6 @@ enum Site {
         alternate: StyleTree,
         overridden: Vec<String>,
     },
-    SpreadAnd {
-        path: Vec<PathSeg>,
-        test: Span,
-        value: StyleTree,
-        overridden: Vec<String>,
-    },
 }
 
 impl Site {
@@ -498,8 +499,7 @@ impl Site {
         match self {
             Self::PropertyTernary { test, .. }
             | Self::PropertyAnd { test, .. }
-            | Self::SpreadTernary { test, .. }
-            | Self::SpreadAnd { test, .. } => test.start,
+            | Self::SpreadTernary { test, .. } => test.start,
         }
     }
 }
@@ -510,13 +510,15 @@ enum CollectOutcome {
     Bail,
 }
 
-fn collect_sites(
+/// Both spread forms lower to `SpreadTernary`: `a && X` spreads X or nothing,
+/// which is what `a ? X : {}` does, so downstream sees one spread shape.
+fn collect_spread_sites(
     obj: &StyleObject,
-    path: &mut Vec<PathSeg>,
+    path: &[PathSeg],
     sites: &mut Vec<Site>,
 ) -> CollectOutcome {
     for spread in &obj.spreads {
-        match spread {
+        let (test, consequent, alternate, overridden) = match spread {
             StyleSpread::Open { .. } | StyleSpread::OpenWithFallback { .. } => {
                 return CollectOutcome::Bail;
             }
@@ -525,34 +527,39 @@ fn collect_sites(
                 consequent,
                 alternate,
                 overridden,
-            } => {
-                if tree_has_open(consequent) || tree_has_open(alternate) {
-                    return CollectOutcome::Bail;
-                }
-                sites.push(Site::SpreadTernary {
-                    path: path.clone(),
-                    test: *test,
-                    consequent: consequent.clone(),
-                    alternate: alternate.clone(),
-                    overridden: overridden.clone(),
-                });
-            }
+            } => (test, consequent, alternate.clone(), overridden),
             StyleSpread::And {
                 test,
                 value,
                 overridden,
-            } => {
-                if tree_has_open(value) {
-                    return CollectOutcome::Bail;
-                }
-                sites.push(Site::SpreadAnd {
-                    path: path.clone(),
-                    test: *test,
-                    value: value.clone(),
-                    overridden: overridden.clone(),
-                });
-            }
+            } => (
+                test,
+                value,
+                StyleTree::Object(StyleObject::default()),
+                overridden,
+            ),
+        };
+        if tree_has_open(consequent) || tree_has_open(&alternate) {
+            return CollectOutcome::Bail;
         }
+        sites.push(Site::SpreadTernary {
+            path: path.to_vec(),
+            test: *test,
+            consequent: consequent.clone(),
+            alternate,
+            overridden: overridden.clone(),
+        });
+    }
+    CollectOutcome::Ok
+}
+
+fn collect_sites(
+    obj: &StyleObject,
+    path: &mut Vec<PathSeg>,
+    sites: &mut Vec<Site>,
+) -> CollectOutcome {
+    if matches!(collect_spread_sites(obj, path, sites), CollectOutcome::Bail) {
+        return CollectOutcome::Bail;
     }
 
     for (key, value) in &obj.entries {
@@ -742,30 +749,39 @@ fn lower_whole_arg_ternary(
     let Some(no) = encode_tree(project, alternate, for_jsx, pattern_transform) else {
         return LowerResult::Bail;
     };
-    LowerResult::Expr(ClassExpr::Ternary {
-        test: test_src.to_owned(),
-        yes: Box::new(ClassExpr::Lit(yes)),
-        no: Box::new(ClassExpr::Lit(no)),
-    })
+    LowerResult::Expr(ternary(
+        test_src.to_owned(),
+        ClassExpr::Lit(yes),
+        ClassExpr::Lit(no),
+    ))
 }
 
-/// Shared encode refs for site/property-arm lowering (`pattern_transform` stays
-/// a separate reborrowable param — packing `&mut dyn FnMut` into this struct
+/// Shared inputs for site/property-arm lowering (`pattern_transform` stays a
+/// separate reborrowable param — packing `&mut dyn FnMut` into this struct
 /// fights borrowck across sequential arm encodes).
-struct LowerEncodeCtx<'a> {
+struct LowerCtx<'a> {
+    source: &'a str,
+    /// Static entries no conditional site owns. Emitted in every branch, and
+    /// hoisted back out when several sites share it.
+    shared_base: &'a [(String, Literal)],
+    /// Every static entry, including the ones sites own. A spread branch that
+    /// omits an affected key falls back to the value here.
+    full_base: &'a [(String, Literal)],
     project: &'a Project,
     for_jsx: Option<&'a ExtractedJsx>,
 }
 
-#[allow(
-    clippy::too_many_lines,
-    reason = "each Site arm builds an independent class expression"
-)]
+fn ternary(test: String, yes: ClassExpr, no: ClassExpr) -> ClassExpr {
+    ClassExpr::Ternary {
+        test,
+        yes: Box::new(yes),
+        no: Box::new(no),
+    }
+}
+
 fn lower_site(
-    source: &str,
-    base: &[(String, Literal)],
     site: &Site,
-    encode: &LowerEncodeCtx<'_>,
+    ctx: &LowerCtx<'_>,
     pattern_transform: &mut Option<&mut PatternTransformFn<'_>>,
 ) -> Option<ClassExpr> {
     match site {
@@ -774,39 +790,9 @@ fn lower_site(
             test,
             consequent,
             alternate,
-        } => {
-            let test_src = span_slice(source, *test)?.to_owned();
-            let yes =
-                lower_property_arm(source, base, path, consequent, encode, pattern_transform)?;
-            let no = lower_property_arm(source, base, path, alternate, encode, pattern_transform)?;
-            Some(ClassExpr::Ternary {
-                test: test_src,
-                yes: Box::new(yes),
-                no: Box::new(no),
-            })
-        }
+        } => lower_property_ternary(path, *test, consequent, alternate, ctx, pattern_transform),
         Site::PropertyAnd { path, test, value } => {
-            let test_src = span_slice(source, *test)?.to_owned();
-            let lit = project_literal(value)?;
-            let mut truthy = base.to_vec();
-            apply_branch(&mut truthy, path, lit);
-            let yes = encode_literal_object(
-                encode.project,
-                &truthy,
-                encode.for_jsx,
-                pattern_transform.as_deref_mut(),
-            );
-            let no = encode_literal_object(
-                encode.project,
-                base,
-                encode.for_jsx,
-                pattern_transform.as_deref_mut(),
-            );
-            Some(ClassExpr::Ternary {
-                test: test_src,
-                yes: Box::new(ClassExpr::Lit(yes)),
-                no: Box::new(ClassExpr::Lit(no)),
-            })
+            lower_property_and(path, *test, value, ctx, pattern_transform)
         }
         Site::SpreadTernary {
             path,
@@ -814,77 +800,114 @@ fn lower_site(
             consequent,
             alternate,
             overridden,
-        } => {
-            let test_src = span_slice(source, *test)?.to_owned();
-            let mut affected = affected_keys_from_arms(consequent, alternate);
-            affected.retain(|key| !overridden.contains(key));
-            let yes = encode_spread_branch(
-                encode,
-                base,
-                path,
-                &affected,
-                consequent,
-                overridden,
-                pattern_transform.as_deref_mut(),
-            )?;
-            let no = encode_spread_branch(
-                encode,
-                base,
-                path,
-                &affected,
-                alternate,
-                overridden,
-                pattern_transform.as_deref_mut(),
-            )?;
-            Some(ClassExpr::Ternary {
-                test: test_src,
-                yes: Box::new(ClassExpr::Lit(yes)),
-                no: Box::new(ClassExpr::Lit(no)),
-            })
-        }
-        Site::SpreadAnd {
+        } => lower_spread_site(
             path,
-            test,
-            value,
+            *test,
+            consequent,
+            alternate,
             overridden,
-        } => {
-            let test_src = span_slice(source, *test)?.to_owned();
-            let mut affected = affected_keys_from_arm(value);
-            affected.retain(|key| !overridden.contains(key));
-            let yes = encode_spread_branch(
-                encode,
-                base,
-                path,
-                &affected,
-                value,
-                overridden,
-                pattern_transform.as_deref_mut(),
-            )?;
-            let empty = StyleTree::Object(StyleObject::default());
-            let no = encode_spread_branch(
-                encode,
-                base,
-                path,
-                &affected,
-                &empty,
-                overridden,
-                pattern_transform.as_deref_mut(),
-            )?;
-            Some(ClassExpr::Ternary {
-                test: test_src,
-                yes: Box::new(ClassExpr::Lit(yes)),
-                no: Box::new(ClassExpr::Lit(no)),
-            })
-        }
+            ctx,
+            pattern_transform,
+        ),
     }
 }
 
+fn lower_property_ternary(
+    path: &[PathSeg],
+    test: pandacss_shared::Span,
+    consequent: &StyleTree,
+    alternate: &StyleTree,
+    ctx: &LowerCtx<'_>,
+    pattern_transform: &mut Option<&mut PatternTransformFn<'_>>,
+) -> Option<ClassExpr> {
+    let test_src = span_slice(ctx.source, test)?.to_owned();
+    let yes = lower_property_arm(path, consequent, ctx, pattern_transform)?;
+    let no = lower_property_arm(path, alternate, ctx, pattern_transform)?;
+    Some(ternary(test_src, yes, no))
+}
+
+fn lower_property_and(
+    path: &[PathSeg],
+    test: pandacss_shared::Span,
+    value: &StyleTree,
+    ctx: &LowerCtx<'_>,
+    pattern_transform: &mut Option<&mut PatternTransformFn<'_>>,
+) -> Option<ClassExpr> {
+    let test_src = span_slice(ctx.source, test)?.to_owned();
+    let lit = project_literal(value)?;
+    let mut truthy = ctx.shared_base.to_vec();
+    apply_branch(&mut truthy, path, lit);
+    let yes = encode_literal_object(
+        ctx.project,
+        &truthy,
+        ctx.for_jsx,
+        pattern_transform.as_deref_mut(),
+    );
+    let no = encode_literal_object(
+        ctx.project,
+        ctx.shared_base,
+        ctx.for_jsx,
+        pattern_transform.as_deref_mut(),
+    );
+    Some(ternary(test_src, ClassExpr::Lit(yes), ClassExpr::Lit(no)))
+}
+
+fn lower_spread_site(
+    path: &[PathSeg],
+    test: pandacss_shared::Span,
+    consequent: &StyleTree,
+    alternate: &StyleTree,
+    overridden: &[String],
+    ctx: &LowerCtx<'_>,
+    pattern_transform: &mut Option<&mut PatternTransformFn<'_>>,
+) -> Option<ClassExpr> {
+    let test_src = span_slice(ctx.source, test)?.to_owned();
+    let mut affected = affected_keys_from_arms(consequent, alternate);
+    affected.retain(|key| !overridden.contains(key));
+    let yes = encode_spread_branch(
+        ctx,
+        path,
+        &affected,
+        consequent,
+        overridden,
+        pattern_transform.as_deref_mut(),
+    )?;
+    let no = encode_spread_branch(
+        ctx,
+        path,
+        &affected,
+        alternate,
+        overridden,
+        pattern_transform.as_deref_mut(),
+    )?;
+    Some(ternary(test_src, ClassExpr::Lit(yes), ClassExpr::Lit(no)))
+}
+
+/// Entries at `path` in `entries` whose key is in `keys`.
+fn entries_at_path_for_keys(
+    entries: &[(String, Literal)],
+    path: &[PathSeg],
+    keys: &HashSet<String>,
+) -> Vec<(String, Literal)> {
+    let scope = if path.is_empty() {
+        entries
+    } else {
+        match literal_at_path(entries, path) {
+            Some(Literal::Object(nested)) => nested.as_slice(),
+            _ => return Vec::new(),
+        }
+    };
+    scope
+        .iter()
+        .filter(|(key, _)| keys.contains(key))
+        .cloned()
+        .collect()
+}
+
 fn lower_property_arm(
-    source: &str,
-    base: &[(String, Literal)],
     path: &[PathSeg],
     arm: &StyleTree,
-    encode: &LowerEncodeCtx<'_>,
+    ctx: &LowerCtx<'_>,
     pattern_transform: &mut Option<&mut PatternTransformFn<'_>>,
 ) -> Option<ClassExpr> {
     if let StyleTree::Ternary {
@@ -893,22 +916,18 @@ fn lower_property_arm(
         alternate,
     } = arm
     {
-        let test_src = span_slice(source, *test)?.to_owned();
-        let yes = lower_property_arm(source, base, path, consequent, encode, pattern_transform)?;
-        let no = lower_property_arm(source, base, path, alternate, encode, pattern_transform)?;
-        return Some(ClassExpr::Ternary {
-            test: test_src,
-            yes: Box::new(yes),
-            no: Box::new(no),
-        });
+        let test_src = span_slice(ctx.source, *test)?.to_owned();
+        let yes = lower_property_arm(path, consequent, ctx, pattern_transform)?;
+        let no = lower_property_arm(path, alternate, ctx, pattern_transform)?;
+        return Some(ternary(test_src, yes, no));
     }
     let lit = project_literal(arm)?;
-    let mut next = base.to_vec();
+    let mut next = ctx.shared_base.to_vec();
     apply_branch(&mut next, path, lit);
     let classes = encode_literal_object(
-        encode.project,
+        ctx.project,
         &next,
-        encode.for_jsx,
+        ctx.for_jsx,
         pattern_transform.as_deref_mut(),
     );
     Some(ClassExpr::Lit(classes))
@@ -936,12 +955,6 @@ fn affected_paths_by_site(sites: &[Site]) -> Vec<Vec<Vec<PathSeg>>> {
                 affected_keys_from_arms(consequent, alternate),
                 overridden,
             ),
-            Site::SpreadAnd {
-                path,
-                value,
-                overridden,
-                ..
-            } => spread_affected_paths(path, affected_keys_from_arm(value), overridden),
         })
         .collect()
 }
@@ -1068,8 +1081,7 @@ fn base_entries_from_array(items: &[StyleTree]) -> Vec<Literal> {
 }
 
 fn encode_spread_branch(
-    encode: &LowerEncodeCtx<'_>,
-    base: &[(String, Literal)],
+    ctx: &LowerCtx<'_>,
     path: &[PathSeg],
     affected: &HashSet<String>,
     branch: &StyleTree,
@@ -1084,14 +1096,21 @@ fn encode_spread_branch(
         Some(_) => return None,
         None => Vec::new(),
     };
+    // Spreading an object that omits an affected key leaves the static value in
+    // place, so resolve the branch against `full_base` before encoding.
+    let mut resolved = entries_at_path_for_keys(ctx.full_base, path, affected);
+    for (key, value) in branch_obj {
+        Literal::upsert_object_entry(&mut resolved, key, value);
+    }
 
+    let base = ctx.shared_base;
     let next = if path.is_empty() {
         let mut result: Vec<(String, Literal)> = base
             .iter()
             .filter(|(key, _)| !affected.contains(key))
             .cloned()
             .collect();
-        for (k, v) in branch_obj {
+        for (k, v) in resolved {
             Literal::upsert_object_entry(&mut result, k, v);
         }
         result
@@ -1106,7 +1125,7 @@ fn encode_spread_branch(
             .into_iter()
             .filter(|(key, _)| !affected.contains(key))
             .collect();
-        for (k, v) in branch_obj {
+        for (k, v) in resolved {
             Literal::upsert_object_entry(&mut filtered, k, v);
         }
         let mut result = base.to_vec();
@@ -1114,9 +1133,9 @@ fn encode_spread_branch(
         result
     };
     Some(encode_literal_object(
-        encode.project,
+        ctx.project,
         &next,
-        encode.for_jsx,
+        ctx.for_jsx,
         pattern_transform,
     ))
 }

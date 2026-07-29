@@ -213,6 +213,111 @@ advanced_snapshot!(
     @r#"export const cls = (a ? "color_red" : "color_blue") + (b ? " padding_1" : "");"#
 );
 
+// `a && X` spreads exactly like `a ? X : {}`, so lowering desugars the first
+// into the second. This snapshot must stay identical to
+// `ternary_spread_empty_alternate_keeps_the_base_value`.
+advanced_snapshot!(
+    logical_spread_falls_back_to_the_base_value_it_overrides,
+    {
+        let source = indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({ padding: '2', color: 'green', ...(b && { padding: '1' }) });
+        "#};
+        transform("src/styles.tsx", source)
+    },
+    @r#"export const cls = b ? "color_green padding_1" : "color_green padding_2";"#
+);
+
+advanced_snapshot!(
+    nested_logical_spread_falls_back_to_the_base_value_it_overrides,
+    {
+        let source = indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({ _hover: { padding: '2', color: 'green', ...(b && { padding: '1' }) } });
+        "#};
+        transform("src/styles.tsx", source)
+    },
+    @r#"export const cls = b ? "hover:color_green hover:padding_1" : "hover:color_green hover:padding_2";"#
+);
+
+// A spread arm that doesn't supply an affected key falls back to the base value.
+advanced_snapshot!(
+    ternary_spread_empty_alternate_keeps_the_base_value,
+    {
+        let source = indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({ padding: '2', color: 'green', ...(b ? { padding: '1' } : {}) });
+        "#};
+        transform("src/styles.tsx", source)
+    },
+    @r#"export const cls = b ? "color_green padding_1" : "color_green padding_2";"#
+);
+
+advanced_snapshot!(
+    ternary_spread_empty_consequent_keeps_the_base_value,
+    {
+        let source = indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({ padding: '2', color: 'green', ...(b ? {} : { padding: '1' }) });
+        "#};
+        transform("src/styles.tsx", source)
+    },
+    @r#"export const cls = b ? "color_green padding_2" : "color_green padding_1";"#
+);
+
+advanced_snapshot!(
+    ternary_spread_partial_overlap_keeps_unsupplied_base_values,
+    {
+        let source = indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({ padding: '2', margin: '3', ...(b ? { padding: '1' } : { margin: '4' }) });
+        "#};
+        transform("src/styles.tsx", source)
+    },
+    @r#"export const cls = b ? "margin_3 padding_1" : "margin_4 padding_2";"#
+);
+
+advanced_snapshot!(
+    nested_ternary_spread_partial_overlap_keeps_unsupplied_base_values,
+    {
+        let source = indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({ _hover: { padding: '2', margin: '3', ...(b ? { padding: '1' } : { margin: '4' }) } });
+        "#};
+        transform("src/styles.tsx", source)
+    },
+    @r#"export const cls = b ? "hover:margin_3 hover:padding_1" : "hover:margin_4 hover:padding_2";"#
+);
+
+// An overridden key is excluded from `affected`, so the fallback must not
+// resurrect the base value the later static property replaced.
+advanced_snapshot!(
+    a_later_static_override_wins_over_the_spread_base_fallback,
+    {
+        let source = indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({ padding: '2', ...(b ? { padding: '1' } : {}), padding: '5' });
+        "#};
+        transform("src/styles.tsx", source)
+    },
+    @r#"export const cls = b ? "padding_5" : "padding_5";"#
+);
+
+// `padding` and `paddingTop` are distinct keys, so the spread never shadows the
+// base longhand and both classes survive the truthy branch. Guards the base
+// fallback against ever treating a shorthand as the longhand it expands to.
+advanced_snapshot!(
+    spread_shorthand_keeps_the_longhand_base_it_does_not_replace,
+    {
+        let source = indoc! {r#"
+            import { css } from '@panda/css';
+            export const cls = css({ paddingTop: '2', ...(b ? { padding: '1' } : {}) });
+        "#};
+        transform("src/styles.tsx", source)
+    },
+    @r#"export const cls = b ? "padding_1 padding-top_2" : "padding-top_2";"#
+);
+
 advanced_snapshot!(
     disjoint_conditional_spreads_remove_overridden_base_values,
     {
