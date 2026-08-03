@@ -1,29 +1,18 @@
 ---
 title: Using Panda in a Component Library
-description: How to set up Panda in a component library
+description: Share Panda styles with apps that don't run Panda, or ship just your tokens and recipes.
 ---
 
-When creating a component library that uses Panda which can be used in a variety of different projects, you have four
-options:
+Building a full design system — tokens, recipes, and components — for apps that all run Panda? Use the
+[Design System guide](/docs/guides/design-system). That's the recommended path: you run `panda lib` once, and each app
+opts in with a single `designSystem` line and generates only the styles it adds.
 
-1. Ship a Panda [preset](/docs/customization/presets)
-2. Ship a static CSS file
-3. Use Panda as external package, and ship the src files
-4. Use Panda as external package, and ship the build info file
+This page covers the two cases that guide doesn't:
+
+1. [Ship a Panda preset](#ship-a-panda-preset) — share only tokens, patterns, or recipes, no components.
+2. [Ship a static CSS file](#ship-a-static-css-file) — style apps that don't run Panda at all.
 
 > In the examples below, we use `tsup` as the build tool. You can use any other build tool.
-
-## Recommendations
-
-- If your library code shouldn't be published on npm and App code uses Panda, use
-  [ship build info](#ship-the-build-info-file) approach
-- If your app code doesn't use Panda, use the [static css](#ship-a-static-css-file) file approach
-- If your app code lives in a monorepo, use the [include src files](#include-the-src-files) approach
-- If your library code doesn't ship components but only ships tokens, patterns or recipes, use the
-  [ship preset](#ship-a-panda-preset) approach
-
-> ⚠️ If you use the `include src files` or `ship build info` approach, you might also need to ship a `preset` if your
-> library code has any custom tokens, patterns or recipes.
 
 ## Ship a Panda Preset
 
@@ -72,8 +61,8 @@ export default defineConfig({
 
 ## Ship a Static CSS File
 
-This approach involves extracting the static css of your library at build time. Then you can import the CSS file in your
-app code.
+Use this when your app code doesn't run Panda. You extract the library's static CSS at build time, then import the CSS
+file in your app.
 
 **Library code**
 
@@ -137,281 +126,12 @@ This approach comes with a few downsides:
 
 - You might have duplicate CSS classes when using multiple atomic css libraries
 
-## Use Panda as external package
+## Share a full design system instead
 
-### Summary
-
-- create a Panda [preset](/docs/customization/presets) so that you (and your users) can share the same design system
-  tokens
-- create a workspace package for your outdir (`@acme-org/styled-system`) and use that package name as the `importMap` in
-  your app code
-- have your component library (`@acme-org/components`) use the `@acme-org/styled-system` package as external
-
----
-
-Let's make a dedicated workspace package for your `outdir`:
-
-1. Create a new directory `packages/styled-system` (or any other name)
-2. Install `@pandacss/dev` as a dev dependency
-3. Run the `panda init` command in there to generate a `panda.config.ts` file, don't forget to set the `jsxFramework` if
-   needed
-4. [optional] you might want to install and import your [preset](/docs/customization/presets) in this `panda.config.ts`
-   file as well
-5. Add [`exports`](https://nodejs.org/api/packages.html#exports) entries for the generated styled-system entrypoints
-
-This should look similar to this:
-
-```json
-{
-  "name": "@acme-org/styled-system",
-  "version": "1.0.0",
-  "exports": {
-    "./css": {
-      "types": "./css/index.d.ts",
-      "require": "./css/index.mjs",
-      "import": "./css/index.mjs"
-    },
-    "./tokens": {
-      "types": "./tokens/index.d.ts",
-      "require": "./tokens/index.mjs",
-      "import": "./tokens/index.mjs"
-    },
-    "./types": {
-      "types": "./types/index.d.ts",
-      "require": "./types/index.mjs",
-      "import": "./types/index.mjs"
-    },
-    "./patterns": {
-      "types": "./patterns/index.d.ts",
-      "require": "./patterns/index.mjs",
-      "import": "./patterns/index.mjs"
-    },
-    "./recipes": {
-      "types": "./recipes/index.d.ts",
-      "require": "./recipes/index.mjs",
-      "import": "./recipes/index.mjs"
-    },
-    "./jsx": {
-      "types": "./jsx/index.d.ts",
-      "require": "./jsx/index.mjs",
-      "import": "./jsx/index.mjs"
-    },
-    "./styles.css": "./styles.css"
-  },
-  "devDependencies": {
-    "@pandacss/dev": "^1.4.2",
-    "@types/react": "19.2.2",
-    "react": "^19.2.0"
-  },
-  "peerDependencies": {
-    "react": ">=19"
-  }
-}
-```
-
-> Notice that we've included the `react` and its corresponding `@types/react` in the `devDependencies` and
-> `peerDependencies`. This is to ensure the types are correctly set up in the `styled-system` package.
-
-Going forward, you'll now import the functions from the `@acme-org/styled-system` monorepo package.
-
-```tsx
-import { css } from '@acme-org/styled-system/css'
-
-export function Button({ children }) {
-  return (
-    <button type="button" className={css({ bg: 'red.300', px: '2', py: '3' })}>
-      {children}
-    </button>
-  )
-}
-```
-
-**App code**
-
-Install the newly created `@acme-org/styled-system` package in your app code.
-
-```bash
-pnpm add @acme-org/styled-system
-```
-
-Configure the `importMap` in your `panda.config.ts` to match the `name` field of your outdir `package.json`. This will
-inform Panda which imports belong to the `styled-system`.
-
-```tsx filename="panda.config.ts"
-import { defineConfig } from '@pandacss/dev'
-
-export default defineConfig({
-  //...
-  importMap: '@acme-org/styled-system',
-  outdir: 'styled-system'
-})
-```
-
-Mark the `@acme-org/styled-system` as an external package in your library build tool. This ensures that the generated JS
-runtime code is imported only once, avoiding duplication.
-
-```bash
-tsup src/index.tsx --external @acme-org/styled-system
-```
-
-### Include the src files
-
-Include the `src` directory from the library code in the panda config.
-
-```tsx {6} filename="panda.config.ts"
-import { defineConfig } from '@pandacss/dev'
-
-export default defineConfig({
-  //...
-  include: ['../@acme-org/design-system/src/**/*.tsx', './src/**/*.{ts,tsx}'],
-  importMap: '@acme-org/styled-system',
-  outdir: 'styled-system'
-})
-```
-
-### Ship the build info file
-
-This approach is similar to the previous one, but instead of shipping the source code, you ship the Panda build info
-file. This will have **the exact same end-result** as adding the sources files in the `include`, but it will allow you
-not to ship the source code.
-
-The build info file is a JSON file that **only** contains the information about the static extraction result, you still
-need to ship your app build/dist by yourself. It can be used by Panda to generate CSS classes without the need for
-parsing the source code.
-
-Generate the build info file:
-
-```bash
-panda buildinfo --outfile dist/panda.buildinfo.json
-```
-
-**App code**
-
-Install the newly created `@acme-org/styled-system` package in your app code.
-
-```bash
-pnpm add @acme-org/styled-system
-```
-
-Configure the `importMap` in your `panda.config.ts` to match the `name` field of your outdir `package.json`. This will
-inform Panda which imports belong to the `styled-system`.
-
-```tsx filename="panda.config.ts"
-import { defineConfig } from '@pandacss/dev'
-
-export default defineConfig({
-  //...
-  importMap: '@acme-org/styled-system',
-  outdir: 'styled-system'
-})
-```
-
-Will allow imports like:
-
-```tsx
-import { css } from '@acme-org/styled-system/css'
-import { button } from '@acme-org/styled-system/recipes'
-```
-
-Next, you need to include the build info file from the library code in the panda config.
-
-```tsx {6} filename="panda.config.ts"
-import { defineConfig } from '@pandacss/dev'
-
-export default defineConfig({
-  //...
-  include: ['./node_modules/@acme-org/design-system/dist/panda.buildinfo.json', './src/**/*.{ts,tsx}'],
-  importMap: '@acme-org/styled-system',
-  outdir: 'styled-system'
-})
-```
-
-## FAQ
-
-### Why should my component library use an external package `styled-system`?
-
-By de-coupling the component library from the `styled-system`, your users can share the same runtime code between your
-library and their app code.
-
-```tsx filename="component-lib/src/button.tsx"
-import { css } from '@acme-org/styled-system/css'
-
-export function Button({ children, css: cssProp }) {
-  return (
-    <button type="button" className={css({ bg: 'red.300', px: '2', py: '3' }, cssProp)}>
-      {children}
-    </button>
-  )
-}
-```
-
-```tsx filename="app/src/App.tsx"
-import { Button } from '@acme-org/design-system'
-import { css } from '@acme-org/styled-system/css'
-
-export function App() {
-  return <Button css={{ color: 'white' }}>Click me</Button>
-}
-```
-
-Marking the `styled-system` as an external package in your build tool means that the generated JS runtime code (the
-`css` function is the example above) is imported only once, avoiding duplication.
-
-### How do I use the `@acme-org/styled-system` package ?
-
-You can use your monorepo workspace package `@acme-org/styled-system` just like any other dependency in your app or
-component library code.
-
-```bash
-pnpm add @acme-org/styled-system
-```
-
-Set the `importMap` in your `panda.config.ts` to that same package name. This will inform Panda which imports belong to
-the `styled-system`.
-
-```tsx filename="panda.config.ts"
-import { defineConfig } from '@pandacss/dev'
-
-export default defineConfig({
-  //...
-  importMap: '@acme-org/styled-system'
-})
-```
-
-Then you can import the functions from the `@acme-org/styled-system` monorepo package.
-
-```tsx
-import { css } from '@acme-org/styled-system/css'
-
-export function Button({ children }) {
-  return (
-    <button type="button" className={css({ bg: 'red.300', px: '2', py: '3' })}>
-      {children}
-    </button>
-  )
-}
-```
-
-### How to override tokens used by the `@acme-org/styled-system` package?
-
-You can override the tokens used by the `@acme-org/styled-system` package by extending the `theme` in your
-`panda.config.ts` file.
-
-```tsx filename="panda.config.ts"
-import { defineConfig } from '@pandacss/dev'
-
-export default defineConfig({
-  //...
-  presets: ['@acme-org/preset'],
-  theme: {
-    extend: {
-      tokens: {
-        colors: { primary: { value: 'blue.500' } }
-      }
-    }
-  }
-})
-```
+Shipping components to apps that also run Panda? Don't wire up an external `styled-system` package and `importMap` by
+hand. The [Design System guide](/docs/guides/design-system) covers that path: `panda lib` builds your tokens, recipes,
+and components into one package, and each app consumes it with a single `designSystem` line — reusing your build output
+instead of re-scanning it.
 
 ## Troubleshooting
 
