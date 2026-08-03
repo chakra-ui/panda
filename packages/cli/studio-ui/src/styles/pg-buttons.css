@@ -1,0 +1,115 @@
+.pg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 14px;
+  height: 36px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  border: 1px solid transparent;
+  border-radius: var(--radii-md, 8px);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.pg-btn-solid {
+  background: var(--colors-accent, var(--accent));
+  color: #1a1a1a;
+}
+.pg-btn-outline {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--fg);
+}
+.pg-btn-ghost {
+  background: transparent;
+  color: var(--fg);
+}
+.pg-btn-ghost:hover {
+  background: var(--card);
+}
+.pg-btn-subtle {
+  background: color-mix(in srgb, var(--colors-accent, var(--accent)) 18%, transparent);
+  color: var(--fg);
+}
+.pg-btn-surface {
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--fg);
+}
+.pg-btn-plain {
+  background: transparent;
+  color: var(--colors-accent, var(--accent));
+  padding: 0 4px;
+}
+
+.pg-btn-gray.pg-btn-solid {
+  background: var(--fg);
+  color: var(--bg);
+}
+.pg-btn-gray.pg-btn-subtle {
+  background: var(--card);
+  color: var(--fg);
+}
+.pg-btn-gray.pg-btn-plain {
+  color: var(--fg);
+}
+
+.pg-code {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-family: var(--fonts-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 13px;
+  border-radius: var(--radii-md, 8px);
+  border: 1px solid transparent;
+}
+.pg-code-subtle {
+  background: color-mix(in srgb, var(--colors-accent, var(--accent)) 18%, transparent);
+  color: var(--fg);
+}
+.pg-code-surface {
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--fg);
+}
+.pg-code-outline {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--fg);
+}
+.pg-code-solid {
+  background: var(--colors-accent, var(--accent));
+  color: #1a1a1a;
+}
+
+.pg-avatar-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.pg-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radii-md, 8px);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  overflow: hidden;
+}
+.pg-avatar-solid {
+  background: var(--colors-accent, var(--accent));
+  color: #1a1a1a;
+}
+.pg-avatar-subtle {
+  background: color-mix(in srgb, var(--colors-accent, var(--accent)) 18%, transparent);
+  color: var(--fg);
+}

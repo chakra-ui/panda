@@ -1,0 +1,90 @@
+.pg-theme {
+  width: 320px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 20px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+.pg-theme-head {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--fg);
+}
+.pg-theme-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.pg-theme-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.pg-swatches {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+}
+.pg-swatch {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  padding: 0;
+}
+.pg-swatch.pg-on {
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--fg);
+}
+.pg-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.pg-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 8px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--fg);
+  cursor: pointer;
+}
+.pg-tile.pg-on {
+  border-color: var(--colors-accent, var(--accent));
+  box-shadow: 0 0 0 1px var(--colors-accent, var(--accent));
+}
+.pg-tile-ag {
+  font-size: 22px;
+  font-weight: 600;
+}
+.pg-tile-name {
+  font-size: 11px;
+  color: var(--muted);
+}
+.pg-tile-radius {
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--colors-accent, var(--accent));
+  border-right: 0;
+  border-bottom: 0;
+}
+@media (max-width: 900px) {
+  .pg-root {
+    flex-direction: column;
+  }
+  .pg-theme {
+    width: 100%;
+    position: static;
+  }
+}

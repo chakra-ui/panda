@@ -1,0 +1,150 @@
+.sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow: auto;
+  border-right: 1px solid var(--border);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.brand .logo {
+  font-size: 20px;
+  line-height: 1;
+}
+.brand .logo-custom {
+  height: 22px;
+  width: auto;
+}
+.search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.search-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--muted);
+  pointer-events: none;
+}
+.search {
+  width: 100%;
+  padding: 8px 10px 8px 32px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--fg);
+  font-size: 13px;
+}
+.search::placeholder {
+  color: var(--muted);
+}
+.search:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.nav {
+  display: flex;
+  flex-direction: column;
+}
+.nav-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.nav-label-spaced {
+  margin-top: 20px;
+}
+.nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.nav a {
+  display: block;
+  padding: 6px 10px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg);
+  text-decoration: none;
+  text-transform: capitalize;
+}
+.nav a:hover {
+  background: var(--card);
+}
+.nav a.active {
+  background: var(--accent);
+  color: #1a1a1a;
+}
+.theme {
+  position: fixed;
+  top: 14px;
+  right: 20px;
+  z-index: 20;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--fg);
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.theme:hover {
+  border-color: var(--accent);
+}
+.content {
+  flex: 1;
+  min-width: 0;
+  padding: 28px 40px 80px;
+}
+.content-head {
+  margin-bottom: 24px;
+  min-height: 16px;
+}
+.content-search {
+  max-width: 340px;
+  margin: 8px 0 10px;
+}
+.crumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+  text-transform: capitalize;
+}
+.crumb .sep {
+  opacity: 0.5;
+}
+.crumb .here {
+  color: var(--fg);
+  font-weight: 600;
+}
+.content .count {
+  color: var(--muted);
+  font-size: 13px;
+}

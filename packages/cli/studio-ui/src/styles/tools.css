@@ -1,0 +1,103 @@
+.tool {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+.tool-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.tool-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.tool-controls select,
+.tool-controls textarea {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--fg);
+  font-size: 13px;
+  font-family: inherit;
+}
+.tool-controls select:focus,
+.tool-controls textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.tool-controls textarea {
+  resize: vertical;
+  min-height: 64px;
+}
+.contrast-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 160px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 30px;
+  font-weight: 600;
+}
+.contrast-score {
+  font-size: 40px;
+  font-weight: 700;
+  margin: 16px 0 12px;
+}
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+.badge.pass {
+  background: color-mix(in srgb, #16a34a 20%, transparent);
+  border-color: #16a34a;
+}
+.badge.fail {
+  background: color-mix(in srgb, #dc2626 15%, transparent);
+  border-color: #dc2626;
+  opacity: 0.7;
+}
+.type-play {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.type-play-preview {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  padding: 32px;
+  min-height: 200px;
+  overflow-wrap: anywhere;
+}
+.type-play-css {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.7;
+  white-space: pre;
+  overflow-x: auto;
+}
