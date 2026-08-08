@@ -60,6 +60,7 @@ pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactF
         &system_module(
             &ctx.types.conditions,
             &ctx.types.utilities,
+            &ctx.types.keyframes.keys,
             ctx.types.options,
         ),
         options,
@@ -272,9 +273,14 @@ fn tokens_module(data: &TokenTypeData) -> Module {
 
 fn value_alias_parts(
     data: &UtilityTypeData,
+    keyframes: &[String],
     options: pandacss_config::TypegenOptions,
 ) -> Vec<String> {
     let strict = options.strict_tokens || options.strict_property_values;
+
+    let mut keyframe_names = keyframes.to_vec();
+    keyframe_names.sort_unstable();
+    keyframe_names.dedup();
 
     // Color-opacity / important modifiers are only reachable from strict aliases.
     let escape_hatch = if strict {
@@ -304,11 +310,12 @@ fn value_alias_parts(
         if !needed_aliases.contains(alias.name.as_str()) {
             continue;
         }
+        let alias_parts = expand_keyframe_parts(&alias.parts, &keyframe_names);
         parts.push(format!(
             "export type {} = {}",
             alias.name,
             value_alias_type(
-                &alias.parts,
+                &alias_parts,
                 options,
                 strict_entries.get(alias.name.as_str()).copied()
             )
@@ -316,6 +323,25 @@ fn value_alias_parts(
     }
 
     parts
+}
+
+fn expand_keyframe_parts(parts: &[ValueTypePart], keyframe_names: &[String]) -> Vec<ValueTypePart> {
+    if !parts.iter().any(
+        |part| matches!(part, ValueTypePart::TokenCategory(category) if category == "keyframes"),
+    ) {
+        return parts.to_vec();
+    }
+
+    let mut expanded = Vec::with_capacity(parts.len() + keyframe_names.len());
+    for part in parts {
+        match part {
+            ValueTypePart::TokenCategory(category) if category == "keyframes" => {
+                expanded.extend(keyframe_names.iter().cloned().map(ValueTypePart::Literal));
+            }
+            other => expanded.push(other.clone()),
+        }
+    }
+    expanded
 }
 
 /// Maps each utility value alias to its native CSS property entry, for default-mode `strict_props` inheritance.
@@ -629,6 +655,7 @@ fn css_datatype_type_parts() -> Vec<String> {
 fn system_module(
     conditions: &ConditionTypeData,
     data: &UtilityTypeData,
+    keyframes: &[String],
     options: pandacss_config::TypegenOptions,
 ) -> Module {
     let jsx_style_props = options.jsx_style_props;
@@ -641,7 +668,7 @@ fn system_module(
         "export type Assign<T, U> = {\n  [K in keyof T]: K extends keyof U ? U[K] : T[K]\n} & U".into(),
     ];
     parts.extend(condition_type_parts(conditions, options));
-    parts.extend(value_alias_parts(data, options));
+    parts.extend(value_alias_parts(data, keyframes, options));
     parts.extend(vec![
         r#"export type AtRuleType = "media" | "layer" | "container" | "supports" | "page" | "scope" | "starting-style""#.into(),
         "export type Selector = `${string}&` | `&${string}` | `@${AtRuleType}${string}`".into(),
