@@ -103,6 +103,7 @@
     "internal-cva-variant-table",
     "jsx-extract-requires-framework",
     "jsx-partial-fold-opaque-spread",
+    "keyframes-animation-name-types",
     "lib-catalog-peer-range",
     "lib-exports-safety",
     "lib-files-publishable",
