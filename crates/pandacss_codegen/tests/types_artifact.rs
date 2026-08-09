@@ -6,9 +6,10 @@ use insta::assert_snapshot;
 use pandacss_codegen::{ArtifactGraph, ArtifactId, CodegenInput, GenerateOptions};
 use pandacss_config::{
     CodegenFormat, ConditionTypeData, PatternPropertyTypeData, PatternPropertyTypeKind,
-    PatternTypeData, PatternTypeDefinition, PrimitiveType, RecipeTypeData, RecipeTypeDefinition,
-    SlotRecipeTypeDefinition, TokenCategoryTypeData, TokenTypeData, TypeData,
-    UtilityPropertyTypeData, UtilityTypeData, ValueAliasTypeData, ValueTypePart, VariantTypeData,
+    PatternTypeData, PatternTypeDefinition, PrimitiveType, RESERVED_VALUE_ALIAS_NAMES,
+    RecipeTypeData, RecipeTypeDefinition, SlotRecipeTypeDefinition, TokenCategoryTypeData,
+    TokenTypeData, TypeData, UtilityPropertyTypeData, UtilityTypeData, ValueAliasTypeData,
+    ValueTypePart, VariantTypeData,
 };
 
 fn input() -> CodegenInput {
@@ -213,6 +214,47 @@ fn recipe_type_data() -> RecipeTypeData {
     }
 }
 
+fn declared_type_name(line: &str) -> Option<&str> {
+    let rest = line
+        .strip_prefix("export type ")
+        .or_else(|| line.strip_prefix("export interface "))?;
+    let name = rest
+        .split(|c: char| !c.is_alphanumeric() && c != '_')
+        .next()?;
+    (!name.is_empty()).then_some(name)
+}
+
+/// Panda's CSS vocabulary uses the `Css` prefix; whatever still ends in `Value` must be
+/// reserved, or a utility on the matching property shadows it.
+#[test]
+fn reserves_every_panda_owned_value_type() {
+    // No utilities, so every remaining export is Panda's own.
+    for (scenario, mut bare) in [("default", input()), ("strict", strict_input())] {
+        bare.types.utilities = UtilityTypeData::default();
+
+        let artifacts = ArtifactGraph.generate_with_input(
+            &bare,
+            GenerateOptions {
+                format: CodegenFormat::Ts,
+                ..GenerateOptions::default()
+            },
+        );
+
+        let unreserved: Vec<_> = artifact(&artifacts, ArtifactId::Types)
+            .files
+            .iter()
+            .flat_map(|file| file.code.lines().filter_map(declared_type_name))
+            .filter(|name| name.ends_with("Value"))
+            .filter(|name| !RESERVED_VALUE_ALIAS_NAMES.contains(name))
+            .collect();
+
+        assert!(
+            unreserved.is_empty(),
+            "{scenario}: add to RESERVED_VALUE_ALIAS_NAMES or rename with the `Css` prefix: {unreserved:?}"
+        );
+    }
+}
+
 #[test]
 #[allow(
     clippy::too_many_lines,
@@ -278,7 +320,7 @@ fn emits_ts_source_types() {
     assert!(system.contains("export interface Breakpoints {"));
     assert!(system.contains("export type ContainerName = \"card\" | AnyString"));
     assert!(system.contains(
-        "export type ContainerValue = ContainerName | `${ContainerName} / inline-size` | `${ContainerName} / size` | AnyString"
+        "export type CssContainer = ContainerName | `${ContainerName} / inline-size` | `${ContainerName} / size` | AnyString"
     ));
     assert!(system.contains("export type Condition = keyof Conditions"));
     assert!(system.contains("export type ConditionalValue<T> ="));
@@ -291,19 +333,19 @@ fn emits_ts_source_types() {
         "export type Assign<T, U> = {\n  [K in keyof T]: K extends keyof U ? U[K] : T[K]\n} & U"
     ));
     assert!(system.contains(
-        "export type ColorValue = ColorGlobals | TokenValue<\"colors\"> | CssVars | AnyString | AnyNumber"
+        "export type ColorValue = CssColorGlobals | TokenValue<\"colors\"> | CssVars | AnyString | AnyNumber"
     ));
     assert!(system.contains(
-        "export type SpacingValue = AutoGlobals | TokenValue<\"spacing\"> | CssVars | AnyString | AnyNumber"
+        "export type SpacingValue = CssAutoGlobals | TokenValue<\"spacing\"> | CssVars | AnyString | AnyNumber"
     ));
-    // own csstype: globals + the single shared CssValue
+    // own csstype: globals + the single shared CssAny
     assert!(system.contains(
-        r#"export type Globals = "inherit" | "initial" | "revert" | "revert-layer" | "unset""#
+        r#"export type CssGlobals = "inherit" | "initial" | "revert" | "revert-layer" | "unset""#
     ));
-    assert!(system.contains("export type CssValue = Globals | (string & {}) | number"));
+    assert!(system.contains("export type CssAny = CssGlobals | (string & {}) | number"));
     assert!(system.contains("export type PropertyValueMap = {"));
     assert!(system.contains(
-        r#"  float: Globals | "inline-end" | "inline-start" | "left" | "none" | "right""#
+        r#"  float: CssGlobals | "inline-end" | "inline-start" | "left" | "none" | "right""#
     ));
     assert!(!system.contains(
         "export type CssPropertyValue<K extends keyof PropertyValueMap> = PropertyValueMap[K]"
@@ -322,60 +364,61 @@ fn emits_ts_source_types() {
             r#"  textAlign?: ConditionalValue<PropertyValueMap["textAlign"] | AnyString>"#
         )
     );
-    assert!(system.contains("export type LengthValue = DimensionGlobals | (string & {}) | number"));
+    assert!(
+        system.contains("export type CssLength = CssDimensionGlobals | (string & {}) | number")
+    );
     assert!(system.contains(
-        "export type ColorCssValue = ColorGlobals | NamedColor | SystemColor | (string & {})"
+        "export type CssColor = CssColorGlobals | CssNamedColor | CssSystemColor | (string & {})"
     ));
-    assert!(system.contains(r#"export type SystemColor = "AccentColor""#));
+    assert!(system.contains(r#"export type CssSystemColor = "AccentColor""#));
     assert!(system.contains(r#"| "Canvas""#));
-    assert!(system.contains(r#"export type NamedColor = "aliceblue""#));
-    assert!(
-        system.contains(r#"export type BgSizeValue = LengthValue | "auto" | "contain" | "cover""#)
-    );
+    assert!(system.contains(r#"export type CssNamedColor = "aliceblue""#));
+    assert!(system.contains(r#"export type CssBgSize = CssLength | "auto" | "contain" | "cover""#));
     assert!(system.contains(
-        r#"export type FontSizeValue = LengthValue | AbsoluteSize | "larger" | "smaller" | "math""#
+        r#"export type CssFontSize = CssLength | CssAbsoluteSize | "larger" | "smaller" | "math""#
     ));
     assert!(system.contains(
-        r#"export type FontWeightValue = Globals | "bold" | "normal" | (string & {}) | number"#
+        r#"export type CssFontWeight = CssGlobals | "bold" | "normal" | (string & {}) | number"#
     ));
     assert!(
-        system
-            .contains(r#"export type LineWidthValue = LengthValue | "medium" | "thick" | "thin""#)
+        system.contains(r#"export type CssLineWidth = CssLength | "medium" | "thick" | "thin""#)
     );
     assert!(system.contains(
-        r#"export type LineStyleValue = Globals | "dashed" | "dotted" | "double" | "groove" | "hidden" | "inset" | "none" | "outset" | "ridge" | "solid""#
+        r#"export type CssLineStyle = CssGlobals | "dashed" | "dotted" | "double" | "groove" | "hidden" | "inset" | "none" | "outset" | "ridge" | "solid""#
     ));
-    assert!(system.contains("export type OpenLineStyleValue = LineStyleValue | (string & {})"));
+    assert!(system.contains("export type CssLineStyleOpen = CssLineStyle | (string & {})"));
     assert!(system.contains(
-        r#"export type RepeatStyleValue = Globals | "no-repeat" | "repeat" | "repeat-x" | "repeat-y" | "round" | "space" | (string & {})"#
-    ));
-    assert!(system.contains(
-        r#"export type FontStretchValue = Globals | "condensed" | "expanded" | "extra-condensed" | "extra-expanded" | "normal" | "semi-condensed" | "semi-expanded" | "ultra-condensed" | "ultra-expanded" | (string & {})"#
+        r#"export type CssRepeatStyle = CssGlobals | "no-repeat" | "repeat" | "repeat-x" | "repeat-y" | "round" | "space" | (string & {})"#
     ));
     assert!(system.contains(
-        r#"export type OverflowCssValue = Globals | "-moz-hidden-unscrollable" | "auto" | "clip" | "hidden" | "overlay" | "scroll" | "visible""#
-    ));
-    assert!(system.contains("export type OpenOverflowCssValue = OverflowCssValue | (string & {})"));
-    assert!(system.contains(
-        r#"export type OverflowShortCssValue = Globals | "auto" | "clip" | "hidden" | "scroll" | "visible""#
+        r#"export type CssFontStretch = CssGlobals | "condensed" | "expanded" | "extra-condensed" | "extra-expanded" | "normal" | "semi-condensed" | "semi-expanded" | "ultra-condensed" | "ultra-expanded" | (string & {})"#
     ));
     assert!(system.contains(
-        r#"export type OverscrollBehaviorCssValue = Globals | "auto" | "contain" | "none""#
+        r#"export type CssOverflow = CssGlobals | "-moz-hidden-unscrollable" | "auto" | "clip" | "hidden" | "overlay" | "scroll" | "visible""#
+    ));
+    assert!(system.contains("export type CssOverflowOpen = CssOverflow | (string & {})"));
+    assert!(system.contains(
+        r#"export type CssOverflowShort = CssGlobals | "auto" | "clip" | "hidden" | "scroll" | "visible""#
     ));
     assert!(system.contains(
-        "export type OpenOverscrollBehaviorCssValue = OverscrollBehaviorCssValue | (string & {})"
+        r#"export type CssOverscrollBehavior = CssGlobals | "auto" | "contain" | "none""#
     ));
-    assert!(system.contains("  borderTopStyle: LineStyleValue"));
-    assert!(system.contains("  borderStyle: OpenLineStyleValue"));
-    assert!(system.contains("  columnRuleStyle: OpenLineStyleValue"));
-    assert!(system.contains("  backgroundRepeat: RepeatStyleValue"));
-    assert!(system.contains("  maskRepeat: RepeatStyleValue"));
-    assert!(system.contains("  fontStretch: FontStretchValue"));
-    assert!(system.contains("  fontWidth: FontStretchValue"));
-    assert!(system.contains("  overflowX: OverflowCssValue"));
-    assert!(system.contains("  overflow: OpenOverflowCssValue"));
-    assert!(system.contains("  overscrollBehaviorX: OverscrollBehaviorCssValue"));
-    assert!(system.contains("  overscrollBehavior: OpenOverscrollBehaviorCssValue"));
+    assert!(
+        system.contains(
+            "export type CssOverscrollBehaviorOpen = CssOverscrollBehavior | (string & {})"
+        )
+    );
+    assert!(system.contains("  borderTopStyle: CssLineStyle"));
+    assert!(system.contains("  borderStyle: CssLineStyleOpen"));
+    assert!(system.contains("  columnRuleStyle: CssLineStyleOpen"));
+    assert!(system.contains("  backgroundRepeat: CssRepeatStyle"));
+    assert!(system.contains("  maskRepeat: CssRepeatStyle"));
+    assert!(system.contains("  fontStretch: CssFontStretch"));
+    assert!(system.contains("  fontWidth: CssFontStretch"));
+    assert!(system.contains("  overflowX: CssOverflow"));
+    assert!(system.contains("  overflow: CssOverflowOpen"));
+    assert!(system.contains("  overscrollBehaviorX: CssOverscrollBehavior"));
+    assert!(system.contains("  overscrollBehavior: CssOverscrollBehaviorOpen"));
     assert_eq!(
         system
             .matches(
@@ -385,9 +428,9 @@ fn emits_ts_source_types() {
         1
     );
     assert!(system.contains(
-        r#"export type PositionValue = LengthValue | "bottom" | "center" | "left" | "right" | "top""#
+        r#"export type CssPosition = CssLength | "bottom" | "center" | "left" | "right" | "top""#
     ));
-    assert!(system.contains(r#"export type GenericFamily = "-apple-system""#));
+    assert!(system.contains(r#"export type CssGenericFamily = "-apple-system""#));
     assert!(
         system.contains(
             "  backgroundColor?: ConditionalValue<PropertyValueMap[\"backgroundColor\"]>"
@@ -401,9 +444,9 @@ fn emits_ts_source_types() {
     assert!(system.contains("  fontFamily?: ConditionalValue<PropertyValueMap[\"fontFamily\"]>"));
     assert!(system.contains("  marginTop?: ConditionalValue<PropertyValueMap[\"marginTop\"]>"));
     assert!(system.contains("  cursor?: ConditionalValue<PropertyValueMap[\"cursor\"]>"));
-    assert!(system.contains("  WebkitLineClamp?: ConditionalValue<CssValue>"));
+    assert!(system.contains("  WebkitLineClamp?: ConditionalValue<CssAny>"));
     // configured utilities override native css props in the same interface
-    assert!(system.contains("  container?: ConditionalValue<ContainerValue>"));
+    assert!(system.contains("  container?: ConditionalValue<CssContainer>"));
     assert!(system.contains("  containerName?: ConditionalValue<ContainerName>"));
     assert!(
         system.contains(r#"  color?: ConditionalValue<ColorValue | PropertyValueMap["color"]>"#)
@@ -571,7 +614,7 @@ fn token_value_allows_missing_utility_categories() {
         "export type TokenValue<T extends string> = T extends keyof Tokens ? Tokens[T] : never"
     ));
     assert!(system.contains(
-        "export type ColorsValue = ColorGlobals | TokenValue<\"colors\"> | CssVars | AnyString | AnyNumber"
+        "export type ColorsValue = CssColorGlobals | TokenValue<\"colors\"> | CssVars | AnyString | AnyNumber"
     ));
     assert!(
         system.contains(r#"  color?: ConditionalValue<ColorsValue | PropertyValueMap["color"]>"#)
@@ -667,10 +710,10 @@ fn emits_js_declaration_types() {
     let system = file(types, "types/system.d.ts");
     assert!(system.contains("import type { TokenValue } from './tokens';"));
     assert!(system.contains(
-        "export type ColorValue = ColorGlobals | TokenValue<\"colors\"> | CssVars | AnyString | AnyNumber"
+        "export type ColorValue = CssColorGlobals | TokenValue<\"colors\"> | CssVars | AnyString | AnyNumber"
     ));
     assert!(system.contains(
-        "export type SpacingValue = AutoGlobals | TokenValue<\"spacing\"> | CssVars | AnyString | AnyNumber"
+        "export type SpacingValue = CssAutoGlobals | TokenValue<\"spacing\"> | CssVars | AnyString | AnyNumber"
     ));
 
     assert_eq!(
@@ -722,10 +765,10 @@ fn emits_strict_value_types_without_repeating_large_unions() {
     // strict-list native props narrow on `SystemProperties` under strictPropertyValues.
     let system = file(types, "types/system.ts");
     assert!(system.contains(
-        "export type ColorValue = WithEscapeHatch<ColorGlobals | TokenValue<\"colors\"> | CssVars>"
+        "export type ColorValue = WithEscapeHatch<CssColorGlobals | TokenValue<\"colors\"> | CssVars>"
     ));
     assert!(system.contains(
-        "export type SpacingValue = WithEscapeHatch<AutoGlobals | TokenValue<\"spacing\"> | CssVars>"
+        "export type SpacingValue = WithEscapeHatch<CssAutoGlobals | TokenValue<\"spacing\"> | CssVars>"
     ));
     assert!(system.contains("export interface SystemProperties {"));
     assert!(system.contains("  color?: ConditionalValue<ColorValue>"));
@@ -802,21 +845,23 @@ fn strict_tokens_keep_per_category_globals() {
 
     // The per-category globals aliases are emitted once as static types.
     assert!(
-        system.contains(r#"export type ColorGlobals = Globals | "currentColor" | "transparent""#)
+        system.contains(
+            r#"export type CssColorGlobals = CssGlobals | "currentColor" | "transparent""#
+        )
     );
     assert!(system.contains(
-        r#"export type DimensionGlobals = Globals | "auto" | "fit-content" | "max-content" | "min-content""#
+        r#"export type CssDimensionGlobals = CssGlobals | "auto" | "fit-content" | "max-content" | "min-content""#
     ));
-    assert!(system.contains(r#"export type AutoGlobals = Globals | "auto""#));
+    assert!(system.contains(r#"export type CssAutoGlobals = CssGlobals | "auto""#));
 
-    // sizes-backed property unions in DimensionGlobals.
+    // sizes-backed property unions in CssDimensionGlobals.
     assert!(system.contains(
-        r#"export type SizeValue = WithEscapeHatch<DimensionGlobals | TokenValue<"sizes"> | CssVars>"#
+        r#"export type SizeValue = WithEscapeHatch<CssDimensionGlobals | TokenValue<"sizes"> | CssVars>"#
     ));
-    // strictPropertyValues keyword property keeps the base Globals + CssVars alongside
+    // strictPropertyValues keyword property keeps the base CssGlobals + CssVars alongside
     // OnlyKnown; configured utility values take precedence over the csstype table.
     assert!(system.contains(
-        r#"export type DisplayValue = WithEscapeHatch<Globals | CssVars | OnlyKnown<"flex" | "block">>"#
+        r#"export type DisplayValue = WithEscapeHatch<CssGlobals | CssVars | OnlyKnown<"flex" | "block">>"#
     ));
 }
 
@@ -867,7 +912,7 @@ fn mapped_property_unions_css_properties_under_strict_property_values() {
     let system = file(artifact(&artifacts, ArtifactId::Types), "types/system.ts");
 
     assert!(system.contains(
-        r#"export type FloatValue = WithEscapeHatch<Globals | CssVars | OnlyKnown<"end" | "start" | PropertyValueMap["float"]>>"#
+        r#"export type FloatValue = WithEscapeHatch<CssGlobals | CssVars | OnlyKnown<"end" | "start" | PropertyValueMap["float"]>>"#
     ));
 }
 
@@ -1057,7 +1102,7 @@ fn utility_shorthand_unions_css_property_value_in_default_mode() {
     );
     let system = file(artifact(&artifacts, ArtifactId::Types), "types/system.ts");
 
-    assert!(system.contains(r"  bg?: ConditionalValue<ColorsValue | CssValue>"));
+    assert!(system.contains(r"  bg?: ConditionalValue<ColorsValue | CssAny>"));
     assert!(system.contains(
         r#"  bgColor?: ConditionalValue<ColorsValue | PropertyValueMap["backgroundColor"]>"#
     ));
@@ -1065,8 +1110,56 @@ fn utility_shorthand_unions_css_property_value_in_default_mode() {
         r#"  backgroundColor?: ConditionalValue<ColorsValue | PropertyValueMap["backgroundColor"]>"#
     ));
     assert!(system.contains(
-        r#"export type ColorsValue = ColorGlobals | TokenValue<"colors"> | CssVars | AnyString | AnyNumber"#
+        r#"export type ColorsValue = CssColorGlobals | TokenValue<"colors"> | CssVars | AnyString | AnyNumber"#
     ));
+}
+
+#[test]
+fn shorthand_of_valueless_native_property_emits_member() {
+    let input = CodegenInput {
+        types: TypeData {
+            utilities: UtilityTypeData {
+                properties: BTreeMap::from([
+                    (
+                        "position".into(),
+                        UtilityPropertyTypeData {
+                            name: "position".into(),
+                            css_property: Some("position".into()),
+                            alias: "PositionValue".into(),
+                            ..UtilityPropertyTypeData::default()
+                        },
+                    ),
+                    (
+                        "pos".into(),
+                        UtilityPropertyTypeData {
+                            name: "pos".into(),
+                            css_property: Some("position".into()),
+                            alias: "PositionValue".into(),
+                            ..UtilityPropertyTypeData::default()
+                        },
+                    ),
+                ]),
+                shorthands: BTreeMap::from([("pos".into(), "position".into())]),
+                ..UtilityTypeData::default()
+            },
+            ..TypeData::default()
+        },
+        ..CodegenInput::default()
+    };
+
+    let artifacts = ArtifactGraph.generate_with_input(
+        &input,
+        GenerateOptions {
+            format: CodegenFormat::Ts,
+            ..GenerateOptions::default()
+        },
+    );
+    let system = file(artifact(&artifacts, ArtifactId::Types), "types/system.ts");
+
+    assert!(
+        system.contains("  pos?: ConditionalValue<"),
+        "missing `pos` member:\n{system}"
+    );
 }
 
 #[test]
@@ -1162,7 +1255,7 @@ fn mapped_property_is_omitted_without_explicit_property_field() {
     let system = file(artifact(&artifacts, ArtifactId::Types), "types/system.ts");
 
     assert!(system.contains(
-        r#"export type SpacingValue = AutoGlobals | TokenValue<"spacing"> | CssVars | AnyString | AnyNumber"#
+        r#"export type SpacingValue = CssAutoGlobals | TokenValue<"spacing"> | CssVars | AnyString | AnyNumber"#
     ));
     assert!(!system.contains(r#"CssProperties["gap"]"#));
     assert!(system.contains(r#"  gap?: ConditionalValue<SpacingValue | PropertyValueMap["gap"]>"#));
@@ -1205,13 +1298,13 @@ fn value_alias_unions_are_rendered_without_obvious_duplicates() {
     let system = file(artifact(&artifacts, ArtifactId::Types), "types/system.ts");
 
     assert!(system.contains(
-        r#"export type MixedValue = AutoGlobals | ColorGlobals | TokenValue<"colors"> | TokenValue<"spacing"> | CssVars | number"#
+        r#"export type MixedValue = CssAutoGlobals | CssColorGlobals | TokenValue<"colors"> | TokenValue<"spacing"> | CssVars | number"#
     ));
     assert_eq!(system.matches("export type MixedValue").count(), 1);
     assert!(!system.contains(
-        r#"export type MixedValue = AutoGlobals | ColorGlobals | TokenValue<"colors"> | TokenValue<"spacing"> | CssVars | CssVars"#
+        r#"export type MixedValue = CssAutoGlobals | CssColorGlobals | TokenValue<"colors"> | TokenValue<"spacing"> | CssVars | CssVars"#
     ));
-    assert!(!system.contains(r"export type MixedValue = Globals | AutoGlobals"));
+    assert!(!system.contains(r"export type MixedValue = CssGlobals | CssAutoGlobals"));
     assert!(!system.contains(r"number | AnyNumber"));
 }
 
@@ -1229,10 +1322,10 @@ fn can_emit_type_import_extensions() {
     let system = file(types, "types/system.d.mts");
     assert!(system.contains("import type { TokenValue } from './tokens.d.mts';"));
     assert!(system.contains(
-        "export type ColorValue = ColorGlobals | TokenValue<\"colors\"> | CssVars | AnyString | AnyNumber"
+        "export type ColorValue = CssColorGlobals | TokenValue<\"colors\"> | CssVars | AnyString | AnyNumber"
     ));
     assert!(system.contains(
-        "export type SpacingValue = AutoGlobals | TokenValue<\"spacing\"> | CssVars | AnyString | AnyNumber"
+        "export type SpacingValue = CssAutoGlobals | TokenValue<\"spacing\"> | CssVars | AnyString | AnyNumber"
     ));
 
     assert_eq!(

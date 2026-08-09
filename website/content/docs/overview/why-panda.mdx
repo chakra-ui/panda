@@ -1,73 +1,109 @@
 ---
 title: Why Panda
-description: From the endless list of CSS-in-JS libraries, why should you choose Panda?
+description:
+  Panda compiles your design system. Typed tokens and recipes in, atomic CSS out, nothing computed in the browser.
 ---
 
-Runtime CSS-in-JS and style props are powerful features that allow developers to build dynamic UI components that are
-composable, predictable, and easy to use. However, it comes at the cost of performance and runtime.
+Panda is a compiler for your design system. Tokens, recipes, and styles go in as typed TypeScript. Atomic CSS comes out
+at build time. Nothing computes or injects styles in the browser.
 
-## Backstory
+That last part is table stakes now. Several libraries generate CSS at build time. What Panda adds is a design system the
+compiler enforces: your tokens and variants are types, a wrong value is a type error, and you can publish the whole
+system as a package other apps consume.
 
-With the release of Server Components and the rise of server-first frameworks, most existing runtime CSS-in-JS styling
-solutions (like emotion, styled-components) either can't work reliably, or can't work anymore. This new paradigm is a
-huge win for performance, development, and user experience, however, it poses a new "Innovate or Die" challenge for
-CSS-in-JS libraries.
+Not sure which API to reach for as a component grows? See [Thinking in Panda](/docs/overview/thinking-in-panda).
 
-> **Fun Fact:** Most CSS-in-JS libraries have a pinned issue on their GitHub repo about "Next app dir" or/and "Server
-> Components" 😅, making the challenge even more obvious.
+## Why the alternatives fall short
 
-So, the question is, **is CSS-in-JS dead?** The answer is **no, but it needs to evolve!**
+Runtime CSS-in-JS libraries like emotion and styled-components do their work in the browser. Every render serializes
+styles and injects `<style>` tags. That costs main-thread time, and it adds a styling engine to your bundle. Under React
+Server Components the model breaks: a client style engine can't run while the server renders.
 
-## The new era of CSS-in-JS
+The usual escape is a utility-class framework. That removes the runtime cost, and the ecosystem is large. The tradeoff
+is where your constraints live. Class strings are just strings, so a token name is never checked. Write `text-teal-400`
+instead of your brand token and nothing fails at build time. You find out in review, or in production. Component
+variants usually mean reaching for a separate library.
 
-Panda is a new CSS-in-JS engine that aims to solve the challenges of CSS-in-JS in the server-first era. It provides
-styling primitives to create, organize, and manage CSS styles in a type-safe and readable manner.
+Panda puts the constraint in the type system instead. Dark mode is one semantic token, not a second class on every
+element:
 
-- **Static Analysis:** Panda uses static analysis to parse and analyze your styles at build time, and generate CSS files
-  that can be used in any JavaScript framework.
+```tsx
+// utility classes: two values, repeated at every call site
+<div className="text-gray-900 dark:text-white" />
 
-- **PostCSS:** After static analysis, Panda uses a set of PostCSS plugins to convert the parsed data to atomic css at
-  build time. **This makes Panda compatible with any framework that supports PostCSS.**
+// Panda: one token that already knows what it means
+<div className={css({ color: 'text' })} />
+```
 
-- **Codegen:** Panda generates a lightweight runtime JS code that is used to author styles. **Think of it as an
-  optimized function that joins key-value pairs of an object**. It doesn't generate styles in the browser nor inject
-  styles in the `<head>`.
+You keep colocated, composable styles. Your app ships plain CSS.
 
-- **Type-Safety:** Panda combines `csstype` and auto-generated typings to provide type-safety for css properties and
-  design tokens.
+## Your design system is the product
 
-- **Performance:** Panda uses a unique approach to generate atomic CSS files that are optimized for performance and
-  readability.
+Panda earns its keep when styles have to stay consistent across a codebase, and then across several. You define each
+design decision once, and everything refers to it.
 
-- **Developer Experience:** Panda provides a great developer experience with a rich set of features like recipes,
-  patterns, design tokens, JSX style props, and more.
+**Tokens** name your raw values. **Semantic tokens** name intent, and can resolve differently per condition:
 
-- **Modern CSS**: Panda uses modern CSS features like cascade layers, css variables, modern selectors like `:where` and
-  `:is` in generated styles.
+```ts filename="panda.config.ts"
+theme: {
+  tokens: {
+    colors: { gray900: { value: '#111' }, white: { value: '#fff' } }
+  },
+  semanticTokens: {
+    colors: {
+      text: { value: { base: '{colors.gray900}', _dark: '{colors.white}' } }
+    }
+  }
+}
+```
 
-## When to use Panda?
+`css({ color: 'text' })` is now correct in both themes, and the hex lives in one place. See
+[tokens](/docs/theming/tokens).
 
-### Styling engine
+**Recipes** package a component's variants once, so a button is a contract instead of a pile of conditionals:
 
-If you're building a JavaScript application with a framework that supports PostCSS, Panda is a great choice for you.
+```ts
+import { cva } from '../styled-system/css'
 
-```jsx
+const button = cva({
+  base: { rounded: 'md', fontWeight: 'semibold' },
+  variants: {
+    size: { sm: { px: '3', py: '1.5' }, lg: { px: '5', py: '3' } },
+    tone: { solid: { bg: 'accent', color: 'white' }, ghost: { color: 'accent' } }
+  },
+  defaultVariants: { size: 'sm', tone: 'solid' }
+})
+```
+
+**The types come from your config.** Autocomplete offers your tokens, not every CSS value, and a typo fails while you
+type:
+
+```ts
+css({ color: 'red.500' }) // ✅ valid
+css({ color: 'rde.500' }) // ❌ type error
+```
+
+Turn on [`strictTokens`](/docs/concepts/writing-styles#stricttokens) and Panda also rejects raw values where a token
+belongs, so the system holds when the deadline is tight. Recipe variants are typed too. Pull a component's prop types
+straight from its recipe with `RecipeVariantProps`.
+
+**And you can ship it.** `panda lib` bundles your tokens, recipes, and pre-extracted CSS into a package. Other apps opt
+in with one line, `designSystem: '@acme/ds'`, and reuse the system without re-scanning your source. One design system,
+many apps, one source of truth.
+
+## Styles next to your markup
+
+Styles live in the file that uses them. No separate stylesheet to open, no class name to invent and keep in sync.
+
+```tsx
 import { css } from '../styled-system/css'
 import { circle, stack } from '../styled-system/patterns'
 
-function App() {
+function Profile() {
   return (
-    <div
-      className={stack({
-        direction: 'row',
-        p: '4',
-        rounded: 'md',
-        shadow: 'lg',
-        bg: 'white'
-      })}
-    >
+    <div className={stack({ direction: 'row', p: '4', rounded: 'md', shadow: 'lg', bg: 'white' })}>
       <div className={circle({ size: '5rem', overflow: 'hidden' })}>
-        <img src="https://via.placeholder.com/150" alt="avatar" />
+        <img src="/avatar.png" alt="" />
       </div>
       <div className={css({ mt: '4', fontSize: 'xl', fontWeight: 'semibold' })}>John Doe</div>
       <div className={css({ mt: '2', fontSize: 'sm', color: 'gray.600' })}>john@doe.com</div>
@@ -76,68 +112,58 @@ function App() {
 }
 ```
 
-> If your framework doesn't support PostCSS, you can use the [Panda CLI](/docs/installation/cli)
+Some people think in class names, others in props. Panda does both, and they extract to the same atoms:
 
-### Token generator
-
-Panda has first-class support for design tokens. It provides a way to express raw and semantic tokens for your project.
-The generator can be used to create a set of CSS variables for your design tokens.
-
-```ts filename="panda.config.ts"
-export default defineConfig({
-  emitTokensOnly: true,
-  theme: {
-    tokens: {
-      colors: {
-        gray50: { value: '#F9FAFB' },
-        gray100: { value: '#F3F4F6' }
-      }
-    },
-    semanticTokens: {
-      colors: {
-        primary: { value: '{colors.gray50}' },
-        success: {
-          value: { _light: '{colors.green500}', _dark: '{colors.green200}' }
-        }
-      }
-    }
-  }
-})
+```tsx
+<div className={css({ color: 'text', px: '4' })} />
+<styled.div color="text" px="4" />
 ```
 
-Running the `panda codegen` will generate
+[Patterns](/docs/concepts/patterns) like `stack`, `grid`, and `circle` cover the layouts you write constantly.
+[Conditions](/docs/concepts/conditional-styles) like `_hover`, `_dark`, and `md` are keys in the same object.
 
-```css filename="styled-system/tokens/index.css"
-:root {
-  --colors-gray50: #f9fafb;
-  --colors-gray100: #f3f4f6;
-  --colors-primary: var(--colors-gray50);
-  --colors-success: var(--colors-green500);
-}
+Panda reads what it can see at build time, so a value that only exists at runtime needs a CSS variable or the `[...]`
+escape hatch. The [dynamic styling](/docs/guides/dynamic-styling) guide covers each pattern.
 
-[data-theme='dark'] {
-  --colors-primary: var(--colors-gray50);
-  --colors-success: var(--colors-green200);
-}
-```
+## CSS you can reason about
 
-Then you have a set of css variables that you can use in your project.
+- **Atomic CSS that plateaus.** One class per property, value, and condition, shared everywhere.
+  `css({ color: 'red.500' })` and `<styled.div color="red.500" />` resolve to the same `.c_red\.500` rule, emitted once.
+  Your CSS grows with the number of distinct styles you write, not with the size of your codebase.
+- **Predictable overrides.** Panda emits into [cascade layers](/docs/concepts/cascade-layers) in a fixed order, so a
+  utility always beats a recipe no matter the import order. No specificity wars.
+- **Only the CSS you use.** Opt into `optimize` and Panda drops unused tokens and keyframes, so design-system entries
+  you never reference don't ship.
+- **A runtime that can disappear.** The generated functions only join class names. Pre-render with RSC, Astro, or a
+  bundler transform and static calls are replaced by their class names, so the runtime leaves your bundle.
 
-```css
-@import '../styled-system/tokens/index.css';
+## Fast, native builds
 
-.card {
-  background-color: var(--colors-gray50);
-}
-```
+Panda compiles your styles with a Rust engine built on the [Oxc](https://oxc.rs) toolchain. It parses each file once,
+with no TypeScript program in the hot path, so builds stay fast and the install stays small. The same engine compiles to
+WebAssembly, which is how the playground runs Panda in your browser.
 
-## When not to use Panda?
+## Works with your stack
 
-Panda isn't the right fit for your project if:
+The same API works in React, Solid, Preact, Vue, Svelte, Qwik, Astro, and plain HTML. Wire it in with a
+[bundler plugin](/docs/installation/vite) for Vite, webpack, Rollup, or PostCSS, or run the
+[CLI](/docs/installation/cli). Panda also reads styles out of `.vue`, `.svelte`, and `.astro` files, and out of compiled
+JSX.
 
-- You're building with HTML and CSS.
-- You're using a template-based framework like PHP.
-- You're looking for an absolute zero JS solution.
+## When Panda is the wrong fit
 
-In these scenarios, we recommend that you use vanilla CSS (which is getting awesome by the day), or other utility based
-CSS libraries.
+- **You're happy with utility classes.** If token drift isn't a real problem on your team, a utility framework has a
+  bigger ecosystem, more component kits, and coding models that already write its class names well. Type safety alone
+  doesn't justify migrating a working codebase.
+- **You don't want a codegen step.** Panda generates a `styled-system` folder, and TypeScript needs it before types
+  resolve. Most teams run `panda codegen` on install and forget it, but it is a real setup cost.
+- **You need styles computed at runtime.** Panda is static-first. Values known only when the app runs go through CSS
+  variables instead of arbitrary style generation.
+- **You're writing plain HTML and CSS,** on a template-based framework like Rails or PHP, or you want zero JavaScript in
+  your toolchain. Vanilla CSS keeps getting better.
+
+## Next steps
+
+- [Get started](/docs/overview/getting-started): install Panda and ship your first styles.
+- [Thinking in Panda](/docs/overview/thinking-in-panda): which API to reach for as a component grows.
+- [Tokens](/docs/theming/tokens) and [recipes](/docs/concepts/recipes): the two pieces your design system rests on.

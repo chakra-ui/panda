@@ -21,4 +21,12 @@ describe('cx', () => {
   it('flattens nested arrays before merging', () => {
     expect(cx(['d_flex px_4', ['h_8', false]], 'px_2')).toMatchInlineSnapshot(`"d_flex px_2 h_8"`)
   })
+
+  it('returns a lone class string untouched', () => {
+    // Producers emit conflict-free strings, so there is nothing to merge and
+    // the transform's `cx(staticClasses, props.className)` stays cheap when no
+    // `className` is passed through.
+    expect(cx('d_flex px_4', undefined)).toMatchInlineSnapshot(`"d_flex px_4"`)
+    expect(cx([false, 'd_flex px_4'])).toMatchInlineSnapshot(`"d_flex px_4"`)
+  })
 })

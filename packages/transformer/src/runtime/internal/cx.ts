@@ -127,8 +127,20 @@ export function createCx(options: CxOptions = {}) {
   const separator = options.separator ?? bakedSeparator
 
   return function cx(...parts: PandaClassPart[]): string {
+    // Every producer of a Panda class string — the transform's class printer,
+    // `css()`, a nested `cx` — emits merge-key-conflict-free output, so a lone
+    // string has nothing left to merge and tokenizing it is pure cost. This is
+    // the hot path: `cx(staticClasses, props.className)` with no `className`.
+    if (parts.length === 1) {
+      const only = parts[0]
+      if (typeof only === 'string') return only
+      if (!only) return ''
+    }
+
     const flat: string[] = []
     flattenParts(parts, flat)
+    if (flat.length === 0) return ''
+    if (flat.length === 1) return flat[0]!
     return mergeClassStrings(separator, flat)
   }
 }

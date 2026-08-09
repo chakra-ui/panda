@@ -4,7 +4,7 @@
 
 use crate::{
     CssSyntaxKind, Diagnostic, ExpressionFacts, ExtractorConfig, ImportSpecifierKind, JsxKind,
-    Literal, MatchCategory, MatchedImport, Matchers, Span, StyleTree, VisitorContext,
+    Literal, MatchCategory, MatchedImport, Matchers, Span, StyleObject, StyleTree, VisitorContext,
     css_template::css_template_to_style_tree,
     jsx_react_runtime,
     matcher::member_display,
@@ -13,6 +13,7 @@ use crate::{
     },
     span_from_oxc,
     style_tree::{jsx_attributes_to_style_tree, project_literal},
+    styled_bindings::{StyledBinding, StyledBindings, collect_styled_bindings},
 };
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
@@ -165,6 +166,7 @@ pub fn extract_jsx(
         source_path: Some(std::path::PathBuf::from(path)),
         line_index: None,
         pattern_raw_transform: None,
+        recipe_raw_resolve: None,
     });
     let ctx = VisitorContext::new(matched, config).with_resolver(&resolver);
     let mut jsx = collect_jsx(&parser_return.program, &ctx, true);
@@ -195,6 +197,7 @@ pub(crate) fn collect_jsx(
         out: &mut out,
         react_runtime,
         style_source_refs: None,
+        styled_bindings: collect_styled_bindings(program, ctx),
         retain_transform_facts,
     };
     extractor.visit_program(program);
@@ -213,6 +216,7 @@ pub(crate) fn collect_jsx_verbose(
         out: &mut out,
         react_runtime,
         style_source_refs: Some(&mut style_source_refs),
+        styled_bindings: collect_styled_bindings(program, ctx),
         retain_transform_facts: false,
     };
     extractor.visit_program(program);
@@ -286,6 +290,7 @@ pub(crate) struct Extractor<'walk, 'ctx, 'cb> {
     out: &'walk mut Vec<ExtractedJsx>,
     react_runtime: jsx_react_runtime::ReactRuntimeImports,
     style_source_refs: Option<&'walk mut Vec<StyleSourceRef>>,
+    styled_bindings: StyledBindings,
     pub(crate) retain_transform_facts: bool,
 }
 
@@ -297,6 +302,9 @@ pub(crate) struct ResolvedTag<'a> {
     /// `true` when resolved via a matched Panda import; `false` for the
     /// name-only `should_match_tag` fallback.
     pub(crate) panda_owned: bool,
+    /// Set when the tag is a local `styled()` chain the fold may collapse to
+    /// its host element.
+    pub(crate) styled: Option<&'a StyledBinding>,
 }
 
 impl Extractor<'_, '_, '_> {
@@ -328,10 +336,30 @@ impl Extractor<'_, '_, '_> {
                         alias: Cow::Borrowed(&matched.alias),
                         emit_empty: true,
                         panda_owned: true,
+                        styled: None,
                     });
                 }
 
                 let tag_name = id.name.as_str();
+                // A local `styled()` chain stands in for `<styled.{tag}>`, so the
+                // fold reaches it with the machinery host factories already use.
+                // Only when the tag resolves to the symbol we recorded — a local
+                // binding may shadow the module-level chain.
+                if let Some(binding) = self.styled_bindings.get(tag_name)
+                    && binding.symbol_id.is_some()
+                    && let Some(resolver) = self.ctx.resolver
+                    && resolver.symbol_for_identifier(id) == binding.symbol_id
+                {
+                    return Some(ResolvedTag {
+                        category: MatchCategory::Jsx,
+                        name: Cow::Owned(format!("styled.{}", binding.intrinsic)),
+                        alias: Cow::Borrowed(tag_name),
+                        emit_empty: true,
+                        panda_owned: true,
+                        styled: Some(binding),
+                    });
+                }
+
                 let is_configured_component = self.ctx.config.jsx.is_component_tag(tag_name);
                 if !is_configured_component
                     && !self
@@ -348,6 +376,7 @@ impl Extractor<'_, '_, '_> {
                     alias: Cow::Borrowed(tag_name),
                     emit_empty: is_configured_component,
                     panda_owned: false,
+                    styled: None,
                 })
             }
             JSXElementName::MemberExpression(member) => {
@@ -385,6 +414,7 @@ impl Extractor<'_, '_, '_> {
                     alias: Cow::Borrowed(root),
                     emit_empty: is_configured_component,
                     panda_owned: false,
+                    styled: None,
                 });
             }
             return None;
@@ -409,6 +439,7 @@ impl Extractor<'_, '_, '_> {
                         alias: Cow::Borrowed(&matched.alias),
                         emit_empty: true,
                         panda_owned: true,
+                        styled: None,
                     });
                 }
 
@@ -422,6 +453,7 @@ impl Extractor<'_, '_, '_> {
                     alias: Cow::Borrowed(&matched.alias),
                     emit_empty: true,
                     panda_owned: true,
+                    styled: None,
                 })
             }
             ImportSpecifierKind::Namespace => {
@@ -440,6 +472,7 @@ impl Extractor<'_, '_, '_> {
                     alias: Cow::Borrowed(&matched.alias),
                     emit_empty: true,
                     panda_owned: true,
+                    styled: None,
                 })
             }
             ImportSpecifierKind::Default => None,
@@ -483,6 +516,7 @@ impl Extractor<'_, '_, '_> {
                         alias: Cow::Borrowed(&matched.alias),
                         emit_empty: true,
                         panda_owned: true,
+                        styled: None,
                     });
                 }
 
@@ -503,6 +537,7 @@ impl Extractor<'_, '_, '_> {
                     alias: Cow::Borrowed(tag_name),
                     emit_empty: is_configured_component,
                     panda_owned: false,
+                    styled: None,
                 })
             }
             Expression::StringLiteral(s) => {
@@ -516,6 +551,7 @@ impl Extractor<'_, '_, '_> {
                     alias: Cow::Borrowed(tag_name),
                     emit_empty: true,
                     panda_owned: false,
+                    styled: None,
                 })
             }
             Expression::StaticMemberExpression(member) => {
@@ -546,12 +582,18 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
             let emit_empty = resolved.emit_empty;
             let panda_owned = resolved.panda_owned;
 
+            let styled_base = resolved.styled.map(|binding| binding.base.clone());
+            let styled_intrinsic = resolved.styled.map(|binding| binding.intrinsic.clone());
             let style = jsx_attributes_to_style_tree(
                 &element.attributes,
                 self.ctx.resolver,
                 &self.ctx.config.jsx,
                 &tag_name,
             );
+            let style = match (styled_base, style) {
+                (Some(base), style) => prepend_styled_base(base, style),
+                (None, style) => style,
+            };
             let data = style
                 .as_ref()
                 .and_then(project_literal)
@@ -605,7 +647,8 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 source: if retain {
                     JsxSourceFacts {
                         kind: JsxSourceKind::Element,
-                        factory_intrinsic: factory_intrinsic_from_jsx_name(&element.name),
+                        factory_intrinsic: styled_intrinsic
+                            .or_else(|| factory_intrinsic_from_jsx_name(&element.name)),
                         ..Default::default()
                     }
                 } else {
@@ -685,6 +728,26 @@ fn factory_intrinsic_from_jsx_name(name: &JSXElementName<'_>) -> Option<String> 
         JSXElementName::MemberExpression(member) => Some(member.property.name.to_string()),
         _ => None,
     }
+}
+
+/// Puts a `styled()` chain's `base` underneath the element's own props, which
+/// is the precedence the runtime factory gives them. `None` when the element's
+/// styles are not a plain object, since only then is the ordering well defined.
+fn prepend_styled_base(
+    base: Vec<(String, StyleTree)>,
+    style: Option<StyleTree>,
+) -> Option<StyleTree> {
+    let own = match style {
+        None => StyleObject::default(),
+        Some(StyleTree::Object(object)) => object,
+        Some(_) => return None,
+    };
+    let mut entries = base;
+    entries.extend(own.entries);
+    Some(StyleTree::Object(StyleObject {
+        entries,
+        spreads: own.spreads,
+    }))
 }
 
 pub(crate) fn factory_intrinsic_from_expression(expression: &Expression<'_>) -> Option<String> {

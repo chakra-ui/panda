@@ -60,23 +60,24 @@ fn emits_ts_source_css() {
 
     assert_eq!(paths(css), vec!["css/css.ts"]);
     assert_snapshot!(file(css, "css/css.ts"), @r#"
-    import { createCssRuntime, hypenateProperty, isObject, withoutSpace } from '../helpers';
+    import { createAssignCss, createMergeCss, createSerializeCss, createSerializeCssArgs, hypenateProperty, isObject, withoutSpace } from '../helpers';
     import { breakpointKeys, finalizeConditions, sortConditions } from './conditions';
     import type { SystemStyleObject } from '../types/system';
 
     type Styles = SystemStyleObject | undefined | null | false
+    type StyleList = Styles | StyleList[]
 
     interface CssRawFunction {
       (styles: Styles): SystemStyleObject
-      (styles: Styles[]): SystemStyleObject
-      (...styles: Array<Styles | Styles[]>): SystemStyleObject
+      (styles: StyleList[]): SystemStyleObject
+      (...styles: StyleList[]): SystemStyleObject
       (styles: Styles): SystemStyleObject
     }
 
     interface CssFunction {
       (styles: Styles): string
-      (styles: Styles[]): string
-      (...styles: Array<Styles | Styles[]>): string
+      (styles: StyleList[]): string
+      (...styles: StyleList[]): string
       (styles: Styles): string
 
       raw: CssRawFunction
@@ -84,43 +85,50 @@ fn emits_ts_source_css() {
 
     const utilities = "WebkitLineClamp:webkit-line-clamp,color:text,flexDirection:flex/flexDir,marginInlineStart:/ms,marginLeft:ml/1"
 
-    const classNameByProp = new Map<string, string>()
-    const shorthands = new Map<string, string>()
-    if (utilities) {
-      utilities.split(",").forEach((utility: string) => {
-        const [prop, meta] = utility.split(":")
-        const [className, ...shorthandList] = meta.split("/")
-        if (className) classNameByProp.set(prop, className)
-        shorthandList.forEach((shorthand: string) => {
-          const key = shorthand === "1" ? className : shorthand
-          shorthands.set(key, prop)
+    function createCssContext() {
+      const classNameByProp = new Map<string, string>()
+      const shorthands = new Map<string, string>()
+      if (utilities) {
+        utilities.split(",").forEach((utility: string) => {
+          const [prop, meta] = utility.split(":")
+          const [className, ...shorthandList] = meta.split("/")
+          if (className) classNameByProp.set(prop, className)
+          shorthandList.forEach((shorthand: string) => {
+            const key = shorthand === "1" ? className : shorthand
+            shorthands.set(key, prop)
+          })
         })
-      })
+      }
+
+      const resolveShorthand = (prop: string) => shorthands.get(prop) || prop
+
+      return {
+        hash: false,
+        conditions: {
+          shift: sortConditions,
+          finalize: finalizeConditions,
+          breakpoints: { keys: breakpointKeys },
+        },
+        utility: {
+          prefix: null,
+          hasShorthand: true,
+          toHash(path: string[], hashFn: any) {
+            return hashFn(path.join(":"))
+          },
+          transform(prop: string, value: string) {
+            const key = resolveShorthand(prop)
+            const propKey = classNameByProp.get(key) || hypenateProperty(key)
+            return { className: `${propKey}_${withoutSpace(value)}` }
+          },
+          resolveShorthand,
+        },
+      }
     }
 
-    const resolveShorthand = (prop: string) => shorthands.get(prop) || prop
-
-    const { serializeCss, serializeCssArgs, mergeCss, assignCss } = createCssRuntime({
-      hash: false,
-      conditions: {
-        shift: sortConditions,
-        finalize: finalizeConditions,
-        breakpoints: { keys: breakpointKeys },
-      },
-      utility: {
-        prefix: null,
-        hasShorthand: true,
-        toHash(path: string[], hashFn: any) {
-          return hashFn(path.join(":"))
-        },
-        transform(prop: string, value: string) {
-          const key = resolveShorthand(prop)
-          const propKey = classNameByProp.get(key) || hypenateProperty(key)
-          return { className: `${propKey}_${withoutSpace(value)}` }
-        },
-        resolveShorthand,
-      },
-    })
+    const cssContext = /* @__PURE__ */ createCssContext()
+    const serializeCss = /* @__PURE__ */ createSerializeCss(cssContext)
+    export const mergeCss = /* @__PURE__ */ createMergeCss(cssContext)
+    const serializeCssArgs = /* @__PURE__ */ createSerializeCssArgs(serializeCss, mergeCss)
 
     export const css: CssFunction = /* @__PURE__ */ Object.assign(
       function css(...styles: any[]) {
@@ -134,7 +142,7 @@ fn emits_ts_source_css() {
       },
     )
 
-    export { mergeCss, assignCss }
+    export const assignCss = /* @__PURE__ */ createAssignCss(cssContext)
     "#);
 }
 
@@ -167,48 +175,55 @@ fn emits_js_runtime_and_declarations() {
 
     assert_eq!(paths(css), vec!["css/css.mjs", "css/css.d.mts"]);
     assert_snapshot!(file(css, "css/css.mjs"), @r#"
-    import { createCssRuntime, hypenateProperty, isObject, withoutSpace } from '../helpers.mjs';
+    import { createAssignCss, createMergeCss, createSerializeCss, createSerializeCssArgs, hypenateProperty, isObject, withoutSpace } from '../helpers.mjs';
     import { breakpointKeys, finalizeConditions, sortConditions } from './conditions.mjs';
 
     const utilities = "WebkitLineClamp:webkit-line-clamp,color:text,flexDirection:flex/flexDir,marginInlineStart:/ms,marginLeft:ml/1"
 
-    const classNameByProp = new Map()
-    const shorthands = new Map()
-    if (utilities) {
-      utilities.split(",").forEach((utility) => {
-        const [prop, meta] = utility.split(":")
-        const [className, ...shorthandList] = meta.split("/")
-        if (className) classNameByProp.set(prop, className)
-        shorthandList.forEach((shorthand) => {
-          const key = shorthand === "1" ? className : shorthand
-          shorthands.set(key, prop)
+    function createCssContext() {
+      const classNameByProp = new Map()
+      const shorthands = new Map()
+      if (utilities) {
+        utilities.split(",").forEach((utility) => {
+          const [prop, meta] = utility.split(":")
+          const [className, ...shorthandList] = meta.split("/")
+          if (className) classNameByProp.set(prop, className)
+          shorthandList.forEach((shorthand) => {
+            const key = shorthand === "1" ? className : shorthand
+            shorthands.set(key, prop)
+          })
         })
-      })
+      }
+
+      const resolveShorthand = (prop) => shorthands.get(prop) || prop
+
+      return {
+        hash: false,
+        conditions: {
+          shift: sortConditions,
+          finalize: finalizeConditions,
+          breakpoints: { keys: breakpointKeys },
+        },
+        utility: {
+          prefix: null,
+          hasShorthand: true,
+          toHash(path, hashFn) {
+            return hashFn(path.join(":"))
+          },
+          transform(prop, value) {
+            const key = resolveShorthand(prop)
+            const propKey = classNameByProp.get(key) || hypenateProperty(key)
+            return { className: `${propKey}_${withoutSpace(value)}` }
+          },
+          resolveShorthand,
+        },
+      }
     }
 
-    const resolveShorthand = (prop) => shorthands.get(prop) || prop
-
-    const { serializeCss, serializeCssArgs, mergeCss, assignCss } = createCssRuntime({
-      hash: false,
-      conditions: {
-        shift: sortConditions,
-        finalize: finalizeConditions,
-        breakpoints: { keys: breakpointKeys },
-      },
-      utility: {
-        prefix: null,
-        hasShorthand: true,
-        toHash(path, hashFn) {
-          return hashFn(path.join(":"))
-        },
-        transform(prop, value) {
-          const key = resolveShorthand(prop)
-          const propKey = classNameByProp.get(key) || hypenateProperty(key)
-          return { className: `${propKey}_${withoutSpace(value)}` }
-        },
-        resolveShorthand,
-      },
-    })
+    const cssContext = /* @__PURE__ */ createCssContext()
+    const serializeCss = /* @__PURE__ */ createSerializeCss(cssContext)
+    export const mergeCss = /* @__PURE__ */ createMergeCss(cssContext)
+    const serializeCssArgs = /* @__PURE__ */ createSerializeCssArgs(serializeCss, mergeCss)
 
     export const css = /* @__PURE__ */ Object.assign(
       function css(...styles) {
@@ -222,24 +237,25 @@ fn emits_js_runtime_and_declarations() {
       },
     )
 
-    export { mergeCss, assignCss }
+    export const assignCss = /* @__PURE__ */ createAssignCss(cssContext)
     "#);
     assert_snapshot!(file(css, "css/css.d.mts"), @"
     import type { SystemStyleObject } from '../types/system.d.mts';
 
     type Styles = SystemStyleObject | undefined | null | false
+    type StyleList = Styles | StyleList[]
 
     interface CssRawFunction {
       (styles: Styles): SystemStyleObject
-      (styles: Styles[]): SystemStyleObject
-      (...styles: Array<Styles | Styles[]>): SystemStyleObject
+      (styles: StyleList[]): SystemStyleObject
+      (...styles: StyleList[]): SystemStyleObject
       (styles: Styles): SystemStyleObject
     }
 
     interface CssFunction {
       (styles: Styles): string
-      (styles: Styles[]): string
-      (...styles: Array<Styles | Styles[]>): string
+      (styles: StyleList[]): string
+      (...styles: StyleList[]): string
       (styles: Styles): string
 
       raw: CssRawFunction
@@ -262,10 +278,40 @@ fn guards_empty_utility_metadata() {
     let runtime = file(css, "css/css.mjs");
 
     assert!(runtime.contains("const utilities = \"\""));
-    assert!(runtime.contains("if (utilities) {\n  utilities.split(\",\").forEach((utility) => {"));
+    assert!(
+        runtime.contains("if (utilities) {\n    utilities.split(\",\").forEach((utility) => {")
+    );
 }
 
 #[test]
+fn the_css_runtime_stays_tree_shakeable() {
+    let artifacts = ArtifactGraph.generate_with_input(
+        &input(),
+        GenerateOptions {
+            format: CodegenFormat::Mjs,
+            import_extensions: true,
+        },
+    );
+    let runtime = file(artifact(&artifacts, ArtifactId::Css), "css/css.mjs");
+
+    // Bundlers only drop a `@__PURE__` call when it initializes a plain
+    // identifier, and only per binding — so each serializer piece gets its own
+    // `const`. Destructuring, or one object holding all four, would pin the
+    // whole serializer into every bundle that imports from `css/index`.
+    for binding in [
+        "const cssContext = /* @__PURE__ */ createCssContext()",
+        "const serializeCss = /* @__PURE__ */ createSerializeCss(cssContext)",
+        "export const mergeCss = /* @__PURE__ */ createMergeCss(cssContext)",
+        "const serializeCssArgs = /* @__PURE__ */ createSerializeCssArgs(serializeCss, mergeCss)",
+        "export const assignCss = /* @__PURE__ */ createAssignCss(cssContext)",
+    ] {
+        assert!(runtime.contains(binding), "missing binding: {binding}");
+    }
+    assert!(!runtime.contains("} = create"));
+}
+
+#[test]
+#[allow(clippy::too_many_lines, reason = "inline snapshot of a whole module")]
 fn emits_template_literal_css_runtime_and_declarations() {
     let mut input = input();
     input.config.syntax = CssSyntaxKind::TemplateLiteral;
@@ -280,7 +326,7 @@ fn emits_template_literal_css_runtime_and_declarations() {
 
     assert_eq!(paths(css), vec!["css/css.mjs", "css/css.d.mts"]);
     assert_snapshot!(file(css, "css/css.mjs"), @r#"
-    import { createCssRuntime, isObject, mergeProps, withoutSpace } from '../helpers.mjs';
+    import { createAssignCss, createMergeCss, createSerializeCss, isObject, mergeProps, withoutSpace } from '../helpers.mjs';
     import { finalizeConditions, sortConditions } from './conditions.mjs';
 
     const newRule = /(?:([\u0080-\uFFFF\w-%@]+) *:? *([^{;]+?);|([^;}{]*?) *{)|(}\s*)/g
@@ -306,27 +352,33 @@ fn emits_template_literal_css_runtime_and_declarations() {
       return tree[0]
     }
 
-    const { serializeCss, mergeCss, assignCss } = createCssRuntime({
-      hash: false,
-      conditions: {
-        shift: sortConditions,
-        finalize: finalizeConditions,
-        breakpoints: { keys: [] },
-      },
-      utility: {
-        prefix: null,
-        hasShorthand: false,
-        toHash(path, hashFn) {
-          return hashFn(path.join(":"))
+    function createCssContext() {
+      return {
+        hash: false,
+        conditions: {
+          shift: sortConditions,
+          finalize: finalizeConditions,
+          breakpoints: { keys: [] },
         },
-        transform(prop, value) {
-          return { className: `${prop}_${withoutSpace(value)}` }
+        utility: {
+          prefix: null,
+          hasShorthand: false,
+          toHash(path, hashFn) {
+            return hashFn(path.join(":"))
+          },
+          transform(prop, value) {
+            return { className: `${prop}_${withoutSpace(value)}` }
+          },
+          resolveShorthand(prop) {
+            return prop
+          },
         },
-        resolveShorthand(prop) {
-          return prop
-        },
-      },
-    })
+      }
+    }
+
+    const cssContext = /* @__PURE__ */ createCssContext()
+    const serializeCss = /* @__PURE__ */ createSerializeCss(cssContext)
+    export const mergeCss = /* @__PURE__ */ createMergeCss(cssContext)
     const templateCache = new WeakMap()
     const toStyleObject = (style) => {
       if (isObject(style)) return style
@@ -360,7 +412,7 @@ fn emits_template_literal_css_runtime_and_declarations() {
       },
     )
 
-    export { mergeCss, assignCss }
+    export const assignCss = /* @__PURE__ */ createAssignCss(cssContext)
     "#);
     assert_snapshot!(file(css, "css/css.d.mts"), @"
     type CssTemplate = { raw: readonly string[] | ArrayLike<string> }

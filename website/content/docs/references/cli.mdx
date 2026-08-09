@@ -1,7 +1,7 @@
 ---
 title: CLI Reference
 description:
-  Use Panda's command-line interface to initialize, build, check, view project info, and debug your project.
+  Use Panda's command-line interface to initialize, build, check, diagnose, and debug your project.
 ---
 
 Use Panda's command-line interface (CLI) to generate the styled-system output and CSS from a terminal.
@@ -14,8 +14,7 @@ Use Panda's command-line interface (CLI) to generate the styled-system output an
 | `panda dev`       | Watch project files and rebuild the generated system and CSS. |
 | `panda build`     | Generate the styled-system output and CSS once. Bare `panda` runs the same build. |
 | `panda check`     | Check generated files without writing. Use this in CI. |
-| `panda info`      | Print project and compiler info. |
-| `panda doctor`    | Check config loading and compiler diagnostics. |
+| `panda doctor`    | Check config loading, print the project summary, and surface compiler diagnostics. |
 | `panda debug`     | Write bug-report artifacts under `<outdir>/debug`. |
 | `panda codegen`   | Advanced: generate the styled-system output only. |
 | `panda cssgen`    | Advanced: generate CSS only. |
@@ -130,28 +129,19 @@ pnpm panda check --format github --max-warnings 0
 
 `panda check` uses the same output flags as `panda build`, but write/watch-only flags are hidden from help.
 
-## info
-
-Print project and compiler information.
-
-```bash
-pnpm panda info
-pnpm panda info --json
-```
-
-The result includes config path, source count, watch directories, artifact IDs, condition count, token category count,
-and utility count.
-
 ## doctor
 
-Check config loading and compiler diagnostics.
+Check config loading, print the project summary, and surface compiler diagnostics.
 
 ```bash
 pnpm panda doctor
+pnpm panda doctor --json
 pnpm panda doctor --format github --max-warnings 0
 ```
 
-Use this command when you want a fast setup and diagnostics health check without writing generated files.
+Use this command when you want a fast setup and diagnostics health check without writing generated files. The summary
+includes config path, source count, watch directories, artifact IDs, condition count, token category count, and utility
+count.
 
 ## debug
 
@@ -235,6 +225,6 @@ pnpm panda buildinfo --minify
 
 ## Removed Commands
 
-`panda inspect` and `panda validate` are removed. Use `panda info` and `panda doctor`.
+`panda inspect`, `panda validate`, and `panda info` are removed. Use `panda doctor`, which validates your setup and prints the project summary.
 
 Legacy commands such as `studio`, `analyze`, `ship`, and `emit-pkg` are not part of the v2 CLI surface.

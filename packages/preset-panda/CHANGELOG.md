@@ -1,5 +1,17 @@
 # @pandacss/preset-panda
 
+## 2.0.0-beta.12
+
+### Patch Changes
+
+- @pandacss/types@2.0.0-beta.12
+
+## 2.0.0-beta.11
+
+### Patch Changes
+
+- @pandacss/types@2.0.0-beta.11
+
 ## 2.0.0-beta.10
 
 ### Patch Changes

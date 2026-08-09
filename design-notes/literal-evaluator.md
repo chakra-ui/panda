@@ -54,7 +54,9 @@ Production `extract()` paths always supply a `Resolver`, which unlocks identifie
   (`cond && X` → `X`).
 - **`ConditionalExpression`** — Foldable test picks a branch; open test emits `Conditional` with both branches.
 - **`TemplateLiteral`** — Including tagged templates (tag identity ignored).
-- **`Identifier`** — Same-file `const` / `let` / `var` with literal initializer, never mutated.
+- **`Identifier`** — Same-file `const` / `let` / `var` with literal initializer, never mutated. Free
+  global `undefined` folds to `Null` (parity with array slots and `null == undefined`); a shadowed
+  local named `undefined` that doesn't resolve stays open.
 - **`StaticMemberExpression`, `ComputedMemberExpression`** — After the object folds to a literal.
 - **Computed object keys** — When the key expression folds to a string or number (including nested condition objects).
 - **Object / array destructuring** — Renames, computed binding keys, defaults, and rest.

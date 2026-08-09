@@ -123,9 +123,7 @@ describe('compiler.transformSource: css', () => {
     )
 
     const result = compiler.transformSource({ path: 'src/styles.ts', source })
-    expect(result.code).toMatchInlineSnapshot(`
-      "export const raw = "color_red padding_4px""
-    `)
+    expect(result.code).toMatchInlineSnapshot(`"export const raw = { color: 'red', padding: '4px' }"`)
   })
 
   test('rewrites multiple static css() calls in one file', () => {
@@ -501,9 +499,7 @@ describe('compiler.transformSource: css', () => {
       {
         "changed": true,
         "bailed": false,
-        "code": "import { cx as __pcx } from '@pandacss-internal/css';
-      import { css } from '@panda/css'
-      export const cls = __pcx("color_red", css({ width: undefined }))",
+        "code": "export const cls = "color_red"",
       }
     `)
   })
@@ -578,7 +574,7 @@ describe('compiler.transformSource: css', () => {
     )
 
     const result = compiler.transformSource({ path: 'src/button.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`"export const cls = "color_red md:color_blue""`)
+    expect(result.code).toMatchInlineSnapshot(`"export const cls = { color: { base: 'red', md: 'blue' } }"`)
   })
 
   test('emits both classes for a multi-prop finite ternary', () => {

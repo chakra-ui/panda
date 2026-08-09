@@ -160,6 +160,9 @@ enum ClassFragment {
 
 /// Falls back to the `className={"…"}` expression form when the value has a
 /// quote/backslash a double-quoted JSX attribute can't hold.
+///
+/// Keep this set minimal: extracted class values are raw source, so JSX still
+/// decodes entities in the attribute form but not in the expression form.
 fn class_name_attribute(class_attr: &str, value: &str) -> String {
     if value.contains(['"', '\\', '\n', '\r']) {
         format!(
@@ -278,16 +281,14 @@ fn print_concatenated_fragments(class_attr: &str, fragments: &[ClassFragment]) -
         }
         match fragment {
             ClassFragment::Static(value) => {
-                if index > 0 && matches!(fragments[index - 1], ClassFragment::Expr { .. }) {
-                    expr.push('"');
-                    expr.push(' ');
-                    expr.push_str(value);
-                    expr.push('"');
+                let separated =
+                    index > 0 && matches!(fragments[index - 1], ClassFragment::Expr { .. });
+                let literal = if separated {
+                    format!(" {value}")
                 } else {
-                    expr.push('"');
-                    expr.push_str(value);
-                    expr.push('"');
-                }
+                    value.clone()
+                };
+                expr.push_str(&super::resolve::js_string_literal(&literal));
             }
             ClassFragment::Expr {
                 value,
@@ -531,6 +532,49 @@ mod tests {
         assert_eq!(
             print.attribute,
             r#"className={"foo" + " " + (isError ? "color_red" : "color_blue")}"#
+        );
+    }
+
+    /// A class concatenated after an expression is a JS string literal like any
+    /// other, so quote/backslash/newline have to survive as escapes.
+    fn concatenated_after_identifier(class_name: &str) -> String {
+        merge_class_name_fragments(
+            "className",
+            HelperCxMode::False,
+            existing(
+                None,
+                Some("props.cls"),
+                Some(ExpressionKind::Identifier),
+                false,
+            ),
+            class_name,
+        )
+        .expression
+    }
+
+    #[test]
+    fn concatenated_static_fragment_escapes_a_double_quote() {
+        assert_eq!(
+            concatenated_after_identifier("color_[var(--x,_\"red\")]"),
+            r#"props.cls + " color_[var(--x,_\"red\")]""#
+        );
+    }
+
+    #[test]
+    fn concatenated_static_fragment_escapes_a_backslash() {
+        assert_eq!(
+            concatenated_after_identifier("color_[calc(1px\\2)]"),
+            r#"props.cls + " color_[calc(1px\\2)]""#
+        );
+    }
+
+    /// Unreachable from source today, but a raw newline would otherwise
+    /// terminate the string literal.
+    #[test]
+    fn concatenated_static_fragment_escapes_a_newline() {
+        assert_eq!(
+            concatenated_after_identifier("color_[a\nb]"),
+            r#"props.cls + " color_[a\nb]""#
         );
     }
 

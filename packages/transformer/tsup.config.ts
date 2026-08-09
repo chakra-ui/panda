@@ -46,7 +46,20 @@ export default defineConfig((options) => ({
   splitting: false,
   clean: true,
   async onSuccess() {
+    // 1) Bundle the virtual `@pandacss-internal/css` runtime
     await build({ ...internalCssRuntimeBuild, config: false })
+    // 2) Write it into source.ts for getInternalCssRuntimeSource()
     writeInternalCssSource()
+    // 3) Re-bundle index so the embedded string matches this build (otherwise
+    //    index.js ships the previous source.ts and needs a second `pnpm build`)
+    await build({
+      entry: { index: 'src/index.ts' },
+      format: ['esm'],
+      platform: 'node',
+      dts: false,
+      splitting: false,
+      clean: false,
+      config: false,
+    })
   },
 }))

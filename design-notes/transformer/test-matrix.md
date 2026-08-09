@@ -133,7 +133,7 @@ These are the direct successors to the earlier prototype's `buildClassNameAttr(.
 ## Snapshot tests: bailout behavior
 
 - dynamic `css` arg bails
-- `.raw()` forms bail
+- `.raw()` forms fold to the style object they resolve to
 - JSX spread props bail
 - complex `as={condition ? A : B}` bail
 - dynamic token path bails
@@ -226,12 +226,12 @@ If conditional flattening stays in scope:
 - `cva` compound variants
 - callable `cva` result shape
 - `cva.variantMap` and `variantKeys`
-- `cva.raw()` bail
+- `cva.raw()` folds to resolved styles
 - `cva.splitVariantProps`
 - `sva()` helper output shape
 - slot keys on result
 - `sva.variantMap`
-- `sva.raw()` bail
+- `sva.raw()` folds to resolved styles per slot
 
 ## Integration tests: common host contract
 

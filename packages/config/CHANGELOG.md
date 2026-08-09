@@ -1,5 +1,19 @@
 # @pandacss/config
 
+## 2.0.0-beta.12
+
+### Patch Changes
+
+- @pandacss/compiler-shared@2.0.0-beta.12
+- @pandacss/types@2.0.0-beta.12
+
+## 2.0.0-beta.11
+
+### Patch Changes
+
+- @pandacss/compiler-shared@2.0.0-beta.11
+- @pandacss/types@2.0.0-beta.11
+
 ## 2.0.0-beta.10
 
 ### Minor Changes
@@ -32,7 +46,6 @@
   ```tsx
   // React / Next
   import { ViewTransition } from 'react'
-
   ;<ViewTransition name="hero" share={slide}>
     <img src="…" alt="…" />
   </ViewTransition>

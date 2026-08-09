@@ -214,7 +214,7 @@ fn emits_ts_source() {
           return stackConfig.transform(s, patternFns)
         }
 
-        export const stack: StackPatternFn = /* @__PURE__ */ Object.assign(memo(function stack(styles = {}) {
+        export const stack: StackPatternFn = /* @__PURE__ */ Object.assign(/* @__PURE__ */ memo(function stack(styles = {}) {
           return css(stackRaw(styles))
         }), { raw: stackRaw, propKeys: ["align","direction","gap","justify"] })
         "#}
@@ -299,7 +299,7 @@ fn emits_js_runtime_and_declarations() {
           return stackConfig.transform(s, patternFns)
         }
 
-        export const stack = /* @__PURE__ */ Object.assign(memo(function stack(styles = {}) {
+        export const stack = /* @__PURE__ */ Object.assign(/* @__PURE__ */ memo(function stack(styles = {}) {
           return css(stackRaw(styles))
         }), { raw: stackRaw, propKeys: ["align","direction","gap","justify"] })
         "#}
@@ -376,7 +376,7 @@ fn can_emit_import_extensions() {
           return stackConfig.transform(s, patternFns)
         }
 
-        export const stack = /* @__PURE__ */ Object.assign(memo(function stack(styles = {}) {
+        export const stack = /* @__PURE__ */ Object.assign(/* @__PURE__ */ memo(function stack(styles = {}) {
           return css(stackRaw(styles))
         }), { raw: stackRaw, propKeys: ["align","direction","gap","justify"] })
         "#}

@@ -12,6 +12,21 @@ Just-in-Time)
 
 > TLDR; Panda is a CSS-in-JS engine that generates atomic CSS at build time (via CLI or PostCSS)
 
+## Requirements
+
+Panda v2 is **ESM-only**. Every `@pandacss/*` package ships as an ES module — there's no separate CommonJS build. Two
+things follow from that:
+
+- **Node.js 22.12 or newer.** This is the first release where `require()` can load an ES module, so CommonJS tooling can
+  still pull Panda in. On older versions Panda won't load at all.
+- **Author your config as ESM.** `panda.config.ts` already uses `import` and `export default`, so nothing changes there.
+  For a plain `postcss.config.js`, make sure the file is ESM — set `"type": "module"` in your `package.json`, or name it
+  `.mjs`.
+
+Some build tools still expect a CommonJS PostCSS config — Next.js is the main one. For those, keep a `postcss.config.cjs`
+that does `require('@pandacss/dev/postcss')`; the plugin ships a CommonJS entry for exactly this case. Each
+[framework guide](#framework-guides) shows the right form for its setup.
+
 ## Installation
 
 ### General Guides

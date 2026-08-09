@@ -97,14 +97,13 @@ import '../index.css';
 
 ### Update the postcss config
 
-Astro requires a little change for the `postcss.config.[c]js`:
+Astro loads PostCSS plugins as an array, so import the plugin and call it in your `postcss.config.mjs`:
 
-```diff {3} filename="postcss.config.js"
-module.exports = {
--  plugins: {
--   '@pandacss/dev/postcss': {}
--  }
-+  plugins: [require('@pandacss/dev/postcss')()]
+```js filename="postcss.config.mjs"
+import pandacss from '@pandacss/dev/postcss'
+
+export default {
+  plugins: [pandacss()],
 }
 ```
 

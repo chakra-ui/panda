@@ -81,6 +81,7 @@ export const docsNavigation: NavItem = {
       items: [
         { title: 'Getting Started', url: 'getting-started' },
         { title: 'Why Panda?', url: 'why-panda' },
+        { title: 'Thinking in Panda', url: 'thinking-in-panda' },
         { title: 'FAQs', url: 'faq' },
         { title: 'Browser Support', url: 'browser-support' },
         {
@@ -224,7 +225,10 @@ export const docsNavigation: NavItem = {
         { title: 'Dynamic Styles', url: 'dynamic-styling' },
         { title: 'Isolated Declarations', url: 'isolated-declarations' },
         { title: 'Static Generator', url: 'static' },
-        { title: 'Environment-specific config', url: 'environment-specific-config' },
+        {
+          title: 'Environment-specific config',
+          url: 'environment-specific-config'
+        },
         { title: 'Debugging', url: 'debugging' }
       ]
     },
@@ -233,7 +237,8 @@ export const docsNavigation: NavItem = {
       url: 'references',
       items: [
         { title: 'CLI', url: 'cli' },
-        { title: 'Config', url: 'config' }
+        { title: 'Config', url: 'config' },
+        { title: 'Diagnostics', url: 'diagnostics' }
       ]
     }
   ]

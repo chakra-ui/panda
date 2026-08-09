@@ -1,0 +1,322 @@
+---
+title: Thinking in Panda
+description: Which Panda API to reach for next, from css() to recipes, slots, and config.
+---
+
+Panda styles ship as plain CSS from the build. You write objects next to your markup. The only question that matters day
+to day is which API to reach for as a component grows.
+
+Start local. Promote only when the shape of the styles forces it. This walk builds a Button, then a Card, and climbs the
+ladder: `css` → `cva` → `sva` → config.
+
+If you want the why-build-time pitch first, read [Why Panda](/docs/overview/why-panda).
+
+## Step 1: Start with `css()`
+
+You need a button. One look, no variants yet. Put the styles on the element:
+
+```tsx
+import { css } from '../styled-system/css'
+
+export function Button({ children }: { children: React.ReactNode }) {
+  return (
+    <button
+      className={css({
+        display: 'inline-flex',
+        alignItems: 'center',
+        rounded: 'md',
+        fontWeight: 'semibold',
+        bg: 'blue.500',
+        color: 'white',
+        px: '4',
+        py: '2',
+        _hover: { bg: 'blue.600' },
+        md: { px: '5' }
+      })}
+    >
+      {children}
+    </button>
+  )
+}
+```
+
+A few habits show up here and stay true for every later step.
+
+**Tokens name intent.** `blue.500`, `md`, `semibold` come from your theme. Panda resolves them to CSS variables.
+
+**Conditions live in the object.** `_hover` and `md` are keys next to the rest of the styles. No separate media file.
+
+**Keep styles static.** Panda reads your source at build time. Literals, local constants, and ternaries are fine. Values
+that only exist when the app runs are not. Map runtime choices to styles Panda can see:
+
+```tsx
+// ❌ Panda can't see `shade` at build time
+function Text({ shade }: { shade: number }) {
+  return <p className={css({ color: `red.${shade}` })} />
+}
+
+// ✅ every class exists at build time
+const byShade = {
+  300: css({ color: 'red.300' }),
+  500: css({ color: 'red.500' })
+}
+
+function Text({ shade }: { shade: keyof typeof byShade }) {
+  return <p className={byShade[shade]} />
+}
+```
+
+For values that are genuinely dynamic (a user-picked color, a computed length), use CSS variables. See
+[dynamic styling](/docs/guides/dynamic-styling).
+
+Each property and value becomes a shared atomic class. `css({ color: 'white' })` and another file that asks for the same
+token emit the same rule once. Your CSS scales with distinct styles, not with how many components you have.
+
+More on the object syntax: [Writing styles](/docs/concepts/writing-styles).
+
+## Step 2: Promote to a recipe when variants appear
+
+The button now needs `size` and `visual`. Duplicating `css()` calls or nesting ternaries gets old fast:
+
+```tsx
+// works, but every new variant makes this harder to read
+function Button({ size, visual, children }) {
+  return (
+    <button
+      className={css({
+        rounded: 'md',
+        fontWeight: 'semibold',
+        px: size === 'sm' ? '3' : '5',
+        py: size === 'sm' ? '1.5' : '3',
+        bg: visual === 'solid' ? 'blue.500' : 'transparent',
+        color: visual === 'solid' ? 'white' : 'blue.500',
+        borderWidth: visual === 'outline' ? '1px' : undefined,
+        borderColor: visual === 'outline' ? 'blue.500' : undefined
+      })}
+    >
+      {children}
+    </button>
+  )
+}
+```
+
+That's a variant matrix. Reach for `cva`:
+
+```tsx
+import { cva } from '../styled-system/css'
+
+const button = cva({
+  base: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    rounded: 'md',
+    fontWeight: 'semibold'
+  },
+  variants: {
+    size: {
+      sm: { px: '3', py: '1.5', fontSize: 'sm' },
+      lg: { px: '5', py: '3', fontSize: 'md' }
+    },
+    visual: {
+      solid: { bg: 'blue.500', color: 'white', _hover: { bg: 'blue.600' } },
+      outline: { borderWidth: '1px', borderColor: 'blue.500', color: 'blue.500' }
+    }
+  },
+  defaultVariants: {
+    size: 'sm',
+    visual: 'solid'
+  }
+})
+
+export function Button({ size, visual, children }) {
+  return <button className={button({ size, visual })}>{children}</button>
+}
+```
+
+Promote to a recipe when you have variants to name, not because the component file got long. One element, many looks:
+`cva` is enough.
+
+Full API: [Recipes](/docs/concepts/recipes).
+
+## Step 3: Split into slots when markup has parts
+
+Now build a Card. It has a root, a title, and a body. One `size` prop should style all three together. That's structure,
+not just more variants on a single node.
+
+`sva` gives you one recipe and a class bag per part:
+
+```tsx
+import { sva } from '../styled-system/css'
+
+const card = sva({
+  slots: ['root', 'title', 'body'],
+  base: {
+    root: {
+      rounded: 'lg',
+      borderWidth: '1px',
+      borderColor: 'gray.200',
+      bg: 'white',
+      p: '4'
+    },
+    title: { fontWeight: 'semibold', mb: '2' },
+    body: { color: 'gray.600', fontSize: 'sm' }
+  },
+  variants: {
+    size: {
+      sm: {
+        root: { p: '3' },
+        title: { fontSize: 'md' },
+        body: { fontSize: 'xs' }
+      },
+      lg: {
+        root: { p: '6' },
+        title: { fontSize: 'xl' },
+        body: { fontSize: 'md' }
+      }
+    }
+  },
+  defaultVariants: { size: 'sm' }
+})
+
+export function Card({ size, title, children }) {
+  const classes = card({ size })
+  return (
+    <div className={classes.root}>
+      <h2 className={classes.title}>{title}</h2>
+      <div className={classes.body}>{children}</div>
+    </div>
+  )
+}
+```
+
+Use slots when one variant API owns multiple elements. Stay on `cva` when a single element is enough.
+
+Full API: [Slot recipes](/docs/concepts/slot-recipes).
+
+## Step 4: Move to config when it's a system primitive
+
+`cva` and `sva` are great next to the component. Move the same shape into config when the component is a design-system
+primitive: shared across apps, shipped in a preset, or you want JIT CSS for only the variants you actually use.
+
+Button becomes a config recipe:
+
+```ts filename="button.recipe.ts"
+import { defineRecipe } from '@pandacss/dev'
+
+export const buttonRecipe = defineRecipe({
+  className: 'button',
+  base: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    rounded: 'md',
+    fontWeight: 'semibold'
+  },
+  variants: {
+    size: {
+      sm: { px: '3', py: '1.5', fontSize: 'sm' },
+      lg: { px: '5', py: '3', fontSize: 'md' }
+    },
+    visual: {
+      solid: { bg: 'blue.500', color: 'white', _hover: { bg: 'blue.600' } },
+      outline: { borderWidth: '1px', borderColor: 'blue.500', color: 'blue.500' }
+    }
+  },
+  defaultVariants: {
+    size: 'sm',
+    visual: 'solid'
+  }
+})
+```
+
+Card becomes a config slot recipe:
+
+```ts filename="card.recipe.ts"
+import { defineSlotRecipe } from '@pandacss/dev'
+
+export const cardRecipe = defineSlotRecipe({
+  className: 'card',
+  slots: ['root', 'title', 'body'],
+  base: {
+    root: {
+      rounded: 'lg',
+      borderWidth: '1px',
+      borderColor: 'gray.200',
+      bg: 'white',
+      p: '4'
+    },
+    title: { fontWeight: 'semibold', mb: '2' },
+    body: { color: 'gray.600', fontSize: 'sm' }
+  },
+  variants: {
+    size: {
+      sm: {
+        root: { p: '3' },
+        title: { fontSize: 'md' },
+        body: { fontSize: 'xs' }
+      },
+      lg: {
+        root: { p: '6' },
+        title: { fontSize: 'xl' },
+        body: { fontSize: 'md' }
+      }
+    }
+  },
+  defaultVariants: { size: 'sm' }
+})
+```
+
+Register them on the theme, then import the generated recipes from `styled-system`:
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+import { buttonRecipe } from './button.recipe'
+import { cardRecipe } from './card.recipe'
+
+export default defineConfig({
+  // ...
+  theme: {
+    extend: {
+      recipes: { button: buttonRecipe },
+      slotRecipes: { card: cardRecipe }
+    }
+  }
+})
+```
+
+```tsx
+import { button } from '../styled-system/recipes'
+;<button className={button({ size: 'lg', visual: 'outline' })} />
+```
+
+**Decision rule:**
+
+- Stay on `cva` / `sva` for colocated, app-local components.
+- Move to `defineRecipe` / `defineSlotRecipe` for design-system components, leaner JIT CSS, and sharing via a preset or
+  `panda lib`.
+
+The full comparison table lives here:
+[Should I use atomic or config recipes?](/docs/concepts/recipes#should-i-use-atomic-or-config-recipes-). The same split
+applies to `sva` vs config slot recipes.
+
+## Step 5: Trust the system
+
+Three rules make the ladder safe. You don't need to relearn them at every step.
+
+**Tokens are the vocabulary.** Name intent once (`colors.text`, `spacing.4`). Every `css`, recipe, and slot refers to
+the same names. See [tokens](/docs/theming/tokens).
+
+**Cascade layers keep overrides predictable.** Panda emits into fixed layers: reset, base, tokens, recipes, utilities. A
+utility always beats a recipe, whatever the import order. When you merge style objects, the last value wins. See
+[cascade layers](/docs/concepts/cascade-layers) and [merging styles](/docs/concepts/merging-styles).
+
+**Types come from your config.** Autocomplete offers your tokens and recipe variants. A typo is a type error while you
+type. Turn on [`strictTokens`](/docs/concepts/writing-styles#stricttokens) when you want raw values rejected too.
+
+## Where to go next
+
+If you can say which step a style belongs on, you already think in Panda.
+
+- [Getting started](/docs/overview/getting-started): install Panda and generate your first styles.
+- [Writing styles](/docs/concepts/writing-styles): the `css` function and object syntax in full.
+- [Recipes](/docs/concepts/recipes): `cva` and config recipes.
+- [Slot recipes](/docs/concepts/slot-recipes): `sva` and config slot recipes.

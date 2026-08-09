@@ -127,10 +127,13 @@ describe('compiler.transformSource: template-literal css', () => {
     `)
   })
 
-  test('rewrites a css.raw template to a class string, matching the object form', () => {
+  test('leaves a css.raw template untouched — raw yields a style object, not classes', () => {
     const source = lines("import { css } from '@panda/css'", 'export const a = css.raw`color: red;`')
     const result = tpl.transformSource({ path: 'src/a.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`"export const a = "color_red""`)
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { css } from '@panda/css'
+      export const a = css.raw\`color: red;\`"
+    `)
   })
 })
 

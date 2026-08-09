@@ -482,7 +482,9 @@ fn public_function_const(name: &str, raw_name: &str, fn_type_name: &str, prop_ke
         name: name.into(),
         type_annotation: Some(TsType::Ref(fn_type_name.into())),
         init: Some(crate::Expr::Raw(format!(
-            "/* @__PURE__ */ Object.assign(memo(function {name}(styles = {{}}) {{\n  return css({raw_name}(styles))\n}}), {{ raw: {raw_name}, propKeys: {prop_keys} }})"
+            // Both calls need `@__PURE__`: a pure call is only droppable when
+            // its arguments are droppable too.
+            "/* @__PURE__ */ Object.assign(/* @__PURE__ */ memo(function {name}(styles = {{}}) {{\n  return css({raw_name}(styles))\n}}), {{ raw: {raw_name}, propKeys: {prop_keys} }})"
         ))),
         js_doc: None,
     }))

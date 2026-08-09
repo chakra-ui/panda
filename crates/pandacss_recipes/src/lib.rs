@@ -372,10 +372,7 @@ fn parse_string_map_owned(literal: Literal) -> Vec<(String, String)> {
     };
     entries
         .into_iter()
-        .filter_map(|(k, v)| match v {
-            Literal::String(s) => Some((k, s)),
-            _ => None,
-        })
+        .filter_map(|(k, v)| variant_condition_value(&v).map(|value| (k, value)))
         .collect()
 }
 

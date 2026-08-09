@@ -104,7 +104,7 @@ fn emits_ts_source_recipes() {
         ]
     );
     assert_snapshot!(file(recipes, "recipes/runtime.ts"), @r#"
-    import { createCssRuntime, getCompoundVariantClassNames, getSlotCompoundVariant, memo, splitProps, toHash, uniq, withDefaults, withoutSpace } from '../helpers';
+    import { createSerializeCss, getCompoundVariantClassNames, getSlotCompoundVariant, memo, splitProps, toHash, uniq, withDefaults, withoutSpace } from '../helpers';
     import { breakpointKeys, finalizeConditions, sortConditions } from '../css/conditions';
     import { cx } from '../css/cx';
 
@@ -125,7 +125,7 @@ fn emits_ts_source_recipes() {
       const { name, className, variantMap, variantKeys, defaults, compounds } = normalize(config)
       const classPrefix = "p"
 
-      const { serializeCss: recipeCss } = createCssRuntime({
+      const recipeCss = /* @__PURE__ */ createSerializeCss({
         hash: false,
         conditions: {
           shift: sortConditions,
@@ -334,7 +334,7 @@ fn emits_js_runtime_and_declarations() {
         ]
     );
     assert_snapshot!(file(recipes, "recipes/runtime.mjs"), @r#"
-    import { createCssRuntime, getCompoundVariantClassNames, getSlotCompoundVariant, memo, splitProps, toHash, uniq, withDefaults, withoutSpace } from '../helpers.mjs';
+    import { createSerializeCss, getCompoundVariantClassNames, getSlotCompoundVariant, memo, splitProps, toHash, uniq, withDefaults, withoutSpace } from '../helpers.mjs';
     import { breakpointKeys, finalizeConditions, sortConditions } from '../css/conditions.mjs';
     import { cx } from '../css/cx.mjs';
 
@@ -355,7 +355,7 @@ fn emits_js_runtime_and_declarations() {
       const { name, className, variantMap, variantKeys, defaults, compounds } = normalize(config)
       const classPrefix = "p"
 
-      const { serializeCss: recipeCss } = createCssRuntime({
+      const recipeCss = /* @__PURE__ */ createSerializeCss({
         hash: false,
         conditions: {
           shift: sortConditions,

@@ -1,5 +1,33 @@
 # @pandacss/eslint-plugin
 
+## 2.0.0-beta.12
+
+### Patch Changes
+
+- Updated dependencies [172c52f]
+- Updated dependencies [98aaa76]
+- Updated dependencies [ceb8d8d]
+- Updated dependencies [28ee00a]
+- Updated dependencies [604b103]
+- Updated dependencies [25137db]
+- Updated dependencies [c2fcd98]
+- Updated dependencies [8ccb118]
+- Updated dependencies [fad2f12]
+- Updated dependencies [736358d]
+- Updated dependencies [28ee00a]
+  - @pandacss/compiler@2.0.0-beta.12
+  - @pandacss/compiler-shared@2.0.0-beta.12
+  - @pandacss/config@2.0.0-beta.12
+
+## 2.0.0-beta.11
+
+### Patch Changes
+
+- Updated dependencies [c7f949a]
+  - @pandacss/compiler@2.0.0-beta.11
+  - @pandacss/compiler-shared@2.0.0-beta.11
+  - @pandacss/config@2.0.0-beta.11
+
 ## 2.0.0-beta.10
 
 ### Patch Changes

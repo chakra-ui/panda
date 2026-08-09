@@ -429,7 +429,7 @@ describe('compiler.transformSource: jsx', () => {
 
     const result = styledJsxCompiler.transformSource({ path: 'src/app.tsx', source })
     expect(result.code).toMatchInlineSnapshot(
-      `"export const el = <div className={(isError ? "color_red padding_4" : "color_blue padding_4") + " " + (isDark ? "bg_black padding_4" : "bg_white padding_4")} />"`,
+      `"export const el = <div className={"padding_4" + " " + (isError ? "color_red" : "color_blue") + " " + (isDark ? "bg_black" : "bg_white")} />"`,
     )
   })
 

@@ -630,6 +630,7 @@ fn parse_expression_literal(
             source_path: Some(std::path::PathBuf::from(context.path)),
             line_index: None,
             pattern_raw_transform: None,
+            recipe_raw_resolve: None,
         })
     });
     for stmt in parser_return.program.body.iter().rev() {

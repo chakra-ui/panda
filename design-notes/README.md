@@ -53,6 +53,8 @@ Some topics span several notes. Keep the detailed contract in one place and link
 - [StyleTree](./style-tree.md) — span-backed transform IR for `css()` / JSX conditionals; `project_literal` for encode.
 - [Cross-file resolution](./cross-file-resolution.md) — `CrossFileResolver`, cache shape (`Literal` | `PureFn`), cycle
   guard.
+- [Cross-file questions](./cross-file-questions.md) — forward questions use the lazy resolver; reverse or whole-program
+  ones ask the bundler at `buildEnd` rather than building a second module graph.
 - [JSX tag matching](./jsx-tag-matching.md) — `jsxMatchTag`: declarative successor to v1 `matchTag`/`matchTagProp`;
   match/ignore JSX tags by name, pattern, or import source, plus per-rule prop control. Why it's data, not a callback.
 - [Recipe variant dynamic diagnostics](./recipe-variant-diagnostics.md) — `recipe_variant_dynamic`: warn when config

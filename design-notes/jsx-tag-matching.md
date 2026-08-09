@@ -196,6 +196,13 @@ The only genuinely new field is a **tag blocklist**: `tag_blocklist: FxHashSet<S
 `JsxExtractionConfig`, so `from` rules slot into the same path rather than a parallel one (see
 [Extraction pipeline](./extraction-pipeline.md), [Cross-file resolution](./cross-file-resolution.md)).
 
+## Interaction with local `styled()` chains
+
+A module-level `const Button = styled('button', …)` resolves as `<styled.button>` **before** any `jsxMatchTag` rule is
+consulted, so the chain fold reaches it. When `ignore: true` lands it has to gate that branch too, or
+`{ tag: 'Button', ignore: true }` is silently overridden for a local chain. The fold already requires the tag to resolve
+to the symbol the chain declared, so the hook point exists.
+
 ## Out of scope
 
 **Recipe variant tree-shaking through wrapper components** (#3522 item 12). When `MyRedButton = (p) => <Button {...p}/>`
