@@ -536,6 +536,30 @@ const Button = withContext('button')
 
 `withRootProvider` is new. Use it for the root of a slot recipe when the root doesn't render a slot of its own.
 
+### Border overrides sort by property, not source order
+
+v2 orders atomic rules by property breadth, deterministically — the same sort every property follows. All the border
+shorthands (`borderWidth` / `borderStyle` / `borderColor` and the per-side `borderTop`, `borderInlineEnd`, … forms) sit
+in one tier, so the all-sides shorthand emits after a narrower per-side one and wins the cascade, no matter which order
+you merged them.
+
+That changes one v1 pattern. Composing an all-sides border with a per-side override no longer opens the side:
+
+```tsx
+// base sets a full border, override tries to drop one side
+cx(css({ borderWidth: '1px', borderStyle: 'solid' }), css({ borderInlineEnd: '0' }))
+// v1: renders an open bracket — the override was declared last
+// v2: renders a closed box — borderWidth re-applies the inline-end side
+```
+
+Reach for the longhand when the override has to win — longhands rank above every shorthand, so they always land last:
+
+```tsx
+cx(css({ borderWidth: '1px', borderStyle: 'solid' }), css({ borderInlineEndWidth: '0' }))
+```
+
+Border is not special-cased here on purpose: padding, margin, and every other property group sort the same way.
+
 ---
 
 ## CLI commands
