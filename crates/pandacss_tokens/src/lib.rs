@@ -497,11 +497,13 @@ impl TokenDictionary {
     /// `(theme, condition, value)` variants grouped by path — the shape tooling
     /// needs instead of re-deriving it from raw config.
     ///
-    /// A token counts as semantic when its path is declared under
-    /// `semanticTokens` in `config`; core primitives and theme-variant core
-    /// tokens are excluded. `{ref}` aliases resolve to the referenced token's
-    /// literal (via [`Self::flat_maps`]), not its CSS variable, so values are
-    /// concrete. Theme-folded conditions (`_theme{Name}`) split back into a
+    /// Project every semantic token — those declared under `semanticTokens` and
+    /// tagged `semantic` at build time — into its resolved theme/condition
+    /// variants. Requiring both the declared path and the marker excludes core
+    /// primitives that share a path with a semantic token, and derived tokens
+    /// (e.g. negative spacing) that inherit the marker. `{ref}` aliases resolve
+    /// to the referenced token's literal value, not its CSS variable, so values
+    /// are concrete. Theme-folded conditions (`_theme{Name}`) split back into a
     /// theme name plus a theme-relative condition.
     #[must_use]
     pub fn semantic_projection(
@@ -513,22 +515,20 @@ impl TokenDictionary {
             return Vec::new();
         }
         let theme_conditions = from_config::theme_condition_map(config);
-        let (values, _vars) = self.flat_maps();
 
         let mut entries: Vec<SemanticTokenEntry> = Vec::new();
         let mut index_by_path: FxHashMap<&str, usize> = FxHashMap::default();
 
         for token in &self.tokens {
             let path = token.path.as_ref();
-            if !semantic_paths.contains(path) {
+            if token.extension("semantic") != Some("true") || !semantic_paths.contains(path) {
                 continue;
             }
-
             let raw = token
                 .original_value
                 .as_deref()
                 .unwrap_or_else(|| token.value.as_ref());
-            let value = resolve_semantic_value(raw, &values);
+            let value = self.resolve_semantic_value(raw);
             let (theme, condition) =
                 split_theme_condition(token.condition.as_deref(), &theme_conditions);
 
@@ -551,15 +551,15 @@ impl TokenDictionary {
 
         entries
     }
-}
 
-/// Resolve a whole-string `{token.path}` alias to the referenced token's
-/// literal value; anything else (or an unknown ref) is returned unchanged.
-/// Mirrors the studio's `values[ref] ?? raw`.
-fn resolve_semantic_value(raw: &str, values: &BTreeMap<String, String>) -> String {
-    parse_token_ref(Some(raw))
-        .and_then(|reference| values.get(reference))
-        .map_or_else(|| raw.to_owned(), String::clone)
+    /// Resolve a whole-string `{token.path}` alias to the referenced token's
+    /// literal value; anything else (or an unknown ref) is returned unchanged.
+    /// Mirrors the studio's `values[ref] ?? raw`.
+    fn resolve_semantic_value(&self, raw: &str) -> String {
+        parse_token_ref(Some(raw))
+            .and_then(|reference| self.token(reference))
+            .map_or_else(|| raw.to_owned(), |token| token.value.to_string())
+    }
 }
 
 /// Split a token condition into `(theme, theme-relative condition)`. A leading

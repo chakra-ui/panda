@@ -103,7 +103,7 @@ impl WasmCompiler {
                     .serialize(&serializer)
                     .map_err(|err| JsValue::from_str(&err.to_string()))
             }
-            None => Ok(JsValue::UNDEFINED),
+            None => Ok(JsValue::NULL),
         }
     }
 

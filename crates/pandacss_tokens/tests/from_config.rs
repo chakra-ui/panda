@@ -515,14 +515,16 @@ fn from_config_applies_spacing_middlewares() {
       category: spacing
       condition: ~
       originalValue: "{spacing.sm}"
-      extensions: {}
+      extensions:
+        semantic: "true"
     - path: spacing.gutter
       value: 2rem
       var: var(--spacing-gutter)
       category: spacing
       condition: _wide
       originalValue: ~
-      extensions: {}
+      extensions:
+        semantic: "true"
     - path: spacing.-sm
       value: calc(var(--spacing-sm) * -1)
       var: ""
@@ -553,6 +555,7 @@ fn from_config_applies_spacing_middlewares() {
         isNegative: "true"
         originalPath: spacing.gutter
         prop: "-gutter"
+        semantic: "true"
     - path: spacing.-gutter
       value: calc(var(--spacing-gutter) * -1)
       var: ""
@@ -563,6 +566,7 @@ fn from_config_applies_spacing_middlewares() {
         isNegative: "true"
         originalPath: spacing.gutter
         prop: "-gutter"
+        semantic: "true"
     "#);
 }
 
