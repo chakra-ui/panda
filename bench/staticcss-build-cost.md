@@ -10,7 +10,7 @@ a point-in-time result; the durable harness design lives in [benchmark-suite](..
 
 ## Background
 
-Two discussions, same author, report the same thing — build time, not wrong CSS:
+Two discussions report the same thing — build time, not wrong CSS:
 
 - **#3106** — 3.47s without `staticCss`, 13.35s with it, 30s+ once more PostCSS plugins pile on.
 - **#3256** — the follow-up: add a build cache so `staticCss` stops regenerating the whole stylesheet on every change.
