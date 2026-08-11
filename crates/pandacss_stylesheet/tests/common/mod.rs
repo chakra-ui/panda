@@ -92,6 +92,18 @@ pub fn compile_keyframes_output(
 }
 
 #[allow(dead_code)]
+#[allow(
+    clippy::needless_pass_by_value,
+    reason = "test helper; owned options read more naturally at call sites"
+)]
+pub fn compile_fontface_output(
+    config: &UserConfig,
+    options: StylesheetOptions,
+) -> StylesheetOutput {
+    pandacss_stylesheet::compile_fontface(config, &options)
+}
+
+#[allow(dead_code)]
 pub fn split_output(
     config: &UserConfig,
     source: &str,

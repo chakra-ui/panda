@@ -262,3 +262,19 @@ export interface Spec {
   jsxFactory?: string
   importMap?: ImportMapOutput
 }
+
+/** One resolved value of a semantic token under a specific theme + condition. */
+export interface SemanticTokenCondition {
+  /** Named theme (`config.themes`); omitted for the base theme. */
+  theme?: string
+  /** Condition key relative to the theme (`base`, `_dark`, `_dark:base`). */
+  condition: string
+  /** The condition's value resolved to a literal (references expanded). */
+  value: string
+}
+
+/** A semantic token with every resolved theme/condition variant. */
+export interface SemanticTokenEntry {
+  path: string
+  conditions: SemanticTokenCondition[]
+}

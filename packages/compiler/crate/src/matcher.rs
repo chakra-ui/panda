@@ -62,6 +62,44 @@ pub(crate) fn from_core_token_dictionary(
     }
 }
 
+/// One semantic-token path with its resolved condition/theme variants.
+#[napi(object)]
+#[derive(Clone, serde::Serialize)]
+pub struct SemanticTokenEntry {
+    pub path: String,
+    pub conditions: Vec<SemanticConditionEntry>,
+}
+
+/// One resolved variant of a semantic token: theme, condition label, and value.
+#[napi(object)]
+#[derive(Clone, serde::Serialize)]
+pub struct SemanticConditionEntry {
+    /// Theme variant name; omitted for the base theme.
+    pub theme: Option<String>,
+    pub condition: String,
+    pub value: String,
+}
+
+pub(crate) fn from_core_semantic_projection(
+    entries: Vec<pandacss_tokens::SemanticTokenEntry>,
+) -> Vec<SemanticTokenEntry> {
+    entries
+        .into_iter()
+        .map(|entry| SemanticTokenEntry {
+            path: entry.path,
+            conditions: entry
+                .conditions
+                .into_iter()
+                .map(|condition| SemanticConditionEntry {
+                    theme: condition.theme,
+                    condition: condition.condition,
+                    value: condition.value,
+                })
+                .collect(),
+        })
+        .collect()
+}
+
 #[napi(object)]
 pub struct MatchedImport {
     pub category: MatchCategory,

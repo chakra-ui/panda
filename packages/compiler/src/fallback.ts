@@ -176,6 +176,9 @@ class FallbackCompiler implements Compiler {
       propertyOrder: [],
     }
   }
+  semanticTokens() {
+    return null
+  }
   sources() {
     return []
   }
@@ -254,6 +257,9 @@ class FallbackCompiler implements Compiler {
     return emptyCompileOutput()
   }
   getKeyframeCss(_options?: CompileOptions) {
+    return emptyCompileOutput()
+  }
+  getFontfaceCss(_options?: CompileOptions) {
     return emptyCompileOutput()
   }
   getSplitCss(_options?: SplitCssOptions) {

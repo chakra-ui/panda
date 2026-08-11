@@ -347,6 +347,27 @@ pub fn compile_keyframes(
     }
 }
 
+/// Emit only `globalFontface` as `@font-face` CSS. `emit_layer_declaration`
+/// controls whether blocks are wrapped in `@layer base { … }`. Needs only the
+/// config — no atoms, tokens, or recipes participate.
+#[must_use]
+pub fn compile_fontface(config: &UserConfig, options: &StylesheetOptions) -> StylesheetOutput {
+    let emitted = emitter::emit_fontface(
+        config,
+        emitter::EmitFontfaceOptions {
+            minify: options.minify,
+            wrap_in_layer: options.emit_layer_declaration,
+            polyfill: options.polyfill,
+        },
+    );
+    StylesheetOutput {
+        css: emitted.css,
+        source_map: options.source_map.then(String::new),
+        diagnostics: Vec::new(),
+        layer_ranges: emitted.layer_ranges,
+    }
+}
+
 /// Split the compiled stylesheet into per-file outputs for `--splitting`: one
 /// file per layer, one per recipe, plus `recipes.css` / `styles.css` index
 /// files. Each file is written verbatim by the host (same model as artifacts).

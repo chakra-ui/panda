@@ -276,6 +276,42 @@ fn collect_semantic_category<T: TokenValueString>(
     });
 }
 
+/// Every semantic-token path (category-prefixed, dotted, `DEFAULT` dropped)
+/// declared in the base theme and each theme variant. Lets tooling tell
+/// semantic tokens apart from core primitives when projecting a built
+/// dictionary, without redoing any value work.
+pub(crate) fn collect_semantic_paths(config: &UserConfig) -> FxHashSet<String> {
+    let mut paths = FxHashSet::default();
+    collect_semantic_paths_from(&config.theme.semantic_tokens, &mut paths);
+    for variant in config.themes.values() {
+        collect_semantic_paths_from(&variant.semantic_tokens, &mut paths);
+    }
+    paths
+}
+
+fn collect_semantic_paths_from(tokens: &SemanticTokens, paths: &mut FxHashSet<String>) {
+    macro_rules! collect {
+        ($field:ident, $category:expr, $name:literal) => {
+            walk_token_group(&tokens.$field, &mut vec![$name], &mut |path, _token| {
+                paths.insert(TokenPath::from_segments(path).dotted);
+            });
+        };
+    }
+
+    for_each_token_field!(collect);
+}
+
+/// Reverse map of the `_theme{Capitalized}` condition prefix back to its theme
+/// variant name (`_themeOcean` -> `ocean`), matching the folding in
+/// [`create_token_dictionary`].
+pub(crate) fn theme_condition_map(config: &UserConfig) -> FxHashMap<String, String> {
+    config
+        .themes
+        .keys()
+        .map(|name| (format!("_theme{}", capitalize(name)), name.clone()))
+        .collect()
+}
+
 /// Flatten a nested semantic value, calling `visit` once per concrete value.
 /// Conditions colon-join on nesting (`_dark` inside `md` -> `md:_dark`); a
 /// top-level `base` carries `None`.

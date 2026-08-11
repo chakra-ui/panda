@@ -3,7 +3,7 @@ use super::WasmCompiler;
 use serde::Serialize as _;
 use wasm_bindgen::prelude::*;
 
-use crate::matcher::from_core_token_dictionary;
+use crate::matcher::{from_core_semantic_projection, from_core_token_dictionary};
 
 use super::serde_types::LayerNamesSerde;
 
@@ -85,6 +85,24 @@ impl WasmCompiler {
             Some(dictionary) => from_core_token_dictionary(dictionary.as_ref())
                 .serialize(&serializer)
                 .map_err(|err| JsValue::from_str(&err.to_string())),
+            None => Ok(JsValue::UNDEFINED),
+        }
+    }
+
+    /// Resolved semantic-token condition/theme data projected for design-system
+    /// tooling.
+    ///
+    /// # Errors
+    /// Returns a JS error if serializing fails.
+    #[wasm_bindgen(js_name = semanticTokens)]
+    pub fn semantic_tokens(&self) -> Result<JsValue, JsValue> {
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        match self.inner.config().token_dictionary() {
+            Some(dictionary) => {
+                from_core_semantic_projection(dictionary.semantic_projection(&self.user_config))
+                    .serialize(&serializer)
+                    .map_err(|err| JsValue::from_str(&err.to_string()))
+            }
             None => Ok(JsValue::UNDEFINED),
         }
     }

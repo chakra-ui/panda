@@ -3,11 +3,10 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import {
-  buildSemanticMap,
   buildTokensSnapshot,
-  fontfaceToCss,
   runStudioGenerate,
   runStudioServe,
+  semanticMapFromTokens,
   viewFiles,
   viewerFiles,
 } from '../src'
@@ -171,57 +170,71 @@ describe('studio viewer', () => {
 })
 
 describe('studio fonts', () => {
-  it('emits @font-face css so the viewer loads the user font', () => {
-    const css = fontfaceToCss({
-      Custom: { src: [{ url: '/fonts/custom.woff2', format: 'woff2' }], fontWeight: 500, fontDisplay: 'swap' },
-    })
-    expect(css).toContain('@font-face')
-    expect(css).toContain('font-family: "Custom"')
-    expect(css).toContain('url("/fonts/custom.woff2") format("woff2")')
-    expect(css).toContain('font-weight: 500')
-    expect(css).toContain('font-display: swap')
+  let dir: string | undefined
+
+  afterEach(() => {
+    cleanupFixture(dir)
+    dir = undefined
   })
 
-  it('returns empty string when no fontface is configured', () => {
-    expect(fontfaceToCss(undefined)).toBe('')
-    expect(fontfaceToCss({})).toBe('')
+  it('emits @font-face css from the compiler so the viewer loads the user font', async () => {
+    const config = TOKEN_CONFIG.replace(
+      'export default {',
+      `export default {
+  globalFontface: { Custom: { src: "url('/fonts/custom.woff2') format('woff2')", fontDisplay: 'swap' } },`,
+    )
+    dir = createFixture(config)
+
+    await runStudioGenerate({ cwd: dir, logLevel: 'silent' })
+
+    const css = readFileSync(join(dir, 'styled-system', 'studio', 'studio.css'), 'utf8')
+    expect(css).toContain('@font-face')
+    expect(css).toContain('font-family: Custom')
+    expect(css).toContain("url('/fonts/custom.woff2') format('woff2')")
+    expect(css).toContain('font-display: swap')
   })
 })
 
 describe('studio semantic tokens', () => {
-  const spec = { tokens: { categories: {}, values: { 'colors.white': '#fff', 'colors.black': '#000' } } } as never
-  const config = {
-    theme: { semanticTokens: { colors: { bg: { value: { base: '{colors.white}', _dark: '{colors.black}' } } } } },
-    themes: { ocean: { semanticTokens: { colors: { bg: { value: { base: '#e0f2fe' } } } } } },
-  }
+  let dir: string | undefined
 
-  it('resolves semantic conditions and named themes against token values', () => {
-    expect(buildSemanticMap(spec, config)).toEqual({
-      'colors.bg': { base: '#fff', _dark: '#000', 'ocean · base': '#e0f2fe' },
-    })
+  afterEach(() => {
+    cleanupFixture(dir)
+    dir = undefined
   })
 
-  it('flattens nested conditions with colon-joined keys, matching the compiler', () => {
-    const nested = {
-      theme: {
-        semanticTokens: {
-          colors: {
-            brand: { value: { base: '{colors.white}', _dark: { base: '{colors.black}', _sunset: '{colors.white}' } } },
-          },
-        },
+  it('labels base-theme and named-theme conditions from the compiler projection', () => {
+    const map = semanticMapFromTokens([
+      {
+        path: 'colors.bg',
+        conditions: [
+          { condition: 'base', value: '#fff' },
+          { condition: '_dark', value: '#000' },
+          { theme: 'ocean', condition: 'base', value: '#e0f2fe' },
+        ],
       },
-    }
-    expect(buildSemanticMap(spec, nested)).toEqual({
-      'colors.brand': { base: '#fff', '_dark:base': '#000', '_dark:_sunset': '#fff' },
-    })
+    ])
+    expect(map).toEqual({ 'colors.bg': { base: '#fff', _dark: '#000', 'ocean · base': '#e0f2fe' } })
   })
 
-  it('emits semantic tokens with conditions, base as the display value', () => {
-    const semantic = buildSemanticMap(spec, config)
-    const tokens = buildTokensSnapshot(spec, semantic)
-    const bg = tokens.find((token) => token.path === 'colors.bg')
-    expect(bg).toMatchObject({ category: 'colors', name: 'bg', value: '#fff' })
-    expect(bg?.conditions).toEqual({ base: '#fff', _dark: '#000', 'ocean · base': '#e0f2fe' })
+  it('resolves semantic conditions and named themes end to end through the compiler', async () => {
+    const config = TOKEN_CONFIG.replace(
+      'theme: {',
+      `theme: {
+    semanticTokens: { colors: { bg: { value: { base: '{colors.red.500}', _dark: '{colors.blue.500}' } } } },`,
+    ).replace(
+      'export default {',
+      `export default {
+  themes: { ocean: { semanticTokens: { colors: { bg: { value: { base: '#e0f2fe' } } } } } },`,
+    )
+    dir = createFixture(config)
+
+    await runStudioGenerate({ cwd: dir, logLevel: 'silent' })
+
+    const snapshot = JSON.parse(readFileSync(join(dir, 'styled-system', 'studio', 'tokens.json'), 'utf8'))
+    const bg = snapshot.find((token: StudioToken) => token.path === 'colors.bg')
+    expect(bg).toMatchObject({ category: 'colors', name: 'bg', value: '#ef4444' })
+    expect(bg.conditions).toEqual({ base: '#ef4444', _dark: '#3b82f6', 'ocean · base': '#e0f2fe' })
   })
 
   it('keeps semantic paths out of the primitive list', () => {

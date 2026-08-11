@@ -2,6 +2,7 @@ mod atomic;
 mod common;
 mod compositions;
 mod config_flags;
+mod fontface;
 mod global_css;
 mod global_fontface;
 mod global_vars;

@@ -9,7 +9,7 @@ export { runAnalyze } from './commands/analyze'
 export { projectSummary, type ProjectSummary } from './project-summary'
 export { runInit, setupGitIgnore } from './commands/init'
 export { runStudioGenerate, runStudioServe } from './commands/studio'
-export { buildSemanticMap, buildTokensSnapshot, fontfaceToCss, viewFiles, viewerFiles } from './studio-codegen'
+export { buildTokensSnapshot, semanticMapFromTokens, viewFiles, viewerFiles } from './studio-codegen'
 export type { StudioToken, StudioFile, StudioFramework } from './studio-codegen'
 export { serveStudio } from './studio-server'
 export type {

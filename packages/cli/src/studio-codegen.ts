@@ -1,4 +1,4 @@
-import type { Spec } from '@pandacss/compiler-shared'
+import type { SemanticTokenEntry, Spec } from '@pandacss/compiler-shared'
 import { studioScript, studioStyle } from './studio-bundle.generated'
 
 export interface StudioToken {
@@ -86,55 +86,15 @@ export function buildTokensSnapshot(spec: Spec, semantic: Record<string, Record<
   return out
 }
 
-export function buildSemanticMap(spec: Spec, config: unknown): Record<string, Record<string, string>> {
+export function semanticMapFromTokens(entries: SemanticTokenEntry[] = []): Record<string, Record<string, string>> {
   const out: Record<string, Record<string, string>> = {}
-  const values = spec.tokens.values
-
-  const resolve = (raw: unknown): string => {
-    const str = String(raw)
-    const ref = /^\{(.+)\}$/.exec(str.trim())
-    return ref ? values[ref[1]] ?? str : str
-  }
-
-  const flatten = (raw: unknown, condition: string | undefined, into: Record<string, string>) => {
-    if (raw && typeof raw === 'object') {
-      for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
-        const next =
-          key === 'base' && condition === undefined ? undefined : condition === undefined ? key : `${condition}:${key}`
-        flatten(value, next, into)
-      }
-    } else {
-      into[condition ?? 'base'] = resolve(raw)
+  for (const entry of entries) {
+    const conditions: Record<string, string> = {}
+    for (const { theme, condition, value } of entry.conditions) {
+      conditions[theme ? `${theme} · ${condition}` : condition] = value
     }
+    out[entry.path] = conditions
   }
-
-  const walk = (node: unknown, category: string, segments: string[], theme: string) => {
-    if (!node || typeof node !== 'object') return
-    for (const [key, child] of Object.entries(node as Record<string, unknown>)) {
-      if (!child || typeof child !== 'object') continue
-      if ('value' in child) {
-        const path = `${category}.${[...segments, key].join('.')}`
-        out[path] ??= {}
-        const conditions: Record<string, string> = {}
-        flatten((child as { value: unknown }).value, undefined, conditions)
-        for (const [condition, value] of Object.entries(conditions)) {
-          out[path][theme ? `${theme} · ${condition}` : condition] = value
-        }
-      } else {
-        walk(child, category, [...segments, key], theme)
-      }
-    }
-  }
-
-  const cfg = config as {
-    theme?: { semanticTokens?: Record<string, unknown> }
-    themes?: Record<string, { semanticTokens?: Record<string, unknown> }>
-  }
-  const addSet = (semanticTokens: Record<string, unknown> | undefined, theme: string) => {
-    for (const [category, tokens] of Object.entries(semanticTokens ?? {})) walk(tokens, category, [], theme)
-  }
-  addSet(cfg?.theme?.semanticTokens, '')
-  for (const [name, theme] of Object.entries(cfg?.themes ?? {})) addSet(theme?.semanticTokens, name)
   return out
 }
 
@@ -196,33 +156,6 @@ function viewerViews(tokens: StudioToken[]): ViewerView[] {
   if (tokens.some((token) => TYPE_CATEGORIES.includes(token.category)))
     views.push({ id: 'typography', label: 'Typography', group: 'playground' })
   return views
-}
-
-export function fontfaceToCss(globalFontface: unknown): string {
-  if (!globalFontface || typeof globalFontface !== 'object') return ''
-  const kebab = (prop: string) => prop.replace(/[A-Z]/g, (char) => `-${char.toLowerCase()}`)
-  const src = (value: unknown): string => {
-    const one = (item: unknown) => {
-      if (!item || typeof item !== 'object') return String(item)
-      const entry = item as { url?: string; format?: string }
-      return `url("${entry.url ?? ''}")${entry.format ? ` format("${entry.format}")` : ''}`
-    }
-    return Array.isArray(value) ? value.map(one).join(', ') : one(value)
-  }
-  const rule = (family: string, decls: Record<string, unknown>) => {
-    const body = Object.entries(decls)
-      .map(([prop, value]) => `${kebab(prop)}: ${prop === 'src' ? src(value) : String(value)}`)
-      .join('; ')
-    return `@font-face { font-family: "${family}"; ${body} }`
-  }
-  const blocks: string[] = []
-  for (const [family, def] of Object.entries(globalFontface as Record<string, unknown>)) {
-    if (family === 'extend' || !def || typeof def !== 'object') continue
-    for (const one of Array.isArray(def) ? def : [def]) {
-      if (one && typeof one === 'object') blocks.push(rule(family, one as Record<string, unknown>))
-    }
-  }
-  return blocks.join('\n')
 }
 
 function viewerHtml(view: ViewerView, views: ViewerView[], logo = ''): string {

@@ -98,6 +98,29 @@ pub struct ResolvedTokenPath {
     pub semantic_category: bool,
 }
 
+/// One semantic-token path with its resolved condition/theme variants,
+/// projected for design-system tooling. See [`TokenDictionary::semantic_projection`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SemanticTokenEntry {
+    /// Full token path, e.g. `colors.bg`.
+    pub path: String,
+    /// One entry per resolved `(theme, condition)` variant, in build order.
+    pub conditions: Vec<SemanticConditionEntry>,
+}
+
+/// One resolved variant of a semantic token: its theme, condition label, and
+/// final literal value.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SemanticConditionEntry {
+    /// Theme variant name (`themes.<name>`); `None` for the base theme.
+    pub theme: Option<String>,
+    /// Condition label relative to the theme; `base` when unconditional.
+    pub condition: String,
+    /// Final literal value, with a whole-string `{ref}` alias resolved to the
+    /// referenced token's literal.
+    pub value: String,
+}
+
 #[cfg(feature = "serde")]
 impl<'de> Deserialize<'de> for TokenDictionary {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
@@ -469,6 +492,100 @@ impl TokenDictionary {
     pub fn color_palettes(&self) -> &ColorPaletteView {
         &self.color_palettes
     }
+
+    /// Project the built dictionary's semantic tokens into resolved
+    /// `(theme, condition, value)` variants grouped by path — the shape tooling
+    /// needs instead of re-deriving it from raw config.
+    ///
+    /// A token counts as semantic when its path is declared under
+    /// `semanticTokens` in `config`; core primitives and theme-variant core
+    /// tokens are excluded. `{ref}` aliases resolve to the referenced token's
+    /// literal (via [`Self::flat_maps`]), not its CSS variable, so values are
+    /// concrete. Theme-folded conditions (`_theme{Name}`) split back into a
+    /// theme name plus a theme-relative condition.
+    #[must_use]
+    pub fn semantic_projection(
+        &self,
+        config: &pandacss_config::UserConfig,
+    ) -> Vec<SemanticTokenEntry> {
+        let semantic_paths = from_config::collect_semantic_paths(config);
+        if semantic_paths.is_empty() {
+            return Vec::new();
+        }
+        let theme_conditions = from_config::theme_condition_map(config);
+        let (values, _vars) = self.flat_maps();
+
+        let mut entries: Vec<SemanticTokenEntry> = Vec::new();
+        let mut index_by_path: FxHashMap<&str, usize> = FxHashMap::default();
+
+        for token in &self.tokens {
+            let path = token.path.as_ref();
+            if !semantic_paths.contains(path) {
+                continue;
+            }
+
+            let raw = token
+                .original_value
+                .as_deref()
+                .unwrap_or_else(|| token.value.as_ref());
+            let value = resolve_semantic_value(raw, &values);
+            let (theme, condition) =
+                split_theme_condition(token.condition.as_deref(), &theme_conditions);
+
+            let entry_index = *index_by_path.entry(path).or_insert_with(|| {
+                let index = entries.len();
+                entries.push(SemanticTokenEntry {
+                    path: path.to_owned(),
+                    conditions: Vec::new(),
+                });
+                index
+            });
+            entries[entry_index]
+                .conditions
+                .push(SemanticConditionEntry {
+                    theme,
+                    condition,
+                    value,
+                });
+        }
+
+        entries
+    }
+}
+
+/// Resolve a whole-string `{token.path}` alias to the referenced token's
+/// literal value; anything else (or an unknown ref) is returned unchanged.
+/// Mirrors the studio's `values[ref] ?? raw`.
+fn resolve_semantic_value(raw: &str, values: &BTreeMap<String, String>) -> String {
+    parse_token_ref(Some(raw))
+        .and_then(|reference| values.get(reference))
+        .map_or_else(|| raw.to_owned(), String::clone)
+}
+
+/// Split a token condition into `(theme, theme-relative condition)`. A leading
+/// `_theme{Name}` segment maps to its theme name and is stripped; the remainder
+/// (or `base` when empty) is the relative condition. Non-theme conditions carry
+/// `theme = None` and the full condition; `None` (base) becomes `base`.
+fn split_theme_condition(
+    condition: Option<&str>,
+    theme_conditions: &FxHashMap<String, String>,
+) -> (Option<String>, String) {
+    let Some(condition) = condition else {
+        return (None, "base".to_owned());
+    };
+
+    let first = condition.split(':').next().unwrap_or(condition);
+    if let Some(theme) = theme_conditions.get(first) {
+        let rest = condition[first.len()..].strip_prefix(':').unwrap_or("");
+        let relative = if rest.is_empty() {
+            "base".to_owned()
+        } else {
+            rest.to_owned()
+        };
+        return (Some(theme.clone()), relative);
+    }
+
+    (None, condition.to_owned())
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
