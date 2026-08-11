@@ -11,6 +11,9 @@ type NextConfig = {
  * existing `webpack` function. Only affects the webpack build — Turbopack needs
  * its own integration. Pass `transform: true` in `pandaOptions` to enable
  * source rewrite.
+ *
+ * Next.js 16 defaults to Turbopack and fails the build when a webpack config is
+ * present, so run `next dev --webpack` and `next build --webpack`.
  */
 export function withPandaCss(nextConfig: NextConfig = {}, pandaOptions: PandaWebpackPluginOptions = {}): NextConfig {
   // One instance shared across Next's server/client/edge compilers so the

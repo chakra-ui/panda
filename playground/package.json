@@ -1,20 +1,20 @@
 {
   "name": "playground",
-  "version": "0.1.1-beta.12",
+  "version": "0.1.1-beta.13",
   "private": true,
   "scripts": {
     "css:codegen": "pnpm panda codegen --silent",
     "types:codegen": "tsx scripts/bundle-types.mts",
-    "build": "pnpm db:generate && pnpm css:codegen && pnpm types:codegen && next build",
+    "build": "pnpm db:generate && pnpm css:codegen && pnpm types:codegen && next build --webpack",
     "start": "next start",
     "lint": "eslint .",
-    "dev": "pnpm db:generate && pnpm css:codegen && next dev",
+    "dev": "pnpm db:generate && pnpm css:codegen && next dev --webpack",
     "db:format": "prisma format",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "db:reset": "prisma db push --force-reset",
-    "viz": "ANALYZE=true next build",
+    "viz": "ANALYZE=true next build --webpack",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -33,7 +33,7 @@
     "monaco-editor-auto-typings": "0.4.6",
     "monaco-jsx-syntax-highlight": "1.2.0",
     "nanoid": "5.1.6",
-    "next": "15.5.7",
+    "next": "16.3.0",
     "next-themes": "0.4.6",
     "os-browserify": "0.3.0",
     "outdent": "^0.8.0",
@@ -53,7 +53,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",
     "@eslint/js": "^9.39.1",
-    "@next/bundle-analyzer": "15.5.6",
+    "@next/bundle-analyzer": "16.3.0",
     "@pandacss/dev": "workspace:*",
     "@pandacss/types": "workspace:*",
     "@types/node": "24.10.1",
@@ -61,7 +61,7 @@
     "@types/react-dom": "19.2.3",
     "dts-bundle-generator": "9.5.1",
     "eslint": "^9.39.1",
-    "eslint-config-next": "16.0.6",
+    "eslint-config-next": "16.3.0",
     "eslint-plugin-react-hooks": "^7.0.1",
     "raw-loader": "4.0.2",
     "tsx": "4.20.6"
