@@ -66,7 +66,7 @@ export function App({ tokens, views, current, logo }: AppProps) {
           onSearch={onSearch}
           count={countFor(current, tokens, query)}
         />
-        <ViewContent view={current} tokens={tokens} query={query} theme={activeTheme} />
+        <ViewContent view={current} tokens={tokens} query={query} />
       </main>
       <ThemeToggle theme={activeTheme} onToggle={toggleTheme} />
     </div>

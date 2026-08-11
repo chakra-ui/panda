@@ -51,14 +51,16 @@ You get one component per category plus the shared grid and the snapshot:
 ```
 styled-system/studio/
   tokens.json
-  components/
-    token-grid.tsx
-  Colors.tsx
-  Typography.tsx
-  Spacing.tsx
-  Sizes.tsx
-  Radii.tsx
-  Shadows.tsx
+  studio.css
+  helpers.ts
+  token-grid.tsx
+  colors.tsx
+  typography.tsx
+  spacing.tsx
+  sizes.tsx
+  radii.tsx
+  shadows.tsx
+  semantic.tsx
 ```
 
 Each view is a plain component with inline styles that reads `tokens.json`. It doesn't import the styled-system runtime,
@@ -85,8 +87,8 @@ Wrap a view in a story:
 
 ```tsx
 // stories/design-system.stories.tsx
-import { Colors } from '../styled-system/studio/Colors'
-import { Typography } from '../styled-system/studio/Typography'
+import { Colors } from '../styled-system/studio/colors'
+import { Typography } from '../styled-system/studio/typography'
 
 export default { title: 'Design System/Tokens' }
 
@@ -99,7 +101,7 @@ export const AllTypography = () => <Typography />
 Import a view and render it:
 
 ```tsx
-import { Colors } from './styled-system/studio/Colors'
+import { Colors } from './styled-system/studio/colors'
 
 export default function TokensPage() {
   return <Colors />

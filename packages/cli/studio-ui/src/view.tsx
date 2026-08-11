@@ -1,19 +1,8 @@
 import { matchesTerm, SCALE_CATEGORIES, type StudioToken, TYPE_CATEGORIES } from './helpers'
 import { Card, Palette, Scale, Semantic, ShadowCard, TypeList } from './sections'
-import { Showcase } from './showcase'
 import { Contrast, TypographyPlayground } from './tools'
 
-export function ViewContent({
-  view,
-  tokens,
-  query,
-  theme,
-}: {
-  view: string
-  tokens: StudioToken[]
-  query: string
-  theme: string
-}) {
+export function ViewContent({ view, tokens, query }: { view: string; tokens: StudioToken[]; query: string }) {
   const term = query.trim().toLowerCase()
 
   if (view.startsWith('semantic-')) {
@@ -35,9 +24,6 @@ export function ViewContent({
 
     case 'typography':
       return <TypographyPlayground tokens={tokens} />
-
-    case 'playground':
-      return <Showcase tokens={tokens} theme={theme} />
 
     default: {
       const items = tokens
@@ -72,7 +58,7 @@ export function ViewContent({
 }
 
 export function countFor(view: string, tokens: StudioToken[], query: string): number | null {
-  if (view === 'contrast' || view === 'typography' || view === 'playground') return null
+  if (view === 'contrast' || view === 'typography') return null
   const term = query.trim().toLowerCase()
   const items = view.startsWith('semantic-')
     ? tokens.filter((t) => t.conditions && t.category === view.slice('semantic-'.length))

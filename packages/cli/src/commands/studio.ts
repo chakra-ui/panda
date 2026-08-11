@@ -13,7 +13,6 @@ import {
   buildSemanticMap,
   buildTokensSnapshot,
   fontfaceToCss,
-  keyframesToCss,
   viewFiles,
   viewerFiles,
   type StudioFile,
@@ -63,7 +62,7 @@ export async function runStudioGenerate(
       const framework = resolveFramework(ctx.driver.config.jsxFramework)
       const spec = ctx.driver.compiler.spec()
       const tokens = buildTokensSnapshot(spec, buildSemanticMap(spec, ctx.driver.config))
-      const styles = studioStyles(ctx.driver.config)
+      const styles = studioStyles(ctx.driver.compiler.getKeyframeCss().css, ctx.driver.config)
       const outdir = flags.outdir ? ctx.driver.resolvePath(flags.outdir) : join(ctx.driver.getOutdir(), 'studio')
 
       const files = writeStudioFiles(outdir, viewFiles(tokens, framework, styles))
@@ -92,7 +91,7 @@ export async function runStudioServe(
     async execute(ctx) {
       const spec = ctx.driver.compiler.spec()
       const tokens = buildTokensSnapshot(spec, buildSemanticMap(spec, ctx.driver.config))
-      const styles = studioStyles(ctx.driver.config)
+      const styles = studioStyles(ctx.driver.compiler.getKeyframeCss().css, ctx.driver.config)
       const dir = mkdtempSync(join(tmpdir(), 'panda-studio-'))
       writeStudioFiles(dir, viewerFiles(tokens, styles, flags.logo))
 
@@ -119,9 +118,9 @@ function resolveFramework(jsxFramework: unknown): StudioFramework {
   return jsxFramework === 'solid' ? 'solid' : 'react'
 }
 
-function studioStyles(config: unknown): string {
-  const cfg = config as { theme?: { keyframes?: unknown }; globalFontface?: unknown } | undefined
-  return [keyframesToCss(cfg?.theme?.keyframes), fontfaceToCss(cfg?.globalFontface)].filter(Boolean).join('\n')
+function studioStyles(keyframeCss: string, config: unknown): string {
+  const cfg = config as { globalFontface?: unknown } | undefined
+  return [keyframeCss, fontfaceToCss(cfg?.globalFontface)].filter(Boolean).join('\n')
 }
 
 function writeStudioFiles(outdir: string, files: StudioFile[]): string[] {

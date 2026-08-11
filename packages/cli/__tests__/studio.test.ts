@@ -87,6 +87,20 @@ describe('studio generate', () => {
     expect(logs[0]).toContain('studio: wrote')
   })
 
+  it('emits keyframe CSS from the compiler into studio.css', async () => {
+    const config = TOKEN_CONFIG.replace(
+      'tokens: {',
+      "keyframes: { spin: { to: { transform: 'rotate(360deg)' } } },\n    tokens: {",
+    )
+    dir = createFixture(config)
+
+    await runStudioGenerate({ cwd: dir, logLevel: 'silent' })
+
+    const css = readFileSync(join(dir, 'styled-system', 'studio', 'studio.css'), 'utf8')
+    expect(css).toContain('@keyframes spin')
+    expect(css).toContain('rotate(360deg)')
+  })
+
   it('honours --outdir', async () => {
     dir = createFixture(TOKEN_CONFIG)
 
@@ -117,7 +131,7 @@ describe('studio viewer', () => {
 
   it('emits a self-contained vanilla bundle, one page per section', () => {
     const paths = viewerFiles(SAMPLE).map((file) => file.path)
-    expect(paths).toEqual(['tokens.json', 'studio.css', 'studio.js', 'index.html', 'playground.html', 'contrast.html'])
+    expect(paths).toEqual(['tokens.json', 'studio.css', 'studio.js', 'index.html', 'contrast.html'])
   })
 
   it('emits one semantic page per category present, not a single semantic view', () => {

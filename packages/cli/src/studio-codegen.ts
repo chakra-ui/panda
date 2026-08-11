@@ -191,33 +191,11 @@ function viewerViews(tokens: StudioToken[]): ViewerView[] {
   ].sort((a, b) => rank(a) - rank(b))
   for (const category of semanticCategories)
     views.push({ id: `semantic-${category}`, label: category, group: 'semantic' })
-  if (tokens.length) views.push({ id: 'playground', label: 'Playground', group: 'playground' })
   if (tokens.some((token) => token.category === 'colors'))
     views.push({ id: 'contrast', label: 'Contrast', group: 'playground' })
   if (tokens.some((token) => TYPE_CATEGORIES.includes(token.category)))
     views.push({ id: 'typography', label: 'Typography', group: 'playground' })
   return views
-}
-
-export function keyframesToCss(keyframes: unknown): string {
-  if (!keyframes || typeof keyframes !== 'object') return ''
-  const kebab = (prop: string) => prop.replace(/[A-Z]/g, (char) => `-${char.toLowerCase()}`)
-  const blocks: string[] = []
-  for (const [name, frames] of Object.entries(keyframes as Record<string, unknown>)) {
-    if (!frames || typeof frames !== 'object') continue
-    const steps = Object.entries(frames as Record<string, unknown>)
-      .map(([step, decls]) => {
-        if (!decls || typeof decls !== 'object') return ''
-        const props = Object.entries(decls as Record<string, unknown>)
-          .map(([prop, value]) => `${kebab(prop)}: ${String(value)}`)
-          .join('; ')
-        return `${step} { ${props} }`
-      })
-      .filter(Boolean)
-      .join(' ')
-    if (steps) blocks.push(`@keyframes ${name} { ${steps} }`)
-  }
-  return blocks.join('\n')
 }
 
 export function fontfaceToCss(globalFontface: unknown): string {
