@@ -114,6 +114,9 @@ assumed — the shared unplugin handles the runtime module:
 Tested on Next.js (webpack): `next build` emits the correct stylesheet, `next dev` HMRs style edits. Users keep
 `@layer …;` in `globals.css`.
 
+Next.js 16 defaults to Turbopack and fails the build when a webpack config is present, so `withPandaCss` users must run
+`next dev --webpack` / `next build --webpack` until the Turbopack adapter lands.
+
 ## Turbopack
 
 Not built. The hard part isn't the transform — it's CSS delivery.

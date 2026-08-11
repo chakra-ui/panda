@@ -61,7 +61,7 @@ fn generates_artifacts_from_resolved_project_state() {
     // `types/system` is the merged surface (own csstype + properties + selectors +
     // system-types) — ~540 members, so assert its shape rather than full content.
     let code = &system.code;
-    assert!(code.contains("export type CssValue = Globals | (string & {}) | number"));
+    assert!(code.contains("export type CssAny = CssGlobals | (string & {}) | number"));
     assert!(code.contains("export interface SystemProperties {"));
     assert!(!code.contains("export interface CssProperties {"));
     assert!(
@@ -306,4 +306,43 @@ fn generates_affected_artifacts_by_dependency() {
         .collect::<Vec<_>>();
 
     assert_snapshot!(format!("{ids:?}"), @"[Patterns, Themes, Types, Tokens, Conditions]");
+}
+
+#[test]
+fn keyframes_typegen_inlines_names_and_stays_out_of_tokens() {
+    let config = create_config(json!({
+        "strictTokens": true,
+        "theme": {
+            "keyframes": {
+                "probeKf": { "from": { "opacity": 0 }, "to": { "opacity": 1 } }
+            }
+        },
+        "utilities": {
+            "animationName": { "values": "keyframes" }
+        }
+    }));
+    let system = System::new(config.clone()).expect("valid project config");
+    let project = Project::new(system);
+
+    let artifact = project
+        .generate_artifact(&config, ArtifactId::Types, GenerateOptions::default(), None)
+        .expect("types artifact");
+    let system_code = &artifact
+        .files
+        .iter()
+        .find(|file| file.path == "types/system.d.mts")
+        .expect("system file")
+        .code;
+    let tokens_code = &artifact
+        .files
+        .iter()
+        .find(|file| file.path == "types/tokens.d.mts")
+        .expect("tokens file")
+        .code;
+
+    assert!(system_code.contains(
+        r#"export type KeyframesValue = WithEscapeHatch<CssGlobals | "probeKf" | CssVars>"#
+    ));
+    assert!(!tokens_code.contains("keyframes"));
+    assert!(!tokens_code.contains("probeKf"));
 }

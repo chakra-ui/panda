@@ -62,22 +62,61 @@ pub(super) fn sanitize_style_value() -> Item {
     ))
 }
 
-pub(super) fn create_css_runtime() -> Item {
+// Four separate factories rather than one that returns all of them: each call
+// site binds a plain `const`, so a bundle that only uses `mergeCss` (recipes,
+// pattern JSX) drops the serializer, and `assignCss` drops wherever it is dead.
+pub(super) fn resolve_style_args() -> Item {
     helper_function(
-        "createCssRuntime",
+        "resolveStyleArgs",
+        vec![
+            Param::typed("styles", TsType::Raw("Array<any> | IArguments".into())),
+            Param::typed("context", TsType::Raw("Record<string, any>".into())),
+        ],
+        TsType::Raw("any[]".into()),
+        indoc! {r"
+            const out: any[] = []
+            const visit = (items: Array<any> | IArguments) => {
+              for (let i = 0; i < items.length; i++) {
+                const style = items[i]
+                if (Array.isArray(style)) {
+                  visit(style)
+                  continue
+                }
+                if (!isObject(style)) continue
+                for (const key in style) {
+                  if (style[key] !== void 0) {
+                    out.push(style)
+                    break
+                  }
+                }
+              }
+            }
+            visit(styles)
+            if (out.length < 2) return out
+            for (let i = 0; i < out.length; i++) out[i] = normalizeStyleObject(out[i], context)
+            return out
+        "}
+        .trim(),
+        [],
+    )
+}
+
+pub(super) fn create_serialize_css() -> Item {
+    helper_function(
+        "createSerializeCss",
         vec![Param::typed("context", TsType::Raw("Record<string, any>".into()))],
-        TsType::Raw(
-            "{ serializeCss: (...styles: any[]) => string; serializeCssArgs: (...styles: any[]) => string; mergeCss: (...styles: any[]) => any; assignCss: (...styles: any[]) => any }".into(),
-        ),
+        TsType::Raw("(...styles: any[]) => string".into()),
         indoc! {r#"
-            const { utility: u, hash, conditions: c } = context
+            const u = context.utility
+            const c = context.conditions
+            const hash = context.hash
             const fmt = (s: string) => u.prefix ? u.prefix + "-" + s : s
             const toClass = (paths: string[], name: string) => {
               const parts = c.finalize(paths)
               parts.push(hash ? name : fmt(name))
               return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
             }
-            const serializeCss = weakMemo(memo(function serializeCss({ base, ...styles }: Record<string, any> = {}) {
+            return weakMemo(memo(function serializeCss({ base, ...styles }: Record<string, any> = {}) {
               const obj = normalizeStyleObject(base ? Object.assign(styles, base) : styles, context)
               const set = new Set<string>()
               walkObject(obj, (value: any, paths: string[]) => {
@@ -94,43 +133,67 @@ pub(super) fn create_css_runtime() -> Item {
               for (const name of set) out += out ? " " + name : name
               return out
             }))
-            const resolve = (styles: Array<any> | IArguments) => {
-              const out: any[] = []
-              const visit = (items: Array<any> | IArguments) => {
-                for (let i = 0; i < items.length; i++) {
-                  const style = items[i]
-                  if (Array.isArray(style)) {
-                    visit(style)
-                    continue
-                  }
-                  if (!isObject(style)) continue
-                  for (const key in style) {
-                    if (style[key] !== void 0) {
-                      out.push(style)
-                      break
-                    }
-                  }
-                }
-              }
-              visit(styles)
-              if (out.length < 2) return out
-              for (let i = 0; i < out.length; i++) out[i] = normalizeStyleObject(out[i], context)
-              return out
+        "#}
+        .trim(),
+        [],
+    )
+}
+
+pub(super) fn create_merge_css() -> Item {
+    helper_function(
+        "createMergeCss",
+        vec![Param::typed(
+            "context",
+            TsType::Raw("Record<string, any>".into()),
+        )],
+        TsType::Raw("(...styles: any[]) => any".into()),
+        indoc! {r"
+            return function mergeCss() {
+              return mergeProps(...resolveStyleArgs(arguments, context))
             }
-            const mergeCss: (...styles: any[]) => any = function() {
-              return mergeProps(...resolve(arguments))
-            }
-            const serializeCssArgs = memo(function serializeCssArgs(...styles: any[]) {
+        "}
+        .trim(),
+        [],
+    )
+}
+
+pub(super) fn create_serialize_css_args() -> Item {
+    helper_function(
+        "createSerializeCssArgs",
+        vec![
+            Param::typed(
+                "serializeCss",
+                TsType::Raw("(...styles: any[]) => string".into()),
+            ),
+            Param::typed("mergeCss", TsType::Raw("(...styles: any[]) => any".into())),
+        ],
+        TsType::Raw("(...styles: any[]) => string".into()),
+        indoc! {r"
+            return memo(function serializeCssArgs(...styles: any[]) {
               return serializeCss(mergeCss(...styles))
             })
-            const assignCss: (...styles: any[]) => any = function() {
+        "}
+        .trim(),
+        [],
+    )
+}
+
+pub(super) fn create_assign_css() -> Item {
+    helper_function(
+        "createAssignCss",
+        vec![Param::typed(
+            "context",
+            TsType::Raw("Record<string, any>".into()),
+        )],
+        TsType::Raw("(...styles: any[]) => any".into()),
+        indoc! {r"
+            return function assignCss() {
               const out: Record<string, any> = {}
-              const resolved = resolve(arguments)
+              const resolved = resolveStyleArgs(arguments, context)
               for (let i = 0; i < resolved.length; i++) Object.assign(out, resolved[i])
               return out
             }
-            return { serializeCss, serializeCssArgs, mergeCss, assignCss }
-        "#}
+        "}
         .trim(),
         [],
     )

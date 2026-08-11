@@ -11,6 +11,7 @@ mod framework_vue;
 mod import_map;
 mod imports;
 mod jsx;
+mod local_bindings;
 mod optional_chaining;
 mod polish;
 mod raw_spreads;

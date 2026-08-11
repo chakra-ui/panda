@@ -1,5 +1,109 @@
 # @pandacss/compiler
 
+## 2.0.0-beta.13
+
+### Patch Changes
+
+- b621edb: Fix `animationName` rejecting every keyframe name under `strictTokens`. Generated types now inline the
+  keyframe names (`KeyframesValue = "spin" | "fadeIn" | …`) instead of pointing at a `keyframes` token category that
+  never existed, so `css({ animationName: 'spin' })` type-checks without the `[spin]` escape hatch.
+  - @pandacss/compiler-shared@2.0.0-beta.13
+  - @pandacss/config@2.0.0-beta.13
+  - @pandacss/types@2.0.0-beta.13
+
+## 2.0.0-beta.12
+
+### Minor Changes
+
+- 8ccb118: Fix `objectPosition`, `backgroundPosition` and the other position properties rejecting valid values like
+  `center` under `strictTokens`. `system.d.ts` declared `PositionValue`, `ContainerValue` and `ZIndexValue` twice, so
+  TypeScript bound the wrong one and reported `Duplicate identifier` under `skipLibCheck: false`.
+
+  Panda's built-in CSS value types are renamed with a `Css` prefix, so the `{Property}Value` aliases generated from your
+  utilities can no longer shadow them:
+
+  ```ts
+  // before
+  import type { PositionValue, LengthValue, Globals } from './styled-system/types'
+
+  // after
+  import type { CssPosition, CssLength, CssGlobals } from './styled-system/types'
+  ```
+
+### Patch Changes
+
+- 172c52f: Accept styles nested more than one array deep in `css()` and `css.raw()`. The runtime already flattened them;
+  the type stopped at a single level, so a wrapper chain three or more levels deep failed to typecheck.
+- 98aaa76: Fix arbitrary values containing a quote or backslash producing unparseable output when merged with a dynamic
+  `className`. `<Box className={cls} color={'[var(--x, "red")]'} />` emitted a broken string literal instead of escaping
+  the class name.
+- ceb8d8d: Emit a class shared by every branch once instead of repeating it in each one.
+
+  ```ts
+  // before
+  export const cls = (wide ? 'd_flex p_8' : 'd_flex p_4') + ' ' + (tall ? 'd_flex m_2' : 'd_flex m_1')
+  // after
+  export const cls = 'd_flex' + ' ' + (wide ? 'p_8' : 'p_4') + ' ' + (tall ? 'm_2' : 'm_1')
+  ```
+
+- 28ee00a: Precompute the static styles of a `styled.*` element that also spreads unknown props. The factory and the
+  spread stay so runtime style props still work; everything Panda can see at build time collapses into one `className`.
+- 604b103: Fix conditional spreads dropping static styles they don't override.
+  `css({ padding: '2', margin: '3', ...(b ? { padding: '1' } : { margin: '4' }) })` lost `margin: '3'` and
+  `padding: '2'` from their respective branches instead of keeping them.
+- 25137db: Speed up `css()` when styles arrive through a wrapper chain. Each level rebuilds its array of styles every
+  render, so the memo used to re-serialize the whole tree on every call. It now keys those calls on the identity of the
+  style objects inside, which don't change.
+
+  ```tsx
+  const L1 = ({ css: cssProp }) => <L0 css={[l1, cssProp]} />
+  ```
+
+  Renders roughly 4x faster for a three-level chain, 3x for six levels. Plain `css({ … })` calls are unaffected.
+
+- c2fcd98: Fix `@pandacss/compiler/tooling` failing to load the native binding, which broke the ESLint/oxlint plugin
+  with `Native project does not support pattern.transform callbacks` on any config using preset patterns. The binding is
+  now resolved from the package root instead of relative to the emitted module, and a binding that genuinely fails to
+  load now says so.
+- fad2f12: Fix `.raw()` handing back a class string instead of a style object, which broke anything composing those
+  styles.
+
+  ```ts
+  const button = cva({ base: { color: 'red' } })
+
+  const styles = button.raw() // was "color_red", now { color: 'red' }
+
+  css(styles, { color: 'blue' }) // merges, instead of dropping the base
+  ```
+
+  Covers `css.raw()`, `recipe.raw()`, `pattern.raw()` and inline `cva`/`sva`. When an imported recipe's variants aren't
+  known at build time, Panda now warns instead of returning a string.
+
+- 736358d: Fix `.raw()` on an imported recipe being left alone in files that import nothing else from Panda.
+
+  ```ts
+  import { button } from './recipes' // the only import
+
+  const styles = button.raw() // was a class string, now { color: 'red' }
+  ```
+
+- 28ee00a: Fold same-file `styled()` chains to their underlying element when the class string is constant, so `<Button>`
+  no longer pays for a `forwardRef` component level at runtime. Chains with variants, an options argument, or a
+  non-local base keep the existing runtime behaviour.
+  - @pandacss/compiler-shared@2.0.0-beta.12
+  - @pandacss/config@2.0.0-beta.12
+  - @pandacss/types@2.0.0-beta.12
+
+## 2.0.0-beta.11
+
+### Patch Changes
+
+- c7f949a: Fix `pos` and other shorthands for value-less native properties (like `position`) missing from the generated
+  types. Use them as style props, in `css()`, and on pattern components.
+  - @pandacss/compiler-shared@2.0.0-beta.11
+  - @pandacss/config@2.0.0-beta.11
+  - @pandacss/types@2.0.0-beta.11
+
 ## 2.0.0-beta.10
 
 ### Minor Changes

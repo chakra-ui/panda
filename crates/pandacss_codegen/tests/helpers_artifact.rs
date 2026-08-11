@@ -17,7 +17,7 @@ fn function_block(source: &str, name: &str) -> String {
 fn declaration_lines(source: &str) -> String {
     source
         .lines()
-        .filter(|line| line.contains("createCss") || line.contains("createMergeCss"))
+        .filter(|line| line.contains("function create") || line.contains("resolveStyleArgs"))
         .collect::<Vec<_>>()
         .join("\n")
 }
@@ -690,21 +690,102 @@ fn emits_ts_source() {
     export function memo<T extends (...args: any[]) => any>(fn: T): T {
       const cache = new Map<number, Array<{ args: Parameters<T>; out: ReturnType<T> }>>()
       const stringCache = new Map<string, ReturnType<T>>()
+      const seen = new WeakSet<object>()
+      const newNode = (): any => ({ objects: new WeakMap(), prims: new Map(), out: void 0, has: false })
+      const root = newNode()
       let lastHash: number | undefined
-      let lastIsFlat = false
       let lastKey: Parameters<T> | string | undefined
       let lastValue: ReturnType<T>
       let hasLast = false
+      let misses = 0
+
+      const step = (node: any, v: any) => {
+        if (v !== null && typeof v === "object") {
+          let next = node.objects.get(v)
+          if (next === void 0) { next = newNode(); node.objects.set(v, next) }
+          return next
+        }
+        let next = node.prims.get(v)
+        if (next === void 0) {
+          if (node.prims.size > 64) node.prims.clear()
+          next = newNode()
+          node.prims.set(v, next)
+        }
+        return next
+      }
+      const walk = (node: any, v: any): any => {
+        if (Array.isArray(v)) {
+          node = step(node, "\u0000[")
+          for (let i = 0; i < v.length; i++) node = walk(node, v[i])
+          return step(node, "\u0000]")
+        }
+        return step(node, v)
+      }
+      const readWalk = (node: any, v: any): any => {
+        if (node === void 0) return void 0
+        if (Array.isArray(v)) {
+          node = node.prims.get("\u0000[")
+          for (let i = 0; i < v.length && node !== void 0; i++) node = readWalk(node, v[i])
+          return node === void 0 ? void 0 : node.prims.get("\u0000]")
+        }
+        return v !== null && typeof v === "object" ? node.objects.get(v) : node.prims.get(v)
+      }
+      const markSeen = (v: any): boolean => {
+        if (Array.isArray(v)) {
+          let all = true
+          for (let i = 0; i < v.length; i++) if (!markSeen(v[i])) all = false
+          return all
+        }
+        if (v === null || typeof v !== "object") return true
+        if (seen.has(v)) return true
+        seen.add(v)
+        return false
+      }
+
       return ((...args: Parameters<T>) => {
+        let composed = false
+        for (let i = 0; i < args.length; i++) if (Array.isArray(args[i])) { composed = true; break }
+
+        if (composed) {
+          let node = root
+          for (let i = 0; i < args.length && node !== void 0; i++) node = readWalk(node, args[i])
+          if (node !== void 0 && node.has) return node.out
+
+          const composedKey = JSON.stringify(args)
+          let composedOut =
+            hasLast && lastHash === void 0 && composedKey === lastKey ? lastValue : stringCache.get(composedKey)
+          if (composedOut === void 0) {
+            composedOut = fn(...args)
+            stringCache.set(composedKey, composedOut)
+            if (stringCache.size > 500) stringCache.delete(stringCache.keys().next().value as string)
+          }
+
+          let reused = false
+          if ((++misses & 3) === 0) {
+            reused = true
+            for (let i = 0; i < args.length; i++) if (!markSeen(args[i])) reused = false
+          }
+          if (reused) {
+            let insert = root
+            for (let i = 0; i < args.length; i++) insert = walk(insert, args[i])
+            insert.out = composedOut
+            insert.has = true
+          }
+          lastHash = void 0
+          lastKey = composedKey
+          lastValue = composedOut
+          hasLast = true
+          return composedOut
+        }
+
         const hash = flatHashOrNull(args)
         if (hash !== null) {
-          if (hasLast && lastIsFlat && hash === lastHash && flatArgsEqual(args, lastKey as Parameters<T>)) return lastValue
+          if (hasLast && lastHash === hash && flatArgsEqual(args, lastKey as Parameters<T>)) return lastValue
           let bucket = cache.get(hash)
           if (bucket) {
             for (let i = 0; i < bucket.length; i++) {
               if (flatArgsEqual(args, bucket[i].args)) {
                 lastHash = hash
-                lastIsFlat = true
                 lastKey = args
                 lastValue = bucket[i].out
                 hasLast = true
@@ -721,26 +802,26 @@ fn emits_ts_source() {
           if (bucket.length > 8) bucket.shift()
           if (cache.size > 500) cache.delete(cache.keys().next().value as number)
           lastHash = hash
-          lastIsFlat = true
           lastKey = args
           lastValue = out
           hasLast = true
           return out
         }
+
         const key = JSON.stringify(args)
-        if (hasLast && !lastIsFlat && key === lastKey) return lastValue
-        if (stringCache.has(key)) {
-          const out = stringCache.get(key) as ReturnType<T>
-          lastIsFlat = false
+        if (hasLast && lastHash === void 0 && key === lastKey) return lastValue
+        const cached = stringCache.get(key)
+        if (cached !== void 0) {
+          lastHash = void 0
           lastKey = key
-          lastValue = out
+          lastValue = cached
           hasLast = true
-          return out
+          return cached
         }
         const out = fn(...args)
         stringCache.set(key, out)
         if (stringCache.size > 500) stringCache.delete(stringCache.keys().next().value as string)
-        lastIsFlat = false
+        lastHash = void 0
         lastKey = key
         lastValue = out
         hasLast = true
@@ -760,16 +841,18 @@ fn emits_ts_source() {
       }) as T
     }
     "#);
-    assert_snapshot!(function_block(source, "createCss"), @r#"
-    export function createCssRuntime(context: Record<string, any>): { serializeCss: (...styles: any[]) => string; serializeCssArgs: (...styles: any[]) => string; mergeCss: (...styles: any[]) => any; assignCss: (...styles: any[]) => any } {
-      const { utility: u, hash, conditions: c } = context
+    assert_snapshot!(function_block(source, "createSerializeCss"), @r#"
+    export function createSerializeCss(context: Record<string, any>): (...styles: any[]) => string {
+      const u = context.utility
+      const c = context.conditions
+      const hash = context.hash
       const fmt = (s: string) => u.prefix ? u.prefix + "-" + s : s
       const toClass = (paths: string[], name: string) => {
         const parts = c.finalize(paths)
         parts.push(hash ? name : fmt(name))
         return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
       }
-      const serializeCss = weakMemo(memo(function serializeCss({ base, ...styles }: Record<string, any> = {}) {
+      return weakMemo(memo(function serializeCss({ base, ...styles }: Record<string, any> = {}) {
         const obj = normalizeStyleObject(base ? Object.assign(styles, base) : styles, context)
         const set = new Set<string>()
         walkObject(obj, (value: any, paths: string[]) => {
@@ -786,46 +869,7 @@ fn emits_ts_source() {
         for (const name of set) out += out ? " " + name : name
         return out
       }))
-      const resolve = (styles: Array<any> | IArguments) => {
-        const out: any[] = []
-        const visit = (items: Array<any> | IArguments) => {
-          for (let i = 0; i < items.length; i++) {
-            const style = items[i]
-            if (Array.isArray(style)) {
-              visit(style)
-              continue
-            }
-            if (!isObject(style)) continue
-            for (const key in style) {
-              if (style[key] !== void 0) {
-                out.push(style)
-                break
-              }
-            }
-          }
-        }
-        visit(styles)
-        if (out.length < 2) return out
-        for (let i = 0; i < out.length; i++) out[i] = normalizeStyleObject(out[i], context)
-        return out
-      }
-      const mergeCss: (...styles: any[]) => any = function() {
-        return mergeProps(...resolve(arguments))
-      }
-      const serializeCssArgs = memo(function serializeCssArgs(...styles: any[]) {
-        return serializeCss(mergeCss(...styles))
-      })
-      const assignCss: (...styles: any[]) => any = function() {
-        const out: Record<string, any> = {}
-        const resolved = resolve(arguments)
-        for (let i = 0; i < resolved.length; i++) Object.assign(out, resolved[i])
-        return out
-      }
-      return { serializeCss, serializeCssArgs, mergeCss, assignCss }
     }
-
-    const HYPHENATE_PROPERTY_REGEX = /[A-Z]/g
-    const MS_PROPERTY_REGEX = /^ms-/
     "#);
 }
 
@@ -1045,21 +1089,102 @@ fn emits_js_runtime() {
     export function memo(fn) {
       const cache = new Map()
       const stringCache = new Map()
+      const seen = new WeakSet()
+      const newNode = () => ({ objects: new WeakMap(), prims: new Map(), out: void 0, has: false })
+      const root = newNode()
       let lastHash
-      let lastIsFlat = false
       let lastKey
       let lastValue
       let hasLast = false
+      let misses = 0
+
+      const step = (node, v) => {
+        if (v !== null && typeof v === "object") {
+          let next = node.objects.get(v)
+          if (next === void 0) { next = newNode(); node.objects.set(v, next) }
+          return next
+        }
+        let next = node.prims.get(v)
+        if (next === void 0) {
+          if (node.prims.size > 64) node.prims.clear()
+          next = newNode()
+          node.prims.set(v, next)
+        }
+        return next
+      }
+      const walk = (node, v) => {
+        if (Array.isArray(v)) {
+          node = step(node, "\u0000[")
+          for (let i = 0; i < v.length; i++) node = walk(node, v[i])
+          return step(node, "\u0000]")
+        }
+        return step(node, v)
+      }
+      const readWalk = (node, v) => {
+        if (node === void 0) return void 0
+        if (Array.isArray(v)) {
+          node = node.prims.get("\u0000[")
+          for (let i = 0; i < v.length && node !== void 0; i++) node = readWalk(node, v[i])
+          return node === void 0 ? void 0 : node.prims.get("\u0000]")
+        }
+        return v !== null && typeof v === "object" ? node.objects.get(v) : node.prims.get(v)
+      }
+      const markSeen = (v) => {
+        if (Array.isArray(v)) {
+          let all = true
+          for (let i = 0; i < v.length; i++) if (!markSeen(v[i])) all = false
+          return all
+        }
+        if (v === null || typeof v !== "object") return true
+        if (seen.has(v)) return true
+        seen.add(v)
+        return false
+      }
+
       return ((...args) => {
+        let composed = false
+        for (let i = 0; i < args.length; i++) if (Array.isArray(args[i])) { composed = true; break }
+
+        if (composed) {
+          let node = root
+          for (let i = 0; i < args.length && node !== void 0; i++) node = readWalk(node, args[i])
+          if (node !== void 0 && node.has) return node.out
+
+          const composedKey = JSON.stringify(args)
+          let composedOut =
+            hasLast && lastHash === void 0 && composedKey === lastKey ? lastValue : stringCache.get(composedKey)
+          if (composedOut === void 0) {
+            composedOut = fn(...args)
+            stringCache.set(composedKey, composedOut)
+            if (stringCache.size > 500) stringCache.delete(stringCache.keys().next().value)
+          }
+
+          let reused = false
+          if ((++misses & 3) === 0) {
+            reused = true
+            for (let i = 0; i < args.length; i++) if (!markSeen(args[i])) reused = false
+          }
+          if (reused) {
+            let insert = root
+            for (let i = 0; i < args.length; i++) insert = walk(insert, args[i])
+            insert.out = composedOut
+            insert.has = true
+          }
+          lastHash = void 0
+          lastKey = composedKey
+          lastValue = composedOut
+          hasLast = true
+          return composedOut
+        }
+
         const hash = flatHashOrNull(args)
         if (hash !== null) {
-          if (hasLast && lastIsFlat && hash === lastHash && flatArgsEqual(args, lastKey)) return lastValue
+          if (hasLast && lastHash === hash && flatArgsEqual(args, lastKey)) return lastValue
           let bucket = cache.get(hash)
           if (bucket) {
             for (let i = 0; i < bucket.length; i++) {
               if (flatArgsEqual(args, bucket[i].args)) {
                 lastHash = hash
-                lastIsFlat = true
                 lastKey = args
                 lastValue = bucket[i].out
                 hasLast = true
@@ -1076,26 +1201,26 @@ fn emits_js_runtime() {
           if (bucket.length > 8) bucket.shift()
           if (cache.size > 500) cache.delete(cache.keys().next().value)
           lastHash = hash
-          lastIsFlat = true
           lastKey = args
           lastValue = out
           hasLast = true
           return out
         }
+
         const key = JSON.stringify(args)
-        if (hasLast && !lastIsFlat && key === lastKey) return lastValue
-        if (stringCache.has(key)) {
-          const out = stringCache.get(key)
-          lastIsFlat = false
+        if (hasLast && lastHash === void 0 && key === lastKey) return lastValue
+        const cached = stringCache.get(key)
+        if (cached !== void 0) {
+          lastHash = void 0
           lastKey = key
-          lastValue = out
+          lastValue = cached
           hasLast = true
-          return out
+          return cached
         }
         const out = fn(...args)
         stringCache.set(key, out)
         if (stringCache.size > 500) stringCache.delete(stringCache.keys().next().value)
-        lastIsFlat = false
+        lastHash = void 0
         lastKey = key
         lastValue = out
         hasLast = true
@@ -1115,73 +1240,36 @@ fn emits_js_runtime() {
       })
     }
     "#);
-    assert_snapshot!(function_block(source, "createCss"), @r#"
-export function createCssRuntime(context) {
-  const { utility: u, hash, conditions: c } = context
-  const fmt = (s) => u.prefix ? u.prefix + "-" + s : s
-  const toClass = (paths, name) => {
-    const parts = c.finalize(paths)
-    parts.push(hash ? name : fmt(name))
-    return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
-  }
-  const serializeCss = weakMemo(memo(function serializeCss({ base, ...styles } = {}) {
-    const obj = normalizeStyleObject(base ? Object.assign(styles, base) : styles, context)
-    const set = new Set()
-    walkObject(obj, (value, paths) => {
-      if (value == null) return
-      const important = isImportant(value)
-      const [prop, ...all] = c.shift(paths)
-      const cond = filterBaseConditions(all)
-      const res = u.transform(prop, withoutSpace(withoutImportant(sanitizeStyleValue(value))))
-      let name = toClass(cond, res.className)
-      if (important) name += "!"
-      set.add(name)
-    })
-    let out = ""
-    for (const name of set) out += out ? " " + name : name
-    return out
-  }))
-  const resolve = (styles) => {
-    const out = []
-    const visit = (items) => {
-      for (let i = 0; i < items.length; i++) {
-        const style = items[i]
-        if (Array.isArray(style)) {
-          visit(style)
-          continue
-        }
-        if (!isObject(style)) continue
-        for (const key in style) {
-          if (style[key] !== void 0) {
-            out.push(style)
-            break
-          }
-        }
+    assert_snapshot!(function_block(source, "createSerializeCss"), @r#"
+    export function createSerializeCss(context) {
+      const u = context.utility
+      const c = context.conditions
+      const hash = context.hash
+      const fmt = (s) => u.prefix ? u.prefix + "-" + s : s
+      const toClass = (paths, name) => {
+        const parts = c.finalize(paths)
+        parts.push(hash ? name : fmt(name))
+        return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
       }
+      return weakMemo(memo(function serializeCss({ base, ...styles } = {}) {
+        const obj = normalizeStyleObject(base ? Object.assign(styles, base) : styles, context)
+        const set = new Set()
+        walkObject(obj, (value, paths) => {
+          if (value == null) return
+          const important = isImportant(value)
+          const [prop, ...all] = c.shift(paths)
+          const cond = filterBaseConditions(all)
+          const res = u.transform(prop, withoutSpace(withoutImportant(sanitizeStyleValue(value))))
+          let name = toClass(cond, res.className)
+          if (important) name += "!"
+          set.add(name)
+        })
+        let out = ""
+        for (const name of set) out += out ? " " + name : name
+        return out
+      }))
     }
-    visit(styles)
-    if (out.length < 2) return out
-    for (let i = 0; i < out.length; i++) out[i] = normalizeStyleObject(out[i], context)
-    return out
-  }
-  const mergeCss = function() {
-    return mergeProps(...resolve(arguments))
-  }
-  const serializeCssArgs = memo(function serializeCssArgs(...styles) {
-    return serializeCss(mergeCss(...styles))
-  })
-  const assignCss = function() {
-    const out = {}
-    const resolved = resolve(arguments)
-    for (let i = 0; i < resolved.length; i++) Object.assign(out, resolved[i])
-    return out
-  }
-  return { serializeCss, serializeCssArgs, mergeCss, assignCss }
-}
-
-const HYPHENATE_PROPERTY_REGEX = /[A-Z]/g
-const MS_PROPERTY_REGEX = /^ms-/
-"#);
+    "#);
 }
 
 #[test]
@@ -1194,5 +1282,11 @@ fn emits_declarations() {
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
     assert_eq!(paths(helpers), vec!["helpers.js", "helpers.d.ts"]);
-    assert_snapshot!(declaration_lines(file(helpers, "helpers.d.ts")), @"export declare function createCssRuntime(context: Record<string, any>): { serializeCss: (...styles: any[]) => string; serializeCssArgs: (...styles: any[]) => string; mergeCss: (...styles: any[]) => any; assignCss: (...styles: any[]) => any };");
+    assert_snapshot!(declaration_lines(file(helpers, "helpers.d.ts")), @"
+    export declare function resolveStyleArgs(styles: Array<any> | IArguments, context: Record<string, any>): any[];
+    export declare function createSerializeCss(context: Record<string, any>): (...styles: any[]) => string;
+    export declare function createMergeCss(context: Record<string, any>): (...styles: any[]) => any;
+    export declare function createSerializeCssArgs(serializeCss: (...styles: any[]) => string, mergeCss: (...styles: any[]) => any): (...styles: any[]) => string;
+    export declare function createAssignCss(context: Record<string, any>): (...styles: any[]) => any;
+    ");
 }

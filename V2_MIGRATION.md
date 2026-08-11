@@ -349,6 +349,28 @@ pandacss({ transform: true })
 
 Same flag in `@pandacss/webpack` and `@pandacss/rollup`. Without it, the plugins only handle CSS, codegen, and HMR.
 
+### Linting
+
+The ESLint plugin is rebuilt on the v2 engine. It loads your config and the compiler once, so rules lint against the same extraction the build uses.
+
+```ts
+// eslint.config.mjs
+import panda from '@pandacss/eslint-plugin'
+
+export default [await panda.configs.recommended({ configPath: './panda.config.ts' })]
+```
+
+The same rules run under [oxlint](https://oxc.rs) through its JS plugin API. Point `jsPlugins` at the oxlint entry in `.oxlintrc.json`:
+
+```json
+{
+  "jsPlugins": ["@pandacss/eslint-plugin/oxlint"],
+  "rules": { "@pandacss/no-invalid-nesting": "error" }
+}
+```
+
+Install with `@pandacss/eslint-plugin@beta`. ESLint needs v9 flat config; oxlint needs `oxlint` and `@oxlint/plugins` (alpha).
+
 ---
 
 ## Breaking changes & migration
@@ -513,6 +535,30 @@ const Button = withContext('button')
 ```
 
 `withRootProvider` is new. Use it for the root of a slot recipe when the root doesn't render a slot of its own.
+
+### Border overrides sort by property, not source order
+
+v2 orders atomic rules by property breadth, deterministically — the same sort every property follows. All the border
+shorthands (`borderWidth` / `borderStyle` / `borderColor` and the per-side `borderTop`, `borderInlineEnd`, … forms) sit
+in one tier, so the all-sides shorthand emits after a narrower per-side one and wins the cascade, no matter which order
+you merged them.
+
+That changes one v1 pattern. Composing an all-sides border with a per-side override no longer opens the side:
+
+```tsx
+// base sets a full border, override tries to drop one side
+cx(css({ borderWidth: '1px', borderStyle: 'solid' }), css({ borderInlineEnd: '0' }))
+// v1: renders an open bracket — the override was declared last
+// v2: renders a closed box — borderWidth re-applies the inline-end side
+```
+
+Reach for the longhand when the override has to win — longhands rank above every shorthand, so they always land last:
+
+```tsx
+cx(css({ borderWidth: '1px', borderStyle: 'solid' }), css({ borderInlineEndWidth: '0' }))
+```
+
+Border is not special-cased here on purpose: padding, margin, and every other property group sort the same way.
 
 ---
 

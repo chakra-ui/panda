@@ -18,7 +18,8 @@ use std::sync::Mutex;
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    BindingPattern, Declaration, ExportNamedDeclaration, Program, Statement, VariableDeclaration,
+    BindingPattern, Declaration, ExportNamedDeclaration, Expression, Program, Statement,
+    VariableDeclaration,
 };
 use oxc_parser::Parser;
 use oxc_resolver::{ResolveOptions, ResolverGeneric, TsconfigDiscovery};
@@ -30,15 +31,26 @@ use crate::Literal;
 use crate::literal::expression_to_literal;
 use crate::pure_fn::{OwnedPureFn, lower_callable_expr, lower_function};
 use crate::{
-    Matchers, TokenDictionary, collect_imports, imports::module_export_name, match_import_records,
-    scope::Resolver,
+    MatchCategory, MatchedImport, Matchers, TokenDictionary, collect_imports,
+    imports::module_export_name, match_import_records, scope::Resolver,
 };
 
-/// A folded named export: a style literal or a pure callable descriptor.
+/// A folded named export: a style literal, a pure callable, or an inline recipe.
 #[derive(Debug, Clone)]
 pub(crate) enum ExportEntry {
     Literal(Literal),
     PureFn(OwnedPureFn),
+    Recipe(ExportedRecipe),
+}
+
+/// `export const button = cva({ … })` — enough for an importer to resolve
+/// `button.raw(props)` without running the recipe.
+#[derive(Debug, Clone)]
+pub struct ExportedRecipe {
+    /// `"cva"` or `"sva"`.
+    pub factory: String,
+    /// The config object as authored.
+    pub config: Literal,
 }
 
 type FileExports = FxHashMap<String, ExportEntry>;
@@ -183,6 +195,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
             source_path: Some(path.to_path_buf()),
             line_index: None,
             pattern_raw_transform: None,
+            recipe_raw_resolve: None,
         });
 
         // Oxc returns a partial AST on parse errors — walk what we get.
@@ -191,6 +204,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
             path,
             self,
             &resolver,
+            &matched,
         ))
     }
 }
@@ -285,6 +299,7 @@ fn collect_exports(
     path: &Path,
     lookup: &dyn CrossFileLookup,
     resolver: &Resolver<'_, '_>,
+    matched: &[MatchedImport],
 ) -> FileExports {
     let mut exports = FxHashMap::default();
 
@@ -292,10 +307,40 @@ fn collect_exports(
         let Statement::ExportNamedDeclaration(decl) = stmt else {
             continue;
         };
-        collect_from_named(decl, path, lookup, resolver, &mut exports);
+        collect_from_named(decl, path, lookup, resolver, matched, &mut exports);
     }
 
     exports
+}
+
+/// `cva`/`sva` when `callee` is a Panda recipe factory imported in this file.
+fn recipe_factory_name(callee: &Expression<'_>, matched: &[MatchedImport]) -> Option<String> {
+    let Expression::Identifier(id) = callee.get_inner_expression() else {
+        return None;
+    };
+    matched
+        .iter()
+        .find(|import| {
+            import.alias == id.name.as_str()
+                && import.category == MatchCategory::Css
+                && matches!(import.name.as_str(), "cva" | "sva")
+        })
+        .map(|import| import.name.clone())
+}
+
+/// `export const button = cva({ … })` as a resolvable recipe.
+fn exported_recipe(
+    init: &Expression<'_>,
+    resolver: &Resolver<'_, '_>,
+    matched: &[MatchedImport],
+) -> Option<ExportedRecipe> {
+    let Expression::CallExpression(call) = init.get_inner_expression() else {
+        return None;
+    };
+    let factory = recipe_factory_name(&call.callee, matched)?;
+    let arg = call.arguments.first()?.as_expression()?;
+    let config = expression_to_literal(arg, Some(resolver))?;
+    Some(ExportedRecipe { factory, config })
 }
 
 fn collect_from_named(
@@ -303,11 +348,12 @@ fn collect_from_named(
     path: &Path,
     lookup: &dyn CrossFileLookup,
     resolver: &Resolver<'_, '_>,
+    matched: &[MatchedImport],
     out: &mut FileExports,
 ) {
     match &decl.declaration {
         Some(Declaration::VariableDeclaration(var)) => {
-            collect_from_var(var, resolver, out);
+            collect_from_var(var, resolver, matched, out);
             return;
         }
         Some(Declaration::FunctionDeclaration(func)) => {
@@ -349,6 +395,7 @@ fn collect_from_named(
 fn collect_from_var(
     var: &VariableDeclaration<'_>,
     resolver: &Resolver<'_, '_>,
+    matched: &[MatchedImport],
     out: &mut FileExports,
 ) {
     for declarator in &var.declarations {
@@ -357,7 +404,9 @@ fn collect_from_var(
         };
         match &declarator.id {
             BindingPattern::BindingIdentifier(id) => {
-                if let Some(value) = expression_to_literal(init, Some(resolver)) {
+                if let Some(recipe) = exported_recipe(init, resolver, matched) {
+                    out.insert(id.name.to_string(), ExportEntry::Recipe(recipe));
+                } else if let Some(value) = expression_to_literal(init, Some(resolver)) {
                     out.insert(id.name.to_string(), ExportEntry::Literal(value));
                 } else if let Some(pure_fn) = lower_callable_expr(init, Some(resolver)) {
                     out.insert(id.name.to_string(), ExportEntry::PureFn(pure_fn));

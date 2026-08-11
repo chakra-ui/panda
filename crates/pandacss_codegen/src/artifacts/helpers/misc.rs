@@ -124,29 +124,126 @@ pub(super) fn flat_args_equal() -> Item {
     }))
 }
 
+/// Argument memo with three regimes, picked per call.
+///
+/// A wrapper chain forwards its styles in arrays it rebuilds every render while
+/// the style objects inside stay the same instances, so those calls are keyed on
+/// identity through a trie. Reading it allocates nothing and a node is only
+/// inserted once every object has been seen before, so styles written inline stay
+/// on the value path instead of filling the trie with single-render objects. The
+/// trie's object nodes are `WeakMap`s, so nothing is retained once a render drops
+/// its objects.
+///
+/// Flat arguments keep the value hash, which is what an inline `css({ … })` needs,
+/// and anything else keeps `JSON.stringify` — V8 serializes faster than a JS walk.
+#[allow(
+    clippy::too_many_lines,
+    reason = "one emitted runtime function; splitting the template would not make it clearer"
+)]
 pub(super) fn memo() -> Item {
     helper_function(
         "memo",
         vec![Param::typed("fn", TsType::Raw("T".into()))],
         TsType::Raw("T".into()),
-        indoc! {r"
+        indoc! {r#"
             const cache = new Map<number, Array<{ args: Parameters<T>; out: ReturnType<T> }>>()
             const stringCache = new Map<string, ReturnType<T>>()
+            const seen = new WeakSet<object>()
+            const newNode = (): any => ({ objects: new WeakMap(), prims: new Map(), out: void 0, has: false })
+            const root = newNode()
             let lastHash: number | undefined
-            let lastIsFlat = false
             let lastKey: Parameters<T> | string | undefined
             let lastValue: ReturnType<T>
             let hasLast = false
+            let misses = 0
+
+            const step = (node: any, v: any) => {
+              if (v !== null && typeof v === "object") {
+                let next = node.objects.get(v)
+                if (next === void 0) { next = newNode(); node.objects.set(v, next) }
+                return next
+              }
+              let next = node.prims.get(v)
+              if (next === void 0) {
+                if (node.prims.size > 64) node.prims.clear()
+                next = newNode()
+                node.prims.set(v, next)
+              }
+              return next
+            }
+            const walk = (node: any, v: any): any => {
+              if (Array.isArray(v)) {
+                node = step(node, "\u0000[")
+                for (let i = 0; i < v.length; i++) node = walk(node, v[i])
+                return step(node, "\u0000]")
+              }
+              return step(node, v)
+            }
+            const readWalk = (node: any, v: any): any => {
+              if (node === void 0) return void 0
+              if (Array.isArray(v)) {
+                node = node.prims.get("\u0000[")
+                for (let i = 0; i < v.length && node !== void 0; i++) node = readWalk(node, v[i])
+                return node === void 0 ? void 0 : node.prims.get("\u0000]")
+              }
+              return v !== null && typeof v === "object" ? node.objects.get(v) : node.prims.get(v)
+            }
+            const markSeen = (v: any): boolean => {
+              if (Array.isArray(v)) {
+                let all = true
+                for (let i = 0; i < v.length; i++) if (!markSeen(v[i])) all = false
+                return all
+              }
+              if (v === null || typeof v !== "object") return true
+              if (seen.has(v)) return true
+              seen.add(v)
+              return false
+            }
+
             return ((...args: Parameters<T>) => {
+              let composed = false
+              for (let i = 0; i < args.length; i++) if (Array.isArray(args[i])) { composed = true; break }
+
+              if (composed) {
+                let node = root
+                for (let i = 0; i < args.length && node !== void 0; i++) node = readWalk(node, args[i])
+                if (node !== void 0 && node.has) return node.out
+
+                const composedKey = JSON.stringify(args)
+                let composedOut =
+                  hasLast && lastHash === void 0 && composedKey === lastKey ? lastValue : stringCache.get(composedKey)
+                if (composedOut === void 0) {
+                  composedOut = fn(...args)
+                  stringCache.set(composedKey, composedOut)
+                  if (stringCache.size > 500) stringCache.delete(stringCache.keys().next().value as string)
+                }
+
+                let reused = false
+                if ((++misses & 3) === 0) {
+                  reused = true
+                  for (let i = 0; i < args.length; i++) if (!markSeen(args[i])) reused = false
+                }
+                if (reused) {
+                  let insert = root
+                  for (let i = 0; i < args.length; i++) insert = walk(insert, args[i])
+                  insert.out = composedOut
+                  insert.has = true
+                }
+                lastHash = void 0
+                lastKey = composedKey
+                lastValue = composedOut
+                hasLast = true
+                return composedOut
+              }
+
               const hash = flatHashOrNull(args)
               if (hash !== null) {
-                if (hasLast && lastIsFlat && hash === lastHash && flatArgsEqual(args, lastKey as Parameters<T>)) return lastValue
+                if (hasLast && lastHash === hash && flatArgsEqual(args, lastKey as Parameters<T>)) return lastValue
                 let bucket = cache.get(hash)
                 if (bucket) {
                   for (let i = 0; i < bucket.length; i++) {
                     if (flatArgsEqual(args, bucket[i].args)) {
                       lastHash = hash
-                      lastIsFlat = true
                       lastKey = args
                       lastValue = bucket[i].out
                       hasLast = true
@@ -163,32 +260,32 @@ pub(super) fn memo() -> Item {
                 if (bucket.length > 8) bucket.shift()
                 if (cache.size > 500) cache.delete(cache.keys().next().value as number)
                 lastHash = hash
-                lastIsFlat = true
                 lastKey = args
                 lastValue = out
                 hasLast = true
                 return out
               }
+
               const key = JSON.stringify(args)
-              if (hasLast && !lastIsFlat && key === lastKey) return lastValue
-              if (stringCache.has(key)) {
-                const out = stringCache.get(key) as ReturnType<T>
-                lastIsFlat = false
+              if (hasLast && lastHash === void 0 && key === lastKey) return lastValue
+              const cached = stringCache.get(key)
+              if (cached !== void 0) {
+                lastHash = void 0
                 lastKey = key
-                lastValue = out
+                lastValue = cached
                 hasLast = true
-                return out
+                return cached
               }
               const out = fn(...args)
               stringCache.set(key, out)
               if (stringCache.size > 500) stringCache.delete(stringCache.keys().next().value as string)
-              lastIsFlat = false
+              lastHash = void 0
               lastKey = key
               lastValue = out
               hasLast = true
               return out
             }) as T
-        "}
+        "#}
         .trim(),
         ["T extends (...args: any[]) => any"],
     )

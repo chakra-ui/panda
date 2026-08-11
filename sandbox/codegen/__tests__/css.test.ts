@@ -390,3 +390,35 @@ describe('css.raw', () => {
     `)
   })
 })
+
+describe('composed style arguments', () => {
+  // A wrapper chain forwards its styles in arrays rebuilt on every render, so the
+  // same composition arrives as a new tree each time. It has to resolve to one
+  // stable class string.
+  const base = { display: 'flex', color: 'red' }
+  const middle = { paddingLeft: '2px' }
+  const leaf = { paddingLeft: '4px' }
+
+  test('merges styles nested in arrays, later entries winning', () => {
+    expect(css(base, [middle, [leaf, undefined]])).toMatchInlineSnapshot('"d_flex c_red pl_4px"')
+  })
+
+  test('returns the same class string when the arrays are rebuilt', () => {
+    const first = css(base, [middle, [leaf, undefined]])
+    for (let i = 0; i < 5; i++) {
+      expect(css(base, [middle, [leaf, undefined]])).toBe(first)
+    }
+  })
+
+  test('distinguishes compositions that differ only deep in the tree', () => {
+    const a = css(base, [middle, [leaf, undefined]])
+    const b = css(base, [middle, [{ paddingLeft: '8px' }, undefined]])
+    expect(a).not.toBe(b)
+    expect(b).toContain('pl_8px')
+  })
+
+  test('reflects a changed value in a rebuilt object', () => {
+    expect(css(base, [{ color: 'blue' }])).toContain('c_blue')
+    expect(css(base, [{ color: 'green' }])).toContain('c_green')
+  })
+})

@@ -124,6 +124,25 @@ fn parses_minimal_cva_with_only_base() {
 }
 
 #[test]
+fn parses_boolean_default_variants() {
+    let src = indoc! {r"
+        import { cva } from '@panda/css';
+        const button = cva({
+          base: { color: 'red' },
+          variants: {
+            muted: { true: { opacity: '0.5' } },
+          },
+          defaultVariants: { muted: true },
+        });
+    "};
+    let recipe = parse_recipe(src);
+    assert_eq!(
+        recipe.default_variants,
+        vec![("muted".to_owned(), "true".to_owned())]
+    );
+}
+
+#[test]
 fn unknown_keys_are_ignored() {
     // `description`, `className`, future fields — we ignore them so
     // adding new config keys doesn't break parsing. Behavioral

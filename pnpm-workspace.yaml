@@ -10,3 +10,28 @@ packages:
   # wasm-pack output dirs get a minimal package.json for CJS/ESM typing; not workspace packages.
   - '!packages/compiler-wasm/pkg-node/**'
   - '!packages/compiler-wasm/pkg-web/**'
+  # Fixture packages stand in for installed ones; one reuses the compiler's name.
+  - '!packages/*/__tests__/fixtures/**'
+overrides:
+  '@swc/helpers@~0.4': 0.4.36
+  picomatch@4.0.3: 4.0.4
+  # @napi-rs/cli WASI builds require emnapi / @emnapi/* on the same version.
+  emnapi: 1.11.2
+  '@emnapi/core': 1.11.2
+  '@emnapi/runtime': 1.11.2
+allowBuilds:
+  '@parcel/watcher': true
+  '@prisma/client': true
+  '@prisma/engines': true
+  '@swc/core': true
+  core-js: true
+  core-js-pure: true
+  es5-ext: true
+  esbuild: true
+  gatsby: true
+  gatsby-cli: true
+  lmdb: true
+  msgpackr-extract: true
+  prisma: true
+  sharp: true
+  unrs-resolver: true

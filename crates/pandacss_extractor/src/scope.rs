@@ -31,11 +31,19 @@ use crate::pure_fn::{
 use crate::style_tree::{
     StyleTree, expression_to_style_tree, literal_to_style_tree, project_literal,
 };
-use crate::{ImportBindingFacts, ImportRecord, ImportSpecifierKind, Literal, TokenRef};
+use crate::{
+    ImportBindingFacts, ImportRecord, ImportSpecifierKind, ImportedRecipeRawCall, Literal, TokenRef,
+};
 
 pub(crate) type PatternRawTransformFn<'a> =
     dyn FnMut(&str, &Literal) -> Result<Option<Literal>, crate::Diagnostic> + 'a;
 pub(crate) type PatternRawTransformCell<'a> = RefCell<&'a mut PatternRawTransformFn<'a>>;
+
+/// Resolve an imported recipe's `.raw(props)` — `(factory, config, props)`.
+/// Supplied by the project layer, which owns the config needed to merge styles.
+pub(crate) type RecipeRawResolveFn<'a> =
+    dyn FnMut(&str, &Literal, &Literal) -> Option<Literal> + 'a;
+pub(crate) type RecipeRawResolveCell<'a> = RefCell<&'a mut RecipeRawResolveFn<'a>>;
 
 /// Per-file symbol/scope index plus a memo of resolved literal values. Also
 /// resolves Panda `token()` / `token.var()` calls through the supplied
@@ -59,10 +67,12 @@ pub(crate) struct Resolver<'a, 'cb> {
     line_index: Option<&'a crate::LineIndex<'a>>,
     diagnostics: RefCell<Vec<crate::Diagnostic>>,
     token_refs: RefCell<Vec<TokenRef>>,
+    imported_recipe_raw_calls: RefCell<Vec<ImportedRecipeRawCall>>,
     /// Resolved paths of cross-file modules read during this file's extraction,
     /// surfaced as transform build dependencies for watch invalidation.
     cross_file_deps: RefCell<FxHashSet<PathBuf>>,
     pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
+    recipe_raw_resolve: Option<&'cb RecipeRawResolveCell<'cb>>,
 }
 
 struct TokenCallResolution {
@@ -107,6 +117,7 @@ pub(crate) struct ResolverBuildInput<'a, 'cb> {
     pub source_path: Option<PathBuf>,
     pub line_index: Option<&'a crate::LineIndex<'a>>,
     pub pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
+    pub recipe_raw_resolve: Option<&'cb RecipeRawResolveCell<'cb>>,
 }
 
 impl<'a, 'cb> Resolver<'a, 'cb> {
@@ -130,6 +141,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             source_path,
             line_index,
             pattern_raw_transform,
+            recipe_raw_resolve,
         } = input;
         let semantic = SemanticBuilder::new().build(program).semantic;
         Self {
@@ -145,8 +157,10 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             line_index,
             diagnostics: RefCell::default(),
             token_refs: RefCell::default(),
+            imported_recipe_raw_calls: RefCell::default(),
             cross_file_deps: RefCell::default(),
             pattern_raw_transform,
+            recipe_raw_resolve,
         }
     }
 
@@ -162,12 +176,21 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         std::mem::take(&mut self.token_refs.borrow_mut())
     }
 
+    /// Folded `imported.raw(props)` call sites, for the transform to rewrite.
+    pub(crate) fn take_imported_recipe_raw_calls(&self) -> Vec<ImportedRecipeRawCall> {
+        std::mem::take(&mut self.imported_recipe_raw_calls.borrow_mut())
+    }
+
     /// Resolved cross-file module paths read during extraction.
     pub(crate) fn take_cross_file_deps(&self) -> Vec<String> {
         std::mem::take(&mut *self.cross_file_deps.borrow_mut())
             .into_iter()
             .map(|path| path.to_string_lossy().into_owned())
             .collect()
+    }
+
+    pub(crate) fn semantic(&self) -> &Semantic<'a> {
+        &self.semantic
     }
 
     pub(crate) fn import_binding_facts(&self, imports: &[ImportRecord]) -> Vec<ImportBindingFacts> {
@@ -291,7 +314,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         self.resolve_import_entry(symbol_id)
             .and_then(|entry| match entry {
                 ExportEntry::PureFn(func) => Some(func),
-                ExportEntry::Literal(_) => None,
+                ExportEntry::Literal(_) | ExportEntry::Recipe(_) => None,
             })
     }
 
@@ -538,9 +561,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             AstKind::TSEnumDeclaration(decl) => {
                 Some(literal_to_style_tree(resolve_enum_as_object(decl)))
             }
-            AstKind::FormalParameter(param) => {
-                resolve_param_as_type_literal(param).map(literal_to_style_tree)
-            }
+            AstKind::FormalParameter(param) => self.resolve_param_style_tree(param, symbol_id),
             _ => None,
         }
     }
@@ -565,7 +586,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
                 self.resolve_declarator(declarator, symbol_id)
             }
             AstKind::TSEnumDeclaration(decl) => Some(resolve_enum_as_object(decl)),
-            AstKind::FormalParameter(param) => resolve_param_as_type_literal(param),
+            AstKind::FormalParameter(param) => self.resolve_param(param, symbol_id),
             _ => None,
         }
     }
@@ -576,7 +597,8 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
     fn resolve_import_symbol(&self, symbol_id: SymbolId) -> Option<Literal> {
         match self.resolve_import_entry(symbol_id)? {
             ExportEntry::Literal(lit) => Some(lit),
-            ExportEntry::PureFn(_) => None,
+            // A recipe is a function, not a value — only `.raw(props)` resolves it.
+            ExportEntry::PureFn(_) | ExportEntry::Recipe(_) => None,
         }
     }
 
@@ -644,6 +666,78 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
                 None
             }
         }
+    }
+
+    fn resolve_recipe_raw_styles(
+        &self,
+        call: &CallExpression<'_>,
+        recipe: &crate::cross_file::ExportedRecipe,
+        resolve: &RecipeRawResolveCell<'_>,
+    ) -> Option<Literal> {
+        if call.arguments.len() > 1 {
+            return None;
+        }
+        let props = match call.arguments.first() {
+            None => Literal::Object(Vec::new()),
+            Some(arg) => expression_to_literal(arg.as_expression()?, Some(self))?,
+        };
+        (resolve.borrow_mut())(&recipe.factory, &recipe.config, &props)
+    }
+
+    /// The definition file precomputes its class strings independently, so a
+    /// `.raw` we can't resolve here would return one at runtime.
+    fn report_dynamic_imported_raw(&self, call: &CallExpression<'_>, name: &str) {
+        let span = crate::span_from_oxc(call.span);
+        let mut diagnostic = crate::Diagnostic::warning(
+            crate::diagnostic_codes::IMPORTED_RECIPE_RAW_DYNAMIC,
+            format!(
+                "`{name}.raw(...)` needs statically known variants because `{name}` is defined in \
+                 another file. It will return a class string, not a style object. Pass literal \
+                 variant values, or move the composition into the file that defines `{name}`."
+            ),
+        );
+        diagnostic.span = Some(span);
+        diagnostic.location = self
+            .line_index
+            .map(|idx| idx.locate_range(span.start, span.end));
+        self.diagnostics.borrow_mut().push(diagnostic);
+    }
+
+    /// Fold `button.raw(props)` where `button` is an imported inline
+    /// `cva`/`sva`. The definition file precomputes its class strings, so its
+    /// runtime `raw` would return a string — resolving here keeps the object.
+    pub(crate) fn resolve_imported_recipe_raw_call(
+        &self,
+        call: &CallExpression<'_>,
+    ) -> Option<Literal> {
+        let resolve = self.recipe_raw_resolve?;
+        let (object, path) = flatten_static_member_path(&call.callee)?;
+        if path.as_slice() != ["raw"] || !self.is_import_binding(object) {
+            return None;
+        }
+        // Panda's own `.raw` surfaces are handled by `resolve_raw_style_call`.
+        if self.aliases.contains_key(object.name.as_str()) {
+            return None;
+        }
+
+        let symbol_id = self.symbol_for_identifier(object)?;
+        let ExportEntry::Recipe(recipe) = self.resolve_import_entry(symbol_id)? else {
+            return None;
+        };
+
+        let Some(styles) = self.resolve_recipe_raw_styles(call, &recipe, resolve) else {
+            self.report_dynamic_imported_raw(call, object.name.as_str());
+            return None;
+        };
+        let span = crate::span_from_oxc(call.span);
+        let mut folded = self.imported_recipe_raw_calls.borrow_mut();
+        if !folded.iter().any(|call| call.span == span) {
+            folded.push(ImportedRecipeRawCall {
+                span,
+                styles: styles.clone(),
+            });
+        }
+        Some(styles)
     }
 
     /// [`StyleTree`] for a `.raw(...)` arg. Pattern transform: project → transform → rehydrate.
@@ -764,6 +858,38 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             }
             BindingPattern::AssignmentPattern(_) => None,
         }
+    }
+
+    /// Resolve one symbol bound by a parameter against its `TSTypeLiteral`
+    /// annotation. A destructured parameter binds several symbols, so the
+    /// pattern is walked for the slice belonging to `target_symbol`.
+    fn resolve_param(
+        &self,
+        param: &oxc_ast::ast::FormalParameter<'a>,
+        target_symbol: SymbolId,
+    ) -> Option<Literal> {
+        let source = resolve_param_as_type_literal(param)?;
+        match &param.pattern {
+            BindingPattern::BindingIdentifier(id) => {
+                if id.symbol_id.get() != Some(target_symbol) {
+                    return None;
+                }
+                Some(source)
+            }
+            BindingPattern::ObjectPattern(_) | BindingPattern::ArrayPattern(_) => {
+                resolve_pattern_path(&param.pattern, &source, target_symbol, Some(self))
+            }
+            BindingPattern::AssignmentPattern(_) => None,
+        }
+    }
+
+    fn resolve_param_style_tree(
+        &self,
+        param: &oxc_ast::ast::FormalParameter<'a>,
+        target_symbol: SymbolId,
+    ) -> Option<StyleTree> {
+        self.resolve_param(param, target_symbol)
+            .map(literal_to_style_tree)
     }
 }
 
@@ -1060,6 +1186,10 @@ fn resolve_enum_as_object(decl: &oxc_ast::ast::TSEnumDeclaration<'_>) -> Literal
 
 /// Fold a parameter's `TSTypeLiteral` annotation into a synthetic object
 /// so `function f(x: { color: 'red' })` lets `x.color` resolve.
+///
+/// All-or-nothing: a member that doesn't fold to a literal makes the whole
+/// annotation unresolvable. A partial object would answer `undefined` for keys
+/// the type says nothing about, silently dropping the caller's real value.
 fn resolve_param_as_type_literal(param: &oxc_ast::ast::FormalParameter<'_>) -> Option<Literal> {
     let annotation = param.type_annotation.as_ref()?;
     let oxc_ast::ast::TSType::TSTypeLiteral(type_lit) = &annotation.type_annotation else {
@@ -1068,19 +1198,20 @@ fn resolve_param_as_type_literal(param: &oxc_ast::ast::FormalParameter<'_>) -> O
     let mut entries: Vec<(String, Literal)> = Vec::with_capacity(type_lit.members.len());
     for member in &type_lit.members {
         let oxc_ast::ast::TSSignature::TSPropertySignature(prop) = member else {
-            continue;
+            return None;
         };
+        // `{ color?: 'red' }` may be absent at runtime, so the literal type
+        // isn't a value.
+        if prop.optional {
+            return None;
+        }
         let key = match &prop.key {
             PropertyKey::StaticIdentifier(id) => id.name.to_string(),
             PropertyKey::StringLiteral(s) => s.value.to_string(),
-            _ => continue,
+            _ => return None,
         };
-        let Some(ann) = prop.type_annotation.as_ref() else {
-            continue;
-        };
-        if let Some(value) = ts_type_to_literal(&ann.type_annotation) {
-            entries.push((key, value));
-        }
+        let ann = prop.type_annotation.as_ref()?;
+        entries.push((key, ts_type_to_literal(&ann.type_annotation)?));
     }
     Some(Literal::Object(entries))
 }

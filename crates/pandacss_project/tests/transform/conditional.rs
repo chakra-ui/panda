@@ -266,13 +266,13 @@ conditional_snapshot!(
 );
 
 conditional_snapshot!(
-    css_raw_rewrites_conditional_object,
+    css_raw_conditional_object_unwraps_to_the_object,
     r#"
         import { css } from '@panda/css';
         export const cls = css.raw({ color: { base: 'red', md: 'blue' } });
     "#,
     true,
-    @r#"export const cls = "color_red md:color_blue";"#
+    @"export const cls = { color: { base: 'red', md: 'blue' } };"
 );
 
 conditional_snapshot!(
@@ -295,6 +295,45 @@ conditional_snapshot!(
     @r#"export const cls = isWide ? "hover:md:color_blue" : "hover:md:color_green";"#
 );
 
+// --- shared base hoisted out of multi-site conditionals ---
+
+conditional_snapshot!(
+    static_base_is_emitted_once_across_conditional_sites,
+    r#"
+        import { css } from '@panda/css';
+        export const cls = css({
+            display: 'flex',
+            color: 'red',
+            padding: wide ? '8px' : '4px',
+            margin: tall ? '2px' : '1px',
+        });
+    "#,
+    true,
+    @r#"export const cls = "color_red d_flex" + " " + (wide ? "padding_8px" : "padding_4px") + " " + (tall ? "margin_2px" : "margin_1px");"#
+);
+
+conditional_snapshot!(
+    single_conditional_site_keeps_base_inline,
+    // One site renders the base once at runtime either way, so there's
+    // nothing to hoist.
+    r#"
+        import { css } from '@panda/css';
+        export const cls = css({ display: 'flex', padding: wide ? '8px' : '4px' });
+    "#,
+    true,
+    @r#"export const cls = wide ? "d_flex padding_8px" : "d_flex padding_4px";"#
+);
+
+conditional_snapshot!(
+    disjoint_conditional_sites_hoist_nothing,
+    r#"
+        import { css } from '@panda/css';
+        export const cls = css({ padding: wide ? '8px' : '4px', margin: tall ? '2px' : '1px' });
+    "#,
+    true,
+    @r#"export const cls = (wide ? "padding_8px" : "padding_4px") + " " + (tall ? "margin_2px" : "margin_1px");"#
+);
+
 // --- unresolved condition keys (encoder emits nothing) ---
 
 conditional_snapshot!(
@@ -314,3 +353,27 @@ conditional_snapshot!(
     "#,
     unchanged
 );
+
+#[test]
+fn a_conditional_with_nothing_to_add_leaves_no_stray_space() {
+    // Hoisting the shared classes can empty one branch. If the separator
+    // stayed outside the ternary, every element without the optional class
+    // would carry a trailing space in its class attribute.
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        export const cls = css({
+          display: 'flex',
+          width: wide ? '100%' : undefined,
+          margin: tall ? '2px' : '1px',
+        });
+    "#};
+
+    let output = transform("src/styles.tsx", source);
+
+    assert!(
+        !output.code.contains(r#"" " + (wide ? " "#),
+        "separator should move inside the branch: {}",
+        output.code
+    );
+    assert_snapshot!(output.code, @r#"export const cls = "d_flex" + (wide ? " width_100%" : "") + " " + (tall ? "margin_2px" : "margin_1px");"#);
+}

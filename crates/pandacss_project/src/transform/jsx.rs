@@ -7,7 +7,7 @@ use crate::Project;
 
 use super::jsx_element;
 use super::jsx_runtime;
-use super::plan::{HelperCxMode, Rewrite};
+use super::plan::{HelperCxMode, Rewrite, TransformHelperFacts};
 use super::recipe_inline;
 use super::resolve::span_slice;
 
@@ -18,7 +18,6 @@ pub(crate) fn rewrites_for_jsx_element(
     source: &str,
     jsx: &ExtractedJsx,
     helper_cx: HelperCxMode,
-    needs_cx: &mut bool,
     pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> Vec<Rewrite> {
     // Only rewrite tags Panda owns. A name-only match (`jsxStyleProps`, or a
@@ -46,7 +45,6 @@ pub(crate) fn rewrites_for_jsx_element(
                 source,
                 jsx,
                 helper_cx,
-                needs_cx,
                 pattern_transform,
             )
         }
@@ -55,7 +53,6 @@ pub(crate) fn rewrites_for_jsx_element(
             source,
             jsx,
             helper_cx,
-            needs_cx,
             pattern_transform,
         ),
         JsxSourceKind::TaggedTemplate => Vec::new(),
@@ -78,5 +75,6 @@ fn styled_template_definition_rewrite(
         end: jsx.span.end,
         content: format!("{member}({config})"),
         preserved: vec![callee_span],
+        helper: TransformHelperFacts::cva(),
     })
 }

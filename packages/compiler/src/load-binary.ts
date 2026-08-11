@@ -2,12 +2,8 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import type { NativeBinding } from './types'
 
-// napi-generated loader at the package root. Require via a variable so bundlers
-// leave it external.
-const bindingUrl = new URL('../binding.cjs', import.meta.url)
 const webContainerWasiPackage = '@pandacss/compiler-wasm32-wasi'
 
 /** Returns `undefined` when the generated loader is absent so callers can fall back in source-only installs. */
@@ -24,13 +20,24 @@ export function loadNativeBinding(): NativeBinding | undefined {
   }
 }
 
-function resolveBindingPath(): string | undefined {
-  if (bindingUrl.protocol === 'file:') {
-    const bindingPath = fileURLToPath(bindingUrl)
+/** Resolves the napi-generated loader at the package root. Goes through the
+ *  package, not `import.meta.url`: a bundler may emit this module at any depth. */
+export function resolveBindingPath(referrer: string = import.meta.url): string | undefined {
+  const packageRoot = resolvePackageRoot(referrer)
+  if (packageRoot) {
+    const bindingPath = join(packageRoot, 'binding.cjs')
     if (existsSync(bindingPath)) return bindingPath
   }
 
   return fallbackBindingPaths().find((path) => existsSync(path))
+}
+
+function resolvePackageRoot(referrer: string): string | undefined {
+  try {
+    return dirname(createRequire(referrer).resolve('@pandacss/compiler/package.json'))
+  } catch {
+    return undefined
+  }
 }
 
 function fallbackBindingPaths(): string[] {

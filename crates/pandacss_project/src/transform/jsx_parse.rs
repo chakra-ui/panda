@@ -4,7 +4,7 @@ use std::collections::HashSet;
 
 use pandacss_extractor::{
     ExpressionFacts, ExpressionKind, JsxExtractionConfig, LogicalExpressionOperator, ObjectFacts,
-    StyleSpread, StyleTree,
+    StyleObject, StyleSpread, StyleTree,
 };
 
 use super::helper::{ClassNamePrint, ExistingClassName};
@@ -185,10 +185,6 @@ pub(crate) struct ParsedProperty {
 }
 
 impl ParsedProperty {
-    pub(super) fn is_spread(&self) -> bool {
-        self.spread_expression.is_some()
-    }
-
     pub(super) fn as_is_resolvable(&self) -> bool {
         if self.key.as_deref() != Some("as") {
             return true;
@@ -224,6 +220,100 @@ impl ParsedProperty {
 
     pub(super) fn expression_facts(&self) -> Option<&ExpressionFacts> {
         self.value.as_ref().map(|value| &value.facts)
+    }
+}
+
+/// How a slot names the prop it sets.
+pub(super) enum SlotName<'a> {
+    Named(&'a str),
+    Spread,
+    /// A computed key — nothing can be assumed about which prop it sets.
+    Computed,
+}
+
+/// One style-carrying slot of a JSX site: an opening-element attribute, or a
+/// property of a runtime call's props object. The two syntaxes differ only in
+/// how a slot is spelled, so the skip, spread, and selection rules take this
+/// instead of either concrete type.
+pub(super) trait StyleSlot {
+    fn name(&self) -> SlotName<'_>;
+    fn span(&self) -> pandacss_shared::Span;
+    /// Original source, re-emitted verbatim when the slot survives.
+    fn raw(&self) -> &str;
+    fn spread_expression(&self) -> Option<&ParsedExpression>;
+    fn expression_facts(&self) -> Option<&ExpressionFacts>;
+    fn value_is_dynamic(&self) -> bool;
+    /// Whether the slot carries a value expression whose source must be kept.
+    fn has_expression(&self) -> bool;
+}
+
+impl StyleSlot for ParsedAttribute {
+    fn name(&self) -> SlotName<'_> {
+        if self.spread {
+            return SlotName::Spread;
+        }
+        self.name
+            .as_deref()
+            .map_or(SlotName::Computed, SlotName::Named)
+    }
+
+    fn span(&self) -> pandacss_shared::Span {
+        self.span
+    }
+
+    fn raw(&self) -> &str {
+        &self.raw
+    }
+
+    fn spread_expression(&self) -> Option<&ParsedExpression> {
+        self.spread_expression.as_ref()
+    }
+
+    fn expression_facts(&self) -> Option<&ExpressionFacts> {
+        Self::expression_facts(self)
+    }
+
+    fn value_is_dynamic(&self) -> bool {
+        self.dynamic
+    }
+
+    fn has_expression(&self) -> bool {
+        self.expression.is_some()
+    }
+}
+
+impl StyleSlot for ParsedProperty {
+    fn name(&self) -> SlotName<'_> {
+        if self.spread_expression.is_some() {
+            return SlotName::Spread;
+        }
+        self.key
+            .as_deref()
+            .map_or(SlotName::Computed, SlotName::Named)
+    }
+
+    fn span(&self) -> pandacss_shared::Span {
+        self.span
+    }
+
+    fn raw(&self) -> &str {
+        &self.raw
+    }
+
+    fn spread_expression(&self) -> Option<&ParsedExpression> {
+        self.spread_expression.as_ref()
+    }
+
+    fn expression_facts(&self) -> Option<&ExpressionFacts> {
+        Self::expression_facts(self)
+    }
+
+    fn value_is_dynamic(&self) -> bool {
+        Self::value_is_dynamic(self)
+    }
+
+    fn has_expression(&self) -> bool {
+        self.value.is_some()
     }
 }
 
@@ -306,9 +396,13 @@ struct ResidualObject {
     has_runtime_props: bool,
 }
 
+/// What a site's conditional spreads require of the rewrite. `None` from the
+/// planner means the site must stay unchanged; this says what to do otherwise.
 pub(super) enum ConditionalSpreadPlan {
-    None,
+    /// The spreads carry styles only, already folded into the style tree, so
+    /// the rewritten site simply drops them.
     StyleOnly,
+    /// A spread also carries runtime props, so it stays and absorbs the class.
     Runtime(ConditionalSpreadRewrite),
 }
 
@@ -390,7 +484,7 @@ pub(super) fn plan_conditional_spreads<'a>(
 ) -> Option<ConditionalSpreadPlan> {
     let mut source_spreads = source_spreads.peekable();
     if source_spreads.peek().is_none() {
-        return Some(ConditionalSpreadPlan::None);
+        return Some(ConditionalSpreadPlan::StyleOnly);
     }
     let StyleTree::Object(style) = style? else {
         return None;
@@ -411,7 +505,11 @@ pub(super) fn plan_conditional_spreads<'a>(
             .flatten()
         });
         let Some(parts) = parts else {
-            if is_style_only_object_spread(source, expression, jsx, tag_name, class_attr) {
+            // Static style spreads are already folded into `style.entries` by
+            // extract. Skip them here so they don't shift conditional pairing.
+            if is_style_only_object_spread(source, expression, jsx, tag_name, class_attr)
+                || is_absorbed_resolved_spread(expression, style)
+            {
                 continue;
             }
             return None;
@@ -436,8 +534,10 @@ pub(super) fn plan_conditional_spreads<'a>(
     if style_spreads.next().is_some() {
         return None;
     }
+    // Every source spread was style-only (inline object or extract-resolved
+    // identifier/member). Safe to rewrite — styles already live in entries.
     if count == 0 {
-        return None;
+        return Some(ConditionalSpreadPlan::StyleOnly);
     }
 
     let Some(runtime) = runtime else {
@@ -480,6 +580,31 @@ fn is_style_only_object_spread(
     })
 }
 
+/// Identifier / member spreads that extract folded into `style.entries`.
+///
+/// Opaque spreads (`{...props}`) leave `StyleSpread::Open`. When any Open
+/// remains, we cannot tell which source spread produced it, so bail.
+///
+/// Inline objects are handled by [`is_style_only_object_spread`] — they can
+/// mix runtime props without producing Open.
+fn is_absorbed_resolved_spread(expression: &ParsedExpression, style: &StyleObject) -> bool {
+    if style.spreads.iter().any(|spread| {
+        matches!(
+            spread,
+            StyleSpread::Open { .. } | StyleSpread::OpenWithFallback { .. }
+        )
+    }) {
+        return false;
+    }
+    if expression.facts.object.is_some()
+        || expression.facts.conditional.is_some()
+        || expression.facts.logical.is_some()
+    {
+        return false;
+    }
+    true
+}
+
 fn spread_arms_are_static(spread: &StyleSpread) -> bool {
     match spread {
         StyleSpread::Ternary {
@@ -496,7 +621,7 @@ fn spread_arms_are_static(spread: &StyleSpread) -> bool {
             !super::style_lower::style_tree_has_rewrite_sites(value)
                 && !super::style_lower::style_tree_has_open_value(value)
         }
-        StyleSpread::Open | StyleSpread::OpenWithFallback { .. } => false,
+        StyleSpread::Open { .. } | StyleSpread::OpenWithFallback { .. } => false,
     }
 }
 
@@ -552,7 +677,7 @@ fn conditional_spread_parts(
                 )?,
             })
         }
-        StyleSpread::Open | StyleSpread::OpenWithFallback { .. } => None,
+        StyleSpread::Open { .. } | StyleSpread::OpenWithFallback { .. } => None,
     }
 }
 

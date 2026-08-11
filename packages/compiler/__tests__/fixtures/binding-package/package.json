@@ -1,0 +1,7 @@
+{
+  "name": "@pandacss/compiler",
+  "version": "0.0.0-fixture",
+  "exports": {
+    "./package.json": "./package.json"
+  }
+}

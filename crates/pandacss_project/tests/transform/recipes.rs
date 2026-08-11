@@ -17,6 +17,22 @@ fn transform_button(project: &Project, source: &str) -> pandacss_project::Transf
 }
 
 #[test]
+fn unwraps_recipe_raw_call_to_its_object() {
+    // `recipe.raw` is `props => props` — it hands back the variant selection,
+    // so the wrapper and the import can both go.
+    let source = indoc! {r#"
+        import { button } from '@panda/recipes';
+        export const styles = button.raw({ size: 'sm' });
+    "#};
+
+    let output = transform_recipes("src/button.tsx", source);
+
+    assert!(output.changed);
+    assert!(!output.bailed);
+    assert_snapshot!(output.code, @"export const styles = { size: 'sm' };");
+}
+
+#[test]
 fn rewrites_static_recipe_call_to_class_string() {
     let source = indoc! {r#"
         import { button } from '@panda/recipes';

@@ -325,3 +325,32 @@ fn dynamic_value_kept_verbatim_in_runtime_css() {
     export const cls = __pcx("color_red", css({ gridTemplate: computeGrid(props.cols) }));
     "#);
 }
+
+// ─── css composition through a component prop ───
+
+#[test]
+fn css_prop_forwarded_through_typed_destructured_param_is_not_dropped() {
+    // `{ css?: any }` is a type annotation, not a value. Folding it to an
+    // empty object dropped `cssProp` and lost every style the caller passed.
+    let out = css(indoc! {r#"
+        import { css } from '@panda/css';
+        const base = { color: 'red' };
+        export const L0 = ({ css: cssProp, children }: { css?: any; children?: any }) => (
+          <button className={css(base, cssProp)}>{children}</button>
+        );
+    "#});
+    assert!(!out.bailed);
+    assert!(out.code.contains("css(base, cssProp)"), "{}", out.code);
+}
+
+#[test]
+fn typed_destructured_param_with_concrete_type_is_not_dropped() {
+    let out = css(indoc! {r#"
+        import { css } from '@panda/css';
+        const base = { color: 'red' };
+        export const L0 = ({ extra }: { extra?: Record<string, string> }) =>
+          css(base, extra);
+    "#});
+    assert!(!out.bailed);
+    assert!(out.code.contains("css(base, extra)"), "{}", out.code);
+}
