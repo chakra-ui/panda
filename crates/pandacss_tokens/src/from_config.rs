@@ -458,6 +458,10 @@ impl TokenPath {
     }
 }
 
+#[allow(
+    clippy::too_many_arguments,
+    reason = "token push threads builder, context, path, value, category, condition, metadata, and semantic flag through one call site"
+)]
 fn push_token(
     builder: &mut TokenDictionaryBuilder,
     context: &mut BuildContext<'_>,
