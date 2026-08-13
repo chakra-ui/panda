@@ -101,7 +101,7 @@ fn collect_breakpoint_tokens(
         .into_iter()
         .filter(|name| name != "base")
     {
-        let Some(value) = theme.breakpoints.get(&name) else {
+        let Some(value) = theme.breakpoints().get(&name) else {
             continue;
         };
         push_token(
