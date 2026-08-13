@@ -1,6 +1,7 @@
 import type { BuildInfoArtifact } from '@pandacss/compiler-shared'
 import { describe, expect, it } from 'vitest'
-import { createProject } from './test-utils'
+import { createCompilerFromSnapshot } from '../src'
+import { createProject, importMap } from './test-utils'
 
 // A "library" project that extracts two component modules.
 function libBuildInfo(): BuildInfoArtifact {
@@ -30,7 +31,7 @@ describe('compiler.buildInfo', () => {
     // modules; `padding`/`margin` are module-local.
     expect(libBuildInfo()).toMatchInlineSnapshot(`
       {
-        "schemaVersion": 5,
+        "schemaVersion": 6,
         "panda": "^2.0.0",
         "configFingerprint": "cfg1-343a1d7a20956a6a",
         "strings": [
@@ -233,6 +234,92 @@ describe('compiler.buildInfo', () => {
       "@layer tokens {
         :where(:root, :host) {
           --colors-brand-500: #3b82f6;
+        }
+      }
+      "
+    `)
+  })
+
+  it('replays a JS utility transform (boxSize) into the consumer CSS', () => {
+    const snapshot = (): Parameters<typeof createCompilerFromSnapshot>[0] => ({
+      config: {
+        cwd: '/virtual',
+        outdir: 'styled-system',
+        importMap,
+        jsxFramework: 'react',
+        theme: { tokens: { sizes: { 4: { value: '1rem' } } } },
+        utilities: {
+          boxSize: {
+            className: 'size',
+            values: 'sizes',
+            transform: { kind: 'js-callback', id: 'utilities.boxSize.transform' },
+          },
+        },
+      },
+      callbacks: {
+        'utility.transform': {
+          'utilities.boxSize.transform': (value) => ({ width: value, height: value }),
+        },
+      },
+    })
+
+    const lib = createCompilerFromSnapshot(snapshot(), { crossFile: false })
+    lib.parseFileSource('/virtual/thing.tsx', "import { css } from '@panda/css'\ncss({ boxSize: '4' })")
+    const info = lib.buildInfo.create({ panda: '^2.0.0' })
+
+    const app = createCompilerFromSnapshot(snapshot(), { crossFile: false })
+    expect(app.buildInfo.hydrate(info, { name: '@acme/ds' })).toEqual({
+      ok: true,
+      modules: ['/virtual/thing.tsx'],
+    })
+
+    expect(app.getLayerCss({ layers: ['utilities'] }).css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .size_4 {
+          width: var(--sizes-4);
+          height: var(--sizes-4);
+        }
+      }
+      "
+    `)
+  })
+
+  it('replays a transform whose result nests a condition into the consumer CSS', () => {
+    const snapshot = (): Parameters<typeof createCompilerFromSnapshot>[0] => ({
+      config: {
+        cwd: '/virtual',
+        outdir: 'styled-system',
+        importMap,
+        jsxFramework: 'react',
+        conditions: { hover: '&:hover' },
+        utilities: {
+          debug: {
+            className: 'debug',
+            transform: { kind: 'js-callback', id: 'utilities.debug.transform' },
+          },
+        },
+      },
+      callbacks: {
+        'utility.transform': {
+          'utilities.debug.transform': () => ({ _hover: { border: '2px solid blue' } }),
+        },
+      },
+    })
+
+    const lib = createCompilerFromSnapshot(snapshot(), { crossFile: false })
+    lib.parseFileSource('/virtual/thing.tsx', "import { css } from '@panda/css'\ncss({ debug: true })")
+    const info = lib.buildInfo.create({ panda: '^2.0.0' })
+
+    const app = createCompilerFromSnapshot(snapshot(), { crossFile: false })
+    expect(app.buildInfo.hydrate(info, { name: '@acme/ds' })).toEqual({
+      ok: true,
+      modules: ['/virtual/thing.tsx'],
+    })
+
+    expect(app.getLayerCss({ layers: ['utilities'] }).css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .debug_true:hover {
+          border: 2px solid blue;
         }
       }
       "

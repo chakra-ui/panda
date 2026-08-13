@@ -31,11 +31,11 @@ recomputed on hydrate.
 
 ```jsonc
 {
-  "schemaVersion": 5,
+  "schemaVersion": 6,
   "panda": "^2.0.0",                               // peer range (collision guard); author-supplied
   "configFingerprint": "cfg1-…",                          // engine fingerprint of output-affecting config
   "strings": ["color", "red", "padding", "4px", "colors.brand", "vt_xxx"], // intern table
-  "atoms": [{ "p": 0, "v": 1 }],                   // [propIdx, valueIdx]; token values use `{ t, v }`
+  "atoms": [{ "p": 0, "v": 1 }],                   // [propIdx, valueIdx]; token values use `{ t, v }`; `s` = JS-transform styles
   "tokenRefs": [4],                                  // string indices for runtime token CSS-var usage
   "recipes": { "base": [...], "variants": [...] }, // interned EncodedRecipesSnapshot groups
   "viewTransitions": [{ "cls": 5, "old": { "opacity": 0 }, "new": { "opacity": 1 } }],
@@ -51,6 +51,13 @@ A value is a bare index (string), `{ t, v }` (token path + resolved value), or `
 px-driving type tag). Full atom/recipe data is kept (not pre-built CSS) so the consumer re-emits with **token identity**
 preserved instead of reducing tokens to opaque CSS values. Top-level `tokenRefs` entries point into `strings`; each
 module's `tokenRefs` entries point into that top-level array, preserving import-based tree-shaking.
+
+**JS utility-`transform` styles ride on the atom (`s`).** A utility with a JS `transform` (e.g. `boxSize` →
+`{ width, height }`) produces styles the Rust engine can't recompute; the producer runs the callback at extraction and
+keeps the result in a side map keyed by the carrier atom's `(prop, value)`. That map isn't derivable from the atom
+alone, so each atom serializes its transform result as `s` (the styles object) and the consumer restores it into the
+same override map on hydrate. Without it a replayed atom falls back to the kebab-cased utility name (`box-size`) — wrong,
+sometimes invalid CSS. Recipe entries need no `s`: their transform is baked into `entries` at extraction.
 
 **Token definitions are not in build info.** The artifact carries token _usage_ (path + producer-resolved value at
 extraction time); the consumer's **tokens layer** still comes from its own config (typically the lib preset merged in

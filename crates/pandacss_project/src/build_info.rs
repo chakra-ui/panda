@@ -12,17 +12,17 @@ use pandacss_encoder::{
     Atom, AtomValue, ConditionList, EncodedRecipesSnapshot, RecipeStyleEntry,
     RecipeStyleGroupSnapshot,
 };
-use pandacss_extractor::ExportInfo;
+use pandacss_extractor::{ExportInfo, Literal};
 use pandacss_shared::ViewTransitionStyle;
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde::{Deserialize, Serialize};
 
 use crate::recipes::EncodedRecipes;
-use crate::{FileEntry, ParseFileReport};
+use crate::{FileEntry, ParseFileReport, UtilityStyleKey};
 
 /// Bumped when the on-disk shape changes; a consumer with a different
 /// `SCHEMA_VERSION` falls back to re-extracting the library's source.
-pub const SCHEMA_VERSION: u32 = 5;
+pub const SCHEMA_VERSION: u32 = 6;
 
 /// Synthetic file-key prefix for atoms hydrated from a parent design system.
 /// Excluded from serialized build info so a published artifact carries only
@@ -125,6 +125,8 @@ pub struct BuildAtom {
     /// `!important`. Omitted when false.
     #[serde(default, skip_serializing_if = "is_false")]
     pub i: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub s: Option<serde_json::Value>,
 }
 
 /// A bare integer is a string-interned value (the common case); token-derived
@@ -204,6 +206,7 @@ impl Interner {
             v: self.build_value(atom.value()),
             c: atom.conditions().iter().map(|c| self.intern(c)).collect(),
             i: atom.important(),
+            s: None,
         }
     }
 
@@ -213,6 +216,7 @@ impl Interner {
             v: self.build_value(&entry.value),
             c: entry.conditions.iter().map(|c| self.intern(c)).collect(),
             i: entry.important,
+            s: None,
         }
     }
 
@@ -476,8 +480,27 @@ impl super::Project {
             .map(|(index, atom)| (*atom, index as u32))
             .collect();
 
+        let mut override_lookup: FxHashMap<(&str, &AtomValue), &Literal> = FxHashMap::default();
+        for (path, entry) in &self.files {
+            if path.starts_with(HYDRATED_FILE_PREFIX) {
+                continue;
+            }
+            for ((prop, value), styles) in &entry.utility_styles {
+                override_lookup.insert((prop.as_ref(), value), styles);
+            }
+        }
+
         let mut interner = Interner::default();
-        let build_atoms = atoms.iter().map(|atom| interner.build_atom(atom)).collect();
+        let build_atoms = atoms
+            .iter()
+            .map(|atom| {
+                let mut build = interner.build_atom(atom);
+                if let Some(styles) = override_lookup.get(&(atom.prop(), atom.value())) {
+                    build.s = Some(styles.to_json());
+                }
+                build
+            })
+            .collect();
 
         // Map each group's class name to its combined (base+variants+compounds)
         // index for per-module provenance.
@@ -652,6 +675,7 @@ impl super::Project {
         // corrupt (an out-of-range string index). Refuse to hydrate partial data
         // and let the caller re-extract, same as a schema-version mismatch.
         let mut atoms: FxHashSet<Atom> = FxHashSet::default();
+        let mut utility_styles: FxHashMap<UtilityStyleKey, Literal> = FxHashMap::default();
         for (index, build) in info.atoms.iter().enumerate() {
             let selected = selected_atoms
                 .as_ref()
@@ -661,6 +685,10 @@ impl super::Project {
             }
             match atom_from_build(build, &info.strings) {
                 Some(atom) => {
+                    if let Some(styles) = build.s.as_ref().and_then(Literal::from_json) {
+                        utility_styles
+                            .insert((Box::from(atom.prop()), atom.value().clone()), styles);
+                    }
                     atoms.insert(atom);
                 }
                 None => return false,
@@ -710,7 +738,7 @@ impl super::Project {
                 cacheable: true,
                 atoms,
                 encoded_recipes: EncodedRecipes::new(false),
-                utility_styles: FxHashMap::default(),
+                utility_styles,
                 token_refs,
                 exports: pandacss_extractor::ExportInfo::default(),
                 diagnostics: Vec::new(),

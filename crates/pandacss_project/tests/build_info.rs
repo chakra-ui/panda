@@ -31,7 +31,7 @@ fn build_info_emits_interned_atoms_with_per_module_provenance() {
     // `color: red` is shared, so it appears once in `atoms` and is referenced by
     // both modules; `padding`/`margin` are module-local.
     assert_yaml_snapshot!(info, @"
-    schemaVersion: 5
+    schemaVersion: 6
     panda: ^2.0.0
     configFingerprint: cfg1-0130e6407f607c4d
     strings:
@@ -197,6 +197,76 @@ fn hydrate_reproduces_every_atom() {
     assert!(consumer.hydrate("@acme/ds", &info, None));
 
     assert_eq!(sorted_atoms(&consumer), sorted_atoms(&source));
+}
+
+#[test]
+fn hydrate_restores_utility_transform_styles() {
+    use pandacss_project::{
+        Diagnostic, ExtractedLiteral as Literal, ParseTransforms, UtilityTransformFn,
+    };
+
+    let config_overrides = json!({
+        "theme": { "tokens": { "sizes": { "4": { "value": "1rem" } } } },
+        "utilities": {
+            "boxSize": {
+                "className": "size",
+                "values": "sizes",
+                "transform": { "kind": "js-callback", "id": "boxSize" }
+            }
+        }
+    });
+
+    let mut transform = |prop: &str,
+                         resolved: &AtomValue,
+                         _original: &AtomValue|
+     -> Result<Option<Literal>, Diagnostic> {
+        if prop != "boxSize" {
+            return Ok(None);
+        }
+        let value = match resolved {
+            AtomValue::String(value)
+            | AtomValue::Number(value)
+            | AtomValue::Token { value, .. } => value.to_string(),
+            AtomValue::Bool(_) | AtomValue::Null => return Ok(None),
+        };
+        Ok(Some(Literal::Object(vec![
+            ("width".to_owned(), Literal::String(value.clone())),
+            ("height".to_owned(), Literal::String(value)),
+        ])))
+    };
+
+    let mut lib = create_project(config_overrides.clone());
+    lib.parse_file_with(
+        "thing.tsx",
+        "import { css } from '@panda/css'; css({ boxSize: '4' });",
+        ParseTransforms {
+            utility: Some(&mut transform as &mut UtilityTransformFn<'_>),
+            ..Default::default()
+        },
+    );
+
+    let info = lib.build_info("^2.0.0".into());
+    let json = serde_json::to_string(&info).expect("serialize");
+    let restored: BuildInfo = serde_json::from_str(&json).expect("deserialize");
+
+    let mut consumer = create_project(config_overrides.clone());
+    assert!(consumer.hydrate("@acme/ds", &restored, None));
+
+    let config = create_config(config_overrides);
+    let snapshots = consumer.stylesheet_snapshots(&config);
+    let style = snapshots
+        .utility_styles
+        .values()
+        .next()
+        .expect("hydrated boxSize transform styles present");
+    let object = style.to_json();
+    assert_eq!(object["width"], object["height"]);
+    assert!(
+        object
+            .get("width")
+            .is_some_and(serde_json::Value::is_string)
+    );
+    assert_eq!(snapshots.utility_styles.len(), 1);
 }
 
 #[test]

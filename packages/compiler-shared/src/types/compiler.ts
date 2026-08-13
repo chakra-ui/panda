@@ -67,6 +67,7 @@ export interface BuildAtom {
   v: number | { t: number; v: number } | { n: number } | boolean | null
   c?: number[]
   i?: boolean
+  s?: Record<string, unknown>
 }
 
 /**
