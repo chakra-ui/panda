@@ -331,6 +331,96 @@ fn from_config_expands_color_mix_references() {
 }
 
 #[test]
+fn from_config_expands_alpha_modifier_reference_in_non_color_categories() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "colors": { "ink": { "value": "#000000" } },
+            },
+            "semanticTokens": {
+                "shadows": {
+                    "embeddedAlpha": { "value": "3px 3px 0 {colors.ink/10}" },
+                    "embeddedPlain": { "value": "3px 3px 0 {colors.ink}" },
+                },
+                "borders": {
+                    "embeddedAlpha": { "value": "1px solid {colors.ink/10}" },
+                },
+                "gradients": {
+                    "embeddedAlpha": { "value": "linear-gradient(to right, {colors.ink/10}, transparent)" },
+                },
+            },
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
+    borders.embeddedAlpha: "1px solid color-mix(in oklab, var(--colors-ink) 10%, transparent)"
+    colors.colorPalette: var(--colors-color-palette)
+    colors.ink: "#000000"
+    gradients.embeddedAlpha: "linear-gradient(to right, color-mix(in oklab, var(--colors-ink) 10%, transparent), transparent)"
+    shadows.embeddedAlpha: "3px 3px 0 color-mix(in oklab, var(--colors-ink) 10%, transparent)"
+    shadows.embeddedPlain: 3px 3px 0 var(--colors-ink)
+    "##);
+}
+
+#[test]
+fn from_config_resolves_slash_keyed_token_reference_over_color_mix() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "sizes": { "1/2": { "value": "50%" } },
+            },
+            "semanticTokens": {
+                "sizes": { "half": { "value": "{sizes.1/2}" } },
+            },
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_token_values(&dict), @r#"
+    sizes.1/2: 50%
+    sizes.half: "var(--sizes-1\\/2)"
+    "#);
+}
+
+#[test]
+fn from_config_serializes_composite_shadow_semantic_token() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "colors": { "ink": { "value": "#000000" } },
+            },
+            "semanticTokens": {
+                "shadows": {
+                    "composite": {
+                        "value": { "offsetX": "3px", "offsetY": "3px", "blur": "0", "spread": "0", "color": "{colors.ink}" },
+                    },
+                },
+            },
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
+    colors.colorPalette: var(--colors-color-palette)
+    colors.ink: "#000000"
+    shadows.composite: 3px 3px 0 0 var(--colors-ink)
+    "##);
+}
+
+#[test]
 fn from_config_uses_css_var_prefix_and_hash_options() {
     let config: UserConfig = serde_json::from_value(json!({
         "prefix": {
