@@ -51,8 +51,8 @@ the container scale, so identical `cssBytes` across steps means the extra time i
 pure overhead. Guards the condition-lookup cache in `pandacss_config::Theme` —
 without it, emit cost scales with `rules x containers^2`.
 
-See [`STATIC_CSS_CONDITIONS_REPORT.md`](./STATIC_CSS_CONDITIONS_REPORT.md) for the
-measured before/after.
+See [`staticcss-build-cost.md`](./staticcss-build-cost.md) for the measured
+before/after.
 
 ## Current Targets
 

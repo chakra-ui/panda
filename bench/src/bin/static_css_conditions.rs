@@ -10,7 +10,7 @@
 //!
 //! Rule count is fixed and only the container scale varies, so identical
 //! `cssBytes` across steps means the extra time buys nothing. See
-//! `bench/STATIC_CSS_CONDITIONS_REPORT.md`.
+//! `bench/staticcss-build-cost.md`.
 
 use std::time::{Duration, Instant};
 

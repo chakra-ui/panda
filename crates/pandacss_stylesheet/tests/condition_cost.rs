@@ -85,6 +85,6 @@ fn growing_the_container_scale_does_not_change_emit_cost() {
         large_time < small_time * MAX_GROWTH,
         "emitting the same rules took {large_time:?} with 48 container sizes vs {small_time:?} \
          with 4. Condition lookups are likely rebuilt per call again instead of resolved once \
-         (see bench/STATIC_CSS_CONDITIONS_REPORT.md)"
+         (see bench/staticcss-build-cost.md)"
     );
 }
