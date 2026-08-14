@@ -16,5 +16,5 @@ declare module '@pandacss/dev' {
   export function defineAnimationStyles(definition: CompositionStyles['animationStyles']): Panda.AnimationStyles
   export function defineLayerStyles(definition: CompositionStyles['layerStyles']): Panda.LayerStyles
   export function definePattern<T extends PatternProperties>(config: PatternConfig<T>): Panda.PatternConfig
-  export function defineParts<T extends Parts>(parts: T): (config: Partial<Record<keyof T, SystemStyleObject>>) => Partial<Record<keyof T, SystemStyleObject>>
+  export function defineParts<const T extends Parts>(parts: T): <C extends Partial<Record<keyof T, SystemStyleObject>>>(config: C) => { [K in keyof C & keyof T as T[K]['selector']]: SystemStyleObject }
 }

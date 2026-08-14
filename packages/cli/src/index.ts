@@ -43,8 +43,10 @@ export function defineSlotRecipe<S extends string, T extends SlotRecipeVariantRe
   return config as SlotRecipeConfig
 }
 
-export function defineParts<T extends Parts>(parts: T) {
-  return function (config: Partial<Record<keyof T, SystemStyleObject>>): Partial<Record<keyof T, SystemStyleObject>> {
+export function defineParts<const T extends Parts>(parts: T) {
+  return <C extends Partial<Record<keyof T, SystemStyleObject>>>(
+    config: C,
+  ): { [K in keyof C & keyof T as T[K]['selector']]: SystemStyleObject } => {
     return Object.fromEntries(
       Object.entries(config).map(([key, value]) => {
         const part = parts[key]
