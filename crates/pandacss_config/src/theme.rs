@@ -12,8 +12,8 @@ pub type TokenGroup<T> = IndexMap<String, TokenNode<T>>;
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Theme {
-    #[serde(default)]
-    pub breakpoints: BTreeMap<String, String>,
+    #[serde(flatten)]
+    scales: ConditionScales,
     #[serde(default)]
     pub keyframes: StyleConfig,
     #[serde(default)]
@@ -31,83 +31,111 @@ pub struct Theme {
     #[serde(default)]
     pub slot_recipes: BTreeMap<String, RecipeConfig>,
     #[serde(default)]
-    pub containers: BTreeMap<String, String>,
-    #[serde(default)]
-    pub container_names: Vec<String>,
-    #[serde(default)]
     pub color_palette: ColorPaletteOptions,
 }
 
 impl Theme {
     #[must_use]
+    pub fn breakpoints(&self) -> &BTreeMap<String, String> {
+        &self.scales.breakpoints
+    }
+
+    #[must_use]
     pub fn breakpoint_names(&self) -> Vec<String> {
-        let entries = ranges::sorted_scale(&self.breakpoints);
+        let entries = ranges::sorted_scale(&self.scales.breakpoints);
         let mut names = Vec::with_capacity(entries.len() + 1);
         names.push("base".to_owned());
         names.extend(entries.into_iter().map(|entry| entry.name));
         names
     }
 
-    #[must_use]
-    pub fn breakpoint_condition_names(&self) -> Vec<String> {
-        self.breakpoint_conditions()
-            .into_iter()
-            .map(|rule| rule.key)
-            .collect()
+    pub(crate) fn breakpoint_condition_keys(&self) -> impl Iterator<Item = &str> {
+        self.scales.breakpoint_queries.keys().map(String::as_str)
     }
 
     #[must_use]
     pub fn breakpoint_condition_query(&self, key: &str) -> Option<String> {
-        self.breakpoint_conditions()
-            .into_iter()
-            .find(|rule| rule.key == key)
-            .map(|rule| rule.query)
+        self.scales.breakpoint_queries.get(key).cloned()
     }
 
     #[must_use]
     pub fn container_names(&self) -> Vec<String> {
-        self.container_names.clone()
+        self.scales.container_names.clone()
     }
 
-    #[must_use]
-    pub fn container_condition_names(&self) -> Vec<String> {
-        self.container_conditions()
-            .into_iter()
-            .map(|condition| condition.key)
-            .collect()
+    pub(crate) fn container_condition_keys(&self) -> impl Iterator<Item = &str> {
+        self.scales.container_queries.keys().map(String::as_str)
     }
 
     #[must_use]
     pub fn container_condition_query(&self, key: &str) -> Option<String> {
-        self.container_conditions()
-            .into_iter()
-            .find(|condition| condition.key == key)
-            .map(|condition| condition.query)
+        self.scales.container_queries.get(key).cloned()
     }
 
     #[must_use]
     pub fn container_conditions(&self) -> Vec<ContainerCondition> {
-        let mut conditions = BTreeMap::new();
-        let scale = self.container_scale();
-
-        insert_container_conditions(&mut conditions, "", &scale);
-        for name in self.container_names.iter().filter(|name| !name.is_empty()) {
-            insert_container_conditions(&mut conditions, name, &scale);
-        }
-
-        conditions
-            .into_iter()
-            .map(|(key, query)| ContainerCondition { key, query })
+        self.scales
+            .container_queries
+            .iter()
+            .map(|(key, query)| ContainerCondition {
+                key: key.clone(),
+                query: query.clone(),
+            })
             .collect()
     }
+}
 
-    fn container_scale(&self) -> BTreeMap<String, String> {
-        self.containers.clone()
-    }
+/// The condition scales plus the lookups derived from them. Deserializing
+/// resolves the lookups once: a scale of N sizes expands to O(N^2) ranges, and
+/// the emitter resolves a condition for every rule it writes. Fields stay
+/// private so the two can never drift apart.
+#[derive(Debug, Clone, Default, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConditionScales {
+    breakpoints: BTreeMap<String, String>,
+    containers: BTreeMap<String, String>,
+    container_names: Vec<String>,
+    #[serde(skip)]
+    breakpoint_queries: BTreeMap<String, String>,
+    #[serde(skip)]
+    container_queries: BTreeMap<String, String>,
+}
 
-    fn breakpoint_conditions(&self) -> Vec<ranges::RangeRule> {
-        ranges::range_rules(&self.breakpoints, str::to_owned, |min, max| {
-            format!("@media {}", ranges::range_query("width", min, max))
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ConditionScalesRepr {
+    #[serde(default)]
+    breakpoints: BTreeMap<String, String>,
+    #[serde(default)]
+    containers: BTreeMap<String, String>,
+    #[serde(default)]
+    container_names: Vec<String>,
+}
+
+impl<'de> Deserialize<'de> for ConditionScales {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let repr = ConditionScalesRepr::deserialize(deserializer)?;
+
+        let breakpoint_queries =
+            ranges::range_rules(&repr.breakpoints, str::to_owned, |min, max| {
+                format!("@media {}", ranges::range_query("width", min, max))
+            })
+            .into_iter()
+            .map(|rule| (rule.key, rule.query))
+            .collect();
+
+        let mut container_queries = BTreeMap::new();
+        insert_container_conditions(&mut container_queries, "", &repr.containers);
+        for name in repr.container_names.iter().filter(|name| !name.is_empty()) {
+            insert_container_conditions(&mut container_queries, name, &repr.containers);
+        }
+
+        Ok(Self {
+            breakpoints: repr.breakpoints,
+            containers: repr.containers,
+            container_names: repr.container_names,
+            breakpoint_queries,
+            container_queries,
         })
     }
 }
@@ -341,8 +369,8 @@ pub struct TokenEntry<T> {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum SemanticValue<T> {
-    Conditions(IndexMap<String, SemanticValue<T>>),
     Value(T),
+    Conditions(IndexMap<String, SemanticValue<T>>),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

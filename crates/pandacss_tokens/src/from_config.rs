@@ -101,7 +101,7 @@ fn collect_breakpoint_tokens(
         .into_iter()
         .filter(|name| name != "base")
     {
-        let Some(value) = theme.breakpoints.get(&name) else {
+        let Some(value) = theme.breakpoints().get(&name) else {
             continue;
         };
         push_token(
@@ -582,12 +582,7 @@ fn expand_token_references(builder: &mut TokenDictionaryBuilder) -> Result<(), T
         }
 
         let value = Arc::clone(&tokens[index].value);
-        let expanded = expand_references(
-            value.as_ref(),
-            tokens,
-            &by_path,
-            tokens[index].category == TokenCategory::Colors,
-        )?;
+        let expanded = expand_references(value.as_ref(), tokens, &by_path)?;
         if let Some(expanded) = expanded {
             tokens[index].original_value = Some(value);
             tokens[index].value = Arc::from(expanded);
@@ -842,7 +837,6 @@ fn expand_references(
     value: &str,
     tokens: &[Token],
     by_path: &FxHashMap<Arc<str>, usize>,
-    allow_color_mix: bool,
 ) -> Result<Option<String>, TokenError> {
     let mut out = String::with_capacity(value.len());
     let mut rest = value;
@@ -858,14 +852,12 @@ fn expand_references(
             return Ok((out != value).then_some(out));
         };
         let key = after_start[..end].trim();
-        let replacement = if allow_color_mix && key.contains('/') {
+        let replacement = if let Some(index) = by_path.get(key) {
+            Cow::Borrowed(tokens[*index].var.as_ref())
+        } else if key.contains('/') {
             Cow::Owned(color_mix(key, tokens, by_path)?)
         } else {
-            Cow::Borrowed(
-                by_path
-                    .get(key)
-                    .map_or(key, |index| tokens[*index].var.as_ref()),
-            )
+            Cow::Borrowed(key)
         };
         out.push_str(&replacement);
         changed = true;

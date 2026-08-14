@@ -13,6 +13,12 @@ export const showcases: Showcase[] = [
     image: '/showcase/coinmarketcap.png'
   },
   {
+    name: 'Contra',
+    description: 'The professional network for independents',
+    url: 'https://contra.com/?view=projects',
+    image: '/showcase/contra.png'
+  },
+  {
     name: 'Magic Labs',
     description: 'Web3 Wallet Infrastructure',
     url: 'https://magic.link/',

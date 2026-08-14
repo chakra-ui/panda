@@ -113,7 +113,7 @@ fn deserializes_typed_theme_shape() {
         "slotRecipes": config.theme.slot_recipes.keys().collect::<Vec<_>>(),
         "containers": config.theme.container_names(),
         "containerCondition": config.container_condition("@card/md"),
-        "containerNames": &config.theme.container_names,
+        "containerNames": config.theme.container_names(),
         "colorPalette": {
             "enabled": config.theme.color_palette.enabled,
             "include": &config.theme.color_palette.include,

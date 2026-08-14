@@ -1,0 +1,35 @@
+---
+title: The Compiler Engine
+description: A short overview of Panda v2's Rust-based compiler, replacing the current PostCSS/ts-morph pipeline. Not yet shipped.
+---
+
+> **This page describes a feature that isn't available yet, and it's the least stable page in this section.** The v2
+> compiler's internal design has already changed shape more than once, so treat everything below as a snapshot, not
+> a spec. See [Upgrading to v2](/docs/styling/upgrading-to-v2) for the broader context.
+
+[How Panda works](/docs/styling/how-panda-works) describes today's pipeline: `ts-morph` walks your source as a
+TypeScript AST, and PostCSS turns the result into CSS. v2 replaces that with a Rust engine, exposed to JavaScript
+through two bindings, `@pandacss/compiler` (native, Node) and `@pandacss/compiler-wasm` (browser/WASM, for editor
+and playground contexts that can't run native code).
+
+The core entry point is a single `createCompiler(config)` call that returns a long-lived, stateful compiler, not a
+one-shot function. The expensive part, compiling your config into matchers, utilities, conditions, and a token
+dictionary, happens once, and the same instance is reused across every file you parse and every rebuild. Source
+files then flow through roughly six phases: construction, ingestion (reading matched files), extraction (parsing
+with [Oxc](https://oxc.rs/) and matching your style calls), encoding (turning usage into atomic style records),
+emission (turning those into actual CSS rules and layers), and output. As of this writing the CSS optimization phase
+specifically has no native implementation yet, that's one of several pieces still open.
+
+## Why this matters even before it ships
+
+The extraction and CSS-generation model itself, static analysis of your source, atomic CSS output organized into
+cascade layers, isn't changing. What changes is what runs underneath it: a compiled Rust engine instead of a
+JavaScript one, which is the basis for v2's performance goals. See the diagnostics and lint tooling planned around
+it: [Diagnostics Reference](/docs/reference/diagnostics), [ESLint & OXLint Plugin](/docs/reference/eslint-oxlint-plugin),
+and [Editor & IDE Tooling](/docs/reference/editor-tooling), all three are meant to share this same compiler core
+rather than reimplementing extraction logic separately.
+
+## See also
+
+- [How Panda works](/docs/styling/how-panda-works) for the current, shipped pipeline this replaces.
+- [Upgrading to v2](/docs/styling/upgrading-to-v2) for what else changes.

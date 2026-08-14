@@ -261,8 +261,8 @@ impl UserConfig {
             names.insert(theme_condition_name(key));
         }
 
-        names.extend(self.theme.breakpoint_condition_names());
-        names.extend(self.theme.container_condition_names());
+        names.extend(self.theme.breakpoint_condition_keys().map(str::to_owned));
+        names.extend(self.theme.container_condition_keys().map(str::to_owned));
         names.into_iter().collect()
     }
 

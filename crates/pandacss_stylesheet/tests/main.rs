@@ -1,6 +1,7 @@
 mod atomic;
 mod common;
 mod compositions;
+mod condition_cost;
 mod config_flags;
 mod fontface;
 mod global_css;

@@ -1,0 +1,86 @@
+---
+title: Shared styled-system in a monorepo
+description: Point every app in a monorepo at one generated styled-system package instead of each one re-deriving its own.
+---
+
+If every package in your monorepo runs its own Panda config from scratch, each one ends up with a slightly different
+`styled-system`: its own token names, its own recipe definitions, sometimes its own drift when one app updates a
+token and the others don't. The fix is the same one you'd use for an external [component
+library](/docs/design-systems/overview): one package owns the design system, everyone else imports from it.
+
+This is the internal version of that setup. There's no npm publish step and no external users to keep a stable API
+for, just a workspace dependency and [`importMap`](/docs/reference/config#importmap) so each app's own Panda
+instance recognizes the shared package's imports during extraction.
+
+## Point every app at one shared package
+
+Give the design system its own workspace package, the same way [Set up a library
+package](/docs/design-systems/setup) describes, then have each app depend on it and set `importMap` to match:
+
+```bash
+pnpm add @acme/styled-system --workspace
+```
+
+```tsx filename="apps/marketing/panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  //...
+  presets: ['@acme/styled-system/preset'],
+  importMap: '@acme/styled-system',
+  include: ['./src/**/*.{ts,tsx}']
+})
+```
+
+`presets` pulls in the shared tokens and recipe definitions so the app's own generated types match. `importMap`
+tells the app's parser that `import { css } from '@acme/styled-system/css'` is a style call, not an arbitrary
+function, so extraction and codegen work against the shared runtime instead of assuming a locally-declared one. Each
+app still runs its own `panda codegen`, since it still needs to extract its own source and generate CSS tailored to
+what it actually uses, it just isn't redefining the design system's tokens and recipes to do it.
+
+## Adding a local overlay
+
+Some apps need a few recipes or patterns of their own on top of the shared set, without forking the shared package.
+`importMap` accepts more than one root, so you can point extraction at both the shared package and the app's own
+local `styled-system` output in one go:
+
+```tsx filename="apps/marketing/panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  //...
+  presets: ['@acme/styled-system/preset'],
+  importMap: ['@acme/styled-system', './styled-system'],
+  outdir: 'styled-system'
+})
+```
+
+Extraction now recognizes imports from either root. Shared components import `css`/`cva` from `@acme/styled-system`
+as before; anything defined only in this app imports from its own local `./styled-system` output. `importMap` also
+accepts an object form when different categories (`css`, `recipes`, `patterns`, `jsx`, `tokens`) need different
+roots, for example if the shared package owns tokens and recipes but every app generates its own local patterns:
+
+```tsx
+importMap: {
+  css: ['@acme/styled-system/css', './styled-system/css'],
+  recipes: '@acme/styled-system/recipes',
+  patterns: './styled-system/patterns'
+}
+```
+
+See [`importMap`](/docs/reference/config#importmap) for the full set of accepted shapes.
+
+## Where this is headed
+
+An upcoming version of Panda is expected to collapse the `presets` plus `importMap` pairing above into a single
+`designSystem` field that resolves both automatically. See [Consuming a design
+system](/docs/design-systems/consuming-a-design-system) for what that looks like and how stable it is right now, this
+page's `presets` and `importMap` combination is what actually ships and works today.
+
+## See also
+
+- [Set up a library package](/docs/design-systems/setup) for creating the shared package itself.
+- [Avoiding CSS collisions](/docs/design-systems/avoiding-collisions) for what happens when two presets define a
+  token or recipe under the same name.
+- [Monorepo dev workflow](/docs/design-systems/monorepo-dev-workflow) for keeping the shared package's watch mode and
+  each app's dev server in sync.

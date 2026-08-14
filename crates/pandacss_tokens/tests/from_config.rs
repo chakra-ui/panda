@@ -279,7 +279,7 @@ fn from_config_transforms_composite_token_values() {
     colors.red: "#f00"
     easings.smooth: "cubic-bezier(0.4, 0, 0.2, 1)"
     fonts.body: "Inter, sans-serif"
-    gradients.brand: "linear-gradient(to right, var(--colors-red) 0px, blue 100px)"
+    gradients.brand: "linear-gradient(to right, var(--colors-red) 0%, blue 100%)"
     shadows.ring: "0px 1px 2px 0px rgb(0 0 0 / 0.1), 0px 0px 0px 1px var(--colors-red)"
     shadows.sm: 4px 10px 4px 0px var(--colors-red)
     "##);
@@ -327,6 +327,262 @@ fn from_config_expands_color_mix_references() {
     colors.pink: "#ff00ff"
     colors.ref: "color-mix(in oklab, var(--colors-border) 40%, transparent)"
     opacity.half: "0.5"
+    "##);
+}
+
+#[test]
+fn from_config_expands_alpha_modifier_reference_in_non_color_categories() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "colors": { "ink": { "value": "#000000" } },
+            },
+            "semanticTokens": {
+                "shadows": {
+                    "embeddedAlpha": { "value": "3px 3px 0 {colors.ink/10}" },
+                    "embeddedPlain": { "value": "3px 3px 0 {colors.ink}" },
+                },
+                "borders": {
+                    "embeddedAlpha": { "value": "1px solid {colors.ink/10}" },
+                },
+                "gradients": {
+                    "embeddedAlpha": { "value": "linear-gradient(to right, {colors.ink/10}, transparent)" },
+                },
+            },
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
+    borders.embeddedAlpha: "1px solid color-mix(in oklab, var(--colors-ink) 10%, transparent)"
+    colors.colorPalette: var(--colors-color-palette)
+    colors.ink: "#000000"
+    gradients.embeddedAlpha: "linear-gradient(to right, color-mix(in oklab, var(--colors-ink) 10%, transparent), transparent)"
+    shadows.embeddedAlpha: "3px 3px 0 color-mix(in oklab, var(--colors-ink) 10%, transparent)"
+    shadows.embeddedPlain: 3px 3px 0 var(--colors-ink)
+    "##);
+}
+
+#[test]
+fn from_config_resolves_slash_keyed_token_reference_over_color_mix() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "sizes": { "1/2": { "value": "50%" } },
+            },
+            "semanticTokens": {
+                "sizes": { "half": { "value": "{sizes.1/2}" } },
+            },
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_token_values(&dict), @r#"
+    sizes.1/2: 50%
+    sizes.half: "var(--sizes-1\\/2)"
+    "#);
+}
+
+#[test]
+fn from_config_serializes_composite_shadow_semantic_token() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "colors": { "ink": { "value": "#000000" } },
+            },
+            "semanticTokens": {
+                "shadows": {
+                    "composite": {
+                        "value": { "offsetX": "3px", "offsetY": "3px", "blur": "0", "spread": "0", "color": "{colors.ink}" },
+                    },
+                },
+            },
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
+    colors.colorPalette: var(--colors-color-palette)
+    colors.ink: "#000000"
+    shadows.composite: 3px 3px 0 0 var(--colors-ink)
+    "##);
+}
+
+/// `border` and `asset` share the composite path with `shadows`. Without the
+/// `SemanticValue` variant order they deserialize as conditions, producing
+/// `borders.card@color` / `assets.grid@type` instead of one serialized value.
+#[test]
+fn from_config_serializes_composite_border_and_asset_semantic_tokens() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "colors": { "ink": { "value": "#000000" } },
+            },
+            "semanticTokens": {
+                "borders": {
+                    "card": { "value": { "color": "{colors.ink}", "width": "1px", "style": "solid" } },
+                },
+                "gradients": {
+                    "sweep": { "value": { "type": "linear", "placement": "to right", "stops": ["{colors.ink}", "transparent"] } },
+                },
+                "assets": {
+                    "grid": { "value": { "type": "svg", "value": "<svg/>" } },
+                },
+            },
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
+    assets.grid: "url(\"data:image/svg+xml,%3csvg/%3e\")"
+    borders.card: 1px solid var(--colors-ink)
+    colors.colorPalette: var(--colors-color-palette)
+    colors.ink: "#000000"
+    gradients.sweep: "linear-gradient(to right, var(--colors-ink), transparent)"
+    "##);
+}
+
+/// `SemanticValue` tries the value before the conditions map, so a composite
+/// object is no longer mistaken for conditions. This is the other direction:
+/// a real conditions map whose branches are composites must still split into
+/// per-condition tokens for every category that has a composite form.
+#[test]
+fn from_config_keeps_conditions_for_composite_semantic_tokens() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "colors": { "ink": { "value": "#000000" }, "snow": { "value": "#ffffff" } },
+            },
+            "semanticTokens": {
+                "shadows": {
+                    "card": { "value": {
+                        "base": { "offsetX": "0", "offsetY": "1px", "blur": "2px", "spread": "0", "color": "{colors.ink}" },
+                        "_dark": { "offsetX": "0", "offsetY": "1px", "blur": "2px", "spread": "0", "color": "{colors.snow}" },
+                    } },
+                },
+                "borders": {
+                    "card": { "value": {
+                        "base": { "color": "{colors.ink}", "width": "1px", "style": "solid" },
+                        "_dark": { "color": "{colors.snow}", "width": "2px", "style": "dashed" },
+                    } },
+                },
+                "gradients": {
+                    "sweep": { "value": {
+                        "base": { "type": "linear", "placement": "to right", "stops": ["{colors.ink}", "transparent"] },
+                        "_dark": { "type": "linear", "placement": "to left", "stops": ["{colors.snow}", "transparent"] },
+                    } },
+                },
+                "assets": {
+                    "grid": { "value": {
+                        "base": { "type": "svg", "value": "<svg/>" },
+                        "_dark": { "type": "url", "value": "https://example.test/grid.png" },
+                    } },
+                },
+            },
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
+    assets.grid: "url(\"data:image/svg+xml,%3csvg/%3e\")"
+    assets.grid@_dark: "url(\"https://example.test/grid.png\")"
+    borders.card: 1px solid var(--colors-ink)
+    borders.card@_dark: 2px dashed var(--colors-snow)
+    colors.colorPalette: var(--colors-color-palette)
+    colors.ink: "#000000"
+    colors.snow: "#ffffff"
+    gradients.sweep: "linear-gradient(to right, var(--colors-ink), transparent)"
+    gradients.sweep@_dark: "linear-gradient(to left, var(--colors-snow), transparent)"
+    shadows.card: 0 1px 2px 0 var(--colors-ink)
+    shadows.card@_dark: 0 1px 2px 0 var(--colors-snow)
+    "##);
+}
+
+/// Shadow arrays and the `inset` flag also flow through the composite path.
+#[test]
+fn from_config_serializes_shadow_arrays_and_inset_semantic_tokens() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "colors": { "ink": { "value": "#000000" }, "snow": { "value": "#ffffff" } },
+            },
+            "semanticTokens": {
+                "shadows": {
+                    "layered": { "value": [
+                        { "offsetX": "0", "offsetY": "1px", "blur": "2px", "spread": "0", "color": "{colors.ink}" },
+                        { "offsetX": "0", "offsetY": "4px", "blur": "8px", "spread": "0", "color": "{colors.snow}" },
+                    ] },
+                    "strings": { "value": ["0 1px 2px {colors.ink}", "0 4px 8px {colors.snow}"] },
+                    "inner": { "value": { "offsetX": "0", "offsetY": "1px", "blur": "2px", "spread": "0", "color": "{colors.ink}", "inset": true } },
+                },
+            },
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
+    colors.colorPalette: var(--colors-color-palette)
+    colors.ink: "#000000"
+    colors.snow: "#ffffff"
+    shadows.inner: inset 0 1px 2px 0 var(--colors-ink)
+    shadows.layered: "0 1px 2px 0 var(--colors-ink), 0 4px 8px 0 var(--colors-snow)"
+    shadows.strings: "0 1px 2px var(--colors-ink), 0 4px 8px var(--colors-snow)"
+    "##);
+}
+
+/// Composite values accept bare numbers where CSS needs a unit. A stop position
+/// is a percentage along the gradient and a numeric placement is an angle;
+/// emitting either unitless gives a gradient that renders wrong, or not at all.
+#[test]
+fn from_config_gives_numeric_gradient_values_their_css_unit() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "gradients": {
+                    "angled": { "value": { "type": "linear", "placement": 45, "stops": ["red", "blue"] } },
+                    "positioned": { "value": { "type": "linear", "placement": "to right", "stops": [
+                        { "color": "red", "position": 0 },
+                        { "color": "blue", "position": 100 },
+                    ] } },
+                    "keyword": { "value": { "type": "radial", "placement": "circle at center", "stops": ["red", "blue"] } },
+                },
+            },
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
+    gradients.angled: "linear-gradient(45deg, red, blue)"
+    gradients.keyword: "radial-gradient(circle at center, red, blue)"
+    gradients.positioned: "linear-gradient(to right, red 0%, blue 100%)"
     "##);
 }
 

@@ -1,0 +1,60 @@
+---
+title: Troubleshooting
+description: Common build and packaging errors when shipping a Panda-based component library, and how to fix them.
+---
+
+Most of these come from the build tool bundling or externalizing the shared `styled-system` package differently
+than your library expects. They show up at build or type-check time, not at runtime, which makes them easy to
+mistake for a Panda bug when they're usually a bundler configuration mismatch.
+
+## Module resolution error for styled-system imports
+
+```
+ERROR: Could not resolve "../styled-system/xxx"
+```
+
+This usually means the file extension Panda generated doesn't match what your build tool expects to resolve. Set
+[`outExtension`](/docs/reference/config#outextension) in your `panda.config.ts` to match:
+
+```tsx filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  //...
+  outExtension: 'js'
+})
+```
+
+## Types like StyleContextProvider or a recipe's variant type aren't exported
+
+If users hit a type error saying something your library re-exports from the shared `styled-system` package
+isn't exported, for example a `createStyleContext`-generated provider type, or a recipe's variant type, check two
+things before assuming it's a Panda issue:
+
+1. **The `styled-system` package's own `exports` map.** Every conditional export needs `types` listed first, before
+   `import` and `require`. If `types` isn't first, some type checkers resolve the wrong (or no) declaration file for
+   that subpath. See the exports map in [Set up a library package](/docs/design-systems/setup#create-the-package) for
+   the expected shape.
+2. **Whether your build tool bundles or externalizes declaration files for that package.** If your library's build
+   step tries to inline the shared package's types into your own `.d.ts` output, and that package's declaration
+   files aren't structured the way the bundler expects, some named types can silently drop from the bundled output
+   even though the JS import works fine. If you hit this, try excluding the shared `styled-system` package from your
+   declaration bundling step entirely and let users resolve its types the normal way, through their own
+   `node_modules` resolution, rather than through your library's inlined `.d.ts`.
+
+## A component's prop type resolves to undefined
+
+This is usually the same root cause as above, a re-exported type not surviving declaration bundling, rather than
+anything wrong with the component itself. Confirm the type resolves correctly when imported directly from the
+`styled-system` package before assuming your component's own types are broken.
+
+## Yarn PnP
+
+If you use Yarn PnP, set `nodeLinker: node-modules` in `.yarnrc.yml`. Panda's generated `styled-system` package
+doesn't currently resolve correctly under PnP's strict linking.
+
+## Still stuck?
+
+Component library setup issues are usually specific to your build tool and monorepo layout. Check
+[GitHub Discussions](https://github.com/chakra-ui/panda/discussions) for similar setups, or ask in
+[Discord](https://discord.gg/VQrkpsgSx7).
