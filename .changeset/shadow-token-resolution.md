@@ -2,11 +2,12 @@
 '@pandacss/compiler': patch
 ---
 
-Fix two shadow token bugs that produced invalid CSS or no output.
+Fix the `{colors.x/alpha}` opacity modifier being ignored outside the `colors` category. In `shadows`, `borders` and
+`gradients` it passed through as raw `colors.x/alpha` text, which browsers drop. It now expands to `color-mix(...)`
+everywhere.
 
-A `{colors.x/alpha}` opacity modifier inside a `shadows` value (or any non-color category, like `borders` and `gradients`) now expands to `color-mix(...)` instead of emitting the raw `colors.x/alpha` text, which the browser dropped.
-
-The composite `Shadow` object form in `semanticTokens` now works:
+Fix the composite object form of a `semanticTokens` value emitting nothing. It was parsed as a conditions map named
+after its own keys. Applies to composite `shadow`, `border` and `asset` values.
 
 ```ts
 semanticTokens: {
@@ -15,5 +16,3 @@ semanticTokens: {
   },
 }
 ```
-
-It used to be read as conditions and emit nothing. The same fix covers composite `border`, `gradient`, and `asset` semantic tokens.
