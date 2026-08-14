@@ -115,7 +115,7 @@ export default defineConfig({
 > ⚠️ Semantic Token values need to be nested in an object with a `value` key. This is to allow for additional properties
 > like `description` and more in the future.
 
-Semantic tokens can also be changed based on the [conditions](/docs/concepts/conditional-styles) like light and dark
+Semantic tokens can also be changed based on the [conditions](/docs/styling/conditional-styles) like light and dark
 modes.
 
 For example, if you want a color to change automatically based on light or dark mode.
@@ -141,7 +141,7 @@ export default defineConfig({
 ```
 
 > NOTE 🚨: The conditions used in semantic tokens must be an at-rule or parent selector
-> [condition](/docs/concepts/conditional-styles#reference).
+> [condition](/docs/styling/conditional-styles#reference).
 
 ## Token Nesting
 
@@ -624,7 +624,7 @@ const theme = {
 ## Token Helpers
 
 To help defining tokens in a type-safe way, you can use the tokens
-[Config Functions](/docs/customization/config-functions#token-creators).
+[Config Functions](/docs/design-systems/config-functions#token-creators).
 
 ## CSS variables
 
@@ -649,4 +649,4 @@ This will generate a CSS file similar to the following:
 }
 ```
 
-You can also define type-safe CSS variables using [globalVars](/docs/concepts/writing-styles#property-conflicts).
+You can also define type-safe CSS variables using [globalVars](/docs/styling/writing-styles#property-conflicts).

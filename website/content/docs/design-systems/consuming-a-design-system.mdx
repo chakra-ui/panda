@@ -1,0 +1,47 @@
+---
+title: Consuming a design system
+description: An upcoming single config field for adopting a design system preset, replacing manual presets, importMap, and include wiring.
+---
+
+> **This page describes a feature that isn't available in the current release.** It's part of a larger rewrite of
+> Panda's engine that hasn't shipped yet, and the exact shape below is still marked as a draft internally, so treat
+> it as directional rather than a reference you can use today. If you're consuming a design system right now, see
+> [Presets](/docs/design-systems/presets) for the current, supported way to do it.
+
+## The problem it's meant to solve
+
+Today, adopting a design system means wiring three separate config options by hand: `presets` for the tokens and
+recipes, `importMap` so Panda recognizes the shared package's imports, and `include` so the app's build also picks
+up the design system's own pre-extracted styles. It's easy to get one of the three wrong, and the app ends up
+re-extracting components the design system already extracted once.
+
+## The planned shape
+
+A consumer is expected to write one field instead:
+
+```ts
+export default {
+  designSystem: '@acme/ds'
+}
+```
+
+The design system package publishes a manifest file describing its preset, its pre-extracted build output, and its
+import paths, so Panda can resolve all three from that one field. Nested design systems (one built on top of
+another) are expected to work by having the manifest record its own parent, so the chain resolves without the app
+needing to know about every layer.
+
+## What's genuinely unresolved
+
+The API shape has already changed once before landing (an earlier draft proposed apps declaring how design systems
+combine explicitly; that's since been simplified in favor of the manifest just recording its own parent). Whether
+you'll be able to consume more than one design system in the same app at once is explicitly still an open question,
+not a planned feature.
+
+## Where to go instead, for now
+
+- [Presets](/docs/design-systems/presets) is the current, real way to consume a shared design system: add it to
+  `presets`, set `importMap` to match its package name, and optionally use `include` if the package ships build
+  info. That workflow isn't going away, `designSystem` is planned as a shorthand for it, not a replacement that
+  breaks it.
+- [Building a design system with Panda](/docs/design-systems/preset-overview) if you're authoring one, not
+  consuming one.

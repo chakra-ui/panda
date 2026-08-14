@@ -1,0 +1,79 @@
+---
+title: Migration strategy
+description: Run Panda alongside your current styling solution during a gradual migration, and what to know about how the two systems interact on the page.
+---
+
+Most real migrations aren't a single rewrite, they're Panda and your current solution running on the same page for
+weeks or months while you convert one component or route at a time. This page covers what to know before you start
+that: how the two systems interact in the cascade, and a prompt you can hand to an AI coding agent to speed up the
+conversion itself. For the specifics of translating one particular tool's API to Panda's, jump straight to its
+guide: [Stitches](/docs/styling/stitches), [Styled Components](/docs/styling/styled-components), [Theme
+UI](/docs/styling/theme-ui), [Tailwind](/docs/styling/tailwind), [Chakra UI](/docs/styling/chakra-ui),
+[Emotion](/docs/styling/emotion), [StyleX](/docs/styling/stylex).
+
+## The one thing that surprises people: layered vs. unlayered CSS
+
+Panda's generated CSS ships inside [cascade layers](/docs/styling/cascade-layers) (`@layer reset, base, tokens,
+recipes, utilities`). Per the CSS spec, **any unlayered rule beats every layered rule**, regardless of selector
+specificity or which stylesheet loaded last. Most existing CSS, plain stylesheets, most CSS-in-JS libraries, is
+unlayered.
+
+That means during a migration, your existing styles win over Panda's by default, even for a component you've already
+converted. If you see a converted component still showing its old styles, this is almost always why, not a
+specificity bug in your new Panda styles.
+
+Two ways to fix it, depending on which side you want to win:
+
+- **Let Panda's new styles win.** Strip the `@layer` wrapper from Panda's own output with
+  [`postcss-cascade-layers`](/docs/styling/cascade-layers#polyfills). It emulates each layer's priority using
+  specificity instead of the `@layer` rule, so Panda's CSS competes as unlayered CSS against your legacy styles
+  instead of automatically losing to them.
+- **Keep your legacy styles as the fallback while you migrate.** Leave both as they are. Converted components need
+  a specific enough legacy override removed (or the legacy selector deleted) once they're fully on Panda, since
+  layering alone won't make Panda's version win.
+
+If your previous tool also uses cascade layers (rare, but check if you're coming from a tool that ships its own
+`@layer` rules), the fix is different: use [`layers`](/docs/reference/config#layers) to rename Panda's layers so they
+don't collide with the other tool's layer names, then declare both tools' `@layer` statements in one explicit order
+at the top of your CSS. Order in that declaration, not import order, decides priority between two layered sources.
+
+## Migrating gradually, not all at once
+
+Pick one boundary and hold it consistently for the length of the migration, either by route, by component
+directory, or by team. Trying to convert overlapping pieces of the same component tree from two teams at once is
+where most of the cascade confusion above actually bites. A clean boundary also makes `git blame` and rollback
+straightforward if a converted piece needs to revert temporarily.
+
+## AGENT PROMPT: converting a component to Panda
+
+Paste this into an AI coding agent along with the component file you want converted, filling in the tool you're
+migrating from:
+
+```text
+You are converting a component from [STITCHES / STYLED-COMPONENTS / THEME UI / TAILWIND / CHAKRA UI / EMOTION /
+STYLEX] to Panda CSS. Follow these rules:
+
+1. Read the migration guide at https://panda-css.com/docs/styling/[stitches|styled-components|theme-ui|tailwind|
+   chakra-ui|emotion|stylex] first, and translate the component using the equivalents shown there, not general CSS
+   knowledge.
+2. Prefer the `css()` function for one-off styles, and `cva()`/`sva()` (defined with `styled-system/recipes` and
+   `styled-system/patterns` imports) only when the component already has real variants, don't introduce variants
+   that didn't exist in the original.
+3. Map every raw color/spacing/font value in the original component to a design token from `styled-system/tokens` if
+   an equivalent token exists. If none exists, leave the raw value and flag it in a comment rather than guessing at
+   a token name.
+4. Do not invent Panda config options, hooks, or CLI flags. If you're unsure whether something exists, say so instead
+   of guessing.
+5. Preserve the original component's props and behavior exactly, this is a styling migration, not a refactor. Don't
+   rename props, change default variants, or restructure the component's JSX unless the styling approach requires it.
+6. After converting, list anything you weren't able to translate directly (a CSS feature the old tool supported that
+   Panda handles differently, a dynamic style that needs `css.raw()` or a data attribute instead) so a human can
+   review it.
+```
+
+## See also
+
+- [Cascade Layers](/docs/styling/cascade-layers) for the full layer model this page's coexistence advice is based
+  on.
+- [Federated Micro-Frontends](/docs/design-systems/federated-microfrontends) if your migration also involves
+  multiple independently-built bundles on the same page, a related but different collision problem.

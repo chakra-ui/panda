@@ -1,0 +1,410 @@
+---
+title: Build a design system with Panda
+description:
+  Ship your tokens, recipes, and components as one package, and consume it in any app with a single config line.
+---
+
+Panda lets you ship a design system as its own package: tokens, recipes, patterns, and components. Any app consumes it
+with one line of config. You build the design system once, run `panda lib`, and apps opt in with `designSystem`. Each
+app generates only the styles it adds and reuses the design system's build output for the rest, so nothing is scanned or
+emitted twice.
+
+Sharing only part of your system, or styling apps that don't use Panda? See
+[when to use each](#choose-how-to-distribute) below.
+
+## Choose how to distribute
+
+There's more than one way to share styles. Pick based on who uses Panda:
+
+| You want to…                                               | Use                                     | Guide                                               |
+| ---------------------------------------------------------- | --------------------------------------- | --------------------------------------------------- |
+| Share a full design system between apps that all use Panda | `panda lib` + `designSystem`            | This guide                                          |
+| Share only tokens, recipes, or patterns (no components)    | A [preset](/docs/design-systems/presets) | [Presets](/docs/design-systems/presets)              |
+| Style apps that don't use Panda                            | A prebuilt static CSS file              | [Component library](/docs/design-systems/overview) |
+
+This guide covers the first case: you own the design system and the apps, and both run Panda. You get type-safe tokens,
+tree-shaking, and no duplicated config.
+
+## How it works
+
+A design system lives in one package. It defines your theme (tokens, semantic tokens, recipes, patterns) and, if you
+want, ships components built on top of it.
+
+`panda lib` turns that package into something other Panda projects can consume. It writes three machine artifacts under
+`dist/panda/` and syncs your `package.json` exports:
+
+- `lib.json` is the manifest: your package name, the Panda version it targets, an import map to your generated
+  `styled-system`, and the source files a consumer can re-extract from if needed.
+- `preset.mjs` is your theme as a Panda preset. It carries the token, recipe, and pattern definitions.
+- `buildinfo.json` is the extraction metadata: which styles the design system already uses.
+
+An app opts in with a single line:
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  designSystem: '@acme/ds'
+})
+```
+
+`designSystem` wires up both artifacts for you: the preset, so the app knows your tokens and recipes, and the build
+info, so the app reuses what the design system already generated. You never reference `preset.mjs` or `buildinfo.json`
+by hand.
+
+The app also generates less. When it runs `panda codegen`, it emits only the styles it adds. Everything the design
+system already owns (its recipes, patterns, JSX components, and the generic runtime like `css`, `cva`, and `cx`) is
+re-exported from the design system package instead of copied. Your app's `styled-system` becomes a thin overlay, not a
+second copy. [Extend the design system](#extend-the-design-system) shows what that looks like in practice.
+
+## Set up the monorepo
+
+A monorepo keeps the design system and its apps together while they stay separate packages. This guide uses pnpm
+workspaces.
+
+```yaml filename="pnpm-workspace.yaml"
+packages:
+  - 'packages/*'
+```
+
+```txt
+my-design-system/
+├── packages/
+│   ├── ds/        # the design system
+│   └── app/       # an app that consumes it
+├── package.json
+└── pnpm-workspace.yaml
+```
+
+## Build the design system package
+
+### Configure the theme
+
+Create `packages/ds/panda.config.ts`. Define your tokens, recipes, and patterns, and set `jsxFramework` if you ship
+components as JSX.
+
+```ts filename="packages/ds/panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  presets: ['@pandacss/preset-base'],
+  include: ['src/**/*.{ts,tsx}'],
+  outdir: 'styled-system',
+  jsxFramework: 'react',
+  theme: {
+    tokens: {
+      colors: {
+        brand: { value: '#facc15' }
+      },
+      radii: {
+        md: { value: '0.375rem' }
+      }
+    },
+    recipes: {
+      button: {
+        className: 'button',
+        base: {
+          display: 'inline-flex',
+          alignItems: 'center',
+          borderRadius: 'md',
+          paddingInline: '4',
+          color: 'black',
+          backgroundColor: 'brand'
+        }
+      }
+    }
+  }
+})
+```
+
+### Author your components
+
+Generate the `styled-system` with `panda codegen`, then build components on top of it. Import from the local
+`styled-system`; consumers get their own access later.
+
+```tsx filename="packages/ds/src/button/button.tsx"
+import type { ComponentPropsWithoutRef } from 'react'
+import { css } from '../../styled-system/css'
+
+export function Button(props: ComponentPropsWithoutRef<'button'>) {
+  return <button className={css({ color: 'black', bg: 'brand', px: '4', borderRadius: 'md' })} {...props} />
+}
+```
+
+```ts filename="packages/ds/src/index.ts"
+export { Button } from './button/button'
+```
+
+### Set up package.json
+
+Write your package entry, the build scripts, and the peer dependency on `@pandacss/dev`. You don't list the
+`styled-system` exports yourself; `panda lib` adds them.
+
+```json filename="packages/ds/package.json"
+{
+  "name": "@acme/ds",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "codegen": "panda codegen",
+    "lib": "panda codegen && panda lib",
+    "watch": "panda codegen && panda lib --watch"
+  },
+  "peerDependencies": {
+    "@pandacss/dev": "^2.0.0",
+    "react": ">=18"
+  }
+}
+```
+
+### Publish the library artifacts
+
+Run `panda lib`:
+
+```bash
+pnpm --filter @acme/ds lib
+```
+
+This runs codegen, writes `lib.json`, `preset.mjs`, and `buildinfo.json` under `dist/panda/`, and syncs your
+`package.json` exports. It adds `./panda/*` (the manifest a consumer reads) plus a subpath for each `styled-system`
+category the codegen emitted, such as `./css`, `./recipes`, `./patterns`, `./jsx`, and `./tokens`. Only the categories
+you actually use are exported. The overlay resolves through these, so let `panda lib` manage them.
+
+`dist/panda/` is what consumers read, so build it before you publish. A `"prepublishOnly": "panda lib"` script keeps it
+fresh without committing generated output.
+
+## Consume the design system in an app
+
+### Point the app at the design system
+
+Add the design system as a dependency, then reference it with `designSystem`. Anything under `theme.extend` layers on
+top of the design system's theme.
+
+```json filename="packages/app/package.json"
+{
+  "name": "@acme/app",
+  "type": "module",
+  "dependencies": {
+    "@acme/ds": "workspace:*"
+  },
+  "devDependencies": {
+    "@pandacss/dev": "^2.0.0",
+    "@pandacss/vite": "^2.0.0"
+  }
+}
+```
+
+```ts filename="packages/app/panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  designSystem: '@acme/ds',
+  include: ['src/**/*.tsx'],
+  outdir: 'styled-system',
+  theme: {
+    extend: {
+      tokens: {
+        spacing: {
+          6: { value: '1.5rem' }
+        }
+      }
+    }
+  }
+})
+```
+
+### Wire up the bundler
+
+Add Panda through your bundler. With Vite, use the `@pandacss/vite` plugin; `transform: true` inlines static styles at
+build time. See the [framework guides](/docs/styling/getting-started) for other setups.
+
+```ts filename="packages/app/vite.config.ts"
+import pandacss from '@pandacss/vite'
+import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  plugins: [pandacss({ transform: true }), react()]
+})
+```
+
+### Add the entry CSS
+
+Panda emits into [cascade layers](/docs/styling/cascade-layers). Declare their order once in an entry stylesheet and
+import it at your app's root. This is what puts the CSS on the page, and fixing the layer order here keeps overrides
+predictable no matter what order your files import in.
+
+```css filename="packages/app/src/index.css"
+@layer reset, base, tokens, recipes, utilities;
+```
+
+```tsx filename="packages/app/src/main.tsx"
+import { createRoot } from 'react-dom/client'
+import { App } from './app'
+import './index.css'
+
+createRoot(document.getElementById('root')!).render(<App />)
+```
+
+### Use the design system
+
+Import components from the design system, and import `css` from your local `styled-system`. The local `styled-system`
+carries the design system's tokens plus your own extensions.
+
+```tsx filename="packages/app/src/app.tsx"
+import { Button } from '@acme/ds'
+import { css } from '../styled-system/css'
+
+export function App() {
+  return (
+    <main className={css({ color: 'brand', p: '6' })}>
+      <Button>Welcome</Button>
+    </main>
+  )
+}
+```
+
+## Consume with PostCSS
+
+If the app runs Panda through PostCSS instead of a bundler plugin, only the PostCSS config changes. `designSystem`, the
+entry CSS, and the imports stay the same.
+
+```js filename="postcss.config.mjs"
+import pandacss from '@pandacss/postcss'
+
+export default {
+  plugins: [pandacss()]
+}
+```
+
+## Extend the design system
+
+An app can add its own recipes and patterns on top of the design system. You author them under `theme.extend`, and they
+become your local delta. Everything the design system already owns is re-exported from its package, so you import both
+from the same place: your local `styled-system`.
+
+```ts filename="packages/app/panda.config.ts"
+export default defineConfig({
+  designSystem: '@acme/ds',
+  theme: {
+    extend: {
+      recipes: {
+        panel: {
+          className: 'panel',
+          base: { display: 'flex', flexDirection: 'column', gap: '3', p: '3' }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx filename="packages/app/src/app.tsx"
+import { Button } from '@acme/ds'
+// `panel` is the app's own recipe; `button` is re-exported from the design system.
+import { button, panel } from '../styled-system/recipes'
+
+export function App() {
+  return (
+    <div className={panel()}>
+      <button className={button()}>Welcome</button>
+    </div>
+  )
+}
+```
+
+### What stays virtual, and what regenerates
+
+The rule is simple: an artifact comes from the design system unless you redeclare the config it's built from. Redeclare
+means you author the field yourself, not merely inherit it from the design system's preset.
+
+- Recipes and patterns you add, or redeclare to override, are generated locally. Everything else is re-exported.
+- The `css` runtime (`css`, `cva`, `cx`, `sva`, and conditions) comes from the design system unless you author
+  `conditions`, `breakpoints`, or `utilities`.
+- Changing `prefix`, `hash`, `separator`, `jsxFramework`, `jsxStyleProps`, or `syntax` regenerates the whole runtime
+  locally, because the design system's runtime no longer matches yours.
+
+### Override a design system value
+
+To change something the design system owns, redeclare it. Panda merges your definition over the original, warns so the
+override isn't silent, and your version wins.
+
+- Overriding a token raises `design_system_token_conflict`.
+- Overriding a recipe, pattern, or other exported artifact raises `design_system_artifact_conflict`, and the design
+  system's version drops out of the re-export in favor of yours.
+
+## Isolate styles with a prefix
+
+By default, two Panda builds emit the same class names, like `.button` and `--colors-brand`. That's fine for one app. It
+collides when the same styles load in more than one independently-built bundle: micro-frontends, widgets embedded in a
+host, or two design systems in one app.
+
+Set a `prefix` on the consumer's config to namespace its class names and CSS variables:
+
+```ts filename="packages/app/panda.config.ts"
+export default defineConfig({
+  designSystem: '@acme/ds',
+  prefix: 'app' // .button → .app-button, --colors-brand → --app-colors-brand
+})
+```
+
+Each consumer picks its own prefix by its own identity, not by design system version, so their output can't clash even
+on different versions of the same design system. A prefix that differs from the design system's regenerates the runtime
+locally rather than re-exporting it, which is what you want when the goal is isolated output.
+
+## Develop with watch mode
+
+While building the design system and an app together, run both in watch mode so the app picks up design system changes
+as you make them:
+
+```bash
+pnpm --filter @acme/ds watch   # panda lib --watch
+pnpm --filter @acme/app dev
+```
+
+`panda lib --watch` rewrites the artifacts whenever your tokens, recipes, or components change.
+
+## Version and publish
+
+Bump the design system's package version as you would any library, then publish:
+
+```bash
+pnpm --filter @acme/ds lib
+pnpm --filter @acme/ds publish
+```
+
+Two things to know about versions:
+
+- **Panda major must match.** `panda lib` stamps the Panda version the design system targets, from its `@pandacss/dev`
+  peer or the `--panda` flag. A consumer must run the same Panda major, so the design system and its apps upgrade Panda
+  together.
+- **Stale build info self-heals.** If a consumer's Panda can't use the shipped `buildinfo.json`, for example after a
+  version bump, Panda re-extracts the design system's source from the files listed in `lib.json`. Styles stay correct;
+  the consumer just does a little more work until you republish.
+
+## Troubleshooting
+
+- **`design_system_export_missing`** means the design system's `package.json` doesn't export something the overlay
+  needs. Rebuild the design system with `panda lib` so its exports are in sync, then reinstall.
+- **`design_system_token_conflict` / `design_system_artifact_conflict`** are expected when you override on purpose. They
+  fire so an unintended shadow of a design system value doesn't pass silently.
+- **Nested design systems** (a design system that extends another) work, but a nested consumer emits its full local tree
+  instead of a thin overlay. Output is correct, just not deduped.
+
+## Worked example
+
+The [design system example](https://github.com/chakra-ui/panda/tree/v2/sandbox-design-system) in the Panda repo wires
+the full setup together: the design system, a Vite app, a PostCSS app, and an app that extends the design system.
+
+## Next steps
+
+- [Presets](/docs/design-systems/presets) — share theme configuration without the full library workflow.
+- [Using Panda in a component library](/docs/design-systems/overview) — ship a preset, or a static CSS file for apps
+  that don't run Panda.
+- [Cascade layers](/docs/styling/cascade-layers) — how Panda orders output, and why overrides stay predictable.
+- [Tokens](/docs/theming/tokens) and [Recipes](/docs/styling/recipes) — the building blocks your design system defines.
+
+```
+
+```

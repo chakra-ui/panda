@@ -1,0 +1,61 @@
+---
+title: Performance & Optimization
+description: What actually costs time in a Panda project, build time, IDE responsiveness, and strictTokens, and how to check before you tune.
+---
+
+Panda ships zero runtime cost, see [How Panda works](/docs/styling/how-panda-works), but that doesn't mean nothing
+costs time. Two different things get blamed under "Panda is slow": the build (`panda cssgen`/`codegen`, or your
+bundler plugin) and the editor (TypeScript checking your style calls). They have different causes and different
+fixes.
+
+## Measure before you tune
+
+Don't guess which phase is slow. Panda's CLI can generate a flamegraph for any command:
+
+```bash
+panda --cpu-prof
+```
+
+This produces a `.cpuprofile` file you can open in [Speedscope](https://www.speedscope.app/) to see exactly which
+phase, config resolution, file parsing, CSS generation, is actually taking the time. See
+[Debugging](/docs/reference/debugging#performance-profiling) for the full flag list across `codegen`, `cssgen`, and
+`debug`.
+
+## Build time: scope what gets scanned
+
+Extraction time scales with how many files [`include`](/docs/reference/config#include) matches, and how many style
+calls are inside them. The most direct lever is making that glob no wider than it needs to be, don't include test
+files, storybook files, or generated output if they never call `css()`/`cva()` themselves. See
+[Debugging](/docs/reference/debugging#panda-debug) for `panda debug`, which shows exactly which files were scanned
+for a given run, useful for spotting an `include` pattern that's wider than intended.
+
+## IDE responsiveness and `strictTokens`
+
+If your editor feels sluggish specifically while editing `css()` calls or JSX style props, not while editing
+anything else, this is usually TypeScript re-checking a large generated union type, not Panda itself running
+anything.
+
+[`strictTokens`](/docs/reference/config#stricttokens) is the main thing that changes how big that union gets. With
+it off, most style properties accept a token union **or** a permissive string fallback, so an unrecognized value
+still type-checks (just without catching typos). With it on, that permissive fallback is removed and the property
+only accepts the real token union, which is what gives you the safety, but it also means TypeScript has to check
+every value against the full token list instead of a loose `string` type. The more tokens a category has, the bigger
+that union gets.
+
+`strictTokens` is a single project-wide boolean today, there's no built-in way to enable it for some token
+categories and not others. If you want that (for example, strict `colors` but permissive `fontSizes`), you'd build
+it with a [`config:resolved` hook](/docs/design-systems/hooks) that filters which properties get the strict
+treatment, Panda doesn't ship that filtering out of the box.
+
+The generated style-prop types themselves are large by nature too, they enumerate every CSS property against its
+token union, independent of `strictTokens`. If your editor is slow across a big project, check whether disabling
+`strictTokens` measurably helps before assuming it's something else, that's the one config knob that changes the
+size of what TypeScript has to check on every style call.
+
+## See also
+
+- [How Panda works](/docs/styling/how-panda-works) for why there's no runtime cost to weigh against these build/IDE
+  costs in the first place.
+- [Debugging](/docs/reference/debugging) for `--cpu-prof`, `panda debug`, and `PANDA_DEBUG`.
+- [Static CSS Generation](/docs/design-systems/static) and [Federated Micro-Frontends](/docs/design-systems/federated-microfrontends)
+  for scaling considerations once you're shipping to multiple apps, not just optimizing one.

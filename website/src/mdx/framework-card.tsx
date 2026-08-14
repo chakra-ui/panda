@@ -20,78 +20,78 @@ import Link from 'next/link'
 const logoMap = {
   nextjs: {
     name: 'Next.js',
-    href: '/docs/installation/nextjs',
+    href: '/docs/styling/nextjs',
     logo: NextjsLogo
   },
   gatsby: {
     name: 'Gatsby',
     logo: GatsbyLogo,
-    href: '/docs/installation/gatsby'
+    href: '/docs/styling/gatsby'
   },
   solid: {
     name: 'Solid',
     logo: SolidjsLogo,
-    href: '/docs/installation/solidjs'
+    href: '/docs/styling/solidjs'
   },
   vite: {
     name: 'Vite',
     logo: ViteLogo,
-    href: '/docs/installation/vite'
+    href: '/docs/styling/vite'
   },
   preact: {
     name: 'Preact',
     logo: PreactLogo,
-    href: '/docs/installation/preact'
+    href: '/docs/styling/preact'
   },
   svelte: {
     name: 'Svelte',
     logo: SvelteLogo,
-    href: '/docs/installation/svelte'
+    href: '/docs/styling/svelte'
   },
   astro: {
     name: 'Astro',
     logo: AstroLogo,
-    href: '/docs/installation/astro'
+    href: '/docs/styling/astro'
   },
   remix: {
     name: 'Remix',
     logo: RemixLogo,
-    href: '/docs/installation/remix'
+    href: '/docs/styling/remix'
   },
   reactrouter: {
     name: 'React Router',
     logo: ReactRouterLogo,
-    href: '/docs/installation/react-router'
+    href: '/docs/styling/react-router'
   },
   qwik: {
     name: 'Qwik',
     logo: QwikLogo,
-    href: '/docs/installation/qwik'
+    href: '/docs/styling/qwik'
   },
   redwood: {
     name: 'Redwood',
     logo: RedwoodLogo,
-    href: '/docs/installation/redwood'
+    href: '/docs/styling/redwood'
   },
   rsbuild: {
     name: 'Rsbuild',
     logo: RsbuildLogo,
-    href: '/docs/installation/rsbuild'
+    href: '/docs/styling/rsbuild'
   },
   vue: {
     name: 'Vue',
     logo: VueLogo,
-    href: '/docs/installation/vue'
+    href: '/docs/styling/vue'
   },
   storybook: {
     name: 'Storybook',
     logo: StorybookLogo,
-    href: '/docs/installation/storybook'
+    href: '/docs/styling/storybook'
   },
   ember: {
     name: 'Ember',
     logo: EmberLogo,
-    href: '/docs/installation/ember'
+    href: '/docs/styling/ember'
   }
 }
 

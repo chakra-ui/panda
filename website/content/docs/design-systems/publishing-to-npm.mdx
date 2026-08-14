@@ -1,0 +1,79 @@
+---
+title: Publishing to npm
+description: What to include in the package, how to version it, and how to check the published output before it ships.
+---
+
+[Set up a library package](/docs/design-systems/setup) covers creating the `styled-system` package and its `exports`
+map. This page covers what happens after that, actually publishing it so other teams can install it.
+
+## Decide what ships
+
+Most packages publish only their built output, not source. Set `files` in `package.json` to the built directory so
+`npm publish` (or `pnpm publish`) ignores everything else, source, config, tests, by default:
+
+```json filename="package.json"
+{
+  "files": ["dist"]
+}
+```
+
+The one exception is the build-info approach from [Ship the styled-system vs the CSS](/docs/design-systems/ship-styled-system#ship-the-build-info-file):
+if you're shipping a `panda.buildinfo.json` alongside your compiled output, add it to `files` too so it actually
+reaches the registry.
+
+```json filename="package.json"
+{
+  "files": ["dist", "panda.buildinfo.json"]
+}
+```
+
+Scoped packages default to private on npm. If yours is meant to be publicly installable, set `publishConfig`:
+
+```json filename="package.json"
+{
+  "name": "@acme/design-system",
+  "publishConfig": {
+    "access": "public"
+  }
+}
+```
+
+## Version deliberately
+
+A design system's version isn't just a changelog entry, it's the thing users pin against. Renaming a token, changing
+a recipe's default variant, or reshaping a component's props are breaking changes even if nothing throws a type
+error, since they change what a user's already-generated CSS expects. Treat these the same as any other public API:
+major bump for anything that changes what an existing user's code produces, minor for new tokens/recipes/components,
+patch for internal fixes that don't change output.
+
+This matters more once you're running [federated micro-frontends](/docs/design-systems/federated-microfrontends):
+that guide's cross-version isolation depends on remotes pinning different majors deliberately, not on version bumps
+being accidental.
+
+If you want version bumps and changelog entries automated rather than hand-rolled, [Changesets](https://github.com/changesets/changesets)
+is a common choice for this, Panda's own monorepo uses it, though it's a general npm tool with no special Panda
+integration.
+
+## Check the published output before it ships
+
+`exports` map mistakes (the wrong file in `files`, a `types` condition listed after `import`/`require`, see
+[Troubleshooting](/docs/design-systems/troubleshooting#types-like-stylecontextprovider-or-a-recipes-variant-type-arent-exported))
+are much cheaper to catch before publishing than after. Both `npm` and `pnpm` can build the exact tarball a real
+publish would upload, without touching the registry:
+
+```bash
+npm pack --dry-run
+# or
+pnpm publish --dry-run
+```
+
+Read the file list it prints and confirm nothing you expect is missing, and nothing you didn't mean to publish
+(a stray `src/`, a local `.env`) is there.
+
+## See also
+
+- [Set up a library package](/docs/design-systems/setup) for the package itself and its `exports` map.
+- [Ship the styled-system vs the CSS](/docs/design-systems/ship-styled-system) for what to build before you publish
+  it, static CSS, source, or build info.
+- [Federated Micro-Frontends](/docs/design-systems/federated-microfrontends) for why version discipline matters once
+  more than one version of your design system can load on the same page.
