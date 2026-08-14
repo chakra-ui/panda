@@ -67,14 +67,27 @@ fn emit(containers: usize) -> (Duration, String) {
     (start.elapsed(), css)
 }
 
+/// Fastest of a few runs. A loaded machine only ever adds time, so the minimum
+/// is the sample least affected by whatever else the CI box is doing.
+fn fastest_emit(containers: usize) -> (Duration, String) {
+    let mut best = emit(containers);
+    for _ in 0..2 {
+        let next = emit(containers);
+        if next.0 < best.0 {
+            best = next;
+        }
+    }
+    best
+}
+
 #[test]
 fn growing_the_container_scale_does_not_change_emit_cost() {
     // Warm up so allocator and branch-prediction effects land outside the timings.
     let _ = emit(4);
     let _ = emit(48);
 
-    let (small_time, small_css) = emit(4);
-    let (large_time, large_css) = emit(48);
+    let (small_time, small_css) = fastest_emit(4);
+    let (large_time, large_css) = fastest_emit(48);
 
     assert_eq!(
         small_css, large_css,
