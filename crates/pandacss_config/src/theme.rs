@@ -369,8 +369,8 @@ pub struct TokenEntry<T> {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum SemanticValue<T> {
-    Conditions(IndexMap<String, SemanticValue<T>>),
     Value(T),
+    Conditions(IndexMap<String, SemanticValue<T>>),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

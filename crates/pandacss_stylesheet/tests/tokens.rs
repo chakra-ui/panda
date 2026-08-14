@@ -67,6 +67,36 @@ fn emits_primitive_and_semantic_token_vars() {
 }
 
 #[test]
+fn emits_shadow_alpha_modifier_and_composite_token_vars() {
+    let config = config(serde_json::json!({
+        "theme": {
+            "tokens": {
+                "colors": { "ink": { "value": "#000000" } }
+            },
+            "semanticTokens": {
+                "shadows": {
+                    "embeddedAlpha": { "value": "3px 3px 0 {colors.ink/10}" },
+                    "composite": {
+                        "value": { "offsetX": "3px", "offsetY": "3px", "blur": "0", "spread": "0", "color": "{colors.ink}" }
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Tokens]);
+    assert_snapshot!(css, @"
+    @layer tokens {
+      :where(:root, :host) {
+        --colors-ink: #000000;
+        --shadows-embedded-alpha: 3px 3px 0 color-mix(in oklab, var(--colors-ink) 10%, transparent);
+        --shadows-composite: 3px 3px 0 0 var(--colors-ink);
+      }
+    }
+    ");
+}
+
+#[test]
 fn optimize_tokens_keeps_only_referenced_vars() {
     let config = config(serde_json::json!({
         "optimize": { "removeUnusedTokens": true },
