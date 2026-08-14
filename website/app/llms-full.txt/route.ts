@@ -8,15 +8,10 @@ export async function GET() {
 
   // Group docs by category
   const categories = [
-    { key: 'overview', title: 'Overview' },
-    { key: 'installation', title: 'Installation' },
-    { key: 'concepts', title: 'Concepts' },
+    { key: 'styling', title: 'Styling' },
     { key: 'theming', title: 'Theming' },
-    { key: 'utilities', title: 'Utilities' },
-    { key: 'customization', title: 'Customization' },
-    { key: 'guides', title: 'Guides' },
-    { key: 'migration', title: 'Migration' },
-    { key: 'references', title: 'References' }
+    { key: 'design-systems', title: 'Design Systems' },
+    { key: 'reference', title: 'Reference' }
   ]
 
   const content = generateFullDocumentation(sortedDocs, categories)

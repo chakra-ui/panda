@@ -1,4 +1,4 @@
-import { docsNavigation, type NavItem } from '@/docs.config'
+import { docsTabs, type NavItem } from '@/docs.config'
 import { ChevronRightIcon } from '@/icons'
 import { css } from '@/styled-system/css'
 import { Box, HStack } from '@/styled-system/jsx'
@@ -14,39 +14,19 @@ interface Props {
   slug: string
 }
 
-// Flatten navigation to get all pages in order
-function flattenNavigation(
-  items: NavItem[],
-  prefix = '',
-  category = ''
-): PaginationItem[] {
+// Flatten a single tab's groups into an ordered page list. Scoped to one tab so
+// prev/next never crosses a tab boundary. Each tab is a self-contained sequence.
+function flattenTab(tabKey: string, groups: NavItem[]): PaginationItem[] {
   const result: PaginationItem[] = []
 
-  for (const item of items) {
-    // Skip external links
-    if (item.external) continue
-
-    // Determine the current category
-    const currentCategory = category || item.title
-
-    // If item has a URL and no children, add it as a page
-    if (item.url && !item.items) {
-      const url = prefix ? `${prefix}/${item.url}` : item.url
-      result.push({ title: item.title, url, category: currentCategory })
-    }
-
-    // Recursively process child items
-    if (item.items) {
-      const currentPrefix = item.url
-        ? prefix
-          ? `${prefix}/${item.url}`
-          : item.url
-        : prefix
-      // Pass the category down - if this is a top-level section, use its title as category
-      const categoryToPass = !prefix && item.url ? item.title : currentCategory
-      result.push(
-        ...flattenNavigation(item.items, currentPrefix, categoryToPass)
-      )
+  for (const group of groups) {
+    for (const item of group.items || []) {
+      if (item.external || !item.url) continue
+      result.push({
+        title: item.title,
+        url: `${tabKey}/${item.url}`,
+        category: group.title
+      })
     }
   }
 
@@ -57,9 +37,16 @@ function getPagination(currentSlug: string): {
   prev?: PaginationItem
   next?: PaginationItem
 } {
-  const allPages = flattenNavigation(docsNavigation.items || [])
+  const tabKey = currentSlug.split('/')[0]
+  const tab = docsTabs.find(t => t.key === tabKey)
 
-  // Find exact match - the slug should match the page URL exactly
+  if (!tab) {
+    return {}
+  }
+
+  const allPages = flattenTab(tabKey, tab.items)
+
+  // Find the exact match: the slug should match the page URL exactly
   const currentIndex = allPages.findIndex(page => {
     return page.url === currentSlug
   })

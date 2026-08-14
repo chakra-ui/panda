@@ -1,0 +1,134 @@
+---
+title: Ship the styled-system vs the CSS
+description: Three ways to get your component library's styles into a user's app, from a plain CSS file to a build-info artifact.
+---
+
+Once your library has a shared [`styled-system` package](/docs/design-systems/setup), you still need to decide how
+the user actually gets your components' styles. Panda gives you three options, in order of how much they ask of
+the user.
+
+## Ship a static CSS file
+
+The simplest option: extract your library's CSS at build time and let the user import a plain stylesheet. This
+works even if the user doesn't use Panda at all.
+
+```tsx filename="src/index.tsx"
+import { css } from '../styled-system/css'
+
+export function Button({ children }) {
+  return (
+    <button type="button" className={css({ bg: 'red.300', px: '2', py: '3' })}>
+      {children}
+    </button>
+  )
+}
+```
+
+Build the library, then generate the CSS file:
+
+```bash
+# build the library code
+tsup src/index.tsx
+
+# generate the static CSS file
+panda cssgen --outfile dist/styles.css
+```
+
+The user imports the stylesheet directly, alongside the [cascade layers](/docs/styling/cascade-layers) declaration
+so layer order stays correct:
+
+```tsx filename="src/App.tsx"
+import { Button } from '@acme-org/design-system'
+import './main.css'
+
+export function App() {
+  return <Button>Click me</Button>
+}
+```
+
+```css filename="src/main.css"
+@layer reset, base, tokens, recipes, utilities;
+@import url('@acme-org/design-system/dist/styles.css');
+
+/* Your own styles here */
+```
+
+The tradeoffs: the user can't customize the styles since the CSS is already generated, you may need
+[`prefix`](/docs/reference/config#prefix) to avoid class-name conflicts with the user's own Panda output, and
+running two atomic CSS libraries in the same app can produce duplicate classes for the same declarations.
+
+## Include the source files
+
+If the user already uses Panda and your library lives in the same monorepo, point Panda at your library's
+source directly:
+
+```tsx {6} filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  //...
+  include: ['../@acme-org/design-system/src/**/*.tsx', './src/**/*.{ts,tsx}'],
+  importMap: '@acme-org/styled-system',
+  outdir: 'styled-system'
+})
+```
+
+Panda re-extracts your components' styles as part of the user's own build. This has the same end result as
+shipping build info (below), but it means shipping your library's source code, not just its compiled output.
+
+## Ship the build info file
+
+This is the middle ground: the user's Panda still generates the CSS, but from a pre-computed extraction result
+instead of your source files. You keep your source private, and the user doesn't re-parse your components.
+
+The build info file is a JSON artifact that records only the static extraction result (which style calls your
+components made, and with what values). It doesn't include your compiled JS or components themselves, you still
+ship your normal library build alongside it.
+
+Generate it after building your library:
+
+```bash
+panda ship --outfile dist/panda.buildinfo.json
+```
+
+> A future major version of Panda renames this command to `panda buildinfo` as part of a broader rewrite of how the
+> build-info format works internally. The file it produces stays named `panda.buildinfo.json` either way, and the
+> `include` step below is expected to keep working the same.
+
+Then, in the user's config, include the build info file the same way you'd include source:
+
+```tsx {6} filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  //...
+  include: ['./node_modules/@acme-org/design-system/dist/panda.buildinfo.json', './src/**/*.{ts,tsx}'],
+  importMap: '@acme-org/styled-system',
+  outdir: 'styled-system'
+})
+```
+
+This unlocks the same imports as the source-files approach, without needing your source:
+
+```tsx
+import { css } from '@acme-org/styled-system/css'
+import { button } from '@acme-org/styled-system/recipes'
+```
+
+## Which one to use
+
+- User's app doesn't use Panda: ship a static CSS file.
+- Your library code shouldn't be published, and the user's app uses Panda: ship the build info file.
+- Your library lives in the same monorepo as the user: include the source files directly.
+- Your library only ships tokens, recipes, or patterns, not components: skip all three, [ship a preset](/docs/design-systems/presets)
+  instead.
+
+If you use the include-source-files or build-info approach and your library has custom tokens, recipes, or patterns,
+you'll likely still need to ship a [preset](/docs/design-systems/presets) alongside it.
+
+## See also
+
+- [Track usage in wrapped components](/docs/design-systems/track-usage) covers what happens when a user imports
+  your components through a re-export or a thin wrapper, and how that affects which of the above actually resolves
+  styles.
+- [Troubleshooting](/docs/design-systems/troubleshooting) covers the most common build errors with each approach.

@@ -1,0 +1,66 @@
+---
+title: forwardProps
+description: Use the styled() factory to wrap single elements or third-party components for distribution.
+---
+
+Not every component in a library is a multi-part compound like an accordion or tabs. A `Button`, `Input`, or a
+wrapped third-party component is usually a single element, and the [`styled()` factory](/docs/styling/style-props#factory-function)
+is the right tool for that. This page covers the decisions specific to wrapping something for distribution; the
+factory's full API lives at [JSX Style Props](/docs/styling/style-props#factory-function).
+
+## Wrapping a third-party component
+
+`styled()` accepts any component, not just JSX intrinsics like `'button'`. This is how you add Panda's style props to
+a component you don't own:
+
+```tsx
+import { styled } from '../styled-system/jsx'
+import { Button as HeadlessButton } from 'some-headless-lib'
+
+const Button = styled(HeadlessButton)
+```
+
+Users can now pass style props directly, on top of whatever props the wrapped component already accepts.
+
+## Deciding what gets forwarded
+
+By default, `styled()` forwards every prop except recipe variants and style props to the underlying element. That's
+usually right for a plain `'button'` or `'div'`, but wrapping someone else's component raises a specific question:
+does the wrapped component need to see a value that Panda would otherwise treat as a variant or a style prop?
+
+That's what `forwardProps` is for. List the prop names that should reach your component as-is, in addition to
+driving the recipe:
+
+```tsx
+import { styled } from '../styled-system/jsx'
+
+const Input = styled('input', {}, { forwardProps: ['size'] })
+```
+
+Here, `size` still selects the matching recipe variant, but the underlying `<input>` also receives it as a real HTML
+attribute. Without `forwardProps`, Panda would consume `size` for styling and never pass it through.
+
+> A forwarded prop becomes a plain prop on the wrapped component: it no longer feeds recipe styling on its own after
+> that point. If you need a prop to both style a slot and reach the component, and you're wrapping a multi-part
+> compound rather than a single element, see [Forwarding props](/docs/styling/jsx-style-context#forwarding-props) in
+> `createStyleContext` instead.
+
+## When forwardProps isn't enough
+
+`forwardProps` takes a fixed list. If which props get forwarded depends on the component you're wrapping, for
+example when integrating a library like Framer Motion that has its own valid prop set, use `shouldForwardProp`
+instead. See [shouldForwardProp](/docs/styling/style-props#shouldforwardprop) for the full signature and a worked
+example.
+
+## Naming the factory
+
+Users of your library see whatever name you export, not the underlying `styled()` call. If your library wraps
+several third-party components this way, keep the naming consistent with the component being wrapped so users
+can tell your exports apart from the library's own.
+
+## See also
+
+- [Wrap headless UI](/docs/design-systems/wrap-headless-ui) covers the equivalent decision for multi-part compounds
+  built with `createStyleContext`, not single-element wrappers.
+- [Track usage in wrapped components](/docs/design-systems/track-usage) covers how Panda's static extraction handles
+  a component re-exported or wrapped like this.

@@ -1,7 +1,7 @@
 'use client'
 
 import { Badge } from '@/components/ui/badge'
-import { docsNavigation, type NavItem } from '@/docs.config'
+import { docsTabs } from '@/docs.config'
 import { ChevronDownIcon, ChevronRightIcon } from '@/icons'
 import { css } from '@/styled-system/css'
 import { Box, HStack, Stack } from '@/styled-system/jsx'
@@ -10,94 +10,93 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { LuArrowUpRight } from 'react-icons/lu'
 
-interface SidebarItem {
-  title: string
-  slug: string
-  external?: boolean
-  href?: string
-  tag?: string
-  children?: SidebarItem[]
-}
-
 interface Props {
+  /** `{tabKey}/{page}`, e.g. `styling/why-panda`. Matches the docs page route's `slug`. */
   slug?: string
 }
 
+const linkStyles = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '2',
+  px: '4',
+  py: '1.5',
+  rounded: 'md',
+  textStyle: 'sm',
+  color: 'fg.muted',
+  bg: 'transparent',
+  fontWeight: 'normal',
+  transitionProperty: 'background, color',
+  transitionDuration: '200ms',
+  _hover: { bg: 'bg.subtle', color: 'fg' },
+  _current: {
+    color: 'fg',
+    bg: 'accent.subtle',
+    fontWeight: 'semibold'
+  }
+})
+
 export function Sidebar({ slug: currentSlug }: Props) {
   const pathname = usePathname()
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set()
-  )
+  // pathname is `/docs/{tabKey}/...`; currentSlug (when passed) is `{tabKey}/...`
+  const tabKey = pathname?.split('/')[2] || currentSlug?.split('/')[0]
+  const tab = docsTabs.find(t => t.key === tabKey)
 
-  // Use the sidebar structure from config
-  const sidebarStructure: SidebarItem[] =
-    docsNavigation.items?.map((section: NavItem) => ({
-      title: section.title,
-      slug: section.url || '',
-      tag: section.tag,
-      children: section.items?.map((item: NavItem) => ({
-        title: item.title,
-        slug: item.external ? item.href || '' : `${section.url}/${item.url}`,
-        external: item.external,
-        href: item.href,
-        tag: item.tag
-      }))
-    })) || []
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
 
-  const toggleSection = (slug: string) => {
-    setExpandedSections(prev => {
+  if (!tab) return null
+
+  const isActive = (pageUrl: string) =>
+    pathname === `/docs/${tabKey}/${pageUrl}` ||
+    currentSlug === `${tabKey}/${pageUrl}`
+
+  const isGroupActive = (groupItems: typeof tab.items[number]['items']) =>
+    groupItems?.some(item => item.url && isActive(item.url)) || false
+
+  const toggleGroup = (title: string) => {
+    setExpandedGroups(prev => {
       const next = new Set(prev)
-      if (next.has(slug)) {
-        next.delete(slug)
+      if (next.has(title)) {
+        next.delete(title)
       } else {
-        next.add(slug)
+        next.add(title)
       }
       return next
     })
   }
 
-  const isActive = (slug: string) => {
-    return pathname === `/docs/${slug}` || currentSlug === slug
-  }
-
-  const isSectionActive = (section: SidebarItem) => {
-    return section.children?.some(child => isActive(child.slug)) || false
-  }
-
   return (
     <Stack as="nav" gap="1">
-      {sidebarStructure.map(section => {
+      {tab.items.map(group => {
         const isExpanded =
-          expandedSections.has(section.slug) || isSectionActive(section)
+          expandedGroups.has(group.title) || isGroupActive(group.items)
 
         return (
-          <div key={section.slug}>
+          <div key={group.title}>
             <button
-              onClick={() => toggleSection(section.slug)}
+              onClick={() => toggleGroup(group.title)}
               className={css({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 w: 'full',
-                px: 3,
-                py: 2,
+                px: '3',
+                py: '2',
                 rounded: 'md',
                 fontWeight: 'semibold',
                 fontSize: 'sm',
                 color: 'fg',
                 transitionProperty: 'background',
                 transitionDuration: '200ms',
-                _hover: {
-                  bg: 'bg.subtle'
-                },
+                _hover: { bg: 'bg.subtle' },
                 cursor: 'pointer'
               })}
             >
               <HStack>
-                <span>{section.title}</span>
-                {section.tag && <Badge variant="solid">{section.tag}</Badge>}
+                <span>{group.title}</span>
+                {group.tag && <Badge variant="solid">{group.tag}</Badge>}
               </HStack>
-              {section.children && (
+              {group.items && (
                 <Box
                   as={isExpanded ? ChevronDownIcon : ChevronRightIcon}
                   w="4"
@@ -107,35 +106,14 @@ export function Sidebar({ slug: currentSlug }: Props) {
               )}
             </button>
 
-            {isExpanded && section.children && (
+            {isExpanded && group.items && (
               <Stack gap="0.5" mt="1">
-                {section.children.map(item => {
-                  const linkStyles = css({
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '2',
-                    px: '4',
-                    py: '1.5',
-                    rounded: 'md',
-                    textStyle: 'sm',
-                    color: 'fg.muted',
-                    bg: 'transparent',
-                    fontWeight: 'normal',
-                    transitionProperty: 'background, color',
-                    transitionDuration: '200ms',
-                    _current: {
-                      color: 'fg',
-                      bg: 'accent.subtle',
-                      fontWeight: 'semibold'
-                    }
-                  })
-
+                {group.items.map(item => {
                   if (item.external) {
                     return (
                       <a
-                        key={item.slug}
-                        href={item.href || item.slug}
-                        data-current={isActive(item.slug) || undefined}
+                        key={item.title}
+                        href={item.href}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={linkStyles}
@@ -146,11 +124,13 @@ export function Sidebar({ slug: currentSlug }: Props) {
                     )
                   }
 
+                  if (!item.url) return null
+
                   return (
                     <Link
-                      key={item.slug}
-                      href={`/docs/${item.slug}`}
-                      data-current={isActive(item.slug) || undefined}
+                      key={item.url}
+                      href={`/docs/${tabKey}/${item.url}`}
+                      data-current={isActive(item.url) || undefined}
                       className={linkStyles}
                     >
                       <span>{item.title}</span>
