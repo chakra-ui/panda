@@ -69,6 +69,11 @@ atoms also key off conditions), and the producer's resolved `var(--…)` baked i
 their transform is applied to the carrier atom's conditions at extraction and baked into `entries`, so they need
 nothing at hydrate time.
 
+Recompute only works when the consumer actually merged the library's preset. If it didn't, the utility is unknown and
+the atom emits as the kebab-cased name (`box-size`). `Project::collect_unregistered_hydrated_utility_diagnostics` catches
+that: a hydrated prop that's neither a known utility nor a CSS property raises `design_system_utility_unregistered`, so
+the silent fallback surfaces as a warning instead.
+
 Runtime `token()` / `token.var()` calls that require a CSS variable are carried separately in `tokenRefs`. They may not
 produce an atom or recipe—for example, an exported `token.var('colors.brand')` value—but still seed `removeUnusedTokens`
 after hydration. Primitive `token()` calls that inline a non-variable value are intentionally not retained.

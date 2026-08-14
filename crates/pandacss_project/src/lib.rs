@@ -51,7 +51,8 @@ use pandacss_extractor::{
     MatchCategory, extract,
 };
 use pandacss_recipes::{Recipe, SlotRecipe};
-use pandacss_shared::{ViewTransitionStyle, diagnostic_codes};
+use pandacss_shared::css_properties::is_css_property;
+use pandacss_shared::{ViewTransitionStyle, diagnostic_codes, hyphenate_property};
 use pandacss_utility::{ShorthandPolicy, StyleNormalizer, Utility};
 
 /// Key into the utility-transform override map: `(prop, original_value)`. The
@@ -1219,6 +1220,7 @@ impl Project {
             diagnostics.extend(config_diagnostics.iter().cloned());
         }
         diagnostics.extend(hydrated_diagnostics);
+        diagnostics.extend(self.collect_unregistered_hydrated_utility_diagnostics());
 
         ProjectStylesheetSnapshots {
             atoms: self
@@ -1548,6 +1550,34 @@ impl Project {
         }
 
         (overrides, diagnostics)
+    }
+
+    fn collect_unregistered_hydrated_utility_diagnostics(&self) -> Vec<Diagnostic> {
+        let utility = self.config.utility.as_ref();
+        let mut seen: FxHashSet<(&str, &str)> = FxHashSet::default();
+        let mut diagnostics = Vec::new();
+        for (path, entry) in &self.files {
+            let Some(name) = path.strip_prefix(crate::build_info::HYDRATED_FILE_PREFIX) else {
+                continue;
+            };
+            for atom in &entry.atoms {
+                let prop = atom.prop();
+                if utility.is_some_and(|utility| utility.is_known(prop)) || is_css_property(prop) {
+                    continue;
+                }
+                if !seen.insert((name, prop)) {
+                    continue;
+                }
+                diagnostics.push(Diagnostic::warning(
+                    diagnostic_codes::DESIGN_SYSTEM_UTILITY_UNREGISTERED,
+                    format!(
+                        "design system \"{name}\" uses \"{prop}\", which this project's config has no utility for, so its rule emits as \"{}\". Merge \"{name}\"'s preset so \"{prop}\" resolves.",
+                        hyphenate_property(prop)
+                    ),
+                ));
+            }
+        }
+        diagnostics
     }
 
     /// Distinct keys from hydrated atoms whose utility declares a JS transform
