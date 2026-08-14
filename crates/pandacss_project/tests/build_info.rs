@@ -1265,3 +1265,289 @@ fn hydrate_rejects_corrupt_view_transition_class_index() {
     let mut consumer = create_project(json!({}));
     assert!(!consumer.hydrate("@acme/ds", &info, None));
 }
+
+#[test]
+fn a_hydrated_atom_gets_its_transform_recomputed_by_the_consumer() {
+    use pandacss_project::{
+        Diagnostic, ExtractedLiteral as Literal, ParseTransforms, UtilityTransformFn,
+    };
+
+    // The library's preset ships this utility, so the consumer's own config
+    // declares it too and holds the callback.
+    let config_overrides = json!({
+        "theme": { "tokens": { "sizes": { "4": { "value": "1rem" } } } },
+        "utilities": {
+            "boxSize": {
+                "className": "size",
+                "values": "sizes",
+                "transform": { "kind": "js-callback", "id": "boxSize" }
+            }
+        }
+    });
+
+    let mut transform = |prop: &str,
+                         resolved: &AtomValue,
+                         _original: &AtomValue|
+     -> Result<Option<Literal>, Diagnostic> {
+        if prop != "boxSize" {
+            return Ok(None);
+        }
+        let value = match resolved {
+            AtomValue::String(value)
+            | AtomValue::Number(value)
+            | AtomValue::Token { value, .. } => value.to_string(),
+            AtomValue::Bool(_) | AtomValue::Null => return Ok(None),
+        };
+        Ok(Some(Literal::Object(vec![
+            ("width".to_owned(), Literal::String(value.clone())),
+            ("height".to_owned(), Literal::String(value)),
+        ])))
+    };
+
+    let mut lib = create_project(config_overrides.clone());
+    lib.parse_file_with(
+        "thing.tsx",
+        "import { css } from '@panda/css'; css({ boxSize: '4' });",
+        ParseTransforms {
+            utility: Some(&mut transform as &mut UtilityTransformFn<'_>),
+            ..Default::default()
+        },
+    );
+
+    let info = lib.build_info("^2.0.0".into());
+    let json = serde_json::to_string(&info).expect("serialize");
+    // The carrier atom travels; the transform result does not.
+    assert!(
+        !json.contains("width"),
+        "build info must not carry transform output"
+    );
+
+    let restored: BuildInfo = serde_json::from_str(&json).expect("deserialize");
+    let mut consumer = create_project(config_overrides.clone());
+    assert!(consumer.hydrate("@acme/ds", &restored, None));
+
+    let config = create_config(config_overrides);
+    let snapshots = consumer.stylesheet_snapshots_with_utility_transform(
+        &config,
+        &mut transform as &mut UtilityTransformFn<'_>,
+    );
+
+    let style = snapshots
+        .utility_styles
+        .values()
+        .next()
+        .expect("consumer recomputed the transform for the hydrated atom");
+    let object = style.to_json();
+    assert_eq!(object["width"], object["height"]);
+    assert_eq!(object["width"], serde_json::json!("var(--sizes-4)"));
+    assert_eq!(snapshots.utility_styles.len(), 1);
+}
+
+/// Shared fixture for the hydrated-transform tests: a `boxSize` utility whose
+/// JS transform expands to `width`/`height`.
+fn box_size_config() -> serde_json::Value {
+    json!({
+        "theme": {
+            "tokens": { "sizes": { "4": { "value": "1rem" }, "8": { "value": "2rem" } } },
+            "breakpoints": { "md": "768px" }
+        },
+        "conditions": { "hover": "&:hover", "focus": "&:focus" },
+        "utilities": {
+            "boxSize": {
+                "className": "size",
+                "values": "sizes",
+                "transform": { "kind": "js-callback", "id": "boxSize" }
+            }
+        }
+    })
+}
+
+#[allow(
+    clippy::unnecessary_wraps,
+    clippy::result_large_err,
+    reason = "signature must match UtilityTransformFn"
+)]
+fn box_size_transform(
+    prop: &str,
+    resolved: &AtomValue,
+    _original: &AtomValue,
+) -> Result<Option<pandacss_project::ExtractedLiteral>, pandacss_project::Diagnostic> {
+    use pandacss_project::ExtractedLiteral as Literal;
+    if prop != "boxSize" {
+        return Ok(None);
+    }
+    let value = match resolved {
+        AtomValue::String(value) | AtomValue::Number(value) | AtomValue::Token { value, .. } => {
+            value.to_string()
+        }
+        AtomValue::Bool(_) | AtomValue::Null => return Ok(None),
+    };
+    Ok(Some(Literal::Object(vec![
+        ("width".to_owned(), Literal::String(value.clone())),
+        ("height".to_owned(), Literal::String(value)),
+    ])))
+}
+
+#[test]
+fn one_transform_result_covers_a_hydrated_atom_used_under_many_conditions() {
+    use pandacss_project::{ParseTransforms, UtilityTransformFn};
+
+    let mut transform = box_size_transform;
+    let mut lib = create_project(box_size_config());
+    lib.parse_file_with(
+        "thing.tsx",
+        "import { css } from '@panda/css'; css({ boxSize: '4', _hover: { boxSize: '4' }, _focus: { boxSize: '4' }, md: { boxSize: '4' } });",
+        ParseTransforms {
+            utility: Some(&mut transform as &mut UtilityTransformFn<'_>),
+            ..Default::default()
+        },
+    );
+    let info = lib.build_info("^2.0.0".into());
+    let atoms_using_box_size = info.atoms.len();
+    assert!(atoms_using_box_size >= 4, "expected one atom per condition");
+
+    let mut consumer = create_project(box_size_config());
+    assert!(consumer.hydrate("@acme/ds", &info, None));
+
+    // Count invocations: the styles key off (prop, value), so the conditional
+    // atoms must collapse to a single call rather than one per condition.
+    let mut calls = 0_usize;
+    let mut counting = |prop: &str, resolved: &AtomValue, original: &AtomValue| {
+        if prop == "boxSize" {
+            calls += 1;
+        }
+        box_size_transform(prop, resolved, original)
+    };
+
+    let config = create_config(box_size_config());
+    let snapshots = consumer.stylesheet_snapshots_with_utility_transform(
+        &config,
+        &mut counting as &mut UtilityTransformFn<'_>,
+    );
+    assert_eq!(snapshots.utility_styles.len(), 1);
+    drop(snapshots);
+
+    assert_eq!(
+        calls, 1,
+        "{atoms_using_box_size} hydrated atoms share one (prop, value) key, so the library callback should run once"
+    );
+}
+
+#[test]
+fn the_consumer_own_usage_wins_over_a_hydrated_atom_with_the_same_key() {
+    use pandacss_project::{ExtractedLiteral as Literal, ParseTransforms, UtilityTransformFn};
+
+    let mut lib_transform = box_size_transform;
+    let mut lib = create_project(box_size_config());
+    lib.parse_file_with(
+        "thing.tsx",
+        "import { css } from '@panda/css'; css({ boxSize: '4' });",
+        ParseTransforms {
+            utility: Some(&mut lib_transform as &mut UtilityTransformFn<'_>),
+            ..Default::default()
+        },
+    );
+    let info = lib.build_info("^2.0.0".into());
+
+    // The consumer parses the same utility itself, so the parse-time pass
+    // already recorded an entry for `(boxSize, 4)`.
+    let mut app_transform = |prop: &str,
+                             _resolved: &AtomValue,
+                             _original: &AtomValue|
+     -> Result<Option<Literal>, pandacss_project::Diagnostic> {
+        if prop != "boxSize" {
+            return Ok(None);
+        }
+        Ok(Some(Literal::Object(vec![(
+            "outline".to_owned(),
+            Literal::String("from-consumer".to_owned()),
+        )])))
+    };
+
+    let mut consumer = create_project(box_size_config());
+    consumer.parse_file_with(
+        "app.tsx",
+        "import { css } from '@panda/css'; css({ boxSize: '4' });",
+        ParseTransforms {
+            utility: Some(&mut app_transform as &mut UtilityTransformFn<'_>),
+            ..Default::default()
+        },
+    );
+    assert!(consumer.hydrate("@acme/ds", &info, None));
+
+    let config = create_config(box_size_config());
+    let snapshots = consumer.stylesheet_snapshots_with_utility_transform(
+        &config,
+        &mut app_transform as &mut UtilityTransformFn<'_>,
+    );
+
+    let style = snapshots
+        .utility_styles
+        .values()
+        .next()
+        .expect("an entry for the shared key");
+    assert_eq!(style.to_json()["outline"], json!("from-consumer"));
+    assert_eq!(snapshots.utility_styles.len(), 1);
+}
+
+#[test]
+fn a_module_filter_only_recomputes_transforms_for_imported_modules() {
+    use pandacss_project::{ParseTransforms, UtilityTransformFn};
+
+    let mut transform = box_size_transform;
+    let mut lib = create_project(box_size_config());
+    for (path, value) in [("kept.tsx", "4"), ("dropped.tsx", "8")] {
+        lib.parse_file_with(
+            path,
+            &format!("import {{ css }} from '@panda/css'; css({{ boxSize: '{value}' }});"),
+            ParseTransforms {
+                utility: Some(&mut transform as &mut UtilityTransformFn<'_>),
+                ..Default::default()
+            },
+        );
+    }
+    let info = lib.build_info("^2.0.0".into());
+
+    let mut consumer = create_project(box_size_config());
+    assert!(consumer.hydrate("@acme/ds", &info, Some(&["kept.tsx".into()])));
+    let config = create_config(box_size_config());
+    let snapshots = consumer.stylesheet_snapshots_with_utility_transform(
+        &config,
+        &mut transform as &mut UtilityTransformFn<'_>,
+    );
+
+    // Only the imported module's atom hydrates, so only its transform runs.
+    assert_eq!(snapshots.utility_styles.len(), 1);
+    let style = snapshots
+        .utility_styles
+        .values()
+        .next()
+        .expect("kept entry");
+    assert_eq!(style.to_json()["width"], json!("var(--sizes-4)"));
+}
+
+#[test]
+fn a_consumer_without_the_transform_callback_still_hydrates() {
+    use pandacss_project::{ParseTransforms, UtilityTransformFn};
+
+    let mut transform = box_size_transform;
+    let mut lib = create_project(box_size_config());
+    lib.parse_file_with(
+        "thing.tsx",
+        "import { css } from '@panda/css'; css({ boxSize: '4' });",
+        ParseTransforms {
+            utility: Some(&mut transform as &mut UtilityTransformFn<'_>),
+            ..Default::default()
+        },
+    );
+    let info = lib.build_info("^2.0.0".into());
+
+    let mut consumer = create_project(box_size_config());
+    assert!(consumer.hydrate("@acme/ds", &info, None));
+
+    // No transform passed: the atom survives and emits verbatim rather than panicking.
+    let config = create_config(box_size_config());
+    let snapshots = consumer.stylesheet_snapshots(&config);
+    assert!(snapshots.utility_styles.is_empty());
+    assert_eq!(snapshots.atoms.len(), 1);
+}

@@ -1205,8 +1205,10 @@ impl Project {
         self.refresh_encoded_recipes_snapshot();
         self.refresh_token_refs_snapshot();
         self.refresh_static_encoded_recipes_snapshot(user_config, utility_transform.as_deref_mut());
-        self.refresh_config_utility_styles(user_config, utility_transform);
-        let use_merged_utility_styles = self.prepare_snapshot_utility_styles();
+        self.refresh_config_utility_styles(user_config, utility_transform.as_deref_mut());
+        let (hydrated_styles, hydrated_diagnostics) =
+            self.collect_hydrated_utility_styles(utility_transform);
+        let use_merged_utility_styles = self.prepare_snapshot_utility_styles(&hydrated_styles);
         self.refresh_view_transitions_snapshot();
 
         let mut diagnostics = self
@@ -1216,6 +1218,7 @@ impl Project {
         if let Some((_, _, config_diagnostics)) = &self.config_utility_styles_cache {
             diagnostics.extend(config_diagnostics.iter().cloned());
         }
+        diagnostics.extend(hydrated_diagnostics);
 
         ProjectStylesheetSnapshots {
             atoms: self
@@ -1436,12 +1439,15 @@ impl Project {
 
     /// Merges config-authored overrides into `utility_styles_cache`; returns
     /// `false` (use the cache directly) when there are none.
-    fn prepare_snapshot_utility_styles(&mut self) -> bool {
-        let has_global = self
+    fn prepare_snapshot_utility_styles(
+        &mut self,
+        hydrated: &FxHashMap<UtilityStyleKey, Literal>,
+    ) -> bool {
+        let has_config_overrides = self
             .config_utility_styles_cache
             .as_ref()
             .is_some_and(|(_, overrides, _)| !overrides.is_empty());
-        if !has_global {
+        if !has_config_overrides && hydrated.is_empty() {
             self.merged_utility_styles_snapshot_cache = None;
             return false;
         }
@@ -1451,6 +1457,9 @@ impl Project {
             for (key, styles) in overrides {
                 merged.entry(key.clone()).or_insert_with(|| styles.clone());
             }
+        }
+        for (key, styles) in hydrated {
+            merged.entry(key.clone()).or_insert_with(|| styles.clone());
         }
         self.merged_utility_styles_snapshot_cache = Some(merged);
         true
@@ -1504,6 +1513,64 @@ impl Project {
             }
             serde_json::Value::Bool(_) | serde_json::Value::Null => {}
         }
+    }
+
+    /// Hydrated atoms are injected straight into a synthetic file entry, so they
+    /// never pass through the parse-time transform. The consumer holds the
+    /// library's callback — its preset ships the utility definition — so the
+    /// styles are recomputed here rather than shipped in build info.
+    fn collect_hydrated_utility_styles(
+        &self,
+        utility_transform: Option<&mut UtilityTransformFn<'_>>,
+    ) -> (FxHashMap<UtilityStyleKey, Literal>, Vec<Diagnostic>) {
+        let mut overrides = FxHashMap::default();
+        let mut diagnostics = Vec::new();
+
+        let (Some(transform), Some(utility)) = (utility_transform, self.config.utility.as_ref())
+        else {
+            return (overrides, diagnostics);
+        };
+
+        for (prop, value) in self.hydrated_transform_keys(utility) {
+            let resolved = resolved_atom_value(Some(utility), &prop, &value);
+            match transform(&prop, &resolved, &value) {
+                Ok(Some(styles)) if !is_empty_style_object(&styles) => {
+                    overrides.insert((prop, value), styles);
+                }
+                Ok(_) => {}
+                Err(diagnostic) => diagnostics.push(with_callback_target(
+                    diagnostic,
+                    "utility",
+                    &prop,
+                    Some(&atom_value_summary(&value)),
+                )),
+            }
+        }
+
+        (overrides, diagnostics)
+    }
+
+    /// Distinct keys from hydrated atoms whose utility declares a JS transform
+    /// and that no parsed file already covers. One entry per key, however many
+    /// conditions reference it.
+    fn hydrated_transform_keys(&self, utility: &Utility) -> FxHashSet<UtilityStyleKey> {
+        let mut pending = FxHashSet::default();
+        for (path, entry) in &self.files {
+            if !path.starts_with(crate::build_info::HYDRATED_FILE_PREFIX) {
+                continue;
+            }
+            for atom in &entry.atoms {
+                let canonical = utility.resolve_shorthand(atom.prop());
+                if utility.callback_transform_id(canonical).is_none() {
+                    continue;
+                }
+                let key: UtilityStyleKey = (Box::from(canonical), atom.value().clone());
+                if !self.utility_styles_cache.contains_key(&key) {
+                    pending.insert(key);
+                }
+            }
+        }
+        pending
     }
 
     fn is_transform_utility(&self, key: &str) -> bool {
