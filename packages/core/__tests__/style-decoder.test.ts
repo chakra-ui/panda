@@ -2334,6 +2334,7 @@ describe('style decoder', () => {
             },
           },
         },
+        "grouped": Set {},
         "recipes": Map {
           "checkbox" => Set {
             {
