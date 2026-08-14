@@ -4,7 +4,7 @@ description: Creating your own reusable preset for utilities and theme
 ---
 
 By default, any configuration you add in your own `panda.config.js` file is smartly merged with the
-[default presets](#which-panda-presets-will-be-included), allowing you to override or extend specific parts of the
+[default presets](#what-each-built-in-preset-does), allowing you to override or extend specific parts of the
 configuration.
 
 ## When to use a preset
@@ -136,7 +136,7 @@ export default defineConfig({
 ```
 
 `@pandacss/preset-base` is still included automatically unless you set `eject: true`. See
-[which presets are included](#which-panda-presets-will-be-included).
+[when each preset is included](#when-each-preset-is-included).
 
 ### Extend the preset in the app
 
@@ -205,14 +205,44 @@ export default defineConfig({
 })
 ```
 
-## Which panda presets will be included ?
+## What each built-in preset does
+
+Panda ships two presets by default. They do different jobs, so it helps to know what you get from each before you drop
+one.
+
+### `@pandacss/preset-base` — utilities, conditions, and patterns
+
+Gives you the styling vocabulary out of the box:
+
+- **Utilities** — the style props you write every day (`bg`, `p`, `mx`, `rounded`, `display`, …) and how they map to
+  CSS. See [utilities](/docs/customization/utilities).
+- **Conditions** — the selectors behind pseudo-state props like `_hover`, `_focus`, `_dark`, and `_disabled`. See
+  [conditional styles](/docs/concepts/conditional-styles).
+- **Patterns** — layout helpers like `stack`, `hstack`, `grid`, and `container`. See
+  [patterns](/docs/concepts/patterns).
+
+It ships no design tokens (no colors, no spacing). Set `eject: true` to leave it out, then you define your own
+utilities, conditions, and patterns. See [minimal setup](/docs/guides/minimal-setup).
+
+### `@pandacss/preset-panda` — the default theme
+
+This is the opinionated design system: the tokens and theme Panda uses out of the box.
+
+- **Tokens** — colors, spacing, sizes, fonts, font sizes, radii, shadows, durations, easings, and more. See
+  [tokens](/docs/theming/tokens).
+- **Breakpoints** (these power the responsive `sm`/`md`/`lg` conditions), **keyframes**, **text styles**, and
+  **container sizes**.
+
+Drop it if you bring your own design system, and keep it if you want sensible defaults to start from. Removing it only
+takes away these values — the styling engine (`preset-base`) keeps working.
+
+## When each preset is included
 
 ![Visual helper](/stately-presets-merging.png)
 
-- `@pandacss/preset-base`: ALWAYS included if NOT using `eject: true`
-
-- `@pandacss/preset-panda`: only included by default if you haven't specified the `presets` config option, otherwise
-  you'll have to include that preset by yourself like so:
+- `@pandacss/preset-base` is **always** included unless you set `eject: true`.
+- `@pandacss/preset-panda` is included **only when you don't set the `presets` option**. Once you set `presets`, add it
+  back yourself if you still want the default theme:
 
 ```ts
 import pandaPreset from '@pandacss/preset-panda'
