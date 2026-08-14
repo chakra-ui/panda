@@ -4,10 +4,10 @@ import { logger, quote } from '@pandacss/logger'
 import { PandaError } from '@pandacss/shared'
 import type { Config } from '@pandacss/types'
 import fsExtra from 'fs-extra'
+import { formatly } from 'formatly'
 import { lookItUpSync } from 'look-it-up'
 import { outdent } from 'outdent'
 import { join } from 'path'
-import prettier from 'prettier'
 
 type SetupOptions = Partial<Config> & {
   force?: boolean
@@ -65,7 +65,9 @@ export default defineConfig({
 })
     `
 
-    await fsExtra.writeFile(join(cwd, file), await prettier.format(content, { parser: 'babel' }))
+    const filePath = join(cwd, file)
+    await fsExtra.writeFile(filePath, content)
+    await formatly([filePath], { cwd })
     logger.log(messages.thankYou())
   }
 }
