@@ -279,7 +279,7 @@ fn from_config_transforms_composite_token_values() {
     colors.red: "#f00"
     easings.smooth: "cubic-bezier(0.4, 0, 0.2, 1)"
     fonts.body: "Inter, sans-serif"
-    gradients.brand: "linear-gradient(to right, var(--colors-red) 0px, blue 100px)"
+    gradients.brand: "linear-gradient(to right, var(--colors-red) 0%, blue 100%)"
     shadows.ring: "0px 1px 2px 0px rgb(0 0 0 / 0.1), 0px 0px 0px 1px var(--colors-red)"
     shadows.sm: 4px 10px 4px 0px var(--colors-red)
     "##);
@@ -544,14 +544,45 @@ fn from_config_serializes_shadow_arrays_and_inset_semantic_tokens() {
         .expect("token dictionary")
         .expect("non-empty dictionary");
 
-    // The doubled space after `inset` matches v1's `["inset ", …].join(" ")`.
     assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
     colors.colorPalette: var(--colors-color-palette)
     colors.ink: "#000000"
     colors.snow: "#ffffff"
-    shadows.inner: inset  0 1px 2px 0 var(--colors-ink)
+    shadows.inner: inset 0 1px 2px 0 var(--colors-ink)
     shadows.layered: "0 1px 2px 0 var(--colors-ink), 0 4px 8px 0 var(--colors-snow)"
     shadows.strings: "0 1px 2px var(--colors-ink), 0 4px 8px var(--colors-snow)"
+    "##);
+}
+
+/// Composite values accept bare numbers where CSS needs a unit. A stop position
+/// is a percentage along the gradient and a numeric placement is an angle;
+/// emitting either unitless gives a gradient that renders wrong, or not at all.
+#[test]
+fn from_config_gives_numeric_gradient_values_their_css_unit() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "gradients": {
+                    "angled": { "value": { "type": "linear", "placement": 45, "stops": ["red", "blue"] } },
+                    "positioned": { "value": { "type": "linear", "placement": "to right", "stops": [
+                        { "color": "red", "position": 0 },
+                        { "color": "blue", "position": 100 },
+                    ] } },
+                    "keyword": { "value": { "type": "radial", "placement": "circle at center", "stops": ["red", "blue"] } },
+                },
+            },
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
+    gradients.angled: "linear-gradient(45deg, red, blue)"
+    gradients.keyword: "radial-gradient(circle at center, red, blue)"
+    gradients.positioned: "linear-gradient(to right, red 0%, blue 100%)"
     "##);
 }
 

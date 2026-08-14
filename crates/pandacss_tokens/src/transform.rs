@@ -101,7 +101,16 @@ impl TokenValueString for GradientValue {
         match self {
             Self::String(value) => value.clone(),
             Self::Gradient(value) => {
-                let placement = value.placement.to_token_string();
+                // A bare number only reads as an angle, and CSS drops the whole
+                // declaration when the unit is missing.
+                let placement = match &value.placement {
+                    StringOrNumber::Number(angle) => {
+                        let mut placement = number_to_js_string(*angle);
+                        placement.push_str("deg");
+                        placement
+                    }
+                    StringOrNumber::String(placement) => placement.clone(),
+                };
                 let mut out = String::new();
                 out.push_str(&value.r#type);
                 out.push_str("-gradient(");
@@ -124,7 +133,7 @@ impl TokenValueString for GradientValue {
                             out.push_str(&stop.color);
                             out.push(' ');
                             push_number_to_js_string(&mut out, stop.position);
-                            out.push_str("px");
+                            out.push('%');
                         }
                     }
                 }
@@ -167,8 +176,7 @@ fn shadow_to_string(value: &Shadow) -> String {
         offset_x.len() + offset_y.len() + blur.len() + spread.len() + value.color.len() + 12,
     );
     if value.inset.unwrap_or(false) {
-        // Double space is intentional: JS writes "inset " then joins with spaces.
-        out.push_str("inset  ");
+        out.push_str("inset ");
     }
     out.push_str(&offset_x);
     out.push(' ');

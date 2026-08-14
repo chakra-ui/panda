@@ -16,3 +16,7 @@ semanticTokens: {
   },
 }
 ```
+
+Fix composite `gradients` emitting bare numbers where CSS needs a unit. A stop `position` now serializes as a percentage
+(`100%`, was `100px`) and a numeric `placement` as an angle (`45deg`, was `45`, which browsers rejected outright).
+Gradients using either form will render differently.
