@@ -227,6 +227,9 @@ type Gradient =
     }
 ```
 
+`placement` is either a keyword (`to right`, `circle at center`) or a number, which is read as an angle in degrees. A
+stop `position` is a percentage along the gradient, from `0` to `100`.
+
 ```jsx
 const theme = {
   tokens: {
@@ -240,11 +243,24 @@ const theme = {
           placement: 'to right',
           stops: ['red', 'blue']
         }
+      },
+      // angled placement, with positioned stops
+      angled: {
+        value: {
+          type: 'linear',
+          placement: 45,
+          stops: [
+            { color: 'red', position: 0 },
+            { color: 'blue', position: 100 }
+          ]
+        }
       }
     }
   }
 }
 ```
+
+The `angled` token above emits `linear-gradient(45deg, red 0%, blue 100%)`.
 
 ### Sizes
 
