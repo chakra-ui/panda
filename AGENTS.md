@@ -198,6 +198,44 @@ follow [`TONE_OF_VOICE.md`](TONE_OF_VOICE.md).
 - `minor`: New features, backwards-compatible changes
 - `major`: Breaking changes
 
+## Communicating Issues & Fixes
+
+Explain to someone who knows Panda, not the internals. Default to short.
+
+Plain words over jargon. If a term only makes sense after reading the source, define it in half a sentence or drop it.
+The reader should understand what broke and why without opening a file.
+
+**Shape** — four lines, in this order:
+
+- **Symptom** — what the user sees. "`boxSize="4"` emitted `box-size` instead of `width`/`height`."
+- **Cause** — one sentence. "Replayed atoms skip the transform pass."
+- **Fix** — one sentence. "Recompute on the consumer, which already has the callback."
+- **Confidence** — what you verified, what you assumed, what's still open.
+
+**Rules:**
+
+- Lead with the symptom. Never open with the code path.
+- One number or name per claim (`5 duplicate copies`, `schemaVersion 5`, a commit sha). Not "much faster".
+- Separate "I verified this" from "I'm inferring this". A traced code path is not a tested result.
+- Put caveats inline, not in a footer the reader never reaches.
+- A follow-up question is not a request for more detail. Answer what was asked.
+
+**Draw it when prose gets long.** If the explanation needs more than ~4 sentences, or crosses more than two hops, replace
+the prose with a diagram:
+
+```
+library                              consumer
+  css({ boxSize: '4' })                build info: atom(boxSize, 4)
+        │                                     │
+        ▼                                     ▼
+  transform() → { width, height }        hydrate → transform skipped
+        │                                     │
+        ▼                                     ▼
+  .size_4 { width; height }  ✅          .size_4 { box-size }  ❌
+```
+
+ASCII in the terminal, mermaid in markdown docs. The diagram replaces the prose; it doesn't accompany it.
+
 ## Important Files & Patterns
 
 ### Configuration Flow
@@ -537,6 +575,8 @@ side). All crates are `publish = false` today. See `design-notes/publish-namespa
    narration; only comment non-obvious invariants or business rules, in one short line.
 9. **New styled-system functions need the full pipeline**: see
    [Adding a new styled-system function](#adding-a-new-styled-system-function). Codegen alone is not enough.
+10. **Explain fixes symptom-first, and draw a diagram when prose runs long**: see
+    [Communicating Issues & Fixes](#communicating-issues--fixes).
 
 ## Emergency Rollback
 

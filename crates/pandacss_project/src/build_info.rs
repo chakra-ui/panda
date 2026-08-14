@@ -608,8 +608,10 @@ impl super::Project {
     ///
     /// Returns `false` (no-op) when [`SCHEMA_VERSION`] doesn't match — the
     /// caller falls back to re-extracting the library's source. This only
-    /// guards the wire format; the semver peer-range and `config_fingerprint`
-    /// check happens in the JS layer, which knows the consumer's Panda version.
+    /// guards the wire format; the semver peer-range check happens in the JS
+    /// layer, which knows the consumer's Panda version. `config_fingerprint` is
+    /// recorded for introspection, not enforced — a consumer legitimately
+    /// extends the library's config. See `design-notes/build-info.md`.
     pub fn hydrate(
         &mut self,
         name: &str,

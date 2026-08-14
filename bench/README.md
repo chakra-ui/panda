@@ -38,6 +38,22 @@ Numbers track whatever the current compiler emits, so a runtime regression shows
 up as the guard flipping or the ratios widening. To compare against v1, run the
 same shapes under `@pandacss/dev@1.11.4` in a throwaway project.
 
+## staticCss condition sweep (`static_css_conditions`)
+
+```sh
+cargo run -p pandacss_bench --bin static_css_conditions --release
+cargo run -p pandacss_bench --bin static_css_conditions --release -- --iterations 5
+```
+
+Models the configs from discussions #3106 / #3256: a large `staticCss` matrix
+whose conditions are container queries. Holds the rule count fixed and grows only
+the container scale, so identical `cssBytes` across steps means the extra time is
+pure overhead. Guards the condition-lookup cache in `pandacss_config::Theme` —
+without it, emit cost scales with `rules x containers^2`.
+
+See [`staticcss-build-cost.md`](./staticcss-build-cost.md) for the measured
+before/after.
+
 ## Current Targets
 
 - `sandbox/vite-ts`: first baseline target because it is small, checked in, and exercises normal app extraction.

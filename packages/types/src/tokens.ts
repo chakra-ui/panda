@@ -52,10 +52,12 @@ export interface Shadow {
 
 export interface Gradient {
   type: 'linear' | 'radial'
+  /** A keyword (`to right`, `circle at center`) or an angle in degrees. */
   placement: string | number
   stops:
     | Array<{
         color: string
+        /** Distance along the gradient, as a percentage (`0` to `100`). */
         position: number
       }>
     | Array<string>

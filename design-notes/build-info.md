@@ -57,6 +57,18 @@ extraction time); the consumer's **tokens layer** still comes from its own confi
 via the manifest — see [design-system-manifest.md](./design-system-manifest.md)). Hydrated utilities reference
 `var(--path)`; the consumer's `TokenDictionary` supplies the final CSS value at emit time.
 
+**JS utility-`transform` results are not in build info either.** A utility with a JS `transform` (`boxSize` →
+`{ width, height }`) produces styles the Rust engine can't derive from the atom alone, so it's tempting to serialize
+them onto the atom. They aren't, for the same reason token definitions aren't: the consumer already has the function.
+`preset.mjs` ships `utilities` (only app-only keys are stripped), `createConfigSnapshot` runs after the preset merge and
+registers every `utilities.*.transform` as a callback, so the consumer can call it. `Project::collect_hydrated_utility_styles`
+recomputes the styles at snapshot time, keyed by `(prop, value)` exactly as the parse-time pass does.
+
+Shipping the result instead would mean a wire-format bump, a copy per condition (the styles key off `(prop, value)` but
+atoms also key off conditions), and the producer's resolved `var(--…)` baked into the artifact. Recipes are different:
+their transform is applied to the carrier atom's conditions at extraction and baked into `entries`, so they need
+nothing at hydrate time.
+
 Runtime `token()` / `token.var()` calls that require a CSS variable are carried separately in `tokenRefs`. They may not
 produce an atom or recipe—for example, an exported `token.var('colors.brand')` value—but still seed `removeUnusedTokens`
 after hydration. Primitive `token()` calls that inline a non-variable value are intentionally not retained.
