@@ -1,0 +1,119 @@
+---
+title: Color opacity modifier
+description: Append /{opacity} to color tokens so Panda emits color-mix; omit it for plain token references.
+---
+
+Append `/{opacity}` to a color token, for example `red.300/40`, `{colors.black/50}`, or `red/half`. Panda emits
+[`color-mix`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix) only when the suffix is present;
+plain values like `white` stay as token references. Works on color-connected utilities from `@pandacss/preset-base`:
+`background`, `color`, `borderColor`, and others. Browsers without `color-mix` use the solid token.
+
+## Examples
+
+### Basic example
+
+```ts
+css({
+  bg: 'red.300/40',
+  color: 'white'
+})
+```
+
+```css
+@layer utilities {
+  .bg_red\.300\/40 {
+    --mix-background: color-mix(in srgb, var(--colors-red-300) 40%, transparent);
+    background: var(--mix-background, var(--colors-red-300));
+  }
+
+  .text_white {
+    color: var(--colors-white);
+  }
+}
+```
+
+### Using a custom property
+
+For `--*` variables in `css()`, wrap the token path in curly braces and reference it with `var()`:
+
+```ts
+css({
+  '--overlay': '{colors.black/50}',
+  bg: 'var(--overlay)'
+})
+```
+
+```ts
+// ❌ Not resolved
+'--overlay': 'colors.black/50'
+
+// ✅ Resolved to color-mix
+'--overlay': '{colors.black/50}'
+```
+
+### Usage with virtual colors
+
+See [virtual colors](/docs/styling/virtual-color) for the full `colorPalette` API:
+
+```ts
+css({
+  colorPalette: 'blue',
+  '--tint': '{colors.colorPalette.500/50}',
+  bg: 'var(--tint)'
+})
+```
+
+## Usage in custom utilities
+
+Support `{color}/{opacity}` on your own utilities through the `colorMix` helper on `utils`:
+
+```ts
+export default defineConfig({
+  utilities: {
+    background: {
+      shorthand: 'bg',
+      className: 'bg',
+      values: 'colors',
+      transform(value, args) {
+        const mix = args.utils.colorMix(value)
+        if (mix.invalid) return { background: value }
+
+        return {
+          background: mix.value
+        }
+      }
+    }
+  }
+})
+```
+
+### Using createColorMixTransform
+
+```ts
+import type { PropertyTransform } from '@pandacss/types'
+
+export const createColorMixTransform =
+  (prop: string): PropertyTransform =>
+  (value, args) => {
+    const mix = args.utils.colorMix(value)
+    if (mix.invalid) return { [prop]: value }
+    const cssVar = '--mix-' + prop
+    return {
+      [cssVar]: mix.value,
+      [prop]: `var(${cssVar}, ${mix.color})`
+    }
+  }
+```
+
+```ts
+export default defineConfig({
+  utilities: {
+    background: {
+      shorthand: 'bg',
+      className: 'bg',
+      values: 'colors',
+      transform: createColorMixTransform('background')
+    }
+  }
+})
+```

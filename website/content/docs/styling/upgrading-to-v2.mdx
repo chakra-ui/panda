@@ -1,0 +1,66 @@
+---
+title: Upgrading to v2
+description: What's actually changing in Panda's next major version, a Rust-based rewrite of the compiler, and what's still unstable.
+---
+
+> **v2 hasn't shipped.** It lives on an unmerged branch, most of its design is still marked as draft or proposed
+> internally, and some of it has already changed shape once before landing. This page exists so you know what's
+> coming and can plan around it, not as a migration guide you can follow today. Where a claim below is genuinely
+> unstable, the linked page says so again.
+
+## What v2 actually is
+
+v2 replaces Panda's current pipeline, `ts-morph` for extraction and PostCSS for CSS generation, with a Rust-based
+compiler, exposed to JavaScript through native (`@pandacss/compiler`) and WASM (`@pandacss/compiler-wasm`) bindings.
+See [The Compiler Engine](/docs/styling/compiler-engine) for what that means, and
+[How Panda works](/docs/styling/how-panda-works) for the model it's replacing. The extraction-and-static-CSS model
+itself isn't changing, what runs underneath it is.
+
+## Config changes worth knowing about now
+
+Comparing the current config against the v2 branch directly turns up real, concrete differences:
+
+- **Ten options are removed**: `studio` (and its `outdir`/`logo`/`inject` sub-options), `eject`, `emitTokensOnly`,
+  `gitignore`, `clean`, `watch`, `poll`, `lightningcss`, `browserslist`, and `forceConsistentTypeExtension` (replaced
+  by `forceImportExtension`, which isn't a drop-in rename, its semantics differ).
+- **`hooks` moves off the top-level config entirely.** In v2 it's only valid on a `Preset`, and there it's required,
+  not optional, project-level hooks become an inline local plugin instead. See
+  [Ecosystem Plugins](/docs/design-systems/ecosystem-plugins) for how the current `hooks`/`plugins` split works and
+  how v2 merges them into one `plugins` field.
+- **`outExtension` gains a `'ts'` value**, alongside the existing options.
+- **Two new options appear**: `designSystem` (see [Consuming a design system](/docs/design-systems/consuming-a-design-system))
+  and a nested `optimize` block (`removeUnusedTokens`, `removeUnusedKeyframes`, `smartCompoundVariants`,
+  `treeshakeDesignSystem`).
+
+None of this is a migration checklist yet, some of these removed options don't have a settled replacement path
+documented publicly. Treat it as a heads-up for what to expect, not a today-action list.
+
+## ESM only
+
+v2 drops CommonJS support for `panda.config.ts` itself. That's separate from the `postcss.config.cjs` file `panda
+init --postcss` generates today, an explicit `.cjs` file is CommonJS by design regardless of this shift, and
+whether v2's tooling still loads a `.cjs` PostCSS config isn't confirmed publicly. While checking this site's own
+installation guides against that question, a handful (Astro, Ember, Next.js, Redwood, Storybook) turned out to
+reference the generated file as `postcss.config.js` when the CLI actually writes `postcss.config.cjs`, an unrelated
+pre-existing naming mismatch, now fixed. That fix is about accuracy today, not a v2 migration step.
+
+## What else is part of this rewrite
+
+A cluster of other pages in these docs describe pieces of v2 specifically, all carrying the same "not shipped yet"
+caveat as this page, at varying levels of settledness:
+
+- [Agent Skills](/docs/styling/agent-skills): official, job-shaped skill packs for AI coding agents.
+- [Diagnostics Reference](/docs/reference/diagnostics): stable diagnostic codes for recoverable compiler issues.
+- [ESLint & OXLint Plugin](/docs/reference/eslint-oxlint-plugin): a shared lint rule set built on the compiler's
+  own project metadata.
+- [Editor & IDE Tooling](/docs/reference/editor-tooling): live completions and diagnostics while editing
+  `panda.config.ts` and your styles.
+- [Consuming a design system](/docs/design-systems/consuming-a-design-system): the planned `designSystem` config
+  field.
+- [Panda Studio in v2](/docs/theming/studio-v2): the Astro app replaced by a lighter viewer plus a codegen command.
+- [The Compiler Engine](/docs/styling/compiler-engine): the Rust pipeline underneath all of the above.
+
+## See also
+
+- [How Panda works](/docs/styling/how-panda-works) for the current, shipped mental model.
+- [Config](/docs/reference/config) for the current, real config options.

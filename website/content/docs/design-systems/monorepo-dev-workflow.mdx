@@ -1,0 +1,72 @@
+---
+title: Monorepo dev workflow
+description: Running Panda's watch mode across a shared package and the apps that consume it, and what to check when changes don't show up.
+---
+
+Once you have a [shared styled-system package](/docs/design-systems/shared-styled-system), local development usually
+means running Panda's watch mode in more than one workspace package at once. This page covers what that setup looks
+like and the most common way it goes wrong: a change that shows up in the DOM but not in the generated CSS until you
+restart.
+
+## Watching across a workspace boundary
+
+An app's `include` glob can point at a sibling package's source through the workspace symlink in `node_modules`, and
+Panda's watcher follows it like any other included path:
+
+```tsx filename="apps/marketing/panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  //...
+  include: [
+    './node_modules/@acme/design-system/src/**/*.{ts,tsx}',
+    './src/**/*.{ts,tsx}'
+  ]
+})
+```
+
+Run the app's own watch command and it picks up changes in both places:
+
+```bash
+panda --watch
+```
+
+If the shared package also needs its own local dev loop, for example you're iterating on it in isolation before an
+app picks up the change, give it the same script. Most monorepo component-library setups run `panda --watch` in each
+package that has its own `panda.config.ts`, not just the consuming app.
+
+## When changes don't show up without a restart
+
+If you save a change in the shared package and the page updates but the styling doesn't, or doesn't update at all
+until you restart the dev server, check these in order:
+
+1. **Confirm Panda actually saw the change.** Run with `PANDA_DEBUG=file:*` and save the file again. If nothing
+   prints, Panda's watcher didn't detect it, this is a filesystem event problem, not a bundler one.
+2. **Try polling.** Native filesystem events don't always fire reliably across workspace symlinks, network drives,
+   Docker volumes, or WSL. Panda's watch mode has a `--poll` flag for exactly this:
+
+   ```bash
+   panda --watch --poll
+   ```
+
+   Polling is slower than native events, so only reach for it once step 1 shows Panda isn't seeing changes with the
+   default watcher.
+3. **Confirm your bundler's own dev server is watching the shared package too.** If step 1 shows Panda regenerated
+   the CSS correctly but the browser still shows the old styles, the app's dev server (Vite, webpack, whichever
+   you're using) may not be watching that path itself, some dev servers exclude `node_modules` (including workspace
+   symlinks) from their own file watcher by default, separately from whatever Panda is doing. This is a bundler
+   configuration question, and the exact fix depends on which one you're using, but the symptom is the same: Panda's
+   output on disk is correct, the running dev server just hasn't reloaded it.
+
+## Build order
+
+If the shared package needs to be built (not just watched) before an app can resolve its types, for example a
+TypeScript project reference or a package that ships compiled `.d.ts` files rather than resolving `panda.config.ts`
+output directly, start the shared package's watch process before the app's. Otherwise the app's first type-check can
+fail against output that doesn't exist yet.
+
+## See also
+
+- [Shared styled-system in a monorepo](/docs/design-systems/shared-styled-system) for setting up the package this
+  workflow assumes already exists.
+- [Debugging](/docs/reference/debugging) for `PANDA_DEBUG` and `panda debug` in more depth.

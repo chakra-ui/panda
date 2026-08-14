@@ -8,17 +8,7 @@ interface RouteContext {
 export const dynamic = 'force-static'
 
 export async function generateStaticParams() {
-  const categories = [
-    'overview',
-    'installation', 
-    'concepts',
-    'theming',
-    'utilities',
-    'customization',
-    'guides',
-    'migration',
-    'references'
-  ]
+  const categories = ['styling', 'theming', 'design-systems', 'reference']
   
   // Generate params for category pages
   const categoryParams = categories.map(category => ({
@@ -110,15 +100,10 @@ _This content is automatically generated from the official Panda CSS documentati
 
 function generateCategoryContent(category: string, docs: typeof import('.velite').docs) {
   const categoryTitles: Record<string, string> = {
-    overview: 'Panda CSS Overview',
-    installation: 'Panda CSS Installation Guides',
-    concepts: 'Panda CSS Core Concepts',
+    styling: 'Panda CSS Styling',
     theming: 'Panda CSS Theming',
-    utilities: 'Panda CSS Utilities',
-    customization: 'Panda CSS Customization',
-    guides: 'Panda CSS Guides',
-    migration: 'Panda CSS Migration Guides',
-    references: 'Panda CSS References'
+    'design-systems': 'Panda CSS Design Systems',
+    reference: 'Panda CSS Reference'
   }
 
   const sections = docs.map(doc => {

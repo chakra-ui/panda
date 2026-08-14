@@ -1,0 +1,46 @@
+---
+title: Building a design system with Panda
+description: Ship a design language as a Panda preset, config only, no components, for other teams to build on.
+---
+
+A design system, in the preset sense, ships a **language**: tokens, semantic tokens, recipes, conditions, patterns,
+a `definePreset` config with no components and no CSS of its own. Consumers install it, add it to their own
+`presets` array, and build their own components against it. That's the opposite of a
+[component library](/docs/design-systems/overview), which ships finished, framework-locked components. If you're
+building compiled `<Button>`s and `<Card>`s, you want that page instead; if you're building the vocabulary another
+team uses to build their own, you're in the right place.
+
+Nothing stops a mature design system from shipping both, a components package built on top of its own preset. That's
+common, but it's still two separate things: the preset is the contract, the components are one particular
+implementation of it.
+
+## Author a preset
+
+Everything about writing `definePreset`, the available keys, publishing, and extending a preset in a consuming app
+is covered in depth at [Presets](/docs/design-systems/presets), including a full end-to-end example from an empty
+package to an app consuming it. This page won't repeat that, start there for the authoring walkthrough.
+
+A few things worth knowing before you do:
+
+- **Tokens and multi-brand theming** live in the [Theming](/docs/theming/tokens) tab, a preset is usually where you
+  define the token set a multi-brand app themes on top of. See
+  [Multiple Themes & multi-brand](/docs/theming/multiple-themes) if your design system needs to support more than
+  one brand or theme.
+- **`theme.extend`** is how a consuming app layers its own tokens on top of your preset without forking it. See
+  [The extend keyword](/docs/styling/extend) and [Theme config](/docs/theming/theme).
+- **Recipes in a preset** use `defineRecipe` / `defineSlotRecipe`, the config form, not the colocated `cva`/`sva`
+  form a component library would use. See [Recipes](/docs/styling/recipes) and
+  [Slot Recipes](/docs/styling/slot-recipes) for the distinction.
+
+## Consuming a design system
+
+Today, a consumer wires your preset in manually: `presets`, `importMap`, and `include` all set by hand. An upcoming
+version of Panda is expected to replace that with one config field for the whole thing. See
+[Consuming a design system](/docs/design-systems/consuming-a-design-system) for what that looks like and how stable
+it is right now.
+
+## See also
+
+- [Ecosystem Plugins](/docs/design-systems/ecosystem-plugins) for extending the engine itself, rather than shipping
+  a design language on top of it.
+- [Presets](/docs/design-systems/presets) for the authoring walkthrough this page points to throughout.

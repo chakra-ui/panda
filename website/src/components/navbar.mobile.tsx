@@ -38,6 +38,7 @@ export const MobileNavBar = () => {
         >
           <Stack>
             <NavLink href="/docs">Docs</NavLink>
+            <NavLink href="/blog">Blog</NavLink>
             <NavLink href="/team">Team</NavLink>
             <NavLink href="/showcase">Showcase</NavLink>
             <NavLink href="https://play.panda-css.com/" isExternal>
