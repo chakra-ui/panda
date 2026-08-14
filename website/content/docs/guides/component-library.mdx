@@ -11,6 +11,13 @@ options:
 3. Use Panda as external package, and ship the src files
 4. Use Panda as external package, and ship the build info file
 
+The examples use three package names. Keep them straight:
+
+- **`@acme-org/components`** — the component library you're building and shipping. Name it whatever you like.
+- **`@acme-org/styled-system`** — Panda's generated output (your `outdir`), shared as its own workspace package. Don't
+  confuse it with the component library above.
+- **`@acme-org/panda-preset`** — a preset holding your shared tokens, patterns, and recipes.
+
 > In the examples below, we use `tsup` as the build tool. You can use any other build tool.
 
 ## Recommendations
@@ -104,7 +111,7 @@ Finally, don't forget to include the [cascade layers](/docs/concepts/cascade-lay
 **App code**
 
 ```tsx filename="src/App.tsx"
-import { Button } from '@acme-org/design-system'
+import { Button } from '@acme-org/components'
 import './main.css'
 
 export function App() {
@@ -116,7 +123,7 @@ export function App() {
 
 ```css filename="src/main.css"
 @layer reset, base, tokens, recipes, utilities;
-@import url('@acme-org/design-system/dist/styles.css');
+@import url('@acme-org/components/dist/styles.css');
 
 /* Your own styles here */
 ```
@@ -264,7 +271,7 @@ import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   //...
-  include: ['../@acme-org/design-system/src/**/*.tsx', './src/**/*.{ts,tsx}'],
+  include: ['../@acme-org/components/src/**/*.tsx', './src/**/*.{ts,tsx}'],
   importMap: '@acme-org/styled-system',
   outdir: 'styled-system'
 })
@@ -321,7 +328,7 @@ import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   //...
-  include: ['./node_modules/@acme-org/design-system/dist/panda.buildinfo.json', './src/**/*.{ts,tsx}'],
+  include: ['./node_modules/@acme-org/components/dist/panda.buildinfo.json', './src/**/*.{ts,tsx}'],
   importMap: '@acme-org/styled-system',
   outdir: 'styled-system'
 })
@@ -334,7 +341,7 @@ export default defineConfig({
 By de-coupling the component library from the `styled-system`, your users can share the same runtime code between your
 library and their app code.
 
-```tsx filename="component-lib/src/button.tsx"
+```tsx filename="components/src/button.tsx"
 import { css } from '@acme-org/styled-system/css'
 
 export function Button({ children, css: cssProp }) {
@@ -347,7 +354,7 @@ export function Button({ children, css: cssProp }) {
 ```
 
 ```tsx filename="app/src/App.tsx"
-import { Button } from '@acme-org/design-system'
+import { Button } from '@acme-org/components'
 import { css } from '@acme-org/styled-system/css'
 
 export function App() {
@@ -403,7 +410,7 @@ import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   //...
-  presets: ['@acme-org/preset'],
+  presets: ['@acme-org/panda-preset'],
   theme: {
     extend: {
       tokens: {
