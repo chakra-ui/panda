@@ -1,5 +1,18 @@
 # @pandacss/typescript-plugin
 
+## 2.0.0-beta.14
+
+### Patch Changes
+
+- Updated dependencies [10014b4]
+- Updated dependencies [a4f3944]
+- Updated dependencies [9bcdcb0]
+- Updated dependencies [ef7ffc7]
+- Updated dependencies [6bcc885]
+  - @pandacss/compiler@2.0.0-beta.14
+  - @pandacss/compiler-shared@2.0.0-beta.14
+  - @pandacss/types@2.0.0-beta.14
+
 ## 2.0.0-beta.13
 
 ### Patch Changes
