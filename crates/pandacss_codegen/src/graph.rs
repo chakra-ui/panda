@@ -571,7 +571,10 @@ pub fn emit_module_files(
                 dependencies,
             }]
         }),
-        EmitMode::Split { format, .. } => {
+        EmitMode::Split {
+            format,
+            import_extensions,
+        } => {
             let mut files = Vec::with_capacity(2);
             if let Some(code) = printed.runtime.filter(|code| !code.is_empty()) {
                 files.push(ArtifactFile {
@@ -580,8 +583,13 @@ pub fn emit_module_files(
                     dependencies,
                 });
             }
+            let declaration_ext = if import_extensions {
+                format.explicit_declaration_extension()
+            } else {
+                format.declaration_extension()
+            };
             if let (Some(ext), Some(code)) = (
-                format.declaration_extension(),
+                declaration_ext,
                 printed.types.filter(|code| !code.is_empty()),
             ) {
                 files.push(ArtifactFile {

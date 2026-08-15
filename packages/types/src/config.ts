@@ -386,6 +386,7 @@ interface CodegenOptions {
   outExtension?: 'ts' | 'js' | 'mjs'
   /**
    * Whether generated import specifiers include runtime file extensions.
+   * When `outExtension` is `mjs`, this also emits `.d.mts` instead of `.d.ts`.
    * @default false
    */
   forceImportExtension?: boolean

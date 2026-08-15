@@ -60,47 +60,47 @@ fn emits_react_jsx_artifacts() {
 
     assert_eq!(
         paths(artifact(&artifacts, ArtifactId::JsxIsValidProp)),
-        vec!["jsx/is-valid-prop.mjs", "jsx/is-valid-prop.d.mts"]
+        vec!["jsx/is-valid-prop.mjs", "jsx/is-valid-prop.d.ts"]
     );
     assert_eq!(
         paths(artifact(&artifacts, ArtifactId::JsxFactory)),
-        vec!["jsx/factory.mjs", "jsx/factory.d.mts"]
+        vec!["jsx/factory.mjs", "jsx/factory.d.ts"]
     );
     assert_eq!(
         paths(artifact(&artifacts, ArtifactId::JsxHelper)),
-        vec!["jsx/helper.mjs", "jsx/helper.d.mts"]
+        vec!["jsx/helper.mjs", "jsx/helper.d.ts"]
     );
     assert_eq!(
         paths(artifact(&artifacts, ArtifactId::JsxPatterns)),
-        vec!["jsx/stack.mjs", "jsx/stack.d.mts"]
+        vec!["jsx/stack.mjs", "jsx/stack.d.ts"]
     );
     assert_eq!(
         paths(artifact(&artifacts, ArtifactId::JsxCreateRecipeContext)),
         vec![
             "jsx/create-recipe-context.mjs",
-            "jsx/create-recipe-context.d.mts"
+            "jsx/create-recipe-context.d.ts"
         ]
     );
     assert_eq!(
         paths(artifact(&artifacts, ArtifactId::JsxCreateSlotRecipeContext)),
         vec![
             "jsx/create-slot-recipe-context.mjs",
-            "jsx/create-slot-recipe-context.d.mts"
+            "jsx/create-slot-recipe-context.d.ts"
         ]
     );
     assert_eq!(
         paths(artifact(&artifacts, ArtifactId::JsxIndex)),
-        vec!["jsx/index.mjs", "jsx/index.d.mts"]
+        vec!["jsx/index.mjs", "jsx/index.d.ts"]
     );
     assert_eq!(
         paths(artifact(&artifacts, ArtifactId::Types)),
         vec![
-            "types/tokens.d.mts",
-            "types/system.d.mts",
-            "types/pattern.d.mts",
-            "types/recipe.d.mts",
-            "types/jsx.d.mts",
-            "types/index.d.mts"
+            "types/tokens.d.ts",
+            "types/system.d.ts",
+            "types/pattern.d.ts",
+            "types/recipe.d.ts",
+            "types/jsx.d.ts",
+            "types/index.d.ts"
         ]
     );
 }
@@ -210,8 +210,8 @@ fn create_slot_recipe_context_preserves_style_prop_modes() {
 #[test]
 fn react_types_include_jsx_factory_surface() {
     let artifacts = ArtifactGraph.generate_with_config(&react_config(), GenerateOptions::default());
-    let jsx = file(artifact(&artifacts, ArtifactId::Types), "types/jsx.d.mts");
-    let index = file(artifact(&artifacts, ArtifactId::Types), "types/index.d.mts");
+    let jsx = file(artifact(&artifacts, ArtifactId::Types), "types/jsx.d.ts");
+    let index = file(artifact(&artifacts, ArtifactId::Types), "types/index.d.ts");
 
     assert!(jsx.contains("export type HTMLPandaProps<T extends ElementType>"));
     assert!(jsx.contains("export type Panda = JsxFactory & JsxElements"));
@@ -290,9 +290,9 @@ fn template_literal_react_jsx_factory_uses_template_runtime() {
     );
     let dts = file(
         artifact(&artifacts, ArtifactId::JsxFactory),
-        "jsx/factory.d.mts",
+        "jsx/factory.d.ts",
     );
-    let jsx = file(artifact(&artifacts, ArtifactId::Types), "types/jsx.d.mts");
+    let jsx = file(artifact(&artifacts, ArtifactId::Types), "types/jsx.d.ts");
 
     assert!(code.contains("import { css, cx } from '../css/index';"));
     assert!(code.contains("import { getDisplayName } from './helper';"));
@@ -320,17 +320,14 @@ fn template_literal_react_jsx_skips_object_style_artifacts() {
     assert!(paths(artifact(&artifacts, ArtifactId::JsxIsValidProp)).is_empty());
     assert_eq!(
         paths(artifact(&artifacts, ArtifactId::JsxHelper)),
-        vec!["jsx/helper.mjs", "jsx/helper.d.mts"]
+        vec!["jsx/helper.mjs", "jsx/helper.d.ts"]
     );
     assert!(paths(artifact(&artifacts, ArtifactId::JsxPatterns)).is_empty());
     assert!(paths(artifact(&artifacts, ArtifactId::JsxCreateRecipeContext)).is_empty());
     assert!(paths(artifact(&artifacts, ArtifactId::JsxCreateSlotRecipeContext)).is_empty());
 
     let index = file(artifact(&artifacts, ArtifactId::JsxIndex), "jsx/index.mjs");
-    let index_dts = file(
-        artifact(&artifacts, ArtifactId::JsxIndex),
-        "jsx/index.d.mts",
-    );
+    let index_dts = file(artifact(&artifacts, ArtifactId::JsxIndex), "jsx/index.d.ts");
 
     assert!(index.contains("export * from './factory'"));
     assert!(!index.contains("is-valid-prop"));

@@ -43,8 +43,13 @@ fn out_extension_defaults_and_overrides() {
     assert_eq!(mjs_config.out_extension, CodegenFormat::Mjs);
     assert!(mjs_config.out_extension.is_split());
     assert_eq!(mjs_config.out_extension.runtime_extension(), "mjs");
+    // Extensionless `mjs` keeps `.d.ts` so `styled-system/css` resolves under tsc.
     assert_eq!(
         mjs_config.out_extension.declaration_extension(),
+        Some("d.ts")
+    );
+    assert_eq!(
+        mjs_config.out_extension.explicit_declaration_extension(),
         Some("d.mts")
     );
 

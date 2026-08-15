@@ -22,7 +22,7 @@ fn uses_out_extension_for_files() {
     });
     assert_eq!(
         paths(artifact(&mjs, ArtifactId::Cx)),
-        vec!["css/cx.mjs", "css/cx.d.mts"]
+        vec!["css/cx.mjs", "css/cx.d.ts"]
     );
 
     let ts = graph.generate(GenerateOptions {
