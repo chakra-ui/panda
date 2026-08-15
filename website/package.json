@@ -13,7 +13,6 @@
     "build:content": "velite --clean",
     "build:next": "next build",
     "build": "run-s build:codegen build:content build:next",
-    "prebuild": "pnpm --filter=../packages/** build",
     "lint": "eslint . --max-warnings 0",
     "start": "next start"
   },
