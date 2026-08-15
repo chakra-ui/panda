@@ -28,7 +28,7 @@ Comparing the current config against the v2 branch directly turns up real, concr
   [Ecosystem Plugins](/docs/design-systems/ecosystem-plugins) for how the current `hooks`/`plugins` split works and
   how v2 merges them into one `plugins` field.
 - **`outExtension` gains a `'ts'` value**, alongside the existing options.
-- **Two new options appear**: `designSystem` (see [Consuming a design system](/docs/design-systems/consuming-a-design-system))
+- **Two new options appear**: `designSystem` (see [Consume a design system](/docs/design-systems/consuming-a-design-system))
   and a nested `optimize` block (`removeUnusedTokens`, `removeUnusedKeyframes`, `smartCompoundVariants`,
   `treeshakeDesignSystem`).
 
@@ -55,8 +55,7 @@ caveat as this page, at varying levels of settledness:
   own project metadata.
 - [Editor & IDE Tooling](/docs/reference/editor-tooling): live completions and diagnostics while editing
   `panda.config.ts` and your styles.
-- [Consuming a design system](/docs/design-systems/consuming-a-design-system): the planned `designSystem` config
-  field.
+- [Consume a design system](/docs/design-systems/consuming-a-design-system): the `designSystem` config field.
 - [Panda Studio in v2](/docs/theming/studio-v2): the Astro app replaced by a lighter viewer plus a codegen command.
 - [The Compiler Engine](/docs/styling/compiler-engine): the Rust pipeline underneath all of the above.
 

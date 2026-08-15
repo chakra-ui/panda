@@ -70,12 +70,12 @@ importMap: {
 
 See [`importMap`](/docs/reference/config#importmap) for the full set of accepted shapes.
 
-## Where this is headed
+## Using `designSystem` instead
 
-An upcoming version of Panda is expected to collapse the `presets` plus `importMap` pairing above into a single
-`designSystem` field that resolves both automatically. See [Consuming a design
-system](/docs/design-systems/consuming-a-design-system) for what that looks like and how stable it is right now, this
-page's `presets` and `importMap` combination is what actually ships and works today.
+`designSystem: '@acme/styled-system'` does the `presets` plus `importMap` wiring for you, and hydrates the package's
+build info so the app does not re-extract library source. See
+[Consume a design system](/docs/design-systems/consuming-a-design-system). The setup on this page still works if the
+shared package does not ship a `panda lib` manifest.
 
 ## See also
 
