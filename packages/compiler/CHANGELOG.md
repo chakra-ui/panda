@@ -1,5 +1,48 @@
 # @pandacss/compiler
 
+## 2.0.0-beta.14
+
+### Patch Changes
+
+- 10014b4: Fix a `designSystem` consumer emitting the wrong CSS property for a library utility with a JS `transform`. A
+  `boxSize` prop emitted `box-size` instead of `width`/`height`, because styles replayed from the library's build info
+  skipped the transform.
+- a4f3944: Warn when a `designSystem` consumer replays a library atom whose utility isn't registered in its own config,
+  usually because the library's preset wasn't merged. The style used to emit silently as the kebab-cased utility name
+  (`boxSize` became `box-size`). Now `panda cssgen`/`codegen` reports it, naming the design system and the utility, so
+  you can add the missing preset.
+- 9bcdcb0: Fix `outExtension: "mjs"` emitting `.d.mts` files that TypeScript's bundler resolver cannot find.
+
+  Clean codegen now writes `.d.ts` next to `.mjs`, so `import { css } from 'styled-system/css'` typechecks. Set
+  `forceImportExtension: true` if you still want `.d.mts`.
+
+- ef7ffc7: Fix the `{colors.x/alpha}` opacity modifier being ignored outside the `colors` category. In `shadows`,
+  `borders` and `gradients` it passed through as raw `colors.x/alpha` text, which browsers drop. It now expands to
+  `color-mix(...)` everywhere.
+
+  Fix the composite object form of a `semanticTokens` value emitting nothing. It was parsed as a conditions map named
+  after its own keys. Applies to composite `shadow`, `border` and `asset` values.
+
+  ```ts
+  semanticTokens: {
+    shadows: {
+      card: { value: { offsetX: '0', offsetY: '2px', blur: '4px', spread: '0', color: '{colors.ink}' } },
+    },
+  }
+  ```
+
+  Fix composite `gradients` emitting bare numbers where CSS needs a unit. A stop `position` now serializes as a
+  percentage (`100%`, was `100px`) and a numeric `placement` as an angle (`45deg`, was `45`, which browsers rejected
+  outright). Gradients using either form will render differently.
+
+- 6bcc885: Speed up `staticCss` builds that use breakpoint or container conditions. Condition queries are resolved once
+  per theme instead of rebuilt for every rule, so a config on `preset-panda`'s container scale drops from ~14s to ~0.3s
+  (roughly 50x faster, a 98% cut) with identical CSS output. The saving grows with the scale: a 64-size container scale
+  goes from 52.6s to 38ms.
+  - @pandacss/compiler-shared@2.0.0-beta.14
+  - @pandacss/config@2.0.0-beta.14
+  - @pandacss/types@2.0.0-beta.14
+
 ## 2.0.0-beta.13
 
 ### Patch Changes

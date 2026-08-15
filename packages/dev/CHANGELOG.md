@@ -1,5 +1,22 @@
 # @pandacss/dev
 
+## 2.0.0-beta.14
+
+### Patch Changes
+
+- aa5ca7d: Fix `defineParts` returning an untyped object, which made the result unassignable to `base` or `variants` in
+  `defineRecipe`.
+- Updated dependencies [10014b4]
+- Updated dependencies [a4f3944]
+- Updated dependencies [9bcdcb0]
+- Updated dependencies [ef7ffc7]
+- Updated dependencies [6bcc885]
+  - @pandacss/compiler@2.0.0-beta.14
+  - @pandacss/cli@2.0.0-beta.14
+  - @pandacss/postcss@2.0.0-beta.14
+  - @pandacss/config@2.0.0-beta.14
+  - @pandacss/types@2.0.0-beta.14
+
 ## 2.0.0-beta.13
 
 ### Patch Changes
