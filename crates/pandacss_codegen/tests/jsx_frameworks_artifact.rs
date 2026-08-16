@@ -59,10 +59,10 @@ fn emits_pattern_jsx_for_non_react_frameworks() {
             .generate_with_config(&config(framework, false), GenerateOptions::default());
         let patterns = artifact(&artifacts, ArtifactId::JsxPatterns);
 
-        assert_eq!(paths(patterns), vec!["jsx/stack.mjs", "jsx/stack.d.mts"]);
+        assert_eq!(paths(patterns), vec!["jsx/stack.mjs", "jsx/stack.d.ts"]);
 
         let code = file(patterns, "jsx/stack.mjs");
-        let dts = file(patterns, "jsx/stack.d.mts");
+        let dts = file(patterns, "jsx/stack.d.ts");
 
         assert!(
             code.contains(import_marker),
@@ -121,20 +121,20 @@ fn emits_recipe_contexts_for_supported_non_react_frameworks() {
             paths(recipe),
             vec![
                 "jsx/create-recipe-context.mjs",
-                "jsx/create-recipe-context.d.mts"
+                "jsx/create-recipe-context.d.ts"
             ]
         );
         assert_eq!(
             paths(slot_recipe),
             vec![
                 "jsx/create-slot-recipe-context.mjs",
-                "jsx/create-slot-recipe-context.d.mts"
+                "jsx/create-slot-recipe-context.d.ts"
             ]
         );
 
         let recipe_code = file(recipe, "jsx/create-recipe-context.mjs");
         let slot_code = file(slot_recipe, "jsx/create-slot-recipe-context.mjs");
-        let slot_dts = file(slot_recipe, "jsx/create-slot-recipe-context.d.mts");
+        let slot_dts = file(slot_recipe, "jsx/create-slot-recipe-context.d.ts");
 
         assert!(
             recipe_code.contains(recipe_import),
@@ -264,11 +264,11 @@ fn emits_object_jsx_factory_for_non_react_frameworks() {
         let helper = artifact(&artifacts, ArtifactId::JsxHelper);
         let types = artifact(&artifacts, ArtifactId::Types);
 
-        assert_eq!(paths(factory), vec!["jsx/factory.mjs", "jsx/factory.d.mts"]);
-        assert_eq!(paths(helper), vec!["jsx/helper.mjs", "jsx/helper.d.mts"]);
+        assert_eq!(paths(factory), vec!["jsx/factory.mjs", "jsx/factory.d.ts"]);
+        assert_eq!(paths(helper), vec!["jsx/helper.mjs", "jsx/helper.d.ts"]);
         let code = file(factory, "jsx/factory.mjs");
         let helper_code = file(helper, "jsx/helper.mjs");
-        let jsx = file(types, "types/jsx.d.mts");
+        let jsx = file(types, "types/jsx.d.ts");
 
         assert!(
             code.contains(import_marker),
@@ -324,11 +324,11 @@ fn emits_template_literal_jsx_factory_for_non_react_frameworks() {
         let helper = artifact(&artifacts, ArtifactId::JsxHelper);
         let types = artifact(&artifacts, ArtifactId::Types);
 
-        assert_eq!(paths(factory), vec!["jsx/factory.mjs", "jsx/factory.d.mts"]);
-        assert_eq!(paths(helper), vec!["jsx/helper.mjs", "jsx/helper.d.mts"]);
+        assert_eq!(paths(factory), vec!["jsx/factory.mjs", "jsx/factory.d.ts"]);
+        assert_eq!(paths(helper), vec!["jsx/helper.mjs", "jsx/helper.d.ts"]);
         let code = file(factory, "jsx/factory.mjs");
         let helper_code = file(helper, "jsx/helper.mjs");
-        let jsx = file(types, "types/jsx.d.mts");
+        let jsx = file(types, "types/jsx.d.ts");
 
         assert!(
             code.contains(import_marker),

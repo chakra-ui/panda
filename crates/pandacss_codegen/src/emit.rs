@@ -274,7 +274,7 @@ fn print_source(
         }
         (ImportKind::Value | ImportKind::Type, EmitTarget::Dts) => {
             let ext = format
-                .and_then(CodegenFormat::declaration_extension)
+                .and_then(CodegenFormat::explicit_declaration_extension)
                 .unwrap_or("d.ts");
             format!("{source}.{ext}")
         }

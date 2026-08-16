@@ -1343,6 +1343,68 @@ fn a_hydrated_atom_gets_its_transform_recomputed_by_the_consumer() {
     assert_eq!(snapshots.utility_styles.len(), 1);
 }
 
+#[test]
+fn hydrating_a_utility_the_consumer_never_merged_warns() {
+    use pandacss_project::{
+        Diagnostic, ExtractedLiteral as Literal, ParseTransforms, UtilityTransformFn,
+    };
+
+    let lib_overrides = json!({
+        "utilities": {
+            "boxSize": {
+                "className": "size",
+                "transform": { "kind": "js-callback", "id": "boxSize" }
+            }
+        }
+    });
+
+    let mut transform = |prop: &str,
+                         resolved: &AtomValue,
+                         _original: &AtomValue|
+     -> Result<Option<Literal>, Diagnostic> {
+        if prop != "boxSize" {
+            return Ok(None);
+        }
+        let value = match resolved {
+            AtomValue::String(value)
+            | AtomValue::Number(value)
+            | AtomValue::Token { value, .. } => value.to_string(),
+            AtomValue::Bool(_) | AtomValue::Null => return Ok(None),
+        };
+        Ok(Some(Literal::Object(vec![
+            ("width".to_owned(), Literal::String(value.clone())),
+            ("height".to_owned(), Literal::String(value)),
+        ])))
+    };
+
+    let mut lib = create_project(lib_overrides.clone());
+    lib.parse_file_with(
+        "thing.tsx",
+        "import { css } from '@panda/css'; css({ boxSize: '4', color: 'red' });",
+        ParseTransforms {
+            utility: Some(&mut transform as &mut UtilityTransformFn<'_>),
+            ..Default::default()
+        },
+    );
+    let info = lib.build_info("^2.0.0".into());
+
+    let mut consumer = create_project(json!({}));
+    assert!(consumer.hydrate("@acme/ds", &info, None));
+
+    let config = create_config(json!({}));
+    let diagnostics = consumer.stylesheet_snapshots(&config).diagnostics.clone();
+    let unregistered: Vec<&str> = diagnostics
+        .iter()
+        .filter(|d| d.code == "design_system_utility_unregistered")
+        .map(|d| d.message.as_str())
+        .collect();
+
+    assert_eq!(unregistered.len(), 1, "one warning, got {diagnostics:?}");
+    assert!(unregistered[0].contains("boxSize"), "{}", unregistered[0]);
+    assert!(unregistered[0].contains("box-size"), "{}", unregistered[0]);
+    assert!(!unregistered[0].contains("color"), "{}", unregistered[0]);
+}
+
 /// Shared fixture for the hydrated-transform tests: a `boxSize` utility whose
 /// JS transform expands to `width`/`height`.
 fn box_size_config() -> serde_json::Value {

@@ -114,7 +114,7 @@ fn emitted_files_carry_config_dependencies() {
 
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
     assert!(file_dependencies(helpers, "helpers.mjs").contains(ConfigDependency::CodegenFormat));
-    assert!(file_dependencies(helpers, "helpers.d.mts").contains(ConfigDependency::CodegenFormat));
+    assert!(file_dependencies(helpers, "helpers.d.ts").contains(ConfigDependency::CodegenFormat));
 
     let conditions = artifact(&artifacts, ArtifactId::Conditions);
     let dependencies = file_dependencies(conditions, "css/conditions.mjs");
@@ -141,12 +141,12 @@ fn emitted_files_carry_config_dependencies() {
     assert!(dependencies.contains(ConfigDependency::Utilities));
 
     let types = artifact(&artifacts, ArtifactId::Types);
-    let dependencies = file_dependencies(types, "types/tokens.d.mts");
+    let dependencies = file_dependencies(types, "types/tokens.d.ts");
     assert!(dependencies.contains(ConfigDependency::CodegenFormat));
     assert!(dependencies.contains(ConfigDependency::Tokens));
     assert!(dependencies.contains(ConfigDependency::Themes));
 
-    let dependencies = file_dependencies(types, "types/system.d.mts");
+    let dependencies = file_dependencies(types, "types/system.d.ts");
     assert!(dependencies.contains(ConfigDependency::CodegenFormat));
     assert!(dependencies.contains(ConfigDependency::Tokens));
     assert!(dependencies.contains(ConfigDependency::Utilities));

@@ -90,7 +90,12 @@ fn index_files(
                 code: runtime,
                 dependencies,
             }];
-            if let Some(ext) = format.declaration_extension() {
+            let declaration_ext = if options.import_extensions {
+                format.explicit_declaration_extension()
+            } else {
+                format.declaration_extension()
+            };
+            if let Some(ext) = declaration_ext {
                 files.push(ArtifactFile {
                     path: format!("themes/index.{ext}"),
                     code: types,

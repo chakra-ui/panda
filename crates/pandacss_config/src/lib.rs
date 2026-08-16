@@ -529,8 +529,26 @@ impl CodegenFormat {
         }
     }
 
+    /// Companion declaration extension for extensionless imports.
+    ///
+    /// `mjs` uses `.d.ts` so TypeScript bundler resolution can find
+    /// `styled-system/css`. Pair `.mjs` with `.d.mts` via
+    /// [`Self::explicit_declaration_extension`] when generated specifiers
+    /// include file extensions.
     #[must_use]
     pub fn declaration_extension(self) -> Option<&'static str> {
+        match self {
+            Self::Js | Self::Mjs => Some("d.ts"),
+            Self::Ts => None,
+        }
+    }
+
+    /// Companion declaration extension when generated imports include extensions.
+    ///
+    /// Pairs `.mjs` with `.d.mts` for Deno / `NodeNext` consumers that opt into
+    /// `forceImportExtension`.
+    #[must_use]
+    pub fn explicit_declaration_extension(self) -> Option<&'static str> {
         match self {
             Self::Js => Some("d.ts"),
             Self::Mjs => Some("d.mts"),

@@ -26,14 +26,17 @@ outExtension: 'js' | 'mjs' | 'ts'
 forceImportExtension: boolean
 ```
 
-`outExtension` controls the emitted runtime file extension. The declaration extension is inferred from it, so v2 does
-not need `forceConsistentTypeExtension`:
+`outExtension` controls the emitted runtime file extension. The declaration extension follows the import-specifier
+policy, so v2 does not need `forceConsistentTypeExtension`:
 
-| `outExtension` | Runtime source | Type file |
-| -------------- | -------------- | --------- |
-| `ts`           | `.ts` / `.tsx` | none      |
-| `js`           | `.js`          | `.d.ts`   |
-| `mjs`          | `.mjs`         | `.d.mts`  |
+| `outExtension` | Runtime source | Type file (extensionless) | Type file (`forceImportExtension`) |
+| -------------- | -------------- | ------------------------- | ---------------------------------- |
+| `ts`           | `.ts` / `.tsx` | none                      | none                               |
+| `js`           | `.js`          | `.d.ts`                   | `.d.ts`                            |
+| `mjs`          | `.mjs`         | `.d.ts`                   | `.d.mts`                           |
+
+`mjs` keeps `.d.ts` when imports are extensionless so TypeScript bundler resolution can find `styled-system/css`.
+`.d.mts` is only paired with `.mjs` when `forceImportExtension` is on.
 
 `forceImportExtension` controls whether generated import specifiers include the runtime/type extension. It is separate
 from `outExtension` because some package/bundler setups still prefer extensionless internal specifiers, while Deno and
@@ -56,8 +59,8 @@ outExtension: 'mjs'
 forceImportExtension: true
 ```
 
-`forceConsistentTypeExtension` is no longer needed: `outExtension: "mjs"` always pairs runtime `.mjs` with declaration
-`.d.mts`.
+`forceConsistentTypeExtension` is no longer needed: `outExtension: "mjs"` emits `.d.ts` for extensionless imports, and
+`.d.mts` only when `forceImportExtension` is on.
 
 ## Current State
 

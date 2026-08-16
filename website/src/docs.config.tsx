@@ -256,7 +256,8 @@ export const docsTabs: TabItem[] = [
         title: 'Design System (preset)',
         items: [
           { title: 'Overview', url: 'preset-overview' },
-          { title: 'Consuming a design system', url: 'consuming-a-design-system' }
+          { title: 'Build a design system', url: 'building-a-design-system' },
+          { title: 'Consume a design system', url: 'consuming-a-design-system' }
         ]
       },
       {

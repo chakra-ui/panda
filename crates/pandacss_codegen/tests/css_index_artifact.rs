@@ -27,6 +27,29 @@ fn reexports_css_modules() {
 }
 
 #[test]
+fn mjs_without_import_extensions_emits_dts_for_bundler_resolution() {
+    let graph = ArtifactGraph;
+
+    let mjs = graph.generate(GenerateOptions {
+        format: CodegenFormat::Mjs,
+        import_extensions: false,
+    });
+    let index = artifact(&mjs, ArtifactId::CssIndex);
+    assert_eq!(paths(index), vec!["css/index.mjs", "css/index.d.ts"]);
+    assert_eq!(
+        file(index, "css/index.d.ts"),
+        indoc! {r"
+        export * from './css';
+        export * from './cva';
+        export * from './cx';
+        export * from './sva';
+        export * from './view-transition';
+        "}
+        .trim()
+    );
+}
+
+#[test]
 fn can_emit_import_extensions() {
     let graph = ArtifactGraph;
 

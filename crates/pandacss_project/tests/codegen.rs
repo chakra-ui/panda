@@ -30,12 +30,12 @@ fn generates_artifacts_from_resolved_project_state() {
     let tokens = artifact
         .files
         .iter()
-        .find(|file| file.path == "types/tokens.d.mts")
+        .find(|file| file.path == "types/tokens.d.ts")
         .expect("tokens file");
     let system = artifact
         .files
         .iter()
-        .find(|file| file.path == "types/system.d.mts")
+        .find(|file| file.path == "types/system.d.ts")
         .expect("system file");
 
     assert_snapshot!(tokens.code, @r#"
@@ -154,7 +154,7 @@ fn generates_theme_artifact_files() {
     assert_eq!(
         files,
         vec![
-            "themes/index.d.mts",
+            "themes/index.d.ts",
             "themes/index.mjs",
             "themes/theme-default.json",
             "themes/theme-empty.json",
@@ -190,7 +190,7 @@ fn generates_theme_artifact_files() {
     let index_types = artifact
         .files
         .iter()
-        .find(|file| file.path == "themes/index.d.mts")
+        .find(|file| file.path == "themes/index.d.ts")
         .expect("themes index types");
     assert_snapshot!(index_types.code, @r#"
     export type ThemeName = "default" | "empty" | "pink"
@@ -330,13 +330,13 @@ fn keyframes_typegen_inlines_names_and_stays_out_of_tokens() {
     let system_code = &artifact
         .files
         .iter()
-        .find(|file| file.path == "types/system.d.mts")
+        .find(|file| file.path == "types/system.d.ts")
         .expect("system file")
         .code;
     let tokens_code = &artifact
         .files
         .iter()
-        .find(|file| file.path == "types/tokens.d.mts")
+        .find(|file| file.path == "types/tokens.d.ts")
         .expect("tokens file")
         .code;
 
