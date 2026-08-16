@@ -1,54 +1,109 @@
 ---
 title: Panda Studio
-description: Visualize your design tokens as data, HTML, and CSS you style yourself.
+description: Turn your resolved design tokens into data, HTML, and wired-up CSS — then style it yourself.
 ---
 
 # Panda Studio
 
-`panda studio` turns your resolved design tokens into three things you can build on — **data**, **HTML**, and **CSS
-variables**. The API is modeled on [Tiptap](https://tiptap.dev)'s `getHTML` / `getJSON`: Panda hands you the content,
-you own the presentation. It ships no design of its own.
+Panda Studio gives you your resolved design tokens in three shapes: data, HTML, and CSS variables. You compose and style
+them however you like. Panda ships the content, not the design — there's no framework runtime and no stylesheet to fight.
+
+The API follows [Tiptap](https://tiptap.dev)'s `getHTML` / `getJSON`: small functions that hand you one thing each.
 
 ```bash
 panda studio
 ```
 
-This emits `styled-system/studio` and boots a live viewer at `http://localhost:4000`. Re-run after a config change to
-refresh.
+This does two things: it writes `styled-system/studio` into your project, and it boots a live viewer at
+`http://localhost:4000`. Re-run it after a config change to refresh both.
 
-## The three functions
+## Quick start
 
-`styled-system/studio` exports three framework-agnostic functions:
+Run the viewer to look at your tokens:
+
+```bash
+panda studio                    # boot the viewer at :4000
+panda studio --port 4137        # pick a port
+panda studio --css ./studio.css # render it with your own stylesheet
+```
+
+Or import the functions and build your own view:
 
 ```ts
 import { getTokenJson, getTokenHtml, getTokenCss } from '../styled-system/studio'
 ```
 
-### `getTokenJson`
+Both paths read the same token snapshot, resolved from your config.
 
-Returns your tokens as data. Filter by `category`, search with `query`, or omit both for everything.
+## Getting tokens as data
 
-```ts
-getTokenJson({ category: 'colors' })
-getTokenJson({ category: 'spacing', query: 'sm' })
-getTokenJson() // all tokens
-```
-
-Each token is `{ category, path, name, value, conditions? }`. Semantic tokens include a `conditions` map of their
-resolved per-condition and per-theme values. Walk the result to build whatever UI you want.
-
-### `getTokenHtml`
-
-Returns semantic, **style-free** HTML — names and values as text, everything else on `data-*` attributes. It carries no
-inline styles and no classes-with-opinions, so it drops into any framework and styles cleanly.
+`getTokenJson` returns your tokens as an array. Filter by `category`, search with `query`, or pass nothing for the lot.
 
 ```ts
-getTokenHtml({ tokens: getTokenJson({ category: 'colors' }) })
-getTokenHtml({ category: 'colors', query: 'brand' }) // filter inline
+getTokenJson({ category: 'colors' }) // one category
+getTokenJson({ query: 'brand' }) // search names, values, and categories
+getTokenJson({ category: 'spacing', query: 'sm' }) // both
+getTokenJson() // everything
 ```
+
+`query` matches against the token's name, value, and category, case-insensitive. Walk the array to build any UI you
+want — a grid, a table, a search box, your own components.
+
+### The token shape
+
+Every entry is a `StudioToken`:
+
+```ts
+interface StudioToken {
+  category: string // 'colors', 'spacing', 'fontSizes', 'animations', …
+  path: string // 'colors.red.500'
+  name: string // 'red.500'
+  value: string // '#ef4444' — the resolved value, not a reference
+  conditions?: Record<string, string> // present only on semantic tokens
+}
+```
+
+Values are fully resolved. A token that points at `{colors.red.500}` in your config arrives as `#ef4444`.
+
+### Semantic tokens and themes
+
+Semantic tokens carry a `conditions` map instead of a single displayed value. Each key is a condition, each value is the
+resolved color for it. Named themes are folded in with a `theme · condition` key.
+
+```ts
+{
+  category: 'colors',
+  path: 'colors.bg',
+  name: 'bg',
+  value: '#ffffff',            // the base condition, for convenience
+  conditions: {
+    base: '#ffffff',
+    _dark: '#000000',
+    'ocean · base': '#e0f2fe'  // from a named theme
+  }
+}
+```
+
+## Getting tokens as HTML
+
+`getTokenHtml` returns a string of semantic, style-free HTML. Names and values are text; everything else rides on
+`data-` attributes. It has no inline styles and no opinionated classes, so it drops into any framework and takes your CSS
+cleanly.
+
+```ts
+getTokenHtml({ category: 'colors' }) // filter the baked tokens
+getTokenHtml({ category: 'colors', query: 'brand' }) // filter with search
+getTokenHtml({ tokens: getTokenJson({ category: 'spacing' }) }) // render a set you already have
+```
+
+Pass `tokens` to render an exact list, or pass `category` / `query` to filter the baked snapshot inline. All token
+values are HTML-escaped.
+
+### The markup it produces
+
+Tokens are grouped by category into sections:
 
 ```html
-<!-- shape of the output -->
 <section class="pds-group" data-category="colors">
   <h2 class="pds-group__title">colors</h2>
   <ul class="pds-tokens">
@@ -60,34 +115,57 @@ getTokenHtml({ category: 'colors', query: 'brand' }) // filter inline
 </section>
 ```
 
-Drop the string into any framework:
+Semantic tokens carry their conditions inline:
 
-```tsx
-// React
-function Colors() {
-  const [tokens, setTokens] = useState(getTokenJson({ category: 'colors' }))
-  return (
-    <div>
-      <input onChange={(e) => setTokens(getTokenJson({ category: 'colors', query: e.target.value }))} />
-      <div dangerouslySetInnerHTML={{ __html: getTokenHtml({ tokens }) }} />
+```html
+<li class="pds-token pds-token--semantic" data-category="colors" data-name="bg" data-value="#ffffff">
+  <span class="pds-token__name">bg</span>
+  <div class="pds-conditions">
+    <div class="pds-condition" data-condition="base" data-value="#ffffff">
+      <span class="pds-condition__name">base</span>
+      <code class="pds-condition__value">#ffffff</code>
     </div>
-  )
-}
+    <div class="pds-condition" data-condition="_dark" data-value="#000000">
+      <span class="pds-condition__name">_dark</span>
+      <code class="pds-condition__value">#000000</code>
+    </div>
+  </div>
+</li>
 ```
 
-The same works with Vue's `v-html`, Solid's `innerHTML`, or writing the string to a file.
+### Class and attribute reference
 
-### `getTokenCss`
+Style off these. Every class is prefixed `pds-`; every value you'd need in CSS is on a `data-` attribute.
 
-Takes **your** stylesheet and wires it up. It prepends each token's value as a CSS variable (`--pds-value`) on the
-matching `[data-value]` element — the one thing static CSS can't do, since it can't read a value out of a `data-`
-attribute — then returns your CSS appended.
+| Selector                | On                     | Use it for                        |
+| ----------------------- | ---------------------- | --------------------------------- |
+| `.pds-group`            | Each category section  | Section spacing, borders          |
+| `.pds-group__title`     | The `<h2>` category    | Heading style                     |
+| `.pds-tokens`           | The `<ul>` of tokens   | Grid or list layout               |
+| `.pds-token`            | Each token             | Card style                        |
+| `.pds-token--semantic`  | Semantic tokens        | Target tokens with conditions     |
+| `.pds-token__name`      | Token name             | Name style, swatch pseudo-element |
+| `.pds-token__value`     | Token value            | Value style                       |
+| `.pds-conditions`       | A semantic token's set | Layout of its conditions          |
+| `.pds-condition`        | One condition row      | Row style, swatch pseudo-element  |
+| `.pds-condition__name`  | Condition label        | Label style                       |
+| `.pds-condition__value` | Condition value        | Value style                       |
+| `[data-category]`       | Groups and tokens      | Scope rules to `colors`, etc.     |
+| `[data-value]`          | Tokens and conditions  | The token's value, for CSS        |
+| `[data-name]`           | Tokens                 | Target a single token             |
+
+## Wiring your CSS in
+
+`getTokenCss` takes your stylesheet and returns it ready to drop in. It prepends one thing you can't write by hand: each
+token's value as a `--pds-value` variable on the matching `[data-value]` element. CSS can't read a value out of a
+`data-` attribute, so Panda writes those variables for you and appends your CSS after them.
 
 ```ts
-getTokenCss(myStylesheet) // "[data-value=\"#ef4444\"]{--pds-value:#ef4444}…" + myStylesheet
+getTokenCss(myStylesheet)
+// → '[data-value="#ef4444"]{--pds-value:#ef4444}…' + myStylesheet
 ```
 
-So in your own CSS you reference `var(--pds-value)` and it resolves to the token's real value:
+In your own CSS, reach for `var(--pds-value)` and it resolves to the real token value:
 
 ```css
 /* your stylesheet */
@@ -100,25 +178,129 @@ So in your own CSS you reference `var(--pds-value)` and it resolves to the token
 }
 ```
 
-Include `getTokenCss(yourCss)` once and every color swatch paints itself; the same trick drives spacing bars, aspect
-ratios, or animation previews. Values that would break a stylesheet are dropped. Panda never authors the design — the
-grid, the cards, the typography are all yours.
+Include `getTokenCss(yourCss)` once and every color swatch paints itself. The same variable drives spacing bars,
+aspect-ratio boxes, or animation previews — anywhere you want the token's value in a property:
 
-## Live viewer
-
-`panda studio` serves a viewer rendered from these same functions. By default it's unstyled markup — pass your own
-stylesheet to make it yours:
-
-```bash
-panda studio --css ./studio.css        # render the viewer with your stylesheet
-panda studio --port 4000
+```css
+[data-category='spacing'] .pds-token__name::after {
+  content: '';
+  display: block;
+  height: 8px;
+  width: var(--pds-value);
+  background: currentColor;
+}
+[data-category='animations'] .pds-token {
+  animation: var(--pds-value);
+}
 ```
 
-`--css` is read and passed straight through `getTokenCss`, so your file can lean on `var(--pds-value)` and the
-`pds-*` classes above. It's the same path any consumer takes — Panda's viewer has no private styling.
+Values that would break a stylesheet — anything containing `{`, `}`, `<`, `>`, `;`, or a quote — are dropped, so a
+malformed token can't escape into your CSS. Everything else is yours: the grid, the cards, the type. Panda writes no
+design.
+
+## Running the live viewer
+
+`panda studio` serves a page rendered from these same three functions. With no stylesheet it's bare markup. Point it at
+your CSS to make it yours:
+
+```bash
+panda studio --css ./studio.css
+```
+
+`--css` reads the file and passes it straight through `getTokenCss`, so it can use `var(--pds-value)` and the `pds-`
+classes above. This is the same path any consumer takes — the viewer has no private styling.
+
+| Flag             | Default     | What it does                       |
+| ---------------- | ----------- | ---------------------------------- |
+| `--css <path>`   | none        | Stylesheet to render the viewer with |
+| `--port <port>`  | `4000`      | Port for the server                |
+| `--host <host>`  | `127.0.0.1` | Host to bind                       |
+
+The standard flags apply too: `--cwd`, `--config`, `--log-level`. Every run also refreshes the generated
+`styled-system/studio` files.
 
 ## Rendering it yourself
 
-You don't need the viewer. Import the three functions and compose them however you document your design system — an app
-route, an MDX page, or Storybook. `getTokenJson` for full control, `getTokenHtml` + `getTokenCss(yourCss)` when you want
-the markup done for you and only the look to own.
+You don't need the viewer. Import the functions and render them where you document your design system — an app route, an
+MDX page, or Storybook. Include `getTokenCss(yourCss)` once in the page, then drop the HTML in.
+
+### In React
+
+```tsx
+import { useState } from 'react'
+import { getTokenJson, getTokenHtml, getTokenCss } from '../styled-system/studio'
+import myStudioCss from './studio.css?raw'
+
+export function Colors() {
+  const [tokens, setTokens] = useState(getTokenJson({ category: 'colors' }))
+  return (
+    <div>
+      <style>{getTokenCss(myStudioCss)}</style>
+      <input
+        placeholder="Filter colors"
+        onChange={(e) => setTokens(getTokenJson({ category: 'colors', query: e.target.value }))}
+      />
+      <div dangerouslySetInnerHTML={{ __html: getTokenHtml({ tokens }) }} />
+    </div>
+  )
+}
+```
+
+### In Vue
+
+```vue
+<script setup>
+import { ref, computed } from 'vue'
+import { getTokenJson, getTokenHtml, getTokenCss } from '../styled-system/studio'
+import myStudioCss from './studio.css?raw'
+
+const query = ref('')
+const html = computed(() => getTokenHtml({ category: 'colors', query: query.value }))
+</script>
+
+<template>
+  <component :is="'style'">{{ getTokenCss(myStudioCss) }}</component>
+  <input v-model="query" placeholder="Filter colors" />
+  <div v-html="html" />
+</template>
+```
+
+### In Solid
+
+```tsx
+import { createSignal } from 'solid-js'
+import { getTokenHtml, getTokenCss } from '../styled-system/studio'
+import myStudioCss from './studio.css?raw'
+
+export function Colors() {
+  const [query, setQuery] = createSignal('')
+  return (
+    <div>
+      <style>{getTokenCss(myStudioCss)}</style>
+      <input onInput={(e) => setQuery(e.currentTarget.value)} />
+      <div innerHTML={getTokenHtml({ category: 'colors', query: query() })} />
+    </div>
+  )
+}
+```
+
+### As a static file
+
+No framework needed. Write the page to disk and open it:
+
+```ts
+import { readFileSync, writeFileSync } from 'node:fs'
+import { getTokenHtml, getTokenCss } from '../styled-system/studio'
+
+const css = getTokenCss(readFileSync('./studio.css', 'utf8'))
+writeFileSync('tokens.html', `<!doctype html><style>${css}</style>${getTokenHtml()}`)
+```
+
+## What Panda ships, and what it doesn't
+
+Panda gives you the data (`getTokenJson`), the markup (`getTokenHtml`), and the wiring that puts token values in reach of
+CSS (`getTokenCss`). It does not ship a design. There's no default theme, no bundled stylesheet, no framework runtime —
+the grid, the swatches, and the type are all yours to write, or to skip by building straight from `getTokenJson`.
+
+That's the trade: a bare `panda studio` looks plain until you pass `--css`. In exchange, nothing you didn't write ends up
+in your bundle or your markup.
