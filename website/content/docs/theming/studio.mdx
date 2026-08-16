@@ -61,6 +61,32 @@ function Colors() {
 }
 ```
 
-The same works with Vue's `v-html`, Solid's `innerHTML`, or writing the string to a file. Because the output carries the
-values in `data-value`, you can style swatches, scales, and previews entirely from your own CSS — or ignore the HTML and
-render your own from `getTokenJson`.
+The same works with Vue's `v-html`, Solid's `innerHTML`, or writing the string to a file.
+
+### `getTokenCss`
+
+Returns your color tokens as CSS variables, keyed to the markup above — the one thing you can't derive from the HTML
+alone, since CSS can't read a color out of a `data-` attribute. It ships no layout or design of its own.
+
+```css
+/* getTokenCss() output */
+[data-value='#ef4444'] {
+  --pds-swatch: #ef4444;
+}
+```
+
+Include it once, then paint a swatch with a single rule of your own:
+
+```css
+[data-category='colors'] .pds-token__name::before {
+  content: '';
+  display: inline-block;
+  width: 2.5em;
+  height: 2.5em;
+  border-radius: 4px;
+  background: var(--pds-swatch);
+}
+```
+
+Everything else — grids, cards, typography, scales — is yours to style off the `data-*` attributes, or skip the HTML
+entirely and build your own from `getTokenJson`.

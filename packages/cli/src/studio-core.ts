@@ -11,6 +11,7 @@ export interface StudioToken {
 export interface StudioRuntime {
   getTokenJson: (opts?: { category?: string; query?: string }) => StudioToken[]
   getTokenHtml: (opts?: { tokens?: StudioToken[]; category?: string; query?: string }) => string
+  getTokenCss: () => string
 }
 
 export interface StudioFile {
@@ -77,6 +78,19 @@ export function createStudioRuntime(tokens: StudioToken[]): StudioRuntime {
     return `<li class="pds-token" ${attrs}><span class="pds-token__name">${esc(t.name)}</span><code class="pds-token__value">${esc(t.value)}</code></li>`
   }
 
+  const getTokenCss: StudioRuntime['getTokenCss'] = () => {
+    const colors = new Set<string>()
+    for (const t of tokens) {
+      if (t.category !== 'colors') continue
+      if (t.conditions) for (const value of Object.values(t.conditions)) colors.add(value)
+      else colors.add(t.value)
+    }
+    return [...colors]
+      .filter((value) => !/[{}<>;"]/.test(value))
+      .map((value) => `[data-value="${value}"]{--pds-swatch:${value}}`)
+      .join('')
+  }
+
   const getTokenJson: StudioRuntime['getTokenJson'] = (opts = {}) => filter(opts)
 
   const getTokenHtml: StudioRuntime['getTokenHtml'] = (opts = {}) => {
@@ -95,7 +109,7 @@ export function createStudioRuntime(tokens: StudioToken[]): StudioRuntime {
       .join('')
   }
 
-  return { getTokenJson, getTokenHtml }
+  return { getTokenJson, getTokenHtml, getTokenCss }
 }
 
 export function studioRuntimeModule(tokens: StudioToken[]): string {
@@ -103,6 +117,7 @@ export function studioRuntimeModule(tokens: StudioToken[]): string {
 const runtime = createStudioRuntime(${JSON.stringify(tokens)})
 export const getTokenJson = runtime.getTokenJson
 export const getTokenHtml = runtime.getTokenHtml
+export const getTokenCss = runtime.getTokenCss
 `
 }
 
@@ -116,6 +131,7 @@ export function studioArtifactFiles(tokens: StudioToken[]): StudioFile[] {
 }
 export declare function getTokenJson(opts?: { category?: string; query?: string }): StudioToken[]
 export declare function getTokenHtml(opts?: { tokens?: StudioToken[]; category?: string; query?: string }): string
+export declare function getTokenCss(): string
 `
   return [
     { path: 'studio/index.mjs', code: studioRuntimeModule(tokens) },

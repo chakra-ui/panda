@@ -107,6 +107,17 @@ describe('getTokenJson / getTokenHtml', () => {
     expect(html).toContain('data-name="sm"')
     expect(html).not.toContain('red.500')
   })
+
+  it('maps only color values to CSS variables, skipping unsafe values', () => {
+    const css = createStudioRuntime([
+      { category: 'colors', path: 'colors.red.500', name: 'red.500', value: '#ef4444' },
+      { category: 'spacing', path: 'spacing.sm', name: 'sm', value: '8px' },
+      { category: 'colors', path: 'colors.x', name: 'x', value: 'red;}body{display:none' },
+    ]).getTokenCss()
+    expect(css).toBe('[data-value="#ef4444"]{--pds-swatch:#ef4444}')
+    expect(css).not.toContain('8px')
+    expect(css).not.toContain('display:none')
+  })
 })
 
 describe('styled-system/studio artifact', () => {
@@ -117,6 +128,7 @@ describe('styled-system/studio artifact', () => {
     const mod = await import(`data:text/javascript,${encodeURIComponent(files[0].code)}`)
     expect(mod.getTokenJson({ category: 'spacing' })).toEqual([SAMPLE[1]])
     expect(mod.getTokenHtml({ category: 'colors' })).toContain('data-value="#ef4444"')
+    expect(mod.getTokenCss()).toContain('--pds-swatch:#ef4444')
   })
 })
 
@@ -147,7 +159,7 @@ describe('panda studio', () => {
 
     const page = await (await fetch(`${result.url}/`)).text()
     expect(page).toContain('data-name="red.500"')
-    expect(page).not.toContain('<style')
+    expect(page).toContain('--pds-swatch:#ef4444')
   })
 
   it('resolves semantic conditions and named themes into the artifact', async () => {

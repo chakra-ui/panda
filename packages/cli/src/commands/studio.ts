@@ -26,13 +26,14 @@ export const studioCommand = defineCommand({
   run: async ({ args }) => setExitCode(await runStudioServe(parseCliFlags(studioServeFlagsSchema, args))),
 })
 
-function studioPage(body: string): string {
+function studioPage(body: string, css: string): string {
   return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Panda Studio</title>
+    <style>body{margin:0;padding:32px 40px 80px;font-family:-apple-system,system-ui,sans-serif}.pds-tokens{list-style:none;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}[data-category=colors] .pds-token__name::before,[data-category=colors] .pds-condition::before{content:"";display:inline-block;width:2.5em;height:2.5em;vertical-align:middle;margin-right:.5em;border-radius:4px;background:var(--pds-swatch)}${css}</style>
   </head>
   <body>${body}</body>
 </html>
@@ -62,9 +63,9 @@ export async function runStudioServe(
         writeFileSync(path, file.code)
       }
 
-      const { getTokenHtml } = createStudioRuntime(tokens)
+      const { getTokenHtml, getTokenCss } = createStudioRuntime(tokens)
       const dir = mkdtempSync(join(tmpdir(), 'panda-studio-'))
-      writeFileSync(join(dir, 'index.html'), studioPage(getTokenHtml()))
+      writeFileSync(join(dir, 'index.html'), studioPage(getTokenHtml(), getTokenCss()))
       server = await serveStudio(dir, { port: flags.port, host: flags.host })
 
       if (shouldPrintHumanSummary(flags)) {
