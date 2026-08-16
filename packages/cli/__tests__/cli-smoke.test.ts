@@ -79,7 +79,7 @@ describe('cli smoke', () => {
       \`analyze\` Inspect Panda usage across project sources
       \`codegen\` Generate the panda system
       \`cssgen\` Generate CSS from project files
-      \`studio\` Boot a live token viewer. Run \`panda studio generate\` to emit token views into your project
+      \`studio\` Emit styled-system/studio and boot a live token viewer
 
       Use \`panda <command> --help\` for more information about a command.
 

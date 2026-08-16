@@ -126,14 +126,9 @@ export const debugFlagsSchema = infoFlagsSchema.extend({
   onlyConfig: booleanFlag,
 })
 
-export const studioGenerateFlagsSchema = commonFlagsSchema.extend({
-  outdir: stringFlag,
-})
-
 export const studioServeFlagsSchema = commonFlagsSchema.extend({
   port: numberLikeFlag,
   host: stringFlag,
-  logo: stringFlag,
 })
 
 export const analyzeFlagsSchema = commonFlagsSchema.extend({
@@ -155,7 +150,6 @@ export type BuildFlags = FlagsInfer<typeof buildFlagsSchema>
 export type InitFlags = FlagsInfer<typeof initFlagsSchema>
 export type BuildinfoFlags = FlagsInfer<typeof buildinfoFlagsSchema>
 export type LibFlags = FlagsInfer<typeof libFlagsSchema>
-export type StudioGenerateFlags = FlagsInfer<typeof studioGenerateFlagsSchema>
 export type StudioServeFlags = FlagsInfer<typeof studioServeFlagsSchema>
 export type DoctorFlags = FlagsInfer<typeof doctorFlagsSchema>
 export type DebugFlags = FlagsInfer<typeof debugFlagsSchema>
@@ -177,12 +171,6 @@ export interface LibResult extends CommandResult<NodeDriver> {
   buildInfoPath?: string
   presetPath?: string
   exportsChanged: boolean
-}
-
-export interface StudioGenerateResult extends CommandResult {
-  outdir?: string
-  files: string[]
-  framework: string
 }
 
 export interface StudioServeResult extends CommandResult<NodeDriver> {

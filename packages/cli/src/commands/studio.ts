@@ -1,78 +1,42 @@
 import { defineCommand } from 'citty'
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { baseArgs, outputArgs, parseCliFlags, traceArgs } from '../args'
 import { consoleOutput, shouldPrintHumanSummary, type OutputSink } from '../output'
 import { setExitCode } from '../result'
 import { runCommand } from '../run-command'
-import { studioGenerateFlagsSchema, studioServeFlagsSchema } from '../schema'
-import type { StudioGenerateFlags, StudioGenerateResult, StudioServeFlags, StudioServeResult } from '../schema'
+import { studioServeFlagsSchema } from '../schema'
+import type { StudioServeFlags, StudioServeResult } from '../schema'
 import { serveStudio, type StudioServer } from '../studio-server'
-import {
-  buildTokensSnapshot,
-  semanticMapFromTokens,
-  viewFiles,
-  viewerFiles,
-  type StudioFile,
-  type StudioFramework,
-} from '../studio-codegen'
-
-export const studioGenerateCommand = defineCommand({
-  meta: {
-    name: 'studio generate',
-    description: 'Write token view components for your design system',
-  },
-  args: () => ({
-    ...baseArgs(),
-    outdir: { type: 'string', description: "Output directory for the views (default '<outdir>/studio')" },
-    ...outputArgs(),
-    ...traceArgs(),
-  }),
-  run: async ({ args }) => setExitCode(await runStudioGenerate(parseCliFlags(studioGenerateFlagsSchema, args))),
-})
+import { buildTokensSnapshot, createStudioRuntime, semanticMapFromTokens, studioArtifactFiles } from '../studio-core'
 
 export const studioCommand = defineCommand({
   meta: {
     name: 'studio',
-    description: 'Boot a live token viewer. Run `panda studio generate` to emit token views into your project',
+    description: 'Emit styled-system/studio and boot a live token viewer',
   },
   args: () => ({
     ...baseArgs(),
     port: { type: 'string', description: 'Port for the live viewer server' },
     host: { type: 'string', description: 'Host for the live viewer server' },
-    logo: { type: 'string', description: 'Custom logo (path or URL) for the viewer header' },
     ...outputArgs(),
     ...traceArgs(),
   }),
   run: async ({ args }) => setExitCode(await runStudioServe(parseCliFlags(studioServeFlagsSchema, args))),
 })
 
-export async function runStudioGenerate(
-  flags: StudioGenerateFlags = {},
-  output: OutputSink = consoleOutput,
-): Promise<StudioGenerateResult> {
-  return (await runCommand({
-    command: 'studio',
-    flags,
-    output,
-    failData: () => ({ files: [], framework: 'react' as StudioFramework }),
-    async execute(ctx) {
-      const framework = resolveFramework(ctx.driver.config.jsxFramework)
-      const spec = ctx.driver.compiler.spec()
-      const tokens = buildTokensSnapshot(spec, semanticMapFromTokens(ctx.driver.compiler.semanticTokens() ?? []))
-      const styles = studioStyles(ctx.driver.compiler.getKeyframeCss().css, ctx.driver.compiler.getFontfaceCss().css)
-      const outdir = flags.outdir ? ctx.driver.resolvePath(flags.outdir) : join(ctx.driver.getOutdir(), 'studio')
-
-      const files = writeStudioFiles(outdir, viewFiles(tokens, framework, styles))
-
-      if (shouldPrintHumanSummary(flags)) {
-        ctx.output.log(`studio: wrote ${files.length} ${framework} files to ${outdir}`)
-      }
-
-      return { data: { outdir, files, framework } }
-    },
-  })) as StudioGenerateResult
+function studioPage(body: string): string {
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Panda Studio</title>
+  </head>
+  <body>${body}</body>
+</html>
+`
 }
 
 export async function runStudioServe(
@@ -90,10 +54,17 @@ export async function runStudioServe(
     async execute(ctx) {
       const spec = ctx.driver.compiler.spec()
       const tokens = buildTokensSnapshot(spec, semanticMapFromTokens(ctx.driver.compiler.semanticTokens() ?? []))
-      const styles = studioStyles(ctx.driver.compiler.getKeyframeCss().css, ctx.driver.compiler.getFontfaceCss().css)
-      const dir = mkdtempSync(join(tmpdir(), 'panda-studio-'))
-      writeStudioFiles(dir, viewerFiles(tokens, styles, flags.logo))
+      const outdir = ctx.driver.getOutdir()
 
+      for (const file of studioArtifactFiles(tokens)) {
+        const path = join(outdir, file.path)
+        mkdirSync(dirname(path), { recursive: true })
+        writeFileSync(path, file.code)
+      }
+
+      const { getTokenHtml } = createStudioRuntime(tokens)
+      const dir = mkdtempSync(join(tmpdir(), 'panda-studio-'))
+      writeFileSync(join(dir, 'index.html'), studioPage(getTokenHtml()))
       server = await serveStudio(dir, { port: flags.port, host: flags.host })
 
       if (shouldPrintHumanSummary(flags)) {
@@ -111,21 +82,4 @@ export async function runStudioServe(
   }
 
   return result
-}
-
-function resolveFramework(jsxFramework: unknown): StudioFramework {
-  return jsxFramework === 'solid' ? 'solid' : 'react'
-}
-
-function studioStyles(keyframeCss: string, fontfaceCss: string): string {
-  return [keyframeCss, fontfaceCss].filter(Boolean).join('\n')
-}
-
-function writeStudioFiles(outdir: string, files: StudioFile[]): string[] {
-  return files.map((file) => {
-    const path = join(outdir, file.path)
-    mkdirSync(dirname(path), { recursive: true })
-    writeFileSync(path, file.code)
-    return path
-  })
 }

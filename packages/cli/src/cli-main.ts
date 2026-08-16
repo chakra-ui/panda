@@ -13,11 +13,7 @@ export async function main(argv = process.argv): Promise<void> {
 
   if (rawArgs[0] === 'studio') {
     const studio = await import('./commands/studio')
-    if (rawArgs[1] === 'generate') {
-      await runMain(studio.studioGenerateCommand, { rawArgs: rawArgs.slice(2), showUsage: showPlainUsage })
-    } else {
-      await runMain(studio.studioCommand, { rawArgs: rawArgs.slice(1), showUsage: showPlainUsage })
-    }
+    await runMain(studio.studioCommand, { rawArgs: rawArgs.slice(1), showUsage: showPlainUsage })
     return
   }
 

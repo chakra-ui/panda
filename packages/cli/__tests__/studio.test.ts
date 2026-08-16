@@ -1,14 +1,14 @@
 // @vitest-environment node
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import {
   buildTokensSnapshot,
-  runStudioGenerate,
+  createStudioRuntime,
   runStudioServe,
   semanticMapFromTokens,
-  viewFiles,
-  viewerFiles,
+  studioArtifactFiles,
 } from '../src'
 import type { StudioToken } from '../src'
 import { cleanupFixture, createFixture } from './helpers'
@@ -34,24 +34,12 @@ const TOKEN_CONFIG = `export default {
 }
 `
 
-const SOLID_CONFIG = TOKEN_CONFIG.replace("jsxFramework: 'react'", "jsxFramework: 'solid'")
+const SAMPLE: StudioToken[] = [
+  { category: 'colors', path: 'colors.red.500', name: 'red.500', value: '#ef4444' },
+  { category: 'spacing', path: 'spacing.sm', name: 'sm', value: '8px' },
+]
 
-const SAMPLE: StudioToken[] = [{ category: 'colors', path: 'colors.red.500', name: 'red.500', value: '#ef4444' }]
-
-describe('studio generate', () => {
-  let dir: string | undefined
-
-  afterEach(() => {
-    cleanupFixture(dir)
-    dir = undefined
-  })
-
-  it('flattens the token spec into a snapshot', () => {
-    const files = viewFiles(SAMPLE, 'react')
-    const snapshot = JSON.parse(files.find((file) => file.path === 'tokens.json')!.code)
-    expect(snapshot).toEqual(SAMPLE)
-  })
-
+describe('studio snapshot', () => {
   it('builds a snapshot from a spec, skipping empty values', () => {
     const spec = {
       tokens: {
@@ -64,143 +52,13 @@ describe('studio generate', () => {
     ])
   })
 
-  it('writes React views + tokens.json to the default outdir', async () => {
-    dir = createFixture(TOKEN_CONFIG)
-
-    const logs: string[] = []
-    const result = await runStudioGenerate({ cwd: dir }, { log: (message) => logs.push(message) })
-
-    const studioDir = join(dir, 'styled-system', 'studio')
-    expect(result.framework).toBe('react')
-    expect(existsSync(join(studioDir, 'colors.tsx'))).toBe(true)
-    expect(existsSync(join(studioDir, 'token-grid.tsx'))).toBe(true)
-    expect(existsSync(join(studioDir, 'studio.css'))).toBe(true)
-    expect(existsSync(join(studioDir, 'helpers.ts'))).toBe(true)
-
-    const snapshot = JSON.parse(readFileSync(join(studioDir, 'tokens.json'), 'utf8'))
-    expect(snapshot).toContainEqual({ category: 'colors', path: 'colors.red.500', name: 'red.500', value: '#ef4444' })
-
-    const grid = readFileSync(join(studioDir, 'token-grid.tsx'), 'utf8')
-    expect(grid).toContain("from 'react'")
-    expect(grid).toContain("import css from './studio.css?raw'")
-    expect(logs[0]).toContain('studio: wrote')
-  })
-
-  it('emits keyframe CSS from the compiler into studio.css', async () => {
-    const config = TOKEN_CONFIG.replace(
-      'tokens: {',
-      "keyframes: { spin: { to: { transform: 'rotate(360deg)' } } },\n    tokens: {",
-    )
-    dir = createFixture(config)
-
-    await runStudioGenerate({ cwd: dir, logLevel: 'silent' })
-
-    const css = readFileSync(join(dir, 'styled-system', 'studio', 'studio.css'), 'utf8')
-    expect(css).toContain('@keyframes spin')
-    expect(css).toContain('rotate(360deg)')
-  })
-
-  it('honours --outdir', async () => {
-    dir = createFixture(TOKEN_CONFIG)
-
-    await runStudioGenerate({ cwd: dir, outdir: '.storybook/studio', logLevel: 'silent' })
-
-    expect(existsSync(join(dir, '.storybook', 'studio', 'colors.tsx'))).toBe(true)
-  })
-
-  it('emits Solid source when jsxFramework is solid', async () => {
-    dir = createFixture(SOLID_CONFIG)
-
-    const result = await runStudioGenerate({ cwd: dir, logLevel: 'silent' })
-    expect(result.framework).toBe('solid')
-
-    const grid = readFileSync(join(dir, 'styled-system', 'studio', 'token-grid.tsx'), 'utf8')
-    expect(grid).toContain("from 'solid-js'")
-    expect(grid).toContain('<For')
-  })
-})
-
-describe('studio viewer', () => {
-  let dir: string | undefined
-
-  afterEach(() => {
-    cleanupFixture(dir)
-    dir = undefined
-  })
-
-  it('emits a self-contained vanilla bundle, one page per section', () => {
-    const paths = viewerFiles(SAMPLE).map((file) => file.path)
-    expect(paths).toEqual(['tokens.json', 'studio.css', 'studio.js', 'index.html', 'contrast.html'])
-  })
-
-  it('emits one semantic page per category present, not a single semantic view', () => {
-    const tokens: StudioToken[] = [
-      ...SAMPLE,
-      { category: 'colors', path: 'colors.bg', name: 'bg', value: '#fff', conditions: { base: '#fff', _dark: '#000' } },
-      { category: 'fonts', path: 'fonts.body', name: 'body', value: 'sans', conditions: { base: 'sans' } },
-    ]
-    const paths = viewerFiles(tokens).map((file) => file.path)
-    expect(paths).toContain('semantic-colors.html')
-    expect(paths).toContain('semantic-fonts.html')
-    expect(paths).not.toContain('semantic.html')
-  })
-
-  it('serves tokens.json over http', async () => {
-    dir = createFixture(TOKEN_CONFIG)
-
-    const result = await runStudioServe({ cwd: dir, host: '127.0.0.1', logLevel: 'silent' })
-    try {
-      expect(result.url).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/)
-
-      const res = await fetch(`${result.url}/tokens.json`)
-      const snapshot = await res.json()
-      expect(snapshot).toContainEqual({
-        category: 'colors',
-        path: 'colors.red.500',
-        name: 'red.500',
-        value: '#ef4444',
-      })
-
-      const page = await fetch(`${result.url}/`)
-      expect(await page.text()).toContain('Panda Studio')
-    } finally {
-      await result.stop?.()
-    }
-  })
-})
-
-describe('studio fonts', () => {
-  let dir: string | undefined
-
-  afterEach(() => {
-    cleanupFixture(dir)
-    dir = undefined
-  })
-
-  it('emits @font-face css from the compiler so the viewer loads the user font', async () => {
-    const config = TOKEN_CONFIG.replace(
-      'export default {',
-      `export default {
-  globalFontface: { Custom: { src: "url('/fonts/custom.woff2') format('woff2')", fontDisplay: 'swap' } },`,
-    )
-    dir = createFixture(config)
-
-    await runStudioGenerate({ cwd: dir, logLevel: 'silent' })
-
-    const css = readFileSync(join(dir, 'styled-system', 'studio', 'studio.css'), 'utf8')
-    expect(css).toContain('@font-face')
-    expect(css).toContain('font-family: Custom')
-    expect(css).toContain("url('/fonts/custom.woff2') format('woff2')")
-    expect(css).toContain('font-display: swap')
-  })
-})
-
-describe('studio semantic tokens', () => {
-  let dir: string | undefined
-
-  afterEach(() => {
-    cleanupFixture(dir)
-    dir = undefined
+  it('keeps semantic paths out of the primitive list', () => {
+    const specWithSemantic = {
+      tokens: { categories: { colors: { values: ['bg'] } }, values: { 'colors.bg': 'var(--colors-white)' } },
+    } as never
+    const tokens = buildTokensSnapshot(specWithSemantic, { 'colors.bg': { base: '#fff' } })
+    expect(tokens.filter((token) => token.path === 'colors.bg')).toHaveLength(1)
+    expect(tokens[0].value).toBe('#fff')
   })
 
   it('labels base-theme and named-theme conditions from the compiler projection', () => {
@@ -216,8 +74,83 @@ describe('studio semantic tokens', () => {
     ])
     expect(map).toEqual({ 'colors.bg': { base: '#fff', _dark: '#000', 'ocean · base': '#e0f2fe' } })
   })
+})
 
-  it('resolves semantic conditions and named themes end to end through the compiler', async () => {
+describe('getTokenJson / getTokenHtml', () => {
+  const runtime = createStudioRuntime(SAMPLE)
+
+  it('filters by category and query', () => {
+    expect(runtime.getTokenJson({ category: 'colors' })).toHaveLength(1)
+    expect(runtime.getTokenJson({ query: '8px' })).toEqual([SAMPLE[1]])
+    expect(runtime.getTokenJson()).toHaveLength(2)
+  })
+
+  it('renders semantic markup with no inline styles or shipped css', () => {
+    const html = runtime.getTokenHtml({ category: 'colors' })
+    expect(html).toContain('class="pds-token"')
+    expect(html).toContain('data-value="#ef4444"')
+    expect(html).toContain('red.500')
+    expect(html).not.toContain('style=')
+  })
+
+  it('escapes untrusted token values', () => {
+    const html = createStudioRuntime([
+      { category: 'colors', path: 'colors.x', name: 'x', value: '"><script>alert(1)</script>' },
+    ]).getTokenHtml()
+    expect(html).not.toContain('<script>')
+    expect(html).toContain('&lt;script&gt;')
+    expect(html).toContain('&quot;')
+  })
+
+  it('renders the tokens passed in, not the baked set', () => {
+    const html = runtime.getTokenHtml({ tokens: [SAMPLE[1]] })
+    expect(html).toContain('data-name="sm"')
+    expect(html).not.toContain('red.500')
+  })
+})
+
+describe('styled-system/studio artifact', () => {
+  it('emits a self-contained module + types', async () => {
+    const files = studioArtifactFiles(SAMPLE)
+    expect(files.map((f) => f.path)).toEqual(['studio/index.mjs', 'studio/index.d.ts'])
+
+    const mod = await import(`data:text/javascript,${encodeURIComponent(files[0].code)}`)
+    expect(mod.getTokenJson({ category: 'spacing' })).toEqual([SAMPLE[1]])
+    expect(mod.getTokenHtml({ category: 'colors' })).toContain('data-value="#ef4444"')
+  })
+})
+
+describe('panda studio', () => {
+  let dir: string | undefined
+  let stop: (() => Promise<void>) | undefined
+
+  afterEach(async () => {
+    await stop?.()
+    stop = undefined
+    cleanupFixture(dir)
+    dir = undefined
+  })
+
+  it('emits styled-system/studio and server-renders the page', async () => {
+    dir = createFixture(TOKEN_CONFIG)
+    const result = await runStudioServe({ cwd: dir, host: '127.0.0.1', logLevel: 'silent' })
+    stop = result.stop
+
+    expect(result.url).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/)
+
+    const studioDir = join(dir, 'styled-system', 'studio')
+    expect(existsSync(join(studioDir, 'index.mjs'))).toBe(true)
+    expect(existsSync(join(studioDir, 'index.d.ts'))).toBe(true)
+
+    const mod = await import(pathToFileURL(join(studioDir, 'index.mjs')).href)
+    expect(mod.getTokenJson({ category: 'colors' }).some((t: StudioToken) => t.name === 'red.500')).toBe(true)
+
+    const page = await (await fetch(`${result.url}/`)).text()
+    expect(page).toContain('data-name="red.500"')
+    expect(page).not.toContain('<style')
+  })
+
+  it('resolves semantic conditions and named themes into the artifact', async () => {
     const config = TOKEN_CONFIG.replace(
       'theme: {',
       `theme: {
@@ -228,21 +161,11 @@ describe('studio semantic tokens', () => {
   themes: { ocean: { semanticTokens: { colors: { bg: { value: { base: '#e0f2fe' } } } } } },`,
     )
     dir = createFixture(config)
+    const result = await runStudioServe({ cwd: dir, host: '127.0.0.1', logLevel: 'silent' })
+    stop = result.stop
 
-    await runStudioGenerate({ cwd: dir, logLevel: 'silent' })
-
-    const snapshot = JSON.parse(readFileSync(join(dir, 'styled-system', 'studio', 'tokens.json'), 'utf8'))
-    const bg = snapshot.find((token: StudioToken) => token.path === 'colors.bg')
-    expect(bg).toMatchObject({ category: 'colors', name: 'bg', value: '#ef4444' })
+    const mod = await import(pathToFileURL(join(dir, 'styled-system', 'studio', 'index.mjs')).href)
+    const bg = mod.getTokenJson().find((t: StudioToken) => t.path === 'colors.bg')
     expect(bg.conditions).toEqual({ base: '#ef4444', _dark: '#3b82f6', 'ocean · base': '#e0f2fe' })
-  })
-
-  it('keeps semantic paths out of the primitive list', () => {
-    const specWithSemantic = {
-      tokens: { categories: { colors: { values: ['bg'] } }, values: { 'colors.bg': 'var(--colors-white)' } },
-    } as never
-    const tokens = buildTokensSnapshot(specWithSemantic, { 'colors.bg': { base: '#fff' } })
-    expect(tokens.filter((token) => token.path === 'colors.bg')).toHaveLength(1)
-    expect(tokens[0].value).toBe('#fff')
   })
 })

@@ -8,9 +8,15 @@ export { runLib } from './commands/lib'
 export { runAnalyze } from './commands/analyze'
 export { projectSummary, type ProjectSummary } from './project-summary'
 export { runInit, setupGitIgnore } from './commands/init'
-export { runStudioGenerate, runStudioServe } from './commands/studio'
-export { buildTokensSnapshot, semanticMapFromTokens, viewFiles, viewerFiles } from './studio-codegen'
-export type { StudioToken, StudioFile, StudioFramework } from './studio-codegen'
+export { runStudioServe } from './commands/studio'
+export {
+  buildTokensSnapshot,
+  createStudioRuntime,
+  semanticMapFromTokens,
+  studioArtifactFiles,
+  studioRuntimeModule,
+} from './studio-core'
+export type { StudioToken, StudioFile, StudioRuntime } from './studio-core'
 export { serveStudio } from './studio-server'
 export type {
   BuildFlags,
@@ -34,8 +40,6 @@ export type {
   LibFlags,
   LibResult,
   LogLevel,
-  StudioGenerateFlags,
-  StudioGenerateResult,
   StudioServeFlags,
   StudioServeResult,
 } from './schema'

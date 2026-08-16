@@ -1,109 +1,66 @@
 ---
 title: Panda Studio
-description: Visualize your design tokens with a live viewer, or generate token views you render yourself.
+description: Visualize your design tokens as data and HTML you render yourself.
 ---
 
 # Panda Studio
 
-`panda studio` turns your resolved design tokens into a visual reference. It has two tracks that share one token
-snapshot:
-
-- **`panda studio`** boots a live viewer to look at your tokens.
-- **`panda studio generate`** writes the token views into your project as source, so you render them wherever you
-  document your design system.
-
-Both read a generated `tokens.json` snapshot of your fully-resolved tokens. Re-run after a config change to refresh.
-
-## Live viewer
-
-Boot the viewer against your config:
+`panda studio` turns your resolved design tokens into two things you can build on: **data** and **HTML**. The API is
+inspired by [Tiptap](https://tiptap.dev)'s `getHTML` / `getJSON` — Panda ships the content, you own the presentation.
 
 ```bash
 panda studio
 ```
 
-This builds a self-contained bundle (plain HTML, CSS, and JS — no framework, no bundler) and serves it locally. It
-groups your tokens by category and renders a preview for each: colors as swatches, spacing and sizes as bars, radii and
-shadows as boxes, and typography as text samples. It follows your system light/dark theme, with a toggle in the header.
+This emits `styled-system/studio` and boots a live viewer at `http://localhost:4000` (set `--port` to change it).
+Re-run after a config change to refresh.
 
-Set the port with `--port`:
+## The two functions
 
-```bash
-panda studio --port 4000
+`styled-system/studio` exports two framework-agnostic functions:
+
+```ts
+import { getTokenJson, getTokenHtml } from '../styled-system/studio'
 ```
 
-## Generating views
+### `getTokenJson`
 
-If you already document your design system your own way, generate the views as source and render them yourself:
+Returns your tokens as data. Filter by `category`, search with `query`, or omit both for everything.
 
-```bash
-panda studio generate
+```ts
+getTokenJson({ category: 'colors' })
+getTokenJson({ category: 'spacing', query: 'sm' })
+getTokenJson() // all tokens
 ```
 
-This writes to `styled-system/studio` by default. Use `--outdir` to change it:
+Each token is `{ category, path, name, value, conditions? }`. Semantic tokens include a `conditions` map of their
+resolved per-condition and per-theme values. Walk the result to build whatever UI you want.
 
-```bash
-panda studio generate --outdir .storybook/studio
+### `getTokenHtml`
+
+Returns semantic, **style-free** HTML — names and values as text, everything else as `data-*` attributes. It ships no
+CSS, so you style it however you like.
+
+```ts
+getTokenHtml({ tokens: getTokenJson({ category: 'colors' }) })
+getTokenHtml({ category: 'colors', query: 'brand' }) // filter inline
 ```
 
-You get one component per category plus the shared grid and the snapshot:
-
-```
-styled-system/studio/
-  tokens.json
-  studio.css
-  helpers.ts
-  token-grid.tsx
-  colors.tsx
-  typography.tsx
-  spacing.tsx
-  sizes.tsx
-  radii.tsx
-  shadows.tsx
-  semantic.tsx
-```
-
-Each view is a plain component with inline styles that reads `tokens.json`. It doesn't import the styled-system runtime,
-so it renders anywhere regardless of how your app consumes Panda.
-
-You own these files. Edit them freely, and re-run `panda studio generate` to refresh the snapshot after a config change.
-
-### Framework support
-
-The generated views match your `config.jsxFramework`:
-
-- `react` (the default) emits `.tsx` components using React.
-- `solid` emits `.tsx` components using `solid-js`.
-
-For any other framework, use the live viewer — it's framework-agnostic.
-
-## Rendering the views
-
-The views are plain components, so drop them wherever you render UI.
-
-### Storybook
-
-Wrap a view in a story:
+Drop the string into any framework:
 
 ```tsx
-// stories/design-system.stories.tsx
-import { Colors } from '../styled-system/studio/colors'
-import { Typography } from '../styled-system/studio/typography'
-
-export default { title: 'Design System/Tokens' }
-
-export const AllColors = () => <Colors />
-export const AllTypography = () => <Typography />
-```
-
-### An app route or MDX page
-
-Import a view and render it:
-
-```tsx
-import { Colors } from './styled-system/studio/colors'
-
-export default function TokensPage() {
-  return <Colors />
+// React
+function Colors() {
+  const [tokens, setTokens] = useState(getTokenJson({ category: 'colors' }))
+  return (
+    <div>
+      <input onChange={(e) => setTokens(getTokenJson({ category: 'colors', query: e.target.value }))} />
+      <div dangerouslySetInnerHTML={{ __html: getTokenHtml({ tokens }) }} />
+    </div>
+  )
 }
 ```
+
+The same works with Vue's `v-html`, Solid's `innerHTML`, or writing the string to a file. Because the output carries the
+values in `data-value`, you can style swatches, scales, and previews entirely from your own CSS — or ignore the HTML and
+render your own from `getTokenJson`.
