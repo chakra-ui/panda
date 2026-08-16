@@ -11,7 +11,7 @@ export interface StudioToken {
 export interface StudioRuntime {
   getTokenJson: (opts?: { category?: string; query?: string }) => StudioToken[]
   getTokenHtml: (opts?: { tokens?: StudioToken[]; category?: string; query?: string }) => string
-  getTokenCss: () => string
+  getTokenCss: (css?: string) => string
 }
 
 export interface StudioFile {
@@ -78,17 +78,17 @@ export function createStudioRuntime(tokens: StudioToken[]): StudioRuntime {
     return `<li class="pds-token" ${attrs}><span class="pds-token__name">${esc(t.name)}</span><code class="pds-token__value">${esc(t.value)}</code></li>`
   }
 
-  const getTokenCss: StudioRuntime['getTokenCss'] = () => {
-    const colors = new Set<string>()
+  const getTokenCss: StudioRuntime['getTokenCss'] = (css = '') => {
+    const values = new Set<string>()
     for (const t of tokens) {
-      if (t.category !== 'colors') continue
-      if (t.conditions) for (const value of Object.values(t.conditions)) colors.add(value)
-      else colors.add(t.value)
+      if (t.conditions) for (const value of Object.values(t.conditions)) values.add(value)
+      else values.add(t.value)
     }
-    return [...colors]
+    const vars = [...values]
       .filter((value) => !/[{}<>;"]/.test(value))
-      .map((value) => `[data-value="${value}"]{--pds-swatch:${value}}`)
+      .map((value) => `[data-value="${value}"]{--pds-value:${value}}`)
       .join('')
+    return `${vars}${css}`
   }
 
   const getTokenJson: StudioRuntime['getTokenJson'] = (opts = {}) => filter(opts)
@@ -131,7 +131,7 @@ export function studioArtifactFiles(tokens: StudioToken[]): StudioFile[] {
 }
 export declare function getTokenJson(opts?: { category?: string; query?: string }): StudioToken[]
 export declare function getTokenHtml(opts?: { tokens?: StudioToken[]; category?: string; query?: string }): string
-export declare function getTokenCss(): string
+export declare function getTokenCss(css?: string): string
 `
   return [
     { path: 'studio/index.mjs', code: studioRuntimeModule(tokens) },

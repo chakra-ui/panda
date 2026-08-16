@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -108,15 +108,17 @@ describe('getTokenJson / getTokenHtml', () => {
     expect(html).not.toContain('red.500')
   })
 
-  it('maps only color values to CSS variables, skipping unsafe values', () => {
-    const css = createStudioRuntime([
+  it('maps token values to CSS variables and appends the given stylesheet', () => {
+    const rt = createStudioRuntime([
       { category: 'colors', path: 'colors.red.500', name: 'red.500', value: '#ef4444' },
       { category: 'spacing', path: 'spacing.sm', name: 'sm', value: '8px' },
       { category: 'colors', path: 'colors.x', name: 'x', value: 'red;}body{display:none' },
-    ]).getTokenCss()
-    expect(css).toBe('[data-value="#ef4444"]{--pds-swatch:#ef4444}')
-    expect(css).not.toContain('8px')
+    ])
+    const css = rt.getTokenCss('.pds-token{border:1px solid}')
+    expect(css).toContain('[data-value="#ef4444"]{--pds-value:#ef4444}')
+    expect(css).toContain('[data-value="8px"]{--pds-value:8px}')
     expect(css).not.toContain('display:none')
+    expect(css.endsWith('.pds-token{border:1px solid}')).toBe(true)
   })
 })
 
@@ -128,7 +130,7 @@ describe('styled-system/studio artifact', () => {
     const mod = await import(`data:text/javascript,${encodeURIComponent(files[0].code)}`)
     expect(mod.getTokenJson({ category: 'spacing' })).toEqual([SAMPLE[1]])
     expect(mod.getTokenHtml({ category: 'colors' })).toContain('data-value="#ef4444"')
-    expect(mod.getTokenCss()).toContain('--pds-swatch:#ef4444')
+    expect(mod.getTokenCss()).toContain('--pds-value:#ef4444')
   })
 })
 
@@ -159,7 +161,18 @@ describe('panda studio', () => {
 
     const page = await (await fetch(`${result.url}/`)).text()
     expect(page).toContain('data-name="red.500"')
-    expect(page).toContain('--pds-swatch:#ef4444')
+    expect(page).toContain('--pds-value:#ef4444')
+  })
+
+  it('renders the viewer with a user stylesheet passed via --css', async () => {
+    dir = createFixture(TOKEN_CONFIG)
+    writeFileSync(join(dir, 'studio.css'), '.pds-token{outline:2px dashed hotpink}')
+    const result = await runStudioServe({ cwd: dir, host: '127.0.0.1', css: 'studio.css', logLevel: 'silent' })
+    stop = result.stop
+
+    const page = await (await fetch(`${result.url}/`)).text()
+    expect(page).toContain('.pds-token{outline:2px dashed hotpink}')
+    expect(page).toContain('--pds-value:#ef4444')
   })
 
   it('resolves semantic conditions and named themes into the artifact', async () => {

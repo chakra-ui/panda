@@ -1,26 +1,27 @@
 ---
 title: Panda Studio
-description: Visualize your design tokens as data and HTML you render yourself.
+description: Visualize your design tokens as data, HTML, and CSS you style yourself.
 ---
 
 # Panda Studio
 
-`panda studio` turns your resolved design tokens into two things you can build on: **data** and **HTML**. The API is
-inspired by [Tiptap](https://tiptap.dev)'s `getHTML` / `getJSON` — Panda ships the content, you own the presentation.
+`panda studio` turns your resolved design tokens into three things you can build on — **data**, **HTML**, and **CSS
+variables**. The API is modeled on [Tiptap](https://tiptap.dev)'s `getHTML` / `getJSON`: Panda hands you the content,
+you own the presentation. It ships no design of its own.
 
 ```bash
 panda studio
 ```
 
-This emits `styled-system/studio` and boots a live viewer at `http://localhost:4000` (set `--port` to change it).
-Re-run after a config change to refresh.
+This emits `styled-system/studio` and boots a live viewer at `http://localhost:4000`. Re-run after a config change to
+refresh.
 
-## The two functions
+## The three functions
 
-`styled-system/studio` exports two framework-agnostic functions:
+`styled-system/studio` exports three framework-agnostic functions:
 
 ```ts
-import { getTokenJson, getTokenHtml } from '../styled-system/studio'
+import { getTokenJson, getTokenHtml, getTokenCss } from '../styled-system/studio'
 ```
 
 ### `getTokenJson`
@@ -38,12 +39,25 @@ resolved per-condition and per-theme values. Walk the result to build whatever U
 
 ### `getTokenHtml`
 
-Returns semantic, **style-free** HTML — names and values as text, everything else as `data-*` attributes. It ships no
-CSS, so you style it however you like.
+Returns semantic, **style-free** HTML — names and values as text, everything else on `data-*` attributes. It carries no
+inline styles and no classes-with-opinions, so it drops into any framework and styles cleanly.
 
 ```ts
 getTokenHtml({ tokens: getTokenJson({ category: 'colors' }) })
 getTokenHtml({ category: 'colors', query: 'brand' }) // filter inline
+```
+
+```html
+<!-- shape of the output -->
+<section class="pds-group" data-category="colors">
+  <h2 class="pds-group__title">colors</h2>
+  <ul class="pds-tokens">
+    <li class="pds-token" data-category="colors" data-name="red.500" data-value="#ef4444">
+      <span class="pds-token__name">red.500</span>
+      <code class="pds-token__value">#ef4444</code>
+    </li>
+  </ul>
+</section>
 ```
 
 Drop the string into any framework:
@@ -65,28 +79,46 @@ The same works with Vue's `v-html`, Solid's `innerHTML`, or writing the string t
 
 ### `getTokenCss`
 
-Returns your color tokens as CSS variables, keyed to the markup above — the one thing you can't derive from the HTML
-alone, since CSS can't read a color out of a `data-` attribute. It ships no layout or design of its own.
+Takes **your** stylesheet and wires it up. It prepends each token's value as a CSS variable (`--pds-value`) on the
+matching `[data-value]` element — the one thing static CSS can't do, since it can't read a value out of a `data-`
+attribute — then returns your CSS appended.
 
-```css
-/* getTokenCss() output */
-[data-value='#ef4444'] {
-  --pds-swatch: #ef4444;
-}
+```ts
+getTokenCss(myStylesheet) // "[data-value=\"#ef4444\"]{--pds-value:#ef4444}…" + myStylesheet
 ```
 
-Include it once, then paint a swatch with a single rule of your own:
+So in your own CSS you reference `var(--pds-value)` and it resolves to the token's real value:
 
 ```css
+/* your stylesheet */
 [data-category='colors'] .pds-token__name::before {
   content: '';
-  display: inline-block;
-  width: 2.5em;
-  height: 2.5em;
-  border-radius: 4px;
-  background: var(--pds-swatch);
+  display: block;
+  height: 56px;
+  border-radius: 6px;
+  background: var(--pds-value);
 }
 ```
 
-Everything else — grids, cards, typography, scales — is yours to style off the `data-*` attributes, or skip the HTML
-entirely and build your own from `getTokenJson`.
+Include `getTokenCss(yourCss)` once and every color swatch paints itself; the same trick drives spacing bars, aspect
+ratios, or animation previews. Values that would break a stylesheet are dropped. Panda never authors the design — the
+grid, the cards, the typography are all yours.
+
+## Live viewer
+
+`panda studio` serves a viewer rendered from these same functions. By default it's unstyled markup — pass your own
+stylesheet to make it yours:
+
+```bash
+panda studio --css ./studio.css        # render the viewer with your stylesheet
+panda studio --port 4000
+```
+
+`--css` is read and passed straight through `getTokenCss`, so your file can lean on `var(--pds-value)` and the
+`pds-*` classes above. It's the same path any consumer takes — Panda's viewer has no private styling.
+
+## Rendering it yourself
+
+You don't need the viewer. Import the three functions and compose them however you document your design system — an app
+route, an MDX page, or Storybook. `getTokenJson` for full control, `getTokenHtml` + `getTokenCss(yourCss)` when you want
+the markup done for you and only the look to own.

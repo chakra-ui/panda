@@ -11,8 +11,9 @@ you two framework-agnostic functions, inspired by Tiptap's `getHTML`/`getJSON`:
   own UI by walking the result.
 - `getTokenHtml({ tokens })` returns semantic, style-free HTML you can drop into any framework (`dangerouslySetInnerHTML`,
   `v-html`, `innerHTML`) and style however you like.
-- `getTokenCss()` returns your color tokens as CSS variables (`[data-value]{--pds-swatch:…}`) keyed to that markup, so a
-  swatch is one rule of your own CSS away — no styling shipped, no attribute values inlined into `style`.
+- `getTokenCss(yourStylesheet)` wires up your CSS: it exposes each token's value as a `--pds-value` variable on the
+  matching `[data-value]` element and appends your stylesheet, so `var(--pds-value)` resolves to real token values. The
+  viewer takes a stylesheet the same way — `panda studio --css ./studio.css`.
 
 Semantic tokens carry their per-condition and per-theme values, resolved to real values. Panda ships the data and the
-markup; the styling and any richer UI are yours.
+markup and wires your CSS in; the design is yours.

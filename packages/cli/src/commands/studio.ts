@@ -1,5 +1,5 @@
 import { defineCommand } from 'citty'
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { baseArgs, outputArgs, parseCliFlags, traceArgs } from '../args'
@@ -20,6 +20,7 @@ export const studioCommand = defineCommand({
     ...baseArgs(),
     port: { type: 'string', description: 'Port for the live viewer server' },
     host: { type: 'string', description: 'Host for the live viewer server' },
+    css: { type: 'string', description: 'Path to a stylesheet to render the viewer with' },
     ...outputArgs(),
     ...traceArgs(),
   }),
@@ -33,7 +34,7 @@ function studioPage(body: string, css: string): string {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Panda Studio</title>
-    <style>body{margin:0;padding:32px 40px 80px;font-family:-apple-system,system-ui,sans-serif}.pds-tokens{list-style:none;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}[data-category=colors] .pds-token__name::before,[data-category=colors] .pds-condition::before{content:"";display:inline-block;width:2.5em;height:2.5em;vertical-align:middle;margin-right:.5em;border-radius:4px;background:var(--pds-swatch)}${css}</style>
+    <style>${css}</style>
   </head>
   <body>${body}</body>
 </html>
@@ -64,8 +65,9 @@ export async function runStudioServe(
       }
 
       const { getTokenHtml, getTokenCss } = createStudioRuntime(tokens)
+      const userCss = flags.css ? readFileSync(ctx.driver.resolvePath(flags.css), 'utf8') : ''
       const dir = mkdtempSync(join(tmpdir(), 'panda-studio-'))
-      writeFileSync(join(dir, 'index.html'), studioPage(getTokenHtml(), getTokenCss()))
+      writeFileSync(join(dir, 'index.html'), studioPage(getTokenHtml(), getTokenCss(userCss)))
       server = await serveStudio(dir, { port: flags.port, host: flags.host })
 
       if (shouldPrintHumanSummary(flags)) {
