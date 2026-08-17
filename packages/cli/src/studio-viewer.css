@@ -1,0 +1,198 @@
+/* Default look for `panda studio`. Not shipped by the styled-system/studio module —
+   only the live viewer injects it, and `--css` appends after it to override. */
+
+:root {
+  color-scheme: light;
+  --pds-bg: #ffffff;
+  --pds-fg: #1a1a1a;
+  --pds-muted: #6b7280;
+  --pds-border: #e5e7eb;
+  --pds-track: #eef0f3;
+  --pds-fill: #8b5cf6;
+}
+
+body {
+  margin: 0;
+  padding: 2.5rem clamp(1rem, 4vw, 3rem);
+  background: var(--pds-bg);
+  color: var(--pds-fg);
+  font-family:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.4;
+}
+
+.pds-group {
+  max-width: 72rem;
+  margin: 0 auto 3rem;
+}
+
+.pds-group__title {
+  margin: 0 0 1.25rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pds-muted);
+}
+
+.pds-tokens {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: 1.5rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Spacing & sizes read as a single-column meter: full-width bars, growing top to bottom. */
+[data-category='spacing'] .pds-tokens,
+[data-category='sizes'] .pds-tokens {
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.pds-token {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.pds-token__name {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.pds-token__value,
+.pds-condition__value {
+  font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+  font-size: 0.6875rem;
+  color: var(--pds-muted);
+  word-break: break-all;
+}
+
+/* Every preview sits above its name via ::before: swatch, bar, sample, or corner. */
+
+/* Colors: a swatch painted from the token value. */
+[data-category='colors'] .pds-token__name::before,
+[data-category='colors'] .pds-condition::before {
+  content: '';
+  display: block;
+  height: 3rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0.375rem;
+  border: 1px solid var(--pds-border);
+  background: var(--pds-value);
+}
+
+[data-category='colors'] .pds-condition::before {
+  height: 1.75rem;
+}
+
+/* Semantic tokens show a swatch per condition; drop the redundant top one. */
+[data-category='colors'] .pds-token--semantic .pds-token__name::before {
+  display: none;
+}
+
+/* Shadows: a surface tile casting the shadow (inset shadows show inside). */
+[data-category='shadows'] .pds-token__name::before {
+  content: '';
+  display: block;
+  height: 2.75rem;
+  margin: 0.25rem 0 0.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid var(--pds-border);
+  background: #ffffff;
+  box-shadow: var(--pds-value);
+}
+
+/* Font weights: sample text at the weight. */
+[data-category='fontWeights'] .pds-token__name::before {
+  content: 'Ag';
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 1.75rem;
+  font-weight: var(--pds-value);
+  line-height: 1.1;
+}
+
+/* Letter spacings: a sample word at the tracking. */
+[data-category='letterSpacings'] .pds-token__name::before {
+  content: 'Panda';
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: 1.125rem;
+  letter-spacing: var(--pds-value);
+}
+
+/* Line heights: stacked lines at the given height. */
+[data-category='lineHeights'] .pds-token__name::before {
+  content: 'Aa\A Aa\A Aa';
+  white-space: pre;
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.8125rem;
+  line-height: var(--pds-value);
+  color: var(--pds-muted);
+}
+
+/* Spacing & sizes: a track with a fill as wide as the token value. */
+[data-category='spacing'] .pds-token__name::before,
+[data-category='sizes'] .pds-token__name::before {
+  content: '';
+  display: block;
+  height: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-radius: 999px;
+  background:
+    linear-gradient(var(--pds-fill), var(--pds-fill)) left center / min(var(--pds-value), 100%) 100% no-repeat,
+    var(--pds-track);
+}
+
+/* Values that can't meter — negatives, keyword sizes — show name + value only, no bar. */
+[data-category='spacing'] .pds-token[data-value^='-'] .pds-token__name::before,
+[data-category='sizes'] .pds-token[data-value^='-'] .pds-token__name::before,
+[data-category='sizes'] .pds-token[data-value$='-content'] .pds-token__name::before,
+[data-category='sizes'] .pds-token[data-value='auto'] .pds-token__name::before {
+  display: none;
+}
+
+/* Font sizes: sample text rendered at the token's size. */
+[data-category='fontSizes'] .pds-token__name::before {
+  content: 'Ag';
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: min(var(--pds-value), 3.5rem);
+  line-height: 1.1;
+}
+
+/* Radii: a corner preview. */
+[data-category='radii'] .pds-token__name::before {
+  content: '';
+  display: block;
+  height: 3rem;
+  width: 3rem;
+  margin-bottom: 0.5rem;
+  border: 2px solid currentColor;
+  border-radius: var(--pds-value);
+  opacity: 0.45;
+}
+
+.pds-conditions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pds-condition {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pds-condition__name {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--pds-muted);
+}

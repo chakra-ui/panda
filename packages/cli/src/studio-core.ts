@@ -19,14 +19,22 @@ export interface StudioFile {
   code: string
 }
 
+const NEGATED = /^calc\(var\(--([^)]+)\)\s*\*\s*-1\)$/
+
 export function buildTokensSnapshot(spec: Spec, semantic: Record<string, Record<string, string>> = {}): StudioToken[] {
   const out: StudioToken[] = []
   for (const [category, meta] of Object.entries(spec.tokens.categories)) {
     for (const name of meta.values) {
       const path = `${category}.${name}`
       if (semantic[path]) continue
-      const value = spec.tokens.values[path]
+      let value = spec.tokens.values[path]
       if (value == null || value === '') continue
+      const negated = value.match(NEGATED)
+      if (negated) {
+        const positivePath = negated[1].replace(/\\/g, '').replace('-', '.')
+        const positive = spec.tokens.values[positivePath]
+        if (positive) value = `-${positive}`
+      }
       out.push({ category, path, name, value })
     }
   }
@@ -93,6 +101,22 @@ export function createStudioRuntime(tokens: StudioToken[]): StudioRuntime {
 
   const getTokenJson: StudioRuntime['getTokenJson'] = (opts = {}) => filter(opts)
 
+  const UNIT_PX: Record<string, number> = { '': 1, px: 1, rem: 16, em: 16, ch: 8, ex: 8, '%': 16, vw: 16, vh: 16 }
+  const metered = new Set(['spacing', 'sizes'])
+  const toPx = (value: string) => {
+    const m = String(value).match(/^(-?[0-9.]+)\s*([a-z%]*)$/i)
+    if (!m) return NaN
+    const n = parseFloat(m[1])
+    const factor = UNIT_PX[m[2].toLowerCase()]
+    return Number.isFinite(n) && factor != null ? n * factor : NaN
+  }
+  const sortKey = (t: StudioToken) => {
+    const px = toPx(t.value)
+    if (Number.isFinite(px)) return px < 0 && metered.has(t.category) ? 1e9 - px : px
+    const byName = Number(t.name)
+    return Number.isFinite(byName) ? byName : Infinity
+  }
+
   const getTokenHtml: StudioRuntime['getTokenHtml'] = (opts = {}) => {
     const items = opts.tokens ?? filter(opts)
     const groups = new Map<string, StudioToken[]>()
@@ -101,6 +125,7 @@ export function createStudioRuntime(tokens: StudioToken[]): StudioRuntime {
       if (group) group.push(t)
       else groups.set(t.category, [t])
     }
+    for (const group of groups.values()) group.sort((a, b) => sortKey(a) - sortKey(b))
     return [...groups.entries()]
       .map(
         ([category, group]) =>

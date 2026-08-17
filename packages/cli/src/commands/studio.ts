@@ -27,6 +27,15 @@ export const studioCommand = defineCommand({
   run: async ({ args }) => setExitCode(await runStudioServe(parseCliFlags(studioServeFlagsSchema, args))),
 })
 
+function readViewerCss(): string {
+  for (const rel of ['../studio-viewer.css', './studio-viewer.css']) {
+    try {
+      return readFileSync(new URL(rel, import.meta.url), 'utf8')
+    } catch {}
+  }
+  return ''
+}
+
 function studioPage(body: string, css: string): string {
   return `<!doctype html>
 <html lang="en">
@@ -67,7 +76,7 @@ export async function runStudioServe(
       const { getTokenHtml, getTokenCss } = createStudioRuntime(tokens)
       const userCss = flags.css ? readFileSync(ctx.driver.resolvePath(flags.css), 'utf8') : ''
       const dir = mkdtempSync(join(tmpdir(), 'panda-studio-'))
-      writeFileSync(join(dir, 'index.html'), studioPage(getTokenHtml(), getTokenCss(userCss)))
+      writeFileSync(join(dir, 'index.html'), studioPage(getTokenHtml(), getTokenCss(readViewerCss() + userCss)))
       server = await serveStudio(dir, { port: flags.port, host: flags.host })
 
       if (shouldPrintHumanSummary(flags)) {

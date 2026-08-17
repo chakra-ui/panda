@@ -102,6 +102,38 @@ describe('getTokenJson / getTokenHtml', () => {
     expect(html).toContain('&quot;')
   })
 
+  it('orders a category by value so bars read as a top-to-bottom meter, negatives last', () => {
+    const html = createStudioRuntime([
+      { category: 'spacing', path: 'spacing.10', name: '10', value: '2.5rem' },
+      { category: 'spacing', path: 'spacing.-4', name: '-4', value: '-1rem' },
+      { category: 'spacing', path: 'spacing.1', name: '1', value: '0.25rem' },
+      { category: 'spacing', path: 'spacing.2', name: '2', value: '0.5rem' },
+    ]).getTokenHtml({ category: 'spacing' })
+    expect(html.indexOf('data-name="1"')).toBeLessThan(html.indexOf('data-name="2"'))
+    expect(html.indexOf('data-name="2"')).toBeLessThan(html.indexOf('data-name="10"'))
+    expect(html.indexOf('data-name="10"')).toBeLessThan(html.indexOf('data-name="-4"'))
+  })
+
+  it('orders sizes by real length across units, so ch lands by its px width', () => {
+    const html = createStudioRuntime([
+      { category: 'sizes', path: 'sizes.a', name: 'a', value: '40rem' },
+      { category: 'sizes', path: 'sizes.prose', name: 'prose', value: '60ch' },
+      { category: 'sizes', path: 'sizes.b', name: 'b', value: '20rem' },
+    ]).getTokenHtml({ category: 'sizes' })
+    expect(html.indexOf('data-name="b"')).toBeLessThan(html.indexOf('data-name="prose"'))
+    expect(html.indexOf('data-name="prose"')).toBeLessThan(html.indexOf('data-name="a"'))
+  })
+
+  it('keeps naturally-negative scales (letterSpacings) ascending, not pushed last', () => {
+    const html = createStudioRuntime([
+      { category: 'letterSpacings', path: 'letterSpacings.normal', name: 'normal', value: '0em' },
+      { category: 'letterSpacings', path: 'letterSpacings.tighter', name: 'tighter', value: '-0.05em' },
+      { category: 'letterSpacings', path: 'letterSpacings.wide', name: 'wide', value: '0.025em' },
+    ]).getTokenHtml({ category: 'letterSpacings' })
+    expect(html.indexOf('data-name="tighter"')).toBeLessThan(html.indexOf('data-name="normal"'))
+    expect(html.indexOf('data-name="normal"')).toBeLessThan(html.indexOf('data-name="wide"'))
+  })
+
   it('renders the tokens passed in, not the baked set', () => {
     const html = runtime.getTokenHtml({ tokens: [SAMPLE[1]] })
     expect(html).toContain('data-name="sm"')
@@ -162,16 +194,19 @@ describe('panda studio', () => {
     const page = await (await fetch(`${result.url}/`)).text()
     expect(page).toContain('data-name="red.500"')
     expect(page).toContain('--pds-value:#ef4444')
+    expect(page).toContain('grid-template-columns')
   })
 
-  it('renders the viewer with a user stylesheet passed via --css', async () => {
+  it('renders the viewer with a user stylesheet appended after the default', async () => {
     dir = createFixture(TOKEN_CONFIG)
     writeFileSync(join(dir, 'studio.css'), '.pds-token{outline:2px dashed hotpink}')
     const result = await runStudioServe({ cwd: dir, host: '127.0.0.1', css: 'studio.css', logLevel: 'silent' })
     stop = result.stop
 
     const page = await (await fetch(`${result.url}/`)).text()
+    expect(page).toContain('grid-template-columns')
     expect(page).toContain('.pds-token{outline:2px dashed hotpink}')
+    expect(page.indexOf('grid-template-columns')).toBeLessThan(page.indexOf('outline:2px dashed hotpink'))
     expect(page).toContain('--pds-value:#ef4444')
   })
 

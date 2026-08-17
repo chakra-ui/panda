@@ -24,7 +24,7 @@ Run the viewer to look at your tokens:
 ```bash
 panda studio                    # boot the viewer at :4000
 panda studio --port 4137        # pick a port
-panda studio --css ./studio.css # render it with your own stylesheet
+panda studio --css ./studio.css # override the default look with your own
 ```
 
 Or import the functions and build your own view:
@@ -200,21 +200,23 @@ design.
 
 ## Running the live viewer
 
-`panda studio` serves a page rendered from these same three functions. With no stylesheet it's bare markup. Point it at
-your CSS to make it yours:
+`panda studio` serves a page rendered from these same three functions. It ships with a default look — a token grid with
+color swatches, spacing bars, and type samples drawn from your tokens — so a plain `panda studio` is already presentable.
+Point it at your own CSS to override or extend that look:
 
 ```bash
 panda studio --css ./studio.css
 ```
 
-`--css` reads the file and passes it straight through `getTokenCss`, so it can use `var(--pds-value)` and the `pds-`
-classes above. This is the same path any consumer takes — the viewer has no private styling.
+`--css` reads the file and appends it after the viewer's default stylesheet, both passed through `getTokenCss` — so your
+rules use `var(--pds-value)` and the `pds-` classes above, and win over the defaults. The default look lives only in the
+live viewer; the `styled-system/studio` module still ships no CSS.
 
-| Flag             | Default     | What it does                       |
-| ---------------- | ----------- | ---------------------------------- |
-| `--css <path>`   | none        | Stylesheet to render the viewer with |
-| `--port <port>`  | `4000`      | Port for the server                |
-| `--host <host>`  | `127.0.0.1` | Host to bind                       |
+| Flag             | Default     | What it does                                     |
+| ---------------- | ----------- | ------------------------------------------------ |
+| `--css <path>`   | none        | Stylesheet layered over the viewer's default look |
+| `--port <port>`  | `4000`      | Port for the server                              |
+| `--host <host>`  | `127.0.0.1` | Host to bind                                     |
 
 The standard flags apply too: `--cwd`, `--config`, `--log-level`. Every run also refreshes the generated
 `styled-system/studio` files.
@@ -298,9 +300,11 @@ writeFileSync('tokens.html', `<!doctype html><style>${css}</style>${getTokenHtml
 
 ## What Panda ships, and what it doesn't
 
-Panda gives you the data (`getTokenJson`), the markup (`getTokenHtml`), and the wiring that puts token values in reach of
-CSS (`getTokenCss`). It does not ship a design. There's no default theme, no bundled stylesheet, no framework runtime —
-the grid, the swatches, and the type are all yours to write, or to skip by building straight from `getTokenJson`.
+The `styled-system/studio` module gives you the data (`getTokenJson`), the markup (`getTokenHtml`), and the wiring that
+puts token values in reach of CSS (`getTokenCss`). It ships no design — no theme, no bundled stylesheet, no framework
+runtime. When you render it yourself, the grid, the swatches, and the type are all yours to write, or to skip by building
+straight from `getTokenJson`.
 
-That's the trade: a bare `panda studio` looks plain until you pass `--css`. In exchange, nothing you didn't write ends up
-in your bundle or your markup.
+The `panda studio` viewer is the one place Panda ships a default stylesheet, so the command is useful on its own. That
+CSS stays in the live viewer and never reaches your project — nothing you didn't import ends up in your bundle or your
+markup.
