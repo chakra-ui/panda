@@ -2,7 +2,7 @@ import type { TSConfig } from 'pkg-types'
 import type { Conditions, ExtendableConditions } from './conditions'
 import type { HookRegistry } from './hooks'
 import type { PatternConfig } from './pattern'
-import type { Keys, LiteralUnion, PathIn, RequiredBy } from './shared'
+import type { Keys, PathIn, RequiredBy } from './shared'
 import type { StaticCssOptions } from './static-css'
 import type {
   ExtendableGlobalFontface,
@@ -12,6 +12,7 @@ import type {
   SystemStyleObject,
 } from './system-types'
 import type { ExtendableTheme, Theme } from './theme'
+import type { CssPropertyDefinition, GlobalVarsDefinition } from './global-vars'
 import type { ExtendableUtilityConfig, UtilityConfig } from './utility'
 
 export type { TSConfig }
@@ -74,43 +75,7 @@ interface ExtendableStaticCssOptions extends StaticCssOptions {
   extend?: StaticCssOptions | undefined
 }
 
-export type CssPropertySyntax =
-  | '*'
-  | '<length>'
-  | '<number>'
-  | '<percentage>'
-  | '<length-percentage>'
-  | '<color>'
-  | '<image>'
-  | '<url>'
-  | '<integer>'
-  | '<angle>'
-  | '<time>'
-  | '<resolution>'
-  | '<transform-function>'
-  | '<length> | <percentage>'
-
-export interface CssPropertyDefinition {
-  /**
-   * Controls whether the custom property registration specified by @property inherits by default.
-   * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@property/inherits
-   */
-  inherits: boolean
-  /**
-   * Sets the initial value for the property.
-   * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@property/initial-value
-   */
-  initialValue?: string
-  /**
-   * Describes the allowable syntax for the property.
-   * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@property/syntax
-   */
-  syntax: LiteralUnion<CssPropertySyntax>
-}
-
-export interface GlobalVarsDefinition {
-  [key: string]: string | CssPropertyDefinition
-}
+export type { CssPropertyDefinition, CssPropertySyntax, GlobalVarsDefinition } from './global-vars'
 
 interface ExtendableGlobalVars {
   [key: string]: string | CssPropertyDefinition | GlobalVarsDefinition | undefined
