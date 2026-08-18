@@ -20,8 +20,8 @@
   "dependencies": {
     "@ark-ui/react": "5.18.3",
     "@monaco-editor/react": "4.6.0",
-    "@pandacss/compiler-shared": "beta",
-    "@pandacss/compiler-wasm": "beta",
+    "@pandacss/compiler-shared": "2.0.0-beta.14",
+    "@pandacss/compiler-wasm": "2.0.0-beta.14",
     "@pandacss/config": "beta",
     "@pandacss/preset-base": "beta",
     "@pandacss/preset-panda": "beta",
