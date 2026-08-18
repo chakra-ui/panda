@@ -1,28 +1,22 @@
 ---
 title: Diagnostics Reference
-description: The stable diagnostic codes Panda's v2 compiler emits for recoverable config and extraction issues, planned, not yet shipped.
+description: The diagnostic codes Panda's compiler emits for recoverable config and extraction issues.
 ---
-
-> **This page describes a feature that isn't available yet.** It's part of the v2 rewrite covered in
-> [Upgrading to v2](/docs/styling/upgrading-to-v2), still marked as a draft internally, so treat the codes below as
-> directional rather than a reference you can use today. For errors from the current version, see
-> [Debugging](/docs/reference/debugging).
 
 ## What a diagnostic is
 
-Today, a config or extraction problem is either a thrown error or a logged warning, with no stable identifier
-attached to it. The planned diagnostic system gives recoverable issues, ones that don't stop the build, a structured
-shape instead: a stable `code`, a human-readable `message`, a `severity` (`info`, `warning`, or `error`), and where
+The diagnostic system gives recoverable issues, ones that don't stop the build, a structured
+shape: a stable `code`, a human-readable `message`, a `severity` (`info`, `warning`, or `error`), and where
 relevant a source `span` or 1-indexed line/column `location`. Fatal setup failures (a config file that won't load at
 all) still throw, they aren't replaced by this, diagnostics are specifically for issues you can act on without the
 build stopping.
 
-The `code` field is meant to be a stable public API in its own right, useful for tooling (an ESLint rule, a CI check,
+The `code` field is a stable public API in its own right, useful for tooling (an ESLint rule, a CI check,
 an editor integration) to key off, independent of however the human-readable message wording changes over time.
 
-## Planned codes
+## Codes
 
-Grouped by what they're about, not necessarily final or exhaustive:
+Grouped by what they're about, not necessarily exhaustive:
 
 **Config and tokens**
 
