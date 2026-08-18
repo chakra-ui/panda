@@ -49,7 +49,7 @@ export const cardRecipe = defineSlotRecipe({
 ```
 
 This is the same rule covered in [Config Recipes](/docs/styling/jsx-style-context#config-recipes) for components
-built with `createStyleContext`, it applies just as much to a plain `styled()` wrapper with a non-matching name.
+built with `createSlotRecipeContext`, it applies just as much to a plain `styled()` wrapper with a non-matching name.
 
 ## When the value is genuinely dynamic
 
@@ -64,5 +64,5 @@ CSS reaches users in the first place.
 
 The flip side: sometimes Panda tracks a prop you don't want it to, most often when wrapping a headless library whose
 props happen to share a name with a CSS property (Radix UI's `Select.Content` has a `position` prop that isn't a CSS
-position, for example). Use the `matchTag` / `matchTagProp` hooks to exclude those tags or props explicitly. See
-[Configuring JSX extraction](/docs/design-systems/hooks#configuring-jsx-extraction) for the exact setup.
+position, for example). Excluding a specific tag or prop from extraction isn't configurable in the current engine — it's
+a known gap. If it causes a real problem, [open an issue](https://github.com/chakra-ui/panda/issues).

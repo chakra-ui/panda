@@ -1,18 +1,19 @@
 ---
 title: Wrap headless UI
-description: Use createStyleContext to turn a headless UI library like Ark UI into styled, distributable components.
+description: Use createSlotRecipeContext to turn a headless UI library like Ark UI into styled, distributable components.
 ---
 
 Most component libraries aren't built from raw DOM elements, they wrap a headless UI library like
-[Ark UI](https://ark-ui.com) or Radix UI for behavior and accessibility, then add styling on top. `createStyleContext`
-is the tool for that: it's covered in full at [JSX Style Context](/docs/styling/jsx-style-context), this page is
+[Ark UI](https://ark-ui.com) or Radix UI for behavior and accessibility, then add styling on top.
+`createSlotRecipeContext` is the tool for that: it's covered in full at
+[JSX Style Context](/docs/styling/jsx-style-context), this page is
 about applying it when the components you're wrapping and shipping aren't your own.
 
 ## Why not just style each part
 
 A compound component like `Accordion` has a root, several items, triggers, and panels, all sharing one slot recipe.
 Styling each part with a plain `css()` call works, but every user would need to know which slot recipe variant
-applies to which part, and repeat that wiring themselves. `createStyleContext` does that wiring once, in your
+applies to which part, and repeat that wiring themselves. `createSlotRecipeContext` does that wiring once, in your
 library, and hands the user a set of already-styled components.
 
 ## Wrapping a headless root
@@ -24,7 +25,7 @@ from its context. Match `withProvider` and `withContext` to that shape:
 // components/ui/accordion.tsx
 import { Accordion as ArkAccordion } from '@ark-ui/react/accordion'
 import { sva } from '../styled-system/css'
-import { createStyleContext } from '../styled-system/jsx'
+import { createSlotRecipeContext } from '../styled-system/jsx'
 
 const accordion = sva({
   slots: ['root', 'item', 'itemTrigger', 'itemContent'],
@@ -34,7 +35,7 @@ const accordion = sva({
   }
 })
 
-const { withProvider, withContext } = createStyleContext(accordion)
+const { withProvider, withContext } = createSlotRecipeContext(accordion)
 
 export const Accordion = {
   Root: withProvider(ArkAccordion.Root, 'root'),
@@ -57,7 +58,7 @@ library than in an app, since users see the exported name, not your internal rec
 
 ## Let users opt out
 
-Every component built with `createStyleContext` accepts an `unstyled` prop, on the root to strip all slot styles, or
+Every component built with `createSlotRecipeContext` accepts an `unstyled` prop, on the root to strip all slot styles, or
 on a single slot to strip just that one. Document this for your users explicitly. It's often the only supported
 way to fully override a slot's structure without fighting your recipe's specificity, and library authors sometimes
 forget to mention it exists. See [unstyled prop](/docs/styling/jsx-style-context#unstyled-prop) for the exact
