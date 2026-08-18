@@ -1,9 +1,3 @@
-/**
- * Diffs two `ci.ts` result files (base vs head) and prints a Markdown table.
- * Lower is better for every metric (milliseconds and bytes).
- *
- *   pnpm --filter=./bench ci-compare -- base.json head.json
- */
 import { readFileSync } from 'node:fs'
 
 interface Result {
@@ -25,13 +19,13 @@ function fmt(n: number): string {
   return Number.isInteger(n) ? n.toLocaleString('en-US') : n.toFixed(3)
 }
 
-const NOISE = 2 // percent within which a change is treated as flat
+const NOISE = 2
 
 function change(base: number | undefined, head: number): string {
   if (base === undefined || base === 0) return '🆕 new'
   const pct = ((head - base) / base) * 100
   if (Math.abs(pct) < NOISE) return `⚪ ${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`
-  const sign = pct > 0 ? '+' : '' // lower is better, so a rise is a regression
+  const sign = pct > 0 ? '+' : ''
   return `${pct < 0 ? '🟢' : '🔴'} ${sign}${pct.toFixed(1)}%`
 }
 

@@ -1,17 +1,3 @@
-/**
- * CI benchmark for the compiler. Runs on a fixed corpus and writes a JSON
- * result; the `benchmarks` workflow runs it on the PR base and head, and
- * `ci-compare` diffs them. Two dimensions:
- *
- *   - extraction — parse and emit a corpus of `css` / `cva` / `sva` components
- *   - staticCss — a spacing scale over populated container conditions, the
- *     shape that makes large staticCss configs expensive to emit
- *
- * Configs are built inline (no presets) so the same script runs on any checkout
- * that has `@pandacss/compiler` built.
- *
- *   pnpm --filter=./bench ci-run -- --out result.json --files 200 --runs 9
- */
 import { performance } from 'node:perf_hooks'
 import { gzipSync } from 'node:zlib'
 import { writeFileSync } from 'node:fs'
@@ -26,8 +12,6 @@ const importMap = {
 }
 
 const LAYERS = ['reset', 'base', 'tokens', 'recipes', 'utilities']
-
-// --- helpers ---------------------------------------------------------------
 
 function timed<T>(fn: () => T): [ms: number, value: T] {
   const start = performance.now()
@@ -45,16 +29,10 @@ const round = (n: number): number => Math.round(n * 1000) / 1000
 const bytes = (s: string): number => Buffer.byteLength(s, 'utf8')
 const gzip = (s: string): number => gzipSync(s).length
 
-// --- extraction corpus -----------------------------------------------------
-
 function extractionConfig() {
   return { cwd: '/virtual', outdir: 'styled-system', importMap, jsxFactory: 'styled', jsxFramework: 'react' }
 }
 
-// One file per component set: a `css` card (four conditions, a responsive query,
-// a nested selector), a `cva` button (two axes plus compound variants), and an
-// `sva` menu (a slot recipe). Content varies by index so atoms don't all
-// collapse to one.
 function genFile(i: number): { path: string; source: string } {
   const hue = i % 360
   const gap = (i % 8) + 2
@@ -120,15 +98,24 @@ export const menu${i} = sva({
   }
 }
 
-// --- staticCss corpus ------------------------------------------------------
-
 const SPACING_VALUES = 133
-// prettier-ignore
 const SPACING_PROPERTIES = [
-  'padding', 'paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight', 'paddingX', 'paddingY',
-  'margin', 'marginTop', 'marginBottom', 'marginLeft', 'marginRight', 'marginX', 'marginY',
+  'padding',
+  'paddingTop',
+  'paddingBottom',
+  'paddingLeft',
+  'paddingRight',
+  'paddingX',
+  'paddingY',
+  'margin',
+  'marginTop',
+  'marginBottom',
+  'marginLeft',
+  'marginRight',
+  'marginX',
+  'marginY',
 ]
-const CONTAINERS = 14 // preset-panda ships this many; the cost grows with the scale.
+const CONTAINERS = 14
 
 function staticCssConfig() {
   const spacingKeys = Array.from({ length: SPACING_VALUES }, (_, i) => String(i))
@@ -147,8 +134,6 @@ function staticCssConfig() {
     staticCss: { css: [{ responsive: false, conditions: ['@pb/sm', '@pb/md', '@pb/lg', '@pb/xl'], properties }] },
   }
 }
-
-// --- benchmarks ------------------------------------------------------------
 
 function benchExtraction(files: ReturnType<typeof genFile>[], runs: number) {
   const setup: number[] = []
@@ -201,8 +186,6 @@ function benchStaticCss(runs: number) {
     containerBlocks: (css.match(/@container/g) ?? []).length,
   }
 }
-
-// --- entry -----------------------------------------------------------------
 
 interface Args {
   out: string | null
