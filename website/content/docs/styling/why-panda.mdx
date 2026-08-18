@@ -39,6 +39,10 @@ the tools you're weighing.
   See [migrating from StyleX](/docs/styling/stylex).
 - **Leaving runtime CSS-in-JS.** emotion and styled-components compute styles in the browser and struggle under Server
   Components. Panda keeps the authoring model and drops the runtime.
+- **On a template-first stack (Rails, Laravel, plain HTML).** No JS component tree needed. Generate a static set of
+  utility and recipe classes with [`staticCss`](/docs/design-systems/static) and write them straight in your markup. You
+  trade typed authoring for the same tokens, recipes, and atomic output, and v2 builds that static set far faster than
+  v1.
 
 ## A quick example
 
@@ -63,12 +67,8 @@ atomic CSS with no runtime.
 
 ## When not to use Panda
 
-Panda earns its place when you have a design system to express, tokens, variants, themes, and a build step to run it.
-It's the wrong fit if:
-
-- You're writing plain HTML and CSS with no build step.
-- You're on a template-first server framework like PHP or Rails views, with little JavaScript.
-- You need an absolute zero-tooling setup.
+Panda needs a build step to turn your styles into CSS. It's the wrong fit if you want zero tooling: plain HTML and CSS,
+or a setup with no build at all.
 
 Modern CSS keeps getting better. If you don't need tokens, variants, or type-safety, you may not need a tool at all.
 
