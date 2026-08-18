@@ -118,6 +118,47 @@ export const menu${i} = sva({
   }
 }
 
+// The staticCss build from discussions #3106 / #3256: a spacing scale crossed
+// with the spacing properties and the container conditions. The cost only
+// shows up when `theme.containers` is populated (preset-panda ships 14), so we
+// populate it here — a bare config would silently drop the `@container` rules.
+const SPACING_VALUES = 133
+const SPACING_PROPERTIES = [
+  'padding',
+  'paddingTop',
+  'paddingBottom',
+  'paddingLeft',
+  'paddingRight',
+  'paddingX',
+  'paddingY',
+  'margin',
+  'marginTop',
+  'marginBottom',
+  'marginLeft',
+  'marginRight',
+  'marginX',
+  'marginY',
+]
+const CONTAINERS = 14
+
+function staticCssConfig() {
+  const spacingKeys = Array.from({ length: SPACING_VALUES }, (_, i) => String(i))
+  const spacing = Object.fromEntries(spacingKeys.map((k, i) => [k, { value: `${i * 0.25}em` }]))
+  const names = ['sm', 'md', 'lg', 'xl']
+  const containers = Object.fromEntries(
+    Array.from({ length: CONTAINERS }, (_, i) => [names[i] ?? `c${i}`, `${20 + i * 4}rem`]),
+  )
+  const properties = Object.fromEntries(SPACING_PROPERTIES.map((p) => [p, spacingKeys]))
+  return {
+    cwd: '/virtual',
+    outdir: 'styled-system',
+    importMap,
+    preflight: false,
+    theme: { containerNames: ['pb'], containers, tokens: { spacing, sizes: spacing } },
+    staticCss: { css: [{ responsive: false, conditions: ['@pb/sm', '@pb/md', '@pb/lg', '@pb/xl'], properties }] },
+  }
+}
+
 function median(xs: number[]): number {
   const s = [...xs].sort((a, b) => a - b)
   const mid = Math.floor(s.length / 2)
@@ -154,8 +195,28 @@ function main() {
   const cssBytes = Buffer.byteLength(css, 'utf8')
   const cssGzipBytes = gzipSync(css).length
 
+  // staticCss build with populated containers (the #3106 / #3256 path). Emit is
+  // where the cost lived, so time getLayerCss over the static config.
+  const scConfig = staticCssConfig()
+  const scEmit: number[] = []
+  let scCss = ''
+  for (let r = 0; r < args.runs; r++) {
+    const sc = createCompiler(scConfig, { crossFile: false })
+    sc.parseFileSource('/virtual/static.tsx', 'export const x = 1\n')
+    const t = performance.now()
+    scCss = sc.getLayerCss({ layers: LAYERS }).css
+    scEmit.push(performance.now() - t)
+  }
+  const scContainerBlocks = (scCss.match(/@container/g) ?? []).length
+
   const result = {
-    meta: { files: args.files, runs: args.runs, node: process.version },
+    meta: {
+      files: args.files,
+      runs: args.runs,
+      node: process.version,
+      'staticcss.containers': CONTAINERS,
+      'staticcss.container.blocks': scContainerBlocks,
+    },
     perf: {
       'setup.ms': round(median(setup)),
       'parse.cold.ms': round(median(coldParse)),
@@ -164,6 +225,11 @@ function main() {
     size: {
       'css.bytes': cssBytes,
       'css.gzip.bytes': cssGzipBytes,
+    },
+    static: {
+      'staticcss.emit.ms': round(median(scEmit)),
+      'staticcss.css.bytes': Buffer.byteLength(scCss, 'utf8'),
+      'staticcss.gzip.bytes': gzipSync(scCss).length,
     },
   }
 

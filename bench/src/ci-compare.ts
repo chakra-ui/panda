@@ -10,6 +10,7 @@ interface Result {
   meta?: Record<string, unknown>
   perf?: Record<string, number>
   size?: Record<string, number>
+  static?: Record<string, number>
 }
 
 function read(path: string): Result {
@@ -42,7 +43,7 @@ function main() {
   const head = read(headPath)
 
   const rows: string[] = []
-  for (const group of ['perf', 'size'] as const) {
+  for (const group of ['perf', 'size', 'static'] as const) {
     const headGroup = head[group]
     if (!headGroup) continue
     const baseGroup = base[group] ?? {}
@@ -60,10 +61,14 @@ function main() {
 
   const files = (head.meta?.files as number) ?? '?'
   const runs = (head.meta?.runs as number) ?? '?'
-  console.log(`Synthetic corpus: ${files} files, median of ${runs} runs. Lower is better.\n`)
+  const blocks = head.meta?.['staticcss.container.blocks'] as number | undefined
+  console.log(`Corpus: ${files} files, median of ${runs} runs. Lower is better.\n`)
   console.log('| Metric | Base | Head | Change |')
   console.log('| --- | ---: | ---: | ---: |')
   console.log(rows.join('\n'))
+  if (blocks !== undefined) {
+    console.log(`\n_\`staticcss.*\` is the #3106/#3256 build: a spacing scale over ${blocks} \`@container\` blocks._`)
+  }
 }
 
 main()
