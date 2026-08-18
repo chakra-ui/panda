@@ -1,0 +1,100 @@
+name: Benchmarks
+
+on:
+  pull_request:
+    branches:
+      - main
+      - v2
+    paths:
+      - '.github/workflows/benchmarks.yml'
+      - 'bench/**'
+      - 'crates/**'
+      - 'packages/compiler/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'rust-toolchain.toml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  bench:
+    name: Compiler perf and size
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install
+        uses: ./.github/composite-actions/install
+        with:
+          ignore-scripts: 'true'
+
+      - name: Setup Rust
+        uses: ./.github/composite-actions/setup-rust
+        with:
+          cache-key: bench
+
+      # Benchmark the PR base. The bench script may not exist there yet, so
+      # fall back to an empty result and report every metric as new.
+      - name: Benchmark base
+        run: |
+          git checkout -f ${{ github.event.pull_request.base.sha }}
+          pnpm install --ignore-scripts
+          pnpm --filter @pandacss/compiler build:native
+          if pnpm --filter=./bench ci-run -- --out "$RUNNER_TEMP/base.json"; then
+            echo "benchmarked base"
+          else
+            echo '{}' > "$RUNNER_TEMP/base.json"
+            echo "bench script missing on base, using empty result"
+          fi
+
+      - name: Benchmark head
+        run: |
+          git checkout -f ${{ github.event.pull_request.head.sha }}
+          pnpm install --ignore-scripts
+          pnpm --filter @pandacss/compiler build:native
+          pnpm --filter=./bench ci-run -- --out "$RUNNER_TEMP/head.json"
+
+      - name: Compare
+        id: compare
+        run: |
+          {
+            echo 'table<<EOF'
+            pnpm --filter=./bench ci-compare -- "$RUNNER_TEMP/base.json" "$RUNNER_TEMP/head.json"
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Post comment
+        uses: actions/github-script@v7
+        env:
+          TABLE: ${{ steps.compare.outputs.table }}
+        with:
+          script: |
+            const marker = '<!-- panda-benchmarks -->'
+            const body = [
+              marker,
+              '### 🧪 Compiler benchmarks',
+              '',
+              'The compiler runs on a fixed set of components and this PR is compared against its base.',
+              '',
+              process.env.TABLE,
+              '',
+              '<sub>`parse.cold.ms` reads every file once, `emit.ms` turns that into CSS, `css.bytes` is the output size. Median of the runs, no network, same components every time, so a change here is a real change in the engine.</sub>',
+            ].join('\n')
+            const { owner, repo } = context.repo
+            const issue_number = context.issue.number
+            const { data: comments } = await github.rest.issues.listComments({ owner, repo, issue_number })
+            const existing = comments.find((c) => c.body && c.body.includes(marker))
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body })
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body })
+            }

@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "baseline": "tsx src/baseline.ts",
+    "ci-run": "tsx src/ci.ts",
+    "ci-compare": "tsx src/ci-compare.ts",
     "binding-boundary": "tsx src/binding-boundary.ts",
     "extract-compare": "tsx src/extract-compare.ts",
     "generated-types-perf": "tsx src/generated-types-perf.ts",
