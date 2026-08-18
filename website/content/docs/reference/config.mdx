@@ -13,39 +13,24 @@ export default defineConfig({
 })
 ```
 
-> These are the current, real config options. Several are expected to change in Panda's next major version, see
-> [Upgrading to v2](/docs/styling/upgrading-to-v2) for what's already known about that.
-
 ## Output css options
 
 ### presets
 
-**Type**: `string[]`
+**Type**: `(string | Preset | Promise<Preset>)[]`
 
-**Default**: `['@pandacss/preset-base', '@pandacss/preset-panda']`
+**Default**: `[]`
 
-The set of reusable and shareable configuration presets.
+The set of reusable and shareable configuration presets. Presets are explicit — Panda does not auto-inject any preset.
+For the default utilities, tokens, and conditions, add `@pandacss/preset-base` and `@pandacss/preset-panda` yourself
+(`panda init` scaffolds this for you). Without them you get a bare system.
 
-By default, any preset you add will be smartly merged with the default configuration, with your own configuration acting
-as a set of overrides and extensions.
+Each preset you add is smartly merged with your config, with your own config acting as a set of overrides and
+extensions.
 
 ```json
 {
   "presets": ["@pandacss/preset-base", "@pandacss/preset-panda"]
-}
-```
-
-### eject
-
-**Type**: `boolean`
-
-**Default**: `false`
-
-Whether to opt-out of the defaults config presets: [`@pandacss/preset-base`, `@pandacss/preset-panda`]
-
-```json
-{
-  "eject": true
 }
 ```
 
@@ -116,25 +101,12 @@ table.extension {
 }
 ```
 
-### emitTokensOnly
-
-**Type**: `boolean`
-
-**Default**: `false`
-
-Whether to only emit the `tokens` directory
-
-```json
-{
-  "emitTokensOnly": false
-}
-```
-
 ### prefix
 
-**Type**: `string`
+**Type**: `string | { cssVar?: string; className?: string }`
 
-The namespace prefix for the generated css classes and css variables.
+The namespace prefix for the generated css classes and css variables. Pass a string to prefix both, or an object to set
+the css variable and class name prefixes separately.
 
 Ex: when using a prefix of `panda-`
 
@@ -315,29 +287,38 @@ Then the result looks like this:
 }
 ```
 
-## File system options
+### optimize
 
-### gitignore
+**Type**: `OptimizeOptions`
 
-**Type**: `boolean`
+**Default**: `{}`
 
-**Default**: `true`
-
-Whether to update the .gitignore file.
+CSS emission optimizations. Every optimization is opt-in.
 
 ```json
 {
-  "gitignore": true
+  "optimize": {
+    "removeUnusedTokens": true,
+    "removeUnusedKeyframes": true,
+    "smartCompoundVariants": true,
+    "treeshakeDesignSystem": true,
+    "propertyFallback": true
+  }
 }
 ```
 
-Will add the following to your `.gitignore` file:
+- `removeUnusedTokens` — remove unused token declarations based on extracted project usage.
+- `removeUnusedKeyframes` — remove unused keyframes based on extracted project usage.
+- `smartCompoundVariants` — narrow compound variant CSS to the variant combinations you actually use, instead of
+  emitting every permutation.
+- `treeshakeDesignSystem` — hydrate only the build-info modules for the design-system exports your app imports. Namespace
+  and side-effect imports still hydrate everything.
+- `propertyFallback` — also seed `@property` registrations as plain declarations, for engines that ignore `@property`
+  (Safari &lt; 16.4, Firefox &lt; 128) and would otherwise drop declarations that read an unregistered variable.
 
-```txt
-# Panda
-styled-system
-styled-system-static
-```
+`removeUnusedTokens` and `removeUnusedKeyframes` replace the cleanup people used to do in a `cssgen:done` hook.
+
+## File system options
 
 ### cwd
 
@@ -350,20 +331,6 @@ The current working directory.
 ```json
 {
   "cwd": "src"
-}
-```
-
-### clean
-
-**Type**: `boolean`
-
-**Default**: `false`
-
-Whether to clean the output directory before generating the css.
-
-```json
-{
-  "clean": false
 }
 ```
 
@@ -446,6 +413,21 @@ Check out [Shared styled-system in a monorepo](/docs/design-systems/shared-style
 using multiple `importMap` roots, or the [Component Library](/docs/design-systems/overview) guide for the
 external-package case.
 
+### designSystem
+
+**Type**: `string`
+
+Consume a published design system. Point this at the package and Panda resolves its manifest, merges its preset, and
+applies its build info — you don't set `importMap` or list build info in `include`.
+
+```json
+{
+  "designSystem": "@acme/design-system"
+}
+```
+
+Check out [Consuming a design system](/docs/design-systems/consuming-a-design-system) for the full workflow.
+
 ### include
 
 **Type**: `string[]`
@@ -491,62 +473,32 @@ Explicit list of config related files that should trigger a context reload on ch
 }
 ```
 
-### watch
-
-**Type**: `boolean`
-
-**Default**: `false`
-
-Whether to watch for changes and regenerate the css.
-
-```json
-{
-  "watch": false
-}
-```
-
-### poll
-
-**Type**: `boolean`
-
-**Default**: `false`
-
-Whether to use polling instead of filesystem events when watching.
-
-```json
-{
-  "poll": false
-}
-```
-
 ### outExtension
 
-**Type**: `'mjs' | 'js'`
+**Type**: `'ts' | 'js' | 'mjs'`
 
-**Default**: `mjs`
+**Default**: `js`
 
 File extension for generated javascript files.
 
 ```json
 {
-  "outExtension": "mjs"
+  "outExtension": "js"
 }
 ```
 
-### forceConsistentTypeExtension
+### forceImportExtension
 
 **Type**: `boolean`
 
 **Default**: `false`
 
-Whether to force consistent type extensions for generated typescript .d.ts files.
-
-If set to `true` and `outExtension` is set to `mjs`, the generated typescript `.d.ts` files will have the extension
-`.d.mts`.
+Whether generated import specifiers include the runtime file extension. When `outExtension` is `mjs`, this also emits
+`.d.mts` instead of `.d.ts`.
 
 ```json
 {
-  "forceConsistentTypeExtension": true
+  "forceImportExtension": true
 }
 ```
 
@@ -580,34 +532,6 @@ const Container = styled.div`
   background-color: gainsboro;
   padding: 10px 15px;
 `
-```
-
-### lightningcss
-
-**Type**: `boolean`
-
-**Default**: `false`
-
-Whether to use `lightningcss` instead of `postcss` for css optimization.
-
-```json
-{
-  "lightningcss": true
-}
-```
-
-### browserslist
-
-**Type**: `string[]`
-
-**Default**: `[]`
-
-Browserslist query to target specific browsers. Only used when `lightningcss` is set to `true`.
-
-```json
-{
-  "browserslist": ["last 2 versions", "not dead", "not < 2%"]
-}
 ```
 
 ### polyfill
@@ -924,6 +848,46 @@ Global font face definitions.
 Check out the [Custom Fonts](/docs/theming/fonts#global-font-face) guide for more information on how to use the
 `globalFontface` option.
 
+### globalVars
+
+**Type**: `Extendable<GlobalVarsDefinition>`
+
+**Default**: `{}`
+
+The global CSS variables for your project. A plain string emits the variable directly; an object registers it with
+`@property`, and only reaches the output if the stylesheet reads or writes it.
+
+```json
+{
+  "globalVars": {
+    "--some-color": "red",
+    "--button-color": {
+      "syntax": "<color>",
+      "inherits": false,
+      "initialValue": "blue"
+    }
+  }
+}
+```
+
+### globalPositionTry
+
+**Type**: `Extendable<GlobalPositionTry>`
+
+**Default**: `{}`
+
+Global `@position-try` fallbacks for anchor positioning, keyed by the fallback name.
+
+```json
+{
+  "globalPositionTry": {
+    "--bottom": {
+      "top": "anchor(bottom)"
+    }
+  }
+}
+```
+
 ## JSX options
 
 ### jsxFramework
@@ -990,23 +954,6 @@ Ex with 'none':
 
 ## Documentation options
 
-### studio
-
-**Type**: `Partial<Studio>`
-
-**Default**: `{ title: 'Panda', logo: '🐼' }`
-
-Used to customize the design system studio
-
-```json
-{
-  "studio": {
-    "logo": "🐼",
-    "title": "Panda"
-  }
-}
-```
-
 ### log level
 
 **Type**: `'debug' | 'info' | 'warn' | 'error' | 'silent'`
@@ -1041,22 +988,14 @@ The validation strictness to use when validating the config.
 
 ## Other options
 
-### Hooks
-
-**Type**: `PandaHooks`
-
-Panda provides a set of callbacks that you can hook into for more advanced use cases. Check the
-[Hooks](/docs/design-systems/hooks) docs for more information.
-
-### Plugins
+### plugins
 
 **Type**: `PandaPlugin[]`
 
-Plugins are currently simple objects that contain a `name` and a `hooks` object with the same structure as the `hooks`
-object in the config.
+Plugins are simple objects that contain a `name` and a `hooks` object. Hooks live on plugins — there is no root-level
+`hooks` config option. Check the [Hooks](/docs/design-systems/hooks) docs for the full list of callbacks.
 
-They will be called in sequence in the order they are defined in the `plugins` array, with the user's config called
-last.
+Plugins are called in sequence in the order they are defined in the `plugins` array, with the user's config called last.
 
 ```ts
 import { defineConfig } from '@pandacss/dev'
@@ -1065,12 +1004,10 @@ export default defineConfig({
   // ...
   plugins: [
     {
-      name: 'token-format',
+      name: 'local',
       hooks: {
-        'tokens:created': ({ configure }) => {
-          configure({
-            formatTokenName: path => '$' + path.join('-')
-          })
+        'cssgen:done': ({ content, path }) => {
+          report({ bytes: content.length, path })
         }
       }
     }

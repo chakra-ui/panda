@@ -10,16 +10,16 @@ fixes.
 
 ## Measure before you tune
 
-Don't guess which phase is slow. Panda's CLI can generate a flamegraph for any command:
+Don't guess which phase is slow. Add `--profile` to any Panda command to profile the whole run, including time spent in
+the Rust engine:
 
 ```bash
-panda --cpu-prof
+panda --profile
 ```
 
-This produces a `.cpuprofile` file you can open in [Speedscope](https://www.speedscope.app/) to see exactly which
-phase, config resolution, file parsing, CSS generation, is actually taking the time. See
-[Debugging](/docs/reference/debugging#performance-profiling) for the full flag list across `codegen`, `cssgen`, and
-`debug`.
+This writes a `.panda/trace.json` file you can open in `chrome://tracing` or [ui.perfetto.dev](https://ui.perfetto.dev)
+to see exactly which phase, config resolution, file parsing, CSS generation, is actually taking the time (plus a
+`.panda/timings.json` summary). See [Debugging](/docs/reference/debugging#performance-profiling) for details.
 
 ## Build time: scope what gets scanned
 
@@ -56,6 +56,6 @@ size of what TypeScript has to check on every style call.
 
 - [How Panda works](/docs/styling/how-panda-works) for why there's no runtime cost to weigh against these build/IDE
   costs in the first place.
-- [Debugging](/docs/reference/debugging) for `--cpu-prof`, `panda debug`, and `PANDA_DEBUG`.
+- [Debugging](/docs/reference/debugging) for `--profile`, `panda debug`, and `PANDA_DEBUG`.
 - [Static CSS Generation](/docs/design-systems/static) and [Federated Micro-Frontends](/docs/design-systems/federated-microfrontends)
   for scaling considerations once you're shipping to multiple apps, not just optimizing one.
