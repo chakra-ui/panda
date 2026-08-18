@@ -307,6 +307,7 @@ export const docsTabs: TabItem[] = [
           { title: 'Interactivity', url: 'interactivity' },
           { title: 'Layout', url: 'layout' },
           { title: 'List', url: 'list' },
+          { title: 'Masks', url: 'masks' },
           { title: 'Outline', url: 'outline' },
           { title: 'Focus Ring', url: 'focus-ring' },
           { title: 'Sizing', url: 'sizing' },

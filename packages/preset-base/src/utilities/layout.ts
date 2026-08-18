@@ -11,8 +11,8 @@ export const layout: UtilityConfig = {
     group: 'Layout',
     transform(value) {
       return {
-        boxDecorationBreak: value,
         WebkitBoxDecorationBreak: value,
+        boxDecorationBreak: value,
       }
     },
   },

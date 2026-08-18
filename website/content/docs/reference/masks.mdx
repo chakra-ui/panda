@@ -1,0 +1,196 @@
+---
+title: Masks
+description: Fade an edge, spotlight an image, or stack both without writing mask-image gradients by hand.
+---
+
+Fading the bottom of a hero used to mean writing the same gradient twice: once for `maskImage`, once for
+`-webkit-mask-image`.
+
+Now you set a stop.
+
+```tsx
+css({ maskBottomFrom: '40%' })
+```
+
+It's solid through 40%, then it fades to transparent at the bottom. One prop. The `-webkit-` prefix is already there.
+
+## Fading one edge
+
+`From` is where the fade starts. `To` is where it finishes. Skip `To` and it defaults to `100%`.
+
+```tsx
+css({ overflow: 'auto', maskBottomFrom: '80%' })
+css({ maskBottomFrom: '20%', maskBottomTo: '80%' })
+```
+
+| Prop             | Fades toward |
+| ---------------- | ------------ |
+| `maskTopFrom`    | top          |
+| `maskRightFrom`  | right        |
+| `maskBottomFrom` | bottom       |
+| `maskLeftFrom`   | left         |
+
+Each one has a matching `To`. Values are spacing tokens or raw lengths (`8`, `20%`, `2rem`).
+
+## Fading both sides
+
+`maskX` and `maskY` are two edges, not one gradient. Left and right. Top and bottom.
+
+```tsx
+css({ overflowX: 'auto', maskXFrom: '8', maskXTo: '90%' })
+css({ maskYFrom: '15%', maskYTo: '85%' })
+```
+
+Pick `maskXFrom` or `maskLeftFrom`, not both. They write the same CSS variables. Stylesheet sort order decides the
+winner, not the order you wrote the props.
+
+## Stacking a fade and a spotlight
+
+Edge fades live on the linear layer. Radial and conic are separate layers. The browser intersects them, so a bottom fade
+plus a radial spotlight keeps both.
+
+```tsx
+css({
+  maskBottomFrom: '50%',
+  maskRadialFrom: '35%',
+  maskRadialAt: 'center'
+})
+```
+
+Fade the footer. Keep a soft circle of the photo.
+
+`maskBottomFrom` and `maskLinear` both write the linear layer. Use one or the other. Stacking those two does not add a
+second fade. The later class overwrites the first.
+
+## Using a linear mask
+
+`maskLinear` is an angle, or the same `to-t` / `to-br` map as `bgGradient`.
+
+```tsx
+css({ maskLinear: '45', maskLinearFrom: '30%' })
+css({ maskLinear: 'to-b', maskLinearFrom: '40%', maskLinearTo: '80%' })
+```
+
+A bare number on `maskLinear` is degrees: `'45'` means `45deg`. A bare number on `maskLinearFrom` is spacing. That split
+is easy to mix up.
+
+## Using a radial mask
+
+`maskRadialAt` is the center of the gradient. It is not `maskPosition`. `maskPosition` moves a `maskImage`.
+
+```tsx
+css({
+  maskRadialFrom: '20%',
+  maskRadialAt: 'center',
+  maskRadialShape: 'circle',
+  maskRadialSize: 'farthest-side'
+})
+```
+
+`maskRadialAt` accepts `center`, `top`, `top left`, `30% 30%`, and the rest of the background-position syntax. Write
+the CSS — there is no `topLeft` alias.
+
+## Using a conic mask
+
+```tsx
+css({
+  maskConic: '45',
+  maskConicFrom: '20%',
+  maskConicTo: '80%'
+})
+```
+
+Same degree rule as `maskLinear`: `'45'` means `45deg`.
+
+## Changing stop colors
+
+Stops default to black, then transparent. That is what you want for a normal fade. Override the color with a separate
+prop, not by stuffing a color into `From`.
+
+```tsx
+css({
+  maskBottomFrom: '25%',
+  maskBottomFromColor: 'transparent',
+  maskBottomToColor: 'black'
+})
+```
+
+Every `From` / `To` has a matching `FromColor` / `ToColor`: `maskBottomFromColor`, `maskLinearToColor`,
+`maskRadialFromColor`, `maskConicToColor`. Color tokens and opacity modifiers work (`red.500`, `black/50`).
+
+## Using a raw mask image
+
+A PNG, an SVG, or a gradient you already have goes on `maskImage`. That is the escape hatch. It replaces the fade
+layers. Do not mix it with `maskBottomFrom`.
+
+```tsx
+css({
+  maskImage: 'url(/scribble.png)',
+  maskSize: 'cover',
+  maskPosition: 'center',
+  maskRepeat: 'no-repeat'
+})
+```
+
+## Using CSS mask properties
+
+These map 1:1 to CSS. Each one also emits the `-webkit-` prefix.
+
+| Prop            | CSS property     | Values                                           |
+| --------------- | ---------------- | ------------------------------------------------ |
+| `mask`          | `mask`           | shorthand                                        |
+| `maskImage`     | `mask-image`     | `none`, `url(...)`, any image                    |
+| `maskSize`      | `mask-size`      | `auto`, `cover`, `contain`, any length           |
+| `maskPosition`  | `mask-position`  | `center`, `top left`, `50% 50%`, …               |
+| `maskRepeat`    | `mask-repeat`    | `repeat`, `no-repeat`, `repeat-x`, `repeat-y`, … |
+| `maskClip`      | `mask-clip`      | `border-box`, `padding-box`, `content-box`, …    |
+| `maskOrigin`    | `mask-origin`    | `border-box`, `padding-box`, `content-box`, …    |
+| `maskComposite` | `mask-composite` | `add`, `subtract`, `intersect`, `exclude`        |
+| `maskMode`      | `mask-mode`      | `alpha`, `luminance`, `match-source`             |
+| `maskType`      | `mask-type`      | `alpha`, `luminance` (SVG `<mask>` only)         |
+
+Fade helpers composite as `intersect`. Set `maskComposite` to change that — it wins wherever you put it, because the
+helpers read the same variable.
+
+```tsx
+css({
+  maskBottomFrom: '50%',
+  maskRadialFrom: '70%',
+  maskComposite: 'add'
+})
+```
+
+## Under strict tokens
+
+Stops resolve against `spacing`, so a raw length needs the escape hatch.
+
+```tsx
+css({ maskBottomFrom: '4' }) // spacing token
+css({ maskBottomFrom: '[20%]' }) // raw percentage
+```
+
+Colors work the same way: `maskBottomFromColor: 'red.500'`, or `'[rebeccapurple]'`.
+
+## What does not compose
+
+- `maskImage` and the fade helpers. Both write `mask-image`, so stylesheet sort order picks the winner, not the order
+  you wrote the props. Pick one.
+- `maskBottomFrom` and `maskLinear`. Same layer. One overwrites the other.
+- `maskXFrom` and `maskLeftFrom`. Same variables. Pick one.
+- Logical edges. There is no `maskStartFrom` or `maskEndFrom`. Fade direction is visual: top, right, bottom, left.
+
+Start with `maskBottomFrom`. Add a second helper only when one edge is not enough.
+
+## How it works
+
+The helpers write CSS variables — `--mask-linear`, `--mask-bottom-from-position`, and friends — which Panda registers
+with `@property`. Two things follow from that.
+
+Registrations are `inherits: false`, so a fade on a parent cannot leak into a child. And Panda only emits the
+registrations your stylesheet actually references, so a project that never masks pays nothing for them.
+
+You can set the variables yourself when a helper doesn't cover the case.
+
+```tsx
+css({ maskBottomFrom: '50%', '--mask-bottom-from-color': 'rebeccapurple' })
+```

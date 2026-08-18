@@ -25,14 +25,50 @@ tokens.
 <input className={css({ caretColor: 'red.400' })} />
 ```
 
+## Wrapping long words
+
+`overflowWrap: 'anywhere'` lets a flex or grid item shrink when a URL or long word would otherwise blow out the
+min-content size. `break-word` is the milder keyword.
+
+```tsx
+css({ overflowWrap: 'anywhere' })
+```
+
 ## Scrollbar
 
-The `scrollbar` utility allows customization of scrollbar appearance. It supports `visible` and `hidden` values which
-respectively show or hide the scrollbar.
+`scrollbar: 'hidden'` hides the bar on standard CSS, WebKit, and legacy Edge. `visible` brings it back.
 
 ```jsx
 <div className={css({ scrollbar: 'hidden' })}>Scrollbar hidden</div>
 ```
+
+Thickness is `scrollbarWidth`. Colors are two props that compose, same idea as masks: each one re-emits
+`scrollbar-color` from CSS variables, so you can set thumb, track, or both.
+
+```tsx
+css({
+  overflow: 'auto',
+  scrollbarWidth: 'thin',
+  scrollbarThumb: 'gray.400',
+  scrollbarTrack: 'gray.100',
+  scrollbarGutter: 'stable',
+})
+```
+
+| Prop              | CSS                                            | Values                                      |
+| ----------------- | ---------------------------------------------- | ------------------------------------------- |
+| `scrollbar`       | hide / show, including `::-webkit-scrollbar`   | `visible`, `hidden`                         |
+| `scrollbarWidth`  | `scrollbar-width`                              | `auto`, `thin`, `none`                      |
+| `scrollbarThumb`  | `--scrollbar-thumb` + `scrollbar-color`        | `colors`                                    |
+| `scrollbarTrack`  | `--scrollbar-track` + `scrollbar-color`        | `colors`                                    |
+| `scrollbarGutter` | `scrollbar-gutter`                             | `auto`, `stable`, `stable both-edges`       |
+| `scrollbarColor`  | `scrollbar-color`                              | raw two-value string (`red transparent`)    |
+
+`scrollbarColor` is the escape hatch for a raw `thumb track` pair. Don't use it for a single color token. That's
+invalid CSS. Use `scrollbarThumb` / `scrollbarTrack`.
+
+`_scrollbarThumb` and `_scrollbarTrack` are still there for extra WebKit styling the standard property can't express,
+like radius or a border. Use them for that, not for color.
 
 ## Scroll Margin
 

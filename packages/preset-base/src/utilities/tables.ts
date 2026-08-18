@@ -1,4 +1,5 @@
 import type { UtilityConfig } from '@pandacss/types'
+import { cssVar } from '../css-var'
 
 export const tables: UtilityConfig = {
   borderCollapse: {
@@ -19,6 +20,7 @@ export const tables: UtilityConfig = {
     className: 'bd-sx',
     values: 'spacing',
     group: 'Table',
+    globalVars: { '--border-spacing-x': cssVar('<length>', '0') },
     transform(value) {
       return {
         '--border-spacing-x': value,
@@ -29,6 +31,7 @@ export const tables: UtilityConfig = {
     className: 'bd-sy',
     values: 'spacing',
     group: 'Table',
+    globalVars: { '--border-spacing-y': cssVar('<length>', '0') },
     transform(value) {
       return {
         '--border-spacing-y': value,

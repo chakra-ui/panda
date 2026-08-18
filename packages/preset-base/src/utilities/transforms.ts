@@ -1,4 +1,9 @@
 import type { UtilityConfig } from '@pandacss/types'
+import { anyVar, cssVar } from '../css-var'
+
+const length = () => cssVar('<length-percentage>', '0')
+
+const axisAngle = () => anyVar('0')
 
 const positiveFractions = {
   '1/2': '50%',
@@ -44,6 +49,7 @@ export const transforms: UtilityConfig = {
     className: 'rotate-x',
     group: 'Transform',
     property: 'rotate',
+    globalVars: { '--rotate-x': axisAngle() },
     transform(value) {
       return {
         '--rotate-x': value,
@@ -54,6 +60,7 @@ export const transforms: UtilityConfig = {
     className: 'rotate-y',
     group: 'Transform',
     property: 'rotate',
+    globalVars: { '--rotate-y': axisAngle() },
     transform(value) {
       return {
         '--rotate-y': value,
@@ -64,6 +71,7 @@ export const transforms: UtilityConfig = {
     className: 'rotate-z',
     group: 'Transform',
     property: 'rotate',
+    globalVars: { '--rotate-z': axisAngle() },
     transform(value) {
       return {
         '--rotate-z': value,
@@ -81,6 +89,7 @@ export const transforms: UtilityConfig = {
   scaleX: {
     className: 'scale-x',
     group: 'Transform',
+    globalVars: { '--scale-x': anyVar('1') },
     transform(value) {
       return {
         '--scale-x': value,
@@ -90,6 +99,7 @@ export const transforms: UtilityConfig = {
   scaleY: {
     className: 'scale-y',
     group: 'Transform',
+    globalVars: { '--scale-y': anyVar('1') },
     transform(value) {
       return {
         '--scale-y': value,
@@ -109,6 +119,7 @@ export const transforms: UtilityConfig = {
     shorthand: 'x',
     className: 'translate-x',
     group: 'Transform',
+    globalVars: { '--translate-x': length() },
     values(theme) {
       return {
         ...theme('spacing'),
@@ -125,6 +136,7 @@ export const transforms: UtilityConfig = {
     shorthand: 'y',
     className: 'translate-y',
     group: 'Transform',
+    globalVars: { '--translate-y': length() },
     values(theme) {
       return {
         ...theme('spacing'),
@@ -141,6 +153,7 @@ export const transforms: UtilityConfig = {
     shorthand: 'z',
     className: 'translate-z',
     group: 'Transform',
+    globalVars: { '--translate-z': length() },
     values(theme) {
       return {
         ...theme('spacing'),
