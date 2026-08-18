@@ -170,12 +170,10 @@ Function for [plugin](/docs/reference/config#plugins) definitions.
 import { definePlugin } from '@pandacss/dev'
 
 export const plugin = definePlugin({
-  name: 'token-format',
+  name: 'css-report',
   hooks: {
-    'tokens:created': ({ configure }) => {
-      configure({
-        formatTokenName: path => '$' + path.join('-')
-      })
+    'cssgen:done': ({ path, content }) => {
+      console.log(`generated ${content.length} bytes`, path)
     }
   }
 })

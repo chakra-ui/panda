@@ -1,96 +1,56 @@
 ---
-title: Ecosystem Plugins
-description: The plugin packages Panda ships and auto-injects, and how to write your own following the same pattern.
+title: Ecosystem plugins
+description: What a Panda plugin is, when to write one, and how to share hooks as a package.
 ---
 
-A [plugin](/docs/design-systems/hooks#sharing-hooks) is a named bundle of hooks you can distribute as its own package,
-instead of pasting the same `hooks` object into every project's config. Panda already ships three of these as
-separate packages, and the engine wires two of them in for you automatically. This page covers what those three
-plugins do and when you'd write one of your own, not the hook mechanics themselves, see
-[Hooks](/docs/design-systems/hooks) for the full API and how to author a plugin from scratch.
+A plugin is a named bundle of [hooks](/docs/design-systems/hooks) you distribute as its own package, instead of pasting
+the same hooks into every project's config. It's the hooks counterpart to a [preset](/docs/design-systems/presets): a
+preset shares theme and tokens, a plugin shares behavior.
 
-## The plugins Panda ships
+## Framework support is built in
 
-| Package | What it does | How it's enabled |
-| --- | --- | --- |
-| `@pandacss/plugin-vue` | Transforms `.vue` single-file components to a `tsx`-friendly syntax so the parser can extract style calls from them | Automatic, no config needed |
-| `@pandacss/plugin-svelte` | Same idea, for `.svelte` files | Automatic, no config needed |
-| `@pandacss/plugin-lightningcss` | Swaps the CSS optimizer from PostCSS to LightningCSS | Opt-in, set `lightningcss: true` |
-
-All three ship as dependencies of `@pandacss/node`, so they're already installed alongside `@pandacss/dev`, there's
-nothing extra to add to your own `package.json`.
-
-### Vue and Svelte support
-
-Both plugins hook `parser:before`, checking the file extension and handing back a transformed source string:
-
-```ts
-// simplified from packages/plugin-svelte/src/index.ts
-export function pluginSvelte(): PandaPlugin {
-  return {
-    name: '@pandacss/plugin-svelte',
-    hooks: {
-      'parser:before': ({ filePath, content }) => {
-        if (filePath.endsWith('.svelte')) {
-          return svelteToTsx(content)
-        }
-      }
-    }
-  }
-}
-```
-
-The CLI and the PostCSS plugin both auto-inject `pluginVue()` and `pluginSvelte()` before your own config's hooks
-run, which is why the [Vue](/docs/styling/vue) and [Svelte](/docs/styling/svelte) installation pages never mention
-adding a plugin. If you're driving Panda's core APIs directly instead of going through the CLI or the PostCSS plugin,
-you'd need to add these two yourself.
-
-### LightningCSS optimization
-
-By default, Panda optimizes generated CSS with PostCSS. Setting
-[`lightningcss: true`](/docs/reference/config#lightningcss) in your config swaps that for LightningCSS instead, and
-auto-injects `pluginLightningcss()` to do it:
-
-```tsx filename="panda.config.ts"
-import { defineConfig } from '@pandacss/dev'
-
-export default defineConfig({
-  // ...
-  lightningcss: true
-})
-```
-
-Under the hood, this plugin hooks `css:optimize`, the one hook in `PandaHooks` that lets a plugin replace Panda's
-optimizer outright rather than just tweaking its input or output:
-
-```ts
-// simplified from packages/plugin-lightningcss/src/index.ts
-export function pluginLightningcss(): PandaPlugin {
-  return {
-    name: '@pandacss/plugin-lightningcss',
-    hooks: {
-      'css:optimize': ({ css, minify, browserslist }) => {
-        return optimizeLightCss(css, { minify, browserslist })
-      }
-    }
-  }
-}
-```
-
-If you don't already have a [browserslist](https://github.com/browserslist/browserslist) config, Panda looks for one
-in your project once `lightningcss` is enabled, since LightningCSS needs browser targets to know which CSS features
-it can safely emit.
+You don't add a plugin to make Panda read Vue, Svelte, or Astro files. The compiler extracts styles from `.vue`,
+`.svelte`, and `.astro` single-file components directly, so the [Vue](/docs/styling/vue), [Svelte](/docs/styling/svelte),
+and [Astro](/docs/styling/astro) install pages have no plugin to add. If you're upgrading from v1, the separate
+`@pandacss/plugin-vue` and `@pandacss/plugin-svelte` packages are gone — that work moved into the compiler.
 
 ## When to write your own
 
-Most one-off customization belongs in your config's inline `hooks`, not a separate package, see
-[Hooks](/docs/design-systems/hooks) for examples like prefixing token names or stripping unused CSS variables. Reach
-for a real plugin package when you want to share that behavior across multiple projects or teams, the same reason
-you'd reach for a [preset](/docs/design-systems/presets) instead of copy-pasting theme tokens. The three plugins
-above are a working reference for the shape: a `name`, a `hooks` object, and one exported factory function a user
-adds to their own `plugins` array.
+Most one-off customization belongs in an inline plugin in your config, not a separate package — see
+[Hooks](/docs/design-systems/hooks) for examples like transforming source before extraction or reacting to generated
+output. Reach for a published plugin when you want to share that behavior across projects or teams, the same reason you'd
+reach for a preset instead of copy-pasting tokens.
+
+A plugin is a `name` and a `hooks` object. `definePlugin` gives you the types:
+
+```ts filename="my-plugin.ts"
+import { definePlugin } from '@pandacss/dev'
+
+export function myPlugin() {
+  return definePlugin({
+    name: 'my-plugin',
+    hooks: {
+      'parser:before': ({ filePath, content }) => {
+        // transform a file's source before Panda extracts from it
+        return content
+      },
+    },
+  })
+}
+```
+
+Users add the factory to their `plugins` array:
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+import { myPlugin } from './my-plugin'
+
+export default defineConfig({
+  plugins: [myPlugin()],
+})
+```
 
 ## See also
 
-- [Hooks](/docs/design-systems/hooks) for the full `PandaHooks` reference and how to author and share a plugin.
-- [Config](/docs/reference/config#lightningcss) for the `lightningcss` option.
+- [Hooks](/docs/design-systems/hooks) for every hook and how to author and share a plugin.
+- [Presets](/docs/design-systems/presets) for sharing theme and tokens the same way.
