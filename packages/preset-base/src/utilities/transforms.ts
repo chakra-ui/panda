@@ -3,7 +3,10 @@ import { anyVar, cssVar } from '../css-var'
 
 const length = () => cssVar('<length-percentage>', '0')
 
-const axisAngle = () => anyVar('0')
+// The `rotate` property holds one rotation, so `rotate: 'auto'` composes on `transform`
+// instead. Each axis variable holds the whole function, and an unset one contributes
+// nothing through the empty `var(--rotate-x,)` fallback.
+const ROTATE_AXES = ['x', 'y', 'z'].map((axis) => `var(--rotate-${axis},)`).join(' ')
 
 const positiveFractions = {
   '1/2': '50%',
@@ -40,19 +43,20 @@ export const transforms: UtilityConfig = {
     className: 'rotate',
     group: 'Transform',
     property: 'rotate',
-    values: {
-      auto: 'var(--rotate-x) var(--rotate-y)',
-      'auto-3d': 'var(--rotate-x) var(--rotate-y) var(--rotate-z)',
+    // `auto-3d` is an alias: an unset axis contributes nothing either way.
+    values: { auto: 'auto', 'auto-3d': 'auto' },
+    transform(value) {
+      return value === 'auto' ? { transform: ROTATE_AXES } : { rotate: value }
     },
   },
   rotateX: {
     className: 'rotate-x',
     group: 'Transform',
     property: 'rotate',
-    globalVars: { '--rotate-x': axisAngle() },
+    globalVars: { '--rotate-x': anyVar() },
     transform(value) {
       return {
-        '--rotate-x': value,
+        '--rotate-x': `rotateX(${value})`,
       }
     },
   },
@@ -60,10 +64,10 @@ export const transforms: UtilityConfig = {
     className: 'rotate-y',
     group: 'Transform',
     property: 'rotate',
-    globalVars: { '--rotate-y': axisAngle() },
+    globalVars: { '--rotate-y': anyVar() },
     transform(value) {
       return {
-        '--rotate-y': value,
+        '--rotate-y': `rotateY(${value})`,
       }
     },
   },
@@ -71,10 +75,10 @@ export const transforms: UtilityConfig = {
     className: 'rotate-z',
     group: 'Transform',
     property: 'rotate',
-    globalVars: { '--rotate-z': axisAngle() },
+    globalVars: { '--rotate-z': anyVar() },
     transform(value) {
       return {
-        '--rotate-z': value,
+        '--rotate-z': `rotateZ(${value})`,
       }
     },
   },
@@ -153,12 +157,11 @@ export const transforms: UtilityConfig = {
     shorthand: 'z',
     className: 'translate-z',
     group: 'Transform',
-    globalVars: { '--translate-z': length() },
+    // `<length>`, not `<length-percentage>`: the third slot of `translate` rejects a
+    // percentage, and a stray one would take x and y down with it.
+    globalVars: { '--translate-z': cssVar('<length>', '0') },
     values(theme) {
-      return {
-        ...theme('spacing'),
-        ...fractions,
-      }
+      return theme('spacing')
     },
     transform(value) {
       return {
