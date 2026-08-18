@@ -48,7 +48,7 @@ jobs:
         run: |
           git checkout -f ${{ github.event.pull_request.base.sha }}
           pnpm install --ignore-scripts
-          pnpm --filter @pandacss/compiler build:native
+          pnpm --filter "@pandacss/compiler..." build
           if pnpm --filter=./bench ci-run -- --out "$RUNNER_TEMP/base.json" --files 200 --runs 9; then
             echo "benchmarked base"
           else
@@ -60,7 +60,7 @@ jobs:
         run: |
           git checkout -f ${{ github.event.pull_request.head.sha }}
           pnpm install --ignore-scripts
-          pnpm --filter @pandacss/compiler build:native
+          pnpm --filter "@pandacss/compiler..." build
           pnpm --filter=./bench ci-run -- --out "$RUNNER_TEMP/head.json" --files 200 --runs 9
 
       - name: Compare
