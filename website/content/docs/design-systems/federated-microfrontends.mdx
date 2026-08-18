@@ -312,7 +312,7 @@ own build. The collision is identical, and `prefix` is still the fix. It
 just moves to the **consumer's** config, keyed to the remote's identity
 rather than the DS version.
 
-`panda ship` only writes extraction results (which styles are used), not the
+`panda buildinfo` only writes extraction results (which styles are used), not the
 token and recipe **definitions**. So a build-info consumer wires up two
 pieces: the build-info file (via `include`) and the lib's preset (via
 `presets`). The preset supplies the definitions, the build-info file supplies

@@ -3,8 +3,8 @@ title: Presets
 description: Creating your own reusable preset for utilities and theme
 ---
 
-By default, any configuration you add in your own `panda.config.js` file is smartly merged with the
-[default presets](#which-panda-presets-will-be-included), allowing you to override or extend specific parts of the
+Any configuration you add in your own `panda.config.js` file is smartly merged with the
+[presets you list](#which-panda-presets-will-be-included), allowing you to override or extend specific parts of the
 configuration.
 
 ## When to use a preset
@@ -121,21 +121,22 @@ pnpm add -D @acme/preset
 
 ### Add it to panda.config
 
-Setting `presets` replaces the default `@pandacss/preset-panda`. Include it explicitly if you still want the default
-theme:
+`presets` is the exact list Panda uses — nothing is added for you. List `@pandacss/preset-base` for the default utilities
+and `@pandacss/preset-panda` for the default theme, then add your own:
 
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
+import basePreset from '@pandacss/preset-base'
 import pandaPreset from '@pandacss/preset-panda'
 import { acmePreset } from '@acme/preset'
 
 export default defineConfig({
-  presets: [pandaPreset, acmePreset],
+  presets: [basePreset, pandaPreset, acmePreset],
   include: ['./src/**/*.{js,jsx,ts,tsx}']
 })
 ```
 
-`@pandacss/preset-base` is still included automatically unless you set `eject: true`. See
+`@pandacss/preset-base` gives you the default utilities and patterns, and is included only if you list it, as above. See
 [which presets are included](#which-panda-presets-will-be-included).
 
 ### Extend the preset in the app
@@ -145,7 +146,7 @@ conflicts. See [extend](/docs/styling/extend).
 
 ```ts filename="panda.config.ts"
 export default defineConfig({
-  presets: [pandaPreset, acmePreset],
+  presets: [basePreset, pandaPreset, acmePreset],
   theme: {
     extend: {
       tokens: {
@@ -205,24 +206,27 @@ export default defineConfig({
 })
 ```
 
-## Which panda presets will be included ?
+## Which panda presets will be included?
 
-![Visual helper](/stately-presets-merging.png)
+Panda includes exactly the presets you list in `presets` — nothing is added for you.
 
-- `@pandacss/preset-base`: ALWAYS included if NOT using `eject: true`
+- `@pandacss/preset-base` (default utilities, conditions, and patterns): included only if you list it.
+- `@pandacss/preset-panda` (default tokens, breakpoints, and text styles): included only if you list it.
 
-- `@pandacss/preset-panda`: only included by default if you haven't specified the `presets` config option, otherwise
-  you'll have to include that preset by yourself like so:
+List both when you want the full defaults, then add your own presets:
 
 ```ts
+import basePreset from '@pandacss/preset-base'
 import pandaPreset from '@pandacss/preset-panda'
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   // ...
-  presets: [pandaPreset, myCustomPreset]
+  presets: [basePreset, pandaPreset, myCustomPreset]
 })
 ```
+
+For a system with no defaults at all, use `presets: []`.
 
 ## Minimal setup
 

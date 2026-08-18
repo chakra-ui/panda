@@ -88,12 +88,13 @@ ship your normal library build alongside it.
 Generate it after building your library:
 
 ```bash
-panda ship --outfile dist/panda.buildinfo.json
+panda buildinfo --outfile dist/panda.buildinfo.json
 ```
 
-> A future major version of Panda renames this command to `panda buildinfo` as part of a broader rewrite of how the
-> build-info format works internally. The file it produces stays named `panda.buildinfo.json` either way, and the
-> `include` step below is expected to keep working the same.
+> Publishing a full library? Prefer `panda lib` — it writes the build info, a preset, and a manifest in one step, and
+> consumers wire it up with the [`designSystem`](/docs/design-systems/consuming-a-design-system) config field instead of
+> `include` + `importMap`. See [Build a design system](/docs/design-systems/building-a-design-system). `panda buildinfo`
+> is the lower-level option when you only want the extraction result.
 
 Then, in the user's config, include the build info file the same way you'd include source:
 

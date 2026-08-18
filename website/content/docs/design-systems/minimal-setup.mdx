@@ -34,7 +34,8 @@ export default defineConfig({
 
 ## Removing default utilities
 
-Use the `eject: true` property to remove all the default utilities.
+The default utilities come from `@pandacss/preset-base`. To remove them, omit `@pandacss/preset-base` from `presets` (or
+use `presets: []`) — Panda doesn't add it for you.
 
 Panda doesn't automatically know which tokens are valid for which CSS properties, so it is necessary to tell Panda that
 my tokens from the "colors" category are valid for the CSS property "color".
@@ -42,7 +43,7 @@ my tokens from the "colors" category are valid for the CSS property "color".
 ```js
 export default defineConfig({
   // ...
-  eject: true,
+  presets: [],
   utilities: {
     color: {
       values: 'colors'
@@ -86,5 +87,5 @@ export default defineConfig({
 })
 ```
 
-> Note: You don't need to install `@pandacss/preset-base` or `@pandacss/preset-panda`. Panda will automatically resolve
-> them for you.
+> Note: Panda doesn't add `@pandacss/preset-base` or `@pandacss/preset-panda` for you. Install the ones you want and list
+> them in `presets`.
