@@ -1,37 +1,21 @@
 /**
- * CI benchmark: measures the current build of the Rust engine on a fixed
- * synthetic corpus and writes a JSON result. The `benchmarks` workflow runs
- * this on the PR base and head, then `ci-compare` diffs the two.
+ * CI benchmark for the compiler. Runs on a fixed corpus and writes a JSON
+ * result; the `benchmarks` workflow runs it on the PR base and head, and
+ * `ci-compare` diffs them. Two dimensions:
  *
- * Deliberately dependency-light: it builds a small inline config through
- * `createCompiler` (no presets), so the same script runs on any checkout that
- * has `@pandacss/compiler` built. Measures the engine, not preset richness.
+ *   - extraction — parse and emit a corpus of `css` / `cva` / `sva` components
+ *   - staticCss — a spacing scale over populated container conditions, the
+ *     shape that makes large staticCss configs expensive to emit
  *
- *   pnpm --filter=./bench ci -- --out result.json --files 100 --runs 7
+ * Configs are built inline (no presets) so the same script runs on any checkout
+ * that has `@pandacss/compiler` built.
+ *
+ *   pnpm --filter=./bench ci-run -- --out result.json --files 200 --runs 9
  */
 import { performance } from 'node:perf_hooks'
 import { gzipSync } from 'node:zlib'
 import { writeFileSync } from 'node:fs'
 import { createCompiler } from '@pandacss/compiler'
-
-interface Args {
-  out: string | null
-  files: number
-  runs: number
-}
-
-function parseArgs(argv: string[]): Args {
-  const args: Args = { out: null, files: 100, runs: 7 }
-  for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i]
-    if (arg === '--out' && argv[i + 1]) args.out = argv[++i]
-    else if (arg === '--files' && argv[i + 1]) args.files = Number(argv[++i])
-    else if (arg === '--runs' && argv[i + 1]) args.runs = Number(argv[++i])
-  }
-  if (!Number.isFinite(args.files) || args.files < 1) throw new Error(`Invalid --files: ${args.files}`)
-  if (!Number.isFinite(args.runs) || args.runs < 1) throw new Error(`Invalid --runs: ${args.runs}`)
-  return args
-}
 
 const importMap = {
   css: ['@panda/css'],
@@ -41,18 +25,36 @@ const importMap = {
   tokens: ['@panda/tokens'],
 }
 
-function config() {
+const LAYERS = ['reset', 'base', 'tokens', 'recipes', 'utilities']
+
+// --- helpers ---------------------------------------------------------------
+
+function timed<T>(fn: () => T): [ms: number, value: T] {
+  const start = performance.now()
+  const value = fn()
+  return [performance.now() - start, value]
+}
+
+function median(xs: number[]): number {
+  const sorted = [...xs].sort((a, b) => a - b)
+  const mid = Math.floor(sorted.length / 2)
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
+}
+
+const round = (n: number): number => Math.round(n * 1000) / 1000
+const bytes = (s: string): number => Buffer.byteLength(s, 'utf8')
+const gzip = (s: string): number => gzipSync(s).length
+
+// --- extraction corpus -----------------------------------------------------
+
+function extractionConfig() {
   return { cwd: '/virtual', outdir: 'styled-system', importMap, jsxFactory: 'styled', jsxFramework: 'react' }
 }
 
-const LAYERS = ['reset', 'base', 'tokens', 'recipes', 'utilities']
-
-// Each file emits three components that exercise different paths: a `css` card
-// (static styles, four conditions, a responsive media query, a nested
-// selector), a `cva` button (two variant axes plus compound variants), and an
-// `sva` menu (a slot recipe with a size variant). Raw CSS properties so no
-// preset utilities are needed. Content varies by index so classes don't all
-// collapse to the same atoms.
+// One file per component set: a `css` card (four conditions, a responsive query,
+// a nested selector), a `cva` button (two axes plus compound variants), and an
+// `sva` menu (a slot recipe). Content varies by index so atoms don't all
+// collapse to one.
 function genFile(i: number): { path: string; source: string } {
   const hue = i % 360
   const gap = (i % 8) + 2
@@ -118,32 +120,19 @@ export const menu${i} = sva({
   }
 }
 
-// The staticCss build from discussions #3106 / #3256: a spacing scale crossed
-// with the spacing properties and the container conditions. The cost only
-// shows up when `theme.containers` is populated (preset-panda ships 14), so we
-// populate it here — a bare config would silently drop the `@container` rules.
+// --- staticCss corpus ------------------------------------------------------
+
 const SPACING_VALUES = 133
+// prettier-ignore
 const SPACING_PROPERTIES = [
-  'padding',
-  'paddingTop',
-  'paddingBottom',
-  'paddingLeft',
-  'paddingRight',
-  'paddingX',
-  'paddingY',
-  'margin',
-  'marginTop',
-  'marginBottom',
-  'marginLeft',
-  'marginRight',
-  'marginX',
-  'marginY',
+  'padding', 'paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight', 'paddingX', 'paddingY',
+  'margin', 'marginTop', 'marginBottom', 'marginLeft', 'marginRight', 'marginX', 'marginY',
 ]
-const CONTAINERS = 14
+const CONTAINERS = 14 // preset-panda ships this many; the cost grows with the scale.
 
 function staticCssConfig() {
   const spacingKeys = Array.from({ length: SPACING_VALUES }, (_, i) => String(i))
-  const spacing = Object.fromEntries(spacingKeys.map((k, i) => [k, { value: `${i * 0.25}em` }]))
+  const spacing = Object.fromEntries(spacingKeys.map((key, i) => [key, { value: `${i * 0.25}em` }]))
   const names = ['sm', 'md', 'lg', 'xl']
   const containers = Object.fromEntries(
     Array.from({ length: CONTAINERS }, (_, i) => [names[i] ?? `c${i}`, `${20 + i * 4}rem`]),
@@ -159,55 +148,87 @@ function staticCssConfig() {
   }
 }
 
-function median(xs: number[]): number {
-  const s = [...xs].sort((a, b) => a - b)
-  const mid = Math.floor(s.length / 2)
-  return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2
+// --- benchmarks ------------------------------------------------------------
+
+function benchExtraction(files: ReturnType<typeof genFile>[], runs: number) {
+  const setup: number[] = []
+  const parse: number[] = []
+  const emit: number[] = []
+  let css = ''
+
+  for (let r = 0; r < runs; r++) {
+    const [setupMs, compiler] = timed(() => createCompiler(extractionConfig(), { crossFile: false }))
+    const [parseMs] = timed(() => {
+      for (const file of files) compiler.parseFileSource(file.path, file.source)
+    })
+    const [emitMs, out] = timed(() => compiler.getLayerCss({ layers: LAYERS }).css)
+    setup.push(setupMs)
+    parse.push(parseMs)
+    emit.push(emitMs)
+    css = out
+  }
+
+  return {
+    perf: {
+      'setup.ms': round(median(setup)),
+      'parse.cold.ms': round(median(parse)),
+      'emit.ms': round(median(emit)),
+    },
+    size: {
+      'css.bytes': bytes(css),
+      'css.gzip.bytes': gzip(css),
+    },
+  }
 }
 
-function round(n: number): number {
-  return Math.round(n * 1000) / 1000
+function benchStaticCss(runs: number) {
+  const config = staticCssConfig()
+  const emit: number[] = []
+  let css = ''
+
+  for (let r = 0; r < runs; r++) {
+    const compiler = createCompiler(config, { crossFile: false })
+    compiler.parseFileSource('/virtual/static.tsx', 'export const x = 1\n')
+    const [emitMs, out] = timed(() => compiler.getLayerCss({ layers: LAYERS }).css)
+    emit.push(emitMs)
+    css = out
+  }
+
+  return {
+    emitMs: round(median(emit)),
+    cssBytes: bytes(css),
+    gzipBytes: gzip(css),
+    containerBlocks: (css.match(/@container/g) ?? []).length,
+  }
+}
+
+// --- entry -----------------------------------------------------------------
+
+interface Args {
+  out: string | null
+  files: number
+  runs: number
+}
+
+function parseArgs(argv: string[]): Args {
+  const args: Args = { out: null, files: 100, runs: 7 }
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i]
+    if (arg === '--out' && argv[i + 1]) args.out = argv[++i]
+    else if (arg === '--files' && argv[i + 1]) args.files = Number(argv[++i])
+    else if (arg === '--runs' && argv[i + 1]) args.runs = Number(argv[++i])
+  }
+  if (!Number.isFinite(args.files) || args.files < 1) throw new Error(`Invalid --files: ${args.files}`)
+  if (!Number.isFinite(args.runs) || args.runs < 1) throw new Error(`Invalid --runs: ${args.runs}`)
+  return args
 }
 
 function main() {
   const args = parseArgs(process.argv.slice(2))
   const files = Array.from({ length: args.files }, (_, i) => genFile(i))
 
-  const setup: number[] = []
-  const coldParse: number[] = []
-  const emit: number[] = []
-  let css = ''
-
-  for (let r = 0; r < args.runs; r++) {
-    const t0 = performance.now()
-    const compiler = createCompiler(config(), { crossFile: false })
-    setup.push(performance.now() - t0)
-
-    const t1 = performance.now()
-    for (const f of files) compiler.parseFileSource(f.path, f.source)
-    coldParse.push(performance.now() - t1)
-
-    const t2 = performance.now()
-    css = compiler.getLayerCss({ layers: LAYERS }).css
-    emit.push(performance.now() - t2)
-  }
-
-  const cssBytes = Buffer.byteLength(css, 'utf8')
-  const cssGzipBytes = gzipSync(css).length
-
-  // staticCss build with populated containers (the #3106 / #3256 path). Emit is
-  // where the cost lived, so time getLayerCss over the static config.
-  const scConfig = staticCssConfig()
-  const scEmit: number[] = []
-  let scCss = ''
-  for (let r = 0; r < args.runs; r++) {
-    const sc = createCompiler(scConfig, { crossFile: false })
-    sc.parseFileSource('/virtual/static.tsx', 'export const x = 1\n')
-    const t = performance.now()
-    scCss = sc.getLayerCss({ layers: LAYERS }).css
-    scEmit.push(performance.now() - t)
-  }
-  const scContainerBlocks = (scCss.match(/@container/g) ?? []).length
+  const extraction = benchExtraction(files, args.runs)
+  const staticCss = benchStaticCss(args.runs)
 
   const result = {
     meta: {
@@ -215,21 +236,14 @@ function main() {
       runs: args.runs,
       node: process.version,
       'staticcss.containers': CONTAINERS,
-      'staticcss.container.blocks': scContainerBlocks,
+      'staticcss.container.blocks': staticCss.containerBlocks,
     },
-    perf: {
-      'setup.ms': round(median(setup)),
-      'parse.cold.ms': round(median(coldParse)),
-      'emit.ms': round(median(emit)),
-    },
-    size: {
-      'css.bytes': cssBytes,
-      'css.gzip.bytes': cssGzipBytes,
-    },
+    perf: extraction.perf,
+    size: extraction.size,
     static: {
-      'staticcss.emit.ms': round(median(scEmit)),
-      'staticcss.css.bytes': Buffer.byteLength(scCss, 'utf8'),
-      'staticcss.gzip.bytes': gzipSync(scCss).length,
+      'staticcss.emit.ms': staticCss.emitMs,
+      'staticcss.css.bytes': staticCss.cssBytes,
+      'staticcss.gzip.bytes': staticCss.gzipBytes,
     },
   }
 

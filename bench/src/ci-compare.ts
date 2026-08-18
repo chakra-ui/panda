@@ -67,7 +67,7 @@ function main() {
   console.log('| --- | ---: | ---: | ---: |')
   console.log(rows.join('\n'))
   if (blocks !== undefined) {
-    console.log(`\n_\`staticcss.*\` is the #3106/#3256 build: a spacing scale over ${blocks} \`@container\` blocks._`)
+    console.log(`\n_\`staticcss.*\` is a large staticCss build: a spacing scale over ${blocks} \`@container\` blocks._`)
   }
 }
 
