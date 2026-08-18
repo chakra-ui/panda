@@ -142,15 +142,15 @@ extracted.
 
 ## Performance profiling
 
-If Panda is taking too long to process your files, you can use the `--cpu-prof` with the `panda`, `panda cssgen`,
-`panda codegen` and `panda debug` commands to generate a flamegraph of the whole process, which will allow you (or us as
-maintainers) to see which part of the process is taking the most time.
+If Panda is taking too long to process your files, add `--profile` to any command (`panda`, `panda cssgen`,
+`panda codegen`, `panda debug`) to profile the whole run, including time spent in the Rust engine. This lets you (or us
+as maintainers) see which part of the process is taking the most time.
 
-This will generate a `panda-{command}-{timestamp}.cpuprofile` file in the current working directory, which can be opened
-in tools like [Speedscope](https://www.speedscope.app/)
+This writes a `.panda/trace.json` file — open it in `chrome://tracing` or [ui.perfetto.dev](https://ui.perfetto.dev) — along
+with a `.panda/timings.json` summary.
 
 ```bash
-pnpm panda --cpu-prof
+pnpm panda --profile
 ```
 
 ## FAQ

@@ -9,14 +9,14 @@ headless UI libraries like Ark UI, and Radix UI.
 ## Atomic Slot Recipe
 
 - Create a slot recipe using the `sva` function
-- Pass the slot recipe to the `createStyleContext` function
+- Pass the slot recipe to the `createSlotRecipeContext` function
 - Use the `withProvider` and `withContext` functions to create compound components
 
 ```tsx
 // components/ui/card.tsx
 
 import { sva } from 'styled-system/css'
-import { createStyleContext } from 'styled-system/jsx'
+import { createSlotRecipeContext } from 'styled-system/jsx'
 
 const card = sva({
   slots: ['root', 'label'],
@@ -35,7 +35,7 @@ const card = sva({
   }
 })
 
-const { withProvider, withContext } = createStyleContext(card)
+const { withProvider, withContext } = createSlotRecipeContext(card)
 
 const Root = withProvider('div', 'root')
 const Label = withContext('label', 'label')
@@ -64,18 +64,18 @@ export default function App() {
 
 ## Config Slot Recipe
 
-The `createStyleContext` function can also be used with slot recipes defined in the `panda.config.ts` file.
+The `createSlotRecipeContext` function can also be used with slot recipes defined in the `panda.config.ts` file.
 
-- Pass the config recipe to the `createStyleContext` function
+- Pass the config recipe to the `createSlotRecipeContext` function
 - Use the `withProvider` and `withContext` functions to create compound components
 
 ```tsx
 // components/ui/card.tsx
 
 import { card } from '../styled-system/recipes'
-import { createStyleContext } from 'styled-system/jsx'
+import { createSlotRecipeContext } from 'styled-system/jsx'
 
-const { withProvider, withContext } = createStyleContext(card)
+const { withProvider, withContext } = createSlotRecipeContext(card)
 
 const Root = withProvider('div', 'root')
 const Label = withContext('label', 'label')
@@ -102,9 +102,10 @@ export default function App() {
 }
 ```
 
-## createStyleContext
+## createSlotRecipeContext
 
-This function is a factory function that returns three functions: `withRootProvider`, `withProvider`, and `withContext`.
+Use this for a slot recipe (`sva` or `defineSlotRecipe`) with multiple parts. It's a factory function that returns three
+functions: `withRootProvider`, `withProvider`, and `withContext`.
 
 ### withRootProvider
 
@@ -150,8 +151,8 @@ const AvatarFallback = withContext(Avatar.Fallback, 'fallback')
 
 ### unstyled prop
 
-Every component created with `createStyleContext` supports the `unstyled` prop to disable styling. It is useful when you
-want to opt-out of the recipe styles.
+Every component created with `createSlotRecipeContext` supports the `unstyled` prop to disable styling. It is useful when
+you want to opt-out of the recipe styles.
 
 - When applied the root component, will disable all styles
 - When applied to a child component, will disable the styles for that specific slot
@@ -170,11 +171,27 @@ want to opt-out of the recipe styles.
 </AvatarRoot>
 ```
 
+## createRecipeContext
+
+Use this for a single-element config recipe (`cva` or `defineRecipe`) that has no slots. It returns a single
+`withContext` function, and `withContext` takes just the element or component, with no slot name.
+
+```tsx
+import { button } from '../styled-system/recipes'
+import { createRecipeContext } from 'styled-system/jsx'
+
+const { withContext } = createRecipeContext(button)
+
+export const Button = withContext('button')
+```
+
+The component accepts the recipe's variant props and forwards them to drive the styling.
+
 ## Guides
 
 ### Config Recipes
 
-The rules of config recipes still applies when using `createStyleContext`. Ensure the name of the final component
+The rules of config recipes still applies when using `createSlotRecipeContext`. Ensure the name of the final component
 matches the name of the recipe.
 
 > If you want to use a custom name, you can configure the recipe's `jsx` property in the `panda.config.ts` file.
@@ -183,7 +200,7 @@ matches the name of the recipe.
 // recipe name is "card"
 import { card } from '../styled-system/recipes'
 
-const { withRootProvider, withContext } = createStyleContext(card)
+const { withRootProvider, withContext } = createSlotRecipeContext(card)
 
 const Root = withRootProvider('div')
 const Header = withContext('header', 'header')
@@ -202,7 +219,7 @@ export const Card = {
 Use `defaultProps` option to provide default props to the component.
 
 ```tsx
-const { withContext } = createStyleContext(card)
+const { withContext } = createSlotRecipeContext(card)
 
 export const CardHeader = withContext('header', 'header', {
   defaultProps: {
@@ -228,7 +245,7 @@ const tabs = sva({
   }
 })
 
-const { withProvider } = createStyleContext(tabs)
+const { withProvider } = createSlotRecipeContext(tabs)
 
 function TabsRoot({ orientation, ...rest }: TabsRootProps) {
   // `orientation` is available here, so we can mirror it as an aria attribute

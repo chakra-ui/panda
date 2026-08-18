@@ -43,7 +43,7 @@ attribute. Without `forwardProps`, Panda would consume `size` for styling and ne
 > A forwarded prop becomes a plain prop on the wrapped component: it no longer feeds recipe styling on its own after
 > that point. If you need a prop to both style a slot and reach the component, and you're wrapping a multi-part
 > compound rather than a single element, see [Forwarding props](/docs/styling/jsx-style-context#forwarding-props) in
-> `createStyleContext` instead.
+> `createSlotRecipeContext` instead.
 
 ## When forwardProps isn't enough
 
@@ -61,6 +61,6 @@ can tell your exports apart from the library's own.
 ## See also
 
 - [Wrap headless UI](/docs/design-systems/wrap-headless-ui) covers the equivalent decision for multi-part compounds
-  built with `createStyleContext`, not single-element wrappers.
+  built with `createSlotRecipeContext`, not single-element wrappers.
 - [Track usage in wrapped components](/docs/design-systems/track-usage) covers how Panda's static extraction handles
   a component re-exported or wrapped like this.
