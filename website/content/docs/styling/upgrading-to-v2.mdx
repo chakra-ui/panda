@@ -1,65 +1,262 @@
 ---
 title: Upgrading to v2
-description: What's actually changing in Panda's next major version, a Rust-based rewrite of the compiler, and what's still unstable.
+description: What changed in Panda v2, how to install the beta, and the breaking changes to fix as you migrate.
 ---
 
-> **v2 hasn't shipped.** It lives on an unmerged branch, most of its design is still marked as draft or proposed
-> internally, and some of it has already changed shape once before landing. This page exists so you know what's
-> coming and can plan around it, not as a migration guide you can follow today. Where a claim below is genuinely
-> unstable, the linked page says so again.
+<Callout type="warning">
+  v2 is in beta (`2.0.0-beta`). The authoring API is stable, but the package layout and a few CLI surfaces are still
+  moving. Install it with the `@beta` tag; a plain install stays on v1.
+</Callout>
 
-## What v2 actually is
+v2 keeps the framework you already know and rewrites the compiler underneath it. You write the same `css()`, recipes,
+patterns, tokens, conditions, and JSX props. What changed is how Panda turns them into CSS.
 
-v2 replaces Panda's current pipeline, `ts-morph` for extraction and PostCSS for CSS generation, with a Rust-based
-compiler, exposed to JavaScript through native (`@pandacss/compiler`) and WASM (`@pandacss/compiler-wasm`) bindings.
-See [The Compiler Engine](/docs/styling/compiler-engine) for what that means, and
-[How Panda works](/docs/styling/how-panda-works) for the model it's replacing. The extraction-and-static-CSS model
-itself isn't changing, what runs underneath it is.
+## What v2 is
 
-## Config changes worth knowing about now
+v1 ran extraction and evaluation through `ts-morph` and `ts-evaluator` in Node. v2 replaces that hot path with a native
+engine built on [Oxc](https://oxc.rs), shipped two ways:
 
-Comparing the current config against the v2 branch directly turns up real, concrete differences:
+- **`@pandacss/compiler`** — a native binding. The CLI and bundler plugins use it.
+- **`@pandacss/compiler-wasm`** — the same engine compiled to WASM for the browser. The playground runs on it.
 
-- **Ten options are removed**: `studio` (and its `outdir`/`logo`/`inject` sub-options), `eject`, `emitTokensOnly`,
-  `gitignore`, `clean`, `watch`, `poll`, `lightningcss`, `browserslist`, and `forceConsistentTypeExtension` (replaced
-  by `forceImportExtension`, which isn't a drop-in rename, its semantics differ).
-- **`hooks` moves off the top-level config entirely.** In v2 it's only valid on a `Preset`, and there it's required,
-  not optional, project-level hooks become an inline local plugin instead. See
-  [Ecosystem Plugins](/docs/design-systems/ecosystem-plugins) for how the current `hooks`/`plugins` split works and
-  how v2 merges them into one `plugins` field.
-- **`outExtension` gains a `'ts'` value**, alongside the existing options.
-- **Two new options appear**: `designSystem` (see [Consume a design system](/docs/design-systems/consuming-a-design-system))
-  and a nested `optimize` block (`removeUnusedTokens`, `removeUnusedKeyframes`, `smartCompoundVariants`,
-  `treeshakeDesignSystem`).
+Both wrap the same Rust crates, so Node and browser builds produce the same CSS. You get faster extraction — one parse
+per file, no TypeScript program in the hot path — and a smaller install, since the `ts-morph` dependency tree is gone.
+Output stays in parity with v1 except for the deliberate changes below.
 
-None of this is a migration checklist yet, some of these removed options don't have a settled replacement path
-documented publicly. Treat it as a heads-up for what to expect, not a today-action list.
+See [The compiler engine](/docs/styling/compiler-engine) for the pipeline, and
+[How Panda works](/docs/styling/how-panda-works) for the model it keeps.
 
-## ESM only
+## Try the beta
 
-v2 drops CommonJS support for `panda.config.ts` itself. That's separate from the `postcss.config.cjs` file `panda
-init --postcss` generates today, an explicit `.cjs` file is CommonJS by design regardless of this shift, and
-whether v2's tooling still loads a `.cjs` PostCSS config isn't confirmed publicly. While checking this site's own
-installation guides against that question, a handful (Astro, Ember, Next.js, Redwood, Storybook) turned out to
-reference the generated file as `postcss.config.js` when the CLI actually writes `postcss.config.cjs`, an unrelated
-pre-existing naming mismatch, now fixed. That fix is about accuracy today, not a v2 migration step.
+### Release channels
 
-## What else is part of this rewrite
+v1 and v2 ship side by side on npm. Install without a tag and you stay on stable v1.
 
-A cluster of other pages in these docs describe pieces of v2 specifically, all carrying the same "not shipped yet"
-caveat as this page, at varying levels of settledness:
+| Channel  | Version           | Install              |
+| -------- | ----------------- | -------------------- |
+| `latest` | v1 (`1.x`)        | `@pandacss/dev`      |
+| `beta`   | v2 (`2.0.0-beta`) | `@pandacss/dev@beta` |
 
-- [Agent Skills](/docs/styling/agent-skills): official, job-shaped skill packs for AI coding agents.
-- [Diagnostics Reference](/docs/reference/diagnostics): stable diagnostic codes for recoverable compiler issues.
-- [ESLint & OXLint Plugin](/docs/reference/eslint-oxlint-plugin): a shared lint rule set built on the compiler's
-  own project metadata.
-- [Editor & IDE Tooling](/docs/reference/editor-tooling): live completions and diagnostics while editing
-  `panda.config.ts` and your styles.
-- [Consume a design system](/docs/design-systems/consuming-a-design-system): the `designSystem` config field.
-- [Panda Studio in v2](/docs/theming/studio-v2): the Astro app replaced by a lighter viewer plus a codegen command.
-- [The Compiler Engine](/docs/styling/compiler-engine): the Rust pipeline underneath all of the above.
+All `@pandacss/*` packages move on one version. Don't mix a v1 package with a v2 one.
+
+### Install
+
+Most projects only need `@pandacss/dev`:
+
+```bash
+pnpm add -D @pandacss/dev@beta
+```
+
+Add integrations on the same tag when you need them: `@pandacss/postcss@beta`, `@pandacss/vite@beta`,
+`@pandacss/webpack@beta`, or `@pandacss/rollup@beta`.
+
+v2 is ESM only and needs Node 22 or newer. Set `"type": "module"` (or use `.mjs`) so your `panda.config.ts` loads as ESM.
+
+Want reproducible installs? Pin an exact version like `@pandacss/dev@2.0.0-beta.14`. `@beta` always resolves to the
+newest pre-release.
+
+### Build
+
+Your v1 `panda.config.ts` carries over. Regenerate:
+
+```bash
+panda build    # codegen + cssgen in one pass
+panda dev      # rebuild on change
+```
+
+The `panda` and `pandacss` binaries are the same as v1.
+
+## Breaking changes to fix
+
+These are the changes you have to act on when you move a project from v1.
+
+### ESM only
+
+There's no CommonJS build. If your config or tooling used `require()`:
+
+```js
+// ❌ v1
+const { defineConfig } = require('@pandacss/dev')
+
+// ✅ v2
+import { defineConfig } from '@pandacss/dev'
+```
+
+Set `"type": "module"`, use `.mjs`, or run through an ESM-aware bundler. The `postcss.config.cjs` that
+`panda init --postcss` writes is CommonJS on purpose and still works.
+
+### Hooks moved to plugins
+
+Hooks still exist, but they live on named plugins now, not a root `hooks` object:
+
+```ts
+// ❌ v1
+export default defineConfig({
+  hooks: {
+    'cssgen:done': ({ content }) => content,
+  },
+})
+
+// ✅ v2
+export default defineConfig({
+  plugins: [
+    {
+      name: 'local',
+      hooks: {
+        'parser:before': {
+          filter: { id: '**/*.{jsx,tsx}' },
+          handler: ({ content }) => content,
+        },
+      },
+    },
+  ],
+})
+```
+
+Supported hooks: `config:resolved`, `preset:resolved`, `parser:before`, `codegen:prepare`, `codegen:done`, and
+`cssgen:done`. `cssgen:done` is observe-only now — it runs after the final CSS with `{ artifact, content, path? }` and
+can't rewrite the string. Used it to strip unused tokens or keyframes? Reach for `optimize.removeUnusedTokens` /
+`removeUnusedKeyframes` instead. The v1 engine hooks (`context:created`, `parser:after`, `tokens:created`,
+`utility:created`, `parser:before.configure(...)`, …) are gone. See [Hooks](/docs/design-systems/hooks).
+
+### createStyleContext is now two helpers
+
+`createStyleContext` is gone from `styled-system/jsx`. Use one helper per recipe kind:
+
+```tsx
+// ❌ v1 — one helper for both
+import { createStyleContext } from 'styled-system/jsx'
+
+// ✅ v2 — slot recipe (sva)
+import { createSlotRecipeContext } from 'styled-system/jsx'
+const { withRootProvider, withProvider, withContext } = createSlotRecipeContext(card)
+
+// ✅ v2 — config recipe (cva)
+import { createRecipeContext } from 'styled-system/jsx'
+const { withContext } = createRecipeContext(button)
+```
+
+`withRootProvider` is new — use it for a slot recipe's root when the root doesn't render a slot of its own. See
+[JSX style context](/docs/styling/jsx-style-context).
+
+### MCP moved to its own package
+
+The MCP server left the CLI. Run it from `@pandacss/mcp` with the `panda-mcp` binary:
+
+```bash
+# ❌ v1
+panda mcp
+panda init-mcp
+
+# ✅ v2 — run it directly, nothing to install
+npx -y @pandacss/mcp
+```
+
+See [MCP server](/docs/styling/mcp-server).
+
+### Packages folded into the compiler
+
+These v1 internals are gone; their work lives in `@pandacss/compiler` now. Drop direct imports of `@pandacss/core`,
+`@pandacss/extractor`, `@pandacss/generator`, `@pandacss/node`, `@pandacss/parser`, `@pandacss/token-dictionary`,
+`@pandacss/is-valid-prop`, `@pandacss/logger`, `@pandacss/reporter`, and the Astro `@pandacss/studio`. If you only use
+`@pandacss/dev` plus Vite or PostCSS, you're fine.
+
+### Config options removed
+
+Ten options are gone: `studio` (and its sub-options), `eject`, `emitTokensOnly`, `gitignore`, `clean`, `watch`, `poll`,
+`lightningcss`, and `browserslist`. `forceConsistentTypeExtension` is replaced by `forceImportExtension` — different
+semantics, not a rename. `outExtension` gains a `'ts'` value. See [Config](/docs/reference/config).
+
+### CLI commands and flags
+
+`panda inspect`, `panda validate`, and `panda info` are removed. Use `panda doctor` (add `--json` for scripts).
+
+Logging flags are consolidated: `--log-level silent|error|warn|info|debug` replaces `--silent`, `--quiet`, and
+`--verbose`. `--profile` replaces `--cpu-prof` and covers time in the Rust engine, not just the Node side. Shared flags
+are kebab-case (`--max-warnings`, `--watch-debounce`, …). See [CLI](/docs/reference/cli).
+
+### Border overrides sort by property, not source order
+
+v2 orders atomic rules by property breadth, deterministically. All the border shorthands sit in one tier, so an
+all-sides shorthand always wins over a per-side one, no matter the merge order. Composing an all-sides border with a
+per-side override no longer opens that side:
+
+```tsx
+// v1: renders an open bracket — the override was declared last
+// v2: renders a closed box — borderWidth re-applies the inline-end side
+cx(css({ borderWidth: '1px', borderStyle: 'solid' }), css({ borderInlineEnd: '0' }))
+```
+
+Reach for the longhand when the override has to win — longhands rank above every shorthand, so they always land last:
+
+```tsx
+cx(css({ borderWidth: '1px', borderStyle: 'solid' }), css({ borderInlineEndWidth: '0' }))
+```
+
+Padding, margin, and every other property group sort the same way. See [Border](/docs/reference/border).
+
+### scrollbarWidth takes keywords, not tokens
+
+v1 mapped `scrollbarWidth` to `sizes` tokens, so `scrollbarWidth: '4'` emitted `var(--sizes-4)` and browsers dropped it.
+It's now `auto | thin | none`:
+
+```ts
+// ❌ v1 — type-checked, invalid CSS
+css({ scrollbarWidth: '4' })
+
+// ✅ v2
+css({ scrollbarWidth: 'thin' })
+```
+
+If you passed a single color to `scrollbarColor`, move it to `scrollbarThumb`. `scrollbarColor` is now a raw two-value
+string (`'red transparent'`).
+
+### No universal variable reset
+
+v1 seeded `--translate-x`, `--blur`, `--gradient-from-position` and friends through a `*, ::before, ::after, ::backdrop`
+rule — 34 declarations on every element, used or not. v2 registers those variables with `@property` instead, so they
+carry their own defaults and only ship when you use the utility. A page that uses none of them gets an empty base layer.
+
+This needs `@property` (Chrome 85+, Safari 16.4+, Firefox 128+); older browsers drop the affected utilities rather than
+mis-render them. Set `optimize.propertyFallback: true` to also seed the defaults as plain declarations for the variables
+your project uses.
+
+## What's new you'll want
+
+Beyond parity, v2 adds features worth turning on:
+
+- **The `optimize` block.** Opt-in CSS cleanup: `removeUnusedTokens`, `removeUnusedKeyframes`, `smartCompoundVariants`,
+  `treeshakeDesignSystem`, and `propertyFallback`. It replaces the common v1 `cssgen:done` cleanup.
+- **New utilities and conditions.** Mask helpers ([Masks](/docs/reference/masks)), scrollbar utilities, pointer and
+  validity conditions (`_pointerFine`, `_userValid`, `_inert`), and raw CSS keywords like `textWrap: 'pretty'` and
+  `justifyContent: 'safe center'`.
+- **`viewTransition()`.** Style the View Transitions API and get a stable class back. See
+  [View transitions](/docs/styling/view-transition).
+- **Cross-file composition and source transforms.** Compose `css.raw()` styles across files, and let bundler plugins
+  rewrite static `css()` calls with `transform: true`.
+- **Smaller `.d.ts`.** `cva` / `sva` return types key on a clean props type, which unblocks `isolatedDeclarations`. See
+  [Isolated declarations](/docs/styling/isolated-declarations).
+- **Design systems.** `panda lib` publishes a component library; apps consume it with the `designSystem` config field.
+  It replaces `panda ship`. See [Building a design system](/docs/design-systems/building-a-design-system) and
+  [Consuming a design system](/docs/design-systems/consuming-a-design-system).
+- **Linting on the v2 engine.** The [ESLint & oxlint plugin](/docs/reference/eslint-oxlint-plugin) lints against the
+  same extraction the build uses.
+
+## Still being finalized
+
+Honest gaps in the beta. Expect them to change before stable:
+
+- **Studio.** The Astro-based `@pandacss/studio` is gone. A lighter, CLI-generated studio is planned. See
+  [Studio in v2](/docs/theming/studio-v2).
+- **PostCSS plugin.** `@pandacss/postcss` v2 is experimental. If it misbehaves, use the Vite plugin or `panda build`.
+- **CSS minification.** `minify: true` works in the native emitter; full parity with the v1 LightningCSS path is still
+  open.
+- **Some presets and plugins.** A few v1 community presets aren't ported yet. Check engine coverage before you rely on
+  them.
 
 ## See also
 
-- [How Panda works](/docs/styling/how-panda-works) for the current, shipped mental model.
-- [Config](/docs/reference/config) for the current, real config options.
+- [The compiler engine](/docs/styling/compiler-engine) — the Rust pipeline underneath v2.
+- [Config](/docs/reference/config) — the full v2 config reference.
+- [CLI](/docs/reference/cli) — every command and flag.
+- [How Panda works](/docs/styling/how-panda-works) — the mental model v2 keeps.
