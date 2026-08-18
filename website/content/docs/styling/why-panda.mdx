@@ -1,47 +1,46 @@
 ---
 title: Why Panda
-description: Typed, build-time, zero-runtime styling with real design tokens and recipes — and where it fits next to Tailwind, StyleX, and vanilla-extract.
+description: Typed, build-time, zero-runtime styling with real design tokens and recipes, and where it fits next to Tailwind, StyleX, and vanilla-extract.
 ---
 
-Panda turns the styles you write next to your markup into static, atomic CSS at build time. You get the ergonomics of
-CSS-in-JS — objects, tokens, conditions, autocomplete — with zero runtime: nothing computes styles in the browser, and
-nothing ships to the client but CSS.
+Panda turns the styles you write next to your markup into static, atomic CSS at build time. You author styles as objects
+next to your components, with tokens, conditions, and autocomplete. The build ships only CSS. Nothing computes styles in
+the browser.
 
-## What you get
+## What Panda gives you
 
-- **Zero runtime.** Panda reads your source at build time and resolves it to a static CSS file. No style computation in
-  the browser, no `<head>` injection. It works with React Server Components because there's nothing to run on the
-  server or the client.
-- **Typed at the call site.** Tokens, utilities, and recipe variants are typed from your own config. A misspelled token
-  or an invalid property is a TypeScript error as you type — not a class name that silently does nothing.
-- **A design system, not just utilities.** Tokens and semantic tokens, recipes and slot recipes for component variants,
-  patterns for layout, and presets plus [`panda lib`](/docs/design-systems/building-a-design-system) to share the whole
-  thing across apps.
-- **Atomic CSS that scales.** Each property/value pair becomes one shared class. Your CSS grows with the number of
+- **Zero runtime.** Panda reads your source at build time and writes a static CSS file. No style computation in the
+  browser, no `<head>` injection, and nothing to run under React Server Components.
+- **Typed at the call site.** Tokens, utilities, and recipe variants come from your own config. A misspelled token or an
+  invalid property is a TypeScript error as you type, not a class name that quietly does nothing.
+- **A design system, not just utilities.** Tokens and semantic tokens, recipes and slot recipes for variants, patterns
+  for layout, and presets plus [`panda lib`](/docs/design-systems/building-a-design-system) to share it across apps.
+- **Atomic CSS that scales.** Each property and value becomes one shared class, so your CSS grows with the number of
   distinct styles, not the number of components.
-- **A fast compiler.** Panda extracts and emits with a Rust engine built on [Oxc](https://oxc.rs) — native for your
-  build, WebAssembly for the browser. See [The compiler engine](/docs/styling/compiler-engine).
-- **Modern CSS.** Cascade layers, CSS variables, `:where`/`:is`, and container queries in the generated output.
+- **A Rust compiler.** Panda extracts with an engine built on [Oxc](https://oxc.rs): one parse per file, no TypeScript
+  program in the hot path. Native for your build, WebAssembly for the browser. See
+  [the compiler engine](/docs/styling/compiler-engine).
+- **Modern CSS.** Cascade layers, CSS variables, `:where` and `:is`, and container queries in the output.
 
-Run it through the CLI, the PostCSS plugin, or a Vite/webpack/Rollup plugin — Panda doesn't depend on any one bundler.
+Run it through the CLI, the PostCSS plugin, or a Vite, webpack, or Rollup plugin. Panda doesn't depend on any one
+bundler.
 
 ## Where Panda fits
 
-Most people find Panda at one moment: the styling approach that got them started stops scaling. Here's how Panda sits
-next to the tools you're probably weighing.
+Most people find Panda at one moment: the approach that got them started stops scaling. Here's where Panda sits next to
+the tools you're weighing.
 
-- **Coming from Tailwind.** You've hit class-name soup — long `class="..."` strings your editor can't check, no
-  colocated variants, and a typo that just no-ops. Panda keeps the speed of utilities, but they're typed object keys and
-  token values, and variants live in [recipes](/docs/styling/recipes) instead of strings. See
-  [migrating from Tailwind](/docs/styling/tailwind).
+- **Coming from Tailwind.** You've hit class-name soup: long `class="..."` strings your editor can't check, no colocated
+  variants, a typo that just no-ops. Panda keeps the speed of utilities, but they're typed object keys and token values,
+  and variants live in [recipes](/docs/styling/recipes). See [migrating from Tailwind](/docs/styling/tailwind).
 - **Comparing build-time CSS-in-JS.** StyleX and vanilla-extract are the other typed, zero-runtime options. All three
-  extract to static atomic CSS, so the real difference is scope: Panda ships the design-system layer — recipes, slot
-  recipes, patterns, semantic tokens, presets — as first-class APIs, where StyleX and vanilla-extract leave you to build
-  variants and layout primitives by hand. See [migrating from StyleX](/docs/styling/stylex).
+  extract to static atomic CSS, so the difference is scope: Panda ships the design-system layer (recipes, slot recipes,
+  patterns, semantic tokens, presets) as built-in APIs, where the others leave you to build variants and layout by hand.
+  See [migrating from StyleX](/docs/styling/stylex).
 - **Leaving runtime CSS-in-JS.** emotion and styled-components compute styles in the browser and struggle under Server
-  Components. Panda keeps the familiar authoring model and drops the runtime cost.
+  Components. Panda keeps the authoring model and drops the runtime.
 
-## A quick taste
+## A quick example
 
 ```tsx
 import { css } from '../styled-system/css'
@@ -59,22 +58,22 @@ function Profile() {
 }
 ```
 
-`stack` and `circle` are patterns; `blue.500`, `md`, and `xl` are tokens from your theme. All of it is typed, and all of
-it compiles to atomic CSS with no runtime.
+`stack` and `circle` are patterns; `md` and `xl` are tokens from your theme. It's all typed, and it all compiles to
+atomic CSS with no runtime.
 
 ## When not to use Panda
 
-Panda earns its place when you have a design system to express — tokens, variants, themes — and a build step to run it.
+Panda earns its place when you have a design system to express, tokens, variants, themes, and a build step to run it.
 It's the wrong fit if:
 
 - You're writing plain HTML and CSS with no build step.
-- You're on a template-first server framework (PHP, Rails views) with little JavaScript.
+- You're on a template-first server framework like PHP or Rails views, with little JavaScript.
 - You need an absolute zero-tooling setup.
 
 Modern CSS keeps getting better. If you don't need tokens, variants, or type-safety, you may not need a tool at all.
 
-## Next
+## Where to go next
 
-- [Get started](/docs/styling/getting-started) — install Panda and generate your first styles.
-- [Thinking in Panda](/docs/styling/thinking-in-panda) — which API to reach for as a component grows.
-- [How Panda works](/docs/styling/how-panda-works) — the build-time model, start to finish.
+- [Get started](/docs/styling/getting-started): install Panda and generate your first styles.
+- [Thinking in Panda](/docs/styling/thinking-in-panda): which API to reach for as a component grows.
+- [How Panda works](/docs/styling/how-panda-works): the build-time model, start to finish.
