@@ -1,12 +1,21 @@
 ---
 title: The compiler engine
-description: How Panda v2 compiles your styles — a Rust engine built on Oxc, exposed to both Node and the browser.
+description: How Panda compiles your styles — a Rust engine built on Oxc, exposed to both Node and the browser.
 ---
 
-v2's compiler is a Rust engine. It does the same job v1 did — read your source, pull out the styles, emit atomic CSS in
-cascade layers — but it replaces v1's `ts-morph` + PostCSS pipeline with native code built on [Oxc](https://oxc.rs). Your
-styles and your output don't change (see [Upgrading to v2](/docs/styling/upgrading-to-v2) for the handful of deliberate
-CSS differences). What changes is the machine underneath.
+Panda's compiler is a Rust engine built on [Oxc](https://oxc.rs). It reads your source, pulls out the styles, and emits
+atomic CSS in cascade layers — the same model [How Panda works](/docs/styling/how-panda-works) describes, running on
+native code.
+
+If you're coming from an earlier version, the pipeline is what changed:
+
+```
+before   ts-morph walks a TypeScript AST   →   PostCSS generates the CSS
+after    Oxc parses each file once         →   native Rust emits the CSS
+```
+
+Your styles and your output don't change (see [Upgrading to v2](/docs/styling/upgrading-to-v2) for the handful of
+deliberate CSS differences). The machine underneath does.
 
 ## Two bindings, one engine
 
@@ -50,26 +59,25 @@ source → extract → encode → emit → CSS
 Codegen runs alongside this to write the `styled-system` output — the types and helpers you import. A façade crate owns
 the multi-file build and watch state and wires the stages together; it's the single entry point both bindings talk to.
 
-## What's the same, what's faster
+## What you gain
 
-The model is unchanged: static analysis of your source, atomic CSS, cascade layers, tokens, recipes, conditions. You
-write the same Panda.
+You write the same Panda — static analysis of your source, atomic CSS, cascade layers, tokens, recipes, conditions. The
+compiled engine changes what that costs:
 
-What you gain is a compiled engine instead of a JavaScript one — one parse per file and no `ts-morph` AST to build and
-hold — plus a smaller install, since the `ts-morph` / `ts-evaluator` dependency tree is gone. That's the basis for v2's
-performance work.
-
-The diagnostics and lint tooling read the same compiler core rather than reimplementing extraction: see
-[Diagnostics](/docs/reference/diagnostics), the [ESLint & oxlint plugin](/docs/reference/eslint-oxlint-plugin), and
-[Editor & IDE tooling](/docs/reference/editor-tooling).
+- One parse per file, and no `ts-morph` AST to build and hold.
+- A smaller install, since the `ts-morph` / `ts-evaluator` dependency tree is gone.
+- One shared compiler core behind the tooling. Diagnostics and lint read the same extraction the build does, rather than
+  reimplementing it — see [Diagnostics](/docs/reference/diagnostics), the
+  [ESLint & oxlint plugin](/docs/reference/eslint-oxlint-plugin), and
+  [Editor & IDE tooling](/docs/reference/editor-tooling).
 
 ## Still open: CSS optimization
 
-The emitter writes CSS natively and minifies when you set `minify: true`, but full parity with v1's LightningCSS
-minification is still open. If you rely on the last few percent of v1's minified output, check the result before you
+The emitter writes CSS natively and minifies when you set `minify: true`, but full parity with LightningCSS
+minification is still open. If you rely on the last few percent of that minified output, check the result before you
 ship it.
 
 ## See also
 
-- [How Panda works](/docs/styling/how-panda-works) for the extraction model this keeps.
-- [Upgrading to v2](/docs/styling/upgrading-to-v2) for what else changes in v2.
+- [How Panda works](/docs/styling/how-panda-works) for the extraction model this runs.
+- [Upgrading to v2](/docs/styling/upgrading-to-v2) for what else changes.
