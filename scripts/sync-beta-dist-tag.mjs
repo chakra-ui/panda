@@ -3,9 +3,11 @@ import { readdirSync, readFileSync } from 'node:fs'
 
 const apply = process.argv.includes('--apply')
 
+// Nothing to sync outside pre mode, and `changeset pre exit` must not fail the release.
 const preState = readJson('.changeset/pre.json')
 if (preState?.mode !== 'pre') {
-  throw new Error('Not in changesets pre mode. This script only syncs the prerelease dist-tag.')
+  console.log('Not in changesets pre mode; no prerelease dist-tag to sync.')
+  process.exit(0)
 }
 const tag = preState.tag
 
