@@ -20,13 +20,32 @@ Here are some similarities between the two:
 
 Here's where they differ.
 
-## Performance
+## Type safety
 
-Unlike a migration from Theme UI or Chakra, this isn't a runtime-vs-static story, Tailwind already extracts to
-static CSS at build time, the same as Panda. The real difference is in what's checked before that extraction runs:
-Tailwind's utilities are class name strings your editor can't type-check, an unknown or misspelled class is just a
-no-op. Panda's utilities are object keys and token values, so an unknown property or an invalid token is a
-TypeScript error at the call site, before you ever run a build.
+This is the sharpest difference between the two, and it isn't about runtime cost, both tools extract to static CSS at
+build time. It's about what's checked before that extraction runs.
+
+Tailwind styles are class-name strings. Your editor can't check them, so a misspelled or unknown class is a silent
+no-op, the style just doesn't apply and nothing warns you. As a project grows, that's how you get class-name soup: long
+`class="..."` strings no one can safely refactor, variants copy-pasted across files, and dead classes that never did
+anything.
+
+Panda styles are objects. Properties are typed keys and values draw from your typed tokens, so a mistyped property is a
+TypeScript error at the call site, before you run a build. Autocomplete offers your real tokens and recipe variants as
+you type.
+
+```jsx
+import { css } from '../styled-system/css'
+
+// ❌ Tailwind: a mistyped class is a silent no-op
+;<div class="bg-red-500 aligns-center" />
+
+// ✅ Panda: a mistyped property won't type-check
+;<div className={css({ bg: 'red.500', aligns: 'center' })} /> // 'aligns' does not exist
+```
+
+Turn on [`strictTokens`](/docs/styling/writing-styles) to reject raw values too, so a color has to be a token, not a
+one-off like `#f00`.
 
 ## Theming
 
