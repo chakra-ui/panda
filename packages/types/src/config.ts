@@ -355,6 +355,12 @@ export interface OptimizeOptions {
    * Off by default. Namespace / side-effect imports still hydrate everything.
    */
   treeshakeDesignSystem?: boolean
+  /**
+   * Also seed `@property` registrations as plain declarations, for engines that ignore
+   * `@property` (Safari < 16.4, Firefox < 128) and would otherwise drop any declaration
+   * reading an unregistered variable. Off by default — modern engines don't need it.
+   */
+  propertyFallback?: boolean
 }
 
 interface CodegenOptions {
