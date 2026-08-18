@@ -1,11 +1,13 @@
 ---
-title: Editor & IDE Tooling
-description: Preset-aware completions, hover, and diagnostics while editing panda.config.ts and your styles, planned, not yet shipped.
+title: Editor & IDE tooling
+description: Preset-aware completions, hover, and diagnostics while editing panda.config.ts and your styles. Experimental in the v2 beta.
 ---
 
-> **This page describes a feature that isn't available yet.** It's part of the v2 rewrite covered in
-> [Upgrading to v2](/docs/styling/upgrading-to-v2), still marked as proposed internally, so treat the details below
-> as directional.
+<Callout type="warning">
+  These packages ship on the v2 beta (`@pandacss/typescript-plugin`, `@pandacss/language-server`) but are experimental.
+  Coverage is still landing, so treat the feature list below as direction. Part of the rewrite in
+  [Upgrading to v2](/docs/styling/upgrading-to-v2).
+</Callout>
 
 ## The problem it's meant to solve
 
@@ -17,8 +19,7 @@ edit time, which needs an actual language service, not just better generated typ
 
 ## Two thin transports over one core
 
-The plan is one shared core, exposed to editors two different ways depending on what the user's TypeScript setup can
-support:
+One shared core, exposed to editors two ways depending on what the user's TypeScript setup can support:
 
 - **`@pandacss/typescript-plugin`**: a classic `tsserver` plugin, the same mechanism `typescript-styled-plugin` and
   early Vue/Angular tooling used. Works today in any editor built on classic `tsserver` (VS Code, and most others),
@@ -27,8 +28,8 @@ support:
   classic `tsserver`, including TypeScript's newer Go-based compiler (`tsgo`, codename Corsa), which doesn't support
   the classic in-process plugin API at all.
 
-Both are planned to ship together rather than one first and the other later, since betting entirely on the classic
-plugin API is risky while TypeScript's own team is consolidating around LSP for the newer compiler. Either way, the
+Both ship together rather than one first and the other later, since betting entirely on the classic plugin API is risky
+while TypeScript's own team is consolidating around LSP for the newer compiler. Either way, the
 actual token/recipe resolution logic lives once in a shared `@pandacss/compiler/tooling` core, both transports are
 thin wrappers over it, and it's the same core the [ESLint & OXLint Plugin](/docs/reference/eslint-oxlint-plugin) is
 expected to use for its project metadata too.
