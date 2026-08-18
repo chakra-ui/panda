@@ -7,6 +7,7 @@
   "scripts": {
     "prepare": "husky && pnpm build:fast",
     "dev": "pnpm --parallel --filter=./packages/** dev",
+    "build:playground": "pnpm --filter playground build",
     "build:fast": "pnpm -r --parallel --filter=./packages/** build:fast",
     "build": "pnpm --filter @pandacss/compiler-wasm build && pnpm -r --filter=./packages/** --filter=!@pandacss/compiler-wasm build",
     "bench:rust-spike": "pnpm --filter=./bench baseline",

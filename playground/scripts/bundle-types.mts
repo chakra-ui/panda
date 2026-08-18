@@ -13,9 +13,17 @@ const dtsFiles = {
 }
 
 console.log('Generating dts bundles...')
-const bundledDts = generateDtsBundle([{ filePath: path.join(__dirname, 'panda-types.ts') }], {
-  preferredConfigPath: tsconfigPath,
-})
+const bundledDts = generateDtsBundle(
+  [
+    {
+      filePath: path.join(__dirname, 'panda-types.ts'),
+      // @pandacss/types resolves to a published package, which the generator would
+      // re-export rather than inline. The editor needs the declarations themselves.
+      libraries: { inlinedLibraries: ['@pandacss/types'] },
+    },
+  ],
+  { preferredConfigPath: tsconfigPath },
+)
 
 const outdir = path.join(__dirname, '../src/dts/')
 console.log('Writing dts bundles in', outdir)
