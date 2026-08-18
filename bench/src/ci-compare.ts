@@ -15,18 +15,21 @@ function read(path: string): Result {
   }
 }
 
-function fmt(n: number): string {
-  return Number.isInteger(n) ? n.toLocaleString('en-US') : n.toFixed(3)
-}
+const PERCENT = 100
+const PCT_DECIMALS = 1
+const NOISE_PCT = 2
+const FMT_DECIMALS = 3
 
-const NOISE = 2
+function fmt(n: number): string {
+  return Number.isInteger(n) ? n.toLocaleString('en-US') : n.toFixed(FMT_DECIMALS)
+}
 
 function change(base: number | undefined, head: number): string {
   if (base === undefined || base === 0) return '🆕 new'
-  const pct = ((head - base) / base) * 100
-  if (Math.abs(pct) < NOISE) return `⚪ ${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`
+  const pct = ((head - base) / base) * PERCENT
+  if (Math.abs(pct) < NOISE_PCT) return `⚪ ${pct >= 0 ? '+' : ''}${pct.toFixed(PCT_DECIMALS)}%`
   const sign = pct > 0 ? '+' : ''
-  return `${pct < 0 ? '🟢' : '🔴'} ${sign}${pct.toFixed(1)}%`
+  return `${pct < 0 ? '🟢' : '🔴'} ${sign}${pct.toFixed(PCT_DECIMALS)}%`
 }
 
 function main() {

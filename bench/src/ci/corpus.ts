@@ -1,4 +1,16 @@
-import { importMap, SPACING_VALUES, SPACING_PROPERTIES, CONTAINERS } from './constants'
+import {
+  importMap,
+  SPACING_VALUES,
+  SPACING_PROPERTIES,
+  CONTAINERS,
+  HUE_RANGE,
+  GAP_MIN,
+  GAP_VARIANTS,
+  ICON_GAP,
+  EM_STEP,
+  CONTAINER_BASE_REM,
+  CONTAINER_STEP_REM,
+} from './constants'
 
 export interface SourceFile {
   path: string
@@ -10,8 +22,9 @@ export function extractionConfig() {
 }
 
 export function genFile(i: number): SourceFile {
-  const hue = i % 360
-  const gap = (i % 8) + 2
+  const hue = i % HUE_RANGE
+  const gap = (i % GAP_VARIANTS) + GAP_MIN
+  const iconSize = gap + ICON_GAP
   return {
     path: `/virtual/comp-${i}.tsx`,
     source: `import { css, cva, sva } from '@panda/css'
@@ -30,7 +43,7 @@ export const card${i} = css({
   _focus: { outline: '2px solid hsl(${hue} 60% 45%)' },
   _active: { transform: 'scale(0.99)' },
   _dark: { color: 'hsl(${hue} 40% 92%)', backgroundColor: 'hsl(${hue} 30% 12%)' },
-  '& svg': { width: '${gap + 8}px', height: '${gap + 8}px' },
+  '& svg': { width: '${iconSize}px', height: '${iconSize}px' },
   '@media (min-width: 768px)': { padding: '24px', fontSize: '16px' },
 })
 
@@ -76,10 +89,13 @@ export const menu${i} = sva({
 
 export function staticCssConfig() {
   const spacingKeys = Array.from({ length: SPACING_VALUES }, (_, i) => String(i))
-  const spacing = Object.fromEntries(spacingKeys.map((key, i) => [key, { value: `${i * 0.25}em` }]))
+  const spacing = Object.fromEntries(spacingKeys.map((key, i) => [key, { value: `${i * EM_STEP}em` }]))
   const names = ['sm', 'md', 'lg', 'xl']
   const containers = Object.fromEntries(
-    Array.from({ length: CONTAINERS }, (_, i) => [names[i] ?? `c${i}`, `${20 + i * 4}rem`]),
+    Array.from({ length: CONTAINERS }, (_, i) => [
+      names[i] ?? `c${i}`,
+      `${CONTAINER_BASE_REM + i * CONTAINER_STEP_REM}rem`,
+    ]),
   )
   const properties = Object.fromEntries(SPACING_PROPERTIES.map((p) => [p, spacingKeys]))
   return {

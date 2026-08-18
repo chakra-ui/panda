@@ -13,6 +13,11 @@ export function median(xs: number[]): number {
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
 }
 
-export const round = (n: number): number => Math.round(n * 1000) / 1000
+const ROUND_DECIMALS = 3
+
+export const round = (n: number): number => {
+  const factor = 10 ** ROUND_DECIMALS
+  return Math.round(n * factor) / factor
+}
 export const bytes = (s: string): number => Buffer.byteLength(s, 'utf8')
 export const gzip = (s: string): number => gzipSync(s).length

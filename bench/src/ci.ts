@@ -1,5 +1,5 @@
 import { writeFileSync } from 'node:fs'
-import { CONTAINERS } from './ci/constants'
+import { CONTAINERS, DEFAULT_FILES, DEFAULT_RUNS } from './ci/constants'
 import { genFile } from './ci/corpus'
 import { benchExtraction, benchStaticCss } from './ci/benchmarks'
 
@@ -10,7 +10,7 @@ interface Args {
 }
 
 function parseArgs(argv: string[]): Args {
-  const args: Args = { out: null, files: 100, runs: 7 }
+  const args: Args = { out: null, files: DEFAULT_FILES, runs: DEFAULT_RUNS }
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i]
     if (arg === '--out' && argv[i + 1]) args.out = argv[++i]
