@@ -1,0 +1,62 @@
+name: Benchmarks comment
+
+on:
+  workflow_run:
+    workflows: ['Benchmarks']
+    types:
+      - completed
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  comment:
+    name: Post benchmark comment
+    runs-on: ubuntu-latest
+    if: >-
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: Download comment payload
+        uses: actions/download-artifact@v4
+        with:
+          name: bench-comment
+          path: bench-comment
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Post comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs')
+            const { owner, repo } = context.repo
+            const sha = context.payload.workflow_run.head_sha
+            const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner,
+              repo,
+              commit_sha: sha,
+            })
+            const pr = prs.find((p) => p.state === 'open')
+            if (!pr) return
+            const issue_number = pr.number
+            const table = fs.readFileSync('bench-comment/table.md', 'utf8')
+            const marker = '<!-- panda-benchmarks -->'
+            const body = [
+              marker,
+              '### 🧪 Compiler benchmarks',
+              '',
+              'The compiler runs on a fixed set of components and this PR is compared against its base.',
+              '',
+              table,
+              '',
+              '<sub>`parse.cold.ms` reads every file once, `emit.ms` turns that into CSS, `css.bytes` is the output size. Median of the runs, no network, same components every time, so a change here is a real change in the engine.</sub>',
+            ].join('\n')
+            const { data: comments } = await github.rest.issues.listComments({ owner, repo, issue_number })
+            const existing = comments.find((c) => c.body && c.body.includes(marker))
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body })
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body })
+            }
