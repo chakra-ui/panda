@@ -1,7 +1,9 @@
+import { AngularLogo } from '@/icons/angular'
 import { AstroLogo } from '@/icons/astro'
 import { EmberLogo } from '@/icons/ember'
 import { GatsbyLogo } from '@/icons/gatsby'
 import { NextjsLogo } from '@/icons/nextjs'
+import { NuxtLogo } from '@/icons/nuxt'
 import { PreactLogo } from '@/icons/preact'
 import { ReactRouterLogo } from '@/icons/react-router'
 import { QwikLogo } from '@/icons/qwik'
@@ -9,7 +11,6 @@ import { RedwoodLogo } from '@/icons/redwood'
 import { RsbuildLogo } from '@/icons/rsbuild'
 import { RemixLogo } from '@/icons/remix'
 import { SolidjsLogo } from '@/icons/solid'
-import { StorybookLogo } from '@/icons/storybook'
 import { SvelteLogo } from '@/icons/svelte'
 import { ViteLogo } from '@/icons/vite'
 import { VueLogo } from '@/icons/vue'
@@ -17,41 +18,37 @@ import { css } from '@/styled-system/css'
 import { grid, square, stack } from '@/styled-system/patterns'
 import Link from 'next/link'
 
+// Ordered most to least popular, so the framework grid surfaces common setups first.
 const logoMap = {
   nextjs: {
     name: 'Next.js',
     href: '/docs/styling/nextjs',
     logo: NextjsLogo
   },
-  gatsby: {
-    name: 'Gatsby',
-    logo: GatsbyLogo,
-    href: '/docs/styling/gatsby'
-  },
-  solid: {
-    name: 'Solid',
-    logo: SolidjsLogo,
-    href: '/docs/styling/solidjs'
-  },
   vite: {
     name: 'Vite',
     logo: ViteLogo,
     href: '/docs/styling/vite'
   },
-  preact: {
-    name: 'Preact',
-    logo: PreactLogo,
-    href: '/docs/styling/preact'
+  astro: {
+    name: 'Astro',
+    logo: AstroLogo,
+    href: '/docs/styling/astro'
+  },
+  vue: {
+    name: 'Vue',
+    logo: VueLogo,
+    href: '/docs/styling/vue'
+  },
+  nuxt: {
+    name: 'Nuxt',
+    logo: NuxtLogo,
+    href: '/docs/styling/nuxt'
   },
   svelte: {
     name: 'Svelte',
     logo: SvelteLogo,
     href: '/docs/styling/svelte'
-  },
-  astro: {
-    name: 'Astro',
-    logo: AstroLogo,
-    href: '/docs/styling/astro'
   },
   remix: {
     name: 'Remix',
@@ -63,35 +60,45 @@ const logoMap = {
     logo: ReactRouterLogo,
     href: '/docs/styling/react-router'
   },
+  angular: {
+    name: 'Angular',
+    logo: AngularLogo,
+    href: '/docs/styling/angular'
+  },
+  gatsby: {
+    name: 'Gatsby',
+    logo: GatsbyLogo,
+    href: '/docs/styling/gatsby'
+  },
+  solid: {
+    name: 'Solid',
+    logo: SolidjsLogo,
+    href: '/docs/styling/solidjs'
+  },
   qwik: {
     name: 'Qwik',
     logo: QwikLogo,
     href: '/docs/styling/qwik'
   },
-  redwood: {
-    name: 'Redwood',
-    logo: RedwoodLogo,
-    href: '/docs/styling/redwood'
+  preact: {
+    name: 'Preact',
+    logo: PreactLogo,
+    href: '/docs/styling/preact'
   },
   rsbuild: {
     name: 'Rsbuild',
     logo: RsbuildLogo,
     href: '/docs/styling/rsbuild'
   },
-  vue: {
-    name: 'Vue',
-    logo: VueLogo,
-    href: '/docs/styling/vue'
-  },
-  storybook: {
-    name: 'Storybook',
-    logo: StorybookLogo,
-    href: '/docs/styling/storybook'
-  },
   ember: {
     name: 'Ember',
     logo: EmberLogo,
     href: '/docs/styling/ember'
+  },
+  redwood: {
+    name: 'Redwood',
+    logo: RedwoodLogo,
+    href: '/docs/styling/redwood'
   }
 }
 

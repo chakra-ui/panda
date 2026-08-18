@@ -100,12 +100,13 @@ export const docsTabs: TabItem[] = [
       {
         title: 'Get Started',
         items: [
-          { title: 'Getting Started', url: 'getting-started' },
-          { title: 'Why Panda?', url: 'why-panda' },
+          { title: 'Welcome to Panda', url: 'getting-started' },
+          { title: 'Installation', url: 'installation' },
           { title: 'Thinking in Panda', url: 'thinking-in-panda' },
           { title: 'FAQs', url: 'faq' },
           { title: 'Browser Support', url: 'browser-support' },
           { title: 'How Panda works', url: 'how-panda-works' },
+          { title: 'Performance & Optimization', url: 'performance-optimization' },
           { title: 'Upgrading to v2', url: 'upgrading-to-v2' },
           { title: 'The Compiler Engine', url: 'compiler-engine' },
           {
@@ -130,30 +131,6 @@ export const docsTabs: TabItem[] = [
         ]
       },
       {
-        title: 'Installation',
-        items: [
-          { title: 'CLI', url: 'cli' },
-          { title: 'PostCSS', url: 'postcss' },
-          { title: 'Astro', url: 'astro' },
-          { title: 'Angular', url: 'angular' },
-          { title: 'Next.js', url: 'nextjs' },
-          { title: 'Remix', url: 'remix' },
-          { title: 'React Router', url: 'react-router' },
-          { title: 'Gatsby', url: 'gatsby' },
-          { title: 'Ember', url: 'ember' },
-          { title: 'Redwood', url: 'redwood' },
-          { title: 'Rsbuild', url: 'rsbuild' },
-          { title: 'Qwik', url: 'qwik' },
-          { title: 'Vite', url: 'vite' },
-          { title: 'Vue', url: 'vue' },
-          { title: 'Nuxt', url: 'nuxt' },
-          { title: 'Preact', url: 'preact' },
-          { title: 'Solid.js', url: 'solidjs' },
-          { title: 'Svelte', url: 'svelte' },
-          { title: 'Storybook', url: 'storybook' }
-        ]
-      },
-      {
         title: 'Core Concepts',
         items: [
           { title: 'Writing Styles', url: 'writing-styles' },
@@ -163,11 +140,8 @@ export const docsTabs: TabItem[] = [
           { title: 'Global Styles', url: 'global-styles' },
           { title: 'Cascade Layers', url: 'cascade-layers' },
           { title: 'Dynamic Styles', url: 'dynamic-styling' },
-          { title: 'Isolated Declarations', url: 'isolated-declarations' },
           { title: 'Virtual Color', url: 'virtual-color' },
-          { title: 'Color opacity modifier', url: 'color-opacity-modifier' },
-          { title: 'View Transition', url: 'view-transition', tag: 'new' },
-          { title: 'Performance & Optimization', url: 'performance-optimization' }
+          { title: 'Color opacity modifier', url: 'color-opacity-modifier' }
         ]
       },
       {
@@ -180,7 +154,8 @@ export const docsTabs: TabItem[] = [
           { title: 'JSX Style Props', url: 'style-props' },
           { title: 'JSX Style Context', url: 'jsx-style-context' },
           { title: 'Styled System', url: 'styled-system' },
-          { title: 'The extend keyword', url: 'extend' }
+          { title: 'The extend keyword', url: 'extend' },
+          { title: 'View Transition', url: 'view-transition', tag: 'new' }
         ]
       },
       {
@@ -248,6 +223,7 @@ export const docsTabs: TabItem[] = [
           { title: 'Set up a library package', url: 'setup' },
           { title: 'Wrap headless UI', url: 'wrap-headless-ui' },
           { title: 'forwardProps & the styled factory', url: 'forward-props' },
+          { title: 'Isolated Declarations', url: 'isolated-declarations' },
           { title: 'Ship the styled-system vs the CSS', url: 'ship-styled-system' },
           { title: 'Track usage in wrapped components', url: 'track-usage' },
           { title: 'Troubleshooting', url: 'troubleshooting' }
@@ -350,6 +326,34 @@ export const defaultTabKey = 'styling'
  * live in Styling ▸ Get Started instead, they're product tracking, not
  * community.
  */
+/**
+ * Page urls whose canonical home is the Installation page's tabs (CLI, PostCSS,
+ * Framework Guides, Storybook), even though they aren't listed as their own
+ * sidebar items. The sidebar and breadcrumb use this to keep "Installation"
+ * highlighted/shown instead of the raw page url when viewing one of these.
+ */
+export const installationGuideUrls = [
+  'cli',
+  'postcss',
+  'storybook',
+  'astro',
+  'angular',
+  'nextjs',
+  'remix',
+  'react-router',
+  'gatsby',
+  'ember',
+  'redwood',
+  'rsbuild',
+  'qwik',
+  'vite',
+  'vue',
+  'nuxt',
+  'preact',
+  'solidjs',
+  'svelte'
+]
+
 export const communityLinks: NavItem[] = [
   { title: 'Team', href: '/team' },
   { title: 'Showcase', href: '/showcase' },

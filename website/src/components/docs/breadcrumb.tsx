@@ -1,3 +1,4 @@
+import { installationGuideUrls } from '@/docs.config'
 import { ChevronRightIcon } from '@/icons'
 import { css } from '@/styled-system/css'
 import { HStack } from '@/styled-system/jsx'
@@ -7,7 +8,16 @@ interface Props {
 }
 
 export const Breadcrumb = ({ slug }: Props) => {
-  const parts = slug.split('/')
+  const rawParts = slug.split('/')
+
+  // Framework/CLI/PostCSS/Storybook guides live only behind the Installation
+  // page's tabs, so their breadcrumb should read "Installation" instead of
+  // the raw tab name.
+  const isInstallationGuide =
+    rawParts.length === 2 && installationGuideUrls.includes(rawParts[1])
+  const parts = isInstallationGuide
+    ? ['Installation', rawParts[1]]
+    : rawParts
 
   const breadcrumbs = parts.map((part, index) => ({
     label: part.replace(/-/g, ' '),

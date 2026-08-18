@@ -1,0 +1,196 @@
+---
+title: Isolated declarations
+description: Export components and recipes with variants without bloating your .d.ts files.
+---
+
+Say you export this button, with two variants, colocated right in your component file:
+
+```tsx
+import { styled } from 'styled-system/jsx'
+
+export const Button = styled('button', {
+  base: { px: '4', rounded: 'md' },
+  variants: {
+    visual: {
+      solid: { bg: 'blue.500', color: 'white' },
+      outline: { borderWidth: '1px', borderColor: 'blue.500' }
+    }
+  }
+})
+```
+
+Nothing looks wrong here. But the `.d.ts` TypeScript emits for it looks like this:
+
+```ts
+export declare const Button: {
+  __variants: {
+    visual: {
+      solid: { bg: string; color: string }
+      outline: { borderWidth: string; borderColor: string }
+    }
+  }
+}
+```
+
+Every CSS value from your component, copied into the type. Add ten more variants and the `.d.ts` grows right along with
+them. This page shows why that happens and the one line that stops it.
+
+## Why the CSS ends up in your types
+
+TypeScript has to write down some type for `Button`, and it infers one from the object literal you passed to `styled()`.
+That inferred type has no name. Nothing in your code called it anything, so when TypeScript emits the declaration file,
+it can't reference a name that doesn't exist. It writes out the whole structure instead, CSS values included.
+
+This gets stricter, not just slower, once you turn on
+[`isolatedDeclarations`](https://www.typescriptlang.org/tsconfig/#isolatedDeclarations). That flag requires every
+exported `const` initialized by a function call to carry an explicit type. `styled(...)`, `cva(...)`, and `sva(...)` are
+all function calls, so without an annotation, `isolatedDeclarations` fails the build outright. The question isn't
+whether to add a type. It's whether that type is one you can actually write by hand, and right now it isn't, because the
+real type is anonymous.
+
+## The fix
+
+Keep the object literal exactly as it is. Add one explicit annotation next to the export that names only the variant
+keys, no CSS.
+
+```tsx
+import { styled, type StyledComponent } from 'styled-system/jsx'
+
+export const Button: StyledComponent<'button', { visual?: 'solid' | 'outline' }> = styled('button', {
+  base: { px: '4', rounded: 'md' },
+  variants: {
+    visual: {
+      solid: { bg: 'blue.500', color: 'white' },
+      outline: { borderWidth: '1px', borderColor: 'blue.500' }
+    }
+  }
+})
+```
+
+Now the emitted `.d.ts` is one line:
+
+```ts
+export declare const Button: StyledComponent<'button', { visual?: 'solid' | 'outline' }>
+```
+
+The CSS never leaves your source file. The `as` prop, style props, and `splitVariantProps` all still work exactly like
+before, you've only changed what TypeScript writes down, not what the component does.
+
+The annotation type is different depending on which function you're annotating. Here's each one.
+
+## Annotating `styled`
+
+Use `StyledComponent<Tag, Props>`, shown above. `Tag` is the element name as a string literal, `Props` is an object
+listing each variant name and its allowed values.
+
+## Annotating `cva`
+
+Use `RecipeRuntimeFn<Props>`:
+
+```tsx
+import { cva } from 'styled-system/css'
+import type { RecipeRuntimeFn } from 'styled-system/types'
+
+export const button: RecipeRuntimeFn<{ visual?: 'solid' | 'outline' }> = cva({
+  base: { px: '4' },
+  variants: {
+    visual: {
+      solid: { bg: 'blue.500', color: 'white' },
+      outline: { borderWidth: '1px' }
+    }
+  }
+})
+```
+
+`RecipeRuntimeFn` accepts a second type parameter for the variant map, but it defaults to `object`. Leave it off unless
+some other code reads `button.variantMap` and needs the exact key arrays.
+
+## Annotating `sva`
+
+Use `SlotRecipeRuntimeFn<Slots, Props>`. The slot names come first, as a string union:
+
+```tsx
+import { sva } from 'styled-system/css'
+import type { SlotRecipeRuntimeFn } from 'styled-system/types'
+
+export const button: SlotRecipeRuntimeFn<'root' | 'icon', { visual?: 'solid' | 'outline' }> = sva({
+  slots: ['root', 'icon'],
+  base: { root: { px: '4' }, icon: { w: '4' } },
+  variants: {
+    visual: {
+      solid: { root: { bg: 'blue.500' } },
+      outline: { root: { borderWidth: '1px' } }
+    }
+  }
+})
+```
+
+## One gotcha with boolean variants
+
+Write a variant as `{ true: {...}, false: {...} }` and Panda types it as `boolean`, not the string union
+`'true' | 'false'`. Match that in your annotation:
+
+```tsx
+export const button: RecipeRuntimeFn<{ disabled?: boolean }> = cva({
+  variants: {
+    disabled: {
+      true: { opacity: '0.5' },
+      false: { opacity: '1' }
+    }
+  }
+})
+```
+
+Annotate it as `disabled?: 'true' | 'false'` instead and the types won't match what `cva` actually produces.
+
+## Don't want to write the annotation at all?
+
+If you don't want to write the annotation, move the recipe into your config the recipe in `panda.config.ts` instead of
+inline, and Panda generates a named type for it. No annotation to write, no CSS in any `.d.ts`, ever:
+
+```ts
+// panda.config.ts
+export default defineConfig({
+  theme: {
+    recipes: {
+      button: {
+        className: 'button',
+        base: { px: '4', rounded: 'md' },
+        variants: {
+          visual: {
+            solid: { bg: 'blue.500', color: 'white' },
+            outline: { borderWidth: '1px' }
+          }
+        }
+      }
+    }
+  }
+})
+```
+
+Import the generated props type and build your component against it:
+
+```tsx
+import { button, type ButtonVariantProps } from 'styled-system/recipes'
+
+export interface ButtonProps extends ButtonVariantProps {}
+
+export const Button = (props: ButtonProps) => {
+  const [variants, rest] = button.splitVariantProps(props)
+  return <button className={button(variants)} {...rest} />
+}
+```
+
+`ButtonVariantProps` is a real, named type with zero CSS in it, and it updates the moment you change the recipe. If
+you're starting a new component and don't care about keeping the recipe colocated, this is less work than writing the
+annotation yourself.
+
+## What to watch for
+
+You're typing the variant keys by hand, so nothing forces you to update the annotation when you add or rename a variant.
+Get it wrong and the mismatch won't show up as a type error, `cva` will just silently accept props that don't exist.
+Config recipes don't have this problem, since their type is generated from the same source as the CSS.
+
+A few inline recipes can't get a clean annotation at all: variants built from spreads, computed keys, or conditionals
+don't reduce to a fixed set of keys you can type. If you hit one of those, move it into your config instead of fighting
+the types.
