@@ -19,11 +19,6 @@ overrides:
   emnapi: 1.11.2
   '@emnapi/core': 1.11.2
   '@emnapi/runtime': 1.11.2
-  # One React types version workspace-wide. pnpm hoists a single @types/react into
-  # .pnpm/node_modules, and next / @ark-ui ship no @types/react of their own, so their
-  # .d.ts files resolve React through it. A second copy makes that pick order-dependent.
-  '@types/react': 19.2.7
-  '@types/react-dom': 19.2.3
 allowBuilds:
   '@parcel/watcher': true
   '@prisma/client': true
@@ -33,8 +28,8 @@ allowBuilds:
   core-js-pure: true
   es5-ext: true
   esbuild: true
-  gatsby: true
-  gatsby-cli: true
+  gatsby: set this to true or false
+  gatsby-cli: set this to true or false
   lmdb: true
   msgpackr-extract: true
   prisma: true
