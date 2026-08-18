@@ -47,18 +47,23 @@ function config() {
 
 const LAYERS = ['reset', 'base', 'tokens', 'recipes', 'utilities']
 
-// A realistic-ish component: static css, conditions, a media query, and a
-// recipe with variants. Raw CSS properties so no preset utilities are needed.
+// Each file emits three components that exercise different paths: a `css` card
+// (static styles, four conditions, a responsive media query, a nested
+// selector), a `cva` button (two variant axes plus compound variants), and an
+// `sva` menu (a slot recipe with a size variant). Raw CSS properties so no
+// preset utilities are needed. Content varies by index so classes don't all
+// collapse to the same atoms.
 function genFile(i: number): { path: string; source: string } {
   const hue = i % 360
+  const gap = (i % 8) + 2
   return {
     path: `/virtual/comp-${i}.tsx`,
-    source: `import { css, cva } from '@panda/css'
+    source: `import { css, cva, sva } from '@panda/css'
 
 export const card${i} = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '${(i % 8) + 2}px',
+  gap: '${gap}px',
   padding: '16px',
   color: 'hsl(${hue} 40% 20%)',
   backgroundColor: 'hsl(${hue} 40% 96%)',
@@ -66,6 +71,10 @@ export const card${i} = css({
   fontSize: '14px',
   fontWeight: 600,
   _hover: { backgroundColor: 'hsl(${hue} 40% 92%)' },
+  _focus: { outline: '2px solid hsl(${hue} 60% 45%)' },
+  _active: { transform: 'scale(0.99)' },
+  _dark: { color: 'hsl(${hue} 40% 92%)', backgroundColor: 'hsl(${hue} 30% 12%)' },
+  '& svg': { width: '${gap + 8}px', height: '${gap + 8}px' },
   '@media (min-width: 768px)': { padding: '24px', fontSize: '16px' },
 })
 
@@ -80,9 +89,30 @@ export const button${i} = cva({
     tone: {
       solid: { color: '#fff', backgroundColor: 'hsl(${hue} 60% 45%)' },
       ghost: { color: 'hsl(${hue} 60% 45%)', backgroundColor: 'transparent' },
+      outline: { color: 'hsl(${hue} 60% 45%)', border: '1px solid hsl(${hue} 60% 45%)' },
     },
   },
+  compoundVariants: [
+    { size: 'lg', tone: 'solid', css: { boxShadow: '0 1px 2px hsl(${hue} 60% 30%)' } },
+    { size: 'sm', tone: 'ghost', css: { opacity: 0.9 } },
+  ],
   defaultVariants: { size: 'md', tone: 'solid' },
+})
+
+export const menu${i} = sva({
+  slots: ['root', 'item', 'label'],
+  base: {
+    root: { display: 'flex', flexDirection: 'column', gap: '${gap}px', padding: '8px' },
+    item: { display: 'flex', alignItems: 'center', padding: '6px', borderRadius: '4px', _hover: { backgroundColor: 'hsl(${hue} 40% 94%)' } },
+    label: { fontSize: '12px', color: 'hsl(${hue} 20% 40%)' },
+  },
+  variants: {
+    size: {
+      sm: { item: { padding: '4px', fontSize: '12px' }, label: { fontSize: '10px' } },
+      lg: { item: { padding: '10px', fontSize: '16px' }, label: { fontSize: '14px' } },
+    },
+  },
+  defaultVariants: { size: 'sm' },
 })
 `,
   }
