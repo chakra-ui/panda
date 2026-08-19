@@ -580,15 +580,16 @@ const styles: SystemStyleObject = {
 
 ## Property conflicts
 
-When you combine shorthand and longhand properties, Panda will resolve the styles in a predictable way. The shorthand
-property will take precedence over the longhand property.
+When you combine shorthand and longhand properties, Panda resolves them predictably: the longhand wins, whatever order
+you write them in. Panda sorts atomic rules by how broad each property is, so the narrower longhand emits last and
+overrides the shorthand.
 
 ```jsx
 import { css } from '../styled-system/css'
 
 const styles = css({
-  paddingTop: '20px'
-  padding: "10px",
+  paddingTop: '20px',
+  padding: '10px'
 })
 ```
 
@@ -605,6 +606,8 @@ The styles generated at build time will look like this:
   }
 }
 ```
+
+`.pt_20px` emits after `.p_10px`, so the element gets `10px` padding on three sides and `20px` on top.
 
 ## Global vars
 
