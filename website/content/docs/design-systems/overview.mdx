@@ -5,13 +5,18 @@ description: How to build and ship a component library on Panda, from setup thro
 
 A component library ships finished, styled components: a `<Button>`, a `<Card>`, a `<Tabs>`, ready to drop into any
 project that installs it. That's different from shipping a design system as a **preset**, a pure config package with
-no components at all, just the tokens and recipes another team builds their own components from. If you're not sure
-which one you're building, the difference is what you're shipping: compiled components mean you're on this page;
-pure `definePreset` config means you want [Building a design system](/docs/design-systems/preset-overview). If you
-own the apps and want one package plus `designSystem`, use
-[Build a design system](/docs/design-systems/building-a-design-system).
-Mature libraries often ship both, a components package built on top of their own preset, so it's not an
-either-or choice, just a question of which one you need first.
+no components at all, just the tokens and recipes another team builds their own components from.
+
+Not sure which one you're building? Go by what you're shipping:
+
+- Compiled, styled components: you're in the right place, keep reading.
+- Pure `definePreset` config, no components: see the
+  [design system (preset) overview](/docs/design-systems/preset-overview) instead.
+- You own the apps too, and want one package plus the `designSystem` config field: see
+  [Build a preset](/docs/design-systems/building-a-design-system).
+
+Mature libraries often ship both, a components package built on top of their own preset, so this isn't an either-or
+choice, just a question of which one you need first.
 
 The rest of this section walks through building a component library on Panda, in the order you'll likely need it:
 

@@ -1,18 +1,23 @@
 ---
 title: Config Functions
-description: Functions to expose types for your config.
+description: The define* helpers for authoring config, recipes, tokens, and themes in their own files with full type checking.
 ---
 
-Config functions help define and provide type information for your configuration. These utilities enhance code
-readability, enforce consistency, and ensure robust type checking.
+Every function on this page does exactly one thing at runtime: return its argument unchanged. `defineRecipe` is
+literally `(config) => config`. So why call them at all?
 
-## Config Creators
+Because of what they do at the type level. Write a recipe as a plain object inside `defineConfig({...})` and
+TypeScript infers its type from context, no wrapper needed. Move that same object into its own file,
+`recipes/button.ts`, and there's no longer any context to infer from, it's just an object literal with whatever type
+you happen to give it. Wrapping it in `defineRecipe(...)` restores that context: the function's parameter type
+constrains what you write, so your editor autocompletes and flags errors while you type, in a file that never
+imports `defineConfig` at all.
 
-To help defining config in a type-safe way, you can use the following helpers:
+## Style and config helpers
 
 ### `defineConfig`
 
-Function for [config](/docs/reference/config) definitions.
+Wraps the [config](/docs/reference/config) object itself.
 
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -25,7 +30,7 @@ export default defineConfig({
 
 ### `defineRecipe`
 
-Function for [recipe](/docs/styling/recipes#config-recipe) definitions.
+For a [config recipe](/docs/styling/recipes#config-recipe) authored outside `defineConfig`.
 
 ```ts
 import { defineRecipe } from '@pandacss/dev'
@@ -51,7 +56,7 @@ export const buttonRecipe = defineRecipe({
 
 ### `defineSlotRecipe`
 
-Function for [slot recipe](/docs/styling/slot-recipes#config-slot-recipe) definitions.
+Same idea, for a [slot recipe](/docs/styling/slot-recipes#config-slot-recipe).
 
 ```ts
 import { defineSlotRecipe } from '@pandacss/dev'
@@ -85,15 +90,12 @@ export const checkboxRecipe = defineSlotRecipe({
 
 ### `defineParts`
 
-It can be useful when you want to have the equivalent of a slot recipe without needing to split the class names bindings
-and instead just having a className that handles children on 1 DOM element.
-
-It pairs well with [ZagJs](https://zagjs.com/) and [Ark-UI](https://ark-ui.com/)
-
-Let's refactor the previous example to use parts instead of slots:
+For when you want one class on one DOM element to carry every part's styles, instead of a slot recipe's separate
+class per part. Pass a map of part name to selector, and you get back a function that turns per-part style objects
+into one combined style object keyed by those selectors:
 
 ```ts
-import { defineParts, definetRecipe } from '@pandacss/dev'
+import { defineParts, defineRecipe } from '@pandacss/dev'
 
 const parts = defineParts({
   root: { selector: '& [data-part="root"]' },
@@ -127,9 +129,12 @@ export const checkboxRecipe = defineRecipe({
 })
 ```
 
+This is the shape [Zag.js](https://zagjs.com/) and [Ark UI](https://ark-ui.com/) render to, `data-part` attributes on
+a single root, rather than Panda's own slot convention.
+
 ### `definePattern`
 
-Function for [pattern](/docs/design-systems/patterns) definitions.
+For a [pattern](/docs/design-systems/patterns) authored outside `defineConfig`.
 
 ```ts
 import { definePattern } from '@pandacss/dev'
@@ -146,7 +151,7 @@ const visuallyHidden = definePattern({
 
 ### `definePreset`
 
-Function for [preset](/docs/design-systems/presets#creating-a-preset) definitions.
+For a [preset](/docs/design-systems/presets#creating-a-preset).
 
 ```ts
 import { definePreset } from '@pandacss/dev'
@@ -164,7 +169,7 @@ export const pandaPreset = definePreset({
 
 ### `definePlugin`
 
-Function for [plugin](/docs/reference/config#plugins) definitions.
+For a [plugin](/docs/design-systems/hooks#sharing-a-hook), the object that carries a shareable `hooks` map.
 
 ```ts
 import { definePlugin } from '@pandacss/dev'
@@ -181,7 +186,7 @@ export const plugin = definePlugin({
 
 ### `defineKeyframes`
 
-Function for [keyframes](/docs/theming/theme#keyframes) definitions.
+For [`@keyframes`](/docs/theming/theme#keyframes) authored outside `defineConfig`.
 
 ```ts
 import { defineKeyframes } from '@pandacss/dev'
@@ -196,7 +201,7 @@ export const keyframes = defineKeyframes({
 
 ### `defineGlobalStyles`
 
-Function for [global styles](/docs/styling/writing-styles#global-styles) definitions.
+For [global styles](/docs/styling/global-styles) authored outside `defineConfig`.
 
 ```ts
 import { defineGlobalStyles } from '@pandacss/dev'
@@ -211,7 +216,7 @@ const globalCss = defineGlobalStyles({
 
 ### `defineUtility`
 
-Function for [utility](/docs/design-systems/utilities) definitions.
+For a custom [utility](/docs/design-systems/utilities) authored outside `defineConfig`.
 
 ```ts
 import { defineUtility } from '@pandacss/dev'
@@ -225,55 +230,10 @@ export const br = defineUtility({
 })
 ```
 
-### `defineTextStyles`
-
-Function for [text styles](/docs/theming/text-styles) definitions.
-
-```ts
-import { defineTextStyles } from '@pandacss/dev'
-
-export const textStyles = defineTextStyles({
-  body: {
-    description: 'The body text style - used in paragraphs',
-    value: {
-      fontFamily: 'Inter',
-      fontWeight: '500',
-      fontSize: '16px',
-      lineHeight: '24',
-      letterSpacing: '0',
-      textDecoration: 'None',
-      textTransform: 'None'
-    }
-  }
-})
-```
-
-### `defineLayerStyles`
-
-Function for [layer styles](/docs/theming/layer-styles) definitions.
-
-```ts
-import { defineLayerStyles } from '@pandacss/dev'
-
-const layerStyles = defineLayerStyles({
-  container: {
-    description: 'container styles',
-    value: {
-      background: 'gray.50',
-      border: '2px solid',
-      borderColor: 'gray.500'
-    }
-  }
-})
-```
-
 ### `defineStyles`
 
-Function for style definitions.
-
-This comes in handy when you want to define reusable styles in the config.
-
-E.g. a set of styles to be used in multiple variants within a [recipe](/docs/styling/recipes#config-recipe).
+For a chunk of `SystemStyleObject` you want to reuse across variants, spread it into each one instead of repeating
+the properties:
 
 ```ts {3, 14, 18} filename="recipes/button.ts"
 import { defineRecipe, defineStyles } from '@pandacss/dev'
@@ -301,9 +261,52 @@ export const buttonRecipe = defineRecipe({
 })
 ```
 
-## Token Creators
+## Composite style helpers
 
-To help defining tokens in a type-safe way, you can use the following helpers:
+Text styles, layer styles, and animation styles follow the same pattern as the helpers above, a typed wrapper for
+authoring them outside `defineConfig`. Each has its own full page, since the value objects have more shape to them
+than a plain style object:
+
+- [`defineTextStyles`](/docs/theming/text-styles)
+- [`defineLayerStyles`](/docs/theming/layer-styles)
+- [`defineAnimationStyles`](/docs/theming/animation-styles)
+
+## Multi-brand theming helpers
+
+`defineThemeVariant` wraps a single theme variant, the same `{ tokens, semanticTokens }` shape used for
+[multi-theme tokens](/docs/theming/multiple-themes):
+
+```ts
+import { defineThemeVariant } from '@pandacss/dev'
+
+export const darkTheme = defineThemeVariant({
+  tokens: {
+    colors: { bg: { value: '{colors.gray.900}' } }
+  }
+})
+```
+
+`defineThemeContract` goes further: define the token shape every theme must implement once, and it returns a checked
+version of `defineThemeVariant` that rejects a theme missing one of those tokens. See
+[Theme contract](/docs/theming/multiple-themes#theme-contract) for the full example.
+
+### `defineGlobalFontface`
+
+For [`globalFontface`](/docs/theming/fonts#global-font-face) authored outside `defineConfig`:
+
+```ts
+import { defineGlobalFontface } from '@pandacss/dev'
+
+export const fonts = defineGlobalFontface({
+  Inter: {
+    src: 'url(/fonts/inter.woff2) format("woff2")',
+    fontWeight: 400,
+    fontStyle: 'normal'
+  }
+})
+```
+
+## Token helpers
 
 ### `defineTokens`
 
@@ -319,7 +322,8 @@ const theme = {
 }
 ```
 
-You can also use this function to define tokens in a separate file:
+Scope it to one token category when you're authoring that category in its own file, `defineTokens.colors(...)` type-checks
+against just the `colors` shape instead of the full token tree:
 
 ```ts filename="tokens/colors.ts"
 import { defineTokens } from '@pandacss/dev'
@@ -330,6 +334,8 @@ export const colors = defineTokens.colors({
 ```
 
 ### `defineSemanticTokens`
+
+Same idea, for tokens whose value depends on a condition like color mode:
 
 ```ts
 import { defineSemanticTokens } from '@pandacss/dev'
@@ -344,8 +350,6 @@ const theme = {
   })
 }
 ```
-
-You can also use this function to define tokens in a separate file:
 
 ```ts filename="tokens/colors.semantic.ts"
 import { defineSemanticTokens } from '@pandacss/dev'

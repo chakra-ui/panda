@@ -1,30 +1,30 @@
 ---
-title: Customizing Patterns
-description:
-  Panda provides the ability to customize the built-in patterns, as well as creating your own custom patterns. This is
-  useful to create your own layout pattern abstractions that can be used in your application.
+title: Patterns
+description: Customize a built-in layout pattern, or define your own reusable layout abstraction.
 ---
 
-Panda allows you to customize built-in patterns and create custom patterns for reusable layout abstractions.
+Patterns are layout helpers like `stack`, `flex`, and `grid`, functions that return a style object instead of you
+writing one by hand. This page covers customizing the built-in ones and writing your own.
 
-A pattern accepts the following parameters:
+A pattern config takes:
 
-- `description` - The description of the pattern.
-- `properties` - The list of properties that the pattern accepts.
-- `defaultValues` - The default values for the properties. This is useful when you want to provide a default value for a
-  property.
-- `transform` - The function that accepts the properties and returns a css object.
-- `jsx` - The name of the JSX component that will be generated (when `jsxFramework` is set). Defaults to the pascal-case
-  version of the pattern name.
-- `jsxElement` - The actual JSX element that will be rendered (when `jsxFramework` is set). Defaults to `div`.
-- `blocklist` - The list of properties that are not allowed to be used in the pattern. Can be used to ensure strict
-  typings when using the pattern.
-- `strict` - Whether to only generate types for the specified properties. This will disallow css properties.
+- `description`: shown in the generated JSDoc.
+- `properties`: the props the pattern accepts, and their type.
+- `defaultValues`: what a prop is when the caller omits it. Either a plain object, or a function of the other props,
+  for defaults that depend on each other.
+- `transform`: takes the resolved props (plus a small set of helpers) and returns the style object to emit.
+- `jsxName`: the name of the generated JSX component. Defaults to the pascal-case of the pattern name.
+- `jsx`: which JSX tag names count as a usage of this pattern for extraction, an array of strings or regexes. This is
+  a different thing from `jsxName`: it's about recognizing usage, not generating a component.
+- `jsxElement`: the actual DOM element the generated component renders. Defaults to `'div'`.
+- `blocklist`: CSS properties the pattern rejects, enforced at the type level. Marked experimental in the type
+  definitions, expect this one to still move.
+- `strict`: only type the properties you listed, nothing else. With `strict: true`, arbitrary CSS properties won't
+  type-check on this pattern.
 
-## Creating a Pattern
+## Creating a pattern
 
-To create a pattern, you can use the `patterns` property in the config. Let's say we want to create a "Scrollable"
-pattern that applies preset styles to a container that allows for scrolling.
+Say you want a `scrollable` pattern, a container with a fixed scroll direction and an optional hidden scrollbar:
 
 ```js
 const config = {
@@ -37,13 +37,10 @@ const config = {
           hideScrollbar: true
         },
         properties: {
-          // The direction of the scroll
           direction: { type: 'enum', value: ['horizontal', 'vertical'] },
-          // Whether to hide the scrollbar
           hideScrollbar: { type: 'boolean' }
         },
-        // disallow the `overflow` property (in TypeScript)
-        blocklist: ['overflow'],
+        blocklist: ['overflow'], // reject `overflow` at the type level, since this pattern sets it
         transform(props) {
           const { direction, hideScrollbar, ...rest } = props
           return {
@@ -64,7 +61,16 @@ const config = {
 }
 ```
 
-Then you can run the following command to generate the pattern JS code:
+`transform` also receives a second argument with a few helpers (`map`, `isCssUnit`, `isCssVar`, `isCssFunction`) for
+patterns whose props need to branch on what kind of value they got:
+
+```js
+transform(props, { isCssVar }) {
+  // isCssVar(props.gap) is true for something like 'var(--my-gap)'
+}
+```
+
+Run codegen so the pattern function and its types exist:
 
 <Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   {/* <!-- prettier-ignore-start --> */}
@@ -91,8 +97,6 @@ Then you can run the following command to generate the pattern JS code:
   {/* <!-- prettier-ignore-end --> */}
 </Tabs>
 
-Now you can import the pattern and use it in your application:
-
 ```js
 import { scrollable } from '../styled-system/patterns'
 
@@ -105,10 +109,10 @@ const App = () => {
 }
 ```
 
-## Customizing Built-in Patterns
+## Customizing a built-in pattern
 
-You can extend the [default patterns](/docs/styling/patterns#predefined-patterns) by using the `patterns.extend`
-property in the config.
+Extend a [default pattern](/docs/styling/patterns#predefined-patterns) the same way, under `patterns.extend`. Here's
+`flex` narrowed to two directions, with a second component name recognized as a usage of it:
 
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -116,12 +120,10 @@ import { defineConfig } from '@pandacss/dev'
 export default defineConfig({
   patterns: {
     extend: {
-      // Extend the default `flex` pattern
       flex: {
         properties: {
-          // only allow row and column
           direction: { type: 'enum', value: ['row', 'column'] },
-          jsx: ['Flex', 'CustomFlex'] // 👈 match the `CustomFlex` component to this pattern
+          jsx: ['Flex', 'CustomFlex'] // extraction now also matches <CustomFlex />
         }
       }
     }
@@ -129,13 +131,13 @@ export default defineConfig({
 })
 ```
 
-### Changing pattern defaults
+### Changing a pattern's defaults
 
-Use `defaultValues` in `patterns.extend` to change what a built-in pattern applies when you omit a prop. The shape is
-the same for every pattern; only the pattern name and keys change.
+`defaultValues` in `patterns.extend` changes what a built-in pattern applies when a prop is omitted. Same shape for
+every pattern, only the pattern name and keys change.
 
-For example, `@pandacss/preset-base` sets `gap: '8px'` on [`stack`](/docs/styling/patterns#stack). To default to a
-spacing token instead:
+`@pandacss/preset-base` sets `gap: '8px'` on [`stack`](/docs/styling/patterns#stack). To default to a spacing token
+instead:
 
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -153,12 +155,12 @@ export default defineConfig({
 })
 ```
 
-`<Stack />` and `stack({})` now use spacing token `2`. Pass `gap` on the component or in the function call to override.
+`<Stack />` and `stack({})` now default to spacing token `2`. A `gap` passed at the call site still overrides it.
 
-Values can be token keys (`'2'`) or literals (`'12px'`). `stack`, `hstack`, and `vstack` are separate patterns, so override
-each if you want the same default gap everywhere.
+Values can be a token key (`'2'`) or a raw literal (`'12px'`). `stack`, `hstack`, and `vstack` are separate patterns
+with their own `defaultValues`, so override each one if you want the same default gap everywhere.
 
-Then you can run the following command to update the pattern JS code:
+Re-run codegen after changing defaults, same as any other config change:
 
 <Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   {/* <!-- prettier-ignore-start --> */}
@@ -185,7 +187,7 @@ Then you can run the following command to update the pattern JS code:
   {/* <!-- prettier-ignore-end --> */}
 </Tabs>
 
-## Minimal setup
+## Starting from zero
 
-If you want to use Panda with the bare minimum, without any of the defaults, you can read more about it
-[here](/docs/design-systems/minimal-setup)
+Everything here assumes you're extending Panda's defaults with `patterns.extend`. For no built-in patterns at all,
+see [minimal setup](/docs/design-systems/minimal-setup).

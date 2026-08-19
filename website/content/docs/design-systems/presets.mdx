@@ -1,25 +1,24 @@
 ---
 title: Presets
-description: Creating your own reusable preset for utilities and theme
+description: Package your tokens, theme, and utilities as a preset other projects can install.
 ---
 
-Any configuration you add in your own `panda.config.js` file is smartly merged with the
-[presets you list](#which-panda-presets-will-be-included), allowing you to override or extend specific parts of the
-configuration.
+A preset is a Panda config packaged for reuse. List one in `presets`, and Panda merges it into your own config before
+your own settings apply.
 
 ## When to use a preset
 
-Use a preset when you want to share tokens, theme, utilities, patterns, or recipes across projects:
+Reach for a preset when tokens, theme, utilities, patterns, or recipes need to exist in more than one place:
 
-- **Design system package**: one npm package for your tokens and theme
-- **Multiple apps**: the same colors, spacing, and breakpoints everywhere
-- **Component libraries**: consumers add your preset in `panda.config.ts`
-  ([component library guide](/docs/design-systems/overview))
+- **A design system package.** One npm package that owns your tokens and theme.
+- **Multiple apps, one look.** The same colors, spacing, and breakpoints everywhere, defined once.
+- **A component library.** Consumers add your preset to their own `panda.config.ts`. See the
+  [component library guide](/docs/design-systems/overview).
 
-If the app does not use Panda, ship static CSS instead. See the
-[component library guide](/docs/design-systems/overview) for other options.
+If the consuming app doesn't use Panda at all, a preset can't help, ship static CSS instead. The
+[component library guide](/docs/design-systems/overview) covers that path too.
 
-You can specify a preset in your `panda.config.js` file by using the `presets` option:
+List a preset by package name:
 
 ```js
 import { defineConfig } from '@pandacss/dev'
@@ -31,10 +30,7 @@ export default defineConfig({
 
 ## Creating a preset
 
-Presets are also valid Panda configuration objects, taking a similar shape to the configuration you would add in your
-`panda.config.ts` file.
-
-> **Note:** Every preset must have a unique name.
+A preset is a valid Panda config object, wrapped in `definePreset` for the type inference. It needs a unique `name`:
 
 ```js
 // my-preset.js
@@ -56,7 +52,7 @@ export default definePreset({
 })
 ```
 
-You can then use this preset in your `panda.config.ts` file:
+Then list it like any other preset:
 
 ```js
 // panda.config.ts
@@ -68,10 +64,7 @@ export default defineConfig({
 })
 ```
 
-## End-to-end example
-
-This walks through publishing a preset and using it in an app. For library build details, see
-[Ship the styled-system vs the CSS](/docs/design-systems/ship-styled-system).
+## End to end: publish a preset, use it in an app
 
 <Steps>
 
@@ -94,7 +87,7 @@ export const acmePreset = definePreset({
 })
 ```
 
-### Build and publish
+### Build and publish it
 
 ```json filename="@acme/preset/package.json"
 {
@@ -113,7 +106,7 @@ pnpm tsup src/index.ts --format esm,cjs --dts
 pnpm publish
 ```
 
-### Install in your app
+### Install it in the app
 
 ```bash
 pnpm add -D @acme/preset
@@ -121,8 +114,9 @@ pnpm add -D @acme/preset
 
 ### Add it to panda.config
 
-`presets` is the exact list Panda uses — nothing is added for you. List `@pandacss/preset-base` for the default utilities
-and `@pandacss/preset-panda` for the default theme, then add your own:
+`presets` is the exact list Panda uses, nothing extra is added for you. If you want the defaults, list
+`@pandacss/preset-base` (utilities and patterns) and `@pandacss/preset-panda` (tokens and text styles) explicitly,
+then your own preset after:
 
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -136,13 +130,12 @@ export default defineConfig({
 })
 ```
 
-`@pandacss/preset-base` gives you the default utilities and patterns, and is included only if you list it, as above. See
-[which presets are included](#which-panda-presets-will-be-included).
+See [which presets get included](#which-presets-are-included-by-default) for what happens if you skip one.
 
-### Extend the preset in the app
+### Extend on top, from the app
 
-Use `theme.extend` to add or override tokens on top of the preset. Presets merge in order, and later entries win on
-conflicts. See [extend](/docs/styling/extend).
+`theme.extend` layers app-specific tokens on top of every preset. Presets merge in the order you list them, and the
+app's own config is applied last, so it always wins a conflict:
 
 ```ts filename="panda.config.ts"
 export default defineConfig({
@@ -161,7 +154,7 @@ export default defineConfig({
 
 </Steps>
 
-The available keys for a preset are:
+A preset can define any of these keys:
 
 - [`conditions`](/docs/styling/conditional-styles)
 - [`globalCss`](/docs/styling/writing-styles#global-styles)
@@ -171,10 +164,14 @@ The available keys for a preset are:
 - [`theme`](/docs/theming/theme)
 - [`utilities`](/docs/design-systems/utilities)
 
-### Asynchronous presets
+For how a whole component library gets built and shipped, not just its preset, see
+[shipping styles](/docs/design-systems/ship-styled-system).
 
-There are cases where you need to perform logic to determine the content of your preset, you'd call functions to do
-this. In cases where they're asynchronous; panda allows promises, given that they resolve to a valid preset object.
+### Async presets
+
+A preset can be a function that returns a promise, useful when building the preset needs an await somewhere (reading
+colors from a design tool's API, say). Panda resolves it before merging, as long as it eventually resolves to a
+valid preset object:
 
 ```js
 // my-preset.js
@@ -194,7 +191,7 @@ export default async function myPreset() {
 }
 ```
 
-You can then use this preset in your `panda.config.ts` file:
+Call it, don't just reference it, in the `presets` array:
 
 ```js
 // panda.config.ts
@@ -206,14 +203,14 @@ export default defineConfig({
 })
 ```
 
-## Which panda presets will be included?
+## Which presets are included by default
 
-Panda includes exactly the presets you list in `presets` — nothing is added for you.
+None. Panda includes exactly what's in your `presets` array, nothing more.
 
-- `@pandacss/preset-base` (default utilities, conditions, and patterns): included only if you list it.
-- `@pandacss/preset-panda` (default tokens, breakpoints, and text styles): included only if you list it.
+- `@pandacss/preset-base`: default utilities, conditions, and patterns. Only present if you list it.
+- `@pandacss/preset-panda`: default tokens, breakpoints, and text styles. Only present if you list it.
 
-List both when you want the full defaults, then add your own presets:
+List both for the usual defaults, then your own preset after:
 
 ```ts
 import basePreset from '@pandacss/preset-base'
@@ -221,14 +218,8 @@ import pandaPreset from '@pandacss/preset-panda'
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
-  // ...
   presets: [basePreset, pandaPreset, myCustomPreset]
 })
 ```
 
-For a system with no defaults at all, use `presets: []`.
-
-## Minimal setup
-
-If you want to use Panda with the bare minimum, without any of the defaults, you can read more about it
-[here](/docs/design-systems/minimal-setup)
+For a system with no defaults at all, `presets: []`.
