@@ -134,6 +134,16 @@ describe('getTokenJson / getTokenHtml', () => {
     expect(html.indexOf('data-name="normal"')).toBeLessThan(html.indexOf('data-name="wide"'))
   })
 
+  it('sorts by name when asked, keeping value order as the default', () => {
+    const runtime = createStudioRuntime([
+      { category: 'sizes', path: 'sizes.sm', name: 'sm', value: '16px' },
+      { category: 'sizes', path: 'sizes.lg', name: 'lg', value: '4px' },
+      { category: 'sizes', path: 'sizes.xl', name: 'xl', value: '8px' },
+    ])
+    expect(runtime.getTokenJson().map((t) => t.name)).toEqual(['lg', 'xl', 'sm'])
+    expect(runtime.getTokenJson({ sort: 'name' }).map((t) => t.name)).toEqual(['lg', 'sm', 'xl'])
+  })
+
   it('renders the tokens passed in, not the baked set', () => {
     const html = runtime.getTokenHtml({ tokens: [SAMPLE[1]] })
     expect(html).toContain('data-name="sm"')

@@ -19,8 +19,8 @@ export function studioArtifactFiles(tokens: StudioToken[]): StudioFile[] {
   conditions?: Record<string, string>
   deprecated?: boolean | string
 }
-export declare function getTokenJson(opts?: { category?: string; query?: string }): StudioToken[]
-export declare function getTokenHtml(opts?: { tokens?: StudioToken[]; category?: string; query?: string }): string
+export declare function getTokenJson(opts?: { category?: string; query?: string; sort?: 'value' | 'name' }): StudioToken[]
+export declare function getTokenHtml(opts?: { tokens?: StudioToken[]; category?: string; query?: string; sort?: 'value' | 'name' }): string
 export declare function getTokenCss(css?: string): string
 `
   return [

@@ -44,7 +44,10 @@ getTokenJson({ category: 'colors' }) // one category
 getTokenJson({ query: 'brand' }) // search names, values, and categories
 getTokenJson({ category: 'spacing', query: 'sm' }) // both
 getTokenJson() // everything
+getTokenJson({ sort: 'name' }) // order by token name instead of value
 ```
+
+Within a category, tokens sort by value by default — `spacing` and `sizes` read as a size meter, in real length across units. Pass `sort: 'name'` to order by token name instead (natural order, so `2` before `10`). `getTokenHtml` takes the same `sort` option.
 
 `query` matches against the token's name, value, and category, case-insensitive. Walk the array to build any UI you
 want — a grid, a table, a search box, your own components.

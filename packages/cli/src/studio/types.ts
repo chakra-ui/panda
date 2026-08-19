@@ -8,8 +8,8 @@ export interface StudioToken {
 }
 
 export interface StudioRuntime {
-  getTokenJson: (opts?: { category?: string; query?: string }) => StudioToken[]
-  getTokenHtml: (opts?: { tokens?: StudioToken[]; category?: string; query?: string }) => string
+  getTokenJson: (opts?: { category?: string; query?: string; sort?: 'value' | 'name' }) => StudioToken[]
+  getTokenHtml: (opts?: { tokens?: StudioToken[]; category?: string; query?: string; sort?: 'value' | 'name' }) => string
   getTokenCss: (css?: string) => string
 }
 

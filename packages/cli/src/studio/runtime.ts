@@ -53,18 +53,20 @@ export function createStudioRuntime(tokens: StudioToken[]): StudioRuntime {
     const byName = Number(t.name)
     return Number.isFinite(byName) ? byName : Infinity
   }
-  const sortTokens = (list: StudioToken[]) => {
+  const nameCompare = (a: StudioToken, b: StudioToken) => a.name.localeCompare(b.name, undefined, { numeric: true })
+  const sortTokens = (list: StudioToken[], sort: 'value' | 'name' = 'value') => {
     const order = new Map<string, number>()
     for (const t of list) if (!order.has(t.category)) order.set(t.category, order.size)
+    const within = sort === 'name' ? nameCompare : (a: StudioToken, b: StudioToken) => sortKey(a) - sortKey(b)
     return [...list].sort(
-      (a, b) => (order.get(a.category) ?? 0) - (order.get(b.category) ?? 0) || sortKey(a) - sortKey(b),
+      (a, b) => (order.get(a.category) ?? 0) - (order.get(b.category) ?? 0) || within(a, b),
     )
   }
 
-  const getTokenJson: StudioRuntime['getTokenJson'] = (opts = {}) => sortTokens(filter(opts))
+  const getTokenJson: StudioRuntime['getTokenJson'] = (opts = {}) => sortTokens(filter(opts), opts.sort)
 
   const getTokenHtml: StudioRuntime['getTokenHtml'] = (opts = {}) => {
-    const items = sortTokens(opts.tokens ?? filter(opts))
+    const items = sortTokens(opts.tokens ?? filter(opts), opts.sort)
     const groups = new Map<string, StudioToken[]>()
     for (const t of items) {
       const group = groups.get(t.category)
