@@ -298,6 +298,28 @@ const css = getTokenCss(readFileSync('./studio.css', 'utf8'))
 writeFileSync('tokens.html', `<!doctype html><style>${css}</style>${getTokenHtml()}`)
 ```
 
+### One page per category
+
+Want a separate page for colors, spacing, and each other category? Loop over the categories and write one file each.
+`getTokenJson()` gives you the list, so there's no separate API for it:
+
+```ts
+import { writeFileSync } from 'node:fs'
+import { getTokenJson, getTokenHtml, getTokenCss } from '../styled-system/studio'
+import studioCss from './studio.css?raw'
+
+const css = getTokenCss(studioCss)
+const categories = [...new Set(getTokenJson().map((t) => t.category))]
+
+for (const category of categories) {
+  // colors.html, spacing.html, fontSizes.html, …
+  writeFileSync(`${category}.html`, `<!doctype html><style>${css}</style>${getTokenHtml({ category })}`)
+}
+```
+
+The same loop works for app routes or Storybook stories — one per category — instead of files. Semantic tokens still
+render their conditions on whichever page they land on.
+
 ### In Storybook
 
 Storybook is where most teams already document their design system. The functions return plain data, an HTML string, and
