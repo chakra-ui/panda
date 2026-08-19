@@ -229,3 +229,32 @@ describe('panda studio', () => {
     expect(bg.conditions).toEqual({ base: '#ef4444', _dark: '#3b82f6', 'ocean · base': '#e0f2fe' })
   })
 })
+
+describe('deprecated tokens and shared ordering', () => {
+  it('surfaces deprecated tokens from the spec, and only those', () => {
+    const spec = {
+      tokens: {
+        categories: { colors: { values: ['red.500', 'old.500'] } },
+        values: { 'colors.red.500': '#ef4444', 'colors.old.500': '#111' },
+        deprecated: { 'colors.old.500': 'use red.500' },
+      },
+    } as never
+    const tokens = buildTokensSnapshot(spec)
+    expect(tokens.find((t) => t.name === 'red.500')?.deprecated).toBeUndefined()
+    expect(tokens.find((t) => t.name === 'old.500')?.deprecated).toBe('use red.500')
+  })
+
+  it('getTokenJson returns the same order getTokenHtml renders', () => {
+    const tokens: StudioToken[] = [
+      { category: 'spacing', path: 'spacing.lg', name: 'lg', value: '16px' },
+      { category: 'colors', path: 'colors.b', name: 'b', value: '#000' },
+      { category: 'spacing', path: 'spacing.sm', name: 'sm', value: '4px' },
+      { category: 'colors', path: 'colors.a', name: 'a', value: '#fff' },
+    ]
+    const { getTokenJson, getTokenHtml } = createStudioRuntime(tokens)
+    // category first-seen order (spacing, then colors); value-sorted within a category
+    expect(getTokenJson().map((t) => t.path)).toEqual(['spacing.sm', 'spacing.lg', 'colors.b', 'colors.a'])
+    const htmlOrder = [...getTokenHtml().matchAll(/data-name="([^"]+)"/g)].map((m) => m[1])
+    expect(htmlOrder).toEqual(getTokenJson().map((t) => t.name))
+  })
+})

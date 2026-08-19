@@ -6,6 +6,7 @@ export interface StudioToken {
   name: string
   value: string
   conditions?: Record<string, string>
+  deprecated?: boolean | string
 }
 
 export interface StudioRuntime {
@@ -35,7 +36,10 @@ export function buildTokensSnapshot(spec: Spec, semantic: Record<string, Record<
         const positive = spec.tokens.values[positivePath]
         if (positive) value = `-${positive}`
       }
-      out.push({ category, path, name, value })
+      const token: StudioToken = { category, path, name, value }
+      const deprecated = spec.tokens.deprecated?.[path]
+      if (deprecated) token.deprecated = deprecated
+      out.push(token)
     }
   }
   for (const [path, conditions] of Object.entries(semantic)) {
@@ -44,7 +48,10 @@ export function buildTokensSnapshot(spec: Spec, semantic: Record<string, Record<
     const name = dot === -1 ? path : path.slice(dot + 1)
     const value = conditions.base ?? Object.values(conditions)[0]
     if (value == null || value === '') continue
-    out.push({ category, path, name, value, conditions })
+    const token: StudioToken = { category, path, name, value, conditions }
+    const deprecated = spec.tokens.deprecated?.[path]
+    if (deprecated) token.deprecated = deprecated
+    out.push(token)
   }
   return out
 }
@@ -99,8 +106,6 @@ export function createStudioRuntime(tokens: StudioToken[]): StudioRuntime {
     return `${vars}${css}`
   }
 
-  const getTokenJson: StudioRuntime['getTokenJson'] = (opts = {}) => filter(opts)
-
   const UNIT_PX: Record<string, number> = { '': 1, px: 1, rem: 16, em: 16, ch: 8, ex: 8, '%': 16, vw: 16, vh: 16 }
   const metered = new Set(['spacing', 'sizes'])
   const toPx = (value: string) => {
@@ -116,16 +121,24 @@ export function createStudioRuntime(tokens: StudioToken[]): StudioRuntime {
     const byName = Number(t.name)
     return Number.isFinite(byName) ? byName : Infinity
   }
+  const sortTokens = (list: StudioToken[]) => {
+    const order = new Map<string, number>()
+    for (const t of list) if (!order.has(t.category)) order.set(t.category, order.size)
+    return [...list].sort(
+      (a, b) => (order.get(a.category) ?? 0) - (order.get(b.category) ?? 0) || sortKey(a) - sortKey(b),
+    )
+  }
+
+  const getTokenJson: StudioRuntime['getTokenJson'] = (opts = {}) => sortTokens(filter(opts))
 
   const getTokenHtml: StudioRuntime['getTokenHtml'] = (opts = {}) => {
-    const items = opts.tokens ?? filter(opts)
+    const items = sortTokens(opts.tokens ?? filter(opts))
     const groups = new Map<string, StudioToken[]>()
     for (const t of items) {
       const group = groups.get(t.category)
       if (group) group.push(t)
       else groups.set(t.category, [t])
     }
-    for (const group of groups.values()) group.sort((a, b) => sortKey(a) - sortKey(b))
     return [...groups.entries()]
       .map(
         ([category, group]) =>
@@ -153,6 +166,7 @@ export function studioArtifactFiles(tokens: StudioToken[]): StudioFile[] {
   name: string
   value: string
   conditions?: Record<string, string>
+  deprecated?: boolean | string
 }
 export declare function getTokenJson(opts?: { category?: string; query?: string }): StudioToken[]
 export declare function getTokenHtml(opts?: { tokens?: StudioToken[]; category?: string; query?: string }): string
