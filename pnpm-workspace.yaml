@@ -28,8 +28,8 @@ allowBuilds:
   core-js-pure: true
   es5-ext: true
   esbuild: true
-  gatsby: true
-  gatsby-cli: true
+  gatsby: set this to true or false
+  gatsby-cli: set this to true or false
   lmdb: true
   msgpackr-extract: true
   prisma: true

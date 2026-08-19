@@ -93,6 +93,10 @@ pub struct UserConfig {
     pub conditions: Conditions,
     #[serde(default)]
     pub utilities: UtilityMap,
+    /// Variable name -> the utility that registered it, hoisted from utility `globalVars`.
+    /// Lets the emitter tell a real collision from a merely reserved name.
+    #[serde(default, rename = "utilityGlobalVars")]
+    pub utility_global_vars: BTreeMap<String, String>,
     #[serde(default)]
     pub patterns: PatternMap,
     #[serde(default)]
@@ -153,6 +157,7 @@ impl Default for UserConfig {
             theme: Theme::default(),
             conditions: Conditions::default(),
             utilities: UtilityMap::default(),
+            utility_global_vars: BTreeMap::default(),
             patterns: PatternMap::default(),
             prefix: PrefixConfig::default(),
             hash: HashConfig::default(),
@@ -341,6 +346,11 @@ pub struct OptimizeConfig {
     /// names the consumer imports from that package (host-side; default off).
     #[serde(default)]
     pub treeshake_design_system: bool,
+    /// Seed emitted `@property` registrations as plain declarations too, for engines
+    /// that ignore `@property` (Safari < 16.4, Firefox < 128) and would otherwise drop
+    /// any declaration reading an unregistered variable.
+    #[serde(default)]
+    pub property_fallback: bool,
 }
 
 /// User-facing names for the five cascade layers (matches v1's

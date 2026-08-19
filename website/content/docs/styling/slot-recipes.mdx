@@ -250,10 +250,10 @@ const Checkbox = (props: CheckboxVariants) => {
 ### Styling JSX Compound Components
 
 Compound components are a great way to create reusable components for better composition. Slot recipes play nicely with
-this pattern and requires a context provider for the component.
+this pattern through a context provider for the component.
 
 > **Note:** This is an advanced topic and you don't need to understand it to use slot recipes. If you use React, be
-> aware that context require adding 'use client' to the top of the file.
+> aware that context requires adding 'use client' to the top of the file.
 
 Let's say you want to design a Checkbox component that can be used like this:
 
@@ -264,55 +264,15 @@ Let's say you want to design a Checkbox component that can be used like this:
 </Checkbox>
 ```
 
-First, create a shared context for ths styles
-
-```jsx filename="style-context.tsx"
-'use client'
-import { createContext, forwardRef, useContext } from 'react'
-
-export const createStyleContext = recipe => {
-  const StyleContext = createContext(null)
-
-  const withProvider = (Component, part) => {
-    const Comp = forwardRef((props, ref) => {
-      const [variantProps, rest] = recipe.splitVariantProps(props)
-      const styles = recipe(variantProps)
-      return (
-        <StyleContext.Provider value={styles}>
-          <Component ref={ref} className={styles?.[part ?? '']} {...rest} />
-        </StyleContext.Provider>
-      )
-    })
-    Comp.displayName = Component.displayName || Component.name
-    return Comp
-  }
-
-  const withContext = (Component, part) => {
-    if (!part) return Component
-
-    const Comp = forwardRef((props, ref) => {
-      const styles = useContext(StyleContext)
-      return <Component ref={ref} className={styles?.[part ?? '']} {...props} />
-    })
-    Comp.displayName = Component.displayName || Component.name
-    return Comp
-  }
-
-  return { withProvider, withContext }
-}
-```
-
-> Note: For the TypeScript version of this file, refer to
-> [create-style-context.tsx](https://github.com/cschroeter/park-ui/blob/main/website/src/lib/create-style-context.tsx)
-> in Park UI
-
-Then, use the context to create compound components connected to the recipe
+Panda ships `createSlotRecipeContext` in `styled-system/jsx`. Pass it your slot recipe and it returns `withProvider` and
+`withContext` to wire each part to the right slot:
 
 ```jsx filename="Checkbox.tsx"
-import { createStyleContext } from './style-context'
+'use client'
+import { createSlotRecipeContext } from '../styled-system/jsx'
 import { checkbox } from './checkbox.recipe'
 
-const { withProvider, withContext } = createStyleContext(checkbox)
+const { withProvider, withContext } = createSlotRecipeContext(checkbox)
 
 //                                  👇🏻 points to the root slot
 const Root = withProvider('label', 'root')
@@ -323,6 +283,9 @@ const Label = withContext('span', 'label')
 
 const Checkbox = { Root, Control, Label }
 ```
+
+For the full API — `withRootProvider`, forwarding props, and the `unstyled` prop — see
+[JSX Style Context](/docs/styling/jsx-style-context).
 
 ## Config Slot Recipe
 
@@ -653,7 +616,7 @@ It pairs well with [ZagJs](https://zagjs.com/) and [Ark-UI](https://ark-ui.com/)
 Let's refactor the previous example to use parts instead of slots:
 
 ```ts
-import { defineParts, definetRecipe } from '@pandacss/dev'
+import { defineParts, defineRecipe } from '@pandacss/dev'
 
 const parts = defineParts({
   root: { selector: '& [data-part="root"]' },

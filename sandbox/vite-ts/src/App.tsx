@@ -6,6 +6,7 @@ import { button, someRecipe } from '../styled-system/recipes'
 import { Badge, badge } from './Badge'
 import { AnotherButtonWithRegex, Button, ListedButton } from './Button'
 import { Card } from './Card'
+import { MaskDemo } from './MaskDemo'
 import { SourceTransformProof } from './SourceTransformProof'
 import { ViewTransitionDemo } from './ViewTransitionDemo'
 
@@ -29,6 +30,7 @@ function App() {
 
   return (
     <div className={stack({ padding: '40px', align: 'stretch', color: 'red.300' })}>
+      <MaskDemo />
       <ViewTransitionDemo />
 
       <section className={css({ padding: '5', borderWidth: '1px' })}>

@@ -186,4 +186,28 @@ describe('css', () => {
   test('nested condition prop with array syntax', () => {
     assertType(css({ _hover: { _dark: { bg: ['pink.100', 'pink.200'] } } }))
   })
+
+  test('scrollbar width takes the CSS keywords, not size tokens', () => {
+    assertType(css({ scrollbarWidth: 'thin' }))
+    assertType(css({ scrollbarWidth: 'none' }))
+
+    // @ts-expect-error `scrollbar-width` never accepted a length
+    assertType(css({ scrollbarWidth: '4' }))
+  })
+
+  test('scrollbar colors take color tokens', () => {
+    assertType(css({ scrollbarThumb: 'blue.300', scrollbarTrack: 'blue.100' }))
+
+    // @ts-expect-error expected from strictTokens: true
+    assertType(css({ scrollbarThumb: 'rebeccapurple' }))
+  })
+
+  test('mask stops take spacing tokens or the escape hatch', () => {
+    assertType(css({ maskBottomFrom: '4' }))
+    assertType(css({ maskBottomFrom: '[20%]' }))
+    assertType(css({ maskBottomFromColor: 'blue.300' }))
+
+    // @ts-expect-error a raw percentage needs the escape hatch under strictTokens
+    assertType(css({ maskBottomFrom: '20%' }))
+  })
 })

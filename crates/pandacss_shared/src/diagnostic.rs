@@ -23,6 +23,7 @@ pub mod codes {
     pub const DESIGN_SYSTEM_UTILITY_UNREGISTERED: &str = "design_system_utility_unregistered";
     pub const INVALID_COLOR_OPACITY_MODIFIER: &str = "invalid_color_opacity_modifier";
     pub const JS_PARSE_ERROR: &str = "js_parse_error";
+    pub const GLOBAL_VAR_UTILITY_CONFLICT: &str = "global_var_utility_conflict";
     pub const LAYER_NAME_COLLISION: &str = "layer_name_collision";
     pub const PREFLIGHT_OPTIONS_UNSUPPORTED: &str = "preflight_options_unsupported";
     pub const STATIC_CSS_PATTERN_MISSING_TRANSFORM: &str = "static_css_pattern_missing_transform";

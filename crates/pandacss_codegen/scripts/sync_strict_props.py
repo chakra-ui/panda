@@ -62,6 +62,28 @@ SHORTHAND_EXACT = {
     "cursor",
 }
 
+# Two-word CSS values csstype only types as `string & {}`. Keep these on the
+# generated PropertyValueMap so `css({ justifyContent: 'safe center' })` autocompletes.
+KEYWORD_EXTRAS = {
+    "alignContent": ["first baseline", "last baseline", "safe center", "safe end", "safe start"],
+    "alignItems": ["first baseline", "last baseline", "safe center", "safe end", "safe start"],
+    "alignSelf": ["first baseline", "last baseline", "safe center", "safe end", "safe start"],
+    "justifyContent": ["safe center", "safe end", "safe start"],
+    "justifyItems": ["first baseline", "last baseline", "safe center", "safe end", "safe start"],
+    "justifySelf": ["first baseline", "last baseline", "safe center", "safe end", "safe start"],
+    "placeContent": ["first baseline", "last baseline", "safe center", "safe end", "safe start"],
+    "placeItems": ["first baseline", "last baseline", "safe center", "safe end", "safe start"],
+    "placeSelf": ["first baseline", "last baseline", "safe center", "safe end", "safe start"],
+    "scrollbarGutter": ["auto", "stable", "stable both-edges"],
+}
+
+# Props the ranked MAX_KEYWORD_ENTRIES budget would drop, but whose csstype union is
+# already closed and worth carrying. Unlike KEYWORD_EXTRAS these add no keywords of
+# their own — the entry is taken from csstype as-is, `open` included.
+KEYWORD_INCLUDE = {
+    "scrollbarWidth",
+}
+
 KEYWORD_EXCLUDE = {
     "minWidth",
     "maxWidth",
@@ -92,7 +114,7 @@ NUMERIC_EXACT = {
 FONT_WEIGHT_EXACT = {"fontWeight"}
 FONT_FAMILY_EXACT = {"fontFamily"}
 FONT_SIZE_EXACT = {"fontSize"}
-BG_SIZE_EXACT = {"backgroundSize"}
+BG_SIZE_EXACT = {"backgroundSize", "maskSize"}
 POSITION_EXACT = {
     "backgroundPosition",
     "objectPosition",
@@ -502,6 +524,10 @@ def main() -> None:
         if name in priority or len(kws) >= 2 or (len(kws) >= 1 and not open_):
             new_keywords[name] = (sorted(kws), open_)
 
+    for name in KEYWORD_INCLUDE:
+        if name in new_keywords:
+            keywords_map.setdefault(name, new_keywords[name])
+
     if len(keywords_map) < MAX_KEYWORD_ENTRIES:
         slots = MAX_KEYWORD_ENTRIES - len(keywords_map)
         ranked = sorted(
@@ -510,6 +536,10 @@ def main() -> None:
         )
         for name, data in ranked[:slots]:
             keywords_map.setdefault(name, data)
+
+    for name, extras in KEYWORD_EXTRAS.items():
+        existing, open_ = keywords_map.get(name, ([], True))
+        keywords_map[name] = (sorted(set(existing) | set(extras)), open_)
 
     family_map: dict[str, str] = {}
     for name in sorted(css_names):

@@ -13,8 +13,8 @@ use pandacss_encoder::{
 };
 use pandacss_extractor::Literal;
 use pandacss_shared::{
-    ViewTransitionStyle, css_escape, find_matching_paren, hyphenate_property, number_to_js_string,
-    split_important, to_hash, without_space,
+    Diagnostic, ViewTransitionStyle, css_escape, diagnostic_codes, find_matching_paren,
+    hyphenate_property, number_to_js_string, split_important, to_hash, without_space,
 };
 use pandacss_tokens::{TokenCssConditionVars, TokenCssVar, TokenCssVars, TokenDictionary};
 use pandacss_utility::{
@@ -41,6 +41,7 @@ use crate::writer::CssWriter;
 pub(crate) struct EmitOutput {
     pub css: String,
     pub layer_ranges: StylesheetLayerRanges,
+    pub diagnostics: Vec<Diagnostic>,
     /// Merged-sheet analyze for polyfill recipe split (same step/ranks).
     pub(crate) polyfill_analyze: Option<crate::polyfill::AnalyzeResult>,
 }
@@ -129,23 +130,18 @@ pub(crate) fn emit(input: EmitInput<'_>, options: EmitOptions) -> EmitOutput {
         }));
     }
 
-    if has_base_layer(config) {
-        layer_ranges.base = Some(write_layer(&mut writer, &layers.base, |writer| {
-            write_made_with_panda_marker(writer);
-            cx.write_collected_styles(writer, &config.global_css);
-            cx.serialize_global_vars(writer);
-            serialize_global_fontface(writer, &config.global_fontface);
-            serialize_global_position_try(writer, &config.global_position_try);
-        }));
-    }
-
     if !recipes.atomic.is_empty() {
         atoms.extend(recipes.atomic.iter());
     }
     atoms = dedup_atom_refs(atoms);
 
     let keyframes = as_non_empty_object(&config.theme.keyframes);
-    let usage = if config.optimize.remove_unused_tokens || config.optimize.remove_unused_keyframes {
+    // `@property` pruning needs usage before the base layer is written.
+    let usage = if config.optimize.remove_unused_tokens
+        || config.optimize.remove_unused_keyframes
+        || has_property_registrations(config)
+        || !config.utility_global_vars.is_empty()
+    {
         Some(cx.collect_usage(
             tokens.dictionary,
             tokens.refs,
@@ -157,6 +153,19 @@ pub(crate) fn emit(input: EmitInput<'_>, options: EmitOptions) -> EmitOutput {
     } else {
         None
     };
+
+    let diagnostics = global_var_conflicts(config, usage.as_ref());
+
+    if has_base_layer(config) {
+        layer_ranges.base = Some(write_layer(&mut writer, &layers.base, |writer| {
+            write_made_with_panda_marker(writer);
+            cx.write_collected_styles(writer, &config.global_css);
+            cx.serialize_global_vars(writer, usage.as_ref());
+            serialize_global_fontface(writer, &config.global_fontface);
+            serialize_global_position_try(writer, &config.global_position_try);
+        }));
+    }
+
     let token_vars = tokens
         .dictionary
         .map(|dictionary| prepare_emittable_token_vars(config, dictionary, usage.as_ref()));
@@ -219,7 +228,7 @@ pub(crate) fn emit(input: EmitInput<'_>, options: EmitOptions) -> EmitOutput {
         }
     }
 
-    finish_emit(writer, polyfill, layers, minify, layer_ranges)
+    finish_emit(writer, polyfill, layers, minify, layer_ranges, diagnostics)
 }
 
 fn finish_emit(
@@ -228,12 +237,14 @@ fn finish_emit(
     layers: &pandacss_config::CascadeLayers,
     minify: bool,
     layer_ranges: StylesheetLayerRanges,
+    diagnostics: Vec<Diagnostic>,
 ) -> EmitOutput {
     if !polyfill {
         return EmitOutput {
             css: writer.finish(),
             layer_ranges,
             polyfill_analyze: None,
+            diagnostics,
         };
     }
     let ops = writer.into_ops();
@@ -243,7 +254,30 @@ fn finish_emit(
         css: flat.css,
         layer_ranges: flat.layer_ranges,
         polyfill_analyze: Some(analyze),
+        diagnostics,
     }
+}
+
+/// A config `globalVars` string only conflicts with a utility's registration when the sheet
+/// actually reads that variable. Reserving the name is not itself a problem.
+fn global_var_conflicts(config: &UserConfig, usage: Option<&UsageMarks>) -> Vec<Diagnostic> {
+    let Value::Object(entries) = &config.global_vars else {
+        return Vec::new();
+    };
+    entries
+        .iter()
+        .filter(|(_, value)| matches!(value, Value::String(_)))
+        .filter_map(|(name, _)| Some((name, config.utility_global_vars.get(name)?)))
+        .filter(|(name, _)| usage.is_some_and(|usage| usage.reads_var(name)))
+        .map(|(name, owner)| {
+            Diagnostic::warning(
+                diagnostic_codes::GLOBAL_VAR_UTILITY_CONFLICT,
+                format!(
+                    "globalVars `{name}` shadows the `@property` registration from the `{owner}` utility, and your CSS reads that variable. The registration is lost, so `{name}` starts inheriting and `{owner}` may misbehave. Pass an `@property` object instead of a plain value."
+                ),
+            )
+        })
+        .collect()
 }
 
 /// Emit only `theme.keyframes` as CSS (no token vars, no other layers).
@@ -306,6 +340,7 @@ pub(crate) fn emit_keyframes(input: EmitInput<'_>, options: EmitKeyframesOptions
             css: String::new(),
             layer_ranges,
             polyfill_analyze: None,
+            diagnostics: Vec::new(),
         };
     };
 
@@ -319,13 +354,14 @@ pub(crate) fn emit_keyframes(input: EmitInput<'_>, options: EmitKeyframesOptions
         layer_ranges.tokens = Some(write_layer(&mut writer, &layers.tokens, |writer| {
             cx.serialize_keyframes(writer, keyframes, used);
         }));
-        finish_emit(writer, polyfill, layers, minify, layer_ranges)
+        finish_emit(writer, polyfill, layers, minify, layer_ranges, Vec::new())
     } else {
         cx.serialize_keyframes(&mut writer, keyframes, used);
         EmitOutput {
             css: writer.finish(),
             layer_ranges,
             polyfill_analyze: None,
+            diagnostics: Vec::new(),
         }
     }
 }
@@ -354,6 +390,7 @@ pub(crate) fn emit_fontface(config: &UserConfig, options: EmitFontfaceOptions) -
             css: String::new(),
             layer_ranges,
             polyfill_analyze: None,
+            diagnostics: Vec::new(),
         };
     }
 
@@ -361,13 +398,14 @@ pub(crate) fn emit_fontface(config: &UserConfig, options: EmitFontfaceOptions) -
         layer_ranges.base = Some(write_layer(&mut writer, &layers.base, |writer| {
             serialize_global_fontface(writer, &config.global_fontface);
         }));
-        finish_emit(writer, polyfill, layers, minify, layer_ranges)
+        finish_emit(writer, polyfill, layers, minify, layer_ranges, Vec::new())
     } else {
         serialize_global_fontface(&mut writer, &config.global_fontface);
         EmitOutput {
             css: writer.finish(),
             layer_ranges,
             polyfill_analyze: None,
+            diagnostics: Vec::new(),
         }
     }
 }
@@ -814,6 +852,13 @@ fn has_recipe_rules(recipes: &EncodedRecipesSnapshot) -> bool {
         .any(|group| !group.entries.is_empty())
 }
 
+fn has_property_registrations(config: &UserConfig) -> bool {
+    let Value::Object(entries) = &config.global_vars else {
+        return false;
+    };
+    entries.values().any(Value::is_object)
+}
+
 fn has_base_layer(_config: &UserConfig) -> bool {
     // PORT NOTE: v1 `generateGlobalCss` always emits the Panda marker in base.
     true
@@ -845,6 +890,21 @@ fn capacity_hint(atoms: &[&Atom], recipes: &EncodedRecipesSnapshot) -> usize {
 struct UsageMarks {
     token_vars: FxHashSet<String>,
     keyframes: FxHashSet<String>,
+    /// A registration stays alive when its variable is written, not just read —
+    /// `inherits: false` matters for a var that is only ever set.
+    declared_vars: FxHashSet<String>,
+}
+
+impl UsageMarks {
+    fn touches_var(&self, name: &str) -> bool {
+        self.token_vars.contains(name) || self.declared_vars.contains(name)
+    }
+
+    /// Reads only. A `globalVars` entry declaring the variable is a write, and must not
+    /// count as the sheet using it.
+    fn reads_var(&self, name: &str) -> bool {
+        self.token_vars.contains(name)
+    }
 }
 
 fn collect_css_var_refs(value: &str, refs: &mut FxHashSet<String>) {
@@ -1277,8 +1337,9 @@ impl<'a> EmitContext<'a> {
         let Value::Object(entries) = &self.config.global_vars else {
             return;
         };
-        for value in entries.values() {
+        for (name, value) in entries {
             if let Value::String(value) = value {
+                marks.declared_vars.insert(name.clone());
                 collect_css_var_refs(value, &mut marks.token_vars);
                 collect_token_reference_vars(value, token_dictionary, &mut marks.token_vars);
             }
@@ -1311,6 +1372,9 @@ impl<'a> EmitContext<'a> {
     ) {
         collect_css_var_refs(value, &mut marks.token_vars);
         collect_token_reference_vars(value, token_dictionary, &mut marks.token_vars);
+        if prop.starts_with("--") {
+            marks.declared_vars.insert(prop.to_owned());
+        }
         if is_animation_property(prop) {
             collect_keyframe_refs(value, keyframes, &mut marks.keyframes);
         }
@@ -1793,7 +1857,7 @@ impl<'a> EmitContext<'a> {
         self.property_declarations(prop, &value, false)
     }
 
-    fn serialize_global_vars(&self, writer: &mut CssWriter) {
+    fn serialize_global_vars(&self, writer: &mut CssWriter, usage: Option<&UsageMarks>) {
         let Value::Object(entries) = &self.config.global_vars else {
             return;
         };
@@ -1806,6 +1870,9 @@ impl<'a> EmitContext<'a> {
                     declarations.push(GlobalVarDeclaration { prop: key, value });
                 }
                 Value::Object(config) => {
+                    if usage.is_some_and(|usage| !usage.touches_var(key)) {
+                        continue;
+                    }
                     if let Some(property) = global_var_property(key, config) {
                         properties.push(property);
                     }
@@ -1820,6 +1887,10 @@ impl<'a> EmitContext<'a> {
                     writer.declaration(declaration.prop, declaration.value, false);
                 }
             });
+        }
+
+        if self.config.optimize.property_fallback {
+            write_property_fallback(writer, &properties, self.config.css_var_root());
         }
 
         for property in properties {
@@ -2296,6 +2367,34 @@ struct ConditionalDeclarations {
 struct GlobalVarDeclaration<'a> {
     prop: &'a str,
     value: &'a str,
+}
+
+const UNIVERSAL_SELECTOR: &str = "*, ::before, ::after, ::backdrop";
+
+/// Seeds registrations as plain declarations for engines that ignore `@property`. A
+/// non-inheriting registration has to land on every element, since that is what stops a
+/// child seeing its parent's value without the registration to do it.
+fn write_property_fallback(writer: &mut CssWriter, properties: &[GlobalVarProperty], root: &str) {
+    let (inheriting, isolated): (Vec<_>, Vec<_>) = properties
+        .iter()
+        .partition(|property| property.inherits == "true");
+
+    for (selector, group) in [(root, inheriting), (UNIVERSAL_SELECTOR, isolated)] {
+        if group.is_empty() {
+            continue;
+        }
+        writer.rule(selector, |writer| {
+            for property in group {
+                // No initial value means guaranteed-invalid, which `initial` reproduces on
+                // engines that never read the registration.
+                writer.declaration(
+                    property.name,
+                    property.initial_value.unwrap_or("initial"),
+                    false,
+                );
+            }
+        });
+    }
 }
 
 struct GlobalVarProperty<'a> {

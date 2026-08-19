@@ -28,8 +28,8 @@ export const background: UtilityConfig = {
     group: 'Background',
     transform(value) {
       return {
-        backgroundClip: value,
         WebkitBackgroundClip: value,
+        backgroundClip: value,
       }
     },
   },

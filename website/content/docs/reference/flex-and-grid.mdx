@@ -60,3 +60,17 @@ The `gridTemplateRows` utility defines the rows of a grid container.
 ```jsx
 <div className={css({ gridTemplateRows: 'repeat(3, minmax(0, 1fr))' })} />
 ```
+
+## Keeping content visible
+
+`safe center` keeps a centered flex child on screen when the container is too small, instead of overflowing out of view.
+
+```tsx
+css({ justifyContent: 'safe center', alignItems: 'safe center' })
+```
+
+`last baseline` aligns to the last line of a multi-line item.
+
+```tsx
+css({ alignItems: 'last baseline' })
+```

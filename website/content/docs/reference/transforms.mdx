@@ -5,6 +5,14 @@ description: Panda provides utilities for transforming elements.
 
 Panda provides utilities for transforming elements.
 
+Each family works the same way: the axis utilities set a CSS variable, and the parent utility set to `auto` composes
+them. An axis on its own does nothing until you opt in.
+
+```jsx
+<div className={css({ translateX: '20px' })} /> // sets the variable, moves nothing
+<div className={css({ translate: 'auto', translateX: '20px' })} /> // moves
+```
+
 ## Scale
 
 Control the scale property. Supported value is `auto`
@@ -31,10 +39,11 @@ Control the scaleY property.
 
 ## Translate
 
-Control the translate property. Supported value is `auto`
+Control the translate property. Supported values are `auto` and `auto-3d`
 
 ```jsx
 <div className={css({ translate: 'auto' })} /> // => 'var(--translate-x) var(--translate-y)'
+<div className={css({ translate: 'auto-3d' })} /> // adds 'var(--translate-z)'
 ```
 
 ### Translate X
@@ -53,4 +62,81 @@ Control the translateY property.
 ```jsx
 <div className={css({ translateY: '-40%' })} /> // => --translate-y: -40%;
 <div className={css({ y: '4rem' })} /> // shorthand
+```
+
+### Translate Z
+
+Control the translateZ property. Takes `spacing` tokens or a length, and needs `translate: 'auto-3d'`.
+
+```jsx
+<div className={css({ translate: 'auto-3d', translateZ: '4' })} /> // => --translate-z: var(--spacing-4);
+<div className={css({ z: '10px' })} /> // shorthand
+```
+
+Percentages are not allowed here. CSS resolves a percentage translation against the element's size on that axis, and
+there is no size in z, so a percentage would invalidate the whole declaration.
+
+## Rotate
+
+Control the rotate property. Pass an angle for a plain 2D rotation, or `auto` to compose the axis utilities.
+
+```jsx
+<div className={css({ rotate: '45deg' })} /> // => rotate: 45deg;
+<div className={css({ rotate: 'auto' })} /> // => transform: var(--rotate-x,) var(--rotate-y,) var(--rotate-z,);
+```
+
+`auto` composes on `transform` rather than on the `rotate` property, because `rotate` holds exactly one rotation. That
+is what lets you combine axes.
+
+```jsx
+<div className={css({ rotate: 'auto', rotateX: '45deg', rotateY: '30deg' })} /> // both apply
+```
+
+`auto-3d` is accepted as an alias of `auto`. An axis you never set contributes nothing either way.
+
+### Rotate X, Y and Z
+
+Control the rotateX, rotateY and rotateZ properties. Each stores a rotation function and waits for `rotate: 'auto'`.
+
+```jsx
+<div className={css({ rotate: 'auto', rotateX: '45deg' })} /> // => --rotate-x: rotateX(45deg);
+<div className={css({ rotate: 'auto', rotateZ: '0.5turn' })} /> // => --rotate-z: rotateZ(0.5turn);
+```
+
+Two things to know when you combine `rotate: 'auto'` with other utilities:
+
+- A raw `transform` value overrides it, since both write `transform`. Write the functions together if you need both:
+  `transform: 'skewX(10deg) rotateX(45deg)'`.
+- With a non-uniform `scale`, the rotation applies after the scaling rather than before. Uniform scales are unaffected.
+
+## Transform
+
+Control the transform property directly. This is the escape hatch for anything the utilities above don't cover.
+
+```jsx
+<div className={css({ transform: 'skewX(10deg)' })} />
+```
+
+### Transform Origin
+
+Control the transform-origin property.
+
+```jsx
+<div className={css({ transformOrigin: 'top left' })} />
+```
+
+### Transform Box
+
+Control the transform-box property.
+
+```jsx
+<div className={css({ transformBox: 'fill-box' })} />
+```
+
+### Transform Style
+
+Control the transform-style property. Use `preserve-3d` when you want children to sit in the parent's 3D space.
+
+```jsx
+<div className={css({ transformStyle: 'preserve-3d' })} />
 ```

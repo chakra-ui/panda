@@ -62,6 +62,8 @@ export const conditions = {
   required: '&:is(:required, [data-required], [aria-required=true])',
   valid: '&:is(:valid, [data-valid])',
   invalid: '&:is(:invalid, [data-invalid], [aria-invalid=true])',
+  userValid: '&:is(:user-valid, [data-user-valid])',
+  userInvalid: '&:is(:user-invalid, [data-user-invalid])',
   autofill: '&:autofill',
   inRange: '&:is(:in-range, [data-in-range])',
   outOfRange: '&:is(:out-of-range, [data-outside-range])',
@@ -81,6 +83,7 @@ export const conditions = {
   fullscreen: '&:is(:fullscreen, [data-fullscreen])',
   loading: '&:is([data-loading], [aria-busy=true])',
   hidden: '&:is([hidden], [data-hidden])',
+  inert: '&:is([inert], [data-inert])',
 
   current: '&:is([aria-current=true], [data-current])',
   currentPage: '&[aria-current=page]',
@@ -121,4 +124,11 @@ export const conditions = {
   starting: '@starting-style',
   noscript: '@media (scripting: none)',
   invertedColors: '@media (inverted-colors: inverted)',
+
+  pointerFine: '@media (pointer: fine)',
+  pointerCoarse: '@media (pointer: coarse)',
+  pointerNone: '@media (pointer: none)',
+  anyPointerFine: '@media (any-pointer: fine)',
+  anyPointerCoarse: '@media (any-pointer: coarse)',
+  anyPointerNone: '@media (any-pointer: none)',
 }

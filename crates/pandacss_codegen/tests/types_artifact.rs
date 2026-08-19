@@ -352,6 +352,9 @@ fn emits_ts_source_types() {
     ));
     assert!(system.contains(r#"  placeItems: PropertyValueMap["alignItems"]"#));
     assert!(system.contains(r#"  alignItems?: ConditionalValue<PropertyValueMap["alignItems"]>"#));
+    assert!(system.contains(r#""safe center""#));
+    assert!(system.contains(r#""last baseline""#));
+    assert!(system.contains(r#""stable both-edges""#));
     // SystemProperties: native css props plus configured utility overrides
     assert!(system.contains("export interface SystemProperties {"));
     assert!(!system.contains("export interface CssProperties {"));

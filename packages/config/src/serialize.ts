@@ -9,6 +9,7 @@ import type { UserConfig } from '@pandacss/types'
 import { stringify } from 'javascript-stringify'
 import { serializeHooks, type HookSerializationCallbacks } from './hooks'
 import { compact } from './shared'
+import { mergeUtilityGlobalVars } from './utility-global-vars'
 
 const runtimeOnlyKeys = new Set(['hooks', 'plugins', 'presets', 'name'])
 
@@ -26,7 +27,8 @@ export interface ConfigSnapshot {
  * pattern's `transform`/`defaultValues` source as `codegenSource` for the Rust
  * pattern generator.
  */
-export function createConfigSnapshot(config: UserConfig): ConfigSnapshot {
+export function createConfigSnapshot(input: UserConfig): ConfigSnapshot {
+  const config = mergeUtilityGlobalVars(input) as UserConfig
   const callbacks: Callbacks = {}
   const hooks = serializeHooks(config, callbacks, sanitize, hashCallbackSource)
   const serialized: SerializedConfig = {

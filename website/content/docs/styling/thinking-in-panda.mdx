@@ -3,13 +3,20 @@ title: Thinking in Panda
 description: Which Panda API to reach for next, from css() to recipes, slots, and config.
 ---
 
-Panda styles ship as plain CSS from the build. You write objects next to your markup. The only question that matters day
-to day is which API to reach for as a component grows.
+Panda has one mental model, and everything below is that model at different sizes. Four ideas carry it:
 
-Start local. Promote only when the shape of the styles forces it. This walk builds a Button, then a Card, and climbs the
-ladder: `css` → `cva` → `sva` → config.
+- **Styles live next to your markup.** You write them as objects in the same file as the component, not in a separate
+  stylesheet to keep in sync.
+- **Tokens are the vocabulary.** Name intent once (`blue.500`, `md`, `semibold`) and every style refers to the same
+  names.
+- **Atomic CSS that scales.** Each property and value becomes one shared class, so your CSS grows with the number of
+  distinct styles, not the number of components.
+- **Zero runtime.** It all compiles to plain CSS at build time. Nothing computes styles in the browser.
 
-If you want the why-build-time pitch first, read [Why Panda](/docs/overview/why-panda).
+The only question day to day is which API to reach for as a component grows. Start local. Promote only when the shape of
+the styles forces it. This walk builds a Button, then a Card, and climbs the ladder: `css` → `cva` → `sva` → config.
+
+If you want the why-build-time pitch first, read [Why Panda](/docs/styling/why-panda).
 
 ## Step 1: Start with `css()`
 

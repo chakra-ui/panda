@@ -133,6 +133,9 @@ fn polyfill_keeps_at_rule_descriptors() {
                 "initialValue": "blue"
             }
         },
+        "globalCss": {
+            "button": { "color": "var(--button-color)" }
+        },
         "globalPositionTry": {
             "flip": {
                 "positionAnchor": "--trigger",
@@ -153,6 +156,9 @@ fn polyfill_keeps_at_rule_descriptors() {
     assert_snapshot!(css, @r#"
     :root:not(#\#) {
       --made-with-panda: '🐼';
+    }
+    button:not(#\#) {
+      color: var(--button-color);
     }
     @property --button-color {
       syntax: '<color>';

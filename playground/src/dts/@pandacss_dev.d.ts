@@ -6,9 +6,7 @@ declare function defineConfig<const T extends Config>(config: T): T & {
 };
 declare function defineRecipe<T extends RecipeVariantRecord>(config: RecipeConfig<T>): RecipeConfig<T>;
 declare function defineSlotRecipe<S extends string, T extends SlotRecipeVariantRecord<S>>(config: SlotRecipeConfig<S, T>): SlotRecipeConfig<S, T>;
-declare function defineParts<T extends Parts>(parts: T): (config: Partial<Record<keyof T, SystemStyleObject>>) => {
-    [k: string]: Record<keyof T, SystemStyleObject>[number] | undefined;
-};
+declare function defineParts<T extends Parts>(parts: T): (config: Partial<Record<keyof T, SystemStyleObject>>) => SystemStyleObject;
 declare function definePattern<T extends PatternConfig>(config: T): PatternConfig;
 declare function definePreset<const T extends Preset>(preset: T): T;
 declare function defineKeyframes(keyframes: CssKeyframes): CssKeyframes;
