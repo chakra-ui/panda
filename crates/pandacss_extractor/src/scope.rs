@@ -249,7 +249,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         self.lookup_pure_fn_symbol(symbol_id)
     }
 
-    fn lookup_callable(&self, callee: &Expression<'_>) -> Option<OwnedPureFn> {
+    pub(crate) fn lookup_callable(&self, callee: &Expression<'_>) -> Option<OwnedPureFn> {
         match callee.get_inner_expression() {
             Expression::Identifier(ident) => {
                 let symbol_id = self.symbol_for_identifier(ident)?;
@@ -329,6 +329,32 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             .scoping()
             .get_reference(reference_id)
             .symbol_id()
+    }
+
+    /// Same-file `const`/`let`/`var` initializer when the binding is not an
+    /// import and has not been assigned after declaration. Destructuring
+    /// and function bindings return `None`.
+    #[must_use]
+    pub(crate) fn unmutated_binding_init(&self, symbol_id: SymbolId) -> Option<&Expression<'_>> {
+        let scoping = self.semantic.scoping();
+        if scoping
+            .symbol_flags(symbol_id)
+            .contains(SymbolFlags::Import)
+            || scoping.symbol_is_mutated(symbol_id)
+        {
+            return None;
+        }
+        let AstKind::VariableDeclarator(declarator) =
+            self.semantic.symbol_declaration(symbol_id).kind()
+        else {
+            return None;
+        };
+        match &declarator.id {
+            BindingPattern::BindingIdentifier(id) if id.symbol_id.get() == Some(symbol_id) => {
+                declarator.init.as_ref()
+            }
+            _ => None,
+        }
     }
 
     /// `true` iff the identifier resolves to an `import` specifier. Free

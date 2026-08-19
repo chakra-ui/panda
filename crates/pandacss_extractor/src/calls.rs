@@ -15,10 +15,14 @@ use crate::{
     style_tree::{expression_to_style_tree, project_literal},
 };
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{Argument, CallExpression, Expression, TaggedTemplateExpression};
+use oxc_ast::ast::{
+    Argument, CallExpression, Expression, IdentifierReference, TaggedTemplateExpression,
+};
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
+use oxc_semantic::SymbolId;
 use oxc_span::{GetSpan, SourceType};
+use rustc_hash::FxHashSet;
 use serde::Serialize;
 use std::borrow::Cow;
 
@@ -76,7 +80,8 @@ pub struct ExtractedCall {
     /// when every argument is `None`.
     pub data: Vec<Option<Literal>>,
     /// Internal-only hint for JSX factory calls such as
-    /// `styled("button", button, { defaultProps })`, where the second
+    /// `styled("button", button, { defaultProps })` or
+    /// `styled("button", recipes.button, { defaultProps })`, where the second
     /// argument is intentionally non-literal but still names a config recipe.
     #[serde(skip)]
     pub jsx_recipe_ident: Option<String>,
@@ -615,16 +620,93 @@ fn collect_call_style_source_refs(
 impl Extractor<'_, '_, '_> {
     fn jsx_recipe_identifier(&self, call: &CallExpression<'_>) -> Option<String> {
         let arg = call.arguments.get(1)?.as_expression()?;
-        let Expression::Identifier(ident) = arg else {
-            return None;
-        };
-        if let Some(resolver) = self.ctx.resolver
-            && !resolver.is_import_binding(ident)
-        {
+        self.recipe_name_from_expr(arg, &mut FxHashSet::default())
+    }
+
+    fn recipe_name_from_expr(
+        &self,
+        expr: &Expression<'_>,
+        visiting: &mut FxHashSet<SymbolId>,
+    ) -> Option<String> {
+        let inner = expr.get_inner_expression();
+        match inner {
+            Expression::Identifier(ident) => self.recipe_name_from_ident(ident, visiting),
+            Expression::StaticMemberExpression(_) => self.recipe_name_from_member(inner, visiting),
+            _ => None,
+        }
+    }
+
+    fn recipe_name_from_ident(
+        &self,
+        ident: &IdentifierReference<'_>,
+        visiting: &mut FxHashSet<SymbolId>,
+    ) -> Option<String> {
+        if self.is_import_like(ident) {
+            return self.named_recipe_import_name(ident);
+        }
+        let resolver = self.ctx.resolver?;
+        let symbol_id = resolver.symbol_for_identifier(ident)?;
+        if !visiting.insert(symbol_id) {
             return None;
         }
+        let init = resolver.unmutated_binding_init(symbol_id)?;
+        self.recipe_name_from_expr(init, visiting)
+    }
+
+    fn recipe_name_from_member(
+        &self,
+        expr: &Expression<'_>,
+        visiting: &mut FxHashSet<SymbolId>,
+    ) -> Option<String> {
+        let (object, path) = flatten_static_member_path(expr)?;
+        let [property] = path.as_slice() else {
+            return None;
+        };
+        self.recipe_namespace_root(object, visiting)?;
+        self.ctx
+            .config
+            .matchers
+            .category_accepts_name(MatchCategory::Recipe, property)
+            .then(|| (*property).to_owned())
+    }
+
+    fn recipe_namespace_root(
+        &self,
+        ident: &IdentifierReference<'_>,
+        visiting: &mut FxHashSet<SymbolId>,
+    ) -> Option<&MatchedImport> {
+        if self.is_import_like(ident) {
+            return self.namespace_recipe_import(ident);
+        }
+        let resolver = self.ctx.resolver?;
+        let symbol_id = resolver.symbol_for_identifier(ident)?;
+        if !visiting.insert(symbol_id) {
+            return None;
+        }
+        let init = resolver.unmutated_binding_init(symbol_id)?;
+        match init.get_inner_expression() {
+            Expression::Identifier(inner) => self.recipe_namespace_root(inner, visiting),
+            _ => None,
+        }
+    }
+
+    fn is_import_like(&self, ident: &IdentifierReference<'_>) -> bool {
+        self.ctx
+            .resolver
+            .is_none_or(|resolver| resolver.is_import_binding(ident))
+    }
+
+    fn named_recipe_import_name(&self, ident: &IdentifierReference<'_>) -> Option<String> {
         let matched = self.ctx.aliases.get(ident.name.as_str())?;
-        (matched.category == MatchCategory::Recipe).then(|| matched.name.clone())
+        (matched.kind == ImportSpecifierKind::Named && matched.category == MatchCategory::Recipe)
+            .then(|| matched.name.clone())
+    }
+
+    fn namespace_recipe_import(&self, ident: &IdentifierReference<'_>) -> Option<&MatchedImport> {
+        let matched = self.ctx.aliases.get(ident.name.as_str())?;
+        (matched.kind == ImportSpecifierKind::Namespace
+            && matched.category == MatchCategory::Recipe)
+            .then_some(matched)
     }
 }
 

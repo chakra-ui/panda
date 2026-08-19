@@ -6,8 +6,8 @@
 
 use oxc_ast::ast::{
     ArrayExpression, ArrayExpressionElement, ChainElement, ChainExpression,
-    ComputedMemberExpression, Expression, LogicalOperator, ObjectExpression, ObjectPropertyKind,
-    PropertyKind, StaticMemberExpression,
+    ComputedMemberExpression, Expression, LogicalOperator, ObjectExpression, ObjectProperty,
+    ObjectPropertyKind, PropertyKind, StaticMemberExpression,
 };
 use oxc_span::GetSpan;
 
@@ -16,6 +16,7 @@ use pandacss_shared::Span;
 use crate::literal::{
     expression_to_literal, literal_to_property_key, property_key_to_string, truthy,
 };
+use crate::pure_fn::fold_accessor_expr;
 use crate::{Literal, Resolver, span_from_oxc};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -415,12 +416,6 @@ fn object_to_style_tree(
     for prop in &obj.properties {
         match prop {
             ObjectPropertyKind::ObjectProperty(prop) => {
-                if prop.method || prop.kind != PropertyKind::Init {
-                    spreads.push(StyleSpread::Open {
-                        span: span_from_oxc(prop.span),
-                    });
-                    continue;
-                }
                 let Some(key) = property_key_to_string(&prop.key, prop.computed, resolver) else {
                     spreads.push(StyleSpread::Open {
                         span: span_from_oxc(prop.span),
@@ -428,6 +423,18 @@ fn object_to_style_tree(
                     continue;
                 };
                 mark_spreads_overridden(&mut spreads, &key);
+                if key == "defaultProps"
+                    && let Some(value) = fold_default_props_property(prop, resolver)
+                {
+                    upsert_style_entry(&mut entries, key, value);
+                    continue;
+                }
+                if prop.method || prop.kind != PropertyKind::Init {
+                    spreads.push(StyleSpread::Open {
+                        span: span_from_oxc(prop.span),
+                    });
+                    continue;
+                }
                 match expression_to_style_tree(&prop.value, resolver) {
                     Some(value) => upsert_style_entry(&mut entries, key, value),
                     None => upsert_open_style_entry(&mut entries, key),
@@ -443,6 +450,31 @@ fn object_to_style_tree(
         return None;
     }
     Some(StyleTree::Object(StyleObject { entries, spreads }))
+}
+
+/// Fold `defaultProps` when it is a static object or a zero-arg callable.
+fn fold_default_props_property(
+    prop: &ObjectProperty<'_>,
+    resolver: Option<&Resolver<'_, '_>>,
+) -> Option<StyleTree> {
+    if prop.kind == PropertyKind::Set {
+        return None;
+    }
+    if is_callable_default_props(prop) {
+        return fold_accessor_expr(&prop.value, resolver).map(literal_to_style_tree);
+    }
+    expression_to_style_tree(&prop.value, resolver)
+        .or_else(|| fold_accessor_expr(&prop.value, resolver).map(literal_to_style_tree))
+}
+
+fn is_callable_default_props(prop: &ObjectProperty<'_>) -> bool {
+    if prop.method || prop.kind == PropertyKind::Get {
+        return true;
+    }
+    matches!(
+        prop.value.get_inner_expression(),
+        Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_)
+    )
 }
 
 fn push_style_spread(

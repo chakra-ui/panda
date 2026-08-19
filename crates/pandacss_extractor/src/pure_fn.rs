@@ -117,6 +117,21 @@ pub(crate) fn lower_callable_expr(
     }
 }
 
+/// Apply a zero-arg accessor. Required parameters stay open.
+#[must_use]
+pub(crate) fn fold_accessor_expr(
+    expr: &Expression<'_>,
+    resolver: Option<&Resolver<'_, '_>>,
+) -> Option<Literal> {
+    let func = match expr.get_inner_expression() {
+        Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_) => {
+            lower_callable_expr(expr, resolver)?
+        }
+        _ => resolver?.lookup_callable(expr)?,
+    };
+    apply_pure_fn(&func, &[])
+}
+
 pub(crate) fn lower_arrow(
     arrow: &ArrowFunctionExpression<'_>,
     resolver: Option<&Resolver<'_, '_>>,
