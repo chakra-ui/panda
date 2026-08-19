@@ -28,7 +28,7 @@ export default defineConfig({
 ## Types like StyleContextProvider or a recipe's variant type aren't exported
 
 If users hit a type error saying something your library re-exports from the shared `styled-system` package
-isn't exported, for example a `createStyleContext`-generated provider type, or a recipe's variant type, check two
+isn't exported, for example a `createSlotRecipeContext`-generated provider type, or a recipe's variant type, check two
 things before assuming it's a Panda issue:
 
 1. **The `styled-system` package's own `exports` map.** Every conditional export needs `types` listed first, before

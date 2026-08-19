@@ -133,6 +133,12 @@ fn optimize_defaults_and_overrides() {
     .expect("treeshake design system config");
     assert!(treeshake.optimize.treeshake_design_system);
 
+    let fallback: UserConfig = serde_json::from_value(json!({
+        "optimize": { "propertyFallback": true }
+    }))
+    .expect("property fallback config");
+    assert!(fallback.optimize.property_fallback);
+
     let serialized = serde_json::to_value(&configured).expect("serialized config");
     assert_eq!(
         serialized.get("optimize"),
@@ -140,7 +146,8 @@ fn optimize_defaults_and_overrides() {
             "removeUnusedTokens": true,
             "removeUnusedKeyframes": true,
             "smartCompoundVariants": false,
-            "treeshakeDesignSystem": false
+            "treeshakeDesignSystem": false,
+            "propertyFallback": false
         }))
     );
 }

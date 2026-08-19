@@ -1,39 +1,61 @@
 ---
 title: Panda Studio in v2
-description: The Astro-based Panda Studio app is being replaced by a lighter live viewer plus a codegen command. Not yet shipped.
+description: A CLI-generated token viewer is coming to v2 — panda studio, plus getTokenJson, getTokenHtml, and getTokenCss. Not in the beta yet.
 ---
 
-> **This page describes a feature that isn't available yet.** It's part of the v2 rewrite covered in
-> [Upgrading to v2](/docs/styling/upgrading-to-v2), still marked as proposed internally. For the current version of
-> Panda Studio, see [Panda Studio](/docs/theming/studio).
+<Callout type="warning">
+  Coming soon. `panda studio` isn't in the v2 beta yet — it's still in progress. This page previews the shape so you can
+  plan around it. For the shipped version, see [Panda Studio](/docs/theming/studio).
+</Callout>
 
-## What's changing
+## What's coming
 
-The current [Panda Studio](/docs/theming/studio) is a full Astro application: installing it means installing an
-entire framework runtime to look at your tokens, and self-hosting it to share with a team. The plan for v2 removes
-that Astro app entirely and replaces it with two lighter commands that both read the same generated token snapshot:
+The v1 [Panda Studio](/docs/theming/studio) is a separate Astro app — install a framework, boot a server, self-host to
+share. The Rust migration removed that pipeline, so v2 has no built-in way to look at your tokens today.
 
-- **`panda studio`** boots a small, dependency-light live viewer, no framework runtime, meant as a direct,
-  regression-safe replacement for "run a server, look at my tokens."
-- **`panda studio generate`** takes a different approach entirely: instead of running a server, it writes the token
-  view components as real source files into your own project, the same way tools like shadcn/ui hand you component
-  source instead of a package. You own the generated files and can render them however you already document your
-  design system, in your app, in Storybook, in an MDX page, and re-run the command to refresh them.
+`panda studio` brings token visualization back without the Astro weight. It writes `styled-system/studio` into your
+project and boots a live viewer:
 
 ```sh
-panda studio                          # boot the live viewer
-panda studio generate                 # emit view components into your project
-panda studio generate --outdir .storybook/studio
+panda studio                     # emit styled-system/studio + boot the viewer
+panda studio --port 4137
+panda studio --css ./studio.css  # render the viewer with your own stylesheet
 ```
 
-Generated views are expected to respect `config.jsxFramework`, with React and Solid as the initially planned targets.
+`styled-system/studio` exports three framework-agnostic functions, modeled on [Tiptap](https://tiptap.dev)'s `getHTML` /
+`getJSON` — small functions that each hand you one thing:
 
-## Why split it this way
+- **`getTokenJson({ category, query })`** — your tokens as data. Filter by category, search by query, or omit both for
+  everything. Each token is `{ category, path, name, value, conditions? }`, values fully resolved, with semantic tokens
+  carrying their per-condition and per-theme values.
+- **`getTokenHtml({ tokens })`** — semantic, style-free HTML. Names and values as text, everything else on `data-`
+  attributes, all escaped. Drop it into any framework (`dangerouslySetInnerHTML`, `v-html`, `innerHTML`) or write it to
+  a file.
+- **`getTokenCss(yourStylesheet)`** — takes your CSS and wires it up. It exposes each token's value as a `--pds-value`
+  variable on the matching `[data-value]` element, then appends your stylesheet, so `var(--pds-value)` resolves to real
+  token values.
 
-Two different asks were driving this: teams that just want to boot a viewer and look at their tokens (what v1
-already did, minus the Astro weight), and teams that already document their design system their own way and want
-the token views as source they control, not another app to run alongside their own docs. One command can't serve
-both well, so v2 splits them instead of trying to make one do both.
+Panda ships the content and the wiring, not the design. There's no default theme and no bundled stylesheet — the grid,
+swatches, and type are yours. A bare `panda studio` is plain until you pass `--css`.
+
+```tsx
+import { getTokenJson, getTokenHtml, getTokenCss } from '../styled-system/studio'
+import myCss from './studio.css?raw'
+
+function Colors() {
+  const [tokens, setTokens] = useState(getTokenJson({ category: 'colors' }))
+  return (
+    <div>
+      <style>{getTokenCss(myCss)}</style>
+      <input onChange={(e) => setTokens(getTokenJson({ category: 'colors', query: e.target.value }))} />
+      <div dangerouslySetInnerHTML={{ __html: getTokenHtml({ tokens }) }} />
+    </div>
+  )
+}
+```
+
+The generated module is self-contained — the runtime is inlined with your tokens baked in, so it imports nothing at
+runtime.
 
 ## See also
 

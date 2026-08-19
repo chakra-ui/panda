@@ -13,6 +13,7 @@ import { helpers } from './helpers'
 import { interactivity } from './interactivity'
 import { layout } from './layout'
 import { list } from './list'
+import { mask } from './mask'
 import { outline } from './outline'
 import { polyfill } from './polyfill'
 import { sizing } from './sizing'
@@ -26,6 +27,7 @@ import { typography } from './typography'
 export const utilities: UtilityConfig = Object.assign(
   {},
   layout,
+  mask,
   display,
   flexGrid,
   spacing,

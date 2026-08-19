@@ -83,6 +83,11 @@ Some topics span several notes. Keep the detailed contract in one place and link
 - [Container query theme API](./container-query-theme-api.md) — `theme.containers` as the shared scale for typed
   container conditions, `theme.containerNames` as named query scopes, native CSS props for container declaration, and
   migration guidance for legacy `containerSizes`/`cq` concepts.
+- [CSS custom functions](./css-custom-functions.md) — proposed native `@function` definitions in `theme.functions`,
+  generated typed call builders in `styled-system/functions`, config-recipe authoring, extraction, emission, and
+  design-system publishing.
+- [Ordered CSS value fallbacks](./css-value-fallbacks.md) — proposed `css.fallback()` declaration runs across inline
+  styles, recipes, slot recipes, patterns, build info, and design-system hydration.
 - [Token reference syntax](./token-reference-syntax.md) — `tokenSyntax: '$'`: Stitches-style `$` token syntax in style
   values, replacing the v1 `tokens:created` rename hook. Includes the v1 → v2 migration guide.
 - [View Transition API](./view-transition-api.md) — `viewTransition()` bag class from the css barrel,

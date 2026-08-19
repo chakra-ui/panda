@@ -106,6 +106,56 @@ export default defineConfig({
 
 > Keys from `globalVars` are suggestable in style objects and generated near your tokens at `cssVarRoot`.
 
+### Variables owned by a utility
+
+A utility that writes a CSS variable declares the registration itself, so the two can't drift apart:
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  utilities: {
+    blur: {
+      className: 'blur',
+      globalVars: {
+        '--blur': { syntax: '*', inherits: false }
+      },
+      transform: (value) => ({ '--blur': `blur(${value})` })
+    }
+  }
+})
+```
+
+Only the utility that *writes* the variable needs to declare it. A second utility that reads it — `filter: 'auto'`
+composing `var(--blur, )` — declares nothing.
+
+These merge into `globalVars`, and Panda drops any registration your stylesheet never references. Declaring one
+costs nothing until it's used, which is how `preset-base` registers dozens of them without charging projects that
+don't mask, transform, or filter.
+
+Two rules keep collisions honest:
+
+- Two utilities registering the same name with different definitions is a config error. A CSS variable has one
+  registration for the whole document, so share one definition between them.
+- Putting a plain value on a name a utility registered warns, because the value drops the `@property` registration
+  and starts the variable inheriting. Pass a full `@property` object if you meant to retune it. The warning only
+  appears when your stylesheet actually reads that variable, so reusing a name the preset happens to reserve is
+  fine as long as the two never meet.
+
+### Older browsers
+
+`@property` needs Chrome 85+, Safari 16.4+, or Firefox 128+. Engines without it skip the registration entirely, so a
+declaration that reads an unregistered variable is dropped — the utility silently does nothing.
+
+Set `optimize.propertyFallback` to also seed the defaults as plain declarations:
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  optimize: { propertyFallback: true }
+})
+```
+
+Panda derives the seeds from the registrations it actually emitted, so you only pay for the variables your project
+uses. Modern engines ignore them.
+
 ## Troubleshooting
 
 - **Global styles aren't applied:** Confirm `preflight` is enabled (if you expect reset), and ensure your selector

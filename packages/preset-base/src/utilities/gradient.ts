@@ -1,4 +1,13 @@
 import type { PropertyValues, UtilityConfig } from '@pandacss/types'
+import { anyVar, cssVar } from '../css-var'
+
+// Transparent, not black — otherwise `gradientTo` alone fades from opaque.
+const stopColor = () => cssVar('<color>', '#0000')
+const composed = {
+  '--gradient-position': anyVar(),
+  '--gradient-stops': anyVar(),
+  '--gradient-via-stops': anyVar(),
+}
 import { createColorMixTransform } from '../color-mix-transform'
 
 const gradientVia = createColorMixTransform('--gradient-via')
@@ -34,6 +43,7 @@ export const backgroundGradients: UtilityConfig = {
     shorthand: 'bgGradient',
     className: 'bg-grad',
     group: 'Background Gradient',
+    globalVars: composed,
     values: linearGradientValues,
     transform(value, { raw, token }) {
       const tokenValue = token(`gradients.${raw}`)
@@ -58,6 +68,7 @@ export const backgroundGradients: UtilityConfig = {
     shorthand: 'bgLinear',
     className: 'bg-linear',
     group: 'Background Gradient',
+    globalVars: composed,
     values: linearGradientValues,
     transform(value, { raw, token }) {
       const tokenValue = token(`gradients.${raw}`)
@@ -82,6 +93,7 @@ export const backgroundGradients: UtilityConfig = {
     shorthand: 'bgRadial',
     className: 'bg-radial',
     group: 'Background Gradient',
+    globalVars: composed,
     values: 'gradients',
     transform(value, { raw, token }) {
       const tokenValue = token(`gradients.${raw}`)
@@ -101,6 +113,7 @@ export const backgroundGradients: UtilityConfig = {
     shorthand: 'bgConic',
     className: 'bg-conic',
     group: 'Background Gradient',
+    globalVars: composed,
     transform(value) {
       return {
         '--gradient-stops': gradientStops,
@@ -113,6 +126,7 @@ export const backgroundGradients: UtilityConfig = {
   textGradient: {
     className: 'txt-grad',
     group: 'Background Gradient',
+    globalVars: composed,
     values: linearGradientValues,
     transform(value, { raw, token }) {
       const tokenValue = token(`gradients.${raw}`)
@@ -143,6 +157,7 @@ export const backgroundGradients: UtilityConfig = {
   gradientFromPosition: {
     className: 'grad-from-pos',
     group: 'Background Gradient',
+    globalVars: { '--gradient-from-position': cssVar('<length-percentage>', '0%') },
     transform(value) {
       return {
         '--gradient-from-position': value,
@@ -152,6 +167,7 @@ export const backgroundGradients: UtilityConfig = {
   gradientToPosition: {
     className: 'grad-to-pos',
     group: 'Background Gradient',
+    globalVars: { '--gradient-to-position': cssVar('<length-percentage>', '100%') },
     transform(value) {
       return {
         '--gradient-to-position': value,
@@ -162,18 +178,21 @@ export const backgroundGradients: UtilityConfig = {
     className: 'grad-from',
     values: 'colors',
     group: 'Background Gradient',
+    globalVars: { '--gradient-from': stopColor() },
     transform: createColorMixTransform('--gradient-from'),
   },
   gradientTo: {
     className: 'grad-to',
     values: 'colors',
     group: 'Background Gradient',
+    globalVars: { '--gradient-to': stopColor() },
     transform: createColorMixTransform('--gradient-to'),
   },
   gradientVia: {
     className: 'grad-via',
     values: 'colors',
     group: 'Background Gradient',
+    globalVars: { '--gradient-via': stopColor() },
     transform(value, args) {
       const transformed = gradientVia(value, args)
       return {
@@ -186,6 +205,7 @@ export const backgroundGradients: UtilityConfig = {
   gradientViaPosition: {
     className: 'grad-via-pos',
     group: 'Background Gradient',
+    globalVars: { '--gradient-via-position': cssVar('<length-percentage>', '50%') },
     transform(value) {
       return {
         '--gradient-via-position': value,

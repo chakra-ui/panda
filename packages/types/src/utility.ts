@@ -1,3 +1,4 @@
+import type { GlobalVarsDefinition } from './global-vars'
 import type { LiteralUnion } from './shared'
 import type { CssProperty, NestedCssProperties } from './system-types'
 import type { Token, TokenCategory } from './tokens'
@@ -68,6 +69,11 @@ export interface PropertyConfig {
    * Whether this utility is deprecated or not.
    */
   deprecated?: boolean
+  /**
+   * `@property` registrations for the CSS variables this utility writes. Merged into the
+   * config-level `globalVars`, and pruned when the stylesheet never references them.
+   */
+  globalVars?: GlobalVarsDefinition
 }
 
 export type CssSemanticGroup =
@@ -88,6 +94,7 @@ export type CssSemanticGroup =
   | 'Layout'
   | 'List'
   | 'Margin'
+  | 'Mask'
   | 'Other'
   | 'Padding'
   | 'Position'

@@ -155,11 +155,7 @@ export const typography: UtilityConfig = {
   },
   textWrap: {
     className: 'tw',
-    values: ['wrap', 'balance', 'nowrap'],
     group: 'Typography',
-    transform(value) {
-      return { textWrap: value }
-    },
   },
   truncate: {
     className: 'trunc',

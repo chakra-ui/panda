@@ -1,5 +1,21 @@
-import type { UtilityConfig } from '@pandacss/types'
+import type { NestedCssProperties, UtilityConfig } from '@pandacss/types'
+import { anyVar, cssVar } from '../css-var'
 import { createColorMixTransform } from '../color-mix-transform'
+
+const SCROLLBAR_COLOR = 'var(--scrollbar-thumb, currentColor) var(--scrollbar-track, transparent)'
+
+function scrollbarColorStyles(colorVars: NestedCssProperties | undefined) {
+  return {
+    ...colorVars,
+    scrollbarColor: SCROLLBAR_COLOR,
+    '&::-webkit-scrollbar-thumb': {
+      backgroundColor: 'var(--scrollbar-thumb, currentColor)',
+    },
+    '&::-webkit-scrollbar-track': {
+      backgroundColor: 'var(--scrollbar-track, transparent)',
+    },
+  }
+}
 
 export const interactivity: UtilityConfig = {
   accentColor: {
@@ -47,9 +63,25 @@ export const interactivity: UtilityConfig = {
   },
   scrollbarColor: {
     className: 'scr-bar-c',
+    group: 'Scroll',
+  },
+  scrollbarThumb: {
+    className: 'scr-bar-th',
     values: 'colors',
     group: 'Scroll',
-    transform: createColorMixTransform('scrollbarColor'),
+    globalVars: { '--scrollbar-thumb': cssVar('<color>') },
+    transform(value, args) {
+      return scrollbarColorStyles(createColorMixTransform('--scrollbar-thumb')(value, args))
+    },
+  },
+  scrollbarTrack: {
+    className: 'scr-bar-tk',
+    values: 'colors',
+    group: 'Scroll',
+    globalVars: { '--scrollbar-track': cssVar('<color>') },
+    transform(value, args) {
+      return scrollbarColorStyles(createColorMixTransform('--scrollbar-track')(value, args))
+    },
   },
   scrollbarGutter: {
     className: 'scr-bar-g',
@@ -57,7 +89,6 @@ export const interactivity: UtilityConfig = {
   },
   scrollbarWidth: {
     className: 'scr-bar-w',
-    values: 'sizes',
     group: 'Scroll',
   },
 
@@ -203,6 +234,7 @@ export const interactivity: UtilityConfig = {
     className: 'scrs-strt',
     values: ['mandatory', 'proximity'],
     group: 'Scroll',
+    globalVars: { '--scroll-snap-strictness': anyVar('proximity') },
     transform(value) {
       return {
         '--scroll-snap-strictness': value,

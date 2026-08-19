@@ -1,4 +1,12 @@
 import type { UtilityConfig } from '@pandacss/types'
+import { anyVar, cssVar } from '../css-var'
+
+const length = () => cssVar('<length-percentage>', '0')
+
+// The `rotate` property holds one rotation, so `rotate: 'auto'` composes on `transform`
+// instead. Each axis variable holds the whole function, and an unset one contributes
+// nothing through the empty `var(--rotate-x,)` fallback.
+const ROTATE_AXES = ['x', 'y', 'z'].map((axis) => `var(--rotate-${axis},)`).join(' ')
 
 const positiveFractions = {
   '1/2': '50%',
@@ -35,18 +43,20 @@ export const transforms: UtilityConfig = {
     className: 'rotate',
     group: 'Transform',
     property: 'rotate',
-    values: {
-      auto: 'var(--rotate-x) var(--rotate-y)',
-      'auto-3d': 'var(--rotate-x) var(--rotate-y) var(--rotate-z)',
+    // `auto-3d` is an alias: an unset axis contributes nothing either way.
+    values: { auto: 'auto', 'auto-3d': 'auto' },
+    transform(value) {
+      return value === 'auto' ? { transform: ROTATE_AXES } : { rotate: value }
     },
   },
   rotateX: {
     className: 'rotate-x',
     group: 'Transform',
     property: 'rotate',
+    globalVars: { '--rotate-x': anyVar() },
     transform(value) {
       return {
-        '--rotate-x': value,
+        '--rotate-x': `rotateX(${value})`,
       }
     },
   },
@@ -54,9 +64,10 @@ export const transforms: UtilityConfig = {
     className: 'rotate-y',
     group: 'Transform',
     property: 'rotate',
+    globalVars: { '--rotate-y': anyVar() },
     transform(value) {
       return {
-        '--rotate-y': value,
+        '--rotate-y': `rotateY(${value})`,
       }
     },
   },
@@ -64,9 +75,10 @@ export const transforms: UtilityConfig = {
     className: 'rotate-z',
     group: 'Transform',
     property: 'rotate',
+    globalVars: { '--rotate-z': anyVar() },
     transform(value) {
       return {
-        '--rotate-z': value,
+        '--rotate-z': `rotateZ(${value})`,
       }
     },
   },
@@ -81,6 +93,7 @@ export const transforms: UtilityConfig = {
   scaleX: {
     className: 'scale-x',
     group: 'Transform',
+    globalVars: { '--scale-x': anyVar('1') },
     transform(value) {
       return {
         '--scale-x': value,
@@ -90,6 +103,7 @@ export const transforms: UtilityConfig = {
   scaleY: {
     className: 'scale-y',
     group: 'Transform',
+    globalVars: { '--scale-y': anyVar('1') },
     transform(value) {
       return {
         '--scale-y': value,
@@ -109,6 +123,7 @@ export const transforms: UtilityConfig = {
     shorthand: 'x',
     className: 'translate-x',
     group: 'Transform',
+    globalVars: { '--translate-x': length() },
     values(theme) {
       return {
         ...theme('spacing'),
@@ -125,6 +140,7 @@ export const transforms: UtilityConfig = {
     shorthand: 'y',
     className: 'translate-y',
     group: 'Transform',
+    globalVars: { '--translate-y': length() },
     values(theme) {
       return {
         ...theme('spacing'),
@@ -141,11 +157,11 @@ export const transforms: UtilityConfig = {
     shorthand: 'z',
     className: 'translate-z',
     group: 'Transform',
+    // `<length>`, not `<length-percentage>`: the third slot of `translate` rejects a
+    // percentage, and a stray one would take x and y down with it.
+    globalVars: { '--translate-z': cssVar('<length>', '0') },
     values(theme) {
-      return {
-        ...theme('spacing'),
-        ...fractions,
-      }
+      return theme('spacing')
     },
     transform(value) {
       return {

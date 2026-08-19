@@ -220,6 +220,24 @@ The engine aims for the same CSS as v1. These are the differences you'll notice,
 - **Eager compound variants.** Compound variants emit at build time as named classes in
   `@layer recipes.compound_variants` (v1 atomized them into utilities). Runtime combo classes still apply for dynamic
   usage. Set `optimize.smartCompoundVariants: true` to emit only extracted combinations.
+- **Prefix before standard.** Prefixed twins (`mask-image`, `appearance`, `clip-path`, `background-clip`,
+  `backdrop-filter`, …) emit `-webkit-*` first. Lightning CSS drops the unprefixed declaration when the prefix comes
+  second.
+- **Unused `@property` registrations are dropped.** A `globalVars` entry in `@property` form only reaches the base layer
+  if the stylesheet reads or writes that variable. Plain string `globalVars` always emit. This is what lets a preset
+  register dozens of variables — the mask helpers do — without charging every project for them. If you reference a
+  registered variable only from CSS that Panda never sees, declare it in `globalCss` too.
+- **Utilities can own their variables.** A utility definition takes a `globalVars` of its own, so the registration for a
+  variable lives next to the utility that writes it instead of in a separate config block. It merges into the
+  config-level `globalVars` and is pruned the same way. Registering the same name twice with different definitions is an
+  error, as is replacing a utility's registration with a plain value.
+- **No more universal variable reset.** v1 gave `--translate-x`, `--blur`, `--gradient-from-position` and friends their
+  defaults through a `*, ::before, ::after, ::backdrop` rule — 34 declarations on every element, used or not. v2
+  registers those variables with `@property` instead, so they carry their own defaults, don't inherit, and only ship
+  when you use the utility. A page that uses none of them now has an empty base layer. This needs `@property`
+  (Chrome 85+, Safari 16.4+, Firefox 128+); older browsers drop the affected utilities rather than mis-render them. Set
+  `optimize.propertyFallback: true` to also seed those defaults as plain declarations, which restores the v1 behaviour
+  for the variables your project actually uses.
 
 ### Config: `optimize`
 
@@ -232,6 +250,7 @@ export default defineConfig({
     removeUnusedKeyframes: true,
     smartCompoundVariants: true, // JIT compound variant CSS (default: all combos)
     treeshakeDesignSystem: true, // hydrate only DS modules you import (default: all)
+    propertyFallback: true, // seed `@property` defaults for engines that ignore it
   },
 })
 ```
@@ -335,6 +354,35 @@ const slide = viewTransition({
 ```
 
 Panda owns the shared CSS; you still set `view-transition-name` yourself.
+
+### Conditions and utilities
+
+`preset-base` picks up a few CSS features that landed after v1.
+
+**Conditions.** `_pointerFine` / `_pointerCoarse` / `_pointerNone` (and the `_anyPointer*` variants), `_userValid` /
+`_userInvalid`, and `_inert`.
+
+**Masks.** Fade an edge or stack a spotlight without writing `mask-image` by hand. `maskBottomFrom`, `maskXFrom`,
+`maskLinear`, `maskRadialFrom`, `maskConic`. Raw `maskImage` is still the escape hatch and does not compose. The
+helpers run on `@property`-registered variables, so a parent's fade can't leak into a child.
+
+**Scrollbars.** `scrollbarThumb` and `scrollbarTrack` set the two `scrollbar-color` sides. `scrollbarGutter` takes the
+CSS value (`stable`, `stable both-edges`).
+
+**Keywords.** Write the CSS: `textWrap: 'pretty'`, `justifyContent: 'safe center'`, `alignItems: 'last baseline'`.
+Generated types include those strings. There is no `safeCenter` alias.
+
+```ts
+css({
+  overflow: 'auto',
+  maskBottomFrom: '80%',
+  scrollbarWidth: 'thin',
+  scrollbarThumb: 'gray.400',
+  color: { _pointerFine: 'blue.500' },
+  opacity: { _inert: '0.5' },
+  justifyContent: 'safe center',
+})
+```
 
 ### Source transformation
 
@@ -559,6 +607,22 @@ cx(css({ borderWidth: '1px', borderStyle: 'solid' }), css({ borderInlineEndWidth
 ```
 
 Border is not special-cased here on purpose: padding, margin, and every other property group sort the same way.
+
+### `scrollbarWidth` is `auto` | `thin` | `none`
+
+v1 mapped `scrollbarWidth` to `sizes` tokens. `scrollbar-width` never accepted a length, so `scrollbarWidth: '4'`
+emitted `var(--sizes-4)` and browsers dropped it.
+
+```ts
+// ❌ v1 — type-checked, invalid CSS
+css({ scrollbarWidth: '4' })
+
+// ✅ v2
+css({ scrollbarWidth: 'thin' })
+```
+
+If you passed a single color token to `scrollbarColor`, move it to `scrollbarThumb`. `scrollbarColor` is a raw two-value
+string (`'red transparent'`).
 
 ---
 

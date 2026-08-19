@@ -1,6 +1,7 @@
 export type * from './composition'
 export type * from './conditions'
 export type * from './config'
+export type * from './global-vars'
 export type * from './hooks'
 export type * from './parts'
 export type * from './pattern'

@@ -71,7 +71,7 @@ export function TabBar() {
             <TabLink key={tab.key} tab={tab} active={tab.key === activeKey} />
           ))}
           <CommunityMenu />
-          <a
+          <Link
             href="/blog"
             className={css({
               display: 'flex',
@@ -89,7 +89,7 @@ export function TabBar() {
             })}
           >
             Blog
-          </a>
+          </Link>
         </HStack>
       </HStack>
     </Box>

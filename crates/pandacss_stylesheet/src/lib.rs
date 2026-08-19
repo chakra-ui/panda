@@ -267,6 +267,8 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
         },
     );
 
+    diagnostics.extend(emitted.diagnostics);
+
     StylesheetOutput {
         css: emitted.css,
         source_map: options.source_map.then(String::new),
@@ -399,7 +401,7 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Sp
     };
     let recipes = merged_recipes.as_ref().unwrap_or(input.encoded_recipes);
 
-    let full = emitter::emit(
+    let mut full = emitter::emit(
         emitter::EmitInput {
             config: input.config,
             utility: &utility,
@@ -418,6 +420,8 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Sp
             polyfill: options.polyfill,
         },
     );
+
+    diagnostics.extend(std::mem::take(&mut full.diagnostics));
 
     let selected = options.layers.as_deref();
     let layer_selected =

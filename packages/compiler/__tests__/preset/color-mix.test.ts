@@ -4,8 +4,8 @@ import { applyConfigDefaults } from '@pandacss/compiler-shared'
 import { createConfigSnapshot, mergeConfigs } from '@pandacss/config'
 import type { UserConfig } from '@pandacss/types'
 import { describe, expect, it } from 'vitest'
-import { createCompilerFromSnapshot } from '../src'
-import { importMap } from './test-utils'
+import { createCompilerFromSnapshot } from '../../src'
+import { importMap } from '../test-utils'
 
 function createPresetCompiler(overrides: Partial<UserConfig> = {}) {
   const merged = mergeConfigs([

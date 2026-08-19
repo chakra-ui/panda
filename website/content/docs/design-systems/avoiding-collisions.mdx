@@ -51,15 +51,20 @@ import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   presets: ['@acme/marketing-preset', '@acme/product-preset'],
-  hooks: {
-    'preset:resolved': ({ preset, name }) => {
-      if (name === '@acme/marketing-preset' && preset.theme?.recipes?.button) {
-        preset.theme.recipes.marketingButton = preset.theme.recipes.button
-        delete preset.theme.recipes.button
+  plugins: [
+    {
+      name: 'rename-marketing-button',
+      hooks: {
+        'preset:resolved': ({ preset, name }) => {
+          if (name === '@acme/marketing-preset' && preset.theme?.recipes?.button) {
+            preset.theme.recipes.marketingButton = preset.theme.recipes.button
+            delete preset.theme.recipes.button
+          }
+          return preset
+        }
       }
-      return preset
     }
-  }
+  ]
 })
 ```
 

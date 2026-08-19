@@ -7,6 +7,7 @@
   "scripts": {
     "prepare": "husky && pnpm build:fast",
     "dev": "pnpm --parallel --filter=./packages/** dev",
+    "build:playground": "pnpm --filter playground build",
     "build:fast": "pnpm -r --parallel --filter=./packages/** build:fast",
     "build": "pnpm --filter @pandacss/compiler-wasm build && pnpm -r --filter=./packages/** --filter=!@pandacss/compiler-wasm build",
     "bench:rust-spike": "pnpm --filter=./bench baseline",
@@ -32,6 +33,7 @@
     "release": "pnpm release:prepare && pnpm release:verify && changeset publish",
     "release:prepare": "pnpm --filter @pandacss/compiler exec napi pre-publish --npm-dir npm --no-gh-release",
     "release:verify": "node scripts/verify-release-artifacts.mjs",
+    "release:sync-tag": "node scripts/sync-beta-dist-tag.mjs",
     "release-dev": "changeset version --snapshot dev && changeset publish --tag dev",
     "mdx-check": "mdx-local-link-checker docs && mdx-local-link-checker website/pages/docs"
   },

@@ -80,8 +80,10 @@ export default {
 }
 ```
 
-PostCSS does not write `styled-system` for you. Run `panda codegen` before the first build, or add it to your
-dev script.
+The plugin regenerates `styled-system` on every build, but the folder has to exist the first time the bundler resolves
+your imports. Run `panda codegen` (or `panda build`) in a `predev`/`prebuild` script so a fresh checkout builds — the
+[example apps](https://github.com/chakra-ui/panda-examples) are wired this way. To emit CSS without the folder at all,
+use [`panda cssgen`](/docs/reference/cli#cssgen).
 
 ## Add the entry CSS
 
@@ -217,5 +219,6 @@ the first, or give it its own parent link if it is a real child design system.
   needs to republish. If the build errors instead, the manifest has no `files` and recovery is disabled.
 - **`design_system_token_conflict` / `design_system_artifact_conflict`** are expected when you override on purpose.
 
-The [design system example](https://github.com/chakra-ui/panda/tree/v2/sandbox-design-system) in the Panda repo is a
-Vite app, a PostCSS app, and an app that extends the theme, all pointed at one workspace package.
+The [example apps](https://github.com/chakra-ui/panda-examples) show one design system shipped three ways: a monorepo
+that builds the system and a Next.js app together, an app that installs the published CSS and components with no Panda,
+and an app that runs Panda and extends the system's tokens. Grab any one with `degit`.
