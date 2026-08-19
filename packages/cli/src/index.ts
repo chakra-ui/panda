@@ -13,11 +13,11 @@ export {
   buildTokensSnapshot,
   createStudioRuntime,
   semanticMapFromTokens,
+  serveStudio,
   studioArtifactFiles,
   studioRuntimeModule,
-} from './studio-core'
-export type { StudioToken, StudioFile, StudioRuntime } from './studio-core'
-export { serveStudio } from './studio-server'
+} from './studio'
+export type { StudioToken, StudioFile, StudioRuntime } from './studio'
 export type {
   BuildFlags,
   BuildResult,

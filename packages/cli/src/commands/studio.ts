@@ -8,8 +8,14 @@ import { setExitCode } from '../result'
 import { runCommand } from '../run-command'
 import { studioServeFlagsSchema } from '../schema'
 import type { StudioServeFlags, StudioServeResult } from '../schema'
-import { serveStudio, type StudioServer } from '../studio-server'
-import { buildTokensSnapshot, createStudioRuntime, semanticMapFromTokens, studioArtifactFiles } from '../studio-core'
+import {
+  buildTokensSnapshot,
+  createStudioRuntime,
+  semanticMapFromTokens,
+  serveStudio,
+  studioArtifactFiles,
+  type StudioServer,
+} from '../studio'
 
 export const studioCommand = defineCommand({
   meta: {
@@ -28,7 +34,7 @@ export const studioCommand = defineCommand({
 })
 
 function readViewerCss(): string {
-  for (const rel of ['../studio-viewer.css', './studio-viewer.css']) {
+  for (const rel of ['../studio/viewer.css', './viewer.css', './studio/viewer.css']) {
     try {
       return readFileSync(new URL(rel, import.meta.url), 'utf8')
     } catch {}

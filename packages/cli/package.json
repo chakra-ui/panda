@@ -36,7 +36,7 @@
   "scripts": {
     "build": "pnpm build:report && tsup src/index.ts --format=esm --dts --no-splitting --shims && tsup src/cli-main.ts --format=esm --dts --no-splitting --shims --clean=false && pnpm copy:studio-css",
     "build:fast": "pnpm build:report && tsup src/index.ts src/cli-main.ts --format=esm --no-dts --no-splitting --shims && pnpm copy:studio-css",
-    "copy:studio-css": "node -e \"require('fs').copyFileSync('src/studio-viewer.css','dist/studio-viewer.css')\"",
+    "copy:studio-css": "node -e \"require('fs').copyFileSync('src/studio/viewer.css','dist/viewer.css')\"",
     "build:report": "rimraf report-ui/dist && tsup report-ui/src/main.tsx --format=iife --global-name=PandaAnalyzeReport --minify --no-dts --out-dir=report-ui/dist --platform=browser --target=es2020 && node scripts/write-analyze-report-bundle.mjs",
     "report:dev": "pnpm report:fixture && vite --host 127.0.0.1 report-ui",
     "report:fixture": "pnpm build:fast && node scripts/write-analyze-report-fixture.mjs",
