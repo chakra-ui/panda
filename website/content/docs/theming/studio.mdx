@@ -298,6 +298,54 @@ const css = getTokenCss(readFileSync('./studio.css', 'utf8'))
 writeFileSync('tokens.html', `<!doctype html><style>${css}</style>${getTokenHtml()}`)
 ```
 
+### In Storybook
+
+Storybook is where most teams already document their design system. The functions return plain data, an HTML string, and
+a CSS string, with no component and no runtime. So one story works in every Storybook renderer. Pick the framework your
+project uses; the body is the same two calls each time.
+
+The `@storybook/html` renderer needs no framework. A story that returns the markup with the CSS injected once is the
+whole thing:
+
+```ts
+// TokenStudio.stories.ts — @storybook/html
+import type { Meta, StoryObj } from '@storybook/html'
+import { getTokenHtml, getTokenCss } from '../styled-system/studio'
+import studioCss from './studio.css?raw'
+
+const meta: Meta = { title: 'Design System/Tokens' }
+export default meta
+
+export const Colors: StoryObj = {
+  render: () => `<style>${getTokenCss(studioCss)}</style>${getTokenHtml({ category: 'colors' })}`,
+}
+```
+
+For a React, Vue, Solid, or Preact Storybook, drop the same two calls into that framework's story. The render body
+matches the [framework examples above](#rendering-it-yourself). In React:
+
+```tsx
+// TokenStudio.stories.tsx — @storybook/react
+import type { Meta, StoryObj } from '@storybook/react'
+import { getTokenHtml, getTokenCss } from '../styled-system/studio'
+import studioCss from './studio.css?raw'
+
+const meta: Meta = { title: 'Design System/Tokens' }
+export default meta
+
+export const Colors: StoryObj = {
+  render: () => (
+    <>
+      <style>{getTokenCss(studioCss)}</style>
+      <div dangerouslySetInnerHTML={{ __html: getTokenHtml({ category: 'colors' }) }} />
+    </>
+  ),
+}
+```
+
+Add a story per category by passing `{ category: 'colors' }`, `{ category: 'spacing' }`, and so on. Or wire a Storybook
+control to `query` for a searchable panel. The stylesheet is yours; Storybook renders whatever `studio.css` styles.
+
 ## What Panda ships, and what it doesn't
 
 The `styled-system/studio` module gives you the data (`getTokenJson`), the markup (`getTokenHtml`), and the wiring that
