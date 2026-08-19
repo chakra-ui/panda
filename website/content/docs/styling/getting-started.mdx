@@ -1,5 +1,5 @@
 ---
-title: Get started with Panda
+title: Welcome to Panda
 description: The universal design system solution for the web
 ---
 
@@ -12,36 +12,51 @@ Just-in-Time)
 
 > TLDR; Panda is a CSS-in-JS engine that generates atomic CSS at build time (via CLI or PostCSS)
 
-## Requirements
+## Why Panda
 
-Panda v2 is **ESM-only**. Every `@pandacss/*` package ships as an ES module — there's no separate CommonJS build. Two
-things follow from that:
+- **Static analysis:** Panda parses your styles at build time and generates plain CSS files that work in any
+  JavaScript framework.
+- **Type safety:** Panda combines `csstype` with auto-generated typings, so CSS properties and design tokens are
+  type-checked as you write them.
+- **Performance:** styles compile down to atomic CSS ahead of time, so there's no runtime style engine shipped to the
+  browser.
+- **Developer experience:** recipes, patterns, design tokens, and JSX style props give you a consistent way to author
+  styles without hand-rolling your own system.
+- **Modern CSS:** generated styles use cascade layers, CSS variables, and modern selectors like `:where` and `:is`.
 
-- **Node.js 22.12 or newer.** This is the first release where `require()` can load an ES module, so CommonJS tooling can
-  still pull Panda in. On older versions Panda won't load at all.
-- **Author your config as ESM.** `panda.config.ts` already uses `import` and `export default`, so nothing changes there.
-  For a plain `postcss.config.js`, make sure the file is ESM — set `"type": "module"` in your `package.json`, or name it
-  `.mjs`.
+Here's what using Panda looks like in practice:
 
-Some build tools still expect a CommonJS PostCSS config — Next.js is the main one. For those, keep a `postcss.config.cjs`
-that does `require('@pandacss/dev/postcss')`; the plugin ships a CommonJS entry for exactly this case. Each
-[framework guide](#framework-guides) shows the right form for its setup.
+```jsx
+import { css } from '../styled-system/css'
+import { circle, stack } from '../styled-system/patterns'
+
+function App() {
+  return (
+    <div
+      className={stack({
+        direction: 'row',
+        p: '4',
+        rounded: 'md',
+        shadow: 'lg',
+        bg: 'white'
+      })}
+    >
+      <div className={circle({ size: '5rem', overflow: 'hidden' })}>
+        <img src="https://via.placeholder.com/150" alt="avatar" />
+      </div>
+      <div className={css({ mt: '4', fontSize: 'xl', fontWeight: 'semibold' })}>John Doe</div>
+      <div className={css({ mt: '2', fontSize: 'sm', color: 'gray.600' })}>john@doe.com</div>
+    </div>
+  )
+}
+```
+
 
 ## Installation
 
-### General Guides
+Panda can be installed as a CLI tool, a PostCSS plugin, through a framework-specific guide, or inside Storybook.
 
-- [Panda CLI](/docs/styling/cli): The simplest way to use Panda is with the Panda CLI tool.
-
-- [Using PostCSS](/docs/styling/postcss): (**Recommended**) Installing Panda as a PostCSS plugin is the recommended
-  way to integrate it with your project.
-
-### Framework Guides
-
-Start using Panda CSS in your JavaScript framework using our framework-specific guides that cover our recommended
-approach.
-
-<FrameworkCards />
+<Card arrow title="Installation" description="Pick the setup that matches your project" href="/docs/styling/installation" />
 
 ## Next Steps
 

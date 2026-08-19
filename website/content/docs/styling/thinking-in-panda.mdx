@@ -16,11 +16,11 @@ Panda has one mental model, and everything below is that model at different size
 The only question day to day is which API to reach for as a component grows. Start local. Promote only when the shape of
 the styles forces it. This walk builds a Button, then a Card, and climbs the ladder: `css` → `cva` → `sva` → config.
 
-If you want the why-build-time pitch first, read [Why Panda](/docs/styling/why-panda).
+Want the case for build-time styles first? Read [Welcome to Panda](/docs/styling/getting-started).
 
 ## Step 1: Start with `css()`
 
-You need a button. One look, no variants yet. Put the styles on the element:
+Say you need a button, one look, no variants yet. Use `css()` to put the styles right on the element:
 
 ```tsx
 import { css } from '../styled-system/css'
@@ -53,8 +53,8 @@ A few habits show up here and stay true for every later step.
 
 **Conditions live in the object.** `_hover` and `md` are keys next to the rest of the styles. No separate media file.
 
-**Keep styles static.** Panda reads your source at build time. Literals, local constants, and ternaries are fine. Values
-that only exist when the app runs are not. Map runtime choices to styles Panda can see:
+**Keep styles static.** Panda reads your source at build time, so literals, local constants, and ternaries are all fine.
+The moment a value only exists once the app is running, Panda can't see it. Map runtime choices to styles Panda can see:
 
 ```tsx
 // ❌ Panda can't see `shade` at build time
@@ -73,17 +73,19 @@ function Text({ shade }: { shade: keyof typeof byShade }) {
 }
 ```
 
-For values that are genuinely dynamic (a user-picked color, a computed length), use CSS variables. See
-[dynamic styling](/docs/guides/dynamic-styling).
+> `byShade` is really just a variant map without the name. Catch yourself hand-rolling one like this and take it as a
+> sign: that's `cva`, coming up in Step 2. For values that are truly dynamic, a user-picked color, a computed length,
+> skip the lookup map too: use [CSS variables](/docs/styling/dynamic-styling) instead.
 
-Each property and value becomes a shared atomic class. `css({ color: 'white' })` and another file that asks for the same
-token emit the same rule once. Your CSS scales with distinct styles, not with how many components you have.
+Each property and value becomes a shared atomic class. Write `css({ color: 'white' })` in two different files, and Panda
+still only generates it once. Your CSS scales with how many distinct styles you use, not with how many components you
+have.
 
-More on the object syntax: [Writing styles](/docs/concepts/writing-styles).
+More on the object syntax: [Writing styles](/docs/styling/writing-styles).
 
 ## Step 2: Promote to a recipe when variants appear
 
-The button now needs `size` and `visual`. Duplicating `css()` calls or nesting ternaries gets old fast:
+The button now needs `size` and `visual`. Duplicating `css()` calls or nesting ternaries isn't an effective approach:
 
 ```tsx
 // works, but every new variant makes this harder to read
@@ -143,12 +145,16 @@ export function Button({ size, visual, children }) {
 Promote to a recipe when you have variants to name, not because the component file got long. One element, many looks:
 `cva` is enough.
 
-Full API: [Recipes](/docs/concepts/recipes).
+> That "before" example still compiles, unlike Step 1's `` `red.${shade}` ``. A ternary's branches are both literal, so
+> Panda can see them and generates CSS for both. A template literal's interpolation isn't a fixed set of options, so
+> there's nothing for Panda to generate. Runtime _choice_ between literals is fine. Runtime _computation_ of a new one
+> is not.
+
+Full API: [Recipes](/docs/styling/recipes).
 
 ## Step 3: Split into slots when markup has parts
 
-Now build a Card. It has a root, a title, and a body. One `size` prop should style all three together. That's structure,
-not just more variants on a single node.
+Now let's build a Card. A Card has a `root`, `title`, and a `body`. One `size` prop should style all three together.
 
 `sva` gives you one recipe and a class bag per part:
 
@@ -198,12 +204,14 @@ export function Card({ size, title, children }) {
 
 Use slots when one variant API owns multiple elements. Stay on `cva` when a single element is enough.
 
-Full API: [Slot recipes](/docs/concepts/slot-recipes).
+Full API: [Slot recipes](/docs/styling/slot-recipes).
 
 ## Step 4: Move to config when it's a system primitive
 
-`cva` and `sva` are great next to the component. Move the same shape into config when the component is a design-system
-primitive: shared across apps, shipped in a preset, or you want JIT CSS for only the variants you actually use.
+`cva` and `sva` are fine as long as the recipe stays colocated: it only matters inside this one component's file. Move
+the same `base` / `variants` / `defaultVariants` shape into `defineRecipe` or `defineSlotRecipe` once any of this gets
+true: other apps need to import the component, it ships inside a preset, or you want Panda to generate CSS only for
+the variants your code actually calls, not the full matrix.
 
 Button becomes a config recipe:
 
@@ -290,40 +298,49 @@ export default defineConfig({
 })
 ```
 
+The call signature doesn't change. Only the import path does, from a local file to `styled-system`:
+
 ```tsx
-import { button } from '../styled-system/recipes'
-;<button className={button({ size: 'lg', visual: 'outline' })} />
+import { button, card } from '../styled-system/recipes'
+
+const classes = card({ size: 'lg' })
+
+<button className={button({ size: 'lg', visual: 'outline' })}>Buy now</button>
+<div className={classes.root}>
+  <h2 className={classes.title}>Plan</h2>
+</div>
 ```
 
 **Decision rule:**
 
 - Stay on `cva` / `sva` for colocated, app-local components.
-- Move to `defineRecipe` / `defineSlotRecipe` for design-system components, leaner JIT CSS, and sharing via a preset or
-  `panda lib`.
+- Move to `defineRecipe` / `defineSlotRecipe` for design-system components. You get leaner JIT CSS, and you can share
+  the recipe through a preset or `panda lib`.
 
 The full comparison table lives here:
-[Should I use atomic or config recipes?](/docs/concepts/recipes#should-i-use-atomic-or-config-recipes-). The same split
+[Should I use atomic or config recipes?](/docs/styling/recipes#should-i-use-atomic-or-config-recipes-). The same split
 applies to `sva` vs config slot recipes.
 
 ## Step 5: Trust the system
 
-Three rules make the ladder safe. You don't need to relearn them at every step.
+A few things don't change as you move between `css`, `cva`, `sva`, and config: tokens, cascade layers, and types.
 
-**Tokens are the vocabulary.** Name intent once (`colors.text`, `spacing.4`). Every `css`, recipe, and slot refers to
-the same names. See [tokens](/docs/theming/tokens).
+**Tokens are the vocabulary.** Name intent once: `colors.text`, `spacing.4`. Every `css`, recipe, and slot refers to the
+same names. See [tokens](/docs/theming/tokens).
 
-**Cascade layers keep overrides predictable.** Panda emits into fixed layers: reset, base, tokens, recipes, utilities. A
-utility always beats a recipe, whatever the import order. When you merge style objects, the last value wins. See
-[cascade layers](/docs/concepts/cascade-layers) and [merging styles](/docs/concepts/merging-styles).
+**Cascade layers keep overrides predictable.** Panda emits into fixed layers, reset, base, tokens, recipes, utilities,
+and a utility always beats a recipe no matter what order you import things in. That's decided at the CSS layer, not in
+your code. Merge style objects yourself, though, and a different rule kicks in: the last value wins. See
+[cascade layers](/docs/styling/cascade-layers) and [merging styles](/docs/styling/merging-styles).
 
 **Types come from your config.** Autocomplete offers your tokens and recipe variants. A typo is a type error while you
-type. Turn on [`strictTokens`](/docs/concepts/writing-styles#stricttokens) when you want raw values rejected too.
+type. Turn on [`strictTokens`](/docs/styling/writing-styles#stricttokens) when you want raw values rejected too.
 
 ## Where to go next
 
-If you can say which step a style belongs on, you already think in Panda.
+Know which step a style belongs on? You already think in Panda.
 
-- [Getting started](/docs/overview/getting-started): install Panda and generate your first styles.
-- [Writing styles](/docs/concepts/writing-styles): the `css` function and object syntax in full.
-- [Recipes](/docs/concepts/recipes): `cva` and config recipes.
-- [Slot recipes](/docs/concepts/slot-recipes): `sva` and config slot recipes.
+- [Welcome to Panda](/docs/styling/getting-started): install Panda and generate your first styles.
+- [Writing styles](/docs/styling/writing-styles): the `css` function and object syntax in full.
+- [Recipes](/docs/styling/recipes): `cva` and config recipes.
+- [Slot recipes](/docs/styling/slot-recipes): `sva` and config slot recipes.

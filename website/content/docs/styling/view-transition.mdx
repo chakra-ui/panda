@@ -3,17 +3,19 @@ title: viewTransition()
 description: Style shared View Transitions API animations with a hashed bag class. You still set unique view-transition-name values at runtime.
 ---
 
-`viewTransition()` returns a stable bag class (`vt_*`) and emits CSS for the View Transitions API slots —
-`::view-transition-group`, `::view-transition-image-pair`, `::view-transition-old`, and `::view-transition-new`.
+The View Transitions API styles its animation with `::view-transition-old(name)` and `::view-transition-new(name)`,
+matched against a `view-transition-name` you set on the element. That name has to be unique per element. Two elements
+with the same name break the transition.
 
-Panda owns that shared animation CSS through `view-transition-class`. You still set unique `view-transition-name` values
-yourself — React `<ViewTransition>`, Astro `transition:name`, or a plain style.
+Panda extracts and shares styles across every place you call a style function. Those two rules don't mix: if the CSS
+were keyed on `view-transition-name`, Panda couldn't dedupe it, since the name is different every time. So Panda
+doesn't touch `view-transition-name` at all. Instead, `viewTransition()` gives you a class, generated from a real
+CSS property built for exactly this, `view-transition-class`. Panda can extract and share a class like any other
+atomic style. You still set the unique name yourself, however your framework wants it.
 
-Import from `styled-system/css`.
+Import `viewTransition` from `styled-system/css`.
 
-## Examples
-
-### Basic example
+## Basic example
 
 ```ts
 import { viewTransition } from 'styled-system/css'
@@ -23,13 +25,14 @@ const slide = viewTransition({
     animationDuration: '0.4s',
     animationTimingFunction: 'ease-in-out'
   },
+  imagePair: { isolation: 'isolate' },
   old: { opacity: 0 },
   new: { opacity: 1 }
 })
-// → "vt_…"
+// → "vt_xxx"
 ```
 
-Generated CSS:
+`slide` is a class name, `"vt_xxx"`. Panda emits the CSS behind it:
 
 ```css
 @layer utilities {
@@ -42,6 +45,10 @@ Generated CSS:
     animation-timing-function: ease-in-out;
   }
 
+  ::view-transition-image-pair(.vt_xxx) {
+    isolation: isolate;
+  }
+
   ::view-transition-old(.vt_xxx) {
     opacity: 0;
   }
@@ -52,10 +59,18 @@ Generated CSS:
 }
 ```
 
-### Usage with React
+Call `viewTransition()` again somewhere else with the exact same options and you get the exact same class back, no
+duplicate CSS. That's the whole point: one shared bag class, however many elements use it.
 
-Pass the bag class into React's View Transition Class props (`enter`, `exit`, `share`, `update`, `default`). Use `name`
-only for shared-element transitions.
+## Wiring it into your framework
+
+`viewTransition()` only gets you the class. Every framework has its own way of setting `view-transition-name`, so
+that part is still on you.
+
+### React
+
+Pass the class into React's View Transition Class props, `enter`, `exit`, `share`, `update`, `default`. Reserve
+`name` for elements that need a shared-element transition:
 
 ```tsx
 import { ViewTransition } from 'react'
@@ -76,12 +91,12 @@ export function HeroImage() {
 }
 ```
 
-> `<ViewTransition>` needs a React build that exports it (Canary / Experimental today). Next.js can opt in with
-> `experimental.viewTransition: true`.
+`<ViewTransition>` needs a React build that exports it, Canary or Experimental as of this writing. Next.js can opt in
+with `experimental.viewTransition: true`.
 
-### Usage with Astro
+### Astro
 
-Astro owns the name via `transition:name`. Put the bag class on the element:
+Astro owns the name through `transition:name`. Put the bag class on the element next to it:
 
 ```astro
 ---
@@ -97,11 +112,12 @@ const slide = viewTransition({
 <img class={slide} transition:name="hero" src="/hero.jpg" alt="Hero" />
 ```
 
-Enable client routing with `<ClientRouter />` from `astro:transitions` in your layout.
+Enable client routing with `<ClientRouter />` from `astro:transitions` in your layout, or the browser never starts a
+transition to animate.
 
-### Usage with Solid or Nuxt
+### Solid or Nuxt
 
-The framework (or you) starts the transition. Attach the bag class and set the name:
+Neither framework wraps this for you, so you set both the class and the name yourself:
 
 ```tsx
 import { viewTransition } from 'styled-system/css'
@@ -120,29 +136,23 @@ const slide = viewTransition({
 />
 ```
 
-## Why we use `view-transition-class`
+## Slots
 
-`view-transition-name` must be unique per element. Duplicates break the transition, so Panda can't extract or share it.
-
-`view-transition-class` is the shared styling hook — like a CSS class — so it can be deduplicated across callsites and
-shipped through design-system build info.
-
-## API Reference
-
-### Slots
+Four options, each one a slot in the View Transitions pseudo-element tree:
 
 | Option      | CSS selector                          |
-| ----------- | ------------------------------------- |
+| ----------- | -------------------------------------- |
 | `group`     | `::view-transition-group(.vt_*)`      |
 | `imagePair` | `::view-transition-image-pair(.vt_*)` |
 | `old`       | `::view-transition-old(.vt_*)`        |
 | `new`       | `::view-transition-new(.vt_*)`        |
 
-Each slot accepts a style object (same shape as `css()`). Use `animationName` for theme keyframes or custom names.
+Each one takes a style object, same shape as `css()`. For animations, set `animationName` to a theme keyframe or a
+name you defined yourself.
 
-### Shipping from a design system
+## Shipping a shared transition from a design system
 
-Export shared bags from library source:
+Export the bag as a constant from your library source, the same way you'd export a shared `cva`:
 
 ```ts
 export const slide = viewTransition({
@@ -151,5 +161,7 @@ export const slide = viewTransition({
 })
 ```
 
-`panda lib` serializes them into build info so apps hydrate the CSS without re-scanning the library. Tree-shake follows
-imported modules, same as recipes. There is no `theme.viewTransitions` registry.
+`panda lib` serializes it into build info, so apps consuming your library get the CSS without re-scanning your
+source. It tree-shakes the same way recipes do, only the bags an app actually imports ship. There's no
+`theme.viewTransitions` config registry to register this in. If you've shared a `cva` or a plain `css()` helper from
+a design system before, this works the same way.
