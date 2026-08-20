@@ -2,11 +2,16 @@ use crate::{CodegenContext, ImportDecl, Item, ItemNode, Module, RuntimeImport};
 
 #[must_use]
 pub fn module(ctx: CodegenContext<'_>) -> Module {
+    let breakpoint_keys = serde_json::to_string(&ctx.config.theme.breakpoint_names())
+        .expect("breakpoints should serialize");
     Module::new()
         .with_import(ImportDecl::value(
             ["withoutSpace"],
             &ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
         ))
+        .with_item(Item::runtime(ItemNode::RawStmt(format!(
+            "export const breakpointKeys = {breakpoint_keys}"
+        ))))
         .with_item(Item::runtime(ItemNode::RawStmt(
             CONDITIONS_LITERAL_RUNTIME.into(),
         )))
