@@ -30,4 +30,5 @@ pub use unit_conversion::to_rem;
 pub use view_transition::{
     ViewTransitionStyle, filter_view_transition_slots, stable_stringify,
     stable_stringify_view_transition, view_transition_base_class, view_transition_class_name,
+    view_transition_named_class,
 };

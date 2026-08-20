@@ -159,6 +159,29 @@ fn deserializes_typed_theme_shape() {
 }
 
 #[test]
+fn deserializes_theme_view_transitions() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "viewTransitions": {
+                "slide": {
+                    "old": { "opacity": 0 },
+                    "new": { "opacity": 1 }
+                }
+            }
+        }
+    }))
+    .expect("valid typed config");
+
+    let slide = config
+        .theme
+        .view_transitions
+        .get("slide")
+        .expect("slide bag");
+    assert_eq!(slide["old"]["opacity"], 0);
+    assert_eq!(slide["new"]["opacity"], 1);
+}
+
+#[test]
 fn condition_names_are_derived_from_config() {
     let config: UserConfig = serde_json::from_value(json!({
         "conditions": {

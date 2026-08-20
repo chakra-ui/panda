@@ -286,11 +286,13 @@ pub(crate) fn rewrite_for_view_transition_call(
     args: &[Option<Literal>],
 ) -> Option<Rewrite> {
     let arg = args.first()?.as_ref()?;
-    if !matches!(arg, Literal::Object(_)) {
-        return None;
-    }
-    let class_name =
-        view_transition_class_name(&arg.to_json(), &project.config().class_name_prefix);
+    let class_name = match arg {
+        Literal::Object(_) => {
+            view_transition_class_name(&arg.to_json(), &project.config().class_name_prefix)
+        }
+        Literal::String(name) => project.config().view_transition(name)?.class_name.clone(),
+        _ => return None,
+    };
     Some(Rewrite {
         start: span.start,
         end: span.end,

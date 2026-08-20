@@ -355,6 +355,9 @@ const slide = viewTransition({
 
 Panda owns the shared CSS; you still set `view-transition-name` yourself.
 
+A preset or `theme.viewTransitions` can name the same bags. Then the team writes `viewTransition('slide')` and Panda
+inlines `"vt_slide"`. Unused names stay out of the CSS.
+
 ### Conditions and utilities
 
 `preset-base` picks up a few CSS features that landed after v1.

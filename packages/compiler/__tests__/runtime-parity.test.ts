@@ -7,7 +7,7 @@ type CssRuntime = {
 }
 
 type ViewTransitionRuntime = {
-  viewTransition: (options: Record<string, unknown>) => string
+  viewTransition: (options: Record<string, unknown> | string) => string
 }
 
 describe('generated runtime/cssgen parity', () => {
@@ -349,5 +349,37 @@ describe('generated runtime/cssgen parity', () => {
     expect(className).toBe('vt_gnOaDr')
     expect(className).toBe(runtime.viewTransition({ old: { opacity: 0 }, new: { opacity: 1 } }))
     expect(utilitiesCss).toContain(`.${className}`)
+  })
+
+  it('uses the same named theme viewTransition class as cssgen', async () => {
+    const compiler = createProject({
+      outExtension: 'mjs',
+      theme: {
+        viewTransitions: {
+          slide: {
+            old: { opacity: 0 },
+            new: { opacity: 1 },
+          },
+        },
+      },
+    })
+
+    compiler.parseFileSource(
+      '/virtual/app.ts',
+      `import { viewTransition } from '@panda/css';
+       viewTransition('slide')`,
+    )
+
+    const runtime = await loadGeneratedModule<ViewTransitionRuntime>(compiler, {
+      entry: 'css/view-transition.mjs',
+    })
+    const className = runtime.viewTransition('slide')
+    const utilitiesCss = compiler.getLayerCss({ layers: ['utilities'] }).css
+
+    expect(className).toBe('vt_slide')
+    expect(utilitiesCss).toContain('.vt_slide')
+    expect(utilitiesCss).toContain('view-transition-class: vt_slide;')
+    expect(utilitiesCss).toContain('::view-transition-old(.vt_slide)')
+    expect(utilitiesCss).not.toContain('vt_fade')
   })
 })

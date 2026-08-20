@@ -96,7 +96,9 @@ export interface ViewTransitionStyleObject {
   new?: SystemStyleObject
 }
 
-export type ViewTransitionFn = (options: ViewTransitionStyleObject) => string
+export type ViewTransitions = Record<string, ViewTransitionStyleObject>
+
+export type ViewTransitionFn = (options: ViewTransitionStyleObject | string) => string
 
 export interface GlobalStyleObject {
   [selector: string]: SystemStyleObject

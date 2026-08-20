@@ -523,13 +523,19 @@ impl Project {
                     let Some(arg) = data.into_iter().next().flatten() else {
                         continue;
                     };
-                    if !matches!(arg, Literal::Object(_)) {
-                        continue;
-                    }
-                    let style = ViewTransitionStyle::from_options(
-                        &arg.to_json(),
-                        &self.config.class_name_prefix,
-                    );
+                    let style = match &arg {
+                        Literal::Object(_) => ViewTransitionStyle::from_options(
+                            &arg.to_json(),
+                            &self.config.class_name_prefix,
+                        ),
+                        Literal::String(name) => {
+                            let Some(style) = self.config.view_transition(name) else {
+                                continue;
+                            };
+                            style.clone()
+                        }
+                        _ => continue,
+                    };
                     if style.is_empty() {
                         continue;
                     }

@@ -533,6 +533,26 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
       }
     `)
   })
+
+  it('emits a named theme viewTransition class and skips unused names', async () => {
+    const compiler = await createCompiler({
+      ...baseConfig,
+      theme: {
+        viewTransitions: {
+          slide: { old: { opacity: 0 }, new: { opacity: 1 } },
+          fade: { old: { opacity: 1 }, new: { opacity: 0 } },
+        },
+      },
+    })
+
+    compiler.parseFileSource('/vt.ts', `import { viewTransition } from '@panda/css'\nviewTransition('slide')`)
+
+    const css = compiler.getLayerCss({ layers: ['utilities'] }).css
+    expect(css).toContain('.vt_slide')
+    expect(css).toContain('view-transition-class: vt_slide')
+    expect(css).toContain('::view-transition-old(.vt_slide)')
+    expect(css).not.toContain('vt_fade')
+  })
 })
 
 describeMissingWasm()

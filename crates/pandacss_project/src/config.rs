@@ -15,7 +15,7 @@ use pandacss_extractor::{
 };
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::css_properties::css_property_names;
-use pandacss_shared::{capitalize, compile_js_regex};
+use pandacss_shared::{ViewTransitionStyle, capitalize, compile_js_regex};
 use pandacss_tokens::{TokenDictionary, TokenError};
 use pandacss_utility::{Utility, UtilityOptions};
 
@@ -102,8 +102,27 @@ pub(crate) fn compile_config_with_token_dictionary(
             .as_object()
             .map(|frames| frames.keys().cloned().collect())
             .unwrap_or_default(),
+        view_transitions: theme_view_transitions(config),
         optimize: config.optimize,
     })
+}
+
+fn theme_view_transitions(
+    config: &pandacss_config::UserConfig,
+) -> BTreeMap<String, ViewTransitionStyle> {
+    let prefix = config.prefix.class_name().unwrap_or_default();
+    config
+        .theme
+        .view_transitions
+        .iter()
+        .filter_map(|(name, options)| {
+            if name.is_empty() {
+                return None;
+            }
+            let style = ViewTransitionStyle::from_named_options(name, options, prefix);
+            (!style.is_empty()).then(|| (name.clone(), style))
+        })
+        .collect()
 }
 
 #[allow(clippy::needless_pass_by_value, reason = "used as a map_err callback")]

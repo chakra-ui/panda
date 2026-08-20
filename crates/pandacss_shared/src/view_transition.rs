@@ -19,7 +19,16 @@ pub struct ViewTransitionStyle {
 impl ViewTransitionStyle {
     #[must_use]
     pub fn from_options(options: &Value, prefix: &str) -> Self {
-        let class_name = view_transition_class_name(options, prefix);
+        Self::from_class_and_options(view_transition_class_name(options, prefix), options)
+    }
+
+    /// Theme / preset bag keyed by name (`slide` → `vt_slide`).
+    #[must_use]
+    pub fn from_named_options(name: &str, options: &Value, prefix: &str) -> Self {
+        Self::from_class_and_options(view_transition_named_class(name, prefix), options)
+    }
+
+    fn from_class_and_options(class_name: String, options: &Value) -> Self {
         let Value::Object(map) = options else {
             return Self {
                 class_name,
@@ -143,6 +152,17 @@ pub fn view_transition_class_name(options: &Value, prefix: &str) -> String {
     }
 }
 
+/// Stable class for a theme bag: `vt_{name}`, plus optional `prefix-`.
+#[must_use]
+pub fn view_transition_named_class(name: &str, prefix: &str) -> String {
+    let base = format!("vt_{name}");
+    if prefix.is_empty() {
+        base
+    } else {
+        format!("{prefix}-{base}")
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -180,5 +200,11 @@ mod tests {
             view_transition_class_name(&options, "p"),
             format!("p-{}", view_transition_base_class(&options))
         );
+    }
+
+    #[test]
+    fn named_class_uses_theme_key() {
+        assert_eq!(view_transition_named_class("slide", ""), "vt_slide");
+        assert_eq!(view_transition_named_class("slide", "p"), "p-vt_slide");
     }
 }

@@ -20,6 +20,7 @@ import type {
   TextStyles,
   ThemeVariant,
   Tokens,
+  ViewTransitions,
 } from '@pandacss/types'
 
 export function defineConfig<const T extends Config>(config: T): T & { name: string } {
@@ -121,5 +122,9 @@ export function defineStyles(definition: SystemStyleObject): SystemStyleObject {
 }
 
 export function defineAnimationStyles(definition: CompositionStyles['animationStyles']): AnimationStyles {
+  return definition
+}
+
+export function defineViewTransitions(definition: ViewTransitions): ViewTransitions {
   return definition
 }

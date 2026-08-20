@@ -150,6 +150,54 @@ Four options, each one a slot in the View Transitions pseudo-element tree:
 Each one takes a style object, same shape as `css()`. For animations, set `animationName` to a theme keyframe or a
 name you defined yourself.
 
+## Share from a preset or config
+
+Put named bags in `theme.viewTransitions` so the team calls `viewTransition('slide')` instead of copying the object.
+
+```ts filename="view-transitions.ts"
+import { defineViewTransitions } from '@pandacss/dev'
+
+export const viewTransitions = defineViewTransitions({
+  slide: {
+    group: { animationDuration: '0.4s' },
+    old: { opacity: 0 },
+    new: { opacity: 1 }
+  }
+})
+```
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+import { viewTransitions } from './view-transitions'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      viewTransitions
+    }
+  }
+})
+```
+
+```ts
+import { viewTransition } from 'styled-system/css'
+
+viewTransition('slide')
+// → "vt_slide"
+```
+
+A static name becomes a string at build time. The import is dropped. Unused names stay out of the CSS.
+
+Use it the same way as the object form: React `share` / `enter` / `exit`, or the class next to Astro's `transition:name`.
+
+```tsx
+<ViewTransition name="hero" share={viewTransition('slide')}>
+  <img src="/hero.jpg" alt="Hero" />
+</ViewTransition>
+```
+
+You can still write `viewTransition({ old, new })` for a one-off. That keeps the hashed `vt_*` class.
+
 ## Shipping a shared transition from a design system
 
 Export the bag as a constant from your library source, the same way you'd export a shared `cva`:
@@ -162,6 +210,6 @@ export const slide = viewTransition({
 ```
 
 `panda lib` serializes it into build info, so apps consuming your library get the CSS without re-scanning your
-source. It tree-shakes the same way recipes do, only the bags an app actually imports ship. There's no
-`theme.viewTransitions` config registry to register this in. If you've shared a `cva` or a plain `css()` helper from
-a design system before, this works the same way.
+source. It tree-shakes the same way recipes do, only the bags an app actually imports ship.
+
+A preset can also register the same bags in `theme.viewTransitions` and let apps call `viewTransition('slide')`.
