@@ -1,5 +1,38 @@
 # @pandacss/config
 
+## 2.0.0-beta.15
+
+### Minor Changes
+
+- e18eeb3: Add `theme.viewTransitions` so a preset can name shared view-transition bags. Call `viewTransition('slide')`
+  and Panda inlines `"vt_slide"`. Unused names stay out of the CSS.
+- 2d5d152: Add `globalVars` to utility definitions, so a variable's `@property` registration lives next to the utility
+  that writes it. Registrations merge into the config-level `globalVars` and are pruned when unused.
+
+  ```ts
+  utilities: {
+    blur: {
+      className: 'blur',
+      globalVars: { '--blur': { syntax: '*', inherits: false } },
+      transform: (value) => ({ '--blur': `blur(${value})` }),
+    },
+  }
+  ```
+
+  Putting a plain value on a name a utility registered warns during CSS emit, but only when your stylesheet actually
+  reads that variable, since the value drops the registration and starts the variable inheriting. Pass a full
+  `@property` object to retune one instead. Two utilities registering the same name with different definitions is a
+  config error.
+
+### Patch Changes
+
+- Updated dependencies [ec65db3]
+- Updated dependencies [02bd0ad]
+- Updated dependencies [e18eeb3]
+- Updated dependencies [2d5d152]
+  - @pandacss/types@2.0.0-beta.15
+  - @pandacss/compiler-shared@2.0.0-beta.15
+
 ## 2.0.0-beta.14
 
 ### Patch Changes

@@ -1,5 +1,77 @@
 # @pandacss/compiler
 
+## 2.0.0-beta.15
+
+### Minor Changes
+
+- 02bd0ad: Add `optimize.propertyFallback`, which also seeds each emitted `@property` registration as a plain
+  declaration so engines that ignore `@property` (Safari below 16.4, Firefox below 128) still get the defaults.
+
+  ```ts
+  export default defineConfig({
+    optimize: { propertyFallback: true },
+  })
+  ```
+
+  Off by default. Seeds come from the registrations that survived pruning, so you only pay for the variables you use.
+
+- e18eeb3: Add `theme.viewTransitions` so a preset can name shared view-transition bags. Call `viewTransition('slide')`
+  and Panda inlines `"vt_slide"`. Unused names stay out of the CSS.
+
+### Patch Changes
+
+- 02bd0ad: Drop `globalVars` `@property` registrations the stylesheet never reads or writes, so a preset can register a
+  whole utility family without charging projects that don't use it. Plain string `globalVars` still always emit.
+- ec65db3: Add conditions for pointer type (`_pointerFine`, `_pointerCoarse`, `_pointerNone`, and the `_anyPointer*`
+  variants), post-interaction validity (`_userValid`, `_userInvalid`), and `_inert`.
+
+  ```ts
+  css({
+    color: { _pointerFine: 'blue.500' },
+    borderColor: { _userInvalid: 'red.500' },
+    opacity: { _inert: '0.5' },
+  })
+  ```
+
+  `textWrap` now takes every CSS keyword, including `pretty` and `stable`. Generated types also include the two-word
+  alignment keywords `safe center`, `safe end`, `safe start`, `first baseline`, and `last baseline`.
+
+  ```ts
+  css({ textWrap: 'pretty', justifyContent: 'safe center', alignItems: 'last baseline' })
+  ```
+
+- ec65db3: Add `scrollbarThumb` and `scrollbarTrack` so you can color each side of `scrollbar-color`. `scrollbarGutter`
+  accepts `stable both-edges`.
+
+  ```ts
+  css({
+    overflow: 'auto',
+    scrollbarWidth: 'thin',
+    scrollbarThumb: 'gray.400',
+    scrollbarTrack: 'gray.100',
+    scrollbarGutter: 'stable',
+  })
+  ```
+
+  **Breaking:** `scrollbarWidth` takes `auto`, `thin`, or `none` instead of `sizes` tokens, since `scrollbar-width`
+  never accepted a length. Swap a size token for `thin` or `none`. `scrollbarColor` is now a raw two-value string
+  (`red transparent`). A single color token never produced valid CSS there, since `scrollbar-color` takes exactly two,
+  so move it to `scrollbarThumb`.
+
+- 7c8a215: Extract style props from `styled` `defaultProps` on inline factories, including Solid function accessors.
+  Recipe `defaultProps` also resolve through `recipes.button` and local aliases. Analyze and inspect report those usages
+  too.
+- 8885864: Fix config recipes throwing at import time with `syntax: 'template-literal'`. The recipe runtime imported
+  `breakpointKeys` from the conditions file, which the template-literal build didn't export, so any `defineRecipe`
+  failed to load.
+- Updated dependencies [ec65db3]
+- Updated dependencies [02bd0ad]
+- Updated dependencies [e18eeb3]
+- Updated dependencies [2d5d152]
+  - @pandacss/types@2.0.0-beta.15
+  - @pandacss/config@2.0.0-beta.15
+  - @pandacss/compiler-shared@2.0.0-beta.15
+
 ## 2.0.0-beta.14
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # @pandacss/compiler-shared
 
+## 2.0.0-beta.15
+
+### Patch Changes
+
+- Updated dependencies [ec65db3]
+- Updated dependencies [02bd0ad]
+- Updated dependencies [e18eeb3]
+- Updated dependencies [2d5d152]
+  - @pandacss/types@2.0.0-beta.15
+
 ## 2.0.0-beta.14
 
 ### Patch Changes
