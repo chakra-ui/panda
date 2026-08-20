@@ -2016,3 +2016,59 @@ fn jsx_factory_default_props_respect_disabled_shorthands() {
       conditions: []
     "#);
 }
+
+#[test]
+fn a_jsx_style_prop_folds_a_fallback_run() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "utilities": { "color": { "className": "c" } }
+    }));
+
+    let report = project.parse_file(
+        "app.tsx",
+        indoc! {r"
+            import { css } from '@panda/css';
+            import { styled } from '@panda/jsx';
+
+            export const El = () => (
+              <styled.div color={css.fallback('oklch(60% 0.2 30)', 'red')} />
+            );
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r#"
+    - prop: color
+      value: "fallback(oklch(60% 0.2 30), red)"
+      conditions: []
+    "#);
+}
+
+#[test]
+fn a_jsx_css_prop_folds_a_nested_fallback_run() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "conditions": { "hover": "&:hover" },
+        "utilities": { "color": { "className": "c" } }
+    }));
+
+    let report = project.parse_file(
+        "app.tsx",
+        indoc! {r"
+            import { css } from '@panda/css';
+            import { styled } from '@panda/jsx';
+
+            export const El = () => (
+              <styled.div css={{ _hover: { color: css.fallback('oklch(60% 0.2 30)', 'red') } }} />
+            );
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r#"
+    - prop: color
+      value: "fallback(oklch(60% 0.2 30), red)"
+      conditions:
+        - _hover
+    "#);
+}

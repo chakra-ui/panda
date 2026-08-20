@@ -19,7 +19,10 @@ use smallvec::SmallVec;
 
 use pandacss_extractor::Literal;
 use pandacss_recipes::{Recipe, SlotRecipe};
-use pandacss_shared::{number_to_js_string, push_number_to_js_string, split_important};
+use pandacss_shared::{
+    is_fallback_value, number_to_js_string, push_number_to_js_string, split_important,
+    split_run_important,
+};
 
 // PERF(port): `Atom::conditions` inline budget, not a semantic limit — longer
 // chains still work via heap spill. Tuned to skip an allocation on the common shallow case.
@@ -519,7 +522,12 @@ fn leaf_to_atom_value(value: &Literal) -> Option<EncodedLeaf> {
             if is_absolute_url(s) {
                 return None;
             }
-            let (value, important) = split_important(s);
+            // Members carry their own importance; only a trailing marker is the run's.
+            let (value, important) = if is_fallback_value(s) {
+                split_run_important(s)
+            } else {
+                split_important(s)
+            };
             // `"1"` == `1`: encode as `Number` so it dedupes and gets px.
             let value = match canonical_number(&value) {
                 Some(n) => AtomValue::Number(number_to_js_string(n).into_boxed_str()),

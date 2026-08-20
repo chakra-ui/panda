@@ -20,6 +20,7 @@
   "devDependencies": {
     "@builder.io/qwik": "1.17.2",
     "@pandacss/cli": "workspace:*",
+    "@pandacss/dev": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/vite": "workspace:*",
@@ -44,8 +45,8 @@
     "tsx": "4.20.6",
     "typescript": "6.0.2",
     "vite": "7.2.6",
-    "vitest": "4.0.15",
     "vite-plugin-solid": "2.11.10",
+    "vitest": "4.0.15",
     "vue": "3.5.25"
   }
 }

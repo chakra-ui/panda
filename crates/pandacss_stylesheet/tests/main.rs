@@ -3,6 +3,7 @@ mod common;
 mod compositions;
 mod condition_cost;
 mod config_flags;
+mod css_fallback;
 mod global_css;
 mod global_fontface;
 mod global_vars;

@@ -2,6 +2,7 @@ mod calls;
 mod common;
 mod conditional_output;
 mod cross_file;
+mod css_fallback_calls;
 mod css_property;
 mod css_template;
 mod extract;

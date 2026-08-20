@@ -18,6 +18,12 @@ use oxc_ast::ast::{
 };
 use oxc_semantic::{Semantic, SemanticBuilder, SymbolFlags, SymbolId};
 use oxc_span::GetSpan;
+use pandacss_shared::{
+    FALLBACK_FN, FALLBACK_MIN_MEMBERS, format_fallback_value, number_to_js_string,
+};
+
+/// Codegen puts `.fallback` on the `css` export only, never on `cva` / `sva`.
+const CSS_FN: &str = "css";
 use pandacss_tokens::{TokenCategory, TokenDictionary};
 use rustc_hash::{FxHashMap, FxHashSet};
 use smallvec::SmallVec;
@@ -793,6 +799,80 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         }
     }
 
+    /// Fold `css.fallback('75%', 'min(60rem, 100%)')` to the written value form.
+    ///
+    /// One dynamic member leaves the whole property open; emitting only the
+    /// baseline would make the build disagree with the runtime.
+    pub(crate) fn resolve_fallback_call(&self, call: &CallExpression<'_>) -> Option<Literal> {
+        if !self.is_css_fallback_callee(call) {
+            return None;
+        }
+        if call.arguments.len() < FALLBACK_MIN_MEMBERS {
+            self.report_fallback(
+                call,
+                crate::diagnostic_codes::CSS_FALLBACK_ARITY_INVALID,
+                format!(
+                    "`css.fallback()` needs at least {FALLBACK_MIN_MEMBERS} values; one value has \
+                     nothing to fall back to."
+                ),
+            );
+            return None;
+        }
+
+        let mut members = Vec::with_capacity(call.arguments.len());
+        for argument in &call.arguments {
+            let value = expression_to_literal(argument.as_expression()?, Some(self))?;
+            let Some(text) = fallback_member_text(&value) else {
+                self.report_fallback(
+                    call,
+                    crate::diagnostic_codes::CSS_FALLBACK_MEMBER_INVALID,
+                    "Every `css.fallback()` value must be a single CSS value. Objects, arrays, \
+                     booleans, and null have no declaration form."
+                        .to_owned(),
+                );
+                return None;
+            };
+            members.push(text);
+        }
+        Some(Literal::String(format_fallback_value(
+            members.iter().map(String::as_str),
+        )))
+    }
+
+    fn report_fallback(&self, call: &CallExpression<'_>, code: &str, message: String) {
+        let span = crate::span_from_oxc(call.span);
+        let mut diagnostic = crate::Diagnostic::error(code, message);
+        diagnostic.span = Some(span);
+        diagnostic.location = self
+            .line_index
+            .map(|idx| idx.locate_range(span.start, span.end));
+        self.diagnostics.borrow_mut().push(diagnostic);
+    }
+
+    /// Whether a callee is `css.fallback` on Panda's own `css` binding, named
+    /// (`css.fallback`) or namespaced (`p.css.fallback`).
+    fn is_css_fallback_callee(&self, call: &CallExpression<'_>) -> bool {
+        let Expression::StaticMemberExpression(_) = &call.callee else {
+            return false;
+        };
+        let Some((object, path)) = flatten_static_member_path(&call.callee) else {
+            return false;
+        };
+        let Some(matched) = self.aliases.get(object.name.as_str()) else {
+            return false;
+        };
+        if matched.category != MatchCategory::Css || !self.is_import_binding(object) {
+            return false;
+        }
+        match matched.kind {
+            ImportSpecifierKind::Named => {
+                matched.name == CSS_FN && path.as_slice() == [FALLBACK_FN]
+            }
+            ImportSpecifierKind::Namespace => path.as_slice() == [CSS_FN, FALLBACK_FN],
+            ImportSpecifierKind::Default => false,
+        }
+    }
+
     /// Match a Panda `.raw(...)` call → `(name, category)`.
     fn match_raw_style_call<'s>(
         &'s self,
@@ -1253,5 +1333,18 @@ fn ts_type_to_literal(ts_type: &oxc_ast::ast::TSType<'_>) -> Option<Literal> {
         oxc_ast::ast::TSLiteral::NumericLiteral(n) => Some(Literal::Number(n.value)),
         oxc_ast::ast::TSLiteral::BooleanLiteral(b) => Some(Literal::Bool(b.value)),
         _ => None,
+    }
+}
+
+/// A run member's CSS text; non-scalars have no single declaration form.
+fn fallback_member_text(value: &Literal) -> Option<String> {
+    match value {
+        Literal::String(text) | Literal::Token { value: text, .. } => Some(text.clone()),
+        Literal::Number(number) => Some(number_to_js_string(*number)),
+        Literal::Bool(_)
+        | Literal::Null
+        | Literal::Object(_)
+        | Literal::Array(_)
+        | Literal::Conditional(_) => None,
     }
 }

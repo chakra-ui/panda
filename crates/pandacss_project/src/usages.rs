@@ -8,6 +8,7 @@ use pandacss_extractor::{
     ExtractedCall, LineIndex, Literal, MatchCategory, StyleSourceOwnerKind, StyleSourceRef,
     extract_verbose,
 };
+use pandacss_shared::parse_fallback_value;
 use pandacss_tokens::{TokenCategory, TokenDictionary, TokenSuggestion};
 use pandacss_utility::Utility;
 use rustc_hash::FxHashMap;
@@ -704,31 +705,38 @@ fn walk_prop(
                 .map_or(prop, |utility| utility.resolve_shorthand(prop));
             sites.push(site(UsageKind::Property, canonical, range));
 
+            // Each member is a value for this property in its own right, or its
+            // tokens and keyframes look unused and get pruned.
+            let members = parse_fallback_value(raw).unwrap_or_else(|| vec![raw.as_str()]);
+
             // A `Literal::Token` already has its path via `token_refs`, so skip
             // the category-relative heuristic to avoid duplicate sites.
             if let Some(dict) = cx.tokens
                 && !matches!(value, Literal::Token { .. })
             {
-                // Bare category-relative value on a known utility, e.g.
-                // `color: 'red.300'` (optionally `red.300/40`).
-                if let Some(utility) = cx.utility
-                    && let Some(category) = utility.token_category(prop)
-                {
-                    let path = format!("{category}.{}", strip_modifier(raw));
-                    if dict.token(&path).is_some() {
-                        sites.push(site(UsageKind::Token, &path, range));
+                for member in &members {
+                    // Bare category-relative value on a known utility, e.g.
+                    // `color: 'red.300'` (optionally `red.300/40`).
+                    if let Some(utility) = cx.utility
+                        && let Some(category) = utility.token_category(prop)
+                    {
+                        let path = format!("{category}.{}", strip_modifier(member));
+                        if dict.token(&path).is_some() {
+                            sites.push(site(UsageKind::Token, &path, range));
+                        }
                     }
+                    collect_token_refs(member, dict, &mut |path| {
+                        sites.push(site(UsageKind::Token, path, range));
+                    });
                 }
-                collect_token_refs(raw, dict, &mut |path| {
-                    sites.push(site(UsageKind::Token, path, range));
-                });
             }
 
             // Match each whitespace/comma-separated word against the keyframe
             // set, catching shorthands (`spin 1s linear`) and lists (`spin, fade`).
             if matches!(canonical, "animation" | "animationName") {
-                for word in raw
-                    .split([' ', ','])
+                for word in members
+                    .iter()
+                    .flat_map(|member| member.split([' ', ',']))
                     .map(str::trim)
                     .filter(|word| !word.is_empty())
                 {
