@@ -1,5 +1,24 @@
 # @pandacss/compiler-wasm
 
+## 2.0.0-beta.15
+
+### Minor Changes
+
+- e18eeb3: Add `theme.viewTransitions` so a preset can name shared view-transition bags. Call `viewTransition('slide')`
+  and Panda inlines `"vt_slide"`. Unused names stay out of the CSS.
+
+### Patch Changes
+
+- 7c8a215: Extract style props from `styled` `defaultProps` on inline factories, including Solid function accessors.
+  Recipe `defaultProps` also resolve through `recipes.button` and local aliases. Analyze and inspect report those usages
+  too.
+- Updated dependencies [ec65db3]
+- Updated dependencies [02bd0ad]
+- Updated dependencies [e18eeb3]
+- Updated dependencies [2d5d152]
+  - @pandacss/types@2.0.0-beta.15
+  - @pandacss/compiler-shared@2.0.0-beta.15
+
 ## 2.0.0-beta.14
 
 ### Patch Changes
