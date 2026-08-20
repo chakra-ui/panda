@@ -86,8 +86,9 @@ Some topics span several notes. Keep the detailed contract in one place and link
 - [CSS custom functions](./css-custom-functions.md) — proposed native `@function` definitions in `theme.functions`,
   generated typed call builders in `styled-system/functions`, config-recipe authoring, extraction, emission, and
   design-system publishing.
-- [Ordered CSS value fallbacks](./css-value-fallbacks.md) — proposed `css.fallback()` declaration runs across inline
-  styles, recipes, slot recipes, patterns, build info, and design-system hydration.
+- [Ordered CSS value fallbacks](./css-value-fallbacks.md) — the `fallback(a, b)` value form and `css.fallback()`: one
+  value, one atom, one class, one declaration per member, written most-preferred first and typed by the property it sits
+  in.
 - [Token reference syntax](./token-reference-syntax.md) — `tokenSyntax: '$'`: Stitches-style `$` token syntax in style
   values, replacing the v1 `tokens:created` rename hook. Includes the v1 → v2 migration guide.
 - [View Transition API](./view-transition-api.md) — `viewTransition()` bag class from the css barrel,

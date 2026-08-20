@@ -847,6 +847,9 @@ importers:
       '@pandacss/cli':
         specifier: workspace:*
         version: link:../../packages/cli
+      '@pandacss/dev':
+        specifier: workspace:*
+        version: link:../../packages/dev
       '@pandacss/preset-base':
         specifier: workspace:*
         version: link:../../packages/preset-base

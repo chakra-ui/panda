@@ -87,6 +87,8 @@ interface GenericProperties {
 
 export type NestedCssProperties = Nested<CssProperties>
 
+export type CssFallbackMember = String | Number
+
 export type SystemStyleObject = Nested<(SystemProperties | GenericProperties) & CssVarProperties>
 
 export interface ViewTransitionStyleObject {

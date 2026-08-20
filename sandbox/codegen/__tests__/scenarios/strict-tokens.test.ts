@@ -211,3 +211,41 @@ describe('css', () => {
     assertType(css({ maskBottomFrom: '20%' }))
   })
 })
+
+describe('css.fallback', () => {
+  test('members are checked against the property they are written in', () => {
+    assertType(css({ color: css.fallback('blue.300', 'red.200') }))
+    assertType(css({ position: css.fallback('absolute', 'sticky') }))
+  })
+
+  test('a member that is not valid for the property is rejected', () => {
+    // @ts-expect-error expected from strictTokens: true — not a color token
+    assertType(css({ color: css.fallback('blue.300', 'notAToken') }))
+    // @ts-expect-error expected from strictTokens: true — not a position keyword
+    assertType(css({ position: css.fallback('absolute', 'absolute123') }))
+  })
+
+  test('the arbitrary-value escape hatch still applies per member', () => {
+    assertType(css({ color: css.fallback('blue.300', '[oklch(60% 0.2 260)]') }))
+  })
+
+  test('each member is checked independently, so members may differ', () => {
+    assertType(css({ padding: css.fallback('4', 'auto') }))
+  })
+
+  test('an arbitrary length still needs the escape hatch, even in a run', () => {
+    assertType(css({ padding: css.fallback('[1rem]', '4') }))
+    // @ts-expect-error expected from strictTokens: true — 1rem is not a spacing token
+    assertType(css({ padding: css.fallback('1rem', '4') }))
+  })
+
+  test('a third invalid member is rejected', () => {
+    // @ts-expect-error expected from strictTokens: true — not a color token
+    assertType(css({ color: css.fallback('blue.300', 'red.200', 'nope') }))
+  })
+
+  test('a plain string is still rejected', () => {
+    // @ts-expect-error expected from strictTokens: true — only css.fallback() produces a run
+    assertType(css({ color: 'fallback(blue.300, oklch(60% 0.2 260))' }))
+  })
+})

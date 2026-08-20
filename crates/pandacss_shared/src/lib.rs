@@ -2,6 +2,7 @@
 //! no dependencies on other Panda crates.
 
 pub mod css_escape;
+pub mod css_fallback;
 pub mod css_properties;
 pub mod diagnostic;
 pub mod error;
@@ -13,6 +14,10 @@ pub mod unit_conversion;
 pub mod view_transition;
 
 pub use css_escape::css_escape;
+pub use css_fallback::{
+    FALLBACK_FN, FALLBACK_MIN_MEMBERS, FALLBACK_SEPARATOR, FallbackError, format_fallback_value,
+    is_fallback_value, parse_fallback_run, parse_fallback_value, split_run_important,
+};
 pub use diagnostic::{
     Diagnostic, DiagnosticLabel, DiagnosticSeverity, SourceLocation, SourceRange, Span,
     codes as diagnostic_codes,

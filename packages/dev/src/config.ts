@@ -20,7 +20,18 @@ import type {
   TextStyles,
   ThemeVariant,
   Tokens,
+  CssFallbackMember,
 } from '@pandacss/types'
+
+export function cssFallback<T>(first: T, second: T, ...rest: T[]): T
+export function cssFallback<A extends CssFallbackMember, B extends CssFallbackMember, R extends CssFallbackMember[]>(
+  first: A,
+  second: B,
+  ...rest: R
+): A | B | R[number]
+export function cssFallback(first: unknown, second: unknown, ...rest: unknown[]) {
+  return `fallback(${[first, second, ...rest].join(', ')})`
+}
 
 export function defineConfig<const T extends Config>(config: T): T & { name: string } {
   return Object.assign(config, { name: '__panda.config__' })

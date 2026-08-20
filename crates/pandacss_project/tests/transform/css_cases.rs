@@ -296,3 +296,46 @@ fn raw_as_an_object_property_value_keeps_the_object_bare() {
     "#};
     assert_snapshot!(transform("src/styles.tsx", source).code, @"export const styles = { button: { color: 'red' } };");
 }
+
+// --- `css.fallback()` ---
+
+#[test]
+fn a_static_fallback_run_rewrites_to_its_class() {
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        export const a = css({ width: css.fallback('min(60rem, 100%)', '75%') });
+    "#};
+
+    let output = transform("src/styles.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const a = "width_fallback(min(60rem,_100%),_75%)";"#);
+}
+
+#[test]
+fn a_dynamic_fallback_member_keeps_the_runtime_call() {
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        export const a = (enhanced) => css({ width: css.fallback(enhanced, '75%') });
+    "#};
+
+    let output = transform("src/styles.tsx", source);
+
+    assert_eq!(output.code, source);
+}
+
+#[test]
+fn a_nested_fallback_run_rewrites_to_its_classes() {
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        export const a = css({
+          _hover: { color: css.fallback('oklch(60% 0.2 30)', 'red') },
+          width: [css.fallback('min(60rem, 100%)', '100%'), '75%'],
+        });
+    "#};
+
+    let output = transform("src/styles.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const a = "width_fallback(min(60rem,_100%),_100%) hover:color_fallback(oklch(60%_0.2_30),_red) sm:width_75%";"#);
+}

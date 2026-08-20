@@ -1,6 +1,7 @@
 export type { Config, Preset, UserConfig } from '@pandacss/types'
 
 export {
+  cssFallback,
   defineAnimationStyles,
   defineConfig,
   defineGlobalFontface,

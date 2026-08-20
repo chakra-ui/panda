@@ -18,6 +18,13 @@ pub mod codes {
     pub const CONFIG_TOKEN_NESTED_VALUE: &str = "config_token_nested_value";
     pub const CONFIG_TOKEN_SELF_REFERENCE: &str = "config_token_self_reference";
     pub const CONFIG_TOKEN_UNKNOWN_REFERENCE: &str = "config_token_unknown_reference";
+    pub const CSS_FALLBACK_ARITY_INVALID: &str = "css_fallback_arity_invalid";
+    pub const CSS_FALLBACK_CUSTOM_PROPERTY: &str = "css_fallback_custom_property";
+    pub const CSS_FALLBACK_IMPORTANCE_MIXED: &str = "css_fallback_importance_mixed";
+    pub const CSS_FALLBACK_MEMBER_INVALID: &str = "css_fallback_member_invalid";
+    pub const CSS_FALLBACK_NESTED: &str = "css_fallback_nested";
+    pub const CSS_FALLBACK_TRANSFORM_UNSUPPORTED: &str = "css_fallback_transform_unsupported";
+    pub const CSS_FALLBACK_UNBALANCED: &str = "css_fallback_unbalanced";
     pub const DEPRECATED_TOKEN_USED: &str = "deprecated_token_used";
     pub const DEPRECATED_UTILITY_USED: &str = "deprecated_utility_used";
     pub const DESIGN_SYSTEM_UTILITY_UNREGISTERED: &str = "design_system_utility_unregistered";

@@ -13,8 +13,10 @@ use pandacss_encoder::{
 };
 use pandacss_extractor::Literal;
 use pandacss_shared::{
-    Diagnostic, ViewTransitionStyle, css_escape, diagnostic_codes, find_matching_paren,
-    hyphenate_property, number_to_js_string, split_important, to_hash, without_space,
+    Diagnostic, FALLBACK_MIN_MEMBERS, FallbackError, ViewTransitionStyle, css_escape,
+    diagnostic_codes, find_matching_paren, hyphenate_property, is_fallback_value, is_important,
+    number_to_js_string, parse_fallback_run, parse_fallback_value, split_important, to_hash,
+    without_space,
 };
 use pandacss_tokens::{TokenCssConditionVars, TokenCssVar, TokenCssVars, TokenDictionary};
 use pandacss_utility::{
@@ -33,8 +35,9 @@ use crate::grouped::{GroupNode, write_grouped_rules};
 use crate::numeric_value;
 use crate::sort::{SortContext, SortedAtom, condition_names};
 use crate::style_rules::{
-    Declaration, LoweredTarget, StyleRule, Target, append_declaration, append_declarations,
-    flush_pending_rule, push_grouped_rule, push_pending_rule, write_rule, write_with_wrappers,
+    Declaration, LoweredTarget, StyleRule, Target, append_declaration, append_declaration_run,
+    append_declarations, flush_pending_rule, push_grouped_rule, push_pending_rule, write_rule,
+    write_with_wrappers,
 };
 use crate::writer::CssWriter;
 
@@ -147,7 +150,8 @@ pub(crate) fn emit(input: EmitInput<'_>, options: EmitOptions) -> EmitOutput {
         None
     };
 
-    let diagnostics = global_var_conflicts(config, usage.as_ref());
+    let mut diagnostics = global_var_conflicts(config, usage.as_ref());
+    diagnostics.extend(cx.fallback_diagnostics(&atoms, recipes));
 
     if has_base_layer(config) {
         layer_ranges.base = Some(write_layer(&mut writer, &layers.base, |writer| {
@@ -253,6 +257,46 @@ fn finish_emit(
 
 /// A config `globalVars` string only conflicts with a utility's registration when the sheet
 /// actually reads that variable. Reserving the name is not itself a problem.
+/// Reports values written in the `fallback(...)` form that Panda drops.
+/// Emission is silent by design, so without this the property just disappears.
+fn fallback_value_diagnostic(prop: &str, raw: &str) -> Option<Diagnostic> {
+    if !is_fallback_value(raw) {
+        return None;
+    }
+    // A custom property only fails once `var()` substitutes it, too late to
+    // recover an earlier declaration.
+    if prop.starts_with("--") {
+        return Some(Diagnostic::warning(
+            diagnostic_codes::CSS_FALLBACK_CUSTOM_PROPERTY,
+            format!(
+                "`{prop}` is a custom property, so `{raw}` cannot fall back reliably. Put the \
+                 fallback where the variable is read instead, with `var({prop}, …)`."
+            ),
+        ));
+    }
+    match parse_fallback_run(raw) {
+        Ok(_) => None,
+        Err(FallbackError::Unbalanced) => Some(Diagnostic::error(
+            diagnostic_codes::CSS_FALLBACK_UNBALANCED,
+            format!("`{prop}: {raw}` has unbalanced brackets or quotes, so no CSS was emitted."),
+        )),
+        Err(FallbackError::TooFewMembers) => Some(Diagnostic::error(
+            diagnostic_codes::CSS_FALLBACK_ARITY_INVALID,
+            format!(
+                "`{prop}: {raw}` needs at least {FALLBACK_MIN_MEMBERS} values; one value has \
+                 nothing to fall back to. No CSS was emitted."
+            ),
+        )),
+        Err(FallbackError::Nested) => Some(Diagnostic::error(
+            diagnostic_codes::CSS_FALLBACK_NESTED,
+            format!(
+                "`{prop}: {raw}` nests one fallback inside another. A run is already ordered, so \
+                 list every value in one `fallback(…)`. No CSS was emitted."
+            ),
+        )),
+    }
+}
+
 fn global_var_conflicts(config: &UserConfig, usage: Option<&UsageMarks>) -> Vec<Diagnostic> {
     let Value::Object(entries) = &config.global_vars else {
         return Vec::new();
@@ -1142,6 +1186,74 @@ impl<'a> EmitContext<'a> {
         }
     }
 
+    /// One diagnostic per distinct dropped `fallback(...)` value.
+    fn fallback_diagnostics(
+        &self,
+        atoms: &[&Atom],
+        recipes: &EncodedRecipesSnapshot,
+    ) -> Vec<Diagnostic> {
+        let mut seen = FxHashSet::default();
+        let mut diagnostics = Vec::new();
+
+        let recipe_entries = recipes
+            .base
+            .iter()
+            .chain(&recipes.variants)
+            .chain(&recipes.compounds)
+            .flat_map(|group| group.entries.iter())
+            .map(|entry| (entry.prop.as_ref(), &entry.value, entry.important));
+        let atom_entries = atoms
+            .iter()
+            .map(|atom| (atom.prop(), atom.value(), atom.important()));
+
+        for (prop, value, important) in atom_entries.chain(recipe_entries) {
+            let Some(raw) = atom_value_to_string(value) else {
+                continue;
+            };
+            if !is_fallback_value(&raw) {
+                continue;
+            }
+            if !seen.insert((prop.to_owned(), raw.to_string())) {
+                continue;
+            }
+            if let Some(diagnostic) = fallback_value_diagnostic(prop, &raw) {
+                diagnostics.push(diagnostic);
+                continue;
+            }
+            if parse_fallback_value(&raw)
+                .is_some_and(|members| run_importance_is_mixed(&members, important))
+            {
+                diagnostics.push(Diagnostic::error(
+                    diagnostic_codes::CSS_FALLBACK_IMPORTANCE_MIXED,
+                    format!(
+                        "`{prop}: {raw}` marks only some values `!important`, so the important \
+                         one always wins and the rest never apply. Mark the whole run instead, \
+                         with `fallback(…) !important`. No CSS was emitted."
+                    ),
+                ));
+                continue;
+            }
+            // Parsed, but the members do not lower to one ordered cascade.
+            if let Some(members) = parse_fallback_value(&raw)
+                && self
+                    .fallback_declarations(prop, &members, important)
+                    .is_none()
+            {
+                diagnostics.push(Diagnostic::warning(
+                    diagnostic_codes::CSS_FALLBACK_TRANSFORM_UNSUPPORTED,
+                    format!(
+                        "`{prop}` lowers each value of `{raw}` to a different set of \
+                         declarations, so Panda cannot order them into one fallback. No CSS was \
+                         emitted."
+                    ),
+                ));
+            }
+        }
+        // Atoms iterate from a hash set, so sort for a stable report.
+        diagnostics.sort_by(|a, b| a.code.cmp(&b.code).then_with(|| a.message.cmp(&b.message)));
+        diagnostics
+    }
+
     fn collect_atom_usage(
         &self,
         atom: &Atom,
@@ -1153,6 +1265,14 @@ impl<'a> EmitContext<'a> {
         let Some(raw) = raw.as_deref() else {
             return;
         };
+        // Expand like emission does, or a member's tokens look unused and get pruned.
+        if let Some(members) = parse_fallback_value(raw)
+            && let Some(declarations) =
+                self.fallback_declarations(atom.prop(), &members, atom.important())
+        {
+            Self::collect_declarations_usage(&declarations, token_dictionary, keyframes, marks);
+            return;
+        }
         let result = self.transform_atom_styles(atom.prop(), raw, atom.value());
         if is_composition_prop(atom.prop()) {
             if let Some(styles) = composition_style_object(atom.prop(), &result.styles) {
@@ -1405,6 +1525,17 @@ impl<'a> EmitContext<'a> {
             return;
         }
 
+        // A run keeps the class name the whole value earns and only swaps in
+        // the expanded declarations.
+        let run = parse_fallback_value(raw).and_then(|members| {
+            self.fallback_declarations(atom.prop(), &members, atom.important())
+        });
+        // `fallback(…)` is not real CSS, so a malformed run emits nothing
+        // rather than leaking its text into the sheet.
+        if run.is_none() && is_fallback_value(raw) {
+            return;
+        }
+
         let numeric_hint = atom_value_numeric_hint(atom.value());
         for rule in self.lower_target(
             Target::Class {
@@ -1414,13 +1545,69 @@ impl<'a> EmitContext<'a> {
             },
             rule_conditions,
         ) {
-            let Some(declarations) =
+            let declarations = if let Some(declarations) = &run {
+                declarations.clone()
+            } else if let Some(declarations) =
                 Self::declarations_from_literal(&result.styles, atom.important(), numeric_hint)
-            else {
+            {
+                declarations
+            } else {
                 continue;
             };
             push_grouped_rule(grouped, &rule, declarations);
         }
+    }
+
+    /// Ordered declarations for a `fallback(...)` value: for each output
+    /// property, every member's value in cascade order.
+    ///
+    /// `None` when the run is not provably one ordered cascade — a member
+    /// lowering to a nested object, or members disagreeing on which properties
+    /// they produce, as a multi-property utility transform can.
+    fn fallback_declarations(
+        &self,
+        prop: &str,
+        members: &[&str],
+        important: bool,
+    ) -> Option<Vec<Declaration>> {
+        if run_importance_is_mixed(members, important) {
+            return None;
+        }
+        let mut runs: Vec<Vec<Declaration>> = Vec::new();
+
+        // Members are authored most-preferred first, like `var(--brand, red)`.
+        // CSS takes the last declaration it understands, so emit in reverse.
+        for (index, member) in members.iter().rev().enumerate() {
+            let result = self.transform_atom(prop, member, None);
+            let Literal::Object(entries) = &result.styles else {
+                return None;
+            };
+            let declarations =
+                declarations_from_entries(entries, important, fallback_member_numeric_hint(member));
+            if declarations.is_empty() {
+                return None;
+            }
+
+            if index == 0 {
+                runs = declarations.into_iter().map(|entry| vec![entry]).collect();
+                continue;
+            }
+            if declarations.len() != runs.len() {
+                return None;
+            }
+            for (run, declaration) in runs.iter_mut().zip(declarations) {
+                if run[0].prop != declaration.prop {
+                    return None;
+                }
+                run.push(declaration);
+            }
+        }
+
+        let mut declarations = Vec::new();
+        for run in runs {
+            append_declaration_run(&mut declarations, run);
+        }
+        (!declarations.is_empty()).then_some(declarations)
     }
 
     /// Emit one grouped class for compositions and transforms whose result
@@ -2103,6 +2290,10 @@ impl<'a> EmitContext<'a> {
     ) -> Option<Vec<Declaration>> {
         let raw = atom_value_to_string(value);
         let raw = raw.as_deref()?;
+        if is_fallback_value(raw) {
+            let members = parse_fallback_value(raw)?;
+            return self.fallback_declarations(prop, &members, important);
+        }
         // `_styles` variant so a `globalCss` custom-utility transform is applied
         // via the override map; falls back to the built-in when none exists.
         let result = self.transform_atom_styles(prop, raw, value);
@@ -2517,6 +2708,31 @@ fn declarations_from_entries(
         }
     }
     declarations
+}
+
+/// A bare-number member takes the property's default unit, like a standalone
+/// value. Mirrors the encoder's `canonical_number` on leading-zero integers.
+/// Whether a run marks only some declarations `!important`.
+///
+/// Importance belongs to the run, not a member: an important declaration beats
+/// the others whatever the order, so the rest could never apply. A trailing
+/// marker already covers every member, which is the supported way to write it.
+fn run_importance_is_mixed(members: &[&str], run_important: bool) -> bool {
+    !run_important
+        && members
+            .iter()
+            .any(|member| is_important(member) != is_important(members[0]))
+}
+
+fn fallback_member_numeric_hint(member: &str) -> Option<&str> {
+    if member.starts_with('0') && member.as_bytes().get(1).is_some_and(u8::is_ascii_digit) {
+        return None;
+    }
+    member
+        .parse::<f64>()
+        .ok()
+        .filter(|number| number.is_finite())
+        .map(|_| member)
 }
 
 fn atom_value_numeric_hint(value: &AtomValue) -> Option<&str> {

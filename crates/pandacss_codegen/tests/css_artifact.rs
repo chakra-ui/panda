@@ -74,6 +74,15 @@ fn emits_ts_source_css() {
       (styles: Styles): SystemStyleObject
     }
 
+    type CssFallbackMember = string | number
+
+    interface CssFallbackFunction {
+      // Uniform members: `T` comes from the property, so its values autocomplete.
+      <T>(first: T, second: T, ...rest: T[]): T
+      // Members of differing types: each position is inferred on its own.
+      <A extends CssFallbackMember, B extends CssFallbackMember, R extends CssFallbackMember[]>(first: A, second: B, ...rest: R): A | B | R[number]
+    }
+
     interface CssFunction {
       (styles: Styles): string
       (styles: StyleList[]): string
@@ -81,6 +90,7 @@ fn emits_ts_source_css() {
       (styles: Styles): string
 
       raw: CssRawFunction
+      fallback: CssFallbackFunction
     }
 
     const utilities = "WebkitLineClamp:webkit-line-clamp,color:text,flexDirection:flex/flexDir,marginInlineStart:/ms,marginLeft:ml/1"
@@ -138,6 +148,10 @@ fn emits_ts_source_css() {
       {
         raw: function cssRaw(...styles: any[]) {
           return mergeCss(...styles)
+        },
+        // Separator is a contract with `pandacss_shared::css_fallback`.
+        fallback: function cssFallback(...values: any[]) {
+          return `fallback(${values.join(', ')})`
         },
       },
     )
@@ -234,6 +248,10 @@ fn emits_js_runtime_and_declarations() {
         raw: function cssRaw(...styles) {
           return mergeCss(...styles)
         },
+        // Separator is a contract with `pandacss_shared::css_fallback`.
+        fallback: function cssFallback(...values) {
+          return `fallback(${values.join(', ')})`
+        },
       },
     )
 
@@ -252,6 +270,15 @@ fn emits_js_runtime_and_declarations() {
       (styles: Styles): SystemStyleObject
     }
 
+    type CssFallbackMember = string | number
+
+    interface CssFallbackFunction {
+      // Uniform members: `T` comes from the property, so its values autocomplete.
+      <T>(first: T, second: T, ...rest: T[]): T
+      // Members of differing types: each position is inferred on its own.
+      <A extends CssFallbackMember, B extends CssFallbackMember, R extends CssFallbackMember[]>(first: A, second: B, ...rest: R): A | B | R[number]
+    }
+
     interface CssFunction {
       (styles: Styles): string
       (styles: StyleList[]): string
@@ -259,6 +286,7 @@ fn emits_js_runtime_and_declarations() {
       (styles: Styles): string
 
       raw: CssRawFunction
+      fallback: CssFallbackFunction
     }
 
     export declare const css: CssFunction;
