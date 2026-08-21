@@ -12,17 +12,20 @@ export function createStudioRuntime(tokens: StudioToken[]): StudioRuntime {
   }
 
   const renderToken = (t: StudioToken) => {
-    const attrs = `data-category="${esc(t.category)}" data-name="${esc(t.name)}" data-value="${esc(t.value)}"`
+    const deprecated = t.deprecated
+      ? ` data-deprecated="${esc(typeof t.deprecated === 'string' ? t.deprecated : '')}"`
+      : ''
+    const attrs = `data-category="${esc(t.category)}" data-name="${esc(t.name)}" data-value="${esc(t.value)}"${deprecated}`
     if (t.conditions) {
       const conds = Object.entries(t.conditions)
         .map(
           ([cond, value]) =>
-            `<div class="pds-condition" data-condition="${esc(cond)}" data-value="${esc(value)}"><span class="pds-condition__name">${esc(cond)}</span><code class="pds-condition__value">${esc(value)}</code></div>`,
+            `<div class="pds-condition" data-condition="${esc(cond)}" data-value="${esc(value)}"><span class="pds-condition__name">${esc(cond)}</span> <code class="pds-condition__value">${esc(value)}</code></div>`,
         )
         .join('')
       return `<li class="pds-token pds-token--semantic" ${attrs}><span class="pds-token__name">${esc(t.name)}</span><div class="pds-conditions">${conds}</div></li>`
     }
-    return `<li class="pds-token" ${attrs}><span class="pds-token__name">${esc(t.name)}</span><code class="pds-token__value">${esc(t.value)}</code></li>`
+    return `<li class="pds-token" ${attrs}><span class="pds-token__name">${esc(t.name)}</span> <code class="pds-token__value">${esc(t.value)}</code></li>`
   }
 
   const getTokenCss: StudioRuntime['getTokenCss'] = (css = '') => {
@@ -58,9 +61,7 @@ export function createStudioRuntime(tokens: StudioToken[]): StudioRuntime {
     const order = new Map<string, number>()
     for (const t of list) if (!order.has(t.category)) order.set(t.category, order.size)
     const within = sort === 'name' ? nameCompare : (a: StudioToken, b: StudioToken) => sortKey(a) - sortKey(b)
-    return [...list].sort(
-      (a, b) => (order.get(a.category) ?? 0) - (order.get(b.category) ?? 0) || within(a, b),
-    )
+    return [...list].sort((a, b) => (order.get(a.category) ?? 0) - (order.get(b.category) ?? 0) || within(a, b))
   }
 
   const getTokenJson: StudioRuntime['getTokenJson'] = (opts = {}) => sortTokens(filter(opts), opts.sort)

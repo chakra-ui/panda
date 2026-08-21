@@ -229,6 +229,29 @@ The standard flags apply too: `--cwd`, `--config`, `--log-level`. Every run also
 You don't need the viewer. Import the functions and render them where you document your design system — an app route, an
 MDX page, or Storybook. Include `getTokenCss(yourCss)` once in the page, then drop the HTML in.
 
+Features like search aren't something Panda ships — they're a few lines on top of these functions. Search is
+`getTokenHtml({ query })` re-run on input. No framework, no search code from us:
+
+```html
+<input id="q" type="search" placeholder="Search tokens…" />
+<div id="out"></div>
+
+<script type="module">
+  import { getTokenHtml, getTokenCss } from './styled-system/studio'
+
+  document.head.insertAdjacentHTML('beforeend', `<style>${getTokenCss(myStudioCss)}</style>`)
+
+  const q = document.getElementById('q')
+  const out = document.getElementById('out')
+  const render = () => (out.innerHTML = getTokenHtml({ query: q.value }))
+  q.addEventListener('input', render)
+  render()
+</script>
+```
+
+The same three lines — filter on input, re-render — are all a React `useState`, a Vue `ref`, or a Storybook control is
+doing below.
+
 ### In React
 
 ```tsx
@@ -368,8 +391,41 @@ export const Colors: StoryObj = {
 }
 ```
 
-Add a story per category by passing `{ category: 'colors' }`, `{ category: 'spacing' }`, and so on. Or wire a Storybook
-control to `query` for a searchable panel. The stylesheet is yours; Storybook renders whatever `studio.css` styles.
+Add a story per category by passing `{ category: 'colors' }`, `{ category: 'spacing' }`, and so on. The stylesheet is
+yours; Storybook renders whatever `studio.css` styles.
+
+#### A searchable story
+
+Search is a Storybook arg wired to `query` — no search code of your own, just `getTokenHtml({ query })` re-running when
+the control changes:
+
+```tsx
+// TokenStudio.stories.tsx — @storybook/react
+import type { Meta, StoryObj } from '@storybook/react'
+import { getTokenHtml, getTokenCss } from '../styled-system/studio'
+import studioCss from './studio.css?raw'
+
+type Args = { query: string }
+
+const meta: Meta<Args> = {
+  title: 'Design System/Tokens',
+  argTypes: { query: { control: 'text' } },
+  args: { query: '' },
+}
+export default meta
+
+export const Tokens: StoryObj<Args> = {
+  render: ({ query }) => (
+    <>
+      <style>{getTokenCss(studioCss)}</style>
+      <div dangerouslySetInnerHTML={{ __html: getTokenHtml({ query }) }} />
+    </>
+  ),
+}
+```
+
+Type in the story's `query` control and the panel filters live. Swap `getTokenHtml` for the framework body from
+[Rendering it yourself](#rendering-it-yourself) for a Vue, Solid, or `@storybook/html` project — the wiring is the same.
 
 ## What Panda ships, and what it doesn't
 
