@@ -50,6 +50,7 @@
     "eslint": "^9.39.1",
     "eslint-config-next": "16.3.0",
     "eslint-plugin-react-hooks": "^7.0.1",
+    "github-slugger": "^2.0.0",
     "postcss": "8.5.14",
     "prettier": "3.2.5",
     "rehype-autolink-headings": "^7.1.0",
