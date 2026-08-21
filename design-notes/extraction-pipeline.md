@@ -70,6 +70,10 @@ positives on shadowed names.
 Unresolved symbols (free variables) conservatively count as imports. Such names typically refer to globals or implicit
 imports the binder can't see; downstream alias lookup by name is authoritative.
 
+The second argument of `styled(tag, recipe, options)` resolves to a config recipe name when it is a named recipe
+import, a local alias of one (`const recipe = button`), or a single property on a recipe namespace import
+(`recipes.button`). Mutated bindings and deeper member chains do not resolve.
+
 ## Transform facts
 
 The project transformer consumes compact owned facts from this parse instead of parsing source fragments again:

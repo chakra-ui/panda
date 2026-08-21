@@ -2,6 +2,7 @@ use crate::common::{artifact, file, paths};
 use insta::assert_snapshot;
 use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
 use pandacss_config::{CodegenFormat, CssSyntaxKind, PrefixConfig, UserConfig};
+use serde_json::json;
 
 #[test]
 fn emits_ts_source_view_transition() {
@@ -22,6 +23,10 @@ fn emits_ts_source_view_transition() {
 
     export const viewTransition: ViewTransitionFn = (options) => {
       const prefix = null
+      if (typeof options === 'string') {
+        const base = 'vt_' + options
+        return prefix ? prefix + '-' + base : base
+      }
       const slots = ['group', 'imagePair', 'old', 'new']
       const filtered = {}
       if (options && typeof options === 'object') {
@@ -86,6 +91,10 @@ fn emits_prefixed_view_transition_runtime() {
 
     export const viewTransition: ViewTransitionFn = (options) => {
       const prefix = "p"
+      if (typeof options === 'string') {
+        const base = 'vt_' + options
+        return prefix ? prefix + '-' + base : base
+      }
       const slots = ['group', 'imagePair', 'old', 'new']
       const filtered = {}
       if (options && typeof options === 'object') {
@@ -136,4 +145,29 @@ fn template_literal_syntax_skips_view_transition_artifact() {
     let vt = artifact(&artifacts, ArtifactId::ViewTransition);
 
     assert!(paths(vt).is_empty());
+}
+
+#[test]
+fn types_named_theme_bags_on_view_transition_fn() {
+    let mut config = UserConfig::default();
+    config.theme.view_transitions.insert(
+        "slide".into(),
+        json!({ "old": { "opacity": 0 }, "new": { "opacity": 1 } }),
+    );
+    config.theme.view_transitions.insert(
+        "fade".into(),
+        json!({ "old": { "opacity": 1 }, "new": { "opacity": 0 } }),
+    );
+    let artifacts = ArtifactGraph.generate_with_config(
+        &config,
+        GenerateOptions {
+            format: CodegenFormat::Ts,
+            import_extensions: false,
+        },
+    );
+    let vt = artifact(&artifacts, ArtifactId::ViewTransition);
+    let source = file(vt, "css/view-transition.ts");
+    assert!(source.contains(
+        "export type ViewTransitionFn = (options: ViewTransitionStyleObject | \"fade\" | \"slide\") => string;"
+    ));
 }

@@ -5,6 +5,7 @@ use rustc_hash::FxHashSet;
 use pandacss_config::{OptimizeConfig, UserConfig};
 use pandacss_extractor::ExtractorConfig;
 use pandacss_recipes::{Recipe, SlotRecipe};
+use pandacss_shared::ViewTransitionStyle;
 use pandacss_tokens::TokenDictionary;
 use pandacss_utility::Utility;
 
@@ -31,6 +32,7 @@ pub struct Config {
     pub(crate) config_recipes: BTreeMap<RecipeKey, Recipe>,
     pub(crate) config_slot_recipes: BTreeMap<RecipeKey, SlotRecipe>,
     pub(crate) keyframes: FxHashSet<String>,
+    pub(crate) view_transitions: BTreeMap<String, ViewTransitionStyle>,
     pub(crate) optimize: OptimizeConfig,
 }
 
@@ -60,5 +62,10 @@ impl Config {
     #[must_use]
     pub fn conditions(&self) -> &ProjectConditionMatcher {
         &self.conditions
+    }
+
+    #[must_use]
+    pub(crate) fn view_transition(&self, name: &str) -> Option<&ViewTransitionStyle> {
+        self.view_transitions.get(name)
     }
 }

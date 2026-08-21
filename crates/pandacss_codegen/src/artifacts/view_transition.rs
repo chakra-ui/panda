@@ -70,7 +70,7 @@ fn module(ctx: CodegenContext<'_>) -> Module {
             exported: true,
             name: "ViewTransitionFn".into(),
             generic_params: Vec::new(),
-            ty: TsType::Raw("(options: ViewTransitionStyleObject) => string".into()),
+            ty: TsType::Raw(view_transition_fn_type(ctx)),
             js_doc: None,
         }))
         .with_item(Item::both(ItemNode::Const(ConstDecl {
@@ -83,8 +83,25 @@ fn module(ctx: CodegenContext<'_>) -> Module {
         })))
 }
 
+fn view_transition_fn_type(ctx: CodegenContext<'_>) -> String {
+    let names: Vec<String> = ctx.config.theme.view_transitions.keys().cloned().collect();
+    if names.is_empty() {
+        return "(options: ViewTransitionStyleObject) => string".into();
+    }
+    let name_union = names
+        .iter()
+        .map(|name| format!("{name:?}"))
+        .collect::<Vec<_>>()
+        .join(" | ");
+    format!("(options: ViewTransitionStyleObject | {name_union}) => string")
+}
+
 const VIEW_TRANSITION_IMPL: &str = r"(options) => {
   const prefix = __PREFIX__
+  if (typeof options === 'string') {
+    const base = 'vt_' + options
+    return prefix ? prefix + '-' + base : base
+  }
   const slots = ['group', 'imagePair', 'old', 'new']
   const filtered = {}
   if (options && typeof options === 'object') {

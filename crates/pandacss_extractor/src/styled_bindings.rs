@@ -4,8 +4,9 @@
 //! extra React component level even when its class string is constant. When the
 //! chain is base-only and rooted in an intrinsic tag, every `<Button>` site can
 //! be folded to the host element, exactly as `<styled.button>` already is.
-//! Anything the fold cannot prove — variants, an options argument, a non-local
-//! base — is simply not recorded, so the runtime chain stays.
+//! Anything the fold cannot prove — variants, a non-local base, an options
+//! argument beyond style-only `defaultProps` — is simply not recorded, so the
+//! runtime chain stays.
 
 use oxc_ast::ast::{
     BindingPattern, Declaration, Expression, Program, Statement, VariableDeclarationKind,
@@ -24,6 +25,20 @@ pub(crate) struct StyledBinding {
     pub intrinsic: String,
     /// Composed `base` styles, outermost-first, so element props still win.
     pub base: Vec<(String, StyleTree)>,
+    /// Style-only `defaultProps`, which sit over `base` and under element props.
+    /// Kept apart from `base` because wrapping this binding in another
+    /// `styled()` level drops them: the runtime renders `__base__`, so the inner
+    /// level's `forwardRef` — and its defaults — never run.
+    pub default_props: Vec<(String, StyleTree)>,
+}
+
+impl StyledBinding {
+    /// `base` then `defaultProps`, the precedence the runtime factory applies.
+    pub(crate) fn composed_base(&self) -> Vec<(String, StyleTree)> {
+        let mut composed = self.base.clone();
+        composed.extend(self.default_props.iter().cloned());
+        composed
+    }
 }
 
 pub(crate) type StyledBindings = FxHashMap<String, StyledBinding>;
@@ -95,11 +110,14 @@ fn resolve_binding(
             if !is_styled_factory(callee.name.as_str(), ctx) {
                 return None;
             }
-            // A third `options` argument carries `defaultProps` /
-            // `shouldForwardProp`, neither of which the fold reproduces.
-            if call.arguments.len() != 2 {
-                return None;
-            }
+            // A third `options` argument only folds when it is style-only
+            // `defaultProps`; `shouldForwardProp` / `forwardProps` / `dataAttr`
+            // are runtime behavior the fold cannot reproduce.
+            let default_props = match call.arguments.len() {
+                2 => Vec::new(),
+                3 => default_prop_styles(call.arguments.get(2)?.as_expression()?, ctx)?,
+                _ => return None,
+            };
 
             let (intrinsic, inherited) = match call
                 .arguments
@@ -122,6 +140,7 @@ fn resolve_binding(
                 symbol_id: None,
                 intrinsic,
                 base,
+                default_props,
             })
         }
         _ => None,
@@ -167,4 +186,61 @@ fn base_only_entries(
         }
     }
     Some(base)
+}
+
+/// Style entries of a `{ defaultProps: { … } }` options argument.
+///
+/// `None` — refusing the fold — for any other option key, a non-object or
+/// spread-carrying shape, or a prop the class string cannot absorb.
+fn default_prop_styles(
+    options: &Expression<'_>,
+    ctx: &VisitorContext<'_, '_>,
+) -> Option<Vec<(String, StyleTree)>> {
+    let StyleTree::Object(StyleObject { entries, spreads }) =
+        expression_to_style_tree(options, ctx.resolver)?
+    else {
+        return None;
+    };
+    if !spreads.is_empty() {
+        return None;
+    }
+
+    let mut default_props = Vec::new();
+    for (key, value) in entries {
+        if key != "defaultProps" {
+            return None;
+        }
+        let StyleTree::Object(StyleObject {
+            entries,
+            spreads: prop_spreads,
+        }) = value
+        else {
+            return None;
+        };
+        if !prop_spreads.is_empty() {
+            return None;
+        }
+        if !entries
+            .iter()
+            .all(|(prop, _)| is_foldable_style_prop(prop, ctx))
+        {
+            return None;
+        }
+        default_props = entries;
+    }
+    Some(default_props)
+}
+
+/// Whether a default prop can be folded into the element's class string.
+///
+/// Everything else — HTML attributes, `as` / `children` / `className` /
+/// `unstyled`, and the `css` prop, which the runtime replaces wholesale instead
+/// of merging per key — has to keep the runtime component.
+fn is_foldable_style_prop(prop: &str, ctx: &VisitorContext<'_, '_>) -> bool {
+    if prop == "css" || prop.ends_with("Css") {
+        return false;
+    }
+    // An unconfigured set means "unknown", not "everything": without the
+    // utility table the fold cannot tell `fontWeight` from `type`.
+    ctx.config.jsx.valid_style_props.contains(prop)
 }

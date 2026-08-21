@@ -18,6 +18,20 @@ export default {
   jsxFactory: 'panda',
   jsxFramework: 'react',
   theme: {
+    viewTransitions: {
+      slide: {
+        group: {
+          animationDuration: '0.45s',
+          animationTimingFunction: 'ease-in-out',
+        },
+        old: { opacity: 0 },
+        new: { opacity: 1 },
+      },
+      fade: {
+        old: { opacity: 1 },
+        new: { opacity: 0 },
+      },
+    },
     semanticTokens: {
       colors: {
         text: { value: { base: '{colors.gray.600}', _osDark: '{colors.gray.400}' } },

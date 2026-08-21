@@ -220,12 +220,12 @@ export const docsTabs: TabItem[] = [
         title: 'Component Library',
         items: [
           { title: 'Overview', url: 'overview' },
-          { title: 'Library setup', url: 'setup' },
+          { title: 'Set up a library package', url: 'setup' },
           { title: 'Wrap headless UI', url: 'wrap-headless-ui' },
-          { title: 'forwardProps', url: 'forward-props' },
+          { title: 'forwardProps & the styled factory', url: 'forward-props' },
           { title: 'Isolated Declarations', url: 'isolated-declarations' },
-          { title: 'Shipping styles', url: 'ship-styled-system' },
-          { title: 'Usage tracking', url: 'track-usage' },
+          { title: 'Ship the styled-system vs the CSS', url: 'ship-styled-system' },
+          { title: 'Track usage in wrapped components', url: 'track-usage' },
           { title: 'Troubleshooting', url: 'troubleshooting' }
         ]
       },
@@ -233,8 +233,8 @@ export const docsTabs: TabItem[] = [
         title: 'Design System (preset)',
         items: [
           { title: 'Overview', url: 'preset-overview' },
-          { title: 'Build a preset', url: 'building-a-design-system' },
-          { title: 'Consume a preset', url: 'consuming-a-design-system' }
+          { title: 'Build a design system', url: 'building-a-design-system' },
+          { title: 'Consume a design system', url: 'consuming-a-design-system' }
         ]
       },
       {
@@ -252,7 +252,7 @@ export const docsTabs: TabItem[] = [
       {
         title: 'Distribution & Scale',
         items: [
-          { title: 'Shared styled-system', url: 'shared-styled-system' },
+          { title: 'Shared styled-system in a monorepo', url: 'shared-styled-system' },
           { title: 'Publishing to npm', url: 'publishing-to-npm' },
           { title: 'Avoiding CSS collisions', url: 'avoiding-collisions' },
           { title: 'Monorepo dev workflow', url: 'monorepo-dev-workflow' },

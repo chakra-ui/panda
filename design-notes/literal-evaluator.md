@@ -114,7 +114,8 @@ Edge-case drops worth noting: division by zero (`1 / 0` would be `Infinity` in J
 
 Captures that aren't parameters must already fold; they bake into the descriptor as `OwnedPureExpr::Value` at lower
 time. Lowering fails on async/generators, rest or destructured params, nested unknown calls, `this`, assignment, and
-other impure forms. Bare function values used without a call stay non-`Literal`.
+other impure forms. Bare function values used without a call stay non-`Literal`, except factory
+`defaultProps` accessors (arrow / `function` / method), which are applied with no arguments.
 
 Same-file bindings go through the resolver's `fn_cache`. Imported / re-exported helpers come from `CrossFileResolver` as
 `ExportEntry::PureFn` (see [cross-file-resolution](./cross-file-resolution.md)) — lowered while the export file's AST is

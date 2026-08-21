@@ -1,14 +1,7 @@
 import { useState } from 'react'
 import { css, cx, viewTransition } from '../styled-system/css'
 
-const slide = viewTransition({
-  group: {
-    animationDuration: '0.45s',
-    animationTimingFunction: 'ease-in-out',
-  },
-  old: { opacity: 0 },
-  new: { opacity: 1 },
-})
+const slide = viewTransition('slide')
 
 export function ViewTransitionDemo() {
   const [large, setLarge] = useState(false)
@@ -25,7 +18,7 @@ export function ViewTransitionDemo() {
 
   return (
     <section className={css({ padding: '5', borderWidth: '1px', display: 'grid', gap: '4' })}>
-      <p className={css({ fontWeight: 'semibold', mb: '0' })}>viewTransition()</p>
+      <p className={css({ fontWeight: 'semibold', mb: '0' })}>viewTransition('slide')</p>
       <p className={css({ color: 'fg.muted', fontSize: 'sm' })}>
         Bag class: <code className={css({ fontFamily: 'mono' })}>{slide}</code>
       </p>

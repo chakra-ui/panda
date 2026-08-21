@@ -265,10 +265,14 @@ fn collect_call_styles(
                 }
             }
         }
-        // `styled('div', config)` puts config at arg 1; `styled.div(config)` at
-        // arg 0. A config with recipe keys is walked as a recipe, else flat.
+        // `styled('div', config, options)` puts config at arg 1 and options at
+        // arg 2; `styled.div(config)` puts config at arg 0. A config with recipe
+        // keys is walked as a recipe, else flat.
         (MatchCategory::Jsx, _) => {
-            if let Some(config) = call_object(call, 1).or_else(|| call_object(call, 0)) {
+            if let Some(recipe) = call.jsx_recipe_ident.as_deref() {
+                accum.sites.push(site(UsageKind::Recipe, recipe, &range));
+            }
+            if let Some(config) = jsx_factory_config(call) {
                 if has_recipe_keys(config) {
                     collect_recipe(
                         Some(config),
@@ -290,6 +294,15 @@ fn collect_call_styles(
                     );
                 }
             }
+            if let Some(default_props) = jsx_factory_default_props(call) {
+                walk_jsx_style_props(default_props, ctx.cx, &range, accum.sites);
+                collector.collect(
+                    default_props,
+                    StyleEntrySyntax::JsxProp,
+                    &mut vec!["defaultProps".to_owned()],
+                    accum.style_entries,
+                );
+            }
         }
         (MatchCategory::Recipe, _) => {
             accum
@@ -309,6 +322,26 @@ fn collect_call_styles(
 fn call_object(call: &ExtractedCall, index: usize) -> Option<&[(String, Literal)]> {
     match call.data.get(index) {
         Some(Some(Literal::Object(entries))) => Some(entries),
+        _ => None,
+    }
+}
+
+fn object_field<'a>(entries: &'a [(String, Literal)], name: &str) -> Option<&'a Literal> {
+    entries
+        .iter()
+        .find(|(key, _)| key == name)
+        .map(|(_, value)| value)
+}
+
+fn jsx_factory_config(call: &ExtractedCall) -> Option<&[(String, Literal)]> {
+    call_object(call, 1).or_else(|| call_object(call, 0))
+}
+
+/// `defaultProps` off the factory options object, which the `JsxFactory`
+/// signature only ever puts at argument 2.
+fn jsx_factory_default_props(call: &ExtractedCall) -> Option<&[(String, Literal)]> {
+    match call_object(call, 2).and_then(|entries| object_field(entries, "defaultProps")) {
+        Some(Literal::Object(props)) => Some(props),
         _ => None,
     }
 }
@@ -620,6 +653,35 @@ fn walk_object(
         if is_nesting(key, cx) {
             if let Literal::Object(nested) = value {
                 walk_object(nested, cx, range, sites);
+            }
+        } else {
+            walk_prop(key, value, cx, range, sites);
+        }
+    }
+}
+
+fn walk_jsx_style_props(
+    entries: &[(String, Literal)],
+    cx: &Cx,
+    range: &SourceRange,
+    sites: &mut Vec<UsageSite>,
+) {
+    for (key, value) in entries {
+        if is_jsx_css_prop(key) {
+            match value {
+                Literal::Object(nested) => walk_object(nested, cx, range, sites),
+                Literal::Array(items) => {
+                    for item in items {
+                        if let Literal::Object(nested) = item {
+                            walk_object(nested, cx, range, sites);
+                        }
+                    }
+                }
+                _ => {}
+            }
+        } else if is_nesting(key, cx) {
+            if let Literal::Object(nested) = value {
+                walk_jsx_style_props(nested, cx, range, sites);
             }
         } else {
             walk_prop(key, value, cx, range, sites);

@@ -20,4 +20,5 @@ export {
   defineThemeVariant,
   defineTokens,
   defineUtility,
+  defineViewTransitions,
 } from './config'
