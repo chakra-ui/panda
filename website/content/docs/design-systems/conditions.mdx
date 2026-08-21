@@ -1,15 +1,15 @@
 ---
 title: Conditions
-description: Learn how to customize conditions in your Panda config
+description: Add your own named conditions, like _hover or dark, on top of Panda's built-in set.
 ---
 
-Conditions allow you to apply different styles and behaviors based on specific conditions or states. They provide a way
-to target specific elements or apply styles in response to certain events or conditions.
+A condition is a name you can use as a style key, `_hover`, `_dark`, `md`, that expands to a selector or at-rule.
+This page is about defining your own, on top of the [built-in ones](/docs/styling/conditional-styles#reference).
 
 ## Creating a condition
 
-To create a condition, you can use the conditions property in the config. Let's say we want to create a `groupHover`
-pseudo condition that applies styles to an element when a parent container with the `group` role is hovered.
+Add a condition under `conditions.extend`. Here's a `groupHover` condition that styles a child when a parent with
+`role="group"` is hovered:
 
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -23,10 +23,10 @@ export default defineConfig({
 })
 ```
 
-> ⚠️ The `&` character is mandatory, it is a placeholder for the current selector. It will be replaced with the actual
-> selector when the condition is used. It has to be used either at the beginning or at the end of the condition.
+The `&` is required. It's the placeholder for whatever selector the condition ends up applied to, and it has to sit
+at the start or the end of the string.
 
-Then you can run the following command to generate the conditions JS code:
+Run codegen to generate the `_groupHover` key:
 
 <Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   {/* <!-- prettier-ignore-start --> */}
@@ -52,8 +52,6 @@ Then you can run the following command to generate the conditions JS code:
   </Tab>
   {/* <!-- prettier-ignore-end --> */}
 </Tabs>
-
-Now, we can use the `groupHover` condition in our components.
 
 ```jsx
 import { css } from '../styled-system/css'
@@ -71,10 +69,10 @@ function App() {
 }
 ```
 
-## Customizing Built-in Conditions
+## Overriding a built-in condition
 
-You can extend the [default conditions](/docs/styling/conditional-styles#reference) by using the `conditions.extend`
-property in the config.
+`conditions.extend` also lets you replace what a built-in condition does. Here's `dark` redefined to also match a
+`data-theme` attribute, on top of the `.dark` class it already matches:
 
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -82,43 +80,18 @@ import { defineConfig } from '@pandacss/dev'
 export default defineConfig({
   conditions: {
     extend: {
-      // Extend the default `dark` condition
       dark: '.dark &, [data-theme="dark"] &'
     }
   }
 })
 ```
 
-Then you can run the following command to update the conditions JS code:
+Run codegen again after any change here, built-in or custom, since the condition's expansion is baked into the
+generated `styled-system` package.
 
-<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
-  {/* <!-- prettier-ignore-start --> */}
-  <Tab>
-    ```bash
-    pnpm panda codegen
-    ```
-  </Tab>
-  <Tab>
-    ```bash
-    npm panda codegen
-    ```
-  </Tab>
-  <Tab>
-    ```bash
-    yarn panda codegen
-    ```
-  </Tab>
-  <Tab>
-    ```bash
-    bun panda codegen
-    ```
-  </Tab>
-  {/* <!-- prettier-ignore-end --> */}
-</Tabs>
+## Referencing tokens
 
-## Using tokens
-
-You can also use tokens in your conditions, and they will be resolved to their actual values:
+A condition's selector string can call `token()`, and it resolves the same way it would inside a style object:
 
 ```tsx
 import { defineConfig } from '@pandacss/dev'
@@ -133,9 +106,10 @@ export default defineConfig({
 })
 ```
 
-## Mixed conditions
+## Combining multiple rules under one name
 
-You can also use mixed conditions (nested at-rules/selectors) under a single condition name:
+Give a condition an array instead of a string, and every entry nests inside the last, all under the one condition
+name:
 
 ```tsx
 import { defineConfig } from '@pandacss/dev'
@@ -159,7 +133,7 @@ css({
 })
 ```
 
-will generate the following CSS:
+generates:
 
 ```css
 @media (hover: hover) and (pointer: fine) {
@@ -169,11 +143,13 @@ will generate the following CSS:
 }
 ```
 
-## Multi-block conditions
+## One condition, several independent blocks
 
-Sometimes you need a single condition to generate multiple independent CSS blocks, each with its own at-rule. For example, you might want hover feedback on desktop (pointer devices) and active/press feedback on touch devices.
+The array form above nests every rule inside the previous one. Sometimes you need the opposite: one condition that
+emits multiple separate CSS blocks, each with its own at-rule, not nested inside each other. A common case is hover
+feedback on pointer devices and press feedback on touch devices, two different media queries, same condition name.
 
-Use the object syntax with `@slot` markers to define multi-block conditions. Each path from the root of the object to a `@slot` value becomes an independent CSS block:
+Use the object form with `@slot` markers. Each path from the root down to an `@slot` becomes its own CSS block:
 
 ```tsx
 import { defineConfig } from '@pandacss/dev'
@@ -183,14 +159,14 @@ export default defineConfig({
     extend: {
       hoverActive: {
         '@media (hover: hover)': {
-          '&:is(:hover, [data-hover])': '@slot',
+          '&:is(:hover, [data-hover])': '@slot'
         },
         '@media (hover: none)': {
-          '&:is(:active, [data-active])': '@slot',
-        },
-      },
-    },
-  },
+          '&:is(:active, [data-active])': '@slot'
+        }
+      }
+    }
+  }
 })
 ```
 
@@ -199,12 +175,12 @@ import { css } from '../styled-system/css'
 
 css({
   _hoverActive: {
-    bg: 'red',
-  },
+    bg: 'red'
+  }
 })
 ```
 
-will generate the following CSS:
+generates two independent blocks:
 
 ```css
 @media (hover: hover) {
@@ -219,13 +195,15 @@ will generate the following CSS:
 }
 ```
 
-This is also useful for any scenario where a single condition needs to apply the same styles across multiple independent at-rule blocks. Objects with a single `@slot` path behave identically to the [mixed conditions](#mixed-conditions) array syntax.
+An object with just one `@slot` path behaves the same as the array form above, this is the general case, the array
+form is the shorthand for the common single-block one.
 
 ## Container queries
 
-Read more about how to define type-safe container queries [here](/docs/styling/conditional-styles#container-queries)
+Type-safe container queries are their own topic. See
+[container queries](/docs/styling/conditional-styles#container-queries).
 
-## Minimal setup
+## Starting from zero
 
-If you want to use Panda with the bare minimum, without any of the defaults, you can read more about it
-[here](/docs/design-systems/minimal-setup)
+Everything here assumes you're extending Panda's defaults with `conditions.extend`. For no built-in conditions at
+all, see [minimal setup](/docs/design-systems/minimal-setup).

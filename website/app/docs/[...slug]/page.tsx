@@ -109,7 +109,7 @@ export default async function DocsPage(props: DocsPageProps) {
           visibility={doc.hideToc ? 'hidden' : 'visible'}
           display={{ base: 'none', xl: 'block' }}
           flexShrink="0"
-          w="56"
+          w="72"
           position="sticky"
           top="calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height))"
           pt="10"

@@ -91,7 +91,7 @@ Generate it after building your library:
 panda buildinfo --outfile dist/panda.buildinfo.json
 ```
 
-> Publishing a full library? Prefer `panda lib` — it writes the build info, a preset, and a manifest in one step, and
+> Publishing a full library? Prefer `panda lib`. It writes the build info, a preset, and a manifest in one step, and
 > consumers wire it up with the [`designSystem`](/docs/design-systems/consuming-a-design-system) config field instead of
 > `include` + `importMap`. See [Build a design system](/docs/design-systems/building-a-design-system). `panda buildinfo`
 > is the lower-level option when you only want the extraction result.
@@ -109,7 +109,7 @@ export default defineConfig({
 })
 ```
 
-This unlocks the same imports as the source-files approach, without needing your source:
+You get the same imports as the source-files approach, without needing your source:
 
 ```tsx
 import { css } from '@acme-org/styled-system/css'

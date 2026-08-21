@@ -12,11 +12,11 @@ preset shares theme and tokens, a plugin shares behavior.
 You don't add a plugin to make Panda read Vue, Svelte, or Astro files. The compiler extracts styles from `.vue`,
 `.svelte`, and `.astro` single-file components directly, so the [Vue](/docs/styling/vue), [Svelte](/docs/styling/svelte),
 and [Astro](/docs/styling/astro) install pages have no plugin to add. If you're upgrading from v1, the separate
-`@pandacss/plugin-vue` and `@pandacss/plugin-svelte` packages are gone — that work moved into the compiler.
+`@pandacss/plugin-vue` and `@pandacss/plugin-svelte` packages are gone. That work moved into the compiler.
 
 ## When to write your own
 
-Most one-off customization belongs in an inline plugin in your config, not a separate package — see
+Most one-off customization belongs in an inline plugin in your config, not a separate package. See
 [Hooks](/docs/design-systems/hooks) for examples like transforming source before extraction or reacting to generated
 output. Reach for a published plugin when you want to share that behavior across projects or teams, the same reason you'd
 reach for a preset instead of copy-pasting tokens.

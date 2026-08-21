@@ -1,15 +1,14 @@
 ---
 title: Federated Micro-Frontends
-description: How to safely run multiple Panda-built applications (and multiple versions of the same design system) on a single host page using `prefix` and `cssVarRoot`, whether your design system ships static CSS or build info.
+description: Run multiple Panda-built apps, or multiple versions of the same design system, on one host page without class-name or CSS-variable collisions.
 ---
 
-Panda supports federated micro-frontend architectures (multiple
-independently-built apps loaded onto a single host page) through the
-`prefix` and `cssVarRoot` config options.
+Two independently-built Panda apps loaded onto the same page can emit the same class name, or the same CSS variable,
+with different rules behind them. The cascade only keeps one. `prefix` and `cssVarRoot` are the config options that
+stop that from happening.
 
-This guide shows how to set up a Panda lib so it can co-exist with other
-Panda libs (or with a different version of itself) without class-name or CSS
-variable collisions.
+This guide sets up a Panda lib so it can co-exist with other Panda libs, or with a different version of itself,
+on the same document.
 
 ## When you need this
 
@@ -169,12 +168,12 @@ clashing. The cascade has nothing to fight over.
 
 ## Deriving the prefix from your package
 
-Hardcoding the prefix is brittle. The robust pattern is to derive it from
-your package's major version:
+A hardcoded prefix drifts out of sync the moment you forget to bump it. Derive it from your package's major version
+instead:
 
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
-import pkg from './package.json' assert { type: 'json' }
+import pkg from './package.json' with { type: 'json' }
 
 const major = pkg.version.split('.')[0]
 const slug = pkg.name.replace(/[@/]/g, '-').replace(/^-/, '')
@@ -281,7 +280,7 @@ For a Panda lib intended to ship into a federated host:
 
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
-import pkg from './package.json' assert { type: 'json' }
+import pkg from './package.json' with { type: 'json' }
 
 const major = pkg.version.split('.')[0]
 const slug = pkg.name.replace(/[@/]/g, '-').replace(/^-/, '')

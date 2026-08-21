@@ -65,9 +65,8 @@ export const RouteSwitch = (props: RouteSwitchProps) => {
 
 const linkStyles = cva({
   base: {
-    flex: '1',
     textAlign: 'center',
-    px: '1',
+    px: '4',
     py: '2',
     cursor: 'pointer',
     rounded: 'md',
@@ -124,9 +123,11 @@ const triggerStyles = flex({
   mt: '4',
   p: '1',
   gap: '1',
-  w: 'full',
+  w: 'fit-content',
+  maxW: 'full',
+  flexWrap: 'wrap',
   rounded: 'md',
-  justify: 'stretch',
+  justify: 'start',
   bg: { base: 'gray.100', _dark: 'neutral.700' }
 })
 

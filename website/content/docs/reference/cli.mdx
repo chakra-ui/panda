@@ -109,7 +109,7 @@ pnpm panda dev --include "./src/**/*.tsx"
 | `--outdir <dir>`     | Output directory for generated files                         | [`config.outdir`](/docs/reference/config#outdir)   |
 | `--outfile, -o <file>` | Output file for extracted CSS                              | -                                                  |
 | `--splitting`        | Emit split CSS files (one per layer and recipe)             | -                                                  |
-| `--clean`            | Clean the output directory before generating                | [`config.clean`](/docs/reference/config#clean)     |
+| `--clean`            | Clean the output directory before generating                | -     |
 | `--polyfill`         | Polyfill cascade layers with `:not(#\\#)` for older browsers | [`config.polyfill`](/docs/reference/config#polyfill) |
 
 `panda dev` also accepts the [shared flags](#shared-flags), `--include`, and `--watch-debounce`.
@@ -142,7 +142,7 @@ pnpm panda build --splitting
 | `--outdir <dir>`       | Output directory for generated files                        | [`config.outdir`](/docs/reference/config#outdir)   |
 | `--outfile, -o <file>` | Output file for extracted CSS                              | -                                                  |
 | `--splitting`          | Emit split CSS files (one per layer and recipe)             | -                                                  |
-| `--clean`              | Clean the output directory before generating                | [`config.clean`](/docs/reference/config#clean)     |
+| `--clean`              | Clean the output directory before generating                | -     |
 | `--polyfill`           | Polyfill cascade layers with `:not(#\\#)` for older browsers | [`config.polyfill`](/docs/reference/config#polyfill) |
 | `--check`              | Check generated files without writing                       | -                                                  |
 
@@ -189,7 +189,7 @@ pnpm panda codegen --watch
 | ----------------- | -------------------------------------------- | ------------------------------------------------ |
 | `--watch, -w`     | Watch the config and rebuild on change      | -                                                |
 | `--outdir <dir>`  | Output directory for generated files        | [`config.outdir`](/docs/reference/config#outdir) |
-| `--clean`         | Clean the output directory before generating | [`config.clean`](/docs/reference/config#clean)   |
+| `--clean`         | Clean the output directory before generating | -   |
 | `--check`         | Check generated files without writing        | -                                                |
 
 `panda codegen` also accepts the [shared flags](#shared-flags) and `--watch-debounce`.
