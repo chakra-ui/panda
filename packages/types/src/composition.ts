@@ -37,7 +37,7 @@ type TextStyleProperty =
   | 'fontVariationSettings'
   | 'fontWeight'
   | 'hangingPunctuation'
-  | 'hypens'
+  | 'hyphens'
   | 'hyphenateCharacter'
   | 'hyphenateLimitChars'
   | 'letterSpacing'
