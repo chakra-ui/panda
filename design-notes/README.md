@@ -91,7 +91,8 @@ Some topics span several notes. Keep the detailed contract in one place and link
 - [Token reference syntax](./token-reference-syntax.md) — `tokenSyntax: '$'`: Stitches-style `$` token syntax in style
   values, replacing the v1 `tokens:created` rename hook. Includes the v1 → v2 migration guide.
 - [View Transition API](./view-transition-api.md) — `viewTransition()` bag class from the css barrel,
-  `view-transition-class` emission, hash contract, transform rewrite, and what's still out of scope.
+  `theme.viewTransitions` named bags, `view-transition-class` emission, hash contract, transform rewrite, and what's
+  still out of scope.
 
 ### Boundary
 

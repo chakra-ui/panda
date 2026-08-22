@@ -2,7 +2,7 @@ use crate::common::{extract_shape, panda_config, panda_config_with_jsx, panda_js
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
 use pandacss_extractor::{
-    CssSyntaxKind, JsxExtractionConfig, extract, extract_debug, extract_for_transform,
+    CssSyntaxKind, JsxExtractionConfig, Literal, extract, extract_debug, extract_for_transform,
 };
 
 #[test]
@@ -394,4 +394,211 @@ fn extract_for_transform_resolves_symbols_for_normal_css_files() {
             .any(|binding| binding.local == "css" && !binding.references.is_empty())
     );
     assert_eq!(result.calls.len(), 1);
+}
+
+fn factory_options_json(source: &str) -> serde_json::Value {
+    let result = extract(source, "factory.tsx", &panda_jsx_config());
+    result
+        .calls
+        .iter()
+        .find(|call| call.name == "styled")
+        .and_then(|call| call.data.get(2).and_then(Option::as_ref))
+        .map_or(serde_json::Value::Null, Literal::to_json)
+}
+
+#[test]
+fn styled_default_props_folds_solid_callable_forms() {
+    assert_yaml_snapshot!(
+        factory_options_json(indoc! {r#"
+            import { styled } from "@panda/jsx"
+            styled('div', { color: 'red' }, { defaultProps: () => ({ marginTop: '8px' }) })
+        "#}),
+        @r#"
+    defaultProps:
+      marginTop: 8px
+    "#
+    );
+    assert_yaml_snapshot!(
+        factory_options_json(indoc! {r#"
+            import { styled } from "@panda/jsx"
+            styled('div', { color: 'red' }, {
+              defaultProps: () => {
+                return { marginTop: '8px' }
+              },
+            })
+        "#}),
+        @r#"
+    defaultProps:
+      marginTop: 8px
+    "#
+    );
+    assert_yaml_snapshot!(
+        factory_options_json(indoc! {r#"
+            import { styled } from "@panda/jsx"
+            styled('div', { color: 'red' }, {
+              defaultProps: function () {
+                return { marginTop: '8px' }
+              },
+            })
+        "#}),
+        @r#"
+    defaultProps:
+      marginTop: 8px
+    "#
+    );
+    assert_yaml_snapshot!(
+        factory_options_json(indoc! {r#"
+            import { styled } from "@panda/jsx"
+            styled('div', { color: 'red' }, {
+              defaultProps() {
+                return { marginTop: '8px' }
+              },
+            })
+        "#}),
+        @r#"
+    defaultProps:
+      marginTop: 8px
+    "#
+    );
+    assert_yaml_snapshot!(
+        factory_options_json(indoc! {r#"
+            import { styled } from "@panda/jsx"
+            styled('div', { color: 'red' }, {
+              defaultProps: function defaults() {
+                return { marginTop: '8px' }
+              },
+            })
+        "#}),
+        @r#"
+    defaultProps:
+      marginTop: 8px
+    "#
+    );
+    assert_yaml_snapshot!(
+        factory_options_json(indoc! {r#"
+            import { styled } from "@panda/jsx"
+            styled('div', { color: 'red' }, {
+              get defaultProps() {
+                return { marginTop: '8px' }
+              },
+            })
+        "#}),
+        @r#"
+    defaultProps:
+      marginTop: 8px
+    "#
+    );
+}
+
+#[test]
+fn styled_default_props_folds_identifier_bound_functions() {
+    assert_yaml_snapshot!(
+        factory_options_json(indoc! {r#"
+            import { styled } from "@panda/jsx"
+            const defaults = () => ({ marginTop: '8px' })
+            styled('div', { color: 'red' }, { defaultProps: defaults })
+        "#}),
+        @r#"
+    defaultProps:
+      marginTop: 8px
+    "#
+    );
+    assert_yaml_snapshot!(
+        factory_options_json(indoc! {r#"
+            import { styled } from "@panda/jsx"
+            function defaults() {
+              return { marginTop: '8px' }
+            }
+            styled('div', { color: 'red' }, { defaultProps: defaults })
+        "#}),
+        @r#"
+    defaultProps:
+      marginTop: 8px
+    "#
+    );
+}
+
+fn styled_recipe_ident(source: &str) -> Option<String> {
+    extract(source, "factory.tsx", &panda_jsx_config())
+        .calls
+        .iter()
+        .find(|call| call.name == "styled")
+        .and_then(|call| call.jsx_recipe_ident.clone())
+}
+
+#[test]
+fn styled_recipe_ident_resolves_import_member_and_local_alias() {
+    assert_eq!(
+        styled_recipe_ident(indoc! {r#"
+            import { styled } from "@panda/jsx"
+            import { button } from "@panda/recipes"
+            styled('div', button, { defaultProps: { size: 'sm' } })
+        "#}),
+        Some("button".into())
+    );
+    assert_eq!(
+        styled_recipe_ident(indoc! {r#"
+            import { styled } from "@panda/jsx"
+            import { button as btn } from "@panda/recipes"
+            styled('div', btn, { defaultProps: { size: 'sm' } })
+        "#}),
+        Some("button".into())
+    );
+    assert_eq!(
+        styled_recipe_ident(indoc! {r#"
+            import { styled } from "@panda/jsx"
+            import * as recipes from "@panda/recipes"
+            styled('div', recipes.button, { defaultProps: { size: 'sm' } })
+        "#}),
+        Some("button".into())
+    );
+    assert_eq!(
+        styled_recipe_ident(indoc! {r#"
+            import { styled } from "@panda/jsx"
+            import { button } from "@panda/recipes"
+            const recipe = button
+            styled('div', recipe, { defaultProps: { size: 'sm' } })
+        "#}),
+        Some("button".into())
+    );
+    assert_eq!(
+        styled_recipe_ident(indoc! {r#"
+            import { styled } from "@panda/jsx"
+            import * as recipes from "@panda/recipes"
+            const recipe = recipes.button
+            styled('div', recipe, { defaultProps: { size: 'sm' } })
+        "#}),
+        Some("button".into())
+    );
+    assert_eq!(
+        styled_recipe_ident(indoc! {r#"
+            import { styled } from "@panda/jsx"
+            import * as recipes from "@panda/recipes"
+            const r = recipes
+            styled('div', r.button, { defaultProps: { size: 'sm' } })
+        "#}),
+        Some("button".into())
+    );
+}
+
+#[test]
+fn styled_recipe_ident_skips_mutated_and_deep_members() {
+    assert_eq!(
+        styled_recipe_ident(indoc! {r#"
+            import { styled } from "@panda/jsx"
+            import { button } from "@panda/recipes"
+            let recipe = button
+            recipe = button
+            styled('div', recipe, { defaultProps: { size: 'sm' } })
+        "#}),
+        None
+    );
+    assert_eq!(
+        styled_recipe_ident(indoc! {r#"
+            import { styled } from "@panda/jsx"
+            import * as recipes from "@panda/recipes"
+            styled('div', recipes.button.raw, { defaultProps: { size: 'sm' } })
+        "#}),
+        None
+    );
 }

@@ -148,7 +148,8 @@ fn a_rebindable_let_declaration_blocks_the_chain_fold() {
 }
 
 #[test]
-fn an_options_argument_blocks_the_chain_fold() {
+fn an_html_default_prop_blocks_the_chain_fold() {
+    // `type` is a DOM attribute, not a style, so the fold has nowhere to put it.
     let source = indoc! {r#"
         import { styled } from '@panda/jsx';
         const Button = styled('button', { base: { color: 'red' } }, { defaultProps: { type: 'submit' } });
@@ -206,4 +207,262 @@ fn a_local_binding_shadowing_a_folded_chain_is_left_alone() {
         "shadowed element should be untouched: {}",
         output.code
     );
+}
+
+#[test]
+fn style_only_default_props_fold_into_the_class_string() {
+    let source = indoc! {r#"
+        import { styled } from '@panda/jsx';
+        const Button = styled('button', { base: { color: 'red' } }, {
+          defaultProps: { margin: '0' },
+        });
+        export const el = <Button>hi</Button>;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { cva as __pcva } from '@pandacss-internal/css';
+    import { styled } from '@panda/jsx';
+    const Button = styled('button', __pcva({ base: 'color_red' }), {
+      defaultProps: { margin: '0' },
+    });
+    export const el = <button className="color_red margin_0">hi</button>;
+    "#);
+}
+
+#[test]
+fn a_shorthand_default_prop_folds() {
+    let source = indoc! {r#"
+        import { styled } from '@panda/jsx';
+        const Button = styled('button', { base: { color: 'red' } }, {
+          defaultProps: { bg: 'blue' },
+        });
+        export const el = <Button />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { cva as __pcva } from '@pandacss-internal/css';
+    import { styled } from '@panda/jsx';
+    const Button = styled('button', __pcva({ base: 'color_red' }), {
+      defaultProps: { bg: 'blue' },
+    });
+    export const el = <button className="bg_blue color_red" />;
+    "#);
+}
+
+#[test]
+fn default_props_win_over_the_chain_base() {
+    let source = indoc! {r#"
+        import { styled } from '@panda/jsx';
+        const Button = styled('button', { base: { color: 'red' } }, {
+          defaultProps: { color: 'blue' },
+        });
+        export const el = <Button />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { cva as __pcva } from '@pandacss-internal/css';
+    import { styled } from '@panda/jsx';
+    const Button = styled('button', __pcva({ base: 'color_red' }), {
+      defaultProps: { color: 'blue' },
+    });
+    export const el = <button className="color_blue" />;
+    "#);
+}
+
+#[test]
+fn element_props_win_over_default_props() {
+    let source = indoc! {r#"
+        import { styled } from '@panda/jsx';
+        const Button = styled('button', { base: { color: 'red' } }, {
+          defaultProps: { color: 'blue' },
+        });
+        export const el = <Button color="green" />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { cva as __pcva } from '@pandacss-internal/css';
+    import { styled } from '@panda/jsx';
+    const Button = styled('button', __pcva({ base: 'color_red' }), {
+      defaultProps: { color: 'blue' },
+    });
+    export const el = <button className="color_green" />;
+    "#);
+}
+
+#[test]
+fn an_alias_of_a_chain_with_default_props_still_folds() {
+    let source = indoc! {r#"
+        import { styled } from '@panda/jsx';
+        const Button = styled('button', { base: { color: 'red' } }, {
+          defaultProps: { margin: '0' },
+        });
+        const Alias = Button;
+        export const el = <Alias />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { cva as __pcva } from '@pandacss-internal/css';
+    import { styled } from '@panda/jsx';
+    const Button = styled('button', __pcva({ base: 'color_red' }), {
+      defaultProps: { margin: '0' },
+    });
+    const Alias = Button;
+    export const el = <button className="color_red margin_0" />;
+    "#);
+}
+
+#[test]
+fn wrapping_a_chain_drops_the_inner_levels_default_props() {
+    // The runtime renders `BaseComponent.__base__`, so the inner level's
+    // `forwardRef` — and its `defaultProps` — never run. The fold matches that.
+    let source = indoc! {r#"
+        import { styled } from '@panda/jsx';
+        const Base = styled('button', { base: { color: 'red' } }, {
+          defaultProps: { margin: '0' },
+        });
+        const Button = styled(Base, { base: { padding: '4px' } });
+        export const el = <Button />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { cva as __pcva } from '@pandacss-internal/css';
+    import { styled } from '@panda/jsx';
+    const Base = styled('button', __pcva({ base: 'color_red' }), {
+      defaultProps: { margin: '0' },
+    });
+    const Button = styled(Base, { base: { padding: '4px' } });
+    export const el = <button className="color_red padding_4px" />;
+    "#);
+}
+
+#[test]
+fn a_css_prop_default_blocks_the_chain_fold() {
+    // The element's own `css` replaces the default wholesale rather than
+    // merging per key, which flattening into the class string would not match.
+    let source = indoc! {r#"
+        import { styled } from '@panda/jsx';
+        const Button = styled('button', { base: { color: 'red' } }, {
+          defaultProps: { css: { margin: '0' } },
+        });
+        export const el = <Button />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.code.contains(r#"<Button />"#), "{}", output.code);
+}
+
+#[test]
+fn should_forward_prop_blocks_the_chain_fold() {
+    let source = indoc! {r#"
+        import { styled } from '@panda/jsx';
+        const Button = styled('button', { base: { color: 'red' } }, {
+          defaultProps: { margin: '0' },
+          shouldForwardProp: (prop) => prop !== 'margin',
+        });
+        export const el = <Button />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.code.contains(r#"<Button />"#), "{}", output.code);
+}
+
+#[test]
+fn a_statically_resolved_spread_in_default_props_still_folds() {
+    let source = indoc! {r#"
+        import { styled } from '@panda/jsx';
+        const shared = { margin: '0' };
+        const Button = styled('button', { base: { color: 'red' } }, {
+          defaultProps: { ...shared, color: 'blue' },
+        });
+        export const el = <Button />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { cva as __pcva } from '@pandacss-internal/css';
+    import { styled } from '@panda/jsx';
+    const shared = { margin: '0' };
+    const Button = styled('button', __pcva({ base: 'color_red' }), {
+      defaultProps: { ...shared, color: 'blue' },
+    });
+    export const el = <button className="color_blue margin_0" />;
+    "#);
+}
+
+#[test]
+fn an_unresolvable_spread_in_default_props_blocks_the_chain_fold() {
+    let source = indoc! {r#"
+        import { styled } from '@panda/jsx';
+        import { shared } from './shared';
+        const Button = styled('button', { base: { color: 'red' } }, {
+          defaultProps: { ...shared, color: 'blue' },
+        });
+        export const el = <Button />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.code.contains(r#"<Button />"#), "{}", output.code);
+}
+
+#[test]
+fn an_unknown_default_prop_blocks_the_chain_fold() {
+    // `role` is neither a CSS property nor a configured utility, so the fold
+    // cannot prove where it belongs.
+    let source = indoc! {r#"
+        import { styled } from '@panda/jsx';
+        const Button = styled('button', { base: { color: 'red' } }, {
+          defaultProps: { color: 'blue', role: 'button' },
+        });
+        export const el = <Button />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.code.contains(r#"<Button />"#), "{}", output.code);
+}
+
+#[test]
+fn a_conditional_default_prop_folds() {
+    let source = indoc! {r#"
+        import { styled } from '@panda/jsx';
+        const Button = styled('button', { base: { color: 'red' } }, {
+          defaultProps: { color: { base: 'blue', _hover: 'green' } },
+        });
+        export const el = <Button />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { cva as __pcva } from '@pandacss-internal/css';
+    import { styled } from '@panda/jsx';
+    const Button = styled('button', __pcva({ base: 'color_red' }), {
+      defaultProps: { color: { base: 'blue', _hover: 'green' } },
+    });
+    export const el = <button className="color_blue hover:color_green" />;
+    "#);
 }

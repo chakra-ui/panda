@@ -284,3 +284,228 @@ fn applies_prefix_to_class_and_property() {
     }
     ");
 }
+
+#[test]
+fn emits_named_theme_view_transition_when_used() {
+    let cfg = config(json!({
+        "outdir": "styled-system",
+        "include": [],
+        "exclude": [],
+        "jsxFramework": "react",
+        "preflight": false,
+        "importMap": {
+            "css": ["@panda/css"],
+            "recipe": [],
+            "pattern": [],
+            "jsx": [],
+            "tokens": []
+        },
+        "theme": {
+            "viewTransitions": {
+                "slide": {
+                    "group": { "animationDuration": "0.4s" },
+                    "old": { "opacity": 0 },
+                    "new": { "opacity": 1 },
+                },
+                "fade": {
+                    "old": { "opacity": 1 },
+                    "new": { "opacity": 0 },
+                },
+            }
+        }
+    }));
+    let source = indoc! {"
+        import { viewTransition } from '@panda/css'
+        export const slide = viewTransition('slide')
+    "};
+    assert_snapshot!(
+        compile_output(&cfg, source, StylesheetOptions::default())
+            .get_layer_css(&[StylesheetLayer::Utilities]),
+        @r"
+    @layer utilities {
+      .vt_slide {
+        view-transition-class: vt_slide;
+      }
+      ::view-transition-group(.vt_slide) {
+        animation-duration: 0.4s;
+      }
+      ::view-transition-old(.vt_slide) {
+        opacity: 0;
+      }
+      ::view-transition-new(.vt_slide) {
+        opacity: 1;
+      }
+    }
+    "
+    );
+}
+
+#[test]
+fn skips_unused_theme_view_transition() {
+    let cfg = config(json!({
+        "outdir": "styled-system",
+        "include": [],
+        "exclude": [],
+        "jsxFramework": "react",
+        "preflight": false,
+        "importMap": {
+            "css": ["@panda/css"],
+            "recipe": [],
+            "pattern": [],
+            "jsx": [],
+            "tokens": []
+        },
+        "theme": {
+            "viewTransitions": {
+                "slide": { "old": { "opacity": 0 } },
+                "fade": { "old": { "opacity": 1 } },
+            }
+        }
+    }));
+    let source = indoc! {"
+        import { viewTransition } from '@panda/css'
+        export const slide = viewTransition('slide')
+    "};
+    let css = compile_output(&cfg, source, StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Utilities]);
+    assert!(css.contains("vt_slide"));
+    assert!(!css.contains("vt_fade"));
+}
+
+#[test]
+fn named_theme_view_transition_marks_keyframes() {
+    let cfg = config(json!({
+        "outdir": "styled-system",
+        "include": [],
+        "exclude": [],
+        "jsxFramework": "react",
+        "preflight": false,
+        "optimize": { "removeUnusedKeyframes": true },
+        "importMap": {
+            "css": ["@panda/css"],
+            "recipe": [],
+            "pattern": [],
+            "jsx": [],
+            "tokens": []
+        },
+        "theme": {
+            "keyframes": {
+                "slideOutLeft": {
+                    "to": { "transform": "translateX(-100%)" }
+                },
+                "unused": {
+                    "to": { "opacity": "0" }
+                }
+            },
+            "viewTransitions": {
+                "slide": {
+                    "old": { "animationName": "slideOutLeft" },
+                }
+            }
+        }
+    }));
+    let source = indoc! {"
+        import { viewTransition } from '@panda/css'
+        export const slide = viewTransition('slide')
+    "};
+    let css = compile_output(&cfg, source, StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Tokens, StylesheetLayer::Utilities]);
+    assert!(css.contains("@keyframes slideOutLeft"));
+    assert!(!css.contains("@keyframes unused"));
+    assert!(css.contains("vt_slide"));
+}
+
+#[test]
+fn emits_prefixed_named_theme_view_transition() {
+    let cfg = config(json!({
+        "outdir": "styled-system",
+        "include": [],
+        "exclude": [],
+        "jsxFramework": "react",
+        "preflight": false,
+        "prefix": "p",
+        "importMap": {
+            "css": ["@panda/css"],
+            "recipe": [],
+            "pattern": [],
+            "jsx": [],
+            "tokens": []
+        },
+        "theme": {
+            "viewTransitions": {
+                "slide": { "old": { "opacity": 0 } }
+            }
+        }
+    }));
+    let source = indoc! {"
+        import { viewTransition } from '@panda/css'
+        export const slide = viewTransition('slide')
+    "};
+    let css = compile_output(&cfg, source, StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Utilities]);
+    assert!(css.contains(".p-vt_slide"));
+    assert!(css.contains("view-transition-class: p-vt_slide"));
+    assert!(css.contains("::view-transition-old(.p-vt_slide)"));
+    assert!(!css.contains(".vt_slide {"));
+}
+
+#[test]
+fn folded_const_name_emits_theme_bag() {
+    let cfg = config(json!({
+        "outdir": "styled-system",
+        "include": [],
+        "exclude": [],
+        "jsxFramework": "react",
+        "preflight": false,
+        "importMap": {
+            "css": ["@panda/css"],
+            "recipe": [],
+            "pattern": [],
+            "jsx": [],
+            "tokens": []
+        },
+        "theme": {
+            "viewTransitions": {
+                "slide": { "old": { "opacity": 0 } }
+            }
+        }
+    }));
+    let source = indoc! {"
+        import { viewTransition } from '@panda/css'
+        const name = 'slide'
+        export const slide = viewTransition(name)
+    "};
+    let css = compile_output(&cfg, source, StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Utilities]);
+    assert!(css.contains(".vt_slide"));
+}
+
+#[test]
+fn unbound_dynamic_name_does_not_emit_theme_bag() {
+    let cfg = config(json!({
+        "outdir": "styled-system",
+        "include": [],
+        "exclude": [],
+        "jsxFramework": "react",
+        "preflight": false,
+        "importMap": {
+            "css": ["@panda/css"],
+            "recipe": [],
+            "pattern": [],
+            "jsx": [],
+            "tokens": []
+        },
+        "theme": {
+            "viewTransitions": {
+                "slide": { "old": { "opacity": 0 } }
+            }
+        }
+    }));
+    let source = indoc! {"
+        import { viewTransition } from '@panda/css'
+        export const slide = viewTransition(name)
+    "};
+    let css = compile_output(&cfg, source, StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Utilities]);
+    assert!(!css.contains("vt_slide"));
+}

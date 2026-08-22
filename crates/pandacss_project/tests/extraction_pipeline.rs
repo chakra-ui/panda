@@ -392,25 +392,51 @@ fn jsx_factory_property_call_variants_without_base_feed_the_encoder() {
 }
 
 #[test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "end-to-end fixture with inline recipe + atom snapshots"
+)]
 fn jsx_factory_default_props_route_imported_recipe_usage() {
     let mut project = create_project(json!({
         "jsxFramework": "react",
+        "conditions": {
+            "hover": "&:hover",
+            "dark": "[data-theme=dark] &"
+        },
         "theme": {
+            "tokens": {
+                "colors": {
+                    "amber": {
+                        "400": { "value": "#fbbf24" },
+                        "500": { "value": "#f59e0b" }
+                    },
+                    "sky": {
+                        "200": { "value": "#bae6fd" },
+                        "300": { "value": "#7dd3fc" }
+                    }
+                }
+            },
             "recipes": {
                 "button": {
+                    "className": "button",
+                    "jsx": ["Button"],
                     "base": { "display": "inline-flex" },
                     "variants": {
                         "size": {
                             "sm": { "fontSize": "12px" },
                             "md": { "fontSize": "14px" }
                         },
-                        "tone": {
-                            "solid": { "background": "red" }
+                        "variant": {
+                            "first": { "background": "blue" },
+                            "second": { "background": "red" }
                         }
                     },
                     "defaultVariants": { "size": "sm" }
                 }
             }
+        },
+        "utilities": {
+            "color": { "className": "c", "values": "colors" }
         }
     }));
 
@@ -423,9 +449,411 @@ fn jsx_factory_default_props_route_imported_recipe_usage() {
             const Button = styled('button', aliasedButton, {
               defaultProps: {
                 size: 'md',
-                tone: 'solid',
+                variant: 'second',
+                color: {
+                  base: 'amber.400',
+                  _dark: 'sky.300',
+                  _hover: {
+                    base: 'amber.500',
+                    _dark: 'sky.200',
+                  },
+                },
+              },
+            });
+
+            export default function Page() {
+              return <Button>Click me!</Button>;
+            }
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 2);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: amber.400
+      conditions: []
+    - prop: color
+      value: sky.300
+      conditions:
+        - _dark
+    - prop: color
+      value: amber.500
+      conditions:
+        - _hover
+    - prop: color
+      value: sky.200
+      conditions:
+        - _hover
+        - _dark
+    ");
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r"
+    base:
+      - recipe: button
+        slot: ~
+        className: button
+        entries:
+          - prop: display
+            value: inline-flex
+            conditions: []
+    variants:
+      - recipe: button
+        slot: ~
+        className: button--size_md
+        entries:
+          - prop: fontSize
+            value: 14px
+            conditions: []
+      - recipe: button
+        slot: ~
+        className: button--size_sm
+        entries:
+          - prop: fontSize
+            value: 12px
+            conditions: []
+      - recipe: button
+        slot: ~
+        className: button--variant_second
+        entries:
+          - prop: background
+            value: red
+            conditions: []
+    atomic: []
+    ");
+}
+
+fn button_recipe_project() -> pandacss_project::Project {
+    create_project(json!({
+        "jsxFramework": "react",
+        "theme": {
+            "recipes": {
+                "button": {
+                    "className": "button",
+                    "base": { "display": "inline-flex" },
+                    "variants": {
+                        "size": {
+                            "sm": { "fontSize": "12px" },
+                            "md": { "fontSize": "14px" }
+                        }
+                    },
+                    "defaultVariants": { "size": "sm" }
+                }
+            }
+        },
+        "utilities": {
+            "color": { "className": "c" }
+        }
+    }))
+}
+
+#[test]
+fn jsx_factory_default_props_resolve_namespace_and_local_recipe_idents() {
+    let mut project = button_recipe_project();
+    let report = project.parse_file(
+        "button.tsx",
+        indoc! {r"
+            import { styled } from '@panda/jsx';
+            import * as recipes from '@panda/recipes';
+            import { button } from '@panda/recipes';
+
+            const recipe = button;
+            const FromNs = styled('button', recipes.button, {
+              defaultProps: { size: 'md', color: 'red' },
+            });
+            const FromAlias = styled('span', recipe, {
+              defaultProps: { size: 'sm', color: 'blue' },
+            });
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 2);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: blue
+      conditions: []
+    - prop: color
+      value: red
+      conditions: []
+    ");
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r"
+    base:
+      - recipe: button
+        slot: ~
+        className: button
+        entries:
+          - prop: display
+            value: inline-flex
+            conditions: []
+    variants:
+      - recipe: button
+        slot: ~
+        className: button--size_md
+        entries:
+          - prop: fontSize
+            value: 14px
+            conditions: []
+      - recipe: button
+        slot: ~
+        className: button--size_sm
+        entries:
+          - prop: fontSize
+            value: 12px
+            conditions: []
+    atomic: []
+    ");
+}
+
+#[test]
+fn jsx_factory_default_props_route_imported_slot_recipe_usage() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "theme": {
+            "slotRecipes": {
+                "card": {
+                    "className": "card",
+                    "slots": ["root", "title"],
+                    "base": {
+                        "root": { "display": "flex" },
+                        "title": { "fontWeight": "bold" }
+                    },
+                    "variants": {
+                        "size": {
+                            "sm": { "root": { "padding": "4px" } },
+                            "md": { "root": { "padding": "8px" } }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+
+    let report = project.parse_file(
+        "card.tsx",
+        indoc! {r"
+            import { styled } from '@panda/jsx';
+            import { card } from '@panda/recipes';
+
+            const Card = styled('div', card, {
+              defaultProps: {
+                size: 'md',
                 color: 'blue',
               },
+            });
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: blue
+      conditions: []
+    ");
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r"
+    base:
+      - recipe: card
+        slot: root
+        className: card__root
+        entries:
+          - prop: display
+            value: flex
+            conditions: []
+      - recipe: card
+        slot: title
+        className: card__title
+        entries:
+          - prop: fontWeight
+            value: bold
+            conditions: []
+    variants:
+      - recipe: card
+        slot: root
+        className: card__root--size_md
+        entries:
+          - prop: padding
+            value: 8px
+            conditions: []
+    atomic: []
+    ");
+}
+
+#[test]
+fn jsx_factory_default_props_preserve_token_call_identity() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "theme": {
+            "tokens": {
+                "colors": { "red": { "500": { "value": "#ef4444" } } }
+            }
+        }
+    }));
+    project.parse_file(
+        "box.tsx",
+        indoc! {r"
+            import { styled } from '@panda/jsx';
+            import { token } from '@panda/tokens';
+
+            const Box = styled('div', { display: 'block' }, {
+              defaultProps: { color: token('colors.red.500') },
+            });
+        "},
+    );
+
+    let color = project
+        .atoms()
+        .iter()
+        .find(|atom| atom.prop() == "color")
+        .expect("color atom");
+    assert!(
+        matches!(
+            color.value(),
+            pandacss_encoder::AtomValue::Token { path, value }
+                if &**path == "colors.red.500" && &**value == "#ef4444"
+        ),
+        "token() in defaultProps preserved identity, got {:?}",
+        color.value(),
+    );
+}
+
+#[test]
+fn jsx_factory_inline_style_default_props_emit_atoms() {
+    let mut project = create_project(json!({ "jsxFramework": "react" }));
+    let report = project.parse_file(
+        "box.tsx",
+        indoc! {r"
+            import { styled } from '@panda/jsx';
+
+            const Box = styled('div', { color: 'red' }, {
+              defaultProps: {
+                marginTop: '8px',
+                background: 'blue',
+              },
+            });
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: background
+      value: blue
+      conditions: []
+    - prop: color
+      value: red
+      conditions: []
+    - prop: marginTop
+      value: 8px
+      conditions: []
+    ");
+}
+
+#[test]
+fn jsx_factory_inline_recipe_default_props_emit_leftover_style_atoms() {
+    let mut project = create_project(json!({ "jsxFramework": "react" }));
+    let report = project.parse_file(
+        "button.tsx",
+        indoc! {r"
+            import { styled } from '@panda/jsx';
+
+            const Button = styled('button', {
+              base: { color: 'red' },
+              variants: {
+                size: {
+                  sm: { padding: '2px' },
+                  md: { padding: '8px' },
+                },
+              },
+            }, {
+              defaultProps: {
+                size: 'md',
+                marginTop: '8px',
+              },
+            });
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: red
+      conditions: []
+    - prop: marginTop
+      value: 8px
+      conditions: []
+    - prop: padding
+      value: 2px
+      conditions: []
+    - prop: padding
+      value: 8px
+      conditions: []
+    ");
+}
+
+#[test]
+fn jsx_factory_nested_conditions_and_css_prop_in_default_props() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "conditions": { "hover": "&:hover" }
+    }));
+    let report = project.parse_file(
+        "box.tsx",
+        indoc! {r"
+            import { styled } from '@panda/jsx';
+
+            const Box = styled('div', { display: 'block' }, {
+              defaultProps: {
+                color: { base: 'amber.400', _hover: 'amber.500' },
+                css: { marginTop: '8px' },
+              },
+            });
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: amber.400
+      conditions: []
+    - prop: color
+      value: amber.500
+      conditions:
+        - _hover
+    - prop: display
+      value: block
+      conditions: []
+    - prop: marginTop
+      value: 8px
+      conditions: []
+    ");
+}
+
+#[test]
+fn jsx_factory_arrow_default_props_fold_on_imported_recipe() {
+    let mut project = create_project(json!({
+        "jsxFramework": "solid",
+        "theme": {
+            "recipes": {
+                "button": {
+                    "base": { "display": "inline-flex" },
+                    "variants": {
+                        "size": {
+                            "sm": { "fontSize": "12px" },
+                            "md": { "fontSize": "14px" }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+
+    let report = project.parse_file(
+        "button.tsx",
+        indoc! {r"
+            import { styled } from '@panda/jsx';
+            import { button } from '@panda/recipes';
+
+            const Button = styled('button', button, {
+              defaultProps: () => ({
+                size: 'md',
+                color: 'blue',
+              }),
             });
         "},
     );
@@ -453,14 +881,130 @@ fn jsx_factory_default_props_route_imported_recipe_usage() {
           - prop: fontSize
             value: 14px
             conditions: []
-      - recipe: button
-        slot: ~
-        className: button--tone_solid
-        entries:
-          - prop: background
-            value: red
-            conditions: []
     atomic: []
+    ");
+}
+
+#[test]
+fn jsx_factory_function_default_props_fold_on_inline_style() {
+    let mut project = create_project(json!({ "jsxFramework": "solid" }));
+    let report = project.parse_file(
+        "box.tsx",
+        indoc! {r"
+            import { styled } from '@panda/jsx';
+
+            const Box = styled('div', { color: 'red' }, {
+              defaultProps: function () {
+                return { marginTop: '8px' };
+              },
+            });
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: red
+      conditions: []
+    - prop: marginTop
+      value: 8px
+      conditions: []
+    ");
+}
+
+#[test]
+fn jsx_factory_arrow_block_and_method_default_props_fold() {
+    let mut project = create_project(json!({ "jsxFramework": "solid" }));
+    let report = project.parse_file(
+        "box.tsx",
+        indoc! {r"
+            import { styled } from '@panda/jsx';
+
+            const Arrow = styled('div', { color: 'red' }, {
+              defaultProps: () => {
+                return { marginTop: '8px' };
+              },
+            });
+
+            const Method = styled('span', { color: 'blue' }, {
+              defaultProps() {
+                return { padding: '4px' };
+              },
+            });
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 2);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: blue
+      conditions: []
+    - prop: color
+      value: red
+      conditions: []
+    - prop: marginTop
+      value: 8px
+      conditions: []
+    - prop: padding
+      value: 4px
+      conditions: []
+    ");
+}
+
+#[test]
+fn jsx_factory_identifier_function_default_props_fold() {
+    let mut project = create_project(json!({ "jsxFramework": "solid" }));
+    let report = project.parse_file(
+        "box.tsx",
+        indoc! {r"
+            import { styled } from '@panda/jsx';
+
+            const arrowDefaults = () => ({ marginTop: '8px' });
+            function functionDefaults() {
+              return { padding: '4px' };
+            }
+
+            const Arrow = styled('div', { color: 'red' }, { defaultProps: arrowDefaults });
+            const Fn = styled('span', { color: 'blue' }, { defaultProps: functionDefaults });
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 2);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: blue
+      conditions: []
+    - prop: color
+      value: red
+      conditions: []
+    - prop: marginTop
+      value: 8px
+      conditions: []
+    - prop: padding
+      value: 4px
+      conditions: []
+    ");
+}
+
+#[test]
+fn jsx_factory_required_param_default_props_are_not_invented() {
+    let mut project = create_project(json!({ "jsxFramework": "solid" }));
+    let report = project.parse_file(
+        "box.tsx",
+        indoc! {r"
+            import { styled } from '@panda/jsx';
+
+            const Box = styled('div', { color: 'red' }, {
+              defaultProps: (color) => ({ color, marginTop: '8px' }),
+            });
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: red
+      conditions: []
     ");
 }
 
@@ -1439,6 +1983,36 @@ fn complex_recipe_decomposes_into_many_atoms() {
       conditions: []
     - prop: fontWeight
       value: bold
+      conditions: []
+    "#);
+}
+
+#[test]
+fn jsx_factory_default_props_respect_disabled_shorthands() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "shorthands": false,
+        "utilities": { "padding": { "shorthand": "p" } }
+    }));
+
+    let report = project.parse_file(
+        "button.tsx",
+        indoc! {r"
+            import { styled } from '@panda/jsx';
+
+            const Card = styled('div', { color: 'red' }, {
+              defaultProps: { p: '4' },
+            });
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r#"
+    - prop: color
+      value: red
+      conditions: []
+    - prop: p
+      value: "4"
       conditions: []
     "#);
 }

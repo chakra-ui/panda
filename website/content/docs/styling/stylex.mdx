@@ -6,8 +6,8 @@ description: Migrate your project from Meta's StyleX to Panda and see how create
 This guide outlines the steps needed to migrate your project from StyleX to Panda and highlights key design
 differences between the two.
 
-> **Disclaimer:** This isn't about which one is best. Both compile to static CSS at build time, styling
-> the differences below are mostly about strictness and scope, not runtime cost.
+> **Disclaimer:** This isn't about which one is best. Both compile to static CSS at build time, so the
+> differences below are about strictness and scope, not runtime cost.
 
 Here are some similarities between the two:
 
@@ -15,16 +15,21 @@ Here are some similarities between the two:
 - Both use object syntax for styles rather than tagged template strings.
 - Both define theme values in a central place and reference them by name in style objects.
 
-Here's where they differ, and StyleX has a few deliberate constraints that don't map onto Panda cleanly, called out
-where relevant.
+The foundation is the same, so the decision is about scope. StyleX stays deliberately minimal, single-element styles,
+no globals, no built-in variants, which keeps specificity predictable but leaves variants and layout for you to build.
+Panda ships that layer, recipes, patterns, and semantic tokens as typed APIs, on the same static-CSS output. Reach for
+Panda when you want the design system in the box; stay on StyleX if strict per-element scoping is the point. The rest of
+this guide maps `defineVars` / `create` / `props` to Panda's equivalents, and flags the constraints that don't carry
+over.
 
-## Performance
+## How styles compile
 
 Both are already build-time, static systems, so unlike a migration from Emotion or Chakra, this isn't a
 runtime-vs-static story. StyleX's atomic CSS model is deliberately strict about style precedence (the last property
 wins, resolved partly through property order at the call site) and requires a compiler plugin (Babel, SWC, or the
-Rust-based one) wired into your build. Panda's PostCSS-based pipeline works the same way structurally, static
-extraction plus atomic output, but doesn't require you to reason about call-site property order the way StyleX does.
+Rust-based one) wired into your build. Panda extracts with its own Rust engine built on [Oxc](https://oxc.rs), native
+for your build and WebAssembly in the browser. Structurally the same, static extraction plus atomic output, but it
+doesn't require you to reason about call-site property order the way StyleX does.
 
 ## Theming
 

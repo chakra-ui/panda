@@ -523,13 +523,19 @@ impl Project {
                     let Some(arg) = data.into_iter().next().flatten() else {
                         continue;
                     };
-                    if !matches!(arg, Literal::Object(_)) {
-                        continue;
-                    }
-                    let style = ViewTransitionStyle::from_options(
-                        &arg.to_json(),
-                        &self.config.class_name_prefix,
-                    );
+                    let style = match &arg {
+                        Literal::Object(_) => ViewTransitionStyle::from_options(
+                            &arg.to_json(),
+                            &self.config.class_name_prefix,
+                        ),
+                        Literal::String(name) => {
+                            let Some(style) = self.config.view_transition(name) else {
+                                continue;
+                            };
+                            style.clone()
+                        }
+                        _ => continue,
+                    };
                     if style.is_empty() {
                         continue;
                     }
@@ -598,8 +604,9 @@ impl Project {
                     let arg = args.next().flatten();
                     let second_arg = args.next().flatten();
                     let third_arg = args.next().flatten();
+                    let default_props = default_props_from_options(third_arg.as_ref());
                     if let Some(recipe_name) = call.jsx_recipe_ident.as_deref()
-                        && let Some(default_props) = default_props_from_options(third_arg.as_ref())
+                        && let Some(default_props) = default_props
                     {
                         if let Some(style_props) = compiled
                             .recipes
@@ -608,7 +615,7 @@ impl Project {
                             self.process_style_props(
                                 &mut encoder,
                                 &style_props,
-                                ShorthandPolicy::Internal,
+                                ShorthandPolicy::UserFacing,
                             );
                         }
                         encoded_recipes.process_usage(
@@ -621,23 +628,21 @@ impl Project {
                         report.jsx_usages += 1;
                         continue;
                     }
-                    let Some(style) =
-                        jsx_factory_static_style(second_arg.as_ref().or(arg.as_ref()))
-                    else {
-                        continue;
-                    };
+                    let style = jsx_factory_static_style(second_arg.as_ref().or(arg.as_ref()));
+                    let mut inline_variant_keys: &[(String, Literal)] = &[];
                     match style {
-                        JsxFactoryStaticStyle::Style(style) => {
+                        Some(JsxFactoryStaticStyle::Style(style)) => {
                             self.process_style_props(
                                 &mut encoder,
                                 style,
                                 ShorthandPolicy::UserFacing,
                             );
                         }
-                        JsxFactoryStaticStyle::Recipe(config) => {
+                        Some(JsxFactoryStaticStyle::Recipe(config)) => {
                             let Some(recipe) = Recipe::from_literal(config) else {
                                 continue;
                             };
+                            inline_variant_keys = recipe_variant_entries(config).unwrap_or(&[]);
                             self.process_recipe_atoms(&mut encoder, &recipe);
                             self.inline_recipes.insert(
                                 RecipeKey {
@@ -651,6 +656,15 @@ impl Project {
                                 .or_default()
                                 .push(call.span.start);
                         }
+                        None if default_props.is_none() => continue,
+                        None => {}
+                    }
+                    if let Some(default_props) = default_props {
+                        self.process_inline_default_prop_styles(
+                            &mut encoder,
+                            default_props,
+                            inline_variant_keys,
+                        );
                     }
                     report.jsx_usages += 1;
                 }
@@ -1090,6 +1104,35 @@ impl Project {
                 }
             }
             _ => self.process_atomic(encoder, arg, ShorthandPolicy::UserFacing),
+        }
+    }
+
+    /// Encode style leftovers from inline `styled` `defaultProps`.
+    fn process_inline_default_prop_styles(
+        &self,
+        encoder: &mut Encoder<ProjectConditionMatcher>,
+        default_props: &Literal,
+        variant_keys: &[(String, Literal)],
+    ) {
+        if variant_keys.is_empty() {
+            self.process_style_props(encoder, default_props, ShorthandPolicy::UserFacing);
+            return;
+        }
+        let Some(entries) = literal_entries(default_props) else {
+            self.process_style_props(encoder, default_props, ShorthandPolicy::UserFacing);
+            return;
+        };
+        let leftovers: Vec<(String, Literal)> = entries
+            .iter()
+            .filter(|(key, _)| variant_keys.iter().all(|(variant, _)| variant != key))
+            .cloned()
+            .collect();
+        if !leftovers.is_empty() {
+            self.process_style_props(
+                encoder,
+                &Literal::Object(leftovers),
+                ShorthandPolicy::UserFacing,
+            );
         }
     }
 
@@ -2042,6 +2085,13 @@ fn default_props_from_options(options: Option<&Literal>) -> Option<&Literal> {
     literal_entries(options?)?
         .iter()
         .find_map(|(key, value)| (key == "defaultProps").then_some(value))
+}
+
+fn recipe_variant_entries(config: &Literal) -> Option<&[(String, Literal)]> {
+    literal_entries(config)?
+        .iter()
+        .find(|(key, _)| key == "variants")
+        .and_then(|(_, value)| literal_entries(value))
 }
 
 fn jsx_factory_static_style(config: Option<&Literal>) -> Option<JsxFactoryStaticStyle<'_>> {

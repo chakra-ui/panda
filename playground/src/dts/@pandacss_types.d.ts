@@ -10707,7 +10707,8 @@ export interface ViewTransitionStyleObject {
 	old?: SystemStyleObject;
 	new?: SystemStyleObject;
 }
-export type ViewTransitionFn = (options: ViewTransitionStyleObject) => string;
+export type ViewTransitions = Record<string, ViewTransitionStyleObject>;
+export type ViewTransitionFn = (options: ViewTransitionStyleObject | string) => string;
 export interface GlobalStyleObject {
 	[selector: string]: SystemStyleObject;
 }
@@ -11323,6 +11324,10 @@ export interface Theme {
 	 * The animation styles for your project.
 	 */
 	animationStyles?: AnimationStyles;
+	/**
+	 * Named View Transition bags. Call `viewTransition('slide')` to use one.
+	 */
+	viewTransitions?: ViewTransitions;
 	/**
 	 * Multi-variant style definitions for your project.
 	 * Useful for defining component styles.

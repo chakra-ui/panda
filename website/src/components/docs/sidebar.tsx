@@ -1,17 +1,15 @@
 'use client'
 
 import { Badge } from '@/components/ui/badge'
-import { docsTabs } from '@/docs.config'
-import { ChevronDownIcon, ChevronRightIcon } from '@/icons'
+import { docsTabs, installationGuideUrls } from '@/docs.config'
 import { css } from '@/styled-system/css'
-import { Box, HStack, Stack } from '@/styled-system/jsx'
+import { HStack, Stack } from '@/styled-system/jsx'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
 import { LuArrowUpRight } from 'react-icons/lu'
 
 interface Props {
-  /** `{tabKey}/{page}`, e.g. `styling/why-panda`. Matches the docs page route's `slug`. */
+  /** `{tabKey}/{page}`, e.g. `styling/getting-started`. Matches the docs page route's `slug`. */
   slug?: string
 }
 
@@ -42,107 +40,74 @@ export function Sidebar({ slug: currentSlug }: Props) {
   const tabKey = pathname?.split('/')[2] || currentSlug?.split('/')[0]
   const tab = docsTabs.find(t => t.key === tabKey)
 
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
-
   if (!tab) return null
 
   const isActive = (pageUrl: string) =>
     pathname === `/docs/${tabKey}/${pageUrl}` ||
     currentSlug === `${tabKey}/${pageUrl}`
 
-  const isGroupActive = (groupItems: typeof tab.items[number]['items']) =>
-    groupItems?.some(item => item.url && isActive(item.url)) || false
+  // Framework/CLI/PostCSS/Storybook guides live only behind the Installation
+  // page's tabs, not as their own sidebar items, but the sidebar should still
+  // point at "Installation" while viewing one.
+  const currentPageUrl = pathname?.split('/')[3] || currentSlug?.split('/')[1]
+  const isOnInstallationGuide =
+    !!currentPageUrl && installationGuideUrls.includes(currentPageUrl)
 
-  const toggleGroup = (title: string) => {
-    setExpandedGroups(prev => {
-      const next = new Set(prev)
-      if (next.has(title)) {
-        next.delete(title)
-      } else {
-        next.add(title)
-      }
-      return next
-    })
-  }
+  const isItemActive = (item: NonNullable<typeof tab.items[number]['items']>[number]) =>
+    (item.url && isActive(item.url)) ||
+    (item.url === 'installation' && isOnInstallationGuide)
 
   return (
     <Stack as="nav" gap="1">
-      {tab.items.map(group => {
-        const isExpanded =
-          expandedGroups.has(group.title) || isGroupActive(group.items)
+      {tab.items.map(group => (
+        <div key={group.title}>
+          <HStack
+            px="3"
+            py="2"
+            fontWeight="semibold"
+            fontSize="sm"
+            color="fg"
+          >
+            <span>{group.title}</span>
+            {group.tag && <Badge variant="solid">{group.tag}</Badge>}
+          </HStack>
 
-        return (
-          <div key={group.title}>
-            <button
-              onClick={() => toggleGroup(group.title)}
-              className={css({
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                w: 'full',
-                px: '3',
-                py: '2',
-                rounded: 'md',
-                fontWeight: 'semibold',
-                fontSize: 'sm',
-                color: 'fg',
-                transitionProperty: 'background',
-                transitionDuration: '200ms',
-                _hover: { bg: 'bg.subtle' },
-                cursor: 'pointer'
-              })}
-            >
-              <HStack>
-                <span>{group.title}</span>
-                {group.tag && <Badge variant="solid">{group.tag}</Badge>}
-              </HStack>
-              {group.items && (
-                <Box
-                  as={isExpanded ? ChevronDownIcon : ChevronRightIcon}
-                  w="4"
-                  h="4"
-                  color="fg.muted"
-                />
-              )}
-            </button>
-
-            {isExpanded && group.items && (
-              <Stack gap="0.5" mt="1">
-                {group.items.map(item => {
-                  if (item.external) {
-                    return (
-                      <a
-                        key={item.title}
-                        href={item.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={linkStyles}
-                      >
-                        {item.title}
-                        <LuArrowUpRight />
-                      </a>
-                    )
-                  }
-
-                  if (!item.url) return null
-
+          {group.items && (
+            <Stack gap="0.5" mt="1">
+              {group.items.map(item => {
+                if (item.external) {
                   return (
-                    <Link
-                      key={item.url}
-                      href={`/docs/${tabKey}/${item.url}`}
-                      data-current={isActive(item.url) || undefined}
+                    <a
+                      key={item.title}
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className={linkStyles}
                     >
-                      <span>{item.title}</span>
-                      {item.tag && <Badge variant="solid">{item.tag}</Badge>}
-                    </Link>
+                      {item.title}
+                      <LuArrowUpRight />
+                    </a>
                   )
-                })}
-              </Stack>
-            )}
-          </div>
-        )
-      })}
+                }
+
+                if (!item.url) return null
+
+                return (
+                  <Link
+                    key={item.url}
+                    href={`/docs/${tabKey}/${item.url}`}
+                    data-current={isItemActive(item) || undefined}
+                    className={linkStyles}
+                  >
+                    <span>{item.title}</span>
+                    {item.tag && <Badge variant="solid">{item.tag}</Badge>}
+                  </Link>
+                )
+              })}
+            </Stack>
+          )}
+        </div>
+      ))}
     </Stack>
   )
 }

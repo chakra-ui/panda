@@ -812,9 +812,9 @@ export const el = <button className="color_blue">hi</button>
 ```
 
 `collect_styled_bindings` (`pandacss_extractor/src/styled_bindings.rs`) walks top-level `const`
-declarations and records `name → { intrinsic, base }`, following `styled(Parent, …)` chains and
-`const Alias = Button`. The JSX visitor then resolves such a tag to `styled.{intrinsic}` and prepends
-the composed `base` under the element's own props, so the element reaches the existing
+declarations and records `name → { intrinsic, base, default_props }`, following `styled(Parent, …)`
+chains and `const Alias = Button`. The JSX visitor then resolves such a tag to `styled.{intrinsic}`
+and prepends the composed `base` under the element's own props, so the element reaches the existing
 `<styled.button>` machinery — `as`, the `css` prop, conditionals, spreads and the partial fold all
 apply unchanged, and precedence falls out of entry order.
 
@@ -823,49 +823,30 @@ of the map and the runtime chain stays:
 
 - `variants` / `compoundVariants` / `defaultVariants`, or any config key other than `base` — the
   class would depend on props
-- a third `options` argument (`defaultProps`, `shouldForwardProp`), which the fold does not reproduce
-- a base that is not a string tag or an already-recorded local binding, so imported components and
-  `styled(motion.div, …)` keep their wrapper
-- `let` / `var`, which can be reassigned between definition and use
-- declarations inside a function or block, where the visitor has no scope information to tell
-  per-call shadowing apart
-
-The `styled()` definition itself still desugars to `__pcva(…)` as before. After the fold it is
-unreferenced, so bundlers drop it.
-
-### Same-file `styled()` chain fold
-
-`const Button = styled('button', { base: … })` renders through `forwardRef`. That extra component
-level is the dominant cost even when the class string never changes: a bare `forwardRef` that returns
-nothing but a `<button>` measures the same as the full factory, while inlining the tag is ~45%
-faster. So when the chain's class is provably constant, `<Button>` folds to the host element.
-
-```tsx
-const L0 = styled('button', { base: { color: 'red' } })
-const L1 = styled(L0, { base: { color: 'blue' } })
-export const el = <L1>hi</L1>
-// →
-export const el = <button className="color_blue">hi</button>
-```
-
-`collect_styled_bindings` (`pandacss_extractor/src/styled_bindings.rs`) walks top-level `const`
-declarations and records `name → { intrinsic, base }`, following `styled(Parent, …)` chains and
-`const Alias = Button`. The JSX visitor then resolves such a tag to `styled.{intrinsic}` and prepends
-the composed `base` under the element's own props, so the element reaches the existing
-`<styled.button>` machinery — `as`, the `css` prop, conditionals, spreads and the partial fold all
-apply unchanged, and precedence falls out of entry order.
-
-A binding is recorded only when the fold can prove the class is constant. Anything else is left out
-of the map and the runtime chain stays:
-
-- `variants` / `compoundVariants` / `defaultVariants`, or any config key other than `base` — the
-  class would depend on props
-- a third `options` argument (`defaultProps`, `shouldForwardProp`), which the fold does not reproduce
+- a third `options` argument that is anything but style-only `defaultProps` — `shouldForwardProp`,
+  `forwardProps` and `dataAttr` are runtime behavior with no class-string equivalent
 - a base that is not a string tag or an already-recorded local binding, so imported components and
   `styled(motion.div, …)` keep their wrapper
 - `let` / `var`, which can be reassigned between definition and use
 - declarations inside a function or block — only module-level chains are recorded, and a tag folds
   only when it resolves to the recorded symbol, so a local binding that shadows one is left alone
+
+#### Style-only `defaultProps`
+
+`{ defaultProps: { fontWeight: 'bold' } }` is just more styles, so it folds. The runtime merges
+`Object.assign({}, defaultProps, restProps)` and lets the result win over the cva base, giving
+`base < defaultProps < element props` — which is exactly the entry order the fold already composes,
+so the defaults append after `base`.
+
+Every default prop must be in `JsxExtractionConfig::valid_style_props` (CSS properties + configured
+utilities and shorthands + condition names). An unconfigured set means *unknown*, not *everything*:
+without the utility table the extractor cannot tell `fontWeight` from `type`, and a DOM attribute
+folded into a class string would simply vanish from the element. `css` / `*Css` are excluded too —
+an element's own `css` prop replaces the default wholesale rather than merging per key.
+
+`defaultProps` are kept apart from `base` because wrapping loses them. `styled(Base, …)` renders
+`BaseComponent.__base__`, so `Base`'s own `forwardRef` — and its defaults — never run at runtime;
+inheriting only `base` matches that.
 
 The `styled()` definition itself still desugars to `__pcva(…)` as before. After the fold it is
 unreferenced, so bundlers drop it.

@@ -803,6 +803,40 @@ describe('resolveAuthoredPresets / errors', () => {
     )
   })
 
+  test('merges theme.extend.viewTransitions from a preset and lets the user win on the same name', async () => {
+    const result = await resolve(
+      defineConfig({
+        presets: [
+          definePreset({
+            name: 'vt-preset',
+            theme: {
+              extend: {
+                viewTransitions: {
+                  slide: { old: { opacity: 0 }, new: { opacity: 1 } },
+                  fade: { old: { opacity: 1 } },
+                },
+              },
+            },
+          }),
+        ],
+        theme: {
+          extend: {
+            viewTransitions: {
+              fade: { old: { opacity: 0.5 } },
+              pop: { new: { opacity: 1 } },
+            },
+          },
+        },
+      }),
+    )
+
+    expect(result.theme.viewTransitions).toEqual({
+      slide: { old: { opacity: 0 }, new: { opacity: 1 } },
+      fade: { old: { opacity: 0.5 } },
+      pop: { new: { opacity: 1 } },
+    })
+  })
+
   test('rejects non-object extend values with the section path', async () => {
     await expect(
       resolveAuthoredPresets(

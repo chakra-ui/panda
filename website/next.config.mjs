@@ -172,6 +172,16 @@ const config = {
         source: '/docs/references/:path*',
         destination: '/docs/reference/:path*',
         permanent: true
+      },
+      {
+        source: '/docs/styling/why-panda',
+        destination: '/docs/styling/getting-started',
+        permanent: true
+      },
+      {
+        source: '/docs/styling/isolated-declarations',
+        destination: '/docs/design-systems/isolated-declarations',
+        permanent: true
       }
     ]
   },

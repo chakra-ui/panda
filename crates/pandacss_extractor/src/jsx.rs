@@ -582,7 +582,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
             let emit_empty = resolved.emit_empty;
             let panda_owned = resolved.panda_owned;
 
-            let styled_base = resolved.styled.map(|binding| binding.base.clone());
+            let styled_base = resolved.styled.map(StyledBinding::composed_base);
             let styled_intrinsic = resolved.styled.map(|binding| binding.intrinsic.clone());
             let style = jsx_attributes_to_style_tree(
                 &element.attributes,

@@ -208,8 +208,10 @@ fn template_literal_syntax_emits_selector_only_conditions() {
     assert_eq!(paths(conditions), vec!["css/conditions.mjs"]);
     assert_eq!(
         file(conditions, "css/conditions.mjs"),
-        indoc! {r"
+        indoc! {r#"
         import { withoutSpace } from '../helpers.mjs';
+
+        export const breakpointKeys = ["base"]
 
         export const isCondition = (val) => condRegex.test(val)
 
@@ -229,7 +231,7 @@ fn template_literal_syntax_emits_selector_only_conditions() {
             return 0
           })
         }
-        "}
+        "#}
         .trim()
     );
 }

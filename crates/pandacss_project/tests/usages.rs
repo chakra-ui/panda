@@ -727,3 +727,156 @@ fn inspection_collects_style_entries_for_styled_factory() {
     Utility RecipeCall Safe color -> None path=variants.tone.danger.color
     ");
 }
+
+#[test]
+fn inspection_collects_styled_factory_default_props() {
+    let source = indoc! {r"
+        import { styled } from '@panda/jsx'
+        styled('div', { color: 'red.300' }, {
+          defaultProps: {
+            p: '4',
+            color: { base: 'red.500', _hover: 'red.300' },
+            css: { padding: '4' },
+          },
+        })
+    "};
+    let result = project().inspect_file_source("a.tsx", source);
+
+    assert_snapshot!(summary(&result), @r"
+    Property color
+    Token colors.red.300
+    Property padding
+    Token spacing.4
+    Property color
+    Token colors.red.500
+    Property color
+    Token colors.red.300
+    Property padding
+    Token spacing.4
+    ");
+    assert_snapshot!(style_summary(&result), @r#"
+    Utility CssCall Safe color -> None path=color
+    Utility JsxProp Safe p -> Some("padding") path=defaultProps.p
+    Utility JsxProp Safe color -> None path=defaultProps.color
+    Utility JsxStyleProp Safe padding -> None path=defaultProps.css.padding
+    "#);
+}
+
+#[test]
+fn inspection_collects_function_default_props() {
+    let source = indoc! {r"
+        import { styled } from '@panda/jsx'
+        styled('div', { color: 'red.300' }, {
+          defaultProps: () => ({ color: 'red.500' }),
+        })
+        styled('span', { color: 'red.300' }, {
+          defaultProps() {
+            return { p: '4' }
+          },
+        })
+    "};
+    let result = project().inspect_file_source("a.tsx", source);
+
+    assert_snapshot!(summary(&result), @r"
+    Property color
+    Token colors.red.300
+    Property color
+    Token colors.red.500
+    Property color
+    Token colors.red.300
+    Property padding
+    Token spacing.4
+    ");
+}
+
+#[test]
+fn inspection_collects_imported_recipe_default_props() {
+    let source = indoc! {r"
+        import { styled } from '@panda/jsx'
+        import { button } from '@panda/recipes'
+        styled('button', button, {
+          defaultProps: {
+            size: 'md',
+            color: 'red.500',
+          },
+        })
+    "};
+    let result = create_project(json!({
+        "jsxFramework": "react",
+        "theme": {
+            "tokens": {
+                "colors": { "red": { "500": { "value": "#e00" } } }
+            },
+            "recipes": {
+                "button": {
+                    "className": "button",
+                    "variants": {
+                        "size": {
+                            "sm": { "padding": "1" },
+                            "md": { "padding": "2" }
+                        }
+                    }
+                }
+            }
+        },
+        "utilities": {
+            "color": { "className": "c", "values": "colors" }
+        }
+    }))
+    .inspect_file_source("a.tsx", source);
+
+    assert_snapshot!(summary(&result), @r"
+    Recipe button
+    Property size
+    Property color
+    Token colors.red.500
+    ");
+}
+
+#[test]
+fn inspection_collects_namespace_and_aliased_recipe_default_props() {
+    let source = indoc! {r"
+        import { styled } from '@panda/jsx'
+        import * as recipes from '@panda/recipes'
+        import { button } from '@panda/recipes'
+        const recipe = button
+        styled('button', recipes.button, {
+          defaultProps: { size: 'md', color: 'red.500' },
+        })
+        styled('span', recipe, {
+          defaultProps: { size: 'sm' },
+        })
+    "};
+    let result = create_project(json!({
+        "jsxFramework": "react",
+        "theme": {
+            "tokens": {
+                "colors": { "red": { "500": { "value": "#e00" } } }
+            },
+            "recipes": {
+                "button": {
+                    "className": "button",
+                    "variants": {
+                        "size": {
+                            "sm": { "padding": "1" },
+                            "md": { "padding": "2" }
+                        }
+                    }
+                }
+            }
+        },
+        "utilities": {
+            "color": { "className": "c", "values": "colors" }
+        }
+    }))
+    .inspect_file_source("a.tsx", source);
+
+    assert_snapshot!(summary(&result), @r"
+    Recipe button
+    Property size
+    Property color
+    Token colors.red.500
+    Recipe button
+    Property size
+    ");
+}

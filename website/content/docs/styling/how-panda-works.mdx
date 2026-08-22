@@ -24,7 +24,7 @@ The output of step 2, one CSS file, is the only thing that ships to the browser.
 reading your `css()` calls at runtime, by the time your app runs, the class names are already plain strings and the
 CSS already exists.
 
-## Why "extractable" is the constraint that matters
+## What makes a value extractable
 
 Because step 2 works by reading your source code as text (not by running it), Panda needs your style calls to be
 statically analyzable, values it can determine by looking at the code, not by executing it. `css({ bg: 'red.500' })`
@@ -32,7 +32,7 @@ is extractable, `css({ bg: someVariableComputedAtRuntime })` generally isn't, be
 variable will be without running your program. This is the root cause behind most "why isn't my style showing up"
 questions, see [Dynamic Styles](/docs/styling/dynamic-styling) for the specific patterns that work around it.
 
-## What this buys you, and what it costs
+## The tradeoff
 
 The payoff is that Panda adds zero runtime, no style computation, no context reads, no re-render cost from styling
 itself, since everything is already resolved into a static CSS file before the browser ever sees your app. The
