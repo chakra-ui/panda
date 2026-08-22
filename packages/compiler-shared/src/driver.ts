@@ -125,6 +125,8 @@ export interface Driver {
   getLayerCss(options: LayerCssOptions): CompileOutput
   /** Theme `@keyframes` CSS only (no token vars or other layers). */
   getKeyframeCss(options?: CompileOptions): CompileOutput
+  /** Global `@font-face` CSS only (no token vars or other layers). */
+  getFontfaceCss(options?: CompileOptions): CompileOutput
   /** Generate split stylesheet files and the complete output diagnostics in memory. */
   getSplitCss(options?: SplitCssOptions): SplitCssResult
   /** Generate + write stylesheet CSS through the host filesystem. Returns the compile output plus written path. */
@@ -249,6 +251,11 @@ export abstract class BaseDriver implements Driver {
   getKeyframeCss(options?: CompileOptions): CompileOutput {
     this.prepareCssOutput()
     return this.#compiler.getKeyframeCss(options)
+  }
+
+  getFontfaceCss(options?: CompileOptions): CompileOutput {
+    this.prepareCssOutput()
+    return this.#compiler.getFontfaceCss(options)
   }
 
   getSplitCss(options?: SplitCssOptions): SplitCssResult {

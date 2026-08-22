@@ -35,6 +35,7 @@ import type {
   RecipeEntry,
   ResolveUtilityValueInput,
   ResolvedUtilityValue,
+  SemanticTokenEntry,
   SerializedHookFilter,
   SourceEntry,
   Spec,
@@ -127,6 +128,7 @@ export declare class WasmCompiler {
   hasLayerDeclaration(css: string): boolean
   stripLayerOrderStatements(css: string): string
   spec(): Spec
+  semanticTokens(): SemanticTokenEntry[] | null
   sources(): SourceEntry[]
   inspectFileSource(path: string, source: string): Omit<FileInspectionResult, 'path'>
   resolveUtilityValue(input: ResolveUtilityValueInput): ResolvedUtilityValue | null
@@ -152,6 +154,7 @@ export declare class WasmCompiler {
   compile(options?: CompileOptions): CompileOutput
   getLayerCss(options: LayerCssOptions): CompileOutput
   getKeyframeCss(options?: CompileOptions): CompileOutput
+  getFontfaceCss(options?: CompileOptions): CompileOutput
   getSplitCss(options?: SplitCssOptions): SplitCssResult
   generateArtifacts(options?: GenerateArtifactOptions): CodegenArtifact[]
   generateArtifact(id: CodegenArtifactId, options?: GenerateArtifactOptions): CodegenArtifact | undefined

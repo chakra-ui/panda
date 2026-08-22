@@ -205,8 +205,7 @@ export const docsTabs: TabItem[] = [
         title: 'Tooling',
         items: [
           { title: 'Spec', url: 'spec', tag: 'new' },
-          { title: 'Panda Studio', url: 'studio' },
-          { title: 'Panda Studio in v2', url: 'studio-v2' }
+          { title: 'Panda Studio', url: 'studio' }
         ]
       }
     ]

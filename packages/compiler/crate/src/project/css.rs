@@ -215,6 +215,27 @@ impl Compiler {
         Ok(output)
     }
 
+    /// Global `@font-face` CSS only (no token vars or other layers).
+    #[napi(js_name = getFontfaceCss)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn get_fontface_css(
+        &mut self,
+        options: Option<CompileOptions>,
+    ) -> napi::Result<CompileOutput> {
+        crate::init_tracing();
+        let _span = tracing::trace_span!(target: "css", "fontface_css").entered();
+        let output = crate::compile::build_fontface_compile_output(
+            &mut self.inner,
+            &self.user_config,
+            options.as_ref(),
+        );
+        crate::flush_tracing();
+        Ok(output)
+    }
+
     /// CSS for the named cascade layers, concatenated in order. Sliced in Rust
     /// (byte offsets stay valid); unknown layer names are skipped.
     #[napi(js_name = getLayerCss)]

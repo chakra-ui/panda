@@ -8,6 +8,16 @@ export { runLib } from './commands/lib'
 export { runAnalyze } from './commands/analyze'
 export { projectSummary, type ProjectSummary } from './project-summary'
 export { runInit, setupGitIgnore } from './commands/init'
+export { runStudioServe } from './commands/studio'
+export {
+  buildTokensSnapshot,
+  createStudioRuntime,
+  semanticMapFromTokens,
+  serveStudio,
+  studioArtifactFiles,
+  studioRuntimeModule,
+} from './studio'
+export type { StudioToken, StudioFile, StudioRuntime } from './studio'
 export type {
   BuildFlags,
   BuildResult,
@@ -30,4 +40,6 @@ export type {
   LibFlags,
   LibResult,
   LogLevel,
+  StudioServeFlags,
+  StudioServeResult,
 } from './schema'

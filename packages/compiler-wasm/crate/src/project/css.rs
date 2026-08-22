@@ -192,6 +192,18 @@ impl WasmCompiler {
             .map_err(|err| JsValue::from_str(&err.to_string()))
     }
 
+    /// Global `@font-face` CSS only (no token vars or other layers).
+    #[wasm_bindgen(js_name = getFontfaceCss)]
+    pub fn get_fontface_css(&mut self, options: Option<JsValue>) -> Result<JsValue, JsValue> {
+        let _span = tracing::trace_span!("get_fontface_css", method = "wasm").entered();
+        let options = compile_options_from_js(options)?;
+        let output = build_fontface_compile_output(&mut self.inner, &self.user_config, &options);
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        output
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
     /// CSS for the named cascade layers, concatenated in order. Sliced in Rust
     /// (byte offsets stay valid); unknown layer names are skipped.
     #[wasm_bindgen(js_name = getLayerCss)]
@@ -419,6 +431,33 @@ fn build_keyframes_compile_output(
     snapshot_diagnostics.append(&mut output.diagnostics);
     let diagnostics =
         collect_output_diagnostics(project, static_pattern_diagnostics, snapshot_diagnostics);
+    CompileOutputSerde {
+        css: output.css,
+        source_map: output.source_map,
+        manifest,
+        layer_ranges: empty_layer_ranges(),
+        diagnostics,
+    }
+}
+
+fn build_fontface_compile_output(
+    project: &mut pandacss_project::Project,
+    user_config: &pandacss_config::UserConfig,
+    options: &CompileOptionsSerde,
+) -> CompileOutputSerde {
+    let token_dictionary = project.config().token_dictionary();
+    let manifest = compile_manifest_serde(project, token_dictionary.as_ref());
+    let polyfill = pandacss_stylesheet::resolve_polyfill(user_config, options.polyfill);
+    let stylesheet_options = pandacss_stylesheet::StylesheetOptions {
+        minify: pandacss_stylesheet::resolve_minify(user_config, options.minify),
+        include_static: false,
+        source_map: false,
+        emit_layer_declaration: options.emit_layer_declaration.unwrap_or(true),
+        polyfill,
+        layers: None,
+    };
+    let output = pandacss_stylesheet::compile_fontface(user_config, &stylesheet_options);
+    let diagnostics = collect_output_diagnostics(project, Vec::new(), output.diagnostics);
     CompileOutputSerde {
         css: output.css,
         source_map: output.source_map,

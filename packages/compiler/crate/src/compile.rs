@@ -294,6 +294,35 @@ pub(crate) fn build_keyframes_compile_output(
     }
 }
 
+pub(crate) fn build_fontface_compile_output(
+    project: &mut pandacss_project::Project,
+    user_config: &UserConfig,
+    options: Option<&CompileOptions>,
+) -> CompileOutput {
+    let token_dictionary = project.config().token_dictionary();
+    let manifest = compile_manifest(project, token_dictionary.as_ref());
+    let emit_layer_declaration = options.is_none_or(CompileOptions::should_emit_layer_declaration);
+    let minify_override = options.and_then(|options| options.minify);
+    let polyfill_override = options.and_then(|options| options.polyfill);
+    let polyfill = pandacss_stylesheet::resolve_polyfill(user_config, polyfill_override);
+    let stylesheet_options = pandacss_stylesheet::StylesheetOptions {
+        minify: pandacss_stylesheet::resolve_minify(user_config, minify_override),
+        include_static: false,
+        source_map: false,
+        emit_layer_declaration,
+        polyfill,
+        layers: None,
+    };
+    let output = pandacss_stylesheet::compile_fontface(user_config, &stylesheet_options);
+    CompileOutput {
+        css: output.css,
+        source_map: output.source_map,
+        manifest,
+        layer_ranges: empty_layer_ranges(),
+        diagnostics: collect_output_diagnostics(project, Vec::new(), output.diagnostics),
+    }
+}
+
 pub(crate) fn build_layer_compile_output(
     project: &mut pandacss_project::Project,
     user_config: &UserConfig,

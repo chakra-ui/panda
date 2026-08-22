@@ -112,6 +112,7 @@ fn collect_breakpoint_tokens(
             TokenCategory::Breakpoints,
             None,
             None,
+            false,
         );
         push_token(
             builder,
@@ -121,6 +122,7 @@ fn collect_breakpoint_tokens(
             TokenCategory::Sizes,
             None,
             None,
+            false,
         );
     }
 }
@@ -227,6 +229,7 @@ fn collect_token_category<T: TokenValueString>(
             token_category.clone(),
             condition,
             Some(metadata),
+            false,
         );
     });
 }
@@ -257,6 +260,7 @@ fn collect_semantic_category<T: TokenValueString>(
                     token_category.clone(),
                     Some(&condition),
                     Some(metadata),
+                    true,
                 );
             });
             return;
@@ -271,9 +275,46 @@ fn collect_semantic_category<T: TokenValueString>(
                 token_category.clone(),
                 condition.as_deref(),
                 Some(metadata),
+                true,
             );
         });
     });
+}
+
+/// Every semantic-token path (category-prefixed, dotted, `DEFAULT` dropped)
+/// declared in the base theme and each theme variant. Combined with the
+/// per-token `semantic` marker, this excludes both core primitives sharing a
+/// path and derived tokens (e.g. negative spacing) that inherit the marker.
+pub(crate) fn collect_semantic_paths(config: &UserConfig) -> FxHashSet<String> {
+    let mut paths = FxHashSet::default();
+    collect_semantic_paths_from(&config.theme.semantic_tokens, &mut paths);
+    for variant in config.themes.values() {
+        collect_semantic_paths_from(&variant.semantic_tokens, &mut paths);
+    }
+    paths
+}
+
+fn collect_semantic_paths_from(tokens: &SemanticTokens, paths: &mut FxHashSet<String>) {
+    macro_rules! collect {
+        ($field:ident, $category:expr, $name:literal) => {
+            walk_token_group(&tokens.$field, &mut vec![$name], &mut |path, _token| {
+                paths.insert(TokenPath::from_segments(path).dotted);
+            });
+        };
+    }
+
+    for_each_token_field!(collect);
+}
+
+/// Reverse map of the `_theme{Capitalized}` condition prefix back to its theme
+/// variant name (`_themeOcean` -> `ocean`), matching the folding in
+/// [`create_token_dictionary`].
+pub(crate) fn theme_condition_map(config: &UserConfig) -> FxHashMap<String, String> {
+    config
+        .themes
+        .keys()
+        .map(|name| (format!("_theme{}", capitalize(name)), name.clone()))
+        .collect()
 }
 
 /// Flatten a nested semantic value, calling `visit` once per concrete value.
@@ -417,6 +458,10 @@ impl TokenPath {
     }
 }
 
+#[allow(
+    clippy::too_many_arguments,
+    reason = "token push threads builder, context, path, value, category, condition, metadata, and semantic flag through one call site"
+)]
 fn push_token(
     builder: &mut TokenDictionaryBuilder,
     context: &mut BuildContext<'_>,
@@ -425,6 +470,7 @@ fn push_token(
     category: TokenCategory,
     condition: Option<&str>,
     metadata: Option<TokenMetadata<'_>>,
+    semantic: bool,
 ) {
     let mut token = Token::new(
         path.dotted.as_str(),
@@ -448,6 +494,9 @@ fn push_token(
         if metadata.is_default {
             token.set_extension("isDefault", "true");
         }
+    }
+    if semantic {
+        token.set_extension("semantic", "true");
     }
 
     builder.push(token);

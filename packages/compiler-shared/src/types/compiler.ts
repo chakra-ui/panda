@@ -29,6 +29,7 @@ import type {
   LayerCssOptions,
   LayerNames,
   ScanOptions,
+  SemanticTokenEntry,
   SourceEntry,
   SplitCssOptions,
   SplitCssResult,
@@ -228,6 +229,8 @@ export interface Compiler {
   /** Remove Panda `@layer …;` order statements; leave unrelated ones. */
   stripLayerOrderStatements(css: string): string
   spec(): Spec
+  /** Resolved semantic tokens with every theme/condition variant; `null` when the config defines none. */
+  semanticTokens(): SemanticTokenEntry[] | null
   sources(): SourceEntry[]
   diagnostics(): Diagnostic[]
 
@@ -258,6 +261,8 @@ export interface Compiler {
   getLayerCss(options: LayerCssOptions): CompileOutput
   /** Theme `@keyframes` CSS only (no token vars or other layers). */
   getKeyframeCss(options?: CompileOptions): CompileOutput
+  /** Global `@font-face` CSS only (no token vars or other layers). */
+  getFontfaceCss(options?: CompileOptions): CompileOutput
   /** Generate split stylesheet files and the complete output diagnostics in memory. */
   getSplitCss(options?: SplitCssOptions): SplitCssResult
 

@@ -47,6 +47,45 @@ pub(crate) fn from_core_token_dictionary(
     }
 }
 
+/// One semantic-token path with its resolved condition/theme variants.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SemanticTokenEntry {
+    pub path: String,
+    pub conditions: Vec<SemanticConditionEntry>,
+}
+
+/// One resolved variant of a semantic token: theme, condition label, and value.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SemanticConditionEntry {
+    /// Theme variant name; omitted for the base theme.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub theme: Option<String>,
+    pub condition: String,
+    pub value: String,
+}
+
+pub(crate) fn from_core_semantic_projection(
+    entries: Vec<pandacss_tokens::SemanticTokenEntry>,
+) -> Vec<SemanticTokenEntry> {
+    entries
+        .into_iter()
+        .map(|entry| SemanticTokenEntry {
+            path: entry.path,
+            conditions: entry
+                .conditions
+                .into_iter()
+                .map(|condition| SemanticConditionEntry {
+                    theme: condition.theme,
+                    condition: condition.condition,
+                    value: condition.value,
+                })
+                .collect(),
+        })
+        .collect()
+}
+
 #[allow(
     clippy::default_trait_access,
     reason = "jsx_kinds is an opaque FxHashMap; the stateless extract path leaves it empty"

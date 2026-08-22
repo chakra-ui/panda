@@ -11,6 +11,12 @@ export async function main(argv = process.argv): Promise<void> {
     return
   }
 
+  if (rawArgs[0] === 'studio') {
+    const studio = await import('./commands/studio')
+    await runMain(studio.studioCommand, { rawArgs: rawArgs.slice(1), showUsage: showPlainUsage })
+    return
+  }
+
   // Defer command modules so each path only pays for what it runs (Clack, analyze
   // report, watcher, compiler driver graph, etc.).
   if (shouldUseDispatcher(rawArgs)) {
@@ -35,6 +41,7 @@ export async function main(argv = process.argv): Promise<void> {
         analyze: () => import('./commands/analyze').then((m) => m.analyzeCommand),
         codegen: () => import('./commands/codegen').then((m) => m.codegenCommand),
         cssgen: () => import('./commands/cssgen').then((m) => m.cssgenCommand),
+        studio: () => import('./commands/studio').then((m) => m.studioCommand),
       },
     })
 

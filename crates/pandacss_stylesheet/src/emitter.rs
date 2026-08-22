@@ -79,6 +79,13 @@ pub(crate) struct EmitKeyframesOptions {
     pub polyfill: bool,
 }
 
+#[derive(Clone, Copy)]
+pub(crate) struct EmitFontfaceOptions {
+    pub minify: bool,
+    pub wrap_in_layer: bool,
+    pub polyfill: bool,
+}
+
 #[allow(
     clippy::too_many_lines,
     reason = "emit is the single CSS assembly entry point"
@@ -350,6 +357,50 @@ pub(crate) fn emit_keyframes(input: EmitInput<'_>, options: EmitKeyframesOptions
         finish_emit(writer, polyfill, layers, minify, layer_ranges, Vec::new())
     } else {
         cx.serialize_keyframes(&mut writer, keyframes, used);
+        EmitOutput {
+            css: writer.finish(),
+            layer_ranges,
+            polyfill_analyze: None,
+            diagnostics: Vec::new(),
+        }
+    }
+}
+
+/// Emit only `globalFontface` as `@font-face` CSS (no token vars, no other
+/// layers). When `wrap_in_layer` is true, wraps the blocks in
+/// `@layer base { … }` — the cascade layer `@font-face` lives in for a full
+/// stylesheet (see [`emit`]).
+#[must_use]
+pub(crate) fn emit_fontface(config: &UserConfig, options: EmitFontfaceOptions) -> EmitOutput {
+    let EmitFontfaceOptions {
+        minify,
+        wrap_in_layer,
+        polyfill,
+    } = options;
+    let layers = &config.layers;
+    let mut writer = if polyfill && wrap_in_layer {
+        CssWriter::recording(minify)
+    } else {
+        CssWriter::new(minify, 256)
+    };
+    let mut layer_ranges = StylesheetLayerRanges::default();
+
+    if as_non_empty_object(&config.global_fontface).is_none() {
+        return EmitOutput {
+            css: String::new(),
+            layer_ranges,
+            polyfill_analyze: None,
+            diagnostics: Vec::new(),
+        };
+    }
+
+    if wrap_in_layer {
+        layer_ranges.base = Some(write_layer(&mut writer, &layers.base, |writer| {
+            serialize_global_fontface(writer, &config.global_fontface);
+        }));
+        finish_emit(writer, polyfill, layers, minify, layer_ranges, Vec::new())
+    } else {
+        serialize_global_fontface(&mut writer, &config.global_fontface);
         EmitOutput {
             css: writer.finish(),
             layer_ranges,

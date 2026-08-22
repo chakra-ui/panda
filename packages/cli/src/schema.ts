@@ -126,6 +126,12 @@ export const debugFlagsSchema = infoFlagsSchema.extend({
   onlyConfig: booleanFlag,
 })
 
+export const studioServeFlagsSchema = commonFlagsSchema.extend({
+  port: numberLikeFlag,
+  host: stringFlag,
+  css: stringFlag,
+})
+
 export const analyzeFlagsSchema = commonFlagsSchema.extend({
   // Scope to include in the report: all, tokens, recipes, utilities, patterns, keyframes (or token/recipe aliases)
   scope: enumOf(['all', 'tokens', 'recipes', 'utilities', 'patterns', 'keyframes', 'token', 'recipe']),
@@ -145,6 +151,7 @@ export type BuildFlags = FlagsInfer<typeof buildFlagsSchema>
 export type InitFlags = FlagsInfer<typeof initFlagsSchema>
 export type BuildinfoFlags = FlagsInfer<typeof buildinfoFlagsSchema>
 export type LibFlags = FlagsInfer<typeof libFlagsSchema>
+export type StudioServeFlags = FlagsInfer<typeof studioServeFlagsSchema>
 export type DoctorFlags = FlagsInfer<typeof doctorFlagsSchema>
 export type DebugFlags = FlagsInfer<typeof debugFlagsSchema>
 type AnalyzeScopeRaw = FlagsInfer<typeof analyzeFlagsSchema>['scope']
@@ -165,6 +172,10 @@ export interface LibResult extends CommandResult<NodeDriver> {
   buildInfoPath?: string
   presetPath?: string
   exportsChanged: boolean
+}
+
+export interface StudioServeResult extends CommandResult<NodeDriver> {
+  url?: string
 }
 
 export interface CommandResult<TDriver extends Driver = Driver> extends CliResult {

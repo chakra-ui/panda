@@ -2,7 +2,9 @@ use super::{Compiler, LayerNames};
 
 use napi_derive::napi;
 
-use crate::matcher::{TokenDictionary, from_core_token_dictionary};
+use crate::matcher::{
+    SemanticTokenEntry, TokenDictionary, from_core_semantic_projection, from_core_token_dictionary,
+};
 
 #[napi]
 impl Compiler {
@@ -92,5 +94,16 @@ impl Compiler {
             .token_dictionary()
             .as_deref()
             .map(from_core_token_dictionary)
+    }
+
+    /// Resolved semantic-token condition/theme data projected for design-system
+    /// tooling. `None` when the project builds no token dictionary.
+    #[napi(js_name = semanticTokens)]
+    #[must_use]
+    pub fn semantic_tokens(&self) -> Option<Vec<SemanticTokenEntry>> {
+        let dictionary = self.inner.config().token_dictionary()?;
+        Some(from_core_semantic_projection(
+            dictionary.semantic_projection(&self.user_config),
+        ))
     }
 }
