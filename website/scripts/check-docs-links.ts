@@ -118,6 +118,19 @@ for (const file of files) {
       }
     }
   }
+
+  const internalRe = /(?:\]\(|href=")(\/[^)"#\s]+)(#[^)"\s]*)?[)"]/g
+  let mi: RegExpExecArray | null
+  while ((mi = internalRe.exec(content))) {
+    const [, pathPart, fragment] = mi
+    if (pathPart.startsWith('/docs/')) continue
+    if (/\.(png|jpe?g|gif|svg|webp|txt)$/.test(pathPart)) continue
+    const lineNo = content.slice(0, mi.index).split('\n').length
+    errors.push(
+      `${slug}.mdx:${lineNo}  ${pathPart}${fragment ?? ''} — internal doc link must ` +
+        `start with /docs/ (routes live under /docs)`
+    )
+  }
 }
 
 // Guard against sidebar/search drift: every on-disk doc must be reachable from docsTabs or
