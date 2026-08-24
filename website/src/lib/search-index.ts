@@ -99,7 +99,9 @@ export function getSearchIndex(docs: Doc[]): SearchIndex {
 
   // Process each document
   for (const doc of docs) {
-    const baseUrl = `/docs/${doc.slug}`
+    // doc.slug already starts with "docs/" (Velite's root is "content", the
+    // collection pattern is "docs/**/*.mdx") — don't prepend "/docs/" again.
+    const baseUrl = `/${doc.slug}`
 
     // Add main page record
     const pageRecord: SearchRecord = {

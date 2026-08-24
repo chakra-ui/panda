@@ -1,44 +1,33 @@
 ---
-title: Static CSS Generator
-description: Panda can be used to generate a static set of utility classes for your project.
+title: Static CSS Generation
+description: Pre-generate specific utility, recipe, pattern, and theme CSS that Panda's static analysis can't see on its own.
 ---
 
-Panda can be used to generate a static set of utility classes for your project.
+Panda only emits CSS for styles it can see in your source at build time. That breaks down in a few real cases: a
+class name assembled from a runtime variable in a plain HTML template with no build step, a Storybook `args` value
+that changes per story, or a recipe variant chosen by a prop instead of a literal string. In each case, the value
+exists, but static analysis can't prove which one.
 
-This is useful if you want to use Panda in an HTML project or you want absolute zero runtime.
+`staticCss` is the escape hatch. Tell Panda which utilities, recipes, patterns, or themed variants to generate
+regardless of whether it ever sees them called, and it generates them unconditionally.
 
-## Usage
-
-To generate a static set of CSS classes, add them to your `panda.config.js` file:
-
-```js
+```js filename="panda.config.js"
 export default {
   staticCss: {
-    // the css properties you want to generate
     css: [],
-    // the recipes you want to generate
-    recipes: {}
+    recipes: {},
+    patterns: {},
+    themes: []
   }
 }
 ```
 
-The `static` property supports two properties:
+All four keys are optional. Use only the ones you need.
 
-- `css` - an array of CSS properties you want to generate with their `conditions`
-- `recipes` - the component recipes you want to generate
+## Generating CSS properties
 
-## Generating CSS Properties
-
-The `css` property is an array of CSS properties you want to generate with their `conditions`.
-
-You can specify the following options:
-
-- `properties`: the CSS properties you want to generate
-- `conditions`: the CSS conditions or selectors you want to generate in addition to the default values. Values can be
-  `light, dark`, etc.
-- `responsive`: whether or not to generate responsive classes
-- `values`: the values you want to generate for the CSS property. When set to `*`, all values defined in the tokens will
-  be included. When set to an array, only the values in the array will be generated.
+Each entry in `css` is a rule: which properties to generate, and which values for each. The array under a property
+name is the list of values, `'*'` means every value your tokens define for that property:
 
 ```js
 export default {
@@ -63,12 +52,15 @@ export default {
 }
 ```
 
+Two more options apply per rule:
+
+- `conditions`: extra conditions or selectors to generate each value under, on top of the unconditioned base class.
+- `responsive`: whether to also generate one class per breakpoint.
+
 ## Generating Recipes
 
-The `recipes` property is an object of component recipes you want to generate with their `conditions`.
-
-Use this when config recipe variants come from runtime props. See
-[Dynamic variant props](/docs/styling/recipes#dynamic-variant-props).
+Use this when a config recipe's variant comes from a runtime prop instead of a literal you write in your source. See
+[dynamic variant props](/docs/styling/recipes#dynamic-variant-props) for why static analysis misses those.
 
 ```js
 export default {
@@ -81,14 +73,14 @@ export default {
         },
         { variant: ['*'] }
       ],
-      // shorthand for all variants
+      // shorthand for every variant
       tooltip: ['*']
     }
   }
 }
 ```
 
-You can also directly specify a recipe's `staticCss` rules from inside a recipe config, e.g.:
+You can also declare a recipe's static rules where you define the recipe, instead of in the top-level config:
 
 ```js
 import { defineRecipe } from '@pandacss/dev'
@@ -106,47 +98,88 @@ const card = defineRecipe({
 })
 ```
 
-would be the equivalent of defining it inside the main config:
+That's equivalent to writing it in the config:
 
 ```js
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
-  // ...
   staticCss: {
     recipes: {
-      card: {
-        size: ['*']
-      }
+      card: { size: ['*'] }
     }
   }
 })
 ```
 
-Or you could even generate the CSS for every config `recipe` / `slotRecipes` (and each of their variants):
+Or generate every variant of every config recipe and slot recipe at once:
 
 ```tsx filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
-  // ...
   staticCss: {
     recipes: '*'
   }
 })
 ```
 
-This is mostly useful for testing purposes with [`Storybook`](/docs/styling/storybook).
+That's usually overkill for an app, but it's exactly what you want for testing with
+[Storybook](/docs/styling/storybook): every variant needs to render, whether or not your stories happen to call it.
 
-## Performance Considerations
+## Generating patterns
 
-Panda provides intelligent caching and memoization to optimize static CSS generation. However, **pre-generating large
-numbers of styles can still impact build times**. It's important to be selective and only generate the styles you
-actually need.
+`patterns` works the same way as `css`, one rule per property, keyed by the pattern's name instead of the global
+namespace:
 
-### Best Practices
+```js
+export default {
+  staticCss: {
+    patterns: {
+      stack: [{ properties: { gap: ['4'] } }]
+    }
+  }
+}
+```
 
-**❌ Avoid: Generating every possible combination**
+Or generate every value a pattern's prop can take:
+
+```js
+export default {
+  staticCss: {
+    patterns: {
+      stack: [{ properties: { gap: ['*'] } }]
+    }
+  }
+}
+```
+
+## Generating theme variants
+
+If your config defines multiple [themes](/docs/theming/multiple-themes), list the ones you want your `css` rules
+pre-generated for, in addition to the default:
+
+```js
+export default {
+  staticCss: {
+    themes: ['light', 'dark'],
+    css: [
+      {
+        properties: {
+          color: ['*']
+        }
+      }
+    ]
+  }
+}
+```
+
+## Keep it selective
+
+Panda caches and memoizes static generation, but pre-generating a large number of styles still adds build time.
+Generate what you actually use, not everything you might.
+
+**Avoid generating every combination:**
 
 ```js
 export default {
@@ -155,13 +188,13 @@ export default {
       {
         conditions: ['hover', 'focus', 'active', 'disabled'],
         properties: {
-          // This expands to ALL tokens - very expensive!
+          // Expands to every token value on every property. Expensive.
           color: ['*'],
           backgroundColor: ['*'],
           borderColor: ['*'],
           width: ['*'],
           height: ['*']
-          // ... 20+ more properties with wildcards
+          // ...20+ more properties with wildcards
         }
       }
     ]
@@ -169,7 +202,7 @@ export default {
 }
 ```
 
-**✅ Better: Only generate what you need**
+**Generate only what you need instead:**
 
 ```js
 export default {
@@ -178,7 +211,6 @@ export default {
       {
         conditions: ['_hover', '_focus'],
         properties: {
-          // Only the colors you actually use
           color: ['red.500', 'blue.500', 'gray.600'],
           backgroundColor: ['white', 'gray.50', 'blue.50'],
           borderColor: ['gray.200', 'blue.500']
@@ -189,48 +221,18 @@ export default {
 }
 ```
 
-### When to Use Wildcards
+A wildcard is fine when the token set is small (`fontWeight: ['*']` is a handful of values, not hundreds), or when
+you're covering every variant on purpose for Storybook or visual regression testing.
 
-Wildcards (`['*']`) are appropriate when:
-
-- **Small token sets**: Properties with < 20 values (e.g., `fontWeight: ['*']`)
-- **Critical utilities**: Styles you genuinely need in all variants
-- **Testing scenarios**: Storybook or visual regression testing
-
-### Use Responsive Selectively
-
-The `responsive` property multiplies the number of generated classes by your breakpoints. Only enable it for properties
-that genuinely need responsive behavior.
-
-**❌ Avoid: Responsive for all properties**
+`responsive: true` multiplies every value by your breakpoint count, so scope it to properties that actually change
+across breakpoints:
 
 ```js
 export default {
   staticCss: {
     css: [
       {
-        // This generates classes for ALL breakpoints (sm, md, lg, xl, 2xl)
-        responsive: true,
-        properties: {
-          color: ['red.500', 'blue.500'],
-          backgroundColor: ['white', 'gray.50'],
-          fontWeight: ['400', '500', '600'],
-          borderRadius: ['sm', 'md', 'lg']
-        }
-      }
-    ]
-  }
-}
-```
-
-**✅ Better: Responsive only for layout properties**
-
-```js
-export default {
-  staticCss: {
-    css: [
-      {
-        // Responsive for layout properties that change across breakpoints
+        // Layout properties genuinely differ by breakpoint.
         responsive: true,
         properties: {
           display: ['none', 'block', 'flex'],
@@ -239,7 +241,7 @@ export default {
         }
       },
       {
-        // No responsive needed for colors/typography that stay the same
+        // Colors and type don't need a responsive copy.
         properties: {
           color: ['red.500', 'blue.500'],
           fontWeight: ['400', '500', '600']
@@ -250,20 +252,11 @@ export default {
 }
 ```
 
-Properties that commonly need `responsive: true`:
+Layout, sizing, spacing, and positioning properties (`display`, `width`, `padding`, `position`, ...) usually need
+`responsive: true`. Color, typography, and effects properties (`color`, `fontWeight`, `boxShadow`, ...) usually don't.
 
-- Layout: `display`, `flexDirection`, `gridTemplateColumns`
-- Sizing: `width`, `height`, `maxWidth`
-- Spacing: `padding`, `margin`, `gap`
-- Positioning: `position`, `top`, `left`
+## Removing what you don't use
 
-Properties that rarely need `responsive: true`:
-
-- Colors: `color`, `backgroundColor`, `borderColor`
-- Typography: `fontWeight`, `textDecoration`, `fontFamily`
-- Effects: `boxShadow`, `opacity`, `cursor`
-
-## Removing unused CSS
-
-For an even smaller css output size, you can utilize [PurgeCSS](https://purgecss.com/) to treeshake and remove unused
-CSS. This tool will analyze your template and match selectors against your CSS.
+`staticCss` generates classes unconditionally, so you'll end up shipping some that never render. For a smaller
+output, run the result through [PurgeCSS](https://purgecss.com/): it scans your templates and drops any selector
+that never matches.
