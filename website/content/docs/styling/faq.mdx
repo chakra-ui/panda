@@ -270,7 +270,7 @@ In such a case, check the [`outExtension`](/docs/reference/config#outextension) 
 ## Why does importing `styled` not exist?
 
 You should use [`config.jsxFramework`](/docs/styling/style-props#configure-jsx) when you need to import styled
-components. You can then use the [`jsxFactory`](/references/config#jsxfactory) option to set the name of the factory
+components. You can then use the [`jsxFactory`](/docs/reference/config#jsxfactory) option to set the name of the factory
 component.
 
 ---
@@ -356,7 +356,7 @@ yet", update your tsconfig to use es6 or higher:
 ## How can I generate all possible CSS variants at build time?
 
 While it's possible to generate all variants, even unused ones, by using
-[`config.staticCss`](https://panda-css.com/docs/styling/dynamic-styling#using-static-css), it's generally **not
+[`config.staticCss`](/docs/styling/dynamic-styling#using-static-css), it's generally **not
 recommended** to use it for more than a few values. However, keep in mind this approach compromises one of Panda's
 strengths: lean, usage-based CSS generation.
 

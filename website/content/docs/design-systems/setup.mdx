@@ -22,9 +22,12 @@ and the package's `panda.config.ts` becomes the one place your design tokens liv
 3. Run `panda init` to generate a `panda.config.ts`. Set `jsxFramework` if your components use JSX style props.
 4. If your library has custom tokens, recipes, or patterns, install and import your [preset](/docs/design-systems/presets)
    here too.
-5. Run [`panda emit-pkg`](/docs/reference/cli#emit-pkg) to wire up the package's `exports` map.
+5. Write the package's `exports` map by hand, matching the shape below. It's a one-time, static template, you don't
+   need to regenerate it as your recipes or tokens change. If this package is the whole design system you're
+   publishing (not just an internal styled-system split), run `panda lib` instead. It syncs this exports map for you
+   as one part of writing build info and a preset. See [Shipping styles](/docs/design-systems/ship-styled-system).
 
-The generated `package.json` looks roughly like this:
+The package's `package.json` looks roughly like this:
 
 ```json
 {

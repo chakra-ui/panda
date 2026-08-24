@@ -1,25 +1,24 @@
 ---
 title: Utilities
-description:
-  The utility API is a way to create your own CSS properties, map existing properties to a set of values or tokens.
+description: Add your own CSS properties, or remap existing ones to your tokens, with the utility API.
 ---
 
-The utility API enables you to create custom CSS properties and map existing properties to specific values or tokens.
-It's like building your own type-safe version of Chakra UI, Tailwind (in JS), or Styled System.
+Panda ships a set of built-in utilities (`bg`, `px`, `rounded`, and the rest of what you already use in `css()`). The
+utility API is how you add your own on top, or change what a built-in one does. Think of it as building your own
+typed version of Tailwind's or Chakra's utility layer, except every value comes from your own config.
 
-Panda comes with a set of utilities out of the box. You can customize them, or add your own.
+A utility takes these fields:
 
-Here are the properties you need to define or customize a utility:
-
-- `className` : The className the property maps to
-- `shorthand`: The shorthand or alias version of the property
-- `values`: The possible values the property can have. Could be a token category, or an enum of values, string, number,
-  or boolean.
-- `transform`: A function that converts the value to a valid css object
+- `property`: the real CSS property this utility maps to (`borderRadius`, `backgroundColor`, and so on).
+- `className`: the class name Panda generates for it. Defaults to the property name if you skip it.
+- `shorthand`: one alias, or an array of aliases, for the property (`px` for `paddingInline`, say).
+- `values`: what values the property accepts. A token category name (`'radii'`, `'colors'`), an array of literal
+  strings, `{ type: 'boolean' }`, or an object mapping your own keys to raw values.
+- `transform`: a function that takes the value and returns the CSS object to emit.
 
 ## Creating a custom utility
 
-Let's say we want to create new property `br` that applies a border radius to an element.
+Say you want a `br` shorthand that applies a border radius:
 
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -28,8 +27,8 @@ export default defineConfig({
   utilities: {
     extend: {
       br: {
-        className: 'rounded', // css({ br: "sm" }) => rounded-sm
-        values: 'radii', // connect values to the radii tokens
+        className: 'rounded', // css({ br: 'sm' }) → .rounded_sm
+        values: 'radii', // pull values from the radii tokens
         transform(value) {
           return { borderRadius: value }
         }
@@ -39,7 +38,7 @@ export default defineConfig({
 })
 ```
 
-Then you can run the following command to generate the pattern JS code:
+Run codegen so the new property shows up in your generated types:
 
 <Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   {/* <!-- prettier-ignore-start --> */}
@@ -66,7 +65,7 @@ Then you can run the following command to generate the pattern JS code:
   {/* <!-- prettier-ignore-end --> */}
 </Tabs>
 
-Now, we can use the `br` property in our components.
+`br` now works everywhere `css()` does:
 
 ```jsx
 import { css } from '../styled-system/css'
@@ -76,7 +75,7 @@ function App() {
 }
 ```
 
-or use in JSX style props
+And as a JSX style prop:
 
 ```jsx
 import { styled } from '../styled-system/jsx'
@@ -86,10 +85,10 @@ function App() {
 }
 ```
 
-### Using enum values
+### Enum values
 
-Let's say we want to create a new property `borderX` that applies a limited set of inline border to an element and
-automatically applies the border color.
+Restrict a utility to a fixed set of raw values instead of a token category. Here, `borderX` only accepts three widths
+and always sets the border color for you:
 
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -99,11 +98,11 @@ export default defineConfig({
     extend: {
       borderX: {
         values: ['1px', '2px', '4px'],
-        shorthand: 'bx', // `bx` or `borderX` can be used
+        shorthand: 'bx', // both `bx` and `borderX` work
         transform(value, { token }) {
           return {
             borderInlineWidth: value,
-            borderColor: token('colors.red.200') // read the css variable for red.200
+            borderColor: token('colors.red.200') // resolves to the CSS variable for red.200
           }
         }
       }
@@ -111,8 +110,6 @@ export default defineConfig({
   }
 })
 ```
-
-Now, we can use the `borderX` or `bx` property in our components.
 
 ```jsx
 import { css } from '../styled-system/css'
@@ -122,7 +119,9 @@ function App() {
 }
 ```
 
-### Using mapped values
+### Mapped values
+
+Map your own keys to raw CSS values instead of a plain array:
 
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -145,7 +144,11 @@ export default defineConfig({
 })
 ```
 
-### Using boolean values
+Now `borderX: 'small'` resolves to `2px`, not the literal string `'small'`.
+
+### Boolean values
+
+Set `values: { type: 'boolean' }` for a utility that's either on or off:
 
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -170,7 +173,9 @@ export default defineConfig({
 })
 ```
 
-## Minimal setup
+`css({ truncate: true })` now emits the three declarations above. `truncate: false` emits nothing.
 
-If you want to use Panda with the bare minimum, without any of the defaults, you can read more about it
-[here](/docs/design-systems/minimal-setup)
+## Starting from zero
+
+Everything here assumes you're extending Panda's defaults with `utilities.extend`. If you want no built-in utilities
+at all and full control from the start, see [minimal setup](/docs/design-systems/minimal-setup).
