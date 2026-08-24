@@ -1,0 +1,46 @@
+<svg width="1200" height="460" viewBox="0 0 1200 460" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Generated types cost to tsc, Panda 2.0 as a share of Panda 1: type instantiations down 99 percent (20 vs 2603), peak memory down 24 percent, check time down 40 to 60 percent">
+  <style>
+    .surface { fill: #FBF9F3; }
+    .ink { fill: #1A1A17; }
+    .muted { fill: #5E584C; }
+    .track { fill: #ECE7DA; }
+    .bar { fill: #F6E458; stroke: #1A1A17; stroke-width: 2; }
+    .ref { stroke: #C9B94E; stroke-width: 1.5; stroke-dasharray: 3 4; }
+    .sans { font-family: 'Onest','Segoe UI',system-ui,sans-serif; }
+    .mono { font-family: 'Source Code Pro',ui-monospace,monospace; }
+    @media (prefers-color-scheme: dark) {
+      .surface { fill: #17171B; } .ink { fill: #F5F2E9; } .muted { fill: #B7B1A3; }
+      .track { fill: #26262B; } .bar { stroke: #17171B; } .ref { stroke: #6E6636; }
+    }
+  </style>
+  <rect width="1200" height="460" class="surface"/>
+
+  <text x="60" y="58" class="sans ink" font-size="28" font-weight="800" letter-spacing="-0.3">Your generated types cost the compiler less</text>
+  <text x="60" y="88" class="sans muted" font-size="16">Type-checking a project against Panda 2.0's styled-system types, as a share of Panda 1. Shorter is better.</text>
+
+  <line x1="1070" y1="130" x2="1070" y2="380" class="ref"/>
+  <text x="1070" y="122" text-anchor="middle" class="muted mono" font-size="13">Panda 1 = 100%</text>
+
+  <g class="sans">
+    <!-- instantiations: 0.77% → ~7px -->
+    <text x="380" y="172" text-anchor="end" class="ink" font-size="16" font-weight="600">Type instantiations</text>
+    <rect x="400" y="150" width="670" height="36" rx="6" class="track"/>
+    <rect x="400" y="150" width="7" height="36" rx="3.5" class="bar"/>
+    <text x="422" y="174" class="ink mono" font-size="16" font-weight="700">−99%</text>
+    <text x="1060" y="174" text-anchor="end" class="muted mono" font-size="13">20 vs 2,603</text>
+
+    <!-- memory: 75.7% → 507px -->
+    <text x="380" y="252" text-anchor="end" class="ink" font-size="16" font-weight="600">tsc peak memory</text>
+    <rect x="400" y="230" width="670" height="36" rx="6" class="track"/>
+    <rect x="400" y="230" width="507" height="36" rx="6" class="bar"/>
+    <text x="927" y="254" class="ink mono" font-size="16" font-weight="700">−24%</text>
+
+    <!-- check time: 50% → 335px -->
+    <text x="380" y="332" text-anchor="end" class="ink" font-size="16" font-weight="600">tsc check time</text>
+    <rect x="400" y="310" width="670" height="36" rx="6" class="track"/>
+    <rect x="400" y="310" width="335" height="36" rx="6" class="bar"/>
+    <text x="755" y="334" class="ink mono" font-size="16" font-weight="700">−40 to 60%</text>
+  </g>
+
+  <text x="60" y="418" class="sans muted" font-size="14">Fewer instantiations mean faster hovers and autocomplete in your editor, and less work for tsc in CI.</text>
+</svg>

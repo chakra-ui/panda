@@ -1,0 +1,95 @@
+<svg width="1200" height="470" viewBox="0 0 1200 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The Panda 2.0 compiler pipeline: parse, extract, encode, emit — one engine, two bindings">
+  <style>
+    .surface { fill: #FBF9F3; }
+    .ink { fill: #1A1A17; }
+    .muted { fill: #5E584C; }
+    .card { fill: #FFFFFF; stroke: #1A1A17; stroke-width: 2; }
+    .yl { fill: #F6E458; }
+    .yltile { fill: #F6E458; stroke: #1A1A17; stroke-width: 2; }
+    .ony { fill: #1A1A17; }
+    .rail { fill: #F3EFE3; stroke: #E4DECF; stroke-width: 1.5; }
+    .chip { fill: #FFFFFF; stroke: #CFC8B8; stroke-width: 1.5; }
+    .flow { stroke: #1A1A17; stroke-width: 3; fill: none; }
+    .sans { font-family: 'Onest','Segoe UI',system-ui,sans-serif; }
+    .mono { font-family: 'Source Code Pro',ui-monospace,monospace; }
+    @media (prefers-color-scheme: dark) {
+      .surface { fill: #17171B; } .ink { fill: #F5F2E9; } .muted { fill: #B7B1A3; }
+      .card { fill: #23232B; stroke: #3A3A42; } .rail { fill: #1E1E25; stroke: #34343A; }
+      .chip { fill: #23232B; stroke: #3A3A42; } .flow { stroke: #E7E2D6; }
+    }
+  </style>
+  <rect width="1200" height="470" class="surface"/>
+
+  <rect x="60" y="40" width="52" height="7" rx="3.5" class="yl"/>
+  <text x="60" y="84" class="sans ink" font-size="29" font-weight="800" letter-spacing="-0.4">One parse per file. Zero style runtime.</text>
+  <text x="60" y="114" class="sans muted" font-size="16.5">Your source becomes a static stylesheet in four stages, all in Rust.</text>
+
+  <defs>
+    <marker id="e" viewBox="0 0 10 10" refX="6.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+      <path d="M0 1 L9 5 L0 9" fill="none" stroke="currentColor" class="ink" stroke-width="2.2"/>
+    </marker>
+  </defs>
+
+  <g class="sans">
+    <!-- 01 PARSE -->
+    <g transform="translate(60 168)">
+      <rect width="210" height="140" rx="16" class="card"/>
+      <rect x="22" y="22" width="40" height="26" rx="8" class="yl"/><text x="42" y="40" text-anchor="middle" class="ony mono" font-size="14" font-weight="700">01</text>
+      <text x="72" y="40" class="ink" font-size="14" font-weight="800" letter-spacing="1.3">PARSE</text>
+      <text x="22" y="80" class="ink" font-size="20" font-weight="700">Oxc AST</text>
+      <text x="22" y="106" class="muted mono" font-size="13">.ts .tsx .vue</text>
+      <text x="22" y="126" class="muted mono" font-size="13">.svelte .astro</text>
+    </g>
+    <!-- 02 EXTRACT -->
+    <g transform="translate(306 168)">
+      <rect width="210" height="140" rx="16" class="card"/>
+      <rect x="22" y="22" width="40" height="26" rx="8" class="yl"/><text x="42" y="40" text-anchor="middle" class="ony mono" font-size="14" font-weight="700">02</text>
+      <text x="72" y="40" class="ink" font-size="14" font-weight="800" letter-spacing="1.3">EXTRACT</text>
+      <text x="22" y="80" class="ink" font-size="20" font-weight="700">match &amp; fold</text>
+      <text x="22" y="106" class="muted" font-size="13.5">follow imports,</text>
+      <text x="22" y="126" class="muted" font-size="13.5">resolve scope</text>
+    </g>
+    <!-- 03 ENCODE -->
+    <g transform="translate(552 168)">
+      <rect width="210" height="140" rx="16" class="card"/>
+      <rect x="22" y="22" width="40" height="26" rx="8" class="yl"/><text x="42" y="40" text-anchor="middle" class="ony mono" font-size="14" font-weight="700">03</text>
+      <text x="72" y="40" class="ink" font-size="14" font-weight="800" letter-spacing="1.3">ENCODE</text>
+      <text x="22" y="80" class="ink" font-size="20" font-weight="700">atomic rules</text>
+      <text x="22" y="106" class="muted" font-size="13.5">dedupe, refcount,</text>
+      <text x="22" y="126" class="muted" font-size="13.5">one class each</text>
+    </g>
+    <!-- 04 EMIT -->
+    <g transform="translate(798 168)">
+      <rect width="210" height="140" rx="16" class="card"/>
+      <rect x="22" y="22" width="40" height="26" rx="8" class="yl"/><text x="42" y="40" text-anchor="middle" class="ony mono" font-size="14" font-weight="700">04</text>
+      <text x="72" y="40" class="ink" font-size="14" font-weight="800" letter-spacing="1.3">EMIT</text>
+      <text x="22" y="80" class="ink" font-size="20" font-weight="700">native CSS</text>
+      <text x="22" y="106" class="muted" font-size="13.5">grouped @media,</text>
+      <text x="22" y="126" class="muted" font-size="13.5">sorted layers</text>
+    </g>
+    <!-- output tile -->
+    <g transform="translate(1044 168)">
+      <rect width="96" height="140" rx="16" class="yltile"/>
+      <text x="48" y="70" text-anchor="middle" class="ony mono" font-size="17" font-weight="700">styles</text>
+      <text x="48" y="94" text-anchor="middle" class="ony mono" font-size="17" font-weight="700">.css</text>
+    </g>
+
+    <g class="flow">
+      <line x1="270" y1="238" x2="304" y2="238" marker-end="url(#e)"/>
+      <line x1="516" y1="238" x2="550" y2="238" marker-end="url(#e)"/>
+      <line x1="762" y1="238" x2="796" y2="238" marker-end="url(#e)"/>
+      <line x1="1008" y1="238" x2="1042" y2="238" marker-end="url(#e)"/>
+    </g>
+  </g>
+
+  <!-- bindings rail -->
+  <g class="sans">
+    <rect x="60" y="336" width="1080" height="100" rx="16" class="rail"/>
+    <text x="84" y="372" class="muted" font-size="14" font-weight="800" letter-spacing="2">ONE ENGINE · TWO BINDINGS</text>
+    <g transform="translate(84 386)"><rect width="450" height="40" rx="11" class="chip"/><text x="20" y="26" class="ink mono" font-size="14">NAPI → the CLI, Vite, PostCSS</text></g>
+    <g transform="translate(552 386)"><rect width="410" height="40" rx="11" class="chip"/><text x="20" y="26" class="ink mono" font-size="14">Wasm → the browser playground</text></g>
+    <g transform="translate(1082 356) scale(3.1)">
+      <path d="M10.7608 0.390669C9.38613 -0.0126127 7.98396 -0.067426 6.55506 0.0630881C5.75542 0.147945 4.98667 0.310054 4.24518 0.594509C2.64244 1.20936 1.43903 2.27424 0.72147 3.87754C0.207033 5.02698 0.0211109 6.24802 0.0017347 7.50081C-0.0187424 8.8248 0.143717 10.1305 0.401862 11.4249C0.635852 12.5983 0.947463 13.7487 1.39249 14.8591C1.43477 14.9646 1.48743 15.0002 1.60028 15C3.0078 14.9969 4.41533 14.9969 5.82286 14.9969C6.23955 14.9969 6.65623 14.9969 7.07292 14.9968C7.10483 14.9968 7.13673 14.995 7.17342 14.993C7.19215 14.9919 7.21213 14.9908 7.23399 14.9898C7.22553 14.9693 7.21796 14.9504 7.21087 14.9327C7.19692 14.8979 7.18479 14.8676 7.17125 14.838C7.06947 14.6156 6.96558 14.3942 6.86169 14.1728C6.63635 13.6924 6.41101 13.2121 6.20721 12.7224C5.5891 11.2373 5.11575 9.7082 4.9713 8.08959C4.90756 7.37541 4.91641 6.66531 5.11044 5.96941C5.33222 5.17396 5.80814 4.6124 6.59715 4.37763C7.32168 4.16204 8.05629 4.16346 8.77688 4.40144C9.42 4.61383 9.8393 5.06248 10.0176 5.73423C10.1546 6.25013 10.1546 6.77159 10.051 7.29169C9.97115 7.69214 9.81051 8.05756 9.52137 8.34988C9.00271 8.87423 8.35495 8.9948 7.6599 8.95462C7.53624 8.94747 7.41295 8.93362 7.28592 8.91936C7.22642 8.91267 7.16609 8.9059 7.10452 8.89968C7.10629 8.91977 7.10727 8.93828 7.10819 8.95562C7.10999 8.98973 7.11156 9.01931 7.11843 9.04755C7.14805 9.16913 7.17627 9.29115 7.2045 9.41319C7.27249 9.70715 7.3405 10.0012 7.42793 10.289C7.59961 10.8542 7.79925 11.4058 8.02556 11.9443C9.63883 11.8158 11.1248 11.4062 12.7019 10.4393C12.7256 10.4241 12.7471 10.4103 12.7686 10.3966C13.4461 9.96587 13.9944 9.40712 14.3725 8.68563C14.9848 7.51725 15.1042 6.26777 14.9223 4.97808C14.7345 3.64712 14.1497 2.52993 13.1429 1.6536C12.4446 1.0458 11.6371 0.647746 10.7608 0.390669Z" class="ink"/>
+    </g>
+  </g>
+</svg>
