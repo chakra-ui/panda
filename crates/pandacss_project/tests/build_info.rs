@@ -33,7 +33,7 @@ fn build_info_emits_interned_atoms_with_per_module_provenance() {
     assert_yaml_snapshot!(info, @"
     schemaVersion: 5
     panda: ^2.0.0
-    configFingerprint: cfg1-49bac1e44a87696f
+    configFingerprint: cfg1-e34170613f41c279
     strings:
       - color
       - red
