@@ -614,6 +614,7 @@ fn add_virtual_color_palette_tokens(
     }
 
     let mut palette = PaletteAccumulator::default();
+    let mut seen: FxHashSet<String> = FxHashSet::default();
 
     for token in builder.tokens_mut().iter_mut() {
         if !is_concrete_color(token) {
@@ -630,6 +631,10 @@ fn add_virtual_color_palette_tokens(
             continue;
         }
 
+        if !seen.insert(token.path.to_string()) {
+            continue;
+        }
+
         palette.collect_token(token, &segments, color_path, context);
         token.set_extension("colorPalette", &color_path_string);
     }
@@ -638,9 +643,7 @@ fn add_virtual_color_palette_tokens(
 }
 
 fn is_concrete_color(token: &Token) -> bool {
-    token.category == TokenCategory::Colors
-        && token.extension("isVirtual") != Some("true")
-        && token.condition.is_none()
+    token.category == TokenCategory::Colors && token.extension("isVirtual") != Some("true")
 }
 
 /// Virtual palette tokens + mappings discovered while scanning color tokens,
