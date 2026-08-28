@@ -1,5 +1,50 @@
 # @pandacss/types
 
+## 2.0.0-beta.15
+
+### Minor Changes
+
+- 02bd0ad: Add `optimize.propertyFallback`, which also seeds each emitted `@property` registration as a plain
+  declaration so engines that ignore `@property` (Safari below 16.4, Firefox below 128) still get the defaults.
+
+  ```ts
+  export default defineConfig({
+    optimize: { propertyFallback: true },
+  })
+  ```
+
+  Off by default. Seeds come from the registrations that survived pruning, so you only pay for the variables you use.
+
+- e18eeb3: Add `theme.viewTransitions` so a preset can name shared view-transition bags. Call `viewTransition('slide')`
+  and Panda inlines `"vt_slide"`. Unused names stay out of the CSS.
+- 2d5d152: Add `globalVars` to utility definitions, so a variable's `@property` registration lives next to the utility
+  that writes it. Registrations merge into the config-level `globalVars` and are pruned when unused.
+
+  ```ts
+  utilities: {
+    blur: {
+      className: 'blur',
+      globalVars: { '--blur': { syntax: '*', inherits: false } },
+      transform: (value) => ({ '--blur': `blur(${value})` }),
+    },
+  }
+  ```
+
+  Putting a plain value on a name a utility registered warns during CSS emit, but only when your stylesheet actually
+  reads that variable, since the value drops the registration and starts the variable inheriting. Pass a full
+  `@property` object to retune one instead. Two utilities registering the same name with different definitions is a
+  config error.
+
+### Patch Changes
+
+- ec65db3: Add `maskBottomFrom`, `maskXFrom`, and `maskRadialFrom` so you can fade an edge or spotlight an image without
+  writing `mask-image` gradients by hand. Raw `maskImage` still works as an escape hatch.
+
+  ```ts
+  css({ overflow: 'auto', maskBottomFrom: '80%' })
+  css({ maskBottomFrom: '50%', maskRadialFrom: '35%', maskRadialAt: 'center' })
+  ```
+
 ## 2.0.0-beta.14
 
 ## 2.0.0-beta.13
