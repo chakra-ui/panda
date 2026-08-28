@@ -126,6 +126,28 @@ describe('cli smoke', () => {
     `)
   })
 
+  it('rejects non-numeric values for numeric flags', () => {
+    const result = runCli(['doctor', '--max-warnings', 'abc'])
+
+    expect(result).toMatchObject({ exitCode: 1, stdout: '' })
+    expect(result.stderr).toMatchInlineSnapshot(`
+      "[error] Invalid command options
+      - --max-warnings: expected a number (received "abc")
+      "
+    `)
+  })
+
+  it('names the config file when a config dependency is missing', () => {
+    dir = createFixture("import 'some-missing-pkg'\nexport default {}\n")
+
+    const result = runCli(['codegen', '--cwd', dir])
+
+    expect(result.exitCode).toBe(1)
+    const output = result.stdout + result.stderr
+    expect(output).toContain("Cannot find package 'some-missing-pkg'")
+    expect(output).not.toContain('data:text/javascript')
+  })
+
   it('returns interactive usage errors as JSON', () => {
     const results = [
       ['--json', ['--json']],
