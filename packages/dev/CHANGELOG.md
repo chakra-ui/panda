@@ -1,5 +1,30 @@
 # @pandacss/dev
 
+## 2.0.0-beta.15
+
+### Minor Changes
+
+- e18eeb3: Add `theme.viewTransitions` so a preset can name shared view-transition bags. Call `viewTransition('slide')`
+  and Panda inlines `"vt_slide"`. Unused names stay out of the CSS.
+
+### Patch Changes
+
+- Updated dependencies [8b43347]
+- Updated dependencies [02bd0ad]
+- Updated dependencies [ec65db3]
+- Updated dependencies [ec65db3]
+- Updated dependencies [02bd0ad]
+- Updated dependencies [ec65db3]
+- Updated dependencies [7c8a215]
+- Updated dependencies [8885864]
+- Updated dependencies [e18eeb3]
+- Updated dependencies [2d5d152]
+  - @pandacss/compiler@2.0.0-beta.15
+  - @pandacss/types@2.0.0-beta.15
+  - @pandacss/config@2.0.0-beta.15
+  - @pandacss/cli@2.0.0-beta.15
+  - @pandacss/postcss@2.0.0-beta.15
+
 ## 2.0.0-beta.14
 
 ### Patch Changes
