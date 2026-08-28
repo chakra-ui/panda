@@ -25,9 +25,11 @@ pub fn split_important(value: &str) -> (Cow<'_, str>, bool) {
 
 /// Byte range to strip for `!important`: the `!` plus leading whitespace
 /// through the keyword. A bare `!` with no keyword still counts (JS parity).
+/// The marker must close the value, so a `!` inside a string (`content: '"hi!"'`)
+/// is left alone.
 fn important_marker(value: &str) -> Option<(usize, usize)> {
     let bytes = value.as_bytes();
-    let bang = bytes.iter().position(|byte| *byte == b'!')?;
+    let bang = bytes.iter().rposition(|byte| *byte == b'!')?;
 
     let mut start = bang;
     while start > 0 && bytes[start - 1].is_ascii_whitespace() {
@@ -37,12 +39,14 @@ fn important_marker(value: &str) -> Option<(usize, usize)> {
     let after_bang = bang + 1;
     let important = "important";
 
-    if value
+    let end = if value
         .get(after_bang..after_bang + important.len())
         .is_some_and(|candidate| candidate.eq_ignore_ascii_case(important))
     {
-        Some((start, after_bang + important.len()))
+        after_bang + important.len()
     } else {
-        Some((start, after_bang))
-    }
+        after_bang
+    };
+
+    value[end..].trim().is_empty().then_some((start, end))
 }
