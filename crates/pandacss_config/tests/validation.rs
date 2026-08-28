@@ -236,3 +236,114 @@ fn reports_invalid_container_configuration() {
       severity: warning
     "#);
 }
+
+#[test]
+fn suggests_the_qualified_path_for_a_bare_reference() {
+    let diagnostics = validate_config_value(&json!({
+        "validation": "warn",
+        "theme": {
+            "tokens": {
+                "colors": { "black": { "value": "#09090B" } }
+            },
+            "semanticTokens": {
+                "shadows": {
+                    "xl": { "value": "0px 16px 24px {black/64}" }
+                }
+            }
+        }
+    }));
+
+    let missing: Vec<_> = diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.code == "config_token_missing_reference")
+        .map(|diagnostic| (diagnostic.message.clone(), diagnostic.help.clone()))
+        .collect();
+
+    assert_yaml_snapshot!(missing, @r#"
+    - - "Missing token: `black` used in `theme.semanticTokens.shadows.xl`"
+      - - "Did you mean `{colors.black}`? A reference is a full path from the token root, so it needs its category."
+    "#);
+}
+
+#[test]
+fn lists_both_categories_when_a_bare_name_is_defined_twice() {
+    let diagnostics = validate_config_value(&json!({
+        "validation": "warn",
+        "theme": {
+            "tokens": {
+                "colors": { "black": { "value": "#09090B" } },
+                "fontWeights": { "black": { "value": 900 } }
+            },
+            "semanticTokens": {
+                "shadows": {
+                    "xl": { "value": "0px 16px 24px {black/64}" }
+                }
+            }
+        }
+    }));
+
+    let help: Vec<_> = diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.code == "config_token_missing_reference")
+        .map(|diagnostic| diagnostic.help.clone())
+        .collect();
+
+    assert_yaml_snapshot!(help, @r#"
+    - - "Did you mean `{colors.black}` or `{fontWeights.black}`? A reference is a full path from the token root, so it needs its category."
+    "#);
+}
+
+#[test]
+fn lists_both_candidates_for_a_name_defined_in_two_categories() {
+    let diagnostics = validate_config_value(&json!({
+        "validation": "warn",
+        "theme": {
+            "tokens": {
+                "colors": { "muted": { "value": "#888" } },
+                "shadows": { "muted": { "value": "0 0 0 1px #888" } }
+            },
+            "semanticTokens": {
+                "borders": {
+                    "subtle": { "value": "1px solid {muted}" }
+                }
+            }
+        }
+    }));
+
+    let help: Vec<_> = diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.code == "config_token_missing_reference")
+        .map(|diagnostic| diagnostic.help.clone())
+        .collect();
+
+    assert_yaml_snapshot!(help, @r#"
+    - - "Did you mean `{colors.muted}` or `{shadows.muted}`? A reference is a full path from the token root, so it needs its category."
+    "#);
+}
+
+#[test]
+fn skips_the_suggestion_when_too_many_categories_match() {
+    let diagnostics = validate_config_value(&json!({
+        "validation": "warn",
+        "theme": {
+            "tokens": {
+                "colors": { "muted": { "value": "#888" } },
+                "shadows": { "muted": { "value": "0 0 0 1px #888" } },
+                "borders": { "muted": { "value": "1px solid #888" } }
+            },
+            "semanticTokens": {
+                "borders": {
+                    "subtle": { "value": "1px solid {muted}" }
+                }
+            }
+        }
+    }));
+
+    let help: Vec<_> = diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.code == "config_token_missing_reference")
+        .map(|diagnostic| diagnostic.help.clone())
+        .collect();
+
+    assert_eq!(help, vec![None]);
+}

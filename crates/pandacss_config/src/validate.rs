@@ -528,10 +528,22 @@ fn validate_token_references(tokens: &TokenData, diagnostics: &mut Vec<Diagnosti
 
             let Some(value) = tokens.value_at_path.get(&current_path) else {
                 let config_key = tokens.type_by_path.get(path).copied().unwrap_or("tokens");
-                diagnostics.push(warn(
+                let mut diagnostic = warn(
                     diagnostic_codes::CONFIG_TOKEN_MISSING_REFERENCE,
                     format!("Missing token: `{current_path}` used in `theme.{config_key}.{path}`"),
-                ));
+                );
+                let candidates = qualified_candidates(tokens, &current_path);
+                if !candidates.is_empty() {
+                    let suggestion = candidates
+                        .iter()
+                        .map(|candidate| format!("`{{{candidate}}}`"))
+                        .collect::<Vec<_>>()
+                        .join(" or ");
+                    diagnostic = diagnostic.with_help(format!(
+                        "Did you mean {suggestion}? A reference is a full path from the token root, so it needs its category."
+                    ));
+                }
+                diagnostics.push(diagnostic);
                 continue;
             };
 
@@ -563,6 +575,26 @@ fn validate_token_references(tokens: &TokenData, diagnostics: &mut Vec<Diagnosti
             }
         }
     }
+}
+
+/// Category-qualified paths for a bare reference like `{black}`. More than
+/// [`MAX_SUGGESTIONS`] candidates is too vague to be worth naming.
+fn qualified_candidates(tokens: &TokenData, path: &str) -> Vec<String> {
+    const MAX_SUGGESTIONS: usize = 2;
+
+    let suffix = format!(".{path}");
+    let candidates: Vec<String> = tokens
+        .value_at_path
+        .keys()
+        .filter(|candidate| candidate.ends_with(&suffix))
+        .cloned()
+        .collect();
+
+    if candidates.len() > MAX_SUGGESTIONS {
+        return Vec::new();
+    }
+
+    candidates
 }
 
 /// Path to every token leaf (a `value` key, or a non-object). Reuses one `path` buffer.
