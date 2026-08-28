@@ -126,6 +126,17 @@ describe('cli smoke', () => {
     `)
   })
 
+  it('rejects non-numeric values for numeric flags', () => {
+    const result = runCli(['doctor', '--max-warnings', 'abc'])
+
+    expect(result).toMatchObject({ exitCode: 1, stdout: '' })
+    expect(result.stderr).toMatchInlineSnapshot(`
+      "[error] Invalid command options
+      - --max-warnings: expected a number (received "abc")
+      "
+    `)
+  })
+
   it('returns interactive usage errors as JSON', () => {
     const results = [
       ['--json', ['--json']],
