@@ -44,7 +44,7 @@ describe('cli smoke', () => {
 
       OPTIONS
 
-      \`--cwd="<cwd>"\` Current working directory
+      \`--cwd\` Current working directory
       \`-c, --config\` Path to panda config file
       \`--include=<glob>\` Source file globs to scan, replacing the config include list
       \`-w, --watch\` Watch files and rebuild

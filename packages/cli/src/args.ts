@@ -3,7 +3,7 @@ import type { FlagsInfer, FlagsSchema, Issue, ParseResult, Shape } from './flags
 
 export function baseArgs(): ArgsDef {
   return {
-    cwd: { type: 'string', description: 'Current working directory', default: process.cwd() },
+    cwd: { type: 'string', description: 'Current working directory' },
     config: { type: 'string', description: 'Path to panda config file', alias: 'c' },
   }
 }
