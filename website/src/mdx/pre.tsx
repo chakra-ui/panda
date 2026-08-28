@@ -9,6 +9,9 @@ const preStyles = cva({
     rounded: 'xl',
     contain: 'paint',
     maxH: '640px',
+    '&:not(:has(.line))': {
+      px: '4'
+    },
     '& code[data-language] .line': {
       px: '4'
     }

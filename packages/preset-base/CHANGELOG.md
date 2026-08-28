@@ -1,5 +1,105 @@
 # @pandacss/preset-base
 
+## 2.0.0-beta.15
+
+### Minor Changes
+
+- ec65db3: Add `maskBottomFrom`, `maskXFrom`, and `maskRadialFrom` so you can fade an edge or spotlight an image without
+  writing `mask-image` gradients by hand. Raw `maskImage` still works as an escape hatch.
+
+  ```ts
+  css({ overflow: 'auto', maskBottomFrom: '80%' })
+  css({ maskBottomFrom: '50%', maskRadialFrom: '35%', maskRadialAt: 'center' })
+  ```
+
+- ec65db3: Add conditions for pointer type (`_pointerFine`, `_pointerCoarse`, `_pointerNone`, and the `_anyPointer*`
+  variants), post-interaction validity (`_userValid`, `_userInvalid`), and `_inert`.
+
+  ```ts
+  css({
+    color: { _pointerFine: 'blue.500' },
+    borderColor: { _userInvalid: 'red.500' },
+    opacity: { _inert: '0.5' },
+  })
+  ```
+
+  `textWrap` now takes every CSS keyword, including `pretty` and `stable`. Generated types also include the two-word
+  alignment keywords `safe center`, `safe end`, `safe start`, `first baseline`, and `last baseline`.
+
+  ```ts
+  css({ textWrap: 'pretty', justifyContent: 'safe center', alignItems: 'last baseline' })
+  ```
+
+- cc004da: Fix `rotateX`, `rotateY`, and `rotateZ`, which applied the wrong rotation or none at all. They fed the
+  `rotate` property, which holds one rotation, so a single axis came out as a flat 2D spin and two axes computed to
+  `none`. `rotate: 'auto'` now composes them on `transform`; plain values like `rotate: '45deg'` still use `rotate`.
+
+  ```ts
+  css({ rotate: 'auto', rotateX: '45deg', rotateY: '30deg' }) // both apply
+  ```
+
+  **Breaking:** `translateZ` no longer accepts fractions. `translate`'s third slot rejects a percentage, so
+  `translateZ: '1/2'` invalidated the whole declaration and dropped x and y with it. Use a spacing token or a length.
+
+  Two consequences of composing on `transform`: a raw `transform` value overrides `rotate: 'auto'`, so write both
+  functions yourself if you need them together, and with a non-uniform `scale` the rotation applies after scaling rather
+  than before.
+
+- ec65db3: Add `scrollbarThumb` and `scrollbarTrack` so you can color each side of `scrollbar-color`. `scrollbarGutter`
+  accepts `stable both-edges`.
+
+  ```ts
+  css({
+    overflow: 'auto',
+    scrollbarWidth: 'thin',
+    scrollbarThumb: 'gray.400',
+    scrollbarTrack: 'gray.100',
+    scrollbarGutter: 'stable',
+  })
+  ```
+
+  **Breaking:** `scrollbarWidth` takes `auto`, `thin`, or `none` instead of `sizes` tokens, since `scrollbar-width`
+  never accepted a length. Swap a size token for `thin` or `none`. `scrollbarColor` is now a raw two-value string
+  (`red transparent`). A single color token never produced valid CSS there, since `scrollbar-color` takes exactly two,
+  so move it to `scrollbarThumb`.
+
+- ec65db3: Register the variables behind `translate`, `rotate`, `scale`, gradients, filters, scrollbars, and table
+  spacing with `@property`, replacing the `*, ::before, ::after, ::backdrop` reset that gave them defaults. The reset
+  shipped 34 declarations on every element of every page; the registrations only emit when your stylesheet references
+  them, and `inherits: false` stops a parent's filter or fade reaching its children.
+
+  Needs `@property` support (Chrome 85+, Safari 16.4+, Firefox 128+). Set `optimize.propertyFallback` to keep these
+  utilities working on older engines.
+
+### Patch Changes
+
+- 2d5d152: Add `globalVars` to utility definitions, so a variable's `@property` registration lives next to the utility
+  that writes it. Registrations merge into the config-level `globalVars` and are pruned when unused.
+
+  ```ts
+  utilities: {
+    blur: {
+      className: 'blur',
+      globalVars: { '--blur': { syntax: '*', inherits: false } },
+      transform: (value) => ({ '--blur': `blur(${value})` }),
+    },
+  }
+  ```
+
+  Putting a plain value on a name a utility registered warns during CSS emit, but only when your stylesheet actually
+  reads that variable, since the value drops the registration and starts the variable inheriting. Pass a full
+  `@property` object to retune one instead. Two utilities registering the same name with different definitions is a
+  config error.
+
+- ec65db3: Emit `-webkit-*` before the unprefixed property on `backdropFilter`, `mask*`, `appearance`, `clipPath`,
+  `backgroundClip`, and the other prefixed twins. Lightning CSS drops the standard declaration when the prefix comes
+  second.
+- Updated dependencies [ec65db3]
+- Updated dependencies [02bd0ad]
+- Updated dependencies [e18eeb3]
+- Updated dependencies [2d5d152]
+  - @pandacss/types@2.0.0-beta.15
+
 ## 2.0.0-beta.14
 
 ### Patch Changes

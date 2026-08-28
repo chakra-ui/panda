@@ -32,7 +32,7 @@ describe('compiler.buildInfo', () => {
       {
         "schemaVersion": 5,
         "panda": "^2.0.0",
-        "configFingerprint": "cfg1-da670b3d66a0f3ee",
+        "configFingerprint": "cfg1-7983b0e78dea7740",
         "strings": [
           "color",
           "red",

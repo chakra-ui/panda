@@ -1,12 +1,13 @@
 ---
 title: Panda Integration Hooks
-description: Leveraging hooks in Panda to create custom functionality.
+description: Six lifecycle hooks for changing config, transforming source before parsing, and observing generated CSS.
 ---
 
-Panda hooks let you add new functionality or change existing behavior at specific points in the compiler lifecycle.
+Panda runs your build in stages: resolve config, parse source, generate code, generate CSS. Hooks let you plug into
+each of those stages without forking Panda itself.
 
-Hooks are callbacks you attach to named plugins in the `plugins` array. There is no root-level `hooks` object — every
-hook lives on a plugin with a `name` and a `hooks` map.
+There's no root-level `hooks` option on your config. Every hook lives on a plugin, an object with a `name` and a
+`hooks` map, listed in the `plugins` array:
 
 ```ts
 import { defineConfig } from '@pandacss/dev'
@@ -18,29 +19,33 @@ export default defineConfig({
       hooks: {
         'cssgen:done': ({ content, path }) => {
           // ...
-        },
-      },
-    },
-  ],
+        }
+      }
+    }
+  ]
 })
 ```
 
-Here are some things you can do with hooks:
+That's deliberate: a hook attached to a named plugin is something you can copy into another project or publish on
+npm. A bare `hooks` object on the config wouldn't be.
 
-- Modify the resolved config (`config:resolved`), like stripping out patterns, tokens, or keyframes.
-- Modify a preset after it's resolved (`preset:resolved`), like removing tokens or theme properties from a preset.
-- Transform a source file into `tsx`-friendly syntax before it's parsed (`parser:before`), so Panda can extract its style
-  usage — this also lets you support templating languages Panda doesn't parse natively.
-- Adjust the generated JS and DTS artifacts before they're written (`codegen:prepare`), or react after they're written
-  (`codegen:done`).
-- Observe the final CSS after it's produced (`cssgen:done`), for reporting or downstream tooling.
+## The six hooks
 
-## Examples
+| Hook | Fires | Use it to |
+| --- | --- | --- |
+| `config:resolved` | After presets merge, before defaults apply | Strip or rewrite the resolved config |
+| `preset:resolved` | When a preset resolves, before configs merge | Filter what a preset contributes |
+| `parser:before` | After a file is read, before it's parsed | Rewrite non-TSX source into syntax Panda can parse |
+| `codegen:prepare` | Before generated files are written | Add or modify JS/`.d.ts` artifacts |
+| `codegen:done` | After generated files are written | React to the finished `styled-system` output |
+| `cssgen:done` | After final CSS is produced | Observe the CSS (read-only, can't rewrite it) |
 
-### Modifying the config
+The rest of this page walks through the four you'll actually reach for.
 
-Use the `utils` helpers on the `config:resolved` hook to change the resolved config. This example removes the `stack`
-pattern.
+## Rewrite the resolved config
+
+`config:resolved` gets the fully merged config plus a set of `utils` for editing it. This example removes the `stack`
+pattern:
 
 ```ts
 import { defineConfig } from '@pandacss/dev'
@@ -52,17 +57,17 @@ export default defineConfig({
       hooks: {
         'config:resolved': ({ config, utils }) => {
           return utils.omit(config, ['patterns.stack'])
-        },
-      },
-    },
-  ],
+        }
+      }
+    }
+  ]
 })
 ```
 
-### Modifying presets
+## Filter a preset before it merges
 
-Use the `preset:resolved` hook to change a preset after it's resolved. This is useful for filtering out parts of a
-preset.
+`preset:resolved` runs once per preset, before any of them merge into your final config. Use it to strip something
+out of a preset you don't control, instead of forking it:
 
 ```ts
 import { defineConfig } from '@pandacss/dev'
@@ -77,20 +82,18 @@ export default defineConfig({
             return utils.omit(preset, ['theme.tokens.colors', 'theme.semanticTokens.colors'])
           }
           return preset
-        },
-      },
-    },
-  ],
+        }
+      }
+    }
+  ]
 })
 ```
 
-### Transforming a source file before parsing
+## Feed Panda a file it can't parse natively
 
-Use `parser:before` to rewrite a file's content before Panda parses it. The hook receives `{ filePath, content }` and
-returns the transformed string. Return nothing to leave the content unchanged.
-
-This is how you support source that isn't standard `tsx` — pre-process it into syntax Panda's parser understands, then
-return it.
+`parser:before` receives `{ filePath, content }` and returns the rewritten string. Return nothing and the content
+passes through unchanged. This is the whole mechanism behind supporting a templating language Panda doesn't parse on
+its own: strip or rewrite whatever Panda's parser would choke on, before parsing happens.
 
 ```ts
 import { defineConfig } from '@pandacss/dev'
@@ -103,14 +106,14 @@ export default defineConfig({
         'parser:before': ({ filePath, content }) => {
           if (!filePath.endsWith('.astro')) return
           return content.replace(/^---[\s\S]*?---/, '')
-        },
-      },
-    },
-  ],
+        }
+      }
+    }
+  ]
 })
 ```
 
-To scope a hook to specific files, pass an object with a `filter` and a `handler` instead of a bare function:
+Scope a hook to a set of files by passing `{ filter, handler }` instead of a bare function:
 
 ```ts
 import { defineConfig } from '@pandacss/dev'
@@ -122,18 +125,18 @@ export default defineConfig({
       hooks: {
         'parser:before': {
           filter: { id: '**/*.{jsx,tsx}' },
-          handler: ({ content }) => content,
-        },
-      },
-    },
-  ],
+          handler: ({ content }) => content
+        }
+      }
+    }
+  ]
 })
 ```
 
-### Observing the final CSS
+## Observe the CSS after it's built
 
-`cssgen:done` runs after the final CSS is produced, for the CLI, Vite, and PostCSS. It's observe-only — the hook
-receives `{ artifact, content, path?, … }` and its return value is ignored, so you can't rewrite the CSS here.
+`cssgen:done` fires once the CLI, Vite plugin, or PostCSS plugin has produced the final CSS. It's read-only: whatever
+you return is ignored, so this hook is for reporting, not rewriting.
 
 ```ts
 import { defineConfig } from '@pandacss/dev'
@@ -147,14 +150,14 @@ export default defineConfig({
           if (artifact === 'styles.css') {
             console.log(`Generated ${content.length} bytes at ${path}`)
           }
-        },
-      },
-    },
-  ],
+        }
+      }
+    }
+  ]
 })
 ```
 
-To strip unused tokens or keyframes from the final CSS, use the top-level `optimize` config instead of a hook:
+To actually strip unused tokens or keyframes from that CSS, you don't need a hook at all, `optimize` already does it:
 
 ```ts
 import { defineConfig } from '@pandacss/dev'
@@ -162,24 +165,21 @@ import { defineConfig } from '@pandacss/dev'
 export default defineConfig({
   optimize: {
     removeUnusedTokens: true,
-    removeUnusedKeyframes: true,
-  },
+    removeUnusedKeyframes: true
+  }
 })
 ```
 
-For any other CSS transform, run PostCSS after Panda.
+For any other CSS transform, run PostCSS after Panda instead of trying to do it from `cssgen:done`.
 
-> Note: With `removeUnusedTokens`, you can't rely on the JS function
-> [`token.var`](/docs/styling/dynamic-styling#using-tokenvar) (or [token(xxx)](/docs/styling/dynamic-styling#using-token)
-> where `xxx` is a [semanticToken](/docs/theming/tokens#semantic-tokens) path) from `styled-system/tokens`, because the
-> CSS variables are removed based on the usage found in the generated CSS.
+> With `removeUnusedTokens` on, don't rely on [`token.var`](/docs/styling/dynamic-styling#using-tokenvar) (or
+> `token(xxx)` for a [semantic token](/docs/theming/tokens#semantic-tokens) path) from `styled-system/tokens`. Panda
+> decides which CSS variables to keep by scanning the generated CSS, and a variable only referenced through that JS
+> helper won't show up in the scan.
 
-## Sharing hooks
+## Sharing a hook
 
-Hooks are shared as plugins. A plugin is a plain object with a `name` and a `hooks` object.
-
-Plugins differ from `presets` in that they can't be extended, but they run in sequence in the order they appear in the
-`plugins` array, with the user's own config called last.
+Since every hook lives on a plugin, sharing one is just exporting the plugin object:
 
 ```ts
 import { defineConfig } from '@pandacss/dev'
@@ -189,39 +189,34 @@ const myPlugin = {
   hooks: {
     'config:resolved': ({ config, utils }) => {
       return utils.omit(config, ['patterns.stack'])
-    },
-  },
+    }
+  }
 }
 
 export default defineConfig({
-  plugins: [myPlugin],
+  plugins: [myPlugin]
 })
 ```
+
+Plugins run in the order they appear in `plugins`, with your own config's own values applied last. Unlike `presets`,
+a plugin can't be extended by the config that uses it, it just runs.
 
 ## Reference
 
 ```ts
 export interface PandaHooks {
-  /**
-   * Called after authored presets are merged, before defaults and serialization.
-   */
+  /** Called after authored presets are merged, before defaults and serialization. */
   'config:resolved': (args: ConfigResolvedHookArgs) => MaybeAsyncReturn<void | Config>
-  /**
-   * Called when an authored preset is resolved, before all configs are merged.
-   */
+  /** Called when an authored preset is resolved, before all configs are merged. */
   'preset:resolved': (args: PresetResolvedHookArgs) => MaybeAsyncReturn<void | Config>
   /**
    * Called after reading file content but before parsing it.
    * Use this to transform non-standard source into TSX-friendly syntax.
    */
   'parser:before': (args: ParserResultBeforeHookArgs) => MaybeAsyncReturn<string | void>
-  /**
-   * Called before generated files are written by a JS host.
-   */
+  /** Called before generated files are written by a JS host. */
   'codegen:prepare': (args: CodegenPrepareHookArgs) => void | CodegenPrepareArtifact[]
-  /**
-   * Called after generated files are written by a JS host.
-   */
+  /** Called after generated files are written by a JS host. */
   'codegen:done': (args: CodegenDoneHookArgs) => void
   /**
    * Called after final CSS is produced by a JS host (observe-only; no rewrite).
@@ -231,14 +226,13 @@ export interface PandaHooks {
 }
 ```
 
-Each hook can be a plain function or an object with a `filter` and a `handler`, which is useful for scoping
-`parser:before` to specific files:
+Each hook accepts a plain function, or `{ filter, handler }` to scope it to specific files:
 
 ```ts
 export type PandaHook<Handler> = Handler | { filter?: HookFilter; handler: Handler }
 ```
 
-The argument types are:
+Argument types:
 
 ```ts
 export interface ConfigResolvedHookArgs {

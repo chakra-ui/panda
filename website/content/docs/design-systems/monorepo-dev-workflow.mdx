@@ -40,18 +40,18 @@ package that has its own `panda.config.ts`, not just the consuming app.
 If you save a change in the shared package and the page updates but the styling doesn't, or doesn't update at all
 until you restart the dev server, check these in order:
 
-1. **Confirm Panda actually saw the change.** Run with `PANDA_DEBUG=file:*` and save the file again. If nothing
-   prints, Panda's watcher didn't detect it, this is a filesystem event problem, not a bundler one.
-2. **Try polling.** Native filesystem events don't always fire reliably across workspace symlinks, network drives,
-   Docker volumes, or WSL. Panda's watch mode has a `--poll` flag for exactly this:
+1. **Confirm the symlinked path is actually being watched.** Run [`panda doctor`](/docs/reference/cli#doctor) and
+   check `watchDirs` in its output. If the shared package's path isn't listed, `include` doesn't reach it through
+   the symlink, fix the glob before looking anywhere else.
+2. **Confirm Panda actually saw the change.** Run your watch command with `--log-level debug` and save the file
+   again. If nothing about that file prints, Panda's watcher didn't detect the change, a filesystem event problem,
+   not a bundler one:
 
    ```bash
-   panda --watch --poll
+   panda --watch --log-level debug
    ```
 
-   Polling is slower than native events, so only reach for it once step 1 shows Panda isn't seeing changes with the
-   default watcher.
-3. **Confirm your bundler's own dev server is watching the shared package too.** If step 1 shows Panda regenerated
+3. **Confirm your bundler's own dev server is watching the shared package too.** If step 2 shows Panda regenerated
    the CSS correctly but the browser still shows the old styles, the app's dev server (Vite, webpack, whichever
    you're using) may not be watching that path itself, some dev servers exclude `node_modules` (including workspace
    symlinks) from their own file watcher by default, separately from whatever Panda is doing. This is a bundler
@@ -69,4 +69,5 @@ fail against output that doesn't exist yet.
 
 - [Shared styled-system in a monorepo](/docs/design-systems/shared-styled-system) for setting up the package this
   workflow assumes already exists.
-- [Debugging](/docs/reference/debugging) for `PANDA_DEBUG` and `panda debug` in more depth.
+- [Debugging](/docs/reference/debugging#panda-debug) for what else `panda debug` can tell you.
+- [CLI reference](/docs/reference/cli#doctor) for the full `panda doctor` output.
