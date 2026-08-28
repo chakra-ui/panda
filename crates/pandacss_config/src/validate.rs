@@ -697,6 +697,12 @@ fn is_token_reference(value: &str) -> bool {
     value.contains('{') && value.contains('}')
 }
 
+/// `{#000/64}` and `{rgb(0 0 0)/64}` are literal colors the resolver mixes as-is,
+/// not token paths — reporting them as missing tokens is a false positive.
+fn is_literal_value(reference: &str) -> bool {
+    reference.starts_with('#') || reference.contains('(')
+}
+
 /// Every `{token.path}` reference in a serialized value, `/opacity` suffix stripped.
 fn references(value: &str) -> BTreeSet<String> {
     let mut refs = BTreeSet::new();
@@ -707,7 +713,7 @@ fn references(value: &str) -> BTreeSet<String> {
             break;
         };
         let reference = after_start[..end].trim();
-        if !reference.is_empty() {
+        if !reference.is_empty() && !is_literal_value(reference) {
             refs.insert(
                 reference
                     .split_once('/')
