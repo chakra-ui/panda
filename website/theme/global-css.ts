@@ -35,18 +35,6 @@ export const globalCss = defineGlobalStyles({
     }
   },
   /* Content Typography */
-  'article details > summary': {
-    '&::-webkit-details-marker': {
-      display: 'none'
-    },
-    _before: {
-      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='h-5 w-5' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z' clip-rule='evenodd' /%3E%3C/svg%3E")`,
-      height: '1.2em',
-      width: '1.2em',
-      verticalAlign: '-4px'
-    }
-  },
-
   "input[type='search']": {
     '&::-webkit-search-decoration, &::-webkit-search-cancel-button, &::-webkit-search-results-button, &::-webkit-search-results-decoration':
       {

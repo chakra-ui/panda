@@ -1,5 +1,6 @@
-import { Card, Cards } from '@/mdx/cards'
+import { Sidebar } from '@/components/docs/sidebar'
 import { generateOgImageUrl } from '@/lib/og-image'
+import { Card, Cards } from '@/mdx/cards'
 import { Box, Stack } from '@/styled-system/jsx'
 import type { Metadata } from 'next'
 import {
@@ -30,7 +31,28 @@ export const metadata: Metadata = {
 
 export default function DocsWelcomePage() {
   return (
-    <Box as="article" maxW="60rem" mx="auto" px="6" pt="10">
+    <Box display="flex" position="relative">
+      <Box
+        as="aside"
+        display={{ base: 'none', lg: 'block' }}
+        flexShrink="0"
+        w="64"
+        position="sticky"
+        top="calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height) + 1rem)"
+        height="calc(100vh - var(--navbar-height) - var(--banner-height) - var(--tabbar-height) - 1rem)"
+      >
+        <Box
+          overflowY="auto"
+          height="100%"
+          className="scroll-area"
+          py="4"
+          px="6"
+        >
+          <Sidebar tabKey="styling" />
+        </Box>
+      </Box>
+
+      <Box as="article" flex="1" minW="0" maxW="64rem" px="6" pt="10">
       <Box textStyle="eyebrow" color="fg.subtle" mb="4">
         Docs
       </Box>
@@ -127,6 +149,7 @@ export default function DocsWelcomePage() {
           description="The mental model, in about ten minutes."
         />
       </Cards>
+      </Box>
     </Box>
   )
 }

@@ -59,6 +59,12 @@ export const semanticTokens = defineSemanticTokens({
       },
       subtle: {
         value: { base: '{colors.yellow.200}', _dark: '#414012' }
+      },
+      wash: {
+        value: {
+          base: '{colors.yellow.100}',
+          _dark: 'rgba(253, 224, 71, 0.12)'
+        }
       }
     },
 

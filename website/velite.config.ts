@@ -78,8 +78,12 @@ const blog = defineCollection({
       title: s.string(),
       description: s.string().optional(),
       date: s.isodate(),
-      author: s.string().optional(),
+      author: s
+        .union([s.string(), s.array(s.string())])
+        .optional()
+        .transform(v => (v == null ? undefined : Array.isArray(v) ? v : [v])),
       tags: s.array(s.string()).optional(),
+      type: s.enum(['article', 'release']).optional(),
       image: s.string().optional(),
       slug: s.path(),
       code: s.mdx(),

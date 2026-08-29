@@ -77,8 +77,8 @@ const socials = [
 
 export const SiteFooter = () => {
   return (
-    <Box as="footer" borderTopWidth="1px" borderColor="border" mt="24">
-      <Box maxW="90rem" mx="auto" px="6" py="16">
+    <Box as="footer" borderTopWidth="1px" borderColor="border">
+      <Box maxW="90rem" mx="auto" px="6" py="12">
         <Box
           display="grid"
           gap="10"

@@ -1,0 +1,63 @@
+<svg width="1200" height="560" viewBox="0 0 1200 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Extraction: cold parse of 100 files went 187ms to 7.5ms (25x); watch re-parse per file went 652us to 1.8us (about 360x)">
+  <style>
+    .surface { fill: #FBF9F3; }
+    .ink { fill: #1A1A17; }
+    .muted { fill: #5E584C; }
+    .axis { stroke: #D8D2C4; stroke-width: 1.5; }
+    .v1 { fill: #C9C4B8; }
+    .v2 { fill: #F6E458; stroke: #1A1A17; stroke-width: 2; }
+    .sans { font-family: 'Onest','Segoe UI',system-ui,sans-serif; }
+    .mono { font-family: 'Source Code Pro',ui-monospace,monospace; }
+    @media (prefers-color-scheme: dark) {
+      .surface { fill: #17171B; } .ink { fill: #F5F2E9; } .muted { fill: #B7B1A3; }
+      .axis { stroke: #34343A; } .v1 { fill: #3E3E44; } .v2 { stroke: #17171B; }
+    }
+  </style>
+  <rect width="1200" height="560" class="surface"/>
+
+  <text x="60" y="60" class="sans ink" font-size="28" font-weight="800" letter-spacing="-0.3">Extraction: parsing your files</text>
+  <text x="60" y="90" class="sans muted" font-size="16">Panda 2.0 (Oxc) vs Panda 1 (ts-morph), same source. Lower is better.</text>
+
+  <!-- legend -->
+  <g class="sans" transform="translate(838 44)">
+    <rect x="0" y="0" width="16" height="16" rx="3" class="v1"/>
+    <text x="24" y="13" class="muted" font-size="15">Panda 1</text>
+    <rect x="118" y="0" width="16" height="16" rx="3" class="v2"/>
+    <text x="142" y="13" class="ink" font-size="15" font-weight="600">Panda 2.0</text>
+  </g>
+
+  <!-- baseline -->
+  <line x1="80" y1="450" x2="1120" y2="450" class="axis"/>
+
+  <!-- ===== Panel A: cold parse, 100 files (ms) ===== -->
+  <g class="sans">
+    <text x="300" y="500" text-anchor="middle" class="ink" font-size="17" font-weight="700">Cold parse · 100 files</text>
+    <text x="300" y="524" text-anchor="middle" class="muted" font-size="14">milliseconds, one full build</text>
+    <!-- v1 bar: 187ms → 280px -->
+    <rect x="185" y="170" width="110" height="280" rx="5" class="v1"/>
+    <text x="240" y="158" text-anchor="middle" class="ink mono" font-size="17" font-weight="700">187 ms</text>
+    <!-- v2 bar: 7.5ms → ~12px (min visible) -->
+    <rect x="325" y="438" width="110" height="12" rx="5" class="v2"/>
+    <text x="380" y="426" text-anchor="middle" class="ink mono" font-size="17" font-weight="700">7.5 ms</text>
+    <!-- speedup callout -->
+    <text x="300" y="300" text-anchor="middle" class="ink sans" font-size="42" font-weight="800">25×</text>
+    <text x="300" y="326" text-anchor="middle" class="muted sans" font-size="15">faster</text>
+  </g>
+
+  <!-- divider -->
+  <line x1="600" y1="150" x2="600" y2="450" class="axis" stroke-dasharray="4 6"/>
+
+  <!-- ===== Panel B: watch re-parse, per file (µs) ===== -->
+  <g class="sans">
+    <text x="900" y="500" text-anchor="middle" class="ink" font-size="17" font-weight="700">Watch re-parse · per file</text>
+    <text x="900" y="524" text-anchor="middle" class="muted" font-size="14">microseconds, the save-and-see loop</text>
+    <!-- v1 bar: 652µs → 280px -->
+    <rect x="785" y="170" width="110" height="280" rx="5" class="v1"/>
+    <text x="840" y="158" text-anchor="middle" class="ink mono" font-size="17" font-weight="700">652 µs</text>
+    <!-- v2 bar: 1.8µs → min visible 9px -->
+    <rect x="925" y="441" width="110" height="9" rx="4" class="v2"/>
+    <text x="980" y="429" text-anchor="middle" class="ink mono" font-size="17" font-weight="700">1.8 µs</text>
+    <text x="900" y="300" text-anchor="middle" class="ink sans" font-size="42" font-weight="800">~360×</text>
+    <text x="900" y="326" text-anchor="middle" class="muted sans" font-size="15">faster</text>
+  </g>
+</svg>

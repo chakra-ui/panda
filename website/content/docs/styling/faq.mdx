@@ -3,7 +3,10 @@ title: Frequently Asked Questions
 description: Frequently asked questions and how to resolve common issues
 ---
 
-## How does Panda manage style conflicts ?
+<Faq>
+
+<Details>
+<summary>How does Panda manage style conflicts ?</summary>
 
 When you combine shorthand and longhand properties, Panda will resolve the styles in a predictable way. The shorthand
 property will take precedence over the longhand property.
@@ -33,7 +36,10 @@ The styles generated at build time will look like this:
 
 ---
 
-## Imported Image is not working in Vite App
+</Details>
+
+<Details>
+<summary>Imported Image is not working in Vite App</summary>
 
 This is a known limitation of Panda due to our static extraction approach.
 
@@ -58,7 +64,10 @@ const Demo = () => {
 
 ---
 
-## How to get Panda to work with Jest?
+</Details>
+
+<Details>
+<summary>How to get Panda to work with Jest?</summary>
 
 If you run into error messages like `SyntaxError: Unexpected token 'export'` when running Jest tests. Here's what you
 can:
@@ -96,7 +105,10 @@ export default defineConfig({
 
 ---
 
-## HMR does not work when I use `tsconfig` paths?
+</Details>
+
+<Details>
+<summary>HMR does not work when I use `tsconfig` paths?</summary>
 
 Panda tries to automatically infer and read the custom paths defined in `tsconfig.json` file. However, there might be
 scenarios where the hot module replacement doesn't work.
@@ -129,7 +141,10 @@ This will ensure that the paths are resolved correctly, and HMR works as expecte
 
 ---
 
-## HMR not triggered
+</Details>
+
+<Details>
+<summary>HMR not triggered</summary>
 
 If you are having issues with HMR not being triggered after a `panda.config.ts` change (or one of its
 [dependencies](/docs/reference/config#dependencies)), you can manually specify the files that should trigger a rebuild
@@ -146,7 +161,10 @@ export default defineConfig({
 
 ---
 
-## Why are my styles not applied?
+</Details>
+
+<Details>
+<summary>Why are my styles not applied?</summary>
 
 Check that the [`@layer` rules](/docs/styling/cascade-layers#layer-css) are set and the corresponding `.css` file is
 included. [If you're not using `postcss`](/docs/compiler/cli), ensure that `styled-system/styles.css` is imported
@@ -154,7 +172,10 @@ and that the `panda` command has been run (or is running with `--watch`).
 
 ---
 
-## How can I debug the styles?
+</Details>
+
+<Details>
+<summary>How can I debug the styles?</summary>
 
 You can use the `panda debug` to debug design token extraction & css generated from files.
 
@@ -164,14 +185,20 @@ If the issue persists, you can try looking for it in the [issues](https://github
 
 ---
 
-## Why is my IDE not showing `styled-system` imports?
+</Details>
+
+<Details>
+<summary>Why is my IDE not showing `styled-system` imports?</summary>
 
 If you're not getting import autocomplete in your IDE, you may need to include the `styled-system` directory in your
 tsconfig.json file.
 
 ---
 
-## How do I get a type with each recipe properties?
+</Details>
+
+<Details>
+<summary>How do I get a type with each recipe properties?</summary>
 
 You can get a [`config recipe`](/docs/recipes/recipes#config-recipe) properties types by using `XXXVariantProps`. Let's
 say you have a `config recipe` named `button`, you can import its type like this:
@@ -193,7 +220,10 @@ export type ButtonVariantProps = RecipeVariantProps<typeof buttonStyle>
 
 ---
 
-## How do I split recipe props from the rest?
+</Details>
+
+<Details>
+<summary>How do I split recipe props from the rest?</summary>
 
 You can split recipe props by using `xxx.splitVariantProps`. Let's say you have a `recipe` named `button`, you can split
 its props like this:
@@ -217,7 +247,10 @@ The same `xxx.splitVariantProps` method is available for both `config recipes` a
 
 ---
 
-## How do I reference a token value or css var?
+</Details>
+
+<Details>
+<summary>How do I reference a token value or css var?</summary>
 
 You can reference a token value or it's associated css variable using the
 [`token` function](/docs/theming/usage#vanilla-js). This function allows you to access and use the values stored in your
@@ -239,14 +272,20 @@ function App() {
 
 ---
 
-## Should I commit the styled-system folder?
+</Details>
+
+<Details>
+<summary>Should I commit the styled-system folder?</summary>
 
 Just like the `node_modules` folder, you most likely don't want to commit the `styled-system` folder. It contains code
 that is auto-generated and can be re-generated at any time.
 
 ---
 
-## How does Panda work?
+</Details>
+
+<Details>
+<summary>How does Panda work?</summary>
 
 When running `pnpm panda`, here's what's happening under the hood:
 
@@ -260,14 +299,20 @@ When running `pnpm panda`, here's what's happening under the hood:
 
 ---
 
-## I'm seeing a "Could not resolve xxx" error with esbuild/tsup. What should I do?
+</Details>
+
+<Details>
+<summary>I'm seeing a "Could not resolve xxx" error with esbuild/tsup. What should I do?</summary>
 
 In such a case, check the [`outExtension`](/docs/reference/config#outextension) in your `panda.config` and set it to
 "js". This will ensure your modules are resolved correctly.
 
 ---
 
-## Why does importing `styled` not exist?
+</Details>
+
+<Details>
+<summary>Why does importing `styled` not exist?</summary>
 
 You should use [`config.jsxFramework`](/docs/styling/style-props#configure-jsx) when you need to import styled
 components. You can then use the [`jsxFactory`](/docs/reference/config#jsxfactory) option to set the name of the factory
@@ -275,14 +320,20 @@ component.
 
 ---
 
-## Why is my preset overriding the base one, even after adding it to the array?
+</Details>
+
+<Details>
+<summary>Why is my preset overriding the base one, even after adding it to the array?</summary>
 
 You might have forgotten to include the `extend` keyword in your config. Without `extend`, your preset will completely
 replace the base one, instead of merging with it.
 
 ---
 
-## Why is my base condition not working in this example?
+</Details>
+
+<Details>
+<summary>Why is my base condition not working in this example?</summary>
 
 ```ts
 css({ color: { _base: 'red.600', _dark: 'white' } })
@@ -292,14 +343,20 @@ You used `_base` instead of `base`, there is no underscore `_`.
 
 ---
 
-## What's the difference between using `defineConfig()` vs `definePreset()`
+</Details>
+
+<Details>
+<summary>What's the difference between using `defineConfig()` vs `definePreset()`</summary>
 
 `defineConfig` is intended to be used in your app config, and will show you all the config keys that are available.
 `definePreset` will only show you the config keys that will be merged into an app's config, the rest will be ignored.
 
 ---
 
-## How can I completely override the default tokens?.
+</Details>
+
+<Details>
+<summary>How can I completely override the default tokens?.</summary>
 
 If you want to **completely override all** of the default presets theme tokens, you can omit the `extends` keyword from
 your `theme` config object.
@@ -309,19 +366,28 @@ specifically pick what you need in there (or use the JS spread operator `...` an
 
 ---
 
-## How do I make a design system / component library with Panda?
+</Details>
+
+<Details>
+<summary>How do I make a design system / component library with Panda?</summary>
 
 There is a detailed guide on how to do this [here](/docs/design-systems/overview).
 
 ---
 
-## Can I use dynamic styles with Panda?
+</Details>
+
+<Details>
+<summary>Can I use dynamic styles with Panda?</summary>
 
 Yes, you can use dynamic styles with Panda. More on that [here](/docs/styling/dynamic-styling#runtime-conditions).
 
 ---
 
-## Should I use atomic or config recipes ?
+</Details>
+
+<Details>
+<summary>Should I use atomic or config recipes ?</summary>
 
 [Config recipes](/docs/recipes/recipes#config-recipe) are generated just in time, meaning that only the recipes and
 variants you use will exist in the generated CSS, regardless of the number of recipes in the config.
@@ -338,7 +404,10 @@ with only the styles used. Choose according to your component needs.
 
 ---
 
-## Why does the panda codegen command fail ?
+</Details>
+
+<Details>
+<summary>Why does the panda codegen command fail ?</summary>
 
 If you run into any error related to "Transforming const to the configured target environment ("es5") is not supported
 yet", update your tsconfig to use es6 or higher:
@@ -353,7 +422,10 @@ yet", update your tsconfig to use es6 or higher:
 
 ---
 
-## How can I generate all possible CSS variants at build time?
+</Details>
+
+<Details>
+<summary>How can I generate all possible CSS variants at build time?</summary>
 
 While it's possible to generate all variants, even unused ones, by using
 [`config.staticCss`](/docs/styling/dynamic-styling#using-static-css), it's generally **not
@@ -362,7 +434,10 @@ strengths: lean, usage-based CSS generation.
 
 ---
 
-## Can I use one-off media query and other at rules?
+</Details>
+
+<Details>
+<summary>Can I use one-off media query and other at rules?</summary>
 
 Yes, you can! You can apply one-off media queries and other at rules (such as `@container`, `@supports`) in your CSS as
 shown below:
@@ -387,7 +462,10 @@ css({
 
 ---
 
-## How can I prevent other libraries from overriding my styles?
+</Details>
+
+<Details>
+<summary>How can I prevent other libraries from overriding my styles?</summary>
 
 You can use
 [Layer Imports](<https://developer.mozilla.org/en-US/docs/Web/CSS/@import#layer-name:~:text=%40import%20url%20layer(layer%2Dname)%3B>)
@@ -408,3 +486,7 @@ Then update the default layer list to deprioritize the styles from the other lib
 
 @layer ionic, reset, base, token, recipes, utilities;
 ```
+
+</Details>
+
+</Faq>

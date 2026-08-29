@@ -77,7 +77,10 @@ you'll likely still need to ship a [preset](/docs/design-systems/presets) alongs
 
 ## FAQ
 
-### Why should my component library use an external styled-system package?
+<Faq>
+
+<Details>
+<summary>Why should my component library use an external styled-system package?</summary>
 
 De-coupling the component library from its `styled-system` means your users share the same runtime code between
 your library and their app, instead of bundling two copies of `css()`, `cva()`, and the JSX factory.
@@ -107,7 +110,10 @@ Marking the `styled-system` package as external in your build tool keeps that ru
 the example above, imported once, not duplicated per package. See
 [Set up a library package](/docs/design-systems/setup) for the full setup.
 
-### How do I use the shared styled-system package day to day?
+</Details>
+
+<Details>
+<summary>How do I use the shared styled-system package day to day?</summary>
 
 Like any other workspace dependency: install it, then set `importMap` in `panda.config.ts` to the same package name
 so Panda knows which imports belong to it.
@@ -125,7 +131,10 @@ export default defineConfig({
 })
 ```
 
-### How do I override tokens used by the shared package?
+</Details>
+
+<Details>
+<summary>How do I override tokens used by the shared package?</summary>
 
 Extend `theme` in your users' own `panda.config.ts`, same as overriding any preset's tokens:
 
@@ -146,6 +155,10 @@ export default defineConfig({
 ```
 
 See [Theme](/docs/theming/theme) for the full set of things `theme.extend` can override, not just tokens.
+
+</Details>
+
+</Faq>
 
 ## See also
 

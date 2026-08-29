@@ -11,6 +11,8 @@ import { LuArrowUpRight } from 'react-icons/lu'
 interface Props {
   /** `{tabKey}/{page}`, e.g. `styling/getting-started`. Matches the docs page route's `slug`. */
   slug?: string
+  /** Used when the route has no tab segment of its own, e.g. the `/docs` welcome page. */
+  tabKey?: string
 }
 
 const linkStyles = css({
@@ -43,15 +45,16 @@ const linkStyles = css({
   _hover: { bg: 'bg.subtle', color: 'fg' },
   _current: {
     color: 'fg',
-    bg: 'accent.subtle',
+    bg: 'accent.wash',
     _before: { bg: 'accent.emphasis' }
   }
 })
 
-export function Sidebar({ slug: currentSlug }: Props) {
+export function Sidebar({ slug: currentSlug, tabKey: fallbackTab }: Props) {
   const pathname = usePathname()
   // pathname is `/docs/{tabKey}/...`; currentSlug (when passed) is `{tabKey}/...`
-  const tabKey = pathname?.split('/')[2] || currentSlug?.split('/')[0]
+  const tabKey =
+    pathname?.split('/')[2] || currentSlug?.split('/')[0] || fallbackTab
   const tab = docsTabs.find(t => t.key === tabKey)
 
   if (!tab) return null
@@ -99,6 +102,21 @@ export function Sidebar({ slug: currentSlug }: Props) {
                       {item.title}
                       <LuArrowUpRight />
                     </a>
+                  )
+                }
+
+                if (item.href) {
+                  const current = pathname === item.href
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      data-current={current || undefined}
+                      aria-current={current ? 'page' : undefined}
+                      className={linkStyles}
+                    >
+                      <span>{item.title}</span>
+                    </Link>
                   )
                 }
 

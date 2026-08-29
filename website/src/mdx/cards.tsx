@@ -56,11 +56,7 @@ const cardStyles = sva({
         root: { rounded: 'lg' }
       },
       gapless: {
-        root: {
-          rounded: 'none',
-          gap: '1',
-          margin: '-0.5px'
-        }
+        root: { rounded: 'none' }
       }
     }
   },
@@ -143,7 +139,14 @@ const columnStyles = {
 
 const gapStyles = {
   gapped: css({ gap: '4' }),
-  gapless: css({ gap: '0' })
+  gapless: css({
+    gap: '0',
+    '& > a': {
+      rounded: 'none!',
+      marginBlockStart: '-1px',
+      marginInlineStart: '-1px'
+    }
+  })
 }
 
 const gridBase = css({ display: 'grid', my: '8' })
