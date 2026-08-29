@@ -41,9 +41,8 @@ export const Details = (props: React.ComponentProps<'details'>) => {
 }
 
 const faqStyles = css({
-  my: '6',
-  borderTopWidth: '1px',
-  borderColor: 'border'
+  mt: '2',
+  mb: '8'
 })
 
 export const Faq = (props: React.ComponentProps<'div'>) => {

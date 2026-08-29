@@ -82,9 +82,9 @@ const ActionMenu = (props: { doc: Docs }) => {
         <Menu.Positioner>
           <Menu.Content
             className={css({
-              minW: '200px',
+              minW: '15rem',
               bg: 'bg',
-              p: '1',
+              p: '1.5',
               borderWidth: '1px',
               outline: '0',
               borderRadius: 'md'
@@ -97,19 +97,23 @@ const ActionMenu = (props: { doc: Docs }) => {
                 asChild
                 className={hstack({
                   cursor: 'pointer',
-                  gap: '2',
-                  px: '2',
-                  py: '1',
-                  minH: '8',
+                  gap: '3',
+                  px: '3',
+                  py: '2',
+                  minH: '10',
+                  rounded: 'md',
                   textStyle: 'sm',
                   fontWeight: 'medium',
-                  textDecoration: 'underline',
-                  textDecorationColor: 'border',
-                  textUnderlineOffset: '4px',
+                  color: 'fg.muted',
+                  textDecoration: 'none',
+                  transitionProperty: 'color, background-color',
+                  transitionDuration: '150ms',
+                  _hover: { color: 'fg', bg: 'bg.subtle' },
                   _icon: {
-                    boxSize: '3'
+                    boxSize: '4'
                   },
                   _highlighted: {
+                    color: 'fg',
                     bg: 'bg.muted'
                   }
                 })}

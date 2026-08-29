@@ -56,7 +56,7 @@ const cardStyles = sva({
         root: { rounded: 'lg' }
       },
       gapless: {
-        root: { rounded: 'none', p: '4', gap: '1' }
+        root: { borderRadius: '0', p: '4', gap: '1' }
       }
     }
   },
@@ -142,9 +142,9 @@ const gapStyles = {
   gapless: css({
     gap: '0',
     '& > a': {
-      rounded: 'none!',
-      padding: '4!',
-      gap: '1!',
+      borderRadius: '0!',
+      padding: '1rem!',
+      gap: '0.25rem!',
       marginBlockStart: '-1px',
       marginInlineStart: '-1px'
     }
