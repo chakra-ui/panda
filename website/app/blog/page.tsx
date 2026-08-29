@@ -1,9 +1,11 @@
 import { blog } from '.velite'
 import { generateOgImageUrl } from '@/lib/og-image'
+import { PostList } from '@/components/blog/post-list'
 import { css } from '@/styled-system/css'
-import { Box, Container, Stack, panda } from '@/styled-system/jsx'
+import { Box, Stack } from '@/styled-system/jsx'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { LuArrowRight, LuRss } from 'react-icons/lu'
 
 const ogTitle = 'Panda CSS Blog'
 const ogDescription = 'News, updates, and deep dives from the Panda CSS team'
@@ -25,107 +27,129 @@ export const metadata: Metadata = {
   }
 }
 
-function formatDate(isoDate: string) {
-  return new Date(isoDate).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
-}
-
 export default function BlogPage() {
   const posts = [...blog].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   )
 
-  return (
-    <Box bg="bg.muted" pt="20" minH="80dvh">
-      <Container py="20">
-        <Stack gap="6" align="center" mb="16">
-          <panda.h1
-            fontSize={{ base: '3xl', md: '5xl' }}
-            fontWeight="bold"
-            letterSpacing="tight"
-          >
-            Blog
-          </panda.h1>
-          <panda.p
-            fontSize={{ base: 'lg', md: 'xl' }}
-            color="fg.muted"
-            maxW="2xl"
-            textAlign="center"
-          >
-            {ogDescription}
-          </panda.p>
-        </Stack>
+  const [featured] = posts
+  const featuredSlug = featured.slug.split('/').slice(1).join('/')
 
+  return (
+    <Box maxW="72rem" mx="auto" px="6" pt="16" pb="24">
+      <Box
+        display="flex"
+        alignItems="flex-end"
+        justifyContent="space-between"
+        mb="12"
+      >
         <Box
-          display="grid"
-          gridTemplateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }}
-          gap="8"
-          maxW="7xl"
-          mx="auto"
+          as="h1"
+          fontSize={{ base: '5xl', md: '6xl' }}
+          fontWeight="bold"
+          letterSpacing="tighter"
+          lineHeight="1"
         >
-          {posts.map(post => {
-            const slug = post.slug.split('/').slice(1).join('/')
-            return (
-              <Link
-                key={post.slug}
-                href={`/blog/${slug}`}
-                className={css({
-                  display: 'block',
-                  height: 'full',
-                  p: '6',
-                  bg: 'bg',
-                  borderWidth: '1px',
-                  borderRadius: 'lg',
-                  transitionProperty: 'border-color',
-                  transitionDuration: '150ms',
-                  _hover: { borderColor: 'fg.subtle' }
-                })}
-              >
-                <Stack gap="2">
-                  <panda.p fontSize="sm" color="fg.subtle">
-                    {formatDate(post.date)}
-                    {post.author && (
-                      <panda.span mx="2" aria-hidden>
-                        ·
-                      </panda.span>
-                    )}
-                    {post.author}
-                  </panda.p>
-                  <panda.h2 fontSize="xl" fontWeight="semibold" lineHeight="tight">
-                    {post.title}
-                  </panda.h2>
-                  {post.description && (
-                    <panda.p color="fg.muted" lineHeight="relaxed">
-                      {post.description}
-                    </panda.p>
-                  )}
-                  {post.tags && post.tags.length > 0 && (
-                    <Box display="flex" gap="2" mt="1" flexWrap="wrap">
-                      {post.tags.map(tag => (
-                        <panda.span
-                          key={tag}
-                          fontSize="xs"
-                          px="2"
-                          py="0.5"
-                          bg="bg.muted"
-                          borderWidth="1px"
-                          borderRadius="full"
-                          color="fg.muted"
-                        >
-                          {tag}
-                        </panda.span>
-                      ))}
-                    </Box>
-                  )}
-                </Stack>
-              </Link>
-            )
-          })}
+          Blog
         </Box>
-      </Container>
+        <a
+          href="/rss.xml"
+          className={css({
+            display: 'flex',
+            alignItems: 'center',
+            gap: '2',
+            textStyle: 'eyebrow',
+            color: 'fg.subtle',
+            textDecoration: 'none',
+            _hover: { color: 'fg' }
+          })}
+        >
+          <LuRss />
+          RSS
+        </a>
+      </Box>
+
+      <Link
+        href={`/blog/${featuredSlug}`}
+        className={css({
+          display: 'block',
+          p: { base: '6', md: '10' },
+          borderWidth: '1px',
+          borderColor: 'border',
+          rounded: 'lg',
+          textDecoration: 'none',
+          color: 'fg',
+          transitionProperty: 'border-color, background-color',
+          transitionDuration: '150ms',
+          _hover: { borderColor: 'fg.subtle', bg: 'bg.subtle' }
+        })}
+      >
+        <Box display="flex" alignItems="center" gap="3" mb="5" flexWrap="wrap">
+          <Box
+            textStyle="eyebrow"
+            bg="accent.wash"
+            color="fg"
+            px="2"
+            py="1"
+          >
+            Latest
+          </Box>
+          <Box textStyle="eyebrow" color="fg.subtle">
+            {new Date(featured.date)
+              .toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+              .toUpperCase()}
+            {featured.type === 'release' ? ' · RELEASE' : ''}
+          </Box>
+        </Box>
+
+        <Box display="flex" alignItems="flex-end" justifyContent="space-between" gap="6">
+          <Stack gap="4" maxW="40rem">
+            <Box
+              as="h2"
+              fontSize={{ base: '3xl', md: '4xl' }}
+              fontWeight="bold"
+              letterSpacing="tight"
+              lineHeight="1.1"
+            >
+              {featured.title}
+            </Box>
+            {featured.description && (
+              <Box textStyle="prose" color="fg.muted">
+                {featured.description}
+              </Box>
+            )}
+            {featured.author && featured.author.length > 0 && (
+              <Box textStyle="sm" color="fg.subtle">
+                {featured.author.join(', ')}
+              </Box>
+            )}
+          </Stack>
+          <Box
+            display={{ base: 'none', md: 'flex' }}
+            alignItems="center"
+            justifyContent="center"
+            flexShrink="0"
+            w="12"
+            h="12"
+            borderWidth="1px"
+            borderColor="border"
+            rounded="md"
+          >
+            <LuArrowRight />
+          </Box>
+        </Box>
+      </Link>
+
+      <PostList
+        posts={posts.map(post => ({
+          slug: post.slug.split('/').slice(1).join('/'),
+          title: post.title,
+          description: post.description,
+          date: post.date,
+          author: post.author,
+          type: post.type
+        }))}
+      />
     </Box>
   )
 }

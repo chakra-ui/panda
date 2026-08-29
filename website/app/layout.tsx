@@ -28,6 +28,12 @@ export default function RootLayout(props: Props) {
       suppressHydrationWarning
     >
       <head>
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="Panda CSS Blog"
+          href="/rss.xml"
+        />
         <Script
           data-domain="panda-css.com"
           src="https://plausible.io/js/script.js"

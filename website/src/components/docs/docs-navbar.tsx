@@ -12,6 +12,7 @@ import { Box, HStack } from '@/styled-system/jsx'
 import { Icon } from '@/theme/icons'
 import { MobileNavDrawer, MobileTabSwitcher } from '@/mdx/navbar'
 import { ThemeSwitch } from '@/mdx/theme-switch'
+import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 /**
@@ -26,6 +27,25 @@ import { usePathname } from 'next/navigation'
  * padding-top are both computed against `--navbar-height` assuming the bar
  * above it is taken out of normal document flow.
  */
+const siteLinks = [
+  {
+    title: 'Docs',
+    href: '/docs',
+    match: (p: string) => p.startsWith('/docs') && !p.startsWith('/docs/reference')
+  },
+  {
+    title: 'Reference',
+    href: '/docs/reference/cli',
+    match: (p: string) => p.startsWith('/docs/reference')
+  },
+  { title: 'Blog', href: '/blog', match: (p: string) => p.startsWith('/blog') },
+  {
+    title: 'Showcase',
+    href: '/showcase',
+    match: (p: string) => p.startsWith('/showcase')
+  }
+]
+
 export function DocsNavbar() {
   const pathname = usePathname()
 
@@ -45,6 +65,34 @@ export function DocsNavbar() {
         >
           <Icon icon="LogoWithText" />
         </Anchor>
+
+        <HStack gap="1" flexShrink="0" display={{ base: 'none', lg: 'flex' }}>
+          {siteLinks.map(link => {
+            const active = link.match(pathname ?? '')
+            return (
+              <Link
+                key={link.title}
+                href={link.href}
+                aria-current={active ? 'page' : undefined}
+                className={css({
+                  textStyle: 'sm',
+                  fontWeight: 'medium',
+                  px: '3',
+                  py: '1.5',
+                  rounded: 'md',
+                  whiteSpace: 'nowrap',
+                  color: active ? 'fg' : 'fg.muted',
+                  bg: active ? 'bg.muted' : 'transparent',
+                  transitionProperty: 'color, background-color',
+                  transitionDuration: '150ms',
+                  _hover: { color: 'fg', bg: 'bg.subtle' }
+                })}
+              >
+                {link.title}
+              </Link>
+            )
+          })}
+        </HStack>
 
         <Box flex="1" display="flex" justifyContent="center" maxW={{ base: 'none', md: '32rem' }}>
           <CommandMenu
