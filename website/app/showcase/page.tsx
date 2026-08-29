@@ -26,6 +26,7 @@ export const metadata: Metadata = {
   }
 }
 
+const mediaCover = css({ objectFit: 'cover' })
 const mediaWide = css({ aspectRatio: '2 / 1' })
 const mediaTall = css({ aspectRatio: '3 / 2' })
 
@@ -72,7 +73,7 @@ function ShowcaseCard(props: { data: Showcase; featured?: boolean }) {
               ? '(max-width: 768px) 100vw, 66vw'
               : '(max-width: 768px) 100vw, 33vw'
           }
-          style={{ objectFit: 'cover' }}
+          className={mediaCover}
         />
       </Box>
       <Box

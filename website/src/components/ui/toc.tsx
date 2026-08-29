@@ -1,7 +1,7 @@
 'use client'
 
 import { Docs } from '.velite'
-import { sva } from '@/styled-system/css'
+import { css, cx, sva } from '@/styled-system/css'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
@@ -96,10 +96,12 @@ export const Toc = (props: TocProps) => {
           <li key={item.id} className={classes.item}>
             <Link
               href={`#${item.id}`}
-              style={{ paddingInlineStart: 16 + item.depth * 12 }}
               data-current={isCurrent(item.id) || undefined}
               aria-current={isCurrent(item.id) ? 'location' : undefined}
-              className={classes.link}
+              className={cx(
+                classes.link,
+                depthStyles[Math.min(item.depth, depthStyles.length - 1)]
+              )}
               onClick={e => onLinkClick(e, item.id)}
             >
               {item.title}
@@ -110,6 +112,13 @@ export const Toc = (props: TocProps) => {
     </nav>
   )
 }
+
+const depthStyles = [
+  css({ ps: '4' }),
+  css({ ps: '7' }),
+  css({ ps: '10' }),
+  css({ ps: '13' })
+]
 
 const tocRecipe = sva({
   slots: ['root', 'title', 'link', 'item'],

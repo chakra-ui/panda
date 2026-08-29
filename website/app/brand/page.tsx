@@ -1,9 +1,8 @@
 import { SitePage } from '@/components/site-page'
 import { generateOgImageUrl } from '@/lib/og-image'
-import { css } from '@/styled-system/css'
+import { css, cx } from '@/styled-system/css'
 import { Box } from '@/styled-system/jsx'
 import type { Metadata } from 'next'
-import Image from 'next/image'
 
 const title = 'Brand kit'
 const description =
@@ -20,20 +19,45 @@ export const metadata: Metadata = {
 }
 
 const assets = [
+  { name: 'Logo', file: 'panda-p-letter.svg', src: '/panda-p-letter.svg' },
+  { name: 'Mascot', file: 'panda-hello.svg', src: '/panda-hello.svg' },
+  { name: 'Rocket', file: 'panda-rocket.svg', src: '/panda-rocket.svg' },
+  { name: 'Scooter', file: 'panda-scooter.svg', src: '/panda-scooter.svg' },
+  { name: 'Yoga', file: 'panda-yoga.svg', src: '/panda-yoga.svg' },
   {
-    name: 'Logo',
-    file: 'panda-p-letter.svg',
-    src: '/static/panda-p-letter.svg'
-  },
-  { name: 'Mascot', file: 'panda-hello.svg', src: '/static/panda-hello.svg' },
-  { name: 'Rocket', file: 'panda-rocket.svg', src: '/static/panda-rocket.svg' }
+    name: 'Bubble tea',
+    file: 'panda-bubble-tea.svg',
+    src: '/panda-bubble-tea.svg'
+  }
 ]
 
+const swatchBase = css({ h: '9rem' })
+
 const colors = [
-  { name: 'Yellow', hex: '#FACC15', swatch: 'yellow.400' },
-  { name: 'Ink', hex: '#0D0D0D', swatch: 'black' },
-  { name: 'Wash', hex: '#FEF9C3', swatch: 'yellow.100' },
-  { name: 'Paper', hex: '#FFFFFF', swatch: 'white' }
+  {
+    name: 'Yellow',
+    hex: '#FACC15',
+    role: 'Accent, only ever as a surface',
+    swatch: css({ bg: 'yellow.400' })
+  },
+  {
+    name: 'Ink',
+    hex: '#111111',
+    role: 'Dark ground',
+    swatch: css({ bg: 'dark' })
+  },
+  {
+    name: 'Wash',
+    hex: '#FEF9C3',
+    role: 'Highlight behind active items',
+    swatch: css({ bg: 'yellow.100' })
+  },
+  {
+    name: 'Paper',
+    hex: '#FFFFFF',
+    role: 'Light ground',
+    swatch: css({ bg: 'white' })
+  }
 ]
 
 const cellStyles = css({
@@ -62,12 +86,16 @@ export default function BrandPage() {
               p="10"
               bg="bg.subtle"
             >
-              <Image
+              <img
                 src={asset.src}
                 alt={`Panda ${asset.name.toLowerCase()}`}
                 width={160}
                 height={160}
-                style={{ maxHeight: '100%', width: 'auto' }}
+                className={css({
+                  w: 'full',
+                  h: 'full',
+                  objectFit: 'contain'
+                })}
               />
             </Box>
             <Box
@@ -119,13 +147,16 @@ export default function BrandPage() {
       >
         {colors.map(color => (
           <Box key={color.name} className={cellStyles}>
-            <Box h="9rem" bg={color.swatch} />
+            <div className={cx(swatchBase, color.swatch)} />
             <Box px="5" py="4" borderTopWidth="1px" borderColor="border">
               <Box textStyle="sm" fontWeight="medium">
                 {color.name}
               </Box>
               <Box textStyle="sm" fontFamily="mono" color="fg.subtle">
                 {color.hex}
+              </Box>
+              <Box textStyle="sm" color="fg.subtle" mt="1.5">
+                {color.role}
               </Box>
             </Box>
           </Box>
