@@ -5,6 +5,7 @@ import { Card, Cards } from '@/mdx/cards'
 import { Code } from '@/mdx/code'
 import { CodeBlock } from '@/mdx/code-block'
 import { Details, Faq } from '@/mdx/details'
+import { UtilityTable } from '@/mdx/utility-table'
 import { Divider } from '@/mdx/divider'
 import { FileTree } from '@/mdx/file-tree'
 import { FrameworkCards } from '@/mdx/framework-card'
@@ -74,6 +75,7 @@ const sharedComponents = {
   details: Details,
   Details,
   Faq,
+  UtilityTable,
   hr: Divider,
 
   // Custom components

@@ -9,10 +9,11 @@
     "dev:next": "next dev",
     "dev": "run-s codegen dev:watch",
     "dev:watch": "run-p dev:content dev:next",
+    "generate:reference": "tsx scripts/generate-utility-reference.ts",
     "build:codegen": "panda codegen",
     "build:content": "velite --clean",
     "build:next": "next build",
-    "build": "run-s build:codegen build:content build:next",
+    "build": "run-s generate:reference build:codegen build:content build:next",
     "lint": "eslint . --max-warnings 0",
     "start": "next start"
   },
@@ -57,6 +58,7 @@
     "rehype-slug": "^6.0.0",
     "shiki": "^3.19.0",
     "unist-util-visit": "^5.0.0",
-    "velite": "0.3.0"
+    "velite": "0.3.0",
+    "tsx": "4.20.6"
   }
 }
