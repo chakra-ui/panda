@@ -29,15 +29,12 @@ export const Breadcrumb = ({ slug }: Props) => {
       {breadcrumbs.map((crumb, index) => (
         <HStack
           key={`${crumb.label}-${index}`}
-          textStyle="sm"
-          fontWeight="semibold"
-          textTransform="uppercase"
-          letterSpacing="wide"
+          textStyle="eyebrow"
         >
           {crumb.isLast ? (
             <span className={css({ color: 'fg' })}>{crumb.label}</span>
           ) : (
-            <span className={css({ color: 'fg.muted' })}>{crumb.label}</span>
+            <span className={css({ color: 'fg.subtle' })}>{crumb.label}</span>
           )}
           {!crumb.isLast && (
             <ChevronRightIcon className={css({ w: 3, h: 3 })} />

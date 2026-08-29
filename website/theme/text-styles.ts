@@ -1,6 +1,22 @@
 import { defineTextStyles } from '@pandacss/dev'
 
 export const textStyles = defineTextStyles({
+  eyebrow: {
+    value: {
+      fontFamily: 'mono',
+      fontSize: '0.75rem',
+      fontWeight: '500',
+      lineHeight: '1',
+      letterSpacing: '0.08em',
+      textTransform: 'uppercase'
+    }
+  },
+  prose: {
+    value: {
+      fontSize: '1rem',
+      lineHeight: '1.7'
+    }
+  },
   panda: {
     h1: {
       value: {

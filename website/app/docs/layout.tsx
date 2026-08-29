@@ -1,6 +1,6 @@
 import { DocsNavbar } from '@/components/docs/docs-navbar'
 import { TabBar } from '@/components/docs/tab-bar'
-import { Footer } from '@/mdx/footer'
+import { SiteFooter } from '@/components/docs/site-footer'
 import { css } from '@/styled-system/css'
 
 export default function DocsLayout(props: React.PropsWithChildren) {
@@ -35,7 +35,7 @@ export default function DocsLayout(props: React.PropsWithChildren) {
       >
         {children}
       </main>
-      <Footer />
+      <SiteFooter />
     </div>
   )
 }

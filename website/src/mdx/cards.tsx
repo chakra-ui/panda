@@ -1,68 +1,152 @@
-import { css, cx } from '@/styled-system/css'
-import { HStack, Stack, panda } from '@/styled-system/jsx'
-import { grid } from '@/styled-system/patterns'
-import { LuChevronRight } from 'react-icons/lu'
-import { Anchor } from '../components/ui/anchor'
+import { css, cx, sva } from '@/styled-system/css'
+import Link from 'next/link'
+import { LuArrowRight } from 'react-icons/lu'
 
-const Arrow = () => (
-  <span
-    className={css({
-      transition: 'opacity',
-      opacity: { base: '0', _groupHover: '1' }
-    })}
-  >
-    <LuChevronRight />
-  </span>
-)
+const cardStyles = sva({
+  slots: ['root', 'icon', 'kicker', 'title', 'body', 'cta'],
+  base: {
+    root: {
+      position: 'relative',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '2',
+      height: 'full',
+      p: '5',
+      borderWidth: '1px',
+      borderColor: 'border',
+      color: 'fg',
+      textDecoration: 'none',
+      transitionProperty: 'background-color, border-color',
+      transitionDuration: '150ms',
+      _hover: { borderColor: 'fg.subtle', bg: 'bg.subtle' }
+    },
+    icon: {
+      display: 'flex',
+      color: 'accent.emphasis',
+      mb: '1',
+      '& svg': { width: '1.25rem', height: '1.25rem' }
+    },
+    kicker: {
+      textStyle: 'eyebrow',
+      color: 'fg.subtle'
+    },
+    title: {
+      textStyle: 'lg',
+      fontWeight: 'semibold',
+      lineHeight: '1.3'
+    },
+    body: {
+      textStyle: 'sm',
+      lineHeight: '1.6',
+      color: 'fg.muted'
+    },
+    cta: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '2',
+      mt: 'auto',
+      pt: '3',
+      textStyle: 'sm',
+      color: 'fg.muted'
+    }
+  },
+  variants: {
+    mode: {
+      gapped: {
+        root: { rounded: 'lg' }
+      },
+      gapless: {
+        root: {
+          rounded: 'none',
+          gap: '1',
+          margin: '-0.5px'
+        }
+      }
+    }
+  },
+  defaultVariants: { mode: 'gapped' }
+})
 
-type Props = {
-  children?: React.ReactNode
+interface CardProps {
   title: string
-  description?: string
-  icon: React.ReactNode
-  image?: boolean
-  arrow?: boolean
   href: string
+  children?: React.ReactNode
+  description?: string
+  icon?: React.ReactNode
+  kicker?: string
+  cta?: React.ReactNode
+  arrow?: boolean
+  mode?: 'gapped' | 'gapless'
 }
 
-export const Card = (props: Props) => {
-  const { children, title, description, icon, image, arrow, href } = props
-  const animatedArrow = arrow ? <Arrow /> : null
+export const Card = (props: CardProps) => {
+  const { title, href, children, description, icon, kicker, cta, arrow, mode } =
+    props
+  const classes = cardStyles({ mode })
+  const external = href.startsWith('http')
 
   return (
-    <panda.div borderWidth="1px" px="6" py="4" rounded="lg">
-      <Anchor className="group" href={href}>
-        {image || children}
-        {icon}
-        <span>
-          <Stack gap="1">
-            <panda.span textStyle="lg" fontWeight="semibold">
-              <HStack>
-                {title}
-                {animatedArrow}
-              </HStack>
-            </panda.span>
-            {description && (
-              <panda.span color={{ base: 'neutral.700', _dark: 'neutral.400' }}>
-                {description}
-              </panda.span>
-            )}
-          </Stack>
+    <Link
+      href={href}
+      className={classes.root}
+      target={external ? '_blank' : undefined}
+      rel={external ? 'noopener noreferrer' : undefined}
+    >
+      {icon && <span className={classes.icon}>{icon}</span>}
+      {kicker && <span className={classes.kicker}>{kicker}</span>}
+      <span className={classes.title}>
+        {title}
+        {arrow && (
+          <LuArrowRight
+            className={css({
+              display: 'inline',
+              ml: '2',
+              verticalAlign: 'middle',
+              color: 'fg.subtle'
+            })}
+          />
+        )}
+      </span>
+      {(description || children) && (
+        <span className={classes.body}>{description ?? children}</span>
+      )}
+      {cta && (
+        <span className={classes.cta}>
+          {cta}
+          <LuArrowRight />
         </span>
-      </Anchor>
-    </panda.div>
+      )}
+    </Link>
   )
 }
 
-export const Cards = (props: React.ComponentProps<'div'>) => {
-  const { className, ...rest } = props
+interface CardsProps extends React.ComponentProps<'div'> {
+  columns?: 1 | 2 | 3 | 4
+  mode?: 'gapped' | 'gapless'
+}
+
+export const Cards = (props: CardsProps) => {
+  const { className, columns = 2, mode = 'gapped', children, ...rest } = props
+
   return (
     <div
+      data-mode={mode}
       className={cx(
-        grid({ columns: { base: 1, sm: 2 }, mt: '10', gap: '6' }),
+        css({
+          display: 'grid',
+          my: '8',
+          gridTemplateColumns: {
+            base: '1fr',
+            sm: `repeat(${Math.min(columns, 2)}, minmax(0, 1fr))`,
+            lg: `repeat(${columns}, minmax(0, 1fr))`
+          },
+          gap: mode === 'gapped' ? '4' : '0'
+        }),
         className
       )}
       {...rest}
-    />
+    >
+      {children}
+    </div>
   )
 }
