@@ -13,7 +13,6 @@ const CODEGEN_DEPENDENCIES = new Set<string>([
   'prefix',
   'recipes',
   'separator',
-  'syntax',
   'themes',
   'tokens',
   'utilities',

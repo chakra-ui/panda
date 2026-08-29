@@ -1,7 +1,5 @@
 //! `css/view-transition` runtime for `viewTransition()`.
 
-use pandacss_config::CssSyntaxKind;
-
 use crate::{
     Artifact, ArtifactFile, ArtifactId, CodegenContext, ConstDecl, DependencySet, Expr, ImportDecl,
     Item, ItemNode, Module, RuntimeImport, TsType, TypeAliasDecl,
@@ -27,10 +25,6 @@ pub fn files(
     options: GenerateOptions,
     dependencies: DependencySet,
 ) -> Vec<ArtifactFile> {
-    if matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
-        return Vec::new();
-    }
-
     if ctx.virtualizes(RuntimeImport::CssIndex) {
         return Vec::new();
     }

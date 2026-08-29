@@ -2,7 +2,7 @@ use crate::common::{extract_shape, panda_config, panda_config_with_jsx, panda_js
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
 use pandacss_extractor::{
-    CssSyntaxKind, JsxExtractionConfig, Literal, extract, extract_debug, extract_for_transform,
+    JsxExtractionConfig, Literal, extract, extract_debug, extract_for_transform,
 };
 
 #[test]
@@ -321,15 +321,8 @@ fn jsx_factory_extraction_requires_jsx_framework() {
         import { styled } from "@panda/jsx"
 
         const Card = styled('div', { base: { color: 'red' } })
-        const Panel = styled.div`
-          padding: 4px;
-        `
     "#};
-    let result = extract(
-        source,
-        "factory.tsx",
-        &panda_config().with_syntax(CssSyntaxKind::TemplateLiteral),
-    );
+    let result = extract(source, "factory.tsx", &panda_config());
 
     assert_yaml_snapshot!(extract_shape(&result), @"
     calls: []

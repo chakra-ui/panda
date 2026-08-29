@@ -135,7 +135,6 @@ discover the unsupported value when `var(--accent)` is substituted, too late to 
 - Falling back between different properties, such as `display` and `-webkit-box`.
 - Polyfilling unsupported values.
 - Accepting dynamic, conditional, responsive, object, boolean, or null members initially.
-- Supporting template-literal syntax.
 - Supporting callback-backed multi-property utility transforms initially.
 - Replacing `@supports` when feature detection is the clearer tool.
 
@@ -588,11 +587,9 @@ Do not apply it to:
 - HTML `style`,
 - config fields that are not style values.
 
-Template-literal codegen has no property-value position, so its `css` function does not receive `fallback` initially.
-
 ## Runtime and extraction marker
 
-Generated object-syntax codegen extends `CssFunction`:
+Generated codegen extends `CssFunction`:
 
 ```ts
 interface CssFunction {
@@ -899,12 +896,11 @@ AtomValue::Fallback ── one ordered atom / one class
 ### Phase 2: generated and config APIs
 
 1. Add `CssFallbackValue<T>` to CSS property leaves.
-2. Add `css.fallback()` to object-syntax codegen.
-3. Keep template-literal codegen unchanged.
-4. Make style walkers, responsive normalization, merge helpers, and `css.raw()` treat markers as leaves.
-5. Add `cssFallback()` to `@pandacss/dev`.
-6. Add binding-aware source extraction and transform support.
-7. Add runtime/Rust hash parity tests.
+2. Add `css.fallback()` to generated codegen.
+3. Make style walkers, responsive normalization, merge helpers, and `css.raw()` treat markers as leaves.
+4. Add `cssFallback()` to `@pandacss/dev`.
+5. Add binding-aware source extraction and transform support.
+6. Add runtime/Rust hash parity tests.
 
 ### Phase 3: recipes and patterns
 
@@ -932,8 +928,7 @@ AtomValue::Fallback ── one ordered atom / one class
 - native properties and data-backed utilities,
 - JSX style props,
 - rejection for custom properties and HTML `style`,
-- rejection in primitive pattern props,
-- no template-literal method.
+- rejection in primitive pattern props.
 
 ### Extraction
 
@@ -1010,7 +1005,6 @@ AtomValue::Fallback ── one ordered atom / one class
 | Importance                  | One shared value across every member                     |
 | Custom properties           | Rejected initially                                       |
 | Callback utility transforms | Rejected initially                                       |
-| Template-literal syntax     | No fallback API                                          |
 | Build info                  | New fallback value and schema `6`                        |
 | CSS emission                | Property-scoped ordered declaration runs                 |
 | Design-system export        | Existing `css` unit; no new subpath                      |

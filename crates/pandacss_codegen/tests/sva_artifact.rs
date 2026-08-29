@@ -1,7 +1,7 @@
 use crate::common::{artifact, file, paths};
 use insta::assert_snapshot;
 use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
-use pandacss_config::{CodegenFormat, CssSyntaxKind, UserConfig};
+use pandacss_config::CodegenFormat;
 
 #[test]
 fn emits_ts_source_sva() {
@@ -131,16 +131,4 @@ fn emits_js_runtime_and_declarations() {
 
     export declare const sva: SlotRecipeCreatorFn;
     ");
-}
-
-#[test]
-fn template_literal_syntax_skips_sva_artifact() {
-    let config = UserConfig {
-        syntax: CssSyntaxKind::TemplateLiteral,
-        ..Default::default()
-    };
-    let artifacts = ArtifactGraph.generate_with_config(&config, GenerateOptions::default());
-    let sva = artifact(&artifacts, ArtifactId::Sva);
-
-    assert!(paths(sva).is_empty());
 }

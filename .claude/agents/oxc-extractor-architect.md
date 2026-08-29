@@ -127,7 +127,6 @@ Always call `walk::walk_*` at end of overrides to descend nested nodes.
 
 - Callees: `Identifier` (named import) or `StaticMemberExpression` (namespace `p.css`, `p.recipe.raw`)
 - Args → `Vec<Option<Literal>>` — **`None` = present but not foldable**; indices preserved
-- Tagged templates when `CssSyntaxKind::TemplateLiteral` → `css_template::css_template_to_object`
 - Emit rules: Recipe/Pattern always; others need at least one `Some` literal (Jsx has factory exceptions)
 
 **JSX extraction (`jsx.rs`):**
@@ -200,7 +199,7 @@ Changes to framework support often need **both** `*_adapter.rs` (mask) and `temp
 ## Config types (`matcher.rs`)
 
 - **`Matchers`** — per-category `Matcher { modules, names }` + `jsx_factories`, `jsx_kinds`
-- **`ExtractorConfig`** — matchers, jsx config, `has_jsx_framework`, `syntax: CssSyntaxKind`, `token_dictionary`,
+- **`ExtractorConfig`** — matchers, jsx config, `has_jsx_framework`, `token_dictionary`,
   `cross_file`
 - **`VisitorContext`** — alias map + optional `&Resolver`
 

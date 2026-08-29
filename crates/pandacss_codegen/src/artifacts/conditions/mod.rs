@@ -1,21 +1,14 @@
 //! The `conditions` artifact: the configured condition keys plus the
 //! `isCondition` / `sortConditions` runtime helpers and their types.
 
-mod conditions_literal;
-
 use crate::{
     Artifact, ArtifactFile, ArtifactId, Block, CodegenContext, ConstDecl, DependencySet, Expr,
     FunctionDecl, ImportDecl, Item, ItemNode, Module, Param, RuntimeImport, Stmt, TsType,
     graph::{GenerateOptions, emit_module_files},
 };
-use pandacss_config::CssSyntaxKind;
 
 #[must_use]
 pub fn module(ctx: CodegenContext<'_>) -> Module {
-    if matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
-        return conditions_literal::module(ctx);
-    }
-
     let keys = ctx.condition_keys();
     runtime_module(ctx, &keys, &ctx.config.theme.breakpoint_names())
 }
@@ -86,17 +79,6 @@ pub fn files(
 ) -> Vec<ArtifactFile> {
     if ctx.virtualizes(RuntimeImport::CssConditions) {
         return Vec::new();
-    }
-
-    if matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
-        return emit_module_files(
-            "css/conditions",
-            &conditions_literal::module(ctx),
-            options.format,
-            false,
-            options.import_extensions,
-            dependencies,
-        );
     }
 
     if !options.format.is_source_ts() {

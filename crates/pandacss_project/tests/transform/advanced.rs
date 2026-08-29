@@ -1,9 +1,7 @@
-//! Spreads, cross-file resolution, template-literal css, shorthands, and
+//! Spreads, cross-file resolution, shorthands, and
 //! conditional-spread parity with extractor / compiler fixtures.
 
-use super::common::{
-    transform, transform_cross_file, transform_template_literal, transform_with_shorthands,
-};
+use super::common::{transform, transform_cross_file, transform_jsx, transform_with_shorthands};
 use indoc::indoc;
 use insta::assert_snapshot;
 
@@ -425,9 +423,9 @@ fn helper_injection_does_not_panic_on_multibyte_source() {
     let source = indoc! {r"
         import { styled } from '@panda/jsx';
         // « guillemet comment »
-        export const Box = styled.div`color: red;`;
+        export const Box = styled.div({ color: 'red' });
     "};
-    let output = transform_template_literal("src/box.tsx", source);
+    let output = transform_jsx("src/box.tsx", source);
 
     assert!(output.changed);
     assert!(output.code.contains("__pcva"));
@@ -535,131 +533,6 @@ advanced_snapshot!(
 import { button } from './styles';
 export const cls = "color_red margin-top_8px padding_4px";
 "#
-);
-
-// --- template-literal css (css_template.rs) ---
-
-advanced_snapshot!(
-    tagged_template_with_media_query,
-    {
-        let source = indoc! {r"
-            import { css } from '@panda/css';
-            export const cls = css`
-              color: red;
-              @media (min-width: 700px) {
-                background: blue;
-              }
-            `;
-        "};
-        transform_template_literal("src/styles.tsx", source)
-    },
-    @r#"export const cls = "color_red [@media_(min-width:_700px)]:background_blue";"#
-);
-
-advanced_snapshot!(
-    tagged_template_with_nested_selector,
-    {
-        let source = indoc! {r"
-            import { css } from '@panda/css';
-            export const cls = css`
-              color: red;
-              p {
-                color: blue;
-              }
-            `;
-        "};
-        transform_template_literal("src/styles.tsx", source)
-    },
-    @r#"export const cls = "color_red [&_p]:color_blue";"#
-);
-
-advanced_snapshot!(
-    tagged_template_hover_pseudo,
-    {
-        let source = indoc! {r"
-            import { css } from '@panda/css';
-            export const cls = css`
-              color: red;
-              &:hover {
-                color: blue;
-              }
-            `;
-        "};
-        transform_template_literal("src/styles.tsx", source)
-    },
-    @r#"export const cls = "color_red [&:hover]:color_blue";"#
-);
-
-advanced_snapshot!(
-    tagged_template_nested_declaration_without_trailing_semicolon,
-    {
-        // The nested block's last declaration omits its `;` before `}`.
-        let source = indoc! {r"
-            import { css } from '@panda/css';
-            export const cls = css`color: red; &:hover { color: blue }`;
-        "};
-        transform_template_literal("src/styles.tsx", source)
-    },
-    @r#"export const cls = "color_red [&:hover]:color_blue";"#
-);
-
-advanced_snapshot!(
-    tagged_template_trailing_declaration_without_terminator,
-    {
-        // The final top-level declaration has no `;` at all.
-        let source = indoc! {r"
-            import { css } from '@panda/css';
-            export const cls = css`color: red; background: blue`;
-        "};
-        transform_template_literal("src/styles.tsx", source)
-    },
-    @r#"export const cls = "background_blue color_red";"#
-);
-
-advanced_snapshot!(
-    styled_template_definition_desugars_to_precomputed_cva,
-    {
-        let source = indoc! {r"
-            import { styled } from '@panda/jsx';
-            export const Box = styled.div`color: red;`;
-        "};
-        transform_template_literal("src/box.tsx", source)
-    },
-    @r#"
-import { cva as __pcva } from '@pandacss-internal/css';
-import { styled } from '@panda/jsx';
-export const Box = styled.div(__pcva({ base: 'color_red' }));
-"#
-);
-
-advanced_snapshot!(
-    styled_template_definition_folds_nested_selectors_into_base,
-    {
-        let source = indoc! {r"
-            import { styled } from '@panda/jsx';
-            export const Box = styled.div`color: red; &:hover { color: blue }`;
-        "};
-        transform_template_literal("src/box.tsx", source)
-    },
-    @r#"
-import { cva as __pcva } from '@pandacss-internal/css';
-import { styled } from '@panda/jsx';
-export const Box = styled.div(__pcva({ base: 'color_red [&:hover]:color_blue' }));
-"#
-);
-
-advanced_snapshot!(
-    styled_template_definition_with_dynamic_interpolation_is_left_untouched,
-    unchanged,
-    {
-        // Panda template literals are static — an unsupported `${…}` interpolation
-        // isn't extracted, so the definition is left for the runtime factory.
-        let source = indoc! {r"
-            import { styled } from '@panda/jsx';
-            export const Box = styled.div`color: ${(p) => p.color};`;
-        "};
-        transform_template_literal("src/box.tsx", source)
-    }
 );
 
 // --- preset-style shorthands (project.test / css.test) ---
