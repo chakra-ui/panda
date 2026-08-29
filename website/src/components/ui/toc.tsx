@@ -5,10 +5,12 @@ import { sva } from '@/styled-system/css'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
-function useTocState() {
+function useTocState(ids: string[]) {
   const [activeId, setActiveId] = useState<string | null>(null)
+  const key = ids.join(',')
 
   useEffect(() => {
+    const listed = new Set(key.split(','))
     let frame = 0
 
     const read = () => {
@@ -18,7 +20,7 @@ function useTocState() {
         document.querySelectorAll<HTMLElement>(
           'article h2, article h3, article h4'
         )
-      ).filter(el => el.id && el.offsetParent !== null)
+      ).filter(el => listed.has(el.id) && el.offsetParent !== null)
 
       if (visible.length === 0) return
 
@@ -56,7 +58,7 @@ function useTocState() {
       window.removeEventListener('scroll', schedule)
       window.removeEventListener('resize', schedule)
     }
-  }, [])
+  }, [key])
 
   return {
     isCurrent: (id: string) => id === activeId,
@@ -78,7 +80,7 @@ export interface TocProps {
 
 export const Toc = (props: TocProps) => {
   const { data } = props
-  const { isCurrent, onLinkClick } = useTocState()
+  const { isCurrent, onLinkClick } = useTocState(data.map(item => item.id))
 
   if (data.length === 0) {
     return null

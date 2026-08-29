@@ -26,6 +26,9 @@ export const metadata: Metadata = {
   }
 }
 
+const mediaWide = css({ aspectRatio: '2 / 1' })
+const mediaTall = css({ aspectRatio: '3 / 2' })
+
 const cardStyles = css({
   display: 'flex',
   flexDirection: 'column',
@@ -56,9 +59,9 @@ function ShowcaseCard(props: { data: Showcase; featured?: boolean }) {
       <Box
         position="relative"
         w="full"
-        aspectRatio={featured ? '2 / 1' : '3 / 2'}
         bg="bg.subtle"
         overflow="hidden"
+        className={featured ? mediaWide : mediaTall}
       >
         <Image
           src={data.image}
