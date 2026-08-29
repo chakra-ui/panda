@@ -1,79 +1,57 @@
 ---
-title: Using Panda in a Component Library
-description: How to build and ship a component library on Panda, from setup through packaging and troubleshooting.
+title: Design Systems
+description: Ship a component library, or a preset other teams build on.
+hideToc: true
 ---
-
-A component library ships finished, styled components: a `<Button>`, a `<Card>`, a `<Tabs>`, ready to drop into any
-project that installs it. That's different from shipping a design system as a **preset**, a pure config package with
-no components at all, just the tokens and recipes another team builds their own components from.
-
-Not sure which one you're building? Go by what you're shipping:
-
-- Compiled, styled components: you're in the right place, keep reading.
-- Pure `definePreset` config, no components: see the
-  [design system (preset) overview](/docs/design-systems/preset-overview) instead.
-- You own the apps too, and want one package plus the `designSystem` config field: see
-  [Build a preset](/docs/design-systems/building-a-design-system).
-
-Mature libraries often ship both, a components package built on top of their own preset, so this isn't an either-or
-choice, just a question of which one you need first.
-
-The rest of this section walks through building a component library on Panda, in the order you'll likely need it:
-
-<Cards>
-  <Card
-    arrow
-    title="Set up a library package"
-    description="Give your library its own styled-system package so it and its users share one runtime"
-    href="/docs/design-systems/setup"
-  />
-  <Card
-    arrow
-    title="Wrap headless UI"
-    description="Use createSlotRecipeContext to turn Ark UI or Radix primitives into styled, distributable components"
-    href="/docs/design-systems/wrap-headless-ui"
-  />
-  <Card
-    arrow
-    title="forwardProps & the styled factory"
-    description="Wrap a single element or third-party component with styled(), and decide what reaches it"
-    href="/docs/design-systems/forward-props"
-  />
-  <Card
-    arrow
-    title="Ship the styled-system vs the CSS"
-    description="Three ways to get your library's styles into a user's app, from a plain stylesheet to build info"
-    href="/docs/design-systems/ship-styled-system"
-  />
-  <Card
-    arrow
-    title="Track usage in wrapped components"
-    description="Why renaming or wrapping a component can stop Panda from pre-generating its CSS, and how to fix it"
-    href="/docs/design-systems/track-usage"
-  />
-  <Card
-    arrow
-    title="Troubleshooting"
-    description="Module resolution errors, missing type exports, and other common build issues"
-    href="/docs/design-systems/troubleshooting"
-  />
+<Cards columns={2}>
+  <Card kicker="Components" title="Component library" href="/docs/design-systems/setup" description="Ship finished, styled components other apps drop in." cta="Set up a library" />
+  <Card kicker="Config" title="Design system preset" href="/docs/design-systems/preset-overview" description="Ship tokens and recipes, no components, for teams to build on." cta="Build a preset" />
 </Cards>
 
-## Quick answers
+## Build a component library
 
-If you already know what you're looking for:
+<Cards columns={3} mode="gapless">
+  <Card title="Set up a library package" href="/docs/design-systems/setup" description="One styled-system shared by your library and its users." />
+  <Card title="Wrap headless UI" href="/docs/design-systems/wrap-headless-ui" description="Turn Ark UI or Radix primitives into styled components." />
+  <Card title="forwardProps" href="/docs/design-systems/forward-props" description="Decide what reaches the underlying element." />
+  <Card title="Ship styles vs the system" href="/docs/design-systems/ship-styled-system" description="Three ways to get your CSS into a user's app." />
+  <Card title="Track usage" href="/docs/design-systems/track-usage" description="Keep Panda generating CSS for wrapped components." />
+  <Card title="Isolated declarations" href="/docs/design-systems/isolated-declarations" description="Type-safe exports without a full type check." />
+</Cards>
 
-- **Library code shouldn't be published, and the app uses Panda:** ship the build info file. See
-  [Ship the styled-system vs the CSS](/docs/design-systems/ship-styled-system#ship-the-build-info-file).
-- **App code doesn't use Panda:** ship a static CSS file. See
-  [Ship the styled-system vs the CSS](/docs/design-systems/ship-styled-system#ship-a-static-css-file).
-- **Library code lives in the same monorepo as the app:** include the source files directly. See
-  [Ship the styled-system vs the CSS](/docs/design-systems/ship-styled-system#include-the-source-files).
-- **Library only ships tokens, recipes, or patterns, no components:** skip all of the above,
-  [ship a preset](/docs/design-systems/presets) instead.
+## Build a preset
 
-If you use the include-source-files or build-info approach and your library has custom tokens, recipes, or patterns,
-you'll likely still need to ship a [preset](/docs/design-systems/presets) alongside it.
+<Cards columns={3} mode="gapless">
+  <Card title="Preset overview" href="/docs/design-systems/preset-overview" description="What a preset is, and when to ship one." />
+  <Card title="Build a design system" href="/docs/design-systems/building-a-design-system" description="Tokens, recipes and conditions in one package." />
+  <Card title="Consume a design system" href="/docs/design-systems/consuming-a-design-system" description="Install a preset and extend it safely." />
+</Cards>
+
+## Customize
+
+<Cards columns={4} mode="gapless">
+  <Card title="Utilities" href="/docs/design-systems/utilities" description="Add your own style properties." />
+  <Card title="Conditions" href="/docs/design-systems/conditions" description="Name your own selectors and queries." />
+  <Card title="Patterns" href="/docs/design-systems/patterns" description="Reusable layout primitives." />
+  <Card title="Presets" href="/docs/design-systems/presets" description="Compose and override config." />
+  <Card title="Hooks" href="/docs/design-systems/hooks" description="Tap into the build pipeline." />
+  <Card title="Config functions" href="/docs/design-systems/config-functions" description="Type-safe config helpers." />
+  <Card title="Ecosystem plugins" href="/docs/design-systems/ecosystem-plugins" description="Extend Panda from a package." />
+  <Card title="Troubleshooting" href="/docs/design-systems/troubleshooting" description="Common build and resolution errors." />
+</Cards>
+
+## Distribute
+
+<Cards columns={4} mode="gapless">
+  <Card title="Monorepo styled-system" href="/docs/design-systems/shared-styled-system" description="One system across many packages." />
+  <Card title="Publishing to npm" href="/docs/design-systems/publishing-to-npm" description="Package and version your system." />
+  <Card title="Avoiding collisions" href="/docs/design-systems/avoiding-collisions" description="Keep class names from clashing." />
+  <Card title="Monorepo workflow" href="/docs/design-systems/monorepo-dev-workflow" description="Day-to-day dev across packages." />
+  <Card title="Federated micro-frontends" href="/docs/design-systems/federated-microfrontends" description="Independent deploys, one system." />
+  <Card title="Minimal setup" href="/docs/design-systems/minimal-setup" description="The smallest working config." />
+  <Card title="Environment config" href="/docs/design-systems/environment-specific-config" description="Different config per environment." />
+  <Card title="Static CSS" href="/docs/compiler/static" description="Pre-generate CSS you cannot extract." />
+</Cards>
 
 ## FAQ
 

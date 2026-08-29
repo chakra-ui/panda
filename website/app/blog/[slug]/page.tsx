@@ -73,11 +73,10 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
       mx="auto"
       display="flex"
       position="relative"
-      pt="calc(var(--navbar-height, 4rem) + 2rem)"
-      pb="32"
+      pb="24"
     >
       {/* Main content */}
-      <Box as="article" flex="1" minW="0" px={{ base: '4', lg: '10' }} pt="10">
+      <Box as="article" flex="1" minW="0" px={{ base: '4', lg: '10' }} pt="12">
         <Link
           href="/blog"
           className={css({
@@ -110,13 +109,13 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
             <panda.span fontSize="sm" color="fg.subtle">
               {formatDate(post.date)}
             </panda.span>
-            {post.author && (
+            {post.author && post.author.length > 0 && (
               <>
                 <panda.span color="fg.subtle" aria-hidden>
                   ·
                 </panda.span>
                 <panda.span fontSize="sm" color="fg.subtle">
-                  {post.author}
+                  {post.author.join(', ')}
                 </panda.span>
               </>
             )}

@@ -1,140 +1,143 @@
-import { Navbar } from '@/components/navbar'
+import { SitePage } from '@/components/site-page'
 import { generateOgImageUrl } from '@/lib/og-image'
-import { showcases } from '@/showcase'
-import { css } from '@/styled-system/css'
-import { Container, Grid, panda, Stack } from '@/styled-system/jsx'
-import { FooterSection } from '@/www/footer.section'
+import { showcases, type Showcase } from '@/showcase'
+import { css, cx } from '@/styled-system/css'
+import { Box } from '@/styled-system/jsx'
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import Link from 'next/link'
+import { LuArrowUpRight } from 'react-icons/lu'
 
-const ogTitle = 'See projects built with Panda CSS'
-const ogDescription =
-  'Explore the projects and applications built using Panda CSS'
+const title = 'Built with Panda'
+const description = 'Real products shipping on Panda CSS today.'
 
 export const metadata: Metadata = {
-  title: 'Showcase',
-  description:
-    'Panda CSS is a powerful tool for building modern web applications.',
+  title: 'Showcase | Panda CSS',
+  description,
   openGraph: {
-    title: ogTitle,
-    description: ogDescription,
-    type: 'website',
-    images: [
-      generateOgImageUrl({
-        title: ogTitle,
-        description: ogDescription,
-        category: 'Showcase'
-      })
-    ]
+    title,
+    description,
+    images: [generateOgImageUrl({ title, description, category: 'Showcase' })]
   },
   twitter: {
     card: 'summary_large_image',
-    title: ogTitle,
-    description: ogDescription,
-    images: [
-      generateOgImageUrl({
-        title: ogTitle,
-        description: ogDescription,
-        category: 'Showcase'
-      })
-    ]
+    title,
+    description,
+    images: [generateOgImageUrl({ title, description, category: 'Showcase' })]
   }
-}
-
-interface Showcase {
-  name: string
-  description: string
-  url: string
-  image: string
 }
 
 const cardStyles = css({
-  borderWidth: '1px',
-  borderRadius: 'md',
   display: 'flex',
   flexDirection: 'column',
+  borderWidth: '1px',
+  borderColor: 'border',
+  rounded: 'lg',
   overflow: 'hidden',
-  transitionProperty: 'border-color',
+  textDecoration: 'none',
+  color: 'fg',
+  transitionProperty: 'border-color, background-color',
   transitionDuration: '150ms',
-  _hover: {
-    borderColor: 'fg.subtle'
-  }
+  _hover: { borderColor: 'fg.subtle', bg: 'bg.subtle' }
 })
 
-const ShowcaseCard = ({ data }: { data: Showcase }) => {
-  const { name, description, url, image } = data
+function ShowcaseCard(props: { data: Showcase; featured?: boolean }) {
+  const { data, featured } = props
 
   return (
-    <Link
-      href={url}
+    <a
+      href={data.url}
       target="_blank"
       rel="noopener noreferrer"
-      className={cardStyles}
+      className={cx(
+        cardStyles,
+        featured ? css({ gridColumn: { base: 'auto', md: 'span 2' } }) : undefined
+      )}
     >
-      <Image
-        src={image}
-        alt={name}
-        width={400}
-        height={300}
-        className={css({
-          width: '100%',
-          height: '200px',
-          objectFit: 'cover',
-          borderTopRadius: 'md'
-        })}
-      />
-      <Stack gap="0" p="4" bg="bg">
-        <panda.h3 fontSize="lg" fontWeight="semibold">
-          {name}
-        </panda.h3>
-        <panda.p color="fg.muted">{description}</panda.p>
-      </Stack>
-    </Link>
+      <Box
+        position="relative"
+        w="full"
+        aspectRatio={featured ? '2 / 1' : '3 / 2'}
+        bg="bg.subtle"
+        overflow="hidden"
+      >
+        <Image
+          src={data.image}
+          alt={`The ${data.name} website, built with Panda CSS`}
+          fill
+          sizes={
+            featured
+              ? '(max-width: 768px) 100vw, 66vw'
+              : '(max-width: 768px) 100vw, 33vw'
+          }
+          style={{ objectFit: 'cover' }}
+        />
+      </Box>
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
+        gap="4"
+        px="5"
+        py="4"
+        borderTopWidth="1px"
+        borderColor="border"
+      >
+        <Box minW="0">
+          <Box textStyle="sm" fontWeight="semibold">
+            {data.name}
+          </Box>
+          <Box textStyle="eyebrow" color="fg.subtle" mt="1.5">
+            {data.description}
+          </Box>
+        </Box>
+        <Box color="fg.subtle" flexShrink="0">
+          <LuArrowUpRight />
+        </Box>
+      </Box>
+    </a>
   )
 }
 
 export default function ShowcasePage() {
-  return (
-    <>
-      <Navbar />
-      <panda.div bg="bg.muted" pt="20" minH="80dvh">
-        <Container py="20">
-          <Stack gap="6" align="center">
-            <Stack align="center" textAlign="center">
-              <panda.h1
-                fontSize={{ base: '3xl', md: '5xl' }}
-                fontWeight="bold"
-                letterSpacing="tight"
-              >
-                Showcase
-              </panda.h1>
-            </Stack>
-            <panda.p
-              fontSize={{ base: 'lg', md: 'xl' }}
-              color="fg.muted"
-              maxW="2xl"
-              lineHeight="relaxed"
-              textAlign="center"
-            >
-              Explore the projects built with Panda CSS by the community and get
-              inspired for your next project.
-            </panda.p>
-          </Stack>
-        </Container>
+  const [featured, ...rest] = showcases
 
-        <Container pb="20">
-          <Grid
-            columns={{ base: 1, md: 2, lg: 3 }}
-            gap={{ base: '4', md: '8' }}
-          >
-            {showcases.map(showcase => (
-              <ShowcaseCard key={showcase.name} data={showcase} />
-            ))}
-          </Grid>
-        </Container>
-      </panda.div>
-      <FooterSection />
-    </>
+  return (
+    <SitePage kicker="Built with Panda" title={title} description={description}>
+      <Box
+        display="grid"
+        gridTemplateColumns={{ base: '1fr', md: 'repeat(3, minmax(0, 1fr))' }}
+        gap="5"
+      >
+        <ShowcaseCard data={featured} featured />
+        {rest.map(item => (
+          <ShowcaseCard key={item.name} data={item} />
+        ))}
+      </Box>
+
+      <Box
+        mt="16"
+        pt="10"
+        borderTopWidth="1px"
+        borderColor="border"
+        textStyle="prose"
+        color="fg.muted"
+      >
+        Shipping something on Panda?{' '}
+        <a
+          href="https://github.com/chakra-ui/panda/discussions"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={css({
+            color: 'fg',
+            textDecorationLine: 'underline',
+            textUnderlineOffset: '3px',
+            textDecorationColor: 'accent.emphasis'
+          })}
+        >
+          Tell us about it
+        </a>
+        .
+      </Box>
+    </SitePage>
   )
 }

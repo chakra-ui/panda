@@ -21,7 +21,7 @@ export const footerColumns: FooterColumn[] = [
       { title: 'Documentation', href: '/docs' },
       { title: 'Reference', href: '/docs/reference/cli' },
       { title: 'Blog', href: '/blog' },
-      { title: 'Install', href: '/docs/styling/installation' }
+      { title: 'Install', href: '/install' }
     ]
   },
   {
@@ -31,6 +31,7 @@ export const footerColumns: FooterColumn[] = [
       { title: 'Editor & IDE', href: '/docs/tooling/editor-tooling' },
       { title: 'MCP server', href: '/docs/tooling/mcp-server' },
       { title: 'Studio', href: '/docs/tooling/studio' },
+      { title: 'Ecosystem', href: '/ecosystem' },
       { title: 'Playground', href: 'https://play.panda-css.com/' }
     ]
   },
@@ -51,6 +52,7 @@ export const footerColumns: FooterColumn[] = [
     links: [
       { title: 'Showcase', href: '/showcase' },
       { title: 'Team', href: '/team' },
+      { title: 'Brand kit', href: '/brand' },
       { title: 'Roadmap', href: 'https://panda-css.canny.io/' },
       {
         title: 'Changelog',
