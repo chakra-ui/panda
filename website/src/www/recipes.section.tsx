@@ -75,7 +75,7 @@ export const RecipesSection = () => {
             </Stack>
 
             <panda.div position={{ lg: 'absolute' }} bottom="40" left="0">
-              <LearnMore href="/docs/styling/recipes" />
+              <LearnMore href="/docs/recipes/recipes" />
             </panda.div>
           </Stack>
 

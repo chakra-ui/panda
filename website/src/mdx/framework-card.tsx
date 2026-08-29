@@ -22,83 +22,83 @@ import Link from 'next/link'
 const logoMap = {
   nextjs: {
     name: 'Next.js',
-    href: '/docs/styling/nextjs',
+    href: '/docs/compiler/nextjs',
     logo: NextjsLogo
   },
   vite: {
     name: 'Vite',
     logo: ViteLogo,
-    href: '/docs/styling/vite'
+    href: '/docs/compiler/vite'
   },
   astro: {
     name: 'Astro',
     logo: AstroLogo,
-    href: '/docs/styling/astro'
+    href: '/docs/compiler/astro'
   },
   vue: {
     name: 'Vue',
     logo: VueLogo,
-    href: '/docs/styling/vue'
+    href: '/docs/compiler/vue'
   },
   nuxt: {
     name: 'Nuxt',
     logo: NuxtLogo,
-    href: '/docs/styling/nuxt'
+    href: '/docs/compiler/nuxt'
   },
   svelte: {
     name: 'Svelte',
     logo: SvelteLogo,
-    href: '/docs/styling/svelte'
+    href: '/docs/compiler/svelte'
   },
   remix: {
     name: 'Remix',
     logo: RemixLogo,
-    href: '/docs/styling/remix'
+    href: '/docs/compiler/remix'
   },
   reactrouter: {
     name: 'React Router',
     logo: ReactRouterLogo,
-    href: '/docs/styling/react-router'
+    href: '/docs/compiler/react-router'
   },
   angular: {
     name: 'Angular',
     logo: AngularLogo,
-    href: '/docs/styling/angular'
+    href: '/docs/compiler/angular'
   },
   gatsby: {
     name: 'Gatsby',
     logo: GatsbyLogo,
-    href: '/docs/styling/gatsby'
+    href: '/docs/compiler/gatsby'
   },
   solid: {
     name: 'Solid',
     logo: SolidjsLogo,
-    href: '/docs/styling/solidjs'
+    href: '/docs/compiler/solidjs'
   },
   qwik: {
     name: 'Qwik',
     logo: QwikLogo,
-    href: '/docs/styling/qwik'
+    href: '/docs/compiler/qwik'
   },
   preact: {
     name: 'Preact',
     logo: PreactLogo,
-    href: '/docs/styling/preact'
+    href: '/docs/compiler/preact'
   },
   rsbuild: {
     name: 'Rsbuild',
     logo: RsbuildLogo,
-    href: '/docs/styling/rsbuild'
+    href: '/docs/compiler/rsbuild'
   },
   ember: {
     name: 'Ember',
     logo: EmberLogo,
-    href: '/docs/styling/ember'
+    href: '/docs/compiler/ember'
   },
   redwood: {
     name: 'Redwood',
     logo: RedwoodLogo,
-    href: '/docs/styling/redwood'
+    href: '/docs/compiler/redwood'
   }
 }
 

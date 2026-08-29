@@ -168,7 +168,7 @@ One override → `css`. Named parts → `trackCss`, `slideCss`, etc. Other prop 
 ### Recipe
 
 You can use recipe variants as JSX props to quickly change the styles of your components, as long as
-[you're tracking those components in your recipe config](/docs/styling/recipes#advanced-jsx-tracking).
+[you're tracking those components in your recipe config](/docs/recipes/recipes#advanced-jsx-tracking).
 
 ```tsx
 import { styled } from '../styled-system/jsx'
@@ -320,7 +320,7 @@ const App = () => <Input size={4} />
 ```
 
 > **Note:** A forwarded prop becomes a plain HTML prop, so it no longer feeds recipe styling. To keep a prop styling
-> _and_ pass it to your component, see [forwarding props](/docs/styling/jsx-style-context#forwarding-props) in
+> _and_ pass it to your component, see [forwarding props](/docs/recipes/jsx-style-context#forwarding-props) in
 > `createSlotRecipeContext`.
 
 ### Unstyled prop

@@ -15,7 +15,7 @@ A recipe consists of four properties:
 > **Credit:** This API was inspired by [Stitches](https://stitches.dev/),
 > [Vanilla Extract](https://vanilla-extract.style/), and [Class Variance Authority](https://cva.style/).
 
-[Comparison table between the different types of recipes here: "Should I use atomic or config recipes ?"](/docs/styling/recipes#should-i-use-atomic-or-config-recipes-)
+[Comparison table between the different types of recipes here: "Should I use atomic or config recipes ?"](/docs/recipes/recipes#should-i-use-atomic-or-config-recipes-)
 
 ## Atomic Recipe (or cva)
 
@@ -455,12 +455,12 @@ export const buttonRecipe = defineRecipe({
 
 Or add literal calls in stories/tests, or use string literals in the call itself.
 
-Slot recipes follow the same rules. See [slot recipes](/docs/styling/slot-recipes#dynamic-variant-props). More in
-[static CSS](/docs/design-systems/static#generating-recipes).
+Slot recipes follow the same rules. See [slot recipes](/docs/recipes/slot-recipes#dynamic-variant-props). More in
+[static CSS](/docs/compiler/static#generating-recipes).
 
 ### Using compound variants
 
-Apply styles when **multiple** variant props match. Same shape as [`cva`](/docs/styling/recipes#compound-variants): a
+Apply styles when **multiple** variant props match. Same shape as [`cva`](/docs/recipes/recipes#compound-variants): a
 flat `css` object on each entry:
 
 ```ts filename="input.recipe.ts"
@@ -576,7 +576,7 @@ input({ size: 'md', variant: 'outline' })
 // "input input--size_md input--variant_outline px_3 py_2"
 ```
 
-Runtime-only combos need [`staticCss`](/docs/design-systems/static#generating-recipes). Run `pnpm panda codegen` after editing
+Runtime-only combos need [`staticCss`](/docs/compiler/static#generating-recipes). Run `pnpm panda codegen` after editing
 the recipe.
 
 ### Responsive and Conditional variants
@@ -585,7 +585,7 @@ Pass breakpoint objects to variant props instead of a single value. Generated ty
 
 This only works when:
 
-- The recipe is defined in config with `defineRecipe`, not [`cva`](/docs/styling/recipes#atomic-recipe-or-cva)
+- The recipe is defined in config with `defineRecipe`, not [`cva`](/docs/recipes/recipes#atomic-recipe-or-cva)
 - The recipe has no `compoundVariants` (see [Using compound variants](#using-compound-variants))
 
 ```jsx
@@ -795,8 +795,8 @@ export const Demo = {
 
 ## Limitations
 
-- [`cva`](/docs/styling/recipes#atomic-recipe-or-cva): no responsive variant props. Config recipes: yes, unless
-  `compoundVariants` is set (see [above](/docs/styling/recipes#using-compound-variants)).
+- [`cva`](/docs/recipes/recipes#atomic-recipe-or-cva): no responsive variant props. Config recipes: yes, unless
+  `compoundVariants` is set (see [above](/docs/recipes/recipes#using-compound-variants)).
 
 - Due to static nature of Panda, it's not possible to track the usage of the recipes in all cases. Here are some of use
   cases that Panda won't be able to track the usage of the recipe variants:
@@ -832,12 +832,12 @@ export const Demo = {
 
 ## Static CSS
 
-Use `staticCss` to pre-generate recipe CSS Panda can't extract, including [dynamic variant props](/docs/styling/recipes#dynamic-variant-props). See [Generating recipes](/docs/design-systems/static#generating-recipes).
+Use `staticCss` to pre-generate recipe CSS Panda can't extract, including [dynamic variant props](/docs/recipes/recipes#dynamic-variant-props). See [Generating recipes](/docs/compiler/static#generating-recipes).
 
 ## Should I use atomic or config recipes ?
 
-[Config recipes](/docs/styling/recipes#config-recipe) are JIT: Panda only emits variants it finds in your code.
-[`cva`](/docs/styling/recipes#atomic-recipe-or-cva) recipes live anywhere in the app, so every variant is generated up
+[Config recipes](/docs/recipes/recipes#config-recipe) are JIT: Panda only emits variants it finds in your code.
+[`cva`](/docs/recipes/recipes#atomic-recipe-or-cva) recipes live anywhere in the app, so every variant is generated up
 front.
 
 Use config recipes for design-system components and leaner CSS. Use `cva` for colocation and runtime merging.

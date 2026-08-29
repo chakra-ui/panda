@@ -100,34 +100,13 @@ export const docsTabs: TabItem[] = [
       {
         title: 'Get Started',
         items: [
+          { title: 'Overview', url: 'overview' },
           { title: 'Welcome to Panda', url: 'getting-started' },
           { title: 'Installation', url: 'installation' },
           { title: 'Thinking in Panda', url: 'thinking-in-panda' },
           { title: 'FAQs', url: 'faq' },
           { title: 'Browser Support', url: 'browser-support' },
-          { title: 'How Panda works', url: 'how-panda-works' },
-          { title: 'Performance & Optimization', url: 'performance-optimization' },
-          { title: 'Upgrading to v2', url: 'upgrading-to-v2' },
-          { title: 'The Compiler Engine', url: 'compiler-engine' },
-          {
-            title: 'Roadmap',
-            href: 'https://panda-css.canny.io/',
-            external: true
-          },
-          {
-            title: 'Changelog',
-            href: 'https://github.com/chakra-ui/panda/blob/main/CHANGELOG.md',
-            external: true
-          }
-        ]
-      },
-      {
-        title: 'AI for Agents',
-        tag: 'new',
-        items: [
-          { title: 'LLMs.txt', url: 'llms-txt' },
-          { title: 'MCP Server', url: 'mcp-server' },
-          { title: 'Agent Skills', url: 'agent-skills' }
+          { title: 'Upgrading to v2', url: 'upgrading-to-v2' }
         ]
       },
       {
@@ -147,14 +126,10 @@ export const docsTabs: TabItem[] = [
       {
         title: 'Styling APIs',
         items: [
-          { title: 'Patterns', url: 'patterns' },
-          { title: 'Recipes', url: 'recipes' },
-          { title: 'Slot Recipes', url: 'slot-recipes' },
-          { title: 'Template Literals', url: 'template-literals' },
           { title: 'JSX Style Props', url: 'style-props' },
-          { title: 'JSX Style Context', url: 'jsx-style-context' },
           { title: 'Styled System', url: 'styled-system' },
           { title: 'The extend keyword', url: 'extend' },
+          { title: 'Template Literals', url: 'template-literals' },
           { title: 'View Transition', url: 'view-transition', tag: 'new' }
         ]
       },
@@ -174,6 +149,28 @@ export const docsTabs: TabItem[] = [
     ]
   },
   {
+    key: 'recipes',
+    title: 'Recipes',
+    side: 'left',
+    items: [
+      {
+        title: 'Recipes',
+        items: [
+          { title: 'Overview', url: 'overview' },
+          { title: 'Recipes', url: 'recipes' },
+          { title: 'Slot Recipes', url: 'slot-recipes' }
+        ]
+      },
+      {
+        title: 'Composition',
+        items: [
+          { title: 'Patterns', url: 'patterns' },
+          { title: 'JSX Style Context', url: 'jsx-style-context' }
+        ]
+      }
+    ]
+  },
+  {
     key: 'theming',
     title: 'Theming',
     side: 'left',
@@ -181,6 +178,7 @@ export const docsTabs: TabItem[] = [
       {
         title: 'Tokens',
         items: [
+          { title: 'Overview', url: 'overview' },
           { title: 'Tokens', url: 'tokens' },
           { title: 'Token Usage', url: 'usage' }
         ]
@@ -198,15 +196,8 @@ export const docsTabs: TabItem[] = [
         items: [
           { title: 'Theme', url: 'theme' },
           { title: 'Custom Fonts', url: 'fonts' },
-          { title: 'Multiple Themes', url: 'multiple-themes' }
-        ]
-      },
-      {
-        title: 'Tooling',
-        items: [
-          { title: 'Spec', url: 'spec', tag: 'new' },
-          { title: 'Panda Studio', url: 'studio' },
-          { title: 'Panda Studio in v2', url: 'studio-v2' }
+          { title: 'Multiple Themes', url: 'multiple-themes' },
+          { title: 'Spec', url: 'spec', tag: 'new' }
         ]
       }
     ]
@@ -257,7 +248,6 @@ export const docsTabs: TabItem[] = [
           { title: 'Avoiding CSS collisions', url: 'avoiding-collisions' },
           { title: 'Monorepo dev workflow', url: 'monorepo-dev-workflow' },
           { title: 'Federated Micro-Frontends', url: 'federated-microfrontends' },
-          { title: 'Static CSS Generation', url: 'static' },
           { title: 'Minimal Setup', url: 'minimal-setup' },
           { title: 'Environment-specific config', url: 'environment-specific-config' }
         ]
@@ -265,10 +255,102 @@ export const docsTabs: TabItem[] = [
     ]
   },
   {
+    key: 'compiler',
+    title: 'Compiler',
+    side: 'left',
+    items: [
+      {
+        title: 'How it works',
+        items: [
+          { title: 'Overview', url: 'overview' },
+          { title: 'How Panda works', url: 'how-panda-works' },
+          { title: 'The Compiler Engine', url: 'compiler-engine' },
+          { title: 'Performance & Optimization', url: 'performance-optimization' },
+          { title: 'Static CSS Generation', url: 'static' }
+        ]
+      },
+      {
+        title: 'Build Integrations',
+        items: [
+          { title: 'CLI', url: 'cli' },
+          { title: 'PostCSS', url: 'postcss' },
+          { title: 'Vite', url: 'vite' },
+          { title: 'Storybook', url: 'storybook' }
+        ]
+      },
+      {
+        title: 'Framework Guides',
+        items: [
+          { title: 'Next.js', url: 'nextjs' },
+          { title: 'Astro', url: 'astro' },
+          { title: 'Vue', url: 'vue' },
+          { title: 'Nuxt', url: 'nuxt' },
+          { title: 'Svelte', url: 'svelte' },
+          { title: 'SolidJS', url: 'solidjs' },
+          { title: 'Remix', url: 'remix' },
+          { title: 'React Router', url: 'react-router' },
+          { title: 'Angular', url: 'angular' },
+          { title: 'Preact', url: 'preact' },
+          { title: 'Qwik', url: 'qwik' },
+          { title: 'Ember', url: 'ember' },
+          { title: 'Gatsby', url: 'gatsby' },
+          { title: 'Redwood', url: 'redwood' },
+          { title: 'Rsbuild', url: 'rsbuild' }
+        ]
+      }
+    ]
+  },
+  {
+    key: 'tooling',
+    title: 'Tooling',
+    side: 'left',
+    items: [
+      {
+        title: 'Lint & Edit',
+        items: [
+          { title: 'Overview', url: 'overview' },
+          { title: 'ESLint & OXLint Plugin', url: 'eslint-oxlint-plugin' },
+          { title: 'Editor & IDE Tooling', url: 'editor-tooling' }
+        ]
+      },
+      {
+        title: 'AI for Agents',
+        tag: 'new',
+        items: [
+          { title: 'MCP Server', url: 'mcp-server' },
+          { title: 'LLMs.txt', url: 'llms-txt' },
+          { title: 'Agent Skills', url: 'agent-skills' }
+        ]
+      },
+      {
+        title: 'Inspect',
+        items: [
+          { title: 'Panda Studio', url: 'studio' },
+          { title: 'Panda Studio in v2', url: 'studio-v2' },
+          {
+            title: 'Playground',
+            href: 'https://play.panda-css.com/',
+            external: true
+          }
+        ]
+      }
+    ]
+  },
+  {
     key: 'reference',
-    title: 'References',
+    title: 'Reference',
     side: 'right',
     items: [
+      {
+        title: 'CLI & Config',
+        items: [
+          { title: 'CLI', url: 'cli' },
+          { title: 'Config', url: 'config' },
+          { title: 'Debugging', url: 'debugging' },
+          { title: 'Diagnostics', url: 'diagnostics' },
+          { title: 'Deprecations', url: 'deprecations' }
+        ]
+      },
       {
         title: 'Utility Reference',
         items: [
@@ -294,18 +376,6 @@ export const docsTabs: TabItem[] = [
           { title: 'Transitions', url: 'transitions' },
           { title: 'Typography', url: 'typography' }
         ]
-      },
-      {
-        title: 'CLI, Config & Tools',
-        items: [
-          { title: 'CLI', url: 'cli' },
-          { title: 'Config', url: 'config' },
-          { title: 'Deprecations', url: 'deprecations' },
-          { title: 'Debugging', url: 'debugging' },
-          { title: 'Diagnostics Reference', url: 'diagnostics' },
-          { title: 'ESLint & OXLint Plugin', url: 'eslint-oxlint-plugin' },
-          { title: 'Editor & IDE Tooling', url: 'editor-tooling' }
-        ]
       }
     ]
   }
@@ -327,34 +397,6 @@ export const defaultTabKey = 'styling'
  * live in Styling ▸ Get Started instead, they're product tracking, not
  * community.
  */
-/**
- * Page urls whose canonical home is the Installation page's tabs (CLI, PostCSS,
- * Framework Guides, Storybook), even though they aren't listed as their own
- * sidebar items. The sidebar and breadcrumb use this to keep "Installation"
- * highlighted/shown instead of the raw page url when viewing one of these.
- */
-export const installationGuideUrls = [
-  'cli',
-  'postcss',
-  'storybook',
-  'astro',
-  'angular',
-  'nextjs',
-  'remix',
-  'react-router',
-  'gatsby',
-  'ember',
-  'redwood',
-  'rsbuild',
-  'qwik',
-  'vite',
-  'vue',
-  'nuxt',
-  'preact',
-  'solidjs',
-  'svelte'
-]
-
 export const communityLinks: NavItem[] = [
   { title: 'Team', href: '/team' },
   { title: 'Showcase', href: '/showcase' },

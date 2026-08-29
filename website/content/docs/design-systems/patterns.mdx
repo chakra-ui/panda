@@ -111,7 +111,7 @@ const App = () => {
 
 ## Customizing a built-in pattern
 
-Extend a [default pattern](/docs/styling/patterns#predefined-patterns) the same way, under `patterns.extend`. Here's
+Extend a [default pattern](/docs/recipes/patterns#predefined-patterns) the same way, under `patterns.extend`. Here's
 `flex` narrowed to two directions, with a second component name recognized as a usage of it:
 
 ```ts filename="panda.config.ts"
@@ -136,7 +136,7 @@ export default defineConfig({
 `defaultValues` in `patterns.extend` changes what a built-in pattern applies when a prop is omitted. Same shape for
 every pattern, only the pattern name and keys change.
 
-`@pandacss/preset-base` sets `gap: '8px'` on [`stack`](/docs/styling/patterns#stack). To default to a spacing token
+`@pandacss/preset-base` sets `gap: '8px'` on [`stack`](/docs/recipes/patterns#stack). To default to a spacing token
 instead:
 
 ```ts filename="panda.config.ts"

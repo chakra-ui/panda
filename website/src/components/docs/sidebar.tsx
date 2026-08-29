@@ -1,7 +1,7 @@
 'use client'
 
 import { Badge } from '@/components/ui/badge'
-import { docsTabs, installationGuideUrls } from '@/docs.config'
+import { docsTabs } from '@/docs.config'
 import { css } from '@/styled-system/css'
 import { HStack, Stack } from '@/styled-system/jsx'
 import Link from 'next/link'
@@ -60,16 +60,9 @@ export function Sidebar({ slug: currentSlug }: Props) {
     pathname === `/docs/${tabKey}/${pageUrl}` ||
     currentSlug === `${tabKey}/${pageUrl}`
 
-  // Framework/CLI/PostCSS/Storybook guides live only behind the Installation
-  // page's tabs, not as their own sidebar items, but the sidebar should still
-  // point at "Installation" while viewing one.
-  const currentPageUrl = pathname?.split('/')[3] || currentSlug?.split('/')[1]
-  const isOnInstallationGuide =
-    !!currentPageUrl && installationGuideUrls.includes(currentPageUrl)
-
-  const isItemActive = (item: NonNullable<typeof tab.items[number]['items']>[number]) =>
-    (item.url && isActive(item.url)) ||
-    (item.url === 'installation' && isOnInstallationGuide)
+  const isItemActive = (
+    item: NonNullable<(typeof tab.items)[number]['items']>[number]
+  ) => !!item.url && isActive(item.url)
 
   return (
     <Stack as="nav" aria-label={`${tab.title} pages`} gap="1">

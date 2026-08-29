@@ -120,6 +120,34 @@ export const Card = (props: CardProps) => {
   )
 }
 
+const columnStyles = {
+  1: css({ gridTemplateColumns: '1fr' }),
+  2: css({
+    gridTemplateColumns: { base: '1fr', sm: 'repeat(2, minmax(0, 1fr))' }
+  }),
+  3: css({
+    gridTemplateColumns: {
+      base: '1fr',
+      sm: 'repeat(2, minmax(0, 1fr))',
+      lg: 'repeat(3, minmax(0, 1fr))'
+    }
+  }),
+  4: css({
+    gridTemplateColumns: {
+      base: '1fr',
+      sm: 'repeat(2, minmax(0, 1fr))',
+      lg: 'repeat(4, minmax(0, 1fr))'
+    }
+  })
+}
+
+const gapStyles = {
+  gapped: css({ gap: '4' }),
+  gapless: css({ gap: '0' })
+}
+
+const gridBase = css({ display: 'grid', my: '8' })
+
 interface CardsProps extends React.ComponentProps<'div'> {
   columns?: 1 | 2 | 3 | 4
   mode?: 'gapped' | 'gapless'
@@ -132,16 +160,9 @@ export const Cards = (props: CardsProps) => {
     <div
       data-mode={mode}
       className={cx(
-        css({
-          display: 'grid',
-          my: '8',
-          gridTemplateColumns: {
-            base: '1fr',
-            sm: `repeat(${Math.min(columns, 2)}, minmax(0, 1fr))`,
-            lg: `repeat(${columns}, minmax(0, 1fr))`
-          },
-          gap: mode === 'gapped' ? '4' : '0'
-        }),
+        gridBase,
+        columnStyles[columns] ?? columnStyles[2],
+        gapStyles[mode] ?? gapStyles.gapped,
         className
       )}
       {...rest}

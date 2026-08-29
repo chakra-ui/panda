@@ -108,7 +108,7 @@ See [JSX Style Props](/docs/styling/style-props) for the other ways Panda lets y
 
 Tailwind doesn't ship a built-in way to define a component's variants (a button's `size`/`intent` combinations)
 itself, that typically means composing class strings by hand, or reaching for a separate package like
-`tailwind-variants`. Panda has this built in as [recipes](/docs/styling/recipes):
+`tailwind-variants`. Panda has this built in as [recipes](/docs/recipes/recipes):
 
 ```ts filename="button.ts"
 import { cva } from '../styled-system/css'
@@ -129,7 +129,7 @@ export const button = cva({
 ```
 
 The variant combinations are typed, so `button({ size: 'xl' })` is a type error if `xl` was never defined. See
-[Recipes](/docs/styling/recipes) and [Slot Recipes](/docs/styling/slot-recipes) for multi-part components.
+[Recipes](/docs/recipes/recipes) and [Slot Recipes](/docs/recipes/slot-recipes) for multi-part components.
 
 ## Color Modes
 
@@ -199,7 +199,7 @@ See [Global Styles](/docs/styling/global-styles).
 
 Tailwind has no built-in layout components, it's class-name-only, layout primitives like a `Box` or `Stack` are
 something you'd build yourself or pull from a separate component library (Headless UI, shadcn/ui). Panda ships
-[patterns](/docs/styling/patterns) for exactly this, as both a function and a JSX component, out of the box:
+[patterns](/docs/recipes/patterns) for exactly this, as both a function and a JSX component, out of the box:
 
 ```jsx
 import { Box, Grid } from '../styled-system/jsx'
@@ -211,7 +211,7 @@ import { Box, Grid } from '../styled-system/jsx'
 
 Tailwind's `@apply` directive (composing utility classes inside a hand-written CSS rule) also has no Panda
 equivalent, since Panda doesn't generate named utility classes for you to reference from separate CSS, use a
-[recipe](/docs/styling/recipes) or the [`cx`](/docs/styling/merging-styles) helper for the same composition instead.
+[recipe](/docs/recipes/recipes) or the [`cx`](/docs/styling/merging-styles) helper for the same composition instead.
 Tailwind plugins, loaded with `@plugin` in v4 (`@tailwindcss/typography`, `@tailwindcss/forms`) don't carry over
 either, check [Presets](/docs/design-systems/presets) for the equivalent idea, a shareable package of tokens,
 recipes, and patterns.
@@ -226,5 +226,5 @@ than a redesign.
 ## See also
 
 - [Migration strategy](/docs/styling/migration-strategy) for running both tools side by side during the migration.
-- [Writing Styles](/docs/styling/writing-styles) and [Recipes](/docs/styling/recipes) for the two APIs this guide
+- [Writing Styles](/docs/styling/writing-styles) and [Recipes](/docs/recipes/recipes) for the two APIs this guide
   leans on most.

@@ -1,0 +1,36 @@
+---
+title: Compiler
+description: How Panda finds your styles and emits CSS.
+hideToc: true
+---
+
+Panda reads your source at build time, extracts every style it can prove, and writes plain CSS. No runtime, no
+class-name soup.
+
+<Cards columns={3}>
+  <Card title="How Panda works" href="/docs/compiler/how-panda-works" kicker="Concept" description="Extraction, encoding, and emission in one pass." cta="Read the pipeline" />
+  <Card title="The compiler engine" href="/docs/compiler/compiler-engine" kicker="Internals" description="The Rust and Oxc engine behind v2." cta="Look inside" />
+  <Card title="Performance" href="/docs/compiler/performance-optimization" kicker="Tuning" description="Keep builds fast as the codebase grows." cta="Tune your build" />
+</Cards>
+
+## Build integrations
+
+<Cards columns={4} mode="gapless">
+  <Card title="CLI" href="/docs/compiler/cli" description="panda, codegen, cssgen." />
+  <Card title="PostCSS" href="/docs/compiler/postcss" description="The plugin, for any bundler." />
+  <Card title="Vite" href="/docs/compiler/vite" description="First-class Vite support." />
+  <Card title="Storybook" href="/docs/compiler/storybook" description="Styles in your stories." />
+</Cards>
+
+## Framework guides
+
+<Cards columns={4} mode="gapless">
+  <Card title="Next.js" href="/docs/compiler/nextjs" description="App and pages router." />
+  <Card title="Astro" href="/docs/compiler/astro" description="Islands and static output." />
+  <Card title="Vue" href="/docs/compiler/vue" description="SFC style extraction." />
+  <Card title="Nuxt" href="/docs/compiler/nuxt" description="The Nuxt module." />
+  <Card title="Svelte" href="/docs/compiler/svelte" description="Svelte and SvelteKit." />
+  <Card title="Solid" href="/docs/compiler/solidjs" description="SolidStart and Vite." />
+  <Card title="Remix" href="/docs/compiler/remix" description="Remix and Vite." />
+  <Card title="React Router" href="/docs/compiler/react-router" description="Framework mode." />
+</Cards>

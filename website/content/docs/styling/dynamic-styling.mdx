@@ -39,7 +39,7 @@ fix this:
 
 ### Using Static CSS
 
-Panda supports a [`staticCss`](/docs/design-systems/static) option in the config you can use to pre-generate some styles ahead
+Panda supports a [`staticCss`](/docs/compiler/static) option in the config you can use to pre-generate some styles ahead
 of time.
 
 ```tsx filename="panda.config.ts"
@@ -349,7 +349,7 @@ And the following CSS
 ## Runtime conditions
 
 Even though we recommend that you first look for better alternatives (such as using
-[recipe variants](/docs/styling/recipes)), you may still occasionally need runtime conditions.
+[recipe variants](/docs/recipes/recipes)), you may still occasionally need runtime conditions.
 
 When encountering a runtime condition, Panda will first try to resolve it statically. If it can't, it will fallback to
 the generating the corresponding CSS for each possible branches.
@@ -466,7 +466,7 @@ const Section = () => {
 ```
 
 Even though `colorByType` is statically analyzable, Panda does not _yet_ support this kind of automatic extraction
-fallback. This is the perfect opportunity to use the [recipes](/docs/styling/recipes).
+fallback. This is the perfect opportunity to use the [recipes](/docs/recipes/recipes).
 
 ```tsx
 import { useState } from 'react'
@@ -501,16 +501,16 @@ You can now :
 
 All of this with complete type-safety and without having to make drastic changes to the component.
 
-> Note that you can also [integrate this recipe directly into your theme](/docs/styling/recipes) if you want to only
+> Note that you can also [integrate this recipe directly into your theme](/docs/recipes/recipes) if you want to only
 > generate the CSS that you use, among other things
 
 ## Config recipes
 
 Config recipes only emit CSS for variants Panda can statically analyze. `button({ size })` works at runtime, but you'll
-only get `defaultVariants` in the stylesheet unless you add [`staticCss`](/docs/design-systems/static#generating-recipes) or
+only get `defaultVariants` in the stylesheet unless you add [`staticCss`](/docs/compiler/static#generating-recipes) or
 use string literals in the call.
 
-See [Dynamic variant props](/docs/styling/recipes#dynamic-variant-props).
+See [Dynamic variant props](/docs/recipes/recipes#dynamic-variant-props).
 
 ## Summary
 
