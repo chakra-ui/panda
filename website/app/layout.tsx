@@ -23,7 +23,7 @@ export default function RootLayout(props: Props) {
       lang="en"
       className={cx(
         fontClassName,
-        css({ fontFamily: 'body', fontSize: '0.9em' })
+        css({ fontFamily: 'body' })
       )}
       suppressHydrationWarning
     >

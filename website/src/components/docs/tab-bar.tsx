@@ -242,7 +242,7 @@ function TabLink({ tab, active }: TabLinkProps) {
   return (
     <Link
       href={`/docs/${tab.key}`}
-      aria-current={active || undefined}
+      aria-current={active ? 'page' : undefined}
       className={css({
         position: 'relative',
         display: 'flex',

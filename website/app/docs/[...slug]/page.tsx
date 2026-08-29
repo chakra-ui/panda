@@ -22,7 +22,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: DocsPageProps) {
   const { slug } = await params
-  const doc = docs.find(doc => doc.slug.endsWith(slug.join('/')))
+  const doc = docs.find(doc => doc.slug === `docs/${slug.join('/')}`)
   
   if (!doc) {
     return {
@@ -59,7 +59,7 @@ export default async function DocsPage(props: DocsPageProps) {
   const params = await props.params
 
   const slug = params.slug.join('/')
-  const doc = docs.find(doc => doc.slug.endsWith(slug))
+  const doc = docs.find(doc => doc.slug === `docs/${slug}`)
 
   if (!doc) {
     notFound()

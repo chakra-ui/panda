@@ -4,9 +4,17 @@ export const globalCss = defineGlobalStyles({
   '*, *::before, *::after': {
     borderColor: 'border'
   },
+  '@media (prefers-reduced-motion: reduce)': {
+    '*, *::before, *::after': {
+      animationDuration: '0.01ms!',
+      animationIterationCount: '1!',
+      transitionDuration: '0.01ms!',
+      scrollBehavior: 'auto!'
+    }
+  },
   html: {
     fontFamily: 'sans',
-    fontSize: '0.9em',
+    scrollbarGutter: 'stable',
     '--nextra-primary-hue': '212deg',
     scrollPaddingTop:
       'calc(var(--navbar-height, 4rem) + var(--banner-height, 2.5rem) + 1rem)'
@@ -55,7 +63,7 @@ export const globalCss = defineGlobalStyles({
   '.scroll-area': {
     scrollbarWidth: 'thin',
     scrollbarColor: 'oklch(55.55% 0 0 / 40%) transparent',
-    scrollbarGutter: 'auto',
+    scrollbarGutter: 'stable',
     '&::-webkit-scrollbar': {
       w: '3',
       h: '3'

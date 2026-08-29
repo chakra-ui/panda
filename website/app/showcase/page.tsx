@@ -55,10 +55,10 @@ const cardStyles = css({
   display: 'flex',
   flexDirection: 'column',
   overflow: 'hidden',
-  transition: 'transform 0.2s',
+  transitionProperty: 'border-color',
+  transitionDuration: '150ms',
   _hover: {
-    transform: 'translateY(-4px)',
-    shadow: 'lg'
+    borderColor: 'fg.subtle'
   }
 })
 

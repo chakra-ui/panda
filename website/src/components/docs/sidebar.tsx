@@ -14,23 +14,37 @@ interface Props {
 }
 
 const linkStyles = css({
+  position: 'relative',
   display: 'flex',
   alignItems: 'center',
   gap: '2',
-  px: '4',
+  minH: '8',
+  ml: '-1px',
+  ps: '4',
+  pe: '3',
   py: '1.5',
-  rounded: 'md',
+  roundedEnd: 'md',
   textStyle: 'sm',
   color: 'fg.muted',
   bg: 'transparent',
-  fontWeight: 'normal',
-  transitionProperty: 'background, color',
-  transitionDuration: '200ms',
+  fontWeight: 'medium',
+  transitionProperty: 'background-color, color',
+  transitionDuration: '150ms',
+  _before: {
+    content: '""',
+    position: 'absolute',
+    insetY: '0',
+    insetStart: '0',
+    width: '2px',
+    bg: 'transparent',
+    transitionProperty: 'background-color',
+    transitionDuration: '150ms'
+  },
   _hover: { bg: 'bg.subtle', color: 'fg' },
   _current: {
     color: 'fg',
     bg: 'accent.subtle',
-    fontWeight: 'semibold'
+    _before: { bg: 'accent.emphasis' }
   }
 })
 
@@ -58,7 +72,7 @@ export function Sidebar({ slug: currentSlug }: Props) {
     (item.url === 'installation' && isOnInstallationGuide)
 
   return (
-    <Stack as="nav" gap="1">
+    <Stack as="nav" aria-label={`${tab.title} pages`} gap="1">
       {tab.items.map(group => (
         <div key={group.title}>
           <HStack
@@ -73,7 +87,12 @@ export function Sidebar({ slug: currentSlug }: Props) {
           </HStack>
 
           {group.items && (
-            <Stack gap="0.5" mt="1">
+            <Stack
+              gap="0.5"
+              mt="1"
+              borderInlineStartWidth="1px"
+              borderColor="border"
+            >
               {group.items.map(item => {
                 if (item.external) {
                   return (
@@ -92,11 +111,14 @@ export function Sidebar({ slug: currentSlug }: Props) {
 
                 if (!item.url) return null
 
+                const current = isItemActive(item)
+
                 return (
                   <Link
                     key={item.url}
                     href={`/docs/${tabKey}/${item.url}`}
-                    data-current={isItemActive(item) || undefined}
+                    data-current={current || undefined}
+                    aria-current={current ? 'page' : undefined}
                     className={linkStyles}
                   >
                     <span>{item.title}</span>

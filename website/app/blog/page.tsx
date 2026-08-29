@@ -79,8 +79,9 @@ export default function BlogPage() {
                   bg: 'bg',
                   borderWidth: '1px',
                   borderRadius: 'lg',
-                  transition: 'all 0.2s',
-                  _hover: { shadow: 'md', transform: 'translateY(-2px)' }
+                  transitionProperty: 'border-color',
+                  transitionDuration: '150ms',
+                  _hover: { borderColor: 'fg.subtle' }
                 })}
               >
                 <Stack gap="2">

@@ -21,20 +21,10 @@ export const cardRecipe = defineRecipe({
         borderColor: 'border',
         color: 'currentColor',
         textDecorationLine: 'none',
-        boxShadow: 'md',
-        boxShadowColor: 'border.muted',
-        transition: 'all',
+        transitionProperty: 'color, background-color, border-color',
+        transitionDuration: '150ms',
         _hover: {
-          boxShadowColor: 'border.muted',
-          borderColor: 'border'
-        },
-        _active: {
-          boxShadow: 'sm',
-          boxShadowColor: 'gray.200'
-        },
-        _dark: {
-          _hover: { boxShadow: 'none' },
-          boxShadow: 'none'
+          borderColor: 'fg.subtle'
         }
       },
       title: {
@@ -90,7 +80,6 @@ export const cardRecipe = defineRecipe({
       default: parts({
         root: {
           bg: 'transparent',
-          boxShadow: 'sm',
           _dark: {
             borderColor: 'neutral.800',
             _hover: {
@@ -99,13 +88,12 @@ export const cardRecipe = defineRecipe({
             }
           },
           _hover: {
-            bgColor: 'gray.50',
-            boxShadow: 'md'
+            bgColor: 'gray.50'
           }
         },
         content: {
           _dark: {
-            color: 'neutra.200',
+            color: 'neutral.200',
             _hover: { color: 'neutral.50' }
           }
         }
@@ -113,7 +101,6 @@ export const cardRecipe = defineRecipe({
       image: parts({
         root: {
           bgColor: 'gray.100',
-          boxShadow: 'md',
           _dark: {
             borderColor: 'neutral.700',
             bg: 'gray.100',
@@ -122,9 +109,6 @@ export const cardRecipe = defineRecipe({
               borderColor: 'neutral.500',
               bg: 'neutral.700'
             }
-          },
-          _hover: {
-            boxShadow: 'lg'
           }
         },
         content: {
