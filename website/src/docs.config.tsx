@@ -6,7 +6,7 @@ export interface TeamMember {
 }
 
 export const teamMembers: TeamMember[] = [
-  { login: 'segunadebayo', role: 'Lead Maintainer', status: 'active' },
+  { login: 'segunadebayo', role: 'Creator & Lead Maintainer', status: 'active' },
   { login: 'Adebesin-Cell', role: 'Maintainer', status: 'active' },
   { login: 'anubra266', role: 'Maintainer', status: 'active' },
   { login: 'astahmer', role: 'Creator', status: 'alumni' },
