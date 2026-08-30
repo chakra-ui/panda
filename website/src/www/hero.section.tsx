@@ -8,7 +8,7 @@ export const HeroSection = () => {
   return (
     <panda.section bg="bg.main">
       <Box maxW="8xl" mx="auto" px={{ base: '4', md: '6', lg: '8' }}>
-        <Box pt="40" pb="24" position="relative">
+        <Box pt="12" pb="16" position="relative">
           <panda.h4
             color="fg/80"
             fontSize="2xl"
@@ -37,7 +37,7 @@ export const HeroSection = () => {
 
                 <panda.h1
                   color="fg.headline"
-                  fontSize={{ base: '7rem', sm: '12rem', lg: '14.5rem' }}
+                  fontSize={{ base: '5rem', sm: '9rem', lg: '11rem' }}
                   fontWeight="bold"
                   letterSpacing="tighter"
                   lineHeight="1"

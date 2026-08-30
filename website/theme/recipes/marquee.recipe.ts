@@ -15,8 +15,22 @@ export const marqueeRecipe = defineRecipe({
       fontWeight: 'semibold'
     },
     viewport: {
+      display: 'flex',
+      overflow: 'hidden',
       maskImage:
         'linear-gradient(to right, transparent, black 5rem, black calc(100% - 5rem), transparent)'
+    },
+    content: {
+      display: 'flex',
+      flexShrink: '0',
+      gap: 'var(--marquee-spacing)',
+      minWidth: 'max-content',
+      animationName: 'marqueeScroll',
+      animationDuration: 'var(--marquee-duration)',
+      animationDelay: 'var(--marquee-delay)',
+      animationIterationCount: 'var(--marquee-loop-count)',
+      animationTimingFunction: 'linear',
+      _motionReduce: { animationName: 'none' }
     },
     item: {
       display: 'flex',

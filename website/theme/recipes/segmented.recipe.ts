@@ -70,9 +70,20 @@ export const segmentedRecipe = defineRecipe({
         item: { minH: '11' }
       }),
       pill: parts({
-        root: { rounded: 'full', bg: 'bg.subtle', p: '1', borderColor: 'transparent' },
-        indicator: { rounded: 'full', bg: 'bg', shadow: 'sm' },
-        item: { minH: '9', px: '5' }
+        root: {
+          rounded: 'full',
+          bg: 'bg.muted',
+          p: '1',
+          borderColor: 'transparent'
+        },
+        indicator: {
+          rounded: 'full',
+          bg: 'bg',
+          shadow: 'sm',
+          borderWidth: '1px',
+          borderColor: 'border'
+        },
+        item: { minH: '9', px: '5', _checked: { fontWeight: 'semibold' } }
       }),
       card: parts({
         root: {
