@@ -92,7 +92,9 @@ export default async function DocsPage(props: DocsPageProps) {
 
         {/* Main Content */}
         <Box
+          key={slug}
           as="article"
+          animation="fade-in 120ms ease-out"
           flex="1"
           minW="0"
           maxW="52rem"
