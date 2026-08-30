@@ -65,7 +65,7 @@ export class SessionStore<T = Record<string, any>> {
     return undefined
   }
 
-  getParsedSnapshot = (): T => {
-    return this.parse(this.getSnapshot())
+  parseSnapshot = (value: string | null | undefined): T => {
+    return this.parse(value)
   }
 }
