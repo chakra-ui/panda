@@ -63,7 +63,7 @@ export const HeroSection = () => {
                   size="lg"
                   color="main"
                   variant="funky"
-                  w={{ base: 'full', sm: '220px' }}
+                  w={{ base: 'full', sm: '240px' }}
                 >
                   Get Started
                 </ButtonLink>
@@ -72,7 +72,7 @@ export const HeroSection = () => {
                   size="lg"
                   color="black"
                   variant="funky"
-                  w={{ base: 'full', sm: '220px' }}
+                  w={{ base: 'full', sm: '240px' }}
                 >
                   Browse Guides
                 </ButtonLink>

@@ -3,14 +3,14 @@
 import { CourseBanner } from '@/components/course-banner'
 import { CommandMenu } from '@/components/docs/command-menu'
 import { SearchButton } from '@/components/docs/search'
-import { Sidebar } from '@/components/docs/sidebar'
 import { Anchor } from '@/components/ui/anchor'
 import { docsConfig } from '@/docs.config'
 import { GithubIcon, MenuIcon } from '@/icons'
 import { css } from '@/styled-system/css'
 import { Box, HStack } from '@/styled-system/jsx'
 import { Icon } from '@/theme/icons'
-import { MobileNavDrawer, MobileTabSwitcher } from '@/mdx/navbar'
+import { MobileMenu } from '@/components/docs/mobile-menu'
+import { MobileNavDrawer } from '@/mdx/navbar'
 import { ThemeSwitch } from '@/mdx/theme-switch'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -176,10 +176,7 @@ export function DocsNavbar() {
               </button>
             }
           >
-            <div className={css({ pt: '8' })}>
-              <MobileTabSwitcher pathname={pathname} />
-              <Sidebar slug={pathname} />
-            </div>
+            <MobileMenu pathname={pathname} />
           </MobileNavDrawer>
         </HStack>
       </HStack>
