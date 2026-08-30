@@ -38,8 +38,10 @@ export default function DocsWelcomePage() {
         flexShrink="0"
         w="64"
         position="sticky"
-        top="calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height) + 1rem)"
-        height="calc(100vh - var(--navbar-height) - var(--banner-height) - var(--tabbar-height) - 1rem)"
+        top="calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height))"
+        height="calc(100vh - var(--navbar-height) - var(--banner-height) - var(--tabbar-height))"
+        borderInlineEndWidth="1px"
+        borderColor="border"
       >
         <Box
           overflowY="auto"

@@ -65,8 +65,8 @@ export const globalCss = defineGlobalStyles({
     scrollbarColor: 'oklch(55.55% 0 0 / 40%) transparent',
     scrollbarGutter: 'stable',
     '&::-webkit-scrollbar': {
-      w: '3',
-      h: '3'
+      w: '1.5',
+      h: '1.5'
     },
     '&::-webkit-scrollbar-track': {
       bg: 'transparent'

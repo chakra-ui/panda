@@ -77,8 +77,10 @@ export default async function DocsPage(props: DocsPageProps) {
           flexShrink="0"
           w="64"
           position="sticky"
-          top="calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height) + 1rem)"
-          height="calc(100vh - var(--navbar-height) - var(--banner-height) - var(--tabbar-height) - 1rem)"
+          top="calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height))"
+          height="calc(100vh - var(--navbar-height) - var(--banner-height) - var(--tabbar-height))"
+          borderInlineEndWidth="1px"
+          borderColor="border"
         >
           <Box overflowY="auto" height="100%" className="scroll-area" py="4" px="6">
             <Sidebar slug={slug} />
