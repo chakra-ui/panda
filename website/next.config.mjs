@@ -152,22 +152,42 @@ const config = {
       },
       {
         source: '/docs/styling/llms-txt',
-        destination: '/docs/tooling/llms-txt',
+        destination: '/docs/get-started/llms-txt',
         permanent: true
       },
       {
         source: '/docs/styling/mcp-server',
-        destination: '/docs/tooling/mcp-server',
+        destination: '/docs/get-started/mcp-server',
         permanent: true
       },
       {
         source: '/docs/styling/agent-skills',
-        destination: '/docs/tooling/agent-skills',
+        destination: '/docs/get-started/agent-skills',
         permanent: true
       },
       {
         source: '/docs/reference/eslint-oxlint-plugin',
-        destination: '/docs/tooling/eslint-oxlint-plugin',
+        destination: '/docs/get-started/eslint-oxlint-plugin',
+        permanent: true
+      },
+      {
+        source: '/docs/tooling/llms-txt',
+        destination: '/docs/get-started/llms-txt',
+        permanent: true
+      },
+      {
+        source: '/docs/tooling/mcp-server',
+        destination: '/docs/get-started/mcp-server',
+        permanent: true
+      },
+      {
+        source: '/docs/tooling/agent-skills',
+        destination: '/docs/get-started/agent-skills',
+        permanent: true
+      },
+      {
+        source: '/docs/tooling/eslint-oxlint-plugin',
+        destination: '/docs/get-started/eslint-oxlint-plugin',
         permanent: true
       },
       {
@@ -238,7 +258,7 @@ const config = {
       },
       {
         source: '/docs/overview/llms-txt',
-        destination: '/docs/styling/llms-txt',
+        destination: '/docs/get-started/llms-txt',
         permanent: true
       },
 

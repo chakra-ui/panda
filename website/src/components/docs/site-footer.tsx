@@ -29,9 +29,9 @@ export const footerColumns: FooterColumn[] = [
   {
     title: 'Toolkit',
     links: [
-      { title: 'ESLint & Oxlint', href: '/docs/tooling/eslint-oxlint-plugin' },
+      { title: 'ESLint & Oxlint', href: '/docs/get-started/eslint-oxlint-plugin' },
       { title: 'Editor & IDE', href: '/docs/tooling/editor-tooling' },
-      { title: 'MCP server', href: '/docs/tooling/mcp-server' },
+      { title: 'MCP server', href: '/docs/get-started/mcp-server' },
       { title: 'Studio', href: '/docs/tooling/studio' },
       { title: 'Ecosystem', href: '/ecosystem' },
       { title: 'Playground', href: 'https://play.panda-css.com/' }

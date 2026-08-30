@@ -40,7 +40,7 @@ export default function EcosystemPage() {
           icon={<LuShieldCheck />}
           kicker="Lint"
           title="ESLint plugin"
-          href="/docs/tooling/eslint-oxlint-plugin"
+          href="/docs/get-started/eslint-oxlint-plugin"
           description="A shared rule set that catches the mistakes the compiler does not error on."
           cta="Set up linting"
         />
@@ -59,17 +59,17 @@ export default function EcosystemPage() {
           <Card
             icon={<LuBot />}
             title="MCP server"
-            href="/docs/tooling/mcp-server"
+            href="/docs/get-started/mcp-server"
             description="Give an agent your real config, not a guess."
           />
           <Card
             title="llms.txt"
-            href="/docs/tooling/llms-txt"
+            href="/docs/get-started/llms-txt"
             description="These docs as plain text, per page or whole."
           />
           <Card
             title="Agent skills"
-            href="/docs/tooling/agent-skills"
+            href="/docs/get-started/agent-skills"
             description="Packaged instructions for coding agents."
           />
         </Cards>
