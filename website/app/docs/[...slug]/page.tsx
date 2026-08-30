@@ -57,22 +57,6 @@ export async function generateMetadata({ params }: DocsPageProps) {
   }
 }
 
-const docsGrid = css({
-  display: 'flex',
-  position: 'relative',
-  // the rule spans the whole row; on the sticky aside it would stop short
-  _before: {
-    content: '""',
-    display: 'none',
-    position: 'absolute',
-    insetY: '0',
-    insetInlineStart: '290px',
-    width: '1px',
-    bg: 'border',
-    lg: { display: 'block' }
-  }
-})
-
 export default async function DocsPage(props: DocsPageProps) {
   const params = await props.params
 
@@ -85,7 +69,7 @@ export default async function DocsPage(props: DocsPageProps) {
 
   return (
     <>
-      <div className={docsGrid}>
+      <Box display="flex" position="relative">
         {/* Sidebar */}
         <Box
           as="aside"
@@ -142,7 +126,7 @@ export default async function DocsPage(props: DocsPageProps) {
           </Box>
         </Box>
         )}
-      </div>
+      </Box>
 
       {!doc.hideToc && <MobileToc data={doc.toc} />}
     </>
