@@ -2,6 +2,7 @@ import { DocsNavbar } from '@/components/docs/docs-navbar'
 import { MobileBrowse } from '@/components/docs/mobile-browse'
 import { TabBar } from '@/components/docs/tab-bar'
 import { SiteFooter } from '@/components/docs/site-footer'
+import { SkipNavContent, SkipNavLink } from '@/mdx/skip-nav'
 import { css } from '@/styled-system/css'
 
 export default function DocsLayout(props: React.PropsWithChildren) {
@@ -16,6 +17,7 @@ export default function DocsLayout(props: React.PropsWithChildren) {
         '--tabbar-height': '2.75rem'
       })}
     >
+      <SkipNavLink styled />
       <DocsNavbar />
       <div
         className={css({
@@ -45,6 +47,7 @@ export default function DocsLayout(props: React.PropsWithChildren) {
           }
         })}
       >
+        <SkipNavContent />
         {children}
       </main>
       <MobileBrowse />
