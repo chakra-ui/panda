@@ -243,7 +243,7 @@ fn conditional_jsx_spread_preserves_runtime_prop_overrides() {
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
     export const before = <div id="before" {...(active ? { id: 'on', className: "color_red" } : { id: 'off', className: "color_blue" })} />;
-    export const after = <div {...(active ? { id: 'on', className: "color_green" } : { id: 'off', className: "color_green" })} id="after" />;
+    export const after = <div {...(active ? { id: 'on', className: 'color_green' } : { id: 'off', className: 'color_green' })} id="after" />;
     "#);
 }
 

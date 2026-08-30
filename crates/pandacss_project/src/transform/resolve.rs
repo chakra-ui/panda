@@ -12,7 +12,7 @@ use crate::Project;
 
 use super::helper::CX_HELPER_LOCAL;
 use super::plan::{HelperCxMode, Rewrite, TransformHelperFacts};
-use super::style_lower;
+use super::style_lower::{self, LowerTarget};
 
 /// Returns `None` when the literal cannot be encoded to stable class strings.
 pub(crate) fn classes_for_css_args(
@@ -121,15 +121,14 @@ pub(crate) fn rewrite_for_css_call(
     // open spreads must not fall through to a silent-static rewrite.
     if let Some(tree) = style_args.first().and_then(|value| value.as_ref()) {
         if style_lower::style_tree_has_rewrite_sites(tree) {
-            return style_lower::lower_style_tree(project, source, tree, None, None).map(|expr| {
-                Rewrite {
+            return style_lower::lower_style_tree(project, source, tree, LowerTarget::Css, None)
+                .map(|expr| Rewrite {
                     start: span.start,
                     end: span.end,
                     content: style_lower::print_class_expr(&expr),
                     preserved: style_lower::preserved_source_spans(tree),
                     helper: TransformHelperFacts::none(),
-                }
-            });
+                });
         }
         if tree.is_open() || style_lower::style_tree_has_open_spread(tree) {
             return None;
@@ -302,13 +301,41 @@ pub(crate) fn rewrite_for_view_transition_call(
 
 pub(crate) fn rewrite_for_recipe_call(
     project: &Project,
+    source: &str,
     recipe_name: &str,
     span: pandacss_shared::Span,
     args: &[Option<Literal>],
+    style_args: &[Option<StyleTree>],
     facts: &CallFacts,
 ) -> Option<Rewrite> {
     if recipe_call_has_unextractable_args(args, facts) {
         return None;
+    }
+    // Finite conditionals become a class ternary. Flattening both branches is
+    // never correct — if we can't emit the expression, leave the call.
+    if let Some(tree) = style_args.first().and_then(|value| value.as_ref()) {
+        if style_lower::style_tree_has_rewrite_sites(tree) {
+            return style_lower::lower_style_tree(
+                project,
+                source,
+                tree,
+                LowerTarget::Recipe(recipe_name),
+                None,
+            )
+            .map(|expr| Rewrite {
+                start: span.start,
+                end: span.end,
+                content: style_lower::print_class_expr(&expr),
+                preserved: style_lower::preserved_source_spans(tree),
+                helper: TransformHelperFacts::none(),
+            });
+        }
+        if tree.is_open()
+            || style_lower::style_tree_has_open_spread(tree)
+            || style_lower::style_tree_has_open_value(tree)
+        {
+            return None;
+        }
     }
     let classes = project.class_names_for_recipe_call(recipe_name, args)?;
     Some(rewrite_for_class_names(span, &classes))
@@ -413,7 +440,7 @@ pub(crate) fn rewrite_for_style_literal(
     span: pandacss_shared::Span,
     styles: &Literal,
 ) -> Option<Rewrite> {
-    if !matches!(styles, Literal::Object(_)) || literal_has_conditional(styles) {
+    if !matches!(styles, Literal::Object(_)) || styles.has_conditional() {
         return None;
     }
     let object = serde_json::to_string(styles).ok()?;
@@ -429,17 +456,6 @@ pub(crate) fn rewrite_for_style_literal(
         preserved: Vec::new(),
         helper: TransformHelperFacts::none(),
     })
-}
-
-fn literal_has_conditional(literal: &Literal) -> bool {
-    match literal {
-        Literal::Conditional(_) => true,
-        Literal::Object(entries) => entries
-            .iter()
-            .any(|(_, value)| literal_has_conditional(value)),
-        Literal::Array(items) => items.iter().any(literal_has_conditional),
-        _ => false,
-    }
 }
 
 /// A bare object literal needs parentheses wherever `{` would open a block —

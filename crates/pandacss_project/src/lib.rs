@@ -1799,7 +1799,8 @@ impl Project {
     }
 
     /// Resolve a config recipe call to the class string a static runtime call
-    /// would return. Slot recipes and conditional variants return `None`.
+    /// would return. Slot recipes, JS ternaries, and responsive variants return
+    /// `None`.
     #[must_use]
     pub fn class_names_for_recipe_call(
         &self,

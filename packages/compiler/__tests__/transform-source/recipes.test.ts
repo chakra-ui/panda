@@ -295,11 +295,7 @@ describe('compiler.transformSource: config recipe calls', () => {
     expect(result.code).toMatchInlineSnapshot(`"export const cls = "button button--size_sm button--variant_solid""`)
   })
 
-  // SUSPECT: a ternary variant value is inlined as an *unconditional union* of
-  // both branch classes (both `size_sm` and `size_lg`), rather than bailing or
-  // emitting a conditional expression. At runtime the call would apply only one
-  // size class based on `isSmall`; emitting both makes size non-deterministic.
-  test('inlines both branches of a ternary variant value (suspect union)', () => {
+  test('keeps a ternary variant value as a class expression', () => {
     const source = lines(
       "import { button } from '@panda/recipes'",
       "export const cls = button({ size: isSmall ? 'sm' : 'lg' })",
@@ -308,8 +304,32 @@ describe('compiler.transformSource: config recipe calls', () => {
     const result = recipeCompiler.transformSource({ path: 'src/button.tsx', source })
     expect(result.changed).toBe(true)
     expect(result.code).toMatchInlineSnapshot(
-      `"export const cls = "button button--size_sm button--size_lg button--variant_solid""`,
+      `"export const cls = "button button--variant_solid" + " " + (isSmall ? "button--size_sm" : "button--size_lg")"`,
     )
+  })
+
+  test('resolves two conditional variants into a decision tree', () => {
+    const source = lines(
+      "import { button } from '@panda/recipes'",
+      "export const cls = button({ size: isSmall ? 'sm' : 'lg', variant: isSolid ? 'solid' : 'outline' })",
+    )
+
+    const result = recipeCompiler.transformSource({ path: 'src/button.tsx', source })
+    expect(result.changed).toBe(true)
+    expect(result.code).toMatchInlineSnapshot(
+      `"export const cls = "button" + " " + (isSmall ? (isSolid ? "button--size_sm button--variant_solid" : "button--size_sm button--variant_outline button--compound__size_sm__variant_outline") : isSolid ? "button--size_lg button--variant_solid" : "button--size_lg button--variant_outline")"`,
+    )
+  })
+
+  test('leaves a logical-and variant to the runtime', () => {
+    const source = lines(
+      "import { button } from '@panda/recipes'",
+      "export const cls = button({ size: isSmall && 'sm' })",
+    )
+
+    const result = recipeCompiler.transformSource({ path: 'src/button.tsx', source })
+    expect(result.changed).toBe(false)
+    expect(result.code).toBe(source)
   })
 
   test('applies compound only when defaults are overridden into the combo', () => {

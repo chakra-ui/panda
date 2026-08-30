@@ -133,7 +133,8 @@ pub fn project_with_recipes() -> Project {
                         "variants": {
                             "size": {
                                 "sm": { "fontSize": "12px" },
-                                "md": { "fontSize": "16px" }
+                                "md": { "fontSize": "16px" },
+                                "lg": { "fontSize": "18px" }
                             }
                         }
                     }
@@ -536,6 +537,14 @@ pub fn project_with_jsx_patterns() -> Project {
                             "type": "property",
                             "property": "gap"
                         }
+                    }
+                },
+                "row": {
+                    "jsxName": "Row",
+                    "defaultValues": { "gap": "4" },
+                    "properties": {
+                        "gap": { "type": "property", "property": "gap" },
+                        "color": { "type": "property", "property": "color" }
                     }
                 }
             }

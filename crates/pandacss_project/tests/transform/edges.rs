@@ -169,6 +169,8 @@ edge_snapshot!(
     @r#"export const el = <div className={isMobile ? "button button--size_sm" : "button button--size_lg"} />;"#
 );
 
+// Each leaf resolves the whole selection, so exactly one size class lands in
+// every branch — a per-site lowering would add `size_md` from the defaults.
 edge_snapshot!(
     jsx_recipe_two_variant_conditionals,
     transform_jsx_recipes(
@@ -185,10 +187,148 @@ edge_snapshot!(
     ),
     @r#"
 export const el = (
-  <div className={"button" + " " + (isMobile ? "button--size_sm" : "button--size_lg") + " " + (isPrimary ? "button--size_md button--visual_solid" : "button--size_md button--visual_outline")} />
+  <div className={"button" + " " + (isMobile ? (isPrimary ? "button--size_sm button--visual_solid" : "button--size_sm button--visual_outline") : isPrimary ? "button--size_lg button--visual_solid" : "button--size_lg button--visual_outline")} />
 );
 "#
 );
+
+edge_snapshot!(
+    jsx_recipe_variant_and_style_prop_conditionals,
+    transform_jsx_recipes(
+        "src/app.tsx",
+        indoc! {r#"
+            import { Button } from '@acme/ui';
+            export const el = (
+              <Button size={isMobile ? 'sm' : 'lg'} color={isDark ? 'white' : 'black'} />
+            );
+        "#},
+    ),
+    @r#"
+export const el = (
+  <div className={"button" + " " + (isMobile ? (isDark ? "button--size_sm color_white" : "button--size_sm color_black") : isDark ? "button--size_lg color_white" : "button--size_lg color_black")} />
+);
+"#
+);
+
+edge_snapshot!(
+    jsx_recipe_two_style_prop_conditionals,
+    transform_jsx_recipes(
+        "src/app.tsx",
+        indoc! {r#"
+            import { Button } from '@acme/ui';
+            export const el = (
+              <Button
+                size="sm"
+                color={isDark ? 'white' : 'black'}
+                _hover={{ color: isDark ? 'black' : 'white' }}
+              />
+            );
+        "#},
+    ),
+    @r#"
+export const el = (
+  <div className={"button button--size_sm" + " " + (isDark ? "color_white" : "color_black") + " " + (isDark ? "hover:color_black" : "hover:color_white")} />
+);
+"#
+);
+
+edge_snapshot!(
+    jsx_recipe_spread_ternary_variant,
+    transform_jsx_recipes(
+        "src/app.tsx",
+        indoc! {r#"
+            import { Button } from '@acme/ui';
+            export const el = <Button {...(isMobile ? { size: 'sm' } : { size: 'lg' })} />;
+        "#},
+    ),
+    @r#"export const el = <div className={isMobile ? "button button--size_sm" : "button button--size_lg"} />;"#
+);
+
+// The falsy arm spreads nothing, and a bare `<Button />` still renders the
+// recipe base plus its defaults — not an empty class list.
+#[test]
+fn jsx_recipe_and_spread_stays_at_runtime() {
+    let source = indoc! {r#"
+        import { Button } from '@acme/ui';
+        export const el = <Button {...(isMobile && { size: 'sm' })} />;
+    "#};
+
+    let output = transform_jsx_recipes("src/app.tsx", source);
+
+    assert!(!output.changed);
+    assert!(!output.bailed);
+    assert_eq!(output.code, source);
+}
+
+#[test]
+fn jsx_recipe_responsive_variant_arm_stays_at_runtime() {
+    let source = indoc! {r#"
+        import { Button } from '@acme/ui';
+        export const el = <Button size={isMobile ? { base: 'sm', md: 'lg' } : 'sm'} />;
+    "#};
+
+    let output = transform_jsx_recipes("src/app.tsx", source);
+
+    assert!(!output.changed);
+    assert!(!output.bailed);
+    assert_eq!(output.code, source);
+}
+
+// A pattern's `defaultValues` fill in the same way a recipe's defaults do, so
+// two conditional props need the same decision tree — otherwise the second site
+// contributes `gap_4` next to the first site's `gap_2`.
+edge_snapshot!(
+    jsx_pattern_default_values_with_two_conditionals,
+    transform_jsx_patterns(
+        "src/app.tsx",
+        indoc! {r#"
+            import { Row } from '@panda/jsx';
+            export const el = <Row gap={isTight ? '2' : '8'} color={isDark ? 'red' : 'blue'} />;
+        "#},
+    ),
+    @r#"export const el = <div className={isTight ? (isDark ? "color_red gap_2" : "color_blue gap_2") : isDark ? "color_red gap_8" : "color_blue gap_8"} />;"#
+);
+
+edge_snapshot!(
+    jsx_pattern_default_value_fills_the_untouched_prop,
+    transform_jsx_patterns(
+        "src/app.tsx",
+        indoc! {r#"
+            import { Row } from '@panda/jsx';
+            export const el = <Row color={isDark ? 'red' : 'blue'} />;
+        "#},
+    ),
+    @r#"export const el = <div className={isDark ? "color_red gap_4" : "color_blue gap_4"} />;"#
+);
+
+#[test]
+fn jsx_pattern_logical_and_on_defaulted_prop_stays_at_runtime() {
+    let source = indoc! {r#"
+        import { Row } from '@panda/jsx';
+        export const el = <Row gap={isTight && '2'} />;
+    "#};
+
+    let output = transform_jsx_patterns("src/app.tsx", source);
+
+    assert!(!output.changed);
+    assert!(!output.bailed);
+    assert_eq!(output.code, source);
+}
+
+// Same shape for patterns: `<Stack />` still applies the pattern's own styles.
+#[test]
+fn jsx_pattern_and_spread_stays_at_runtime() {
+    let source = indoc! {r#"
+        import { Stack } from '@panda/jsx';
+        export const el = <Stack {...(isStacked && { gap: '4' })} />;
+    "#};
+
+    let output = transform_jsx_patterns("src/app.tsx", source);
+
+    assert!(!output.changed);
+    assert!(!output.bailed);
+    assert_eq!(output.code, source);
+}
 
 edge_snapshot!(
     jsx_slot_recipe_nested_conditional_style_prop,
@@ -230,7 +370,7 @@ edge_snapshot!(
 );
 
 #[test]
-fn recipe_whole_arg_object_ternary_stays_unchanged() {
+fn recipe_whole_arg_object_ternary_emits_class_ternary() {
     let source = indoc! {r#"
         import { button } from '@panda/recipes';
         export const cls = button(isMobile ? { size: 'sm' } : { size: 'lg' });
@@ -238,13 +378,16 @@ fn recipe_whole_arg_object_ternary_stays_unchanged() {
 
     let output = transform_recipes("src/button.tsx", source);
 
-    assert!(!output.changed);
+    assert!(output.changed);
     assert!(!output.bailed);
-    assert_eq!(output.code, source);
+    assert_snapshot!(
+        output.code,
+        @r#"export const cls = "button" + " " + (isMobile ? "button--size_sm" : "button--size_lg");"#
+    );
 }
 
 #[test]
-fn recipe_object_arg_finite_variant_ternary_emits_static_branches() {
+fn recipe_object_arg_finite_variant_ternary_emits_class_ternary() {
     let source = indoc! {r#"
         import { button } from '@panda/recipes';
         export const cls = button({ size: isMobile ? 'sm' : 'lg' });
@@ -254,7 +397,10 @@ fn recipe_object_arg_finite_variant_ternary_emits_static_branches() {
 
     assert!(output.changed);
     assert!(!output.bailed);
-    assert_snapshot!(output.code, @r#"export const cls = "button button--size_sm";"#);
+    assert_snapshot!(
+        output.code,
+        @r#"export const cls = "button" + " " + (isMobile ? "button--size_sm" : "button--size_lg");"#
+    );
 }
 
 // --- css vs jsx semantic pair for the same nested conditional ---

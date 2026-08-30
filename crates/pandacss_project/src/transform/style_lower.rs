@@ -2,8 +2,10 @@
 
 use std::collections::HashSet;
 
+use rustc_hash::FxHashSet;
+
 use pandacss_extractor::{
-    ExtractedJsx, Literal, StyleObject, StyleSpread, StyleTree, project_literal,
+    ExtractedJsx, JsxKind, Literal, StyleObject, StyleSpread, StyleTree, project_literal,
 };
 use pandacss_shared::Span;
 
@@ -13,6 +15,10 @@ use crate::Project;
 use super::resolve::{classes_for_css_args, js_string_literal, span_slice};
 
 const MAX_CONDITIONAL_SITES: usize = 64;
+
+/// Ceiling on the leaves of a [`lower_combinations`] decision tree. Past this,
+/// the inlined string is bigger than the call it replaces.
+const MAX_COMBINATION_LEAVES: usize = 16;
 
 /// A lowered class value. `Lit` is a plain class list — callers that can inline
 /// a static string check for it rather than carrying a parallel "is static" flag.
@@ -25,6 +31,76 @@ pub enum ClassExpr {
         no: Box<ClassExpr>,
     },
     Join(Vec<ClassExpr>),
+}
+
+/// What a lowered branch encodes to. Lowering is shape-driven and shared; the
+/// targets differ only in how one branch literal becomes class names.
+#[derive(Debug, Clone, Copy)]
+pub(crate) enum LowerTarget<'a> {
+    Css,
+    Jsx(&'a ExtractedJsx),
+    Recipe(&'a str),
+}
+
+impl LowerTarget<'_> {
+    fn encode(
+        self,
+        project: &Project,
+        lit: Literal,
+        pattern_transform: Option<&mut PatternTransformFn<'_>>,
+    ) -> Option<String> {
+        let classes = match self {
+            Self::Css => classes_for_css_args(project, &[Some(lit)])?,
+            Self::Jsx(jsx) => {
+                let branch_jsx = ExtractedJsx {
+                    data: lit,
+                    style: None,
+                    ..jsx.clone()
+                };
+                project.class_names_for_jsx_usage(&branch_jsx, pattern_transform)?
+            }
+            Self::Recipe(recipe_name) => {
+                project.class_names_for_recipe_call(recipe_name, &[Some(lit)])?
+            }
+        };
+        Some(classes.join(" "))
+    }
+
+    /// Whether a branch with no static answer can be emitted as no classes.
+    /// True where empty props really do mean no classes; a recipe or pattern
+    /// still applies its base and defaults, so `None` there means the branch is
+    /// unresolvable and the call belongs to the runtime.
+    fn unresolved_branch_is_empty(self) -> bool {
+        match self {
+            Self::Css => true,
+            Self::Jsx(jsx) => matches!(jsx.kind, JsxKind::Factory | JsxKind::Component),
+            Self::Recipe(_) => false,
+        }
+    }
+
+    /// Recipe base + defaults repeat in every arm, so one site is already worth
+    /// hoisting. css/jsx keep the bare ternary for the class attribute to merge.
+    fn hoist_single_site(self) -> bool {
+        matches!(self, Self::Recipe(_))
+    }
+
+    /// Keys whose absence from a branch doesn't mean "unset": a recipe fills in
+    /// `defaultVariants`, a pattern its `defaultValues`. Branches that touch
+    /// these can't be lowered one site at a time — see [`lower_combinations`].
+    fn default_bearing_props(self, project: &Project) -> FxHashSet<&str> {
+        let config = project.config();
+        match self {
+            Self::Recipe(recipe_name) => config.recipes.variant_props_for(&[recipe_name]),
+            Self::Jsx(jsx) if jsx.kind == JsxKind::Recipe => {
+                let recipes = &config.recipes;
+                recipes.variant_props_for(&recipes.find_by_jsx(&jsx.name))
+            }
+            Self::Jsx(jsx) if jsx.kind == JsxKind::Pattern => {
+                config.patterns.default_value_keys(&jsx.name)
+            }
+            Self::Css | Self::Jsx(_) => FxHashSet::default(),
+        }
+    }
 }
 
 /// True when `StyleTree` carries finite conditionals that transform should lower.
@@ -169,13 +245,19 @@ pub fn print_class_expr(expr: &ClassExpr) -> String {
     match expr {
         ClassExpr::Lit(s) => js_string_literal(s),
         ClassExpr::Ternary { test, yes, no } => {
-            format!(
-                "{test} ? {} : {}",
-                print_class_expr(yes),
-                print_class_expr(no)
-            )
+            format!("{test} ? {} : {}", print_arm(yes), print_class_expr(no))
         }
         ClassExpr::Join(parts) => print_join(parts),
+    }
+}
+
+/// A ternary nested in the *consequent* is parenthesized. The parse is
+/// unambiguous either way, but `a ? b ? x : y : z` isn't readable; a chain of
+/// alternates (`a ? x : b ? y : z`) is.
+fn print_arm(expr: &ClassExpr) -> String {
+    match expr {
+        ClassExpr::Ternary { .. } => format!("({})", print_class_expr(expr)),
+        _ => print_class_expr(expr),
     }
 }
 
@@ -299,11 +381,11 @@ fn collect_preserved_source_spans(tree: &StyleTree, spans: &mut Vec<Span>) {
 }
 
 #[must_use]
-pub fn lower_style_tree(
+pub(crate) fn lower_style_tree(
     project: &Project,
     source: &str,
     tree: &StyleTree,
-    for_jsx: Option<&ExtractedJsx>,
+    target: LowerTarget<'_>,
     mut pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> Option<ClassExpr> {
     if tree.is_open() || style_tree_has_open_value(tree) {
@@ -324,13 +406,13 @@ pub fn lower_style_tree(
             *test,
             consequent,
             alternate,
-            for_jsx,
+            target,
             pattern_transform.as_deref_mut(),
         );
     }
 
     let StyleTree::Object(obj) = tree else {
-        return encode_tree(project, tree, for_jsx, pattern_transform.as_deref_mut())
+        return encode_tree(project, tree, target, pattern_transform.as_deref_mut())
             .map(ClassExpr::Lit);
     };
 
@@ -341,7 +423,7 @@ pub fn lower_style_tree(
         return None;
     }
     if sites.is_empty() {
-        return encode_tree(project, tree, for_jsx, pattern_transform.as_deref_mut())
+        return encode_tree(project, tree, target, pattern_transform.as_deref_mut())
             .map(ClassExpr::Lit);
     }
 
@@ -351,7 +433,6 @@ pub fn lower_style_tree(
     if affected_paths_overlap(&affected_paths) {
         return None;
     }
-
     let full_base = projected_base(obj);
     let mut shared_base = full_base.clone();
     for path in affected_paths.iter().flatten() {
@@ -363,31 +444,275 @@ pub fn lower_style_tree(
         shared_base: &shared_base,
         full_base: &full_base,
         project,
-        for_jsx,
+        target,
     };
+    match lower_default_bearing_sites(
+        &sites,
+        &affected_paths,
+        &shared_base,
+        &ctx,
+        &mut pattern_transform,
+    ) {
+        SiteLowering::Deferred => return None,
+        SiteLowering::Combined(combined) => {
+            // One site keeps the bare ternary the per-site path would print;
+            // several repeat the base in every leaf, so hoist it out.
+            let lowered = if sites.len() == 1 && !target.hoist_single_site() {
+                combined
+            } else {
+                hoist_into_join(vec![combined])
+            };
+            return Some(prune_empty(lowered));
+        }
+        SiteLowering::PerSite => {}
+    }
+
     for site in &sites {
         exprs.push(lower_site(site, &ctx, &mut pattern_transform)?);
     }
 
-    if exprs.len() == 1 {
-        return exprs.pop();
+    let lowered = if exprs.len() == 1 && !target.hoist_single_site() {
+        exprs.pop()?
+    } else {
+        hoist_into_join(exprs)
+    };
+    Some(prune_empty(lowered))
+}
+
+/// How a site set has to be lowered.
+enum SiteLowering {
+    /// Branch classes depend only on the keys each branch sets, so sites lower
+    /// one at a time.
+    PerSite,
+    /// The combination walk's result.
+    Combined(ClassExpr),
+    /// Combinations are required but can't be produced — leave it to the runtime.
+    Deferred,
+}
+
+/// Sites that set a [default-bearing key](LowerTarget::default_bearing_props)
+/// can't be lowered independently, because a branch that omits one still
+/// resolves the default.
+fn lower_default_bearing_sites(
+    sites: &[Site],
+    affected_paths: &[Vec<Vec<PathSeg>>],
+    shared_base: &[(String, Literal)],
+    ctx: &LowerCtx<'_>,
+    pattern_transform: &mut Option<&mut PatternTransformFn<'_>>,
+) -> SiteLowering {
+    let props = ctx.target.default_bearing_props(ctx.project);
+    if props.is_empty() {
+        return SiteLowering::PerSite;
+    }
+    let touches = |paths: &Vec<Vec<PathSeg>>| {
+        paths
+            .iter()
+            .filter_map(|path| match path.first() {
+                Some(PathSeg::Key(key)) => Some(key.as_str()),
+                _ => None,
+            })
+            .any(|key| props.contains(key))
+    };
+    if !affected_paths.iter().any(touches) {
+        return SiteLowering::PerSite;
     }
 
-    let mut parts = Vec::with_capacity(exprs.len() + 1);
-    if let Some(shared) = hoist_shared_classes(&mut exprs) {
-        parts.push(ClassExpr::Lit(shared));
+    // `cond && 'sm'` falls back to the test's own value when falsy: `undefined`
+    // keeps the default, `false` replaces it with a value that matches nothing.
+    // One class string can't be both.
+    let undecidable = sites
+        .iter()
+        .zip(affected_paths)
+        .any(|(site, paths)| matches!(site, Site::PropertyAnd { .. }) && touches(paths));
+    if undecidable || combination_leaves(sites) > MAX_COMBINATION_LEAVES {
+        return SiteLowering::Deferred;
     }
-    parts.append(&mut exprs);
-    Some(ClassExpr::Join(parts))
+    lower_combinations(sites, shared_base, ctx, pattern_transform)
+        .map_or(SiteLowering::Deferred, SiteLowering::Combined)
+}
+
+/// Walk the sites into a decision tree, resolving each leaf against the whole
+/// selection it stands for. Costlier to print than independent sites, but it's
+/// the only shape that gets defaults — and compound variants, which depend on
+/// several keys at once — right.
+fn lower_combinations(
+    sites: &[Site],
+    entries: &[(String, Literal)],
+    ctx: &LowerCtx<'_>,
+    pattern_transform: &mut Option<&mut PatternTransformFn<'_>>,
+) -> Option<ClassExpr> {
+    let Some((site, rest)) = sites.split_first() else {
+        return encode_literal_object(
+            ctx.project,
+            entries,
+            ctx.target,
+            pattern_transform.as_deref_mut(),
+        )
+        .map(ClassExpr::Lit);
+    };
+
+    match site {
+        Site::PropertyTernary {
+            path,
+            test,
+            consequent,
+            alternate,
+        } => {
+            let test_src = span_slice(ctx.source, *test)?.to_owned();
+            let yes =
+                lower_arm_combinations(path, consequent, rest, entries, ctx, pattern_transform)?;
+            let no =
+                lower_arm_combinations(path, alternate, rest, entries, ctx, pattern_transform)?;
+            Some(ternary(test_src, yes, no))
+        }
+        // Only reached for keys with no default, where the falsy arm simply
+        // drops the key.
+        Site::PropertyAnd { path, test, value } => {
+            let test_src = span_slice(ctx.source, *test)?.to_owned();
+            let yes = lower_arm_combinations(path, value, rest, entries, ctx, pattern_transform)?;
+            let no = lower_combinations(rest, entries, ctx, pattern_transform)?;
+            Some(ternary(test_src, yes, no))
+        }
+        Site::SpreadTernary {
+            path,
+            test,
+            consequent,
+            alternate,
+            overridden,
+        } => {
+            let test_src = span_slice(ctx.source, *test)?.to_owned();
+            let mut affected = affected_keys_from_arms(consequent, alternate);
+            affected.retain(|key| !overridden.contains(key));
+            let yes_entries =
+                spread_branch_entries(ctx, path, &affected, consequent, overridden, entries)?;
+            let yes = lower_combinations(rest, &yes_entries, ctx, pattern_transform)?;
+            let no_entries =
+                spread_branch_entries(ctx, path, &affected, alternate, overridden, entries)?;
+            let no = lower_combinations(rest, &no_entries, ctx, pattern_transform)?;
+            Some(ternary(test_src, yes, no))
+        }
+    }
+}
+
+fn lower_arm_combinations(
+    path: &[PathSeg],
+    arm: &StyleTree,
+    rest: &[Site],
+    entries: &[(String, Literal)],
+    ctx: &LowerCtx<'_>,
+    pattern_transform: &mut Option<&mut PatternTransformFn<'_>>,
+) -> Option<ClassExpr> {
+    if let StyleTree::Ternary {
+        test,
+        consequent,
+        alternate,
+    } = arm
+    {
+        let test_src = span_slice(ctx.source, *test)?.to_owned();
+        let yes = lower_arm_combinations(path, consequent, rest, entries, ctx, pattern_transform)?;
+        let no = lower_arm_combinations(path, alternate, rest, entries, ctx, pattern_transform)?;
+        return Some(ternary(test_src, yes, no));
+    }
+    let mut next = entries.to_vec();
+    apply_branch(&mut next, path, project_literal(arm)?);
+    lower_combinations(rest, &next, ctx, pattern_transform)
+}
+
+fn combination_leaves(sites: &[Site]) -> usize {
+    sites
+        .iter()
+        .map(|site| match site {
+            Site::PropertyTernary {
+                consequent,
+                alternate,
+                ..
+            } => arm_leaves(consequent) + arm_leaves(alternate),
+            Site::PropertyAnd { .. } | Site::SpreadTernary { .. } => 2,
+        })
+        .fold(1usize, usize::saturating_mul)
+}
+
+fn arm_leaves(arm: &StyleTree) -> usize {
+    match arm {
+        StyleTree::Ternary {
+            consequent,
+            alternate,
+            ..
+        } => arm_leaves(consequent) + arm_leaves(alternate),
+        _ => 1,
+    }
+}
+
+/// Drop conditions that don't change the class list, rather than print
+/// `a ? "" : ""`.
+fn prune_empty(expr: ClassExpr) -> ClassExpr {
+    match expr {
+        ClassExpr::Lit(value) => ClassExpr::Lit(value),
+        ClassExpr::Ternary { test, yes, no } => {
+            let yes = prune_empty(*yes);
+            let no = prune_empty(*no);
+            // Arms that resolve alike make the condition pointless — but only
+            // drop it when evaluating the test can't be observed.
+            if yes == no && test_is_side_effect_free(&test) {
+                return yes;
+            }
+            ternary(test, yes, no)
+        }
+        ClassExpr::Join(parts) => {
+            let mut kept: Vec<ClassExpr> = parts
+                .into_iter()
+                .map(prune_empty)
+                .filter(|part| !is_empty_expr(part))
+                .collect();
+            match kept.len() {
+                0 => ClassExpr::Lit(String::new()),
+                1 => kept.remove(0),
+                _ => ClassExpr::Join(kept),
+            }
+        }
+    }
+}
+
+/// An identifier or dotted path, optionally negated. Anything else — a call, an
+/// assignment, an index — is left in place, since the transform must not drop an
+/// expression the source may rely on running.
+fn test_is_side_effect_free(test: &str) -> bool {
+    let test = test.trim().trim_start_matches('!').trim_start();
+    !test.is_empty()
+        && test.split('.').all(|segment| {
+            let mut chars = segment.chars();
+            chars
+                .next()
+                .is_some_and(|first| first.is_ascii_alphabetic() || first == '_' || first == '$')
+                && chars.all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '$')
+        })
+}
+
+fn is_empty_expr(expr: &ClassExpr) -> bool {
+    let mut empty = true;
+    for_each_leaf(expr, &mut |leaf| empty &= leaf.is_empty());
+    empty
+}
+
+/// Emit the tokens every leaf shares once, in front of the rest.
+fn hoist_into_join(mut exprs: Vec<ClassExpr>) -> ClassExpr {
+    let shared = hoist_shared_classes(&mut exprs);
+    match (shared, exprs.len()) {
+        (None, 1) => exprs.remove(0),
+        (None, _) => ClassExpr::Join(exprs),
+        (Some(shared), _) => {
+            let mut parts = Vec::with_capacity(exprs.len() + 1);
+            parts.push(ClassExpr::Lit(shared));
+            parts.append(&mut exprs);
+            ClassExpr::Join(parts)
+        }
+    }
 }
 
 /// Every site encodes the object's static base alongside its own branch, so a
 /// class list with N sites repeats that base N times at runtime. Class order
 /// doesn't affect the cascade, so tokens present in every branch of every site
 /// are pulled out and emitted once.
-///
-/// Only worth doing for multiple sites: with one site the base appears twice in
-/// the source but only once in the rendered string.
 fn hoist_shared_classes(exprs: &mut [ClassExpr]) -> Option<String> {
     let mut shared: Option<Vec<String>> = None;
     for expr in exprs.iter() {
@@ -691,7 +1016,7 @@ fn lower_whole_arg_ternary(
     test: Span,
     consequent: &StyleTree,
     alternate: &StyleTree,
-    for_jsx: Option<&ExtractedJsx>,
+    target: LowerTarget<'_>,
     mut pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> Option<ClassExpr> {
     if tree_has_open(consequent) || tree_has_open(alternate) {
@@ -701,15 +1026,16 @@ fn lower_whole_arg_ternary(
     let yes = encode_tree(
         project,
         consequent,
-        for_jsx,
+        target,
         pattern_transform.as_deref_mut(),
     )?;
-    let no = encode_tree(project, alternate, for_jsx, pattern_transform)?;
-    Some(ternary(
-        test_src.to_owned(),
-        ClassExpr::Lit(yes),
-        ClassExpr::Lit(no),
-    ))
+    let no = encode_tree(project, alternate, target, pattern_transform)?;
+    let expr = ternary(test_src.to_owned(), ClassExpr::Lit(yes), ClassExpr::Lit(no));
+    Some(if target.hoist_single_site() {
+        hoist_into_join(vec![expr])
+    } else {
+        expr
+    })
 }
 
 /// Shared inputs for site/property-arm lowering (`pattern_transform` stays a
@@ -724,7 +1050,7 @@ struct LowerCtx<'a> {
     /// omits an affected key falls back to the value here.
     full_base: &'a [(String, Literal)],
     project: &'a Project,
-    for_jsx: Option<&'a ExtractedJsx>,
+    target: LowerTarget<'a>,
 }
 
 fn ternary(test: String, yes: ClassExpr, no: ClassExpr) -> ClassExpr {
@@ -796,15 +1122,15 @@ fn lower_property_and(
     let yes = encode_literal_object(
         ctx.project,
         &truthy,
-        ctx.for_jsx,
+        ctx.target,
         pattern_transform.as_deref_mut(),
-    );
+    )?;
     let no = encode_literal_object(
         ctx.project,
         ctx.shared_base,
-        ctx.for_jsx,
+        ctx.target,
         pattern_transform.as_deref_mut(),
-    );
+    )?;
     Some(ternary(test_src, ClassExpr::Lit(yes), ClassExpr::Lit(no)))
 }
 
@@ -883,9 +1209,9 @@ fn lower_property_arm(
     let classes = encode_literal_object(
         ctx.project,
         &next,
-        ctx.for_jsx,
+        ctx.target,
         pattern_transform.as_deref_mut(),
-    );
+    )?;
     Some(ClassExpr::Lit(classes))
 }
 
@@ -1044,6 +1370,19 @@ fn encode_spread_branch(
     overridden: &[String],
     pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> Option<String> {
+    let next = spread_branch_entries(ctx, path, affected, branch, overridden, ctx.shared_base)?;
+    encode_literal_object(ctx.project, &next, ctx.target, pattern_transform)
+}
+
+/// The entries a spread branch resolves to, layered over `base`.
+fn spread_branch_entries(
+    ctx: &LowerCtx<'_>,
+    path: &[PathSeg],
+    affected: &HashSet<String>,
+    branch: &StyleTree,
+    overridden: &[String],
+    base: &[(String, Literal)],
+) -> Option<Vec<(String, Literal)>> {
     let branch_obj = match project_literal(branch) {
         Some(Literal::Object(entries)) => entries
             .into_iter()
@@ -1059,7 +1398,6 @@ fn encode_spread_branch(
         Literal::upsert_object_entry(&mut resolved, key, value);
     }
 
-    let base = ctx.shared_base;
     let next = if path.is_empty() {
         let mut result: Vec<(String, Literal)> = base
             .iter()
@@ -1088,12 +1426,7 @@ fn encode_spread_branch(
         apply_branch(&mut result, path, Literal::Object(filtered));
         result
     };
-    Some(encode_literal_object(
-        ctx.project,
-        &next,
-        ctx.for_jsx,
-        pattern_transform,
-    ))
+    Some(next)
 }
 
 fn affected_keys_from_arms(a: &StyleTree, b: &StyleTree) -> HashSet<String> {
@@ -1119,50 +1452,25 @@ fn affected_keys_from_arm(tree: &StyleTree) -> HashSet<String> {
 fn encode_tree(
     project: &Project,
     tree: &StyleTree,
-    for_jsx: Option<&ExtractedJsx>,
+    target: LowerTarget<'_>,
     pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> Option<String> {
-    let lit = project_literal(tree)?;
-    match for_jsx {
-        Some(jsx) => {
-            let branch_jsx = ExtractedJsx {
-                data: lit,
-                style: None,
-                ..jsx.clone()
-            };
-            Some(
-                project
-                    .class_names_for_jsx_usage(&branch_jsx, pattern_transform)?
-                    .join(" "),
-            )
-        }
-        None => Some(classes_for_css_args(project, &[Some(lit)])?.join(" ")),
-    }
+    target.encode(project, project_literal(tree)?, pattern_transform)
 }
 
 fn encode_literal_object(
     project: &Project,
     entries: &[(String, Literal)],
-    for_jsx: Option<&ExtractedJsx>,
+    target: LowerTarget<'_>,
     pattern_transform: Option<&mut PatternTransformFn<'_>>,
-) -> String {
-    let lit = Literal::Object(entries.to_vec());
-    match for_jsx {
-        Some(jsx) => {
-            let branch_jsx = ExtractedJsx {
-                data: lit,
-                style: None,
-                ..jsx.clone()
-            };
-            // Empty branch objects encode to `""` (falsy ternary arm), not Bail.
-            project
-                .class_names_for_jsx_usage(&branch_jsx, pattern_transform)
-                .map(|classes| classes.join(" "))
-                .unwrap_or_default()
-        }
-        None => classes_for_css_args(project, &[Some(lit)])
-            .map(|classes| classes.join(" "))
-            .unwrap_or_default(),
+) -> Option<String> {
+    match target.encode(
+        project,
+        Literal::Object(entries.to_vec()),
+        pattern_transform,
+    ) {
+        Some(classes) => Some(classes),
+        None => target.unresolved_branch_is_empty().then(String::new),
     }
 }
 

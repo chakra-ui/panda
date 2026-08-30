@@ -298,7 +298,7 @@ advanced_snapshot!(
         "#};
         transform("src/styles.tsx", source)
     },
-    @r#"export const cls = b ? "padding_5" : "padding_5";"#
+    @r#"export const cls = "padding_5";"#
 );
 
 // `padding` and `paddingTop` are distinct keys, so the spread never shadows the
