@@ -270,7 +270,8 @@ export const docsTabs: TabItem[] = [
           { title: 'How Panda works', url: 'how-panda-works' },
           { title: 'The Compiler Engine', url: 'compiler-engine' },
           { title: 'Performance & Optimization', url: 'performance-optimization' },
-          { title: 'Static CSS Generation', url: 'static' }
+          { title: 'Static CSS Generation', url: 'static' },
+          { title: 'Source Transforms', url: 'transformer' }
         ]
       },
       {

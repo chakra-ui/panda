@@ -332,23 +332,36 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Troubleshooting
 
-### I don't see any styles
+### I don't see any styles after restarting the dev server
 
-Sometimes Next.js caches PostCSS generated styles and when that happens you need to clear the cache. To do that, delete
-the `.next` folder and restart your development server.
+Save your CSS entry file once. That re-triggers the build and the styles come back.
 
-You can also update you `package.json` scripts to delete the `.next` folder before each build:
+This only happens across a cold restart, and it is Next.js's persistent filesystem cache (`.next/cache`) holding the
+previous CSS, not Panda failing to invalidate. While the dev server is running, the PostCSS plugin emits dir-dependency
+messages for your source directories, so styles refresh normally as you edit.
 
-```diff {3,4}
+Reach for `rm -rf .next` only when a single save doesn't clear it. Wiring it into your `dev` script forces a full
+rebuild on every start, which costs far more time than the stale styles it works around.
+
+If you hit this often, or your app is large enough that the rebuild hurts, skip the PostCSS cache entirely: run the CLI
+in watch mode and import the stylesheet it generates.
+
+```json filename="package.json"
 {
-"scripts": {
--    "dev": "next dev",
-+    "dev": "rm -rf .next && next dev",
-},
+  "scripts": {
+    "dev": "concurrently \"panda --watch\" \"next dev\""
+  }
 }
 ```
 
-This is a known issue with Next.js and you can track the progress here:
+```ts filename="app/layout.tsx"
+import '../styled-system/styles.css'
+```
+
+The CLI watches the filesystem directly, so nothing rides Next's cache and there is nothing to go stale. Remove
+`@pandacss/dev/postcss` from your `postcss.config.mjs` when you switch, otherwise both paths emit CSS.
+
+Tracking upstream:
 
 - [vercel/next.js#39410](https://github.com/vercel/next.js/issues/39410)
 - [vercel/next.js#48748](https://github.com/vercel/next.js/issues/48748)

@@ -11,6 +11,10 @@ exists, but static analysis can't prove which one.
 `staticCss` is the escape hatch. Tell Panda which utilities, recipes, patterns, or themed variants to generate
 regardless of whether it ever sees them called, and it generates them unconditionally.
 
+<Callout type="info">
+  Looking for build-time rewriting of `css()` calls into plain class strings? That's [source transforms](/docs/compiler/transformer), a separate opt-in feature.
+</Callout>
+
 ```js filename="panda.config.js"
 export default {
   staticCss: {
