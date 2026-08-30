@@ -10,7 +10,7 @@ const description =
   'Lint, edit and generate with the rest of your toolchain.'
 
 export const metadata: Metadata = {
-  title: 'Ecosystem | Panda CSS',
+  title: 'Ecosystem',
   description,
   openGraph: {
     title,

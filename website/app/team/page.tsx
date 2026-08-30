@@ -18,7 +18,7 @@ const description =
   'Panda is built by a small core team and a large community of contributors.'
 
 export const metadata: Metadata = {
-  title: `${title} | Panda CSS`,
+  title: title,
   description,
   openGraph: {
     title,

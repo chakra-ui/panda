@@ -9,7 +9,7 @@ const description =
   'The Panda logo, wordmark and palette. Please do not stretch, recolour or restyle the panda without asking.'
 
 export const metadata: Metadata = {
-  title: `${title} | Panda CSS`,
+  title: title,
   description,
   openGraph: {
     title,

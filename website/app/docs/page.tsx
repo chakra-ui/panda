@@ -20,7 +20,7 @@ const description =
   'Build modern websites with build-time, type-safe CSS-in-JS.'
 
 export const metadata: Metadata = {
-  title: `${title} | Panda CSS`,
+  title: title,
   description,
   openGraph: {
     title,

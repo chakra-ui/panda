@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: DocsPageProps) {
   })
 
   return {
-    title: `${doc.title} | Panda CSS`,
+    title: doc.title,
     description: doc.description,
     openGraph: {
       title: doc.title,
