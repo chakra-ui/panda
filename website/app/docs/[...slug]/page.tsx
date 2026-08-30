@@ -75,7 +75,7 @@ export default async function DocsPage(props: DocsPageProps) {
           as="aside"
           display={{ base: 'none', lg: 'block' }}
           flexShrink="0"
-          w="64"
+          w="290px"
           position="sticky"
           top="calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height))"
           height="calc(100vh - var(--navbar-height) - var(--banner-height) - var(--tabbar-height))"
