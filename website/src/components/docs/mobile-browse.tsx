@@ -61,7 +61,15 @@ export const MobileBrowse = () => {
           className={cx(classes.content, css({ maxW: '85vw', width: '20rem' }))}
         >
           <div className={cx(classes.body, 'scroll-area')}>
-            <Box textStyle="eyebrow" color="fg.subtle" pt="2" pb="4">
+            <Box
+              display="flex"
+              alignItems="center"
+              minH="12"
+              pe="12"
+              mb="2"
+              textStyle="eyebrow"
+              color="fg.subtle"
+            >
               {tab.title}
             </Box>
 

@@ -63,14 +63,26 @@ export const MobileMenu = ({ pathname }: Props) => {
   ]
 
   return (
-    <Stack gap="8" pt="1" pb="10">
-      <Link
-        href="/"
-        aria-label="Panda CSS home"
-        className={css({ display: 'flex', width: 'fit-content', mb: '2' })}
+    <Stack gap="8" pb="10">
+      <Box
+        display="flex"
+        alignItems="center"
+        minH="12"
+        pe="12"
+        mb="2"
       >
-        <Icon icon="LogoWithText" />
-      </Link>
+        <Link
+          href="/"
+          aria-label="Panda CSS home"
+          className={css({
+            display: 'flex',
+            alignItems: 'center',
+            '& svg': { height: '1.75rem', width: 'auto' }
+          })}
+        >
+          <Icon icon="LogoWithText" />
+        </Link>
+      </Box>
 
       <nav aria-label="Site">
         {SITE_LINKS.map(link => {
