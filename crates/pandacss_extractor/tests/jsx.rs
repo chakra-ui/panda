@@ -3,9 +3,8 @@ use insta::assert_yaml_snapshot;
 
 use crate::common::{jsx_config, jsx_kind_config, panda_config};
 use pandacss_extractor::{
-    CssSyntaxKind, ExtractUsage, ExtractedJsx, ExtractedJsxResult, ImportSpecifierKind,
-    JsxExtractionConfig, JsxKind, JsxStyleProps, MatchCategory, MatchedImport,
-    extract as extract_usage, extract_jsx,
+    ExtractUsage, ExtractedJsx, ExtractedJsxResult, ImportSpecifierKind, JsxExtractionConfig,
+    JsxKind, JsxStyleProps, MatchCategory, MatchedImport, extract as extract_usage, extract_jsx,
 };
 use serde_json::{Value, json};
 
@@ -45,17 +44,6 @@ fn extract(source: &str, matched: &[MatchedImport]) -> ExtractedJsxResult {
         "fixture.tsx",
         matched,
         &jsx_config(["styled", "Box", "Stack", "Grid"]).with_jsx_framework(true),
-    )
-}
-
-fn extract_template(source: &str, matched: &[MatchedImport]) -> ExtractedJsxResult {
-    extract_jsx(
-        source,
-        "fixture.tsx",
-        matched,
-        &jsx_config(["styled", "Box", "Stack", "Grid"])
-            .with_syntax(CssSyntaxKind::TemplateLiteral)
-            .with_jsx_framework(true),
     )
 }
 
@@ -1687,85 +1675,8 @@ fn spread_with_nested_jsx_element_drops_the_spread() {
     );
 }
 
-// --- CSS-in-template (`styled.div`...``), parity with string-literal.test.ts ---
-
 #[test]
-fn styled_factory_tagged_template_css() {
-    // The template body parses into a kebab-keyed style object, recorded like a
-    // `<styled.div>` usage.
-    let source = indoc! {r"
-        const baseStyle = styled.div`
-            background: transparent;
-            border-radius: 3px;
-            border: 1px solid var(--accent-color);
-            color: var(--accent-color);
-            display: inline-block;
-            margin: 0.5rem 1rem;
-            padding: 0.5rem 0;
-            transition: all 200ms ease-in-out;
-            width: 11rem;
-        `
-    "};
-    assert_yaml_snapshot!(extract_template(source, &[styled("styled")]).jsx, @"
-    - category: jsx
-      kind: factory
-      name: styled.div
-      alias: styled
-      data:
-        background: transparent
-        border-radius: 3px
-        border: 1px solid var(--accent-color)
-        color: var(--accent-color)
-        display: inline-block
-        margin: 0.5rem 1rem
-        padding: 0.5rem 0
-        transition: all 200ms ease-in-out
-        width: 11rem
-      span:
-        start: 18
-        end: 291
-    ");
-}
-
-#[test]
-fn styled_factory_tagged_template_folds_interpolations() {
-    // `${size}` resolves through the same-file scope evaluator before the
-    // template body parses into a style object.
-    let source = indoc! {r"
-        const size = 300;
-        const One = styled.div`
-          display: flex;
-          width: ${size}px;
-        `
-    "};
-    assert_yaml_snapshot!(extract_template(source, &[styled("styled")]).jsx, @"
-    - category: jsx
-      kind: factory
-      name: styled.div
-      alias: styled
-      data:
-        display: flex
-        width: 300px
-      span:
-        start: 30
-        end: 80
-    ");
-}
-
-#[test]
-fn styled_factory_tagged_template_with_unresolvable_interpolation_is_skipped() {
-    // A runtime-only interpolation can't fold; the whole template drops
-    // instead of emitting a bogus style value.
-    let source = indoc! {r"
-        const One = styled.div`
-          width: ${props.width}px;
-        `
-    "};
-    assert_yaml_snapshot!(extract_template(source, &[styled("styled")]).jsx, @"[]");
-}
-
-#[test]
-fn styled_factory_tagged_template_ignored_in_object_syntax() {
+fn styled_factory_tagged_template_does_not_extract() {
     assert_yaml_snapshot!(
         extract("const baseStyle = styled.div`color: red;`", &[styled("styled")]),
         @r"
@@ -1773,155 +1684,6 @@ fn styled_factory_tagged_template_ignored_in_object_syntax() {
     diagnostics: []
     ",
     );
-}
-
-#[test]
-fn tagged_template_css_splits_value_on_first_colon() {
-    // A value keeping a colon (`url(http://…)`) survives — the astish value
-    // group stops at the first `;`, not the inner `:`. Each declaration is
-    // `;`-terminated, as the astish regex requires.
-    assert_yaml_snapshot!(
-        extract_template(
-            "const x = styled.div`background: url(http://x.png); color: red;`",
-            &[styled("styled")],
-        ),
-        @r#"
-    jsx:
-      - category: jsx
-        kind: factory
-        name: styled.div
-        alias: styled
-        data:
-          background: "url(http://x.png)"
-          color: red
-        span:
-          start: 10
-          end: 64
-    diagnostics: []
-    "#,
-    );
-}
-
-#[test]
-fn tagged_template_css_nests_at_rules_and_selectors() {
-    // Nested at-rules / selectors fold into nested objects via the astish port
-    // (no flat-only limitation). Grounded in `astish.test.ts` › "should work
-    // with media queries": a bare `@media` block nests under its full
-    // condition key; flat declarations stay at the top level.
-    assert_yaml_snapshot!(
-        extract_template(
-            "const x = styled.div`width: 500px; height: 500px; background: red; @media (min-width: 700px) { background: blue; }`",
-            &[styled("styled")],
-        ),
-        @r#"
-    jsx:
-      - category: jsx
-        kind: factory
-        name: styled.div
-        alias: styled
-        data:
-          width: 500px
-          height: 500px
-          background: red
-          "@media (min-width: 700px)":
-            background: blue
-        span:
-          start: 10
-          end: 115
-    diagnostics: []
-    "#,
-    );
-}
-
-#[test]
-fn tagged_template_css_joins_multiline_selectors() {
-    // Grounded in `astish.test.ts` › "with multiline selectors": a selector
-    // split across lines (`& span,\n& p`) collapses to one key (`& span, & p`)
-    // and its block nests. Selectors already containing `&` keep no extra
-    // prefix.
-    let source = indoc! {r"
-        const x = styled.div`
-            background: pink;
-            & span,
-            & p {
-                color: blue;
-            }
-        `
-    "};
-    assert_yaml_snapshot!(extract_template(source, &[styled("styled")]).jsx, @r#"
-    - category: jsx
-      kind: factory
-      name: styled.div
-      alias: styled
-      data:
-        background: pink
-        "& span, & p":
-          color: blue
-      span:
-        start: 10
-        end: 94
-    "#);
-}
-
-#[test]
-fn tagged_template_css_matches_shared_astish_fixture() {
-    let source = indoc! {r"
-        const x = styled.div`
-            display: flex;
-            align-items: center;
-            -webkit-align-items: center;
-            @media (min-width: 400) {
-                color: red;
-                justify-content: center;
-            }
-            @container (min-inline-width: 600px) {
-                background: pink;
-            }
-        `
-    "};
-    let result = extract_template(source, &[styled("styled")]);
-    assert_yaml_snapshot!(result.jsx[0].data, @r#"
-    display: flex
-    align-items: center
-    "-webkit-align-items": center
-    "@media (min-width: 400)":
-      color: red
-      justify-content: center
-    "@container (min-inline-width: 600px)":
-      background: pink
-    "#);
-}
-
-#[test]
-fn tagged_template_css_supports_native_nesting_and_custom_props() {
-    let source = indoc! {r"
-        const x = styled.div`
-            color: red;
-            --test: 4px;
-            p {
-                color: blue;
-            }
-            h1,
-            h2,
-            h3,
-            h4 {
-                color: pink;
-                font-weight: bold;
-                margin-bottom: 1rem;
-            }
-        `
-    "};
-    let result = extract_template(source, &[styled("styled")]);
-    assert_yaml_snapshot!(result.jsx[0].data, @r#"
-    color: red
-    "--test": 4px
-    "& p":
-      color: blue
-    "& h1, h2, h3, h4":
-      color: pink
-      font-weight: bold
-      margin-bottom: 1rem
-    "#);
 }
 
 // --- JSX kind classification ---

@@ -475,7 +475,7 @@ fn push_identity_or_merged_raw(
     {
         plan.extend(rewrites);
     } else if let Some(rewrite) =
-        resolve::rewrite_for_merged_raw_call(project, source, call.span, &call.data, &call.facts)
+        resolve::rewrite_for_merged_raw_call(project, source, call.span, &call.data)
     {
         plan.push(rewrite);
     }

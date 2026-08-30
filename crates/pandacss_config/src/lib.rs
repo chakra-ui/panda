@@ -53,14 +53,6 @@ fn default_true() -> bool {
     true
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum CssSyntaxKind {
-    TemplateLiteral,
-    #[default]
-    ObjectLiteral,
-}
-
 /// JSON-safe resolved config snapshot from the JS side. JS still executes
 /// `panda.config.*`, resolves presets, and runs config-phase plugins; Rust
 /// gets this shape after runtime-only hooks/plugins are stripped.
@@ -107,8 +99,6 @@ pub struct UserConfig {
     pub shorthands: bool,
     #[serde(default = "default_separator")]
     pub separator: String,
-    #[serde(default)]
-    pub syntax: CssSyntaxKind,
     #[serde(default)]
     pub static_css: Value,
     #[serde(default)]
@@ -163,7 +153,6 @@ impl Default for UserConfig {
             hash: HashConfig::default(),
             shorthands: true,
             separator: default_separator(),
-            syntax: CssSyntaxKind::default(),
             static_css: Value::default(),
             global_css: Value::default(),
             global_vars: Value::default(),

@@ -61,7 +61,7 @@ Generated CSS:
 
 | Topic            | Choice                                                                                      |
 | ---------------- | ------------------------------------------------------------------------------------------- |
-| Export           | `styled-system/css` only (object syntax; skipped for template-literal)                      |
+| Export           | `styled-system/css` only                                                                    |
 | Allowlist        | Css category: `["css", "cva", "sva", "viewTransition"]` — no dedicated `importMap` key      |
 | Class model      | Object form: `vt_{to_hash(stableSerializedOptions)}`. Theme name: `vt_{name}`. Optional `prefix-`. |
 | Slots            | `group`, `imagePair`, `old`, `new` → `::view-transition-{group,image-pair,old,new}`         |

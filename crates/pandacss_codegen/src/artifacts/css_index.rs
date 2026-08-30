@@ -1,6 +1,4 @@
-//! The `css/index` barrel: re-exports CSS helpers for the configured syntax.
-
-use pandacss_config::CssSyntaxKind;
+//! The `css/index` barrel: re-exports CSS helpers.
 
 use crate::{
     Artifact, ArtifactFile, ArtifactId, CodegenContext, DependencySet, ExportDecl, Item, ItemNode,
@@ -10,11 +8,7 @@ use crate::{
 
 #[must_use]
 pub fn module(ctx: CodegenContext<'_>) -> Module {
-    let stems: &[&str] = if matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
-        &["css", "cx"]
-    } else {
-        &["css", "cva", "cx", "sva", "view-transition"]
-    };
+    let stems: &[&str] = &["css", "cva", "cx", "sva", "view-transition"];
 
     // Deep `export *` per module so both runtime values and their `.d.ts` companions
     // flow through (same shape as recipes/patterns/jsx overlay barrels).

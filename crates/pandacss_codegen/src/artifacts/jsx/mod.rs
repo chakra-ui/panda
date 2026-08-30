@@ -3,28 +3,23 @@
 
 mod jsx_helper;
 mod preact_jsx;
-mod preact_jsx_literal;
 mod preact_pattern_jsx;
 mod preact_recipe_context;
 mod qwik_jsx;
-mod qwik_jsx_literal;
 mod qwik_pattern_jsx;
 mod react_jsx;
-mod react_jsx_literal;
 mod react_pattern_jsx;
 mod react_recipe_context;
 mod solid_jsx;
-mod solid_jsx_literal;
 mod solid_pattern_jsx;
 mod solid_recipe_context;
 mod vue_jsx;
-mod vue_jsx_literal;
 mod vue_pattern_jsx;
 mod vue_recipe_context;
 
 use std::collections::BTreeSet;
 
-use pandacss_config::{CssSyntaxKind, JsxFramework, JsxStylePropsConfig};
+use pandacss_config::{JsxFramework, JsxStylePropsConfig};
 use pandacss_shared::{file_stem, pascal_case};
 
 use crate::{
@@ -41,17 +36,13 @@ pub fn generate_is_valid_prop(
     options: GenerateOptions,
     dependencies: DependencySet,
 ) -> Artifact {
-    let files = if matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
-        Vec::new()
-    } else {
-        framework_files(
-            ctx,
-            options,
-            dependencies,
-            "jsx/is-valid-prop",
-            is_valid_prop_module,
-        )
-    };
+    let files = framework_files(
+        ctx,
+        options,
+        dependencies,
+        "jsx/is-valid-prop",
+        is_valid_prop_module,
+    );
 
     Artifact {
         id: ArtifactId::JsxIsValidProp,
@@ -92,12 +83,11 @@ pub fn generate_patterns(
     options: GenerateOptions,
     dependencies: DependencySet,
 ) -> Artifact {
-    let files =
-        if has_jsx_framework(ctx) && !matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
-            pattern_files(ctx, options, dependencies)
-        } else {
-            Vec::new()
-        };
+    let files = if has_jsx_framework(ctx) {
+        pattern_files(ctx, options, dependencies)
+    } else {
+        Vec::new()
+    };
 
     Artifact {
         id: ArtifactId::JsxPatterns,
@@ -112,17 +102,13 @@ pub fn generate_create_recipe_context(
     options: GenerateOptions,
     dependencies: DependencySet,
 ) -> Artifact {
-    let files = if matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
-        Vec::new()
-    } else {
-        context_files(
-            ctx,
-            options,
-            dependencies,
-            "jsx/create-recipe-context",
-            recipe_context_module,
-        )
-    };
+    let files = context_files(
+        ctx,
+        options,
+        dependencies,
+        "jsx/create-recipe-context",
+        recipe_context_module,
+    );
 
     Artifact {
         id: ArtifactId::JsxCreateRecipeContext,
@@ -137,17 +123,13 @@ pub fn generate_create_slot_recipe_context(
     options: GenerateOptions,
     dependencies: DependencySet,
 ) -> Artifact {
-    let files = if matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
-        Vec::new()
-    } else {
-        context_files(
-            ctx,
-            options,
-            dependencies,
-            "jsx/create-slot-recipe-context",
-            slot_recipe_context_module,
-        )
-    };
+    let files = context_files(
+        ctx,
+        options,
+        dependencies,
+        "jsx/create-slot-recipe-context",
+        slot_recipe_context_module,
+    );
 
     Artifact {
         id: ArtifactId::JsxCreateSlotRecipeContext,
@@ -392,23 +374,6 @@ fn factory_module(ctx: CodegenContext<'_>) -> Module {
     let component = component_name(ctx);
     let upper = factory_upper(ctx);
 
-    if matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
-        return match ctx.config.jsx_framework.as_ref() {
-            Some(JsxFramework::React) => {
-                react_jsx_literal::module(ctx, &factory, &component, &upper)
-            }
-            Some(JsxFramework::Preact) => {
-                preact_jsx_literal::module(ctx, &factory, &component, &upper)
-            }
-            Some(JsxFramework::Qwik) => qwik_jsx_literal::module(ctx, &factory, &component, &upper),
-            Some(JsxFramework::Solid) => {
-                solid_jsx_literal::module(ctx, &factory, &component, &upper)
-            }
-            Some(JsxFramework::Vue) => vue_jsx_literal::module(ctx, &factory, &component, &upper),
-            _ => Module::new(),
-        };
-    }
-
     match ctx.config.jsx_framework.as_ref() {
         Some(JsxFramework::React) => react_jsx::module(ctx, &factory, &component, &upper),
         Some(JsxFramework::Preact) => preact_jsx::module(ctx, &factory, &component, &upper),
@@ -440,50 +405,38 @@ fn slot_recipe_context_module(ctx: CodegenContext<'_>) -> Module {
 }
 
 fn index_module(ctx: CodegenContext<'_>) -> Module {
-    let template_literal = matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral);
     let mut module = Module::new();
 
     // Owned DS pattern components: deep `export *` so values + Props types both flow through.
-    if !template_literal && let Some(overlay) = ctx.overlay {
+    if let Some(overlay) = ctx.overlay {
         for source in overlay.owned_jsx_sources() {
             module = module.with_item(Item::both(ItemNode::Export(ExportDecl::Star { source })));
         }
     }
 
-    let mut local_sources = vec!["./factory".to_owned()];
-    if !template_literal {
-        local_sources.push("./is-valid-prop".to_owned());
-        if has_context_framework(ctx) {
-            local_sources.extend([
-                "./create-recipe-context".to_owned(),
-                "./create-slot-recipe-context".to_owned(),
-            ]);
-        }
-        local_sources.extend(app_pattern_jsx_stems(ctx));
+    let mut local_sources = vec!["./factory".to_owned(), "./is-valid-prop".to_owned()];
+    if has_context_framework(ctx) {
+        local_sources.extend([
+            "./create-recipe-context".to_owned(),
+            "./create-slot-recipe-context".to_owned(),
+        ]);
     }
+    local_sources.extend(app_pattern_jsx_stems(ctx));
 
     module = local_sources.into_iter().fold(module, |module, source| {
         module.with_item(Item::both(ItemNode::Export(ExportDecl::Star { source })))
     });
 
-    let type_names = if template_literal {
-        vec![
-            html_props_name(ctx),
-            component_name(ctx),
-            factory_upper(ctx),
-        ]
-    } else {
-        vec![
-            html_props_name(ctx),
-            component_name(ctx),
-            factory_upper(ctx),
-            "StyledVariantProps".into(),
-            "JsxFactoryOptions".into(),
-            "ComponentProps".into(),
-            "DataAttrs".into(),
-            "AsProps".into(),
-        ]
-    };
+    let type_names = vec![
+        html_props_name(ctx),
+        component_name(ctx),
+        factory_upper(ctx),
+        "StyledVariantProps".into(),
+        "JsxFactoryOptions".into(),
+        "ComponentProps".into(),
+        "DataAttrs".into(),
+        "AsProps".into(),
+    ];
 
     module.with_item(Item::ty(ItemNode::Export(ExportDecl::TypeNamed {
         names: type_names,

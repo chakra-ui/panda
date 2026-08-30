@@ -52,7 +52,6 @@ export const initCommand = defineCommand({
       type: 'string',
       description: 'JSX style props: all, minimal, or none',
     },
-    syntax: { type: 'string', description: 'CSS syntax: object-literal or template-literal' },
     'strict-tokens': { type: 'boolean', description: 'Set strictTokens to true' },
     'skip-presets': {
       type: 'boolean',
@@ -150,7 +149,6 @@ export async function runInit(flags: InitFlags = {}, output: OutputSink = consol
           outExtension: flags.outExtension,
           jsxFramework: flags.jsxFramework,
           jsxStyleProps: flags.jsxStyleProps,
-          syntax: flags.syntax,
           strictTokens: flags.strictTokens,
           presets: includeDefaultPresets ? DEFAULT_PRESETS : [],
         }),
@@ -290,7 +288,6 @@ interface SetupConfigOptions {
   outExtension?: 'ts' | 'js' | 'mjs'
   jsxFramework?: string
   jsxStyleProps?: 'all' | 'minimal' | 'none'
-  syntax?: 'template-literal' | 'object-literal'
   strictTokens?: boolean
   presets: readonly string[]
 }
@@ -378,7 +375,6 @@ function configSource(options: SetupConfigOptions): string {
   if (options.outExtension) lines.push(`  outExtension: ${JSON.stringify(options.outExtension)},`)
   if (options.jsxFramework) lines.push(`  jsxFramework: ${JSON.stringify(options.jsxFramework)},`)
   if (options.jsxStyleProps) lines.push(`  jsxStyleProps: ${JSON.stringify(options.jsxStyleProps)},`)
-  if (options.syntax) lines.push(`  syntax: ${JSON.stringify(options.syntax)},`)
   if (options.strictTokens) lines.push('  strictTokens: true,')
 
   lines.push('})', '')

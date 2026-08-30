@@ -1,10 +1,6 @@
 //! The `css` artifact: the `css()` / `mergeCss()` runtime + its types.
 
-mod css_literal;
-
 use std::collections::BTreeMap;
-
-use pandacss_config::CssSyntaxKind;
 
 use crate::{
     Artifact, ArtifactFile, ArtifactId, CodegenContext, ConstDecl, DependencySet, Expr, ImportDecl,
@@ -46,10 +42,6 @@ pub fn files(
 }
 
 fn module(ctx: CodegenContext<'_>) -> Module {
-    if matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
-        return css_literal::module(ctx);
-    }
-
     Module::new()
         .with_import(ImportDecl::value(
             [

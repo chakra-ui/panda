@@ -1,7 +1,7 @@
 use crate::common::{artifact, file, paths};
 use indoc::indoc;
 use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
-use pandacss_config::{CodegenFormat, CssSyntaxKind};
+use pandacss_config::CodegenFormat;
 use serde_json::json;
 
 #[test]
@@ -183,55 +183,4 @@ fn can_emit_import_extensions() {
         "import { withoutSpace } from '../helpers.js';"
     );
     assert!(!file(conditions, "css/conditions.d.ts").contains("../types/system"));
-}
-
-#[test]
-fn template_literal_syntax_emits_selector_only_conditions() {
-    let graph = ArtifactGraph;
-    let mut config: pandacss_config::UserConfig = serde_json::from_value(json!({
-        "conditions": {
-            "hover": "&:hover"
-        }
-    }))
-    .expect("valid config");
-    config.syntax = CssSyntaxKind::TemplateLiteral;
-
-    let artifacts = graph.generate_with_config(
-        &config,
-        GenerateOptions {
-            format: CodegenFormat::Mjs,
-            import_extensions: true,
-        },
-    );
-    let conditions = artifact(&artifacts, ArtifactId::Conditions);
-
-    assert_eq!(paths(conditions), vec!["css/conditions.mjs"]);
-    assert_eq!(
-        file(conditions, "css/conditions.mjs"),
-        indoc! {r#"
-        import { withoutSpace } from '../helpers.mjs';
-
-        export const breakpointKeys = ["base"]
-
-        export const isCondition = (val) => condRegex.test(val)
-
-        const condRegex = /^@|&|&$/
-        const selectorRegex = /&|@/
-
-        export const finalizeConditions = (paths) => {
-          return paths.map((path) => selectorRegex.test(path) ? `[${withoutSpace(path.trim())}]` : path)
-        }
-
-        export function sortConditions(paths) {
-          return [...paths].sort((a, b) => {
-            const aa = isCondition(a)
-            const bb = isCondition(b)
-            if (aa && !bb) return 1
-            if (!aa && bb) return -1
-            return 0
-          })
-        }
-        "#}
-        .trim()
-    );
 }

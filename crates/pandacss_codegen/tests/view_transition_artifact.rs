@@ -1,7 +1,7 @@
 use crate::common::{artifact, file, paths};
 use insta::assert_snapshot;
 use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
-use pandacss_config::{CodegenFormat, CssSyntaxKind, PrefixConfig, UserConfig};
+use pandacss_config::{CodegenFormat, PrefixConfig, UserConfig};
 use serde_json::json;
 
 #[test]
@@ -133,18 +133,6 @@ fn emits_prefixed_view_transition_runtime() {
       }
     }
     "##);
-}
-
-#[test]
-fn template_literal_syntax_skips_view_transition_artifact() {
-    let config = UserConfig {
-        syntax: CssSyntaxKind::TemplateLiteral,
-        ..Default::default()
-    };
-    let artifacts = ArtifactGraph.generate_with_config(&config, GenerateOptions::default());
-    let vt = artifact(&artifacts, ArtifactId::ViewTransition);
-
-    assert!(paths(vt).is_empty());
 }
 
 #[test]

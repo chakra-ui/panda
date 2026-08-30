@@ -128,7 +128,7 @@ These are the direct successors to the earlier prototype's `buildClassNameAttr(.
 - `token.var()` calls
 - token fallback values
 - token import aliases
-- token inside `css`, template literals, `cva`, and mixed files
+- token inside `css`, `cva`, and mixed files
 
 ## Snapshot tests: bailout behavior
 

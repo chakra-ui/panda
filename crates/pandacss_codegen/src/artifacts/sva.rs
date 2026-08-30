@@ -1,8 +1,6 @@
 //! The `sva` artifact: the slot-recipe-creator factory `sva()`. Like `cva`,
 //! a fixed runtime impl independent of config.
 
-use pandacss_config::CssSyntaxKind;
-
 use crate::{
     Artifact, ArtifactFile, ArtifactId, CodegenContext, ConstDecl, DependencySet, Expr, ImportDecl,
     Item, ItemNode, Module, RuntimeImport, TsType,
@@ -28,10 +26,6 @@ pub fn files(
     options: GenerateOptions,
     dependencies: DependencySet,
 ) -> Vec<ArtifactFile> {
-    if matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
-        return Vec::new();
-    }
-
     if ctx.virtualizes(RuntimeImport::CssIndex) {
         return Vec::new();
     }

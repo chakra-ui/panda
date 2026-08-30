@@ -3,7 +3,6 @@ mod common;
 mod conditional_output;
 mod cross_file;
 mod css_property;
-mod css_template;
 mod extract;
 mod framework_astro;
 mod framework_svelte;

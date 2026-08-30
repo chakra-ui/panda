@@ -150,7 +150,6 @@ export const docsTabs: TabItem[] = [
           { title: 'Patterns', url: 'patterns' },
           { title: 'Recipes', url: 'recipes' },
           { title: 'Slot Recipes', url: 'slot-recipes' },
-          { title: 'Template Literals', url: 'template-literals' },
           { title: 'JSX Style Props', url: 'style-props' },
           { title: 'JSX Style Context', url: 'jsx-style-context' },
           { title: 'Styled System', url: 'styled-system' },
