@@ -4,6 +4,7 @@ import { Providers } from '@/components/providers'
 import { css, cx } from '@/styled-system/css'
 import { fontClassName } from 'styles/fonts'
 import seoConfig from '../seo.config'
+import '../styled-system/styles.css'
 import '../styles/panda.css'
 
 interface Props {

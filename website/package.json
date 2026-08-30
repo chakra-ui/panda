@@ -4,18 +4,19 @@
   "description": "",
   "private": true,
   "scripts": {
-    "codegen": "panda codegen",
+    "codegen": "panda",
     "dev:content": "velite --watch",
     "dev:next": "next dev",
     "dev": "run-s codegen dev:watch",
-    "dev:watch": "run-p dev:content dev:next",
+    "dev:watch": "run-p dev:panda dev:content dev:next",
     "generate:reference": "tsx scripts/generate-utility-reference.ts",
-    "build:codegen": "panda codegen",
+    "build:codegen": "panda",
     "build:content": "velite --clean",
     "build:next": "next build",
     "build": "run-s generate:reference build:codegen build:content build:next",
     "lint": "eslint . --max-warnings 0",
-    "start": "next start"
+    "start": "next start",
+    "dev:panda": "panda --watch"
   },
   "dependencies": {
     "@ark-ui/react": "5.39.1",
@@ -35,7 +36,6 @@
   },
   "devDependencies": {
     "@pandacss/dev": "beta",
-    "@pandacss/postcss": "beta",
     "@shikijs/rehype": "^3.19.0",
     "@shikijs/transformers": "^3.19.0",
     "@types/react": "19.2.7",
@@ -45,7 +45,6 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "github-slugger": "^2.0.0",
     "npm-run-all2": "^9.0.3",
-    "postcss": "8.5.14",
     "prettier": "3.2.5",
     "rehype-autolink-headings": "^7.1.0",
     "rehype-slug": "^6.0.0",

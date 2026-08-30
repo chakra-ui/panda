@@ -521,7 +521,7 @@ importers:
         version: 5.1.6
       next:
         specifier: 16.3.0
-        version: 16.3.0(@babel/core@7.28.5(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@24.10.1)(babel-plugin-macros@3.1.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 16.3.0(@babel/core@7.26.10(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@24.10.1)(babel-plugin-macros@3.1.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       next-themes:
         specifier: 0.4.6
         version: 0.4.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -1654,7 +1654,7 @@ importers:
         version: 16.1.0
       next:
         specifier: 16.3.0
-        version: 16.3.0(@babel/core@7.26.10(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@24.10.1)(babel-plugin-macros@3.1.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 16.3.0(@babel/core@7.28.5(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@24.10.1)(babel-plugin-macros@3.1.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       next-themes:
         specifier: 0.4.6
         version: 0.4.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -1672,9 +1672,6 @@ importers:
         version: 5.5.0(react@19.2.0)
     devDependencies:
       '@pandacss/dev':
-        specifier: beta
-        version: 2.0.0-beta.15(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(postcss@8.5.14)
-      '@pandacss/postcss':
         specifier: beta
         version: 2.0.0-beta.15(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(postcss@8.5.14)
       '@shikijs/rehype':
@@ -1704,9 +1701,6 @@ importers:
       npm-run-all2:
         specifier: ^9.0.3
         version: 9.0.3
-      postcss:
-        specifier: 8.5.14
-        version: 8.5.14
       prettier:
         specifier: 3.2.5
         version: 3.2.5
