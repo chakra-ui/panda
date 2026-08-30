@@ -59,6 +59,12 @@ function formatDate(isoDate: string) {
   })
 }
 
+function formatAuthors(author: string | string[]) {
+  const list = Array.isArray(author) ? author : [author]
+  if (list.length <= 1) return list.join('')
+  return `${list.slice(0, -1).join(', ')} & ${list[list.length - 1]}`
+}
+
 export default async function BlogPostPage(props: BlogPostPageProps) {
   const { slug } = await props.params
   const post = blog.find(p => p.slug === `blog/${slug}`)
@@ -116,7 +122,7 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
                   ·
                 </panda.span>
                 <panda.span fontSize="sm" color="fg.subtle">
-                  {post.author}
+                  {formatAuthors(post.author)}
                 </panda.span>
               </>
             )}

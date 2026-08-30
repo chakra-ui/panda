@@ -1,0 +1,88 @@
+<svg width="1200" height="470" viewBox="0 0 1200 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Design system flow: the author runs panda lib to ship a manifest, preset and build info; the consumer sets designSystem and reuses the pre-extracted styles">
+  <style>
+    .surface { fill: #FBF9F3; }
+    .ink { fill: #1A1A17; }
+    .muted { fill: #5E584C; }
+    .card { fill: #FFFFFF; stroke: #1A1A17; stroke-width: 2; }
+    .yl { fill: #F6E458; }
+    .ylstroke { fill: #F6E458; stroke: #1A1A17; stroke-width: 2; }
+    .ony { fill: #1A1A17; }
+    .chip { fill: #FBF9F3; stroke: #CFC8B8; stroke-width: 1.5; }
+    .flow { stroke: #1A1A17; stroke-width: 3; fill: none; }
+    .dot { fill: #F6E458; stroke: #1A1A17; stroke-width: 1.5; }
+    .sans { font-family: 'Onest','Segoe UI',system-ui,sans-serif; }
+    .mono { font-family: 'Source Code Pro',ui-monospace,monospace; }
+    @media (prefers-color-scheme: dark) {
+      .surface { fill: #17171B; } .ink { fill: #F5F2E9; } .muted { fill: #B7B1A3; }
+      .card { fill: #23232B; stroke: #3A3A42; } .chip { fill: #1B1B21; stroke: #3A3A42; }
+      .flow { stroke: #E7E2D6; } .dot { stroke: #17171B; }
+    }
+  </style>
+  <rect width="1200" height="470" class="surface"/>
+
+  <rect x="60" y="40" width="52" height="7" rx="3.5" class="yl"/>
+  <text x="60" y="86" class="sans ink" font-size="30" font-weight="800" letter-spacing="-0.4">Ship a design system, reuse it in one line</text>
+  <text x="60" y="116" class="sans muted" font-size="16.5">The library extracts itself once at publish time. Every app that installs it reuses that work.</text>
+
+  <defs>
+    <marker id="ds" viewBox="0 0 10 10" refX="6.5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 1 L9 5 L0 9" fill="none" stroke="currentColor" class="ink" stroke-width="2.2"/>
+    </marker>
+  </defs>
+
+  <g class="sans">
+    <!-- 01 AUTHOR -->
+    <g transform="translate(60 150)">
+      <rect width="326" height="256" rx="18" class="card"/>
+      <rect x="28" y="26" width="42" height="27" rx="8" class="yl"/>
+      <text x="49" y="45" text-anchor="middle" class="ony mono" font-size="15" font-weight="700">01</text>
+      <text x="82" y="45" class="ink" font-size="15" font-weight="800" letter-spacing="1.5">AUTHOR</text>
+      <rect x="28" y="70" width="168" height="42" rx="11" class="ylstroke"/>
+      <text x="48" y="97" class="ony mono" font-size="17" font-weight="700">panda lib</text>
+      <text x="28" y="152" class="muted" font-size="14">writes to the package</text>
+      <g class="mono ink" font-size="14">
+        <text x="28" y="184">· lib.json manifest</text>
+        <text x="28" y="210">· preset (tokens, recipes)</text>
+        <text x="28" y="236">· build info (extracted CSS)</text>
+      </g>
+    </g>
+
+    <!-- 02 PUBLISH -->
+    <g transform="translate(437 150)">
+      <rect width="326" height="256" rx="18" class="card"/>
+      <rect x="28" y="26" width="42" height="27" rx="8" class="yl"/>
+      <text x="49" y="45" text-anchor="middle" class="ony mono" font-size="15" font-weight="700">02</text>
+      <text x="82" y="45" class="ink" font-size="15" font-weight="800" letter-spacing="1.5">PUBLISH</text>
+      <text x="28" y="92" class="ink mono" font-size="18" font-weight="700">@acme/ds</text>
+      <text x="28" y="128" class="muted" font-size="14">exports synced for you</text>
+      <g class="mono" font-size="13.5">
+        <rect x="28" y="142" width="120" height="34" rx="9" class="chip"/><text x="46" y="164" class="ink">./css</text>
+        <rect x="158" y="142" width="140" height="34" rx="9" class="chip"/><text x="176" y="164" class="ink">./recipes</text>
+        <rect x="28" y="186" width="106" height="34" rx="9" class="chip"/><text x="46" y="208" class="ink">./jsx</text>
+        <rect x="144" y="186" width="132" height="34" rx="9" class="chip"/><text x="162" y="208" class="ink">./tokens</text>
+      </g>
+    </g>
+
+    <!-- 03 CONSUME -->
+    <g transform="translate(814 150)">
+      <rect width="326" height="256" rx="18" class="card"/>
+      <rect x="28" y="26" width="42" height="27" rx="8" class="yl"/>
+      <text x="49" y="45" text-anchor="middle" class="ony mono" font-size="15" font-weight="700">03</text>
+      <text x="82" y="45" class="ink" font-size="15" font-weight="800" letter-spacing="1.5">CONSUME</text>
+      <rect x="28" y="66" width="270" height="56" rx="11" class="chip"/>
+      <text x="44" y="90" class="muted mono" font-size="12.5">defineConfig(&#123;</text>
+      <text x="44" y="110" class="ink mono" font-size="13.5" font-weight="700">designSystem: '@acme/ds'</text>
+      <text x="28" y="162" class="ink" font-size="15" font-weight="700">Reuses the extracted styles</text>
+      <text x="28" y="190" class="muted" font-size="14">No re-scan of the library source.</text>
+      <text x="28" y="214" class="muted" font-size="14">theme.extend layers on top.</text>
+    </g>
+
+    <!-- arrows with yellow midpoint -->
+    <g class="flow">
+      <line x1="390" y1="278" x2="433" y2="278" marker-end="url(#ds)"/>
+      <line x1="767" y1="278" x2="810" y2="278" marker-end="url(#ds)"/>
+    </g>
+    <circle cx="411" cy="278" r="4.5" class="dot"/>
+    <circle cx="788" cy="278" r="4.5" class="dot"/>
+  </g>
+</svg>
