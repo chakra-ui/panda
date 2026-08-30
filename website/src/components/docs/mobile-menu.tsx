@@ -11,8 +11,6 @@ import { LuArrowUpRight, LuGithub, LuMessageCircle, LuTwitter } from 'react-icon
 const SITE_LINKS = [
   { title: 'Home', href: '/' },
   { title: 'Docs', href: '/docs' },
-  { title: 'Guides', href: '/guides' },
-  { title: 'Reference', href: '/docs/reference/cli' },
   { title: 'Blog', href: '/blog' },
   { title: 'Showcase', href: '/showcase' }
 ]
