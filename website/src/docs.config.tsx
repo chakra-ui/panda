@@ -121,6 +121,15 @@ export const docsTabs: TabItem[] = [
         ]
       },
       {
+        title: 'AI for Agents',
+        tag: 'new',
+        items: [
+          { title: 'MCP Server', url: 'mcp-server' },
+          { title: 'LLMs.txt', url: 'llms-txt' },
+          { title: 'Agent Skills', url: 'agent-skills' }
+        ]
+      },
+      {
         title: 'Migration',
         items: [
           { title: 'Migration strategy', url: 'migration-strategy' },
@@ -131,15 +140,6 @@ export const docsTabs: TabItem[] = [
           { title: 'Emotion', url: 'emotion' },
           { title: 'Theme UI', url: 'theme-ui' },
           { title: 'StyleX', url: 'stylex' }
-        ]
-      },
-      {
-        title: 'AI for Agents',
-        tag: 'new',
-        items: [
-          { title: 'MCP Server', url: 'mcp-server' },
-          { title: 'LLMs.txt', url: 'llms-txt' },
-          { title: 'Agent Skills', url: 'agent-skills' }
         ]
       },
       {
