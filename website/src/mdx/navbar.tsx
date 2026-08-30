@@ -163,9 +163,11 @@ export const MobileNavDrawer = (props: MobileNavDrawerProps) => {
               alignItems: 'center',
               justifyContent: 'space-between',
               gap: '4',
-              minH: '14',
-              px: '6',
-              flexShrink: 0
+              minH: '13',
+              px: '5',
+              flexShrink: 0,
+              borderBottomWidth: '1px',
+              borderColor: 'border'
             })}
           >
             {header ?? <span />}

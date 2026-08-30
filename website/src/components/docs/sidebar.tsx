@@ -1,12 +1,58 @@
 'use client'
 
 import { Badge } from '@/components/ui/badge'
+import type { IconType } from 'react-icons'
+import {
+  LuBlocks,
+  LuBookOpen,
+  LuBot,
+  LuCircleHelp,
+  LuCog,
+  LuFolderTree,
+  LuLayers,
+  LuLayoutGrid,
+  LuPackage,
+  LuPalette,
+  LuRocket,
+  LuShuffle,
+  LuSlidersHorizontal,
+  LuSparkles,
+  LuTerminal,
+  LuType,
+  LuWrench
+} from 'react-icons/lu'
 import { docsTabs } from '@/docs.config'
 import { Stack } from '@/styled-system/jsx'
 import { docNav } from '@/styled-system/recipes'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LuArrowUpRight } from 'react-icons/lu'
+
+/** Group titles come from docs.config; anything unmapped falls back to a folder. */
+const GROUP_ICONS: Record<string, IconType> = {
+  'Get Started': LuRocket,
+  'Core Concepts': LuSparkles,
+  'Styling APIs': LuLayers,
+  Migration: LuShuffle,
+  Recipes: LuLayers,
+  Composition: LuLayoutGrid,
+  Tokens: LuPalette,
+  'Composite Styles': LuType,
+  Themes: LuPalette,
+  'Component Library': LuBlocks,
+  'Design System (preset)': LuPackage,
+  Customization: LuSlidersHorizontal,
+  'Distribution & Scale': LuPackage,
+  'How it works': LuCog,
+  'Build Integrations': LuTerminal,
+  'Framework Guides': LuBlocks,
+  'Lint & Edit': LuWrench,
+  'AI for Agents': LuBot,
+  Inspect: LuLayoutGrid,
+  Help: LuCircleHelp,
+  'CLI & Config': LuTerminal,
+  'Utility Reference': LuBookOpen
+}
 
 interface Props {
   /** `{tabKey}/{page}`, e.g. `styling/getting-started`. Matches the docs page route's `slug`. */
@@ -39,6 +85,10 @@ export function Sidebar({ slug: currentSlug, tabKey: fallbackTab }: Props) {
       {tab.items.map(group => (
         <div key={group.title}>
           <div className={classes.label}>
+            {(() => {
+              const GroupIcon = GROUP_ICONS[group.title] ?? LuFolderTree
+              return <GroupIcon size={15} aria-hidden />
+            })()}
             <span>{group.title}</span>
             {group.tag && <Badge variant="solid">{group.tag}</Badge>}
           </div>

@@ -58,12 +58,16 @@ export const docNavRecipe = defineSlotRecipe({
         label: {
           display: 'flex',
           alignItems: 'center',
-          gap: '2',
+          gap: '2.5',
           px: '3',
-          py: '2',
+          py: '1.5',
+          mt: '4',
+          mb: '1',
           textStyle: 'sm',
           fontWeight: 'semibold',
-          color: 'fg'
+          color: 'fg',
+          '& svg': { color: 'fg.subtle', flexShrink: 0 },
+          _first: { mt: '0' }
         },
         link: {
           minH: '8',

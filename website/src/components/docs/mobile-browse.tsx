@@ -4,7 +4,6 @@ import { Sidebar } from '@/components/docs/sidebar'
 import { drawerSlotRecipe } from '@/components/ui/drawer'
 import { getTab } from '@/docs.config'
 import { css, cx } from '@/styled-system/css'
-import { Box } from '@/styled-system/jsx'
 import { Dialog, useDialog } from '@ark-ui/react/dialog'
 import { Portal } from '@ark-ui/react/portal'
 import { usePathname } from 'next/navigation'
@@ -68,9 +67,11 @@ export const MobileBrowse = () => {
               alignItems: 'center',
               justifyContent: 'space-between',
               gap: '4',
-              minH: '14',
-              px: '6',
+              minH: '13',
+              px: '5',
               flexShrink: 0,
+              borderBottomWidth: '1px',
+              borderColor: 'border',
               textStyle: 'eyebrow',
               color: 'fg.subtle'
             })}
@@ -89,10 +90,8 @@ export const MobileBrowse = () => {
               <LuX size={18} />
             </Dialog.CloseTrigger>
           </div>
-          <div className={cx(classes.body, 'scroll-area')}>
-            <Box borderTopWidth="1px" borderColor="border" pt="6">
-              <Sidebar tabKey={tabKey} />
-            </Box>
+          <div className={cx(classes.body, 'scroll-area', css({ pt: '3' }))}>
+            <Sidebar tabKey={tabKey} />
           </div>
 
         </Dialog.Content>
