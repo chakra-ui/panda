@@ -6,6 +6,7 @@ import { getTab } from '@/docs.config'
 import { css, cx } from '@/styled-system/css'
 import { Box } from '@/styled-system/jsx'
 import { Dialog, useDialog } from '@ark-ui/react/dialog'
+import { Portal } from '@ark-ui/react/portal'
 import { usePathname } from 'next/navigation'
 import { useEffect } from 'react'
 import { LuList, LuX } from 'react-icons/lu'
@@ -55,39 +56,48 @@ export const MobileBrowse = () => {
         Browse {tab.title}
       </Dialog.Trigger>
 
+      <Portal>
       <Dialog.Backdrop className={classes.backdrop} />
       <Dialog.Positioner className={classes.positioner}>
         <Dialog.Content
           className={cx(classes.content, css({ maxW: '85vw', width: '20rem' }))}
         >
-          <div className={cx(classes.body, 'scroll-area')}>
-            <Box
-              display="flex"
-              alignItems="center"
-              minH="12"
-              pe="12"
-              mb="2"
-              textStyle="eyebrow"
-              color="fg.subtle"
+          <div
+            className={css({
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '4',
+              minH: '14',
+              px: '6',
+              flexShrink: 0,
+              textStyle: 'eyebrow',
+              color: 'fg.subtle'
+            })}
+          >
+            {tab.title}
+            <Dialog.CloseTrigger
+              className={css({
+                display: 'flex',
+                p: '2',
+                rounded: 'md',
+                color: 'fg',
+                cursor: 'pointer',
+                _hover: { bg: 'bg.subtle' }
+              })}
             >
-              {tab.title}
-            </Box>
-
+              <LuX size={18} />
+            </Dialog.CloseTrigger>
+          </div>
+          <div className={cx(classes.body, 'scroll-area')}>
             <Box borderTopWidth="1px" borderColor="border" pt="6">
               <Sidebar tabKey={tabKey} />
             </Box>
           </div>
 
-          <Dialog.CloseTrigger
-            className={cx(
-              classes.closeTrigger,
-              css({ color: 'fg', display: 'flex' })
-            )}
-          >
-            <LuX size={18} />
-          </Dialog.CloseTrigger>
         </Dialog.Content>
       </Dialog.Positioner>
+      </Portal>
     </Dialog.RootProvider>
   )
 }

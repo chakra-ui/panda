@@ -9,7 +9,7 @@ import { GithubIcon, MenuIcon } from '@/icons'
 import { css } from '@/styled-system/css'
 import { Box, HStack } from '@/styled-system/jsx'
 import { Icon } from '@/theme/icons'
-import { MobileMenu } from '@/components/docs/mobile-menu'
+import { MobileMenu, MobileMenuLogo } from '@/components/docs/mobile-menu'
 import { MobileNavDrawer } from '@/mdx/navbar'
 import { ThemeSwitch } from '@/mdx/theme-switch'
 import Link from 'next/link'
@@ -60,9 +60,9 @@ export function DocsNavbar() {
 
       <HStack
         h="var(--navbar-height, 4rem)"
-        px="6"
-        gap="4"
-        justifyContent="space-between"
+        px={{ base: '4', md: '6' }}
+        gap={{ base: '1', md: '4' }}
+        justifyContent={{ base: 'flex-start', md: 'space-between' }}
       >
         <Anchor
           href="/"
@@ -118,7 +118,7 @@ export function DocsNavbar() {
           />
         </Box>
 
-        <HStack gap="2" flexShrink="0">
+        <HStack gap={{ base: '0', md: '2' }} flexShrink="0">
           <Anchor
             href="https://play.panda-css.com/"
             newWindow
@@ -182,6 +182,7 @@ export function DocsNavbar() {
                 <MenuIcon className={css({ width: '5', height: '5' })} />
               </button>
             }
+            header={<MobileMenuLogo />}
           >
             <MobileMenu pathname={pathname} />
           </MobileNavDrawer>

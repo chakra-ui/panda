@@ -3,7 +3,7 @@
 import { CourseBanner } from '@/components/course-banner'
 import { CommandMenu } from '@/components/docs/command-menu'
 import { SearchButton } from '@/components/docs/search'
-import { MobileMenu } from '@/components/docs/mobile-menu'
+import { MobileMenu, MobileMenuLogo } from '@/components/docs/mobile-menu'
 import { Anchor } from '@/components/ui/anchor'
 import { drawerSlotRecipe } from '@/components/ui/drawer'
 import { docsConfig } from '@/docs.config'
@@ -117,6 +117,7 @@ export const Navbar = () => {
               <MenuIcon />
             </button>
           }
+          header={<MobileMenuLogo />}
         >
           <MobileMenu pathname={pathname} />
         </MobileNavDrawer>
@@ -128,10 +129,12 @@ export const Navbar = () => {
 interface MobileNavDrawerProps {
   trigger: React.ReactNode
   children: React.ReactNode
+  /** Sits on the same row as the close button. */
+  header?: React.ReactNode
 }
 
 export const MobileNavDrawer = (props: MobileNavDrawerProps) => {
-  const { trigger, children } = props
+  const { trigger, children, header } = props
   const dialog = useDialog()
   const classes = drawerSlotRecipe({ size: 'xs', placement: 'start' })
   const pathname = usePathname()
@@ -154,15 +157,38 @@ export const MobileNavDrawer = (props: MobileNavDrawerProps) => {
       <Dialog.Backdrop className={classes.backdrop} />
       <Dialog.Positioner className={classes.positioner}>
         <Dialog.Content className={classes.content}>
+          <div
+            className={css({
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '4',
+              minH: '14',
+              px: '6',
+              flexShrink: 0
+            })}
+          >
+            {header ?? <span />}
+            <Dialog.CloseTrigger
+              className={css({
+                display: 'flex',
+                p: '2',
+                ms: 'auto',
+                rounded: 'md',
+                color: 'fg',
+                cursor: 'pointer',
+                _hover: { bg: 'bg.subtle' }
+              })}
+            >
+              <Center width="5" height="5">
+                <Icon
+                  icon="Close"
+                  className={css({ width: '1em', height: 'auto' })}
+                />
+              </Center>
+            </Dialog.CloseTrigger>
+          </div>
           <div className={cx(classes.body, 'scroll-area')}>{children}</div>
-          <Dialog.CloseTrigger className={classes.closeTrigger}>
-            <Center width="5" height="5" color="fg">
-              <Icon
-                icon="Close"
-                className={css({ width: '1em', height: 'auto' })}
-              />
-            </Center>
-          </Dialog.CloseTrigger>
         </Dialog.Content>
       </Dialog.Positioner>
     </Dialog.RootProvider>

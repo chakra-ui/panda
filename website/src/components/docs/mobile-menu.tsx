@@ -51,6 +51,20 @@ const socialCircle = css({
   _hover: { color: 'fg', borderColor: 'fg.subtle' }
 })
 
+export const MobileMenuLogo = () => (
+  <Link
+    href="/"
+    aria-label="Panda CSS home"
+    className={css({
+      display: 'flex',
+      alignItems: 'center',
+      '& svg': { height: '1.6rem', width: 'auto' }
+    })}
+  >
+    <Icon icon="LogoWithText" />
+  </Link>
+)
+
 interface Props {
   pathname: string | null
 }
@@ -63,27 +77,7 @@ export const MobileMenu = ({ pathname }: Props) => {
   ]
 
   return (
-    <Stack gap="8" pb="10">
-      <Box
-        display="flex"
-        alignItems="center"
-        minH="12"
-        pe="12"
-        mb="2"
-      >
-        <Link
-          href="/"
-          aria-label="Panda CSS home"
-          className={css({
-            display: 'flex',
-            alignItems: 'center',
-            '& svg': { height: '1.75rem', width: 'auto' }
-          })}
-        >
-          <Icon icon="LogoWithText" />
-        </Link>
-      </Box>
-
+    <Stack gap="8" pt="2" pb="10">
       <nav aria-label="Site">
         {SITE_LINKS.map(link => {
           const current =
