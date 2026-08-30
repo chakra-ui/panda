@@ -3,8 +3,8 @@ title: Ecosystem plugins
 description: What a Panda plugin is, when to write one, and how to share hooks as a package.
 ---
 
-A plugin is a named bundle of [hooks](/docs/design-systems/hooks) you distribute as its own package, instead of pasting
-the same hooks into every project's config. It's the hooks counterpart to a [preset](/docs/design-systems/presets): a
+A plugin is a named bundle of [hooks](/docs/theming/hooks) you distribute as its own package, instead of pasting
+the same hooks into every project's config. It's the hooks counterpart to a [preset](/docs/theming/presets): a
 preset shares theme and tokens, a plugin shares behavior.
 
 ## Framework support is built in
@@ -17,7 +17,7 @@ and [Astro](/docs/compiler/astro) install pages have no plugin to add. If you're
 ## When to write your own
 
 Most one-off customization belongs in an inline plugin in your config, not a separate package. See
-[Hooks](/docs/design-systems/hooks) for examples like transforming source before extraction or reacting to generated
+[Hooks](/docs/theming/hooks) for examples like transforming source before extraction or reacting to generated
 output. Reach for a published plugin when you want to share that behavior across projects or teams, the same reason you'd
 reach for a preset instead of copy-pasting tokens.
 
@@ -52,5 +52,5 @@ export default defineConfig({
 
 ## See also
 
-- [Hooks](/docs/design-systems/hooks) for every hook and how to author and share a plugin.
-- [Presets](/docs/design-systems/presets) for sharing theme and tokens the same way.
+- [Hooks](/docs/theming/hooks) for every hook and how to author and share a plugin.
+- [Presets](/docs/theming/presets) for sharing theme and tokens the same way.

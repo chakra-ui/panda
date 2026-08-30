@@ -242,6 +242,18 @@ export const docsTabs: TabItem[] = [
           { title: 'Multiple Themes', url: 'multiple-themes' },
           { title: 'Spec', url: 'spec', tag: 'new' }
         ]
+      },
+      {
+        title: 'Customization',
+        items: [
+          { title: 'Utilities', url: 'utilities' },
+          { title: 'Conditions', url: 'conditions' },
+          { title: 'Patterns', url: 'patterns' },
+          { title: 'Presets', url: 'presets' },
+          { title: 'Hooks', url: 'hooks' },
+          { title: 'Config Functions', url: 'config-functions' },
+          { title: 'Ecosystem Plugins', url: 'ecosystem-plugins' }
+        ]
       }
     ]
   },
@@ -264,23 +276,11 @@ export const docsTabs: TabItem[] = [
         ]
       },
       {
-        title: 'Design System (preset)',
+        title: 'Design System Preset',
         items: [
           { title: 'Overview', url: 'preset-overview' },
           { title: 'Build a design system', url: 'building-a-design-system' },
           { title: 'Consume a design system', url: 'consuming-a-design-system' }
-        ]
-      },
-      {
-        title: 'Customization',
-        items: [
-          { title: 'Utilities', url: 'utilities' },
-          { title: 'Conditions', url: 'conditions' },
-          { title: 'Patterns', url: 'patterns' },
-          { title: 'Presets', url: 'presets' },
-          { title: 'Hooks', url: 'hooks' },
-          { title: 'Config Functions', url: 'config-functions' },
-          { title: 'Ecosystem Plugins', url: 'ecosystem-plugins' }
         ]
       },
       {

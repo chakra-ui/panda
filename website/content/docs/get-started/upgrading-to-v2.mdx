@@ -117,7 +117,7 @@ Supported hooks: `config:resolved`, `preset:resolved`, `parser:before`, `codegen
 `cssgen:done`. `cssgen:done` is observe-only now — it runs after the final CSS with `{ artifact, content, path? }` and
 can't rewrite the string. Used it to strip unused tokens or keyframes? Reach for `optimize.removeUnusedTokens` /
 `removeUnusedKeyframes` instead. The v1 engine hooks (`context:created`, `parser:after`, `tokens:created`,
-`utility:created`, `parser:before.configure(...)`, …) are gone. See [Hooks](/docs/design-systems/hooks).
+`utility:created`, `parser:before.configure(...)`, …) are gone. See [Hooks](/docs/theming/hooks).
 
 ### createStyleContext is now two helpers
 

@@ -99,12 +99,12 @@ export default function EcosystemPage() {
         <Cards columns={2} mode="gapless">
           <Card
             title="preset-panda"
-            href="/docs/design-systems/presets"
+            href="/docs/theming/presets"
             description="The default tokens, conditions and utilities."
           />
           <Card
             title="preset-base"
-            href="/docs/design-systems/presets"
+            href="/docs/theming/presets"
             description="The utility layer, without the opinions."
           />
         </Cards>

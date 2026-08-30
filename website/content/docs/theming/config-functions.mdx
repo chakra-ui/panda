@@ -134,7 +134,7 @@ a single root, rather than Panda's own slot convention.
 
 ### `definePattern`
 
-For a [pattern](/docs/design-systems/patterns) authored outside `defineConfig`.
+For a [pattern](/docs/theming/patterns) authored outside `defineConfig`.
 
 ```ts
 import { definePattern } from '@pandacss/dev'
@@ -151,7 +151,7 @@ const visuallyHidden = definePattern({
 
 ### `definePreset`
 
-For a [preset](/docs/design-systems/presets#creating-a-preset).
+For a [preset](/docs/theming/presets#creating-a-preset).
 
 ```ts
 import { definePreset } from '@pandacss/dev'
@@ -169,7 +169,7 @@ export const pandaPreset = definePreset({
 
 ### `definePlugin`
 
-For a [plugin](/docs/design-systems/hooks#sharing-a-hook), the object that carries a shareable `hooks` map.
+For a [plugin](/docs/theming/hooks#sharing-a-hook), the object that carries a shareable `hooks` map.
 
 ```ts
 import { definePlugin } from '@pandacss/dev'
@@ -216,7 +216,7 @@ const globalCss = defineGlobalStyles({
 
 ### `defineUtility`
 
-For a custom [utility](/docs/design-systems/utilities) authored outside `defineConfig`.
+For a custom [utility](/docs/theming/utilities) authored outside `defineConfig`.
 
 ```ts
 import { defineUtility } from '@pandacss/dev'

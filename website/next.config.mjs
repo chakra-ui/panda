@@ -262,7 +262,7 @@ const config = {
       // different tab than the rest of their old directory. ---
       {
         source: '/docs/concepts/hooks',
-        destination: '/docs/design-systems/hooks',
+        destination: '/docs/theming/hooks',
         permanent: true
       },
       {
@@ -484,6 +484,43 @@ const config = {
       {
         source: '/docs/theming/overview',
         destination: '/docs/theming/tokens',
+        permanent: true
+      },
+
+      // --- Design Systems: Customization group moved to Theming ---
+      {
+        source: '/docs/design-systems/utilities',
+        destination: '/docs/theming/utilities',
+        permanent: true
+      },
+      {
+        source: '/docs/design-systems/conditions',
+        destination: '/docs/theming/conditions',
+        permanent: true
+      },
+      {
+        source: '/docs/design-systems/patterns',
+        destination: '/docs/theming/patterns',
+        permanent: true
+      },
+      {
+        source: '/docs/design-systems/presets',
+        destination: '/docs/theming/presets',
+        permanent: true
+      },
+      {
+        source: '/docs/design-systems/hooks',
+        destination: '/docs/theming/hooks',
+        permanent: true
+      },
+      {
+        source: '/docs/design-systems/config-functions',
+        destination: '/docs/theming/config-functions',
+        permanent: true
+      },
+      {
+        source: '/docs/design-systems/ecosystem-plugins',
+        destination: '/docs/theming/ecosystem-plugins',
         permanent: true
       }
     ]
