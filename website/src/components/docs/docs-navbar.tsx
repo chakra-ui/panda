@@ -34,6 +34,11 @@ const siteLinks = [
     match: (p: string) => p.startsWith('/docs') && !p.startsWith('/docs/reference')
   },
   {
+    title: 'Guides',
+    href: '/guides',
+    match: (p: string) => p.startsWith('/guides')
+  },
+  {
     title: 'Reference',
     href: '/docs/reference/cli',
     match: (p: string) => p.startsWith('/docs/reference')

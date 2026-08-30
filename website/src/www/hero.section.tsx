@@ -68,13 +68,13 @@ export const HeroSection = () => {
                   Get Started
                 </ButtonLink>
                 <ButtonLink
-                  href="https://www.pandamastery.com/"
+                  href="/guides"
                   size="lg"
                   color="black"
                   variant="funky"
                   w={{ base: 'full', sm: '220px' }}
                 >
-                  Learn Panda
+                  Browse Guides
                 </ButtonLink>
               </Stack>
 

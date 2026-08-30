@@ -19,6 +19,7 @@ export const footerColumns: FooterColumn[] = [
     title: 'Learn',
     links: [
       { title: 'Documentation', href: '/docs' },
+      { title: 'Guides', href: '/guides' },
       { title: 'Reference', href: '/docs/reference/cli' },
       { title: 'Blog', href: '/blog' },
       { title: 'Install', href: '/install' }
