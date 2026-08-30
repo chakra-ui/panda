@@ -101,23 +101,51 @@ export const MobileMenu = ({ pathname }: Props) => {
         })}
       </nav>
 
-      <Link
-        href="/install"
-        className={css({
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minH: '14',
-          rounded: 'lg',
-          bg: 'accent',
-          color: 'black',
-          fontSize: 'lg',
-          fontWeight: 'bold',
-          textDecoration: 'none'
-        })}
-      >
-        Install Panda
-      </Link>
+      <Stack gap="3">
+        <Link
+          href="/install"
+          className={css({
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minH: '14',
+            rounded: 'lg',
+            bg: 'accent',
+            color: 'black',
+            fontSize: 'lg',
+            fontWeight: 'bold',
+            textDecoration: 'none'
+          })}
+        >
+          Install Panda
+        </Link>
+
+        <a
+          href="https://play.panda-css.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={css({
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '2',
+            minH: '14',
+            rounded: 'lg',
+            borderWidth: '1px',
+            borderColor: 'border',
+            color: 'fg',
+            fontSize: 'lg',
+            fontWeight: 'semibold',
+            textDecoration: 'none',
+            transitionProperty: 'background-color, border-color',
+            transitionDuration: '150ms',
+            _hover: { bg: 'bg.subtle', borderColor: 'fg.subtle' }
+          })}
+        >
+          Playground
+          <LuArrowUpRight size={18} aria-hidden />
+        </a>
+      </Stack>
 
       <Box
         display="flex"
