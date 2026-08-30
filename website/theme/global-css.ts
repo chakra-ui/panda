@@ -4,6 +4,18 @@ export const globalCss = defineGlobalStyles({
   '*, *::before, *::after': {
     borderColor: 'border'
   },
+  ':where(.shiki span:not(.highlighted))': {
+    color: 'var(--shiki-light)',
+    fontStyle: 'var(--shiki-light-font-style)',
+    fontWeight: 'var(--shiki-light-font-weight)',
+    textDecoration: 'var(--shiki-light-text-decoration)'
+  },
+  '.dark :where(.shiki span:not(.highlighted))': {
+    color: 'var(--shiki-dark)',
+    fontStyle: 'var(--shiki-dark-font-style)',
+    fontWeight: 'var(--shiki-dark-font-weight)',
+    textDecoration: 'var(--shiki-dark-text-decoration)'
+  },
   '@media (prefers-reduced-motion: reduce)': {
     '*, *::before, *::after': {
       animationDuration: '0.01ms!',
