@@ -222,7 +222,6 @@ export const docsTabs: TabItem[] = [
       {
         title: 'Tokens',
         items: [
-          { title: 'Overview', url: 'overview' },
           { title: 'Tokens', url: 'tokens' },
           { title: 'Token Usage', url: 'usage' }
         ]

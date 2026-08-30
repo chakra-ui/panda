@@ -213,7 +213,13 @@ function TabLink({ tab, active }: TabLinkProps) {
 
   return (
     <Link
-      href={tab.key === 'get-started' ? '/docs' : `/docs/${tab.key}`}
+      href={
+        tab.key === 'get-started'
+          ? '/docs'
+          : tab.key === 'theming'
+            ? '/docs/theming/tokens'
+            : `/docs/${tab.key}`
+      }
       aria-current={active ? 'page' : undefined}
       className={css({
         position: 'relative',

@@ -223,7 +223,7 @@ const config = {
       },
       {
         source: '/docs/theming',
-        destination: '/docs/theming/overview',
+        destination: '/docs/theming/tokens',
         permanent: true
       },
       {
@@ -477,6 +477,13 @@ const config = {
       {
         source: '/docs/recipes/jsx-style-context',
         destination: '/docs/recipes/jsx-recipes-overview',
+        permanent: true
+      },
+
+      // --- Theming tab: overview page removed, tab lands on Tokens directly ---
+      {
+        source: '/docs/theming/overview',
+        destination: '/docs/theming/tokens',
         permanent: true
       }
     ]

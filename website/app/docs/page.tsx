@@ -91,7 +91,7 @@ export default function DocsWelcomePage() {
         <Card
           icon={<LuPalette />}
           title="Theming"
-          href="/docs/theming/overview"
+          href="/docs/theming/tokens"
           description="Design tokens, semantic tokens and multiple themes."
           cta="Define tokens"
         />
