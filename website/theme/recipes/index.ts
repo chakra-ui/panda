@@ -8,6 +8,7 @@ import { docCardRecipe } from './doc-card.recipe'
 import { docNavRecipe } from './doc-nav.recipe'
 import { marqueeRecipe } from './marquee.recipe'
 import { segmentedRecipe } from './segmented.recipe'
+import { textLinkRecipe } from './text-link.recipe'
 
 export const slotRecipes = {
   docCard: docCardRecipe,
@@ -22,5 +23,6 @@ export const recipes = {
   navbar: navbarRecipe,
   nextraTabs: nextraTabsRecipe,
   segmented: segmentedRecipe,
-  marquee: marqueeRecipe
+  marquee: marqueeRecipe,
+  textLink: textLinkRecipe
 }

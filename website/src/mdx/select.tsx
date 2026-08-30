@@ -29,6 +29,7 @@ function SelectComponent({ options, selected, onChange, title, className }: Prop
       onValueChange={e => onChange(e.items[0] ?? null)}
     >
       <Select.Trigger
+        aria-label={typeof title === 'string' ? title : undefined}
         className={cx(
           css({
             height: 7,

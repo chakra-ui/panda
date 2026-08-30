@@ -3,12 +3,19 @@
 import { Segmented } from '@/components/ui/segmented'
 import { Clipboard } from '@ark-ui/react/clipboard'
 import { css } from '@/styled-system/css'
+import { textLink } from '@/styled-system/recipes'
 import { Box, Stack } from '@/styled-system/jsx'
 import { useState } from 'react'
 import { LuCheck, LuCopy } from 'react-icons/lu'
+import { SiBun, SiNpm, SiPnpm, SiYarn } from 'react-icons/si'
 
-const MANAGERS = ['pnpm', 'npm', 'yarn', 'bun'] as const
-type Manager = (typeof MANAGERS)[number]
+const MANAGERS = [
+  { id: 'pnpm', label: 'pnpm', icon: <SiPnpm /> },
+  { id: 'npm', label: 'npm', icon: <SiNpm /> },
+  { id: 'yarn', label: 'yarn', icon: <SiYarn /> },
+  { id: 'bun', label: 'bun', icon: <SiBun /> }
+] as const
+type Manager = (typeof MANAGERS)[number]['id']
 
 const SETUPS = [
   { id: 'cli', label: 'CLI', href: '/docs/compiler/cli' },
@@ -52,16 +59,23 @@ export function InstallPicker() {
 
   return (
     <Stack gap="8" alignItems="center">
-      <Segmented
-        label="Package manager"
-        tone="accent"
-        value={manager}
-        onValueChange={value => setManager(value as Manager)}
-        options={MANAGERS.map(item => ({ value: item, label: item }))}
-      />
+      <Box w="full" maxW="40rem">
+        <Segmented
+          label="Package manager"
+          tone="card"
+          value={manager}
+          onValueChange={value => setManager(value as Manager)}
+          options={MANAGERS.map(item => ({
+            value: item.id,
+            label: item.label,
+            icon: item.icon
+          }))}
+        />
+      </Box>
 
       <Segmented
         label="Setup"
+        tone="pill"
         size="sm"
         value={setup}
         onValueChange={value => setSetup(value as Setup)}
@@ -125,12 +139,7 @@ export function InstallPicker() {
         Full guide for{' '}
         <a
           href={SETUPS.find(s => s.id === setup)?.href}
-          className={css({
-            color: 'fg',
-            textDecorationLine: 'underline',
-            textUnderlineOffset: '3px',
-            textDecorationColor: 'accent.emphasis'
-          })}
+          className={textLink()}
         >
           {SETUPS.find(s => s.id === setup)?.label}
         </a>

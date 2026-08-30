@@ -3,6 +3,7 @@ import { teamMembers } from '@/docs.config'
 import { fetchGithubUsers, type GitHubUser } from '@/lib/github-utils'
 import { generateOgImageUrl } from '@/lib/og-image'
 import { css } from '@/styled-system/css'
+import { textLink } from '@/styled-system/recipes'
 import { Box } from '@/styled-system/jsx'
 import type { Metadata } from 'next'
 import Image from 'next/image'
@@ -20,6 +21,10 @@ export const metadata: Metadata = {
     description,
     images: [generateOgImageUrl({ title, description, category: 'Team' })]
   }
+}
+
+function toAbsoluteUrl(value: string) {
+  return /^https?:\/\//.test(value) ? value : `https://${value}`
 }
 
 const socialStyles = css({
@@ -90,7 +95,7 @@ function MemberRow({ user }: { user: GitHubUser }) {
         )}
         {user.blog && (
           <a
-            href={user.blog}
+            href={toAbsoluteUrl(user.blog)}
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`${user.login}'s website`}
@@ -129,12 +134,7 @@ export default async function TeamPage() {
           href="https://github.com/chakra-ui/panda/blob/main/CONTRIBUTING.md"
           target="_blank"
           rel="noopener noreferrer"
-          className={css({
-            color: 'fg',
-            textDecorationLine: 'underline',
-            textUnderlineOffset: '3px',
-            textDecorationColor: 'accent.emphasis'
-          })}
+          className={textLink()}
         >
           Contribute
         </a>

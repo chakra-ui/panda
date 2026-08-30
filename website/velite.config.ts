@@ -137,7 +137,8 @@ export default defineConfig({
         {
           behavior: 'append',
           properties: {
-            className: ['subheading-anchor']
+            className: ['subheading-anchor'],
+            'aria-label': 'Link to this section'
           }
         }
       ],
@@ -154,7 +155,7 @@ export default defineConfig({
             transformerEmptyLineSpace
           ],
           themes: {
-            light: 'github-light',
+            light: 'github-light-high-contrast',
             dark: 'github-dark'
           },
           defaultColor: false

@@ -68,6 +68,40 @@ export const segmentedRecipe = defineRecipe({
         root: { rounded: 'lg' },
         indicator: { bg: 'accent.wash' },
         item: { minH: '11' }
+      }),
+      pill: parts({
+        root: { rounded: 'full', bg: 'bg.subtle', p: '1', borderColor: 'transparent' },
+        indicator: { rounded: 'full', bg: 'bg', shadow: 'sm' },
+        item: { minH: '9', px: '5' }
+      }),
+      card: parts({
+        root: {
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+          gap: '3',
+          borderWidth: '0',
+          rounded: 'none',
+          overflow: 'visible',
+          md: { gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }
+        },
+        indicator: { display: 'none' },
+        item: {
+          flexDirection: 'column',
+          gap: '3',
+          minH: '7.5rem',
+          px: '4',
+          borderWidth: '1px',
+          borderColor: 'border',
+          rounded: 'lg',
+          textStyle: 'sm',
+          '& svg': { width: '1.75rem', height: '1.75rem' },
+          _hover: { borderColor: 'fg.subtle', bg: 'bg.subtle' },
+          _checked: {
+            borderColor: 'accent.emphasis',
+            bg: 'accent.wash',
+            color: 'fg'
+          }
+        }
       })
     }
   },

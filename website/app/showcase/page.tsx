@@ -2,6 +2,7 @@ import { SitePage } from '@/components/site-page'
 import { generateOgImageUrl } from '@/lib/og-image'
 import { showcases, type Showcase } from '@/showcase'
 import { css, cx } from '@/styled-system/css'
+import { textLink } from '@/styled-system/recipes'
 import { Box } from '@/styled-system/jsx'
 import type { Metadata } from 'next'
 import Image from 'next/image'
@@ -131,12 +132,7 @@ export default function ShowcasePage() {
           href="https://github.com/chakra-ui/panda/discussions"
           target="_blank"
           rel="noopener noreferrer"
-          className={css({
-            color: 'fg',
-            textDecorationLine: 'underline',
-            textUnderlineOffset: '3px',
-            textDecorationColor: 'accent.emphasis'
-          })}
+          className={textLink()}
         >
           Tell us about it
         </a>

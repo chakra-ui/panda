@@ -4,6 +4,7 @@ import { generateOgImageUrl } from '@/lib/og-image'
 import { Card, Cards } from '@/mdx/cards'
 import { Box } from '@/styled-system/jsx'
 import type { Metadata } from 'next'
+import pandaPkg from '@pandacss/dev/package.json'
 
 const title = 'Install Panda'
 const description =
@@ -21,7 +22,12 @@ export const metadata: Metadata = {
 
 export default function InstallPage() {
   return (
-    <SitePage kicker="Install" title={title} description={description} centered>
+    <SitePage
+      kicker={`Install · v${pandaPkg.version}`}
+      title={title}
+      description={description}
+      centered
+    >
       <InstallPicker />
 
       <Box borderTopWidth="1px" borderColor="border" my="16" />

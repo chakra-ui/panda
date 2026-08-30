@@ -61,6 +61,7 @@ export function DocsNavbar() {
       >
         <Anchor
           href="/"
+          aria-label="Panda CSS home"
           className={css({ flexShrink: '0', display: 'flex', _hover: { opacity: 0.75 } })}
         >
           <Icon icon="LogoWithText" />

@@ -15,7 +15,7 @@ interface Props {
   value: string
   onValueChange: (value: string) => void
   size?: 'sm' | 'md'
-  tone?: 'neutral' | 'accent'
+  tone?: 'neutral' | 'accent' | 'pill' | 'card'
   orientation?: 'horizontal' | 'vertical'
 }
 
@@ -38,10 +38,8 @@ export function Segmented(props: Props) {
           key={option.value}
           value={option.value}
         >
-          <SegmentGroup.ItemText>
-            {option.icon}
-            {option.label}
-          </SegmentGroup.ItemText>
+          {option.icon && <span aria-hidden>{option.icon}</span>}
+          <SegmentGroup.ItemText>{option.label}</SegmentGroup.ItemText>
           <SegmentGroup.ItemHiddenInput />
         </SegmentGroup.Item>
       ))}

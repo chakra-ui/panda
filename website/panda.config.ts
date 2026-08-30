@@ -37,7 +37,8 @@ export default defineConfig({
       card: [{ variant: ['*'] }],
       docCard: [{ mode: ['*'] }],
       docNav: [{ kind: ['*'] }],
-      segmented: [{ size: ['*'], tone: ['*'] }]
+      segmented: [{ size: ['*'], tone: ['*'] }],
+      textLink: [{ tone: ['*'] }]
     }
   },
   theme: {
