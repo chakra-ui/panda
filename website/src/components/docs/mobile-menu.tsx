@@ -4,7 +4,7 @@ import { docsConfig } from '@/docs.config'
 import { Icon } from '@/theme/icons'
 import { css } from '@/styled-system/css'
 import { Box, Stack } from '@/styled-system/jsx'
-import { ThemeSwitch } from '@/mdx/theme-switch'
+import { ThemeSegmented } from '@/components/docs/theme-segmented'
 import Link from 'next/link'
 import { LuArrowUpRight, LuGithub, LuMessageCircle, LuTwitter } from 'react-icons/lu'
 
@@ -147,15 +147,11 @@ export const MobileMenu = ({ pathname }: Props) => {
         </a>
       </Stack>
 
-      <Box
-        display="flex"
-        alignItems="center"
-        gap="3"
-        borderTopWidth="1px"
-        borderColor="border"
-        pt="6"
-      >
-        {socials.map(social => (
+      <Stack gap="5" borderTopWidth="1px" borderColor="border" pt="6">
+        <ThemeSegmented />
+
+        <Box display="flex" alignItems="center" gap="3">
+          {socials.map(social => (
           <a
             key={social.label}
             href={social.href}
@@ -166,11 +162,9 @@ export const MobileMenu = ({ pathname }: Props) => {
           >
             {social.icon}
           </a>
-        ))}
-        <Box ml="auto">
-          <ThemeSwitch />
+          ))}
         </Box>
-      </Box>
+      </Stack>
     </Stack>
   )
 }

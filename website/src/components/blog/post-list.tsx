@@ -1,5 +1,6 @@
 'use client'
 
+import { AuthorLine } from '@/components/blog/author-line'
 import { Segmented } from '@/components/ui/segmented'
 import { css } from '@/styled-system/css'
 import { Box, Stack } from '@/styled-system/jsx'
@@ -12,6 +13,7 @@ export interface PostSummary {
   description?: string
   date: string
   author?: string[]
+  readingTime?: number
   type?: 'article' | 'release'
 }
 
@@ -60,20 +62,22 @@ export function PostList({ posts }: { posts: PostSummary[] }) {
       </Box>
 
       {years.map(year => (
-        <Box
-          key={year}
-          display="grid"
-          gridTemplateColumns={{ base: '1fr', md: '8rem 1fr' }}
-          gap={{ base: '4', md: '8' }}
-          mb="10"
-        >
+        <Box key={year} mb="12">
           <Box
-            fontSize="2xl"
-            fontWeight="bold"
-            letterSpacing="tight"
-            color="fg"
+            display="flex"
+            alignItems="center"
+            gap="4"
+            mb="2"
+            position="sticky"
+            top="calc(var(--navbar-height) + var(--banner-height))"
+            bg="bg"
+            py="3"
+            zIndex="1"
           >
-            {year}
+            <Box textStyle="eyebrow" color="fg" bg="accent.wash" px="2" py="1">
+              {year}
+            </Box>
+            <Box flex="1" h="1px" bg="border" />
           </Box>
           <Stack gap="0">
             {visible
@@ -83,55 +87,63 @@ export function PostList({ posts }: { posts: PostSummary[] }) {
                   key={post.slug}
                   href={`/blog/${post.slug}`}
                   className={css({
-                    display: 'grid',
-                    gridTemplateColumns: { base: '1fr', md: '9rem 1fr' },
-                    gap: { base: '2', md: '6' },
+                    display: 'block',
+                    position: 'relative',
                     py: '6',
+                    ps: '5',
                     borderTopWidth: '1px',
                     borderColor: 'border',
                     textDecoration: 'none',
                     color: 'fg',
                     transitionProperty: 'background-color',
                     transitionDuration: '150ms',
-                    _hover: { bg: 'bg.subtle' }
+                    _before: {
+                      content: '""',
+                      position: 'absolute',
+                      insetY: '0',
+                      insetStart: '0',
+                      width: '2px',
+                      bg: 'transparent',
+                      transitionProperty: 'background-color',
+                      transitionDuration: '150ms'
+                    },
+                    _hover: {
+                      bg: 'bg.subtle',
+                      _before: { bg: 'accent.emphasis' }
+                    }
                   })}
                 >
-                  <Box textStyle="eyebrow" color="fg.subtle" pt="1">
-                    {monthYear(post.date)}
-                  </Box>
-                  <Stack gap="2">
+                  <Stack gap="3">
                     <Box
                       display="flex"
                       alignItems="center"
                       gap="3"
                       flexWrap="wrap"
+                      textStyle="eyebrow"
+                      color="fg.subtle"
                     >
-                      <Box textStyle="lg" fontWeight="semibold">
-                        {post.title}
-                      </Box>
+                      <span>{monthYear(post.date)}</span>
                       {post.type === 'release' && (
-                        <Box
-                          textStyle="eyebrow"
-                          color="fg.subtle"
-                          borderWidth="1px"
-                          borderColor="border"
-                          px="2"
-                          py="1"
-                        >
+                        <Box color="fg" bg="accent.wash" px="2" py="1">
                           Release
                         </Box>
                       )}
                     </Box>
+
+                    <Box textStyle="xl" fontWeight="semibold" lineHeight="1.3">
+                      {post.title}
+                    </Box>
+
                     {post.description && (
                       <Box textStyle="sm" color="fg.muted" lineHeight="1.6">
                         {post.description}
                       </Box>
                     )}
-                    {post.author && post.author.length > 0 && (
-                      <Box textStyle="sm" color="fg.subtle">
-                        {post.author.join(', ')}
-                      </Box>
-                    )}
+
+                    <AuthorLine
+                      authors={post.author}
+                      readingTime={post.readingTime}
+                    />
                   </Stack>
                 </Link>
               ))}

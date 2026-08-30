@@ -1,3 +1,4 @@
+import { AuthorLine } from '@/components/blog/author-line'
 import { blog } from '.velite'
 import { MDXContent } from '@/components/docs/mdx-content'
 import { Toc } from '@/components/ui/toc'
@@ -105,20 +106,24 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
               {post.description}
             </panda.p>
           )}
-          <Box display="flex" alignItems="center" gap="2" flexWrap="wrap">
-            <panda.span fontSize="sm" color="fg.subtle">
+          <Box display="flex" alignItems="center" gap="3" flexWrap="wrap">
+            <panda.span textStyle="eyebrow" color="fg.subtle">
               {formatDate(post.date)}
             </panda.span>
-            {post.author && post.author.length > 0 && (
+            {post.metadata?.readingTime ? (
               <>
                 <panda.span color="fg.subtle" aria-hidden>
                   ·
                 </panda.span>
-                <panda.span fontSize="sm" color="fg.subtle">
-                  {post.author.join(', ')}
+                <panda.span textStyle="eyebrow" color="fg.subtle">
+                  {post.metadata.readingTime} min read
                 </panda.span>
               </>
-            )}
+            ) : null}
+          </Box>
+
+          <Box pt="2">
+            <AuthorLine authors={post.author} size="md" linked />
           </Box>
         </Stack>
 

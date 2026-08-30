@@ -375,6 +375,7 @@ const config = {
     remotePatterns: [
       { hostname: 'images.unsplash.com' },
       { hostname: 'avatars.githubusercontent.com' },
+      { hostname: 'github.com' },
       { hostname: 'coolcontrast.vercel.app' },
       { hostname: 's2.coinmarketcap.com' },
       { hostname: 'magic.link' },

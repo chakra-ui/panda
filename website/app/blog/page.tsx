@@ -1,5 +1,6 @@
 import { blog } from '.velite'
 import { generateOgImageUrl } from '@/lib/og-image'
+import { AuthorLine } from '@/components/blog/author-line'
 import { PostList } from '@/components/blog/post-list'
 import { css } from '@/styled-system/css'
 import { Box, Stack } from '@/styled-system/jsx'
@@ -87,8 +88,8 @@ export default function BlogPage() {
         <Box display="flex" alignItems="center" gap="3" mb="5" flexWrap="wrap">
           <Box
             textStyle="eyebrow"
-            bg="accent.wash"
-            color="fg"
+            bg="accent"
+            color="black"
             px="2"
             py="1"
           >
@@ -118,11 +119,11 @@ export default function BlogPage() {
                 {featured.description}
               </Box>
             )}
-            {featured.author && featured.author.length > 0 && (
-              <Box textStyle="sm" color="fg.subtle">
-                {featured.author.join(', ')}
-              </Box>
-            )}
+            <AuthorLine
+              authors={featured.author}
+              readingTime={featured.metadata?.readingTime}
+              size="md"
+            />
           </Stack>
           <Box
             display={{ base: 'none', md: 'flex' }}
@@ -147,6 +148,7 @@ export default function BlogPage() {
           description: post.description,
           date: post.date,
           author: post.author,
+          readingTime: post.metadata?.readingTime,
           type: post.type
         }))}
       />

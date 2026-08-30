@@ -77,6 +77,7 @@ const blog = defineCollection({
     .object({
       title: s.string(),
       description: s.string().optional(),
+      metadata: s.metadata(),
       date: s.isodate(),
       author: s
         .union([s.string(), s.array(s.string())])
