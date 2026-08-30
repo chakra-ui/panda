@@ -1,30 +1,9 @@
 'use client'
 
-import { useMounted } from '@/lib/use-mounted'
 import { css } from '@/styled-system/css'
 import { HStack } from '@/styled-system/jsx'
 import { ButtonIcon } from '@/theme/icons'
 import { useTheme } from 'next-themes'
-
-function useThemeSwitch() {
-  const theme = useTheme()
-  const { setTheme, resolvedTheme } = theme
-
-  const mounted = useMounted()
-  const isDark = mounted && resolvedTheme === 'dark'
-
-  const toggleTheme = () => setTheme(isDark ? 'light' : 'dark')
-
-  const iconToUse: 'Moon' | 'Sun' = isDark ? 'Moon' : 'Sun'
-  const iconText = isDark ? 'Dark' : 'Light'
-
-  return {
-    mounted,
-    iconToUse,
-    iconText,
-    toggleTheme
-  }
-}
 
 const switchStyle = css({
   px: '2',
@@ -33,39 +12,67 @@ const switchStyle = css({
   fontWeight: 'semibold',
   letterSpacing: 'tight',
   rounded: 'md',
-  _hover: {
-    bg: 'bg.emphasized.hover'
+  cursor: 'pointer',
+  _hover: { bg: 'bg.emphasized.hover' },
+  _focusVisible: {
+    outline: '2px solid',
+    outlineColor: 'blue.500',
+    outlineOffset: '2px'
   }
 })
 
+/**
+ * Which face shows is decided by the theme class on `html`, not by React, so
+ * the control is correct on first paint and needs no mount guard.
+ */
+const lightOnly = css({ display: 'contents', _dark: { display: 'none' } })
+const darkOnly = css({ display: 'none', _dark: { display: 'contents' } })
+
+function useToggleTheme() {
+  const { setTheme, resolvedTheme } = useTheme()
+  return () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
+}
+
 export function ThemeSwitchButton() {
-  const { iconToUse, toggleTheme, mounted, iconText } = useThemeSwitch()
+  const toggleTheme = useToggleTheme()
 
   return (
     <button
-      style={{ opacity: mounted ? 1 : 0 }}
+      type="button"
       onClick={toggleTheme}
+      aria-label="Toggle colour theme"
       className={switchStyle}
     >
       <HStack gap="2">
-        <span>{iconText} </span>
-        <ButtonIcon icon={iconToUse} />
+        <span className={lightOnly}>
+          <span>Light</span>
+          <ButtonIcon icon="Sun" />
+        </span>
+        <span className={darkOnly}>
+          <span>Dark</span>
+          <ButtonIcon icon="Moon" />
+        </span>
       </HStack>
     </button>
   )
 }
 
 export function ThemeSwitchIconButton() {
-  const { iconToUse, iconText, toggleTheme, mounted } = useThemeSwitch()
+  const toggleTheme = useToggleTheme()
 
   return (
     <button
-      style={{ opacity: mounted ? 1 : 0 }}
+      type="button"
       onClick={toggleTheme}
-      aria-label={iconText}
+      aria-label="Toggle colour theme"
       className={switchStyle}
     >
-      <ButtonIcon icon={iconToUse} />
+      <span className={lightOnly}>
+        <ButtonIcon icon="Sun" />
+      </span>
+      <span className={darkOnly}>
+        <ButtonIcon icon="Moon" />
+      </span>
     </button>
   )
 }

@@ -21,6 +21,7 @@
     "@ark-ui/react": "5.39.1",
     "@pandacss/preset-base": "beta",
     "@pandacss/preset-panda": "beta",
+    "@zag-js/hotkeys": "1.43.3",
     "bright": "1.0.0",
     "focus-visible": "5.2.1",
     "fuse.js": "^7.1.0",

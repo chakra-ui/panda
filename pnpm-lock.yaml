@@ -1637,6 +1637,9 @@ importers:
       '@pandacss/preset-panda':
         specifier: beta
         version: 2.0.0-beta.15
+      '@zag-js/hotkeys':
+        specifier: 1.43.3
+        version: 1.43.3
       bright:
         specifier: 1.0.0
         version: 1.0.0(react@19.2.0)

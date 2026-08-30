@@ -1,17 +1,28 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useMemo, useSyncExternalStore } from 'react'
 
+/**
+ * Subscribes to a media query. One MediaQueryList instance is reused for both
+ * subscribe and unsubscribe, and the server snapshot is always `false`, so the
+ * first client render matches the markup.
+ */
 export const useMatchMedia = (query: string) => {
-  const [isMatch, setIsMatch] = useState(() => {
-    if (typeof window === 'undefined') return false
-    return window.matchMedia(query).matches
-  })
+  const mql = useMemo(
+    () => (typeof window === 'undefined' ? null : window.matchMedia(query)),
+    [query]
+  )
 
-  useEffect(() => {
-    const handler = (event: MediaQueryListEvent): void =>
-      setIsMatch(event.matches)
-    window.matchMedia(query).addEventListener('change', handler)
-    return () => window.matchMedia(query).removeEventListener('change', handler)
-  }, [query])
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      if (!mql) return () => {}
+      mql.addEventListener('change', onChange)
+      return () => mql.removeEventListener('change', onChange)
+    },
+    [mql]
+  )
 
-  return isMatch
+  return useSyncExternalStore(
+    subscribe,
+    () => mql?.matches ?? false,
+    () => false
+  )
 }
