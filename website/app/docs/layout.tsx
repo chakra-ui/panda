@@ -31,9 +31,7 @@ export default function DocsLayout(props: React.PropsWithChildren) {
       <main
         className={css({
           pt: 'calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height))',
-          pb: '16',
           position: 'relative',
-          // on the row wrapper this stops above main's bottom padding
           _before: {
             content: '""',
             display: 'none',

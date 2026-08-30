@@ -94,6 +94,7 @@ export default async function DocsPage(props: DocsPageProps) {
           mx="auto"
           px="6"
           pt="10"
+          pb="16"
         >
           <Breadcrumb slug={slug} />
           <Header doc={doc} />

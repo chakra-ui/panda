@@ -7,8 +7,6 @@ interface ThemeSwitchProps {
   className?: string
 }
 
-// next-themes stamps the class before hydration, so CSS picks the icon.
-// Choosing in JS would render a sun on the server and a moon on the client.
 const sunIcon = css({ _dark: { display: 'none' } })
 const moonIcon = css({ display: 'none', _dark: { display: 'block' } })
 
