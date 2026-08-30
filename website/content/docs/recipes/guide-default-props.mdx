@@ -1,0 +1,21 @@
+---
+title: Default Props
+description: Use defaultProps to provide default props to a component created with a recipe context.
+---
+
+Use `defaultProps` option to provide default props to the component.
+
+```tsx
+const { withContext } = createSlotRecipeContext(card)
+
+export const CardHeader = withContext('header', 'header', {
+  defaultProps: {
+    role: 'banner'
+  }
+})
+```
+
+## See also
+
+- [Slot Recipe Context](/docs/recipes/slot-recipe-context) and [Recipe Context](/docs/recipes/recipe-context) for the
+  context helpers this option applies to.

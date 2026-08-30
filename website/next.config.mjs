@@ -17,7 +17,7 @@ const config = {
       },
       {
         source: '/docs/styling/recipes',
-        destination: '/docs/recipes/recipes',
+        destination: '/docs/recipes/overview',
         permanent: true
       },
       {
@@ -26,13 +26,8 @@ const config = {
         permanent: true
       },
       {
-        source: '/docs/styling/patterns',
-        destination: '/docs/recipes/patterns',
-        permanent: true
-      },
-      {
         source: '/docs/styling/jsx-style-context',
-        destination: '/docs/recipes/jsx-style-context',
+        destination: '/docs/recipes/jsx-recipes-overview',
         permanent: true
       },
       {
@@ -464,6 +459,24 @@ const config = {
       {
         source: '/docs/get-started',
         destination: '/docs/get-started/getting-started',
+        permanent: true
+      },
+
+      // --- Recipes tab rework: Recipes split into Atomic/Config, Patterns
+      // moved to Styling, JSX Style Context split into JSX Recipes + Guides ---
+      {
+        source: '/docs/recipes/recipes',
+        destination: '/docs/recipes/overview',
+        permanent: true
+      },
+      {
+        source: '/docs/recipes/patterns',
+        destination: '/docs/styling/patterns',
+        permanent: true
+      },
+      {
+        source: '/docs/recipes/jsx-style-context',
+        destination: '/docs/recipes/jsx-recipes-overview',
         permanent: true
       }
     ]

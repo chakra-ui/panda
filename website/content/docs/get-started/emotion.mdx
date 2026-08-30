@@ -110,7 +110,7 @@ const Button = styled.button`
 `
 ```
 
-Panda's [recipes](/docs/recipes/recipes) replace this with a typed, declarative variant map, no manual prop-to-style
+Panda's [recipes](/docs/recipes/overview) replace this with a typed, declarative variant map, no manual prop-to-style
 branching:
 
 ```ts filename="button.ts"
@@ -131,7 +131,7 @@ export const button = cva({
 ```
 
 `button({ variant: 'accent' })` is a type error if `accent` was never defined, the hand-rolled version above has no
-equivalent safety net. See [Recipes](/docs/recipes/recipes) and [Slot Recipes](/docs/recipes/slot-recipes).
+equivalent safety net. See [Recipes](/docs/recipes/overview) and [Slot Recipes](/docs/recipes/slot-recipes).
 
 ## Color Modes
 
@@ -188,7 +188,7 @@ See [Global Styles](/docs/styling/global-styles).
 ## Component Styles
 
 Emotion has no built-in layout primitives, `styled.div`/`styled.section` give you a styled element, but nothing like
-a pre-built `Box` or `Stack`. Panda ships [patterns](/docs/recipes/patterns) for common layout shapes as both a
+a pre-built `Box` or `Stack`. Panda ships [patterns](/docs/styling/patterns) for common layout shapes as both a
 function and a JSX component:
 
 ```jsx

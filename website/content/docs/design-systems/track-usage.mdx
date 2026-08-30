@@ -29,7 +29,7 @@ The recipe still works. Direct calls like `button({ size: 'lg' })` with a litera
 what you name the wrapping component. What's lost is JSX-based tracking, so a user writing `<Random size="lg" />`
 in their own code won't get that variant's CSS pre-generated from their app.
 
-See [Limitations](/docs/recipes/recipes#limitations) for the full explanation, including the related case where the
+See [Limitations](/docs/recipes/config-recipe#limitations) for the full explanation, including the related case where the
 variant prop itself is renamed on the way through (`size` becoming `buttonSize`, for example).
 
 ## Fixing it: match the name, or configure an alias
@@ -48,7 +48,7 @@ export const cardRecipe = defineSlotRecipe({
 })
 ```
 
-This is the same rule covered in [Config Recipes](/docs/recipes/jsx-style-context#config-recipes) for components
+This is the same rule covered in [Config Recipes](/docs/recipes/guide-config-recipes) for components
 built with `createSlotRecipeContext`, it applies just as much to a plain `styled()` wrapper with a non-matching name.
 
 ## When the value is genuinely dynamic
@@ -56,7 +56,7 @@ built with `createSlotRecipeContext`, it applies just as much to a plain `styled
 Sometimes the variant value isn't known until runtime no matter what the component is named, for example a `size`
 prop threaded through from a parent your library doesn't control. No amount of tag or prop matching fixes that,
 Panda can't see a value it doesn't have. Pre-generate the variants you expect with `staticCss` instead. See
-[Dynamic variant props](/docs/recipes/recipes#dynamic-variant-props) for the pattern, and
+[Dynamic variant props](/docs/recipes/config-recipe#dynamic-variant-props) for the pattern, and
 [Ship the styled-system vs the CSS](/docs/design-systems/ship-styled-system) if you're deciding how that generated
 CSS reaches users in the first place.
 

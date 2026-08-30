@@ -166,7 +166,8 @@ export const docsTabs: TabItem[] = [
           { title: 'Cascade Layers', url: 'cascade-layers' },
           { title: 'Dynamic Styles', url: 'dynamic-styling' },
           { title: 'Virtual Color', url: 'virtual-color' },
-          { title: 'Color opacity modifier', url: 'color-opacity-modifier' }
+          { title: 'Color opacity modifier', url: 'color-opacity-modifier' },
+          { title: 'Patterns', url: 'patterns' }
         ]
       },
       {
@@ -190,15 +191,25 @@ export const docsTabs: TabItem[] = [
         title: 'Recipes',
         items: [
           { title: 'Overview', url: 'overview' },
-          { title: 'Recipes', url: 'recipes' },
+          { title: 'Atomic Recipe', url: 'atomic-recipe' },
+          { title: 'Config Recipe', url: 'config-recipe' },
           { title: 'Slot Recipes', url: 'slot-recipes' }
         ]
       },
       {
-        title: 'Composition',
+        title: 'JSX Recipes',
         items: [
-          { title: 'Patterns', url: 'patterns' },
-          { title: 'JSX Style Context', url: 'jsx-style-context' }
+          { title: 'Overview', url: 'jsx-recipes-overview' },
+          { title: 'Slot Recipe Context', url: 'slot-recipe-context' },
+          { title: 'Recipe Context', url: 'recipe-context' }
+        ]
+      },
+      {
+        title: 'Guides',
+        items: [
+          { title: 'Config Recipes', url: 'guide-config-recipes' },
+          { title: 'Default Props', url: 'guide-default-props' },
+          { title: 'Forwarding Props', url: 'guide-forwarding-props' }
         ]
       }
     ]
