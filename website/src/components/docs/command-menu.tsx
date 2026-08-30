@@ -2,6 +2,7 @@
 import { blog, docs } from '.velite'
 import { Badge } from '@/components/ui/badge'
 import { dialogSlotRecipe } from '@/components/ui/dialog'
+import { SEARCH_HOTKEY } from '@/components/docs/search'
 import { Segmented } from '@/components/ui/segmented'
 import {
   convertToSearchItems,
@@ -281,7 +282,7 @@ const useHotkey = (props: UseHotkeyProps) => {
     const store = createHotkeyStore({ target: env.getDocument() })
     store.register({
       id: 'open-command-menu',
-      hotkey: 'mod+k',
+      hotkey: SEARCH_HOTKEY,
       action: event => {
         event.preventDefault()
         setOpen(true)
