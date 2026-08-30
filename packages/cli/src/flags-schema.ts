@@ -86,10 +86,10 @@ function parseField(field: Field, value: unknown): { ok: true; value: unknown } 
       return typeof value === 'string'
         ? { ok: true, value }
         : { ok: false, message: `expected string, received ${typeLabel(value)}` }
-    case 'stringOrNumber':
-      return typeof value === 'string' || typeof value === 'number'
-        ? { ok: true, value }
-        : { ok: false, message: `expected string or number, received ${typeLabel(value)}` }
+    case 'stringOrNumber': {
+      const numeric = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : Number.NaN
+      return Number.isFinite(numeric) ? { ok: true, value } : { ok: false, message: 'expected a number' }
+    }
     case 'stringOrArray':
       return typeof value === 'string' || (Array.isArray(value) && value.every((entry) => typeof entry === 'string'))
         ? { ok: true, value }
