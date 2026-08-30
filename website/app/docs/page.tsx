@@ -48,7 +48,7 @@ export default function DocsWelcomePage() {
           py="4"
           px="6"
         >
-          <Sidebar tabKey="styling" />
+          <Sidebar tabKey="get-started" />
         </Box>
       </Box>
 
@@ -139,13 +139,13 @@ export default function DocsWelcomePage() {
         <Card
           icon={<LuDownload />}
           title="Install Panda"
-          href="/docs/styling/installation"
+          href="/docs/get-started/installation"
           description="Every install path, for every framework."
         />
         <Card
           icon={<LuZap />}
           title="Thinking in Panda"
-          href="/docs/styling/thinking-in-panda"
+          href="/docs/get-started/thinking-in-panda"
           description="The mental model, in about ten minutes."
         />
       </Cards>

@@ -386,7 +386,7 @@ These are intentional and worth knowing about before you diff your output:
 
 ### Migrating a large codebase gradually
 
-The one surprise nobody expects is layering. Panda ships its CSS inside `@layer`, and per the CSS spec, any unlayered rule beats every layered rule, so your legacy, unlayered styles win over converted Panda components by default. If you're migrating incrementally, either run `postcss-cascade-layers` to strip the layer wrapper (so Panda competes as unlayered too), or hold a clean boundary by route, directory, or team. The [migration strategy](/docs/styling/migration-strategy) guide covers this in full.
+The one surprise nobody expects is layering. Panda ships its CSS inside `@layer`, and per the CSS spec, any unlayered rule beats every layered rule, so your legacy, unlayered styles win over converted Panda components by default. If you're migrating incrementally, either run `postcss-cascade-layers` to strip the layer wrapper (so Panda competes as unlayered too), or hold a clean boundary by route, directory, or team. The [migration strategy](/docs/get-started/migration-strategy) guide covers this in full.
 
 ## Try it
 
@@ -394,4 +394,4 @@ The one surprise nobody expects is layering. Panda ships its CSS inside `@layer`
 npm install @pandacss/dev@beta
 ```
 
-The full [upgrade guide](/docs/styling/upgrading-to-v2) is in the docs, and the [playground](https://play.panda-css.com) now runs the same engine in your browser. We built Panda 2.0 because we wanted a faster, smaller engine we could take everywhere: the CLI, your bundler, and the web. Your code doesn't have to know it happened. That's the point.
+The full [upgrade guide](/docs/get-started/upgrading-to-v2) is in the docs, and the [playground](https://play.panda-css.com) now runs the same engine in your browser. We built Panda 2.0 because we wanted a faster, smaller engine we could take everywhere: the CLI, your bundler, and the web. Your code doesn't have to know it happened. That's the point.

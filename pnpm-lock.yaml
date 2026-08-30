@@ -926,18 +926,6 @@ importers:
         specifier: 3.5.25
         version: 3.5.25(typescript@6.0.2)
 
-  sandbox/conditional-color-palette:
-    devDependencies:
-      '@pandacss/cli':
-        specifier: workspace:*
-        version: link:../../packages/cli
-      '@pandacss/preset-base':
-        specifier: workspace:*
-        version: link:../../packages/preset-base
-      '@pandacss/preset-panda':
-        specifier: workspace:*
-        version: link:../../packages/preset-panda
-
   sandbox/docusaurus-ts:
     dependencies:
       '@docusaurus/core':

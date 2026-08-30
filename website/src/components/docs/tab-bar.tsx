@@ -16,12 +16,14 @@ import {
   LuLayers,
   LuPaintbrush,
   LuPalette,
+  LuRocket,
   LuUsers,
   LuWrench
 } from 'react-icons/lu'
 import type { IconType } from 'react-icons'
 
 export const TAB_ICONS: Record<string, IconType> = {
+  'get-started': LuRocket,
   styling: LuPaintbrush,
   recipes: LuLayers,
   theming: LuPalette,
@@ -211,7 +213,7 @@ function TabLink({ tab, active }: TabLinkProps) {
 
   return (
     <Link
-      href={`/docs/${tab.key}`}
+      href={tab.key === 'get-started' ? '/docs' : `/docs/${tab.key}`}
       aria-current={active ? 'page' : undefined}
       className={css({
         position: 'relative',

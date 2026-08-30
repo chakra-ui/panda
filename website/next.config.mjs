@@ -12,7 +12,7 @@ const config = {
     return [
       {
         source: '/docs/getting-started',
-        destination: '/docs/styling/getting-started',
+        destination: '/docs/get-started/getting-started',
         permanent: true
       },
       {
@@ -366,6 +366,84 @@ const config = {
       {
         source: '/docs/styling/isolated-declarations',
         destination: '/docs/design-systems/isolated-declarations',
+        permanent: true
+      },
+
+      // --- Get Started tab split off from Styling (this pages' Core Concepts
+      // and Styling APIs groups stayed put) ---
+      {
+        source: '/docs/styling/getting-started',
+        destination: '/docs/get-started/getting-started',
+        permanent: true
+      },
+      {
+        source: '/docs/styling/installation',
+        destination: '/docs/get-started/installation',
+        permanent: true
+      },
+      {
+        source: '/docs/styling/thinking-in-panda',
+        destination: '/docs/get-started/thinking-in-panda',
+        permanent: true
+      },
+      {
+        source: '/docs/styling/faq',
+        destination: '/docs/get-started/faq',
+        permanent: true
+      },
+      {
+        source: '/docs/styling/browser-support',
+        destination: '/docs/get-started/browser-support',
+        permanent: true
+      },
+      {
+        source: '/docs/styling/upgrading-to-v2',
+        destination: '/docs/get-started/upgrading-to-v2',
+        permanent: true
+      },
+      {
+        source: '/docs/styling/migration-strategy',
+        destination: '/docs/get-started/migration-strategy',
+        permanent: true
+      },
+      {
+        source: '/docs/styling/tailwind',
+        destination: '/docs/get-started/tailwind',
+        permanent: true
+      },
+      {
+        source: '/docs/styling/chakra-ui',
+        destination: '/docs/get-started/chakra-ui',
+        permanent: true
+      },
+      {
+        source: '/docs/styling/stitches',
+        destination: '/docs/get-started/stitches',
+        permanent: true
+      },
+      {
+        source: '/docs/styling/styled-components',
+        destination: '/docs/get-started/styled-components',
+        permanent: true
+      },
+      {
+        source: '/docs/styling/emotion',
+        destination: '/docs/get-started/emotion',
+        permanent: true
+      },
+      {
+        source: '/docs/styling/theme-ui',
+        destination: '/docs/get-started/theme-ui',
+        permanent: true
+      },
+      {
+        source: '/docs/styling/stylex',
+        destination: '/docs/get-started/stylex',
+        permanent: true
+      },
+      {
+        source: '/docs/get-started',
+        destination: '/docs/get-started/getting-started',
         permanent: true
       }
     ]

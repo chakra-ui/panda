@@ -96,17 +96,15 @@ export const docsConfig: DocsConfig = {
 
 export const docsTabs: TabItem[] = [
   {
-    key: 'styling',
-    title: 'Styling',
+    key: 'get-started',
+    title: 'Get Started',
     side: 'left',
     items: [
       {
-        title: 'Get Started',
+        title: 'Overview',
         items: [
           { title: 'Welcome to Panda', href: '/docs' },
-          { title: 'Styling overview', url: 'overview' },
           { title: 'Why Panda', url: 'getting-started' },
-          { title: 'Installation', url: 'installation' },
           { title: 'Thinking in Panda', url: 'thinking-in-panda' },
           { title: 'FAQs', url: 'faq' },
           { title: 'Browser Support', url: 'browser-support' },
@@ -114,8 +112,46 @@ export const docsTabs: TabItem[] = [
         ]
       },
       {
+        title: 'Installation',
+        items: [{ title: 'Installation', url: 'installation' }]
+      },
+      {
+        title: 'Migration',
+        items: [
+          { title: 'Migration strategy', url: 'migration-strategy' },
+          { title: 'Tailwind CSS', url: 'tailwind' },
+          { title: 'Chakra UI', url: 'chakra-ui' },
+          { title: 'Stitches', url: 'stitches' },
+          { title: 'Styled Components', url: 'styled-components' },
+          { title: 'Emotion', url: 'emotion' },
+          { title: 'Theme UI', url: 'theme-ui' },
+          { title: 'StyleX', url: 'stylex' }
+        ]
+      },
+      {
+        title: 'AI for Agents',
+        tag: 'new',
+        items: [
+          { title: 'MCP Server', url: 'mcp-server' },
+          { title: 'LLMs.txt', url: 'llms-txt' },
+          { title: 'Agent Skills', url: 'agent-skills' }
+        ]
+      },
+      {
+        title: 'ESLint & OXLint',
+        items: [{ title: 'ESLint & OXLint Plugin', url: 'eslint-oxlint-plugin' }]
+      }
+    ]
+  },
+  {
+    key: 'styling',
+    title: 'Styling',
+    side: 'left',
+    items: [
+      {
         title: 'Core Concepts',
         items: [
+          { title: 'Overview', url: 'overview' },
           { title: 'Writing Styles', url: 'writing-styles' },
           { title: 'Conditional Styles', url: 'conditional-styles' },
           { title: 'Responsive Design', url: 'responsive-design' },
@@ -135,19 +171,6 @@ export const docsTabs: TabItem[] = [
           { title: 'The extend keyword', url: 'extend' },
           { title: 'Template Literals', url: 'template-literals' },
           { title: 'View Transition', url: 'view-transition', tag: 'new' }
-        ]
-      },
-      {
-        title: 'Migration',
-        items: [
-          { title: 'Migration strategy', url: 'migration-strategy' },
-          { title: 'Tailwind CSS', url: 'tailwind' },
-          { title: 'Chakra UI', url: 'chakra-ui' },
-          { title: 'Stitches', url: 'stitches' },
-          { title: 'Styled Components', url: 'styled-components' },
-          { title: 'Emotion', url: 'emotion' },
-          { title: 'Theme UI', url: 'theme-ui' },
-          { title: 'StyleX', url: 'stylex' }
         ]
       }
     ]
@@ -314,17 +337,7 @@ export const docsTabs: TabItem[] = [
         title: 'Lint & Edit',
         items: [
           { title: 'Overview', url: 'overview' },
-          { title: 'ESLint & OXLint Plugin', url: 'eslint-oxlint-plugin' },
           { title: 'Editor & IDE Tooling', url: 'editor-tooling' }
-        ]
-      },
-      {
-        title: 'AI for Agents',
-        tag: 'new',
-        items: [
-          { title: 'MCP Server', url: 'mcp-server' },
-          { title: 'LLMs.txt', url: 'llms-txt' },
-          { title: 'Agent Skills', url: 'agent-skills' }
         ]
       },
       {
@@ -395,7 +408,7 @@ export function getTab(key: string): TabItem | undefined {
   return docsTabs.find(tab => tab.key === key)
 }
 
-export const defaultTabKey = 'styling'
+export const defaultTabKey = 'get-started'
 
 /**
  * Links shown in the TabBar's "Community" dropdown. Team and Showcase also

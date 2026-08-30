@@ -37,7 +37,7 @@ export default function GuidesPage() {
           icon={<LuRocket />}
           kicker="Start here"
           title="Thinking in Panda"
-          href="/docs/styling/thinking-in-panda"
+          href="/docs/get-started/thinking-in-panda"
           description="The mental model, in about ten minutes."
           cta="Learn the model"
         />
@@ -45,7 +45,7 @@ export default function GuidesPage() {
           icon={<LuShuffle />}
           kicker="Moving over"
           title="Migration strategy"
-          href="/docs/styling/migration-strategy"
+          href="/docs/get-started/migration-strategy"
           description="How to move an existing codebase without a big-bang rewrite."
           cta="Plan a migration"
         />
@@ -74,14 +74,14 @@ export default function GuidesPage() {
 
       <Section title="Move from another library">
         <Cards columns={4}>
-          <Card title="Tailwind CSS" href="/docs/styling/tailwind" description="Utility classes to style objects." />
-          <Card title="Chakra UI" href="/docs/styling/chakra-ui" description="Style props you already know." />
-          <Card title="Styled Components" href="/docs/styling/styled-components" description="Template literals to objects." />
-          <Card title="Emotion" href="/docs/styling/emotion" description="Runtime CSS-in-JS to build time." />
-          <Card title="Stitches" href="/docs/styling/stitches" description="Variants and tokens, mapped over." />
-          <Card title="Theme UI" href="/docs/styling/theme-ui" description="Theme objects to Panda tokens." />
-          <Card title="StyleX" href="/docs/styling/stylex" description="Atomic to atomic, with types." />
-          <Card title="Upgrading to v2" href="/docs/styling/upgrading-to-v2" description="What changed, and what to do." />
+          <Card title="Tailwind CSS" href="/docs/get-started/tailwind" description="Utility classes to style objects." />
+          <Card title="Chakra UI" href="/docs/get-started/chakra-ui" description="Style props you already know." />
+          <Card title="Styled Components" href="/docs/get-started/styled-components" description="Template literals to objects." />
+          <Card title="Emotion" href="/docs/get-started/emotion" description="Runtime CSS-in-JS to build time." />
+          <Card title="Stitches" href="/docs/get-started/stitches" description="Variants and tokens, mapped over." />
+          <Card title="Theme UI" href="/docs/get-started/theme-ui" description="Theme objects to Panda tokens." />
+          <Card title="StyleX" href="/docs/get-started/stylex" description="Atomic to atomic, with types." />
+          <Card title="Upgrading to v2" href="/docs/get-started/upgrading-to-v2" description="What changed, and what to do." />
         </Cards>
       </Section>
 
