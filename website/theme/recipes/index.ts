@@ -4,6 +4,15 @@ import { navbarRecipe } from './navbar.recipe'
 import { nextraTabsRecipe } from './nextra-tabs.recipe'
 import { codeTabsRecipe } from './code-tabs.recipe'
 import { buttonRecipe } from './button.recipe'
+import { docCardRecipe } from './doc-card.recipe'
+import { docNavRecipe } from './doc-nav.recipe'
+import { marqueeRecipe } from './marquee.recipe'
+import { segmentedRecipe } from './segmented.recipe'
+
+export const slotRecipes = {
+  docCard: docCardRecipe,
+  docNav: docNavRecipe
+}
 
 export const recipes = {
   button: buttonRecipe,
@@ -11,5 +20,7 @@ export const recipes = {
   card: cardRecipe,
   callout: calloutRecipe,
   navbar: navbarRecipe,
-  nextraTabs: nextraTabsRecipe
+  nextraTabs: nextraTabsRecipe,
+  segmented: segmentedRecipe,
+  marquee: marqueeRecipe
 }

@@ -1,67 +1,15 @@
-import { css, cx, sva } from '@/styled-system/css'
+'use client'
+
+import { css, cx } from '@/styled-system/css'
+import { grid } from '@/styled-system/patterns'
+import { docCard } from '@/styled-system/recipes'
 import Link from 'next/link'
+import { createContext, useContext } from 'react'
 import { LuArrowRight } from 'react-icons/lu'
 
-const cardStyles = sva({
-  slots: ['root', 'icon', 'kicker', 'title', 'body', 'cta'],
-  base: {
-    root: {
-      position: 'relative',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '2',
-      height: 'full',
-      p: '5',
-      borderWidth: '1px',
-      borderColor: 'border',
-      color: 'fg',
-      textDecoration: 'none',
-      transitionProperty: 'background-color, border-color',
-      transitionDuration: '150ms',
-      _hover: { borderColor: 'fg.subtle', bg: 'bg.subtle' }
-    },
-    icon: {
-      display: 'flex',
-      color: 'accent.emphasis',
-      mb: '1',
-      '& svg': { width: '1.25rem', height: '1.25rem' }
-    },
-    kicker: {
-      textStyle: 'eyebrow',
-      color: 'fg.subtle'
-    },
-    title: {
-      textStyle: 'lg',
-      fontWeight: 'semibold',
-      lineHeight: '1.3'
-    },
-    body: {
-      textStyle: 'sm',
-      lineHeight: '1.6',
-      color: 'fg.muted'
-    },
-    cta: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '2',
-      mt: 'auto',
-      pt: '3',
-      textStyle: 'sm',
-      color: 'fg.muted'
-    }
-  },
-  variants: {
-    mode: {
-      gapped: {
-        root: { rounded: 'lg' }
-      },
-      gapless: {
-        root: { borderRadius: '0', p: '4', gap: '1' }
-      }
-    }
-  },
-  defaultVariants: { mode: 'gapped' }
-})
+type Mode = 'gapped' | 'gapless'
+
+const ModeContext = createContext<Mode>('gapped')
 
 interface CardProps {
   title: string
@@ -72,13 +20,21 @@ interface CardProps {
   kicker?: string
   cta?: React.ReactNode
   arrow?: boolean
-  mode?: 'gapped' | 'gapless'
+  mode?: Mode
 }
+
+const inlineArrow = css({
+  display: 'inline',
+  ml: '2',
+  verticalAlign: 'middle',
+  color: 'fg.subtle'
+})
 
 export const Card = (props: CardProps) => {
   const { title, href, children, description, icon, kicker, cta, arrow, mode } =
     props
-  const classes = cardStyles({ mode })
+  const groupMode = useContext(ModeContext)
+  const classes = docCard({ mode: mode ?? groupMode })
   const external = href.startsWith('http')
 
   return (
@@ -92,16 +48,7 @@ export const Card = (props: CardProps) => {
       {kicker && <span className={classes.kicker}>{kicker}</span>}
       <span className={classes.title}>
         {title}
-        {arrow && (
-          <LuArrowRight
-            className={css({
-              display: 'inline',
-              ml: '2',
-              verticalAlign: 'middle',
-              color: 'fg.subtle'
-            })}
-          />
-        )}
+        {arrow && <LuArrowRight className={inlineArrow} />}
       </span>
       {(description || children) && (
         <span className={classes.body}>{description ?? children}</span>
@@ -116,63 +63,36 @@ export const Card = (props: CardProps) => {
   )
 }
 
-const columnStyles = {
-  1: css({ gridTemplateColumns: '1fr' }),
-  2: css({
-    gridTemplateColumns: { base: '1fr', sm: 'repeat(2, minmax(0, 1fr))' }
-  }),
-  3: css({
-    gridTemplateColumns: {
-      base: '1fr',
-      sm: 'repeat(2, minmax(0, 1fr))',
-      lg: 'repeat(3, minmax(0, 1fr))'
-    }
-  }),
-  4: css({
-    gridTemplateColumns: {
-      base: '1fr',
-      sm: 'repeat(2, minmax(0, 1fr))',
-      lg: 'repeat(4, minmax(0, 1fr))'
-    }
-  })
-}
-
-const gapStyles = {
-  gapped: css({ gap: '4' }),
-  gapless: css({
-    gap: '0',
-    '& > a': {
-      borderRadius: '0!',
-      padding: '1rem!',
-      gap: '0.25rem!',
-      marginBlockStart: '-1px',
-      marginInlineStart: '-1px'
-    }
-  })
-}
-
-const gridBase = css({ display: 'grid', my: '8' })
-
 interface CardsProps extends React.ComponentProps<'div'> {
   columns?: 1 | 2 | 3 | 4
-  mode?: 'gapped' | 'gapless'
+  mode?: Mode
 }
+
+const gridStyles = {
+  1: grid({ columns: 1, gap: '4', my: '8' }),
+  2: grid({ columns: { base: 1, sm: 2 }, gap: '4', my: '8' }),
+  3: grid({ columns: { base: 1, sm: 2, lg: 3 }, gap: '4', my: '8' }),
+  4: grid({ columns: { base: 1, sm: 2, lg: 4 }, gap: '4', my: '8' })
+}
+
+const gaplessGrid = css({ gap: '0' })
 
 export const Cards = (props: CardsProps) => {
   const { className, columns = 2, mode = 'gapped', children, ...rest } = props
 
   return (
-    <div
-      data-mode={mode}
-      className={cx(
-        gridBase,
-        columnStyles[columns] ?? columnStyles[2],
-        gapStyles[mode] ?? gapStyles.gapped,
-        className
-      )}
-      {...rest}
-    >
-      {children}
-    </div>
+    <ModeContext.Provider value={mode}>
+      <div
+        data-mode={mode}
+        className={cx(
+          gridStyles[columns] ?? gridStyles[2],
+          mode === 'gapless' && gaplessGrid,
+          className
+        )}
+        {...rest}
+      >
+        {children}
+      </div>
+    </ModeContext.Provider>
   )
 }

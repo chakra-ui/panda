@@ -1,7 +1,8 @@
 'use client'
 
 import { Docs } from '.velite'
-import { css, cx, sva } from '@/styled-system/css'
+import { css, cx } from '@/styled-system/css'
+import { docNav } from '@/styled-system/recipes'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
@@ -86,14 +87,14 @@ export const Toc = (props: TocProps) => {
     return null
   }
 
-  const classes = tocRecipe()
+  const classes = docNav({ kind: 'toc' })
 
   return (
-    <nav className={classes.root} aria-label="Table of contents">
-      <h3 className={classes.title}>On this page</h3>
-      <ul>
+    <nav aria-label="Table of contents">
+      <h3 className={classes.label}>On this page</h3>
+      <ul className={classes.list}>
         {data.map(item => (
-          <li key={item.id} className={classes.item}>
+          <li key={item.id}>
             <Link
               href={`#${item.id}`}
               data-current={isCurrent(item.id) || undefined}
@@ -119,57 +120,3 @@ const depthStyles = [
   css({ ps: '10' }),
   css({ ps: '13' })
 ]
-
-const tocRecipe = sva({
-  slots: ['root', 'title', 'link', 'item'],
-  base: {
-    root: {
-      '& > ul': {
-        borderInlineStartWidth: '1px',
-        borderColor: 'border'
-      }
-    },
-    title: {
-      textStyle: 'xs',
-      fontFamily: 'mono',
-      fontWeight: 'medium',
-      textTransform: 'uppercase',
-      letterSpacing: '0.08em',
-      color: 'fg.subtle',
-      mb: '8'
-    },
-    item: {
-      scrollMarginY: '6',
-      scrollPaddingY: '6'
-    },
-    link: {
-      position: 'relative',
-      display: 'flex',
-      ml: '-1px',
-      py: '1',
-      pe: '3',
-      textStyle: 'sm',
-      fontWeight: 'medium',
-      color: 'fg.subtle',
-      transitionProperty: 'color',
-      transitionDuration: '150ms',
-      _before: {
-        content: '""',
-        position: 'absolute',
-        insetY: '0',
-        insetStart: '0',
-        width: '2px',
-        bg: 'transparent',
-        transitionProperty: 'background-color',
-        transitionDuration: '150ms'
-      },
-      _current: {
-        color: 'fg',
-        _before: { bg: 'accent.emphasis' }
-      },
-      _hover: {
-        color: 'fg'
-      }
-    }
-  }
-})

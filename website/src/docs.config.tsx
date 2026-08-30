@@ -324,6 +324,10 @@ export const docsTabs: TabItem[] = [
         ]
       },
       {
+        title: 'Help',
+        items: [{ title: 'Feedback', url: 'feedback' }]
+      },
+      {
         title: 'Inspect',
         items: [
           { title: 'Panda Studio', url: 'studio' },

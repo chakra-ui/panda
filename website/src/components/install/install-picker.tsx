@@ -1,5 +1,7 @@
 'use client'
 
+import { Segmented } from '@/components/ui/segmented'
+import { Clipboard } from '@ark-ui/react/clipboard'
 import { css } from '@/styled-system/css'
 import { Box, Stack } from '@/styled-system/jsx'
 import { useState } from 'react'
@@ -42,106 +44,29 @@ function command(manager: Manager, setup: Setup) {
   return `${add} @pandacss/dev\n${run} panda init`
 }
 
-const optionStyles = css({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: '2',
-  minH: '11',
-  px: '5',
-  textStyle: 'sm',
-  fontWeight: 'medium',
-  cursor: 'pointer',
-  borderWidth: '1px',
-  borderColor: 'border',
-  rounded: 'md',
-  color: 'fg.muted',
-  bg: 'transparent',
-  transitionProperty: 'color, background-color, border-color',
-  transitionDuration: '150ms',
-  _hover: { color: 'fg', borderColor: 'fg.subtle' },
-  '&[aria-checked=true]': {
-    color: 'fg',
-    bg: 'accent.wash',
-    borderColor: 'accent.emphasis'
-  }
-})
-
-const tabStyles = css({
-  textStyle: 'sm',
-  fontWeight: 'medium',
-  px: '4',
-  py: '2',
-  cursor: 'pointer',
-  color: 'fg.muted',
-  bg: 'transparent',
-  transitionProperty: 'color, background-color',
-  transitionDuration: '150ms',
-  _hover: { color: 'fg' },
-  '&[aria-selected=true]': { color: 'fg', bg: 'bg.muted' }
-})
-
 export function InstallPicker() {
   const [manager, setManager] = useState<Manager>('pnpm')
   const [setup, setSetup] = useState<Setup>('cli')
-  const [copied, setCopied] = useState(false)
 
   const value = command(manager, setup)
 
-  async function copy() {
-    await navigator.clipboard.writeText(value)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
   return (
     <Stack gap="8" alignItems="center">
-      <Box
-        role="radiogroup"
-        aria-label="Package manager"
-        display="grid"
-        gridTemplateColumns="repeat(4, minmax(0, 1fr))"
-        gap="3"
-        w="full"
-        maxW="34rem"
-      >
-        {MANAGERS.map(item => (
-          <button
-            key={item}
-            type="button"
-            role="radio"
-            aria-checked={manager === item}
-            onClick={() => setManager(item)}
-            className={optionStyles}
-          >
-            {manager === item && <LuCheck aria-hidden />}
-            {item}
-          </button>
-        ))}
-      </Box>
+      <Segmented
+        label="Package manager"
+        tone="accent"
+        value={manager}
+        onValueChange={value => setManager(value as Manager)}
+        options={MANAGERS.map(item => ({ value: item, label: item }))}
+      />
 
-      <Box
-        role="tablist"
-        aria-label="Setup"
-        display="inline-flex"
-        borderWidth="1px"
-        borderColor="border"
-        rounded="md"
-        overflow="hidden"
-      >
-        {SETUPS.map(item => (
-          <button
-            key={item.id}
-            type="button"
-            role="tab"
-            aria-selected={setup === item.id}
-            onClick={() => setSetup(item.id)}
-            className={tabStyles}
-          >
-            {item.label}
-          </button>
-        ))}
-      </Box>
+      <Segmented
+        label="Setup"
+        size="sm"
+        value={setup}
+        onValueChange={value => setSetup(value as Setup)}
+        options={SETUPS.map(item => ({ value: item.id, label: item.label }))}
+      />
 
       <Box
         w="full"
@@ -175,23 +100,25 @@ export function InstallPicker() {
             </Box>
           ))}
         </Box>
-        <button
-          type="button"
-          onClick={copy}
-          aria-label="Copy install command"
-          className={css({
-            flexShrink: '0',
-            p: '2',
-            rounded: 'md',
-            color: 'fg.subtle',
-            cursor: 'pointer',
-            transitionProperty: 'color, background-color',
-            transitionDuration: '150ms',
-            _hover: { color: 'fg', bg: 'bg.muted' }
-          })}
-        >
-          {copied ? <LuCheck /> : <LuCopy />}
-        </button>
+        <Clipboard.Root value={value} timeout={2000}>
+          <Clipboard.Trigger
+            aria-label="Copy install command"
+            className={css({
+              flexShrink: '0',
+              p: '2',
+              rounded: 'md',
+              color: 'fg.subtle',
+              cursor: 'pointer',
+              transitionProperty: 'color, background-color',
+              transitionDuration: '150ms',
+              _hover: { color: 'fg', bg: 'bg.muted' }
+            })}
+          >
+            <Clipboard.Indicator copied={<LuCheck />}>
+              <LuCopy />
+            </Clipboard.Indicator>
+          </Clipboard.Trigger>
+        </Clipboard.Root>
       </Box>
 
       <Box textStyle="sm" color="fg.muted">

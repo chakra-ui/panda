@@ -1,3 +1,4 @@
+import type { Metadata, Viewport } from 'next'
 import Script from 'next/script'
 import { Providers } from '@/components/providers'
 import { css, cx } from '@/styled-system/css'
@@ -9,11 +10,12 @@ interface Props {
   children: React.ReactNode
 }
 
-const { themeColor: _, ...metadata } = seoConfig
-export { metadata }
+const { themeColor, ...rest } = seoConfig
 
-export const viewport = {
-  viewport: seoConfig.themeColor
+export const metadata: Metadata = rest
+
+export const viewport: Viewport = {
+  themeColor
 }
 
 export default function RootLayout(props: Props) {

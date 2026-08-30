@@ -1,5 +1,6 @@
 'use client'
 
+import { Segmented } from '@/components/ui/segmented'
 import { css } from '@/styled-system/css'
 import { Box, Stack } from '@/styled-system/jsx'
 import Link from 'next/link'
@@ -22,20 +23,6 @@ function monthYear(iso: string) {
     .toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
     .toUpperCase()
 }
-
-const segmentStyles = css({
-  textStyle: 'sm',
-  fontWeight: 'medium',
-  px: '4',
-  py: '2',
-  color: 'fg.muted',
-  bg: 'transparent',
-  cursor: 'pointer',
-  transitionProperty: 'background-color, color',
-  transitionDuration: '150ms',
-  _hover: { color: 'fg' },
-  '&[aria-selected=true]': { bg: 'bg.muted', color: 'fg' }
-})
 
 export function PostList({ posts }: { posts: PostSummary[] }) {
   const [filter, setFilter] = useState<Filter>('Everything')
@@ -60,28 +47,13 @@ export function PostList({ posts }: { posts: PostSummary[] }) {
         gap="4"
         mb="10"
       >
-        <Box
-          role="tablist"
-          aria-label="Filter posts"
-          display="inline-flex"
-          borderWidth="1px"
-          borderColor="border"
-          rounded="md"
-          overflow="hidden"
-        >
-          {FILTERS.map(item => (
-            <button
-              key={item}
-              role="tab"
-              type="button"
-              aria-selected={filter === item}
-              onClick={() => setFilter(item)}
-              className={segmentStyles}
-            >
-              {item}
-            </button>
-          ))}
-        </Box>
+        <Segmented
+          label="Filter posts"
+          size="sm"
+          value={filter}
+          onValueChange={value => setFilter(value as Filter)}
+          options={FILTERS.map(item => ({ value: item, label: item }))}
+        />
         <Box textStyle="eyebrow" color="fg.subtle">
           {visible.length} {visible.length === 1 ? 'post' : 'posts'}
         </Box>

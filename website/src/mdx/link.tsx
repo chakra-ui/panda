@@ -5,12 +5,23 @@ import { css, cx } from '@/styled-system/css'
 const EXTERNAL_HREF_REGEX = /https?:\/\//
 
 const styles = css({
-  color: 'link',
+  color: 'fg',
   fontWeight: 'medium',
-  textUnderlineOffset: '2px',
   textDecorationLine: 'underline',
-  textDecorationThickness: 'from-font',
-  textUnderlinePosition: 'from-font'
+  textDecorationColor: 'accent.emphasis',
+  textDecorationThickness: '1px',
+  textUnderlineOffset: '3px',
+  transitionProperty: 'text-decoration-color, background-color',
+  transitionDuration: '150ms',
+  _hover: {
+    textDecorationThickness: '1px',
+    bg: 'accent.wash'
+  },
+  _focusVisible: {
+    outline: '2px solid',
+    outlineColor: 'blue.500',
+    outlineOffset: '2px'
+  }
 })
 
 export const Link = ({ href = '', className, ...props }: AnchorProps) => (

@@ -2,8 +2,8 @@
 
 import { Badge } from '@/components/ui/badge'
 import { docsTabs } from '@/docs.config'
-import { css } from '@/styled-system/css'
-import { HStack, Stack } from '@/styled-system/jsx'
+import { Stack } from '@/styled-system/jsx'
+import { docNav } from '@/styled-system/recipes'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LuArrowUpRight } from 'react-icons/lu'
@@ -14,41 +14,6 @@ interface Props {
   /** Used when the route has no tab segment of its own, e.g. the `/docs` welcome page. */
   tabKey?: string
 }
-
-const linkStyles = css({
-  position: 'relative',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '2',
-  minH: '8',
-  ml: '-1px',
-  ps: '4',
-  pe: '3',
-  py: '1.5',
-  roundedEnd: 'md',
-  textStyle: 'sm',
-  color: 'fg.muted',
-  bg: 'transparent',
-  fontWeight: 'medium',
-  transitionProperty: 'background-color, color',
-  transitionDuration: '150ms',
-  _before: {
-    content: '""',
-    position: 'absolute',
-    insetY: '0',
-    insetStart: '0',
-    width: '2px',
-    bg: 'transparent',
-    transitionProperty: 'background-color',
-    transitionDuration: '150ms'
-  },
-  _hover: { bg: 'bg.subtle', color: 'fg' },
-  _current: {
-    color: 'fg',
-    bg: 'accent.wash',
-    _before: { bg: 'accent.emphasis' }
-  }
-})
 
 export function Sidebar({ slug: currentSlug, tabKey: fallbackTab }: Props) {
   const pathname = usePathname()
@@ -67,28 +32,19 @@ export function Sidebar({ slug: currentSlug, tabKey: fallbackTab }: Props) {
     item: NonNullable<(typeof tab.items)[number]['items']>[number]
   ) => !!item.url && isActive(item.url)
 
+  const classes = docNav({ kind: 'sidebar' })
+
   return (
     <Stack as="nav" aria-label={`${tab.title} pages`} gap="1">
       {tab.items.map(group => (
         <div key={group.title}>
-          <HStack
-            px="3"
-            py="2"
-            fontWeight="semibold"
-            fontSize="sm"
-            color="fg"
-          >
+          <div className={classes.label}>
             <span>{group.title}</span>
             {group.tag && <Badge variant="solid">{group.tag}</Badge>}
-          </HStack>
+          </div>
 
           {group.items && (
-            <Stack
-              gap="0.5"
-              mt="1"
-              borderInlineStartWidth="1px"
-              borderColor="border"
-            >
+            <div className={classes.list}>
               {group.items.map(item => {
                 if (item.external) {
                   return (
@@ -97,7 +53,7 @@ export function Sidebar({ slug: currentSlug, tabKey: fallbackTab }: Props) {
                       href={item.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={linkStyles}
+                      className={classes.link}
                     >
                       {item.title}
                       <LuArrowUpRight />
@@ -113,7 +69,7 @@ export function Sidebar({ slug: currentSlug, tabKey: fallbackTab }: Props) {
                       href={item.href}
                       data-current={current || undefined}
                       aria-current={current ? 'page' : undefined}
-                      className={linkStyles}
+                      className={classes.link}
                     >
                       <span>{item.title}</span>
                     </Link>
@@ -130,14 +86,14 @@ export function Sidebar({ slug: currentSlug, tabKey: fallbackTab }: Props) {
                     href={`/docs/${tabKey}/${item.url}`}
                     data-current={current || undefined}
                     aria-current={current ? 'page' : undefined}
-                    className={linkStyles}
+                    className={classes.link}
                   >
                     <span>{item.title}</span>
                     {item.tag && <Badge variant="solid">{item.tag}</Badge>}
                   </Link>
                 )
               })}
-            </Stack>
+            </div>
           )}
         </div>
       ))}
