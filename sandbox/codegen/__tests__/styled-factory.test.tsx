@@ -340,6 +340,16 @@ describe('styled factory - button recipe', () => {
     )
   })
 
+  test('condition style props', () => {
+    const { container } = render(<Box display="flex" _hover={{ color: 'red.500' }} />)
+
+    expect(container.firstChild).toMatchInlineSnapshot(`
+      <div
+        class="d_flex hover:c_red.500"
+      />
+    `)
+  })
+
   test('stack pattern', () => {
     const { container } = render(
       <Stack direction="column" color="red.400">

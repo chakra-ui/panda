@@ -218,6 +218,51 @@ fn react_types_include_jsx_factory_surface() {
 }
 
 #[test]
+fn is_valid_prop_includes_condition_keys() {
+    let config: UserConfig = serde_json::from_value(serde_json::json!({
+        "jsxFramework": "react",
+        "conditions": {
+            "hover": "&:hover",
+            "dark": ".dark &"
+        },
+        "theme": {
+            "breakpoints": { "md": "768px" }
+        }
+    }))
+    .expect("config should deserialize");
+
+    let artifacts = ArtifactGraph.generate_with_config(&config, GenerateOptions::default());
+    let code = file(
+        artifact(&artifacts, ArtifactId::JsxIsValidProp),
+        "jsx/is-valid-prop.mjs",
+    );
+
+    assert!(code.contains("\"_hover\""));
+    assert!(code.contains("\"_dark\""));
+    assert!(code.contains("\"md\""));
+    assert!(code.contains("\"base\""));
+}
+
+#[test]
+fn is_valid_prop_omits_conditions_when_style_props_are_minimal() {
+    let config: UserConfig = serde_json::from_value(serde_json::json!({
+        "jsxFramework": "react",
+        "jsxStyleProps": "minimal",
+        "conditions": { "hover": "&:hover" }
+    }))
+    .expect("config should deserialize");
+
+    let artifacts = ArtifactGraph.generate_with_config(&config, GenerateOptions::default());
+    let code = file(
+        artifact(&artifacts, ArtifactId::JsxIsValidProp),
+        "jsx/is-valid-prop.mjs",
+    );
+
+    assert!(!code.contains("\"_hover\""));
+    assert!(code.contains("\"css\""));
+}
+
+#[test]
 fn helper_owns_jsx_helpers() {
     let artifacts = ArtifactGraph.generate_with_config(&react_config(), GenerateOptions::default());
     let factory = file(

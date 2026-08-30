@@ -364,6 +364,7 @@ fn css_prop_names(ctx: CodegenContext<'_>) -> Vec<String> {
                 .values()
                 .map(|property| property.name.clone()),
         );
+        names.extend(ctx.condition_keys());
     }
 
     names.into_iter().collect()
