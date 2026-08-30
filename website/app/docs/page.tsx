@@ -1,6 +1,7 @@
 import { Sidebar } from '@/components/docs/sidebar'
 import { generateOgImageUrl } from '@/lib/og-image'
 import { Card, Cards } from '@/mdx/cards'
+import { css } from '@/styled-system/css'
 import { Box, Stack } from '@/styled-system/jsx'
 import type { Metadata } from 'next'
 import {
@@ -29,9 +30,25 @@ export const metadata: Metadata = {
   }
 }
 
+const docsGrid = css({
+  display: 'flex',
+  position: 'relative',
+  // the rule spans the whole row; on the sticky aside it would stop short
+  _before: {
+    content: '""',
+    display: 'none',
+    position: 'absolute',
+    insetY: '0',
+    insetInlineStart: '290px',
+    width: '1px',
+    bg: 'border',
+    lg: { display: 'block' }
+  }
+})
+
 export default function DocsWelcomePage() {
   return (
-    <Box display="flex" position="relative">
+    <div className={docsGrid}>
       <Box
         as="aside"
         display={{ base: 'none', lg: 'block' }}
@@ -40,8 +57,6 @@ export default function DocsWelcomePage() {
         position="sticky"
         top="calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height))"
         height="calc(100vh - var(--navbar-height) - var(--banner-height) - var(--tabbar-height))"
-        borderInlineEndWidth="1px"
-        borderColor="border"
       >
         <Box
           overflowY="auto"
@@ -152,6 +167,6 @@ export default function DocsWelcomePage() {
         />
       </Cards>
       </Box>
-    </Box>
+    </div>
   )
 }
