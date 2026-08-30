@@ -11,32 +11,69 @@ It reads your source rather than running in the browser: static analysis picks u
 and only the styles you actually used end up in the stylesheet. You get the authoring experience of CSS-in-JS without
 shipping a style engine to your users.
 
-Here's what that looks like in practice.
+There is more than one way to write it. Every tab below produces the same atomic CSS.
 
-```jsx
-import { css } from '../styled-system/css'
-import { circle, stack } from '../styled-system/patterns'
+<Tabs items={['css function', 'Style props', 'Patterns', 'Recipes']}>
+  <Tab>
+    ```jsx
+    import { css } from '../styled-system/css'
 
-function App() {
-  return (
-    <div
-      className={stack({
-        direction: 'row',
-        p: '4',
-        rounded: 'md',
-        shadow: 'lg',
-        bg: 'white'
-      })}
-    >
-      <div className={circle({ size: '5rem', overflow: 'hidden' })}>
-        <img src="https://via.placeholder.com/150" alt="avatar" />
-      </div>
-      <div className={css({ mt: '4', fontSize: 'xl', fontWeight: 'semibold' })}>John Doe</div>
-      <div className={css({ mt: '2', fontSize: 'sm', color: 'gray.600' })}>john@doe.com</div>
-    </div>
-  )
-}
-```
+    export function Card() {
+      return (
+        <div className={css({ display: 'flex', gap: '4', p: '4', rounded: 'md', bg: 'white' })}>
+          <img className={css({ w: '12', h: '12', rounded: 'full' })} src="/avatar.png" alt="" />
+          <span className={css({ fontWeight: 'semibold' })}>John Doe</span>
+        </div>
+      )
+    }
+    ```
+  </Tab>
+  <Tab>
+    ```jsx
+    import { styled } from '../styled-system/jsx'
+
+    export function Card() {
+      return (
+        <styled.div display="flex" gap="4" p="4" rounded="md" bg="white">
+          <styled.img w="12" h="12" rounded="full" src="/avatar.png" alt="" />
+          <styled.span fontWeight="semibold">John Doe</styled.span>
+        </styled.div>
+      )
+    }
+    ```
+  </Tab>
+  <Tab>
+    ```jsx
+    import { hstack, circle } from '../styled-system/patterns'
+
+    export function Card() {
+      return (
+        <div className={hstack({ gap: '4', p: '4', rounded: 'md', bg: 'white' })}>
+          <img className={circle({ size: '12' })} src="/avatar.png" alt="" />
+          <span>John Doe</span>
+        </div>
+      )
+    }
+    ```
+  </Tab>
+  <Tab>
+    ```jsx
+    import { cva } from '../styled-system/css'
+
+    const card = cva({
+      base: { display: 'flex', gap: '4', rounded: 'md', bg: 'white' },
+      variants: {
+        size: { sm: { p: '2' }, md: { p: '4' } }
+      },
+      defaultVariants: { size: 'md' }
+    })
+
+    export function Card({ size }) {
+      return <div className={card({ size })}>John Doe</div>
+    }
+    ```
+  </Tab>
+</Tabs>
 
 ## What you get
 
