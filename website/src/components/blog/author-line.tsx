@@ -83,7 +83,11 @@ export function AuthorLine(props: Props) {
   const namedPeople = people.slice(0, MAX_NAMES)
   const hiddenNames = people.length - namedPeople.length
 
-  const byline = namedPeople.map(person => person.name).join(', ')
+  const names = namedPeople.map(person => person.name)
+  const byline =
+    names.length > 1
+      ? `${names.slice(0, -1).join(', ')} & ${names[names.length - 1]}`
+      : names.join('')
   const credit = hiddenNames > 0 ? `${byline} +${hiddenNames} more` : byline
 
   return (
