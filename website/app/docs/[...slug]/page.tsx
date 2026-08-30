@@ -8,7 +8,7 @@ import { Pagination } from '@/components/docs/pagination'
 import { Sidebar } from '@/components/docs/sidebar'
 import { Toc } from '@/components/ui/toc'
 import { generateOgImageUrl } from '@/lib/og-image'
-import { css } from '@/styled-system/css'
+import { css, cx } from '@/styled-system/css'
 import { Box } from '@/styled-system/jsx'
 import { notFound } from 'next/navigation'
 
@@ -57,6 +57,11 @@ export async function generateMetadata({ params }: DocsPageProps) {
   }
 }
 
+const sidebarScroll = css({
+  maskImage:
+    'linear-gradient(to bottom, black calc(100% - 2.5rem), transparent 100%)'
+})
+
 export default async function DocsPage(props: DocsPageProps) {
   const params = await props.params
 
@@ -80,7 +85,7 @@ export default async function DocsPage(props: DocsPageProps) {
           top="calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height))"
           height="calc(100vh - var(--navbar-height) - var(--banner-height) - var(--tabbar-height))"
         >
-          <Box overflowY="auto" height="100%" className="scroll-area" py="4" px="6">
+          <Box overflowY="auto" height="100%" className={cx('scroll-area', sidebarScroll)} py="4" px="6">
             <Sidebar slug={slug} />
           </Box>
         </Box>

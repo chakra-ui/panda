@@ -61,8 +61,6 @@ export const globalCss = defineGlobalStyles({
     }
   },
   '.scroll-area': {
-    maskImage:
-      'linear-gradient(to bottom, black calc(100% - 2.5rem), transparent 100%)',
     scrollbarWidth: 'thin',
     scrollbarColor: 'oklch(55.55% 0 0 / 40%) transparent',
     scrollbarGutter: 'stable',

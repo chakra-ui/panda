@@ -1,4 +1,5 @@
 import { Sidebar } from '@/components/docs/sidebar'
+import { css, cx } from '@/styled-system/css'
 import { generateOgImageUrl } from '@/lib/og-image'
 import { Card, Cards } from '@/mdx/cards'
 import { Box, Stack } from '@/styled-system/jsx'
@@ -29,6 +30,11 @@ export const metadata: Metadata = {
   }
 }
 
+const sidebarScroll = css({
+  maskImage:
+    'linear-gradient(to bottom, black calc(100% - 2.5rem), transparent 100%)'
+})
+
 export default function DocsWelcomePage() {
   return (
     <Box display="flex" position="relative">
@@ -44,7 +50,7 @@ export default function DocsWelcomePage() {
         <Box
           overflowY="auto"
           height="100%"
-          className="scroll-area"
+          className={cx('scroll-area', sidebarScroll)}
           py="4"
           px="6"
         >
