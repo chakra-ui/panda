@@ -118,7 +118,7 @@ export default function ShowcasePage() {
       >
         Shipping something on Panda?{' '}
         <a
-          href="https://github.com/chakra-ui/panda/discussions"
+          href="https://github.com/chakra-ui/panda/discussions/1182"
           target="_blank"
           rel="noopener noreferrer"
           className={textLink()}
