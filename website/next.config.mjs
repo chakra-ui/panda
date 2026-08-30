@@ -17,7 +17,7 @@ const config = {
       },
       {
         source: '/docs/styling/recipes',
-        destination: '/docs/recipes/overview',
+        destination: '/docs/recipes/atomic-recipe',
         permanent: true
       },
       {
@@ -203,7 +203,7 @@ const config = {
       // Bare tab roots: the [...slug] catch-all needs at least one page segment.
       {
         source: '/docs/recipes',
-        destination: '/docs/recipes/overview',
+        destination: '/docs/recipes/atomic-recipe',
         permanent: true
       },
       {
@@ -218,7 +218,7 @@ const config = {
       },
       {
         source: '/docs/styling',
-        destination: '/docs/styling/overview',
+        destination: '/docs/styling/writing-styles',
         permanent: true
       },
       {
@@ -228,7 +228,7 @@ const config = {
       },
       {
         source: '/docs/design-systems',
-        destination: '/docs/design-systems/overview',
+        destination: '/docs/design-systems/setup',
         permanent: true
       },
       {
@@ -317,7 +317,7 @@ const config = {
       },
       {
         source: '/docs/guides/component-library',
-        destination: '/docs/design-systems/overview',
+        destination: '/docs/design-systems/setup',
         permanent: true
       },
 
@@ -393,7 +393,7 @@ const config = {
       },
       {
         source: '/docs/styling/installation',
-        destination: '/docs/get-started/installation',
+        destination: '/docs/get-started/cli',
         permanent: true
       },
       {
@@ -466,7 +466,7 @@ const config = {
       // moved to Styling, JSX Style Context split into JSX Recipes + Guides ---
       {
         source: '/docs/recipes/recipes',
-        destination: '/docs/recipes/overview',
+        destination: '/docs/recipes/atomic-recipe',
         permanent: true
       },
       {
@@ -675,6 +675,29 @@ const config = {
       {
         source: '/docs/get-started/eslint-oxlint-plugin',
         destination: '/docs/get-started/eslint-plugin',
+        permanent: true
+      },
+
+      // --- Overview pages removed: Installation, Styling, Recipes, and
+      // Design Systems now land straight on their first real page ---
+      {
+        source: '/docs/get-started/installation',
+        destination: '/docs/get-started/cli',
+        permanent: true
+      },
+      {
+        source: '/docs/styling/overview',
+        destination: '/docs/styling/writing-styles',
+        permanent: true
+      },
+      {
+        source: '/docs/recipes/overview',
+        destination: '/docs/recipes/atomic-recipe',
+        permanent: true
+      },
+      {
+        source: '/docs/design-systems/overview',
+        destination: '/docs/design-systems/setup',
         permanent: true
       }
     ]

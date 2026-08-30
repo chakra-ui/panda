@@ -55,7 +55,7 @@ Rspack and Rolldown work through the webpack and Rollup adapters respectively.
 
 ## What gets rewritten
 
-`css()` calls, [pattern](/docs/styling/patterns) calls, [recipe](/docs/recipes/overview) calls, and JSX style props
+`css()` calls, [pattern](/docs/styling/patterns) calls, [recipe](/docs/recipes/atomic-recipe) calls, and JSX style props
 on the styled factory. Patterns and factory elements are inlined too, so `<Stack gap="4">` becomes a plain `<div>`
 with a class string and the pattern function disappears.
 

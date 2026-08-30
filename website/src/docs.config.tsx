@@ -114,7 +114,6 @@ export const docsTabs: TabItem[] = [
       {
         title: 'Installation',
         items: [
-          { title: 'Overview', url: 'installation' },
           { title: 'CLI', url: 'cli' },
           { title: 'PostCSS', url: 'postcss' },
           { title: 'Framework Guides', url: 'framework-guides' },
@@ -187,7 +186,6 @@ export const docsTabs: TabItem[] = [
       {
         title: 'Core Concepts',
         items: [
-          { title: 'Overview', url: 'overview' },
           { title: 'Writing Styles', url: 'writing-styles' },
           { title: 'Conditional Styles', url: 'conditional-styles' },
           { title: 'Responsive Design', url: 'responsive-design' },
@@ -229,7 +227,6 @@ export const docsTabs: TabItem[] = [
       {
         title: 'Recipes',
         items: [
-          { title: 'Overview', url: 'overview' },
           { title: 'Atomic Recipe', url: 'atomic-recipe' },
           { title: 'Config Recipe', url: 'config-recipe' },
           { title: 'Slot Recipes', url: 'slot-recipes' }
@@ -311,7 +308,6 @@ export const docsTabs: TabItem[] = [
       {
         title: 'Component Library',
         items: [
-          { title: 'Overview', url: 'overview' },
           { title: 'Set up a library package', url: 'setup' },
           { title: 'Wrap headless UI', url: 'wrap-headless-ui' },
           { title: 'forwardProps & the styled factory', url: 'forward-props' },

@@ -75,14 +75,14 @@ export default function DocsWelcomePage() {
         <Card
           icon={<LuPaintbrush />}
           title="Styling"
-          href="/docs/styling/overview"
+          href="/docs/styling/writing-styles"
           description="css(), style props, conditions and the styled factory."
           cta="Write a style"
         />
         <Card
           icon={<LuLayers />}
           title="Recipes"
-          href="/docs/recipes/overview"
+          href="/docs/recipes/atomic-recipe"
           description="Component styles with variants, compiled at build time."
           cta="Write a recipe"
         />
@@ -96,7 +96,7 @@ export default function DocsWelcomePage() {
         <Card
           icon={<LuBlocks />}
           title="Design Systems"
-          href="/docs/design-systems/overview"
+          href="/docs/design-systems/setup"
           description="Presets, component libraries and shipping to npm."
           cta="Build a system"
         />
@@ -123,7 +123,7 @@ export default function DocsWelcomePage() {
         <Card
           icon={<LuDownload />}
           title="Install Panda"
-          href="/docs/get-started/installation"
+          href="/docs/get-started/cli"
           description="Every install path, for every framework."
         />
         <Card

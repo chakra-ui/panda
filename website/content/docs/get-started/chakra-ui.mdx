@@ -126,7 +126,7 @@ const config = defineConfig({
 })
 ```
 
-Panda's equivalent is a [recipe](/docs/recipes/overview), either colocated with `cva`/`sva` or shared globally via
+Panda's equivalent is a [recipe](/docs/recipes/atomic-recipe), either colocated with `cva`/`sva` or shared globally via
 `theme.recipes`/`theme.slotRecipes` in `panda.config.ts`, the same `base`/`variants` shape Chakra uses:
 
 ```ts filename="panda.config.ts"
@@ -157,7 +157,7 @@ import { button } from '../styled-system/recipes'
 <button className={button({ variant: 'solid' })}>Click me</button>
 ```
 
-See [Recipes](/docs/recipes/overview) and [Slot Recipes](/docs/recipes/slot-recipes).
+See [Recipes](/docs/recipes/atomic-recipe) and [Slot Recipes](/docs/recipes/slot-recipes).
 
 ## Color Modes
 

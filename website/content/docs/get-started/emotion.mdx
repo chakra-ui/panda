@@ -110,7 +110,7 @@ const Button = styled.button`
 `
 ```
 
-Panda's [recipes](/docs/recipes/overview) replace this with a typed, declarative variant map, no manual prop-to-style
+Panda's [recipes](/docs/recipes/atomic-recipe) replace this with a typed, declarative variant map, no manual prop-to-style
 branching:
 
 ```ts filename="button.ts"
@@ -131,7 +131,7 @@ export const button = cva({
 ```
 
 `button({ variant: 'accent' })` is a type error if `accent` was never defined, the hand-rolled version above has no
-equivalent safety net. See [Recipes](/docs/recipes/overview) and [Slot Recipes](/docs/recipes/slot-recipes).
+equivalent safety net. See [Recipes](/docs/recipes/atomic-recipe) and [Slot Recipes](/docs/recipes/slot-recipes).
 
 ## Color Modes
 

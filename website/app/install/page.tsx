@@ -53,7 +53,7 @@ export default function InstallPage() {
         <Card
           kicker="Existing app"
           title="Add Panda to your app"
-          href="/docs/get-started/installation"
+          href="/docs/get-started/cli"
           description="Drop Panda into a project that already has styles."
           cta="Setup guide"
         />

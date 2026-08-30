@@ -204,18 +204,24 @@ interface TabLinkProps {
   active: boolean
 }
 
+/**
+ * Tabs whose landing page isn't `overview` (removed on several tabs so the
+ * tab jumps straight into real content instead of an index page).
+ */
+const TAB_LANDING_HREF: Record<string, string> = {
+  'get-started': '/docs',
+  styling: '/docs/styling/writing-styles',
+  recipes: '/docs/recipes/atomic-recipe',
+  theming: '/docs/theming/tokens',
+  'design-systems': '/docs/design-systems/setup'
+}
+
 function TabLink({ tab, active }: TabLinkProps) {
   const Icon = TAB_ICONS[tab.key]
 
   return (
     <Link
-      href={
-        tab.key === 'get-started'
-          ? '/docs'
-          : tab.key === 'theming'
-            ? '/docs/theming/tokens'
-            : `/docs/${tab.key}`
-      }
+      href={TAB_LANDING_HREF[tab.key] ?? `/docs/${tab.key}`}
       aria-current={active ? 'page' : undefined}
       className={css({
         position: 'relative',
