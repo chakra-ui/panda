@@ -11,6 +11,11 @@ const config = {
   async redirects() {
     return [
       {
+        source: '/docs/styling/template-literals',
+        destination: '/docs/styling/styled-components',
+        permanent: true
+      },
+      {
         source: '/docs/getting-started',
         destination: '/docs/styling/getting-started',
         permanent: true
