@@ -28,7 +28,7 @@ export const Breadcrumb = ({ slug }: Props) => {
 
   const trail = [
     { label: tab.title, href: `/docs/${tab.key}/overview` },
-    group ? { label: group.title } : undefined
+    group && group.title !== tab.title ? { label: group.title } : undefined
   ].filter(Boolean) as { label: string; href?: string }[]
 
   return (
@@ -36,7 +36,7 @@ export const Breadcrumb = ({ slug }: Props) => {
       {trail.map((crumb, index) => {
         const isLast = index === trail.length - 1
         return (
-          <HStack key={crumb.label} gap="2">
+          <HStack key={`${crumb.label}-${index}`} gap="2">
             {crumb.href && !isLast ? (
               <Link href={crumb.href} className={crumbStyles}>
                 {crumb.label}
