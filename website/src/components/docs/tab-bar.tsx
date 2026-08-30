@@ -239,7 +239,7 @@ function TabLink({ tab, active }: TabLinkProps) {
           right: '3',
           bottom: '-1px',
           height: '2px',
-          bg: active ? 'accent' : 'border',
+          bg: active ? 'accent' : 'transparent',
           transitionProperty: 'background',
           transitionDuration: '200ms'
         }

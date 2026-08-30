@@ -12,7 +12,7 @@ export const drawerSlotRecipe = sva({
       top: 0,
       w: '100vw',
       h: '100dvh',
-      zIndex: 'overlay',
+      zIndex: '40',
       _open: {
         animationName: 'fade-in',
         animationDuration: '200ms'
@@ -29,7 +29,7 @@ export const drawerSlotRecipe = sva({
       position: 'fixed',
       insetInlineStart: 0,
       top: 0,
-      zIndex: 'modal',
+      zIndex: '50',
       overscrollBehaviorY: 'none'
     },
     content: {
@@ -38,7 +38,7 @@ export const drawerSlotRecipe = sva({
       position: 'relative',
       width: '100%',
       outline: 0,
-      zIndex: 'modal',
+      zIndex: '50',
       textStyle: 'sm',
       maxH: '100dvh',
       color: 'inherit',

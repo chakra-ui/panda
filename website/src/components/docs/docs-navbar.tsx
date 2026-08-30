@@ -100,7 +100,13 @@ export function DocsNavbar() {
           })}
         </HStack>
 
-        <Box flex="1" display="flex" justifyContent="center" maxW={{ base: 'none', md: '32rem' }}>
+        <Box
+          flex={{ base: '0 0 auto', md: '1' }}
+          ml={{ base: 'auto', md: '0' }}
+          display="flex"
+          justifyContent="center"
+          maxW={{ base: 'none', md: '32rem' }}
+        >
           <CommandMenu
             trigger={
               <SearchButton
@@ -117,7 +123,7 @@ export function DocsNavbar() {
             href="https://play.panda-css.com/"
             newWindow
             className={css({
-              display: 'flex',
+              display: { base: 'none', lg: 'flex' },
               alignItems: 'center',
               px: '3',
               py: '2',
@@ -140,7 +146,7 @@ export function DocsNavbar() {
               href={docsConfig.docsRepositoryBase}
               newWindow
               className={css({
-                display: 'flex',
+                display: { base: 'none', lg: 'flex' },
                 p: '2',
                 color: 'currentColor',
                 rounded: 'md',
@@ -154,6 +160,7 @@ export function DocsNavbar() {
 
           <ThemeSwitch
             className={css({
+              display: { base: 'none', lg: 'flex' },
               p: '2',
               rounded: 'md',
               _hover: { bg: 'bg.subtle' }

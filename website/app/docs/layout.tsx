@@ -1,4 +1,5 @@
 import { DocsNavbar } from '@/components/docs/docs-navbar'
+import { MobileBrowse } from '@/components/docs/mobile-browse'
 import { TabBar } from '@/components/docs/tab-bar'
 import { SiteFooter } from '@/components/docs/site-footer'
 import { css } from '@/styled-system/css'
@@ -11,7 +12,7 @@ export default function DocsLayout(props: React.PropsWithChildren) {
       className={css({
         '--navbar-height': '4rem',
         '--menu-height': '3.75rem',
-        '--banner-height': '2.5rem',
+        '--banner-height': { base: '3.5rem', md: '2.5rem' },
         '--tabbar-height': '2.75rem'
       })}
     >
@@ -35,6 +36,7 @@ export default function DocsLayout(props: React.PropsWithChildren) {
       >
         {children}
       </main>
+      <MobileBrowse />
       <SiteFooter />
     </div>
   )

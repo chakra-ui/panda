@@ -1,7 +1,7 @@
 import { SitePage } from '@/components/site-page'
 import { generateOgImageUrl } from '@/lib/og-image'
 import { showcases, type Showcase } from '@/showcase'
-import { css, cx } from '@/styled-system/css'
+import { css } from '@/styled-system/css'
 import { textLink } from '@/styled-system/recipes'
 import { Box } from '@/styled-system/jsx'
 import type { Metadata } from 'next'
@@ -28,7 +28,6 @@ export const metadata: Metadata = {
 }
 
 const mediaCover = css({ objectFit: 'cover' })
-const mediaWide = css({ aspectRatio: '2 / 1' })
 const mediaTall = css({ aspectRatio: '3 / 2' })
 
 const cardStyles = css({
@@ -45,35 +44,28 @@ const cardStyles = css({
   _hover: { borderColor: 'fg.subtle', bg: 'bg.subtle' }
 })
 
-function ShowcaseCard(props: { data: Showcase; featured?: boolean }) {
-  const { data, featured } = props
+function ShowcaseCard(props: { data: Showcase }) {
+  const { data } = props
 
   return (
     <a
       href={data.url}
       target="_blank"
       rel="noopener noreferrer"
-      className={cx(
-        cardStyles,
-        featured ? css({ gridColumn: { base: 'auto', md: 'span 2' } }) : undefined
-      )}
+      className={cardStyles}
     >
       <Box
         position="relative"
         w="full"
         bg="bg.subtle"
         overflow="hidden"
-        className={featured ? mediaWide : mediaTall}
+        className={mediaTall}
       >
         <Image
           src={data.image}
           alt={`The ${data.name} website, built with Panda CSS`}
           fill
-          sizes={
-            featured
-              ? '(max-width: 768px) 100vw, 66vw'
-              : '(max-width: 768px) 100vw, 33vw'
-          }
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           className={mediaCover}
         />
       </Box>
@@ -104,17 +96,14 @@ function ShowcaseCard(props: { data: Showcase; featured?: boolean }) {
 }
 
 export default function ShowcasePage() {
-  const [featured, ...rest] = showcases
-
   return (
     <SitePage kicker="Built with Panda" title={title} description={description}>
       <Box
         display="grid"
-        gridTemplateColumns={{ base: '1fr', md: 'repeat(3, minmax(0, 1fr))' }}
+        gridTemplateColumns={{ base: '1fr', sm: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(3, minmax(0, 1fr))' }}
         gap="5"
       >
-        <ShowcaseCard data={featured} featured />
-        {rest.map(item => (
+        {showcases.map(item => (
           <ShowcaseCard key={item.name} data={item} />
         ))}
       </Box>

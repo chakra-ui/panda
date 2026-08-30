@@ -84,7 +84,9 @@ export const CourseBanner = () => {
         <HStack
           justify="center"
           px="2"
-          py="2"
+          py="0"
+          minH="var(--banner-height, 2.5rem)"
+          alignItems="center"
           rounded="sm"
           w="full"
           pos="relative"

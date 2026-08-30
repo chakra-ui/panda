@@ -133,7 +133,7 @@ interface MobileNavDrawerProps {
 export const MobileNavDrawer = (props: MobileNavDrawerProps) => {
   const { trigger, children } = props
   const dialog = useDialog()
-  const classes = drawerSlotRecipe({ size: 'md', placement: 'start' })
+  const classes = drawerSlotRecipe({ size: 'xs', placement: 'start' })
   const pathname = usePathname()
 
   const isLgUp = useMatchMedia('(min-width: 1024px)')
