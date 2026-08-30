@@ -7,9 +7,13 @@ interface ThemeSwitchProps {
   className?: string
 }
 
+// next-themes stamps the class before hydration, so CSS picks the icon.
+// Choosing in JS would render a sun on the server and a moon on the client.
+const sunIcon = css({ _dark: { display: 'none' } })
+const moonIcon = css({ display: 'none', _dark: { display: 'block' } })
+
 export function ThemeSwitch({ className }: ThemeSwitchProps) {
-  const { setTheme, resolvedTheme, theme = '' } = useTheme()
-  const IconToUse = resolvedTheme === 'dark' ? MoonIcon : SunIcon
+  const { setTheme, theme = '' } = useTheme()
 
   return (
     <Select
@@ -35,7 +39,8 @@ export function ThemeSwitch({ className }: ThemeSwitchProps) {
               textTransform: 'capitalize'
             })}
           >
-            <IconToUse />
+            <SunIcon className={sunIcon} />
+            <MoonIcon className={moonIcon} />
           </div>
         )
       }}

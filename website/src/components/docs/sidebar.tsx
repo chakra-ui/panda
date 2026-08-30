@@ -81,13 +81,13 @@ export function Sidebar({ slug: currentSlug, tabKey: fallbackTab }: Props) {
   const classes = docNav({ kind: 'sidebar' })
 
   return (
-    <Stack as="nav" aria-label={`${tab.title} pages`} gap="1">
+    <Stack as="nav" aria-label={`${tab.title} pages`} gap="7">
       {tab.items.map(group => (
         <div key={group.title}>
           <div className={classes.label}>
             {(() => {
               const GroupIcon = GROUP_ICONS[group.title] ?? LuFolderTree
-              return <GroupIcon size={15} aria-hidden />
+              return <GroupIcon size={16} aria-hidden />
             })()}
             <span>{group.title}</span>
             {group.tag && <Badge variant="solid">{group.tag}</Badge>}

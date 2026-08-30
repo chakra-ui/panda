@@ -52,7 +52,7 @@ export default function DocsWelcomePage() {
         </Box>
       </Box>
 
-      <Box as="article" flex="1" minW="0" maxW="64rem" px="6" pt="10">
+      <Box as="article" flex="1" minW="0" maxW="64rem" mx="auto" px="6" pt="10">
       <Box textStyle="eyebrow" color="fg.subtle" mb="4">
         Docs
       </Box>

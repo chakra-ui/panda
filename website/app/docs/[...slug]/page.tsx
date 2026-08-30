@@ -91,6 +91,7 @@ export default async function DocsPage(props: DocsPageProps) {
           flex="1"
           minW="0"
           maxW="52rem"
+          mx="auto"
           px="6"
           pt="10"
         >
@@ -109,8 +110,8 @@ export default async function DocsPage(props: DocsPageProps) {
         </Box>
 
         {/* Table of Contents */}
+        {!doc.hideToc && (
         <Box
-          visibility={doc.hideToc ? 'hidden' : 'visible'}
           display={{ base: 'none', xl: 'block' }}
           flexShrink="0"
           w="72"
@@ -124,6 +125,7 @@ export default async function DocsPage(props: DocsPageProps) {
             <Toc data={doc.toc} />
           </Box>
         </Box>
+        )}
       </Box>
 
       {!doc.hideToc && <MobileToc data={doc.toc} />}

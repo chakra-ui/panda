@@ -42,6 +42,11 @@ export const segmentedRecipe = defineRecipe({
       }
     },
     indicator: {
+      position: 'absolute',
+      left: 'var(--left)',
+      top: 'var(--top)',
+      width: 'var(--width)',
+      height: 'var(--height)',
       bg: 'bg.muted',
       rounded: 'sm',
       zIndex: '0'
@@ -85,8 +90,7 @@ export const segmentedRecipe = defineRecipe({
         item: {
           minH: '9',
           px: '4',
-          gap: '2',
-          _checked: { fontWeight: 'semibold' }
+          gap: '2'
         }
       }),
       card: parts({

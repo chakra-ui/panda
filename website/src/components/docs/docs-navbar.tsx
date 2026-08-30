@@ -64,6 +64,7 @@ export function DocsNavbar() {
         gap={{ base: '1', md: '4' }}
         justifyContent={{ base: 'flex-start', md: 'space-between' }}
       >
+        <HStack gap={{ base: '1', md: '4' }} flexShrink="0">
         <Anchor
           href="/"
           aria-label="Panda CSS home"
@@ -98,6 +99,7 @@ export function DocsNavbar() {
               </Link>
             )
           })}
+        </HStack>
         </HStack>
 
         <Box

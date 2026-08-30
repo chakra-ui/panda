@@ -8,7 +8,7 @@ export const HeroSection = () => {
   return (
     <panda.section bg="bg.main">
       <Box maxW="8xl" mx="auto" px={{ base: '4', md: '6', lg: '8' }}>
-        <Box pt="10" pb="12" position="relative">
+        <Box pt={{ base: '12', md: '20' }} pb={{ base: '16', md: '24' }} position="relative">
           <Flex gap="8" align="center">
             <Stack gap="6" flex="1" minW="0">
               <panda.p
