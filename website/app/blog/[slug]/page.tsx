@@ -1,3 +1,4 @@
+import { LuRss } from 'react-icons/lu'
 import { AuthorLine } from '@/components/blog/author-line'
 import { blog } from '.velite'
 import { MDXContent } from '@/components/docs/mdx-content'
@@ -106,7 +107,14 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
               {post.description}
             </panda.p>
           )}
-          <Box display="flex" alignItems="center" gap="3" flexWrap="wrap">
+          <Box
+            display="flex"
+            alignItems="center"
+            gap="3"
+            flexWrap="wrap"
+            justifyContent="space-between"
+          >
+            <Box display="flex" alignItems="center" gap="3" flexWrap="wrap">
             <panda.span textStyle="eyebrow" color="fg.subtle">
               {formatDate(post.date)}
             </panda.span>
@@ -120,6 +128,26 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
                 </panda.span>
               </>
             ) : null}
+            </Box>
+
+            <a
+              href="/rss.xml"
+              aria-label="Subscribe to the RSS feed"
+              className={css({
+                display: 'flex',
+                alignItems: 'center',
+                gap: '2',
+                textStyle: 'eyebrow',
+                color: 'fg.subtle',
+                textDecoration: 'none',
+                transitionProperty: 'color',
+                transitionDuration: '150ms',
+                _hover: { color: 'fg' }
+              })}
+            >
+              <LuRss size={14} aria-hidden />
+              RSS
+            </a>
           </Box>
 
           <Box pt="2">
