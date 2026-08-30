@@ -1,14 +1,17 @@
 export interface TeamMember {
   login: string
   role: string
+  /** Alumni shipped the work Panda stands on, but are not active today. */
+  status: 'active' | 'alumni'
 }
 
 export const teamMembers: TeamMember[] = [
-  { login: 'segunadebayo', role: 'Creator & Maintainer' },
-  { login: 'astahmer', role: 'Creator' },
-  { login: 'cschroeter', role: 'Creator @ Park UI' },
-  { login: 'anubra266', role: 'Creator @ Tark UI' },
-  { login: 'estheragbaje', role: 'Developer Marketing' }
+  { login: 'segunadebayo', role: 'Creator & Maintainer', status: 'active' },
+  { login: 'Adebesin-Cell', role: 'Maintainer', status: 'active' },
+  { login: 'anubra266', role: 'Maintainer', status: 'active' },
+  { login: 'astahmer', role: 'Creator', status: 'alumni' },
+  { login: 'cschroeter', role: 'Creator @ Park UI', status: 'alumni' },
+  { login: 'estheragbaje', role: 'Developer Marketing', status: 'alumni' }
 ]
 
 export interface NavItem {

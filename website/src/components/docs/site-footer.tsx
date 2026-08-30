@@ -1,4 +1,5 @@
 import { docsConfig } from '@/docs.config'
+import { Icon } from '@/theme/icons'
 import { css } from '@/styled-system/css'
 import { Box, Stack } from '@/styled-system/jsx'
 import Link from 'next/link'
@@ -91,9 +92,18 @@ export const SiteFooter = () => {
           }}
         >
           <Stack gap="4" gridColumn={{ base: '1 / -1', lg: 'auto' }}>
-            <Box textStyle="xl" fontWeight="bold" letterSpacing="tight">
-              panda
-            </Box>
+            <Link
+              href="/"
+              aria-label="Panda CSS home"
+              className={css({
+                display: 'flex',
+                alignItems: 'center',
+                width: 'fit-content',
+                '& svg': { height: '1.75rem', width: 'auto' }
+              })}
+            >
+              <Icon icon="LogoWithText" />
+            </Link>
             <Box textStyle="sm" color="fg.muted" maxW="16rem" lineHeight="1.6">
               Build modern websites with build-time, type-safe CSS-in-JS.
             </Box>
@@ -164,8 +174,8 @@ export const SiteFooter = () => {
           justifyContent="space-between"
         >
           <span>Copyright © {new Date().getFullYear()}</span>
-          <a
-            href="https://www.adebayosegun.com/"
+          <Link
+            href="/team"
             className={css({
               color: 'inherit',
               textDecoration: 'none',
@@ -173,7 +183,7 @@ export const SiteFooter = () => {
             })}
           >
             Proudly made by the Chakra team
-          </a>
+          </Link>
         </Box>
       </Box>
     </Box>

@@ -1,6 +1,10 @@
 import { SitePage } from '@/components/site-page'
 import { teamMembers } from '@/docs.config'
-import { fetchGithubUsers, type GitHubUser } from '@/lib/github-utils'
+import {
+  fetchContributors,
+  fetchGithubUsers,
+  type GitHubUser
+} from '@/lib/github-utils'
 import { generateOgImageUrl } from '@/lib/og-image'
 import { css } from '@/styled-system/css'
 import { textLink } from '@/styled-system/recipes'
@@ -109,19 +113,81 @@ function MemberRow({ user }: { user: GitHubUser }) {
   )
 }
 
+function Section(props: { title: string; children: React.ReactNode }) {
+  return (
+    <Box mb="14">
+      <Box textStyle="eyebrow" color="fg.subtle" mb="2">
+        {props.title}
+      </Box>
+      <Box borderBottomWidth="1px" borderColor="border">
+        {props.children}
+      </Box>
+    </Box>
+  )
+}
+
 export default async function TeamPage() {
-  const users = await fetchGithubUsers(teamMembers.map(member => member.login))
+  const [users, contributors] = await Promise.all([
+    fetchGithubUsers(teamMembers.map(member => member.login)),
+    fetchContributors(teamMembers.map(member => member.login))
+  ])
+
+  const statusOf = (login: string) =>
+    teamMembers.find(member => member.login === login)?.status
+  const active = users.filter(user => statusOf(user.login) === 'active')
+  const alumni = users.filter(user => statusOf(user.login) === 'alumni')
 
   return (
-    <SitePage kicker="Maintainers" title={title} description={description}>
-      <Box borderBottomWidth="1px" borderColor="border">
-        {users.map(user => (
+    <SitePage kicker="Team" title={title} description={description}>
+      <Section title="Maintainers">
+        {active.map(user => (
           <MemberRow key={user.login} user={user} />
         ))}
-      </Box>
+      </Section>
+
+      {alumni.length > 0 && (
+        <Section title="Alumni">
+          {alumni.map(user => (
+            <MemberRow key={user.login} user={user} />
+          ))}
+        </Section>
+      )}
+
+      {contributors.length > 0 && (
+        <Box mb="14">
+          <Box textStyle="eyebrow" color="fg.subtle" mb="4">
+            Contributors · {contributors.length}
+          </Box>
+          <Box display="flex" flexWrap="wrap" gap="2">
+            {contributors.map(person => (
+              <a
+                key={person.login}
+                href={person.html_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={person.login}
+                className={css({
+                  display: 'flex',
+                  rounded: 'full',
+                  transitionProperty: 'opacity',
+                  transitionDuration: '150ms',
+                  _hover: { opacity: 0.7 }
+                })}
+              >
+                <Image
+                  src={person.avatar_url}
+                  alt={person.login}
+                  width={40}
+                  height={40}
+                  className={css({ rounded: 'full', bg: 'bg.muted' })}
+                />
+              </a>
+            ))}
+          </Box>
+        </Box>
+      )}
 
       <Box
-        mt="16"
         pt="10"
         borderTopWidth="1px"
         borderColor="border"
@@ -129,7 +195,7 @@ export default async function TeamPage() {
         color="fg.muted"
         maxW="42rem"
       >
-        Panda also carries work from hundreds of contributors.{' '}
+        Panda is built in the open.{' '}
         <a
           href="https://github.com/chakra-ui/panda/blob/main/CONTRIBUTING.md"
           target="_blank"
