@@ -336,15 +336,16 @@ fn is_valid_prop_runtime(ctx: CodegenContext<'_>) -> String {
     let props = serde_json::to_string(&props).expect("css prop names should serialize");
 
     format!(
-        r"const cssPropertySet = new Set({props})
+        r#"const cssPropertySet = new Set({props})
+const cssPropertySelectorRe = /&|@/
 
 export function isCssProperty(value) {{
-  return cssPropertySet.has(value)
+  return cssPropertySet.has(value) || value.startsWith("--") || cssPropertySelectorRe.test(value)
 }}
 
 export function splitCssProps(props) {{
   return splitProps(props, isCssProperty)
-}}"
+}}"#
     )
 }
 

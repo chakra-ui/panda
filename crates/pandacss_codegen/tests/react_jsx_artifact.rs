@@ -241,6 +241,9 @@ fn is_valid_prop_includes_condition_keys() {
     assert!(code.contains("\"_dark\""));
     assert!(code.contains("\"md\""));
     assert!(code.contains("\"base\""));
+    assert!(code.contains("value.startsWith(\"--\")"));
+    assert!(code.contains("const cssPropertySelectorRe = /&|@/"));
+    assert!(code.contains("cssPropertySelectorRe.test(value)"));
 }
 
 #[test]
