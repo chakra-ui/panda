@@ -113,7 +113,13 @@ export const docsTabs: TabItem[] = [
       },
       {
         title: 'Installation',
-        items: [{ title: 'Installation', url: 'installation' }]
+        items: [
+          { title: 'Overview', url: 'installation' },
+          { title: 'CLI', href: '/docs/compiler/cli' },
+          { title: 'PostCSS', href: '/docs/compiler/postcss' },
+          { title: 'Framework Guides', href: '/docs/compiler/overview' },
+          { title: 'Storybook', href: '/docs/compiler/storybook' }
+        ]
       },
       {
         title: 'Migration',
