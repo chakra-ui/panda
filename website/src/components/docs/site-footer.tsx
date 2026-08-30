@@ -29,10 +29,10 @@ export const footerColumns: FooterColumn[] = [
   {
     title: 'Toolkit',
     links: [
-      { title: 'ESLint & Oxlint', href: '/docs/get-started/eslint-oxlint-plugin' },
-      { title: 'Editor & IDE', href: '/docs/tooling/editor-tooling' },
+      { title: 'ESLint & Oxlint', href: '/docs/get-started/eslint-plugin' },
+      { title: 'Editor & IDE', href: '/docs/get-started/editor-tooling' },
       { title: 'MCP server', href: '/docs/get-started/mcp-server' },
-      { title: 'Studio', href: '/docs/tooling/studio' },
+      { title: 'Studio', href: '/docs/theming/studio' },
       { title: 'Ecosystem', href: '/ecosystem' },
       { title: 'Playground', href: 'https://play.panda-css.com/' }
     ]

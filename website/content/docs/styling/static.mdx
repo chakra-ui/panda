@@ -12,7 +12,7 @@ exists, but static analysis can't prove which one.
 regardless of whether it ever sees them called, and it generates them unconditionally.
 
 <Callout type="info">
-  Looking for build-time rewriting of `css()` calls into plain class strings? That's [source transforms](/docs/compiler/transformer), a separate opt-in feature.
+  Looking for build-time rewriting of `css()` calls into plain class strings? That's [source transforms](/docs/get-started/source-transforms), a separate opt-in feature.
 </Callout>
 
 ```js filename="panda.config.js"
@@ -129,7 +129,7 @@ export default defineConfig({
 ```
 
 That's usually overkill for an app, but it's exactly what you want for testing with
-[Storybook](/docs/compiler/storybook): every variant needs to render, whether or not your stories happen to call it.
+[Storybook](/docs/get-started/storybook): every variant needs to render, whether or not your stories happen to call it.
 
 ## Generating patterns
 

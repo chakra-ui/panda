@@ -81,7 +81,7 @@ export default function InstallPage() {
         <Card
           title="Documentation"
           href="/docs"
-          description="Concepts, recipes, theming and the compiler."
+          description="Concepts, recipes, theming and design systems."
         />
         <Card
           title="Reference"

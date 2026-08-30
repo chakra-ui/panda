@@ -12,13 +12,11 @@ import {
   LuBlocks,
   LuBookOpen,
   LuChevronDown,
-  LuCog,
   LuLayers,
   LuPaintbrush,
   LuPalette,
   LuRocket,
-  LuUsers,
-  LuWrench
+  LuUsers
 } from 'react-icons/lu'
 import type { IconType } from 'react-icons'
 
@@ -28,8 +26,6 @@ export const TAB_ICONS: Record<string, IconType> = {
   recipes: LuLayers,
   theming: LuPalette,
   'design-systems': LuBlocks,
-  compiler: LuCog,
-  tooling: LuWrench,
   reference: LuBookOpen
 }
 

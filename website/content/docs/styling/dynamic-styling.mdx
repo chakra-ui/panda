@@ -39,7 +39,7 @@ fix this:
 
 ### Using Static CSS
 
-Panda supports a [`staticCss`](/docs/compiler/static) option in the config you can use to pre-generate some styles ahead
+Panda supports a [`staticCss`](/docs/styling/static) option in the config you can use to pre-generate some styles ahead
 of time.
 
 ```tsx filename="panda.config.ts"
@@ -507,7 +507,7 @@ All of this with complete type-safety and without having to make drastic changes
 ## Config recipes
 
 Config recipes only emit CSS for variants Panda can statically analyze. `button({ size })` works at runtime, but you'll
-only get `defaultVariants` in the stylesheet unless you add [`staticCss`](/docs/compiler/static#generating-recipes) or
+only get `defaultVariants` in the stylesheet unless you add [`staticCss`](/docs/styling/static#generating-recipes) or
 use string literals in the call.
 
 See [Dynamic variant props](/docs/recipes/config-recipe#dynamic-variant-props).

@@ -3,7 +3,7 @@ title: Performance & Optimization
 description: What actually costs time in a Panda project, build time, IDE responsiveness, and strictTokens, and how to check before you tune.
 ---
 
-Panda ships zero runtime cost, see [How Panda works](/docs/compiler/how-panda-works), but that doesn't mean nothing
+Panda ships zero runtime cost, see [How Panda works](/docs/styling/how-panda-works), but that doesn't mean nothing
 costs time. Two different things get blamed under "Panda is slow": the build (`panda cssgen`/`codegen`, or your
 bundler plugin) and the editor (TypeScript checking your style calls). They have different causes and different
 fixes.
@@ -54,8 +54,8 @@ size of what TypeScript has to check on every style call.
 
 ## See also
 
-- [How Panda works](/docs/compiler/how-panda-works) for why there's no runtime cost to weigh against these build/IDE
+- [How Panda works](/docs/styling/how-panda-works) for why there's no runtime cost to weigh against these build/IDE
   costs in the first place.
 - [Debugging](/docs/reference/debugging) for `--profile`, `panda debug`, and `PANDA_DEBUG`.
-- [Static CSS Generation](/docs/compiler/static) and [Federated Micro-Frontends](/docs/design-systems/federated-microfrontends)
+- [Static CSS Generation](/docs/styling/static) and [Federated Micro-Frontends](/docs/design-systems/federated-microfrontends)
   for scaling considerations once you're shipping to multiple apps, not just optimizing one.

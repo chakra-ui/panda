@@ -23,8 +23,8 @@ Both wrap the same Rust crates, so Node and browser builds produce the same CSS.
 per file, no TypeScript program in the hot path — and a smaller install, since the `ts-morph` dependency tree is gone.
 Output stays in parity with v1 except for the deliberate changes below.
 
-See [The compiler engine](/docs/compiler/compiler-engine) for the pipeline, and
-[How Panda works](/docs/compiler/how-panda-works) for the model it keeps.
+See [The compiler engine](/docs/styling/compiler-engine) for the pipeline, and
+[How Panda works](/docs/styling/how-panda-works) for the model it keeps.
 
 ## Try the beta
 
@@ -239,7 +239,7 @@ Beyond parity, v2 adds features worth turning on:
 - **Design systems.** `panda lib` publishes a component library; apps consume it with the `designSystem` config field.
   It replaces `panda ship`. See [Building a design system](/docs/design-systems/building-a-design-system) and
   [Consuming a design system](/docs/design-systems/consuming-a-design-system).
-- **Linting on the v2 engine.** The [ESLint & oxlint plugin](/docs/get-started/eslint-oxlint-plugin) lints against the
+- **Linting on the v2 engine.** The [ESLint & oxlint plugin](/docs/get-started/eslint-plugin) lints against the
   same extraction the build uses.
 
 ## Still being finalized
@@ -247,7 +247,7 @@ Beyond parity, v2 adds features worth turning on:
 Honest gaps in the beta. Expect them to change before stable:
 
 - **Studio.** The Astro-based `@pandacss/studio` is gone. A lighter, CLI-generated studio is planned. See
-  [Studio in v2](/docs/tooling/studio-v2).
+  [Studio in v2](/docs/theming/studio-v2).
 - **PostCSS plugin.** `@pandacss/postcss` v2 is experimental. If it misbehaves, use the Vite plugin or `panda build`.
 - **CSS minification.** `minify: true` works in the native emitter; full parity with the v1 LightningCSS path is still
   open.
@@ -256,7 +256,7 @@ Honest gaps in the beta. Expect them to change before stable:
 
 ## See also
 
-- [The compiler engine](/docs/compiler/compiler-engine) — the Rust pipeline underneath v2.
+- [The compiler engine](/docs/styling/compiler-engine) — the Rust pipeline underneath v2.
 - [Config](/docs/reference/config) — the full v2 config reference.
 - [CLI](/docs/reference/cli) — every command and flag.
-- [How Panda works](/docs/compiler/how-panda-works) — the mental model v2 keeps.
+- [How Panda works](/docs/styling/how-panda-works) — the mental model v2 keeps.

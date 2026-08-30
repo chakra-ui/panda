@@ -31,7 +31,7 @@ One shared core, exposed to editors two ways depending on what the user's TypeSc
 Both ship together rather than one first and the other later, since betting entirely on the classic plugin API is risky
 while TypeScript's own team is consolidating around LSP for the newer compiler. Either way, the
 actual token/recipe resolution logic lives once in a shared `@pandacss/compiler/tooling` core, both transports are
-thin wrappers over it, and it's the same core the [ESLint & OXLint Plugin](/docs/get-started/eslint-oxlint-plugin) is
+thin wrappers over it, and it's the same core the [ESLint & OXLint Plugin](/docs/get-started/eslint-plugin) is
 expected to use for its project metadata too.
 
 ## What it's meant to provide
@@ -50,5 +50,5 @@ expected to use for its project metadata too.
 - [Upgrading to v2](/docs/get-started/upgrading-to-v2) for the broader rewrite this belongs to.
 - [Diagnostics Reference](/docs/reference/diagnostics) for the specific issues this tooling is meant to surface
   live.
-- [ESLint & OXLint Plugin](/docs/get-started/eslint-oxlint-plugin) for the sibling tool sharing the same underlying
+- [ESLint & OXLint Plugin](/docs/get-started/eslint-plugin) for the sibling tool sharing the same underlying
   project metadata.

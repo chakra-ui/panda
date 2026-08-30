@@ -11,10 +11,15 @@ export const GET = async () => {
         'The complete Panda CSS documentation across every section'
     },
     {
+      title: 'Get Started',
+      href: `${getPublicUrl('/llms.txt/get-started')}`,
+      description:
+        'Getting started, installation, migrating from another tool, and tooling like ESLint/OXLint plugins'
+    },
+    {
       title: 'Styling',
       href: `${getPublicUrl('/llms.txt/styling')}`,
-      description:
-        'Getting started, installation, core concepts, styling APIs, and migrating from another tool'
+      description: 'Core concepts, styling APIs, and how the compiler works under the hood'
     },
     {
       title: 'Theming',

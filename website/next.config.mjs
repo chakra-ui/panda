@@ -32,117 +32,117 @@ const config = {
       },
       {
         source: '/docs/styling/how-panda-works',
-        destination: '/docs/compiler/how-panda-works',
+        destination: '/docs/styling/how-panda-works',
         permanent: true
       },
       {
         source: '/docs/styling/compiler-engine',
-        destination: '/docs/compiler/compiler-engine',
+        destination: '/docs/styling/compiler-engine',
         permanent: true
       },
       {
         source: '/docs/styling/performance-optimization',
-        destination: '/docs/compiler/performance-optimization',
+        destination: '/docs/styling/performance-optimization',
         permanent: true
       },
       {
         source: '/docs/styling/cli',
-        destination: '/docs/compiler/cli',
+        destination: '/docs/get-started/cli',
         permanent: true
       },
       {
         source: '/docs/styling/postcss',
-        destination: '/docs/compiler/postcss',
+        destination: '/docs/get-started/postcss',
         permanent: true
       },
       {
         source: '/docs/styling/storybook',
-        destination: '/docs/compiler/storybook',
+        destination: '/docs/get-started/storybook',
         permanent: true
       },
       {
         source: '/docs/styling/vite',
-        destination: '/docs/compiler/vite',
+        destination: '/docs/get-started/vite',
         permanent: true
       },
       {
         source: '/docs/styling/angular',
-        destination: '/docs/compiler/angular',
+        destination: '/docs/get-started/angular',
         permanent: true
       },
       {
         source: '/docs/styling/astro',
-        destination: '/docs/compiler/astro',
+        destination: '/docs/get-started/astro',
         permanent: true
       },
       {
         source: '/docs/styling/ember',
-        destination: '/docs/compiler/ember',
+        destination: '/docs/get-started/ember',
         permanent: true
       },
       {
         source: '/docs/styling/gatsby',
-        destination: '/docs/compiler/gatsby',
+        destination: '/docs/get-started/gatsby',
         permanent: true
       },
       {
         source: '/docs/styling/nextjs',
-        destination: '/docs/compiler/nextjs',
+        destination: '/docs/get-started/nextjs',
         permanent: true
       },
       {
         source: '/docs/styling/nuxt',
-        destination: '/docs/compiler/nuxt',
+        destination: '/docs/get-started/nuxt',
         permanent: true
       },
       {
         source: '/docs/styling/preact',
-        destination: '/docs/compiler/preact',
+        destination: '/docs/get-started/preact',
         permanent: true
       },
       {
         source: '/docs/styling/qwik',
-        destination: '/docs/compiler/qwik',
+        destination: '/docs/get-started/qwik',
         permanent: true
       },
       {
         source: '/docs/styling/react-router',
-        destination: '/docs/compiler/react-router',
+        destination: '/docs/get-started/react-router',
         permanent: true
       },
       {
         source: '/docs/styling/redwood',
-        destination: '/docs/compiler/redwood',
+        destination: '/docs/get-started/redwood',
         permanent: true
       },
       {
         source: '/docs/styling/remix',
-        destination: '/docs/compiler/remix',
+        destination: '/docs/get-started/remix',
         permanent: true
       },
       {
         source: '/docs/styling/rsbuild',
-        destination: '/docs/compiler/rsbuild',
+        destination: '/docs/get-started/rsbuild',
         permanent: true
       },
       {
         source: '/docs/styling/solidjs',
-        destination: '/docs/compiler/solidjs',
+        destination: '/docs/get-started/solidjs',
         permanent: true
       },
       {
         source: '/docs/styling/svelte',
-        destination: '/docs/compiler/svelte',
+        destination: '/docs/get-started/svelte',
         permanent: true
       },
       {
         source: '/docs/styling/vue',
-        destination: '/docs/compiler/vue',
+        destination: '/docs/get-started/vue',
         permanent: true
       },
       {
         source: '/docs/design-systems/static',
-        destination: '/docs/compiler/static',
+        destination: '/docs/styling/static',
         permanent: true
       },
       {
@@ -162,7 +162,7 @@ const config = {
       },
       {
         source: '/docs/reference/eslint-oxlint-plugin',
-        destination: '/docs/get-started/eslint-oxlint-plugin',
+        destination: '/docs/get-started/eslint-plugin',
         permanent: true
       },
       {
@@ -182,22 +182,22 @@ const config = {
       },
       {
         source: '/docs/tooling/eslint-oxlint-plugin',
-        destination: '/docs/get-started/eslint-oxlint-plugin',
+        destination: '/docs/get-started/eslint-plugin',
         permanent: true
       },
       {
         source: '/docs/reference/editor-tooling',
-        destination: '/docs/tooling/editor-tooling',
+        destination: '/docs/get-started/editor-tooling',
         permanent: true
       },
       {
         source: '/docs/theming/studio',
-        destination: '/docs/tooling/studio',
+        destination: '/docs/theming/studio',
         permanent: true
       },
       {
         source: '/docs/theming/studio-v2',
-        destination: '/docs/tooling/studio-v2',
+        destination: '/docs/theming/studio-v2',
         permanent: true
       },
       // Bare tab roots: the [...slug] catch-all needs at least one page segment.
@@ -208,12 +208,12 @@ const config = {
       },
       {
         source: '/docs/compiler',
-        destination: '/docs/compiler/overview',
+        destination: '/docs/get-started/framework-guides',
         permanent: true
       },
       {
         source: '/docs/tooling',
-        destination: '/docs/tooling/overview',
+        destination: '/docs/get-started',
         permanent: true
       },
       {
@@ -521,6 +521,160 @@ const config = {
       {
         source: '/docs/design-systems/ecosystem-plugins',
         destination: '/docs/theming/ecosystem-plugins',
+        permanent: true
+      },
+
+      // --- Compiler and Tooling tabs removed entirely; content redistributed
+      // to Get Started (installation content + frameworks + tooling),
+      // Styling (compiler internals), and Theming (Studio) ---
+      {
+        source: '/docs/compiler/cli',
+        destination: '/docs/get-started/cli',
+        permanent: true
+      },
+      {
+        source: '/docs/compiler/postcss',
+        destination: '/docs/get-started/postcss',
+        permanent: true
+      },
+      {
+        source: '/docs/compiler/storybook',
+        destination: '/docs/get-started/storybook',
+        permanent: true
+      },
+      {
+        source: '/docs/compiler/vite',
+        destination: '/docs/get-started/vite',
+        permanent: true
+      },
+      {
+        source: '/docs/compiler/nextjs',
+        destination: '/docs/get-started/nextjs',
+        permanent: true
+      },
+      {
+        source: '/docs/compiler/astro',
+        destination: '/docs/get-started/astro',
+        permanent: true
+      },
+      {
+        source: '/docs/compiler/vue',
+        destination: '/docs/get-started/vue',
+        permanent: true
+      },
+      {
+        source: '/docs/compiler/nuxt',
+        destination: '/docs/get-started/nuxt',
+        permanent: true
+      },
+      {
+        source: '/docs/compiler/svelte',
+        destination: '/docs/get-started/svelte',
+        permanent: true
+      },
+      {
+        source: '/docs/compiler/solidjs',
+        destination: '/docs/get-started/solidjs',
+        permanent: true
+      },
+      {
+        source: '/docs/compiler/remix',
+        destination: '/docs/get-started/remix',
+        permanent: true
+      },
+      {
+        source: '/docs/compiler/react-router',
+        destination: '/docs/get-started/react-router',
+        permanent: true
+      },
+      {
+        source: '/docs/compiler/angular',
+        destination: '/docs/get-started/angular',
+        permanent: true
+      },
+      {
+        source: '/docs/compiler/preact',
+        destination: '/docs/get-started/preact',
+        permanent: true
+      },
+      {
+        source: '/docs/compiler/qwik',
+        destination: '/docs/get-started/qwik',
+        permanent: true
+      },
+      {
+        source: '/docs/compiler/ember',
+        destination: '/docs/get-started/ember',
+        permanent: true
+      },
+      {
+        source: '/docs/compiler/gatsby',
+        destination: '/docs/get-started/gatsby',
+        permanent: true
+      },
+      {
+        source: '/docs/compiler/redwood',
+        destination: '/docs/get-started/redwood',
+        permanent: true
+      },
+      {
+        source: '/docs/compiler/rsbuild',
+        destination: '/docs/get-started/rsbuild',
+        permanent: true
+      },
+      {
+        source: '/docs/compiler/transformer',
+        destination: '/docs/get-started/source-transforms',
+        permanent: true
+      },
+      {
+        source: '/docs/compiler/overview',
+        destination: '/docs/get-started/framework-guides',
+        permanent: true
+      },
+      {
+        source: '/docs/compiler/how-panda-works',
+        destination: '/docs/styling/how-panda-works',
+        permanent: true
+      },
+      {
+        source: '/docs/compiler/compiler-engine',
+        destination: '/docs/styling/compiler-engine',
+        permanent: true
+      },
+      {
+        source: '/docs/compiler/performance-optimization',
+        destination: '/docs/styling/performance-optimization',
+        permanent: true
+      },
+      {
+        source: '/docs/compiler/static',
+        destination: '/docs/styling/static',
+        permanent: true
+      },
+      {
+        source: '/docs/tooling/editor-tooling',
+        destination: '/docs/get-started/editor-tooling',
+        permanent: true
+      },
+      {
+        source: '/docs/tooling/feedback',
+        destination: '/docs/get-started/feedback',
+        permanent: true
+      },
+      {
+        source: '/docs/tooling/studio',
+        destination: '/docs/theming/studio',
+        permanent: true
+      },
+      {
+        source: '/docs/tooling/studio-v2',
+        destination: '/docs/theming/studio-v2',
+        permanent: true
+      },
+      {
+        source: '/docs/get-started/eslint-oxlint-plugin',
+        destination: '/docs/get-started/eslint-plugin',
         permanent: true
       }
     ]

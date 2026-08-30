@@ -61,14 +61,14 @@ export default function GuidesPage() {
 
       <Section title="Set up your framework">
         <Cards columns={4}>
-          <Card title="Next.js" href="/docs/compiler/nextjs" description="App and pages router." />
-          <Card title="Vite" href="/docs/compiler/vite" description="First-class Vite support." />
-          <Card title="Astro" href="/docs/compiler/astro" description="Islands and static output." />
-          <Card title="Vue" href="/docs/compiler/vue" description="SFC style extraction." />
-          <Card title="Nuxt" href="/docs/compiler/nuxt" description="The Nuxt module." />
-          <Card title="Svelte" href="/docs/compiler/svelte" description="Svelte and SvelteKit." />
-          <Card title="Remix" href="/docs/compiler/remix" description="Remix and Vite." />
-          <Card title="Storybook" href="/docs/compiler/storybook" description="Styles in your stories." />
+          <Card title="Next.js" href="/docs/get-started/nextjs" description="App and pages router." />
+          <Card title="Vite" href="/docs/get-started/vite" description="First-class Vite support." />
+          <Card title="Astro" href="/docs/get-started/astro" description="Islands and static output." />
+          <Card title="Vue" href="/docs/get-started/vue" description="SFC style extraction." />
+          <Card title="Nuxt" href="/docs/get-started/nuxt" description="The Nuxt module." />
+          <Card title="Svelte" href="/docs/get-started/svelte" description="Svelte and SvelteKit." />
+          <Card title="Remix" href="/docs/get-started/remix" description="Remix and Vite." />
+          <Card title="Storybook" href="/docs/get-started/storybook" description="Styles in your stories." />
         </Cards>
       </Section>
 
@@ -96,8 +96,8 @@ export default function GuidesPage() {
 
       <Section title="Tune the build">
         <Cards columns={4}>
-          <Card title="Static CSS" href="/docs/compiler/static" description="Pre-generate what you can't extract." />
-          <Card title="Performance" href="/docs/compiler/performance-optimization" description="Keep builds fast as you grow." />
+          <Card title="Static CSS" href="/docs/styling/static" description="Pre-generate what you can't extract." />
+          <Card title="Performance" href="/docs/styling/performance-optimization" description="Keep builds fast as you grow." />
           <Card title="Debugging" href="/docs/reference/debugging" description="See what Panda extracted, and why." />
           <Card title="Cascade layers" href="/docs/styling/cascade-layers" description="How Panda orders its output." />
         </Cards>

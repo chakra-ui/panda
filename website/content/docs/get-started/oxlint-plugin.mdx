@@ -1,6 +1,6 @@
 ---
-title: ESLint & OXLint Plugin
-description: A shared lint rule set for Panda, catching mistakes the compiler itself doesn't error on.
+title: OXLint Plugin
+description: The same Panda-aware lint rule set as the ESLint plugin, via Oxlint's faster Rust-based linter.
 ---
 
 <Callout type="warning">
@@ -10,7 +10,7 @@ description: A shared lint rule set for Panda, catching mistakes the compiler it
 
 ## Why this needs to be Panda-specific
 
-Generic ESLint rules can't see what Panda's compiler already knows: which values resolve to real tokens, which
+Generic lint rules can't see what Panda's compiler already knows: which values resolve to real tokens, which
 recipe variants actually exist, which conditions are typos. A style object that silently produces no CSS today,
 because a condition key is misspelled or a token reference doesn't resolve, passes both `tsc` and a generic linter
 without a warning. The plugin is built directly on Panda's own compiler output instead of pattern-matching
@@ -20,10 +20,10 @@ source text, so it can catch that class of mistake specifically.
 
 Rather than a separate ESLint package and a separate Oxlint package (which would drift out of sync with each other),
 it's one package with two entry points sharing the same rule implementations and the same underlying project
-metadata (token paths, recipe variants, deprecated entries, resolved import map):
+metadata (token paths, recipe variants, deprecated entries, resolved import map). This page covers the Oxlint entry
+point; see [ESLint Plugin](/docs/get-started/eslint-plugin) for the ESLint one.
 
 ```txt
-@pandacss/eslint-plugin            # ESLint flat config
 @pandacss/eslint-plugin/oxlint     # Oxlint entry, reuses the same rules
 ```
 
@@ -58,6 +58,7 @@ Not exhaustive, and some of these are more settled than others, but they give a 
 
 ## See also
 
+- [ESLint Plugin](/docs/get-started/eslint-plugin) for the same rule set via ESLint's flat config.
 - [Upgrading to v2](/docs/get-started/upgrading-to-v2) for the broader rewrite this belongs to.
 - [Diagnostics Reference](/docs/reference/diagnostics) for the compiler-level diagnostic codes this plugin builds on
   top of.

@@ -18,10 +18,10 @@ const MANAGERS = [
 type Manager = (typeof MANAGERS)[number]['id']
 
 const SETUPS = [
-  { id: 'cli', label: 'CLI', href: '/docs/compiler/cli' },
-  { id: 'postcss', label: 'PostCSS', href: '/docs/compiler/postcss' },
-  { id: 'vite', label: 'Vite', href: '/docs/compiler/vite' },
-  { id: 'nextjs', label: 'Next.js', href: '/docs/compiler/nextjs' }
+  { id: 'cli', label: 'CLI', href: '/docs/get-started/cli' },
+  { id: 'postcss', label: 'PostCSS', href: '/docs/get-started/postcss' },
+  { id: 'vite', label: 'Vite', href: '/docs/get-started/vite' },
+  { id: 'nextjs', label: 'Next.js', href: '/docs/get-started/nextjs' }
 ] as const
 type Setup = (typeof SETUPS)[number]['id']
 

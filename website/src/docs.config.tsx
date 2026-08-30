@@ -115,10 +115,10 @@ export const docsTabs: TabItem[] = [
         title: 'Installation',
         items: [
           { title: 'Overview', url: 'installation' },
-          { title: 'CLI', href: '/docs/compiler/cli' },
-          { title: 'PostCSS', href: '/docs/compiler/postcss' },
-          { title: 'Framework Guides', href: '/docs/compiler/overview' },
-          { title: 'Storybook', href: '/docs/compiler/storybook' }
+          { title: 'CLI', url: 'cli' },
+          { title: 'PostCSS', url: 'postcss' },
+          { title: 'Framework Guides', url: 'framework-guides' },
+          { title: 'Storybook', url: 'storybook' }
         ]
       },
       {
@@ -144,8 +144,38 @@ export const docsTabs: TabItem[] = [
         ]
       },
       {
-        title: 'ESLint & OXLint',
-        items: [{ title: 'ESLint & OXLint Plugin', url: 'eslint-oxlint-plugin' }]
+        title: 'Tooling',
+        items: [
+          { title: 'ESLint Plugin', url: 'eslint-plugin' },
+          { title: 'OXLint Plugin', url: 'oxlint-plugin' },
+          { title: 'Source Transforms', url: 'source-transforms' },
+          { title: 'Editor & IDE Tooling', url: 'editor-tooling' }
+        ]
+      },
+      {
+        title: 'Help',
+        items: [{ title: 'Feedback', url: 'feedback' }]
+      },
+      {
+        title: 'Frameworks',
+        items: [
+          { title: 'Next.js', url: 'nextjs' },
+          { title: 'Vite', url: 'vite' },
+          { title: 'Astro', url: 'astro' },
+          { title: 'Vue', url: 'vue' },
+          { title: 'Nuxt', url: 'nuxt' },
+          { title: 'Svelte', url: 'svelte' },
+          { title: 'Remix', url: 'remix' },
+          { title: 'React Router', url: 'react-router' },
+          { title: 'Angular', url: 'angular' },
+          { title: 'Gatsby', url: 'gatsby' },
+          { title: 'SolidJS', url: 'solidjs' },
+          { title: 'Qwik', url: 'qwik' },
+          { title: 'Preact', url: 'preact' },
+          { title: 'Rsbuild', url: 'rsbuild' },
+          { title: 'Ember', url: 'ember' },
+          { title: 'Redwood', url: 'redwood' }
+        ]
       }
     ]
   },
@@ -178,6 +208,15 @@ export const docsTabs: TabItem[] = [
           { title: 'The extend keyword', url: 'extend' },
           { title: 'Template Literals', url: 'template-literals' },
           { title: 'View Transition', url: 'view-transition', tag: 'new' }
+        ]
+      },
+      {
+        title: 'How It Works',
+        items: [
+          { title: 'How Panda Works', url: 'how-panda-works' },
+          { title: 'The Compiler Engine', url: 'compiler-engine' },
+          { title: 'Performance & Optimization', url: 'performance-optimization' },
+          { title: 'Static CSS Generation', url: 'static' }
         ]
       }
     ]
@@ -254,6 +293,13 @@ export const docsTabs: TabItem[] = [
           { title: 'Config Functions', url: 'config-functions' },
           { title: 'Ecosystem Plugins', url: 'ecosystem-plugins' }
         ]
+      },
+      {
+        title: 'Studio',
+        items: [
+          { title: 'Panda Studio', url: 'studio' },
+          { title: 'Panda Studio in v2', url: 'studio-v2' }
+        ]
       }
     ]
   },
@@ -293,83 +339,6 @@ export const docsTabs: TabItem[] = [
           { title: 'Federated Micro-Frontends', url: 'federated-microfrontends' },
           { title: 'Minimal Setup', url: 'minimal-setup' },
           { title: 'Environment-specific config', url: 'environment-specific-config' }
-        ]
-      }
-    ]
-  },
-  {
-    key: 'compiler',
-    title: 'Compiler',
-    side: 'left',
-    items: [
-      {
-        title: 'How it works',
-        items: [
-          { title: 'Overview', url: 'overview' },
-          { title: 'How Panda works', url: 'how-panda-works' },
-          { title: 'The Compiler Engine', url: 'compiler-engine' },
-          { title: 'Performance & Optimization', url: 'performance-optimization' },
-          { title: 'Static CSS Generation', url: 'static' },
-          { title: 'Source Transforms', url: 'transformer' }
-        ]
-      },
-      {
-        title: 'Build Integrations',
-        items: [
-          { title: 'CLI', url: 'cli' },
-          { title: 'PostCSS', url: 'postcss' },
-          { title: 'Vite', url: 'vite' },
-          { title: 'Storybook', url: 'storybook' }
-        ]
-      },
-      {
-        title: 'Framework Guides',
-        items: [
-          { title: 'Next.js', url: 'nextjs' },
-          { title: 'Astro', url: 'astro' },
-          { title: 'Vue', url: 'vue' },
-          { title: 'Nuxt', url: 'nuxt' },
-          { title: 'Svelte', url: 'svelte' },
-          { title: 'SolidJS', url: 'solidjs' },
-          { title: 'Remix', url: 'remix' },
-          { title: 'React Router', url: 'react-router' },
-          { title: 'Angular', url: 'angular' },
-          { title: 'Preact', url: 'preact' },
-          { title: 'Qwik', url: 'qwik' },
-          { title: 'Ember', url: 'ember' },
-          { title: 'Gatsby', url: 'gatsby' },
-          { title: 'Redwood', url: 'redwood' },
-          { title: 'Rsbuild', url: 'rsbuild' }
-        ]
-      }
-    ]
-  },
-  {
-    key: 'tooling',
-    title: 'Tooling',
-    side: 'left',
-    items: [
-      {
-        title: 'Lint & Edit',
-        items: [
-          { title: 'Overview', url: 'overview' },
-          { title: 'Editor & IDE Tooling', url: 'editor-tooling' }
-        ]
-      },
-      {
-        title: 'Help',
-        items: [{ title: 'Feedback', url: 'feedback' }]
-      },
-      {
-        title: 'Inspect',
-        items: [
-          { title: 'Panda Studio', url: 'studio' },
-          { title: 'Panda Studio in v2', url: 'studio-v2' },
-          {
-            title: 'Playground',
-            href: 'https://play.panda-css.com/',
-            external: true
-          }
         ]
       }
     ]

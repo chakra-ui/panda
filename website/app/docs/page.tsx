@@ -5,12 +5,10 @@ import { Box, Stack } from '@/styled-system/jsx'
 import type { Metadata } from 'next'
 import {
   LuBlocks,
-  LuCog,
   LuDownload,
   LuLayers,
   LuPaintbrush,
   LuPalette,
-  LuWrench,
   LuZap
 } from 'react-icons/lu'
 
@@ -73,7 +71,7 @@ export default function DocsWelcomePage() {
         </Box>
       </Stack>
 
-      <Cards columns={3}>
+      <Cards columns={2}>
         <Card
           icon={<LuPaintbrush />}
           title="Styling"
@@ -101,20 +99,6 @@ export default function DocsWelcomePage() {
           href="/docs/design-systems/overview"
           description="Presets, component libraries and shipping to npm."
           cta="Build a system"
-        />
-        <Card
-          icon={<LuCog />}
-          title="Compiler"
-          href="/docs/compiler/overview"
-          description="Extraction, CSS emission and every build integration."
-          cta="See the pipeline"
-        />
-        <Card
-          icon={<LuWrench />}
-          title="Tooling"
-          href="/docs/tooling/overview"
-          description="Lint rules, editor support and surfaces agents read."
-          cta="Set up tooling"
         />
       </Cards>
 

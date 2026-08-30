@@ -22,83 +22,83 @@ import Link from 'next/link'
 const logoMap = {
   nextjs: {
     name: 'Next.js',
-    href: '/docs/compiler/nextjs',
+    href: '/docs/get-started/nextjs',
     logo: NextjsLogo
   },
   vite: {
     name: 'Vite',
     logo: ViteLogo,
-    href: '/docs/compiler/vite'
+    href: '/docs/get-started/vite'
   },
   astro: {
     name: 'Astro',
     logo: AstroLogo,
-    href: '/docs/compiler/astro'
+    href: '/docs/get-started/astro'
   },
   vue: {
     name: 'Vue',
     logo: VueLogo,
-    href: '/docs/compiler/vue'
+    href: '/docs/get-started/vue'
   },
   nuxt: {
     name: 'Nuxt',
     logo: NuxtLogo,
-    href: '/docs/compiler/nuxt'
+    href: '/docs/get-started/nuxt'
   },
   svelte: {
     name: 'Svelte',
     logo: SvelteLogo,
-    href: '/docs/compiler/svelte'
+    href: '/docs/get-started/svelte'
   },
   remix: {
     name: 'Remix',
     logo: RemixLogo,
-    href: '/docs/compiler/remix'
+    href: '/docs/get-started/remix'
   },
   reactrouter: {
     name: 'React Router',
     logo: ReactRouterLogo,
-    href: '/docs/compiler/react-router'
+    href: '/docs/get-started/react-router'
   },
   angular: {
     name: 'Angular',
     logo: AngularLogo,
-    href: '/docs/compiler/angular'
+    href: '/docs/get-started/angular'
   },
   gatsby: {
     name: 'Gatsby',
     logo: GatsbyLogo,
-    href: '/docs/compiler/gatsby'
+    href: '/docs/get-started/gatsby'
   },
   solid: {
     name: 'Solid',
     logo: SolidjsLogo,
-    href: '/docs/compiler/solidjs'
+    href: '/docs/get-started/solidjs'
   },
   qwik: {
     name: 'Qwik',
     logo: QwikLogo,
-    href: '/docs/compiler/qwik'
+    href: '/docs/get-started/qwik'
   },
   preact: {
     name: 'Preact',
     logo: PreactLogo,
-    href: '/docs/compiler/preact'
+    href: '/docs/get-started/preact'
   },
   rsbuild: {
     name: 'Rsbuild',
     logo: RsbuildLogo,
-    href: '/docs/compiler/rsbuild'
+    href: '/docs/get-started/rsbuild'
   },
   ember: {
     name: 'Ember',
     logo: EmberLogo,
-    href: '/docs/compiler/ember'
+    href: '/docs/get-started/ember'
   },
   redwood: {
     name: 'Redwood',
     logo: RedwoodLogo,
-    href: '/docs/compiler/redwood'
+    href: '/docs/get-started/redwood'
   }
 }
 
