@@ -67,8 +67,9 @@ export const MobileBrowse = () => {
               alignItems: 'center',
               justifyContent: 'space-between',
               gap: '4',
-              minH: '13',
+              minH: '16',
               px: '5',
+              py: '3',
               flexShrink: 0,
               borderBottomWidth: '1px',
               borderColor: 'border',
@@ -80,17 +81,25 @@ export const MobileBrowse = () => {
             <Dialog.CloseTrigger
               className={css({
                 display: 'flex',
-                p: '2',
-                rounded: 'md',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                w: '9',
+                h: '9',
+                rounded: 'full',
+                borderWidth: '1px',
+                borderColor: 'border',
                 color: 'fg',
                 cursor: 'pointer',
-                _hover: { bg: 'bg.subtle' }
+                transitionProperty: 'color, background-color, border-color',
+                transitionDuration: '150ms',
+                _hover: { bg: 'bg.subtle', borderColor: 'fg.subtle' }
               })}
             >
-              <LuX size={18} />
+              <LuX size={16} />
             </Dialog.CloseTrigger>
           </div>
-          <div className={cx(classes.body, 'scroll-area', css({ pt: '3' }))}>
+          <div className={cx(classes.body, 'scroll-area', css({ pt: '5' }))}>
             <Sidebar tabKey={tabKey} />
           </div>
 

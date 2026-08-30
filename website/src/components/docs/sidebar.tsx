@@ -16,7 +16,7 @@ import {
   LuRocket,
   LuShuffle,
   LuSlidersHorizontal,
-  LuSparkles,
+  LuLightbulb,
   LuTerminal,
   LuType,
   LuWrench
@@ -31,7 +31,7 @@ import { LuArrowUpRight } from 'react-icons/lu'
 /** Group titles come from docs.config; anything unmapped falls back to a folder. */
 const GROUP_ICONS: Record<string, IconType> = {
   'Get Started': LuRocket,
-  'Core Concepts': LuSparkles,
+  'Core Concepts': LuLightbulb,
   'Styling APIs': LuLayers,
   Migration: LuShuffle,
   Recipes: LuLayers,

@@ -163,8 +163,9 @@ export const MobileNavDrawer = (props: MobileNavDrawerProps) => {
               alignItems: 'center',
               justifyContent: 'space-between',
               gap: '4',
-              minH: '13',
+              minH: '16',
               px: '5',
+              py: '3',
               flexShrink: 0,
               borderBottomWidth: '1px',
               borderColor: 'border'
@@ -174,15 +175,23 @@ export const MobileNavDrawer = (props: MobileNavDrawerProps) => {
             <Dialog.CloseTrigger
               className={css({
                 display: 'flex',
-                p: '2',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
                 ms: 'auto',
-                rounded: 'md',
+                w: '9',
+                h: '9',
+                rounded: 'full',
+                borderWidth: '1px',
+                borderColor: 'border',
                 color: 'fg',
                 cursor: 'pointer',
-                _hover: { bg: 'bg.subtle' }
+                transitionProperty: 'color, background-color, border-color',
+                transitionDuration: '150ms',
+                _hover: { bg: 'bg.subtle', borderColor: 'fg.subtle' }
               })}
             >
-              <Center width="5" height="5">
+              <Center width="4" height="4">
                 <Icon
                   icon="Close"
                   className={css({ width: '1em', height: 'auto' })}
