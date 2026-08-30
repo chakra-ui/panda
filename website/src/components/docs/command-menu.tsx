@@ -229,12 +229,32 @@ export const CommandMenu = (props: Props) => {
                           item={item}
                           persistFocus
                           className={css({
+                            position: 'relative',
                             height: 'auto',
                             px: '4',
                             py: '3',
-                            rounded: 'sm',
+                            rounded: 'md',
+                            cursor: 'pointer',
+                            transitionProperty: 'background-color',
+                            transitionDuration: '150ms',
+                            _before: {
+                              content: '""',
+                              position: 'absolute',
+                              insetY: '1',
+                              insetStart: '0',
+                              width: '2px',
+                              rounded: 'full',
+                              bg: 'transparent',
+                              transitionProperty: 'background-color',
+                              transitionDuration: '150ms'
+                            },
+                            _hover: {
+                              bg: 'bg.subtle',
+                              _before: { bg: 'accent.emphasis' }
+                            },
                             _highlighted: {
-                              bg: 'accent.wash'
+                              bg: 'bg.muted',
+                              _before: { bg: 'accent.emphasis' }
                             }
                           })}
                         >
