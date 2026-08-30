@@ -6,11 +6,11 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value;
 
 use pandacss_config::{
-    CompoundVariantConfig, CssSyntaxKind as ConfigCssSyntaxKind, ImportMap, JsxFramework,
-    JsxSpecifier, JsxStylePropsConfig, PatternConfig, RecipeConfig, VariantSelection,
+    CompoundVariantConfig, ImportMap, JsxFramework, JsxSpecifier, JsxStylePropsConfig,
+    PatternConfig, RecipeConfig, VariantSelection,
 };
 use pandacss_extractor::{
-    CssSyntaxKind, ExtractorConfig, JsxExtractionConfig, JsxKind, JsxStyleProps, Literal,
+    ExtractorConfig, JsxExtractionConfig, JsxKind, JsxStyleProps, Literal,
     Matcher as ExtractorMatcher, Matchers, NameMatcher as ExtractorNameMatcher,
 };
 use pandacss_recipes::{Recipe, SlotRecipe};
@@ -63,7 +63,6 @@ pub(crate) fn compile_config_with_token_dictionary(
     );
     extractor_config.has_jsx_framework = config.jsx_framework.is_some();
     extractor_config.class_attribute = class_attribute_for_framework(config.jsx_framework.as_ref());
-    extractor_config.syntax = extractor_syntax_from_config(config.syntax);
     extractor_config.token_dictionary = token_dictionary;
 
     let utility = (!utility.is_empty()).then_some(utility);
@@ -526,13 +525,6 @@ fn jsx_style_props_from_config(config: &pandacss_config::UserConfig) -> JsxStyle
         Some(JsxStylePropsConfig::Minimal) => JsxStyleProps::Minimal,
         Some(JsxStylePropsConfig::None) => JsxStyleProps::None,
         _ => JsxStyleProps::All,
-    }
-}
-
-fn extractor_syntax_from_config(syntax: ConfigCssSyntaxKind) -> CssSyntaxKind {
-    match syntax {
-        ConfigCssSyntaxKind::TemplateLiteral => CssSyntaxKind::TemplateLiteral,
-        ConfigCssSyntaxKind::ObjectLiteral => CssSyntaxKind::ObjectLiteral,
     }
 }
 

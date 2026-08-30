@@ -55,19 +55,6 @@ pub(crate) fn rewrite_for_sva_call(
     })
 }
 
-/// `__pcva({ … })` for a static style object or cva config, or `None` if it
-/// has no resolvable styles. Without `StyleTree`, conditionals are rejected (not unioned).
-pub(crate) fn styled_config_call(project: &Project, config: &Literal) -> Option<String> {
-    if style_literal_has_conditional(config) {
-        return None;
-    }
-    if !is_static_style_literal(config) {
-        return None;
-    }
-    let encoded = encode_cva_config(project, "", config, None)?;
-    Some(format!("{CVA_HELPER_LOCAL}({encoded})"))
-}
-
 pub(crate) fn encode_cva_config(
     project: &Project,
     source: &str,

@@ -11706,11 +11706,6 @@ export interface CssgenOptions {
 	 */
 	cssVarRoot?: string;
 	/**
-	 * The css syntax kind to use
-	 * @default 'object-literal'
-	 */
-	syntax?: "template-literal" | "object-literal";
-	/**
 	 * Layer mappings used in the generated css.
 	 * @default 'true'
 	 */

@@ -1,7 +1,4 @@
 export default {
-  // No presets: template-literal syntax serializes prop-based class names
-  // (`display_flex`); preset utility classNames would diverge from the runtime.
-
   // Whether to use css reset
   preflight: true,
 
@@ -14,6 +11,5 @@ export default {
   // The output directory for your css system
   outdir: 'styled-system',
   forceImportExtension: true,
-  syntax: 'template-literal',
   jsxFramework: 'react',
 }

@@ -133,7 +133,6 @@ export const docsTabs: TabItem[] = [
           { title: 'JSX Style Props', url: 'style-props' },
           { title: 'Styled System', url: 'styled-system' },
           { title: 'The extend keyword', url: 'extend' },
-          { title: 'Template Literals', url: 'template-literals' },
           { title: 'View Transition', url: 'view-transition', tag: 'new' }
         ]
       },

@@ -28,7 +28,6 @@ export type CodegenDependency =
   | 'prefix'
   | 'recipes'
   | 'separator'
-  | 'syntax'
   | 'themes'
   | 'tokens'
   | 'utilities'
