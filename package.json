@@ -74,11 +74,5 @@
       "git add --all packages/studio/"
     ]
   },
-  "packageManager": "pnpm@11.15.1",
-  "pnpm": {
-    "overrides": {
-      "@swc/helpers@~0.4": "0.4.36",
-      "picomatch@4.0.3": "4.0.4"
-    }
-  }
+  "packageManager": "pnpm@11.15.1"
 }
