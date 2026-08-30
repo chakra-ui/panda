@@ -77,10 +77,12 @@ function useTocState(ids: string[]) {
 
 export interface TocProps {
   data: Docs['toc']
+  /** The sheet renders its own header, so it hides this one. */
+  hideTitle?: boolean
 }
 
 export const Toc = (props: TocProps) => {
-  const { data } = props
+  const { data, hideTitle } = props
   const { isCurrent, onLinkClick } = useTocState(data.map(item => item.id))
 
   if (data.length === 0) {
@@ -91,7 +93,7 @@ export const Toc = (props: TocProps) => {
 
   return (
     <nav aria-label="Table of contents">
-      <h3 className={classes.label}>On this page</h3>
+      {!hideTitle && <h3 className={classes.label}>On this page</h3>}
       <ul className={classes.list}>
         {data.map(item => (
           <li key={item.id}>

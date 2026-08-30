@@ -2,6 +2,7 @@ import { LuRss } from 'react-icons/lu'
 import { AuthorLine } from '@/components/blog/author-line'
 import { blog } from '.velite'
 import { MDXContent } from '@/components/docs/mdx-content'
+import { MobileToc } from '@/components/docs/mobile-toc'
 import { Toc } from '@/components/ui/toc'
 import { generateOgImageUrl } from '@/lib/og-image'
 import { css } from '@/styled-system/css'
@@ -184,6 +185,8 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
       </Box>
 
       {/* Table of contents */}
+      <MobileToc data={post.toc as any} />
+
       {post.toc.length > 0 && (
         <Box
           display={{ base: 'none', xl: 'block' }}

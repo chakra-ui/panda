@@ -3,6 +3,7 @@ import { Breadcrumb } from '@/components/docs/breadcrumb'
 import { Header } from '@/components/docs/header'
 import { MDXContent } from '@/components/docs/mdx-content'
 import { PageActions } from '@/components/docs/page-actions'
+import { MobileToc } from '@/components/docs/mobile-toc'
 import { Pagination } from '@/components/docs/pagination'
 import { Sidebar } from '@/components/docs/sidebar'
 import { Toc } from '@/components/ui/toc'
@@ -124,6 +125,8 @@ export default async function DocsPage(props: DocsPageProps) {
           </Box>
         </Box>
       </Box>
+
+      {!doc.hideToc && <MobileToc data={doc.toc} />}
     </>
   )
 }

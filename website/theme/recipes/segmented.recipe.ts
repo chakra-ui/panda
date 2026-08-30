@@ -78,12 +78,16 @@ export const segmentedRecipe = defineRecipe({
         },
         indicator: {
           rounded: 'full',
-          bg: 'bg',
-          shadow: 'sm',
+          bg: 'accent.wash',
           borderWidth: '1px',
-          borderColor: 'border'
+          borderColor: 'accent.emphasis'
         },
-        item: { minH: '9', px: '5', _checked: { fontWeight: 'semibold' } }
+        item: {
+          minH: '9',
+          px: '4',
+          gap: '2',
+          _checked: { fontWeight: 'semibold' }
+        }
       }),
       card: parts({
         root: {
