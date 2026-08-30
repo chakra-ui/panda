@@ -23,7 +23,7 @@ tokens and recipes.
 - Component state is exposed through `data-*` attributes.
 - Some components expose CSS variables for runtime values like size, available space, or transform origin.
 
-Panda can target those attributes through built-in [conditions](/docs/concepts/conditional-styles). These already match
+Panda can target those attributes through built-in [conditions](/docs/styling/conditional-styles). These already match
 the [Base UI] states you'll use most:
 
 | Panda condition | Matches              |
@@ -401,7 +401,7 @@ layer. Style each part through `className`, then use `_checked`, `_open`, `_disa
 against [Base UI]'s state attributes. For multi-part components, use a slot recipe. When you want reusable components,
 wrap that recipe with `createStyleContext`.
 
-To go deeper, see the Panda docs on [recipes](/docs/concepts/recipes), [slot recipes](/docs/concepts/slot-recipes),
-[conditional styles](/docs/concepts/conditional-styles), and [JSX style context](/docs/concepts/jsx-style-context).
+To go deeper, see the Panda docs on [recipes](/docs/recipes/atomic-recipe), [slot recipes](/docs/recipes/slot-recipes),
+[conditional styles](/docs/styling/conditional-styles), and [JSX style context](/docs/recipes/jsx-recipes-overview).
 
 [Base UI]: https://base-ui.com/
