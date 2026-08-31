@@ -33,7 +33,8 @@ function formatDate(isoDate: string) {
   })
 }
 
-function formatAuthors(author: string | string[]) {
+function formatAuthors(author: string | string[] | undefined) {
+  if (!author) return ''
   const list = Array.isArray(author) ? author : [author]
   if (list.length <= 1) return list.join('')
   return `${list.slice(0, -1).join(', ')} & ${list[list.length - 1]}`
