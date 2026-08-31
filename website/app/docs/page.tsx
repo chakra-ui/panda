@@ -6,12 +6,10 @@ import { Box, Stack } from '@/styled-system/jsx'
 import type { Metadata } from 'next'
 import {
   LuBlocks,
-  LuCog,
   LuDownload,
   LuLayers,
   LuPaintbrush,
   LuPalette,
-  LuWrench,
   LuZap
 } from 'react-icons/lu'
 
@@ -54,7 +52,7 @@ export default function DocsWelcomePage() {
           py="4"
           px="6"
         >
-          <Sidebar tabKey="styling" />
+          <Sidebar tabKey="get-started" />
         </Box>
       </Box>
 
@@ -79,48 +77,34 @@ export default function DocsWelcomePage() {
         </Box>
       </Stack>
 
-      <Cards columns={3}>
+      <Cards columns={2}>
         <Card
           icon={<LuPaintbrush />}
           title="Styling"
-          href="/docs/styling/overview"
+          href="/docs/styling/writing-styles"
           description="css(), style props, conditions and the styled factory."
           cta="Write a style"
         />
         <Card
           icon={<LuLayers />}
           title="Recipes"
-          href="/docs/recipes/overview"
+          href="/docs/recipes/atomic-recipe"
           description="Component styles with variants, compiled at build time."
           cta="Write a recipe"
         />
         <Card
           icon={<LuPalette />}
           title="Theming"
-          href="/docs/theming/overview"
+          href="/docs/theming/tokens"
           description="Design tokens, semantic tokens and multiple themes."
           cta="Define tokens"
         />
         <Card
           icon={<LuBlocks />}
           title="Design Systems"
-          href="/docs/design-systems/overview"
+          href="/docs/design-systems/setup"
           description="Presets, component libraries and shipping to npm."
           cta="Build a system"
-        />
-        <Card
-          icon={<LuCog />}
-          title="Compiler"
-          href="/docs/compiler/overview"
-          description="Extraction, CSS emission and every build integration."
-          cta="See the pipeline"
-        />
-        <Card
-          icon={<LuWrench />}
-          title="Tooling"
-          href="/docs/tooling/overview"
-          description="Lint rules, editor support and surfaces agents read."
-          cta="Set up tooling"
         />
       </Cards>
 
@@ -145,13 +129,13 @@ export default function DocsWelcomePage() {
         <Card
           icon={<LuDownload />}
           title="Install Panda"
-          href="/docs/styling/installation"
+          href="/docs/get-started/cli"
           description="Every install path, for every framework."
         />
         <Card
           icon={<LuZap />}
           title="Thinking in Panda"
-          href="/docs/styling/thinking-in-panda"
+          href="/docs/get-started/thinking-in-panda"
           description="The mental model, in about ten minutes."
         />
       </Cards>

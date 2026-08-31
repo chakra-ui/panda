@@ -410,7 +410,7 @@ Individual fields also accept an array of paths when only some categories need m
 ```
 
 Check out [Shared styled-system in a monorepo](/docs/design-systems/shared-styled-system) for a full example of
-using multiple `importMap` roots, or the [Component Library](/docs/design-systems/overview) guide for the
+using multiple `importMap` roots, or the [Component Library](/docs/design-systems/setup) guide for the
 external-package case.
 
 ### designSystem
@@ -961,7 +961,7 @@ The validation strictness to use when validating the config.
 **Type**: `PandaPlugin[]`
 
 Plugins are simple objects that contain a `name` and a `hooks` object. Hooks live on plugins — there is no root-level
-`hooks` config option. Check the [Hooks](/docs/design-systems/hooks) docs for the full list of callbacks.
+`hooks` config option. Check the [Hooks](/docs/theming/hooks) docs for the full list of callbacks.
 
 Plugins are called in sequence in the order they are defined in the `plugins` array, with the user's config called last.
 

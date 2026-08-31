@@ -46,21 +46,21 @@ export default function InstallPage() {
         <Card
           kicker="New project"
           title="Start something new"
-          href="/docs/styling/getting-started"
+          href="/docs/get-started/getting-started"
           description="Set up Panda from scratch and write your first style."
           cta="Quickstart"
         />
         <Card
           kicker="Existing app"
           title="Add Panda to your app"
-          href="/docs/styling/installation"
+          href="/docs/get-started/cli"
           description="Drop Panda into a project that already has styles."
           cta="Setup guide"
         />
         <Card
           kicker="Migrating"
           title="Coming from Tailwind"
-          href="/docs/styling/tailwind"
+          href="/docs/get-started/tailwind"
           description="Map utility classes onto Panda's style objects."
           cta="Migration guide"
         />
@@ -81,7 +81,7 @@ export default function InstallPage() {
         <Card
           title="Documentation"
           href="/docs"
-          description="Concepts, recipes, theming and the compiler."
+          description="Concepts, recipes, theming and design systems."
         />
         <Card
           title="Reference"

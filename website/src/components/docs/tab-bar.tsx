@@ -12,22 +12,20 @@ import {
   LuBlocks,
   LuBookOpen,
   LuChevronDown,
-  LuCog,
   LuLayers,
   LuPaintbrush,
   LuPalette,
-  LuUsers,
-  LuWrench
+  LuRocket,
+  LuUsers
 } from 'react-icons/lu'
 import type { IconType } from 'react-icons'
 
 export const TAB_ICONS: Record<string, IconType> = {
+  'get-started': LuRocket,
   styling: LuPaintbrush,
   recipes: LuLayers,
   theming: LuPalette,
   'design-systems': LuBlocks,
-  compiler: LuCog,
-  tooling: LuWrench,
   reference: LuBookOpen
 }
 
@@ -206,12 +204,24 @@ interface TabLinkProps {
   active: boolean
 }
 
+/**
+ * Tabs whose landing page isn't `overview` (removed on several tabs so the
+ * tab jumps straight into real content instead of an index page).
+ */
+const TAB_LANDING_HREF: Record<string, string> = {
+  'get-started': '/docs',
+  styling: '/docs/styling/writing-styles',
+  recipes: '/docs/recipes/atomic-recipe',
+  theming: '/docs/theming/tokens',
+  'design-systems': '/docs/design-systems/setup'
+}
+
 function TabLink({ tab, active }: TabLinkProps) {
   const Icon = TAB_ICONS[tab.key]
 
   return (
     <Link
-      href={`/docs/${tab.key}`}
+      href={TAB_LANDING_HREF[tab.key] ?? `/docs/${tab.key}`}
       aria-current={active ? 'page' : undefined}
       className={css({
         position: 'relative',

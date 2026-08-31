@@ -6,7 +6,7 @@ description: Use createSlotRecipeContext to turn a headless UI library like Ark 
 Most component libraries aren't built from raw DOM elements, they wrap a headless UI library like
 [Ark UI](https://ark-ui.com) or Radix UI for behavior and accessibility, then add styling on top.
 `createSlotRecipeContext` is the tool for that: it's covered in full at
-[JSX Style Context](/docs/recipes/jsx-style-context), this page is
+[JSX Style Context](/docs/recipes/jsx-recipes-overview), this page is
 about applying it when the components you're wrapping and shipping aren't your own.
 
 ## Why not just style each part
@@ -47,28 +47,28 @@ export const Accordion = {
 
 If the headless library's root doesn't render a DOM element itself (some context-only providers don't), use
 `withRootProvider` instead of `withProvider`, it skips the slot styling and only sets up the context. See
-[withRootProvider](/docs/recipes/jsx-style-context#withrootprovider) for that case.
+[withRootProvider](/docs/recipes/slot-recipe-context#withrootprovider) for that case.
 
 ## Naming for config recipes
 
 If your slot recipe is defined in `panda.config.ts` instead of inline `sva`, the exported component's name has to
 match the recipe name exactly, or set the recipe's `jsx` option to your component's name. This matters more in a
 library than in an app, since users see the exported name, not your internal recipe key. See
-[Config Recipes](/docs/recipes/jsx-style-context#config-recipes) for the exact rule.
+[Config Recipes](/docs/recipes/guide-config-recipes) for the exact rule.
 
 ## Let users opt out
 
 Every component built with `createSlotRecipeContext` accepts an `unstyled` prop, on the root to strip all slot styles, or
 on a single slot to strip just that one. Document this for your users explicitly. It's often the only supported
 way to fully override a slot's structure without fighting your recipe's specificity, and library authors sometimes
-forget to mention it exists. See [unstyled prop](/docs/recipes/jsx-style-context#unstyled-prop) for the exact
+forget to mention it exists. See [unstyled prop](/docs/recipes/slot-recipe-context#unstyled-prop) for the exact
 behavior on root vs. child components.
 
 ## When you need the variant value inside the component
 
 `withProvider` uses variant props to pick which slot styles apply, but doesn't pass them through to your wrapped
 component by default. If your wrapper needs the value too, for example to mirror `orientation` as an `aria-orientation`
-attribute, list it in `forwardProps`. See [Forwarding props](/docs/recipes/jsx-style-context#forwarding-props) for
+attribute, list it in `forwardProps`. See [Forwarding props](/docs/recipes/guide-forwarding-props) for
 the full pattern, including the `withContext` case where a prop shares a name with a CSS property.
 
 ## See also

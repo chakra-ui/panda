@@ -6,7 +6,7 @@ description: Point every app in a monorepo at one generated styled-system packag
 If every package in your monorepo runs its own Panda config from scratch, each one ends up with a slightly different
 `styled-system`: its own token names, its own recipe definitions, sometimes its own drift when one app updates a
 token and the others don't. The fix is the same one you'd use for an external [component
-library](/docs/design-systems/overview): one package owns the design system, everyone else imports from it.
+library](/docs/design-systems/setup): one package owns the design system, everyone else imports from it.
 
 This is the internal version of that setup. There's no npm publish step and no external users to keep a stable API
 for, just a workspace dependency and [`importMap`](/docs/reference/config#importmap) so each app's own Panda

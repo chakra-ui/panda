@@ -37,7 +37,7 @@ export default function GuidesPage() {
           icon={<LuRocket />}
           kicker="Start here"
           title="Thinking in Panda"
-          href="/docs/styling/thinking-in-panda"
+          href="/docs/get-started/thinking-in-panda"
           description="The mental model, in about ten minutes."
           cta="Learn the model"
         />
@@ -45,7 +45,7 @@ export default function GuidesPage() {
           icon={<LuShuffle />}
           kicker="Moving over"
           title="Migration strategy"
-          href="/docs/styling/migration-strategy"
+          href="/docs/get-started/migration-strategy"
           description="How to move an existing codebase without a big-bang rewrite."
           cta="Plan a migration"
         />
@@ -61,27 +61,27 @@ export default function GuidesPage() {
 
       <Section title="Set up your framework">
         <Cards columns={4}>
-          <Card title="Next.js" href="/docs/compiler/nextjs" description="App and pages router." />
-          <Card title="Vite" href="/docs/compiler/vite" description="First-class Vite support." />
-          <Card title="Astro" href="/docs/compiler/astro" description="Islands and static output." />
-          <Card title="Vue" href="/docs/compiler/vue" description="SFC style extraction." />
-          <Card title="Nuxt" href="/docs/compiler/nuxt" description="The Nuxt module." />
-          <Card title="Svelte" href="/docs/compiler/svelte" description="Svelte and SvelteKit." />
-          <Card title="Remix" href="/docs/compiler/remix" description="Remix and Vite." />
-          <Card title="Storybook" href="/docs/compiler/storybook" description="Styles in your stories." />
+          <Card title="Next.js" href="/docs/get-started/nextjs" description="App and pages router." />
+          <Card title="Vite" href="/docs/get-started/vite" description="First-class Vite support." />
+          <Card title="Astro" href="/docs/get-started/astro" description="Islands and static output." />
+          <Card title="Vue" href="/docs/get-started/vue" description="SFC style extraction." />
+          <Card title="Nuxt" href="/docs/get-started/nuxt" description="The Nuxt module." />
+          <Card title="Svelte" href="/docs/get-started/svelte" description="Svelte and SvelteKit." />
+          <Card title="Remix" href="/docs/get-started/remix" description="Remix and Vite." />
+          <Card title="Storybook" href="/docs/get-started/storybook" description="Styles in your stories." />
         </Cards>
       </Section>
 
       <Section title="Move from another library">
         <Cards columns={4}>
-          <Card title="Tailwind CSS" href="/docs/styling/tailwind" description="Utility classes to style objects." />
-          <Card title="Chakra UI" href="/docs/styling/chakra-ui" description="Style props you already know." />
-          <Card title="Styled Components" href="/docs/styling/styled-components" description="Template literals to objects." />
-          <Card title="Emotion" href="/docs/styling/emotion" description="Runtime CSS-in-JS to build time." />
-          <Card title="Stitches" href="/docs/styling/stitches" description="Variants and tokens, mapped over." />
-          <Card title="Theme UI" href="/docs/styling/theme-ui" description="Theme objects to Panda tokens." />
-          <Card title="StyleX" href="/docs/styling/stylex" description="Atomic to atomic, with types." />
-          <Card title="Upgrading to v2" href="/docs/styling/upgrading-to-v2" description="What changed, and what to do." />
+          <Card title="Tailwind CSS" href="/docs/get-started/tailwind" description="Utility classes to style objects." />
+          <Card title="Chakra UI" href="/docs/get-started/chakra-ui" description="Style props you already know." />
+          <Card title="Styled Components" href="/docs/get-started/styled-components" description="Template literals to objects." />
+          <Card title="Emotion" href="/docs/get-started/emotion" description="Runtime CSS-in-JS to build time." />
+          <Card title="Stitches" href="/docs/get-started/stitches" description="Variants and tokens, mapped over." />
+          <Card title="Theme UI" href="/docs/get-started/theme-ui" description="Theme objects to Panda tokens." />
+          <Card title="StyleX" href="/docs/get-started/stylex" description="Atomic to atomic, with types." />
+          <Card title="Upgrading to v2" href="/docs/get-started/upgrading-to-v2" description="What changed, and what to do." />
         </Cards>
       </Section>
 
@@ -96,8 +96,8 @@ export default function GuidesPage() {
 
       <Section title="Tune the build">
         <Cards columns={4}>
-          <Card title="Static CSS" href="/docs/compiler/static" description="Pre-generate what you can't extract." />
-          <Card title="Performance" href="/docs/compiler/performance-optimization" description="Keep builds fast as you grow." />
+          <Card title="Static CSS" href="/docs/styling/static" description="Pre-generate what you can't extract." />
+          <Card title="Performance" href="/docs/styling/performance-optimization" description="Keep builds fast as you grow." />
           <Card title="Debugging" href="/docs/reference/debugging" description="See what Panda extracted, and why." />
           <Card title="Cascade layers" href="/docs/styling/cascade-layers" description="How Panda orders its output." />
         </Cards>

@@ -115,8 +115,9 @@ export default async function DocsPage(props: DocsPageProps) {
           <PageActions slug={slug} />
         </Box>
 
-        {/* Table of Contents */}
-        {!doc.hideToc && (
+        {/* Table of Contents — space is reserved even when hidden, so the
+            article's `mx="auto"` centers against the same remaining width
+            on every page, with or without a TOC. */}
         <Box
           display={{ base: 'none', xl: 'block' }}
           flexShrink="0"
@@ -127,11 +128,12 @@ export default async function DocsPage(props: DocsPageProps) {
           pr="6"
           maxH="calc(100vh - var(--navbar-height) - var(--banner-height) - var(--tabbar-height) - 1rem)"
         >
-          <Box overflowY="auto" height="100%" className="scroll-area">
-            <Toc data={doc.toc} />
-          </Box>
+          {!doc.hideToc && (
+            <Box overflowY="auto" height="100%" className="scroll-area">
+              <Toc data={doc.toc} />
+            </Box>
+          )}
         </Box>
-        )}
       </Box>
 
       {!doc.hideToc && <MobileToc data={doc.toc} />}

@@ -1,0 +1,362 @@
+---
+title: Config Functions
+description: The define* helpers for authoring config, recipes, tokens, and themes in their own files with full type checking.
+---
+
+Every function on this page does exactly one thing at runtime: return its argument unchanged. `defineRecipe` is
+literally `(config) => config`. So why call them at all?
+
+Because of what they do at the type level. Write a recipe as a plain object inside `defineConfig({...})` and
+TypeScript infers its type from context, no wrapper needed. Move that same object into its own file,
+`recipes/button.ts`, and there's no longer any context to infer from, it's just an object literal with whatever type
+you happen to give it. Wrapping it in `defineRecipe(...)` restores that context: the function's parameter type
+constrains what you write, so your editor autocompletes and flags errors while you type, in a file that never
+imports `defineConfig` at all.
+
+## Style and config helpers
+
+### `defineConfig`
+
+Wraps the [config](/docs/reference/config) object itself.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {},
+  include: ['src/**/*.{js,jsx,ts,tsx}']
+})
+```
+
+### `defineRecipe`
+
+For a [config recipe](/docs/recipes/config-recipe) authored outside `defineConfig`.
+
+```ts
+import { defineRecipe } from '@pandacss/dev'
+
+export const buttonRecipe = defineRecipe({
+  className: 'button',
+  description: 'The styles for the Button component',
+  base: {
+    display: 'flex'
+  },
+  variants: {
+    visual: {
+      funky: { bg: 'red.200', color: 'white' },
+      edgy: { border: '1px solid {colors.red.500}' }
+    }
+  },
+  defaultVariants: {
+    visual: 'funky',
+    size: 'sm'
+  }
+})
+```
+
+### `defineSlotRecipe`
+
+Same idea, for a [slot recipe](/docs/recipes/slot-recipes#config-slot-recipe).
+
+```ts
+import { defineSlotRecipe } from '@pandacss/dev'
+
+export const checkboxRecipe = defineSlotRecipe({
+  className: 'checkbox',
+  description: 'The styles for the Checkbox component',
+  slots: ['root', 'control', 'label'],
+  base: {
+    root: { display: 'flex', alignItems: 'center', gap: '2' },
+    control: { borderWidth: '1px', borderRadius: 'sm' },
+    label: { marginStart: '2' }
+  },
+  variants: {
+    size: {
+      sm: {
+        control: { width: '8', height: '8' },
+        label: { fontSize: 'sm' }
+      },
+      md: {
+        control: { width: '10', height: '10' },
+        label: { fontSize: 'md' }
+      }
+    }
+  },
+  defaultVariants: {
+    size: 'sm'
+  }
+})
+```
+
+### `defineParts`
+
+For when you want one class on one DOM element to carry every part's styles, instead of a slot recipe's separate
+class per part. Pass a map of part name to selector, and you get back a function that turns per-part style objects
+into one combined style object keyed by those selectors:
+
+```ts
+import { defineParts, defineRecipe } from '@pandacss/dev'
+
+const parts = defineParts({
+  root: { selector: '& [data-part="root"]' },
+  control: { selector: '& [data-part="control"]' },
+  label: { selector: '& [data-part="label"]' }
+})
+
+export const checkboxRecipe = defineRecipe({
+  className: 'checkbox',
+  description: 'A checkbox style',
+  base: parts({
+    root: { display: 'flex', alignItems: 'center', gap: '2' },
+    control: { borderWidth: '1px', borderRadius: 'sm' },
+    label: { marginStart: '2' }
+  }),
+  variants: {
+    size: {
+      sm: parts({
+        control: { width: '8', height: '8' },
+        label: { fontSize: 'sm' }
+      }),
+      md: parts({
+        control: { width: '10', height: '10' },
+        label: { fontSize: 'md' }
+      })
+    }
+  },
+  defaultVariants: {
+    size: 'sm'
+  }
+})
+```
+
+This is the shape [Zag.js](https://zagjs.com/) and [Ark UI](https://ark-ui.com/) render to, `data-part` attributes on
+a single root, rather than Panda's own slot convention.
+
+### `definePattern`
+
+For a [pattern](/docs/theming/patterns) authored outside `defineConfig`.
+
+```ts
+import { definePattern } from '@pandacss/dev'
+
+const visuallyHidden = definePattern({
+  transform(props) {
+    return {
+      srOnly: true,
+      ...props
+    }
+  }
+})
+```
+
+### `definePreset`
+
+For a [preset](/docs/theming/presets#creating-a-preset).
+
+```ts
+import { definePreset } from '@pandacss/dev'
+
+export const pandaPreset = definePreset({
+  theme: {
+    extend: {
+      tokens: {
+        colors: { primary: { value: 'blue.500' } }
+      }
+    }
+  }
+})
+```
+
+### `definePlugin`
+
+For a [plugin](/docs/theming/hooks#sharing-a-hook), the object that carries a shareable `hooks` map.
+
+```ts
+import { definePlugin } from '@pandacss/dev'
+
+export const plugin = definePlugin({
+  name: 'css-report',
+  hooks: {
+    'cssgen:done': ({ path, content }) => {
+      console.log(`generated ${content.length} bytes`, path)
+    }
+  }
+})
+```
+
+### `defineKeyframes`
+
+For [`@keyframes`](/docs/theming/theme#keyframes) authored outside `defineConfig`.
+
+```ts
+import { defineKeyframes } from '@pandacss/dev'
+
+export const keyframes = defineKeyframes({
+  fadeIn: {
+    '0%': { opacity: '0' },
+    '100%': { opacity: '1' }
+  }
+})
+```
+
+### `defineGlobalStyles`
+
+For [global styles](/docs/styling/global-styles) authored outside `defineConfig`.
+
+```ts
+import { defineGlobalStyles } from '@pandacss/dev'
+
+const globalCss = defineGlobalStyles({
+  'html, body': {
+    color: 'gray.900',
+    lineHeight: '1.5'
+  }
+})
+```
+
+### `defineUtility`
+
+For a custom [utility](/docs/theming/utilities) authored outside `defineConfig`.
+
+```ts
+import { defineUtility } from '@pandacss/dev'
+
+export const br = defineUtility({
+  className: 'rounded',
+  values: 'radii',
+  transform(value) {
+    return { borderRadius: value }
+  }
+})
+```
+
+### `defineStyles`
+
+For a chunk of `SystemStyleObject` you want to reuse across variants, spread it into each one instead of repeating
+the properties:
+
+```ts {3, 14, 18} filename="recipes/button.ts"
+import { defineRecipe, defineStyles } from '@pandacss/dev'
+
+const buttonVisualStyles = defineStyles({
+  borderRadius: 'lg',
+  boxShadow: 'sm'
+})
+
+export const buttonRecipe = defineRecipe({
+  // ...
+  variants: {
+    visual: {
+      funky: {
+        bg: 'red.200',
+        color: 'white',
+        ...buttonVisualStyles
+      },
+      edgy: {
+        border: '1px solid {colors.red.500}',
+        ...buttonVisualStyles
+      }
+    }
+  }
+})
+```
+
+## Composite style helpers
+
+Text styles, layer styles, and animation styles follow the same pattern as the helpers above, a typed wrapper for
+authoring them outside `defineConfig`. Each has its own full page, since the value objects have more shape to them
+than a plain style object:
+
+- [`defineTextStyles`](/docs/theming/text-styles)
+- [`defineLayerStyles`](/docs/theming/layer-styles)
+- [`defineAnimationStyles`](/docs/theming/animation-styles)
+
+## Multi-brand theming helpers
+
+`defineThemeVariant` wraps a single theme variant, the same `{ tokens, semanticTokens }` shape used for
+[multi-theme tokens](/docs/theming/multiple-themes):
+
+```ts
+import { defineThemeVariant } from '@pandacss/dev'
+
+export const darkTheme = defineThemeVariant({
+  tokens: {
+    colors: { bg: { value: '{colors.gray.900}' } }
+  }
+})
+```
+
+`defineThemeContract` goes further: define the token shape every theme must implement once, and it returns a checked
+version of `defineThemeVariant` that rejects a theme missing one of those tokens. See
+[Theme contract](/docs/theming/multiple-themes#theme-contract) for the full example.
+
+### `defineGlobalFontface`
+
+For [`globalFontface`](/docs/theming/fonts#global-font-face) authored outside `defineConfig`:
+
+```ts
+import { defineGlobalFontface } from '@pandacss/dev'
+
+export const fonts = defineGlobalFontface({
+  Inter: {
+    src: 'url(/fonts/inter.woff2) format("woff2")',
+    fontWeight: 400,
+    fontStyle: 'normal'
+  }
+})
+```
+
+## Token helpers
+
+### `defineTokens`
+
+```ts
+import { defineTokens } from '@pandacss/dev'
+
+const theme = {
+  tokens: defineTokens({
+    colors: {
+      primary: { value: '#ff0000' }
+    }
+  })
+}
+```
+
+Scope it to one token category when you're authoring that category in its own file, `defineTokens.colors(...)` type-checks
+against just the `colors` shape instead of the full token tree:
+
+```ts filename="tokens/colors.ts"
+import { defineTokens } from '@pandacss/dev'
+
+export const colors = defineTokens.colors({
+  primary: { value: '#ff0000' }
+})
+```
+
+### `defineSemanticTokens`
+
+Same idea, for tokens whose value depends on a condition like color mode:
+
+```ts
+import { defineSemanticTokens } from '@pandacss/dev'
+
+const theme = {
+  semanticTokens: defineSemanticTokens({
+    colors: {
+      primary: {
+        value: { _light: '{colors.blue.400}', _dark: '{colors.blue.200}' }
+      }
+    }
+  })
+}
+```
+
+```ts filename="tokens/colors.semantic.ts"
+import { defineSemanticTokens } from '@pandacss/dev'
+
+export const colors = defineSemanticTokens.colors({
+  primary: {
+    value: { _light: '{colors.blue.400}', _dark: '{colors.blue.200}' }
+  }
+})
+```

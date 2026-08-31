@@ -40,7 +40,7 @@ export default function EcosystemPage() {
           icon={<LuShieldCheck />}
           kicker="Lint"
           title="ESLint plugin"
-          href="/docs/tooling/eslint-oxlint-plugin"
+          href="/docs/get-started/eslint-plugin"
           description="A shared rule set that catches the mistakes the compiler does not error on."
           cta="Set up linting"
         />
@@ -48,7 +48,7 @@ export default function EcosystemPage() {
           icon={<LuCode />}
           kicker="Edit"
           title="Editor & IDE"
-          href="/docs/tooling/editor-tooling"
+          href="/docs/get-started/editor-tooling"
           description="Token previews, autocomplete and the TypeScript plugin."
           cta="Set up your editor"
         />
@@ -59,17 +59,17 @@ export default function EcosystemPage() {
           <Card
             icon={<LuBot />}
             title="MCP server"
-            href="/docs/tooling/mcp-server"
+            href="/docs/get-started/mcp-server"
             description="Give an agent your real config, not a guess."
           />
           <Card
             title="llms.txt"
-            href="/docs/tooling/llms-txt"
+            href="/docs/get-started/llms-txt"
             description="These docs as plain text, per page or whole."
           />
           <Card
             title="Agent skills"
-            href="/docs/tooling/agent-skills"
+            href="/docs/get-started/agent-skills"
             description="Packaged instructions for coding agents."
           />
         </Cards>
@@ -79,7 +79,7 @@ export default function EcosystemPage() {
         <Cards columns={3} mode="gapless">
           <Card
             title="Panda Studio"
-            href="/docs/tooling/studio"
+            href="/docs/theming/studio"
             description="A generated site for your design tokens."
           />
           <Card
@@ -99,12 +99,12 @@ export default function EcosystemPage() {
         <Cards columns={2} mode="gapless">
           <Card
             title="preset-panda"
-            href="/docs/design-systems/presets"
+            href="/docs/theming/presets"
             description="The default tokens, conditions and utilities."
           />
           <Card
             title="preset-base"
-            href="/docs/design-systems/presets"
+            href="/docs/theming/presets"
             description="The utility layer, without the opinions."
           />
         </Cards>
