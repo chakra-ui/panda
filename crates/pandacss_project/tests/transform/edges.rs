@@ -2,7 +2,7 @@
 
 use super::common::{
     transform, transform_jsx, transform_jsx_extended, transform_jsx_patterns,
-    transform_jsx_recipes, transform_jsx_slot_recipes, transform_recipes,
+    transform_jsx_recipes, transform_jsx_shorthands, transform_jsx_slot_recipes, transform_recipes,
 };
 use indoc::indoc;
 use insta::assert_snapshot;
@@ -155,128 +155,165 @@ export const el = (
 "#
 );
 
+// --- css prop merging: the css prop wins over the style props beside it ---
+
+edge_snapshot!(
+    css_prop_overrides_a_style_prop_on_the_same_property,
+    transform_jsx(
+        "src/app.tsx",
+        indoc! {r#"
+            import { Box } from '@panda/jsx';
+            export const el = <Box color="red" css={{ color: 'blue' }} />;
+        "#},
+    ),
+    @r#"export const el = <div className="color_blue" />;"#
+);
+
+edge_snapshot!(
+    css_prop_and_style_props_on_different_properties_both_apply,
+    transform_jsx(
+        "src/app.tsx",
+        indoc! {r#"
+            import { Box } from '@panda/jsx';
+            export const el = <Box color="red" css={{ fontSize: '12px' }} />;
+        "#},
+    ),
+    @r#"export const el = <div className="color_red fs_12px" />;"#
+);
+
+edge_snapshot!(
+    css_prop_array_layers_left_to_right,
+    transform_jsx(
+        "src/app.tsx",
+        indoc! {r#"
+            import { Box } from '@panda/jsx';
+            export const el = <Box color="red" css={[{ color: 'blue' }, { color: 'green' }]} />;
+        "#},
+    ),
+    @r#"export const el = <div className="color_green" />;"#
+);
+
+edge_snapshot!(
+    css_prop_merges_into_a_nested_condition,
+    transform_jsx(
+        "src/app.tsx",
+        indoc! {r#"
+            import { Box } from '@panda/jsx';
+            export const el = <Box _hover={{ color: 'red' }} css={{ _hover: { color: 'blue' } }} />;
+        "#},
+    ),
+    @r#"export const el = <div className="hover:color_blue" />;"#
+);
+
+// `resolveStyleArgs` normalizes before `mergeProps`, so these are one key.
+edge_snapshot!(
+    css_prop_shorthand_collapses_the_longhand_beside_it,
+    transform_jsx_shorthands(
+        "src/app.tsx",
+        indoc! {r#"
+            import { Box } from '@panda/jsx';
+            export const el = <Box padding="4" css={{ p: '8' }} />;
+        "#},
+    ),
+    @r#"export const el = <div className="p_8" />;"#
+);
+
+edge_snapshot!(
+    style_prop_shorthand_collapses_the_css_prop_longhand,
+    transform_jsx_shorthands(
+        "src/app.tsx",
+        indoc! {r#"
+            import { Box } from '@panda/jsx';
+            export const el = <Box p="4" css={{ padding: '8' }} />;
+        "#},
+    ),
+    @r#"export const el = <div className="p_8" />;"#
+);
+
+edge_snapshot!(
+    falsy_css_prop_leaves_the_style_props_alone,
+    transform_jsx(
+        "src/app.tsx",
+        indoc! {r#"
+            import { Box } from '@panda/jsx';
+            export const el = <Box color="red" css={false} />;
+        "#},
+    ),
+    @r#"export const el = <div className="color_red" />;"#
+);
+
+// A runtime branch can't merge into the base.
+edge_snapshot!(
+    conditional_css_prop_encodes_each_branch,
+    transform_jsx(
+        "src/app.tsx",
+        indoc! {r#"
+            import { Box } from '@panda/jsx';
+            export const el = <Box color="red" css={flag ? { color: 'blue' } : { color: 'green' }} />;
+        "#},
+    ),
+    @r#"export const el = <div className={flag ? "color_blue" : "color_green"} />;"#
+);
+
 // --- recipe / pattern variant conditionals ---
 
-edge_snapshot!(
-    jsx_recipe_single_variant_conditional,
-    transform_jsx_recipes(
-        "src/app.tsx",
-        indoc! {r#"
-            import { Button } from '@acme/ui';
-            export const el = <Button size={isMobile ? 'sm' : 'lg'} />;
-        "#},
-    ),
-    @r#"export const el = <div className={isMobile ? "button button--size_sm" : "button button--size_lg"} />;"#
-);
+// Recipe elements keep their tag and variant props, so an element carrying only
+// conditional variants has nothing to fold. Patterns below lower completely.
+#[test]
+fn jsx_recipe_variant_conditionals_stay_on_the_element() {
+    let source = indoc! {r#"
+        import { Button } from '@acme/ui';
+        export const el = (
+          <Button
+            size={isMobile ? 'sm' : 'lg'}
+            visual={isPrimary ? 'solid' : 'outline'}
+          />
+        );
+    "#};
 
-// Each leaf resolves the whole selection, so exactly one size class lands in
-// every branch — a per-site lowering would add `size_md` from the defaults.
-edge_snapshot!(
-    jsx_recipe_two_variant_conditionals,
-    transform_jsx_recipes(
-        "src/app.tsx",
-        indoc! {r#"
-            import { Button } from '@acme/ui';
-            export const el = (
-              <Button
-                size={isMobile ? 'sm' : 'lg'}
-                visual={isPrimary ? 'solid' : 'outline'}
-              />
-            );
-        "#},
-    ),
-    @r#"
-export const el = (
-  <div className={"button" + " " + (isMobile ? (isPrimary ? "button--size_sm button--visual_solid" : "button--size_sm button--visual_outline") : isPrimary ? "button--size_lg button--visual_solid" : "button--size_lg button--visual_outline")} />
-);
-"#
-);
+    let output = transform_jsx_recipes("src/app.tsx", source);
 
-edge_snapshot!(
-    jsx_recipe_variant_and_style_prop_conditionals,
-    transform_jsx_recipes(
-        "src/app.tsx",
-        indoc! {r#"
-            import { Button } from '@acme/ui';
-            export const el = (
-              <Button size={isMobile ? 'sm' : 'lg'} color={isDark ? 'white' : 'black'} />
-            );
-        "#},
-    ),
-    @r#"
-export const el = (
-  <div className={"button" + " " + (isMobile ? (isDark ? "button--size_sm color_white" : "button--size_sm color_black") : isDark ? "button--size_lg color_white" : "button--size_lg color_black")} />
-);
-"#
-);
+    assert!(!output.changed);
+    assert!(!output.bailed);
+    assert_eq!(output.code, source);
+}
+
+#[test]
+fn jsx_recipe_spread_ternary_stays_at_runtime() {
+    let source = indoc! {r#"
+        import { Button } from '@acme/ui';
+        export const el = <Button {...(isMobile ? { size: 'sm' } : { size: 'lg' })} />;
+    "#};
+
+    let output = transform_jsx_recipes("src/app.tsx", source);
+
+    assert!(!output.changed);
+    assert!(!output.bailed);
+    assert_eq!(output.code, source);
+}
 
 edge_snapshot!(
-    jsx_recipe_two_style_prop_conditionals,
-    transform_jsx_recipes(
+    jsx_slot_recipe_conditional_style_prop_folds,
+    transform_jsx_slot_recipes(
         "src/app.tsx",
         indoc! {r#"
-            import { Button } from '@acme/ui';
+            import { Tabs } from '@acme/ui';
             export const el = (
-              <Button
+              <Tabs.Trigger
                 size="sm"
-                color={isDark ? 'white' : 'black'}
-                _hover={{ color: isDark ? 'black' : 'white' }}
+                _hover={{ _dark: { color: isDark ? 'white' : 'black' } }}
               />
             );
         "#},
     ),
     @r#"
+import { Tabs } from '@acme/ui';
 export const el = (
-  <div className={"button button--size_sm" + " " + (isDark ? "color_white" : "color_black") + " " + (isDark ? "hover:color_black" : "hover:color_white")} />
+  <Tabs.Trigger size="sm" className={isDark ? "hover:dark:color_white" : "hover:dark:color_black"} />
 );
 "#
 );
 
-edge_snapshot!(
-    jsx_recipe_spread_ternary_variant,
-    transform_jsx_recipes(
-        "src/app.tsx",
-        indoc! {r#"
-            import { Button } from '@acme/ui';
-            export const el = <Button {...(isMobile ? { size: 'sm' } : { size: 'lg' })} />;
-        "#},
-    ),
-    @r#"export const el = <div className={isMobile ? "button button--size_sm" : "button button--size_lg"} />;"#
-);
-
-// The falsy arm spreads nothing, and a bare `<Button />` still renders the
-// recipe base plus its defaults — not an empty class list.
-#[test]
-fn jsx_recipe_and_spread_stays_at_runtime() {
-    let source = indoc! {r#"
-        import { Button } from '@acme/ui';
-        export const el = <Button {...(isMobile && { size: 'sm' })} />;
-    "#};
-
-    let output = transform_jsx_recipes("src/app.tsx", source);
-
-    assert!(!output.changed);
-    assert!(!output.bailed);
-    assert_eq!(output.code, source);
-}
-
-#[test]
-fn jsx_recipe_responsive_variant_arm_stays_at_runtime() {
-    let source = indoc! {r#"
-        import { Button } from '@acme/ui';
-        export const el = <Button size={isMobile ? { base: 'sm', md: 'lg' } : 'sm'} />;
-    "#};
-
-    let output = transform_jsx_recipes("src/app.tsx", source);
-
-    assert!(!output.changed);
-    assert!(!output.bailed);
-    assert_eq!(output.code, source);
-}
-
-// A pattern's `defaultValues` fill in the same way a recipe's defaults do, so
-// two conditional props need the same decision tree — otherwise the second site
-// contributes `gap_4` next to the first site's `gap_2`.
 edge_snapshot!(
     jsx_pattern_default_values_with_two_conditionals,
     transform_jsx_patterns(
@@ -329,27 +366,6 @@ fn jsx_pattern_and_spread_stays_at_runtime() {
     assert!(!output.bailed);
     assert_eq!(output.code, source);
 }
-
-edge_snapshot!(
-    jsx_slot_recipe_nested_conditional_style_prop,
-    transform_jsx_slot_recipes(
-        "src/app.tsx",
-        indoc! {r#"
-            import { Tabs } from '@acme/ui';
-            export const el = (
-              <Tabs.Trigger
-                size="sm"
-                _hover={{ _dark: { color: isDark ? 'white' : 'black' } }}
-              />
-            );
-        "#},
-    ),
-    @r#"
-export const el = (
-  <div className={isDark ? "hover:dark:color_white" : "hover:dark:color_black"} />
-);
-"#
-);
 
 // --- whole-arg object ternaries (css / recipe calls) ---
 

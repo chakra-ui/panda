@@ -325,6 +325,25 @@ pub fn transform_with_shorthands(path: &str, source: &str) -> pandacss_project::
     transform_with_project(&shorthands_project(), path, source)
 }
 
+/// JSX with shorthands on, so `p` and `padding` are the same property.
+pub fn project_with_jsx_shorthands() -> Project {
+    Project::new(
+        System::new(create_config(json!({
+            "jsxFramework": "react",
+            "shorthands": true,
+            "utilities": {
+                "color": { "className": "c", "shorthand": "c" },
+                "padding": { "className": "p", "shorthand": "p" }
+            }
+        })))
+        .expect("config"),
+    )
+}
+
+pub fn transform_jsx_shorthands(path: &str, source: &str) -> pandacss_project::TransformOutput {
+    transform_jsx_with_project(&project_with_jsx_shorthands(), path, source)
+}
+
 pub fn project_with_jsx() -> Project {
     Project::new(
         System::new(create_config(json!({
@@ -407,8 +426,8 @@ pub fn project_with_jsx_recipes() -> Project {
     Project::new(
         System::new(create_config(json!({
             "jsxFramework": "react",
-            // Design system ships `<Button>` from `@acme/ui`, mapped into the jsx
-            // importMap so Panda owns it (recipe components aren't in `@panda/jsx`).
+            // `<Button>` ships from `@acme/ui`, mapped into the jsx importMap so
+            // its usages are extracted. Panda tracks it, it doesn't render it.
             "importMap": { "jsx": ["@panda/jsx", "@acme/ui"] },
             "utilities": {
                 "color": {},
@@ -423,6 +442,17 @@ pub fn project_with_jsx_recipes() -> Project {
                     "md": "768px"
                 },
                 "recipes": {
+                    // `color` is a variant here, a css property elsewhere.
+                    "chip": {
+                        "className": "chip",
+                        "jsx": ["Chip"],
+                        "base": { "display": "inline-block" },
+                        "variants": {
+                            "color": {
+                                "brand": { "color": "white" }
+                            }
+                        }
+                    },
                     "button": {
                         "className": "button",
                         "jsx": ["Button"],
