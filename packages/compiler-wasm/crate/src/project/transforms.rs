@@ -95,6 +95,10 @@ pub(super) fn resolve_utility_values_callbacks(
                 "Utility values callback `{id}` for `{prop}` threw: {err:?}"
             ))
         })?;
+        if result.is_null() || result.is_undefined() {
+            utility.values = None;
+            continue;
+        }
         utility.values = Some(serde_wasm_bindgen::from_value(result).map_err(|err| {
             JsValue::from_str(&format!(
                 "Utility values callback `{id}` for `{prop}` returned invalid values: {err}"
