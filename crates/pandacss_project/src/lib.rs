@@ -1149,14 +1149,49 @@ impl Project {
         };
 
         let mut rest = Vec::with_capacity(entries.len());
+        let mut css_layers = Vec::new();
         for (key, value) in entries {
-            if is_css_prop(key) {
+            if key == "css" {
+                collect_css_prop_layers(value, &mut css_layers);
+            } else if is_css_prop(key) {
+                // `inputCss` and friends address a slot, not this element.
                 self.process_nested_css_prop(encoder, value, policy);
             } else {
                 rest.push((key.clone(), value.clone()));
             }
         }
 
+        // Mirrors `resolveStyleArgs` -> `mergeProps`: normalize, then merge with
+        // the css prop last. Encoding the halves apart would emit a class for
+        // each and leave the winner to the sheet's order.
+        if css_layers
+            .iter()
+            .all(|layer| matches!(layer, Literal::Object(_)))
+        {
+            let normalizer = StyleNormalizer::new(
+                self.config.utility.as_ref(),
+                &self.config.breakpoints,
+                policy,
+            );
+            let base = normalizer.normalize(&Literal::Object(rest)).into_owned();
+            let layers: Vec<Literal> = css_layers
+                .iter()
+                .map(|layer| normalizer.normalize(layer).into_owned())
+                .collect();
+            let mut objects = Vec::with_capacity(layers.len() + 1);
+            objects.push(&base);
+            objects.extend(layers.iter());
+            let merged = merge_style_props(&objects);
+            if !matches!(&merged, Literal::Object(entries) if entries.is_empty()) {
+                self.process_atomic(encoder, &merged, policy);
+            }
+            return;
+        }
+
+        // A runtime branch can't merge into the base.
+        for layer in &css_layers {
+            self.process_atomic(encoder, layer, policy);
+        }
         if !rest.is_empty() {
             self.process_atomic(encoder, &Literal::Object(rest), policy);
         }
@@ -1799,7 +1834,8 @@ impl Project {
     }
 
     /// Resolve a config recipe call to the class string a static runtime call
-    /// would return. Slot recipes and conditional variants return `None`.
+    /// would return. Slot recipes, JS ternaries, and responsive variants return
+    /// `None`.
     #[must_use]
     pub fn class_names_for_recipe_call(
         &self,
@@ -2019,6 +2055,19 @@ pub(crate) fn condition_style_key(config: &UserConfig, condition: &str) -> Strin
 
 fn is_css_prop(key: &str) -> bool {
     key == "css" || key.ends_with("Css")
+}
+
+/// The objects a `css` prop contributes, in application order.
+fn collect_css_prop_layers(value: &Literal, out: &mut Vec<Literal>) {
+    match value {
+        Literal::Array(items) => {
+            for item in items {
+                collect_css_prop_layers(item, out);
+            }
+        }
+        Literal::Null | Literal::Bool(false) => {}
+        other => out.push(other.clone()),
+    }
 }
 
 /// Mirrors the emitter's `value_to_atom_value` so override keys match at lookup.

@@ -280,6 +280,15 @@ impl RecipeRegistry {
         (!style_entries.is_empty()).then_some(Literal::Object(style_entries))
     }
 
+    /// Variant keys across `recipe_names`; any other key is a style prop.
+    pub(crate) fn variant_props_for(&self, recipe_names: &[&str]) -> FxHashSet<&str> {
+        recipe_names
+            .iter()
+            .filter_map(|name| self.variant_props(name))
+            .flat_map(|props| props.iter().map(Box::as_ref))
+            .collect()
+    }
+
     fn variant_props(&self, recipe_name: &str) -> Option<&FxHashSet<Box<str>>> {
         self.recipes
             .get(recipe_name)
@@ -314,8 +323,8 @@ impl RecipeRegistry {
         format!("{class_name}__{slot}")
     }
 
-    /// Class names a static runtime call would apply. `None` for slot recipes
-    /// or conditional variant selections.
+    /// Class names a static runtime call would apply. `None` for slot recipes,
+    /// JS ternaries, or responsive variant selections.
     pub(crate) fn class_names_for_recipe_call(
         &self,
         recipe_name: &str,
@@ -323,6 +332,9 @@ impl RecipeRegistry {
         conditions: &ProjectConditionMatcher,
         breakpoints: &[String],
     ) -> Option<Vec<String>> {
+        if selected.has_conditional() {
+            return None;
+        }
         let node = self.recipe(recipe_name)?;
 
         let mut classes = Vec::new();

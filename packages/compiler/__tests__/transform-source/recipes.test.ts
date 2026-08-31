@@ -3,7 +3,8 @@ import { createTransformProject, importMap, lines } from '../test-utils'
 
 // Config recipes + slot recipe, default (eager) compound mode. The design
 // system's `<Card>`/`<Tabs>` ship from `@acme/ui`, mapped into the jsx importMap
-// so Panda owns those tags (recipe components aren't exported from `@panda/jsx`).
+// so their usages are extracted. Panda tracks recipe components; it doesn't
+// generate or render them.
 //   - `button`   : size/variant variants, boolean `block`, one compound, defaults, `className: 'button'`
 //   - `card`     : boolean `raised` + `visual` variants, `jsx: ['Card']`, `className: 'card'`
 //   - `badge`    : two compound variants, defaults, no `className` (falls back to recipe key)
@@ -295,11 +296,7 @@ describe('compiler.transformSource: config recipe calls', () => {
     expect(result.code).toMatchInlineSnapshot(`"export const cls = "button button--size_sm button--variant_solid""`)
   })
 
-  // SUSPECT: a ternary variant value is inlined as an *unconditional union* of
-  // both branch classes (both `size_sm` and `size_lg`), rather than bailing or
-  // emitting a conditional expression. At runtime the call would apply only one
-  // size class based on `isSmall`; emitting both makes size non-deterministic.
-  test('inlines both branches of a ternary variant value (suspect union)', () => {
+  test('keeps a ternary variant value as a class expression', () => {
     const source = lines(
       "import { button } from '@panda/recipes'",
       "export const cls = button({ size: isSmall ? 'sm' : 'lg' })",
@@ -308,8 +305,32 @@ describe('compiler.transformSource: config recipe calls', () => {
     const result = recipeCompiler.transformSource({ path: 'src/button.tsx', source })
     expect(result.changed).toBe(true)
     expect(result.code).toMatchInlineSnapshot(
-      `"export const cls = "button button--size_sm button--size_lg button--variant_solid""`,
+      `"export const cls = "button button--variant_solid" + " " + (isSmall ? "button--size_sm" : "button--size_lg")"`,
     )
+  })
+
+  test('resolves two conditional variants into a decision tree', () => {
+    const source = lines(
+      "import { button } from '@panda/recipes'",
+      "export const cls = button({ size: isSmall ? 'sm' : 'lg', variant: isSolid ? 'solid' : 'outline' })",
+    )
+
+    const result = recipeCompiler.transformSource({ path: 'src/button.tsx', source })
+    expect(result.changed).toBe(true)
+    expect(result.code).toMatchInlineSnapshot(
+      `"export const cls = "button" + " " + (isSmall ? (isSolid ? "button--size_sm button--variant_solid" : "button--size_sm button--variant_outline button--compound__size_sm__variant_outline") : isSolid ? "button--size_lg button--variant_solid" : "button--size_lg button--variant_outline")"`,
+    )
+  })
+
+  test('leaves a logical-and variant to the runtime', () => {
+    const source = lines(
+      "import { button } from '@panda/recipes'",
+      "export const cls = button({ size: isSmall && 'sm' })",
+    )
+
+    const result = recipeCompiler.transformSource({ path: 'src/button.tsx', source })
+    expect(result.changed).toBe(false)
+    expect(result.code).toBe(source)
   })
 
   test('applies compound only when defaults are overridden into the combo', () => {
@@ -525,23 +546,34 @@ describe('compiler.transformSource: inline cva / sva / styled', () => {
 })
 
 describe('compiler.transformSource: recipe JSX components', () => {
-  test('rewrites a config recipe JSX element with a boolean variant', () => {
+  test('leaves a config recipe JSX element with a boolean variant', () => {
     const source = lines("import { Card } from '@acme/ui'", 'export const el = <Card raised />')
 
     const result = recipeCompiler.transformSource({ path: 'src/card.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`"export const el = <div className="card card--raised_true" />"`)
+    expect(result.changed).toBe(false)
+    expect(result.code).toBe(source)
   })
 
-  test('splits recipe variant props from style props on a JSX element', () => {
+  // The point of `jsx: [...]`: not rewritten, but still emitted.
+  test('still emits the recipe CSS for an element it leaves alone', () => {
+    const source = lines("import { Card } from '@acme/ui'", 'export const el = <Card raised />')
+    recipeCompiler.parseFileSource('src/card-usage.tsx', source)
+
+    expect(recipeCompiler.transformSource({ path: 'src/card-usage.tsx', source }).changed).toBe(false)
+    expect(recipeCompiler.getLayerCss({ layers: ['recipes'] }).css).toContain('card--raised_true')
+  })
+
+  test('keeps variant props on the element and folds the style props', () => {
     const source = lines(
       "import { Card } from '@acme/ui'",
       'export const el = <Card raised visual="outline" color="red" />',
     )
 
     const result = recipeCompiler.transformSource({ path: 'src/card.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(
-      `"export const el = <div className="card card--raised_true card--visual_outline color_red" />"`,
-    )
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { Card } from '@acme/ui'
+      export const el = <Card raised visual="outline" className="color_red" />"
+    `)
   })
 
   test('leaves a slot recipe JSX element for the runtime', () => {

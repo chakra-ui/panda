@@ -9,7 +9,7 @@ use pandacss_recipes::{
 use super::helper::{CVA_HELPER_LOCAL, SVA_HELPER_LOCAL};
 use super::plan::{Rewrite, TransformHelperFacts};
 use super::resolve::is_static_style_literal;
-use super::style_lower;
+use super::style_lower::{self, LowerTarget};
 
 pub(crate) fn rewrite_for_cva_call(
     project: &Project,
@@ -119,7 +119,7 @@ fn print_plain_style_as_base(
     if let Some(expr) = style_tree_class_expression(project, source, style) {
         return Some(format!("{{ base: {expr} }}"));
     }
-    if style_literal_has_conditional(config) {
+    if config.has_conditional() {
         return None;
     }
     let classes = project.class_names_for_style_literal(config)?;
@@ -145,7 +145,7 @@ fn print_recipe_config(
         for group in &recipe.variants {
             let mut options = Vec::new();
             for option in &group.options {
-                if style_literal_has_conditional(&option.style) {
+                if option.style.has_conditional() {
                     return None;
                 }
                 if !is_static_style_literal(&option.style) {
@@ -195,7 +195,7 @@ fn print_recipe_base(
     if let Some(expr) = style_tree_class_expression(project, source, base_tree) {
         return Some(expr);
     }
-    if style_literal_has_conditional(base) {
+    if base.has_conditional() {
         return None;
     }
     if !is_static_style_literal(base) {
@@ -217,19 +217,8 @@ fn style_tree_class_expression(
     if !style_lower::style_tree_has_rewrite_sites(tree) {
         return None;
     }
-    style_lower::lower_style_tree(project, source, tree, None, None)
+    style_lower::lower_style_tree(project, source, tree, LowerTarget::Css, None)
         .map(|expr| style_lower::print_class_expr(&expr))
-}
-
-fn style_literal_has_conditional(value: &Literal) -> bool {
-    match value {
-        Literal::Conditional(_) => true,
-        Literal::Object(entries) => entries
-            .iter()
-            .any(|(_, nested)| style_literal_has_conditional(nested)),
-        Literal::Array(items) => items.iter().any(style_literal_has_conditional),
-        _ => false,
-    }
 }
 
 fn print_slot_recipe_config(project: &Project, recipe: &SlotRecipe) -> Option<String> {
@@ -248,7 +237,7 @@ fn print_slot_recipe_config(project: &Project, recipe: &SlotRecipe) -> Option<St
     if !recipe.base.is_empty() {
         let mut base_parts = Vec::new();
         for (slot, style) in &recipe.base {
-            if style_literal_has_conditional(style) {
+            if style.has_conditional() {
                 return None;
             }
             let classes = project.class_names_for_style_literal(style)?;
@@ -333,7 +322,7 @@ fn encode_shared_slot_variant_option(
 ) -> Option<String> {
     let mut encoded: Vec<String> = Vec::new();
     for (_, style) in &option.styles {
-        if style_literal_has_conditional(style) {
+        if style.has_conditional() {
             return None;
         }
         encoded.push(project.class_names_for_style_literal(style)?.join(" "));
@@ -350,7 +339,7 @@ fn encode_shared_slot_variant_option(
 }
 
 fn print_compound_variant(project: &Project, compound: &CompoundVariant) -> Option<String> {
-    if style_literal_has_conditional(&compound.css) {
+    if compound.css.has_conditional() {
         return None;
     }
     let mut parts = print_compound_conditions(&compound.conditions);
@@ -372,7 +361,7 @@ fn print_slot_compound_variant(
     let mut parts = print_compound_conditions(&compound.conditions);
     let mut css_parts = Vec::new();
     for (slot, style) in &compound.css {
-        if style_literal_has_conditional(style) {
+        if style.has_conditional() {
             return None;
         }
         let classes = project.class_names_for_style_literal(style)?;

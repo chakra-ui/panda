@@ -614,9 +614,7 @@ For the button recipe, we can import the `ButtonVariants` type like so:
 import React from 'react'
 import type { ButtonVariants } from '../styled-system/recipes'
 
-type ButtonProps = ButtonVariants & {
-  children: React.ReactNode
-}
+type ButtonProps = ButtonVariants & React.ComponentProps<'button'>
 ```
 
 ### Usage in JSX
@@ -629,16 +627,15 @@ track the usage of the variant properties.
 
 ```tsx
 import React from 'react'
+import { cx } from '../styled-system/css'
 import { button, type ButtonVariants } from '../styled-system/recipes'
 
-type ButtonProps = ButtonVariants & {
-  children: React.ReactNode
-}
+type ButtonProps = ButtonVariants & React.ComponentProps<'button'>
 
 const Button = (props: ButtonProps) => {
-  const { children, size } = props
+  const { size, className, children, ...rest } = props
   return (
-    <button {...props} className={button({ size })}>
+    <button {...rest} className={cx(button({ size }), className)}>
       {children}
     </button>
   )
@@ -652,6 +649,10 @@ const App = () => {
   )
 }
 ```
+
+Two things to keep in the wrapper: pull the variant props out of `props` so they don't land on the DOM element, and
+merge any incoming `className` with [`cx`](/docs/styling/writing-styles#classname-concatenation) so callers can still
+style your component.
 
 ### Advanced JSX Tracking
 
@@ -806,9 +807,9 @@ export const Demo = {
   In below example, the `size` prop is renamed to `buttonSize`
 
   ```tsx
-  const Button = ({ buttonSize, children }) => {
+  const Button = ({ buttonSize, className, children, ...props }) => {
     return (
-      <button {...props} className={button({ size: buttonSize })}>
+      <button {...props} className={cx(button({ size: buttonSize }), className)}>
         {children}
       </button>
     )
@@ -821,9 +822,9 @@ export const Demo = {
   In below example, the component name `Button` is renamed to `Random` and we are using `button` recipe.
 
   ```tsx
-  const Random = ({ size, children }) => {
+  const Random = ({ size, className, children, ...props }) => {
     return (
-      <button {...props} className={button({ size })}>
+      <button {...props} className={cx(button({ size }), className)}>
         {children}
       </button>
     )

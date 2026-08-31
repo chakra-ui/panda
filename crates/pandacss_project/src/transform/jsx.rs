@@ -18,9 +18,9 @@ pub(crate) fn rewrites_for_jsx_element(
     helper_cx: HelperCxMode,
     pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> Vec<Rewrite> {
-    // Only rewrite tags Panda owns. A name-only match (`jsxStyleProps`, or a
-    // lib component colliding with a pattern name) is extracted for CSS but
-    // left untouched: rewriting it would replace a user's component with a `div`.
+    // A name-only match (`jsxStyleProps`, or a lib component colliding with a
+    // pattern name) is extracted for CSS but left alone: rewriting it would
+    // replace a user's component with a `div`.
     if !jsx.panda_owned {
         return Vec::new();
     }

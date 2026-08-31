@@ -51,6 +51,17 @@ impl Literal {
         }
     }
 
+    /// True when any value in the tree is a branch only the runtime can decide.
+    #[must_use]
+    pub fn has_conditional(&self) -> bool {
+        match self {
+            Self::Conditional(_) => true,
+            Self::Object(entries) => entries.iter().any(|(_, value)| value.has_conditional()),
+            Self::Array(items) => items.iter().any(Self::has_conditional),
+            _ => false,
+        }
+    }
+
     /// Accumulate instead of overwrite: an existing key becomes a
     /// `Conditional` of both values. For conditional-spread branches
     /// (`...(cond ? a : b)`), so each branch's keys stay applicable — node's

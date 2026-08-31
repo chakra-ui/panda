@@ -16,9 +16,9 @@ way to know `<Random size="lg" />` should pull the `button` recipe's `size="lg"`
 
 ```tsx
 // recipe is named "button", but the component is named "Random"
-const Random = ({ size, children }) => {
+const Random = ({ size, className, children, ...props }) => {
   return (
-    <button {...props} className={button({ size })}>
+    <button {...props} className={cx(button({ size }), className)}>
       {children}
     </button>
   )
