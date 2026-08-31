@@ -293,16 +293,6 @@ pub fn transform_cross_file(
     transform_with_project(&project, &format!("/proj/{main_path}"), main_source)
 }
 
-pub fn template_literal_project() -> Project {
-    Project::new(
-        System::new(create_config(json!({
-            "syntax": "template-literal",
-            "jsxFramework": "react"
-        })))
-        .expect("config"),
-    )
-}
-
 pub fn shorthands_project() -> Project {
     Project::new(
         System::new(create_config(json!({
@@ -695,10 +685,6 @@ pub fn transform_jsx_solid(path: &str, source: &str) -> pandacss_project::Transf
 
 pub fn transform_jsx_qwik(path: &str, source: &str) -> pandacss_project::TransformOutput {
     transform_source(&project_with_jsx_qwik(), path, source, &jsx_only_options())
-}
-
-pub fn transform_template_literal(path: &str, source: &str) -> pandacss_project::TransformOutput {
-    transform_with_project(&template_literal_project(), path, source)
 }
 
 /// Transform output has to be valid source. Feeding it back through the

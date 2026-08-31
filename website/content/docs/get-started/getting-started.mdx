@@ -1,18 +1,81 @@
 ---
-title: Welcome to Panda
-description: The universal design system solution for the web
+title: Why Panda
+description: What Panda is, and what you get from writing styles this way.
 ---
 
-Panda is a styling engine that generates styling primitives to author atomic CSS and recipes in a type-safe and readable
-manner.
+## What is Panda
 
-Panda combines the developer experience of CSS-in-JS and the performance of atomic CSS. It leverages static analysis to
-scan your JavaScript and TypeScript files for JSX style props and function calls, generating styles on-demand (aka
-Just-in-Time)
+Panda is a styling engine. You write styles in TypeScript, and Panda generates plain atomic CSS at build time.
 
-> TLDR; Panda is a CSS-in-JS engine that generates atomic CSS at build time (via CLI or PostCSS)
+It reads your source rather than running in the browser: static analysis picks up JSX style props and function calls,
+and only the styles you actually used end up in the stylesheet. You get the authoring experience of CSS-in-JS without
+shipping a style engine to your users.
 
-## Why Panda
+There is more than one way to write it. Every tab below produces the same atomic CSS.
+
+<Tabs items={['css function', 'Style props', 'Patterns', 'Recipes']}>
+  <Tab>
+    ```jsx
+    import { css } from '../styled-system/css'
+
+    export function Card() {
+      return (
+        <div className={css({ display: 'flex', gap: '4', p: '4', rounded: 'md', bg: 'white' })}>
+          <img className={css({ w: '12', h: '12', rounded: 'full' })} src="/avatar.png" alt="" />
+          <span className={css({ fontWeight: 'semibold' })}>John Doe</span>
+        </div>
+      )
+    }
+    ```
+  </Tab>
+  <Tab>
+    ```jsx
+    import { styled } from '../styled-system/jsx'
+
+    export function Card() {
+      return (
+        <styled.div display="flex" gap="4" p="4" rounded="md" bg="white">
+          <styled.img w="12" h="12" rounded="full" src="/avatar.png" alt="" />
+          <styled.span fontWeight="semibold">John Doe</styled.span>
+        </styled.div>
+      )
+    }
+    ```
+  </Tab>
+  <Tab>
+    ```jsx
+    import { hstack, circle } from '../styled-system/patterns'
+
+    export function Card() {
+      return (
+        <div className={hstack({ gap: '4', p: '4', rounded: 'md', bg: 'white' })}>
+          <img className={circle({ size: '12' })} src="/avatar.png" alt="" />
+          <span>John Doe</span>
+        </div>
+      )
+    }
+    ```
+  </Tab>
+  <Tab>
+    ```jsx
+    import { cva } from '../styled-system/css'
+
+    const card = cva({
+      base: { display: 'flex', gap: '4', rounded: 'md', bg: 'white' },
+      variants: {
+        size: { sm: { p: '2' }, md: { p: '4' } }
+      },
+      defaultVariants: { size: 'md' }
+    })
+
+    export function Card({ size }) {
+      return <div className={card({ size })}>John Doe</div>
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## What you get
 
 - **Static analysis:** Panda parses your styles at build time and generates plain CSS files that work in any
   JavaScript framework.
@@ -24,47 +87,19 @@ Just-in-Time)
   styles without hand-rolling your own system.
 - **Modern CSS:** generated styles use cascade layers, CSS variables, and modern selectors like `:where` and `:is`.
 
-Here's what using Panda looks like in practice:
-
-```jsx
-import { css } from '../styled-system/css'
-import { circle, stack } from '../styled-system/patterns'
-
-function App() {
-  return (
-    <div
-      className={stack({
-        direction: 'row',
-        p: '4',
-        rounded: 'md',
-        shadow: 'lg',
-        bg: 'white'
-      })}
-    >
-      <div className={circle({ size: '5rem', overflow: 'hidden' })}>
-        <img src="https://via.placeholder.com/150" alt="avatar" />
-      </div>
-      <div className={css({ mt: '4', fontSize: 'xl', fontWeight: 'semibold' })}>John Doe</div>
-      <div className={css({ mt: '2', fontSize: 'sm', color: 'gray.600' })}>john@doe.com</div>
-    </div>
-  )
-}
-```
 
 
-## Installation
+## Where to go next
 
-Panda can be installed as a CLI tool, a PostCSS plugin, through a framework-specific guide, or inside Storybook.
+Panda installs as a CLI tool, a PostCSS plugin, through a framework-specific guide, or inside Storybook.
 
 <Cards>
-  <Card arrow title="Installation" description="Install via the CLI, PostCSS, your framework, or Storybook" href="/docs/get-started/cli" />
-</Cards>
-
-## Next Steps
-
-Get familiar with the core features and concepts in Panda.
-
-<Cards>
+  <Card
+    arrow
+    title="Installation"
+    description="Pick the setup that matches your project, then write your first style"
+    href="/docs/get-started/cli"
+  />
   <Card
     arrow
     title="Tokens"

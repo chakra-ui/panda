@@ -130,8 +130,7 @@ panda init -i                     # interactive wizard (TTY only; not a log mode
 ```
 
 The wizard asks for PostCSS, `outExtension` (`js` / `mjs` / `ts`), JSX framework (or none), `jsxStyleProps` (`all` /
-`minimal` / `none` when a framework is chosen), `strictTokens`, and `.gitignore`. Template-literal `syntax` stays a
-flag/config option only.
+`minimal` / `none` when a framework is chosen), `strictTokens`, and `.gitignore`.
 
 ### 3. Tell Panda what to scan
 
@@ -439,6 +438,29 @@ import { defineConfig } from '@pandacss/dev'
 ```
 
 Set `"type": "module"`, use `.mjs`, or run through an ESM-aware bundler. `panda.config.ts` loads as ESM.
+
+### Template literal syntax is gone
+
+The `syntax` config option and the `--syntax` init flag are removed, and so is tagged-template styling. Write styles as
+objects:
+
+```tsx
+// ❌ v1
+const Button = styled.button`
+  background-color: gainsboro;
+  padding: 10px 15px;
+`
+
+// ✅ v2
+const Button = styled('button', {
+  base: {
+    backgroundColor: 'gainsboro',
+    padding: '10px 15px'
+  }
+})
+```
+
+Run `panda codegen --clean` after you migrate so the old runtime is regenerated.
 
 ### `--cpu-prof` is now `--profile`
 

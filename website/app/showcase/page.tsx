@@ -12,7 +12,7 @@ const title = 'Built with Panda'
 const description = 'Real products shipping on Panda CSS today.'
 
 export const metadata: Metadata = {
-  title: 'Showcase | Panda CSS',
+  title: 'Showcase',
   description,
   openGraph: {
     title,

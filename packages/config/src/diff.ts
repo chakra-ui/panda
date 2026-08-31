@@ -16,7 +16,6 @@ const ALL_DEPENDENCIES: CodegenDependency[] = [
   'prefix',
   'recipes',
   'separator',
-  'syntax',
   'themes',
   'tokens',
   'utilities',
@@ -100,8 +99,6 @@ function classify(path: string[]): Classified {
       return { deps: ['patterns'], pattern: second }
     case 'themes':
       return { deps: ['themes'] }
-    case 'syntax':
-      return { deps: ['syntax'] }
     case 'hash':
       return { deps: ['hash'] }
     case 'prefix':

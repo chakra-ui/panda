@@ -3,9 +3,7 @@
 use std::collections::HashSet;
 
 use pandacss_encoder::{Atom, Encoder, compare_atoms_by_emit_order};
-use pandacss_extractor::{
-    CallFacts, CallSyntax, ExpressionKind, ExtractedCall, Literal, StyleTree,
-};
+use pandacss_extractor::{CallFacts, ExpressionKind, ExtractedCall, Literal, StyleTree};
 use pandacss_shared::view_transition_class_name;
 use pandacss_utility::ShorthandPolicy;
 
@@ -346,9 +344,6 @@ pub(crate) fn rewrites_for_identity_raw_call(
     arg_spans: &[pandacss_shared::Span],
     facts: &CallFacts,
 ) -> Option<[Rewrite; 2]> {
-    if facts.syntax != CallSyntax::Call {
-        return None;
-    }
     let [arg] = arg_spans else {
         return None;
     };
@@ -388,11 +383,7 @@ pub(crate) fn rewrite_for_merged_raw_call(
     source: &str,
     span: pandacss_shared::Span,
     args: &[Option<Literal>],
-    facts: &CallFacts,
 ) -> Option<Rewrite> {
-    if facts.syntax != CallSyntax::Call {
-        return None;
-    }
     let merged = project.merged_style_literal(args)?;
     rewrite_for_style_literal(source, span, &merged)
 }
@@ -405,9 +396,7 @@ pub(crate) fn rewrite_for_pattern_raw_call(
     call: &ExtractedCall,
     pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> Option<Rewrite> {
-    if call.facts.syntax != CallSyntax::Call
-        || pattern_call_has_unextractable_args(&call.data, &call.style_args, &call.facts)
-    {
+    if pattern_call_has_unextractable_args(&call.data, &call.style_args, &call.facts) {
         return None;
     }
     let styles =
@@ -497,7 +486,7 @@ pub(crate) fn span_slice(source: &str, span: pandacss_shared::Span) -> Option<&s
 }
 
 fn recipe_call_has_unextractable_args(args: &[Option<Literal>], facts: &CallFacts) -> bool {
-    if facts.syntax != CallSyntax::Call || args.iter().any(Option::is_none) {
+    if args.iter().any(Option::is_none) {
         return true;
     }
     if args.is_empty()
@@ -519,7 +508,7 @@ fn pattern_call_has_unextractable_args(
     style_args: &[Option<StyleTree>],
     facts: &CallFacts,
 ) -> bool {
-    if facts.syntax != CallSyntax::Call || args.iter().any(Option::is_none) {
+    if args.iter().any(Option::is_none) {
         return true;
     }
     // A pattern call collapses to one value, so anything the literal can't

@@ -82,7 +82,6 @@ export const initFlagsSchema = commonFlagsSchema
     outdir: stringFlag,
     jsxFramework: stringFlag,
     jsxStyleProps: enumOf(['all', 'minimal', 'none']),
-    syntax: enumOf(['template-literal', 'object-literal']),
     strictTokens: booleanFlag,
     skipPresets: booleanFlag,
     interactive: booleanFlag,

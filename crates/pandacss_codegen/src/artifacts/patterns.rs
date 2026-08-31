@@ -4,8 +4,7 @@
 use std::collections::BTreeSet;
 
 use pandacss_config::{
-    CssSyntaxKind, PatternConfig, PatternPropertyConfig, PatternPropertyTypeKind,
-    PatternTypeDefinition,
+    PatternConfig, PatternPropertyConfig, PatternPropertyTypeKind, PatternTypeDefinition,
 };
 use pandacss_shared::{file_stem, js_ident, pascal_case};
 use serde_json::{Map, Value};
@@ -38,10 +37,6 @@ pub fn files(
     options: GenerateOptions,
     dependencies: DependencySet,
 ) -> Vec<ArtifactFile> {
-    if matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
-        return Vec::new();
-    }
-
     let mut module_files = Vec::new();
     let mut names = Vec::new();
 

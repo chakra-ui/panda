@@ -1,4 +1,5 @@
 import { Sidebar } from '@/components/docs/sidebar'
+import { css, cx } from '@/styled-system/css'
 import { generateOgImageUrl } from '@/lib/og-image'
 import { Card, Cards } from '@/mdx/cards'
 import { Box, Stack } from '@/styled-system/jsx'
@@ -17,7 +18,7 @@ const description =
   'Build modern websites with build-time, type-safe CSS-in-JS.'
 
 export const metadata: Metadata = {
-  title: `${title} | Panda CSS`,
+  title: title,
   description,
   openGraph: {
     title,
@@ -27,6 +28,11 @@ export const metadata: Metadata = {
   }
 }
 
+const sidebarScroll = css({
+  maskImage:
+    'linear-gradient(to bottom, black calc(100% - 2.5rem), transparent 100%)'
+})
+
 export default function DocsWelcomePage() {
   return (
     <Box display="flex" position="relative">
@@ -34,15 +40,15 @@ export default function DocsWelcomePage() {
         as="aside"
         display={{ base: 'none', lg: 'block' }}
         flexShrink="0"
-        w="64"
+        w="290px"
         position="sticky"
-        top="calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height) + 1rem)"
-        height="calc(100vh - var(--navbar-height) - var(--banner-height) - var(--tabbar-height) - 1rem)"
+        top="calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height))"
+        height="calc(100vh - var(--navbar-height) - var(--banner-height) - var(--tabbar-height))"
       >
         <Box
           overflowY="auto"
           height="100%"
-          className="scroll-area"
+          className={cx('scroll-area', sidebarScroll)}
           py="4"
           px="6"
         >
@@ -50,7 +56,7 @@ export default function DocsWelcomePage() {
         </Box>
       </Box>
 
-      <Box as="article" flex="1" minW="0" maxW="64rem" mx="auto" px="6" pt="10">
+      <Box as="article" flex="1" minW="0" maxW="64rem" mx="auto" px="6" pt="10" pb="16">
       <Box textStyle="eyebrow" color="fg.subtle" mb="4">
         Docs
       </Box>

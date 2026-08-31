@@ -1631,15 +1631,9 @@ importers:
       bright:
         specifier: 1.0.0
         version: 1.0.0(react@19.2.0)
-      focus-visible:
-        specifier: 5.2.1
-        version: 5.2.1
       fuse.js:
         specifier: ^7.1.0
         version: 7.1.0
-      git-url-parse:
-        specifier: 16.1.0
-        version: 16.1.0
       next:
         specifier: 16.3.0
         version: 16.3.0(@babel/core@7.28.5(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@24.10.1)(babel-plugin-macros@3.1.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -10666,9 +10660,6 @@ packages:
   flattie@1.1.1:
     resolution: {integrity: sha512-9UbaD6XdAL97+k/n+N7JwX46K/M6Zc6KcFYskrYL8wbBV/Uyk0CTAMY0VT+qiK5PM7AIc9aTWYtq65U7T+aCNQ==}
     engines: {node: '>=8'}
-
-  focus-visible@5.2.1:
-    resolution: {integrity: sha512-8Bx950VD1bWTQJEH/AM6SpEk+SU55aVnp4Ujhuuxy3eMEBCRwBnTBnVXr9YAPvZL3/CNjCa8u4IWfNmEO53whA==}
 
   follow-redirects@1.15.11:
     resolution: {integrity: sha512-deG2P0JfjrTxl50XGCDyfI97ZGVCxIpfKYmfyrQ54n5FO/0gfIES8C/Psl6kWVDolizcaaxZJnTS0QSMxvnsBQ==}
@@ -28240,8 +28231,6 @@ snapshots:
   flatted@3.3.3: {}
 
   flattie@1.1.1: {}
-
-  focus-visible@5.2.1: {}
 
   follow-redirects@1.15.11(debug@4.4.3(supports-color@10.2.2)):
     optionalDependencies:

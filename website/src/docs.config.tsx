@@ -122,7 +122,6 @@ export const docsTabs: TabItem[] = [
       },
       {
         title: 'AI for Agents',
-        tag: 'new',
         items: [
           { title: 'MCP Server', url: 'mcp-server' },
           { title: 'LLMs.txt', url: 'llms-txt' },
@@ -204,8 +203,7 @@ export const docsTabs: TabItem[] = [
           { title: 'JSX Style Props', url: 'style-props' },
           { title: 'Styled System', url: 'styled-system' },
           { title: 'The extend keyword', url: 'extend' },
-          { title: 'Template Literals', url: 'template-literals' },
-          { title: 'View Transition', url: 'view-transition', tag: 'new' }
+          { title: 'View Transition', url: 'view-transition' }
         ]
       },
       {
@@ -276,7 +274,7 @@ export const docsTabs: TabItem[] = [
           { title: 'Theme', url: 'theme' },
           { title: 'Custom Fonts', url: 'fonts' },
           { title: 'Multiple Themes', url: 'multiple-themes' },
-          { title: 'Spec', url: 'spec', tag: 'new' }
+          { title: 'Spec', url: 'spec' }
         ]
       },
       {

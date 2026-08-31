@@ -70,7 +70,6 @@ pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactF
             ConfigDependency::Conditions,
             ConfigDependency::Tokens,
             ConfigDependency::Utilities,
-            ConfigDependency::Syntax,
         ]),
     ));
 
@@ -113,7 +112,6 @@ pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactF
                 ConfigDependency::JsxFactory,
                 ConfigDependency::JsxFramework,
                 ConfigDependency::JsxStyleProps,
-                ConfigDependency::Syntax,
             ]),
         ));
     }

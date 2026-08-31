@@ -9,7 +9,7 @@ const title = 'Guides'
 const description = 'Task-shaped walkthroughs for common jobs in Panda.'
 
 export const metadata: Metadata = {
-  title: `${title} | Panda CSS`,
+  title: title,
   description,
   openGraph: {
     title,

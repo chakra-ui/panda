@@ -98,7 +98,6 @@ const FINGERPRINT_IGNORED_KEYS: &[&str] = &[
     "jsxFramework",
     "jsxFactory",
     "jsxStyleProps",
-    "syntax",
     "outExtension",
     "forceImportExtension",
     "validation",

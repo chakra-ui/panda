@@ -150,7 +150,6 @@ fn emitted_files_carry_config_dependencies() {
     assert!(dependencies.contains(ConfigDependency::CodegenFormat));
     assert!(dependencies.contains(ConfigDependency::Tokens));
     assert!(dependencies.contains(ConfigDependency::Utilities));
-    assert!(dependencies.contains(ConfigDependency::Syntax));
 
     let themes_config = serde_json::from_value(serde_json::json!({
         "themes": {

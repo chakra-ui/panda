@@ -1,7 +1,7 @@
 use crate::common::{artifact, file, paths};
 use insta::assert_snapshot;
 use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
-use pandacss_config::{CssSyntaxKind, UserConfig};
+use pandacss_config::UserConfig;
 
 fn react_config() -> UserConfig {
     serde_json::from_value(serde_json::json!({
@@ -46,12 +46,6 @@ fn react_config() -> UserConfig {
         }
     }))
     .expect("config should deserialize")
-}
-
-fn template_literal_react_config() -> UserConfig {
-    let mut config = react_config();
-    config.syntax = CssSyntaxKind::TemplateLiteral;
-    config
 }
 
 #[test]
@@ -224,6 +218,54 @@ fn react_types_include_jsx_factory_surface() {
 }
 
 #[test]
+fn is_valid_prop_includes_condition_keys() {
+    let config: UserConfig = serde_json::from_value(serde_json::json!({
+        "jsxFramework": "react",
+        "conditions": {
+            "hover": "&:hover",
+            "dark": ".dark &"
+        },
+        "theme": {
+            "breakpoints": { "md": "768px" }
+        }
+    }))
+    .expect("config should deserialize");
+
+    let artifacts = ArtifactGraph.generate_with_config(&config, GenerateOptions::default());
+    let code = file(
+        artifact(&artifacts, ArtifactId::JsxIsValidProp),
+        "jsx/is-valid-prop.mjs",
+    );
+
+    assert!(code.contains("\"_hover\""));
+    assert!(code.contains("\"_dark\""));
+    assert!(code.contains("\"md\""));
+    assert!(code.contains("\"base\""));
+    assert!(code.contains("value.startsWith(\"--\")"));
+    assert!(code.contains("const cssPropertySelectorRe = /&|@/"));
+    assert!(code.contains("cssPropertySelectorRe.test(value)"));
+}
+
+#[test]
+fn is_valid_prop_omits_conditions_when_style_props_are_minimal() {
+    let config: UserConfig = serde_json::from_value(serde_json::json!({
+        "jsxFramework": "react",
+        "jsxStyleProps": "minimal",
+        "conditions": { "hover": "&:hover" }
+    }))
+    .expect("config should deserialize");
+
+    let artifacts = ArtifactGraph.generate_with_config(&config, GenerateOptions::default());
+    let code = file(
+        artifact(&artifacts, ArtifactId::JsxIsValidProp),
+        "jsx/is-valid-prop.mjs",
+    );
+
+    assert!(!code.contains("\"_hover\""));
+    assert!(code.contains("\"css\""));
+}
+
+#[test]
 fn helper_owns_jsx_helpers() {
     let artifacts = ArtifactGraph.generate_with_config(&react_config(), GenerateOptions::default());
     let factory = file(
@@ -278,67 +320,4 @@ fn helper_owns_jsx_helpers() {
     assert!(!factory.contains("defaultShouldForwardProp"));
     assert!(!factory.contains("normalizeHTMLProps"));
     assert!(!factory.contains("factory-helper"));
-}
-
-#[test]
-fn template_literal_react_jsx_factory_uses_template_runtime() {
-    let artifacts = ArtifactGraph
-        .generate_with_config(&template_literal_react_config(), GenerateOptions::default());
-    let code = file(
-        artifact(&artifacts, ArtifactId::JsxFactory),
-        "jsx/factory.mjs",
-    );
-    let dts = file(
-        artifact(&artifacts, ArtifactId::JsxFactory),
-        "jsx/factory.d.ts",
-    );
-    let jsx = file(artifact(&artifacts, ArtifactId::Types), "types/jsx.d.ts");
-
-    assert!(code.contains("import { css, cx } from '../css/index';"));
-    assert!(code.contains("import { getDisplayName } from './helper';"));
-    assert!(code.contains("const styles = css.raw(Dynamic.__styles__, template)"));
-    assert!(code.contains("const staticClassName = css(styles)"));
-    assert!(code.contains("className: cx(staticClassName, className)"));
-    assert!(code.contains("PandaComponent.__styles__ = styles"));
-    assert!(!code.contains("cva"));
-    assert!(!code.contains("isCssProperty"));
-    assert!(!code.contains("splitJsxProps"));
-
-    assert!(dts.contains("import type { Panda } from '../types/jsx';"));
-    assert!(dts.contains("export declare const panda: Panda"));
-    assert!(jsx.contains("(args: { raw: readonly string[] | ArrayLike<string> })"));
-    assert!(jsx.contains("export type HTMLPandaProps<T extends ElementType> = ComponentProps<T>"));
-    assert!(!jsx.contains("RecipeDefinition"));
-    assert!(!jsx.contains("JsxStyleProps"));
-}
-
-#[test]
-fn template_literal_react_jsx_skips_object_style_artifacts() {
-    let artifacts = ArtifactGraph
-        .generate_with_config(&template_literal_react_config(), GenerateOptions::default());
-
-    assert!(paths(artifact(&artifacts, ArtifactId::JsxIsValidProp)).is_empty());
-    assert_eq!(
-        paths(artifact(&artifacts, ArtifactId::JsxHelper)),
-        vec!["jsx/helper.mjs", "jsx/helper.d.ts"]
-    );
-    assert!(paths(artifact(&artifacts, ArtifactId::JsxPatterns)).is_empty());
-    assert!(paths(artifact(&artifacts, ArtifactId::JsxCreateRecipeContext)).is_empty());
-    assert!(paths(artifact(&artifacts, ArtifactId::JsxCreateSlotRecipeContext)).is_empty());
-
-    let index = file(artifact(&artifacts, ArtifactId::JsxIndex), "jsx/index.mjs");
-    let index_dts = file(artifact(&artifacts, ArtifactId::JsxIndex), "jsx/index.d.ts");
-
-    assert!(index.contains("export * from './factory'"));
-    assert!(!index.contains("is-valid-prop"));
-    assert!(!index.contains("create-recipe-context"));
-    assert!(!index.contains("create-slot-recipe-context"));
-    assert!(!index.contains("stack"));
-
-    assert!(index_dts.contains("HTMLPandaProps"));
-    assert!(index_dts.contains("PandaComponent"));
-    assert!(index_dts.contains("Panda"));
-    assert!(index_dts.contains("from '../types/jsx'"));
-    assert!(!index_dts.contains("StyledVariantProps"));
-    assert!(!index_dts.contains("JsxFactoryOptions"));
 }

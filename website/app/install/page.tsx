@@ -11,7 +11,7 @@ const description =
   'One command. Your typed styled-system generated in seconds.'
 
 export const metadata: Metadata = {
-  title: `${title} | Panda CSS`,
+  title: title,
   description,
   openGraph: {
     title,

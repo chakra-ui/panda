@@ -108,7 +108,6 @@ spread-merged keys fall back to `Literal`.
 | ------------------------- | -------------------------------- | ----------------- |
 | `css()` / pattern args    | `style_args`                     | `project_literal` |
 | JSX style props           | `style`                          | `project_literal` |
-| Tagged-template `css`     | `css_template_to_style_tree`     | `project_literal` |
 | Vue/Svelte template attrs | `literal_to_style_tree` (static) | object entries    |
 
 A missing StyleTree on a dynamic conditional is an extraction bug. Do not restore the source collectors.
