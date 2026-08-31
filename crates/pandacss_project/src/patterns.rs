@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use std::sync::Arc;
 
 use regex::Regex;
-use rustc_hash::FxHashMap;
+use rustc_hash::{FxHashMap, FxHashSet};
 
 use pandacss_extractor::Literal;
 
@@ -76,6 +76,17 @@ impl PatternRegistry {
                     Cow::Owned(apply_default_values(defaults.as_ref(), styles))
                 }),
         }
+    }
+
+    /// Keys the pattern fills in when a usage leaves them out.
+    pub(crate) fn default_value_keys(&self, name: &str) -> FxHashSet<&str> {
+        let Some(Literal::Object(entries)) = self
+            .find(name)
+            .and_then(|entry| entry.default_values.as_deref())
+        else {
+            return FxHashSet::default();
+        };
+        entries.iter().map(|(key, _)| key.as_str()).collect()
     }
 
     /// Resolve a pattern name or JSX tag to the canonical pattern name.

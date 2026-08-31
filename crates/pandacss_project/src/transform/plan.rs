@@ -255,9 +255,11 @@ pub(crate) fn build_plan(
             MatchCategory::Recipe if targets.recipes_enabled() => {
                 if let Some(rewrite) = resolve::rewrite_for_recipe_call(
                     project,
+                    source,
                     &call.name,
                     call.span,
                     &call.data,
+                    &call.style_args,
                     &call.facts,
                 ) {
                     plan.push(rewrite);
