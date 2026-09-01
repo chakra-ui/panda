@@ -1,7 +1,7 @@
 import { DocsNavbar } from '@/components/docs/docs-navbar'
 import { MobileBrowse } from '@/components/docs/mobile-browse'
 import { TabBar } from '@/components/docs/tab-bar'
-import { SiteFooter } from '@/components/docs/site-footer'
+import { DocsFooter } from '@/components/docs/docs-footer'
 import { SkipNavContent, SkipNavLink } from '@/mdx/skip-nav'
 import { css } from '@/styled-system/css'
 
@@ -40,7 +40,7 @@ export default function DocsLayout(props: React.PropsWithChildren) {
         {children}
       </main>
       <MobileBrowse />
-      <SiteFooter />
+      <DocsFooter />
     </div>
   )
 }
