@@ -35,8 +35,11 @@ export const marqueeRecipe = defineRecipe({
     item: {
       display: 'flex',
       alignItems: 'center',
-      gap: '2',
-      mx: '2',
+      // The dot separates two labels, so it has to sit equidistant from both.
+      // Ark puts `margin-inline: spacing/2` on every item and `spacing` between
+      // them, making the outer gap `2 * spacing`; deriving the inner gap from
+      // the same variable keeps the two equal whatever Ark sets it to.
+      gap: 'calc(var(--marquee-spacing) * 2)',
       whiteSpace: 'nowrap',
       letterSpacing: 'tight'
     }
