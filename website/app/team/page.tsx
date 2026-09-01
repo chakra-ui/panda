@@ -14,6 +14,7 @@ import Image from 'next/image'
 import { LuGithub, LuGlobe, LuTwitter } from 'react-icons/lu'
 
 const title = 'Team'
+const heading = 'Meet the team'
 const description =
   'Panda is built by a small core team and a large community of contributors.'
 
@@ -131,20 +132,22 @@ export default async function TeamPage() {
 
   const statusOf = (login: string) =>
     teamMembers.find(member => member.login === login)?.status
-  const active = users.filter(user => statusOf(user.login) === 'active')
-  const alumni = users.filter(user => statusOf(user.login) === 'alumni')
+  const maintainers = users.filter(
+    user => statusOf(user.login) === 'maintainer'
+  )
+  const advisors = users.filter(user => statusOf(user.login) === 'advisor')
 
   return (
-    <SitePage kicker="Team" title={title} description={description}>
+    <SitePage kicker="Team" title={heading} description={description}>
       <Section title="Maintainers">
-        {active.map(user => (
+        {maintainers.map(user => (
           <MemberRow key={user.login} user={user} />
         ))}
       </Section>
 
-      {alumni.length > 0 && (
-        <Section title="Alumni">
-          {alumni.map(user => (
+      {advisors.length > 0 && (
+        <Section title="Advisors">
+          {advisors.map(user => (
             <MemberRow key={user.login} user={user} />
           ))}
         </Section>
