@@ -1,4 +1,5 @@
 import { Sidebar } from '@/components/docs/sidebar'
+import { defaultTabKey } from '@/docs.config'
 import { css, cx } from '@/styled-system/css'
 import { generateOgImageUrl } from '@/lib/og-image'
 import { Card, Cards } from '@/mdx/cards'
@@ -53,7 +54,7 @@ export default function DocsWelcomePage() {
           pb="4"
           px="6"
         >
-          <Sidebar tabKey="get-started" />
+          <Sidebar tabKey={defaultTabKey} />
         </Box>
       </Box>
 

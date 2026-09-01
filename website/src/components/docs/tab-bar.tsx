@@ -2,6 +2,7 @@
 
 import {
   communityLinks,
+  defaultTabKey,
   docsTabs,
   tabLandingHref,
   type TabItem
@@ -52,7 +53,8 @@ export const TAB_ICONS: Record<string, IconType> = {
  */
 export function TabBar() {
   const pathname = usePathname()
-  const activeKey = pathname?.split('/')[2]
+  // `/docs` has no tab segment, and is where Get Started lands.
+  const activeKey = pathname?.split('/')[2] || defaultTabKey
 
   const left = docsTabs.filter(tab => tab.side === 'left')
   const right = docsTabs.filter(tab => tab.side === 'right')
