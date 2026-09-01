@@ -1,10 +1,4 @@
 import { cva } from '@/styled-system/css'
-import { useEffect, useRef } from 'react'
-import { useSetActiveAnchor } from '../mdx/contexts'
-import {
-  useIntersectionObserver,
-  useSlugs
-} from '../mdx/contexts/active-anchor'
 
 type HeadingTag = `h${1 | 2 | 3 | 4 | 5 | 6}`
 
@@ -28,7 +22,14 @@ const styles = cva({
   variants: {
     tag: {
       h1: { mt: '2', fontSize: '4xl', fontWeight: 'bold' },
-      h2: { mt: '12', fontSize: '3xl' },
+      h2: {
+        mt: '16',
+        mb: '6',
+        pb: '3',
+        fontSize: '3xl',
+        borderBottomWidth: '1px',
+        borderColor: 'border'
+      },
       h3: { mt: '10', fontSize: '2xl' },
       h4: { mt: '8', fontSize: 'xl' },
       h5: { mt: '8', fontSize: 'lg' },
@@ -38,33 +39,7 @@ const styles = cva({
 })
 
 export const Heading = (props: Props) => {
-  const { tag: Tag, context, children, id, ...rest } = props
-
-  const setActiveAnchor = useSetActiveAnchor()
-  const slugs = useSlugs()
-  const observer = useIntersectionObserver()
-  const obRef = useRef<HTMLAnchorElement | null>(null)
-  const indexRef = useRef(context.index)
-
-  useEffect(() => {
-    if (!id) return
-    const heading = obRef.current
-    if (!heading) return
-    const currentIndex = indexRef.current
-    indexRef.current += 1
-    slugs.set(heading, [id, currentIndex])
-    observer?.observe(heading)
-
-    return () => {
-      observer?.disconnect()
-      slugs.delete(heading)
-      setActiveAnchor(f => {
-        const ret = { ...f }
-        delete ret[id]
-        return ret
-      })
-    }
-  }, [id, slugs, observer, setActiveAnchor])
+  const { tag: Tag, context: _context, children, id, ...rest } = props
 
   return (
     <Tag className={styles({ tag: Tag })} id={id} {...rest}>

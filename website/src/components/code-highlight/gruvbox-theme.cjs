@@ -112,7 +112,7 @@ module.exports = {
     {
       scope: 'storage',
       settings: {
-        foreground: '#fb4934'
+        foreground: '#fc5f4c'
       }
     },
     {
@@ -148,7 +148,7 @@ module.exports = {
     {
       scope: 'string.escape',
       settings: {
-        foreground: '#fb4934'
+        foreground: '#fc5f4c'
       }
     },
     {
@@ -184,13 +184,13 @@ module.exports = {
     {
       scope: 'keyword',
       settings: {
-        foreground: '#fb4934'
+        foreground: '#fc5f4c'
       }
     },
     {
       scope: 'keyword.control',
       settings: {
-        foreground: '#fb4934'
+        foreground: '#fc5f4c'
       }
     },
     {
@@ -338,7 +338,7 @@ module.exports = {
     {
       scope: 'storage.type.class',
       settings: {
-        foreground: '#fb4934'
+        foreground: '#fc5f4c'
       }
     },
     {
@@ -356,7 +356,7 @@ module.exports = {
     {
       scope: 'punctuation.quasi',
       settings: {
-        foreground: '#fb4934'
+        foreground: '#fc5f4c'
       }
     },
     {
@@ -381,7 +381,7 @@ module.exports = {
         'storage.type.class.python'
       ],
       settings: {
-        foreground: '#fb4934'
+        foreground: '#fc5f4c'
       }
     },
     {
@@ -416,7 +416,7 @@ module.exports = {
     {
       scope: 'keyword.operator.logical',
       settings: {
-        foreground: '#fb4934'
+        foreground: '#fc5f4c'
       }
     },
     {
@@ -698,7 +698,7 @@ module.exports = {
         'source.css support.function.misc'
       ],
       settings: {
-        foreground: '#fb4934'
+        foreground: '#fc5f4c'
       }
     },
     {
@@ -853,7 +853,7 @@ module.exports = {
     foreground: '#ebdbb2',
     'widget.shadow': '#28282830',
     'selection.background': '#689d6a80',
-    errorForeground: '#fb4934',
+    errorForeground: '#fc5f4c',
     'button.background': '#45858880',
     'button.foreground': '#ebdbb2',
     'button.hoverBackground': '#45858860',
@@ -864,7 +864,7 @@ module.exports = {
     'input.border': '#3c3836',
     'input.foreground': '#ebdbb2',
     'input.placeholderForeground': '#ebdbb260',
-    'inputValidation.errorBorder': '#fb4934',
+    'inputValidation.errorBorder': '#fc5f4c',
     'inputValidation.errorBackground': '#cc241d80',
     'inputValidation.infoBorder': '#83a598',
     'inputValidation.infoBackground': '#45858880',
@@ -946,13 +946,13 @@ module.exports = {
     'editorOverviewRuler.modifiedForeground': '#83a598',
     'editorOverviewRuler.addedForeground': '#83a598',
     'editorOverviewRuler.deletedForeground': '#83a598',
-    'editorOverviewRuler.errorForeground': '#fb4934',
+    'editorOverviewRuler.errorForeground': '#fc5f4c',
     'editorOverviewRuler.warningForeground': '#d79921',
     'editorOverviewRuler.infoForeground': '#d3869b',
     'editorGutter.background': '#28282800',
     'editorGutter.modifiedBackground': '#83a598',
     'editorGutter.addedBackground': '#b8bb26',
-    'editorGutter.deletedBackground': '#fb4934',
+    'editorGutter.deletedBackground': '#fc5f4c',
     'editorError.foreground': '#cc241d',
     'editorWarning.foreground': '#d79921',
     'editorInfo.foreground': '#458588',
@@ -1007,7 +1007,7 @@ module.exports = {
     'terminal.ansiBlack': '#3c3836',
     'terminal.ansiBrightBlack': '#928374',
     'terminal.ansiRed': '#cc241d',
-    'terminal.ansiBrightRed': '#fb4934',
+    'terminal.ansiBrightRed': '#fc5f4c',
     'terminal.ansiGreen': '#98971a',
     'terminal.ansiBrightGreen': '#b8bb26',
     'terminal.ansiYellow': '#d79921',
@@ -1044,7 +1044,7 @@ module.exports = {
     'notification.infoForeground': '#282828',
     'notification.warningBackground': '#fabd2f',
     'notification.warningForeground': '#282828',
-    'notification.errorBackground': '#fb4934',
+    'notification.errorBackground': '#fc5f4c',
     'notification.errorForeground': '#282828',
     'extensionButton.prominentBackground': '#b8bb2680',
     'extensionButton.prominentHoverBackground': '#b8bb2630',

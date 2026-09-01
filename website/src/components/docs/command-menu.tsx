@@ -1,11 +1,14 @@
 'use client'
-import { docs } from '.velite'
+import { blog, docs } from '.velite'
 import { Badge } from '@/components/ui/badge'
 import { dialogSlotRecipe } from '@/components/ui/dialog'
+import { SEARCH_HOTKEY } from '@/components/docs/search'
+import { Segmented } from '@/components/ui/segmented'
 import {
   convertToSearchItems,
   filterSearchItems,
-  getSearchIndex
+  getSearchIndex,
+  type SearchSection
 } from '@/lib/search-index'
 import { useMatchMedia } from '@/lib/use-match-media'
 import { css, cx } from '@/styled-system/css'
@@ -13,10 +16,16 @@ import { createListCollection } from '@ark-ui/react/collection'
 import { Combobox } from '@ark-ui/react/combobox'
 import { Dialog } from '@ark-ui/react/dialog'
 import { useEnvironmentContext } from '@ark-ui/react/environment'
+import { createHotkeyStore } from '@zag-js/hotkeys'
 import { Portal } from '@ark-ui/react/portal'
 import { useRouter } from 'next/navigation'
 import { useDeferredValue, useEffect, useMemo, useState } from 'react'
-import { Box, Center, Stack } from 'styled-system/jsx'
+import { Box, Center, HStack, Stack } from 'styled-system/jsx'
+
+const SECTIONS = ['All', 'Docs', 'Reference', 'Blog'] as const
+type SectionFilter = (typeof SECTIONS)[number]
+
+const SUGGESTIONS = ['recipes', 'tokens', 'conditions', 'staticCss']
 
 interface Props {
   mediaQuery: string
@@ -29,9 +38,10 @@ export const CommandMenu = (props: Props) => {
 
   const [open, setOpen] = useState(false)
   const [inputValue, setInputValue] = useState('')
+  const [section, setSection] = useState<SectionFilter>('All')
   const inputValueState = useDeferredValue(inputValue)
 
-  const searchIndex = useMemo(() => getSearchIndex(docs), [])
+  const searchIndex = useMemo(() => getSearchIndex(docs, blog), [])
   const items = useMemo(() => convertToSearchItems(searchIndex), [searchIndex])
 
   // Filter items based on input
@@ -40,10 +50,14 @@ export const CommandMenu = (props: Props) => {
     [items, searchIndex, inputValueState]
   )
 
-  const filteredItems = useMemo(
-    () => Object.values(matches).flat().slice(0, limit),
-    [matches, limit]
-  )
+  const filteredItems = useMemo(() => {
+    const all = Object.values(matches).flat()
+    const scoped =
+      section === 'All'
+        ? all
+        : all.filter(item => item.section === (section as SearchSection))
+    return scoped.slice(0, limit)
+  }, [matches, limit, section])
 
   const router = useRouter()
 
@@ -118,6 +132,39 @@ export const CommandMenu = (props: Props) => {
                   })}
                 />
               </Combobox.Control>
+
+              <HStack
+                justify="space-between"
+                gap="4"
+                px="4"
+                py="2.5"
+                borderBottomWidth="1px"
+                borderColor="border"
+                flexWrap="wrap"
+              >
+                <Segmented
+                  label="Filter results"
+                  size="sm"
+                  tone="pill"
+                  value={section}
+                  onValueChange={value => setSection(value as SectionFilter)}
+                  options={SECTIONS.map(item => ({
+                    value: item,
+                    label: item
+                  }))}
+                />
+                <HStack
+                  gap="3"
+                  textStyle="eyebrow"
+                  color="fg.subtle"
+                  display={{ base: 'none', md: 'flex' }}
+                >
+                  <span>&uarr;&darr; move</span>
+                  <span>&crarr; open</span>
+                  <span>esc close</span>
+                </HStack>
+              </HStack>
+
               <Combobox.Content
                 className={cx(
                   'scroll-area',
@@ -141,10 +188,24 @@ export const CommandMenu = (props: Props) => {
               >
                 <Combobox.List>
                   {collection.items.length === 0 && (
-                    <Center p="3" minH="40">
-                      <Box color="fg.muted" textStyle="sm">
-                        No results found for <Box as="strong">{inputValue}</Box>
-                      </Box>
+                    <Center p="6" minH="32">
+                      {inputValue ? (
+                        <Box color="fg.muted" textStyle="sm">
+                          No results for <Box as="strong">{inputValue}</Box>
+                        </Box>
+                      ) : (
+                        <Box color="fg.muted" textStyle="sm">
+                          Search the docs, reference and blog — try{' '}
+                          {SUGGESTIONS.map((term, index) => (
+                            <span key={term}>
+                              <Box as="strong" color="fg">
+                                {term}
+                              </Box>
+                              {index < SUGGESTIONS.length - 1 ? ', ' : '.'}
+                            </span>
+                          ))}
+                        </Box>
+                      )}
                     </Center>
                   )}
                   {collection.group().map(([group, items]) => (
@@ -168,12 +229,32 @@ export const CommandMenu = (props: Props) => {
                           item={item}
                           persistFocus
                           className={css({
+                            position: 'relative',
                             height: 'auto',
                             px: '4',
                             py: '3',
-                            rounded: 'sm',
+                            rounded: 'md',
+                            cursor: 'pointer',
+                            transitionProperty: 'background-color',
+                            transitionDuration: '150ms',
+                            _before: {
+                              content: '""',
+                              position: 'absolute',
+                              insetY: '1',
+                              insetStart: '0',
+                              width: '2px',
+                              rounded: 'full',
+                              bg: 'transparent',
+                              transitionProperty: 'background-color',
+                              transitionDuration: '150ms'
+                            },
+                            _hover: {
+                              bg: 'bg.subtle',
+                              _before: { bg: 'accent.emphasis' }
+                            },
                             _highlighted: {
-                              bg: 'bg.main'
+                              bg: 'bg.muted',
+                              _before: { bg: 'accent.emphasis' }
                             }
                           })}
                         >
@@ -207,26 +288,27 @@ interface UseHotkeyProps {
   setOpen: (open: boolean) => void
 }
 
+/**
+ * `mod+k` normalises to Cmd on Apple platforms and Ctrl elsewhere, and the
+ * store already ignores keystrokes typed into form fields.
+ */
 const useHotkey = (props: UseHotkeyProps) => {
   const { enabled, setOpen } = props
-
   const env = useEnvironmentContext()
 
   useEffect(() => {
-    const document = env.getDocument()
-    const isMac = /(Mac|iPhone|iPod|iPad)/i.test(navigator?.platform)
-    const hotkey = isMac ? 'metaKey' : 'ctrlKey'
+    if (!enabled) return
 
-    const handleKeydown = (event: KeyboardEvent) => {
-      if (event.key?.toLowerCase() === 'k' && event[hotkey] && enabled) {
+    const store = createHotkeyStore({ target: env.getDocument() })
+    store.register({
+      id: 'open-command-menu',
+      hotkey: SEARCH_HOTKEY,
+      action: event => {
         event.preventDefault()
         setOpen(true)
       }
-    }
+    })
 
-    document.addEventListener('keydown', handleKeydown, true)
-    return () => {
-      document.removeEventListener('keydown', handleKeydown, true)
-    }
+    return () => store.destroy()
   }, [env, setOpen, enabled])
 }

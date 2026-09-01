@@ -8,6 +8,7 @@ export async function GET() {
 
   // Group docs by category
   const categories = [
+    { key: 'get-started', title: 'Get Started' },
     { key: 'styling', title: 'Styling' },
     { key: 'theming', title: 'Theming' },
     { key: 'design-systems', title: 'Design Systems' },

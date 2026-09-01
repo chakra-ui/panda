@@ -1,5 +1,7 @@
-import { sva } from '@/styled-system/css'
-import Marquee from 'react-fast-marquee'
+'use client'
+
+import { Marquee } from '@ark-ui/react/marquee'
+import { marquee } from '@/styled-system/recipes'
 
 const features = [
   'Style props',
@@ -12,47 +14,19 @@ const features = [
   'Variants'
 ]
 
-const recipe = sva({
-  slots: ['root', 'marquee', 'item', 'itemText'],
-  base: {
-    root: {
-      bg: 'bg',
-      py: '5',
-      textStyle: '2xl',
-      fontWeight: 'semibold'
-    },
-    marquee: {
-      listStyleType: 'none',
-      _motionReduce: {
-        '& .rfm-marquee': {
-          animation: 'none!'
-        }
-      }
-    },
-    item: {
-      mx: '2',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '2'
-    },
-    itemText: {
-      letterSpacing: 'tight'
-    }
-  }
-})
-
 export const FeatureMarqueeSection = () => {
-  const root = recipe()
   return (
-    <div className={root.root}>
-      <Marquee className={root.marquee} autoFill>
-        {features.map((feature, index) => (
-          <div key={index} className={root.item}>
-            <span className={root.itemText}>{feature}</span>
-            <span>•</span>
-          </div>
-        ))}
-      </Marquee>
-    </div>
+    <Marquee.Root className={marquee()} speed={40}>
+      <Marquee.Viewport>
+        <Marquee.Content>
+          {features.map(feature => (
+            <Marquee.Item key={feature}>
+              <span>{feature}</span>
+              <span aria-hidden>•</span>
+            </Marquee.Item>
+          ))}
+        </Marquee.Content>
+      </Marquee.Viewport>
+    </Marquee.Root>
   )
 }

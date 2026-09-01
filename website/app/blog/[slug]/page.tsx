@@ -1,5 +1,8 @@
+import { LuRss } from 'react-icons/lu'
+import { AuthorLine } from '@/components/blog/author-line'
 import { blog } from '.velite'
 import { MDXContent } from '@/components/docs/mdx-content'
+import { MobileToc } from '@/components/docs/mobile-toc'
 import { Toc } from '@/components/ui/toc'
 import { generateOgImageUrl } from '@/lib/og-image'
 import { css } from '@/styled-system/css'
@@ -59,12 +62,6 @@ function formatDate(isoDate: string) {
   })
 }
 
-function formatAuthors(author: string | string[]) {
-  const list = Array.isArray(author) ? author : [author]
-  if (list.length <= 1) return list.join('')
-  return `${list.slice(0, -1).join(', ')} & ${list[list.length - 1]}`
-}
-
 export default async function BlogPostPage(props: BlogPostPageProps) {
   const { slug } = await props.params
   const post = blog.find(p => p.slug === `blog/${slug}`)
@@ -79,11 +76,10 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
       mx="auto"
       display="flex"
       position="relative"
-      pt="calc(var(--navbar-height, 4rem) + 2rem)"
-      pb="32"
+      pb="24"
     >
       {/* Main content */}
-      <Box as="article" flex="1" minW="0" px={{ base: '4', lg: '10' }} pt="10">
+      <Box as="article" flex="1" minW="0" px={{ base: '4', lg: '10' }} pt="12">
         <Link
           href="/blog"
           className={css({
@@ -112,20 +108,51 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
               {post.description}
             </panda.p>
           )}
-          <Box display="flex" alignItems="center" gap="2" flexWrap="wrap">
-            <panda.span fontSize="sm" color="fg.subtle">
+          <Box
+            display="flex"
+            alignItems="center"
+            gap="3"
+            flexWrap="wrap"
+            justifyContent="space-between"
+          >
+            <Box display="flex" alignItems="center" gap="3" flexWrap="wrap">
+            <panda.span textStyle="eyebrow" color="fg.subtle">
               {formatDate(post.date)}
             </panda.span>
-            {post.author && (
+            {post.metadata?.readingTime ? (
               <>
                 <panda.span color="fg.subtle" aria-hidden>
                   ·
                 </panda.span>
-                <panda.span fontSize="sm" color="fg.subtle">
-                  {formatAuthors(post.author)}
+                <panda.span textStyle="eyebrow" color="fg.subtle">
+                  {post.metadata.readingTime} min read
                 </panda.span>
               </>
-            )}
+            ) : null}
+            </Box>
+
+            <a
+              href="/rss.xml"
+              aria-label="Subscribe to the RSS feed"
+              className={css({
+                display: 'flex',
+                alignItems: 'center',
+                gap: '2',
+                textStyle: 'eyebrow',
+                color: 'fg.subtle',
+                textDecoration: 'none',
+                transitionProperty: 'color',
+                transitionDuration: '150ms',
+                _hover: { color: 'fg' }
+              })}
+            >
+              <LuRss size={14} aria-hidden />
+              RSS
+            </a>
+          </Box>
+
+          <Box pt="2">
+            <AuthorLine authors={post.author} size="md" linked />
           </Box>
         </Stack>
 
@@ -158,6 +185,8 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
       </Box>
 
       {/* Table of contents */}
+      <MobileToc data={post.toc as any} />
+
       {post.toc.length > 0 && (
         <Box
           display={{ base: 'none', xl: 'block' }}

@@ -2,11 +2,13 @@ import { docs } from '.velite'
 import { Breadcrumb } from '@/components/docs/breadcrumb'
 import { Header } from '@/components/docs/header'
 import { MDXContent } from '@/components/docs/mdx-content'
+import { PageActions } from '@/components/docs/page-actions'
+import { MobileToc } from '@/components/docs/mobile-toc'
 import { Pagination } from '@/components/docs/pagination'
 import { Sidebar } from '@/components/docs/sidebar'
 import { Toc } from '@/components/ui/toc'
 import { generateOgImageUrl } from '@/lib/og-image'
-import { css } from '@/styled-system/css'
+import { css, cx } from '@/styled-system/css'
 import { Box } from '@/styled-system/jsx'
 import { notFound } from 'next/navigation'
 
@@ -22,7 +24,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: DocsPageProps) {
   const { slug } = await params
-  const doc = docs.find(doc => doc.slug.endsWith(slug.join('/')))
+  const doc = docs.find(doc => doc.slug === `docs/${slug.join('/')}`)
   
   if (!doc) {
     return {
@@ -38,7 +40,7 @@ export async function generateMetadata({ params }: DocsPageProps) {
   })
 
   return {
-    title: `${doc.title} | Panda CSS`,
+    title: doc.title,
     description: doc.description,
     openGraph: {
       title: doc.title,
@@ -55,11 +57,16 @@ export async function generateMetadata({ params }: DocsPageProps) {
   }
 }
 
+const sidebarScroll = css({
+  maskImage:
+    'linear-gradient(to bottom, black calc(100% - 2.5rem), transparent 100%)'
+})
+
 export default async function DocsPage(props: DocsPageProps) {
   const params = await props.params
 
   const slug = params.slug.join('/')
-  const doc = docs.find(doc => doc.slug.endsWith(slug))
+  const doc = docs.find(doc => doc.slug === `docs/${slug}`)
 
   if (!doc) {
     notFound()
@@ -73,12 +80,12 @@ export default async function DocsPage(props: DocsPageProps) {
           as="aside"
           display={{ base: 'none', lg: 'block' }}
           flexShrink="0"
-          w="64"
+          w="290px"
           position="sticky"
-          top="calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height) + 1rem)"
-          height="calc(100vh - var(--navbar-height) - var(--banner-height) - var(--tabbar-height) - 1rem)"
+          top="calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height))"
+          height="calc(100vh - var(--navbar-height) - var(--banner-height) - var(--tabbar-height))"
         >
-          <Box overflowY="auto" height="100%" className="scroll-area" py="4" px="6">
+          <Box overflowY="auto" height="100%" className={cx('scroll-area', sidebarScroll)} py="4" px="6">
             <Sidebar slug={slug} />
           </Box>
         </Box>
@@ -88,8 +95,11 @@ export default async function DocsPage(props: DocsPageProps) {
           as="article"
           flex="1"
           minW="0"
+          maxW="52rem"
+          mx="auto"
           px="6"
           pt="10"
+          pb="16"
         >
           <Breadcrumb slug={slug} />
           <Header doc={doc} />
@@ -102,11 +112,13 @@ export default async function DocsPage(props: DocsPageProps) {
             <MDXContent code={doc.code} />
           </div>
           <Pagination slug={slug} />
+          <PageActions slug={slug} />
         </Box>
 
-        {/* Table of Contents */}
+        {/* Table of Contents — space is reserved even when hidden, so the
+            article's `mx="auto"` centers against the same remaining width
+            on every page, with or without a TOC. */}
         <Box
-          visibility={doc.hideToc ? 'hidden' : 'visible'}
           display={{ base: 'none', xl: 'block' }}
           flexShrink="0"
           w="72"
@@ -116,11 +128,15 @@ export default async function DocsPage(props: DocsPageProps) {
           pr="6"
           maxH="calc(100vh - var(--navbar-height) - var(--banner-height) - var(--tabbar-height) - 1rem)"
         >
-          <Box overflowY="auto" height="100%" className="scroll-area">
-            <Toc data={doc.toc} />
-          </Box>
+          {!doc.hideToc && (
+            <Box overflowY="auto" height="100%" className="scroll-area">
+              <Toc data={doc.toc} />
+            </Box>
+          )}
         </Box>
       </Box>
+
+      {!doc.hideToc && <MobileToc data={doc.toc} />}
     </>
   )
 }

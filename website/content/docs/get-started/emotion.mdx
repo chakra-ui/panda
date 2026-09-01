@@ -1,0 +1,217 @@
+---
+title: Migrating from Emotion
+description: Migrate your project from Emotion to Panda and see how css, styled, and theming map across.
+---
+
+This guide outlines the steps needed to migrate your project from Emotion to Panda and highlights key design
+differences between the two.
+
+> **Note:** Emotion is a lower-level library than the others in this section, it doesn't ship a `sx` prop, a variant
+> system, color modes, or layout components itself. Teams typically build those on top of Emotion by hand, or pull
+> in Theme UI or Chakra to get them. Where that's the case below, this guide describes the common hand-rolled
+> pattern, not something Emotion itself provides.
+
+Here are some similarities between the two:
+
+- Both let you write styles as plain objects.
+- Both support a `styled` factory for creating styled components.
+- Both let you define theme tokens and read them back inside style definitions.
+
+Here's where they differ.
+
+## Performance
+
+Emotion computes and injects styles at runtime, in the browser (and during SSR), every `css()` call and every
+`styled` component render re-evaluates its styles. Panda extracts style objects at build time and ships static CSS,
+so there's no runtime style computation cost, this matters most in large lists or deeply nested trees where
+Emotion's per-render style computation adds up.
+
+## Theming
+
+Emotion's `ThemeProvider` passes a plain object through context, there's no required shape or token wrapper:
+
+```jsx
+import { ThemeProvider } from '@emotion/react'
+
+const theme = { colors: { brand: '#0ea5e9' } }
+
+export default function App({ children }) {
+  return <ThemeProvider theme={theme}>{children}</ThemeProvider>
+}
+```
+
+```jsx
+import { useTheme } from '@emotion/react'
+
+function Button() {
+  const theme = useTheme()
+  return <button style={{ background: theme.colors.brand }} />
+}
+```
+
+Panda doesn't need a provider or a hook to read the theme, tokens are resolved at build time into the generated
+`css()`/`cva()` functions directly:
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        colors: {
+          brand: { value: '#0ea5e9' }
+        }
+      }
+    }
+  }
+})
+```
+
+```jsx
+import { css } from '../styled-system/css'
+
+<button className={css({ bg: 'brand' })} />
+```
+
+See [Tokens](/docs/theming/tokens).
+
+## The `sx` prop, and the `css` prop
+
+Emotion's own inline mechanism is the `css` prop, enabled with the `@jsxImportSource @emotion/react` pragma (or the
+older `/** @jsx jsx */` plus an explicit `jsx` import):
+
+```jsx
+/** @jsxImportSource @emotion/react */
+
+<div css={{ color: 'white', background: 'blue' }} />
+```
+
+Panda's `styled` factory accepts a `css` prop the same way, no pragma or special JSX runtime required:
+
+```jsx
+import { styled } from '../styled-system/jsx'
+
+<styled.div css={{ color: 'white', bg: 'blue' }} />
+```
+
+See [JSX Style Props](/docs/styling/style-props) for the rest of Panda's inline styling options.
+
+## Variants
+
+Plain Emotion has no variant system, a common hand-rolled pattern is a function that takes props and returns a style
+object or class list:
+
+```jsx
+import styled from '@emotion/styled'
+
+const Button = styled.button`
+  ${props => (props.variant === 'primary' ? `background: blue;` : `background: gray;`)}
+`
+```
+
+Panda's [recipes](/docs/recipes/atomic-recipe) replace this with a typed, declarative variant map, no manual prop-to-style
+branching:
+
+```ts filename="button.ts"
+import { cva } from '../styled-system/css'
+
+export const button = cva({
+  variants: {
+    variant: {
+      primary: { bg: 'blue.500' },
+      secondary: { bg: 'gray.500' }
+    }
+  }
+})
+```
+
+```jsx
+<button className={button({ variant: 'primary' })}>Click me</button>
+```
+
+`button({ variant: 'accent' })` is a type error if `accent` was never defined, the hand-rolled version above has no
+equivalent safety net. See [Recipes](/docs/recipes/atomic-recipe) and [Slot Recipes](/docs/recipes/slot-recipes).
+
+## Color Modes
+
+Emotion has no built-in color-mode concept, teams typically swap the whole theme object passed to `ThemeProvider`
+based on some app state, and every user of the theme reads the current mode's value through `useTheme`.
+
+Panda's semantic tokens define the light/dark pair once, no theme-swapping or context read at the usage site:
+
+```ts filename="panda.config.ts"
+theme: {
+  extend: {
+    semanticTokens: {
+      colors: {
+        bg: { value: { base: 'white', _dark: 'gray.900' } }
+      }
+    }
+  }
+}
+```
+
+```jsx
+<div className={css({ bg: 'bg' })} />
+```
+
+See [Theme](/docs/theming/theme) and [Multiple Themes](/docs/theming/multiple-themes).
+
+## Global Styles
+
+Emotion's `Global` component injects styles into the global scope from within your component tree:
+
+```jsx
+import { Global, css } from '@emotion/react'
+
+<Global styles={css`
+  body {
+    margin: 0;
+  }
+`} />
+```
+
+Panda's equivalent is the `globalCss` key in `panda.config.ts`, declared once in config rather than rendered as a
+component:
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  globalCss: {
+    body: { margin: 0 }
+  }
+})
+```
+
+See [Global Styles](/docs/styling/global-styles).
+
+## Component Styles
+
+Emotion has no built-in layout primitives, `styled.div`/`styled.section` give you a styled element, but nothing like
+a pre-built `Box` or `Stack`. Panda ships [patterns](/docs/styling/patterns) for common layout shapes as both a
+function and a JSX component:
+
+```jsx
+import { Box, Stack } from '../styled-system/jsx'
+
+<Stack gap="4">
+  <Box bg="gray.100">Item</Box>
+</Stack>
+```
+
+Emotion's `keyframes` helper for animations does carry over directly in spirit, Panda defines keyframes in
+[`theme.keyframes`](/docs/theming/theme#keyframes) instead of an inline `keyframes()` call, and composes them into
+named, reusable presets with [Animation Styles](/docs/theming/animation-styles).
+
+## Conclusion
+
+Because Emotion is a lower-level library, this migration is less about translating equivalent built-in features
+(most of what Panda has built in, Emotion doesn't have at all) and more about replacing hand-rolled patterns, a
+variant function, a manually-swapped theme object, with Panda's typed, declarative equivalents.
+
+## See also
+
+- [Migration strategy](/docs/get-started/migration-strategy) for running both libraries side by side during the
+  migration.
+- [Theme UI](/docs/get-started/theme-ui) if your app also uses Theme UI's layer on top of Emotion, that guide covers the
+  `sx` prop, variants, and color modes Theme UI adds.

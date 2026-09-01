@@ -44,7 +44,7 @@ that union gets.
 
 `strictTokens` is a single project-wide boolean today, there's no built-in way to enable it for some token
 categories and not others. If you want that (for example, strict `colors` but permissive `fontSizes`), you'd build
-it with a [`config:resolved` hook](/docs/design-systems/hooks) that filters which properties get the strict
+it with a [`config:resolved` hook](/docs/theming/hooks) that filters which properties get the strict
 treatment, Panda doesn't ship that filtering out of the box.
 
 The generated style-prop types themselves are large by nature too, they enumerate every CSS property against its
@@ -57,5 +57,5 @@ size of what TypeScript has to check on every style call.
 - [How Panda works](/docs/styling/how-panda-works) for why there's no runtime cost to weigh against these build/IDE
   costs in the first place.
 - [Debugging](/docs/reference/debugging) for `--profile`, `panda debug`, and `PANDA_DEBUG`.
-- [Static CSS Generation](/docs/design-systems/static) and [Federated Micro-Frontends](/docs/design-systems/federated-microfrontends)
+- [Static CSS Generation](/docs/styling/static) and [Federated Micro-Frontends](/docs/design-systems/federated-microfrontends)
   for scaling considerations once you're shipping to multiple apps, not just optimizing one.

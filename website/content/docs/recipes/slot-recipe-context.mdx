@@ -1,0 +1,179 @@
+---
+title: Slot Recipe Context
+description: createSlotRecipeContext distributes slot recipe styles across a compound component tree.
+---
+
+It uses a context-based approach to distribute recipe styles across multiple child components, making it easier to style
+headless UI libraries like Ark UI, and Radix UI.
+
+## Atomic Slot Recipe
+
+- Create a slot recipe using the `sva` function
+- Pass the slot recipe to the `createSlotRecipeContext` function
+- Use the `withProvider` and `withContext` functions to create compound components
+
+```tsx
+// components/ui/card.tsx
+
+import { sva } from 'styled-system/css'
+import { createSlotRecipeContext } from 'styled-system/jsx'
+
+const card = sva({
+  slots: ['root', 'label'],
+  base: {
+    root: {},
+    label: {}
+  },
+  variants: {
+    size: {
+      sm: { root: {} },
+      md: { root: {} }
+    }
+  },
+  defaultVariants: {
+    size: 'sm'
+  }
+})
+
+const { withProvider, withContext } = createSlotRecipeContext(card)
+
+const Root = withProvider('div', 'root')
+const Label = withContext('label', 'label')
+
+export const Card = {
+  Root,
+  Label
+}
+```
+
+Then you can use the `Root` and `Label` components to create a card.
+
+```tsx
+// app/page.tsx
+
+import { Card } from './components/ui/card'
+
+export default function App() {
+  return (
+    <Card.Root>
+      <Card.Label>Hello</Card.Label>
+    </Card.Root>
+  )
+}
+```
+
+## Config Slot Recipe
+
+The `createSlotRecipeContext` function can also be used with slot recipes defined in the `panda.config.ts` file.
+
+- Pass the config recipe to the `createSlotRecipeContext` function
+- Use the `withProvider` and `withContext` functions to create compound components
+
+```tsx
+// components/ui/card.tsx
+
+import { card } from '../styled-system/recipes'
+import { createSlotRecipeContext } from 'styled-system/jsx'
+
+const { withProvider, withContext } = createSlotRecipeContext(card)
+
+const Root = withProvider('div', 'root')
+const Label = withContext('label', 'label')
+
+export const Card = {
+  Root,
+  Label
+}
+```
+
+Then you can use the `Root` and `Label` components to create a card.
+
+```tsx
+// app/page.tsx
+
+import { Card } from './components/ui/card'
+
+export default function App() {
+  return (
+    <Card.Root>
+      <Card.Label>Hello</Card.Label>
+    </Card.Root>
+  )
+}
+```
+
+## createSlotRecipeContext
+
+Use this for a slot recipe (`sva` or `defineSlotRecipe`) with multiple parts. It's a factory function that returns three
+functions: `withRootProvider`, `withProvider`, and `withContext`.
+
+### withRootProvider
+
+Creates the root component that provides the style context. Use this when the root component **does not render an
+underlying DOM element**.
+
+```tsx
+import { Dialog } from '@ark-ui/react'
+
+//...
+
+const DialogRoot = withRootProvider(Dialog.Root)
+```
+
+### withProvider
+
+Creates a component that both provides context and applies the root slot styles. Use this when the root component
+**renders an underlying DOM element**.
+
+> **Note:** It requires the root `slot` parameter to be passed.
+
+```tsx
+import { Avatar } from '@ark-ui/react'
+
+//...
+
+const AvatarRoot = withProvider(Avatar.Root, 'root')
+```
+
+### withContext
+
+Creates a component that consumes the style context and applies slot styles. It does not accept variant props directly,
+but gets them from context.
+
+```tsx
+import { Avatar } from '@ark-ui/react'
+
+//...
+
+const AvatarImage = withContext(Avatar.Image, 'image')
+const AvatarFallback = withContext(Avatar.Fallback, 'fallback')
+```
+
+### unstyled prop
+
+Every component created with `createSlotRecipeContext` supports the `unstyled` prop to disable styling. It is useful when
+you want to opt-out of the recipe styles.
+
+- When applied the root component, will disable all styles
+- When applied to a child component, will disable the styles for that specific slot
+
+```tsx
+// Removes all styles
+<AvatarRoot unstyled>
+  <AvatarImage />
+  <AvatarFallback />
+</AvatarRoot>
+
+// Removes only the styles for the image slot
+<AvatarRoot>
+  <AvatarImage unstyled css={{ bg: 'red' }} />
+  <AvatarFallback />
+</AvatarRoot>
+```
+
+## See also
+
+- [Recipe Context](/docs/recipes/recipe-context) for the single-element equivalent, `createRecipeContext`, used with a
+  recipe that has no slots.
+- [Config Recipes](/docs/recipes/guide-config-recipes), [Default Props](/docs/recipes/guide-default-props), and
+  [Forwarding props](/docs/recipes/guide-forwarding-props) for guides on using `createSlotRecipeContext` in practice.

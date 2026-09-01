@@ -1,204 +1,211 @@
-import { Navbar } from '@/components/navbar'
+import { SitePage } from '@/components/site-page'
 import { teamMembers } from '@/docs.config'
+import {
+  fetchContributors,
+  fetchGithubUsers,
+  type GitHubUser
+} from '@/lib/github-utils'
 import { generateOgImageUrl } from '@/lib/og-image'
-import { fetchGithubUsers, type GitHubUser } from '@/lib/github-utils'
 import { css } from '@/styled-system/css'
-import { Container, Grid, HStack, panda, Stack } from '@/styled-system/jsx'
-import { FooterSection } from '@/www/footer.section'
+import { textLink } from '@/styled-system/recipes'
+import { Box } from '@/styled-system/jsx'
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import Link from 'next/link'
-import { FaGithub, FaGlobe, FaTwitter } from 'react-icons/fa'
+import { LuGithub, LuGlobe, LuTwitter } from 'react-icons/lu'
 
-const ogTitle = 'Meet the Panda CSS Team'
-const ogDescription =
-  'Get to know the passionate engineers who make Panda CSS possible'
+const title = 'Team'
+const description =
+  'Panda is built by a small core team and a large community of contributors.'
 
 export const metadata: Metadata = {
-  title: 'Team',
-  description:
-    'Panda CSS is maintained by a passionate team of engineers. It also receives contributions from engineers around the world.',
+  title: title,
+  description,
   openGraph: {
-    title: ogTitle,
-    description: ogDescription,
-    type: 'website',
-    images: [
-      generateOgImageUrl({
-        title: ogTitle,
-        description: ogDescription,
-        category: 'Team'
-      })
-    ]
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: ogTitle,
-    description: ogDescription,
-    images: [
-      generateOgImageUrl({
-        title: ogTitle,
-        description: ogDescription,
-        category: 'Team'
-      })
-    ]
+    title,
+    description,
+    images: [generateOgImageUrl({ title, description, category: 'Team' })]
   }
 }
 
-const iconMap = {
-  github: <FaGithub />,
-  twitter: <FaTwitter />,
-  blog: <FaGlobe />
+function toAbsoluteUrl(value: string) {
+  return /^https?:\/\//.test(value) ? value : `https://${value}`
 }
 
-const SocialIcon = ({ platform, url }: { platform: string; url: string }) => {
-  return (
-    <Link
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={css({
-        color: 'var(--fg-muted)',
-        transition: 'color 0.2s'
-      })}
-      aria-label={`${platform} profile`}
-    >
-      {iconMap[platform as keyof typeof iconMap] || (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
-        </svg>
-      )}
-    </Link>
-  )
-}
+const socialStyles = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  w: '8',
+  h: '8',
+  rounded: 'md',
+  color: 'fg.subtle',
+  transitionProperty: 'color, background-color',
+  transitionDuration: '150ms',
+  _hover: { color: 'fg', bg: 'bg.muted' }
+})
 
-const TeamMemberCard = ({ member }: { member: GitHubUser }) => {
-  const teamMember = teamMembers.find(tm => tm.login === member.login)
-  const role = teamMember?.role || 'Contributor'
+function MemberRow({ user }: { user: GitHubUser }) {
+  const role =
+    teamMembers.find(member => member.login === user.login)?.role ??
+    'Contributor'
 
   return (
-    <panda.div
-      bg="bg"
-      borderRadius="xl"
-      p="8"
-      textAlign="center"
-      boxShadow="sm"
-      transition="transform 0.2s"
-      _hover={{
-        transform: 'translateY(-4px)',
-        shadow: 'lg'
-      }}
+    <Box
+      display="grid"
+      gridTemplateColumns={{ base: 'auto 1fr', md: 'auto 1fr auto' }}
+      alignItems="center"
+      gap={{ base: '4', md: '6' }}
+      py="5"
+      borderTopWidth="1px"
+      borderColor="border"
     >
-      <Stack gap="6" align="center" pt="4">
-        <panda.div
-          position="relative"
-          w="20"
-          h="20"
-          borderRadius="full"
-          overflow="hidden"
-          outline="4px solid"
-          outlineColor="yellow.300"
-          outlineOffset="4px"
+      <Image
+        src={user.avatar_url}
+        alt=""
+        width={48}
+        height={48}
+        className={css({ rounded: 'full', w: '12', h: '12' })}
+      />
+
+      <Box minW="0">
+        <Box textStyle="lg" fontWeight="semibold">
+          {user.name || user.login}
+        </Box>
+        <Box textStyle="eyebrow" color="fg.subtle" mt="1.5">
+          {role}
+        </Box>
+      </Box>
+
+      <Box display="flex" gap="1" gridColumn={{ base: '2', md: 'auto' }}>
+        <a
+          href={user.html_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`${user.login} on GitHub`}
+          className={socialStyles}
         >
-          <Image
-            src={member.avatar_url}
-            alt={member.name || member.login}
-            width={80}
-            height={80}
-            className={css({
-              objectFit: 'cover',
-              width: '100%',
-              height: '100%'
-            })}
-          />
-        </panda.div>
-
-        <Stack gap="1" align="center">
-          <panda.h3 fontSize="xl" fontWeight="bold">
-            {member.name || member.login}
-          </panda.h3>
-
-          <panda.p textStyle="ms" color="var(--fg-muted)">
-            {role}
-          </panda.p>
-        </Stack>
-
-        <panda.p fontSize="sm">
-          {member.bio || 'Contributing to the Panda CSS ecosystem'}
-        </panda.p>
-
-        <HStack gap="4" justify="center">
-          <SocialIcon platform="github" url={member.html_url} />
-          {member.twitter_username && (
-            <SocialIcon
-              platform="twitter"
-              url={`https://twitter.com/${member.twitter_username}`}
-            />
-          )}
-          {member.blog && (
-            <SocialIcon platform="blog" url={toHttps(member.blog)} />
-          )}
-        </HStack>
-      </Stack>
-    </panda.div>
+          <LuGithub />
+        </a>
+        {user.twitter_username && (
+          <a
+            href={`https://x.com/${user.twitter_username}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${user.login} on X`}
+            className={socialStyles}
+          >
+            <LuTwitter />
+          </a>
+        )}
+        {user.blog && (
+          <a
+            href={toAbsoluteUrl(user.blog)}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${user.login}'s website`}
+            className={socialStyles}
+          >
+            <LuGlobe />
+          </a>
+        )}
+      </Box>
+    </Box>
   )
 }
 
-const toHttps = (url: string) => {
-  return url.startsWith('https://') ? url : `https://${url}`
+function Section(props: { title: string; children: React.ReactNode }) {
+  return (
+    <Box mb="14">
+      <Box textStyle="eyebrow" color="fg.subtle" mb="2">
+        {props.title}
+      </Box>
+      <Box borderBottomWidth="1px" borderColor="border">
+        {props.children}
+      </Box>
+    </Box>
+  )
 }
 
 export default async function TeamPage() {
-  const data = await fetchGithubUsers(teamMembers.map(member => member.login))
-  return (
-    <>
-      <Navbar />
-      <panda.div bg="bg.muted" pt="20" minH="80dvh">
-        <Container py="20">
-          <Stack gap="16" align="center">
-            <Stack gap="6" align="center" textAlign="center">
-              <panda.h1
-                fontSize={{ base: '3xl', md: '5xl' }}
-                fontWeight="bold"
-                letterSpacing="tight"
-              >
-                Meet our team
-              </panda.h1>
-              <panda.p
-                fontSize={{ base: 'lg', md: 'xl' }}
-                color="fg.muted"
-                maxW="2xl"
-                lineHeight="relaxed"
-              >
-                Panda CSS is maintained by a passionate team of engineers. It
-                also receives contributions from engineers around the world.
-              </panda.p>
-            </Stack>
+  const [users, contributors] = await Promise.all([
+    fetchGithubUsers(teamMembers.map(member => member.login)),
+    fetchContributors(teamMembers.map(member => member.login))
+  ])
 
-            <Grid
-              columns={{ base: 1, md: 2, lg: 3 }}
-              gap="8"
-              w="full"
-              maxW="6xl"
-            >
-              {data.length > 0 ? (
-                data.map(member => (
-                  <TeamMemberCard key={member.login} member={member} />
-                ))
-              ) : (
-                <panda.div
-                  gridColumn="1 / -1"
-                  textAlign="center"
-                  p="8"
-                  color="fg.muted"
-                >
-                  Unable to load team members
-                </panda.div>
-              )}
-            </Grid>
-          </Stack>
-        </Container>
-      </panda.div>
-      <FooterSection />
-    </>
+  const statusOf = (login: string) =>
+    teamMembers.find(member => member.login === login)?.status
+  const active = users.filter(user => statusOf(user.login) === 'active')
+  const alumni = users.filter(user => statusOf(user.login) === 'alumni')
+
+  return (
+    <SitePage kicker="Team" title={title} description={description}>
+      <Section title="Maintainers">
+        {active.map(user => (
+          <MemberRow key={user.login} user={user} />
+        ))}
+      </Section>
+
+      {alumni.length > 0 && (
+        <Section title="Alumni">
+          {alumni.map(user => (
+            <MemberRow key={user.login} user={user} />
+          ))}
+        </Section>
+      )}
+
+      {contributors.length > 0 && (
+        <Box mb="14">
+          <Box textStyle="eyebrow" color="fg.subtle" mb="4">
+            Contributors · {contributors.length}
+          </Box>
+          <Box display="flex" flexWrap="wrap" gap="2">
+            {contributors.map(person => (
+              <a
+                key={person.login}
+                href={person.html_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={person.login}
+                className={css({
+                  display: 'flex',
+                  rounded: 'full',
+                  transitionProperty: 'opacity',
+                  transitionDuration: '150ms',
+                  _hover: { opacity: 0.7 }
+                })}
+              >
+                <Image
+                  src={person.avatar_url}
+                  alt={person.login}
+                  width={40}
+                  height={40}
+                  className={css({ rounded: 'full', bg: 'bg.muted' })}
+                />
+              </a>
+            ))}
+          </Box>
+        </Box>
+      )}
+
+      <Box
+        pt="10"
+        borderTopWidth="1px"
+        borderColor="border"
+        textStyle="prose"
+        color="fg.muted"
+        maxW="42rem"
+      >
+        Panda is built in the open.{' '}
+        <a
+          href="https://github.com/chakra-ui/panda/blob/main/CONTRIBUTING.md"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={textLink()}
+        >
+          Contribute
+        </a>
+        .
+      </Box>
+    </SitePage>
   )
 }

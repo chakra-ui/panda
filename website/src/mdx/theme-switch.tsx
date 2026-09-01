@@ -1,5 +1,4 @@
 import { MoonIcon, SunIcon } from '@/icons'
-import { useMounted } from '@/lib/use-mounted'
 import { Select } from '@/mdx/select'
 import { css } from '@/styled-system/css'
 import { useTheme } from 'next-themes'
@@ -8,11 +7,11 @@ interface ThemeSwitchProps {
   className?: string
 }
 
-export function ThemeSwitch({ className }: ThemeSwitchProps) {
-  const { setTheme, resolvedTheme, theme = '' } = useTheme()
-  const mounted = useMounted()
+const sunIcon = css({ _dark: { display: 'none' } })
+const moonIcon = css({ display: 'none', _dark: { display: 'block' } })
 
-  const IconToUse = mounted && resolvedTheme === 'dark' ? MoonIcon : SunIcon
+export function ThemeSwitch({ className }: ThemeSwitchProps) {
+  const { setTheme, theme = '' } = useTheme()
 
   return (
     <Select
@@ -38,7 +37,8 @@ export function ThemeSwitch({ className }: ThemeSwitchProps) {
               textTransform: 'capitalize'
             })}
           >
-            <IconToUse />
+            <SunIcon className={sunIcon} />
+            <MoonIcon className={moonIcon} />
           </div>
         )
       }}

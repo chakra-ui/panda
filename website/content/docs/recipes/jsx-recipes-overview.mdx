@@ -1,0 +1,33 @@
+---
+title: JSX Recipes
+description: Distribute a recipe's styles across a compound component tree using React context.
+hideToc: true
+---
+
+JSX recipes use a context-based approach to distribute recipe styles across multiple child components, making it
+easier to style headless UI libraries like Ark UI and Radix UI.
+
+<Cards columns={2}>
+  <Card
+    title="Slot Recipe Context"
+    href="/docs/recipes/slot-recipe-context"
+    kicker="Multi part"
+    description="createSlotRecipeContext for a slot recipe (sva or defineSlotRecipe) with multiple parts."
+    cta="Distribute a slot recipe"
+  />
+  <Card
+    title="Recipe Context"
+    href="/docs/recipes/recipe-context"
+    kicker="Single element"
+    description="createRecipeContext for a single-element recipe (cva or defineRecipe) with no slots."
+    cta="Distribute a recipe"
+  />
+</Cards>
+
+## Guides
+
+<Cards columns={3}>
+  <Card title="Config Recipes" href="/docs/recipes/guide-config-recipes" description="Naming rules for config recipes used with a recipe context." />
+  <Card title="Default Props" href="/docs/recipes/guide-default-props" description="Provide default props to a component created with a recipe context." />
+  <Card title="Forwarding props" href="/docs/recipes/guide-forwarding-props" description="Pass a variant value used for styling through to your component." />
+</Cards>

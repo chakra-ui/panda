@@ -1,0 +1,2538 @@
+{
+  "groups": [
+    {
+      "group": "Animation",
+      "entries": [
+        {
+          "property": "animation",
+          "className": "anim",
+          "values": "animations",
+          "group": "Animation"
+        },
+        {
+          "property": "animationComposition",
+          "className": "anim-comp",
+          "group": "Animation"
+        },
+        {
+          "property": "animationDelay",
+          "className": "anim-dly",
+          "values": "durations",
+          "group": "Animation"
+        },
+        {
+          "property": "animationDirection",
+          "className": "anim-dir",
+          "group": "Animation"
+        },
+        {
+          "property": "animationDuration",
+          "className": "anim-dur",
+          "values": "durations",
+          "group": "Animation"
+        },
+        {
+          "property": "animationFillMode",
+          "className": "anim-fm",
+          "group": "Animation"
+        },
+        {
+          "property": "animationIterationCount",
+          "className": "anim-ic",
+          "group": "Animation"
+        },
+        {
+          "property": "animationName",
+          "className": "anim-n",
+          "values": "keyframes",
+          "group": "Animation"
+        },
+        {
+          "property": "animationPlayState",
+          "className": "anim-ps",
+          "group": "Animation"
+        },
+        {
+          "property": "animationRange",
+          "className": "anim-r",
+          "group": "Animation"
+        },
+        {
+          "property": "animationRangeEnd",
+          "className": "anim-re",
+          "group": "Animation"
+        },
+        {
+          "property": "animationRangeStart",
+          "className": "anim-rs",
+          "group": "Animation"
+        },
+        {
+          "property": "animationState",
+          "className": "anim-s",
+          "group": "Animation"
+        },
+        {
+          "property": "animationTimeline",
+          "className": "anim-tl",
+          "group": "Animation"
+        },
+        {
+          "property": "animationTimingFunction",
+          "className": "anim-tmf",
+          "values": "easings",
+          "group": "Animation"
+        }
+      ]
+    },
+    {
+      "group": "Background",
+      "entries": [
+        {
+          "property": "background",
+          "shorthand": "bg",
+          "className": "bg",
+          "values": "colors",
+          "group": "Background"
+        },
+        {
+          "property": "backgroundAttachment",
+          "shorthand": "bgAttachment",
+          "className": "bg-a",
+          "group": "Background"
+        },
+        {
+          "property": "backgroundBlendMode",
+          "shorthand": "bgBlendMode",
+          "className": "bg-bm",
+          "group": "Background"
+        },
+        {
+          "property": "backgroundClip",
+          "shorthand": "bgClip",
+          "className": "bg-cp",
+          "group": "Background"
+        },
+        {
+          "property": "backgroundColor",
+          "shorthand": "bgColor",
+          "className": "bg-c",
+          "values": "colors",
+          "group": "Background"
+        },
+        {
+          "property": "backgroundImage",
+          "shorthand": "bgImage",
+          "className": "bg-i",
+          "values": "assets",
+          "group": "Background"
+        },
+        {
+          "property": "backgroundOrigin",
+          "shorthand": "bgOrigin",
+          "className": "bg-o",
+          "group": "Background"
+        },
+        {
+          "property": "backgroundPosition",
+          "shorthand": "bgPosition",
+          "className": "bg-p",
+          "group": "Background"
+        },
+        {
+          "property": "backgroundPositionX",
+          "shorthand": "bgPositionX",
+          "className": "bg-p-x",
+          "group": "Background"
+        },
+        {
+          "property": "backgroundPositionY",
+          "shorthand": "bgPositionY",
+          "className": "bg-p-y",
+          "group": "Background"
+        },
+        {
+          "property": "backgroundRepeat",
+          "shorthand": "bgRepeat",
+          "className": "bg-r",
+          "group": "Background"
+        },
+        {
+          "property": "backgroundSize",
+          "shorthand": "bgSize",
+          "className": "bg-s",
+          "group": "Background"
+        },
+        {
+          "property": "opacity",
+          "className": "op",
+          "values": "opacity",
+          "group": "Background"
+        }
+      ]
+    },
+    {
+      "group": "Background Gradient",
+      "entries": [
+        {
+          "property": "backgroundConic",
+          "shorthand": "bgConic",
+          "className": "bg-conic",
+          "group": "Background Gradient"
+        },
+        {
+          "property": "backgroundGradient",
+          "shorthand": "bgGradient",
+          "className": "bg-grad",
+          "values": "gradients | to-t | to-tr | to-r | to-br | to-b | to-bl | to-l | to-tl",
+          "group": "Background Gradient"
+        },
+        {
+          "property": "backgroundLinear",
+          "shorthand": "bgLinear",
+          "className": "bg-linear",
+          "values": "gradients | to-t | to-tr | to-r | to-br | to-b | to-bl | to-l | to-tl",
+          "group": "Background Gradient"
+        },
+        {
+          "property": "backgroundRadial",
+          "shorthand": "bgRadial",
+          "className": "bg-radial",
+          "values": "gradients",
+          "group": "Background Gradient"
+        },
+        {
+          "property": "gradientFrom",
+          "className": "grad-from",
+          "values": "colors",
+          "group": "Background Gradient"
+        },
+        {
+          "property": "gradientFromPosition",
+          "className": "grad-from-pos",
+          "group": "Background Gradient"
+        },
+        {
+          "property": "gradientTo",
+          "className": "grad-to",
+          "values": "colors",
+          "group": "Background Gradient"
+        },
+        {
+          "property": "gradientToPosition",
+          "className": "grad-to-pos",
+          "group": "Background Gradient"
+        },
+        {
+          "property": "gradientVia",
+          "className": "grad-via",
+          "values": "colors",
+          "group": "Background Gradient"
+        },
+        {
+          "property": "gradientViaPosition",
+          "className": "grad-via-pos",
+          "group": "Background Gradient"
+        },
+        {
+          "property": "textGradient",
+          "className": "txt-grad",
+          "values": "gradients | to-t | to-tr | to-r | to-br | to-b | to-bl | to-l | to-tl",
+          "group": "Background Gradient"
+        }
+      ]
+    },
+    {
+      "group": "Border",
+      "entries": [
+        {
+          "property": "border",
+          "className": "bd",
+          "values": "borders",
+          "group": "Border"
+        },
+        {
+          "property": "borderBlock",
+          "shorthand": "borderY",
+          "className": "bd-y",
+          "values": "borders",
+          "group": "Border"
+        },
+        {
+          "property": "borderBlockColor",
+          "shorthand": "borderYColor",
+          "className": "bd-y-c",
+          "values": "colors",
+          "group": "Border"
+        },
+        {
+          "property": "borderBlockEnd",
+          "className": "bd-be",
+          "values": "borders",
+          "group": "Border"
+        },
+        {
+          "property": "borderBlockEndColor",
+          "className": "bd-be-c",
+          "values": "colors",
+          "group": "Border"
+        },
+        {
+          "property": "borderBlockStart",
+          "className": "bd-bs",
+          "values": "borders",
+          "group": "Border"
+        },
+        {
+          "property": "borderBlockStartColor",
+          "className": "bd-bs-c",
+          "values": "colors",
+          "group": "Border"
+        },
+        {
+          "property": "borderBlockWidth",
+          "shorthand": "borderYWidth",
+          "className": "bd-y-w",
+          "values": "borderWidths",
+          "group": "Border"
+        },
+        {
+          "property": "borderBottom",
+          "className": "bd-b",
+          "values": "borders",
+          "group": "Border"
+        },
+        {
+          "property": "borderBottomColor",
+          "className": "bd-b-c",
+          "values": "colors",
+          "group": "Border"
+        },
+        {
+          "property": "borderBottomWidth",
+          "className": "bd-b-w",
+          "values": "borderWidths",
+          "group": "Border"
+        },
+        {
+          "property": "borderColor",
+          "className": "bd-c",
+          "values": "colors",
+          "group": "Border"
+        },
+        {
+          "property": "borderInline",
+          "shorthand": "borderX",
+          "className": "bd-x",
+          "values": "borders",
+          "group": "Border"
+        },
+        {
+          "property": "borderInlineColor",
+          "shorthand": "borderXColor",
+          "className": "bd-x-c",
+          "values": "colors",
+          "group": "Border"
+        },
+        {
+          "property": "borderInlineEnd",
+          "shorthand": "borderEnd",
+          "className": "bd-e",
+          "values": "borders",
+          "group": "Border"
+        },
+        {
+          "property": "borderInlineEndColor",
+          "shorthand": "borderEndColor",
+          "className": "bd-e-c",
+          "values": "colors",
+          "group": "Border"
+        },
+        {
+          "property": "borderInlineEndWidth",
+          "shorthand": "borderEndWidth",
+          "className": "bd-e-w",
+          "values": "borderWidths",
+          "group": "Border"
+        },
+        {
+          "property": "borderInlineStart",
+          "shorthand": "borderStart",
+          "className": "bd-s",
+          "values": "borders",
+          "group": "Border"
+        },
+        {
+          "property": "borderInlineStartColor",
+          "shorthand": "borderStartColor",
+          "className": "bd-s-c",
+          "values": "colors",
+          "group": "Border"
+        },
+        {
+          "property": "borderInlineStartWidth",
+          "shorthand": "borderStartWidth",
+          "className": "bd-s-w",
+          "values": "borderWidths",
+          "group": "Border"
+        },
+        {
+          "property": "borderInlineWidth",
+          "shorthand": "borderXWidth",
+          "className": "bd-x-w",
+          "values": "borderWidths",
+          "group": "Border"
+        },
+        {
+          "property": "borderLeft",
+          "className": "bd-l",
+          "values": "borders",
+          "group": "Border"
+        },
+        {
+          "property": "borderLeftColor",
+          "className": "bd-l-c",
+          "values": "colors",
+          "group": "Border"
+        },
+        {
+          "property": "borderLeftWidth",
+          "className": "bd-l-w",
+          "values": "borderWidths",
+          "group": "Border"
+        },
+        {
+          "property": "borderRight",
+          "className": "bd-r",
+          "values": "borders",
+          "group": "Border"
+        },
+        {
+          "property": "borderRightColor",
+          "className": "bd-r-c",
+          "values": "colors",
+          "group": "Border"
+        },
+        {
+          "property": "borderRightWidth",
+          "className": "bd-r-w",
+          "values": "borderWidths",
+          "group": "Border"
+        },
+        {
+          "property": "borderTop",
+          "className": "bd-t",
+          "values": "borders",
+          "group": "Border"
+        },
+        {
+          "property": "borderTopColor",
+          "className": "bd-t-c",
+          "values": "colors",
+          "group": "Border"
+        },
+        {
+          "property": "borderTopWidth",
+          "className": "bd-t-w",
+          "values": "borderWidths",
+          "group": "Border"
+        },
+        {
+          "property": "divideColor",
+          "className": "dvd-c",
+          "values": "colors",
+          "group": "Border"
+        },
+        {
+          "property": "divideStyle",
+          "className": "dvd-s",
+          "group": "Border"
+        },
+        {
+          "property": "divideX",
+          "className": "dvd-x",
+          "values": "borderWidths",
+          "group": "Border"
+        },
+        {
+          "property": "divideY",
+          "className": "dvd-y",
+          "values": "borderWidths",
+          "group": "Border"
+        },
+        {
+          "property": "outline",
+          "shorthand": "ring",
+          "className": "ring",
+          "values": "borders",
+          "group": "Border"
+        },
+        {
+          "property": "outlineOffset",
+          "shorthand": "ringOffset",
+          "className": "ring-o",
+          "values": "spacing",
+          "group": "Border"
+        },
+        {
+          "property": "outlineWidth",
+          "shorthand": "ringWidth",
+          "className": "ring-w",
+          "values": "borderWidths",
+          "group": "Border"
+        },
+        {
+          "property": "strokeDasharray",
+          "className": "stk-dsh",
+          "group": "Border"
+        },
+        {
+          "property": "strokeDashoffset",
+          "className": "stk-do",
+          "group": "Border"
+        },
+        {
+          "property": "strokeLinecap",
+          "className": "stk-lc",
+          "group": "Border"
+        },
+        {
+          "property": "strokeLinejoin",
+          "className": "stk-lj",
+          "group": "Border"
+        },
+        {
+          "property": "strokeMiterlimit",
+          "className": "stk-ml",
+          "group": "Border"
+        },
+        {
+          "property": "strokeOpacity",
+          "className": "stk-op",
+          "group": "Border"
+        },
+        {
+          "property": "strokeWidth",
+          "className": "stk-w",
+          "values": "borderWidths",
+          "group": "Border"
+        }
+      ]
+    },
+    {
+      "group": "Border Radius",
+      "entries": [
+        {
+          "property": "borderBlockEndWidth",
+          "className": "bd-be-w",
+          "values": "borderWidths",
+          "group": "Border Radius"
+        },
+        {
+          "property": "borderBlockStartWidth",
+          "className": "bd-bs-w",
+          "values": "borderWidths",
+          "group": "Border Radius"
+        },
+        {
+          "property": "borderBottomLeftRadius",
+          "shorthand": "roundedBottomLeft",
+          "className": "bdr-bl",
+          "values": "radii",
+          "group": "Border Radius"
+        },
+        {
+          "property": "borderBottomRadius",
+          "shorthand": "roundedBottom",
+          "className": "bdr-b",
+          "values": "radii",
+          "group": "Border Radius"
+        },
+        {
+          "property": "borderBottomRightRadius",
+          "shorthand": "roundedBottomRight",
+          "className": "bdr-br",
+          "values": "radii",
+          "group": "Border Radius"
+        },
+        {
+          "property": "borderEndEndRadius",
+          "shorthand": "roundedEndEnd",
+          "className": "bdr-ee",
+          "values": "radii",
+          "group": "Border Radius"
+        },
+        {
+          "property": "borderEndRadius",
+          "shorthand": "roundedEnd",
+          "className": "bdr-e",
+          "values": "radii",
+          "group": "Border Radius"
+        },
+        {
+          "property": "borderEndStartRadius",
+          "shorthand": "roundedEndStart",
+          "className": "bdr-es",
+          "values": "radii",
+          "group": "Border Radius"
+        },
+        {
+          "property": "borderLeftRadius",
+          "shorthand": "roundedLeft",
+          "className": "bdr-l",
+          "values": "radii",
+          "group": "Border Radius"
+        },
+        {
+          "property": "borderRadius",
+          "shorthand": "rounded",
+          "className": "bdr",
+          "values": "radii",
+          "group": "Border Radius"
+        },
+        {
+          "property": "borderRightRadius",
+          "shorthand": "roundedRight",
+          "className": "bdr-r",
+          "values": "radii",
+          "group": "Border Radius"
+        },
+        {
+          "property": "borderStartEndRadius",
+          "shorthand": "roundedStartEnd",
+          "className": "bdr-se",
+          "values": "radii",
+          "group": "Border Radius"
+        },
+        {
+          "property": "borderStartRadius",
+          "shorthand": "roundedStart",
+          "className": "bdr-s",
+          "values": "radii",
+          "group": "Border Radius"
+        },
+        {
+          "property": "borderStartStartRadius",
+          "shorthand": "roundedStartStart",
+          "className": "bdr-ss",
+          "values": "radii",
+          "group": "Border Radius"
+        },
+        {
+          "property": "borderTopLeftRadius",
+          "shorthand": "roundedTopLeft",
+          "className": "bdr-tl",
+          "values": "radii",
+          "group": "Border Radius"
+        },
+        {
+          "property": "borderTopRadius",
+          "shorthand": "roundedTop",
+          "className": "bdr-t",
+          "values": "radii",
+          "group": "Border Radius"
+        },
+        {
+          "property": "borderTopRightRadius",
+          "shorthand": "roundedTopRight",
+          "className": "bdr-tr",
+          "values": "radii",
+          "group": "Border Radius"
+        },
+        {
+          "property": "borderWidth",
+          "className": "bd-w",
+          "values": "borderWidths",
+          "group": "Border Radius"
+        }
+      ]
+    },
+    {
+      "group": "Color",
+      "entries": [
+        {
+          "property": "accentColor",
+          "className": "ac-c",
+          "values": "colors",
+          "group": "Color"
+        },
+        {
+          "property": "boxShadowColor",
+          "shorthand": "shadowColor",
+          "className": "bx-sh-c",
+          "values": "colors",
+          "group": "Color"
+        },
+        {
+          "property": "caretColor",
+          "className": "ca-c",
+          "values": "colors",
+          "group": "Color"
+        },
+        {
+          "property": "color",
+          "className": "c",
+          "values": "colors",
+          "group": "Color"
+        },
+        {
+          "property": "fill",
+          "className": "fill",
+          "values": "colors",
+          "group": "Color"
+        },
+        {
+          "property": "outlineColor",
+          "shorthand": "ringColor",
+          "className": "ring-c",
+          "values": "colors",
+          "group": "Color"
+        },
+        {
+          "property": "stroke",
+          "className": "stk",
+          "values": "colors",
+          "group": "Color"
+        }
+      ]
+    },
+    {
+      "group": "Container",
+      "entries": [
+        {
+          "property": "container",
+          "className": "cq",
+          "group": "Container"
+        },
+        {
+          "property": "containerName",
+          "className": "cq-n",
+          "values": "containerNames",
+          "group": "Container"
+        },
+        {
+          "property": "containerType",
+          "className": "cq-t",
+          "group": "Container"
+        }
+      ]
+    },
+    {
+      "group": "Display",
+      "entries": [
+        {
+          "property": "display",
+          "className": "d",
+          "group": "Display"
+        },
+        {
+          "property": "hideBelow",
+          "className": "show",
+          "values": "breakpoints",
+          "group": "Display"
+        },
+        {
+          "property": "hideFrom",
+          "className": "hide",
+          "values": "breakpoints",
+          "group": "Display"
+        }
+      ]
+    },
+    {
+      "group": "Effect",
+      "entries": [
+        {
+          "property": "backdropBlur",
+          "className": "bkdp-blur",
+          "values": "blurs",
+          "group": "Effect"
+        },
+        {
+          "property": "backdropBrightness",
+          "className": "bkdp-brightness",
+          "group": "Effect"
+        },
+        {
+          "property": "backdropContrast",
+          "className": "bkdp-contrast",
+          "group": "Effect"
+        },
+        {
+          "property": "backdropFilter",
+          "className": "bkdp",
+          "values": "auto",
+          "group": "Effect"
+        },
+        {
+          "property": "backdropGrayscale",
+          "className": "bkdp-grayscale",
+          "group": "Effect"
+        },
+        {
+          "property": "backdropHueRotate",
+          "className": "bkdp-hue-rotate",
+          "group": "Effect"
+        },
+        {
+          "property": "backdropInvert",
+          "className": "bkdp-invert",
+          "group": "Effect"
+        },
+        {
+          "property": "backdropOpacity",
+          "className": "bkdp-opacity",
+          "group": "Effect"
+        },
+        {
+          "property": "backdropSaturate",
+          "className": "bkdp-saturate",
+          "group": "Effect"
+        },
+        {
+          "property": "backdropSepia",
+          "className": "bkdp-sepia",
+          "group": "Effect"
+        },
+        {
+          "property": "blur",
+          "className": "blur",
+          "values": "blurs",
+          "group": "Effect"
+        },
+        {
+          "property": "brightness",
+          "className": "brightness",
+          "group": "Effect"
+        },
+        {
+          "property": "contrast",
+          "className": "contrast",
+          "group": "Effect"
+        },
+        {
+          "property": "dropShadow",
+          "className": "drop-shadow",
+          "values": "dropShadows",
+          "group": "Effect"
+        },
+        {
+          "property": "filter",
+          "className": "filter",
+          "values": "auto",
+          "group": "Effect"
+        },
+        {
+          "property": "grayscale",
+          "className": "grayscale",
+          "group": "Effect"
+        },
+        {
+          "property": "hueRotate",
+          "className": "hue-rotate",
+          "group": "Effect"
+        },
+        {
+          "property": "invert",
+          "className": "invert",
+          "group": "Effect"
+        },
+        {
+          "property": "mixBlendMode",
+          "className": "mix-bm",
+          "group": "Effect"
+        },
+        {
+          "property": "saturate",
+          "className": "saturate",
+          "group": "Effect"
+        },
+        {
+          "property": "sepia",
+          "className": "sepia",
+          "group": "Effect"
+        }
+      ]
+    },
+    {
+      "group": "Flex Layout",
+      "entries": [
+        {
+          "property": "alignContent",
+          "className": "ac",
+          "group": "Flex Layout"
+        },
+        {
+          "property": "alignItems",
+          "className": "ai",
+          "group": "Flex Layout"
+        },
+        {
+          "property": "alignSelf",
+          "className": "as",
+          "group": "Flex Layout"
+        },
+        {
+          "property": "flex",
+          "className": "flex",
+          "values": "1 | auto | initial | none",
+          "group": "Flex Layout"
+        },
+        {
+          "property": "flexBasis",
+          "className": "flex-b",
+          "values": "sizes | 1/2 | 1/3 | 2/3 | 1/4 | 2/4 | 3/4 | 1/5 | 2/5 | 3/5 | 4/5 | 1/6 | 2/6 | 3/6 | 4/6 | 5/6 | 1/12 | 2/12 | 3/12 | 4/12 | 5/12 | 6/12 | 7/12 | 8/12 | 9/12 | 10/12 | 11/12 | full",
+          "group": "Flex Layout"
+        },
+        {
+          "property": "flexDirection",
+          "shorthand": "flexDir",
+          "className": "flex-d",
+          "group": "Flex Layout"
+        },
+        {
+          "property": "flexGrow",
+          "className": "flex-g",
+          "group": "Flex Layout"
+        },
+        {
+          "property": "flexShrink",
+          "className": "flex-sh",
+          "group": "Flex Layout"
+        },
+        {
+          "property": "gap",
+          "className": "gap",
+          "values": "spacing",
+          "group": "Flex Layout"
+        },
+        {
+          "property": "justifyContent",
+          "className": "jc",
+          "group": "Flex Layout"
+        }
+      ]
+    },
+    {
+      "group": "Focus Ring",
+      "entries": [
+        {
+          "property": "focusRing",
+          "className": "focus-ring",
+          "values": "outside | inside | mixed | none",
+          "group": "Focus Ring"
+        },
+        {
+          "property": "focusRingColor",
+          "className": "focus-ring-c",
+          "values": "colors",
+          "group": "Focus Ring"
+        },
+        {
+          "property": "focusRingOffset",
+          "className": "focus-ring-o",
+          "values": "spacing",
+          "group": "Focus Ring"
+        },
+        {
+          "property": "focusRingStyle",
+          "className": "focus-ring-s",
+          "values": "borderStyles",
+          "group": "Focus Ring"
+        },
+        {
+          "property": "focusRingWidth",
+          "className": "focus-ring-w",
+          "values": "borderWidths",
+          "group": "Focus Ring"
+        },
+        {
+          "property": "focusVisibleRing",
+          "className": "focus-v-ring",
+          "values": "outside | inside | mixed | none",
+          "group": "Focus Ring"
+        }
+      ]
+    },
+    {
+      "group": "Grid Layout",
+      "entries": [
+        {
+          "property": "columnGap",
+          "className": "cg",
+          "values": "spacing",
+          "group": "Grid Layout"
+        },
+        {
+          "property": "gridAutoColumns",
+          "className": "grid-ac",
+          "values": "min | max | fr",
+          "group": "Grid Layout"
+        },
+        {
+          "property": "gridAutoFlow",
+          "className": "grid-af",
+          "group": "Grid Layout"
+        },
+        {
+          "property": "gridAutoRows",
+          "className": "grid-ar",
+          "values": "min | max | fr",
+          "group": "Grid Layout"
+        },
+        {
+          "property": "gridColumn",
+          "className": "grid-c",
+          "group": "Grid Layout"
+        },
+        {
+          "property": "gridColumnEnd",
+          "className": "grid-ce",
+          "group": "Grid Layout"
+        },
+        {
+          "property": "gridColumnGap",
+          "className": "grid-cg",
+          "values": "spacing",
+          "group": "Grid Layout"
+        },
+        {
+          "property": "gridColumnStart",
+          "className": "grid-cs",
+          "group": "Grid Layout"
+        },
+        {
+          "property": "gridGap",
+          "className": "grid-g",
+          "values": "spacing",
+          "group": "Grid Layout"
+        },
+        {
+          "property": "gridRow",
+          "className": "grid-r",
+          "group": "Grid Layout"
+        },
+        {
+          "property": "gridRowGap",
+          "className": "grid-rg",
+          "values": "spacing",
+          "group": "Grid Layout"
+        },
+        {
+          "property": "gridTemplateColumns",
+          "className": "grid-tc",
+          "group": "Grid Layout"
+        },
+        {
+          "property": "gridTemplateRows",
+          "className": "grid-tr",
+          "group": "Grid Layout"
+        },
+        {
+          "property": "rowGap",
+          "className": "rg",
+          "values": "spacing",
+          "group": "Grid Layout"
+        }
+      ]
+    },
+    {
+      "group": "Height",
+      "entries": [
+        {
+          "property": "blockSize",
+          "className": "h-bs",
+          "values": "sizes | auto | svh | lvh | dvh | screen | 1/2 | 1/3 | 2/3 | 1/4 | 2/4 | 3/4 | 1/5 | 2/5 | 3/5 | 4/5 | 1/6 | 2/6 | 3/6 | 4/6 | 5/6",
+          "group": "Height"
+        },
+        {
+          "property": "height",
+          "shorthand": "h",
+          "className": "h",
+          "values": "sizes | auto | svh | lvh | dvh | screen | 1/2 | 1/3 | 2/3 | 1/4 | 2/4 | 3/4 | 1/5 | 2/5 | 3/5 | 4/5 | 1/6 | 2/6 | 3/6 | 4/6 | 5/6",
+          "group": "Height"
+        },
+        {
+          "property": "maxBlockSize",
+          "className": "max-b",
+          "values": "sizes | auto | svh | lvh | dvh | screen | 1/2 | 1/3 | 2/3 | 1/4 | 2/4 | 3/4 | 1/5 | 2/5 | 3/5 | 4/5 | 1/6 | 2/6 | 3/6 | 4/6 | 5/6",
+          "group": "Height"
+        },
+        {
+          "property": "maxHeight",
+          "shorthand": "maxH",
+          "className": "max-h",
+          "values": "sizes | auto | svh | lvh | dvh | screen | 1/2 | 1/3 | 2/3 | 1/4 | 2/4 | 3/4 | 1/5 | 2/5 | 3/5 | 4/5 | 1/6 | 2/6 | 3/6 | 4/6 | 5/6",
+          "group": "Height"
+        },
+        {
+          "property": "minBlockSize",
+          "className": "min-h-bs",
+          "values": "sizes | auto | svh | lvh | dvh | screen | 1/2 | 1/3 | 2/3 | 1/4 | 2/4 | 3/4 | 1/5 | 2/5 | 3/5 | 4/5 | 1/6 | 2/6 | 3/6 | 4/6 | 5/6",
+          "group": "Height"
+        },
+        {
+          "property": "minHeight",
+          "shorthand": "minH",
+          "className": "min-h",
+          "values": "sizes | auto | svh | lvh | dvh | screen | 1/2 | 1/3 | 2/3 | 1/4 | 2/4 | 3/4 | 1/5 | 2/5 | 3/5 | 4/5 | 1/6 | 2/6 | 3/6 | 4/6 | 5/6",
+          "group": "Height"
+        }
+      ]
+    },
+    {
+      "group": "Interactivity",
+      "entries": [
+        {
+          "property": "touchAction",
+          "className": "tch-a",
+          "group": "Interactivity"
+        },
+        {
+          "property": "userSelect",
+          "className": "us",
+          "group": "Interactivity"
+        }
+      ]
+    },
+    {
+      "group": "Layout",
+      "entries": [
+        {
+          "property": "aspectRatio",
+          "className": "asp",
+          "values": "aspectRatios",
+          "group": "Layout"
+        },
+        {
+          "property": "boxDecorationBreak",
+          "className": "bx-db",
+          "group": "Layout"
+        },
+        {
+          "property": "objectFit",
+          "className": "obj-f",
+          "group": "Layout"
+        },
+        {
+          "property": "objectPosition",
+          "className": "obj-p",
+          "group": "Layout"
+        }
+      ]
+    },
+    {
+      "group": "List",
+      "entries": [
+        {
+          "property": "listStyle",
+          "className": "li-s",
+          "group": "List"
+        },
+        {
+          "property": "listStyleImage",
+          "className": "li-img",
+          "values": "assets",
+          "group": "List"
+        },
+        {
+          "property": "listStylePosition",
+          "className": "li-pos",
+          "group": "List"
+        },
+        {
+          "property": "listStyleType",
+          "className": "li-t",
+          "group": "List"
+        }
+      ]
+    },
+    {
+      "group": "Margin",
+      "entries": [
+        {
+          "property": "margin",
+          "shorthand": "m",
+          "className": "m",
+          "values": "spacing | auto",
+          "group": "Margin"
+        },
+        {
+          "property": "marginBlock",
+          "shorthand": "my, marginY",
+          "className": "my",
+          "values": "spacing | auto",
+          "group": "Margin"
+        },
+        {
+          "property": "marginBlockEnd",
+          "className": "mbe",
+          "values": "spacing | auto",
+          "group": "Margin"
+        },
+        {
+          "property": "marginBlockStart",
+          "className": "mbs",
+          "values": "spacing | auto",
+          "group": "Margin"
+        },
+        {
+          "property": "marginBottom",
+          "shorthand": "mb",
+          "className": "mb",
+          "values": "spacing | auto",
+          "group": "Margin"
+        },
+        {
+          "property": "marginInline",
+          "shorthand": "mx, marginX",
+          "className": "mx",
+          "values": "spacing | auto",
+          "group": "Margin"
+        },
+        {
+          "property": "marginInlineEnd",
+          "shorthand": "me, marginEnd",
+          "className": "me",
+          "values": "spacing | auto",
+          "group": "Margin"
+        },
+        {
+          "property": "marginInlineStart",
+          "shorthand": "ms, marginStart",
+          "className": "ms",
+          "values": "spacing | auto",
+          "group": "Margin"
+        },
+        {
+          "property": "marginLeft",
+          "shorthand": "ml",
+          "className": "ml",
+          "values": "spacing | auto",
+          "group": "Margin"
+        },
+        {
+          "property": "marginRight",
+          "shorthand": "mr",
+          "className": "mr",
+          "values": "spacing | auto",
+          "group": "Margin"
+        },
+        {
+          "property": "marginTop",
+          "shorthand": "mt",
+          "className": "mt",
+          "values": "spacing | auto",
+          "group": "Margin"
+        },
+        {
+          "property": "spaceX",
+          "className": "sx",
+          "values": "spacing | auto",
+          "group": "Margin"
+        },
+        {
+          "property": "spaceY",
+          "className": "sy",
+          "values": "spacing | auto",
+          "group": "Margin"
+        }
+      ]
+    },
+    {
+      "group": "Mask",
+      "entries": [
+        {
+          "property": "mask",
+          "className": "msk",
+          "group": "Mask"
+        },
+        {
+          "property": "maskBottomFrom",
+          "className": "msk-b-from",
+          "values": "spacing",
+          "group": "Mask"
+        },
+        {
+          "property": "maskBottomFromColor",
+          "className": "msk-b-from-c",
+          "values": "colors",
+          "group": "Mask"
+        },
+        {
+          "property": "maskBottomTo",
+          "className": "msk-b-to",
+          "values": "spacing",
+          "group": "Mask"
+        },
+        {
+          "property": "maskBottomToColor",
+          "className": "msk-b-to-c",
+          "values": "colors",
+          "group": "Mask"
+        },
+        {
+          "property": "maskClip",
+          "className": "msk-cp",
+          "group": "Mask"
+        },
+        {
+          "property": "maskComposite",
+          "className": "msk-cmp",
+          "group": "Mask"
+        },
+        {
+          "property": "maskConic",
+          "className": "msk-conic",
+          "group": "Mask"
+        },
+        {
+          "property": "maskConicFrom",
+          "className": "msk-conic-from",
+          "values": "spacing",
+          "group": "Mask"
+        },
+        {
+          "property": "maskConicFromColor",
+          "className": "msk-conic-from-c",
+          "values": "colors",
+          "group": "Mask"
+        },
+        {
+          "property": "maskConicTo",
+          "className": "msk-conic-to",
+          "values": "spacing",
+          "group": "Mask"
+        },
+        {
+          "property": "maskConicToColor",
+          "className": "msk-conic-to-c",
+          "values": "colors",
+          "group": "Mask"
+        },
+        {
+          "property": "maskImage",
+          "className": "msk-i",
+          "group": "Mask"
+        },
+        {
+          "property": "maskLeftFrom",
+          "className": "msk-l-from",
+          "values": "spacing",
+          "group": "Mask"
+        },
+        {
+          "property": "maskLeftFromColor",
+          "className": "msk-l-from-c",
+          "values": "colors",
+          "group": "Mask"
+        },
+        {
+          "property": "maskLeftTo",
+          "className": "msk-l-to",
+          "values": "spacing",
+          "group": "Mask"
+        },
+        {
+          "property": "maskLeftToColor",
+          "className": "msk-l-to-c",
+          "values": "colors",
+          "group": "Mask"
+        },
+        {
+          "property": "maskLinear",
+          "className": "msk-linear",
+          "values": "to-t | to-tr | to-r | to-br | to-b | to-bl | to-l | to-tl",
+          "group": "Mask"
+        },
+        {
+          "property": "maskLinearFrom",
+          "className": "msk-linear-from",
+          "values": "spacing",
+          "group": "Mask"
+        },
+        {
+          "property": "maskLinearFromColor",
+          "className": "msk-linear-from-c",
+          "values": "colors",
+          "group": "Mask"
+        },
+        {
+          "property": "maskLinearTo",
+          "className": "msk-linear-to",
+          "values": "spacing",
+          "group": "Mask"
+        },
+        {
+          "property": "maskLinearToColor",
+          "className": "msk-linear-to-c",
+          "values": "colors",
+          "group": "Mask"
+        },
+        {
+          "property": "maskMode",
+          "className": "msk-md",
+          "group": "Mask"
+        },
+        {
+          "property": "maskOrigin",
+          "className": "msk-o",
+          "group": "Mask"
+        },
+        {
+          "property": "maskPosition",
+          "className": "msk-p",
+          "group": "Mask"
+        },
+        {
+          "property": "maskRadial",
+          "className": "msk-radial",
+          "group": "Mask"
+        },
+        {
+          "property": "maskRadialAt",
+          "className": "msk-radial-at",
+          "values": "center | top | bottom | left | right | top left | top right | bottom left | bottom right",
+          "group": "Mask"
+        },
+        {
+          "property": "maskRadialFrom",
+          "className": "msk-radial-from",
+          "values": "spacing",
+          "group": "Mask"
+        },
+        {
+          "property": "maskRadialFromColor",
+          "className": "msk-radial-from-c",
+          "values": "colors",
+          "group": "Mask"
+        },
+        {
+          "property": "maskRadialShape",
+          "className": "msk-radial-shape",
+          "values": "circle | ellipse",
+          "group": "Mask"
+        },
+        {
+          "property": "maskRadialSize",
+          "className": "msk-radial-sz",
+          "values": "closest-side | closest-corner | farthest-side | farthest-corner",
+          "group": "Mask"
+        },
+        {
+          "property": "maskRadialTo",
+          "className": "msk-radial-to",
+          "values": "spacing",
+          "group": "Mask"
+        },
+        {
+          "property": "maskRadialToColor",
+          "className": "msk-radial-to-c",
+          "values": "colors",
+          "group": "Mask"
+        },
+        {
+          "property": "maskRepeat",
+          "className": "msk-r",
+          "group": "Mask"
+        },
+        {
+          "property": "maskRightFrom",
+          "className": "msk-r-from",
+          "values": "spacing",
+          "group": "Mask"
+        },
+        {
+          "property": "maskRightFromColor",
+          "className": "msk-r-from-c",
+          "values": "colors",
+          "group": "Mask"
+        },
+        {
+          "property": "maskRightTo",
+          "className": "msk-r-to",
+          "values": "spacing",
+          "group": "Mask"
+        },
+        {
+          "property": "maskRightToColor",
+          "className": "msk-r-to-c",
+          "values": "colors",
+          "group": "Mask"
+        },
+        {
+          "property": "maskSize",
+          "className": "msk-s",
+          "group": "Mask"
+        },
+        {
+          "property": "maskTopFrom",
+          "className": "msk-t-from",
+          "values": "spacing",
+          "group": "Mask"
+        },
+        {
+          "property": "maskTopFromColor",
+          "className": "msk-t-from-c",
+          "values": "colors",
+          "group": "Mask"
+        },
+        {
+          "property": "maskTopTo",
+          "className": "msk-t-to",
+          "values": "spacing",
+          "group": "Mask"
+        },
+        {
+          "property": "maskTopToColor",
+          "className": "msk-t-to-c",
+          "values": "colors",
+          "group": "Mask"
+        },
+        {
+          "property": "maskType",
+          "className": "msk-t",
+          "group": "Mask"
+        },
+        {
+          "property": "maskXFrom",
+          "className": "msk-x-from",
+          "values": "spacing",
+          "group": "Mask"
+        },
+        {
+          "property": "maskXFromColor",
+          "className": "msk-x-from-c",
+          "values": "colors",
+          "group": "Mask"
+        },
+        {
+          "property": "maskXTo",
+          "className": "msk-x-to",
+          "values": "spacing",
+          "group": "Mask"
+        },
+        {
+          "property": "maskXToColor",
+          "className": "msk-x-to-c",
+          "values": "colors",
+          "group": "Mask"
+        },
+        {
+          "property": "maskYFrom",
+          "className": "msk-y-from",
+          "values": "spacing",
+          "group": "Mask"
+        },
+        {
+          "property": "maskYFromColor",
+          "className": "msk-y-from-c",
+          "values": "colors",
+          "group": "Mask"
+        },
+        {
+          "property": "maskYTo",
+          "className": "msk-y-to",
+          "values": "spacing",
+          "group": "Mask"
+        },
+        {
+          "property": "maskYToColor",
+          "className": "msk-y-to-c",
+          "values": "colors",
+          "group": "Mask"
+        }
+      ]
+    },
+    {
+      "group": "Other",
+      "entries": [
+        {
+          "property": "clipPath",
+          "className": "cp-path",
+          "group": "Other"
+        },
+        {
+          "property": "debug",
+          "className": "debug",
+          "values": "type",
+          "group": "Other"
+        },
+        {
+          "property": "hyphens",
+          "className": "hy",
+          "group": "Other"
+        },
+        {
+          "property": "srOnly",
+          "className": "sr",
+          "values": "type",
+          "group": "Other"
+        }
+      ]
+    },
+    {
+      "group": "Padding",
+      "entries": [
+        {
+          "property": "padding",
+          "shorthand": "p",
+          "className": "p",
+          "values": "spacing",
+          "group": "Padding"
+        },
+        {
+          "property": "paddingBlock",
+          "shorthand": "py, paddingY",
+          "className": "py",
+          "values": "spacing",
+          "group": "Padding"
+        },
+        {
+          "property": "paddingBlockEnd",
+          "className": "pbe",
+          "values": "spacing",
+          "group": "Padding"
+        },
+        {
+          "property": "paddingBlockStart",
+          "className": "pbs",
+          "values": "spacing",
+          "group": "Padding"
+        },
+        {
+          "property": "paddingBottom",
+          "shorthand": "pb",
+          "className": "pb",
+          "values": "spacing",
+          "group": "Padding"
+        },
+        {
+          "property": "paddingInline",
+          "shorthand": "paddingX, px",
+          "className": "px",
+          "values": "spacing",
+          "group": "Padding"
+        },
+        {
+          "property": "paddingInlineEnd",
+          "shorthand": "pe, paddingEnd",
+          "className": "pe",
+          "values": "spacing",
+          "group": "Padding"
+        },
+        {
+          "property": "paddingInlineStart",
+          "shorthand": "ps, paddingStart",
+          "className": "ps",
+          "values": "spacing",
+          "group": "Padding"
+        },
+        {
+          "property": "paddingLeft",
+          "shorthand": "pl",
+          "className": "pl",
+          "values": "spacing",
+          "group": "Padding"
+        },
+        {
+          "property": "paddingRight",
+          "shorthand": "pr",
+          "className": "pr",
+          "values": "spacing",
+          "group": "Padding"
+        },
+        {
+          "property": "paddingTop",
+          "shorthand": "pt",
+          "className": "pt",
+          "values": "spacing",
+          "group": "Padding"
+        }
+      ]
+    },
+    {
+      "group": "Position",
+      "entries": [
+        {
+          "property": "bottom",
+          "className": "bottom",
+          "values": "spacing",
+          "group": "Position"
+        },
+        {
+          "property": "float",
+          "className": "float",
+          "values": "start | end",
+          "group": "Position"
+        },
+        {
+          "property": "inset",
+          "className": "inset",
+          "values": "spacing | auto",
+          "group": "Position"
+        },
+        {
+          "property": "insetBlock",
+          "shorthand": "insetY",
+          "className": "inset-y",
+          "values": "spacing",
+          "group": "Position"
+        },
+        {
+          "property": "insetBlockEnd",
+          "className": "inset-be",
+          "values": "spacing",
+          "group": "Position"
+        },
+        {
+          "property": "insetBlockStart",
+          "className": "inset-bs",
+          "values": "spacing",
+          "group": "Position"
+        },
+        {
+          "property": "insetInline",
+          "shorthand": "insetX",
+          "className": "inset-x",
+          "values": "spacing",
+          "group": "Position"
+        },
+        {
+          "property": "insetInlineEnd",
+          "shorthand": "insetEnd, end",
+          "className": "inset-e",
+          "values": "spacing",
+          "group": "Position"
+        },
+        {
+          "property": "insetInlineStart",
+          "shorthand": "insetStart, start",
+          "className": "inset-s",
+          "values": "spacing",
+          "group": "Position"
+        },
+        {
+          "property": "left",
+          "className": "left",
+          "values": "spacing",
+          "group": "Position"
+        },
+        {
+          "property": "position",
+          "shorthand": "pos",
+          "className": "pos",
+          "group": "Position"
+        },
+        {
+          "property": "right",
+          "className": "right",
+          "values": "spacing",
+          "group": "Position"
+        },
+        {
+          "property": "top",
+          "className": "top",
+          "values": "spacing",
+          "group": "Position"
+        }
+      ]
+    },
+    {
+      "group": "Scroll",
+      "entries": [
+        {
+          "property": "overflow",
+          "className": "ov",
+          "group": "Scroll"
+        },
+        {
+          "property": "overflowAnchor",
+          "className": "ov-a",
+          "group": "Scroll"
+        },
+        {
+          "property": "overflowBlock",
+          "className": "ov-b",
+          "group": "Scroll"
+        },
+        {
+          "property": "overflowClipBox",
+          "className": "ovcp-bx",
+          "group": "Scroll"
+        },
+        {
+          "property": "overflowClipMargin",
+          "className": "ovcp-m",
+          "group": "Scroll"
+        },
+        {
+          "property": "overflowInline",
+          "className": "ov-i",
+          "group": "Scroll"
+        },
+        {
+          "property": "overflowWrap",
+          "className": "ov-wrap",
+          "group": "Scroll"
+        },
+        {
+          "property": "overflowX",
+          "className": "ov-x",
+          "group": "Scroll"
+        },
+        {
+          "property": "overflowY",
+          "className": "ov-y",
+          "group": "Scroll"
+        },
+        {
+          "property": "overscrollBehavior",
+          "className": "ovs-b",
+          "group": "Scroll"
+        },
+        {
+          "property": "overscrollBehaviorBlock",
+          "className": "ovs-bb",
+          "group": "Scroll"
+        },
+        {
+          "property": "overscrollBehaviorInline",
+          "className": "ovs-bi",
+          "group": "Scroll"
+        },
+        {
+          "property": "overscrollBehaviorX",
+          "className": "ovs-bx",
+          "group": "Scroll"
+        },
+        {
+          "property": "overscrollBehaviorY",
+          "className": "ovs-by",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollbar",
+          "className": "scr-bar",
+          "values": "visible | hidden",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollbarColor",
+          "className": "scr-bar-c",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollbarGutter",
+          "className": "scr-bar-g",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollbarThumb",
+          "className": "scr-bar-th",
+          "values": "colors",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollbarTrack",
+          "className": "scr-bar-tk",
+          "values": "colors",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollbarWidth",
+          "className": "scr-bar-w",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollBehavior",
+          "className": "scr-bhv",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollMargin",
+          "className": "scr-m",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollMarginBlock",
+          "shorthand": "scrollMarginY",
+          "className": "scr-my",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollMarginBlockEnd",
+          "className": "scr-mbe",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollMarginBlockStart",
+          "className": "scr-mbt",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollMarginBottom",
+          "className": "scr-mb",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollMarginInline",
+          "shorthand": "scrollMarginX",
+          "className": "scr-mx",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollMarginInlineEnd",
+          "className": "scr-me",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollMarginInlineStart",
+          "className": "scr-ms",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollMarginLeft",
+          "className": "scr-ml",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollMarginRight",
+          "className": "scr-mr",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollMarginTop",
+          "className": "scr-mt",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollPadding",
+          "className": "scr-p",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollPaddingBlock",
+          "shorthand": "scrollPaddingY",
+          "className": "scr-py",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollPaddingBlockEnd",
+          "className": "scr-pbe",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollPaddingBlockStart",
+          "className": "scr-pbs",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollPaddingBottom",
+          "className": "scr-pb",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollPaddingInline",
+          "shorthand": "scrollPaddingX",
+          "className": "scr-px",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollPaddingInlineEnd",
+          "className": "scr-pe",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollPaddingInlineStart",
+          "className": "scr-ps",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollPaddingLeft",
+          "className": "scr-pl",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollPaddingRight",
+          "className": "scr-pr",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollPaddingTop",
+          "className": "scr-pt",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollSnapAlign",
+          "className": "scr-sa",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollSnapCoordinate",
+          "className": "scrs-c",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollSnapDestination",
+          "className": "scrs-d",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollSnapMargin",
+          "className": "scrs-m",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollSnapMarginBottom",
+          "className": "scrs-mb",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollSnapMarginLeft",
+          "className": "scrs-ml",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollSnapMarginRight",
+          "className": "scrs-mr",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollSnapMarginTop",
+          "className": "scrs-mt",
+          "values": "spacing",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollSnapPointsX",
+          "className": "scrs-px",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollSnapPointsY",
+          "className": "scrs-py",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollSnapStop",
+          "className": "scrs-s",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollSnapStrictness",
+          "className": "scrs-strt",
+          "values": "mandatory | proximity",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollSnapType",
+          "className": "scrs-t",
+          "values": "none | x | y | both",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollSnapTypeX",
+          "className": "scrs-tx",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollSnapTypeY",
+          "className": "scrs-ty",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollTimeline",
+          "className": "scrtl",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollTimelineAxis",
+          "className": "scrtl-a",
+          "group": "Scroll"
+        },
+        {
+          "property": "scrollTimelineName",
+          "className": "scrtl-n",
+          "group": "Scroll"
+        }
+      ]
+    },
+    {
+      "group": "Shadow",
+      "entries": [
+        {
+          "property": "boxShadow",
+          "shorthand": "shadow",
+          "className": "bx-sh",
+          "values": "shadows",
+          "group": "Shadow"
+        }
+      ]
+    },
+    {
+      "group": "System",
+      "entries": [
+        {
+          "property": "boxSizing",
+          "className": "bx-s",
+          "group": "System"
+        },
+        {
+          "property": "cursor",
+          "className": "cursor",
+          "values": "cursor",
+          "group": "System"
+        }
+      ]
+    },
+    {
+      "group": "Table",
+      "entries": [
+        {
+          "property": "borderCollapse",
+          "className": "bd-cl",
+          "group": "Table"
+        },
+        {
+          "property": "borderSpacing",
+          "className": "bd-sp",
+          "values": "spacing | auto",
+          "group": "Table"
+        },
+        {
+          "property": "borderSpacingX",
+          "className": "bd-sx",
+          "values": "spacing",
+          "group": "Table"
+        },
+        {
+          "property": "borderSpacingY",
+          "className": "bd-sy",
+          "values": "spacing",
+          "group": "Table"
+        },
+        {
+          "property": "tableLayout",
+          "className": "tbl",
+          "group": "Table"
+        }
+      ]
+    },
+    {
+      "group": "Transform",
+      "entries": [
+        {
+          "property": "rotate",
+          "className": "rotate",
+          "values": "auto | auto-3d",
+          "group": "Transform"
+        },
+        {
+          "property": "rotateX",
+          "className": "rotate-x",
+          "group": "Transform"
+        },
+        {
+          "property": "rotateY",
+          "className": "rotate-y",
+          "group": "Transform"
+        },
+        {
+          "property": "rotateZ",
+          "className": "rotate-z",
+          "group": "Transform"
+        },
+        {
+          "property": "scale",
+          "className": "scale",
+          "values": "auto",
+          "group": "Transform"
+        },
+        {
+          "property": "scaleX",
+          "className": "scale-x",
+          "group": "Transform"
+        },
+        {
+          "property": "scaleY",
+          "className": "scale-y",
+          "group": "Transform"
+        },
+        {
+          "property": "transform",
+          "className": "trf",
+          "group": "Transform"
+        },
+        {
+          "property": "transformBox",
+          "className": "trf-b",
+          "group": "Transform"
+        },
+        {
+          "property": "transformOrigin",
+          "className": "trf-o",
+          "group": "Transform"
+        },
+        {
+          "property": "transformStyle",
+          "className": "trf-s",
+          "group": "Transform"
+        },
+        {
+          "property": "translate",
+          "className": "translate",
+          "values": "auto | auto-3d",
+          "group": "Transform"
+        },
+        {
+          "property": "translateX",
+          "shorthand": "x",
+          "className": "translate-x",
+          "values": "spacing | 1/2 | 1/3 | 2/3 | 1/4 | 2/4 | 3/4 | full | -1/2 | -1/3 | -2/3 | -1/4 | -2/4 | -3/4 | -full",
+          "group": "Transform"
+        },
+        {
+          "property": "translateY",
+          "shorthand": "y",
+          "className": "translate-y",
+          "values": "spacing | 1/2 | 1/3 | 2/3 | 1/4 | 2/4 | 3/4 | full | -1/2 | -1/3 | -2/3 | -1/4 | -2/4 | -3/4 | -full",
+          "group": "Transform"
+        },
+        {
+          "property": "translateZ",
+          "shorthand": "z",
+          "className": "translate-z",
+          "values": "spacing",
+          "group": "Transform"
+        }
+      ]
+    },
+    {
+      "group": "Transition",
+      "entries": [
+        {
+          "property": "transition",
+          "className": "trs",
+          "values": "all | common | size | position | background | colors | opacity | shadow | transform",
+          "group": "Transition"
+        },
+        {
+          "property": "transitionDelay",
+          "className": "trs-dly",
+          "values": "durations",
+          "group": "Transition"
+        },
+        {
+          "property": "transitionDuration",
+          "className": "trs-dur",
+          "values": "durations",
+          "group": "Transition"
+        },
+        {
+          "property": "transitionProperty",
+          "className": "trs-prop",
+          "values": "common | colors | size | position | background",
+          "group": "Transition"
+        },
+        {
+          "property": "transitionTimingFunction",
+          "className": "trs-tmf",
+          "values": "easings",
+          "group": "Transition"
+        }
+      ]
+    },
+    {
+      "group": "Typography",
+      "entries": [
+        {
+          "property": "fontFamily",
+          "className": "ff",
+          "values": "fonts",
+          "group": "Typography"
+        },
+        {
+          "property": "fontFeatureSettings",
+          "className": "ff-s",
+          "group": "Typography"
+        },
+        {
+          "property": "fontKerning",
+          "className": "fk",
+          "group": "Typography"
+        },
+        {
+          "property": "fontPalette",
+          "className": "fp",
+          "group": "Typography"
+        },
+        {
+          "property": "fontSize",
+          "className": "fs",
+          "values": "fontSizes",
+          "group": "Typography"
+        },
+        {
+          "property": "fontSizeAdjust",
+          "className": "fs-a",
+          "group": "Typography"
+        },
+        {
+          "property": "fontSmoothing",
+          "className": "fsmt",
+          "values": "antialiased | subpixel-antialiased",
+          "group": "Typography"
+        },
+        {
+          "property": "fontVariant",
+          "className": "fv",
+          "group": "Typography"
+        },
+        {
+          "property": "fontVariantAlternates",
+          "className": "fv-alt",
+          "group": "Typography"
+        },
+        {
+          "property": "fontVariantCaps",
+          "className": "fv-caps",
+          "group": "Typography"
+        },
+        {
+          "property": "fontVariantNumeric",
+          "className": "fv-num",
+          "group": "Typography"
+        },
+        {
+          "property": "fontVariationSettings",
+          "className": "fv-s",
+          "group": "Typography"
+        },
+        {
+          "property": "fontWeight",
+          "className": "fw",
+          "values": "fontWeights",
+          "group": "Typography"
+        },
+        {
+          "property": "letterSpacing",
+          "className": "ls",
+          "values": "letterSpacings",
+          "group": "Typography"
+        },
+        {
+          "property": "lineClamp",
+          "className": "lc",
+          "group": "Typography"
+        },
+        {
+          "property": "lineHeight",
+          "className": "lh",
+          "values": "lineHeights",
+          "group": "Typography"
+        },
+        {
+          "property": "textAlign",
+          "className": "ta",
+          "group": "Typography"
+        },
+        {
+          "property": "textDecoration",
+          "className": "td",
+          "group": "Typography"
+        },
+        {
+          "property": "textDecorationColor",
+          "className": "td-c",
+          "values": "colors",
+          "group": "Typography"
+        },
+        {
+          "property": "textDecorationStyle",
+          "className": "td-s",
+          "group": "Typography"
+        },
+        {
+          "property": "textDecorationThickness",
+          "className": "td-t",
+          "group": "Typography"
+        },
+        {
+          "property": "textEmphasisColor",
+          "className": "te-c",
+          "values": "colors",
+          "group": "Typography"
+        },
+        {
+          "property": "textIndent",
+          "className": "ti",
+          "values": "spacing",
+          "group": "Typography"
+        },
+        {
+          "property": "textOverflow",
+          "className": "tov",
+          "group": "Typography"
+        },
+        {
+          "property": "textShadow",
+          "className": "tsh",
+          "values": "shadows",
+          "group": "Typography"
+        },
+        {
+          "property": "textShadowColor",
+          "shorthand": "textShadowColor",
+          "className": "tsh-c",
+          "values": "colors",
+          "group": "Typography"
+        },
+        {
+          "property": "textSizeAdjust",
+          "className": "txt-adj",
+          "group": "Typography"
+        },
+        {
+          "property": "textTransform",
+          "className": "tt",
+          "group": "Typography"
+        },
+        {
+          "property": "textUnderlineOffset",
+          "className": "tu-o",
+          "group": "Typography"
+        },
+        {
+          "property": "textWrap",
+          "className": "tw",
+          "group": "Typography"
+        },
+        {
+          "property": "truncate",
+          "className": "trunc",
+          "values": "type",
+          "group": "Typography"
+        },
+        {
+          "property": "verticalAlign",
+          "className": "va",
+          "group": "Typography"
+        },
+        {
+          "property": "WebkitTextFillColor",
+          "className": "wktf-c",
+          "values": "colors",
+          "group": "Typography"
+        },
+        {
+          "property": "wordBreak",
+          "className": "wb",
+          "group": "Typography"
+        }
+      ]
+    },
+    {
+      "group": "Visibility",
+      "entries": [
+        {
+          "property": "appearance",
+          "className": "ap",
+          "group": "Visibility"
+        },
+        {
+          "property": "backfaceVisibility",
+          "className": "bfv",
+          "group": "Visibility"
+        },
+        {
+          "property": "visibility",
+          "className": "vis",
+          "group": "Visibility"
+        },
+        {
+          "property": "zIndex",
+          "className": "z",
+          "values": "zIndex",
+          "group": "Visibility"
+        }
+      ]
+    },
+    {
+      "group": "Width",
+      "entries": [
+        {
+          "property": "boxSize",
+          "className": "size",
+          "values": "sizes | auto | 1/2 | 1/3 | 2/3 | 1/4 | 2/4 | 3/4 | 1/5 | 2/5 | 3/5 | 4/5 | 1/6 | 2/6 | 3/6 | 4/6 | 5/6 | 1/12 | 2/12 | 3/12 | 4/12 | 5/12 | 6/12 | 7/12 | 8/12 | 9/12 | 10/12 | 11/12 | screen",
+          "group": "Width"
+        },
+        {
+          "property": "inlineSize",
+          "className": "w-is",
+          "values": "sizes | auto | 1/2 | 1/3 | 2/3 | 1/4 | 2/4 | 3/4 | 1/5 | 2/5 | 3/5 | 4/5 | 1/6 | 2/6 | 3/6 | 4/6 | 5/6 | 1/12 | 2/12 | 3/12 | 4/12 | 5/12 | 6/12 | 7/12 | 8/12 | 9/12 | 10/12 | 11/12 | screen",
+          "group": "Width"
+        },
+        {
+          "property": "maxInlineSize",
+          "className": "max-w-is",
+          "values": "sizes | auto | 1/2 | 1/3 | 2/3 | 1/4 | 2/4 | 3/4 | 1/5 | 2/5 | 3/5 | 4/5 | 1/6 | 2/6 | 3/6 | 4/6 | 5/6 | 1/12 | 2/12 | 3/12 | 4/12 | 5/12 | 6/12 | 7/12 | 8/12 | 9/12 | 10/12 | 11/12 | screen",
+          "group": "Width"
+        },
+        {
+          "property": "maxWidth",
+          "shorthand": "maxW",
+          "className": "max-w",
+          "values": "sizes | auto | 1/2 | 1/3 | 2/3 | 1/4 | 2/4 | 3/4 | 1/5 | 2/5 | 3/5 | 4/5 | 1/6 | 2/6 | 3/6 | 4/6 | 5/6 | 1/12 | 2/12 | 3/12 | 4/12 | 5/12 | 6/12 | 7/12 | 8/12 | 9/12 | 10/12 | 11/12 | screen",
+          "group": "Width"
+        },
+        {
+          "property": "minInlineSize",
+          "className": "min-w-is",
+          "values": "sizes | auto | 1/2 | 1/3 | 2/3 | 1/4 | 2/4 | 3/4 | 1/5 | 2/5 | 3/5 | 4/5 | 1/6 | 2/6 | 3/6 | 4/6 | 5/6 | 1/12 | 2/12 | 3/12 | 4/12 | 5/12 | 6/12 | 7/12 | 8/12 | 9/12 | 10/12 | 11/12 | screen",
+          "group": "Width"
+        },
+        {
+          "property": "minWidth",
+          "shorthand": "minW",
+          "className": "min-w",
+          "values": "sizes | auto | 1/2 | 1/3 | 2/3 | 1/4 | 2/4 | 3/4 | 1/5 | 2/5 | 3/5 | 4/5 | 1/6 | 2/6 | 3/6 | 4/6 | 5/6 | 1/12 | 2/12 | 3/12 | 4/12 | 5/12 | 6/12 | 7/12 | 8/12 | 9/12 | 10/12 | 11/12 | screen",
+          "group": "Width"
+        },
+        {
+          "property": "width",
+          "shorthand": "w",
+          "className": "w",
+          "values": "sizes | auto | 1/2 | 1/3 | 2/3 | 1/4 | 2/4 | 3/4 | 1/5 | 2/5 | 3/5 | 4/5 | 1/6 | 2/6 | 3/6 | 4/6 | 5/6 | 1/12 | 2/12 | 3/12 | 4/12 | 5/12 | 6/12 | 7/12 | 8/12 | 9/12 | 10/12 | 11/12 | screen",
+          "group": "Width"
+        }
+      ]
+    }
+  ]
+}

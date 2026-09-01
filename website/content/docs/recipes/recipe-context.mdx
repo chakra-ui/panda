@@ -1,0 +1,25 @@
+---
+title: Recipe Context
+description: createRecipeContext distributes a single-element recipe's styles to a component that renders it.
+---
+
+Use this for a single-element config recipe (`cva` or `defineRecipe`) that has no slots. It returns a single
+`withContext` function, and `withContext` takes just the element or component, with no slot name.
+
+```tsx
+import { button } from '../styled-system/recipes'
+import { createRecipeContext } from 'styled-system/jsx'
+
+const { withContext } = createRecipeContext(button)
+
+export const Button = withContext('button')
+```
+
+The component accepts the recipe's variant props and forwards them to drive the styling.
+
+## See also
+
+- [Slot Recipe Context](/docs/recipes/slot-recipe-context) for the multi-part equivalent, `createSlotRecipeContext`,
+  used with a slot recipe.
+- [Default Props](/docs/recipes/guide-default-props) and [Forwarding props](/docs/recipes/guide-forwarding-props) for
+  guides that apply to both context helpers.

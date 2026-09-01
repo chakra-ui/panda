@@ -1,19 +1,21 @@
+import type { Metadata, Viewport } from 'next'
 import Script from 'next/script'
 import { Providers } from '@/components/providers'
 import { css, cx } from '@/styled-system/css'
 import { fontClassName } from 'styles/fonts'
 import seoConfig from '../seo.config'
-import '../styles/panda.css'
+import '../styled-system/styles.css'
 
 interface Props {
   children: React.ReactNode
 }
 
-const { themeColor: _, ...metadata } = seoConfig
-export { metadata }
+const { themeColor, ...rest } = seoConfig
 
-export const viewport = {
-  viewport: seoConfig.themeColor
+export const metadata: Metadata = rest
+
+export const viewport: Viewport = {
+  themeColor
 }
 
 export default function RootLayout(props: Props) {
@@ -23,11 +25,17 @@ export default function RootLayout(props: Props) {
       lang="en"
       className={cx(
         fontClassName,
-        css({ fontFamily: 'body', fontSize: '0.9em' })
+        css({ fontFamily: 'body' })
       )}
       suppressHydrationWarning
     >
       <head>
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="Panda CSS Blog"
+          href="/rss.xml"
+        />
         <Script
           data-domain="panda-css.com"
           src="https://plausible.io/js/script.js"

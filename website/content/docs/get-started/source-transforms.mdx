@@ -1,0 +1,113 @@
+---
+title: Source Transforms
+description: Rewrite css(), pattern and recipe calls into plain class strings at build time, so the styling runtime never ships.
+---
+
+Panda always generates CSS at build time. By default it leaves the JavaScript alone: `css({ color: 'red.300' })`
+stays a function call, and Panda's runtime resolves it to a class string in the browser.
+
+Source transforms remove that last step. Turn them on and the bundler rewrites each call site to the class string
+Panda already computed:
+
+```tsx
+// you write
+<div className={css({ color: 'red.300', fontSize: '2xl', padding: '4' })} />
+
+// your bundle ships
+<div className="c_red.300 fs_2xl p_4" />
+```
+
+Nothing is left to resolve at runtime, so the styling runtime drops out of the bundle entirely.
+
+## Enabling it
+
+Source transforms are opt-in, behind `transform: true` on the bundler plugin.
+
+<Tabs items={['Vite', 'webpack', 'Rollup']}>
+  <Tab>
+```ts filename="vite.config.ts"
+import pandacss from '@pandacss/vite'
+
+export default defineConfig({
+  plugins: [pandacss({ transform: true })]
+})
+```
+  </Tab>
+  <Tab>
+```js filename="webpack.config.js"
+const { PandaWebpackPlugin } = require('@pandacss/webpack')
+
+module.exports = {
+  plugins: [new PandaWebpackPlugin({ transform: true })]
+}
+```
+  </Tab>
+  <Tab>
+```ts filename="rollup.config.ts"
+import pandacss from '@pandacss/rollup'
+
+export default { plugins: [pandacss({ transform: true })] }
+```
+  </Tab>
+</Tabs>
+
+Rspack and Rolldown work through the webpack and Rollup adapters respectively.
+
+## What gets rewritten
+
+`css()` calls, [pattern](/docs/styling/patterns) calls, [recipe](/docs/recipes/atomic-recipe) calls, and JSX style props
+on the styled factory. Patterns and factory elements are inlined too, so `<Stack gap="4">` becomes a plain `<div>`
+with a class string and the pattern function disappears.
+
+## What stays at runtime
+
+A call Panda cannot resolve to a literal keeps its runtime form. This is by design, not a failure:
+
+```tsx
+const tone = await getTone()
+
+// stays a runtime call — the value isn't knowable at build time
+<div className={css({ color: tone })} />
+```
+
+When a call site mixes static styles with a runtime class name, Panda rewrites what it can and joins the rest:
+
+```tsx
+// you write
+<styled.div className={external} color="red.500" padding="4" />
+
+// becomes
+<div className={external + " c_red.500 p_4"} />
+```
+
+Where the merge needs real class-conflict resolution, Panda emits a `cx` import from your generated
+`styled-system` rather than inlining a copy.
+
+## Turbopack
+
+The bundler plugins above cover Vite, webpack, Rollup, Rspack and Rolldown. Turbopack has no plugin API — only
+loaders — so there is no first-party Turbopack adapter yet.
+
+Next.js 16 defaults to Turbopack and fails the build when a webpack config is present, so `withPandaCss` users
+need the webpack builder explicitly:
+
+```json filename="package.json"
+{
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "next build --webpack"
+  }
+}
+```
+
+If you'd rather stay on Turbopack, keep source transforms off. Everything else about Panda is unchanged: CSS is
+still generated at build time, and only the class-resolution step happens at runtime.
+
+## Should you turn it on?
+
+The win is a smaller bundle and less work in the browser, and it is a fixed win: the runtime is a constant cost,
+so the saving does not grow with your app. On a small app the difference is a few kilobytes gzipped. Measure your
+own bundle before and after rather than assuming.
+
+Leave it off if you rely on `css()` in code paths Panda cannot see statically, or if switching your builder costs
+more than the bundle saves.

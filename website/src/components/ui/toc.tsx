@@ -1,209 +1,110 @@
 'use client'
 
 import { Docs } from '.velite'
-import { sva } from '@/styled-system/css'
+import { css, cx } from '@/styled-system/css'
+import { docNav } from '@/styled-system/recipes'
 import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
-import scrollIntoView from 'scroll-into-view-if-needed'
+import { useEffect, useState } from 'react'
 
-interface HeadingState {
-  index: number
-  aboveHalfViewport: boolean
-  insideHalfViewport: boolean
-  isActive: boolean
-}
-
-function useTocState() {
-  const [headingStates, setHeadingStates] = useState<
-    Record<string, HeadingState>
-  >({})
-  const observerRef = useRef<IntersectionObserver | null>(null)
+function useTocState(ids: string[]) {
+  const [activeId, setActiveId] = useState<string | null>(null)
+  const key = ids.join(',')
 
   useEffect(() => {
-    // Get all headings
-    const elements = Array.from(
-      document.querySelectorAll('article h2, article h3, article h4')
-    ).filter(el => el.id)
+    const listed = new Set(key.split(','))
+    let frame = 0
 
-    if (elements.length === 0) return
+    const read = () => {
+      frame = 0
 
-    // Create a map of elements to their ids and indices
-    const elementMap = new Map()
-    elements.forEach((el, index) => {
-      elementMap.set(el, [el.id, index])
-    })
+      const visible = Array.from(
+        document.querySelectorAll<HTMLElement>(
+          'article h2, article h3, article h4'
+        )
+      ).filter(el => listed.has(el.id) && el.offsetParent !== null)
 
-    // Clean up existing observer before creating a new one
-    if (observerRef.current) {
-      observerRef.current.disconnect()
-      observerRef.current = null
+      if (visible.length === 0) return
+
+      const line = 140
+      let current = visible[0]
+
+      for (const heading of visible) {
+        if (heading.getBoundingClientRect().top > line) break
+        current = heading
+      }
+
+      const atBottom =
+        window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - 2
+
+      setActiveId(atBottom ? visible[visible.length - 1].id : current.id)
     }
 
-    // Set up intersection observer with sophisticated tracking
-    observerRef.current = new IntersectionObserver(
-      entries => {
-        setHeadingStates(prevStates => {
-          const newStates = { ...prevStates }
+    const schedule = () => {
+      if (frame === 0) frame = requestAnimationFrame(read)
+    }
 
-          // Update states based on intersection entries
-          for (const entry of entries) {
-            if (entry?.rootBounds && elementMap.has(entry.target)) {
-              const [id, index] = elementMap.get(entry.target)
-              const aboveHalfViewport =
-                entry.boundingClientRect.y + entry.boundingClientRect.height <=
-                entry.rootBounds.y + entry.rootBounds.height
-              const insideHalfViewport = entry.intersectionRatio > 0
+    read()
 
-              newStates[id] = {
-                index,
-                aboveHalfViewport,
-                insideHalfViewport,
-                isActive: false
-              }
-            }
-          }
+    const article = document.querySelector('article')
+    const observer = article ? new ResizeObserver(schedule) : null
+    if (article && observer) observer.observe(article)
 
-          // Determine which headings should be active
-          const activeIds = new Set<string>()
-
-          // First, mark all visible headings as active
-          for (const id in newStates) {
-            newStates[id].isActive = false
-
-            if (newStates[id].insideHalfViewport) {
-              activeIds.add(id)
-            }
-          }
-
-          // If no headings are visible, find the most relevant one
-          if (activeIds.size === 0) {
-            let fallbackId = ''
-            let largestIndexAboveViewport = -1
-
-            // Look for the last heading that passed above the viewport
-            for (const id in newStates) {
-              if (
-                newStates[id].aboveHalfViewport &&
-                newStates[id].index > largestIndexAboveViewport
-              ) {
-                largestIndexAboveViewport = newStates[id].index
-                fallbackId = id
-              }
-            }
-
-            // If still no heading found and we're near the bottom, activate the last heading
-            if (!fallbackId) {
-              const isNearBottom =
-                window.innerHeight + window.scrollY >=
-                document.documentElement.scrollHeight - 100
-
-              if (isNearBottom) {
-                const allIds = Object.keys(newStates)
-                if (allIds.length > 0) {
-                  fallbackId = allIds.reduce((maxId, id) =>
-                    newStates[id].index > newStates[maxId].index ? id : maxId
-                  )
-                }
-              }
-            }
-
-            if (fallbackId) {
-              activeIds.add(fallbackId)
-            }
-          }
-
-          // Mark all active headings
-          for (const id of activeIds) {
-            if (newStates[id]) {
-              newStates[id].isActive = true
-            }
-          }
-
-          return newStates
-        })
-      },
-      {
-        rootMargin: '0px 0px -20%',
-        threshold: [0, 0.1]
-      }
-    )
-
-    elements.forEach(el => observerRef.current?.observe(el))
+    window.addEventListener('scroll', schedule, { passive: true })
+    window.addEventListener('resize', schedule)
 
     return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect()
-        observerRef.current = null
-      }
+      if (frame !== 0) cancelAnimationFrame(frame)
+      observer?.disconnect()
+      window.removeEventListener('scroll', schedule)
+      window.removeEventListener('resize', schedule)
     }
-  }, [])
-
-  useEffect(() => {
-    // Find the active heading for auto-scrolling TOC
-    const activeId = Object.keys(headingStates).find(
-      id => headingStates[id]?.isActive
-    )
-    if (!activeId) return
-
-    // Use requestAnimationFrame to ensure DOM is ready
-    requestAnimationFrame(() => {
-      const anchor = document.querySelector(`li > a[href="#${activeId}"]`)
-
-      if (anchor) {
-        // Find the scrollable container (parent with overflow-y auto)
-        const scrollContainer = anchor.closest('.scroll-area')
-
-        if (scrollContainer) {
-          scrollIntoView(anchor, {
-            behavior: 'smooth',
-            block: 'center',
-            inline: 'center',
-            scrollMode: 'if-needed',
-            boundary: scrollContainer
-          })
-        }
-      }
-    })
-  }, [headingStates])
+  }, [key])
 
   return {
-    isCurrent: (id: string) => headingStates[id]?.isActive || false,
+    isCurrent: (id: string) => id === activeId,
     onLinkClick: (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
       e.preventDefault()
       const element = document.getElementById(id)
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' })
-        window.history.pushState(null, '', `#${id}`)
-      }
+      if (!element) return
+
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      element.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' })
+      window.history.pushState(null, '', `#${id}`)
     }
   }
 }
 
 export interface TocProps {
   data: Docs['toc']
+  /** The sheet renders its own header, so it hides this one. */
+  hideTitle?: boolean
 }
 
 export const Toc = (props: TocProps) => {
-  const { data } = props
-  const { isCurrent, onLinkClick } = useTocState()
+  const { data, hideTitle } = props
+  const { isCurrent, onLinkClick } = useTocState(data.map(item => item.id))
 
   if (data.length === 0) {
     return null
   }
 
-  const classes = tocRecipe()
+  const classes = docNav({ kind: 'toc' })
 
   return (
-    <nav className={classes.root} aria-label="Table of contents">
-      <h3 className={classes.title}>On this page</h3>
-      <ul>
+    <nav aria-label="Table of contents">
+      {!hideTitle && <h3 className={classes.label}>On this page</h3>}
+      <ul className={classes.list}>
         {data.map(item => (
-          <li key={item.id} className={classes.item}>
+          <li key={item.id}>
             <Link
               href={`#${item.id}`}
-              style={{ paddingInlineStart: item.depth * 12 }}
               data-current={isCurrent(item.id) || undefined}
-              className={classes.link}
+              aria-current={isCurrent(item.id) ? 'location' : undefined}
+              className={cx(
+                classes.link,
+                depthStyles[Math.min(item.depth, depthStyles.length - 1)]
+              )}
               onClick={e => onLinkClick(e, item.id)}
             >
               {item.title}
@@ -215,37 +116,9 @@ export const Toc = (props: TocProps) => {
   )
 }
 
-const tocRecipe = sva({
-  slots: ['root', 'title', 'link', 'item'],
-  base: {
-    root: {
-      ps: '4'
-    },
-    title: {
-      textStyle: 'sm',
-      fontWeight: 'medium',
-      letterSpacing: 'tight',
-      mb: '4'
-    },
-    item: {
-      my: '2',
-      scrollMarginY: '6',
-      scrollPaddingY: '6'
-    },
-    link: {
-      display: 'inline-flex',
-      textStyle: 'sm',
-      color: 'fg.subtle',
-      py: '0.5',
-      transitionProperty: 'color',
-      transitionDuration: '200ms',
-      _current: {
-        color: 'fg',
-        fontWeight: 'medium'
-      },
-      _hover: {
-        color: 'fg'
-      }
-    }
-  }
-})
+const depthStyles = [
+  css({ ps: '4' }),
+  css({ ps: '7' }),
+  css({ ps: '10' }),
+  css({ ps: '13' })
+]

@@ -33,3 +33,34 @@ export async function fetchGithubUsers(
   const users = await Promise.all(userPromises)
   return users.filter((user): user is GitHubUser => user !== null)
 }
+
+export interface Contributor {
+  login: string
+  avatar_url: string
+  html_url: string
+  contributions: number
+}
+
+/** Repo contributors, bots and the core team removed. */
+export async function fetchContributors(
+  exclude: string[] = []
+): Promise<Contributor[]> {
+  try {
+    const response = await fetch(
+      'https://api.github.com/repos/chakra-ui/panda/contributors?per_page=100',
+      { next: { revalidate: 86400 } }
+    )
+    if (!response.ok) return []
+
+    const contributors: Contributor[] = await response.json()
+    const skip = new Set(exclude.map(login => login.toLowerCase()))
+
+    return contributors.filter(
+      person =>
+        !person.login.includes('[bot]') && !skip.has(person.login.toLowerCase())
+    )
+  } catch (error) {
+    console.error('Failed to fetch contributors:', error)
+    return []
+  }
+}

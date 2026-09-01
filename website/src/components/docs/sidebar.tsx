@@ -1,43 +1,73 @@
 'use client'
 
 import { Badge } from '@/components/ui/badge'
-import { docsTabs, installationGuideUrls } from '@/docs.config'
-import { css } from '@/styled-system/css'
-import { HStack, Stack } from '@/styled-system/jsx'
+import type { IconType } from 'react-icons'
+import {
+  LuBlocks,
+  LuBookOpen,
+  LuBot,
+  LuCircleHelp,
+  LuCog,
+  LuDownload,
+  LuFolderTree,
+  LuLayers,
+  LuLayoutGrid,
+  LuPackage,
+  LuPalette,
+  LuRocket,
+  LuShuffle,
+  LuSlidersHorizontal,
+  LuLightbulb,
+  LuTerminal,
+  LuType,
+  LuWrench
+} from 'react-icons/lu'
+import { docsTabs } from '@/docs.config'
+import { Stack } from '@/styled-system/jsx'
+import { docNav } from '@/styled-system/recipes'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LuArrowUpRight } from 'react-icons/lu'
 
+/** Group titles come from docs.config; anything unmapped falls back to a folder. */
+const GROUP_ICONS: Record<string, IconType> = {
+  'Get Started': LuRocket,
+  Installation: LuDownload,
+  'Core Concepts': LuLightbulb,
+  'Styling APIs': LuLayers,
+  'How It Works': LuCog,
+  Migration: LuShuffle,
+  Recipes: LuLayers,
+  'JSX Recipes': LuLayoutGrid,
+  Guides: LuBookOpen,
+  Tokens: LuPalette,
+  'Composite Styles': LuType,
+  Themes: LuPalette,
+  Studio: LuLayoutGrid,
+  'Component Library': LuBlocks,
+  'Design System Preset': LuPackage,
+  Customization: LuSlidersHorizontal,
+  'Distribution & Scale': LuPackage,
+  Tooling: LuWrench,
+  Frameworks: LuBlocks,
+  'AI for Agents': LuBot,
+  Help: LuCircleHelp,
+  'CLI & Config': LuTerminal,
+  'Utility Reference': LuBookOpen
+}
+
 interface Props {
   /** `{tabKey}/{page}`, e.g. `styling/getting-started`. Matches the docs page route's `slug`. */
   slug?: string
+  /** Used when the route has no tab segment of its own, e.g. the `/docs` welcome page. */
+  tabKey?: string
 }
 
-const linkStyles = css({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '2',
-  px: '4',
-  py: '1.5',
-  rounded: 'md',
-  textStyle: 'sm',
-  color: 'fg.muted',
-  bg: 'transparent',
-  fontWeight: 'normal',
-  transitionProperty: 'background, color',
-  transitionDuration: '200ms',
-  _hover: { bg: 'bg.subtle', color: 'fg' },
-  _current: {
-    color: 'fg',
-    bg: 'accent.subtle',
-    fontWeight: 'semibold'
-  }
-})
-
-export function Sidebar({ slug: currentSlug }: Props) {
+export function Sidebar({ slug: currentSlug, tabKey: fallbackTab }: Props) {
   const pathname = usePathname()
   // pathname is `/docs/{tabKey}/...`; currentSlug (when passed) is `{tabKey}/...`
-  const tabKey = pathname?.split('/')[2] || currentSlug?.split('/')[0]
+  const tabKey =
+    pathname?.split('/')[2] || currentSlug?.split('/')[0] || fallbackTab
   const tab = docsTabs.find(t => t.key === tabKey)
 
   if (!tab) return null
@@ -46,34 +76,27 @@ export function Sidebar({ slug: currentSlug }: Props) {
     pathname === `/docs/${tabKey}/${pageUrl}` ||
     currentSlug === `${tabKey}/${pageUrl}`
 
-  // Framework/CLI/PostCSS/Storybook guides live only behind the Installation
-  // page's tabs, not as their own sidebar items, but the sidebar should still
-  // point at "Installation" while viewing one.
-  const currentPageUrl = pathname?.split('/')[3] || currentSlug?.split('/')[1]
-  const isOnInstallationGuide =
-    !!currentPageUrl && installationGuideUrls.includes(currentPageUrl)
+  const isItemActive = (
+    item: NonNullable<(typeof tab.items)[number]['items']>[number]
+  ) => !!item.url && isActive(item.url)
 
-  const isItemActive = (item: NonNullable<typeof tab.items[number]['items']>[number]) =>
-    (item.url && isActive(item.url)) ||
-    (item.url === 'installation' && isOnInstallationGuide)
+  const classes = docNav({ kind: 'sidebar' })
 
   return (
-    <Stack as="nav" gap="1">
+    <Stack as="nav" aria-label={`${tab.title} pages`} gap="7">
       {tab.items.map(group => (
         <div key={group.title}>
-          <HStack
-            px="3"
-            py="2"
-            fontWeight="semibold"
-            fontSize="sm"
-            color="fg"
-          >
+          <div className={classes.label}>
+            {(() => {
+              const GroupIcon = GROUP_ICONS[group.title] ?? LuFolderTree
+              return <GroupIcon size={16} aria-hidden />
+            })()}
             <span>{group.title}</span>
             {group.tag && <Badge variant="solid">{group.tag}</Badge>}
-          </HStack>
+          </div>
 
           {group.items && (
-            <Stack gap="0.5" mt="1">
+            <div className={classes.list}>
               {group.items.map(item => {
                 if (item.external) {
                   return (
@@ -82,7 +105,7 @@ export function Sidebar({ slug: currentSlug }: Props) {
                       href={item.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={linkStyles}
+                      className={classes.link}
                     >
                       {item.title}
                       <LuArrowUpRight />
@@ -90,21 +113,39 @@ export function Sidebar({ slug: currentSlug }: Props) {
                   )
                 }
 
+                if (item.href) {
+                  const current = pathname === item.href
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      data-current={current || undefined}
+                      aria-current={current ? 'page' : undefined}
+                      className={classes.link}
+                    >
+                      <span>{item.title}</span>
+                    </Link>
+                  )
+                }
+
                 if (!item.url) return null
+
+                const current = isItemActive(item)
 
                 return (
                   <Link
                     key={item.url}
                     href={`/docs/${tabKey}/${item.url}`}
-                    data-current={isItemActive(item) || undefined}
-                    className={linkStyles}
+                    data-current={current || undefined}
+                    aria-current={current ? 'page' : undefined}
+                    className={classes.link}
                   >
                     <span>{item.title}</span>
                     {item.tag && <Badge variant="solid">{item.tag}</Badge>}
                   </Link>
                 )
               })}
-            </Stack>
+            </div>
           )}
         </div>
       ))}

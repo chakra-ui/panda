@@ -4,14 +4,14 @@ description: What happens when two presets define a token or recipe under the sa
 ---
 
 This page is about a single Panda build that combines more than one source of tokens and recipes, your own config
-plus one or more [presets](/docs/design-systems/presets). It's a different problem from [Federated
+plus one or more [presets](/docs/theming/presets). It's a different problem from [Federated
 Micro-Frontends](/docs/design-systems/federated-microfrontends), which covers multiple separately-built bundles
 loaded onto the same page at runtime. If your setup is the federated case, `prefix` is the fix, and that guide covers
 it in depth. This page covers what happens earlier, before any of that CSS is even emitted.
 
 ## The collision
 
-[Presets merge in order, and later entries win on conflicts](/docs/design-systems/presets#extend-on-top-from-the-app).
+[Presets merge in order, and later entries win on conflicts](/docs/theming/presets#extend-on-top-from-the-app).
 That's fine when you're intentionally overriding one preset's tokens with another's, it's the mechanism `theme.extend`
 relies on. It's a problem when it happens by accident: two presets you didn't expect to overlap both define a
 `button` recipe, or both define a `brand` color token, with different values.
@@ -70,7 +70,7 @@ export default defineConfig({
 
 Now both recipes exist side by side as `marketingButton` and `productButton`, instead of one silently replacing the
 other. Apply the same pattern to `theme.tokens` for a colliding token name. See
-[Hooks](/docs/design-systems/hooks#filter-a-preset-before-it-merges) for the rest of what `preset:resolved` can do.
+[Hooks](/docs/theming/hooks#filter-a-preset-before-it-merges) for the rest of what `preset:resolved` can do.
 
 This is a different mechanism from [`prefix`](/docs/design-systems/federated-microfrontends#setting-prefix), which
 namespaces every emitted class name and CSS variable uniformly at the config level for multi-bundle setups. Here,
@@ -79,7 +79,7 @@ specific colliding keys, not prefixing everything.
 
 ## See also
 
-- [Presets](/docs/design-systems/presets) for how preset merging and `theme.extend` work.
-- [Hooks](/docs/design-systems/hooks#filter-a-preset-before-it-merges) for the `preset:resolved` example this page's fix is based on.
+- [Presets](/docs/theming/presets) for how preset merging and `theme.extend` work.
+- [Hooks](/docs/theming/hooks#filter-a-preset-before-it-merges) for the `preset:resolved` example this page's fix is based on.
 - [Federated Micro-Frontends](/docs/design-systems/federated-microfrontends) for the separate, multi-bundle version
   of this problem.

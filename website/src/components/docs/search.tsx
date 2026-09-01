@@ -1,7 +1,11 @@
-import { css, cx } from '@/styled-system/css'
-import { useEffect, useState } from 'react'
 import { SearchIcon } from '@/icons'
+import { css, cx } from '@/styled-system/css'
 import { center } from '@/styled-system/patterns'
+import { formatHotkey } from '@zag-js/hotkeys'
+import { useEffect, useState } from 'react'
+
+/** Kept in step with the `mod+k` command registered by the command menu. */
+export const SEARCH_HOTKEY = 'mod+k'
 
 const styles = {
   container: css({
@@ -57,7 +61,7 @@ interface SearchButtonProps extends React.ComponentProps<'button'> {
 
 export const SearchButton = (props: SearchButtonProps) => {
   const { className, containerClassName, ...rest } = props
-  const key = useCommandOrControl()
+  const key = useHotkeyLabel()
   return (
     <>
       <div className={cx(styles.container, css({ hideBelow: 'sm' }), containerClassName)}>
@@ -86,10 +90,16 @@ export const SearchButton = (props: SearchButtonProps) => {
   )
 }
 
-const useCommandOrControl = () => {
-  const [key, setKey] = useState<string | null>(null)
+/**
+ * Which modifier `mod` resolves to is only knowable on the client, so the badge
+ * fades in once. It is absolutely positioned, so nothing reflows when it lands.
+ */
+const useHotkeyLabel = () => {
+  const [label, setLabel] = useState<string | null>(null)
+
   useEffect(() => {
-    setKey(navigator.userAgent.includes('Macintosh') ? '⌘K' : '⌃K')
+    setLabel(formatHotkey(SEARCH_HOTKEY, { platform: 'auto', style: 'symbols' }))
   }, [])
-  return key
+
+  return label
 }

@@ -1,5 +1,14 @@
-import { type Docs as Doc } from '.velite'
+import { type Blog as Post, type Docs as Doc } from '.velite'
 import Fuse from 'fuse.js'
+
+export type SearchSection = 'Docs' | 'Reference' | 'Blog'
+
+/** The tab a result belongs to, derived from its url. */
+export function sectionOf(url: string): SearchSection {
+  if (url.startsWith('/blog')) return 'Blog'
+  if (url.startsWith('/docs/reference')) return 'Reference'
+  return 'Docs'
+}
 
 export interface SearchRecord {
   id: string
@@ -11,6 +20,7 @@ export interface SearchRecord {
   headingLevel?: number
   description?: string
   breadcrumb?: string[]
+  section?: SearchSection
 }
 
 export interface SearchIndex {
@@ -22,6 +32,7 @@ export interface SearchIndex {
 export interface SearchItem {
   label: string
   value: string
+  section: SearchSection
   category: string
   description: string
   content?: string
@@ -94,7 +105,7 @@ function createSearchId(baseSlug: string, headingId?: string): string {
 /**
  * Transform Velite docs to search-optimized records
  */
-export function getSearchIndex(docs: Doc[]): SearchIndex {
+export function getSearchIndex(docs: Doc[], posts: Post[] = []): SearchIndex {
   const searchRecords: SearchRecord[] = []
 
   // Process each document
@@ -138,10 +149,25 @@ export function getSearchIndex(docs: Doc[]): SearchIndex {
     }
   }
 
+  for (const post of posts) {
+    searchRecords.push({
+      id: createSearchId(post.slug),
+      url: `/${post.slug}`,
+      title: post.title,
+      content: post.description ?? post.title,
+      type: 'page',
+      description: post.description ?? '',
+      breadcrumb: ['Blog']
+    })
+  }
+
   return {
     generated: new Date().toISOString(),
     totalRecords: searchRecords.length,
-    records: searchRecords
+    records: searchRecords.map(record => ({
+      ...record,
+      section: sectionOf(record.url)
+    }))
   }
 }
 
@@ -153,6 +179,7 @@ export function convertToSearchItems(searchIndex: SearchIndex): SearchItem[] {
     (record: SearchRecord): SearchItem => ({
       label: record.title,
       value: record.url,
+      section: record.section ?? sectionOf(record.url),
       category: record.breadcrumb?.join(' › ') || 'Documentation',
       description: record.description || '',
       content: record.content,
@@ -170,10 +197,9 @@ export function filterSearchItems(
   query: string
 ): Record<string, SearchItem[]> {
   if (!query) {
-    // Show recent or popular items when no search query
-    const popularItems = items.filter(item => item.type === 'page').slice(0, 5)
-
-    return popularItems.length ? { '': popularItems } : {}
+    // No query: hand back every page so the caller can scope by section itself.
+    const pages = items.filter(item => item.type === 'page')
+    return pages.length ? { '': pages } : {}
   }
 
   // Configure Fuse.js for better fuzzy search

@@ -77,12 +77,14 @@ const blog = defineCollection({
     .object({
       title: s.string(),
       description: s.string().optional(),
+      metadata: s.metadata(),
       date: s.isodate(),
       author: s
         .union([s.string(), s.array(s.string())])
         .optional()
         .transform(v => (v == null ? undefined : Array.isArray(v) ? v : [v])),
       tags: s.array(s.string()).optional(),
+      type: s.enum(['article', 'release']).optional(),
       image: s.string().optional(),
       slug: s.path(),
       code: s.mdx(),
@@ -136,7 +138,8 @@ export default defineConfig({
         {
           behavior: 'append',
           properties: {
-            className: ['subheading-anchor']
+            className: ['subheading-anchor'],
+            'aria-label': 'Link to this section'
           }
         }
       ],
@@ -153,7 +156,7 @@ export default defineConfig({
             transformerEmptyLineSpace
           ],
           themes: {
-            light: 'github-light',
+            light: 'github-light-high-contrast',
             dark: 'github-dark'
           },
           defaultColor: false

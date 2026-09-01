@@ -13,11 +13,11 @@ import { fileURLToPath } from 'node:url'
 import fs from 'node:fs'
 import path from 'node:path'
 import GithubSlugger from 'github-slugger'
-import { docsTabs, installationGuideUrls } from '../src/docs.config'
+import { docsTabs } from '../src/docs.config'
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url))
 const DOCS_ROOT = path.resolve(SCRIPT_DIR, '../content/docs')
-const RAW_MARKDOWN_EXCEPTION_SLUG = 'styling/llms-txt'
+const RAW_MARKDOWN_EXCEPTION_SLUG = 'tooling/llms-txt'
 
 function walk(dir: string, out: string[] = []): string[] {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -144,14 +144,14 @@ for (const tab of docsTabs) {
     }
   }
 }
-const installSlugs = new Set(installationGuideUrls.map(u => `styling/${u}`))
+const installSlugs = new Set<string>()
 
 const orphans = [...slugs].filter(s => !navSlugs.has(s) && !installSlugs.has(s))
 const danglingNavEntries = [...navSlugs, ...installSlugs].filter(s => !slugs.has(s))
 
 for (const slug of orphans) {
   errors.push(
-    `${slug}.mdx — on disk but not reachable from docsTabs or installationGuideUrls in ` +
+    `${slug}.mdx — on disk but not reachable from docsTabs in ` +
       `docs.config.tsx (search will surface it; the sidebar won't)`
   )
 }

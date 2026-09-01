@@ -8,7 +8,13 @@ interface RouteContext {
 export const dynamic = 'force-static'
 
 export async function generateStaticParams() {
-  const categories = ['styling', 'theming', 'design-systems', 'reference']
+  const categories = [
+    'get-started',
+    'styling',
+    'theming',
+    'design-systems',
+    'reference'
+  ]
   
   // Generate params for category pages
   const categoryParams = categories.map(category => ({
@@ -100,6 +106,7 @@ _This content is automatically generated from the official Panda CSS documentati
 
 function generateCategoryContent(category: string, docs: typeof import('.velite').docs) {
   const categoryTitles: Record<string, string> = {
+    'get-started': 'Panda CSS Get Started',
     styling: 'Panda CSS Styling',
     theming: 'Panda CSS Theming',
     'design-systems': 'Panda CSS Design Systems',

@@ -5,20 +5,25 @@ import { css } from '@/styled-system/css'
 import { Box, HStack } from '@/styled-system/jsx'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { Menu } from '@ark-ui/react/menu'
+import { Portal } from '@ark-ui/react/portal'
 import {
+  LuArrowUpRight,
   LuBlocks,
   LuBookOpen,
   LuChevronDown,
+  LuLayers,
   LuPaintbrush,
   LuPalette,
+  LuRocket,
   LuUsers
 } from 'react-icons/lu'
 import type { IconType } from 'react-icons'
 
 export const TAB_ICONS: Record<string, IconType> = {
+  'get-started': LuRocket,
   styling: LuPaintbrush,
+  recipes: LuLayers,
   theming: LuPalette,
   'design-systems': LuBlocks,
   reference: LuBookOpen
@@ -110,130 +115,105 @@ export function TabBar() {
  * out avoids that ancestor entirely.
  */
 function CommunityMenu() {
-  const [open, setOpen] = useState(false)
-  const [coords, setCoords] = useState({ top: 0, right: 0 })
-  const buttonRef = useRef<HTMLButtonElement>(null)
-  const panelRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!open) return
-
-    function onPointerDown(event: MouseEvent) {
-      const target = event.target as Node
-      if (
-        buttonRef.current &&
-        !buttonRef.current.contains(target) &&
-        panelRef.current &&
-        !panelRef.current.contains(target)
-      ) {
-        setOpen(false)
-      }
-    }
-
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') setOpen(false)
-    }
-
-    function onViewportChange() {
-      setOpen(false)
-    }
-
-    document.addEventListener('mousedown', onPointerDown)
-    document.addEventListener('keydown', onKeyDown)
-    window.addEventListener('scroll', onViewportChange, true)
-    window.addEventListener('resize', onViewportChange)
-    return () => {
-      document.removeEventListener('mousedown', onPointerDown)
-      document.removeEventListener('keydown', onKeyDown)
-      window.removeEventListener('scroll', onViewportChange, true)
-      window.removeEventListener('resize', onViewportChange)
-    }
-  }, [open])
-
-  function toggleOpen() {
-    if (!open && buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect()
-      setCoords({ top: rect.bottom + 4, right: window.innerWidth - rect.right })
-    }
-    setOpen(v => !v)
-  }
-
   return (
-    <Box position="relative" flexShrink="0">
-      <button
-        ref={buttonRef}
-        type="button"
-        aria-haspopup="menu"
-        aria-expanded={open}
-        onClick={toggleOpen}
-        className={css({
-          display: 'flex',
-          alignItems: 'center',
-          gap: '2',
-          textStyle: 'sm',
-          fontWeight: 'semibold',
-          px: '3',
-          py: '3',
-          h: 'full',
-          rounded: 'md',
-          whiteSpace: 'nowrap',
-          color: open ? 'fg' : 'fg.muted',
-          transitionProperty: 'color, background',
-          transitionDuration: '200ms',
-          _hover: { color: 'fg', bg: 'bg.subtle' }
-        })}
-      >
+    <Menu.Root lazyMount positioning={{ placement: 'bottom-end' }}>
+      <Menu.Trigger className={communityTrigger}>
         <LuUsers size={16} />
         Community
         <LuChevronDown size={14} />
-      </button>
-      {open &&
-        createPortal(
-          <div
-            ref={panelRef}
-            role="menu"
-            style={{ position: 'fixed', top: coords.top, right: coords.right }}
-            className={css({
-              minW: '12rem',
-              bg: 'bg',
-              borderWidth: '1px',
-              borderColor: 'border',
-              rounded: 'md',
-              shadow: 'lg',
-              py: '1',
-              zIndex: '20'
-            })}
-          >
+      </Menu.Trigger>
+      <Portal>
+        <Menu.Positioner>
+          <Menu.Content className={communityContent}>
             {communityLinks.map(link => (
-              <a
+              <Menu.Item
                 key={link.title}
-                role="menuitem"
-                href={link.href}
-                target={link.external ? '_blank' : undefined}
-                rel={link.external ? 'noopener noreferrer' : undefined}
-                onClick={() => setOpen(false)}
-                className={css({
-                  display: 'block',
-                  textStyle: 'sm',
-                  color: 'fg.muted',
-                  px: '3',
-                  py: '2',
-                  _hover: { color: 'fg', bg: 'bg.subtle' }
-                })}
+                value={link.title}
+                asChild
+                className={communityItem}
               >
-                {link.title}
-              </a>
+                <a
+                  href={link.href}
+                  target={link.external ? '_blank' : undefined}
+                  rel={link.external ? 'noopener noreferrer' : undefined}
+                >
+                  {link.title}
+                  {link.external && <LuArrowUpRight size={13} />}
+                </a>
+              </Menu.Item>
             ))}
-          </div>,
-          document.body
-        )}
-    </Box>
+          </Menu.Content>
+        </Menu.Positioner>
+      </Portal>
+    </Menu.Root>
   )
 }
+
+const communityTrigger = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '2',
+  textStyle: 'sm',
+  fontWeight: 'semibold',
+  px: '3',
+  py: '3',
+  h: 'full',
+  rounded: 'md',
+  whiteSpace: 'nowrap',
+  color: 'fg.muted',
+  cursor: 'pointer',
+  transitionProperty: 'color, background-color',
+  transitionDuration: '150ms',
+  _hover: { color: 'fg', bg: 'bg.subtle' },
+  _open: { color: 'fg' }
+})
+
+const communityContent = css({
+  minW: '13rem',
+  bg: 'bg',
+  borderWidth: '1px',
+  borderColor: 'border',
+  rounded: 'md',
+  shadow: 'lg',
+  p: '1.5',
+  zIndex: '20',
+  outline: '0'
+})
+
+const communityItem = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '3',
+  minH: '9',
+  px: '3',
+  py: '2',
+  rounded: 'md',
+  textStyle: 'sm',
+  color: 'fg.muted',
+  textDecoration: 'none',
+  cursor: 'pointer',
+  transitionProperty: 'color, background-color',
+  transitionDuration: '150ms',
+  _hover: { color: 'fg', bg: 'bg.subtle' },
+  _highlighted: { color: 'fg', bg: 'bg.muted' }
+})
 
 interface TabLinkProps {
   tab: TabItem
   active: boolean
+}
+
+/**
+ * Tabs whose landing page isn't `overview` (removed on several tabs so the
+ * tab jumps straight into real content instead of an index page).
+ */
+const TAB_LANDING_HREF: Record<string, string> = {
+  'get-started': '/docs',
+  styling: '/docs/styling/writing-styles',
+  recipes: '/docs/recipes/atomic-recipe',
+  theming: '/docs/theming/tokens',
+  'design-systems': '/docs/design-systems/setup'
 }
 
 function TabLink({ tab, active }: TabLinkProps) {
@@ -241,8 +221,8 @@ function TabLink({ tab, active }: TabLinkProps) {
 
   return (
     <Link
-      href={`/docs/${tab.key}`}
-      aria-current={active || undefined}
+      href={TAB_LANDING_HREF[tab.key] ?? `/docs/${tab.key}`}
+      aria-current={active ? 'page' : undefined}
       className={css({
         position: 'relative',
         display: 'flex',
@@ -269,7 +249,7 @@ function TabLink({ tab, active }: TabLinkProps) {
           right: '3',
           bottom: '-1px',
           height: '2px',
-          bg: active ? 'accent' : 'border',
+          bg: active ? 'accent' : 'transparent',
           transitionProperty: 'background',
           transitionDuration: '200ms'
         }

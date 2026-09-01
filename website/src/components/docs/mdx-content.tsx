@@ -4,8 +4,8 @@ import { Callout } from '@/mdx/callout'
 import { Card, Cards } from '@/mdx/cards'
 import { Code } from '@/mdx/code'
 import { CodeBlock } from '@/mdx/code-block'
-import { Collapse } from '@/mdx/collapse'
-import { Details } from '@/mdx/details'
+import { Details, Faq } from '@/mdx/details'
+import { UtilityTable } from '@/mdx/utility-table'
 import { Divider } from '@/mdx/divider'
 import { FileTree } from '@/mdx/file-tree'
 import { FrameworkCards } from '@/mdx/framework-card'
@@ -19,7 +19,6 @@ import {
   RouteSwitchTrigger
 } from '@/mdx/route-switch'
 import { Steps } from '@/mdx/steps'
-import { Summary } from '@/mdx/summary'
 import { Table, Td, Th, Tr } from '@/mdx/table'
 import { Tab, Tabs } from '@/mdx/tabs'
 import { Text } from '@/mdx/text'
@@ -74,7 +73,9 @@ const sharedComponents = {
 
   // Other elements
   details: Details,
-  summary: Summary,
+  Details,
+  Faq,
+  UtilityTable,
   hr: Divider,
 
   // Custom components
@@ -83,7 +84,6 @@ const sharedComponents = {
   Cards,
   'card-group': Cards,
   'code-block': CodeBlock,
-  Collapse,
   FileTree,
   Steps,
   TokenDocs,
