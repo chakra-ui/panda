@@ -79,7 +79,7 @@ export default async function DocsPage(props: DocsPageProps) {
             height="100%"
             className={cx('scroll-area', sidebarScroll)}
             pt="10"
-            pb="4"
+            pb="10"
             px="6"
           >
             <Sidebar slug={slug} />
