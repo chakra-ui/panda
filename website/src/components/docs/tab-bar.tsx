@@ -35,9 +35,10 @@ export const TAB_ICONS: Record<string, IconType> = {
  * plus a plain Blog link. Active tab is derived from the URL's first `/docs/:key`
  * segment, so it stays in sync with server-rendered navigation with no extra state.
  *
- * Hugs the real page edge with a small fixed `px`, same as the sidebar below it,
- * instead of sitting inside a `maxW` centered column. A centered shell only
- * matches the sidebar's position up to that maxW; past it, the two drift apart.
+ * Hugs the real page edge with the same responsive `px` as the navbar above and
+ * the sidebar below, instead of sitting inside a `maxW` centered column. A
+ * centered shell only matches the sidebar's position up to that maxW; past it,
+ * the two drift apart.
  *
  * Every tab shows its own underline (`border` at rest, `accent` when active,
  * `fg.muted` on hover), stretched to the row's full height so it always sits at
@@ -61,7 +62,7 @@ export function TabBar() {
     >
       <HStack
         gap="1"
-        px="6"
+        px={{ base: '4', md: '6' }}
         overflowX="auto"
         overflowY="hidden"
         className="scroll-area"
