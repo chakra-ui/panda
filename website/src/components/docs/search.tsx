@@ -25,10 +25,13 @@ const styles = {
     py: '2',
     ps: '3',
     pe: '12',
-    transition: 'shadow',
+    cursor: 'pointer',
+    transitionProperty: 'background-color',
+    transitionDuration: '150ms',
     textStyle: 'sm',
     lineHeight: 'tight',
-    bg: 'bg.muted'
+    bg: 'bg.muted',
+    _hover: { bg: 'bg.muted.hover' }
   }),
 
   kbd: css({
@@ -46,7 +49,10 @@ const styles = {
     fontSize: '10px',
     fontWeight: 'medium',
     borderWidth: '1px',
+    // `align-items` needs a flex container; as a block the glyphs sat 2px high.
+    display: 'inline-flex',
     alignItems: 'center',
+    justifyContent: 'center',
     opacity: 0,
     '&[data-mounted]': {
       opacity: 1

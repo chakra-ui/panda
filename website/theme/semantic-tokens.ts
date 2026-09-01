@@ -13,6 +13,9 @@ export const semanticTokens = defineSemanticTokens({
       muted: {
         value: { base: '{colors.neutral.100}', _dark: '{colors.neutral.800}' }
       },
+      'muted.hover': {
+        value: { base: '{colors.neutral.200}', _dark: '{colors.neutral.700}' }
+      },
       surface: {
         value: { base: '{colors.white}', _dark: '{colors.neutral.900}' }
       },
