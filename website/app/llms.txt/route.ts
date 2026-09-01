@@ -7,8 +7,7 @@ export const GET = async () => {
     {
       title: 'Complete documentation',
       href: `${getPublicUrl('/llms-full.txt')}`,
-      description:
-        'The complete Panda CSS documentation across every section'
+      description: 'The complete Panda CSS documentation across every section'
     },
     {
       title: 'Get Started',
@@ -19,7 +18,8 @@ export const GET = async () => {
     {
       title: 'Styling',
       href: `${getPublicUrl('/llms.txt/styling')}`,
-      description: 'Core concepts, styling APIs, and how the compiler works under the hood'
+      description:
+        'Core concepts, styling APIs, and how the compiler works under the hood'
     },
     {
       title: 'Theming',

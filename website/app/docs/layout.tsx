@@ -25,7 +25,7 @@ export default function DocsLayout(props: React.PropsWithChildren) {
           insetX: '0',
           top: 'calc(var(--navbar-height) + var(--banner-height))',
           zIndex: '10',
-          bg: 'bg',
+          bg: 'bg'
         })}
       >
         <TabBar />

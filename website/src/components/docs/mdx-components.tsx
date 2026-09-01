@@ -4,11 +4,7 @@ import { Code } from '@/mdx/code'
 import { CodeBlock } from '@/mdx/code-block'
 import { Details, Faq } from '@/mdx/details'
 import { Divider } from '@/mdx/divider'
-import {
-  FileTreeFile,
-  FileTreeFolder,
-  FileTreeRoot
-} from '@/mdx/file-tree'
+import { FileTreeFile, FileTreeFolder, FileTreeRoot } from '@/mdx/file-tree'
 import { FrameworkCards } from '@/mdx/framework-card'
 import { createHeadings } from '@/mdx/heading'
 import { Link } from '@/mdx/link'

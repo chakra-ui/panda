@@ -6,7 +6,12 @@ import { css } from '@/styled-system/css'
 import { Box, Stack } from '@/styled-system/jsx'
 import { ThemeSegmented } from '@/components/docs/theme-segmented'
 import Link from 'next/link'
-import { LuArrowUpRight, LuGithub, LuMessageCircle, LuTwitter } from 'react-icons/lu'
+import {
+  LuArrowUpRight,
+  LuGithub,
+  LuMessageCircle,
+  LuTwitter
+} from 'react-icons/lu'
 
 const SITE_LINKS = [
   { title: 'Home', href: '/' },
@@ -69,8 +74,16 @@ interface Props {
 
 export const MobileMenu = ({ pathname }: Props) => {
   const socials = [
-    { icon: <LuGithub />, href: docsConfig.docsRepositoryBase, label: 'GitHub' },
-    { icon: <LuMessageCircle />, href: docsConfig.discordUrl, label: 'Discord' },
+    {
+      icon: <LuGithub />,
+      href: docsConfig.docsRepositoryBase,
+      label: 'GitHub'
+    },
+    {
+      icon: <LuMessageCircle />,
+      href: docsConfig.discordUrl,
+      label: 'Discord'
+    },
     { icon: <LuTwitter />, href: docsConfig.twitterUrl, label: 'X' }
   ]
 
@@ -150,16 +163,16 @@ export const MobileMenu = ({ pathname }: Props) => {
 
         <Box display="flex" alignItems="center" gap="3">
           {socials.map(social => (
-          <a
-            key={social.label}
-            href={social.href}
-            aria-label={social.label}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={socialCircle}
-          >
-            {social.icon}
-          </a>
+            <a
+              key={social.label}
+              href={social.href}
+              aria-label={social.label}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={socialCircle}
+            >
+              {social.icon}
+            </a>
           ))}
         </Box>
       </Stack>

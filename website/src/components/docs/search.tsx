@@ -70,7 +70,13 @@ export const SearchButton = (props: SearchButtonProps) => {
   const key = useHotkeyLabel()
   return (
     <>
-      <div className={cx(styles.container, css({ hideBelow: 'sm' }), containerClassName)}>
+      <div
+        className={cx(
+          styles.container,
+          css({ hideBelow: 'sm' }),
+          containerClassName
+        )}
+      >
         <button
           spellCheck={false}
           className={cx(className, styles.input)}
@@ -101,7 +107,9 @@ const useHotkeyLabel = () => {
   const [label, setLabel] = useState<string | null>(null)
 
   useEffect(() => {
-    setLabel(formatHotkey(SEARCH_HOTKEY, { platform: 'auto', style: 'symbols' }))
+    setLabel(
+      formatHotkey(SEARCH_HOTKEY, { platform: 'auto', style: 'symbols' })
+    )
   }, [])
 
   return label

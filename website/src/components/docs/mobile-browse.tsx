@@ -53,55 +53,57 @@ export const MobileBrowse = () => {
       </Dialog.Trigger>
 
       <Portal>
-      <Dialog.Backdrop className={classes.backdrop} />
-      <Dialog.Positioner className={classes.positioner}>
-        <Dialog.Content
-          className={cx(classes.content, css({ maxW: '85vw', width: '20rem' }))}
-        >
-          <div
-            className={css({
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '4',
-              minH: '16',
-              px: '5',
-              py: '3',
-              flexShrink: 0,
-              borderBottomWidth: '1px',
-              borderColor: 'border',
-              textStyle: 'eyebrow',
-              color: 'fg.subtle'
-            })}
+        <Dialog.Backdrop className={classes.backdrop} />
+        <Dialog.Positioner className={classes.positioner}>
+          <Dialog.Content
+            className={cx(
+              classes.content,
+              css({ maxW: '85vw', width: '20rem' })
+            )}
           >
-            {tab.title}
-            <Dialog.CloseTrigger
+            <div
               className={css({
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
+                justifyContent: 'space-between',
+                gap: '4',
+                minH: '16',
+                px: '5',
+                py: '3',
                 flexShrink: 0,
-                w: '9',
-                h: '9',
-                rounded: 'full',
-                borderWidth: '1px',
+                borderBottomWidth: '1px',
                 borderColor: 'border',
-                color: 'fg',
-                cursor: 'pointer',
-                transitionProperty: 'color, background-color, border-color',
-                transitionDuration: '150ms',
-                _hover: { bg: 'bg.subtle', borderColor: 'fg.subtle' }
+                textStyle: 'eyebrow',
+                color: 'fg.subtle'
               })}
             >
-              <LuX size={16} />
-            </Dialog.CloseTrigger>
-          </div>
-          <div className={cx(classes.body, 'scroll-area', css({ pt: '5' }))}>
-            <Sidebar tabKey={tabKey} />
-          </div>
-
-        </Dialog.Content>
-      </Dialog.Positioner>
+              {tab.title}
+              <Dialog.CloseTrigger
+                className={css({
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  w: '9',
+                  h: '9',
+                  rounded: 'full',
+                  borderWidth: '1px',
+                  borderColor: 'border',
+                  color: 'fg',
+                  cursor: 'pointer',
+                  transitionProperty: 'color, background-color, border-color',
+                  transitionDuration: '150ms',
+                  _hover: { bg: 'bg.subtle', borderColor: 'fg.subtle' }
+                })}
+              >
+                <LuX size={16} />
+              </Dialog.CloseTrigger>
+            </div>
+            <div className={cx(classes.body, 'scroll-area', css({ pt: '5' }))}>
+              <Sidebar tabKey={tabKey} />
+            </div>
+          </Dialog.Content>
+        </Dialog.Positioner>
       </Portal>
     </Dialog.RootProvider>
   )

@@ -39,7 +39,9 @@ export function useScrollActiveIntoView<T extends HTMLElement>(
     const view = scroller.getBoundingClientRect()
     if (item.top >= view.top && item.bottom <= view.bottom) return
 
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const reduced = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches
     scroller.scrollTo({
       top:
         scroller.scrollTop +

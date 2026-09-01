@@ -34,10 +34,7 @@ export function Segmented(props: Props) {
     >
       <SegmentGroup.Indicator />
       {options.map(option => (
-        <SegmentGroup.Item
-          key={option.value}
-          value={option.value}
-        >
+        <SegmentGroup.Item key={option.value} value={option.value}>
           {option.icon && <span aria-hidden>{option.icon}</span>}
           <SegmentGroup.ItemText>{option.label}</SegmentGroup.ItemText>
           <SegmentGroup.ItemHiddenInput />

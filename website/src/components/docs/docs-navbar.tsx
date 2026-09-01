@@ -48,41 +48,45 @@ export function DocsNavbar() {
         justifyContent={{ base: 'flex-start', md: 'space-between' }}
       >
         <HStack gap={{ base: '1', md: '4' }} flexShrink="0">
-        <Anchor
-          href="/"
-          aria-label="Panda CSS home"
-          className={css({ flexShrink: '0', display: 'flex', _hover: { opacity: 0.75 } })}
-        >
-          <Icon icon="LogoWithText" />
-        </Anchor>
+          <Anchor
+            href="/"
+            aria-label="Panda CSS home"
+            className={css({
+              flexShrink: '0',
+              display: 'flex',
+              _hover: { opacity: 0.75 }
+            })}
+          >
+            <Icon icon="LogoWithText" />
+          </Anchor>
 
-        <HStack gap="1" flexShrink="0" display={{ base: 'none', lg: 'flex' }}>
-          {siteLinks.map(link => {
-            const active = link.match(pathname ?? '')
-            return (
-              <Link
-                key={link.title}
-                href={link.href}
-                aria-current={active ? 'page' : undefined}
-                className={css({
-                  textStyle: 'sm',
-                  fontWeight: 'medium',
-                  px: '3',
-                  py: '1.5',
-                  rounded: 'md',
-                  whiteSpace: 'nowrap',
-                  color: active ? 'fg' : 'fg.muted',
-                  bg: active ? 'bg.muted' : 'transparent',
-                  transitionProperty: 'color, background-color',
-                  transitionDuration: '150ms',
-                  _hover: { color: 'fg', bg: 'bg.subtle' }
-                })}
-              >
-                {link.title}
-              </Link>
-            )
-          })}
-        </HStack>
+          <HStack gap="1" flexShrink="0" display={{ base: 'none', lg: 'flex' }}>
+            {siteLinks.map(link => {
+              const active = link.match(pathname ?? '')
+              return (
+                <Link
+                  key={link.title}
+                  href={link.href}
+                  aria-current={active ? 'page' : undefined}
+                  className={css({
+                    textStyle: 'sm',
+                    fontWeight: 'medium',
+                    px: '3',
+                    py: '1.5',
+                    rounded: 'md',
+                    whiteSpace: 'nowrap',
+                    color: active ? 'fg' : 'fg.muted',
+                    bg: active ? 'bg.muted' : 'transparent',
+                    transitionProperty: 'color, background-color',
+                    transitionDuration: '150ms',
+                    _hover: { color: 'fg', bg: 'bg.subtle' }
+                  })}
+                >
+                  {link.title}
+                </Link>
+              )
+            })}
+          </HStack>
         </HStack>
 
         <Box
@@ -95,7 +99,11 @@ export function DocsNavbar() {
           <CommandMenu
             trigger={
               <SearchButton
-                containerClassName={css({ flex: '1', width: 'full', maxW: '28rem' })}
+                containerClassName={css({
+                  flex: '1',
+                  width: 'full',
+                  maxW: '28rem'
+                })}
                 className={css({ width: 'full' })}
               />
             }

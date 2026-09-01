@@ -23,10 +23,7 @@ export default function RootLayout(props: Props) {
   return (
     <html
       lang="en"
-      className={cx(
-        fontClassName,
-        css({ fontFamily: 'body' })
-      )}
+      className={cx(fontClassName, css({ fontFamily: 'body' }))}
       suppressHydrationWarning
     >
       <head>

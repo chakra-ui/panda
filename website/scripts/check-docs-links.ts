@@ -99,7 +99,9 @@ for (const file of files) {
         .replace(/\.mdx?$/, '')
 
       if (!slugs.has(targetSlug)) {
-        errors.push(`${where}  ${pathPart}${fragment ?? ''} — no doc at slug "${targetSlug}"`)
+        errors.push(
+          `${where}  ${pathPart}${fragment ?? ''} — no doc at slug "${targetSlug}"`
+        )
         continue
       }
 
@@ -147,7 +149,9 @@ for (const tab of docsTabs) {
 const installSlugs = new Set<string>()
 
 const orphans = [...slugs].filter(s => !navSlugs.has(s) && !installSlugs.has(s))
-const danglingNavEntries = [...navSlugs, ...installSlugs].filter(s => !slugs.has(s))
+const danglingNavEntries = [...navSlugs, ...installSlugs].filter(
+  s => !slugs.has(s)
+)
 
 for (const slug of orphans) {
   errors.push(
@@ -156,7 +160,9 @@ for (const slug of orphans) {
   )
 }
 for (const slug of danglingNavEntries) {
-  errors.push(`docs.config.tsx references "${slug}" but no such file exists under content/docs`)
+  errors.push(
+    `docs.config.tsx references "${slug}" but no such file exists under content/docs`
+  )
 }
 
 console.log(

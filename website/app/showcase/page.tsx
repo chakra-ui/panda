@@ -100,7 +100,11 @@ export default function ShowcasePage() {
     <SitePage kicker="Built with Panda" title={title} description={description}>
       <Box
         display="grid"
-        gridTemplateColumns={{ base: '1fr', sm: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(3, minmax(0, 1fr))' }}
+        gridTemplateColumns={{
+          base: '1fr',
+          sm: 'repeat(2, minmax(0, 1fr))',
+          lg: 'repeat(3, minmax(0, 1fr))'
+        }}
         gap="5"
       >
         {showcases.map(item => (

@@ -117,7 +117,8 @@ export const CommandMenu = (props: Props) => {
   )
 
   const matches = useMemo(
-    () => (searchIndex ? filterSearchItems(items, searchIndex, inputValueState) : {}),
+    () =>
+      searchIndex ? filterSearchItems(items, searchIndex, inputValueState) : {},
     [items, searchIndex, inputValueState]
   )
 

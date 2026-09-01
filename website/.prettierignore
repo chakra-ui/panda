@@ -1,0 +1,11 @@
+node_modules
+.next
+.source
+styled-system
+styled-system-static
+public
+src/generated
+*.tsbuildinfo
+
+# Content is authored prose; reformatting rewraps every paragraph.
+content

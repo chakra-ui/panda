@@ -69,7 +69,9 @@ function useTocState(ids: string[]) {
       const element = document.getElementById(id)
       if (!element) return
 
-      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      const reduced = window.matchMedia(
+        '(prefers-reduced-motion: reduce)'
+      ).matches
       element.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' })
       window.history.pushState(null, '', `#${id}`)
     }

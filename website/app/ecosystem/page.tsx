@@ -6,8 +6,7 @@ import type { Metadata } from 'next'
 import { LuBot, LuCode, LuShieldCheck } from 'react-icons/lu'
 
 const title = 'Everything around Panda'
-const description =
-  'Lint, edit and generate with the rest of your toolchain.'
+const description = 'Lint, edit and generate with the rest of your toolchain.'
 
 export const metadata: Metadata = {
   title: 'Ecosystem',
@@ -15,9 +14,7 @@ export const metadata: Metadata = {
   openGraph: {
     title,
     description,
-    images: [
-      generateOgImageUrl({ title, description, category: 'Ecosystem' })
-    ]
+    images: [generateOgImageUrl({ title, description, category: 'Ecosystem' })]
   }
 }
 

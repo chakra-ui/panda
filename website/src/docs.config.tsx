@@ -6,7 +6,11 @@ export interface TeamMember {
 }
 
 export const teamMembers: TeamMember[] = [
-  { login: 'segunadebayo', role: 'Creator & Lead Maintainer', status: 'active' },
+  {
+    login: 'segunadebayo',
+    role: 'Creator & Lead Maintainer',
+    status: 'active'
+  },
   { login: 'Adebesin-Cell', role: 'Maintainer', status: 'active' },
   { login: 'anubra266', role: 'Maintainer', status: 'active' },
   { login: 'astahmer', role: 'Creator', status: 'alumni' },
@@ -207,7 +211,10 @@ export const docsTabs: TabItem[] = [
         items: [
           { title: 'How Panda Works', url: 'how-panda-works' },
           { title: 'The Compiler Engine', url: 'compiler-engine' },
-          { title: 'Performance & Optimization', url: 'performance-optimization' },
+          {
+            title: 'Performance & Optimization',
+            url: 'performance-optimization'
+          },
           { title: 'Static CSS Generation', url: 'static' }
         ]
       }
@@ -306,7 +313,10 @@ export const docsTabs: TabItem[] = [
           { title: 'Wrap headless UI', url: 'wrap-headless-ui' },
           { title: 'forwardProps & the styled factory', url: 'forward-props' },
           { title: 'Isolated Declarations', url: 'isolated-declarations' },
-          { title: 'Ship the styled-system vs the CSS', url: 'ship-styled-system' },
+          {
+            title: 'Ship the styled-system vs the CSS',
+            url: 'ship-styled-system'
+          },
           { title: 'Track usage in wrapped components', url: 'track-usage' },
           { title: 'Troubleshooting', url: 'troubleshooting' }
         ]
@@ -322,13 +332,22 @@ export const docsTabs: TabItem[] = [
       {
         title: 'Distribution & Scale',
         items: [
-          { title: 'Shared styled-system in a monorepo', url: 'shared-styled-system' },
+          {
+            title: 'Shared styled-system in a monorepo',
+            url: 'shared-styled-system'
+          },
           { title: 'Publishing to npm', url: 'publishing-to-npm' },
           { title: 'Avoiding CSS collisions', url: 'avoiding-collisions' },
           { title: 'Monorepo dev workflow', url: 'monorepo-dev-workflow' },
-          { title: 'Federated Micro-Frontends', url: 'federated-microfrontends' },
+          {
+            title: 'Federated Micro-Frontends',
+            url: 'federated-microfrontends'
+          },
           { title: 'Minimal Setup', url: 'minimal-setup' },
-          { title: 'Environment-specific config', url: 'environment-specific-config' }
+          {
+            title: 'Environment-specific config',
+            url: 'environment-specific-config'
+          }
         ]
       }
     ]

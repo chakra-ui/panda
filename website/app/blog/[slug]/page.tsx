@@ -79,13 +79,7 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
   const readingTime = getReadingTime(await getMarkdown(page))
 
   return (
-    <Box
-      maxW="90rem"
-      mx="auto"
-      display="flex"
-      position="relative"
-      pb="24"
-    >
+    <Box maxW="90rem" mx="auto" display="flex" position="relative" pb="24">
       {/* Main content */}
       <Box as="article" flex="1" minW="0" px={{ base: '4', lg: '10' }} pt="12">
         <Link
@@ -124,15 +118,15 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
             justifyContent="space-between"
           >
             <Box display="flex" alignItems="center" gap="3" flexWrap="wrap">
-            <panda.span textStyle="eyebrow" color="fg.subtle">
-              {formatDate(post.date)}
-            </panda.span>
-            <panda.span color="fg.subtle" aria-hidden>
-              ·
-            </panda.span>
-            <panda.span textStyle="eyebrow" color="fg.subtle">
-              {readingTime} min read
-            </panda.span>
+              <panda.span textStyle="eyebrow" color="fg.subtle">
+                {formatDate(post.date)}
+              </panda.span>
+              <panda.span color="fg.subtle" aria-hidden>
+                ·
+              </panda.span>
+              <panda.span textStyle="eyebrow" color="fg.subtle">
+                {readingTime} min read
+              </panda.span>
             </Box>
 
             <a

@@ -26,12 +26,17 @@ const omit = new Set(['black', 'white', 'transparent', 'current'])
 export const defaultColors = Object.keys(preset.theme.tokens.colors)
   .filter(key => !omit.has(key))
   .map(key => {
-    const values = dictionary.filter(({ type, path }) => type === 'color' && path[1] === key)
+    const values = dictionary.filter(
+      ({ type, path }) => type === 'color' && path[1] === key
+    )
     return { key, values }
   })
 
 export const defaultSpacings = dictionary
-  .filter(({ extensions }) => extensions.category === 'spacing' && !extensions.isNegative)
+  .filter(
+    ({ extensions }) =>
+      extensions.category === 'spacing' && !extensions.isNegative
+  )
   .sort((a, b) => parseFloat(a.value) - parseFloat(b.value))
 
 export const defaultSizings = dictionary
@@ -43,15 +48,23 @@ export const defaultSizings = dictionary
   )
   .sort((a, b) => parseFloat(a.value) - parseFloat(b.value))
 
-export const defaultBorderRadius = dictionary.filter(({ extensions }) => extensions.category === 'radii')
+export const defaultBorderRadius = dictionary.filter(
+  ({ extensions }) => extensions.category === 'radii'
+)
 
-export const defaultFontSizes = dictionary.filter(({ extensions }) => extensions.category === 'fontSizes')
+export const defaultFontSizes = dictionary.filter(
+  ({ extensions }) => extensions.category === 'fontSizes'
+)
 
-export const defaultFonts = dictionary.filter(({ extensions }) => extensions.category === 'fonts')
+export const defaultFonts = dictionary.filter(
+  ({ extensions }) => extensions.category === 'fonts'
+)
 
 export const defaultBreakpoints = preset.theme.breakpoints
 
-export const defaultShadows = dictionary.filter(({ extensions }) => extensions.category === 'shadows')
+export const defaultShadows = dictionary.filter(
+  ({ extensions }) => extensions.category === 'shadows'
+)
 
 export const defaultKeyframes = preset.theme.keyframes
 
@@ -61,7 +74,11 @@ function flattenTokens(tokens: Record<string, unknown>): Token[] {
   })
 }
 
-function collectTokens(value: unknown, path: string[], category: string): Token[] {
+function collectTokens(
+  value: unknown,
+  path: string[],
+  category: string
+): Token[] {
   if (isTokenValue(value)) {
     const raw = String(value.value)
     return [

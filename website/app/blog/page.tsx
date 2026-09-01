@@ -18,13 +18,25 @@ export const metadata: Metadata = {
     title: ogTitle,
     description: ogDescription,
     type: 'website',
-    images: [generateOgImageUrl({ title: ogTitle, description: ogDescription, category: 'Blog' })]
+    images: [
+      generateOgImageUrl({
+        title: ogTitle,
+        description: ogDescription,
+        category: 'Blog'
+      })
+    ]
   },
   twitter: {
     card: 'summary_large_image',
     title: ogTitle,
     description: ogDescription,
-    images: [generateOgImageUrl({ title: ogTitle, description: ogDescription, category: 'Blog' })]
+    images: [
+      generateOgImageUrl({
+        title: ogTitle,
+        description: ogDescription,
+        category: 'Blog'
+      })
+    ]
   }
 }
 
@@ -95,13 +107,7 @@ export default async function BlogPage() {
         })}
       >
         <Box display="flex" alignItems="center" gap="3" mb="5" flexWrap="wrap">
-          <Box
-            textStyle="eyebrow"
-            bg="accent"
-            color="black"
-            px="2"
-            py="1"
-          >
+          <Box textStyle="eyebrow" bg="accent" color="black" px="2" py="1">
             Latest
           </Box>
           <Box textStyle="eyebrow" color="fg.subtle">
@@ -112,7 +118,12 @@ export default async function BlogPage() {
           </Box>
         </Box>
 
-        <Box display="flex" alignItems="flex-end" justifyContent="space-between" gap="6">
+        <Box
+          display="flex"
+          alignItems="flex-end"
+          justifyContent="space-between"
+          gap="6"
+        >
           <Stack gap="4" maxW="40rem">
             <Box
               as="h2"

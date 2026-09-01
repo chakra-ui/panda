@@ -10,6 +10,8 @@
     "build:next": "next build",
     "build": "run-s generate:reference codegen build:next",
     "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "start": "next start"
   },
   "dependencies": {
