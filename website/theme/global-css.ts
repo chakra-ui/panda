@@ -25,6 +25,8 @@ export const globalCss = defineGlobalStyles({
     }
   },
   html: {
+    // Rebases every rem in the design system, not just text.
+    fontSize: '15px',
     fontFamily: 'sans',
     scrollbarGutter: 'stable',
     // Themes the page scrollbar and native form controls. `next-themes` only
