@@ -1,7 +1,6 @@
 'use client'
 
 import type { TocEntry } from '@/lib/toc'
-import { css, cx } from '@/styled-system/css'
 import { useScrollActiveIntoView } from '@/lib/use-scroll-active-into-view'
 import { docNav } from '@/styled-system/recipes'
 import Link from 'next/link'
@@ -106,10 +105,12 @@ export const Toc = (props: TocProps) => {
               href={`#${item.id}`}
               data-current={isCurrent(item.id) || undefined}
               aria-current={isCurrent(item.id) ? 'location' : undefined}
-              className={cx(
-                classes.link,
-                depthStyles[Math.min(item.depth, depthStyles.length - 1)]
-              )}
+              className={classes.link}
+              style={
+                {
+                  '--toc-depth': Math.min(item.depth, MAX_DEPTH)
+                } as React.CSSProperties
+              }
               onClick={e => onLinkClick(e, item.id)}
             >
               {item.title}
@@ -121,9 +122,5 @@ export const Toc = (props: TocProps) => {
   )
 }
 
-const depthStyles = [
-  css({ ps: '4' }),
-  css({ ps: '7' }),
-  css({ ps: '10' }),
-  css({ ps: '13' })
-]
+/** Past this, the indent eats more of the rail than the heading is worth. */
+const MAX_DEPTH = 3

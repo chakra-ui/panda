@@ -2,7 +2,7 @@ import { defineSlotRecipe } from '@pandacss/dev'
 
 /**
  * The sidebar and table-of-contents rails. Both draw their indicator at rest and
- * only change its colour, so the active item never re-measures the list.
+ * only recolour it, so activating an item never adds or removes a box.
  */
 export const docNavRecipe = defineSlotRecipe({
   className: 'docNav',
@@ -24,11 +24,9 @@ export const docNavRecipe = defineSlotRecipe({
       ml: '-1px',
       pe: '3',
       textStyle: 'sm',
-      fontWeight: 'medium',
       color: 'fg.muted',
-      bg: 'transparent',
       textDecoration: 'none',
-      transitionProperty: 'background-color, color',
+      transitionProperty: 'color',
       transitionDuration: '150ms',
       _before: {
         content: '""',
@@ -42,7 +40,8 @@ export const docNavRecipe = defineSlotRecipe({
       },
       _hover: { color: 'fg' },
       _current: {
-        color: 'fg',
+        // Past `fg`, which hover already uses, so active never reads as hover.
+        color: { base: 'black', _dark: 'white' },
         _before: { bg: 'accent.emphasis' }
       },
       _focusVisible: {
@@ -71,20 +70,27 @@ export const docNavRecipe = defineSlotRecipe({
           minH: '8',
           ps: '6',
           py: '1.5',
-          roundedEnd: 'md',
-          _hover: { bg: 'bg.subtle' },
-          _current: { bg: 'accent.wash' }
+          roundedEnd: 'md'
         }
       },
       toc: {
         label: {
           textStyle: 'eyebrow',
           color: 'fg.subtle',
+          // Flush with the list's rail, which is the block's outer edge; items
+          // indent inside it. Matching the items instead orphans the rail.
           mb: '8'
         },
         link: {
           py: '1',
-          color: 'fg.subtle'
+          // Nesting indent as a rule rather than a class per level: the item
+          // sets `--toc-depth`, so there's no cap on how deep the tree can go.
+          ps: 'calc(token(spacing.4) * (var(--toc-depth, 0) + 1))',
+          fontWeight: 'medium',
+          color: 'fg.subtle',
+          // Repeats the base `_current`: Panda emits variant styles in a later
+          // sub-layer than base ones, so the rest colour above outranks it.
+          _current: { color: { base: 'black', _dark: 'white' } }
         }
       }
     }
