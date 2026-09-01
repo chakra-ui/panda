@@ -14,7 +14,7 @@ const config = {
     return [
       {
         source: '/docs/styling/template-literals',
-        destination: '/docs/styling/styled-components',
+        destination: '/docs/get-started/styled-components',
         permanent: true
       },
       {
@@ -35,21 +35,6 @@ const config = {
       {
         source: '/docs/styling/jsx-style-context',
         destination: '/docs/recipes/jsx-recipes-overview',
-        permanent: true
-      },
-      {
-        source: '/docs/styling/how-panda-works',
-        destination: '/docs/styling/how-panda-works',
-        permanent: true
-      },
-      {
-        source: '/docs/styling/compiler-engine',
-        destination: '/docs/styling/compiler-engine',
-        permanent: true
-      },
-      {
-        source: '/docs/styling/performance-optimization',
-        destination: '/docs/styling/performance-optimization',
         permanent: true
       },
       {
@@ -197,16 +182,6 @@ const config = {
         destination: '/docs/get-started/editor-tooling',
         permanent: true
       },
-      {
-        source: '/docs/theming/studio',
-        destination: '/docs/theming/studio',
-        permanent: true
-      },
-      {
-        source: '/docs/theming/studio-v2',
-        destination: '/docs/theming/studio-v2',
-        permanent: true
-      },
       // Bare tab roots: the [...slug] catch-all needs at least one page segment.
       {
         source: '/docs/recipes',
@@ -220,7 +195,7 @@ const config = {
       },
       {
         source: '/docs/tooling',
-        destination: '/docs/get-started',
+        destination: '/docs/get-started/getting-started',
         permanent: true
       },
       {
@@ -319,7 +294,7 @@ const config = {
       },
       {
         source: '/docs/guides/static',
-        destination: '/docs/design-systems/static',
+        destination: '/docs/styling/static',
         permanent: true
       },
       {
@@ -382,7 +357,7 @@ const config = {
       },
       {
         source: '/docs/styling/why-panda',
-        destination: '/docs/styling/getting-started',
+        destination: '/docs/get-started/getting-started',
         permanent: true
       },
       {
