@@ -8,7 +8,7 @@ export const HeroSection = () => {
   return (
     <panda.section bg="bg.main">
       <Box maxW="8xl" mx="auto" px={{ base: '4', md: '6', lg: '8' }}>
-        <Box pt={{ base: '12', md: '20' }} pb={{ base: '16', md: '24' }} position="relative">
+        <Box pt={{ base: '16', md: '32' }} pb={{ base: '20', md: '32' }} position="relative">
           <Flex gap="8" align="center">
             <Stack gap="6" flex="1" minW="0">
               <panda.p
@@ -31,7 +31,7 @@ export const HeroSection = () => {
 
                 <panda.h1
                   color="fg.headline"
-                  fontSize={{ base: '4.5rem', sm: '7rem', lg: '8.5rem' }}
+                  fontSize={{ base: '7rem', sm: '10rem', lg: '14rem' }}
                   fontWeight="bold"
                   letterSpacing="tighter"
                   lineHeight="0.95"
@@ -85,11 +85,15 @@ export const HeroSection = () => {
               priority
               className={css({
                 display: { base: 'none', lg: 'block' },
-                flexShrink: 0
+                flexShrink: 0,
+                // Only grows from `xl`: at `lg` the remaining column is barely
+                // wider than the wordmark, which is one unbreakable word.
+                w: { lg: '300px', xl: '350px' },
+                h: 'auto'
               })}
               src="/panda-bubble-tea.svg"
-              width={300}
-              height={389}
+              width={390}
+              height={506}
               alt="Yums the panda drinking a bubble tea"
             />
           </Flex>
