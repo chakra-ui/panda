@@ -1,4 +1,4 @@
-import { docsTabs } from '@/docs.config'
+import { docsTabs, tabLandingHref } from '@/docs.config'
 import { ChevronRightIcon } from '@/icons'
 import { css } from '@/styled-system/css'
 import { HStack } from '@/styled-system/jsx'
@@ -27,7 +27,7 @@ export const Breadcrumb = ({ slug }: Props) => {
   )
 
   const trail = [
-    { label: tab.title, href: `/docs/${tab.key}/overview` },
+    { label: tab.title, href: tabLandingHref(tab.key) },
     group && group.title !== tab.title ? { label: group.title } : undefined
   ].filter(Boolean) as { label: string; href?: string }[]
 

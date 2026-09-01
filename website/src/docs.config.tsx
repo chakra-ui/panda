@@ -387,6 +387,26 @@ export function getTab(key: string): TabItem | undefined {
   return docsTabs.find(tab => tab.key === key)
 }
 
+/**
+ * Tabs whose landing page isn't the tab root, so the tab jumps straight into
+ * real content instead of an index page.
+ */
+const TAB_LANDING_HREF: Record<string, string> = {
+  'get-started': '/docs',
+  styling: '/docs/styling/writing-styles',
+  recipes: '/docs/recipes/atomic-recipe',
+  theming: '/docs/theming/tokens',
+  'design-systems': '/docs/design-systems/setup'
+}
+
+/**
+ * Where a tab's own link points, for the tab bar and the breadcrumb alike.
+ * Unlisted tabs fall back to the tab root, which redirects to their first page.
+ */
+export function tabLandingHref(tabKey: string): string {
+  return TAB_LANDING_HREF[tabKey] ?? `/docs/${tabKey}`
+}
+
 export const defaultTabKey = 'get-started'
 
 /**
