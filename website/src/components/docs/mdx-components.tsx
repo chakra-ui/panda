@@ -32,8 +32,8 @@ import * as React from 'react'
 
 const headings = createHeadings({ index: 0 })
 
-// `<FileTree.Folder>` needs a plain object to hang the parts off — a client
-// component reference can't carry them across the server boundary.
+// A client component reference can't carry `.Folder`/`.File` across the
+// server boundary, so the compound shape is rebuilt here.
 const FileTree = Object.assign(
   (props: React.ComponentProps<typeof FileTreeRoot>) => (
     <FileTreeRoot {...props} />
@@ -42,7 +42,6 @@ const FileTree = Object.assign(
 )
 
 export const mdxComponents: MDXComponents = {
-  // Styled system components
   Box,
   Flex,
 
@@ -62,32 +61,26 @@ export const mdxComponents: MDXComponents = {
   ),
   p: Text,
 
-  // Headings
   ...headings,
 
-  // Code
   pre: Pre,
   code: Code,
 
-  // Lists
   ol: OrderedList,
   ul: UnorderedList,
   li: ListItem,
 
-  // Table
   table: Table,
   tr: Tr,
   th: Th,
   td: Td,
 
-  // Other elements
   details: Details,
   Details,
   Faq,
   UtilityTable,
   hr: Divider,
 
-  // Custom components
   Callout,
   Card,
   Cards,
@@ -107,7 +100,6 @@ export const mdxComponents: MDXComponents = {
   Tabs,
   Tab,
 
-  // Utility components
   Video: (props: any) => (
     <video
       muted

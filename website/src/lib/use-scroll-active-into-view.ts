@@ -11,23 +11,15 @@ function getScrollParent(node: HTMLElement | null) {
 }
 
 interface Options {
-  /**
-   * Re-runs when this changes: the active heading id for a table of contents,
-   * the route for a nav whose marker only moves on navigation.
-   */
+  /** Active heading id for a table of contents, route for a nav. */
   activeKey: string | null | undefined
-  /**
-   * `smooth` suits a marker that moves while you read. `auto` suits one that
-   * moves on navigation, where an animation reads as a glitch on arrival.
-   */
+  /** `auto` where the marker moves on navigation and easing looks wrong. */
   behavior?: ScrollBehavior
 }
 
 /**
- * Keeps the `[data-current]` descendant visible inside its own scroll
- * container. No-ops while it is already in view, and only ever scrolls that
- * container — unlike `scrollIntoView`, which walks every scrollable ancestor
- * and would fight the page scroll that triggered the change.
+ * Scrolls only the nearest scrollable ancestor, unlike `scrollIntoView`, which
+ * walks all of them and would fight the page scroll that triggered the change.
  */
 export function useScrollActiveIntoView<T extends HTMLElement>(
   options: Options

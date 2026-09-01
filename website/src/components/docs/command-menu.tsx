@@ -39,9 +39,8 @@ interface Props {
 }
 
 /**
- * The index is built at build time and served as a static file, so the docs
- * content never ships in the client bundle. Fetched once per page load and
- * shared by every mounted menu (the navbar renders one per breakpoint).
+ * Served as a static file so the docs content never ships in the client bundle.
+ * Fetched once and shared by every mounted menu.
  */
 let searchIndexPromise: Promise<SearchIndex> | null = null
 
@@ -83,10 +82,7 @@ function useSearchIndex(enabled: boolean) {
   return searchIndex
 }
 
-/**
- * Warms the index ahead of the dialog: on pointer/focus intent over the
- * trigger, and on idle for keyboard users who go straight for the hotkey.
- */
+/** Idle covers keyboard users who go straight for the hotkey. */
 function usePrefetchSearchIndex() {
   const prefetch = useCallback(() => {
     loadSearchIndex().catch(() => {})
@@ -120,7 +116,6 @@ export const CommandMenu = (props: Props) => {
     [searchIndex]
   )
 
-  // Filter items based on input
   const matches = useMemo(
     () => (searchIndex ? filterSearchItems(items, searchIndex, inputValueState) : {}),
     [items, searchIndex, inputValueState]
@@ -371,10 +366,7 @@ interface UseHotkeyProps {
   setOpen: (open: boolean) => void
 }
 
-/**
- * `mod+k` normalises to Cmd on Apple platforms and Ctrl elsewhere, and the
- * store already ignores keystrokes typed into form fields.
- */
+/** `mod` resolves to Cmd on Apple platforms, Ctrl elsewhere. */
 const useHotkey = (props: UseHotkeyProps) => {
   const { enabled, setOpen } = props
   const env = useEnvironmentContext()

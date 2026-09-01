@@ -27,12 +27,8 @@ export interface NavItem {
 }
 
 /**
- * A top-level tab in the docs shell (Styling / Theming / Design Systems / Reference).
- * `items` is a flat list of groups; each group's own `items` are pages. Only the
- * page's `url` contributes to the route: it's `${tab.key}/${page.url}`, since
- * Phase 2 flattened content so every page sits directly under its tab's content
- * directory (no group-level subdirectory). A group's `url` is unused for routing,
- * it exists purely as a sidebar label.
+ * Routes are `${tab.key}/${page.url}`; a group's own `url` is never routed, it
+ * is only a sidebar label.
  */
 export interface TabItem {
   key: string
@@ -382,15 +378,11 @@ export const docsTabs: TabItem[] = [
   }
 ]
 
-/** Look up a tab by its URL key (the first `/docs/:key` segment). */
 export function getTab(key: string): TabItem | undefined {
   return docsTabs.find(tab => tab.key === key)
 }
 
-/**
- * Tabs whose landing page isn't the tab root, so the tab jumps straight into
- * real content instead of an index page.
- */
+/** Tabs that jump straight into content instead of an index page. */
 const TAB_LANDING_HREF: Record<string, string> = {
   'get-started': '/docs',
   styling: '/docs/styling/writing-styles',
@@ -399,10 +391,7 @@ const TAB_LANDING_HREF: Record<string, string> = {
   'design-systems': '/docs/design-systems/setup'
 }
 
-/**
- * Where a tab's own link points, for the tab bar and the breadcrumb alike.
- * Unlisted tabs fall back to the tab root, which redirects to their first page.
- */
+/** Unlisted tabs fall back to the tab root, which redirects onward. */
 export function tabLandingHref(tabKey: string): string {
   return TAB_LANDING_HREF[tabKey] ?? `/docs/${tabKey}`
 }
@@ -410,13 +399,8 @@ export function tabLandingHref(tabKey: string): string {
 export const defaultTabKey = 'get-started'
 
 /**
- * Links shown in the TabBar's "Community" dropdown. Team and Showcase also
- * exist in the persistent top-level site nav today, that's expected to be
- * reworked/scrapped later, so they stay here deliberately rather than being
- * treated as a duplicate to remove. GitHub is left out since it's a permanent
- * icon link in the top nav with no plan to change that. Roadmap and Changelog
- * live in Styling ▸ Get Started instead, they're product tracking, not
- * community.
+ * Team and Showcase repeat the top-level nav on purpose, pending its rework.
+ * GitHub is left out; it has a permanent icon link up there.
  */
 export const communityLinks: NavItem[] = [
   { title: 'Team', href: '/team' },

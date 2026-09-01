@@ -52,9 +52,6 @@ export interface SearchPostInput {
   description?: string
 }
 
-/**
- * Build the search index from the structured data emitted at build time.
- */
 export function getSearchIndex(
   docs: SearchDocInput[],
   posts: SearchPostInput[] = []
@@ -82,7 +79,6 @@ export function getSearchIndex(
         .map(entry => entry.content)
         .join('\n')
 
-      // Only index substantial content
       if (sectionContent.length <= 50) continue
 
       searchRecords.push({
@@ -120,9 +116,6 @@ export function getSearchIndex(
   }
 }
 
-/**
- * Convert search records to search items for UI
- */
 export function convertToSearchItems(searchIndex: SearchIndex): SearchItem[] {
   return searchIndex.records.map(
     (record: SearchRecord): SearchItem => ({
@@ -137,9 +130,6 @@ export function convertToSearchItems(searchIndex: SearchIndex): SearchItem[] {
   )
 }
 
-/**
- * Filter and group search items based on query using Fuse.js
- */
 export function filterSearchItems(
   items: SearchItem[],
   _searchIndex: SearchIndex,
@@ -151,7 +141,6 @@ export function filterSearchItems(
     return pages.length ? { '': pages } : {}
   }
 
-  // Configure Fuse.js for better fuzzy search
   const fuseOptions = {
     keys: [
       { name: 'label', weight: 0.5 }, // Title gets highest weight
@@ -173,14 +162,11 @@ export function filterSearchItems(
   const fuse = new Fuse(items, fuseOptions)
   const results = fuse.search(query)
 
-  // Sort results: pages before headings, then by score
   const sortedResults = results
     .sort((a, b) => {
-      // First sort by type preference (pages before headings)
       if (a.item.type === 'page' && b.item.type === 'heading') return -1
       if (a.item.type === 'heading' && b.item.type === 'page') return 1
 
-      // Then sort by Fuse score (lower score = better match)
       return (a.score || 1) - (b.score || 1)
     })
     .map(result => result.item)

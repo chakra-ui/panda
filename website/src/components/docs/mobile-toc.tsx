@@ -29,11 +29,7 @@ const trigger = css({
   cursor: 'pointer'
 })
 
-/**
- * Section navigation for long reads on mobile, where the sidebar table of
- * contents is hidden. Sits opposite the docs "Browse" pill so the two never
- * collide on a docs page.
- */
+/** Sits opposite the "Browse" pill so the two never collide. */
 export const MobileToc = ({ data }: TocProps) => {
   const pathname = usePathname()
   const dialog = useDialog()

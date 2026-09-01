@@ -30,10 +30,7 @@ const trigger = css({
   cursor: 'pointer'
 })
 
-/**
- * Section navigation on mobile. The hamburger answers "where in the site am I";
- * this answers "where in this section am I", the same split bun uses.
- */
+/** The hamburger covers the site; this covers the current section. */
 export const MobileBrowse = () => {
   const pathname = usePathname()
   const dialog = useDialog()

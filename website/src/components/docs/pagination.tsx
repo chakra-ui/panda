@@ -14,8 +14,7 @@ interface Props {
   slug: string
 }
 
-// Flatten a single tab's groups into an ordered page list. Scoped to one tab so
-// prev/next never crosses a tab boundary. Each tab is a self-contained sequence.
+// Scoped to one tab so prev/next never crosses a tab boundary.
 function flattenTab(tabKey: string, groups: NavItem[]): PaginationItem[] {
   const result: PaginationItem[] = []
 
@@ -46,7 +45,6 @@ function getPagination(currentSlug: string): {
 
   const allPages = flattenTab(tabKey, tab.items)
 
-  // Find the exact match: the slug should match the page URL exactly
   const currentIndex = allPages.findIndex(page => {
     return page.url === currentSlug
   })

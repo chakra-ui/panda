@@ -36,20 +36,8 @@ export const TAB_ICONS: Record<string, IconType> = {
 }
 
 /**
- * The persistent tab bar for the docs shell. Styling / Theming / Design Systems
- * on the left (build intents), References on the right (cross-cutting lookup),
- * plus a plain Blog link. Active tab is derived from the URL's first `/docs/:key`
- * segment, so it stays in sync with server-rendered navigation with no extra state.
- *
- * Hugs the real page edge with the same responsive `px` as the navbar above and
- * the sidebar below, instead of sitting inside a `maxW` centered column. A
- * centered shell only matches the sidebar's position up to that maxW; past it,
- * the two drift apart.
- *
- * Every tab shows its own underline (`border` at rest, `accent` when active,
- * `fg.muted` on hover), stretched to the row's full height so it always sits at
- * the same baseline. Hover also adds a subtle background pill, matching the
- * sidebar's own group-header hover treatment.
+ * Takes the same responsive `px` as the navbar and sidebar rather than a `maxW`
+ * column, which would only line up with the sidebar until it hits that maxW.
  */
 export function TabBar() {
   const pathname = usePathname()
@@ -111,17 +99,8 @@ export function TabBar() {
 }
 
 /**
- * "Community" is a dropdown, not a routed tab: Team and Showcase are full
- * marketing pages at their own routes, and the rest (Discord, GitHub, Roadmap,
- * Changelog, Contributing) are external links. There's no `/docs/community`
- * content for it to route to.
- *
- * The panel renders through a portal into `document.body`, positioned via the
- * button's own bounding rect. The tab bar's row has `overflowX: auto` for
- * horizontal scrolling on mobile, and per the CSS spec, setting overflow-x to
- * anything but `visible` forces overflow-y to clip too, so an absolutely
- * positioned panel nested inside that row gets silently cut off. Portaling it
- * out avoids that ancestor entirely.
+ * Portaled out of the row: `overflow-x: auto` there forces `overflow-y` to clip
+ * as well, which would silently cut the panel off.
  */
 function CommunityMenu() {
   return (
@@ -244,9 +223,7 @@ function TabLink({ tab, active }: TabLinkProps) {
           position: 'absolute',
           left: '3',
           right: '3',
-          // Sits flush inside the row: a negative offset would spill past the
-          // scroll container and, since `overflow-x: auto` forces `overflow-y`
-          // to `auto`, that 1px was enough to render a vertical scrollbar.
+          // Flush inside the row: 1px of spill was enough to add a scrollbar.
           bottom: '0',
           height: '2px',
           bg: active ? 'accent' : 'transparent',

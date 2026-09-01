@@ -3,10 +3,8 @@ import { Box } from '@/styled-system/jsx'
 import Link from 'next/link'
 
 /**
- * The docs shell already carries everything the site footer offers: next/prev
- * from the pagination, edit and raw-markdown from the page actions, and
- * community/project links from the tab bar's dropdown. All that is left to say
- * here is who made it, on the same gutter as the sidebar above.
+ * Slim by design: pagination, page actions and the tab bar's dropdown already
+ * cover what the site footer offers.
  */
 export const DocsFooter = () => {
   return (

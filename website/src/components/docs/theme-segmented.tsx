@@ -11,10 +11,7 @@ const OPTIONS = [
   { value: 'system', label: 'System', icon: <LuMonitor size={15} /> }
 ]
 
-/**
- * Inline theme picker for the mobile sheet. A popover would position itself
- * outside the drawer, so the choice is laid out in place instead.
- */
+/** Laid out in place: a popover would position itself outside the drawer. */
 export function ThemeSegmented() {
   const { theme, setTheme } = useTheme()
 

@@ -61,7 +61,7 @@ const styles = {
 }
 
 interface SearchButtonProps extends React.ComponentProps<'button'> {
-  /** Applied to the outer container div, not the button itself, use this to control overall width/flex from a parent that needs the search bar to grow. */
+  /** Applied to the container, not the button, so a parent can size the bar. */
   containerClassName?: string
 }
 
@@ -96,10 +96,7 @@ export const SearchButton = (props: SearchButtonProps) => {
   )
 }
 
-/**
- * Which modifier `mod` resolves to is only knowable on the client, so the badge
- * fades in once. It is absolutely positioned, so nothing reflows when it lands.
- */
+/** The modifier is only knowable on the client, so the badge fades in once. */
 const useHotkeyLabel = () => {
   const [label, setLabel] = useState<string | null>(null)
 

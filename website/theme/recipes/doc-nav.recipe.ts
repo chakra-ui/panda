@@ -1,9 +1,6 @@
 import { defineSlotRecipe } from '@pandacss/dev'
 
-/**
- * The sidebar and table-of-contents rails. Both draw their indicator at rest and
- * only recolour it, so activating an item never adds or removes a box.
- */
+/** Both rails draw their indicator at rest and only recolour it. */
 export const docNavRecipe = defineSlotRecipe({
   className: 'docNav',
   description: 'Sidebar and table-of-contents navigation rails',
@@ -59,8 +56,7 @@ export const docNavRecipe = defineSlotRecipe({
           alignItems: 'center',
           gap: '2',
           px: '0',
-          // No top padding: the first label has to sit on the same line as the
-          // breadcrumb, and `gap` already separates the groups below it.
+          // None on top: the first label lines up with the breadcrumb.
           pb: '1.5',
           mb: '2',
           textStyle: 'sm',
@@ -79,19 +75,17 @@ export const docNavRecipe = defineSlotRecipe({
         label: {
           textStyle: 'eyebrow',
           color: 'fg.subtle',
-          // Flush with the list's rail, which is the block's outer edge; items
-          // indent inside it. Matching the items instead orphans the rail.
+          // Flush with the rail; matching the items instead orphans it.
           mb: '8'
         },
         link: {
           py: '1',
-          // Nesting indent as a rule rather than a class per level: the item
-          // sets `--toc-depth`, so there's no cap on how deep the tree can go.
+          // Item sets `--toc-depth`, so nesting isn't capped.
           ps: 'calc(token(spacing.4) * (var(--toc-depth, 0) + 1))',
           fontWeight: 'medium',
           color: 'fg.subtle',
-          // Repeats the base `_current`: Panda emits variant styles in a later
-          // sub-layer than base ones, so the rest colour above outranks it.
+          // Repeated from base: variants land in a later sub-layer than base,
+          // so the rest colour above would otherwise win.
           _current: { color: { base: 'black', _dark: 'white' } }
         }
       }

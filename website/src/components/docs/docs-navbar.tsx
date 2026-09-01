@@ -16,16 +16,9 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 /**
- * The docs-only top bar: logo left, search centered, Playground/GitHub/theme
- * on the right, no text nav links and no border under it, the TabBar directly
- * below owns the one dividing line for the whole header block. This is
- * deliberately separate from the site-wide `Navbar` in `mdx/navbar.tsx`, which
- * still serves the marketing pages (home, blog, team, showcase) unchanged.
- *
- * Fixed position (not just sticky), matching the site-wide navbar's own
- * behavior, since `app/docs/layout.tsx`'s sticky TabBar offset and `main`'s
- * padding-top are both computed against `--navbar-height` assuming the bar
- * above it is taken out of normal document flow.
+ * Docs-only; `mdx/navbar.tsx` still serves the marketing pages. Fixed rather
+ * than sticky: the layout's TabBar offset and `main` padding are computed
+ * against `--navbar-height` assuming this bar is out of flow.
  */
 const siteLinks = [
   {

@@ -66,13 +66,11 @@ interface Props {
 
 export function Sidebar({ slug: currentSlug, tabKey: fallbackTab }: Props) {
   const pathname = usePathname()
-  // Long tabs scroll past the fold, so arriving on a deep page would otherwise
-  // show no highlight at all. Instant, since the marker only moves on navigation.
+  // Instant: it only moves on navigation, where easing reads as a glitch.
   const navRef = useScrollActiveIntoView<HTMLDivElement>({
     activeKey: pathname,
     behavior: 'auto'
   })
-  // pathname is `/docs/{tabKey}/...`; currentSlug (when passed) is `{tabKey}/...`
   const tabKey =
     pathname?.split('/')[2] || currentSlug?.split('/')[0] || fallbackTab
   const tab = docsTabs.find(t => t.key === tabKey)
