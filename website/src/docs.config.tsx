@@ -150,10 +150,6 @@ export const docsTabs: TabItem[] = [
         ]
       },
       {
-        title: 'Help',
-        items: [{ title: 'Feedback', url: 'feedback' }]
-      },
-      {
         title: 'Frameworks',
         items: [
           { title: 'Next.js', url: 'nextjs' },

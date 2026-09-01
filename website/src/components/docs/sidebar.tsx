@@ -6,7 +6,6 @@ import {
   LuBlocks,
   LuBookOpen,
   LuBot,
-  LuCircleHelp,
   LuDownload,
   LuFolderTree,
   LuLayers,
@@ -53,7 +52,6 @@ const GROUP_ICONS: Record<string, IconType> = {
   Tooling: LuWrench,
   Frameworks: LuBlocks,
   'AI for Agents': LuBot,
-  Help: LuCircleHelp,
   'CLI & Config': LuTerminal,
   'Utility Reference': LuBookOpen
 }
