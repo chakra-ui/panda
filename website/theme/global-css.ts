@@ -27,7 +27,13 @@ export const globalCss = defineGlobalStyles({
   html: {
     fontFamily: 'sans',
     scrollbarGutter: 'stable',
+    // Themes the page scrollbar and native form controls. `next-themes` only
+    // toggles a class, so without this they keep following the OS instead.
+    colorScheme: 'light',
     '--nextra-primary-hue': '212deg'
+  },
+  'html.dark, html[data-theme="dark"]': {
+    colorScheme: 'dark'
   },
   /**
    * Anchor offset for the fixed navbar/banner/tab bar. It lives on the target
