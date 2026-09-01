@@ -101,7 +101,7 @@ export const MobileMenu = ({ pathname }: Props) => {
 
       <Stack gap="3">
         <Link
-          href="/install"
+          href="/docs/get-started/cli"
           className={css({
             display: 'flex',
             alignItems: 'center',
