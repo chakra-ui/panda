@@ -3,6 +3,8 @@ import { css } from '@/styled-system/css'
 import { Box, Flex, Stack, panda } from '@/styled-system/jsx'
 import { CommandPrompt } from '@/www/command-prompt'
 import Image from 'next/image'
+import Link from 'next/link'
+import { LuArrowRight } from 'react-icons/lu'
 
 export const HeroSection = () => {
   return (
@@ -11,13 +13,33 @@ export const HeroSection = () => {
         <Box pt={{ base: '16', md: '32' }} pb={{ base: '20', md: '32' }} position="relative">
           <Flex gap="8" align="center">
             <Stack gap="6" flex="1" minW="0">
-              <panda.p
-                textStyle="eyebrow"
-                color="fg/70"
-                hideBelow="md"
+              <Link
+                href="/blog/panda-css-v2"
+                className={css({
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '3',
+                  w: 'fit-content',
+                  textStyle: 'eyebrow',
+                  color: 'fg/70',
+                  textDecoration: 'none',
+                  transitionProperty: 'color',
+                  transitionDuration: '150ms',
+                  _hover: { color: 'fg' }
+                })}
               >
-                Build-time CSS-in-JS
-              </panda.p>
+                <panda.span
+                  bg="fg"
+                  color="bg"
+                  px="1.5"
+                  py="1"
+                  rounded="xs"
+                >
+                  New
+                </panda.span>
+                <span>Panda CSS v2.0 released</span>
+                <LuArrowRight size={14} aria-hidden />
+              </Link>
 
               <div>
                 <panda.p
