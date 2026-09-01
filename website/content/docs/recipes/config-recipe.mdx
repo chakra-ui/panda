@@ -29,7 +29,7 @@ The config recipe takes the following additional properties:
 
 > As of v0.9, the `name` property is removed in favor of `className`
 
-### Defining the recipe
+## Defining the recipe
 
 To define a config recipe, import the `defineRecipe` helper function
 
@@ -64,7 +64,7 @@ export const buttonRecipe = defineRecipe({
 })
 ```
 
-### Adding recipe to config
+## Adding recipe to config
 
 To add the recipe to the config, you’d need to add it to the `theme.recipes` object.
 
@@ -85,14 +85,14 @@ export default defineConfig({
 })
 ```
 
-### Generate JS code
+## Generate JS code
 
 This generates a recipes folder the specified `outdir` which is `styled-system` by default. If Panda doesn’t
 automatically generate your CSS file, you can run the `panda codegen` command.
 
 You only need to import the recipes into the component files where you need to use them.
 
-### Using the recipe
+## Using the recipe
 
 To use the recipe, you can import the recipe from the `<outdir>/recipes` entrypoint and use it in your component. Panda
 tracks the usage of the recipe and only generates CSS of the variants used in your application.
@@ -135,7 +135,7 @@ name that matches the recipe-variant name pattern `<recipe-className>--<variant-
 }
 ```
 
-### Dynamic variant props
+## Dynamic variant props
 
 Config recipes only emit CSS for variant values Panda can see at build time. `button({ size })` still returns class
 names at runtime, but if that CSS was never generated, the styles won't apply.
@@ -158,7 +158,7 @@ Or add literal calls in stories/tests, or use string literals in the call itself
 Slot recipes follow the same rules. See [slot recipes](/docs/recipes/slot-recipes#dynamic-variant-props). More in
 [static CSS](/docs/styling/static#generating-recipes).
 
-### Using compound variants
+## Using compound variants
 
 Apply styles when **multiple** variant props match. Same shape as [`cva`](/docs/recipes/atomic-recipe#compound-variants): a
 flat `css` object on each entry:
@@ -279,7 +279,7 @@ input({ size: 'md', variant: 'outline' })
 Runtime-only combos need [`staticCss`](/docs/styling/static#generating-recipes). Run `pnpm panda codegen` after editing
 the recipe.
 
-### Responsive and Conditional variants
+## Responsive and Conditional variants
 
 Pass breakpoint objects to variant props instead of a single value. Generated types use `ConditionalValue`.
 
@@ -303,7 +303,7 @@ function App() {
 > In most cases, we don't recommend applying conditional variants inline. Ideally, you might want to render different
 > views for your responsive breakpoints.
 
-### TypeScript Guide
+## TypeScript Guide
 
 Every recipe ships a type interface for its accepted variants. You can import them from the `styled-system/recipes`
 entrypoint.
@@ -317,7 +317,7 @@ import type { ButtonVariants } from '../styled-system/recipes'
 type ButtonProps = ButtonVariants & React.ComponentProps<'button'>
 ```
 
-### Usage in JSX
+## Usage in JSX
 
 Layer recipes can be consumed directly in your custom JSX components. Panda will automatically track the usage of the
 recipe if the component name matches the recipe name.
@@ -354,7 +354,7 @@ Two things to keep in the wrapper: pull the variant props out of `props` so they
 merge any incoming `className` with [`cx`](/docs/styling/writing-styles#classname-concatenation) so callers can still
 style your component.
 
-### Advanced JSX Tracking
+## Advanced JSX Tracking
 
 We recommend that you use the recipe functions in most cases, in design systems there might be a need to compose
 existing components (like Button) to create new components.
@@ -391,7 +391,7 @@ const PageButton = (props: ButtonProps) => {
 }
 ```
 
-#### Extending a preset recipe
+### Extending a preset recipe
 
 If you're using a recipe from a preset, you can still extend it in your config.
 

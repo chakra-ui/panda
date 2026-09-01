@@ -26,7 +26,7 @@ They are defined using the `cva` function which was inspired by [Class Variance 
 > **Note:** `cva` is not the same as [Class Variance Authority](https://cva.style/). The `cva` from Panda is a
 > purpose-built function for creating atomic recipes that are connected to your design tokens and utilities.
 
-### Defining the recipe
+## Defining the recipe
 
 ```jsx
 import { cva } from '../styled-system/css'
@@ -48,7 +48,7 @@ const button = cva({
 })
 ```
 
-### Using the recipe
+## Using the recipe
 
 The returned value from the `cva` function is a function that can be used to apply the recipe to a component. Here's an
 example of how to use the `button` recipe:
@@ -85,7 +85,7 @@ as atomic classes.
 }
 ```
 
-### Setting the default variants
+## Setting the default variants
 
 The `defaultVariants` property is used to set the default variant values for the recipe. This is useful when you want to
 apply a variant by default. Here's an example of how to use `defaultVariants`:
@@ -114,7 +114,7 @@ const button = cva({
 })
 ```
 
-### Compound Variants
+## Compound Variants
 
 Compound variants are a way to combine multiple variants together to create more complex sets of styles. They are
 defined using the `compoundVariants` property , which takes an array of objects as its argument. Each object in the
@@ -218,7 +218,7 @@ your code with lots of conditional logic.
 
 For config recipes (`defineRecipe`), see [Using compound variants](/docs/recipes/config-recipe#using-compound-variants).
 
-### TypeScript Guide
+## TypeScript Guide
 
 Panda provides two type utilities for inferring the variant types of a recipe: `RecipeVariant` and `RecipeVariantProps`.
 
@@ -275,7 +275,7 @@ export type ButtonVariants = RecipeVariantProps<typeof buttonStyle>
 // { size?: 'small' | 'large' | undefined } | undefined
 ```
 
-### Usage in JSX
+## Usage in JSX
 
 You can create a JSX component from any existing atomic recipe by using the `styled` function from the `/jsx`
 entrypoint.
