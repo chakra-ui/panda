@@ -4,17 +4,13 @@
   "description": "",
   "private": true,
   "scripts": {
-    "codegen": "panda",
-    "dev:next": "next dev",
-    "dev": "run-s codegen dev:watch",
-    "dev:watch": "run-p dev:panda dev:next",
+    "codegen": "panda codegen",
+    "dev": "next dev",
     "generate:reference": "tsx scripts/generate-utility-reference.ts",
-    "build:codegen": "panda",
     "build:next": "next build",
-    "build": "run-s generate:reference build:codegen build:next",
+    "build": "run-s generate:reference codegen build:next",
     "lint": "eslint . --max-warnings 0",
-    "start": "next start",
-    "dev:panda": "panda --watch"
+    "start": "next start"
   },
   "dependencies": {
     "@ark-ui/react": "5.39.1",
