@@ -1,5 +1,5 @@
+import { pageSeo } from '@/lib/seo'
 import { SitePage } from '@/components/site-page'
-import { generateOgImageUrl } from '@/lib/og-image'
 import { showcases, type Showcase } from '@/showcase'
 import { css } from '@/styled-system/css'
 import { textLink } from '@/styled-system/recipes'
@@ -11,21 +11,12 @@ import { LuArrowUpRight } from 'react-icons/lu'
 const title = 'Built with Panda'
 const description = 'Real products shipping on Panda CSS today.'
 
-export const metadata: Metadata = {
-  title: 'Showcase',
+export const metadata: Metadata = pageSeo({
+  title,
   description,
-  openGraph: {
-    title,
-    description,
-    images: [generateOgImageUrl({ title, description, category: 'Showcase' })]
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title,
-    description,
-    images: [generateOgImageUrl({ title, description, category: 'Showcase' })]
-  }
-}
+  path: '/showcase',
+  category: 'Showcase'
+})
 
 const mediaCover = css({ objectFit: 'cover' })
 const mediaTall = css({ aspectRatio: '3 / 2' })

@@ -1,3 +1,5 @@
+import { pageSeo } from '@/lib/seo'
+import type { Metadata } from 'next'
 import { DocsNavbar } from '@/components/docs/docs-navbar'
 import { SiteFooter } from '@/components/docs/site-footer'
 import { css } from '@/styled-system/css'
@@ -13,6 +15,13 @@ import { StartBuildingSection } from '@/www/start-building.section'
 import { TestimonialsSection } from '@/www/testimonials.section'
 import { TryPandaSection } from '@/www/try-panda.section'
 import { WorksEverywhereSection } from '@/www/works-everywhere.section'
+
+export const metadata: Metadata = pageSeo({
+  title:
+    'Panda CSS - Build modern websites using build time and type-safe CSS-in-JS',
+  description: 'Build modern websites using build time and type-safe CSS-in-JS',
+  path: '/'
+})
 
 export default function Page() {
   return (

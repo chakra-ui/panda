@@ -16,7 +16,9 @@ const seoConfig = defineMetadata({
   themeColor: '#F6E458',
   openGraph: {
     images: `${publicUrl}/og`,
-    url: publicUrl
+    url: publicUrl,
+    siteName: 'Panda CSS',
+    type: 'website'
   },
   manifest: '/site.webmanifest',
   icons: [
@@ -26,6 +28,7 @@ const seoConfig = defineMetadata({
     { rel: 'image/x-icon', url: '/favicon.ico' }
   ],
   twitter: {
+    card: 'summary_large_image',
     site: '@panda__css',
     creator: '@thesegunadebayo'
   }

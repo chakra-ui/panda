@@ -1,9 +1,9 @@
+import { pageSeo } from '@/lib/seo'
 import { LuRss } from 'react-icons/lu'
 import { AuthorLine } from '@/components/blog/author-line'
 import { mdxComponents } from '@/components/docs/mdx-components'
 import { MobileToc } from '@/components/docs/mobile-toc'
 import { Toc } from '@/components/ui/toc'
-import { generateOgImageUrl } from '@/lib/og-image'
 import { blogSource, getMarkdown, getReadingTime } from '@/lib/source'
 import { toTocEntries } from '@/lib/toc'
 import { css } from '@/styled-system/css'
@@ -32,29 +32,13 @@ export async function generateMetadata({
 
   const post = page.data
 
-  const ogImage = generateOgImageUrl({
-    title: post.title,
-    description: post.description,
-    category: 'Blog'
-  })
-
-  return {
+  return pageSeo({
     title: `${post.title} | Panda CSS Blog`,
     description: post.description,
-    openGraph: {
-      title: post.title,
-      description: post.description,
-      type: 'article',
-      publishedTime: post.date,
-      images: [ogImage]
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: post.title,
-      description: post.description,
-      images: [ogImage]
-    }
-  }
+    path: page.url,
+    category: 'Blog',
+    publishedTime: post.date
+  })
 }
 
 function formatDate(isoDate: string) {

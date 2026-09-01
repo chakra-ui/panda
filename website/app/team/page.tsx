@@ -1,3 +1,4 @@
+import { pageSeo } from '@/lib/seo'
 import { SitePage } from '@/components/site-page'
 import { teamMembers } from '@/docs.config'
 import {
@@ -5,7 +6,6 @@ import {
   fetchGithubUsers,
   type GitHubUser
 } from '@/lib/github-utils'
-import { generateOgImageUrl } from '@/lib/og-image'
 import { css } from '@/styled-system/css'
 import { textLink } from '@/styled-system/recipes'
 import { Box } from '@/styled-system/jsx'
@@ -17,15 +17,12 @@ const title = 'Team'
 const description =
   'Panda is built by a small core team and a large community of contributors.'
 
-export const metadata: Metadata = {
-  title: title,
+export const metadata: Metadata = pageSeo({
+  title,
   description,
-  openGraph: {
-    title,
-    description,
-    images: [generateOgImageUrl({ title, description, category: 'Team' })]
-  }
-}
+  path: '/team',
+  category: 'Team'
+})
 
 function toAbsoluteUrl(value: string) {
   return /^https?:\/\//.test(value) ? value : `https://${value}`

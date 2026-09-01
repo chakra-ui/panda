@@ -1,3 +1,4 @@
+import { pageSeo } from '@/lib/seo'
 import { Breadcrumb } from '@/components/docs/breadcrumb'
 import { Header } from '@/components/docs/header'
 import { mdxComponents } from '@/components/docs/mdx-components'
@@ -6,7 +7,6 @@ import { PageActions } from '@/components/docs/page-actions'
 import { Pagination } from '@/components/docs/pagination'
 import { Sidebar } from '@/components/docs/sidebar'
 import { Toc } from '@/components/ui/toc'
-import { generateOgImageUrl } from '@/lib/og-image'
 import { docsSource } from '@/lib/source'
 import { toTocEntries } from '@/lib/toc'
 import { css, cx } from '@/styled-system/css'
@@ -35,30 +35,12 @@ export async function generateMetadata({ params }: DocsPageProps) {
     }
   }
 
-  const { title, description } = page.data
-
-  const ogImage = generateOgImageUrl({
-    title,
-    description,
+  return pageSeo({
+    title: page.data.title,
+    description: page.data.description,
+    path: page.url,
     category: 'Docs'
   })
-
-  return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      type: 'article',
-      images: [ogImage]
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: [ogImage]
-    }
-  }
 }
 
 const sidebarScroll = css({

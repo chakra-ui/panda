@@ -1,5 +1,5 @@
+import { pageSeo } from '@/lib/seo'
 import { SitePage } from '@/components/site-page'
-import { generateOgImageUrl } from '@/lib/og-image'
 import { css, cx } from '@/styled-system/css'
 import { Box } from '@/styled-system/jsx'
 import type { Metadata } from 'next'
@@ -8,15 +8,12 @@ const title = 'Brand kit'
 const description =
   'The Panda logo, wordmark and palette. Please do not stretch, recolour or restyle the panda without asking.'
 
-export const metadata: Metadata = {
-  title: title,
+export const metadata: Metadata = pageSeo({
+  title,
   description,
-  openGraph: {
-    title,
-    description,
-    images: [generateOgImageUrl({ title, description, category: 'Brand' })]
-  }
-}
+  path: '/brand',
+  category: 'Brand'
+})
 
 const assets = [
   { name: 'Logo', file: 'panda-p-letter.svg', src: '/panda-p-letter.svg' },

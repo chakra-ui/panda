@@ -1,4 +1,4 @@
-import { generateOgImageUrl } from '@/lib/og-image'
+import { pageSeo } from '@/lib/seo'
 import { blogSource, getMarkdown, getReadingTime } from '@/lib/source'
 import { AuthorLine } from '@/components/blog/author-line'
 import { PostList } from '@/components/blog/post-list'
@@ -11,34 +11,12 @@ import { LuArrowRight, LuRss } from 'react-icons/lu'
 const ogTitle = 'Panda CSS Blog'
 const ogDescription = 'News, updates, and deep dives from the Panda CSS team'
 
-export const metadata: Metadata = {
-  title: 'Blog',
+export const metadata: Metadata = pageSeo({
+  title: ogTitle,
   description: ogDescription,
-  openGraph: {
-    title: ogTitle,
-    description: ogDescription,
-    type: 'website',
-    images: [
-      generateOgImageUrl({
-        title: ogTitle,
-        description: ogDescription,
-        category: 'Blog'
-      })
-    ]
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: ogTitle,
-    description: ogDescription,
-    images: [
-      generateOgImageUrl({
-        title: ogTitle,
-        description: ogDescription,
-        category: 'Blog'
-      })
-    ]
-  }
-}
+  path: '/blog',
+  category: 'Blog'
+})
 
 export default async function BlogPage() {
   const posts = await Promise.all(

@@ -1,7 +1,7 @@
+import { pageSeo } from '@/lib/seo'
 import { Sidebar } from '@/components/docs/sidebar'
 import { defaultTabKey } from '@/docs.config'
 import { css, cx } from '@/styled-system/css'
-import { generateOgImageUrl } from '@/lib/og-image'
 import { Card, Cards } from '@/mdx/cards'
 import { Box, Stack } from '@/styled-system/jsx'
 import type { Metadata } from 'next'
@@ -18,16 +18,12 @@ const title = 'Welcome to Panda'
 const description =
   'Build modern websites with build-time, type-safe CSS-in-JS.'
 
-export const metadata: Metadata = {
-  title: title,
+export const metadata: Metadata = pageSeo({
+  title,
   description,
-  openGraph: {
-    title,
-    description,
-    type: 'article',
-    images: [generateOgImageUrl({ title, description, category: 'Docs' })]
-  }
-}
+  path: '/docs',
+  category: 'Docs'
+})
 
 const sidebarScroll = css({
   maskImage:
