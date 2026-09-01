@@ -45,9 +45,14 @@ export function DocsNavbar() {
         h="var(--navbar-height, 4rem)"
         px={{ base: '4', md: '6' }}
         gap={{ base: '1', md: '4' }}
-        justifyContent={{ base: 'flex-start', md: 'space-between' }}
+        // Below `md` the bar is a row with the search collapsed to an icon on
+        // the right; above it, `1fr auto 1fr` centres the search whatever the
+        // two sides happen to contain.
+        display={{ base: 'flex', md: 'grid' }}
+        gridTemplateColumns={{ md: '1fr auto 1fr' }}
+        alignItems="center"
       >
-        <HStack gap={{ base: '1', md: '4' }} flexShrink="0">
+        <HStack gap={{ base: '1', md: '4' }} minW="0" flexShrink="0">
           <Anchor
             href="/"
             aria-label="Panda CSS home"
@@ -90,10 +95,11 @@ export function DocsNavbar() {
         </HStack>
 
         <Box
-          flex={{ base: '0 0 auto', md: '1' }}
+          flex={{ base: '0 0 auto', md: 'none' }}
           ml={{ base: 'auto', md: '0' }}
           display="flex"
           justifyContent="center"
+          w={{ md: '28rem' }}
           maxW={{ base: 'none', md: '32rem' }}
         >
           <CommandMenu
@@ -111,7 +117,12 @@ export function DocsNavbar() {
           />
         </Box>
 
-        <HStack gap={{ base: '0', md: '2' }} flexShrink="0">
+        <HStack
+          gap={{ base: '0', md: '2' }}
+          minW="0"
+          flexShrink="0"
+          justifySelf="end"
+        >
           <Anchor
             href="https://play.panda-css.com/"
             newWindow
