@@ -2,6 +2,7 @@
 
 import type { TocEntry } from '@/lib/toc'
 import { css, cx } from '@/styled-system/css'
+import { useScrollActiveIntoView } from '@/lib/use-scroll-active-into-view'
 import { docNav } from '@/styled-system/recipes'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
@@ -62,6 +63,7 @@ function useTocState(ids: string[]) {
   }, [key])
 
   return {
+    activeId,
     isCurrent: (id: string) => id === activeId,
     onLinkClick: (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
       e.preventDefault()
@@ -83,7 +85,10 @@ export interface TocProps {
 
 export const Toc = (props: TocProps) => {
   const { data, hideTitle } = props
-  const { isCurrent, onLinkClick } = useTocState(data.map(item => item.id))
+  const { activeId, isCurrent, onLinkClick } = useTocState(
+    data.map(item => item.id)
+  )
+  const navRef = useScrollActiveIntoView<HTMLElement>({ activeKey: activeId })
 
   if (data.length === 0) {
     return null
@@ -92,7 +97,7 @@ export const Toc = (props: TocProps) => {
   const classes = docNav({ kind: 'toc' })
 
   return (
-    <nav aria-label="Table of contents">
+    <nav ref={navRef} aria-label="Table of contents">
       {!hideTitle && <h3 className={classes.label}>On this page</h3>}
       <ul className={classes.list}>
         {data.map(item => (

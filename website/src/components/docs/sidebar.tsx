@@ -23,6 +23,7 @@ import {
   LuWrench
 } from 'react-icons/lu'
 import { docsTabs } from '@/docs.config'
+import { useScrollActiveIntoView } from '@/lib/use-scroll-active-into-view'
 import { Stack } from '@/styled-system/jsx'
 import { docNav } from '@/styled-system/recipes'
 import Link from 'next/link'
@@ -65,6 +66,12 @@ interface Props {
 
 export function Sidebar({ slug: currentSlug, tabKey: fallbackTab }: Props) {
   const pathname = usePathname()
+  // Long tabs scroll past the fold, so arriving on a deep page would otherwise
+  // show no highlight at all. Instant, since the marker only moves on navigation.
+  const navRef = useScrollActiveIntoView<HTMLDivElement>({
+    activeKey: pathname,
+    behavior: 'auto'
+  })
   // pathname is `/docs/{tabKey}/...`; currentSlug (when passed) is `{tabKey}/...`
   const tabKey =
     pathname?.split('/')[2] || currentSlug?.split('/')[0] || fallbackTab
@@ -83,7 +90,7 @@ export function Sidebar({ slug: currentSlug, tabKey: fallbackTab }: Props) {
   const classes = docNav({ kind: 'sidebar' })
 
   return (
-    <Stack as="nav" aria-label={`${tab.title} pages`} gap="7">
+    <Stack ref={navRef} as="nav" aria-label={`${tab.title} pages`} gap="7">
       {tab.items.map(group => (
         <div key={group.title}>
           <div className={classes.label}>
