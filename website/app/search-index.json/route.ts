@@ -19,6 +19,9 @@ export function GET() {
   )
 
   return Response.json(index, {
-    headers: { 'Cache-Control': 'public, max-age=3600' }
+    headers: {
+      'Cache-Control': 'public, max-age=3600',
+      'X-Robots-Tag': 'noindex'
+    }
   })
 }
