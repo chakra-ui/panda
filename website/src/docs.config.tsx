@@ -107,7 +107,6 @@ export const docsTabs: TabItem[] = [
           { title: 'Why Panda', url: 'getting-started' },
           { title: 'Thinking in Panda', url: 'thinking-in-panda' },
           { title: 'FAQs', url: 'faq' },
-          { title: 'Browser Support', url: 'browser-support' },
           { title: 'Upgrading to v2', url: 'upgrading-to-v2' }
         ]
       },
@@ -183,39 +182,33 @@ export const docsTabs: TabItem[] = [
     side: 'left',
     items: [
       {
-        title: 'Core Concepts',
+        title: 'Write styles',
         items: [
+          { title: 'Overview', url: 'overview' },
           { title: 'Writing Styles', url: 'writing-styles' },
           { title: 'Conditional Styles', url: 'conditional-styles' },
           { title: 'Responsive Design', url: 'responsive-design' },
-          { title: 'Merging Styles', url: 'merging-styles' },
-          { title: 'Global Styles', url: 'global-styles' },
-          { title: 'Cascade Layers', url: 'cascade-layers' },
+          { title: 'JSX Style Props', url: 'style-props' },
+          { title: 'Patterns', url: 'patterns' },
+          { title: 'Merging Styles', url: 'merging-styles' }
+        ]
+      },
+      {
+        title: 'Build & output',
+        items: [
           { title: 'Dynamic Styles', url: 'dynamic-styling' },
+          { title: 'Static CSS Generation', url: 'static' },
+          { title: 'Optimization', url: 'optimization' }
+        ]
+      },
+      {
+        title: 'Advanced',
+        items: [
+          { title: 'Cascade Layers', url: 'cascade-layers' },
+          { title: 'Global Styles', url: 'global-styles' },
           { title: 'Virtual Color', url: 'virtual-color' },
           { title: 'Color opacity modifier', url: 'color-opacity-modifier' },
-          { title: 'Patterns', url: 'patterns' }
-        ]
-      },
-      {
-        title: 'Styling APIs',
-        items: [
-          { title: 'JSX Style Props', url: 'style-props' },
-          { title: 'Styled System', url: 'styled-system' },
-          { title: 'The extend keyword', url: 'extend' },
           { title: 'View Transition', url: 'view-transition' }
-        ]
-      },
-      {
-        title: 'How It Works',
-        items: [
-          { title: 'How Panda Works', url: 'how-panda-works' },
-          { title: 'The Compiler Engine', url: 'compiler-engine' },
-          {
-            title: 'Performance & Optimization',
-            url: 'performance-optimization'
-          },
-          { title: 'Static CSS Generation', url: 'static' }
         ]
       }
     ]
@@ -287,6 +280,7 @@ export const docsTabs: TabItem[] = [
           { title: 'Conditions', url: 'conditions' },
           { title: 'Patterns', url: 'patterns' },
           { title: 'Presets', url: 'presets' },
+          { title: 'The extend keyword', url: 'extend' },
           { title: 'Hooks', url: 'hooks' },
           { title: 'Config Functions', url: 'config-functions' },
           { title: 'Ecosystem Plugins', url: 'ecosystem-plugins' }
@@ -368,6 +362,22 @@ export const docsTabs: TabItem[] = [
         ]
       },
       {
+        title: 'Styled System',
+        items: [
+          { title: 'Overview', url: 'styled-system' },
+          { title: 'css()', url: 'css' },
+          { title: 'cva()', url: 'cva' },
+          { title: 'sva()', url: 'sva' },
+          { title: 'cx()', url: 'cx' },
+          { title: 'viewTransition()', url: 'view-transition' },
+          { title: 'patterns/', url: 'patterns' },
+          { title: 'recipes/', url: 'recipes' },
+          { title: 'jsx/', url: 'jsx' },
+          { title: 'tokens/', url: 'tokens' },
+          { title: 'types/', url: 'types' }
+        ]
+      },
+      {
         title: 'Utility Reference',
         items: [
           { title: 'Background', url: 'background' },
@@ -404,7 +414,7 @@ export function getTab(key: string): TabItem | undefined {
 /** Tabs that jump straight into content instead of an index page. */
 const TAB_LANDING_HREF: Record<string, string> = {
   'get-started': '/docs',
-  styling: '/docs/styling/writing-styles',
+  styling: '/docs/styling/overview',
   recipes: '/docs/recipes/atomic-recipe',
   theming: '/docs/theming/tokens',
   'design-systems': '/docs/design-systems/setup'

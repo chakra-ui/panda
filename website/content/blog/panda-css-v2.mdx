@@ -111,7 +111,7 @@ One honest note: this crate emits and formats CSS, but it is not yet a full CSS 
 
 ### The same engine, native and in the browser
 
-Because the engine is plain Rust over Oxc, it compiles two ways. A native binding (`@pandacss/compiler`) powers the CLI, Vite, and PostCSS. A WebAssembly binding (`@pandacss/compiler-wasm`) runs the identical code in the browser — that's what the playground uses. The Wasm bundle is about 490 KB gzipped, and cross-file resolution works there too: editing a file in the playground pushes it into an in-memory filesystem the resolver reads immediately. For the first time, the playground and your build run the same extractor and produce the same CSS, because they are literally the same code. If you want the full architecture, the [compiler engine](/docs/styling/compiler-engine) docs go deeper.
+Because the engine is plain Rust over Oxc, it compiles two ways. A native binding (`@pandacss/compiler`) powers the CLI, Vite, and PostCSS. A WebAssembly binding (`@pandacss/compiler-wasm`) runs the identical code in the browser — that's what the playground uses. The Wasm bundle is about 490 KB gzipped, and cross-file resolution works there too: editing a file in the playground pushes it into an in-memory filesystem the resolver reads immediately. For the first time, the playground and your build run the same extractor and produce the same CSS, because they are literally the same code. If you want the mental model, see [Why Panda → How it works](/docs/get-started/getting-started#how-it-works).
 
 
 ## Faster

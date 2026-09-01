@@ -1,0 +1,53 @@
+---
+title: Styling
+description: Write styles next to your markup. Panda turns them into atomic CSS at build time.
+---
+
+Panda looks like CSS-in-JS at the call site. You write style objects in TypeScript, and the build emits plain atomic
+CSS. Nothing in the browser computes those styles.
+
+There is more than one way to author. Every path below produces the same kind of CSS.
+
+## Pick an API
+
+Start local. Promote only when the shape of the styles forces it.
+
+<Cards columns={2}>
+  <Card
+    title="css()"
+    href="/docs/styling/writing-styles"
+    description="Object styles on a className. The default for one-off and colocated styles."
+    cta="Write a style"
+  />
+  <Card
+    title="JSX Style Props"
+    href="/docs/styling/style-props"
+    description="Pass CSS as JSX props on styled.* elements when you want Chakra-like ergonomics."
+    cta="Use style props"
+  />
+  <Card
+    title="Patterns"
+    href="/docs/styling/patterns"
+    description="Layout primitives like stack, grid, and container, typed and responsive."
+    cta="Browse patterns"
+  />
+  <Card
+    title="Recipes"
+    href="/docs/recipes/atomic-recipe"
+    description="Variants and compound variants for components. Lives in the Recipes tab."
+    cta="Write a recipe"
+  />
+</Cards>
+
+## What makes it different
+
+- **Build-time extraction.** Panda reads your source for `css()`, style props, patterns, and recipes. Only what you
+  used becomes CSS.
+- **Atomic by default.** Each property and value is a shared class, so CSS grows with distinct styles, not with the
+  number of components.
+- **Conditions in the object.** `_hover`, `md`, `_dark` sit next to the rest of the styles. No separate media file.
+- **Tokens as vocabulary.** `blue.500`, `md`, `semibold` resolve from your theme and stay type-checked.
+
+The tradeoff: styles have to be statically analyzable. Values that only exist at runtime need an escape hatch. See
+[Why Panda → How it works](/docs/get-started/getting-started#how-it-works) for the two build steps, and
+[Styled System](/docs/reference/styled-system) for what you import from.

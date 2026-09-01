@@ -88,7 +88,7 @@ export default function DocsWelcomePage() {
           <Card
             icon={<LuPaintbrush />}
             title="Styling"
-            href="/docs/styling/writing-styles"
+            href="/docs/styling/overview"
             description="Write styles with css(), style props, conditions, and the styled factory — extracted at build time."
             cta="Write a style"
           />

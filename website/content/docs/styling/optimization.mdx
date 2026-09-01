@@ -1,0 +1,177 @@
+---
+title: Optimization
+description: Shrink the CSS Panda emits. Every optimize flag is opt-in.
+---
+
+Panda already extracts only the styles it finds in your source. The `optimize` block goes further: unused tokens,
+unused keyframes, unused compound variants, unused design-system modules.
+
+Nothing here changes how you write styles. All of it is off by default.
+
+## CSS cleanup
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  optimize: {
+    removeUnusedTokens: true,
+    removeUnusedKeyframes: true,
+    smartCompoundVariants: true,
+    treeshakeDesignSystem: true
+  }
+})
+```
+
+### Unused tokens
+
+By default the tokens layer ships every `--*` from your theme. With `removeUnusedTokens`, a variable stays only if
+something uses it: extracted styles, recipes, `staticCss`, `globalCss`, and `token()` / `token.var()` calls Panda can
+see.
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  optimize: { removeUnusedTokens: true }
+})
+```
+
+```ts
+import { token } from 'styled-system/tokens'
+
+// ✅ Panda sees this — `--colors-red` stays
+export const brand = token.var('colors.red')
+
+// ❌ Built at runtime — invisible; use staticCss or leave the flag off
+export const dynamic = token.var(path)
+```
+
+`staticCss.themes` always keeps those theme variables, so a themed sheet doesn't get pruned empty.
+
+### Unused keyframes
+
+Same idea for `@keyframes`. A name stays if `animation` or `animation-name` references it.
+
+### Compound variants
+
+Once a recipe is used, Panda emits **every** compound variant for that recipe. `smartCompoundVariants` emits only the
+compounds that match the variant combinations it extracted.
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  optimize: { smartCompoundVariants: true },
+  // Runtime-only variants need an explicit list (one variant key per rule)
+  staticCss: {
+    recipes: {
+      button: [{ size: ['sm', 'md'] }, { variant: ['solid'] }]
+    }
+  }
+})
+```
+
+See [Static CSS → Recipes](/docs/styling/static#recipes).
+
+### Design systems
+
+When you consume a library with `designSystem`, Panda hydrates every module from its build info.
+`treeshakeDesignSystem` scans your `include` files and hydrates only the exports you import.
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  designSystem: '@acme/ds',
+  optimize: { treeshakeDesignSystem: true }
+})
+```
+
+`import * as DS from '@acme/ds'`, a side-effect import, or `import()` still hydrates everything. If the app imports
+nothing from the package, nothing hydrates. See
+[Consume a design system](/docs/design-systems/consuming-a-design-system).
+
+### Older browsers
+
+This is compatibility, not size. v2 registers transform and filter variables with `@property` instead of a reset on
+every element. Safari &lt; 16.4 and Firefox &lt; 128 ignore `@property` and drop those utilities.
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  optimize: { propertyFallback: true }
+})
+```
+
+That also writes the defaults as plain declarations, for the variables your project uses.
+
+## Profile the build
+
+Don't guess. Add `--profile` to any Panda command:
+
+```bash
+panda --profile
+```
+
+That writes `.panda/trace.json` (open it in `chrome://tracing` or [ui.perfetto.dev](https://ui.perfetto.dev)) and a
+`.panda/timings.json` summary. See [Debugging](/docs/reference/debugging#performance-profiling).
+
+## Narrow include
+
+Extraction time scales with how many files [`include`](/docs/reference/config#include) matches. A file with no Panda
+import is cheap after parse, but it still gets parsed. Keep the glob tight: skip tests, Storybook, and generated output
+unless they call `css()` themselves.
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  include: ['./src/**/*.{ts,tsx}'],
+  exclude: ['./src/**/*.stories.tsx', './src/**/*.test.tsx']
+})
+```
+
+`panda debug` lists every file a run scanned.
+
+## Less staticCss
+
+[`staticCss`](/docs/styling/static) is the escape hatch for values Panda can't extract. It generates those classes
+unconditionally, so a wide `*` list grows both CSS and build time. Generate only the utilities and recipes you need.
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  // ❌ Ships every color utility
+  // staticCss: { css: [{ properties: { color: ['*'] } }] }
+
+  // ✅ Only the values you can't extract
+  staticCss: {
+    css: [{ properties: { color: ['red.500', 'blue.500'] } }]
+  }
+})
+```
+
+## Minify
+
+`minify: true` strips whitespace from the emitted CSS. Native minify is not yet a full LightningCSS replacement — check
+the result if you depended on that last few percent. Often enabled only in production. See
+[Environment-specific config](/docs/design-systems/environment-specific-config).
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  minify: process.env.NODE_ENV === 'production'
+})
+```
+
+## Editor speed
+
+If the IDE lags only inside `css()` calls or style props, that's TypeScript checking generated unions, not Panda
+running.
+
+[`strictTokens`](/docs/styling/writing-styles#stricttokens) is the knob. Off, properties accept a token **or** a
+string. On, they accept only the token union — safer, and a larger type for TypeScript to check.
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  strictTokens: true
+})
+```
+
+Try turning it off before assuming something else is wrong.
+
+## See also
+
+- [Config → optimize](/docs/reference/config#optimize) for the full option list.
+- [Static CSS Generation](/docs/styling/static) for pre-generating what extraction can't see.
+- [Debugging](/docs/reference/debugging) for `--profile` and `panda debug`.

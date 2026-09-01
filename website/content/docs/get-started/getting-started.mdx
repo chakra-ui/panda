@@ -75,6 +75,33 @@ There is more than one way to write it. Every tab below produces the same atomic
   </Tab>
 </Tabs>
 
+## How it works
+
+Two steps at build time. Nothing in the browser computes styles.
+
+```
+  panda.config.ts                 css({ color: 'blue.500' })
+         │                                    │
+         ▼                                    ▼
+      codegen                              extract
+         │                                    │
+         ▼                                    ▼
+  styled-system/                         styles.css
+  (css, cva, …)                     .color_blue\.500 { … }
+         │                                    │
+         └────────────────┬───────────────────┘
+                          ▼
+                       browser
+              class name string + static CSS
+```
+
+1. **Codegen** reads your config and writes the `styled-system` package you import from.
+2. **Extract** scans your source for those calls and emits only the CSS you used.
+
+Values have to be visible in source. If a style only exists at runtime, see
+[Dynamic Styles](/docs/styling/dynamic-styling). Folder details:
+[Styled System](/docs/reference/styled-system).
+
 ## What you get
 
 - **Static analysis:** Panda parses your styles at build time and generates plain CSS files that work in any
@@ -86,8 +113,6 @@ There is more than one way to write it. Every tab below produces the same atomic
 - **Developer experience:** recipes, patterns, design tokens, and JSX style props give you a consistent way to author
   styles without hand-rolling your own system.
 - **Modern CSS:** generated styles use cascade layers, CSS variables, and modern selectors like `:where` and `:is`.
-
-
 
 ## Where to go next
 
