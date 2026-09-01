@@ -76,7 +76,14 @@ type SkipNavContentProps = Omit<React.ComponentProps<'div'>, 'ref' | 'children'>
 
 export const SkipNavContent = forwardRef<HTMLDivElement, SkipNavContentProps>(
   function ({ id, ...props }, forwardedRef) {
-    return <div {...props} ref={forwardedRef} id={id || DEFAULT_ID} />
+    return (
+      <div
+        {...props}
+        ref={forwardedRef}
+        id={id || DEFAULT_ID}
+        data-scroll-target
+      />
+    )
   }
 )
 
