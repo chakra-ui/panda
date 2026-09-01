@@ -91,7 +91,7 @@ export default async function DocsPage(props: DocsPageProps) {
           top="calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height))"
           height="calc(100vh - var(--navbar-height) - var(--banner-height) - var(--tabbar-height))"
         >
-          <Box overflowY="auto" height="100%" className={cx('scroll-area', sidebarScroll)} py="4" px="6">
+          <Box overflowY="auto" height="100%" className={cx('scroll-area', sidebarScroll)} pt="10" pb="4" px="6">
             <Sidebar slug={slug} />
           </Box>
         </Box>

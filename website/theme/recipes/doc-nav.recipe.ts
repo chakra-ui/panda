@@ -59,7 +59,9 @@ export const docNavRecipe = defineSlotRecipe({
           alignItems: 'center',
           gap: '2',
           px: '0',
-          py: '1.5',
+          // No top padding: the first label has to sit on the same line as the
+          // breadcrumb, and `gap` already separates the groups below it.
+          pb: '1.5',
           mb: '2',
           textStyle: 'sm',
           fontWeight: 'semibold',

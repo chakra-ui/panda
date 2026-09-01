@@ -49,7 +49,8 @@ export default function DocsWelcomePage() {
           overflowY="auto"
           height="100%"
           className={cx('scroll-area', sidebarScroll)}
-          py="4"
+          pt="10"
+          pb="4"
           px="6"
         >
           <Sidebar tabKey="get-started" />
