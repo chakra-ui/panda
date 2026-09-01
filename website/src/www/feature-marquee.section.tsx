@@ -16,7 +16,7 @@ const features = [
 
 export const FeatureMarqueeSection = () => {
   return (
-    <Marquee.Root className={marquee()} speed={40} spacing="0.5rem">
+    <Marquee.Root className={marquee()} speed={40} spacing="0.5rem" autoFill>
       <Marquee.Viewport>
         <Marquee.Content>
           {features.map(feature => (
