@@ -88,7 +88,7 @@ export const HeroSection = () => {
                   Get Started
                 </ButtonLink>
                 <ButtonLink
-                  href="/guides"
+                  href="/docs/get-started/framework-guides"
                   size="lg"
                   color="black"
                   variant="funky"

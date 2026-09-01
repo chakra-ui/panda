@@ -20,7 +20,6 @@ export const footerColumns: FooterColumn[] = [
     title: 'Learn',
     links: [
       { title: 'Documentation', href: '/docs' },
-      { title: 'Guides', href: '/guides' },
       { title: 'Reference', href: '/docs/reference/cli' },
       { title: 'Blog', href: '/blog' }
     ]
@@ -32,7 +31,6 @@ export const footerColumns: FooterColumn[] = [
       { title: 'Editor & IDE', href: '/docs/get-started/editor-tooling' },
       { title: 'MCP server', href: '/docs/get-started/mcp-server' },
       { title: 'Studio', href: '/docs/theming/studio' },
-      { title: 'Ecosystem', href: '/ecosystem' },
       { title: 'Playground', href: 'https://play.panda-css.com/' }
     ]
   },

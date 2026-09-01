@@ -13,6 +13,16 @@ const config = {
   async redirects() {
     return [
       {
+        source: '/guides',
+        destination: '/docs/get-started/framework-guides',
+        permanent: true
+      },
+      {
+        source: '/ecosystem',
+        destination: '/docs',
+        permanent: true
+      },
+      {
         source: '/docs/styling/template-literals',
         destination: '/docs/get-started/styled-components',
         permanent: true
