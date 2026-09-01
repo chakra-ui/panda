@@ -21,17 +21,18 @@ const styles = cva({
   },
   variants: {
     tag: {
-      h1: { mt: '2', fontSize: '4xl', fontWeight: 'bold' },
+      h1: { mt: '2', fontSize: { base: '3xl', md: '4xl' }, fontWeight: 'bold' },
       h2: {
         mt: '16',
         mb: '6',
         pb: '3',
-        fontSize: '3xl',
+        fontSize: { base: '2xl', md: '3xl' },
         borderBottomWidth: '1px',
         borderColor: 'border'
       },
-      h3: { mt: '10', fontSize: '2xl' },
-      h4: { mt: '8', fontSize: 'xl' },
+      // h3/h4 step down with h2 so the hierarchy still reads on a phone.
+      h3: { mt: '10', fontSize: { base: 'xl', md: '2xl' } },
+      h4: { mt: '8', fontSize: { base: 'lg', md: 'xl' } },
       h5: { mt: '8', fontSize: 'lg' },
       h6: { mt: '8', fontSize: 'base' }
     }
