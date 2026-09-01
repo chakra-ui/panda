@@ -64,7 +64,7 @@ const CodePanel = (props: {
       >
         {title}
       </panda.span>
-      <panda.div flexShrink="0">
+      <panda.div minW="0" overflowX="auto" className="scroll-area">
         <Code
           lang="tsx"
           style={{ borderRadius: token('radii.xl'), margin: '0' }}
@@ -120,10 +120,10 @@ export const DesignTokensSection = () => {
         </Stack>
 
         <Stack direction={{ base: 'column', lg: 'row' }} gap="10">
-          <CodePanel title="Core Tokens" className={css({ flex: '40%' })}>
+          <CodePanel title="Core Tokens" className={css({ flex: '40%', minW: '0' })}>
             {codeSnippets.coreTokens}
           </CodePanel>
-          <CodePanel title="Semantic Tokens" className={css({ flex: '60%' })}>
+          <CodePanel title="Semantic Tokens" className={css({ flex: '60%', minW: '0' })}>
             {codeSnippets.semanticTokens}
           </CodePanel>
         </Stack>
