@@ -1,0 +1,67 @@
+---
+title: Styled System
+description: What’s inside the generated styled-system folder, and where each entrypoint is documented.
+---
+
+`styled-system` is the package Panda codegen writes for your project (path from
+[`config.outdir`](/docs/reference/config#outdir)). You import `css`, patterns, recipes, and JSX helpers from it.
+
+It is a **build artifact**, not a style engine. The helpers map style objects to class name strings. The CSS itself
+comes from extraction. Don't edit these files by hand; regenerate with `panda codegen` or `panda build`.
+
+For the mental model (codegen vs extraction), see
+[Why Panda → How it works](/docs/get-started/getting-started#how-it-works).
+
+## Folder layout
+
+Exact files depend on your config (`jsxFramework`, recipes, patterns, and so on).
+
+<FileTree>
+  <FileTree.Folder name="styled-system" defaultOpen>
+    <FileTree.Folder name="css" defaultOpen>
+      <FileTree.File name="css.ts" />
+      <FileTree.File name="cva.ts" />
+      <FileTree.File name="sva.ts" />
+      <FileTree.File name="cx.ts" />
+      <FileTree.File name="view-transition.ts" />
+      <FileTree.File name="index.ts" />
+    </FileTree.Folder>
+    <FileTree.Folder name="jsx" />
+    <FileTree.Folder name="patterns" />
+    <FileTree.Folder name="recipes" />
+    <FileTree.Folder name="tokens" />
+    <FileTree.Folder name="types" />
+    <FileTree.File name="helpers.js" />
+    <FileTree.File name="styles.css" />
+  </FileTree.Folder>
+</FileTree>
+
+## Entrypoints
+
+| Path | Page | Role |
+| ---- | ---- | ---- |
+| `css/css` | [`css()`](/docs/reference/css) | Style object → class name |
+| `css/cva` | [`cva()`](/docs/reference/cva) | Atomic recipes (colocated variants) |
+| `css/sva` | [`sva()`](/docs/reference/sva) | Slot recipes (multi-part) |
+| `css/cx` | [`cx()`](/docs/reference/cx) | Join class name strings |
+| `css/view-transition` | [`viewTransition()`](/docs/reference/view-transition) | Shared View Transition classes |
+| `patterns/` | [patterns](/docs/reference/patterns) | Layout primitive functions |
+| `recipes/` | [recipes](/docs/reference/recipes) | Config recipes from your theme |
+| `jsx/` | [jsx](/docs/reference/jsx) | `styled` factory and JSX patterns |
+| `tokens/` | [tokens](/docs/reference/tokens) | `token()` / `token.var()` in JS |
+| `types/` | [types](/docs/reference/types) | Generated TypeScript types |
+
+Root files: `helpers.js` (shared runtime helpers) and `styles.css` (extracted atomic CSS).
+
+## Generation and commit policy
+
+- **Written by** `panda`, `panda build`, or `panda codegen` from your resolved config.
+- **Not meant to be edited.** Customizations belong in `panda.config.ts` and your source files.
+- **Usually gitignored.** Some design-system publish flows commit it on purpose; see
+  [Ship the styled-system vs the CSS](/docs/design-systems/ship-styled-system).
+
+## See also
+
+- [Why Panda → How it works](/docs/get-started/getting-started#how-it-works)
+- [CLI](/docs/reference/cli) — `panda codegen`, `panda build`, `panda cssgen`
+- [Config `outdir`](/docs/reference/config#outdir)

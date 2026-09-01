@@ -1,0 +1,45 @@
+---
+title: tokens/
+description: The tokens/ folder — token() and token.var() for reading theme values in JavaScript.
+---
+
+**Folder:** `styled-system/tokens/`  
+**Import:** `import { token } from '../styled-system/tokens'`
+
+Usually a single `tokens/index` module. Use it when you need a resolved token value (or CSS variable) **outside** a
+style object — charts, canvas, third-party APIs, inline styles.
+
+```ts
+import { token } from '../styled-system/tokens'
+
+token('colors.blue.500')
+// => "var(--colors-blue-500)" (or the raw value, depending on usage)
+
+token.var('colors.blue.500')
+// => "var(--colors-blue-500)"
+```
+
+Both accept an optional fallback:
+
+```ts
+token('colors.brand', '#0af')
+token.var('colors.brand', '#0af')
+```
+
+## Prefer style objects first
+
+For normal UI, put tokens in [`css()`](/docs/reference/css) or style props (`color: 'blue.500'`). Panda resolves them
+in the generated CSS. Reach for `token()` when you must read the value in JS.
+
+Inside style strings you can also use the `token()` **string** helper or `{path.to.token}` reference syntax; that is
+documented under [Token Usage](/docs/theming/usage), not this generated module.
+
+## Defining tokens
+
+Theme authoring lives under [Theming → Tokens](/docs/theming/tokens). This page is only the generated runtime reader.
+
+## See also
+
+- [Token Usage](/docs/theming/usage)
+- [Tokens](/docs/theming/tokens)
+- [Styled System overview](/docs/reference/styled-system)

@@ -1,0 +1,36 @@
+---
+title: cx()
+description: The css/cx entrypoint — join class name strings, skipping falsy values.
+---
+
+**File:** `styled-system/css/cx`  
+**Import:** `import { cx } from '../styled-system/css'`
+
+`cx()` concatenates class names into one string. Falsy values (`false`, `null`, `undefined`) are skipped, so
+conditional classes stay readable.
+
+```ts
+import { css, cx } from '../styled-system/css'
+
+const base = css({ display: 'flex', gap: '2' })
+const active = css({ bg: 'blue.500', color: 'white' })
+
+cx(base, isActive && active, className)
+```
+
+It does **not** merge style objects or resolve conflicts between utilities. For that, pass multiple arguments to
+[`css()`](/docs/reference/css) or use [Merging Styles](/docs/styling/merging-styles).
+
+```ts
+// ❌ cx does not merge style objects
+cx({ color: 'red' }, { color: 'blue' })
+
+// ✅ merge with css, then join other class strings with cx
+cx(css({ color: 'red' }, { color: 'blue' }), otherClassName)
+```
+
+## See also
+
+- [css()](/docs/reference/css)
+- [Merging Styles](/docs/styling/merging-styles)
+- [Styled System overview](/docs/reference/styled-system)

@@ -1,0 +1,237 @@
+---
+title: types/
+description: The types/ folder — generated TypeScript types for style objects, tokens, recipes, patterns, and JSX.
+---
+
+**Folder:** `styled-system/types/`  
+**Import:** `import type { … } from '../styled-system/types'`
+
+Codegen emits TypeScript that mirrors your theme, utilities, conditions, patterns, and recipes. Use these when wrapping
+Panda APIs in your own components or libraries.
+
+Exact unions (`ColorToken`, breakpoint keys, …) come from **your** config. The shapes below are always there; the
+member lists grow with your tokens and recipes.
+
+Some helpers are also re-exported from `styled-system/css` and `styled-system/jsx` for convenience. The definitions
+still live under `types/`.
+
+## Files
+
+| File | What it exports |
+| ---- | --------------- |
+| `types/system` | Style objects, conditions, CSS property value types |
+| `types/tokens` | Token path unions for `token()` |
+| `types/recipe` | Recipe / slot-recipe creators and variant helpers |
+| `types/pattern` | Pattern config shapes |
+| `types/jsx` | Factory component props (`HTMLStyledProps`, …) |
+| `types/index` | Barrel re-exports |
+
+## Style objects — `types/system`
+
+### `SystemStyleObject`
+
+The type of a Panda style object: utilities, conditions, nested selectors, and CSS variables.
+
+```ts
+import type { SystemStyleObject } from '../styled-system/types'
+
+const styles: SystemStyleObject = {
+  display: 'flex',
+  gap: '4',
+  color: 'blue.500',
+  _hover: { color: 'blue.600' },
+  md: { px: '6' },
+  '& > span': { fontWeight: 'semibold' }
+}
+```
+
+Use this to type shared style constants, function args, or anything you later pass to [`css()`](/docs/reference/css).
+
+### `JsxStyleProps`
+
+`SystemStyleObject` plus an optional `css` prop (for nesting another style object on JSX components).
+
+```ts
+import type { JsxStyleProps } from '../styled-system/types'
+
+interface IconProps {
+  color?: JsxStyleProps['color']
+  size?: JsxStyleProps['width']
+}
+```
+
+### `ConditionalValue<T>`
+
+A value that may be plain, responsive/conditional, or nested under condition keys (`_hover`, `md`, …).
+
+```ts
+import type { ConditionalValue } from '../styled-system/types'
+
+type Gap = ConditionalValue<'1' | '2' | '4'>
+// '1' | '2' | '4' | { base?: ..., md?: ..., _hover?: ... } | ...
+```
+
+### `Condition` / `Conditions`
+
+`Condition` is the union of every condition key in your config (`_hover`, `md`, `_dark`, …). `Conditions` maps each
+key to its CSS selector string. Useful when building custom utilities or typing condition maps.
+
+## Tokens — `types/tokens`
+
+Generated from your theme. Typical exports:
+
+| Type | Role |
+| ---- | ---- |
+| `Tokens` | Interface of category → token name unions (`colors`, `spacing`, …) |
+| `ColorToken`, `SpacingToken`, `SizeToken`, … | Per-category name unions |
+| `Token` | Dot-path union, e.g. `` `colors.${ColorToken}` `` |
+| `TokenPath` | `Token` plus color opacity paths (`colors.blue.500/50`) |
+| `ColorPalette` | Virtual / palette names for `colorPalette` |
+| `TokenValue<'colors'>` | Resolves to the `ColorToken` union |
+
+```ts
+import type { TokenPath, ColorToken } from '../styled-system/types'
+import { token } from '../styled-system/tokens'
+
+function swatch(path: TokenPath) {
+  return token(path)
+}
+
+const brand: ColorToken = 'blue.500'
+swatch('colors.blue.500')
+swatch('colors.blue.500/50') // opacity modifier
+```
+
+Runtime reader: [`tokens/`](/docs/reference/tokens). Authoring tokens: [Theming → Tokens](/docs/theming/tokens).
+
+## Recipes — `types/recipe`
+
+### Inferring variants from `cva` / `sva`
+
+These are the types you reach for most often. They are re-exported from `styled-system/css`.
+
+| Type | Result |
+| ---- | ------ |
+| `RecipeVariantProps<typeof recipe>` | Optional variant props for JSX (`size?: 'sm' \| 'md'`) |
+| `RecipeVariant<typeof recipe>` | Required variant map (`size: 'sm' \| 'md'`) |
+
+```ts
+import { cva, type RecipeVariantProps, type RecipeVariant } from '../styled-system/css'
+
+const button = cva({
+  base: { rounded: 'md' },
+  variants: {
+    size: {
+      sm: { px: '2', py: '1' },
+      md: { px: '4', py: '2' }
+    }
+  }
+})
+
+type ButtonProps = RecipeVariantProps<typeof button>
+// { size?: 'sm' | 'md' | undefined }
+
+type ButtonVariants = RecipeVariant<typeof button>
+// { size: 'sm' | 'md' }
+```
+
+Same helpers work with [`sva()`](/docs/reference/sva).
+
+### Config / definition shapes
+
+Used when typing recipe configs or building abstractions on top of Panda:
+
+| Type | Role |
+| ---- | ---- |
+| `RecipeDefinition<T>` | Shape passed to `cva` / `defineRecipe` |
+| `SlotRecipeDefinition` | Shape for `sva` / `defineSlotRecipe` |
+| `RecipeSelection<T>` | Partial variant selection object |
+| `RecipeRuntimeFn` | Runtime recipe function (`__type`, `raw`, `splitVariantProps`, …) |
+| `SlotRecipeRuntimeFn` | Runtime slot recipe (returns per-slot class map) |
+| `RecipeCreatorFn` / `SlotRecipeCreatorFn` | Types of `cva` / `sva` themselves |
+
+```ts
+import type { RecipeDefinition } from '../styled-system/types'
+
+const shared: RecipeDefinition<{
+  size: { sm: {}; md: {} }
+}> = {
+  base: { display: 'inline-flex' },
+  variants: {
+    size: {
+      sm: { px: '2' },
+      md: { px: '4' }
+    }
+  }
+}
+```
+
+## Patterns — `types/pattern`
+
+| Type | Role |
+| ---- | ---- |
+| `PatternConfig<Props>` | Config shape for `definePattern` |
+| `PatternPropertyValue` / `PatternTokenValue` | Property and conditional value helpers |
+| `PatternHelpers` | Helpers passed to a pattern `transform` (`map`, `isCssUnit`, …) |
+
+For component props, prefer the generated pattern prop types from `jsx/` (for example `StackProps`) or the pattern
+function’s parameters. See [`patterns/`](/docs/reference/patterns) and [`jsx/`](/docs/reference/jsx).
+
+## JSX — `types/jsx`
+
+Generated when [`jsxFramework`](/docs/reference/config#jsxframework) is set. Names follow your `jsxFactory` (often
+`styled` → `HTMLStyledProps`; this docs site uses `panda` → `HTMLPandaProps`). Import from `styled-system/jsx` in app
+code; the definitions still live under `types/jsx`.
+
+| Type | Role |
+| ---- | ---- |
+| `HTMLStyledProps<'button'>` | Native element props + style props + `as` / `unstyled` |
+| `JsxStyleProps` | Style props only (also on `types/system`) |
+| `StyledVariantProps<typeof Comp>` | Variants from a `styled(component, recipe)` result |
+| `PandaComponent` / `JsxFactory` | Factory function / component instance types |
+| `ComponentProps<T>` | Props of an intrinsic or custom element |
+| `AsProps` / `UnstyledProps` / `DataAttrs` | `as`, `unstyled`, and `data-*` typing |
+
+```ts
+import { styled } from '../styled-system/jsx'
+import type { HTMLStyledProps, StyledVariantProps } from '../styled-system/jsx'
+
+type BoxProps = HTMLStyledProps<'div'>
+
+const Button = styled('button', {
+  base: { rounded: 'md' },
+  variants: {
+    visual: {
+      solid: { bg: 'blue.500', color: 'white' },
+      outline: { borderWidth: '1px' }
+    }
+  }
+})
+
+type ButtonVariantProps = StyledVariantProps<typeof Button>
+// { visual?: 'solid' | 'outline' | undefined }
+```
+
+Typing a custom component that accepts style props:
+
+```tsx
+import { css } from '../styled-system/css'
+import { splitCssProps } from '../styled-system/jsx'
+import type { HTMLStyledProps } from '../styled-system/jsx'
+
+export function Card(props: HTMLStyledProps<'div'>) {
+  const [cssProps, restProps] = splitCssProps(props)
+  const { css: cssProp, ...styleProps } = cssProps
+  const className = css({ rounded: 'lg', p: '4' }, styleProps, cssProp)
+  return <div {...restProps} className={className} />
+}
+```
+
+More JSX typing patterns: [JSX Style Props → TypeScript](/docs/styling/style-props#typescript).
+
+## See also
+
+- [css()](/docs/reference/css) · [cva()](/docs/reference/cva) · [jsx/](/docs/reference/jsx) · [tokens/](/docs/reference/tokens)
+- [JSX Style Props](/docs/styling/style-props#typescript)
+- [Atomic Recipe → TypeScript](/docs/recipes/atomic-recipe#typescript-guide)
+- [Styled System overview](/docs/reference/styled-system)

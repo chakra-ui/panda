@@ -1,0 +1,59 @@
+---
+title: jsx/
+description: The jsx/ folder — styled factory, JSX patterns, and recipe context helpers.
+---
+
+**Folder:** `styled-system/jsx/`  
+**Import:** `import { styled, Stack } from '../styled-system/jsx'`
+
+Generated only when [`jsxFramework`](/docs/reference/config#jsxframework) is set (for example `'react'`). Without
+that flag, this folder is absent and style props are not extracted from JSX.
+
+## Key files
+
+| File | Export | Role |
+| ---- | ------ | ---- |
+| `jsx/factory` | `styled` | `styled.div`, `styled('button')`, factory API |
+| `jsx/<pattern>` | `Stack`, `Grid`, … | JSX form of each pattern |
+| `jsx/create-recipe-context` | `createRecipeContext` | Context for a single-element recipe |
+| `jsx/create-slot-recipe-context` | `createSlotRecipeContext` | Context for a slot recipe |
+| `jsx/index` | barrel | Re-exports factory, patterns, helpers |
+
+## Style props
+
+```tsx
+import { styled } from '../styled-system/jsx'
+
+export function Button({ children }: { children: React.ReactNode }) {
+  return (
+    <styled.button bg="blue.500" color="white" px="4" py="2" rounded="md">
+      {children}
+    </styled.button>
+  )
+}
+```
+
+Same atomic CSS as [`css()`](/docs/reference/css); different authoring surface.
+
+## JSX patterns
+
+```tsx
+import { Stack, Circle } from '../styled-system/jsx'
+
+<Stack gap="4" direction="row">
+  <Circle size="12" />
+</Stack>
+```
+
+Function form lives under [`patterns/`](/docs/reference/patterns).
+
+## Recipe context
+
+Use `createRecipeContext` / `createSlotRecipeContext` to push recipe variants through a compound component tree
+(headless UI, design-system packages). Guides: [JSX Recipes](/docs/recipes/jsx-recipes-overview).
+
+## See also
+
+- [JSX Style Props](/docs/styling/style-props)
+- [patterns/](/docs/reference/patterns)
+- [Styled System overview](/docs/reference/styled-system)

@@ -1,0 +1,60 @@
+---
+title: css()
+description: The css/css entrypoint — turn a style object into a class name string.
+---
+
+**File:** `styled-system/css/css`  
+**Import:** `import { css } from '../styled-system/css'`
+
+`css()` is the core styled-system helper. Pass a style object (or several to merge); get back a class name string.
+Panda extracts those styles at build time and emits atomic CSS. At runtime, `css()` only resolves the class names.
+
+```ts
+import { css } from '../styled-system/css'
+
+const className = css({
+  bg: 'blue.500',
+  color: 'white',
+  px: '4',
+  py: '2',
+  rounded: 'md',
+  _hover: { bg: 'blue.600' },
+  md: { px: '5' }
+})
+// => "bg_blue.500 text_white px_4 py_2 rounded_md ..."
+```
+
+```tsx
+<button className={className}>Save</button>
+```
+
+## Merging styles
+
+Pass multiple arguments (or arrays). Later styles override earlier ones for the same property:
+
+```ts
+css({ color: 'red.500' }, { color: 'blue.500' }) // blue wins
+css([{ color: 'red.500' }, condition && { fontWeight: 'bold' }])
+```
+
+## `css.raw`
+
+`css.raw()` returns the merged style object instead of a class name. Use it when you need to pass styles into
+another helper (`cva`, a pattern, or a custom component) without generating a class yet.
+
+```ts
+const base = css.raw({ display: 'flex', gap: '2' })
+const styles = css(base, { p: '4' })
+```
+
+## What it is not
+
+`css()` does not insert `<style>` tags, read theme context, or recompute CSS on render. The stylesheet already
+exists from extraction. See [Why Panda → How it works](/docs/get-started/getting-started#how-it-works).
+
+## See also
+
+- [Writing Styles](/docs/styling/writing-styles) — object syntax, shorthands, nesting
+- [Merging Styles](/docs/styling/merging-styles) — `css.raw`, recipes, overrides
+- [Conditional Styles](/docs/styling/conditional-styles) — `_hover`, breakpoints, data attributes
+- [Styled System overview](/docs/reference/styled-system)
