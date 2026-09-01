@@ -58,7 +58,7 @@ export default function DocsWelcomePage() {
         as="article"
         flex="1"
         minW="0"
-        maxW="64rem"
+        maxW="4xl"
         mx="auto"
         px="6"
         pt="10"
@@ -89,28 +89,28 @@ export default function DocsWelcomePage() {
             icon={<LuPaintbrush />}
             title="Styling"
             href="/docs/styling/writing-styles"
-            description="css(), style props, conditions and the styled factory."
+            description="Write styles with css(), style props, conditions, and the styled factory — extracted at build time."
             cta="Write a style"
           />
           <Card
             icon={<LuLayers />}
             title="Recipes"
             href="/docs/recipes/atomic-recipe"
-            description="Component styles with variants, compiled at build time."
+            description="Define component styles with variants and compound variants, compiled to atomic CSS."
             cta="Write a recipe"
           />
           <Card
             icon={<LuPalette />}
             title="Theming"
             href="/docs/theming/tokens"
-            description="Design tokens, semantic tokens and multiple themes."
+            description="Set up design tokens, semantic tokens, and multiple themes that stay type-safe end to end."
             cta="Define tokens"
           />
           <Card
             icon={<LuBlocks />}
             title="Design Systems"
             href="/docs/design-systems/setup"
-            description="Presets, component libraries and shipping to npm."
+            description="Ship presets and component libraries to npm with a typed system consumers can extend."
             cta="Build a system"
           />
         </Cards>
@@ -137,13 +137,13 @@ export default function DocsWelcomePage() {
             icon={<LuDownload />}
             title="Install Panda"
             href="/docs/get-started/cli"
-            description="Every install path, for every framework."
+            description="Pick your framework and install path — CLI, PostCSS, or bundler plugin."
           />
           <Card
             icon={<LuZap />}
             title="Thinking in Panda"
             href="/docs/get-started/thinking-in-panda"
-            description="The mental model, in about ten minutes."
+            description="The mental model behind tokens, recipes, and build-time styles, in about ten minutes."
           />
         </Cards>
       </Box>

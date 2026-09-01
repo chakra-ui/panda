@@ -4,7 +4,7 @@ export const docCardRecipe = defineSlotRecipe({
   className: 'docCard',
   slots: ['root', 'icon', 'kicker', 'title', 'body', 'cta'],
   description:
-    'A navigation card. Hover changes border and background only, never the box.',
+    'A navigation card. Hover softens the background only — no lift or border shift.',
   jsx: ['DocCard'],
   base: {
     root: {
@@ -18,9 +18,9 @@ export const docCardRecipe = defineSlotRecipe({
       borderColor: 'border',
       color: 'fg',
       textDecoration: 'none',
-      transitionProperty: 'background-color, border-color',
+      transitionProperty: 'background-color',
       transitionDuration: '150ms',
-      _hover: { borderColor: 'fg.subtle', bg: 'bg.subtle' },
+      _hover: { bg: 'bg.subtle' },
       _focusVisible: {
         outline: '2px solid',
         outlineColor: 'blue.500',

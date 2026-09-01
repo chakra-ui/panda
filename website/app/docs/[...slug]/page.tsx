@@ -91,7 +91,7 @@ export default async function DocsPage(props: DocsPageProps) {
           as="article"
           flex="1"
           minW="0"
-          maxW="52rem"
+          maxW="4xl"
           mx="auto"
           px="6"
           pt="10"
