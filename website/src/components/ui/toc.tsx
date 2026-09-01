@@ -1,6 +1,6 @@
 'use client'
 
-import { Docs } from '.velite'
+import type { TocEntry } from '@/lib/toc'
 import { css, cx } from '@/styled-system/css'
 import { docNav } from '@/styled-system/recipes'
 import Link from 'next/link'
@@ -76,7 +76,7 @@ function useTocState(ids: string[]) {
 }
 
 export interface TocProps {
-  data: Docs['toc']
+  data: TocEntry[]
   /** The sheet renders its own header, so it hides this one. */
   hideTitle?: boolean
 }

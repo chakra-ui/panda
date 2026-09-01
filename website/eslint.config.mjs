@@ -15,7 +15,7 @@ const eslintConfig = [
       'yarn.lock',
       'src/App.tsx',
       '.next/**',
-      '.velite/**',
+      '.source/**',
       'next-env.d.ts',
     ],
   },

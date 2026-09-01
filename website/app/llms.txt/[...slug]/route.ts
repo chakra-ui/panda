@@ -1,5 +1,5 @@
+import { docsSource, getMarkdown, type DocPage } from '@/lib/source'
 import { notFound } from 'next/navigation'
-import { docs } from '.velite'
 
 interface RouteContext {
   params: Promise<{ slug: string[] }>
@@ -7,35 +7,26 @@ interface RouteContext {
 
 export const dynamic = 'force-static'
 
-export async function generateStaticParams() {
-  const categories = [
-    'get-started',
-    'styling',
-    'theming',
-    'design-systems',
-    'reference'
-  ]
-  
-  // Generate params for category pages
-  const categoryParams = categories.map(category => ({
+const categoryTitles: Record<string, string> = {
+  'get-started': 'Panda CSS Get Started',
+  styling: 'Panda CSS Styling',
+  theming: 'Panda CSS Theming',
+  'design-systems': 'Panda CSS Design Systems',
+  reference: 'Panda CSS Reference'
+}
+
+export function generateStaticParams() {
+  const categoryParams = Object.keys(categoryTitles).map(category => ({
     slug: [category]
   }))
-  
-  // Generate params for individual doc pages
-  const docParams = docs.map(doc => {
-    const slugParts = doc.slug.replace('docs/', '').split('/')
-    return {
-      slug: slugParts
-    }
-  })
-  
-  return [...categoryParams, ...docParams]
+
+  return [...categoryParams, ...docsSource.generateParams()]
 }
 
 export async function GET(request: Request, context: RouteContext) {
   const params = await context.params
   let slugParts = params.slug
-  
+
   // Remove .mdx extension from the last part if present
   const lastPart = slugParts[slugParts.length - 1]
   if (lastPart.endsWith('.mdx')) {
@@ -44,19 +35,17 @@ export async function GET(request: Request, context: RouteContext) {
       lastPart.slice(0, -4) // Remove .mdx
     ]
   }
-  
+
   // Check if this is a specific doc request (e.g., /installation/redwood)
   if (slugParts.length > 1) {
-    const fullSlug = `docs/${slugParts.join('/')}`
-    const doc = docs.find(d => d.slug === fullSlug)
-    
-    if (!doc) {
+    const page = docsSource.getPage(slugParts)
+
+    if (!page) {
       notFound()
     }
-    
-    // Generate content for a single doc
-    const content = generateSingleDocContent(doc)
-    
+
+    const content = await generateSingleDocContent(page)
+
     return new Response(content, {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
@@ -64,24 +53,20 @@ export async function GET(request: Request, context: RouteContext) {
       }
     })
   }
-  
+
   // Category level request (e.g., /installation)
   const category = slugParts[0]
 
-  // Filter docs by category
-  const categoryDocs = docs.filter(doc => 
-    doc.slug.startsWith(`docs/${category}`)
-  )
+  const categoryPages = docsSource
+    .getPages()
+    .filter(page => page.slugs[0] === category)
+    .sort((a, b) => a.url.localeCompare(b.url))
 
-  if (categoryDocs.length === 0) {
+  if (categoryPages.length === 0) {
     notFound()
   }
 
-  // Sort docs by slug for consistent ordering
-  const sortedDocs = categoryDocs.sort((a, b) => a.slug.localeCompare(b.slug))
-
-  // Build the content
-  const content = generateCategoryContent(category, sortedDocs)
+  const content = await generateCategoryContent(category, categoryPages)
 
   return new Response(content, {
     headers: {
@@ -91,12 +76,12 @@ export async function GET(request: Request, context: RouteContext) {
   })
 }
 
-function generateSingleDocContent(doc: typeof import('.velite').docs[0]) {
-  return `# ${doc.title}
+async function generateSingleDocContent(page: DocPage) {
+  return `# ${page.data.title}
 
-${doc.description || ''}
+${page.data.description || ''}
 
-${doc.llm}
+${await getMarkdown(page)}
 
 ---
 
@@ -104,29 +89,22 @@ _This content is automatically generated from the official Panda CSS documentati
 `
 }
 
-function generateCategoryContent(category: string, docs: typeof import('.velite').docs) {
-  const categoryTitles: Record<string, string> = {
-    'get-started': 'Panda CSS Get Started',
-    styling: 'Panda CSS Styling',
-    theming: 'Panda CSS Theming',
-    'design-systems': 'Panda CSS Design Systems',
-    reference: 'Panda CSS Reference'
-  }
+async function generateCategoryContent(category: string, pages: DocPage[]) {
+  const sections = (
+    await Promise.all(
+      pages.map(async page => {
+        const headerLevel = '#'.repeat(Math.min(page.slugs.length, 6))
 
-  const sections = docs.map(doc => {
-    const title = doc.title
-    const slug = doc.slug.replace('docs/', '')
-    const level = slug.split('/').length - 1
-    const headerLevel = '#'.repeat(Math.min(level + 1, 6))
-    
-    return `
-${headerLevel} ${title}
+        return `
+${headerLevel} ${page.data.title}
 
-${doc.description || ''}
+${page.data.description || ''}
 
-${doc.llm}
+${await getMarkdown(page)}
 `
-  }).join('\n\n---\n\n')
+      })
+    )
+  ).join('\n\n---\n\n')
 
   return `# ${categoryTitles[category] || category}
 
@@ -134,7 +112,7 @@ ${doc.llm}
 
 ## Table of Contents
 
-${docs.map(doc => `- [${doc.title}](#${doc.title.toLowerCase().replace(/\s+/g, '-')})`).join('\n')}
+${pages.map(page => `- [${page.data.title}](#${page.data.title.toLowerCase().replace(/\s+/g, '-')})`).join('\n')}
 
 ---
 

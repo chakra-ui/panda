@@ -1,6 +1,5 @@
 'use client'
 
-import { Docs } from '.velite'
 import { Button } from '@/components/ui/button'
 import { getPublicUrl } from '@/lib/public-url'
 import { css } from '@/styled-system/css'
@@ -12,8 +11,14 @@ import NextLink from 'next/link'
 import { BsMarkdown } from 'react-icons/bs'
 import { LuCheck, LuChevronDown } from 'react-icons/lu'
 
-export const CopyMdxWidget = (props: { doc: Docs }) => {
-  const { doc } = props
+interface Props {
+  /** Page URL, e.g. `/docs/styling/overview`. */
+  url: string
+  /** The page's MDX source, without frontmatter. */
+  markdown: string
+}
+
+export const CopyMdxWidget = (props: Props) => {
   return (
     <div
       className={flex({
@@ -23,17 +28,15 @@ export const CopyMdxWidget = (props: { doc: Docs }) => {
         '& > :last-child': { borderStartRadius: '0' }
       })}
     >
-      <CopyPageButton doc={doc} />
-      <ActionMenu doc={doc} />
+      <CopyPageButton {...props} />
+      <ActionMenu {...props} />
     </div>
   )
 }
 
-const CopyPageButton = (props: { doc: Docs }) => {
-  const { doc } = props
-
+const CopyPageButton = (props: Props) => {
   const clipboard = useClipboard({
-    value: doc.llm,
+    value: props.markdown,
     timeout: 1000
   })
 
@@ -44,18 +47,18 @@ const CopyPageButton = (props: { doc: Docs }) => {
   )
 }
 
-const ActionMenu = (props: { doc: Docs }) => {
-  const { doc } = props
+const ActionMenu = (props: Props) => {
+  const mdxUrl = getPublicUrl(`${props.url}.mdx`)
 
   const readUrl = encodeURIComponent(
-    `Use web browsing to access links and information: ${getPublicUrl(`/${doc.slug}.mdx`)}/\n\nI want to ask some questions
+    `Use web browsing to access links and information: ${mdxUrl}/\n\nI want to ask some questions
     `
   )
 
   const items = [
     {
       label: 'View as markdown',
-      href: `${getPublicUrl(`/${doc.slug}.mdx`)}`,
+      href: mdxUrl,
       icon: BsMarkdown
     },
     {

@@ -5,15 +5,13 @@
   "private": true,
   "scripts": {
     "codegen": "panda",
-    "dev:content": "velite --watch",
     "dev:next": "next dev",
     "dev": "run-s codegen dev:watch",
-    "dev:watch": "run-p dev:panda dev:content dev:next",
+    "dev:watch": "run-p dev:panda dev:next",
     "generate:reference": "tsx scripts/generate-utility-reference.ts",
     "build:codegen": "panda",
-    "build:content": "velite --clean",
     "build:next": "next build",
-    "build": "run-s generate:reference build:codegen build:content build:next",
+    "build": "run-s generate:reference build:codegen build:next",
     "lint": "eslint . --max-warnings 0",
     "start": "next start",
     "dev:panda": "panda --watch"
@@ -24,18 +22,22 @@
     "@pandacss/preset-panda": "beta",
     "@zag-js/hotkeys": "1.43.3",
     "bright": "1.0.0",
+    "fumadocs-core": "^16.15.4",
+    "fumadocs-mdx": "^15.4.0",
     "fuse.js": "^7.1.0",
     "next": "16.3.0",
     "next-themes": "0.4.6",
     "outdent": "^0.8.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "react-icons": "5.5.0"
+    "react-icons": "5.5.0",
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@pandacss/dev": "beta",
     "@shikijs/rehype": "^3.19.0",
     "@shikijs/transformers": "^3.19.0",
+    "@types/mdx": "^2.0.14",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "eslint": "9.39.5",
@@ -45,10 +47,8 @@
     "npm-run-all2": "^9.0.3",
     "prettier": "3.2.5",
     "rehype-autolink-headings": "^7.1.0",
-    "rehype-slug": "^6.0.0",
     "shiki": "^3.19.0",
     "tsx": "4.20.6",
-    "unist-util-visit": "^5.0.0",
-    "velite": "0.3.0"
+    "unist-util-visit": "^5.0.0"
   }
 }

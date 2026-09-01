@@ -1,3 +1,5 @@
+'use client'
+
 import { useClipboard } from '@ark-ui/react/clipboard'
 import { css, cva } from '@/styled-system/css'
 import { grid, hstack, square } from '@/styled-system/patterns'

@@ -1,3 +1,5 @@
+'use client'
+
 import { MoonIcon, SunIcon } from '@/icons'
 import { Select } from '@/mdx/select'
 import { css } from '@/styled-system/css'

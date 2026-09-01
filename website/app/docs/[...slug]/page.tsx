@@ -1,13 +1,14 @@
-import { docs } from '.velite'
 import { Breadcrumb } from '@/components/docs/breadcrumb'
 import { Header } from '@/components/docs/header'
-import { MDXContent } from '@/components/docs/mdx-content'
-import { PageActions } from '@/components/docs/page-actions'
+import { mdxComponents } from '@/components/docs/mdx-components'
 import { MobileToc } from '@/components/docs/mobile-toc'
+import { PageActions } from '@/components/docs/page-actions'
 import { Pagination } from '@/components/docs/pagination'
 import { Sidebar } from '@/components/docs/sidebar'
 import { Toc } from '@/components/ui/toc'
 import { generateOgImageUrl } from '@/lib/og-image'
+import { docsSource } from '@/lib/source'
+import { toTocEntries } from '@/lib/toc'
 import { css, cx } from '@/styled-system/css'
 import { Box } from '@/styled-system/jsx'
 import { notFound } from 'next/navigation'
@@ -18,40 +19,42 @@ interface DocsPageProps {
   }>
 }
 
-export async function generateStaticParams() {
-  return docs.map(doc => ({ slug: doc.slug.split('/').slice(1) }))
+export function generateStaticParams() {
+  return docsSource.generateParams()
 }
 
 export async function generateMetadata({ params }: DocsPageProps) {
   const { slug } = await params
-  const doc = docs.find(doc => doc.slug === `docs/${slug.join('/')}`)
-  
-  if (!doc) {
+  const page = docsSource.getPage(slug)
+
+  if (!page) {
     return {
       title: 'Panda CSS',
       description: 'Build modern websites using build time and type-safe CSS-in-JS'
     }
   }
 
+  const { title, description } = page.data
+
   const ogImage = generateOgImageUrl({
-    title: doc.title,
-    description: doc.description,
+    title,
+    description,
     category: 'Docs'
   })
 
   return {
-    title: doc.title,
-    description: doc.description,
+    title,
+    description,
     openGraph: {
-      title: doc.title,
-      description: doc.description,
+      title,
+      description,
       type: 'article',
       images: [ogImage]
     },
     twitter: {
       card: 'summary_large_image',
-      title: doc.title,
-      description: doc.description,
+      title,
+      description,
       images: [ogImage]
     }
   }
@@ -66,11 +69,14 @@ export default async function DocsPage(props: DocsPageProps) {
   const params = await props.params
 
   const slug = params.slug.join('/')
-  const doc = docs.find(doc => doc.slug === `docs/${slug}`)
+  const page = docsSource.getPage(params.slug)
 
-  if (!doc) {
+  if (!page) {
     notFound()
   }
+
+  const { body: MDX, hideToc } = page.data
+  const toc = toTocEntries(page.data.toc)
 
   return (
     <>
@@ -102,14 +108,14 @@ export default async function DocsPage(props: DocsPageProps) {
           pb="16"
         >
           <Breadcrumb slug={slug} />
-          <Header doc={doc} />
+          <Header page={page} />
           <div
             className={css({
               '& > *:first-child': { mt: '0' },
               '& > *:last-child': { mb: '0' }
             })}
           >
-            <MDXContent code={doc.code} />
+            <MDX components={mdxComponents} />
           </div>
           <Pagination slug={slug} />
           <PageActions slug={slug} />
@@ -128,15 +134,15 @@ export default async function DocsPage(props: DocsPageProps) {
           pr="6"
           maxH="calc(100vh - var(--navbar-height) - var(--banner-height) - var(--tabbar-height) - 1rem)"
         >
-          {!doc.hideToc && (
+          {!hideToc && (
             <Box overflowY="auto" height="100%" className="scroll-area">
-              <Toc data={doc.toc} />
+              <Toc data={toc} />
             </Box>
           )}
         </Box>
       </Box>
 
-      {!doc.hideToc && <MobileToc data={doc.toc} />}
+      {!hideToc && <MobileToc data={toc} />}
     </>
   )
 }

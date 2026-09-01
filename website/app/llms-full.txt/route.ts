@@ -1,21 +1,21 @@
-import { docs } from '.velite'
+import { docsSource, getMarkdown, type DocPage } from '@/lib/source'
 
 export const dynamic = 'force-static'
 
+const categories = [
+  { key: 'get-started', title: 'Get Started' },
+  { key: 'styling', title: 'Styling' },
+  { key: 'theming', title: 'Theming' },
+  { key: 'design-systems', title: 'Design Systems' },
+  { key: 'reference', title: 'Reference' }
+]
+
 export async function GET() {
-  // Sort all docs by slug for consistent ordering
-  const sortedDocs = docs.sort((a, b) => a.slug.localeCompare(b.slug))
+  const sortedPages = docsSource
+    .getPages()
+    .sort((a, b) => a.url.localeCompare(b.url))
 
-  // Group docs by category
-  const categories = [
-    { key: 'get-started', title: 'Get Started' },
-    { key: 'styling', title: 'Styling' },
-    { key: 'theming', title: 'Theming' },
-    { key: 'design-systems', title: 'Design Systems' },
-    { key: 'reference', title: 'Reference' }
-  ]
-
-  const content = generateFullDocumentation(sortedDocs, categories)
+  const content = await generateFullDocumentation(sortedPages)
 
   return new Response(content, {
     headers: {
@@ -25,45 +25,38 @@ export async function GET() {
   })
 }
 
-function generateFullDocumentation(
-  docs: typeof import('.velite').docs,
-  categories: Array<{ key: string; title: string }>
-) {
+async function generateFullDocumentation(pages: DocPage[]) {
   const tocEntries: string[] = []
   const sections: string[] = []
 
-  categories.forEach(category => {
-    const categoryDocs = docs.filter(doc =>
-      doc.slug.startsWith(`docs/${category.key}`)
-    )
+  for (const category of categories) {
+    const categoryPages = pages.filter(page => page.slugs[0] === category.key)
 
-    if (categoryDocs.length === 0) return
+    if (categoryPages.length === 0) continue
 
     tocEntries.push(`\n### ${category.title}`)
-    categoryDocs.forEach(doc => {
+    for (const page of categoryPages) {
       tocEntries.push(
-        `- [${doc.title}](#${doc.title.toLowerCase().replace(/\s+/g, '-')})`
+        `- [${page.data.title}](#${page.data.title.toLowerCase().replace(/\s+/g, '-')})`
       )
-    })
+    }
 
     sections.push(`\n# ${category.title}\n`)
 
-    categoryDocs.forEach(doc => {
-      const slug = doc.slug.replace('docs/', '')
-      const level = slug.split('/').length
-      const headerLevel = '#'.repeat(Math.min(level, 6))
+    for (const page of categoryPages) {
+      const headerLevel = '#'.repeat(Math.min(page.slugs.length, 6))
 
       sections.push(`
-${headerLevel} ${doc.title}
+${headerLevel} ${page.data.title}
 
-${doc.description || ''}
+${page.data.description || ''}
 
-${doc.llm}
+${await getMarkdown(page)}
 
 ---
 `)
-    })
-  })
+    }
+  }
 
   return `# Panda CSS Complete Documentation
 

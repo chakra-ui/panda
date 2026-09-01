@@ -1,5 +1,4 @@
 'use client'
-import { blog, docs } from '.velite'
 import { Badge } from '@/components/ui/badge'
 import { dialogSlotRecipe } from '@/components/ui/dialog'
 import { SEARCH_HOTKEY } from '@/components/docs/search'
@@ -7,7 +6,7 @@ import { Segmented } from '@/components/ui/segmented'
 import {
   convertToSearchItems,
   filterSearchItems,
-  getSearchIndex,
+  type SearchIndex,
   type SearchSection
 } from '@/lib/search-index'
 import { useMatchMedia } from '@/lib/use-match-media'
@@ -19,7 +18,13 @@ import { useEnvironmentContext } from '@ark-ui/react/environment'
 import { createHotkeyStore } from '@zag-js/hotkeys'
 import { Portal } from '@ark-ui/react/portal'
 import { useRouter } from 'next/navigation'
-import { useDeferredValue, useEffect, useMemo, useState } from 'react'
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import { Box, Center, HStack, Stack } from 'styled-system/jsx'
 
 const SECTIONS = ['All', 'Docs', 'Reference', 'Blog'] as const
@@ -33,6 +38,73 @@ interface Props {
   limit?: number
 }
 
+/**
+ * The index is built at build time and served as a static file, so the docs
+ * content never ships in the client bundle. Fetched once per page load and
+ * shared by every mounted menu (the navbar renders one per breakpoint).
+ */
+let searchIndexPromise: Promise<SearchIndex> | null = null
+
+function loadSearchIndex(): Promise<SearchIndex> {
+  searchIndexPromise ??= fetch('/search-index.json')
+    .then(response => {
+      if (!response.ok) throw new Error(`search index: ${response.status}`)
+      return response.json() as Promise<SearchIndex>
+    })
+    .catch(error => {
+      // Clear the cache so a later attempt can retry instead of replaying it.
+      searchIndexPromise = null
+      throw error
+    })
+
+  return searchIndexPromise
+}
+
+function useSearchIndex(enabled: boolean) {
+  const [searchIndex, setSearchIndex] = useState<SearchIndex | null>(null)
+
+  useEffect(() => {
+    if (!enabled || searchIndex) return
+
+    let cancelled = false
+
+    loadSearchIndex().then(
+      index => {
+        if (!cancelled) setSearchIndex(index)
+      },
+      () => {}
+    )
+
+    return () => {
+      cancelled = true
+    }
+  }, [enabled, searchIndex])
+
+  return searchIndex
+}
+
+/**
+ * Warms the index ahead of the dialog: on pointer/focus intent over the
+ * trigger, and on idle for keyboard users who go straight for the hotkey.
+ */
+function usePrefetchSearchIndex() {
+  const prefetch = useCallback(() => {
+    loadSearchIndex().catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (typeof window.requestIdleCallback !== 'function') {
+      const timer = window.setTimeout(prefetch, 2000)
+      return () => window.clearTimeout(timer)
+    }
+
+    const handle = window.requestIdleCallback(prefetch, { timeout: 5000 })
+    return () => window.cancelIdleCallback(handle)
+  }, [prefetch])
+
+  return prefetch
+}
+
 export const CommandMenu = (props: Props) => {
   const { mediaQuery, trigger, limit = 8 } = props
 
@@ -41,12 +113,16 @@ export const CommandMenu = (props: Props) => {
   const [section, setSection] = useState<SectionFilter>('All')
   const inputValueState = useDeferredValue(inputValue)
 
-  const searchIndex = useMemo(() => getSearchIndex(docs, blog), [])
-  const items = useMemo(() => convertToSearchItems(searchIndex), [searchIndex])
+  const searchIndex = useSearchIndex(open)
+  const prefetchSearchIndex = usePrefetchSearchIndex()
+  const items = useMemo(
+    () => (searchIndex ? convertToSearchItems(searchIndex) : []),
+    [searchIndex]
+  )
 
   // Filter items based on input
   const matches = useMemo(
-    () => filterSearchItems(items, searchIndex, inputValueState),
+    () => (searchIndex ? filterSearchItems(items, searchIndex, inputValueState) : {}),
     [items, searchIndex, inputValueState]
   )
 
@@ -81,7 +157,14 @@ export const CommandMenu = (props: Props) => {
       open={open}
       onOpenChange={event => setOpen(event.open)}
     >
-      <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
+      <Dialog.Trigger
+        asChild
+        onPointerEnter={prefetchSearchIndex}
+        onFocusCapture={prefetchSearchIndex}
+        onTouchStart={prefetchSearchIndex}
+      >
+        {trigger}
+      </Dialog.Trigger>
       <Portal>
         <Dialog.Backdrop className={dialogStyles.backdrop} />
         <Dialog.Positioner className={dialogStyles.positioner}>

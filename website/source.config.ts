@@ -7,13 +7,12 @@ import {
   transformerNotationHighlight,
   transformerNotationWordHighlight
 } from '@shikijs/transformers'
+import { defineConfig } from 'fumadocs-mdx/config'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
-import rehypeSlug from 'rehype-slug'
 import type { ShikiTransformer } from 'shiki'
 import { visit } from 'unist-util-visit'
-import { defineCollection, defineConfig, s } from 'velite'
-import { flattenToc } from './src/lib/flatten-toc'
 
+/** Lifts ```ts filename="x.ts" fences into a titled <code-block> wrapper. */
 function remarkCodeTitle() {
   return (tree: any, file: any) => {
     visit(tree, 'code', (node, index, parent) => {
@@ -70,79 +69,20 @@ const transformerEmptyLineSpace: ShikiTransformer = {
   }
 }
 
-const blog = defineCollection({
-  name: 'Blog',
-  pattern: ['blog/**/*.mdx'],
-  schema: s
-    .object({
-      title: s.string(),
-      description: s.string().optional(),
-      metadata: s.metadata(),
-      date: s.isodate(),
-      author: s
-        .union([s.string(), s.array(s.string())])
-        .optional()
-        .transform(v => (v == null ? undefined : Array.isArray(v) ? v : [v])),
-      tags: s.array(s.string()).optional(),
-      type: s.enum(['article', 'release']).optional(),
-      image: s.string().optional(),
-      slug: s.path(),
-      code: s.mdx(),
-      toc: s.toc()
-    })
-    .transform(data => ({
-      ...data,
-      toc: flattenToc(data.toc)
-    }))
-})
-
-const docs = defineCollection({
-  name: 'Docs',
-  pattern: ['docs/**/*.mdx'],
-  schema: s
-    .object({
-      title: s.string(),
-      description: s.string().optional(),
-      metadata: s.metadata(),
-      llm: s
-        .custom<string | undefined>(
-          i => i === undefined || typeof i === 'string'
-        )
-        .transform((_data, { meta }) => {
-          return (meta.content as string) ?? ''
-        }),
-      slug: s.path(),
-      category: s.string().optional(),
-      code: s.mdx(),
-      toc: s.toc(),
-      hideToc: s.boolean().optional()
-    })
-    .transform(data => ({
-      ...data,
-      toc: flattenToc(data.toc)
-    }))
-})
-
 export default defineConfig({
-  root: 'content',
-  collections: {
-    docs,
-    blog
-  },
-  mdx: {
-    remarkPlugins: [remarkCodeTitle],
-    rehypePlugins: [
-      rehypeSlug,
-      [
-        rehypeAutolinkHeadings,
-        {
-          behavior: 'append',
-          properties: {
-            className: ['subheading-anchor'],
-            'aria-label': 'Link to this section'
-          }
-        }
-      ],
+  mdxOptions: {
+    // We run our own Shiki pass below, and neither of the other two default
+    // plugins matches how this site authors content.
+    rehypeCodeOptions: false,
+    remarkImageOptions: false,
+    remarkNpmOptions: false,
+    remarkCodeTabOptions: false,
+    // Appended, so `remarkStructure` (search index) sees plain code nodes and
+    // skips them instead of indexing every snippet.
+    remarkPlugins: v => [...v, remarkCodeTitle],
+    // `v` ends with fumadocs' `rehypeToc`; the anchor is appended after it so
+    // heading links don't leak into table-of-contents titles.
+    rehypePlugins: v => [
       [
         rehypeShiki,
         {
@@ -160,6 +100,17 @@ export default defineConfig({
             dark: 'github-dark'
           },
           defaultColor: false
+        }
+      ],
+      ...v,
+      [
+        rehypeAutolinkHeadings,
+        {
+          behavior: 'append',
+          properties: {
+            className: ['subheading-anchor'],
+            'aria-label': 'Link to this section'
+          }
         }
       ]
     ]

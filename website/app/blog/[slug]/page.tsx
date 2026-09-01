@@ -1,10 +1,11 @@
 import { LuRss } from 'react-icons/lu'
 import { AuthorLine } from '@/components/blog/author-line'
-import { blog } from '.velite'
-import { MDXContent } from '@/components/docs/mdx-content'
+import { mdxComponents } from '@/components/docs/mdx-components'
 import { MobileToc } from '@/components/docs/mobile-toc'
 import { Toc } from '@/components/ui/toc'
 import { generateOgImageUrl } from '@/lib/og-image'
+import { blogSource, getMarkdown, getReadingTime } from '@/lib/source'
+import { toTocEntries } from '@/lib/toc'
 import { css } from '@/styled-system/css'
 import { Box, Stack, panda } from '@/styled-system/jsx'
 import { Metadata } from 'next'
@@ -15,19 +16,21 @@ interface BlogPostPageProps {
   params: Promise<{ slug: string }>
 }
 
-export async function generateStaticParams() {
-  return blog.map(post => ({ slug: post.slug.split('/').slice(1).join('/') }))
+export function generateStaticParams() {
+  return blogSource.getPages().map(page => ({ slug: page.slugs.join('/') }))
 }
 
 export async function generateMetadata({
   params
 }: BlogPostPageProps): Promise<Metadata> {
   const { slug } = await params
-  const post = blog.find(p => p.slug === `blog/${slug}`)
+  const page = blogSource.getPage([slug])
 
-  if (!post) {
+  if (!page) {
     return { title: 'Panda CSS Blog' }
   }
+
+  const post = page.data
 
   const ogImage = generateOgImageUrl({
     title: post.title,
@@ -64,11 +67,16 @@ function formatDate(isoDate: string) {
 
 export default async function BlogPostPage(props: BlogPostPageProps) {
   const { slug } = await props.params
-  const post = blog.find(p => p.slug === `blog/${slug}`)
+  const page = blogSource.getPage([slug])
 
-  if (!post) {
+  if (!page) {
     notFound()
   }
+
+  const post = page.data
+  const { body: MDX } = post
+  const toc = toTocEntries(post.toc)
+  const readingTime = getReadingTime(await getMarkdown(page))
 
   return (
     <Box
@@ -119,16 +127,12 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
             <panda.span textStyle="eyebrow" color="fg.subtle">
               {formatDate(post.date)}
             </panda.span>
-            {post.metadata?.readingTime ? (
-              <>
-                <panda.span color="fg.subtle" aria-hidden>
-                  ·
-                </panda.span>
-                <panda.span textStyle="eyebrow" color="fg.subtle">
-                  {post.metadata.readingTime} min read
-                </panda.span>
-              </>
-            ) : null}
+            <panda.span color="fg.subtle" aria-hidden>
+              ·
+            </panda.span>
+            <panda.span textStyle="eyebrow" color="fg.subtle">
+              {readingTime} min read
+            </panda.span>
             </Box>
 
             <a
@@ -162,7 +166,7 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
             '& > *:last-child': { mb: 0 }
           })}
         >
-          <MDXContent code={post.code} />
+          <MDX components={mdxComponents} />
           {post.tags && post.tags.length > 0 && (
             <Box display="flex" gap="2" flexWrap="wrap" mt="10">
               {post.tags.map(tag => (
@@ -185,9 +189,9 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
       </Box>
 
       {/* Table of contents */}
-      <MobileToc data={post.toc as any} />
+      <MobileToc data={toc} />
 
-      {post.toc.length > 0 && (
+      {toc.length > 0 && (
         <Box
           display={{ base: 'none', xl: 'block' }}
           flexShrink="0"
@@ -198,7 +202,7 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
           maxH="calc(100vh - var(--navbar-height, 4rem) - 2rem)"
         >
           <Box overflowY="auto" height="100%" className="scroll-area">
-            <Toc data={post.toc as any} />
+            <Toc data={toc} />
           </Box>
         </Box>
       )}

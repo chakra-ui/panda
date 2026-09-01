@@ -1,5 +1,5 @@
-import { blog } from '.velite'
 import { generateOgImageUrl } from '@/lib/og-image'
+import { blogSource, getMarkdown, getReadingTime } from '@/lib/source'
 import { AuthorLine } from '@/components/blog/author-line'
 import { PostList } from '@/components/blog/post-list'
 import { css } from '@/styled-system/css'
@@ -28,13 +28,22 @@ export const metadata: Metadata = {
   }
 }
 
-export default function BlogPage() {
-  const posts = [...blog].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+export default async function BlogPage() {
+  const posts = await Promise.all(
+    blogSource
+      .getPages()
+      .sort(
+        (a, b) =>
+          new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
+      )
+      .map(async page => ({
+        ...page.data,
+        slug: page.slugs.join('/'),
+        readingTime: getReadingTime(await getMarkdown(page))
+      }))
   )
 
   const [featured] = posts
-  const featuredSlug = featured.slug.split('/').slice(1).join('/')
 
   return (
     <Box maxW="72rem" mx="auto" px="6" pt="16" pb="24">
@@ -71,7 +80,7 @@ export default function BlogPage() {
       </Box>
 
       <Link
-        href={`/blog/${featuredSlug}`}
+        href={`/blog/${featured.slug}`}
         className={css({
           display: 'block',
           p: { base: '6', md: '10' },
@@ -121,7 +130,7 @@ export default function BlogPage() {
             )}
             <AuthorLine
               authors={featured.author}
-              readingTime={featured.metadata?.readingTime}
+              readingTime={featured.readingTime}
               size="md"
             />
           </Stack>
@@ -143,12 +152,12 @@ export default function BlogPage() {
 
       <PostList
         posts={posts.map(post => ({
-          slug: post.slug.split('/').slice(1).join('/'),
+          slug: post.slug,
           title: post.title,
           description: post.description,
           date: post.date,
           author: post.author,
-          readingTime: post.metadata?.readingTime,
+          readingTime: post.readingTime,
           type: post.type
         }))}
       />

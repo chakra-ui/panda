@@ -1,4 +1,4 @@
-import { type Blog as Post, type Docs as Doc } from '.velite'
+import type { StructuredData } from 'fumadocs-core/mdx-plugins/remark-structure'
 import Fuse from 'fuse.js'
 
 export type SearchSection = 'Docs' | 'Reference' | 'Blog'
@@ -39,120 +39,69 @@ export interface SearchItem {
   type?: 'page' | 'heading'
 }
 
-/**
- * Extract content for each heading section from the full document
- */
-function extractSectionContent(
-  fullContent: string,
-  toc: Doc['toc'],
-  currentIndex: number
-): string {
-  const currentHeading = toc[currentIndex]
-  const nextHeading = toc[currentIndex + 1]
-
-  // Find the start position of current heading in content
-  const currentHeadingPattern = new RegExp(
-    `#+\\s*${escapeRegExp(currentHeading.title)}`,
-    'i'
-  )
-  const currentMatch = fullContent.match(currentHeadingPattern)
-
-  if (!currentMatch) {
-    return ''
-  }
-
-  const startIndex = currentMatch.index!
-
-  // Find end position (start of next heading or end of document)
-  let endIndex = fullContent.length
-  if (nextHeading) {
-    const nextHeadingPattern = new RegExp(
-      `#+\\s*${escapeRegExp(nextHeading.title)}`,
-      'i'
-    )
-    const nextMatch = fullContent
-      .slice(startIndex + currentMatch[0].length)
-      .match(nextHeadingPattern)
-    if (nextMatch) {
-      endIndex = startIndex + currentMatch[0].length + nextMatch.index!
-    }
-  }
-
-  // Extract and clean the content
-  const content = fullContent
-    .slice(startIndex, endIndex)
-    .replace(/```[\s\S]*?```/g, '') // Remove code blocks
-    .replace(/`[^`]*`/g, '') // Remove inline code
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Convert links to text
-    .replace(/#+\s*/g, '') // Remove heading markers
-    .replace(/\n{3,}/g, '\n\n') // Normalize line breaks
-    .trim()
-
-  return content
+export interface SearchDocInput {
+  url: string
+  title: string
+  description?: string
+  structuredData: StructuredData
 }
 
-function escapeRegExp(string: string): string {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+export interface SearchPostInput {
+  url: string
+  title: string
+  description?: string
 }
 
 /**
- * Create a unique ID for search records
+ * Build the search index from the structured data emitted at build time.
  */
-function createSearchId(baseSlug: string, headingId?: string): string {
-  return headingId ? `${baseSlug}#${headingId}` : baseSlug
-}
-
-/**
- * Transform Velite docs to search-optimized records
- */
-export function getSearchIndex(docs: Doc[], posts: Post[] = []): SearchIndex {
+export function getSearchIndex(
+  docs: SearchDocInput[],
+  posts: SearchPostInput[] = []
+): SearchIndex {
   const searchRecords: SearchRecord[] = []
 
-  // Process each document
   for (const doc of docs) {
-    // doc.slug already starts with "docs/" (Velite's root is "content", the
-    // collection pattern is "docs/**/*.mdx") — don't prepend "/docs/" again.
-    const baseUrl = `/${doc.slug}`
+    const { headings, contents } = doc.structuredData
 
-    // Add main page record
-    const pageRecord: SearchRecord = {
-      id: createSearchId(doc.slug),
-      url: baseUrl,
+    const pageContent = contents.map(entry => entry.content).join('\n')
+
+    searchRecords.push({
+      id: doc.url,
+      url: doc.url,
       title: doc.title,
-      content: doc.llm,
+      content: pageContent,
       type: 'page',
-      description: doc.description || doc.llm.slice(0, 150) + '...',
+      description: doc.description || pageContent.slice(0, 150) + '...',
       breadcrumb: [doc.title]
-    }
-    searchRecords.push(pageRecord)
+    })
 
-    // Add heading-level records
-    for (let i = 0; i < doc.toc.length; i++) {
-      const heading = doc.toc[i]
-      const sectionContent = extractSectionContent(doc.llm, doc.toc, i)
+    for (const heading of headings) {
+      const sectionContent = contents
+        .filter(entry => entry.heading === heading.id)
+        .map(entry => entry.content)
+        .join('\n')
 
-      if (sectionContent.length > 50) {
-        // Only index substantial content
-        const headingRecord: SearchRecord = {
-          id: createSearchId(doc.slug, heading.id),
-          url: `${baseUrl}${heading.url}`,
-          title: heading.title,
-          content: sectionContent,
-          type: 'heading',
-          pageTitle: doc.title,
-          headingLevel: heading.depth,
-          description: sectionContent.slice(0, 150) + '...',
-          breadcrumb: [doc.title]
-        }
-        searchRecords.push(headingRecord)
-      }
+      // Only index substantial content
+      if (sectionContent.length <= 50) continue
+
+      searchRecords.push({
+        id: `${doc.url}#${heading.id}`,
+        url: `${doc.url}#${heading.id}`,
+        title: heading.content,
+        content: sectionContent,
+        type: 'heading',
+        pageTitle: doc.title,
+        description: sectionContent.slice(0, 150) + '...',
+        breadcrumb: [doc.title]
+      })
     }
   }
 
   for (const post of posts) {
     searchRecords.push({
-      id: createSearchId(post.slug),
-      url: `/${post.slug}`,
+      id: post.url,
+      url: post.url,
       title: post.title,
       content: post.description ?? post.title,
       type: 'page',

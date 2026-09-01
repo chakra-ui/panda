@@ -1,3 +1,5 @@
+'use client'
+
 import { css, cx } from '@/styled-system/css'
 import { Portal } from '@ark-ui/react/portal'
 import { createListCollection, Select } from '@ark-ui/react/select'

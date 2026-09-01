@@ -1,3 +1,5 @@
+import { createMDX } from 'fumadocs-mdx/next'
+
 /** @type {import('next').NextConfig} */
 const config = {
   async rewrites() {
@@ -721,4 +723,8 @@ const config = {
   }
 }
 
-export default config
+const withMDX = createMDX({
+  macro: { include: ['**/src/lib/source.ts'] }
+})
+
+export default withMDX(config)

@@ -1,13 +1,16 @@
-import { Docs } from '.velite'
+import { getMarkdown, type DocPage } from '@/lib/source'
 import { css } from '@/styled-system/css'
 import { Flex } from '@/styled-system/jsx'
 import { CopyMdxWidget } from './copy-mdx-widget'
 
 interface Props {
-  doc: Docs
+  page: DocPage
 }
 
-export const Header = ({ doc }: Props) => {
+export const Header = async ({ page }: Props) => {
+  const { title, description } = page.data
+  const markdown = await getMarkdown(page)
+
   return (
     <Flex
       direction={{ base: 'column', md: 'row' }}
@@ -26,18 +29,18 @@ export const Header = ({ doc }: Props) => {
             mb: 2
           })}
         >
-          {doc.title}
+          {title}
         </h1>
-        {doc.description && (
+        {description && (
           <p
             className={css({ fontSize: 'lg', color: 'fg.muted', maxW: '3xl' })}
           >
-            {doc.description}
+            {description}
           </p>
         )}
       </div>
 
-      <CopyMdxWidget doc={doc} />
+      <CopyMdxWidget url={page.url} markdown={markdown} />
     </Flex>
   )
 }

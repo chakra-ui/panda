@@ -24,7 +24,6 @@
       "@/*": ["./src/*"],
       "@/styled-system/*": ["./styled-system/*"],
       "@/theme/*": ["./theme/*"],
-      ".velite": ["./.velite"],
       "styled-system/*": ["./styled-system/*"],
       "styles/*": ["./styles/*"]
     }
@@ -36,8 +35,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".velite",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", ".source"]
 }

@@ -1,5 +1,5 @@
-import { blog } from '.velite'
 import { docsConfig } from '@/docs.config'
+import { blogSource } from '@/lib/source'
 
 export const dynamic = 'force-static'
 
@@ -14,14 +14,14 @@ function escapeXml(value: string) {
 
 export function GET() {
   const site = docsConfig.url
-  const posts = [...blog].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  )
+  const posts = blogSource
+    .getPages()
+    .map(page => ({ ...page.data, url: `${site}${page.url}` }))
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
   const items = posts
     .map(post => {
-      const slug = post.slug.split('/').slice(1).join('/')
-      const url = `${site}/blog/${slug}`
+      const url = post.url
       return [
         '    <item>',
         `      <title>${escapeXml(post.title)}</title>`,
