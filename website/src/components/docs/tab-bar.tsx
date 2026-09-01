@@ -63,6 +63,7 @@ export function TabBar() {
         gap="1"
         px="6"
         overflowX="auto"
+        overflowY="hidden"
         className="scroll-area"
         alignItems="stretch"
       >
@@ -247,7 +248,10 @@ function TabLink({ tab, active }: TabLinkProps) {
           position: 'absolute',
           left: '3',
           right: '3',
-          bottom: '-1px',
+          // Sits flush inside the row: a negative offset would spill past the
+          // scroll container and, since `overflow-x: auto` forces `overflow-y`
+          // to `auto`, that 1px was enough to render a vertical scrollbar.
+          bottom: '0',
           height: '2px',
           bg: active ? 'accent' : 'transparent',
           transitionProperty: 'background',
