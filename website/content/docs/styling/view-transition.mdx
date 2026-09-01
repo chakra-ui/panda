@@ -1,21 +1,18 @@
 ---
-title: viewTransition()
-description: Style shared View Transitions API animations with a hashed bag class. You still set unique view-transition-name values at runtime.
+title: View Transitions
+description: Style View Transitions API animations with a shared class. You still set a unique name per element.
 ---
 
-The View Transitions API styles its animation with `::view-transition-old(name)` and `::view-transition-new(name)`,
-matched against a `view-transition-name` you set on the element. That name has to be unique per element. Two elements
-with the same name break the transition.
+## How it works
 
-Panda extracts and shares styles across every place you call a style function. Those two rules don't mix: if the CSS
-were keyed on `view-transition-name`, Panda couldn't dedupe it, since the name is different every time. So Panda
-doesn't touch `view-transition-name` at all. Instead, `viewTransition()` gives you a class, generated from a real
-CSS property built for exactly this, `view-transition-class`. Panda can extract and share a class like any other
-atomic style. You still set the unique name yourself, however your framework wants it.
+The View Transitions API needs two things:
 
-Import `viewTransition` from `styled-system/css`.
+1. **A unique `view-transition-name`** on each element (duplicates break the transition)
+2. **Shared animation CSS** for `::view-transition-old(*)` / `::view-transition-new(*)` and friends
 
-## Basic example
+Panda can't own the name. Those have to stay unique, so it can't extract or dedupe them. Instead,
+`viewTransition()` returns a class built on
+[`view-transition-class`](https://developer.mozilla.org/en-US/docs/Web/CSS/view-transition-class).
 
 ```ts
 import { viewTransition } from 'styled-system/css'
@@ -25,52 +22,50 @@ const slide = viewTransition({
     animationDuration: '0.4s',
     animationTimingFunction: 'ease-in-out'
   },
-  imagePair: { isolation: 'isolate' },
   old: { opacity: 0 },
   new: { opacity: 1 }
 })
 // → "vt_xxx"
 ```
 
-`slide` is a class name, `"vt_xxx"`. Panda emits the CSS behind it:
-
 ```css
-@layer utilities {
-  .vt_xxx {
-    view-transition-class: vt_xxx;
-  }
+.vt_xxx {
+  view-transition-class: vt_xxx;
+}
 
-  ::view-transition-group(.vt_xxx) {
-    animation-duration: 0.4s;
-    animation-timing-function: ease-in-out;
-  }
+::view-transition-group(.vt_xxx) {
+  animation-duration: 0.4s;
+  animation-timing-function: ease-in-out;
+}
 
-  ::view-transition-image-pair(.vt_xxx) {
-    isolation: isolate;
-  }
+::view-transition-old(.vt_xxx) {
+  opacity: 0;
+}
 
-  ::view-transition-old(.vt_xxx) {
-    opacity: 0;
-  }
-
-  ::view-transition-new(.vt_xxx) {
-    opacity: 1;
-  }
+::view-transition-new(.vt_xxx) {
+  opacity: 1;
 }
 ```
 
-Call `viewTransition()` again somewhere else with the exact same options and you get the exact same class back, no
-duplicate CSS. That's the whole point: one shared bag class, however many elements use it.
+## Pseudo-elements
 
-## Wiring it into your framework
+| Option      | Selector                              |
+| ----------- | ------------------------------------- |
+| `group`     | `::view-transition-group(.vt_*)`      |
+| `imagePair` | `::view-transition-image-pair(.vt_*)` |
+| `old`       | `::view-transition-old(.vt_*)`        |
+| `new`       | `::view-transition-new(.vt_*)`        |
 
-`viewTransition()` only gets you the class. Every framework has its own way of setting `view-transition-name`, so
-that part is still on you.
+Each option takes a style object, same shape as `css()`. Set `animationName` to a theme keyframe or any animation name.
+
+## Framework usage
+
+`viewTransition()` only returns the class. How you set `view-transition-name` depends on the framework.
 
 ### React
 
-Pass the class into React's View Transition Class props, `enter`, `exit`, `share`, `update`, `default`. Reserve
-`name` for elements that need a shared-element transition:
+Needs a React build that exports `<ViewTransition>` (Canary / Experimental), or Next.js with
+`experimental.viewTransition: true`.
 
 ```tsx
 import { ViewTransition } from 'react'
@@ -82,21 +77,17 @@ const slide = viewTransition({
   new: { opacity: 1 }
 })
 
-export function HeroImage() {
-  return (
-    <ViewTransition name="hero" share={slide}>
-      <img src="/hero.jpg" alt="Hero" />
-    </ViewTransition>
-  )
-}
+<ViewTransition name="hero" share={slide}>
+  <img src="/hero.jpg" alt="Hero" />
+</ViewTransition>
 ```
 
-`<ViewTransition>` needs a React build that exports it, Canary or Experimental as of this writing. Next.js can opt in
-with `experimental.viewTransition: true`.
+Pass the class into `enter`, `exit`, `share`, `update`, or `default`. Use `name` when elements should morph into each
+other.
 
 ### Astro
 
-Astro owns the name through `transition:name`. Put the bag class on the element next to it:
+Astro owns the name via `transition:name`. Put the class on the element:
 
 ```astro
 ---
@@ -112,95 +103,58 @@ const slide = viewTransition({
 <img class={slide} transition:name="hero" src="/hero.jpg" alt="Hero" />
 ```
 
-Enable client routing with `<ClientRouter />` from `astro:transitions` in your layout, or the browser never starts a
-transition to animate.
+Enable client routing with `<ClientRouter />` from `astro:transitions`, or the browser never starts a transition.
 
-### Solid or Nuxt
+### Other frameworks
 
-Neither framework wraps this for you, so you set both the class and the name yourself:
+Set both the class and the name yourself:
 
 ```tsx
-import { viewTransition } from 'styled-system/css'
-
-const slide = viewTransition({
-  group: { animationDuration: '0.4s' },
-  old: { opacity: 0 },
-  new: { opacity: 1 }
-})
-
 <img
-  class={slide}
+  className={slide}
   style={{ viewTransitionName: 'hero' }}
   src="/hero.jpg"
   alt="Hero"
 />
 ```
 
-## Slots
+## Named transitions
 
-Four options, each one a slot in the View Transitions pseudo-element tree:
-
-| Option      | CSS selector                          |
-| ----------- | -------------------------------------- |
-| `group`     | `::view-transition-group(.vt_*)`      |
-| `imagePair` | `::view-transition-image-pair(.vt_*)` |
-| `old`       | `::view-transition-old(.vt_*)`        |
-| `new`       | `::view-transition-new(.vt_*)`        |
-
-Each one takes a style object, same shape as `css()`. For animations, set `animationName` to a theme keyframe or a
-name you defined yourself.
-
-## Share from a preset or config
-
-Put named bags in `theme.viewTransitions` so the team calls `viewTransition('slide')` instead of copying the object.
-
-```ts filename="view-transitions.ts"
-import { defineViewTransitions } from '@pandacss/dev'
-
-export const viewTransitions = defineViewTransitions({
-  slide: {
-    group: { animationDuration: '0.4s' },
-    old: { opacity: 0 },
-    new: { opacity: 1 }
-  }
-})
-```
+Register reusable bags in `theme.viewTransitions`, then call them by name:
 
 ```ts filename="panda.config.ts"
-import { defineConfig } from '@pandacss/dev'
-import { viewTransitions } from './view-transitions'
+import { defineConfig, defineViewTransitions } from '@pandacss/dev'
 
 export default defineConfig({
   theme: {
     extend: {
-      viewTransitions
+      viewTransitions: defineViewTransitions({
+        slide: {
+          group: { animationDuration: '0.4s' },
+          old: { opacity: 0 },
+          new: { opacity: 1 }
+        }
+      })
     }
   }
 })
 ```
 
-```ts
+```tsx
+import { ViewTransition } from 'react'
 import { viewTransition } from 'styled-system/css'
 
-viewTransition('slide')
-// → "vt_slide"
-```
-
-A static name becomes a string at build time. The import is dropped. Unused names stay out of the CSS.
-
-Use it the same way as the object form: React `share` / `enter` / `exit`, or the class next to Astro's `transition:name`.
-
-```tsx
 <ViewTransition name="hero" share={viewTransition('slide')}>
   <img src="/hero.jpg" alt="Hero" />
 </ViewTransition>
 ```
 
-You can still write `viewTransition({ old, new })` for a one-off. That keeps the hashed `vt_*` class.
+`viewTransition('slide')` returns `"vt_slide"`. A static name inlines at build time and drops the import. Unused names
+stay out of the CSS.
 
-## Shipping a shared transition from a design system
+## Design systems
 
-Export the bag as a constant from your library source, the same way you'd export a shared `cva`:
+Export a bag the same way you'd export a shared `cva`:
 
 ```ts
 export const slide = viewTransition({
@@ -209,7 +163,6 @@ export const slide = viewTransition({
 })
 ```
 
-`panda lib` serializes it into build info, so apps consuming your library get the CSS without re-scanning your
-source. It tree-shakes the same way recipes do, only the bags an app actually imports ship.
-
-A preset can also register the same bags in `theme.viewTransitions` and let apps call `viewTransition('slide')`.
+`panda lib` puts it in build info. Consuming apps get the CSS without re-scanning your source, and tree-shaking follows
+imports like recipes. Or register the same bags in a preset's `theme.viewTransitions` and let apps call
+`viewTransition('slide')`.

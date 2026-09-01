@@ -1,92 +1,120 @@
 ---
 title: Static CSS Generation
-description: Pre-generate specific utility, recipe, pattern, and theme CSS that Panda's static analysis can't see on its own.
+description: Pre-generate CSS that Panda can't extract from your source.
 ---
 
-Panda only emits CSS for styles it can see in your source at build time. That breaks down in a few real cases: a
-class name assembled from a runtime variable in a plain HTML template with no build step, a Storybook `args` value
-that changes per story, or a recipe variant chosen by a prop instead of a literal string. In each case, the value
-exists, but static analysis can't prove which one.
+Panda only emits styles it can prove at build time. A literal in `css({ color: 'red.300' })` is fine. A value that
+only exists at runtime is invisible.
 
-`staticCss` is the escape hatch. Tell Panda which utilities, recipes, patterns, or themed variants to generate
-regardless of whether it ever sees them called, and it generates them unconditionally.
+`staticCss` is the list of styles you want in the sheet anyway. Panda expands that list into the same atoms and recipe
+classes extraction would have produced, then merges them into the emit.
 
-<Callout type="info">
-  Looking for build-time rewriting of `css()` calls into plain class strings? That's [source transforms](/docs/get-started/source-transforms), a separate opt-in feature.
-</Callout>
-
-```js filename="panda.config.js"
-export default {
-  staticCss: {
-    css: [],
-    recipes: {},
-    patterns: {},
-    themes: []
-  }
-}
+```
+your source  →  extract what it can see
+staticCss    →  always-on utilities, recipes, patterns
+                    ↓
+                 merge → CSS
 ```
 
-All four keys are optional. Use only the ones you need.
+It does **not** rewrite your JS. For turning static `css()` calls into plain class strings, see
+[Source transforms](/docs/get-started/source-transforms).
 
-## Generating CSS properties
+## When to reach for it
 
-Each entry in `css` is a rule: which properties to generate, and which values for each. The array under a property
-name is the list of values, `'*'` means every value your tokens define for that property:
+Use `staticCss` when the class name still has to be a Panda utility or recipe class, but the value isn't a string
+literal in source:
 
-```js
-export default {
+- A color (or other token) chosen from state, Storybook knobs, or a URL param
+- A [config recipe](/docs/recipes/config-recipe) variant passed as a prop Panda can't follow
+- Storybook or visual tests that need every recipe variant, whether or not a story calls it
+- [`colorPalette`](/docs/styling/virtual-color#pregenerated-virtual-colors) swapped at runtime
+- Theme token vars you still need after [`removeUnusedTokens`](/docs/styling/optimization#unused-tokens)
+
+## When not to
+
+- **Open-ended values.** Prefer a CSS variable and [`token()`](/docs/styling/dynamic-styling#using-token) /
+  [`token.var()`](/docs/styling/dynamic-styling#using-tokenvar). Don't pre-generate a whole category "just in case."
+- **Literals already in source.** Extraction already covers `css({ color: 'red.300' })` and
+  `<Button size="sm" />`. Adding those to `staticCss` only duplicates work.
+- **`recipes: '*'` in a production app.** Fine for Storybook. Heavy for shipping CSS.
+
+## Config shape
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  staticCss: {
+    css: [], // utility classes
+    recipes: {}, // config / slot recipes
+    patterns: {}, // pattern props
+    themes: [] // theme token vars to keep
+  }
+})
+```
+
+Every key is optional. Use only what you need.
+
+### Utilities (`css`)
+
+Each rule lists properties and values. `'*'` means every value that utility knows (token keys or enum values).
+
+```ts filename="panda.config.ts"
+export default defineConfig({
   staticCss: {
     css: [
       {
         properties: {
-          margin: ['*'],
-          padding: ['*', '50px', '80px']
+          color: ['red.300', 'blue.500'],
+          padding: ['*', '50px']
         },
+        conditions: ['hover'],
         responsive: true
-      },
-      {
-        properties: {
-          color: ['*'],
-          backgroundColor: ['green.200', 'red.400']
-        },
-        conditions: ['light', 'dark']
       }
     ]
   }
-}
+})
 ```
 
-Two more options apply per rule:
+- **`conditions`** — also emit under these states. Bare names like `'hover'` become `_hover` unless they already match
+  a configured condition key. The base (unconditioned) class is always included.
+- **`responsive: true`** — also emit under every breakpoint. That multiplies output, so reserve it for layout props.
 
-- `conditions`: extra conditions or selectors to generate each value under, on top of the unconditioned base class.
-- `responsive`: whether to also generate one class per breakpoint.
+With that config, a runtime value can pick a class that already exists:
 
-## Generating Recipes
+```tsx
+const [color, setColor] = useState('red.300')
 
-Use this when a config recipe's variant comes from a runtime prop instead of a literal you write in your source. See
-[dynamic variant props](/docs/recipes/config-recipe#dynamic-variant-props) for why static analysis misses those.
+// Works: `red.300` was pre-generated
+<styled.button color={color} />
+```
 
-```js
-export default {
+### Recipes
+
+Use this when a config recipe's variant comes from a prop Panda can't extract. See
+[dynamic variant props](/docs/recipes/config-recipe#dynamic-variant-props).
+
+Each rule lists **one variant key at a time**. `{ size: ['sm', 'md'] }` emits `size=sm` and `size=md` as separate
+usages. Other variants fall back to `defaultVariants`.
+
+```ts filename="panda.config.ts"
+export default defineConfig({
   staticCss: {
     recipes: {
       button: [
-        {
-          size: ['sm', 'md'],
-          responsive: true
-        },
-        { variant: ['*'] }
+        { size: ['sm', 'md'] },
+        { variant: ['*'] } // every value of `variant`
       ],
-      // shorthand for every variant
+      // Every variant on this recipe
       tooltip: ['*']
     }
   }
-}
+})
 ```
 
-You can also declare a recipe's static rules where you define the recipe, instead of in the top-level config:
+Declare it on the recipe instead of the top-level config if you prefer:
 
-```js
+```ts
 import { defineRecipe } from '@pandacss/dev'
 
 const card = defineRecipe({
@@ -102,25 +130,9 @@ const card = defineRecipe({
 })
 ```
 
-That's equivalent to writing it in the config:
+Generate every variant of every config and slot recipe (Storybook):
 
-```js
-import { defineConfig } from '@pandacss/dev'
-
-export default defineConfig({
-  staticCss: {
-    recipes: {
-      card: { size: ['*'] }
-    }
-  }
-})
-```
-
-Or generate every variant of every config recipe and slot recipe at once:
-
-```tsx filename="panda.config.ts"
-import { defineConfig } from '@pandacss/dev'
-
+```ts filename="panda.config.ts"
 export default defineConfig({
   staticCss: {
     recipes: '*'
@@ -128,139 +140,86 @@ export default defineConfig({
 })
 ```
 
-That's usually overkill for an app, but it's exactly what you want for testing with
-[Storybook](/docs/get-started/storybook): every variant needs to render, whether or not your stories happen to call it.
+`recipes: '*'` at the root wins over per-recipe `staticCss`.
 
-## Generating patterns
+With [`smartCompoundVariants`](/docs/styling/optimization#compound-variants), only compounds that match an emitted
+usage (including defaults) land in the sheet. List the variants you need, or leave smart compounds off.
 
-`patterns` works the same way as `css`, one rule per property, keyed by the pattern's name instead of the global
-namespace:
+### Patterns
 
-```js
-export default {
+Same idea as `css`, keyed by pattern name. The pattern's transform runs, then the result is encoded as atoms.
+
+```ts filename="panda.config.ts"
+export default defineConfig({
   staticCss: {
     patterns: {
-      stack: [{ properties: { gap: ['4'] } }]
+      stack: [
+        {
+          properties: { gap: ['4', '8'] },
+          responsive: true
+        }
+      ]
     }
   }
-}
+})
 ```
 
-Or generate every value a pattern's prop can take:
+### Themes
 
-```js
-export default {
-  staticCss: {
-    patterns: {
-      stack: [{ properties: { gap: ['*'] } }]
-    }
-  }
-}
-```
+If you use [multiple themes](/docs/theming/multiple-themes), list the theme names whose token CSS variables should
+always ship. That matters when [`removeUnusedTokens`](/docs/styling/optimization#unused-tokens) is on: theme vars
+listed here survive pruning even if extraction never saw them.
 
-## Generating theme variants
-
-If your config defines multiple [themes](/docs/theming/multiple-themes), list the ones you want your `css` rules
-pre-generated for, in addition to the default:
-
-```js
-export default {
+```ts filename="panda.config.ts"
+export default defineConfig({
   staticCss: {
     themes: ['light', 'dark'],
-    css: [
-      {
-        properties: {
-          color: ['*']
-        }
-      }
-    ]
+    css: [{ properties: { color: ['fg', 'bg'] } }]
   }
-}
+})
 ```
 
-## Keep it selective
+## Keep it small
 
-Panda caches and memoizes static generation, but pre-generating a large number of styles still adds build time.
-Generate what you actually use, not everything you might.
+`staticCss` generates unconditionally. Anything you list can end up in the sheet whether a page uses it or not.
 
-**Avoid generating every combination:**
+```ts filename="panda.config.ts"
+export default defineConfig({
+  // ❌ Every color × every condition × every breakpoint
+  // staticCss: {
+  //   css: [{
+  //     conditions: ['hover', 'focus'],
+  //     responsive: true,
+  //     properties: { color: ['*'], backgroundColor: ['*'] }
+  //   }]
+  // }
 
-```js
-export default {
+  // ✅ Only values a runtime path can actually pick
   staticCss: {
     css: [
       {
-        conditions: ['hover', 'focus', 'active', 'disabled'],
         properties: {
-          // Expands to every token value on every property. Expensive.
-          color: ['*'],
-          backgroundColor: ['*'],
-          borderColor: ['*'],
-          width: ['*'],
-          height: ['*']
-          // ...20+ more properties with wildcards
+          color: ['red.500', 'blue.500', 'gray.600']
         }
       }
-    ]
+    ],
+    recipes: {
+      button: [{ size: ['sm', 'md', 'lg'] }]
+    }
   }
-}
+})
 ```
 
-**Generate only what you need instead:**
+Wildcards are fine when the set is small (`fontWeight: ['*']`) or when Storybook truly needs every recipe variant.
+`responsive: true` belongs on layout props (`display`, `width`, `flexDirection`), not on colors.
 
-```js
-export default {
-  staticCss: {
-    css: [
-      {
-        conditions: ['_hover', '_focus'],
-        properties: {
-          color: ['red.500', 'blue.500', 'gray.600'],
-          backgroundColor: ['white', 'gray.50', 'blue.50'],
-          borderColor: ['gray.200', 'blue.500']
-        }
-      }
-    ]
-  }
-}
-```
+Panda warns when a `'*'` expands to a large set, and when a property, recipe, or variant name is unknown. See
+[Diagnostics](/docs/reference/diagnostics).
 
-A wildcard is fine when the token set is small (`fontWeight: ['*']` is a handful of values, not hundreds), or when
-you're covering every variant on purpose for Storybook or visual regression testing.
+For the broader CSS-size toolkit, see [Optimization](/docs/styling/optimization).
 
-`responsive: true` multiplies every value by your breakpoint count, so scope it to properties that actually change
-across breakpoints:
+## See also
 
-```js
-export default {
-  staticCss: {
-    css: [
-      {
-        // Layout properties genuinely differ by breakpoint.
-        responsive: true,
-        properties: {
-          display: ['none', 'block', 'flex'],
-          flexDirection: ['row', 'column'],
-          width: ['full', '1/2', '1/3']
-        }
-      },
-      {
-        // Colors and type don't need a responsive copy.
-        properties: {
-          color: ['red.500', 'blue.500'],
-          fontWeight: ['400', '500', '600']
-        }
-      }
-    ]
-  }
-}
-```
-
-Layout, sizing, spacing, and positioning properties (`display`, `width`, `padding`, `position`, ...) usually need
-`responsive: true`. Color, typography, and effects properties (`color`, `fontWeight`, `boxShadow`, ...) usually don't.
-
-## Removing what you don't use
-
-`staticCss` generates classes unconditionally, so you'll end up shipping some that never render. For a smaller
-output, run the result through [PurgeCSS](https://purgecss.com/): it scans your templates and drops any selector
-that never matches.
+- [Dynamic Styles](/docs/styling/dynamic-styling) for the other runtime escapes (`token`, CSS variables, data attrs).
+- [Optimization](/docs/styling/optimization) for `optimize` flags that pair with `staticCss`.
+- [Storybook](/docs/get-started/storybook) for `recipes: '*'`.

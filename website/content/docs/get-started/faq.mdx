@@ -1,216 +1,118 @@
 ---
-title: Frequently Asked Questions
-description: Frequently asked questions and how to resolve common issues
+title: FAQs
+description: Common questions, short answers.
 ---
 
 <Faq>
 
 <Details>
-<summary>How does Panda manage style conflicts ?</summary>
+<summary>Why aren't my styles applied?</summary>
 
-When you combine shorthand and longhand properties, Panda will resolve the styles in a predictable way. The shorthand
-property will take precedence over the longhand property.
+Check that the [`@layer` order](/docs/styling/cascade-layers#layer-css) is declared and the stylesheet is imported. Without
+PostCSS, import `styled-system/styles.css` and run `panda` (or `panda --watch`).
 
-```jsx
-import { css } from '../styled-system/css'
+</Details>
 
-const styles = css({
-  paddingTop: '20px',
-  padding: '10px'
-})
+<Details id="browser-support">
+<summary>Which browsers does Panda support?</summary>
+
+Panda needs CSS variables, [cascade layers](https://caniuse.com/css-cascade-layers), and modern selectors like
+[`:where()`](https://caniuse.com/mdn-css_selectors_where) / [`:is()`](https://caniuse.com/css-matches-pseudo).
+
+```txt
+>= 1%
+last 1 major version
+not dead
+Chrome >= 99
+Edge >= 99
+Firefox >= 97
+iOS >= 15.4
+Safari >= 15.4
+Android >= 115
+Opera >= 73
 ```
 
-The styles generated at build time will look like this:
+For older browsers:
 
-```css
-@layer utilities {
-  .p_10px {
-    padding: 10px;
-  }
-
-  .pt_20px {
-    padding-top: 20px;
-  }
-}
-```
-
----
+- Set `polyfill: true` (or `--polyfill`) so cascade-layer order works without `@layer`. See
+  [Cascade Layers](/docs/styling/cascade-layers#polyfills).
+- Add [autoprefixer](https://github.com/postcss/autoprefixer) in PostCSS when you need vendor prefixes.
+- Transform and filter utilities use `@property` (Safari 16.4+, Firefox 128+). Set
+  [`optimize.propertyFallback`](/docs/styling/optimization#older-browsers) if you need older engines.
 
 </Details>
 
 <Details>
-<summary>Imported Image is not working in Vite App</summary>
+<summary>How are style conflicts resolved?</summary>
 
-This is a known limitation of Panda due to our static extraction approach.
-
-> Think of it this way: there's no way for the compiler to know what the final asset URL will be since Vite controls it.
-
-We recommend moving the imported `backgroundImage` to the `style` attribute.
+Shorthand and longhand can both emit. Longhands win when they target a more specific side. Panda sorts by property
+breadth, not source order.
 
 ```jsx
-import myImageBackground from './my-image.png'
-
-const Demo = () => {
-  return (
-    <p
-      className={css({ bg: 'red.300', backgroundRepeat: 'repeat' })}
-      style={{ backgroundImage: `url("${myImageBackground}")` }}
-    >
-      Hello World
-    </p>
-  )
-}
+css({ padding: '10px', paddingTop: '20px' })
+// → .p_10px { padding: 10px } then .pt_20px { padding-top: 20px }
 ```
-
----
 
 </Details>
 
 <Details>
-<summary>How to get Panda to work with Jest?</summary>
+<summary>Why isn't HMR working?</summary>
 
-If you run into error messages like `SyntaxError: Unexpected token 'export'` when running Jest tests. Here's what you
-can:
+**Path aliases.** Set `importMap` to match your `tsconfig` paths:
 
-In your tsconfig, add
-
-```json
-{
-  "compilerOptions": {
-    "allowJs": true
-  }
-}
-```
-
-In your Jest configuration, add the `ts-jest` transformer:
-
-```ts
-export default {
-  // ...
-  transform: {
-    '^.+\\.tsx?$': 'ts-jest',
-    '^.+\\.(ts|tsx|js|jsx)?$': 'ts-jest'
-  }
-}
-```
-
-In your Panda config, set the `outExtension` to `js`:
-
-```ts
+```ts filename="panda.config.ts"
 export default defineConfig({
-  // ...
-  outExtension: 'js'
-})
-```
-
----
-
-</Details>
-
-<Details>
-<summary>HMR does not work when I use `tsconfig` paths?</summary>
-
-Panda tries to automatically infer and read the custom paths defined in `tsconfig.json` file. However, there might be
-scenarios where the hot module replacement doesn't work.
-
-To fix this add the `importMap` option to your `panda.config.js` file, setting it's value to the specified `paths` in
-your `tsconfig.json` file.
-
-```json
-// tsconfig.json
-
-{
-  "compilerOptions": {
-    "baseUrl": "./src",
-    "paths": {
-      "@my-path/*": ["./styled-system/*"]
-    }
-  }
-}
-```
-
-```js
-// panda.config.js
-
-module.exports = {
   importMap: '@my-path'
-}
+})
 ```
 
-This will ensure that the paths are resolved correctly, and HMR works as expected.
+**Config changes.** List files that should reload the context in
+[`dependencies`](/docs/reference/config#dependencies):
 
----
-
-</Details>
-
-<Details>
-<summary>HMR not triggered</summary>
-
-If you are having issues with HMR not being triggered after a `panda.config.ts` change (or one of its
-[dependencies](/docs/reference/config#dependencies)), you can manually specify the files that should trigger a rebuild
-by adding the following to your `panda.config.ts`:
-
-```js filename="panda.config.ts"
-import { defineConfig } from '@pandacss/dev'
-
+```ts filename="panda.config.ts"
 export default defineConfig({
-  // ...
   dependencies: ['path/to/files/**.ts']
 })
 ```
 
----
+</Details>
+
+<Details>
+<summary>Should I commit the styled-system folder?</summary>
+
+No. Regenerate it with `panda codegen` or `panda`.
 
 </Details>
 
 <Details>
-<summary>Why are my styles not applied?</summary>
+<summary>Why doesn't `styled` exist?</summary>
 
-Check that the [`@layer` rules](/docs/styling/cascade-layers#layer-css) are set and the corresponding `.css` file is
-included. [If you're not using `postcss`](/docs/get-started/cli), ensure that `styled-system/styles.css` is imported
-and that the `panda` command has been run (or is running with `--watch`).
-
----
+Set [`jsxFramework`](/docs/styling/style-props#configure-jsx) so Panda generates JSX helpers. Rename the factory with
+[`jsxFactory`](/docs/reference/config#jsxfactory) if you want.
 
 </Details>
 
 <Details>
-<summary>How can I debug the styles?</summary>
+<summary>Atomic or config recipes?</summary>
 
-You can use the `panda debug` to debug design token extraction & css generated from files.
+[Config recipes](/docs/recipes/config-recipe) emit only the variants you use. Prefer them for shared design-system
+components.
 
-If the issue persists, you can try looking for it in the [issues](https://github.com/chakra-ui/panda/issues) or in the
-[discord](https://discord.gg/VQrkpsgSx7). If you can't find it, please create a minimal reproduction and submit
-[a new github issue](https://github.com/chakra-ui/panda/issues/new/choose) so we can help you.
-
----
+[Atomic recipes](/docs/recipes/atomic-recipe) (`cva`) emit every variant. Prefer them when you want styles colocated with
+the component.
 
 </Details>
 
 <Details>
-<summary>Why is my IDE not showing `styled-system` imports?</summary>
+<summary>How do I type and split recipe props?</summary>
 
-If you're not getting import autocomplete in your IDE, you may need to include the `styled-system` directory in your
-tsconfig.json file.
-
----
-
-</Details>
-
-<Details>
-<summary>How do I get a type with each recipe properties?</summary>
-
-You can get a [`config recipe`](/docs/recipes/config-recipe) properties types by using `XXXVariantProps`. Let's
-say you have a `config recipe` named `button`, you can import its type like this:
+Config recipe:
 
 ```ts
 import { button, type ButtonVariantProps } from '../styled-system/recipes'
 ```
 
----
-
-You can get an [`atomic recipe`](/docs/recipes/atomic-recipe) properties types by using `RecipeVariantProps`.
-Let's say you have a `atomic recipe` named `button`, you can get its type like this:
+Atomic recipe:
 
 ```ts
 import { cva, type RecipeVariantProps } from '../styled-system/css'
@@ -218,274 +120,151 @@ import { cva, type RecipeVariantProps } from '../styled-system/css'
 export type ButtonVariantProps = RecipeVariantProps<typeof buttonStyle>
 ```
 
----
+Split variants from the rest with `splitVariantProps`:
 
-</Details>
-
-<Details>
-<summary>How do I split recipe props from the rest?</summary>
-
-You can split recipe props by using `xxx.splitVariantProps`. Let's say you have a `recipe` named `button`, you can split
-its props like this:
-
-```tsx Button.tsx {8}
-import { css, cx } from '../styled-system/css'
-import { ButtonVariantProps, button } from '../styled-system/recipes'
-
-interface ButtonProps extends ButtonVariantProps {
-  children: React.ReactNode
-}
-
-export function Button(props: ButtonProps) {
-  const { children, ...rest } = props
-  const [buttonProps, cssProps] = button.splitVariantProps(rest)
-  return <button className={cx(button(buttonProps), css(cssProps))}>{children}</button>
-}
+```tsx
+const [buttonProps, cssProps] = button.splitVariantProps(props)
 ```
 
-The same `xxx.splitVariantProps` method is available for both `config recipes` and `atomic recipes`.
-
----
-
 </Details>
 
 <Details>
-<summary>How do I reference a token value or css var?</summary>
+<summary>How do I read a token at runtime?</summary>
 
-You can reference a token value or it's associated css variable using the
-[`token` function](/docs/theming/usage#vanilla-js). This function allows you to access and use the values stored in your
-theme tokens at runtime.
+Use [`token`](/docs/theming/usage#vanilla-js) from `styled-system/tokens`:
 
 ```tsx
 import { token } from '../styled-system/tokens'
 
-function App() {
-  return (
-    <div
-      style={{
-        background: token('colors.blue.200')
-      }}
-    />
-  )
-}
+<div style={{ background: token('colors.blue.200') }} />
 ```
 
----
+</Details>
+
+<Details>
+<summary>Why did my preset replace the defaults?</summary>
+
+You need `extend`. Without it, your theme or preset replaces the base instead of merging.
+
+For tokens, omit `extend` only when you want a full override. To keep some defaults, import `@pandacss/preset-panda` and
+pick what you need.
 
 </Details>
 
 <Details>
-<summary>Should I commit the styled-system folder?</summary>
+<summary>Why isn't `base` working?</summary>
 
-Just like the `node_modules` folder, you most likely don't want to commit the `styled-system` folder. It contains code
-that is auto-generated and can be re-generated at any time.
-
----
-
-</Details>
-
-<Details>
-<summary>How does Panda work?</summary>
-
-When running `pnpm panda`, here's what's happening under the hood:
-
-- **Load Panda context**:
-  - Find and evaluate app config, merge result with presets.
-  - Create panda context: prepare code generator from config, parse user's file as AST.
-- **Generating artifacts**:
-  - Write lightweight JS runtime and types to output directory
-- **Extracting used styles in app code**:
-  - Run parser on each user's file: identify and extract styles, compute CSS, write to styles.css.
-
----
-
-</Details>
-
-<Details>
-<summary>I'm seeing a "Could not resolve xxx" error with esbuild/tsup. What should I do?</summary>
-
-In such a case, check the [`outExtension`](/docs/reference/config#outextension) in your `panda.config` and set it to
-"js". This will ensure your modules are resolved correctly.
-
----
-
-</Details>
-
-<Details>
-<summary>Why does importing `styled` not exist?</summary>
-
-You should use [`config.jsxFramework`](/docs/styling/style-props#configure-jsx) when you need to import styled
-components. You can then use the [`jsxFactory`](/docs/reference/config#jsxfactory) option to set the name of the factory
-component.
-
----
-
-</Details>
-
-<Details>
-<summary>Why is my preset overriding the base one, even after adding it to the array?</summary>
-
-You might have forgotten to include the `extend` keyword in your config. Without `extend`, your preset will completely
-replace the base one, instead of merging with it.
-
----
-
-</Details>
-
-<Details>
-<summary>Why is my base condition not working in this example?</summary>
+Use `base`, not `_base`. There is no underscore.
 
 ```ts
-css({ color: { _base: 'red.600', _dark: 'white' } })
+css({ color: { base: 'red.600', _dark: 'white' } })
 ```
 
-You used `_base` instead of `base`, there is no underscore `_`.
+</Details>
 
----
+<Details>
+<summary>defineConfig vs definePreset?</summary>
+
+`defineConfig` is for the app. It exposes every config key.
+
+`definePreset` is for shareable presets. It only includes keys that merge into an app config.
 
 </Details>
 
 <Details>
-<summary>What's the difference between using `defineConfig()` vs `definePreset()`</summary>
+<summary>Can I use dynamic styles?</summary>
 
-`defineConfig` is intended to be used in your app config, and will show you all the config keys that are available.
-`definePreset` will only show you the config keys that will be merged into an app's config, the rest will be ignored.
-
----
+Yes, with limits. See [Dynamic Styles](/docs/styling/dynamic-styling).
 
 </Details>
 
 <Details>
-<summary>How can I completely override the default tokens?.</summary>
+<summary>How do I build a design system?</summary>
 
-If you want to **completely override all** of the default presets theme tokens, you can omit the `extends` keyword from
-your `theme` config object.
-
-If you want to **keep some of the defaults**, you can install the `@pandacss/preset-panda` package, import it, then
-specifically pick what you need in there (or use the JS spread operator `...` and override the other keys).
-
----
+See [Design systems](/docs/design-systems/setup).
 
 </Details>
 
 <Details>
-<summary>How do I make a design system / component library with Panda?</summary>
+<summary>Why don't imported images work in Vite?</summary>
 
-There is a detailed guide on how to do this [here](/docs/design-systems/setup).
+Panda can't know Vite's final asset URL at extract time. Put `backgroundImage` on `style` instead:
 
----
+```jsx
+import bg from './my-image.png'
 
-</Details>
-
-<Details>
-<summary>Can I use dynamic styles with Panda?</summary>
-
-Yes, you can use dynamic styles with Panda. More on that [here](/docs/styling/dynamic-styling#runtime-conditions).
-
----
+<p
+  className={css({ bg: 'red.300', backgroundRepeat: 'repeat' })}
+  style={{ backgroundImage: `url("${bg}")` }}
+/>
+```
 
 </Details>
 
 <Details>
-<summary>Should I use atomic or config recipes ?</summary>
+<summary>Jest or esbuild can't resolve styled-system?</summary>
 
-[Config recipes](/docs/recipes/config-recipe) are generated just in time, meaning that only the recipes and
-variants you use will exist in the generated CSS, regardless of the number of recipes in the config.
-
-This contrasts with [Atomic recipes](/docs/recipes/atomic-recipe) (cva), which generates all of the variants
-regardless of what was used in your code. The reason for this difference is that all `config.recipes` are known at the
-start of the panda process when we evaluate your config. In contrast, the CVA recipes are scattered throughout your
-code. To get all of them and find their usage across your code, we would need to scan your app code multiple times,
-which would not be ideal performance-wise.
-
-When dealing with simple use cases, or if you need code colocation, or even avoiding dynamic styling, atomic recipes
-shine by providing all style variants. Config recipes are preferred for design system components, delivering leaner CSS
-with only the styles used. Choose according to your component needs.
-
----
+Set [`outExtension: 'js'`](/docs/reference/config#outextension). For Jest, also transform with `ts-jest` and set
+`allowJs: true` in `tsconfig`.
 
 </Details>
 
 <Details>
-<summary>Why does the panda codegen command fail ?</summary>
+<summary>Why does codegen fail with an es5 error?</summary>
 
-If you run into any error related to "Transforming const to the configured target environment ("es5") is not supported
-yet", update your tsconfig to use es6 or higher:
+Raise the TypeScript target:
 
 ```json filename="tsconfig.json"
 {
   "compilerOptions": {
-    "target": "es6"
+    "target": "ES2017"
   }
 }
 ```
 
----
+</Details>
+
+<Details>
+<summary>How do I generate every CSS variant?</summary>
+
+Use [`staticCss`](/docs/styling/static). Avoid wide `*` lists if you want to keep usage-based CSS. See
+[Optimization](/docs/styling/optimization#less-staticcss).
 
 </Details>
 
 <Details>
-<summary>How can I generate all possible CSS variants at build time?</summary>
+<summary>Can I write one-off media queries?</summary>
 
-While it's possible to generate all variants, even unused ones, by using
-[`config.staticCss`](/docs/styling/dynamic-styling#using-static-css), it's generally **not
-recommended** to use it for more than a few values. However, keep in mind this approach compromises one of Panda's
-strengths: lean, usage-based CSS generation.
+Yes. Put `@media`, `@container`, or `@supports` keys in the style object:
 
----
-
-</Details>
-
-<Details>
-<summary>Can I use one-off media query and other at rules?</summary>
-
-Yes, you can! You can apply one-off media queries and other at rules (such as `@container`, `@supports`) in your CSS as
-shown below:
-
-```javascript
+```js
 css({
-  containerType: 'size',
-  '@media (min-width: 10px)': {
-    fontSize: 'xl',
-    color: 'blue.300'
-  },
-  '@container (min-width: 10px)': {
-    fontSize: '2xl',
-    color: 'green.300'
-  },
-  '@supports (display: flex)': {
-    fontSize: '3xl',
-    color: 'red.300'
-  }
+  '@media (min-width: 10px)': { fontSize: 'xl' },
+  '@supports (display: flex)': { color: 'red.300' }
 })
 ```
 
----
-
 </Details>
 
 <Details>
-<summary>How can I prevent other libraries from overriding my styles?</summary>
+<summary>How do I stop other libraries overriding my styles?</summary>
 
-You can use
-[Layer Imports](<https://developer.mozilla.org/en-US/docs/Web/CSS/@import#layer-name:~:text=%40import%20url%20layer(layer%2Dname)%3B>)
-to prevent other libraries from overriding your styles.
-
-First of all you cast the css from the other library(s) to a css layer:
+Import their CSS into a lower cascade layer, then put that layer before Panda's:
 
 ```css
 @import url('bootstrap.css') layer(bootstrap);
 
-@import url('ionic.css') layer(ionic);
+@layer bootstrap, reset, base, tokens, recipes, utilities;
 ```
 
-Then update the default layer list to deprioritize the styles from the other library(s):
+</Details>
 
-```css
-@layer bootstrap, reset, base, token, recipes, utilities;
+<Details>
+<summary>How do I debug styles?</summary>
 
-@layer ionic, reset, base, token, recipes, utilities;
-```
+Run [`panda debug`](/docs/reference/debugging#panda-debug). If that doesn't help, search
+[GitHub issues](https://github.com/chakra-ui/panda/issues) or ask in [Discord](https://discord.gg/VQrkpsgSx7). Open a
+minimal reproduction when you file an issue.
 
 </Details>
 
