@@ -3,15 +3,16 @@ title: Thinking in Panda
 description: Which Panda API to reach for next, from css() to recipes, slots, and config.
 ---
 
-Panda has one mental model, and everything below is that model at different sizes. Four ideas carry it:
+Panda has one mental model. Whether you're styling a single button or building a design system, these four ideas hold
+true:
 
 - **Styles live next to your markup.** You write them as objects in the same file as the component, not in a separate
-  stylesheet to keep in sync.
-- **Tokens are the vocabulary.** Name intent once (`blue.500`, `md`, `semibold`) and every style refers to the same
-  names.
-- **Atomic CSS that scales.** Each property and value becomes one shared class, so your CSS grows with the number of
-  distinct styles, not the number of components.
-- **Zero runtime.** It all compiles to plain CSS at build time. Nothing computes styles in the browser.
+  stylesheet you have to keep in sync.
+- **Tokens replace raw values.** Name the token once (`blue.500`, `md`, `semibold`) instead of the raw value, and every
+  style refers to the same token.
+- **Atomic CSS scales.** Each property and value becomes one shared class, so your CSS grows with the number of distinct
+  styles, not the number of components.
+- **Ships zero runtime.** It all compiles to plain CSS at build time. Nothing computes styles in the browser.
 
 The only question day to day is which API to reach for as a component grows. Start local. Promote only when the shape of
 the styles forces it. This walk builds a Button, then a Card, and climbs the ladder: `css` → `cva` → `sva` → config.
@@ -20,7 +21,7 @@ Want the case for build-time styles first? Read [Welcome to Panda](/docs/get-sta
 
 ## Step 1: Start with `css()`
 
-Say you need a button, one look, no variants yet. Use `css()` to put the styles right on the element:
+Say you need to style a button that has no variants yet. Use `css()` to put the styles right on the element:
 
 ```tsx
 import { css } from '../styled-system/css'
@@ -142,8 +143,10 @@ export function Button({ size, visual, children }) {
 }
 ```
 
-Promote to a recipe when you have variants to name, not because the component file got long. One element, many looks:
-`cva` is enough.
+Always use a recipe when you have variants to name, not simply because the component file gets long. As long as it's a
+single element, `cva` alone is enough.
+
+If a component has more than one element, reach for `sva` instead, which you'll see in Step 3.
 
 > That "before" example still compiles, unlike Step 1's `` `red.${shade}` ``. A ternary's branches are both literal, so
 > Panda can see them and generates CSS for both. A template literal's interpolation isn't a fixed set of options, so
@@ -154,7 +157,8 @@ Full API: [Recipes](/docs/recipes/atomic-recipe).
 
 ## Step 3: Split into slots when markup has parts
 
-Now let's build a Card. A Card has a `root`, `title`, and a `body`. One `size` prop should style all three together.
+Now let's build a Card. Unlike a button, which has a single element, a Card has a `root`, `title`, and a `body`. One
+`size` prop should style all three together.
 
 `sva` gives you one recipe and a class bag per part:
 
@@ -208,10 +212,10 @@ Full API: [Slot recipes](/docs/recipes/slot-recipes).
 
 ## Step 4: Move to config when it's a system primitive
 
-`cva` and `sva` are fine as long as the recipe stays colocated: it only matters inside this one component's file. Move
-the same `base` / `variants` / `defaultVariants` shape into `defineRecipe` or `defineSlotRecipe` once any of this gets
-true: other apps need to import the component, it ships inside a preset, or you want Panda to generate CSS only for
-the variants your code actually calls, not the full matrix.
+`cva` and `sva` are fine as long as the recipe stays colocated: it only matters inside this one component's file.
+However, move the same `base` / `variants` / `defaultVariants` shape into `defineRecipe` or `defineSlotRecipe`, then
+register it in `panda.config.ts`, once any of this gets true: other apps need to import the component, it ships inside a
+preset, or you want Panda to generate CSS only for the variants your code actually calls, not the full matrix.
 
 Button becomes a config recipe:
 
@@ -317,11 +321,10 @@ const classes = card({ size: 'lg' })
 - Move to `defineRecipe` / `defineSlotRecipe` for design-system components. You get leaner JIT CSS, and you can share
   the recipe through a preset or `panda lib`.
 
-The full comparison table lives here:
-[Recipes overview](/docs/recipes/overview). Config form for parts:
+The full comparison table lives here: [Recipes overview](/docs/recipes/overview). Config form for parts:
 [Config Slot Recipe](/docs/recipes/config-recipe#config-slot-recipe).
 
-## Step 5: Trust the system
+## Trust the system
 
 A few things don't change as you move between `css`, `cva`, `sva`, and config: tokens, cascade layers, and types.
 

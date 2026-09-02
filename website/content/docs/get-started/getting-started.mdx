@@ -27,6 +27,7 @@ There is more than one way to write it. Every tab below produces the same atomic
       )
     }
     ```
+
   </Tab>
   <Tab>
     ```jsx
@@ -41,6 +42,7 @@ There is more than one way to write it. Every tab below produces the same atomic
       )
     }
     ```
+
   </Tab>
   <Tab>
     ```jsx
@@ -55,6 +57,7 @@ There is more than one way to write it. Every tab below produces the same atomic
       )
     }
     ```
+
   </Tab>
   <Tab>
     ```jsx
@@ -72,12 +75,16 @@ There is more than one way to write it. Every tab below produces the same atomic
       return <div className={card({ size })}>John Doe</div>
     }
     ```
+
   </Tab>
 </Tabs>
 
 ## How it works
 
-Two steps at build time. Nothing in the browser computes styles.
+Panda runs two passes at build time, so the browser never computes styles:
+
+1. **Codegen** reads your config and writes the `styled-system` package you import from.
+2. **Extract** scans your source for those calls and emits only the CSS you used.
 
 ```
   panda.config.ts                 css({ color: 'blue.500' })
@@ -95,17 +102,13 @@ Two steps at build time. Nothing in the browser computes styles.
               class name string + static CSS
 ```
 
-1. **Codegen** reads your config and writes the `styled-system` package you import from.
-2. **Extract** scans your source for those calls and emits only the CSS you used.
-
 Values have to be visible in source. If a style only exists at runtime, see
-[Dynamic Styles](/docs/styling/dynamic-styling). Folder details:
-[Styled System](/docs/reference/styled-system).
+[Dynamic Styles](/docs/styling/dynamic-styling). Folder details: [Styled System](/docs/reference/styled-system).
 
 ## What you get
 
-- **Static analysis:** Panda parses your styles at build time and generates plain CSS files that work in any
-  JavaScript framework.
+- **Static analysis:** Panda parses your styles at build time and generates plain CSS files that work in any JavaScript
+  framework.
 - **Type safety:** Panda combines `csstype` with auto-generated typings, so CSS properties and design tokens are
   type-checked as you write them.
 - **Performance:** styles compile down to atomic CSS ahead of time, so there's no runtime style engine shipped to the
