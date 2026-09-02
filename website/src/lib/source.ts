@@ -5,6 +5,7 @@ import { z } from 'zod'
 const docsCollection = defineCollections({
   type: 'doc',
   dir: 'content/docs',
+  lastModified: true,
   schema: z.object({
     title: z.string(),
     description: z.string().optional(),

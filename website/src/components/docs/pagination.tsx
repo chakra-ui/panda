@@ -20,12 +20,10 @@ function flattenTab(tabKey: string, groups: NavItem[]): PaginationItem[] {
 
   for (const group of groups) {
     for (const item of group.items || []) {
-      if (item.external || !item.url) continue
-      result.push({
-        title: item.title,
-        url: `${tabKey}/${item.url}`,
-        category: group.title
-      })
+      if (item.external) continue
+      const url = item.url ? `${tabKey}/${item.url}` : item.href
+      if (!url) continue
+      result.push({ title: item.title, url, category: group.title })
     }
   }
 
@@ -93,7 +91,7 @@ const PagationLink = (props: PagationLinkProps) => {
   const { item, type } = props
   return (
     <Link
-      href={`/docs/${item.url}`}
+      href={item.url.startsWith('/') ? item.url : `/docs/${item.url}`}
       className={css({
         flex: '1',
         display: 'flex',

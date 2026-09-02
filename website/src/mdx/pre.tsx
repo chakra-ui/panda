@@ -1,9 +1,8 @@
-import { cva, cx } from '@/styled-system/css'
+import { css, cva, cx } from '@/styled-system/css'
+import { CopyButton } from './copy-button'
 
 const preStyles = cva({
   base: {
-    position: 'relative',
-    mt: { base: '6', _first: '0' },
     bg: 'bg.muted!',
     overflowX: 'auto',
     rounded: 'xl',
@@ -29,16 +28,24 @@ const preStyles = cva({
   }
 })
 
+const wrapperStyles = css({
+  position: 'relative',
+  mt: { base: '6', _first: '0' }
+})
+
 export const Pre = (props: React.ComponentProps<'pre'>) => {
   const { className = '', ...rest } = props
   return (
-    <pre
-      className={cx(
-        preStyles({ hasFilename: false }),
-        'scroll-area',
-        className
-      )}
-      {...rest}
-    />
+    <div className={wrapperStyles}>
+      <pre
+        className={cx(
+          preStyles({ hasFilename: false }),
+          'scroll-area',
+          className
+        )}
+        {...rest}
+      />
+      <CopyButton />
+    </div>
   )
 }

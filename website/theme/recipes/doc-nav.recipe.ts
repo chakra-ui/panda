@@ -39,7 +39,6 @@ export const docNavRecipe = defineSlotRecipe({
       _current: {
         // Past `fg`, which hover already uses, so active never reads as hover.
         color: { base: 'black', _dark: 'white' },
-        fontWeight: 'medium',
         _before: { bg: 'accent.emphasis' }
       },
       _focusVisible: {

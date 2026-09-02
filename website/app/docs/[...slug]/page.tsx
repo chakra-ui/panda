@@ -108,7 +108,7 @@ export default async function DocsPage(props: DocsPageProps) {
             <MDX components={mdxComponents} />
           </div>
           <Pagination slug={slug} />
-          <PageActions slug={slug} />
+          <PageActions slug={slug} lastModified={page.data.lastModified} />
         </Box>
 
         {/* Table of Contents — space is reserved even when hidden, so the
