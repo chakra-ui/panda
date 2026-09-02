@@ -6,7 +6,7 @@ import { LuFileText, LuPencilLine } from 'react-icons/lu'
 interface Props {
   /** `{tabKey}/{page}`, matching the docs route slug. */
   slug: string
-  lastModified?: Date
+  lastModified?: Date | null
 }
 
 const actionStyles = css({
