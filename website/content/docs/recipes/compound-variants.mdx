@@ -3,25 +3,44 @@ title: Compound variants
 description: Styles that apply when more than one variant matches. Same authoring shape, different CSS for atomic vs config.
 ---
 
-A variant is one axis (`size`, `visual`). A compound is a combination. When `size` is `sm` and `visual` is
-`outline`, you might want tighter padding than either axis would set alone.
+A variant is `size` or `visual`. A compound variant is a combination. When `size` is `sm` and `visual` is
+`outline`, you might want tighter padding than either variant would set alone.
 
-Every recipe API uses the same key: `compoundVariants`. There is no `compoundSlotVariants`. Slot recipes put a
-per-slot style object in `css`.
+Every recipe API uses the same key: `compoundVariants`.
 
-## Writing a compound
+## Writing a compound variant
 
 ```ts
-compoundVariants: [
-  {
-    size: 'sm',
-    visual: 'outline',
-    css: { px: '2', py: '1' }
-  }
-]
+const button = cva({
+  base: { rounded: 'md', fontWeight: 'semibold' },
+  variants: {
+    size: {
+      sm: { px: '3', py: '1.5' },
+      lg: { px: '5', py: '3' }
+    },
+    visual: {
+      solid: { bg: 'blue.500', color: 'white' },
+      outline: { borderWidth: '1px', color: 'blue.500' }
+    }
+  },
+  compoundVariants: [
+    {
+      size: 'sm',
+      visual: 'outline',
+      css: { px: '2', py: '1' }
+    }
+  ]
+})
 ```
 
-Every listed key must match. An array on a condition is OR, so `size: ['sm', 'md']` matches either `sm` or `md`.
+```tsx
+<button className={button({ size: 'sm', visual: 'outline' })}>Save</button>
+```
+
+`size` and `visual` still apply. The compound variant adds the tighter padding only for that pair. Every listed key must
+match. An array on a condition is OR, so `size: ['sm', 'md']` matches either `sm` or `md`.
+
+## Slot recipes
 
 On a slot recipe, `css` is per slot:
 
@@ -38,32 +57,44 @@ compoundVariants: [
 ]
 ```
 
-## Atomic vs config
+## Atomic vs config recipe
 
-The authoring is the same. The CSS is not.
+The authoring is the same. The CSS is not. Same `css: { px: '2', py: '1' }` on `sm` + `outline`:
 
-On `cva` and `sva`, each compound `css` is atomized with the rest of the definition. At runtime the matching
-objects merge, then go through `css()`. You never see a special compound class.
+`cva` / `sva` atomize it. Runtime merges those objects into `css()`. There is no compound variant class.
 
-On `defineRecipe` and `defineSlotRecipe`, the first extracted use of the recipe emits a **named class** per
-compound, in `recipes.compound_variants` (or `recipes.slots.compound_variants`). Runtime only appends the matching
-name. With the default `separator` (`_`), those names look like this:
-
+```css
+@layer utilities {
+  .px_2 {
+    padding-inline: var(--spacing-2);
+  }
+  .py_1 {
+    padding-block: var(--spacing-1);
+  }
+}
 ```
-button--compound__size_sm__visual_outline
-checkbox__root--compound__size_sm
+
+`defineRecipe` / `defineSlotRecipe` emit a **named class** in `recipes.compound_variants` (or
+`recipes.slots.compound_variants`). Runtime only appends that name.
+
+```css
+@layer recipes {
+  @layer compound_variants {
+    .button--compound__size_sm__visual_outline {
+      padding-inline: var(--spacing-2);
+      padding-block: var(--spacing-1);
+    }
+  }
+}
 ```
 
-`hash: true` shortens the tail to a hash. A `className` on a `cva` compound is ignored. Atomic compounds stay
-utilities.
+## Eager emit vs smart compound variants
 
-## Eager emit vs smart compounds
+By default, that first use emits **every** compound variant for the recipe. Runtime still decides which class to
+apply, so unused combinations sit in the sheet until you opt into something tighter.
 
-By default, that first use emits **every** compound for the recipe. Runtime still decides which class to apply, so
-unused combinations sit in the sheet until you opt into something tighter.
-
-[`optimize.smartCompoundVariants`](/docs/styling/optimization#compound-variants) emits only compounds that match a
-combination Panda actually extracted, plus defaults.
+[`optimize.smartCompoundVariants`](/docs/styling/optimization#compound-variants) emits only compound variants that
+match a combination Panda actually extracted, plus defaults.
 
 ```ts filename="panda.config.ts"
 export default defineConfig({
@@ -75,7 +106,7 @@ If a combo only exists at runtime, pair the flag with [`staticCss`](/docs/recipe
 class name comes back and the CSS does not.
 
 `staticCss` is one variant key per rule. Listing `{ size: ['sm'] }` and `{ visual: ['outline'] }` as two rules does
-not emit the `sm + outline` combo unless defaults fill the other axis.
+not emit the `sm + outline` combo unless defaults fill the other key.
 
 ## Responsive variants
 
@@ -89,7 +120,7 @@ Adding `compoundVariants` disables responsive and conditional variant props on c
 `cva` and `sva` never had responsive variant props. The longer version is on
 [responsive variants](/docs/recipes/responsive-variants).
 
-## Cascade
+## Cascade layers
 
 Config recipe layers, in order:
 
@@ -102,7 +133,7 @@ recipes.compound_variants
 Slots use `recipes.slots.base`, `recipes.slots.variants`, then `recipes.slots.compound_variants`. After that comes
 `@layer utilities`.
 
-Compounds beat the recipe's own styles. `css()` and other utilities still win.
+Compound variants beat the recipe's own styles. `css()` and other utilities still win.
 
 ## See also
 

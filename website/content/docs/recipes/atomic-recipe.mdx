@@ -49,7 +49,24 @@ in a key when the caller omits it, so `button()` and `button({ size: 'lg' })` bo
 `compoundVariants` is for styles that apply only when two variants match. That has its own page:
 [compound variants](/docs/recipes/compound-variants).
 
-Boolean variants use `'true'` and `'false'` as keys in the definition. At the call site you pass a real `boolean`.
+## Boolean variants
+
+Keys in the definition are the strings `'true'` and `'false'`. At the call site you pass a real boolean.
+
+```ts
+const button = cva({
+  base: { rounded: 'md' },
+  variants: {
+    outlined: {
+      true: { borderWidth: '1px', borderColor: 'gray.300' }
+    }
+  }
+})
+```
+
+```tsx
+<button className={button({ outlined: true })}>Save</button>
+```
 
 ## Using the recipe
 
