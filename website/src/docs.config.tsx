@@ -184,9 +184,16 @@ export const docsTabs: TabItem[] = [
           { title: 'Writing Styles', url: 'writing-styles' },
           { title: 'Conditional Styles', url: 'conditional-styles' },
           { title: 'Responsive Design', url: 'responsive-design' },
-          { title: 'JSX Style Props', url: 'style-props' },
           { title: 'Patterns', url: 'patterns' },
           { title: 'Merging Styles', url: 'merging-styles' }
+        ]
+      },
+      {
+        title: 'JSX',
+        items: [
+          { title: 'Style props', url: 'style-props' },
+          { title: 'Factory props', url: 'factory-props' },
+          { title: 'Extraction rules', url: 'extraction-rules' }
         ]
       },
       {
@@ -215,27 +222,29 @@ export const docsTabs: TabItem[] = [
     side: 'left',
     items: [
       {
-        title: 'Recipes',
+        title: 'Write recipes',
         items: [
+          { title: 'Overview', url: 'overview' },
           { title: 'Atomic Recipe', url: 'atomic-recipe' },
-          { title: 'Config Recipe', url: 'config-recipe' },
-          { title: 'Slot Recipes', url: 'slot-recipes' }
+          { title: 'Slot Recipe', url: 'slot-recipes' },
+          { title: 'Config Recipe', url: 'config-recipe' }
         ]
       },
       {
-        title: 'JSX Recipes',
+        title: 'Variants',
         items: [
-          { title: 'Overview', url: 'jsx-recipes-overview' },
-          { title: 'Slot Recipe Context', url: 'slot-recipe-context' },
-          { title: 'Recipe Context', url: 'recipe-context' }
+          { title: 'Compound variants', url: 'compound-variants' },
+          { title: 'Dynamic variants', url: 'dynamic-variants' },
+          { title: 'Responsive variants', url: 'responsive-variants' }
         ]
       },
       {
-        title: 'Guides',
+        title: 'JSX Usage',
         items: [
-          { title: 'Config Recipes', url: 'guide-config-recipes' },
-          { title: 'Default Props', url: 'guide-default-props' },
-          { title: 'Forwarding Props', url: 'guide-forwarding-props' }
+          { title: 'Styled factory', url: 'styled-factory' },
+          { title: 'Recipe context', url: 'recipe-context' },
+          { title: 'Slot recipe context', url: 'slot-recipe-context' },
+          { title: 'Tracking JSX', url: 'jsx-tracking' }
         ]
       }
     ]
@@ -411,7 +420,7 @@ export function getTab(key: string): TabItem | undefined {
 const TAB_LANDING_HREF: Record<string, string> = {
   'get-started': '/docs',
   styling: '/docs/styling/overview',
-  recipes: '/docs/recipes/atomic-recipe',
+  recipes: '/docs/recipes/overview',
   theming: '/docs/theming/tokens',
   'design-systems': '/docs/design-systems/setup'
 }

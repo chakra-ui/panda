@@ -1,107 +1,46 @@
 ---
-title: JSX Style Props
-description: Build UIs quickly by passing css properties as "props" to your components.
+title: Style props
+description: Pass CSS properties as props on styled.* elements. Same atomic CSS as css(), different authoring surface.
 ---
 
-While you can get very far by using the `className` prop and function from Panda, style props provide a more ergonomic
-way of expressing styles.
+Style props are CSS properties on a JSX element. `bg="blue.500"` is the same atomic CSS as `css({ bg: 'blue.500' })`.
 
-Panda will extract the style props through static analysis and generate the CSS at build time.
-
-> Same atomic CSS as `css()`, different authoring surface. For variants and compound components, step up to
-> [recipes](/docs/recipes/atomic-recipe) or walk the ladder in
-> [Thinking in Panda](/docs/get-started/thinking-in-panda).
-
-> If you use Chakra UI, Styled System, or Theme UI, you'll feel right at home right away 😊
-
-```jsx
+```tsx
 import { css } from '../styled-system/css'
 import { styled } from '../styled-system/jsx'
 
-// The className approach
-const Button = ({ children }) => (
-  <button
-    className={css({
-      bg: 'blue.500',
-      color: 'white',
-      py: '2',
-      px: '4',
-      rounded: 'md'
-    })}
-  >
-    {children}
-  </button>
-)
+// className
+<button className={css({ bg: 'blue.500', color: 'white', py: '2', px: '4' })} />
 
-// The style props approach
-const Button = ({ children }) => (
-  <styled.button bg="blue.500" color="white" py="2" px="4" rounded="md">
-    {children}
-  </styled.button>
-)
+// style props
+<styled.button bg="blue.500" color="white" py="2" px="4" />
 ```
+
+`css`, `as`, and `className` are [factory props](#factory-props). Variants on `styled()` are
+[Styled factory](/docs/recipes/styled-factory).
+
+<Callout type="info">
+  You need [`jsxFramework`](/docs/reference/config#jsxframework) in your config, or `styled-system/jsx` is not
+  generated.
+</Callout>
 
 ## Configure JSX
 
-Using JSX style props is turned off by default in Panda, but you can opt-in to this feature by using the `jsxFramework`
-property in the panda config.
-
-> ⚠️ Panda will not extract style props from JSX elements if you don't set the `jsxFramework` property. This is to avoid
-> unnecessary work for projects that don't use JSX.
-
-### Choose Framework
-
-JSX is a JavaScript syntax extension that allows you to write HTML-like code directly within your JavaScript code and is
-supported by most popular frameworks. Panda supports JSX style props in React, Preact, Vue 3, Qwik and Solid.js.
-
-```js filename="panda.config.ts"
+```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
-  // ...
   jsxFramework: 'react'
 })
 ```
 
-### Generate JSX runtime
+Panda supports React, Preact, Vue 3, Qwik, and Solid. Then run `panda codegen`.
 
-Next, you need to run `panda codegen` to generate the JSX runtime for your framework.
+You can rename the factory with [`jsxFactory`](/docs/reference/config#jsxfactory).
 
-<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
-  {/* <!-- prettier-ignore-start --> */}
-  <Tab>
-  ```bash
-  pnpm panda codegen --clean
-  ```
-  </Tab>
-  <Tab>
-  ```bash
-  npm panda codegen --clean
-  ```
-  </Tab>
-  <Tab>
-  ```bash
-  yarn panda codegen --clean
-  ```
-  </Tab>
-  <Tab>
-  ```bash
-  bun panda codegen --clean
-  ```
-  </Tab>
-  {/* <!-- prettier-ignore-end --> */}
-</Tabs>
+## Using style props
 
-That's it! You can now use JSX style props in your components.
-
-## Using Style Props
-
-### JSX Element
-
-Style props are just CSS properties that you can pass to your components as props. With the JSX runtime, you can use
-`styled.<element>` syntax to create supercharged JSX elements that support style props.
-
-```jsx
+```tsx
 import { styled } from '../styled-system/jsx'
 
 const Button = ({ children }) => (
@@ -111,140 +50,96 @@ const Button = ({ children }) => (
 )
 ```
 
-### Property Renaming
+`styled.button` is a shorthand for `styled('button')` when you only need style props.
 
-<Callout type="warning">Due to the static nature of Panda, you can't rename properties at runtime.</Callout>
+## Factory props
 
-```tsx filename="App.tsx"
-import { Circle, CircleProps } from '../styled-system/jsx'
+Besides `bg` and `px`, the factory reads a few props itself. They are not CSS utilities.
 
-type Props = {
-  circleSize?: CircleProps['size']
-}
+### css
 
-const CustomCircle = (props: Props) => {
-  const { circleSize = '3' } = props
-  return (
-    <Circle
-      // ❌ Avoid: Panda can't know that you're mapping `circleSize` to `size`
-      size={circleSize}
-    />
-  )
-}
-
-// ...
-
-const App = () => {
-  return (
-    // In this case, you should keep the `size` naming
-    <CustomCircle circleSize="4" />
-  )
-}
-```
-
-The same principles apply to all style props, recipe variants, and pattern props.
-
-<Callout type="info">
-  If you still need to rename properties at runtime, you can use `config.staticCss` as an escape-hatch to pre-generate
-  the CSS anyway for the properties you need.
-</Callout>
-
-### Custom component props
-
-Panda can't map custom prop names to CSS properties. There's no config that turns `elementWidth` into `width`. Styles
-are extracted at the call site, on props the compiler recognizes: CSS utilities (`width`, `padding`, …) when
-`jsxStyleProps` is `'all'`, the `css` prop, props ending in `Css` (`trackCss`, `wrapperCss`), and pattern or recipe
-props on tracked components.
+An extra style object, merged last among styles. Use it for conditions, selectors, or a style you already have as an
+object.
 
 ```tsx
-// ❌
-<Carousel elementWidth="300px" />
-
-// ✅
-<Carousel width="300px" />
-<Carousel css={{ width: '300px' }} />
-<Carousel trackCss={{ width: '300px' }} />
+<styled.button
+  bg="blue.500"
+  css={{
+    _hover: { bg: 'blue.600' },
+    '&[data-active]': { bg: 'blue.700' }
+  }}
+>
+  Click me
+</styled.button>
 ```
 
-One override → `css`. Named parts → `trackCss`, `slideCss`, etc. Other prop names → `css.raw()`. See
+One override on a custom component is also `css`. Named parts use `trackCss`, `slideCss`, and so on. See
 [passing styles to custom components](/docs/styling/merging-styles#passing-styles-to-custom-components).
 
-### Recipe
+### className
 
-You can use recipe variants as JSX props to quickly change the styles of your components, as long as
-[you're tracking those components in your recipe config](/docs/recipes/config-recipe#advanced-jsx-tracking).
+Appended after the factory classes. Use it for a class you do not control, or a string from outside Panda.
 
 ```tsx
-import { styled } from '../styled-system/jsx'
-import { button, type ButtonVariantProps } from '../styled-system/recipes'
-
-const Button = (props: ButtonVariantProps) => <button className={button(props)}>Button</button>
-
-const App = () => <Button variant="secondary">Button</Button>
+<styled.button bg="blue.500" className="external">
+  Click me
+</styled.button>
 ```
 
-## Factory Function
+### as
 
-You can also use the `styled` function to create a styled component from any component or JSX intrinsic element (like
-"a", "button").
+Render a different element. Style props still apply.
 
-```jsx
+```tsx
+<styled.button as="a" href="https://panda-css.com" bg="blue.500">
+  Docs
+</styled.button>
+```
+
+### HTML attributes
+
+`width`, `height`, `translate`, and `content` are style props, so they do not reach the DOM. Use the `html*` aliases
+when you need the HTML attribute.
+
+```tsx
+<styled.img htmlWidth="40" htmlHeight="40" src="/logo.png" alt="" />
+```
+
+| Prop | Lands on the DOM as |
+| --- | --- |
+| `htmlWidth` | `width` |
+| `htmlHeight` | `height` |
+| `htmlTranslate` | `translate` |
+| `htmlContent` | `content` |
+
+## Property names
+
+Extract reads the prop on the tag. `circleSize` is not `size`. `elementWidth` is not `width`. See
+[Extraction rules](/docs/styling/extraction-rules).
+
+## styled()
+
+`styled()` wraps any element or component. The result accepts style props.
+
+```tsx
 import { styled } from '../styled-system/jsx'
 import { Button } from 'component-library'
 
 const StyledButton = styled(Button)
 
-const App = () => (
-  <StyledButton bg="blue.500" color="white" py="2" px="4" rounded="md">
-    Button
-  </StyledButton>
-)
+<StyledButton bg="blue.500" color="white" py="2" px="4">
+  Button
+</StyledButton>
 ```
 
-> You can configure the `styled` function name using the [`config.jsxFactory`](/docs/reference/config#jsxfactory)
-> option.
+To pass a recipe as the second argument, use [Styled factory](/docs/recipes/styled-factory).
 
-### Factory Recipe
+## Factory options
 
-You can define a recipe for your component using the `styled` function. This is useful when you want to create a
-component that has a specific set of style props.
-
-```jsx
-import { styled } from '../styled-system/jsx'
-
-const Button = styled('button', {
-  base: {
-    py: '2',
-    px: '4',
-    rounded: 'md'
-  },
-  variants: {
-    variant: {
-      primary: {
-        bg: 'blue.500',
-        color: 'white'
-      },
-      secondary: {
-        bg: 'gray.500',
-        color: 'white'
-      }
-    }
-  }
-})
-
-const App = () => (
-  <Button variant="secondary" mt="10px">
-    Button
-  </Button>
-)
-```
-
-### Factory Options
-
-There's a few options you can pass to the `styled` function to customize the behavior of the generated component.
+The third argument is optional.
 
 ```ts
-interface FactoryOptions<TProps extends Dict> {
+interface FactoryOptions<TProps> {
   dataAttr?: boolean
   defaultProps?: TProps
   shouldForwardProp?(prop: string, variantKeys: string[]): boolean
@@ -252,51 +147,28 @@ interface FactoryOptions<TProps extends Dict> {
 }
 ```
 
-#### `dataAttr`
+| Option | What it does |
+| --- | --- |
+| `dataAttr` | Sets `data-recipe={name}` when the recipe has a name |
+| `defaultProps` | Sit under incoming props, so a caller can still override them |
+| `shouldForwardProp` | Decides what reaches the DOM. By default, variants and CSS properties are not forwarded |
+| `forwardProps` | Allowlist on top of `shouldForwardProp`. A forwarded prop no longer feeds the recipe |
 
-Setting `dataAttr` to true will add a `data-recipe="{recipeName}"` attribute to the element with the recipe name. This
-is useful for testing and debugging.
+```tsx
+const Input = styled('input', {}, { forwardProps: ['size'] })
 
-```jsx
-import { styled } from '../styled-system/jsx'
-import { button } from '../styled-system/recipes'
-
-const Button = styled('button', button, { dataAttr: true })
-
-const App = () => <Button variant="secondary">Button</Button>
-// => <button data-recipe="button" class="btn btn--variant_purple">Button</button>
+<Input size={4} />
 ```
 
-#### `defaultProps`
+`size` becomes an HTML attribute. It does not feed a recipe. To keep a key as a variant **and** pass it through, use
+[`withProvider`](/docs/recipes/slot-recipe-context#forwarding-props).
 
-allows you to skip writing wrapper components just to set a few props. It also allows you to locall override the default
-variants or base styles of a recipe.
+### shouldForwardProp
 
-```jsx
+Use a function when the list is not fixed, for example Framer Motion:
+
+```tsx
 import { styled } from '../styled-system/jsx'
-import { button } from '../styled-system/recipes'
-
-const Button = styled('button', button, {
-  defaultProps: {
-    variant: 'secondary',
-    px: '10px'
-  }
-})
-
-const App = () => <Button>Button</Button>
-// => <button class="btn btn--variant_secondary px_10px">Button</button>
-```
-
-#### `shouldForwardProp`
-
-Used to customize which props are forwarded to the underlying element. By default, all props except recipe variants and
-style props are forwarded.
-
-For example, you could use it to integrate with [Framer Motion](https://www.framer.com/motion/).
-
-```jsx
-import { styled } from '../styled-system/jsx'
-import { button } from '../styled-system/recipes'
 import { motion, isValidMotionProp } from 'framer-motion'
 
 const StyledMotion = styled(
@@ -309,92 +181,56 @@ const StyledMotion = styled(
 )
 ```
 
-#### `forwardProps`
+Recipe defaults and `unstyled` are on [Styled factory](/docs/recipes/styled-factory).
 
-A simpler version of `shouldForwardProp`. Pass the prop names you want sent to the underlying element, even when they'd
-normally be treated as variants or style props.
+## Restricting style props
 
-```jsx
-import { styled } from '../styled-system/jsx'
+[`jsxStyleProps`](/docs/reference/config#jsxstyleprops) controls which props the factory treats as styles. Default is
+`all`. Tighten it when you do not want `bg` on every component, or when you want a smaller JSX runtime.
 
-const Input = styled('input', {}, { forwardProps: ['size'] })
-
-const App = () => <Input size={4} />
-// => <input size="4" />
+```ts filename="panda.config.ts"
+export default defineConfig({
+  jsxStyleProps: 'minimal'
+})
 ```
 
-> **Note:** A forwarded prop becomes a plain HTML prop, so it no longer feeds recipe styling. To keep a prop styling
-> _and_ pass it to your component, see [forwarding props](/docs/recipes/guide-forwarding-props) in
-> `createSlotRecipeContext`.
+### all
 
-### Unstyled prop
+Every style prop. This is the default.
 
-All styled components accept an `unstyled` prop that allows you to disable the recipe styles. This is useful when you
-want to use a component's structure but apply completely custom styling.
-
-```jsx
-import { styled } from '../styled-system/jsx'
-import { button } from '../styled-system/recipes'
-
-const Button = styled('button', button)
-
-const App = () => (
-  <>
-    {/* With recipe styles */}
-    <Button>Styled Button</Button>
-
-    {/* Without recipe styles, but inline styles still work */}
-    <Button unstyled bg="red.500" color="white">
-      Unstyled Button
-    </Button>
-  </>
-)
+```tsx
+<styled.button bg="blue.500" px="4">
+  Click me
+</styled.button>
 ```
 
-### Reducing the allowed style props
+### minimal
 
-You can reduce the allowed JSX properties on the factory using
-[`config.jsxStyleProps`](/docs/reference/config#jsxstyleprops):
+The `css` prop and props that end in `Css`. `bg` and `px` no longer work.
 
-- When set to 'all', all style props are allowed.
-- When set to 'minimal', only the `css` prop and props ending in `Css` are allowed as style objects.
-- When set to 'none', no style props are allowed and therefore the `jsxFactory` will not be usable as a component:
-  - `<styled.div />` and `styled("div")` aren't valid
-  - but the recipe usage is still valid `styled("div", { base: { color: "red.300" }, variants: { ...} })`
+```tsx
+<styled.button css={{ bg: 'blue.500', px: '4' }}>Click me</styled.button>
+<Carousel trackCss={{ width: '300px' }} />
+```
 
-> Removing style props (from `all` to either `minimal` or `none`) will reduce the size of the generated code due to not
-> having to check which props are style props at runtime.
+### none
 
-## JSX Patterns
+Style props are off. `<styled.div />` and `styled('div')` are invalid. `css()` and a recipe on `styled()` still work.
 
-Patterns are common layout patterns like `stack`, `grid`, `circle` that can be used to speed up your css. Think of them
-as a way to avoid repetitive layout styles.
+```tsx
+<button className={css({ bg: 'blue.500' })}>Click me</button>
 
-All the patterns provided by Panda are available as JSX components.
-
-> Learn more about the [patterns](/docs/theming/patterns) we provide.
-
-```jsx
-import { Stack, Circle } from '../styled-system/jsx'
-
-const App = () => (
-  <Stack gap="4" align="flex-start">
-    <button>Button</button>
-    <Circle size="4" bg="red.300">
-      4
-    </Circle>
-  </Stack>
-)
+const Button = styled('button', {
+  base: { bg: 'blue.500' }
+})
 ```
 
 ## Making your own styled components
 
-To make a custom JSX component that accepts style props, Use the `splitCssProps` function to split style props from
-other component props.
-
-> For this to work correctly, set the `jsxFramework` to the framework you're using in your panda config.
+`splitCssProps` pulls style props off a hand-written component.
 
 ```tsx
+import { css } from '../styled-system/css'
 import { splitCssProps } from '../styled-system/jsx'
 import type { HTMLStyledProps } from '../styled-system/types'
 
@@ -407,55 +243,38 @@ export function Component(props: HTMLStyledProps<'div'>) {
   return <div {...restProps} className={className} />
 }
 
-// Usage
-function App() {
-  return <Component w="2">Click me</Component>
-}
+<Component w="2">Click me</Component>
 ```
 
 ## TypeScript
 
-Panda provides type definitions for all the style props that are supported by the JSX runtime.
+### Style object
 
-You can use these types to get type safety in your components.
-
-### Style Object
-
-Use the `JsxStyleProps` to get the types of the style object that is compatible with JSX elements.
+`JsxStyleProps` is the style-object shape.
 
 ```tsx
-import { styled } from '../styled-system/jsx'
 import type { JsxStyleProps } from '../styled-system/types'
 
 interface ButtonProps {
   color?: JsxStyleProps['color']
 }
-
-const Button = (props: ButtonProps) => {
-  return <styled.button {...props}>
-}
 ```
 
-### Style Props
+### Style props
 
-Use the `HTMLStyledProps` type to get the types of an element in addition to the style props.
+`HTMLStyledProps` is the element plus style props.
 
-```tsx {2}
-import { styled } from '../styled-system/jsx'
+```tsx
 import type { HTMLStyledProps } from '../styled-system/jsx'
 
 type ButtonProps = HTMLStyledProps<'button'>
-
-const Button = (props: ButtonProps) => {
-  return <styled.button {...props}>
-}
 ```
 
-### Variant Props
+### Variant props
 
-Use the `StyledVariantProps` type to extract the variants from a styled component.
+`StyledVariantProps` reads variants off a `styled()` component.
 
-```tsx {2}
+```tsx
 import { styled } from '../styled-system/jsx'
 import type { StyledVariantProps } from '../styled-system/jsx'
 
@@ -470,14 +289,21 @@ const Button = styled('button', {
 })
 
 type ButtonVariantProps = StyledVariantProps<typeof Button>
-//   ^ { state?: 'error' | 'success' | undefined }
+//   { state?: 'error' | 'success' | undefined }
 ```
 
 ### Patterns
 
-Every pattern provided by Panda has a corresponding type that you can use to get type safety in your components.
+Each pattern has a matching props type.
 
-```tsx {2}
-import { Stack } from '../styled-system/jsx'
+```tsx
 import type { StackProps } from '../styled-system/jsx'
 ```
+
+## See also
+
+- [Factory props](/docs/styling/factory-props)
+- [Extraction rules](/docs/styling/extraction-rules)
+- [Styled factory](/docs/recipes/styled-factory)
+- [Patterns](/docs/styling/patterns)
+- [jsx/ reference](/docs/reference/jsx)

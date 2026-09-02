@@ -8,6 +8,8 @@ call with a literal value, that's straightforward. For a component your library 
 needs a way to connect the JSX tag a user writes back to the recipe or pattern that should generate CSS for it.
 This page covers what breaks that connection and how to fix it.
 
+The same contract covers prop names and runtime values. See [Extraction rules](/docs/styling/extraction-rules).
+
 ## Why a rename breaks tracking
 
 Panda recognizes a JSX tag as using a given recipe or pattern by matching the tag's name (or a configured alias) at
@@ -29,8 +31,8 @@ The recipe still works. Direct calls like `button({ size: 'lg' })` with a litera
 what you name the wrapping component. What's lost is JSX-based tracking, so a user writing `<Random size="lg" />`
 in their own code won't get that variant's CSS pre-generated from their app.
 
-See [Limitations](/docs/recipes/config-recipe#limitations) for the full explanation, including the related case where the
-variant prop itself is renamed on the way through (`size` becoming `buttonSize`, for example).
+See [Extraction rules](/docs/styling/extraction-rules) for the related case where the variant prop itself is
+renamed on the way through (`size` becoming `buttonSize`, for example).
 
 ## Fixing it: match the name, or configure an alias
 
@@ -48,15 +50,15 @@ export const cardRecipe = defineSlotRecipe({
 })
 ```
 
-This is the same rule covered in [Config Recipes](/docs/recipes/guide-config-recipes) for components
-built with `createSlotRecipeContext`, it applies just as much to a plain `styled()` wrapper with a non-matching name.
+This is the same rule covered in [Tracking JSX](/docs/recipes/jsx-tracking) for components built with
+`createSlotRecipeContext`. It applies just as much to a plain `styled()` wrapper with a non-matching name.
 
 ## When the value is genuinely dynamic
 
 Sometimes the variant value isn't known until runtime no matter what the component is named, for example a `size`
 prop threaded through from a parent your library doesn't control. No amount of tag or prop matching fixes that,
 Panda can't see a value it doesn't have. Pre-generate the variants you expect with `staticCss` instead. See
-[Dynamic variant props](/docs/recipes/config-recipe#dynamic-variant-props) for the pattern, and
+[Dynamic variants](/docs/recipes/dynamic-variants) for the pattern, and
 [Ship the styled-system vs the CSS](/docs/design-systems/ship-styled-system) if you're deciding how that generated
 CSS reaches users in the first place.
 

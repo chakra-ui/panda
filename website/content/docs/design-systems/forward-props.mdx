@@ -4,9 +4,9 @@ description: Use the styled() factory to wrap single elements or third-party com
 ---
 
 Not every component in a library is a multi-part compound like an accordion or tabs. A `Button`, `Input`, or a
-wrapped third-party component is usually a single element, and the [`styled()` factory](/docs/styling/style-props#factory-function)
+wrapped third-party component is usually a single element, and the [`styled()` factory](/docs/styling/style-props#styled)
 is the right tool for that. This page covers the decisions specific to wrapping something for distribution; the
-factory's full API lives at [JSX Style Props](/docs/styling/style-props#factory-function).
+factory's full API lives at [Style props](/docs/styling/style-props#styled).
 
 ## Wrapping a third-party component
 
@@ -28,8 +28,8 @@ By default, `styled()` forwards every prop except recipe variants and style prop
 usually right for a plain `'button'` or `'div'`, but wrapping someone else's component raises a specific question:
 does the wrapped component need to see a value that Panda would otherwise treat as a variant or a style prop?
 
-That's what `forwardProps` is for. List the prop names that should reach your component as-is, in addition to
-driving the recipe:
+That's what `forwardProps` is for. List the prop names that should reach your component as-is, instead of being
+treated as a variant or a style prop:
 
 ```tsx
 import { styled } from '../styled-system/jsx'
@@ -37,13 +37,11 @@ import { styled } from '../styled-system/jsx'
 const Input = styled('input', {}, { forwardProps: ['size'] })
 ```
 
-Here, `size` still selects the matching recipe variant, but the underlying `<input>` also receives it as a real HTML
-attribute. Without `forwardProps`, Panda would consume `size` for styling and never pass it through.
+Without `forwardProps`, `size` would be consumed as a style prop and never reach the `<input>`. With it, `size`
+becomes a plain HTML attribute.
 
-> A forwarded prop becomes a plain prop on the wrapped component: it no longer feeds recipe styling on its own after
-> that point. If you need a prop to both style a slot and reach the component, and you're wrapping a multi-part
-> compound rather than a single element, see [Forwarding props](/docs/recipes/guide-forwarding-props) in
-> `createSlotRecipeContext` instead.
+A forwarded prop no longer feeds the recipe. If you need a key to pick styles **and** reach the component, that is
+[`withProvider`](/docs/recipes/slot-recipe-context#forwarding-props) on a slot recipe, not the factory.
 
 ## When forwardProps isn't enough
 

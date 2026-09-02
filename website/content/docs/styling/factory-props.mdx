@@ -1,0 +1,81 @@
+---
+title: Factory props
+description: css, as, className, and html* on a styled component.
+---
+
+Besides style props (`bg`, `px`, `color`), every `styled()` component accepts a few extra props. They are not CSS
+utilities. The factory reads them itself.
+
+Style props stay on [Style props](/docs/styling/style-props). A recipe on `styled()` is
+[Styled factory](/docs/recipes/styled-factory).
+
+```tsx
+import { styled } from '../styled-system/jsx'
+
+const Button = styled('button')
+```
+
+## css
+
+An extra style object, merged last among styles. Use it for conditions, selectors, or a style you already have as an
+object.
+
+```tsx
+<Button
+  bg="blue.500"
+  css={{
+    _hover: { bg: 'blue.600' },
+    '&[data-active]': { bg: 'blue.700' }
+  }}
+>
+  Click me
+</Button>
+```
+
+One override on a custom component is also `css`. Named parts use `trackCss`, `slideCss`, and so on. See
+[passing styles to custom components](/docs/styling/merging-styles#passing-styles-to-custom-components).
+
+## className
+
+Appended after the factory classes. Use it for a class you do not control, or a string from outside Panda.
+
+```tsx
+<Button bg="blue.500" className="external">
+  Click me
+</Button>
+```
+
+## as
+
+Render a different element. Style props still apply.
+
+```tsx
+<Button as="a" href="https://panda-css.com" bg="blue.500">
+  Docs
+</Button>
+```
+
+## HTML attributes
+
+`width`, `height`, `translate`, and `content` are style props, so they do not reach the DOM. Use the `html*` aliases
+when you need the HTML attribute.
+
+```tsx
+const Img = styled('img')
+
+<Img htmlWidth="40" htmlHeight="40" src="/logo.png" alt="" />
+```
+
+| Prop | Lands on the DOM as |
+| --- | --- |
+| `htmlWidth` | `width` |
+| `htmlHeight` | `height` |
+| `htmlTranslate` | `translate` |
+| `htmlContent` | `content` |
+
+## See also
+
+- [Style props](/docs/styling/style-props)
+- [Styled factory](/docs/recipes/styled-factory)
+- [Merging styles](/docs/styling/merging-styles)
+- [jsx/ reference](/docs/reference/jsx)

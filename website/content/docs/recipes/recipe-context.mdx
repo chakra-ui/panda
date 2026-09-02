@@ -1,25 +1,190 @@
 ---
-title: Recipe Context
-description: createRecipeContext distributes a single-element recipe's styles to a component that renders it.
+title: Recipe context
+description: styled() plus a provider. Build a compound component around a single-element recipe.
 ---
 
-Use this for a single-element config recipe (`cva` or `defineRecipe`) that has no slots. It returns a single
-`withContext` function, and `withContext` takes just the element or component, with no slot name.
+`createRecipeContext` is [`styled()`](/docs/recipes/styled-factory) plus a provider. A parent sets variant props
+once. Every `withContext` child picks them up. That is how you build a compound component around a single-element
+recipe.
+
+<Callout type="info">
+  You need [`jsxFramework`](/docs/reference/config#jsxframework) in your config, or `styled-system/jsx` is not
+  generated. This helper is a Client Component (`"use client"`).
+</Callout>
+
+It works with [`cva`](/docs/recipes/atomic-recipe), a config recipe, or an inline recipe definition.
 
 ```tsx
-import { button } from '../styled-system/recipes'
-import { createRecipeContext } from 'styled-system/jsx'
+import { cva } from '../styled-system/css'
+import { createRecipeContext } from '../styled-system/jsx'
 
-const { withContext } = createRecipeContext(button)
+const buttonRecipe = cva({
+  base: { display: 'inline-flex' },
+  variants: {
+    size: {
+      sm: { px: '3' },
+      lg: { px: '5' }
+    }
+  }
+})
+
+const { withContext, PropsProvider } = createRecipeContext(buttonRecipe)
 
 export const Button = withContext('button')
 ```
 
-The component accepts the recipe's variant props and forwards them to drive the styling.
+A config recipe is the same call with a different import:
+
+```tsx
+import { button } from '../styled-system/recipes'
+import { createRecipeContext } from '../styled-system/jsx'
+
+const { withContext, PropsProvider } = createRecipeContext(button)
+```
+
+```tsx
+<Button size="lg" type="submit" onClick={onSave}>
+  Save
+</Button>
+```
+
+`size` is the variant. `type` and `onClick` go to the `<button>`.
+
+## withContext
+
+The first argument is the element or component to wrap. The second is the same options object as
+[`styled()`](/docs/styling/style-props#factory-options): `defaultProps`, `forwardProps`, `shouldForwardProp`,
+`dataAttr`.
+
+### Wrapping an element
+
+One recipe can back more than one component. `Button` is a `button`. `LinkButton` is an `a`. Same variants.
+
+```tsx
+export const Button = withContext('button')
+export const LinkButton = withContext('a')
+```
+
+```tsx
+<Button size="lg">Save</Button>
+<LinkButton size="lg" href="/docs">
+  Docs
+</LinkButton>
+```
+
+For a config recipe, list both tags. See [Config recipe](#config-recipe).
+
+### Wrapping an external component
+
+Pass the component you don't own.
+
+```tsx
+import { ark } from '@ark-ui/react/factory'
+import Link from 'next/link'
+
+export const Button = withContext(ark.button, {
+  defaultProps: { type: 'button' }
+})
+
+export const LinkButton = withContext(Link)
+```
+
+## Default props
+
+```tsx
+export const Button = withContext('button', {
+  defaultProps: {
+    type: 'button',
+    size: 'sm'
+  }
+})
+```
+
+Incoming props win over defaults, so `<Button size="lg" />` still works.
+
+## unstyled
+
+Skip the recipe classes. Style props, `css`, and `className` still apply. Same idea as
+[`styled()`](/docs/recipes/styled-factory#unstyled).
+
+```tsx
+<Button unstyled css={{ bg: 'red.500' }}>
+  Click me
+</Button>
+```
+
+## PropsProvider
+
+The `PropsProvider` lets you style a set of buttons, tags, or avatars as one group. Export it as `ButtonGroup`,
+`TagGroup`, or `AvatarGroup`. The group sets variant props once. Every `withContext` child picks them up.
+
+```tsx
+export const Button = withContext('button')
+export const ButtonGroup = PropsProvider
+```
+
+```tsx
+<ButtonGroup size="lg" visual="outline">
+  <Button>Save</Button>
+  <Button visual="solid">Cancel</Button>
+</ButtonGroup>
+```
+
+`Save` inherits `size="lg"` and `visual="outline"`. `Cancel` keeps the size and overrides `visual`. Incoming props
+win over the group.
+
+### Adding layout
+
+When the group also lays out its children, split recipe props off and put style props on `HStack`. Use `spaceX`, not
+`gap`, when the overlap needs to be negative.
+
+```tsx
+import { HStack } from '../styled-system/jsx'
+
+const { withContext, PropsProvider } = createRecipeContext(avatar)
+
+export const Avatar = withContext('div')
+
+export function AvatarGroup(props) {
+  const [variantProps, restProps] = avatar.splitVariantProps(props)
+  return (
+    <PropsProvider {...variantProps}>
+      <HStack spaceX="-2" {...restProps} />
+    </PropsProvider>
+  )
+}
+```
+
+```tsx
+<AvatarGroup size="lg" px="4">
+  <Avatar />
+  <Avatar />
+</AvatarGroup>
+```
+
+`size` styles the avatars. `px` styles the stack.
+
+### Config recipe
+
+Extract sees `size` on `ButtonGroup`, not on `Button`. A renamed export like `LinkButton` is the same miss. List every
+tag that carries variant props, or the CSS is missing:
+
+```ts
+export const buttonRecipe = defineRecipe({
+  className: 'button',
+  jsx: ['Button', 'ButtonGroup', 'LinkButton']
+})
+
+export const LinkButton = withContext('a')
+export const ButtonGroup = PropsProvider
+```
+
+`cva` already emits every variant, so the extra names do not matter there. The full tag rule is on
+[Tracking JSX](/docs/recipes/jsx-tracking).
 
 ## See also
 
-- [Slot Recipe Context](/docs/recipes/slot-recipe-context) for the multi-part equivalent, `createSlotRecipeContext`,
-  used with a slot recipe.
-- [Default Props](/docs/recipes/guide-default-props) and [Forwarding props](/docs/recipes/guide-forwarding-props) for
-  guides that apply to both context helpers.
+- [Styled factory](/docs/recipes/styled-factory)
+- [Slot recipe context](/docs/recipes/slot-recipe-context)
+- [Tracking JSX](/docs/recipes/jsx-tracking)
+- [jsx/ reference](/docs/reference/jsx)

@@ -1,0 +1,100 @@
+---
+title: Dynamic variants
+description: Config recipes only emit variants Panda can see. Pre-generate the ones that come from props, state, or Storybook.
+---
+
+`cva` and `sva` emit every variant when you define them. This page is about config recipes (`defineRecipe` and
+`defineSlotRecipe`).
+
+The function still returns a class name at runtime. If that class was never written to the sheet, the styles do not
+apply. That is the usual "it works in Storybook, it is blank in the app" bug: Storybook had a literal, the app
+passed a prop.
+
+## What extract sees
+
+```ts
+button({ size: 'lg' }) // emits lg
+button({ size: wide ? 'sm' : 'lg' }) // both branches, both literals
+<Button size="lg" /> // lg, if the tag matches the recipe name
+button({ size }) // defaultVariants only
+<Button size={size} /> // defaultVariants only
+```
+
+Panda also warns (`recipe_variant_dynamic`) when a variant value does not fold and `staticCss` does not already
+cover that key.
+
+A renamed prop is invisible too. Extract cannot see that `buttonSize` is `size`. Same contract as
+[Extraction rules](/docs/styling/extraction-rules):
+
+```tsx
+export function Button({ buttonSize, children }) {
+  return <button className={button({ size: buttonSize })}>{children}</button>
+}
+```
+
+A wrapper whose name is not the recipe name (and not listed in `jsx`) is invisible as well. That is
+[Tracking JSX](/docs/recipes/jsx-tracking).
+
+## Pre-generate with staticCss
+
+Declare the missing values on the recipe or in `staticCss.recipes`. The shape is the same `RecipeRule` either way.
+
+```ts filename="button.recipe.ts"
+export const buttonRecipe = defineRecipe({
+  className: 'button',
+  staticCss: ['*']
+  // or [{ size: ['sm', 'md', 'lg'] }]
+})
+```
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  staticCss: {
+    recipes: {
+      button: [{ size: ['sm', 'md'] }, { visual: ['*'] }]
+    }
+  }
+})
+```
+
+Each rule is **one variant key**. `{ size: ['sm'], visual: ['solid'] }` in a single object still expands to two
+usages (`size=sm` and `visual=solid`), not the cartesian product. Other axes fall back to `defaultVariants`.
+
+A few details that surprise people:
+
+- `true` as a value becomes `"true"`
+- `'*'` on a key means every value of that axis
+- `recipe.staticCss: ['*']` means every axis, one value at a time
+- `conditions` and `responsive` wrap that usage. They do not mark the key as covered for the dynamic-variant warning
+
+## Root config vs per-recipe
+
+`staticCss.recipes.button` and `recipe.staticCss` are the same list. If both are set, the per-recipe list
+**overwrites** that name.
+
+`staticCss.recipes: '*'` generates every variant of every config and slot recipe, and wins over per-recipe
+`staticCss`. Fine for Storybook. Heavy for a production app.
+
+Literals already in source do not need `staticCss`. Extraction already has them.
+
+The full `staticCss` reference is [Static CSS → Recipes](/docs/styling/static#recipes).
+
+## Smart compound variants
+
+With [`smartCompoundVariants`](/docs/styling/optimization#compound-variants), a compound only emits when Panda
+extracted (or staticCss-emitted) a matching combination. One-axis `staticCss` rules do not invent a combo unless
+defaults fill the other keys. See
+[compound variants](/docs/recipes/compound-variants#eager-emit-vs-smart-compounds).
+
+## Other ways to make a value visible
+
+Put a literal call in a story or test (`button({ size: 'lg' })`), pass a string literal at the call site, or keep
+`defaultVariants` as the fallback you actually want when the prop is dynamic.
+
+## See also
+
+- [Extraction rules](/docs/styling/extraction-rules)
+- [Config recipes](/docs/recipes/config-recipe)
+- [Slot recipes](/docs/recipes/slot-recipes)
+- [Static CSS](/docs/styling/static)
+- [Compound variants](/docs/recipes/compound-variants)

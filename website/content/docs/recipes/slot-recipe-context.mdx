@@ -1,179 +1,195 @@
 ---
-title: Slot Recipe Context
-description: createSlotRecipeContext distributes slot recipe styles across a compound component tree.
+title: Slot recipe context
+description: Distribute a slot recipe across a compound component tree. The tool for wrapping Ark UI, Radix, and Base UI.
 ---
 
-It uses a context-based approach to distribute recipe styles across multiple child components, making it easier to style
-headless UI libraries like Ark UI, and Radix UI.
+A slot recipe returns a map of classes. `createSlotRecipeContext` turns that map into compound components: the root
+takes variant props, and the parts pick up their slot styles from context. That is how you wrap Ark UI, Radix, or
+Base UI without asking every consumer to know which class goes on which part.
 
-## Atomic Slot Recipe
+<Callout type="info">
+  You need [`jsxFramework`](/docs/reference/config#jsxframework) in your config, or `styled-system/jsx` is not
+  generated. This helper is a Client Component (`"use client"`).
+</Callout>
 
-- Create a slot recipe using the `sva` function
-- Pass the slot recipe to the `createSlotRecipeContext` function
-- Use the `withProvider` and `withContext` functions to create compound components
+It works with [`sva`](/docs/recipes/slot-recipes) or
+[`defineSlotRecipe`](/docs/recipes/config-recipe#config-slot-recipe).
 
 ```tsx
-// components/ui/card.tsx
-
-import { sva } from 'styled-system/css'
-import { createSlotRecipeContext } from 'styled-system/jsx'
+import { sva } from '../styled-system/css'
+import { createSlotRecipeContext } from '../styled-system/jsx'
 
 const card = sva({
-  slots: ['root', 'label'],
+  slots: ['root', 'title', 'body'],
   base: {
-    root: {},
-    label: {}
+    root: { rounded: 'lg', borderWidth: '1px', p: '4' },
+    title: { fontWeight: 'semibold' },
+    body: { color: 'gray.600', fontSize: 'sm' }
   },
   variants: {
     size: {
-      sm: { root: {} },
-      md: { root: {} }
+      sm: { root: { p: '3' } },
+      lg: { root: { p: '6' } }
     }
   },
-  defaultVariants: {
-    size: 'sm'
-  }
+  defaultVariants: { size: 'sm' }
 })
 
 const { withProvider, withContext } = createSlotRecipeContext(card)
 
-const Root = withProvider('div', 'root')
-const Label = withContext('label', 'label')
-
 export const Card = {
-  Root,
-  Label
+  Root: withProvider('div', 'root'),
+  Title: withContext('h2', 'title'),
+  Body: withContext('div', 'body')
 }
 ```
 
-Then you can use the `Root` and `Label` components to create a card.
+`size` is set once on the root. Title and body read their classes from context.
 
 ```tsx
-// app/page.tsx
-
-import { Card } from './components/ui/card'
-
-export default function App() {
-  return (
-    <Card.Root>
-      <Card.Label>Hello</Card.Label>
-    </Card.Root>
-  )
-}
+<Card.Root size="lg">
+  <Card.Title>Hello</Card.Title>
+  <Card.Body>A card with parts.</Card.Body>
+</Card.Root>
 ```
 
-## Config Slot Recipe
-
-The `createSlotRecipeContext` function can also be used with slot recipes defined in the `panda.config.ts` file.
-
-- Pass the config recipe to the `createSlotRecipeContext` function
-- Use the `withProvider` and `withContext` functions to create compound components
+A config slot recipe is the same call with a different import:
 
 ```tsx
-// components/ui/card.tsx
-
 import { card } from '../styled-system/recipes'
-import { createSlotRecipeContext } from 'styled-system/jsx'
+import { createSlotRecipeContext } from '../styled-system/jsx'
 
 const { withProvider, withContext } = createSlotRecipeContext(card)
-
-const Root = withProvider('div', 'root')
-const Label = withContext('label', 'label')
-
-export const Card = {
-  Root,
-  Label
-}
 ```
 
-Then you can use the `Root` and `Label` components to create a card.
+## withRootProvider
 
-```tsx
-// app/page.tsx
-
-import { Card } from './components/ui/card'
-
-export default function App() {
-  return (
-    <Card.Root>
-      <Card.Label>Hello</Card.Label>
-    </Card.Root>
-  )
-}
-```
-
-## createSlotRecipeContext
-
-Use this for a slot recipe (`sva` or `defineSlotRecipe`) with multiple parts. It's a factory function that returns three
-functions: `withRootProvider`, `withProvider`, and `withContext`.
-
-### withRootProvider
-
-Creates the root component that provides the style context. Use this when the root component **does not render an
-underlying DOM element**.
+Use this when the root **does not render a DOM element**. Some headless `Root` components are context-only. This
+helper provides the slot map and does not apply a slot class.
 
 ```tsx
 import { Dialog } from '@ark-ui/react'
 
-//...
-
-const DialogRoot = withRootProvider(Dialog.Root)
+const DialogRoot = withRootProvider(Dialog.Root, {
+  defaultProps: { lazyMount: true }
+})
 ```
 
-### withProvider
+The only option is `defaultProps`. There is no slot to style, so `unstyled` and factory options do not apply.
 
-Creates a component that both provides context and applies the root slot styles. Use this when the root component
-**renders an underlying DOM element**.
+## withProvider
 
-> **Note:** It requires the root `slot` parameter to be passed.
+Use this when the root **renders an element**. It splits variant props, provides the slot map, styles that slot, and
+sets `data-slot` to the slot name.
 
 ```tsx
 import { Avatar } from '@ark-ui/react'
-
-//...
 
 const AvatarRoot = withProvider(Avatar.Root, 'root')
 ```
 
-### withContext
+The second argument is the slot name. The third is factory options:
+[`defaultProps`](#default-props), [`forwardProps`](#forwarding-props), `shouldForwardProp`, `dataAttr`.
 
-Creates a component that consumes the style context and applies slot styles. It does not accept variant props directly,
-but gets them from context.
+## withContext
+
+Consumes context and applies one slot. It does not accept variant props. Those already live on the provider.
 
 ```tsx
-import { Avatar } from '@ark-ui/react'
-
-//...
-
 const AvatarImage = withContext(Avatar.Image, 'image')
 const AvatarFallback = withContext(Avatar.Fallback, 'fallback')
 ```
 
-### unstyled prop
+Same factory options as `withProvider`. Each part also gets `data-slot`.
 
-Every component created with `createSlotRecipeContext` supports the `unstyled` prop to disable styling. It is useful when
-you want to opt-out of the recipe styles.
+<Callout type="warning">
+  A `withContext` part throws if it renders outside its provider. Keep the tree under the matching
+  `withProvider` or `withRootProvider`.
+</Callout>
 
-- When applied the root component, will disable all styles
-- When applied to a child component, will disable the styles for that specific slot
+## unstyled
+
+Skip **this element's** slot styles. Style props, `css`, and `className` still apply. The slot map in context does
+not change, so children keep their styles unless they pass `unstyled` too.
 
 ```tsx
-// Removes all styles
 <AvatarRoot unstyled>
   <AvatarImage />
-  <AvatarFallback />
-</AvatarRoot>
-
-// Removes only the styles for the image slot
-<AvatarRoot>
-  <AvatarImage unstyled css={{ bg: 'red' }} />
-  <AvatarFallback />
 </AvatarRoot>
 ```
 
+The root has no recipe class. The image still looks like the recipe.
+
+```tsx
+<AvatarRoot>
+  <AvatarImage unstyled css={{ bg: 'red.500' }} />
+</AvatarRoot>
+```
+
+To strip every part, pass `unstyled` on each one you wrap.
+
+<Callout type="info">
+  `withRootProvider` does not style an element, so `unstyled` there does nothing. Put it on the parts.
+</Callout>
+
+## Default props
+
+Use `defaultProps` for HTML or component props. Incoming props win.
+
+```tsx
+const CardHeader = withContext('header', 'header', {
+  defaultProps: { role: 'banner' }
+})
+```
+
+Do not put variant keys here. `withProvider` splits variants off the incoming props only, so
+`defaultProps: { size: 'sm' }` does not pick the recipe. Set variant defaults on the recipe's `defaultVariants`.
+
+## Forwarding props
+
+`withProvider` uses variant props to pick styles, then drops them so they do not land on the DOM. List a key in
+`forwardProps` when the wrapped component still needs the value, for example to mirror `orientation` as
+`aria-orientation`.
+
+```tsx
+function TabsRoot({ orientation, ...rest }: TabsRootProps) {
+  return <div aria-orientation={orientation} {...rest} />
+}
+
+export const Tabs = withProvider(TabsRoot, 'root', {
+  forwardProps: ['orientation']
+})
+```
+
+`withContext` has no variants to split. Its `forwardProps` is the
+[factory](/docs/styling/style-props#factory-options) allowlist: keep a prop that shares a name with a CSS property
+from becoming a style.
+
+```tsx
+const TabIndicator = withContext(Indicator, 'indicator', {
+  forwardProps: ['width']
+})
+```
+
+Without that, `width` would be treated as a style prop.
+
+## Naming config recipes
+
+The exported name must match the recipe (`Card` for theme key `card`), or you list it in `jsx`. Nested `Card.Root`
+and `CardRoot` are tracked from the **theme key**, not from a custom `jsx` string. The full rule is on
+[Tracking JSX](/docs/recipes/jsx-tracking).
+
+## How styles apply
+
+A config slot recipe sets `className` to `cx(slotClass, rest.className)`.
+
+An `sva` recipe depends on [`jsxStyleProps`](/docs/reference/config#jsxstyleprops). `'all'` spreads the slot's style
+object as style props. `'minimal'` uses `css.raw`. `'none'` uses `cx(css(slotStyles), className)`.
+
 ## See also
 
-- [Recipe Context](/docs/recipes/recipe-context) for the single-element equivalent, `createRecipeContext`, used with a
-  recipe that has no slots.
-- [Config Recipes](/docs/recipes/guide-config-recipes), [Default Props](/docs/recipes/guide-default-props), and
-  [Forwarding props](/docs/recipes/guide-forwarding-props) for guides on using `createSlotRecipeContext` in practice.
+- [Slot recipes](/docs/recipes/slot-recipes)
+- [Tracking JSX](/docs/recipes/jsx-tracking)
+- [Wrap headless UI](/docs/design-systems/wrap-headless-ui)
+- [Recipe context](/docs/recipes/recipe-context)
+- [jsx/ reference](/docs/reference/jsx)

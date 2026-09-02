@@ -1,0 +1,169 @@
+---
+title: Extraction rules
+description: Panda reads the source as written. The tag, the prop, and the value have to be names it already knows.
+---
+
+Panda's compiler matches the names in your source. The tag, the prop, and the value have to be names it already
+knows.
+
+The usual miss:
+
+- You rename `Button` to `Random`
+- You rename `size` to `circleSize`
+- You pass a value from state
+
+The class shows up. The CSS does not.
+
+## Matching the tag
+
+`<Button size="lg" />` only emits the `button` recipe if the tag is `Button`, or a name you listed in `jsx`.
+
+```tsx
+export function Random(props) {
+  return <button className={button(props)} />
+}
+
+<Random size="lg" />
+```
+
+Extract sees `Random`, not `Button`. Export it as `Button`, or set `jsx: ['Random']`. That is
+[Tracking JSX](/docs/recipes/jsx-tracking). For a library wrapper, see
+[Track usage](/docs/design-systems/track-usage).
+
+`cva` and `sva` do not need a matching tag. Defining them already emits every variant.
+
+## Matching the prop
+
+Extract reads the prop on the tag. It does not follow a rename.
+
+### Style props
+
+There is no config that turns `elementWidth` into `width`.
+
+```tsx
+function Carousel({ elementWidth, ...props }) {
+  return <styled.div width={elementWidth} {...props} />
+}
+
+<Carousel elementWidth="300px" />
+```
+
+Extract sees `elementWidth`, not `width`. Use a utility name, `css`, or a `*Css` prop at the call site:
+
+```tsx
+<Carousel width="300px" />
+<Carousel css={{ width: '300px' }} />
+<Carousel trackCss={{ width: '300px' }} />
+```
+
+Extract reads CSS utilities when [`jsxStyleProps`](/docs/styling/style-props#restricting-style-props) is `'all'`, plus
+`css` and props that end in `Css`. For any other name, wrap the object in `.raw()` so the call site is visible:
+
+```tsx
+<Card style={css.raw({ bg: 'blue' })} />
+```
+
+See [passing styles to custom components](/docs/styling/merging-styles#passing-styles-to-custom-components).
+
+### Recipe and pattern props
+
+`circleSize` is not `size`. `buttonSize` is not `size`.
+
+```tsx
+function CustomCircle({ circleSize = '3', ...props }) {
+  return <Circle size={circleSize} {...props} />
+}
+
+<CustomCircle circleSize="4" />
+```
+
+```tsx
+function Button({ buttonSize, children }) {
+  return <button className={button({ size: buttonSize })}>{children}</button>
+}
+
+<Button buttonSize="lg" />
+```
+
+Extract sees `circleSize` / `buttonSize`, not `size`. Keep the key at the call site.
+
+`cva` and `sva` already emit every variant, so a rename there is a value problem, not a missing class. See
+[Matching the value](#matching-the-value).
+
+## Matching the value
+
+A runtime value is invisible, even when the tag and prop are right.
+
+```tsx
+function Button({ size, ...props }) {
+  return <button className={button({ size })} {...props} />
+}
+
+<Button size={size} />
+```
+
+The wrapper looks correct. Extract sees `size={size}`, not `size="lg"`. You get `defaultVariants` only.
+
+```tsx
+<Button size="lg" />
+```
+
+Pre-generate with [`staticCss`](/docs/styling/static), or put a literal at the call site.
+
+See [Dynamic styles](/docs/styling/dynamic-styling) and [Dynamic variants](/docs/recipes/dynamic-variants).
+
+## Composition patterns
+
+Expose a name extract already knows, and merge inside the wrapper. Don't invent `elementWidth`.
+
+### Using css and *Css
+
+The wrapper takes a style object. Extract reads `css` and any prop that ends in `Css` at the call site.
+
+```tsx
+function Card({ css: cssProp, ...props }) {
+  return <div className={css({ bg: 'red' }, cssProp)} {...props} />
+}
+
+<Card css={{ bg: 'blue' }} />
+```
+
+Named parts use `rootCss`, `bodyCss`, and so on. Same extract rule, one object per slot.
+
+```tsx
+function Card({ rootCss, bodyCss, ...props }) {
+  return (
+    <div className={css({ bg: 'red' }, rootCss)} {...props}>
+      <p className={css(bodyCss)} />
+    </div>
+  )
+}
+
+<Card rootCss={{ bg: 'blue' }} bodyCss={{ color: 'white' }} />
+```
+
+### Using className
+
+The consumer already has a class. The wrapper only concatenates.
+
+```tsx
+function Card({ className, ...props }) {
+  return <div className={cx(card(), className)} {...props} />
+}
+
+<Card className={css({ bg: 'blue' })} />
+```
+
+Extract sees the `css()` at the call site. The wrapper never has to know `bg`.
+
+Use `css` / `*Css` when the wrapper should merge style objects. Use `className` when the consumer already has a class
+(a recipe, `css()`, or something external).
+
+See [Merging styles](/docs/styling/merging-styles).
+
+## See also
+
+- [Style props](/docs/styling/style-props)
+- [Tracking JSX](/docs/recipes/jsx-tracking)
+- [Dynamic styles](/docs/styling/dynamic-styling)
+- [Track usage](/docs/design-systems/track-usage)

@@ -179,34 +179,14 @@ const App = () => {
 }
 ```
 
-## Property Renaming
+## Property names
 
-Due to the static nature of Panda, you can't rename properties at runtime.
+Extract reads the prop as written. A rename like `circleSize` to `size` does not emit CSS. Same for a custom name like
+`elementWidth`. See [Extraction rules](/docs/styling/extraction-rules).
 
-```tsx filename="App.tsx"
-import { Circle, CircleProps } from '../styled-system/jsx'
+## Marking objects with raw()
 
-type Props = {
-  circleSize?: CircleProps['size']
-}
-
-const CustomCircle = (props: Props) => {
-  const { circleSize = '3' } = props
-  return (
-    <Circle
-      // ❌ Avoid: Panda can't determine the value of circleSize at build-time
-      size={circleSize}
-    />
-  )
-}
-```
-
-In this case, use `size` at the call site.
-
-### Alternative
-
-As of v0.8, we added a new `{fn}.raw()` method to css, patterns and recipes. This function is an identity function and
-only serves as a hint for the compiler to extract the css.
+`{fn}.raw()` is an identity function. It only hints the compiler to extract the object.
 
 It can be useful, for example, in Storybook args or custom react props.
 
@@ -225,19 +205,6 @@ export const Funky: Story = {
   })
 }
 ```
-
-### Custom prop names
-
-`elementWidth="300px"` won't compile to `width`. Use a utility name, `css`, a `*Css` prop, or `css.raw()`:
-
-```tsx
-<Carousel width="300px" />
-<Carousel css={{ width: '300px' }} />
-<Carousel trackCss={{ width: '300px' }} />
-<Carousel trackProps={css.raw({ width: '300px' })} />
-```
-
-See [custom component props](/docs/styling/style-props#custom-component-props).
 
 ### Enhanced `css.raw` spreading
 
@@ -510,7 +477,7 @@ Config recipes only emit CSS for variants Panda can statically analyze. `button(
 only get `defaultVariants` in the stylesheet unless you add [`staticCss`](/docs/styling/static#recipes) or
 use string literals in the call.
 
-See [Dynamic variant props](/docs/recipes/config-recipe#dynamic-variant-props).
+See [Dynamic variants](/docs/recipes/dynamic-variants).
 
 ## Summary
 
@@ -554,13 +521,6 @@ const Button = () => {
 <styled.div color={colors[getColorName()]} />
 <styled.div color={colors[colorFromAnotherFile]} />
 
-const CustomCircle = (props) => {
-  const { circleSize = '3' } = props
-  return (
-    <Circle
-      // ❌ Avoid: Panda can't determine the value of circleSize at build-time
-      size={circleSize}
-    />
-  )
-}
+// ❌ renamed prop. See Extraction rules
+<CustomCircle circleSize="4" />
 ```

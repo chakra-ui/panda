@@ -1,80 +1,60 @@
 ---
 title: Config Recipe
-description: Define recipes in your Panda config with defineRecipe, generated just in time from the variants you use.
+description: Shared recipes in your theme. defineRecipe for one element, defineSlotRecipe for parts. Named classes, JIT emit.
 ---
 
-Recipes are a way to create multi-variant styles with a type-safe runtime API.
+`defineRecipe` is the recipe that lives in your theme. You register it, run codegen, and import a function from
+`styled-system/recipes`. You get **named** classes, not a bag of atomic classes.
 
-A recipe consists of four properties:
+Panda generates styles for config recipes just-in-time, meaning it emits a variant only when it can see that value
+in your source.
 
-- `base`: The base styles for the component
-- `variants`: The different visual styles for the component
-- `compoundVariants`: The different combinations of variants for the component
-- `defaultVariants`: The default variant values for the component
-
-> **Credit:** This API was inspired by [Stitches](https://stitches.dev/),
-> [Vanilla Extract](https://vanilla-extract.style/), and [Class Variance Authority](https://cva.style/).
-
-Not sure whether to reach for a config recipe or an [atomic recipe](/docs/recipes/atomic-recipe)? See
-[Should I use atomic or config recipes?](#should-i-use-atomic-or-config-recipes-) below.
-
-Config recipes are extracted and generated just in time, this means regardless of the number of recipes in the config,
-only the recipes and variants you use will exist in the generated CSS.
-
-The config recipe takes the following additional properties:
-
-- `className`: The name of the recipe. Used in the generated class name
-- `jsx`: An array of JSX components that use the recipe. Defaults to the uppercase version of the recipe name
-- `description`: An optional description of the recipe (used in the js-doc comments)
-
-> As of v0.9, the `name` property is removed in favor of `className`
+<Callout type="info">
+  If the recipe only exists in one component file, use [`cva`](/docs/recipes/atomic-recipe) or
+  [`sva`](/docs/recipes/slot-recipes) instead.
+</Callout>
 
 ## Defining the recipe
 
-To define a config recipe, import the `defineRecipe` helper function
+The authoring shape is the same as `cva`. The extra field that matters is `className`, which becomes the CSS stem.
 
-```jsx filename="button.recipe.ts"
+```ts filename="button.recipe.ts"
 import { defineRecipe } from '@pandacss/dev'
 
 export const buttonRecipe = defineRecipe({
   className: 'button',
-  description: 'The styles for the Button component',
   base: {
-    display: 'flex'
+    display: 'inline-flex',
+    alignItems: 'center',
+    rounded: 'md',
+    fontWeight: 'semibold'
   },
   variants: {
     visual: {
-      funky: { bg: 'red.200', color: 'white' },
-      edgy: { border: '1px solid {colors.red.500}' }
+      solid: { bg: 'blue.500', color: 'white' },
+      outline: { borderWidth: '1px', borderColor: 'blue.500', color: 'blue.500' }
     },
     size: {
-      sm: { padding: '4', fontSize: '12px' },
-      lg: { padding: '8', fontSize: '40px' }
-    },
-    shape: {
-      square: { borderRadius: '0' },
-      circle: { borderRadius: 'full' }
+      sm: { px: '3', py: '1.5', fontSize: 'sm' },
+      lg: { px: '5', py: '3', fontSize: 'md' }
     }
   },
   defaultVariants: {
-    visual: 'funky',
-    size: 'sm',
-    shape: 'circle'
+    visual: 'solid',
+    size: 'sm'
   }
 })
 ```
 
-## Adding recipe to config
+## Adding it to the theme
 
-To add the recipe to the config, you’d need to add it to the `theme.recipes` object.
+Register it under a **theme key**. That key is the import name and the name extract looks for.
 
-```jsx filename="panda.config.ts"
+```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
 import { buttonRecipe } from './button.recipe'
 
 export default defineConfig({
-  //...
-  jsxFramework: 'react',
   theme: {
     extend: {
       recipes: {
@@ -85,335 +65,28 @@ export default defineConfig({
 })
 ```
 
-## Generate JS code
+After `pnpm panda codegen`:
 
-This generates a recipes folder the specified `outdir` which is `styled-system` by default. If Panda doesn’t
-automatically generate your CSS file, you can run the `panda codegen` command.
-
-You only need to import the recipes into the component files where you need to use them.
-
-## Using the recipe
-
-To use the recipe, you can import the recipe from the `<outdir>/recipes` entrypoint and use it in your component. Panda
-tracks the usage of the recipe and only generates CSS of the variants used in your application.
-
-```js
+```tsx
 import { button } from '../styled-system/recipes'
 
-function App() {
-  return (
-    <div>
-      <button className={button()}>Click me</button>
-      <button className={button({ shape: 'circle' })}>Click me</button>
-    </div>
-  )
-}
+<button className={button({ visual: 'solid', size: 'lg' })}>Click me</button>
 ```
 
-The generated css is registered under the `recipe` [cascade layer](/docs/styling/cascade-layers) with the class
-name that matches the recipe-variant name pattern `<recipe-className>--<variant-name>`.
+## Extending a preset recipe
 
-> **Technical Notes 📝:** Only the recipe and variants used in your application are generated. Not more!
-
-```css
-@layer recipes {
-  @layer base {
-    .button {
-      font-size: var(--font-sizes-lg);
-    }
-  }
-
-  .button--visual-funky {
-    background-color: var(--colors-red-200);
-    color: var(--colors-white);
-  }
-
-  .button--size-lg {
-    padding: var(--space-8);
-    font-size: var(--font-sizes-40px);
-  }
-}
-```
-
-## Dynamic variant props
-
-Config recipes only emit CSS for variant values Panda can see at build time. `button({ size })` still returns class
-names at runtime, but if that CSS was never generated, the styles won't apply.
-
-- `button({ size: 'lg' })` → emits `lg`
-- `button({ size: wide ? 'sm' : 'lg' })` → emits both branches
-- `button({ size })` or `<Button size={size} />` → emits `defaultVariants` only
-
-When a variant comes from a prop or state, pre-generate it:
-
-```ts filename="button.recipe.ts"
-export const buttonRecipe = defineRecipe({
-  className: 'button',
-  staticCss: ['*'] // or [{ size: ['sm', 'md', 'lg'] }]
-})
-```
-
-Or add literal calls in stories/tests, or use string literals in the call itself.
-
-Slot recipes follow the same rules. See [slot recipes](/docs/recipes/slot-recipes#dynamic-variant-props). More in
-[static CSS](/docs/styling/static#recipes).
-
-## Using compound variants
-
-Apply styles when **multiple** variant props match. Same shape as [`cva`](/docs/recipes/atomic-recipe#compound-variants): a
-flat `css` object on each entry:
-
-```ts filename="input.recipe.ts"
-import { defineRecipe } from '@pandacss/dev'
-
-export const inputRecipe = defineRecipe({
-  className: 'input',
-  base: {
-    borderWidth: '1px',
-    borderColor: 'gray.200',
-    borderRadius: 'md'
-  },
-  variants: {
-    size: {
-      sm: { fontSize: 'sm' },
-      md: { fontSize: 'md' }
-    },
-    variant: {
-      outline: { bg: 'transparent' },
-      filled: { bg: 'gray.100' }
-    }
-  },
-  defaultVariants: {
-    size: 'md',
-    variant: 'outline'
-  },
-  compoundVariants: [
-    {
-      size: 'sm',
-      variant: 'outline',
-      css: { px: '2', py: '1' }
-    },
-    {
-      size: 'md',
-      variant: 'outline',
-      css: { px: '3', py: '2' }
-    }
-  ]
-})
-```
-
-```ts filename="panda.config.ts"
-theme: {
-  extend: {
-    recipes: {
-      input: inputRecipe
-    }
-  }
-}
-```
-
-```tsx
-import { input } from '../styled-system/recipes'
-
-input({ size: 'sm', variant: 'outline' })
-// → "input input--size_sm input--variant_outline px_2 py_1"
-```
-
-First extracted use atomizes every compound `css` object into `@layer utilities`:
-
-```css
-@layer utilities {
-  .px_2 {
-    padding-inline: var(--spacing-2);
-  }
-  .py_1 {
-    padding-block: var(--spacing-1);
-  }
-  .px_3 {
-    padding-inline: var(--spacing-3);
-  }
-  .py_2 {
-    padding-block: var(--spacing-2);
-  }
-}
-```
-
-Adding `compoundVariants` also drops responsive variant props. A recipe like **`datepicker`** without compounds keeps
-`ConditionalValue`:
+If the recipe comes from a preset, override it under `theme.extend.recipes`. You can change `className`, `base`,
+variants, and `jsx`. See [The extend keyword](/docs/theming/extend).
 
 ```ts
-// styled-system/recipes/date-picker.ts
-export type DatePickerVariantProps = {
-  size?: ConditionalValue<'sm' | 'md'>
-}
-```
-
-```tsx
-datePicker({ size: { base: 'sm', md: 'lg' } }) // ✅
-```
-
-**`input`** above accepts plain literals only:
-
-```ts
-// styled-system/recipes/input.ts
-export type InputVariantProps = {
-  size?: 'sm' | 'md'
-}
-```
-
-```tsx
-input({ size: { base: 'sm', md: 'lg' } })
-// ❌ [recipe:input:size] Conditions are not supported when using compound variants.
-```
-
-At runtime, only the matching combo merges via `getCompoundVariantCss`:
-
-```tsx
-input({ size: 'sm', variant: 'outline' })
-// "input input--size_sm input--variant_outline px_2 py_1"
-
-input({ size: 'md', variant: 'outline' })
-// "input input--size_md input--variant_outline px_3 py_2"
-```
-
-Runtime-only combos need [`staticCss`](/docs/styling/static#recipes). Run `pnpm panda codegen` after editing
-the recipe.
-
-## Responsive and Conditional variants
-
-Pass breakpoint objects to variant props instead of a single value. Generated types use `ConditionalValue`.
-
-This only works when:
-
-- The recipe is defined in config with `defineRecipe`, not [`cva`](/docs/recipes/atomic-recipe)
-- The recipe has no `compoundVariants` (see [Using compound variants](#using-compound-variants))
-
-```jsx
-import { button } from '../styled-system/recipes'
-
-function App() {
-  return (
-    <div>
-      <button className={button({ size: { base: 'sm', md: 'lg' } })}>Click me</button>
-    </div>
-  )
-}
-```
-
-> In most cases, we don't recommend applying conditional variants inline. Ideally, you might want to render different
-> views for your responsive breakpoints.
-
-## TypeScript Guide
-
-Every recipe ships a type interface for its accepted variants. You can import them from the `styled-system/recipes`
-entrypoint.
-
-For the button recipe, we can import the `ButtonVariants` type like so:
-
-```ts
-import React from 'react'
-import type { ButtonVariants } from '../styled-system/recipes'
-
-type ButtonProps = ButtonVariants & React.ComponentProps<'button'>
-```
-
-## Usage in JSX
-
-Layer recipes can be consumed directly in your custom JSX components. Panda will automatically track the usage of the
-recipe if the component name matches the recipe name.
-
-For example, if your recipe is called `button` and you create a `Button` component from it, Panda will automatically
-track the usage of the variant properties.
-
-```tsx
-import React from 'react'
-import { cx } from '../styled-system/css'
-import { button, type ButtonVariants } from '../styled-system/recipes'
-
-type ButtonProps = ButtonVariants & React.ComponentProps<'button'>
-
-const Button = (props: ButtonProps) => {
-  const { size, className, children, ...rest } = props
-  return (
-    <button {...rest} className={cx(button({ size }), className)}>
-      {children}
-    </button>
-  )
-}
-
-const App = () => {
-  return (
-    <div>
-      <Button size="lg">Click me</Button>
-    </div>
-  )
-}
-```
-
-Two things to keep in the wrapper: pull the variant props out of `props` so they don't land on the DOM element, and
-merge any incoming `className` with [`cx`](/docs/styling/writing-styles#classname-concatenation) so callers can still
-style your component.
-
-## Advanced JSX Tracking
-
-We recommend that you use the recipe functions in most cases, in design systems there might be a need to compose
-existing components (like Button) to create new components.
-
-To track the usage of the recipes in these cases, you'll need to add the `jsx` hint for the recipe config
-
-```js {12} filename="button.recipe.ts"
-import { defineRecipe } from '@pandacss/dev'
-
-const button = defineRecipe({
-  base: {
-    color: 'red',
-    fontSize: '1.5rem'
-  },
-  variants: {
-    // ...
-  },
-  // Add the jsx hint to track the usage of the recipe in JSX, you can use regex to match multiple components
-  jsx: ['Button', 'PageButton']
-})
-```
-
-Then you can create a new component that uses the `Button` component and Panda will track the usage of the `button`
-recipe as well.
-
-```tsx
-const PageButton = (props: ButtonProps) => {
-  const { children, size } = props
-  return (
-    <Button {...props} size={size}>
-      {children}
-    </Button>
-  )
-}
-```
-
-### Extending a preset recipe
-
-If you're using a recipe from a preset, you can still extend it in your config.
-
-```js
-import { defineConfig } from '@pandacss/dev'
-
 export default defineConfig({
-  //...
-  jsxFramework: 'react',
   theme: {
     extend: {
       recipes: {
         button: {
-          className: 'something-else', // 👈 override the className
-          base: {
-            color: 'red', // 👈 replace some part of the recipe
-            fontSize: '1.5rem' // or add new styles
-          },
-          variants: {
-            // ... // 👈 add or extend new variants
-          },
-          jsx: ['Button', 'PageButton'] // 👈 extend the jsx tracking hint
+          className: 'btn',
+          base: { rounded: 'full' },
+          jsx: ['Button', 'LinkButton']
         }
       }
     }
@@ -421,134 +94,270 @@ export default defineConfig({
 })
 ```
 
-Learn more about the [extend](/docs/theming/extend) keyword.
+## CSS Output
 
-## Methods and Properties
+Panda emits a variant only when it can see a literal: `button({ size: 'lg' })`, a ternary whose both branches fold,
+or `<Button size="lg" />` on a tag it treats as this recipe. The first use also emits `base` plus
+`defaultVariants`.
 
-Both atomic and config recipe ships a helper methods and properties that can be used to get information about the
-recipe.
+With the default `separator` (`_`), the classes look like this:
 
-- `variantKeys`: An array of the recipe variant keys
-- `variantMap`: An object of the recipe variant keys and their values
-- `splitVariantProps`: A function that takes an object as its argument and returns an array containing the recipe
-  variant props and the rest of the props
+```
+button
+button--visual_solid
+button--size_lg
+```
 
-```js
-import { cva } from '../styled-system/css'
+```css
+@layer recipes.base {
+  .button {
+    display: inline-flex;
+  }
+}
 
-const buttonRecipe = cva({
-  base: {
-    color: 'red',
-    fontSize: '1.5rem'
-  },
-  variants: {
-    size: {
-      sm: {
-        fontSize: '1rem'
-      },
-      md: {
-        fontSize: '2rem'
+@layer recipes.variants {
+  .button--size_lg {
+    padding-inline: var(--spacing-5);
+    font-size: var(--font-sizes-md);
+  }
+}
+```
+
+`hash`, `prefix`, and `separator` change that string. They are baked into `recipes/runtime.ts` at codegen, so you
+re-run codegen after flipping them.
+
+Compounds are named classes in `recipes.compound_variants`, not leftover atoms. See
+[compound variants](/docs/recipes/compound-variants).
+
+`button({ size })` and `<Button size={size} />` only emit `defaultVariants`. The function still returns a class
+name at runtime. If that class was never written to the sheet, nothing paints. Pre-generate the missing values with
+[dynamic variants](/docs/recipes/dynamic-variants).
+
+## How the recipe is named
+
+The import, the CSS class, and the JSX tag can all be different words. Mixing them up is the usual reason styles
+vanish.
+
+### Theme key
+
+The key you register under `theme.recipes` is the import name and the name of the generated types.
+
+```ts
+export default defineConfig({
+  theme: {
+    extend: {
+      recipes: {
+        button: buttonRecipe
       }
     }
   }
 })
-
-buttonRecipe.variantKeys
-// => ['size']
-
-buttonRecipe.variantMap
-// => { size: ['sm', 'md'] }
-
-buttonRecipe.splitVariantProps({ size: 'sm', onClick() {} })
-// => [{ size: 'sm'}, { onClick() {} }]
 ```
 
-These methods and properties are useful when creating custom components or writing Storybook stories for your recipes.
+```ts
+import { button, type ButtonVariant } from '../styled-system/recipes'
+```
 
-Here's a Storybook example.
+### className
 
-```tsx filename="button.stories.tsx"
-import { Button, buttonRecipe } from './components/button'
+`className` on the recipe is only the CSS stem. It does not rename the import. Omit it and the stem falls back to
+the theme key.
 
-export default {
-  title: 'Button',
-  component: Button,
-  argTypes: {
+```ts
+export const buttonRecipe = defineRecipe({
+  className: 'btn',
+  // ...
+})
+```
+
+```css
+.btn {
+}
+.btn--size_sm {
+}
+```
+
+### JSX name
+
+Panda connects a JSX tag to the recipe by the **component name**, not by the import. For theme key `button`, that
+default name is `Button`.
+
+```tsx
+<Button size="lg" />
+```
+
+If you wrap that in another component with a different name, list both on `jsx`. `jsx` **replaces** the default
+list, so keep `Button` if you still render it.
+
+```tsx
+export function LinkButton(props) {
+  return <Button {...props} />
+}
+```
+
+```ts
+export const buttonRecipe = defineRecipe({
+  className: 'btn',
+  jsx: ['Button', 'LinkButton']
+})
+```
+
+More on wrappers and missed tags: [Tracking JSX](/docs/recipes/jsx-tracking).
+
+## Using raw()
+
+On [`cva`](/docs/recipes/atomic-recipe#using-raw) and [`sva`](/docs/recipes/slot-recipes#using-raw), `raw()`
+returns the resolved style object. Config recipes do not do that.
+
+`raw()` is an identity helper: it returns the **props you passed**, so the extractor can see them.
+
+```ts
+button.raw({ size: 'sm' })
+// { size: 'sm' }
+```
+
+<Callout type="warning">
+  `css(button.raw({ size: 'sm' }), { color: 'red.500' })` does not include the recipe styles. Merge the class string
+  with atomic CSS instead. Utilities sit above `@layer recipes`, so the extra styles win.
+</Callout>
+
+```ts
+import { css, cx } from '../styled-system/css'
+import { button } from '../styled-system/recipes'
+
+cx(button({ size: 'sm' }), css({ color: 'red.500' }))
+```
+
+## Exported Types
+
+Generated names follow the **theme key**, not `className`.
+
+```ts
+import { button, type ButtonVariant, type ButtonVariantProps } from '../styled-system/recipes'
+
+type ButtonVariant = {
+  size?: 'sm' | 'lg'
+  visual?: 'solid' | 'outline'
+}
+```
+
+If the recipe has compounds, `ButtonVariantProps` is literals only. `ConditionalValue` goes away.
+
+<Callout type="warning">
+  Breakpoint objects (`size: { base: 'sm', md: 'lg' }`) are [responsive variants](/docs/recipes/responsive-variants).
+  They only work when the recipe has no `compoundVariants`.
+</Callout>
+
+## Helpers
+
+```ts
+button.variantKeys
+// ['visual', 'size']
+
+button.variantMap
+// { visual: ['solid', 'outline'], size: ['sm', 'lg'] }
+
+button.splitVariantProps({ size: 'sm', onClick() {} })
+// [{ size: 'sm' }, { onClick() {} }]
+
+button.getVariantProps({ size: 'lg' })
+// { visual: 'solid', size: 'lg' }
+
+button.raw({ size: 'sm' })
+// { size: 'sm' }
+```
+
+`splitVariantProps` is the one you want in a wrapper, so `onClick` never looks like a variant. `variantMap` is
+handy for Storybook `argTypes`. `merge(other)` combines two recipes. `getVariantProps` fills in `defaultVariants`.
+`raw()` is the identity helper above, not a style object.
+
+## Config Slot Recipe
+
+Parts use `defineSlotRecipe` under `theme.slotRecipes`. Same contract as above: theme key, named classes, emit only
+what extract sees. The function returns a **slot map**, not one class string.
+
+The slot shape (`slots`, per-slot `base` / `css`) is the same as [`sva`](/docs/recipes/slot-recipes).
+
+```ts filename="checkbox.recipe.ts"
+import { defineSlotRecipe } from '@pandacss/dev'
+
+export const checkboxRecipe = defineSlotRecipe({
+  className: 'checkbox',
+  slots: ['root', 'control', 'label'],
+  base: {
+    root: { display: 'flex', alignItems: 'center', gap: '2' },
+    control: { borderWidth: '1px', borderRadius: 'sm' },
+    label: { marginStart: '2' }
+  },
+  variants: {
     size: {
-      control: {
-        type: 'select',
-        options: buttonRecipe.variantMap.size
+      sm: { control: { boxSize: '8' }, label: { fontSize: 'sm' } },
+      md: { control: { boxSize: '10' }, label: { fontSize: 'md' } }
+    }
+  },
+  defaultVariants: { size: 'sm' }
+})
+```
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+import { checkboxRecipe } from './checkbox.recipe'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      slotRecipes: {
+        checkbox: checkboxRecipe
       }
     }
   }
+})
+```
+
+```tsx
+import { checkbox } from '../styled-system/recipes'
+
+const classes = checkbox({ size: 'md' })
+// classes.root, classes.control, classes.label
+```
+
+<Callout type="warning">
+  Do not wrap a slot recipe with `styled()`. Put the parts on JSX with
+  [slot recipe context](/docs/recipes/slot-recipe-context).
+</Callout>
+
+Config slot classes are named, not atomic:
+
+```
+checkbox__root
+checkbox__control
+checkbox__root--size_md
+```
+
+```css
+@layer recipes.slots.base {
+  .checkbox__root {
+    display: flex;
+  }
 }
 
-export const Demo = {
-  render: args => <Button {...args}>Click me</Button>
+@layer recipes.slots.variants {
+  .checkbox__root--size_md {
+    /* … */
+  }
 }
 ```
 
-## Best Practices
+Compounds emit per-slot classes in `recipes.slots.compound_variants`. See
+[compound variants](/docs/recipes/compound-variants).
 
-- Leverage css variables in the base styles as much as possible. Makes it easier to theme the component with JS
-- Don't mix styles by writing complex selectors. Separate concerns and group them in logical variants
-- Use the `compoundVariants` property to create more complex sets of styles
+## See also
 
-## Limitations
-
-- [`cva`](/docs/recipes/atomic-recipe): no responsive variant props. Config recipes: yes, unless
-  `compoundVariants` is set (see [above](#using-compound-variants)).
-
-- Due to static nature of Panda, it's not possible to track the usage of the recipes in all cases. Here are some of use
-  cases that Panda won't be able to track the usage of the recipe variants:
-
-  **When you change the name of the variant prop in the JSX component**
-
-  In below example, the `size` prop is renamed to `buttonSize`
-
-  ```tsx
-  const Button = ({ buttonSize, className, children, ...props }) => {
-    return (
-      <button {...props} className={cx(button({ size: buttonSize }), className)}>
-        {children}
-      </button>
-    )
-  }
-  ```
-
-  **When you use the recipe in a custom component that is not named as per the recipe name, Panda won't be able to track
-  the usage of the recipe variants.**
-
-  In below example, the component name `Button` is renamed to `Random` and we are using `button` recipe.
-
-  ```tsx
-  const Random = ({ size, className, children, ...props }) => {
-    return (
-      <button {...props} className={cx(button({ size }), className)}>
-        {children}
-      </button>
-    )
-  }
-  ```
-
-## Static CSS
-
-Use `staticCss` to pre-generate recipe CSS Panda can't extract, including
-[dynamic variant props](#dynamic-variant-props). See [Generating recipes](/docs/styling/static#recipes).
-
-## Should I use atomic or config recipes ?
-
-Config recipes are JIT: Panda only emits variants it finds in your code.
-[`cva`](/docs/recipes/atomic-recipe) recipes live anywhere in the app, so every variant is generated up front.
-
-Use config recipes for design-system components and leaner CSS. Use `cva` for colocation and runtime merging.
-
-|                                   | Config recipe                                                                                                                                  | Atomic recipe (cva)                                                                                                                              |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Theme tokens, utilities, conditions | ✅                                                                                                                                             | ✅                                                                                                                                               |
-| JIT: CSS for variants used in code | ✅                                                                                                                                             | ❌ all variants always                                                                                                                           |
-| Shareable in a preset               | ✅                                                                                                                                             | ❌                                                                                                                                               |
-| Responsive variant props            | ✅ without `compoundVariants`                                                                                                                  | ❌                                                                                                                                               |
-| Colocate with components            | ❌ define in config                                                                                                                            | ✅                                                                                                                                               |
-| Atomic utility classes              | ❌ named recipe classes                                                                                                                        | ✅                                                                                                                                               |
-| Runtime merge with `css()`          | ❌ use [`cx`](/docs/styling/merging-styles#merging-config-recipe-and-style-object) for classes                                                | ✅ [`.raw()` + `css()`](/docs/styling/merging-styles#merging-cva--css-styles)                                                                  |
+- [Recipes overview](/docs/recipes/overview)
+- [Merging styles](/docs/styling/merging-styles)
+- [Slot Recipe](/docs/recipes/slot-recipes)
+- [Tracking JSX](/docs/recipes/jsx-tracking)
+- [Dynamic variants](/docs/recipes/dynamic-variants)
+- [Responsive variants](/docs/recipes/responsive-variants)
+- [Compound variants](/docs/recipes/compound-variants)
+- [recipes/ reference](/docs/reference/recipes)

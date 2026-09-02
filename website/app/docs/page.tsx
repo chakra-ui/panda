@@ -95,7 +95,7 @@ export default function DocsWelcomePage() {
           <Card
             icon={<LuLayers />}
             title="Recipes"
-            href="/docs/recipes/atomic-recipe"
+            href="/docs/recipes/overview"
             description="Define component styles with variants and compound variants, compiled to atomic CSS."
             cta="Write a recipe"
           />

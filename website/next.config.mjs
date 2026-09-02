@@ -63,7 +63,7 @@ const config = {
       },
       {
         source: '/docs/recipes',
-        destination: '/docs/recipes/atomic-recipe',
+        destination: '/docs/recipes/overview',
         permanent: true
       },
       {
@@ -126,7 +126,7 @@ const config = {
       },
       {
         source: '/docs/concepts/recipes',
-        destination: '/docs/recipes/atomic-recipe',
+        destination: '/docs/recipes/overview',
         permanent: true
       },
       {
@@ -136,7 +136,7 @@ const config = {
       },
       {
         source: '/docs/concepts/jsx-style-context',
-        destination: '/docs/recipes/jsx-recipes-overview',
+        destination: '/docs/recipes/slot-recipe-context',
         permanent: true
       },
       {

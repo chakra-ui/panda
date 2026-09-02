@@ -1,0 +1,124 @@
+---
+title: Styled factory
+description: Wrap a single-element recipe in styled() so variants, css, and style props share one component.
+---
+
+`styled(element, recipe)` turns a `cva` or config recipe into a component. Variant keys become props. Style props and
+`css` still work, so you can write `<Button size="lg" bg="blue.500">` without dropping out of the recipe.
+
+<Callout type="info">
+  You need [`jsxFramework`](/docs/reference/config#jsxframework) in your config, or `styled-system/jsx` is not
+  generated.
+</Callout>
+
+## Using styled()
+
+```tsx
+import { cva } from '../styled-system/css'
+import { styled } from '../styled-system/jsx'
+
+const buttonRecipe = cva({
+  base: {
+    display: 'inline-flex',
+    rounded: 'md',
+    fontWeight: 'semibold'
+  },
+  variants: {
+    size: {
+      sm: { px: '3', py: '1.5', fontSize: 'sm' },
+      lg: { px: '5', py: '3', fontSize: 'md' }
+    }
+  },
+  defaultVariants: { size: 'sm' }
+})
+
+export const Button = styled('button', buttonRecipe)
+```
+
+```tsx
+<Button size="lg" bg="blue.500">
+  Click me
+</Button>
+```
+
+`size` drives the recipe. `bg` is a style prop, so it becomes an atomic utility and still wins over the recipe layer.
+
+`css`, `as`, and `className` are on [Factory props](/docs/styling/factory-props).
+
+<Callout type="warning">
+  If a variant key is also a CSS property, it is treated as a **variant**, not a style prop. That is the usual reason
+  `size` on a styled recipe does not set `width` / `height`.
+</Callout>
+
+## Inlining the recipe
+
+Pass the definition as the second argument. Panda extracts it as a `cva` recipe:
+
+```tsx
+const Button = styled('button', {
+  base: { display: 'inline-flex' },
+  variants: {
+    size: {
+      sm: { px: '3' },
+      lg: { px: '5' }
+    }
+  }
+})
+```
+
+## Usage with a config recipe
+
+Import the generated function and hand it to `styled`. Same component API. Named classes instead of atoms.
+
+```tsx
+import { button } from '../styled-system/recipes'
+import { styled } from '../styled-system/jsx'
+
+export const Button = styled('button', button)
+```
+
+## unstyled
+
+Skip the recipe classes. Style props, `css`, and `className` still apply.
+
+```tsx
+<Button unstyled css={{ bg: 'red.500' }}>
+  Click me
+</Button>
+```
+
+## Composing recipes
+
+Wrap an existing styled recipe. The second recipe must be the **same kind**: two `cva` recipes, or two config recipes.
+You cannot wrap a `cva` recipe with a config recipe on the same element.
+
+```tsx
+const Button = styled('button', buttonRecipe)
+
+const IconButton = styled(Button, {
+  base: { px: '2' },
+  variants: {
+    size: {
+      sm: { boxSize: '8' },
+      lg: { boxSize: '10' }
+    }
+  }
+})
+
+<IconButton size="lg" />
+```
+
+`size` is still one prop. The second recipe adds `boxSize` and keeps `buttonRecipe`'s padding and font size unless it
+sets the same key. The later recipe wins on a clash.
+
+If the thing you wrap is a headless component rather than a DOM tag, use
+[`createRecipeContext`](/docs/recipes/recipe-context). That is `styled()` plus a way for a parent to push variant
+props down.
+
+## See also
+
+- [Style props](/docs/styling/style-props)
+- [Factory props](/docs/styling/factory-props)
+- [Recipe context](/docs/recipes/recipe-context)
+- [jsx/ reference](/docs/reference/jsx)
+- [forwardProps in a design system](/docs/design-systems/forward-props)
