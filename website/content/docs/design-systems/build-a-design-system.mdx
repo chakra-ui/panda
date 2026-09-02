@@ -1,0 +1,219 @@
+---
+title: Build a design system
+description: Run panda lib in the package. Apps opt in with designSystem.
+---
+
+You own the package. The apps that use it run Panda. Run `panda lib`, then point each app at the package.
+
+The command is the same in a monorepo and on npm. Only the workflow around it differs:
+[Monorepo workflow](/docs/design-systems/monorepo-workflow) covers watch mode,
+[Publishing](/docs/design-systems/publishing) covers the npm tarball.
+
+If your apps do not run Panda, ship a stylesheet instead:
+[Consume without Panda](/docs/design-systems/consume-without-panda). If you only need tokens, without components,
+ship a [preset](/docs/theming/presets).
+
+## Create the package
+
+This walkthrough uses a workspace package at `packages/ds` that ships TypeScript source directly, the usual shape
+when the consumers live in the same repo. [Publishing](/docs/design-systems/publishing) covers the built `dist`
+shape for npm.
+
+```bash
+pnpm add -D @pandacss/dev
+```
+
+## Configure the theme
+
+```ts filename="packages/ds/panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  presets: ['@pandacss/preset-base'],
+  include: ['src/**/*.{ts,tsx}'],
+  outdir: 'styled-system',
+  jsxFramework: 'react',
+  theme: {
+    tokens: {
+      colors: {
+        brand: { value: '#facc15' }
+      },
+      radii: {
+        md: { value: '0.375rem' }
+      }
+    },
+    recipes: {
+      button: {
+        className: 'button',
+        base: {
+          display: 'inline-flex',
+          alignItems: 'center',
+          borderRadius: 'md',
+          paddingInline: '4',
+          color: 'black',
+          backgroundColor: 'brand'
+        }
+      }
+    }
+  }
+})
+```
+
+## Author a component
+
+```bash
+panda codegen
+```
+
+```tsx filename="packages/ds/src/button/button.tsx"
+import type { ComponentPropsWithoutRef } from 'react'
+import { button } from '../../styled-system/recipes'
+
+export function Button(props: ComponentPropsWithoutRef<'button'>) {
+  return <button className={button()} {...props} />
+}
+```
+
+```ts filename="packages/ds/src/index.ts"
+export { Button } from './button/button'
+```
+
+Inside the package, import from the local `styled-system`. Consumers import the component from `@acme/ds`.
+
+## Set up package.json
+
+Write the `"."` entry yourself. Do not list `styled-system` exports. `panda lib` adds them.
+
+```json filename="packages/ds/package.json"
+{
+  "name": "@acme/ds",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "codegen": "panda codegen",
+    "lib": "panda codegen && panda lib",
+    "watch": "panda codegen && panda lib --watch"
+  },
+  "peerDependencies": {
+    "@pandacss/dev": "^2.0.0",
+    "react": ">=18"
+  }
+}
+```
+
+## Run panda lib
+
+```bash
+pnpm --filter @acme/ds lib
+```
+
+It writes three files under `dist/panda/`:
+
+```
+dist/panda/
+├── lib.json         # the manifest: theme, import map, fallback file globs
+├── preset.mjs       # tokens, recipes, patterns
+└── buildinfo.json   # the styles panda lib extracted from your source
+```
+
+An app never imports these files. Setting `designSystem: '@acme/ds'` loads the manifest, merges the preset into the
+app's theme, and replays `buildinfo.json`. The app gets your styles without re-scanning your source.
+
+`panda lib` also syncs `package.json` exports. Your `"."` entry stays, the rest is generated. This walkthrough has
+no patterns, so `./patterns` is absent.
+
+```json filename="packages/ds/package.json"
+{
+  "name": "@acme/ds",
+  "exports": {
+    ".": "./src/index.ts",
+    "./panda/*": "./dist/panda/*",
+    "./css": {
+      "types": "./styled-system/css/index.d.ts",
+      "default": "./styled-system/css/index.js"
+    },
+    "./css/*": {
+      "types": "./styled-system/css/*.d.ts",
+      "default": "./styled-system/css/*.js"
+    },
+    "./helpers": {
+      "types": "./styled-system/helpers.d.ts",
+      "default": "./styled-system/helpers.js"
+    },
+    "./recipes": {
+      "types": "./styled-system/recipes/index.d.ts",
+      "default": "./styled-system/recipes/index.js"
+    },
+    "./recipes/*": {
+      "types": "./styled-system/recipes/*.d.ts",
+      "default": "./styled-system/recipes/*.js"
+    },
+    "./jsx": {
+      "types": "./styled-system/jsx/index.d.ts",
+      "default": "./styled-system/jsx/index.js"
+    },
+    "./jsx/*": {
+      "types": "./styled-system/jsx/*.d.ts",
+      "default": "./styled-system/jsx/*.js"
+    },
+    "./tokens": {
+      "types": "./styled-system/tokens/index.d.ts",
+      "default": "./styled-system/tokens/index.js"
+    }
+  }
+}
+```
+
+Do not edit the generated subpaths. The next `panda lib` rewrites them.
+
+## Fallback files
+
+```
+app reads buildinfo.json
+├─ ok    → replays your styles, no re-scan
+└─ stale → re-extracts the `files` globs in lib.json   (warns: design_system_buildinfo_stale)
+    └─ no `files` → the build fails, nothing silently missing
+```
+
+`panda lib` infers `files` from your `include`. For a built-only package where those paths don't ship, pass what
+you publish:
+
+```bash
+panda lib --files './**/*.{js,mjs}'
+```
+
+## Point an app at it
+
+```ts filename="packages/app/panda.config.ts"
+export default defineConfig({
+  designSystem: '@acme/ds',
+  include: ['src/**/*.{ts,tsx}']
+})
+```
+
+Do not put the design system in `include`. That errors with `design_system_in_include`. The package loads through
+`designSystem`, nothing else.
+
+Render a `<Button>` in the app and it comes out styled by the `button` recipe, with no Panda config for it in the
+app:
+
+```tsx filename="packages/app/src/app.tsx"
+import { Button } from '@acme/ds'
+
+export function App() {
+  return <Button>Save</Button> // brand background, md radius
+}
+```
+
+Bundler setup, imports, and theme overrides:
+[Consume with Panda](/docs/design-systems/consume-with-panda).
+
+## See also
+
+- [Consume with Panda](/docs/design-systems/consume-with-panda)
+- [Monorepo workflow](/docs/design-systems/monorepo-workflow)
+- [Publishing](/docs/design-systems/publishing)
+- [`panda lib`](/docs/reference/cli#lib)

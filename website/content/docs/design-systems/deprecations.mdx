@@ -1,0 +1,41 @@
+---
+title: Deprecations
+description: Mark tokens and recipes deprecated so consumers get warned before a removal.
+---
+
+Set `deprecated` in the library's theme. Apps that use the entry get a `deprecated_token_used` diagnostic at build
+time, and the `no-deprecated` [lint rule](/docs/design-systems/linting) flags it in the editor.
+
+```ts filename="packages/ds/panda.config.ts"
+export default defineConfig({
+  theme: {
+    tokens: {
+      colors: {
+        brand: {
+          value: '#facc15',
+          deprecated: 'use `colors.accent` instead'
+        }
+      }
+    }
+  }
+})
+```
+
+`deprecated: true` works too. The string form puts the migration hint in the warning. Utilities, patterns, and
+recipes take the same property. See [Deprecations reference](/docs/reference/deprecations).
+
+## Removal timeline
+
+- Deprecate in a minor release. Consumers keep building, with warnings.
+- Check adoption with [`panda analyze`](/docs/design-systems/analyze) across the consuming apps.
+- Remove in the next major. See [Publishing](/docs/design-systems/publishing) for the peer-range and semver
+  guidance.
+
+Removing without deprecating fails quieter than you'd hope: a reference to a token that no longer exists is emitted
+as a literal CSS value, not a build error.
+
+## See also
+
+- [Deprecations reference](/docs/reference/deprecations) for every deprecatable entity
+- [Linting](/docs/design-systems/linting)
+- [Analyze usage](/docs/design-systems/analyze)

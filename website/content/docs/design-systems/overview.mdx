@@ -1,0 +1,112 @@
+---
+title: Design systems
+description: Ship components and the config they were built against as one package.
+---
+
+A Panda design system is a package of **components plus the config they were built against**: tokens, recipes, and
+the generated `styled-system`, published as one unit with `panda lib`.
+
+Without it, the library and each app generate separate `styled-system` folders. That puts two copies of the runtime
+(`css()`, `cva()`, the JSX factory) in the bundle, with no shared token contract between them. With it, apps load
+the package's theme, reuse the styles the package already extracted, and stay typed against the merged theme.
+
+Apps that run Panda opt in with one field:
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  designSystem: '@acme/ds'
+})
+```
+
+## Pick a path
+
+<Cards columns={2}>
+  <Card
+    title="Build a design system"
+    href="/docs/design-systems/build-a-design-system"
+    kicker="panda lib"
+    description="You own the package. The same command works in a monorepo and on npm."
+    cta="Run panda lib"
+  />
+  <Card
+    title="Consume with Panda"
+    href="/docs/design-systems/consume-with-panda"
+    kicker="config field"
+    description="The app runs Panda. Add one field and build on the package's theme."
+    cta="Point the app at it"
+  />
+  <Card
+    title="Consume without Panda"
+    href="/docs/design-systems/consume-without-panda"
+    kicker="panda cssgen"
+    description="The app only imports a stylesheet. No theming from the app."
+    cta="Ship a CSS file"
+  />
+  <Card
+    title="Ship a preset"
+    href="/docs/theming/presets"
+    kicker="preset"
+    description="Tokens and recipes only. No components, no styled-system."
+    cta="Write a preset"
+  />
+</Cards>
+
+## Where the package lives
+
+`panda lib` is the same either way. Only watch and publish differ.
+
+In a workspace, depend on the source and run `panda lib --watch`. See
+[Monorepo workflow](/docs/design-systems/monorepo-workflow).
+
+```json filename="packages/app/package.json"
+{
+  "dependencies": {
+    "@acme/ds": "workspace:*"
+  }
+}
+```
+
+On npm, install a published version and run `panda lib` before `npm publish`. See
+[Publishing](/docs/design-systems/publishing).
+
+```json filename="apps/web/package.json"
+{
+  "dependencies": {
+    "@acme/ds": "^1.0.0"
+  }
+}
+```
+
+## Storybook
+
+Stories that call recipes run Panda, even when production only imports a CSS file. That is why a story can look
+right while the app looks blank. Include the story files, or pre-generate variants:
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  designSystem: '@acme/ds',
+  include: ['src/**/*.{ts,tsx}', '.storybook/**/*.{ts,tsx}'],
+  staticCss: {
+    recipes: '*'
+  }
+})
+```
+
+[Storybook](/docs/design-systems/storybook) covers the package's own stories.
+[Using Storybook](/docs/get-started/storybook) covers adding Panda to an app's Storybook.
+
+## Writing the components
+
+Once the package exists:
+
+- [Wrap headless libraries](/docs/design-systems/wrap-headless-libraries) for compounds and single `styled()` wrappers
+- [Tracking JSX](/docs/recipes/jsx-tracking) so `<Button size="lg" />` still extracts
+- [Isolated declarations](/docs/design-systems/isolated-declarations) to keep CSS out of your `.d.ts`
+
+## Governing the system
+
+Once apps depend on it:
+
+- [Linting](/docs/design-systems/linting) to flag raw values where a token exists
+- [Analyze usage](/docs/design-systems/analyze) to see which tokens apps actually use
+- [Deprecations](/docs/design-systems/deprecations) to warn consumers before a removal

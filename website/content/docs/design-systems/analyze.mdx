@@ -1,0 +1,34 @@
+---
+title: Analyze usage
+description: Report which tokens and recipes each app actually uses with panda analyze.
+---
+
+`panda analyze` reports which tokens, recipes, utilities, patterns, and keyframes a project uses. Run it in a
+consuming app to measure adoption. Run it before removing anything.
+
+```bash
+pnpm panda analyze
+
+# one category
+pnpm panda analyze --scope tokens
+pnpm panda analyze --scope recipes
+```
+
+## Share a report
+
+```bash
+pnpm panda analyze --report ./analyze-report   # static HTML, shareable
+pnpm panda analyze --ui                        # interactive, refreshes on change
+pnpm panda analyze --outfile analyze.json      # JSON, for CI or scripts
+```
+
+## Before removing a token
+
+A token with zero usage across every consuming app is safe to drop in the next major. One that still shows up gets
+[deprecated](/docs/design-systems/deprecations) first, so consumers are warned while they migrate.
+
+## See also
+
+- [`panda analyze`](/docs/reference/cli#analyze) for all flags
+- [Deprecations](/docs/design-systems/deprecations)
+- [Publishing](/docs/design-systems/publishing) for the semver guidance

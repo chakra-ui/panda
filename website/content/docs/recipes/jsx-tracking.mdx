@@ -112,6 +112,10 @@ Keep `Card` / `Card.Root` in that list if those tags still appear in the app.
 
 A local `<Button>` that is **not** this recipe can still be treated as one. The match is not import-gated.
 
+A headless prop can also share a name with a CSS property (`Select.Content` `position`). You cannot exclude that
+tag in the current engine. If it causes a real problem,
+[open an issue](https://github.com/chakra-ui/panda/issues).
+
 Renamed props (`size` → `buttonSize`) and a wrapper named `Random` are a different miss. See
 [Extraction rules](/docs/styling/extraction-rules).
 
@@ -120,4 +124,4 @@ Renamed props (`size` → `buttonSize`) and a wrapper named `Random` are a diffe
 - [Extraction rules](/docs/styling/extraction-rules)
 - [Config recipes](/docs/recipes/config-recipe)
 - [Slot recipe context](/docs/recipes/slot-recipe-context)
-- [Track usage](/docs/design-systems/track-usage)
+- [Wrap headless libraries](/docs/design-systems/wrap-headless-libraries)

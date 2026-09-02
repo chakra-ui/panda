@@ -208,6 +208,7 @@ export const docsTabs: TabItem[] = [
         title: 'Advanced',
         items: [
           { title: 'Cascade Layers', url: 'cascade-layers' },
+          { title: 'Style isolation', url: 'style-isolation' },
           { title: 'Global Styles', url: 'global-styles' },
           { title: 'Virtual Color', url: 'virtual-color' },
           { title: 'Color opacity modifier', url: 'color-opacity-modifier' },
@@ -285,6 +286,7 @@ export const docsTabs: TabItem[] = [
           { title: 'Conditions', url: 'conditions' },
           { title: 'Patterns', url: 'patterns' },
           { title: 'Presets', url: 'presets' },
+          { title: 'Minimal setup', url: 'minimal-setup' },
           { title: 'The extend keyword', url: 'extend' },
           { title: 'Hooks', url: 'hooks' },
           { title: 'Config Functions', url: 'config-functions' },
@@ -306,47 +308,36 @@ export const docsTabs: TabItem[] = [
     side: 'left',
     items: [
       {
-        title: 'Component Library',
+        title: 'Start',
         items: [
-          { title: 'Set up a library package', url: 'setup' },
-          { title: 'Wrap headless UI', url: 'wrap-headless-ui' },
-          { title: 'forwardProps & the styled factory', url: 'forward-props' },
-          { title: 'Isolated Declarations', url: 'isolated-declarations' },
-          {
-            title: 'Ship the styled-system vs the CSS',
-            url: 'ship-styled-system'
-          },
-          { title: 'Track usage in wrapped components', url: 'track-usage' },
+          { title: 'Overview', url: 'overview' },
+          { title: 'Build a design system', url: 'build-a-design-system' },
+          { title: 'Consume with Panda', url: 'consume-with-panda' },
+          { title: 'Consume without Panda', url: 'consume-without-panda' }
+        ]
+      },
+      {
+        title: 'Write components',
+        items: [
+          { title: 'Wrap headless libraries', url: 'wrap-headless-libraries' },
+          { title: 'Isolated declarations', url: 'isolated-declarations' }
+        ]
+      },
+      {
+        title: 'Ship the library',
+        items: [
+          { title: 'Monorepo workflow', url: 'monorepo-workflow' },
+          { title: 'Publishing', url: 'publishing' },
+          { title: 'Storybook', url: 'storybook' },
           { title: 'Troubleshooting', url: 'troubleshooting' }
         ]
       },
       {
-        title: 'Design System Preset',
+        title: 'Governance',
         items: [
-          { title: 'Overview', url: 'preset-overview' },
-          { title: 'Build a design system', url: 'building-a-design-system' },
-          { title: 'Consume a design system', url: 'consuming-a-design-system' }
-        ]
-      },
-      {
-        title: 'Distribution & Scale',
-        items: [
-          {
-            title: 'Shared styled-system in a monorepo',
-            url: 'shared-styled-system'
-          },
-          { title: 'Publishing to npm', url: 'publishing-to-npm' },
-          { title: 'Avoiding CSS collisions', url: 'avoiding-collisions' },
-          { title: 'Monorepo dev workflow', url: 'monorepo-dev-workflow' },
-          {
-            title: 'Federated Micro-Frontends',
-            url: 'federated-microfrontends'
-          },
-          { title: 'Minimal Setup', url: 'minimal-setup' },
-          {
-            title: 'Environment-specific config',
-            url: 'environment-specific-config'
-          }
+          { title: 'Linting', url: 'linting' },
+          { title: 'Analyze usage', url: 'analyze' },
+          { title: 'Deprecations', url: 'deprecations' }
         ]
       }
     ]
@@ -361,6 +352,7 @@ export const docsTabs: TabItem[] = [
         items: [
           { title: 'CLI', url: 'cli' },
           { title: 'Config', url: 'config' },
+          { title: 'Environment-specific config', url: 'environment-specific-config' },
           { title: 'Debugging', url: 'debugging' },
           { title: 'Diagnostics', url: 'diagnostics' },
           { title: 'Deprecations', url: 'deprecations' }
@@ -422,7 +414,7 @@ const TAB_LANDING_HREF: Record<string, string> = {
   styling: '/docs/styling/overview',
   recipes: '/docs/recipes/overview',
   theming: '/docs/theming/tokens',
-  'design-systems': '/docs/design-systems/setup'
+  'design-systems': '/docs/design-systems/overview'
 }
 
 /** Unlisted tabs fall back to the tab root, which redirects onward. */

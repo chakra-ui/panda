@@ -84,7 +84,7 @@ export default defineConfig({
 
 `import * as DS from '@acme/ds'`, a side-effect import, or `import()` still hydrates everything. If the app imports
 nothing from the package, nothing hydrates. See
-[Consume a design system](/docs/design-systems/consuming-a-design-system).
+[Consume with Panda](/docs/design-systems/consume-with-panda).
 
 ### Older browsers
 
@@ -146,7 +146,7 @@ export default defineConfig({
 
 `minify: true` strips whitespace from the emitted CSS. Native minify is not yet a full LightningCSS replacement — check
 the result if you depended on that last few percent. Often enabled only in production. See
-[Environment-specific config](/docs/design-systems/environment-specific-config).
+[Environment-specific config](/docs/reference/environment-specific-config).
 
 ```ts filename="panda.config.ts"
 export default defineConfig({

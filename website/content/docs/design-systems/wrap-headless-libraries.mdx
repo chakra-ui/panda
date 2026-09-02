@@ -1,0 +1,154 @@
+---
+title: Wrap headless libraries
+description: Turn headless library components into styled components with createSlotRecipeContext.
+---
+
+Match `withProvider` and `withContext` to the headless tree. This page covers wrapping for a library. The full
+helper API lives on [Slot recipe context](/docs/recipes/slot-recipe-context).
+
+```tsx filename="src/accordion.tsx"
+import { Accordion as ArkAccordion } from '@ark-ui/react/accordion'
+import { sva } from '../styled-system/css'
+import { createSlotRecipeContext } from '../styled-system/jsx'
+
+const accordion = sva({
+  slots: ['root', 'item', 'itemTrigger', 'itemContent'],
+  base: {
+    root: { display: 'flex', flexDirection: 'column', gap: '2' },
+    itemTrigger: { fontWeight: 'medium', cursor: 'pointer' }
+  }
+})
+
+const { withProvider, withContext } = createSlotRecipeContext(accordion)
+
+export const Accordion = {
+  Root: withProvider(ArkAccordion.Root, 'root'),
+  Item: withContext(ArkAccordion.Item, 'item'),
+  ItemTrigger: withContext(ArkAccordion.ItemTrigger, 'itemTrigger'),
+  ItemContent: withContext(ArkAccordion.ItemContent, 'itemContent')
+}
+```
+
+```tsx
+<Accordion.Root>
+  <Accordion.Item value="one">
+    <Accordion.ItemTrigger>Title</Accordion.ItemTrigger>
+    <Accordion.ItemContent>Body</Accordion.ItemContent>
+  </Accordion.Item>
+</Accordion.Root>
+```
+
+If the headless root does not render a DOM node, use `withRootProvider` instead of `withProvider`.
+
+## Naming for config recipes
+
+An `accordion` slot recipe already tracks `Accordion`, `Accordion.Root`, and `AccordionRoot`. Export under that
+name and there is nothing to configure. Set `jsx` only when the export name differs from the theme key:
+
+```ts filename="panda.config.ts"
+export const accordion = defineSlotRecipe({
+  className: 'accordion',
+  jsx: ['Disclosure'] // replaces the default root name
+})
+```
+
+```tsx
+export const Disclosure = {
+  Root: withProvider(ArkAccordion.Root, 'root')
+}
+```
+
+See [Tracking JSX](/docs/recipes/jsx-tracking).
+
+## unstyled prop
+
+Every part accepts `unstyled`. It skips **that element's** slot styles only.
+
+```tsx
+// the root opts out, the parts stay styled
+<Accordion.Root unstyled>
+  <Accordion.Item value="one">
+    <Accordion.ItemTrigger>Styled trigger</Accordion.ItemTrigger>
+    <Accordion.ItemContent>Body</Accordion.ItemContent>
+  </Accordion.Item>
+</Accordion.Root>
+
+// a single part opts out
+<Accordion.Root>
+  <Accordion.Item value="one">
+    <Accordion.ItemTrigger unstyled>Plain trigger</Accordion.ItemTrigger>
+    <Accordion.ItemContent>Body</Accordion.ItemContent>
+  </Accordion.Item>
+</Accordion.Root>
+```
+
+## Forward variant props
+
+`withProvider` uses variant props to pick styles. It does not pass them through by default. List the ones the
+wrapped component also needs.
+
+```tsx
+export const Accordion = {
+  Root: withProvider(ArkAccordion.Root, 'root', {
+    forwardProps: ['orientation']
+  })
+}
+```
+
+## Wrap a single element
+
+A `Button` or a single third-party control is not a compound. Use `styled()`. The full factory API lives on
+[Style props](/docs/styling/style-props#styled).
+
+```tsx filename="src/button.tsx"
+import { styled } from '../styled-system/jsx'
+import { Button as HeadlessButton } from 'some-headless-lib'
+
+export const Button = styled(HeadlessButton)
+```
+
+Users get style props on top of the wrapped component's props.
+
+By default `styled()` consumes recipe variants and style props. They never reach the underlying element. List the
+names that must get through:
+
+```tsx filename="src/input.tsx"
+import { styled } from '../styled-system/jsx'
+
+export const Input = styled('input', {}, { forwardProps: ['size'] })
+```
+
+```tsx
+<Input size={4} />
+```
+
+Without `forwardProps`, `size` is a style prop and never becomes an HTML attribute. A forwarded prop no longer
+feeds the recipe. If a key must pick styles **and** reach the component, that is `withProvider` on a slot recipe,
+shown above.
+
+## Forward a dynamic set
+
+`forwardProps` is a fixed list. If the set depends on the wrapped library (Framer Motion, for example), use
+`shouldForwardProp`.
+
+```tsx
+import { styled, isCssProperty } from '../styled-system/jsx'
+import { motion, isValidMotionProp } from 'framer-motion'
+
+const StyledMotion = styled(
+  motion.div,
+  {},
+  {
+    shouldForwardProp: (prop, variantKeys) =>
+      isValidMotionProp(prop) || (!variantKeys.includes(prop) && !isCssProperty(prop))
+  }
+)
+```
+
+See [shouldForwardProp](/docs/styling/style-props#shouldforwardprop).
+
+## See also
+
+- [Slot recipe context](/docs/recipes/slot-recipe-context)
+- [Styled factory](/docs/recipes/styled-factory)
+- [Tracking JSX](/docs/recipes/jsx-tracking)

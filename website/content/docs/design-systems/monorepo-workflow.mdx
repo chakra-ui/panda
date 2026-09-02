@@ -1,0 +1,116 @@
+---
+title: Monorepo workflow
+description: Watch panda lib in the package. Never put a manifest package in include.
+---
+
+The design system and the app are workspace packages. Run `panda lib --watch` in the library. The app points at it
+with `designSystem`.
+
+```txt
+my-design-system/
+├── packages/
+│   ├── ds/
+│   └── app/
+├── package.json
+└── pnpm-workspace.yaml
+```
+
+```yaml filename="pnpm-workspace.yaml"
+packages:
+  - 'packages/*'
+```
+
+```json filename="packages/app/package.json"
+{
+  "dependencies": {
+    "@acme/ds": "workspace:*"
+  }
+}
+```
+
+```ts filename="packages/app/panda.config.ts"
+export default defineConfig({
+  designSystem: '@acme/ds',
+  include: ['src/**/*.{ts,tsx}']
+})
+```
+
+## Do not include the library source
+
+A package that already ran `panda lib` has a manifest (`dist/panda/lib.json`). It belongs in `designSystem`, not
+`include`.
+
+```ts filename="packages/app/panda.config.ts"
+export default defineConfig({
+  designSystem: '@acme/ds',
+  // ❌ errors: design_system_in_include
+  include: [
+    'src/**/*.{ts,tsx}',
+    './node_modules/@acme/ds/src/**/*.{ts,tsx}'
+  ]
+})
+```
+
+The app replays the styles recorded in `buildinfo.json`. It does not re-scan the library source.
+
+## Watch the library
+
+```json filename="packages/ds/package.json"
+{
+  "scripts": {
+    "watch": "panda codegen && panda lib --watch"
+  }
+}
+```
+
+```bash
+pnpm --filter @acme/ds watch
+pnpm --filter @acme/app dev
+```
+
+`panda lib --watch` rewrites `dist/panda/` when tokens, recipes, or components change. It does not rerun
+`panda codegen`. If a change updates generated `styled-system` files, run `panda codegen` again, or keep a second
+codegen watcher.
+
+Panda watches the app's `include` plus the library's manifest and build-info paths. Editing library source updates
+JS through your bundler. CSS can lag until `panda lib` finishes. That is a known limit.
+
+## When CSS does not update
+
+1. Confirm the library watcher is running and `dist/panda/buildinfo.json` is rewriting.
+2. Confirm the app lists `designSystem: '@acme/ds'`, not the library in `include`.
+3. Run the app with `--log-level debug` and save again.
+4. If Panda rewrote CSS but the browser did not, the bundler is not watching the workspace package. Vite often
+   skips `node_modules` (including workspace links).
+
+```ts filename="packages/app/vite.config.ts"
+export default defineConfig({
+  server: {
+    watch: {
+      ignored: ['!**/node_modules/@acme/ds/**']
+    }
+  }
+})
+```
+
+Exact Vite / webpack flags depend on the app. The symptom is the same: files on disk are new, the dev server is not.
+
+## Build order
+
+Start the library watcher first. The app's first `panda codegen` needs `dist/panda/` (or a `workspace:*` source
+export) to resolve.
+
+```json filename="package.json"
+{
+  "scripts": {
+    "dev": "pnpm --filter @acme/ds watch & pnpm --filter @acme/app dev"
+  }
+}
+```
+
+## See also
+
+- [Build a design system](/docs/design-systems/build-a-design-system)
+- [Consume with Panda](/docs/design-systems/consume-with-panda)
+- [Storybook](/docs/design-systems/storybook)
+- [Debugging](/docs/reference/debugging)

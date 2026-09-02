@@ -1,0 +1,138 @@
+---
+title: Consume without Panda
+description: Ship a stylesheet the app imports. No designSystem, no app tokens.
+---
+
+The app does not run Panda, so it cannot use `designSystem` and cannot extend tokens. Instead, run Panda in the
+library, write a plain CSS file with `panda cssgen`, and publish that file next to your components. `panda cssgen`
+replaces the v1 `panda ship` command.
+
+If the app **does** run Panda, stop here and use
+[Consume with Panda](/docs/design-systems/consume-with-panda).
+
+## Emit a stylesheet
+
+In the library, after codegen:
+
+```bash
+panda codegen
+panda cssgen --outfile dist/styles.css
+```
+
+```json filename="packages/ds/package.json"
+{
+  "name": "@acme/ds",
+  "exports": {
+    ".": "./dist/index.js",
+    "./styles.css": "./dist/styles.css"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "panda codegen && panda cssgen --outfile dist/styles.css && tsup"
+  }
+}
+```
+
+`panda lib` does **not** write this file. Add the `./styles.css` export yourself.
+
+## Import it in the app
+
+No `panda.config.ts`. No `@pandacss/dev`.
+
+```tsx filename="src/main.tsx"
+import '@acme/ds/styles.css'
+import { Button } from '@acme/ds'
+
+export function App() {
+  return <Button>Save</Button>
+}
+```
+
+```css filename="src/index.css"
+@layer reset, base, tokens, recipes, utilities;
+```
+
+Declare the layers in the app if you also load other layered CSS. The shipped file already contains the library's
+rules.
+
+## Emit every variant
+
+The app never scans your source. Variants that only appear as props at runtime will not be in the sheet unless you
+pre-generate them in the library.
+
+```ts filename="packages/ds/panda.config.ts"
+export default defineConfig({
+  include: ['src/**/*.{ts,tsx}'],
+  staticCss: {
+    recipes: '*'
+  }
+})
+```
+
+That is fine for a library stylesheet. Heavy if you later consume the same package with `designSystem` and also ship
+this file. Prefer listing the recipes you need:
+
+```ts filename="packages/ds/panda.config.ts"
+export default defineConfig({
+  staticCss: {
+    recipes: {
+      button: ['*'],
+      card: ['*']
+    }
+  }
+})
+```
+
+See [Static CSS](/docs/styling/static).
+
+## What the app cannot do
+
+Without Panda in the app there is no theme merge, no local `styled-system`, and no token swap. Overrides like this
+only work in a Panda app:
+
+```ts filename="panda.config.ts"
+// requires the app to run Panda, see Consume with Panda
+export default defineConfig({
+  designSystem: '@acme/ds',
+  theme: {
+    extend: {
+      tokens: {
+        colors: { brand: { value: '#ff00aa' } }
+      }
+    }
+  }
+})
+```
+
+To change the look here, edit the tokens in the library and republish the CSS.
+
+## Two sheets on one page
+
+Two independently built stylesheets can emit the same class names (`.button`, `--colors-brand`). Set `prefix` in the
+library that should yield.
+
+```ts filename="packages/ds/panda.config.ts"
+export default defineConfig({
+  prefix: 'acme' // .button → .acme-button
+})
+```
+
+```ts
+// also works: hash class names, or move CSS variables
+hash: true
+cssVarRoot: '#app'
+```
+
+Derive the prefix from the package's name and major version. The full collision model, token scoping, and the
+limits of `prefix`: [Style isolation](/docs/styling/style-isolation).
+
+## Storybook still runs Panda
+
+Your stories import recipes. Storybook is a Panda consumer even when production only imports `styles.css`. See
+[Storybook](/docs/design-systems/storybook).
+
+## See also
+
+- [Build a design system](/docs/design-systems/build-a-design-system) if you also ship `panda lib` for Panda apps
+- [Consume with Panda](/docs/design-systems/consume-with-panda) when the app can run Panda
+- [`panda cssgen`](/docs/reference/cli#cssgen)

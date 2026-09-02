@@ -1,0 +1,56 @@
+---
+title: Linting
+description: Flag raw values and deprecated tokens with the ESLint or oxlint plugin.
+---
+
+The [ESLint plugin](/docs/get-started/eslint-plugin) lints against the same extraction the build uses, so it knows
+which values resolve to your tokens. The recommended config flags hardcoded colors and deprecated entries out of
+the box.
+
+<Callout type="warning">
+  The plugin is experimental in the beta. Install `@pandacss/eslint-plugin@beta` and expect the rule set to change
+  while it settles.
+</Callout>
+
+```ts filename="eslint.config.mjs"
+import panda from '@pandacss/eslint-plugin'
+
+export default [
+  await panda.configs.recommended({ configPath: './panda.config.ts' })
+]
+```
+
+## Widen enforcement
+
+`prefer-token` defaults to colors only. Add the categories your system owns, and the opt-in consistency rules:
+
+```ts filename="eslint.config.mjs"
+import panda from '@pandacss/eslint-plugin'
+
+const recommended = await panda.configs.recommended({ configPath: './panda.config.ts' })
+
+export default [
+  {
+    ...recommended,
+    rules: {
+      ...recommended.rules,
+      '@pandacss/prefer-token': ['warn', { categories: ['colors', 'spacing', 'radii'] }],
+      '@pandacss/prefer-text-style': 'warn',
+      '@pandacss/no-physical-properties': 'warn',
+      '@pandacss/no-important': 'warn'
+    }
+  }
+]
+```
+
+## Lint the consuming apps
+
+The plugin loads each app's `panda.config.ts`, so an app with `designSystem: '@acme/ds'` lints against the merged
+theme. Ship the lint config with the design system (a shared ESLint config package) and every app enforces the same
+rules against the same tokens.
+
+## See also
+
+- [ESLint Plugin](/docs/get-started/eslint-plugin) for the full rule set
+- [OXLint Plugin](/docs/get-started/oxlint-plugin) for the same rules on Oxlint
+- [Deprecations](/docs/design-systems/deprecations) for what `no-deprecated` flags

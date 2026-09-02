@@ -73,7 +73,7 @@ const config = {
       },
       {
         source: '/docs/design-systems',
-        destination: '/docs/design-systems/setup',
+        destination: '/docs/design-systems/overview',
         permanent: true
       },
       {
@@ -206,17 +206,17 @@ const config = {
       },
       {
         source: '/docs/guides/environment-specific-config',
-        destination: '/docs/design-systems/environment-specific-config',
+        destination: '/docs/reference/environment-specific-config',
         permanent: true
       },
       {
         source: '/docs/guides/federated-microfrontends',
-        destination: '/docs/design-systems/federated-microfrontends',
+        destination: '/docs/styling/style-isolation',
         permanent: true
       },
       {
         source: '/docs/guides/minimal-setup',
-        destination: '/docs/design-systems/minimal-setup',
+        destination: '/docs/theming/minimal-setup',
         permanent: true
       },
       {
@@ -226,7 +226,77 @@ const config = {
       },
       {
         source: '/docs/guides/component-library',
-        destination: '/docs/design-systems/setup',
+        destination: '/docs/design-systems/overview',
+        permanent: true
+      },
+      {
+        source: '/docs/design-systems/setup',
+        destination: '/docs/design-systems/overview',
+        permanent: true
+      },
+      {
+        source: '/docs/design-systems/building-a-design-system',
+        destination: '/docs/design-systems/build-a-design-system',
+        permanent: true
+      },
+      {
+        source: '/docs/design-systems/consuming-a-design-system',
+        destination: '/docs/design-systems/consume-with-panda',
+        permanent: true
+      },
+      {
+        source: '/docs/design-systems/wrap-headless-ui',
+        destination: '/docs/design-systems/wrap-headless-libraries',
+        permanent: true
+      },
+      {
+        source: '/docs/design-systems/forward-props',
+        destination: '/docs/design-systems/wrap-headless-libraries',
+        permanent: true
+      },
+      {
+        source: '/docs/design-systems/publishing-to-npm',
+        destination: '/docs/design-systems/publishing',
+        permanent: true
+      },
+      {
+        source: '/docs/design-systems/monorepo-dev-workflow',
+        destination: '/docs/design-systems/monorepo-workflow',
+        permanent: true
+      },
+      {
+        source: '/docs/design-systems/preset-overview',
+        destination: '/docs/theming/presets',
+        permanent: true
+      },
+      {
+        source: '/docs/design-systems/ship-styled-system',
+        destination: '/docs/design-systems/overview',
+        permanent: true
+      },
+      {
+        source: '/docs/design-systems/shared-styled-system',
+        destination: '/docs/design-systems/consume-with-panda',
+        permanent: true
+      },
+      {
+        source: '/docs/design-systems/federated-microfrontends',
+        destination: '/docs/styling/style-isolation',
+        permanent: true
+      },
+      {
+        source: '/docs/design-systems/avoiding-collisions',
+        destination: '/docs/design-systems/consume-with-panda',
+        permanent: true
+      },
+      {
+        source: '/docs/design-systems/minimal-setup',
+        destination: '/docs/theming/minimal-setup',
+        permanent: true
+      },
+      {
+        source: '/docs/design-systems/environment-specific-config',
+        destination: '/docs/reference/environment-specific-config',
         permanent: true
       },
       {

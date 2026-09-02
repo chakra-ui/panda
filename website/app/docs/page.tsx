@@ -109,8 +109,8 @@ export default function DocsWelcomePage() {
           <Card
             icon={<LuBlocks />}
             title="Design Systems"
-            href="/docs/design-systems/setup"
-            description="Ship presets and component libraries to npm with a typed system consumers can extend"
+            href="/docs/design-systems/overview"
+            description="Ship components, tokens, and recipes as one package every app builds on"
             cta="Build a system"
           />
         </Cards>

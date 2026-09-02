@@ -10,13 +10,11 @@ your own settings apply.
 
 Reach for a preset when tokens, theme, utilities, patterns, or recipes need to exist in more than one place:
 
-- **A design system package.** One npm package that owns your tokens and theme.
+- **A design language.** Tokens, recipes, conditions. No components. This page.
 - **Multiple apps, one look.** The same colors, spacing, and breakpoints everywhere, defined once.
-- **A component library.** Consumers add your preset to their own `panda.config.ts`. See the
-  [component library guide](/docs/design-systems/setup).
 
-If the consuming app doesn't use Panda at all, a preset can't help, ship static CSS instead. The
-[component library guide](/docs/design-systems/setup) covers that path too.
+Shipping components plus that language is a [design system](/docs/design-systems/overview). Apps that do not run
+Panda need a [stylesheet](/docs/design-systems/consume-without-panda), not a preset.
 
 List a preset by package name:
 
@@ -164,8 +162,7 @@ A preset can define any of these keys:
 - [`theme`](/docs/theming/theme)
 - [`utilities`](/docs/theming/utilities)
 
-For how a whole component library gets built and shipped, not just its preset, see
-[shipping styles](/docs/design-systems/ship-styled-system).
+For components plus this preset, see [Build a design system](/docs/design-systems/build-a-design-system).
 
 ### Async presets
 

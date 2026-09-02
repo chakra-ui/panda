@@ -208,7 +208,7 @@ would result in:
 
 Whether to minify the generated css. This can be set to `true` to reduce the size of the generated css.
 
-Often enabled only in production. See [Environment-specific config](/docs/design-systems/environment-specific-config).
+Often enabled only in production. See [Environment-specific config](/docs/reference/environment-specific-config).
 
 ```json
 {
@@ -225,7 +225,7 @@ Often enabled only in production. See [Environment-specific config](/docs/design
 Whether to hash the generated class names / css variables. This is useful if want to shorten the class names or css
 variables.
 
-Often enabled only in production. See [Environment-specific config](/docs/design-systems/environment-specific-config).
+Often enabled only in production. See [Environment-specific config](/docs/reference/environment-specific-config).
 
 Hash the class names and css variables:
 
@@ -410,9 +410,9 @@ Individual fields also accept an array of paths when only some categories need m
 }
 ```
 
-Check out [Shared styled-system in a monorepo](/docs/design-systems/shared-styled-system) for a full example of
-using multiple `importMap` roots, or the [Component Library](/docs/design-systems/setup) guide for the
-external-package case.
+A published design system uses [`designSystem`](#designsystem), not `importMap`. See
+[Consume with Panda](/docs/design-systems/consume-with-panda). Use `importMap` when the package is a shared
+styled-system that is **not** a `panda lib` manifest.
 
 ### designSystem
 
@@ -427,7 +427,7 @@ applies its build info — you don't set `importMap` or list build info in `incl
 }
 ```
 
-Check out [Consuming a design system](/docs/design-systems/consuming-a-design-system) for the full workflow.
+See [Consume with Panda](/docs/design-systems/consume-with-panda).
 
 ### include
 
