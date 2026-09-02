@@ -18,6 +18,7 @@ import {
   LuBlocks,
   LuBookOpen,
   LuChevronDown,
+  LuHeart,
   LuLayers,
   LuPaintbrush,
   LuPalette,
@@ -73,11 +74,14 @@ export function TabBar() {
             <TabLink key={tab.key} tab={tab} active={tab.key === activeKey} />
           ))}
           <CommunityMenu />
-          <Link
-            href="/blog"
+          <a
+            href="https://opencollective.com/chakra-ui"
+            target="_blank"
+            rel="noopener noreferrer"
             className={css({
               display: 'flex',
               alignItems: 'center',
+              gap: '2',
               textStyle: 'sm',
               fontWeight: 'semibold',
               color: 'fg.muted',
@@ -90,8 +94,13 @@ export function TabBar() {
               _hover: { color: 'fg', bg: 'bg.subtle' }
             })}
           >
-            Blog
-          </Link>
+            <LuHeart
+              size={16}
+              fill="currentColor"
+              className={css({ color: 'red.500' })}
+            />
+            Sponsor
+          </a>
         </HStack>
       </HStack>
     </Box>
