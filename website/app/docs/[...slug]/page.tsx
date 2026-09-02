@@ -7,6 +7,7 @@ import { PageActions } from '@/components/docs/page-actions'
 import { Pagination } from '@/components/docs/pagination'
 import { Sidebar } from '@/components/docs/sidebar'
 import { Toc } from '@/components/ui/toc'
+import { lastModified } from '@/lib/last-modified'
 import { docsSource } from '@/lib/source'
 import { toTocEntries } from '@/lib/toc'
 import { css, cx } from '@/styled-system/css'
@@ -60,6 +61,7 @@ export default async function DocsPage(props: DocsPageProps) {
 
   const { body: MDX, hideToc } = page.data
   const toc = toTocEntries(page.data.toc)
+  const modified = await lastModified(`content/docs/${slug}.mdx`)
 
   return (
     <>
@@ -108,7 +110,7 @@ export default async function DocsPage(props: DocsPageProps) {
             <MDX components={mdxComponents} />
           </div>
           <Pagination slug={slug} />
-          <PageActions slug={slug} />
+          <PageActions slug={slug} lastModified={modified} />
         </Box>
 
         {/* Table of Contents — space is reserved even when hidden, so the

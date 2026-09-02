@@ -1,11 +1,12 @@
 import { docsConfig } from '@/docs.config'
 import { css } from '@/styled-system/css'
-import { HStack } from '@/styled-system/jsx'
+import { Box, HStack } from '@/styled-system/jsx'
 import { LuFileText, LuPencilLine } from 'react-icons/lu'
 
 interface Props {
   /** `{tabKey}/{page}`, matching the docs route slug. */
   slug: string
+  lastModified?: Date | null
 }
 
 const actionStyles = css({
@@ -25,7 +26,7 @@ const actionStyles = css({
   }
 })
 
-export const PageActions = ({ slug }: Props) => {
+export const PageActions = ({ slug, lastModified }: Props) => {
   const editUrl = `${docsConfig.docsRepositoryBase}/edit/v2/website/content/docs/${slug}.mdx`
 
   return (
@@ -65,6 +66,20 @@ export const PageActions = ({ slug }: Props) => {
         <LuFileText size={14} aria-hidden />
         View as markdown
       </a>
+
+      {lastModified && (
+        <Box textStyle="eyebrow" color="fg.subtle" flexBasis="100%">
+          {docsConfig.gitTimestamp}{' '}
+          <time dateTime={lastModified.toISOString()}>
+            {lastModified.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              timeZone: 'UTC'
+            })}
+          </time>
+        </Box>
+      )}
     </HStack>
   )
 }
