@@ -2,17 +2,12 @@
 
 import { CheckIcon, CopyIcon } from '@/icons'
 import { css } from '@/styled-system/css'
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 export const CopyButton = () => {
   const ref = useRef<HTMLButtonElement>(null)
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
   const [copied, setCopied] = useState(false)
-
-  useEffect(() => {
-    if (!copied) return
-    const id = setTimeout(() => setCopied(false), 2000)
-    return () => clearTimeout(id)
-  }, [copied])
 
   const copy = async () => {
     const pre = ref.current?.parentElement?.querySelector('pre')
@@ -20,6 +15,8 @@ export const CopyButton = () => {
     try {
       await navigator.clipboard.writeText(pre.innerText.replace(/\n$/, ''))
       setCopied(true)
+      clearTimeout(timer.current)
+      timer.current = setTimeout(() => setCopied(false), 2000)
     } catch {
       setCopied(false)
     }
