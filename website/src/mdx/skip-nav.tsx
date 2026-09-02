@@ -28,7 +28,6 @@ export const SkipNavLink = forwardRef<HTMLAnchorElement, SkipNavLinkProps>(
         ? styled // Give the user a way to opt-in the default style provided with the theme. Probably remove this option in the next major version (v3.x) and just do a check to use the providedClassName or the default
           ? css({
               srOnly: true,
-              /* eslint-disable no-restricted-syntax -- skip link is revealed on focus by design */
               _focus: {
                 position: 'fixed',
                 srOnly: false,
@@ -51,7 +50,6 @@ export const SkipNavLink = forwardRef<HTMLAnchorElement, SkipNavLinkProps>(
                   borderColor: 'neutral.800'
                 }
               }
-              /* eslint-enable no-restricted-syntax */
             })
           : ''
         : providedClassName

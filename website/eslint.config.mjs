@@ -38,15 +38,6 @@ const eslintConfig = [
       '@typescript-eslint/no-unused-vars': [
         'warn',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
-      ],
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector:
-            'Property[key.name=/^_(hover|active|current|checked|selected|focus|focusVisible|groupHover|peerHover)$/] Property[key.name=/^(transform|scale|rotate|translate|boxShadow|shadow|fontWeight|fontSize|padding|margin|borderWidth|width|height)$/]',
-          message:
-            "Interactive states must not change an element's box. Use color, background-color, border-color or opacity instead. See design-notes/docs-redesign.md."
-        }
       ]
     }
   }

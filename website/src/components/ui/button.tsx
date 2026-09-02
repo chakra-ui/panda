@@ -25,7 +25,6 @@ const buttonRecipe = cva({
         border: '3px solid var(--border-color, black)',
         boxShadow: '4px 4px 0px 0px var(--shadow-color, black)',
         _hover: {
-          // eslint-disable-next-line no-restricted-syntax -- brand offset shadow, paints only
           boxShadow: '6px 6px 0px 0px var(--shadow-color, black)'
         }
       },

@@ -21,7 +21,6 @@ export const buttonRecipe = defineRecipe({
     transition: 'all',
     '&:is(a, button)': {
       _hover: {
-        // eslint-disable-next-line no-restricted-syntax -- brand offset shadow, paints only
         boxShadow: '6px 6px 0px 0px var(--shadow-color, black)'
       }
     },
