@@ -10,51 +10,66 @@ Config recipes emit CSS for `<Button size="lg" />` only if Panda can treat that 
 `cva` and `sva` do not need this. Defining them already emits every variant, so a missed JSX tag does not leave you
 without CSS.
 
-This page is the extract rule for **tag names**. Prop names and runtime values are
-[Extraction rules](/docs/styling/extraction-rules). If you are shipping a library and renaming wrappers, also read
-[Track usage in wrapped components](/docs/design-systems/track-usage).
-
-## Theme key, className, and JSX name
+## Naming guide
 
 A config recipe has three names. Mixing them up is the usual reason tracking fails.
 
 ```ts
-// theme key: "button"  →  import { button }, type ButtonVariant
-export const buttonRecipe = defineRecipe({
-  className: 'btn', // CSS stem only: .btn, .btn--size_sm
-  jsx: ['Button'] // tags extract should treat as this recipe
-})
+theme: {
+  recipes: {
+    button: defineRecipe({
+      className: 'btn', // .btn, .btn--size_sm
+      jsx: ['Button'] // <Button>
+    })
+  }
+}
 ```
 
-| Name        | Comes from                       | Used for                                             |
-| ----------- | -------------------------------- | ---------------------------------------------------- |
-| Theme key   | `theme.recipes.button`           | Import, extract name, types (`ButtonVariant`)        |
-| `className` | Recipe config                    | CSS stem. Falls back to the theme key if you omit it |
-| JSX name    | `jsx`, or `capitalize(themeKey)` | `<Button>` tracking                                  |
+```tsx
+import { button } from '../styled-system/recipes' // theme key
 
-If you set `className: 'btn'` and leave `jsx` off, you still `import { button }`, the classes become `btn` and
-`btn--size_sm`, and JSX tracking still looks for `<Button>`.
+button({ size: 'sm' }) // btn btn--size_sm
 
-## Default JSX names
+<Button size="lg" /> // still Button, not Btn
+```
 
-For `theme.recipes.button`, the default tag is `Button`.
+## Default tags
 
-For `theme.slotRecipes.card`, Panda also tracks `Card.Header`, `CardHeader`, and the other `{Name}.{Slot}` /
-`{Name}{Slot}` forms. Those suffixes are built from the **theme key**, not from `className`. If the recipe has no `root`
-slot, `Card.Root` and `CardRoot` are tracked too.
+```
+theme.recipes.button      →  Button
+theme.slotRecipes.card    →  Card, Card.Root, CardRoot
+```
 
-The **exported** compound name still has to match. `Card` works. `Panel` does not, unless you set `jsx`.
+Those names come from the **theme key**, not from `className`. The exported compound name still has to match. `Card`
+works. `Panel` does not, unless you set `jsx`.
 
 ```tsx
 const { withProvider, withContext } = createSlotRecipeContext(card)
 
+// tracked
 export const Card = {
+  Root: withProvider('div', 'root'),
+  Header: withContext('header', 'header')
+}
+
+// not tracked
+export const Panel = {
   Root: withProvider('div', 'root'),
   Header: withContext('header', 'header')
 }
 ```
 
-## Custom names
+```tsx
+<Card.Root size="lg">
+  <Card.Header />
+</Card.Root>
+```
+
+`size` is on the root. Header is a part.
+
+## jsx
+
+Use `jsx` when the export name is not the default tag.
 
 ```ts
 export const buttonRecipe = defineRecipe({
@@ -77,58 +92,32 @@ export const cardRecipe = defineSlotRecipe({
   className: 'card',
   slots: ['root', 'header'],
   jsx: ['Panel']
+  // tracked:     Panel, Card.Root, Card.Header
+  // not tracked: Card, Panel.Root, Panel.Header
 })
 ```
 
-That tracks `<Panel>`, `<Card.Root>`, and `<Card.Header>`. It does **not** track `<Card>`, `<Panel.Root>`, or
-`<Panel.Header>`.
-
-If you export `Panel = { Root, Header }`, list the tags you actually render, or use a regex:
+If you export `Panel = { Root, Header }`, list the tags that carry variant props (`Panel.Root`), plus
+`Panel` if you render it. Or use a regex:
 
 ```ts
-jsx: ['Panel', 'Panel.Root', 'Panel.Header']
+jsx: ['Panel', 'Panel.Root']
 // or
 jsx: [/^Panel/]
 ```
 
 Keep `Card` / `Card.Root` in that list if those tags still appear in the app.
 
-## Wrappers
+## False matches
 
-Always split variant props off before you spread onto the DOM. Otherwise `onClick` can emit a junk class like
-`button--onClick_…`.
+A local `<Button>` that is **not** this recipe can still be treated as one. The match is not import-gated.
 
-```tsx
-export function Button(props: ButtonProps) {
-  const [variants, rest] = button.splitVariantProps(props)
-  return <button {...rest} className={cx(button(variants), props.className)} />
-}
-```
-
-Two things extract cannot follow, even when the runtime call is correct:
-
-```tsx
-// renamed prop: extract cannot see that buttonSize is size
-export function Button({ buttonSize, children }) {
-  return <button className={button({ size: buttonSize })}>{children}</button>
-}
-
-// wrapper name is not the recipe name
-export function Random(props) {
-  return <button className={button(props)} />
-}
-```
-
-`Random` needs `jsx: ['Random']`, or an export named `Button`. Direct literal calls like `button({ size: 'lg' })` are
-extracted either way. Dynamic values still need [`staticCss`](/docs/recipes/dynamic-variants).
-
-The flip side: a local `<Button>` that is **not** this recipe can still be treated as one. The match is not
-import-gated.
+Renamed props (`size` → `buttonSize`) and a wrapper named `Random` are a different miss. See
+[Extraction rules](/docs/styling/extraction-rules).
 
 ## See also
 
 - [Extraction rules](/docs/styling/extraction-rules)
 - [Config recipes](/docs/recipes/config-recipe)
 - [Slot recipe context](/docs/recipes/slot-recipe-context)
-- [Dynamic variants](/docs/recipes/dynamic-variants)
 - [Track usage](/docs/design-systems/track-usage)
