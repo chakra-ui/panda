@@ -1,5 +1,13 @@
 # @pandacss/types
 
+## 2.0.0-beta.16
+
+### Major Changes
+
+- ef14fc5: Remove the `syntax` config option and the `template-literal` authoring mode. Drop `syntax` from your config
+  and the `--syntax` flag from `panda init`, and write styles with the object syntax: `css({ color: 'red' })` instead of
+  `` css`color: red` ``.
+
 ## 2.0.0-beta.15
 
 ### Minor Changes
