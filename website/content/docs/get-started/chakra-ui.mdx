@@ -3,10 +3,27 @@ title: Migrating from Chakra UI
 description: Migrate your project from Chakra UI to Panda and see how style props, theme, and variants map across.
 ---
 
-Chakra's theming was deliberately designed to align with Panda's conventions, so `{ value }` tokens, `globalCss`,
-and recipes carry over almost unchanged. The migration is moving those shapes off Chakra's Emotion runtime onto
-build-time CSS, plus one decision about interactive components. Install Panda through your
-[framework guide](/docs/get-started/framework-guides), then convert one component at a time.
+Chakra was designed to align with Panda, so `@chakra-ui/panda-preset` carries the whole theme over in one config
+line; what's left is moving components off the Emotion runtime.
+
+Panda styles, it doesn't ship components: pair it with [Ark UI](https://ark-ui.com) to fully replace Chakra.
+
+## Keep the Chakra theme
+
+[`@chakra-ui/panda-preset`](https://www.npmjs.com/package/@chakra-ui/panda-preset) mirrors Chakra's default theme:
+tokens, semantic colors, recipes, slot recipes, and global styles.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  presets: ['@chakra-ui/panda-preset'],
+  include: ['./src/**/*.{js,jsx,ts,tsx}']
+})
+```
+
+Your existing token and recipe names (`bg.subtle`, `red.500`, `button`) keep working in `css()` unchanged. With
+the preset in place, the theming sections below only matter where your config diverges from Chakra's defaults.
 
 ## Theming
 
@@ -53,22 +70,20 @@ export default defineConfig({
 
 See [Tokens](/docs/theming/tokens).
 
-## The `sx` prop
+## css prop
 
-Chakra's `sx` prop layers ad hoc styles onto a styled component:
-
-```jsx
-<Box sx={{ color: 'white', bg: 'brand', fontSize: '4' }} />
-```
-
-Panda's equivalents are the `css` prop on the `styled` factory, or `css()` directly:
+Chakra v3's `css` prop carries over by name; only the component source changes:
 
 ```jsx
+// before
+import { Box } from '@chakra-ui/react'
+
+<Box css={{ color: 'white', bg: 'brand' }} />
+
+// after
 import { styled } from '../styled-system/jsx'
-import { css } from '../styled-system/css'
 
-<styled.div css={{ color: 'white', bg: 'brand', fontSize: '4' }} />
-<div className={css({ color: 'white', bg: 'brand', fontSize: '4' })} />
+<styled.div css={{ color: 'white', bg: 'brand' }} />
 ```
 
 See [JSX Style Props](/docs/styling/style-props).
@@ -201,11 +216,40 @@ import { button } from '../styled-system/recipes'
 const className = button({ variant: 'solid' })
 ```
 
-## What has no equivalent
+## Interactive components
 
-Panda doesn't ship interactive components (`Menu`, `Dialog`, `Tabs`); it's a styling engine, not a component
-library. If you need those without Chakra's runtime styling, wrap a headless library like Ark UI. See
-[Wrap headless libraries](/docs/design-systems/wrap-headless-libraries).
+Panda doesn't ship interactive components (`Menu`, `Dialog`, `Tabs`). The replacement is wrapping Ark UI with a
+slot recipe, and since Chakra v3 is built on Ark, the component anatomy is the one you already use:
+
+```tsx
+// before
+import { Menu } from '@chakra-ui/react'
+
+// after: same parts from Ark, styled by your slot recipe
+import { Menu as ArkMenu } from '@ark-ui/react/menu'
+import { sva } from '../styled-system/css'
+import { createSlotRecipeContext } from '../styled-system/jsx'
+
+const menu = sva({
+  slots: ['root', 'trigger', 'content', 'item'],
+  base: {
+    content: { bg: 'white', rounded: 'md', shadow: 'lg' },
+    item: { px: '3', py: '2', _highlighted: { bg: 'gray.100' } }
+  }
+})
+
+const { withProvider, withContext } = createSlotRecipeContext(menu)
+
+export const Menu = {
+  Root: withProvider(ArkMenu.Root, 'root'),
+  Trigger: withContext(ArkMenu.Trigger, 'trigger'),
+  Content: withContext(ArkMenu.Content, 'content'),
+  Item: withContext(ArkMenu.Item, 'item')
+}
+```
+
+Usage sites keep their `<Menu.Root>` / `<Menu.Trigger>` markup unchanged. See
+[Wrap headless libraries](/docs/design-systems/wrap-headless-libraries) for the full pattern.
 
 ## Run both during the migration
 
