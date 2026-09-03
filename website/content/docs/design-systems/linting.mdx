@@ -3,14 +3,9 @@ title: Linting
 description: Flag raw values and deprecated tokens with the ESLint or oxlint plugin.
 ---
 
-The [ESLint plugin](/docs/get-started/eslint-plugin) lints against the same extraction the build uses, so it knows
+The [ESLint plugin](/docs/get-started/linting) lints against the same extraction the build uses, so it knows
 which values resolve to your tokens. The recommended config flags hardcoded colors and deprecated entries out of
 the box.
-
-<Callout type="warning">
-  The plugin is experimental in the beta. Install `@pandacss/eslint-plugin@beta` and expect the rule set to change
-  while it settles.
-</Callout>
 
 ```ts filename="eslint.config.mjs"
 import panda from '@pandacss/eslint-plugin'
@@ -51,6 +46,5 @@ rules against the same tokens.
 
 ## See also
 
-- [ESLint Plugin](/docs/get-started/eslint-plugin) for the full rule set
-- [OXLint Plugin](/docs/get-started/oxlint-plugin) for the same rules on Oxlint
+- [Linting](/docs/get-started/linting) for the full rule set and Oxlint setup
 - [Deprecations](/docs/design-systems/deprecations) for what `no-deprecated` flags

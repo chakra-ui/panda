@@ -1,0 +1,240 @@
+---
+title: Linting
+description: A Panda-aware lint rule set for ESLint and Oxlint, catching mistakes the compiler doesn't error on.
+---
+
+A style object can be valid TypeScript and still be wrong. `color: '#ef4444'` renders fine but ignores the
+`red.500` token your theme already owns; `color: 'red.1000'` is quieter still: the compiler skips it, and you find
+out in the browser.
+
+The lint rules catch these in real time. They run on Panda's own compiler, so they know your actual theme: which
+raw values have a token waiting, which token paths resolve. One package, two entry points, same rules:
+
+```txt
+@pandacss/eslint-plugin            # ESLint flat config
+@pandacss/eslint-plugin/oxlint     # Oxlint entry, reuses the same rules
+```
+
+## ESLint setup
+
+The recommended config preloads your Panda project so rules can resolve tokens and recipes:
+
+```ts filename="eslint.config.mjs"
+import panda from '@pandacss/eslint-plugin'
+
+export default [
+  await panda.configs.recommended({ configPath: './panda.config.ts' })
+]
+```
+
+## Oxlint setup
+
+Register the plugin and pick your rules in `.oxlintrc.json`:
+
+```json filename=".oxlintrc.json"
+{
+  "jsPlugins": ["@pandacss/eslint-plugin/oxlint"],
+  "rules": {
+    "@pandacss/no-invalid-token-paths": "error",
+    "@pandacss/no-invalid-nesting": "error",
+    "@pandacss/no-debug": "warn",
+    "@pandacss/prefer-token": ["warn", { "categories": ["colors"] }]
+  }
+}
+```
+
+## Correctness rules
+
+These catch code that silently produces no CSS, or the wrong CSS. The recommended config enables all of them, plus
+[`no-deprecated`](#no-deprecated), [`no-debug`](#no-debug), and [`prefer-token`](#prefer-token) for colors.
+
+#### no-invalid-token-paths
+
+A token reference that doesn't resolve is emitted as a literal CSS value, not an error.
+
+```tsx
+// ❌ 'red.1000' is not in the theme
+css({ color: 'red.1000' })
+
+// ✅
+css({ color: 'red.500' })
+```
+
+#### no-invalid-nesting
+
+A nested selector without `&` is silently ignored by the compiler.
+
+```tsx
+// ❌ no "&", Panda skips the whole block
+css({ ':hover': { color: 'red.500' } })
+
+// ✅ either form works
+css({ '&:hover': { color: 'red.500' } })
+css({ _hover: { color: 'red.500' } })
+```
+
+#### file-not-included
+
+A file that calls Panda's style functions but sits outside the config's `include` globs extracts nothing. Every
+`css()` call in it is dead.
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  include: ['src/**/*.tsx']
+  // ❌ lib/button.tsx calls css() but is not covered
+})
+```
+
+#### extraction-diagnostics
+
+Relays the compiler's own diagnostics into the editor: a typo'd condition key, a value extraction can't resolve
+statically, anything the build would warn about. This is the rule that surfaces
+[dynamic styling](/docs/styling/dynamic-styling) mistakes at lint time instead of at runtime.
+
+```tsx
+// ❌ '_hver' is not a condition, the compiler ignores it
+css({ _hver: { color: 'red.500' } })
+```
+
+## Deprecation
+
+#### no-deprecated
+
+Flags tokens, utilities, recipes, and patterns marked [`deprecated`](/docs/reference/deprecations) in the config.
+Scope it with `kinds` if you only care about some of them.
+
+```tsx
+// theme: brand: { value: '#facc15', deprecated: 'use colors.accent instead' }
+
+// ❌ deprecated token
+css({ color: 'brand' })
+
+// ✅
+css({ color: 'accent' })
+```
+
+## Consistency rules
+
+Opt-in. These enforce house style across a team; turn on the ones that match yours.
+
+#### prefer-token
+
+A raw value where a token exists for that category. The suggestion names the token, so the fix is a copy-paste.
+Defaults to colors; widen with `categories`.
+
+```tsx
+// ❌ raw value, theme has red.500
+css({ color: '#ef4444' })
+
+// ✅
+css({ color: 'red.500' })
+```
+
+```ts
+'@pandacss/prefer-token': ['warn', { categories: ['colors', 'spacing', 'radii'] }]
+```
+
+#### no-primitive-token
+
+Stricter than `prefer-token`: flags primitive palette tokens where a semantic token exists, so component code
+tracks intent instead of a palette.
+
+```tsx
+// ❌ primitive, theme defines fg.error
+css({ color: 'red.500' })
+
+// ✅
+css({ color: 'fg.error' })
+```
+
+#### prefer-text-style
+
+Several typography properties set individually that should collapse into one `textStyle` token.
+
+```tsx
+// ❌ ad-hoc typography
+css({ fontSize: '2xl', fontWeight: 'bold', lineHeight: '1.2' })
+
+// ✅
+css({ textStyle: 'heading.lg' })
+```
+
+#### consistent-property-style
+
+One spelling per property across the codebase. Configure `style` as `'shorthand'` or `'longhand'`.
+
+```tsx
+// with { style: 'shorthand' }
+
+// ❌
+css({ marginLeft: '4' })
+
+// ✅
+css({ ml: '4' })
+```
+
+#### no-shorthand-longhand-mix
+
+A shorthand and its longhand in the same object resolve in an order you probably didn't intend.
+
+```tsx
+// ❌ does marginLeft win? don't make readers guess
+css({ margin: '4', marginLeft: '5' })
+
+// ✅
+css({ marginTop: '4', marginLeft: '5' })
+```
+
+## Hygiene rules
+
+Opt-in, apart from `no-debug`.
+
+#### no-debug
+
+The `debug` property left in source. Useful locally, noise in a commit.
+
+```tsx
+// ❌
+css({ debug: true, color: 'red.500' })
+```
+
+#### no-important
+
+`!important` in a style value, in either spelling.
+
+```tsx
+// ❌ both forms flagged
+css({ color: 'red.500!' })
+css({ _hover: { color: 'red.500 !important' } })
+```
+
+#### no-margin-properties
+
+Margins couple a component to its surroundings. Prefer `gap` and layout patterns, so spacing lives in the parent.
+
+```tsx
+// ❌ child decides its own spacing
+css({ mt: '4' })
+
+// ✅ parent owns the spacing
+css({ display: 'flex', flexDirection: 'column', gap: '4' })
+```
+
+#### no-physical-properties
+
+Physical properties break RTL layouts. Use logical equivalents.
+
+```tsx
+// ❌
+css({ left: '0', marginLeft: '4' })
+
+// ✅
+css({ insetInlineStart: '0', marginInlineStart: '4' })
+```
+
+## See also
+
+- [Linting a design system](/docs/design-systems/linting) for enforcing token usage across consuming apps.
+- [Diagnostics Reference](/docs/reference/diagnostics) for the compiler-level diagnostic codes this plugin builds on
+  top of.
+- [Dynamic Styles](/docs/styling/dynamic-styling) for the extraction constraint the compiler enforces.

@@ -116,7 +116,8 @@ export const docsTabs: TabItem[] = [
           { title: 'CLI', url: 'cli' },
           { title: 'PostCSS', url: 'postcss' },
           { title: 'Framework Guides', url: 'framework-guides' },
-          { title: 'Storybook', url: 'storybook' }
+          { title: 'Storybook', url: 'storybook' },
+          { title: 'Linting', url: 'linting' }
         ]
       },
       {
@@ -138,14 +139,6 @@ export const docsTabs: TabItem[] = [
           { title: 'Emotion', url: 'emotion' },
           { title: 'Theme UI', url: 'theme-ui' },
           { title: 'StyleX', url: 'stylex' }
-        ]
-      },
-      {
-        title: 'Tooling',
-        items: [
-          { title: 'ESLint Plugin', url: 'eslint-plugin' },
-          { title: 'OXLint Plugin', url: 'oxlint-plugin' },
-          { title: 'Editor & IDE Tooling', url: 'editor-tooling' }
         ]
       },
       {
