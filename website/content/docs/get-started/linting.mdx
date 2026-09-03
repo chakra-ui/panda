@@ -220,6 +220,19 @@ css({ mt: '4' })
 css({ display: 'flex', flexDirection: 'column', gap: '4' })
 ```
 
+#### no-descendant-selectors
+
+A selector that styles another element (`& > li`, `.foo &`) couples components through the DOM tree. Off by
+default; turn it on for StyleX-style per-element scoping.
+
+```tsx
+// ❌ styles the children, not the element
+css({ '& > li': { marginBlock: '2' } })
+
+// ✅ cross-element state through a condition
+css({ _groupHover: { opacity: 1 } })
+```
+
 #### no-physical-properties
 
 Physical properties break RTL layouts. Use logical equivalents.

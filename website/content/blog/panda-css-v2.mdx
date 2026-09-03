@@ -386,7 +386,7 @@ These are intentional and worth knowing about before you diff your output:
 
 ### Migrating a large codebase gradually
 
-The one surprise nobody expects is layering. Panda ships its CSS inside `@layer`, and per the CSS spec, any unlayered rule beats every layered rule, so your legacy, unlayered styles win over converted Panda components by default. If you're migrating incrementally, either run `postcss-cascade-layers` to strip the layer wrapper (so Panda competes as unlayered too), or hold a clean boundary by route, directory, or team. The [migration strategy](/docs/get-started/migration-strategy) guide covers this in full.
+The one surprise nobody expects is layering. Panda ships its CSS inside `@layer`, and per the CSS spec, any unlayered rule beats every layered rule, so your legacy, unlayered styles win over converted Panda components by default. If you're migrating incrementally, either run `postcss-cascade-layers` to strip the layer wrapper (so Panda competes as unlayered too), or hold a clean boundary by route, directory, or team. [Cascade layers](/docs/styling/cascade-layers#migrating-alongside-unlayered-css) covers the details.
 
 ## Try it
 

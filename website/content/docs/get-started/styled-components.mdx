@@ -1,98 +1,59 @@
 ---
 title: Migrating from Styled Components
-description: Migrate your project from Styled Components to Panda.
+description: Migrate your project from Styled Components to Panda, from tagged templates to typed style objects.
 ---
 
-This guide outlines the steps needed to migrate your project from Styled Components to Panda and highlights key design
-differences between the two libraries.
+Styled Components computes styles at runtime and has been in maintenance mode since v6; Panda extracts static
+CSS at build time. The one hard boundary: every `` styled.x`...` `` template literal becomes a style object.
 
-> **Disclaimer:** This isn't about comparing which one is best. Panda and Styled Components are two different CSS-in-JS
-> solutions with design decisions.
+## Objects, not template literals
 
-Here are some similarities between the two libraries.
-
-- Both libraries give you a `styled` factory for creating styled components.
-- Both libraries provide a way to define design tokens (variables) and use them in your styles.
-- Both libraries require the use of `&` for nested selectors.
-
-Below are some differences between the two libraries.
-
-## Installation
-
-Initialize a project with the following command.
-
-```bash
-panda init -p --jsx-framework react
-```
-
-Then you need to add the cascade layers to the global styles of your project.
-
-```css
-@layer reset, base, tokens, recipes, utilities;
-```
-
-## Styling components
-
-In styled-components, you can style a component with tagged template literals or with an object.
+Panda's static extraction reads style objects from your source. It does not parse CSS text, so a tagged template
+never extracts:
 
 ```jsx
 import styled from 'styled-components'
 
+// before
 const Button = styled.button`
   background-color: #fff;
   border: 1px solid #000;
-  color: #000;
   padding: 0.5rem 1rem;
 `
-
-const OtherButton = styled.button({
-  backgroundColor: '#fff',
-  border: '1px solid #000',
-  color: '#000',
-  padding: '0.5rem 1rem'
-})
 ```
-
-Panda takes style objects only. Import the `styled` factory from the `styled-system` directory Panda generates at the
-root of your project, and put the styles in the `base` key. The same factory defines variants and compound variants.
 
 ```jsx
 import { styled } from '../styled-system/jsx'
 
+// after: same factory idea, styles in the `base` key
 const Button = styled('button', {
   base: {
     backgroundColor: '#fff',
     border: '1px solid #000',
-    color: '#000',
     padding: '0.5rem 1rem'
   }
 })
 ```
 
-## Prop Interpolation
+The factory is generated into `styled-system/jsx` when `jsxFramework: 'react'` is set in your config.
 
-In styled-components, you can interpolate the component's props to conditionally set styles.
+If you already use Styled Components' object syntax, the conversion is just moving styles under `base`. See
+[Styled factory](/docs/recipes/styled-factory).
+
+## Prop interpolation becomes variants
+
+Functions of props are the other thing static extraction can't run:
 
 ```jsx
+// before
 const Button = styled.button`
-  ${props =>
-    props.color === 'violet' &&
-    `
-    background-color: 'blueviolet'
-  `}
-
-  ${props =>
-    props.color === 'gray' &&
-    `
-    background-color: 'gainsboro'
-  `}
+  ${props => props.color === 'violet' && `background-color: blueviolet;`}
+  ${props => props.color === 'gray' && `background-color: gainsboro;`}
 `
 ```
 
-In Panda, we model interpolations using the variants API. This allows define style groups or recipes that can be applied
-to components.
-
 ```jsx
+// after: each branch is a typed variant
 const Button = styled('button', {
   variants: {
     color: {
@@ -102,316 +63,173 @@ const Button = styled('button', {
   }
 })
 
-// Usage
 <Button color="violet">Button</Button>
 ```
 
-## Tokens and Themes
+A value that only exists at runtime (state, fetched data) can't become a variant; see
+[Dynamic Styles](/docs/styling/dynamic-styling) for what to do instead.
 
-### Defining Tokens
+## Theme access to tokens
 
-In styled-components, you can define tokens in a theme object that is passed to the `ThemeProvider`.
-This requires the use of React's context API to access the theme object in your styles
-
-```tsx
-import { ThemeProvider } from 'styled-components'
-
-const theme = {
-  colors: {
-    primary: 'blue',
-    secondary: 'red'
-  }
-}
-
-const App = () => (
-  <ThemeProvider theme={theme}>
-    <Button>Button</Button>
-  </ThemeProvider>
-)
-````
-
-In Panda, you define tokens in the `theme` key of the `panda.config.ts` file. This allows you to access the tokens in
-your styles without the need for React's context API.
+Styled Components reads a theme through React context, with ambient type declarations for safety:
 
 ```tsx
-// panda.config.ts
-import { defineConfig } from '@pandacss/dev'
-
-export default defineConfig({
-  theme: {
-    extend: {
-      tokens: {
-        colors: {
-          primary: { value: 'blue' },
-          secondary: { value: 'red' }
-        }
-      }
-    }
-  }
-})
-```
-
-### Using Tokens
-
-In styled-components, you can use tokens in your styles using a function approach that provides the `theme` prop, and
-requires ambient type declarations to get type safety.
-
-```tsx
-import styled from 'styled-components'
-
-// link.tsx
+// before
 const StyledLink = styled.a(({ theme }) => ({
   color: theme.colors.primary,
-  display: 'block',
   textDecoration: 'none'
 }))
-
-// theme.d.ts
-declare module 'styled-components' {
-  export interface DefaultTheme {
-    colors: {
-      primary: string
-      secondary: string
-    }
-  }
-}
 ```
 
-In Panda, the tokens are automatically available in your styles and connected to each css property, removing the need
-for an interpolation function.
+Panda's tokens live in config, generate their own types, and connect to every CSS property, so the interpolation
+function disappears:
 
-```tsx
-// panda.config.ts
+```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   theme: {
-    // extend the base theme
     extend: {
       tokens: {
-        // add custom colors
         colors: {
-          primary: { value: 'blue' },
-          secondary: { value: 'red' }
+          primary: { value: 'blue' }
         }
       }
     }
   }
 })
+```
 
-// link.tsx
-import { styled } from '../styled-system/jsx'
-
+```tsx
 const StyledLink = styled('a', {
   base: {
     color: 'primary',
-    display: 'block',
     textDecoration: 'none'
   }
 })
 ```
 
-## Responsive Styles
+`ThemeProvider` goes away entirely. See [Tokens](/docs/theming/tokens).
 
-In styled-components, you write the media query manually or use a helper function like `styled-media-query`.
+## Responsive styles
+
+Hand-written media queries become breakpoint objects:
 
 ```tsx
-import styled from 'styled-components'
-import media from 'styled-media-query'
-
+// before
 const Button = styled.button({
-  backgroundColor: '#fff',
-  border: '1px solid #000',
-  color: '#000',
   padding: '0.5rem 1rem',
-
-  [media.greaterThan('medium')]: {
-    padding: '1rem 2rem'
-  }
+  '@media (min-width: 768px)': { padding: '1rem 2rem' }
 })
-```
 
-In Panda, you can use the pseudo props API to define responsive styles.
-
-```tsx
-import { styled } from '../styled-system/jsx'
-
+// after
 const Button = styled('button', {
   base: {
-    backgroundColor: '#fff',
-    border: '1px solid #000',
-    color: '#000',
     padding: { base: '0.5rem 1rem', md: '1rem 2rem' }
   }
 })
 ```
 
-## Global Styles
+See [Responsive Design](/docs/styling/responsive-design).
 
-In styled-components, you can use the `createGlobalStyle` function to define global styles.
+## Global styles
 
-```tsx
-import { createGlobalStyle } from 'styled-components'
+`createGlobalStyle` becomes the `globalCss` config key, emitted straight into the generated CSS:
 
-const GlobalStyle = createGlobalStyle`
-  body {
-    margin: 0;
-    padding: 0;
-  }
-`
-```
-
-In Panda, you can use the `globalCss` key of the `panda.config.ts` file to define global styles. This will automatically
-add styles to the project via PostCSS.
-
-```tsx
-// panda.config.ts
-import { defineConfig } from '@pandacss/dev'
-
+```ts filename="panda.config.ts"
 export default defineConfig({
   globalCss: {
-    body: {
-      margin: 0,
-      padding: 0
+    body: { margin: 0, padding: 0 }
+  }
+})
+```
+
+See [Global Styles](/docs/styling/global-styles).
+
+## Targeting components
+
+Styled Components lets one component target another by interpolating it (`${Link}:hover &`). That relies on
+runtime-generated class identity. In Panda, a parent-driven state is a compound component: model both parts as one
+[slot recipe](/docs/recipes/slot-recipes), where the parent's state styles its slots.
+
+```tsx
+const link = sva({
+  slots: ['root', 'icon'],
+  base: {
+    root: { background: 'papayawhip' },
+    icon: {
+      width: '48px',
+      height: '48px',
+      // the group modifier replaces ${Link}:hover &
+      _groupHover: { fill: 'rebeccapurple' }
     }
   }
 })
 ```
 
-## Targeting Components
-
-In styled-components, you can target existing styled components within the styled function
+The parent carries the `group` class that `_groupHover` reads:
 
 ```tsx
-import styled from 'styled-components'
+const classes = link()
 
-const Link = styled.a`
-  background: papayawhip;
-  color: #bf4f74;
-`
-
-const Icon = styled.svg`
-  width: 48px;
-  height: 48px;
-
-  ${Link}:hover & {
-    fill: rebeccapurple;
-  }
-`
+<a className={cx(classes.root, 'group')}>
+  <svg className={classes.icon} />
+</a>
 ```
 
-In Panda, you need to use the native selector directly. This is largely due to the static nature of Panda
-
-```tsx
-import { styled } from '../styled-system/jsx'
-
-const Link = styled('a', {
-  base: {
-    background: 'papayawhip',
-    color: '#bf4f74'
-  }
-})
-
-const Icon = styled('svg', {
-  base: {
-    width: '48px',
-    height: '48px',
-    '.Link:hover &': {
-      fill: 'rebeccapurple'
-    }
-  }
-})
-
-const App = () => (
-  <Link className="Link">
-    <Icon />
-  </Link>
-)
-```
+See [Slot Recipes](/docs/recipes/slot-recipes) and [Conditional Styles](/docs/styling/conditional-styles).
 
 ## Animations
 
-In styled components, you can define keyframes using the `keyframes` method.
+The `keyframes` helper becomes `theme.keyframes`, referenced by name:
 
-```ts
-import styled, { keyframes } from 'styled-components'
-
-const rotate = keyframes`
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-`
-
-// usage
-const Button = styled.button`
-  &:hover {
-    animation: ${rotate} 200ms;
-  }
-`
-```
-
-In Panda, you define keyframes in the `theme.keyframes` key of the `panda.config` function.
-
-```ts
-import { defineConfig } from '@pandacss/dev'
-
+```ts filename="panda.config.ts"
 export default defineConfig({
   theme: {
     extend: {
       keyframes: {
         rotate: {
-          from: {
-            transform: 'rotate(0deg)'
-          },
-          to: {
-            transform: 'rotate(360deg)'
-          }
+          from: { transform: 'rotate(0deg)' },
+          to: { transform: 'rotate(360deg)' }
         }
       }
     }
   }
 })
+```
 
-// usage
-import { styled } from '../styled-system/jsx'
-
+```tsx
 const Button = styled('button', {
   base: {
-    '&:hover': {
-      animation: 'rotate 200ms'
-    }
+    _hover: { animation: 'rotate 200ms' }
   }
 })
 ```
 
-## Server-Side Rendering
+See [Theme](/docs/theming/theme#keyframes) and [Animation Styles](/docs/theming/animation-styles).
 
-In styled components, you need to configure the server-side rendering for your framework.
+## Server-side rendering
 
-```tsx
-import { renderToString } from 'react-dom/server'
-import { ServerStyleSheet } from 'styled-components'
+Delete it. `ServerStyleSheet`, `collectStyles`, `getStyleTags`, the babel plugin: all of it exists to flush
+runtime-generated styles into server HTML. Panda's CSS is a static file produced at build time, so there is
+nothing to collect and no hydration mismatch to manage.
 
-const sheet = new ServerStyleSheet()
-try {
-  const html = renderToString(sheet.collectStyles(<YourApp />))
-  const styleTags = sheet.getStyleTags() // or sheet.getStyleElement();
-} catch (error) {
-  // handle error
-  console.error(error)
-} finally {
-  sheet.seal()
-}
-```
+## Run both during the migration
 
-In Panda, you don't need to configure anything. Panda automatically extracts the styles and injects them at build time
-using PostCSS.
+Panda's CSS ships inside cascade layers and Styled Components' injected styles are unlayered, so legacy styles win
+over converted components by default. See
+[Migrating alongside unlayered CSS](/docs/styling/cascade-layers#migrating-alongside-unlayered-css) for the two
+ways to control which side wins.
 
-## Conclusion
+## After migrating
 
-Before choosing your preferred CSS-in-JS library, be sure to consider your engineering and design goals. Both Styled
-components and Panda are capable of achieving many of the same styling goals, but they have different approaches.
+- **Drop the styling runtime.** [Source transforms](/docs/styling/source-transforms) rewrite static calls to plain
+  class strings at build time, so after leaving Styled Components' runtime behind, even Panda's small one can go.
+- **Lint against your theme.** The [lint rules](/docs/get-started/linting) flag raw values where a token exists,
+  useful while converting hardcoded template-literal values to tokens.
+
+## See also
+
+- [Migrating from Emotion](/docs/get-started/emotion) if parts of your app use Emotion directly; the `styled`
+  conversion is the same.
+- [Styled factory](/docs/recipes/styled-factory) for the full factory API.

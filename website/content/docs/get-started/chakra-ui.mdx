@@ -3,35 +3,14 @@ title: Migrating from Chakra UI
 description: Migrate your project from Chakra UI to Panda and see how style props, theme, and variants map across.
 ---
 
-This guide outlines the steps needed to migrate your project from Chakra UI to Panda and highlights key design
-differences between the two.
-
-> **Note:** Chakra's own team has said its theming system was deliberately designed to align with Panda's
-> conventions, `globalCss`, `{ value }`-wrapped tokens, and `recipes`/`slotRecipes` terminology all match Panda
-> directly, while Chakra still runs on Emotion at runtime rather than Panda's static extraction. Several of the
-> mappings below will already look familiar because of that.
-
-Here are some similarities between the two:
-
-- Both support style props directly on components, and both support design tokens defined in a central theme.
-- Both support responsive values and a similar breakpoint-object shorthand.
-- Both have a first-class idea of a component "variant" that's more than just a class name toggle.
-
-Here's where they differ.
-
-## Performance
-
-Chakra styles components with `@emotion/styled` at runtime: every style prop and `sx` value is computed by Emotion in
-the browser (or on the server during SSR), and the CSS is injected on the fly.
-
-Panda extracts your style objects at build time and ships plain static CSS, there's no runtime style computation
-cost at all. This matters most in large component trees or lists, where Chakra's runtime style computation happens
-per render.
+Chakra's theming was deliberately designed to align with Panda's conventions, so `{ value }` tokens, `globalCss`,
+and recipes carry over almost unchanged. The migration is moving those shapes off Chakra's Emotion runtime onto
+build-time CSS, plus one decision about interactive components. Install Panda through your
+[framework guide](/docs/get-started/framework-guides), then convert one component at a time.
 
 ## Theming
 
-Chakra builds a system with `createSystem` and a config from `defineConfig`, then passes it to `ChakraProvider` as
-`value`:
+Chakra builds a system at runtime and hands it to a provider:
 
 ```jsx
 import { ChakraProvider, createSystem, defaultConfig, defineConfig } from '@chakra-ui/react'
@@ -53,8 +32,8 @@ export default function App({ children }) {
 }
 ```
 
-Notice the token shape, `{ value: '#0ea5e9' }`, is the same wrapper Panda uses. Panda doesn't need a provider, the
-theme lives in `panda.config.ts` and is resolved at build time, not read from React context at render time:
+The token shape is already Panda's. Panda needs no provider: the theme lives in `panda.config.ts` and resolves at
+build time:
 
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -72,38 +51,31 @@ export default defineConfig({
 })
 ```
 
-See [Tokens](/docs/theming/tokens) for the full token model.
+See [Tokens](/docs/theming/tokens).
 
 ## The `sx` prop
 
-Chakra's `sx` prop (and the lower-priority `__css` prop) layers ad hoc styles onto a component that already has
-style props:
+Chakra's `sx` prop layers ad hoc styles onto a styled component:
 
 ```jsx
 <Box sx={{ color: 'white', bg: 'brand', fontSize: '4' }} />
 ```
 
-Panda's closest equivalent is the `css` prop on the `styled` factory, or just building the class name directly with
-`css()`:
+Panda's equivalents are the `css` prop on the `styled` factory, or `css()` directly:
 
 ```jsx
 import { styled } from '../styled-system/jsx'
-
-<styled.div css={{ color: 'white', bg: 'brand', fontSize: '4' }} />
-```
-
-```jsx
 import { css } from '../styled-system/css'
 
+<styled.div css={{ color: 'white', bg: 'brand', fontSize: '4' }} />
 <div className={css({ color: 'white', bg: 'brand', fontSize: '4' })} />
 ```
 
-See [JSX Style Props](/docs/styling/style-props) for the full set of ways to style a component inline.
+See [JSX Style Props](/docs/styling/style-props).
 
 ## Variants
 
-Chakra defines a component's variants with `defineRecipe` (single-part) or `defineSlotRecipe` (multi-part, like
-`Menu` or `Tabs`), registered on the system's `theme.recipes`/`theme.slotRecipes`:
+Chakra registers recipes on the system:
 
 ```ts
 import { defineRecipe } from '@chakra-ui/react'
@@ -118,20 +90,11 @@ export const buttonRecipe = defineRecipe({
 })
 ```
 
-```ts
-const config = defineConfig({
-  theme: {
-    recipes: { button: buttonRecipe }
-  }
-})
-```
-
-Panda's equivalent is a [recipe](/docs/recipes/atomic-recipe), either colocated with `cva`/`sva` or shared globally via
-`theme.recipes`/`theme.slotRecipes` in `panda.config.ts`, the same `base`/`variants` shape Chakra uses:
+Panda uses the same `base`/`variants` shape, in `panda.config.ts` (or colocated with `cva`/`sva`). The one new
+field is `className`, the stable class name Panda emits for the recipe, which Chakra never needed because Emotion
+generated hashed class names at runtime:
 
 ```ts filename="panda.config.ts"
-import { defineConfig } from '@pandacss/dev'
-
 export default defineConfig({
   theme: {
     extend: {
@@ -159,21 +122,9 @@ import { button } from '../styled-system/recipes'
 
 See [Recipes](/docs/recipes/atomic-recipe) and [Slot Recipes](/docs/recipes/slot-recipes).
 
-## Color Modes
+## Color modes
 
-Chakra's own docs recommend semantic tokens (`bg="bg.subtle"`, values that resolve automatically per color mode) as
-the preferred pattern, the same model Panda uses. A `useColorModeValue` hook is also available, opt-in via a
-CLI-generated snippet (`npx @chakra-ui/cli snippet add color-mode`) built on `next-themes`, for cases where a value
-genuinely needs to branch per color mode at the call site rather than through a token:
-
-```jsx
-import { useColorModeValue } from '@/components/ui/color-mode'
-
-const bg = useColorModeValue('white', 'gray.800')
-```
-
-Panda defines the light/dark pair once, as a semantic token, and every user of that token gets the right value
-automatically, no hook call needed at the usage site:
+Both sides prefer semantic tokens: define the light/dark pair once, and every use site resolves per mode.
 
 ```ts filename="panda.config.ts"
 theme: {
@@ -191,23 +142,11 @@ theme: {
 <div className={css({ bg: 'bg' })} />
 ```
 
-See [Theme](/docs/theming/theme) and [Multiple Themes](/docs/theming/multiple-themes) for semantic tokens and
-color-mode setup in depth.
+See [Conditional Styles](/docs/styling/conditional-styles) and [Multiple Themes](/docs/theming/multiple-themes).
 
-## Global Styles
+## Global styles
 
-Chakra applies global styles through the `globalCss` key in `defineConfig`, the same key name Panda uses:
-
-```ts
-const config = defineConfig({
-  globalCss: {
-    body: { bg: 'gray.50', color: 'gray.800' }
-  }
-})
-```
-
-Panda's version is the same shape, `globalCss` in `panda.config.ts`, no provider needed since it's emitted straight
-into the generated CSS:
+Same key, same shape, no provider:
 
 ```ts filename="panda.config.ts"
 export default defineConfig({
@@ -219,19 +158,10 @@ export default defineConfig({
 
 See [Global Styles](/docs/styling/global-styles).
 
-## Component Styles
+## Layout components
 
-Chakra ships pre-styled components (`Box`, `Flex`, `Grid`, `Stack`) that accept style props directly:
-
-```jsx
-import { Box, Grid } from '@chakra-ui/react'
-
-<Grid templateColumns="repeat(2, 1fr)" gap="6">
-  <Box bg="brand.500">Box</Box>
-</Grid>
-```
-
-Panda's [patterns](/docs/styling/patterns) cover the same layout primitives, as a JSX component or a plain function:
+Chakra's `Box`, `Flex`, `Grid`, `Stack` map to Panda's [patterns](/docs/styling/patterns), generated into
+`styled-system/jsx`:
 
 ```jsx
 import { Box, Grid } from '../styled-system/jsx'
@@ -241,22 +171,58 @@ import { Box, Grid } from '../styled-system/jsx'
 </Grid>
 ```
 
-Panda doesn't ship interactive components (`Menu`, `Modal`, `Tabs`) the way Chakra does, since Panda is a styling
-engine, not a component library. If you need those without Chakra's runtime styling, wrap a headless library like
-Ark UI. See [Wrap headless libraries](/docs/design-systems/wrap-headless-libraries).
+## Unwind the runtime
 
-## Conclusion
+The mechanical part of the migration is removing what Panda replaces:
 
-Chakra and Panda agree on a lot of the underlying concepts, matching config shapes (`globalCss`, `{ value }`
-tokens), matching recipe terminology, and semantic tokens as the preferred color-mode pattern on both sides, since
-Chakra's theming system was deliberately designed toward Panda's conventions. The real migration cost is mechanical:
-moving each of those concepts off Chakra's runtime (`ChakraProvider`, `createSystem`, the recipe hooks) onto Panda's
-build-time equivalent, and separately deciding what to do about Chakra's interactive components if you were relying
-on them.
+- **`ChakraProvider` and `createSystem`** go away entirely. Nothing reads a theme from context; the theme is in
+  the generated CSS.
+- **`useColorModeValue`** call sites become [semantic tokens](#color-modes). The value branches in CSS, not in a
+  hook, so the component doesn't re-render on mode change. Keep `next-themes` (or your toggle of choice) for
+  setting the `.dark` class.
+
+```jsx
+// before
+const bg = useColorModeValue('white', 'gray.800')
+
+// after: css({ bg: 'bg' }) with the semantic token above
+```
+
+- **`useRecipe` / `useSlotRecipe`** become direct imports from `styled-system/recipes`. Recipes are plain
+  functions now; there is no system to look them up in.
+
+```jsx
+// before
+const recipe = useRecipe({ key: 'button' })
+const styles = recipe({ variant: 'solid' })
+
+// after
+import { button } from '../styled-system/recipes'
+const className = button({ variant: 'solid' })
+```
+
+## What has no equivalent
+
+Panda doesn't ship interactive components (`Menu`, `Dialog`, `Tabs`); it's a styling engine, not a component
+library. If you need those without Chakra's runtime styling, wrap a headless library like Ark UI. See
+[Wrap headless libraries](/docs/design-systems/wrap-headless-libraries).
+
+## Run both during the migration
+
+Panda's CSS ships inside cascade layers, and Emotion's injected styles are unlayered, so Chakra's styles win over
+converted components by default. See
+[Migrating alongside unlayered CSS](/docs/styling/cascade-layers#migrating-alongside-unlayered-css) for the two
+ways to control which side wins.
+
+## After migrating
+
+- **Lint against your theme.** The [lint rules](/docs/get-started/linting) flag raw values where a token exists
+  and deprecated tokens as you retire Chakra-era names.
+- **Drop the styling runtime.** [Source transforms](/docs/styling/source-transforms) rewrite static calls to plain
+  class strings, so no styling code ships at all, the full distance from Emotion's runtime.
 
 ## See also
 
-- [Migration strategy](/docs/get-started/migration-strategy) for running both libraries side by side during the
-  migration.
-- [Wrap headless libraries](/docs/design-systems/wrap-headless-libraries) if you need Chakra-like interactive components without
-  Chakra's runtime.
+- [Wrap headless libraries](/docs/design-systems/wrap-headless-libraries) for Chakra-like interactive components
+  without Chakra's runtime.
+- [Recipes](/docs/recipes/overview) for the full recipe model this migration leans on.

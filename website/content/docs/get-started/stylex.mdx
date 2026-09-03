@@ -3,59 +3,37 @@ title: Migrating from StyleX
 description: Migrate your project from Meta's StyleX to Panda and see how create, defineVars, and props map across.
 ---
 
-This guide outlines the steps needed to migrate your project from StyleX to Panda and highlights key design
-differences between the two.
+StyleX and Panda share the same foundation: static extraction with a Rust compiler, atomic output, object syntax.
+The difference is scope:
 
-> **Disclaimer:** This isn't about which one is best. Both compile to static CSS at build time, so the
-> differences below are about strictness and scope, not runtime cost.
+- **StyleX stays minimal.** No globals, no built-in variants. Your team hand-rolls its conventions, and
+  hand-rolled conventions drift.
+- **Panda gives you the conventions.** Variants, patterns, and semantic tokens as typed APIs, enforced by the
+  compiler and the [lint rules](/docs/get-started/linting). More surface area up front, but each piece replaces a
+  convention you'd otherwise write and police yourself.
 
-Here are some similarities between the two:
+Value the minimalism? You don't have to take the batteries: start from
+[zero presets](/docs/theming/minimal-setup) or just `@pandacss/preset-base`, bring your own tokens, and add
+conventions back one at a time. Install through your [framework guide](/docs/get-started/framework-guides).
 
-- Both extract to static CSS at build time, no runtime style computation in either.
-- Both use object syntax for styles rather than tagged template strings.
-- Both define theme values in a central place and reference them by name in style objects.
+## Theme to tokens
 
-The foundation is the same, so the decision is about scope. StyleX stays deliberately minimal, single-element styles,
-no globals, no built-in variants, which keeps specificity predictable but leaves variants and layout for you to build.
-Panda ships that layer, recipes, patterns, and semantic tokens as typed APIs, on the same static-CSS output. Reach for
-Panda when you want the design system in the box; stay on StyleX if strict per-element scoping is the point. The rest of
-this guide maps `defineVars` / `create` / `props` to Panda's equivalents, and flags the constraints that don't carry
-over.
-
-## How styles compile
-
-Both are already build-time, static systems, so unlike a migration from Emotion or Chakra, this isn't a
-runtime-vs-static story. StyleX's atomic CSS model is deliberately strict about style precedence (the last property
-wins, resolved partly through property order at the call site) and requires a compiler plugin (Babel, SWC, or the
-Rust-based one) wired into your build. Panda extracts with its own Rust engine built on [Oxc](https://oxc.rs), native
-for your build and WebAssembly in the browser. Structurally the same, static extraction plus atomic output, but it
-doesn't require you to reason about call-site property order the way StyleX does.
-
-## Theming
-
-StyleX defines theme values with `stylex.defineVars`, which compiles to real CSS custom properties. The call has to
-live in a file with a `.stylex.js`/`.stylex.ts` extension and be a named export, StyleX's compiler enforces this:
+`stylex.defineVars` (which must live in a `.stylex.ts` file as a named export) becomes `theme.tokens` in config,
+referenced by name instead of imported variable objects:
 
 ```ts filename="vars.stylex.ts"
 import * as stylex from '@stylexjs/stylex'
 
+// before
 export const colors = stylex.defineVars({
   brand: '#0ea5e9'
 })
 ```
 
-```ts
-const styles = stylex.create({
-  button: { backgroundColor: colors.brand }
-})
-```
-
-Panda's theme tokens live in `panda.config.ts` instead of a separate `defineVars` call, and are referenced by name
-as string values rather than imported variable objects:
-
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
 
+// after
 export default defineConfig({
   theme: {
     extend: {
@@ -77,14 +55,14 @@ import { css } from '../styled-system/css'
 
 See [Tokens](/docs/theming/tokens).
 
-## The `sx` prop
+## Inline styles to css()
 
-StyleX has no inline-prop escape hatch, every element applies its styles explicitly through `stylex.props()`,
-spread onto the element:
+`stylex.create` plus `stylex.props()` spread becomes `css()` building a class name:
 
 ```jsx
 import * as stylex from '@stylexjs/stylex'
 
+// before
 const styles = stylex.create({
   base: { color: 'white', backgroundColor: 'blue' }
 })
@@ -92,23 +70,22 @@ const styles = stylex.create({
 <div {...stylex.props(styles.base)} />
 ```
 
-Panda's `css()` is closer to this than a dedicated `sx` prop, you build the class name and pass it to `className`
-directly, or use the `styled` factory's `css` prop for the same one-off styling on top of an existing component:
-
 ```jsx
 import { css } from '../styled-system/css'
 
+// after
 <div className={css({ color: 'white', bg: 'blue' })} />
 ```
 
-See [JSX Style Props](/docs/styling/style-props).
+See [JSX Style Props](/docs/styling/style-props) for the `styled` factory and `css` prop forms.
 
 ## Variants
 
-StyleX has no built-in variant system, the common pattern is a `stylex.create` call with multiple named style
-objects, and picking one at render time based on a prop:
+StyleX's common pattern is named style objects picked by an untyped string key. Panda's
+[recipes](/docs/recipes/atomic-recipe) formalize it as a typed variant map:
 
 ```jsx
+// before
 const styles = stylex.create({
   primary: { backgroundColor: 'blue' },
   secondary: { backgroundColor: 'gray' }
@@ -117,10 +94,8 @@ const styles = stylex.create({
 <button {...stylex.props(styles[variant])} />
 ```
 
-Panda's [recipes](/docs/recipes/atomic-recipe) formalize this as a typed variant map, the prop and its allowed values are
-checked at compile time instead of being an untyped string key lookup:
-
 ```ts filename="button.ts"
+// after: the prop and its allowed values are checked at compile time
 import { cva } from '../styled-system/css'
 
 export const button = cva({
@@ -133,17 +108,43 @@ export const button = cva({
 })
 ```
 
-```jsx
-<button className={button({ variant: 'primary' })}>Click me</button>
-```
+See [Recipes](/docs/recipes/atomic-recipe) and [Slot Recipes](/docs/recipes/slot-recipes) for multi-part
+components.
 
-See [Recipes](/docs/recipes/atomic-recipe) and [Slot Recipes](/docs/recipes/slot-recipes) for multi-part components.
+## View transitions
 
-## Color Modes
-
-StyleX handles color mode inside `defineVars` itself, keying a value to a media query:
+`stylex.viewTransitionClass` maps one to one to Panda's `viewTransition`, same `group`/`old`/`new` keys, both
+built on `view-transition-class`:
 
 ```ts
+// before
+const slide = stylex.viewTransitionClass({
+  group: { animationDuration: '0.4s' },
+  old: { opacity: 0 },
+  new: { opacity: 1 }
+})
+```
+
+```ts
+// after
+import { viewTransition } from '../styled-system/css'
+
+const slide = viewTransition({
+  group: { animationDuration: '0.4s' },
+  old: { opacity: 0 },
+  new: { opacity: 1 }
+})
+```
+
+See [View Transitions](/docs/styling/view-transition).
+
+## Color modes
+
+StyleX keys a `defineVars` value to a media query. Panda's semantic tokens are the direct equivalent, branching on
+the `_dark` condition:
+
+```ts
+// before
 const DARK = '@media (prefers-color-scheme: dark)'
 
 export const colors = stylex.defineVars({
@@ -151,10 +152,8 @@ export const colors = stylex.defineVars({
 })
 ```
 
-Panda's semantic tokens are the direct equivalent, a token whose value branches on the `_dark` condition instead of
-an inline media-query key:
-
 ```ts filename="panda.config.ts"
+// after
 theme: {
   extend: {
     semanticTokens: {
@@ -166,41 +165,13 @@ theme: {
 }
 ```
 
-```jsx
-<div className={css({ bg: 'bg' })} />
-```
+See [Multiple Themes](/docs/theming/multiple-themes) for setups beyond media-query switching (a toggled class or
+attribute).
 
-See [Theme](/docs/theming/theme) and [Multiple Themes](/docs/theming/multiple-themes) for color-mode setup beyond
-media-query-only switching (a manually toggled class or attribute, for example).
+## Layout components
 
-## Global Styles
-
-This is the one place StyleX and Panda genuinely disagree, not just in syntax. StyleX deliberately has no global
-styles and no descendant or nested selectors targeting other elements, styles on an element have to come from class
-names on that element itself. The only exception is ordinary CSS inheritance (a `color` cascading to children the
-normal CSS way), and StyleX offers a separate `stylex.when` API for the controlled cases where you do need one
-element's state to affect another, rather than reaching for an implicit descendant selector. This is a core design
-constraint, not a missing feature, it's what lets StyleX guarantee predictable specificity at scale.
-
-Panda does support global styles, through `globalCss` in `panda.config.ts`:
-
-```ts filename="panda.config.ts"
-export default defineConfig({
-  globalCss: {
-    body: { margin: 0 }
-  }
-})
-```
-
-See [Global Styles](/docs/styling/global-styles). If you were relying on StyleX's strict per-element scoping as a
-guardrail against accidental global overrides, note that Panda doesn't enforce that for you, it's on your team to
-avoid reaching for `globalCss` or descendant selectors where a scoped style would do.
-
-## Component Styles
-
-StyleX has no built-in layout primitives (no `Box`, `Stack`, `Grid`), consistent with its low-level, single-element
-scope. Panda ships [patterns](/docs/styling/patterns) for common layout shapes, as both a function and a JSX
-component:
+StyleX has no built-in layout primitives, consistent with its single-element scope. Panda ships
+[patterns](/docs/styling/patterns) as both functions and JSX components:
 
 ```jsx
 import { Box, Stack } from '../styled-system/jsx'
@@ -210,16 +181,55 @@ import { Box, Stack } from '../styled-system/jsx'
 </Stack>
 ```
 
-## Conclusion
+See [Patterns](/docs/styling/patterns).
 
-StyleX and Panda share the same foundation, static extraction, atomic output, no runtime cost, but StyleX adds real
-constraints (no global styles, no descendant selectors, strict call-site property ordering) that Panda doesn't
-enforce. Moving from StyleX to Panda mostly means translating `defineVars`/`create`/`props` to Panda's config and
-`css()`/`cva()` equivalents, and deciding deliberately, since Panda won't enforce it for you, whether to keep
-StyleX's scoping discipline in your own styles.
+## Scoping: constraints become choices
+
+StyleX forbids global styles and descendant selectors by design. Panda supports both, plus typed conditions for
+the cross-element cases `stylex.when` gates:
+
+**Global styles**, for resets and base styles:
+
+```ts filename="panda.config.ts"
+globalCss: {
+  body: { margin: 0 }
+}
+```
+
+**Descendant selectors**, styling children from the parent:
+
+```ts
+css({ '& > li': { marginBlock: '2' } })
+```
+
+**Cross-element state**, as conditions instead of a separate API:
+
+```tsx
+<div className={css({ _groupHover: { opacity: 1 } })} />
+```
+
+The specificity discipline StyleX enforced at compile time becomes your choice:
+[cascade layers](/docs/styling/cascade-layers) keep precedence predictable, and the opt-in
+[`no-descendant-selectors`](/docs/get-started/linting#no-descendant-selectors) lint rule brings back per-element
+scoping as a lint error where you want it.
+
+## Run both during the migration
+
+Panda's CSS ships inside cascade layers and StyleX's output is unlayered, so StyleX styles win over converted
+components by default. See
+[Migrating alongside unlayered CSS](/docs/styling/cascade-layers#migrating-alongside-unlayered-css) for the two
+ways to control which side wins.
+
+## After migrating
+
+- **Replace the compiler-enforced discipline.** StyleX's compiler rejected what its model forbids. Panda's
+  [lint rules](/docs/get-started/linting) are the equivalent enforcement: raw values where a token exists,
+  invalid token paths, `!important`, physical properties.
+- **Keep the zero-runtime output.** [Source transforms](/docs/styling/source-transforms) rewrite static calls to
+  plain class strings, matching StyleX's compiled output model.
 
 ## See also
 
-- [Migration strategy](/docs/get-started/migration-strategy) for running both side by side during the migration.
-- [Cascade Layers](/docs/styling/cascade-layers) for how Panda manages selector precedence, the nearest equivalent
-  to StyleX's specificity guarantees.
+- [Cascade Layers](/docs/styling/cascade-layers) for how Panda manages selector precedence, the nearest
+  equivalent to StyleX's specificity guarantees.
+- [Writing Styles](/docs/styling/writing-styles) for the full `css()` model this guide maps onto.

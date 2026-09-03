@@ -121,7 +121,7 @@ export const docsTabs: TabItem[] = [
         ]
       },
       {
-        title: 'AI for Agents',
+        title: 'Using AI',
         items: [
           { title: 'MCP Server', url: 'mcp-server' },
           { title: 'LLMs.txt', url: 'llms-txt' },
@@ -131,14 +131,11 @@ export const docsTabs: TabItem[] = [
       {
         title: 'Migration',
         items: [
-          { title: 'Migration strategy', url: 'migration-strategy' },
+          { title: 'StyleX', url: 'stylex' },
           { title: 'Tailwind CSS', url: 'tailwind' },
-          { title: 'Chakra UI', url: 'chakra-ui' },
-          { title: 'Stitches', url: 'stitches' },
           { title: 'Styled Components', url: 'styled-components' },
           { title: 'Emotion', url: 'emotion' },
-          { title: 'Theme UI', url: 'theme-ui' },
-          { title: 'StyleX', url: 'stylex' }
+          { title: 'Chakra UI', url: 'chakra-ui' }
         ]
       },
       {

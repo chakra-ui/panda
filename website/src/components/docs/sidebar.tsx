@@ -53,7 +53,7 @@ const GROUP_ICONS: Record<string, IconType> = {
   'Styled System': LuPackage,
   Tooling: LuWrench,
   Frameworks: LuBlocks,
-  'AI for Agents': LuBot,
+  'Using AI': LuBot,
   'CLI & Config': LuTerminal,
   'Utility Reference': LuBookOpen
 }
