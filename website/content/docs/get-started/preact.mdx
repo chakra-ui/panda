@@ -3,7 +3,10 @@ title: Using Preact
 description: Easily use Panda with Preact with our dedicated integration.
 ---
 
-This guide shows you how to set up Panda CSS in a Preact project using PostCSS.
+This guide shows you how to set up Panda CSS in a Preact project using the `@pandacss/vite` plugin.
+
+Prefer PostCSS? Run `panda init --postcss` instead of the plugin step below and follow
+[Using PostCSS](/docs/get-started/postcss). Everything else on this page stays the same.
 
 ## Start a new project
 
@@ -32,24 +35,39 @@ To get started, we will need to create a new Preact project using `typescript` t
 
 ### Install Panda
 
-Install panda and create your `panda.config.ts` file.
+Install panda, the Vite plugin, and create your `panda.config.ts` file.
 
 <Tabs items={['npm', 'yarn']}>
   {/* <!-- prettier-ignore-start --> */}
   <Tab>
     ```bash
-    npm install -D @pandacss/dev
-    npx panda init --postcss
+    npm install -D @pandacss/dev @pandacss/vite
+    npx panda init
     ```
   </Tab>
   <Tab>
     ```bash
-    yarn add -D @pandacss/dev
-    yarn panda init --postcss
+    yarn add -D @pandacss/dev @pandacss/vite
+    yarn panda init
     ```
   </Tab>
   {/* <!-- prettier-ignore-end --> */}
 </Tabs>
+
+### Add the Vite plugin
+
+Add `pandacss()` to your Vite plugins. It generates the `styled-system` folder, injects the CSS, and keeps both up
+to date on save. No separate watcher needed.
+
+```ts {2,6} filename="vite.config.ts"
+import { defineConfig } from 'vite'
+import pandacss from '@pandacss/vite'
+import preact from '@preact/preset-vite'
+
+export default defineConfig({
+  plugins: [pandacss(), preact()]
+})
+```
 
 ### Update package.json scripts
 
@@ -68,11 +86,8 @@ Open your `package.json` file and update the `scripts` section as follows:
 }
 ```
 
-- `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about
-  [codegen](/docs/reference/cli#codegen) in the CLI section.
-
-> This step ensures that the panda output directory is regenerated after each dependency installation. So you can add
-> the output directory to your `.gitignore` file and not worry about it.
+The plugin only runs with Vite. The `"prepare"` script covers type checking and your editor, which read
+`styled-system` before Vite starts, and lets the folder stay gitignored.
 
 ### Configure the content
 
@@ -91,13 +106,15 @@ export default defineConfig({
 })
 ```
 
-### Configure the entry CSS with layers
+### Configure CSS layers
 
 Add this code to an `src/style/index.css` file imported in the root component of your project.
 
 ```css filename="src/style/index.css"
 @layer reset, base, tokens, recipes, utilities;
 ```
+
+This file only sets the layer order. The plugin injects the generated CSS for you.
 
 ## Start your build process
 
@@ -134,7 +151,19 @@ const Home = () => {
 export default Home
 ```
 
+### Optional: drop the styling runtime
+
+By default `css()` resolves class strings in the browser with a small runtime. Turn on source transforms and the
+plugin rewrites static calls to plain class strings at build time, so the runtime never ships:
+
+```ts filename="vite.config.ts"
+plugins: [pandacss({ transform: true }), preact()]
+```
+
+Dynamic values keep their runtime form. See [Source transforms](/docs/styling/source-transforms).
+
 </Steps>
+
 
 ## Troubleshooting
 

@@ -177,7 +177,7 @@ export default defineConfig({
 })
 ```
 
-### Configure the entry CSS with layers
+### Configure CSS layers
 
 Add this code to an `app/index.css` file.
 
@@ -264,6 +264,11 @@ export default class HelloPanda extends Component {
 > Ember.
 
 </Steps>
+
+## Ship without the styling runtime
+
+This setup resolves `css()` calls with a small runtime in the browser. Panda's webpack plugin can rewrite them to plain
+class strings at build time instead. See [Source transforms](/docs/styling/source-transforms).
 
 ## Troubleshooting
 

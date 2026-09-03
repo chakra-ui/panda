@@ -196,7 +196,7 @@ export default defineConfig({
 
 </RouteSwitchContent>
 
-### Configure the entry CSS with layers
+### Configure CSS layers
 
 <RouteSwitchContent value="app-dir">
   In your Next.js project, navigate to the `src/app` folder and open `globals.css` file. Replace all the content with
@@ -222,8 +222,6 @@ export default defineConfig({
 > **Note:** Feel free to remove the `Home.module.css` file as we don't need it anymore.
 
 </RouteSwitchContent>
-
-### Import the entry CSS in your app
 
 <RouteSwitchContent value="app-dir">
   
@@ -328,6 +326,12 @@ Run the following command to start the development server:
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 </Steps>
+
+## Ship without the styling runtime
+
+This setup resolves `css()` calls with a small runtime in the browser. Panda's webpack plugin can rewrite them to plain
+class strings at build time instead. See [Source transforms](/docs/styling/source-transforms).
+
 </RouteSwitch>
 
 ## Troubleshooting

@@ -3,114 +3,160 @@ title: Using Astro
 description: Easily use Panda with Astro with our dedicated integration.
 ---
 
-This guide shows you how to set up Panda CSS in an Astro project using our dedicated integration.
+This guide will show you how to set up Panda CSS in an Astro project using the `@pandacss/vite` plugin.
 
-## Setup
+Prefer PostCSS? Run `panda init --postcss` instead of the plugin step below and follow
+[Using PostCSS](/docs/get-started/postcss). Everything else on this page stays the same.
+
+## Start a new project
 
 <Steps>
 
-### Install Panda
+### Create Astro project
 
-Install panda and create your `panda.config.ts` file.
+To get started, create a new Astro project:
 
 <Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   {/* <!-- prettier-ignore-start --> */}
   <Tab>
     ```bash
-    pnpm install -D @pandacss/dev
-    pnpm panda init --postcss
+    pnpm create astro@latest test-app
+    cd test-app
     ```
   </Tab>
   <Tab>
     ```bash
-    npm install -D @pandacss/dev
-    npx panda init --postcss
+    npm create astro@latest test-app
+    cd test-app
     ```
   </Tab>
   <Tab>
     ```bash
-    yarn add -D @pandacss/dev
-    yarn panda init --postcss
+    yarn create astro test-app
+    cd test-app
     ```
   </Tab>
   <Tab>
     ```bash
-    bun add -D @pandacss/dev
-    bun panda init --postcss
+    bun create astro@latest test-app
+    cd test-app
     ```
   </Tab>
   {/* <!-- prettier-ignore-end --> */}
 </Tabs>
 
+### Install Panda
+
+Install panda, the Vite plugin, and create your `panda.config.ts` file.
+
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
+  {/* <!-- prettier-ignore-start --> */}
+  <Tab>
+    ```bash
+    pnpm install -D @pandacss/dev @pandacss/vite
+    pnpm panda init
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    npm install -D @pandacss/dev @pandacss/vite
+    npx panda init
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    yarn add -D @pandacss/dev @pandacss/vite
+    yarn panda init
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    bun add -D @pandacss/dev @pandacss/vite
+    bun panda init
+    ```
+  </Tab>
+  {/* <!-- prettier-ignore-end --> */}
+</Tabs>
+
+### Add the Vite plugin
+
+Astro runs on Vite, so the plugin goes in the `vite` section of your Astro config. It generates the `styled-system`
+folder, injects the CSS, and keeps both up to date on save. No separate watcher needed.
+
+```js {1,7} filename="astro.config.mjs"
+import pandacss from '@pandacss/vite'
+import { defineConfig } from 'astro/config'
+
+// https://astro.build/config
+export default defineConfig({
+  vite: {
+    plugins: [pandacss()]
+  }
+})
+```
+
 ### Update package.json scripts
 
 Open your `package.json` file and update the `scripts` section as follows:
 
-```diff {3}
+```diff {3} filename="package.json"
 {
   "scripts": {
-+   "prepare": "panda codegen",
++    "prepare": "panda codegen",
     "dev": "astro dev",
-    "start": "astro start",
     "build": "astro build",
     "preview": "astro preview"
   }
 }
 ```
 
-    The `prepare` script that will run codegen after dependency installation. Read more about [codegen](/docs/reference/cli#codegen) in the CLI section.
-
-> This step ensures that the panda output directory is regenerated after each dependency installation. So you can add
-> the output directory to your `.gitignore` file and not worry about it.
+The plugin only runs with Vite. The `"prepare"` script covers type checking and your editor, which read
+`styled-system` before Vite starts, and lets the folder stay gitignored.
 
 ### Configure the content
 
-Add your panda config to your `panda.config.js` file, or wherever panda is configured in your project.
+Make sure your `.astro` files and any framework components are included in the `include` section of the
+`panda.config.ts` file.
 
-```js {6}
+```js {8} filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
+  // Whether to use css reset
   preflight: true,
-  // define the content to scan 👇🏻
-  include: ['./src/**/*.{ts,tsx,js,jsx,astro}', './pages/**/*.{ts,tsx,js,jsx,astro}'],
+
+  // Where to look for your css declarations
+  include: ['./src/**/*.{js,jsx,ts,tsx,astro}'],
+
+  // Files to exclude
   exclude: [],
+
+  // The output directory for your css system
   outdir: 'styled-system'
 })
 ```
 
-### Configure the entry CSS with layers
+### Configure CSS layers
 
-Add the layer css code to the `src/index.css` file
+Create an `src/index.css` file with the layer order, and import it in your layout:
 
 ```css filename="src/index.css"
 @layer reset, base, tokens, recipes, utilities;
 ```
 
-Then, import the `src/index.css` file in your page or layout file
+```astro {2} filename="src/layouts/Layout.astro"
+---
+import '../index.css'
+---
 
-```md filename="src/pages/index.astro"
----
-import '../index.css';
----
+<slot />
 ```
 
-### Update the postcss config
-
-Astro requires a little change for the `postcss.config.cjs` that `panda init --postcss` generated:
-
-```diff {3} filename="postcss.config.cjs"
-module.exports = {
--  plugins: {
--   '@pandacss/dev/postcss': {}
--  }
-+  plugins: [require('@pandacss/dev/postcss')()]
-}
-```
+This file only sets the layer order. The plugin injects the generated CSS for you.
 
 ### Start your build process
 
-Run your build process with `npm run dev` or whatever command is configured in your package.json file.
+Run the following command to start your development server.
 
 <Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   {/* <!-- prettier-ignore-start --> */}
@@ -139,14 +185,28 @@ Run your build process with `npm run dev` or whatever command is configured in y
 
 ### Start using Panda
 
-Use the generated style utilities in your code, and panda will extract them to the generated CSS file.
+Use the generated style utilities in your `.astro` files, and panda will extract them at build time.
 
-```jsx
+```astro filename="src/pages/index.astro"
 ---
-import { css } from '../../styled-system/css';
+import { css } from '../../styled-system/css'
 ---
-<div class={css({ fontSize: "2xl", fontWeight: 'bold' })}>Hello !</div>
+
+<div class={css({ fontSize: '2xl', fontWeight: 'bold' })}>Hello 🐼!</div>
 ```
+
+### Optional: drop the styling runtime
+
+By default `css()` resolves class strings in the browser with a small runtime. Turn on source transforms and the
+plugin rewrites static calls to plain class strings at build time, so the runtime never ships:
+
+```js filename="astro.config.mjs"
+vite: {
+  plugins: [pandacss({ transform: true })]
+}
+```
+
+Dynamic values keep their runtime form. See [Source transforms](/docs/styling/source-transforms).
 
 </Steps>
 

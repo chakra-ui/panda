@@ -116,7 +116,7 @@ export default defineConfig({
 })
 ```
 
-### Configure the entry CSS with layers
+### Configure CSS layers
 
 Add this code to an `src/style/index.css` file imported in the root component of your project.
 
@@ -165,6 +165,11 @@ export default HomePage
 ```
 
 </Steps>
+
+## Ship without the styling runtime
+
+This setup resolves `css()` calls with a small runtime in the browser. Panda's Vite plugin can rewrite them to plain
+class strings at build time instead. See [Source transforms](/docs/styling/source-transforms).
 
 ## Troubleshooting
 

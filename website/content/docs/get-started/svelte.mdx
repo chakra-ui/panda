@@ -3,7 +3,10 @@ title: Using Svelte
 description: Easily use Panda with Svelte with our dedicated integration.
 ---
 
-This guide will show you how to set up Panda CSS in a Svelte project using PostCSS.
+This guide will show you how to set up Panda CSS in a Svelte project using the `@pandacss/vite` plugin.
+
+Prefer PostCSS? Run `panda init --postcss` instead of the plugin step below and follow
+[Using PostCSS](/docs/get-started/postcss). Everything else on this page stays the same.
 
 ## Start a new project
 
@@ -91,36 +94,58 @@ Enter the newly created directory and install the dependencies.
 
 ### Install Panda
 
-To install Panda and corresponding dependencies run the following commands:
+Install panda, the Vite plugin, and create your `panda.config.ts` file:
 
 <Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   {/* <!-- prettier-ignore-start --> */}
   <Tab>
     ```bash
-    pnpm install -D @pandacss/dev
-    pnpm panda init --postcss
+    pnpm install -D @pandacss/dev @pandacss/vite
+    pnpm panda init
     ```
   </Tab>
   <Tab>
     ```bash
-    npm install -D @pandacss/dev
-    npx panda init --postcss
+    npm install -D @pandacss/dev @pandacss/vite
+    npx panda init
     ```
   </Tab>
   <Tab>
     ```bash
-    yarn add -D @pandacss/dev
-    yarn panda init --postcss
+    yarn add -D @pandacss/dev @pandacss/vite
+    yarn panda init
     ```
   </Tab>
   <Tab>
     ```bash
-    bun add -D @pandacss/dev
-    bun panda init --postcss
+    bun add -D @pandacss/dev @pandacss/vite
+    bun panda init
     ```
   </Tab>
   {/* <!-- prettier-ignore-end --> */}
 </Tabs>
+
+### Add the Vite plugin
+
+Add `pandacss()` to your Vite plugins. It generates the `styled-system` folder, injects the CSS, and keeps both up
+to date on save. No separate watcher needed.
+
+```ts {2,6-11} filename="vite.config.ts"
+import { defineConfig } from 'vite'
+import pandacss from '@pandacss/vite'
+import { sveltekit } from '@sveltejs/kit/vite'
+
+export default defineConfig({
+  plugins: [sveltekit(), pandacss()],
+  server: {
+    fs: {
+      allow: ['styled-system']
+    }
+  }
+})
+```
+
+`server.fs.allow` lets SvelteKit's dev server read the generated `styled-system` folder.
 
 ### Update package.json scripts
 
@@ -141,11 +166,8 @@ Open your `package.json` file and update the `scripts` section as follows:
 }
 ```
 
-This `"prepare"` script will run Panda CSS CLI codegen before each build. Read more about
-[codegen](/docs/reference/cli#codegen) in the CLI section.
-
-> This step ensures that the panda output directory is regenerated after each dependency installation. So you can add
-> the output directory to your `.gitignore` file and not worry about it.
+The plugin only runs with Vite. The `"prepare"` script covers type checking and your editor, which read
+`styled-system` before Vite starts, and lets the folder stay gitignored.
 
 ### Configure the content
 
@@ -172,7 +194,7 @@ export default defineConfig({
 
 ### Update Svelte config
 
-To configure Svelte preprocess to use PostCSS and add Panda alias update the `svelte.config.js` file as follows:
+Add the `styled-system` alias to your `svelte.config.js` file:
 
 ```js {15} filename="svelte.config.js"
 import adapter from '@sveltejs/adapter-auto'
@@ -197,62 +219,13 @@ const config = {
 export default config
 ```
 
-### Update Vite config
+### Configure CSS layers
 
-To be able to import `styled-system` files in your Svelte components you will need to update the `vite.config.js` file
-as follows:
-
-```js {6-10} filename="vite.config.js"
-import { sveltekit } from '@sveltejs/kit/vite'
-import { defineConfig } from 'vite'
-
-export default defineConfig({
-  plugins: [sveltekit()],
-  server: {
-    fs: {
-      allow: ['styled-system']
-    }
-  }
-})
-```
-
-If you’re using Storybook for a SvelteKit project, you need to replicate the same Vite server config changes. In your
-.storybook folder, you likely have a `main.js` (or `vite.config.js` in older Storybook versions). Update it as follows:
-
-```js filename="main.js"
-import { defineConfig, mergeConfig } from 'vite'
-
-/** @type { import('@storybook/sveltekit').StorybookConfig } */
-
-const config = {
-  // other Storybook config...
-  viteFinal: async config => {
-    return mergeConfig(
-      config,
-      defineConfig({
-        server: {
-          fs: {
-            allow: ['styled-system']
-          }
-        }
-      })
-    )
-  }
-}
-export default config
-```
-
-### Configure the entry CSS with layers
-
-Create the `app.css` file in the `src` directory and add the following content:
+Create an `src/app.css` file with the layer order, and import it from the root layout:
 
 ```css filename="src/app.css"
 @layer reset, base, tokens, recipes, utilities;
 ```
-
-### Import styles in the layout file
-
-Create the `src/routes/+layout.svelte` file and add the following content:
 
 ```svelte {2} filename="src/routes/+layout.svelte"
 <script>
@@ -261,6 +234,8 @@ Create the `src/routes/+layout.svelte` file and add the following content:
 
 <slot />
 ```
+
+The CSS file only sets the layer order. The plugin injects the generated CSS for you.
 
 ### Start your build process
 
@@ -306,9 +281,48 @@ Now you can start using Panda CSS in your project. Here is the snippet of code t
 </div>
 ```
 
+### Optional: drop the styling runtime
+
+By default `css()` resolves class strings in the browser with a small runtime. Turn on source transforms and the
+plugin rewrites static calls to plain class strings at build time, so the runtime never ships:
+
+```ts filename="vite.config.ts"
+plugins: [sveltekit(), pandacss({ transform: true })]
+```
+
+Dynamic values keep their runtime form. See [Source transforms](/docs/styling/source-transforms).
+
 </Steps>
 
 ## Troubleshooting
+
+### Storybook can't load styled-system files
+
+Storybook runs its own Vite server, which does not inherit the `server.fs.allow` setting from your `vite.config.ts`.
+Add it in your `.storybook` folder's `main.js` (or `vite.config.js` in older Storybook versions):
+
+```js filename="main.js"
+import { defineConfig, mergeConfig } from 'vite'
+
+/** @type { import('@storybook/sveltekit').StorybookConfig } */
+
+const config = {
+  // other Storybook config...
+  viteFinal: async config => {
+    return mergeConfig(
+      config,
+      defineConfig({
+        server: {
+          fs: {
+            allow: ['styled-system']
+          }
+        }
+      })
+    )
+  }
+}
+export default config
+```
 
 ### Autocomplete not working
 

@@ -145,7 +145,6 @@ export const docsTabs: TabItem[] = [
         items: [
           { title: 'ESLint Plugin', url: 'eslint-plugin' },
           { title: 'OXLint Plugin', url: 'oxlint-plugin' },
-          { title: 'Source Transforms', url: 'source-transforms' },
           { title: 'Editor & IDE Tooling', url: 'editor-tooling' }
         ]
       },
@@ -154,18 +153,18 @@ export const docsTabs: TabItem[] = [
         items: [
           { title: 'Next.js', url: 'nextjs' },
           { title: 'Vite', url: 'vite' },
-          { title: 'Astro', url: 'astro' },
           { title: 'Vue', url: 'vue' },
           { title: 'Nuxt', url: 'nuxt' },
+          { title: 'Astro', url: 'astro' },
           { title: 'Svelte', url: 'svelte' },
-          { title: 'Remix', url: 'remix' },
           { title: 'React Router', url: 'react-router' },
-          { title: 'Angular', url: 'angular' },
-          { title: 'Gatsby', url: 'gatsby' },
+          { title: 'Remix', url: 'remix' },
           { title: 'SolidJS', url: 'solidjs' },
           { title: 'Qwik', url: 'qwik' },
           { title: 'Preact', url: 'preact' },
+          { title: 'Angular', url: 'angular' },
           { title: 'Rsbuild', url: 'rsbuild' },
+          { title: 'Gatsby', url: 'gatsby' },
           { title: 'Ember', url: 'ember' },
           { title: 'Redwood', url: 'redwood' }
         ]
@@ -201,6 +200,7 @@ export const docsTabs: TabItem[] = [
         items: [
           { title: 'Dynamic Styles', url: 'dynamic-styling' },
           { title: 'Static CSS Generation', url: 'static' },
+          { title: 'Source Transforms', url: 'source-transforms' },
           { title: 'Optimization', url: 'optimization' }
         ]
       },

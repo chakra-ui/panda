@@ -3,7 +3,10 @@ title: Using React Router
 description: Easily use Panda with React Router with our dedicated integration.
 ---
 
-This guide will show you how to set up Panda CSS in a React Router project using PostCSS.
+This guide will show you how to set up Panda CSS in a React Router project using the `@pandacss/vite` plugin.
+
+Prefer PostCSS? Run `panda init --postcss` instead of the plugin step below and follow
+[Using PostCSS](/docs/get-started/postcss). Everything else on this page stays the same.
 
 ## Start a new project
 
@@ -52,36 +55,52 @@ You will be asked a few questions, answer these as follows:
 
 ### Install Panda
 
-Install panda and create your `panda.config.ts` file.
+Install panda, the Vite plugin, and create your `panda.config.ts` file.
 
 <Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   {/* <!-- prettier-ignore-start --> */}
   <Tab>
     ```bash
-    pnpm install -D @pandacss/dev
-    pnpm panda init --postcss
+    pnpm install -D @pandacss/dev @pandacss/vite
+    pnpm panda init
     ```
   </Tab>
   <Tab>
     ```bash
-    npm install -D @pandacss/dev
-    npx panda init --postcss
+    npm install -D @pandacss/dev @pandacss/vite
+    npx panda init
     ```
   </Tab>
   <Tab>
     ```bash
-    yarn add -D @pandacss/dev
-    yarn panda init --postcss
+    yarn add -D @pandacss/dev @pandacss/vite
+    yarn panda init
     ```
   </Tab>
   <Tab>
     ```bash
-    bun add -D @pandacss/dev
-    bun panda init --postcss
+    bun add -D @pandacss/dev @pandacss/vite
+    bun panda init
     ```
   </Tab>
   {/* <!-- prettier-ignore-end --> */}
 </Tabs>
+
+### Add the Vite plugin
+
+Update the `vite.config.ts` file to use Panda instead of TailwindCSS. The plugin generates the `styled-system`
+folder, injects the CSS, and keeps both up to date on save.
+
+```ts {2,7} filename="vite.config.ts"
+import { defineConfig } from 'vite'
+import pandacss from '@pandacss/vite'
+import { reactRouter } from '@react-router/dev/vite'
+import tsconfigPaths from 'vite-tsconfig-paths'
+
+export default defineConfig({
+  plugins: [pandacss(), reactRouter(), tsconfigPaths()]
+})
+```
 
 ### Update package.json scripts
 
@@ -99,11 +118,8 @@ Open your `package.json` file and update the `scripts` section as follows:
 }
 ```
 
-- `"prepare"` - script that will run Panda CSS CLI codegen before each build. Read more about
-  [codegen](/docs/reference/cli#codegen) in the CLI section.
-
-> This step ensures that the panda output directory is regenerated after each dependency installation. So you can add
-> the Panda CSS output directory to your `.gitignore` file and not worry about it.
+The plugin only runs with Vite. The `"prepare"` script covers type checking and your editor, which read
+`styled-system` before Vite starts, and lets the folder stay gitignored.
 
 ### Configure the content
 
@@ -128,28 +144,7 @@ export default defineConfig({
 })
 ```
 
-### Replace TailwindCSS with PandaCSS
-
-Update the `vite.config.ts` file to use PandaCSS instead of TailwindCSS.
-
-```ts {3,10} filename="vite.config.ts"
-import { reactRouter } from '@react-router/dev/vite'
-import autoprefixer from 'autoprefixer'
-import pandacss from '@pandacss/dev/postcss'
-import { defineConfig } from 'vite'
-import tsconfigPaths from 'vite-tsconfig-paths'
-
-export default defineConfig({
-  css: {
-    postcss: {
-      plugins: [pandacss, autoprefixer]
-    }
-  },
-  plugins: [reactRouter(), tsconfigPaths()]
-})
-```
-
-### Configure the entry CSS with layers
+### Configure CSS layers
 
 Create a new file `app/app.css` and add the following content:
 
@@ -157,7 +152,7 @@ Create a new file `app/app.css` and add the following content:
 @layer reset, base, tokens, recipes, utilities;
 ```
 
-### Update the root component
+This file only sets the layer order. The plugin injects the generated CSS for you.
 
 Import the `app.css` file in your `app/root.tsx` file and add the `styles` variable to the `links` function.
 
@@ -245,7 +240,19 @@ export default function Home() {
 }
 ```
 
+### Optional: drop the styling runtime
+
+By default `css()` resolves class strings in the browser with a small runtime. Turn on source transforms and the
+plugin rewrites static calls to plain class strings at build time, so the runtime never ships:
+
+```ts filename="vite.config.ts"
+plugins: [pandacss({ transform: true }), reactRouter(), tsconfigPaths()]
+```
+
+Dynamic values keep their runtime form. See [Source transforms](/docs/styling/source-transforms).
+
 </Steps>
+
 
 ## Troubleshooting
 

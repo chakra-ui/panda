@@ -245,6 +245,11 @@ const config = {
         permanent: true
       },
       {
+        source: '/docs/get-started/source-transforms',
+        destination: '/docs/styling/source-transforms',
+        permanent: true
+      },
+      {
         source: '/docs/design-systems/wrap-headless-ui',
         destination: '/docs/design-systems/wrap-headless-libraries',
         permanent: true

@@ -129,6 +129,15 @@ const [buttonProps, cssProps] = button.splitVariantProps(props)
 </Details>
 
 <Details>
+<summary>Does Panda ship a runtime?</summary>
+
+A small one. CSS is generated at build time; in the browser, `css()` only resolves class strings. Turn on
+[source transforms](/docs/styling/source-transforms) and the bundler rewrites static calls to plain class strings
+at build time, so even that runtime drops out of the bundle.
+
+</Details>
+
+<Details>
 <summary>How do I read a token at runtime?</summary>
 
 Use [`token`](/docs/theming/usage#vanilla-js) from `styled-system/tokens`:

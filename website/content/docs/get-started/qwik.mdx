@@ -3,7 +3,10 @@ title: Using Qwik
 description: Easily use Panda with Qwik with our dedicated integration.
 ---
 
-Learn how to set up Panda CSS in a Qwik project using PostCSS.
+Learn how to set up Panda CSS in a Qwik project using the `@pandacss/vite` plugin.
+
+Prefer PostCSS? Run `panda init --postcss` instead of the plugin step below and follow
+[Using PostCSS](/docs/get-started/postcss). Everything else on this page stays the same.
 
 ## Start a new project
 
@@ -38,34 +41,98 @@ To get started, we will need to create a new Qwik project using `typescript` tem
   {/* <!-- prettier-ignore-end --> */}
 </Tabs>
 
-### Install and Configure Panda
+### Install Panda
 
-Qwik provies an official script that installs panda and configures it for you.
+Install panda, the Vite plugin, and create your `panda.config.ts` file.
 
 <Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
   {/* <!-- prettier-ignore-start --> */}
   <Tab>
     ```bash
-    npm run qwik add pandacss
+    npm install -D @pandacss/dev @pandacss/vite
+    npx panda init
     ```
   </Tab>
   <Tab>
     ```bash
-    pnpm qwik add pandacss
+    pnpm install -D @pandacss/dev @pandacss/vite
+    pnpm panda init
     ```
   </Tab>
   <Tab>
     ```bash
-    yarn qwik add pandacss
+    yarn add -D @pandacss/dev @pandacss/vite
+    yarn panda init
     ```
   </Tab>
   <Tab>
     ```bash
-    bun qwik add pandacss
+    bun add -D @pandacss/dev @pandacss/vite
+    bun panda init
     ```
   </Tab>
   {/* <!-- prettier-ignore-end --> */}
 </Tabs>
+
+### Add the Vite plugin
+
+Add `pandacss()` to your Vite plugins. It generates the `styled-system` folder, injects the CSS, and keeps both up
+to date on save. No separate watcher needed.
+
+```ts {2,8} filename="vite.config.ts"
+import { defineConfig } from 'vite'
+import pandacss from '@pandacss/vite'
+import { qwikVite } from '@builder.io/qwik/optimizer'
+import { qwikCity } from '@builder.io/qwik-city/vite'
+import tsconfigPaths from 'vite-tsconfig-paths'
+
+export default defineConfig({
+  plugins: [pandacss(), qwikCity(), qwikVite(), tsconfigPaths()]
+})
+```
+
+### Update package.json scripts
+
+Open your `package.json` file and update the `scripts` section as follows:
+
+```diff {3} filename="package.json"
+{
+  "scripts": {
++    "prepare": "panda codegen",
+    "dev": "vite --mode ssr",
+    "build": "qwik build",
+    "preview": "qwik build preview && vite preview --open"
+  }
+}
+```
+
+The plugin only runs with Vite. The `"prepare"` script covers type checking and your editor, which read
+`styled-system` before Vite starts, and lets the folder stay gitignored.
+
+### Configure the content
+
+Set `jsxFramework: 'qwik'` and make sure your component paths are in `include`:
+
+```js {5,6} filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  preflight: true,
+  include: ['./src/**/*.{js,jsx,ts,tsx}'],
+  jsxFramework: 'qwik',
+  outdir: 'styled-system'
+})
+```
+
+### Configure CSS layers
+
+Declare the layer order at the top of `src/global.css`, which Qwik already imports in `src/root.tsx`:
+
+```css filename="src/global.css"
+@layer reset, base, tokens, recipes, utilities;
+```
+
+This file only sets the layer order. The plugin injects the generated CSS for you.
 
 ## Start your build process
 
@@ -119,6 +186,17 @@ export default component$(() => {
   )
 })
 ```
+
+### Optional: drop the styling runtime
+
+By default `css()` resolves class strings in the browser with a small runtime. Turn on source transforms and the
+plugin rewrites static calls to plain class strings at build time, so the runtime never ships:
+
+```ts filename="vite.config.ts"
+plugins: [pandacss({ transform: true }), qwikCity(), qwikVite(), tsconfigPaths()]
+```
+
+Dynamic values keep their runtime form. See [Source transforms](/docs/styling/source-transforms).
 
 </Steps>
 

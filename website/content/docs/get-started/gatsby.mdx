@@ -109,15 +109,13 @@ export default defineConfig({
 })
 ```
 
-### Configure the entry CSS with layers
+### Configure CSS layers
 
 Create `src/styles/index.css` file and add the following content:
 
 ```css filename="src/styles/index.css"
 @layer reset, base, tokens, recipes, utilities;
 ```
-
-### Import the entry CSS
 
 Create a `gatsby-browser.ts` file in the root of your project and add the following content:
 
@@ -153,6 +151,11 @@ export const Head: HeadFC = () => <title>Home Page</title>
 ```
 
 </Steps>
+
+## Ship without the styling runtime
+
+This setup resolves `css()` calls with a small runtime in the browser. Panda's webpack plugin can rewrite them to plain
+class strings at build time instead. See [Source transforms](/docs/styling/source-transforms).
 
 ## Troubleshooting
 
