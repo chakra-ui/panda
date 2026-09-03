@@ -1,14 +1,13 @@
+import { readFile } from 'node:fs/promises'
 import { ImageResponse } from 'next/og'
 import { Logo } from './logo'
 import { Yums } from './mascot'
 
-const monaSans = fetch(
+const monaSans = readFile(
   new URL('../../styles/Onest-Bold.ttf', import.meta.url)
-).then(res => res.arrayBuffer())
+)
 
 const upperFirst = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
-
-export const runtime = 'edge'
 
 const getFontSize = (title: string) => {
   if (title.length < 14) return '104px'
