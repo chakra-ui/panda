@@ -37,7 +37,7 @@ design_system_in_include
 ```ts
 // ❌
 export default defineConfig({
-  include: ['./node_modules/@acme/ds/src/**/*.{ts,tsx}']
+  include: ['src/**/*.{ts,tsx}', '@acme/ds']
 })
 
 // ✅
@@ -46,6 +46,9 @@ export default defineConfig({
   include: ['src/**/*.{ts,tsx}']
 })
 ```
+
+A path glob into the package (`./node_modules/@acme/ds/src/**`) triggers no error but re-extracts source the
+manifest already covers. Remove it too. See [Monorepo workflow](/docs/design-systems/monorepo-workflow).
 
 ## Fallback files will not publish
 

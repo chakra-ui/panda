@@ -194,8 +194,9 @@ export default defineConfig({
 })
 ```
 
-Do not put the design system in `include`. That errors with `design_system_in_include`. The package loads through
-`designSystem`, nothing else.
+Do not put the design system in `include`. Listing the package name there errors with `design_system_in_include`;
+a glob into its source re-extracts what the package already ships. The package loads through `designSystem`,
+nothing else.
 
 Render a `<Button>` in the app and it comes out styled by the `button` recipe, with no Panda config for it in the
 app:
