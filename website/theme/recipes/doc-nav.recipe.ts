@@ -80,6 +80,10 @@ export const docNavRecipe = defineSlotRecipe({
           mb: '8'
         },
         link: {
+          // Base sets flex for the sidebar's icon + label; TOC titles are
+          // plain text that can contain an inline `<code>`, which needs to
+          // wrap like normal text instead of laying out as flex items.
+          display: 'block',
           py: '1',
           // Item sets `--toc-depth`, so nesting isn't capped.
           ps: 'calc(token(spacing.4) * (var(--toc-depth, 0) + 1))',

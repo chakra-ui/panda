@@ -3,14 +3,37 @@ title: Styling
 description: Write styles next to your markup. Panda turns them into atomic CSS at build time.
 ---
 
-Panda looks like CSS-in-JS at the call site. You write style objects in TypeScript, and the build emits plain atomic
+Panda looks like CSS-in-JS when you write it. You write style objects in TypeScript, and the build emits plain atomic
 CSS. Nothing in the browser computes those styles.
 
-There is more than one way to author. Every path below produces the same kind of CSS.
+```tsx
+import { css } from 'styled-system/css'
+
+function Button() {
+  return (
+    <button
+      className={css({
+        bg: 'blue.500',
+        color: 'white',
+        px: '4',
+        py: '2',
+        borderRadius: 'md',
+        _hover: { bg: 'blue.600' }
+      })}
+    >
+      Click me
+    </button>
+  )
+}
+```
+
+There is more than one way to author styles in Panda. While the above syntax holds true, `css()` is only one entry
+point. Every API below compiles down to the same CSS.
 
 ## Pick an API
 
-Start local. Promote only when the shape of the styles forces it.
+Most styles start as a quick **`css()`** call. Reach for **patterns** when you need layout primitives, **style props**
+if you want JSX-prop ergonomics, and **recipes** once a component actually has variants.
 
 <Cards columns={2}>
   <Card
@@ -38,17 +61,3 @@ Start local. Promote only when the shape of the styles forces it.
     cta="Write a recipe"
   />
 </Cards>
-
-## What makes it different
-
-- **Build-time extraction.** Panda reads your source for `css()`, style props, patterns, and recipes. Only what you
-  used becomes CSS.
-- **Atomic by default.** Each property and value is a shared class, so CSS grows with distinct styles, not with the
-  number of components.
-- **Conditions in the object.** `_hover`, `md`, `_dark` sit next to the rest of the styles. No separate media file.
-- **Tokens as vocabulary.** `blue.500`, `md`, `semibold` resolve from your theme and stay type-checked.
-
-The tradeoff: styles have to be statically analyzable. Values that only exist at runtime need an escape hatch. See
-[Extraction rules](/docs/styling/extraction-rules),
-[Why Panda → How it works](/docs/get-started/getting-started#how-it-works) for the two build steps, and
-[Styled System](/docs/reference/styled-system) for what you import from.

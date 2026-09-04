@@ -149,8 +149,8 @@ list of values in your styles. This prevents the use of custom or raw CSS values
 css({ display: 'flex' }) // ✅ Valid
 css({ display: 'block' }) // ✅ Valid
 
-css({ display: 'abc' }) // ❌ will throw since 'abc' is not part of predefined values of 'display'
-css({ pos: 'absolute123' }) // ❌ will throw since 'absolute123' is not part of predefined values of 'position'
+css({ display: 'abc' }) // ❌ will throw error since 'abc' is not part of predefined values of 'display'
+css({ pos: 'absolute123' }) // ❌ will throw error since 'absolute123' is not part of predefined values of 'position'
 css({ display: '[var(--btn-display)]' }) // ✅ Valid, since `[var(--btn-display)]` is using the escape-hatch syntax
 
 css({ content: '""' }) // ✅ Valid, since `content` does not have a predefined list of values
