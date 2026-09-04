@@ -19,6 +19,7 @@ mod sort;
 mod split;
 mod static_css;
 mod static_patterns;
+mod themes;
 mod tokens;
 mod utility_layers;
 mod utility_transform;

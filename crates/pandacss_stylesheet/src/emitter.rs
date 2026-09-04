@@ -26,8 +26,8 @@ use serde_json::Value;
 use crate::StylesheetLayerRanges;
 use crate::conditions::{
     ConditionPaths, is_nested_selector_key, lower_selector_conditions,
-    lower_target_resolved_conditions, lower_token_conditions, nested_selector,
-    resolved_condition_paths,
+    lower_target_resolved_conditions, lower_theme_token_conditions, lower_token_conditions,
+    nested_selector, resolved_condition_paths,
 };
 use crate::grouped::{GroupNode, write_grouped_rules};
 use crate::numeric_value;
@@ -372,42 +372,26 @@ pub fn emit_theme_css(
         theme_condition_segment(condition) == Some(theme_condition.as_str())
     });
 
-    let mut base = Vec::new();
-    let mut conditions = Vec::new();
-    for group in &vars.conditions {
-        let mut condition_paths = Vec::new();
-        let mut has_theme = false;
-        for segment in group.condition.split(':') {
-            if segment == theme_condition.as_str() {
-                has_theme = true;
-                continue;
-            }
-            if segment.is_empty() || segment == "base" {
-                continue;
-            }
-            let paths = resolved_condition_paths(config, segment)?;
-            condition_paths.push(expand_condition_paths(paths, Some(dictionary)));
-        }
-        if !has_theme {
-            continue;
-        }
-        if condition_paths.is_empty() {
-            base.extend_from_slice(&group.vars);
-        } else {
-            conditions.push(PreparedTokenCondition {
+    let conditions = vars
+        .conditions
+        .iter()
+        .filter(|group| theme_condition_segment(group.condition) == Some(theme_condition.as_str()))
+        .filter_map(|group| {
+            let conditions = prepare_condition_paths(config, Some(dictionary), group.condition)?;
+            Some(PreparedTokenCondition {
                 vars: group.vars.as_slice(),
-                conditions: condition_paths,
-            });
-        }
-    }
-
-    let prepared = PreparedTokenVars {
-        base: base.as_slice(),
-        conditions,
-    };
-    if prepared.base.is_empty() && prepared.conditions.is_empty() {
+                conditions,
+                theme_root: Some(theme_root.clone()),
+            })
+        })
+        .collect::<Vec<_>>();
+    if conditions.is_empty() {
         return None;
     }
+    let prepared = PreparedTokenVars {
+        base: &[],
+        conditions,
+    };
 
     let mut writer = CssWriter::new(minify, 512);
     EmitContext::serialize_token_vars_with_root(&mut writer, &prepared, &theme_root);
@@ -659,6 +643,28 @@ fn static_theme_condition_filter(config: &UserConfig) -> Option<ThemeConditionFi
     }
 
     Some(ThemeConditionFilter::Only(conditions))
+}
+
+/// Condition paths for every segment of a token condition except a leading
+/// theme segment, which the caller turns into the rule root instead.
+fn prepare_condition_paths(
+    config: &UserConfig,
+    dictionary: Option<&TokenDictionary>,
+    condition: &str,
+) -> Option<Vec<ConditionPaths>> {
+    let mut conditions = Vec::new();
+    for segment in condition.split(':') {
+        let segment = segment.trim();
+        if theme_condition_segment(segment).is_some() || segment == "base" {
+            continue;
+        }
+        if segment.is_empty() {
+            return None;
+        }
+        let paths = resolved_condition_paths(config, segment)?;
+        conditions.push(expand_condition_paths(paths, dictionary));
+    }
+    Some(conditions)
 }
 
 fn theme_condition_segment(condition: &str) -> Option<&str> {
@@ -1858,11 +1864,7 @@ impl<'a> EmitContext<'a> {
             .conditions
             .iter()
             .filter_map(|group| {
-                self.resolve_token_condition(group.condition)
-                    .map(|conditions| PreparedTokenCondition {
-                        vars: group.vars.as_slice(),
-                        conditions,
-                    })
+                self.prepare_token_condition(group.condition, group.vars.as_slice())
             })
             .collect::<Vec<_>>();
 
@@ -1886,7 +1888,11 @@ impl<'a> EmitContext<'a> {
         }
 
         for group in &vars.conditions {
-            for rule in lower_token_conditions(root, &group.conditions) {
+            let rules = match &group.theme_root {
+                Some(theme_root) => lower_theme_token_conditions(theme_root, &group.conditions),
+                None => lower_token_conditions(root, &group.conditions),
+            };
+            for rule in rules {
                 write_with_wrappers(writer, &rule.wrappers, |writer| {
                     write_token_var_rule(writer, &rule.selector, group.vars);
                 });
@@ -1896,17 +1902,22 @@ impl<'a> EmitContext<'a> {
 
     /// Semantic token condition keys are produced by
     /// `pandacss_tokens::from_config::visit_semantic_values`, where nested
-    /// conditions are joined with `:` (for example `_dark:md`).
-    fn resolve_token_condition(&self, condition: &str) -> Option<Vec<ConditionPaths>> {
-        let mut conditions = Vec::new();
-        for segment in condition.split(':') {
-            let segment = segment.trim();
-            if segment.is_empty() || segment == "base" {
-                return None;
-            }
-            conditions.push(self.resolved_condition_paths(segment)?);
-        }
-        (!conditions.is_empty()).then_some(conditions)
+    /// conditions are joined with `:` (for example `_dark:md`). A leading
+    /// `_theme{Name}` segment moves the group onto that theme's root.
+    fn prepare_token_condition<'b>(
+        &self,
+        condition: &str,
+        vars: &'b [TokenCssVar<'b>],
+    ) -> Option<PreparedTokenCondition<'b>> {
+        let theme_root = theme_condition_segment(condition)
+            .and_then(|segment| self.config.theme_for_condition(segment))
+            .and_then(|theme| self.config.theme_root_selector(theme));
+        let conditions = prepare_condition_paths(self.config, self.token_dictionary, condition)?;
+        (theme_root.is_some() || !conditions.is_empty()).then_some(PreparedTokenCondition {
+            vars,
+            conditions,
+            theme_root,
+        })
     }
 
     fn write_recipes_layer(
@@ -2361,6 +2372,8 @@ struct PreparedTokenVars<'a> {
 struct PreparedTokenCondition<'a> {
     vars: &'a [TokenCssVar<'a>],
     conditions: Vec<ConditionPaths>,
+    /// Set for theme token vars: they declare on this root instead of the css var root.
+    theme_root: Option<String>,
 }
 
 fn dedup_atom_refs(atoms: Vec<&Atom>) -> Vec<&Atom> {

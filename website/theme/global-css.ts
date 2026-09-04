@@ -125,6 +125,19 @@ export const globalCss = defineGlobalStyles({
           bg: 'hsl(var(--nextra-primary-hue), 100%, 77%, 0.1)',
           shadowColor: 'hsl(var(--nextra-primary-hue), 100%, 77%, 0.1)'
         }
+      },
+      // `/word/` highlights from Shiki: the line-highlight tint with a thin ring.
+      '& .highlighted-word': {
+        rounded: 'sm',
+        px: '0.2em',
+        mx: '-0.2em',
+        bg: 'hsl(var(--nextra-primary-hue), 100%, 45%, 0.12)',
+        boxShadow: '0 0 0 1px hsl(var(--nextra-primary-hue), 100%, 45%, 0.35)',
+        boxDecorationBreak: 'clone',
+        _dark: {
+          bg: 'hsl(var(--nextra-primary-hue), 100%, 77%, 0.12)',
+          boxShadow: '0 0 0 1px hsl(var(--nextra-primary-hue), 100%, 77%, 0.35)'
+        }
       }
     }
   },

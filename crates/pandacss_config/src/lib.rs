@@ -282,11 +282,20 @@ impl UserConfig {
 
     #[must_use]
     pub fn theme_condition(&self, condition: &str) -> Option<String> {
+        let key = self.theme_for_condition(condition)?;
+        Some(format!(
+            "&:where([data-panda-theme={key}], [data-panda-theme={key}] *)"
+        ))
+    }
+
+    /// The theme a `_theme{Name}` condition refers to.
+    #[must_use]
+    pub fn theme_for_condition(&self, condition: &str) -> Option<&str> {
         let theme = condition.strip_prefix("_theme")?;
         self.themes
             .keys()
             .find(|key| capitalize_for_theme_condition(key) == theme)
-            .map(|key| format!("&:where([data-panda-theme={key}], [data-panda-theme={key}] *)"))
+            .map(String::as_str)
     }
 
     #[must_use]

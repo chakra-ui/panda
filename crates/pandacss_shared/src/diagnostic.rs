@@ -8,6 +8,7 @@ pub mod codes {
     pub const CONFIG_CONTAINER_INVALID: &str = "config_container_invalid";
     pub const CONFIG_CONTAINER_NAME_INVALID: &str = "config_container_name_invalid";
     pub const CONFIG_CONTAINER_UNITS_MIXED: &str = "config_container_units_mixed";
+    pub const CONFIG_THEME_NAME_INVALID: &str = "config_theme_name_invalid";
     pub const CONFIG_CONDITION_ARRAY_UNSUPPORTED: &str = "config_condition_array_unsupported";
     pub const CONFIG_CONDITION_SELECTOR_INVALID: &str = "config_condition_selector_invalid";
     pub const CONFIG_UTILITY_VALUES_INVALID: &str = "config_utility_values_invalid";

@@ -978,13 +978,13 @@ fn static_css_themes_emit_selected_theme_token_vars() {
           --colors-body: var(--colors-blue-400);
         }
       }
-      :where([data-panda-theme=primary], [data-panda-theme=primary] *) {
+      [data-panda-theme=primary] {
         --colors-text: red;
         --colors-body: var(--colors-red-600);
         --colors-muted: var(--colors-red-200);
       }
       @media (prefers-color-scheme: dark) {
-        :where([data-panda-theme=primary], [data-panda-theme=primary] *) {
+        [data-panda-theme=primary] {
           --colors-body: var(--colors-red-400);
         }
       }
@@ -1071,7 +1071,7 @@ fn static_css_themes_survives_remove_unused_tokens() {
         --colors-text: blue;
         --colors-red-600: #dc2626;
       }
-      :where([data-panda-theme=primary], [data-panda-theme=primary] *) {
+      [data-panda-theme=primary] {
         --colors-text: red;
         --colors-body: var(--colors-red-600);
       }

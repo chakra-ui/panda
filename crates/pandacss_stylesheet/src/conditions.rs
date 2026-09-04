@@ -94,6 +94,75 @@ fn lower_conditions_with(
     targets
 }
 
+/// Theme token vars declare on the theme root and inherit from there. A parent
+/// condition such as `.dark &` declares on every boundary where it meets the
+/// theme: above it, on the same element, or inside it.
+pub(crate) fn lower_theme_token_conditions(
+    theme_root: &str,
+    conditions: &[ConditionPaths],
+) -> Vec<LoweredTarget> {
+    lower_conditions_with(
+        LoweredTarget::new(theme_root),
+        conditions,
+        apply_theme_raw_condition,
+    )
+}
+
+fn apply_theme_raw_condition(target: &mut LoweredTarget, raw: &str) {
+    if raw.starts_with('@') {
+        target.wrappers.push(raw.to_owned());
+        return;
+    }
+
+    target.selector = if let Some(parent) = theme_parent_selector(raw) {
+        crate::selector::split_selector_list(&target.selector)
+            .iter()
+            .flat_map(|theme| theme_boundary_selectors(theme, &parent))
+            .collect::<Vec<_>>()
+            .join(", ")
+    } else {
+        crate::selector::replace_selector_parent(raw, &target.selector)
+    };
+    target.merge_safe &= crate::css_syntax::selector_is_merge_safe(&target.selector);
+}
+
+/// The parent of a plain `P &` condition, where `P` is a compound the theme can
+/// sit above, on, or inside. Combinators (`.dark > &`) and ampersands elsewhere
+/// (`.dark & .panel`) keep their own shape and are substituted instead.
+fn theme_parent_selector(raw: &str) -> Option<String> {
+    let mut parents = Vec::new();
+    for selector in crate::selector::split_selector_list(raw) {
+        let selector = selector.trim();
+        let parent = selector.strip_suffix('&')?.trim_end();
+        if parent.is_empty()
+            || parent.ends_with(['>', '~', '+'])
+            || crate::css_syntax::contains_code_byte(parent, b'&')
+        {
+            return None;
+        }
+        parents.push(parent.to_owned());
+    }
+    match parents.len() {
+        0 => None,
+        1 => parents.pop(),
+        _ => Some(format!(":where({})", parents.join(", "))),
+    }
+}
+
+/// `.dark` meets `[data-panda-theme=x]` above it, on it, or inside it. The
+/// same-element form needs a compound-able parent; `*` only makes sense above.
+fn theme_boundary_selectors(theme: &str, parent: &str) -> Vec<String> {
+    let mut selectors = vec![format!("{parent} {theme}")];
+    if parent == "*" {
+        return selectors;
+    }
+    if parent.starts_with(['.', '[', ':', '#']) {
+        selectors.push(format!("{theme}{parent}"));
+    }
+    selectors.push(format!("{theme} {parent}"));
+    selectors
+}
+
 pub(crate) fn is_nested_selector_key(key: &str) -> bool {
     crate::css_syntax::contains_code_byte(key, b'&')
         || key.contains(',')
