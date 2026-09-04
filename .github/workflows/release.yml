@@ -149,7 +149,7 @@ jobs:
         working-directory: packages/compiler
         run: >-
           pnpm exec napi build --platform --release --manifest-path crate/Cargo.toml --output-dir . --js binding.cjs
-          --dts native.d.ts --target wasm32-wasip1-threads
+          --dts native.d.cts --target wasm32-wasip1-threads
 
       - name: Upload wasi artifact
         uses: actions/upload-artifact@v7

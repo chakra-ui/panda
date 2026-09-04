@@ -2,13 +2,14 @@
   "name": "sandbox-nuxt",
   "private": true,
   "scripts": {
+    "prebuild": "nuxt prepare",
     "build": "pnpm codegen && nuxt build",
+    "predev": "nuxt prepare",
     "dev": "pnpm codegen && nuxt dev",
     "generate": "pnpm codegen && nuxt generate",
     "preview": "nuxt preview",
     "codegen": "panda codegen",
-    "cssgen": "panda cssgen",
-    "postinstall": "nuxt prepare"
+    "cssgen": "panda cssgen"
   },
   "devDependencies": {
     "@pandacss/cli": "workspace:*",

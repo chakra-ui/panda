@@ -23,6 +23,7 @@ target
 *.pending-snap
 *.node
 packages/compiler/native.d.ts
+packages/compiler/native.d.cts
 packages/compiler/binding.cjs
 packages/compiler/browser.js
 packages/compiler/compiler.wasi-browser.js
