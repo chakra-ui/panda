@@ -19,11 +19,6 @@ export default defineConfig({
   ],
   exclude: [],
   outdir: 'styled-system',
-  optimize: {
-    removeUnusedTokens: true,
-    removeUnusedKeyframes: true,
-    smartCompoundVariants: true
-  },
   jsxFramework: 'react',
   jsxFactory: 'panda',
   conditions: {

@@ -34,7 +34,7 @@ const config = {
       to('/docs/get-started', '/docs/get-started/getting-started'),
       to('/docs/styling', '/docs/styling/overview'),
       to('/docs/recipes', '/docs/recipes/overview'),
-      to('/docs/theming', '/docs/theming/tokens'),
+      to('/docs/theming', '/docs/theming/theme'),
       to('/docs/design-systems', '/docs/design-systems/overview'),
       to('/docs/reference', '/docs/reference/cli'),
 
@@ -53,7 +53,7 @@ const config = {
       to('/docs/ai/mcp-server', '/docs/get-started/mcp-server'),
 
       to('/docs/concepts/styled-system', '/docs/reference/styled-system'),
-      to('/docs/concepts/extend', '/docs/theming/extend'),
+      to('/docs/concepts/extend', '/docs/theming/extending-presets'),
       to('/docs/concepts/hooks', '/docs/theming/plugins'),
       to('/docs/concepts/recipes', '/docs/recipes/overview'),
       to('/docs/concepts/slot-recipes', '/docs/recipes/slot-recipes'),
@@ -94,9 +94,9 @@ const config = {
       to('/docs/customization/deprecations', '/docs/reference/deprecations'),
 
       to('/docs/theming/introduction', '/docs/theming/tokens'),
-      to('/docs/theming/categories', '/docs/theming/tokens'),
-      to('/docs/theming/token-types', '/docs/theming/tokens'),
-      to('/docs/theming/consuming-tokens', '/docs/theming/usage'),
+      to('/docs/theming/categories', '/docs/theming/token-categories'),
+      to('/docs/theming/token-types', '/docs/theming/token-categories'),
+      to('/docs/theming/consuming-tokens', '/docs/theming/tokens#use-a-token'),
       to('/docs/theming/multi-theme', '/docs/theming/multiple-themes'),
 
       to('/docs/references/panda-config', '/docs/reference/config'),

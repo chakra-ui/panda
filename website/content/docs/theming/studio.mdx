@@ -1,47 +1,63 @@
 ---
-title: Using Panda Studio
-description: Document your design system visually using Panda Studio.
+title: Studio
+description: A CLI-generated token viewer for v2, with getTokenJson, getTokenHtml, and getTokenCss. Not in the beta yet.
 ---
 
 <Callout type="warning">
-  The standalone `@pandacss/studio` Astro app is removed in v2. A lighter, CLI-generated studio is coming, see
-  [Studio in v2](/docs/theming/studio-v2). The page below is kept as a reference for the v1 app.
+  Coming soon. `panda studio` isn't in the v2 beta yet. This page previews the shape so you can plan around it. The v1
+  `@pandacss/studio` Astro app is removed in v2.
 </Callout>
 
-## Panda Studio
+## What's coming
 
-Panda Studio is a visual interface for exploring and understanding your entire design system. It provides a read-only
-view of your tokens, semantic tokens, recipes, patterns, conditions, and more.
+The v1 Panda Studio was a separate Astro app: install a framework, boot a server, self-host to share. The Rust
+migration removed that pipeline, so v2 has no built-in way to look at your tokens today.
 
-![Panda Studio UI](/panda-studio.png)
+`panda studio` brings token visualization back without the Astro weight. It writes `styled-system/studio` into your
+project and boots a live viewer:
 
-If you don't want to manually generate spec files or build a documentation website, Panda Studio is the easiest option.
-
-- Studio does not require separate spec generation.
-
-- Studio generates and visualizes your design system automatically.
-
-- Studio acts as a fully-featured documentation tool without writing any documentation code.
-
-> Spec files are primarily for custom documentation setups and Storybook integrations. Panda Studio is for teams who
-> want instant documentation.
-
-## Panda Studio Setup
-
-To use panda studio, first install it:
-
-```bash
-pnpm i @pandacss/studio
+```sh
+panda studio                     # emit styled-system/studio + boot the viewer
+panda studio --port 4137
+panda studio --css ./studio.css  # render the viewer with your own stylesheet
 ```
 
-Next, launch it locally using:
+`styled-system/studio` exports three framework-agnostic functions, modeled on [Tiptap](https://tiptap.dev)'s `getHTML` /
+`getJSON` — small functions that each hand you one thing:
 
-```bash
-pnpm panda studio
+- **`getTokenJson({ category, query })`** — your tokens as data. Filter by category, search by query, or omit both for
+  everything. Each token is `{ category, path, name, value, conditions? }`, values fully resolved, with semantic tokens
+  carrying their per-condition and per-theme values.
+- **`getTokenHtml({ tokens })`** — semantic, style-free HTML. Names and values as text, everything else on `data-`
+  attributes, all escaped. Drop it into any framework (`dangerouslySetInnerHTML`, `v-html`, `innerHTML`) or write it to
+  a file.
+- **`getTokenCss(yourStylesheet)`** — takes your CSS and wires it up. It exposes each token's value as a `--pds-value`
+  variable on the matching `[data-value]` element, then appends your stylesheet, so `var(--pds-value)` resolves to real
+  token values.
+
+Panda ships the content and the wiring, not the design. There's no default theme and no bundled stylesheet — the grid,
+swatches, and type are yours. A bare `panda studio` is plain until you pass `--css`.
+
+```tsx
+import { getTokenJson, getTokenHtml, getTokenCss } from '../styled-system/studio'
+import myCss from './studio.css?raw'
+
+function Colors() {
+  const [tokens, setTokens] = useState(getTokenJson({ category: 'colors' }))
+  return (
+    <div>
+      <style>{getTokenCss(myCss)}</style>
+      <input onChange={(e) => setTokens(getTokenJson({ category: 'colors', query: e.target.value }))} />
+      <div dangerouslySetInnerHTML={{ __html: getTokenHtml({ tokens }) }} />
+    </div>
+  )
+}
 ```
 
-This starts a local server and launches an interactive dashboard showing all your design system elements. Since Studio
-reads your theme configuration directly, any changes to your `panda.config.ts` will appear automatically the next time
-you run it.
+The generated module is self-contained — the runtime is inlined with your tokens baked in, so it imports nothing at
+runtime.
 
-You can also deploy the studio as a standalone design system portal for your team.
+## See also
+
+- [JSON Spec](/docs/theming/json-spec) for a data export you can render in your own docs.
+- [Upgrading to v2](/docs/get-started/upgrading-to-v2) for the broader rewrite this belongs to.

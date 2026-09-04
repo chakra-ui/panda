@@ -246,10 +246,12 @@ export const docsTabs: TabItem[] = [
     side: 'left',
     items: [
       {
-        title: 'Tokens',
+        title: 'Theme',
         items: [
+          { title: 'Default Theme', url: 'theme' },
           { title: 'Tokens', url: 'tokens' },
-          { title: 'Token Usage', url: 'usage' }
+          { title: 'Token Categories', url: 'token-categories' },
+          { title: 'Multiple Themes', url: 'multiple-themes' }
         ]
       },
       {
@@ -261,31 +263,23 @@ export const docsTabs: TabItem[] = [
         ]
       },
       {
-        title: 'Themes',
-        items: [
-          { title: 'Theme', url: 'theme' },
-          { title: 'Custom Fonts', url: 'fonts' },
-          { title: 'Multiple Themes', url: 'multiple-themes' },
-          { title: 'Spec', url: 'spec' }
-        ]
-      },
-      {
         title: 'Customization',
         items: [
           { title: 'Utilities', url: 'utilities' },
           { title: 'Conditions', url: 'conditions' },
           { title: 'Patterns', url: 'patterns' },
           { title: 'Presets', url: 'presets' },
-          { title: 'Minimal setup', url: 'minimal-setup' },
-          { title: 'The extend keyword', url: 'extend' },
           { title: 'Plugins', url: 'plugins' }
         ]
       },
       {
-        title: 'Studio',
+        title: 'Guides',
         items: [
-          { title: 'Panda Studio', url: 'studio' },
-          { title: 'Panda Studio in v2', url: 'studio-v2' }
+          { title: 'Extending Presets', url: 'extending-presets' },
+          { title: 'Custom Fonts', url: 'fonts' },
+          { title: 'Minimal Setup', url: 'minimal-setup' },
+          { title: 'JSON Spec', url: 'json-spec' },
+          { title: 'Studio', url: 'studio' }
         ]
       }
     ]
@@ -398,7 +392,7 @@ const TAB_LANDING_HREF: Record<string, string> = {
   'get-started': '/docs',
   styling: '/docs/styling/overview',
   recipes: '/docs/recipes/overview',
-  theming: '/docs/theming/tokens',
+  theming: '/docs/theming/theme',
   'design-systems': '/docs/design-systems/overview'
 }
 

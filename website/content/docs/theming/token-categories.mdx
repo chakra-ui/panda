@@ -1,0 +1,611 @@
+---
+title: Token Categories
+description: Every token category Panda supports, the properties each one feeds, and the value shape it expects.
+---
+
+Every token belongs to a category. The category decides which style properties accept the token by name and what
+shape its value takes. Each section below shows the properties, how to define the token, and how to use it.
+
+## Colors
+
+**Used by:** `color`, `background`, `borderColor`, `outlineColor`, `fill`, `stroke`, `caretColor`, `accentColor`,
+`textDecorationColor`, `boxShadowColor`, and every side and logical border color.
+
+A string, or a reference to another color token.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        colors: {
+          red: { 100: { value: '#fff1f0' }, 500: { value: '#ef4444' } },
+          brand: { value: '{colors.red.500}' }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+css({ color: 'brand', bg: 'red.100' })
+```
+
+## Gradients
+
+**Used by:** `backgroundGradient`, `backgroundLinear`, `backgroundRadial`, `textGradient`.
+
+A CSS gradient string, or an object with `type`, `placement`, and `stops`. `placement` is a keyword like `to right`
+or a number read as degrees. A stop is a color, or `{ color, position }` with `position` as a percentage.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        gradients: {
+          simple: { value: 'linear-gradient(to right, red, blue)' },
+          primary: { value: { type: 'linear', placement: 'to right', stops: ['red', 'blue'] } },
+          angled: {
+            value: {
+              type: 'linear',
+              placement: 45,
+              stops: [
+                { color: 'red', position: 0 },
+                { color: 'blue', position: 100 }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+css({ backgroundGradient: 'angled' })
+// linear-gradient(45deg, red 0%, blue 100%)
+```
+
+## Sizes
+
+**Used by:** `width`, `height`, `minWidth`, `maxWidth`, `minHeight`, `maxHeight`, `boxSize`, `flexBasis`, and their
+logical variants like `inlineSize`.
+
+A length string.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        sizes: {
+          sm: { value: '12px' },
+          container: { value: '64rem' }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+css({ width: 'sm', maxWidth: 'container' })
+```
+
+## Spacing
+
+**Used by:** `padding`, `gap`, `top`, `right`, `bottom`, `left`, `inset`, `scrollMargin`, `scrollPadding`,
+`textIndent`, `outlineOffset`, and their side and logical variants. Margin utilities accept them too, including
+negative values.
+
+A length string.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        spacing: {
+          sm: { value: '12px' },
+          gutter: { value: '2rem' }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+css({ p: 'sm', gap: 'gutter', mt: '-sm' })
+```
+
+## Fonts
+
+**Used by:** `fontFamily`.
+
+A font stack as a string, or an array of family names.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        fonts: {
+          body: { value: 'Inter, sans-serif' },
+          mono: { value: ['Roboto Mono', 'monospace'] }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+css({ fontFamily: 'body' })
+```
+
+## Font Sizes
+
+**Used by:** `fontSize`.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        fontSizes: {
+          sm: { value: '0.875rem' }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+css({ fontSize: 'sm' })
+```
+
+## Font Weights
+
+**Used by:** `fontWeight`.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        fontWeights: {
+          bold: { value: '700' }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+css({ fontWeight: 'bold' })
+```
+
+## Letter Spacings
+
+**Used by:** `letterSpacing`.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        letterSpacings: {
+          wide: { value: '0.1em' }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+css({ letterSpacing: 'wide' })
+```
+
+## Line Heights
+
+**Used by:** `lineHeight`.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        lineHeights: {
+          normal: { value: '1.5' }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+css({ lineHeight: 'normal' })
+```
+
+## Radii
+
+**Used by:** `borderRadius` and every corner and side variant like `borderTopRadius`.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        radii: {
+          sm: { value: '4px' }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+css({ borderRadius: 'sm', borderTopRadius: 'sm' })
+```
+
+## Borders
+
+**Used by:** `border`, `outline`, and every side and logical variant like `borderTop` and `borderInline`.
+
+A border shorthand string, which may reference color tokens, or an object with `width`, `style`, and `color`.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        borders: {
+          subtle: { value: '1px solid {colors.gray.200}' },
+          accent: { value: { width: '1px', style: 'solid', color: 'red' } }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+css({ border: 'subtle', borderBottom: 'accent' })
+```
+
+## Border Widths
+
+**Used by:** `borderWidth`, `outlineWidth`, `strokeWidth`, `divideX`, `divideY`, and every side and logical width
+variant.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        borderWidths: {
+          thin: { value: '1px' },
+          thick: { value: '2px' }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+css({ borderWidth: 'thin', outlineWidth: 'thick' })
+```
+
+## Shadows
+
+**Used by:** `boxShadow`, `textShadow`.
+
+A shadow string, an object with `offsetX`, `offsetY`, `blur`, `spread`, `color`, and optional `inset`, or an array of
+either for layered shadows.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        shadows: {
+          subtle: { value: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' },
+          accent: { value: { offsetX: 0, offsetY: 4, blur: 4, spread: 0, color: 'rgba(0, 0, 0, 0.1)' } },
+          layered: { value: ['0 1px 2px 0 rgba(0, 0, 0, 0.05)', '0 1px 4px 0 rgba(0, 0, 0, 0.1)'] }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+css({ boxShadow: 'layered' })
+```
+
+## Blurs
+
+**Used by:** `blur`, `backdropBlur`.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        blurs: {
+          sm: { value: '4px' }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+css({ backdropBlur: 'sm' })
+```
+
+## Easings
+
+**Used by:** `transitionTimingFunction`, `animationTimingFunction`.
+
+A timing function string, or the four cubic-bezier numbers as an array.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        easings: {
+          easeIn: { value: 'cubic-bezier(0.4, 0, 0.2, 1)' },
+          easeOut: { value: [0, 0, 0.2, 1] }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+css({ transitionTimingFunction: 'easeOut' })
+```
+
+## Durations
+
+**Used by:** `transitionDuration`, `transitionDelay`, `animationDuration`, `animationDelay`.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        durations: {
+          fast: { value: '100ms' }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+css({ transitionDuration: 'fast' })
+```
+
+## Animations
+
+**Used by:** `animation`.
+
+An `animation` shorthand string. The keyframe name comes from `theme.keyframes`.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        animations: {
+          spin: { value: 'spin 1s linear infinite' }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+css({ animation: 'spin' })
+```
+
+## Opacity
+
+**Used by:** `opacity`.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        opacity: {
+          50: { value: 0.5 }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+css({ opacity: '50' })
+```
+
+## Z-Index
+
+**Used by:** `zIndex`.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        zIndex: {
+          modal: { value: 1000 }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+css({ zIndex: 'modal' })
+```
+
+## Aspect Ratios
+
+**Used by:** `aspectRatio`.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        aspectRatios: {
+          square: { value: '1 / 1' },
+          wide: { value: '16 / 9' }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+css({ aspectRatio: 'wide' })
+```
+
+## Cursor
+
+**Used by:** `cursor`.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        cursor: {
+          click: { value: 'pointer' },
+          disabled: { value: 'not-allowed' },
+          custom: { value: 'url(cursor.svg), auto' }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+css({ cursor: 'click', _disabled: { cursor: 'disabled' } })
+```
+
+## Assets
+
+**Used by:** `backgroundImage`, `listStyleImage`.
+
+A URL string, or an object with `type` set to `url` or `svg` and the matching `value`.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        assets: {
+          logo: { value: { type: 'url', value: '/static/logo.png' } },
+          check: { value: { type: 'svg', value: '<svg>...</svg>' } }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+css({ backgroundImage: 'logo', listStyleImage: 'check' })
+```
+
+## Container Names
+
+**Used by:** `containerName`.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        containerNames: {
+          sidebar: { value: 'sidebar' }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+css({ containerName: 'sidebar', containerType: 'inline-size' })
+```
