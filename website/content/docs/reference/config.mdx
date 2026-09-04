@@ -206,9 +206,12 @@ would result in:
 
 **Default**: `false`
 
-Whether to minify the generated css. This can be set to `true` to reduce the size of the generated css.
+Whether to minify the generated css. This can be set to `true` to reduce the size of the generated css. Usually
+enabled in production only:
 
-Often enabled only in production. See [Environment-specific config](/docs/reference/environment-specific-config).
+```ts filename="panda.config.ts"
+minify: process.env.NODE_ENV === 'production'
+```
 
 ```json
 {
@@ -223,9 +226,11 @@ Often enabled only in production. See [Environment-specific config](/docs/refere
 **Default**: `false`
 
 Whether to hash the generated class names / css variables. This is useful if want to shorten the class names or css
-variables.
+variables. Usually enabled in production only, since hashed names are harder to read in DevTools:
 
-Often enabled only in production. See [Environment-specific config](/docs/reference/environment-specific-config).
+```ts filename="panda.config.ts"
+hash: process.env.NODE_ENV === 'production'
+```
 
 Hash the class names and css variables:
 

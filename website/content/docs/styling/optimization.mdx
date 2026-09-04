@@ -151,8 +151,7 @@ rewrite static calls to plain class strings so it drops out entirely. See
 ## Minify
 
 `minify: true` strips whitespace from the emitted CSS. Native minify is not yet a full LightningCSS replacement — check
-the result if you depended on that last few percent. Often enabled only in production. See
-[Environment-specific config](/docs/reference/environment-specific-config).
+the result if you depended on that last few percent. Enable it in production only:
 
 ```ts filename="panda.config.ts"
 export default defineConfig({

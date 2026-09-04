@@ -280,7 +280,6 @@ export const docsTabs: TabItem[] = [
           { title: 'Minimal setup', url: 'minimal-setup' },
           { title: 'The extend keyword', url: 'extend' },
           { title: 'Hooks', url: 'hooks' },
-          { title: 'Config Functions', url: 'config-functions' },
           { title: 'Ecosystem Plugins', url: 'ecosystem-plugins' }
         ]
       },
@@ -343,7 +342,7 @@ export const docsTabs: TabItem[] = [
         items: [
           { title: 'CLI', url: 'cli' },
           { title: 'Config', url: 'config' },
-          { title: 'Environment-specific config', url: 'environment-specific-config' },
+          { title: 'Config Functions', url: 'config-functions' },
           { title: 'Debugging', url: 'debugging' },
           { title: 'Diagnostics', url: 'diagnostics' },
           { title: 'Deprecations', url: 'deprecations' }
@@ -353,11 +352,7 @@ export const docsTabs: TabItem[] = [
         title: 'Styled System',
         items: [
           { title: 'Overview', url: 'styled-system' },
-          { title: 'css()', url: 'css' },
-          { title: 'cva()', url: 'cva' },
-          { title: 'sva()', url: 'sva' },
-          { title: 'cx()', url: 'cx' },
-          { title: 'viewTransition()', url: 'view-transition' },
+          { title: 'css/', url: 'css' },
           { title: 'patterns/', url: 'patterns' },
           { title: 'recipes/', url: 'recipes' },
           { title: 'jsx/', url: 'jsx' },

@@ -1,13 +1,19 @@
 ---
-title: css()
-description: The css/css entrypoint — turn a style object into a class name string.
+title: css/
+description: The css/ folder — css(), cx(), cva(), sva(), and viewTransition() for turning style objects into class names.
 ---
 
-**File:** `styled-system/css/css`  
-**Import:** `import { css } from '../styled-system/css'`
+**Folder:** `styled-system/css/`  
+**Import:** `import { css, cx, cva, sva, viewTransition } from '../styled-system/css'`
 
-`css()` is the core styled-system helper. Pass a style object (or several to merge); get back a class name string.
-Panda extracts those styles at build time and emits atomic CSS. At runtime, `css()` only resolves the class names.
+Codegen writes one module per helper (`css/css.ts`, `css/cva.ts`, …) plus `css/index.ts` as the barrel. Every helper
+maps a style object to a class name string. Panda extracts those styles at build time and emits atomic CSS. At
+runtime, the helpers only resolve class names: no `<style>` tags, no theme context, no work on render. See
+[How it works](/docs/get-started/getting-started#how-it-works).
+
+## css()
+
+Pass a style object, or several to merge, and get back a class name string.
 
 ```ts
 import { css } from '../styled-system/css'
@@ -28,33 +34,178 @@ const className = css({
 <button className={className}>Save</button>
 ```
 
-## Merging styles
-
-Pass multiple arguments (or arrays). Later styles override earlier ones for the same property:
+Multiple arguments, or arrays, merge in order. Later styles win for the same property:
 
 ```ts
 css({ color: 'red.500' }, { color: 'blue.500' }) // blue wins
 css([{ color: 'red.500' }, condition && { fontWeight: 'bold' }])
 ```
 
-## `css.raw`
-
-`css.raw()` returns the merged style object instead of a class name. Use it when you need to pass styles into
-another helper (`cva`, a pattern, or a custom component) without generating a class yet.
+`css.raw()` returns the merged style object instead of a class name. Use it to pass styles into another helper, a
+pattern, or a component without generating a class yet:
 
 ```ts
 const base = css.raw({ display: 'flex', gap: '2' })
 const styles = css(base, { p: '4' })
 ```
 
-## What it is not
+Guides: [Writing Styles](/docs/styling/writing-styles), [Merging Styles](/docs/styling/merging-styles),
+[Conditional Styles](/docs/styling/conditional-styles).
 
-`css()` does not insert `<style>` tags, read theme context, or recompute CSS on render. The stylesheet already
-exists from extraction. See [Why Panda → How it works](/docs/get-started/getting-started#how-it-works).
+## cx()
+
+Joins class name strings into one, skipping `false`, `null`, and `undefined`:
+
+```ts
+import { css, cx } from '../styled-system/css'
+
+const base = css({ display: 'flex', gap: '2' })
+const active = css({ bg: 'blue.500', color: 'white' })
+
+cx(base, isActive && active, className)
+```
+
+`cx()` does not merge style objects or resolve conflicts between utilities. Merge with `css()` first, then join the
+result with other class strings:
+
+```ts
+// ❌ cx does not merge style objects
+cx({ color: 'red' }, { color: 'blue' })
+
+// ✅ merge with css, then join with cx
+cx(css({ color: 'red' }, { color: 'blue' }), otherClassName)
+```
+
+## cva()
+
+An atomic recipe: base styles plus named variants, colocated in the component file. Call the result with a variant
+map and get a class name.
+
+```ts
+import { cva } from '../styled-system/css'
+
+const button = cva({
+  base: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    rounded: 'md',
+    fontWeight: 'semibold'
+  },
+  variants: {
+    visual: {
+      solid: { bg: 'blue.500', color: 'white' },
+      outline: { borderWidth: '1px', borderColor: 'blue.500' }
+    },
+    size: {
+      sm: { px: '2', py: '1', fontSize: 'sm' },
+      md: { px: '4', py: '2', fontSize: 'md' }
+    }
+  },
+  defaultVariants: {
+    visual: 'solid',
+    size: 'md'
+  }
+})
+
+button({ visual: 'outline', size: 'sm' }) // => class name string
+```
+
+The recipe object takes:
+
+- `base`: styles that always apply.
+- `variants`: named axes (`size`, `visual`, …) and the styles for each value.
+- `compoundVariants`: styles for specific combinations of variant values.
+- `defaultVariants`: values used when a variant is omitted.
+
+Variant props are typed from the definition:
+
+```ts
+import { cva, type RecipeVariantProps } from '../styled-system/css'
+
+type ButtonProps = RecipeVariantProps<typeof button>
+```
+
+Use `cva` for variants local to one component. For a recipe shared across a design system, define it in config and
+import it from [`recipes/`](/docs/reference/recipes) instead. Guides: [Atomic recipes](/docs/recipes/atomic-recipe),
+[Config recipes](/docs/recipes/config-recipe), [Thinking in Panda](/docs/get-started/thinking-in-panda).
+
+## sva()
+
+`cva` for components with several parts. One variant map drives every slot, and the call returns a class name per
+slot.
+
+```ts
+import { sva } from '../styled-system/css'
+
+const card = sva({
+  slots: ['root', 'title', 'body'],
+  base: {
+    root: { rounded: 'lg', borderWidth: '1px', p: '4' },
+    title: { fontWeight: 'semibold', mb: '2' },
+    body: { color: 'fg.muted' }
+  },
+  variants: {
+    size: {
+      sm: {
+        root: { p: '3' },
+        title: { fontSize: 'sm' }
+      },
+      md: {
+        root: { p: '4' },
+        title: { fontSize: 'md' }
+      }
+    }
+  },
+  defaultVariants: { size: 'md' }
+})
+
+const classes = card({ size: 'sm' })
+// classes.root, classes.title, classes.body
+```
+
+```tsx
+<div className={classes.root}>
+  <h2 className={classes.title}>Title</h2>
+  <p className={classes.body}>Body</p>
+</div>
+```
+
+The recipe object takes the same keys as `cva`, plus `slots`, the list of part names. `base`, `variants`, and
+`compoundVariants` are then written per slot.
+
+A slot recipe shared across packages belongs in config as `defineSlotRecipe`, imported from
+[`recipes/`](/docs/reference/recipes). Guides: [Slot recipes](/docs/recipes/slot-recipes),
+[Config slot recipe](/docs/recipes/config-recipe#config-slot-recipe),
+[Slot recipe context](/docs/recipes/slot-recipe-context).
+
+## viewTransition()
+
+Returns a shared class built on `view-transition-class`, so Panda can extract and dedupe view transition styles like
+any other atomic style. You still set a unique `view-transition-name` on each element yourself.
+
+```ts
+import { viewTransition } from '../styled-system/css'
+
+const slide = viewTransition({
+  group: {
+    animationDuration: '0.4s',
+    animationTimingFunction: 'ease-in-out'
+  },
+  imagePair: { isolation: 'isolate' },
+  old: { opacity: 0 },
+  new: { opacity: 1 }
+})
+// => "vt_xxx"
+```
+
+The keys `group`, `imagePair`, `old`, and `new` map to the matching `::view-transition-*` pseudo-elements.
+
+View transition names must be unique per element, so keying styles on the name would leave nothing to share.
+`view-transition-class` is the CSS feature built for shared animation styles, and this helper emits that class.
+Guide: [View Transitions](/docs/styling/view-transition).
 
 ## See also
 
-- [Writing Styles](/docs/styling/writing-styles) — object syntax, shorthands, nesting
-- [Merging Styles](/docs/styling/merging-styles) — `css.raw`, recipes, overrides
-- [Conditional Styles](/docs/styling/conditional-styles) — `_hover`, breakpoints, data attributes
+- [patterns/](/docs/reference/patterns) and [jsx/](/docs/reference/jsx), which call `css()` under the hood
+- [recipes/](/docs/reference/recipes), the config-recipe counterpart to `cva` and `sva`
 - [Styled System overview](/docs/reference/styled-system)

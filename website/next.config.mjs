@@ -10,437 +10,127 @@ const config = {
       }
     ]
   },
+  /**
+   * IMPORTANT: every `source` here must be a path that shipped on the v1
+   * site (panda-css.com, `main` in chakra-ui/panda). Never add redirects for
+   * v2-branch reshuffles: a page renamed or moved before v2 ships has no
+   * inbound links to protect. Update the surviving page's links instead.
+   */
   async redirects() {
-    // Only v1 panda-css.com paths that no longer exist. No redirects for
-    // v2-branch IA reshuffles (renames, tab moves that never shipped on v1).
+    const to = (source, destination) => ({
+      source,
+      destination,
+      permanent: true
+    })
+
     return [
-      {
-        source: '/guides',
-        destination: '/docs/get-started/framework-guides',
-        permanent: true
-      },
-      {
-        source: '/ecosystem',
-        destination: '/docs',
-        permanent: true
-      },
-      {
-        source: '/discord',
-        destination: 'https://discord.gg/VQrkpsgSx7',
-        permanent: true
-      },
-      {
-        source: '/play',
-        destination: 'https://play.panda-css.com',
-        permanent: true
-      },
-      {
-        source: '/learn',
-        destination: 'https://pandamastery.com',
-        permanent: true
-      },
-      {
-        source: '/docs/getting-started',
-        destination: '/docs/get-started/getting-started',
-        permanent: true
-      },
-      {
-        source: '/docs/styling/template-literals',
-        destination: '/docs/get-started/styled-components',
-        permanent: true
-      },
+      // Carried over from the v1 site.
+      to('/discord', 'https://discord.gg/VQrkpsgSx7'),
+      to('/play', 'https://play.panda-css.com'),
+      to('/learn', 'https://pandamastery.com'),
+      to('/docs/getting-started', '/docs/get-started/getting-started'),
 
-      // Bare tab roots: the [...slug] catch-all needs at least one page segment.
-      {
-        source: '/docs/get-started',
-        destination: '/docs/get-started/getting-started',
-        permanent: true
-      },
-      {
-        source: '/docs/styling',
-        destination: '/docs/styling/overview',
-        permanent: true
-      },
-      {
-        source: '/docs/recipes',
-        destination: '/docs/recipes/overview',
-        permanent: true
-      },
-      {
-        source: '/docs/theming',
-        destination: '/docs/theming/tokens',
-        permanent: true
-      },
-      {
-        source: '/docs/design-systems',
-        destination: '/docs/design-systems/overview',
-        permanent: true
-      },
-      {
-        source: '/docs/reference',
-        destination: '/docs/reference/cli',
-        permanent: true
-      },
+      // Tab roots. `tabLandingHref` in docs.config sends unlisted tabs here.
+      to('/docs/get-started', '/docs/get-started/getting-started'),
+      to('/docs/styling', '/docs/styling/overview'),
+      to('/docs/recipes', '/docs/recipes/overview'),
+      to('/docs/theming', '/docs/theming/tokens'),
+      to('/docs/design-systems', '/docs/design-systems/overview'),
+      to('/docs/reference', '/docs/reference/cli'),
 
-      // Specific v1 paths that don't land on the right page via the directory
-      // wildcards below. These MUST come before the wildcards.
-      {
-        source: '/docs/overview/why-panda',
-        destination: '/docs/get-started/getting-started',
-        permanent: true
-      },
-      {
-        source: '/docs/overview/getting-started',
-        destination: '/docs/get-started/getting-started',
-        permanent: true
-      },
-      {
-        source: '/docs/overview/faq',
-        destination: '/docs/get-started/faq',
-        permanent: true
-      },
-      {
-        source: '/docs/overview/browser-support',
-        destination: '/docs/get-started/faq#browser-support',
-        permanent: true
-      },
-      {
-        source: '/docs/overview/llms-txt',
-        destination: '/docs/get-started/llms-txt',
-        permanent: true
-      },
-      {
-        source: '/docs/concepts/styled-system',
-        destination: '/docs/reference/styled-system',
-        permanent: true
-      },
-      {
-        source: '/docs/concepts/extend',
-        destination: '/docs/theming/extend',
-        permanent: true
-      },
-      {
-        source: '/docs/concepts/hooks',
-        destination: '/docs/theming/hooks',
-        permanent: true
-      },
-      {
-        source: '/docs/concepts/recipes',
-        destination: '/docs/recipes/overview',
-        permanent: true
-      },
-      {
-        source: '/docs/concepts/slot-recipes',
-        destination: '/docs/recipes/slot-recipes',
-        permanent: true
-      },
-      {
-        source: '/docs/concepts/jsx-style-context',
-        destination: '/docs/recipes/slot-recipe-context',
-        permanent: true
-      },
-      {
-        source: '/docs/customization/theme',
-        destination: '/docs/theming/theme',
-        permanent: true
-      },
-      {
-        source: '/docs/customization/deprecations',
-        destination: '/docs/reference/deprecations',
-        permanent: true
-      },
-      {
-        source: '/docs/customization/utilities',
-        destination: '/docs/theming/utilities',
-        permanent: true
-      },
-      {
-        source: '/docs/customization/conditions',
-        destination: '/docs/theming/conditions',
-        permanent: true
-      },
-      {
-        source: '/docs/customization/patterns',
-        destination: '/docs/theming/patterns',
-        permanent: true
-      },
-      {
-        source: '/docs/customization/presets',
-        destination: '/docs/theming/presets',
-        permanent: true
-      },
-      {
-        source: '/docs/customization/hooks',
-        destination: '/docs/theming/hooks',
-        permanent: true
-      },
-      {
-        source: '/docs/customization/config-functions',
-        destination: '/docs/theming/config-functions',
-        permanent: true
-      },
-      {
-        source: '/docs/customization/ecosystem-plugins',
-        destination: '/docs/theming/ecosystem-plugins',
-        permanent: true
-      },
-      {
-        source: '/docs/guides/debugging',
-        destination: '/docs/reference/debugging',
-        permanent: true
-      },
-      {
-        source: '/docs/guides/dynamic-styling',
-        destination: '/docs/styling/dynamic-styling',
-        permanent: true
-      },
-      {
-        source: '/docs/guides/fonts',
-        destination: '/docs/theming/fonts',
-        permanent: true
-      },
-      {
-        source: '/docs/guides/multiple-themes',
-        destination: '/docs/theming/multiple-themes',
-        permanent: true
-      },
-      {
-        source: '/docs/guides/environment-specific-config',
-        destination: '/docs/reference/environment-specific-config',
-        permanent: true
-      },
-      {
-        source: '/docs/guides/federated-microfrontends',
-        destination: '/docs/styling/style-isolation',
-        permanent: true
-      },
-      {
-        source: '/docs/guides/minimal-setup',
-        destination: '/docs/theming/minimal-setup',
-        permanent: true
-      },
-      {
-        source: '/docs/guides/static',
-        destination: '/docs/styling/static',
-        permanent: true
-      },
-      {
-        source: '/docs/guides/component-library',
-        destination: '/docs/design-systems/overview',
-        permanent: true
-      },
-      {
-        source: '/docs/design-systems/setup',
-        destination: '/docs/design-systems/overview',
-        permanent: true
-      },
-      {
-        source: '/docs/design-systems/building-a-design-system',
-        destination: '/docs/design-systems/build-a-design-system',
-        permanent: true
-      },
-      {
-        source: '/docs/design-systems/consuming-a-design-system',
-        destination: '/docs/design-systems/consume-with-panda',
-        permanent: true
-      },
-      {
-        source: '/docs/get-started/source-transforms',
-        destination: '/docs/styling/source-transforms',
-        permanent: true
-      },
-      {
-        source: '/docs/design-systems/wrap-headless-ui',
-        destination: '/docs/design-systems/wrap-headless-libraries',
-        permanent: true
-      },
-      {
-        source: '/docs/design-systems/forward-props',
-        destination: '/docs/design-systems/wrap-headless-libraries',
-        permanent: true
-      },
-      {
-        source: '/docs/design-systems/publishing-to-npm',
-        destination: '/docs/design-systems/publishing',
-        permanent: true
-      },
-      {
-        source: '/docs/design-systems/monorepo-dev-workflow',
-        destination: '/docs/design-systems/monorepo-workflow',
-        permanent: true
-      },
-      {
-        source: '/docs/design-systems/preset-overview',
-        destination: '/docs/theming/presets',
-        permanent: true
-      },
-      {
-        source: '/docs/design-systems/ship-styled-system',
-        destination: '/docs/design-systems/overview',
-        permanent: true
-      },
-      {
-        source: '/docs/design-systems/shared-styled-system',
-        destination: '/docs/design-systems/consume-with-panda',
-        permanent: true
-      },
-      {
-        source: '/docs/design-systems/federated-microfrontends',
-        destination: '/docs/styling/style-isolation',
-        permanent: true
-      },
-      {
-        source: '/docs/design-systems/avoiding-collisions',
-        destination: '/docs/design-systems/consume-with-panda',
-        permanent: true
-      },
-      {
-        source: '/docs/design-systems/minimal-setup',
-        destination: '/docs/theming/minimal-setup',
-        permanent: true
-      },
-      {
-        source: '/docs/design-systems/environment-specific-config',
-        destination: '/docs/reference/environment-specific-config',
-        permanent: true
-      },
-      {
-        source: '/docs/installation/cli',
-        destination: '/docs/get-started/cli',
-        permanent: true
-      },
-      {
-        source: '/docs/installation/postcss',
-        destination: '/docs/get-started/postcss',
-        permanent: true
-      },
-      {
-        source: '/docs/installation/storybook',
-        destination: '/docs/get-started/storybook',
-        permanent: true
-      },
-      {
-        source: '/docs/installation/vite',
-        destination: '/docs/get-started/vite',
-        permanent: true
-      },
-      {
-        source: '/docs/installation/angular',
-        destination: '/docs/get-started/angular',
-        permanent: true
-      },
-      {
-        source: '/docs/installation/astro',
-        destination: '/docs/get-started/astro',
-        permanent: true
-      },
-      {
-        source: '/docs/installation/ember',
-        destination: '/docs/get-started/ember',
-        permanent: true
-      },
-      {
-        source: '/docs/installation/gatsby',
-        destination: '/docs/get-started/gatsby',
-        permanent: true
-      },
-      {
-        source: '/docs/installation/nextjs',
-        destination: '/docs/get-started/nextjs',
-        permanent: true
-      },
-      {
-        source: '/docs/installation/nuxt',
-        destination: '/docs/get-started/nuxt',
-        permanent: true
-      },
-      {
-        source: '/docs/installation/preact',
-        destination: '/docs/get-started/preact',
-        permanent: true
-      },
-      {
-        source: '/docs/installation/qwik',
-        destination: '/docs/get-started/qwik',
-        permanent: true
-      },
-      {
-        source: '/docs/installation/react-router',
-        destination: '/docs/get-started/react-router',
-        permanent: true
-      },
-      {
-        source: '/docs/installation/redwood',
-        destination: '/docs/get-started/redwood',
-        permanent: true
-      },
-      {
-        source: '/docs/installation/remix',
-        destination: '/docs/get-started/remix',
-        permanent: true
-      },
-      {
-        source: '/docs/installation/rsbuild',
-        destination: '/docs/get-started/rsbuild',
-        permanent: true
-      },
-      {
-        source: '/docs/installation/solidjs',
-        destination: '/docs/get-started/solidjs',
-        permanent: true
-      },
-      {
-        source: '/docs/installation/svelte',
-        destination: '/docs/get-started/svelte',
-        permanent: true
-      },
-      {
-        source: '/docs/installation/vue',
-        destination: '/docs/get-started/vue',
-        permanent: true
-      },
-      {
-        source: '/docs/ai/llms-txt',
-        destination: '/docs/get-started/llms-txt',
-        permanent: true
-      },
-      {
-        source: '/docs/ai/mcp-server',
-        destination: '/docs/get-started/mcp-server',
-        permanent: true
-      },
+      // v1 docs paths that no longer exist, grouped by their v1 section.
+      // Exact rules come before the wildcards.
+      to('/docs/overview/why-panda', '/docs/get-started/getting-started'),
+      to('/docs/overview/getting-started', '/docs/get-started/getting-started'),
+      to('/docs/overview/faq', '/docs/get-started/faq'),
+      to(
+        '/docs/overview/browser-support',
+        '/docs/get-started/faq#browser-support'
+      ),
+      to('/docs/overview/llms-txt', '/docs/get-started/llms-txt'),
 
-      // Directory wildcards: v1 tabs that moved uniformly (same basename).
-      {
-        source: '/docs/overview/:path*',
-        destination: '/docs/styling/:path*',
-        permanent: true
-      },
-      {
-        source: '/docs/concepts/:path*',
-        destination: '/docs/styling/:path*',
-        permanent: true
-      },
-      {
-        source: '/docs/component-library/:path*',
-        destination: '/docs/design-systems/:path*',
-        permanent: true
-      },
-      {
-        source: '/docs/distribution/:path*',
-        destination: '/docs/design-systems/:path*',
-        permanent: true
-      },
-      {
-        source: '/docs/utilities/:path*',
-        destination: '/docs/reference/:path*',
-        permanent: true
-      },
-      {
-        source: '/docs/references/:path*',
-        destination: '/docs/reference/:path*',
-        permanent: true
-      }
+      to('/docs/ai/llms-txt', '/docs/get-started/llms-txt'),
+      to('/docs/ai/mcp-server', '/docs/get-started/mcp-server'),
+
+      to('/docs/concepts/styled-system', '/docs/reference/styled-system'),
+      to('/docs/concepts/extend', '/docs/theming/extend'),
+      to('/docs/concepts/hooks', '/docs/theming/hooks'),
+      to('/docs/concepts/recipes', '/docs/recipes/overview'),
+      to('/docs/concepts/slot-recipes', '/docs/recipes/slot-recipes'),
+      to(
+        '/docs/concepts/jsx-style-context',
+        '/docs/recipes/slot-recipe-context'
+      ),
+      to(
+        '/docs/concepts/template-literals',
+        '/docs/get-started/styled-components'
+      ),
+      to(
+        '/docs/concepts/atomic-styles',
+        '/docs/styling/writing-styles#atomic-styles'
+      ),
+      to(
+        '/docs/concepts/nested-styles',
+        '/docs/styling/writing-styles#nested-styles'
+      ),
+      to(
+        '/docs/concepts/important',
+        '/docs/styling/writing-styles#important-styles'
+      ),
+      to('/docs/concepts/utility-first', '/docs/styling/writing-styles'),
+      to('/docs/concepts/merge-styles', '/docs/styling/merging-styles'),
+      to('/docs/concepts/creating-a-preset', '/docs/theming/presets'),
+      to('/docs/concepts/custom-font', '/docs/theming/fonts'),
+
+      to('/docs/customization/theme', '/docs/theming/theme'),
+      to('/docs/customization/utilities', '/docs/theming/utilities'),
+      to('/docs/customization/conditions', '/docs/theming/conditions'),
+      to('/docs/customization/patterns', '/docs/theming/patterns'),
+      to('/docs/customization/presets', '/docs/theming/presets'),
+      to(
+        '/docs/customization/config-functions',
+        '/docs/reference/config-functions'
+      ),
+      to('/docs/customization/deprecations', '/docs/reference/deprecations'),
+
+      to('/docs/theming/introduction', '/docs/theming/tokens'),
+      to('/docs/theming/categories', '/docs/theming/tokens'),
+      to('/docs/theming/token-types', '/docs/theming/tokens'),
+      to('/docs/theming/consuming-tokens', '/docs/theming/usage'),
+      to('/docs/theming/multi-theme', '/docs/theming/multiple-themes'),
+
+      to('/docs/references/panda-config', '/docs/reference/config'),
+      to('/docs/references/presets', '/docs/theming/presets'),
+
+      to('/docs/guides/debugging', '/docs/reference/debugging'),
+      to(
+        '/docs/guides/environment-specific-config',
+        '/docs/reference/config#hash'
+      ),
+      to('/docs/guides/dynamic-styling', '/docs/styling/dynamic-styling'),
+      to('/docs/guides/static', '/docs/styling/static'),
+      to('/docs/guides/virtual-color', '/docs/styling/virtual-color'),
+      to(
+        '/docs/guides/federated-microfrontends',
+        '/docs/styling/style-isolation'
+      ),
+      to('/docs/guides/fonts', '/docs/theming/fonts'),
+      to('/docs/guides/custom-font', '/docs/theming/fonts'),
+      to('/docs/guides/multiple-themes', '/docs/theming/multiple-themes'),
+      to('/docs/guides/minimal-setup', '/docs/theming/minimal-setup'),
+      to('/docs/guides/preset', '/docs/theming/presets'),
+      to('/docs/guides/component-library', '/docs/design-systems/overview'),
+      to('/docs/guides/design-system', '/docs/design-systems/overview'),
+
+      to(
+        '/docs/migration/styled-components',
+        '/docs/get-started/styled-components'
+      ),
+
+      to('/docs/installation/:path*', '/docs/get-started/:path*'),
+      to('/docs/concepts/:path*', '/docs/styling/:path*'),
+      to('/docs/references/:path*', '/docs/reference/:path*'),
+      to('/docs/utilities/:path*', '/docs/reference/:path*')
     ]
   },
   reactStrictMode: true,

@@ -38,18 +38,13 @@ Exact files depend on your config (`jsxFramework`, recipes, patterns, and so on)
 
 ## Entrypoints
 
-| Path | Page | Role |
-| ---- | ---- | ---- |
-| `css/css` | [`css()`](/docs/reference/css) | Style object → class name |
-| `css/cva` | [`cva()`](/docs/reference/cva) | Atomic recipes (colocated variants) |
-| `css/sva` | [`sva()`](/docs/reference/sva) | Slot recipes (multi-part) |
-| `css/cx` | [`cx()`](/docs/reference/cx) | Join class name strings |
-| `css/view-transition` | [`viewTransition()`](/docs/reference/view-transition) | Shared View Transition classes |
-| `patterns/` | [patterns](/docs/reference/patterns) | Layout primitive functions |
-| `recipes/` | [recipes](/docs/reference/recipes) | Config recipes from your theme |
-| `jsx/` | [jsx](/docs/reference/jsx) | `styled` factory and JSX patterns |
-| `tokens/` | [tokens](/docs/reference/tokens) | `token()` / `token.var()` in JS |
-| `types/` | [types](/docs/reference/types) | Generated TypeScript types |
+- [`css/`](/docs/reference/css): `css()`, `cx()`, `cva()`, `sva()`, and `viewTransition()`. Style objects to class
+  names.
+- [`patterns/`](/docs/reference/patterns): layout primitive functions.
+- [`recipes/`](/docs/reference/recipes): config recipes from your theme.
+- [`jsx/`](/docs/reference/jsx): the `styled` factory and JSX patterns.
+- [`tokens/`](/docs/reference/tokens): `token()` and `token.var()` in JS.
+- [`types/`](/docs/reference/types): generated TypeScript types.
 
 Root files: `helpers.js` (shared runtime helpers) and `styles.css` (extracted atomic CSS).
 

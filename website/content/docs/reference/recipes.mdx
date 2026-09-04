@@ -16,7 +16,7 @@ button({ size: 'sm', visual: 'solid' })
 ```
 
 These come from `theme.recipes` / `theme.slotRecipes` in config (`defineRecipe` / `defineSlotRecipe`), not from
-colocated [`cva`](/docs/reference/cva) / [`sva`](/docs/reference/sva) in your components.
+colocated [`cva`](/docs/reference/css#cva) / [`sva`](/docs/reference/css#sva) in your components.
 
 ## Types
 
@@ -32,7 +32,7 @@ Exact type names follow the theme key (`button` → `ButtonVariant` / `ButtonVar
 
 | Need | Use |
 | ---- | --- |
-| Variants local to one component | [`cva`](/docs/reference/cva) / [`sva`](/docs/reference/sva) in `css/` |
+| Variants local to one component | [`cva`](/docs/reference/css#cva) / [`sva`](/docs/reference/css#sva) in `css/` |
 | Shared design-system recipe | Config recipe → this `recipes/` folder |
 
 ## Full guides
@@ -45,6 +45,6 @@ Exact type names follow the theme key (`button` → `ButtonVariant` / `ButtonVar
 
 ## See also
 
-- [cva()](/docs/reference/cva) · [sva()](/docs/reference/sva)
+- [css/](/docs/reference/css) — `cva()` and `sva()`
 - [jsx/](/docs/reference/jsx) — recipe context helpers
 - [Styled System overview](/docs/reference/styled-system)
