@@ -174,7 +174,7 @@ export const docsTabs: TabItem[] = [
           { title: 'Writing Styles', url: 'writing-styles' },
           { title: 'Conditional Styles', url: 'conditional-styles' },
           { title: 'Responsive Design', url: 'responsive-design' },
-          { title: 'Patterns', url: 'patterns' },
+          { title: 'Layout Patterns', url: 'patterns' },
           { title: 'Merging Styles', url: 'merging-styles' }
         ]
       },
@@ -267,7 +267,7 @@ export const docsTabs: TabItem[] = [
         items: [
           { title: 'Utilities', url: 'utilities' },
           { title: 'Conditions', url: 'conditions' },
-          { title: 'Patterns', url: 'patterns' },
+          { title: 'Custom Patterns', url: 'patterns' },
           { title: 'Presets', url: 'presets' },
           { title: 'Plugins', url: 'plugins' }
         ]

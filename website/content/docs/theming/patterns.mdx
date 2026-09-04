@@ -1,143 +1,21 @@
 ---
-title: Patterns
-description: Customize a built-in layout pattern, or define your own reusable layout abstraction.
+title: Custom Patterns
+description: Change what the built-in layout patterns do, or turn the layouts your app repeats into patterns of its own.
 ---
 
-Patterns are layout helpers like `stack`, `flex`, and `grid`, functions that return a style object instead of you
-writing one by hand. This page covers customizing the built-in ones and writing your own.
+The built-in [layout patterns](/docs/styling/patterns) cover what every app needs. Your app has layouts of its own
+that they don't cover: a scrollable region, a two-pane view with a fixed sidebar, a sticky header that clears the
+nav. Today those live as copied style objects, and they drift.
 
-A pattern config takes:
+A custom pattern gives such a layout a name, a small set of typed props, and one place to change it. After codegen
+it behaves exactly like a built-in: a function, a JSX component, responsive props, and build-time extraction.
 
-- `description`: shown in the generated JSDoc.
-- `properties`: the props the pattern accepts, and their type.
-- `defaultValues`: what a prop is when the caller omits it. Either a plain object, or a function of the other props,
-  for defaults that depend on each other.
-- `transform`: takes the resolved props (plus a small set of helpers) and returns the style object to emit.
-- `jsxName`: the name of the generated JSX component. Defaults to the pascal-case of the pattern name.
-- `jsx`: which JSX tag names count as a usage of this pattern for extraction, an array of strings or regexes. This is
-  a different thing from `jsxName`: it's about recognizing usage, not generating a component.
-- `jsxElement`: the actual DOM element the generated component renders. Defaults to `'div'`.
-- `blocklist`: CSS properties the pattern rejects, enforced at the type level. Marked experimental in the type
-  definitions, expect this one to still move.
-- `strict`: only type the properties you listed, nothing else. With `strict: true`, arbitrary CSS properties won't
-  type-check on this pattern.
+Everything on this page goes under `patterns.extend` in the config, and takes effect after `panda codegen`.
 
-## Creating a pattern
+## Change a default
 
-Say you want a `scrollable` pattern, a container with a fixed scroll direction and an optional hidden scrollbar:
-
-```js
-const config = {
-  patterns: {
-    extend: {
-      scrollable: {
-        description: 'A container that allows for scrolling',
-        defaultValues: {
-          direction: 'vertical',
-          hideScrollbar: true
-        },
-        properties: {
-          direction: { type: 'enum', value: ['horizontal', 'vertical'] },
-          hideScrollbar: { type: 'boolean' }
-        },
-        blocklist: ['overflow'], // reject `overflow` at the type level, since this pattern sets it
-        transform(props) {
-          const { direction, hideScrollbar, ...rest } = props
-          return {
-            overflow: 'auto',
-            height: direction === 'horizontal' ? '100%' : 'auto',
-            width: direction === 'vertical' ? '100%' : 'auto',
-            scrollbarWidth: hideScrollbar ? 'none' : 'auto',
-            WebkitOverflowScrolling: 'touch',
-            '&::-webkit-scrollbar': {
-              display: hideScrollbar ? 'none' : 'auto'
-            },
-            ...rest
-          }
-        }
-      }
-    }
-  }
-}
-```
-
-`transform` also receives a second argument with a few helpers (`map`, `isCssUnit`, `isCssVar`, `isCssFunction`) for
-patterns whose props need to branch on what kind of value they got:
-
-```js
-transform(props, { isCssVar }) {
-  // isCssVar(props.gap) is true for something like 'var(--my-gap)'
-}
-```
-
-Run codegen so the pattern function and its types exist:
-
-<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
-  {/* <!-- prettier-ignore-start --> */}
-  <Tab>
-    ```bash
-    pnpm panda codegen
-    ```
-  </Tab>
-  <Tab>
-    ```bash
-    npm panda codegen
-    ```
-  </Tab>
-  <Tab>
-    ```bash
-    yarn panda codegen
-    ```
-  </Tab>
-  <Tab>
-    ```bash
-    bun panda codegen
-    ```
-  </Tab>
-  {/* <!-- prettier-ignore-end --> */}
-</Tabs>
-
-```js
-import { scrollable } from '../styled-system/patterns'
-
-const App = () => {
-  return (
-    <div className={scrollable({ direction: 'vertical', hideScrollbar: true })}>
-      <div>Scrollable content</div>
-    </div>
-  )
-}
-```
-
-## Customizing a built-in pattern
-
-Extend a [default pattern](/docs/styling/patterns#predefined-patterns) the same way, under `patterns.extend`. Here's
-`flex` narrowed to two directions, with a second component name recognized as a usage of it:
-
-```ts filename="panda.config.ts"
-import { defineConfig } from '@pandacss/dev'
-
-export default defineConfig({
-  patterns: {
-    extend: {
-      flex: {
-        properties: {
-          direction: { type: 'enum', value: ['row', 'column'] },
-          jsx: ['Flex', 'CustomFlex'] // extraction now also matches <CustomFlex />
-        }
-      }
-    }
-  }
-})
-```
-
-### Changing a pattern's defaults
-
-`defaultValues` in `patterns.extend` changes what a built-in pattern applies when a prop is omitted. Same shape for
-every pattern, only the pattern name and keys change.
-
-`@pandacss/preset-base` sets `gap: '8px'` on [`stack`](/docs/styling/patterns#stack). To default to a spacing token
-instead:
+Start small. Built-ins carry defaults, and `defaultValues` overrides them. The base preset gives `stack` a gap of
+eight pixels; most design systems want a spacing token there instead.
 
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -146,8 +24,28 @@ export default defineConfig({
   patterns: {
     extend: {
       stack: {
-        defaultValues: {
-          gap: '2' // same as <Stack gap="2" />
+        defaultValues: { gap: '4' }
+      }
+    }
+  }
+})
+```
+
+A `gap` at the call site still wins. `hstack` and `vstack` are separate patterns with their own defaults, so change
+each one you use.
+
+## Narrow a prop
+
+`properties` describes what a pattern accepts. Overriding one entry under `extend` replaces that prop's definition
+and leaves the rest alone. Here `flex` is limited to two directions:
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  patterns: {
+    extend: {
+      flex: {
+        properties: {
+          direction: { type: 'enum', value: ['row', 'column'] }
         }
       }
     }
@@ -155,39 +53,229 @@ export default defineConfig({
 })
 ```
 
-`<Stack />` and `stack({})` now default to spacing token `2`. A `gap` passed at the call site still overrides it.
+## Write a pattern
 
-Values can be a token key (`'2'`) or a raw literal (`'12px'`). `stack`, `hstack`, and `vstack` are separate patterns
-with their own `defaultValues`, so override each one if you want the same default gap everywhere.
+A pattern is `properties` for its props and a `transform` that turns them into a style object. Keep each one in its
+own file with `definePattern`, which types the props for you, then register it.
 
-Re-run codegen after changing defaults, same as any other config change:
+```ts filename="patterns/scroll-area.ts"
+import { definePattern } from '@pandacss/dev'
 
-<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
-  {/* <!-- prettier-ignore-start --> */}
-  <Tab>
-    ```bash
-    pnpm panda codegen
-    ```
-  </Tab>
-  <Tab>
-    ```bash
-    npm panda codegen
-    ```
-  </Tab>
-  <Tab>
-    ```bash
-    yarn panda codegen
-    ```
-  </Tab>
-  <Tab>
-    ```bash
-    bun panda codegen
-    ```
-  </Tab>
-  {/* <!-- prettier-ignore-end --> */}
-</Tabs>
+export const scrollArea = definePattern({
+  properties: {
+    axis: { type: 'enum', value: ['x', 'y'] },
+    hideScrollbar: { type: 'boolean' }
+  },
+  defaultValues: {
+    axis: 'y',
+    hideScrollbar: false
+  },
+  transform(props, { map }) {
+    const { axis, hideScrollbar, ...rest } = props
+    return {
+      overflowX: map(axis, (v) => (v === 'x' ? 'auto' : 'hidden')),
+      overflowY: map(axis, (v) => (v === 'y' ? 'auto' : 'hidden')),
+      scrollbarWidth: hideScrollbar ? 'none' : undefined,
+      '&::-webkit-scrollbar': { display: hideScrollbar ? 'none' : undefined },
+      ...rest
+    }
+  }
+})
+```
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+import { scrollArea } from './patterns/scroll-area'
+
+export default defineConfig({
+  patterns: {
+    extend: { scrollArea }
+  }
+})
+```
+
+```sh
+panda codegen
+```
+
+Spread `rest` last so callers can still pass any style property. `map` is explained under
+[Responsive props](#responsive-props). The generated pattern then has the same three forms as a built-in one:
+
+```tsx
+import { scrollArea } from '../styled-system/patterns'
+import { ScrollArea } from '../styled-system/jsx'
+
+scrollArea({ axis: 'x' })
+scrollArea.raw({ axis: 'x' })
+<ScrollArea axis="x" />
+```
+
+The function returns a class name. `raw` returns the style object, for composing into `css()` or a recipe. The
+component renders a `div` with the props applied.
+
+## Property types
+
+The `type` of each property decides how the prop is typed and how its value resolves:
+
+```ts
+properties: {
+  // Typed and resolved like that CSS property. Most props are this.
+  align: { type: 'property', value: 'alignItems' },
+
+  // A fixed set of strings.
+  size: { type: 'enum', value: ['sm', 'md', 'lg'] },
+
+  // A token from that category, resolved through the given CSS property,
+  // so `thickness: '1'` becomes the `sizes.1` variable.
+  thickness: { type: 'token', value: 'sizes', property: 'borderWidth' },
+
+  // Plain values, handed to `transform` as they are.
+  columns: { type: 'number' },
+  inline: { type: 'boolean' },
+  label: { type: 'string' },
+
+  // `description` becomes the JSDoc on the generated prop.
+  ratio: { type: 'number', description: 'Width divided by height' }
+}
+```
+
+## Responsive props
+
+Callers can pass any pattern prop as a breakpoint object, the same way they would a style property. A list that
+scrolls sideways on phones and down on wider screens:
+
+```tsx
+<ScrollArea axis={{ base: 'x', md: 'y' }}>{items}</ScrollArea>
+```
+
+Inside `transform`, that prop arrives as the object, not a string, so a direct comparison like `axis === 'x'` is
+never true. The `map` helper runs your function once per breakpoint value and builds the responsive result for you:
+
+```ts
+transform(props, { map }) {
+  const { axis, ...rest } = props
+  return {
+    overflowX: map(axis, (v) => (v === 'x' ? 'auto' : 'hidden')),
+    overflowY: map(axis, (v) => (v === 'y' ? 'auto' : 'hidden')),
+    ...rest
+  }
+}
+```
+
+For the call above, `overflowX` becomes `{ base: 'auto', md: 'hidden' }`. Use `map` whenever the output depends on
+the value. A prop passed straight through, like `gap` in `stack`, needs no helper.
+
+## Dynamic defaults
+
+`defaultValues` can be a function of the incoming props. The base preset's `grid` sets a default gap only when the
+caller hasn't set a more specific one:
+
+```ts
+defaultValues(props) {
+  return { gap: props.columnGap || props.rowGap ? undefined : '8px' }
+}
+```
+
+## Value helpers
+
+Alongside `map`, `transform` receives three checks for props that accept both tokens and raw CSS:
+
+```ts
+transform(props, { map, isCssUnit, isCssVar, isCssFunction }) {
+  const { inline, ...rest } = props
+  // '12px', '2rem', '50%'      → isCssUnit
+  // 'var(--gutter)'            → isCssVar
+  // 'calc(…)', 'clamp(…)'      → isCssFunction
+  const resolve = (v: string) => (isCssUnit(v) || isCssVar(v) ? v : `token(spacing.${v}, ${v})`)
+  return {
+    '--bleed-x': map(inline, resolve),
+    marginInline: 'calc(var(--bleed-x, 0) * -1)',
+    ...rest
+  }
+}
+```
+
+This is how the base preset's `bleed` accepts `inline: '6'` and `inline: '2rem'` alike.
+
+## Restrict props
+
+By default a pattern accepts its own props plus every style property, so callers can add padding or a background to
+a `scrollArea` without a wrapper. Two options tighten that at the type level.
+
+`strict` keeps only the props in `properties`. Use it for a pattern that shouldn't double as a styling escape hatch:
+
+```ts filename="patterns/scroll-area.ts"
+export const scrollArea = definePattern({
+  strict: true,
+  // ...
+})
+```
+
+```tsx
+scrollArea({ axis: 'x', p: '4' })
+//                     ^ Object literal may only specify known properties, and 'p' does not exist
+```
+
+`blocklist` allows everything except the listed properties. Use it when the pattern owns a property and a caller
+overriding it would break the layout:
+
+```ts filename="patterns/scroll-area.ts"
+export const scrollArea = definePattern({
+  blocklist: ['overflow', 'overflowX', 'overflowY'],
+  // ...
+})
+```
+
+```tsx
+scrollArea({ axis: 'x', p: '4', overflow: 'visible' })
+//                              ^ Object literal may only specify known properties, and 'overflow' does not exist
+```
+
+`blocklist` is marked experimental in the types.
+
+## JSX hints
+
+With `jsxFramework` set, each pattern also becomes a component. Its name is the pattern name in PascalCase, so
+`scrollArea` gives `ScrollArea`. Three options shape it:
+
+```ts filename="patterns/scroll-area.ts"
+export const scrollArea = definePattern({
+  // Component name. Defaults to `ScrollArea` here.
+  jsxName: 'ScrollArea',
+  // Element it renders. Defaults to `div`.
+  jsxElement: 'section',
+  // Extra component names, or regexes, that count as usages of this pattern during extraction.
+  jsx: ['ScrollArea', /ScrollArea$/],
+  // ...
+})
+```
+
+`jsxName` is about what codegen emits. `jsx` is about what extraction recognizes, and matters when you wrap the
+generated component in one of your own, like a `PageScrollArea`. See
+[Wrapping a pattern component](/docs/styling/patterns#wrapping-a-pattern-component).
+
+## Common mistakes
+
+**Missing `extend`.** Without it, your patterns replace every built-in one.
+
+```ts
+// ❌ stack, grid, center… are gone
+patterns: { scrollArea }
+
+// ✅
+patterns: { extend: { scrollArea } }
+```
+
+**Skipping codegen.** The function, the component, and their types exist only after `panda codegen`. The CLI and
+the bundler plugins run it for you when the config changes.
+
+**Branching on a responsive prop without `map`.** `axis === 'x'` is never true when `axis` is
+`{ base: 'x', md: 'y' }`. See [Responsive props](#responsive-props).
+
+**Reaching for a pattern where a recipe fits.** Patterns are layout helpers with a handful of props. A component with
+named visual variants belongs in a [recipe](/docs/recipes/atomic-recipe).
 
 ## Starting from zero
 
-Everything here assumes you're extending Panda's defaults with `patterns.extend`. For no built-in patterns at all,
-see [minimal setup](/docs/theming/minimal-setup).
+Everything above builds on the base preset's patterns. To ship none of them and define only your own, see
+[Minimal setup](/docs/theming/minimal-setup).
