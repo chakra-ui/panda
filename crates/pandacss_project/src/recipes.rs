@@ -33,6 +33,8 @@ use crate::{ProjectConditionMatcher, literal_entries, refcount_add, refcount_rem
 /// regex-specifier matches via a single combined [`RegexSet`].
 #[derive(Debug, Clone, Default)]
 pub(crate) struct RecipeRegistry {
+    class_name_prefix: Box<str>,
+    hash_class_names: bool,
     recipes: FxHashMap<Box<str>, RecipeNode>,
     slot_recipes: FxHashMap<Box<str>, SlotRecipeNode>,
     jsx_to_recipes: FxHashMap<Box<str>, Vec<Box<str>>>,
@@ -54,6 +56,8 @@ struct RecipeNode {
 #[derive(Debug, Clone)]
 struct SlotRecipeNode {
     name: Box<str>,
+    class_name: Box<str>,
+    separator: Box<str>,
     variant_props: FxHashSet<Box<str>>,
     slots: Vec<String>,
     default_variants: FxHashMap<Box<str>, Box<str>>,
@@ -142,8 +146,13 @@ impl RecipeRegistry {
         recipe_definitions: &[RecipeDefinition],
         slot_recipe_definitions: &[SlotRecipeDefinition],
         resolver: &StyleResolver<'_>,
+        class_name_prefix: &str,
     ) -> Self {
-        let mut recipes = Self::default();
+        let mut recipes = Self {
+            class_name_prefix: class_name_prefix.into(),
+            hash_class_names: resolver.hash_class_names,
+            ..Self::default()
+        };
         recipes.collect_recipes(recipe_definitions, resolver);
         recipes.collect_slot_recipes(slot_recipe_definitions, resolver);
         recipes.rebuild_regex_jsx_set();
@@ -187,6 +196,8 @@ impl RecipeRegistry {
                 recipe.name.clone().into_boxed_str(),
                 SlotRecipeNode {
                     name: recipe.name.clone().into_boxed_str(),
+                    class_name: recipe.class_name.clone().into_boxed_str(),
+                    separator: resolver.separator.into(),
                     variant_props: recipe
                         .variant_props
                         .iter()
@@ -308,6 +319,11 @@ impl RecipeRegistry {
         self.slot_recipes.get(name)
     }
 
+    pub(crate) fn slot_names(&self, recipe_name: &str) -> Option<&[String]> {
+        self.slot_recipe(recipe_name)
+            .map(|node| node.slots.as_slice())
+    }
+
     pub(crate) fn slot_for_jsx<'a>(&'a self, recipe_name: &str, tag: &str) -> Option<&'a str> {
         let recipe = self.slot_recipe(recipe_name)?;
         let tag_slot = tag.rsplit('.').next().unwrap_or(tag).to_ascii_lowercase();
@@ -373,8 +389,96 @@ impl RecipeRegistry {
         if classes.is_empty() {
             None
         } else {
-            Some(classes)
+            Some(self.runtime_class_names(classes))
         }
+    }
+
+    /// The class the generated runtime puts on the element: hashed when
+    /// `hash.className` is on, then prefixed.
+    fn runtime_class_name(&self, class_name: &str) -> String {
+        let name = if self.hash_class_names {
+            pandacss_shared::to_hash(class_name)
+        } else {
+            class_name.to_owned()
+        };
+        if self.class_name_prefix.is_empty() {
+            name
+        } else {
+            format!("{}-{name}", self.class_name_prefix)
+        }
+    }
+
+    fn runtime_class_names(&self, classes: Vec<String>) -> Vec<String> {
+        classes
+            .into_iter()
+            .map(|class| self.runtime_class_name(&class))
+            .collect()
+    }
+
+    /// Class names per slot for a static runtime call, in config `slots` order.
+    /// Mirrors the runtime: every slot gets its base class and every selected
+    /// variant class; compound classes only reach the slots they style.
+    pub(crate) fn class_names_for_slot_recipe_call(
+        &self,
+        recipe_name: &str,
+        selected: &Literal,
+        conditions: &ProjectConditionMatcher,
+        breakpoints: &[String],
+    ) -> Option<Vec<(String, Vec<String>)>> {
+        if selected.has_conditional() {
+            return None;
+        }
+        let node = self.slot_recipe(recipe_name)?;
+        let selected = selected_variants(&node.default_variants, selected, conditions, breakpoints);
+
+        let mut variants: Vec<(&str, &str)> = Vec::new();
+        for group in &node.variants {
+            let Some(selected_values) = selected.get(group.name.as_ref()) else {
+                continue;
+            };
+            for selected_value in selected_values {
+                if !selected_value.conditions.is_empty() {
+                    return None;
+                }
+                if group.options.contains_key(selected_value.key.as_ref()) {
+                    variants.push((&group.name, &selected_value.key));
+                }
+            }
+        }
+
+        let mut compounds: Vec<&[(Box<str>, ResolvedRecipePart)]> = Vec::new();
+        for compound in &node.compounds {
+            let Some(extra_conditions) = compound_conditions(compound, &selected) else {
+                continue;
+            };
+            if !extra_conditions.is_empty() {
+                return None;
+            }
+            if let CompoundTarget::Slots(slots) = &compound.target {
+                compounds.push(slots);
+            }
+        }
+
+        let per_slot = node
+            .slots
+            .iter()
+            .map(|slot| {
+                let slot_class = Self::slot_class_name(&node.class_name, slot);
+                let mut classes = vec![slot_class.clone()];
+                classes.extend(variants.iter().map(|(group, value)| {
+                    recipe_variant_class_name(&slot_class, group, &node.separator, value)
+                }));
+                classes.extend(
+                    compounds
+                        .iter()
+                        .flat_map(|slots| slots.iter())
+                        .filter(|(name, _)| name.as_ref() == slot)
+                        .map(|(_, part)| part.class_name.to_string()),
+                );
+                (slot.clone(), self.runtime_class_names(classes))
+            })
+            .collect();
+        Some(per_slot)
     }
 
     pub(crate) fn process_static_css(

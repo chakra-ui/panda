@@ -82,6 +82,7 @@ pub(crate) fn compile_config_with_token_dictionary(
                 separator: config.separator(),
                 hash_class_names: config.hash.class_name(),
             },
+            config.prefix.class_name().unwrap_or_default(),
         )
     };
 

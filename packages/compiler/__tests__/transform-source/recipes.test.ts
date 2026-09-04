@@ -275,15 +275,14 @@ describe('compiler.transformSource: config recipe calls', () => {
     `)
   })
 
-  test('leaves a slot recipe call to the runtime', () => {
+  test('rewrites a slot recipe call to an object of slot classes', () => {
     const source = lines("import { tabs } from '@panda/recipes'", "export const cls = tabs({ size: 'sm' })")
 
     const result = recipeCompiler.transformSource({ path: 'src/tabs.tsx', source })
-    expect(result.changed).toBe(false)
-    expect(result.code).toMatchInlineSnapshot(`
-      "import { tabs } from '@panda/recipes'
-      export const cls = tabs({ size: 'sm' })"
-    `)
+    expect(result.changed).toBe(true)
+    expect(result.code).toMatchInlineSnapshot(
+      `"export const cls = { root: "tabs__root tabs__root--size_sm", trigger: "tabs__trigger tabs__trigger--size_sm" }"`,
+    )
   })
 
   test('handles a namespace member recipe call', () => {
@@ -378,24 +377,18 @@ describe('compiler.transformSource: recipe calls under prefix/hash config', () =
     const source = lines("import { button } from '@panda/recipes'", "export const cls = button({ size: 'sm' })")
 
     const result = prefixCompiler.transformSource({ path: 'src/button.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`"export const cls = "button button--size_sm""`)
+    expect(result.code).toMatchInlineSnapshot(`"export const cls = "pd-ervFBh pd-kzJAEF""`)
   })
 
-  // SUSPECT: under `hash.className: true`, the compound class is hashed
-  // (`button--efyQHr`) but the base (`button`) and variant classes
-  // (`button--size_sm`, `button--variant_outline`) are left unhashed. The
-  // `prefix: 'pd'` also never reaches any recipe class name. Base/variant and
-  // compound class names should hash consistently.
-  test('rewrites a prefixed + hashed compound recipe call (inconsistent hashing)', () => {
+  // Compound names are hashed once when named and again at runtime, matching the stylesheet.
+  test('rewrites a prefixed + hashed compound recipe call', () => {
     const source = lines(
       "import { button } from '@panda/recipes'",
       "export const cls = button({ size: 'sm', variant: 'outline' })",
     )
 
     const result = prefixCompiler.transformSource({ path: 'src/button.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(
-      `"export const cls = "button button--size_sm button--variant_outline button--efyQHr""`,
-    )
+    expect(result.code).toMatchInlineSnapshot(`"export const cls = "pd-ervFBh pd-kzJAEF pd-bHbnsd pd-hivGqI""`)
   })
 })
 

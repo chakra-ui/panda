@@ -7,6 +7,7 @@ use pandacss_recipes::{
 };
 
 use super::helper::{CVA_HELPER_LOCAL, SVA_HELPER_LOCAL};
+use super::js;
 use super::plan::{Rewrite, TransformHelperFacts};
 use super::resolve::is_static_style_literal;
 use super::style_lower::{self, LowerTarget};
@@ -123,7 +124,7 @@ fn print_plain_style_as_base(
         return None;
     }
     let classes = project.class_names_for_style_literal(config)?;
-    Some(format!("{{ base: '{}' }}", escape_js(&classes.join(" "))))
+    Some(format!("{{ base: '{}' }}", js::escape(&classes.join(" "))))
 }
 
 fn print_recipe_config(
@@ -154,17 +155,13 @@ fn print_recipe_config(
                 let classes = project.class_names_for_style_literal(&option.style)?;
                 options.push(format!(
                     "{}: '{}'",
-                    escape_js_key(&option.key),
-                    escape_js(&classes.join(" "))
+                    js::key(&option.key),
+                    js::escape(&classes.join(" "))
                 ));
             }
-            groups.push(format!(
-                "{}: {{ {} }}",
-                escape_js_key(&group.name),
-                options.join(", ")
-            ));
+            groups.push(js::field(&group.name, js::object(options)));
         }
-        parts.push(format!("variants: {{ {} }}", groups.join(", ")));
+        parts.push(js::field("variants", js::object(groups)));
     }
 
     push_default_variants_part(&mut parts, &recipe.default_variants);
@@ -182,7 +179,7 @@ fn print_recipe_config(
         return None;
     }
 
-    Some(format!("{{ {} }}", parts.join(", ")))
+    Some(js::object(parts))
 }
 
 /// `base` value as a JS expression: quoted class string, or unquoted ternary.
@@ -205,7 +202,7 @@ fn print_recipe_base(
     if classes.is_empty() {
         return None;
     }
-    Some(format!("'{}'", escape_js(&classes.join(" "))))
+    Some(format!("'{}'", js::escape(&classes.join(" "))))
 }
 
 fn style_tree_class_expression(
@@ -228,7 +225,7 @@ fn print_slot_recipe_config(project: &Project, recipe: &SlotRecipe) -> Option<St
         let slots = recipe
             .slots
             .iter()
-            .map(|slot| format!("'{}'", escape_js(slot)))
+            .map(|slot| format!("'{}'", js::escape(slot)))
             .collect::<Vec<_>>()
             .join(", ");
         parts.push(format!("slots: [{slots}]"));
@@ -243,11 +240,11 @@ fn print_slot_recipe_config(project: &Project, recipe: &SlotRecipe) -> Option<St
             let classes = project.class_names_for_style_literal(style)?;
             base_parts.push(format!(
                 "{}: '{}'",
-                escape_js_key(slot),
-                escape_js(&classes.join(" "))
+                js::key(slot),
+                js::escape(&classes.join(" "))
             ));
         }
-        parts.push(format!("base: {{ {} }}", base_parts.join(", ")));
+        parts.push(js::field("base", js::object(base_parts)));
     }
 
     if !recipe.variants.is_empty() {
@@ -255,20 +252,12 @@ fn print_slot_recipe_config(project: &Project, recipe: &SlotRecipe) -> Option<St
         for group in &recipe.variants {
             let mut options = Vec::new();
             for option in &group.options {
-                let encoded = encode_shared_slot_variant_option(project, option)?;
-                options.push(format!(
-                    "{}: '{}'",
-                    escape_js_key(&option.key),
-                    escape_js(&encoded)
-                ));
+                let encoded = print_slot_variant_option(project, recipe, option)?;
+                options.push(format!("{}: {encoded}", js::key(&option.key)));
             }
-            groups.push(format!(
-                "{}: {{ {} }}",
-                escape_js_key(&group.name),
-                options.join(", ")
-            ));
+            groups.push(js::field(&group.name, js::object(options)));
         }
-        parts.push(format!("variants: {{ {} }}", groups.join(", ")));
+        parts.push(js::field("variants", js::object(groups)));
     }
 
     push_default_variants_part(&mut parts, &recipe.default_variants);
@@ -286,7 +275,7 @@ fn print_slot_recipe_config(project: &Project, recipe: &SlotRecipe) -> Option<St
         return None;
     }
 
-    Some(format!("{{ {} }}", parts.join(", ")))
+    Some(js::object(parts))
 }
 
 /// `defaultVariants: { … }` config part, shared by [`print_recipe_config`] and
@@ -297,44 +286,60 @@ fn push_default_variants_part(parts: &mut Vec<String>, default_variants: &[(Stri
     }
     let defaults = default_variants
         .iter()
-        .map(|(key, value)| {
-            format!(
-                "{}: {}",
-                escape_js_key(key),
-                format_default_variant_value(value)
-            )
-        })
+        .map(|(key, value)| format!("{}: {}", js::key(key), format_variant_value(value)))
         .collect::<Vec<_>>()
         .join(", ");
     parts.push(format!("defaultVariants: {{ {defaults} }}"));
 }
 
-fn format_default_variant_value(value: &str) -> String {
+/// Booleans stay booleans so the runtime's strict compound matching sees the prop value.
+fn format_variant_value(value: &str) -> String {
     match value {
         "true" | "false" => value.to_owned(),
-        other => format!("'{}'", escape_js(other)),
+        other => format!("'{}'", js::escape(other)),
     }
 }
 
-fn encode_shared_slot_variant_option(
+/// One class string when the option styles every slot the same way, else a
+/// per-slot map so classes never leak onto slots the option doesn't style.
+fn print_slot_variant_option(
     project: &Project,
+    recipe: &SlotRecipe,
     option: &pandacss_recipes::SlotVariantOption,
 ) -> Option<String> {
-    let mut encoded: Vec<String> = Vec::new();
-    for (_, style) in &option.styles {
+    let mut per_slot = Vec::new();
+    for (slot, style) in &option.styles {
         if style.has_conditional() {
             return None;
         }
-        encoded.push(project.class_names_for_style_literal(style)?.join(" "));
+        let classes = project.class_names_for_style_literal(style)?.join(" ");
+        if !classes.is_empty() {
+            per_slot.push((slot.as_str(), classes));
+        }
     }
-    if encoded.is_empty() {
-        return None;
+
+    let slots = slot_names(recipe);
+    let shared = per_slot.first().map(|(_, classes)| classes);
+    let covers_every_slot = !slots.is_empty()
+        && slots
+            .iter()
+            .all(|slot| per_slot.iter().any(|(name, _)| name == slot));
+    if covers_every_slot && per_slot.iter().all(|(_, classes)| Some(classes) == shared) {
+        return shared.map(|classes| format!("'{}'", js::escape(classes)));
     }
-    let first = encoded.first()?;
-    if encoded.iter().all(|value| value == first) {
-        Some(first.clone())
+
+    let entries = per_slot
+        .iter()
+        .map(|(slot, classes)| js::field(slot, format!("'{}'", js::escape(classes))));
+    Some(js::object(entries))
+}
+
+/// Mirrors the runtime's `config.slots ?? Object.keys(base)`.
+fn slot_names(recipe: &SlotRecipe) -> Vec<&str> {
+    if recipe.slots.is_empty() {
+        recipe.base.iter().map(|(slot, _)| slot.as_str()).collect()
     } else {
-        None
+        recipe.slots.iter().map(String::as_str).collect()
     }
 }
 
@@ -350,8 +355,8 @@ fn print_compound_variant(project: &Project, compound: &CompoundVariant) -> Opti
             .class_names_for_style_literal(&compound.css)?
             .join(" ")
     };
-    parts.push(format!("css: '{}'", escape_js(&classes)));
-    Some(format!("{{ {} }}", parts.join(", ")))
+    parts.push(format!("css: '{}'", js::escape(&classes)));
+    Some(js::object(parts))
 }
 
 fn print_slot_compound_variant(
@@ -367,18 +372,18 @@ fn print_slot_compound_variant(
         let classes = project.class_names_for_style_literal(style)?;
         css_parts.push(format!(
             "{}: '{}'",
-            escape_js_key(slot),
-            escape_js(&classes.join(" "))
+            js::key(slot),
+            js::escape(&classes.join(" "))
         ));
     }
     if css_parts.is_empty() {
         return None;
     }
-    parts.push(format!("css: {{ {} }}", css_parts.join(", ")));
+    parts.push(js::field("css", js::object(css_parts)));
     if let Some(class_name) = &compound.class_name {
-        parts.push(format!("className: '{}'", escape_js(class_name)));
+        parts.push(format!("className: '{}'", js::escape(class_name)));
     }
-    Some(format!("{{ {} }}", parts.join(", ")))
+    Some(js::object(parts))
 }
 
 fn print_compound_conditions(conditions: &[(String, Vec<String>)]) -> Vec<String> {
@@ -386,34 +391,17 @@ fn print_compound_conditions(conditions: &[(String, Vec<String>)]) -> Vec<String
         .iter()
         .map(|(key, values)| {
             if values.len() == 1 {
-                format!("{}: '{}'", escape_js_key(key), escape_js(&values[0]))
+                format!("{}: {}", js::key(key), format_variant_value(&values[0]))
             } else {
                 let joined = values
                     .iter()
-                    .map(|value| format!("'{}'", escape_js(value)))
+                    .map(|value| format_variant_value(value))
                     .collect::<Vec<_>>()
                     .join(", ");
-                format!("{}: [{joined}]", escape_js_key(key))
+                format!("{}: [{joined}]", js::key(key))
             }
         })
         .collect()
-}
-
-pub(crate) fn escape_js(value: &str) -> String {
-    value.replace('\\', "\\\\").replace('\'', "\\'")
-}
-
-fn escape_js_key(key: &str) -> String {
-    if key
-        .chars()
-        .all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$')
-        && !key.is_empty()
-        && !key.chars().next().is_some_and(|ch| ch.is_ascii_digit())
-    {
-        key.to_owned()
-    } else {
-        format!("'{}'", escape_js(key))
-    }
 }
 
 pub(crate) fn rewrite_styled_config_arg(

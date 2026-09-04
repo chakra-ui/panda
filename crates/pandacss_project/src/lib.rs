@@ -1843,15 +1843,30 @@ impl Project {
         args: &[Option<Literal>],
     ) -> Option<Vec<String>> {
         let compiled = self.config.as_ref();
-        let empty = Literal::Object(Vec::new());
-        let arg = match args.first().and_then(|arg| arg.as_ref()) {
-            None => &empty,
-            Some(Literal::Object(_)) => args.first().and_then(|arg| arg.as_ref())?,
-            Some(_) => return None,
-        };
         compiled.recipes.class_names_for_recipe_call(
             recipe_name,
-            arg,
+            recipe_call_props(args)?,
+            &compiled.conditions,
+            &compiled.breakpoints,
+        )
+    }
+
+    #[must_use]
+    pub fn slot_recipe_slots(&self, recipe_name: &str) -> Option<&[String]> {
+        self.config.recipes.slot_names(recipe_name)
+    }
+
+    /// Class names a static slot recipe call resolves to, per slot.
+    #[must_use]
+    pub fn class_names_for_slot_recipe_call(
+        &self,
+        recipe_name: &str,
+        args: &[Option<Literal>],
+    ) -> Option<Vec<(String, Vec<String>)>> {
+        let compiled = self.config.as_ref();
+        compiled.recipes.class_names_for_slot_recipe_call(
+            recipe_name,
+            recipe_call_props(args)?,
             &compiled.conditions,
             &compiled.breakpoints,
         )
@@ -2596,3 +2611,13 @@ pub use transform::{
     TransformOutput, TransformTargets, inject_cx_import, inject_internal_css_import,
     inject_internal_css_import_at, sync_internal_css_import, transform_source,
 };
+
+/// The variant props of a recipe call: its first object argument, or no props at all.
+fn recipe_call_props(args: &[Option<Literal>]) -> Option<&Literal> {
+    static EMPTY: Literal = Literal::Object(Vec::new());
+    match args.first().and_then(Option::as_ref) {
+        None => Some(&EMPTY),
+        Some(arg @ Literal::Object(_)) => Some(arg),
+        Some(_) => None,
+    }
+}

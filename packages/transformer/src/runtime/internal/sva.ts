@@ -1,6 +1,13 @@
-import { cva, type StringCvaConfig } from './cva'
+import { cva } from './cva'
 import { cx } from './cx'
-import { memoProps, splitVariantProps, withDefaults, type CompoundVariant } from './shared'
+import {
+  memoProps,
+  splitVariantProps,
+  withDefaults,
+  type CompoundVariant,
+  type VariantMap,
+  type VariantValue,
+} from './shared'
 
 type SvaCompound = Record<string, unknown> & {
   css?: Record<string, string> | string
@@ -8,13 +15,31 @@ type SvaCompound = Record<string, unknown> & {
   classNames?: Record<string, string>
 }
 
+/** An option is one string for every slot, or a map of the slots it styles. */
+type SlotVariantMap = Record<string, Record<string, string | Record<string, string>>>
+
 type SvaConfig = {
   slots?: string[]
   base?: Record<string, string>
-  variants?: StringCvaConfig['variants']
-  defaultVariants?: StringCvaConfig['defaultVariants']
+  variants?: SlotVariantMap
+  defaultVariants?: Record<string, VariantValue>
   compoundVariants?: SvaCompound[]
   className?: Record<string, string>
+}
+
+function variantsForSlot(variants: SlotVariantMap | undefined, slot: string): VariantMap | undefined {
+  if (!variants) return undefined
+  const out: VariantMap = {}
+  for (const key in variants) {
+    const options: Record<string, string> = {}
+    for (const option in variants[key]) {
+      const value = variants[key][option]
+      const cls = typeof value === 'string' ? value : value?.[slot]
+      if (cls) options[option] = cls
+    }
+    out[key] = options
+  }
+  return out
 }
 
 function compoundsForSlot(compounds: SvaCompound[] | undefined, slot: string): CompoundVariant[] | undefined {
@@ -50,7 +75,7 @@ export function sva(config: SvaConfig) {
       slot,
       cva({
         base,
-        variants: config.variants,
+        variants: variantsForSlot(config.variants, slot),
         defaultVariants: config.defaultVariants,
         compoundVariants: compoundsForSlot(config.compoundVariants, slot),
       }),

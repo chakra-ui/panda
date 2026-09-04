@@ -189,6 +189,27 @@ pub(crate) struct Rewrite {
     pub helper: TransformHelperFacts,
 }
 
+impl Rewrite {
+    /// Replace `span` with content that calls no internal runtime symbol.
+    pub(crate) fn replace(span: pandacss_shared::Span, content: String) -> Self {
+        Self::replace_preserving(span, content, Vec::new())
+    }
+
+    pub(crate) fn replace_preserving(
+        span: pandacss_shared::Span,
+        content: String,
+        preserved: Vec<pandacss_shared::Span>,
+    ) -> Self {
+        Self {
+            start: span.start,
+            end: span.end,
+            content,
+            preserved,
+            helper: TransformHelperFacts::none(),
+        }
+    }
+}
+
 pub(crate) fn build_plan(
     project: &Project,
     source: &str,
@@ -487,10 +508,8 @@ fn css_style_tree_should_bail(style_args: &[Option<pandacss_extractor::StyleTree
     let Some(tree) = style_args.first().and_then(|value| value.as_ref()) else {
         return false;
     };
-    tree.is_open()
+    super::style_lower::style_tree_is_open(tree)
         || super::style_lower::style_tree_has_rewrite_sites(tree)
-        || super::style_lower::style_tree_has_open_spread(tree)
-        || super::style_lower::style_tree_has_open_value(tree)
 }
 
 /// Inlines standalone `token()`/`token.var()` calls to their resolved value.

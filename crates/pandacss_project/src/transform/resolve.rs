@@ -11,6 +11,7 @@ use crate::PatternTransformFn;
 use crate::Project;
 
 use super::helper::CX_HELPER_LOCAL;
+use super::js;
 use super::plan::{HelperCxMode, Rewrite, TransformHelperFacts};
 use super::style_lower::{self, LowerTarget};
 
@@ -27,7 +28,7 @@ pub(crate) fn classes_for_css_args(
     let mut atoms: Vec<Atom> = Vec::new();
 
     for arg in args.iter().flatten() {
-        if !is_static_css_arg(arg) {
+        if !is_static_style_literal(arg) {
             return None;
         }
         let mut encoder = Encoder::with_conditions(conditions.clone());
@@ -51,7 +52,7 @@ pub(crate) fn classes_for_css_args(
 
     let classes: Vec<String> = atoms
         .iter()
-        .filter_map(|atom| class_name_for_atom(project, atom))
+        .filter_map(|atom| project.atomic_class_name_for_transform(atom))
         .collect();
 
     if classes.is_empty() {
@@ -80,11 +81,14 @@ fn encode_css_arg(
 
 /// A style value is static (safe to fold to a class string at build time) when
 /// it holds no dynamic/`Conditional` leaves anywhere in its shape.
-fn is_static_css_arg(arg: &Literal) -> bool {
+#[must_use]
+pub(crate) fn is_static_style_literal(arg: &Literal) -> bool {
     match arg {
-        Literal::Object(entries) => entries.iter().all(|(_, value)| is_static_css_arg(value)),
-        Literal::Conditional(branches) => branches.iter().all(is_static_css_arg),
-        Literal::Array(items) => items.iter().all(is_static_css_arg),
+        Literal::Object(entries) => entries
+            .iter()
+            .all(|(_, value)| is_static_style_literal(value)),
+        Literal::Conditional(branches) => branches.iter().all(is_static_style_literal),
+        Literal::Array(items) => items.iter().all(is_static_style_literal),
         Literal::String(_)
         | Literal::Number(_)
         | Literal::Bool(_)
@@ -93,19 +97,13 @@ fn is_static_css_arg(arg: &Literal) -> bool {
     }
 }
 
-fn class_name_for_atom(project: &Project, atom: &Atom) -> Option<String> {
-    project.atomic_class_name_for_transform(atom)
-}
-
-#[must_use]
-pub(crate) fn is_static_style_literal(arg: &Literal) -> bool {
-    is_static_css_arg(arg)
-}
-
 pub(crate) fn css_call_should_bail(args: &[Option<Literal>]) -> bool {
     !args.is_empty()
         && !args.iter().any(Option::is_none)
-        && args.iter().flatten().any(|arg| !is_static_css_arg(arg))
+        && args
+            .iter()
+            .flatten()
+            .any(|arg| !is_static_style_literal(arg))
 }
 
 pub(crate) fn rewrite_for_css_call(
@@ -121,14 +119,13 @@ pub(crate) fn rewrite_for_css_call(
     // open spreads must not fall through to a silent-static rewrite.
     if let Some(tree) = style_args.first().and_then(|value| value.as_ref()) {
         if style_lower::style_tree_has_rewrite_sites(tree) {
-            return style_lower::lower_style_tree(project, source, tree, LowerTarget::Css, None)
-                .map(|expr| Rewrite {
-                    start: span.start,
-                    end: span.end,
-                    content: style_lower::print_class_expr(&expr),
-                    preserved: style_lower::preserved_source_spans(tree),
-                    helper: TransformHelperFacts::none(),
-                });
+            let expr =
+                style_lower::lower_style_tree(project, source, tree, LowerTarget::Css, None)?;
+            return Some(Rewrite::replace_preserving(
+                span,
+                style_lower::print_class_expr(&expr),
+                style_lower::preserved_source_spans(tree),
+            ));
         }
         if tree.is_open() || style_lower::style_tree_has_open_spread(tree) {
             return None;
@@ -147,7 +144,7 @@ pub(crate) fn rewrite_for_css_call(
             {
                 return None;
             }
-            Some(rewrite_for_class_names(span, &classes))
+            Some(Rewrite::replace(span, js::string(&classes.join(" "))))
         }
         // A dynamic prop is nested (or otherwise unclean); leave the call so
         // nothing is silently dropped.
@@ -168,7 +165,7 @@ pub(crate) fn rewrite_for_css_call(
                 end: span.end,
                 content: format!(
                     "{CX_HELPER_LOCAL}({}, {callee}({{ {} }}))",
-                    js_string_literal(&classes.join(" ")),
+                    js::string(&classes.join(" ")),
                     dynamic.join(", ")
                 ),
                 preserved,
@@ -290,13 +287,7 @@ pub(crate) fn rewrite_for_view_transition_call(
         Literal::String(name) => project.config().view_transition(name)?.class_name.clone(),
         _ => return None,
     };
-    Some(Rewrite {
-        start: span.start,
-        end: span.end,
-        content: js_string_literal(&class_name),
-        preserved: Vec::new(),
-        helper: TransformHelperFacts::none(),
-    })
+    Some(Rewrite::replace(span, js::string(&class_name)))
 }
 
 pub(crate) fn rewrite_for_recipe_call(
@@ -311,34 +302,65 @@ pub(crate) fn rewrite_for_recipe_call(
     if recipe_call_has_unextractable_args(args, facts) {
         return None;
     }
+    let tree = style_args.first().and_then(Option::as_ref);
     // Finite conditionals become a class ternary. Flattening both branches is
     // never correct — if we can't emit the expression, leave the call.
-    if let Some(tree) = style_args.first().and_then(|value| value.as_ref()) {
-        if style_lower::style_tree_has_rewrite_sites(tree) {
-            return style_lower::lower_style_tree(
-                project,
-                source,
-                tree,
-                LowerTarget::Recipe(recipe_name),
-                None,
-            )
-            .map(|expr| Rewrite {
-                start: span.start,
-                end: span.end,
-                content: style_lower::print_class_expr(&expr),
-                preserved: style_lower::preserved_source_spans(tree),
-                helper: TransformHelperFacts::none(),
-            });
-        }
-        if tree.is_open()
-            || style_lower::style_tree_has_open_spread(tree)
-            || style_lower::style_tree_has_open_value(tree)
-        {
-            return None;
-        }
+    if let Some(tree) = tree.filter(|tree| style_lower::style_tree_has_rewrite_sites(tree)) {
+        let content = lower_recipe_call(project, source, recipe_name, tree)?;
+        return Some(Rewrite::replace_preserving(
+            span,
+            content,
+            style_lower::preserved_source_spans(tree),
+        ));
     }
-    let classes = project.class_names_for_recipe_call(recipe_name, args)?;
-    Some(rewrite_for_class_names(span, &classes))
+    if tree.is_some_and(style_lower::style_tree_is_open) {
+        return None;
+    }
+    let content = resolve_recipe_call(project, recipe_name, args)?;
+    Some(Rewrite::replace(span, content))
+}
+
+/// A recipe call resolves to one class string; a slot recipe call to an object
+/// literal with one per slot.
+fn resolve_recipe_call(
+    project: &Project,
+    recipe_name: &str,
+    args: &[Option<Literal>],
+) -> Option<String> {
+    if project.slot_recipe_slots(recipe_name).is_none() {
+        let classes = project.class_names_for_recipe_call(recipe_name, args)?;
+        return Some(js::string(&classes.join(" ")));
+    }
+    let slots = project.class_names_for_slot_recipe_call(recipe_name, args)?;
+    let fields = slots
+        .iter()
+        .map(|(slot, classes)| js::field(slot, js::string(&classes.join(" "))));
+    Some(js::object(fields))
+}
+
+fn lower_recipe_call(
+    project: &Project,
+    source: &str,
+    recipe_name: &str,
+    tree: &StyleTree,
+) -> Option<String> {
+    let Some(slots) = project.slot_recipe_slots(recipe_name) else {
+        let target = LowerTarget::Recipe(recipe_name);
+        let expr = style_lower::lower_style_tree(project, source, tree, target, None)?;
+        return Some(style_lower::print_class_expr(&expr));
+    };
+    let fields = slots
+        .iter()
+        .map(|slot| {
+            let target = LowerTarget::SlotRecipe {
+                recipe: recipe_name,
+                slot,
+            };
+            let expr = style_lower::lower_style_tree(project, source, tree, target, None)?;
+            Some(js::field(slot, style_lower::print_class_expr(&expr)))
+        })
+        .collect::<Option<Vec<_>>>()?;
+    Some(js::object(fields))
 }
 
 pub(crate) fn rewrite_for_pattern_call(
@@ -354,7 +376,7 @@ pub(crate) fn rewrite_for_pattern_call(
         return None;
     }
     let classes = project.class_names_for_pattern_call(pattern_name, args, pattern_transform)?;
-    Some(rewrite_for_class_names(span, &classes))
+    Some(Rewrite::replace(span, js::string(&classes.join(" "))))
 }
 
 /// Unwrap an identity `.raw({ … })` call to its object literal.
@@ -383,21 +405,17 @@ pub(crate) fn rewrites_for_identity_raw_call(
     } else {
         ("", "")
     };
+    let before = pandacss_shared::Span {
+        start: span.start,
+        end: arg.start,
+    };
+    let after = pandacss_shared::Span {
+        start: arg.end,
+        end: span.end,
+    };
     Some([
-        Rewrite {
-            start: span.start,
-            end: arg.start,
-            content: open.to_owned(),
-            preserved: Vec::new(),
-            helper: TransformHelperFacts::none(),
-        },
-        Rewrite {
-            start: arg.end,
-            end: span.end,
-            content: close.to_owned(),
-            preserved: Vec::new(),
-            helper: TransformHelperFacts::none(),
-        },
+        Rewrite::replace(before, open.to_owned()),
+        Rewrite::replace(after, close.to_owned()),
     ])
 }
 
@@ -449,13 +467,7 @@ pub(crate) fn rewrite_for_style_literal(
     } else {
         object
     };
-    Some(Rewrite {
-        start: span.start,
-        end: span.end,
-        content,
-        preserved: Vec::new(),
-        helper: TransformHelperFacts::none(),
-    })
+    Some(Rewrite::replace(span, content))
 }
 
 /// A bare object literal needs parentheses wherever `{` would open a block —
@@ -479,22 +491,6 @@ fn object_literal_needs_parens(source: &str, at: u32) -> bool {
     }
 }
 
-fn rewrite_for_class_names(span: pandacss_shared::Span, classes: &[String]) -> Rewrite {
-    Rewrite {
-        start: span.start,
-        end: span.end,
-        content: js_string_literal(&classes.join(" ")),
-        preserved: Vec::new(),
-        helper: TransformHelperFacts::none(),
-    }
-}
-
-/// Quote a class string as a JS string literal, escaping embedded quotes and
-/// backslashes (arbitrary values like `content: '"x"'`).
-pub(crate) fn js_string_literal(value: &str) -> String {
-    serde_json::to_string(value).expect("string serializes as JSON")
-}
-
 pub(crate) fn span_slice(source: &str, span: pandacss_shared::Span) -> Option<&str> {
     let start = usize::try_from(span.start).ok()?;
     let end = usize::try_from(span.end).ok()?;
@@ -505,18 +501,22 @@ fn recipe_call_has_unextractable_args(args: &[Option<Literal>], facts: &CallFact
     if args.iter().any(Option::is_none) {
         return true;
     }
-    if args.is_empty()
-        || facts
-            .direct_empty_object_args
-            .first()
-            .is_some_and(|is_empty| *is_empty)
-    {
+    if call_has_no_props(args, facts) {
         return false;
     }
     matches!(
         args.first().and_then(|arg| arg.as_ref()),
         Some(Literal::Object(entries)) if entries.is_empty()
     )
+}
+
+/// No arguments, or a literal `{}` written directly at the call.
+fn call_has_no_props(args: &[Option<Literal>], facts: &CallFacts) -> bool {
+    args.is_empty()
+        || facts
+            .direct_empty_object_args
+            .first()
+            .is_some_and(|is_empty| *is_empty)
 }
 
 fn pattern_call_has_unextractable_args(
@@ -531,19 +531,11 @@ fn pattern_call_has_unextractable_args(
     // carry on its own — a dropped dynamic spread, or a branch only the
     // runtime can pick — has to stay a runtime call.
     if style_args.iter().flatten().any(|tree| {
-        tree.is_open()
-            || super::style_lower::style_tree_has_open_spread(tree)
-            || super::style_lower::style_tree_has_open_value(tree)
-            || super::style_lower::style_tree_has_runtime_branch(tree)
+        style_lower::style_tree_is_open(tree) || style_lower::style_tree_has_runtime_branch(tree)
     }) {
         return true;
     }
-    if args.is_empty()
-        || facts
-            .direct_empty_object_args
-            .first()
-            .is_some_and(|is_empty| *is_empty)
-    {
+    if call_has_no_props(args, facts) {
         return false;
     }
     !matches!(

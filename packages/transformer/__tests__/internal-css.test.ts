@@ -572,3 +572,74 @@ describe('cva.merge — styled(Parent, styles) chains', () => {
     expect(l2.raw({})).toBe('color_red padding-left_3px')
   })
 })
+
+describe('sva with per-slot variant classes', () => {
+  it('applies each slot its own classes for the selected option', () => {
+    const card = sva({
+      slots: ['root', 'header', 'body'],
+      base: { root: 'd_grid' },
+      variants: {
+        size: {
+          sm: { root: 'p_4px', header: 'fs_12px' },
+          lg: { root: 'p_16px', header: 'fs_20px', body: 'gap_8px' },
+        },
+      },
+      defaultVariants: { size: 'lg' },
+      compoundVariants: [{ size: 'sm', css: { body: 'd_none' } }],
+    })
+
+    expect(card({ size: 'sm' })).toEqual({ root: 'd_grid p_4px', header: 'fs_12px', body: 'd_none' })
+    expect(card()).toEqual({ root: 'd_grid p_16px', header: 'fs_20px', body: 'gap_8px' })
+  })
+
+  it('leaves slots the option does not style untouched', () => {
+    const tabs = sva({
+      slots: ['root', 'trigger'],
+      variants: { size: { sm: { root: 'fs_12px' } } },
+    })
+
+    expect(tabs({ size: 'sm' })).toEqual({ root: 'fs_12px', trigger: '' })
+    expect(tabs.variantMap).toEqual({ size: ['sm'] })
+  })
+
+  it('resolves a boolean variant that styles one slot, with its default', () => {
+    const tabs = sva({
+      slots: ['root', 'trigger'],
+      variants: { fitted: { true: { trigger: 'flex_1' }, false: { trigger: 'flex_none' } } },
+      defaultVariants: { fitted: true },
+    })
+
+    expect(tabs()).toEqual({ root: '', trigger: 'flex_1' })
+    expect(tabs({ fitted: false })).toEqual({ root: '', trigger: 'flex_none' })
+  })
+
+  it('matches a boolean compound condition against a boolean prop', () => {
+    const tabs = sva({
+      slots: ['root', 'trigger'],
+      variants: { size: { sm: { root: 'gap_4px' } }, fitted: { true: { trigger: 'flex_1' } } },
+      compoundVariants: [{ size: 'sm', fitted: true, css: { trigger: 'p_0' } }],
+    })
+
+    expect(tabs({ size: 'sm', fitted: true })).toEqual({ root: 'gap_4px', trigger: 'flex_1 p_0' })
+    expect(tabs({ size: 'sm', fitted: false })).toEqual({ root: 'gap_4px', trigger: '' })
+  })
+
+  it('ignores an unknown option and an empty option map', () => {
+    const tabs = sva({
+      slots: ['root', 'trigger'],
+      variants: { size: { sm: { root: 'gap_4px' }, md: {} } },
+    })
+
+    expect(tabs({ size: 'md' })).toEqual({ root: '', trigger: '' })
+    expect(tabs({ size: 'xl' })).toEqual({ root: '', trigger: '' })
+  })
+
+  it('derives slots from base when slots is omitted', () => {
+    const card = sva({
+      base: { root: 'd_grid', title: 'fw_bold' },
+      variants: { size: { sm: { title: 'fs_12px' } } },
+    })
+
+    expect(card({ size: 'sm' })).toEqual({ root: 'd_grid', title: 'fw_bold fs_12px' })
+  })
+})

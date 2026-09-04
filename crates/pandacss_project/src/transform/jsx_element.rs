@@ -403,11 +403,8 @@ fn print_opening_element(
 
 fn closing_tag_rewrite(jsx: &ExtractedJsx, tag: &ElementTag) -> Option<Rewrite> {
     let closing = jsx.closing_span?;
-    Some(Rewrite {
-        start: closing.start,
-        end: closing.end,
-        content: format!("</{}>", tag.opening_name()),
-        preserved: Vec::new(),
-        helper: TransformHelperFacts::none(),
-    })
+    Some(Rewrite::replace(
+        closing,
+        format!("</{}>", tag.opening_name()),
+    ))
 }

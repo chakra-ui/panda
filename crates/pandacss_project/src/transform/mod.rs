@@ -7,6 +7,7 @@
 mod apply;
 mod helper;
 mod imports;
+mod js;
 mod jsx;
 mod jsx_element;
 mod jsx_parse;
@@ -55,6 +56,17 @@ impl Project {
         options: &TransformOptions,
         transforms: ParseTransforms<'_>,
     ) -> TransformOutput {
+        let span = tracing::trace_span!(
+            target: "transform",
+            "transform_source",
+            path = path,
+            source_len = source.len(),
+            changed = tracing::field::Empty,
+            bailed = tracing::field::Empty,
+            rewrites = tracing::field::Empty,
+        );
+        let _entered = span.enter();
+
         let transformed_source;
         let source = match transforms.source {
             Some(transform) => match transform(path, source) {
@@ -79,6 +91,7 @@ impl Project {
         };
 
         let extracted = {
+            let _span = tracing::trace_span!(target: "transform", "transform_extract").entered();
             let mut resolve_recipe_raw = |factory: &str, config: &Literal, props: &Literal| {
                 let props = recipe_inline::literal_variant_props(props)?;
                 recipe_inline::resolve_inline_recipe_raw(self, factory, config, &props)
@@ -90,12 +103,21 @@ impl Project {
                 &mut resolve_recipe_raw,
             )
         };
-        let plan = plan::build_plan(self, source, &extracted, options, transforms.pattern);
+        let plan = {
+            let _span = tracing::trace_span!(target: "transform", "transform_plan").entered();
+            plan::build_plan(self, source, &extracted, options, transforms.pattern)
+        };
         let diagnostics = extracted.diagnostics;
 
-        let edits = apply::build_transform_edits(self, path, source, &plan, options.helper_cx);
-        let (code, map) = apply::apply_edits(source, path, &edits);
+        let (code, map) = {
+            let _span = tracing::trace_span!(target: "transform", "transform_print").entered();
+            let edits = apply::build_transform_edits(self, path, source, &plan, options.helper_cx);
+            apply::apply_edits(source, path, &edits)
+        };
         let changed = code != source;
+        span.record("changed", changed);
+        span.record("bailed", plan.bailed);
+        span.record("rewrites", plan.rewrites.len());
         // No edits landed: report an unchanged source regardless of what
         // `apply_edits` returned for the map.
         let map = changed.then_some(map).flatten();

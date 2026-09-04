@@ -120,6 +120,7 @@ These are the direct successors to the earlier prototype's `buildClassNameAttr(.
 - pattern calls like `hstack()` and `vstack()`
 - pattern calls with extra style props
 - config recipe call with variants
+- config slot recipe call to an object of per-slot classes, with defaults, compounds, and conditional variants
 - recipe default variants
 - recipe overrides of default variants
 - recipe with no variants

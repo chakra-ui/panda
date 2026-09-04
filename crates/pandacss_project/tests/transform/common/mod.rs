@@ -205,11 +205,55 @@ pub fn project_with_config_slot_recipe() -> Project {
                 "slotRecipes": {
                     "tabs": {
                         "className": "tabs",
-                        "slots": ["root", "trigger"],
+                        "slots": ["root", "trigger", "indicator"],
                         "base": {
                             "root": { "display": "flex" },
                             "trigger": { "color": "blue" }
-                        }
+                        },
+                        "defaultVariants": { "size": "lg" },
+                        "variants": {
+                            "size": {
+                                "sm": { "root": { "gap": "4px" }, "trigger": { "fontSize": "12px" } },
+                                "lg": { "root": { "gap": "8px" }, "trigger": { "fontSize": "16px" } }
+                            },
+                            "fitted": {
+                                "true": { "trigger": { "flex": "1" } }
+                            }
+                        },
+                        "compoundVariants": [
+                            { "size": "sm", "fitted": true, "css": { "trigger": { "padding": "0" } } }
+                        ]
+                    }
+                }
+            }
+        })))
+        .expect("config"),
+    )
+}
+
+/// `prefix` and optional `hash` on top of a recipe and a slot recipe, to check
+/// transformed classes match the selectors the stylesheet emits.
+pub fn project_with_prefixed_recipes(hash: bool) -> Project {
+    Project::new(
+        System::new(create_config(json!({
+            "prefix": "pd",
+            "hash": hash,
+            "theme": {
+                "recipes": {
+                    "button": {
+                        "className": "button",
+                        "base": { "display": "flex" },
+                        "variants": { "size": { "sm": { "padding": "4px" } }, "block": { "true": { "width": "100%" } } },
+                        "compoundVariants": [{ "size": "sm", "block": true, "css": { "gap": "0" } }]
+                    }
+                },
+                "slotRecipes": {
+                    "tabs": {
+                        "className": "tabs",
+                        "slots": ["root", "trigger"],
+                        "base": { "root": { "display": "flex" } },
+                        "variants": { "size": { "sm": { "root": { "gap": "4px" } } } },
+                        "compoundVariants": [{ "size": "sm", "css": { "trigger": { "padding": "0" } } }]
                     }
                 }
             }

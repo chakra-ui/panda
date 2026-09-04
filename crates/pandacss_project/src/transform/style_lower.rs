@@ -12,7 +12,8 @@ use pandacss_shared::Span;
 use crate::PatternTransformFn;
 use crate::Project;
 
-use super::resolve::{classes_for_css_args, js_string_literal, span_slice};
+use super::js;
+use super::resolve::{classes_for_css_args, span_slice};
 
 const MAX_CONDITIONAL_SITES: usize = 64;
 
@@ -40,6 +41,7 @@ pub(crate) enum LowerTarget<'a> {
     Css,
     Jsx(&'a ExtractedJsx),
     Recipe(&'a str),
+    SlotRecipe { recipe: &'a str, slot: &'a str },
 }
 
 impl LowerTarget<'_> {
@@ -62,6 +64,11 @@ impl LowerTarget<'_> {
             Self::Recipe(recipe_name) => {
                 project.class_names_for_recipe_call(recipe_name, &[Some(lit)])?
             }
+            Self::SlotRecipe { recipe, slot } => project
+                .class_names_for_slot_recipe_call(recipe, &[Some(lit)])?
+                .into_iter()
+                .find(|(name, _)| name == slot)
+                .map(|(_, classes)| classes)?,
         };
         Some(classes.join(" "))
     }
@@ -74,14 +81,14 @@ impl LowerTarget<'_> {
         match self {
             Self::Css => true,
             Self::Jsx(jsx) => matches!(jsx.kind, JsxKind::Factory | JsxKind::Component),
-            Self::Recipe(_) => false,
+            Self::Recipe(_) | Self::SlotRecipe { .. } => false,
         }
     }
 
     /// Recipe base + defaults repeat in every arm, so one site is already worth
     /// hoisting. css/jsx keep the bare ternary for the class attribute to merge.
     fn hoist_single_site(self) -> bool {
-        matches!(self, Self::Recipe(_))
+        matches!(self, Self::Recipe(_) | Self::SlotRecipe { .. })
     }
 
     /// Keys whose absence from a branch doesn't mean "unset": a recipe fills in
@@ -90,7 +97,11 @@ impl LowerTarget<'_> {
     fn default_bearing_props(self, project: &Project) -> FxHashSet<&str> {
         let config = project.config();
         match self {
-            Self::Recipe(recipe_name) => config.recipes.variant_props_for(&[recipe_name]),
+            Self::Recipe(recipe_name)
+            | Self::SlotRecipe {
+                recipe: recipe_name,
+                ..
+            } => config.recipes.variant_props_for(&[recipe_name]),
             Self::Jsx(jsx) if jsx.kind == JsxKind::Recipe => {
                 let recipes = &config.recipes;
                 recipes.variant_props_for(&recipes.find_by_jsx(&jsx.name))
@@ -133,6 +144,11 @@ pub(crate) fn style_tree_has_rewrite_sites(tree: &StyleTree) -> bool {
 /// True when `StyleTree` has a rewrite-critical open spread (`||` / `??` / bare rest).
 /// Top-level open *property* values are excluded — those use the mixed static/`cx` path.
 #[must_use]
+/// Carries something only the runtime can resolve: an open leaf, spread, or value.
+pub(crate) fn style_tree_is_open(tree: &StyleTree) -> bool {
+    tree.is_open() || style_tree_has_open_spread(tree) || style_tree_has_open_value(tree)
+}
+
 pub(crate) fn style_tree_has_open_spread(tree: &StyleTree) -> bool {
     match tree {
         StyleTree::Object(obj) => {
@@ -243,7 +259,7 @@ pub(crate) fn style_tree_object_entry<'a>(tree: &'a StyleTree, key: &str) -> Opt
 #[must_use]
 pub fn print_class_expr(expr: &ClassExpr) -> String {
     match expr {
-        ClassExpr::Lit(s) => js_string_literal(s),
+        ClassExpr::Lit(s) => js::string(s),
         ClassExpr::Ternary { test, yes, no } => {
             format!("{test} ? {} : {}", print_arm(yes), print_class_expr(no))
         }
@@ -285,7 +301,7 @@ fn print_join(parts: &[ClassExpr]) -> String {
 fn print_operand(expr: &ClassExpr) -> String {
     match expr {
         // A string literal needs no grouping as a `+` operand.
-        ClassExpr::Lit(value) => js_string_literal(value),
+        ClassExpr::Lit(value) => js::string(value),
         _ => format!("({})", print_class_expr(expr)),
     }
 }
