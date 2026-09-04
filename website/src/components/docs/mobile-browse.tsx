@@ -2,7 +2,7 @@
 
 import { Sidebar } from '@/components/docs/sidebar'
 import { drawerSlotRecipe } from '@/components/ui/drawer'
-import { getTab } from '@/docs.config'
+import { defaultTabKey, getTab } from '@/docs.config'
 import { css, cx } from '@/styled-system/css'
 import { Dialog, useDialog } from '@ark-ui/react/dialog'
 import { Portal } from '@ark-ui/react/portal'
@@ -35,8 +35,9 @@ export const MobileBrowse = () => {
   const pathname = usePathname()
   const dialog = useDialog()
 
-  const tabKey = pathname?.split('/')[2]
-  const tab = tabKey ? getTab(tabKey) : undefined
+  // `/docs` has no tab segment — same fallback as TabBar.
+  const tabKey = pathname?.split('/')[2] || defaultTabKey
+  const tab = getTab(tabKey)
   const classes = drawerSlotRecipe({ size: 'xs', placement: 'start' })
 
   useEffect(() => {
