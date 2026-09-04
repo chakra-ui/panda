@@ -182,7 +182,6 @@ export const docsTabs: TabItem[] = [
         title: 'JSX',
         items: [
           { title: 'Style props', url: 'style-props' },
-          { title: 'Factory props', url: 'factory-props' },
           { title: 'Extraction rules', url: 'extraction-rules' }
         ]
       },
@@ -198,11 +197,11 @@ export const docsTabs: TabItem[] = [
       {
         title: 'Advanced',
         items: [
+          { title: 'Global Styles', url: 'global-styles' },
+          { title: 'Color opacity modifier', url: 'color-opacity-modifier' },
+          { title: 'Virtual Color', url: 'virtual-color' },
           { title: 'Cascade Layers', url: 'cascade-layers' },
           { title: 'Style isolation', url: 'style-isolation' },
-          { title: 'Global Styles', url: 'global-styles' },
-          { title: 'Virtual Color', url: 'virtual-color' },
-          { title: 'Color opacity modifier', url: 'color-opacity-modifier' },
           { title: 'View Transition', url: 'view-transition' }
         ]
       }
