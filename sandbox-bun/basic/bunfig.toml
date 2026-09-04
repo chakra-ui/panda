@@ -1,0 +1,7 @@
+# Bundler plugin for the dev server (`bun src/server.ts`) and HTML imports in tests.
+[serve.static]
+plugins = ["./panda.plugin.ts"]
+
+# Runtime plugin for `bun test`, so test files can import the generated styled-system.
+[test]
+preload = ["./panda-preload.ts"]

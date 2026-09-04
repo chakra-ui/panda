@@ -31,6 +31,8 @@ export default defineConfig({
       // Rust compiler stack — their tests can't resolve deps from root.
       'playground/**',
       'website/**',
+      // Bun sandbox runs under `bun test`.
+      'sandbox-bun/**',
       // Binding tests need `snapshotFormat.compareKeys: null` to preserve the
       // JSON key order coming from the Rust/wasm binding. Run them via package
       // test scripts, which pick up their local configs.
