@@ -1,0 +1,45 @@
+---
+title: Remeasure — v2 vs legacy @pandacss/* 1.12.0
+date: 2026-09-04
+fixtures:
+  - synth-100 (perf.test.ts + extract-compare)
+  - 20-case emitter battery
+hardware: darwin arm64 (local dev machine; not a clean-room CI box)
+caveat: >
+  Same machine class as the 2026-06-08 full-pipeline report, not a locked CI box. Legacy side is published
+  `@pandacss/*@1.12.0` (npm). `1.12.1` is a same-day TextStyleProperty typo fix and was skipped for the freshness gate.
+---
+
+# Remeasure: v2 vs `@pandacss/*@1.12.0`
+
+> Bump of the bench legacy pins from `1.11.3` → `1.12.0`. Full write-up still lives in
+> [`bench/V2_VS_LEGACY_REPORT.md`](../../bench/V2_VS_LEGACY_REPORT.md). This note is the dated number capture.
+
+## TL;DR
+
+v2 did not slow down. Legacy parse got faster, so the headline multipliers compressed.
+
+| Surface                                | June 2026 vs `1.11.3`      | 2026-09-04 vs `1.12.0`             |
+| -------------------------------------- | -------------------------- | ---------------------------------- |
+| Cold parse (100 files, `perf.test.ts`) | 177 ms → 7.6 ms (**23×**)  | 71 ms → 6.2 ms (**12×**)           |
+| Warm parse/file                        | 652 µs → 1.8 µs (**360×**) | 330 µs → 1.4 µs (**235×**)         |
+| CSS emit                               | 5.9 ms → 5.1 ms            | 4.6 ms → 0.9 ms                    |
+| `extract-compare --synth 100` cold     | 184 ms → 4.9 ms (**37×**)  | 125–134 ms → ~6 ms (**~21×**)      |
+| Emitter battery                        | 15/20 identical            | **15/20** identical (same 5 diffs) |
+
+The 5 remaining battery mismatches are still the ratified ones: modern `@media (width >= …)` vs
+`screen and (min-width)`, nested-condition selector order, and inline `color-mix` vs `--mix-*`.
+
+`1.12.0` changelog is MCP split-out, Vue/Svelte config-reload, and `@clack/prompts` — nothing on the extract hot path.
+The faster legacy numbers are this machine + this pin, not a documented 1.12 parse rewrite.
+
+## Reproduce
+
+```sh
+pnpm --filter=./bench exec vitest run __tests__/perf.test.ts
+pnpm --filter=./bench exec vitest run __tests__/edgecases.test.ts
+pnpm --filter=./bench extract-compare -- --synth 100
+```
+
+Run through the bench package. Root vitest aliases every `@pandacss/*` into `packages/*/src` and cannot see
+`@pandacss/node`.

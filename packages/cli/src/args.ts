@@ -3,23 +3,36 @@ import type { FlagsInfer, FlagsSchema, Issue, ParseResult, Shape } from './flags
 
 export function baseArgs(): ArgsDef {
   return {
-    cwd: { type: 'string', description: 'Current working directory' },
-    config: { type: 'string', description: 'Path to panda config file', alias: 'c' },
+    cwd: { type: 'string', valueHint: 'dir', description: 'Current working directory' },
+    config: { type: 'string', valueHint: 'file', description: 'Path to panda config file', alias: 'c' },
   }
 }
 
 export function outputArgs(): ArgsDef {
   return {
     json: { type: 'boolean', description: 'Print JSON' },
-    format: { type: 'string', description: 'Diagnostic output format: human, pretty, json, or github' },
+    format: {
+      type: 'string',
+      valueHint: 'format',
+      description: 'Diagnostic output format: human, pretty, json, or github',
+    },
     'log-level': {
       type: 'string',
       valueHint: 'level',
       description: 'Set output level: silent, error, warn, info, or debug',
     },
-    'max-warnings': { type: 'string', description: 'Fail when warning diagnostics exceed this count' },
-    logfile: { type: 'string', description: 'Write human output to a log file' },
-    color: { type: 'boolean', description: 'Disable ANSI colors in human output', default: true },
+    'max-warnings': {
+      type: 'string',
+      valueHint: 'count',
+      description: 'Fail when warning diagnostics exceed this count',
+    },
+    logfile: { type: 'string', valueHint: 'file', description: 'Write human output to a log file' },
+    color: {
+      type: 'boolean',
+      description: 'Enable ANSI colors in human output',
+      negativeDescription: 'Disable ANSI colors in human output',
+      default: true,
+    },
   }
 }
 
@@ -49,8 +62,8 @@ export function traceArgs(): ArgsDef {
   return {
     profile: { type: 'boolean', description: 'Capture Rust compiler timings (trace.json, timings.json)' },
     trace: { type: 'boolean', description: 'Enable compiler tracing' },
-    'trace-output': { type: 'string', description: 'Trace output: fmt or chrome-json' },
-    'trace-file': { type: 'string', description: 'Trace output file for chrome-json tracing' },
+    'trace-output': { type: 'string', valueHint: 'fmt|chrome-json', description: 'Trace output: fmt or chrome-json' },
+    'trace-file': { type: 'string', valueHint: 'file', description: 'Trace output file for chrome-json tracing' },
   }
 }
 

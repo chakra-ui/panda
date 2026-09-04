@@ -28,10 +28,13 @@ allowBuilds:
   core-js-pure: true
   es5-ext: true
   esbuild: true
-  gatsby: set this to true or false
-  gatsby-cli: set this to true or false
   lmdb: true
   msgpackr-extract: true
   prisma: true
   sharp: true
   unrs-resolver: true
+# Published 2026-09-03; needed to take the pin the same day.
+minimumReleaseAgeExclude:
+  - happy-dom@20.14.0
+  - postcss@8.5.28
+  - '@types/react-dom@19.2.7'

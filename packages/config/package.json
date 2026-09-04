@@ -52,7 +52,7 @@
     "javascript-stringify": "2.1.0",
     "magic-string": "^0.30.21",
     "microdiff": "1.5.0",
-    "rolldown": "1.0.0-rc.17"
+    "rolldown": "1.2.7"
   },
   "engines": {
     "node": ">=22"

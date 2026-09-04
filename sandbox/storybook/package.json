@@ -18,19 +18,19 @@
     "@pandacss/dev": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
-    "@storybook/addon-docs": "10.1.2",
-    "@storybook/addon-links": "10.1.2",
-    "@storybook/react": "^10.1.2",
-    "@storybook/react-vite": "10.1.4",
-    "@types/react": "19.2.7",
-    "@types/react-dom": "19.2.3",
-    "@vitejs/plugin-react": "5.1.1",
-    "eslint-plugin-storybook": "10.1.4",
-    "storybook": "10.1.2",
-    "vite": "7.2.6"
+    "@storybook/addon-docs": "10.6.0",
+    "@storybook/addon-links": "10.6.0",
+    "@storybook/react": "10.6.0",
+    "@storybook/react-vite": "10.6.0",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
+    "@vitejs/plugin-react": "5.2.0",
+    "eslint-plugin-storybook": "10.6.0",
+    "storybook": "10.6.0",
+    "vite": "7.3.6"
   },
   "dependencies": {
-    "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   }
 }

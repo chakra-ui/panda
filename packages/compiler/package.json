@@ -74,8 +74,8 @@
     "@napi-rs/cli": "^3.7.1",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
-    "lightningcss": "1.31.1",
-    "rolldown": "1.0.0-rc.17"
+    "lightningcss": "1.33.0",
+    "rolldown": "1.2.7"
   },
   "engines": {
     "node": ">=22"

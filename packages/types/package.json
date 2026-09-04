@@ -32,6 +32,7 @@
     "dist"
   ],
   "devDependencies": {
+    "@parcel/watcher": "2.5.6",
     "csstype": "3.2.3",
     "ncp": "2.0.0",
     "pkg-types": "2.3.0"

@@ -11,8 +11,8 @@
     "build:rolldown": "rolldown -c rolldown.config.mjs"
   },
   "dependencies": {
-    "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   },
   "devDependencies": {
     "@pandacss/dev": "workspace:*",
@@ -20,11 +20,11 @@
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/rollup": "workspace:*",
     "@rollup/plugin-node-resolve": "^16.0.0",
-    "@types/react": "19.2.7",
-    "@types/react-dom": "19.2.3",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
     "rollup": "^4.0.0",
     "rollup-plugin-esbuild": "^6.0.0",
-    "typescript": "6.0.2",
+    "typescript": "6.0.3",
     "rolldown": "latest"
   }
 }

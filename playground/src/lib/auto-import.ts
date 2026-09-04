@@ -24,7 +24,7 @@ export const configureAutoImports = (opts: AutoImportOpts) => {
   const { monaco, editor, context } = opts
 
   return monaco?.languages.registerCompletionItemProvider('typescript', {
-    provideCompletionItems(model, position) {
+    provideCompletionItems(model: Monaco.editor.ITextModel, position: Monaco.Position) {
       const word = model.getWordUntilPosition(position)
       const range = {
         startLineNumber: position.lineNumber,
@@ -35,7 +35,7 @@ export const configureAutoImports = (opts: AutoImportOpts) => {
 
       monaco.editor.addCommand({
         id: IMPORT_COMMAND,
-        run: (_, ...args: any) => {
+        run: (_accessor: unknown, ...args: any) => {
           handleCommand(editor, range, args)
         },
       })

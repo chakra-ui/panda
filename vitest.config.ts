@@ -39,6 +39,9 @@ export default defineConfig({
       // Lint integration suite drives a real Panda compiler (needs the native
       // binding); runs via the package's own vitest config in the node env.
       'packages/eslint-plugin/__tests__/**',
+      // Legacy comparison pins (`@pandacss/node` npm) resolve only from the bench
+      // package. Root aliases every `@pandacss/*` into `packages/*/src`.
+      'bench/__tests__/**',
     ],
   },
   resolve: {

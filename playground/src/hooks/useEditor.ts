@@ -143,7 +143,6 @@ export function useEditor(props: PandaEditorProps) {
         registerKeybindings()
       })
 
-      //@ts-expect-error - monaco types are not fully compatible with the latest version
       monaco.languages.css.cssDefaults.setOptions({ lint: { unknownAtRules: 'ignore' } })
 
       monaco.languages.typescript.typescriptDefaults.setCompilerOptions({

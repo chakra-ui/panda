@@ -40,47 +40,48 @@ describe('cli smoke', () => {
     expect(normalizeCliOutput(result.stdout)).toMatchInlineSnapshot(`
       "Generate the panda system and CSS. Run with no subcommand for the full build. (panda v<version>)
 
-      USAGE \`panda [OPTIONS] init|dev|build|check|doctor|debug|buildinfo|lib|analyze|codegen|cssgen\`
+      USAGE panda [OPTIONS] init|dev|build|check|doctor|debug|buildinfo|lib|analyze|codegen|cssgen
 
       OPTIONS
 
-      \`--cwd\` Current working directory
-      \`-c, --config\` Path to panda config file
-      \`--include=<glob>\` Source file globs to scan, replacing the config include list
-      \`-w, --watch\` Watch files and rebuild
-      \`--outdir\` Output directory for generated files
-      \`-o, --outfile\` Output file for extracted CSS
-      \`--splitting\` Emit split CSS files
-      \`--clean\` Clean the output directory before generating
-      \`--polyfill\` Polyfill cascade layers with :not(#\\#) (overrides config polyfill)
-      \`--json\` Print JSON
-      \`--format\` Diagnostic output format: human, pretty, json, or github
-      \`--log-level=<level>\` Set output level: silent, error, warn, info, or debug
-      \`--max-warnings\` Fail when warning diagnostics exceed this count
-      \`--logfile\` Write human output to a log file
-      \`--no-color\` Disable ANSI colors in human output
-      \`--profile\` Capture Rust compiler timings (trace.json, timings.json)
-      \`--trace\` Enable compiler tracing
-      \`--trace-output\` Trace output: fmt or chrome-json
-      \`--trace-file\` Trace output file for chrome-json tracing
-      \`--watch-debounce\` Watch rebuild debounce in milliseconds
-      \`--check\` Check generated files without writing
+      --cwd=<dir> Current working directory
+      -c, --config=<file> Path to panda config file
+      --include=<glob> Source file globs to scan, replacing the config include list
+      -w, --watch Watch files and rebuild
+      --outdir=<dir> Output directory for generated files
+      -o, --outfile=<file> Output file for extracted CSS
+      --splitting Emit split CSS files
+      --clean Clean the output directory before generating
+      --polyfill Polyfill cascade layers with :not(#\\#) (overrides config polyfill)
+      --json Print JSON
+      --format=<format> Diagnostic output format: human, pretty, json, or github
+      --log-level=<level> Set output level: silent, error, warn, info, or debug
+      --max-warnings=<count> Fail when warning diagnostics exceed this count
+      --logfile=<file> Write human output to a log file
+      --color Enable ANSI colors in human output (Default: true)
+      --no-color Disable ANSI colors in human output
+      --profile Capture Rust compiler timings (trace.json, timings.json)
+      --trace Enable compiler tracing
+      --trace-output=<fmt|chrome-json> Trace output: fmt or chrome-json
+      --trace-file=<file> Trace output file for chrome-json tracing
+      --watch-debounce=<ms> Watch rebuild debounce in milliseconds
+      --check Check generated files without writing
 
       COMMANDS
 
-      \`init\` Initialize Panda's config file
-      \`dev\` Start Panda in watch mode
-      \`build\` Generate the panda system and CSS
-      \`check\` Check generated files without writing
-      \`doctor\` Validate Panda setup and print a project summary
-      \`debug\` Dump resolved config and per-file extraction for bug reports
-      \`buildinfo\` Build a portable panda.buildinfo.json for a design-system library
-      \`lib\` Publish a design system: write machine artifacts under panda/, and sync package.json exports
-      \`analyze\` Inspect Panda usage across project sources
-      \`codegen\` Generate the panda system
-      \`cssgen\` Generate CSS from project files
+      init Initialize Panda's config file
+      dev Start Panda in watch mode
+      build Generate the panda system and CSS
+      check Check generated files without writing
+      doctor Validate Panda setup and print a project summary
+      debug Dump resolved config and per-file extraction for bug reports
+      buildinfo Build a portable panda.buildinfo.json for a design-system library
+      lib Publish a design system: write machine artifacts under panda/, and sync package.json exports
+      analyze Inspect Panda usage across project sources
+      codegen Generate the panda system
+      cssgen Generate CSS from project files
 
-      Use \`panda <command> --help\` for more information about a command.
+      Use panda <command> --help for more information about a command.
 
       "
     `)
@@ -112,7 +113,7 @@ describe('cli smoke', () => {
 
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('USAGE')
-    expect(result.stderr).toBe(`[error] Unknown command \`${command}\`\n`)
+    expect(result.stderr).toBe(`Unknown command ${command}\n`)
   })
 
   it('rejects invalid flag values', () => {

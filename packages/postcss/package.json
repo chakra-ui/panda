@@ -43,7 +43,7 @@
     "postcss": ">=8"
   },
   "devDependencies": {
-    "postcss": "8.5.14"
+    "postcss": "8.5.28"
   },
   "engines": {
     "node": ">=22"

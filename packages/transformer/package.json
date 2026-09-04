@@ -42,7 +42,7 @@
   "dependencies": {
     "@pandacss/compiler": "workspace:*",
     "@pandacss/compiler-shared": "workspace:*",
-    "unplugin": "^2.3.10"
+    "unplugin": "^2.3.11"
   },
   "peerDependencies": {
     "vite": ">=6.0.0",

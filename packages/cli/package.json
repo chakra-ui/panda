@@ -53,14 +53,14 @@
     "@pandacss/compiler-shared": "workspace:*",
     "@pandacss/config": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "@parcel/watcher": "2.5.1",
-    "citty": "0.1.6",
+    "@parcel/watcher": "2.5.6",
+    "citty": "0.2.2",
     "picocolors": "1.1.1",
     "string-width": "7.2.0"
   },
   "devDependencies": {
-    "preact": "10.27.2",
-    "vite": "7.2.6"
+    "preact": "10.27.3",
+    "vite": "7.2.7"
   },
   "engines": {
     "node": ">=22"

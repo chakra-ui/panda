@@ -53,8 +53,8 @@
     "@pandacss/config": "workspace:*"
   },
   "devDependencies": {
-    "@typescript-eslint/parser": "8.58.2",
-    "eslint": "9.39.1"
+    "@typescript-eslint/parser": "8.69.0",
+    "eslint": "9.39.5"
   },
   "peerDependencies": {
     "eslint": ">=9"
