@@ -1,0 +1,163 @@
+---
+title: Plugins
+description:
+  Change the config, rewrite files before Panda reads them, or react to the output, from a plugin you can share.
+---
+
+A plugin is a named object with a `hooks` map. Each hook runs at one point in the build: after the config resolves,
+before a file is parsed, after code or CSS is written. Add the plugin to `plugins` and Panda calls it.
+
+```ts filename="panda.config.ts"
+import { defineConfig, definePlugin } from '@pandacss/dev'
+
+const removeStack = definePlugin({
+  name: 'remove-stack',
+  hooks: {
+    'config:resolved': ({ config, utils }) => utils.omit(config, ['patterns.stack'])
+  }
+})
+
+export default defineConfig({
+  plugins: [removeStack]
+})
+```
+
+`definePlugin` gives you autocomplete for hook names and arguments.
+
+Six hooks are available, and they fall into three jobs:
+
+- **Change the config** before Panda uses it: `config:resolved`, `preset:resolved`.
+- **Rewrite a file** before Panda parses it: `parser:before`.
+- **Touch or observe the output**: `codegen:prepare`, `codegen:done`, `cssgen:done`.
+
+## Change the config
+
+`config:resolved` runs after your presets and config merge. It receives the final config and a `utils` object with
+`omit`, `pick`, and `traverse`. Return a new config to replace it, or nothing to leave it alone.
+
+```ts
+definePlugin({
+  name: 'no-float',
+  hooks: {
+    'config:resolved': ({ config, utils }) => {
+      return utils.omit(config, ['patterns.float', 'utilities.float'])
+    }
+  }
+})
+```
+
+This is where most one-off changes go: dropping a pattern, renaming a utility, adding a token from an environment
+variable.
+
+## Trim a preset
+
+`preset:resolved` runs once per preset, before the presets merge. It receives the preset's config and its `name`. Use it
+to keep a third-party preset but not all of it, instead of forking it.
+
+```ts
+definePlugin({
+  name: 'no-preset-colors',
+  hooks: {
+    'preset:resolved': ({ preset, name, utils }) => {
+      if (name !== '@pandacss/preset-panda') return
+      return utils.omit(preset, ['theme.tokens.colors', 'theme.semanticTokens.colors'])
+    }
+  }
+})
+```
+
+## Rewrite a file
+
+`parser:before` receives `{ filePath, content }` for every file Panda scans. Return a string and Panda parses that
+instead. This is how you feed Panda a syntax it doesn't understand: strip or rewrite the parts its parser would choke
+on.
+
+```ts
+definePlugin({
+  name: 'strip-frontmatter',
+  hooks: {
+    'parser:before': ({ filePath, content }) => {
+      if (!filePath.endsWith('.md')) return
+      return content.replace(/^---[\s\S]*?---/, '')
+    }
+  }
+})
+```
+
+Instead of checking the path yourself, scope any hook with `{ filter, handler }`. `filter.id` matches the file path and
+`filter.code` matches its content. Each takes a glob, a regex, or an `{ include, exclude }` pair.
+
+```ts
+definePlugin({
+  name: 'strip-frontmatter',
+  hooks: {
+    'parser:before': {
+      filter: { id: '**/*.md' },
+      handler: ({ content }) => content.replace(/^---[\s\S]*?---/, '')
+    }
+  }
+})
+```
+
+Vue, Svelte, and Astro files need none of this. The compiler reads them directly.
+
+## React to the output
+
+Two hooks fire after Panda writes files. Both are for reporting and side effects. Whatever you return is ignored.
+
+`codegen:done` runs after the `styled-system` folder is written, with the list of `files` and the `outdir`.
+
+`cssgen:done` runs after the final CSS is produced by the CLI, the Vite plugin, or the PostCSS plugin. It receives the
+`artifact` name, the CSS `content`, and the `path` when the CSS went to disk.
+
+```ts
+definePlugin({
+  name: 'css-report',
+  hooks: {
+    'cssgen:done': ({ artifact, content, path }) => {
+      if (artifact !== 'styles.css') return
+      console.log(`Generated ${content.length} bytes at ${path}`)
+    }
+  }
+})
+```
+
+To shrink the CSS, don't reach for a hook. Panda's own [optimizations](/docs/styling/optimization) remove unused tokens
+and keyframes, and anything else belongs in a PostCSS step after Panda.
+
+One hook does let you touch generated code. `codegen:prepare` runs before the `styled-system` files are written and
+receives the `artifacts` about to be emitted. Return a modified list to add or edit files. Reach for it only when
+`config:resolved` can't express the change.
+
+## Share a plugin
+
+A plugin is already a value, so sharing it means exporting it. Wrap it in a function when it takes options.
+
+```ts filename="panda-plugin-report.ts"
+import { definePlugin } from '@pandacss/dev'
+
+export function report(options: { verbose?: boolean } = {}) {
+  return definePlugin({
+    name: 'report',
+    hooks: {
+      'cssgen:done': ({ artifact, content }) => {
+        if (options.verbose || artifact === 'styles.css') console.log(artifact, content.length)
+      }
+    }
+  })
+}
+```
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+import { report } from 'panda-plugin-report'
+
+export default defineConfig({
+  plugins: [report({ verbose: true })]
+})
+```
+
+Plugins run in the order they appear in `plugins`. Unlike a preset, a plugin can't be extended by the config that uses
+it. It runs as written.
+
+Every hook's arguments and return value are listed in the [plugins reference](/docs/reference/plugins).

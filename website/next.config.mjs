@@ -54,7 +54,7 @@ const config = {
 
       to('/docs/concepts/styled-system', '/docs/reference/styled-system'),
       to('/docs/concepts/extend', '/docs/theming/extend'),
-      to('/docs/concepts/hooks', '/docs/theming/hooks'),
+      to('/docs/concepts/hooks', '/docs/theming/plugins'),
       to('/docs/concepts/recipes', '/docs/recipes/overview'),
       to('/docs/concepts/slot-recipes', '/docs/recipes/slot-recipes'),
       to(

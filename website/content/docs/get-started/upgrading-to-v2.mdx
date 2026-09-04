@@ -116,7 +116,7 @@ Supported hooks: `config:resolved`, `preset:resolved`, `parser:before`, `codegen
 `cssgen:done`. `cssgen:done` is observe-only now — it runs after the final CSS with `{ artifact, content, path? }` and
 can't rewrite the string. Used it to strip unused tokens or keyframes? Reach for `optimize.removeUnusedTokens` /
 `removeUnusedKeyframes` instead. The v1 engine hooks (`context:created`, `parser:after`, `tokens:created`,
-`utility:created`, `parser:before.configure(...)`, …) are gone. See [Hooks](/docs/theming/hooks).
+`utility:created`, `parser:before.configure(...)`, …) are gone. See [Plugins](/docs/theming/plugins).
 
 ### createStyleContext is now two helpers
 
@@ -157,8 +157,9 @@ See [MCP server](/docs/get-started/mcp-server).
 
 These v1 internals are gone; their work lives in `@pandacss/compiler` now. Drop direct imports of `@pandacss/core`,
 `@pandacss/extractor`, `@pandacss/generator`, `@pandacss/node`, `@pandacss/parser`, `@pandacss/token-dictionary`,
-`@pandacss/is-valid-prop`, `@pandacss/logger`, `@pandacss/reporter`, and the Astro `@pandacss/studio`. If you only use
-`@pandacss/dev` plus Vite or PostCSS, you're fine.
+`@pandacss/is-valid-prop`, `@pandacss/logger`, `@pandacss/reporter`, and the Astro `@pandacss/studio`. The same goes
+for `@pandacss/plugin-vue` and `@pandacss/plugin-svelte`: the compiler reads `.vue`, `.svelte`, and `.astro` files
+directly, so remove them from `plugins`. If you only use `@pandacss/dev` plus Vite or PostCSS, you're fine.
 
 ### Config options removed
 

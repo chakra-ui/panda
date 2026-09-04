@@ -279,8 +279,7 @@ export const docsTabs: TabItem[] = [
           { title: 'Presets', url: 'presets' },
           { title: 'Minimal setup', url: 'minimal-setup' },
           { title: 'The extend keyword', url: 'extend' },
-          { title: 'Hooks', url: 'hooks' },
-          { title: 'Ecosystem Plugins', url: 'ecosystem-plugins' }
+          { title: 'Plugins', url: 'plugins' }
         ]
       },
       {
@@ -343,6 +342,7 @@ export const docsTabs: TabItem[] = [
           { title: 'CLI', url: 'cli' },
           { title: 'Config', url: 'config' },
           { title: 'Config Functions', url: 'config-functions' },
+          { title: 'Plugins', url: 'plugins' },
           { title: 'Debugging', url: 'debugging' },
           { title: 'Diagnostics', url: 'diagnostics' },
           { title: 'Deprecations', url: 'deprecations' }
