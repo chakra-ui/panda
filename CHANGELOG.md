@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [1.12.1](#1.12.1) - 2026-09-04
+
+### Fixed
+
+- Fix `hypens` → `hyphens` typo in `TextStyleProperty`. The misspelled key was the only one the type accepted, so text styles emitted invalid CSS like `hypens: auto`.
+
 ## [1.12.0](#1.12.0) - 2026-07-28
 
 ### Changed
