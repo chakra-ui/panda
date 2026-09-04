@@ -1,5 +1,14 @@
 # @pandacss/types
 
+## 1.12.1
+
+### Patch Changes
+
+- 8a71bff: Fix `TextStyleProperty` typo: `hypens` → `hyphens`
+
+  `hyphens` is the CSS property; the neighbouring `hyphenateCharacter` / `hyphenateLimitChars` keys were already spelled
+  correctly. The misspelled key was the only one the type accepted, and codegen emitted invalid CSS `hypens: auto`.
+
 ## 1.12.0
 
 ## 1.11.5
