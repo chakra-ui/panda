@@ -23,7 +23,7 @@ Nothing is left to resolve at runtime, so the styling runtime drops out of the b
 
 Source transforms are opt-in, behind `transform: true` on the bundler plugin.
 
-<Tabs items={['Vite', 'webpack', 'Rollup']}>
+<Tabs items={['Vite', 'webpack', 'Rollup', 'Bun']}>
   <Tab>
 ```ts filename="vite.config.ts"
 import pandacss from '@pandacss/vite'
@@ -48,6 +48,18 @@ import pandacss from '@pandacss/rollup'
 
 export default { plugins: [pandacss({ transform: true })] }
 ```
+  </Tab>
+  <Tab>
+```ts filename="build.ts"
+import { pandacss } from '@pandacss/bun'
+
+await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  plugins: [pandacss({ transform: true })],
+})
+```
+
+For `bun run` and `bun test`, `await register({ transform: true })` from a preload file. See [Using Bun](/docs/get-started/bun).
   </Tab>
 </Tabs>
 
@@ -85,7 +97,7 @@ Where the merge needs real class-conflict resolution, Panda emits a `cx` import 
 
 ## Turbopack
 
-The bundler plugins above cover Vite, webpack, Rollup, Rspack and Rolldown. Turbopack has no plugin API — only
+The bundler plugins above cover Vite, webpack, Rollup, Bun, Rspack and Rolldown. Turbopack has no plugin API — only
 loaders — so there is no first-party Turbopack adapter yet.
 
 Next.js 16 defaults to Turbopack and fails the build when a webpack config is present, so `withPandaCss` users

@@ -143,6 +143,7 @@ export const docsTabs: TabItem[] = [
         items: [
           { title: 'Next.js', url: 'nextjs' },
           { title: 'Vite', url: 'vite' },
+          { title: 'Bun', url: 'bun' },
           { title: 'Vue', url: 'vue' },
           { title: 'Nuxt', url: 'nuxt' },
           { title: 'Astro', url: 'astro' },
