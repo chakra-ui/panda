@@ -41,14 +41,9 @@ export const SkipNavLink = forwardRef<HTMLAnchorElement, SkipNavLinkProps>(
                 verticalAlign: 'middle',
                 fontSize: 'sm',
                 fontWeight: 'bold',
-                color: 'gray.900',
-                bg: 'white',
-                borderColor: 'neutral.400',
-                _dark: {
-                  color: 'gray.100',
-                  bg: 'neutral.900',
-                  borderColor: 'neutral.800'
-                }
+                color: 'fg',
+                bg: 'bg.surface',
+                borderColor: 'border'
               }
             })
           : ''

@@ -16,7 +16,7 @@ export const Badge = panda('span', {
         color: 'fg'
       },
       solid: {
-        bg: 'primary.600',
+        bg: 'link',
         color: 'white'
       }
     }

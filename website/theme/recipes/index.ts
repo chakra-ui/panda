@@ -1,7 +1,7 @@
 import { calloutRecipe } from './callout.recipe'
 import { cardRecipe } from './card.recipe'
 import { navbarRecipe } from './navbar.recipe'
-import { nextraTabsRecipe } from './nextra-tabs.recipe'
+import { docsTabsRecipe } from './docs-tabs.recipe'
 import { codeTabsRecipe } from './code-tabs.recipe'
 import { buttonRecipe } from './button.recipe'
 import { docCardRecipe } from './doc-card.recipe'
@@ -21,7 +21,7 @@ export const recipes = {
   card: cardRecipe,
   callout: calloutRecipe,
   navbar: navbarRecipe,
-  nextraTabs: nextraTabsRecipe,
+  docsTabs: docsTabsRecipe,
   segmented: segmentedRecipe,
   marquee: marqueeRecipe,
   textLink: textLinkRecipe

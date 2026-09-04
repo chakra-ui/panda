@@ -79,13 +79,12 @@ function SelectComponent({
             borderRadius: 'md',
             outlineWidth: '1px',
             outlineColor: 'rgb(0 0 0 / 0.05)',
-            bg: 'white',
+            bg: 'bg.surface',
             py: '1',
             fontSize: 'sm',
             shadow: 'lg',
             _dark: {
-              outlineColor: 'rgb(255 255 255 / 0.2)',
-              bg: 'neutral.800'
+              outlineColor: 'rgb(255 255 255 / 0.2)'
             }
           })}
         >

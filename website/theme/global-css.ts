@@ -31,8 +31,7 @@ export const globalCss = defineGlobalStyles({
     scrollbarGutter: 'stable',
     // Themes the page scrollbar and native form controls. `next-themes` only
     // toggles a class, so without this they keep following the OS instead.
-    colorScheme: 'light',
-    '--nextra-primary-hue': '212deg'
+    colorScheme: 'light'
   },
   'html.dark, html[data-theme="dark"]': {
     colorScheme: 'dark'
@@ -112,32 +111,22 @@ export const globalCss = defineGlobalStyles({
     '& .line': {
       px: '4',
       '&.highlighted': {
-        bg: 'hsl(var(--nextra-primary-hue), 100%, 45%, 0.15)',
-        color: 'hsl(var(--nextra-primary-hue), 100%, 45%, 0.5)',
-        shadow: '2px 0 currentColor inset'
+        bg: 'link/15',
+        boxShadow: 'inset 2px 0 {colors.link}'
       },
       '& .highlighted': {
         rounded: 'md',
-        bg: 'hsl(var(--nextra-primary-hue), 100%, 32%, 0.1)',
-        shadow: '0 0 0 2px rgba(0,0,0,.3)',
-        shadowColor: 'hsl(var(--nextra-primary-hue), 100%, 32%, 0.1)',
-        _dark: {
-          bg: 'hsl(var(--nextra-primary-hue), 100%, 77%, 0.1)',
-          shadowColor: 'hsl(var(--nextra-primary-hue), 100%, 77%, 0.1)'
-        }
+        bg: 'link/10',
+        boxShadow: '0 0 0 2px {colors.link/10}'
       },
       // `/word/` highlights from Shiki: the line-highlight tint with a thin ring.
       '& .highlighted-word': {
         rounded: 'sm',
         px: '0.2em',
         mx: '-0.2em',
-        bg: 'hsl(var(--nextra-primary-hue), 100%, 45%, 0.12)',
-        boxShadow: '0 0 0 1px hsl(var(--nextra-primary-hue), 100%, 45%, 0.35)',
-        boxDecorationBreak: 'clone',
-        _dark: {
-          bg: 'hsl(var(--nextra-primary-hue), 100%, 77%, 0.12)',
-          boxShadow: '0 0 0 1px hsl(var(--nextra-primary-hue), 100%, 77%, 0.35)'
-        }
+        bg: 'link/12',
+        boxShadow: '0 0 0 1px {colors.link/35}',
+        boxDecorationBreak: 'clone'
       }
     }
   },

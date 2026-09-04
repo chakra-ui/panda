@@ -134,7 +134,7 @@ const File = memo<FileProps>(({ label, name, active }) => (
   <li
     className={cx(
       css({ display: 'flex', listStyle: 'none' }),
-      active && css({ color: 'primary.600' })
+      active && css({ color: 'link' })
     )}
   >
     <a

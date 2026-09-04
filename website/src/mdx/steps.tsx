@@ -4,7 +4,7 @@ const styles = css({
   ms: '4',
   mb: '12',
   borderInlineStartWidth: '1px',
-  borderColor: { base: 'gray.200', _dark: 'neutral.800' },
+  borderColor: 'border',
   ps: '6',
   counterReset: 'step',
   '& > h3': {

@@ -3,9 +3,9 @@ import { defineParts, defineRecipe } from '@pandacss/dev'
 
 const parts = defineParts(tabsAnatomy.build())
 
-export const nextraTabsRecipe = defineRecipe({
-  className: 'nextraTabs',
-  description: 'A nextra documentation tabs style',
+export const docsTabsRecipe = defineRecipe({
+  className: 'docsTabs',
+  description: 'Underlined tabs for docs content',
   base: parts({
     root: {
       overflowX: 'auto',
@@ -19,9 +19,8 @@ export const nextraTabsRecipe = defineRecipe({
       w: 'max',
       minW: 'full',
       borderBottomWidth: '1px',
-      borderColor: 'neutral.200',
-      pb: '1px',
-      _dark: { borderColor: 'neutral.800' }
+      borderColor: 'border',
+      pb: '1px'
     },
     trigger: {
       roundedTop: 'md',
@@ -35,21 +34,19 @@ export const nextraTabsRecipe = defineRecipe({
       userSelect: 'none',
       borderBottomWidth: '2px',
       borderColor: 'transparent',
+      color: 'fg.muted',
       _hover: {
-        borderColor: 'neutral.200'
-      },
-      _dark: {
-        borderColor: 'transparent',
-        color: 'neutral.200'
+        borderColor: 'border'
       },
       _selected: {
-        borderColor: 'neutral.500'
+        color: 'fg',
+        borderColor: 'fg.subtle'
       }
     },
     indicator: {
       height: '2px',
       bottom: '-1px',
-      background: 'neutral.600'
+      background: 'fg.muted'
     },
     content: {
       rounded: 'md',

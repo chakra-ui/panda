@@ -80,7 +80,7 @@ const linkStyles = cva({
       },
       false: {
         _hover: {
-          bg: { base: 'gray.200', _dark: 'neutral.800' }
+          bg: 'bg.muted.hover'
         }
       }
     }
@@ -128,7 +128,7 @@ const triggerStyles = flex({
   flexWrap: 'wrap',
   rounded: 'md',
   justify: 'start',
-  bg: { base: 'gray.100', _dark: 'neutral.700' }
+  bg: 'bg.muted'
 })
 
 type TriggerProps = {

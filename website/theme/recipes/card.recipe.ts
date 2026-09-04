@@ -60,12 +60,9 @@ export const cardRecipe = defineRecipe({
         width: '33px',
         height: '33px',
         border: '4px solid white',
-        bg: 'gray.100',
-        _dark: {
-          bg: 'neutral.800'
-        },
+        bg: 'bg.muted',
         borderRadius: '9999px',
-        color: 'neutral.400',
+        color: 'fg.subtle',
         fontSize: 'base',
         fontWeight: 'normal',
         textAlign: 'center',

@@ -122,7 +122,7 @@ export const FrameworkCard = (props: Props) => {
         className={square({
           size: '14',
           layerStyle: 'offShadow',
-          shadowColor: { _dark: 'neutral.700' },
+          shadowColor: { _dark: 'border' },
           rounded: 'md'
         })}
       >

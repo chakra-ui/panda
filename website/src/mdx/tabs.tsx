@@ -2,7 +2,7 @@
 
 import { SessionStore } from '@/lib/session-store'
 import { cx } from '@/styled-system/css'
-import { nextraTabs } from '@/styled-system/recipes'
+import { docsTabs } from '@/styled-system/recipes'
 import { Tabs as ArkTabs } from '@ark-ui/react/tabs'
 import * as React from 'react'
 
@@ -28,7 +28,7 @@ export const Tabs = (props: React.PropsWithChildren<{ items: string[] }>) => {
     <ArkTabs.Root
       value={value}
       onValueChange={e => tabsStore.setValue(storageKey, e.value)}
-      className={cx('docs-scrollbar', nextraTabs())}
+      className={cx('docs-scrollbar', docsTabs())}
     >
       <ArkTabs.List>
         {items.map((item, index) => {
