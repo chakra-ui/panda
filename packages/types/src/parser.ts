@@ -36,5 +36,8 @@ export interface EncoderJson {
     recipes?: {
       [name: string]: string[]
     }
+    grouped?: {
+      [groupId: string]: string[]
+    }
   }
 }

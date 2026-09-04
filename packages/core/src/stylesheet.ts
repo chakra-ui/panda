@@ -83,6 +83,10 @@ export class Stylesheet {
       this.processCss(css.result, (css.layer as LayerName) ?? 'utilities')
     })
 
+    decoder.grouped.forEach((grouped) => {
+      this.processCss(grouped.result, 'utilities')
+    })
+
     decoder.recipes.forEach((recipeSet) => {
       recipeSet.forEach((recipe) => {
         this.processCss(recipe.result, recipe.entry.slot ? 'recipes_slots' : 'recipes')
