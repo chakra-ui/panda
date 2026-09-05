@@ -295,7 +295,12 @@ export const docsTabs: TabItem[] = [
           { title: 'Overview', url: 'overview' },
           { title: 'Build a design system', url: 'build-a-design-system' },
           { title: 'Consume with Panda', url: 'consume-with-panda' },
-          { title: 'Consume without Panda', url: 'consume-without-panda' }
+          { title: 'Consume without Panda', url: 'consume-without-panda' },
+          {
+            title: 'Examples',
+            href: 'https://github.com/chakra-ui/panda-examples',
+            external: true
+          }
         ]
       },
       {
