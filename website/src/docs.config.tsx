@@ -267,7 +267,7 @@ export const docsTabs: TabItem[] = [
         items: [
           { title: 'Utilities', url: 'utilities' },
           { title: 'Conditions', url: 'conditions' },
-          { title: 'Custom Patterns', url: 'patterns' },
+          { title: 'Patterns', url: 'patterns' },
           { title: 'Presets', url: 'presets' },
           { title: 'Plugins', url: 'plugins' }
         ]
@@ -275,7 +275,6 @@ export const docsTabs: TabItem[] = [
       {
         title: 'Guides',
         items: [
-          { title: 'Extending Presets', url: 'extending-presets' },
           { title: 'Custom Fonts', url: 'fonts' },
           { title: 'Typography', url: 'typography' },
           { title: 'Minimal Setup', url: 'minimal-setup' },

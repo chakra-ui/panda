@@ -53,7 +53,7 @@ const config = {
       to('/docs/ai/mcp-server', '/docs/get-started/mcp-server'),
 
       to('/docs/concepts/styled-system', '/docs/reference/styled-system'),
-      to('/docs/concepts/extend', '/docs/theming/extending-presets'),
+      to('/docs/concepts/extend', '/docs/theming/presets#extending-a-preset'),
       to('/docs/concepts/hooks', '/docs/theming/plugins'),
       to('/docs/concepts/recipes', '/docs/recipes/overview'),
       to('/docs/concepts/slot-recipes', '/docs/recipes/slot-recipes'),
