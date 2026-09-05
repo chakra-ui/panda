@@ -36,7 +36,7 @@ const wrapperStyles = css({
 export const Pre = (props: React.ComponentProps<'pre'>) => {
   const { className = '', ...rest } = props
   return (
-    <div className={wrapperStyles}>
+    <div className={cx('not-prose', wrapperStyles)}>
       <pre
         className={cx(
           preStyles({ hasFilename: false }),

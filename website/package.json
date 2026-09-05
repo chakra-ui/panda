@@ -18,6 +18,7 @@
     "@ark-ui/react": "5.39.1",
     "@pandacss/preset-base": "beta",
     "@pandacss/preset-panda": "beta",
+    "@pandacss/preset-typography": "workspace:*",
     "@zag-js/hotkeys": "1.43.3",
     "bright": "1.0.0",
     "fumadocs-core": "^16.15.4",

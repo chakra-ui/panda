@@ -507,6 +507,9 @@ importers:
       '@pandacss/preset-panda':
         specifier: beta
         version: 2.0.0-beta.15
+      '@pandacss/preset-typography':
+        specifier: workspace:*
+        version: link:../packages/preset-typography
       '@prisma/client':
         specifier: 5.9.1
         version: 5.9.1(prisma@5.9.1)
@@ -1640,6 +1643,9 @@ importers:
       '@pandacss/preset-panda':
         specifier: beta
         version: 2.0.0-beta.15
+      '@pandacss/preset-typography':
+        specifier: workspace:*
+        version: link:../packages/preset-typography
       '@zag-js/hotkeys':
         specifier: 1.43.3
         version: 1.43.3

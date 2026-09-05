@@ -1,12 +1,13 @@
 import { pageSeo } from '@/lib/seo'
 import { LuRss } from 'react-icons/lu'
 import { AuthorLine } from '@/components/blog/author-line'
-import { mdxComponents } from '@/components/docs/mdx-components'
+import { blogMdxComponents } from '@/components/blog/mdx-components'
 import { MobileToc } from '@/components/docs/mobile-toc'
 import { Toc } from '@/components/ui/toc'
 import { blogSource, getMarkdown, getReadingTime } from '@/lib/source'
 import { toTocEntries } from '@/lib/toc'
-import { css } from '@/styled-system/css'
+import { css, cx } from '@/styled-system/css'
+import { prose } from '@/styled-system/recipes'
 import { Box, Stack, panda } from '@/styled-system/jsx'
 import { Metadata } from 'next'
 import Link from 'next/link'
@@ -66,104 +67,101 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
     <Box maxW="90rem" mx="auto" display="flex" position="relative" pb="24">
       {/* Main content */}
       <Box as="article" flex="1" minW="0" px={{ base: '4', lg: '10' }} pt="12">
-        <Link
-          href="/blog"
-          className={css({
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '1',
-            fontSize: 'sm',
-            color: 'fg.muted',
-            mb: '8',
-            _hover: { color: 'fg' }
-          })}
-        >
-          ← All posts
-        </Link>
-
-        <Stack gap="4" mb="12">
-          <panda.h1
-            fontSize={{ base: '3xl', md: '4xl' }}
-            fontWeight="bold"
-            lineHeight="tight"
+        <Box maxW="3xl" mx="auto">
+          <Link
+            href="/blog"
+            className={css({
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '1',
+              fontSize: 'sm',
+              color: 'fg.muted',
+              mb: '8',
+              _hover: { color: 'fg' }
+            })}
           >
-            {post.title}
-          </panda.h1>
-          {post.description && (
-            <panda.p fontSize="lg" color="fg.muted" maxW="3xl">
-              {post.description}
-            </panda.p>
-          )}
-          <Box
-            display="flex"
-            alignItems="center"
-            gap="3"
-            flexWrap="wrap"
-            justifyContent="space-between"
-          >
-            <Box display="flex" alignItems="center" gap="3" flexWrap="wrap">
-              <panda.span textStyle="eyebrow" color="fg.subtle">
-                {formatDate(post.date)}
-              </panda.span>
-              <panda.span color="fg.subtle" aria-hidden>
-                ·
-              </panda.span>
-              <panda.span textStyle="eyebrow" color="fg.subtle">
-                {readingTime} min read
-              </panda.span>
-            </Box>
+            ← All posts
+          </Link>
 
-            <a
-              href="/rss.xml"
-              aria-label="Subscribe to the RSS feed"
-              className={css({
-                display: 'flex',
-                alignItems: 'center',
-                gap: '2',
-                textStyle: 'eyebrow',
-                color: 'fg.subtle',
-                textDecoration: 'none',
-                transitionProperty: 'color',
-                transitionDuration: '150ms',
-                _hover: { color: 'fg' }
-              })}
+          <Stack gap="4" mb="12">
+            <panda.h1
+              fontSize={{ base: '3xl', md: '4xl' }}
+              fontWeight="bold"
+              lineHeight="tight"
             >
-              <LuRss size={14} aria-hidden />
-              RSS
-            </a>
-          </Box>
-
-          <Box pt="2">
-            <AuthorLine authors={post.author} size="md" linked />
-          </Box>
-        </Stack>
-
-        <div
-          className={css({
-            '& > *:first-child': { mt: 0 },
-            '& > *:last-child': { mb: 0 }
-          })}
-        >
-          <MDX components={mdxComponents} />
-          {post.tags && post.tags.length > 0 && (
-            <Box display="flex" gap="2" flexWrap="wrap" mt="10">
-              {post.tags.map(tag => (
-                <panda.span
-                  key={tag}
-                  fontSize="sm"
-                  px="2"
-                  py="0.5"
-                  bg="bg.muted"
-                  borderWidth="1px"
-                  borderRadius="md"
-                  color="fg.muted"
-                >
-                  #{tag}
+              {post.title}
+            </panda.h1>
+            {post.description && (
+              <panda.p fontSize="lg" color="fg.muted" maxW="3xl">
+                {post.description}
+              </panda.p>
+            )}
+            <Box
+              display="flex"
+              alignItems="center"
+              gap="3"
+              flexWrap="wrap"
+              justifyContent="space-between"
+            >
+              <Box display="flex" alignItems="center" gap="3" flexWrap="wrap">
+                <panda.span textStyle="eyebrow" color="fg.subtle">
+                  {formatDate(post.date)}
                 </panda.span>
-              ))}
+                <panda.span color="fg.subtle" aria-hidden>
+                  ·
+                </panda.span>
+                <panda.span textStyle="eyebrow" color="fg.subtle">
+                  {readingTime} min read
+                </panda.span>
+              </Box>
+
+              <a
+                href="/rss.xml"
+                aria-label="Subscribe to the RSS feed"
+                className={css({
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '2',
+                  textStyle: 'eyebrow',
+                  color: 'fg.subtle',
+                  textDecoration: 'none',
+                  transitionProperty: 'color',
+                  transitionDuration: '150ms',
+                  _hover: { color: 'fg' }
+                })}
+              >
+                <LuRss size={14} aria-hidden />
+                RSS
+              </a>
             </Box>
-          )}
-        </div>
+
+            <Box pt="2">
+              <AuthorLine authors={post.author} size="md" linked />
+            </Box>
+          </Stack>
+
+          <div className={cx(prose({ size: 'lg' }), css({ maxW: 'none' }))}>
+            <MDX components={blogMdxComponents} />
+            {post.tags && post.tags.length > 0 && (
+              <Box display="flex" gap="2" flexWrap="wrap" mt="10">
+                {post.tags.map(tag => (
+                  <panda.span
+                    key={tag}
+                    fontSize="sm"
+                    px="2"
+                    py="0.5"
+                    bg="bg.muted"
+                    borderWidth="1px"
+                    borderRadius="md"
+                    color="fg.muted"
+                  >
+                    #{tag}
+                  </panda.span>
+                ))}
+              </Box>
+            )}
+          </div>
+        </Box>
       </Box>
 
       {/* Table of contents */}

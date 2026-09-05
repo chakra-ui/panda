@@ -1,3 +1,4 @@
+import typographyPreset from '@pandacss/preset-typography'
 import { defineConfig } from '@pandacss/dev'
 
 import { tokens } from './theme/tokens'
@@ -9,7 +10,11 @@ import { globalCss } from './theme/global-css'
 import { keyframes } from './theme/keyframes'
 
 export default defineConfig({
-  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
+  presets: [
+    '@pandacss/preset-base',
+    '@pandacss/preset-panda',
+    typographyPreset({ notProse: true })
+  ],
   preflight: true,
   // define the content to scan 👇🏻
   include: [
@@ -38,6 +43,8 @@ export default defineConfig({
       docCard: [{ mode: ['*'] }],
       docNav: [{ kind: ['*'] }],
       segmented: [{ size: ['*'], tone: ['*'] }],
+      // the typography demo switches sizes at runtime
+      prose: [{ size: ['*'] }],
       textLink: [{ tone: ['*'] }]
     }
   },
