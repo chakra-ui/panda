@@ -1,0 +1,123 @@
+---
+title: Prose styles for HTML you don't control
+description:
+  A typography preset for Panda. One recipe for Markdown, CMS output, and streamed text, with sizes and colors from your
+  tokens.
+date: 2026-08-15
+author: sage
+tags: [announcement, typography, presets]
+type: release
+---
+
+Most of the HTML on a site is written by someone who can't add a class to it. Markdown from a docs folder, a rich text
+field in a CMS, the reply from a model streaming in a token at a time. It arrives as plain headings, paragraphs, lists,
+and tables, and every project ends up with a hand-written stylesheet to make it readable.
+
+`@pandacss/preset-typography` replaces that stylesheet with one recipe. This post is rendered by it. So is every other
+post on this blog.
+
+## Before and after
+
+The content is the same in both. The difference is one wrapper:
+
+```css
+/* before: a stylesheet of these, one rule per element, twice for dark mode */
+.article h2 { … }
+.article p { … }
+.article table td { … }
+```
+
+```tsx
+// after
+import { prose } from '../styled-system/recipes'
+
+export const Article = ({ html }: { html: string }) => (
+  <article className={prose()} dangerouslySetInnerHTML={{ __html: html }} />
+)
+```
+
+Headings, paragraphs, lists, blockquotes, tables, code, keyboard keys, images with captions, and horizontal rules all
+come out tuned to each other. Pick a size and the whole scale moves together:
+
+```tsx
+<article className={prose({ size: 'lg' })} />
+```
+
+This post uses `lg`. The [Typography guide](/docs/theming/typography) has the same article with a switcher, if you want
+to see the others.
+
+## What you control, and what you don't have to
+
+Typography plugins tend to expose everything, and then nobody touches any of it. This preset has four knobs.
+
+**Size.** Five steps, `sm` to `2xl`. A size is one font size on the root and everything else is a ratio of it, so an
+article never has a large body with cramped headings or the reverse. Drop a `prose` into a sidebar or a chat bubble and
+it scales with the container.
+
+**Rhythm.** Two custom properties, `--prose-leading` for line height and `--prose-flow` for the space between blocks.
+Set them on the wrapper and every heading and gap moves together.
+
+**Colors.** Every color the recipe uses is a semantic token: `prose.body`, `prose.heading`, `prose.link`, and sixteen
+more. They carry light and dark values, so dark mode needs nothing from you. Override any of them the way you override
+any token:
+
+```ts filename="panda.config.ts"
+semanticTokens: {
+  colors: {
+    prose: {
+      link: { value: { base: '{colors.blue.700}', _dark: '{colors.blue.300}' } }
+    }
+  }
+}
+```
+
+**Width.** The reading measure is the `sizes.prose` token, sixty characters by default. Pass a style to change it.
+
+Everything else is hand-tuned and deliberately not an option. If a rule is wrong for you, override it. Every selector
+the recipe emits is wrapped in `:where()`, so a plain `css()` on the wrapper wins with no `!important`:
+
+```tsx
+<article className={cx(prose(), css({ '& h2': { fontFamily: 'heading' } }))} />
+```
+
+## Built for content that streams
+
+Chat interfaces and AI features render prose a block at a time. Most typography styles use `:last-child` to trim the
+final margin, which means every new block restyles the one before it and the page shifts as text arrives.
+
+The preset spaces every block from the top only, and no rule depends on `:last-child`, `:has()`, or `:empty`. A new
+paragraph appends. Nothing above it changes.
+
+## Keep your components out
+
+Content often carries something of yours, a callout, an embed, a code block with its own chrome. Turn on `notProse` and
+mark those elements. The recipe leaves them and everything inside them alone:
+
+```tsx
+<article className={prose()}>
+  {content}
+  <div className="not-prose">
+    <Callout>Styled by the callout, not the prose.</Callout>
+  </div>
+</article>
+```
+
+That's how this page handles its code blocks. The syntax highlighting you see is the site's, not the preset's.
+
+## Try it
+
+```bash
+pnpm add -D @pandacss/preset-typography
+```
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+import typographyPreset from '@pandacss/preset-typography'
+
+export default defineConfig({
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda', typographyPreset()]
+})
+```
+
+Run codegen, wrap your content in `prose()`, and you're done. The full guide, with every option and the token roles, is
+in the [Typography docs](/docs/theming/typography).
