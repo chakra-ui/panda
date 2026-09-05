@@ -1,5 +1,50 @@
 # @pandacss/compiler
 
+## 2.0.0-beta.16
+
+### Major Changes
+
+- ef14fc5: Remove the `syntax` config option and the `template-literal` authoring mode. Drop `syntax` from your config
+  and the `--syntax` flag from `panda init`, and write styles with the object syntax: `css({ color: 'red' })` instead of
+  `` css`color: red` ``.
+
+### Patch Changes
+
+- f583fb9: Merge the `css` prop over the style props beside it, so one declaration wins instead of two classes whose
+  winner depended on stylesheet order. Shorthands normalize first, so `padding` and `p` collide the way they do at
+  runtime.
+
+  ```tsx
+  // before: className="color_blue color_red", renders red
+  // after:  className="color_blue", renders blue
+  <Box color="red" css={{ color: 'blue' }} />
+  ```
+
+  Generated CSS can shrink: a rule whose only source was the losing side of a collision is no longer emitted.
+
+- d94d26c: Keep `!` inside string values. `css({ content: '"hello!"' })` emitted `content: "hello" !important`; only a
+  trailing `!` or `!important` marks a declaration important now.
+- c3702af: Treat condition props like `_hover`, CSS variables, and `&`/`@` selectors as style props on JSX components,
+  so they become classes instead of DOM attributes.
+- a46ecb4: Stop reporting a literal color inside a token reference as a missing token. `{#000/64}` and `{rgb(0 0 0)/64}`
+  already resolve to a `color-mix()`; only real token paths are validated now.
+- 9bdafba: Fix a config load error when a `utility.values` callback returns nothing. Listing `@pandacss/preset-base` on
+  its own failed with `Utility values callback ... returned invalid values`, because `translateZ` reads the spacing
+  scale and preset-base ships no tokens. The utility now simply has no preset values, and arbitrary values still work.
+- f583fb9: Keep the component when transforming JSX elements listed in a recipe's `jsx` option. That list tracks
+  elements so their variants reach the stylesheet — the component is yours, and replacing `<Button size="sm" />` with a
+  `div` dropped whatever it rendered. The element and its variant props now stay put; only style props fold into
+  `className`.
+- b2294ca: Resolve conditional variants in recipe calls and JSX at build time. `button({ size: cond ? 'sm' : 'lg' })`
+  now emits a class ternary instead of applying both sizes, and several conditional variants resolve into a decision
+  tree that gets defaults and compound variants right. Usages that still can't resolve to one class list are left for
+  the runtime.
+- Updated dependencies [a5bab14]
+- Updated dependencies [ef14fc5]
+  - @pandacss/config@2.0.0-beta.16
+  - @pandacss/types@2.0.0-beta.16
+  - @pandacss/compiler-shared@2.0.0-beta.16
+
 ## 2.0.0-beta.15
 
 ### Minor Changes

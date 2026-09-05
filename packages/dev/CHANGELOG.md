@@ -1,5 +1,26 @@
 # @pandacss/dev
 
+## 2.0.0-beta.16
+
+### Patch Changes
+
+- Updated dependencies [ce90eda]
+- Updated dependencies [b9e7cd9]
+- Updated dependencies [a5bab14]
+- Updated dependencies [f583fb9]
+- Updated dependencies [d94d26c]
+- Updated dependencies [c3702af]
+- Updated dependencies [a46ecb4]
+- Updated dependencies [9bdafba]
+- Updated dependencies [f583fb9]
+- Updated dependencies [b2294ca]
+- Updated dependencies [ef14fc5]
+  - @pandacss/cli@2.0.0-beta.16
+  - @pandacss/config@2.0.0-beta.16
+  - @pandacss/compiler@2.0.0-beta.16
+  - @pandacss/types@2.0.0-beta.16
+  - @pandacss/postcss@2.0.0-beta.16
+
 ## 2.0.0-beta.15
 
 ### Minor Changes

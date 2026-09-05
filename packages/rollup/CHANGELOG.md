@@ -1,5 +1,21 @@
 # @pandacss/rollup
 
+## 2.0.0-beta.16
+
+### Patch Changes
+
+- Updated dependencies [f583fb9]
+- Updated dependencies [d94d26c]
+- Updated dependencies [c3702af]
+- Updated dependencies [a46ecb4]
+- Updated dependencies [9bdafba]
+- Updated dependencies [f583fb9]
+- Updated dependencies [b2294ca]
+- Updated dependencies [ef14fc5]
+  - @pandacss/compiler@2.0.0-beta.16
+  - @pandacss/transformer@2.0.0-beta.16
+  - @pandacss/compiler-shared@2.0.0-beta.16
+
 ## 2.0.0-beta.15
 
 ### Patch Changes
