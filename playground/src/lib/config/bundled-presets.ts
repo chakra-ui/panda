@@ -1,5 +1,6 @@
 import presetBase from '@pandacss/preset-base'
 import presetPanda from '@pandacss/preset-panda'
+import typographyPreset from '@pandacss/preset-typography'
 import type { Preset } from '@pandacss/types'
 
 // The browser can't resolve workspace preset packages from node_modules. Bundle
@@ -7,4 +8,5 @@ import type { Preset } from '@pandacss/types'
 export const bundledPresets: Record<string, Preset> = {
   '@pandacss/preset-base': presetBase,
   '@pandacss/preset-panda': presetPanda,
+  '@pandacss/preset-typography': typographyPreset({ notProse: true }),
 }

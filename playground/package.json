@@ -25,6 +25,7 @@
     "@pandacss/config": "beta",
     "@pandacss/preset-base": "beta",
     "@pandacss/preset-panda": "beta",
+    "@pandacss/preset-typography": "workspace:*",
     "@prisma/client": "5.9.1",
     "@textea/json-viewer": "4.0.1",
     "lightningcss-wasm": "1.33.0",

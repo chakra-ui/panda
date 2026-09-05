@@ -99,6 +99,8 @@ export function useEditor(props: PandaEditorProps) {
   // We use refs to avoid re-renders - Monaco manages its own state (uncontrolled)
   const lastValueRef = useRef(value)
   const isUserEditRef = useRef(false)
+  // Set while we push an external value into Monaco, so its change event is not treated as a user edit.
+  const isSyncingRef = useRef(false)
 
   const [wordWrap, setWordwrap] = useLocalStorage<'on' | 'off'>('editor_wordWrap', 'off')
 
@@ -257,6 +259,7 @@ export function jsxs(type: React.ElementType, props: unknown, key?: React.Key): 
 
   const onCodeEditorChange = useCallback(
     (content: Parameters<OnChange>[0]) => {
+      if (isSyncingRef.current) return
       const { value: currentValue, activeTab: currentTab } = stateRef.current
       const newValue = { ...currentValue, [currentTab]: content }
       // Mark as user edit to skip sync effect
@@ -327,13 +330,21 @@ export function jsxs(type: React.ElementType, props: unknown, key?: React.Key): 
     const currentContent = value[activeTab as keyof Pick<State, 'code' | 'config' | 'css'>]
     const editorContent = editor.getValue()
 
+    // Every tab of the new value, not just the visible one: a later user edit spreads from this ref.
+    lastValueRef.current = value
+
     if (currentContent !== editorContent) {
       // Save cursor position
       const position = editor.getPosition()
       const scrollTop = editor.getScrollTop()
 
-      // Update editor content directly
-      editor.setValue(currentContent ?? '')
+      // Update editor content directly. Monaco fires onChange synchronously here.
+      isSyncingRef.current = true
+      try {
+        editor.setValue(currentContent ?? '')
+      } finally {
+        isSyncingRef.current = false
+      }
 
       // Restore cursor position
       if (position) {
@@ -341,9 +352,6 @@ export function jsxs(type: React.ElementType, props: unknown, key?: React.Key): 
       }
       editor.setScrollTop(scrollTop)
     }
-
-    // Update ref
-    lastValueRef.current = value
   }, [value.code, value.config, value.css, activeTab])
 
   return {
