@@ -19,6 +19,7 @@ import { Steps } from '@/mdx/steps'
 import { Table, Td, Th, Tr } from '@/mdx/table'
 import { Tab, Tabs } from '@/mdx/tabs'
 import { Text } from '@/mdx/text'
+import { ProseDemo } from '@/mdx/prose-demo'
 import { TokenDocs } from '@/mdx/token-docs'
 import { UtilityTable } from '@/mdx/utility-table'
 import { css } from '@/styled-system/css'
@@ -85,6 +86,7 @@ export const mdxComponents: MDXComponents = {
   FileTree,
   Steps,
   TokenDocs,
+  ProseDemo,
   RouteSwitch: (props: any) => (
     <React.Suspense fallback={<div>Loading...</div>}>
       <RouteSwitch {...props} />

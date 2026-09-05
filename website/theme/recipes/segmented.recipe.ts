@@ -114,7 +114,10 @@ export const segmentedRecipe = defineRecipe({
           rounded: 'lg',
           textStyle: 'sm',
           '& svg': { width: '1.75rem', height: '1.75rem' },
-          _hover: { borderColor: 'fg.subtle', bg: 'bg.subtle' },
+          '&:not(:checked, [data-checked], [aria-checked=true], [data-state=checked])':
+            {
+              _hover: { borderColor: 'fg.subtle', bg: 'bg.subtle' }
+            },
           _checked: {
             borderColor: 'accent.emphasis',
             bg: 'accent.wash',

@@ -268,13 +268,16 @@ export default defineConfig({
 
 ```jsx
 // before
-<article class="prose prose-lg" />
+<article class="prose prose-lg dark:prose-invert" />
 
 // after
 import { prose } from '../styled-system/recipes'
 
 <article className={prose({ size: 'lg' })} />
 ```
+
+Dark mode needs no extra class, because the recipe's colors are semantic tokens. See
+[Typography](/docs/theming/typography).
 
 ## What has no equivalent
 

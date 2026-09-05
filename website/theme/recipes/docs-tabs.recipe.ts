@@ -35,8 +35,8 @@ export const docsTabsRecipe = defineRecipe({
       borderBottomWidth: '2px',
       borderColor: 'transparent',
       color: 'fg.muted',
-      _hover: {
-        borderColor: 'border'
+      '&:not([aria-selected=true], [data-selected])': {
+        _hover: { borderColor: 'border' }
       },
       _selected: {
         color: 'fg',

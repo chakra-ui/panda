@@ -277,6 +277,7 @@ export const docsTabs: TabItem[] = [
         items: [
           { title: 'Extending Presets', url: 'extending-presets' },
           { title: 'Custom Fonts', url: 'fonts' },
+          { title: 'Typography', url: 'typography' },
           { title: 'Minimal Setup', url: 'minimal-setup' },
           { title: 'JSON Spec', url: 'json-spec' },
           { title: 'Studio', url: 'studio' }
