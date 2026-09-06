@@ -22,6 +22,7 @@ export default {
   outdir: 'styled-system',
   forceImportExtension: true,
   include: ['**/*.tsx'],
+  exclude: ['**/generated/**'],
   plugins: [
     {
       name: 'host',
@@ -164,6 +165,37 @@ describe('createNodeDriver', () => {
 
       rmSync(tokens!)
       expect(driver.applyChange({ path: tokens!, kind: 'unlink' })).toBe(true)
+    } finally {
+      rmSync(watchDir, { recursive: true, force: true })
+    }
+  })
+
+  it('re-extracts importers when a token module outside the source globs changes', async () => {
+    const watchDir = mkdtempSync(join(tmpdir(), 'panda-driver-cross-file-outside-'))
+    try {
+      writeFileTree(watchDir, {
+        'panda.config.ts': `export default {
+          include: ['**/*.tsx'],
+          importMap: { css: ['@panda/css'] },
+        }`,
+        'App.tsx': "import { brand } from './tokens'; import { css } from '@panda/css'; css({ color: brand })",
+        'tokens.ts': "export const brand = 'red'",
+      })
+      const driver = await createNodeDriver({ cwd: watchDir })
+      driver.parseFiles()
+      expect(driver.cssgen().css).toContain('red')
+
+      const tokens = join(watchDir, 'tokens.ts')
+      expect(driver.isSourceFile(tokens)).toBe(false)
+
+      writeFileSync(tokens, "export const brand = 'blue'")
+      expect(driver.applyChange({ path: tokens, kind: 'change' })).toBe(true)
+      expect(driver.compiler.getFile(tokens)).toBeNull()
+      expect(driver.cssgen().css).toContain('color: blue')
+
+      writeFileSync(tokens, "export const brand = 'green'")
+      expect(driver.applyChange({ path: tokens, kind: 'change', content: "export const brand = 'green'" })).toBe(true)
+      expect(driver.cssgen().css).toContain('color: green')
     } finally {
       rmSync(watchDir, { recursive: true, force: true })
     }
@@ -516,6 +548,54 @@ describe('createNodeDriver', () => {
     `)
     expect(driver.cssgen().css).toContain('blue')
     expect(driver.cssgen().css).toContain('green')
+  })
+
+  it('ignores unknown changes outside the configured source set', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+    const excluded = join(dir, 'generated', 'Ignored.tsx')
+    const unsupported = join(dir, 'notes.md')
+    writeFileTree(dir, {
+      'generated/Ignored.tsx': "import { css } from '@panda/css'; css({ color: 'magenta' })",
+    })
+
+    expect(
+      driver.applyChanges([
+        {
+          path: excluded,
+          kind: 'add',
+        },
+        {
+          path: unsupported,
+          kind: 'change',
+          content: "import { css } from '@panda/css'; css({ color: 'cyan' })",
+        },
+      ]),
+    ).toEqual([false, false])
+    expect(driver.compiler.getFile(excluded)).toBeNull()
+    expect(driver.compiler.getFile(unsupported)).toBeNull()
+    expect(driver.cssgen().css).not.toContain('magenta')
+    expect(driver.cssgen().css).not.toContain('cyan')
+  })
+
+  it('keeps explicitly registered sources refreshable outside the configured source set', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+    const injected = join(dir, 'Injected.ts')
+    driver.compiler.parseFileSource(
+      injected,
+      "import { css } from '@panda/css'; css({ color: 'red', background: 'white' })",
+    )
+
+    expect(driver.isSourceFile(injected)).toBe(false)
+    expect(
+      driver.applyChange({
+        path: injected,
+        kind: 'change',
+        content: "import { css } from '@panda/css'; css({ color: 'blue', background: 'white' })",
+      }),
+    ).toBe(true)
+    expect(driver.cssgen().css).toContain('blue')
+    expect(driver.applyChange({ path: injected, kind: 'unlink' })).toBe(true)
+    expect(driver.applyChange({ path: injected, kind: 'unlink' })).toBe(false)
   })
 
   it('reads source changes from disk when content is omitted', async () => {

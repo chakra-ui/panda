@@ -200,7 +200,7 @@ export class NodeDriver extends BaseDriver {
       if (diff.hasChanged) this.parseFiles()
       return diff.hasChanged
     }
-    if (kind === 'source') return this.applyChange(change)
+    if (kind === 'source') return this.applySourceChange(change, 'design-system')
     return false
   }
 
@@ -276,39 +276,38 @@ export class NodeDriver extends BaseDriver {
   }
 
   applyChange(change: SourceChange): boolean {
-    this.#sourceGeneration++
-    this.#treeshakeSyncedGeneration = -1
-    const changed = this.#applySourceChange(change)
-    const refreshed = this.refreshAffectedFiles()
-    return changed || refreshed
+    return this.applySourceChange(change, 'project')
   }
 
-  #applySourceChange(change: SourceChange): boolean {
-    if (change.kind === 'unlink') {
-      return this.compiler.removeFile(change.path)
-    }
+  private applySourceChange(change: SourceChange, admission: 'project' | 'design-system'): boolean {
+    const changed = this.admitSourceChange(change, admission)
+    const refreshed = this.refreshAffectedFiles()
+    return this.recordSourceChange(changed || refreshed)
+  }
 
-    if (change.kind === 'change') {
-      if (change.content == null) {
-        if (this.compiler.refreshFile(change.path)) return true
+  /** Known files always refresh; unknown project paths must match the source globs. */
+  private admitSourceChange(change: SourceChange, admission: 'project' | 'design-system'): boolean {
+    if (change.kind === 'unlink') return this.compiler.removeFile(change.path)
 
-        this.compiler.parseFile(change.path)
-        return true
-      }
+    const refreshed =
+      change.content == null
+        ? this.compiler.refreshFile(change.path)
+        : this.compiler.refreshFileSource(change.path, change.content)
+    if (refreshed) return true
 
-      if (this.compiler.refreshFileSource(change.path, change.content)) return true
+    if (admission === 'project' && !this.isSourceFile(change.path)) return false
 
-      this.compiler.parseFileSource(change.path, change.content)
-      return true
-    }
-
-    if (change.content == null) {
-      this.compiler.parseFile(change.path)
-      return true
-    }
-
-    this.compiler.parseFileSource(change.path, change.content)
+    if (change.content == null) this.compiler.parseFile(change.path)
+    else this.compiler.parseFileSource(change.path, change.content)
     return true
+  }
+
+  private recordSourceChange(applied: boolean): boolean {
+    if (applied) {
+      this.#sourceGeneration++
+      this.#treeshakeSyncedGeneration = -1
+    }
+    return applied
   }
 
   getOutdir(outdir?: string): string {

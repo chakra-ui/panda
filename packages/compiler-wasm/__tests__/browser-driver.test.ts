@@ -6,6 +6,7 @@ const snapshot = createConfigSnapshot({
   cwd: '/proj',
   outdir: 'styled-system',
   include: ['**/*.tsx'],
+  exclude: ['**/generated/**'],
   importMap: {
     css: ['@panda/css'],
     recipe: ['@panda/recipes'],
@@ -71,6 +72,66 @@ describe('createBrowserDriver', () => {
 
     expect(applied).toMatchInlineSnapshot(`true`)
     expect(driver.cssgen().css).toContain('green')
+  })
+
+  it('ignores unknown additions and changes outside the configured source set', async () => {
+    const driver = await createBrowserDriver({ snapshot })
+    const excluded = '/proj/generated/Ignored.tsx'
+
+    expect(
+      driver.applyChange({
+        path: excluded,
+        kind: 'add',
+        content: "import { css } from '@panda/css'; css({ color: 'magenta' })",
+      }),
+    ).toBe(false)
+    expect(
+      driver.applyChange({
+        path: excluded,
+        kind: 'change',
+        content: "import { css } from '@panda/css'; css({ color: 'cyan' })",
+      }),
+    ).toBe(false)
+    expect(driver.compiler.getFile(excluded)).toBeNull()
+    expect(driver.cssgen().css).not.toContain('magenta')
+    expect(driver.cssgen().css).not.toContain('cyan')
+  })
+
+  it('re-extracts importers when a token module outside the source globs changes', async () => {
+    const driver = await createBrowserDriver({
+      snapshot,
+      sources: {
+        '/proj/tokens.ts': "export const brand = 'red'",
+        '/proj/App.tsx': "import { css } from '@panda/css'; import { brand } from './tokens'; css({ color: brand })",
+      },
+    })
+    driver.parseFiles()
+    expect(driver.isSourceFile('/proj/tokens.ts')).toBe(false)
+    expect(driver.cssgen().css).toContain('red')
+
+    expect(
+      driver.applyChange({ path: '/proj/tokens.ts', kind: 'change', content: "export const brand = 'blue'" }),
+    ).toBe(true)
+    expect(driver.compiler.getFile('/proj/tokens.ts')).toBeNull()
+    expect(driver.cssgen().css).toContain('blue')
+  })
+
+  it('keeps explicitly registered sources refreshable outside the configured source set', async () => {
+    const driver = await createBrowserDriver({ snapshot })
+    const injected = '/proj/Injected.ts'
+    driver.compiler.parseFileSource(injected, "import { css } from '@panda/css'; css({ color: 'red' })")
+
+    expect(driver.isSourceFile(injected)).toBe(false)
+    expect(
+      driver.applyChange({
+        path: injected,
+        kind: 'change',
+        content: "import { css } from '@panda/css'; css({ color: 'blue' })",
+      }),
+    ).toBe(true)
+    expect(driver.cssgen().css).toContain('blue')
+    expect(driver.applyChange({ path: injected, kind: 'unlink' })).toBe(true)
+    expect(driver.applyChange({ path: injected, kind: 'unlink' })).toBe(false)
   })
 
   it('writes stylesheet output to the compiler memory fs', async () => {
