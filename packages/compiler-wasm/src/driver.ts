@@ -87,6 +87,11 @@ class BrowserDriver extends BaseDriver {
       return this.compiler.removeFile(change.path)
     }
     if (change.content == null) return false
+    if (!this.isSourceFile(change.path)) {
+      if (change.kind !== 'change' || !this.compiler.refreshFileSource(change.path, change.content)) return false
+      this.compiler.fs.addFile?.(change.path, change.content)
+      return true
+    }
     this.compiler.fs.addFile?.(change.path, change.content)
     this.compiler.parseFileSource(change.path, change.content)
     return true

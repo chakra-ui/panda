@@ -238,11 +238,11 @@ export function isWatchableDirectory(path: string): boolean {
   }
 }
 
-function splitEvents(events: WatchEvent[], driver: Pick<Driver, 'isConfigFile'>): WatchBatch {
+export function splitEvents(events: WatchEvent[], driver: Pick<Driver, 'isConfigFile' | 'isSourceFile'>): WatchBatch {
   const batch: WatchBatch = { source: [], config: [] }
   for (const event of events) {
     if (driver.isConfigFile(event.path)) batch.config.push(event)
-    else batch.source.push(event)
+    else if (driver.isSourceFile(event.path)) batch.source.push(event)
   }
   return batch
 }

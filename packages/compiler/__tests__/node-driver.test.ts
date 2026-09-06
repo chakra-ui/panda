@@ -22,6 +22,7 @@ export default {
   outdir: 'styled-system',
   forceImportExtension: true,
   include: ['**/*.tsx'],
+  exclude: ['**/generated/**'],
   plugins: [
     {
       name: 'host',
@@ -516,6 +517,54 @@ describe('createNodeDriver', () => {
     `)
     expect(driver.cssgen().css).toContain('blue')
     expect(driver.cssgen().css).toContain('green')
+  })
+
+  it('ignores unknown changes outside the configured source set', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+    const excluded = join(dir, 'generated', 'Ignored.tsx')
+    const unsupported = join(dir, 'notes.md')
+    writeFileTree(dir, {
+      'generated/Ignored.tsx': "import { css } from '@panda/css'; css({ color: 'magenta' })",
+    })
+
+    expect(
+      driver.applyChanges([
+        {
+          path: excluded,
+          kind: 'add',
+        },
+        {
+          path: unsupported,
+          kind: 'change',
+          content: "import { css } from '@panda/css'; css({ color: 'cyan' })",
+        },
+      ]),
+    ).toEqual([false, false])
+    expect(driver.compiler.getFile(excluded)).toBeNull()
+    expect(driver.compiler.getFile(unsupported)).toBeNull()
+    expect(driver.cssgen().css).not.toContain('magenta')
+    expect(driver.cssgen().css).not.toContain('cyan')
+  })
+
+  it('keeps explicitly registered sources refreshable outside the configured source set', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+    const injected = join(dir, 'Injected.ts')
+    driver.compiler.parseFileSource(
+      injected,
+      "import { css } from '@panda/css'; css({ color: 'red', background: 'white' })",
+    )
+
+    expect(driver.isSourceFile(injected)).toBe(false)
+    expect(
+      driver.applyChange({
+        path: injected,
+        kind: 'change',
+        content: "import { css } from '@panda/css'; css({ color: 'blue', background: 'white' })",
+      }),
+    ).toBe(true)
+    expect(driver.cssgen().css).toContain('blue')
+    expect(driver.applyChange({ path: injected, kind: 'unlink' })).toBe(true)
+    expect(driver.applyChange({ path: injected, kind: 'unlink' })).toBe(false)
   })
 
   it('reads source changes from disk when content is omitted', async () => {
