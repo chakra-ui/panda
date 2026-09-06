@@ -76,7 +76,7 @@ class BrowserDriver extends BaseDriver {
   }
 
   applyChange(change: SourceChange): boolean {
-    const changed = this.#applySourceChange(change)
+    const changed = this.trackSourceChange(change, this.#applySourceChange(change))
     const refreshed = this.refreshAffectedFiles()
     return changed || refreshed
   }

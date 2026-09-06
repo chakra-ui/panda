@@ -280,7 +280,7 @@ export class NodeDriver extends BaseDriver {
   }
 
   private applySourceChange(change: SourceChange, admission: 'project' | 'design-system'): boolean {
-    const changed = this.admitSourceChange(change, admission)
+    const changed = this.trackSourceChange(change, this.admitSourceChange(change, admission))
     const refreshed = this.refreshAffectedFiles()
     return this.recordSourceChange(changed || refreshed)
   }

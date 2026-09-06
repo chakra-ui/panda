@@ -52,6 +52,54 @@ describe('createBrowserDriver', () => {
     expect(driver.cssgen().css).toContain('blue')
   })
 
+  it('reconciles staged sources removed since the previous parseFiles scan', async () => {
+    const source = "import { css } from '@panda/css'; css({ color: 'red' })"
+    const driver = await createBrowserDriver({
+      snapshot,
+      sources: {
+        '/proj/A.tsx': source,
+        '/proj/B.tsx': "import { css } from '@panda/css'; css({ color: 'blue' })",
+      },
+    })
+    const explicit = '/proj/virtual.tsx'
+    const explicitSource = "import { css } from '@panda/css'; css({ color: 'green' })"
+    driver.compiler.parseFileSource(explicit, explicitSource)
+    driver.parseFiles()
+
+    expect(driver.compiler.getFile(explicit)).not.toBeNull()
+    expect(driver.cssgen().css).toContain('green')
+    expect(driver.parseFiles({ include: ['A.tsx'] })).toHaveLength(1)
+    expect(driver.compiler.getFile('/proj/B.tsx')).not.toBeNull()
+    expect(driver.cssgen().css).toContain('blue')
+
+    expect(
+      driver.applyChange({
+        path: '/proj/added.tsx',
+        kind: 'add',
+        content: "import { css } from '@panda/css'; css({ color: 'purple' })",
+      }),
+    ).toBe(true)
+    expect(driver.cssgen().css).toContain('purple')
+
+    driver.compiler.fs.removeFile?.('/proj/B.tsx')
+    driver.compiler.fs.removeFile?.('/proj/added.tsx')
+
+    expect(driver.parseFiles()).toHaveLength(1)
+    expect(driver.compiler.getFile('/proj/B.tsx')).toBeNull()
+    expect(driver.compiler.getFile('/proj/added.tsx')).toBeNull()
+    const incrementalCss = driver.cssgen().css
+    expect(incrementalCss).toContain('red')
+    expect(incrementalCss).not.toContain('blue')
+    expect(incrementalCss).not.toContain('purple')
+    expect(incrementalCss).toContain('green')
+    expect(driver.compiler.getFile(explicit)).not.toBeNull()
+
+    const cold = await createBrowserDriver({ snapshot, sources: { '/proj/A.tsx': source } })
+    cold.compiler.parseFileSource(explicit, explicitSource)
+    cold.parseFiles()
+    expect(incrementalCss).toBe(cold.cssgen().css)
+  })
+
   it('embeds the user pattern transform in generated artifacts', async () => {
     const driver = await createBrowserDriver({ snapshot })
     const patterns = driver.artifacts().find((artifact) => artifact.id === 'patterns')
