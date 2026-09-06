@@ -28,10 +28,9 @@ describe('watch helpers', () => {
     expect(normalizeParcelEvent({ type: 'delete', path: '/x.tsx' })).toEqual({ kind: 'unlink', path: '/x.tsx' })
   })
 
-  it('routes only config files and configured project sources', () => {
+  it('forwards non-config events for driver admission', () => {
     const driver = {
       isConfigFile: (path: string) => path.endsWith('panda.config.ts'),
-      isSourceFile: (path: string) => path.endsWith('.tsx') && !path.includes('/generated/'),
     }
 
     expect(
@@ -46,7 +45,11 @@ describe('watch helpers', () => {
       ),
     ).toEqual({
       config: [{ kind: 'change', path: '/proj/panda.config.ts' }],
-      source: [{ kind: 'change', path: '/proj/src/App.tsx' }],
+      source: [
+        { kind: 'change', path: '/proj/src/App.tsx' },
+        { kind: 'add', path: '/proj/src/generated/Icons.tsx' },
+        { kind: 'change', path: '/proj/README.md' },
+      ],
     })
   })
 

@@ -74,19 +74,27 @@ describe('createBrowserDriver', () => {
     expect(driver.cssgen().css).toContain('green')
   })
 
-  it('ignores unknown changes outside the configured source set', async () => {
+  it('ignores unknown additions and changes outside the configured source set', async () => {
     const driver = await createBrowserDriver({ snapshot })
     const excluded = '/proj/generated/Ignored.tsx'
 
-    const applied = driver.applyChange({
-      path: excluded,
-      kind: 'add',
-      content: "import { css } from '@panda/css'; css({ color: 'magenta' })",
-    })
-
-    expect(applied).toBe(false)
+    expect(
+      driver.applyChange({
+        path: excluded,
+        kind: 'add',
+        content: "import { css } from '@panda/css'; css({ color: 'magenta' })",
+      }),
+    ).toBe(false)
+    expect(
+      driver.applyChange({
+        path: excluded,
+        kind: 'change',
+        content: "import { css } from '@panda/css'; css({ color: 'cyan' })",
+      }),
+    ).toBe(false)
     expect(driver.compiler.getFile(excluded)).toBeNull()
     expect(driver.cssgen().css).not.toContain('magenta')
+    expect(driver.cssgen().css).not.toContain('cyan')
   })
 
   it('keeps explicitly registered sources refreshable outside the configured source set', async () => {

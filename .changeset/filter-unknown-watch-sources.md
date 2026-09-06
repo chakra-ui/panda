@@ -1,5 +1,4 @@
 ---
-'@pandacss/cli': patch
 '@pandacss/compiler': patch
 '@pandacss/compiler-wasm': patch
 ---
