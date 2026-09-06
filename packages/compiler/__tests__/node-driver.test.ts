@@ -7,6 +7,7 @@ import {
   rmSync,
   statSync,
   symlinkSync,
+  unlinkSync,
   writeFileSync,
 } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -230,6 +231,60 @@ describe('createNodeDriver', () => {
       expect(driver.cssgen().css).toContain('outline-color: blue-outline')
     } finally {
       rmSync(watchDir, { recursive: true, force: true })
+    }
+  })
+
+  it('reconciles files removed since the previous parseFiles scan', async () => {
+    const rescanDir = mkdtempSync(join(tmpdir(), 'panda-driver-rescan-'))
+    try {
+      writeFileTree(rescanDir, {
+        'panda.config.ts': `export default {
+          include: ['**/*.tsx'],
+          importMap: { css: ['@panda/css'] },
+        }`,
+        'a.tsx': "import { css } from '@panda/css'; css({ color: 'red' })",
+        'b.tsx': "import { css } from '@panda/css'; css({ color: 'blue' })",
+      })
+      const driver = await createNodeDriver({ cwd: rescanDir })
+      const explicit = join(rescanDir, 'virtual.tsx')
+      const explicitSource = "import { css } from '@panda/css'; css({ color: 'green' })"
+      driver.compiler.parseFileSource(explicit, explicitSource)
+
+      expect(driver.parseFiles()).toHaveLength(2)
+      expect(driver.compiler.getFile(explicit)).not.toBeNull()
+      expect(driver.cssgen().css).toContain('red')
+      expect(driver.cssgen().css).toContain('blue')
+      expect(driver.cssgen().css).toContain('green')
+
+      expect(driver.parseFiles({ include: ['a.tsx'] })).toHaveLength(1)
+      expect(driver.compiler.getFile(join(rescanDir, 'b.tsx'))).not.toBeNull()
+      expect(driver.cssgen().css).toContain('blue')
+
+      const added = join(rescanDir, 'added.tsx')
+      writeFileSync(added, "import { css } from '@panda/css'; css({ color: 'purple' })")
+      expect(driver.applyChange({ path: added, kind: 'add' })).toBe(true)
+      expect(driver.cssgen().css).toContain('purple')
+
+      const removed = join(rescanDir, 'b.tsx')
+      unlinkSync(removed)
+      unlinkSync(added)
+
+      expect(driver.parseFiles()).toHaveLength(1)
+      expect(driver.compiler.getFile(removed)).toBeNull()
+      expect(driver.compiler.getFile(added)).toBeNull()
+      const incrementalCss = driver.cssgen().css
+      expect(incrementalCss).toContain('red')
+      expect(incrementalCss).not.toContain('blue')
+      expect(incrementalCss).not.toContain('purple')
+      expect(incrementalCss).toContain('green')
+      expect(driver.compiler.getFile(explicit)).not.toBeNull()
+
+      const cold = await createNodeDriver({ cwd: rescanDir })
+      cold.compiler.parseFileSource(explicit, explicitSource)
+      cold.parseFiles()
+      expect(incrementalCss).toBe(cold.cssgen().css)
+    } finally {
+      rmSync(rescanDir, { recursive: true, force: true })
     }
   })
 

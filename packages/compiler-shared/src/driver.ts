@@ -99,7 +99,7 @@ export interface Driver {
   reload(): Promise<DiffConfigResult>
   /** Source paths matching the config includes/excludes. Does not parse. */
   scan(options?: ScanOptions): string[]
-  /** Scan, then parse every discovered source file via the engine fs. */
+  /** Parse scanned sources, reconciling removals only for a default full-project scan. */
   parseFiles(options?: ScanOptions): ParseFileReport[]
   /** Route one watcher event into the engine. `false` = unknown path / no-op. */
   applyChange(change: SourceChange): boolean
@@ -169,6 +169,7 @@ export function selectArtifacts(
 export abstract class BaseDriver implements Driver {
   #compiler: Compiler
   #introspect: Introspection | undefined
+  #scanOwnedFiles = new Set<string>()
 
   protected constructor(compiler: Compiler) {
     this.#compiler = compiler
@@ -178,6 +179,7 @@ export abstract class BaseDriver implements Driver {
   protected setCompiler(compiler: Compiler): void {
     this.#compiler = compiler
     this.#introspect = undefined
+    this.#scanOwnedFiles.clear()
   }
 
   get compiler(): Compiler {
@@ -218,7 +220,38 @@ export abstract class BaseDriver implements Driver {
   }
 
   parseFiles(options?: ScanOptions): ParseFileReport[] {
-    return this.#compiler.parseFiles(this.#compiler.scan(options))
+    const paths = this.#compiler.scan(options)
+
+    // Only the default scan is an authoritative view of every config-owned
+    // source. A scan with include/exclude/cwd overrides may intentionally be a
+    // subset, so it must not evict files outside that targeted scan.
+    const isFullProjectScan =
+      options?.include === undefined && options?.exclude === undefined && options?.cwd === undefined
+    if (isFullProjectScan) {
+      const active = new Set(paths)
+      for (const path of this.#scanOwnedFiles) {
+        if (!active.has(path)) this.#compiler.removeFile(path)
+      }
+    }
+
+    const reports = this.#compiler.parseFiles(paths)
+    if (isFullProjectScan) {
+      this.#scanOwnedFiles = new Set(paths)
+    } else {
+      for (const path of paths) this.#scanOwnedFiles.add(path)
+    }
+    return reports
+  }
+
+  /** Record source ownership after a host watcher change. */
+  protected trackSourceChange(change: SourceChange, applied: boolean): boolean {
+    if (!this.#compiler.isSourceFile(change.path)) return applied
+    if (change.kind === 'unlink') {
+      this.#scanOwnedFiles.delete(change.path)
+    } else if (applied) {
+      this.#scanOwnedFiles.add(change.path)
+    }
+    return applied
   }
 
   applyChanges(changes: SourceChange[]): boolean[] {
