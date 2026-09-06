@@ -170,6 +170,37 @@ describe('createNodeDriver', () => {
     }
   })
 
+  it('re-extracts importers when a token module outside the source globs changes', async () => {
+    const watchDir = mkdtempSync(join(tmpdir(), 'panda-driver-cross-file-outside-'))
+    try {
+      writeFileTree(watchDir, {
+        'panda.config.ts': `export default {
+          include: ['**/*.tsx'],
+          importMap: { css: ['@panda/css'] },
+        }`,
+        'App.tsx': "import { brand } from './tokens'; import { css } from '@panda/css'; css({ color: brand })",
+        'tokens.ts': "export const brand = 'red'",
+      })
+      const driver = await createNodeDriver({ cwd: watchDir })
+      driver.parseFiles()
+      expect(driver.cssgen().css).toContain('red')
+
+      const tokens = join(watchDir, 'tokens.ts')
+      expect(driver.isSourceFile(tokens)).toBe(false)
+
+      writeFileSync(tokens, "export const brand = 'blue'")
+      expect(driver.applyChange({ path: tokens, kind: 'change' })).toBe(true)
+      expect(driver.compiler.getFile(tokens)).toBeNull()
+      expect(driver.cssgen().css).toContain('color: blue')
+
+      writeFileSync(tokens, "export const brand = 'green'")
+      expect(driver.applyChange({ path: tokens, kind: 'change', content: "export const brand = 'green'" })).toBe(true)
+      expect(driver.cssgen().css).toContain('color: green')
+    } finally {
+      rmSync(watchDir, { recursive: true, force: true })
+    }
+  })
+
   it('re-extracts importers through the config pattern transform', async () => {
     const watchDir = mkdtempSync(join(tmpdir(), 'panda-driver-cross-file-pattern-'))
     try {

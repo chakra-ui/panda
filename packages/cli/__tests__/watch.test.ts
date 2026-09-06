@@ -13,7 +13,6 @@ import {
   isOutputEvent,
   isWatchableDirectory,
   normalizeParcelEvent,
-  splitEvents,
   startProjectWatch,
 } from '../src/watch'
 import { createWatchLogger } from '../src/watch-logger'
@@ -26,31 +25,6 @@ describe('watch helpers', () => {
     expect(normalizeParcelEvent({ type: 'create', path: '/x.tsx' })).toEqual({ kind: 'add', path: '/x.tsx' })
     expect(normalizeParcelEvent({ type: 'update', path: '/x.tsx' })).toEqual({ kind: 'change', path: '/x.tsx' })
     expect(normalizeParcelEvent({ type: 'delete', path: '/x.tsx' })).toEqual({ kind: 'unlink', path: '/x.tsx' })
-  })
-
-  it('forwards non-config events for driver admission', () => {
-    const driver = {
-      isConfigFile: (path: string) => path.endsWith('panda.config.ts'),
-    }
-
-    expect(
-      splitEvents(
-        [
-          { kind: 'change', path: '/proj/panda.config.ts' },
-          { kind: 'change', path: '/proj/src/App.tsx' },
-          { kind: 'add', path: '/proj/src/generated/Icons.tsx' },
-          { kind: 'change', path: '/proj/README.md' },
-        ],
-        driver,
-      ),
-    ).toEqual({
-      config: [{ kind: 'change', path: '/proj/panda.config.ts' }],
-      source: [
-        { kind: 'change', path: '/proj/src/App.tsx' },
-        { kind: 'add', path: '/proj/src/generated/Icons.tsx' },
-        { kind: 'change', path: '/proj/README.md' },
-      ],
-    })
   })
 
   it('recognizes recoverable @parcel/watcher re-scan errors', () => {
