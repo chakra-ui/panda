@@ -4,13 +4,18 @@
 
 `CrossFileResolver` lets the same-file `Resolver` follow `import { x } from './tokens'` references and fold the imported
 value. Module resolution itself is delegated to `oxc_resolver` (relative paths, extension probing, tsconfig paths,
-package.json `exports`). The resolver caches per-session so each imported file is parsed and folded exactly once across
-the batch.
+package.json `exports`). The resolver caches per-session. Unchanged imported files are parsed and folded once across the
+batch; changed files replace their cached exports on the next lookup.
 
 ## Cache shape
 
 ```rust
-Mutex<FxHashMap<PathBuf, FxHashMap<String, ExportEntry>>>
+Mutex<FxHashMap<PathBuf, CachedFileExports>>
+
+struct CachedFileExports {
+    source_hash: u64,
+    exports: FxHashMap<String, ExportEntry>,
+}
 
 enum ExportEntry {
     Literal(Literal),
@@ -18,11 +23,15 @@ enum ExportEntry {
 }
 ```
 
-`path → (exported_name → folded literal or pure-fn descriptor)`.
+`path → (source hash, exported_name → folded literal or pure-fn descriptor)`.
 
-Each file is parsed once. Pure function exports are lowered to a closed owned IR **while the AST is live**, then the
-AST is dropped. The cache keeps descriptors, not `Program`s, so the resolver doesn't pin every imported file's
-allocator.
+The resolver reads and hashes the current source before using a cache entry. Matching source hashes avoid another parse
+and fold; changed sources replace the entry. Pure function exports are lowered to a closed owned IR **while the AST is
+live**, then the AST is dropped. The cache keeps descriptors, not `Program`s, so the resolver doesn't pin every imported
+file's allocator.
+
+Source-hash validation is local to the resolved module. Transitive invalidation is a separate host/provenance concern;
+this cache does not own a reverse module graph.
 
 The cache is behind a `Mutex`, not `RefCell`, so the resolver can be shared by `ExtractorConfig` in future
 parallel/bulk-file paths. The public type is `Send + Sync`.
@@ -64,9 +73,10 @@ to the enclosing `ImportDeclaration`:
 Only named import specifiers reach the cross-file path. Default and namespace specifiers return `None` immediately —
 they don't map cleanly to a single named export and our common case is `import { token } from '…'` style.
 
-Inside the loaded file, `collect_exports` builds a per-file `Resolver`. This costs one semantic pass per imported file,
-but the file is cached after that pass and the AST is dropped. That tradeoff buys parity for local aliases, computed
-keys, destructuring, imported values in the exported file, and Panda `.raw()` helpers without keeping AST memory alive.
+Inside the loaded file, `collect_exports` builds a per-file `Resolver`. This costs one semantic pass per imported source
+revision, but unchanged exports are served from the cache and the AST is dropped. That tradeoff buys parity for local
+aliases, computed keys, destructuring, imported values in the exported file, and Panda `.raw()` helpers without keeping
+AST memory alive.
 
 ## Cycle guard
 
@@ -96,9 +106,9 @@ config.
 
 ## I/O failures
 
-`extract_exports` swallows read errors and parse failures, returning an empty exports map. The dictionary still caches
-the empty map so subsequent references to the same module short-circuit. Strict correctness consumers can detect the
-empty case at the call site — the resolver itself stays best-effort, matching the JS extractor's recovery behavior.
+A read failure removes the previous cache entry and returns no export, so a deleted or unreadable file never serves
+stale data. Parse failures use Oxc's partial AST and cache any exports that still fold, matching the JS extractor's
+best-effort recovery behavior. Recreating a previously resolved file refreshes its exports on the next lookup.
 
 ## StyleTree hand-off
 

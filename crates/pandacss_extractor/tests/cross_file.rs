@@ -470,6 +470,139 @@ fn cache_reuses_across_multiple_extracts() {
     assert_eq!(shape(&a), shape(&b));
 }
 
+#[test]
+fn cache_reloads_exports_when_imported_source_changes() {
+    let source = indoc::indoc! {r"
+        import { brand } from './tokens';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    let (fs, main) = project(source, &[("tokens.ts", "export const brand = 'red';\n")]);
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+
+    let before = extract(source, main.to_str().unwrap(), &config);
+    fs.add_file(
+        PathBuf::from("/proj/tokens.ts"),
+        b"export const brand = 'blue';\n".to_vec(),
+    );
+    let after = extract(source, main.to_str().unwrap(), &config);
+
+    assert_yaml_snapshot!(serde_json::json!({
+        "before": shape(&before),
+        "after": shape(&after),
+    }), @r"
+    before:
+      calls:
+        - name: css
+          data:
+            - color: red
+    after:
+      calls:
+        - name: css
+          data:
+            - color: blue
+    ");
+}
+
+#[test]
+fn cache_drops_an_export_removed_from_an_existing_module() {
+    let source = indoc::indoc! {r"
+        import { brand } from './tokens';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    let (fs, main) = project(source, &[("tokens.ts", "export const brand = 'red';\n")]);
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+
+    let before = extract(source, main.to_str().unwrap(), &config);
+    fs.add_file(
+        PathBuf::from("/proj/tokens.ts"),
+        b"export const accent = 'blue';\n".to_vec(),
+    );
+    let after = extract(source, main.to_str().unwrap(), &config);
+
+    assert_yaml_snapshot!(serde_json::json!({
+        "before": shape(&before),
+        "after": shape(&after),
+    }), @r"
+    before:
+      calls:
+        - name: css
+          data:
+            - color: red
+    after:
+      calls: []
+    ");
+}
+
+#[test]
+fn cache_drops_deleted_exports_and_recovers_after_recreation() {
+    let source = indoc::indoc! {r"
+        import { brand } from './tokens';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    let (fs, main) = project(source, &[("tokens.ts", "export const brand = 'red';\n")]);
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+    let tokens = PathBuf::from("/proj/tokens.ts");
+
+    let before = extract(source, main.to_str().unwrap(), &config);
+    pandacss_fs::FileSystem::remove_file(&fs, &tokens).unwrap();
+    let deleted = extract(source, main.to_str().unwrap(), &config);
+    fs.add_file(tokens, b"export const brand = 'green';\n".to_vec());
+    let recreated = extract(source, main.to_str().unwrap(), &config);
+
+    assert_yaml_snapshot!(serde_json::json!({
+        "before": shape(&before),
+        "deleted": shape(&deleted),
+        "recreated": shape(&recreated),
+    }), @r"
+    before:
+      calls:
+        - name: css
+          data:
+            - color: red
+    deleted:
+      calls: []
+    recreated:
+      calls:
+        - name: css
+          data:
+            - color: green
+    ");
+}
+
+#[test]
+fn cache_reloads_when_a_previously_missing_export_appears() {
+    let source = indoc::indoc! {r"
+        import { brand } from './tokens';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    let (fs, main) = project(source, &[("tokens.ts", "export const accent = 'red';\n")]);
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+
+    let missing = extract(source, main.to_str().unwrap(), &config);
+    fs.add_file(
+        PathBuf::from("/proj/tokens.ts"),
+        b"export const brand = 'blue';\n".to_vec(),
+    );
+    let added = extract(source, main.to_str().unwrap(), &config);
+
+    assert_yaml_snapshot!(serde_json::json!({
+        "missing": shape(&missing),
+        "added": shape(&added),
+    }), @r"
+    missing:
+      calls: []
+    added:
+      calls:
+        - name: css
+          data:
+            - color: blue
+    ");
+}
+
 // --- in-memory FS specific tests ----------------------------------------
 
 #[test]
