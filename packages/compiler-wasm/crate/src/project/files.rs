@@ -147,8 +147,8 @@ impl WasmCompiler {
         pandacss_fs::matches_globs(std::path::Path::new(path), &opts)
     }
 
-    /// Read + parse source paths returned from `scan()`. Returns one report per
-    /// successfully parsed path.
+    /// Read + parse source paths from `scan()`. One report per requested path;
+    /// a read miss keeps last-good state and reports a warning diagnostic.
     ///
     /// # Errors
     /// Returns a JS error when `paths` is malformed or serializing the report fails.
@@ -158,12 +158,10 @@ impl WasmCompiler {
             .map_err(|err| JsValue::from_str(&format!("invalid source paths: {err}")))?;
         let mut reports = Vec::with_capacity(paths.len());
         for path in paths {
-            let path = PathBuf::from(path);
-            let Ok(source) = self.fs.read_to_string(&path) else {
-                continue;
+            let report = match self.fs.read_to_string(Path::new(&path)) {
+                Ok(source) => self.parse_inner(&path, &source),
+                Err(err) => self.inner.record_read_failure(&path, &err),
             };
-            let path = path.to_string_lossy();
-            let report = self.parse_inner(&path, &source);
             reports.push(parse_file_report(&path, report));
         }
         let _span = tracing::trace_span!("boundary_encode", method = "parse_files").entered();

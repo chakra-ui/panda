@@ -412,3 +412,64 @@ fn bare_condition_name_is_not_an_unknown_condition() {
     );
     assert_snapshot!(summary(&report.diagnostics), @"");
 }
+
+#[test]
+fn source_read_failure_keeps_last_good_styles_and_reports_the_miss() {
+    let mut project = create_project(json!({}));
+    project.parse_file(
+        "style.ts",
+        "import { css } from '@panda/css'; css({ color: 'red' });",
+    );
+
+    let missing = std::io::Error::new(std::io::ErrorKind::NotFound, "no such file");
+    let report = project.record_read_failure("style.ts", &missing);
+
+    assert_eq!(report.css_calls, 0);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: red
+      conditions: []
+    ");
+    assert_snapshot!(summary(&report.diagnostics), @"Warning source_not_found failed to read `style.ts`: no such file");
+    assert_yaml_snapshot!(
+        project
+            .file_diagnostics()
+            .into_iter()
+            .map(|diagnostic| (diagnostic.code.as_str(), diagnostic.file.as_deref()))
+            .collect::<Vec<_>>(),
+        @r"
+    - - source_not_found
+      - style.ts
+    "
+    );
+    assert_yaml_snapshot!(
+        project
+            .get_file("style.ts")
+            .map(|file| file.diagnostics().iter().map(|d| d.code.as_str()).collect::<Vec<_>>()),
+        @r"
+    - source_not_found
+    "
+    );
+
+    let denied = std::io::Error::new(std::io::ErrorKind::PermissionDenied, "denied");
+    let report = project.record_read_failure("style.ts", &denied);
+    assert_snapshot!(summary(&report.diagnostics), @"Warning source_read_failed failed to read `style.ts`: denied");
+
+    project.parse_file(
+        "style.ts",
+        "import { css } from '@panda/css'; css({ color: 'blue' });",
+    );
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: blue
+      conditions: []
+    ");
+    assert!(project.file_diagnostics().is_empty());
+
+    assert!(project.get_file("never.ts").is_none());
+    let report = project.record_read_failure("never.ts", &missing);
+    assert_eq!(report.diagnostics[0].code, "source_not_found");
+    assert!(project.get_file("never.ts").is_none());
+    assert!(project.remove_file("never.ts"));
+    assert!(project.file_diagnostics().is_empty());
+}

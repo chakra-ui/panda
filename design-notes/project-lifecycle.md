@@ -8,7 +8,10 @@ owns the mutable per-file buckets and caches. Source files flow in through `pars
 decomposes `cva()` / `sva()` recipes, and feeds the results into a shared atomic encoder. The contract is **per-file
 replacement**: re-adding a path drops its previous contribution before re-encoding, so removed or renamed styles can't
 linger as ghost atoms in watch mode. If `parser:before` fails before extraction, the project keeps the last-good style
-bucket but records that latest-attempt diagnostic; a later successful parse replaces both.
+bucket but records that latest-attempt diagnostic; a later successful parse replaces both. A source read failure in the
+bindings' `parseFiles` follows the same rule via `record_read_failure`: last-good state stays, and the path still gets a
+report with a `source_not_found` / `source_read_failed` warning. It is a warning, not an error, because file diagnostics
+fold into CSS output and `panda build` fails on any error. `parseFiles` never prunes; only `remove_file` drops a path.
 
 ## Construction
 

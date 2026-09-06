@@ -784,6 +784,27 @@ impl Project {
         report
     }
 
+    /// Records a read miss for `path`. Last-good state stays; the error shows
+    /// on `get_file` until a later parse succeeds or `remove_file` runs.
+    pub fn record_read_failure(&mut self, path: &str, err: &std::io::Error) -> ParseFileReport {
+        let code = if err.kind() == std::io::ErrorKind::NotFound {
+            diagnostic_codes::SOURCE_NOT_FOUND
+        } else {
+            diagnostic_codes::SOURCE_READ_FAILED
+        };
+        let mut diagnostic = Diagnostic::warning(code, format!("failed to read `{path}`: {err}"));
+        diagnostic.file = Some(path.to_owned());
+        self.parse_attempt_diagnostics
+            .insert(Arc::from(path), vec![diagnostic.clone()]);
+        ParseFileReport {
+            css_calls: 0,
+            cva_calls: 0,
+            sva_calls: 0,
+            jsx_usages: 0,
+            diagnostics: vec![diagnostic],
+        }
+    }
+
     /// Re-parses `path` only if it's already known. Watch-mode contract:
     /// filter file-change events through this and edits to untracked files
     /// are ignored automatically.
