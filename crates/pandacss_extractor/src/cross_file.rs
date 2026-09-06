@@ -7,8 +7,9 @@
 //! consumer types (`ExtractorConfig`, `Project`) stay non-generic; the
 //! concrete impl is `ResolverImpl<F>` behind a `Box<dyn CrossFileLookup>`.
 //!
-//! Cache: `path → HashMap<exported_name, ExportEntry>`. Each file parses and
-//! folds once per session, then drops its AST.
+//! Cache: `path → (source hash, HashMap<exported_name, ExportEntry>)`. Each
+//! unchanged file parses and folds once, then drops its AST. A changed source
+//! replaces its cached exports.
 //!
 //! Folds top-level `export const X = <foldable>` values and simple pure
 //! function exports (arrow / function) into an owned descriptor.
@@ -54,6 +55,11 @@ pub struct ExportedRecipe {
 }
 
 type FileExports = FxHashMap<String, ExportEntry>;
+
+struct CachedFileExports {
+    source_hash: u64,
+    exports: FileExports,
+}
 
 fn to_forward_slash(path: &Path) -> PathBuf {
     PathBuf::from(path.to_string_lossy().replace('\\', "/"))
@@ -157,7 +163,7 @@ pub(crate) trait CrossFileLookup: Send + Sync {
 struct ResolverImpl<F: FileSystem + Clone> {
     inner: ResolverGeneric<F>,
     fs: F,
-    cache: Mutex<FxHashMap<PathBuf, FileExports>>,
+    cache: Mutex<FxHashMap<PathBuf, CachedFileExports>>,
     in_flight: Mutex<FxHashSet<(PathBuf, String)>>,
 }
 
@@ -175,13 +181,13 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
     fn extract_exports(
         &self,
         path: &Path,
+        source: &str,
         matchers: Option<&Matchers>,
         tokens: Option<&TokenDictionary>,
-    ) -> Option<FileExports> {
-        let source = <F as oxc_resolver::FileSystem>::read_to_string(&self.fs, path).ok()?;
+    ) -> FileExports {
         let allocator = Allocator::default();
         let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
-        let parser_return = Parser::new(&allocator, &source, source_type).parse();
+        let parser_return = Parser::new(&allocator, source, source_type).parse();
         let matched = matchers.map_or_else(Vec::new, |matchers| {
             let imports = collect_imports(&parser_return.program);
             match_import_records(&imports, matchers)
@@ -199,13 +205,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
         });
 
         // Oxc returns a partial AST on parse errors — walk what we get.
-        Some(collect_exports(
-            &parser_return.program,
-            path,
-            self,
-            &resolver,
-            &matched,
-        ))
+        collect_exports(&parser_return.program, path, self, &resolver, &matched)
     }
 }
 
@@ -244,6 +244,20 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         };
         let path = to_forward_slash(&resolution.full_path());
 
+        // Validate cached exports against the current source. Never serve the
+        // last successful entry after a read failure.
+        let Ok(source) = <F as oxc_resolver::FileSystem>::read_to_string(&self.fs, &path) else {
+            self.cache
+                .lock()
+                .expect("cross-file cache poisoned")
+                .remove(&path);
+            return CrossFileResolution {
+                entry: None,
+                path: Some(path),
+            };
+        };
+        let source_hash = pandacss_shared::fx_hash(&source);
+
         // A resolved module is a build dependency even if the export doesn't
         // fold — record `path` on every remaining exit.
         if let Some(exports) = self
@@ -251,9 +265,10 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
             .lock()
             .expect("cross-file cache poisoned")
             .get(&path)
+            .filter(|cached| cached.source_hash == source_hash)
         {
             return CrossFileResolution {
-                entry: exports.get(name).cloned(),
+                entry: exports.exports.get(name).cloned(),
                 path: Some(path),
             };
         }
@@ -270,9 +285,7 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
             }
         }
 
-        let exports = self
-            .extract_exports(&path, matchers, tokens)
-            .unwrap_or_default();
+        let exports = self.extract_exports(&path, &source, matchers, tokens);
         self.in_flight
             .lock()
             .expect("cross-file guard poisoned")
@@ -282,7 +295,13 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         self.cache
             .lock()
             .expect("cross-file cache poisoned")
-            .insert(path.clone(), exports);
+            .insert(
+                path.clone(),
+                CachedFileExports {
+                    source_hash,
+                    exports,
+                },
+            );
         CrossFileResolution {
             entry,
             path: Some(path),
