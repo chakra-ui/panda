@@ -1,18 +1,15 @@
-//! Cross-file import resolution: when the same-file [`crate::Resolver`] hits
-//! `import { x } from './tokens'`, this module loads the target file and
-//! folds the requested export. Module resolution itself is `oxc_resolver`
-//! (relative paths, extensions, tsconfig paths, package.json `exports`).
+//! Cross-file folding. When [`crate::Resolver`] hits `import { x } from './tokens'`,
+//! load the target and fold the named export. Resolution is `oxc_resolver`.
 //!
 //! `CrossFileResolver` type-erases over [`pandacss_fs::FileSystem`] so
-//! consumer types (`ExtractorConfig`, `Project`) stay non-generic; the
-//! concrete impl is `ResolverImpl<F>` behind a `Box<dyn CrossFileLookup>`.
+//! `ExtractorConfig` and `Project` stay non-generic. Impl is `ResolverImpl<F>`
+//! behind `Box<dyn CrossFileLookup>`.
 //!
-//! Cache: `path → (source hash, HashMap<exported_name, ExportEntry>)`. Each
-//! unchanged file parses and folds once, then drops its AST. A changed source
-//! replaces its cached exports.
+//! Cache: `path → (source hash, exports)`. Unchanged files parse once and drop
+//! the AST. A changed or unreadable source replaces the entry.
 //!
-//! Folds top-level `export const X = <foldable>` values and simple pure
-//! function exports (arrow / function) into an owned descriptor.
+//! Folds top-level `export const X = <foldable>` and simple pure function
+//! exports into an owned descriptor.
 
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
@@ -36,7 +33,7 @@ use crate::{
     imports::module_export_name, match_import_records, scope::Resolver,
 };
 
-/// A folded named export: a style literal, a pure callable, or an inline recipe.
+/// Folded named export: style literal, pure callable, or inline recipe.
 #[derive(Debug, Clone)]
 pub(crate) enum ExportEntry {
     Literal(Literal),
@@ -44,13 +41,12 @@ pub(crate) enum ExportEntry {
     Recipe(ExportedRecipe),
 }
 
-/// `export const button = cva({ … })` — enough for an importer to resolve
-/// `button.raw(props)` without running the recipe.
+/// `export const button = cva({ … })`. Enough for `button.raw(props)` without running the recipe.
 #[derive(Debug, Clone)]
 pub struct ExportedRecipe {
     /// `"cva"` or `"sva"`.
     pub factory: String,
-    /// The config object as authored.
+    /// Config object as authored.
     pub config: Literal,
 }
 
@@ -77,9 +73,7 @@ fn default_resolve_options() -> ResolveOptions {
     }
 }
 
-/// Public type-erased resolver. Wraps a generic `ResolverImpl<F>` behind
-/// a trait object so `ExtractorConfig` doesn't need to be generic over the
-/// filesystem impl.
+/// Type-erased over `F: FileSystem` so `ExtractorConfig` stays non-generic.
 pub struct CrossFileResolver {
     inner: Box<dyn CrossFileLookup>,
 }
@@ -100,21 +94,17 @@ impl Default for CrossFileResolver {
 }
 
 impl CrossFileResolver {
-    /// Construct with the default OS filesystem.
     #[cfg(feature = "os")]
     #[must_use]
     pub fn new() -> Self {
         Self::with_fs(pandacss_fs::OsFileSystem::default())
     }
 
-    /// Construct with a custom filesystem. Use this from wasm builds
-    /// (with [`pandacss_fs::MemoryFileSystem`]) or for testing.
+    /// Custom FS. Wasm and tests use [`pandacss_fs::MemoryFileSystem`].
     pub fn with_fs<F: FileSystem + Clone + 'static>(fs: F) -> Self {
         Self::with_fs_and_options(fs, default_resolve_options())
     }
 
-    /// Construct with custom FS *and* resolver options (tsconfig paths,
-    /// alternative extension order, etc.).
     pub fn with_fs_and_options<F: FileSystem + Clone + 'static>(
         fs: F,
         options: ResolveOptions,
@@ -134,15 +124,12 @@ impl CrossFileResolver {
     }
 }
 
-/// A cross-file lookup: the folded export plus the resolved module path
-/// (recorded as a build dependency even when the value doesn't fold).
+/// Folded export plus resolved path. `path` is a build dep even when the export does not fold.
 pub(crate) struct CrossFileResolution {
     pub(crate) entry: Option<ExportEntry>,
     pub(crate) path: Option<PathBuf>,
 }
 
-/// Object-safe interface the rest of the crate consumes. Keeps the
-/// `F: FileSystem` parameter contained inside `cross_file.rs`.
 pub(crate) trait CrossFileLookup: Send + Sync {
     fn resolve_named_export(
         &self,
@@ -158,8 +145,6 @@ pub(crate) trait CrossFileLookup: Send + Sync {
     fn cache_len(&self) -> usize;
 }
 
-/// Concrete generic implementation. Constructed from any
-/// `F: FileSystem + Clone` and then boxed behind `CrossFileLookup`.
 struct ResolverImpl<F: FileSystem + Clone> {
     inner: ResolverGeneric<F>,
     fs: F,
@@ -204,15 +189,15 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
             recipe_raw_resolve: None,
         });
 
-        // Oxc returns a partial AST on parse errors — walk what we get.
+        // Oxc recovers a partial AST on parse errors. Walk what we get.
         collect_exports(&parser_return.program, path, self, &resolver, &matched)
     }
 }
 
 impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
     fn resolve_path(&self, from_file: &Path, specifier: &str) -> Option<PathBuf> {
-        // `resolve_file` is the only API that honors `TsconfigDiscovery::Auto`,
-        // but it panics on a non-file path — guard first.
+        // `resolve_file` is the only API that honors `TsconfigDiscovery::Auto`.
+        // It panics on a non-file path, so guard first.
         if !<F as oxc_resolver::FileSystem>::metadata(&self.fs, from_file)
             .is_ok_and(oxc_resolver::FileMetadata::is_file)
         {
@@ -244,8 +229,7 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         };
         let path = to_forward_slash(&resolution.full_path());
 
-        // Validate cached exports against the current source. Never serve the
-        // last successful entry after a read failure.
+        // Read-fail drops the entry so a deleted file never serves stale exports.
         let Ok(source) = <F as oxc_resolver::FileSystem>::read_to_string(&self.fs, &path) else {
             self.cache
                 .lock()
@@ -258,8 +242,7 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         };
         let source_hash = pandacss_shared::fx_hash(&source);
 
-        // A resolved module is a build dependency even if the export doesn't
-        // fold — record `path` on every remaining exit.
+        // Record `path` on every remaining exit. Resolved modules are deps even when they don't fold.
         if let Some(exports) = self
             .cache
             .lock()
@@ -332,7 +315,7 @@ fn collect_exports(
     exports
 }
 
-/// `cva`/`sva` when `callee` is a Panda recipe factory imported in this file.
+/// `cva` / `sva` when `callee` is a recipe factory imported in this file.
 fn recipe_factory_name(callee: &Expression<'_>, matched: &[MatchedImport]) -> Option<String> {
     let Expression::Identifier(id) = callee.get_inner_expression() else {
         return None;
@@ -347,7 +330,6 @@ fn recipe_factory_name(callee: &Expression<'_>, matched: &[MatchedImport]) -> Op
         .map(|import| import.name.clone())
 }
 
-/// `export const button = cva({ … })` as a resolvable recipe.
 fn exported_recipe(
     init: &Expression<'_>,
     resolver: &Resolver<'_, '_>,
