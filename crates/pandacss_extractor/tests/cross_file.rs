@@ -603,6 +603,200 @@ fn cache_reloads_when_a_previously_missing_export_appears() {
     ");
 }
 
+#[test]
+fn cache_reloads_exports_through_a_re_export() {
+    let source = indoc::indoc! {r"
+        import { brand } from './barrel';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    let (fs, main) = project(
+        source,
+        &[
+            ("barrel.ts", "export { brand } from './tokens';\n"),
+            ("tokens.ts", "export const brand = 'red';\n"),
+        ],
+    );
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+
+    let before = extract(source, main.to_str().unwrap(), &config);
+    fs.add_file(
+        PathBuf::from("/proj/tokens.ts"),
+        b"export const brand = 'blue';\n".to_vec(),
+    );
+    let after = extract(source, main.to_str().unwrap(), &config);
+
+    let deps = before
+        .dependencies
+        .iter()
+        .map(|dep| (dep.path.as_str(), dep.source_hash.is_some()))
+        .collect::<Vec<_>>();
+    assert_eq!(
+        deps,
+        vec![("/proj/barrel.ts", true), ("/proj/tokens.ts", true)]
+    );
+    assert_yaml_snapshot!(serde_json::json!({
+        "before": shape(&before),
+        "after": shape(&after),
+    }), @r"
+    before:
+      calls:
+        - name: css
+          data:
+            - color: red
+    after:
+      calls:
+        - name: css
+          data:
+            - color: blue
+    ");
+}
+
+#[test]
+fn cache_reloads_exports_through_an_imported_alias() {
+    let source = indoc::indoc! {r"
+        import { brand } from './mid';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    let (fs, main) = project(
+        source,
+        &[
+            (
+                "mid.ts",
+                "import { brand as value } from './tokens';\nexport const brand = value;\n",
+            ),
+            ("tokens.ts", "export const brand = 'red';\n"),
+        ],
+    );
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+
+    let before = extract(source, main.to_str().unwrap(), &config);
+    fs.add_file(
+        PathBuf::from("/proj/tokens.ts"),
+        b"export const brand = 'blue';\n".to_vec(),
+    );
+    let after = extract(source, main.to_str().unwrap(), &config);
+
+    assert_yaml_snapshot!(serde_json::json!({
+        "before": shape(&before),
+        "after": shape(&after),
+    }), @r"
+    before:
+      calls:
+        - name: css
+          data:
+            - color: red
+    after:
+      calls:
+        - name: css
+          data:
+            - color: blue
+    ");
+}
+
+#[test]
+fn cache_reloads_exports_through_a_three_hop_re_export() {
+    let source = indoc::indoc! {r"
+        import { brand } from './a';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    let (fs, main) = project(
+        source,
+        &[
+            ("a.ts", "export { brand } from './b';\n"),
+            ("b.ts", "export { brand } from './tokens';\n"),
+            ("tokens.ts", "export const brand = 'red';\n"),
+        ],
+    );
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+
+    let before = extract(source, main.to_str().unwrap(), &config);
+    fs.add_file(
+        PathBuf::from("/proj/tokens.ts"),
+        b"export const brand = 'blue';\n".to_vec(),
+    );
+    let after = extract(source, main.to_str().unwrap(), &config);
+
+    assert_yaml_snapshot!(serde_json::json!({
+        "before": shape(&before),
+        "after": shape(&after),
+    }), @r"
+    before:
+      calls:
+        - name: css
+          data:
+            - color: red
+    after:
+      calls:
+        - name: css
+          data:
+            - color: blue
+    ");
+}
+
+#[test]
+fn cache_keeps_an_unrelated_importer_stable_when_another_module_changes() {
+    let red_source = indoc::indoc! {r"
+        import { brand } from './red';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    let blue_source = indoc::indoc! {r"
+        import { brand } from './blue';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    let (fs, red_main) = project(
+        red_source,
+        &[
+            ("red.ts", "export const brand = 'red';\n"),
+            ("blue.ts", "export const brand = 'navy';\n"),
+            ("other.tsx", blue_source),
+        ],
+    );
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+    let other = PathBuf::from("/proj/other.tsx");
+
+    let red_before = extract(red_source, red_main.to_str().unwrap(), &config);
+    let blue_before = extract(blue_source, other.to_str().unwrap(), &config);
+    fs.add_file(
+        PathBuf::from("/proj/red.ts"),
+        b"export const brand = 'crimson';\n".to_vec(),
+    );
+    let red_after = extract(red_source, red_main.to_str().unwrap(), &config);
+    let blue_after = extract(blue_source, other.to_str().unwrap(), &config);
+
+    assert_yaml_snapshot!(serde_json::json!({
+        "red": { "before": shape(&red_before), "after": shape(&red_after) },
+        "blue": { "before": shape(&blue_before), "after": shape(&blue_after) },
+    }), @r"
+    red:
+      before:
+        calls:
+          - name: css
+            data:
+              - color: red
+      after:
+        calls:
+          - name: css
+            data:
+              - color: crimson
+    blue:
+      before:
+        calls:
+          - name: css
+            data:
+              - color: navy
+      after:
+        calls:
+          - name: css
+            data:
+              - color: navy
+    ");
+}
+
 // --- in-memory FS specific tests ----------------------------------------
 
 #[test]

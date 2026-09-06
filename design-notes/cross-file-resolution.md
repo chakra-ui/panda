@@ -15,6 +15,7 @@ Mutex<FxHashMap<PathBuf, CachedFileExports>>
 struct CachedFileExports {
     source_hash: u64,
     exports: FxHashMap<String, ExportEntry>,
+    deps: Vec<(PathBuf, Option<u64>)>,
 }
 
 enum ExportEntry {
@@ -23,18 +24,51 @@ enum ExportEntry {
 }
 ```
 
-`path → (source hash, exported_name → folded literal or pure-fn descriptor)`.
+`path → (source hash, exported_name → folded literal or pure-fn descriptor, nested provenance)`.
 
 The resolver reads and hashes the current source before using a cache entry. Matching source hashes avoid another parse
-and fold; changed sources replace the entry. Pure function exports are lowered to a closed owned IR **while the AST is
-live**, then the AST is dropped. The cache keeps descriptors, not `Program`s, so the resolver doesn't pin every imported
-file's allocator.
+and fold; changed sources replace the entry. Nested modules folded into this file (re-exports, imported aliases) are
+stored as `deps` with the hash seen, `None` when the module could not be read. A dep hash miss busts the entry, so
+`export { brand } from './tokens'` does not keep the old value after `tokens.ts` changes.
 
-Source-hash validation is local to the resolved module. Transitive invalidation is a separate host/provenance concern;
-this cache does not own a reverse module graph.
+Pure function exports are lowered to a closed owned IR **while the AST is live**, then the AST is dropped. The cache
+keeps descriptors, not `Program`s, so the resolver doesn't pin every imported file's allocator.
 
 The cache is behind a `Mutex`, not `RefCell`, so the resolver can be shared by `ExtractorConfig` in future
 parallel/bulk-file paths. The public type is `Send + Sync`.
+
+## Watch invalidation
+
+The resolver stays a forward lookup. Every extract reports
+`dependencies: Vec<CrossFileDependency { path, source_hash }>`: the resolved module plus its provenance, each with the
+hash the importer folded. `Project` inverts that into `dep → importer → hash`.
+
+```
+parse_file / refresh_file (tokens.ts, hash H)      remove_file (tokens.ts)
+        │                                                  │
+        ▼                                                  ▼
+importers[tokens.ts] where hash ≠ H                 importers[tokens.ts] where hash ≠ None
+        │                                                  │
+        └──────────────► affected_files ◄──────────────────┘
+                              │
+                              ▼  affectedFiles()
+              host: refreshFile(each) → call again until empty
+```
+
+The hash comparison is what keeps this cheap. A cold build parses `tokens.ts` after its importers already folded the
+current bytes, so nothing is affected and nothing is parsed twice. Marking a file also clears its `cacheable` flag, so
+its unchanged source gets past the same-hash short-circuit on the next parse.
+
+The project never re-parses importers itself. Pattern and utility transforms are JS callbacks owned by the host, so a
+cascade inside Rust would produce untransformed atoms. The host reads `affectedFiles()` after every change and re-parses
+through its normal `refreshFile` path (`BaseDriver.refreshAffectedFiles`). That path is additive, like any other watch
+refresh, so dev CSS keeps the old atom alongside the new one until the next full build.
+
+Host paths may not match the resolver's realpath form (`/var` vs `/private/var`). `dependency_key` normalizes through
+the resolver's filesystem. A deleted file canonicalizes its parent so unlink events still match.
+
+Known gap: an import that failed to resolve at extract time records no path, so creating the missing module later does
+not mark the importer. Editing the importer, or a full build, picks it up.
 
 ## What folds
 
@@ -42,7 +76,7 @@ Top-level named exports where the exported value resolves to a static literal **
 
 - `export const x = <foldable>`
 - `export let x = <foldable>` / `export var x = <foldable>` when the binding is not mutated
-- `export const f = (name) => \`.${name}:hover &\`` / `export function f() { return '…' }` when the body lowers
+- `export const f = (name) => \`.${name}:hover &\``/`export function f() { return '…' }` when the body lowers
 - exported aliases, e.g. `const button = base; export { button }`
 - re-exports, e.g. `export { button } from './base'` (literals and pure fns)
 - file-local alias chains, e.g. `const button = base; export const primary = button`
@@ -56,8 +90,8 @@ semantics as same-file extraction. Call sites apply `OwnedPureFn` with folded ar
 
 - `export default …` — same surface as named exports but currently skipped to keep the v1 contract narrow.
 - Namespace/default imports in the importing file — they don't map cleanly to one named export.
-- Impure or unsupported callables, bare function values used without a call, classes, and anything the literal
-  evaluator intentionally rejects.
+- Impure or unsupported callables, bare function values used without a call, classes, and anything the literal evaluator
+  intentionally rejects.
 
 ## Resolver hand-off
 
@@ -112,10 +146,9 @@ best-effort recovery behavior. Recreating a previously resolved file refreshes i
 
 ## StyleTree hand-off
 
-Imported style bindings rehydrate through `literal_to_style_tree`. `Literal::Conditional`
-becomes `StyleTree::Branches` (no foreign spans). Encode still expands every arm; transform
-cannot emit a runtime ternary for the foreign test — it uses the static Conditional path
-(both branch classes). Same-file conditionals keep `Ternary` / `And` with local spans.
+Imported style bindings rehydrate through `literal_to_style_tree`. `Literal::Conditional` becomes `StyleTree::Branches`
+(no foreign spans). Encode still expands every arm; transform cannot emit a runtime ternary for the foreign test — it
+uses the static Conditional path (both branch classes). Same-file conditionals keep `Ternary` / `And` with local spans.
 
 ## Related
 

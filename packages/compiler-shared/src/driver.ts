@@ -199,6 +199,24 @@ export abstract class BaseDriver implements Driver {
     return this.#compiler.scan(options)
   }
 
+  /** A refresh can affect further importers, so loop until quiet. */
+  protected refreshAffectedFiles(): boolean {
+    const seen = new Set<string>()
+    let refreshed = false
+    for (
+      let affected = this.#compiler.affectedFiles();
+      affected.length > 0;
+      affected = this.#compiler.affectedFiles()
+    ) {
+      for (const path of affected) {
+        if (seen.has(path) || !this.#compiler.fs.exists(path)) continue
+        seen.add(path)
+        refreshed = this.#compiler.refreshFile(path) || refreshed
+      }
+    }
+    return refreshed
+  }
+
   parseFiles(options?: ScanOptions): ParseFileReport[] {
     return this.#compiler.parseFiles(this.#compiler.scan(options))
   }

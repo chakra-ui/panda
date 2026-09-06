@@ -51,10 +51,10 @@ Some topics span several notes. Keep the detailed contract in one place and link
 - [Filesystem](./filesystem.md) — `pandacss_fs` trait, os/memory impls, glob via `fast-glob`, WASM compat.
 - [Literal evaluator](./literal-evaluator.md) — what folds vs what doesn't (literals, pure helpers, token/raw calls).
 - [StyleTree](./style-tree.md) — span-backed transform IR for `css()` / JSX conditionals; `project_literal` for encode.
-- [Cross-file resolution](./cross-file-resolution.md) — `CrossFileResolver`, cache shape (`Literal` | `PureFn`), cycle
-  guard.
-- [Cross-file questions](./cross-file-questions.md) — forward questions use the lazy resolver; reverse or whole-program
-  ones ask the bundler at `buildEnd` rather than building a second module graph.
+- [Cross-file resolution](./cross-file-resolution.md) — `CrossFileResolver`, cache shape (`Literal` | `PureFn` plus
+  provenance hashes), cycle guard, hash-keyed `Project` reverse index and host-driven affected-file refresh for watch.
+- [Cross-file questions](./cross-file-questions.md) — forward questions use the lazy resolver; watch uses the extract
+  edge map; whole-program questions ask the bundler at `buildEnd`.
 - [JSX tag matching](./jsx-tag-matching.md) — `jsxMatchTag`: declarative successor to v1 `matchTag`/`matchTagProp`;
   match/ignore JSX tags by name, pattern, or import source, plus per-rule prop control. Why it's data, not a callback.
 - [Recipe variant dynamic diagnostics](./recipe-variant-diagnostics.md) — `recipe_variant_dynamic`: warn when config

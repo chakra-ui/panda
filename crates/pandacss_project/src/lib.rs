@@ -39,6 +39,7 @@ mod usages;
 
 use std::collections::BTreeMap;
 use std::hash::Hash;
+use std::path::Path;
 use std::sync::Arc;
 
 use rustc_hash::{FxHashMap, FxHashSet};
@@ -47,8 +48,8 @@ use smallvec::SmallVec;
 use pandacss_config::UserConfig;
 use pandacss_encoder::{Atom, Encoder, compare_atoms_by_emit_order};
 use pandacss_extractor::{
-    CrossFileResolver, ExportInfo, ExtractedCall, ExtractedJsx, JsxKind, LineIndex, Literal,
-    MatchCategory, extract,
+    CrossFileDependency, CrossFileResolver, ExportInfo, ExtractedCall, ExtractedJsx, JsxKind,
+    LineIndex, Literal, MatchCategory, extract,
 };
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::css_properties::is_css_property;
@@ -152,6 +153,10 @@ pub struct Project {
         Option<(bool, FxHashMap<UtilityStyleKey, Literal>, Vec<Diagnostic>)>,
     merged_utility_styles_snapshot_cache: Option<FxHashMap<UtilityStyleKey, Literal>>,
     parse_epoch: u64,
+    /// Reverse index: cross-file module path → importer → source hash it folded.
+    importers: FxHashMap<String, FxHashMap<Arc<str>, Option<u64>>>,
+    /// Drained by the host, which re-parses through its transform-aware path.
+    affected_files: FxHashSet<Arc<str>>,
     /// Recipes keyed by `(file, span)` so re-parsing a path drops every
     /// matching entry and span shifts don't leave orphans.
     config_recipes: BTreeMap<RecipeKey, Recipe>,
@@ -202,6 +207,8 @@ struct FileEntry {
     /// Top-level export facts for the build-info `exports` map. Empty for
     /// hydrated/synthetic files.
     exports: ExportInfo,
+    /// Cross-file modules this file folded. Used to maintain [`Project::importers`].
+    dependencies: Vec<CrossFileDependency>,
     diagnostics: Vec<Diagnostic>,
     report: ParseFileReport,
 }
@@ -247,6 +254,8 @@ impl Project {
             config_utility_styles_cache: None,
             merged_utility_styles_snapshot_cache: None,
             parse_epoch: 0,
+            importers: FxHashMap::default(),
+            affected_files: FxHashSet::default(),
             config_recipes,
             config_slot_recipes,
             inline_recipes: BTreeMap::new(),
@@ -330,6 +339,7 @@ impl Project {
         );
         let _guard = span.enter();
         let source_hash = hash_source(source);
+        self.mark_affected(path, Some(source_hash));
         if self.files.get(path).is_some_and(|entry| {
             entry.cacheable
                 && entry.source_hash == source_hash
@@ -398,6 +408,7 @@ impl Project {
             .collect::<Vec<_>>();
         // Feeds build-info barrel resolution.
         let exports = result.exports;
+        let dependencies = result.dependencies;
 
         let mut diagnostics = result.diagnostics;
         let line_index = LineIndex::new(source);
@@ -761,6 +772,7 @@ impl Project {
             utility_styles,
             token_refs,
             exports,
+            dependencies,
             diagnostics: report.diagnostics.clone(),
             report: report.clone(),
         };
@@ -776,11 +788,7 @@ impl Project {
     /// filter file-change events through this and edits to untracked files
     /// are ignored automatically.
     pub fn refresh_file(&mut self, path: &str, source: &str) -> bool {
-        if !self.files.contains_key(path) {
-            return false;
-        }
-        self.parse_file_inner(path, source, None, None, None, ParseMode::Additive);
-        true
+        self.refresh_file_with(path, source, ParseTransforms::default())
     }
 
     pub fn refresh_file_with(
@@ -790,6 +798,8 @@ impl Project {
         transforms: ParseTransforms<'_>,
     ) -> bool {
         if !self.files.contains_key(path) {
+            // Untracked modules (outside `include`) still feed folded values.
+            self.mark_affected(path, Some(hash_source(source)));
             return false;
         }
         self.parse_file_inner(
@@ -830,6 +840,7 @@ impl Project {
     }
 
     pub fn remove_file(&mut self, path: &str) -> bool {
+        self.mark_affected(path, None);
         let had_file = self.remove_file_entry(path).is_some();
         let had_parse_attempt = self.parse_attempt_diagnostics.remove(path).is_some();
         let recipes_dropped = self.drop_recipes_for(path);
@@ -840,6 +851,34 @@ impl Project {
             // change (and trigger a rebuild) when something actually dropped.
             recipes_dropped
         }
+    }
+
+    /// Known files whose folded imports changed since the last call. Re-parse
+    /// each through the host's transform-aware path, then call again until empty.
+    pub fn take_affected_files(&mut self) -> Vec<String> {
+        let mut affected = std::mem::take(&mut self.affected_files)
+            .into_iter()
+            .map(|path| path.as_ref().to_owned())
+            .collect::<Vec<_>>();
+        affected.sort();
+        affected
+    }
+
+    /// Known files that folded a value out of `path`, directly or through a re-export.
+    #[must_use]
+    pub fn importers_of(&self, path: &str) -> Vec<String> {
+        let mut out = self
+            .dependency_key(path)
+            .and_then(|key| self.importers.get(&key))
+            .map(|importers| {
+                importers
+                    .keys()
+                    .map(|path| path.as_ref().to_owned())
+                    .collect::<Vec<_>>()
+            })
+            .unwrap_or_default();
+        out.sort();
+        out
     }
 
     /// Clears every path's state. Keeps the compiled [`Config`].
@@ -860,6 +899,8 @@ impl Project {
         self.view_transition_spans.clear();
         self.hydrated_view_transitions.clear();
         self.hydrated_view_transition_order.clear();
+        self.importers.clear();
+        self.affected_files.clear();
     }
 
     /// Forces the next `parse_file` for any path to recompute, even if its
@@ -913,7 +954,73 @@ impl Project {
         }
     }
 
+    /// Affected files keep their own source, so `cacheable` is dropped to get
+    /// past the unchanged-source short-circuit.
+    fn mark_affected(&mut self, path: &str, source_hash: Option<u64>) {
+        let Some(importers) = self
+            .dependency_key(path)
+            .and_then(|key| self.importers.get(&key))
+        else {
+            return;
+        };
+        let affected = importers
+            .iter()
+            .filter(|(importer, seen)| **seen != source_hash && importer.as_ref() != path)
+            .map(|(importer, _)| Arc::clone(importer))
+            .collect::<Vec<_>>();
+        for importer in affected {
+            if let Some(entry) = self.files.get_mut(importer.as_ref()) {
+                entry.cacheable = false;
+            }
+            self.affected_files.insert(importer);
+        }
+    }
+
+    /// Host paths may differ from the resolver's realpath form (`/var` vs `/private/var`).
+    fn dependency_key(&self, path: &str) -> Option<String> {
+        if self.importers.is_empty() {
+            return None;
+        }
+        if self.importers.contains_key(path) {
+            return Some(path.to_owned());
+        }
+        let resolver = self.config.extractor_config.cross_file.as_ref()?;
+        let key = resolver.dependency_key(Path::new(path))?;
+        Some(key.to_string_lossy().into_owned())
+    }
+
+    fn unindex_file_deps(&mut self, path: &str) {
+        let Some(deps) = self.files.get(path).map(|entry| entry.dependencies.clone()) else {
+            return;
+        };
+        for dep in deps {
+            let Some(importers) = self.importers.get_mut(&dep.path) else {
+                continue;
+            };
+            importers.remove(path);
+            if importers.is_empty() {
+                self.importers.remove(&dep.path);
+            }
+        }
+    }
+
+    fn index_file_deps(&mut self, path: &str, dependencies: &[CrossFileDependency]) {
+        if dependencies.is_empty() {
+            return;
+        }
+        let importer = Arc::<str>::from(path);
+        for dep in dependencies {
+            self.importers
+                .entry(dep.path.clone())
+                .or_default()
+                .insert(Arc::clone(&importer), dep.source_hash);
+        }
+    }
+
     fn add_file_state(&mut self, path: Arc<str>, entry: FileEntry) {
+        self.affected_files.remove(path.as_ref());
+        self.unindex_file_deps(path.as_ref());
+        self.index_file_deps(path.as_ref(), &entry.dependencies);
         self.invalidate_stylesheet_snapshots();
         for atom in &entry.atoms {
             let atoms_cache = &mut self.atoms_cache;
@@ -937,6 +1044,9 @@ impl Project {
             return;
         }
 
+        self.affected_files.remove(path.as_ref());
+        self.unindex_file_deps(path.as_ref());
+        self.index_file_deps(path.as_ref(), &entry.dependencies);
         self.invalidate_stylesheet_snapshots();
         let mut missing_atoms = Vec::new();
         let mut missing_utility_styles = Vec::new();
@@ -965,6 +1075,7 @@ impl Project {
             existing.cacheable = entry.cacheable;
             existing.token_refs = entry.token_refs;
             existing.exports = entry.exports;
+            existing.dependencies.clone_from(&entry.dependencies);
             existing.diagnostics = entry.diagnostics;
             existing.report = entry.report;
             missing_recipes
@@ -989,6 +1100,8 @@ impl Project {
     }
 
     fn remove_file_entry(&mut self, path: &str) -> Option<FileEntry> {
+        self.affected_files.remove(path);
+        self.unindex_file_deps(path);
         let entry = self.files.remove(path)?;
         self.invalidate_stylesheet_snapshots();
         for atom in &entry.atoms {

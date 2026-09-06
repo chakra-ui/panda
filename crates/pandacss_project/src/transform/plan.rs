@@ -221,7 +221,7 @@ pub(crate) fn build_plan(
         rewrites: Vec::new(),
         // Reported so the host re-transforms this file when a cross-file
         // module read to fold an imported value changes.
-        dependencies: extracted.dependencies.clone(),
+        dependencies: extracted.dependency_paths(),
         helper: TransformHelperFacts::default(),
         module: extracted.module.clone(),
         bailed: false,

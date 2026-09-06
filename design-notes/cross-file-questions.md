@@ -9,9 +9,13 @@ rebuilding a module graph Panda does not own.
 specifier, parse the module, fold what it exports, cache the descriptors, drop the AST. One edge, on demand. Works in
 every context: the CLI, the PostCSS plugin, and bundler plugins.
 
-**Reverse or whole-program questions** — "who consumes this recipe?", "which variants are reachable through wrapper
-components?", "which files must re-run when this definition changes?" — cannot be answered from one file. Ask the host
-bundler; do not build a second graph.
+**Reverse or whole-program questions** ("who consumes this recipe?", "which variants are reachable through wrapper
+components?") cannot be answered from one file. Ask the host bundler; do not build a second graph.
+
+Watch invalidation for folded values is narrower. `extract()` already records the modules it read and the hash it
+folded. `Project` inverts that list and reports importers as affected when a listed module's hash changes; the host
+re-parses them through its own transform-aware path. That is an edge map from extracts, not a bundler module graph. See
+[Cross-file resolution](./cross-file-resolution.md#watch-invalidation).
 
 ## Why not build our own graph
 

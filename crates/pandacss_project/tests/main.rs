@@ -4,6 +4,7 @@ mod common;
 mod compositions;
 mod config;
 mod config_recipes;
+mod cross_file_watch;
 mod deprecation;
 mod design_system;
 mod diagnostics;

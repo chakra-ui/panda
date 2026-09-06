@@ -76,6 +76,13 @@ pub struct ModuleFacts {
     pub symbols_resolved: bool,
 }
 
+/// A module read while folding an imported value; `source_hash` is `None` when unreadable.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CrossFileDependency {
+    pub path: String,
+    pub source_hash: Option<u64>,
+}
+
 /// Lean extraction result for the production hot path — strips `imports`
 /// and `matched` so callers don't pay serialization cost for fields they
 /// don't use.
@@ -93,16 +100,26 @@ pub struct ExtractUsage {
     /// wire (consumed project-side only).
     #[serde(skip)]
     pub exports: ExportInfo,
-    /// Resolved cross-file module paths read to fold imported values. Surfaced
-    /// as transform build dependencies for watch invalidation. Project-side only.
+    /// Cross-file modules read to fold imported values, including nested
+    /// re-export / imported-alias modules. Project-side only.
     #[serde(skip)]
-    pub dependencies: Vec<String>,
+    pub dependencies: Vec<CrossFileDependency>,
     /// Original-parse module and symbol facts used by source transforms.
     #[serde(skip)]
     pub module: ModuleFacts,
     /// Folded `.raw(...)` calls on recipes imported from another file.
     #[serde(skip)]
     pub imported_recipe_raw_calls: Vec<ImportedRecipeRawCall>,
+}
+
+impl ExtractUsage {
+    #[must_use]
+    pub fn dependency_paths(&self) -> Vec<String> {
+        self.dependencies
+            .iter()
+            .map(|dep| dep.path.clone())
+            .collect()
+    }
 }
 
 /// Verbose extraction result for on-demand tooling. Includes the same core
@@ -287,7 +304,7 @@ struct ExtractResult {
     token_refs: Vec<TokenRef>,
     style_source_refs: Vec<StyleSourceRef>,
     exports: ExportInfo,
-    dependencies: Vec<String>,
+    dependencies: Vec<CrossFileDependency>,
     imported_recipe_raw_calls: Vec<ImportedRecipeRawCall>,
 }
 

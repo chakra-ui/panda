@@ -76,6 +76,12 @@ class BrowserDriver extends BaseDriver {
   }
 
   applyChange(change: SourceChange): boolean {
+    const changed = this.#applySourceChange(change)
+    const refreshed = this.refreshAffectedFiles()
+    return changed || refreshed
+  }
+
+  #applySourceChange(change: SourceChange): boolean {
     if (change.kind === 'unlink') {
       this.compiler.fs.removeFile?.(change.path)
       return this.compiler.removeFile(change.path)

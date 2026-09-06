@@ -112,6 +112,7 @@ export declare class WasmCompiler {
   refreshFile(path: string): boolean
   refreshFileSource(path: string, source: string): boolean
   removeFile(path: string): boolean
+  affectedFiles(): string[]
   clear(): void
   scan(options?: ScanOptions): string[]
   realpath(path: string): string

@@ -120,6 +120,9 @@ class FallbackCompiler implements Compiler {
   removeFile() {
     return false
   }
+  affectedFiles() {
+    return []
+  }
   clear() {
     /* no-op */
   }

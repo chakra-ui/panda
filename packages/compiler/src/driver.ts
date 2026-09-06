@@ -278,7 +278,12 @@ export class NodeDriver extends BaseDriver {
   applyChange(change: SourceChange): boolean {
     this.#sourceGeneration++
     this.#treeshakeSyncedGeneration = -1
+    const changed = this.#applySourceChange(change)
+    const refreshed = this.refreshAffectedFiles()
+    return changed || refreshed
+  }
 
+  #applySourceChange(change: SourceChange): boolean {
     if (change.kind === 'unlink') {
       return this.compiler.removeFile(change.path)
     }

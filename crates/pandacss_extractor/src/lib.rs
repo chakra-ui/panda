@@ -40,10 +40,10 @@ pub use design_system_imports::{
     collect_design_system_imports_for_packages, selection_from_import_records,
 };
 pub use extract::{
-    ExtractDebugResult, ExtractUsage, ExtractVerboseResult, ImportBindingFacts,
-    ImportedRecipeRawCall, ModuleFacts, TokenRef, analyze_module, extract, extract_debug,
-    extract_for_transform, extract_for_transform_with_recipe_resolver, extract_verbose,
-    extract_with_raw_resolvers,
+    CrossFileDependency, ExtractDebugResult, ExtractUsage, ExtractVerboseResult,
+    ImportBindingFacts, ImportedRecipeRawCall, ModuleFacts, TokenRef, analyze_module, extract,
+    extract_debug, extract_for_transform, extract_for_transform_with_recipe_resolver,
+    extract_verbose, extract_with_raw_resolvers,
 };
 pub use imports::{
     ImportKind, ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind,

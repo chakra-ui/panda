@@ -135,6 +135,72 @@ describe('createNodeDriver', () => {
     expect(driver.cssgen().css).toContain('red')
   })
 
+  it('re-extracts importers when a folded token file changes', async () => {
+    const watchDir = mkdtempSync(join(tmpdir(), 'panda-driver-cross-file-'))
+    try {
+      writeFileTree(watchDir, {
+        'panda.config.ts': `export default {
+          include: ['**/*.{ts,tsx}'],
+          importMap: { css: ['@panda/css'] },
+        }`,
+        'App.tsx': "import { brand } from './tokens'; import { css } from '@panda/css'; css({ color: brand })",
+        'ViaBarrel.tsx':
+          "import { brand } from './barrel'; import { css } from '@panda/css'; css({ backgroundColor: brand })",
+        'barrel.ts': "export { brand } from './tokens'",
+        'tokens.ts': "export const brand = 'red'",
+      })
+      const driver = await createNodeDriver({ cwd: watchDir })
+      driver.parseFiles()
+      expect(driver.cssgen().css).toContain('red')
+
+      const tokens = driver.scan().find((path) => path.endsWith('tokens.ts'))
+      expect(tokens).toBeDefined()
+
+      writeFileSync(tokens!, "export const brand = 'blue'")
+      expect(driver.applyChange({ path: tokens!, kind: 'change' })).toBe(true)
+      const css = driver.cssgen().css
+      expect(css).toContain('color: blue')
+      expect(css).toContain('background-color: blue')
+
+      rmSync(tokens!)
+      expect(driver.applyChange({ path: tokens!, kind: 'unlink' })).toBe(true)
+    } finally {
+      rmSync(watchDir, { recursive: true, force: true })
+    }
+  })
+
+  it('re-extracts importers through the config pattern transform', async () => {
+    const watchDir = mkdtempSync(join(tmpdir(), 'panda-driver-cross-file-pattern-'))
+    try {
+      writeFileTree(watchDir, {
+        'panda.config.ts': `export default {
+          include: ['**/*.{ts,tsx}'],
+          importMap: { pattern: ['@panda/patterns'] },
+          patterns: {
+            box: {
+              properties: { tone: { type: 'string' } },
+              transform(props) {
+                return { outlineColor: props.tone + '-outline' }
+              },
+            },
+          },
+        }`,
+        'App.tsx': "import { brand } from './tokens'; import { box } from '@panda/patterns'; box({ tone: brand })",
+        'tokens.ts': "export const brand = 'red'",
+      })
+      const driver = await createNodeDriver({ cwd: watchDir })
+      driver.parseFiles()
+      expect(driver.cssgen().css).toContain('outline-color: red-outline')
+
+      const tokens = driver.scan().find((path) => path.endsWith('tokens.ts'))!
+      writeFileSync(tokens, "export const brand = 'blue'")
+      expect(driver.applyChange({ path: tokens, kind: 'change' })).toBe(true)
+      expect(driver.cssgen().css).toContain('outline-color: blue-outline')
+    } finally {
+      rmSync(watchDir, { recursive: true, force: true })
+    }
+  })
+
   it('runs cssgen:done for string sinks and disk writes', async () => {
     const driver = await createNodeDriver({ cwd: dir })
     driver.parseFiles()

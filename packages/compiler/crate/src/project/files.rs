@@ -407,6 +407,13 @@ impl Compiler {
         self.inner.remove_file(&path)
     }
 
+    /// Files whose folded imports changed since the last call. Clears on read.
+    /// Re-parse each via `refreshFile`, then call again until empty.
+    #[napi(js_name = affectedFiles)]
+    pub fn affected_files(&mut self) -> Vec<String> {
+        self.inner.take_affected_files()
+    }
+
     /// Drop every path's state. Keeps the config-derived extractor,
     /// token dictionary, and cross-file resolver intact.
     #[napi]

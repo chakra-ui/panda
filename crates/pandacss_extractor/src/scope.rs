@@ -19,10 +19,11 @@ use oxc_ast::ast::{
 use oxc_semantic::{Semantic, SemanticBuilder, SymbolFlags, SymbolId};
 use oxc_span::GetSpan;
 use pandacss_tokens::{TokenCategory, TokenDictionary};
-use rustc_hash::{FxHashMap, FxHashSet};
+use rustc_hash::FxHashMap;
 use smallvec::SmallVec;
 
 use crate::cross_file::{CrossFileLookup, ExportEntry};
+use crate::extract::CrossFileDependency;
 use crate::literal::expression_to_literal;
 use crate::matcher::{MatchCategory, MatchedImport, Matchers};
 use crate::pure_fn::{
@@ -68,9 +69,9 @@ pub(crate) struct Resolver<'a, 'cb> {
     diagnostics: RefCell<Vec<crate::Diagnostic>>,
     token_refs: RefCell<Vec<TokenRef>>,
     imported_recipe_raw_calls: RefCell<Vec<ImportedRecipeRawCall>>,
-    /// Resolved paths of cross-file modules read during this file's extraction,
-    /// surfaced as transform build dependencies for watch invalidation.
-    cross_file_deps: RefCell<FxHashSet<PathBuf>>,
+    /// Cross-file modules read during this file's extraction (nested re-export /
+    /// imported-alias modules included), with the source hash folded.
+    cross_file_deps: RefCell<FxHashMap<PathBuf, Option<u64>>>,
     pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
     recipe_raw_resolve: Option<&'cb RecipeRawResolveCell<'cb>>,
 }
@@ -181,12 +182,29 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         std::mem::take(&mut self.imported_recipe_raw_calls.borrow_mut())
     }
 
-    /// Resolved cross-file module paths read during extraction.
-    pub(crate) fn take_cross_file_deps(&self) -> Vec<String> {
-        std::mem::take(&mut *self.cross_file_deps.borrow_mut())
+    pub(crate) fn take_cross_file_deps(&self) -> Vec<CrossFileDependency> {
+        let mut deps = std::mem::take(&mut *self.cross_file_deps.borrow_mut())
             .into_iter()
-            .map(|path| path.to_string_lossy().into_owned())
-            .collect()
+            .map(|(path, source_hash)| CrossFileDependency {
+                path: path.to_string_lossy().into_owned(),
+                source_hash,
+            })
+            .collect::<Vec<_>>();
+        deps.sort_by(|a, b| a.path.cmp(&b.path));
+        deps
+    }
+
+    pub(crate) fn record_cross_file_resolution(
+        &self,
+        resolution: &crate::cross_file::CrossFileResolution,
+    ) {
+        let mut deps = self.cross_file_deps.borrow_mut();
+        if let Some(path) = &resolution.path {
+            deps.insert(path.clone(), resolution.source_hash);
+        }
+        for (path, source_hash) in &resolution.provenance {
+            deps.insert(path.clone(), *source_hash);
+        }
     }
 
     pub(crate) fn semantic(&self) -> &Semantic<'a> {
@@ -662,9 +680,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         let name = imported_name?;
         let resolution =
             cross_file.resolve_named_export(from_file, module, name, self.matchers, self.tokens);
-        if let Some(path) = resolution.path {
-            self.cross_file_deps.borrow_mut().insert(path);
-        }
+        self.record_cross_file_resolution(&resolution);
         resolution.entry
     }
 
