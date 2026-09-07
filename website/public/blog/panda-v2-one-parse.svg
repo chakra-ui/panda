@@ -1,0 +1,82 @@
+<svg width="1200" height="470" viewBox="0 0 1200 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="In v1 the build, playground, and editor each parsed your files separately and drifted apart; in v2 one Oxc parse feeds all three.">
+  <style>
+    .surface { fill: #FBF9F3; }
+    .ink { fill: #1A1A17; }
+    .muted { fill: #5E584C; }
+    .card { fill: #FFFFFF; stroke: #1A1A17; stroke-width: 2; }
+    .yl { fill: #F6E458; }
+    .yltile { fill: #F6E458; stroke: #1A1A17; stroke-width: 2; }
+    .ony { fill: #1A1A17; }
+    .rail { fill: #F3EFE3; stroke: #E4DECF; stroke-width: 1.5; }
+    .chip { fill: #FFFFFF; stroke: #CFC8B8; stroke-width: 1.5; }
+    .flow { stroke: #1A1A17; stroke-width: 3; fill: none; }
+    .ghost { stroke: #B7AE99; stroke-width: 2; fill: none; stroke-dasharray: 5 5; }
+    .sans { font-family: 'Onest','Segoe UI',system-ui,sans-serif; }
+    .mono { font-family: 'Source Code Pro',ui-monospace,monospace; }
+    @media (prefers-color-scheme: dark) {
+      .surface { fill: #17171B; } .ink { fill: #F5F2E9; } .muted { fill: #B7B1A3; }
+      .card { fill: #23232B; stroke: #3A3A42; } .rail { fill: #1E1E25; stroke: #34343A; }
+      .chip { fill: #23232B; stroke: #3A3A42; } .flow { stroke: #E7E2D6; }
+      .ghost { stroke: #55503F; }
+    }
+  </style>
+  <rect width="1200" height="470" class="surface"/>
+
+  <rect x="60" y="40" width="52" height="7" rx="3.5" class="yl"/>
+  <text x="60" y="84" class="sans ink" font-size="29" font-weight="800" letter-spacing="-0.4">One parse, shared by everything.</text>
+  <text x="60" y="114" class="sans muted" font-size="16.5">v1 parsed your files three times over. v2 parses once and hands the result around.</text>
+
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="6.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+      <path d="M0 1 L9 5 L0 9" fill="none" stroke="currentColor" class="ink" stroke-width="2.2"/>
+    </marker>
+    <marker id="g" viewBox="0 0 10 10" refX="6.5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 1 L9 5 L0 9" fill="none" stroke="currentColor" class="ghost" stroke-width="2.2"/>
+    </marker>
+  </defs>
+
+  <g class="sans">
+    <!-- v1 panel -->
+    <rect x="60" y="150" width="515" height="280" rx="18" class="rail"/>
+    <rect x="88" y="176" width="40" height="26" rx="8" class="chip"/><text x="108" y="194" text-anchor="middle" class="muted mono" font-size="13" font-weight="700">v1</text>
+    <text x="140" y="194" class="muted" font-size="14" font-weight="800" letter-spacing="2">THREE PARSERS</text>
+
+    <!-- three consumers, each with its own parse -->
+    <g transform="translate(88 224)"><rect width="176" height="44" rx="11" class="chip"/><text x="18" y="28" class="ink" font-size="15">build (ts-morph)</text></g>
+    <g transform="translate(88 285)"><rect width="176" height="44" rx="11" class="chip"/><text x="18" y="28" class="ink" font-size="15">playground</text></g>
+    <g transform="translate(88 346)"><rect width="176" height="44" rx="11" class="chip"/><text x="18" y="28" class="ink" font-size="15">editor ext</text></g>
+
+    <g class="ghost">
+      <line x1="268" y1="246" x2="316" y2="246" marker-end="url(#g)"/>
+      <line x1="268" y1="307" x2="316" y2="307" marker-end="url(#g)"/>
+      <line x1="268" y1="368" x2="316" y2="368" marker-end="url(#g)"/>
+    </g>
+
+    <g transform="translate(320 224)"><rect width="120" height="44" rx="11" class="card"/><text x="60" y="28" text-anchor="middle" class="ink mono" font-size="14">parse</text></g>
+    <g transform="translate(320 285)"><rect width="120" height="44" rx="11" class="card"/><text x="60" y="28" text-anchor="middle" class="ink mono" font-size="14">parse</text></g>
+    <g transform="translate(320 346)"><rect width="120" height="44" rx="11" class="card"/><text x="60" y="28" text-anchor="middle" class="ink mono" font-size="14">parse</text></g>
+
+    <text x="88" y="416" class="muted" font-size="13.5">each reimplements extraction, so they drift apart.</text>
+
+    <!-- v2 panel -->
+    <rect x="625" y="150" width="515" height="280" rx="18" class="card"/>
+    <rect x="653" y="176" width="40" height="26" rx="8" class="yltile"/><text x="673" y="194" text-anchor="middle" class="ony mono" font-size="13" font-weight="700">v2</text>
+    <text x="705" y="194" class="ink" font-size="14" font-weight="800" letter-spacing="2">ONE PARSE</text>
+
+    <!-- single Oxc parse -->
+    <g transform="translate(653 250)"><rect width="150" height="120" rx="16" class="yltile"/><text x="75" y="55" text-anchor="middle" class="ony" font-size="20" font-weight="700">Oxc</text><text x="75" y="82" text-anchor="middle" class="ony mono" font-size="15">parse</text></g>
+
+    <!-- fan-out to the three consumers -->
+    <g class="flow">
+      <path d="M803 296 C 860 296, 880 246, 936 246" marker-end="url(#a)"/>
+      <path d="M803 310 L 936 310" marker-end="url(#a)"/>
+      <path d="M803 324 C 860 324, 880 374, 936 374" marker-end="url(#a)"/>
+    </g>
+
+    <g transform="translate(940 224)"><rect width="176" height="44" rx="11" class="chip"/><text x="18" y="28" class="ink" font-size="15">build</text></g>
+    <g transform="translate(940 288)"><rect width="176" height="44" rx="11" class="chip"/><text x="18" y="28" class="ink" font-size="15">playground</text></g>
+    <g transform="translate(940 352)"><rect width="176" height="44" rx="11" class="chip"/><text x="18" y="28" class="ink" font-size="15">editor ext</text></g>
+
+    <text x="653" y="416" class="muted" font-size="13.5">one extractor, so the CSS is identical everywhere.</text>
+  </g>
+</svg>
