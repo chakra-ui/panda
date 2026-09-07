@@ -164,6 +164,38 @@ describe('createBrowserDriver', () => {
     expect(driver.cssgen().css).toContain('blue')
   })
 
+  it('re-extracts an importer when a missing token module is created', async () => {
+    const app = "import { css } from '@panda/css'; import { brand } from './tokens'; css({ color: brand })"
+    const driver = await createBrowserDriver({
+      snapshot,
+      sources: { '/proj/App.tsx': app },
+    })
+    driver.parseFiles()
+    expect(driver.cssgen().css).not.toContain('color: red')
+
+    expect(
+      driver.applyChange({
+        path: '/proj/tokens.ts',
+        kind: 'add',
+        content: "export const brand = 'red'",
+      }),
+    ).toBe(true)
+    expect(driver.compiler.getFile('/proj/tokens.ts')).toBeNull()
+
+    const incrementalCss = driver.cssgen().css
+    expect(incrementalCss).toContain('color: red')
+
+    const cold = await createBrowserDriver({
+      snapshot,
+      sources: {
+        '/proj/App.tsx': app,
+        '/proj/tokens.ts': "export const brand = 'red'",
+      },
+    })
+    cold.parseFiles()
+    expect(incrementalCss).toBe(cold.cssgen().css)
+  })
+
   it('keeps explicitly registered sources refreshable outside the configured source set', async () => {
     const driver = await createBrowserDriver({ snapshot })
     const injected = '/proj/Injected.ts'

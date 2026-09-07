@@ -142,6 +142,89 @@ fn editing_a_token_file_that_is_not_a_project_file_still_affects_importers() {
 }
 
 #[test]
+fn creating_a_missing_index_module_affects_its_importer() {
+    let (fs, mut project) = watch_project(&[("App.tsx", app_source())]);
+    project.parse_file("/proj/App.tsx", app_source());
+
+    assert!(project.take_affected_files().is_empty());
+    assert_yaml_snapshot!(sorted_atoms(&project), @"[]");
+
+    write(&fs, "tokens/index.ts", "export const brand = 'red';\n");
+    assert!(!project.refresh_file("/proj/tokens/index.ts", "export const brand = 'red';\n"));
+
+    assert_eq!(refresh_affected(&mut project, &fs), vec!["/proj/App.tsx"]);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: red
+      conditions: []
+    ");
+}
+
+#[test]
+fn creating_a_missing_reexported_token_file_affects_the_importer() {
+    let (fs, mut project) = watch_project(&[
+        ("App.tsx", barrel_app_source()),
+        ("barrel.ts", "export { brand } from './tokens';\n"),
+    ]);
+    project.parse_file("/proj/App.tsx", barrel_app_source());
+
+    assert!(project.take_affected_files().is_empty());
+    assert_yaml_snapshot!(sorted_atoms(&project), @"[]");
+
+    write(&fs, "tokens.ts", "export const brand = 'red';\n");
+    assert!(!project.refresh_file("/proj/tokens.ts", "export const brand = 'red';\n"));
+
+    assert_eq!(refresh_affected(&mut project, &fs), vec!["/proj/App.tsx"]);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: red
+      conditions: []
+    ");
+}
+
+#[test]
+fn creating_an_unrelated_file_does_not_affect_an_unresolved_importer() {
+    let (fs, mut project) = watch_project(&[("App.tsx", app_source())]);
+    project.parse_file("/proj/App.tsx", app_source());
+
+    write(&fs, "other.ts", "export const value = 'blue';\n");
+    assert!(!project.refresh_file("/proj/other.ts", "export const value = 'blue';\n"));
+
+    assert!(project.take_affected_files().is_empty());
+    assert_yaml_snapshot!(sorted_atoms(&project), @"[]");
+}
+
+#[test]
+fn removing_an_unresolved_importer_drops_its_pending_request() {
+    let (fs, mut project) = watch_project(&[("App.tsx", app_source())]);
+    project.parse_file("/proj/App.tsx", app_source());
+    assert!(project.remove_file("/proj/App.tsx"));
+
+    write(&fs, "tokens.ts", "export const brand = 'red';\n");
+    assert!(!project.refresh_file("/proj/tokens.ts", "export const brand = 'red';\n"));
+
+    assert!(project.take_affected_files().is_empty());
+    assert_yaml_snapshot!(sorted_atoms(&project), @"[]");
+}
+
+#[test]
+fn clear_drops_pending_requests_and_cached_resolution_misses() {
+    let (fs, mut project) = watch_project(&[("App.tsx", app_source())]);
+    project.parse_file("/proj/App.tsx", app_source());
+    project.clear();
+
+    write(&fs, "tokens.ts", "export const brand = 'red';\n");
+    project.parse_file("/proj/App.tsx", app_source());
+
+    assert!(project.take_affected_files().is_empty());
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: red
+      conditions: []
+    ");
+}
+
+#[test]
 fn removing_a_token_file_drops_the_folded_atom() {
     let (fs, mut project) = watch_project(&[
         ("App.tsx", app_source()),

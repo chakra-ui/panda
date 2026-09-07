@@ -83,6 +83,13 @@ pub struct CrossFileDependency {
     pub source_hash: Option<u64>,
 }
 
+/// A cross-file import that did not resolve during extraction.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct UnresolvedCrossFileDependency {
+    pub from_file: String,
+    pub specifier: String,
+}
+
 /// Lean extraction result for the production hot path — strips `imports`
 /// and `matched` so callers don't pay serialization cost for fields they
 /// don't use.
@@ -104,6 +111,9 @@ pub struct ExtractUsage {
     /// re-export / imported-alias modules. Project-side only.
     #[serde(skip)]
     pub dependencies: Vec<CrossFileDependency>,
+    /// Failed cross-file resolutions to retry after the filesystem changes.
+    #[serde(skip)]
+    pub unresolved_dependencies: Vec<UnresolvedCrossFileDependency>,
     /// Original-parse module and symbol facts used by source transforms.
     #[serde(skip)]
     pub module: ModuleFacts,
@@ -213,6 +223,7 @@ fn extract_usage(outcome: ExtractResult) -> ExtractUsage {
         token_refs: outcome.token_refs,
         exports: outcome.exports,
         dependencies: outcome.dependencies,
+        unresolved_dependencies: outcome.unresolved_dependencies,
         module: outcome.module,
         imported_recipe_raw_calls: outcome.imported_recipe_raw_calls,
     }
@@ -305,6 +316,7 @@ struct ExtractResult {
     style_source_refs: Vec<StyleSourceRef>,
     exports: ExportInfo,
     dependencies: Vec<CrossFileDependency>,
+    unresolved_dependencies: Vec<UnresolvedCrossFileDependency>,
     imported_recipe_raw_calls: Vec<ImportedRecipeRawCall>,
 }
 
@@ -407,6 +419,7 @@ fn run_extract<'cb>(
             style_source_refs: Vec::new(),
             exports,
             dependencies: Vec::new(),
+            unresolved_dependencies: Vec::new(),
             imported_recipe_raw_calls: Vec::new(),
         };
     }
@@ -492,6 +505,7 @@ fn run_extract<'cb>(
     token_refs.extend(resolver.take_token_refs());
     let token_refs = dedupe_token_refs(token_refs);
     let dependencies = resolver.take_cross_file_deps();
+    let unresolved_dependencies = resolver.take_unresolved_cross_file_deps();
     let imported_recipe_raw_calls = resolver.take_imported_recipe_raw_calls();
     let module = if retain_transform_facts {
         let local_call_bindings = if calls.is_empty() {
@@ -525,6 +539,7 @@ fn run_extract<'cb>(
         style_source_refs,
         exports,
         dependencies,
+        unresolved_dependencies,
         imported_recipe_raw_calls,
     }
 }

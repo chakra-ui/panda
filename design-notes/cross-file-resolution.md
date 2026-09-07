@@ -67,8 +67,10 @@ refresh, so dev CSS keeps the old atom alongside the new one until the next full
 Host paths may not match the resolver's realpath form (`/var` vs `/private/var`). `dependency_key` normalizes through
 the resolver's filesystem. A deleted file canonicalizes its parent so unlink events still match.
 
-Known gap: an import that failed to resolve at extract time records no path, so creating the missing module later does
-not mark the importer. Editing the importer, or a full build, picks it up.
+Failed resolutions are retained as `(from_file, specifier)` requests. When a new file enters the project, `Project`
+probes only those requests with a fresh resolver. If one now resolves, the long-lived resolver cache is cleared and its
+importer is reported through `affectedFiles()`. Nested requests are also stored on cached exports, so creating a module
+behind a re-export invalidates the cached miss.
 
 ## What folds
 

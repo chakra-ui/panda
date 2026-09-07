@@ -365,7 +365,16 @@ fn unresolvable_specifier_drops_outer_call() {
         &[],
     );
     let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @"calls: []");
+    let result = run(&fs, &main, &src);
+
+    assert_yaml_snapshot!(shape(&result), @"calls: []");
+    assert_eq!(
+        result.unresolved_dependencies,
+        vec![pandacss_extractor::UnresolvedCrossFileDependency {
+            from_file: "/proj/main.tsx".to_owned(),
+            specifier: "./does-not-exist".to_owned(),
+        }]
+    );
 }
 
 #[test]
