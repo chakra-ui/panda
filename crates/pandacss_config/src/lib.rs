@@ -110,8 +110,6 @@ pub struct UserConfig {
     #[serde(default)]
     pub global_fontface: Value,
     #[serde(default)]
-    pub global_position_try: Value,
-    #[serde(default)]
     pub themes: ThemeVariantsMap,
     #[serde(default)]
     pub layers: CascadeLayers,
@@ -158,7 +156,6 @@ impl Default for UserConfig {
             global_vars: Value::default(),
             css_var_root: default_css_var_root(),
             global_fontface: Value::default(),
-            global_position_try: Value::default(),
             themes: ThemeVariantsMap::default(),
             layers: CascadeLayers::default(),
             preflight: PreflightConfig::default(),

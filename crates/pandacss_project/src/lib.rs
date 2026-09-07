@@ -53,7 +53,9 @@ use pandacss_extractor::{
 };
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::css_properties::is_css_property;
-use pandacss_shared::{ViewTransitionStyle, diagnostic_codes, hyphenate_property};
+use pandacss_shared::{
+    PositionTryStyle, ViewTransitionStyle, diagnostic_codes, hyphenate_property,
+};
 use pandacss_utility::{ShorthandPolicy, StyleNormalizer, Utility};
 
 /// Key into the utility-transform override map: `(prop, original_value)`. The
@@ -170,6 +172,9 @@ pub struct Project {
     view_transitions: BTreeMap<RecipeKey, ViewTransitionStyle>,
     view_transition_spans: FxHashMap<Arc<str>, SmallVec<[u32; 4]>>,
     view_transitions_snapshot_cache: Option<Vec<ViewTransitionStyle>>,
+    position_try: BTreeMap<RecipeKey, PositionTryStyle>,
+    position_try_spans: FxHashMap<Arc<str>, SmallVec<[u32; 4]>>,
+    position_try_snapshot_cache: Option<Vec<PositionTryStyle>>,
     config_diagnostics: Vec<Diagnostic>,
     /// Recipe snapshots hydrated from build info, keyed by source library
     /// name and merged into [`Self::stylesheet_snapshots`].
@@ -178,6 +183,8 @@ pub struct Project {
     hydrated_recipe_order: Vec<Arc<str>>,
     hydrated_view_transitions: FxHashMap<Arc<str>, Vec<ViewTransitionStyle>>,
     hydrated_view_transition_order: Vec<Arc<str>>,
+    hydrated_position_try: FxHashMap<Arc<str>, Vec<PositionTryStyle>>,
+    hydrated_position_try_order: Vec<Arc<str>>,
 }
 
 pub struct ProjectStylesheetSnapshots<'a> {
@@ -189,6 +196,7 @@ pub struct ProjectStylesheetSnapshots<'a> {
     /// looks these up to emit one class per usage.
     pub utility_styles: &'a FxHashMap<UtilityStyleKey, Literal>,
     pub view_transitions: &'a [ViewTransitionStyle],
+    pub position_try: &'a [PositionTryStyle],
     pub diagnostics: Vec<Diagnostic>,
 }
 
@@ -268,11 +276,16 @@ impl Project {
             view_transitions: BTreeMap::new(),
             view_transition_spans: FxHashMap::default(),
             view_transitions_snapshot_cache: None,
+            position_try: BTreeMap::new(),
+            position_try_spans: FxHashMap::default(),
+            position_try_snapshot_cache: None,
             config_diagnostics,
             hydrated_recipes: FxHashMap::default(),
             hydrated_recipe_order: Vec::new(),
             hydrated_view_transitions: FxHashMap::default(),
             hydrated_view_transition_order: Vec::new(),
+            hydrated_position_try: FxHashMap::default(),
+            hydrated_position_try_order: Vec::new(),
         }
     }
 
@@ -534,6 +547,38 @@ impl Project {
                             .push(call.span.start);
                         report.sva_calls += 1;
                     }
+                }
+                (MatchCategory::Css, "positionTry") => {
+                    let Some(arg) = data.into_iter().next().flatten() else {
+                        continue;
+                    };
+                    let style = match &arg {
+                        Literal::Object(_) => PositionTryStyle::from_options(
+                            &arg.to_json(),
+                            &self.config.class_name_prefix,
+                        ),
+                        Literal::String(name) => {
+                            let Some(style) = self.config.position_try(name) else {
+                                continue;
+                            };
+                            style.clone()
+                        }
+                        _ => continue,
+                    };
+                    if style.is_empty() {
+                        continue;
+                    }
+                    self.position_try.insert(
+                        RecipeKey {
+                            file: Arc::clone(&path_key),
+                            span_start: call.span.start,
+                        },
+                        style,
+                    );
+                    self.position_try_spans
+                        .entry(Arc::clone(&path_key))
+                        .or_default()
+                        .push(call.span.start);
                 }
                 (MatchCategory::Css, "viewTransition") => {
                     let Some(arg) = data.into_iter().next().flatten() else {
@@ -927,8 +972,12 @@ impl Project {
         self.inline_slot_recipe_spans.clear();
         self.view_transitions.clear();
         self.view_transition_spans.clear();
+        self.position_try.clear();
+        self.position_try_spans.clear();
         self.hydrated_view_transitions.clear();
         self.hydrated_view_transition_order.clear();
+        self.hydrated_position_try.clear();
+        self.hydrated_position_try_order.clear();
         self.importers.clear();
         self.unresolved_importers.clear();
         self.affected_files.clear();
@@ -985,6 +1034,20 @@ impl Project {
             }
             self.hydrated_view_transitions
                 .insert(Arc::from(name), styles);
+        }
+    }
+
+    pub(crate) fn set_hydrated_position_try(&mut self, name: &str, styles: Vec<PositionTryStyle>) {
+        self.invalidate_stylesheet_snapshots();
+        if styles.is_empty() {
+            self.hydrated_position_try.remove(name);
+            self.hydrated_position_try_order
+                .retain(|existing| existing.as_ref() != name);
+        } else {
+            if !self.hydrated_position_try.contains_key(name) {
+                self.hydrated_position_try_order.push(Arc::from(name));
+            }
+            self.hydrated_position_try.insert(Arc::from(name), styles);
         }
     }
 
@@ -1201,12 +1264,14 @@ impl Project {
         self.token_refs_snapshot_cache = None;
         self.merged_utility_styles_snapshot_cache = None;
         self.view_transitions_snapshot_cache = None;
+        self.position_try_snapshot_cache = None;
     }
 
     fn drop_recipes_for(&mut self, path: &str) -> bool {
         let before = self.inline_recipes.len()
             + self.inline_slot_recipes.len()
-            + self.view_transitions.len();
+            + self.view_transitions.len()
+            + self.position_try.len();
         if let Some((file, spans)) = self.inline_recipe_spans.remove_entry(path) {
             for span_start in spans {
                 self.inline_recipes.remove(&RecipeKey {
@@ -1231,10 +1296,19 @@ impl Project {
                 });
             }
         }
+        if let Some((file, spans)) = self.position_try_spans.remove_entry(path) {
+            for span_start in spans {
+                self.position_try.remove(&RecipeKey {
+                    file: Arc::clone(&file),
+                    span_start,
+                });
+            }
+        }
         before
             != self.inline_recipes.len()
                 + self.inline_slot_recipes.len()
                 + self.view_transitions.len()
+                + self.position_try.len()
     }
 
     fn process_atomic(
@@ -1476,6 +1550,7 @@ impl Project {
             self.collect_hydrated_utility_styles(utility_transform);
         let use_merged_utility_styles = self.prepare_snapshot_utility_styles(&hydrated_styles);
         self.refresh_view_transitions_snapshot();
+        self.refresh_position_try_snapshot();
 
         let mut diagnostics = self
             .static_encoded_recipes_snapshot_cache
@@ -1516,6 +1591,10 @@ impl Project {
                 .view_transitions_snapshot_cache
                 .as_deref()
                 .expect("view transition snapshot was initialized"),
+            position_try: self
+                .position_try_snapshot_cache
+                .as_deref()
+                .expect("position try snapshot was initialized"),
             diagnostics,
         }
     }
@@ -1634,6 +1713,29 @@ impl Project {
                 .or_insert_with(|| style.clone());
         }
         self.view_transitions_snapshot_cache = Some(by_class.into_values().collect());
+    }
+
+    fn refresh_position_try_snapshot(&mut self) {
+        if self.position_try_snapshot_cache.is_some() {
+            return;
+        }
+        let mut by_ident = BTreeMap::<String, PositionTryStyle>::new();
+        for name in &self.hydrated_position_try_order {
+            let Some(styles) = self.hydrated_position_try.get(name) else {
+                continue;
+            };
+            for style in styles {
+                by_ident
+                    .entry(style.ident.clone())
+                    .or_insert_with(|| style.clone());
+            }
+        }
+        for style in self.position_try.values() {
+            by_ident
+                .entry(style.ident.clone())
+                .or_insert_with(|| style.clone());
+        }
+        self.position_try_snapshot_cache = Some(by_ident.into_values().collect());
     }
 
     /// Recomputes `config_utility_styles_cache` when the transform presence changes.
@@ -1951,9 +2053,11 @@ impl Project {
             && self.inline_recipe_spans.is_empty()
             && self.inline_slot_recipe_spans.is_empty()
             && self.view_transitions.is_empty()
+            && self.position_try.is_empty()
             && self.view_transition_spans.is_empty()
             && self.hydrated_recipes.is_empty()
             && self.hydrated_view_transitions.is_empty()
+            && self.hydrated_position_try.is_empty()
     }
 
     /// Every `cva()` recipe, keyed by `(file, span_start)`. Stable order

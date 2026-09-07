@@ -1,4 +1,4 @@
-//! `css/view-transition` runtime for `viewTransition()`.
+//! `css/position-try` runtime for `positionTry()`.
 
 use crate::{
     Artifact, ArtifactFile, ArtifactId, CodegenContext, ConstDecl, DependencySet, Expr, ImportDecl,
@@ -13,7 +13,7 @@ pub fn generate(
     dependencies: DependencySet,
 ) -> Artifact {
     Artifact {
-        id: ArtifactId::ViewTransition,
+        id: ArtifactId::PositionTry,
         dependencies,
         files: files(ctx, options, dependencies),
     }
@@ -30,7 +30,7 @@ pub fn files(
     }
 
     emit_module_files(
-        "css/view-transition",
+        "css/position-try",
         &module(ctx),
         options.format,
         false,
@@ -42,7 +42,7 @@ pub fn files(
 fn module(ctx: CodegenContext<'_>) -> Module {
     let prefix =
         serde_json::to_string(&ctx.config.prefix.class_name()).expect("prefix should serialize");
-    let impl_src = VIEW_TRANSITION_IMPL.replace("__PREFIX__", &prefix);
+    let impl_src = POSITION_TRY_IMPL.replace("__PREFIX__", &prefix);
 
     Module::new()
         .with_import(ImportDecl::value(
@@ -52,57 +52,40 @@ fn module(ctx: CodegenContext<'_>) -> Module {
         .with_import(ImportDecl::ty(["SystemStyleObject"], "../types/system"))
         .with_item(Item::type_alias(TypeAliasDecl {
             exported: true,
-            name: "ViewTransitionStyleObject".into(),
+            name: "PositionTryFn".into(),
             generic_params: Vec::new(),
-            ty: TsType::Raw(
-                "{ group?: SystemStyleObject; imagePair?: SystemStyleObject; old?: SystemStyleObject; new?: SystemStyleObject }"
-                    .into(),
-            ),
-            js_doc: None,
-        }))
-        .with_item(Item::type_alias(TypeAliasDecl {
-            exported: true,
-            name: "ViewTransitionFn".into(),
-            generic_params: Vec::new(),
-            ty: TsType::Raw(view_transition_fn_type(ctx)),
+            ty: TsType::Raw(position_try_fn_type(ctx)),
             js_doc: None,
         }))
         .with_item(Item::both(ItemNode::Const(ConstDecl {
             exported: true,
             declare: false,
-            name: "viewTransition".into(),
-            type_annotation: Some(TsType::Ref("ViewTransitionFn".into())),
+            name: "positionTry".into(),
+            type_annotation: Some(TsType::Ref("PositionTryFn".into())),
             init: Some(Expr::Raw(impl_src)),
             js_doc: None,
         })))
 }
 
-fn view_transition_fn_type(ctx: CodegenContext<'_>) -> String {
-    let names: Vec<String> = ctx.config.theme.view_transitions.keys().cloned().collect();
+fn position_try_fn_type(ctx: CodegenContext<'_>) -> String {
+    let names: Vec<String> = ctx.config.theme.position_try.keys().cloned().collect();
     if names.is_empty() {
-        return "(options: ViewTransitionStyleObject) => string".into();
+        return "(options: SystemStyleObject) => string".into();
     }
     let name_union = names
         .iter()
         .map(|name| format!("{name:?}"))
         .collect::<Vec<_>>()
         .join(" | ");
-    format!("(options: ViewTransitionStyleObject | {name_union}) => string")
+    format!("(options: SystemStyleObject | {name_union}) => string")
 }
 
-const VIEW_TRANSITION_IMPL: &str = r"(options) => {
+const POSITION_TRY_IMPL: &str = r"(options) => {
   const prefix = __PREFIX__
+  const wrap = (base) => '--' + (prefix ? prefix + '-' + base : base)
   if (typeof options === 'string') {
-    const base = 'vt_' + options
-    return prefix ? prefix + '-' + base : base
+    return wrap('pt_' + options)
   }
-  const slots = ['group', 'imagePair', 'old', 'new']
-  const filtered = {}
-  if (options && typeof options === 'object') {
-    for (const key of slots) {
-      if (key in options) filtered[key] = options[key]
-    }
-  }
-  const base = 'vt_' + toHash(stableStringify(filtered))
-  return prefix ? prefix + '-' + base : base
+  const block = options && typeof options === 'object' ? options : {}
+  return wrap('pt_' + toHash(stableStringify(block)))
 }";

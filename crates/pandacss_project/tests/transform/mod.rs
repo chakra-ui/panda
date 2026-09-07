@@ -36,6 +36,7 @@ mod jsx_recipes_patterns;
 mod jsx_runtime;
 mod jsx_spread;
 mod patterns;
+mod position_try;
 mod recipe_inline;
 mod recipes;
 mod targets;

@@ -13,6 +13,7 @@ mod jsx;
 mod local_bindings;
 mod optional_chaining;
 mod polish;
+mod position_try;
 mod raw_spreads;
 mod scope;
 mod source;

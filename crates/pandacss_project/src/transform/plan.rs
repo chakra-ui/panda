@@ -376,6 +376,15 @@ fn push_css_call_rewrites(
                 None => {}
             }
         }
+        "positionTry" => {
+            match resolve::rewrite_for_position_try_call(project, call.span, &call.data) {
+                Some(rewrite) => plan.push(rewrite),
+                None if call.data.first().is_some_and(Option::is_none) => {
+                    plan.bailed = true;
+                }
+                None => {}
+            }
+        }
         _ => match resolve::rewrite_for_css_call(
             project,
             source,

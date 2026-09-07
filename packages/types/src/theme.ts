@@ -1,6 +1,6 @@
 import type { AnimationStyles, LayerStyles, TextStyles } from './composition'
 import type { RecipeConfig, SlotRecipeConfig } from './recipe'
-import type { CssKeyframes, ViewTransitions } from './system-types'
+import type { CssKeyframes, PositionTry, ViewTransitions } from './system-types'
 import type { SemanticTokens, Tokens } from './tokens'
 
 export interface ColorPaletteOptions {
@@ -56,6 +56,11 @@ export interface Theme {
    * `view-transition-name` values at runtime.
    */
   viewTransitions?: ViewTransitions
+  /**
+   * Named `@position-try` anchor-positioning fallbacks. Call `positionTry('bottom')`
+   * to get the dashed-ident for `positionTryFallbacks`. Emitted only when used.
+   */
+  positionTry?: PositionTry
   /**
    * Multi-variant style definitions for your project.
    * Useful for defining component styles.

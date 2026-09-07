@@ -246,7 +246,27 @@ fn collect_call_styles(
                 accum,
             );
         }
+        (MatchCategory::Css, "positionTry") => match call.data.first().and_then(Option::as_ref) {
+            Some(Literal::String(name)) => {
+                accum.sites.push(site(UsageKind::PositionTry, name, &range));
+            }
+            Some(Literal::Object(entries)) => {
+                walk_object(entries, ctx.cx, &range, accum.sites);
+                collector.collect(
+                    entries,
+                    StyleEntrySyntax::CssCall,
+                    &mut Vec::new(),
+                    accum.style_entries,
+                );
+            }
+            _ => {}
+        },
         (MatchCategory::Css, "viewTransition") => {
+            if let Some(Literal::String(name)) = call.data.first().and_then(Option::as_ref) {
+                accum
+                    .sites
+                    .push(site(UsageKind::ViewTransition, name, &range));
+            }
             if let Some(entries) = call_object(call, 0) {
                 for (key, value) in entries {
                     if !matches!(key.as_str(), "group" | "imagePair" | "old" | "new") {

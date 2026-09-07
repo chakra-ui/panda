@@ -13,7 +13,7 @@ use pandacss_encoder::{
     RecipeStyleGroupSnapshot,
 };
 use pandacss_extractor::ExportInfo;
-use pandacss_shared::ViewTransitionStyle;
+use pandacss_shared::{PositionTryStyle, ViewTransitionStyle};
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde::{Deserialize, Serialize};
 
@@ -22,7 +22,7 @@ use crate::{FileEntry, ParseFileReport};
 
 /// Bumped when the on-disk shape changes; a consumer with a different
 /// `SCHEMA_VERSION` falls back to re-extracting the library's source.
-pub const SCHEMA_VERSION: u32 = 5;
+pub const SCHEMA_VERSION: u32 = 6;
 
 /// Synthetic file-key prefix for atoms hydrated from a parent design system.
 /// Excluded from serialized build info so a published artifact carries only
@@ -48,6 +48,8 @@ pub struct BuildInfo {
     pub recipes: BuildRecipes,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub view_transitions: Vec<BuildViewTransition>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub position_try: Vec<BuildPositionTry>,
     /// Per published module (source-file key) → indices into `atoms` /
     /// `recipes` / `viewTransitions`. Lets the consumer hydrate only imported modules.
     pub modules: BTreeMap<String, ModuleEntry>,
@@ -70,6 +72,15 @@ pub struct BuildViewTransition {
     pub old: Option<serde_json::Value>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub new: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct BuildPositionTry {
+    /// Interned dashed-ident (`--pt_…`).
+    pub ident: u32,
+    /// Flat `@position-try` descriptor block.
+    pub descriptors: serde_json::Value,
 }
 
 /// Recipe + slot-recipe groups, mirroring `EncodedRecipesSnapshot` but interned.
@@ -153,6 +164,8 @@ pub struct ModuleEntry {
     pub token_refs: Vec<u32>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub view_transitions: Vec<u32>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub position_try: Vec<u32>,
 }
 
 #[allow(
@@ -421,6 +434,45 @@ fn collect_build_view_transitions<'a>(
     (entries, file_indices)
 }
 
+#[allow(
+    clippy::cast_possible_truncation,
+    reason = "a project never holds u32::MAX position-try bags"
+)]
+fn collect_build_position_try<'a>(
+    position_try: &'a BTreeMap<super::RecipeKey, PositionTryStyle>,
+    interner: &mut Interner,
+) -> (Vec<BuildPositionTry>, FxHashMap<&'a str, Vec<u32>>) {
+    let mut by_ident = BTreeMap::<String, &PositionTryStyle>::new();
+    for style in position_try.values() {
+        by_ident.entry(style.ident.clone()).or_insert(style);
+    }
+    let list: Vec<&PositionTryStyle> = by_ident.into_values().collect();
+    let index: FxHashMap<&str, u32> = list
+        .iter()
+        .enumerate()
+        .map(|(i, style)| (style.ident.as_str(), i as u32))
+        .collect();
+    let mut file_indices: FxHashMap<&str, Vec<u32>> = FxHashMap::default();
+    for (key, style) in position_try {
+        let Some(&idx) = index.get(style.ident.as_str()) else {
+            continue;
+        };
+        file_indices.entry(key.file.as_ref()).or_default().push(idx);
+    }
+    for indices in file_indices.values_mut() {
+        indices.sort_unstable();
+        indices.dedup();
+    }
+    let entries = list
+        .iter()
+        .map(|style| BuildPositionTry {
+            ident: interner.intern(&style.ident),
+            descriptors: style.descriptors.clone(),
+        })
+        .collect();
+    (entries, file_indices)
+}
+
 fn view_transitions_from_build(
     builds: &[BuildViewTransition],
     strings: &[String],
@@ -440,6 +492,27 @@ fn view_transitions_from_build(
             image_pair: build.image_pair.clone(),
             old: build.old.clone(),
             new: build.new.clone(),
+        });
+    }
+    Some(out)
+}
+
+fn position_try_from_build(
+    builds: &[BuildPositionTry],
+    strings: &[String],
+    selected: Option<&FxHashSet<u32>>,
+) -> Option<Vec<PositionTryStyle>> {
+    let mut out = Vec::new();
+    for (index, build) in builds.iter().enumerate() {
+        let keep =
+            selected.is_none_or(|set| u32::try_from(index).is_ok_and(|index| set.contains(&index)));
+        if !keep {
+            continue;
+        }
+        let ident = string_at(strings, build.ident)?;
+        out.push(PositionTryStyle {
+            ident: ident.into(),
+            descriptors: build.descriptors.clone(),
         });
     }
     Some(out)
@@ -512,6 +585,8 @@ impl super::Project {
 
         let (build_view_transitions, file_view_transitions) =
             collect_build_view_transitions(&self.view_transitions, &mut interner);
+        let (build_position_try, file_position_try) =
+            collect_build_position_try(&self.position_try, &mut interner);
 
         let (modules, styled_modules) = Self::build_module_entries(
             &self.files,
@@ -519,6 +594,7 @@ impl super::Project {
             &recipe_index,
             &token_ref_position,
             &file_view_transitions,
+            &file_position_try,
         );
         let exports = ExportResolver::new(&self.files, styled_modules).resolve_all();
 
@@ -531,6 +607,7 @@ impl super::Project {
             token_refs,
             recipes,
             view_transitions: build_view_transitions,
+            position_try: build_position_try,
             modules,
             exports,
         }
@@ -542,6 +619,7 @@ impl super::Project {
         recipe_index: &FxHashMap<&str, u32>,
         token_ref_position: &FxHashMap<&str, u32>,
         file_view_transitions: &FxHashMap<&str, Vec<u32>>,
+        file_position_try: &FxHashMap<&str, Vec<u32>>,
     ) -> (BTreeMap<String, ModuleEntry>, FxHashSet<String>) {
         let mut modules = BTreeMap::new();
         let mut styled_modules = FxHashSet::default();
@@ -580,10 +658,16 @@ impl super::Project {
                 .cloned()
                 .unwrap_or_default();
 
+            let position_try_indices = file_position_try
+                .get(path.as_ref())
+                .cloned()
+                .unwrap_or_default();
+
             if !atom_indices.is_empty()
                 || !recipe_indices.is_empty()
                 || !token_ref_indices.is_empty()
                 || !view_transition_indices.is_empty()
+                || !position_try_indices.is_empty()
             {
                 styled_modules.insert(path.to_string());
             }
@@ -595,6 +679,7 @@ impl super::Project {
                     recipes: recipe_indices,
                     token_refs: token_ref_indices,
                     view_transitions: view_transition_indices,
+                    position_try: position_try_indices,
                 },
             );
         }
@@ -612,6 +697,10 @@ impl super::Project {
     /// layer, which knows the consumer's Panda version. `config_fingerprint` is
     /// recorded for introspection, not enforced — a consumer legitimately
     /// extends the library's config. See `design-notes/build-info.md`.
+    #[allow(
+        clippy::too_many_lines,
+        reason = "one sequential hydrate for atoms, recipes, token refs, view transitions, and position try"
+    )]
     pub fn hydrate(
         &mut self,
         name: &str,
@@ -628,6 +717,8 @@ impl super::Project {
             selected_module_indices(info, only_modules, |entry| &entry.token_refs);
         let selected_view_transitions =
             selected_module_indices(info, only_modules, |entry| &entry.view_transitions);
+        let selected_position_try =
+            selected_module_indices(info, only_modules, |entry| &entry.position_try);
 
         let Some(recipe_count) = info
             .recipes
@@ -646,6 +737,7 @@ impl super::Project {
                 selected_view_transitions.as_ref(),
                 info.view_transitions.len(),
             )
+            || !selected_indices_in_bounds(selected_position_try.as_ref(), info.position_try.len())
         {
             return false;
         }
@@ -698,6 +790,15 @@ impl super::Project {
             return false;
         };
         self.set_hydrated_view_transitions(name, view_transitions);
+
+        let Some(position_try) = position_try_from_build(
+            &info.position_try,
+            &info.strings,
+            selected_position_try.as_ref(),
+        ) else {
+            return false;
+        };
+        self.set_hydrated_position_try(name, position_try);
 
         let key: Arc<str> = Arc::from(format!("{HYDRATED_FILE_PREFIX}{name}").as_str());
         if self.files.contains_key(&key) {

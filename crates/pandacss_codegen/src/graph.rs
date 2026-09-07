@@ -28,6 +28,7 @@ pub enum ArtifactId {
     Tokens,
     Types,
     ViewTransition,
+    PositionTry,
 }
 
 impl ArtifactId {
@@ -52,6 +53,7 @@ impl ArtifactId {
         Self::Tokens,
         Self::Types,
         Self::ViewTransition,
+        Self::PositionTry,
     ];
 
     #[must_use]
@@ -77,6 +79,7 @@ impl ArtifactId {
             Self::Tokens => "tokens",
             Self::Types => "types",
             Self::ViewTransition => "view-transition",
+            Self::PositionTry => "position-try",
         }
     }
 }
@@ -417,6 +420,14 @@ impl ArtifactGraph {
             ]),
         },
         ArtifactNode {
+            id: ArtifactId::PositionTry,
+            dependencies: DependencySet::from_slice(&[
+                ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
+                ConfigDependency::Prefix,
+            ]),
+        },
+        ArtifactNode {
             id: ArtifactId::Cx,
             dependencies: DependencySet::from_slice(&[
                 ConfigDependency::CodegenFormat,
@@ -628,6 +639,9 @@ fn generate_node_inner(
         ArtifactId::Sva => crate::artifacts::sva::generate(ctx, options, node.dependencies),
         ArtifactId::ViewTransition => {
             crate::artifacts::view_transition::generate(ctx, options, node.dependencies)
+        }
+        ArtifactId::PositionTry => {
+            crate::artifacts::position_try::generate(ctx, options, node.dependencies)
         }
         ArtifactId::Themes => crate::artifacts::themes::generate(ctx, options, node.dependencies),
         ArtifactId::Tokens => crate::artifacts::tokens::generate(ctx, options, node.dependencies),

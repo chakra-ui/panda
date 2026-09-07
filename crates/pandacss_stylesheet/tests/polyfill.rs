@@ -117,7 +117,7 @@ fn polyfill_raises_step_when_global_css_has_ids() {
 
 #[test]
 fn polyfill_keeps_at_rule_descriptors() {
-    // Declarations inside @font-face / @property / @position-try (no .rule()).
+    // Declarations inside @font-face / @property (no .rule()).
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
         "globalFontface": {
@@ -135,12 +135,6 @@ fn polyfill_keeps_at_rule_descriptors() {
         },
         "globalCss": {
             "button": { "color": "var(--button-color)" }
-        },
-        "globalPositionTry": {
-            "flip": {
-                "positionAnchor": "--trigger",
-                "top": "anchor(bottom)"
-            }
         }
     }));
     let css = compile_output(
@@ -169,10 +163,6 @@ fn polyfill_keeps_at_rule_descriptors() {
       font-family: Inter;
       src: url('/fonts/inter.woff2');
       font-weight: 400;
-    }
-    @position-try --flip {
-      position-anchor: --trigger;
-      top: anchor(bottom);
     }
     "#);
 }

@@ -267,6 +267,7 @@ fn pure_consumer_virtualizes_entire_runtime() {
         export * from '@acme/ui/css/cx';
         export * from '@acme/ui/css/sva';
         export * from '@acme/ui/css/view-transition';
+        export * from '@acme/ui/css/position-try';
         "}
         .trim()
     );

@@ -252,7 +252,7 @@ describe('hydrateDesignSystem (consumer)', () => {
         "severity": "warning",
         "category": "designSystem",
         "file": "buildinfo.json",
-        "message": ""@acme/ds" build info uses schemaVersion 999; expected 5. Re-extracted 1 source file.",
+        "message": ""@acme/ds" build info uses schemaVersion 999; expected 6. Re-extracted 1 source file.",
         "help": [
           "Run \`panda lib\` in "@acme/ds" to rebuild panda/buildinfo.json.",
         ],
@@ -277,7 +277,7 @@ describe('hydrateDesignSystem (consumer)', () => {
         {
           code: 'design_system_buildinfo_stale',
           severity: 'error',
-          message: expect.stringMatching(/uses schemaVersion 999; expected 5\. No fallback source files/),
+          message: expect.stringMatching(/uses schemaVersion 999; expected 6\. No fallback source files/),
         },
       ],
     })
@@ -294,7 +294,7 @@ describe('hydrateDesignSystem (consumer)', () => {
   it('re-extracts when build info is structurally invalid but files are present', async () => {
     cwd = createFixture({
       manifest: { files: ['./button.js'] },
-      buildInfo: { schemaVersion: 5 },
+      buildInfo: { schemaVersion: 6 },
     })
 
     const driver = await createNodeDriver({ cwd })
@@ -375,7 +375,7 @@ describe('hydrateDesignSystem (consumer)', () => {
         },
       }`,
       buildInfo: {
-        schemaVersion: 5,
+        schemaVersion: 6,
         panda: '^2.0.0',
         configFingerprint: 'cfg1-test',
         strings: ['colors.red'],
@@ -1305,7 +1305,7 @@ function createFixture(options: DesignSystemFixture = {}): string {
 
 function validBuildInfo(): Record<string, unknown> {
   return {
-    schemaVersion: 5,
+    schemaVersion: 6,
     panda: '^2.0.0',
     configFingerprint: 'cfg1-test',
     strings: [],

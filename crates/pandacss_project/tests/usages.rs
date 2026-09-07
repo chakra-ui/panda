@@ -880,3 +880,37 @@ fn inspection_collects_namespace_and_aliased_recipe_default_props() {
     Property size
     ");
 }
+
+#[test]
+fn reports_named_view_transition_and_position_try_usages() {
+    let result = project().inspect_file_source(
+        "a.tsx",
+        indoc! {r"
+            import { viewTransition, positionTry } from '@panda/css'
+            export const vt = viewTransition('slide')
+            export const pt = positionTry('flip')
+        "},
+    );
+    assert_snapshot!(summary(&result), @"
+    ViewTransition slide
+    PositionTry flip
+    ");
+}
+
+#[test]
+fn collects_position_try_and_view_transition_styles_as_entries() {
+    // Lint rules operate on style entries, so the descriptor/slot bodies of
+    // positionTry / viewTransition must surface as entries, not just usage sites.
+    let result = project().inspect_file_source(
+        "a.tsx",
+        indoc! {r"
+            import { positionTry, viewTransition } from '@panda/css'
+            positionTry({ marginTop: '4' })
+            viewTransition({ old: { color: 'red.500' } })
+        "},
+    );
+    assert_snapshot!(style_summary(&result), @"
+    Unknown CssCall Safe marginTop -> None path=marginTop
+    Utility CssCall ReportOnly color -> None path=color
+    ");
+}
