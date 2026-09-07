@@ -195,8 +195,11 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
 
     async hotUpdate(ctx: HotUpdateOptions) {
       if (!driver) return
-      // Vite invokes this hook once per environment; the driver is shared.
-      if (this.environment !== ctx.server.environments.client) return ctx.modules
+      // Vite runs this hook per environment, client first. The driver is shared and updated in the
+      // client pass; other environments (SSR) still need their own stylesheet roots invalidated.
+      if (this.environment !== ctx.server.environments.client) {
+        return isPandaFile(driver, ctx.file) ? withInvalidatedRoots(this.environment, ctx.modules) : ctx.modules
+      }
 
       const designSystemFile = driver.isDesignSystemFile?.(ctx.file) ?? false
       if (designSystemFile) {
@@ -236,6 +239,10 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
       return ctx.modules
     },
   }
+}
+
+function isPandaFile(driver: Driver, file: string): boolean {
+  return Boolean(driver.isDesignSystemFile?.(file)) || driver.isConfigFile(file) || driver.isSourceFile(file)
 }
 
 async function sourceChangeFromHotUpdate(ctx: HotUpdateOptions, read: boolean): Promise<SourceChange> {

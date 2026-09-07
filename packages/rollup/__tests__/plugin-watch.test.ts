@@ -79,7 +79,7 @@ function waitForWatchRegistration(watcher: RollupWatcher, file: string): Promise
     const interval = setInterval(() => appendFileSync(file, '\n'), 100)
     const timeout = setTimeout(() => finish(new Error('timed out waiting for Rollup to register watch files')), 5_000)
 
-    const finish = (error?: Error) => {
+    const finish = (error?: unknown) => {
       clearInterval(interval)
       clearTimeout(timeout)
       watcher.off('event', onEvent)

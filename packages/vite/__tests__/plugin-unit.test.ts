@@ -148,17 +148,33 @@ describe('@pandacss/vite design-system HMR', () => {
     expect(read).toHaveBeenCalledTimes(readsSource ? 1 : 0)
   })
 
-  it('updates the shared driver only for the Vite client environment', async () => {
+  it('invalidates the stylesheet root in a non-client environment without touching the shared driver', async () => {
     const { driver, pandacss } = await setup()
     const plugin = pandacss() as unknown as TestPlugin
+    const root = { id: '/project/src/index.css' }
     const client = { moduleGraph: {} }
-    driver.isSourceFile.mockReturnValue(true)
+    const ssr = {
+      moduleGraph: {
+        getModuleById: vi.fn((id: string) => (id === root.id ? root : undefined)),
+        invalidateModule: vi.fn(),
+      },
+    }
+    driver.isSourceFile.mockImplementation((file: string): boolean => file === '/project/src/app.tsx')
 
     await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
-    await plugin.hotUpdate.call(
-      { environment: { moduleGraph: {} } },
+    plugin.transform.call({ addWatchFile: vi.fn(), warn: vi.fn() }, CSS_ROOT, '/project/src/index.css')
+
+    const untouched = await plugin.hotUpdate.call(
+      { environment: ssr },
+      { type: 'delete', file: '/project/README.md', modules: [], read: vi.fn(), server: { environments: { client } } },
+    )
+    expect(untouched).toEqual([])
+    expect(ssr.moduleGraph.invalidateModule).not.toHaveBeenCalled()
+
+    const modules = await plugin.hotUpdate.call(
+      { environment: ssr },
       {
-        type: 'update',
+        type: 'delete',
         file: '/project/src/app.tsx',
         modules: [],
         read: vi.fn(),
@@ -167,6 +183,8 @@ describe('@pandacss/vite design-system HMR', () => {
     )
 
     expect(driver.applyChange).not.toHaveBeenCalled()
+    expect(ssr.moduleGraph.invalidateModule).toHaveBeenCalledWith(root)
+    expect(modules).toEqual([root])
   })
 
   it('skips source rewrite by default', async () => {
@@ -325,7 +343,7 @@ function createMockDriver() {
     isDesignSystemFile: vi.fn((file: string) =>
       file === '/project/node_modules/@acme/ds/src/button.css.ts' ? 'source' : false,
     ),
-    isSourceFile: vi.fn(() => false),
+    isSourceFile: vi.fn((_file: string) => false),
     parseFiles: vi.fn(),
     reload: vi.fn(async () => ({ hasChanged: true, dependencies: [], recipes: [], patterns: [], changes: [] })),
     scan: vi.fn(() => ['/project/src/app.tsx']),
