@@ -233,8 +233,8 @@ The engine aims for the same CSS as v1. These are the differences you'll notice,
 - **No more universal variable reset.** v1 gave `--translate-x`, `--blur`, `--gradient-from-position` and friends their
   defaults through a `*, ::before, ::after, ::backdrop` rule — 34 declarations on every element, used or not. v2
   registers those variables with `@property` instead, so they carry their own defaults, don't inherit, and only ship
-  when you use the utility. A page that uses none of them now has an empty base layer. This needs `@property`
-  (Chrome 85+, Safari 16.4+, Firefox 128+); older browsers drop the affected utilities rather than mis-render them. Set
+  when you use the utility. A page that uses none of them now has an empty base layer. This needs `@property` (Chrome
+  85+, Safari 16.4+, Firefox 128+); older browsers drop the affected utilities rather than mis-render them. Set
   `optimize.propertyFallback: true` to also seed those defaults as plain declarations, which restores the v1 behaviour
   for the variables your project actually uses.
 
@@ -357,6 +357,21 @@ Panda owns the shared CSS; you still set `view-transition-name` yourself.
 A preset or `theme.viewTransitions` can name the same bags. Then the team writes `viewTransition('slide')` and Panda
 inlines `"vt_slide"`. Unused names stay out of the CSS.
 
+### `positionTry()`
+
+New: name a CSS anchor-positioning fallback and get the dashed-ident back.
+
+```ts
+import { css, positionTry } from 'styled-system/css'
+
+const bottom = positionTry({ top: 'anchor(bottom)', insetInlineStart: 'anchor(start)' })
+css({ positionAnchor: '--trigger', positionTryFallbacks: bottom })
+```
+
+Panda emits the `@position-try` block and inlines the ident. A preset or `theme.positionTry` can name the same bags, so
+the team writes `positionTry('bottom')`. Unused names stay out of the CSS. This replaces `globalPositionTry` (see
+below).
+
 ### Conditions and utilities
 
 `preset-base` picks up a few CSS features that landed after v1.
@@ -365,8 +380,8 @@ inlines `"vt_slide"`. Unused names stay out of the CSS.
 `_userInvalid`, and `_inert`.
 
 **Masks.** Fade an edge or stack a spotlight without writing `mask-image` by hand. `maskBottomFrom`, `maskXFrom`,
-`maskLinear`, `maskRadialFrom`, `maskConic`. Raw `maskImage` is still the escape hatch and does not compose. The
-helpers run on `@property`-registered variables, so a parent's fade can't leak into a child.
+`maskLinear`, `maskRadialFrom`, `maskConic`. Raw `maskImage` is still the escape hatch and does not compose. The helpers
+run on `@property`-registered variables, so a parent's fade can't leak into a child.
 
 **Scrollbars.** `scrollbarThumb` and `scrollbarTrack` set the two `scrollbar-color` sides. `scrollbarGutter` takes the
 CSS value (`stable`, `stable both-edges`).
@@ -401,7 +416,8 @@ Same flag in `@pandacss/webpack` and `@pandacss/rollup`. Without it, the plugins
 
 ### Linting
 
-The ESLint plugin is rebuilt on the v2 engine. It loads your config and the compiler once, so rules lint against the same extraction the build uses.
+The ESLint plugin is rebuilt on the v2 engine. It loads your config and the compiler once, so rules lint against the
+same extraction the build uses.
 
 ```ts
 // eslint.config.mjs
@@ -410,7 +426,8 @@ import panda from '@pandacss/eslint-plugin'
 export default [await panda.configs.recommended({ configPath: './panda.config.ts' })]
 ```
 
-The same rules run under [oxlint](https://oxc.rs) through its JS plugin API. Point `jsPlugins` at the oxlint entry in `.oxlintrc.json`:
+The same rules run under [oxlint](https://oxc.rs) through its JS plugin API. Point `jsPlugins` at the oxlint entry in
+`.oxlintrc.json`:
 
 ```json
 {
@@ -419,7 +436,8 @@ The same rules run under [oxlint](https://oxc.rs) through its JS plugin API. Poi
 }
 ```
 
-Install with `@pandacss/eslint-plugin@beta`. ESLint needs v9 flat config; oxlint needs `oxlint` and `@oxlint/plugins` (alpha).
+Install with `@pandacss/eslint-plugin@beta`. ESLint needs v9 flat config; oxlint needs `oxlint` and `@oxlint/plugins`
+(alpha).
 
 ---
 
@@ -439,6 +457,30 @@ import { defineConfig } from '@pandacss/dev'
 
 Set `"type": "module"`, use `.mjs`, or run through an ESM-aware bundler. `panda.config.ts` loads as ESM.
 
+### `globalPositionTry` is removed
+
+Use `theme.positionTry` with the `positionTry()` factory instead. It is tree-shaken, typed, and referenced by name.
+
+```ts
+// ❌ v1
+globalPositionTry: {
+  '--bottom': { top: 'anchor(bottom)' },
+}
+css({ positionTryFallbacks: '--bottom' })
+
+// ✅ v2
+theme: {
+  positionTry: {
+    bottom: { top: 'anchor(bottom)' },
+  },
+}
+import { positionTry } from 'styled-system/css'
+css({ positionTryFallbacks: positionTry('bottom') })
+```
+
+A `@position-try` block that must emit unconditionally with a hand-authored name (a dynamically-built fallback list, or
+a reference from CSS Panda does not scan) belongs in a plain `.css` file. `globalFontface` is unchanged.
+
 ### Template literal syntax is gone
 
 The `syntax` config option and the `--syntax` init flag are removed, and so is tagged-template styling. Write styles as
@@ -455,8 +497,8 @@ const Button = styled.button`
 const Button = styled('button', {
   base: {
     backgroundColor: 'gainsboro',
-    padding: '10px 15px'
-  }
+    padding: '10px 15px',
+  },
 })
 ```
 

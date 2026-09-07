@@ -35,6 +35,7 @@ fn filters_artifacts_by_config_dependencies() {
             ArtifactId::Cva,
             ArtifactId::Sva,
             ArtifactId::ViewTransition,
+            ArtifactId::PositionTry,
             ArtifactId::Cx,
             ArtifactId::Tokens,
             ArtifactId::CssIndex,

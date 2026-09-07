@@ -119,6 +119,7 @@ pub fn extract_calls(
         matched,
         matchers: Some(&config.matchers),
         tokens: config.token_dictionary.as_deref(),
+        prefix: config.class_name_prefix.as_str(),
         cross_file: config
             .cross_file
             .as_ref()

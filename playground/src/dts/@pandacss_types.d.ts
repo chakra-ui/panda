@@ -11456,10 +11456,6 @@ export interface PresetCore {
 	 */
 	globalFontface?: GlobalFontface;
 	/**
-	 * The global custom position try fallback option
-	 */
-	globalPositionTry?: GlobalPositionTry;
-	/**
 	 * Used to generate css utility classes for your project.
 	 */
 	staticCss: StaticCssOptions;
@@ -11512,13 +11508,6 @@ export interface ExtendableGlobalVars {
 	[key: string]: string | CssPropertyDefinition | GlobalVarsDefinition | undefined;
 	extend?: GlobalVarsDefinition;
 }
-export interface GlobalPositionTry {
-	[key: string]: SystemStyleObject;
-}
-export interface ExtendableGlobalPositionTry {
-	[key: string]: SystemStyleObject | GlobalPositionTry | undefined;
-	extend?: GlobalPositionTry | undefined;
-}
 export interface ThemeVariant extends Pick<Theme, "tokens" | "semanticTokens"> {
 }
 export interface ThemeVariantsMap {
@@ -11545,7 +11534,6 @@ export interface ExtendableOptions {
 	/**
 	 * The global custom position try fallback option
 	 */
-	globalPositionTry?: ExtendableGlobalPositionTry;
 	/**
 	 * Used to generate css utility classes for your project.
 	 */

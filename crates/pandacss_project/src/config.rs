@@ -15,7 +15,7 @@ use pandacss_extractor::{
 };
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::css_properties::css_property_names;
-use pandacss_shared::{ViewTransitionStyle, capitalize, compile_js_regex};
+use pandacss_shared::{PositionTryStyle, ViewTransitionStyle, capitalize, compile_js_regex};
 use pandacss_tokens::{TokenDictionary, TokenError};
 use pandacss_utility::{Utility, UtilityOptions};
 
@@ -64,6 +64,11 @@ pub(crate) fn compile_config_with_token_dictionary(
     extractor_config.has_jsx_framework = config.jsx_framework.is_some();
     extractor_config.class_attribute = class_attribute_for_framework(config.jsx_framework.as_ref());
     extractor_config.token_dictionary = token_dictionary;
+    config
+        .prefix
+        .class_name()
+        .unwrap_or_default()
+        .clone_into(&mut extractor_config.class_name_prefix);
 
     let utility = (!utility.is_empty()).then_some(utility);
     let patterns = {
@@ -103,8 +108,25 @@ pub(crate) fn compile_config_with_token_dictionary(
             .map(|frames| frames.keys().cloned().collect())
             .unwrap_or_default(),
         view_transitions: theme_view_transitions(config),
+        position_try: theme_position_try(config),
         optimize: config.optimize,
     })
+}
+
+fn theme_position_try(config: &pandacss_config::UserConfig) -> BTreeMap<String, PositionTryStyle> {
+    let prefix = config.prefix.class_name().unwrap_or_default();
+    config
+        .theme
+        .position_try
+        .iter()
+        .filter_map(|(name, options)| {
+            if name.is_empty() {
+                return None;
+            }
+            let style = PositionTryStyle::from_named_options(name, options, prefix);
+            (!style.is_empty()).then(|| (name.clone(), style))
+        })
+        .collect()
 }
 
 fn theme_view_transitions(
@@ -339,7 +361,13 @@ fn matchers_from_definitions(config: &ConfigDefinitions) -> Matchers {
     Matchers {
         css: ExtractorMatcher {
             modules: config.import_map.css.clone(),
-            names: ExtractorNameMatcher::only(["css", "cva", "sva", "viewTransition"]),
+            names: ExtractorNameMatcher::only([
+                "css",
+                "cva",
+                "sva",
+                "viewTransition",
+                "positionTry",
+            ]),
         },
         recipe: ExtractorMatcher {
             modules: config.import_map.recipe.clone(),

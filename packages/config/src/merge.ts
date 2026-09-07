@@ -15,7 +15,6 @@ const sectionKeys = [
   'globalCss',
   'globalVars',
   'globalFontface',
-  'globalPositionTry',
   'staticCss',
   'themes',
 ] as const

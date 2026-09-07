@@ -432,6 +432,7 @@ fn run_extract<'cb>(
             matched: &matched,
             matchers: Some(&config.matchers),
             tokens: config.token_dictionary.as_deref(),
+            prefix: config.class_name_prefix.as_str(),
             cross_file: config
                 .cross_file
                 .as_ref()
@@ -566,6 +567,7 @@ pub fn analyze_module(source: &str, path: &str) -> ModuleFacts {
         matched: &matched,
         matchers: None,
         tokens: None,
+        prefix: "",
         cross_file: None,
         source_path: None,
         line_index: None,

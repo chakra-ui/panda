@@ -1,17 +1,17 @@
 ---
 title: Config Functions
-description: The define* helpers for authoring config, recipes, tokens, and themes in their own files with full type checking.
+description:
+  The define* helpers for authoring config, recipes, tokens, and themes in their own files with full type checking.
 ---
 
 Every function on this page does exactly one thing at runtime: return its argument unchanged. `defineRecipe` is
 literally `(config) => config`. So why call them at all?
 
-Because of what they do at the type level. Write a recipe as a plain object inside `defineConfig({...})` and
-TypeScript infers its type from context, no wrapper needed. Move that same object into its own file,
-`recipes/button.ts`, and there's no longer any context to infer from, it's just an object literal with whatever type
-you happen to give it. Wrapping it in `defineRecipe(...)` restores that context: the function's parameter type
-constrains what you write, so your editor autocompletes and flags errors while you type, in a file that never
-imports `defineConfig` at all.
+Because of what they do at the type level. Write a recipe as a plain object inside `defineConfig({...})` and TypeScript
+infers its type from context, no wrapper needed. Move that same object into its own file, `recipes/button.ts`, and
+there's no longer any context to infer from, it's just an object literal with whatever type you happen to give it.
+Wrapping it in `defineRecipe(...)` restores that context: the function's parameter type constrains what you write, so
+your editor autocompletes and flags errors while you type, in a file that never imports `defineConfig` at all.
 
 ## Style and config helpers
 
@@ -90,9 +90,9 @@ export const checkboxRecipe = defineSlotRecipe({
 
 ### `defineParts`
 
-For when you want one class on one DOM element to carry every part's styles, instead of a slot recipe's separate
-class per part. Pass a map of part name to selector, and you get back a function that turns per-part style objects
-into one combined style object keyed by those selectors:
+For when you want one class on one DOM element to carry every part's styles, instead of a slot recipe's separate class
+per part. Pass a map of part name to selector, and you get back a function that turns per-part style objects into one
+combined style object keyed by those selectors:
 
 ```ts
 import { defineParts, defineRecipe } from '@pandacss/dev'
@@ -129,8 +129,8 @@ export const checkboxRecipe = defineRecipe({
 })
 ```
 
-This is the shape [Zag.js](https://zagjs.com/) and [Ark UI](https://ark-ui.com/) render to, `data-part` attributes on
-a single root, rather than Panda's own slot convention.
+This is the shape [Zag.js](https://zagjs.com/) and [Ark UI](https://ark-ui.com/) render to, `data-part` attributes on a
+single root, rather than Panda's own slot convention.
 
 ### `definePattern`
 
@@ -259,10 +259,25 @@ export const viewTransitions = defineViewTransitions({
 })
 ```
 
+### `definePositionTry`
+
+For named [position-try fallbacks](/docs/styling/position-try) authored outside `defineConfig`.
+
+```ts
+import { definePositionTry } from '@pandacss/dev'
+
+export const positionTry = definePositionTry({
+  bottom: {
+    top: 'anchor(bottom)',
+    insetInlineStart: 'anchor(start)'
+  }
+})
+```
+
 ### `defineStyles`
 
-For a chunk of `SystemStyleObject` you want to reuse across variants, spread it into each one instead of repeating
-the properties:
+For a chunk of `SystemStyleObject` you want to reuse across variants, spread it into each one instead of repeating the
+properties:
 
 ```ts {3, 14, 18} filename="recipes/button.ts"
 import { defineRecipe, defineStyles } from '@pandacss/dev'
@@ -293,8 +308,8 @@ export const buttonRecipe = defineRecipe({
 ## Composite style helpers
 
 Text styles, layer styles, and animation styles follow the same pattern as the helpers above, a typed wrapper for
-authoring them outside `defineConfig`. Each has its own full page, since the value objects have more shape to them
-than a plain style object:
+authoring them outside `defineConfig`. Each has its own full page, since the value objects have more shape to them than
+a plain style object:
 
 - [`defineTextStyles`](/docs/theming/text-styles)
 - [`defineLayerStyles`](/docs/theming/layer-styles)
@@ -351,8 +366,8 @@ const theme = {
 }
 ```
 
-Scope it to one token category when you're authoring that category in its own file, `defineTokens.colors(...)` type-checks
-against just the `colors` shape instead of the full token tree:
+Scope it to one token category when you're authoring that category in its own file, `defineTokens.colors(...)`
+type-checks against just the `colors` shape instead of the full token tree:
 
 ```ts filename="tokens/colors.ts"
 import { defineTokens } from '@pandacss/dev'

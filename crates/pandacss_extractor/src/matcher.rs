@@ -182,6 +182,10 @@ pub struct ExtractorConfig {
     pub class_attribute: &'static str,
     /// When `Some`, `token('x.y')` calls fold to the looked-up value.
     pub token_dictionary: Option<Arc<TokenDictionary>>,
+    /// Config class-name prefix, threaded into the resolver so
+    /// `positionTry(...)` folds to the same dashed-ident the emitter/transform
+    /// produce. Empty when no prefix is configured.
+    pub class_name_prefix: String,
     /// When `Some`, references to imported `const` exports from local
     /// files are loaded and folded at extraction time. The resolver's
     /// internal cache is shared across every `extract()` call that uses
@@ -204,6 +208,7 @@ impl ExtractorConfig {
             has_jsx_framework: false,
             class_attribute: "className",
             token_dictionary: None,
+            class_name_prefix: String::new(),
             cross_file: None,
         }
     }

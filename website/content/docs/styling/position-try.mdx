@@ -1,0 +1,129 @@
+---
+title: Position Try
+description:
+  Define CSS anchor-positioning fallbacks with a typed factory. positionTry() returns the dashed-ident you put in
+  position-try-fallbacks.
+---
+
+## How it works
+
+CSS anchor positioning lets an element fall back to another position when it runs out of room. You name each fallback in
+an [`@position-try`](https://developer.mozilla.org/en-US/docs/Web/CSS/@position-try) block, then reference it by that
+name in [`position-try-fallbacks`](https://developer.mozilla.org/en-US/docs/Web/CSS/position-try-fallbacks).
+
+`positionTry()` returns the dashed-ident and emits the `@position-try` block for you.
+
+```ts
+import { css, positionTry } from 'styled-system/css'
+
+const bottom = positionTry({
+  top: 'anchor(bottom)',
+  insetInlineStart: 'anchor(start)'
+})
+// → "--pt_xxx"
+
+css({ positionAnchor: '--trigger', positionTryFallbacks: bottom })
+```
+
+```css
+@position-try --pt_xxx {
+  top: anchor(bottom);
+  inset-inline-start: anchor(start);
+}
+```
+
+Unlike [`viewTransition()`](/docs/styling/view-transition), which returns a class for `className`, `positionTry()`
+returns a value. An anchor fallback is named in a property value, the same way `@keyframes` is named by
+`animation-name`, so the factory hands you the dashed-ident that `position-try-fallbacks` consumes.
+
+## Using the result
+
+The returned ident is a normal string, so it composes in your own style object. Panda folds the call at build time, so
+`css()` emits a real `position-try-fallbacks` declaration:
+
+```ts
+import { css, positionTry } from 'styled-system/css'
+
+const bottom = positionTry({ top: 'anchor(bottom)' })
+const flip = positionTry({ bottom: 'anchor(top)' })
+
+css({
+  positionAnchor: '--trigger',
+  positionTryFallbacks: `${bottom}, ${flip}`
+})
+```
+
+```css
+.position-try-fallbacks_--pt_xxx\,_--pt_yyy {
+  position-try-fallbacks: --pt_xxx, --pt_yyy;
+}
+```
+
+You still set `anchor-name` on the anchor element and `position-anchor` on the positioned element yourself. Those are
+per-element and Panda does not manage them.
+
+## Named fallbacks
+
+Register reusable fallbacks in `theme.positionTry`, then call them by name:
+
+```ts filename="panda.config.ts"
+import { defineConfig, definePositionTry } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      positionTry: definePositionTry({
+        bottom: {
+          top: 'anchor(bottom)',
+          insetInlineStart: 'anchor(start)'
+        }
+      })
+    }
+  }
+})
+```
+
+```ts
+import { css, positionTry } from 'styled-system/css'
+
+css({ positionTryFallbacks: positionTry('bottom') })
+```
+
+`positionTry('bottom')` returns `"--pt_bottom"`. A static call inlines at build time and drops the import. Unused names
+stay out of the CSS.
+
+## Design systems
+
+Export a fallback the same way you'd export a shared `cva`:
+
+```ts
+export const bottom = positionTry({ top: 'anchor(bottom)' })
+```
+
+`panda lib` puts it in build info. Consuming apps get the `@position-try` CSS without re-scanning your source, and
+tree-shaking follows imports like recipes. Or register the same fallbacks in a preset's `theme.positionTry` and let apps
+call `positionTry('bottom')`.
+
+## Migrating from `globalPositionTry`
+
+`globalPositionTry` is removed. Move its entries to `theme.positionTry` and reference them through `positionTry()`,
+which is typed, tree-shaken, and referenced by name:
+
+```ts
+// ❌ removed
+globalPositionTry: {
+  '--bottom': { top: 'anchor(bottom)' }
+}
+css({ positionTryFallbacks: '--bottom' })
+
+// ✅ v2
+theme: {
+  extend: {
+    positionTry: { bottom: { top: 'anchor(bottom)' } }
+  }
+}
+css({ positionTryFallbacks: positionTry('bottom') })
+```
+
+A block that must always emit under a hand-authored name, for a fallback referenced from CSS Panda does not scan,
+belongs in a plain `.css` file.

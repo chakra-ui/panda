@@ -63,6 +63,9 @@ pub(crate) struct Resolver<'a, 'cb> {
     aliases: FxHashMap<&'a str, &'a MatchedImport>,
     matchers: Option<&'a Matchers>,
     tokens: Option<&'a TokenDictionary>,
+    /// Config class-name prefix used to build `positionTry(...)` dashed-idents
+    /// byte-identically to the emitter/transform. Empty for no prefix.
+    prefix: &'a str,
     cross_file: Option<&'a dyn CrossFileLookup>,
     source_path: Option<PathBuf>,
     line_index: Option<&'a crate::LineIndex<'a>>,
@@ -116,6 +119,7 @@ pub(crate) struct ResolverBuildInput<'a, 'cb> {
     pub matched: &'a [MatchedImport],
     pub matchers: Option<&'a Matchers>,
     pub tokens: Option<&'a TokenDictionary>,
+    pub prefix: &'a str,
     pub cross_file: Option<&'a dyn CrossFileLookup>,
     pub source_path: Option<PathBuf>,
     pub line_index: Option<&'a crate::LineIndex<'a>>,
@@ -140,6 +144,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             matched,
             matchers,
             tokens,
+            prefix,
             cross_file,
             source_path,
             line_index,
@@ -155,6 +160,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             aliases: matched.iter().map(|m| (m.alias.as_str(), m)).collect(),
             matchers,
             tokens,
+            prefix,
             cross_file,
             source_path,
             line_index,
@@ -271,6 +277,10 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
 
     pub(crate) fn matchers(&self) -> Option<&'a Matchers> {
         self.matchers
+    }
+
+    pub(crate) fn prefix(&self) -> &'a str {
+        self.prefix
     }
 
     /// Fold a pure local/imported callable: `f()`, `(() => 'x')()`, etc.
@@ -451,6 +461,35 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         } else {
             Literal::String(resolution.value)
         })
+    }
+
+    /// Resolve a bare `positionTry(arg)` call used as a style value to its
+    /// dashed-ident string (`--pt_flip`, `--pt_{hash}`). Only matches the plain
+    /// identifier form of a `css`-category `positionTry` import binding —
+    /// `positionTry.raw(...)` and namespace/member forms return `None`. The
+    /// ident is built with the config prefix so it is byte-identical to the
+    /// `@position-try` block emitter and the transform.
+    pub(crate) fn resolve_position_try_call(&self, call: &CallExpression<'_>) -> Option<Literal> {
+        let Expression::Identifier(ident) = &call.callee else {
+            return None;
+        };
+        let matched = self.aliases.get(ident.name.as_str())?;
+        if matched.category != MatchCategory::Css || matched.name != "positionTry" {
+            return None;
+        }
+        if !self.is_import_binding(ident) {
+            return None;
+        }
+
+        let arg = call.arguments.first()?.as_expression()?;
+        let ident = match expression_to_literal(arg, Some(self))? {
+            Literal::String(name) => pandacss_shared::position_try_named_ident(&name, self.prefix),
+            arg @ Literal::Object(_) => {
+                pandacss_shared::position_try_ident(&arg.to_json(), self.prefix)
+            }
+            _ => return None,
+        };
+        Some(Literal::String(ident))
     }
 
     pub(crate) fn resolved_token_call_path(&self, call: &CallExpression<'_>) -> Option<String> {
@@ -700,8 +739,14 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
 
         let module = import_module?;
         let name = imported_name?;
-        let resolution =
-            cross_file.resolve_named_export(from_file, module, name, self.matchers, self.tokens);
+        let resolution = cross_file.resolve_named_export(
+            from_file,
+            module,
+            name,
+            self.matchers,
+            self.tokens,
+            self.prefix,
+        );
         self.record_cross_file_resolution(&resolution);
         resolution.entry
     }

@@ -277,12 +277,6 @@ describe('resolveAuthoredPresets / section coverage', () => {
                 Mono: { src: 'url(mono.woff2)' },
               },
             },
-            globalPositionTry: {
-              tooltip: { top: '0' },
-              extend: {
-                popover: { bottom: '0' },
-              },
-            },
             staticCss: {
               css: [{ properties: { color: ['red'] } }],
               extend: {
@@ -326,7 +320,6 @@ describe('resolveAuthoredPresets / section coverage', () => {
       globalCss: result.globalCss,
       globalVars: result.globalVars,
       globalFontface: result.globalFontface,
-      globalPositionTry: result.globalPositionTry,
       staticCss: result.staticCss,
       themes: result.themes,
       theme: result.theme,
@@ -351,14 +344,6 @@ describe('resolveAuthoredPresets / section coverage', () => {
           },
           "Mono": {
             "src": "url(mono.woff2)",
-          },
-        },
-        "globalPositionTry": {
-          "popover": {
-            "bottom": "0",
-          },
-          "tooltip": {
-            "top": "0",
           },
         },
         "globalVars": {

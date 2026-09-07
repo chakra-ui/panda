@@ -72,7 +72,7 @@ export interface TokenRefSite {
   token?: TokenValueRef
 }
 
-export type UsageKind = 'token' | 'property' | 'recipe' | 'pattern' | 'keyframe'
+export type UsageKind = 'token' | 'property' | 'recipe' | 'pattern' | 'keyframe' | 'view-transition' | 'position-try'
 
 export interface UsageSite {
   kind: UsageKind

@@ -28,7 +28,6 @@ const sectionKeySet = new Set([
   'globalCss',
   'globalVars',
   'globalFontface',
-  'globalPositionTry',
   'staticCss',
   'themes',
 ])

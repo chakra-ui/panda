@@ -7,6 +7,7 @@ pub mod diagnostic;
 pub mod error;
 pub mod hash;
 pub mod important;
+pub mod position_try;
 pub mod regex;
 pub mod strings;
 pub mod unit_conversion;
@@ -20,6 +21,9 @@ pub use diagnostic::{
 pub use error::{PandaError, PandaResult};
 pub use hash::{compound_class_name, compound_combo_string, fx_hash, to_hash, without_space};
 pub use important::{is_important, split_important, without_important};
+pub use position_try::{
+    PositionTryStyle, position_try_base_ident, position_try_ident, position_try_named_ident,
+};
 pub use regex::compile_js_regex;
 pub use strings::{
     MAX_SAFE_INTEGER, capitalize, closest_match, file_stem, find_matching_paren,

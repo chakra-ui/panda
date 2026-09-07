@@ -210,6 +210,7 @@ pub(crate) trait CrossFileLookup: Send + Sync {
         name: &str,
         matchers: Option<&Matchers>,
         tokens: Option<&TokenDictionary>,
+        prefix: &str,
     ) -> CrossFileResolution;
 
     fn resolve_path(&self, from_file: &Path, specifier: &str) -> Option<PathBuf>;
@@ -247,6 +248,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
         source: &str,
         matchers: Option<&Matchers>,
         tokens: Option<&TokenDictionary>,
+        prefix: &str,
     ) -> (FileExports, Provenance, UnresolvedDependencies) {
         let allocator = Allocator::default();
         let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
@@ -260,6 +262,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
             matched: &matched,
             matchers,
             tokens,
+            prefix,
             cross_file: Some(self),
             source_path: Some(path.to_path_buf()),
             line_index: None,
@@ -353,6 +356,7 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         name: &str,
         matchers: Option<&Matchers>,
         tokens: Option<&TokenDictionary>,
+        prefix: &str,
     ) -> CrossFileResolution {
         let Some(directory) = from_file.parent() else {
             return CrossFileResolution::none();
@@ -403,7 +407,8 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
             }
         }
 
-        let (exports, deps, unresolved) = self.extract_exports(&path, &source, matchers, tokens);
+        let (exports, deps, unresolved) =
+            self.extract_exports(&path, &source, matchers, tokens, prefix);
         self.in_flight
             .lock()
             .expect("cross-file guard poisoned")
@@ -511,6 +516,7 @@ fn collect_from_named(
                 &local,
                 resolver.matchers(),
                 resolver.tokens(),
+                resolver.prefix(),
             );
             resolver.record_cross_file_resolution(&resolution);
             resolution.entry

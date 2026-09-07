@@ -14,7 +14,7 @@ stay isolated because one unsupported selector invalidates its entire selector l
 Owned:
 
 - Reset/preflight emission, including `preflight.scope` and `preflight.level`.
-- Base layer config CSS: `globalCss`, `globalVars`, `globalFontface`, and `globalPositionTry`.
+- Base layer config CSS: `globalCss`, `globalVars`, and `globalFontface`.
 - Tokens layer: token CSS variables, semantic-token conditions, and `theme.keyframes`.
   Keyframes-only CSS is available via `compile_keyframes` / host `getKeyframeCss()` (no token vars).
 - Recipes layer: config recipes, slot recipes, compound variants, and split recipe files.

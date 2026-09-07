@@ -6,6 +6,7 @@ pub mod cx;
 pub mod helpers;
 pub mod jsx;
 pub mod patterns;
+pub mod position_try;
 pub mod recipes;
 pub mod specs;
 pub mod sva;

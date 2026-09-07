@@ -622,6 +622,7 @@ fn parse_expression_literal(
             matched: context.matched,
             matchers: Some(&context.config.matchers),
             tokens: context.config.token_dictionary.as_deref(),
+            prefix: context.config.class_name_prefix.as_str(),
             cross_file: context
                 .config
                 .cross_file

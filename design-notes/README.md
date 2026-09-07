@@ -93,6 +93,9 @@ Some topics span several notes. Keep the detailed contract in one place and link
 - [View Transition API](./view-transition-api.md) — `viewTransition()` bag class from the css barrel,
   `theme.viewTransitions` named bags, `view-transition-class` emission, hash contract, transform rewrite, and what's
   still out of scope.
+- [Position Try API](./position-try-api.md) — `positionTry()` dashed-ident from the css barrel, `theme.positionTry`
+  named `@position-try` blocks, why it returns an ident not a class, the hash contract, and the `globalPositionTry`
+  removal.
 
 ### Boundary
 
