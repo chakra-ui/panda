@@ -125,15 +125,9 @@ export const debugFlagsSchema = infoFlagsSchema.extend({
   onlyConfig: booleanFlag,
 })
 
-export const analyzeFlagsSchema = commonFlagsSchema.extend({
-  // Scope to include in the report: all, tokens, recipes, utilities, patterns, keyframes (or token/recipe aliases)
-  scope: enumOf(['all', 'tokens', 'recipes', 'utilities', 'patterns', 'keyframes', 'token', 'recipe']),
-  outfile: stringFlag,
-  report: stringFlag,
-  limit: numberLikeFlag,
-  ui: booleanFlag,
-  uiHost: stringFlag,
-  uiPort: numberLikeFlag,
+export const analyzeFlagsSchema = commonFlagsSchema.omit({
+  watch: true,
+  watchDebounce: true,
 })
 
 export type LogLevel = EnumValues<typeof logLevelSchema>
@@ -146,8 +140,6 @@ export type BuildinfoFlags = FlagsInfer<typeof buildinfoFlagsSchema>
 export type LibFlags = FlagsInfer<typeof libFlagsSchema>
 export type DoctorFlags = FlagsInfer<typeof doctorFlagsSchema>
 export type DebugFlags = FlagsInfer<typeof debugFlagsSchema>
-type AnalyzeScopeRaw = FlagsInfer<typeof analyzeFlagsSchema>['scope']
-export type AnalyzeScope = NonNullable<Exclude<AnalyzeScopeRaw, 'token' | 'recipe'>>
 export type AnalyzeFlags = FlagsInfer<typeof analyzeFlagsSchema>
 
 export interface BuildinfoResult extends CommandResult {
@@ -198,11 +190,7 @@ export interface BuildResult extends CommandResult {
   stale: string[]
 }
 
-export interface AnalyzeResult extends CommandResult, UsageReport {
-  scope: AnalyzeScope
-  report?: string
-  ui?: string
-}
+export interface AnalyzeResult extends CommandResult, UsageReport {}
 
 export interface DebugResult extends CommandResult {
   outdir?: string
