@@ -60,7 +60,7 @@ fn emits_flat_token_spec_grouped_by_category() {
             },
             {
               "name": "fg",
-              "value": "var(--colors-red-500)"
+              "value": "#ef4444"
             }
           ]
         },

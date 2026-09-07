@@ -50,7 +50,7 @@ fn build_data(dictionary: &TokenDictionary) -> Vec<Value> {
                     if name == COLOR_PALETTE || name.starts_with(COLOR_PALETTE_PREFIX) {
                         return None;
                     }
-                    Some(json!({ "name": name, "value": &*token.value }))
+                    Some(json!({ "name": name, "value": resolve_value(dictionary, &token.value) }))
                 })
                 .collect();
             json!({ "type": category.as_str(), "values": values })
@@ -62,4 +62,17 @@ fn category_relative_path<'a>(path: &'a str, category: &TokenCategory) -> &'a st
     path.strip_prefix(category.as_str())
         .and_then(|rest| rest.strip_prefix('.'))
         .unwrap_or(path)
+}
+
+/// Follow `var(--x)` references (semantic/aliased tokens) to a concrete base value
+/// so consumers get `#ef4444`, not `var(--colors-red-500)`. Bounded against cycles.
+fn resolve_value<'a>(dictionary: &'a TokenDictionary, value: &'a str) -> &'a str {
+    let mut current = value;
+    for _ in 0..8 {
+        match dictionary.token_by_var(current) {
+            Some(token) if token.value.as_ref() != current => current = &token.value,
+            _ => return current,
+        }
+    }
+    current
 }
