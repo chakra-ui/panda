@@ -12,7 +12,8 @@ A spec is a readable JSON representation of the theme structure in your panda co
 
 ## Spec Generation
 
-Spec generation is not part of the current v2 CLI surface yet. The previous `panda spec` command is not ported.
+Run `panda codegen` (or a full `panda` build) and Panda writes `styled-system/specs/tokens.json`. The other files below
+describe the wider shape this format is moving toward — today only `tokens.json` is emitted.
 
 ## Spec Output
 
@@ -44,33 +45,27 @@ This file contains an array of raw design tokens grouped by category
 
 ```json
 {
-  "type": "tokens",
   "data": [
     {
       "type": "colors",
       "values": [
         {
           "name": "purple.800",
-          "value": "#6b21a8",
-          "cssVar": "var(--colors-purple-800)"
+          "value": "#6b21a8"
         }
-      ],
-      "tokenFunctionExamples": ["token('colors.purple.800')", "token.var('colors.purple.800')"],
-      "functionExamples": ["css({ color: 'purple.800' })"],
-      "jsxExamples": ["<Box color='purple.800' />"]
+      ]
     }
   ]
 }
 ```
 
-Each token in the `values` array includes:
+Each category is `{ type, values }`, and each token in the `values` array includes:
 
-- **name**: token key (e.g., 2xs, md, primary)
-- **value**: resolved CSS value (e.g., "1rem", "#F6E458")
-- **cssVar**: the generated CSS custom property
-- **tokenFunctionExamples**: examples of how to use the token in the `token` function
-- **functionExamples**: examples of how to use the token in the `css` function
-- **jsxExamples**: examples of how to use the token in JSX
+- **name**: token key relative to its category (e.g., `purple.800`, `md`, `primary`)
+- **value**: resolved CSS value (e.g., `"1rem"`, `"#6b21a8"`)
+
+Base values only — theme and condition variants are left out to keep the file flat, and Panda's internal `colorPalette`
+tokens are filtered out.
 
 #### Usage
 

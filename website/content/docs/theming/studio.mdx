@@ -1,63 +1,100 @@
 ---
 title: Studio
-description: A CLI-generated token viewer for v2, with getTokenJson, getTokenHtml, and getTokenCss. Not in the beta yet.
+description: Build your own token viewer from the generated JSON spec — no extra app, no server.
 ---
 
-<Callout type="warning">
-  Coming soon. `panda studio` isn't in the v2 beta yet. This page previews the shape so you can plan around it. The v1
-  `@pandacss/studio` Astro app is removed in v2.
-</Callout>
+Panda v1 shipped a separate Studio app: install a framework, boot a server, self-host to share. v2 removes it. Instead,
+Panda writes your design system to a plain JSON file, and you render it however you like — a page in your app, a
+Storybook story, an MDX doc. You own the design; Panda owns the data.
 
-## What's coming
+This guide builds a small studio from that file.
 
-The v1 Panda Studio was a separate Astro app: install a framework, boot a server, self-host to share. The Rust
-migration removed that pipeline, so v2 has no built-in way to look at your tokens today.
+## The data
 
-`panda studio` brings token visualization back without the Astro weight. It writes `styled-system/studio` into your
-project and boots a live viewer:
+`panda codegen` (or a full `panda` build) writes `styled-system/specs/tokens.json` — a flat snapshot of your tokens
+grouped by category:
 
-```sh
-panda studio                     # emit styled-system/studio + boot the viewer
-panda studio --port 4137
-panda studio --css ./studio.css  # render the viewer with your own stylesheet
+```json
+{
+  "data": [
+    {
+      "type": "colors",
+      "values": [{ "name": "red.500", "value": "#ef4444" }]
+    }
+  ]
+}
 ```
 
-`styled-system/studio` exports three framework-agnostic functions, modeled on [Tiptap](https://tiptap.dev)'s `getHTML` /
-`getJSON` — small functions that each hand you one thing:
+Every category is `{ type, values: [{ name, value }] }`. Values are resolved, so a color is ready to paint and a spacing
+value is ready to size a box. See the [JSON Spec](/docs/theming/json-spec) reference for the full file.
 
-- **`getTokenJson({ category, query })`** — your tokens as data. Filter by category, search by query, or omit both for
-  everything. Each token is `{ category, path, name, value, conditions? }`, values fully resolved, with semantic tokens
-  carrying their per-condition and per-theme values.
-- **`getTokenHtml({ tokens })`** — semantic, style-free HTML. Names and values as text, everything else on `data-`
-  attributes, all escaped. Drop it into any framework (`dangerouslySetInnerHTML`, `v-html`, `innerHTML`) or write it to
-  a file.
-- **`getTokenCss(yourStylesheet)`** — takes your CSS and wires it up. It exposes each token's value as a `--pds-value`
-  variable on the matching `[data-value]` element, then appends your stylesheet, so `var(--pds-value)` resolves to real
-  token values.
+## A color grid
 
-Panda ships the content and the wiring, not the design. There's no default theme and no bundled stylesheet — the grid,
-swatches, and type are yours. A bare `panda studio` is plain until you pass `--css`.
+Find the `colors` group and map its values into swatches:
 
 ```tsx
-import { getTokenJson, getTokenHtml, getTokenCss } from '../styled-system/studio'
-import myCss from './studio.css?raw'
+import { grid } from 'styled-system/patterns'
+import tokens from 'styled-system/specs/tokens.json'
 
-function Colors() {
-  const [tokens, setTokens] = useState(getTokenJson({ category: 'colors' }))
+export function Colors() {
+  const colors = tokens.data.find(group => group.type === 'colors')
+
   return (
-    <div>
-      <style>{getTokenCss(myCss)}</style>
-      <input onChange={(e) => setTokens(getTokenJson({ category: 'colors', query: e.target.value }))} />
-      <div dangerouslySetInnerHTML={{ __html: getTokenHtml({ tokens }) }} />
+    <div className={grid({ columns: 3, gap: '4', padding: '6' })}>
+      {colors?.values.map(color => (
+        <div key={color.name}>
+          <div
+            style={{
+              background: color.value,
+              height: 64,
+              borderRadius: 8,
+              border: '1px solid rgba(0,0,0,0.1)'
+            }}
+          />
+          <p>{color.name}</p>
+          <p>{color.value}</p>
+        </div>
+      ))}
     </div>
   )
 }
 ```
 
-The generated module is self-contained — the runtime is inlined with your tokens baked in, so it imports nothing at
-runtime.
+## Any category
+
+The same shape works for spacing, radii, fonts — anything in your theme. Swap the category and render what fits it. Here
+spacing values size the bar next to each name:
+
+```tsx
+import tokens from 'styled-system/specs/tokens.json'
+
+export function Spacing() {
+  const spacing = tokens.data.find(group => group.type === 'spacing')
+
+  return (
+    <table>
+      <tbody>
+        {spacing?.values.map(token => (
+          <tr key={token.name}>
+            <td>{token.name}</td>
+            <td>{token.value}</td>
+            <td>
+              <div style={{ width: token.value, height: 12, background: 'currentColor' }} />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+```
+
+## Keep it in sync
+
+The file regenerates on every `panda codegen`, so your studio tracks your config with no extra build to run and nothing
+to redeploy. Import it wherever your tokens should be visible — a design-system page, a Storybook story, an MDX doc.
 
 ## See also
 
-- [JSON Spec](/docs/theming/json-spec) for a data export you can render in your own docs.
+- [JSON Spec](/docs/theming/json-spec) for the full file and every category.
 - [Upgrading to v2](/docs/get-started/upgrading-to-v2) for the broader rewrite this belongs to.
