@@ -3,6 +3,7 @@ import type {
   CompositionStyles,
   Config,
   CssKeyframes,
+  ExtendableConditions,
   GlobalFontface,
   GlobalStyleObject,
   LayerStyles,
@@ -74,6 +75,10 @@ export function defineGlobalFontface(definition: GlobalFontface): GlobalFontface
 
 export function defineUtility(utility: PropertyConfig): PropertyConfig {
   return utility
+}
+
+export function defineConditions(definition: ExtendableConditions): ExtendableConditions {
+  return definition
 }
 
 export function definePlugin(plugin: PandaPlugin): PandaPlugin {

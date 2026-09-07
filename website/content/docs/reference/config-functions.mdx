@@ -230,6 +230,35 @@ export const br = defineUtility({
 })
 ```
 
+### `defineConditions`
+
+For custom [conditions](/docs/theming/conditions) authored outside `defineConfig`.
+
+```ts
+import { defineConditions } from '@pandacss/dev'
+
+export const conditions = defineConditions({
+  groupHover: '.group:hover &',
+  cardHover: '[data-card]:hover &'
+})
+```
+
+### `defineViewTransitions`
+
+For named [view transitions](/docs/styling/view-transition) authored outside `defineConfig`.
+
+```ts
+import { defineViewTransitions } from '@pandacss/dev'
+
+export const viewTransitions = defineViewTransitions({
+  slide: {
+    group: { animationDuration: '0.4s' },
+    old: { opacity: 0 },
+    new: { opacity: 1 }
+  }
+})
+```
+
 ### `defineStyles`
 
 For a chunk of `SystemStyleObject` you want to reuse across variants, spread it into each one instead of repeating
