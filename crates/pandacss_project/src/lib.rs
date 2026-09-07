@@ -54,7 +54,7 @@ use pandacss_extractor::{
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::css_properties::is_css_property;
 use pandacss_shared::{
-    PositionTryStyle, ViewTransitionStyle, diagnostic_codes, hyphenate_property,
+    InlineKeyframe, PositionTryStyle, ViewTransitionStyle, diagnostic_codes, hyphenate_property,
 };
 use pandacss_utility::{ShorthandPolicy, StyleNormalizer, Utility};
 
@@ -64,7 +64,8 @@ use pandacss_utility::{ShorthandPolicy, StyleNormalizer, Utility};
 pub type UtilityStyleKey = (Box<str>, AtomValue);
 
 pub use build_info::{
-    BuildAtom, BuildInfo, BuildValue, BuildViewTransition, ModuleEntry, SCHEMA_VERSION,
+    BuildAtom, BuildInfo, BuildKeyframe, BuildValue, BuildViewTransition, ModuleEntry,
+    SCHEMA_VERSION,
 };
 pub use design_system::{
     DesignSystemManifest, MANIFEST_SCHEMA_VERSION, ManifestImportMap, ManifestInput,
@@ -175,6 +176,9 @@ pub struct Project {
     position_try: BTreeMap<RecipeKey, PositionTryStyle>,
     position_try_spans: FxHashMap<Arc<str>, SmallVec<[u32; 4]>>,
     position_try_snapshot_cache: Option<Vec<PositionTryStyle>>,
+    inline_keyframes: BTreeMap<RecipeKey, InlineKeyframe>,
+    inline_keyframe_spans: FxHashMap<Arc<str>, SmallVec<[u32; 4]>>,
+    inline_keyframes_snapshot_cache: Option<Vec<InlineKeyframe>>,
     config_diagnostics: Vec<Diagnostic>,
     /// Recipe snapshots hydrated from build info, keyed by source library
     /// name and merged into [`Self::stylesheet_snapshots`].
@@ -185,6 +189,8 @@ pub struct Project {
     hydrated_view_transition_order: Vec<Arc<str>>,
     hydrated_position_try: FxHashMap<Arc<str>, Vec<PositionTryStyle>>,
     hydrated_position_try_order: Vec<Arc<str>>,
+    hydrated_keyframes: FxHashMap<Arc<str>, Vec<InlineKeyframe>>,
+    hydrated_keyframes_order: Vec<Arc<str>>,
 }
 
 pub struct ProjectStylesheetSnapshots<'a> {
@@ -197,6 +203,7 @@ pub struct ProjectStylesheetSnapshots<'a> {
     pub utility_styles: &'a FxHashMap<UtilityStyleKey, Literal>,
     pub view_transitions: &'a [ViewTransitionStyle],
     pub position_try: &'a [PositionTryStyle],
+    pub inline_keyframes: &'a [InlineKeyframe],
     pub diagnostics: Vec<Diagnostic>,
 }
 
@@ -279,6 +286,9 @@ impl Project {
             position_try: BTreeMap::new(),
             position_try_spans: FxHashMap::default(),
             position_try_snapshot_cache: None,
+            inline_keyframes: BTreeMap::new(),
+            inline_keyframe_spans: FxHashMap::default(),
+            inline_keyframes_snapshot_cache: None,
             config_diagnostics,
             hydrated_recipes: FxHashMap::default(),
             hydrated_recipe_order: Vec::new(),
@@ -286,6 +296,8 @@ impl Project {
             hydrated_view_transition_order: Vec::new(),
             hydrated_position_try: FxHashMap::default(),
             hydrated_position_try_order: Vec::new(),
+            hydrated_keyframes: FxHashMap::default(),
+            hydrated_keyframes_order: Vec::new(),
         }
     }
 
@@ -608,6 +620,30 @@ impl Project {
                         style,
                     );
                     self.view_transition_spans
+                        .entry(Arc::clone(&path_key))
+                        .or_default()
+                        .push(call.span.start);
+                }
+                (MatchCategory::Css, "keyframes") => {
+                    let Some(Literal::Object(_)) = data.first().and_then(Option::as_ref) else {
+                        continue;
+                    };
+                    let arg = data.into_iter().next().flatten().unwrap();
+                    let keyframe = InlineKeyframe::from_options(
+                        &arg.to_json(),
+                        &self.config.class_name_prefix,
+                    );
+                    if keyframe.is_empty() {
+                        continue;
+                    }
+                    self.inline_keyframes.insert(
+                        RecipeKey {
+                            file: Arc::clone(&path_key),
+                            span_start: call.span.start,
+                        },
+                        keyframe,
+                    );
+                    self.inline_keyframe_spans
                         .entry(Arc::clone(&path_key))
                         .or_default()
                         .push(call.span.start);
@@ -974,10 +1010,14 @@ impl Project {
         self.view_transition_spans.clear();
         self.position_try.clear();
         self.position_try_spans.clear();
+        self.inline_keyframes.clear();
+        self.inline_keyframe_spans.clear();
         self.hydrated_view_transitions.clear();
         self.hydrated_view_transition_order.clear();
         self.hydrated_position_try.clear();
         self.hydrated_position_try_order.clear();
+        self.hydrated_keyframes.clear();
+        self.hydrated_keyframes_order.clear();
         self.importers.clear();
         self.unresolved_importers.clear();
         self.affected_files.clear();
@@ -1048,6 +1088,20 @@ impl Project {
                 self.hydrated_position_try_order.push(Arc::from(name));
             }
             self.hydrated_position_try.insert(Arc::from(name), styles);
+        }
+    }
+
+    pub(crate) fn set_hydrated_keyframes(&mut self, name: &str, keyframes: Vec<InlineKeyframe>) {
+        self.invalidate_stylesheet_snapshots();
+        if keyframes.is_empty() {
+            self.hydrated_keyframes.remove(name);
+            self.hydrated_keyframes_order
+                .retain(|existing| existing.as_ref() != name);
+        } else {
+            if !self.hydrated_keyframes.contains_key(name) {
+                self.hydrated_keyframes_order.push(Arc::from(name));
+            }
+            self.hydrated_keyframes.insert(Arc::from(name), keyframes);
         }
     }
 
@@ -1265,13 +1319,15 @@ impl Project {
         self.merged_utility_styles_snapshot_cache = None;
         self.view_transitions_snapshot_cache = None;
         self.position_try_snapshot_cache = None;
+        self.inline_keyframes_snapshot_cache = None;
     }
 
     fn drop_recipes_for(&mut self, path: &str) -> bool {
         let before = self.inline_recipes.len()
             + self.inline_slot_recipes.len()
             + self.view_transitions.len()
-            + self.position_try.len();
+            + self.position_try.len()
+            + self.inline_keyframes.len();
         if let Some((file, spans)) = self.inline_recipe_spans.remove_entry(path) {
             for span_start in spans {
                 self.inline_recipes.remove(&RecipeKey {
@@ -1304,11 +1360,20 @@ impl Project {
                 });
             }
         }
+        if let Some((file, spans)) = self.inline_keyframe_spans.remove_entry(path) {
+            for span_start in spans {
+                self.inline_keyframes.remove(&RecipeKey {
+                    file: Arc::clone(&file),
+                    span_start,
+                });
+            }
+        }
         before
             != self.inline_recipes.len()
                 + self.inline_slot_recipes.len()
                 + self.view_transitions.len()
                 + self.position_try.len()
+                + self.inline_keyframes.len()
     }
 
     fn process_atomic(
@@ -1551,6 +1616,7 @@ impl Project {
         let use_merged_utility_styles = self.prepare_snapshot_utility_styles(&hydrated_styles);
         self.refresh_view_transitions_snapshot();
         self.refresh_position_try_snapshot();
+        self.refresh_inline_keyframes_snapshot();
 
         let mut diagnostics = self
             .static_encoded_recipes_snapshot_cache
@@ -1595,6 +1661,10 @@ impl Project {
                 .position_try_snapshot_cache
                 .as_deref()
                 .expect("position try snapshot was initialized"),
+            inline_keyframes: self
+                .inline_keyframes_snapshot_cache
+                .as_deref()
+                .expect("inline keyframes snapshot was initialized"),
             diagnostics,
         }
     }
@@ -1736,6 +1806,29 @@ impl Project {
                 .or_insert_with(|| style.clone());
         }
         self.position_try_snapshot_cache = Some(by_ident.into_values().collect());
+    }
+
+    fn refresh_inline_keyframes_snapshot(&mut self) {
+        if self.inline_keyframes_snapshot_cache.is_some() {
+            return;
+        }
+        let mut by_name = BTreeMap::<String, InlineKeyframe>::new();
+        for name in &self.hydrated_keyframes_order {
+            let Some(keyframes) = self.hydrated_keyframes.get(name) else {
+                continue;
+            };
+            for keyframe in keyframes {
+                by_name
+                    .entry(keyframe.name.clone())
+                    .or_insert_with(|| keyframe.clone());
+            }
+        }
+        for keyframe in self.inline_keyframes.values() {
+            by_name
+                .entry(keyframe.name.clone())
+                .or_insert_with(|| keyframe.clone());
+        }
+        self.inline_keyframes_snapshot_cache = Some(by_name.into_values().collect());
     }
 
     /// Recomputes `config_utility_styles_cache` when the transform presence changes.
@@ -2054,10 +2147,13 @@ impl Project {
             && self.inline_slot_recipe_spans.is_empty()
             && self.view_transitions.is_empty()
             && self.position_try.is_empty()
+            && self.inline_keyframes.is_empty()
+            && self.inline_keyframe_spans.is_empty()
             && self.view_transition_spans.is_empty()
             && self.hydrated_recipes.is_empty()
             && self.hydrated_view_transitions.is_empty()
             && self.hydrated_position_try.is_empty()
+            && self.hydrated_keyframes.is_empty()
     }
 
     /// Every `cva()` recipe, keyed by `(file, span_start)`. Stable order

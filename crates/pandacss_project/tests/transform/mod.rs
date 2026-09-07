@@ -35,6 +35,7 @@ mod jsx_partial_fold;
 mod jsx_recipes_patterns;
 mod jsx_runtime;
 mod jsx_spread;
+mod keyframes;
 mod patterns;
 mod position_try;
 mod recipe_inline;

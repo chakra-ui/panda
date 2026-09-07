@@ -10,6 +10,7 @@ mod framework_vue;
 mod import_map;
 mod imports;
 mod jsx;
+mod keyframes;
 mod local_bindings;
 mod optional_chaining;
 mod polish;

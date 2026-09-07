@@ -1,10 +1,10 @@
 ---
 title: css/
-description: The css/ folder — css(), cx(), cva(), sva(), viewTransition(), and positionTry().
+description: The css/ folder — css(), cx(), cva(), sva(), viewTransition(), positionTry(), and keyframes().
 ---
 
 **Folder:** `styled-system/css/`  
-**Import:** `import { css, cx, cva, sva, viewTransition, positionTry } from '../styled-system/css'`
+**Import:** `import { css, cx, cva, sva, viewTransition, positionTry, keyframes } from '../styled-system/css'`
 
 Codegen writes one module per helper (`css/css.ts`, `css/cva.ts`, …) plus `css/index.ts` as the barrel. Every helper
 maps a style object to a class name string. Panda extracts those styles at build time and emits atomic CSS. At runtime,
@@ -220,6 +220,23 @@ css({ positionTryFallbacks: positionTry('bottom') })
 A string argument resolves a named `theme.positionTry` bag (`positionTry('bottom')` => `"--pt_bottom"`); an object
 hashes to `--pt_<hash>`. The call folds inside `css()`, so a fallback list composes in your own style object. Guide:
 [Position Try](/docs/styling/position-try).
+
+## keyframes()
+
+Names an inline `@keyframes` block and returns the animation name for `animationName` or the `animation` shorthand.
+Object form only — a bare `animationName: 'spin'` already resolves a `theme.keyframes` entry.
+
+```ts
+import { css, keyframes } from '../styled-system/css'
+
+const spin = keyframes({ from: { transform: 'rotate(0deg)' }, to: { transform: 'rotate(360deg)' } })
+// => "kf_xxx"
+
+css({ animation: `${spin} 1s linear infinite` })
+```
+
+The block emits only when its name is referenced, tree-shaken like `theme.keyframes`. Guide:
+[Keyframes](/docs/styling/keyframes).
 
 ## See also
 
