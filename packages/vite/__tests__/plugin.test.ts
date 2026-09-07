@@ -73,6 +73,15 @@ async function waitForCss(server: ViteDevServer, needle: string): Promise<string
   throw new Error(`timed out waiting for ${JSON.stringify(needle)} in the served CSS`)
 }
 
+async function waitForCssWithout(server: ViteDevServer, needle: string): Promise<string> {
+  for (let attempt = 0; attempt < 50; attempt++) {
+    const css = await readCss(server)
+    if (!css.includes(needle)) return css
+    await new Promise((done) => setTimeout(done, 100))
+  }
+  throw new Error(`timed out waiting for ${JSON.stringify(needle)} to leave the served CSS`)
+}
+
 async function waitForWarning(warnings: string[], needle: string): Promise<string> {
   for (let attempt = 0; attempt < 50; attempt++) {
     const warning = warnings.find((item) => item.includes(needle))
@@ -126,6 +135,30 @@ describe('@pandacss/vite', () => {
     const updated = await waitForCss(server, '8px')
     // Additive refresh keeps prior styles in dev — no flash of a missing rule.
     expect(updated).toContain('4px')
+  })
+
+  it('adds CSS when a matching source file is created', async () => {
+    dir = createFixture(`{ color: 'red' }`)
+    server = await startServer(dir)
+    expect(await waitForCss(server, 'red')).not.toContain('rebeccapurple')
+
+    const newFile = join(dir, 'New.tsx')
+    writeFileSync(newFile, APP(`{ color: 'rebeccapurple' }`))
+    server.watcher.emit('add', newFile)
+
+    expect(await waitForCss(server, 'rebeccapurple')).toContain('rebeccapurple')
+  })
+
+  it('removes CSS when a source file is deleted', async () => {
+    dir = createFixture(`{ color: 'rebeccapurple' }`)
+    server = await startServer(dir)
+    expect(await waitForCss(server, 'rebeccapurple')).toContain('rebeccapurple')
+
+    const appFile = join(dir, 'App.tsx')
+    rmSync(appFile)
+    server.watcher.emit('unlink', appFile)
+
+    expect(await waitForCssWithout(server, 'rebeccapurple')).not.toContain('rebeccapurple')
   })
 
   it('keeps previous CSS and reports diagnostics when source syntax breaks', async () => {

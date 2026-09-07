@@ -11,7 +11,7 @@ interface TestPlugin {
     code: string,
     id: string,
   ) => unknown
-  handleHotUpdate(ctx: unknown): Promise<unknown>
+  hotUpdate: (this: { environment: unknown }, ctx: unknown) => Promise<unknown>
 }
 
 afterEach(() => {
@@ -31,6 +31,7 @@ describe('@pandacss/vite design-system HMR', () => {
     expect(addWatchFile.mock.calls.map(([file]) => file)).toMatchInlineSnapshot(`
       [
         "/project/src/app.tsx",
+        "/project/src",
         "/project/panda.config.ts",
         "/project/node_modules/@acme/ds/panda/lib.json",
         "/project/node_modules/@acme/ds/panda/buildinfo.json",
@@ -68,18 +69,25 @@ describe('@pandacss/vite design-system HMR', () => {
     await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
     plugin.transform.call({ addWatchFile: vi.fn(), warn: vi.fn() }, CSS_ROOT, '/project/src/index.css')
 
-    const modules = await plugin.handleHotUpdate({
-      file: '/project/node_modules/@acme/ds/src/button.css.ts',
-      modules: [componentModule],
-      read: async () => "import { css } from '@acme/ds/css'\nexport const button = css({ fontSize: '20px' })",
-      server: {
-        config: { logger: { warn: vi.fn() } },
-        moduleGraph: {
-          getModuleById: vi.fn((id) => (id === rootModule.id ? rootModule : undefined)),
-          invalidateModule,
+    const environment = {
+      moduleGraph: {
+        getModuleById: vi.fn((id) => (id === rootModule.id ? rootModule : undefined)),
+        invalidateModule,
+      },
+    }
+    const modules = await plugin.hotUpdate.call(
+      { environment },
+      {
+        type: 'update',
+        file: '/project/node_modules/@acme/ds/src/button.css.ts',
+        modules: [componentModule],
+        read: async () => "import { css } from '@acme/ds/css'\nexport const button = css({ fontSize: '20px' })",
+        server: {
+          config: { logger: { warn: vi.fn() } },
+          environments: { client: environment },
         },
       },
-    })
+    )
 
     expect(driver.syncDesignSystemFileChange).toHaveBeenCalledWith({
       path: '/project/node_modules/@acme/ds/src/button.css.ts',
@@ -99,6 +107,66 @@ describe('@pandacss/vite design-system HMR', () => {
         },
       ]
     `)
+  })
+
+  it.each([
+    ['create', 'add', true],
+    ['update', 'change', true],
+    ['delete', 'unlink', false],
+  ] as const)('maps Vite %s events to Panda %s changes', async (type, kind, readsSource) => {
+    const { driver, pandacss } = await setup()
+    const plugin = pandacss() as unknown as TestPlugin
+    const environment = {
+      moduleGraph: {
+        getModuleById: vi.fn(),
+        invalidateModule: vi.fn(),
+      },
+    }
+    const read = vi.fn(async () => "export const cls = css({ color: 'red' })")
+    driver.isSourceFile.mockReturnValue(true)
+
+    await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
+    await plugin.hotUpdate.call(
+      { environment },
+      {
+        type,
+        file: '/project/src/app.tsx',
+        modules: [],
+        read,
+        server: {
+          config: { logger: { warn: vi.fn() } },
+          environments: { client: environment },
+        },
+      },
+    )
+
+    expect(driver.applyChange).toHaveBeenCalledWith({
+      path: '/project/src/app.tsx',
+      kind,
+      ...(readsSource ? { content: "export const cls = css({ color: 'red' })" } : {}),
+    })
+    expect(read).toHaveBeenCalledTimes(readsSource ? 1 : 0)
+  })
+
+  it('updates the shared driver only for the Vite client environment', async () => {
+    const { driver, pandacss } = await setup()
+    const plugin = pandacss() as unknown as TestPlugin
+    const client = { moduleGraph: {} }
+    driver.isSourceFile.mockReturnValue(true)
+
+    await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
+    await plugin.hotUpdate.call(
+      { environment: { moduleGraph: {} } },
+      {
+        type: 'update',
+        file: '/project/src/app.tsx',
+        modules: [],
+        read: vi.fn(),
+        server: { environments: { client } },
+      },
+    )
+
+    expect(driver.applyChange).not.toHaveBeenCalled()
   })
 
   it('skips source rewrite by default', async () => {
