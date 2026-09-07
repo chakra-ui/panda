@@ -22,4 +22,5 @@ export {
   defineTokens,
   defineUtility,
   defineViewTransitions,
+  definePositionTry,
 } from './config'

@@ -202,7 +202,8 @@ export const docsTabs: TabItem[] = [
           { title: 'Virtual Color', url: 'virtual-color' },
           { title: 'Cascade Layers', url: 'cascade-layers' },
           { title: 'Style isolation', url: 'style-isolation' },
-          { title: 'View Transition', url: 'view-transition' }
+          { title: 'View Transition', url: 'view-transition' },
+          { title: 'Position Try', url: 'position-try' }
         ]
       }
     ]
