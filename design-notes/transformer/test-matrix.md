@@ -17,12 +17,13 @@ tests should inherit that corpus instead of replacing it.
 
 ## Current coverage (v2 branch)
 
-| Layer                           | Location                             | Status            |
-| ------------------------------- | ------------------------------------ | ----------------- |
-| Rust transformer snapshots      | `crates/pandacss_project/tests/transform/` | via `cargo nextest run -p pandacss_project transform` |
-| JS facade + runtime             | `packages/transformer/__tests__/`    | 14 tests passing  |
-| Vite plugin                     | `packages/vite/__tests__/`           | 8 tests passing   |
-| Host e2e / bundle-size fixtures | sandbox                              | not started       |
+| Layer                           | Location                                              | Status                                                |
+| ------------------------------- | ----------------------------------------------------- | ----------------------------------------------------- |
+| Rust transformer snapshots      | `crates/pandacss_project/tests/transform/`            | via `cargo nextest run -p pandacss_project transform` |
+| JS facade + runtime             | `packages/transformer/__tests__/`                     | covered                                               |
+| Rolldown tree-shaking           | `packages/transformer/__tests__/tree-shaking.test.ts` | covered                                               |
+| Vite plugin                     | `packages/vite/__tests__/`                            | covered                                               |
+| Bundle-size budgets             | sandbox                                                | not started                                           |
 
 ## Test layers
 

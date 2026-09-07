@@ -417,6 +417,10 @@ importers:
       webpack:
         specifier: '>=5.0.0'
         version: 5.102.1(@swc/core@1.16.1(@swc/helpers@0.5.23))(esbuild@0.28.2)
+    devDependencies:
+      rolldown:
+        specifier: 1.2.7
+        version: 1.2.7
 
   packages/types:
     devDependencies:

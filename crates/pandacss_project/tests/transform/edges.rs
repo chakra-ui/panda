@@ -787,7 +787,7 @@ fn styled_call_syntax_rewrites_config_to_string_branch_cva() {
     assert_snapshot!(output.code, @r"
     import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    export const Card = styled('div', __pcva({ base: 'color_red' }));
+    export const Card = /* @__PURE__ */ styled('div', /* @__PURE__ */ __pcva({ base: 'color_red' }));
     ");
 }
 
@@ -805,7 +805,7 @@ fn styled_member_call_rewrites_style_object_to_string_branch_cva() {
     assert_snapshot!(output.code, @r"
     import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    export const Card = styled.div(__pcva({ base: 'color_red' }));
+    export const Card = /* @__PURE__ */ styled.div(/* @__PURE__ */ __pcva({ base: 'color_red' }));
     ");
 }
 
