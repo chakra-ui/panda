@@ -14,6 +14,7 @@ import { pandacss } from '../src'
 
 interface TestPlugin {
   buildStart(this: TestContext): Promise<void>
+  watchChange(id: string, change: { event: 'create' | 'delete' | 'update' }): Promise<void>
   generateBundle(this: TestContext, output: { dir?: string; file?: string }): Promise<void>
 }
 
@@ -85,16 +86,72 @@ describe('@pandacss/rollup', () => {
       }
     `)
   })
+
+  it('watches source directories, config dependencies, and design-system files', async () => {
+    const driver = createDriver([])
+    driver.scan.mockReturnValue(['/project/src/app.tsx'])
+    mocks.createNodeDriver.mockResolvedValue(driver)
+    const plugin = pandacss()[0] as unknown as TestPlugin
+    const context = createContext()
+
+    await plugin.buildStart.call(context)
+
+    expect(context.addWatchFile.mock.calls.map(([file]) => file)).toMatchInlineSnapshot(`
+      [
+        "/project/src",
+        "/project/panda.shared.ts",
+        "/project/panda.config.ts",
+        "/project/src/app.tsx",
+        "/project/node_modules/@acme/ds/panda/lib.json",
+        "/project/node_modules/@acme/ds/panda/buildinfo.json",
+        "/project/node_modules/@acme/ds/panda/preset.mjs",
+        "/project/node_modules/@acme/ds/src/button.tsx",
+      ]
+    `)
+  })
+
+  it.each([
+    ['create', 'add'],
+    ['update', 'change'],
+    ['delete', 'unlink'],
+  ] as const)('maps Rollup %s events to Panda %s changes', async (event, kind) => {
+    const driver = createDriver([])
+    driver.isSourceFile.mockReturnValue(true)
+    mocks.createNodeDriver.mockResolvedValue(driver)
+    const plugin = pandacss()[0] as unknown as TestPlugin
+
+    await plugin.buildStart.call(createContext())
+    await plugin.watchChange('/project/src/app.tsx', { event })
+
+    expect(driver.applyChange).toHaveBeenCalledWith({ path: '/project/src/app.tsx', kind })
+  })
 })
 
 function createDriver(diagnostics: Array<{ severity: 'error' | 'info' | 'warning'; code: string; message: string }>) {
   return {
     compiler: {},
-    configPath: undefined,
+    configPath: '/project/panda.config.ts',
+    applyChange: vi.fn(),
     codegen: vi.fn(),
     parseFiles: vi.fn(),
-    scan: vi.fn(() => []),
+    scan: vi.fn((): string[] => []),
     cssgen: vi.fn(() => ({ css: '.generated { color: red }', diagnostics })),
+    designSystemDiagnostics: [],
+    designSystemWatchTargets: vi.fn(() => [
+      {
+        manifestPath: '/project/node_modules/@acme/ds/panda/lib.json',
+        buildInfoPath: '/project/node_modules/@acme/ds/panda/buildinfo.json',
+        presetPath: '/project/node_modules/@acme/ds/panda/preset.mjs',
+        sourceFiles: ['/project/node_modules/@acme/ds/src/button.tsx'],
+      },
+    ]),
+    isConfigFile: vi.fn(() => false),
+    isDesignSystemFile: vi.fn(() => false),
+    isSourceFile: vi.fn(() => false),
+    reload: vi.fn(),
+    resolvePath: vi.fn((path: string) => path),
+    syncDesignSystemFileChange: vi.fn(),
+    watchTargets: vi.fn(() => ({ dirs: ['/project/src'], config: ['/project/panda.shared.ts'], sources: [] })),
   }
 }
 
