@@ -158,6 +158,7 @@ jobs:
           path: |
             packages/compiler/compiler.wasm32-wasi.wasm
             packages/compiler/compiler.wasi.cjs
+            packages/compiler/compiler.wasi.d.cts
             packages/compiler/compiler.wasi-browser.js
             packages/compiler/wasi-worker.mjs
             packages/compiler/wasi-worker-browser.mjs
@@ -207,8 +208,8 @@ jobs:
       - name: Stage wasi loader files at package root
         working-directory: packages/compiler
         run: >-
-          mv artifacts/compiler.wasi.cjs artifacts/compiler.wasi-browser.js artifacts/wasi-worker.mjs
-          artifacts/wasi-worker-browser.mjs .
+          mv artifacts/compiler.wasi.cjs artifacts/compiler.wasi.d.cts artifacts/compiler.wasi-browser.js
+          artifacts/wasi-worker.mjs artifacts/wasi-worker-browser.mjs .
 
       - name: Stage platform npm packages
         working-directory: packages/compiler
