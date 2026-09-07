@@ -9,7 +9,6 @@ import type {
   ExtendableGlobalStyleObject,
   GlobalFontface,
   GlobalStyleObject,
-  SystemStyleObject,
 } from './system-types'
 import type { ExtendableTheme, Theme } from './theme'
 import type { CssPropertyDefinition, GlobalVarsDefinition } from './global-vars'
