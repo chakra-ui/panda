@@ -23,6 +23,7 @@ pub enum ArtifactId {
     JsxPatterns,
     Patterns,
     Recipes,
+    Specs,
     Sva,
     Themes,
     Tokens,
@@ -47,6 +48,7 @@ impl ArtifactId {
         Self::JsxIndex,
         Self::Patterns,
         Self::Recipes,
+        Self::Specs,
         Self::Sva,
         Self::Themes,
         Self::Tokens,
@@ -72,6 +74,7 @@ impl ArtifactId {
             Self::JsxPatterns => "jsx-patterns",
             Self::Patterns => "patterns",
             Self::Recipes => "recipes",
+            Self::Specs => "specs",
             Self::Sva => "sva",
             Self::Themes => "themes",
             Self::Tokens => "tokens",
@@ -433,6 +436,11 @@ impl ArtifactGraph {
             ]),
         },
         ArtifactNode {
+            // Always JSON, so format/extensions don't apply; only the token values matter.
+            id: ArtifactId::Specs,
+            dependencies: DependencySet::from_slice(&[ConfigDependency::Tokens]),
+        },
+        ArtifactNode {
             id: ArtifactId::CssIndex,
             dependencies: DependencySet::from_slice(&[
                 ConfigDependency::CodegenFormat,
@@ -631,6 +639,7 @@ fn generate_node_inner(
         }
         ArtifactId::Themes => crate::artifacts::themes::generate(ctx, options, node.dependencies),
         ArtifactId::Tokens => crate::artifacts::tokens::generate(ctx, options, node.dependencies),
+        ArtifactId::Specs => crate::artifacts::specs::generate(ctx, options, node.dependencies),
         ArtifactId::Cx => crate::artifacts::cx::generate(ctx, options, node.dependencies),
         ArtifactId::Helpers => crate::artifacts::helpers::generate(ctx, options, node.dependencies),
         ArtifactId::JsxCreateRecipeContext => {

@@ -7,6 +7,7 @@ pub mod helpers;
 pub mod jsx;
 pub mod patterns;
 pub mod recipes;
+pub mod specs;
 pub mod sva;
 pub mod themes;
 pub mod tokens;
