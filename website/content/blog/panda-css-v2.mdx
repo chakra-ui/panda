@@ -78,6 +78,8 @@ feeds every step — collecting imports, matching them against your config, walk
 identifiers. Imports, `css()` calls, and `<styled.div>` elements all read from the same parse and the same semantic
 pass.
 
+![In v1 the build, playground, and editor each parsed your files separately and drifted apart; in v2 one Oxc parse feeds all three](/blog/panda-v2-one-parse.svg)
+
 That single pass has a fast exit built in. Before doing any real work, the engine collects the file's imports and
 matches them against your Panda entry points. If nothing in the file imports from `styled-system` (or wherever your
 Panda output lives), it stops right there — no identifier resolution, no visitor walks. On a real project most files are
@@ -86,9 +88,14 @@ faster.
 
 ### The engine builds itself once
 
-`createCompiler(config)` returns a long-lived compiler. The expensive setup happens exactly once, at construction:
-turning your config into matchers, utilities, conditions, a token dictionary, and recipes. After that, source files
-stream in through `parseFile`, atoms accumulate in a deduplicated registry, and `compile()` drains that registry to CSS.
+`createCompiler(config)` returns a long-lived compiler. The shape is three calls, and only the first is expensive:
+
+```ts
+const compiler = createCompiler(config) // once: config → matchers, tokens, recipes
+compiler.parseFile(source) // per file: atoms accumulate in a deduplicated registry
+const css = compiler.compile() // drains the registry to CSS
+```
+
 You pay for config compilation once and reuse it across every file and every rebuild, which is what makes `panda dev`
 cheap on the second keystroke.
 
@@ -96,7 +103,7 @@ Watch mode is incremental by contract. Each file's contribution to the global se
 path first drops its previous atoms and then re-encodes it. Removed or renamed styles can't linger as ghosts in the
 output, and a single-file change costs work proportional to that file, not to your whole project.
 
-### Extraction that understands your code
+### Resolving your values
 
 The old engine leaned on a JavaScript interpreter to fold constant expressions. The new one folds them directly in Rust,
 matching JavaScript's coercion rules so the CSS comes out the same. With same-file scope resolution in place, a lot more
@@ -133,7 +140,7 @@ position-preserving JavaScript, so spans stay aligned with your original file an
 line. Oxc then parses the JavaScript it understands. The built-in set covers `.vue`, `.svelte`, and `.astro`; other
 formats can still be handled by a filtered transform on the JS host.
 
-### Matching JSX components with data, not callbacks
+### Matching JSX with data
 
 v1 let you match custom JSX components with a `matchTag` callback — a JavaScript function Panda ran for every element.
 That can't cross into a Rust or WebAssembly engine, so v2 replaces it with `jsxMatchTag`, a declarative rule list
@@ -148,7 +155,7 @@ export default defineConfig({
 Rules are evaluated last-match-wins over Panda's own detection, and because it's data rather than code, it works
 identically in the CLI and in the browser.
 
-### Emitting CSS, in Rust
+### Emitting CSS in Rust
 
 The old pipeline handed generation to PostCSS. v2 emits CSS natively in a dedicated crate. It does the CSS-aware work
 that matters for output quality:
@@ -164,18 +171,47 @@ that matters for output quality:
 - **Deterministic cascade order.** Output is sorted into Panda's layers (`reset, base, tokens, recipes, utilities`),
   with a stable ordering within each so shorthands rank below longhands and the cascade is predictable across builds.
 
+Grouping and modern breakpoints together turn this:
+
+```css
+@media (min-width: 48rem) {
+  .fs_lg {
+    font-size: 1.125rem;
+  }
+}
+@media (min-width: 48rem) {
+  .fw_bold {
+    font-weight: 700;
+  }
+}
+```
+
+into this:
+
+```css
+@media (width >= 48rem) {
+  .fs_lg {
+    font-size: 1.125rem;
+  }
+  .fw_bold {
+    font-weight: 700;
+  }
+}
+```
+
 One honest note: this crate emits and formats CSS, but it is not yet a full CSS optimizer. Value-level minification at
 the quality of a tool like Lightning CSS is the one part of the old pipeline we haven't fully matched, and it's the top
 item on the roadmap. Everything else about the output is at parity, minus the deliberate improvements above.
 
-### The same engine, native and in the browser
+### One engine everywhere
 
 Because the engine is plain Rust over Oxc, it compiles two ways. A native binding (`@pandacss/compiler`) powers the CLI,
-Vite, and PostCSS. A WebAssembly binding (`@pandacss/compiler-wasm`) runs the identical code in the browser — that's
-what the playground uses. The Wasm bundle is about 490 KB gzipped, and cross-file resolution works there too: editing a
-file in the playground pushes it into an in-memory filesystem the resolver reads immediately. For the first time, the
-playground and your build run the same extractor and produce the same CSS, because they are literally the same code. If
-you want the mental model, see [Why Panda → How it works](/docs/get-started/getting-started#how-it-works).
+Vite, and PostCSS. A WebAssembly binding (`@pandacss/compiler-wasm`) runs the identical code in the browser, which is
+what the playground uses. The Wasm bundle is about 490 KB gzipped, and cross-file resolution works there too: edit a file
+in the playground and it lands in an in-memory filesystem the resolver reads at once.
+
+So for the first time the playground and your build run the same extractor and produce the same CSS, because they are the
+same code. For the mental model, see [Why Panda → How it works](/docs/get-started/getting-started#how-it-works).
 
 ## Faster
 
@@ -186,7 +222,7 @@ Rust 1.93), not a clean-room CI box, so treat the absolute times as indicative a
 benchmark reads the same source bytes through both engines with file I/O excluded, so what's being compared is the work
 itself.
 
-### Extraction is 15–37× faster
+### 15–37× faster extraction
 
 Extraction is the core of what the rewrite replaced: parsing your files and pulling out the styles. Across fixtures from
 a handful of real files up to a synthetic thousand-file project, the Oxc engine runs a cold extraction 15 to 37 times
@@ -203,14 +239,14 @@ around 37 MB/s — about a 30× gap that holds steady as projects grow.
 
 ![Cold parse of 100 files dropped from 187ms to 7.5ms; watch-mode re-parse per file from 652µs to 1.8µs](/blog/chart-extraction.svg)
 
-### Watch-mode re-parsing is hundreds of times faster
+### Watch-mode re-parsing
 
 The number you feel every day is the one for saving a file. When a single file changes, the old engine re-parsed it
 through the TypeScript compiler; the new engine re-parses it through Oxc. On a steady-state watch, that step went from
 around 650 microseconds per file to under 2 — roughly 360–390× faster. Real sandboxes bear it out end to end: a Next.js
 pages project's parse step dropped from 762 ms to 31 ms.
 
-### staticCss builds are ~85× faster
+### staticCss builds, ~85× faster
 
 `staticCss` pre-generates a matrix of utilities and recipes, often across breakpoints and containers. It was one of the
 slowest things you could ask v1 to do, and two long-standing community reports centered on it. On the larger of the two
@@ -230,7 +266,7 @@ back.
 
 ![staticCss build time by container count on a log scale: the before line climbs from 399ms to 52.6s while Panda 2.0 stays flat near 25ms](/blog/chart-staticcss.svg)
 
-### Your generated types cost your editor far less
+### Lighter generated types
 
 The static-extraction win has a quieter cousin: the TypeScript types Panda generates for your `styled-system`. v2 emits
 a leaner type graph built around a single shared conditional-value type instead of thousands of individually
@@ -244,7 +280,7 @@ instantiated ones. Type-checking the same usage file against the generated types
 
 That's a faster editor when you hover a prop, and less work for `tsc` in CI.
 
-### The runtime got faster too
+### A faster runtime
 
 Not all of Panda runs at build time. The `css()` function and recipe runtimes ship to the browser for the dynamic cases
 static extraction can't cover, and v2 layers memoization over them. Repeated inline styles on a dense server-rendered
@@ -254,7 +290,7 @@ you'll see.
 
 ![Runtime css() on dense SSR pages as a share of the unmemoized path: repeated inline 3x faster, a 3-level wrapper chain 4x, a 6-level chain 3x, repeated flat objects 30 to 40 percent faster](/blog/chart-runtime.svg)
 
-### What isn't faster yet, and where output differs
+### What isn't faster yet
 
 Two honest caveats, because a release post that only lists wins isn't much use:
 
@@ -271,7 +307,7 @@ Two honest caveats, because a release post that only lists wins isn't much use:
 A faster engine is the headline, but the rewrite also cleared the way for capabilities the old architecture couldn't
 reach. Here's what shipped alongside it.
 
-### Design systems you can publish
+### Publishable design systems
 
 This is the big one. A Panda design system is now an npm package that ships components and the Panda config they were
 built against, and consuming it takes one line.
@@ -301,13 +337,16 @@ extracts itself once, at publish time, and every app that installs it reuses tha
 
 ![Design-system flow: the author runs panda lib to ship a manifest, preset, and build info; the consumer sets designSystem and reuses the pre-extracted styles](/blog/panda-v2-design-system.svg)
 
-A few things make this pleasant in practice. Your `theme.extend` layers on top and the app wins on any conflicting
-token, surfaced as a diagnostic rather than a silent override, so you customize without forking. Resolution works
-through workspaces, symlinks, and Docker layers because the manifest is resolved as a package export, not by reaching
-into source paths. Design systems can extend other design systems, and Panda walks the parent chain for you. When
-something is misconfigured, you get an actionable diagnostic (a stale build info, a missing export, an unsatisfied peer
-range) instead of mysterious missing styles. There's a dedicated `optimize.treeshakeDesignSystem` that hydrates only the
-modules your app actually imports.
+A few things make this pleasant in practice:
+
+- **You customize without forking.** Your `theme.extend` layers on top and the app wins on any conflicting token,
+  surfaced as a diagnostic rather than a silent override.
+- **Resolution survives your setup.** The manifest resolves as a package export, not a source path, so workspaces,
+  symlinks, and Docker layers all work.
+- **Design systems compose.** One can extend another, and Panda walks the parent chain for you.
+- **Misconfiguration tells you what's wrong.** A stale build info, a missing export, or an unsatisfied peer range comes
+  back as an actionable diagnostic, not mysterious missing styles.
+- **You ship only what you use.** `optimize.treeshakeDesignSystem` hydrates just the modules your app imports.
 
 ### View transitions
 
@@ -327,7 +366,7 @@ const slide = viewTransition({
 You can also name reusable transitions in your theme so a preset can share them, and `viewTransition('slide')` inlines
 the shared class. Unused named transitions stay out of your CSS.
 
-### New utilities in the base preset
+### New base-preset utilities
 
 The base preset picked up a batch of utilities for things that used to mean hand-writing raw CSS.
 
@@ -354,7 +393,7 @@ post-interaction validity (`_userValid`, `_userInvalid`), the `_inert` state, ev
 **Fixed transform axes** — `rotateX`, `rotateY`, and `rotateZ` now do what they say, `rotate: 'auto'` composes them onto
 `transform`, and non-uniform `scale` applies rotation after scaling.
 
-### Variables register with @property instead of resetting everything
+### Variables via @property
 
 v1 seeded 34 CSS variables on `*, ::before, ::after, ::backdrop` so that things like transforms and filters had
 defaults. That's a lot of declarations on every element whether you used them or not. v2 registers those variables with
@@ -383,7 +422,7 @@ The command set got a cleanup and some genuinely new tools. Bare `panda` runs co
 Logging moved to a single `--log-level silent|error|warn|info|debug`, and startup got lighter — flag parsing no longer
 loads a schema library on every invocation.
 
-### Linting, on the real engine
+### A first-party ESLint plugin
 
 There's a first-party ESLint plugin with a recommended flat config, and because extraction lives in a shared engine now,
 the linter reads the same extraction your build does rather than approximating it. The rules cover the mistakes Panda
@@ -417,7 +456,7 @@ export default defineConfig({
 This post is rendered by it. The [Typography guide](/docs/theming/typography) has the options, and the
 [launch post](/blog/typography-preset) has the reasoning.
 
-### Extraction that folds more of your code away
+### Folding dynamic code away
 
 Beyond the correctness of extraction, v2 does more to turn dynamic-looking code into static classes:
 
@@ -431,7 +470,7 @@ Beyond the correctness of extraction, v2 does more to turn dynamic-looking code 
 - **Shared classes hoist.** A class present in every branch of a conditional is emitted once instead of being repeated
   across branches.
 
-### Codegen and type fixes worth knowing
+### Codegen and type fixes
 
 A handful of type-level changes remove long-standing papercuts. Keyframe names are inlined into the generated types, so
 `css({ animationName: 'spin' })` type-checks under `strictTokens` without the escape-hatch brackets. Empty token
@@ -441,7 +480,7 @@ native CSS keywords like `cursor: 'pointer'` are accepted without brackets even 
 One rename to be aware of: the built-in CSS value types now carry a `Css` prefix (`CssPosition`, `CssLength`,
 `CssGlobals`) so your own `{Property}Value` aliases can't shadow them. It's in the upgrade checklist below.
 
-### MCP and framework plugins moved out
+### MCP and plugins moved out
 
 The MCP server is now its own package — run `npx -y @pandacss/mcp` instead of the old `panda mcp` subcommand. Vue,
 Svelte, and Lightning CSS support are available as standalone opt-in plugins (`@pandacss/plugin-vue`,
@@ -493,7 +532,7 @@ export default defineConfig({
 `cssgen:done` is observe-only now — you can read the generated CSS but not rewrite the string. The engine-internal hooks
 (`context:created`, `parser:after`, `tokens:created`, `utility:created`, and the rest) are gone.
 
-### `createStyleContext` split into two helpers
+### `createStyleContext` split
 
 ```ts
 // Before
@@ -506,7 +545,7 @@ const ctx = createRecipeContext(recipe)
 
 There's a new `withRootProvider` for a slot root that renders no slot of its own.
 
-### Config options that were removed
+### Removed config options
 
 Ten options are gone: `studio`, `eject`, `emitTokensOnly`, `gitignore`, `clean`, `watch`, `poll`, `lightningcss`, and
 `browserslist`. `forceConsistentTypeExtension` became `forceImportExtension` (different semantics, not a rename), and
@@ -521,7 +560,7 @@ became `--profile` (which now covers Rust engine time too). Shared flags are keb
 `panda ship` is gone, replaced by the design-system flow — `panda lib` to author, `designSystem` to consume. More on
 that below.
 
-### Internal packages folded into the compiler
+### Internal packages folded in
 
 If you imported `@pandacss/core`, `/extractor`, `/generator`, `/node`, `/parser`, `/token-dictionary`, `/is-valid-prop`,
 `/logger`, or `/reporter` directly, drop those imports — they're internal to the compiler now. If you only use
@@ -541,7 +580,7 @@ These are intentional and worth knowing about before you diff your output:
 - **`scrollbarWidth` takes keywords now** (`auto | thin | none`), not a token. A single `scrollbarColor` value moves to
   `scrollbarThumb`.
 
-### Migrating a large codebase gradually
+### Migrating gradually
 
 The one surprise nobody expects is layering. Panda ships its CSS inside `@layer`, and per the CSS spec, any unlayered
 rule beats every layered rule, so your legacy, unlayered styles win over converted Panda components by default. If
