@@ -2,6 +2,7 @@ export type { Config, Preset, UserConfig } from '@pandacss/types'
 
 export {
   defineAnimationStyles,
+  defineConditions,
   defineConfig,
   defineGlobalFontface,
   defineGlobalStyles,
