@@ -1,9 +1,9 @@
 import type {
   AnimationStyles,
   CompositionStyles,
-  Conditions,
   Config,
   CssKeyframes,
+  ExtendableConditions,
   GlobalFontface,
   GlobalStyleObject,
   LayerStyles,
@@ -77,7 +77,7 @@ export function defineUtility(utility: PropertyConfig): PropertyConfig {
   return utility
 }
 
-export function defineConditions(definition: Conditions): Conditions {
+export function defineConditions(definition: ExtendableConditions): ExtendableConditions {
   return definition
 }
 
