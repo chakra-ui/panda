@@ -300,10 +300,10 @@ pub(crate) fn build_plan(
                 }
             }
             MatchCategory::Jsx if targets.jsx_enabled() => {
-                if let Some(rewrite) =
-                    super::recipe_inline::rewrite_for_styled_call(project, source, call)
+                if let Some(rewrites) =
+                    super::recipe_inline::rewrites_for_styled_call(project, source, call)
                 {
-                    plan.push(rewrite);
+                    plan.extend(rewrites);
                 }
             }
             _ => {}

@@ -44,6 +44,9 @@
     "@pandacss/compiler-shared": "workspace:*",
     "unplugin": "^2.3.11"
   },
+  "devDependencies": {
+    "rolldown": "1.2.7"
+  },
   "peerDependencies": {
     "vite": ">=6.0.0",
     "webpack": ">=5.0.0",

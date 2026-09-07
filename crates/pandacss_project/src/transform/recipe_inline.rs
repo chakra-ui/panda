@@ -29,7 +29,7 @@ pub(crate) fn rewrite_for_cva_call(
     Some(Rewrite {
         start: span.start,
         end: span.end,
-        content: format!("{CVA_HELPER_LOCAL}({encoded})"),
+        content: format!("/* @__PURE__ */ {CVA_HELPER_LOCAL}({encoded})"),
         preserved: style
             .map(style_lower::preserved_source_spans)
             .unwrap_or_default(),
@@ -50,7 +50,7 @@ pub(crate) fn rewrite_for_sva_call(
     Some(Rewrite {
         start: span.start,
         end: span.end,
-        content: format!("{SVA_HELPER_LOCAL}({encoded})"),
+        content: format!("/* @__PURE__ */ {SVA_HELPER_LOCAL}({encoded})"),
         preserved: Vec::new(),
         helper: TransformHelperFacts::sva(),
     })
@@ -415,7 +415,7 @@ pub(crate) fn rewrite_styled_config_arg(
     let arg = arg_spans.get(config_arg_index)?;
     let content = {
         let encoded = encode_cva_config(project, source, config, style)?;
-        format!("{CVA_HELPER_LOCAL}({encoded})")
+        format!("/* @__PURE__ */ {CVA_HELPER_LOCAL}({encoded})")
     };
     Some(Rewrite {
         start: arg.start,
@@ -429,11 +429,11 @@ pub(crate) fn rewrite_styled_config_arg(
 }
 
 /// `styled('tag', config)` / `styled.tag(config)` factory call transforms.
-pub(crate) fn rewrite_for_styled_call(
+pub(crate) fn rewrites_for_styled_call(
     project: &Project,
     source: &str,
     call: &pandacss_extractor::ExtractedCall,
-) -> Option<Rewrite> {
+) -> Option<[Rewrite; 2]> {
     if call.category != pandacss_extractor::MatchCategory::Jsx || call.jsx_recipe_ident.is_some() {
         return None;
     }
@@ -446,14 +446,26 @@ pub(crate) fn rewrite_for_styled_call(
         .style_args
         .get(config_index)
         .and_then(|value| value.as_ref());
-    rewrite_styled_config_arg(
+    let config = rewrite_styled_config_arg(
         project,
         source,
         &call.arg_spans,
         config_index,
         config,
         style,
-    )
+    )?;
+    let callee_span = call.facts.callee_span;
+    let callee = super::resolve::span_slice(source, callee_span)?;
+    let outer = Rewrite {
+        start: callee_span.start,
+        end: callee_span.end,
+        content: format!("/* @__PURE__ */ {callee}"),
+        // The replacement re-emits the original callee. Keep its resolved
+        // import reference live during dead-import cleanup.
+        preserved: vec![callee_span],
+        helper: TransformHelperFacts::none(),
+    };
+    Some([outer, config])
 }
 
 fn is_jsx_factory_call(call: &pandacss_extractor::ExtractedCall) -> bool {

@@ -848,8 +848,10 @@ an element's own `css` prop replaces the default wholesale rather than merging p
 `BaseComponent.__base__`, so `Base`'s own `forwardRef` — and its defaults — never run at runtime;
 inheriting only `base` matches that.
 
-The `styled()` definition itself still desugars to `__pcva(…)` as before. After the fold it is
-unreferenced, so bundlers drop it.
+The `styled()` definition itself still desugars to `__pcva(…)` as before. The transform marks both
+the outer `styled()` call and the nested `__pcva()` call as pure. This lets bundlers drop the entire
+definition after the fold, including evaluation of the now-unused recipe config. Transformed
+standalone `cva()` and `sva()` factories carry the same annotation.
 
 ### JSX pattern props
 

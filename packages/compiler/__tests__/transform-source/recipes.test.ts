@@ -408,7 +408,7 @@ describe('compiler.transformSource: inline cva / sva / styled', () => {
     const result = recipeCompiler.transformSource({ path: 'src/recipes.ts', source })
     expect(result.code).toMatchInlineSnapshot(`
       "import { cva as __pcva } from '@pandacss-internal/css';
-      export const button = __pcva({ base: 'background-color_blue color_red', variants: { size: { sm: 'fs_12px', md: 'fs_16px' } }, defaultVariants: { size: 'md' } })"
+      export const button = /* @__PURE__ */ __pcva({ base: 'background-color_blue color_red', variants: { size: { sm: 'fs_12px', md: 'fs_16px' } }, defaultVariants: { size: 'md' } })"
     `)
   })
 
@@ -418,7 +418,7 @@ describe('compiler.transformSource: inline cva / sva / styled', () => {
     const result = recipeCompiler.transformSource({ path: 'src/recipes.ts', source })
     expect(result.code).toMatchInlineSnapshot(`
       "import { cva as __pcva } from '@pandacss-internal/css';
-      export const button = __pcva({ base: 'color_red' })"
+      export const button = /* @__PURE__ */ __pcva({ base: 'color_red' })"
     `)
   })
 
@@ -439,7 +439,7 @@ describe('compiler.transformSource: inline cva / sva / styled', () => {
     const result = recipeCompiler.transformSource({ path: 'src/recipes.ts', source })
     expect(result.code).toMatchInlineSnapshot(`
       "import { cva as __pcva } from '@pandacss-internal/css';
-      export const button = __pcva({ base: 'color_white', variants: { size: { sm: 'fs_12px' }, intent: { danger: 'background-color_red' } }, defaultVariants: { size: 'sm', intent: 'danger' }, compoundVariants: [{ size: 'sm', intent: 'danger', css: 'color_black' }] })"
+      export const button = /* @__PURE__ */ __pcva({ base: 'color_white', variants: { size: { sm: 'fs_12px' }, intent: { danger: 'background-color_red' } }, defaultVariants: { size: 'sm', intent: 'danger' }, compoundVariants: [{ size: 'sm', intent: 'danger', css: 'color_black' }] })"
     `)
   })
 
@@ -458,7 +458,7 @@ describe('compiler.transformSource: inline cva / sva / styled', () => {
     const result = recipeCompiler.transformSource({ path: 'src/recipes.ts', source })
     expect(result.code).toMatchInlineSnapshot(`
       "import { sva as __psva } from '@pandacss-internal/css';
-      export const tabs = __psva({ slots: ['root', 'trigger'], base: { root: 'd_flex', trigger: 'cursor_pointer' }, variants: { size: { sm: 'fs_12px' } } })"
+      export const tabs = /* @__PURE__ */ __psva({ slots: ['root', 'trigger'], base: { root: 'd_flex', trigger: 'cursor_pointer' }, variants: { size: { sm: 'fs_12px' } } })"
     `)
   })
 
@@ -478,7 +478,7 @@ describe('compiler.transformSource: inline cva / sva / styled', () => {
     expect(result.code).toMatchInlineSnapshot(`
       "import { cva as __pcva } from '@pandacss-internal/css';
       import { styled } from '@panda/jsx'
-      export const Panel = styled('div', __pcva({ base: 'color_red padding_8px', variants: { size: { sm: 'fs_12px', md: 'fs_16px' } }, defaultVariants: { size: 'md' } }))"
+      export const Panel = /* @__PURE__ */ styled('div', /* @__PURE__ */ __pcva({ base: 'color_red padding_8px', variants: { size: { sm: 'fs_12px', md: 'fs_16px' } }, defaultVariants: { size: 'md' } }))"
     `)
   })
 
@@ -532,8 +532,8 @@ describe('compiler.transformSource: inline cva / sva / styled', () => {
     const result = recipeCompiler.transformSource({ path: 'src/recipes.ts', source })
     expect(result.code).toMatchInlineSnapshot(`
       "import { cva as __pcva, sva as __psva } from '@pandacss-internal/css';
-      export const button = __pcva({ base: 'color_red' })
-      export const tabs = __psva({ slots: ['root'], base: { root: 'd_flex' } })"
+      export const button = /* @__PURE__ */ __pcva({ base: 'color_red' })
+      export const tabs = /* @__PURE__ */ __psva({ slots: ['root'], base: { root: 'd_flex' } })"
     `)
   })
 })
