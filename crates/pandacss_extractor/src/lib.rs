@@ -41,9 +41,9 @@ pub use design_system_imports::{
 };
 pub use extract::{
     CrossFileDependency, ExtractDebugResult, ExtractUsage, ExtractVerboseResult,
-    ImportBindingFacts, ImportedRecipeRawCall, ModuleFacts, TokenRef, analyze_module, extract,
-    extract_debug, extract_for_transform, extract_for_transform_with_recipe_resolver,
-    extract_verbose, extract_with_raw_resolvers,
+    ImportBindingFacts, ImportedRecipeRawCall, ModuleFacts, TokenRef,
+    UnresolvedCrossFileDependency, analyze_module, extract, extract_debug, extract_for_transform,
+    extract_for_transform_with_recipe_resolver, extract_verbose, extract_with_raw_resolvers,
 };
 pub use imports::{
     ImportKind, ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind,

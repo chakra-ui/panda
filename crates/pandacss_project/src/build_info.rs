@@ -719,6 +719,7 @@ impl super::Project {
                 diagnostics: Vec::new(),
                 report: ParseFileReport::default(),
             },
+            &[],
         );
         true
     }

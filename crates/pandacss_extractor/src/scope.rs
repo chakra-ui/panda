@@ -19,11 +19,11 @@ use oxc_ast::ast::{
 use oxc_semantic::{Semantic, SemanticBuilder, SymbolFlags, SymbolId};
 use oxc_span::GetSpan;
 use pandacss_tokens::{TokenCategory, TokenDictionary};
-use rustc_hash::FxHashMap;
+use rustc_hash::{FxHashMap, FxHashSet};
 use smallvec::SmallVec;
 
 use crate::cross_file::{CrossFileLookup, ExportEntry};
-use crate::extract::CrossFileDependency;
+use crate::extract::{CrossFileDependency, UnresolvedCrossFileDependency};
 use crate::literal::expression_to_literal;
 use crate::matcher::{MatchCategory, MatchedImport, Matchers};
 use crate::pure_fn::{
@@ -72,6 +72,8 @@ pub(crate) struct Resolver<'a, 'cb> {
     /// Cross-file modules read during this file's extraction (nested re-export /
     /// imported-alias modules included), with the source hash folded.
     cross_file_deps: RefCell<FxHashMap<PathBuf, Option<u64>>>,
+    /// Cross-file requests that did not resolve during this extraction.
+    unresolved_cross_file_deps: RefCell<FxHashSet<(PathBuf, String)>>,
     pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
     recipe_raw_resolve: Option<&'cb RecipeRawResolveCell<'cb>>,
 }
@@ -160,6 +162,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             token_refs: RefCell::default(),
             imported_recipe_raw_calls: RefCell::default(),
             cross_file_deps: RefCell::default(),
+            unresolved_cross_file_deps: RefCell::default(),
             pattern_raw_transform,
             recipe_raw_resolve,
         }
@@ -194,6 +197,22 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         deps
     }
 
+    pub(crate) fn take_unresolved_cross_file_deps(&self) -> Vec<UnresolvedCrossFileDependency> {
+        let mut deps = std::mem::take(&mut *self.unresolved_cross_file_deps.borrow_mut())
+            .into_iter()
+            .map(|(from_file, specifier)| UnresolvedCrossFileDependency {
+                from_file: from_file.to_string_lossy().into_owned(),
+                specifier,
+            })
+            .collect::<Vec<_>>();
+        deps.sort_by(|a, b| {
+            a.from_file
+                .cmp(&b.from_file)
+                .then_with(|| a.specifier.cmp(&b.specifier))
+        });
+        deps
+    }
+
     pub(crate) fn record_cross_file_resolution(
         &self,
         resolution: &crate::cross_file::CrossFileResolution,
@@ -205,6 +224,9 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         for (path, source_hash) in &resolution.provenance {
             deps.insert(path.clone(), *source_hash);
         }
+        self.unresolved_cross_file_deps
+            .borrow_mut()
+            .extend(resolution.unresolved.iter().cloned());
     }
 
     pub(crate) fn semantic(&self) -> &Semantic<'a> {
