@@ -71,9 +71,12 @@
     "@pandacss/types": "workspace:*"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.7.1",
+    "@emnapi/core": "1.11.2",
+    "@emnapi/runtime": "1.11.2",
+    "@napi-rs/cli": "3.9.0",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
+    "emnapi": "1.11.2",
     "lightningcss": "1.33.0",
     "rolldown": "1.2.7"
   },

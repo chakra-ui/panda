@@ -208,8 +208,14 @@ importers:
         specifier: workspace:*
         version: link:../types
     devDependencies:
+      '@emnapi/core':
+        specifier: 1.11.2
+        version: 1.11.2
+      '@emnapi/runtime':
+        specifier: 1.11.2
+        version: 1.11.2
       '@napi-rs/cli':
-        specifier: ^3.7.1
+        specifier: 3.9.0
         version: 3.9.0(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@24.10.15)(emnapi@1.11.2(node-addon-api@7.1.1))(supports-color@10.2.2)
       '@pandacss/preset-base':
         specifier: workspace:*
@@ -217,6 +223,9 @@ importers:
       '@pandacss/preset-panda':
         specifier: workspace:*
         version: link:../preset-panda
+      emnapi:
+        specifier: 1.11.2
+        version: 1.11.2(node-addon-api@7.1.1)
       lightningcss:
         specifier: 1.33.0
         version: 1.33.0
@@ -27156,7 +27165,6 @@ snapshots:
   emnapi@1.11.2(node-addon-api@7.1.1):
     optionalDependencies:
       node-addon-api: 7.1.1
-    optional: true
 
   emoji-regex@10.6.0: {}
 

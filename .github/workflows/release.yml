@@ -10,6 +10,7 @@ on:
       - 'crates/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
+      - '.github/workflows/release.yml'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -211,6 +212,11 @@ jobs:
           mv artifacts/compiler.wasi.cjs artifacts/compiler.wasi.d.cts artifacts/compiler.wasi-browser.js
           artifacts/wasi-worker.mjs artifacts/wasi-worker-browser.mjs .
 
+      # Regenerate manifests so they always match the installed @napi-rs/cli.
+      - name: Generate platform package manifests
+        working-directory: packages/compiler
+        run: pnpm exec napi create-npm-dirs --npm-dir npm
+
       - name: Stage platform npm packages
         working-directory: packages/compiler
         run: pnpm exec napi artifacts --output-dir artifacts --npm-dir npm
@@ -237,6 +243,11 @@ jobs:
           pnpm --filter @pandacss/compiler build:js
           pnpm --filter @pandacss/compiler-wasm build:js
           pnpm -r "--filter=./packages/**" "--filter=!@pandacss/types" "--filter=!@pandacss/compiler-shared" "--filter=!@pandacss/config" "--filter=!@pandacss/compiler" "--filter=!@pandacss/compiler-wasm" build
+
+      # The real pre-publish only runs inside the publish step; validate the
+      # release packages here so the dry run and every push exercise it.
+      - name: Validate release packages
+        run: pnpm --filter @pandacss/compiler exec napi pre-publish --dry-run --npm-dir npm --no-gh-release
 
       - name: Verify dry-run artifacts
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
