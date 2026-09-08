@@ -213,6 +213,8 @@ export interface TokenCategoryUsage {
 
 export interface TokenUsageReport {
   categories: TokenCategoryUsage[]
+  /** Configured token paths with no use in scanned sources. */
+  unused: string[]
 }
 
 export interface RecipeVariantUsage {
@@ -234,6 +236,26 @@ export interface RecipeUsageItem {
 
 export interface RecipeUsageReport {
   recipes: RecipeUsageItem[]
+  /** Configured recipes with no call and no JSX use in scanned sources. */
+  unused: string[]
+}
+
+export interface NamedUsageItem {
+  name: string
+  uses: number
+  files: number
+}
+
+/**
+ * Ranked usage of one named surface (utilities, patterns, keyframes) against
+ * what the config declares. `unused` is "unused in scanned sources".
+ */
+export interface NamedUsageReport {
+  total: number
+  used: number
+  unused: string[]
+  percentUsed: number
+  items: NamedUsageItem[]
 }
 
 export interface UsageReportFileFact {
@@ -313,6 +335,9 @@ export interface UsageReportFacts {
 export interface UsageReportViews {
   tokens: TokenUsageReport
   recipes: RecipeUsageReport
+  utilities: NamedUsageReport
+  patterns: NamedUsageReport
+  keyframes: NamedUsageReport
 }
 
 export interface UsageReportFile {
@@ -322,6 +347,19 @@ export interface UsageReportFile {
   sourceUsages: number
 }
 
+export type UsageReportUsageKind = 'token' | 'recipe' | 'utility' | 'pattern' | 'keyframe'
+
+/**
+ * One usage site, denormalized for scripts: no ids to join.
+ */
+export interface UsageReportUsage {
+  kind: UsageReportUsageKind
+  name: string
+  file: string
+  line: number
+  column: number
+}
+
 export interface UsageReport {
   sourceCount: number
   scope: UsageReportScopeOption
@@ -329,6 +367,7 @@ export interface UsageReport {
   facts: UsageReportFacts
   views?: UsageReportViews
   files: UsageReportFile[]
+  usages: UsageReportUsage[]
   sourceUsages: number
 }
 

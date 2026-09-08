@@ -1,4 +1,4 @@
-import { writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { runAnalyze } from '../src'
@@ -22,6 +22,7 @@ describe('cli analyze', () => {
     const result = await runAnalyze({ cwd: dir, logLevel: 'silent' })
 
     expect(result.ok).toBe(true)
+    expect(result.scope).toBe('all')
     expect(result.sourceCount).toBe(1)
     expect(result.summary.tokens.used).toBeGreaterThan(0)
     expect(result.summary.keyframes.used).toBeGreaterThanOrEqual(0)
@@ -32,7 +33,315 @@ describe('cli analyze', () => {
     })
   })
 
-  it('prints the usage summary', async () => {
+  it('writes the JSON report for a scope and creates output directories', async () => {
+    dir = createFixture()
+    writeFileSync(
+      join(dir, 'App.tsx'),
+      "import { css } from '@panda/css';\nimport { token } from '@panda/tokens';\ncss({ color: token('colors.red.500') })",
+    )
+
+    const outfile = join(dir, 'analysis', 'panda-analysis.json')
+    const result = await runAnalyze({ cwd: dir, logLevel: 'silent', scope: 'tokens', outfile })
+
+    expect(result.ok).toBe(true)
+    expect(result.scope).toBe('tokens')
+    expect(existsSync(outfile)).toBe(true)
+
+    const payload = JSON.parse(readFileSync(outfile, 'utf8')) as AnalyzeReportPayload
+    const normalized = {
+      ...payload,
+      facts: {
+        ...payload.facts,
+        files: payload.facts.files.map((file) => ({ ...file, path: file.path.replace(dir!, '<fixture>') })),
+      },
+      files: payload.files.map((file) => ({ ...file, path: file.path.replace(dir!, '<fixture>') })),
+      usages: payload.usages.map((usage) => ({ ...usage, file: usage.file.replace(dir!, '<fixture>') })),
+    }
+
+    expect(normalized).toMatchInlineSnapshot(`
+      {
+        "facts": {
+          "files": [
+            {
+              "diagnostics": 1,
+              "id": 0,
+              "path": "<fixture>/App.tsx",
+            },
+          ],
+          "rawValueSuggestions": [],
+          "rawValueUsages": [],
+          "rawValues": [],
+          "recipeUsages": [],
+          "recipeVariantUsages": [],
+          "recipes": [],
+          "tokenUsages": [
+            {
+              "column": 14,
+              "fileId": 0,
+              "line": 3,
+              "tokenId": 0,
+            },
+          ],
+          "tokens": [
+            {
+              "category": "colors",
+              "configured": false,
+              "id": 0,
+              "path": "colors.red.500",
+            },
+          ],
+        },
+        "files": [
+          {
+            "counts": {
+              "keyframes": 0,
+              "patterns": 0,
+              "recipes": 0,
+              "tokens": 1,
+              "utilities": 0,
+            },
+            "diagnostics": 1,
+            "path": "<fixture>/App.tsx",
+            "sourceUsages": 1,
+          },
+        ],
+        "scope": "tokens",
+        "sourceCount": 1,
+        "sourceUsages": 1,
+        "summary": {
+          "keyframes": {
+            "total": 0,
+            "unique": 0,
+            "used": 0,
+          },
+          "patterns": {
+            "total": 0,
+            "unique": 0,
+            "used": 0,
+          },
+          "recipes": {
+            "total": 0,
+            "unique": 0,
+            "used": 0,
+          },
+          "tokens": {
+            "total": 0,
+            "unique": 1,
+            "used": 1,
+          },
+          "utilities": {
+            "total": 0,
+            "unique": 0,
+            "used": 0,
+          },
+        },
+        "usages": [
+          {
+            "column": 14,
+            "file": "<fixture>/App.tsx",
+            "kind": "token",
+            "line": 3,
+            "name": "colors.red.500",
+          },
+        ],
+        "views": {
+          "keyframes": {
+            "items": [],
+            "percentUsed": 0,
+            "total": 0,
+            "unused": [],
+            "used": 0,
+          },
+          "patterns": {
+            "items": [],
+            "percentUsed": 0,
+            "total": 0,
+            "unused": [],
+            "used": 0,
+          },
+          "recipes": {
+            "recipes": [],
+            "unused": [],
+          },
+          "tokens": {
+            "categories": [
+              {
+                "category": "colors",
+                "files": 1,
+                "percentUsed": 100,
+                "rawValues": [],
+                "top": [
+                  {
+                    "files": 1,
+                    "name": "red.500",
+                    "uses": 1,
+                  },
+                ],
+                "total": 1,
+                "unused": 0,
+                "used": 1,
+              },
+            ],
+            "unused": [],
+          },
+          "utilities": {
+            "items": [],
+            "percentUsed": 0,
+            "total": 0,
+            "unused": [],
+            "used": 0,
+          },
+        },
+      }
+    `)
+  })
+
+  it('prints ranked utilities, patterns, and keyframes with what the config declares but nobody uses', async () => {
+    dir = createFixture(
+      `export default {
+        outdir: 'styled-system',
+        include: ['**/*.tsx'],
+        importMap: {
+          css: ['@panda/css'],
+          pattern: ['@panda/patterns'],
+        },
+        theme: {
+          tokens: {
+            colors: { red: { 500: { value: '#f00' } } },
+            spacing: { 4: { value: '1rem' } },
+          },
+          keyframes: {
+            spin: { to: { transform: 'rotate(360deg)' } },
+            pulse: { to: { opacity: 0.5 } },
+          },
+        },
+        patterns: {
+          stack: { transform: (props) => props },
+          hstack: { transform: (props) => props },
+        },
+        utilities: {
+          color: { className: 'c', values: 'colors' },
+          padding: { className: 'p', shorthand: 'p', values: 'spacing' },
+          margin: { className: 'm', values: 'spacing' },
+        },
+      }`,
+      { source: false },
+    )
+    writeFileSync(
+      join(dir, 'App.tsx'),
+      [
+        "import { css } from '@panda/css'",
+        "import { stack } from '@panda/patterns'",
+        "css({ color: 'red.500', p: '4', padding: '4', animationName: 'spin' })",
+        "stack({ gap: '4' })",
+      ].join('\n'),
+    )
+
+    const logs: string[] = []
+    await runAnalyze({ cwd: dir }, { log: (message) => logs.push(message) })
+
+    expect(logs.join('\n')).toMatchInlineSnapshot(`
+      "analyze: scanned 1 files
+
+      Summary
+      tokens      3 uses, 2 unique
+      recipes     0 uses, 0 unique
+      utilities   3 uses, 2 unique
+      patterns    1 uses, 1 unique
+      keyframes   1 uses, 1 unique
+
+      Tokens
+      Category   Used            Top tokens    Raw values   Files
+      colors     1/1 (100.00%)   red.500 (1)   0            1
+      spacing    1/2 (50.00%)    4 (2)         0            1
+
+      No config recipes found
+
+      Utilities   2/4 used (50.00%)
+      Utility   Uses   Files
+      padding   2      1
+      color     1      1
+      Unused in scanned sources (2): colorPalette, margin
+
+      Patterns   1/2 used (50.00%)
+      Pattern   Uses   Files
+      stack     1      1
+      Unused in scanned sources (1): hstack
+
+      Keyframes   1/2 used (50.00%)
+      Keyframe   Uses   Files
+      spin       1      1
+      Unused in scanned sources (1): pulse"
+    `)
+
+    logs.length = 0
+    await runAnalyze({ cwd: dir, scope: 'keyframes' }, { log: (message) => logs.push(message) })
+
+    expect(logs.join('\n')).toMatchInlineSnapshot(`
+      "analyze: scanned 1 files
+
+      Keyframes   1/2 used (50.00%)
+      Keyframe   Uses   Files
+      spin       1      1
+      Unused in scanned sources (1): pulse"
+    `)
+  })
+
+  it('lists only what nobody uses, one name per line, with --unused', async () => {
+    dir = createFixture(
+      `export default {
+        outdir: 'styled-system',
+        include: ['**/*.tsx'],
+        importMap: { css: ['@panda/css'] },
+        theme: {
+          tokens: { colors: { red: { 500: { value: '#f00' } }, blue: { 500: { value: '#00f' } } } },
+          keyframes: { spin: { to: { transform: 'rotate(360deg)' } }, pulse: { to: { opacity: 0.5 } } },
+          recipes: { badge: { base: { color: 'red.500' } } },
+        },
+        patterns: { stack: { transform: (props) => props } },
+        utilities: {
+          color: { className: 'c', values: 'colors' },
+          margin: { className: 'm', values: 'spacing' },
+        },
+      }`,
+      { source: false },
+    )
+    writeFileSync(
+      join(dir, 'App.tsx'),
+      "import { css } from '@panda/css'\ncss({ color: 'red.500', animationName: 'spin' })",
+    )
+
+    const logs: string[] = []
+    await runAnalyze({ cwd: dir, unused: true }, { log: (message) => logs.push(message) })
+
+    expect(logs.join('\n')).toMatchInlineSnapshot(`
+      "analyze: scanned 1 files
+      Unused in scanned sources
+
+      Tokens (1)
+      colors.blue.500
+
+      Recipes (1)
+      badge
+
+      Utilities (2)
+      colorPalette
+      margin
+
+      Patterns (1)
+      stack
+
+      Keyframes (1)
+      pulse"
+    `)
+
+    logs.length = 0
+    await runAnalyze({ cwd: dir, unused: true, scope: 'keyframes' }, { log: (message) => logs.push(message) })
+
+    expect(logs).toEqual(['pulse'])
+  })
+
+  it('prints a bounded token and recipe report', async () => {
     dir = createFixture(
       `export default {
         jsxFramework: 'react',
@@ -81,7 +390,7 @@ describe('cli analyze', () => {
     )
 
     const logs: string[] = []
-    const result = await runAnalyze({ cwd: dir }, { log: (message) => logs.push(message) })
+    const result = await runAnalyze({ cwd: dir, limit: 1 }, { log: (message) => logs.push(message) })
 
     expect(result.ok).toBe(true)
     expect(logs.join('\n')).toMatchInlineSnapshot(`
@@ -92,7 +401,50 @@ describe('cli analyze', () => {
       recipes     1 uses, 1 unique
       utilities   1 uses, 1 unique
       patterns    0 uses, 0 unique
-      keyframes   0 uses, 0 unique"
+      keyframes   0 uses, 0 unique
+
+      Tokens
+      Category   Used           Top tokens    Raw values   Files
+      colors     1/2 (50.00%)   red.500 (1)   0            1
+
+      Recipes
+      Recipe   Variants       Top variants   Files   Used as
+      button   1/2 (50.00%)   size.sm (1)    1       jsx 100%, fn 0%
+
+      Utilities   1/2 used (50.00%)
+      Utility   Uses   Files
+      color     1      1
+      Unused in scanned sources (1): colorPalette
+
+      No patterns found
+
+      No keyframes found"
     `)
   })
 })
+
+interface AnalyzeReportPayload {
+  sourceCount: number
+  scope: string
+  sourceUsages: number
+  summary: Record<string, { used: number; unique: number }>
+  facts: {
+    files: Array<{ id: number; path: string; diagnostics: number }>
+    tokens: Array<{ id: number; path: string; category: string }>
+    tokenUsages: Array<{ fileId: number; tokenId: number; line: number; column: number }>
+    rawValues: unknown[]
+    rawValueUsages: unknown[]
+    rawValueSuggestions: unknown[]
+    recipes: unknown[]
+    recipeUsages: unknown[]
+    recipeVariantUsages: unknown[]
+  }
+  views?: unknown
+  files: Array<{
+    path: string
+    counts: Record<string, number>
+    diagnostics: number
+    sourceUsages: number
+  }>
+  usages: Array<{ kind: string; name: string; file: string; line: number; column: number }>
+}

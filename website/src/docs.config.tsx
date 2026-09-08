@@ -325,8 +325,8 @@ export const docsTabs: TabItem[] = [
         title: 'Governance',
         items: [
           { title: 'Linting', url: 'linting' },
-          { title: 'Analyze usage', url: 'analyze' },
-          { title: 'Deprecations', url: 'deprecations' }
+          { title: 'Deprecations', url: 'deprecations' },
+          { title: 'Find what nobody uses', url: 'analyze' }
         ]
       }
     ]

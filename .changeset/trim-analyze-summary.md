@@ -2,4 +2,6 @@
 '@pandacss/cli': minor
 ---
 
-Slim `panda analyze` down to the usage summary. It prints the token, recipe, utility, pattern, and keyframe counts and nothing else — the detailed tables, the `--scope`, `--outfile`, `--report`, and `--ui` flags, and the bundled HTML report and UI server are removed.
+Remove the `--report` and `--ui` flags from `panda analyze`, along with the bundled HTML report and its live server. The
+command keeps the usage summary, the token and recipe tables, `--scope`, `--limit`, `--json`, and `--outfile`, so
+scripts and CI keep the same JSON report.
