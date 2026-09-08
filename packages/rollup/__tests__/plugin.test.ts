@@ -125,6 +125,29 @@ describe('@pandacss/rollup', () => {
 
     expect(driver.applyChange).toHaveBeenCalledWith({ path: '/project/src/app.tsx', kind })
   })
+
+  it('regenerates codegen when a design-system artifact changes', async () => {
+    const driver = createDriver([])
+    driver.isDesignSystemFile.mockReturnValue('artifact')
+    driver.syncDesignSystemFileChange.mockResolvedValue(true)
+    mocks.createNodeDriver.mockResolvedValue(driver)
+    const plugin = pandacss({ cwd: '/project', outdir: 'styled-system' })[0] as unknown as TestPlugin
+
+    await plugin.buildStart.call(createContext())
+    driver.codegen.mockClear()
+    await plugin.watchChange('/project/node_modules/@acme/ds/panda/lib.json', { event: 'update' })
+
+    expect(driver.syncDesignSystemFileChange).toHaveBeenCalledWith({
+      path: '/project/node_modules/@acme/ds/panda/lib.json',
+      kind: 'change',
+    })
+    expect(driver.codegen).toHaveBeenCalledWith({ cwd: '/project', outdir: 'styled-system' })
+
+    driver.codegen.mockClear()
+    driver.syncDesignSystemFileChange.mockResolvedValue(false)
+    await plugin.watchChange('/project/node_modules/@acme/ds/panda/lib.json', { event: 'update' })
+    expect(driver.codegen).not.toHaveBeenCalled()
+  })
 })
 
 function createDriver(diagnostics: Array<{ severity: 'error' | 'info' | 'warning'; code: string; message: string }>) {
@@ -146,11 +169,11 @@ function createDriver(diagnostics: Array<{ severity: 'error' | 'info' | 'warning
       },
     ]),
     isConfigFile: vi.fn(() => false),
-    isDesignSystemFile: vi.fn(() => false),
+    isDesignSystemFile: vi.fn((): 'artifact' | 'source' | false => false),
     isSourceFile: vi.fn(() => false),
     reload: vi.fn(),
     resolvePath: vi.fn((path: string) => path),
-    syncDesignSystemFileChange: vi.fn(),
+    syncDesignSystemFileChange: vi.fn(async (): Promise<boolean> => false),
     watchTargets: vi.fn(() => ({ dirs: ['/project/src'], config: ['/project/panda.shared.ts'], sources: [] })),
   }
 }
