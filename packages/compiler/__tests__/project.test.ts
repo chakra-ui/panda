@@ -156,6 +156,7 @@ describe('Compiler', () => {
         "themes",
         "types",
         "tokens",
+        "specs",
         "conditions",
       ]
     `)

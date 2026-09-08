@@ -9,6 +9,7 @@ pub mod keyframes;
 pub mod patterns;
 pub mod position_try;
 pub mod recipes;
+pub mod specs;
 pub mod sva;
 pub mod themes;
 pub mod tokens;
