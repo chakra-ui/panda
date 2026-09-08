@@ -14,6 +14,7 @@ mod patterns_artifact;
 mod position_try_artifact;
 mod react_jsx_artifact;
 mod recipes_artifact;
+mod specs_artifact;
 mod sva_artifact;
 mod tokens_artifact;
 mod ts_erase;
