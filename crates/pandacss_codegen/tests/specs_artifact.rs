@@ -38,12 +38,14 @@ fn input() -> CodegenInput {
 }
 
 #[test]
-fn emits_flat_token_spec_grouped_by_category() {
+fn emits_raw_tokens_without_semantic_tokens() {
     let artifacts = ArtifactGraph.generate_with_input(&input(), GenerateOptions::default());
     let specs = artifact(&artifacts, ArtifactId::Specs);
 
-    assert_eq!(paths(specs), vec!["specs/tokens.json"]);
-    // Semantic `fg` keeps only its base value; the `_dark` variant is dropped.
+    assert_eq!(
+        paths(specs),
+        vec!["specs/tokens.json", "specs/semantic-tokens.json"]
+    );
     assert_snapshot!(file(specs, "specs/tokens.json"), @r##"
     {
       "data": [
@@ -57,10 +59,6 @@ fn emits_flat_token_spec_grouped_by_category() {
             {
               "name": "blue.600",
               "value": "#2563eb"
-            },
-            {
-              "name": "fg",
-              "value": "#ef4444"
             }
           ]
         },
@@ -83,12 +81,48 @@ fn emits_flat_token_spec_grouped_by_category() {
 }
 
 #[test]
+fn emits_semantic_tokens_with_per_condition_values() {
+    let artifacts = ArtifactGraph.generate_with_input(&input(), GenerateOptions::default());
+    let specs = artifact(&artifacts, ArtifactId::Specs);
+
+    assert_snapshot!(file(specs, "specs/semantic-tokens.json"), @r##"
+    {
+      "data": [
+        {
+          "type": "colors",
+          "values": [
+            {
+              "name": "fg",
+              "values": [
+                {
+                  "condition": "base",
+                  "value": "#ef4444"
+                },
+                {
+                  "condition": "_dark",
+                  "value": "#2563eb"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+    "##);
+}
+
+#[test]
 fn emits_empty_data_without_tokens() {
     let artifacts =
         ArtifactGraph.generate_with_input(&CodegenInput::default(), GenerateOptions::default());
     let specs = artifact(&artifacts, ArtifactId::Specs);
 
     assert_snapshot!(file(specs, "specs/tokens.json"), @r#"
+    {
+      "data": []
+    }
+    "#);
+    assert_snapshot!(file(specs, "specs/semantic-tokens.json"), @r#"
     {
       "data": []
     }

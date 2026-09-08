@@ -458,7 +458,6 @@ impl ArtifactGraph {
             ]),
         },
         ArtifactNode {
-            // Always JSON, so format/extensions don't apply; only the token values matter.
             id: ArtifactId::Specs,
             dependencies: DependencySet::from_slice(&[ConfigDependency::Tokens]),
         },
