@@ -16,8 +16,8 @@
   },
   "dependencies": {
     "@ark-ui/react": "5.39.1",
-    "@pandacss/preset-base": "beta",
-    "@pandacss/preset-panda": "beta",
+    "@pandacss/preset-base": "2.0.0-beta.16",
+    "@pandacss/preset-panda": "2.0.0-beta.16",
     "@pandacss/preset-typography": "workspace:*",
     "@zag-js/hotkeys": "1.43.3",
     "bright": "1.0.0",
@@ -33,7 +33,7 @@
     "zod": "^4.5.4"
   },
   "devDependencies": {
-    "@pandacss/dev": "beta",
+    "@pandacss/dev": "2.0.0-beta.16",
     "@shikijs/rehype": "^3.19.0",
     "@shikijs/transformers": "^3.19.0",
     "@types/mdx": "^2.0.14",
