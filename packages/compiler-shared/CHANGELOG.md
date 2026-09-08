@@ -1,5 +1,18 @@
 # @pandacss/compiler-shared
 
+## 2.0.0-beta.16
+
+### Patch Changes
+
+- dfb17b2: Fix `Driver.parseFiles()` retaining atoms from source files removed since the previous scan. Full-project
+  rescans now reconcile scan- and watcher-owned files, including recovery from dropped watcher events.
+- af261f5: Fix watch CSS staying stale when a file you import a value from changes. Importers are re-extracted,
+  including through re-exports, and only when the imported file's content actually changed.
+- Updated dependencies [dea1ef5]
+- Updated dependencies [c58d45d]
+- Updated dependencies [ef14fc5]
+  - @pandacss/types@2.0.0-beta.16
+
 ## 2.0.0-beta.15
 
 ### Patch Changes
