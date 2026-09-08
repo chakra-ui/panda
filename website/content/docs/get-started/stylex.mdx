@@ -138,6 +138,74 @@ const slide = viewTransition({
 
 See [View Transitions](/docs/styling/view-transition).
 
+## Keyframes
+
+`stylex.keyframes` maps one to one to Panda's `keyframes`. Both take the same
+`from`/`to`/`<percentage>` stops and return an animation name you put in
+`animationName` or the `animation` shorthand:
+
+```ts
+// before
+const fade = stylex.keyframes({
+  from: { opacity: 0 },
+  to: { opacity: 1 }
+})
+
+const styles = stylex.create({
+  box: { animationName: fade, animationDuration: '0.6s' }
+})
+```
+
+```ts
+// after
+import { css, keyframes } from '../styled-system/css'
+
+const fade = keyframes({
+  from: { opacity: 0 },
+  to: { opacity: 1 }
+})
+
+const box = css({ animationName: fade, animationDuration: '0.6s' })
+```
+
+Panda emits the `@keyframes` block for you and tree-shakes it to what you
+reference. Shared, design-system animations belong in `theme.keyframes` instead,
+referenced by name (`animationName: 'fade'`). See [Keyframes](/docs/styling/keyframes).
+
+## Position try
+
+`stylex.positionTry` maps one to one to Panda's `positionTry`. Both take the
+anchor-positioning declarations and return the dashed-ident you put in
+`positionTryFallbacks`:
+
+```ts
+// before
+const flip = stylex.positionTry({
+  top: 'anchor(bottom)',
+  insetInlineStart: 'anchor(start)'
+})
+
+const styles = stylex.create({
+  popover: { positionTryFallbacks: flip }
+})
+```
+
+```ts
+// after
+import { css, positionTry } from '../styled-system/css'
+
+const flip = positionTry({
+  top: 'anchor(bottom)',
+  insetInlineStart: 'anchor(start)'
+})
+
+const popover = css({ positionTryFallbacks: flip })
+```
+
+Panda emits the `@position-try` block and tree-shakes it. Reusable fallbacks
+belong in `theme.positionTry`, referenced by name (`positionTry('flip')`). See
+[Position Try](/docs/styling/position-try).
+
 ## Color modes
 
 StyleX keys a `defineVars` value to a media query. Panda's semantic tokens are the direct equivalent, branching on

@@ -96,6 +96,8 @@ Some topics span several notes. Keep the detailed contract in one place and link
 - [Position Try API](./position-try-api.md) — `positionTry()` dashed-ident from the css barrel, `theme.positionTry`
   named `@position-try` blocks, why it returns an ident not a class, the hash contract, and the `globalPositionTry`
   removal.
+- [Keyframes factory](./keyframes-factory.md) — `keyframes()` inline `@keyframes` from the css barrel (object form only,
+  no named form), reusing the positionTry value-fold; merges with `theme.keyframes` for emit and tree-shaking.
 
 ### Boundary
 

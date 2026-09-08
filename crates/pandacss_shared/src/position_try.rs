@@ -7,7 +7,7 @@
 use serde_json::{Map, Value};
 
 use crate::hash::to_hash;
-use crate::view_transition::stable_stringify;
+use crate::stringify::stable_stringify;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PositionTryStyle {

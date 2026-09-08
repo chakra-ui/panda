@@ -203,7 +203,8 @@ export const docsTabs: TabItem[] = [
           { title: 'Cascade Layers', url: 'cascade-layers' },
           { title: 'Style isolation', url: 'style-isolation' },
           { title: 'View Transition', url: 'view-transition' },
-          { title: 'Position Try', url: 'position-try' }
+          { title: 'Position Try', url: 'position-try' },
+          { title: 'Keyframes', url: 'keyframes' }
         ]
       }
     ]
@@ -324,8 +325,8 @@ export const docsTabs: TabItem[] = [
         title: 'Governance',
         items: [
           { title: 'Linting', url: 'linting' },
-          { title: 'Analyze usage', url: 'analyze' },
-          { title: 'Deprecations', url: 'deprecations' }
+          { title: 'Deprecations', url: 'deprecations' },
+          { title: 'Analyze Usage', url: 'analyze' }
         ]
       }
     ]

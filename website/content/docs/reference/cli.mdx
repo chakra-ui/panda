@@ -290,37 +290,32 @@ You then choose how to import them:
 
 ## analyze
 
-Report which tokens, recipes, utilities, patterns, and keyframes your project uses. By default it scans the whole
-project, following your `include` and `exclude` options.
+Report which tokens, recipes, utilities, patterns, and keyframes your project uses, and which configured ones no
+scanned file touches. It scans the whole project, following your `include` and `exclude` options, and prints a
+summary followed by one section per category. For what to do with the report, see
+[Find what nobody uses](/docs/design-systems/analyze).
 
 ```bash
 pnpm panda analyze
 
-# Scope the report
-pnpm panda analyze --scope tokens
-pnpm panda analyze --scope recipes
+# One section
+pnpm panda analyze --scope utilities
+
+# Only the configured names nobody uses, one per line
+pnpm panda analyze --unused
 
 # Write a JSON report
 pnpm panda analyze --outfile analyze.json
-
-# Write a static HTML report
-pnpm panda analyze --report ./analyze-report
-
-# Open an interactive UI
-pnpm panda analyze --ui
 ```
 
 | Flag                | Description                                                                                | Related |
 | ------------------- | ----------------------------------------------------------------------------------------- | ------- |
-| `--scope <scope>`   | Scope the report: `all`, `tokens`, `recipes`, `utilities`, `patterns`, or `keyframes` (`token`/`recipe` are aliases) | -       |
+| `--scope <scope>`   | Print one section: `tokens`, `recipes`, `utilities`, `patterns`, or `keyframes` (`token`/`recipe` are aliases) | -       |
 | `--limit <n>`       | Maximum rows per section in the terminal report                                           | -       |
+| `--unused`          | List only the configured names no scanned file uses, one per line; with `--scope`, names only | -       |
 | `--outfile <path>`  | Write the report as JSON to this path                                                     | -       |
-| `--report <dir>`    | Write a static HTML report to this directory                                              | -       |
-| `--ui`              | Start an interactive report UI that refreshes on change                                   | -       |
-| `--ui-host <host>`  | Host for the report UI server                                                             | -       |
-| `--ui-port <port>`  | Port for the report UI server                                                             | -       |
 
-`panda analyze` also accepts the [shared flags](#shared-flags), `--include`, and `--watch-debounce` (UI refresh debounce).
+`panda analyze` also accepts the [shared flags](#shared-flags) and `--include`.
 
 ---
 

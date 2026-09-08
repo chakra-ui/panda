@@ -8,6 +8,7 @@ mod global_fontface;
 mod global_vars;
 mod integration;
 mod keyframes;
+mod keyframes_factory;
 mod layers;
 mod nested_selector_parity;
 mod output;

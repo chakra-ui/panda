@@ -199,11 +199,14 @@ serializing `Literal` to `JsValue` walks the same tree. Same constraint applies:
 
 The TS wrapper (`packages/compiler/src/index.ts`) defines the public API and a no-op fallback for unsupported platforms.
 `src/load-binary.ts` loads the generated `binding.cjs`; that loader prefers the local/platform native package and falls
-back to `@pandacss/compiler-wasm32-wasi` when the native binding is unavailable. In WebContainer, if optional dependency
-resolution still fails, the loader installs `@pandacss/compiler-wasm32-wasi@<compiler version>` into
-`/tmp/pandacss-compiler-<version>` and requires `compiler.wasi.cjs` from there, matching Rolldown/Oxc's fallback shape.
-The WASI build is linked as a reactor with `_initialize` exported so emnapi runs the module constructors before use.
-Native artifacts, generated WASI files, and the auto-generated `native.d.ts` are gitignored.
+back to `@pandacss/compiler-wasm32-wasi` when the native binding is unavailable. Since `@napi-rs/cli` 3.9 the wasi
+package is not an `optionalDependency` of `@pandacss/compiler`: its manifest no longer carries a `cpu` gate, so listing
+it would make every consumer download the wasm. In WebContainer the loader installs
+`@pandacss/compiler-wasm32-wasi@<compiler version>` into `/tmp/pandacss-compiler-<version>` on first use and requires
+`compiler.wasi.cjs` from there, matching Rolldown/Oxc's fallback shape. Set `napi.wasm.optionalDependency: true` in
+`packages/compiler/package.json` to declare it again; `scripts/verify-release-artifacts.mjs` follows that flag. The WASI
+build is linked as a reactor with `_initialize` exported so emnapi runs the module constructors before use. Native
+artifacts, generated WASI files, and the auto-generated `native.d.ts` are gitignored.
 
 Use `pnpm --filter @pandacss/compiler verify:webcontainer` to serve the browser-based `@webcontainer/api` verification
 fixture. Pass `-- --compiler-tgz <path> --wasi-tgz <path>` to test local package tarballs before publishing; without

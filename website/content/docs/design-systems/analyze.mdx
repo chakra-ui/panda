@@ -1,34 +1,186 @@
 ---
-title: Analyze usage
-description: Report which tokens and recipes each app actually uses with panda analyze.
+title: Find what nobody uses
+description: Run panda analyze in each app before you remove a token, recipe, utility, pattern, or keyframe.
 ---
 
-`panda analyze` reports which tokens, recipes, utilities, patterns, and keyframes a project uses. Run it in a
-consuming app to measure adoption. Run it before removing anything.
+Removing a token that an app still uses doesn't fail the build. The reference is emitted as a literal CSS value and
+the page quietly loses its color. `panda analyze` tells you, per app, what is safe to drop.
+
+## Run it
+
+Run it in the app, not the design-system package. It scans the app's sources and reports against the theme the app
+resolved.
 
 ```bash
-pnpm panda analyze
-
-# one category
-pnpm panda analyze --scope tokens
-pnpm panda analyze --scope recipes
+pnpm panda analyze --limit 5
 ```
 
-## Share a report
+```txt
+analyze: scanned 151 files
+
+Summary
+tokens      1032 uses, 101 unique
+recipes     29 uses, 12 unique
+utilities   2299 uses, 140 unique
+patterns    270 uses, 17 unique
+keyframes   26 uses, 10 unique
+
+Keyframes   10/25 used (40.00%)
+Keyframe    Uses   Files
+fade-in     7      1
+fade-out    7      1
+Unused in scanned sources (15): bounce, marqueeScroll, ping, pulse, scale-in, +10 more
+```
+
+Every section prints the same way: a ranked table, then the configured names no scanned file touches. `--scope`
+prints one section and `--limit` caps the rows and the unused names.
+
+## Read the output
+
+Each section answers one question, and its last line is the list you act on.
+
+### Tokens
+
+Which tokens carry the design, and which raw values could have been tokens. A category at 12% used is a palette you
+can shrink.
 
 ```bash
-pnpm panda analyze --report ./analyze-report   # static HTML, shareable
-pnpm panda analyze --ui                        # interactive, refreshes on change
-pnpm panda analyze --outfile analyze.json      # JSON, for CI or scripts
+pnpm panda analyze --scope tokens --limit 3
 ```
 
-## Before removing a token
+```txt
+Tokens
+Category    Used              Top tokens                             Raw values   Files
+colors      42/352 (11.93%)   fg (60), border (50), fg.subtle (47)   18           64
+spacing     27/71 (38.03%)    4 (66), 2 (57), 3 (53)                 10           69
+fontSizes   11/15 (73.33%)    md (14), sm (9), 3xl (8)               1            19
+```
 
-A token with zero usage across every consuming app is safe to drop in the next major. One that still shows up gets
-[deprecated](/docs/design-systems/deprecations) first, so consumers are warned while they migrate.
+### Recipes
 
-## See also
+Which variants get picked, and whether a recipe is reached through JSX or a function call. A variant nobody selects
+is CSS you ship for nothing.
 
-- [`panda analyze`](/docs/reference/cli#analyze) for all flags
-- [Deprecations](/docs/design-systems/deprecations)
-- [Publishing](/docs/design-systems/publishing) for the semver guidance
+```bash
+pnpm panda analyze --scope recipes --limit 3
+```
+
+```txt
+Recipes
+Recipe      Variants        Top variants                                    Files   Used as
+button      3/13 (23.08%)   color.neutral (2), size.icon (1), size.xs (1)   5       jsx 33%, fn 67%
+segmented   2/6 (33.33%)    size.sm (2), tone.pill (2)                      3       jsx 67%, fn 33%
+callout     0/4 (0.00%)     -                                               1       jsx 0%, fn 100%
+```
+
+### Utilities
+
+Which properties dominate, and which configured utilities no file touches. That's how you decide what to prune from
+a preset. It's the biggest bucket in any app, and a count alone tells you nothing about which ones. Shorthands count
+as their longhand, so `p` and `padding` are one row.
+
+```bash
+pnpm panda analyze --scope utilities --limit 3
+```
+
+```txt
+Utilities   120/410 used (29.27%)
+Utility      Uses   Files
+color        195    54
+background   123    53
+display      119    44
+Unused in scanned sources (290): WebkitTextFillColor, accentColor, alignContent, +287 more
+```
+
+### Patterns
+
+Whether anyone reaches for `hstack`, or everyone wrote `flex` by hand. That decides whether a pattern earns its place
+in the generated code.
+
+```bash
+pnpm panda analyze --scope patterns --limit 3
+```
+
+```txt
+Patterns   10/20 used (50.00%)
+Pattern   Uses   Files
+box       132    25
+stack     47     31
+hstack    40     23
+Unused in scanned sources (10): aspectRatio, bleed, cq, +7 more
+```
+
+### Keyframes
+
+Which keyframes are dead. A keyframe nobody references is pure CSS weight, which is why the `removeUnusedKeyframes`
+optimizer exists. This list is what it would drop.
+
+```bash
+pnpm panda analyze --scope keyframes --limit 3
+```
+
+```txt
+Keyframes   10/25 used (40.00%)
+Keyframe               Uses   Files
+fade-in                7      1
+fade-out               7      1
+slide-from-left-full   2      1
+Unused in scanned sources (15): bounce, marqueeScroll, ping, +12 more
+```
+
+"Unused" means unused in the files this run scanned. Usage in another app, or behind a dynamic value, doesn't show
+here, so run it in every consumer before you decide.
+
+## Decide: remove or deprecate
+
+Zero uses across every consuming app: remove it in the next major. Any uses at all:
+[deprecate it first](/docs/design-systems/deprecations), so those apps get warned while they migrate.
+
+`--unused` skips the tables and prints only the names nobody uses, one per line and uncapped. That is the list you
+paste into the deprecation PR, or diff between two runs.
+
+```bash
+pnpm panda analyze --unused
+```
+
+```txt
+analyze: scanned 151 files
+Unused in scanned sources
+
+Tokens (477)
+animations.bounce
+animations.ping
+animations.pulse
+…
+
+Recipes (0)
+
+Utilities (290)
+WebkitTextFillColor
+accentColor
+…
+
+Keyframes (15)
+bounce
+marqueeScroll
+…
+```
+
+With a scope it prints the names and nothing else, so it pipes:
+
+```bash
+pnpm panda analyze --scope keyframes --unused | xargs
+```
+
+## Script it
+
+`--outfile` writes the full report as JSON and keeps the terminal output. `--json` sends the same payload to stdout.
+The `usages` list has one entry per site, with kind, name, file, line, and column, so a script can answer the removal
+question without joining tables.
+
+```bash
+pnpm panda analyze --outfile analyze.json
+jq '.usages[] | select(.name == "colors.brand.300")' analyze.json
+```
+
+Next: [mark it deprecated](/docs/design-systems/deprecations) and ship the warning before the removal.

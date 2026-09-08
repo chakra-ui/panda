@@ -1,0 +1,99 @@
+---
+title: Keyframes
+description:
+  Define inline, component-local CSS animations with the keyframes() factory. It returns the animation name and emits
+  the @keyframes block for you.
+---
+
+## How it works
+
+`keyframes()` names an inline [`@keyframes`](https://developer.mozilla.org/en-US/docs/Web/CSS/@keyframes) block and
+returns the animation name to put in `animationName` or the `animation` shorthand. Use it for an ad-hoc, component-local
+animation that does not need to live in `theme.keyframes`.
+
+```ts
+import { css, keyframes } from 'styled-system/css'
+
+const spin = keyframes({
+  from: { transform: 'rotate(0deg)' },
+  to: { transform: 'rotate(360deg)' }
+})
+// → "kf_xxx"
+
+css({ animation: `${spin} 1s linear infinite` })
+```
+
+```css
+@keyframes kf_xxx {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+```
+
+Panda folds the call at build time, so a static `keyframes()` inlines to its name and drops the import. Unused inline
+keyframes stay out of the CSS, the same way `theme.keyframes` are pruned when `removeUnusedKeyframes` is on.
+
+## Using the result
+
+The returned name is a normal string, so it composes in your own style object. Put it in `animationName`, or interpolate
+it into the `animation` shorthand:
+
+```ts
+import { css, keyframes } from 'styled-system/css'
+
+const fade = keyframes({
+  from: { opacity: 0 },
+  to: { opacity: 1 }
+})
+
+css({ animationName: fade, animationDuration: '0.6s', animationTimingFunction: 'ease-out' })
+```
+
+## Object form only
+
+Unlike [`viewTransition()`](/docs/styling/view-transition) and [`positionTry()`](/docs/styling/position-try),
+`keyframes()` has no named form. A bare `animationName: 'spin'` already resolves a `theme.keyframes` entry and
+tree-shakes, so a `keyframes('spin')` call would be redundant. The factory takes an object and only an object.
+
+## Theme keyframes
+
+Shared, design-system animations still belong in `theme.keyframes`, referenced by name. The factory is additive, for the
+inline case a shared theme entry cannot express:
+
+```ts filename="panda.config.ts"
+import { defineConfig, defineKeyframes } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      keyframes: defineKeyframes({
+        spin: {
+          from: { transform: 'rotate(0deg)' },
+          to: { transform: 'rotate(360deg)' }
+        }
+      })
+    }
+  }
+})
+```
+
+```ts
+import { css } from 'styled-system/css'
+
+css({ animationName: 'spin' })
+```
+
+## Design systems
+
+Export an inline animation the same way you'd export a shared `cva`:
+
+```ts
+export const spin = keyframes({ to: { transform: 'rotate(360deg)' } })
+```
+
+`panda lib` puts it in build info. Consuming apps get the `@keyframes` CSS without re-scanning your source, and
+tree-shaking follows imports like recipes. Or register shared animations in a preset's `theme.keyframes`.

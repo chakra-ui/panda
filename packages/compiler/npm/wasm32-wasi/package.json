@@ -1,14 +1,11 @@
 {
   "name": "@pandacss/compiler-wasm32-wasi",
-  "version": "1.0.0",
-  "cpu": [
-    "wasm32"
-  ],
+  "version": "2.0.0-beta.15",
   "main": "compiler.wasi.cjs",
-  "browser": "compiler.wasi-browser.js",
   "files": [
     "compiler.wasm32-wasi.wasm",
     "compiler.wasi.cjs",
+    "compiler.wasi.d.cts",
     "compiler.wasi-browser.js",
     "wasi-worker.mjs",
     "wasi-worker-browser.mjs"
@@ -17,10 +14,8 @@
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "homepage": "https://panda-css.com",
   "license": "MIT",
-  "dependencies": {
-    "@napi-rs/wasm-runtime": "^1.1.6",
-    "@emnapi/core": "1.11.1",
-    "@emnapi/runtime": "1.11.1"
+  "engines": {
+    "node": ">=22.13.0 <23.0.0-0 || >=23.5.0"
   },
   "repository": {
     "type": "git",
@@ -30,7 +25,12 @@
   "publishConfig": {
     "access": "public"
   },
-  "engines": {
-    "node": ">=22"
+  "types": "compiler.wasi.d.cts",
+  "browser": "compiler.wasi-browser.js",
+  "type": "module",
+  "dependencies": {
+    "@napi-rs/wasm-runtime": "~1.2.3",
+    "@emnapi/core": "1.11.2",
+    "@emnapi/runtime": "1.11.2"
   }
 }

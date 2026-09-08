@@ -120,6 +120,7 @@ fn compile_once(config: &UserConfig) -> CompileRun {
             utility_styles: snapshots.utility_styles,
             view_transitions: snapshots.view_transitions,
             position_try: snapshots.position_try,
+            inline_keyframes: snapshots.inline_keyframes,
             encoded_recipes: snapshots.encoded_recipes,
             static_encoded_recipes: Some(snapshots.static_encoded_recipes),
             static_pattern_atoms: &[],

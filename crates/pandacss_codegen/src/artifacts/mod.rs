@@ -5,6 +5,7 @@ pub mod cva;
 pub mod cx;
 pub mod helpers;
 pub mod jsx;
+pub mod keyframes;
 pub mod patterns;
 pub mod position_try;
 pub mod recipes;
