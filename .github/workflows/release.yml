@@ -279,7 +279,9 @@ jobs:
       - name: Sync beta dist-tag
         if: >-
           ${{ github.repository == 'chakra-ui/panda' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
-        run: pnpm release:sync-tag --apply
+        # Run with node, not pnpm: pre-publish just rewrote the compiler
+        # package.json and pnpm would refuse on the frozen lockfile.
+        run: node scripts/sync-beta-dist-tag.mjs --apply
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
