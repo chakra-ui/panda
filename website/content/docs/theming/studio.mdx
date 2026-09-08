@@ -64,6 +64,32 @@ each with its per-condition values:
 }
 ```
 
+Render each token with a swatch per condition:
+
+```tsx
+import semanticTokens from 'styled-system/specs/semantic-tokens.json'
+
+export function SemanticColors() {
+  const colors = semanticTokens.data.find(group => group.type === 'colors')
+
+  return (
+    <div>
+      {colors?.values.map(token => (
+        <div key={token.name}>
+          <p>{token.name}</p>
+          {token.values.map(({ condition, value }) => (
+            <div key={condition} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ background: value, width: 24, height: 24, borderRadius: 6 }} />
+              <span>{condition}</span>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  )
+}
+```
+
 ## Or use the viewer
 
 Don't want to build one? [Panda Spec Studio](https://panda-spec-studio-web.vercel.app/) is a ready-made viewer — drop
