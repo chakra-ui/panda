@@ -305,7 +305,7 @@ fn generates_affected_artifacts_by_dependency() {
         .map(|artifact| artifact.id)
         .collect::<Vec<_>>();
 
-    assert_snapshot!(format!("{ids:?}"), @"[Patterns, Themes, Types, Tokens, Conditions]");
+    assert_snapshot!(format!("{ids:?}"), @"[Patterns, Themes, Types, Tokens, Specs, Conditions]");
 }
 
 #[test]
