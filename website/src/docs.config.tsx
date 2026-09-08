@@ -224,20 +224,20 @@ export const docsTabs: TabItem[] = [
         ]
       },
       {
-        title: 'Variants',
-        items: [
-          { title: 'Compound variants', url: 'compound-variants' },
-          { title: 'Dynamic variants', url: 'dynamic-variants' },
-          { title: 'Responsive variants', url: 'responsive-variants' }
-        ]
-      },
-      {
         title: 'JSX Usage',
         items: [
           { title: 'Styled factory', url: 'styled-factory' },
           { title: 'Recipe context', url: 'recipe-context' },
           { title: 'Slot recipe context', url: 'slot-recipe-context' },
           { title: 'Tracking JSX', url: 'jsx-tracking' }
+        ]
+      },
+      {
+        title: 'Advanced',
+        items: [
+          { title: 'Compound variants', url: 'compound-variants' },
+          { title: 'Dynamic variants', url: 'dynamic-variants' },
+          { title: 'Responsive variants', url: 'responsive-variants' }
         ]
       }
     ]
