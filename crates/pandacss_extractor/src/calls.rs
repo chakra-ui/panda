@@ -11,7 +11,7 @@ use crate::{
         StyleSourceOwner, StyleSourceOwnerKind, StyleSourceRef, collect_object_source_refs,
     },
     span_from_oxc,
-    style_tree::{expression_to_style_tree, project_literal},
+    style_tree::{ProjectionRetention, expression_to_style_tree, project_style_args},
 };
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Argument, CallExpression, Expression, IdentifierReference};
@@ -408,11 +408,14 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 .iter()
                 .map(|arg| argument_to_style_tree(arg, resolver))
                 .collect();
-            let data: Vec<Option<Literal>> = style_args
-                .iter()
-                .map(|tree| tree.as_ref().and_then(project_literal))
-                .collect();
-            let arg_spans = if self.retain_transform_facts {
+            let retain = self.retain_transform_facts;
+            let retention = if retain {
+                ProjectionRetention::Retain
+            } else {
+                ProjectionRetention::Discard
+            };
+            let (data, style_args) = project_style_args(style_args, retention);
+            let arg_spans = if retain {
                 call.arguments
                     .iter()
                     .map(|arg| span_from_oxc(arg.span()))
@@ -443,12 +446,8 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                     jsx_recipe_ident,
                     span: span_from_oxc(call.span),
                     arg_spans,
-                    style_args: if self.retain_transform_facts {
-                        style_args
-                    } else {
-                        Vec::new()
-                    },
-                    facts: if self.retain_transform_facts {
+                    style_args,
+                    facts: if retain {
                         call_facts(call, raw)
                     } else {
                         CallFacts::default()
