@@ -10,6 +10,8 @@ on:
       - 'crates/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
+      - 'package.json'
+      - 'scripts/**'
       - '.github/workflows/release.yml'
   workflow_dispatch:
     inputs:
@@ -271,6 +273,15 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
+
+      # changesets publishes packages without a stable release to `latest`, so
+      # the `beta` tag falls behind. Idempotent: exits 0 when nothing is stale.
+      - name: Sync beta dist-tag
+        if: >-
+          ${{ github.repository == 'chakra-ui/panda' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
+        run: pnpm release:sync-tag --apply
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Send Slack notification
         if: steps.changesets.outputs.published == 'true'
