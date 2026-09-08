@@ -1,6 +1,7 @@
 //! Transform planning: match sites, bailouts, and rewrite decisions.
 
 use pandacss_extractor::{ExtractUsage, ExtractedCall, MatchCategory};
+use pandacss_shared::CssFactory;
 use rustc_hash::FxHashSet;
 
 use crate::PatternTransformFn;
@@ -367,8 +368,9 @@ fn push_css_call_rewrites(
                 plan.push(rewrite);
             }
         }
-        "viewTransition" => {
-            match resolve::rewrite_for_view_transition_call(project, call.span, &call.data) {
+        name if CssFactory::from_name(name).is_some() => {
+            let factory = CssFactory::from_name(name).expect("checked by guard");
+            match resolve::rewrite_for_css_factory_call(project, factory, call.span, &call.data) {
                 Some(rewrite) => plan.push(rewrite),
                 None if call.data.first().is_some_and(Option::is_none) => {
                     plan.bailed = true;

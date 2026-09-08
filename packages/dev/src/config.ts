@@ -22,6 +22,7 @@ import type {
   ThemeVariant,
   Tokens,
   ViewTransitions,
+  PositionTry,
 } from '@pandacss/types'
 
 export function defineConfig<const T extends Config>(config: T): T & { name: string } {
@@ -131,5 +132,9 @@ export function defineAnimationStyles(definition: CompositionStyles['animationSt
 }
 
 export function defineViewTransitions(definition: ViewTransitions): ViewTransitions {
+  return definition
+}
+
+export function definePositionTry(definition: PositionTry): PositionTry {
   return definition
 }

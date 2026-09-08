@@ -1,14 +1,14 @@
 ---
 title: css/
-description: The css/ folder — css(), cx(), cva(), sva(), and viewTransition() for turning style objects into class names.
+description: The css/ folder — css(), cx(), cva(), sva(), viewTransition(), positionTry(), and keyframes().
 ---
 
 **Folder:** `styled-system/css/`  
-**Import:** `import { css, cx, cva, sva, viewTransition } from '../styled-system/css'`
+**Import:** `import { css, cx, cva, sva, viewTransition, positionTry, keyframes } from '../styled-system/css'`
 
 Codegen writes one module per helper (`css/css.ts`, `css/cva.ts`, …) plus `css/index.ts` as the barrel. Every helper
-maps a style object to a class name string. Panda extracts those styles at build time and emits atomic CSS. At
-runtime, the helpers only resolve class names: no `<style>` tags, no theme context, no work on render. See
+maps a style object to a class name string. Panda extracts those styles at build time and emits atomic CSS. At runtime,
+the helpers only resolve class names: no `<style>` tags, no theme context, no work on render. See
 [How it works](/docs/get-started/getting-started#how-it-works).
 
 ## css()
@@ -78,8 +78,8 @@ cx(css({ color: 'red' }, { color: 'blue' }), otherClassName)
 
 ## cva()
 
-An atomic recipe: base styles plus named variants, colocated in the component file. Call the result with a variant
-map and get a class name.
+An atomic recipe: base styles plus named variants, colocated in the component file. Call the result with a variant map
+and get a class name.
 
 ```ts
 import { cva } from '../styled-system/css'
@@ -131,8 +131,7 @@ import it from [`recipes/`](/docs/reference/recipes) instead. Guides: [Atomic re
 
 ## sva()
 
-`cva` for components with several parts. One variant map drives every slot, and the call returns a class name per
-slot.
+`cva` for components with several parts. One variant map drives every slot, and the call returns a class name per slot.
 
 ```ts
 import { sva } from '../styled-system/css'
@@ -180,8 +179,8 @@ A slot recipe shared across packages belongs in config as `defineSlotRecipe`, im
 
 ## viewTransition()
 
-Returns a shared class built on `view-transition-class`, so Panda can extract and dedupe view transition styles like
-any other atomic style. You still set a unique `view-transition-name` on each element yourself.
+Returns a shared class built on `view-transition-class`, so Panda can extract and dedupe view transition styles like any
+other atomic style. You still set a unique `view-transition-name` on each element yourself.
 
 ```ts
 import { viewTransition } from '../styled-system/css'
@@ -201,8 +200,43 @@ const slide = viewTransition({
 The keys `group`, `imagePair`, `old`, and `new` map to the matching `::view-transition-*` pseudo-elements.
 
 View transition names must be unique per element, so keying styles on the name would leave nothing to share.
-`view-transition-class` is the CSS feature built for shared animation styles, and this helper emits that class.
-Guide: [View Transitions](/docs/styling/view-transition).
+`view-transition-class` is the CSS feature built for shared animation styles, and this helper emits that class. Guide:
+[View Transitions](/docs/styling/view-transition).
+
+## positionTry()
+
+Returns the dashed-ident for a CSS anchor-positioning fallback and emits its `@position-try` block. Unlike
+`viewTransition()`, which returns a class, this returns a value you put in `position-try-fallbacks`.
+
+```ts
+import { css, positionTry } from '../styled-system/css'
+
+const bottom = positionTry({ top: 'anchor(bottom)', insetInlineStart: 'anchor(start)' })
+// => "--pt_xxx"
+
+css({ positionTryFallbacks: positionTry('bottom') })
+```
+
+A string argument resolves a named `theme.positionTry` bag (`positionTry('bottom')` => `"--pt_bottom"`); an object
+hashes to `--pt_<hash>`. The call folds inside `css()`, so a fallback list composes in your own style object. Guide:
+[Position Try](/docs/styling/position-try).
+
+## keyframes()
+
+Names an inline `@keyframes` block and returns the animation name for `animationName` or the `animation` shorthand.
+Object form only — a bare `animationName: 'spin'` already resolves a `theme.keyframes` entry.
+
+```ts
+import { css, keyframes } from '../styled-system/css'
+
+const spin = keyframes({ from: { transform: 'rotate(0deg)' }, to: { transform: 'rotate(360deg)' } })
+// => "kf_xxx"
+
+css({ animation: `${spin} 1s linear infinite` })
+```
+
+The block emits only when its name is referenced, tree-shaken like `theme.keyframes`. Guide:
+[Keyframes](/docs/styling/keyframes).
 
 ## See also
 

@@ -100,6 +100,14 @@ export type ViewTransitions = Record<string, ViewTransitionStyleObject>
 
 export type ViewTransitionFn = (options: ViewTransitionStyleObject | string) => string
 
+/** Named `@position-try` fallback bags. Referenced by `positionTry('name')`. */
+export type PositionTry = Record<string, SystemStyleObject>
+
+export type PositionTryFn = (options: SystemStyleObject | string) => string
+
+/** Inline `@keyframes` factory: `keyframes({...})` returns the animation name. Object form only. */
+export type KeyframesFn = (keyframe: CssKeyframes[string]) => string
+
 export interface GlobalStyleObject {
   [selector: string]: SystemStyleObject
 }

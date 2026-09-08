@@ -13,8 +13,9 @@ use pandacss_encoder::{
 };
 use pandacss_extractor::Literal;
 use pandacss_shared::{
-    Diagnostic, ViewTransitionStyle, css_escape, diagnostic_codes, find_matching_paren,
-    hyphenate_property, number_to_js_string, split_important, to_hash, without_space,
+    Diagnostic, InlineKeyframe, PositionTryStyle, ViewTransitionStyle, css_escape,
+    diagnostic_codes, find_matching_paren, hyphenate_property, number_to_js_string,
+    split_important, to_hash, without_space,
 };
 use pandacss_tokens::{TokenCssConditionVars, TokenCssVar, TokenCssVars, TokenDictionary};
 use pandacss_utility::{
@@ -61,6 +62,8 @@ pub(crate) struct EmitInput<'a> {
     pub recipes: &'a EncodedRecipesSnapshot,
     pub utility_styles: &'a UtilityStyleOverrides,
     pub view_transitions: &'a [ViewTransitionStyle],
+    pub position_try: &'a [PositionTryStyle],
+    pub inline_keyframes: &'a [InlineKeyframe],
 }
 
 /// Toggle flags for full stylesheet [`emit`].
@@ -92,6 +95,8 @@ pub(crate) fn emit(input: EmitInput<'_>, options: EmitOptions) -> EmitOutput {
         recipes,
         utility_styles,
         view_transitions,
+        position_try,
+        inline_keyframes,
     } = input;
     let EmitOptions {
         minify,
@@ -128,7 +133,8 @@ pub(crate) fn emit(input: EmitInput<'_>, options: EmitOptions) -> EmitOutput {
     }
     atoms = dedup_atom_refs(atoms);
 
-    let keyframes = as_non_empty_object(&config.theme.keyframes);
+    let merged_keyframes = merge_keyframes(&config.theme.keyframes, inline_keyframes);
+    let keyframes = merged_keyframes.as_ref();
     // `@property` pruning needs usage before the base layer is written.
     let usage = if config.optimize.remove_unused_tokens
         || config.optimize.remove_unused_keyframes
@@ -155,7 +161,7 @@ pub(crate) fn emit(input: EmitInput<'_>, options: EmitOptions) -> EmitOutput {
             cx.write_collected_styles(writer, &config.global_css);
             cx.serialize_global_vars(writer, usage.as_ref());
             serialize_global_fontface(writer, &config.global_fontface);
-            serialize_global_position_try(writer, &config.global_position_try);
+            serialize_position_try_styles(writer, position_try);
         }));
     }
 
@@ -288,6 +294,8 @@ pub(crate) fn emit_keyframes(input: EmitInput<'_>, options: EmitKeyframesOptions
         recipes,
         utility_styles,
         view_transitions,
+        position_try: _,
+        inline_keyframes,
     } = input;
     let EmitKeyframesOptions {
         minify,
@@ -308,7 +316,8 @@ pub(crate) fn emit_keyframes(input: EmitInput<'_>, options: EmitKeyframesOptions
     }
     atoms = dedup_atom_refs(atoms);
 
-    let keyframes = as_non_empty_object(&config.theme.keyframes);
+    let merged_keyframes = merge_keyframes(&config.theme.keyframes, inline_keyframes);
+    let keyframes = merged_keyframes.as_ref();
     let usage = if config.optimize.remove_unused_keyframes {
         Some(cx.collect_usage(
             tokens.dictionary,
@@ -584,6 +593,23 @@ fn as_non_empty_object(value: &Value) -> Option<&serde_json::Map<String, Value>>
     (!entries.is_empty()).then_some(entries)
 }
 
+/// Merge `theme.keyframes` with inline `keyframes({…})` blocks into one
+/// name→stops map, so emission and unused-keyframe pruning treat both alike.
+fn merge_keyframes(
+    theme: &Value,
+    inline: &[InlineKeyframe],
+) -> Option<serde_json::Map<String, Value>> {
+    let base = as_non_empty_object(theme);
+    if inline.is_empty() {
+        return base.cloned();
+    }
+    let mut merged = base.cloned().unwrap_or_default();
+    for keyframe in inline {
+        merged.insert(keyframe.name.clone(), keyframe.stops.clone());
+    }
+    (!merged.is_empty()).then_some(merged)
+}
+
 fn has_used_keyframes(
     keyframes: &serde_json::Map<String, Value>,
     used: &FxHashSet<String>,
@@ -728,26 +754,20 @@ fn serialize_global_fontface(writer: &mut CssWriter, value: &Value) {
     }
 }
 
-/// Emit `@position-try` blocks from `globalPositionTry`. The name is
-/// dashed-ident-normalized (`foo` -> `--foo`), matching v1.
-fn serialize_global_position_try(writer: &mut CssWriter, value: &Value) {
-    let Some(entries) = as_non_empty_object(value) else {
-        return;
-    };
-    for (name, rules) in entries {
-        let ident = if name.starts_with("--") {
-            Cow::Borrowed(name.as_str())
-        } else {
-            Cow::Owned(format!("--{name}"))
+/// Emit `@position-try {ident}` blocks from used `theme.positionTry` /
+/// `positionTry({…})` bags. Idents are pre-resolved (`--pt_…`), so they are
+/// written verbatim.
+fn serialize_position_try_styles(writer: &mut CssWriter, styles: &[PositionTryStyle]) {
+    for style in styles {
+        let Value::Object(body) = &style.descriptors else {
+            continue;
         };
-        for rule in at_rule_variants(rules) {
-            let Value::Object(body) = rule else {
-                continue;
-            };
-            writer.at_rule_named("@position-try ", &ident, |writer| {
-                write_at_rule_descriptors(writer, body);
-            });
+        if body.is_empty() {
+            continue;
         }
+        writer.at_rule_named("@position-try ", &style.ident, |writer| {
+            write_at_rule_descriptors(writer, body);
+        });
     }
 }
 

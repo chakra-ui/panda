@@ -74,8 +74,8 @@
     "vite-plugin-virtual": "0.5.0"
   },
   "lint-staged": {
-    "packages/**/*.{ts,tsx}": [
-      "pnpm prettier-fix"
+    "packages/**/*.{ts,tsx,js,mjs,cjs,json,md,mdx,css,yml,yaml}": [
+      "prettier --write"
     ]
   },
   "packageManager": "pnpm@11.25.0"

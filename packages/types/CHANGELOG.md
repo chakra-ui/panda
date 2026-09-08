@@ -1,5 +1,30 @@
 # @pandacss/types
 
+## 2.0.0-beta.16
+
+### Major Changes
+
+- ef14fc5: Remove the `syntax` config option and the `template-literal` authoring mode. Drop `syntax` from your config
+  and the `--syntax` flag from `panda init`, and write styles with the object syntax: `css({ color: 'red' })` instead of
+  `` css`color: red` ``.
+
+### Minor Changes
+
+- dea1ef5: Add a `keyframes()` factory to `styled-system/css` for inline, component-local animations.
+
+  `keyframes({ from: {...}, to: {...} })` returns a `kf_…` animation name and emits its `@keyframes` block, tree-shaken
+  to what a build actually references through `animationName` or the `animation` shorthand. Object form only — a bare
+  `animationName: 'spin'` already resolves a `theme.keyframes` entry, so there is no named form. Shared, design-system
+  animations still belong in `theme.keyframes`.
+
+- c58d45d: Add a `positionTry()` factory to `styled-system/css` and a `theme.positionTry` key for named CSS
+  anchor-positioning fallbacks, and remove `globalPositionTry`.
+
+  `positionTry('bottom')` or `positionTry({ top: 'anchor(bottom)' })` returns the dashed-ident for
+  `positionTryFallbacks` and emits the `@position-try` block, tree-shaken to what a build uses. Move `globalPositionTry`
+  entries to `theme.positionTry` and reference them through the factory. A block that must emit unconditionally with a
+  hand-authored name belongs in a plain `.css` file.
+
 ## 2.0.0-beta.15
 
 ### Minor Changes

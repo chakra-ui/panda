@@ -8,6 +8,8 @@ import { AnotherButtonWithRegex, Button, ListedButton } from './Button'
 import { Card } from './Card'
 import { MaskDemo } from './MaskDemo'
 import { SourceTransformProof } from './SourceTransformProof'
+import { PositionTryDemo } from './PositionTryDemo'
+import { KeyframesDemo } from './KeyframesDemo'
 import { ViewTransitionDemo } from './ViewTransitionDemo'
 
 const SomeRecipe = panda('div', someRecipe)
@@ -32,6 +34,8 @@ function App() {
     <div className={stack({ padding: '40px', align: 'stretch', color: 'red.300' })}>
       <MaskDemo />
       <ViewTransitionDemo />
+      <PositionTryDemo />
+      <KeyframesDemo />
 
       <section className={css({ padding: '5', borderWidth: '1px' })}>
         <p className={css({ fontWeight: 'semibold', mb: '2' })}>CSS - Function</p>

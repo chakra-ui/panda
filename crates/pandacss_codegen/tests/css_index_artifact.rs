@@ -21,6 +21,8 @@ fn reexports_css_modules() {
         export * from './cx';
         export * from './sva';
         export * from './view-transition';
+        export * from './position-try';
+        export * from './keyframes';
         "}
         .trim()
     );
@@ -44,6 +46,8 @@ fn mjs_without_import_extensions_emits_dts_for_bundler_resolution() {
         export * from './cx';
         export * from './sva';
         export * from './view-transition';
+        export * from './position-try';
+        export * from './keyframes';
         "}
         .trim()
     );
@@ -66,6 +70,8 @@ fn can_emit_import_extensions() {
         export * from './cx.js';
         export * from './sva.js';
         export * from './view-transition.js';
+        export * from './position-try.js';
+        export * from './keyframes.js';
         "}
         .trim()
     );
@@ -77,6 +83,8 @@ fn can_emit_import_extensions() {
         export * from './cx.d.ts';
         export * from './sva.d.ts';
         export * from './view-transition.d.ts';
+        export * from './position-try.d.ts';
+        export * from './keyframes.d.ts';
         "}
         .trim()
     );
@@ -94,6 +102,8 @@ fn can_emit_import_extensions() {
         export * from './cx.mjs';
         export * from './sva.mjs';
         export * from './view-transition.mjs';
+        export * from './position-try.mjs';
+        export * from './keyframes.mjs';
         "}
         .trim()
     );
@@ -105,6 +115,8 @@ fn can_emit_import_extensions() {
         export * from './cx.d.mts';
         export * from './sva.d.mts';
         export * from './view-transition.d.mts';
+        export * from './position-try.d.mts';
+        export * from './keyframes.d.mts';
         "}
         .trim()
     );

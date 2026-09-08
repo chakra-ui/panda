@@ -32,6 +32,12 @@ export default {
         new: { opacity: 0 },
       },
     },
+    positionTry: {
+      flip: {
+        bottom: 'anchor(top)',
+        insetInlineStart: 'anchor(start)',
+      },
+    },
     semanticTokens: {
       colors: {
         text: { value: { base: '{colors.gray.600}', _osDark: '{colors.gray.400}' } },

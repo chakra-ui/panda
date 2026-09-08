@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/compiler-darwin-arm64",
-  "version": "1.0.0",
+  "version": "2.0.0-beta.15",
   "cpu": [
     "arm64"
   ],
@@ -12,6 +12,9 @@
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "homepage": "https://panda-css.com",
   "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chakra-ui/panda.git",
@@ -22,8 +25,5 @@
   },
   "os": [
     "darwin"
-  ],
-  "engines": {
-    "node": ">=22"
-  }
+  ]
 }

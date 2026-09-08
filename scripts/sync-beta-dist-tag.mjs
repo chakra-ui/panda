@@ -58,7 +58,12 @@ for (const { pkg } of stale) {
 }
 
 // Re-read rather than trusting the exit codes; a dist-tag write can report success and not stick.
-const unresolved = stale.filter(({ pkg }) => distTags(pkg.name)?.tags[tag] !== pkg.version)
+// The registry can take a while to serve a fresh tag, so poll before calling it a failure.
+let unresolved = stale
+for (let attempt = 0; attempt < 12 && unresolved.length; attempt++) {
+  if (attempt > 0) await new Promise((resolve) => setTimeout(resolve, 5000))
+  unresolved = unresolved.filter(({ pkg }) => distTags(pkg.name, { fresh: true })?.tags[tag] !== pkg.version)
+}
 if (unresolved.length || failed.length) {
   const names = [...new Set([...failed, ...unresolved.map(({ pkg }) => pkg.name)])]
   throw new Error(`Failed to move ${tag} for: ${names.join(', ')}`)
@@ -66,9 +71,11 @@ if (unresolved.length || failed.length) {
 
 console.log(`\nMoved ${tag} for ${stale.length} package(s).`)
 
-function distTags(name) {
+function distTags(name, { fresh = false } = {}) {
   try {
-    const raw = execFileSync('npm', ['view', name, 'dist-tags', 'versions', '--json'], {
+    const args = ['view', name, 'dist-tags', 'versions', '--json']
+    if (fresh) args.push('--prefer-online')
+    const raw = execFileSync('npm', args, {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
     })

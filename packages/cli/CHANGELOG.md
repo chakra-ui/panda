@@ -1,5 +1,47 @@
 # @pandacss/cli
 
+## 2.0.0-beta.16
+
+### Major Changes
+
+- ef14fc5: Remove the `syntax` config option and the `template-literal` authoring mode. Drop `syntax` from your config
+  and the `--syntax` flag from `panda init`, and write styles with the object syntax: `css({ color: 'red' })` instead of
+  `` css`color: red` ``.
+
+### Patch Changes
+
+- 80e62a1: Update `panda --help` for citty 0.2. Flags now show value hints (`--cwd=<dir>`), `--color` / `--no-color` are
+  both listed, and unknown-command errors drop the `[error]` prefix.
+- ce90eda: Keep `panda --help` readable. The `--cwd` flag no longer prints your resolved working directory as its
+  default, which was padding every other option off the right edge of the terminal.
+- b9e7cd9: Fail on non-numeric values for `--max-warnings`, `--watch-debounce`, `--limit`, and `--ui-port`. A typo like
+  `--max-warnings=abc` used to be ignored, which silently turned the warning gate off in CI.
+- Updated dependencies [a5bab14]
+- Updated dependencies [f583fb9]
+- Updated dependencies [6b04d94]
+- Updated dependencies [dfb17b2]
+- Updated dependencies [84720fc]
+- Updated dependencies [d94d26c]
+- Updated dependencies [c3702af]
+- Updated dependencies [dea1ef5]
+- Updated dependencies [a46ecb4]
+- Updated dependencies [ca9bb58]
+- Updated dependencies [c58d45d]
+- Updated dependencies [446210a]
+- Updated dependencies [9bdafba]
+- Updated dependencies [f583fb9]
+- Updated dependencies [b2294ca]
+- Updated dependencies [af261f5]
+- Updated dependencies [9da80e1]
+- Updated dependencies [ef14fc5]
+- Updated dependencies [064e58f]
+- Updated dependencies [ef68d33]
+- Updated dependencies [bcbcb22]
+  - @pandacss/config@2.0.0-beta.16
+  - @pandacss/compiler@2.0.0-beta.16
+  - @pandacss/compiler-shared@2.0.0-beta.16
+  - @pandacss/types@2.0.0-beta.16
+
 ## 2.0.0-beta.15
 
 ### Patch Changes

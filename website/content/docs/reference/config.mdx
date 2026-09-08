@@ -206,8 +206,8 @@ would result in:
 
 **Default**: `false`
 
-Whether to minify the generated css. This can be set to `true` to reduce the size of the generated css. Usually
-enabled in production only:
+Whether to minify the generated css. This can be set to `true` to reduce the size of the generated css. Usually enabled
+in production only:
 
 ```ts filename="panda.config.ts"
 minify: process.env.NODE_ENV === 'production'
@@ -298,8 +298,8 @@ Then the result looks like this:
 
 **Default**: `{}`
 
-CSS emission optimizations. Every optimization is opt-in. See
-[Optimization](/docs/styling/optimization) for when to turn each flag on.
+CSS emission optimizations. Every optimization is opt-in. See [Optimization](/docs/styling/optimization) for when to
+turn each flag on.
 
 ```json
 {
@@ -317,8 +317,8 @@ CSS emission optimizations. Every optimization is opt-in. See
 - `removeUnusedKeyframes` — remove unused keyframes based on extracted project usage.
 - `smartCompoundVariants` — narrow compound variant CSS to the variant combinations you actually use, instead of
   emitting every permutation.
-- `treeshakeDesignSystem` — hydrate only the build-info modules for the design-system exports your app imports. Namespace
-  and side-effect imports still hydrate everything.
+- `treeshakeDesignSystem` — hydrate only the build-info modules for the design-system exports your app imports.
+  Namespace and side-effect imports still hydrate everything.
 - `propertyFallback` — also seed `@property` registrations as plain declarations, for engines that ignore `@property`
   (Safari &lt; 16.4, Firefox &lt; 128) and would otherwise drop declarations that read an unregistered variable.
 
@@ -395,8 +395,8 @@ is the equivalent of:
 }
 ```
 
-Pass an array to match imports from more than one root, for example a shared design system package alongside the
-app's own local `styled-system` output:
+Pass an array to match imports from more than one root, for example a shared design system package alongside the app's
+own local `styled-system` output:
 
 ```json
 {
@@ -839,24 +839,6 @@ The global CSS variables for your project. A plain string emits the variable dir
       "syntax": "<color>",
       "inherits": false,
       "initialValue": "blue"
-    }
-  }
-}
-```
-
-### globalPositionTry
-
-**Type**: `Extendable<GlobalPositionTry>`
-
-**Default**: `{}`
-
-Global `@position-try` fallbacks for anchor positioning, keyed by the fallback name.
-
-```json
-{
-  "globalPositionTry": {
-    "--bottom": {
-      "top": "anchor(bottom)"
     }
   }
 }

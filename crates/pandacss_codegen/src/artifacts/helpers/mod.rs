@@ -23,6 +23,7 @@ pub fn module(ctx: CodegenContext<'_>) -> Module {
         .with_item(misc::is_base_condition())
         .with_item(misc::filter_base_conditions())
         .with_item(misc::to_hash())
+        .with_item(misc::stable_stringify())
         .with_item(token::to_css_var(ctx))
         .with_item(token::color_mix())
         .with_item(object::compact())

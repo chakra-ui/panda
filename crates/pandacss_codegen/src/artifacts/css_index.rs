@@ -8,7 +8,15 @@ use crate::{
 
 #[must_use]
 pub fn module(ctx: CodegenContext<'_>) -> Module {
-    let stems: &[&str] = &["css", "cva", "cx", "sva", "view-transition"];
+    let stems: &[&str] = &[
+        "css",
+        "cva",
+        "cx",
+        "sva",
+        "view-transition",
+        "position-try",
+        "keyframes",
+    ];
 
     // Deep `export *` per module so both runtime values and their `.d.ts` companions
     // flow through (same shape as recipes/patterns/jsx overlay barrels).

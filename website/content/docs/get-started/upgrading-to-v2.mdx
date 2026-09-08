@@ -49,9 +49,10 @@ pnpm add -D @pandacss/dev@beta
 Add integrations on the same tag when you need them: `@pandacss/postcss@beta`, `@pandacss/vite@beta`,
 `@pandacss/webpack@beta`, `@pandacss/rollup@beta`, or `@pandacss/bun@beta`.
 
-v2 is ESM only and needs Node 22 or newer. Set `"type": "module"` (or use `.mjs`) so your `panda.config.ts` loads as ESM.
+v2 is ESM only and needs Node 22 or newer. Set `"type": "module"` (or use `.mjs`) so your `panda.config.ts` loads as
+ESM.
 
-Want reproducible installs? Pin an exact version like `@pandacss/dev@2.0.0-beta.14`. `@beta` always resolves to the
+Want reproducible installs? Pin an exact version like `@pandacss/dev@2.0.0-beta.16`. `@beta` always resolves to the
 newest pre-release.
 
 ### Build
@@ -92,8 +93,8 @@ Hooks still exist, but they live on named plugins now, not a root `hooks` object
 // ❌ v1
 export default defineConfig({
   hooks: {
-    'cssgen:done': ({ content }) => content,
-  },
+    'cssgen:done': ({ content }) => content
+  }
 })
 
 // ✅ v2
@@ -104,11 +105,11 @@ export default defineConfig({
       hooks: {
         'parser:before': {
           filter: { id: '**/*.{jsx,tsx}' },
-          handler: ({ content }) => content,
-        },
-      },
-    },
-  ],
+          handler: ({ content }) => content
+        }
+      }
+    }
+  ]
 })
 ```
 
@@ -157,9 +158,9 @@ See [MCP server](/docs/get-started/mcp-server).
 
 These v1 internals are gone; their work lives in `@pandacss/compiler` now. Drop direct imports of `@pandacss/core`,
 `@pandacss/extractor`, `@pandacss/generator`, `@pandacss/node`, `@pandacss/parser`, `@pandacss/token-dictionary`,
-`@pandacss/is-valid-prop`, `@pandacss/logger`, `@pandacss/reporter`, and the Astro `@pandacss/studio`. The same goes
-for `@pandacss/plugin-vue` and `@pandacss/plugin-svelte`: the compiler reads `.vue`, `.svelte`, and `.astro` files
-directly, so remove them from `plugins`. If you only use `@pandacss/dev` plus Vite or PostCSS, you're fine.
+`@pandacss/is-valid-prop`, `@pandacss/logger`, `@pandacss/reporter`, and the Astro `@pandacss/studio`. The same goes for
+`@pandacss/plugin-vue` and `@pandacss/plugin-svelte`: the compiler reads `.vue`, `.svelte`, and `.astro` files directly,
+so remove them from `plugins`. If you only use `@pandacss/dev` plus Vite or PostCSS, you're fine.
 
 ### Config options removed
 
@@ -232,6 +233,8 @@ Beyond parity, v2 adds features worth turning on:
   `justifyContent: 'safe center'`.
 - **`viewTransition()`.** Style the View Transitions API and get a stable class back. See
   [View transitions](/docs/styling/view-transition).
+- **`positionTry()`.** Define CSS anchor-positioning fallbacks with a typed, tree-shaken factory. Replaces the removed
+  `globalPositionTry` config. See [Position try](/docs/styling/position-try).
 - **Cross-file composition and source transforms.** Compose `css.raw()` styles across files, and let bundler plugins
   rewrite static `css()` calls with `transform: true`.
 - **Smaller `.d.ts`.** `cva` / `sva` return types key on a clean props type, which unblocks `isolatedDeclarations`. See
@@ -239,8 +242,8 @@ Beyond parity, v2 adds features worth turning on:
 - **Design systems.** `panda lib` publishes a component library; apps consume it with the `designSystem` config field.
   It replaces `panda ship`. See [Build a design system](/docs/design-systems/build-a-design-system) and
   [Consume with Panda](/docs/design-systems/consume-with-panda).
-- **Linting on the v2 engine.** The [ESLint & oxlint plugin](/docs/get-started/linting) lints against the
-  same extraction the build uses.
+- **Linting on the v2 engine.** The [ESLint & oxlint plugin](/docs/get-started/linting) lints against the same
+  extraction the build uses.
 
 ## Still being finalized
 

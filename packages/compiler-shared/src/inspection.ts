@@ -1,6 +1,8 @@
 import type {
   FileInspectionBatch,
   FileInspectionResult,
+  NamedUsageItem,
+  NamedUsageReport,
   RecipeUsageItem,
   RecipeUsageReport,
   RecipeVariantUsage,
@@ -16,12 +18,22 @@ import type {
   UsageReportScope,
   UsageReportScopeOption,
   UsageReportSummary,
+  UsageReportUsage,
+  UsageReportUsageKind,
   UsageReportViews,
 } from './types/extraction'
 import type { SourceRange, Span } from './types/diagnostics'
 import type { Spec, SpecRecipe } from './types/output'
 
 const usageScopes: UsageReportScope[] = ['tokens', 'recipes', 'utilities', 'patterns', 'keyframes']
+
+const usageKinds: Record<UsageReportScope, UsageReportUsageKind> = {
+  tokens: 'token',
+  recipes: 'recipe',
+  utilities: 'utility',
+  patterns: 'pattern',
+  keyframes: 'keyframe',
+}
 
 export interface UsageReportOptions {
   scope?: UsageReportScopeOption
@@ -57,9 +69,11 @@ export function createUsageReport(inspection: FileInspectionBatch, options: Usag
   const seen = createSeenSets()
   const facts = createFacts(inspection, options)
   const files: UsageReport['files'] = []
+  const usages: UsageReportUsage[] = []
 
   for (const file of [...inspection.files].sort((a, b) => a.path.localeCompare(b.path))) {
     const counts = createEmptyCounts()
+    const fileUsages: UsageReportUsage[] = []
 
     visitUsage(file, (entry) => {
       if (!includesScope(scope, entry.scope)) return
@@ -67,6 +81,13 @@ export function createUsageReport(inspection: FileInspectionBatch, options: Usag
       counts[entry.scope] += 1
       summary[entry.scope].used += 1
       seen[entry.scope].add(entry.name)
+      fileUsages.push({
+        kind: usageKinds[entry.scope],
+        name: entry.name,
+        file: file.path,
+        line: entry.range.start.line,
+        column: entry.range.start.column,
+      })
     })
 
     const sourceUsages = totalUsages(counts)
@@ -78,6 +99,7 @@ export function createUsageReport(inspection: FileInspectionBatch, options: Usag
       diagnostics: file.diagnostics.length,
       sourceUsages,
     })
+    usages.push(...fileUsages.sort(compareUsageSites))
   }
 
   for (const key of usageScopes) {
@@ -94,11 +116,12 @@ export function createUsageReport(inspection: FileInspectionBatch, options: Usag
     summary,
     facts,
     files,
+    usages,
     sourceUsages: files.reduce((total, file) => total + file.sourceUsages, 0),
   }
 
   if (options.spec) {
-    report.views = createUsageViews(facts, options.spec)
+    report.views = createUsageViews(facts, options.spec, usages)
   }
 
   return report
@@ -256,9 +279,11 @@ function collectRecipeFacts(
   for (const style of ctx.file.styleEntries) {
     if (style.kind !== 'recipe-variant') continue
 
-    const recipeId = getRecipeId(facts, ctx.recipeIds, style.name, 0, false)
-    const variant = variantFromPath(style.path)
-    if (!variant) continue
+    const recipe = owningRecipeCall(ctx.file, style)
+    const variant = variantFromPath(style.path) ?? variantFromCallArg(style)
+    if (!recipe || !variant) continue
+
+    const recipeId = getRecipeId(facts, ctx.recipeIds, recipe, 0, false)
 
     facts.recipeVariantUsages.push({
       fileId: ctx.fileId,
@@ -271,11 +296,45 @@ function collectRecipeFacts(
   }
 }
 
-function createUsageViews(facts: UsageReportFacts, spec: Spec): UsageReportViews {
+function createUsageViews(facts: UsageReportFacts, spec: Spec, usages: UsageReportUsage[]): UsageReportViews {
   return {
     tokens: createTokenView(facts, spec),
     recipes: createRecipeView(facts),
+    utilities: createNamedView(usages, 'utility', canonicalUtilityNames(spec)),
+    patterns: createNamedView(usages, 'pattern', Object.keys(spec.patterns)),
+    keyframes: createNamedView(usages, 'keyframe', spec.keyframes?.keys ?? []),
   }
+}
+
+function createNamedView(
+  usages: UsageReportUsage[],
+  kind: UsageReportUsageKind,
+  configured: string[],
+): NamedUsageReport {
+  const counters = new Map<string, { uses: number; files: Set<string> }>()
+  for (const usage of usages) {
+    if (usage.kind !== kind) continue
+
+    const entry = counters.get(usage.name) ?? { uses: 0, files: new Set<string>() }
+    entry.uses += 1
+    entry.files.add(usage.file)
+    counters.set(usage.name, entry)
+  }
+
+  const items = [...counters.entries()]
+    .map(([name, entry]): NamedUsageItem => ({ name, uses: entry.uses, files: entry.files.size }))
+    .sort(compareUsageItems)
+  const unused = configured.filter((name) => !counters.has(name)).sort()
+  const total = configured.length
+  const used = total - unused.length
+
+  return { total, used, unused, percentUsed: percent(used, total), items }
+}
+
+/** Utility keys minus their shorthand aliases: `p` and `padding` are one utility. */
+function canonicalUtilityNames(spec: Spec): string[] {
+  const shorthands = new Set(Object.keys(spec.utilities.shorthands))
+  return Object.keys(spec.utilities.properties).filter((name) => !shorthands.has(name))
 }
 
 function applySummaryTotals(summary: UsageReportSummary, spec: Spec) {
@@ -284,7 +343,7 @@ function applySummaryTotals(summary: UsageReportSummary, spec: Spec) {
     0,
   )
   summary.recipes.total = Object.keys(spec.recipes).length + Object.keys(spec.slotRecipes).length
-  summary.utilities.total = Object.keys(spec.utilities.properties).length
+  summary.utilities.total = canonicalUtilityNames(spec).length
   summary.patterns.total = Object.keys(spec.patterns).length
   summary.keyframes.total = spec.keyframes?.keys.length ?? 0
 }
@@ -380,7 +439,12 @@ function createTokenView(facts: UsageReportFacts, spec: Spec): TokenUsageReport 
     .filter((entry) => entry.used > 0 || entry.rawValues.length > 0)
     .sort((a, b) => b.used - a.used || a.category.localeCompare(b.category))
 
-  return { categories }
+  const unused = facts.tokens
+    .filter((token) => token.configured && !tokenUses.has(token.id))
+    .map((token) => token.path)
+    .sort()
+
+  return { categories, unused }
 }
 
 function createRecipeView(facts: UsageReportFacts): RecipeUsageReport {
@@ -430,32 +494,65 @@ function createRecipeView(facts: UsageReportFacts): RecipeUsageReport {
     .filter((entry): entry is RecipeUsageItem => Boolean(entry))
     .sort((a, b) => b.usedVariantValues - a.usedVariantValues || a.name.localeCompare(b.name))
 
-  return { recipes }
+  const unused = facts.recipes
+    .filter((recipe) => recipe.configured && !recipeUses.has(recipe.id))
+    .map((recipe) => recipe.name)
+    .sort()
+
+  return { recipes, unused }
 }
 
-function visitUsage(
-  file: FileInspectionResult,
-  visit: (entry: { scope: UsageReportScope; name: string }) => void,
-): void {
+interface VisitedUsage {
+  scope: UsageReportScope
+  name: string
+  range: SourceRange
+}
+
+// Recipe-variant style entries are not visited: a variant selection belongs to
+// the recipe call or JSX element that is already counted.
+function visitUsage(file: FileInspectionResult, visit: (entry: VisitedUsage) => void): void {
   for (const usage of file.usages) {
-    if (usage.kind === 'token') visit({ scope: 'tokens', name: usage.name })
-    if (usage.kind === 'recipe') visit({ scope: 'recipes', name: usage.name })
-    if (usage.kind === 'pattern') visit({ scope: 'patterns', name: usage.name })
-    if (usage.kind === 'keyframe') visit({ scope: 'keyframes', name: usage.name })
+    if (usage.kind === 'token') visit({ scope: 'tokens', name: usage.name, range: usage.range })
+    if (usage.kind === 'recipe') visit({ scope: 'recipes', name: usage.name, range: usage.range })
+    if (usage.kind === 'pattern') visit({ scope: 'patterns', name: usage.name, range: usage.range })
+    if (usage.kind === 'keyframe') visit({ scope: 'keyframes', name: usage.name, range: usage.range })
   }
 
   for (const entry of file.componentEntries) {
     if (entry.kind === 'jsx-recipe' || entry.kind === 'jsx-slot-recipe') {
-      visit({ scope: 'recipes', name: entry.recipe ?? entry.name })
+      visit({ scope: 'recipes', name: entry.recipe ?? entry.name, range: entry.range })
     }
-    if (entry.kind === 'jsx-pattern') visit({ scope: 'patterns', name: entry.name })
+    if (entry.kind === 'jsx-pattern') {
+      visit({ scope: 'patterns', name: entry.pattern ?? entry.name, range: entry.range })
+    }
   }
 
   for (const style of file.styleEntries) {
-    if (style.kind === 'utility') visit({ scope: 'utilities', name: style.name })
-    if (style.kind === 'pattern-prop') visit({ scope: 'patterns', name: style.name })
-    if (style.kind === 'recipe-variant') visit({ scope: 'recipes', name: style.name })
+    if (style.kind === 'utility') {
+      visit({ scope: 'utilities', name: style.canonicalName ?? style.name, range: style.range })
+    }
+    if (style.kind === 'pattern-prop') visit({ scope: 'patterns', name: style.name, range: style.range })
   }
+}
+
+function compareUsageSites(a: UsageReportUsage, b: UsageReportUsage): number {
+  return a.line - b.line || a.column - b.column || a.kind.localeCompare(b.kind) || a.name.localeCompare(b.name)
+}
+
+/** Name of the configured recipe whose call owns this style entry, if any. */
+function owningRecipeCall(file: FileInspectionResult, style: StyleEntryRef): string | undefined {
+  if (style.owner.kind !== 'call') return undefined
+
+  const call = file.calls[style.owner.index]
+  return call?.category === 'recipe' ? call.name : undefined
+}
+
+/** `button({ size: 'sm' })` puts the variant at the top of the path. */
+function variantFromCallArg(style: StyleEntryRef): { variant: string; value: string } | undefined {
+  if (style.path.length !== 1) return undefined
+
+  const value = scalarString(style.sourceValue)
+  return value ? { variant: style.path[0]!, value } : undefined
 }
 
 function addConfiguredTokens(facts: UsageReportFacts, spec: Spec, scope: UsageReportScopeOption): Map<string, number> {

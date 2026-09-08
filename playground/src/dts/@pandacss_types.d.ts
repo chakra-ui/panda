@@ -10709,6 +10709,11 @@ export interface ViewTransitionStyleObject {
 }
 export type ViewTransitions = Record<string, ViewTransitionStyleObject>;
 export type ViewTransitionFn = (options: ViewTransitionStyleObject | string) => string;
+/** Named `@position-try` fallback bags. Referenced by `positionTry('name')`. */
+export type PositionTry = Record<string, SystemStyleObject>;
+export type PositionTryFn = (options: SystemStyleObject | string) => string;
+/** Inline `@keyframes` factory: `keyframes({...})` returns the animation name. Object form only. */
+export type KeyframesFn = (keyframe: CssKeyframes[string]) => string;
 export interface GlobalStyleObject {
 	[selector: string]: SystemStyleObject;
 }
@@ -11326,8 +11331,15 @@ export interface Theme {
 	animationStyles?: AnimationStyles;
 	/**
 	 * Named View Transition bags. Call `viewTransition('slide')` to use one.
+	 * Panda emits the shared `::view-transition-*` CSS; you still set unique
+	 * `view-transition-name` values at runtime.
 	 */
 	viewTransitions?: ViewTransitions;
+	/**
+	 * Named `@position-try` anchor-positioning fallbacks. Call `positionTry('bottom')`
+	 * to get the dashed-ident for `positionTryFallbacks`. Emitted only when used.
+	 */
+	positionTry?: PositionTry;
 	/**
 	 * Multi-variant style definitions for your project.
 	 * Useful for defining component styles.
@@ -11367,6 +11379,27 @@ export interface PartialTheme extends Omit<Theme, "recipes" | "slotRecipes"> {
 }
 export interface ExtendableTheme extends Theme {
 	extend?: PartialTheme | undefined;
+}
+export type CssPropertySyntax = "*" | "<length>" | "<number>" | "<percentage>" | "<length-percentage>" | "<color>" | "<image>" | "<url>" | "<integer>" | "<angle>" | "<time>" | "<resolution>" | "<transform-function>" | "<length> | <percentage>";
+export interface CssPropertyDefinition {
+	/**
+	 * Controls whether the custom property registration specified by @property inherits by default.
+	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@property/inherits
+	 */
+	inherits: boolean;
+	/**
+	 * Sets the initial value for the property.
+	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@property/initial-value
+	 */
+	initialValue?: string;
+	/**
+	 * Describes the allowable syntax for the property.
+	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@property/syntax
+	 */
+	syntax: LiteralUnion<CssPropertySyntax>;
+}
+export interface GlobalVarsDefinition {
+	[key: string]: string | CssPropertyDefinition;
 }
 export interface TokenFn {
 	(path: string): string | undefined;
@@ -11424,8 +11457,13 @@ export interface PropertyConfig {
 	 * Whether this utility is deprecated or not.
 	 */
 	deprecated?: boolean;
+	/**
+	 * `@property` registrations for the CSS variables this utility writes. Merged into the
+	 * config-level `globalVars`, and pruned when the stylesheet never references them.
+	 */
+	globalVars?: GlobalVarsDefinition;
 }
-export type CssSemanticGroup = "Animation" | "Background Gradient" | "Background" | "Border Radius" | "Border" | "Color" | "Container" | "Display" | "Focus Ring" | "Effect" | "Flex Layout" | "Grid Layout" | "Height" | "Interactivity" | "Layout" | "List" | "Margin" | "Other" | "Padding" | "Position" | "Scroll" | "Shadow" | "System" | "Table" | "Transform" | "Transition" | "Typography" | "Visibility" | "Width";
+export type CssSemanticGroup = "Animation" | "Background Gradient" | "Background" | "Border Radius" | "Border" | "Color" | "Container" | "Display" | "Focus Ring" | "Effect" | "Flex Layout" | "Grid Layout" | "Height" | "Interactivity" | "Layout" | "List" | "Margin" | "Mask" | "Other" | "Padding" | "Position" | "Scroll" | "Shadow" | "System" | "Table" | "Transform" | "Transition" | "Typography" | "Visibility" | "Width";
 export type UtilityConfig = {
 	[property in LiteralUnion<CssProperty>]?: PropertyConfig;
 };
@@ -11456,10 +11494,6 @@ export interface PresetCore {
 	 */
 	globalFontface?: GlobalFontface;
 	/**
-	 * The global custom position try fallback option
-	 */
-	globalPositionTry?: GlobalPositionTry;
-	/**
 	 * Used to generate css utility classes for your project.
 	 */
 	staticCss: StaticCssOptions;
@@ -11487,37 +11521,9 @@ export interface ExtendablePatterns {
 export interface ExtendableStaticCssOptions extends StaticCssOptions {
 	extend?: StaticCssOptions | undefined;
 }
-export type CssPropertySyntax = "*" | "<length>" | "<number>" | "<percentage>" | "<length-percentage>" | "<color>" | "<image>" | "<url>" | "<integer>" | "<angle>" | "<time>" | "<resolution>" | "<transform-function>" | "<length> | <percentage>";
-export interface CssPropertyDefinition {
-	/**
-	 * Controls whether the custom property registration specified by @property inherits by default.
-	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@property/inherits
-	 */
-	inherits: boolean;
-	/**
-	 * Sets the initial value for the property.
-	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@property/initial-value
-	 */
-	initialValue?: string;
-	/**
-	 * Describes the allowable syntax for the property.
-	 * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@property/syntax
-	 */
-	syntax: LiteralUnion<CssPropertySyntax>;
-}
-export interface GlobalVarsDefinition {
-	[key: string]: string | CssPropertyDefinition;
-}
 export interface ExtendableGlobalVars {
 	[key: string]: string | CssPropertyDefinition | GlobalVarsDefinition | undefined;
 	extend?: GlobalVarsDefinition;
-}
-export interface GlobalPositionTry {
-	[key: string]: SystemStyleObject;
-}
-export interface ExtendableGlobalPositionTry {
-	[key: string]: SystemStyleObject | GlobalPositionTry | undefined;
-	extend?: GlobalPositionTry | undefined;
 }
 export interface ThemeVariant extends Pick<Theme, "tokens" | "semanticTokens"> {
 }
@@ -11545,7 +11551,6 @@ export interface ExtendableOptions {
 	/**
 	 * The global custom position try fallback option
 	 */
-	globalPositionTry?: ExtendableGlobalPositionTry;
 	/**
 	 * Used to generate css utility classes for your project.
 	 */
@@ -11739,6 +11744,12 @@ export interface OptimizeOptions {
 	 * Off by default. Namespace / side-effect imports still hydrate everything.
 	 */
 	treeshakeDesignSystem?: boolean;
+	/**
+	 * Also seed `@property` registrations as plain declarations, for engines that ignore
+	 * `@property` (Safari < 16.4, Firefox < 128) and would otherwise drop any declaration
+	 * reading an unregistered variable. Off by default — modern engines don't need it.
+	 */
+	propertyFallback?: boolean;
 }
 export interface CodegenOptions {
 	/**

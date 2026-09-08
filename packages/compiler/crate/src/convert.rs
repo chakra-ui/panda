@@ -176,6 +176,10 @@ pub(crate) fn to_core_config(m: Matchers) -> pandacss_extractor::ExtractorConfig
         has_jsx_framework,
         class_attribute,
         token_dictionary,
+        // The flat `Matchers` wire shape carries no class-name prefix, so
+        // `positionTry(...)` folds to unprefixed idents on this free-function
+        // path. The session/project path sets the prefix from its config.
+        class_name_prefix: String::new(),
         // Cross-file resolution isn't on the flat `Matchers` shape — the
         // session class wires it up explicitly. Free-function callers
         // extract single files anyway, so a per-call cache wouldn't help.

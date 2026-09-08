@@ -1,5 +1,4 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { request } from 'node:http'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { runAnalyze } from '../src'
@@ -20,7 +19,7 @@ describe('cli analyze', () => {
       "import { css } from '@panda/css';\nimport { token } from '@panda/tokens';\ncss({ color: token('colors.red.500'), animationName: 'spin' })",
     )
 
-    const result = await runAnalyze({ cwd: dir, logLevel: 'silent', scope: 'all' })
+    const result = await runAnalyze({ cwd: dir, logLevel: 'silent' })
 
     expect(result.ok).toBe(true)
     expect(result.scope).toBe('all')
@@ -56,6 +55,7 @@ describe('cli analyze', () => {
         files: payload.facts.files.map((file) => ({ ...file, path: file.path.replace(dir!, '<fixture>') })),
       },
       files: payload.files.map((file) => ({ ...file, path: file.path.replace(dir!, '<fixture>') })),
+      usages: payload.usages.map((usage) => ({ ...usage, file: usage.file.replace(dir!, '<fixture>') })),
     }
 
     expect(normalized).toMatchInlineSnapshot(`
@@ -135,9 +135,33 @@ describe('cli analyze', () => {
             "used": 0,
           },
         },
+        "usages": [
+          {
+            "column": 14,
+            "file": "<fixture>/App.tsx",
+            "kind": "token",
+            "line": 3,
+            "name": "colors.red.500",
+          },
+        ],
         "views": {
+          "keyframes": {
+            "items": [],
+            "percentUsed": 0,
+            "total": 0,
+            "unused": [],
+            "used": 0,
+          },
+          "patterns": {
+            "items": [],
+            "percentUsed": 0,
+            "total": 0,
+            "unused": [],
+            "used": 0,
+          },
           "recipes": {
             "recipes": [],
+            "unused": [],
           },
           "tokens": {
             "categories": [
@@ -158,65 +182,163 @@ describe('cli analyze', () => {
                 "used": 1,
               },
             ],
+            "unused": [],
+          },
+          "utilities": {
+            "items": [],
+            "percentUsed": 0,
+            "total": 0,
+            "unused": [],
+            "used": 0,
           },
         },
       }
     `)
   })
 
-  it('writes a static HTML report directory', async () => {
-    dir = createFixture()
-    writeFileSync(
-      join(dir, 'App.tsx'),
-      "import { css } from '@panda/css';\nimport { token } from '@panda/tokens';\ncss({ color: token('colors.red.500') })",
+  it('prints ranked utilities, patterns, and keyframes with what the config declares but nobody uses', async () => {
+    dir = createFixture(
+      `export default {
+        outdir: 'styled-system',
+        include: ['**/*.tsx'],
+        importMap: {
+          css: ['@panda/css'],
+          pattern: ['@panda/patterns'],
+        },
+        theme: {
+          tokens: {
+            colors: { red: { 500: { value: '#f00' } } },
+            spacing: { 4: { value: '1rem' } },
+          },
+          keyframes: {
+            spin: { to: { transform: 'rotate(360deg)' } },
+            pulse: { to: { opacity: 0.5 } },
+          },
+        },
+        patterns: {
+          stack: { transform: (props) => props },
+          hstack: { transform: (props) => props },
+        },
+        utilities: {
+          color: { className: 'c', values: 'colors' },
+          padding: { className: 'p', shorthand: 'p', values: 'spacing' },
+          margin: { className: 'm', values: 'spacing' },
+        },
+      }`,
+      { source: false },
     )
-
-    const reportDir = join(dir, 'analysis', 'panda-report')
-    const result = await runAnalyze({ cwd: dir, logLevel: 'silent', scope: 'tokens', report: reportDir })
-
-    expect(result.ok).toBe(true)
-    expect(result.report).toBe(reportDir)
-    expect(existsSync(join(reportDir, 'index.html'))).toBe(true)
-    expect(existsSync(join(reportDir, 'data.json'))).toBe(true)
-
-    const html = readFileSync(join(reportDir, 'index.html'), 'utf8')
-    expect(html).toContain('<title>Panda analyze report</title>')
-    expect(html).toContain('id="panda-analyze-data"')
-
-    const payload = JSON.parse(readFileSync(join(reportDir, 'data.json'), 'utf8')) as AnalyzeReportPayload
-    expect(payload.facts.files).toHaveLength(1)
-    expect(payload.facts.tokenUsages).toHaveLength(1)
-  })
-
-  it('starts an analyze UI server with the latest report', async () => {
-    dir = createFixture()
     writeFileSync(
       join(dir, 'App.tsx'),
-      "import { css } from '@panda/css';\nimport { token } from '@panda/tokens';\ncss({ color: token('colors.red.500') })",
+      [
+        "import { css } from '@panda/css'",
+        "import { stack } from '@panda/patterns'",
+        "css({ color: 'red.500', p: '4', padding: '4', animationName: 'spin' })",
+        "stack({ gap: '4' })",
+      ].join('\n'),
     )
 
     const logs: string[] = []
-    const result = await runAnalyze(
-      { cwd: dir, logLevel: 'silent', scope: 'tokens', ui: true, uiPort: 0 },
-      { log: (message) => logs.push(message), error: (message) => logs.push(message) },
+    await runAnalyze({ cwd: dir }, { log: (message) => logs.push(message) })
+
+    expect(logs.join('\n')).toMatchInlineSnapshot(`
+      "analyze: scanned 1 files
+
+      Summary
+      tokens      3 uses, 2 unique
+      recipes     0 uses, 0 unique
+      utilities   3 uses, 2 unique
+      patterns    1 uses, 1 unique
+      keyframes   1 uses, 1 unique
+
+      Tokens
+      Category   Used            Top tokens    Raw values   Files
+      colors     1/1 (100.00%)   red.500 (1)   0            1
+      spacing    1/2 (50.00%)    4 (2)         0            1
+
+      No config recipes found
+
+      Utilities   2/4 used (50.00%)
+      Utility   Uses   Files
+      padding   2      1
+      color     1      1
+      Unused in scanned sources (2): colorPalette, margin
+
+      Patterns   1/2 used (50.00%)
+      Pattern   Uses   Files
+      stack     1      1
+      Unused in scanned sources (1): hstack
+
+      Keyframes   1/2 used (50.00%)
+      Keyframe   Uses   Files
+      spin       1      1
+      Unused in scanned sources (1): pulse"
+    `)
+
+    logs.length = 0
+    await runAnalyze({ cwd: dir, scope: 'keyframes' }, { log: (message) => logs.push(message) })
+
+    expect(logs.join('\n')).toMatchInlineSnapshot(`
+      "analyze: scanned 1 files
+
+      Keyframes   1/2 used (50.00%)
+      Keyframe   Uses   Files
+      spin       1      1
+      Unused in scanned sources (1): pulse"
+    `)
+  })
+
+  it('lists only what nobody uses, one name per line, with --unused', async () => {
+    dir = createFixture(
+      `export default {
+        outdir: 'styled-system',
+        include: ['**/*.tsx'],
+        importMap: { css: ['@panda/css'] },
+        theme: {
+          tokens: { colors: { red: { 500: { value: '#f00' } }, blue: { 500: { value: '#00f' } } } },
+          keyframes: { spin: { to: { transform: 'rotate(360deg)' } }, pulse: { to: { opacity: 0.5 } } },
+          recipes: { badge: { base: { color: 'red.500' } } },
+        },
+        patterns: { stack: { transform: (props) => props } },
+        utilities: {
+          color: { className: 'c', values: 'colors' },
+          margin: { className: 'm', values: 'spacing' },
+        },
+      }`,
+      { source: false },
+    )
+    writeFileSync(
+      join(dir, 'App.tsx'),
+      "import { css } from '@panda/css'\ncss({ color: 'red.500', animationName: 'spin' })",
     )
 
-    try {
-      expect(result.ok).toBe(true)
-      expect(result.ui).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/)
+    const logs: string[] = []
+    await runAnalyze({ cwd: dir, unused: true }, { log: (message) => logs.push(message) })
 
-      const html = await getHttpText(result.ui!)
-      expect(html).toContain('<title>Panda analyze report</title>')
-      expect(html).not.toContain('id="panda-analyze-data"')
+    expect(logs.join('\n')).toMatchInlineSnapshot(`
+      "analyze: scanned 1 files
+      Unused in scanned sources
 
-      const payload = await getHttpJson<AnalyzeReportPayload>(`${result.ui}/api/report`)
-      expect(payload.scope).toBe('tokens')
-      expect(payload.facts.files).toHaveLength(1)
-      expect(payload.facts.tokenUsages).toHaveLength(1)
-      expect(logs).toEqual([`analyze: UI running at ${result.ui}`, 'analyze: watching for changes'])
-    } finally {
-      await result.stop?.()
-    }
+      Tokens (1)
+      colors.blue.500
+
+      Recipes (1)
+      badge
+
+      Utilities (2)
+      colorPalette
+      margin
+
+      Patterns (1)
+      stack
+
+      Keyframes (1)
+      pulse"
+    `)
+
+    logs.length = 0
+    await runAnalyze({ cwd: dir, unused: true, scope: 'keyframes' }, { log: (message) => logs.push(message) })
+
+    expect(logs).toEqual(['pulse'])
   })
 
   it('prints a bounded token and recipe report', async () => {
@@ -268,7 +390,7 @@ describe('cli analyze', () => {
     )
 
     const logs: string[] = []
-    const result = await runAnalyze({ cwd: dir, scope: 'all', limit: 1 }, { log: (message) => logs.push(message) })
+    const result = await runAnalyze({ cwd: dir, limit: 1 }, { log: (message) => logs.push(message) })
 
     expect(result.ok).toBe(true)
     expect(logs.join('\n')).toMatchInlineSnapshot(`
@@ -287,36 +409,19 @@ describe('cli analyze', () => {
 
       Recipes
       Recipe   Variants       Top variants   Files   Used as
-      button   1/2 (50.00%)   size.sm (1)    1       jsx 100%, fn 0%"
+      button   1/2 (50.00%)   size.sm (1)    1       jsx 100%, fn 0%
+
+      Utilities   1/2 used (50.00%)
+      Utility   Uses   Files
+      color     1      1
+      Unused in scanned sources (1): colorPalette
+
+      No patterns found
+
+      No keyframes found"
     `)
   })
 })
-
-function getHttpText(url: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const req = request(url, (res) => {
-      let body = ''
-      res.setEncoding('utf8')
-      res.on('data', (chunk) => {
-        body += chunk
-      })
-      res.on('end', () => {
-        if (res.statusCode && res.statusCode >= 400) {
-          reject(new Error(`Request failed with status ${res.statusCode}`))
-          return
-        }
-        resolve(body)
-      })
-    })
-
-    req.on('error', reject)
-    req.end()
-  })
-}
-
-async function getHttpJson<T>(url: string): Promise<T> {
-  return JSON.parse(await getHttpText(url)) as T
-}
 
 interface AnalyzeReportPayload {
   sourceCount: number
@@ -341,4 +446,5 @@ interface AnalyzeReportPayload {
     diagnostics: number
     sourceUsages: number
   }>
+  usages: Array<{ kind: string; name: string; file: string; line: number; column: number }>
 }

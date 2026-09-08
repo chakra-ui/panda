@@ -40,6 +40,10 @@ pub enum UsageKind {
     Recipe,
     Pattern,
     Keyframe,
+    #[serde(rename = "view-transition")]
+    ViewTransition,
+    #[serde(rename = "position-try")]
+    PositionTry,
 }
 
 #[derive(Debug, Clone, Serialize)]

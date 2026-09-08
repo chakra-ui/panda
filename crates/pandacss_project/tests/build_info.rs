@@ -31,9 +31,9 @@ fn build_info_emits_interned_atoms_with_per_module_provenance() {
     // `color: red` is shared, so it appears once in `atoms` and is referenced by
     // both modules; `padding`/`margin` are module-local.
     assert_yaml_snapshot!(info, @"
-    schemaVersion: 5
+    schemaVersion: 6
     panda: ^2.0.0
-    configFingerprint: cfg1-e34170613f41c279
+    configFingerprint: cfg1-a3d145687e038e7c
     strings:
       - color
       - red
@@ -1160,6 +1160,86 @@ fn build_info_serializes_view_transitions_with_per_module_provenance() {
 }
 
 #[test]
+fn build_info_serializes_inline_keyframes_with_per_module_provenance() {
+    let mut project = create_project(json!({}));
+    project.parse_file(
+        "fade.ts",
+        indoc! {r"
+            import { keyframes } from '@panda/css';
+            export const fade = keyframes({ from: { opacity: 0 }, to: { opacity: 1 } });
+        "},
+    );
+    project.parse_file(
+        "spin.ts",
+        indoc! {r"
+            import { keyframes } from '@panda/css';
+            export const spin = keyframes({ to: { transform: 'rotate(360deg)' } });
+        "},
+    );
+
+    let info = project.build_info("^2.0.0".into());
+    assert_eq!(info.keyframes.len(), 2);
+    assert_eq!(info.modules["fade.ts"].keyframes.len(), 1);
+    assert_eq!(info.modules["spin.ts"].keyframes.len(), 1);
+    assert_ne!(
+        info.modules["fade.ts"].keyframes,
+        info.modules["spin.ts"].keyframes
+    );
+
+    let fade_name = pandacss_shared::keyframes_name(
+        &json!({ "from": { "opacity": 0 }, "to": { "opacity": 1 } }),
+        "",
+    );
+    let names: Vec<&str> = info
+        .keyframes
+        .iter()
+        .map(|kf| info.strings[kf.name as usize].as_str())
+        .collect();
+    assert!(names.contains(&fade_name.as_str()));
+}
+
+#[test]
+fn hydrate_round_trips_inline_keyframes_with_tree_shake() {
+    let mut source = create_project(json!({}));
+    source.parse_file(
+        "fade.ts",
+        indoc! {r"
+            import { keyframes } from '@panda/css';
+            export const fade = keyframes({ from: { opacity: 0 }, to: { opacity: 1 } });
+        "},
+    );
+    source.parse_file(
+        "spin.ts",
+        indoc! {r"
+            import { keyframes } from '@panda/css';
+            export const spin = keyframes({ to: { transform: 'rotate(360deg)' } });
+        "},
+    );
+    let info = source.build_info("^2.0.0".into());
+    let json = serde_json::to_string(&info).expect("serialize");
+    let restored: BuildInfo = serde_json::from_str(&json).expect("deserialize");
+
+    let mut consumer = create_project(json!({}));
+    assert!(consumer.hydrate("@acme/ds", &restored, Some(&["fade.ts".into()])));
+
+    let config = create_config(json!({}));
+    let snaps = consumer.stylesheet_snapshots(&config);
+    let fade_name = pandacss_shared::keyframes_name(
+        &json!({ "from": { "opacity": 0 }, "to": { "opacity": 1 } }),
+        "",
+    );
+    let spin_name =
+        pandacss_shared::keyframes_name(&json!({ "to": { "transform": "rotate(360deg)" } }), "");
+    let names: Vec<&str> = snaps
+        .inline_keyframes
+        .iter()
+        .map(|kf| kf.name.as_str())
+        .collect();
+    assert_eq!(names, [fade_name.as_str()]);
+    assert!(!names.contains(&spin_name.as_str()));
+}
+
+#[test]
 fn hydrate_round_trips_view_transitions_with_tree_shake() {
     let mut source = create_project(json!({}));
     source.parse_file(
@@ -1612,4 +1692,230 @@ fn a_consumer_without_the_transform_callback_still_hydrates() {
     let snapshots = consumer.stylesheet_snapshots(&config);
     assert!(snapshots.utility_styles.is_empty());
     assert_eq!(snapshots.atoms.len(), 1);
+}
+
+#[test]
+fn build_info_serializes_position_try_with_per_module_provenance() {
+    let mut project = create_project(json!({}));
+    project.parse_file(
+        "bottom.ts",
+        indoc! {r"
+            import { positionTry } from '@panda/css';
+            export const bottom = positionTry({ top: 'anchor(bottom)' });
+        "},
+    );
+    project.parse_file(
+        "start.ts",
+        indoc! {r"
+            import { positionTry } from '@panda/css';
+            export const start = positionTry({ insetInlineStart: 'anchor(start)' });
+        "},
+    );
+    project.parse_file(
+        "bottom-again.ts",
+        indoc! {r"
+            import { positionTry } from '@panda/css';
+            export const bottom2 = positionTry({ top: 'anchor(bottom)' });
+        "},
+    );
+
+    let info = project.build_info("^2.0.0".into());
+    assert_eq!(info.position_try.len(), 2);
+    assert_eq!(info.modules["bottom.ts"].position_try.len(), 1);
+    assert_eq!(info.modules["start.ts"].position_try.len(), 1);
+    assert_eq!(
+        info.modules["bottom.ts"].position_try,
+        info.modules["bottom-again.ts"].position_try
+    );
+    assert_ne!(
+        info.modules["bottom.ts"].position_try,
+        info.modules["start.ts"].position_try
+    );
+
+    let bottom_ident = pandacss_shared::position_try_ident(&json!({ "top": "anchor(bottom)" }), "");
+    let start_ident =
+        pandacss_shared::position_try_ident(&json!({ "insetInlineStart": "anchor(start)" }), "");
+    let idents: Vec<&str> = info
+        .position_try
+        .iter()
+        .map(|pt| info.strings[pt.ident as usize].as_str())
+        .collect();
+    assert!(idents.contains(&bottom_ident.as_str()));
+    assert!(idents.contains(&start_ident.as_str()));
+}
+
+#[test]
+fn hydrate_round_trips_position_try_with_tree_shake() {
+    let mut source = create_project(json!({}));
+    source.parse_file(
+        "bottom.ts",
+        indoc! {r"
+            import { positionTry } from '@panda/css';
+            export const bottom = positionTry({ top: 'anchor(bottom)' });
+        "},
+    );
+    source.parse_file(
+        "start.ts",
+        indoc! {r"
+            import { positionTry } from '@panda/css';
+            export const start = positionTry({ insetInlineStart: 'anchor(start)' });
+        "},
+    );
+    let info = source.build_info("^2.0.0".into());
+    let json = serde_json::to_string(&info).expect("serialize");
+    let restored: BuildInfo = serde_json::from_str(&json).expect("deserialize");
+
+    let mut consumer = create_project(json!({}));
+    assert!(consumer.hydrate("@acme/ds", &restored, Some(&["bottom.ts".into()])));
+
+    let config = create_config(json!({}));
+    let snaps = consumer.stylesheet_snapshots(&config);
+    let bottom_ident = pandacss_shared::position_try_ident(&json!({ "top": "anchor(bottom)" }), "");
+    let start_ident =
+        pandacss_shared::position_try_ident(&json!({ "insetInlineStart": "anchor(start)" }), "");
+    let idents: Vec<&str> = snaps
+        .position_try
+        .iter()
+        .map(|style| style.ident.as_str())
+        .collect();
+    assert_eq!(idents, [bottom_ident.as_str()]);
+    assert!(!idents.contains(&start_ident.as_str()));
+}
+
+#[test]
+fn build_info_excludes_hydrated_parent_position_try() {
+    let mut parent = create_project(json!({}));
+    parent.parse_file(
+        "bottom.ts",
+        indoc! {r"
+            import { positionTry } from '@panda/css';
+            export const bottom = positionTry({ top: 'anchor(bottom)' });
+        "},
+    );
+    let parent_info = parent.build_info("^2.0.0".into());
+
+    let mut middle = create_project(json!({}));
+    assert!(middle.hydrate("@acme/base", &parent_info, None));
+    middle.parse_file(
+        "local.ts",
+        indoc! {r"
+            import { positionTry } from '@panda/css';
+            export const local = positionTry({ insetInlineEnd: 'anchor(end)' });
+        "},
+    );
+    let middle_info = middle.build_info("^2.0.0".into());
+
+    assert_eq!(middle_info.position_try.len(), 1);
+    let local_ident =
+        pandacss_shared::position_try_ident(&json!({ "insetInlineEnd": "anchor(end)" }), "");
+    assert_eq!(
+        middle_info.strings[middle_info.position_try[0].ident as usize],
+        local_ident
+    );
+}
+
+#[test]
+fn hydrate_rejects_corrupt_position_try_ident_index() {
+    let mut source = create_project(json!({}));
+    source.parse_file(
+        "bottom.ts",
+        indoc! {r"
+            import { positionTry } from '@panda/css';
+            export const bottom = positionTry({ top: 'anchor(bottom)' });
+        "},
+    );
+    let mut info = source.build_info("^2.0.0".into());
+    assert!(!info.position_try.is_empty());
+    info.position_try[0].ident = 999_999;
+
+    let mut consumer = create_project(json!({}));
+    assert!(!consumer.hydrate("@acme/ds", &info, None));
+}
+
+#[test]
+fn build_info_ships_a_referenced_named_theme_position_try() {
+    // A design system defines a named bag and references it in its own source.
+    // The resolved block must reach build info so a consumer hydrates the CSS
+    // without needing the design system's theme.
+    let mut ds = create_project(json!({
+        "theme": { "positionTry": { "bottom": { "top": "anchor(bottom)" } } },
+    }));
+    ds.parse_file(
+        "anchor.ts",
+        indoc! {r"
+            import { positionTry } from '@panda/css';
+            export const fallback = positionTry('bottom');
+        "},
+    );
+    let info = ds.build_info("^2.0.0".into());
+    assert_eq!(info.position_try.len(), 1);
+    assert_eq!(
+        info.strings[info.position_try[0].ident as usize],
+        "--pt_bottom"
+    );
+
+    // Consumer has no theme.positionTry; hydration alone must emit the block.
+    let json = serde_json::to_string(&info).expect("serialize");
+    let restored: BuildInfo = serde_json::from_str(&json).expect("deserialize");
+    let mut consumer = create_project(json!({}));
+    assert!(consumer.hydrate("@acme/ds", &restored, None));
+
+    let config = create_config(json!({}));
+    let snaps = consumer.stylesheet_snapshots(&config);
+    let idents: Vec<&str> = snaps
+        .position_try
+        .iter()
+        .map(|s| s.ident.as_str())
+        .collect();
+    assert_eq!(idents, ["--pt_bottom"]);
+}
+
+#[test]
+fn build_info_round_trips_a_position_try_fallback_atom_and_block() {
+    // A design system uses positionTry() as a value inside css(). Build info must
+    // carry both the folded `position-try-fallbacks` atom and the `@position-try`
+    // block, and a consumer with no theme must hydrate both.
+    let mut ds = create_project(json!({
+        "theme": { "positionTry": { "flip": { "top": "anchor(bottom)" } } },
+    }));
+    ds.parse_file(
+        "anchor.ts",
+        indoc! {r"
+            import { css, positionTry } from '@panda/css';
+            export const cls = css({ positionTryFallbacks: positionTry('flip') });
+        "},
+    );
+
+    // The producer serializes the folded atom and the resolved block.
+    assert_yaml_snapshot!(sorted_atoms(&ds), @r#"
+    - prop: positionTryFallbacks
+      value: "--pt_flip"
+      conditions: []
+    "#);
+    let info = ds.build_info("^2.0.0".into());
+    assert_eq!(info.position_try.len(), 1);
+    assert_eq!(
+        info.strings[info.position_try[0].ident as usize],
+        "--pt_flip"
+    );
+
+    // A consumer with no theme.positionTry hydrates both from build info alone.
+    let json = serde_json::to_string(&info).expect("serialize");
+    let restored: BuildInfo = serde_json::from_str(&json).expect("deserialize");
+    let mut consumer = create_project(json!({}));
+    assert!(consumer.hydrate("@acme/ds", &restored, None));
+
+    assert_yaml_snapshot!(sorted_atoms(&consumer), @r#"
+    - prop: positionTryFallbacks
+      value: "--pt_flip"
+      conditions: []
+    "#);
+    let config = create_config(json!({}));
+    let snaps = consumer.stylesheet_snapshots(&config);
+    let idents: Vec<&str> = snaps
+        .position_try
+        .iter()
+        .map(|s| s.ident.as_str())
+        .collect();
+    assert_eq!(idents, ["--pt_flip"]);
 }
