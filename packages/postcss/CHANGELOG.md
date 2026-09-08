@@ -1,5 +1,32 @@
 # @pandacss/postcss
 
+## 2.0.0-beta.16
+
+### Patch Changes
+
+- Updated dependencies [f583fb9]
+- Updated dependencies [6b04d94]
+- Updated dependencies [dfb17b2]
+- Updated dependencies [84720fc]
+- Updated dependencies [d94d26c]
+- Updated dependencies [c3702af]
+- Updated dependencies [dea1ef5]
+- Updated dependencies [a46ecb4]
+- Updated dependencies [ca9bb58]
+- Updated dependencies [c58d45d]
+- Updated dependencies [446210a]
+- Updated dependencies [9bdafba]
+- Updated dependencies [f583fb9]
+- Updated dependencies [b2294ca]
+- Updated dependencies [af261f5]
+- Updated dependencies [9da80e1]
+- Updated dependencies [ef14fc5]
+- Updated dependencies [064e58f]
+- Updated dependencies [ef68d33]
+- Updated dependencies [bcbcb22]
+  - @pandacss/compiler@2.0.0-beta.16
+  - @pandacss/compiler-shared@2.0.0-beta.16
+
 ## 2.0.0-beta.15
 
 ### Patch Changes

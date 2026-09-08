@@ -1,5 +1,32 @@
 # playground
 
+## 0.1.1-beta.14
+
+### Patch Changes
+
+- Updated dependencies [a5bab14]
+- Updated dependencies [f583fb9]
+- Updated dependencies [6b04d94]
+- Updated dependencies [dfb17b2]
+- Updated dependencies [84720fc]
+- Updated dependencies [c3702af]
+- Updated dependencies [dea1ef5]
+- Updated dependencies [ca9bb58]
+- Updated dependencies [c58d45d]
+- Updated dependencies [f583fb9]
+- Updated dependencies [b2294ca]
+- Updated dependencies [af261f5]
+- Updated dependencies [9da80e1]
+- Updated dependencies [ef14fc5]
+- Updated dependencies [4943d03]
+- Updated dependencies [bcbcb22]
+  - @pandacss/config@2.0.0-beta.16
+  - @pandacss/compiler-wasm@2.0.0-beta.16
+  - @pandacss/compiler-shared@2.0.0-beta.16
+  - @pandacss/preset-typography@2.0.0-beta.16
+  - @pandacss/preset-base@2.0.0-beta.16
+  - @pandacss/preset-panda@2.0.0-beta.16
+
 ## 0.1.1-beta.13
 
 ### Patch Changes
