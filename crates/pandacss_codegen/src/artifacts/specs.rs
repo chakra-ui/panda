@@ -102,12 +102,29 @@ fn category_relative_path<'a>(path: &'a str, category: &TokenCategory) -> &'a st
         .unwrap_or(path)
 }
 
-fn resolve_value<'a>(dictionary: &'a TokenDictionary, value: &'a str) -> &'a str {
-    let mut current = value;
-    for _ in 0..8 {
-        match dictionary.token_by_var(current) {
-            Some(token) if token.value.as_ref() != current => current = &token.value,
-            _ => return current,
+fn resolve_value(dictionary: &TokenDictionary, value: &str) -> String {
+    let mut current = value.to_owned();
+    for _ in 0..16 {
+        let mut search_from = 0;
+        let mut replaced = false;
+        while let Some(offset) = current[search_from..].find("var(--") {
+            let start = search_from + offset;
+            let Some(rel_end) = current[start..].find(')') else {
+                break;
+            };
+            let end = start + rel_end + 1;
+            match dictionary.token_by_var(&current[start..end]) {
+                Some(token) if token.value.as_ref() != &current[start..end] => {
+                    let replacement = token.value.to_string();
+                    current.replace_range(start..end, &replacement);
+                    replaced = true;
+                    break;
+                }
+                _ => search_from = end,
+            }
+        }
+        if !replaced {
+            break;
         }
     }
     current

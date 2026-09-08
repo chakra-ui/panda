@@ -71,7 +71,7 @@ fn emits_raw_tokens_without_semantic_tokens() {
             },
             {
               "name": "-4",
-              "value": "calc(var(--spacing-4) * -1)"
+              "value": "calc(1rem * -1)"
             }
           ]
         }
