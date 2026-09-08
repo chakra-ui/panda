@@ -115,6 +115,11 @@ export const infoFlagsSchema = commonFlagsSchema.pick({
   traceFile: true,
 })
 
+export const specFlagsSchema = infoFlagsSchema.omit({ include: true }).extend({
+  outdir: stringFlag,
+  minify: booleanFlag,
+})
+
 // `doctor` reports config-resolved watch targets and never takes a one-off
 // `--include` override (that belongs on scan commands).
 export const doctorFlagsSchema = infoFlagsSchema.omit({ include: true })
@@ -141,6 +146,7 @@ export type BuildFlags = FlagsInfer<typeof buildFlagsSchema>
 export type InitFlags = FlagsInfer<typeof initFlagsSchema>
 export type BuildinfoFlags = FlagsInfer<typeof buildinfoFlagsSchema>
 export type LibFlags = FlagsInfer<typeof libFlagsSchema>
+export type SpecFlags = FlagsInfer<typeof specFlagsSchema>
 export type DoctorFlags = FlagsInfer<typeof doctorFlagsSchema>
 export type DebugFlags = FlagsInfer<typeof debugFlagsSchema>
 type AnalyzeScopeRaw = FlagsInfer<typeof analyzeFlagsSchema>['scope']
@@ -160,7 +166,13 @@ export interface LibResult extends CommandResult<NodeDriver> {
   manifestPath?: string
   buildInfoPath?: string
   presetPath?: string
+  specPath?: string
   exportsChanged: boolean
+}
+
+export interface SpecResult extends CommandResult<NodeDriver> {
+  outfile?: string
+  bytes: number
 }
 
 export interface CommandResult<TDriver extends Driver = Driver> extends CliResult {

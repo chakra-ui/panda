@@ -4,12 +4,12 @@
 
 use serde::{Deserialize, Serialize};
 
-/// Bumped when the wire shape changes; a version mismatch surfaces a diagnostic
-/// rather than mis-reading the manifest.
+/// Bumped for incompatible wire changes; additive optional fields remain readable
+/// by older consumers.
 pub const MANIFEST_SCHEMA_VERSION: u32 = 1;
 
-/// The published `panda/lib.json` record. `preset` / `buildInfo` are relative to
-/// the manifest directory; `files` are relative to the lib outdir.
+/// The published `panda/lib.json` record. `preset`, `buildInfo`, and `spec` are
+/// relative to the manifest directory; `files` are relative to the lib outdir.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DesignSystemManifest {
@@ -22,6 +22,9 @@ pub struct DesignSystemManifest {
     pub panda: String,
     pub preset: String,
     pub build_info: String,
+    /// Versioned semantic spec for documentation and external tooling.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub spec: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub import_map: Option<ManifestImportMap>,
     /// Parent design system package name. Omitted at a root.
@@ -62,6 +65,8 @@ pub struct ManifestInput {
     pub preset: String,
     pub build_info: String,
     #[serde(default)]
+    pub spec: Option<String>,
+    #[serde(default)]
     pub import_map: Option<ManifestImportMap>,
     #[serde(default)]
     pub design_system: Option<String>,
@@ -86,6 +91,7 @@ impl super::Project {
             panda: input.panda,
             preset: input.preset,
             build_info: input.build_info,
+            spec: input.spec,
             import_map: input.import_map,
             design_system: input.design_system,
             files: input.files,

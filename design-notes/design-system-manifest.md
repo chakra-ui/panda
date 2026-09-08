@@ -31,7 +31,8 @@ export default {
 ```
 
 The library publishes one manifest, `panda/lib.json`. The manifest points to the library preset, portable build info,
-import roots, fallback files, and optional parent design system. The author creates all of it with:
+versioned design-system spec, import roots, fallback files, and optional parent design system. The author creates all of
+it with:
 
 ```sh
 panda lib
@@ -109,8 +110,8 @@ hash-space questions. We should not add that surface without clear demand.
 ## The manifest is the package contract
 
 The library publishes machine artifacts under a private `panda/` folder. Consumers resolve
-`@acme/ds/panda/lib.json`. `preset` and `buildInfo` are relative to the manifest file; `files` are relative to the
-lib outdir (parent of `panda/`). The same layout works from `node_modules`, a workspace symlink, or a Docker layer.
+`@acme/ds/panda/lib.json`. `preset`, `buildInfo`, and `spec` are relative to the manifest file; `files` are relative to
+the lib outdir (parent of `panda/`). The same layout works from `node_modules`, a workspace symlink, or a Docker layer.
 
 ```jsonc
 {
@@ -120,6 +121,7 @@ lib outdir (parent of `panda/`). The same layout works from `node_modules`, a wo
   "panda": "^2.0.0", // peer range the consumer must satisfy
   "preset": "./preset.mjs", // compiled preset module
   "buildInfo": "./buildinfo.json",
+  "spec": "./spec.json", // resolved, versioned design-system catalog
   "importMap": {
     "css": "@acme/ds/css",
     "recipes": "@acme/ds/recipes",
@@ -136,6 +138,8 @@ Field meanings:
 
 - `preset`: compiled `.mjs` config. It carries token definitions, recipes, utilities, conditions, and font-face config.
 - `buildInfo`: portable extraction cache. It carries token usage and encoded atoms/recipes.
+- `spec`: resolved design-system definitions for documentation and external tooling. Panda consumers do not need it to
+  compile CSS.
 - `importMap`: package roots used by the library's compiled JSX.
 - `designSystem`: this library's parent design system, if any.
 - `panda` and `schemaVersion`: compatibility guards.
@@ -172,6 +176,7 @@ It writes:
 dist/panda/lib.json
 dist/panda/buildinfo.json
 dist/panda/preset.mjs
+dist/panda/spec.json
 ```
 
 `preset.mjs` is bundled from the author config, but app-only fields are stripped:
@@ -269,7 +274,7 @@ Turbo-style setup:
   "tasks": {
     "lib": {
       "dependsOn": ["^lib"],
-      "outputs": ["dist/panda/lib.json", "dist/panda/buildinfo.json", "dist/panda/preset.mjs"],
+      "outputs": ["dist/panda/lib.json", "dist/panda/buildinfo.json", "dist/panda/preset.mjs", "dist/panda/spec.json"],
     },
     "dev": {
       "cache": false,
@@ -294,6 +299,7 @@ Nx-style setup:
         "{projectRoot}/dist/panda/lib.json",
         "{projectRoot}/dist/panda/buildinfo.json",
         "{projectRoot}/dist/panda/preset.mjs",
+        "{projectRoot}/dist/panda/spec.json",
       ],
       "cache": true,
     },

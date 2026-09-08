@@ -13,6 +13,7 @@ fn full_input() -> ManifestInput {
         "panda": "^2.0.0",
         "preset": "./preset.mjs",
         "buildInfo": "./buildinfo.json",
+        "spec": "./spec.json",
         "importMap": { "css": "@acme/ds/css", "recipes": "@acme/ds/recipes" },
         "designSystem": "@acme/foundations",
         "files": ["../src/**/*.{js,mjs}"],
@@ -29,6 +30,7 @@ fn stamps_schema_version_and_carries_input_fields() {
     assert_eq!(manifest.name, "@acme/ds");
     assert_eq!(manifest.version.as_deref(), Some("1.2.3"));
     assert_eq!(manifest.panda, "^2.0.0");
+    assert_eq!(manifest.spec.as_deref(), Some("./spec.json"));
     assert_eq!(manifest.design_system.as_deref(), Some("@acme/foundations"));
     assert_eq!(
         manifest.import_map.as_ref().and_then(|m| m.css.as_deref()),
@@ -56,6 +58,7 @@ fn omits_optional_fields_when_absent() {
     assert!(json.get("version").is_none());
     assert!(json.get("importMap").is_none());
     assert!(json.get("designSystem").is_none());
+    assert!(json.get("spec").is_none());
     assert!(json.get("files").is_none());
 }
 

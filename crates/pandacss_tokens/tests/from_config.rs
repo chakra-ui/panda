@@ -6,7 +6,7 @@
 use crate::common::{snapshot_token_values, snapshot_tokens};
 use insta::assert_yaml_snapshot;
 use pandacss_config::UserConfig;
-use pandacss_tokens::TokenDictionary;
+use pandacss_tokens::{TokenCategory, TokenDictionary};
 use serde_json::json;
 
 #[test]
@@ -136,6 +136,48 @@ fn from_config_collects_theme_tokens_semantic_tokens_and_breakpoints() {
     redDeprecated: true
     darkFg: "#fff"
     "##);
+}
+
+#[test]
+fn literal_semantic_tokens_remain_identifiable_after_resolution() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "semanticTokens": {
+                "colors": {
+                    "accent": { "value": "#ff00aa" }
+                }
+            }
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert!(dict.is_semantic_token("colors.accent"));
+}
+
+#[test]
+fn primitive_token_aliases_are_not_classified_as_semantic_tokens() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "brand": { "value": "#0055ff" },
+                    "alias": { "value": "{colors.brand}" }
+                }
+            }
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert!(!dict.is_semantic_token("colors.alias"));
+    assert!(!dict.has_semantic_tokens(&TokenCategory::Colors));
 }
 
 #[test]

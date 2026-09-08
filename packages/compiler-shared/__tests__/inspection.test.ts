@@ -475,7 +475,24 @@ const rawRange: SourceRange = {
   end: { line: 2, column: 10 },
 }
 const spec: Spec = {
+  schemaVersion: 1,
+  options: { strictTokens: false, strictPropertyValues: false, jsxStyleProps: 'all' },
+  catalog: {
+    conditions: {},
+    tokens: {},
+    recipes: {},
+    slotRecipes: {},
+    patterns: {},
+    keyframes: {},
+    textStyles: {},
+    layerStyles: {},
+    animationStyles: {},
+    viewTransitions: {},
+    positionTry: {},
+    themes: {},
+  },
   conditions: { keys: [], breakpoints: [], containers: [] },
+  selectors: { selectors: [], arbitrary: [] },
   tokens: {
     categories: {
       colors: { name: 'colors', typeName: 'ColorsToken', values: ['red.500', 'blue.500'] },
@@ -486,10 +503,20 @@ const spec: Spec = {
   },
   utilities: {
     properties: {
-      color: { name: 'color', tokenCategory: 'colors', literals: [], alias: 'ColorsValue' },
+      color: {
+        name: 'color',
+        cssProperty: null,
+        mappedCssProperty: null,
+        tokenCategory: 'colors',
+        literals: [],
+        primitive: null,
+        alias: 'ColorsValue',
+      },
     },
     shorthands: {},
     deprecated: {},
+    aliases: {},
+    classNames: {},
   },
   keyframes: { keys: ['spin'] },
   patterns: {},
@@ -505,6 +532,8 @@ const spec: Spec = {
   },
   slotRecipes: {},
   propertyOrder: [],
+  jsxFactory: null,
+  importMap: null,
 }
 function file(input: Partial<FileInspectionResult> = {}): FileInspectionResult {
   return {

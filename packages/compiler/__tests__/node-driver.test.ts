@@ -733,6 +733,7 @@ describe('NodeDriver writeDesignSystemLib', () => {
       manifestPath: join(dir, 'dist', 'panda', 'lib.json'),
       buildInfoPath: join(dir, 'dist', 'panda', 'buildinfo.json'),
       presetPath: join(dir, 'dist', 'panda', 'preset.mjs'),
+      specPath: join(dir, 'dist', 'panda', 'spec.json'),
       exportsChanged: true,
       parsedFileCount: 1,
       diagnostics: [],
@@ -747,6 +748,7 @@ describe('NodeDriver writeDesignSystemLib', () => {
         "panda": "^2.0.0",
         "preset": "./preset.mjs",
         "buildInfo": "./buildinfo.json",
+        "spec": "./spec.json",
         "importMap": {
           "css": "@acme/ds/css",
           "recipes": "@acme/ds/recipes",
@@ -759,6 +761,8 @@ describe('NodeDriver writeDesignSystemLib', () => {
         ],
       }
     `)
+
+    expect(JSON.parse(readFileSync(join(dir, 'dist', 'panda', 'spec.json'), 'utf8')).schemaVersion).toBe(1)
 
     const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
     expect(pkg.exports).toMatchInlineSnapshot(`
@@ -852,8 +856,9 @@ describe('NodeDriver writeDesignSystemLib', () => {
     expect(result.diagnostics.filter((d) => d.code === 'design_system_files_not_publishable')).toEqual([])
   })
 
-  it('does not publish hydrated parent build info as fallback files', async () => {
-    dir = createLibProject("  designSystem: '@acme/foundations',")
+  it('writes a resolved child spec without publishing parent build info as fallback files', async () => {
+    dir = createLibProject(`  designSystem: '@acme/foundations',
+  theme: { tokens: { colors: { child: { value: '#222' } } } },`)
 
     const parent = createProject()
     parent.parseFileSource('surface.tsx', "import { css } from '@panda/css'; css({ color: 'teal' })")
@@ -872,7 +877,8 @@ describe('NodeDriver writeDesignSystemLib', () => {
         buildInfo: './buildinfo.json',
         importMap: { css: '@acme/foundations/css' },
       }),
-      'node_modules/@acme/foundations/panda/preset.mjs': 'export default { name: "@acme/foundations" }',
+      'node_modules/@acme/foundations/panda/preset.mjs':
+        'export default { name: "@acme/foundations", theme: { tokens: { colors: { parent: { value: "#111" } } } } }',
       'node_modules/@acme/foundations/panda/buildinfo.json': JSON.stringify(
         parent.buildInfo.create({ panda: '^2.0.0' }),
       ),
@@ -890,6 +896,7 @@ describe('NodeDriver writeDesignSystemLib', () => {
         "panda": "^2.0.0",
         "preset": "./preset.mjs",
         "buildInfo": "./buildinfo.json",
+        "spec": "./spec.json",
         "importMap": {
           "css": "@acme/ds/css",
           "recipes": "@acme/ds/recipes",
@@ -903,6 +910,9 @@ describe('NodeDriver writeDesignSystemLib', () => {
         ],
       }
     `)
+
+    const spec = JSON.parse(readFileSync(join(dir, 'dist', 'panda', 'spec.json'), 'utf8'))
+    expect(Object.keys(spec.catalog.tokens)).toEqual(expect.arrayContaining(['colors.parent', 'colors.child']))
   })
 
   it('does not write artifacts when diagnostics fail the warning budget', async () => {

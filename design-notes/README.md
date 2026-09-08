@@ -15,6 +15,8 @@ Some topics span several notes. Keep the detailed contract in one place and link
   diagnostics, and current built/deferred status.
 - `build-info.md` owns the portable build-info payload, token identity, hydration, module/export tree-shaking, and
   stacked hydrate semantics.
+- `design-system-spec.md` owns the versioned `compiler.spec()` and `spec.json` contract, catalog contents, and adapter
+  boundary.
 - `virtual-styled-system.md` owns the canonical DS `styled-system` package surface, dual importMap behavior, and overlay
   codegen plan.
 - `chakra-ui-design-system-migration.md` applies those contracts to Chakra. It should not redefine the generic
@@ -67,6 +69,8 @@ Some topics span several notes. Keep the detailed contract in one place and link
 - [Build info](./build-info.md) — `panda.buildinfo.json`: the portable encoder state a design system ships, its
   condensed format, per-module tree-shaking + import resolution, stacked DS-on-DS consume sketch, the version guard, and
   the engine/JS/CLI layering.
+- [Design-system spec artifact](./design-system-spec.md) — the versioned `compiler.spec()` snapshot and `spec.json`
+  artifact: resolved catalog definitions, deterministic serialization, dynamic-config boundary, and external adapters.
 - [Design-system manifest](./design-system-manifest.md) — `designSystem: '@acme/ds'`: the `panda/lib.json` manifest,
   gen + load as fs-free compiler methods (`compiler.designSystem.*`), the parent-chain walk for nested design systems,
   module/type resolution, setup diagnostics, and the incremental PR breakdown.

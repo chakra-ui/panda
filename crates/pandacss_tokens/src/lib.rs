@@ -415,9 +415,7 @@ impl TokenDictionary {
 
     #[must_use]
     pub fn is_semantic_token(&self, path: &str) -> bool {
-        self.token(path)
-            .and_then(|token| parse_token_ref(token.original_value.as_deref()))
-            .is_some()
+        self.token(path).is_some_and(|token| token.semantic)
     }
 
     #[must_use]

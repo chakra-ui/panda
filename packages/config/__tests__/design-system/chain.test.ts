@@ -280,6 +280,7 @@ describe('resolveAuthoredPresets / designSystem', () => {
     ['schemaVersion', { schemaVersion: 0 }, 'positive integer "schemaVersion"'],
     ['name', { name: '  ' }, 'missing a "name" entry'],
     ['panda', { panda: '' }, 'missing a "panda" entry'],
+    ['spec', { spec: [] }, '"spec" entry'],
     ['files', { files: './button.js' }, '"files" entry'],
     ['importMap', { importMap: { css: ['@acme/ds/css'] } }, '"importMap.css" entry'],
   ])('validates the complete manifest shape before loading its preset (%s)', async (field, manifest, message) => {

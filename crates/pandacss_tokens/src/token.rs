@@ -27,6 +27,8 @@ pub struct Token {
     pub var: Arc<str>,
     pub category: TokenCategory,
     pub condition: Option<Arc<str>>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub semantic: bool,
     /// Pre-alias-substitution value; `None` once references are expanded.
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub original_value: Option<Arc<str>>,
@@ -57,6 +59,8 @@ struct TokenWire {
     category: TokenCategory,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     condition: Option<String>,
+    #[serde(default, skip_serializing_if = "is_false")]
+    semantic: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     original_value: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -78,6 +82,7 @@ impl From<TokenWire> for Token {
             var: Arc::from(value.var),
             category: value.category,
             condition: value.condition.map(Arc::from),
+            semantic: value.semantic,
             original_value: value.original_value.map(Arc::from),
             description: value.description.map(Arc::from),
             deprecated: value.deprecated,
@@ -96,6 +101,7 @@ impl From<Token> for TokenWire {
             var: value.var.to_string(),
             category: value.category,
             condition: value.condition.map(|value| value.to_string()),
+            semantic: value.semantic,
             original_value: value.original_value.map(|value| value.to_string()),
             description: value.description.map(|value| value.to_string()),
             deprecated: value.deprecated,
@@ -119,6 +125,7 @@ impl Token {
             var: Arc::from(var.as_ref()),
             category,
             condition: None,
+            semantic: false,
             original_value: None,
             description: None,
             deprecated: false,
@@ -130,6 +137,12 @@ impl Token {
     #[must_use]
     pub fn with_condition(mut self, condition: impl AsRef<str>) -> Self {
         self.condition = Some(Arc::from(condition.as_ref()));
+        self
+    }
+
+    #[must_use]
+    pub fn semantic(mut self) -> Self {
+        self.semantic = true;
         self
     }
 
@@ -173,4 +186,13 @@ impl Token {
             .into_iter()
             .flat_map(|m| m.iter().map(|(k, v)| (k.as_str(), v.as_str())))
     }
+}
+
+#[cfg(feature = "serde")]
+#[allow(
+    clippy::trivially_copy_pass_by_ref,
+    reason = "serde `skip_serializing_if` requires `fn(&T) -> bool`"
+)]
+fn is_false(value: &bool) -> bool {
+    !value
 }

@@ -10,6 +10,7 @@ const fullInput: DesignSystemManifestInput = {
   panda: '^2.0.0',
   preset: './preset.mjs',
   buildInfo: './buildinfo.json',
+  spec: './spec.json',
   importMap: { css: '@acme/ds/css', recipes: '@acme/ds/recipes' },
   designSystem: '@acme/foundations',
   files: ['./dist/**/*.mjs'],
@@ -27,6 +28,7 @@ describe('compiler.designSystem', () => {
       panda: '^2.0.0',
       preset: './preset.mjs',
       buildInfo: './buildinfo.json',
+      spec: './spec.json',
       importMap: { css: '@acme/ds/css', recipes: '@acme/ds/recipes' },
       designSystem: '@acme/foundations',
       files: ['./dist/**/*.mjs'],
@@ -44,6 +46,7 @@ describe('compiler.designSystem', () => {
     expect(manifest.version).toBeUndefined()
     expect(manifest.importMap).toBeUndefined()
     expect(manifest.designSystem).toBeUndefined()
+    expect(manifest.spec).toBeUndefined()
     expect('files' in manifest).toBe(false)
   })
 
