@@ -104,26 +104,31 @@ fn category_relative_path<'a>(path: &'a str, category: &TokenCategory) -> &'a st
 
 fn resolve_value(dictionary: &TokenDictionary, value: &str) -> String {
     let mut current = value.to_owned();
-    for _ in 0..16 {
-        let mut search_from = 0;
-        let mut replaced = false;
-        while let Some(offset) = current[search_from..].find("var(--") {
-            let start = search_from + offset;
-            let Some(rel_end) = current[start..].find(')') else {
+    for _ in 0..32 {
+        let mut next = String::with_capacity(current.len());
+        let mut rest = current.as_str();
+        let mut changed = false;
+        while let Some(offset) = rest.find("var(--") {
+            let (before, after) = rest.split_at(offset);
+            next.push_str(before);
+            let Some(rel_end) = after.find(')') else {
+                next.push_str(after);
+                rest = "";
                 break;
             };
-            let end = start + rel_end + 1;
-            match dictionary.token_by_var(&current[start..end]) {
-                Some(token) if token.value.as_ref() != &current[start..end] => {
-                    let replacement = token.value.to_string();
-                    current.replace_range(start..end, &replacement);
-                    replaced = true;
-                    break;
+            let (var_ref, tail) = after.split_at(rel_end + 1);
+            match dictionary.token_by_var(var_ref) {
+                Some(token) if token.value.as_ref() != var_ref => {
+                    next.push_str(&token.value);
+                    changed = true;
                 }
-                _ => search_from = end,
+                _ => next.push_str(var_ref),
             }
+            rest = tail;
         }
-        if !replaced {
+        next.push_str(rest);
+        current = next;
+        if !changed {
             break;
         }
     }
