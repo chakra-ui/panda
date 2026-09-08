@@ -40,6 +40,30 @@ export function Colors() {
 Every category shares the `{ name, value }` shape — swap `'colors'` for `'spacing'`, `'fonts'`, or `'radii'`. See
 [JSON Spec](/docs/theming/json-spec) for the full file.
 
+## Theme-aware tokens
+
+Semantic tokens — values that change with a condition like dark mode — live in `styled-system/specs/semantic-tokens.json`,
+each with its per-condition values:
+
+```json
+{
+  "data": [
+    {
+      "type": "colors",
+      "values": [
+        {
+          "name": "fg",
+          "values": [
+            { "condition": "base", "value": "#ef4444" },
+            { "condition": "_dark", "value": "#2563eb" }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
 ## Or use the viewer
 
 Don't want to build one? [Panda Spec Studio](https://panda-spec-studio-web.vercel.app/) is a ready-made viewer — drop

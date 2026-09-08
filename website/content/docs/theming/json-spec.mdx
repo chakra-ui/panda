@@ -12,8 +12,8 @@ A spec is a readable JSON representation of the theme structure in your panda co
 
 ## Spec Generation
 
-Run `panda codegen` (or a full `panda` build) and Panda writes `styled-system/specs/tokens.json`. The other files below
-describe the wider shape this format is moving toward — today only `tokens.json` is emitted.
+Run `panda codegen` (or a full `panda` build) and Panda writes `styled-system/specs/tokens.json` and
+`styled-system/specs/semantic-tokens.json`. The other files below describe the wider shape this format is moving toward.
 
 ## Spec Output
 
@@ -111,7 +111,6 @@ modes (e.g., light/dark).
 
 ```json
 {
-  "type": "semantic-tokens",
   "data": [
     {
       "type": "colors",
@@ -119,30 +118,21 @@ modes (e.g., light/dark).
         {
           "name": "bg",
           "values": [
-            { "value": "{colors.white}", "condition": "base" },
-            { "value": "{colors.dark}", "condition": "dark" }
-          ],
-          "cssVar": "var(--colors-bg)"
+            { "condition": "base", "value": "#ffffff" },
+            { "condition": "_dark", "value": "#0a0a0a" }
+          ]
         }
-      ],
-      "tokenFunctionExamples": ["token('colors.bg')", "token.var('colors.bg')"],
-      "functionExamples": ["css({ color: 'bg' })"],
-      "jsxExamples": ["<Box color='bg' />"]
+      ]
     }
   ]
 }
 ```
 
-Each semantic token in the `values` array includes:
+Each category is `{ type, values }`, and each semantic token in the `values` array includes:
 
 - **name**: the semantic token key (e.g., `bg`, `fg.muted`, `accent`)
-- **values**: an array of conditional mappings, each with:
-  - **value**: the resolved token reference (e.g., `{colors.white}`)
-  - **condition**: the condition name (e.g., `base`, `dark`)
-- **cssVar**: the generated CSS custom property
-- **tokenFunctionExamples**: examples of how to use the token in the `token` function
-- **functionExamples**: examples of how to use the token in the `css` function
-- **jsxExamples**: examples of how to use the token in JSX
+- **values**: an array of conditional mappings, each with a **condition** (e.g., `base`, `_dark`) and its resolved
+  **value**
 
 #### Usage
 
@@ -158,7 +148,6 @@ const Demo = () => {
       {colors?.values.map(token => (
         <div key={token.name}>
           <p>{token.name}</p>
-          <p>{token.cssVar}</p>
           <div>
             {token.values.map(({ condition, value }) => (
               <div key={condition}>
