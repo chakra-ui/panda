@@ -267,6 +267,7 @@ export const docsTabs: TabItem[] = [
       {
         title: 'Customization',
         items: [
+          { title: 'Theme', url: 'customize-theme' },
           { title: 'Utilities', url: 'utilities' },
           { title: 'Conditions', url: 'conditions' },
           { title: 'Patterns', url: 'patterns' },

@@ -4,32 +4,19 @@ description: The breakpoints, tokens, and keyframes Panda ships with, and how to
 ---
 
 Panda comes with a default theme that is used to generate the utilities for your project. It's provided by the
-[Panda preset](/docs/theming/presets), and you can customize any part of it to match your design requirements. Put
-your changes under `extend` so the defaults stay. See [Extending a preset](/docs/theming/presets#extending-a-preset).
+[Panda preset](/docs/theming/presets), and you can customize any part of it to match your design requirements. Put your
+changes under `extend` so the defaults stay. See [Extending a preset](/docs/theming/presets#extending-a-preset).
 
 ## Breakpoints
-
-Use the `breakpoints` key in the `theme` section of your Panda config file to customize the default breakpoints.
-
-```ts filename="panda.config.ts"
-import { defineConfig } from '@pandacss/dev'
-
-export default defineConfig({
-  theme: {
-    extend: {
-      breakpoints: {
-        '3xl': '1800px'
-      }
-    }
-  }
-})
-```
 
 Panda ships with the following breakpoints by default:
 
 <TokenDocs type="breakpoints" />
 
 ## Tokens
+
+A token is a named value, `brand` instead of `#EA8433`. Panda groups them into categories like colors, spacing,
+and radii, each shown below with its defaults. See [Tokens](/docs/theming/tokens) for the full token format.
 
 ### Colors
 
