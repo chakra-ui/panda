@@ -1160,6 +1160,86 @@ fn build_info_serializes_view_transitions_with_per_module_provenance() {
 }
 
 #[test]
+fn build_info_serializes_inline_keyframes_with_per_module_provenance() {
+    let mut project = create_project(json!({}));
+    project.parse_file(
+        "fade.ts",
+        indoc! {r"
+            import { keyframes } from '@panda/css';
+            export const fade = keyframes({ from: { opacity: 0 }, to: { opacity: 1 } });
+        "},
+    );
+    project.parse_file(
+        "spin.ts",
+        indoc! {r"
+            import { keyframes } from '@panda/css';
+            export const spin = keyframes({ to: { transform: 'rotate(360deg)' } });
+        "},
+    );
+
+    let info = project.build_info("^2.0.0".into());
+    assert_eq!(info.keyframes.len(), 2);
+    assert_eq!(info.modules["fade.ts"].keyframes.len(), 1);
+    assert_eq!(info.modules["spin.ts"].keyframes.len(), 1);
+    assert_ne!(
+        info.modules["fade.ts"].keyframes,
+        info.modules["spin.ts"].keyframes
+    );
+
+    let fade_name = pandacss_shared::keyframes_name(
+        &json!({ "from": { "opacity": 0 }, "to": { "opacity": 1 } }),
+        "",
+    );
+    let names: Vec<&str> = info
+        .keyframes
+        .iter()
+        .map(|kf| info.strings[kf.name as usize].as_str())
+        .collect();
+    assert!(names.contains(&fade_name.as_str()));
+}
+
+#[test]
+fn hydrate_round_trips_inline_keyframes_with_tree_shake() {
+    let mut source = create_project(json!({}));
+    source.parse_file(
+        "fade.ts",
+        indoc! {r"
+            import { keyframes } from '@panda/css';
+            export const fade = keyframes({ from: { opacity: 0 }, to: { opacity: 1 } });
+        "},
+    );
+    source.parse_file(
+        "spin.ts",
+        indoc! {r"
+            import { keyframes } from '@panda/css';
+            export const spin = keyframes({ to: { transform: 'rotate(360deg)' } });
+        "},
+    );
+    let info = source.build_info("^2.0.0".into());
+    let json = serde_json::to_string(&info).expect("serialize");
+    let restored: BuildInfo = serde_json::from_str(&json).expect("deserialize");
+
+    let mut consumer = create_project(json!({}));
+    assert!(consumer.hydrate("@acme/ds", &restored, Some(&["fade.ts".into()])));
+
+    let config = create_config(json!({}));
+    let snaps = consumer.stylesheet_snapshots(&config);
+    let fade_name = pandacss_shared::keyframes_name(
+        &json!({ "from": { "opacity": 0 }, "to": { "opacity": 1 } }),
+        "",
+    );
+    let spin_name =
+        pandacss_shared::keyframes_name(&json!({ "to": { "transform": "rotate(360deg)" } }), "");
+    let names: Vec<&str> = snaps
+        .inline_keyframes
+        .iter()
+        .map(|kf| kf.name.as_str())
+        .collect();
+    assert_eq!(names, [fade_name.as_str()]);
+    assert!(!names.contains(&spin_name.as_str()));
+}
+
+#[test]
 fn hydrate_round_trips_view_transitions_with_tree_shake() {
     let mut source = create_project(json!({}));
     source.parse_file(

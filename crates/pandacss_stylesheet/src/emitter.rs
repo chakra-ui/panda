@@ -13,9 +13,9 @@ use pandacss_encoder::{
 };
 use pandacss_extractor::Literal;
 use pandacss_shared::{
-    Diagnostic, PositionTryStyle, ViewTransitionStyle, css_escape, diagnostic_codes,
-    find_matching_paren, hyphenate_property, number_to_js_string, split_important, to_hash,
-    without_space,
+    Diagnostic, InlineKeyframe, PositionTryStyle, ViewTransitionStyle, css_escape,
+    diagnostic_codes, find_matching_paren, hyphenate_property, number_to_js_string,
+    split_important, to_hash, without_space,
 };
 use pandacss_tokens::{TokenCssConditionVars, TokenCssVar, TokenCssVars, TokenDictionary};
 use pandacss_utility::{
@@ -63,6 +63,7 @@ pub(crate) struct EmitInput<'a> {
     pub utility_styles: &'a UtilityStyleOverrides,
     pub view_transitions: &'a [ViewTransitionStyle],
     pub position_try: &'a [PositionTryStyle],
+    pub inline_keyframes: &'a [InlineKeyframe],
 }
 
 /// Toggle flags for full stylesheet [`emit`].
@@ -95,6 +96,7 @@ pub(crate) fn emit(input: EmitInput<'_>, options: EmitOptions) -> EmitOutput {
         utility_styles,
         view_transitions,
         position_try,
+        inline_keyframes,
     } = input;
     let EmitOptions {
         minify,
@@ -131,7 +133,8 @@ pub(crate) fn emit(input: EmitInput<'_>, options: EmitOptions) -> EmitOutput {
     }
     atoms = dedup_atom_refs(atoms);
 
-    let keyframes = as_non_empty_object(&config.theme.keyframes);
+    let merged_keyframes = merge_keyframes(&config.theme.keyframes, inline_keyframes);
+    let keyframes = merged_keyframes.as_ref();
     // `@property` pruning needs usage before the base layer is written.
     let usage = if config.optimize.remove_unused_tokens
         || config.optimize.remove_unused_keyframes
@@ -292,6 +295,7 @@ pub(crate) fn emit_keyframes(input: EmitInput<'_>, options: EmitKeyframesOptions
         utility_styles,
         view_transitions,
         position_try: _,
+        inline_keyframes,
     } = input;
     let EmitKeyframesOptions {
         minify,
@@ -312,7 +316,8 @@ pub(crate) fn emit_keyframes(input: EmitInput<'_>, options: EmitKeyframesOptions
     }
     atoms = dedup_atom_refs(atoms);
 
-    let keyframes = as_non_empty_object(&config.theme.keyframes);
+    let merged_keyframes = merge_keyframes(&config.theme.keyframes, inline_keyframes);
+    let keyframes = merged_keyframes.as_ref();
     let usage = if config.optimize.remove_unused_keyframes {
         Some(cx.collect_usage(
             tokens.dictionary,
@@ -586,6 +591,23 @@ fn as_non_empty_object(value: &Value) -> Option<&serde_json::Map<String, Value>>
         return None;
     };
     (!entries.is_empty()).then_some(entries)
+}
+
+/// Merge `theme.keyframes` with inline `keyframes({…})` blocks into one
+/// name→stops map, so emission and unused-keyframe pruning treat both alike.
+fn merge_keyframes(
+    theme: &Value,
+    inline: &[InlineKeyframe],
+) -> Option<serde_json::Map<String, Value>> {
+    let base = as_non_empty_object(theme);
+    if inline.is_empty() {
+        return base.cloned();
+    }
+    let mut merged = base.cloned().unwrap_or_default();
+    for keyframe in inline {
+        merged.insert(keyframe.name.clone(), keyframe.stops.clone());
+    }
+    (!merged.is_empty()).then_some(merged)
 }
 
 fn has_used_keyframes(

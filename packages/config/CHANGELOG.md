@@ -1,5 +1,19 @@
 # @pandacss/config
 
+## 2.0.0-beta.16
+
+### Patch Changes
+
+- a5bab14: Report config load failures against the config file instead of a base64 `data:` URL. A missing dependency now
+  reads `Cannot find package 'x' imported from …`, and your config is no longer evaluated twice on failure.
+- Updated dependencies [dfb17b2]
+- Updated dependencies [dea1ef5]
+- Updated dependencies [c58d45d]
+- Updated dependencies [af261f5]
+- Updated dependencies [ef14fc5]
+  - @pandacss/compiler-shared@2.0.0-beta.16
+  - @pandacss/types@2.0.0-beta.16
+
 ## 2.0.0-beta.15
 
 ### Minor Changes

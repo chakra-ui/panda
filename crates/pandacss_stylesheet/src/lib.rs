@@ -17,7 +17,7 @@ mod writer;
 
 pub use emitter::UtilityStyleOverrides;
 pub use layers::{has_layer_declaration, strip_layer_order_statements};
-pub use pandacss_shared::{PositionTryStyle, ViewTransitionStyle};
+pub use pandacss_shared::{InlineKeyframe, PositionTryStyle, ViewTransitionStyle};
 pub use selector::{PREFLIGHT_ROOT, ScopeMode, scope_selector, split_selector_list};
 pub use sort::order_properties;
 
@@ -161,6 +161,7 @@ pub struct StylesheetInput<'a> {
     pub utility_styles: &'a emitter::UtilityStyleOverrides,
     pub view_transitions: &'a [ViewTransitionStyle],
     pub position_try: &'a [PositionTryStyle],
+    pub inline_keyframes: &'a [InlineKeyframe],
 }
 
 /// Whether the config requests any static CSS: top-level `staticCss.*` or
@@ -261,6 +262,7 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
             utility_styles: input.utility_styles,
             view_transitions: input.view_transitions,
             position_try: input.position_try,
+            inline_keyframes: input.inline_keyframes,
         },
         emitter::EmitOptions {
             minify: options.minify,
@@ -336,6 +338,7 @@ pub fn compile_keyframes(
             utility_styles: input.utility_styles,
             view_transitions: input.view_transitions,
             position_try: input.position_try,
+            inline_keyframes: input.inline_keyframes,
         },
         emitter::EmitKeyframesOptions {
             minify: options.minify,
@@ -417,6 +420,7 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Sp
             utility_styles: input.utility_styles,
             view_transitions: input.view_transitions,
             position_try: input.position_try,
+            inline_keyframes: input.inline_keyframes,
         },
         emitter::EmitOptions {
             minify: options.minify,

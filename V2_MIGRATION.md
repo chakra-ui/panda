@@ -88,7 +88,7 @@ You can wire up PostCSS two ways:
 - `@pandacss/dev/postcss` — the same plugin re-exported, so you don't need a second install if you already have
   `@pandacss/dev`. This is what `panda init --postcss` writes.
 
-Want reproducible installs? Pin an exact version (`@pandacss/dev@2.0.0-beta.0`). `@beta` always resolves to the newest
+Want reproducible installs? Pin an exact version (`@pandacss/dev@2.0.0-beta.16`). `@beta` always resolves to the newest
 pre-release.
 
 ### 3. Build

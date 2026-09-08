@@ -105,6 +105,90 @@ Panda runs two passes at build time, so the browser never computes styles:
 Values have to be visible in source. If a style only exists at runtime, see
 [Dynamic Styles](/docs/styling/dynamic-styling). Folder details: [Styled System](/docs/reference/styled-system).
 
+## The compiled output
+
+Here is the whole trip for one component, with [source transforms](/docs/styling/source-transforms) on
+(`transform: true` on the bundler plugin). The second and third tabs are the compiler's actual output for the first.
+
+<Tabs items={['You write', 'Panda emits', 'Your bundle ships']}>
+  <Tab>
+    ```tsx filename="Card.tsx"
+    import { css } from '../styled-system/css'
+
+    export function Card() {
+      return (
+        <div
+          className={css({
+            display: 'flex',
+            gap: '4',
+            p: '4',
+            rounded: 'md',
+            bg: 'white',
+            _hover: { bg: 'gray.50' }
+          })}
+        >
+          <span className={css({ fontWeight: 'semibold', color: 'gray.900' })}>John Doe</span>
+        </div>
+      )
+    }
+    ```
+
+  </Tab>
+  <Tab>
+    ```css filename="styles.css"
+    @layer utilities {
+      .bg_white {
+        background: var(--colors-white);
+      }
+      .p_4 {
+        padding: var(--spacing-4);
+      }
+      .bdr_md {
+        border-radius: var(--radii-md);
+      }
+      .gap_4 {
+        gap: var(--spacing-4);
+      }
+      .c_gray\.900 {
+        color: var(--colors-gray-900);
+      }
+      .d_flex {
+        display: flex;
+      }
+      .fw_semibold {
+        font-weight: var(--font-weights-semibold);
+      }
+      .hover\:bg_gray\.50:is(:hover, [data-hover]) {
+        background: var(--colors-gray-50);
+      }
+    }
+    ```
+
+  </Tab>
+  <Tab>
+    ```tsx filename="Card.js"
+    // vite: pandacss({ transform: true })
+    export function Card() {
+      return (
+        <div
+          className={"bg_white bdr_md d_flex gap_4 p_4 hover:bg_gray.50"}
+        >
+          <span className={"c_gray.900 fw_semibold"}>John Doe</span>
+        </div>
+      )
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+The stylesheet is a static file and the component is a string. The `css` import is gone because there was nothing
+left for it to do, so no styling code reaches the browser.
+
+Transforms are opt-in. Without them the CSS is the same, but the `css` call stays in the client bundle and a small
+runtime joins the class names. Server components get the same result with no transform, since `css()` runs on the
+server.
+
 ## What you get
 
 - **Static analysis:** Panda parses your styles at build time and generates plain CSS files that work in any JavaScript

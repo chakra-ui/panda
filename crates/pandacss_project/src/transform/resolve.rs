@@ -4,7 +4,7 @@ use std::collections::HashSet;
 
 use pandacss_encoder::{Atom, Encoder, compare_atoms_by_emit_order};
 use pandacss_extractor::{CallFacts, ExpressionKind, ExtractedCall, Literal, StyleTree};
-use pandacss_shared::{position_try_ident, view_transition_class_name};
+use pandacss_shared::CssFactory;
 use pandacss_utility::ShorthandPolicy;
 
 use crate::PatternTransformFn;
@@ -274,36 +274,27 @@ fn css_callee(source: &str, facts: &CallFacts) -> Option<String> {
     span_slice(source, facts.callee_span).map(str::to_owned)
 }
 
-pub(crate) fn rewrite_for_position_try_call(
+/// Inline a css factory call to its generated name: object form hashes, string
+/// form resolves a named `theme` bag. Dynamic/unknown args don't rewrite.
+pub(crate) fn rewrite_for_css_factory_call(
     project: &Project,
+    factory: CssFactory,
     span: pandacss_shared::Span,
     args: &[Option<Literal>],
 ) -> Option<Rewrite> {
     let arg = args.first()?.as_ref()?;
-    let ident = match arg {
-        Literal::Object(_) => {
-            position_try_ident(&arg.to_json(), &project.config().class_name_prefix)
-        }
-        Literal::String(name) => project.config().position_try(name)?.ident.clone(),
+    let name = match arg {
+        Literal::Object(_) => factory.ident(&arg.to_json(), &project.config().class_name_prefix),
+        Literal::String(name) => match factory {
+            CssFactory::PositionTry => project.config().position_try(name)?.ident.clone(),
+            CssFactory::ViewTransition => {
+                project.config().view_transition(name)?.class_name.clone()
+            }
+            CssFactory::Keyframes => return None,
+        },
         _ => return None,
     };
-    Some(Rewrite::replace(span, js::string(&ident)))
-}
-
-pub(crate) fn rewrite_for_view_transition_call(
-    project: &Project,
-    span: pandacss_shared::Span,
-    args: &[Option<Literal>],
-) -> Option<Rewrite> {
-    let arg = args.first()?.as_ref()?;
-    let class_name = match arg {
-        Literal::Object(_) => {
-            view_transition_class_name(&arg.to_json(), &project.config().class_name_prefix)
-        }
-        Literal::String(name) => project.config().view_transition(name)?.class_name.clone(),
-        _ => return None,
-    };
-    Some(Rewrite::replace(span, js::string(&class_name)))
+    Some(Rewrite::replace(span, js::string(&name)))
 }
 
 pub(crate) fn rewrite_for_recipe_call(

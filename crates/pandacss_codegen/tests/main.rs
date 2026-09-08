@@ -8,6 +8,7 @@ mod cx_artifact;
 mod emit;
 mod helpers_artifact;
 mod jsx_frameworks_artifact;
+mod keyframes_artifact;
 mod overlay_artifact;
 mod patterns_artifact;
 mod position_try_artifact;

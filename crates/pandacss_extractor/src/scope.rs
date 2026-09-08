@@ -18,6 +18,7 @@ use oxc_ast::ast::{
 };
 use oxc_semantic::{Semantic, SemanticBuilder, SymbolFlags, SymbolId};
 use oxc_span::GetSpan;
+use pandacss_shared::CssFactory;
 use pandacss_tokens::{TokenCategory, TokenDictionary};
 use rustc_hash::{FxHashMap, FxHashSet};
 use smallvec::SmallVec;
@@ -463,33 +464,34 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         })
     }
 
-    /// Resolve a bare `positionTry(arg)` call used as a style value to its
-    /// dashed-ident string (`--pt_flip`, `--pt_{hash}`). Only matches the plain
-    /// identifier form of a `css`-category `positionTry` import binding —
-    /// `positionTry.raw(...)` and namespace/member forms return `None`. The
-    /// ident is built with the config prefix so it is byte-identical to the
-    /// `@position-try` block emitter and the transform.
-    pub(crate) fn resolve_position_try_call(&self, call: &CallExpression<'_>) -> Option<Literal> {
+    /// Fold a bare css value-factory call (`positionTry`, `keyframes`) to its
+    /// generated name. Plain import binding only; class factories and
+    /// `.raw(...)`/member forms return `None`.
+    pub(crate) fn resolve_css_value_factory_call(
+        &self,
+        call: &CallExpression<'_>,
+    ) -> Option<Literal> {
         let Expression::Identifier(ident) = &call.callee else {
             return None;
         };
         let matched = self.aliases.get(ident.name.as_str())?;
-        if matched.category != MatchCategory::Css || matched.name != "positionTry" {
+        if matched.category != MatchCategory::Css || !self.is_import_binding(ident) {
             return None;
         }
-        if !self.is_import_binding(ident) {
+        let factory = CssFactory::from_name(&matched.name)?;
+        if !factory.folds_as_css_value() {
             return None;
         }
 
         let arg = call.arguments.first()?.as_expression()?;
-        let ident = match expression_to_literal(arg, Some(self))? {
-            Literal::String(name) => pandacss_shared::position_try_named_ident(&name, self.prefix),
-            arg @ Literal::Object(_) => {
-                pandacss_shared::position_try_ident(&arg.to_json(), self.prefix)
+        let name = match expression_to_literal(arg, Some(self))? {
+            arg @ Literal::Object(_) => factory.ident(&arg.to_json(), self.prefix),
+            Literal::String(name) if factory.has_named_form() => {
+                pandacss_shared::position_try_named_ident(&name, self.prefix)
             }
             _ => return None,
         };
-        Some(Literal::String(ident))
+        Some(Literal::String(name))
     }
 
     pub(crate) fn resolved_token_call_path(&self, call: &CallExpression<'_>) -> Option<String> {

@@ -10,6 +10,9 @@ on:
       - 'crates/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
+      - 'package.json'
+      - 'scripts/**'
+      - '.github/workflows/release.yml'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -158,6 +161,7 @@ jobs:
           path: |
             packages/compiler/compiler.wasm32-wasi.wasm
             packages/compiler/compiler.wasi.cjs
+            packages/compiler/compiler.wasi.d.cts
             packages/compiler/compiler.wasi-browser.js
             packages/compiler/wasi-worker.mjs
             packages/compiler/wasi-worker-browser.mjs
@@ -207,8 +211,13 @@ jobs:
       - name: Stage wasi loader files at package root
         working-directory: packages/compiler
         run: >-
-          mv artifacts/compiler.wasi.cjs artifacts/compiler.wasi-browser.js artifacts/wasi-worker.mjs
-          artifacts/wasi-worker-browser.mjs .
+          mv artifacts/compiler.wasi.cjs artifacts/compiler.wasi.d.cts artifacts/compiler.wasi-browser.js
+          artifacts/wasi-worker.mjs artifacts/wasi-worker-browser.mjs .
+
+      # Regenerate manifests so they always match the installed @napi-rs/cli.
+      - name: Generate platform package manifests
+        working-directory: packages/compiler
+        run: pnpm exec napi create-npm-dirs --npm-dir npm
 
       - name: Stage platform npm packages
         working-directory: packages/compiler
@@ -237,6 +246,11 @@ jobs:
           pnpm --filter @pandacss/compiler-wasm build:js
           pnpm -r "--filter=./packages/**" "--filter=!@pandacss/types" "--filter=!@pandacss/compiler-shared" "--filter=!@pandacss/config" "--filter=!@pandacss/compiler" "--filter=!@pandacss/compiler-wasm" build
 
+      # The real pre-publish only runs inside the publish step; validate the
+      # release packages here so the dry run and every push exercise it.
+      - name: Validate release packages
+        run: pnpm --filter @pandacss/compiler exec napi pre-publish --dry-run --npm-dir npm --no-gh-release
+
       - name: Verify dry-run artifacts
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
         run: |
@@ -259,6 +273,17 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
+
+      # changesets publishes packages without a stable release to `latest`, so
+      # the `beta` tag falls behind. Idempotent: exits 0 when nothing is stale.
+      - name: Sync beta dist-tag
+        if: >-
+          ${{ github.repository == 'chakra-ui/panda' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
+        # Run with node, not pnpm: pre-publish just rewrote the compiler
+        # package.json and pnpm would refuse on the frozen lockfile.
+        run: node scripts/sync-beta-dist-tag.mjs --apply
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Send Slack notification
         if: steps.changesets.outputs.published == 'true'

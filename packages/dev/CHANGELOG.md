@@ -1,5 +1,55 @@
 # @pandacss/dev
 
+## 2.0.0-beta.16
+
+### Minor Changes
+
+- f3f5847: Add a `defineConditions` helper so custom conditions get the same typed authoring experience as tokens,
+  recipes, and the other config blocks.
+
+  ```ts
+  import { defineConditions } from '@pandacss/dev'
+
+  export const conditions = defineConditions({
+    hover: '&:is(:hover, [data-hover])',
+  })
+  ```
+
+- 729ce72: Add the `definePositionTry` config helper for authoring `theme.positionTry` fallbacks outside `defineConfig`,
+  matching `defineViewTransitions`.
+
+### Patch Changes
+
+- Updated dependencies [80e62a1]
+- Updated dependencies [ce90eda]
+- Updated dependencies [b9e7cd9]
+- Updated dependencies [a5bab14]
+- Updated dependencies [f583fb9]
+- Updated dependencies [6b04d94]
+- Updated dependencies [dfb17b2]
+- Updated dependencies [84720fc]
+- Updated dependencies [d94d26c]
+- Updated dependencies [c3702af]
+- Updated dependencies [dea1ef5]
+- Updated dependencies [a46ecb4]
+- Updated dependencies [ca9bb58]
+- Updated dependencies [c58d45d]
+- Updated dependencies [446210a]
+- Updated dependencies [9bdafba]
+- Updated dependencies [f583fb9]
+- Updated dependencies [b2294ca]
+- Updated dependencies [af261f5]
+- Updated dependencies [9da80e1]
+- Updated dependencies [ef14fc5]
+- Updated dependencies [064e58f]
+- Updated dependencies [ef68d33]
+- Updated dependencies [bcbcb22]
+  - @pandacss/cli@2.0.0-beta.16
+  - @pandacss/config@2.0.0-beta.16
+  - @pandacss/compiler@2.0.0-beta.16
+  - @pandacss/types@2.0.0-beta.16
+  - @pandacss/postcss@2.0.0-beta.16
+
 ## 2.0.0-beta.15
 
 ### Minor Changes
