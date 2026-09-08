@@ -566,6 +566,7 @@ const CONFIG_JSON: &str = r##"{
   "outdir": "styled-system",
   "include": ["./src/**/*.{tsx,jsx}"],
   "exclude": [],
+  "jsxFramework": "react",
   "jsxFactory": "panda",
   "importMap": {
     "css":     ["../styled-system/css"],
