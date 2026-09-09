@@ -3,7 +3,9 @@ import { onBeforeUnmount, onMounted, ref } from "vue";
 import * as s from "./view.styles";
 import { parseTokens, type TokensFile } from "~/utils/tokens";
 import { buildThemeLayer, type Variant } from "~/utils/token-model";
-import { loadTokens, loadTokenCss, loadUsage, clearTokens } from "~/utils/idb";
+import { loadTokens, loadTokenCss, loadUsage, saveUsage, clearTokens } from "~/utils/idb";
+import { droppedFiles } from "~/utils/dropped";
+import { useAnalyze } from "~/composables/useAnalyze";
 
 useHead({
   title: "Your system — Panda Spec Studio",
@@ -17,6 +19,8 @@ const resolveVars = ref(false);
 const variants = ref<Variant[]>([]);
 const themeCss = ref<string | null>(null);
 const usage = ref<unknown>(null);
+
+const analyze = useAnalyze();
 
 onMounted(async () => {
   const raw = await loadTokens();
@@ -39,6 +43,20 @@ onMounted(async () => {
     resolveVars.value = true;
     variants.value = theme.variants;
     themeCss.value = theme.css;
+  }
+
+  if (!usage.value && droppedFiles.value.length) {
+    analyze.file.value = file.value;
+    await analyze.analyzeFiles(droppedFiles.value);
+    if (analyze.report.value) {
+      const snapshot = {
+        report: analyze.report.value,
+        scannedCount: analyze.scannedCount.value,
+        mode: analyze.mode.value,
+      };
+      await saveUsage(snapshot);
+      usage.value = snapshot;
+    }
   }
 });
 

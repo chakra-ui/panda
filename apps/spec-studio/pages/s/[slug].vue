@@ -18,7 +18,7 @@ const { data } = await useFetch<{ tokens: TokensFile; css: string | null; usage:
 );
 if (!data.value?.tokens) throw createError({ statusCode: 404, statusMessage: "Spec not found" });
 
-const analyzeHref = data.value.usage ? `/a/${slug}` : "/analyze";
+const analyzeHref = `/a/${slug}`;
 
 onMounted(async () => {
   const css = data.value?.css ?? null;

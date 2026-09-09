@@ -33,6 +33,7 @@ pnpm --filter @pandacss/spec-studio generate  # panda codegen + nuxt generate �
 - **Any Panda `tokens.json`**, not just the bundled sample — drop your own system and its categories render by type. (A dropped system's custom `@keyframes` aren't in the spec, so those animation chips render static; the standard `spin/ping/pulse/bounce` play.)
 - **Search** filters the active category; **click any token** to copy its `name` (what you'd type in `css({ ... })`).
 - **Light + dark** and discovered theme/variant switching, so semantic `var()` tokens paint their real colors.
+- **Share** a system as a link — the tokens (and, from Analyze, the usage snapshot) are saved server-side and open read-only at `/s/<slug>` (and `/a/<slug>` for the analysis). No account.
 - **Persists** your last-loaded system in IndexedDB, so a refresh keeps it.
 - Bad JSON shows a clear inline error, never a blank screen.
 
@@ -47,6 +48,11 @@ Nuxt 3 + Vue 3, [Panda CSS](https://panda-css.com) (workspace `@pandacss/*`), [A
 
 ## Analyze usage
 
-The rail's **Analyze usage** link is a first, no-backend tier: drop your source files (or repo folder) and it reports, per category, which tokens are **used / unused / hot**. It's a heuristic name-match scan — accurate for named tokens (`red.500`, counting both `'red.500'` and `token('colors.red.500')`), approximate for bare-numeric ones (`spacing.4`).
+The rail's **Analyze usage** link answers: which of my tokens are actually used? Drop your source files (or the whole repo folder) and it reports, per category, which tokens are **used / unused / hot**.
 
-**Precise (next):** compiler-grade usage via `@pandacss/compiler-wasm`. Its `WasmExtractor` needs only a token dictionary (buildable from `tokens.json`), but the full per-token `createUsageReport` wants `FileInspectionResult[]` from `WasmCompiler.fromConfig(SerializedConfig)` — so the dropped repo's `panda.config.ts` still has to be evaluated/serialized in the browser. That config-bundling step is the remaining headline problem.
+There are two tiers, and the drop decides which one runs:
+
+- **Compiler-grade** — include your `panda.config.ts` in the drop and the real Panda compiler runs in your browser via `@pandacss/compiler-wasm`. Same extraction and token resolution as a build, so bare-numeric tokens (`spacing.4`) and everything else are counted exactly.
+- **Heuristic** — no config in the drop, so a name-match scan runs instead. Accurate for named tokens (`red.500`, counting both `'red.500'` and `token('colors.red.500')`), approximate for bare-numeric ones. The badge on the report says which tier you got.
+
+Both stay in the browser — nothing is uploaded unless you press **Share**. Sharing an analysis carries the usage snapshot with it, so `/a/<slug>` shows the same report you saw.

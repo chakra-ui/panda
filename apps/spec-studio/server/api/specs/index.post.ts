@@ -2,14 +2,7 @@ import { nanoid } from "nanoid";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../../utils/prisma";
-
-function sanitizeCss(css: string): string {
-  return css
-    .replace(/@import\b[^;]*;?/gi, "")
-    .replace(/url\s*\([^)]*\)/gi, "none")
-    .replace(/expression\s*\([^)]*\)/gi, "none")
-    .slice(0, 500_000);
-}
+import { sanitizeCss } from "../../utils/sanitize-css";
 
 const body = z.object({
   tokens: z.object({ data: z.array(z.unknown()).min(1) }).passthrough(),

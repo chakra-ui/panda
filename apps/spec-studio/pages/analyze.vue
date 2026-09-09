@@ -1,47 +1,47 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, watch } from "vue";
 import * as s from "./analyze.styles";
 import { button } from "styled-system/recipes";
-import { parseTokens, type TokensFile } from "~/utils/tokens";
-import { extractTokens } from "~/utils/extract-tokens";
-import { loadTokens, saveTokens, saveTokenCss, saveUsage, loadUsage } from "~/utils/idb";
-import {
-  analyzeUsage,
-  isSourceFile,
-  isIgnoredPath,
-  MAX_FILE_BYTES,
-  MAX_FILES,
-  type CategoryUsage,
-} from "~/utils/analyze";
+import { parseTokens } from "~/utils/tokens";
+import { loadTokens, saveUsage, loadUsage } from "~/utils/idb";
+import type { CategoryUsage } from "~/utils/analyze";
 import { droppedFiles } from "~/utils/dropped";
-import { useFolderDrop } from "~/composables/useFolderDrop";
+import { useAnalyze } from "~/composables/useAnalyze";
 import { useShareSpec } from "~/composables/useShareSpec";
 
 const { status: shareStatus, share } = useShareSpec();
+const {
+  file,
+  report,
+  scannedCount,
+  empty,
+  mode,
+  analyzing,
+  preciseFailed,
+  preciseError,
+  analyzeFiles,
+  reset,
+  dragging,
+  busy,
+  onPick,
+  onDrop,
+  onDragOver,
+  onDragLeave,
+} = useAnalyze();
 
 useHead({
   title: "Analyze usage — Panda Spec Studio",
   meta: [{ name: "robots", content: "noindex" }],
 });
 
-const file = ref<TokensFile | null>(null);
-const report = ref<CategoryUsage[] | null>(null);
-const scannedCount = ref(0);
-const empty = ref(false);
-const mode = ref<"heuristic" | "precise">("heuristic");
-const analyzing = ref(false);
-const preciseFailed = ref(false);
-const preciseError = ref("");
-
 const route = useRoute();
 const scopeCategory = computed(() => String(route.query.category ?? ""));
-const scopedReport = computed(() =>
-  !report.value
-    ? []
-    : scopeCategory.value
-      ? report.value.filter((c) => c.type === scopeCategory.value)
-      : report.value,
-);
+const scopedReport = computed(() => {
+  if (!report.value) return [];
+  if (!scopeCategory.value) return report.value;
+  const scoped = report.value.filter((c) => c.type === scopeCategory.value);
+  return scoped.length ? scoped : report.value;
+});
 
 const noUsage = computed(() => !!report.value?.length && report.value.every((c) => c.used === 0));
 
@@ -61,18 +61,11 @@ function shareReport() {
   share(file.value, null, { title: "usage", path: "a", usage: usageSnapshot.value });
 }
 
-const fromDrop = ref(false);
-
 onMounted(async () => {
   const raw = await loadTokens();
   const result = raw ? parseTokens(raw) : null;
   if (result?.ok) file.value = result.file;
-  else {
-    await navigateTo("/");
-    return;
-  }
   if (droppedFiles.value.length) {
-    fromDrop.value = true;
     await analyzeFiles(droppedFiles.value);
     return;
   }
@@ -87,131 +80,11 @@ onMounted(async () => {
     mode.value = saved.mode ?? "heuristic";
   }
 });
-
-function mapPrecise(rep: {
-  facts?: { tokens?: { path: string; category: string }[] };
-  views?: {
-    tokens?: {
-      categories?: {
-        category: string;
-        total: number;
-        used: number;
-        unused: number;
-        percentUsed: number;
-        top?: { name: string; uses: number }[];
-      }[];
-    };
-  };
-}): CategoryUsage[] {
-  const byCat = new Map<string, string[]>();
-  for (const t of rep.facts?.tokens ?? []) {
-    const name = t.path.startsWith(`${t.category}.`) ? t.path.slice(t.category.length + 1) : t.path;
-    const list = byCat.get(t.category) ?? [];
-    list.push(name);
-    byCat.set(t.category, list);
-  }
-  return (rep.views?.tokens?.categories ?? []).map((c) => {
-    const usedNames = new Set((c.top ?? []).filter((t) => t.uses > 0).map((t) => t.name));
-    const unusedNames = (byCat.get(c.category) ?? []).filter((n) => !usedNames.has(n));
-    return {
-      type: c.category,
-      total: c.total,
-      used: c.used,
-      unused: c.unused,
-      percent: c.percentUsed,
-      tokens: [
-        ...(c.top ?? []).map((t) => ({ name: t.name, uses: t.uses })),
-        ...unusedNames.map((n) => ({ name: n, uses: 0 })),
-      ],
-    };
-  });
-}
-
-const pathOf = (f: File) =>
-  (f as File & { webkitRelativePath?: string }).webkitRelativePath || f.name;
-
-const { dragging, busy, onPick, onDrop, onDragOver, onDragLeave } = useFolderDrop(analyzeFiles);
-
-async function analyzeFiles(input: File[]) {
-  const { tokensJson, css } = await extractTokens(input);
-  if (tokensJson) {
-    const parsed = parseTokens(tokensJson);
-    if (parsed.ok) {
-      file.value = parsed.file;
-      await saveTokens(tokensJson);
-      await saveTokenCss(css);
-    }
-  }
-
-  if (!file.value) return;
-  const textFiles = input
-    .filter((f) => {
-      const path = pathOf(f);
-      if (isIgnoredPath(path) || f.size > MAX_FILE_BYTES) return false;
-      return isSourceFile(f.name) || /panda\.config\.|\.(ts|tsx|js|jsx|mjs|cjs|json)$/.test(f.name);
-    })
-    .slice(0, MAX_FILES);
-
-  analyzing.value = true;
-  preciseFailed.value = false;
-  preciseError.value = "";
-  await new Promise((r) => requestAnimationFrame(() => r(null)));
-
-  const filesMap = new Map<string, string>();
-  const sources: { name: string; text: string }[] = [];
-  await Promise.all(
-    textFiles.map(async (f) => {
-      const path = pathOf(f);
-      const text = await f.text();
-      filesMap.set(path, text);
-      if (isSourceFile(f.name)) sources.push({ name: path, text });
-    }),
-  );
-  scannedCount.value = sources.length;
-  empty.value = sources.length === 0;
-  if (!sources.length) {
-    report.value = null;
-    analyzing.value = false;
-    return;
-  }
-
-  const { findConfig, analyzePrecise } = await import("~/utils/analyze-compiler");
-  const configPath = findConfig(filesMap);
-  if (configPath && import.meta.client) {
-    try {
-      const rep = await analyzePrecise({ configPath, files: filesMap, sources });
-      report.value = mapPrecise(rep as never);
-      mode.value = "precise";
-      analyzing.value = false;
-      return;
-    } catch (e) {
-      preciseFailed.value = true;
-      const raw = e instanceof Error ? e.message : String(e);
-      preciseError.value = raw
-        .replace(/\s+at\s+\S.*$/s, "")
-        .replace(/\s+/g, " ")
-        .trim()
-        .slice(0, 180);
-      console.error("[spec-studio] precise analyze failed:", e);
-    }
-  }
-  mode.value = "heuristic";
-  report.value = analyzeUsage(file.value, sources);
-  analyzing.value = false;
-}
-
-function reset() {
-  report.value = null;
-  scannedCount.value = 0;
-  empty.value = false;
-  mode.value = "heuristic";
-  preciseFailed.value = false;
-}
 </script>
 
 <template>
   <div :class="s.wrap">
-    <NuxtLink to="/view" :class="s.back">
+    <NuxtLink v-if="file" to="/view" :class="s.back">
       <svg
         width="14"
         height="14"
@@ -224,20 +97,13 @@ function reset() {
       >
         <path d="M15 18l-6-6 6-6" />
       </svg>
-      Back to tokens
+      View tokens
     </NuxtLink>
 
     <div :class="s.head">
       <h1 :class="s.title">Analyze usage</h1>
       <p :class="s.lede">
-        Drop your source files (or your repo folder) and see which tokens are actually used, which
-        are unused, and which are hot — per category.
-      </p>
-      <p :class="s.note">
-        Include your <code>panda.config.ts</code> in the drop for <strong>compiler-grade</strong>
-        results (the real Panda compiler runs in your browser via
-        <code>@pandacss/compiler-wasm</code>). Without it, a heuristic name-match scan runs —
-        accurate for named tokens, approximate for bare-numeric ones.
+        See which tokens your code actually uses, which are unused, and which are hot — per category.
       </p>
     </div>
 
@@ -254,9 +120,17 @@ function reset() {
         @dragover="onDragOver"
         @dragleave="onDragLeave"
       >
-        <p :class="s.dropHint">
-          Drop source files or a whole repo —
-          <code>.ts .tsx .vue .jsx .svelte .astro .css</code>
+        <p v-if="file" :class="s.dropHint">
+          Your tokens are loaded, but usage needs your <strong>source</strong>. Drop your app folder
+          or the whole repo and it'll scan which tokens you actually use.
+        </p>
+        <p v-else :class="s.dropHint">
+          Drop your source folder or the whole repo. You'll get the usage analysis — and you can view
+          its tokens too.
+        </p>
+        <p :class="s.note">
+          Include your <code>panda.config.ts</code> for <strong>compiler-grade</strong> results — the
+          real Panda compiler runs in your browser. Without it, a name-match scan runs.
         </p>
         <label :class="button({ variant: 'solid' })">
           Choose folder

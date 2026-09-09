@@ -17,7 +17,7 @@ const props = defineProps<{
 defineEmits<{ reset: [] }>();
 
 const { status: shareStatus, share } = useShareSpec();
-const analyzeLabel = computed(() => (props.analyzeHref?.startsWith("/a/") ? "View usage" : "Analyze usage"));
+const analyzeLabel = computed(() => (props.usage ? "View usage" : "Analyze usage"));
 const analyzeTo = computed(
   () => `${props.analyzeHref ?? "/analyze"}?category=${encodeURIComponent(activeType.value)}`,
 );
