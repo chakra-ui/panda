@@ -127,10 +127,18 @@ export const radiusBox = css({
 export const specimen = css({
   color: "ink",
   lineHeight: "1.1",
+  w: "full",
   minW: "0",
-  maxW: "full",
   overflow: "hidden",
   whiteSpace: "nowrap",
+  maskImage: "linear-gradient(to right, #000 calc(100% - 32px), transparent)",
+  WebkitMaskImage: "linear-gradient(to right, #000 calc(100% - 32px), transparent)",
+});
+export const lineHeightSpecimen = css({
+  color: "ink",
+  fontSize: "15px",
+  maxW: "440px",
+  py: "2",
 });
 export const boxDemo = css({
   w: "110px",

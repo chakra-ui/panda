@@ -88,7 +88,7 @@ export default defineConfig({
                 display: "grid",
                 gridTemplateColumns: {
                   base: "auto minmax(0,1fr)",
-                  sm: "170px minmax(0,1fr) minmax(0,260px)",
+                  sm: "150px minmax(0,1fr) auto",
                 },
                 alignItems: "center",
                 gap: "4",

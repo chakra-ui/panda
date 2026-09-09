@@ -176,11 +176,17 @@ const maxScreen = computed(() => Math.max(...screenRows.value.map((t) => t.n), 1
             >The quick brown fox jumps</span
           >
           <span
+            v-else-if="renderer === 'ramp' && category.type === 'lineHeights'"
+            :class="s.lineHeightSpecimen"
+            :style="{ lineHeight: t.value }"
+            >The quick brown fox jumps over the lazy dog while the sleepy cat watches the
+            riverbank at dawn</span
+          >
+          <span
             v-else-if="renderer === 'ramp'"
             :class="s.specimen"
             :style="{
               fontSize: category.type === 'fontSizes' ? t.value : '17px',
-              lineHeight: category.type === 'lineHeights' ? t.value : '1.2',
               letterSpacing: category.type === 'letterSpacings' ? t.value : 'normal',
               fontWeight: category.type === 'fontWeights' ? t.value : '400',
             }"
