@@ -5,35 +5,48 @@ use std::path::Path;
 
 use oxc_parser::ParseOptions;
 
+/// Single-file-component container format, resolved once per file from its
+/// extension. Distinct from the template `Framework` dialect: Astro is its own
+/// container but reuses Svelte's attribute syntax.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub(crate) enum SfcFormat {
+    Vue,
+    Svelte,
+    Astro,
+}
+
+impl SfcFormat {
+    #[must_use]
+    pub(crate) fn from_path(path: &str) -> Option<Self> {
+        let extension = Path::new(path).extension()?;
+        [
+            ("vue", Self::Vue),
+            ("svelte", Self::Svelte),
+            ("astro", Self::Astro),
+        ]
+        .into_iter()
+        .find_map(|(candidate, format)| extension.eq_ignore_ascii_case(candidate).then_some(format))
+    }
+}
+
 /// Astro frontmatter is a render-function body, so a top-level `return` is valid
 /// there but a hard error in the bare module we mask it into. Allow it for `.astro`.
 #[must_use]
-pub(crate) fn parse_options_for(path: &str) -> ParseOptions {
+pub(crate) fn parse_options_for(format: Option<SfcFormat>) -> ParseOptions {
     ParseOptions {
-        allow_return_outside_function: has_extension(path, "astro"),
+        allow_return_outside_function: matches!(format, Some(SfcFormat::Astro)),
         ..ParseOptions::default()
     }
 }
 
 #[must_use]
-pub(crate) fn adapt_source<'a>(source: &'a str, path: &str) -> Cow<'a, str> {
-    if has_extension(path, "vue") {
-        return Cow::Owned(crate::vue_adapter::mask_vue(source));
+pub(crate) fn adapt_source(source: &str, format: Option<SfcFormat>) -> Cow<'_, str> {
+    match format {
+        Some(SfcFormat::Vue) => Cow::Owned(crate::vue_adapter::mask_vue(source)),
+        Some(SfcFormat::Svelte) => Cow::Owned(crate::svelte_adapter::mask_svelte(source)),
+        Some(SfcFormat::Astro) => Cow::Owned(crate::astro_adapter::mask_astro(source)),
+        None => Cow::Borrowed(source),
     }
-    if has_extension(path, "svelte") {
-        return Cow::Owned(crate::svelte_adapter::mask_svelte(source));
-    }
-    if has_extension(path, "astro") {
-        return Cow::Owned(crate::astro_adapter::mask_astro(source));
-    }
-    Cow::Borrowed(source)
-}
-
-#[must_use]
-pub(crate) fn has_extension(path: &str, extension: &str) -> bool {
-    Path::new(path)
-        .extension()
-        .is_some_and(|actual| actual.eq_ignore_ascii_case(extension))
 }
 
 /// `true` when a Vue `<template lang="…">` attribute names something other than
@@ -304,4 +317,27 @@ pub(crate) fn find_bytes(bytes: &[u8], needle: &[u8], from: usize) -> Option<usi
     }
     let last = bytes.len().saturating_sub(needle.len());
     (from..=last).find(|&index| starts_with(bytes, index, needle))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::SfcFormat;
+
+    #[test]
+    fn sfc_formats_are_resolved_from_the_extension() {
+        assert_eq!(SfcFormat::from_path("Card.vue"), Some(SfcFormat::Vue));
+        assert_eq!(SfcFormat::from_path("Card.SVELTE"), Some(SfcFormat::Svelte));
+        assert_eq!(SfcFormat::from_path("Card.astro"), Some(SfcFormat::Astro));
+    }
+
+    #[test]
+    fn script_files_are_not_sfc_containers() {
+        for path in ["Card.ts", "Card.tsx", "Card.jsx", "Card.vue.ts", "Card"] {
+            assert_eq!(
+                SfcFormat::from_path(path),
+                None,
+                "expected {path} to be skipped"
+            );
+        }
+    }
 }
