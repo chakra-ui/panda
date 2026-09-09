@@ -463,6 +463,9 @@ unsorted report would vary between runs.
   bailout, a standalone call inlined to its value form, and a JSX `css` prop rewritten to its class.
 - `crates/pandacss_codegen/tests/first_that_works_artifact.rs`, the generated `css/first-that-works` module in TS, JS,
   and `.d.ts`.
+- `packages/cli/__tests__/cssgen.test.ts`, the one hop the Rust tests cannot see: a real `panda.config.ts` importing
+  `firstThatWorks` from `@pandacss/dev` for a `globalCss` rule and a config recipe, loaded and bundled like a user's,
+  through `cssgen` to the expanded declarations.
 - `sandbox/codegen/__tests__`, the generated runtime: the written form, runtime/build class parity, and member typing
   under `strictTokens`.
 
