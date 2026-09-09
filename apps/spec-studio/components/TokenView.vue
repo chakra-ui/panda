@@ -90,10 +90,10 @@ watch(activeType, () => (search.value = ""));
               Matrix
             </button>
           </div>
-          <Field.Root>
+          <Field.Root :class="s.searchField">
             <Field.Label :class="s.srOnly">Filter tokens by name</Field.Label>
             <Field.Input
-              :class="control({ kind: 'search' })"
+              :class="[control({ kind: 'search' }), s.searchInput]"
               v-model="search"
               type="search"
               placeholder="Filter by name…"

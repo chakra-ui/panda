@@ -82,7 +82,17 @@ export const title = css({
 });
 
 export const subtitle = css({ fontSize: "13px", color: "muted", mt: "0.5" });
-export const controls = css({ display: "flex", alignItems: "center", gap: "2.5" });
+export const controls = css({
+  display: "flex",
+  alignItems: "center",
+  gap: "2.5",
+  flex: "1",
+  minW: "0",
+  justifyContent: "flex-end",
+  flexWrap: "wrap",
+});
+export const searchField = css({ flex: "1", minW: "180px", maxW: "340px" });
+export const searchInput = css({ w: "full" });
 
 export const variants = css({
   display: "flex",
