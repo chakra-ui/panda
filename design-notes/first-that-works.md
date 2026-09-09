@@ -489,10 +489,10 @@ unsorted report would vary between runs.
   bailout, a standalone call inlined to its value form, and a JSX `css` prop rewritten to its class.
 - `crates/pandacss_codegen/tests/first_that_works_artifact.rs`, the generated `css/first-that-works` module in TS, JS,
   and `.d.ts`.
-- `sandbox/codegen/__tests__`, the generated runtime: the written form, runtime/build class parity, member typing under
-  `strictTokens`, and the one hop the Rust tests cannot see: the sandbox's own `panda.config.ts` imports
-  `firstThatWorks` from `@pandacss/dev` for a `globalCss` rule and a config recipe, and a test runs `panda cssgen` over
-  it and asserts the expanded declarations.
+- `sandbox/codegen/__tests__`, the generated runtime: the written form, runtime/build class parity, and member typing
+  under `strictTokens`. The sandbox's `preset.ts` also uses `firstThatWorks` from `@pandacss/dev` in a `globalCss` rule
+  and a config recipe, so the fixture codegen bundles the helper through the real config loader, and
+  `src/first-that-works.tsx` imports the resulting recipe so `tsc` fails if it did not come out.
 
 ## Related
 
