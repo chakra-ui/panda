@@ -95,6 +95,49 @@ impl StyleSpread {
     }
 }
 
+#[derive(Clone, Copy)]
+pub(crate) enum ProjectionRetention {
+    Retain,
+    Discard,
+}
+
+/// Project one optional style tree and retain it only when transform needs it.
+#[must_use]
+pub(crate) fn project_style(
+    tree: Option<StyleTree>,
+    retention: ProjectionRetention,
+) -> (Option<Literal>, Option<StyleTree>) {
+    match retention {
+        ProjectionRetention::Retain => (tree.as_ref().and_then(project_literal), tree),
+        // PERF(port): normal extraction can move owned strings into `Literal`.
+        ProjectionRetention::Discard => (tree.and_then(into_project_literal), None),
+    }
+}
+
+/// Project positional style arguments and retain their trees only for transform.
+#[must_use]
+pub(crate) fn project_style_args(
+    trees: Vec<Option<StyleTree>>,
+    retention: ProjectionRetention,
+) -> (Vec<Option<Literal>>, Vec<Option<StyleTree>>) {
+    match retention {
+        ProjectionRetention::Retain => (
+            trees
+                .iter()
+                .map(|tree| tree.as_ref().and_then(project_literal))
+                .collect(),
+            trees,
+        ),
+        ProjectionRetention::Discard => (
+            trees
+                .into_iter()
+                .map(|tree| tree.and_then(into_project_literal))
+                .collect(),
+            Vec::new(),
+        ),
+    }
+}
+
 /// Project a `StyleTree` to a [`Literal`] with today's encode semantics.
 #[must_use]
 pub fn project_literal(tree: &StyleTree) -> Option<Literal> {
@@ -121,29 +164,83 @@ pub fn project_literal(tree: &StyleTree) -> Option<Literal> {
             consequent,
             alternate,
             ..
-        } => project_ternary_arms(consequent, alternate),
-        StyleTree::Branches(items) => project_branches(items),
-        StyleTree::Object(obj) => project_object(obj),
+        } => finish_ternary(project_literal(consequent), project_literal(alternate)),
+        StyleTree::Branches(items) => {
+            finish_branches(items.len(), items.iter().map(project_literal))
+        }
+        StyleTree::Object(obj) => finish_object(
+            obj.entries.len(),
+            ObjectInput::from_lengths(obj.entries.len(), obj.spreads.len()),
+            obj.entries
+                .iter()
+                .map(|(key, value)| (key.clone(), project_literal(value))),
+            obj.spreads.iter().map(project_spread),
+        ),
     }
 }
 
-fn project_branches(items: &[StyleTree]) -> Option<Literal> {
-    let mut out = Vec::with_capacity(items.len());
-    for item in items {
-        if let Some(lit) = project_literal(item) {
-            out.push(lit);
+/// Project a `StyleTree` that is no longer needed, reusing its owned strings.
+#[must_use]
+pub(crate) fn into_project_literal(tree: StyleTree) -> Option<Literal> {
+    match tree {
+        StyleTree::String(s) => Some(Literal::String(s)),
+        StyleTree::Number(n) => Some(Literal::Number(n)),
+        StyleTree::Bool(b) => Some(Literal::Bool(b)),
+        StyleTree::Null => Some(Literal::Null),
+        StyleTree::Token { path, value } => Some(Literal::Token { path, value }),
+        StyleTree::Array(items) => Some(Literal::Array(
+            items
+                .into_iter()
+                .map(|item| into_project_literal(item).unwrap_or(Literal::Null))
+                .collect(),
+        )),
+        StyleTree::Open => None,
+        StyleTree::OpenWithFallback(inner) | StyleTree::And { value: inner, .. } => {
+            into_project_literal(*inner)
+        }
+        StyleTree::Ternary {
+            consequent,
+            alternate,
+            ..
+        } => finish_ternary(
+            into_project_literal(*consequent),
+            into_project_literal(*alternate),
+        ),
+        StyleTree::Branches(items) => {
+            let capacity = items.len();
+            finish_branches(capacity, items.into_iter().map(into_project_literal))
+        }
+        StyleTree::Object(obj) => {
+            let StyleObject { entries, spreads } = obj;
+            let input = ObjectInput::from_lengths(entries.len(), spreads.len());
+            finish_object(
+                entries.len(),
+                input,
+                entries
+                    .into_iter()
+                    .map(|(key, value)| (key, into_project_literal(value))),
+                spreads.into_iter().map(into_project_spread),
+            )
         }
     }
-    match out.as_slice() {
-        [] => None,
-        [only] => Some(only.clone()),
-        [first, rest @ ..] if rest.iter().all(|item| item == first) => Some(first.clone()),
+}
+
+fn finish_branches(
+    capacity: usize,
+    projected: impl IntoIterator<Item = Option<Literal>>,
+) -> Option<Literal> {
+    let mut out = Vec::with_capacity(capacity);
+    out.extend(projected.into_iter().flatten());
+    match out.len() {
+        0 => None,
+        1 => out.pop(),
+        _ if out[1..].iter().all(|item| item == &out[0]) => Some(out.swap_remove(0)),
         _ => Some(Literal::Conditional(out)),
     }
 }
 
-fn project_ternary_arms(consequent: &StyleTree, alternate: &StyleTree) -> Option<Literal> {
-    match (project_literal(consequent), project_literal(alternate)) {
+fn finish_ternary(consequent: Option<Literal>, alternate: Option<Literal>) -> Option<Literal> {
+    match (consequent, alternate) {
         (Some(left), Some(right)) if left == right => Some(left),
         (Some(left), Some(right)) => Some(Literal::Conditional(vec![left, right])),
         (Some(only), None) | (None, Some(only)) => Some(only),
@@ -151,70 +248,111 @@ fn project_ternary_arms(consequent: &StyleTree, alternate: &StyleTree) -> Option
     }
 }
 
-fn project_object(obj: &StyleObject) -> Option<Literal> {
-    let mut entries: Vec<(String, Literal)> = Vec::with_capacity(obj.entries.len());
-    for (key, value) in &obj.entries {
-        if let Some(lit) = project_literal(value) {
-            Literal::upsert_object_entry(&mut entries, key.clone(), lit);
+enum ProjectedSpread {
+    Conditional(Option<Literal>, Option<Literal>),
+    Upsert(Option<Literal>),
+    Open,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum ObjectInput {
+    Empty,
+    NonEmpty,
+}
+
+impl ObjectInput {
+    const fn from_lengths(entries: usize, spreads: usize) -> Self {
+        if entries == 0 && spreads == 0 {
+            Self::Empty
+        } else {
+            Self::NonEmpty
+        }
+    }
+}
+
+fn project_spread(spread: &StyleSpread) -> ProjectedSpread {
+    match spread {
+        StyleSpread::Ternary {
+            consequent,
+            alternate,
+            ..
+        } => ProjectedSpread::Conditional(project_literal(consequent), project_literal(alternate)),
+        StyleSpread::And { value, .. } | StyleSpread::OpenWithFallback { fallback: value } => {
+            ProjectedSpread::Upsert(project_literal(value))
+        }
+        StyleSpread::Open { .. } => ProjectedSpread::Open,
+    }
+}
+
+fn into_project_spread(spread: StyleSpread) -> ProjectedSpread {
+    match spread {
+        StyleSpread::Ternary {
+            consequent,
+            alternate,
+            ..
+        } => ProjectedSpread::Conditional(
+            into_project_literal(consequent),
+            into_project_literal(alternate),
+        ),
+        StyleSpread::And { value, .. } | StyleSpread::OpenWithFallback { fallback: value } => {
+            ProjectedSpread::Upsert(into_project_literal(value))
+        }
+        StyleSpread::Open { .. } => ProjectedSpread::Open,
+    }
+}
+
+fn finish_object(
+    entry_capacity: usize,
+    input: ObjectInput,
+    source_entries: impl IntoIterator<Item = (String, Option<Literal>)>,
+    spreads: impl IntoIterator<Item = ProjectedSpread>,
+) -> Option<Literal> {
+    let mut projected_any = false;
+    let mut entries = Vec::with_capacity(entry_capacity);
+
+    for (key, projected) in source_entries {
+        if let Some(lit) = projected {
+            projected_any = true;
+            Literal::upsert_object_entry(&mut entries, key, lit);
         }
     }
 
-    let mut spread_conditions: Vec<(String, Literal)> = Vec::new();
-    for spread in &obj.spreads {
+    let mut spread_conditions = Vec::new();
+    for spread in spreads {
         match spread {
-            StyleSpread::Ternary {
-                consequent,
-                alternate,
-                ..
-            } => {
-                for arm in [consequent, alternate] {
-                    if let Some(Literal::Object(inner)) = project_literal(arm) {
-                        for (k, v) in inner {
-                            Literal::combine_object_entry(&mut spread_conditions, k, v);
+            ProjectedSpread::Conditional(consequent, alternate) => {
+                for lit in [consequent, alternate].into_iter().flatten() {
+                    projected_any = true;
+                    if let Literal::Object(inner) = lit {
+                        for (key, value) in inner {
+                            Literal::combine_object_entry(&mut spread_conditions, key, value);
                         }
                     }
                 }
             }
-            StyleSpread::And { value, .. } | StyleSpread::OpenWithFallback { fallback: value } => {
-                // Encode peels `cond && obj` / `unk || obj` to the object and last-wins merges.
-                if let Some(Literal::Object(inner)) = project_literal(value) {
-                    for (k, v) in inner {
-                        Literal::upsert_object_entry(&mut entries, k, v);
+            ProjectedSpread::Upsert(projected) => {
+                if let Some(lit) = projected {
+                    projected_any = true;
+                    if let Literal::Object(inner) = lit {
+                        for (key, value) in inner {
+                            Literal::upsert_object_entry(&mut entries, key, value);
+                        }
                     }
                 }
             }
-            StyleSpread::Open { .. } => {}
+            ProjectedSpread::Open => {}
         }
     }
 
-    for (k, v) in spread_conditions {
-        Literal::combine_object_entry(&mut entries, k, v);
+    for (key, value) in spread_conditions {
+        Literal::combine_object_entry(&mut entries, key, value);
     }
 
-    if entries.is_empty() && (!obj.entries.is_empty() || !obj.spreads.is_empty()) {
-        // Mirror object_to_literal: all-unresolvable non-empty object → drop.
-        if obj
-            .entries
-            .iter()
-            .all(|(_, v)| project_literal(v).is_none())
-            && obj.spreads.iter().all(|s| match s {
-                StyleSpread::Open { .. } => true,
-                StyleSpread::Ternary {
-                    consequent,
-                    alternate,
-                    ..
-                } => project_literal(consequent).is_none() && project_literal(alternate).is_none(),
-                StyleSpread::And { value, .. }
-                | StyleSpread::OpenWithFallback { fallback: value } => {
-                    project_literal(value).is_none()
-                }
-            })
-        {
-            return None;
-        }
+    if entries.is_empty() && input == ObjectInput::NonEmpty && !projected_any {
+        None
+    } else {
+        Some(Literal::Object(entries))
     }
-
-    Some(Literal::Object(entries))
 }
 
 /// Build a `StyleTree` from an Oxc expression (sole folder for style objects).
@@ -813,6 +951,80 @@ mod tests {
             return None;
         };
         expression_to_style_tree(&expr_stmt.expression, None)
+    }
+
+    fn assert_projection_equivalent(tree: StyleTree) {
+        let borrowed = project_literal(&tree);
+        assert_eq!(into_project_literal(tree), borrowed);
+    }
+
+    #[test]
+    fn consuming_projection_matches_borrowed_projection() {
+        for source in [
+            "{ color: 'red', nested: { px: 4 }, values: ['a', unknown, 2] }",
+            "{ color: cond ? 'red' : 'blue' }",
+            "{ ...(cond ? { color: 'red' } : { color: 'blue' }), color: 'green' }",
+            "{ ...(cond && { color: 'red' }), ...unknown, padding: maybe || '4' }",
+            "{ ...(maybe || { margin: '2' }) }",
+        ] {
+            assert_projection_equivalent(fold_style(source).expect("tree"));
+        }
+
+        for tree in [
+            StyleTree::Token {
+                path: "colors.red".into(),
+                value: "#f00".into(),
+            },
+            StyleTree::Branches(vec![
+                StyleTree::String("red".into()),
+                StyleTree::String("blue".into()),
+            ]),
+            StyleTree::Branches(vec![
+                StyleTree::String("red".into()),
+                StyleTree::String("red".into()),
+                StyleTree::Open,
+            ]),
+            StyleTree::Object(StyleObject {
+                entries: Vec::new(),
+                spreads: vec![StyleSpread::And {
+                    test: Span { start: 0, end: 1 },
+                    value: StyleTree::String("red".into()),
+                    overridden: Vec::new(),
+                }],
+            }),
+            StyleTree::Object(StyleObject {
+                entries: Vec::new(),
+                spreads: vec![StyleSpread::Ternary {
+                    test: Span { start: 0, end: 1 },
+                    consequent: StyleTree::String("red".into()),
+                    alternate: StyleTree::Open,
+                    overridden: Vec::new(),
+                }],
+            }),
+            StyleTree::Object(StyleObject {
+                entries: Vec::new(),
+                spreads: vec![StyleSpread::OpenWithFallback {
+                    fallback: StyleTree::String("red".into()),
+                }],
+            }),
+            StyleTree::Object(StyleObject {
+                entries: vec![("color".into(), StyleTree::Open)],
+                spreads: vec![StyleSpread::Open {
+                    span: Span { start: 0, end: 1 },
+                }],
+            }),
+        ] {
+            assert_projection_equivalent(tree);
+        }
+    }
+
+    #[test]
+    fn equal_branches_keep_the_first_representation() {
+        let tree = StyleTree::Branches(vec![StyleTree::Number(-0.0), StyleTree::Number(0.0)]);
+        let Some(Literal::Number(value)) = into_project_literal(tree) else {
+            panic!("expected number");
+        };
+        assert!(value.is_sign_negative());
     }
 
     #[test]

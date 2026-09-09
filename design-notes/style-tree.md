@@ -7,8 +7,9 @@ The extractor attaches one `StyleTree` to each style object (`css()`, JSX, or a 
 `StyleTree` and `style_lower` are the only path for conditional rewrites. The legacy `css_conditional` and
 `jsx_conditional` source collectors are gone.
 
-Encoding and NAPI `Literal` `data` both come from [`project_literal`](../crates/pandacss_extractor/src/style_tree.rs).
-The extractor does not run a separate `expression_to_literal` walk over the same AST.
+Encoding and NAPI `Literal` `data` both use the same projection rules. Transform extraction borrows the tree through
+[`project_literal`](../crates/pandacss_extractor/src/style_tree.rs); normal extraction consumes the tree and moves its
+owned strings into `Literal`. The extractor does not run a separate `expression_to_literal` walk over the same AST.
 
 ## Shape
 
@@ -58,6 +59,10 @@ independent atomic classes cannot represent object last-write-wins behavior.
 
 ## `project_literal`
 
+Borrowed and consuming projection use separate ownership-specific walkers over shared reducers for branch collapsing,
+spread merging, and object precedence. This keeps one semantic contract without cloning the transform tree or the normal
+extraction path's owned keys and values.
+
 Maps `StyleTree` to `Option<Literal>` for encoding:
 
 | StyleTree                       | Literal                                         |
@@ -104,19 +109,20 @@ spread-merged keys fall back to `Literal`.
 
 ## Attach points
 
-| Surface                   | StyleTree                        | `data`            |
-| ------------------------- | -------------------------------- | ----------------- |
-| `css()` / pattern args    | `style_args`                     | `project_literal` |
-| JSX style props           | `style`                          | `project_literal` |
-| Vue/Svelte template attrs | `literal_to_style_tree` (static) | object entries    |
+| Surface                   | StyleTree                        | `data`               |
+| ------------------------- | -------------------------------- | -------------------- |
+| `css()` / pattern args    | `style_args`                     | StyleTree projection |
+| JSX style props           | `style`                          | StyleTree projection |
+| Vue/Svelte template attrs | `literal_to_style_tree` (static) | object entries       |
 
 A missing StyleTree on a dynamic conditional is an extraction bug. Do not restore the source collectors.
 
 ## Transform contract (sole path)
 
 1. Extraction builds a `StyleTree` for the style object (`style_args` or `style`).
-2. Extraction sets `data = project_literal(&tree)` from that tree. It does not run a parallel `Literal` fold when
-   attaching a call or JSX node. Leaf folding inside the `StyleTree` folder may still use `expression_to_literal`.
+2. Extraction projects `data` from that tree. Normal extraction consumes the tree; transform extraction borrows it. It
+   does not run a parallel `Literal` fold when attaching a call or JSX node. Leaf folding inside the `StyleTree` folder
+   may still use `expression_to_literal`.
 3. Transform:
    - A tree with rewrite sites uses `lower_style_tree`. `Static` and `Expr` rewrite the site. `Bail` keeps the original
      site instead of rewriting only its static parts.
@@ -130,20 +136,19 @@ while encode uses the right side for `data`. If the right side does not fold, th
 ## Resolved questions
 
 - **Q1 (flipped):** `StyleTree` is the only IR for conditional transforms. The source-parsing collectors are removed.
-- **Q2 (resolved):** Extraction builds one `StyleTree` for each style object, and encoding sets `data` with
-  `project_literal(StyleTree)`. `OpenWithFallback` lets encoding use the right operand of `||` or `??` while transform
-  still bails.
+- **Q2 (resolved):** Extraction builds one `StyleTree` for each style object and projects `data` from it.
+  `OpenWithFallback` lets encoding use the right operand of `||` or `??` while transform still bails.
 - **Q3 (resolved):** Same-file bindings use a StyleTree cache. Array slots and nested bases are first-class in
   `style_lower`.
 - **Q4 (resolved):** Cross-file conditionals use `Branches`: encode every arm and do not rewrite foreign conditions.
-  Call `data` comes only from `project_literal(style_args)`, with no `Literal` fallback at attachment.
+  Call `data` comes only from StyleTree projection, with no `Literal` fallback at attachment.
 
 ## Extending StyleTree
 
 1. Attach `StyleTree` during extraction. Do not parse the source again during transform.
 2. Handle identifiers, `.raw`, and members in the folder and resolver, not in a project-specific path.
 3. When adding a path or site kind, update `PathSeg`, `Site`, `collect_*`, and `apply_branch` together.
-4. Keep encoding in `project_literal`.
+4. Keep encoding in the shared StyleTree projection reducers.
 
 ## Related
 
