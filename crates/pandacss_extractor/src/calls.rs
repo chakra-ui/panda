@@ -11,7 +11,7 @@ use crate::{
         StyleSourceOwner, StyleSourceOwnerKind, StyleSourceRef, collect_object_source_refs,
     },
     span_from_oxc,
-    style_tree::{expression_to_style_tree, project_literal},
+    style_tree::{ProjectionRetention, expression_to_style_tree, project_style_args},
 };
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Argument, CallExpression, Expression, IdentifierReference};
@@ -107,11 +107,12 @@ pub fn extract_calls(
     config: &ExtractorConfig,
 ) -> ExtractedCallsResult {
     let allocator = Allocator::default();
-    let source = crate::adapt_source(source, path);
+    let format = crate::adapter::SfcFormat::from_path(path);
+    let source = crate::adapt_source(source, format);
     let source = source.as_ref();
     let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
     let parser_return = Parser::new(&allocator, source, source_type)
-        .with_options(crate::adapter::parse_options_for(path))
+        .with_options(crate::adapter::parse_options_for(format))
         .parse();
 
     let resolver = crate::Resolver::build(crate::scope::ResolverBuildInput {
@@ -408,11 +409,14 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 .iter()
                 .map(|arg| argument_to_style_tree(arg, resolver))
                 .collect();
-            let data: Vec<Option<Literal>> = style_args
-                .iter()
-                .map(|tree| tree.as_ref().and_then(project_literal))
-                .collect();
-            let arg_spans = if self.retain_transform_facts {
+            let retain = self.retain_transform_facts;
+            let retention = if retain {
+                ProjectionRetention::Retain
+            } else {
+                ProjectionRetention::Discard
+            };
+            let (data, style_args) = project_style_args(style_args, retention);
+            let arg_spans = if retain {
                 call.arguments
                     .iter()
                     .map(|arg| span_from_oxc(arg.span()))
@@ -443,12 +447,8 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                     jsx_recipe_ident,
                     span: span_from_oxc(call.span),
                     arg_spans,
-                    style_args: if self.retain_transform_facts {
-                        style_args
-                    } else {
-                        Vec::new()
-                    },
-                    facts: if self.retain_transform_facts {
+                    style_args,
+                    facts: if retain {
                         call_facts(call, raw)
                     } else {
                         CallFacts::default()

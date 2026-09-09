@@ -389,6 +389,47 @@ fn extract_for_transform_resolves_symbols_for_normal_css_files() {
     assert_eq!(result.calls.len(), 1);
 }
 
+#[test]
+fn normal_and_transform_extraction_project_the_same_data() {
+    let source = indoc! {r#"
+        import { css } from "@panda/css"
+        import { Box } from "@panda/jsx"
+
+        const className = css({
+          color: dark ? "white" : "black",
+          values: ["a", unknown, 2],
+          ...(active && { opacity: 1 }),
+        })
+        const element = (
+          <Box
+            {...(dark ? { color: "white" } : { color: "black" })}
+            padding={size || "4"}
+          />
+        )
+    "#};
+    let config = panda_jsx_config();
+    let normal = extract(source, "fixture.tsx", &config);
+    let transform = extract_for_transform(source, "fixture.tsx", &config);
+
+    assert_eq!(normal.diagnostics, transform.diagnostics);
+    assert_eq!(normal.calls.len(), transform.calls.len());
+    assert_eq!(normal.jsx.len(), transform.jsx.len());
+    assert!(
+        normal
+            .calls
+            .iter()
+            .zip(&transform.calls)
+            .all(|(left, right)| left.data == right.data)
+    );
+    assert!(
+        normal
+            .jsx
+            .iter()
+            .zip(&transform.jsx)
+            .all(|(left, right)| left.data == right.data)
+    );
+}
+
 fn factory_options_json(source: &str) -> serde_json::Value {
     let result = extract(source, "factory.tsx", &panda_jsx_config());
     result

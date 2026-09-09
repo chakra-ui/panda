@@ -131,6 +131,68 @@ describe('@pandacss/vite design-system HMR', () => {
     `)
   })
 
+  it('regenerates codegen when a design-system artifact changes', async () => {
+    const { driver, pandacss } = await setup()
+    const plugin = pandacss({ outdir: 'styled-system' }) as unknown as TestPlugin
+    const environment = createEnvironment()
+    driver.isDesignSystemFile.mockReturnValue('artifact')
+    driver.syncDesignSystemFileChange.mockResolvedValue(true)
+
+    await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
+    driver.codegen.mockClear()
+    await plugin.hotUpdate.call(
+      { environment },
+      artifactHotUpdate('/project/node_modules/@acme/ds/panda/lib.json', environment),
+    )
+
+    expect(driver.syncDesignSystemFileChange).toHaveBeenCalledWith({
+      path: '/project/node_modules/@acme/ds/panda/lib.json',
+      kind: 'change',
+    })
+    expect(driver.codegen).toHaveBeenCalledWith({ cwd: '/project', outdir: 'styled-system' })
+  })
+
+  it('skips codegen when a design-system artifact is unchanged', async () => {
+    const { driver, pandacss } = await setup()
+    const plugin = pandacss() as unknown as TestPlugin
+    const environment = createEnvironment()
+    driver.isDesignSystemFile.mockReturnValue('artifact')
+    driver.syncDesignSystemFileChange.mockResolvedValue(false)
+
+    await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
+    driver.codegen.mockClear()
+    await plugin.hotUpdate.call(
+      { environment },
+      artifactHotUpdate('/project/node_modules/@acme/ds/panda/lib.json', environment),
+    )
+
+    expect(driver.codegen).not.toHaveBeenCalled()
+  })
+
+  it('skips codegen when a design-system source file changes', async () => {
+    const { driver, pandacss } = await setup()
+    const plugin = pandacss() as unknown as TestPlugin
+    const environment = createEnvironment()
+    driver.syncDesignSystemFileChange.mockResolvedValue(true)
+
+    await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
+    driver.codegen.mockClear()
+    await plugin.hotUpdate.call(
+      { environment },
+      {
+        ...artifactHotUpdate('/project/node_modules/@acme/ds/src/button.css.ts', environment),
+        read: async () => "export const button = css({ fontSize: '20px' })",
+      },
+    )
+
+    expect(driver.syncDesignSystemFileChange).toHaveBeenCalledWith({
+      path: '/project/node_modules/@acme/ds/src/button.css.ts',
+      kind: 'change',
+      content: "export const button = css({ fontSize: '20px' })",
+    })
+    expect(driver.codegen).not.toHaveBeenCalled()
+  })
+
   it.each([
     ['create', 'add', true],
     ['update', 'change', true],
@@ -323,6 +385,28 @@ async function setup() {
   return { createNodeDriver, createSourceTransformer, driver, pandacss }
 }
 
+function createEnvironment() {
+  return {
+    moduleGraph: {
+      getModuleById: vi.fn(),
+      invalidateModule: vi.fn(),
+    },
+  }
+}
+
+function artifactHotUpdate(file: string, environment: ReturnType<typeof createEnvironment>) {
+  return {
+    type: 'update',
+    file,
+    modules: [],
+    read: vi.fn(),
+    server: {
+      config: { logger: { warn: vi.fn() } },
+      environments: { client: environment },
+    },
+  }
+}
+
 function createMockDriver() {
   const sourceTransformer = {
     transformSource: vi.fn(
@@ -362,7 +446,7 @@ function createMockDriver() {
       },
     ]),
     isConfigFile: vi.fn(() => false),
-    isDesignSystemFile: vi.fn((file: string) =>
+    isDesignSystemFile: vi.fn((file: string): 'artifact' | 'source' | false =>
       file === '/project/node_modules/@acme/ds/src/button.css.ts' ? 'source' : false,
     ),
     isSourceFile: vi.fn((_file: string) => false),

@@ -11,7 +11,7 @@ use crate::{
         StyleSourceOwner, StyleSourceOwnerKind, StyleSourceRef, collect_jsx_attribute_source_refs,
     },
     span_from_oxc,
-    style_tree::{jsx_attributes_to_style_tree, project_literal},
+    style_tree::{ProjectionRetention, jsx_attributes_to_style_tree, project_style},
     styled_bindings::{StyledBinding, StyledBindings, collect_styled_bindings},
 };
 use oxc_allocator::Allocator;
@@ -145,11 +145,12 @@ pub fn extract_jsx(
 
     let allocator = Allocator::default();
     let raw_source = source;
-    let source = crate::adapt_source(source, path);
+    let format = crate::adapter::SfcFormat::from_path(path);
+    let source = crate::adapt_source(source, format);
     let source = source.as_ref();
     let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
     let parser_return = Parser::new(&allocator, source, source_type)
-        .with_options(crate::adapter::parse_options_for(path))
+        .with_options(crate::adapter::parse_options_for(format))
         .parse();
 
     let resolver = crate::Resolver::build(crate::scope::ResolverBuildInput {
@@ -585,10 +586,14 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 (Some(base), style) => prepend_styled_base(base, style),
                 (None, style) => style,
             };
-            let data = style
-                .as_ref()
-                .and_then(project_literal)
-                .unwrap_or_else(|| Literal::Object(vec![]));
+            let retain = self.retain_transform_facts;
+            let retention = if retain {
+                ProjectionRetention::Retain
+            } else {
+                ProjectionRetention::Discard
+            };
+            let (data, style) = project_style(style, retention);
+            let data = data.unwrap_or_else(|| Literal::Object(vec![]));
             let data_empty = matches!(&data, Literal::Object(entries) if entries.is_empty());
             if data_empty && !emit_empty {
                 walk::walk_jsx_element(self, jsx_el);
@@ -612,7 +617,6 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 );
             }
 
-            let retain = self.retain_transform_facts;
             self.out.push(ExtractedJsx {
                 category,
                 kind,
@@ -634,7 +638,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                     Vec::new()
                 },
                 panda_owned,
-                style: if retain { style } else { None },
+                style,
                 source: if retain {
                     JsxSourceFacts {
                         kind: JsxSourceKind::Element,

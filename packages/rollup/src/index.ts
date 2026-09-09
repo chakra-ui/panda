@@ -81,7 +81,8 @@ export function pandacss(options: PandaRollupOptions = {}): Plugin[] {
       const sourceChange = sourceChangeFromRollup(id, change.event)
       const designSystemFile = driver.isDesignSystemFile(id)
       if (designSystemFile) {
-        await driver.syncDesignSystemFileChange(sourceChange)
+        const changed = await driver.syncDesignSystemFileChange(sourceChange)
+        if (changed && designSystemFile === 'artifact') driver.codegen({ cwd, outdir })
       } else if (driver.isConfigFile(id)) {
         const diff = await driver.reload()
         if (diff.hasChanged) {

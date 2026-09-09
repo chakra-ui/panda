@@ -206,7 +206,10 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
         const change = await sourceChangeFromHotUpdate(ctx, designSystemFile === 'source')
         const changed = await driver.syncDesignSystemFileChange(change)
         if (changed) {
-          if (designSystemFile === 'artifact') watchedFiles.clear()
+          if (designSystemFile === 'artifact') {
+            watchedFiles.clear()
+            codegen()
+          }
           warnDesignSystemDiagnostics((message) => ctx.server.config.logger.warn(message))
         }
         return withInvalidatedRoots(this.environment, ctx.modules)
