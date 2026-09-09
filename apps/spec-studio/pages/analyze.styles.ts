@@ -187,3 +187,9 @@ export const diag = css({
   "& code": { fontFamily: "mono", fontSize: "12px", color: "ink" },
   "& strong": { color: "ink", fontWeight: "600" },
 });
+export const hint = css({
+  mb: "4",
+  fontSize: "12.5px",
+  color: "faint",
+  "& code": { fontFamily: "mono", fontSize: "11.5px", color: "muted" },
+});

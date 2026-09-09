@@ -19,18 +19,6 @@ import { useShareSpec } from "~/composables/useShareSpec";
 
 const { status: shareStatus, share } = useShareSpec();
 
-const usageSnapshot = computed(() =>
-  report.value
-    ? { report: report.value, scannedCount: scannedCount.value, mode: mode.value }
-    : null,
-);
-watch(usageSnapshot, (u) => saveUsage(u));
-
-function shareReport() {
-  if (!file.value || !usageSnapshot.value) return;
-  share(file.value, null, { title: "usage", path: "a", usage: usageSnapshot.value });
-}
-
 useHead({
   title: "Analyze usage — Panda Spec Studio",
   meta: [{ name: "robots", content: "noindex" }],
@@ -55,6 +43,18 @@ const scopedReport = computed(() =>
 );
 
 const noUsage = computed(() => !!report.value?.length && report.value.every((c) => c.used === 0));
+
+const usageSnapshot = computed(() =>
+  report.value
+    ? { report: report.value, scannedCount: scannedCount.value, mode: mode.value }
+    : null,
+);
+watch(usageSnapshot, (u) => saveUsage(u));
+
+function shareReport() {
+  if (!file.value || !usageSnapshot.value) return;
+  share(file.value, null, { title: "usage", path: "a", usage: usageSnapshot.value });
+}
 
 const fromDrop = ref(false);
 
@@ -275,9 +275,8 @@ function reset() {
         <code>tokens.json</code> (run <code>panda codegen</code>). Note this tool targets
         <strong>Panda v2</strong>.
       </p>
-      <p v-else-if="preciseFailed" :class="s.diag">
-        Couldn't run the compiler on that <code>panda.config</code> (custom preset, local imports,
-        or Panda v1) — showing the heuristic name-match scan instead.
+      <p v-else-if="preciseFailed" :class="s.hint">
+        Name-match scan — the compiler couldn't read this <code>panda.config</code>.
       </p>
 
       <p v-if="report && scopeCategory" :class="s.scopeNote">
