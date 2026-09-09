@@ -1,5 +1,5 @@
 import { defineCommand } from 'citty'
-import { exec } from 'node:child_process'
+import { execFile } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { basename, join, resolve } from 'node:path'
 import { baseArgs } from '../args'
@@ -56,9 +56,18 @@ export const specCommand = defineCommand({
     const full = `${studioUrl}${url}`
     console.log(`Shared: ${full}`)
 
-    if (args.open) {
-      const opener = process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'start ""' : 'xdg-open'
-      exec(`${opener} "${full}"`)
+    if (!args.open) return
+
+    let parsed: URL
+    try {
+      parsed = new URL(full)
+    } catch {
+      return
     }
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return
+
+    if (process.platform === 'darwin') execFile('open', [full])
+    else if (process.platform === 'win32') execFile('cmd', ['/c', 'start', '', full])
+    else execFile('xdg-open', [full])
   },
 })
