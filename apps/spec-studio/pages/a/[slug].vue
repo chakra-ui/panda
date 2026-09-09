@@ -55,13 +55,13 @@ async function onScope(e: Event) {
         }}</span>
         Scanned {{ usage.scannedCount }} file{{ usage.scannedCount === 1 ? "" : "s" }}
       </span>
+      <CategorySelect
+        :categories="usage.report.map((c) => c.type)"
+        :category="scopeCategory"
+        @change="onScope"
+      />
     </div>
 
-    <CategorySelect
-      :categories="usage.report.map((c) => c.type)"
-      :category="scopeCategory"
-      @change="onScope"
-    />
     <AnalyzeReport :report="scopedReport" />
   </div>
 </template>

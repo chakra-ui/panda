@@ -4,7 +4,7 @@ import * as s from "./analyze.styles";
 import { button } from "styled-system/recipes";
 import { parseTokens, type TokensFile } from "~/utils/tokens";
 import { extractTokens } from "~/utils/extract-tokens";
-import { loadTokens, saveTokens, saveTokenCss, saveUsage } from "~/utils/idb";
+import { loadTokens, saveTokens, saveTokenCss, saveUsage, loadUsage } from "~/utils/idb";
 import {
   analyzeUsage,
   isSourceFile,
@@ -74,6 +74,17 @@ onMounted(async () => {
   if (droppedFiles.value.length) {
     fromDrop.value = true;
     await analyzeFiles(droppedFiles.value);
+    return;
+  }
+  const saved = await loadUsage<{
+    report: CategoryUsage[];
+    scannedCount: number;
+    mode: "heuristic" | "precise";
+  }>();
+  if (saved?.report?.length) {
+    report.value = saved.report;
+    scannedCount.value = saved.scannedCount ?? 0;
+    mode.value = saved.mode ?? "heuristic";
   }
 });
 
@@ -268,6 +279,12 @@ function reset() {
           Scanned {{ scannedCount }} file{{ scannedCount === 1 ? "" : "s" }}
         </span>
         <div :class="s.toolbarActions">
+          <CategorySelect
+            v-if="report"
+            :categories="report.map((c) => c.type)"
+            :category="scopeCategory"
+            @change="onScope"
+          />
           <button
             :class="button({ variant: 'outline', size: 'sm' })"
             :disabled="shareStatus === 'sharing'"
@@ -295,12 +312,6 @@ function reset() {
         >.
       </p>
 
-      <CategorySelect
-        v-if="report"
-        :categories="report.map((c) => c.type)"
-        :category="scopeCategory"
-        @change="onScope"
-      />
       <AnalyzeReport v-if="report" :report="scopedReport" />
     </template>
   </div>
