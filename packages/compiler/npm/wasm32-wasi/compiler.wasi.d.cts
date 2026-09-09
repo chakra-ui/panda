@@ -34,10 +34,7 @@ export declare class Compiler {
   writeArtifacts(options: WriteArtifactsOptions): Array<string>
   generateArtifacts(options?: GenerateArtifactOptions | undefined | null): Array<CodegenArtifact>
   generateArtifact(id: string, options?: GenerateArtifactOptions | undefined | null): CodegenArtifact | null
-  generateAffectedArtifacts(
-    dependencies: Array<string>,
-    options?: GenerateArtifactOptions | undefined | null,
-  ): Array<CodegenArtifact>
+  generateAffectedArtifacts(dependencies: Array<string>, options?: GenerateArtifactOptions | undefined | null): Array<CodegenArtifact>
   /**
    * Return the serialized config snapshot this project was constructed
    * with.
@@ -241,11 +238,7 @@ export declare class Compiler {
   /** Register a JS-backed `parser:before` source transform. */
   registerSourceTransform(id: string, filter: any | undefined | null, callback: SourceTransformRef): void
   /** Construct a compiler from the resolved, JSON-safe Panda config snapshot. */
-  static fromConfig(
-    config: any,
-    options?: ProjectOptions | undefined | null,
-    utilityValuesCallbacks?: UtilityValueCallbacks | undefined | null,
-  ): Compiler
+  static fromConfig(config: any, options?: ProjectOptions | undefined | null, utilityValuesCallbacks?: UtilityValueCallbacks | undefined | null): Compiler
 }
 
 /**
@@ -400,17 +393,12 @@ export interface DiagnosticLabel {
 export declare const enum DiagnosticSeverity {
   Info = 'info',
   Warning = 'warning',
-  Error = 'error',
+  Error = 'error'
 }
 
 export declare function extract(path: string, source: string, matchers: Matchers): ExtractResult
 
-export declare function extractCalls(
-  path: string,
-  source: string,
-  matched: Array<MatchedImport>,
-  matchers: Matchers,
-): ExtractedCallsResult
+export declare function extractCalls(path: string, source: string, matched: Array<MatchedImport>, matchers: Matchers): ExtractedCallsResult
 
 export declare function extractDebug(path: string, source: string, matchers: Matchers): ExtractDebugResult
 
@@ -439,7 +427,7 @@ export interface ExtractedArg {
  */
 export declare const enum ExtractedArgKind {
   Value = 'value',
-  Missing = 'missing',
+  Missing = 'missing'
 }
 
 export interface ExtractedCall {
@@ -474,12 +462,7 @@ export interface ExtractedJsxResult {
   diagnostics: Array<Diagnostic>
 }
 
-export declare function extractJsx(
-  path: string,
-  source: string,
-  matched: Array<MatchedImport>,
-  matchers: Matchers,
-): ExtractedJsxResult
+export declare function extractJsx(path: string, source: string, matched: Array<MatchedImport>, matchers: Matchers): ExtractedJsxResult
 
 /**
  * Lean result for the production hot path — `imports` and `matched` are
@@ -500,7 +483,7 @@ export interface GenerateArtifactOptions {
 
 export declare const enum ImportKind {
   SideEffect = 'sideEffect',
-  Value = 'value',
+  Value = 'value'
 }
 
 export interface ImportRecord {
@@ -527,7 +510,7 @@ export interface ImportSpecifier {
 export declare const enum ImportSpecifierKind {
   Named = 'named',
   Default = 'default',
-  Namespace = 'namespace',
+  Namespace = 'namespace'
 }
 
 export interface InputFile {
@@ -539,7 +522,7 @@ export declare const enum JsxKind {
   Factory = 'factory',
   Pattern = 'pattern',
   Recipe = 'recipe',
-  Component = 'component',
+  Component = 'component'
 }
 
 export interface LayerCssOptions {
@@ -563,7 +546,7 @@ export declare const enum MatchCategory {
   Recipe = 'recipe',
   Pattern = 'pattern',
   Jsx = 'jsx',
-  Tokens = 'tokens',
+  Tokens = 'tokens'
 }
 
 export interface MatchedImport {
