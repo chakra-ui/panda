@@ -39,6 +39,7 @@ mod usages;
 
 use std::collections::BTreeMap;
 use std::hash::Hash;
+use std::path::Path;
 use std::sync::Arc;
 
 use rustc_hash::{FxHashMap, FxHashSet};
@@ -47,12 +48,14 @@ use smallvec::SmallVec;
 use pandacss_config::UserConfig;
 use pandacss_encoder::{Atom, Encoder, compare_atoms_by_emit_order};
 use pandacss_extractor::{
-    CrossFileResolver, ExportInfo, ExtractedCall, ExtractedJsx, JsxKind, LineIndex, Literal,
-    MatchCategory, extract,
+    CrossFileDependency, CrossFileResolver, ExportInfo, ExtractedCall, ExtractedJsx, JsxKind,
+    LineIndex, Literal, MatchCategory, UnresolvedCrossFileDependency, extract,
 };
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::css_properties::is_css_property;
-use pandacss_shared::{ViewTransitionStyle, diagnostic_codes, hyphenate_property};
+use pandacss_shared::{
+    InlineKeyframe, PositionTryStyle, ViewTransitionStyle, diagnostic_codes, hyphenate_property,
+};
 use pandacss_utility::{ShorthandPolicy, StyleNormalizer, Utility};
 
 /// Key into the utility-transform override map: `(prop, original_value)`. The
@@ -61,7 +64,8 @@ use pandacss_utility::{ShorthandPolicy, StyleNormalizer, Utility};
 pub type UtilityStyleKey = (Box<str>, AtomValue);
 
 pub use build_info::{
-    BuildAtom, BuildInfo, BuildValue, BuildViewTransition, ModuleEntry, SCHEMA_VERSION,
+    BuildAtom, BuildInfo, BuildKeyframe, BuildValue, BuildViewTransition, ModuleEntry,
+    SCHEMA_VERSION,
 };
 pub use design_system::{
     DesignSystemManifest, MANIFEST_SCHEMA_VERSION, ManifestImportMap, ManifestInput,
@@ -152,6 +156,12 @@ pub struct Project {
         Option<(bool, FxHashMap<UtilityStyleKey, Literal>, Vec<Diagnostic>)>,
     merged_utility_styles_snapshot_cache: Option<FxHashMap<UtilityStyleKey, Literal>>,
     parse_epoch: u64,
+    /// Reverse index: cross-file module path → importer → source hash it folded.
+    importers: FxHashMap<String, FxHashMap<Arc<str>, Option<u64>>>,
+    /// Failed cross-file requests keyed by the project file that attempted them.
+    unresolved_importers: FxHashMap<Arc<str>, Vec<UnresolvedCrossFileDependency>>,
+    /// Drained by the host, which re-parses through its transform-aware path.
+    affected_files: FxHashSet<Arc<str>>,
     /// Recipes keyed by `(file, span)` so re-parsing a path drops every
     /// matching entry and span shifts don't leave orphans.
     config_recipes: BTreeMap<RecipeKey, Recipe>,
@@ -163,6 +173,12 @@ pub struct Project {
     view_transitions: BTreeMap<RecipeKey, ViewTransitionStyle>,
     view_transition_spans: FxHashMap<Arc<str>, SmallVec<[u32; 4]>>,
     view_transitions_snapshot_cache: Option<Vec<ViewTransitionStyle>>,
+    position_try: BTreeMap<RecipeKey, PositionTryStyle>,
+    position_try_spans: FxHashMap<Arc<str>, SmallVec<[u32; 4]>>,
+    position_try_snapshot_cache: Option<Vec<PositionTryStyle>>,
+    inline_keyframes: BTreeMap<RecipeKey, InlineKeyframe>,
+    inline_keyframe_spans: FxHashMap<Arc<str>, SmallVec<[u32; 4]>>,
+    inline_keyframes_snapshot_cache: Option<Vec<InlineKeyframe>>,
     config_diagnostics: Vec<Diagnostic>,
     /// Recipe snapshots hydrated from build info, keyed by source library
     /// name and merged into [`Self::stylesheet_snapshots`].
@@ -171,6 +187,10 @@ pub struct Project {
     hydrated_recipe_order: Vec<Arc<str>>,
     hydrated_view_transitions: FxHashMap<Arc<str>, Vec<ViewTransitionStyle>>,
     hydrated_view_transition_order: Vec<Arc<str>>,
+    hydrated_position_try: FxHashMap<Arc<str>, Vec<PositionTryStyle>>,
+    hydrated_position_try_order: Vec<Arc<str>>,
+    hydrated_keyframes: FxHashMap<Arc<str>, Vec<InlineKeyframe>>,
+    hydrated_keyframes_order: Vec<Arc<str>>,
 }
 
 pub struct ProjectStylesheetSnapshots<'a> {
@@ -182,6 +202,8 @@ pub struct ProjectStylesheetSnapshots<'a> {
     /// looks these up to emit one class per usage.
     pub utility_styles: &'a FxHashMap<UtilityStyleKey, Literal>,
     pub view_transitions: &'a [ViewTransitionStyle],
+    pub position_try: &'a [PositionTryStyle],
+    pub inline_keyframes: &'a [InlineKeyframe],
     pub diagnostics: Vec<Diagnostic>,
 }
 
@@ -202,6 +224,8 @@ struct FileEntry {
     /// Top-level export facts for the build-info `exports` map. Empty for
     /// hydrated/synthetic files.
     exports: ExportInfo,
+    /// Cross-file modules this file folded. Used to maintain [`Project::importers`].
+    dependencies: Vec<CrossFileDependency>,
     diagnostics: Vec<Diagnostic>,
     report: ParseFileReport,
 }
@@ -247,6 +271,9 @@ impl Project {
             config_utility_styles_cache: None,
             merged_utility_styles_snapshot_cache: None,
             parse_epoch: 0,
+            importers: FxHashMap::default(),
+            unresolved_importers: FxHashMap::default(),
+            affected_files: FxHashSet::default(),
             config_recipes,
             config_slot_recipes,
             inline_recipes: BTreeMap::new(),
@@ -256,11 +283,21 @@ impl Project {
             view_transitions: BTreeMap::new(),
             view_transition_spans: FxHashMap::default(),
             view_transitions_snapshot_cache: None,
+            position_try: BTreeMap::new(),
+            position_try_spans: FxHashMap::default(),
+            position_try_snapshot_cache: None,
+            inline_keyframes: BTreeMap::new(),
+            inline_keyframe_spans: FxHashMap::default(),
+            inline_keyframes_snapshot_cache: None,
             config_diagnostics,
             hydrated_recipes: FxHashMap::default(),
             hydrated_recipe_order: Vec::new(),
             hydrated_view_transitions: FxHashMap::default(),
             hydrated_view_transition_order: Vec::new(),
+            hydrated_position_try: FxHashMap::default(),
+            hydrated_position_try_order: Vec::new(),
+            hydrated_keyframes: FxHashMap::default(),
+            hydrated_keyframes_order: Vec::new(),
         }
     }
 
@@ -330,6 +367,8 @@ impl Project {
         );
         let _guard = span.enter();
         let source_hash = hash_source(source);
+        let is_new_file = !self.files.contains_key(path);
+        self.mark_affected(path, Some(source_hash), is_new_file);
         if self.files.get(path).is_some_and(|entry| {
             entry.cacheable
                 && entry.source_hash == source_hash
@@ -398,6 +437,8 @@ impl Project {
             .collect::<Vec<_>>();
         // Feeds build-info barrel resolution.
         let exports = result.exports;
+        let dependencies = result.dependencies;
+        let unresolved_dependencies = result.unresolved_dependencies;
 
         let mut diagnostics = result.diagnostics;
         let line_index = LineIndex::new(source);
@@ -519,17 +560,55 @@ impl Project {
                         report.sva_calls += 1;
                     }
                 }
+                (MatchCategory::Css, "positionTry") => {
+                    let Some(arg) = data.into_iter().next().flatten() else {
+                        continue;
+                    };
+                    let style = match &arg {
+                        Literal::Object(_) => PositionTryStyle::from_options(
+                            &arg.to_json(),
+                            &self.config.class_name_prefix,
+                        ),
+                        Literal::String(name) => {
+                            let Some(style) = self.config.position_try(name) else {
+                                continue;
+                            };
+                            style.clone()
+                        }
+                        _ => continue,
+                    };
+                    if style.is_empty() {
+                        continue;
+                    }
+                    self.position_try.insert(
+                        RecipeKey {
+                            file: Arc::clone(&path_key),
+                            span_start: call.span.start,
+                        },
+                        style,
+                    );
+                    self.position_try_spans
+                        .entry(Arc::clone(&path_key))
+                        .or_default()
+                        .push(call.span.start);
+                }
                 (MatchCategory::Css, "viewTransition") => {
                     let Some(arg) = data.into_iter().next().flatten() else {
                         continue;
                     };
-                    if !matches!(arg, Literal::Object(_)) {
-                        continue;
-                    }
-                    let style = ViewTransitionStyle::from_options(
-                        &arg.to_json(),
-                        &self.config.class_name_prefix,
-                    );
+                    let style = match &arg {
+                        Literal::Object(_) => ViewTransitionStyle::from_options(
+                            &arg.to_json(),
+                            &self.config.class_name_prefix,
+                        ),
+                        Literal::String(name) => {
+                            let Some(style) = self.config.view_transition(name) else {
+                                continue;
+                            };
+                            style.clone()
+                        }
+                        _ => continue,
+                    };
                     if style.is_empty() {
                         continue;
                     }
@@ -541,6 +620,30 @@ impl Project {
                         style,
                     );
                     self.view_transition_spans
+                        .entry(Arc::clone(&path_key))
+                        .or_default()
+                        .push(call.span.start);
+                }
+                (MatchCategory::Css, "keyframes") => {
+                    let Some(Literal::Object(_)) = data.first().and_then(Option::as_ref) else {
+                        continue;
+                    };
+                    let arg = data.into_iter().next().flatten().unwrap();
+                    let keyframe = InlineKeyframe::from_options(
+                        &arg.to_json(),
+                        &self.config.class_name_prefix,
+                    );
+                    if keyframe.is_empty() {
+                        continue;
+                    }
+                    self.inline_keyframes.insert(
+                        RecipeKey {
+                            file: Arc::clone(&path_key),
+                            span_start: call.span.start,
+                        },
+                        keyframe,
+                    );
+                    self.inline_keyframe_spans
                         .entry(Arc::clone(&path_key))
                         .or_default()
                         .push(call.span.start);
@@ -755,26 +858,48 @@ impl Project {
             utility_styles,
             token_refs,
             exports,
+            dependencies,
             diagnostics: report.diagnostics.clone(),
             report: report.clone(),
         };
         self.parse_attempt_diagnostics.remove(path);
         match mode {
-            ParseMode::Replace => self.add_file_state(path_key, entry),
-            ParseMode::Additive => self.add_file_state_additive(path_key, entry),
+            ParseMode::Replace => {
+                self.add_file_state(path_key, entry, &unresolved_dependencies);
+            }
+            ParseMode::Additive => {
+                self.add_file_state_additive(path_key, entry, &unresolved_dependencies);
+            }
         }
         report
+    }
+
+    /// Records a read miss for `path`. Last-good state stays; the error shows
+    /// on `get_file` until a later parse succeeds or `remove_file` runs.
+    pub fn record_read_failure(&mut self, path: &str, err: &std::io::Error) -> ParseFileReport {
+        let code = if err.kind() == std::io::ErrorKind::NotFound {
+            diagnostic_codes::SOURCE_NOT_FOUND
+        } else {
+            diagnostic_codes::SOURCE_READ_FAILED
+        };
+        let mut diagnostic = Diagnostic::warning(code, format!("failed to read `{path}`: {err}"));
+        diagnostic.file = Some(path.to_owned());
+        self.parse_attempt_diagnostics
+            .insert(Arc::from(path), vec![diagnostic.clone()]);
+        ParseFileReport {
+            css_calls: 0,
+            cva_calls: 0,
+            sva_calls: 0,
+            jsx_usages: 0,
+            diagnostics: vec![diagnostic],
+        }
     }
 
     /// Re-parses `path` only if it's already known. Watch-mode contract:
     /// filter file-change events through this and edits to untracked files
     /// are ignored automatically.
     pub fn refresh_file(&mut self, path: &str, source: &str) -> bool {
-        if !self.files.contains_key(path) {
-            return false;
-        }
-        self.parse_file_inner(path, source, None, None, None, ParseMode::Additive);
-        true
+        self.refresh_file_with(path, source, ParseTransforms::default())
     }
 
     pub fn refresh_file_with(
@@ -784,6 +909,8 @@ impl Project {
         transforms: ParseTransforms<'_>,
     ) -> bool {
         if !self.files.contains_key(path) {
+            // Untracked modules (outside `include`) still feed folded values.
+            self.mark_affected(path, Some(hash_source(source)), true);
             return false;
         }
         self.parse_file_inner(
@@ -824,6 +951,7 @@ impl Project {
     }
 
     pub fn remove_file(&mut self, path: &str) -> bool {
+        self.mark_affected(path, None, false);
         let had_file = self.remove_file_entry(path).is_some();
         let had_parse_attempt = self.parse_attempt_diagnostics.remove(path).is_some();
         let recipes_dropped = self.drop_recipes_for(path);
@@ -834,6 +962,34 @@ impl Project {
             // change (and trigger a rebuild) when something actually dropped.
             recipes_dropped
         }
+    }
+
+    /// Known files whose folded imports changed since the last call. Re-parse
+    /// each through the host's transform-aware path, then call again until empty.
+    pub fn take_affected_files(&mut self) -> Vec<String> {
+        let mut affected = std::mem::take(&mut self.affected_files)
+            .into_iter()
+            .map(|path| path.as_ref().to_owned())
+            .collect::<Vec<_>>();
+        affected.sort();
+        affected
+    }
+
+    /// Known files that folded a value out of `path`, directly or through a re-export.
+    #[must_use]
+    pub fn importers_of(&self, path: &str) -> Vec<String> {
+        let mut out = self
+            .dependency_key(path)
+            .and_then(|key| self.importers.get(&key))
+            .map(|importers| {
+                importers
+                    .keys()
+                    .map(|path| path.as_ref().to_owned())
+                    .collect::<Vec<_>>()
+            })
+            .unwrap_or_default();
+        out.sort();
+        out
     }
 
     /// Clears every path's state. Keeps the compiled [`Config`].
@@ -852,8 +1008,22 @@ impl Project {
         self.inline_slot_recipe_spans.clear();
         self.view_transitions.clear();
         self.view_transition_spans.clear();
+        self.position_try.clear();
+        self.position_try_spans.clear();
+        self.inline_keyframes.clear();
+        self.inline_keyframe_spans.clear();
         self.hydrated_view_transitions.clear();
         self.hydrated_view_transition_order.clear();
+        self.hydrated_position_try.clear();
+        self.hydrated_position_try_order.clear();
+        self.hydrated_keyframes.clear();
+        self.hydrated_keyframes_order.clear();
+        self.importers.clear();
+        self.unresolved_importers.clear();
+        self.affected_files.clear();
+        if let Some(resolver) = self.config.extractor_config.cross_file.as_ref() {
+            resolver.clear_resolution_cache();
+        }
     }
 
     /// Forces the next `parse_file` for any path to recompute, even if its
@@ -907,7 +1077,135 @@ impl Project {
         }
     }
 
-    fn add_file_state(&mut self, path: Arc<str>, entry: FileEntry) {
+    pub(crate) fn set_hydrated_position_try(&mut self, name: &str, styles: Vec<PositionTryStyle>) {
+        self.invalidate_stylesheet_snapshots();
+        if styles.is_empty() {
+            self.hydrated_position_try.remove(name);
+            self.hydrated_position_try_order
+                .retain(|existing| existing.as_ref() != name);
+        } else {
+            if !self.hydrated_position_try.contains_key(name) {
+                self.hydrated_position_try_order.push(Arc::from(name));
+            }
+            self.hydrated_position_try.insert(Arc::from(name), styles);
+        }
+    }
+
+    pub(crate) fn set_hydrated_keyframes(&mut self, name: &str, keyframes: Vec<InlineKeyframe>) {
+        self.invalidate_stylesheet_snapshots();
+        if keyframes.is_empty() {
+            self.hydrated_keyframes.remove(name);
+            self.hydrated_keyframes_order
+                .retain(|existing| existing.as_ref() != name);
+        } else {
+            if !self.hydrated_keyframes.contains_key(name) {
+                self.hydrated_keyframes_order.push(Arc::from(name));
+            }
+            self.hydrated_keyframes.insert(Arc::from(name), keyframes);
+        }
+    }
+
+    /// Affected files keep their own source, so `cacheable` is dropped to get
+    /// past the unchanged-source short-circuit.
+    fn mark_affected(&mut self, path: &str, source_hash: Option<u64>, retry_unresolved: bool) {
+        let mut affected = self
+            .dependency_key(path)
+            .and_then(|key| self.importers.get(&key))
+            .into_iter()
+            .flat_map(|importers| importers.iter())
+            .filter(|(importer, seen)| **seen != source_hash && importer.as_ref() != path)
+            .map(|(importer, _)| Arc::clone(importer))
+            .collect::<FxHashSet<_>>();
+
+        if retry_unresolved
+            && !self.unresolved_importers.is_empty()
+            && let Some(resolver) = self.config.extractor_config.cross_file.as_ref()
+        {
+            let newly_resolved = self
+                .unresolved_importers
+                .iter()
+                .filter(|(importer, deps)| {
+                    importer.as_ref() != path && resolver.any_resolvable(deps)
+                })
+                .map(|(importer, _)| Arc::clone(importer))
+                .collect::<Vec<_>>();
+            if !newly_resolved.is_empty() {
+                resolver.clear_resolution_cache();
+                affected.extend(newly_resolved);
+            }
+        }
+
+        for importer in affected {
+            if let Some(entry) = self.files.get_mut(importer.as_ref()) {
+                entry.cacheable = false;
+            }
+            self.affected_files.insert(importer);
+        }
+    }
+
+    /// Host paths may differ from the resolver's realpath form (`/var` vs `/private/var`).
+    fn dependency_key(&self, path: &str) -> Option<String> {
+        if self.importers.is_empty() {
+            return None;
+        }
+        if self.importers.contains_key(path) {
+            return Some(path.to_owned());
+        }
+        let resolver = self.config.extractor_config.cross_file.as_ref()?;
+        let key = resolver.dependency_key(Path::new(path))?;
+        Some(key.to_string_lossy().into_owned())
+    }
+
+    fn unindex_file_deps(&mut self, path: &str) {
+        self.unresolved_importers.remove(path);
+        let Some(deps) = self.files.get(path).map(|entry| entry.dependencies.clone()) else {
+            return;
+        };
+        for dep in deps {
+            let Some(importers) = self.importers.get_mut(&dep.path) else {
+                continue;
+            };
+            importers.remove(path);
+            if importers.is_empty() {
+                self.importers.remove(&dep.path);
+            }
+        }
+    }
+
+    fn index_file_deps(&mut self, path: &str, dependencies: &[CrossFileDependency]) {
+        if dependencies.is_empty() {
+            return;
+        }
+        let importer = Arc::<str>::from(path);
+        for dep in dependencies {
+            self.importers
+                .entry(dep.path.clone())
+                .or_default()
+                .insert(Arc::clone(&importer), dep.source_hash);
+        }
+    }
+
+    fn index_unresolved_file_deps(
+        &mut self,
+        path: &Arc<str>,
+        dependencies: &[UnresolvedCrossFileDependency],
+    ) {
+        if !dependencies.is_empty() {
+            self.unresolved_importers
+                .insert(Arc::clone(path), dependencies.to_vec());
+        }
+    }
+
+    fn add_file_state(
+        &mut self,
+        path: Arc<str>,
+        entry: FileEntry,
+        unresolved_dependencies: &[UnresolvedCrossFileDependency],
+    ) {
+        self.affected_files.remove(path.as_ref());
+        self.unindex_file_deps(path.as_ref());
+        self.index_file_deps(path.as_ref(), &entry.dependencies);
+        self.index_unresolved_file_deps(&path, unresolved_dependencies);
         self.invalidate_stylesheet_snapshots();
         for atom in &entry.atoms {
             let atoms_cache = &mut self.atoms_cache;
@@ -925,12 +1223,21 @@ impl Project {
         self.files.insert(path, entry);
     }
 
-    fn add_file_state_additive(&mut self, path: Arc<str>, entry: FileEntry) {
+    fn add_file_state_additive(
+        &mut self,
+        path: Arc<str>,
+        entry: FileEntry,
+        unresolved_dependencies: &[UnresolvedCrossFileDependency],
+    ) {
         if !self.files.contains_key(&path) {
-            self.add_file_state(path, entry);
+            self.add_file_state(path, entry, unresolved_dependencies);
             return;
         }
 
+        self.affected_files.remove(path.as_ref());
+        self.unindex_file_deps(path.as_ref());
+        self.index_file_deps(path.as_ref(), &entry.dependencies);
+        self.index_unresolved_file_deps(&path, unresolved_dependencies);
         self.invalidate_stylesheet_snapshots();
         let mut missing_atoms = Vec::new();
         let mut missing_utility_styles = Vec::new();
@@ -959,6 +1266,7 @@ impl Project {
             existing.cacheable = entry.cacheable;
             existing.token_refs = entry.token_refs;
             existing.exports = entry.exports;
+            existing.dependencies.clone_from(&entry.dependencies);
             existing.diagnostics = entry.diagnostics;
             existing.report = entry.report;
             missing_recipes
@@ -983,6 +1291,8 @@ impl Project {
     }
 
     fn remove_file_entry(&mut self, path: &str) -> Option<FileEntry> {
+        self.affected_files.remove(path);
+        self.unindex_file_deps(path);
         let entry = self.files.remove(path)?;
         self.invalidate_stylesheet_snapshots();
         for atom in &entry.atoms {
@@ -1008,12 +1318,16 @@ impl Project {
         self.token_refs_snapshot_cache = None;
         self.merged_utility_styles_snapshot_cache = None;
         self.view_transitions_snapshot_cache = None;
+        self.position_try_snapshot_cache = None;
+        self.inline_keyframes_snapshot_cache = None;
     }
 
     fn drop_recipes_for(&mut self, path: &str) -> bool {
         let before = self.inline_recipes.len()
             + self.inline_slot_recipes.len()
-            + self.view_transitions.len();
+            + self.view_transitions.len()
+            + self.position_try.len()
+            + self.inline_keyframes.len();
         if let Some((file, spans)) = self.inline_recipe_spans.remove_entry(path) {
             for span_start in spans {
                 self.inline_recipes.remove(&RecipeKey {
@@ -1038,10 +1352,28 @@ impl Project {
                 });
             }
         }
+        if let Some((file, spans)) = self.position_try_spans.remove_entry(path) {
+            for span_start in spans {
+                self.position_try.remove(&RecipeKey {
+                    file: Arc::clone(&file),
+                    span_start,
+                });
+            }
+        }
+        if let Some((file, spans)) = self.inline_keyframe_spans.remove_entry(path) {
+            for span_start in spans {
+                self.inline_keyframes.remove(&RecipeKey {
+                    file: Arc::clone(&file),
+                    span_start,
+                });
+            }
+        }
         before
             != self.inline_recipes.len()
                 + self.inline_slot_recipes.len()
                 + self.view_transitions.len()
+                + self.position_try.len()
+                + self.inline_keyframes.len()
     }
 
     fn process_atomic(
@@ -1143,14 +1475,49 @@ impl Project {
         };
 
         let mut rest = Vec::with_capacity(entries.len());
+        let mut css_layers = Vec::new();
         for (key, value) in entries {
-            if is_css_prop(key) {
+            if key == "css" {
+                collect_css_prop_layers(value, &mut css_layers);
+            } else if is_css_prop(key) {
+                // `inputCss` and friends address a slot, not this element.
                 self.process_nested_css_prop(encoder, value, policy);
             } else {
                 rest.push((key.clone(), value.clone()));
             }
         }
 
+        // Mirrors `resolveStyleArgs` -> `mergeProps`: normalize, then merge with
+        // the css prop last. Encoding the halves apart would emit a class for
+        // each and leave the winner to the sheet's order.
+        if css_layers
+            .iter()
+            .all(|layer| matches!(layer, Literal::Object(_)))
+        {
+            let normalizer = StyleNormalizer::new(
+                self.config.utility.as_ref(),
+                &self.config.breakpoints,
+                policy,
+            );
+            let base = normalizer.normalize(&Literal::Object(rest)).into_owned();
+            let layers: Vec<Literal> = css_layers
+                .iter()
+                .map(|layer| normalizer.normalize(layer).into_owned())
+                .collect();
+            let mut objects = Vec::with_capacity(layers.len() + 1);
+            objects.push(&base);
+            objects.extend(layers.iter());
+            let merged = merge_style_props(&objects);
+            if !matches!(&merged, Literal::Object(entries) if entries.is_empty()) {
+                self.process_atomic(encoder, &merged, policy);
+            }
+            return;
+        }
+
+        // A runtime branch can't merge into the base.
+        for layer in &css_layers {
+            self.process_atomic(encoder, layer, policy);
+        }
         if !rest.is_empty() {
             self.process_atomic(encoder, &Literal::Object(rest), policy);
         }
@@ -1248,6 +1615,8 @@ impl Project {
             self.collect_hydrated_utility_styles(utility_transform);
         let use_merged_utility_styles = self.prepare_snapshot_utility_styles(&hydrated_styles);
         self.refresh_view_transitions_snapshot();
+        self.refresh_position_try_snapshot();
+        self.refresh_inline_keyframes_snapshot();
 
         let mut diagnostics = self
             .static_encoded_recipes_snapshot_cache
@@ -1288,6 +1657,14 @@ impl Project {
                 .view_transitions_snapshot_cache
                 .as_deref()
                 .expect("view transition snapshot was initialized"),
+            position_try: self
+                .position_try_snapshot_cache
+                .as_deref()
+                .expect("position try snapshot was initialized"),
+            inline_keyframes: self
+                .inline_keyframes_snapshot_cache
+                .as_deref()
+                .expect("inline keyframes snapshot was initialized"),
             diagnostics,
         }
     }
@@ -1406,6 +1783,52 @@ impl Project {
                 .or_insert_with(|| style.clone());
         }
         self.view_transitions_snapshot_cache = Some(by_class.into_values().collect());
+    }
+
+    fn refresh_position_try_snapshot(&mut self) {
+        if self.position_try_snapshot_cache.is_some() {
+            return;
+        }
+        let mut by_ident = BTreeMap::<String, PositionTryStyle>::new();
+        for name in &self.hydrated_position_try_order {
+            let Some(styles) = self.hydrated_position_try.get(name) else {
+                continue;
+            };
+            for style in styles {
+                by_ident
+                    .entry(style.ident.clone())
+                    .or_insert_with(|| style.clone());
+            }
+        }
+        for style in self.position_try.values() {
+            by_ident
+                .entry(style.ident.clone())
+                .or_insert_with(|| style.clone());
+        }
+        self.position_try_snapshot_cache = Some(by_ident.into_values().collect());
+    }
+
+    fn refresh_inline_keyframes_snapshot(&mut self) {
+        if self.inline_keyframes_snapshot_cache.is_some() {
+            return;
+        }
+        let mut by_name = BTreeMap::<String, InlineKeyframe>::new();
+        for name in &self.hydrated_keyframes_order {
+            let Some(keyframes) = self.hydrated_keyframes.get(name) else {
+                continue;
+            };
+            for keyframe in keyframes {
+                by_name
+                    .entry(keyframe.name.clone())
+                    .or_insert_with(|| keyframe.clone());
+            }
+        }
+        for keyframe in self.inline_keyframes.values() {
+            by_name
+                .entry(keyframe.name.clone())
+                .or_insert_with(|| keyframe.clone());
+        }
+        self.inline_keyframes_snapshot_cache = Some(by_name.into_values().collect());
     }
 
     /// Recomputes `config_utility_styles_cache` when the transform presence changes.
@@ -1723,9 +2146,14 @@ impl Project {
             && self.inline_recipe_spans.is_empty()
             && self.inline_slot_recipe_spans.is_empty()
             && self.view_transitions.is_empty()
+            && self.position_try.is_empty()
+            && self.inline_keyframes.is_empty()
+            && self.inline_keyframe_spans.is_empty()
             && self.view_transition_spans.is_empty()
             && self.hydrated_recipes.is_empty()
             && self.hydrated_view_transitions.is_empty()
+            && self.hydrated_position_try.is_empty()
+            && self.hydrated_keyframes.is_empty()
     }
 
     /// Every `cva()` recipe, keyed by `(file, span_start)`. Stable order
@@ -1793,7 +2221,8 @@ impl Project {
     }
 
     /// Resolve a config recipe call to the class string a static runtime call
-    /// would return. Slot recipes and conditional variants return `None`.
+    /// would return. Slot recipes, JS ternaries, and responsive variants return
+    /// `None`.
     #[must_use]
     pub fn class_names_for_recipe_call(
         &self,
@@ -1801,15 +2230,30 @@ impl Project {
         args: &[Option<Literal>],
     ) -> Option<Vec<String>> {
         let compiled = self.config.as_ref();
-        let empty = Literal::Object(Vec::new());
-        let arg = match args.first().and_then(|arg| arg.as_ref()) {
-            None => &empty,
-            Some(Literal::Object(_)) => args.first().and_then(|arg| arg.as_ref())?,
-            Some(_) => return None,
-        };
         compiled.recipes.class_names_for_recipe_call(
             recipe_name,
-            arg,
+            recipe_call_props(args)?,
+            &compiled.conditions,
+            &compiled.breakpoints,
+        )
+    }
+
+    #[must_use]
+    pub fn slot_recipe_slots(&self, recipe_name: &str) -> Option<&[String]> {
+        self.config.recipes.slot_names(recipe_name)
+    }
+
+    /// Class names a static slot recipe call resolves to, per slot.
+    #[must_use]
+    pub fn class_names_for_slot_recipe_call(
+        &self,
+        recipe_name: &str,
+        args: &[Option<Literal>],
+    ) -> Option<Vec<(String, Vec<String>)>> {
+        let compiled = self.config.as_ref();
+        compiled.recipes.class_names_for_slot_recipe_call(
+            recipe_name,
+            recipe_call_props(args)?,
             &compiled.conditions,
             &compiled.breakpoints,
         )
@@ -2013,6 +2457,19 @@ pub(crate) fn condition_style_key(config: &UserConfig, condition: &str) -> Strin
 
 fn is_css_prop(key: &str) -> bool {
     key == "css" || key.ends_with("Css")
+}
+
+/// The objects a `css` prop contributes, in application order.
+fn collect_css_prop_layers(value: &Literal, out: &mut Vec<Literal>) {
+    match value {
+        Literal::Array(items) => {
+            for item in items {
+                collect_css_prop_layers(item, out);
+            }
+        }
+        Literal::Null | Literal::Bool(false) => {}
+        other => out.push(other.clone()),
+    }
 }
 
 /// Mirrors the emitter's `value_to_atom_value` so override keys match at lookup.
@@ -2541,3 +2998,13 @@ pub use transform::{
     TransformOutput, TransformTargets, inject_cx_import, inject_internal_css_import,
     inject_internal_css_import_at, sync_internal_css_import, transform_source,
 };
+
+/// The variant props of a recipe call: its first object argument, or no props at all.
+fn recipe_call_props(args: &[Option<Literal>]) -> Option<&Literal> {
+    static EMPTY: Literal = Literal::Object(Vec::new());
+    match args.first().and_then(Option::as_ref) {
+        None => Some(&EMPTY),
+        Some(arg @ Literal::Object(_)) => Some(arg),
+        Some(_) => None,
+    }
+}

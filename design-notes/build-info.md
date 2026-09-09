@@ -160,6 +160,8 @@ Two paths, by how the engine encodes each:
 
 `viewTransition({…})` has its own path, separate from atoms and config recipes. Build info stores a top-level
 `viewTransitions` array, deduplicated by final `class_name`, plus per-module indices. Slot bodies remain opaque JSON.
+Theme-named bags (`viewTransition('slide')`) resolve from the consumer's merged `theme.viewTransitions` and only enter
+this array when a source file uses them.
 
 During hydration, library entries merge before local entries. A design system that hydrates and republishes a parent
 serializes only its own `view_transitions`. It must not emit the parent's data again. This matches the rule that

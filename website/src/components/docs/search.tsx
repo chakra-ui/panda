@@ -1,7 +1,11 @@
-import { css, cx } from '@/styled-system/css'
-import { useEffect, useState } from 'react'
 import { SearchIcon } from '@/icons'
+import { css, cx } from '@/styled-system/css'
 import { center } from '@/styled-system/patterns'
+import { formatHotkey } from '@zag-js/hotkeys'
+import { useEffect, useState } from 'react'
+
+/** Kept in step with the `mod+k` command registered by the command menu. */
+export const SEARCH_HOTKEY = 'mod+k'
 
 const styles = {
   container: css({
@@ -21,10 +25,13 @@ const styles = {
     py: '2',
     ps: '3',
     pe: '12',
-    transition: 'shadow',
+    cursor: 'pointer',
+    transitionProperty: 'background-color',
+    transitionDuration: '150ms',
     textStyle: 'sm',
     lineHeight: 'tight',
-    bg: 'bg.muted'
+    bg: 'bg.muted',
+    _hover: { bg: 'bg.muted.hover' }
   }),
 
   kbd: css({
@@ -42,7 +49,10 @@ const styles = {
     fontSize: '10px',
     fontWeight: 'medium',
     borderWidth: '1px',
+    // `align-items` needs a flex container; as a block the glyphs sat 2px high.
+    display: 'inline-flex',
     alignItems: 'center',
+    justifyContent: 'center',
     opacity: 0,
     '&[data-mounted]': {
       opacity: 1
@@ -51,16 +61,22 @@ const styles = {
 }
 
 interface SearchButtonProps extends React.ComponentProps<'button'> {
-  /** Applied to the outer container div, not the button itself, use this to control overall width/flex from a parent that needs the search bar to grow. */
+  /** Applied to the container, not the button, so a parent can size the bar. */
   containerClassName?: string
 }
 
 export const SearchButton = (props: SearchButtonProps) => {
   const { className, containerClassName, ...rest } = props
-  const key = useCommandOrControl()
+  const key = useHotkeyLabel()
   return (
     <>
-      <div className={cx(styles.container, css({ hideBelow: 'sm' }), containerClassName)}>
+      <div
+        className={cx(
+          styles.container,
+          css({ hideBelow: 'sm' }),
+          containerClassName
+        )}
+      >
         <button
           spellCheck={false}
           className={cx(className, styles.input)}
@@ -86,10 +102,15 @@ export const SearchButton = (props: SearchButtonProps) => {
   )
 }
 
-const useCommandOrControl = () => {
-  const [key, setKey] = useState<string | null>(null)
+/** The modifier is only knowable on the client, so the badge fades in once. */
+const useHotkeyLabel = () => {
+  const [label, setLabel] = useState<string | null>(null)
+
   useEffect(() => {
-    setKey(navigator.userAgent.includes('Macintosh') ? '⌘K' : '⌃K')
+    setLabel(
+      formatHotkey(SEARCH_HOTKEY, { platform: 'auto', style: 'symbols' })
+    )
   }, [])
-  return key
+
+  return label
 }

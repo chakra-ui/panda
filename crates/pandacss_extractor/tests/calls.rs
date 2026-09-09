@@ -3,8 +3,8 @@ use insta::assert_yaml_snapshot;
 
 use crate::common::css_matchers;
 use pandacss_extractor::{
-    CssSyntaxKind, ExtractedCallsResult, ExtractorConfig, ImportSpecifierKind, MatchCategory,
-    MatchedImport, Matcher, Matchers, NameMatcher, extract_calls,
+    ExtractedCallsResult, ExtractorConfig, ImportSpecifierKind, MatchCategory, MatchedImport,
+    Matcher, Matchers, NameMatcher, extract_calls,
 };
 
 fn css(alias: &str) -> MatchedImport {
@@ -116,30 +116,6 @@ fn extract_with_jsx(
         "fixture.tsx",
         matched,
         &ExtractorConfig::new(matchers.clone()).with_jsx_framework(true),
-    )
-}
-
-fn extract_template(source: &str, matched: &[MatchedImport]) -> ExtractedCallsResult {
-    extract_calls(
-        source,
-        "fixture.tsx",
-        matched,
-        &ExtractorConfig::new(css_matchers()).with_syntax(CssSyntaxKind::TemplateLiteral),
-    )
-}
-
-fn extract_with_template_jsx(
-    source: &str,
-    matched: &[MatchedImport],
-    matchers: &Matchers,
-) -> ExtractedCallsResult {
-    extract_calls(
-        source,
-        "fixture.tsx",
-        matched,
-        &ExtractorConfig::new(matchers.clone())
-            .with_jsx_framework(true)
-            .with_syntax(CssSyntaxKind::TemplateLiteral),
     )
 }
 
@@ -866,60 +842,7 @@ fn jsx_factory_property_call_extracts_recipe_config() {
 }
 
 #[test]
-fn jsx_factory_call_tagged_template_extracts_as_css() {
-    let result = extract_with_template_jsx(
-        "styled('span')`color: red; padding: 4px;`",
-        &[jsx_factory("styled")],
-        &panda_matchers("@panda"),
-    );
-
-    assert_yaml_snapshot!(result, @r"
-    calls:
-      - category: css
-        name: css
-        alias: styled
-        data:
-          - color: red
-            padding: 4px
-        span:
-          start: 0
-          end: 41
-    diagnostics: []
-    ");
-}
-
-#[test]
-fn bare_jsx_factory_tagged_template_does_not_extract() {
-    // `styled` without an element has no target; only member
-    // (`styled.div`) and call (`styled('div')`) tags extract.
-    let result = extract_with_template_jsx(
-        "styled`display: flex;`",
-        &[jsx_factory("styled")],
-        &panda_matchers("@panda"),
-    );
-
-    assert_yaml_snapshot!(result, @r"
-    calls: []
-    diagnostics: []
-    ");
-}
-
-#[test]
-fn unmatched_member_tagged_template_does_not_extract() {
-    let result = extract_with_template_jsx(
-        "other.div`display: flex;`",
-        &[jsx_factory("styled")],
-        &panda_matchers("@panda"),
-    );
-
-    assert_yaml_snapshot!(result, @r"
-    calls: []
-    diagnostics: []
-    ");
-}
-
-#[test]
-fn jsx_factory_call_tagged_template_ignored_in_object_syntax() {
+fn jsx_factory_call_tagged_template_does_not_extract() {
     let result = extract_with_jsx(
         "styled('span')`color: red; padding: 4px;`",
         &[jsx_factory("styled")],
@@ -2113,64 +2036,8 @@ fn non_null_assertion_unwraps_through_member_access() {
     assert_eq!(json["color"], "red");
 }
 
-// --- CSS-in-template via the `css` helper (`css`...``) ---
-
 #[test]
-fn css_tagged_template_folds_to_style_object() {
-    // `css`background: red; color: blue;`` — the css helper as a tagged
-    // template desugars to a css call; the body parses (via the astish port)
-    // into a kebab-keyed style object. Declarations terminate with `;`, as the
-    // astish regex requires.
-    assert_yaml_snapshot!(
-        extract_template("css`background: red; color: blue;`", &[css("css")]),
-        @"
-    calls:
-      - category: css
-        name: css
-        alias: css
-        data:
-          - background: red
-            color: blue
-        span:
-          start: 0
-          end: 34
-    diagnostics: []
-    ",
-    );
-}
-
-#[test]
-fn css_tagged_template_supports_native_nesting() {
-    assert_yaml_snapshot!(
-        extract_template(
-            "css`color: red; p { color: blue; } .box & { background-color: red; }`",
-            &[css("css")],
-        )
-        .calls[0]
-            .data,
-        @r#"
-    - color: red
-      "& p":
-        color: blue
-      ".box &":
-        background-color: red
-    "#,
-    );
-}
-
-#[test]
-fn cva_tagged_template_is_not_css_in_template() {
-    // Only `css` qualifies as CSS-in-template; `cva` takes a config object, so
-    // `cva`...`` extracts nothing.
-    let result = extract_template("cva`color: red`", &[cva("cva")]);
-    assert_yaml_snapshot!(result, @r"
-    calls: []
-    diagnostics: []
-    ");
-}
-
-#[test]
-fn css_tagged_template_ignored_in_object_syntax() {
+fn css_tagged_template_does_not_extract() {
     let result = extract("css`background: red; color: blue;`", &[css("css")]);
     assert_yaml_snapshot!(result, @r"
     calls: []

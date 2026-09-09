@@ -1,9 +1,9 @@
 use crate::common::{artifact, file, paths};
 use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
-use pandacss_config::{CodegenFormat, CssSyntaxKind, JsxStylePropsConfig, UserConfig};
+use pandacss_config::{CodegenFormat, JsxStylePropsConfig, UserConfig};
 
-fn config(framework: &str, template_literal: bool) -> UserConfig {
-    let mut config: UserConfig = serde_json::from_value(serde_json::json!({
+fn config(framework: &str) -> UserConfig {
+    serde_json::from_value(serde_json::json!({
         "jsxFramework": framework,
         "jsxFactory": "panda",
         "utilities": {
@@ -20,11 +20,7 @@ fn config(framework: &str, template_literal: bool) -> UserConfig {
             }
         }
     }))
-    .expect("config should deserialize");
-    if template_literal {
-        config.syntax = CssSyntaxKind::TemplateLiteral;
-    }
-    config
+    .expect("config should deserialize")
 }
 
 #[test]
@@ -55,8 +51,8 @@ fn emits_pattern_jsx_for_non_react_frameworks() {
             "import type { FunctionalComponent } from 'vue';",
         ),
     ] {
-        let artifacts = ArtifactGraph
-            .generate_with_config(&config(framework, false), GenerateOptions::default());
+        let artifacts =
+            ArtifactGraph.generate_with_config(&config(framework), GenerateOptions::default());
         let patterns = artifact(&artifacts, ArtifactId::JsxPatterns);
 
         assert_eq!(paths(patterns), vec!["jsx/stack.mjs", "jsx/stack.d.ts"]);
@@ -111,8 +107,8 @@ fn emits_recipe_contexts_for_supported_non_react_frameworks() {
             "VModelProps",
         ),
     ] {
-        let artifacts = ArtifactGraph
-            .generate_with_config(&config(framework, false), GenerateOptions::default());
+        let artifacts =
+            ArtifactGraph.generate_with_config(&config(framework), GenerateOptions::default());
         let recipe = artifact(&artifacts, ArtifactId::JsxCreateRecipeContext);
         let slot_recipe = artifact(&artifacts, ArtifactId::JsxCreateSlotRecipeContext);
         let index = file(artifact(&artifacts, ArtifactId::JsxIndex), "jsx/index.mjs");
@@ -167,8 +163,7 @@ fn emits_recipe_contexts_for_supported_non_react_frameworks() {
 
 #[test]
 fn skips_recipe_contexts_for_qwik() {
-    let artifacts =
-        ArtifactGraph.generate_with_config(&config("qwik", false), GenerateOptions::default());
+    let artifacts = ArtifactGraph.generate_with_config(&config("qwik"), GenerateOptions::default());
     let recipe = artifact(&artifacts, ArtifactId::JsxCreateRecipeContext);
     let slot_recipe = artifact(&artifacts, ArtifactId::JsxCreateSlotRecipeContext);
     let index = file(artifact(&artifacts, ArtifactId::JsxIndex), "jsx/index.mjs");
@@ -186,7 +181,7 @@ fn non_react_slot_recipe_contexts_preserve_style_prop_modes() {
         ("solid", "css.raw(slotStyles, restProps.css)"),
         ("vue", "css.raw(slotStyles, restProps.css)"),
     ] {
-        let mut config = config(framework, false);
+        let mut config = config(framework);
         config.jsx_style_props = Some(JsxStylePropsConfig::Minimal);
         let artifacts = ArtifactGraph.generate_with_config(&config, GenerateOptions::default());
         let code = file(
@@ -204,7 +199,7 @@ fn non_react_slot_recipe_contexts_preserve_style_prop_modes() {
 #[test]
 fn solid_slot_recipe_context_supports_function_default_props() {
     let artifacts =
-        ArtifactGraph.generate_with_config(&config("solid", false), GenerateOptions::default());
+        ArtifactGraph.generate_with_config(&config("solid"), GenerateOptions::default());
     let code = file(
         artifact(&artifacts, ArtifactId::JsxCreateSlotRecipeContext),
         "jsx/create-slot-recipe-context.mjs",
@@ -258,8 +253,8 @@ fn emits_object_jsx_factory_for_non_react_frameworks() {
             "import type { Component, FunctionalComponent, NativeElements } from 'vue';",
         ),
     ] {
-        let artifacts = ArtifactGraph
-            .generate_with_config(&config(framework, false), GenerateOptions::default());
+        let artifacts =
+            ArtifactGraph.generate_with_config(&config(framework), GenerateOptions::default());
         let factory = artifact(&artifacts, ArtifactId::JsxFactory);
         let helper = artifact(&artifacts, ArtifactId::JsxHelper);
         let types = artifact(&artifacts, ArtifactId::Types);
@@ -291,72 +286,10 @@ fn emits_object_jsx_factory_for_non_react_frameworks() {
 }
 
 #[test]
-fn emits_template_literal_jsx_factory_for_non_react_frameworks() {
-    for (framework, import_marker, runtime_marker, type_marker) in [
-        (
-            "preact",
-            "from 'preact';",
-            "forwardRef(function PandaComponent",
-            "(args: { raw: readonly string[] | ArrayLike<string> })",
-        ),
-        (
-            "qwik",
-            "from '@builder.io/qwik';",
-            "const PandaComponent = (props) =>",
-            "(args: { raw: readonly string[] | ArrayLike<string> })",
-        ),
-        (
-            "solid",
-            "from 'solid-js';",
-            "createComponent(\n        Dynamic,",
-            "(args: { raw: readonly string[] | ArrayLike<string> })",
-        ),
-        (
-            "vue",
-            "from 'vue';",
-            "defineComponent({",
-            "FunctionalComponent<ComponentPropsOf<T> & AsProps>",
-        ),
-    ] {
-        let artifacts = ArtifactGraph
-            .generate_with_config(&config(framework, true), GenerateOptions::default());
-        let factory = artifact(&artifacts, ArtifactId::JsxFactory);
-        let helper = artifact(&artifacts, ArtifactId::JsxHelper);
-        let types = artifact(&artifacts, ArtifactId::Types);
-
-        assert_eq!(paths(factory), vec!["jsx/factory.mjs", "jsx/factory.d.ts"]);
-        assert_eq!(paths(helper), vec!["jsx/helper.mjs", "jsx/helper.d.ts"]);
-        let code = file(factory, "jsx/factory.mjs");
-        let helper_code = file(helper, "jsx/helper.mjs");
-        let jsx = file(types, "types/jsx.d.ts");
-
-        assert!(
-            code.contains(import_marker),
-            "{framework} template import missing"
-        );
-        assert!(
-            code.contains(runtime_marker),
-            "{framework} template runtime marker missing"
-        );
-        assert!(code.contains("const staticClassName = css(styles)"));
-        assert!(code.contains("css.raw("));
-        assert!(code.contains("from './helper'"));
-        assert!(helper_code.contains("getDisplayName"));
-        assert!(!helper_code.contains("splitJsxProps"));
-        assert!(!code.contains("cva"));
-        assert!(!code.contains("isCssProperty"));
-        assert!(
-            jsx.contains(type_marker),
-            "{framework} template type marker missing"
-        );
-    }
-}
-
-#[test]
 fn types_index_reexports_jsx_for_non_react_frameworks() {
     for framework in ["preact", "qwik", "solid", "vue"] {
         let artifacts = ArtifactGraph.generate_with_config(
-            &config(framework, false),
+            &config(framework),
             GenerateOptions {
                 format: CodegenFormat::Ts,
                 ..GenerateOptions::default()

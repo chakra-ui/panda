@@ -1,5 +1,11 @@
 export const RsbuildLogo = () => (
-  <svg fill="none" width="32" height="32" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2500 2345">
+  <svg
+    fill="none"
+    width="32"
+    height="32"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 2500 2345"
+  >
     <g clipPath="url(#a)">
       <path
         d="M298 1807a4381 4381 0 0 0-180 84l-36 41c-14 37-11 96-17 135l17 36 21-8s9-33 64-89l51-43s181-108 207-120l-127-36Z"

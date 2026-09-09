@@ -281,3 +281,50 @@ fn stylesheet_snapshots_include_implicit_uppercase_jsx_styles() {
     - padding
     ");
 }
+
+#[test]
+fn replacing_file_swaps_named_view_transitions() {
+    let config = create_config(json!({
+        "theme": {
+            "viewTransitions": {
+                "slide": { "old": { "opacity": 0 } },
+                "fade": { "old": { "opacity": 1 } },
+            }
+        }
+    }));
+    let mut project = pandacss_project::Project::new(
+        pandacss_project::System::new(config.clone()).expect("valid project config"),
+    );
+
+    project.parse_file(
+        "vt.ts",
+        "import { viewTransition } from '@panda/css';\nviewTransition('slide');",
+    );
+    let names: Vec<_> = project
+        .stylesheet_snapshots(&config)
+        .view_transitions
+        .iter()
+        .map(|style| style.class_name.as_str())
+        .collect();
+    assert_eq!(names, ["vt_slide"]);
+
+    project.parse_file(
+        "vt.ts",
+        "import { viewTransition } from '@panda/css';\nviewTransition('fade');",
+    );
+    let names: Vec<_> = project
+        .stylesheet_snapshots(&config)
+        .view_transitions
+        .iter()
+        .map(|style| style.class_name.as_str())
+        .collect();
+    assert_eq!(names, ["vt_fade"]);
+
+    project.remove_file("vt.ts");
+    assert!(
+        project
+            .stylesheet_snapshots(&config)
+            .view_transitions
+            .is_empty()
+    );
+}

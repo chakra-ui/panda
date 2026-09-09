@@ -236,3 +236,61 @@ fn reports_invalid_container_configuration() {
       severity: warning
     "#);
 }
+
+#[test]
+fn does_not_report_a_literal_color_with_an_alpha_modifier() {
+    let diagnostics = validate_config_value(&json!({
+        "validation": "warn",
+        "theme": {
+            "tokens": {
+                "colors": { "black": { "value": "#09090B" } }
+            },
+            "semanticTokens": {
+                "shadows": {
+                    "hex": { "value": "0 0 0 1px {#000/64}" },
+                    "functional": { "value": "0 0 0 1px {rgb(0 0 0)/64}" },
+                    "named": { "value": "0 0 0 1px {black/64}" }
+                }
+            }
+        }
+    }));
+
+    let missing: Vec<_> = diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.code == "config_token_missing_reference")
+        .map(|diagnostic| diagnostic.message.clone())
+        .collect();
+
+    assert_yaml_snapshot!(missing, @r#"
+    - "Missing token: `black` used in `theme.semanticTokens.shadows.named`"
+    "#);
+}
+
+#[test]
+fn rejects_theme_names_that_cannot_be_an_attribute_value_or_condition_key() {
+    let diagnostics = diagnostics(json!({
+        "validation": "warn",
+        "themes": {
+            "gothic": {},
+            "gothic-legacy": {},
+            "my theme": {},
+            "brand.blue": {},
+            "extend": {
+                "acme@2": {},
+                "y2k": {}
+            }
+        }
+    }));
+
+    assert_yaml_snapshot!(diagnostics, @r#"
+    - code: config_theme_name_invalid
+      message: "Theme names may only use letters, digits, `-` and `_`: `my theme`"
+      severity: warning
+    - code: config_theme_name_invalid
+      message: "Theme names may only use letters, digits, `-` and `_`: `brand.blue`"
+      severity: warning
+    - code: config_theme_name_invalid
+      message: "Theme names may only use letters, digits, `-` and `_`: `acme@2`"
+      severity: warning
+    "#);
+}

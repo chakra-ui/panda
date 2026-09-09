@@ -15,9 +15,9 @@ const eslintConfig = [
       'yarn.lock',
       'src/App.tsx',
       '.next/**',
-      '.velite/**',
-      'next-env.d.ts',
-    ],
+      '.source/**',
+      'next-env.d.ts'
+    ]
   },
   ...nextVitals,
   ...nextTypescript,
@@ -37,10 +37,10 @@ const eslintConfig = [
       // Ignore unused variables that start with "_"
       '@typescript-eslint/no-unused-vars': [
         'warn',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
-      ],
-    },
-  },
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
+      ]
+    }
+  }
 ]
 
 export default eslintConfig

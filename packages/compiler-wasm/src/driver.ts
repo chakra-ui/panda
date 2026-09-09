@@ -76,12 +76,21 @@ class BrowserDriver extends BaseDriver {
   }
 
   applyChange(change: SourceChange): boolean {
+    const changed = this.trackSourceChange(change, this.#applySourceChange(change))
+    const refreshed = this.refreshAffectedFiles()
+    return changed || refreshed
+  }
+
+  #applySourceChange(change: SourceChange): boolean {
     if (change.kind === 'unlink') {
       this.compiler.fs.removeFile?.(change.path)
       return this.compiler.removeFile(change.path)
     }
     if (change.content == null) return false
+    // Importers fold this module from the vfs, so it stays current even for non-source paths.
     this.compiler.fs.addFile?.(change.path, change.content)
+    if (this.compiler.refreshFileSource(change.path, change.content)) return true
+    if (!this.isSourceFile(change.path)) return false
     this.compiler.parseFileSource(change.path, change.content)
     return true
   }

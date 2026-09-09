@@ -83,7 +83,7 @@ fn narrows_partial_css_import_when_only_cva_stays_live() {
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
     export const cls = "color_red";
-    export const button = __pcva({ base: 'color_blue' });
+    export const button = /* @__PURE__ */ __pcva({ base: 'color_blue' });
     "#);
 }
 

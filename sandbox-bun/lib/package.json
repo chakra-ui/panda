@@ -1,0 +1,13 @@
+{
+  "name": "sandbox-bun-lib",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "clean": "rm -rf styled-system dist",
+    "build": "bun run build.ts",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.12"
+  }
+}

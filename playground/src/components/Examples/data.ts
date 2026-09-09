@@ -1,4 +1,4 @@
-import { getConfig } from './utils'
+import { DEFAULT_PRESETS, getConfig } from './utils'
 import outdent from 'outdent'
 
 export const initialCSS = `@layer reset,
@@ -267,6 +267,49 @@ export const EXAMPLES = [
     config: getConfig(`theme: { extend: {} },`),
   },
 
+  {
+    id: 'prose',
+    label: 'Typography (prose)',
+    code: outdent`import { prose } from 'styled-system/recipes';
+
+    // HTML you don't control: a CMS field, rendered Markdown, a model reply.
+    const html = \`
+      <h1>Shipping a token change</h1>
+      <p class="lead">Change the palette once. Every component follows, in light and dark.</p>
+      <p>Components read roles like <code>bg: 'surface'</code>, not values. Change the role's value and you are done.</p>
+      <h2>Three steps</h2>
+      <ol>
+        <li>Pick the value in the token sheet.</li>
+        <li>Export it to <code>tokens.json</code>.</li>
+        <li>Run codegen.</li>
+      </ol>
+      <blockquote><p>The best token change is the one nobody finds out about.</p></blockquote>
+      <table>
+        <thead><tr><th>Role</th><th>Light</th><th>Dark</th></tr></thead>
+        <tbody>
+          <tr><td>surface</td><td>white</td><td>gray.800</td></tr>
+          <tr><td>accent</td><td>blue.600</td><td>blue.300</td></tr>
+        </tbody>
+      </table>
+    \`;
+
+    export const App = () => {
+      return (
+        <div style={{ padding: 32 }}>
+          <article
+            className={prose({ size: 'md' })}
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
+        </div>
+      );
+    };
+
+        `,
+    config: getConfig(`theme: { extend: {} },`, undefined, undefined, [
+      ...DEFAULT_PRESETS,
+      '@pandacss/preset-typography',
+    ]),
+  },
   {
     id: 'jsx',
     label: 'JSX Style Props',

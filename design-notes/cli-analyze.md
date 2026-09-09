@@ -19,8 +19,10 @@ except explicit report outputs.
 Keep the command name `analyze`. It is the v1 name, it reads as an action like the rest of the CLI, and it describes the
 work better than noun commands like `usage` or `report`. The output should be described as a **usage report**.
 
-The implementation ships terminal output, JSON output, `--outfile`, a static HTML report via `--report <dir>`, and a
-local live report via `--ui`. The HTML report supports local search/filtering over the same JSON model.
+The implementation ships terminal output, JSON output, and `--outfile`. It does not ship a report viewer: the static
+HTML report and the live `--ui` server were removed in the beta line because a bundled Preact app, a Vite build, and a
+watch-driven server were too much surface for the CLI package. The JSON model is the contract for any viewer; the wasm
+build exports `createUsageReport`, so the playground or a studio page can render the same data in the browser.
 
 ## Problem
 
@@ -55,12 +57,9 @@ Common forms:
 panda analyze --include "src/**/*.tsx"
 panda analyze --scope tokens
 panda analyze --scope recipes
-panda analyze --scope all
 panda analyze --limit 25
 panda analyze --json
 panda analyze --outfile panda-analysis.json
-panda analyze --report panda-analysis
-panda analyze --ui
 ```
 
 Use `--include` for source narrowing. It is explicit, consistent with the v2 CLI, and avoids adding a positional form
@@ -69,7 +68,7 @@ that competes with subcommands or future arguments.
 `--scope` should narrow the report. Public help should use plural section names:
 
 ```txt
-all | tokens | recipes | utilities | patterns | keyframes
+tokens | recipes | utilities | patterns | keyframes
 ```
 
 The parser can accept v1 singular aliases (`token`, `recipe`) and normalize them to `tokens` and `recipes`.
@@ -119,9 +118,26 @@ button    5/12 (41.67%)     size.sm (4), variant.solid (3)      8       jsx 75%,
 badge     2/6 (33.33%)      size.md (2), tone.info (1)          3       jsx 100%, fn 0%
 ```
 
-Default human output should focus on `tokens` and `recipes`, matching the v1 job: understand design-token and recipe
-usage. `--scope all` can prepend a compact summary for the broader v2 scopes before the detailed token and recipe
-sections:
+Human output with no `--scope` prints the summary and every section; a single scope prints that section alone. There is
+no `all` value: omitting the flag already means all, and a synonym would be repetition. Utilities, patterns, and
+keyframes share one shape, ranked by uses with the configured names nobody uses underneath, since "what can I prune" is
+the question behind all three:
+
+```txt
+Keyframes   1/2 used (50.00%)
+Keyframe   Uses   Files
+spin       1      1
+Unused in scanned sources (1): pulse
+```
+
+Utilities count by canonical name, so a shorthand and its longhand are one row and one configured entry.
+
+`--unused` is the removal-tool view, in the shape knip and depcheck print: only the configured names nobody uses, one
+per line, no cap, grouped by section. With `--scope` the headings go too, so the output is just names and pipes into
+`xargs` or a diff. The tables stay the exploratory view; `--unused` is the list you act on. It never changes the exit
+code: unused is data, and policy belongs to lint.
+
+The summary that opens the unscoped output looks like:
 
 ```txt
 Summary
@@ -165,52 +181,29 @@ interface AnalyzeResult extends CliResult {
     tokens: TokenUsageReport
     recipes: RecipeUsageReport
   }
+  usages: Array<{ kind: 'token' | 'recipe' | 'utility' | 'pattern' | 'keyframe'; name; file; line; column }>
 }
 ```
 
-Treat `facts` as the source of truth. It should be table-shaped so terminal output, static HTML, and a future
-interactive viewer can all project from the same data. `views` are derived conveniences for the terminal renderer and
-simple JSON consumers.
+`usages` is the flat, denormalized list of every site the report counted, ordered by file and position. It exists for
+scripts: `jq '.usages[] | select(.name == "colors.brand.300")'` answers the removal question without joining `facts`.
 
-`summary` includes `used`, `unique`, and configured `total` when the design-system surface exposes a denominator. The
-HTML report uses those totals to render overview progress relative to the configured surface.
+Treat `facts` as the source of truth. It should be table-shaped so terminal output and any external viewer can project
+from the same data. `views` are derived conveniences for the terminal renderer, and `usages` is the grep-friendly list
+for scripts.
+
+A `recipe-variant` style entry names the CSS key it sits on, not a recipe. Attribute it to the configured recipe call
+that owns it, and never count it as a recipe use: the call or JSX element is already counted. Local `cva` and `sva`
+bodies produce these entries too and must not surface as recipes.
+
+`summary` includes `used`, `unique`, and configured `total` when the design-system surface exposes a denominator, so a
+viewer can render usage relative to the configured surface.
 
 `--outfile` writes the JSON payload to a file and keeps stdout human-readable unless `--json` is also passed. This
 matches commands where the terminal remains useful while scripts receive a stable artifact.
 
-`--report <dir>` should write a static HTML report directory from the same JSON model:
-
-```txt
-panda-analysis/
-  index.html
-  data.json
-```
-
-Static HTML is the first report artifact because it works in CI artifacts and pull-request workflows without starting a
-server. Do not open a browser by default; a future `--open` flag can opt into that behavior.
-
-The report should embed the normalized data for convenient local viewing and also write `data.json` for tooling or
-future non-inline modes. Embed summaries, tables, per-file counts, and source references (`file`, `line`, `column`,
-`kind`, `name`), but do not embed source text, AST data, or every extracted call payload. If payload size becomes a
-problem, add a future non-inline mode that loads `data.json` instead of embedding it.
-
-The static HTML report is authored as a small Preact UI and bundled into the CLI report shell. It should load the same
-analysis data and provide filtering/searching for token paths, recipe variants, raw values, and files. Sorting,
-unused-only views, and source drilldown are follow-ups.
-
-`--ui` starts a local server for the same report UI, serves the latest analysis from `/api/report`, and refreshes the
-browser through server-sent events when source or config files change. It is a development workflow, not a CI artifact.
-Bind to `127.0.0.1` by default and let `--ui-host` / `--ui-port` customize the server when needed.
-
-Modern analyzer CLIs tend to separate terminal, machine, and report outputs:
-
-- terminal output is compact and ranked,
-- JSON/raw data is explicit and stable,
-- static HTML/report output is a shareable artifact,
-- live UI/server output is local and watch-driven,
-- browser opening is opt-in.
-
-Follow that model here.
+Report artifacts live outside the CLI. Terminal output is compact and ranked, JSON is explicit and stable, and anything
+richer reads the JSON.
 
 ## Implementation Boundary
 
@@ -227,7 +220,7 @@ runCommand
        spec: driver.compiler.spec(),
        suggestTokens: driver.compiler.suggestTokens,
      })
-  -> render human/json/report/ui
+  -> render human/json
 ```
 
 Do not call `driver.parseFiles()`, `driver.cssgen()`, or `codegen` from this command. Analyze reports source usage; it
@@ -343,8 +336,8 @@ Do not rebuild v1's reporter stack in TypeScript. The v2 command should use comp
 Do not make `analyze` an alias for `debug`, `info`, or `doctor`. It answers a different question and should not write
 bug report dumps or setup health checks.
 
-Do not make the interactive UI a separate analysis model. It should project the same JSON report used by terminal,
-`--outfile`, and `--report`.
+Do not put a report viewer back in the CLI. A viewer should project the same JSON report used by the terminal and
+`--outfile`, and it belongs in the playground or studio, not in `@pandacss/cli`.
 
 Do not let report output embed full project source by default. Source references are enough for the first report; source
 previews can be added later behind an explicit opt-in if they prove useful.
@@ -354,10 +347,7 @@ previews can be added later behind an explicit opt-in if they prove useful.
 - What should the default `--limit` be for terminal rows per section?
 - Which raw-value suggestion families should be shown by default: colors only, spacing/sizing too, or all categories
   where `suggestTokens` returns useful candidates?
-- Should `--report` eventually support a non-inline mode for very large reports?
-- Should `--report-format html|markdown` be introduced later, or should HTML remain the only report artifact?
-- Should the HTML report add sorting, unused-only views, and source drilldown?
-- Should `--open` launch the generated report after writing it?
+- Where should the browser viewer live: the playground, a studio page, or a separate package?
 
 ## Related
 

@@ -365,7 +365,16 @@ fn unresolvable_specifier_drops_outer_call() {
         &[],
     );
     let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @"calls: []");
+    let result = run(&fs, &main, &src);
+
+    assert_yaml_snapshot!(shape(&result), @"calls: []");
+    assert_eq!(
+        result.unresolved_dependencies,
+        vec![pandacss_extractor::UnresolvedCrossFileDependency {
+            from_file: "/proj/main.tsx".to_owned(),
+            specifier: "./does-not-exist".to_owned(),
+        }]
+    );
 }
 
 #[test]
@@ -468,6 +477,333 @@ fn cache_reuses_across_multiple_extracts() {
     let a = extract(&src, main.to_str().unwrap(), &config);
     let b = extract(&src, main.to_str().unwrap(), &config);
     assert_eq!(shape(&a), shape(&b));
+}
+
+#[test]
+fn cache_reloads_exports_when_imported_source_changes() {
+    let source = indoc::indoc! {r"
+        import { brand } from './tokens';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    let (fs, main) = project(source, &[("tokens.ts", "export const brand = 'red';\n")]);
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+
+    let before = extract(source, main.to_str().unwrap(), &config);
+    fs.add_file(
+        PathBuf::from("/proj/tokens.ts"),
+        b"export const brand = 'blue';\n".to_vec(),
+    );
+    let after = extract(source, main.to_str().unwrap(), &config);
+
+    assert_yaml_snapshot!(serde_json::json!({
+        "before": shape(&before),
+        "after": shape(&after),
+    }), @r"
+    before:
+      calls:
+        - name: css
+          data:
+            - color: red
+    after:
+      calls:
+        - name: css
+          data:
+            - color: blue
+    ");
+}
+
+#[test]
+fn cache_drops_an_export_removed_from_an_existing_module() {
+    let source = indoc::indoc! {r"
+        import { brand } from './tokens';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    let (fs, main) = project(source, &[("tokens.ts", "export const brand = 'red';\n")]);
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+
+    let before = extract(source, main.to_str().unwrap(), &config);
+    fs.add_file(
+        PathBuf::from("/proj/tokens.ts"),
+        b"export const accent = 'blue';\n".to_vec(),
+    );
+    let after = extract(source, main.to_str().unwrap(), &config);
+
+    assert_yaml_snapshot!(serde_json::json!({
+        "before": shape(&before),
+        "after": shape(&after),
+    }), @r"
+    before:
+      calls:
+        - name: css
+          data:
+            - color: red
+    after:
+      calls: []
+    ");
+}
+
+#[test]
+fn cache_drops_deleted_exports_and_recovers_after_recreation() {
+    let source = indoc::indoc! {r"
+        import { brand } from './tokens';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    let (fs, main) = project(source, &[("tokens.ts", "export const brand = 'red';\n")]);
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+    let tokens = PathBuf::from("/proj/tokens.ts");
+
+    let before = extract(source, main.to_str().unwrap(), &config);
+    pandacss_fs::FileSystem::remove_file(&fs, &tokens).unwrap();
+    let deleted = extract(source, main.to_str().unwrap(), &config);
+    fs.add_file(tokens, b"export const brand = 'green';\n".to_vec());
+    let recreated = extract(source, main.to_str().unwrap(), &config);
+
+    assert_yaml_snapshot!(serde_json::json!({
+        "before": shape(&before),
+        "deleted": shape(&deleted),
+        "recreated": shape(&recreated),
+    }), @r"
+    before:
+      calls:
+        - name: css
+          data:
+            - color: red
+    deleted:
+      calls: []
+    recreated:
+      calls:
+        - name: css
+          data:
+            - color: green
+    ");
+}
+
+#[test]
+fn cache_reloads_when_a_previously_missing_export_appears() {
+    let source = indoc::indoc! {r"
+        import { brand } from './tokens';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    let (fs, main) = project(source, &[("tokens.ts", "export const accent = 'red';\n")]);
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+
+    let missing = extract(source, main.to_str().unwrap(), &config);
+    fs.add_file(
+        PathBuf::from("/proj/tokens.ts"),
+        b"export const brand = 'blue';\n".to_vec(),
+    );
+    let added = extract(source, main.to_str().unwrap(), &config);
+
+    assert_yaml_snapshot!(serde_json::json!({
+        "missing": shape(&missing),
+        "added": shape(&added),
+    }), @r"
+    missing:
+      calls: []
+    added:
+      calls:
+        - name: css
+          data:
+            - color: blue
+    ");
+}
+
+#[test]
+fn cache_reloads_exports_through_a_re_export() {
+    let source = indoc::indoc! {r"
+        import { brand } from './barrel';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    let (fs, main) = project(
+        source,
+        &[
+            ("barrel.ts", "export { brand } from './tokens';\n"),
+            ("tokens.ts", "export const brand = 'red';\n"),
+        ],
+    );
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+
+    let before = extract(source, main.to_str().unwrap(), &config);
+    fs.add_file(
+        PathBuf::from("/proj/tokens.ts"),
+        b"export const brand = 'blue';\n".to_vec(),
+    );
+    let after = extract(source, main.to_str().unwrap(), &config);
+
+    let deps = before
+        .dependencies
+        .iter()
+        .map(|dep| (dep.path.as_str(), dep.source_hash.is_some()))
+        .collect::<Vec<_>>();
+    assert_eq!(
+        deps,
+        vec![("/proj/barrel.ts", true), ("/proj/tokens.ts", true)]
+    );
+    assert_yaml_snapshot!(serde_json::json!({
+        "before": shape(&before),
+        "after": shape(&after),
+    }), @r"
+    before:
+      calls:
+        - name: css
+          data:
+            - color: red
+    after:
+      calls:
+        - name: css
+          data:
+            - color: blue
+    ");
+}
+
+#[test]
+fn cache_reloads_exports_through_an_imported_alias() {
+    let source = indoc::indoc! {r"
+        import { brand } from './mid';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    let (fs, main) = project(
+        source,
+        &[
+            (
+                "mid.ts",
+                "import { brand as value } from './tokens';\nexport const brand = value;\n",
+            ),
+            ("tokens.ts", "export const brand = 'red';\n"),
+        ],
+    );
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+
+    let before = extract(source, main.to_str().unwrap(), &config);
+    fs.add_file(
+        PathBuf::from("/proj/tokens.ts"),
+        b"export const brand = 'blue';\n".to_vec(),
+    );
+    let after = extract(source, main.to_str().unwrap(), &config);
+
+    assert_yaml_snapshot!(serde_json::json!({
+        "before": shape(&before),
+        "after": shape(&after),
+    }), @r"
+    before:
+      calls:
+        - name: css
+          data:
+            - color: red
+    after:
+      calls:
+        - name: css
+          data:
+            - color: blue
+    ");
+}
+
+#[test]
+fn cache_reloads_exports_through_a_three_hop_re_export() {
+    let source = indoc::indoc! {r"
+        import { brand } from './a';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    let (fs, main) = project(
+        source,
+        &[
+            ("a.ts", "export { brand } from './b';\n"),
+            ("b.ts", "export { brand } from './tokens';\n"),
+            ("tokens.ts", "export const brand = 'red';\n"),
+        ],
+    );
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+
+    let before = extract(source, main.to_str().unwrap(), &config);
+    fs.add_file(
+        PathBuf::from("/proj/tokens.ts"),
+        b"export const brand = 'blue';\n".to_vec(),
+    );
+    let after = extract(source, main.to_str().unwrap(), &config);
+
+    assert_yaml_snapshot!(serde_json::json!({
+        "before": shape(&before),
+        "after": shape(&after),
+    }), @r"
+    before:
+      calls:
+        - name: css
+          data:
+            - color: red
+    after:
+      calls:
+        - name: css
+          data:
+            - color: blue
+    ");
+}
+
+#[test]
+fn cache_keeps_an_unrelated_importer_stable_when_another_module_changes() {
+    let red_source = indoc::indoc! {r"
+        import { brand } from './red';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    let blue_source = indoc::indoc! {r"
+        import { brand } from './blue';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    let (fs, red_main) = project(
+        red_source,
+        &[
+            ("red.ts", "export const brand = 'red';\n"),
+            ("blue.ts", "export const brand = 'navy';\n"),
+            ("other.tsx", blue_source),
+        ],
+    );
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+    let other = PathBuf::from("/proj/other.tsx");
+
+    let red_before = extract(red_source, red_main.to_str().unwrap(), &config);
+    let blue_before = extract(blue_source, other.to_str().unwrap(), &config);
+    fs.add_file(
+        PathBuf::from("/proj/red.ts"),
+        b"export const brand = 'crimson';\n".to_vec(),
+    );
+    let red_after = extract(red_source, red_main.to_str().unwrap(), &config);
+    let blue_after = extract(blue_source, other.to_str().unwrap(), &config);
+
+    assert_yaml_snapshot!(serde_json::json!({
+        "red": { "before": shape(&red_before), "after": shape(&red_after) },
+        "blue": { "before": shape(&blue_before), "after": shape(&blue_after) },
+    }), @r"
+    red:
+      before:
+        calls:
+          - name: css
+            data:
+              - color: red
+      after:
+        calls:
+          - name: css
+            data:
+              - color: crimson
+    blue:
+      before:
+        calls:
+          - name: css
+            data:
+              - color: navy
+      after:
+        calls:
+          - name: css
+            data:
+              - color: navy
+    ");
 }
 
 // --- in-memory FS specific tests ----------------------------------------
@@ -722,4 +1058,248 @@ fn imported_conditional_object_keeps_encode_branches() {
                 - red
                 - blue
     ");
+}
+
+// --- factory folds across files (keyframes / positionTry / viewTransition) --
+//
+// A factory call `export const x = keyframes({...})` in one file must fold to
+// its hashed name when imported and used in another, exactly as it folds
+// same-file. All three share the css barrel and the same value-fold path.
+
+use pandacss_extractor::{Literal, NameMatcher};
+
+/// css matcher that recognises the three value/class factories alongside `css`,
+/// with an optional class-name prefix threaded into the folded names.
+fn factory_config(prefix: &str, fs: &MemoryFileSystem) -> ExtractorConfig {
+    let matchers = Matchers {
+        css: pandacss_extractor::Matcher {
+            modules: vec!["@panda/css".into()],
+            names: NameMatcher::only(["css", "keyframes", "positionTry", "viewTransition"]),
+        },
+        ..Default::default()
+    };
+    let mut config =
+        ExtractorConfig::new(matchers).with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+    prefix.clone_into(&mut config.class_name_prefix);
+    config
+}
+
+fn run_factory(fs: &MemoryFileSystem, main: &Path, prefix: &str) -> ExtractUsage {
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(fs, main).unwrap()).unwrap();
+    extract(&src, main.to_str().unwrap(), &factory_config(prefix, fs))
+}
+
+/// Value of `prop` inside the first `css({...})` arg, if it folded to a string.
+fn css_prop(usage: &ExtractUsage, prop: &str) -> Option<String> {
+    let css = usage.calls.iter().find(|c| c.name == "css")?;
+    let Some(Literal::Object(entries)) = css.data.first().and_then(Option::as_ref) else {
+        return None;
+    };
+    entries.iter().find_map(|(key, value)| match value {
+        Literal::String(text) | Literal::Token { value: text, .. } if key == prop => {
+            Some(text.clone())
+        }
+        _ => None,
+    })
+}
+
+#[test]
+fn imported_keyframes_const_folds_in_animation_name() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { spin } from './anim';
+            import { css } from '@panda/css';
+            css({ animationName: spin });
+        "},
+        &[(
+            "anim.ts",
+            "import { keyframes } from '@panda/css';\nexport const spin = keyframes({ from: { opacity: 0 }, to: { opacity: 1 } });\n",
+        )],
+    );
+    let expected = pandacss_shared::keyframes_name(
+        &serde_json::json!({ "from": { "opacity": 0 }, "to": { "opacity": 1 } }),
+        "",
+    );
+    assert_eq!(
+        css_prop(&run_factory(&fs, &main, ""), "animationName").as_deref(),
+        Some(expected.as_str())
+    );
+}
+
+#[test]
+fn imported_position_try_const_folds_in_fallbacks() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { flip } from './anchors';
+            import { css } from '@panda/css';
+            css({ positionTryFallbacks: flip });
+        "},
+        &[(
+            "anchors.ts",
+            "import { positionTry } from '@panda/css';\nexport const flip = positionTry({ top: 'anchor(bottom)' });\n",
+        )],
+    );
+    let expected =
+        pandacss_shared::position_try_ident(&serde_json::json!({ "top": "anchor(bottom)" }), "");
+    assert_eq!(
+        css_prop(&run_factory(&fs, &main, ""), "positionTryFallbacks").as_deref(),
+        Some(expected.as_str())
+    );
+}
+
+#[test]
+fn imported_view_transition_const_does_not_fold_as_a_css_value() {
+    // Unlike keyframes/positionTry, viewTransition returns a *class* for
+    // `className`, not a style-object value. It has no value-fold, so using an
+    // imported viewTransition const inside a css() property must not resolve to
+    // a `vt_` class. Cross-file usage flows through `className` + the transform
+    // (the defining file inlines the call to the class string), not this path.
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { slide } from './transitions';
+            import { css } from '@panda/css';
+            css({ viewTransitionName: slide });
+        "},
+        &[(
+            "transitions.ts",
+            "import { viewTransition } from '@panda/css';\nexport const slide = viewTransition({ old: { opacity: 0 }, new: { opacity: 1 } });\n",
+        )],
+    );
+    let value = css_prop(&run_factory(&fs, &main, ""), "viewTransitionName");
+    assert!(
+        value.as_deref().is_none_or(|v| !v.starts_with("vt_")),
+        "viewTransition is a className class, not a css value; got {value:?}"
+    );
+}
+
+#[test]
+fn imported_keyframes_apply_the_config_prefix() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { spin } from './anim';
+            import { css } from '@panda/css';
+            css({ animationName: spin });
+        "},
+        &[(
+            "anim.ts",
+            "import { keyframes } from '@panda/css';\nexport const spin = keyframes({ from: { opacity: 0 } });\n",
+        )],
+    );
+    let expected =
+        pandacss_shared::keyframes_name(&serde_json::json!({ "from": { "opacity": 0 } }), "acme");
+    let name = css_prop(&run_factory(&fs, &main, "acme"), "animationName").expect("fold");
+    assert_eq!(name, expected);
+    assert!(name.starts_with("acme-kf_"));
+}
+
+#[test]
+fn re_exported_keyframes_folds_through_the_barrel() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { spin } from './index';
+            import { css } from '@panda/css';
+            css({ animationName: spin });
+        "},
+        &[
+            (
+                "anim.ts",
+                "import { keyframes } from '@panda/css';\nexport const spin = keyframes({ from: { opacity: 0 } });\n",
+            ),
+            ("index.ts", "export { spin } from './anim';\n"),
+        ],
+    );
+    let expected =
+        pandacss_shared::keyframes_name(&serde_json::json!({ "from": { "opacity": 0 } }), "");
+    assert_eq!(
+        css_prop(&run_factory(&fs, &main, ""), "animationName").as_deref(),
+        Some(expected.as_str())
+    );
+}
+
+#[test]
+fn aliased_keyframes_import_still_folds() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { spin as spinAnim } from './anim';
+            import { css } from '@panda/css';
+            css({ animationName: spinAnim });
+        "},
+        &[(
+            "anim.ts",
+            "import { keyframes } from '@panda/css';\nexport const spin = keyframes({ from: { opacity: 0 } });\n",
+        )],
+    );
+    let expected =
+        pandacss_shared::keyframes_name(&serde_json::json!({ "from": { "opacity": 0 } }), "");
+    assert_eq!(
+        css_prop(&run_factory(&fs, &main, ""), "animationName").as_deref(),
+        Some(expected.as_str())
+    );
+}
+
+#[test]
+fn composed_multi_animation_name_folds_two_imported_keyframes() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { scale, spin } from './anim';
+            import { css } from '@panda/css';
+            css({ animationName: `${scale}, ${spin}` });
+        "},
+        &[(
+            "anim.ts",
+            "import { keyframes } from '@panda/css';\nexport const scale = keyframes({ to: { transform: 'scale(1.2)' } });\nexport const spin = keyframes({ to: { transform: 'rotate(360deg)' } });\n",
+        )],
+    );
+    let scale = pandacss_shared::keyframes_name(
+        &serde_json::json!({ "to": { "transform": "scale(1.2)" } }),
+        "",
+    );
+    let spin = pandacss_shared::keyframes_name(
+        &serde_json::json!({ "to": { "transform": "rotate(360deg)" } }),
+        "",
+    );
+    assert_eq!(
+        css_prop(&run_factory(&fs, &main, ""), "animationName").as_deref(),
+        Some(format!("{scale}, {spin}").as_str())
+    );
+}
+
+#[test]
+fn imported_factory_consts_fold_together_in_one_call() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { spin } from './anim';
+            import { flip } from './anchors';
+            import { css } from '@panda/css';
+            css({ animationName: spin, positionTryFallbacks: flip });
+        "},
+        &[
+            (
+                "anim.ts",
+                "import { keyframes } from '@panda/css';\nexport const spin = keyframes({ from: { opacity: 0 } });\n",
+            ),
+            (
+                "anchors.ts",
+                "import { positionTry } from '@panda/css';\nexport const flip = positionTry({ top: 'anchor(bottom)' });\n",
+            ),
+        ],
+    );
+    let usage = run_factory(&fs, &main, "");
+    assert_eq!(
+        css_prop(&usage, "animationName").as_deref(),
+        Some(
+            pandacss_shared::keyframes_name(&serde_json::json!({ "from": { "opacity": 0 } }), "")
+                .as_str()
+        )
+    );
+    assert_eq!(
+        css_prop(&usage, "positionTryFallbacks").as_deref(),
+        Some(
+            pandacss_shared::position_try_ident(
+                &serde_json::json!({ "top": "anchor(bottom)" }),
+                ""
+            )
+            .as_str()
+        )
+    );
 }

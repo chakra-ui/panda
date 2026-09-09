@@ -1,0 +1,88 @@
+---
+title: Plugins
+description: Every hook a plugin can register, with when it fires, what it receives, and what it may return.
+---
+
+A plugin is `{ name, hooks }`, passed in the config's [`plugins`](/docs/reference/config#plugins) array. Wrap it in
+[`definePlugin`](/docs/reference/config-functions#defineplugin) for typed hooks. For a walkthrough, see
+[Plugins](/docs/theming/plugins) in the Theming tab.
+
+```ts
+import { definePlugin } from '@pandacss/dev'
+
+definePlugin({
+  name: 'my-plugin',
+  hooks: {
+    'config:resolved': ({ config, utils }) => utils.omit(config, ['patterns.stack'])
+  }
+})
+```
+
+## Hooks
+
+### `config:resolved`
+
+**Fires**: after presets and config merge, before defaults apply.  
+**Receives**: `{ config, path, dependencies, utils }`.  
+**Returns**: a `Config` to replace the resolved one, or nothing. May be async.
+
+### `preset:resolved`
+
+**Fires**: once per preset, before presets merge.  
+**Receives**: `{ preset, name, utils }`.  
+**Returns**: a `Config` to replace that preset, or nothing. May be async.
+
+### `parser:before`
+
+**Fires**: after a file is read, before it is parsed.  
+**Receives**: `{ filePath, content, original }`.  
+**Returns**: a string to parse instead of `content`, or nothing. May be async.
+
+### `codegen:prepare`
+
+**Fires**: before `styled-system` files are written.  
+**Receives**: `{ artifacts, outdir, cwd }`, where each artifact is `{ id, files }` and each file is
+`{ path, code, dependencies }`.  
+**Returns**: an artifact list to write instead, or nothing. Synchronous.
+
+### `codegen:done`
+
+**Fires**: after `styled-system` files are written.  
+**Receives**: `{ files, outdir, cwd }`.  
+**Returns**: ignored. Synchronous.
+
+### `cssgen:done`
+
+**Fires**: after the final CSS is produced by the CLI, the Vite plugin, or the PostCSS plugin.  
+**Receives**: `{ artifact, content, path, outfile, outdir, cwd, manifest, layerRanges }`. `artifact` is
+`'styles.css'`, `'styles.layer'`, or `'styles.split'`. `path` is set only when the CSS was written to disk.  
+**Returns**: ignored. Synchronous.
+
+## Filters
+
+Every hook takes a function, or `{ filter, handler }` to run only for matching files.
+
+```ts
+'parser:before': {
+  filter: { id: '**/*.md' },
+  handler: ({ content }) => content
+}
+```
+
+- `filter.id` matches the file path.
+- `filter.code` matches the file content.
+
+Each takes a glob or regex, or `{ include, exclude }` holding them.
+
+## Config utils
+
+`config:resolved` and `preset:resolved` receive `utils`. Paths are dot-separated, like `'theme.tokens.colors'`.
+
+- `omit(obj, paths)`: a copy without those paths.
+- `pick(obj, paths)`: a copy with only those paths.
+- `traverse(obj, callback, options)`: visits every value, calling back with `{ value, path, key, depth, parent }`.
+  `options.maxDepth` limits the walk.
+
+## Types
+
+`PandaPlugin`, `PandaHooks`, and every argument type are exported from `@pandacss/types`.

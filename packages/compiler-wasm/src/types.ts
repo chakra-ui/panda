@@ -67,7 +67,6 @@ export interface TokenDictionaryInput {
 }
 
 export type JsxFramework = 'react' | 'solid' | 'preact' | 'vue' | 'qwik' | (string & {})
-export type CssSyntax = 'template-literal' | 'object-literal'
 
 export interface MatchersInput {
   css?: MatcherInput
@@ -79,8 +78,6 @@ export interface MatchersInput {
   jsxFramework?: JsxFramework
   /** Defaults to `["styled"]` when omitted. */
   jsxFactories?: string[]
-  /** CSS authoring syntax preference. Omit for object-literal mode. */
-  syntax?: CssSyntax
   /** Enable `token('…')` folding by passing a resolved dictionary. */
   tokenDictionary?: TokenDictionaryInput
 }
@@ -115,6 +112,7 @@ export declare class WasmCompiler {
   refreshFile(path: string): boolean
   refreshFileSource(path: string, source: string): boolean
   removeFile(path: string): boolean
+  affectedFiles(): string[]
   clear(): void
   scan(options?: ScanOptions): string[]
   realpath(path: string): string

@@ -1,5 +1,57 @@
 # @pandacss/eslint-plugin
 
+## 2.0.0-beta.16
+
+### Minor Changes
+
+- 3751b7b: Add an opt-in `no-descendant-selectors` rule that flags selectors styling other elements (`& > li`,
+  `.foo &`), keeping every style scoped to its own element. Cross-element state stays available through conditions like
+  `_groupHover`.
+
+### Patch Changes
+
+- Updated dependencies [a5bab14]
+- Updated dependencies [f583fb9]
+- Updated dependencies [6b04d94]
+- Updated dependencies [dfb17b2]
+- Updated dependencies [84720fc]
+- Updated dependencies [d94d26c]
+- Updated dependencies [c3702af]
+- Updated dependencies [dea1ef5]
+- Updated dependencies [a46ecb4]
+- Updated dependencies [ca9bb58]
+- Updated dependencies [c58d45d]
+- Updated dependencies [446210a]
+- Updated dependencies [9bdafba]
+- Updated dependencies [f583fb9]
+- Updated dependencies [b2294ca]
+- Updated dependencies [af261f5]
+- Updated dependencies [9da80e1]
+- Updated dependencies [ef14fc5]
+- Updated dependencies [064e58f]
+- Updated dependencies [ef68d33]
+- Updated dependencies [bcbcb22]
+  - @pandacss/config@2.0.0-beta.16
+  - @pandacss/compiler@2.0.0-beta.16
+  - @pandacss/compiler-shared@2.0.0-beta.16
+
+## 2.0.0-beta.15
+
+### Patch Changes
+
+- Updated dependencies [8b43347]
+- Updated dependencies [02bd0ad]
+- Updated dependencies [ec65db3]
+- Updated dependencies [02bd0ad]
+- Updated dependencies [ec65db3]
+- Updated dependencies [7c8a215]
+- Updated dependencies [8885864]
+- Updated dependencies [e18eeb3]
+- Updated dependencies [2d5d152]
+  - @pandacss/compiler@2.0.0-beta.15
+  - @pandacss/compiler-shared@2.0.0-beta.15
+  - @pandacss/config@2.0.0-beta.15
+
 ## 2.0.0-beta.14
 
 ### Patch Changes

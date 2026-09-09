@@ -277,12 +277,6 @@ describe('resolveAuthoredPresets / section coverage', () => {
                 Mono: { src: 'url(mono.woff2)' },
               },
             },
-            globalPositionTry: {
-              tooltip: { top: '0' },
-              extend: {
-                popover: { bottom: '0' },
-              },
-            },
             staticCss: {
               css: [{ properties: { color: ['red'] } }],
               extend: {
@@ -326,7 +320,6 @@ describe('resolveAuthoredPresets / section coverage', () => {
       globalCss: result.globalCss,
       globalVars: result.globalVars,
       globalFontface: result.globalFontface,
-      globalPositionTry: result.globalPositionTry,
       staticCss: result.staticCss,
       themes: result.themes,
       theme: result.theme,
@@ -351,14 +344,6 @@ describe('resolveAuthoredPresets / section coverage', () => {
           },
           "Mono": {
             "src": "url(mono.woff2)",
-          },
-        },
-        "globalPositionTry": {
-          "popover": {
-            "bottom": "0",
-          },
-          "tooltip": {
-            "top": "0",
           },
         },
         "globalVars": {
@@ -801,6 +786,40 @@ describe('resolveAuthoredPresets / errors', () => {
     await expect(resolveAuthoredPresets({ presets: [preset] } as any, '/project')).rejects.toThrow(
       /Circular preset dependency detected/,
     )
+  })
+
+  test('merges theme.extend.viewTransitions from a preset and lets the user win on the same name', async () => {
+    const result = await resolve(
+      defineConfig({
+        presets: [
+          definePreset({
+            name: 'vt-preset',
+            theme: {
+              extend: {
+                viewTransitions: {
+                  slide: { old: { opacity: 0 }, new: { opacity: 1 } },
+                  fade: { old: { opacity: 1 } },
+                },
+              },
+            },
+          }),
+        ],
+        theme: {
+          extend: {
+            viewTransitions: {
+              fade: { old: { opacity: 0.5 } },
+              pop: { new: { opacity: 1 } },
+            },
+          },
+        },
+      }),
+    )
+
+    expect(result.theme.viewTransitions).toEqual({
+      slide: { old: { opacity: 0 }, new: { opacity: 1 } },
+      fade: { old: { opacity: 0.5 } },
+      pop: { new: { opacity: 1 } },
+    })
   })
 
   test('rejects non-object extend values with the section path', async () => {

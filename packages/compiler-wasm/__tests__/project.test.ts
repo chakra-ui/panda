@@ -176,6 +176,52 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
     expect(compiler.atoms() as Atom[]).toEqual([])
   })
 
+  it('parseFiles reports a removed vfs file instead of skipping it, and keeps its last styles', async () => {
+    const compiler = await createCompiler(baseConfig)
+    compiler.fs.addFile?.('/virtual/keep.tsx', "import { css } from '@panda/css'; css({ color: 'red' })")
+    compiler.fs.addFile?.('/virtual/gone.tsx', "import { css } from '@panda/css'; css({ color: 'blue' })")
+    compiler.parseFiles(['/virtual/keep.tsx', '/virtual/gone.tsx'])
+    compiler.fs.removeFile?.('/virtual/gone.tsx')
+
+    const reports = compiler.parseFiles(['/virtual/keep.tsx', '/virtual/gone.tsx']).map((report) => ({
+      ...report,
+      diagnostics: report.diagnostics.map((d) => ({ code: d.code, severity: d.severity, file: d.file })),
+    }))
+    expect(reports).toMatchInlineSnapshot(`
+      [
+        {
+          "path": "/virtual/keep.tsx",
+          "cssCalls": 1,
+          "cvaCalls": 0,
+          "svaCalls": 0,
+          "jsxUsages": 0,
+          "diagnostics": [],
+        },
+        {
+          "path": "/virtual/gone.tsx",
+          "cssCalls": 0,
+          "cvaCalls": 0,
+          "svaCalls": 0,
+          "jsxUsages": 0,
+          "diagnostics": [
+            {
+              "code": "source_not_found",
+              "severity": "warning",
+              "file": "/virtual/gone.tsx",
+            },
+          ],
+        },
+      ]
+    `)
+
+    expect(compiler.getFile('/virtual/gone.tsx')?.diagnostics.map((d) => d.code)).toEqual(['source_not_found'])
+    expect(compiler.compile().css).toContain('blue')
+
+    expect(compiler.removeFile('/virtual/gone.tsx')).toBe(true)
+    expect(compiler.getFile('/virtual/gone.tsx')).toBeNull()
+    expect(compiler.compile().css).not.toContain('blue')
+  })
+
   it('records cva recipes', async () => {
     const compiler = await createCompiler(baseConfig)
     compiler.parseFileSource(
@@ -532,6 +578,26 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
         "atomic": [],
       }
     `)
+  })
+
+  it('emits a named theme viewTransition class and skips unused names', async () => {
+    const compiler = await createCompiler({
+      ...baseConfig,
+      theme: {
+        viewTransitions: {
+          slide: { old: { opacity: 0 }, new: { opacity: 1 } },
+          fade: { old: { opacity: 1 }, new: { opacity: 0 } },
+        },
+      },
+    })
+
+    compiler.parseFileSource('/vt.ts', `import { viewTransition } from '@panda/css'\nviewTransition('slide')`)
+
+    const css = compiler.getLayerCss({ layers: ['utilities'] }).css
+    expect(css).toContain('.vt_slide')
+    expect(css).toContain('view-transition-class: vt_slide')
+    expect(css).toContain('::view-transition-old(.vt_slide)')
+    expect(css).not.toContain('vt_fade')
   })
 })
 

@@ -1,5 +1,5 @@
 import { createNodeDriver, type Diagnostic, type Driver } from '@pandacss/compiler'
-import { formatDiagnostic, withDiagnosticFile } from '@pandacss/compiler-shared'
+import { formatDiagnostic, withDiagnosticFile, type SourceChange } from '@pandacss/compiler-shared'
 import {
   createPandaSourcePluginHooks,
   createSourceTransformer,
@@ -7,7 +7,7 @@ import {
   type SourceTransformer,
 } from '@pandacss/transformer'
 import { extname } from 'node:path'
-import type { HmrContext, ModuleNode, Plugin, ResolvedConfig, ViteDevServer } from 'vite'
+import type { DevEnvironment, EnvironmentModuleNode, HotUpdateOptions, Plugin, ResolvedConfig } from 'vite'
 
 export interface PandaPluginOptions {
   /** Project root. Defaults to Vite's resolved `root`. */
@@ -83,10 +83,14 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
       addWatchFile(file)
     }
     const inputFile = inputId.split('?')[0] ?? inputId
-    for (const file of driver.scan()) {
+    const watchTargets = driver.watchTargets()
+    for (const file of watchTargets.files ?? driver.scan()) {
       if (file !== inputFile) watch(file)
     }
-    for (const dep of driver.watchTargets().config) {
+    for (const dir of watchTargets.dirs) {
+      watch(driver.resolvePath(dir))
+    }
+    for (const dep of watchTargets.config) {
       watch(driver.resolvePath(dep))
     }
     if (driver.configPath) {
@@ -110,20 +114,20 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
     warnDiagnostics(warn, diagnostics, 'while loading the design system')
   }
 
-  const invalidateRoots = (server: ViteDevServer): ModuleNode[] => {
-    const mods: ModuleNode[] = []
+  const invalidateRoots = (environment: DevEnvironment): EnvironmentModuleNode[] => {
+    const mods: EnvironmentModuleNode[] = []
     for (const id of rootIds) {
-      const mod = server.moduleGraph.getModuleById(id)
+      const mod = environment.moduleGraph.getModuleById(id)
       if (mod) {
-        server.moduleGraph.invalidateModule(mod)
+        environment.moduleGraph.invalidateModule(mod)
         mods.push(mod)
       }
     }
     return mods
   }
 
-  const withInvalidatedRoots = (server: ViteDevServer, modules: ModuleNode[]) => {
-    return [...new Set([...invalidateRoots(server), ...modules])]
+  const withInvalidatedRoots = (environment: DevEnvironment, modules: EnvironmentModuleNode[]) => {
+    return [...new Set([...invalidateRoots(environment), ...modules])]
   }
 
   return {
@@ -189,21 +193,26 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
       return { code: `${entry}\n${output.css}`, map: null }
     },
 
-    async handleHotUpdate(ctx: HmrContext) {
+    async hotUpdate(ctx: HotUpdateOptions) {
       if (!driver) return
+      // Vite runs this hook per environment, client first. The driver is shared and updated in the
+      // client pass; other environments (SSR) still need their own stylesheet roots invalidated.
+      if (this.environment !== ctx.server.environments.client) {
+        return isPandaFile(driver, ctx.file) ? withInvalidatedRoots(this.environment, ctx.modules) : ctx.modules
+      }
 
       const designSystemFile = driver.isDesignSystemFile?.(ctx.file) ?? false
       if (designSystemFile) {
-        const changed = await driver.syncDesignSystemFileChange({
-          path: ctx.file,
-          kind: 'change',
-          ...(designSystemFile === 'source' ? { content: await ctx.read() } : {}),
-        })
+        const change = await sourceChangeFromHotUpdate(ctx, designSystemFile === 'source')
+        const changed = await driver.syncDesignSystemFileChange(change)
         if (changed) {
-          if (designSystemFile === 'artifact') watchedFiles.clear()
+          if (designSystemFile === 'artifact') {
+            watchedFiles.clear()
+            codegen()
+          }
           warnDesignSystemDiagnostics((message) => ctx.server.config.logger.warn(message))
         }
-        return withInvalidatedRoots(ctx.server, ctx.modules)
+        return withInvalidatedRoots(this.environment, ctx.modules)
       }
 
       if (driver.isConfigFile(ctx.file)) {
@@ -214,24 +223,37 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
         codegen()
         driver.parseFiles()
         warnDesignSystemDiagnostics((message) => ctx.server.config.logger.warn(message))
-        invalidateRoots(ctx.server)
+        invalidateRoots(this.environment)
         ctx.server.ws.send({ type: 'full-reload' })
         return []
       }
 
       if (driver.isSourceFile(ctx.file)) {
-        driver.applyChange({ path: ctx.file, kind: 'change', content: await ctx.read() })
+        driver.applyChange(await sourceChangeFromHotUpdate(ctx, true))
         warnDiagnostics(
           (message) => ctx.server.config.logger.warn(message),
           driver.compiler.getFile(ctx.file)?.diagnostics,
           `while parsing ${ctx.file}`,
           ctx.file,
         )
-        return withInvalidatedRoots(ctx.server, ctx.modules)
+        return withInvalidatedRoots(this.environment, ctx.modules)
       }
 
       return ctx.modules
     },
+  }
+}
+
+function isPandaFile(driver: Driver, file: string): boolean {
+  return Boolean(driver.isDesignSystemFile?.(file)) || driver.isConfigFile(file) || driver.isSourceFile(file)
+}
+
+async function sourceChangeFromHotUpdate(ctx: HotUpdateOptions, read: boolean): Promise<SourceChange> {
+  const kind = ctx.type === 'create' ? 'add' : ctx.type === 'delete' ? 'unlink' : 'change'
+  return {
+    path: ctx.file,
+    kind,
+    ...(read && kind !== 'unlink' ? { content: await ctx.read() } : {}),
   }
 }
 

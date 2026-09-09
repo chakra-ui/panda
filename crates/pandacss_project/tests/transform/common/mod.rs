@@ -133,7 +133,8 @@ pub fn project_with_recipes() -> Project {
                         "variants": {
                             "size": {
                                 "sm": { "fontSize": "12px" },
-                                "md": { "fontSize": "16px" }
+                                "md": { "fontSize": "16px" },
+                                "lg": { "fontSize": "18px" }
                             }
                         }
                     }
@@ -204,11 +205,55 @@ pub fn project_with_config_slot_recipe() -> Project {
                 "slotRecipes": {
                     "tabs": {
                         "className": "tabs",
-                        "slots": ["root", "trigger"],
+                        "slots": ["root", "trigger", "indicator"],
                         "base": {
                             "root": { "display": "flex" },
                             "trigger": { "color": "blue" }
-                        }
+                        },
+                        "defaultVariants": { "size": "lg" },
+                        "variants": {
+                            "size": {
+                                "sm": { "root": { "gap": "4px" }, "trigger": { "fontSize": "12px" } },
+                                "lg": { "root": { "gap": "8px" }, "trigger": { "fontSize": "16px" } }
+                            },
+                            "fitted": {
+                                "true": { "trigger": { "flex": "1" } }
+                            }
+                        },
+                        "compoundVariants": [
+                            { "size": "sm", "fitted": true, "css": { "trigger": { "padding": "0" } } }
+                        ]
+                    }
+                }
+            }
+        })))
+        .expect("config"),
+    )
+}
+
+/// `prefix` and optional `hash` on top of a recipe and a slot recipe, to check
+/// transformed classes match the selectors the stylesheet emits.
+pub fn project_with_prefixed_recipes(hash: bool) -> Project {
+    Project::new(
+        System::new(create_config(json!({
+            "prefix": "pd",
+            "hash": hash,
+            "theme": {
+                "recipes": {
+                    "button": {
+                        "className": "button",
+                        "base": { "display": "flex" },
+                        "variants": { "size": { "sm": { "padding": "4px" } }, "block": { "true": { "width": "100%" } } },
+                        "compoundVariants": [{ "size": "sm", "block": true, "css": { "gap": "0" } }]
+                    }
+                },
+                "slotRecipes": {
+                    "tabs": {
+                        "className": "tabs",
+                        "slots": ["root", "trigger"],
+                        "base": { "root": { "display": "flex" } },
+                        "variants": { "size": { "sm": { "root": { "gap": "4px" } } } },
+                        "compoundVariants": [{ "size": "sm", "css": { "trigger": { "padding": "0" } } }]
                     }
                 }
             }
@@ -293,16 +338,6 @@ pub fn transform_cross_file(
     transform_with_project(&project, &format!("/proj/{main_path}"), main_source)
 }
 
-pub fn template_literal_project() -> Project {
-    Project::new(
-        System::new(create_config(json!({
-            "syntax": "template-literal",
-            "jsxFramework": "react"
-        })))
-        .expect("config"),
-    )
-}
-
 pub fn shorthands_project() -> Project {
     Project::new(
         System::new(create_config(json!({
@@ -332,6 +367,25 @@ pub fn shorthands_project() -> Project {
 
 pub fn transform_with_shorthands(path: &str, source: &str) -> pandacss_project::TransformOutput {
     transform_with_project(&shorthands_project(), path, source)
+}
+
+/// JSX with shorthands on, so `p` and `padding` are the same property.
+pub fn project_with_jsx_shorthands() -> Project {
+    Project::new(
+        System::new(create_config(json!({
+            "jsxFramework": "react",
+            "shorthands": true,
+            "utilities": {
+                "color": { "className": "c", "shorthand": "c" },
+                "padding": { "className": "p", "shorthand": "p" }
+            }
+        })))
+        .expect("config"),
+    )
+}
+
+pub fn transform_jsx_shorthands(path: &str, source: &str) -> pandacss_project::TransformOutput {
+    transform_jsx_with_project(&project_with_jsx_shorthands(), path, source)
 }
 
 pub fn project_with_jsx() -> Project {
@@ -416,8 +470,8 @@ pub fn project_with_jsx_recipes() -> Project {
     Project::new(
         System::new(create_config(json!({
             "jsxFramework": "react",
-            // Design system ships `<Button>` from `@acme/ui`, mapped into the jsx
-            // importMap so Panda owns it (recipe components aren't in `@panda/jsx`).
+            // `<Button>` ships from `@acme/ui`, mapped into the jsx importMap so
+            // its usages are extracted. Panda tracks it, it doesn't render it.
             "importMap": { "jsx": ["@panda/jsx", "@acme/ui"] },
             "utilities": {
                 "color": {},
@@ -432,6 +486,17 @@ pub fn project_with_jsx_recipes() -> Project {
                     "md": "768px"
                 },
                 "recipes": {
+                    // `color` is a variant here, a css property elsewhere.
+                    "chip": {
+                        "className": "chip",
+                        "jsx": ["Chip"],
+                        "base": { "display": "inline-block" },
+                        "variants": {
+                            "color": {
+                                "brand": { "color": "white" }
+                            }
+                        }
+                    },
                     "button": {
                         "className": "button",
                         "jsx": ["Button"],
@@ -546,6 +611,14 @@ pub fn project_with_jsx_patterns() -> Project {
                             "type": "property",
                             "property": "gap"
                         }
+                    }
+                },
+                "row": {
+                    "jsxName": "Row",
+                    "defaultValues": { "gap": "4" },
+                    "properties": {
+                        "gap": { "type": "property", "property": "gap" },
+                        "color": { "type": "property", "property": "color" }
                     }
                 }
             }
@@ -695,10 +768,6 @@ pub fn transform_jsx_solid(path: &str, source: &str) -> pandacss_project::Transf
 
 pub fn transform_jsx_qwik(path: &str, source: &str) -> pandacss_project::TransformOutput {
     transform_source(&project_with_jsx_qwik(), path, source, &jsx_only_options())
-}
-
-pub fn transform_template_literal(path: &str, source: &str) -> pandacss_project::TransformOutput {
-    transform_with_project(&template_literal_project(), path, source)
 }
 
 /// Transform output has to be valid source. Feeding it back through the

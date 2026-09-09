@@ -51,11 +51,15 @@ export class PandaWebpackPlugin {
   /** Watch-mode incremental sync: fold changed files into the driver before this
    *  rebuild's modules (including the layer-declaring CSS) are read. The driver
    *  re-reads changed files through its own fs. */
-  async #sync(cwd: string, changed: Iterable<string>, warn?: (message: string) => void) {
+  async #sync(cwd: string, changed: Iterable<string>, removed: Iterable<string>, warn?: (message: string) => void) {
     await this.#build(cwd)
     const driver = this.#driver!
     let configChanged = false
     let designSystemChanged = false
+
+    for (const file of removed) {
+      if (driver.isSourceFile(file)) driver.applyChange({ path: file, kind: 'unlink' })
+    }
 
     for (const file of changed) {
       const designSystemFile = driver.isDesignSystemFile?.(file) ?? false
@@ -132,7 +136,7 @@ export class PandaWebpackPlugin {
 
     // Watch rebuild: sync changed files into the driver before modules are read.
     compiler.hooks.watchRun.tapPromise(NAME, (c) =>
-      this.#sync(cwd, c.modifiedFiles ?? [], (message) => logger?.warn(message)),
+      this.#sync(cwd, c.modifiedFiles ?? [], c.removedFiles ?? [], (message) => logger?.warn(message)),
     )
   }
 }

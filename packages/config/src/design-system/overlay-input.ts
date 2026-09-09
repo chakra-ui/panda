@@ -11,7 +11,6 @@ export const RUNTIME_OPTION_KEYS = [
   'jsxFramework',
   'jsxFactory',
   'jsxStyleProps',
-  'syntax',
   'strictTokens',
   'strictPropertyValues',
   'shorthands',

@@ -7,14 +7,19 @@ export const GET = async () => {
     {
       title: 'Complete documentation',
       href: `${getPublicUrl('/llms-full.txt')}`,
+      description: 'The complete Panda CSS documentation across every section'
+    },
+    {
+      title: 'Get Started',
+      href: `${getPublicUrl('/llms.txt/get-started')}`,
       description:
-        'The complete Panda CSS documentation across every section'
+        'Getting started, installation, migrating from another tool, and tooling like ESLint/OXLint plugins'
     },
     {
       title: 'Styling',
       href: `${getPublicUrl('/llms.txt/styling')}`,
       description:
-        'Getting started, installation, core concepts, styling APIs, and migrating from another tool'
+        'Core concepts, styling APIs, and how the compiler works under the hood'
     },
     {
       title: 'Theming',
@@ -44,7 +49,8 @@ export const GET = async () => {
 
   return new Response(content, {
     headers: {
-      'Content-Type': 'text/plain; charset=utf-8'
+      'Content-Type': 'text/plain; charset=utf-8',
+      'X-Robots-Tag': 'noindex'
     }
   })
 }

@@ -3,6 +3,7 @@ export type { Config, Preset, UserConfig } from '@pandacss/types'
 export {
   cssFallback,
   defineAnimationStyles,
+  defineConditions,
   defineConfig,
   defineGlobalFontface,
   defineGlobalStyles,
@@ -21,4 +22,6 @@ export {
   defineThemeVariant,
   defineTokens,
   defineUtility,
+  defineViewTransitions,
+  definePositionTry,
 } from './config'

@@ -1,0 +1,37 @@
+---
+title: Responsive variants
+description: Pass a breakpoint object as a variant value. Config recipes only, and only when the recipe has no compounds.
+---
+
+A variant is usually a literal: `size="sm"`. Config recipes also accept a condition object, the same shape you
+already use for [responsive styles](/docs/styling/responsive-design):
+
+```tsx
+import { button } from '../styled-system/recipes'
+
+<button className={button({ size: { base: 'sm', md: 'lg' } })}>Click me</button>
+```
+
+Generated types use `ConditionalValue` for that, so the object is typed.
+
+This does not work on `cva` or `sva`. Those APIs have no responsive variant props. Use a config recipe, or render
+two views.
+
+## Compounds turn it off
+
+Adding `compoundVariants` drops `ConditionalValue` from the types. Runtime throws if you pass an object anyway:
+
+```
+[recipe:button:size] Conditions are not supported when using compound variants.
+```
+
+The same rule applies to slot recipes. See [compound variants](/docs/recipes/compound-variants).
+
+In most cases, two views are clearer than one call with a map. A `sm` button below `md` and an `lg` button above it
+is easier to follow than a nested object on the variant.
+
+## See also
+
+- [Config recipes](/docs/recipes/config-recipe)
+- [Compound variants](/docs/recipes/compound-variants)
+- [Responsive design](/docs/styling/responsive-design)

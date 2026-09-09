@@ -21,8 +21,8 @@ export function buildArgs(): ArgsDef {
     ...baseArgs(),
     ...includeArgs(),
     watch: { type: 'boolean', description: 'Watch files and rebuild', alias: 'w' },
-    outdir: { type: 'string', description: 'Output directory for generated files' },
-    outfile: { type: 'string', description: 'Output file for extracted CSS', alias: 'o' },
+    outdir: { type: 'string', valueHint: 'dir', description: 'Output directory for generated files' },
+    outfile: { type: 'string', valueHint: 'file', description: 'Output file for extracted CSS', alias: 'o' },
     splitting: { type: 'boolean', description: 'Emit split CSS files' },
     clean: { type: 'boolean', description: 'Clean the output directory before generating' },
     polyfill: {
@@ -31,7 +31,7 @@ export function buildArgs(): ArgsDef {
     },
     ...outputArgs(),
     ...traceArgs(),
-    'watch-debounce': { type: 'string', description: 'Watch rebuild debounce in milliseconds' },
+    'watch-debounce': { type: 'string', valueHint: 'ms', description: 'Watch rebuild debounce in milliseconds' },
     check: { type: 'boolean', description: 'Check generated files without writing' },
   }
 }

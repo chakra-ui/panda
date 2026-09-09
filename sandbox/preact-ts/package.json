@@ -11,16 +11,16 @@
     "cssgen": "panda cssgen"
   },
   "dependencies": {
-    "preact": "10.27.2"
+    "preact": "10.29.8"
   },
   "devDependencies": {
     "@pandacss/cli": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/vite": "workspace:*",
-    "@preact/preset-vite": "2.10.2",
-    "typescript": "6.0.2",
-    "vite": "7.2.6",
+    "@preact/preset-vite": "2.10.6",
+    "typescript": "6.0.3",
+    "vite": "7.3.6",
     "vite-tsconfig-paths": "5.1.4"
   }
 }

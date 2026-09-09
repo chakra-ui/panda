@@ -7,7 +7,7 @@
   "scripts": {
     "prepare": "husky && pnpm build:fast",
     "dev": "pnpm --parallel --filter=./packages/** dev",
-    "build:playground": "pnpm --filter playground build",
+    "build:playground": "pnpm --filter 'playground...' build",
     "build:fast": "pnpm -r --parallel --filter=./packages/** build:fast",
     "build": "pnpm --filter @pandacss/compiler-wasm build && pnpm -r --filter=./packages/** --filter=!@pandacss/compiler-wasm build",
     "bench:rust-spike": "pnpm --filter=./bench baseline",
@@ -35,7 +35,7 @@
     "release:verify": "node scripts/verify-release-artifacts.mjs",
     "release:sync-tag": "node scripts/sync-beta-dist-tag.mjs",
     "release-dev": "changeset version --snapshot dev && changeset publish --tag dev",
-    "mdx-check": "mdx-local-link-checker docs && mdx-local-link-checker website/pages/docs"
+    "check-docs-links": "tsx website/scripts/check-docs-links.ts"
   },
   "keywords": [],
   "author": "Segun Adebayo <joseshegs@gmail.com>",
@@ -44,41 +44,39 @@
     "node": ">=22"
   },
   "dependencies": {
-    "@changesets/changelog-github": "0.5.2",
+    "@changesets/changelog-github": "0.7.0",
     "@changesets/cli": "2.29.8",
     "@projectwallace/format-css": "^2.0.0",
-    "chokidar": "4.0.3",
-    "concurrently": "9.2.1",
+    "concurrently": "9.2.4",
     "cross-env": "10.1.0",
-    "happy-dom": "20.0.11",
+    "happy-dom": "20.14.0",
     "husky": "9.1.7",
     "lint-staged": "16.2.7",
-    "mdx-local-link-checker": "2.1.1",
     "rimraf": "5.0.10",
     "ts-morph": "28.0.0",
     "tsup": "8.5.1",
     "tsx": "4.20.6",
-    "typescript": "6.0.2",
+    "typescript": "6.0.3",
     "vite-tsconfig-paths": "5.1.4",
-    "vitest": "4.0.15"
+    "vitest": "4.1.11"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.1",
+    "@eslint/js": "^9.39.5",
     "@types/eslint": "9.6.1",
-    "@types/node": "24.10.1",
-    "@typescript-eslint/eslint-plugin": "8.58.2",
-    "@typescript-eslint/parser": "8.58.2",
-    "eslint": "9.39.1",
+    "@types/node": "24.10.15",
+    "@typescript-eslint/eslint-plugin": "8.69.0",
+    "@typescript-eslint/parser": "8.69.0",
+    "eslint": "9.39.5",
     "eslint-config-prettier": "10.1.8",
     "globals": "^17.0.0",
     "prettier": "3.2.5",
-    "typescript-eslint": "8.58.2",
-    "vite-plugin-virtual": "^0.4.0"
+    "typescript-eslint": "8.69.0",
+    "vite-plugin-virtual": "0.5.0"
   },
   "lint-staged": {
-    "packages/**/*.{ts,tsx}": [
-      "pnpm prettier-fix"
+    "packages/**/*.{ts,tsx,js,mjs,cjs,json,md,mdx,css,yml,yaml}": [
+      "prettier --write"
     ]
   },
-  "packageManager": "pnpm@11.17.0"
+  "packageManager": "pnpm@11.25.0"
 }

@@ -1,47 +1,49 @@
 'use client'
 
-import { communityLinks, docsTabs, type TabItem } from '@/docs.config'
+import {
+  communityLinks,
+  defaultTabKey,
+  docsTabs,
+  tabLandingHref,
+  type TabItem
+} from '@/docs.config'
 import { css } from '@/styled-system/css'
 import { Box, HStack } from '@/styled-system/jsx'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { Menu } from '@ark-ui/react/menu'
+import { Portal } from '@ark-ui/react/portal'
 import {
+  LuArrowUpRight,
   LuBlocks,
   LuBookOpen,
   LuChevronDown,
+  LuHeart,
+  LuLayers,
   LuPaintbrush,
   LuPalette,
+  LuRocket,
   LuUsers
 } from 'react-icons/lu'
 import type { IconType } from 'react-icons'
 
 export const TAB_ICONS: Record<string, IconType> = {
+  'get-started': LuRocket,
   styling: LuPaintbrush,
+  recipes: LuLayers,
   theming: LuPalette,
   'design-systems': LuBlocks,
   reference: LuBookOpen
 }
 
 /**
- * The persistent tab bar for the docs shell. Styling / Theming / Design Systems
- * on the left (build intents), References on the right (cross-cutting lookup),
- * plus a plain Blog link. Active tab is derived from the URL's first `/docs/:key`
- * segment, so it stays in sync with server-rendered navigation with no extra state.
- *
- * Hugs the real page edge with a small fixed `px`, same as the sidebar below it,
- * instead of sitting inside a `maxW` centered column. A centered shell only
- * matches the sidebar's position up to that maxW; past it, the two drift apart.
- *
- * Every tab shows its own underline (`border` at rest, `accent` when active,
- * `fg.muted` on hover), stretched to the row's full height so it always sits at
- * the same baseline. Hover also adds a subtle background pill, matching the
- * sidebar's own group-header hover treatment.
+ * Takes the same responsive `px` as the navbar and sidebar rather than a `maxW`
+ * column, which would only line up with the sidebar until it hits that maxW.
  */
 export function TabBar() {
   const pathname = usePathname()
-  const activeKey = pathname?.split('/')[2]
+  // `/docs` has no tab segment, and is where Get Started lands.
+  const activeKey = pathname?.split('/')[2] || defaultTabKey
 
   const left = docsTabs.filter(tab => tab.side === 'left')
   const right = docsTabs.filter(tab => tab.side === 'right')
@@ -56,8 +58,9 @@ export function TabBar() {
     >
       <HStack
         gap="1"
-        px="6"
+        px={{ base: '4', md: '6' }}
         overflowX="auto"
+        overflowY="hidden"
         className="scroll-area"
         alignItems="stretch"
       >
@@ -71,11 +74,14 @@ export function TabBar() {
             <TabLink key={tab.key} tab={tab} active={tab.key === activeKey} />
           ))}
           <CommunityMenu />
-          <Link
-            href="/blog"
+          <a
+            href="https://opencollective.com/chakra-ui"
+            target="_blank"
+            rel="noopener noreferrer"
             className={css({
               display: 'flex',
               alignItems: 'center',
+              gap: '2',
               textStyle: 'sm',
               fontWeight: 'semibold',
               color: 'fg.muted',
@@ -88,8 +94,13 @@ export function TabBar() {
               _hover: { color: 'fg', bg: 'bg.subtle' }
             })}
           >
-            Blog
-          </Link>
+            <LuHeart
+              size={16}
+              fill="currentColor"
+              className={css({ color: 'red.500' })}
+            />
+            Sponsor
+          </a>
         </HStack>
       </HStack>
     </Box>
@@ -97,139 +108,93 @@ export function TabBar() {
 }
 
 /**
- * "Community" is a dropdown, not a routed tab: Team and Showcase are full
- * marketing pages at their own routes, and the rest (Discord, GitHub, Roadmap,
- * Changelog, Contributing) are external links. There's no `/docs/community`
- * content for it to route to.
- *
- * The panel renders through a portal into `document.body`, positioned via the
- * button's own bounding rect. The tab bar's row has `overflowX: auto` for
- * horizontal scrolling on mobile, and per the CSS spec, setting overflow-x to
- * anything but `visible` forces overflow-y to clip too, so an absolutely
- * positioned panel nested inside that row gets silently cut off. Portaling it
- * out avoids that ancestor entirely.
+ * Portaled out of the row: `overflow-x: auto` there forces `overflow-y` to clip
+ * as well, which would silently cut the panel off.
  */
 function CommunityMenu() {
-  const [open, setOpen] = useState(false)
-  const [coords, setCoords] = useState({ top: 0, right: 0 })
-  const buttonRef = useRef<HTMLButtonElement>(null)
-  const panelRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!open) return
-
-    function onPointerDown(event: MouseEvent) {
-      const target = event.target as Node
-      if (
-        buttonRef.current &&
-        !buttonRef.current.contains(target) &&
-        panelRef.current &&
-        !panelRef.current.contains(target)
-      ) {
-        setOpen(false)
-      }
-    }
-
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') setOpen(false)
-    }
-
-    function onViewportChange() {
-      setOpen(false)
-    }
-
-    document.addEventListener('mousedown', onPointerDown)
-    document.addEventListener('keydown', onKeyDown)
-    window.addEventListener('scroll', onViewportChange, true)
-    window.addEventListener('resize', onViewportChange)
-    return () => {
-      document.removeEventListener('mousedown', onPointerDown)
-      document.removeEventListener('keydown', onKeyDown)
-      window.removeEventListener('scroll', onViewportChange, true)
-      window.removeEventListener('resize', onViewportChange)
-    }
-  }, [open])
-
-  function toggleOpen() {
-    if (!open && buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect()
-      setCoords({ top: rect.bottom + 4, right: window.innerWidth - rect.right })
-    }
-    setOpen(v => !v)
-  }
-
   return (
-    <Box position="relative" flexShrink="0">
-      <button
-        ref={buttonRef}
-        type="button"
-        aria-haspopup="menu"
-        aria-expanded={open}
-        onClick={toggleOpen}
-        className={css({
-          display: 'flex',
-          alignItems: 'center',
-          gap: '2',
-          textStyle: 'sm',
-          fontWeight: 'semibold',
-          px: '3',
-          py: '3',
-          h: 'full',
-          rounded: 'md',
-          whiteSpace: 'nowrap',
-          color: open ? 'fg' : 'fg.muted',
-          transitionProperty: 'color, background',
-          transitionDuration: '200ms',
-          _hover: { color: 'fg', bg: 'bg.subtle' }
-        })}
-      >
+    <Menu.Root lazyMount positioning={{ placement: 'bottom-end' }}>
+      <Menu.Trigger className={communityTrigger}>
         <LuUsers size={16} />
         Community
         <LuChevronDown size={14} />
-      </button>
-      {open &&
-        createPortal(
-          <div
-            ref={panelRef}
-            role="menu"
-            style={{ position: 'fixed', top: coords.top, right: coords.right }}
-            className={css({
-              minW: '12rem',
-              bg: 'bg',
-              borderWidth: '1px',
-              borderColor: 'border',
-              rounded: 'md',
-              shadow: 'lg',
-              py: '1',
-              zIndex: '20'
-            })}
-          >
+      </Menu.Trigger>
+      <Portal>
+        <Menu.Positioner>
+          <Menu.Content className={communityContent}>
             {communityLinks.map(link => (
-              <a
+              <Menu.Item
                 key={link.title}
-                role="menuitem"
-                href={link.href}
-                target={link.external ? '_blank' : undefined}
-                rel={link.external ? 'noopener noreferrer' : undefined}
-                onClick={() => setOpen(false)}
-                className={css({
-                  display: 'block',
-                  textStyle: 'sm',
-                  color: 'fg.muted',
-                  px: '3',
-                  py: '2',
-                  _hover: { color: 'fg', bg: 'bg.subtle' }
-                })}
+                value={link.title}
+                asChild
+                className={communityItem}
               >
-                {link.title}
-              </a>
+                <a
+                  href={link.href}
+                  target={link.external ? '_blank' : undefined}
+                  rel={link.external ? 'noopener noreferrer' : undefined}
+                >
+                  {link.title}
+                  {link.external && <LuArrowUpRight size={13} />}
+                </a>
+              </Menu.Item>
             ))}
-          </div>,
-          document.body
-        )}
-    </Box>
+          </Menu.Content>
+        </Menu.Positioner>
+      </Portal>
+    </Menu.Root>
   )
 }
+
+const communityTrigger = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '2',
+  textStyle: 'sm',
+  fontWeight: 'semibold',
+  px: '3',
+  py: '3',
+  h: 'full',
+  rounded: 'md',
+  whiteSpace: 'nowrap',
+  color: 'fg.muted',
+  cursor: 'pointer',
+  transitionProperty: 'color, background-color',
+  transitionDuration: '150ms',
+  _hover: { color: 'fg', bg: 'bg.subtle' },
+  _open: { color: 'fg' }
+})
+
+const communityContent = css({
+  minW: '13rem',
+  bg: 'bg',
+  borderWidth: '1px',
+  borderColor: 'border',
+  rounded: 'md',
+  shadow: 'lg',
+  p: '1.5',
+  zIndex: '20',
+  outline: '0'
+})
+
+const communityItem = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '3',
+  minH: '9',
+  px: '3',
+  py: '2',
+  rounded: 'md',
+  textStyle: 'sm',
+  color: 'fg.muted',
+  textDecoration: 'none',
+  cursor: 'pointer',
+  transitionProperty: 'color, background-color',
+  transitionDuration: '150ms',
+  _hover: { color: 'fg', bg: 'bg.subtle' },
+  _highlighted: { color: 'fg', bg: 'bg.muted' }
+})
 
 interface TabLinkProps {
   tab: TabItem
@@ -241,8 +206,8 @@ function TabLink({ tab, active }: TabLinkProps) {
 
   return (
     <Link
-      href={`/docs/${tab.key}`}
-      aria-current={active || undefined}
+      href={tabLandingHref(tab.key)}
+      aria-current={active ? 'page' : undefined}
       className={css({
         position: 'relative',
         display: 'flex',
@@ -267,9 +232,10 @@ function TabLink({ tab, active }: TabLinkProps) {
           position: 'absolute',
           left: '3',
           right: '3',
-          bottom: '-1px',
+          // Flush inside the row: 1px of spill was enough to add a scrollbar.
+          bottom: '0',
           height: '2px',
-          bg: active ? 'accent' : 'border',
+          bg: active ? 'accent' : 'transparent',
           transitionProperty: 'background',
           transitionDuration: '200ms'
         }

@@ -4,12 +4,47 @@ export const globalCss = defineGlobalStyles({
   '*, *::before, *::after': {
     borderColor: 'border'
   },
+  ':where(.shiki span:not(.highlighted))': {
+    color: 'var(--shiki-light)',
+    fontStyle: 'var(--shiki-light-font-style)',
+    fontWeight: 'var(--shiki-light-font-weight)',
+    textDecoration: 'var(--shiki-light-text-decoration)'
+  },
+  '.dark :where(.shiki span:not(.highlighted))': {
+    color: 'var(--shiki-dark)',
+    fontStyle: 'var(--shiki-dark-font-style)',
+    fontWeight: 'var(--shiki-dark-font-weight)',
+    textDecoration: 'var(--shiki-dark-text-decoration)'
+  },
+  '@media (prefers-reduced-motion: reduce)': {
+    '*, *::before, *::after': {
+      animationDuration: '0.01ms!',
+      animationIterationCount: '1!',
+      transitionDuration: '0.01ms!',
+      scrollBehavior: 'auto!'
+    }
+  },
   html: {
+    // Rebases every rem in the design system, not just text.
+    fontSize: '15px',
     fontFamily: 'sans',
-    fontSize: '0.9em',
-    '--nextra-primary-hue': '212deg',
-    scrollPaddingTop:
-      'calc(var(--navbar-height, 4rem) + var(--banner-height, 2.5rem) + 1rem)'
+    scrollbarGutter: 'stable',
+    // Themes the page scrollbar and native form controls. `next-themes` only
+    // toggles a class, so without this they keep following the OS instead.
+    colorScheme: 'light'
+  },
+  'html.dark, html[data-theme="dark"]': {
+    colorScheme: 'dark'
+  },
+  /**
+   * Anchor offset for the fixed navbar/banner/tab bar. It lives on the target
+   * rather than on `html`, because the layouts declare these custom properties
+   * on their own wrapper — `html` can't see them and would fall back to
+   * desktop-only guesses (wrong on mobile, and blind to the docs tab bar).
+   */
+  ':is(h1, h2, h3, h4, h5, h6, [data-scroll-target])': {
+    scrollMarginTop:
+      'calc(var(--navbar-height, 4rem) + var(--banner-height, 2.5rem) + var(--tabbar-height, 0px) + 1.5rem)'
   },
   body: {
     bg: 'bg',
@@ -27,18 +62,6 @@ export const globalCss = defineGlobalStyles({
     }
   },
   /* Content Typography */
-  'article details > summary': {
-    '&::-webkit-details-marker': {
-      display: 'none'
-    },
-    _before: {
-      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='h-5 w-5' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z' clip-rule='evenodd' /%3E%3C/svg%3E")`,
-      height: '1.2em',
-      width: '1.2em',
-      verticalAlign: '-4px'
-    }
-  },
-
   "input[type='search']": {
     '&::-webkit-search-decoration, &::-webkit-search-cancel-button, &::-webkit-search-results-button, &::-webkit-search-results-decoration':
       {
@@ -55,10 +78,10 @@ export const globalCss = defineGlobalStyles({
   '.scroll-area': {
     scrollbarWidth: 'thin',
     scrollbarColor: 'oklch(55.55% 0 0 / 40%) transparent',
-    scrollbarGutter: 'auto',
+    scrollbarGutter: 'stable',
     '&::-webkit-scrollbar': {
-      w: '3',
-      h: '3'
+      w: '1.5',
+      h: '1.5'
     },
     '&::-webkit-scrollbar-track': {
       bg: 'transparent'
@@ -88,19 +111,22 @@ export const globalCss = defineGlobalStyles({
     '& .line': {
       px: '4',
       '&.highlighted': {
-        bg: 'hsl(var(--nextra-primary-hue), 100%, 45%, 0.15)',
-        color: 'hsl(var(--nextra-primary-hue), 100%, 45%, 0.5)',
-        shadow: '2px 0 currentColor inset'
+        bg: 'link/15',
+        boxShadow: 'inset 2px 0 {colors.link}'
       },
       '& .highlighted': {
         rounded: 'md',
-        bg: 'hsl(var(--nextra-primary-hue), 100%, 32%, 0.1)',
-        shadow: '0 0 0 2px rgba(0,0,0,.3)',
-        shadowColor: 'hsl(var(--nextra-primary-hue), 100%, 32%, 0.1)',
-        _dark: {
-          bg: 'hsl(var(--nextra-primary-hue), 100%, 77%, 0.1)',
-          shadowColor: 'hsl(var(--nextra-primary-hue), 100%, 77%, 0.1)'
-        }
+        bg: 'link/10',
+        boxShadow: '0 0 0 2px {colors.link/10}'
+      },
+      // `/word/` highlights from Shiki: the line-highlight tint with a thin ring.
+      '& .highlighted-word': {
+        rounded: 'sm',
+        px: '0.2em',
+        mx: '-0.2em',
+        bg: 'link/12',
+        boxShadow: '0 0 0 1px {colors.link/35}',
+        boxDecorationBreak: 'clone'
       }
     }
   },

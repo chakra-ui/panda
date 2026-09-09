@@ -30,6 +30,7 @@ pub fn validate_config_value(config: &Value) -> Vec<Diagnostic> {
     validate_breakpoints(config.pointer("/theme/breakpoints"), &mut diagnostics);
     validate_conditions(config.get("conditions"), &mut diagnostics);
     validate_utilities("utilities", config.get("utilities"), &mut diagnostics);
+    validate_theme_names(config.get("themes"), &mut diagnostics);
 
     let mut artifacts = ArtifactNames::default();
     let mut tokens = TokenData::default();
@@ -630,6 +631,31 @@ fn collect_recipe_names(value: Option<&Value>, names: &mut BTreeSet<String>) {
     names.extend(map.keys().cloned());
 }
 
+/// A theme name is typed into `data-panda-theme`, becomes a `_theme*` condition
+/// key, and lands in the generated `ThemeName` type, so it has to be a plain identifier.
+fn validate_theme_names(value: Option<&Value>, diagnostics: &mut Vec<Diagnostic>) {
+    let Some(themes) = value.and_then(Value::as_object) else {
+        return;
+    };
+    for (name, theme) in themes {
+        if name == "extend" {
+            validate_theme_names(Some(theme), diagnostics);
+        } else if !is_valid_theme_name(name) {
+            diagnostics.push(warn(
+                diagnostic_codes::CONFIG_THEME_NAME_INVALID,
+                format!("Theme names may only use letters, digits, `-` and `_`: `{name}`"),
+            ));
+        }
+    }
+}
+
+fn is_valid_theme_name(name: &str) -> bool {
+    !name.is_empty()
+        && name
+            .chars()
+            .all(|ch| ch.is_ascii_alphanumeric() || matches!(ch, '-' | '_'))
+}
+
 fn validate_artifact_names(names: &ArtifactNames, diagnostics: &mut Vec<Diagnostic>) {
     for recipe in &names.recipes {
         if names.slot_recipes.contains(recipe) {
@@ -697,6 +723,12 @@ fn is_token_reference(value: &str) -> bool {
     value.contains('{') && value.contains('}')
 }
 
+/// `{#000/64}` and `{rgb(0 0 0)/64}` are literal colors the resolver mixes as-is,
+/// not token paths — reporting them as missing tokens is a false positive.
+fn is_literal_value(reference: &str) -> bool {
+    reference.starts_with('#') || reference.contains('(')
+}
+
 /// Every `{token.path}` reference in a serialized value, `/opacity` suffix stripped.
 fn references(value: &str) -> BTreeSet<String> {
     let mut refs = BTreeSet::new();
@@ -707,7 +739,7 @@ fn references(value: &str) -> BTreeSet<String> {
             break;
         };
         let reference = after_start[..end].trim();
-        if !reference.is_empty() {
+        if !reference.is_empty() && !is_literal_value(reference) {
             refs.insert(
                 reference
                     .split_once('/')

@@ -59,7 +59,7 @@ pub(crate) fn merge_class_name_fragments(
         && !panda.is_empty()
         && let Some(merged) = merge_into_literal_class_expression(
             dynamic,
-            &super::resolve::js_string_literal(panda),
+            &super::js::string(panda),
             existing.dynamic_kind,
             existing.dynamic_array_insert,
             existing.dynamic_array_has_elements,
@@ -165,10 +165,7 @@ enum ClassFragment {
 /// decodes entities in the attribute form but not in the expression form.
 fn class_name_attribute(class_attr: &str, value: &str) -> String {
     if value.contains(['"', '\\', '\n', '\r']) {
-        format!(
-            "{class_attr}={{{}}}",
-            super::resolve::js_string_literal(value)
-        )
+        format!("{class_attr}={{{}}}", super::js::string(value))
     } else {
         format!("{class_attr}=\"{value}\"")
     }
@@ -176,7 +173,7 @@ fn class_name_attribute(class_attr: &str, value: &str) -> String {
 
 fn static_class_expression(value: &str) -> String {
     if value.contains(['\'', '"', '\\', '\n', '\r']) {
-        super::resolve::js_string_literal(value)
+        super::js::string(value)
     } else {
         format!("'{value}'")
     }
@@ -252,7 +249,7 @@ fn print_cx_fragments(class_attr: &str, fragments: &[ClassFragment]) -> ClassNam
     let args = fragments
         .iter()
         .map(|fragment| match fragment {
-            ClassFragment::Static(value) => super::resolve::js_string_literal(value),
+            ClassFragment::Static(value) => super::js::string(value),
             ClassFragment::Expr { value: expr, .. } => expr.clone(),
         })
         .collect::<Vec<_>>()
@@ -288,7 +285,7 @@ fn print_concatenated_fragments(class_attr: &str, fragments: &[ClassFragment]) -
                 } else {
                     value.clone()
                 };
-                expr.push_str(&super::resolve::js_string_literal(&literal));
+                expr.push_str(&super::js::string(&literal));
             }
             ClassFragment::Expr {
                 value,

@@ -8,6 +8,7 @@ pub mod codes {
     pub const CONFIG_CONTAINER_INVALID: &str = "config_container_invalid";
     pub const CONFIG_CONTAINER_NAME_INVALID: &str = "config_container_name_invalid";
     pub const CONFIG_CONTAINER_UNITS_MIXED: &str = "config_container_units_mixed";
+    pub const CONFIG_THEME_NAME_INVALID: &str = "config_theme_name_invalid";
     pub const CONFIG_CONDITION_ARRAY_UNSUPPORTED: &str = "config_condition_array_unsupported";
     pub const CONFIG_CONDITION_SELECTOR_INVALID: &str = "config_condition_selector_invalid";
     pub const CONFIG_UTILITY_VALUES_INVALID: &str = "config_utility_values_invalid";
@@ -45,6 +46,8 @@ pub mod codes {
     pub const STATIC_CSS_WILDCARD_LARGE: &str = "static_css_wildcard_large";
     pub const STATIC_CSS_WILDCARD_EMPTY: &str = "static_css_wildcard_empty";
     pub const PANDA_CALL_UNEXTRACTABLE: &str = "panda_call_unextractable";
+    pub const SOURCE_NOT_FOUND: &str = "source_not_found";
+    pub const SOURCE_READ_FAILED: &str = "source_read_failed";
     pub const IMPORTED_RECIPE_RAW_DYNAMIC: &str = "imported_recipe_raw_dynamic";
     pub const TOKEN_DICTIONARY_BUILD_FAILED: &str = "token_dictionary_build_failed";
     pub const TRANSFORM_CALLBACK_FAILED: &str = "transform_callback_failed";

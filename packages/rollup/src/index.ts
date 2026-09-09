@@ -1,5 +1,5 @@
 import { createNodeDriver, type NodeDriver } from '@pandacss/compiler'
-import { formatDiagnostic, type Diagnostic } from '@pandacss/compiler-shared'
+import { formatDiagnostic, type Diagnostic, type SourceChange } from '@pandacss/compiler-shared'
 import { pandaTransformer } from '@pandacss/transformer'
 import { dirname } from 'node:path'
 import type { Plugin, PluginContext } from 'rollup'
@@ -63,21 +63,34 @@ export function pandacss(options: PandaRollupOptions = {}): Plugin[] {
 
     async buildStart() {
       await build()
-      // Watch the config and every scanned source so a change rebuilds.
+      const watchTargets = driver!.watchTargets()
+      for (const dir of watchTargets.dirs) this.addWatchFile(driver!.resolvePath(dir))
+      for (const config of watchTargets.config) this.addWatchFile(driver!.resolvePath(config))
       if (driver!.configPath) this.addWatchFile(driver!.configPath)
-      for (const file of driver!.scan()) this.addWatchFile(file)
+      for (const file of watchTargets.files ?? driver!.scan()) this.addWatchFile(file)
+      for (const target of driver!.designSystemWatchTargets()) {
+        this.addWatchFile(target.manifestPath)
+        this.addWatchFile(target.buildInfoPath)
+        this.addWatchFile(target.presetPath)
+        for (const file of target.sourceFiles) this.addWatchFile(file)
+      }
     },
 
-    async watchChange(id) {
+    async watchChange(id, change) {
       if (!driver) return
-      if (driver.isConfigFile(id)) {
+      const sourceChange = sourceChangeFromRollup(id, change.event)
+      const designSystemFile = driver.isDesignSystemFile(id)
+      if (designSystemFile) {
+        const changed = await driver.syncDesignSystemFileChange(sourceChange)
+        if (changed && designSystemFile === 'artifact') driver.codegen({ cwd, outdir })
+      } else if (driver.isConfigFile(id)) {
         const diff = await driver.reload()
         if (diff.hasChanged) {
           driver.codegen({ cwd, outdir })
           driver.parseFiles()
         }
       } else if (driver.isSourceFile(id)) {
-        driver.applyChange({ path: id, kind: 'change' })
+        driver.applyChange(sourceChange)
       }
     },
 
@@ -104,6 +117,11 @@ export function pandacss(options: PandaRollupOptions = {}): Plugin[] {
   })
 
   return [orchestrator, ...(Array.isArray(transform) ? transform : [transform])]
+}
+
+function sourceChangeFromRollup(path: string, event: 'create' | 'delete' | 'update'): SourceChange {
+  const kind = event === 'create' ? 'add' : event === 'delete' ? 'unlink' : 'change'
+  return { path, kind }
 }
 
 function reportDiagnostics(context: PluginContext, diagnostics: readonly Diagnostic[]) {

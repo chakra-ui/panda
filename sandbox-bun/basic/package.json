@@ -1,0 +1,15 @@
+{
+  "name": "sandbox-bun-basic",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "clean": "rm -rf styled-system dist",
+    "dev": "bun src/server.ts",
+    "build": "bun run build.ts",
+    "start": "cd dist && NODE_ENV=production bun server.js",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.12"
+  }
+}

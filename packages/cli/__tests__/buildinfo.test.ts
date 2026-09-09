@@ -51,7 +51,7 @@ describe('buildinfo command', () => {
             "v": 3,
           },
         ],
-        "configFingerprint": "cfg1-49bac1e44a87696f",
+        "configFingerprint": "cfg1-a3d145687e038e7c",
         "modules": {
           "button.tsx": {
             "atoms": [
@@ -65,7 +65,7 @@ describe('buildinfo command', () => {
           },
         },
         "panda": "^2.0.0",
-        "schemaVersion": 5,
+        "schemaVersion": 6,
         "strings": [
           "background",
           "blue",

@@ -1,18 +1,22 @@
 //! React runtime call rewrites (`jsx`, `jsxs`, `createElement`, …).
 
-use pandacss_extractor::ExtractedJsx;
+use pandacss_extractor::{ExtractedJsx, JsxKind, Literal, StyleObject, StyleTree, project_literal};
 
 use crate::PatternTransformFn;
 use crate::Project;
 
 use super::helper::format_object_class_name;
-use super::jsx_parse::{ConditionalSpreadPlan, SpreadSyntax, parsed_object_from_facts};
+use super::jsx_parse::{
+    ConditionalSpreadPlan, ParsedObjectLiteral, ParsedProperty, SpreadSyntax,
+    parsed_object_from_facts,
+};
 use super::jsx_shared::{
     SelectedSlots, plan_class_name, plan_slot_spreads, resolve_element_tag, select_slots,
     style_slots_should_skip,
 };
 use super::plan::{HelperCxMode, Rewrite, TransformHelperFacts};
 use super::resolve::span_slice;
+use super::style_lower;
 
 pub(super) fn rewrites_for_jsx_runtime_call(
     project: &Project,
@@ -36,6 +40,18 @@ pub(super) fn rewrites_for_jsx_runtime_call(
     let Some(props) = parsed_object_from_facts(source, props_facts) else {
         return Vec::new();
     };
+    if jsx.kind == JsxKind::Recipe {
+        return recipe_style_prop_rewrite(
+            project,
+            source,
+            jsx,
+            callee,
+            &props,
+            helper_cx,
+            pattern_transform,
+        )
+        .map_or_else(Vec::new, |rewrite| vec![rewrite]);
+    }
     let Some(spread_plan) = plan_slot_spreads(
         project,
         source,
@@ -104,6 +120,115 @@ pub(super) fn rewrites_for_jsx_runtime_call(
             ..TransformHelperFacts::none()
         },
     }]
+}
+
+/// The object spelling of `jsx_element::recipe_style_prop_rewrite`.
+fn recipe_style_prop_rewrite(
+    project: &Project,
+    source: &str,
+    jsx: &ExtractedJsx,
+    callee: &str,
+    props: &ParsedObjectLiteral,
+    helper_cx: HelperCxMode,
+    pattern_transform: Option<&mut PatternTransformFn<'_>>,
+) -> Option<Rewrite> {
+    if props
+        .properties
+        .iter()
+        .any(|prop: &ParsedProperty| prop.spread_expression.is_some() || prop.key.is_none())
+    {
+        return None;
+    }
+    let extractor = project.config().extractor_config();
+    let class_attr = extractor.class_attribute;
+    let recipes = &project.config().recipes;
+    let variant_props = recipes.variant_props_for(&recipes.find_by_jsx(&jsx.name));
+
+    let folds = |prop: &ParsedProperty| {
+        prop.key.as_deref().is_some_and(|key| {
+            !variant_props.contains(key)
+                && key != class_attr
+                && !super::jsx_shared::should_skip_style_prop(key)
+                && extractor.jsx.should_extract_prop(&jsx.name, key)
+        })
+    };
+    if !props.properties.iter().any(folds) {
+        return None;
+    }
+
+    let StyleTree::Object(object) = jsx.style.as_ref()? else {
+        return None;
+    };
+    let style_only = StyleTree::Object(StyleObject {
+        entries: object
+            .entries
+            .iter()
+            .filter(|(key, _)| !variant_props.contains(key.as_str()))
+            .cloned()
+            .collect(),
+        spreads: Vec::new(),
+    });
+    if style_lower::style_tree_has_open_value(&style_only) {
+        return None;
+    }
+
+    let style_jsx = ExtractedJsx {
+        kind: JsxKind::Component,
+        data: project_literal(&style_only).unwrap_or_else(|| Literal::Object(Vec::new())),
+        style: Some(style_only.clone()),
+        ..jsx.clone()
+    };
+    let class_name = plan_class_name(
+        project,
+        source,
+        &style_jsx,
+        props.existing_class_name(class_attr),
+        helper_cx,
+        pattern_transform,
+    )?;
+
+    let mut args = jsx
+        .source
+        .args
+        .iter()
+        .filter_map(|argument| span_slice(source, argument.span).map(str::to_owned))
+        .collect::<Vec<_>>();
+    if args.len() != jsx.source.args.len() {
+        return None;
+    }
+
+    let mut parts: Vec<String> = props
+        .properties
+        .iter()
+        .filter(|prop| !folds(prop) && prop.key.as_deref() != Some(class_attr))
+        .map(|prop| prop.raw.clone())
+        .collect();
+    parts.push(format_object_class_name(class_attr, &class_name));
+    args[1] = format!("{{ {} }}", parts.join(", "));
+
+    let mut preserved = style_lower::preserved_source_spans(&style_only);
+    preserved.push(jsx.source.callee_span?);
+    // The component argument stays, so its binding is live.
+    preserved.push(jsx.source.args.first()?.span);
+    preserved.extend(
+        props
+            .properties
+            .iter()
+            .filter(|prop| !folds(prop))
+            .map(|prop| prop.span),
+    );
+    preserved.extend(jsx.source.args.iter().skip(2).map(|argument| argument.span));
+
+    Some(Rewrite {
+        start: jsx.span.start,
+        end: jsx.span.end,
+        content: format!("{callee}({})", args.join(", ")),
+        preserved,
+        helper: TransformHelperFacts {
+            needs_cx: class_name.needs_cx,
+            ..TransformHelperFacts::none()
+        },
+    })
 }
 
 /// `{ …props, className: … }` — the object spelling of the selected slots.

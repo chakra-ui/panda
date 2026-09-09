@@ -13,6 +13,40 @@ function build() {
   return compiler
 }
 
+// The style prop's value never renders, so a rule for it would be dead CSS.
+describe('css prop merging', () => {
+  it('emits only the winning declaration', () => {
+    const compiler = createProject({
+      jsxFramework: 'react',
+      utilities: { color: {} },
+    })
+    compiler.parseFileSource(
+      'app.tsx',
+      "import { Box } from '@panda/jsx'\nconst el = <Box color=\"red\" css={{ color: 'blue' }} />",
+    )
+
+    const css = compiler.getLayerCss({ layers: ['utilities'] }).css
+    expect(css).toContain('color_blue')
+    expect(css).not.toContain('color_red')
+  })
+
+  it('emits only the winning declaration when a shorthand and its longhand collide', () => {
+    const compiler = createProject({
+      jsxFramework: 'react',
+      shorthands: true,
+      utilities: { padding: { className: 'p', shorthand: 'p' } },
+    })
+    compiler.parseFileSource(
+      'app.tsx',
+      "import { Box } from '@panda/jsx'\nconst el = <Box padding=\"4\" css={{ p: '8' }} />",
+    )
+
+    const css = compiler.getLayerCss({ layers: ['utilities'] }).css
+    expect(css).toContain('p_8')
+    expect(css).not.toContain('p_4')
+  })
+})
+
 describe('compiler.getLayerCss()', () => {
   it('returns only the tokens layer (vars + keyframes)', () => {
     expect(build().getLayerCss({ layers: ['tokens'] }).css).toMatchInlineSnapshot(`

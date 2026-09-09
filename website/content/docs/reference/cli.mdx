@@ -83,7 +83,6 @@ pnpm panda init --postcss
 | `--out-extension <ext>`       | Generated runtime file extension: `ts`, `js`, or `mjs`         | [`config.outExtension`](/docs/reference/config#outextension) |
 | `--jsx-framework <framework>` | JSX framework: `react`, `preact`, `vue`, `solid`, or `qwik`    | [`config.jsxFramework`](/docs/reference/config#jsxframework) |
 | `--jsx-style-props <mode>`    | JSX style props: `all`, `minimal`, or `none`                   | -                                                            |
-| `--syntax <syntax>`           | CSS syntax: `object-literal` or `template-literal`             | [`config.syntax`](/docs/reference/config#syntax)             |
 | `--strict-tokens`             | Set `strictTokens` to `true`                                   | [`config.strictTokens`](/docs/reference/config#stricttokens) |
 | `--skip-presets`              | Skip adding and installing the default presets                 | -                                                            |
 | `--no-gitignore`              | Don't update `.gitignore` with the output directory            | -                                                            |
@@ -109,7 +108,7 @@ pnpm panda dev --include "./src/**/*.tsx"
 | `--outdir <dir>`     | Output directory for generated files                         | [`config.outdir`](/docs/reference/config#outdir)   |
 | `--outfile, -o <file>` | Output file for extracted CSS                              | -                                                  |
 | `--splitting`        | Emit split CSS files (one per layer and recipe)             | -                                                  |
-| `--clean`            | Clean the output directory before generating                | [`config.clean`](/docs/reference/config#clean)     |
+| `--clean`            | Clean the output directory before generating                | -     |
 | `--polyfill`         | Polyfill cascade layers with `:not(#\\#)` for older browsers | [`config.polyfill`](/docs/reference/config#polyfill) |
 
 `panda dev` also accepts the [shared flags](#shared-flags), `--include`, and `--watch-debounce`.
@@ -142,7 +141,7 @@ pnpm panda build --splitting
 | `--outdir <dir>`       | Output directory for generated files                        | [`config.outdir`](/docs/reference/config#outdir)   |
 | `--outfile, -o <file>` | Output file for extracted CSS                              | -                                                  |
 | `--splitting`          | Emit split CSS files (one per layer and recipe)             | -                                                  |
-| `--clean`              | Clean the output directory before generating                | [`config.clean`](/docs/reference/config#clean)     |
+| `--clean`              | Clean the output directory before generating                | -     |
 | `--polyfill`           | Polyfill cascade layers with `:not(#\\#)` for older browsers | [`config.polyfill`](/docs/reference/config#polyfill) |
 | `--check`              | Check generated files without writing                       | -                                                  |
 
@@ -189,7 +188,7 @@ pnpm panda codegen --watch
 | ----------------- | -------------------------------------------- | ------------------------------------------------ |
 | `--watch, -w`     | Watch the config and rebuild on change      | -                                                |
 | `--outdir <dir>`  | Output directory for generated files        | [`config.outdir`](/docs/reference/config#outdir) |
-| `--clean`         | Clean the output directory before generating | [`config.clean`](/docs/reference/config#clean)   |
+| `--clean`         | Clean the output directory before generating | -   |
 | `--check`         | Check generated files without writing        | -                                                |
 
 `panda codegen` also accepts the [shared flags](#shared-flags) and `--watch-debounce`.
@@ -291,37 +290,32 @@ You then choose how to import them:
 
 ## analyze
 
-Report which tokens, recipes, utilities, patterns, and keyframes your project uses. By default it scans the whole
-project, following your `include` and `exclude` options.
+Report which tokens, recipes, utilities, patterns, and keyframes your project uses, and which configured ones no
+scanned file touches. It scans the whole project, following your `include` and `exclude` options, and prints a
+summary followed by one section per category. For what to do with the report, see
+[Find what nobody uses](/docs/design-systems/analyze).
 
 ```bash
 pnpm panda analyze
 
-# Scope the report
-pnpm panda analyze --scope tokens
-pnpm panda analyze --scope recipes
+# One section
+pnpm panda analyze --scope utilities
+
+# Only the configured names nobody uses, one per line
+pnpm panda analyze --unused
 
 # Write a JSON report
 pnpm panda analyze --outfile analyze.json
-
-# Write a static HTML report
-pnpm panda analyze --report ./analyze-report
-
-# Open an interactive UI
-pnpm panda analyze --ui
 ```
 
 | Flag                | Description                                                                                | Related |
 | ------------------- | ----------------------------------------------------------------------------------------- | ------- |
-| `--scope <scope>`   | Scope the report: `all`, `tokens`, `recipes`, `utilities`, `patterns`, or `keyframes` (`token`/`recipe` are aliases) | -       |
+| `--scope <scope>`   | Print one section: `tokens`, `recipes`, `utilities`, `patterns`, or `keyframes` (`token`/`recipe` are aliases) | -       |
 | `--limit <n>`       | Maximum rows per section in the terminal report                                           | -       |
+| `--unused`          | List only the configured names no scanned file uses, one per line; with `--scope`, names only | -       |
 | `--outfile <path>`  | Write the report as JSON to this path                                                     | -       |
-| `--report <dir>`    | Write a static HTML report to this directory                                              | -       |
-| `--ui`              | Start an interactive report UI that refreshes on change                                   | -       |
-| `--ui-host <host>`  | Host for the report UI server                                                             | -       |
-| `--ui-port <port>`  | Port for the report UI server                                                             | -       |
 
-`panda analyze` also accepts the [shared flags](#shared-flags), `--include`, and `--watch-debounce` (UI refresh debounce).
+`panda analyze` also accepts the [shared flags](#shared-flags) and `--include`.
 
 ---
 
@@ -373,8 +367,8 @@ can't be combined with `--dry`.
 Publish a design system so other apps share your tokens, recipes, and CSS without re-scanning your source. It writes
 machine artifacts under `panda/` and syncs your package `exports`. This replaces the v1 `ship` command.
 
-See [Building a design system](/docs/design-systems/building-a-design-system) and
-[Consuming a design system](/docs/design-systems/consuming-a-design-system) for the full workflow.
+See [Build a design system](/docs/design-systems/build-a-design-system) and
+[Consume with Panda](/docs/design-systems/consume-with-panda).
 
 ```bash
 pnpm panda lib
@@ -441,4 +435,4 @@ directly:
 npx -y @pandacss/mcp
 ```
 
-See the [MCP Server guide](/docs/styling/mcp-server) for setup and available tools.
+See the [MCP Server guide](/docs/get-started/mcp-server) for setup and available tools.

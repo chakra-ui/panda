@@ -1,0 +1,188 @@
+---
+title: Style isolation
+description: Load multiple Panda-built bundles on one page without class or token collisions.
+---
+
+Two independently built Panda bundles on the same page can emit the same class name, or the same CSS variable, with
+different rules behind them. The cascade keeps one and silently drops the other. `prefix` and `cssVarRoot` stop
+that.
+
+## When you need this
+
+Any setup that loads two or more independently built Panda stylesheets into one document:
+
+- Webpack Module Federation, single-spa, qiankun, or other micro-frontend orchestrators
+- Widgets injected into pages you do not control (Intercom-style embeds, browser extensions)
+- Two versions of the same design system on one page, common mid-migration
+
+If the bundles never share a document (iframes, Next.js multi-zone routing), you do not need this page. The cascade
+cannot cross documents.
+
+## Two kinds of collision
+
+### Override leakage
+
+Two bundles load the same styles, and one adds a local override:
+
+```css
+/* bundle 1 */
+.ds-background { background-color: blue; }
+.local-override { background-color: red; }
+
+/* bundle 2 */
+.ds-background { background-color: blue; }
+```
+
+Load order decides whether `.local-override` wins. Fix it with a
+[cascade layer](/docs/styling/cascade-layers): unlayered styles always beat layered ones, so the override wins
+regardless of load order.
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  layers: {
+    recipes: 'ds.recipes',
+    utilities: 'ds.utilities'
+  }
+})
+```
+
+### Cross-version collision
+
+Bundle A ships `@acme/ds@1`, bundle B ships `@acme/ds@2`. Both emit `.button` and `--colors-brand`, with different
+values:
+
+```css
+/* v1's bundle */
+:root { --colors-brand: #ea580c; }
+.button { background: var(--colors-brand); padding: 8px 12px; }
+
+/* v2's bundle */
+:root { --colors-brand: #2563eb; }
+.button { background: var(--colors-brand); padding: 20px 40px; }
+```
+
+Same selector, different rule. Layers do not help here: both versions emit into the same layer, and within a layer
+load order still decides. This is what `prefix` is for.
+
+## Set a prefix
+
+Panda prepends `prefix` to every emitted class name and CSS variable:
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  prefix: 'acme-v1'
+})
+```
+
+```css
+:where(:root, :host) {
+  --acme-v1-colors-brand: #ea580c;
+}
+
+.acme-v1-button {
+  background: var(--acme-v1-colors-brand);
+}
+```
+
+A second bundle with `prefix: 'acme-v2'` emits `.acme-v2-button` and `--acme-v2-colors-brand`. Both sit in the same
+`<head>` with nothing to fight over. Source code does not change: `css()`, `cva()`, and recipes read `prefix` from
+config and emit the namespaced names.
+
+## Derive the prefix
+
+A hardcoded prefix drifts the moment you forget to bump it. Key it to the package name and major version:
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+import pkg from './package.json' with { type: 'json' }
+
+const major = pkg.version.split('.')[0]
+const slug = pkg.name.replace(/[@/]/g, '-').replace(/^-/, '')
+
+export default defineConfig({
+  prefix: `${slug}-v${major}` // @acme/ds@1.4.2 → acme-ds-v1
+})
+```
+
+A 2.x release rotates the prefix on its own. Patch and minor releases share one, which matches how you already
+reason about breaking changes.
+
+## Who sets the prefix
+
+- **The library ships a static CSS file** ([Consume without Panda](/docs/design-systems/consume-without-panda)):
+  the library sets it, keyed to its own package and major version, because the CSS is frozen at the library's build
+  time.
+- **The apps run Panda** ([Consume with Panda](/docs/design-systems/consume-with-panda)): each app sets its own
+  prefix, keyed to the app's identity. The design system does not bake one in. Two apps pinning different design
+  system versions then emit `.app1-button` and `.app2-button`, and version isolation falls out without anyone
+  tracking versions.
+
+```ts filename="apps/checkout/panda.config.ts"
+export default defineConfig({
+  designSystem: '@acme/ds',
+  prefix: 'checkout' // .button → .checkout-button
+})
+```
+
+## Scope tokens with cssVarRoot
+
+`prefix` renames the variables. If they should also apply only inside your subtree, set `cssVarRoot`:
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  prefix: 'acme-v1',
+  cssVarRoot: '.acme-v1-scope'
+})
+```
+
+```tsx
+<div className="acme-v1-scope">
+  <Button>Click</Button>
+</div>
+```
+
+Elements outside `.acme-v1-scope` cannot resolve the tokens. Optional: `prefix` alone covers most setups.
+
+## Tokens still collide
+
+Atomic classes from raw values never collide, because the value is in the name (`.bg_\#ea580c`). Token references
+are the trap:
+
+```tsx
+const button = cva({
+  base: { background: 'brand' }
+})
+// both versions emit .bg_brand { background: var(--colors-brand) }
+```
+
+The class names match across versions, so nothing clashes structurally. But each version declares `--colors-brand`
+with a different value, the cascade picks one, and the losing bundle renders with the wrong brand color. `prefix`
+fixes this too, by renaming the variable.
+
+## Verify the output
+
+Grep the emitted CSS for the names that used to collide:
+
+```bash
+grep -E "^\.button|--colors-brand:" styled-system/styles.css
+```
+
+Every match should carry your prefix. If not, check that `prefix` sits at the top level of `defineConfig`, not
+inside `theme`, and regenerate.
+
+## What prefix does not solve
+
+- **Same-prefix collisions.** Two bundles that both pick `prefix: 'design'` collide as if neither had one. Choose
+  it like a package name.
+- **Reset collisions.** Preflight targets raw element selectors, so two resets fight regardless of prefix. Set
+  `preflight: false` in bundles that ship into a host page, and let the host own the reset.
+- **Hand-written CSS.** `prefix` applies to what Panda emits, nothing else.
+
+For total isolation against an untrusted host, use an iframe or Shadow DOM. Heavier, but bulletproof.
+
+## See also
+
+- [Cascade Layers](/docs/styling/cascade-layers) for single-version override leakage
+- [Hashing](/docs/styling/writing-styles#hashing) for short opaque class names instead of namespaces
+- [Consume with Panda](/docs/design-systems/consume-with-panda) and
+  [Consume without Panda](/docs/design-systems/consume-without-panda) for the design system setups above

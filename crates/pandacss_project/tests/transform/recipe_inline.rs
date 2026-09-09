@@ -26,7 +26,7 @@ fn rewrites_inline_cva_to_string_branch_config() {
     assert!(output.helper.needs_cva);
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
-    export const button = __pcva({ base: 'background-color_blue color_red', variants: { size: { sm: 'fs_12px', md: 'fs_16px' } }, defaultVariants: { size: 'md' } });
+    export const button = /* @__PURE__ */ __pcva({ base: 'background-color_blue color_red', variants: { size: { sm: 'fs_12px', md: 'fs_16px' } }, defaultVariants: { size: 'md' } });
     "#);
 }
 
@@ -57,7 +57,7 @@ fn rewrites_inline_sva_to_string_branch_config() {
     assert!(output.helper.needs_sva);
     assert_snapshot!(output.code, @r#"
     import { sva as __psva } from '@pandacss-internal/css';
-    export const tabs = __psva({ slots: ['root', 'trigger'], base: { root: 'd_flex', trigger: 'cursor_pointer' }, variants: { size: { sm: 'fs_12px' } } });
+    export const tabs = /* @__PURE__ */ __psva({ slots: ['root', 'trigger'], base: { root: 'd_flex', trigger: 'cursor_pointer' }, variants: { size: { sm: 'fs_12px' } } });
     "#);
 }
 
@@ -88,7 +88,7 @@ fn rewrites_cva_with_compound_variants() {
     assert!(output.helper.needs_cva);
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
-    export const button = __pcva({ base: 'color_white', variants: { size: { sm: 'fs_12px' }, intent: { danger: 'background-color_red' } }, defaultVariants: { size: 'sm', intent: 'danger' }, compoundVariants: [{ size: 'sm', intent: 'danger', css: 'color_black' }] });
+    export const button = /* @__PURE__ */ __pcva({ base: 'color_white', variants: { size: { sm: 'fs_12px' }, intent: { danger: 'background-color_red' } }, defaultVariants: { size: 'sm', intent: 'danger' }, compoundVariants: [{ size: 'sm', intent: 'danger', css: 'color_black' }] });
     "#);
 }
 
@@ -106,26 +106,210 @@ fn bails_on_cva_raw_member_call() {
 }
 
 #[test]
-fn bails_on_sva_when_variant_styles_differ_per_slot() {
+fn rewrites_sva_variants_per_slot_when_slots_differ() {
     let source = indoc! {r#"
         import { sva } from '@panda/css';
         export const card = sva({
-          slots: ['root', 'header'],
+          slots: ['root', 'header', 'body'],
+          base: { root: { display: 'grid' } },
           variants: {
             size: {
-              sm: {
-                root: { padding: '4px' },
-                header: { fontSize: '12px' },
-              },
+              sm: { root: { padding: '4px' }, header: { fontSize: '12px' } },
+              lg: { root: { padding: '16px' }, header: { fontSize: '20px' }, body: { gap: '8px' } },
             },
+          },
+          defaultVariants: { size: 'lg' },
+          compoundVariants: [{ size: 'sm', css: { body: { display: 'none' } } }],
+        });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert!(output.changed);
+    assert!(output.helper.needs_sva);
+    assert_snapshot!(output.code, @"
+    import { sva as __psva } from '@pandacss-internal/css';
+    export const card = /* @__PURE__ */ __psva({ slots: ['root', 'header', 'body'], base: { root: 'd_grid' }, variants: { size: { sm: { root: 'padding_4px', header: 'fs_12px' }, lg: { root: 'padding_16px', header: 'fs_20px', body: 'gap_8px' } } }, defaultVariants: { size: 'lg' }, compoundVariants: [{ size: 'sm', css: { body: 'd_none' } }] });
+    ");
+}
+
+#[test]
+fn keeps_an_sva_variant_off_the_slots_it_does_not_style() {
+    let source = indoc! {r#"
+        import { sva } from '@panda/css';
+        export const tabs = sva({
+          slots: ['root', 'trigger'],
+          variants: { size: { sm: { root: { fontSize: '12px' } } } },
+        });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert_snapshot!(output.code, @"
+    import { sva as __psva } from '@pandacss-internal/css';
+    export const tabs = /* @__PURE__ */ __psva({ slots: ['root', 'trigger'], variants: { size: { sm: { root: 'fs_12px' } } } });
+    ");
+}
+
+#[test]
+fn rewrites_sva_boolean_variant_that_styles_one_slot() {
+    let source = indoc! {r#"
+        import { sva } from '@panda/css';
+        export const tabs = sva({
+          slots: ['root', 'trigger'],
+          variants: {
+            fitted: {
+              true: { trigger: { flex: '1' } },
+              false: { trigger: { flex: 'none' } },
+            },
+          },
+          defaultVariants: { fitted: true },
+        });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert_snapshot!(output.code, @"
+    import { sva as __psva } from '@pandacss-internal/css';
+    export const tabs = /* @__PURE__ */ __psva({ slots: ['root', 'trigger'], variants: { fitted: { true: { trigger: 'flex_1' }, false: { trigger: 'flex_none' } } }, defaultVariants: { fitted: true } });
+    ");
+}
+
+#[test]
+fn rewrites_sva_boolean_variant_shared_by_every_slot() {
+    let source = indoc! {r#"
+        import { sva } from '@panda/css';
+        export const card = sva({
+          slots: ['root', 'title'],
+          variants: { muted: { true: { root: { opacity: '0.5' }, title: { opacity: '0.5' } } } },
+        });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert_snapshot!(output.code, @"
+    import { sva as __psva } from '@pandacss-internal/css';
+    export const card = /* @__PURE__ */ __psva({ slots: ['root', 'title'], variants: { muted: { true: 'opacity_0.5' } } });
+    ");
+}
+
+#[test]
+fn rewrites_sva_boolean_compound_condition_as_a_boolean() {
+    let source = indoc! {r#"
+        import { sva } from '@panda/css';
+        export const tabs = sva({
+          slots: ['root', 'trigger'],
+          variants: {
+            size: { sm: { root: { gap: '4px' } } },
+            fitted: { true: { trigger: { flex: '1' } } },
+          },
+          compoundVariants: [{ size: 'sm', fitted: true, css: { trigger: { padding: '0' } } }],
+        });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert_snapshot!(output.code, @"
+    import { sva as __psva } from '@pandacss-internal/css';
+    export const tabs = /* @__PURE__ */ __psva({ slots: ['root', 'trigger'], variants: { size: { sm: { root: 'gap_4px' } }, fitted: { true: { trigger: 'flex_1' } } }, compoundVariants: [{ size: 'sm', fitted: true, css: { trigger: 'padding_0' } }] });
+    ");
+}
+
+#[test]
+fn rewrites_cva_boolean_compound_condition_as_a_boolean() {
+    let source = indoc! {r#"
+        import { cva } from '@panda/css';
+        export const button = cva({
+          variants: {
+            size: { sm: { fontSize: '12px' } },
+            block: { true: { display: 'flex' } },
+          },
+          compoundVariants: [{ size: 'sm', block: true, css: { padding: '0' } }],
+        });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert_snapshot!(output.code, @"
+    import { cva as __pcva } from '@pandacss-internal/css';
+    export const button = /* @__PURE__ */ __pcva({ variants: { size: { sm: 'fs_12px' }, block: { true: 'd_flex' } }, compoundVariants: [{ size: 'sm', block: true, css: 'padding_0' }] });
+    ");
+}
+
+#[test]
+fn rewrites_sva_responsive_slot_styles_to_conditional_classes() {
+    let source = indoc! {r#"
+        import { sva } from '@panda/css';
+        export const tabs = sva({
+          slots: ['root', 'trigger'],
+          variants: { size: { sm: { root: { fontSize: { base: '12px', md: '14px' } } } } },
+        });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert_snapshot!(output.code, @"
+    import { sva as __psva } from '@pandacss-internal/css';
+    export const tabs = /* @__PURE__ */ __psva({ slots: ['root', 'trigger'], variants: { size: { sm: { root: 'fs_12px md:fs_14px' } } } });
+    ");
+}
+
+#[test]
+fn derives_sva_slots_from_base_when_slots_is_omitted() {
+    let source = indoc! {r#"
+        import { sva } from '@panda/css';
+        export const card = sva({
+          base: { root: { display: 'grid' }, title: { fontWeight: '700' } },
+          variants: {
+            muted: { true: { root: { opacity: '0.5' }, title: { opacity: '0.5' } } },
+            size: { sm: { title: { fontSize: '12px' } } },
           },
         });
     "#};
 
     let output = transform("src/recipes.ts", source);
 
-    assert!(!output.changed);
-    assert_eq!(output.code, source);
+    assert_snapshot!(output.code, @"
+    import { sva as __psva } from '@pandacss-internal/css';
+    export const card = /* @__PURE__ */ __psva({ slots: ['root', 'title'], base: { root: 'd_grid', title: 'font-weight_700' }, variants: { muted: { true: 'opacity_0.5' }, size: { sm: { title: 'fs_12px' } } } });
+    ");
+}
+
+#[test]
+fn encodes_an_sva_option_with_no_styles_as_an_empty_map() {
+    let source = indoc! {r#"
+        import { sva } from '@panda/css';
+        export const tabs = sva({
+          slots: ['root', 'trigger'],
+          variants: { size: { sm: { root: { gap: '4px' } }, md: {} } },
+        });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert_snapshot!(output.code, @"
+    import { sva as __psva } from '@pandacss-internal/css';
+    export const tabs = /* @__PURE__ */ __psva({ slots: ['root', 'trigger'], variants: { size: { sm: { root: 'gap_4px' }, md: {} } } });
+    ");
+}
+
+#[test]
+fn quotes_sva_slot_names_that_are_not_identifiers() {
+    let source = indoc! {r#"
+        import { sva } from '@panda/css';
+        export const field = sva({
+          slots: ['root', 'helper-text'],
+          base: { 'helper-text': { fontSize: '12px' } },
+          variants: { invalid: { true: { 'helper-text': { color: 'red' } } } },
+        });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert_snapshot!(output.code, @"
+    import { sva as __psva } from '@pandacss-internal/css';
+    export const field = /* @__PURE__ */ __psva({ slots: ['root', 'helper-text'], base: { 'helper-text': 'fs_12px' }, variants: { invalid: { true: { 'helper-text': 'color_red' } } } });
+    ");
 }
 
 #[test]
@@ -151,7 +335,7 @@ fn rewrites_styled_with_full_recipe_config() {
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    export const Card = styled('div', __pcva({ base: 'color_red padding_8px', variants: { size: { sm: 'fs_12px', md: 'fs_16px' } }, defaultVariants: { size: 'md' } }));
+    export const Card = /* @__PURE__ */ styled('div', /* @__PURE__ */ __pcva({ base: 'color_red padding_8px', variants: { size: { sm: 'fs_12px', md: 'fs_16px' } }, defaultVariants: { size: 'md' } }));
     "#);
 }
 
@@ -168,7 +352,7 @@ fn rewrites_an_aliased_styled_factory_from_its_callee_shape() {
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
     import { styled as s } from '@panda/jsx';
-    export const Card = s('div', __pcva({ base: 'color_red' }));
+    export const Card = /* @__PURE__ */ s('div', /* @__PURE__ */ __pcva({ base: 'color_red' }));
     "#);
 }
 
@@ -209,7 +393,7 @@ fn rewrites_cva_base_with_property_conditional() {
     assert!(output.helper.needs_cva);
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
-    export const button = __pcva({ base: cond ? "color_red" : "color_blue" });
+    export const button = /* @__PURE__ */ __pcva({ base: cond ? "color_red" : "color_blue" });
     "#);
 }
 
@@ -261,7 +445,7 @@ fn keeps_boolean_cva_call_sites_on_memoized_runtime() {
     assert!(!output.helper.needs_cx);
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
-    const recipe = __pcva({ base: 'd_inline-flex', variants: { r0: { true: 'opacity_0.5' }, r1: { true: 'fs_12px' } }, defaultVariants: { r0: true } });
+    const recipe = /* @__PURE__ */ __pcva({ base: 'd_inline-flex', variants: { r0: { true: 'opacity_0.5' }, r1: { true: 'fs_12px' } }, defaultVariants: { r0: true } });
     export const cls = recipe({
       r0: !active,
       r1: variant === 'secondary' || variant === 'outline',
@@ -309,7 +493,7 @@ fn folds_cva_raw_with_base_only() {
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
-    const styles = __pcva({ base: 'color_red' });
+    const styles = /* @__PURE__ */ __pcva({ base: 'color_red' });
     export const out = {"color":"red"};
     "#);
 }
@@ -331,7 +515,7 @@ fn folds_cva_raw_applying_default_variants() {
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
-    const styles = __pcva({ base: 'color_red', variants: { size: { sm: 'padding_4px', lg: 'padding_8px' } }, defaultVariants: { size: 'sm' } });
+    const styles = /* @__PURE__ */ __pcva({ base: 'color_red', variants: { size: { sm: 'padding_4px', lg: 'padding_8px' } }, defaultVariants: { size: 'sm' } });
     export const out = {"color":"red","padding":"4px"};
     "#);
 }
@@ -353,7 +537,7 @@ fn folds_cva_raw_with_an_explicit_variant_overriding_the_default() {
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
-    const styles = __pcva({ base: 'color_red', variants: { size: { sm: 'padding_4px', lg: 'padding_8px' } }, defaultVariants: { size: 'sm' } });
+    const styles = /* @__PURE__ */ __pcva({ base: 'color_red', variants: { size: { sm: 'padding_4px', lg: 'padding_8px' } }, defaultVariants: { size: 'sm' } });
     export const out = {"color":"red","padding":"8px"};
     "#);
 }
@@ -374,7 +558,7 @@ fn folds_cva_raw_ignoring_an_unknown_variant_value() {
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
-    const styles = __pcva({ base: 'color_red', variants: { size: { sm: 'padding_4px' } } });
+    const styles = /* @__PURE__ */ __pcva({ base: 'color_red', variants: { size: { sm: 'padding_4px' } } });
     export const out = {"color":"red"};
     "#);
 }
@@ -398,7 +582,7 @@ fn folds_cva_raw_with_a_matching_compound_variant() {
         output.code,
         @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
-    const styles = __pcva({ base: 'color_red', variants: { size: { sm: 'padding_4px' }, tone: { a: 'color_blue' } }, compoundVariants: [{ size: 'sm', tone: 'a', css: 'margin_2px' }] });
+    const styles = /* @__PURE__ */ __pcva({ base: 'color_red', variants: { size: { sm: 'padding_4px' }, tone: { a: 'color_blue' } }, compoundVariants: [{ size: 'sm', tone: 'a', css: 'margin_2px' }] });
     export const out = {"color":"blue","padding":"4px","margin":"2px"};
     "#
     );
@@ -421,7 +605,7 @@ fn folds_cva_raw_skipping_an_unmatched_compound_variant() {
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
-    const styles = __pcva({ base: 'color_red', variants: { size: { sm: 'padding_4px' }, tone: { a: 'color_blue' } }, compoundVariants: [{ size: 'sm', tone: 'a', css: 'margin_2px' }] });
+    const styles = /* @__PURE__ */ __pcva({ base: 'color_red', variants: { size: { sm: 'padding_4px' }, tone: { a: 'color_blue' } }, compoundVariants: [{ size: 'sm', tone: 'a', css: 'margin_2px' }] });
     export const out = {"color":"red","padding":"4px"};
     "#);
 }
@@ -442,7 +626,7 @@ fn folds_cva_raw_with_a_boolean_variant() {
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
-    const styles = __pcva({ base: 'color_red', variants: { on: { true: 'opacity_0.5' } } });
+    const styles = /* @__PURE__ */ __pcva({ base: 'color_red', variants: { on: { true: 'opacity_0.5' } } });
     export const out = {"color":"red","opacity":"0.5"};
     "#);
 }
@@ -467,7 +651,7 @@ fn folds_sva_raw_to_one_object_per_slot() {
         output.code,
         @r#"
     import { sva as __psva } from '@pandacss-internal/css';
-    const styles = __psva({ slots: ['root', 'icon'], base: { root: 'color_red', icon: 'padding_1px' }, variants: { size: { sm: 'padding_4px' } }, defaultVariants: { size: 'sm' } });
+    const styles = /* @__PURE__ */ __psva({ slots: ['root', 'icon'], base: { root: 'color_red', icon: 'padding_1px' }, variants: { size: { sm: { root: 'padding_4px' } } }, defaultVariants: { size: 'sm' } });
     export const out = {"root":{"color":"red","padding":"4px"},"icon":{"padding":"1px"}};
     "#
     );
@@ -519,7 +703,7 @@ fn cva_raw_and_plain_calls_coexist_when_raw_folds() {
         output.code,
         @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
-    const styles = __pcva({ base: 'color_red', variants: { size: { sm: 'padding_4px' } } });
+    const styles = /* @__PURE__ */ __pcva({ base: 'color_red', variants: { size: { sm: 'padding_4px' } } });
     export const out = {"color":"red","padding":"4px"};
     export const cls = styles({ size: props.size });
     "#
@@ -998,7 +1182,7 @@ fn folds_a_raw_call_with_no_arguments() {
     assert_snapshot!(transform("src/styles.tsx", source).code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
     import { css } from '@panda/css';
-    const button = __pcva({ base: 'color_red' });
+    const button = /* @__PURE__ */ __pcva({ base: 'color_red' });
     export const cls = css({"color":"red"}, { color: 'blue' });
     "#);
 }

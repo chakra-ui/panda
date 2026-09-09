@@ -1,5 +1,180 @@
 # @pandacss/compiler
 
+## 2.0.0-beta.16
+
+### Major Changes
+
+- ef14fc5: Remove the `syntax` config option and the `template-literal` authoring mode. Drop `syntax` from your config
+  and the `--syntax` flag from `panda init`, and write styles with the object syntax: `css({ color: 'red' })` instead of
+  `` css`color: red` ``.
+
+### Minor Changes
+
+- dea1ef5: Add a `keyframes()` factory to `styled-system/css` for inline, component-local animations.
+
+  `keyframes({ from: {...}, to: {...} })` returns a `kf_…` animation name and emits its `@keyframes` block, tree-shaken
+  to what a build actually references through `animationName` or the `animation` shorthand. Object form only — a bare
+  `animationName: 'spin'` already resolves a `theme.keyframes` entry, so there is no named form. Shared, design-system
+  animations still belong in `theme.keyframes`.
+
+- c58d45d: Add a `positionTry()` factory to `styled-system/css` and a `theme.positionTry` key for named CSS
+  anchor-positioning fallbacks, and remove `globalPositionTry`.
+
+  `positionTry('bottom')` or `positionTry({ top: 'anchor(bottom)' })` returns the dashed-ident for
+  `positionTryFallbacks` and emits the `@position-try` block, tree-shaken to what a build uses. Move `globalPositionTry`
+  entries to `theme.positionTry` and reference them through the factory. A block that must emit unconditionally with a
+  hand-authored name belongs in a plain `.css` file.
+
+- 064e58f: Source transforms now handle slot recipes.
+
+  - `tabs({ size: 'sm' })` on a config slot recipe becomes an object of class strings, one per slot.
+  - Inline `sva()` compiles even when variants style each slot differently.
+  - Defaults, compound variants and finite conditionals fold; dynamic and responsive values stay on the runtime.
+  - Fix transformed recipe classes ignoring `prefix` and `hash`.
+  - Fix boolean compound variants in inline `cva()` / `sva()` never matching.
+  - Add `transform_source` spans to `--profile` output.
+
+### Patch Changes
+
+- f583fb9: Merge the `css` prop over the style props beside it, so one declaration wins instead of two classes whose
+  winner depended on stylesheet order. Shorthands normalize first, so `padding` and `p` collide the way they do at
+  runtime.
+
+  ```tsx
+  // before: className="color_blue color_red", renders red
+  // after:  className="color_blue", renders blue
+  <Box color="red" css={{ color: 'blue' }} />
+  ```
+
+  Generated CSS can shrink: a rule whose only source was the losing side of a collision is no longer emitted.
+
+- 6b04d94: Ignore watcher add and change events for unknown paths outside the configured source globs. Explicitly
+  registered and design-system sources remain refreshable.
+- dfb17b2: Fix `Driver.parseFiles()` retaining atoms from source files removed since the previous scan. Full-project
+  rescans now reconcile scan- and watcher-owned files, including recovery from dropped watcher events.
+- 84720fc: Re-extract files with unresolved cross-file imports when the missing module is created during watch mode.
+- d94d26c: Keep `!` inside string values. `css({ content: '"hello!"' })` emitted `content: "hello" !important`; only a
+  trailing `!` or `!important` marks a declaration important now.
+- c3702af: Treat condition props like `_hover`, CSS variables, and `&`/`@` selectors as style props on JSX components,
+  so they become classes instead of DOM attributes.
+- a46ecb4: Stop reporting a literal color inside a token reference as a missing token. `{#000/64}` and `{rgb(0 0 0)/64}`
+  already resolve to a `color-mix()`; only real token paths are validated now.
+- ca9bb58: `parseFiles` now returns a report for every requested path. A file that cannot be read keeps its last parsed
+  styles and reports a `source_not_found` or `source_read_failed` warning instead of being silently skipped.
+- 446210a: Mark transformed `cva()`, `sva()`, and `styled()` recipe factories as pure so bundlers can remove unused
+  definitions and their runtime helpers.
+- 9bdafba: Fix a config load error when a `utility.values` callback returns nothing. Listing `@pandacss/preset-base` on
+  its own failed with `Utility values callback ... returned invalid values`, because `translateZ` reads the spacing
+  scale and preset-base ships no tokens. The utility now simply has no preset values, and arbitrary values still work.
+- f583fb9: Keep the component when transforming JSX elements listed in a recipe's `jsx` option. That list tracks
+  elements so their variants reach the stylesheet — the component is yours, and replacing `<Button size="sm" />` with a
+  `div` dropped whatever it rendered. The element and its variant props now stay put; only style props fold into
+  `className`.
+- b2294ca: Resolve conditional variants in recipe calls and JSX at build time. `button({ size: cond ? 'sm' : 'lg' })`
+  now emits a class ternary instead of applying both sizes, and several conditional variants resolve into a decision
+  tree that gets defaults and compound variants right. Usages that still can't resolve to one class list are left for
+  the runtime.
+- af261f5: Fix watch CSS staying stale when a file you import a value from changes. Importers are re-extracted,
+  including through re-exports, and only when the imported file's content actually changed.
+- 9da80e1: Refresh cached cross-file exports when the resolved module itself changes, is deleted, or is recreated.
+  Long-lived compiler sessions no longer reuse stale direct exports when re-extracting an importer.
+- ef68d33: Fix theme CSS so nesting and dark mode work. Theme variables now declare on the `[data-panda-theme]` element
+  and inherit, instead of being re-set on every descendant.
+
+  - A `gothic` panel inside a `matcha` page now renders gothic, whichever theme comes first in the CSS.
+  - `<html class="dark" data-panda-theme="gothic">` now reaches every element, and `dark` toggled inside a theme works.
+  - On-demand theme files from `styled-system/themes` scope their dark rules to the theme.
+  - A nested `base` value inside a condition, such as `_dark: { base, md }`, is no longer dropped.
+  - Warn when a theme name contains anything but letters, digits, `-` or `_`, since it becomes a `data-panda-theme`
+    value, a `_theme*` condition and the `ThemeName` type.
+
+- bcbcb22: Update the internal transform cache to `lru` 0.18.4, which fixes upstream Rust soundness issues.
+- Updated dependencies [a5bab14]
+- Updated dependencies [dfb17b2]
+- Updated dependencies [dea1ef5]
+- Updated dependencies [c58d45d]
+- Updated dependencies [af261f5]
+- Updated dependencies [ef14fc5]
+  - @pandacss/config@2.0.0-beta.16
+  - @pandacss/compiler-shared@2.0.0-beta.16
+  - @pandacss/types@2.0.0-beta.16
+
+## 2.0.0-beta.15
+
+### Minor Changes
+
+- 02bd0ad: Add `optimize.propertyFallback`, which also seeds each emitted `@property` registration as a plain
+  declaration so engines that ignore `@property` (Safari below 16.4, Firefox below 128) still get the defaults.
+
+  ```ts
+  export default defineConfig({
+    optimize: { propertyFallback: true },
+  })
+  ```
+
+  Off by default. Seeds come from the registrations that survived pruning, so you only pay for the variables you use.
+
+- e18eeb3: Add `theme.viewTransitions` so a preset can name shared view-transition bags. Call `viewTransition('slide')`
+  and Panda inlines `"vt_slide"`. Unused names stay out of the CSS.
+
+### Patch Changes
+
+- 8b43347: Semantic colors that set only conditional values (`_light`/`_dark`, no `base`) now join their `colorPalette`.
+  Before, `bg: 'colorPalette.solid'` fell through to the raw string when `blue.solid` had no `base` value, so adding a
+  `base` was the only workaround.
+- 02bd0ad: Drop `globalVars` `@property` registrations the stylesheet never reads or writes, so a preset can register a
+  whole utility family without charging projects that don't use it. Plain string `globalVars` still always emit.
+- ec65db3: Add conditions for pointer type (`_pointerFine`, `_pointerCoarse`, `_pointerNone`, and the `_anyPointer*`
+  variants), post-interaction validity (`_userValid`, `_userInvalid`), and `_inert`.
+
+  ```ts
+  css({
+    color: { _pointerFine: 'blue.500' },
+    borderColor: { _userInvalid: 'red.500' },
+    opacity: { _inert: '0.5' },
+  })
+  ```
+
+  `textWrap` now takes every CSS keyword, including `pretty` and `stable`. Generated types also include the two-word
+  alignment keywords `safe center`, `safe end`, `safe start`, `first baseline`, and `last baseline`.
+
+  ```ts
+  css({ textWrap: 'pretty', justifyContent: 'safe center', alignItems: 'last baseline' })
+  ```
+
+- ec65db3: Add `scrollbarThumb` and `scrollbarTrack` so you can color each side of `scrollbar-color`. `scrollbarGutter`
+  accepts `stable both-edges`.
+
+  ```ts
+  css({
+    overflow: 'auto',
+    scrollbarWidth: 'thin',
+    scrollbarThumb: 'gray.400',
+    scrollbarTrack: 'gray.100',
+    scrollbarGutter: 'stable',
+  })
+  ```
+
+  **Breaking:** `scrollbarWidth` takes `auto`, `thin`, or `none` instead of `sizes` tokens, since `scrollbar-width`
+  never accepted a length. Swap a size token for `thin` or `none`. `scrollbarColor` is now a raw two-value string
+  (`red transparent`). A single color token never produced valid CSS there, since `scrollbar-color` takes exactly two,
+  so move it to `scrollbarThumb`.
+
+- 7c8a215: Extract style props from `styled` `defaultProps` on inline factories, including Solid function accessors.
+  Recipe `defaultProps` also resolve through `recipes.button` and local aliases. Analyze and inspect report those usages
+  too.
+- 8885864: Fix config recipes throwing at import time with `syntax: 'template-literal'`. The recipe runtime imported
+  `breakpointKeys` from the conditions file, which the template-literal build didn't export, so any `defineRecipe`
+  failed to load.
+- Updated dependencies [8b43347]
+- Updated dependencies [ec65db3]
+- Updated dependencies [02bd0ad]
+- Updated dependencies [e18eeb3]
+- Updated dependencies [2d5d152]
+  - @pandacss/compiler-shared@2.0.0-beta.15
+  - @pandacss/types@2.0.0-beta.15
+  - @pandacss/config@2.0.0-beta.15
+
 ## 2.0.0-beta.14
 
 ### Patch Changes

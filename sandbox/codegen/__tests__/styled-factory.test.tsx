@@ -340,6 +340,36 @@ describe('styled factory - button recipe', () => {
     )
   })
 
+  test('condition style props', () => {
+    const { container } = render(<Box display="flex" _hover={{ color: 'red.500' }} />)
+
+    expect(container.firstChild).toMatchInlineSnapshot(`
+      <div
+        class="d_flex hover:c_red.500"
+      />
+    `)
+  })
+
+  test('css variable style props', () => {
+    const { container } = render(<Box {...{ '--foo': 42 }} />)
+
+    expect(container.firstChild).toMatchInlineSnapshot(`
+      <div
+        class="--foo_42"
+      />
+    `)
+  })
+
+  test('arbitrary selector style props', () => {
+    const { container } = render(<Box {...{ '&:data-panda': { display: 'flex' } }} />)
+
+    expect(container.firstChild).toMatchInlineSnapshot(`
+      <div
+        class="[&:data-panda]:d_flex"
+      />
+    `)
+  })
+
   test('stack pattern', () => {
     const { container } = render(
       <Stack direction="column" color="red.400">

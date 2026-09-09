@@ -249,6 +249,8 @@ export interface Compiler {
   refreshFile(path: string): boolean
   refreshFileSource(path: string, source: string): boolean
   removeFile(path: string): boolean
+  /** Files whose folded imports changed since the last call. Clears on read. Re-parse via `refreshFile`, then call again until empty. */
+  affectedFiles(): string[]
   clear(): void
 
   /**

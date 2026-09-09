@@ -53,14 +53,6 @@ fn default_true() -> bool {
     true
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum CssSyntaxKind {
-    TemplateLiteral,
-    #[default]
-    ObjectLiteral,
-}
-
 /// JSON-safe resolved config snapshot from the JS side. JS still executes
 /// `panda.config.*`, resolves presets, and runs config-phase plugins; Rust
 /// gets this shape after runtime-only hooks/plugins are stripped.
@@ -108,8 +100,6 @@ pub struct UserConfig {
     #[serde(default = "default_separator")]
     pub separator: String,
     #[serde(default)]
-    pub syntax: CssSyntaxKind,
-    #[serde(default)]
     pub static_css: Value,
     #[serde(default)]
     pub global_css: Value,
@@ -119,8 +109,6 @@ pub struct UserConfig {
     pub css_var_root: String,
     #[serde(default)]
     pub global_fontface: Value,
-    #[serde(default)]
-    pub global_position_try: Value,
     #[serde(default)]
     pub themes: ThemeVariantsMap,
     #[serde(default)]
@@ -163,13 +151,11 @@ impl Default for UserConfig {
             hash: HashConfig::default(),
             shorthands: true,
             separator: default_separator(),
-            syntax: CssSyntaxKind::default(),
             static_css: Value::default(),
             global_css: Value::default(),
             global_vars: Value::default(),
             css_var_root: default_css_var_root(),
             global_fontface: Value::default(),
-            global_position_try: Value::default(),
             themes: ThemeVariantsMap::default(),
             layers: CascadeLayers::default(),
             preflight: PreflightConfig::default(),
@@ -293,11 +279,20 @@ impl UserConfig {
 
     #[must_use]
     pub fn theme_condition(&self, condition: &str) -> Option<String> {
+        let key = self.theme_for_condition(condition)?;
+        Some(format!(
+            "&:where([data-panda-theme={key}], [data-panda-theme={key}] *)"
+        ))
+    }
+
+    /// The theme a `_theme{Name}` condition refers to.
+    #[must_use]
+    pub fn theme_for_condition(&self, condition: &str) -> Option<&str> {
         let theme = condition.strip_prefix("_theme")?;
         self.themes
             .keys()
             .find(|key| capitalize_for_theme_condition(key) == theme)
-            .map(|key| format!("&:where([data-panda-theme={key}], [data-panda-theme={key}] *)"))
+            .map(String::as_str)
     }
 
     #[must_use]

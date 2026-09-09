@@ -13,7 +13,6 @@ mod adapter;
 mod astro_adapter;
 mod calls;
 mod cross_file;
-mod css_template;
 mod design_system_imports;
 mod export_names;
 mod extract;
@@ -35,18 +34,16 @@ mod template_styles;
 mod transform_facts;
 mod vue_adapter;
 
-pub use calls::{
-    CallCalleeKind, CallFacts, CallSyntax, ExtractedCall, ExtractedCallsResult, extract_calls,
-};
+pub use calls::{CallCalleeKind, CallFacts, ExtractedCall, ExtractedCallsResult, extract_calls};
 pub use design_system_imports::{
     DesignSystemImportSelection, DesignSystemPackageQuery, collect_design_system_imports,
     collect_design_system_imports_for_packages, selection_from_import_records,
 };
 pub use extract::{
-    ExtractDebugResult, ExtractUsage, ExtractVerboseResult, ImportBindingFacts,
-    ImportedRecipeRawCall, ModuleFacts, TokenRef, analyze_module, extract, extract_debug,
-    extract_for_transform, extract_for_transform_with_recipe_resolver, extract_verbose,
-    extract_with_raw_resolvers,
+    CrossFileDependency, ExtractDebugResult, ExtractUsage, ExtractVerboseResult,
+    ImportBindingFacts, ImportedRecipeRawCall, ModuleFacts, TokenRef,
+    UnresolvedCrossFileDependency, analyze_module, extract, extract_debug, extract_for_transform,
+    extract_for_transform_with_recipe_resolver, extract_verbose, extract_with_raw_resolvers,
 };
 pub use imports::{
     ImportKind, ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind,
@@ -69,8 +66,8 @@ pub use jsx::{
 };
 pub use literal::Literal;
 pub use matcher::{
-    CssSyntaxKind, ExtractorConfig, JsxExtractionConfig, JsxKind, JsxStyleProps, MatchCategory,
-    MatchedImport, Matcher, Matchers, NameMatcher, TokenDictionary, match_import_records,
+    ExtractorConfig, JsxExtractionConfig, JsxKind, JsxStyleProps, MatchCategory, MatchedImport,
+    Matcher, Matchers, NameMatcher, TokenDictionary, match_import_records,
     match_import_records_resolved, match_imports,
 };
 pub use pandacss_shared::{

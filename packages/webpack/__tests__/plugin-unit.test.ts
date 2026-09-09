@@ -65,6 +65,17 @@ describe('@pandacss/webpack design-system watch', () => {
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('while loading the design system'))
   })
 
+  it('unlinks removed source files on watchRun', async () => {
+    const { driver, PandaWebpackPlugin } = await setupPlugin()
+    driver.isSourceFile.mockImplementation((file: string): boolean => file === '/project/src/Gone.tsx')
+    const { watchRun } = applyPlugin(new PandaWebpackPlugin({ cwd: '/project' }))
+
+    await watchRun?.({ removedFiles: new Set(['/project/src/Gone.tsx', '/project/README.md']) })
+
+    expect(driver.applyChange).toHaveBeenCalledTimes(1)
+    expect(driver.applyChange).toHaveBeenCalledWith({ path: '/project/src/Gone.tsx', kind: 'unlink' })
+  })
+
   it('does not apply the source transformer by default', async () => {
     const webpackApply = vi.fn()
     const driver = createMockDriver()
@@ -159,7 +170,7 @@ async function setupPlugin() {
 
 function applyPlugin(plugin: PandaWebpackPlugin) {
   const warn = vi.fn()
-  let watchRun: ((compiler: { modifiedFiles?: Set<string> }) => Promise<void>) | undefined
+  let watchRun: ((compiler: { modifiedFiles?: Set<string>; removedFiles?: Set<string> }) => Promise<void>) | undefined
 
   plugin.apply({
     context: '/project',
@@ -212,7 +223,7 @@ function createMockDriver() {
     isDesignSystemFile: vi.fn((file: string): false | 'artifact' | 'source' =>
       file === '/project/node_modules/@acme/ds/src/button.css.ts' ? 'source' : false,
     ),
-    isSourceFile: vi.fn(() => false),
+    isSourceFile: vi.fn((_file: string) => false),
     parseFiles: vi.fn(),
     reload: vi.fn(async () => ({ hasChanged: true, dependencies: [], recipes: [], patterns: [], changes: [] })),
     scan: vi.fn(() => ['/project/src/app.tsx']),

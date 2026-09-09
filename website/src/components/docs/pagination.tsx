@@ -14,19 +14,16 @@ interface Props {
   slug: string
 }
 
-// Flatten a single tab's groups into an ordered page list. Scoped to one tab so
-// prev/next never crosses a tab boundary. Each tab is a self-contained sequence.
+// Scoped to one tab so prev/next never crosses a tab boundary.
 function flattenTab(tabKey: string, groups: NavItem[]): PaginationItem[] {
   const result: PaginationItem[] = []
 
   for (const group of groups) {
     for (const item of group.items || []) {
-      if (item.external || !item.url) continue
-      result.push({
-        title: item.title,
-        url: `${tabKey}/${item.url}`,
-        category: group.title
-      })
+      if (item.external) continue
+      const url = item.url ? `${tabKey}/${item.url}` : item.href
+      if (!url) continue
+      result.push({ title: item.title, url, category: group.title })
     }
   }
 
@@ -46,7 +43,6 @@ function getPagination(currentSlug: string): {
 
   const allPages = flattenTab(tabKey, tab.items)
 
-  // Find the exact match: the slug should match the page URL exactly
   const currentIndex = allPages.findIndex(page => {
     return page.url === currentSlug
   })
@@ -72,7 +68,14 @@ export const Pagination = ({ slug }: Props) => {
   }
 
   return (
-    <HStack justify="space-between" mt="12" gap="4">
+    <HStack
+      justify="space-between"
+      mt="20"
+      pt="10"
+      borderTopWidth="1px"
+      borderColor="border"
+      gap="4"
+    >
       {prev ? <PagationLink item={prev} type="prev" /> : <Box flex="1" />}
       {next ? <PagationLink item={next} type="next" /> : <Box flex="1" />}
     </HStack>
@@ -88,7 +91,7 @@ const PagationLink = (props: PagationLinkProps) => {
   const { item, type } = props
   return (
     <Link
-      href={`/docs/${item.url}`}
+      href={item.url.startsWith('/') ? item.url : `/docs/${item.url}`}
       className={css({
         flex: '1',
         display: 'flex',

@@ -1,0 +1,52 @@
+<svg width="1200" height="520" viewBox="0 0 1200 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Runtime css() on SSR: repeated inline is 3x faster, a 3-level wrapper chain 4x, a 6-level chain 3x, repeated flat objects 30 to 40 percent faster">
+  <style>
+    .surface { fill: #FBF9F3; }
+    .ink { fill: #1A1A17; }
+    .muted { fill: #5E584C; }
+    .track { fill: #ECE7DA; }
+    .bar { fill: #F6E458; stroke: #1A1A17; stroke-width: 2; }
+    .ref { stroke: #C9B94E; stroke-width: 1.5; stroke-dasharray: 3 4; }
+    .sans { font-family: 'Onest','Segoe UI',system-ui,sans-serif; }
+    .mono { font-family: 'Source Code Pro',ui-monospace,monospace; }
+    @media (prefers-color-scheme: dark) {
+      .surface { fill: #17171B; } .ink { fill: #F5F2E9; } .muted { fill: #B7B1A3; }
+      .track { fill: #26262B; } .bar { stroke: #17171B; } .ref { stroke: #6E6636; }
+    }
+  </style>
+  <rect width="1200" height="520" class="surface"/>
+
+  <text x="60" y="58" class="sans ink" font-size="28" font-weight="800" letter-spacing="-0.3">Runtime css() on dense SSR pages</text>
+  <text x="60" y="88" class="sans muted" font-size="16">Time with Panda 2.0's memoization, as a share of the unmemoized path. Shorter is faster.</text>
+
+  <!-- 100% reference -->
+  <line x1="1080" y1="130" x2="1080" y2="430" class="ref"/>
+  <text x="1080" y="122" text-anchor="middle" class="muted mono" font-size="13">unmemoized = 100%</text>
+
+  <g class="sans">
+    <!-- row 1: inline 33% -->
+    <text x="410" y="172" text-anchor="end" class="ink" font-size="16" font-weight="600">Repeated inline css()</text>
+    <rect x="430" y="152" width="650" height="34" rx="6" class="track"/>
+    <rect x="430" y="152" width="214" height="34" rx="6" class="bar"/>
+    <text x="664" y="175" class="ink mono" font-size="16" font-weight="700">3× faster</text>
+
+    <!-- row 2: 3-chain 25% -->
+    <text x="410" y="242" text-anchor="end" class="ink" font-size="16" font-weight="600">css() in a 3-level wrapper chain</text>
+    <rect x="430" y="222" width="650" height="34" rx="6" class="track"/>
+    <rect x="430" y="222" width="162" height="34" rx="6" class="bar"/>
+    <text x="612" y="245" class="ink mono" font-size="16" font-weight="700">4× faster</text>
+
+    <!-- row 3: 6-chain 33% -->
+    <text x="410" y="312" text-anchor="end" class="ink" font-size="16" font-weight="600">css() in a 6-level chain</text>
+    <rect x="430" y="292" width="650" height="34" rx="6" class="track"/>
+    <rect x="430" y="292" width="214" height="34" rx="6" class="bar"/>
+    <text x="664" y="315" class="ink mono" font-size="16" font-weight="700">3× faster</text>
+
+    <!-- row 4: flat 74% -->
+    <text x="410" y="382" text-anchor="end" class="ink" font-size="16" font-weight="600">Repeated flat style objects</text>
+    <rect x="430" y="362" width="650" height="34" rx="6" class="track"/>
+    <rect x="430" y="362" width="481" height="34" rx="6" class="bar"/>
+    <text x="931" y="385" class="ink mono" font-size="16" font-weight="700">30–40% faster</text>
+  </g>
+
+  <text x="60" y="474" class="sans muted" font-size="14">Static extraction still handles everything it can at build time; these are the dynamic calls that reach the browser.</text>
+</svg>

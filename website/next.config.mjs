@@ -1,3 +1,5 @@
+import { createMDX } from 'fumadocs-mdx/next'
+
 /** @type {import('next').NextConfig} */
 const config = {
   async rewrites() {
@@ -8,181 +10,127 @@ const config = {
       }
     ]
   },
+  /**
+   * IMPORTANT: every `source` here must be a path that shipped on the v1
+   * site (panda-css.com, `main` in chakra-ui/panda). Never add redirects for
+   * v2-branch reshuffles: a page renamed or moved before v2 ships has no
+   * inbound links to protect. Update the surviving page's links instead.
+   */
   async redirects() {
+    const to = (source, destination) => ({
+      source,
+      destination,
+      permanent: true
+    })
+
     return [
-      {
-        source: '/(docs|docs/getting-started)',
-        destination: '/docs/styling/getting-started',
-        permanent: true
-      },
-      // Bare tab roots: the [...slug] catch-all needs at least one page segment.
-      {
-        source: '/docs/styling',
-        destination: '/docs/styling/getting-started',
-        permanent: true
-      },
-      {
-        source: '/docs/theming',
-        destination: '/docs/theming/tokens',
-        permanent: true
-      },
-      {
-        source: '/docs/design-systems',
-        destination: '/docs/design-systems/overview',
-        permanent: true
-      },
-      {
-        source: '/docs/reference',
-        destination: '/docs/reference/cli',
-        permanent: true
-      },
-      {
-        source: '/discord',
-        destination: 'https://discord.gg/VQrkpsgSx7',
-        permanent: true
-      },
-      {
-        source: '/play',
-        destination: 'https://play.panda-css.com',
-        permanent: true
-      },
-      {
-        source: '/learn',
-        destination: 'https://pandamastery.com',
-        permanent: true
-      },
-      {
-        source: '/docs/overview/llms-txt',
-        destination: '/docs/styling/llms-txt',
-        permanent: true
-      },
+      // Carried over from the v1 site.
+      to('/discord', 'https://discord.gg/VQrkpsgSx7'),
+      to('/play', 'https://play.panda-css.com'),
+      to('/learn', 'https://pandamastery.com'),
+      to('/docs/getting-started', '/docs/get-started/getting-started'),
 
-      // --- Phase 2: tab-directory flattening. Specific overrides MUST come
-      // before the wildcard rules below, since a handful of pages moved to a
-      // different tab than the rest of their old directory. ---
-      {
-        source: '/docs/concepts/hooks',
-        destination: '/docs/design-systems/hooks',
-        permanent: true
-      },
-      {
-        source: '/docs/customization/theme',
-        destination: '/docs/theming/theme',
-        permanent: true
-      },
-      {
-        source: '/docs/customization/deprecations',
-        destination: '/docs/reference/deprecations',
-        permanent: true
-      },
-      {
-        source: '/docs/guides/debugging',
-        destination: '/docs/reference/debugging',
-        permanent: true
-      },
-      {
-        source: '/docs/guides/dynamic-styling',
-        destination: '/docs/styling/dynamic-styling',
-        permanent: true
-      },
-      {
-        source: '/docs/guides/fonts',
-        destination: '/docs/theming/fonts',
-        permanent: true
-      },
-      {
-        source: '/docs/guides/multiple-themes',
-        destination: '/docs/theming/multiple-themes',
-        permanent: true
-      },
-      {
-        source: '/docs/guides/environment-specific-config',
-        destination: '/docs/design-systems/environment-specific-config',
-        permanent: true
-      },
-      {
-        source: '/docs/guides/federated-microfrontends',
-        destination: '/docs/design-systems/federated-microfrontends',
-        permanent: true
-      },
-      {
-        source: '/docs/guides/minimal-setup',
-        destination: '/docs/design-systems/minimal-setup',
-        permanent: true
-      },
-      {
-        source: '/docs/guides/static',
-        destination: '/docs/design-systems/static',
-        permanent: true
-      },
-      {
-        source: '/docs/guides/component-library',
-        destination: '/docs/design-systems/overview',
-        permanent: true
-      },
+      // Tab roots. `tabLandingHref` in docs.config sends unlisted tabs here.
+      to('/docs/get-started', '/docs/get-started/getting-started'),
+      to('/docs/styling', '/docs/styling/overview'),
+      to('/docs/recipes', '/docs/recipes/overview'),
+      to('/docs/theming', '/docs/theming/theme'),
+      to('/docs/design-systems', '/docs/design-systems/overview'),
+      to('/docs/reference', '/docs/reference/cli'),
 
-      // --- directory-level wildcards: everything else in these old
-      // directories moved uniformly to the same new tab, same basename ---
-      {
-        source: '/docs/overview/:path*',
-        destination: '/docs/styling/:path*',
-        permanent: true
-      },
-      {
-        source: '/docs/ai/:path*',
-        destination: '/docs/styling/:path*',
-        permanent: true
-      },
-      {
-        source: '/docs/installation/:path*',
-        destination: '/docs/styling/:path*',
-        permanent: true
-      },
-      {
-        source: '/docs/concepts/:path*',
-        destination: '/docs/styling/:path*',
-        permanent: true
-      },
-      {
-        source: '/docs/migration/:path*',
-        destination: '/docs/styling/:path*',
-        permanent: true
-      },
-      {
-        source: '/docs/component-library/:path*',
-        destination: '/docs/design-systems/:path*',
-        permanent: true
-      },
-      {
-        source: '/docs/customization/:path*',
-        destination: '/docs/design-systems/:path*',
-        permanent: true
-      },
-      {
-        source: '/docs/distribution/:path*',
-        destination: '/docs/design-systems/:path*',
-        permanent: true
-      },
-      {
-        source: '/docs/utilities/:path*',
-        destination: '/docs/reference/:path*',
-        permanent: true
-      },
-      {
-        source: '/docs/references/:path*',
-        destination: '/docs/reference/:path*',
-        permanent: true
-      },
-      {
-        source: '/docs/styling/why-panda',
-        destination: '/docs/styling/getting-started',
-        permanent: true
-      },
-      {
-        source: '/docs/styling/isolated-declarations',
-        destination: '/docs/design-systems/isolated-declarations',
-        permanent: true
-      }
+      // v1 docs paths that no longer exist, grouped by their v1 section.
+      // Exact rules come before the wildcards.
+      to('/docs/overview/why-panda', '/docs/get-started/getting-started'),
+      to('/docs/overview/getting-started', '/docs/get-started/getting-started'),
+      to('/docs/overview/faq', '/docs/get-started/faq'),
+      to(
+        '/docs/overview/browser-support',
+        '/docs/get-started/faq#browser-support'
+      ),
+      to('/docs/overview/llms-txt', '/docs/get-started/llms-txt'),
+
+      to('/docs/ai/llms-txt', '/docs/get-started/llms-txt'),
+      to('/docs/ai/mcp-server', '/docs/get-started/mcp-server'),
+
+      to('/docs/concepts/styled-system', '/docs/reference/styled-system'),
+      to('/docs/concepts/extend', '/docs/theming/presets#extending-a-preset'),
+      to('/docs/concepts/hooks', '/docs/theming/plugins'),
+      to('/docs/concepts/recipes', '/docs/recipes/overview'),
+      to('/docs/concepts/slot-recipes', '/docs/recipes/slot-recipes'),
+      to(
+        '/docs/concepts/jsx-style-context',
+        '/docs/recipes/slot-recipe-context'
+      ),
+      to(
+        '/docs/concepts/template-literals',
+        '/docs/get-started/styled-components'
+      ),
+      to(
+        '/docs/concepts/atomic-styles',
+        '/docs/styling/writing-styles#atomic-styles'
+      ),
+      to(
+        '/docs/concepts/nested-styles',
+        '/docs/styling/writing-styles#nested-styles'
+      ),
+      to(
+        '/docs/concepts/important',
+        '/docs/styling/writing-styles#important-styles'
+      ),
+      to('/docs/concepts/utility-first', '/docs/styling/writing-styles'),
+      to('/docs/concepts/merge-styles', '/docs/styling/merging-styles'),
+      to('/docs/concepts/creating-a-preset', '/docs/theming/presets'),
+      to('/docs/concepts/custom-font', '/docs/theming/fonts'),
+
+      to('/docs/customization/theme', '/docs/theming/theme'),
+      to('/docs/customization/utilities', '/docs/theming/utilities'),
+      to('/docs/customization/conditions', '/docs/theming/conditions'),
+      to('/docs/customization/patterns', '/docs/theming/patterns'),
+      to('/docs/customization/presets', '/docs/theming/presets'),
+      to(
+        '/docs/customization/config-functions',
+        '/docs/reference/config-functions'
+      ),
+      to('/docs/customization/deprecations', '/docs/reference/deprecations'),
+
+      to('/docs/theming/introduction', '/docs/theming/tokens'),
+      to('/docs/theming/categories', '/docs/theming/token-categories'),
+      to('/docs/theming/token-types', '/docs/theming/token-categories'),
+      to('/docs/theming/consuming-tokens', '/docs/theming/tokens#use-a-token'),
+      to('/docs/theming/multi-theme', '/docs/theming/multiple-themes'),
+
+      to('/docs/references/panda-config', '/docs/reference/config'),
+      to('/docs/references/presets', '/docs/theming/presets'),
+
+      to('/docs/guides/debugging', '/docs/reference/debugging'),
+      to(
+        '/docs/guides/environment-specific-config',
+        '/docs/reference/config#hash'
+      ),
+      to('/docs/guides/dynamic-styling', '/docs/styling/dynamic-styling'),
+      to('/docs/guides/static', '/docs/styling/static'),
+      to('/docs/guides/virtual-color', '/docs/styling/virtual-color'),
+      to(
+        '/docs/guides/federated-microfrontends',
+        '/docs/styling/style-isolation'
+      ),
+      to('/docs/guides/fonts', '/docs/theming/fonts'),
+      to('/docs/guides/custom-font', '/docs/theming/fonts'),
+      to('/docs/guides/multiple-themes', '/docs/theming/multiple-themes'),
+      to('/docs/guides/minimal-setup', '/docs/theming/minimal-setup'),
+      to('/docs/guides/preset', '/docs/theming/presets'),
+      to('/docs/guides/component-library', '/docs/design-systems/overview'),
+      to('/docs/guides/design-system', '/docs/design-systems/overview'),
+
+      to(
+        '/docs/migration/styled-components',
+        '/docs/get-started/styled-components'
+      ),
+
+      to('/docs/installation/:path*', '/docs/get-started/:path*'),
+      to('/docs/concepts/:path*', '/docs/styling/:path*'),
+      to('/docs/references/:path*', '/docs/reference/:path*'),
+      to('/docs/utilities/:path*', '/docs/reference/:path*')
     ]
   },
   reactStrictMode: true,
@@ -190,6 +138,7 @@ const config = {
     remotePatterns: [
       { hostname: 'images.unsplash.com' },
       { hostname: 'avatars.githubusercontent.com' },
+      { hostname: 'github.com' },
       { hostname: 'coolcontrast.vercel.app' },
       { hostname: 's2.coinmarketcap.com' },
       { hostname: 'magic.link' },
@@ -198,4 +147,8 @@ const config = {
   }
 }
 
-export default config
+const withMDX = createMDX({
+  macro: { include: ['**/src/lib/source.ts'] }
+})
+
+export default withMDX(config)

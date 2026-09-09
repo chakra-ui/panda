@@ -37,6 +37,7 @@ describe('createPandaPlugin', () => {
       'prefer-token',
       'no-primitive-token',
       'no-important',
+      'no-descendant-selectors',
       'no-margin-properties',
       'no-physical-properties',
       'no-shorthand-longhand-mix',

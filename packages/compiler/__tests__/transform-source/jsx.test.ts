@@ -4,8 +4,7 @@ import { createTransformProject, importMap, lines } from '../test-utils'
 // Panda factory config: `<panda.div>` member tags, `Box`/`HStack`/`Wrap`/`Stack`
 // patterns, a `button` config recipe (jsx: Button) and a `tabs` slot recipe
 // (jsx: Tabs). The design system ships its recipe components from `@acme/ui`,
-// which is mapped into the jsx importMap so Panda owns those tags (recipe
-// components aren't exported from `@panda/jsx`). Mirrors crates/pandacss_project.
+// which is mapped into the jsx importMap. Mirrors crates/pandacss_project.
 // Patterns use real `transform` callbacks matching preset-base (box/hstack/wrap/
 // stack): each maps its pattern props to the flex style object Panda emits at
 // build time. Wired through `pattern.transform` callbacks keyed by the config's
@@ -675,43 +674,37 @@ describe('compiler.transformSource: jsx', () => {
     )
   })
 
-  // --- recipe JSX ---
+  // --- recipe JSX: the component is the user's, so it stays ---
 
-  test('rewrites a recipe JSX element to recipe classes', () => {
+  test('leaves a recipe JSX element for the component to render', () => {
     const source = lines("import { Button } from '@acme/ui'", 'export const el = <Button size="sm" />')
 
     const result = pandaJsxCompiler.transformSource({ path: 'src/app.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`"export const el = <div className="button button--size_sm" />"`)
+    expect(result.changed).toBe(false)
+    expect(result.code).toBe(source)
   })
 
-  test('rewrites a recipe JSX element with leftover style props', () => {
+  test('folds leftover style props into className, keeping the element', () => {
     const source = lines("import { Button } from '@acme/ui'", 'export const el = <Button size="sm" color="red" />')
 
     const result = pandaJsxCompiler.transformSource({ path: 'src/app.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(
-      `"export const el = <div className="button button--size_sm color_red" />"`,
-    )
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { Button } from '@acme/ui'
+      export const el = <Button size="sm" className="color_red" />"
+    `)
   })
 
-  test('rewrites a boolean shorthand recipe variant prop', () => {
-    const source = lines("import { Button } from '@acme/ui'", 'export const el = <Button size="sm" block />')
-
-    const result = pandaJsxCompiler.transformSource({ path: 'src/app.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(
-      `"export const el = <div className="button button--block_true button--size_sm" />"`,
-    )
-  })
-
-  test('rewrites a recipe JSX element with a nested conditional style prop', () => {
+  test('folds a nested conditional style prop into a className expression', () => {
     const source = lines(
       "import { Button } from '@acme/ui'",
       "export const el = <Button size=\"sm\" _hover={{ _dark: { color: isDark ? 'white' : 'black' } }} />",
     )
 
     const result = pandaJsxCompiler.transformSource({ path: 'src/app.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(
-      `"export const el = <div className={isDark ? "button button--size_sm hover:dark:color_white" : "button button--size_sm hover:dark:color_black"} />"`,
-    )
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { Button } from '@acme/ui'
+      export const el = <Button size="sm" className={isDark ? "hover:dark:color_white" : "hover:dark:color_black"} />"
+    `)
   })
 
   test('leaves a variant-only slot recipe member for the runtime', () => {
@@ -797,9 +790,8 @@ describe('compiler.transformSource: component-library tags (not owned by Panda)'
   })
 })
 
-// A monorepo can point Panda's jsx importMap at its own package, so those
-// exports are treated as owned Panda components. Then — and only then — the
-// transform rewrites tags imported from that module.
+// Pointing the jsx importMap at your own package makes its exports Panda-owned
+// for the factory and patterns. It doesn't extend to a recipe's `jsx: [...]`.
 describe('compiler.transformSource: library module added to the jsx importMap', () => {
   const acmeCompiler = createTransformProject({
     jsxFactory: 'panda',
@@ -829,11 +821,12 @@ describe('compiler.transformSource: library module added to the jsx importMap', 
     },
   })
 
-  test('rewrites a Button imported from the mapped module', () => {
+  test('leaves a recipe Button from the mapped module on the page', () => {
     const source = lines("import { Button } from '@acme/ui'", 'export const el = <Button size="sm" />')
 
     const result = acmeCompiler.transformSource({ path: 'src/app.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`"export const el = <div className="button button--size_sm" />"`)
+    expect(result.changed).toBe(false)
+    expect(result.code).toBe(source)
   })
 
   test('leaves the same Button imported from an unmapped module untouched', () => {

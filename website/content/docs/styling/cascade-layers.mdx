@@ -114,6 +114,25 @@ exciting feature of CSS cascade layers.
 
 Panda lets you customize the cascade layers, so your project can coexist with other solutions. Learn more about customizing layers [here](/docs/reference/config#layers).
 
+## Migrating alongside unlayered CSS
+
+Per the CSS spec, **any unlayered rule beats every layered rule**, regardless of selector specificity or load
+order. Most existing CSS is unlayered: plain stylesheets, most CSS-in-JS libraries. So while you migrate to Panda
+one component at a time, your legacy styles win over Panda's by default. If a converted component still shows its
+old styles, this is almost always why, not a specificity bug.
+
+Two ways to fix it, depending on which side you want to win:
+
+- **Let Panda's new styles win.** Turn on the [polyfill](#polyfills) below. Panda's CSS then competes as unlayered
+  CSS against your legacy styles instead of automatically losing to them.
+- **Keep legacy styles as the fallback.** Leave both as they are, and delete each component's legacy override once
+  it's fully on Panda. Layering alone won't make Panda's version win.
+
+If the other tool also ships its own `@layer` rules, the fix is different: rename Panda's layers with
+[`layers`](/docs/reference/config#layers) so the names don't collide, then declare both tools' `@layer` statements
+in one explicit order at the top of your CSS. That declaration, not import order, decides priority between two
+layered sources.
+
 ## Polyfills
 
 Need older browsers, or want unlayered CSS unable to override Panda? Turn on the built-in polyfill:

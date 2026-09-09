@@ -16,18 +16,18 @@
   "devDependencies": {
     "@pandacss/cli": "workspace:*",
     "@pandacss/eslint-plugin": "workspace:*",
-    "@oxlint/plugins": "1.70.0",
-    "@typescript-eslint/parser": "8.58.2",
-    "eslint": "9.39.1",
-    "oxlint": "1.70.0",
+    "@oxlint/plugins": "1.81.0",
+    "@typescript-eslint/parser": "8.69.0",
+    "eslint": "9.39.5",
+    "oxlint": "1.81.0",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/vite": "workspace:*",
-    "typescript": "6.0.2",
-    "vite": "7.2.6",
-    "vite-plugin-solid": "2.11.10"
+    "typescript": "6.0.3",
+    "vite": "7.3.6",
+    "vite-plugin-solid": "2.11.14"
   },
   "dependencies": {
-    "solid-js": "1.9.10"
+    "solid-js": "1.9.15"
   }
 }

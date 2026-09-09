@@ -19,7 +19,7 @@ use super::jsx_skip::{
 };
 use super::plan::HelperCxMode;
 use super::resolve::is_static_style_literal;
-use super::style_lower::{self, ClassExpr};
+use super::style_lower::{self, ClassExpr, LowerTarget};
 
 pub(super) fn should_skip_style_prop(key: &str) -> bool {
     matches!(key, "children" | "key" | "ref")
@@ -64,7 +64,7 @@ pub(super) fn plan_class_name(
                 project,
                 file_source,
                 tree,
-                Some(jsx),
+                LowerTarget::Jsx(jsx),
                 pattern_transform.as_deref_mut(),
             )?
         }
@@ -205,8 +205,14 @@ fn style_tree_should_skip(
         return !data_is_static(&jsx.data);
     };
     if style_lower::style_tree_has_rewrite_sites(tree) {
-        return style_lower::lower_style_tree(project, source, tree, Some(jsx), pattern_transform)
-            .is_none();
+        return style_lower::lower_style_tree(
+            project,
+            source,
+            tree,
+            LowerTarget::Jsx(jsx),
+            pattern_transform,
+        )
+        .is_none();
     }
     style_lower::style_tree_has_open_spread(tree)
         || (!data_is_static(&jsx.data) && !matches!(tree, StyleTree::Object(_)))

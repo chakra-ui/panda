@@ -1,6 +1,7 @@
 //! Transform planning: match sites, bailouts, and rewrite decisions.
 
 use pandacss_extractor::{ExtractUsage, ExtractedCall, MatchCategory};
+use pandacss_shared::CssFactory;
 use rustc_hash::FxHashSet;
 
 use crate::PatternTransformFn;
@@ -189,6 +190,27 @@ pub(crate) struct Rewrite {
     pub helper: TransformHelperFacts,
 }
 
+impl Rewrite {
+    /// Replace `span` with content that calls no internal runtime symbol.
+    pub(crate) fn replace(span: pandacss_shared::Span, content: String) -> Self {
+        Self::replace_preserving(span, content, Vec::new())
+    }
+
+    pub(crate) fn replace_preserving(
+        span: pandacss_shared::Span,
+        content: String,
+        preserved: Vec<pandacss_shared::Span>,
+    ) -> Self {
+        Self {
+            start: span.start,
+            end: span.end,
+            content,
+            preserved,
+            helper: TransformHelperFacts::none(),
+        }
+    }
+}
+
 pub(crate) fn build_plan(
     project: &Project,
     source: &str,
@@ -200,7 +222,7 @@ pub(crate) fn build_plan(
         rewrites: Vec::new(),
         // Reported so the host re-transforms this file when a cross-file
         // module read to fold an imported value changes.
-        dependencies: extracted.dependencies.clone(),
+        dependencies: extracted.dependency_paths(),
         helper: TransformHelperFacts::default(),
         module: extracted.module.clone(),
         bailed: false,
@@ -255,9 +277,11 @@ pub(crate) fn build_plan(
             MatchCategory::Recipe if targets.recipes_enabled() => {
                 if let Some(rewrite) = resolve::rewrite_for_recipe_call(
                     project,
+                    source,
                     &call.name,
                     call.span,
                     &call.data,
+                    &call.style_args,
                     &call.facts,
                 ) {
                     plan.push(rewrite);
@@ -277,10 +301,10 @@ pub(crate) fn build_plan(
                 }
             }
             MatchCategory::Jsx if targets.jsx_enabled() => {
-                if let Some(rewrite) =
-                    super::recipe_inline::rewrite_for_styled_call(project, source, call)
+                if let Some(rewrites) =
+                    super::recipe_inline::rewrites_for_styled_call(project, source, call)
                 {
-                    plan.push(rewrite);
+                    plan.extend(rewrites);
                 }
             }
             _ => {}
@@ -344,8 +368,9 @@ fn push_css_call_rewrites(
                 plan.push(rewrite);
             }
         }
-        "viewTransition" => {
-            match resolve::rewrite_for_view_transition_call(project, call.span, &call.data) {
+        name if CssFactory::from_name(name).is_some() => {
+            let factory = CssFactory::from_name(name).expect("checked by guard");
+            match resolve::rewrite_for_css_factory_call(project, factory, call.span, &call.data) {
                 Some(rewrite) => plan.push(rewrite),
                 None if call.data.first().is_some_and(Option::is_none) => {
                     plan.bailed = true;
@@ -475,7 +500,7 @@ fn push_identity_or_merged_raw(
     {
         plan.extend(rewrites);
     } else if let Some(rewrite) =
-        resolve::rewrite_for_merged_raw_call(project, source, call.span, &call.data, &call.facts)
+        resolve::rewrite_for_merged_raw_call(project, source, call.span, &call.data)
     {
         plan.push(rewrite);
     }
@@ -485,10 +510,8 @@ fn css_style_tree_should_bail(style_args: &[Option<pandacss_extractor::StyleTree
     let Some(tree) = style_args.first().and_then(|value| value.as_ref()) else {
         return false;
     };
-    tree.is_open()
+    super::style_lower::style_tree_is_open(tree)
         || super::style_lower::style_tree_has_rewrite_sites(tree)
-        || super::style_lower::style_tree_has_open_spread(tree)
-        || super::style_lower::style_tree_has_open_value(tree)
 }
 
 /// Inlines standalone `token()`/`token.var()` calls to their resolved value.

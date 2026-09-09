@@ -1,8 +1,6 @@
 //! The `cva` artifact: the recipe-creator factory `cva()`. Config-independent —
 //! the runtime impl is a fixed string; recipe data lives in the `recipes` artifact.
 
-use pandacss_config::CssSyntaxKind;
-
 use crate::{
     Artifact, ArtifactFile, ArtifactId, CodegenContext, ConstDecl, DependencySet, ExportDecl, Expr,
     ImportDecl, Item, ItemNode, Module, RuntimeImport, TsType,
@@ -28,10 +26,6 @@ pub fn files(
     options: GenerateOptions,
     dependencies: DependencySet,
 ) -> Vec<ArtifactFile> {
-    if matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
-        return Vec::new();
-    }
-
     if ctx.virtualizes(RuntimeImport::CssIndex) {
         return Vec::new();
     }

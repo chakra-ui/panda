@@ -1,13 +1,16 @@
+export const DEFAULT_PRESETS = ['@pandacss/preset-base', '@pandacss/preset-panda']
+
 export const getConfig = (
   config?: string,
   otherCode?: string,
   imports = 'import { defineConfig } from "@pandacss/dev";',
+  presets: string[] = DEFAULT_PRESETS,
 ) => {
   const conf = `${imports ?? ''}${otherCode ? `\n\n${otherCode}` : ''}
 
 export const config = defineConfig({
   ${config ?? ''}${config?.endsWith(',') ? '' : ','}
-  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
+  presets: ${JSON.stringify(presets)},
   globalCss: {
     html: {
       h: 'full',

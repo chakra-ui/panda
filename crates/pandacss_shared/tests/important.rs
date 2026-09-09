@@ -23,3 +23,19 @@ fn returns_borrowed_when_marker_is_absent() {
     assert!(!is_important(value));
     assert!(matches!(without_important(value), Cow::Borrowed("red")));
 }
+
+#[test]
+fn ignores_a_bang_inside_the_value() {
+    let value = r#""hello!""#;
+    assert!(!is_important(value));
+    assert!(matches!(
+        without_important(value),
+        Cow::Borrowed(r#""hello!""#)
+    ));
+
+    assert!(is_important(r#""hello!" !important"#));
+    assert_eq!(
+        without_important(r#""hello!" !important"#).as_ref(),
+        r#""hello!""#
+    );
+}

@@ -53,6 +53,45 @@ pub(super) fn to_hash() -> Item {
     )
 }
 
+/// Deterministic JSON with sorted object keys and JS number formatting, so a
+/// bag hashes the same in Rust emit and this runtime. Shared by `viewTransition`
+/// and `positionTry`; mirrors `pandacss_shared::view_transition::stable_stringify`.
+pub(super) fn stable_stringify() -> Item {
+    helper_function(
+        "stableStringify",
+        vec![Param::typed("value", TsType::Raw("any".into()))],
+        TsType::Ref("string".into()),
+        indoc! {r"
+            if (value === null) return 'null'
+            const t = typeof value
+            if (t === 'boolean') return value ? 'true' : 'false'
+            if (t === 'number') return Number.isFinite(value) ? String(value) : 'null'
+            if (t === 'string') return JSON.stringify(value)
+            if (Array.isArray(value)) {
+              let out = '['
+              for (let i = 0; i < value.length; i++) {
+                if (i) out += ','
+                out += stableStringify(value[i])
+              }
+              return out + ']'
+            }
+            if (t === 'object') {
+              const keys = Object.keys(value).sort()
+              let out = '{'
+              for (let i = 0; i < keys.length; i++) {
+                if (i) out += ','
+                const key = keys[i]
+                out += JSON.stringify(key) + ':' + stableStringify(value[key])
+              }
+              return out + '}'
+            }
+            return 'null'
+        "}
+        .trim(),
+        [],
+    )
+}
+
 /// Cheap hash for `memo`'s common case (flat primitive args); `null` on anything nested falls back to `JSON.stringify`.
 pub(super) fn flat_hash_or_null() -> Item {
     Item::runtime(ItemNode::Function(FunctionDecl {
@@ -350,7 +389,7 @@ pub(super) fn is_important() -> Item {
         "isImportant",
         vec![Param::typed("value", TsType::Ref("unknown".into()))],
         TsType::Bool,
-        r#"return typeof value === "string" ? /\s*!(important)?/i.test(value) : false"#,
+        r#"return typeof value === "string" ? /\s*!(important)?\s*$/i.test(value) : false"#,
         [],
     )
 }
@@ -361,7 +400,7 @@ pub(super) fn without_important() -> Item {
         vec![Param::typed("value", TsType::Ref("T".into()))],
         TsType::Ref("T".into()),
         indoc! {r#"
-            return (typeof value === "string" ? value.replace(/\s*!(important)?/i, "").trim() : value) as T
+            return (typeof value === "string" ? value.replace(/\s*!(important)?\s*$/i, "").trim() : value) as T
         "#}
         .trim(),
         ["T extends string | number | boolean"],

@@ -3,6 +3,7 @@ import type {
   CompositionStyles,
   Config,
   CssKeyframes,
+  ExtendableConditions,
   GlobalFontface,
   GlobalStyleObject,
   LayerStyles,
@@ -21,6 +22,8 @@ import type {
   ThemeVariant,
   Tokens,
   CssFallbackMember,
+  ViewTransitions,
+  PositionTry,
 } from '@pandacss/types'
 
 export function cssFallback<T>(first: T, second: T, ...rest: T[]): T
@@ -86,6 +89,10 @@ export function defineUtility(utility: PropertyConfig): PropertyConfig {
   return utility
 }
 
+export function defineConditions(definition: ExtendableConditions): ExtendableConditions {
+  return definition
+}
+
 export function definePlugin(plugin: PandaPlugin): PandaPlugin {
   return plugin
 }
@@ -132,5 +139,13 @@ export function defineStyles(definition: SystemStyleObject): SystemStyleObject {
 }
 
 export function defineAnimationStyles(definition: CompositionStyles['animationStyles']): AnimationStyles {
+  return definition
+}
+
+export function defineViewTransitions(definition: ViewTransitions): ViewTransitions {
+  return definition
+}
+
+export function definePositionTry(definition: PositionTry): PositionTry {
   return definition
 }

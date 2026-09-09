@@ -504,6 +504,42 @@ describe('Compiler callbacks', () => {
     expect(types).not.toContain('export type SpaceValue = "-4"')
   })
 
+  it('keeps the utility usable when the values callback returns nothing', () => {
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          jsxFramework: 'react',
+          utilities: {
+            space: {
+              property: 'margin',
+              values: {
+                kind: 'js-callback',
+                id: 'utilities.space.values',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'utility.values': {
+            'utilities.space.values': (theme) => theme('spacing'),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    compiler.parseFileSource(
+      '/virtual/Button.tsx',
+      `import { css } from '@panda/css'
+       css({ space: '4px' })`,
+    )
+
+    expect(compiler.getLayerCss({ layers: ['utilities'] }).css).toContain('margin: 4px')
+  })
+
   it('resolves utility values functions from a config snapshot', () => {
     const compiler = createCompilerFromSnapshot(
       {

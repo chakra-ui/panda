@@ -206,9 +206,12 @@ would result in:
 
 **Default**: `false`
 
-Whether to minify the generated css. This can be set to `true` to reduce the size of the generated css.
+Whether to minify the generated css. This can be set to `true` to reduce the size of the generated css. Usually enabled
+in production only:
 
-Often enabled only in production. See [Environment-specific config](/docs/design-systems/environment-specific-config).
+```ts filename="panda.config.ts"
+minify: process.env.NODE_ENV === 'production'
+```
 
 ```json
 {
@@ -223,9 +226,11 @@ Often enabled only in production. See [Environment-specific config](/docs/design
 **Default**: `false`
 
 Whether to hash the generated class names / css variables. This is useful if want to shorten the class names or css
-variables.
+variables. Usually enabled in production only, since hashed names are harder to read in DevTools:
 
-Often enabled only in production. See [Environment-specific config](/docs/design-systems/environment-specific-config).
+```ts filename="panda.config.ts"
+hash: process.env.NODE_ENV === 'production'
+```
 
 Hash the class names and css variables:
 
@@ -293,7 +298,8 @@ Then the result looks like this:
 
 **Default**: `{}`
 
-CSS emission optimizations. Every optimization is opt-in.
+CSS emission optimizations. Every optimization is opt-in. See [Optimization](/docs/styling/optimization) for when to
+turn each flag on.
 
 ```json
 {
@@ -311,8 +317,8 @@ CSS emission optimizations. Every optimization is opt-in.
 - `removeUnusedKeyframes` — remove unused keyframes based on extracted project usage.
 - `smartCompoundVariants` — narrow compound variant CSS to the variant combinations you actually use, instead of
   emitting every permutation.
-- `treeshakeDesignSystem` — hydrate only the build-info modules for the design-system exports your app imports. Namespace
-  and side-effect imports still hydrate everything.
+- `treeshakeDesignSystem` — hydrate only the build-info modules for the design-system exports your app imports.
+  Namespace and side-effect imports still hydrate everything.
 - `propertyFallback` — also seed `@property` registrations as plain declarations, for engines that ignore `@property`
   (Safari &lt; 16.4, Firefox &lt; 128) and would otherwise drop declarations that read an unregistered variable.
 
@@ -389,8 +395,8 @@ is the equivalent of:
 }
 ```
 
-Pass an array to match imports from more than one root, for example a shared design system package alongside the
-app's own local `styled-system` output:
+Pass an array to match imports from more than one root, for example a shared design system package alongside the app's
+own local `styled-system` output:
 
 ```json
 {
@@ -409,9 +415,9 @@ Individual fields also accept an array of paths when only some categories need m
 }
 ```
 
-Check out [Shared styled-system in a monorepo](/docs/design-systems/shared-styled-system) for a full example of
-using multiple `importMap` roots, or the [Component Library](/docs/design-systems/overview) guide for the
-external-package case.
+A published design system uses [`designSystem`](#designsystem), not `importMap`. See
+[Consume with Panda](/docs/design-systems/consume-with-panda). Use `importMap` when the package is a shared
+styled-system that is **not** a `panda lib` manifest.
 
 ### designSystem
 
@@ -426,7 +432,7 @@ applies its build info — you don't set `importMap` or list build info in `incl
 }
 ```
 
-Check out [Consuming a design system](/docs/design-systems/consuming-a-design-system) for the full workflow.
+See [Consume with Panda](/docs/design-systems/consume-with-panda).
 
 ### include
 
@@ -500,38 +506,6 @@ Whether generated import specifiers include the runtime file extension. When `ou
 {
   "forceImportExtension": true
 }
-```
-
-### syntax
-
-**Type**: `'object-literal' | 'template-literal'`
-
-**Default**: `object-literal`
-
-Decides which syntax to use when writing CSS. For existing projects, you might need to run the `panda codegen --clean`.
-
-```json
-{
-  "syntax": "template-literal"
-}
-```
-
-Ex object-literal:
-
-```tsx
-const styles = css({
-  backgroundColor: 'gainsboro',
-  padding: '10px 15px'
-})
-```
-
-Ex template-literal:
-
-```tsx
-const Container = styled.div`
-  background-color: gainsboro;
-  padding: 10px 15px;
-`
 ```
 
 ### polyfill
@@ -870,24 +844,6 @@ The global CSS variables for your project. A plain string emits the variable dir
 }
 ```
 
-### globalPositionTry
-
-**Type**: `Extendable<GlobalPositionTry>`
-
-**Default**: `{}`
-
-Global `@position-try` fallbacks for anchor positioning, keyed by the fallback name.
-
-```json
-{
-  "globalPositionTry": {
-    "--bottom": {
-      "top": "anchor(bottom)"
-    }
-  }
-}
-```
-
 ## JSX options
 
 ### jsxFramework
@@ -992,8 +948,9 @@ The validation strictness to use when validating the config.
 
 **Type**: `PandaPlugin[]`
 
-Plugins are simple objects that contain a `name` and a `hooks` object. Hooks live on plugins — there is no root-level
-`hooks` config option. Check the [Hooks](/docs/design-systems/hooks) docs for the full list of callbacks.
+Plugins are objects with a `name` and a `hooks` map. There is no root-level `hooks` option. See the
+[plugins reference](/docs/reference/plugins) for every hook, and [Plugins](/docs/theming/plugins) for how to write and
+share one.
 
 Plugins are called in sequence in the order they are defined in the `plugins` array, with the user's config called last.
 

@@ -165,7 +165,6 @@ pub(crate) fn to_core_matcher(m: Matcher) -> pandacss_extractor::Matcher {
 pub(crate) fn to_core_config(m: Matchers) -> pandacss_extractor::ExtractorConfig {
     let has_jsx_framework = m.jsx_framework.is_some();
     let class_attribute = class_attribute_for_jsx_framework(m.jsx_framework.as_deref());
-    let syntax = syntax_from_string(m.syntax.as_deref());
     let token_dictionary = m
         .token_dictionary
         .clone()
@@ -176,8 +175,11 @@ pub(crate) fn to_core_config(m: Matchers) -> pandacss_extractor::ExtractorConfig
         jsx: pandacss_extractor::JsxExtractionConfig::default(),
         has_jsx_framework,
         class_attribute,
-        syntax,
         token_dictionary,
+        // The flat `Matchers` wire shape carries no class-name prefix, so
+        // `positionTry(...)` folds to unprefixed idents on this free-function
+        // path. The session/project path sets the prefix from its config.
+        class_name_prefix: String::new(),
         // Cross-file resolution isn't on the flat `Matchers` shape — the
         // session class wires it up explicitly. Free-function callers
         // extract single files anyway, so a per-call cache wouldn't help.
@@ -191,13 +193,6 @@ fn class_attribute_for_jsx_framework(value: Option<&str>) -> &'static str {
     match value {
         Some("solid" | "vue" | "qwik") => "class",
         _ => "className",
-    }
-}
-
-fn syntax_from_string(value: Option<&str>) -> pandacss_extractor::CssSyntaxKind {
-    match value {
-        Some("template-literal") => pandacss_extractor::CssSyntaxKind::TemplateLiteral,
-        _ => pandacss_extractor::CssSyntaxKind::ObjectLiteral,
     }
 }
 

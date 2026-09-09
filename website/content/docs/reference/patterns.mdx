@@ -1,0 +1,39 @@
+---
+title: patterns/
+description: The patterns/ folder — generated functions for layout primitives like stack, grid, and container.
+---
+
+**Folder:** `styled-system/patterns/`  
+**Import:** `import { stack, hstack, grid } from '../styled-system/patterns'`
+
+Codegen writes one module per pattern (for example `patterns/stack.ts`) plus `patterns/index.ts` as the barrel.
+Each export is a function: pass pattern props, get a class name. Under the hood they call [`css()`](/docs/reference/css).
+
+```ts
+import { stack, hstack } from '../styled-system/patterns'
+
+stack({ gap: '4', p: '6' })
+hstack({ gap: '2', alignItems: 'center' })
+```
+
+## What you get
+
+Built-ins include layout helpers such as `box`, `container`, `stack`, `hstack`, `vstack`, `grid`, `gridItem`,
+`flex`, `center`, `wrap`, `aspectRatio`, `float`, `bleed`, `circle`, `square`, `divider`, `linkOverlay`,
+`visuallyHidden`, and `cq` (container query). Your config can add or remove patterns.
+
+## JSX form
+
+When [`jsxFramework`](/docs/reference/config#jsxframework) is set, the same patterns also appear as components under
+[`jsx/`](/docs/reference/jsx) (`Stack`, `Grid`, …).
+
+## Customize
+
+Authoring and overriding patterns lives in config: [Theming → Patterns](/docs/theming/patterns).  
+Usage catalog and examples: [Styling → Patterns](/docs/styling/patterns).
+
+## See also
+
+- [css()](/docs/reference/css)
+- [jsx/](/docs/reference/jsx)
+- [Styled System overview](/docs/reference/styled-system)

@@ -17,12 +17,13 @@ tests should inherit that corpus instead of replacing it.
 
 ## Current coverage (v2 branch)
 
-| Layer                           | Location                             | Status            |
-| ------------------------------- | ------------------------------------ | ----------------- |
-| Rust transformer snapshots      | `crates/pandacss_project/tests/transform/` | via `cargo nextest run -p pandacss_project transform` |
-| JS facade + runtime             | `packages/transformer/__tests__/`    | 14 tests passing  |
-| Vite plugin                     | `packages/vite/__tests__/`           | 8 tests passing   |
-| Host e2e / bundle-size fixtures | sandbox                              | not started       |
+| Layer                           | Location                                              | Status                                                |
+| ------------------------------- | ----------------------------------------------------- | ----------------------------------------------------- |
+| Rust transformer snapshots      | `crates/pandacss_project/tests/transform/`            | via `cargo nextest run -p pandacss_project transform` |
+| JS facade + runtime             | `packages/transformer/__tests__/`                     | covered                                               |
+| Rolldown tree-shaking           | `packages/transformer/__tests__/tree-shaking.test.ts` | covered                                               |
+| Vite plugin                     | `packages/vite/__tests__/`                            | covered                                               |
+| Bundle-size budgets             | sandbox                                                | not started                                           |
 
 ## Test layers
 
@@ -120,6 +121,7 @@ These are the direct successors to the earlier prototype's `buildClassNameAttr(.
 - pattern calls like `hstack()` and `vstack()`
 - pattern calls with extra style props
 - config recipe call with variants
+- config slot recipe call to an object of per-slot classes, with defaults, compounds, and conditional variants
 - recipe default variants
 - recipe overrides of default variants
 - recipe with no variants
@@ -128,7 +130,7 @@ These are the direct successors to the earlier prototype's `buildClassNameAttr(.
 - `token.var()` calls
 - token fallback values
 - token import aliases
-- token inside `css`, template literals, `cva`, and mixed files
+- token inside `css`, `cva`, and mixed files
 
 ## Snapshot tests: bailout behavior
 

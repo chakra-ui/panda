@@ -1,0 +1,179 @@
+---
+title: Typography
+description: Prose styles for HTML you don't control. One recipe, five sizes, colors from your tokens.
+---
+
+Markdown, a CMS, an AI reply: content you render but didn't write, arriving as plain headings, paragraphs, lists, and
+tables with no classes to hook onto. The typography preset styles all of it from one wrapper.
+
+The article below is raw HTML. Nothing inside it carries a class. Switch the size to see the whole scale move together,
+and toggle the site's theme to see it follow your dark mode. Every post on [the blog](/blog) is rendered the same way.
+
+<ProseDemo />
+
+## Install
+
+```bash
+pnpm add -D @pandacss/preset-typography
+```
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+import typographyPreset from '@pandacss/preset-typography'
+
+export default defineConfig({
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda', typographyPreset()]
+})
+```
+
+Run codegen and a `prose` recipe appears next to your other recipes.
+
+## Wrap the content
+
+### The wrapper
+
+`prose()` returns a class name. Put it on the element that holds the content, and everything inside is styled:
+
+```tsx
+import { prose } from '../styled-system/recipes'
+
+export function Article({ html }: { html: string }) {
+  return <article className={prose()} dangerouslySetInnerHTML={{ __html: html }} />
+}
+```
+
+It works the same on rendered Markdown or any other markup you didn't write. The children don't need classes.
+
+### Sizes
+
+The scale runs `sm`, `md`, `lg`, `xl`, and `2xl`, with `md` as the default. A size is one font size on the root, and
+every heading, gap, and code block is a ratio of it, so the article keeps its proportions at any step:
+
+```tsx
+<article className={prose({ size: 'lg' })} />
+```
+
+### Follow the container
+
+Because everything is a ratio, a `prose` can take its size from wherever it sits instead of from a variant. A
+sidebar or a chat bubble that sets its own font size scales the whole article with it:
+
+```tsx
+<aside className={css({ fontSize: 'sm' })}>
+  <article className={cx(prose(), css({ fontSize: 'inherit' }))} />
+</aside>
+```
+
+### Lead paragraph
+
+A paragraph with the `lead` class renders as an intro, larger and lighter than the body. It's the one class the
+recipe looks for inside the content:
+
+```html
+<p class="lead">A short opening that sets up the rest of the article.</p>
+<p>Body text continues at the normal size.</p>
+```
+
+## Change the colors
+
+The recipe reads roles like `prose.link` and `prose.heading` from `semanticTokens`. Every semantic token has a light and a dark value. Override the ones you care about in your config:
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda', typographyPreset()],
+  theme: {
+    extend: {
+      semanticTokens: {
+        colors: {
+          prose: {
+            link: { value: { base: '{colors.blue.700}', _dark: '{colors.blue.300}' } },
+            heading: { value: '{colors.fg}' }
+          }
+        }
+      }
+    }
+  }
+})
+```
+
+The defaults come from one palette, `neutral` unless you say otherwise. To base them on another palette:
+
+```ts
+typographyPreset({ semanticTokens: { colorPalette: 'gray' } })
+```
+
+The full set of roles: `body`, `heading`, `lead`, `link`, `linkDecoration`, `bold`, `counter`, `bullet`, `hrBorder`,
+`quote`, `quoteBorder`, `caption`, `kbd`, `code`, `codeBg`, `preCode`, `preBg`, `thBorder`, and `tdBorder`.
+
+## Opt a component out
+
+Content sometimes carries a component of your own, a callout or an embed with its own styles. Turn on `notProse` and
+mark the component:
+
+```ts
+typographyPreset({ notProse: true })
+```
+
+```tsx
+<article className={prose()}>
+  {content}
+  <div className="not-prose">
+    <Callout>Styled by the callout, not the prose.</Callout>
+  </div>
+</article>
+```
+
+Pass a string instead of `true` to use your own class name.
+
+## Tune the rhythm
+
+Two custom properties on the root set the rhythm. `--prose-leading` is the line height, `1.625` by default, and
+`--prose-flow` is the gap between blocks, `1.25em` of the root font size. Headings and larger blocks are multiples of
+the flow, so changing it moves the whole article together:
+
+```tsx
+<article className={cx(prose(), css({ '--prose-leading': '1.5', '--prose-flow': '1em' }))} />
+```
+
+The property names follow the recipe's `name`, so a preset created with `name: 'article'` uses `--article-flow`.
+
+## Override a style
+
+Every rule the recipe emits is wrapped in `:where()`, so it has no specificity of its own. A plain style on the wrapper
+or on an element inside wins without `!important`:
+
+```tsx
+<article className={cx(prose(), css({ maxW: '4xl', '& h2': { fontFamily: 'heading' } }))} />
+```
+
+The default width is the `sizes.prose` token, sixty characters. Override it the same way.
+
+## Stream content
+
+Spacing is applied from the top of each block only, and no rule depends on `:last-child`, `:has()`, or `:empty`. When
+content arrives a block at a time, as it does from an AI model, a new block never restyles the ones already on screen.
+
+## Options
+
+```ts
+typographyPreset({
+  // Recipe name, class name, and token prefix. Default 'prose'.
+  name: 'prose',
+  // Class name when it must differ from the name.
+  className: 'prose',
+  // Sizes to generate. Default all five.
+  sizes: ['sm', 'md', 'lg', 'xl', '2xl'],
+  // Size when the call site passes none. Default 'md'.
+  defaultSize: 'md',
+  // Class that opts a subtree out. true means 'not-prose'. Default off.
+  notProse: true,
+  semanticTokens: {
+    // Set false to define every role yourself.
+    enabled: true,
+    // Token prefix. Defaults to the name.
+    prefix: 'prose',
+    // Palette the defaults are built from.
+    colorPalette: 'neutral'
+  }
+})
+```

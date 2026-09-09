@@ -6,16 +6,16 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value;
 
 use pandacss_config::{
-    CompoundVariantConfig, CssSyntaxKind as ConfigCssSyntaxKind, ImportMap, JsxFramework,
-    JsxSpecifier, JsxStylePropsConfig, PatternConfig, RecipeConfig, VariantSelection,
+    CompoundVariantConfig, ImportMap, JsxFramework, JsxSpecifier, JsxStylePropsConfig,
+    PatternConfig, RecipeConfig, VariantSelection,
 };
 use pandacss_extractor::{
-    CssSyntaxKind, ExtractorConfig, JsxExtractionConfig, JsxKind, JsxStyleProps, Literal,
+    ExtractorConfig, JsxExtractionConfig, JsxKind, JsxStyleProps, Literal,
     Matcher as ExtractorMatcher, Matchers, NameMatcher as ExtractorNameMatcher,
 };
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::css_properties::css_property_names;
-use pandacss_shared::{capitalize, compile_js_regex};
+use pandacss_shared::{PositionTryStyle, ViewTransitionStyle, capitalize, compile_js_regex};
 use pandacss_tokens::{TokenDictionary, TokenError};
 use pandacss_utility::{Utility, UtilityOptions};
 
@@ -63,8 +63,12 @@ pub(crate) fn compile_config_with_token_dictionary(
     );
     extractor_config.has_jsx_framework = config.jsx_framework.is_some();
     extractor_config.class_attribute = class_attribute_for_framework(config.jsx_framework.as_ref());
-    extractor_config.syntax = extractor_syntax_from_config(config.syntax);
     extractor_config.token_dictionary = token_dictionary;
+    config
+        .prefix
+        .class_name()
+        .unwrap_or_default()
+        .clone_into(&mut extractor_config.class_name_prefix);
 
     let utility = (!utility.is_empty()).then_some(utility);
     let patterns = {
@@ -83,6 +87,7 @@ pub(crate) fn compile_config_with_token_dictionary(
                 separator: config.separator(),
                 hash_class_names: config.hash.class_name(),
             },
+            config.prefix.class_name().unwrap_or_default(),
         )
     };
 
@@ -102,8 +107,44 @@ pub(crate) fn compile_config_with_token_dictionary(
             .as_object()
             .map(|frames| frames.keys().cloned().collect())
             .unwrap_or_default(),
+        view_transitions: theme_view_transitions(config),
+        position_try: theme_position_try(config),
         optimize: config.optimize,
     })
+}
+
+fn theme_position_try(config: &pandacss_config::UserConfig) -> BTreeMap<String, PositionTryStyle> {
+    let prefix = config.prefix.class_name().unwrap_or_default();
+    config
+        .theme
+        .position_try
+        .iter()
+        .filter_map(|(name, options)| {
+            if name.is_empty() {
+                return None;
+            }
+            let style = PositionTryStyle::from_named_options(name, options, prefix);
+            (!style.is_empty()).then(|| (name.clone(), style))
+        })
+        .collect()
+}
+
+fn theme_view_transitions(
+    config: &pandacss_config::UserConfig,
+) -> BTreeMap<String, ViewTransitionStyle> {
+    let prefix = config.prefix.class_name().unwrap_or_default();
+    config
+        .theme
+        .view_transitions
+        .iter()
+        .filter_map(|(name, options)| {
+            if name.is_empty() {
+                return None;
+            }
+            let style = ViewTransitionStyle::from_named_options(name, options, prefix);
+            (!style.is_empty()).then(|| (name.clone(), style))
+        })
+        .collect()
 }
 
 #[allow(clippy::needless_pass_by_value, reason = "used as a map_err callback")]
@@ -320,7 +361,14 @@ fn matchers_from_definitions(config: &ConfigDefinitions) -> Matchers {
     Matchers {
         css: ExtractorMatcher {
             modules: config.import_map.css.clone(),
-            names: ExtractorNameMatcher::only(["css", "cva", "sva", "viewTransition"]),
+            names: ExtractorNameMatcher::only([
+                "css",
+                "cva",
+                "sva",
+                "viewTransition",
+                "positionTry",
+                "keyframes",
+            ]),
         },
         recipe: ExtractorMatcher {
             modules: config.import_map.recipe.clone(),
@@ -507,13 +555,6 @@ fn jsx_style_props_from_config(config: &pandacss_config::UserConfig) -> JsxStyle
         Some(JsxStylePropsConfig::Minimal) => JsxStyleProps::Minimal,
         Some(JsxStylePropsConfig::None) => JsxStyleProps::None,
         _ => JsxStyleProps::All,
-    }
-}
-
-fn extractor_syntax_from_config(syntax: ConfigCssSyntaxKind) -> CssSyntaxKind {
-    match syntax {
-        ConfigCssSyntaxKind::TemplateLiteral => CssSyntaxKind::TemplateLiteral,
-        ConfigCssSyntaxKind::ObjectLiteral => CssSyntaxKind::ObjectLiteral,
     }
 }
 

@@ -34,21 +34,16 @@ export const SkipNavLink = forwardRef<HTMLAnchorElement, SkipNavLinkProps>(
                 zIndex: '50',
                 m: '3',
                 ml: '4',
-                h: 'calc(var(--docs-navbar-height) - 1.5rem)',
+                h: 'calc(var(--navbar-height) - 1.5rem)',
                 rounded: 'lg',
                 border: '1px',
                 py: '2',
                 verticalAlign: 'middle',
                 fontSize: 'sm',
                 fontWeight: 'bold',
-                color: 'gray.900',
-                bg: 'white',
-                borderColor: 'neutral.400',
-                _dark: {
-                  color: 'gray.100',
-                  bg: 'neutral.900',
-                  borderColor: 'neutral.800'
-                }
+                color: 'fg',
+                bg: 'bg.surface',
+                borderColor: 'border'
               }
             })
           : ''
@@ -74,7 +69,14 @@ type SkipNavContentProps = Omit<React.ComponentProps<'div'>, 'ref' | 'children'>
 
 export const SkipNavContent = forwardRef<HTMLDivElement, SkipNavContentProps>(
   function ({ id, ...props }, forwardedRef) {
-    return <div {...props} ref={forwardedRef} id={id || DEFAULT_ID} />
+    return (
+      <div
+        {...props}
+        ref={forwardedRef}
+        id={id || DEFAULT_ID}
+        data-scroll-target
+      />
+    )
   }
 )
 

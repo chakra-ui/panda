@@ -71,6 +71,65 @@ describe('scan/parseFiles (native fs engine)', () => {
     expect(css).toContain('blue')
   })
 
+  it('parseFiles() reports a deleted file instead of skipping it, and keeps its last styles', () => {
+    const scratch = mkdtempSync(join(tmpdir(), 'panda-scan-gone-'))
+    try {
+      const keep = join(scratch, 'keep.tsx')
+      const gone = join(scratch, 'gone.tsx')
+      writeFileSync(keep, "import { css } from '@panda/css'; css({ color: 'red' })")
+      writeFileSync(gone, "import { css } from '@panda/css'; css({ color: 'blue' })")
+
+      const compiler = createCompiler(createUserConfig({ cwd: scratch, include: ['**/*.tsx'] }))
+      compiler.parseFiles([keep, gone])
+      rmSync(gone)
+
+      const reports = compiler.parseFiles([keep, gone]).map((report) => ({
+        ...report,
+        path: report.path.replace(`${scratch}/`, ''),
+        diagnostics: report.diagnostics.map((d) => ({
+          code: d.code,
+          severity: d.severity,
+          file: d.file?.replace(`${scratch}/`, ''),
+        })),
+      }))
+      expect(reports).toMatchInlineSnapshot(`
+        [
+          {
+            "path": "keep.tsx",
+            "cssCalls": 1,
+            "cvaCalls": 0,
+            "svaCalls": 0,
+            "jsxUsages": 0,
+            "diagnostics": [],
+          },
+          {
+            "path": "gone.tsx",
+            "cssCalls": 0,
+            "cvaCalls": 0,
+            "svaCalls": 0,
+            "jsxUsages": 0,
+            "diagnostics": [
+              {
+                "code": "source_not_found",
+                "severity": "warning",
+                "file": "gone.tsx",
+              },
+            ],
+          },
+        ]
+      `)
+
+      expect(compiler.getFile(gone)?.diagnostics.map((d) => d.code)).toEqual(['source_not_found'])
+      expect(compiler.compile().css).toContain('blue')
+
+      expect(compiler.removeFile(gone)).toBe(true)
+      expect(compiler.getFile(gone)).toBeNull()
+      expect(compiler.compile().css).not.toContain('blue')
+    } finally {
+      rmSync(scratch, { recursive: true, force: true })
+    }
+  })
+
   it('excludes the configured outdir from scan()', () => {
     const outdir = mkdtempSync(join(tmpdir(), 'panda-scan-outdir-'))
     try {

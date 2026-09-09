@@ -22,7 +22,11 @@ export const DesktopNavBar = () => {
       justify="space-between"
     >
       <HStack gap="4">
-        <Link href="/" className={center({ flexShrink: '0' })}>
+        <Link
+          href="/"
+          aria-label="Panda CSS home"
+          className={center({ flexShrink: '0' })}
+        >
           <Icon icon="LogoWithText" />
         </Link>
         <CourseMiniBanner />

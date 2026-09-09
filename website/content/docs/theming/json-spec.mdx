@@ -1,0 +1,158 @@
+---
+title: JSON Spec
+description: A JSON description of your design tokens for documentation sites and Storybook.
+---
+
+A spec is a readable JSON representation of the tokens in your panda config. It's designed for **documentation** — render
+your palette, spacing scale, and type in your own docs site or Storybook.
+
+## Spec Generation
+
+Run `panda codegen` (or a full `panda` build) and Panda writes `styled-system/specs/tokens.json` and
+`styled-system/specs/semantic-tokens.json`.
+
+## Spec Output
+
+Two files describe your design system:
+
+```sh
+styled-system/
+└── specs/
+    ├── tokens.json            # Raw design tokens grouped by category
+    └── semantic-tokens.json   # Semantic tokens with their per-condition values
+```
+
+Below is a breakdown of what each file contains and how it can be used.
+
+### `tokens.json`
+
+#### Structure
+
+This file contains an array of raw design tokens grouped by category
+
+```json
+{
+  "data": [
+    {
+      "type": "colors",
+      "values": [
+        {
+          "name": "purple.800",
+          "value": "#6b21a8"
+        }
+      ]
+    }
+  ]
+}
+```
+
+Each category is `{ type, values }`, and each token in the `values` array includes:
+
+- **name**: token key relative to its category (e.g., `purple.800`, `md`, `primary`)
+- **value**: resolved CSS value (e.g., `"1rem"`, `"#6b21a8"`)
+
+Base values only — theme and condition variants are left out to keep the file flat, and Panda's internal `colorPalette`
+tokens are filtered out.
+
+#### Usage
+
+Here's an example of how to document color tokens:
+
+```tsx
+import { grid } from 'styled-system/patterns'
+import tokens from 'styled-system/specs/tokens.json'
+
+const Demo = () => {
+  const colors = tokens.data.find(token => token.type === 'colors')
+  return (
+    <div className={grid({ padding: '40px', columns: 3, gap: '4' })}>
+      {colors?.values.map(color => (
+        <div key={color.name}>
+          <p>{color.name}</p>
+          <p>{color.value}</p>
+          <div
+            style={{
+              width: '100px',
+              height: '100px',
+              background: color.value,
+              border: '1px solid lightgray'
+            }}
+          />
+        </div>
+      ))}
+    </div>
+  )
+}
+```
+
+Your color token documentation should look similar to this:
+
+![Token Spec Documentation](/token-spec.png)
+
+### `semantic-tokens.json`
+
+#### Structure
+
+This file contains an array of semantic token definitions grouped by category, with conditional values for different
+modes (e.g., light/dark).
+
+```json
+{
+  "data": [
+    {
+      "type": "colors",
+      "values": [
+        {
+          "name": "bg",
+          "values": [
+            { "condition": "base", "value": "#ffffff" },
+            { "condition": "_dark", "value": "#0a0a0a" }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+Each category is `{ type, values }`, and each semantic token in the `values` array includes:
+
+- **name**: the semantic token key (e.g., `bg`, `fg.muted`, `accent`)
+- **values**: an array of conditional mappings, each with a **condition** (e.g., `base`, `_dark`) and its resolved
+  **value**
+
+#### Usage
+
+Here's an example of how to document semantic color tokens with their conditional values:
+
+```tsx
+import semanticTokens from 'styled-system/specs/semantic-tokens.json'
+
+const Demo = () => {
+  const colors = semanticTokens.data.find(token => token.type === 'colors')
+  return (
+    <div>
+      {colors?.values.map(token => (
+        <div key={token.name}>
+          <p>{token.name}</p>
+          <div>
+            {token.values.map(({ condition, value }) => (
+              <div key={condition}>
+                <span>{condition}</span>
+                <p>{value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+```
+
+## FAQs
+
+### Can I edit the spec files directly?
+
+**No.** The spec files are **generated** — edit your tokens in `panda.config.ts` instead. They exist purely for
+documentation and visualization.

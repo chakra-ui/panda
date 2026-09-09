@@ -1,7 +1,7 @@
 use crate::common::{artifact, file, paths};
 use indoc::indoc;
 use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
-use pandacss_config::{CodegenFormat, CssSyntaxKind, UserConfig};
+use pandacss_config::CodegenFormat;
 
 #[test]
 fn reexports_css_modules() {
@@ -21,6 +21,8 @@ fn reexports_css_modules() {
         export * from './cx';
         export * from './sva';
         export * from './view-transition';
+        export * from './position-try';
+        export * from './keyframes';
         "}
         .trim()
     );
@@ -44,6 +46,8 @@ fn mjs_without_import_extensions_emits_dts_for_bundler_resolution() {
         export * from './cx';
         export * from './sva';
         export * from './view-transition';
+        export * from './position-try';
+        export * from './keyframes';
         "}
         .trim()
     );
@@ -66,6 +70,8 @@ fn can_emit_import_extensions() {
         export * from './cx.js';
         export * from './sva.js';
         export * from './view-transition.js';
+        export * from './position-try.js';
+        export * from './keyframes.js';
         "}
         .trim()
     );
@@ -77,6 +83,8 @@ fn can_emit_import_extensions() {
         export * from './cx.d.ts';
         export * from './sva.d.ts';
         export * from './view-transition.d.ts';
+        export * from './position-try.d.ts';
+        export * from './keyframes.d.ts';
         "}
         .trim()
     );
@@ -94,6 +102,8 @@ fn can_emit_import_extensions() {
         export * from './cx.mjs';
         export * from './sva.mjs';
         export * from './view-transition.mjs';
+        export * from './position-try.mjs';
+        export * from './keyframes.mjs';
         "}
         .trim()
     );
@@ -105,39 +115,8 @@ fn can_emit_import_extensions() {
         export * from './cx.d.mts';
         export * from './sva.d.mts';
         export * from './view-transition.d.mts';
-        "}
-        .trim()
-    );
-}
-
-#[test]
-fn template_literal_syntax_reexports_css_and_cx_only() {
-    let config = UserConfig {
-        syntax: CssSyntaxKind::TemplateLiteral,
-        ..Default::default()
-    };
-    let artifacts = ArtifactGraph.generate_with_config(
-        &config,
-        GenerateOptions {
-            format: CodegenFormat::Mjs,
-            import_extensions: true,
-        },
-    );
-    let index = artifact(&artifacts, ArtifactId::CssIndex);
-
-    assert_eq!(
-        file(index, "css/index.mjs"),
-        indoc! {r"
-        export * from './css.mjs';
-        export * from './cx.mjs';
-        "}
-        .trim()
-    );
-    assert_eq!(
-        file(index, "css/index.d.mts"),
-        indoc! {r"
-        export * from './css.d.mts';
-        export * from './cx.d.mts';
+        export * from './position-try.d.mts';
+        export * from './keyframes.d.mts';
         "}
         .trim()
     );

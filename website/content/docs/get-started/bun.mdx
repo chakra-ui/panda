@@ -1,0 +1,152 @@
+---
+title: Using Bun
+description: Use Panda with Bun's bundler and runtime through the @pandacss/bun plugin.
+---
+
+This guide shows you how to set up Panda CSS in a Bun project using the `@pandacss/bun` plugin.
+
+Prefer PostCSS? Run `panda init --postcss` instead of the plugin step below and follow
+[Using PostCSS](/docs/get-started/postcss). Everything else on this page stays the same.
+
+## Start a new project
+
+<Steps>
+
+### Create a Bun app
+
+```bash
+bun init
+```
+
+### Install Panda
+
+```bash
+bun add -D @pandacss/dev @pandacss/bun
+bun panda init
+```
+
+### Add the Bun plugin
+
+The plugin generates the `styled-system` folder, appends the compiled CSS to the stylesheet that declares Panda's
+layers, and keeps both up to date. No separate watcher needed.
+
+For a fullstack app (`Bun.serve` with HTML imports), Bun loads bundler plugins from `bunfig.toml`:
+
+```toml filename="bunfig.toml"
+[serve.static]
+plugins = ["@pandacss/bun"]
+```
+
+For `Bun.build`, pass the same plugin:
+
+```ts {1,7} filename="build.ts"
+import panda from '@pandacss/bun'
+
+await Bun.build({
+  entrypoints: ['./src/index.html'],
+  outdir: './dist',
+  plugins: [panda],
+})
+```
+
+The `bun build` command line doesn't run plugins, so build through `Bun.build` for production.
+
+To pass options, export a configured plugin from a file and point Bun at that file instead:
+
+```ts filename="panda.plugin.ts"
+import { pandacss } from '@pandacss/bun'
+
+export default pandacss({ transform: true })
+```
+
+```toml filename="bunfig.toml"
+[serve.static]
+plugins = ["./panda.plugin.ts"]
+```
+
+For `bun run` and `bun test`, register the plugin from a preload file. Await it so codegen finishes before your entry
+loads:
+
+```ts filename="panda-preload.ts"
+import { register } from '@pandacss/bun'
+
+await register()
+```
+
+```toml filename="bunfig.toml"
+preload = ["./panda-preload.ts"]
+
+[test]
+preload = ["./panda-preload.ts"]
+```
+
+If you don't need options, point both entries at the ready-made `@pandacss/bun/preload` instead.
+
+Bun's runtime doesn't process CSS, so under `bun run` and `bun test` the plugin only runs codegen and the optional
+source rewrite. The stylesheet injection applies to the dev server and `Bun.build`.
+
+While the dev server runs, editing a component hot-reloads it with its new styles. Bun cannot re-run the CSS file for
+a JavaScript change, so the plugin hands the reloaded module the current stylesheet instead, in a `<style>` tag the
+page keeps across reloads. Production builds are untouched.
+
+Add `transform: true` when you want `css()` calls rewritten to class strings. See
+[Source Transforms](/docs/styling/source-transforms).
+
+### Update package.json scripts
+
+```diff {3} filename="package.json"
+{
+  "scripts": {
++    "prepare": "panda codegen",
+    "dev": "bun run src/index.ts",
+    "build": "bun run build.ts"
+  }
+}
+```
+
+The plugin only runs when Bun loads it. The `"prepare"` script covers `tsc` and your editor, which read `styled-system`
+before a build starts, and lets the folder stay gitignored.
+
+### Configure the content
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  preflight: true,
+  include: ['./src/**/*.{js,jsx,ts,tsx}'],
+  exclude: [],
+  outdir: 'styled-system'
+})
+```
+
+### Configure the entry CSS
+
+Put Panda's layers in the stylesheet you already load. The plugin treats that file as the CSS root and appends the
+generated rules after it.
+
+```css filename="src/index.css"
+@layer reset, base, tokens, recipes, utilities;
+```
+
+Link it from your HTML, or import it from your entry:
+
+```html filename="src/index.html"
+<link rel="stylesheet" href="./index.css" />
+```
+
+```ts filename="src/index.ts"
+import './index.css'
+```
+
+### Start using Panda
+
+```tsx filename="src/App.tsx"
+import { css } from '../styled-system/css'
+
+export function App() {
+  return <div className={css({ fontSize: '2xl', fontWeight: 'bold' })}>Hello 🐼</div>
+}
+```
+
+</Steps>

@@ -1,0 +1,91 @@
+---
+title: Dynamic variants
+description: Config recipes only emit variants Panda can see. Pre-generate the ones that come from props, state, or Storybook.
+---
+
+`cva` and `sva` emit every variant when you define them. This page is about config recipes (`defineRecipe` and
+`defineSlotRecipe`).
+
+The function still returns a class name at runtime. If that class was never written to the sheet, the styles do not
+apply.
+
+```tsx
+<Button size="lg" /> // CSS is in the sheet
+<Button size={size} /> // class name comes back, lg CSS does not
+```
+
+That is the usual "it works in Storybook, it is blank in the app" bug. Storybook had a literal. The app passed a
+prop.
+
+## What extract sees
+
+```tsx
+button({ size: 'lg' }) // emits lg
+button({ size: wide ? 'sm' : 'lg' }) // both branches, both literals
+button({ size }) // defaultVariants only
+
+<Button size="lg" /> // lg, if the tag matches
+<Button size={size} /> // defaultVariants only
+```
+
+Panda warns (`recipe_variant_dynamic`) when a variant value can't be determined statically and `staticCss` does
+not already cover that key.
+
+A renamed prop or a wrapper that is not the recipe name is a different miss. See
+[Extraction rules](/docs/styling/extraction-rules) and [Tracking JSX](/docs/recipes/jsx-tracking).
+
+## Put a literal in source
+
+A string at the call site, or a story that calls `button({ size: 'lg' })`, is enough. Extract sees it.
+`defaultVariants` is what you get when the prop stays dynamic.
+
+Use `staticCss` when you cannot write those literals in the app.
+
+## Pre-generate with staticCss
+
+List the values the app will pass. The same `RecipeRule` works on the recipe or in `staticCss.recipes`.
+
+```ts filename="button.recipe.ts"
+export const buttonRecipe = defineRecipe({
+  className: 'button',
+  staticCss: [{ size: ['sm', 'md', 'lg'] }]
+})
+```
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  staticCss: {
+    recipes: {
+      button: [{ size: ['sm', 'md'] }, { visual: ['*'] }]
+    }
+  }
+})
+```
+
+`'*'` on a key means every value of that variant. `staticCss: ['*']` on the recipe, or `staticCss.recipes: '*'`,
+emits every variant. Fine for Storybook. Heavy for a production app.
+
+The full list is [Static CSS → Recipes](/docs/styling/static#recipes).
+
+## One variant key per rule
+
+`{ size: ['sm'], visual: ['solid'] }` in a single object is two usages, not the pair:
+
+```ts
+// emits size=sm and visual=solid, each with defaultVariants on the other key
+{ size: ['sm'], visual: ['solid'] }
+
+// not "sm + solid" as one combination
+```
+
+Other keys fall back to `defaultVariants`. That matters for
+[smart compound variants](/docs/recipes/compound-variants#eager-emit-vs-smart-compound-variants): one key per rule
+does not invent a combo unless defaults fill the rest.
+
+## See also
+
+- [Extraction rules](/docs/styling/extraction-rules)
+- [Tracking JSX](/docs/recipes/jsx-tracking)
+- [Config recipes](/docs/recipes/config-recipe)
+- [Static CSS](/docs/styling/static)
+- [Compound variants](/docs/recipes/compound-variants)

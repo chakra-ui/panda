@@ -1,5 +1,60 @@
 # @pandacss/transformer
 
+## 2.0.0-beta.16
+
+### Minor Changes
+
+- 064e58f: Source transforms now handle slot recipes.
+
+  - `tabs({ size: 'sm' })` on a config slot recipe becomes an object of class strings, one per slot.
+  - Inline `sva()` compiles even when variants style each slot differently.
+  - Defaults, compound variants and finite conditionals fold; dynamic and responsive values stay on the runtime.
+  - Fix transformed recipe classes ignoring `prefix` and `hash`.
+  - Fix boolean compound variants in inline `cva()` / `sva()` never matching.
+  - Add `transform_source` spans to `--profile` output.
+
+### Patch Changes
+
+- 446210a: Mark transformed `cva()`, `sva()`, and `styled()` recipe factories as pure so bundlers can remove unused
+  definitions and their runtime helpers.
+- Updated dependencies [f583fb9]
+- Updated dependencies [6b04d94]
+- Updated dependencies [dfb17b2]
+- Updated dependencies [84720fc]
+- Updated dependencies [d94d26c]
+- Updated dependencies [c3702af]
+- Updated dependencies [dea1ef5]
+- Updated dependencies [a46ecb4]
+- Updated dependencies [ca9bb58]
+- Updated dependencies [c58d45d]
+- Updated dependencies [446210a]
+- Updated dependencies [9bdafba]
+- Updated dependencies [f583fb9]
+- Updated dependencies [b2294ca]
+- Updated dependencies [af261f5]
+- Updated dependencies [9da80e1]
+- Updated dependencies [ef14fc5]
+- Updated dependencies [064e58f]
+- Updated dependencies [ef68d33]
+- Updated dependencies [bcbcb22]
+  - @pandacss/compiler@2.0.0-beta.16
+  - @pandacss/compiler-shared@2.0.0-beta.16
+
+## 2.0.0-beta.15
+
+### Patch Changes
+
+- Updated dependencies [8b43347]
+- Updated dependencies [02bd0ad]
+- Updated dependencies [ec65db3]
+- Updated dependencies [02bd0ad]
+- Updated dependencies [ec65db3]
+- Updated dependencies [7c8a215]
+- Updated dependencies [8885864]
+- Updated dependencies [e18eeb3]
+  - @pandacss/compiler@2.0.0-beta.15
+  - @pandacss/compiler-shared@2.0.0-beta.15
+
 ## 2.0.0-beta.14
 
 ### Patch Changes

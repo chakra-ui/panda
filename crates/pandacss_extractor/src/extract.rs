@@ -76,6 +76,20 @@ pub struct ModuleFacts {
     pub symbols_resolved: bool,
 }
 
+/// A module read while folding an imported value; `source_hash` is `None` when unreadable.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CrossFileDependency {
+    pub path: String,
+    pub source_hash: Option<u64>,
+}
+
+/// A cross-file import that did not resolve during extraction.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct UnresolvedCrossFileDependency {
+    pub from_file: String,
+    pub specifier: String,
+}
+
 /// Lean extraction result for the production hot path — strips `imports`
 /// and `matched` so callers don't pay serialization cost for fields they
 /// don't use.
@@ -93,16 +107,29 @@ pub struct ExtractUsage {
     /// wire (consumed project-side only).
     #[serde(skip)]
     pub exports: ExportInfo,
-    /// Resolved cross-file module paths read to fold imported values. Surfaced
-    /// as transform build dependencies for watch invalidation. Project-side only.
+    /// Cross-file modules read to fold imported values, including nested
+    /// re-export / imported-alias modules. Project-side only.
     #[serde(skip)]
-    pub dependencies: Vec<String>,
+    pub dependencies: Vec<CrossFileDependency>,
+    /// Failed cross-file resolutions to retry after the filesystem changes.
+    #[serde(skip)]
+    pub unresolved_dependencies: Vec<UnresolvedCrossFileDependency>,
     /// Original-parse module and symbol facts used by source transforms.
     #[serde(skip)]
     pub module: ModuleFacts,
     /// Folded `.raw(...)` calls on recipes imported from another file.
     #[serde(skip)]
     pub imported_recipe_raw_calls: Vec<ImportedRecipeRawCall>,
+}
+
+impl ExtractUsage {
+    #[must_use]
+    pub fn dependency_paths(&self) -> Vec<String> {
+        self.dependencies
+            .iter()
+            .map(|dep| dep.path.clone())
+            .collect()
+    }
 }
 
 /// Verbose extraction result for on-demand tooling. Includes the same core
@@ -196,6 +223,7 @@ fn extract_usage(outcome: ExtractResult) -> ExtractUsage {
         token_refs: outcome.token_refs,
         exports: outcome.exports,
         dependencies: outcome.dependencies,
+        unresolved_dependencies: outcome.unresolved_dependencies,
         module: outcome.module,
         imported_recipe_raw_calls: outcome.imported_recipe_raw_calls,
     }
@@ -287,7 +315,8 @@ struct ExtractResult {
     token_refs: Vec<TokenRef>,
     style_source_refs: Vec<StyleSourceRef>,
     exports: ExportInfo,
-    dependencies: Vec<String>,
+    dependencies: Vec<CrossFileDependency>,
+    unresolved_dependencies: Vec<UnresolvedCrossFileDependency>,
     imported_recipe_raw_calls: Vec<ImportedRecipeRawCall>,
 }
 
@@ -321,13 +350,14 @@ fn run_extract<'cb>(
 ) -> ExtractResult {
     let allocator = Allocator::default();
     let raw_source = source;
-    let source = crate::adapt_source(source, path);
+    let format = crate::adapter::SfcFormat::from_path(path);
+    let source = crate::adapt_source(source, format);
     let source = source.as_ref();
     let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
     let parser_return = {
         let _span = tracing::trace_span!("oxc_parse", path = path).entered();
         Parser::new(&allocator, source, source_type)
-            .with_options(crate::adapter::parse_options_for(path))
+            .with_options(crate::adapter::parse_options_for(format))
             .parse()
     };
     let mut diagnostics = collect_parser_diagnostics(&parser_return.errors, source);
@@ -390,6 +420,7 @@ fn run_extract<'cb>(
             style_source_refs: Vec::new(),
             exports,
             dependencies: Vec::new(),
+            unresolved_dependencies: Vec::new(),
             imported_recipe_raw_calls: Vec::new(),
         };
     }
@@ -402,6 +433,7 @@ fn run_extract<'cb>(
             matched: &matched,
             matchers: Some(&config.matchers),
             tokens: config.token_dictionary.as_deref(),
+            prefix: config.class_name_prefix.as_str(),
             cross_file: config
                 .cross_file
                 .as_ref()
@@ -475,6 +507,7 @@ fn run_extract<'cb>(
     token_refs.extend(resolver.take_token_refs());
     let token_refs = dedupe_token_refs(token_refs);
     let dependencies = resolver.take_cross_file_deps();
+    let unresolved_dependencies = resolver.take_unresolved_cross_file_deps();
     let imported_recipe_raw_calls = resolver.take_imported_recipe_raw_calls();
     let module = if retain_transform_facts {
         let local_call_bindings = if calls.is_empty() {
@@ -508,6 +541,7 @@ fn run_extract<'cb>(
         style_source_refs,
         exports,
         dependencies,
+        unresolved_dependencies,
         imported_recipe_raw_calls,
     }
 }
@@ -520,11 +554,12 @@ fn run_extract<'cb>(
 #[must_use]
 pub fn analyze_module(source: &str, path: &str) -> ModuleFacts {
     let allocator = Allocator::default();
-    let adapted = crate::adapt_source(source, path);
+    let format = crate::adapter::SfcFormat::from_path(path);
+    let adapted = crate::adapt_source(source, format);
     let source = adapted.as_ref();
     let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
     let parser_return = Parser::new(&allocator, source, source_type)
-        .with_options(crate::adapter::parse_options_for(path))
+        .with_options(crate::adapter::parse_options_for(format))
         .parse();
     let imports = collect_imports(&parser_return.program);
     let after_directives = module_after_directives(&parser_return.program, source);
@@ -534,6 +569,7 @@ pub fn analyze_module(source: &str, path: &str) -> ModuleFacts {
         matched: &matched,
         matchers: None,
         tokens: None,
+        prefix: "",
         cross_file: None,
         source_path: None,
         line_index: None,

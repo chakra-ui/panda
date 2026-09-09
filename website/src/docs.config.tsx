@@ -1,14 +1,21 @@
 export interface TeamMember {
   login: string
   role: string
+  /** Advisors shaped the work Panda stands on, but don't maintain it today. */
+  status: 'maintainer' | 'advisor'
 }
 
 export const teamMembers: TeamMember[] = [
-  { login: 'segunadebayo', role: 'Creator & Maintainer' },
-  { login: 'astahmer', role: 'Creator' },
-  { login: 'cschroeter', role: 'Creator @ Park UI' },
-  { login: 'anubra266', role: 'Creator @ Tark UI' },
-  { login: 'estheragbaje', role: 'Developer Marketing' }
+  {
+    login: 'segunadebayo',
+    role: 'Creator & Lead Maintainer',
+    status: 'maintainer'
+  },
+  { login: 'Adebesin-Cell', role: 'Maintainer', status: 'maintainer' },
+  { login: 'anubra266', role: 'Creator, Tark UI', status: 'advisor' },
+  { login: 'astahmer', role: 'Creator', status: 'advisor' },
+  { login: 'cschroeter', role: 'Creator @ Park UI', status: 'advisor' },
+  { login: 'estheragbaje', role: 'Developer Marketing', status: 'maintainer' }
 ]
 
 export interface NavItem {
@@ -24,12 +31,8 @@ export interface NavItem {
 }
 
 /**
- * A top-level tab in the docs shell (Styling / Theming / Design Systems / Reference).
- * `items` is a flat list of groups; each group's own `items` are pages. Only the
- * page's `url` contributes to the route: it's `${tab.key}/${page.url}`, since
- * Phase 2 flattened content so every page sits directly under its tab's content
- * directory (no group-level subdirectory). A group's `url` is unused for routing,
- * it exists purely as a sidebar label.
+ * Routes are `${tab.key}/${page.url}`; a group's own `url` is never routed, it
+ * is only a sidebar label.
  */
 export interface TabItem {
   key: string
@@ -93,82 +96,148 @@ export const docsConfig: DocsConfig = {
 
 export const docsTabs: TabItem[] = [
   {
-    key: 'styling',
-    title: 'Styling',
+    key: 'get-started',
+    title: 'Get Started',
     side: 'left',
     items: [
       {
-        title: 'Get Started',
+        title: 'Overview',
         items: [
-          { title: 'Welcome to Panda', url: 'getting-started' },
-          { title: 'Installation', url: 'installation' },
+          { title: 'Welcome to Panda', href: '/docs' },
+          { title: 'Why Panda', url: 'getting-started' },
           { title: 'Thinking in Panda', url: 'thinking-in-panda' },
           { title: 'FAQs', url: 'faq' },
-          { title: 'Browser Support', url: 'browser-support' },
-          { title: 'How Panda works', url: 'how-panda-works' },
-          { title: 'Performance & Optimization', url: 'performance-optimization' },
-          { title: 'Upgrading to v2', url: 'upgrading-to-v2' },
-          { title: 'The Compiler Engine', url: 'compiler-engine' },
-          {
-            title: 'Roadmap',
-            href: 'https://panda-css.canny.io/',
-            external: true
-          },
-          {
-            title: 'Changelog',
-            href: 'https://github.com/chakra-ui/panda/blob/main/CHANGELOG.md',
-            external: true
-          }
+          { title: 'Upgrading to v2', url: 'upgrading-to-v2' }
         ]
       },
       {
-        title: 'AI for Agents',
-        tag: 'new',
+        title: 'Installation',
         items: [
-          { title: 'LLMs.txt', url: 'llms-txt' },
+          { title: 'CLI', url: 'cli' },
+          { title: 'PostCSS', url: 'postcss' },
+          { title: 'Framework Guides', url: 'framework-guides' },
+          { title: 'Storybook', url: 'storybook' },
+          { title: 'Linting', url: 'linting' }
+        ]
+      },
+      {
+        title: 'Using AI',
+        items: [
           { title: 'MCP Server', url: 'mcp-server' },
+          { title: 'LLMs.txt', url: 'llms-txt' },
           { title: 'Agent Skills', url: 'agent-skills' }
-        ]
-      },
-      {
-        title: 'Core Concepts',
-        items: [
-          { title: 'Writing Styles', url: 'writing-styles' },
-          { title: 'Conditional Styles', url: 'conditional-styles' },
-          { title: 'Responsive Design', url: 'responsive-design' },
-          { title: 'Merging Styles', url: 'merging-styles' },
-          { title: 'Global Styles', url: 'global-styles' },
-          { title: 'Cascade Layers', url: 'cascade-layers' },
-          { title: 'Dynamic Styles', url: 'dynamic-styling' },
-          { title: 'Virtual Color', url: 'virtual-color' },
-          { title: 'Color opacity modifier', url: 'color-opacity-modifier' }
-        ]
-      },
-      {
-        title: 'Styling APIs',
-        items: [
-          { title: 'Patterns', url: 'patterns' },
-          { title: 'Recipes', url: 'recipes' },
-          { title: 'Slot Recipes', url: 'slot-recipes' },
-          { title: 'Template Literals', url: 'template-literals' },
-          { title: 'JSX Style Props', url: 'style-props' },
-          { title: 'JSX Style Context', url: 'jsx-style-context' },
-          { title: 'Styled System', url: 'styled-system' },
-          { title: 'The extend keyword', url: 'extend' },
-          { title: 'View Transition', url: 'view-transition', tag: 'new' }
         ]
       },
       {
         title: 'Migration',
         items: [
-          { title: 'Migration strategy', url: 'migration-strategy' },
+          { title: 'StyleX', url: 'stylex' },
           { title: 'Tailwind CSS', url: 'tailwind' },
-          { title: 'Chakra UI', url: 'chakra-ui' },
-          { title: 'Stitches', url: 'stitches' },
           { title: 'Styled Components', url: 'styled-components' },
           { title: 'Emotion', url: 'emotion' },
-          { title: 'Theme UI', url: 'theme-ui' },
-          { title: 'StyleX', url: 'stylex' }
+          { title: 'Chakra UI', url: 'chakra-ui' }
+        ]
+      },
+      {
+        title: 'Frameworks',
+        items: [
+          { title: 'Next.js', url: 'nextjs' },
+          { title: 'Vite', url: 'vite' },
+          { title: 'Bun', url: 'bun' },
+          { title: 'Vue', url: 'vue' },
+          { title: 'Nuxt', url: 'nuxt' },
+          { title: 'Astro', url: 'astro' },
+          { title: 'Svelte', url: 'svelte' },
+          { title: 'React Router', url: 'react-router' },
+          { title: 'Remix', url: 'remix' },
+          { title: 'SolidJS', url: 'solidjs' },
+          { title: 'Qwik', url: 'qwik' },
+          { title: 'Preact', url: 'preact' },
+          { title: 'Angular', url: 'angular' },
+          { title: 'Rsbuild', url: 'rsbuild' },
+          { title: 'Gatsby', url: 'gatsby' },
+          { title: 'Ember', url: 'ember' },
+          { title: 'Redwood', url: 'redwood' }
+        ]
+      }
+    ]
+  },
+  {
+    key: 'styling',
+    title: 'Styling',
+    side: 'left',
+    items: [
+      {
+        title: 'Write styles',
+        items: [
+          { title: 'Overview', url: 'overview' },
+          { title: 'Writing Styles', url: 'writing-styles' },
+          { title: 'Conditional Styles', url: 'conditional-styles' },
+          { title: 'Responsive Design', url: 'responsive-design' },
+          { title: 'Layout Patterns', url: 'patterns' },
+          { title: 'Merging Styles', url: 'merging-styles' }
+        ]
+      },
+      {
+        title: 'JSX',
+        items: [
+          { title: 'Style props', url: 'style-props' },
+          { title: 'Extraction rules', url: 'extraction-rules' }
+        ]
+      },
+      {
+        title: 'Build & output',
+        items: [
+          { title: 'Dynamic Styles', url: 'dynamic-styling' },
+          { title: 'Static CSS Generation', url: 'static' },
+          { title: 'Source Transforms', url: 'source-transforms' },
+          { title: 'Optimization', url: 'optimization' }
+        ]
+      },
+      {
+        title: 'Advanced',
+        items: [
+          { title: 'Global Styles', url: 'global-styles' },
+          { title: 'Color opacity modifier', url: 'color-opacity-modifier' },
+          { title: 'Virtual Color', url: 'virtual-color' },
+          { title: 'Cascade Layers', url: 'cascade-layers' },
+          { title: 'Style isolation', url: 'style-isolation' },
+          { title: 'View Transition', url: 'view-transition' },
+          { title: 'Position Try', url: 'position-try' },
+          { title: 'Keyframes', url: 'keyframes' }
+        ]
+      }
+    ]
+  },
+  {
+    key: 'recipes',
+    title: 'Recipes',
+    side: 'left',
+    items: [
+      {
+        title: 'Write recipes',
+        items: [
+          { title: 'Overview', url: 'overview' },
+          { title: 'Atomic Recipe', url: 'atomic-recipe' },
+          { title: 'Slot Recipe', url: 'slot-recipes' },
+          { title: 'Config Recipe', url: 'config-recipe' }
+        ]
+      },
+      {
+        title: 'Variants',
+        items: [
+          { title: 'Compound variants', url: 'compound-variants' },
+          { title: 'Dynamic variants', url: 'dynamic-variants' },
+          { title: 'Responsive variants', url: 'responsive-variants' }
+        ]
+      },
+      {
+        title: 'JSX Usage',
+        items: [
+          { title: 'Styled factory', url: 'styled-factory' },
+          { title: 'Recipe context', url: 'recipe-context' },
+          { title: 'Slot recipe context', url: 'slot-recipe-context' },
+          { title: 'Tracking JSX', url: 'jsx-tracking' }
         ]
       }
     ]
@@ -179,10 +248,12 @@ export const docsTabs: TabItem[] = [
     side: 'left',
     items: [
       {
-        title: 'Tokens',
+        title: 'Theme',
         items: [
+          { title: 'Default Theme', url: 'theme' },
           { title: 'Tokens', url: 'tokens' },
-          { title: 'Token Usage', url: 'usage' }
+          { title: 'Token Categories', url: 'token-categories' },
+          { title: 'Multiple Themes', url: 'multiple-themes' }
         ]
       },
       {
@@ -194,19 +265,23 @@ export const docsTabs: TabItem[] = [
         ]
       },
       {
-        title: 'Themes',
+        title: 'Customization',
         items: [
-          { title: 'Theme', url: 'theme' },
-          { title: 'Custom Fonts', url: 'fonts' },
-          { title: 'Multiple Themes', url: 'multiple-themes' }
+          { title: 'Utilities', url: 'utilities' },
+          { title: 'Conditions', url: 'conditions' },
+          { title: 'Patterns', url: 'patterns' },
+          { title: 'Presets', url: 'presets' },
+          { title: 'Plugins', url: 'plugins' }
         ]
       },
       {
-        title: 'Tooling',
+        title: 'Guides',
         items: [
-          { title: 'Spec', url: 'spec', tag: 'new' },
-          { title: 'Panda Studio', url: 'studio' },
-          { title: 'Panda Studio in v2', url: 'studio-v2' }
+          { title: 'Custom Fonts', url: 'fonts' },
+          { title: 'Typography', url: 'typography' },
+          { title: 'Minimal Setup', url: 'minimal-setup' },
+          { title: 'JSON Spec', url: 'json-spec' },
+          { title: 'Studio', url: 'studio' }
         ]
       }
     ]
@@ -217,58 +292,74 @@ export const docsTabs: TabItem[] = [
     side: 'left',
     items: [
       {
-        title: 'Component Library',
+        title: 'Start',
         items: [
           { title: 'Overview', url: 'overview' },
-          { title: 'Set up a library package', url: 'setup' },
-          { title: 'Wrap headless UI', url: 'wrap-headless-ui' },
-          { title: 'forwardProps & the styled factory', url: 'forward-props' },
-          { title: 'Isolated Declarations', url: 'isolated-declarations' },
-          { title: 'Ship the styled-system vs the CSS', url: 'ship-styled-system' },
-          { title: 'Track usage in wrapped components', url: 'track-usage' },
+          { title: 'Build a design system', url: 'build-a-design-system' },
+          { title: 'Consume with Panda', url: 'consume-with-panda' },
+          { title: 'Consume without Panda', url: 'consume-without-panda' },
+          {
+            title: 'Examples',
+            href: 'https://github.com/chakra-ui/panda-examples',
+            external: true
+          }
+        ]
+      },
+      {
+        title: 'Write components',
+        items: [
+          { title: 'Wrap headless libraries', url: 'wrap-headless-libraries' },
+          { title: 'Isolated declarations', url: 'isolated-declarations' }
+        ]
+      },
+      {
+        title: 'Ship the library',
+        items: [
+          { title: 'Monorepo workflow', url: 'monorepo-workflow' },
+          { title: 'Publishing', url: 'publishing' },
+          { title: 'Storybook', url: 'storybook' },
           { title: 'Troubleshooting', url: 'troubleshooting' }
         ]
       },
       {
-        title: 'Design System (preset)',
+        title: 'Governance',
         items: [
-          { title: 'Overview', url: 'preset-overview' },
-          { title: 'Build a design system', url: 'building-a-design-system' },
-          { title: 'Consume a design system', url: 'consuming-a-design-system' }
-        ]
-      },
-      {
-        title: 'Customization',
-        items: [
-          { title: 'Utilities', url: 'utilities' },
-          { title: 'Conditions', url: 'conditions' },
-          { title: 'Patterns', url: 'patterns' },
-          { title: 'Presets', url: 'presets' },
-          { title: 'Hooks', url: 'hooks' },
-          { title: 'Config Functions', url: 'config-functions' },
-          { title: 'Ecosystem Plugins', url: 'ecosystem-plugins' }
-        ]
-      },
-      {
-        title: 'Distribution & Scale',
-        items: [
-          { title: 'Shared styled-system in a monorepo', url: 'shared-styled-system' },
-          { title: 'Publishing to npm', url: 'publishing-to-npm' },
-          { title: 'Avoiding CSS collisions', url: 'avoiding-collisions' },
-          { title: 'Monorepo dev workflow', url: 'monorepo-dev-workflow' },
-          { title: 'Federated Micro-Frontends', url: 'federated-microfrontends' },
-          { title: 'Static CSS Generation', url: 'static' },
-          { title: 'Minimal Setup', url: 'minimal-setup' },
-          { title: 'Environment-specific config', url: 'environment-specific-config' }
+          { title: 'Linting', url: 'linting' },
+          { title: 'Deprecations', url: 'deprecations' },
+          { title: 'Analyze Usage', url: 'analyze' }
         ]
       }
     ]
   },
   {
     key: 'reference',
-    title: 'References',
+    title: 'Reference',
     side: 'right',
     items: [
+      {
+        title: 'CLI & Config',
+        items: [
+          { title: 'CLI', url: 'cli' },
+          { title: 'Config', url: 'config' },
+          { title: 'Config Functions', url: 'config-functions' },
+          { title: 'Plugins', url: 'plugins' },
+          { title: 'Debugging', url: 'debugging' },
+          { title: 'Diagnostics', url: 'diagnostics' },
+          { title: 'Deprecations', url: 'deprecations' }
+        ]
+      },
+      {
+        title: 'Styled System',
+        items: [
+          { title: 'Overview', url: 'styled-system' },
+          { title: 'css/', url: 'css' },
+          { title: 'patterns/', url: 'patterns' },
+          { title: 'recipes/', url: 'recipes' },
+          { title: 'jsx/', url: 'jsx' },
+          { title: 'tokens/', url: 'tokens' },
+          { title: 'types/', url: 'types' }
+        ]
+      },
       {
         title: 'Utility Reference',
         items: [
@@ -294,67 +385,35 @@ export const docsTabs: TabItem[] = [
           { title: 'Transitions', url: 'transitions' },
           { title: 'Typography', url: 'typography' }
         ]
-      },
-      {
-        title: 'CLI, Config & Tools',
-        items: [
-          { title: 'CLI', url: 'cli' },
-          { title: 'Config', url: 'config' },
-          { title: 'Deprecations', url: 'deprecations' },
-          { title: 'Debugging', url: 'debugging' },
-          { title: 'Diagnostics Reference', url: 'diagnostics' },
-          { title: 'ESLint & OXLint Plugin', url: 'eslint-oxlint-plugin' },
-          { title: 'Editor & IDE Tooling', url: 'editor-tooling' }
-        ]
       }
     ]
   }
 ]
 
-/** Look up a tab by its URL key (the first `/docs/:key` segment). */
 export function getTab(key: string): TabItem | undefined {
   return docsTabs.find(tab => tab.key === key)
 }
 
-export const defaultTabKey = 'styling'
+/** Tabs that jump straight into content instead of an index page. */
+const TAB_LANDING_HREF: Record<string, string> = {
+  'get-started': '/docs',
+  styling: '/docs/styling/overview',
+  recipes: '/docs/recipes/overview',
+  theming: '/docs/theming/theme',
+  'design-systems': '/docs/design-systems/overview'
+}
+
+/** Unlisted tabs fall back to the tab root, which redirects onward. */
+export function tabLandingHref(tabKey: string): string {
+  return TAB_LANDING_HREF[tabKey] ?? `/docs/${tabKey}`
+}
+
+export const defaultTabKey = 'get-started'
 
 /**
- * Links shown in the TabBar's "Community" dropdown. Team and Showcase also
- * exist in the persistent top-level site nav today, that's expected to be
- * reworked/scrapped later, so they stay here deliberately rather than being
- * treated as a duplicate to remove. GitHub is left out since it's a permanent
- * icon link in the top nav with no plan to change that. Roadmap and Changelog
- * live in Styling ▸ Get Started instead, they're product tracking, not
- * community.
+ * Team and Showcase repeat the top-level nav on purpose, pending its rework.
+ * GitHub is left out; it has a permanent icon link up there.
  */
-/**
- * Page urls whose canonical home is the Installation page's tabs (CLI, PostCSS,
- * Framework Guides, Storybook), even though they aren't listed as their own
- * sidebar items. The sidebar and breadcrumb use this to keep "Installation"
- * highlighted/shown instead of the raw page url when viewing one of these.
- */
-export const installationGuideUrls = [
-  'cli',
-  'postcss',
-  'storybook',
-  'astro',
-  'angular',
-  'nextjs',
-  'remix',
-  'react-router',
-  'gatsby',
-  'ember',
-  'redwood',
-  'rsbuild',
-  'qwik',
-  'vite',
-  'vue',
-  'nuxt',
-  'preact',
-  'solidjs',
-  'svelte'
-]
-
 export const communityLinks: NavItem[] = [
   { title: 'Team', href: '/team' },
   { title: 'Showcase', href: '/showcase' },

@@ -5,8 +5,8 @@ use pandacss_codegen::{
     ArtifactGraph, ArtifactId, CodegenInput, GenerateOptions, PatternCodegenMeta,
 };
 use pandacss_config::{
-    CodegenFormat, CssSyntaxKind, PrimitiveType, TypeData, UserConfig, UtilityPropertyTypeData,
-    UtilityTypeData, ValueAliasTypeData, ValueTypePart,
+    CodegenFormat, PrimitiveType, TypeData, UserConfig, UtilityPropertyTypeData, UtilityTypeData,
+    ValueAliasTypeData, ValueTypePart,
 };
 use std::collections::BTreeMap;
 
@@ -396,14 +396,4 @@ fn can_emit_import_extensions() {
         "}
         .trim()
     );
-}
-
-#[test]
-fn template_literal_syntax_skips_patterns_artifact() {
-    let mut config = config();
-    config.syntax = CssSyntaxKind::TemplateLiteral;
-    let artifacts = ArtifactGraph.generate_with_config(&config, GenerateOptions::default());
-    let patterns = artifact(&artifacts, ArtifactId::Patterns);
-
-    assert!(paths(patterns).is_empty());
 }

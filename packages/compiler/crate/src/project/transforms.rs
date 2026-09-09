@@ -120,6 +120,10 @@ pub(super) fn resolve_utility_values_callbacks(
                     err.reason
                 ))
             })?;
+        if result.is_null() {
+            utility.values = None;
+            continue;
+        }
         utility.values = Some(serde_json::from_value(result).map_err(|err| {
             napi::Error::from_reason(format!(
                 "Utility values callback `{id}` for `{prop}` returned invalid values: {err}"

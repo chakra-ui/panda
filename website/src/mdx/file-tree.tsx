@@ -1,3 +1,5 @@
+'use client'
+
 import { css, cx } from '@/styled-system/css'
 import { createContext, memo, useCallback, useContext, useState } from 'react'
 
@@ -132,7 +134,7 @@ const File = memo<FileProps>(({ label, name, active }) => (
   <li
     className={cx(
       css({ display: 'flex', listStyle: 'none' }),
-      active && css({ color: 'primary.600' })
+      active && css({ color: 'link' })
     )}
   >
     <a
@@ -160,4 +162,6 @@ const File = memo<FileProps>(({ label, name, active }) => (
 ))
 File.displayName = 'File'
 
-export const FileTree = Object.assign(Tree, { Folder, File })
+// The compound `FileTree.Folder` shape is assembled in the MDX component map:
+// dot-access doesn't survive the client boundary.
+export { Tree as FileTreeRoot, Folder as FileTreeFolder, File as FileTreeFile }

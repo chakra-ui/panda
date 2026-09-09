@@ -160,5 +160,9 @@ export const keyframes = defineKeyframes({
     to: {
       scale: '0.95'
     }
+  },
+  marqueeScroll: {
+    from: { transform: 'translateX(0)' },
+    to: { transform: 'translateX(var(--marquee-translate))' }
   }
 })

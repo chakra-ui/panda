@@ -3,7 +3,7 @@ import { existsSync, realpathSync } from 'node:fs'
 import { mkdir, unlink, writeFile } from 'node:fs/promises'
 import { builtinModules } from 'node:module'
 import { tmpdir } from 'node:os'
-import { dirname, isAbsolute, join, normalize, relative } from 'node:path'
+import { basename, dirname, isAbsolute, join, normalize, relative } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import type { RolldownOutput } from 'rolldown'
 import { importMetaUrlPlugin } from './bundle-plugins'
@@ -61,6 +61,8 @@ export async function bundleConfig<T extends Config = Config>(
 async function loadBundledModule(filepath: string, code: string): Promise<Record<string, unknown>> {
   const target = tempTargetFor(filepath)
 
+  let evalError: unknown
+
   if (target) {
     try {
       await mkdir(dirname(target), { recursive: true })
@@ -70,13 +72,24 @@ async function loadBundledModule(filepath: string, code: string): Promise<Record
       } finally {
         void unlink(target).catch(() => undefined)
       }
-    } catch {
-      // fall through to the data: URL loader
+    } catch (error) {
+      // Keep config evaluation errors: they name real paths, unlike the data: URL retry.
+      if (!isUnresolvedTempModule(error, target)) evalError = error
     }
   }
 
   const dataUrl = `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
-  return (await import(/* @vite-ignore */ dataUrl)) as Record<string, unknown>
+
+  try {
+    return (await import(/* @vite-ignore */ dataUrl)) as Record<string, unknown>
+  } catch (error) {
+    throw evalError ?? error
+  }
+}
+
+function isUnresolvedTempModule(error: unknown, target: string): boolean {
+  const message = error instanceof Error ? error.message : ''
+  return message.includes('Cannot find module') && message.includes(basename(target))
 }
 
 function tempTargetFor(filepath: string): string | undefined {

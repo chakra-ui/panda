@@ -179,3 +179,110 @@ fn applies_prefix_when_utilities_map_is_empty() {
     export const slide = "pd-vt_gnOaDr";
     "#);
 }
+
+#[test]
+fn rewrites_named_theme_view_transition_to_stable_class() {
+    let project = Project::new(
+        System::new(create_config(json!({
+            "theme": {
+                "viewTransitions": {
+                    "slide": {
+                        "old": { "opacity": 0 },
+                        "new": { "opacity": 1 },
+                    },
+                },
+            },
+        })))
+        .expect("config"),
+    );
+    let source = indoc! {r#"
+        import { viewTransition } from '@panda/css';
+        export const slide = viewTransition('slide');
+    "#};
+
+    let output = transform_with_project(&project, "src/vt.ts", source);
+
+    assert!(output.changed);
+    assert!(!output.code.contains("viewTransition("));
+    assert!(!output.code.contains("@panda/css"));
+    assert_snapshot!(output.code, @r#"
+    export const slide = "vt_slide";
+    "#);
+}
+
+#[test]
+fn leaves_unknown_theme_view_transition_name_unchanged() {
+    let project = Project::new(
+        System::new(create_config(json!({
+            "theme": {
+                "viewTransitions": {
+                    "slide": { "old": { "opacity": 0 } },
+                },
+            },
+        })))
+        .expect("config"),
+    );
+    let source = indoc! {r#"
+        import { viewTransition } from '@panda/css';
+        export const missing = viewTransition('fade');
+    "#};
+
+    let output = transform_with_project(&project, "src/vt.ts", source);
+
+    assert!(!output.changed);
+    assert_eq!(output.code, source);
+}
+
+#[test]
+fn applies_prefix_to_named_theme_view_transition() {
+    let project = Project::new(
+        System::new(create_config(json!({
+            "prefix": "p",
+            "theme": {
+                "viewTransitions": {
+                    "slide": { "old": { "opacity": 0 } },
+                },
+            },
+        })))
+        .expect("config"),
+    );
+    let source = indoc! {r#"
+        import { viewTransition } from '@panda/css';
+        export const slide = viewTransition('slide');
+    "#};
+
+    let output = transform_with_project(&project, "src/vt.ts", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    export const slide = "p-vt_slide";
+    "#);
+}
+
+#[test]
+fn rewrites_same_file_const_name_to_theme_class() {
+    let project = Project::new(
+        System::new(create_config(json!({
+            "theme": {
+                "viewTransitions": {
+                    "slide": { "old": { "opacity": 0 } },
+                },
+            },
+        })))
+        .expect("config"),
+    );
+    let source = indoc! {r#"
+        import { viewTransition } from '@panda/css';
+        const name = 'slide';
+        export const slide = viewTransition(name);
+    "#};
+
+    let output = transform_with_project(&project, "src/vt.ts", source);
+
+    assert!(output.changed);
+    assert!(!output.code.contains("viewTransition("));
+    assert_snapshot!(output.code, @r#"
+    const name = 'slide';
+    export const slide = "vt_slide";
+    "#);
+}

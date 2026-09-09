@@ -1,0 +1,92 @@
+---
+title: Minimal setup
+description: Start with zero tokens and zero utilities, and add back only what you need.
+---
+
+`panda init` scaffolds `presets: ['@pandacss/preset-base', '@pandacss/preset-panda']` by default, so a fresh project
+already has a full token set and every built-in utility. This page is for the opposite case: you want to define your
+own tokens and only the utilities you actually use, nothing pulled in for you.
+
+## Start from zero
+
+Run `panda init --skip-presets` instead of a plain `panda init`, and your config comes out with an empty `presets`
+array. If you already ran `panda init`, get the same result by hand:
+
+```ts
+export default defineConfig({
+  // ...
+  presets: []
+})
+```
+
+Panda doesn't add `@pandacss/preset-base` or `@pandacss/preset-panda` on its own, ever. `presets: []` (or
+`--skip-presets`) just skips the two `panda init` would have added for you.
+
+## Add your own tokens
+
+With no preset, `theme.tokens` isn't extending anything, so you write your full token set directly (no `extend` key
+needed):
+
+```ts
+export default defineConfig({
+  // ...
+  presets: [],
+  theme: {
+    tokens: {
+      colors: {
+        primary: { value: '#ff0000' }
+      }
+    }
+  }
+})
+```
+
+## Wire a token to a CSS property
+
+A token by itself isn't usable in `css()` yet. `@pandacss/preset-base` is what maps a CSS property like `color` to a
+token category like `colors`, so without it, you have to tell Panda that mapping yourself:
+
+```ts
+export default defineConfig({
+  // ...
+  presets: [],
+  utilities: {
+    color: {
+      values: 'colors'
+    }
+  },
+  theme: {
+    tokens: {
+      colors: {
+        primary: { value: '#ff0000' }
+      }
+    }
+  }
+})
+```
+
+That's what makes `css({ color: 'primary' })` resolve to your token instead of erroring or falling through to a raw
+CSS value.
+
+## Add a preset back selectively
+
+You don't have to choose all-or-nothing. Add `@pandacss/preset-base` back once you want its utilities without its
+opinions, and skip `@pandacss/preset-panda` (the token set) entirely if you're only after your own colors and
+spacing:
+
+```ts
+export default defineConfig({
+  // ...
+  presets: ['@pandacss/preset-base']
+})
+```
+
+`@pandacss/preset-panda` is the other direction: an opinionated token set, no strong utility choices of its own.
+Install and list whichever ones you actually want:
+
+```ts
+export default defineConfig({
+  // ...
+  presets: ['@pandacss/preset-panda']
+})
+```

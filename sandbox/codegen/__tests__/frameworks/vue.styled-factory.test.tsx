@@ -1,7 +1,6 @@
 /** @jsxImportSource vue */
 import { describe, expect, test } from 'vitest'
 import { Box, Stack, styled } from '../../styled-system-vue/jsx'
-import '@testing-library/jest-dom/vitest'
 import { render } from '@testing-library/vue'
 import { buttonWithCompoundVariants } from '../../styled-system-vue/recipes'
 

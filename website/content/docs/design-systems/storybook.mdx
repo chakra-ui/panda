@@ -1,0 +1,125 @@
+---
+title: Storybook
+description: Include stories, emit every variant you click, and keep production CSS lean.
+---
+
+Storybook for a design system is a Panda project that renders your package. Production may or may not run Panda.
+Stories always do, if they call recipes.
+
+This page covers the package's own stories. To add Panda to an app that already has Storybook, use
+[Using Storybook](/docs/get-started/storybook).
+
+## Include the story files
+
+Panda only emits what it can see. Put stories on `include`.
+
+```ts filename="packages/ds/panda.config.ts"
+export default defineConfig({
+  include: [
+    'src/**/*.{ts,tsx}',
+    '.storybook/**/*.{ts,tsx}',
+    'src/**/*.stories.tsx'
+  ]
+})
+```
+
+A literal in a story is enough:
+
+```tsx filename="src/button/button.stories.tsx"
+import type { Meta, StoryObj } from '@storybook/react'
+import { Button } from './button'
+
+const meta: Meta<typeof Button> = { component: Button }
+export default meta
+
+export const Large: StoryObj<typeof Button> = {
+  args: { size: 'lg', children: 'Save' }
+}
+```
+
+```tsx
+<Button size="lg">Save</Button>
+```
+
+Both extract. `size={size}` from a knob does not. See
+[Dynamic variants](/docs/recipes/dynamic-variants).
+
+## Emit every recipe variant
+
+If stories pass variants from controls, pre-generate them. Fine in Storybook. Heavy in a production app.
+
+```ts filename="packages/ds/panda.config.ts"
+export default defineConfig({
+  include: ['src/**/*.{ts,tsx}', 'src/**/*.stories.tsx'],
+  staticCss: {
+    recipes: '*'
+  }
+})
+```
+
+Or only the recipes you document:
+
+```ts filename="packages/ds/panda.config.ts"
+export default defineConfig({
+  staticCss: {
+    recipes: {
+      button: ['*'],
+      card: ['*']
+    }
+  }
+})
+```
+
+Do not copy `recipes: '*'` into the production app's config. That is the usual "Storybook looks complete, the app
+CSS is huge" mistake.
+
+## Point Storybook at the design system
+
+When stories live in an app that consumes the package:
+
+```ts filename="apps/docs/panda.config.ts"
+export default defineConfig({
+  designSystem: '@acme/ds',
+  include: ['src/**/*.{ts,tsx}', '.storybook/**/*.{ts,tsx}'],
+  staticCss: {
+    recipes: '*'
+  }
+})
+```
+
+When stories live **in** the library, `designSystem` is not set. The library **is** the design system. Run
+`panda codegen` and `panda lib --watch` (or `cssgen`) next to Storybook.
+
+## Why the app looks blank
+
+```tsx
+// story: literal. CSS emits.
+export const Large = { args: { size: 'lg' } }
+
+// app: a prop. extract sees nothing.
+<Button size={props.size}>Save</Button>
+```
+
+Storybook had a literal. The app passed a variable. Fix it in the app with a literal, or with a narrow
+`staticCss` rule. Do not "fix" it by shipping every variant to production.
+
+## Import the CSS
+
+```ts filename=".storybook/preview.ts"
+import '../styled-system/styles.css'
+import type { Preview } from '@storybook/react'
+
+const preview: Preview = {}
+export default preview
+```
+
+If production is [Consume without Panda](/docs/design-systems/consume-without-panda), Storybook can import the same
+`dist/styles.css` you publish. The controls path still needs `staticCss` or literals, because that file is frozen
+at `cssgen` time.
+
+## See also
+
+- [Using Storybook](/docs/get-started/storybook) for PostCSS and Vite setup
+- [Static CSS](/docs/styling/static)
+- [Dynamic variants](/docs/recipes/dynamic-variants)
+- [Monorepo workflow](/docs/design-systems/monorepo-workflow)

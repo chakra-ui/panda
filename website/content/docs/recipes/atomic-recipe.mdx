@@ -1,0 +1,184 @@
+---
+title: Atomic Recipe
+description: Colocated multi-variant styles with cva. Every variant emits as atomic CSS when you define the recipe.
+---
+
+`cva` is the recipe you write next to the component. Pass it base styles and named variants, call the result with
+`{ size: 'lg' }`, get a class string. Panda extracts the definition, so every variant becomes atomic utilities
+whether you use them or not.
+
+This is not [Class Variance Authority](https://cva.style/). Same idea, Panda's function: it talks to your tokens
+and utilities.
+
+<Callout type="info">
+  If the recipe is shared across apps or a preset, use a [config recipe](/docs/recipes/config-recipe) instead.
+</Callout>
+
+## Defining the recipe
+
+```tsx
+import { cva } from '../styled-system/css'
+
+const button = cva({
+  base: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    rounded: 'md',
+    fontWeight: 'semibold'
+  },
+  variants: {
+    visual: {
+      solid: { bg: 'blue.500', color: 'white' },
+      outline: { borderWidth: '1px', borderColor: 'blue.500', color: 'blue.500' }
+    },
+    size: {
+      sm: { px: '3', py: '1.5', fontSize: 'sm' },
+      lg: { px: '5', py: '3', fontSize: 'md' }
+    }
+  },
+  defaultVariants: {
+    visual: 'solid',
+    size: 'sm'
+  }
+})
+```
+
+`base` is always on. `variants` is the map of named variants (`visual`, `size`) to options. `defaultVariants` fills
+in a key when the caller omits it, so `button()` and `button({ size: 'lg' })` both resolve a full look.
+
+`compoundVariants` is for styles that apply only when two variants match. That has its own page:
+[compound variants](/docs/recipes/compound-variants).
+
+## Boolean variants
+
+Keys in the definition are the strings `'true'` and `'false'`. At the call site you pass a real boolean.
+
+```ts
+const button = cva({
+  base: { rounded: 'md' },
+  variants: {
+    outlined: {
+      true: { borderWidth: '1px', borderColor: 'gray.300' }
+    }
+  }
+})
+```
+
+```tsx
+<button className={button({ outlined: true })}>Save</button>
+```
+
+## Using the recipe
+
+```tsx
+export function Button({ visual, size, children }) {
+  return <button className={button({ visual, size })}>{children}</button>
+}
+```
+
+`button()` does not take `css` or `className`. Extra keys like `color: 'red.500'` are ignored. To merge extras, use
+[`raw()`](#using-raw) or wrap the recipe with [`styled()`](/docs/recipes/styled-factory).
+
+## CSS Output
+
+You do not need a literal `button({ size: 'lg' })` somewhere in the app for `lg` to exist. Everything in `base`,
+every variant option, and every compound `css` lands in `@layer utilities` as atoms:
+
+```css
+@layer utilities {
+  .d_inline-flex {
+    display: inline-flex;
+  }
+  .bg_blue\.500 {
+    background-color: var(--colors-blue-500);
+  }
+  .px_3 {
+    padding-inline: var(--spacing-3);
+  }
+}
+```
+
+A ternary inside the definition emits both branches, because both values are literals. A recipe object you build at
+runtime, or import as something that does not fold to an object, is invisible. Panda never ran the code. It only
+read the source.
+
+<Callout type="warning">
+  `cva` has no responsive variant props. `button({ size: { base: 'sm', md: 'lg' } })` does not resolve. See
+  [responsive variants](/docs/recipes/responsive-variants).
+</Callout>
+
+## Using raw()
+
+`button()` returns a class string. `button.raw()` returns the resolved style object. Pass that into `css()` with
+other style objects. Later keys win.
+
+```tsx
+import { css, cx } from '../styled-system/css'
+
+css(button.raw({ size: 'sm' }), { color: 'red.500' })
+```
+
+A wrapper that takes a `css` prop does the same thing:
+
+```tsx
+export function Button({ visual, size, css: cssProp, children }) {
+  return (
+    <button className={css(button.raw({ visual, size }), cssProp)}>{children}</button>
+  )
+}
+```
+
+Already have class strings? Skip `raw()` and concatenate:
+
+```tsx
+cx(button({ size: 'sm' }), css({ color: 'red.500' }))
+```
+
+## Exported Types
+
+`RecipeVariant` makes every key required. `RecipeVariantProps` makes them optional, which is what you want for JSX
+props.
+
+```ts
+import { cva, type RecipeVariant, type RecipeVariantProps } from '../styled-system/css'
+
+type ButtonVariant = RecipeVariant<typeof button>
+// { visual: 'solid' | 'outline'; size: 'sm' | 'lg' }
+
+type ButtonProps = RecipeVariantProps<typeof button>
+// { visual?: 'solid' | 'outline'; size?: 'sm' | 'lg' }
+```
+
+## Helpers
+
+```ts
+button.variantKeys
+// ['visual', 'size']
+
+button.variantMap
+// { visual: ['solid', 'outline'], size: ['sm', 'lg'] }
+
+button.splitVariantProps({ size: 'sm', onClick() {} })
+// [{ size: 'sm' }, { onClick() {} }]
+
+button.getVariantProps({ size: 'lg' })
+// { visual: 'solid', size: 'lg' }
+
+button.raw({ size: 'sm' })
+// { display: 'inline-flex', ..., px: '3', py: '1.5', fontSize: 'sm' }
+```
+
+`splitVariantProps` is the one you want in a wrapper, so `onClick` never looks like a variant. `variantMap` is
+handy for Storybook `argTypes`. `merge(other)` combines two `cva` recipes. `config` is the original definition.
+`raw()` is covered above.
+
+To wrap a headless or third-party component, use [Recipe context](/docs/recipes/recipe-context).
+
+## See also
+
+- [Recipes overview](/docs/recipes/overview)
+- [Merging styles](/docs/styling/merging-styles)
+- [Styled factory](/docs/recipes/styled-factory)
+- [Recipe context](/docs/recipes/recipe-context)
+- [Compound variants](/docs/recipes/compound-variants)
+- [cva() reference](/docs/reference/css#cva)

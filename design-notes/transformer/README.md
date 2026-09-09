@@ -31,8 +31,8 @@ What ships on the v2 branch today:
 | `@pandacss/vite` / `webpack` / `rollup` | CSS-root, codegen, and HMR by default; source rewrite via `transform: true`          |
 | Internal runtime module                 | `@pandacss-internal/css` → `\0pandacss:internal:css`; symbols injected on demand     |
 
-Runtime symbols today: `cx as __pcx`, `cva as __pcva`, `sva as __psva`. Inline `cva()` / `sva()` / `styled()` rewrites
-bail when per-slot variant classes would diverge (runtime expects one shared string per option).
+Runtime symbols today: `cx as __pcx`, `cva as __pcva`, `sva as __psva`. An inline `sva()` variant option encodes
+to one string when it styles every slot alike, otherwise to a per-slot map the runtime projects onto each slot.
 
 Options and bindings use `helper.cx` and `needsCx` / `needsCva` / `needsSva` for internal runtime demand.
 
@@ -848,8 +848,10 @@ an element's own `css` prop replaces the default wholesale rather than merging p
 `BaseComponent.__base__`, so `Base`'s own `forwardRef` — and its defaults — never run at runtime;
 inheriting only `base` matches that.
 
-The `styled()` definition itself still desugars to `__pcva(…)` as before. After the fold it is
-unreferenced, so bundlers drop it.
+The `styled()` definition itself still desugars to `__pcva(…)` as before. The transform marks both
+the outer `styled()` call and the nested `__pcva()` call as pure. This lets bundlers drop the entire
+definition after the fold, including evaluation of the now-unused recipe config. Transformed
+standalone `cva()` and `sva()` factories carry the same annotation.
 
 ### JSX pattern props
 
@@ -878,6 +880,10 @@ Recipe function calls sit between `css(...)` and JSX recipe elements.
 #### Safe to rewrite
 
 - fully static variant objects
+- config slot recipe calls, printed as an object literal with one class string per slot (base class on every slot,
+  variant classes on every slot, compound classes only where the compound styles that slot)
+- recipe and slot recipe classes formatted like the generated runtime: hashed when `hash.className` is on, then
+  prefixed, with compound names hashed a second time by that step
 - finite conditional variant expressions when every branch maps to known recipe classes
 - conditional variant objects when normalization stays within the branch budget
 - static leftover style props on recipes when those leftovers can be encoded as atomic classes

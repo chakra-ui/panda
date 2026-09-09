@@ -1,0 +1,235 @@
+---
+title: Migrating from Styled Components
+description: Migrate your project from Styled Components to Panda, from tagged templates to typed style objects.
+---
+
+Styled Components computes styles at runtime and has been in maintenance mode since v6; Panda extracts static
+CSS at build time. The one hard boundary: every `` styled.x`...` `` template literal becomes a style object.
+
+## Objects, not template literals
+
+Panda's static extraction reads style objects from your source. It does not parse CSS text, so a tagged template
+never extracts:
+
+```jsx
+import styled from 'styled-components'
+
+// before
+const Button = styled.button`
+  background-color: #fff;
+  border: 1px solid #000;
+  padding: 0.5rem 1rem;
+`
+```
+
+```jsx
+import { styled } from '../styled-system/jsx'
+
+// after: same factory idea, styles in the `base` key
+const Button = styled('button', {
+  base: {
+    backgroundColor: '#fff',
+    border: '1px solid #000',
+    padding: '0.5rem 1rem'
+  }
+})
+```
+
+The factory is generated into `styled-system/jsx` when `jsxFramework: 'react'` is set in your config.
+
+If you already use Styled Components' object syntax, the conversion is just moving styles under `base`. See
+[Styled factory](/docs/recipes/styled-factory).
+
+## Prop interpolation becomes variants
+
+Functions of props are the other thing static extraction can't run:
+
+```jsx
+// before
+const Button = styled.button`
+  ${props => props.color === 'violet' && `background-color: blueviolet;`}
+  ${props => props.color === 'gray' && `background-color: gainsboro;`}
+`
+```
+
+```jsx
+// after: each branch is a typed variant
+const Button = styled('button', {
+  variants: {
+    color: {
+      violet: { backgroundColor: 'blueviolet' },
+      gray: { backgroundColor: 'gainsboro' }
+    }
+  }
+})
+
+<Button color="violet">Button</Button>
+```
+
+A value that only exists at runtime (state, fetched data) can't become a variant; see
+[Dynamic Styles](/docs/styling/dynamic-styling) for what to do instead.
+
+## Theme access to tokens
+
+Styled Components reads a theme through React context, with ambient type declarations for safety:
+
+```tsx
+// before
+const StyledLink = styled.a(({ theme }) => ({
+  color: theme.colors.primary,
+  textDecoration: 'none'
+}))
+```
+
+Panda's tokens live in config, generate their own types, and connect to every CSS property, so the interpolation
+function disappears:
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        colors: {
+          primary: { value: 'blue' }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+const StyledLink = styled('a', {
+  base: {
+    color: 'primary',
+    textDecoration: 'none'
+  }
+})
+```
+
+`ThemeProvider` goes away entirely. See [Tokens](/docs/theming/tokens).
+
+## Responsive styles
+
+Hand-written media queries become breakpoint objects:
+
+```tsx
+// before
+const Button = styled.button({
+  padding: '0.5rem 1rem',
+  '@media (min-width: 768px)': { padding: '1rem 2rem' }
+})
+
+// after
+const Button = styled('button', {
+  base: {
+    padding: { base: '0.5rem 1rem', md: '1rem 2rem' }
+  }
+})
+```
+
+See [Responsive Design](/docs/styling/responsive-design).
+
+## Global styles
+
+`createGlobalStyle` becomes the `globalCss` config key, emitted straight into the generated CSS:
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  globalCss: {
+    body: { margin: 0, padding: 0 }
+  }
+})
+```
+
+See [Global Styles](/docs/styling/global-styles).
+
+## Targeting components
+
+Styled Components lets one component target another by interpolating it (`${Link}:hover &`). That relies on
+runtime-generated class identity. In Panda, a parent-driven state is a compound component: model both parts as one
+[slot recipe](/docs/recipes/slot-recipes), where the parent's state styles its slots.
+
+```tsx
+const link = sva({
+  slots: ['root', 'icon'],
+  base: {
+    root: { background: 'papayawhip' },
+    icon: {
+      width: '48px',
+      height: '48px',
+      // the group modifier replaces ${Link}:hover &
+      _groupHover: { fill: 'rebeccapurple' }
+    }
+  }
+})
+```
+
+The parent carries the `group` class that `_groupHover` reads:
+
+```tsx
+const classes = link()
+
+<a className={cx(classes.root, 'group')}>
+  <svg className={classes.icon} />
+</a>
+```
+
+See [Slot Recipes](/docs/recipes/slot-recipes) and [Conditional Styles](/docs/styling/conditional-styles).
+
+## Animations
+
+The `keyframes` helper becomes `theme.keyframes`, referenced by name:
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  theme: {
+    extend: {
+      keyframes: {
+        rotate: {
+          from: { transform: 'rotate(0deg)' },
+          to: { transform: 'rotate(360deg)' }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+const Button = styled('button', {
+  base: {
+    _hover: { animation: 'rotate 200ms' }
+  }
+})
+```
+
+See [Theme](/docs/theming/theme#keyframes) and [Animation Styles](/docs/theming/animation-styles).
+
+## Server-side rendering
+
+Delete it. `ServerStyleSheet`, `collectStyles`, `getStyleTags`, the babel plugin: all of it exists to flush
+runtime-generated styles into server HTML. Panda's CSS is a static file produced at build time, so there is
+nothing to collect and no hydration mismatch to manage.
+
+## Run both during the migration
+
+Panda's CSS ships inside cascade layers and Styled Components' injected styles are unlayered, so legacy styles win
+over converted components by default. See
+[Migrating alongside unlayered CSS](/docs/styling/cascade-layers#migrating-alongside-unlayered-css) for the two
+ways to control which side wins.
+
+## After migrating
+
+- **Drop the styling runtime.** [Source transforms](/docs/styling/source-transforms) rewrite static calls to plain
+  class strings at build time, so after leaving Styled Components' runtime behind, even Panda's small one can go.
+- **Lint against your theme.** The [lint rules](/docs/get-started/linting) flag raw values where a token exists,
+  useful while converting hardcoded template-literal values to tokens.
+
+## See also
+
+- [Migrating from Emotion](/docs/get-started/emotion) if parts of your app use Emotion directly; the `styled`
+  conversion is the same.
+- [Styled factory](/docs/recipes/styled-factory) for the full factory API.

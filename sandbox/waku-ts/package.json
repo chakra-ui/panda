@@ -11,18 +11,18 @@
     "cssgen": "panda cssgen"
   },
   "dependencies": {
-    "react": "19.2.0",
-    "react-dom": "19.2.0",
-    "react-server-dom-webpack": "19.2.0",
-    "waku": "0.27.2"
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-server-dom-webpack": "19.2.8",
+    "waku": "0.27.5"
   },
   "devDependencies": {
     "@pandacss/dev": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
-    "@types/react": "19.2.7",
-    "@types/react-dom": "19.2.3",
-    "postcss": "8.5.14",
-    "typescript": "6.0.2"
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
+    "postcss": "8.5.28",
+    "typescript": "6.0.3"
   }
 }

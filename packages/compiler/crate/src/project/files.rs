@@ -245,11 +245,8 @@ impl Compiler {
         pandacss_fs::matches_globs(std::path::Path::new(&path), &opts)
     }
 
-    /// Read + parse source paths returned from `scan()`. Returns one report per
-    /// successfully parsed path.
-    ///
-    /// # Errors
-    /// Returns an error when a listed path fails to read.
+    /// Read + parse source paths from `scan()`. One report per requested path;
+    /// a read miss keeps last-good state and reports a warning diagnostic.
     #[napi(js_name = parseFiles)]
     #[allow(
         clippy::needless_pass_by_value,
@@ -263,13 +260,11 @@ impl Compiler {
         crate::init_tracing();
         let mut reports = Vec::with_capacity(paths.len());
         for path in paths {
-            let path = std::path::PathBuf::from(path);
-            let Ok(source) = self.fs.read_to_string(&path) else {
-                continue;
+            let report = match self.fs.read_to_string(std::path::Path::new(&path)) {
+                Ok(source) => self.parse_inner(&env, &path, &source),
+                Err(err) => self.inner.record_read_failure(&path, &err),
             };
-            let path = path.to_string_lossy();
-            let report = self.parse_inner(&env, &path, &source);
-            reports.push(convert_report(path.into_owned(), report));
+            reports.push(convert_report(path, report));
         }
         crate::flush_tracing();
         Ok(reports)
@@ -405,6 +400,13 @@ impl Compiler {
     )]
     pub fn remove_file(&mut self, path: String) -> bool {
         self.inner.remove_file(&path)
+    }
+
+    /// Files whose folded imports changed since the last call. Clears on read.
+    /// Re-parse each via `refreshFile`, then call again until empty.
+    #[napi(js_name = affectedFiles)]
+    pub fn affected_files(&mut self) -> Vec<String> {
+        self.inner.take_affected_files()
     }
 
     /// Drop every path's state. Keeps the config-derived extractor,

@@ -74,7 +74,7 @@ never presented as general build speed — the "192µs" trap):
 
 Cold pass parses every file once; warm pass re-parses the largest file N times (steady-state µs/file). File I/O excluded
 from timers. Reuses the `extract-compare.ts` / `perf.test.ts` methodology. v2 via `@pandacss/compiler`; v1 via
-`@pandacss/node@1.11.3` (npm, not workspace — per the bench legacy-pinning rule). Also record **peak RSS** during cold
+`@pandacss/node@1.12.0` (npm, not workspace — per the bench legacy-pinning rule). Also record **peak RSS** during cold
 build — rarely measured publicly, so an easy differentiator for large monorepos.
 
 ### Runtime / SSR

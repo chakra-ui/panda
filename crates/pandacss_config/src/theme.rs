@@ -27,6 +27,10 @@ pub struct Theme {
     #[serde(default)]
     pub animation_styles: StyleConfig,
     #[serde(default)]
+    pub view_transitions: BTreeMap<String, StyleConfig>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub position_try: BTreeMap<String, StyleConfig>,
+    #[serde(default)]
     pub recipes: BTreeMap<String, RecipeConfig>,
     #[serde(default)]
     pub slot_recipes: BTreeMap<String, RecipeConfig>,

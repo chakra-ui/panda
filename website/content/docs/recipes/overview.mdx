@@ -1,0 +1,119 @@
+---
+title: Recipes
+description: Named variants for a component. Write the recipe, then put it on JSX. Start colocated, move to config when it is a design system primitive.
+---
+
+## What's a recipe?
+
+A recipe is how you name the looks of a component. Instead of a tree of ternaries inside `css()`, you declare
+`size` and `visual` once, and Panda turns those names into classes.
+
+```tsx
+// this works, but every new look makes it harder to read
+function Button({ size, visual, children }) {
+  return (
+    <button
+      className={css({
+        rounded: 'md',
+        fontWeight: 'semibold',
+        px: size === 'sm' ? '3' : '5',
+        py: size === 'sm' ? '1.5' : '3',
+        bg: visual === 'solid' ? 'blue.500' : 'transparent',
+        color: visual === 'solid' ? 'white' : 'blue.500'
+      })}
+    >
+      {children}
+    </button>
+  )
+}
+```
+
+That's a variant matrix. A recipe is the same styles, written as a map:
+
+```tsx
+import { cva } from '../styled-system/css'
+
+const button = cva({
+  base: {
+    rounded: 'md',
+    fontWeight: 'semibold'
+  },
+  variants: {
+    size: {
+      sm: { px: '3', py: '1.5' },
+      lg: { px: '5', py: '3' }
+    },
+    visual: {
+      solid: { bg: 'blue.500', color: 'white' },
+      outline: { bg: 'transparent', color: 'blue.500' }
+    }
+  },
+  defaultVariants: {
+    size: 'sm',
+    visual: 'solid'
+  }
+})
+
+function Button({ size, visual, children }) {
+  return <button className={button({ size, visual })}>{children}</button>
+}
+```
+
+Those keys are the same on every recipe API:
+
+| Key | What it does |
+| --- | --- |
+| `base` | Always on |
+| `variants` | Named variants (`size`, `visual`) and their looks |
+| `defaultVariants` | Fills in a key the caller omitted |
+| `compoundVariants` | Styles that apply only when two variants match. See [compound variants](/docs/recipes/compound-variants) |
+
+## Choosing a recipe
+
+`cva` and `sva` live next to the component. `defineRecipe` and `defineSlotRecipe` live in your theme. All four take
+those keys.
+
+1. Is this **one element**, or a component with **parts**? A button is one element. A card has a root, a title, and
+   a body.
+2. Is the recipe **local** to this file, or **shared** (other apps import it, or it ships in a preset)?
+
+```
+                 one element              parts
+local            cva                      sva
+shared           defineRecipe             defineSlotRecipe
+```
+
+If you want the same decision as a story, start with [Thinking in Panda](/docs/get-started/thinking-in-panda).
+
+## Write the recipe
+
+<Cards columns={2}>
+  <Card
+    title="Atomic Recipe"
+    href="/docs/recipes/atomic-recipe"
+    kicker="cva"
+    description="One element, colocated with the component. Every variant emits as atomic utilities when you define it."
+    cta="Write a cva recipe"
+  />
+  <Card
+    title="Slot Recipe"
+    href="/docs/recipes/slot-recipes"
+    kicker="sva"
+    description="One variant API for many parts, colocated with the component. Every slot style emits as atomic utilities."
+    cta="Write an sva recipe"
+  />
+  <Card
+    title="Config Recipe"
+    href="/docs/recipes/config-recipe"
+    kicker="defineRecipe"
+    description="A shared primitive in your theme. Panda emits named classes only for the variants it can see."
+    cta="Write a config recipe"
+  />
+  <Card
+    title="Config Slot Recipe"
+    href="/docs/recipes/config-recipe#config-slot-recipe"
+    kicker="defineSlotRecipe"
+    description="The shared form. Named classes per part, JIT, and the one that belongs in a preset."
+    cta="Write a config slot recipe"
+  />
+</Cards>

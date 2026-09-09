@@ -1,5 +1,97 @@
 # @pandacss/compiler-wasm
 
+## 2.0.0-beta.16
+
+### Major Changes
+
+- ef14fc5: Remove the `syntax` config option and the `template-literal` authoring mode. Drop `syntax` from your config
+  and the `--syntax` flag from `panda init`, and write styles with the object syntax: `css({ color: 'red' })` instead of
+  `` css`color: red` ``.
+
+### Minor Changes
+
+- dea1ef5: Add a `keyframes()` factory to `styled-system/css` for inline, component-local animations.
+
+  `keyframes({ from: {...}, to: {...} })` returns a `kf_…` animation name and emits its `@keyframes` block, tree-shaken
+  to what a build actually references through `animationName` or the `animation` shorthand. Object form only — a bare
+  `animationName: 'spin'` already resolves a `theme.keyframes` entry, so there is no named form. Shared, design-system
+  animations still belong in `theme.keyframes`.
+
+- c58d45d: Add a `positionTry()` factory to `styled-system/css` and a `theme.positionTry` key for named CSS
+  anchor-positioning fallbacks, and remove `globalPositionTry`.
+
+  `positionTry('bottom')` or `positionTry({ top: 'anchor(bottom)' })` returns the dashed-ident for
+  `positionTryFallbacks` and emits the `@position-try` block, tree-shaken to what a build uses. Move `globalPositionTry`
+  entries to `theme.positionTry` and reference them through the factory. A block that must emit unconditionally with a
+  hand-authored name belongs in a plain `.css` file.
+
+### Patch Changes
+
+- f583fb9: Merge the `css` prop over the style props beside it, so one declaration wins instead of two classes whose
+  winner depended on stylesheet order. Shorthands normalize first, so `padding` and `p` collide the way they do at
+  runtime.
+
+  ```tsx
+  // before: className="color_blue color_red", renders red
+  // after:  className="color_blue", renders blue
+  <Box color="red" css={{ color: 'blue' }} />
+  ```
+
+  Generated CSS can shrink: a rule whose only source was the losing side of a collision is no longer emitted.
+
+- 6b04d94: Ignore watcher add and change events for unknown paths outside the configured source globs. Explicitly
+  registered and design-system sources remain refreshable.
+- dfb17b2: Fix `Driver.parseFiles()` retaining atoms from source files removed since the previous scan. Full-project
+  rescans now reconcile scan- and watcher-owned files, including recovery from dropped watcher events.
+- 84720fc: Re-extract files with unresolved cross-file imports when the missing module is created during watch mode.
+- c3702af: Treat condition props like `_hover`, CSS variables, and `&`/`@` selectors as style props on JSX components,
+  so they become classes instead of DOM attributes.
+- ca9bb58: `parseFiles` now returns a report for every requested path. A file that cannot be read keeps its last parsed
+  styles and reports a `source_not_found` or `source_read_failed` warning instead of being silently skipped.
+- f583fb9: Keep the component when transforming JSX elements listed in a recipe's `jsx` option. That list tracks
+  elements so their variants reach the stylesheet — the component is yours, and replacing `<Button size="sm" />` with a
+  `div` dropped whatever it rendered. The element and its variant props now stay put; only style props fold into
+  `className`.
+- b2294ca: Resolve conditional variants in recipe calls and JSX at build time. `button({ size: cond ? 'sm' : 'lg' })`
+  now emits a class ternary instead of applying both sizes, and several conditional variants resolve into a decision
+  tree that gets defaults and compound variants right. Usages that still can't resolve to one class list are left for
+  the runtime.
+- af261f5: Fix watch CSS staying stale when a file you import a value from changes. Importers are re-extracted,
+  including through re-exports, and only when the imported file's content actually changed.
+- 9da80e1: Refresh cached cross-file exports when the resolved module itself changes, is deleted, or is recreated.
+  Long-lived compiler sessions no longer reuse stale direct exports when re-extracting an importer.
+- bcbcb22: Update the internal transform cache to `lru` 0.18.4, which fixes upstream Rust soundness issues.
+- Updated dependencies [dfb17b2]
+- Updated dependencies [dea1ef5]
+- Updated dependencies [c58d45d]
+- Updated dependencies [af261f5]
+- Updated dependencies [ef14fc5]
+  - @pandacss/compiler-shared@2.0.0-beta.16
+  - @pandacss/types@2.0.0-beta.16
+
+## 2.0.0-beta.15
+
+### Minor Changes
+
+- e18eeb3: Add `theme.viewTransitions` so a preset can name shared view-transition bags. Call `viewTransition('slide')`
+  and Panda inlines `"vt_slide"`. Unused names stay out of the CSS.
+
+### Patch Changes
+
+- 8b43347: Semantic colors that set only conditional values (`_light`/`_dark`, no `base`) now join their `colorPalette`.
+  Before, `bg: 'colorPalette.solid'` fell through to the raw string when `blue.solid` had no `base` value, so adding a
+  `base` was the only workaround.
+- 7c8a215: Extract style props from `styled` `defaultProps` on inline factories, including Solid function accessors.
+  Recipe `defaultProps` also resolve through `recipes.button` and local aliases. Analyze and inspect report those usages
+  too.
+- Updated dependencies [8b43347]
+- Updated dependencies [ec65db3]
+- Updated dependencies [02bd0ad]
+- Updated dependencies [e18eeb3]
+- Updated dependencies [2d5d152]
+  - @pandacss/compiler-shared@2.0.0-beta.15
+  - @pandacss/types@2.0.0-beta.15
+
 ## 2.0.0-beta.14
 
 ### Patch Changes

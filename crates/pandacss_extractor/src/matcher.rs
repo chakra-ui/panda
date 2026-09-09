@@ -121,13 +121,6 @@ pub struct Matchers {
     pub jsx_kinds: FxHashMap<String, JsxKind>,
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-pub enum CssSyntaxKind {
-    TemplateLiteral,
-    #[default]
-    ObjectLiteral,
-}
-
 impl Matcher {
     #[must_use]
     fn accepts_module(&self, module: &str) -> bool {
@@ -187,9 +180,12 @@ pub struct ExtractorConfig {
     pub has_jsx_framework: bool,
     /// `"className"` for React/Preact, `"class"` for Solid/Vue/Qwik.
     pub class_attribute: &'static str,
-    pub syntax: CssSyntaxKind,
     /// When `Some`, `token('x.y')` calls fold to the looked-up value.
     pub token_dictionary: Option<Arc<TokenDictionary>>,
+    /// Config class-name prefix, threaded into the resolver so
+    /// `positionTry(...)` folds to the same dashed-ident the emitter/transform
+    /// produce. Empty when no prefix is configured.
+    pub class_name_prefix: String,
     /// When `Some`, references to imported `const` exports from local
     /// files are loaded and folded at extraction time. The resolver's
     /// internal cache is shared across every `extract()` call that uses
@@ -211,8 +207,8 @@ impl ExtractorConfig {
             jsx: JsxExtractionConfig::default(),
             has_jsx_framework: false,
             class_attribute: "className",
-            syntax: CssSyntaxKind::default(),
             token_dictionary: None,
+            class_name_prefix: String::new(),
             cross_file: None,
         }
     }
@@ -226,12 +222,6 @@ impl ExtractorConfig {
     #[must_use]
     pub fn with_class_attribute(mut self, class_attribute: &'static str) -> Self {
         self.class_attribute = class_attribute;
-        self
-    }
-
-    #[must_use]
-    pub fn with_syntax(mut self, syntax: CssSyntaxKind) -> Self {
-        self.syntax = syntax;
         self
     }
 

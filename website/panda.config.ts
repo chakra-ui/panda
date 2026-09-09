@@ -1,15 +1,20 @@
+import typographyPreset from '@pandacss/preset-typography'
 import { defineConfig } from '@pandacss/dev'
 
 import { tokens } from './theme/tokens'
 import { semanticTokens } from './theme/semantic-tokens'
-import { recipes } from './theme/recipes'
+import { recipes, slotRecipes } from './theme/recipes'
 import { textStyles } from './theme/text-styles'
 import { layerStyles } from './theme/layer-styles'
 import { globalCss } from './theme/global-css'
 import { keyframes } from './theme/keyframes'
 
 export default defineConfig({
-  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
+  presets: [
+    '@pandacss/preset-base',
+    '@pandacss/preset-panda',
+    typographyPreset({ notProse: true })
+  ],
   preflight: true,
   // define the content to scan 👇🏻
   include: [
@@ -34,7 +39,13 @@ export default defineConfig({
       // used in .mdx files, e.g. <Callout type="default" /> or with the blockquote sign like: `> Blabla`
       // ts-morph can't parse MDX properly, so we need to specify it here
       callout: [{ type: ['*'] }],
-      card: [{ variant: ['*'] }]
+      card: [{ variant: ['*'] }],
+      docCard: [{ mode: ['*'] }],
+      docNav: [{ kind: ['*'] }],
+      segmented: [{ size: ['*'], tone: ['*'] }],
+      // the typography demo switches sizes at runtime
+      prose: [{ size: ['*'] }],
+      textLink: [{ tone: ['*'] }]
     }
   },
   theme: {
@@ -49,6 +60,7 @@ export default defineConfig({
       semanticTokens,
       tokens,
       recipes,
+      slotRecipes,
       textStyles,
       layerStyles,
       keyframes

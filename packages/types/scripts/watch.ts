@@ -1,4 +1,4 @@
-import { watch } from 'chokidar'
+import { subscribe } from '@parcel/watcher'
 import { join } from 'path'
 import { main as build } from './build'
 
@@ -9,4 +9,7 @@ const rebuild = () => {
 
 rebuild()
 
-watch(join(__dirname, '..', 'src')).on('change', rebuild)
+void subscribe(join(__dirname, '..', 'src'), (error, events) => {
+  if (error) throw error
+  if (events.some((event) => event.type === 'update')) rebuild()
+})

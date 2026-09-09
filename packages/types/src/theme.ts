@@ -1,6 +1,6 @@
 import type { AnimationStyles, LayerStyles, TextStyles } from './composition'
 import type { RecipeConfig, SlotRecipeConfig } from './recipe'
-import type { CssKeyframes } from './system-types'
+import type { CssKeyframes, PositionTry, ViewTransitions } from './system-types'
 import type { SemanticTokens, Tokens } from './tokens'
 
 export interface ColorPaletteOptions {
@@ -50,6 +50,17 @@ export interface Theme {
    * The animation styles for your project.
    */
   animationStyles?: AnimationStyles
+  /**
+   * Named View Transition bags. Call `viewTransition('slide')` to use one.
+   * Panda emits the shared `::view-transition-*` CSS; you still set unique
+   * `view-transition-name` values at runtime.
+   */
+  viewTransitions?: ViewTransitions
+  /**
+   * Named `@position-try` anchor-positioning fallbacks. Call `positionTry('bottom')`
+   * to get the dashed-ident for `positionTryFallbacks`. Emitted only when used.
+   */
+  positionTry?: PositionTry
   /**
    * Multi-variant style definitions for your project.
    * Useful for defining component styles.

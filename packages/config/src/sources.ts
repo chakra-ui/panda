@@ -28,7 +28,6 @@ const sectionKeySet = new Set([
   'globalCss',
   'globalVars',
   'globalFontface',
-  'globalPositionTry',
   'staticCss',
   'themes',
 ])
@@ -44,6 +43,7 @@ const themeEntryKeys = new Set([
   'recipes',
   'slotRecipes',
   'textStyles',
+  'viewTransitions',
 ])
 
 export class SourceTracker {

@@ -34,7 +34,6 @@ describe('diffConfig', () => {
         "prefix",
         "recipes",
         "separator",
-        "syntax",
         "themes",
         "tokens",
         "utilities",
@@ -106,7 +105,6 @@ describe('diffConfig', () => {
   test('jsx + codegen option changes → respective dependencies', () => {
     const next = clone(base)
     next.jsxFramework = 'react'
-    next.syntax = 'template-literal'
     next.shorthands = false
     next.forceImportExtension = true
     const result = diffConfig(base, next)
@@ -114,7 +112,6 @@ describe('diffConfig', () => {
       [
         "forceImportExtension",
         "jsxFramework",
-        "syntax",
         "utilities",
       ]
     `)

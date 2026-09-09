@@ -7,6 +7,7 @@ import {
   createFileNotIncludedRule,
   createNoDebugRule,
   createNoDeprecatedRule,
+  createNoDescendantSelectorsRule,
   createNoImportantRule,
   createNoInvalidTokenPathsRule,
   createNoMarginPropertiesRule,
@@ -22,6 +23,7 @@ import {
   fileNotIncludedRuleName,
   noDebugRuleName,
   noDeprecatedRuleName,
+  noDescendantSelectorsRuleName,
   noImportantRuleName,
   noInvalidNestingRuleName,
   noInvalidTokenPathsRuleName,
@@ -153,6 +155,7 @@ export function bindRules(linter: Linter, project: Project): Record<string, Rule
     [noPrimitiveTokenRuleName]: createNoPrimitiveTokenRule({ inspect, suggestSemanticTokens }),
     // Opt-in style/enforcement rules (not in `recommended`).
     [noImportantRuleName]: createNoImportantRule({ inspect }),
+    [noDescendantSelectorsRuleName]: createNoDescendantSelectorsRule({ inspect }),
     [noMarginPropertiesRuleName]: createNoMarginPropertiesRule({ inspect }),
     [noPhysicalPropertiesRuleName]: createNoPhysicalPropertiesRule({ inspect }),
     [noShorthandLonghandMixRuleName]: createNoShorthandLonghandMixRule({ inspect }),

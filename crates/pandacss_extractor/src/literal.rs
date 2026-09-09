@@ -51,6 +51,17 @@ impl Literal {
         }
     }
 
+    /// True when any value in the tree is a branch only the runtime can decide.
+    #[must_use]
+    pub fn has_conditional(&self) -> bool {
+        match self {
+            Self::Conditional(_) => true,
+            Self::Object(entries) => entries.iter().any(|(_, value)| value.has_conditional()),
+            Self::Array(items) => items.iter().any(Self::has_conditional),
+            _ => false,
+        }
+    }
+
     /// Accumulate instead of overwrite: an existing key becomes a
     /// `Conditional` of both values. For conditional-spread branches
     /// (`...(cond ? a : b)`), so each branch's keys stay applicable — node's
@@ -457,6 +468,7 @@ fn call_to_literal(
     resolver
         .resolve_token_call(call)
         .or_else(|| resolver.resolve_fallback_call(call))
+        .or_else(|| resolver.resolve_css_value_factory_call(call))
         .or_else(|| resolver.resolve_raw_style_call(call))
         .or_else(|| resolver.resolve_imported_recipe_raw_call(call))
         .or_else(|| resolver.resolve_pure_call(call))

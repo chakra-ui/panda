@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/compiler-linux-x64-gnu",
-  "version": "1.0.0",
+  "version": "2.0.0-beta.15",
   "cpu": [
     "x64"
   ],
@@ -12,6 +12,9 @@
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "homepage": "https://panda-css.com",
   "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chakra-ui/panda.git",
@@ -25,8 +28,5 @@
   ],
   "libc": [
     "glibc"
-  ],
-  "engines": {
-    "node": ">=22"
-  }
+  ]
 }

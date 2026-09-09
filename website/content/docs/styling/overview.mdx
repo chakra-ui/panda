@@ -1,0 +1,63 @@
+---
+title: Styling
+description: Write styles next to your markup. Panda turns them into atomic CSS at build time.
+---
+
+Panda looks like CSS-in-JS when you write it. You write style objects in TypeScript, and the build emits plain atomic
+CSS. Nothing in the browser computes those styles.
+
+```tsx
+import { css } from 'styled-system/css'
+
+function Button() {
+  return (
+    <button
+      className={css({
+        bg: 'blue.500',
+        color: 'white',
+        px: '4',
+        py: '2',
+        borderRadius: 'md',
+        _hover: { bg: 'blue.600' }
+      })}
+    >
+      Click me
+    </button>
+  )
+}
+```
+
+There is more than one way to author styles in Panda. While the above syntax holds true, `css()` is only one entry
+point. Every API below compiles down to the same CSS.
+
+## Pick an API
+
+Most styles start as a quick **`css()`** call. Reach for **patterns** when you need layout primitives, **style props**
+if you want JSX-prop ergonomics, and **recipes** once a component actually has variants.
+
+<Cards columns={2}>
+  <Card
+    title="css()"
+    href="/docs/styling/writing-styles"
+    description="Object styles on a className. The default for one-off and colocated styles."
+    cta="Write a style"
+  />
+  <Card
+    title="Style props"
+    href="/docs/styling/style-props"
+    description="Pass CSS as JSX props on styled.* elements when you want Chakra-like ergonomics."
+    cta="Use style props"
+  />
+  <Card
+    title="Patterns"
+    href="/docs/styling/patterns"
+    description="Layout primitives like stack, grid, and container, typed and responsive."
+    cta="Browse patterns"
+  />
+  <Card
+    title="Recipes"
+    href="/docs/recipes/overview"
+    description="Variants and compound variants for components. Lives in the Recipes tab."
+    cta="Write a recipe"
+  />
+</Cards>

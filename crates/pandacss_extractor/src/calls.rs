@@ -3,21 +3,18 @@
 //! [`Literal`] `data` comes from [`project_literal`].
 
 use crate::{
-    CssSyntaxKind, Diagnostic, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory,
-    MatchedImport, Span, StyleTree, TokenRef,
-    css_template::css_template_to_style_tree,
+    Diagnostic, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory, MatchedImport, Span,
+    StyleTree, TokenRef,
     matcher::member_display,
     scope::flatten_static_member_path,
     source_refs::{
         StyleSourceOwner, StyleSourceOwnerKind, StyleSourceRef, collect_object_source_refs,
     },
     span_from_oxc,
-    style_tree::{expression_to_style_tree, project_literal},
+    style_tree::{ProjectionRetention, expression_to_style_tree, project_style_args},
 };
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{
-    Argument, CallExpression, Expression, IdentifierReference, TaggedTemplateExpression,
-};
+use oxc_ast::ast::{Argument, CallExpression, Expression, IdentifierReference};
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_semantic::SymbolId;
@@ -25,13 +22,6 @@ use oxc_span::{GetSpan, SourceType};
 use rustc_hash::FxHashSet;
 use serde::Serialize;
 use std::borrow::Cow;
-
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-pub enum CallSyntax {
-    #[default]
-    Call,
-    TaggedTemplate,
-}
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum CallCalleeKind {
@@ -43,7 +33,6 @@ pub enum CallCalleeKind {
 /// Oxc-derived source facts consumed by the project transformer.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CallFacts {
-    pub syntax: CallSyntax,
     pub callee_kind: CallCalleeKind,
     pub callee_span: Span,
     pub raw: bool,
@@ -55,7 +44,6 @@ pub struct CallFacts {
 impl Default for CallFacts {
     fn default() -> Self {
         Self {
-            syntax: CallSyntax::default(),
             callee_kind: CallCalleeKind::default(),
             callee_span: Span { start: 0, end: 0 },
             raw: false,
@@ -119,11 +107,12 @@ pub fn extract_calls(
     config: &ExtractorConfig,
 ) -> ExtractedCallsResult {
     let allocator = Allocator::default();
-    let source = crate::adapt_source(source, path);
+    let format = crate::adapter::SfcFormat::from_path(path);
+    let source = crate::adapt_source(source, format);
     let source = source.as_ref();
     let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
     let parser_return = Parser::new(&allocator, source, source_type)
-        .with_options(crate::adapter::parse_options_for(path))
+        .with_options(crate::adapter::parse_options_for(format))
         .parse();
 
     let resolver = crate::Resolver::build(crate::scope::ResolverBuildInput {
@@ -131,6 +120,7 @@ pub fn extract_calls(
         matched,
         matchers: Some(&config.matchers),
         tokens: config.token_dictionary.as_deref(),
+        prefix: config.class_name_prefix.as_str(),
         cross_file: config
             .cross_file
             .as_ref()
@@ -419,11 +409,14 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 .iter()
                 .map(|arg| argument_to_style_tree(arg, resolver))
                 .collect();
-            let data: Vec<Option<Literal>> = style_args
-                .iter()
-                .map(|tree| tree.as_ref().and_then(project_literal))
-                .collect();
-            let arg_spans = if self.retain_transform_facts {
+            let retain = self.retain_transform_facts;
+            let retention = if retain {
+                ProjectionRetention::Retain
+            } else {
+                ProjectionRetention::Discard
+            };
+            let (data, style_args) = project_style_args(style_args, retention);
+            let arg_spans = if retain {
                 call.arguments
                     .iter()
                     .map(|arg| span_from_oxc(arg.span()))
@@ -454,12 +447,8 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                     jsx_recipe_ident,
                     span: span_from_oxc(call.span),
                     arg_spans,
-                    style_args: if self.retain_transform_facts {
-                        style_args
-                    } else {
-                        Vec::new()
-                    },
-                    facts: if self.retain_transform_facts {
+                    style_args,
+                    facts: if retain {
                         call_facts(call, raw)
                     } else {
                         CallFacts::default()
@@ -479,90 +468,6 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
         }
         walk::walk_call_expression(self, call);
     }
-
-    fn visit_tagged_template_expression(&mut self, tagged: &TaggedTemplateExpression<'a>) {
-        if self.ctx.config.syntax != CssSyntaxKind::TemplateLiteral {
-            walk::walk_tagged_template_expression(self, tagged);
-            return;
-        }
-
-        if let Expression::CallExpression(call) = &tagged.tag
-            && let Some(resolved) = self.resolve_callee_expr(&call.callee)
-            && resolved.category == MatchCategory::Jsx
-            && let Some(tree) = css_template_to_style_tree(&tagged.quasi, self.ctx.resolver)
-            && matches!(tree, StyleTree::Object(_))
-        {
-            self.out.push(ExtractedCall {
-                category: MatchCategory::Css,
-                name: "css".to_owned(),
-                alias: resolved.alias.to_owned(),
-                data: vec![project_literal(&tree)],
-                jsx_recipe_ident: None,
-                span: span_from_oxc(tagged.span),
-                arg_spans: if self.retain_transform_facts {
-                    vec![span_from_oxc(tagged.span)]
-                } else {
-                    Vec::new()
-                },
-                style_args: if self.retain_transform_facts {
-                    vec![Some(tree)]
-                } else {
-                    Vec::new()
-                },
-                facts: if self.retain_transform_facts {
-                    CallFacts {
-                        syntax: CallSyntax::TaggedTemplate,
-                        callee_kind: call_callee_kind(&call.callee),
-                        callee_span: span_from_oxc(tagged.tag.span()),
-                        raw: resolved.raw,
-                        direct_empty_object_args: Vec::new(),
-                        args: Vec::new(),
-                    }
-                } else {
-                    CallFacts::default()
-                },
-            });
-        }
-
-        if let Some(resolved) = self.resolve_callee_expr(&tagged.tag)
-            && resolved.category == MatchCategory::Css
-            && resolved.name.as_ref() == "css"
-            && let Some(tree) = css_template_to_style_tree(&tagged.quasi, self.ctx.resolver)
-            && matches!(tree, StyleTree::Object(_))
-        {
-            self.out.push(ExtractedCall {
-                category: resolved.category,
-                name: resolved.name.into_owned(),
-                alias: resolved.alias.to_owned(),
-                data: vec![project_literal(&tree)],
-                jsx_recipe_ident: None,
-                span: span_from_oxc(tagged.span),
-                arg_spans: if self.retain_transform_facts {
-                    vec![span_from_oxc(tagged.span)]
-                } else {
-                    Vec::new()
-                },
-                style_args: if self.retain_transform_facts {
-                    vec![Some(tree)]
-                } else {
-                    Vec::new()
-                },
-                facts: if self.retain_transform_facts {
-                    CallFacts {
-                        syntax: CallSyntax::TaggedTemplate,
-                        callee_kind: call_callee_kind(&tagged.tag),
-                        callee_span: span_from_oxc(tagged.tag.span()),
-                        raw: resolved.raw,
-                        direct_empty_object_args: Vec::new(),
-                        args: Vec::new(),
-                    }
-                } else {
-                    CallFacts::default()
-                },
-            });
-        }
-        walk::walk_tagged_template_expression(self, tagged);
-    }
 }
 
 fn call_callee_kind(callee: &Expression<'_>) -> CallCalleeKind {
@@ -578,7 +483,6 @@ fn call_callee_kind(callee: &Expression<'_>) -> CallCalleeKind {
 
 fn call_facts(call: &CallExpression<'_>, raw: bool) -> CallFacts {
     CallFacts {
-        syntax: CallSyntax::Call,
         callee_kind: call_callee_kind(&call.callee),
         callee_span: span_from_oxc(call.callee.span()),
         raw,

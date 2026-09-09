@@ -1,46 +1,51 @@
-import { Collapse } from '@/mdx/collapse'
-import { DetailsProvider } from '@/mdx/contexts'
-import { findSummary } from '@/mdx/find-summary'
-import { css } from '@/styled-system/css'
-import { useEffect, useState } from 'react'
+import { css, cx } from '@/styled-system/css'
 
 const styles = css({
-  mt: { base: '4', _first: '0' },
-  mb: '4',
-  rounded: 'md',
-  borderWidth: '1px',
-  bg: 'bg.surface',
+  borderBottomWidth: '1px',
   borderColor: 'border',
-  p: '2',
-  shadow: 'sm'
+  '& > summary': {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '3',
+    cursor: 'pointer',
+    listStyle: 'none',
+    py: '4',
+    fontWeight: 'medium',
+    lineHeight: '1.5',
+    color: 'fg.muted',
+    transitionProperty: 'color',
+    transitionDuration: '150ms',
+    _hover: { color: 'fg' },
+    '&::-webkit-details-marker': { display: 'none' },
+    _before: {
+      content: '"+"',
+      flexShrink: '0',
+      width: '1rem',
+      fontFamily: 'mono',
+      color: 'fg.subtle',
+      textAlign: 'center'
+    }
+  },
+  '&[open] > summary': {
+    color: 'fg',
+    _before: { content: '"\\2212"' }
+  },
+  '& > summary + *': { mt: '0' },
+  '&[open] > *:not(summary)': { textStyle: 'sm', color: 'fg.muted' },
+  '&[open] > *:last-child': { mb: '5' }
 })
 
 export const Details = (props: React.ComponentProps<'details'>) => {
-  const { children, open, ...rest } = props
-  const [openState, setOpen] = useState(!!open)
-  const [summary, restChildren] = findSummary(children)
+  const { className, ...rest } = props
+  return <details className={cx(styles, className)} {...rest} />
+}
 
-  // To animate the close animation we have to delay the DOM node state here.
-  const [delayedOpenState, setDelayedOpenState] = useState(openState)
+const faqStyles = css({
+  mt: '2',
+  mb: '8'
+})
 
-  useEffect(() => {
-    if (openState) {
-      setDelayedOpenState(true)
-    } else {
-      const timeout = setTimeout(() => setDelayedOpenState(openState), 500)
-      return () => clearTimeout(timeout)
-    }
-  }, [openState])
-
-  return (
-    <details
-      className={styles}
-      {...rest}
-      open={delayedOpenState}
-      data-expanded={openState ? '' : undefined}
-    >
-      <DetailsProvider value={setOpen}>{summary}</DetailsProvider>
-      <Collapse isOpen={openState}>{restChildren}</Collapse>
-    </details>
-  )
+export const Faq = (props: React.ComponentProps<'div'>) => {
+  const { className, ...rest } = props
+  return <div className={cx(faqStyles, className)} {...rest} />
 }

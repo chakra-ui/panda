@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -48,8 +48,9 @@ async function startServer(dir: string): Promise<ViteDevServer> {
     logLevel: 'silent',
     configFile: false,
     plugins: [pandacss()],
-    // A listening server keeps the HMR machinery (and `handleHotUpdate`) live.
-    server: { port: 0, strictPort: false },
+    // A listening server keeps the HMR machinery live. Tests emit watcher events themselves, so the
+    // real file watcher stays off; otherwise its own events race the emitted ones.
+    server: { port: 0, strictPort: false, watch: null },
     optimizeDeps: { noDiscovery: true },
     appType: 'custom',
   })
@@ -72,6 +73,31 @@ async function waitForCss(server: ViteDevServer, needle: string): Promise<string
   }
   throw new Error(`timed out waiting for ${JSON.stringify(needle)} in the served CSS`)
 }
+
+async function waitForCssWithout(server: ViteDevServer, needle: string): Promise<string> {
+  for (let attempt = 0; attempt < 50; attempt++) {
+    const css = await readCss(server)
+    if (!css.includes(needle)) return css
+    await new Promise((done) => setTimeout(done, 100))
+  }
+  throw new Error(`timed out waiting for ${JSON.stringify(needle)} to leave the served CSS`)
+}
+
+/** Record every HMR payload Vite sends to the browser so a test can prove no page reload happened. */
+function recordHmr(server: ViteDevServer): Array<{ type: string; updates?: Array<{ type: string; path: string }> }> {
+  const sent: Array<{ type: string; updates?: Array<{ type: string; path: string }> }> = []
+  const hot = server.environments.client.hot
+  const send = hot.send.bind(hot)
+  hot.send = ((payload: { type: string }) => {
+    sent.push(payload as never)
+    return send(payload as never)
+  }) as typeof hot.send
+  return sent
+}
+
+const EXTRA = (style: string) => `import { css } from '@panda/css'
+export const extra = css(${style})
+`
 
 async function waitForWarning(warnings: string[], needle: string): Promise<string> {
   for (let attempt = 0; attempt < 50; attempt++) {
@@ -126,6 +152,109 @@ describe('@pandacss/vite', () => {
     const updated = await waitForCss(server, '8px')
     // Additive refresh keeps prior styles in dev — no flash of a missing rule.
     expect(updated).toContain('4px')
+  })
+
+  it('adds CSS when a matching source file is created', async () => {
+    dir = createFixture(`{ color: 'red' }`)
+    server = await startServer(dir)
+    expect(await waitForCss(server, 'red')).not.toContain('rebeccapurple')
+
+    const newFile = join(dir, 'New.tsx')
+    writeFileSync(newFile, APP(`{ color: 'rebeccapurple' }`))
+    server.watcher.emit('add', newFile)
+
+    expect(await waitForCss(server, 'rebeccapurple')).toContain('rebeccapurple')
+  })
+
+  it('removes CSS when a source file is deleted', async () => {
+    dir = createFixture(`{ color: 'rebeccapurple' }`)
+    server = await startServer(dir)
+    expect(await waitForCss(server, 'rebeccapurple')).toContain('rebeccapurple')
+
+    const appFile = join(dir, 'App.tsx')
+    rmSync(appFile)
+    server.watcher.emit('unlink', appFile)
+
+    expect(await waitForCssWithout(server, 'rebeccapurple')).not.toContain('rebeccapurple')
+  })
+
+  it('hot-swaps the stylesheet on create and delete without a page reload', async () => {
+    dir = createFixture(`{ color: 'red' }`)
+    server = await startServer(dir)
+    expect(await waitForCss(server, 'red')).not.toContain('0.33em')
+    const sent = recordHmr(server)
+
+    const extraFile = join(dir, 'Extra.tsx')
+    writeFileSync(extraFile, EXTRA(`{ letterSpacing: '0.33em' }`))
+    server.watcher.emit('add', extraFile)
+    expect(await waitForCss(server, '0.33em')).toContain('red')
+
+    rmSync(extraFile)
+    server.watcher.emit('unlink', extraFile)
+    expect(await waitForCssWithout(server, '0.33em')).toContain('red')
+
+    // Vite ships CSS imported from JS as a js-update; either way it is a hot swap, never a reload.
+    expect(sent.map((payload) => payload.type)).toEqual(['update', 'update'])
+    expect(sent.flatMap((payload) => payload.updates ?? []).map((update) => update.path)).toEqual([
+      '/index.css',
+      '/index.css',
+    ])
+  })
+
+  it('keeps styles over HMR when a source file is renamed', async () => {
+    dir = createFixture(`{ color: 'red' }`)
+    const before = join(dir, 'Before.tsx')
+    writeFileSync(before, EXTRA(`{ letterSpacing: '0.33em' }`))
+    server = await startServer(dir)
+    await waitForCss(server, '0.33em')
+    const sent = recordHmr(server)
+
+    const after = join(dir, 'After.tsx')
+    renameSync(before, after)
+    server.watcher.emit('unlink', before)
+    server.watcher.emit('add', after)
+
+    await new Promise((done) => setTimeout(done, 300))
+    expect(await waitForCss(server, '0.33em')).toContain('red')
+    expect(sent.map((payload) => payload.type)).not.toContain('full-reload')
+  })
+
+  it('drops the styles of a deleted file that another module imports', async () => {
+    dir = createFixture(`{ color: 'red' }`)
+    writeFileSync(join(dir, 'Widget.tsx'), EXTRA(`{ letterSpacing: '0.33em' }`))
+    // Vite cannot resolve the fake '@panda/css' import map entry, so the importer only pulls in Widget
+    // and self-accepts, giving Vite an HMR boundary for the delete.
+    writeFileSync(
+      join(dir, 'App.tsx'),
+      `import './index.css'\nimport { extra } from './Widget'\nexport const App = () => extra\nif (import.meta.hot) import.meta.hot.accept()\n`,
+    )
+    server = await startServer(dir)
+    await server.transformRequest('/App.tsx')
+    await waitForCss(server, '0.33em')
+    const sent = recordHmr(server)
+
+    const widget = join(dir, 'Widget.tsx')
+    rmSync(widget)
+    server.watcher.emit('unlink', widget)
+
+    expect(await waitForCssWithout(server, '0.33em')).toContain('black')
+    expect(sent.map((payload) => payload.type)).not.toContain('full-reload')
+  })
+
+  it('invalidates the stylesheet root in the SSR module graph too', async () => {
+    dir = createFixture(`{ color: 'red' }`)
+    server = await startServer(dir)
+    await waitForCss(server, 'red')
+    await server.environments.ssr.transformRequest('/index.css')
+    const rootId = join(dir, 'index.css')
+    expect(server.environments.ssr.moduleGraph.getModuleById(rootId)?.transformResult).toBeTruthy()
+
+    const extraFile = join(dir, 'Extra.tsx')
+    writeFileSync(extraFile, EXTRA(`{ letterSpacing: '0.33em' }`))
+    server.watcher.emit('add', extraFile)
+    await waitForCss(server, '0.33em')
+
+    expect(server.environments.ssr.moduleGraph.getModuleById(rootId)?.transformResult).toBeNull()
   })
 
   it('keeps previous CSS and reports diagnostics when source syntax breaks', async () => {

@@ -1,338 +1,265 @@
 ---
-title: Multi-Theme Tokens
-description: Panda supports advance token definition beyond just light/dark mode; theming beyond just dark mode. You can define multi-theme tokens using nested conditions.
+title: Multiple Themes
+description: Ship several complete looks, each with light and dark, from one set of tokens.
 ---
 
-## Multi-Theme Tokens
+A product rarely ships with one look. Dark mode comes first, then a customer's brand, a high-contrast variant, a
+seasonal skin. Each is the same request: the same components, different values.
 
-Panda supports advance token definition beyond just light/dark mode; theming beyond just dark mode. You can define
-multi-theme tokens using nested conditions.
+Panda answers with tokens. Components read roles like `bg: 'surface'`; a theme is what those roles resolve to, and a
+mode is the shade inside it. One attribute picks the theme, one class picks the mode, and no component knows either
+exists.
 
-Let's say your application supports a pink and blue theme, and each theme can have a light and dark mode. Let's see how
-to model this in Panda.
+Let's build two themes on a neutral default, each with its own light and dark mode:
 
-We'll start by defining the following conditions for these theme and color modes:
+- `matcha`: green accent, rounder controls. Two tokens change.
+- `gothic`: purple accent on a darker canvas, square corners, serif type. Four tokens change.
 
-```js
-// panda.config.ts
-const config = {
-  conditions: {
-    light: '[data-color-mode=light] &',
-    dark: '[data-color-mode=dark] &',
-    pinkTheme: '[data-theme=pink] &',
-    blueTheme: '[data-theme=blue] &'
-  }
+Then ship them: all in one stylesheet, or loaded on demand.
+
+## Semantic tokens
+
+Name tokens after their role, and give every value both modes. With the base preset, `_dark` means "inside an element
+with the `dark` class".
+
+```ts filename="panda.config.ts"
+semanticTokens: {
+  colors: {
+    canvas: { value: { base: '{colors.gray.50}', _dark: '{colors.gray.900}' } },
+    surface: { value: { base: '{colors.white}', _dark: '{colors.gray.800}' } },
+    fg: { value: { base: '{colors.gray.900}', _dark: '{colors.gray.50}' } },
+    accent: { value: { base: '{colors.blue.600}', _dark: '{colors.blue.300}' } }
+  },
+  radii: { control: { value: '{radii.sm}' } },
+  fonts: { body: { value: '{fonts.sans}' } }
 }
 ```
 
-> Conditions are a way to provide preset css selectors or media queries for use in your Panda project
-
-Next, we'll define a `colors.text` semantic token for the pink and blue theme.
-
-```js
-// panda.config.ts
-const theme = {
-  // ...
-  semanticTokens: {
-    colors: {
-      text: {
-        value: {
-          _pinkTheme: '{colors.pink.500}',
-          _blueTheme: '{colors.blue.500}'
-        }
-      }
-    }
-  }
-}
+```tsx
+<div className={css({ bg: 'surface', color: 'fg', borderRadius: 'control', fontFamily: 'body' })}>
+  <button className={css({ bg: 'accent' })}>Buy</button>
+</div>
 ```
 
-Next, we'll modify `colors.text` to support light and dark color modes for each theme.
-
-```js
-// panda.config.ts
-const theme = {
-  // ...
-  semanticTokens: {
-    colors: {
-      text: {
-        value: {
-          _pinkTheme: { base: '{colors.pink.500}', _dark: '{colors.pink.300}' },
-          _blueTheme: { base: '{colors.blue.500}', _dark: '{colors.blue.300}' }
-        }
-      }
-    }
-  }
-}
+```html
+<html class="dark"></html>
 ```
 
-Now, you can use the `text` token in your styles, and it will automatically change based on the theme and the color
-scheme.
+Toggle the class and the card flips. Nothing in the component knows about dark mode.
 
-```jsx
-// use pink and dark mode theme
-<html data-theme="pink" data-color-mode="dark">
-  <body>
-    <h1 className={css({ color: 'text' })}>Hello World</h1>
-  </body>
-</html>
+## Themes
 
-// use pink and light mode theme
-<html data-theme="pink">
-  <body>
-    <h1 className={css({ color: 'text' })}>Hello World</h1>
-  </body>
-</html>
-```
+`themes` holds alternative token values behind one attribute. Override only what differs from the default.
 
-## Multi-Themes
-
-The above example shows you how to define multi-theme tokens using nested conditions but you can also define clearly separated themes using the `themes` property in the config.
-
-This allows you to apply a `theme` on multiple tokens at once, using data attributes and CSS variables.
-
-> Theme variants can be applied using the `data-panda-theme` attribute with the theme key as the value.
-
-```ts
-// panda.config.ts
-import { defineConfig } from '@pandacss/dev'
-
-export default defineConfig({
-  // ...
-  // main theme
-  theme: {
-    extend: {
-      tokens: {
-        colors: {
-          text: { value: 'green' }
-        }
-      },
-      semanticTokens: {
-        colors: {
-          body: {
-            value: {
-              base: '{colors.green.600}',
-              _osDark: '{colors.green.400}'
-            }
-          }
-        }
-      }
+```ts filename="panda.config.ts"
+themes: {
+  matcha: {
+    semanticTokens: {
+      colors: { accent: { value: { base: '{colors.green.700}', _dark: '{colors.green.300}' } } },
+      radii: { control: { value: '{radii.xl}' } }
     }
   },
-  // alternative theme variants
-  themes: {
-    primary: {
-      tokens: {
-        colors: {
-          text: { value: 'red' }
-        }
+  gothic: {
+    semanticTokens: {
+      colors: {
+        canvas: { value: { base: '{colors.gray.100}', _dark: '{colors.black}' } },
+        accent: { value: { base: '{colors.purple.700}', _dark: '{colors.purple.300}' } }
       },
-      semanticTokens: {
-        colors: {
-          muted: { value: '{colors.red.200}' },
-          body: {
-            value: {
-              base: '{colors.red.600}',
-              _osDark: '{colors.red.400}'
-            }
-          }
-        }
-      }
-    },
-    secondary: {
-      tokens: {
-        colors: {
-          text: { value: 'blue' }
-        }
-      },
-      semanticTokens: {
-        colors: {
-          muted: { value: '{colors.blue.200}' },
-          body: {
-            value: {
-              base: '{colors.blue.600}',
-              _osDark: '{colors.blue.400}'
-            }
-          }
-        }
-      }
+      radii: { control: { value: '{radii.none}' } },
+      fonts: { body: { value: '{fonts.serif}' } }
     }
   }
-})
+}
 ```
 
-### Pregenerating themes
-
-By default, no additional theme variant is generated, you need to specify the specific themes you want to generate in
-`staticCss.themes` to include them in the CSS output.
-
-```ts
-// panda.config.ts
-import { defineConfig } from '@pandacss/dev'
-
-export default defineConfig({
-  // ...
-  staticCss: {
-    themes: ['primary', 'secondary']
-  }
-})
+```html
+<html data-panda-theme="gothic"></html>
 ```
 
-This will generate the following CSS:
+Same card, same button: now purple, square corners, serif type. Swap the attribute to `matcha` for green and round.
+
+## Ship the CSS
+
+Panda emits nothing for `themes` until you say how to ship them. Pick one.
+
+### In the main stylesheet
+
+List the themes in `staticCss.themes`. Each becomes a block of variables in the `tokens` layer, holding only what it
+overrides.
+
+```ts filename="panda.config.ts"
+staticCss: {
+  themes: ['matcha', 'gothic']
+}
+```
 
 ```css
 @layer tokens {
   :where(:root, :host) {
-    --colors-text: blue;
-    --colors-body: var(--colors-blue-600);
+    --colors-canvas: var(--colors-gray-50);
+    --colors-accent: var(--colors-blue-600);
+    --fonts-body: var(--fonts-sans);
+    --radii-control: var(--radii-sm);
   }
-
-  [data-panda-theme='primary'] {
-    --colors-text: red;
-    --colors-muted: var(--colors-red-200);
-    --colors-body: var(--colors-red-600);
+  [data-panda-theme='gothic'] {
+    --colors-canvas: var(--colors-gray-100);
+    --colors-accent: var(--colors-purple-700);
+    --fonts-body: var(--fonts-serif);
+    --radii-control: var(--radii-none);
   }
-
-  @media (prefers-color-scheme: dark) {
-    :where(:root, :host) {
-      --colors-body: var(--colors-blue-400);
-    }
-
-    [data-panda-theme='primary'] {
-      --colors-body: var(--colors-red-400);
-    }
+  [data-panda-theme='matcha'] {
+    --colors-accent: var(--colors-green-700);
+    --radii-control: var(--radii-xl);
   }
 }
 ```
 
-### Dynamically importing themes
+No runtime, one request. You pay for every theme on every page.
 
-An alternative way of applying a theme is by using the new `styled-system/themes` entrypoint where you can import the
-themes expected CSS and apply them in your app.
+### On demand
 
-> ℹ️ The `styled-system/themes` will always contain every themes (tree-shaken if not used), whereas `staticCss.themes` only
-> applies to the CSS output.
+The generated `styled-system/themes` module has every theme as its own JSON file, fetched only when asked for.
 
-Each theme has a corresponding JSON file with a similar structure:
+```ts
+import { getTheme, injectTheme } from '../styled-system/themes'
 
-```json
-{
-  "name": "primary",
-  "id": "panda-themes-primary",
-  "css": "[data-panda-theme=primary] { ... }"
+const theme = await getTheme('gothic')
+//    ^? { name: 'gothic'; id: string; css: string }
+
+injectTheme(document.documentElement, theme)
+```
+
+`injectTheme` sets `data-panda-theme` on the element and appends a `<style>` with the theme's variables. It returns that
+style element.
+
+Choose this when you have many themes or the user picks one at runtime. The two options are independent: the module
+always exists, the static CSS only includes what you list.
+
+## Theme attribute
+
+A theme declares its values on the element that carries the attribute, and everything inside inherits them.
+
+**The whole page.** Put it on `<html>`.
+
+```html /data-panda-theme="gothic"/
+<html data-panda-theme="gothic">
+  <body>
+    …
+  </body>
+</html>
+```
+
+**One subtree.** Put it on any element: a sidebar, a preview, an embedded widget. Only that subtree changes.
+
+```html /data-panda-theme="matcha"/
+<html>
+  <body>
+    <aside data-panda-theme="matcha">…</aside>
+  </body>
+</html>
+```
+
+**Nested themes.** The nearest one wins, in either direction.
+
+```html /data-panda-theme="gothic"/ /data-panda-theme="matcha"/
+<html data-panda-theme="gothic">
+  <body>
+    <aside data-panda-theme="matcha">…</aside>
+  </body>
+</html>
+```
+
+**With dark mode.** `class="dark"` can sit on the same element, above the theme, or inside it. Both compose.
+
+```html /class="dark"/ /data-panda-theme="gothic"/ /data-panda-theme="matcha"/
+<html class="dark" data-panda-theme="gothic">
+  <body>
+    <aside data-panda-theme="matcha">…</aside>
+  </body>
+</html>
+```
+
+```css
+.dark [data-panda-theme='gothic'],
+[data-panda-theme='gothic'].dark,
+[data-panda-theme='gothic'] .dark {
+  --colors-canvas: var(--colors-black);
+  --colors-accent: var(--colors-purple-300);
 }
 ```
 
-#### Dynamically import a theme using its name
+Here the page is dark gothic and the aside is dark matcha: the theme picked the palette, dark mode picked the shade.
+Tokens a theme doesn't touch, like `surface`, keep the default's light and dark values.
 
-```ts
-import { getTheme } from '../styled-system/themes'
+## Theme condition
 
-const theme = await getTheme('red')
-//    ^? {
-//     name: "red";
-//     id: string;
-//     css: string;
-// }
+Every theme also gets a condition, `_theme` plus the capitalized name. Use it when a theme needs a structural change
+rather than a different token value.
+
+```tsx /_themeGothic/
+const title = css({
+  fontFamily: 'body',
+  _themeGothic: {
+    textTransform: 'uppercase'
+  }
+})
 ```
 
-#### Inject the theme styles into the DOM:
+The condition matches the theme root and everything inside it:
 
-```ts
-import { injectTheme } from '../styled-system/themes'
-
-const theme = await getTheme('red')
-injectTheme(document.documentElement, theme) // this returns the injected style element
+```css
+.themeGothic\:text-transform_uppercase:where([data-panda-theme='gothic'], [data-panda-theme='gothic'] *) {
+  text-transform: uppercase;
+}
 ```
 
-#### SSR example with NextJS:
+Reach for tokens first. A theme that is only token overrides stays swappable, and components stay unaware of it.
 
-```tsx
-// app/layout.tsx
+## Server rendering
+
+Read the choice on the server, inline the theme CSS, and set the attribute before the first paint.
+
+```tsx filename="app/layout.tsx"
 import { cookies } from 'next/headers'
-import './globals.css'
-import { ThemeName, getTheme } from '../../styled-system/themes'
+import { getTheme, type ThemeName } from '../styled-system/themes'
 
-export default async function RootLayout({
-  children
-}: {
-  children: React.ReactNode
-}) {
-  const store = cookies()
-  const themeName = store.get('theme')?.value as ThemeName
-  const theme = themeName && (await getTheme(themeName))
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const name = cookies().get('theme')?.value as ThemeName | undefined
+  const theme = name ? await getTheme(name) : undefined
 
   return (
-    <html lang="en" data-panda-theme={themeName ? themeName : undefined}>
-      {themeName && (
-        <head>
-          <style
-            type="text/css"
-            id={theme.id}
-            dangerouslySetInnerHTML={{ __html: theme.css }}
-          />
-        </head>
-      )}
+    <html lang="en" data-panda-theme={name}>
+      <head>{theme && <style id={theme.id} dangerouslySetInnerHTML={{ __html: theme.css }} />}</head>
       <body>{children}</body>
     </html>
   )
 }
 ```
 
+On the client, switching is the same two calls plus storing the choice.
+
 ```tsx
-// app/page.tsx
-'use client'
-import { getTheme, injectTheme } from '../../styled-system/themes'
-
-export default function Home() {
-  return (
-    <>
-      <button
-        onClick={async () => {
-          const current = document.documentElement.dataset.pandaTheme
-          const next = current === 'primary' ? 'secondary' : 'primary'
-          const theme = await getTheme(next)
-          setCookie('theme', next, 7)
-          injectTheme(document.documentElement, theme)
-        }}
-      >
-        swap theme
-      </button>
-    </>
-  )
-}
-
-// Set a Cookie
-function setCookie(cName: string, cValue: any, expDays: number) {
-  let date = new Date()
-  date.setTime(date.getTime() + expDays * 24 * 60 * 60 * 1000)
-  const expires = 'expires=' + date.toUTCString()
-  document.cookie = cName + '=' + cValue + '; ' + expires + '; path=/'
-}
+const next = current === 'gothic' ? 'matcha' : 'gothic'
+injectTheme(document.documentElement, await getTheme(next))
+document.cookie = `theme=${next}; path=/`
 ```
 
-### Theme contract
+## Theme contract
 
-Finally, you can create a theme contract to ensure that all themes have the same structure:
+A theme that forgets a token silently falls back to the default. `defineThemeContract` turns that into a type error.
 
-```ts
-import { defineThemeContract } from '@pandacss/dev'
+```ts filename="panda.config.ts"
+import { defineConfig, defineThemeContract } from '@pandacss/dev'
 
 const defineTheme = defineThemeContract({
-  tokens: {
-    colors: {
-      red: { value: '' } // theme implementations must have a red color
-    }
-  }
+  semanticTokens: { colors: { accent: { value: '' } } }
 })
 
-defineTheme({
-  tokens: {
-    colors: {
-      // ^^^^ ❌  Property 'red' is missing in type '{}' but required in type '{ red: { value: string; }; }'
-      //
-      // ✅ fixed with
-      // red: { value: 'red' },
-    }
+export default defineConfig({
+  themes: {
+    matcha: defineTheme({ semanticTokens: { colors: { accent: { value: '{colors.green.700}' } } } }),
+    gothic: defineTheme({ semanticTokens: { colors: {} } })
+    //                                     ^ Property 'accent' is missing
   }
 })
 ```

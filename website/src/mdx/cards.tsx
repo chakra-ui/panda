@@ -1,68 +1,98 @@
+'use client'
+
 import { css, cx } from '@/styled-system/css'
-import { HStack, Stack, panda } from '@/styled-system/jsx'
 import { grid } from '@/styled-system/patterns'
-import { LuChevronRight } from 'react-icons/lu'
-import { Anchor } from '../components/ui/anchor'
+import { docCard } from '@/styled-system/recipes'
+import Link from 'next/link'
+import { createContext, useContext } from 'react'
+import { LuArrowRight } from 'react-icons/lu'
 
-const Arrow = () => (
-  <span
-    className={css({
-      transition: 'opacity',
-      opacity: { base: '0', _groupHover: '1' }
-    })}
-  >
-    <LuChevronRight />
-  </span>
-)
+type Mode = 'gapped' | 'gapless'
 
-type Props = {
-  children?: React.ReactNode
+const ModeContext = createContext<Mode>('gapped')
+
+interface CardProps {
   title: string
-  description?: string
-  icon: React.ReactNode
-  image?: boolean
-  arrow?: boolean
   href: string
+  children?: React.ReactNode
+  description?: string
+  icon?: React.ReactNode
+  kicker?: string
+  cta?: React.ReactNode
+  arrow?: boolean
+  mode?: Mode
 }
 
-export const Card = (props: Props) => {
-  const { children, title, description, icon, image, arrow, href } = props
-  const animatedArrow = arrow ? <Arrow /> : null
+const inlineArrow = css({
+  display: 'inline',
+  ml: '2',
+  verticalAlign: 'middle',
+  color: 'fg.subtle'
+})
+
+export const Card = (props: CardProps) => {
+  const { title, href, children, description, icon, kicker, cta, arrow, mode } =
+    props
+  const groupMode = useContext(ModeContext)
+  const classes = docCard({ mode: mode ?? groupMode })
+  const external = href.startsWith('http')
 
   return (
-    <panda.div borderWidth="1px" px="6" py="4" rounded="lg">
-      <Anchor className="group" href={href}>
-        {image || children}
-        {icon}
-        <span>
-          <Stack gap="1">
-            <panda.span textStyle="lg" fontWeight="semibold">
-              <HStack>
-                {title}
-                {animatedArrow}
-              </HStack>
-            </panda.span>
-            {description && (
-              <panda.span color={{ base: 'neutral.700', _dark: 'neutral.400' }}>
-                {description}
-              </panda.span>
-            )}
-          </Stack>
+    <Link
+      href={href}
+      className={classes.root}
+      target={external ? '_blank' : undefined}
+      rel={external ? 'noopener noreferrer' : undefined}
+    >
+      {icon && <span className={classes.icon}>{icon}</span>}
+      {kicker && <span className={classes.kicker}>{kicker}</span>}
+      <span className={classes.title}>
+        {title}
+        {arrow && <LuArrowRight className={inlineArrow} />}
+      </span>
+      {(description || children) && (
+        <span className={classes.body}>{description ?? children}</span>
+      )}
+      {cta && (
+        <span className={classes.cta}>
+          {cta}
+          <LuArrowRight />
         </span>
-      </Anchor>
-    </panda.div>
+      )}
+    </Link>
   )
 }
 
-export const Cards = (props: React.ComponentProps<'div'>) => {
-  const { className, ...rest } = props
+interface CardsProps extends React.ComponentProps<'div'> {
+  columns?: 1 | 2 | 3 | 4
+  mode?: Mode
+}
+
+const gridStyles = {
+  1: grid({ columns: 1, gap: '4', my: '8' }),
+  2: grid({ columns: { base: 1, sm: 2 }, gap: '4', my: '8' }),
+  3: grid({ columns: { base: 1, sm: 2, lg: 3 }, gap: '4', my: '8' }),
+  4: grid({ columns: { base: 1, sm: 2, lg: 4 }, gap: '4', my: '8' })
+}
+
+const gaplessGrid = css({ gap: '0' })
+
+export const Cards = (props: CardsProps) => {
+  const { className, columns = 2, mode = 'gapped', children, ...rest } = props
+
   return (
-    <div
-      className={cx(
-        grid({ columns: { base: 1, sm: 2 }, mt: '10', gap: '6' }),
-        className
-      )}
-      {...rest}
-    />
+    <ModeContext.Provider value={mode}>
+      <div
+        data-mode={mode}
+        className={cx(
+          gridStyles[columns] ?? gridStyles[2],
+          mode === 'gapless' && gaplessGrid,
+          className
+        )}
+        {...rest}
+      >
+        {children}
+      </div>
+    </ModeContext.Provider>
   )
 }

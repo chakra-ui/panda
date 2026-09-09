@@ -23,11 +23,14 @@ pub enum ArtifactId {
     JsxPatterns,
     Patterns,
     Recipes,
+    Specs,
     Sva,
     Themes,
     Tokens,
     Types,
     ViewTransition,
+    PositionTry,
+    Keyframes,
 }
 
 impl ArtifactId {
@@ -47,11 +50,14 @@ impl ArtifactId {
         Self::JsxIndex,
         Self::Patterns,
         Self::Recipes,
+        Self::Specs,
         Self::Sva,
         Self::Themes,
         Self::Tokens,
         Self::Types,
         Self::ViewTransition,
+        Self::PositionTry,
+        Self::Keyframes,
     ];
 
     #[must_use]
@@ -72,11 +78,14 @@ impl ArtifactId {
             Self::JsxPatterns => "jsx-patterns",
             Self::Patterns => "patterns",
             Self::Recipes => "recipes",
+            Self::Specs => "specs",
             Self::Sva => "sva",
             Self::Themes => "themes",
             Self::Tokens => "tokens",
             Self::Types => "types",
             Self::ViewTransition => "view-transition",
+            Self::PositionTry => "position-try",
+            Self::Keyframes => "keyframes",
         }
     }
 }
@@ -107,7 +116,6 @@ pub enum ConfigDependency {
     Prefix,
     Recipes,
     Separator,
-    Syntax,
     Themes,
     Tokens,
     Utilities,
@@ -126,7 +134,6 @@ impl ConfigDependency {
         Self::Prefix,
         Self::Recipes,
         Self::Separator,
-        Self::Syntax,
         Self::Themes,
         Self::Tokens,
         Self::Utilities,
@@ -146,7 +153,6 @@ impl ConfigDependency {
             Self::Prefix => "prefix",
             Self::Recipes => "recipes",
             Self::Separator => "separator",
-            Self::Syntax => "syntax",
             Self::Themes => "themes",
             Self::Tokens => "tokens",
             Self::Utilities => "utilities",
@@ -270,7 +276,6 @@ impl ArtifactGraph {
                 ConfigDependency::CodegenImportExtensions,
                 ConfigDependency::JsxFramework,
                 ConfigDependency::JsxStyleProps,
-                ConfigDependency::Syntax,
                 ConfigDependency::Utilities,
             ]),
         },
@@ -282,7 +287,6 @@ impl ArtifactGraph {
                 ConfigDependency::JsxFactory,
                 ConfigDependency::JsxFramework,
                 ConfigDependency::JsxStyleProps,
-                ConfigDependency::Syntax,
             ]),
         },
         ArtifactNode {
@@ -291,7 +295,6 @@ impl ArtifactGraph {
                 ConfigDependency::CodegenFormat,
                 ConfigDependency::CodegenImportExtensions,
                 ConfigDependency::JsxFramework,
-                ConfigDependency::Syntax,
             ]),
         },
         ArtifactNode {
@@ -303,7 +306,6 @@ impl ArtifactGraph {
                 ConfigDependency::JsxFramework,
                 ConfigDependency::JsxStyleProps,
                 ConfigDependency::Patterns,
-                ConfigDependency::Syntax,
             ]),
         },
         ArtifactNode {
@@ -315,7 +317,6 @@ impl ArtifactGraph {
                 ConfigDependency::JsxFramework,
                 ConfigDependency::JsxStyleProps,
                 ConfigDependency::Recipes,
-                ConfigDependency::Syntax,
             ]),
         },
         ArtifactNode {
@@ -327,7 +328,6 @@ impl ArtifactGraph {
                 ConfigDependency::JsxFramework,
                 ConfigDependency::JsxStyleProps,
                 ConfigDependency::Recipes,
-                ConfigDependency::Syntax,
             ]),
         },
         ArtifactNode {
@@ -339,7 +339,6 @@ impl ArtifactGraph {
                 ConfigDependency::JsxFramework,
                 ConfigDependency::JsxStyleProps,
                 ConfigDependency::Patterns,
-                ConfigDependency::Syntax,
             ]),
         },
         ArtifactNode {
@@ -348,7 +347,6 @@ impl ArtifactGraph {
                 ConfigDependency::CodegenFormat,
                 ConfigDependency::CodegenImportExtensions,
                 ConfigDependency::Patterns,
-                ConfigDependency::Syntax,
                 ConfigDependency::Tokens,
                 ConfigDependency::Utilities,
             ]),
@@ -388,7 +386,6 @@ impl ArtifactGraph {
                 ConfigDependency::JsxStyleProps,
                 ConfigDependency::Patterns,
                 ConfigDependency::Recipes,
-                ConfigDependency::Syntax,
                 ConfigDependency::Themes,
                 ConfigDependency::Tokens,
                 ConfigDependency::Utilities,
@@ -403,7 +400,6 @@ impl ArtifactGraph {
                 ConfigDependency::Hash,
                 ConfigDependency::Prefix,
                 ConfigDependency::Separator,
-                ConfigDependency::Syntax,
                 ConfigDependency::Utilities,
             ]),
         },
@@ -412,7 +408,6 @@ impl ArtifactGraph {
             dependencies: DependencySet::from_slice(&[
                 ConfigDependency::CodegenFormat,
                 ConfigDependency::CodegenImportExtensions,
-                ConfigDependency::Syntax,
             ]),
         },
         ArtifactNode {
@@ -420,7 +415,6 @@ impl ArtifactGraph {
             dependencies: DependencySet::from_slice(&[
                 ConfigDependency::CodegenFormat,
                 ConfigDependency::CodegenImportExtensions,
-                ConfigDependency::Syntax,
             ]),
         },
         ArtifactNode {
@@ -429,7 +423,22 @@ impl ArtifactGraph {
                 ConfigDependency::CodegenFormat,
                 ConfigDependency::CodegenImportExtensions,
                 ConfigDependency::Prefix,
-                ConfigDependency::Syntax,
+            ]),
+        },
+        ArtifactNode {
+            id: ArtifactId::PositionTry,
+            dependencies: DependencySet::from_slice(&[
+                ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
+                ConfigDependency::Prefix,
+            ]),
+        },
+        ArtifactNode {
+            id: ArtifactId::Keyframes,
+            dependencies: DependencySet::from_slice(&[
+                ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
+                ConfigDependency::Prefix,
             ]),
         },
         ArtifactNode {
@@ -449,11 +458,14 @@ impl ArtifactGraph {
             ]),
         },
         ArtifactNode {
+            id: ArtifactId::Specs,
+            dependencies: DependencySet::from_slice(&[ConfigDependency::Tokens]),
+        },
+        ArtifactNode {
             id: ArtifactId::CssIndex,
             dependencies: DependencySet::from_slice(&[
                 ConfigDependency::CodegenFormat,
                 ConfigDependency::CodegenImportExtensions,
-                ConfigDependency::Syntax,
             ]),
         },
         ArtifactNode {
@@ -462,7 +474,6 @@ impl ArtifactGraph {
                 ConfigDependency::CodegenFormat,
                 ConfigDependency::CodegenImportExtensions,
                 ConfigDependency::Conditions,
-                ConfigDependency::Syntax,
                 ConfigDependency::Tokens,
             ]),
         },
@@ -647,8 +658,15 @@ fn generate_node_inner(
         ArtifactId::ViewTransition => {
             crate::artifacts::view_transition::generate(ctx, options, node.dependencies)
         }
+        ArtifactId::PositionTry => {
+            crate::artifacts::position_try::generate(ctx, options, node.dependencies)
+        }
+        ArtifactId::Keyframes => {
+            crate::artifacts::keyframes::generate(ctx, options, node.dependencies)
+        }
         ArtifactId::Themes => crate::artifacts::themes::generate(ctx, options, node.dependencies),
         ArtifactId::Tokens => crate::artifacts::tokens::generate(ctx, options, node.dependencies),
+        ArtifactId::Specs => crate::artifacts::specs::generate(ctx, options, node.dependencies),
         ArtifactId::Cx => crate::artifacts::cx::generate(ctx, options, node.dependencies),
         ArtifactId::Helpers => crate::artifacts::helpers::generate(ctx, options, node.dependencies),
         ArtifactId::JsxCreateRecipeContext => {

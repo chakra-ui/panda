@@ -28,7 +28,15 @@ export function Article({ html }: { html: string }) {
 }
 ```
 
-Sizes: `sm` | `md` (default) | `lg` | `xl` | `2xl`.
+Sizes: `sm` | `md` (default) | `lg` | `xl` | `2xl`. A size is one font size on the root; headings, spacing, and code are
+`em` ratios of it, so a `prose` inside a smaller container scales down with it.
+
+Rhythm is two custom properties on the root, `--prose-leading` (line height, `1.625`) and `--prose-flow` (gap between
+blocks, `1.25em`). Set them on the wrapper to tighten or loosen an article:
+
+```tsx
+<article className={cx(prose(), css({ '--prose-leading': '1.5', '--prose-flow': '1em' }))} />
+```
 
 Lead paragraphs: add `class="lead"` inside the prose container.
 
@@ -68,7 +76,8 @@ Defaults live under `colors.prose.*` (or your `semanticTokens.prefix`) with `_da
 | `quoteBorder`    | Blockquote edge               |
 | `caption`        | `figcaption`                  |
 | `kbd`            | Keyboard text                 |
-| `code`           | Inline code                   |
+| `code`           | Inline code text              |
+| `codeBg`         | Inline code background        |
 | `preCode`        | Code block text               |
 | `preBg`          | Code block background         |
 | `thBorder`       | Table header / footer borders |

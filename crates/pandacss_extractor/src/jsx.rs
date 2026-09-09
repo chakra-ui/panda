@@ -3,27 +3,26 @@
 //! `{...spread}` attributes in source order.
 
 use crate::{
-    CssSyntaxKind, Diagnostic, ExpressionFacts, ExtractorConfig, ImportSpecifierKind, JsxKind,
-    Literal, MatchCategory, MatchedImport, Matchers, Span, StyleObject, StyleTree, VisitorContext,
-    css_template::css_template_to_style_tree,
+    Diagnostic, ExpressionFacts, ExtractorConfig, ImportSpecifierKind, JsxKind, Literal,
+    MatchCategory, MatchedImport, Matchers, Span, StyleObject, StyleTree, VisitorContext,
     jsx_react_runtime,
     matcher::member_display,
     source_refs::{
         StyleSourceOwner, StyleSourceOwnerKind, StyleSourceRef, collect_jsx_attribute_source_refs,
     },
     span_from_oxc,
-    style_tree::{jsx_attributes_to_style_tree, project_literal},
+    style_tree::{ProjectionRetention, jsx_attributes_to_style_tree, project_style},
     styled_bindings::{StyledBinding, StyledBindings, collect_styled_bindings},
 };
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     CallExpression, Expression, IdentifierReference, JSXAttributeItem, JSXAttributeName,
     JSXAttributeValue, JSXElement, JSXElementName, JSXMemberExpression, JSXMemberExpressionObject,
-    Program, StaticMemberExpression, TaggedTemplateExpression,
+    Program, StaticMemberExpression,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
-use oxc_span::{GetSpan, SourceType};
+use oxc_span::SourceType;
 use serde::Serialize;
 use smallvec::SmallVec;
 use std::borrow::Cow;
@@ -88,7 +87,6 @@ pub enum JsxSourceKind {
     #[default]
     Element,
     RuntimeCall,
-    TaggedTemplate,
     FrameworkTemplate,
 }
 
@@ -147,11 +145,12 @@ pub fn extract_jsx(
 
     let allocator = Allocator::default();
     let raw_source = source;
-    let source = crate::adapt_source(source, path);
+    let format = crate::adapter::SfcFormat::from_path(path);
+    let source = crate::adapt_source(source, format);
     let source = source.as_ref();
     let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
     let parser_return = Parser::new(&allocator, source, source_type)
-        .with_options(crate::adapter::parse_options_for(path))
+        .with_options(crate::adapter::parse_options_for(format))
         .parse();
 
     let resolver = crate::Resolver::build(crate::scope::ResolverBuildInput {
@@ -159,6 +158,7 @@ pub fn extract_jsx(
         matched,
         matchers: Some(&config.matchers),
         tokens: config.token_dictionary.as_deref(),
+        prefix: config.class_name_prefix.as_str(),
         cross_file: config
             .cross_file
             .as_ref()
@@ -479,14 +479,6 @@ impl Extractor<'_, '_, '_> {
         }
     }
 
-    fn resolve_tagged_tag<'a>(&'a self, tag: &'a Expression<'_>) -> Option<ResolvedTag<'a>> {
-        let Expression::StaticMemberExpression(member) = tag else {
-            return None;
-        };
-        let (root, root_ident, path) = flatten_expr_member(member)?;
-        self.resolve_member(root, root_ident, &path)
-    }
-
     pub(crate) fn resolve_runtime_tag<'a>(
         &'a self,
         expr: &'a Expression<'_>,
@@ -594,10 +586,14 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 (Some(base), style) => prepend_styled_base(base, style),
                 (None, style) => style,
             };
-            let data = style
-                .as_ref()
-                .and_then(project_literal)
-                .unwrap_or_else(|| Literal::Object(vec![]));
+            let retain = self.retain_transform_facts;
+            let retention = if retain {
+                ProjectionRetention::Retain
+            } else {
+                ProjectionRetention::Discard
+            };
+            let (data, style) = project_style(style, retention);
+            let data = data.unwrap_or_else(|| Literal::Object(vec![]));
             let data_empty = matches!(&data, Literal::Object(entries) if entries.is_empty());
             if data_empty && !emit_empty {
                 walk::walk_jsx_element(self, jsx_el);
@@ -621,7 +617,6 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 );
             }
 
-            let retain = self.retain_transform_facts;
             self.out.push(ExtractedJsx {
                 category,
                 kind,
@@ -643,7 +638,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                     Vec::new()
                 },
                 panda_owned,
-                style: if retain { style } else { None },
+                style,
                 source: if retain {
                     JsxSourceFacts {
                         kind: JsxSourceKind::Element,
@@ -657,45 +652,6 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
             });
         }
         walk::walk_jsx_element(self, jsx_el);
-    }
-
-    fn visit_tagged_template_expression(&mut self, tagged: &TaggedTemplateExpression<'a>) {
-        if self.ctx.config.syntax != CssSyntaxKind::TemplateLiteral {
-            walk::walk_tagged_template_expression(self, tagged);
-            return;
-        }
-
-        if let Some(resolved) = self.resolve_tagged_tag(&tagged.tag)
-            && let Some(tree) = css_template_to_style_tree(&tagged.quasi, self.ctx.resolver)
-            && matches!(tree, StyleTree::Object(_))
-        {
-            let kind = jsx_kind(&self.ctx.config.matchers, &resolved.name, &resolved.alias);
-            let data = project_literal(&tree).unwrap_or(Literal::Object(vec![]));
-            let retain = self.retain_transform_facts;
-            self.out.push(ExtractedJsx {
-                category: resolved.category,
-                kind,
-                name: resolved.name.into_owned(),
-                alias: resolved.alias.into_owned(),
-                data,
-                span: span_from_oxc(tagged.span),
-                closing_span: None,
-                attributes: Vec::new(),
-                panda_owned: resolved.panda_owned,
-                style: if retain { Some(tree) } else { None },
-                source: if retain {
-                    JsxSourceFacts {
-                        kind: JsxSourceKind::TaggedTemplate,
-                        callee_span: Some(span_from_oxc(tagged.tag.span())),
-                        args: Vec::new(),
-                        factory_intrinsic: factory_intrinsic_from_expression(&tagged.tag),
-                    }
-                } else {
-                    JsxSourceFacts::default()
-                },
-            });
-        }
-        walk::walk_tagged_template_expression(self, tagged);
     }
 }
 

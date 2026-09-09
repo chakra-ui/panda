@@ -1,7 +1,5 @@
 //! `css/view-transition` runtime for `viewTransition()`.
 
-use pandacss_config::CssSyntaxKind;
-
 use crate::{
     Artifact, ArtifactFile, ArtifactId, CodegenContext, ConstDecl, DependencySet, Expr, ImportDecl,
     Item, ItemNode, Module, RuntimeImport, TsType, TypeAliasDecl,
@@ -27,10 +25,6 @@ pub fn files(
     options: GenerateOptions,
     dependencies: DependencySet,
 ) -> Vec<ArtifactFile> {
-    if matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
-        return Vec::new();
-    }
-
     if ctx.virtualizes(RuntimeImport::CssIndex) {
         return Vec::new();
     }
@@ -52,7 +46,7 @@ fn module(ctx: CodegenContext<'_>) -> Module {
 
     Module::new()
         .with_import(ImportDecl::value(
-            ["toHash"],
+            ["stableStringify", "toHash"],
             &ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
         ))
         .with_import(ImportDecl::ty(["SystemStyleObject"], "../types/system"))
@@ -70,7 +64,7 @@ fn module(ctx: CodegenContext<'_>) -> Module {
             exported: true,
             name: "ViewTransitionFn".into(),
             generic_params: Vec::new(),
-            ty: TsType::Raw("(options: ViewTransitionStyleObject) => string".into()),
+            ty: TsType::Raw(view_transition_fn_type(ctx)),
             js_doc: None,
         }))
         .with_item(Item::both(ItemNode::Const(ConstDecl {
@@ -83,8 +77,25 @@ fn module(ctx: CodegenContext<'_>) -> Module {
         })))
 }
 
+fn view_transition_fn_type(ctx: CodegenContext<'_>) -> String {
+    let names: Vec<String> = ctx.config.theme.view_transitions.keys().cloned().collect();
+    if names.is_empty() {
+        return "(options: ViewTransitionStyleObject) => string".into();
+    }
+    let name_union = names
+        .iter()
+        .map(|name| format!("{name:?}"))
+        .collect::<Vec<_>>()
+        .join(" | ");
+    format!("(options: ViewTransitionStyleObject | {name_union}) => string")
+}
+
 const VIEW_TRANSITION_IMPL: &str = r"(options) => {
   const prefix = __PREFIX__
+  if (typeof options === 'string') {
+    const base = 'vt_' + options
+    return prefix ? prefix + '-' + base : base
+  }
   const slots = ['group', 'imagePair', 'old', 'new']
   const filtered = {}
   if (options && typeof options === 'object') {
@@ -94,31 +105,4 @@ const VIEW_TRANSITION_IMPL: &str = r"(options) => {
   }
   const base = 'vt_' + toHash(stableStringify(filtered))
   return prefix ? prefix + '-' + base : base
-
-  function stableStringify(value) {
-    if (value === null) return 'null'
-    const t = typeof value
-    if (t === 'boolean') return value ? 'true' : 'false'
-    if (t === 'number') return Number.isFinite(value) ? String(value) : 'null'
-    if (t === 'string') return JSON.stringify(value)
-    if (Array.isArray(value)) {
-      let out = '['
-      for (let i = 0; i < value.length; i++) {
-        if (i) out += ','
-        out += stableStringify(value[i])
-      }
-      return out + ']'
-    }
-    if (t === 'object') {
-      const keys = Object.keys(value).sort()
-      let out = '{'
-      for (let i = 0; i < keys.length; i++) {
-        if (i) out += ','
-        const key = keys[i]
-        out += JSON.stringify(key) + ':' + stableStringify(value[key])
-      }
-      return out + '}'
-    }
-    return 'null'
-  }
 }";

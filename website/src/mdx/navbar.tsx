@@ -3,11 +3,10 @@
 import { CourseBanner } from '@/components/course-banner'
 import { CommandMenu } from '@/components/docs/command-menu'
 import { SearchButton } from '@/components/docs/search'
-import { Sidebar } from '@/components/docs/sidebar'
-import { TAB_ICONS } from '@/components/docs/tab-bar'
+import { MobileMenu, MobileMenuLogo } from '@/components/docs/mobile-menu'
 import { Anchor } from '@/components/ui/anchor'
 import { drawerSlotRecipe } from '@/components/ui/drawer'
-import { docsConfig, docsTabs } from '@/docs.config'
+import { docsConfig } from '@/docs.config'
 import { GithubIcon, MenuIcon } from '@/icons'
 import { useMatchMedia } from '@/lib/use-match-media'
 import { css, cx } from '@/styled-system/css'
@@ -118,11 +117,9 @@ export const Navbar = () => {
               <MenuIcon />
             </button>
           }
+          header={<MobileMenuLogo />}
         >
-          <div className={css({ pt: '8' })}>
-            <MobileTabSwitcher pathname={pathname} />
-            <Sidebar slug={pathname} />
-          </div>
+          <MobileMenu pathname={pathname} />
         </MobileNavDrawer>
       </nav>
     </div>
@@ -132,12 +129,14 @@ export const Navbar = () => {
 interface MobileNavDrawerProps {
   trigger: React.ReactNode
   children: React.ReactNode
+  /** Sits on the same row as the close button. */
+  header?: React.ReactNode
 }
 
 export const MobileNavDrawer = (props: MobileNavDrawerProps) => {
-  const { trigger, children } = props
+  const { trigger, children, header } = props
   const dialog = useDialog()
-  const classes = drawerSlotRecipe({ size: 'md', placement: 'start' })
+  const classes = drawerSlotRecipe({ size: 'xs', placement: 'start' })
   const pathname = usePathname()
 
   const isLgUp = useMatchMedia('(min-width: 1024px)')
@@ -158,70 +157,51 @@ export const MobileNavDrawer = (props: MobileNavDrawerProps) => {
       <Dialog.Backdrop className={classes.backdrop} />
       <Dialog.Positioner className={classes.positioner}>
         <Dialog.Content className={classes.content}>
+          <div
+            className={css({
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '4',
+              minH: '16',
+              px: '5',
+              py: '3',
+              flexShrink: 0,
+              borderBottomWidth: '1px',
+              borderColor: 'border'
+            })}
+          >
+            {header ?? <span />}
+            <Dialog.CloseTrigger
+              className={css({
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                ms: 'auto',
+                w: '9',
+                h: '9',
+                rounded: 'full',
+                borderWidth: '1px',
+                borderColor: 'border',
+                color: 'fg',
+                cursor: 'pointer',
+                transitionProperty: 'color, background-color, border-color',
+                transitionDuration: '150ms',
+                _hover: { bg: 'bg.subtle', borderColor: 'fg.subtle' }
+              })}
+            >
+              <Center width="4" height="4">
+                <Icon
+                  icon="Close"
+                  className={css({ width: '1em', height: 'auto' })}
+                />
+              </Center>
+            </Dialog.CloseTrigger>
+          </div>
           <div className={cx(classes.body, 'scroll-area')}>{children}</div>
-          <Dialog.CloseTrigger className={classes.closeTrigger}>
-            <Center width="5" height="5" color="fg">
-              <Icon
-                icon="Close"
-                className={css({ width: '1em', height: 'auto' })}
-              />
-            </Center>
-          </Dialog.CloseTrigger>
         </Dialog.Content>
       </Dialog.Positioner>
     </Dialog.RootProvider>
-  )
-}
-
-interface MobileTabSwitcherProps {
-  pathname: string | null
-}
-
-/**
- * Lets a reader switch docs tabs from inside the mobile drawer, without closing
- * it first, since the sticky TabBar sits behind the drawer's backdrop on mobile.
- */
-export const MobileTabSwitcher = ({ pathname }: MobileTabSwitcherProps) => {
-  const activeKey = pathname?.split('/')[2]
-
-  return (
-    <div
-      className={css({
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '2',
-        pb: '6',
-        mb: '6',
-        borderBottomWidth: '1px',
-        borderColor: 'border'
-      })}
-    >
-      {docsTabs.map(tab => {
-        const Icon = TAB_ICONS[tab.key]
-        return (
-          <Anchor
-            key={tab.key}
-            href={`/docs/${tab.key}`}
-            className={css({
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '1.5',
-              textStyle: 'sm',
-              fontWeight: 'semibold',
-              px: '3',
-              py: '1.5',
-              rounded: 'full',
-              borderWidth: '1px',
-              borderColor: tab.key === activeKey ? 'accent' : 'border',
-              bg: tab.key === activeKey ? 'accent.subtle' : 'transparent',
-              color: tab.key === activeKey ? 'fg' : 'fg.muted'
-            })}
-          >
-            {Icon && <Icon size={14} />}
-            {tab.title}
-          </Anchor>
-        )
-      })}
-    </div>
   )
 }

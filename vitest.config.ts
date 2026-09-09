@@ -31,6 +31,8 @@ export default defineConfig({
       // Rust compiler stack — their tests can't resolve deps from root.
       'playground/**',
       'website/**',
+      // Bun sandbox runs under `bun test`.
+      'sandbox-bun/**',
       // Binding tests need `snapshotFormat.compareKeys: null` to preserve the
       // JSON key order coming from the Rust/wasm binding. Run them via package
       // test scripts, which pick up their local configs.
@@ -39,6 +41,9 @@ export default defineConfig({
       // Lint integration suite drives a real Panda compiler (needs the native
       // binding); runs via the package's own vitest config in the node env.
       'packages/eslint-plugin/__tests__/**',
+      // Legacy comparison pins (`@pandacss/node` npm) resolve only from the bench
+      // package. Root aliases every `@pandacss/*` into `packages/*/src`.
+      'bench/__tests__/**',
     ],
   },
   resolve: {

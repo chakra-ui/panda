@@ -1,0 +1,127 @@
+---
+title: Tracking JSX
+description: How Panda connects a JSX tag to a config recipe, and what breaks that connection.
+---
+
+Config recipes emit CSS for `<Button size="lg" />` only if Panda can treat that tag as the recipe. The match is the
+**component name**, not the import. A local function named `Button` is enough, even if it never imported
+`styled-system/recipes`.
+
+`cva` and `sva` do not need this. Defining them already emits every variant, so a missed JSX tag does not leave you
+without CSS.
+
+## Naming guide
+
+A config recipe has three names. Mixing them up is the usual reason tracking fails.
+
+```ts
+theme: {
+  recipes: {
+    button: defineRecipe({
+      className: 'btn', // .btn, .btn--size_sm
+      jsx: ['Button'] // <Button>
+    })
+  }
+}
+```
+
+```tsx
+import { button } from '../styled-system/recipes' // theme key
+
+button({ size: 'sm' }) // btn btn--size_sm
+
+<Button size="lg" /> // still Button, not Btn
+```
+
+## Default tags
+
+```
+theme.recipes.button      →  Button
+theme.slotRecipes.card    →  Card, Card.Root, CardRoot
+```
+
+Those names come from the **theme key**, not from `className`. The exported compound name still has to match. `Card`
+works. `Panel` does not, unless you set `jsx`.
+
+```tsx
+const { withProvider, withContext } = createSlotRecipeContext(card)
+
+// tracked
+export const Card = {
+  Root: withProvider('div', 'root'),
+  Header: withContext('header', 'header')
+}
+
+// not tracked
+export const Panel = {
+  Root: withProvider('div', 'root'),
+  Header: withContext('header', 'header')
+}
+```
+
+```tsx
+<Card.Root size="lg">
+  <Card.Header />
+</Card.Root>
+```
+
+`size` is on the root. Header is a part.
+
+## jsx
+
+Use `jsx` when the export name is not the default tag.
+
+```ts
+export const buttonRecipe = defineRecipe({
+  className: 'button',
+  jsx: ['Button', 'LinkButton', /Btn$/]
+})
+```
+
+Strings are exact tags. A regex matches the full tag, including `Button.Root`.
+
+<Callout type="warning">
+  `jsx` **replaces** the default root name. It does not add to it. If you set `jsx: ['LinkButton']` and omit
+  `Button`, `<Button>` is no longer tracked.
+</Callout>
+
+On a slot recipe, `jsx` replaces the root name only. Slot compounds stay `{ThemeKey}.{Slot}` and `{ThemeKey}{Slot}`.
+
+```ts
+export const cardRecipe = defineSlotRecipe({
+  className: 'card',
+  slots: ['root', 'header'],
+  jsx: ['Panel']
+  // tracked:     Panel, Card.Root, Card.Header
+  // not tracked: Card, Panel.Root, Panel.Header
+})
+```
+
+If you export `Panel = { Root, Header }`, list the tags that carry variant props (`Panel.Root`), plus
+`Panel` if you render it. Or use a regex:
+
+```ts
+jsx: ['Panel', 'Panel.Root']
+// or
+jsx: [/^Panel/]
+```
+
+Keep `Card` / `Card.Root` in that list if those tags still appear in the app.
+
+## False matches
+
+A local `<Button>` that is **not** this recipe can still be treated as one. The match is not import-gated.
+
+A headless prop can also share a name with a CSS property (`Select.Content` `position`). You cannot exclude that
+tag in the current engine. If it causes a real problem,
+[open an issue](https://github.com/chakra-ui/panda/issues).
+
+Renamed props (`size` → `buttonSize`) and a wrapper named `Random` are a different miss. See
+[Extraction rules](/docs/styling/extraction-rules).
+
+## See also
+
+- [Extraction rules](/docs/styling/extraction-rules)
+- [Config recipes](/docs/recipes/config-recipe)
+- [Slot recipe context](/docs/recipes/slot-recipe-context)
+- [Wrap headless libraries](/docs/design-systems/wrap-headless-libraries)

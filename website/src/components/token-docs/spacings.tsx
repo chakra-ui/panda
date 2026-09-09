@@ -33,7 +33,7 @@ export const Spacings = () => {
             <div className={css({ flex: '1' })}>
               <div
                 className={css({ bg: 'pink.200', height: '4' })}
-                style={{ width: token.extensions.varRef }}
+                style={{ width: token.value }}
               />
             </div>
           </div>

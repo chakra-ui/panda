@@ -18,7 +18,7 @@ fn element_props_win_over_the_chain_base() {
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = styled('button', __pcva({ base: 'color_red' }));
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red' }));
     export const el = <button type="submit" className="color_blue" />;
     "#);
 }
@@ -38,7 +38,7 @@ fn an_alias_of_a_folded_chain_still_folds() {
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = styled('button', __pcva({ base: 'color_red' }));
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red' }));
     const Alias = Button;
     export const el = <button className="color_red" />;
     "#);
@@ -58,7 +58,7 @@ fn folds_a_styled_definition_to_its_intrinsic_tag() {
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = styled('button', __pcva({ base: 'color_red' }));
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red' }));
     export const el = <button className="color_red">hi</button>;
     "#);
 }
@@ -79,7 +79,7 @@ fn folds_a_multi_level_chain_with_the_outermost_level_winning() {
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const L0 = styled('button', __pcva({ base: 'color_red margin_0' }));
+    const L0 = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red margin_0' }));
     const L1 = styled(L0, { base: { color: 'blue' } });
     const L2 = styled(L1, { base: { color: 'green' } });
     export const el = <button className="color_green margin_0">hi</button>;
@@ -100,7 +100,7 @@ fn the_as_prop_retargets_a_folded_chain() {
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = styled('button', __pcva({ base: 'color_red' }));
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red' }));
     export const el = <a href="/home" className="color_red" />;
     "#);
 }
@@ -225,7 +225,7 @@ fn style_only_default_props_fold_into_the_class_string() {
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = styled('button', __pcva({ base: 'color_red' }), {
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red' }), {
       defaultProps: { margin: '0' },
     });
     export const el = <button className="color_red margin_0">hi</button>;
@@ -248,7 +248,7 @@ fn a_shorthand_default_prop_folds() {
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = styled('button', __pcva({ base: 'color_red' }), {
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red' }), {
       defaultProps: { bg: 'blue' },
     });
     export const el = <button className="bg_blue color_red" />;
@@ -271,7 +271,7 @@ fn default_props_win_over_the_chain_base() {
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = styled('button', __pcva({ base: 'color_red' }), {
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red' }), {
       defaultProps: { color: 'blue' },
     });
     export const el = <button className="color_blue" />;
@@ -294,7 +294,7 @@ fn element_props_win_over_default_props() {
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = styled('button', __pcva({ base: 'color_red' }), {
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red' }), {
       defaultProps: { color: 'blue' },
     });
     export const el = <button className="color_green" />;
@@ -318,7 +318,7 @@ fn an_alias_of_a_chain_with_default_props_still_folds() {
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = styled('button', __pcva({ base: 'color_red' }), {
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red' }), {
       defaultProps: { margin: '0' },
     });
     const Alias = Button;
@@ -345,7 +345,7 @@ fn wrapping_a_chain_drops_the_inner_levels_default_props() {
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Base = styled('button', __pcva({ base: 'color_red' }), {
+    const Base = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red' }), {
       defaultProps: { margin: '0' },
     });
     const Button = styled(Base, { base: { padding: '4px' } });
@@ -404,7 +404,7 @@ fn a_statically_resolved_spread_in_default_props_still_folds() {
     import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
     const shared = { margin: '0' };
-    const Button = styled('button', __pcva({ base: 'color_red' }), {
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red' }), {
       defaultProps: { ...shared, color: 'blue' },
     });
     export const el = <button className="color_blue margin_0" />;
@@ -460,7 +460,7 @@ fn a_conditional_default_prop_folds() {
     assert_snapshot!(output.code, @r#"
     import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = styled('button', __pcva({ base: 'color_red' }), {
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red' }), {
       defaultProps: { color: { base: 'blue', _hover: 'green' } },
     });
     export const el = <button className="color_blue hover:color_green" />;

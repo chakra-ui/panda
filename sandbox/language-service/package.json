@@ -10,6 +10,6 @@
     "@pandacss/dev": "workspace:*",
     "@pandacss/typescript-plugin": "workspace:*",
     "@pandacss/language-server": "workspace:*",
-    "typescript": "6.0.2"
+    "typescript": "6.0.3"
   }
 }

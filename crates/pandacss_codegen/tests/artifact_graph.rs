@@ -35,6 +35,8 @@ fn filters_artifacts_by_config_dependencies() {
             ArtifactId::Cva,
             ArtifactId::Sva,
             ArtifactId::ViewTransition,
+            ArtifactId::PositionTry,
+            ArtifactId::Keyframes,
             ArtifactId::Cx,
             ArtifactId::Tokens,
             ArtifactId::CssIndex,
@@ -150,7 +152,6 @@ fn emitted_files_carry_config_dependencies() {
     assert!(dependencies.contains(ConfigDependency::CodegenFormat));
     assert!(dependencies.contains(ConfigDependency::Tokens));
     assert!(dependencies.contains(ConfigDependency::Utilities));
-    assert!(dependencies.contains(ConfigDependency::Syntax));
 
     let themes_config = serde_json::from_value(serde_json::json!({
         "themes": {

@@ -1,5 +1,5 @@
 import { cx } from '@/styled-system/css'
-import { Source_Code_Pro, Onest } from 'next/font/google'
+import { Geist_Mono, Onest } from 'next/font/google'
 
 const BodyFont = Onest({
   weight: 'variable',
@@ -9,7 +9,7 @@ const BodyFont = Onest({
   variable: '--font-sans'
 })
 
-export const MonoFont = Source_Code_Pro({
+export const MonoFont = Geist_Mono({
   weight: 'variable',
   display: 'swap',
   subsets: ['latin'],

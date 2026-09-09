@@ -351,6 +351,33 @@ fn from_config_can_disable_color_palette_generation() {
     assert!(dict.color_palettes().is_empty());
 }
 
+#[test]
+fn from_config_conditional_only_semantic_color_joins_palette() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "semanticTokens": {
+                "colors": {
+                    "blue": {
+                        "solid": {
+                            "value": { "_light": "{colors.blue.600}", "_dark": "{colors.blue.600}" }
+                        }
+                    }
+                }
+            }
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_color_palettes(&dict), @r##"
+    blue:
+      "--colors-color-palette-solid": var(--colors-blue-solid)
+    "##);
+}
+
 fn snapshot_color_palettes(
     dict: &TokenDictionary,
 ) -> std::collections::BTreeMap<String, std::collections::BTreeMap<String, String>> {

@@ -1,29 +1,10 @@
 import { defineTokens } from '@pandacss/dev'
 
-const makePrimaryColor = (l: number) => {
-  return {
-    value: `hsl(var(--nextra-primary-hue) 100% ${l}%)`
-  }
-}
-
 export const colors = defineTokens.colors({
   current: { value: 'currentColor' },
   dark: { value: '#111' },
   black: { value: '#000' },
   white: { value: '#fff' },
-  primary: {
-    50: makePrimaryColor(97),
-    100: makePrimaryColor(94),
-    200: makePrimaryColor(86),
-    300: makePrimaryColor(77),
-    400: makePrimaryColor(66),
-    500: makePrimaryColor(50),
-    600: makePrimaryColor(45),
-    700: makePrimaryColor(39),
-    750: makePrimaryColor(35),
-    800: makePrimaryColor(32),
-    900: makePrimaryColor(24)
-  } as any,
   gray: {
     50: { value: '#f9fafb' },
     100: { value: '#f3f4f6' },

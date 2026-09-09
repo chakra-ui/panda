@@ -1,5 +1,31 @@
 # @pandacss/compiler-shared
 
+## 2.0.0-beta.16
+
+### Patch Changes
+
+- dfb17b2: Fix `Driver.parseFiles()` retaining atoms from source files removed since the previous scan. Full-project
+  rescans now reconcile scan- and watcher-owned files, including recovery from dropped watcher events.
+- af261f5: Fix watch CSS staying stale when a file you import a value from changes. Importers are re-extracted,
+  including through re-exports, and only when the imported file's content actually changed.
+- Updated dependencies [dea1ef5]
+- Updated dependencies [c58d45d]
+- Updated dependencies [ef14fc5]
+  - @pandacss/types@2.0.0-beta.16
+
+## 2.0.0-beta.15
+
+### Patch Changes
+
+- 8b43347: Semantic colors that set only conditional values (`_light`/`_dark`, no `base`) now join their `colorPalette`.
+  Before, `bg: 'colorPalette.solid'` fell through to the raw string when `blue.solid` had no `base` value, so adding a
+  `base` was the only workaround.
+- Updated dependencies [ec65db3]
+- Updated dependencies [02bd0ad]
+- Updated dependencies [e18eeb3]
+- Updated dependencies [2d5d152]
+  - @pandacss/types@2.0.0-beta.15
+
 ## 2.0.0-beta.14
 
 ### Patch Changes

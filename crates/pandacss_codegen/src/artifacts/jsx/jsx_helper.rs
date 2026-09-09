@@ -1,16 +1,8 @@
-use pandacss_config::CssSyntaxKind;
-
 use crate::{
     CodegenContext, ImportDecl, ImportKind, ImportSpecifier, Item, ItemNode, Module, RuntimeImport,
 };
 
 pub(super) fn module(ctx: CodegenContext<'_>) -> Module {
-    if matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
-        return Module::new()
-            .with_item(raw_runtime(JSX_TEMPLATE_HELPER_RUNTIME))
-            .with_item(raw_type(JSX_TEMPLATE_HELPER_TYPES));
-    }
-
     Module::new()
         .with_import(ImportDecl::value(
             ["css"],
@@ -49,14 +41,6 @@ pub(super) fn raw_runtime(code: impl Into<String>) -> Item {
 pub(super) fn raw_type(code: impl Into<String>) -> Item {
     Item::ty(ItemNode::RawStmt(code.into()))
 }
-
-const JSX_TEMPLATE_HELPER_RUNTIME: &str = r"export const getDisplayName = (Component) => {
-  if (typeof Component === 'string') return Component
-  return Component?.displayName || Component?.name || 'Component'
-}";
-
-const JSX_TEMPLATE_HELPER_TYPES: &str =
-    r"export declare const getDisplayName: (Component: any) => string";
 
 const JSX_HELPER_RUNTIME: &str = r"export const composeShouldForwardProps = (tag, shouldForwardProp) => {
   if (!tag.__shouldForwardProps__ || !shouldForwardProp) return shouldForwardProp

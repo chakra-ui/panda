@@ -99,7 +99,7 @@ export interface Driver {
   reload(): Promise<DiffConfigResult>
   /** Source paths matching the config includes/excludes. Does not parse. */
   scan(options?: ScanOptions): string[]
-  /** Scan, then parse every discovered source file via the engine fs. */
+  /** Parse scanned sources, reconciling removals only for a default full-project scan. */
   parseFiles(options?: ScanOptions): ParseFileReport[]
   /** Route one watcher event into the engine. `false` = unknown path / no-op. */
   applyChange(change: SourceChange): boolean
@@ -133,8 +133,8 @@ export interface Driver {
   writeLayerCss(options: WriteLayerCssOptions): WriteCssResult
   /** Generate + write split stylesheet files under the configured `outdir`. */
   writeSplitCss(options?: WriteSplitCssOptions): WriteSplitCssResult
-  /** Watch targets for the host watcher: matched files, their base dirs, config deps. */
-  watchTargets(): { sources: string[]; dirs: string[]; config: string[] }
+  /** Watch targets for the host watcher: parsed files, source patterns, their base dirs, and config deps. */
+  watchTargets(): { files?: string[]; sources: string[]; dirs: string[]; config: string[] }
   /** Watch targets for hydrated design-system artifacts and source fallback files. */
   designSystemWatchTargets(): DesignSystemWatchTarget[]
   /** Classify a watched design-system file as an artifact or source fallback. */
@@ -169,6 +169,7 @@ export function selectArtifacts(
 export abstract class BaseDriver implements Driver {
   #compiler: Compiler
   #introspect: Introspection | undefined
+  #scanOwnedFiles = new Set<string>()
 
   protected constructor(compiler: Compiler) {
     this.#compiler = compiler
@@ -178,6 +179,7 @@ export abstract class BaseDriver implements Driver {
   protected setCompiler(compiler: Compiler): void {
     this.#compiler = compiler
     this.#introspect = undefined
+    this.#scanOwnedFiles.clear()
   }
 
   get compiler(): Compiler {
@@ -199,8 +201,56 @@ export abstract class BaseDriver implements Driver {
     return this.#compiler.scan(options)
   }
 
+  /** A refresh can affect further importers, so loop until quiet. */
+  protected refreshAffectedFiles(): boolean {
+    const seen = new Set<string>()
+    let refreshed = false
+    for (
+      let affected = this.#compiler.affectedFiles();
+      affected.length > 0;
+      affected = this.#compiler.affectedFiles()
+    ) {
+      for (const path of affected) {
+        if (seen.has(path) || !this.#compiler.fs.exists(path)) continue
+        seen.add(path)
+        refreshed = this.#compiler.refreshFile(path) || refreshed
+      }
+    }
+    return refreshed
+  }
+
   parseFiles(options?: ScanOptions): ParseFileReport[] {
-    return this.#compiler.parseFiles(this.#compiler.scan(options))
+    const paths = this.#compiler.scan(options)
+
+    // Only the default scan is an authoritative view of every config-owned
+    // source. A scan with include/exclude/cwd overrides may intentionally be a
+    // subset, so it must not evict files outside that targeted scan.
+    const isFullProjectScan =
+      options?.include === undefined && options?.exclude === undefined && options?.cwd === undefined
+    if (isFullProjectScan) {
+      const active = new Set(paths)
+      for (const path of this.#scanOwnedFiles) {
+        if (!active.has(path)) this.#compiler.removeFile(path)
+      }
+    }
+
+    const reports = this.#compiler.parseFiles(paths)
+    if (isFullProjectScan) {
+      this.#scanOwnedFiles = new Set(paths)
+    } else {
+      for (const path of paths) this.#scanOwnedFiles.add(path)
+    }
+    return reports
+  }
+
+  /** Record source ownership after a host watcher change. */
+  protected trackSourceChange(change: SourceChange, applied: boolean): boolean {
+    if (change.kind === 'unlink') this.#scanOwnedFiles.delete(change.path)
+    if (!this.#compiler.isSourceFile(change.path)) return applied
+    if (applied) {
+      this.#scanOwnedFiles.add(change.path)
+    }
+    return applied
   }
 
   applyChanges(changes: SourceChange[]): boolean[] {
@@ -291,9 +341,10 @@ export abstract class BaseDriver implements Driver {
     })
   }
 
-  watchTargets(): { sources: string[]; dirs: string[]; config: string[] } {
+  watchTargets(): { files: string[]; sources: string[]; dirs: string[]; config: string[] } {
     const sources = this.#compiler.sources()
     return {
+      files: [...this.#scanOwnedFiles],
       sources: sources.map((source) => source.pattern),
       dirs: [...new Set(sources.map((source) => source.base))],
       config: this.configDependencies,

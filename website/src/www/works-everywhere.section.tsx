@@ -8,6 +8,9 @@ import {
   panda
 } from '@/styled-system/jsx'
 import { Icon, IconType } from '@/theme/icons'
+import { css } from '@/styled-system/css'
+
+const darkShadow = css({ _dark: { boxShadowColor: 'yellow.300' } })
 
 export const WorksEverywhereSection = () => {
   return (
@@ -86,7 +89,7 @@ const ProjectLogo = ({
       size="20"
       rounded="lg"
       layerStyle="offShadow"
-      _dark={{ boxShadowColor: 'yellow.300' }}
+      className={darkShadow}
     >
       <Icon {...iconProps} />
     </Square>

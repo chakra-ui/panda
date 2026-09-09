@@ -1,0 +1,68 @@
+<svg width="1200" height="560" viewBox="0 0 1200 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="staticCss build time by container count, log scale: the before line climbs from 399ms to 52.6s while Panda 2.0 stays flat near 25ms">
+  <style>
+    .surface { fill: #FBF9F3; }
+    .ink { fill: #1A1A17; }
+    .muted { fill: #5E584C; }
+    .grid { stroke: #E7E1D3; stroke-width: 1.2; }
+    .axis { stroke: #D8D2C4; stroke-width: 1.5; }
+    .before-l { stroke: #8C8578; stroke-width: 3; fill: none; }
+    .before-m { fill: #8C8578; }
+    .case { stroke: #1A1A17; stroke-width: 6.5; fill: none; }
+    .after-l { stroke: #F6E458; stroke-width: 3.5; fill: none; }
+    .after-m { fill: #F6E458; stroke: #1A1A17; stroke-width: 2; }
+    .sans { font-family: 'Onest','Segoe UI',system-ui,sans-serif; }
+    .mono { font-family: 'Source Code Pro',ui-monospace,monospace; }
+    @media (prefers-color-scheme: dark) {
+      .surface { fill: #17171B; } .ink { fill: #F5F2E9; } .muted { fill: #B7B1A3; }
+      .grid { stroke: #2A2A30; } .axis { stroke: #34343A; }
+      .before-l { stroke: #7C766B; } .before-m { fill: #7C766B; }
+      .case { stroke: #17171B; } .after-m { stroke: #17171B; }
+    }
+  </style>
+  <rect width="1200" height="560" class="surface"/>
+
+  <text x="60" y="58" class="sans ink" font-size="28" font-weight="800" letter-spacing="-0.3">Build time stays flat as container queries grow</text>
+  <text x="60" y="88" class="sans muted" font-size="16">staticCss build, before and after resolving conditions once. Output is byte-for-byte identical. Log scale, lower is better.</text>
+
+  <!-- legend -->
+  <g class="sans" transform="translate(788 42)">
+    <line x1="0" y1="8" x2="28" y2="8" class="before-l"/><circle cx="14" cy="8" r="5" class="before-m"/>
+    <text x="36" y="13" class="muted" font-size="15">Before the fix</text>
+    <line x1="188" y1="8" x2="216" y2="8" class="after-l"/><circle cx="202" cy="8" r="5" class="after-m"/>
+    <text x="224" y="13" class="ink" font-size="15" font-weight="600">Panda 2.0</text>
+  </g>
+
+  <!-- y gridlines + labels: 10ms,100ms,1s,10s,100s -->
+  <g class="sans">
+    <line x1="150" y1="430" x2="1120" y2="430" class="grid"/><text x="138" y="435" text-anchor="end" class="muted mono" font-size="13">10 ms</text>
+    <line x1="150" y1="350" x2="1120" y2="350" class="grid"/><text x="138" y="355" text-anchor="end" class="muted mono" font-size="13">100 ms</text>
+    <line x1="150" y1="270" x2="1120" y2="270" class="grid"/><text x="138" y="275" text-anchor="end" class="muted mono" font-size="13">1 s</text>
+    <line x1="150" y1="190" x2="1120" y2="190" class="grid"/><text x="138" y="195" text-anchor="end" class="muted mono" font-size="13">10 s</text>
+    <line x1="150" y1="110" x2="1120" y2="110" class="grid"/><text x="138" y="115" text-anchor="end" class="muted mono" font-size="13">100 s</text>
+  </g>
+
+  <!-- x baseline + labels (containers) -->
+  <line x1="150" y1="450" x2="1120" y2="450" class="axis"/>
+  <g class="sans muted" font-size="14" text-anchor="middle">
+    <text x="180" y="474">4</text><text x="405" y="474">8</text><text x="630" y="474">14</text><text x="855" y="474">32</text><text x="1080" y="474">64</text>
+    <text x="635" y="508" class="ink" font-size="15" font-weight="600">container queries in the theme</text>
+  </g>
+
+  <!-- BEFORE line -->
+  <polyline class="before-l" points="180,301.9 405,265.9 630,232.6 855,178.6 1080,132.3"/>
+  <g class="before-m">
+    <circle cx="180" cy="301.9" r="6"/><circle cx="405" cy="265.9" r="6"/><circle cx="630" cy="232.6" r="6"/><circle cx="855" cy="178.6" r="6"/><circle cx="1080" cy="132.3" r="6"/>
+  </g>
+  <text x="1080" y="118" text-anchor="middle" class="ink mono" font-size="16" font-weight="700">52.6 s</text>
+
+  <!-- AFTER line (dark casing then yellow) -->
+  <polyline class="case" points="180,400.6 405,400.6 630,400.2 855,398.2 1080,393.4"/>
+  <polyline class="after-l" points="180,400.6 405,400.6 630,400.2 855,398.2 1080,393.4"/>
+  <g class="after-m">
+    <circle cx="180" cy="400.6" r="5.5"/><circle cx="405" cy="400.6" r="5.5"/><circle cx="630" cy="400.2" r="5.5"/><circle cx="855" cy="398.2" r="5.5"/><circle cx="1080" cy="393.4" r="5.5"/>
+  </g>
+  <text x="1080" y="382" text-anchor="middle" class="ink mono" font-size="16" font-weight="700">29 ms</text>
+
+  <!-- annotation -->
+  <text x="470" y="360" class="sans muted" font-size="15" font-style="italic">O(N²) blowup → flat</text>
+</svg>

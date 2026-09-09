@@ -1,3 +1,5 @@
+'use client'
+
 import { css, cx } from '@/styled-system/css'
 import { Portal } from '@ark-ui/react/portal'
 import { createListCollection, Select } from '@ark-ui/react/select'
@@ -17,7 +19,13 @@ interface Props {
   className?: string
 }
 
-function SelectComponent({ options, selected, onChange, title, className }: Props) {
+function SelectComponent({
+  options,
+  selected,
+  onChange,
+  title,
+  className
+}: Props) {
   const collection = useMemo(() => {
     return createListCollection({ items: options })
   }, [options])
@@ -29,6 +37,7 @@ function SelectComponent({ options, selected, onChange, title, className }: Prop
       onValueChange={e => onChange(e.items[0] ?? null)}
     >
       <Select.Trigger
+        aria-label={typeof title === 'string' ? title : undefined}
         className={cx(
           css({
             height: 7,
@@ -70,13 +79,12 @@ function SelectComponent({ options, selected, onChange, title, className }: Prop
             borderRadius: 'md',
             outlineWidth: '1px',
             outlineColor: 'rgb(0 0 0 / 0.05)',
-            bg: 'white',
+            bg: 'bg.surface',
             py: '1',
             fontSize: 'sm',
             shadow: 'lg',
             _dark: {
-              outlineColor: 'rgb(255 255 255 / 0.2)',
-              bg: 'neutral.800'
+              outlineColor: 'rgb(255 255 255 / 0.2)'
             }
           })}
         >

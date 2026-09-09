@@ -16,23 +16,23 @@
     "test": "pnpm run doctor && pnpm buildinfo && pnpm build"
   },
   "dependencies": {
-    "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   },
   "devDependencies": {
     "@pandacss/dev": "workspace:*",
     "@pandacss/eslint-plugin": "workspace:*",
-    "@oxlint/plugins": "1.70.0",
-    "@typescript-eslint/parser": "8.58.2",
-    "eslint": "9.39.1",
-    "oxlint": "1.70.0",
+    "@oxlint/plugins": "1.81.0",
+    "@typescript-eslint/parser": "8.69.0",
+    "eslint": "9.39.5",
+    "oxlint": "1.81.0",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/vite": "workspace:*",
-    "@types/react": "19.2.7",
-    "@types/react-dom": "19.2.3",
-    "@vitejs/plugin-react": "5.1.1",
-    "typescript": "6.0.2",
-    "vite": "7.2.6"
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
+    "@vitejs/plugin-react": "5.2.0",
+    "typescript": "6.0.3",
+    "vite": "7.3.6"
   }
 }

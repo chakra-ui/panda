@@ -1,0 +1,240 @@
+---
+title: Slot Recipe
+description: Colocated multi-part styles with sva. Every slot style emits as atomic CSS when you define the recipe.
+---
+
+Some components are more than one element. A card has a root, a title, and a body. You still want one `size` prop
+to style every part.
+
+```tsx
+<Card.Root size="lg">
+  <Card.Title>Plan</Card.Title>
+  <Card.Body>Everything in one place.</Card.Body>
+</Card.Root>
+```
+
+`sva` is the recipe for that. You write it next to the component: slots, per-slot styles, named variants. Call it
+with `{ size: 'lg' }` and you get a **map** of class strings, one per slot.
+
+```tsx
+const card = sva({
+  slots: ['root', 'title', 'body'],
+  // base, variants, ...
+})
+
+const classes = card({ size: 'lg' })
+classes.root // Card.Root
+classes.title // Card.Title
+classes.body // Card.Body
+```
+
+Panda extracts the `sva({...})` definition, not the call sites.
+
+<Callout type="info">
+  If the recipe is shared across apps or a preset, use
+  [`defineSlotRecipe`](/docs/recipes/config-recipe#config-slot-recipe) instead.
+</Callout>
+
+## Defining the recipe
+
+`base` and each variant option are **per slot**, not a flat style object. Compounds use `compoundVariants`, with
+`css` written per slot.
+
+```tsx
+import { sva } from '../styled-system/css'
+
+const card = sva({
+  slots: ['root', 'title', 'body'],
+  className: 'card',
+  base: {
+    root: {
+      rounded: 'lg',
+      borderWidth: '1px',
+      borderColor: 'gray.200',
+      bg: 'white',
+      p: '4'
+    },
+    title: { fontWeight: 'semibold', mb: '2' },
+    body: { color: 'gray.600', fontSize: 'sm' }
+  },
+  variants: {
+    size: {
+      sm: {
+        root: { p: '3' },
+        title: { fontSize: 'md' },
+        body: { fontSize: 'xs' }
+      },
+      lg: {
+        root: { p: '6' },
+        title: { fontSize: 'xl' },
+        body: { fontSize: 'md' }
+      }
+    }
+  },
+  defaultVariants: { size: 'sm' }
+})
+```
+
+`slots` is required in the types. If you omit it, the engine infers names from keys in `base`, `variants`, and
+compounds. List them anyway, so a typo is a type error instead of a silent extra slot.
+
+`compoundVariants` is for styles that apply only when two variants match. That has its own page:
+[compound variants](/docs/recipes/compound-variants).
+
+Boolean variants use `'true'` and `'false'` as keys in the definition. At the call site you pass a real `boolean`.
+
+## Using the recipe
+
+```tsx
+export function Card({ size, title, children }) {
+  const classes = card({ size })
+  return (
+    <div className={classes.root}>
+      <h2 className={classes.title}>{title}</h2>
+      <div className={classes.body}>{children}</div>
+    </div>
+  )
+}
+```
+
+`card()` does not take `css` or `className`. To merge extras, use [`raw()`](#using-raw) or wrap the parts with
+[slot recipe context](/docs/recipes/slot-recipe-context).
+
+<Callout type="warning">
+  Do not wrap a slot recipe with `styled()`. The factory expects a function that returns one class string. Put the
+  parts on JSX with [slot recipe context](/docs/recipes/slot-recipe-context).
+</Callout>
+
+## CSS Output
+
+You do not need a literal `card({ size: 'lg' })` somewhere in the app for `lg` to exist. Everything in `base`, every
+variant option, and every compound `css` lands in `@layer utilities` as atoms:
+
+```css
+@layer utilities {
+  .rounded_lg {
+    border-radius: var(--radii-lg);
+  }
+  .p_4 {
+    padding: var(--spacing-4);
+  }
+  .font_semibold {
+    font-weight: var(--font-weights-semibold);
+  }
+}
+```
+
+A ternary inside the definition emits both branches, because both values are literals. A recipe object you build at
+runtime, or import as something that does not fold to an object, is invisible. Panda never ran the code. It only
+read the source.
+
+<Callout type="warning">
+  `sva` has no responsive variant props. `card({ size: { base: 'sm', md: 'lg' } })` does not resolve. See
+  [responsive variants](/docs/recipes/responsive-variants).
+</Callout>
+
+## Setting className
+
+`className` is optional. When you set it, each slot also gets a stable `${className}__${slot}` class next to the
+atoms: `card__root`, `card__title`, `card__body`.
+
+### Targeting slots
+
+Use those classes to style one part from another. Here the root’s hover changes the title:
+
+```tsx
+const card = sva({
+  slots: ['root', 'title', 'body'],
+  className: 'card',
+  base: {
+    root: {
+      _hover: {
+        '& .card__title': { color: 'blue.500' }
+      }
+    }
+  }
+})
+```
+
+[`hash: true`](/docs/reference/config#hash) hashes those names. Target `data-slot` instead if you hash.
+
+## Using raw()
+
+`card()` returns a map of class strings. `card.raw()` returns the resolved style object for each slot. Pick a slot
+and pass it into `css()` with other style objects. Later keys win.
+
+```tsx
+import { css, cx } from '../styled-system/css'
+
+css(card.raw({ size: 'sm' }).root, { borderColor: 'blue.500' })
+```
+
+A wrapper that takes a per-slot style prop does the same thing:
+
+```tsx
+export function Card({ size, rootCss, title, children }) {
+  const styles = card.raw({ size })
+  return (
+    <div className={css(styles.root, rootCss)}>
+      <h2 className={css(styles.title)}>{title}</h2>
+      <div className={css(styles.body)}>{children}</div>
+    </div>
+  )
+}
+```
+
+Already have class strings? Skip `raw()` and concatenate:
+
+```tsx
+const classes = card({ size: 'sm' })
+cx(classes.root, css({ borderColor: 'blue.500' }))
+```
+
+## Exported Types
+
+`RecipeVariant` makes every key required. `RecipeVariantProps` makes them optional, which is what you want for JSX
+props.
+
+```ts
+import { sva, type RecipeVariant, type RecipeVariantProps } from '../styled-system/css'
+
+type CardVariant = RecipeVariant<typeof card>
+// { size: 'sm' | 'lg' }
+
+type CardProps = RecipeVariantProps<typeof card>
+// { size?: 'sm' | 'lg' }
+```
+
+## Helpers
+
+```ts
+card.variantKeys
+// ['size']
+
+card.variantMap
+// { size: ['sm', 'lg'] }
+
+card.splitVariantProps({ size: 'sm', title: 'Hello' })
+// [{ size: 'sm' }, { title: 'Hello' }]
+
+card.getVariantProps({ size: 'lg' })
+// { size: 'lg' }
+
+card.raw({ size: 'sm' })
+// { root: { ... }, title: { ... }, body: { ... } }
+```
+
+`splitVariantProps` is the one you want in a wrapper, so `title` never looks like a variant. `variantMap` is handy
+for Storybook `argTypes`. `merge(other)` combines two `sva` recipes. `config` is the original definition.
+`raw()` is covered above.
+
+To wrap a tree of parts, use [Slot recipe context](/docs/recipes/slot-recipe-context).
+
+## See also
+
+- [Recipes overview](/docs/recipes/overview)
+- [Merging styles](/docs/styling/merging-styles)
+- [Config Slot Recipe](/docs/recipes/config-recipe#config-slot-recipe)
+- [Slot recipe context](/docs/recipes/slot-recipe-context)
+- [Compound variants](/docs/recipes/compound-variants)
+- [sva() reference](/docs/reference/css#sva)
