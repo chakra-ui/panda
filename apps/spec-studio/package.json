@@ -7,10 +7,14 @@
     "dev": "nuxt prepare && panda codegen --silent && nuxt dev",
     "build": "nuxt prepare && panda codegen --silent && nuxt build",
     "generate": "panda codegen --silent && nuxt generate",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
     "test": "vitest run"
   },
   "dependencies": {
     "@ark-ui/vue": "^5.0.0",
+    "@prisma/client": "5.9.1",
+    "nanoid": "5.1.16",
     "@pandacss/compiler-shared": "workspace:*",
     "@pandacss/compiler-wasm": "workspace:*",
     "@pandacss/config": "workspace:*",
@@ -27,6 +31,7 @@
     "@pandacss/postcss": "workspace:*",
     "@types/node": "^22.0.0",
     "autoprefixer": "^10.4.0",
+    "prisma": "5.9.1",
     "vitest": "^2.1.0"
   }
 }
