@@ -248,4 +248,22 @@ describe('firstThatWorks', () => {
     // @ts-expect-error expected from strictTokens: true — only firstThatWorks() produces a run
     assertType(css({ color: 'firstThatWorks(blue.300, oklch(60% 0.2 260))' }))
   })
+
+  test('a responsive object is not a member, even when every member is one', () => {
+    // @ts-expect-error a member is one value, never a conditional object
+    assertType(css({ width: firstThatWorks({ base: 'full' }, { base: 'auto' }) }))
+  })
+
+  test('every member is typed by the property, up to six', () => {
+    assertType(css({ color: firstThatWorks('blue.300', 'red.200', 'blue.300', 'red.200', 'blue.300', 'red.200') }))
+    assertType(
+      // @ts-expect-error a seventh member has no typed position
+      css({ color: firstThatWorks('blue.300', 'red.200', 'blue.300', 'red.200', 'blue.300', 'red.200', 'blue.300') }),
+    )
+  })
+
+  test('a responsive array is not a member', () => {
+    // @ts-expect-error a member is one value, never a responsive array
+    assertType(css({ width: firstThatWorks(['full', 'auto'], ['auto']) }))
+  })
 })

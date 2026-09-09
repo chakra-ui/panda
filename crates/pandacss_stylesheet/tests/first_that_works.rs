@@ -1402,3 +1402,19 @@ fn a_run_in_a_font_face_descriptor_emits_both_declarations() {
     }
     ");
 }
+
+#[test]
+fn the_api_marked_important_through_a_template_literal_marks_every_declaration() {
+    let css = utilities_css(
+        "import { css, firstThatWorks } from '@panda/css'; css({ color: `${firstThatWorks('oklch(60% 0.2 30)', 'red')} !important` })",
+    );
+
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .c_firstThatWorks\(oklch\(60\%_0\.2_30\)\,_red\)\! {
+        color: red !important;
+        color: oklch(60% 0.2 30) !important;
+      }
+    }
+    ");
+}

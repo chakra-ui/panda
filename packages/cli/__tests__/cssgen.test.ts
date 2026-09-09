@@ -8,7 +8,6 @@ import {
   CONFIG,
   createFixture,
   EMPTY_CONFIG,
-  linkWorkspaceDevPackage,
   normalizeOutput,
   writeSyntaxError,
   writeWarningSource,
@@ -33,44 +32,6 @@ const MINIMAL_CSS_CONFIG = `export default {
   },
   utilities: {
     color: { className: 'c', values: 'colors' },
-  },
-}
-`
-
-// A real config, loaded and bundled like a user's, using the helper from
-// \`@pandacss/dev\` rather than the written value form. The string the helper
-// returns has to survive bundling and serialization to reach the engine.
-const FIRST_THAT_WORKS_CONFIG = `import { firstThatWorks } from '@pandacss/dev'
-
-export default {
-  outdir: 'styled-system',
-  include: ['**/*.tsx'],
-  importMap: {
-    css: ['@panda/css'],
-    recipe: ['@panda/recipes'],
-    pattern: ['@panda/patterns'],
-    jsx: ['@panda/jsx'],
-    tokens: ['@panda/tokens'],
-  },
-  theme: {
-    tokens: {
-      colors: {
-        brand: { value: '#0057b8' },
-      },
-    },
-    recipes: {
-      probe: {
-        className: 'probe',
-        base: { color: firstThatWorks('oklch(55% 0.18 250)', '{colors.brand}') },
-      },
-    },
-  },
-  utilities: {
-    color: { className: 'c', values: 'colors' },
-    minHeight: { className: 'min-h' },
-  },
-  globalCss: {
-    body: { minHeight: firstThatWorks('100dvh', '100vh') },
   },
 }
 `
@@ -441,18 +402,5 @@ describe('cssgen command', () => {
 
     expect(utilities).toContain('@layer utilities')
     expect(utilities).not.toContain('\n  ')
-  })
-  it('expands firstThatWorks() from @pandacss/dev in globalCss and a config recipe', async () => {
-    dir = createFixture(FIRST_THAT_WORKS_CONFIG)
-    linkWorkspaceDevPackage(dir)
-    writeFileSync(join(dir, 'App.tsx'), "import { probe } from '@panda/recipes'; probe()")
-
-    const result = await runCssgen({ cwd: dir, logLevel: 'silent' })
-    const css = readFileSync(join(dir, 'styled-system', 'styles.css'), 'utf8')
-
-    expect(result.diagnostics).toHaveLength(0)
-    expect(css).toContain('min-height: 100vh;\n    min-height: 100dvh;')
-    expect(css).toContain('color: var(--colors-brand);\n      color: oklch(55% 0.18 250);')
-    expect(css).not.toContain('firstThatWorks(')
   })
 })

@@ -7,28 +7,36 @@ description:
 
 ## Why you need it
 
-Browsers don't all understand the same values. `100dvh` sizes to the visible viewport on mobile, but Safari before 15.4
-has never heard of it. `oklch()` picks colors outside sRGB, but a two-year-old Chrome drops the declaration. Every new
-value goes through this window where some of your users have it and some don't.
-
-CSS handles it with a fallback: declare the property twice. A browser that can't parse the second value keeps the first,
-and a browser that can uses it.
+Not every browser understands every value. `100dvh` is still new, and `sticky` used to be `-webkit-sticky`. CSS covers
+all three with one rule: write the property twice, the safe value first, the one you want second.
 
 ```css
 .hero {
   min-height: 100vh;
   min-height: 100dvh;
 }
+
+.header {
+  position: -webkit-sticky;
+  position: sticky;
+}
+
+.brand {
+  color: #0057b8;
+  color: color(display-p3 0 0.34 0.72);
+}
 ```
 
-Panda couldn't write that, because an array already means responsive values. `firstThatWorks()` fills the gap. List the
-values you'd accept, the one you want first, and Panda emits one declaration per value in reverse, so each browser keeps
-the first one it supports.
+## Usage
+
+The way to do that in Panda is `firstThatWorks()`. It takes an ordered list of fallback values for a style property.
 
 ```ts
 import { css, firstThatWorks } from 'styled-system/css'
 
-css({ minHeight: firstThatWorks('100dvh', '100vh') })
+css({
+  minHeight: firstThatWorks('100dvh', '100vh'),
+})
 ```
 
 ```css
@@ -38,138 +46,128 @@ css({ minHeight: firstThatWorks('100dvh', '100vh') })
 }
 ```
 
-Write the value you want first, the same way you'd write `var(--brand, red)`. Two values minimum, because one has
-nothing to fall back to. Three or more work the same way, most preferred first.
-
 ## Common patterns
 
-Wide-gamut color with an sRGB fallback:
+- Wide-gamut color with an sRGB fallback:
 
 ```ts
-css({ color: firstThatWorks('oklch(55% 0.18 250)', '#0057b8') })
-```
-
-Vendor-prefixed values, where each browser keeps the spelling it knows:
-
-```ts
-css({ position: firstThatWorks('sticky', '-webkit-sticky', 'relative') })
-```
-
-A newer sizing keyword behind the one every browser has:
-
-```ts
-css({ width: firstThatWorks('fit-content', '-moz-fit-content', 'auto') })
-```
-
-Color mixing that falls back to a token:
-
-```ts
-css({ bg: firstThatWorks('color-mix(in oklch, brand, white 20%)', 'brand.light') })
-```
-
-That last one shows each member going through the same pipeline as a standalone value. Tokens, shorthands, and default
-units resolve per member:
-
-```css
-.bg_firstThatWorks\(color-mix\(in_oklch\,_brand\,_white_20\%\)\,_brand\.light\) {
-  background-color: var(--colors-brand-light);
-  background-color: color-mix(in oklch, var(--colors-brand), white 20%);
-}
-```
-
-The call folds at build time. With [source transforms](/docs/styling/source-transforms) on, a static call inlines to its
-value and the import is dropped.
-
-## Where it works
-
-Anywhere a value goes: nested conditions, responsive arrays, recipes, slot recipes, and JSX style props.
-
-```tsx
-import { css, cva, firstThatWorks } from 'styled-system/css'
-import { styled } from 'styled-system/jsx'
-
 css({
-  _hover: { color: firstThatWorks('oklch(60% 0.2 30)', 'red') },
-  height: [firstThatWorks('100dvh', '100vh'), 'auto']
-})
-
-const hero = cva({
-  base: { minHeight: firstThatWorks('100svh', '100vh') }
-})
-
-<styled.div color={firstThatWorks('color(display-p3 1 0 0)', 'red')} />
-```
-
-## Config recipes
-
-A config file loads before `styled-system/css` exists. Import the same helper from `@pandacss/dev`:
-
-```ts filename="panda.config.ts"
-import { defineRecipe, firstThatWorks } from '@pandacss/dev'
-
-export const card = defineRecipe({
-  className: 'card',
-  base: { color: firstThatWorks('oklch(45% 0.16 250)', '{colors.blue.700}') }
+  color: firstThatWorks('oklch(55% 0.18 250)', '#0057b8'),
 })
 ```
 
-Or write the value form directly. `firstThatWorks()` returns a plain string, and the string is what Panda reads:
+- Vendor-prefixed values, where each browser keeps the spelling it knows:
 
 ```ts
-base: {
-  color: 'firstThatWorks(oklch(45% 0.16 250), {colors.blue.700})'
-}
+css({
+  position: firstThatWorks('sticky', '-webkit-sticky', 'relative'),
+})
 ```
 
-## Members are typed by the property
-
-Inside `firstThatWorks(` you get the property's own values: the color tokens `color:` offers, the keywords `position:`
-offers. Under `strictTokens`, each member is checked on its own:
+- A newer sizing keyword behind the one every browser has:
 
 ```ts
-css({ color: firstThatWorks('blue.300', 'red.200') }) // ok
-css({ color: firstThatWorks('blue.300', 'notAToken') }) // error: not a color token
-css({ padding: firstThatWorks('[1rem]', '4') }) // the escape hatch applies per member
+css({
+  width: firstThatWorks('fit-content', '-moz-fit-content', 'auto'),
+})
 ```
 
-Members can differ in type. `firstThatWorks('1rem', 4)` is fine.
+- Color mixing that falls back to a token:
+
+```ts
+css({
+  bg: firstThatWorks('color-mix(in oklch, brand, white 20%)', 'brand.light'),
+})
+```
 
 ## `!important`
 
-Mark the whole run, not a member:
+Mark the whole fallback, not one value:
 
 ```ts
-css({ color: 'firstThatWorks(oklch(60% 0.2 30), red) !important' })
+css({
+  color: `${firstThatWorks('oklch(60% 0.2 30)', 'red')} !important`,
+})
 ```
 
-Marking only some members is rejected and emits nothing. An important declaration wins whatever its position, so the
+Marking only some values is rejected and emits nothing. An important declaration wins whatever its position, so the
 others could never apply.
 
-## What a fallback can't recover
+## Troubleshooting
 
-A fallback works because the browser discards a declaration it can't parse. It does not restart the cascade when a value
-fails later. `var(--maybe-invalid)` parses fine and only fails at computed-value time, so a fallback behind it never
-applies. For a variable, use CSS's own fallback, `var(--accent, #0057b8)`. For the same reason, a custom-property
-declaration such as `'--accent': firstThatWorks(...)` is refused with a warning.
+`firstThatWorks(...)` isn't real CSS, so a malformed fallback emits nothing for that property rather than a broken
+declaration. Each case is reported in the build with its own code.
 
-`@supports` is still the tool when more than one property has to change together, or when the fallback is a different
-property altogether.
+- **Fewer than two values.** One value has nothing to fall back to:
 
-## When nothing is emitted
+```ts
+// ❌ first_that_works_arity_invalid
+css({
+  width: firstThatWorks('100dvh'),
+})
+```
 
-`firstThatWorks(...)` isn't real CSS, so a malformed run emits nothing for that property rather than a broken
-declaration. Each case is reported in the build:
+- **An argument that isn't a single value.** Objects, arrays, booleans, and null have no declaration form:
 
-- fewer than two values (`first_that_works_arity_invalid`)
-- an object, array, boolean, or null member (`first_that_works_member_invalid`)
-- unbalanced brackets or quotes (`first_that_works_unbalanced`)
-- a run nested in a run (`first_that_works_nested`)
-- `!important` on only some members (`first_that_works_importance_mixed`)
-- a custom property (`first_that_works_custom_property`, a warning)
+```ts
+// ❌ first_that_works_member_invalid
+css({
+  width: firstThatWorks({ base: '100dvh' }, '100vh'),
+})
 
-A dynamic member isn't a mistake. It's handled like any other [dynamic style](/docs/styling/dynamic-styling).
+css({
+  width: firstThatWorks(['100dvh', '100svh'], '100vh'),
+})
+```
 
-## Coming from StyleX
+- **Unbalanced brackets or quotes** in the written form:
 
-Same name and same order as `stylex.firstThatWorks`. See
-[Migrating from StyleX](/docs/get-started/stylex#value-fallbacks) for the two differences.
+```ts
+// ❌ first_that_works_unbalanced
+css({
+  width: 'firstThatWorks(min(60rem, 100%, 75%)',
+})
+```
+
+- **A fallback inside a fallback.** One is already ordered, so list every value in it:
+
+```ts
+// ❌ first_that_works_nested
+css({
+  color: firstThatWorks(firstThatWorks('oklch(55% 0.18 250)', '#0057b8'), 'blue'),
+})
+
+// ✅
+css({
+  color: firstThatWorks('oklch(55% 0.18 250)', '#0057b8', 'blue'),
+})
+```
+
+- **`!important` on only some values.** An important declaration wins whatever its position, so mark the whole fallback:
+
+```ts
+// ❌ first_that_works_importance_mixed
+css({
+  color: firstThatWorks('oklch(60% 0.2 30) !important', 'red'),
+})
+
+// ✅
+css({
+  color: `${firstThatWorks('oklch(60% 0.2 30)', 'red')} !important`,
+})
+```
+
+- **A custom property.** A variable only fails when it's read, too late to recover, so put the fallback where it's read:
+
+```ts
+// ⚠️ first_that_works_custom_property
+css({
+  '--accent': firstThatWorks('oklch(55% 0.18 250)', '#0057b8'),
+})
+
+// ✅
+css({
+  '--accent': 'oklch(55% 0.18 250)',
+  color: 'var(--accent, #0057b8)',
+})
+```

@@ -303,48 +303,74 @@ return type.
 
 ### Members are typed by the property they sit in
 
-Two overloads, and the order matters:
-
 ```ts
 type FirstThatWorksMember = string | number
+type FirstThatWorksMemberOf<T> = Extract<T, FirstThatWorksMember>
 
-interface FirstThatWorksFunction {
-  // Uniform members: `T` comes from the property, so its values autocomplete.
-  <T>(first: T, second: T, ...rest: T[]): T
-  // Members of differing types: each position is inferred on its own.
-  <A extends FirstThatWorksMember, B extends FirstThatWorksMember, R extends FirstThatWorksMember[]>(
-    first: A,
-    second: B,
-    ...rest: R
-  ): A | B | R[number]
-}
+type FirstThatWorksFn = <
+  T = FirstThatWorksMember,
+  A extends FirstThatWorksMemberOf<T> = FirstThatWorksMemberOf<T>,
+  B extends FirstThatWorksMemberOf<T> = FirstThatWorksMemberOf<T>,
+  C extends FirstThatWorksMemberOf<T> = never,
+  D extends FirstThatWorksMemberOf<T> = never,
+  E extends FirstThatWorksMemberOf<T> = never,
+  F extends FirstThatWorksMemberOf<T> = never,
+>(
+  first: A,
+  second: B,
+  third?: C,
+  fourth?: D,
+  fifth?: E,
+  sixth?: F,
+) => T extends FirstThatWorksMember ? A | B | C | D | E | F : FirstThatWorksMemberOf<T>
 ```
 
-The first overload is what makes the editor useful. `T` has no argument to infer from before you type one, so it comes
-from the contextual return type — the property — and every parameter is typed as that property's value union. Inside
-`firstThatWorks(` you get the same 33 color tokens you get on `color:` itself.
+Every piece of that shape is load-bearing, measured through the TypeScript language service against the generated
+`styled-system` (TS 6.0), in both the default and the `strictTokens` output:
 
-The second catches members that do not share a type, where the first fails. It returns the union of what you passed, so
-members are checked by ordinary assignability rather than by inference:
+- **`T` appears only in the return type**, so it can be inferred from one place: the property the call sits in. Inside
+  `width: firstThatWorks(…)`, `T` is width's `ConditionalValue<X>`.
+- **One type variable per position**, each constrained by `Extract<T, FirstThatWorksMember>`. A position with no
+  argument yet falls back to its constraint, so every slot completes from the property: 474 entries for `color` in the
+  default output, 309 under `strictTokens`, on the first member and on the fourth alike. A shared `T` would be inferred
+  from the first typed member (argument inference outranks return-type inference), narrowing every later slot to that
+  one literal.
+- **`Extract`, not an intersection.** `Extract<T, string | number>` drops the property's responsive object and array
+  forms, so `firstThatWorks({ base: 'full' }, { base: 'auto' })` is a type error, not a build-time
+  `first_that_works_member_invalid`. `T & string` also drops them but collapses the default output's `AnyString`
+  (`string & {}`) for the completion engine: zero completions there.
+- **Positional, capped at six.** A generic rest parameter (`R extends Member[]`) completes under `strictTokens` but not
+  in the default output. Six explicit positions complete everywhere; a seventh member is a type error. The positions
+  after the second are optional, so arity stays at two.
+- **`never` defaults and the conditional return.** With no contextual type, `T` takes its default and the call returns
+  the union of the members actually passed (`"full" | "auto"`), so a standalone constant keeps its literal type and
+  still satisfies `strictTokens` where it is used. With a contextual type the return is the property's scalar subset,
+  `Extract<T, FirstThatWorksMember>`, which is always assignable back. Returning `T` itself fails in config files, where
+  the contextual union carries the nested-selector index signature. Returning the literal union alone, with `T` kept
+  only as `Extract<T, never>`, turns the return into a union target with six naked type variables, and inference then
+  hands every empty position the whole contextual union: "union type too complex to represent" under `strictTokens`.
+- **`strictTokens` checks each member** through its constraint: `firstThatWorks('blue.300', 'notAToken')` fails on the
+  second argument, and the escape hatch applies per member (`firstThatWorks('[1rem]', '4')`).
 
 ```ts
 css({ color: firstThatWorks('blue.300', 'red.200') }) // ok under strictTokens
 css({ color: firstThatWorks('blue.300', 'notAToken') }) // error: not a color token
 css({ padding: firstThatWorks('[1rem]', '4') }) // the escape hatch still applies per member
-css({ padding: firstThatWorks('1rem', 4) }) // differing types, second overload
+css({ padding: firstThatWorks('1rem', 4) }) // members may differ in type
 css({ color: 'firstThatWorks(blue.300, red.200)' }) // error: a plain string is not a token
 ```
 
-That last line needs no help: a bare string was never a valid token, so `strictTokens` rejects it on its own.
+Rejected shapes, each measured the same way so they do not get retried:
 
-Naming the first two parameters is what enforces arity — a bare rest parameter would accept a single value.
-
-The second overload is
-[StyleX's `firstThatWorks` signature](https://github.com/facebook/stylex/blob/main/packages/@stylexjs/babel-plugin/src/shared/stylex-first-that-works.js).
-Two earlier attempts each lost something measurable: a phantom-branded `CssFallbackValue<T>` autocompleted but forced
-every member to one type, and StyleX's signature alone allowed mixed types but offered **zero** completions, because
-parameters inferred from arguments have no contextual type to suggest from. The overload pair keeps both and needs no
-brand, so `WithEscapeHatch` is untouched by this feature.
+- **A shared `<T>(first: T, second: T, ...rest: T[]): T`**, the original. Completes on the first member only; every
+  later slot narrows to the sibling's literal.
+- **`NoInfer<T>` on the parameters.** The checker infers `T` from the property, but the completion engine yields nothing
+  for a `NoInfer<T>` parameter, and a standalone `const w = firstThatWorks(…)` no longer type-checks.
+- **StyleX's independent-parameter signature** with nothing linking the parameters to the return: zero completions.
+- **Intersecting the parameters with the scalar type**, `T & FirstThatWorksMember`: zero completions in the default
+  output, for the `AnyString` reason above.
+- **Returning `(A | B | R[number]) & T`** to keep literal returns: "union type too complex to represent".
+- **A phantom-branded `FirstThatWorksValue<T>`**: autocompleted but forced every member to one type.
 
 ### `firstThatWorks()` for config recipes
 
@@ -445,13 +471,13 @@ unsorted report would vary between runs.
 
 - `crates/pandacss_shared/tests/first_that_works.rs`, 16 tests, the parser: nesting, quotes, whitespace, arity,
   unbalanced input, composition, and values that merely mention the name.
-- `crates/pandacss_extractor/tests/first_that_works_calls.rs`, 33 tests, folding `firstThatWorks()`: renamed and
+- `crates/pandacss_extractor/tests/first_that_works_calls.rs`, 34 tests, folding `firstThatWorks()`: renamed and
   namespace imports, a value held in a constant, local constants as members, a local of the same name, another module's
   export, member calls on `css` or an unrelated object, every member shape that leaves the property open, the
   diagnostics with their source spans, and every placement that reaches the evaluator through a different door:
   `css.raw`, a `token()` or template-literal member, both arms of a conditional spread, a JSX condition prop, a
   `styled()` config, a pattern call, a member imported from another file, and Vue and Svelte templates.
-- `crates/pandacss_stylesheet/tests/first_that_works.rs`, 71 tests, emission and diagnostics: declaration order,
+- `crates/pandacss_stylesheet/tests/first_that_works.rs`, 72 tests, emission and diagnostics: declaration order,
   conditions three deep, conditional value objects, responsive arrays, nested selectors, raw `@media`, recipes, slot
   recipes, variants, important runs, minified output, token and shorthand resolution per member, order-sensitive class
   identity, deduplication, token and keyframe survival under pruning, every rejection path, one diagnostic per code, and
@@ -463,11 +489,10 @@ unsorted report would vary between runs.
   bailout, a standalone call inlined to its value form, and a JSX `css` prop rewritten to its class.
 - `crates/pandacss_codegen/tests/first_that_works_artifact.rs`, the generated `css/first-that-works` module in TS, JS,
   and `.d.ts`.
-- `packages/cli/__tests__/cssgen.test.ts`, the one hop the Rust tests cannot see: a real `panda.config.ts` importing
-  `firstThatWorks` from `@pandacss/dev` for a `globalCss` rule and a config recipe, loaded and bundled like a user's,
-  through `cssgen` to the expanded declarations.
-- `sandbox/codegen/__tests__`, the generated runtime: the written form, runtime/build class parity, and member typing
-  under `strictTokens`.
+- `sandbox/codegen/__tests__`, the generated runtime: the written form, runtime/build class parity, member typing under
+  `strictTokens`, and the one hop the Rust tests cannot see: the sandbox's own `panda.config.ts` imports
+  `firstThatWorks` from `@pandacss/dev` for a `globalCss` rule and a config recipe, and a test runs `panda cssgen` over
+  it and asserts the expanded declarations.
 
 ## Related
 

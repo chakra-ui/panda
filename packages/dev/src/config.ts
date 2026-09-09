@@ -26,14 +26,26 @@ import type {
   PositionTry,
 } from '@pandacss/types'
 
-export function firstThatWorks<T>(first: T, second: T, ...rest: T[]): T
+type FirstThatWorksMemberOf<T> = Extract<T, FirstThatWorksMember>
+
 export function firstThatWorks<
-  A extends FirstThatWorksMember,
-  B extends FirstThatWorksMember,
-  R extends FirstThatWorksMember[],
->(first: A, second: B, ...rest: R): A | B | R[number]
-export function firstThatWorks(first: unknown, second: unknown, ...rest: unknown[]) {
-  return `firstThatWorks(${[first, second, ...rest].join(', ')})`
+  T = FirstThatWorksMember,
+  A extends FirstThatWorksMemberOf<T> = FirstThatWorksMemberOf<T>,
+  B extends FirstThatWorksMemberOf<T> = FirstThatWorksMemberOf<T>,
+  C extends FirstThatWorksMemberOf<T> = never,
+  D extends FirstThatWorksMemberOf<T> = never,
+  E extends FirstThatWorksMemberOf<T> = never,
+  F extends FirstThatWorksMemberOf<T> = never,
+>(
+  first: A,
+  second: B,
+  third?: C,
+  fourth?: D,
+  fifth?: E,
+  sixth?: F,
+): T extends FirstThatWorksMember ? A | B | C | D | E | F : FirstThatWorksMemberOf<T>
+export function firstThatWorks(...values: unknown[]) {
+  return `firstThatWorks(${values.join(', ')})`
 }
 
 export function defineConfig<const T extends Config>(config: T): T & { name: string } {

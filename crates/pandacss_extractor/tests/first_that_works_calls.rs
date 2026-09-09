@@ -547,3 +547,18 @@ fn folds_in_a_svelte_template_attribute() {
         "{all}"
     );
 }
+
+#[test]
+fn folds_inside_a_template_literal_with_a_trailing_important() {
+    // The call is an interpolation like any other, so the whole value folds
+    // to the written form with the marker after the closing paren.
+    let folded = fold(indoc! {r"
+        import { css, firstThatWorks } from '@panda/css';
+        css({ width: `${firstThatWorks('fit-content', 'auto')} !important` });
+    "});
+
+    assert_eq!(
+        folded.as_deref(),
+        Some("firstThatWorks(fit-content, auto) !important")
+    );
+}

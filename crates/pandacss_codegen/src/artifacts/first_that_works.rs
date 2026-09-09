@@ -58,6 +58,13 @@ fn module() -> Module {
         }))
         .with_item(Item::type_alias(TypeAliasDecl {
             exported: true,
+            name: "FirstThatWorksMemberOf".into(),
+            generic_params: vec!["T".into()],
+            ty: TsType::Raw("Extract<T, FirstThatWorksMember>".into()),
+            js_doc: None,
+        }))
+        .with_item(Item::type_alias(TypeAliasDecl {
+            exported: true,
             name: "FirstThatWorksFn".into(),
             generic_params: Vec::new(),
             ty: TsType::Raw(FIRST_THAT_WORKS_FN_TYPE.into()),
@@ -73,16 +80,25 @@ fn module() -> Module {
         })))
 }
 
-// Two call signatures, and the order matters. The first gives every member the
-// property's own value type, so tokens and keywords autocomplete inside the
-// call. The second admits members of differing types, checked one by one.
-const FIRST_THAT_WORKS_FN_TYPE: &str = "{
-  <T>(first: T, second: T, ...rest: T[]): T
-  <A extends FirstThatWorksMember, B extends FirstThatWorksMember, R extends FirstThatWorksMember[]>(
-    first: A,
-    second: B,
-    ...rest: R,
-  ): A | B | R[number]
-}";
+// `T` is inferred from the property alone (it appears only in the return), so
+// every position completes from the property instead of narrowing to a sibling.
+// Positional rather than rest: a generic rest parameter loses completions in the
+// default output. Six members is the cap.
+const FIRST_THAT_WORKS_FN_TYPE: &str = "<
+  T = FirstThatWorksMember,
+  A extends FirstThatWorksMemberOf<T> = FirstThatWorksMemberOf<T>,
+  B extends FirstThatWorksMemberOf<T> = FirstThatWorksMemberOf<T>,
+  C extends FirstThatWorksMemberOf<T> = never,
+  D extends FirstThatWorksMemberOf<T> = never,
+  E extends FirstThatWorksMemberOf<T> = never,
+  F extends FirstThatWorksMemberOf<T> = never,
+>(
+  first: A,
+  second: B,
+  third?: C,
+  fourth?: D,
+  fifth?: E,
+  sixth?: F,
+) => T extends FirstThatWorksMember ? A | B | C | D | E | F : FirstThatWorksMemberOf<T>";
 
 const FIRST_THAT_WORKS_IMPL: &str = "(...values: any[]) => `__FN__(${values.join('__SEP__')})`";
