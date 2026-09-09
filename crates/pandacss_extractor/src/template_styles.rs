@@ -50,7 +50,8 @@ pub(crate) fn collect_template_styles(
     resolver: &crate::Resolver<'_, '_>,
     retain_transform_facts: bool,
 ) -> Vec<ExtractedJsx> {
-    if !config.has_jsx_framework {
+    // PERF(port): template extraction scans the full source and AST; only SFC formats need it.
+    if !config.has_jsx_framework || !has_template_extension(path) {
         return Vec::new();
     }
 
@@ -80,6 +81,12 @@ pub(crate) fn collect_template_styles(
         return collect_astro_template_styles(source, matched, config, &context);
     }
     Vec::new()
+}
+
+fn has_template_extension(path: &str) -> bool {
+    ["vue", "svelte", "astro"]
+        .into_iter()
+        .any(|extension| has_extension(path, extension))
 }
 
 /// Astro markup uses the same JSX attribute syntax as Svelte (`attr="x"`,
@@ -849,4 +856,22 @@ fn find_markup_tag_end(source: &str, from: usize, limit: usize) -> Option<usize>
         index += 1;
     }
     None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::has_template_extension;
+
+    #[test]
+    fn template_extensions_are_explicit() {
+        for path in ["Card.vue", "Card.SVELTE", "Card.astro"] {
+            assert!(has_template_extension(path), "expected {path} to match");
+        }
+        for path in ["Card.ts", "Card.tsx", "Card.jsx", "Card.vue.ts"] {
+            assert!(
+                !has_template_extension(path),
+                "expected {path} to be skipped"
+            );
+        }
+    }
 }
