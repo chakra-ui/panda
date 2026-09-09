@@ -31,6 +31,7 @@ export default defineConfig({
       // Rust compiler stack — their tests can't resolve deps from root.
       'playground/**',
       'website/**',
+      'apps/**',
       // Bun sandbox runs under `bun test`.
       'sandbox-bun/**',
       // Binding tests need `snapshotFormat.compareKeys: null` to preserve the

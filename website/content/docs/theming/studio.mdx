@@ -92,5 +92,32 @@ export function SemanticColors() {
 
 ## Or use the viewer
 
-Don't want to build one? [Panda Spec Studio](https://panda-spec-studio-web.vercel.app/) is a ready-made viewer — drop
-your `tokens.json` or paste it, and every category renders with search and light/dark. No install.
+Don't want to build one? [Spec Studio](https://panda-spec-studio-web.vercel.app/) is a ready-made viewer for the same
+JSON. Drop your `tokens.json` or paste it, and every category renders with search and light and dark. No install, no
+account. It does three things.
+
+### View
+
+Drop `tokens.json`, or your whole `styled-system/` folder, and every category paints in a layout that fits it: colors and
+gradients as swatches, spacing and sizes as a sorted scale, fonts as specimens, durations and easings as live chips, and
+everything else as a name/value table. Click any token to copy its name. Discovered themes and light and dark let
+semantic tokens show their real values.
+
+### Analyze usage
+
+Drop your source files, or the whole repo folder, and Spec Studio reports per category which tokens are used, unused, and
+hot. There are two tiers, and the drop picks one:
+
+- **Include your `panda.config.ts`** and the real Panda compiler runs in your browser through `@pandacss/compiler-wasm`.
+  Counts are exact, down to bare-numeric tokens like `spacing.4`.
+- **Leave it out** and a name-match scan runs instead: accurate for named tokens like `red.500`, approximate for numeric
+  ones.
+
+A badge on the report says which tier ran. Everything stays in the browser.
+
+### Share
+
+The Share button saves the current system and gives you a read-only link at `/s/<slug>` that anyone can open. Share from
+Analyze and the usage report travels with it, at `/a/<slug>`. No account, no ownership: make a spec, get a link, send it.
+
+The [Spec Studio announcement](/blog/see-your-design-system) walks through all three.
