@@ -33,7 +33,7 @@ export default async function BlogPage() {
       }))
   )
 
-  const [featured] = posts
+  const featured = posts.find(post => post.featured) ?? posts[0]
 
   return (
     <Box maxW="72rem" mx="auto" px="6" pt="16" pb="24">
@@ -71,7 +71,7 @@ export default async function BlogPage() {
       >
         <Box display="flex" alignItems="center" gap="3" mb="5" flexWrap="wrap">
           <Box textStyle="eyebrow" bg="accent" color="black" px="2" py="1">
-            Latest
+            {featured.featured ? 'Featured' : 'Latest'}
           </Box>
           <Box textStyle="eyebrow" color="fg.subtle">
             {new Date(featured.date)

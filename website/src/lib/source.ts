@@ -27,6 +27,7 @@ const blogCollection = defineCollections({
       ),
     tags: z.array(z.string()).optional(),
     type: z.enum(['article', 'release']).optional(),
+    featured: z.boolean().optional(),
     image: z.string().optional()
   })
 })
