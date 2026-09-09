@@ -6,12 +6,20 @@ import { button, control } from "styled-system/recipes";
 import type { TokensFile } from "~/utils/tokens";
 import type { Variant } from "~/utils/token-model";
 
-const props = defineProps<{ file: TokensFile; resolveVars?: boolean; variants?: Variant[]; css?: string | null }>();
+const props = defineProps<{
+  file: TokensFile;
+  resolveVars?: boolean;
+  variants?: Variant[];
+  css?: string | null;
+  usage?: unknown;
+  analyzeHref?: string;
+}>();
 defineEmits<{ reset: [] }>();
 
 const { status: shareStatus, share } = useShareSpec();
-const shareLabel = computed(() =>
-  ({ idle: "Share", sharing: "Sharing…", copied: "Link copied", error: "Try again" })[shareStatus.value],
+const analyzeLabel = computed(() => (props.analyzeHref?.startsWith("/a/") ? "View usage" : "Analyze usage"));
+const analyzeTo = computed(
+  () => `${props.analyzeHref ?? "/analyze"}?category=${encodeURIComponent(activeType.value)}`,
 );
 
 const activeVariant = ref<Variant | undefined>(props.variants?.[0]);
@@ -62,7 +70,7 @@ watch(activeType, () => (search.value = ""));
         </div>
         <div :class="s.actions">
           <NuxtLink
-            to="/analyze"
+            :to="analyzeTo"
             :class="[button({ variant: 'solid', size: 'sm' }), s.actionGrow]"
             title="See which tokens are used, unused, and hot"
           >
@@ -79,16 +87,18 @@ watch(activeType, () => (search.value = ""));
               <path d="M3 3v18h18" />
               <path d="M18 17V9M13 17V5M8 17v-3" />
             </svg>
-            Analyze usage
+            {{ analyzeLabel }}
           </NuxtLink>
           <button
             :class="[button({ variant: 'outline', size: 'sm' }), s.shareBtn]"
             :disabled="shareStatus === 'sharing'"
-            :aria-label="shareLabel"
+            aria-label="Share"
             title="Create a shareable link to this system"
-            @click="share(props.file, props.css ?? null)"
+            @click="share(props.file, props.css ?? null, { usage: props.usage })"
           >
+            <span v-if="shareStatus === 'sharing'" :class="s.btnSpinner" />
             <svg
+              v-else
               width="14"
               height="14"
               viewBox="0 0 24 24"
@@ -103,7 +113,7 @@ watch(activeType, () => (search.value = ""));
               <circle cx="18" cy="19" r="3" />
               <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
             </svg>
-            <span :class="s.shareText">{{ shareLabel }}</span>
+            <span :class="s.shareText">Share</span>
           </button>
           <button :class="[button({ variant: 'outline', size: 'sm' }), s.actionFull]" @click="$emit('reset')">
             <svg

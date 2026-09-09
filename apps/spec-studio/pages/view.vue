@@ -3,7 +3,7 @@ import { onBeforeUnmount, onMounted, ref } from "vue";
 import * as s from "./view.styles";
 import { parseTokens, type TokensFile } from "~/utils/tokens";
 import { buildThemeLayer, type Variant } from "~/utils/token-model";
-import { loadTokens, loadTokenCss, clearTokens } from "~/utils/idb";
+import { loadTokens, loadTokenCss, loadUsage, clearTokens } from "~/utils/idb";
 
 useHead({
   title: "Your system — Panda Spec Studio",
@@ -16,6 +16,7 @@ const ready = ref(false);
 const resolveVars = ref(false);
 const variants = ref<Variant[]>([]);
 const themeCss = ref<string | null>(null);
+const usage = ref<unknown>(null);
 
 onMounted(async () => {
   const raw = await loadTokens();
@@ -25,6 +26,7 @@ onMounted(async () => {
     return;
   }
   file.value = result.file;
+  usage.value = await loadUsage();
   ready.value = true;
 
   const rawCss = await loadTokenCss();
@@ -55,6 +57,8 @@ async function reset() {
     :resolve-vars="resolveVars"
     :variants="variants"
     :css="themeCss"
+    :usage="usage"
+    :analyze-href="'/analyze'"
     @reset="reset"
   />
   <div v-else :class="s.loading">

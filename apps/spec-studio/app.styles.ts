@@ -54,3 +54,23 @@ export const themeToggle = css({
   _hover: { color: "ink", borderColor: "lineStrong", bg: "subtle" },
 });
 export const rule = css({ h: "1px", bg: "line" });
+
+export const toast = css({
+  display: "flex",
+  alignItems: "center",
+  gap: "2",
+  px: "4",
+  py: "2.5",
+  rounded: "lg",
+  bg: "ink",
+  color: "paper",
+  fontFamily: "body",
+  fontSize: "13.5px",
+  fontWeight: "500",
+  whiteSpace: "nowrap",
+  boxShadow: "0 10px 34px -8px rgba(0,0,0,0.45)",
+  opacity: "var(--opacity, 1)",
+  transition: "opacity 0.2s ease, translate 0.2s ease",
+  "&[data-state='closed']": { opacity: "0" },
+});
+export const toastError = css({ bg: "danger" });

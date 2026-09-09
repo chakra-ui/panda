@@ -13,8 +13,12 @@ const STYLE_ID = "panda-spec-token-vars";
 const resolveVars = ref(false);
 const variants = ref<Variant[]>([]);
 
-const { data } = await useFetch<{ tokens: TokensFile; css: string | null }>(`/api/specs/${slug}`);
+const { data } = await useFetch<{ tokens: TokensFile; css: string | null; usage: unknown }>(
+  `/api/specs/${slug}`,
+);
 if (!data.value?.tokens) throw createError({ statusCode: 404, statusMessage: "Spec not found" });
+
+const analyzeHref = data.value.usage ? `/a/${slug}` : "/analyze";
 
 onMounted(async () => {
   const css = data.value?.css ?? null;
@@ -43,6 +47,8 @@ async function reset() {
     :file="data.tokens"
     :resolve-vars="resolveVars"
     :variants="variants"
+    :usage="data.usage"
+    :analyze-href="analyzeHref"
     @reset="reset"
   />
 </template>

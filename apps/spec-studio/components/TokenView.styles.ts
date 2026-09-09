@@ -109,6 +109,16 @@ export const actionGrow = css({ flexGrow: { base: "1", md: "0" } });
 export const actionFull = css({ w: { base: "full", md: "auto" } });
 export const shareBtn = css({ w: { base: "9", md: "auto" }, px: { base: "0", md: "3" }, justifyContent: "center", flexShrink: "0" });
 export const shareText = css({ display: { base: "none", md: "inline" } });
+export const btnSpinner = css({
+  display: "inline-block",
+  w: "14px",
+  h: "14px",
+  rounded: "full",
+  borderWidth: "2px",
+  borderColor: "currentColor",
+  borderTopColor: "transparent",
+  animation: "spin 0.6s linear infinite",
+});
 
 export const variants = css({
   display: "flex",

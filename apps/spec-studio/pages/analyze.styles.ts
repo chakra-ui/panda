@@ -95,6 +95,15 @@ export const scanned = css({
   gap: "2",
 });
 export const toolbarActions = css({ display: "flex", alignItems: "center", gap: "2.5" });
+export const scopeNote = css({
+  display: "flex",
+  alignItems: "center",
+  gap: "3",
+  fontSize: "13px",
+  color: "muted",
+  mb: "5",
+});
+export const scopeClear = css({ color: "ink", textDecoration: "underline", _hover: { color: "muted" } });
 export const badge = css({
   fontFamily: "mono",
   fontSize: "10.5px",

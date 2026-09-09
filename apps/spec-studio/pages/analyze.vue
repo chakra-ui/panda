@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import * as s from "./analyze.styles";
 import { button } from "styled-system/recipes";
 import { parseTokens, type TokensFile } from "~/utils/tokens";
 import { extractTokens } from "~/utils/extract-tokens";
-import { loadTokens, saveTokens, saveTokenCss } from "~/utils/idb";
+import { loadTokens, saveTokens, saveTokenCss, saveUsage } from "~/utils/idb";
 import {
   analyzeUsage,
   isSourceFile,
@@ -18,17 +18,17 @@ import { useFolderDrop } from "~/composables/useFolderDrop";
 import { useShareSpec } from "~/composables/useShareSpec";
 
 const { status: shareStatus, share } = useShareSpec();
-const shareLabel = computed(
-  () => ({ idle: "Share", sharing: "Sharing…", copied: "Link copied", error: "Try again" })[shareStatus.value],
+
+const usageSnapshot = computed(() =>
+  report.value
+    ? { report: report.value, scannedCount: scannedCount.value, mode: mode.value }
+    : null,
 );
+watch(usageSnapshot, (u) => saveUsage(u));
 
 function shareReport() {
-  if (!file.value || !report.value) return;
-  share(file.value, null, {
-    title: "usage",
-    path: "a",
-    usage: { report: report.value, scannedCount: scannedCount.value, mode: mode.value },
-  });
+  if (!file.value || !usageSnapshot.value) return;
+  share(file.value, null, { title: "usage", path: "a", usage: usageSnapshot.value });
 }
 
 useHead({
@@ -43,6 +43,16 @@ const empty = ref(false);
 const mode = ref<"heuristic" | "precise">("heuristic");
 const analyzing = ref(false);
 const preciseFailed = ref(false);
+
+const route = useRoute();
+const scopeCategory = computed(() => String(route.query.category ?? ""));
+const scopedReport = computed(() =>
+  !report.value
+    ? []
+    : scopeCategory.value
+      ? report.value.filter((c) => c.type === scopeCategory.value)
+      : report.value,
+);
 
 const noUsage = computed(() => !!report.value?.length && report.value.every((c) => c.used === 0));
 
@@ -250,7 +260,7 @@ function reset() {
             :disabled="shareStatus === 'sharing'"
             @click="shareReport"
           >
-            {{ shareLabel }}
+            {{ shareStatus === "sharing" ? "Sharing…" : "Share" }}
           </button>
           <button :class="button({ variant: 'outline', size: 'sm' })" @click="reset">
             Scan other files
@@ -270,7 +280,11 @@ function reset() {
         or Panda v1) — showing the heuristic name-match scan instead.
       </p>
 
-      <AnalyzeReport v-if="report" :report="report" />
+      <p v-if="report && scopeCategory" :class="s.scopeNote">
+        Scoped to <strong>{{ scopeCategory }}</strong>
+        <NuxtLink to="/analyze" :class="s.scopeClear">Show all categories</NuxtLink>
+      </p>
+      <AnalyzeReport v-if="report" :report="scopedReport" />
     </template>
   </div>
 </template>

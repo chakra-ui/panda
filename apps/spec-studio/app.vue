@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
+import { Toast, Toaster } from "@ark-ui/vue";
 import * as s from "./app.styles";
 import { useTheme } from "~/composables/useTheme";
+import { toaster } from "~/utils/toaster";
 
 const { theme, toggle, sync } = useTheme();
 onMounted(sync);
@@ -58,5 +60,10 @@ onMounted(sync);
     </header>
     <div :class="s.rule" />
     <NuxtPage />
+    <Toaster :toaster="toaster" v-slot="toast">
+      <Toast.Root :class="[s.toast, toast.type === 'error' && s.toastError]">
+        <Toast.Title>{{ toast.title }}</Toast.Title>
+      </Toast.Root>
+    </Toaster>
   </div>
 </template>

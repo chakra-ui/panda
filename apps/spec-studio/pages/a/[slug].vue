@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import * as s from "../analyze.styles";
 import type { CategoryUsage } from "~/utils/analyze";
 
@@ -13,6 +14,10 @@ const { data } = await useFetch<{ title: string | null; usage: Usage | null }>(`
 if (!data.value?.usage?.report) throw createError({ statusCode: 404, statusMessage: "No usage analysis here" });
 
 const usage = data.value.usage;
+const scopeCategory = computed(() => String(route.query.category ?? ""));
+const scopedReport = computed(() =>
+  scopeCategory.value ? usage.report.filter((c) => c.type === scopeCategory.value) : usage.report,
+);
 </script>
 
 <template>
@@ -47,6 +52,10 @@ const usage = data.value.usage;
       </span>
     </div>
 
-    <AnalyzeReport :report="usage.report" />
+    <p v-if="scopeCategory" :class="s.scopeNote">
+      Scoped to <strong>{{ scopeCategory }}</strong>
+      <NuxtLink :to="`/a/${slug}`" :class="s.scopeClear">Show all categories</NuxtLink>
+    </p>
+    <AnalyzeReport :report="scopedReport" />
   </div>
 </template>
