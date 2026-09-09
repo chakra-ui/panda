@@ -826,11 +826,26 @@ fn at_rule_variants(value: &Value) -> &[Value] {
 
 /// Write a flat, unnested descriptor block: each property is hyphenated and
 /// its value rendered. `false` and structural values are skipped.
+///
+/// A descriptor takes no utility transform, so a `firstThatWorks(...)` run
+/// writes its members verbatim, most-preferred last like every other run.
 fn write_at_rule_descriptors(writer: &mut CssWriter, body: &serde_json::Map<String, Value>) {
     for (prop, value) in body {
-        if let Some(rendered) = render_descriptor_value(prop, value) {
-            writer.declaration(&hyphenate_property(prop), &rendered, false);
+        let Some(rendered) = render_descriptor_value(prop, value) else {
+            continue;
+        };
+        let prop = hyphenate_property(prop);
+        if is_first_that_works_value(&rendered) {
+            for member in parse_first_that_works_value(&rendered)
+                .unwrap_or_default()
+                .iter()
+                .rev()
+            {
+                writer.declaration(&prop, member, false);
+            }
+            continue;
         }
+        writer.declaration(&prop, &rendered, false);
     }
 }
 

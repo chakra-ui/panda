@@ -330,3 +330,220 @@ fn a_reported_call_carries_its_source_span() {
         "firstThatWorks('75%')"
     );
 }
+
+// --- Every placement ---
+//
+// The call is a value, so it should fold anywhere a value is written. These
+// pin the placements that reach the evaluator through a different door than a
+// plain `css({ prop: ... })` entry.
+
+use std::path::PathBuf;
+
+use crate::common::{panda_config_with_token_dictionary, panda_jsx_config};
+use pandacss_extractor::{CrossFileResolver, TokenDictionary};
+use pandacss_fs::MemoryFileSystem;
+use pandacss_tokens::{Token, TokenCategory};
+
+/// Every extracted call and JSX node, serialized, so a placement test can
+/// assert the folded run landed somewhere without caring about the shape.
+fn everything(usage: &ExtractUsage) -> String {
+    let calls = usage
+        .calls
+        .iter()
+        .flat_map(|call| call.data.iter().flatten())
+        .map(|literal| literal.to_json().to_string());
+    let jsx = usage.jsx.iter().map(|node| node.data.to_json().to_string());
+    calls.chain(jsx).collect::<Vec<_>>().join("\n")
+}
+
+#[test]
+fn folds_inside_css_raw() {
+    let folded = fold(indoc! {r"
+        import { css, firstThatWorks } from '@panda/css';
+        css.raw({ width: firstThatWorks('fit-content', 'auto') });
+    "});
+
+    assert_eq!(folded.as_deref(), Some("firstThatWorks(fit-content, auto)"));
+}
+
+#[test]
+fn folds_a_token_call_member_to_its_resolved_value() {
+    let dictionary = TokenDictionary::builder()
+        .insert(Token::new(
+            "colors.brand",
+            "#0057b8",
+            "var(--colors-brand)",
+            TokenCategory::Colors,
+        ))
+        .build();
+    let usage = extract(
+        indoc! {r"
+            import { css, firstThatWorks } from '@panda/css';
+            import { token } from '@panda/tokens';
+            css({ color: firstThatWorks('oklch(55% 0.18 250)', token('colors.brand')) });
+        "},
+        "app.tsx",
+        &panda_config_with_token_dictionary(dictionary),
+    );
+
+    assert_eq!(
+        css_prop(&usage, "color").as_deref(),
+        Some("firstThatWorks(oklch(55% 0.18 250), #0057b8)")
+    );
+}
+
+#[test]
+fn folds_a_template_literal_member() {
+    let folded = fold(indoc! {r"
+        import { css, firstThatWorks } from '@panda/css';
+        const size = 12;
+        css({ width: firstThatWorks(`${size}dvw`, `${size}vw`) });
+    "});
+
+    assert_eq!(folded.as_deref(), Some("firstThatWorks(12dvw, 12vw)"));
+}
+
+#[test]
+fn folds_in_both_arms_of_a_conditional_spread() {
+    let usage = extract(
+        indoc! {r"
+            import { css, firstThatWorks } from '@panda/css';
+            css({
+              ...(dark
+                ? { color: firstThatWorks('oklch(80% 0.1 250)', 'white') }
+                : { color: firstThatWorks('oklch(30% 0.1 250)', 'black') }),
+            });
+        "},
+        "app.tsx",
+        &panda_config(),
+    );
+
+    let all = everything(&usage);
+    assert!(
+        all.contains("firstThatWorks(oklch(80% 0.1 250), white)"),
+        "{all}"
+    );
+    assert!(
+        all.contains("firstThatWorks(oklch(30% 0.1 250), black)"),
+        "{all}"
+    );
+}
+
+#[test]
+fn folds_in_a_jsx_condition_prop() {
+    let usage = extract(
+        indoc! {r"
+            import { firstThatWorks } from '@panda/css';
+            import { Box } from '@panda/jsx';
+            const el = <Box _hover={{ color: firstThatWorks('oklch(60% 0.2 30)', 'red') }} />;
+        "},
+        "app.tsx",
+        &panda_jsx_config(),
+    );
+
+    let all = everything(&usage);
+    assert!(
+        all.contains("firstThatWorks(oklch(60% 0.2 30), red)"),
+        "{all}"
+    );
+}
+
+#[test]
+fn folds_in_a_styled_factory_config() {
+    let usage = extract(
+        indoc! {r"
+            import { firstThatWorks } from '@panda/css';
+            import { styled } from '@panda/jsx';
+            const Card = styled('div', { base: { minHeight: firstThatWorks('100dvh', '100vh') } });
+        "},
+        "app.tsx",
+        &panda_jsx_config(),
+    );
+
+    let all = everything(&usage);
+    assert!(all.contains("firstThatWorks(100dvh, 100vh)"), "{all}");
+}
+
+#[test]
+fn folds_in_a_pattern_call() {
+    let usage = extract(
+        indoc! {r"
+            import { firstThatWorks } from '@panda/css';
+            import { stack } from '@panda/patterns';
+            stack({ gap: firstThatWorks('1rem', 4) });
+        "},
+        "app.tsx",
+        &panda_config(),
+    );
+
+    let all = everything(&usage);
+    assert!(all.contains("firstThatWorks(1rem, 4)"), "{all}");
+}
+
+#[test]
+fn folds_a_member_imported_from_another_file() {
+    let fs = MemoryFileSystem::new();
+    fs.add_file(
+        PathBuf::from("/proj/theme.ts"),
+        b"export const brand = 'oklch(55% 0.18 250)';".to_vec(),
+    );
+    let main = PathBuf::from("/proj/main.tsx");
+    let source = indoc! {r"
+        import { css, firstThatWorks } from '@panda/css';
+        import { brand } from './theme';
+        css({ color: firstThatWorks(brand, '#0057b8') });
+    "};
+    fs.add_file(main.clone(), source.as_bytes().to_vec());
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs));
+    let usage = extract(source, main.to_str().unwrap(), &config);
+
+    assert_eq!(
+        css_prop(&usage, "color").as_deref(),
+        Some("firstThatWorks(oklch(55% 0.18 250), #0057b8)")
+    );
+}
+
+#[test]
+fn folds_in_a_vue_template_through_a_script_constant() {
+    let usage = extract(
+        indoc! {r#"
+            <template>
+              <Box :color="accent" />
+            </template>
+            <script setup>
+            import { Box } from '@panda/jsx';
+            import { firstThatWorks } from '@panda/css';
+            const accent = firstThatWorks('oklch(60% 0.2 30)', 'red');
+            </script>
+        "#},
+        "Card.vue",
+        &panda_jsx_config(),
+    );
+
+    let all = everything(&usage);
+    assert!(
+        all.contains("firstThatWorks(oklch(60% 0.2 30), red)"),
+        "{all}"
+    );
+}
+
+#[test]
+fn folds_in_a_svelte_template_attribute() {
+    let usage = extract(
+        indoc! {r"
+            <script>
+            import { Box } from '@panda/jsx';
+            import { firstThatWorks } from '@panda/css';
+            </script>
+            <Box color={firstThatWorks('oklch(60% 0.2 30)', 'red')} />
+        "},
+        "Card.svelte",
+        &panda_jsx_config(),
+    );
+
+    let all = everything(&usage);
+    assert!(
+        all.contains("firstThatWorks(oklch(60% 0.2 30), red)"),
+        "{all}"
+    );
+}

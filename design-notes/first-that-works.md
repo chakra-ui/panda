@@ -183,8 +183,13 @@ It returns `None`, emitting nothing, when the run is not provably one ordered ca
 object, or members disagreeing on which properties they produce, which a multi-property utility transform can do.
 
 Two call sites share it. `collect_atom_rules` handles atomic CSS and keeps the class name the whole value already earns.
-`property_declarations` handles everything else, which is why recipes, slot recipes, variants, and global CSS work
-without a fallback-specific walker.
+`property_declarations` handles everything else, which is why recipes, slot recipes, compound variants, global CSS, text
+styles, keyframe stops, and view-transition bags work without a fallback-specific walker.
+
+At-rule descriptor blocks (`@position-try`, `@font-face`) are the one path that never runs a utility transform, so
+`write_at_rule_descriptors` writes a run's members verbatim, in the same reversed order. A malformed run there emits
+nothing but is not reported: the descriptor path has no diagnostic sink. That is the one gap in the diagnostics table
+below.
 
 ### Class naming
 
@@ -440,18 +445,22 @@ unsorted report would vary between runs.
 
 - `crates/pandacss_shared/tests/first_that_works.rs`, 16 tests, the parser: nesting, quotes, whitespace, arity,
   unbalanced input, composition, and values that merely mention the name.
-- `crates/pandacss_extractor/tests/first_that_works_calls.rs`, 23 tests, folding `firstThatWorks()`: renamed and
+- `crates/pandacss_extractor/tests/first_that_works_calls.rs`, 33 tests, folding `firstThatWorks()`: renamed and
   namespace imports, a value held in a constant, local constants as members, a local of the same name, another module's
-  export, member calls on `css` or an unrelated object, every member shape that leaves the property open, and the
-  diagnostics with their source spans.
-- `crates/pandacss_stylesheet/tests/first_that_works.rs`, 61 tests, emission and diagnostics: declaration order,
+  export, member calls on `css` or an unrelated object, every member shape that leaves the property open, the
+  diagnostics with their source spans, and every placement that reaches the evaluator through a different door:
+  `css.raw`, a `token()` or template-literal member, both arms of a conditional spread, a JSX condition prop, a
+  `styled()` config, a pattern call, a member imported from another file, and Vue and Svelte templates.
+- `crates/pandacss_stylesheet/tests/first_that_works.rs`, 71 tests, emission and diagnostics: declaration order,
   conditions three deep, conditional value objects, responsive arrays, nested selectors, raw `@media`, recipes, slot
   recipes, variants, important runs, minified output, token and shorthand resolution per member, order-sensitive class
-  identity, deduplication, token and keyframe survival under pruning, every rejection path, and one diagnostic per code.
+  identity, deduplication, token and keyframe survival under pruning, every rejection path, one diagnostic per code, and
+  every emission path: global CSS, text styles, inline and theme keyframe stops, `@position-try` and `@font-face`
+  descriptors, view-transition bags, `@supports`, and `cva` / `sva` compound variants.
 - `crates/pandacss_stylesheet/src/style_rules.rs`, run-append semantics, including in-place replacement and importance
   precedence in both directions.
 - `crates/pandacss_project/tests/transform/css_cases.rs`, static rewrite plus dead-import cleanup, the dynamic-member
-  bailout, and a standalone call inlined to its value form.
+  bailout, a standalone call inlined to its value form, and a JSX `css` prop rewritten to its class.
 - `crates/pandacss_codegen/tests/first_that_works_artifact.rs`, the generated `css/first-that-works` module in TS, JS,
   and `.d.ts`.
 - `sandbox/codegen/__tests__`, the generated runtime: the written form, runtime/build class parity, and member typing

@@ -204,7 +204,8 @@ export const docsTabs: TabItem[] = [
           { title: 'Style isolation', url: 'style-isolation' },
           { title: 'View Transition', url: 'view-transition' },
           { title: 'Position Try', url: 'position-try' },
-          { title: 'Keyframes', url: 'keyframes' }
+          { title: 'Keyframes', url: 'keyframes' },
+          { title: 'Value Fallbacks', url: 'first-that-works' }
         ]
       }
     ]

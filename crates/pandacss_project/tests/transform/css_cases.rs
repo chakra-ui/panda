@@ -1,6 +1,6 @@
 //! Static css() transform cases ported from extractor/compiler parity fixtures.
 
-use super::common::transform;
+use super::common::{project_with_jsx, transform, transform_with_project};
 use indoc::indoc;
 use insta::assert_snapshot;
 
@@ -366,4 +366,19 @@ fn a_standalone_call_with_a_dynamic_member_keeps_the_runtime_import() {
 
     assert!(output.bailed);
     assert_eq!(output.code, source);
+}
+
+#[test]
+fn a_run_in_a_jsx_css_prop_rewrites_to_its_class() {
+    let source = indoc! {r#"
+        import { firstThatWorks } from '@panda/css';
+        import { Box } from '@panda/jsx';
+        export const el = <Box css={{ minHeight: firstThatWorks('100dvh', '100vh') }} />;
+    "#};
+
+    let output = transform_with_project(&project_with_jsx(), "src/app.tsx", source);
+
+    assert!(output.changed);
+    assert!(!output.code.contains("@panda/css"));
+    assert_snapshot!(output.code, @r#"export const el = <div className="min-height_firstThatWorks(100dvh,_100vh)" />;"#);
 }

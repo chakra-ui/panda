@@ -1165,3 +1165,240 @@ fn a_rejected_importance_mix_emits_no_css() {
 
     assert_snapshot!(css, @"");
 }
+
+// --- Every emission path ---
+//
+// A run is one string value, so it should expand wherever a value can be
+// written: not just atomic css() but global CSS, compositions, keyframe stops,
+// at-rule bodies, and every recipe surface.
+
+#[test]
+fn a_run_in_global_css_emits_both_declarations() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": { "color": { "className": "c" } },
+        "globalCss": {
+            "body": { "color": "firstThatWorks(oklch(60% 0.2 30), red)" }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
+
+    assert_snapshot!(css, @"
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      body {
+        color: red;
+        color: oklch(60% 0.2 30);
+      }
+    }
+    ");
+}
+
+#[test]
+fn a_run_in_a_text_style_emits_in_the_compositions_sublayer() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "textStyles": {
+                "display": { "value": { "fontSize": "firstThatWorks(clamp(2rem, 5vw, 4rem), 3rem)" } }
+            }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ textStyle: 'display' })",
+        &[StylesheetLayer::Utilities],
+    );
+
+    assert_snapshot!(css, @"
+    @layer utilities {
+      @layer compositions {
+        .textStyle_display {
+          font-size: 3rem;
+          font-size: clamp(2rem, 5vw, 4rem);
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn a_run_in_an_inline_keyframe_stop_emits_both_declarations() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css, keyframes, firstThatWorks } from '@panda/css'; const pulse = keyframes({ from: { color: firstThatWorks('oklch(60% 0.2 30)', 'red') } }); css({ animationName: pulse })",
+        &[StylesheetLayer::Tokens],
+    );
+
+    assert_snapshot!(css, @"
+    @layer tokens {
+      @keyframes kf_jTSRkh {
+        from {
+          color: red;
+          color: oklch(60% 0.2 30);
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn a_run_in_a_theme_keyframe_stop_emits_both_declarations() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "keyframes": {
+                "pulse": { "from": { "color": "firstThatWorks(oklch(60% 0.2 30), red)" } }
+            }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ animationName: 'pulse' })",
+        &[StylesheetLayer::Tokens],
+    );
+
+    assert_snapshot!(css, @"
+    @layer tokens {
+      @keyframes pulse {
+        from {
+          color: red;
+          color: oklch(60% 0.2 30);
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn a_run_in_a_position_try_block_emits_both_declarations() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+    }));
+    let css = crate::common::compile_css(
+        &config,
+        "import { css, positionTry, firstThatWorks } from '@panda/css'; const flip = positionTry({ top: firstThatWorks('anchor(bottom)', '100%') }); css({ positionTryFallbacks: flip })",
+    );
+
+    let block = &css[css.find("@position-try").expect("a position-try block")..];
+    let block = &block[..block.find('}').expect("block end")];
+    let fallback = block.find("top: 100%;").expect("the fallback declaration");
+    let preferred = block
+        .find("top: anchor(bottom);")
+        .expect("the preferred declaration");
+    assert!(
+        fallback < preferred,
+        "the preferred member must be emitted last:\n{block}"
+    );
+}
+
+#[test]
+fn a_run_in_a_view_transition_bag_emits_both_declarations() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { viewTransition, firstThatWorks } from '@panda/css'; export const slide = viewTransition({ old: { color: firstThatWorks('oklch(60% 0.2 30)', 'red') } })",
+        &[StylesheetLayer::Utilities],
+    );
+
+    assert_snapshot!(css, @"
+    @layer utilities {
+      .vt_cZImaU {
+        view-transition-class: vt_cZImaU;
+      }
+      ::view-transition-old(.vt_cZImaU) {
+        color: red;
+        color: oklch(60% 0.2 30);
+      }
+    }
+    ");
+}
+
+#[test]
+fn a_run_under_a_supports_condition_wraps_every_declaration() {
+    let css = utilities_css(
+        "import { css, firstThatWorks } from '@panda/css'; css({ '@supports (color: oklch(0% 0 0))': { color: firstThatWorks('oklch(60% 0.2 30)', 'red') } })",
+    );
+
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      @supports (color: oklch(0% 0 0)) {
+        .\[\@supports_\(color\:_oklch\(0\%_0_0\)\)\]\:c_firstThatWorks\(oklch\(60\%_0\.2_30\)\,_red\) {
+          color: red;
+          color: oklch(60% 0.2 30);
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn a_run_in_a_cva_compound_variant_emits_under_the_compound_class() {
+    let css = utilities_css(
+        "import { cva, firstThatWorks } from '@panda/css'; cva({ variants: { size: { sm: {} }, tone: { loud: {} } }, compoundVariants: [{ size: 'sm', tone: 'loud', css: { color: firstThatWorks('oklch(60% 0.2 30)', 'red') } }] })",
+    );
+
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .c_firstThatWorks\(oklch\(60\%_0\.2_30\)\,_red\) {
+        color: red;
+        color: oklch(60% 0.2 30);
+      }
+    }
+    ");
+}
+
+#[test]
+fn a_run_in_an_sva_compound_variant_emits_under_each_slot() {
+    let css = utilities_css(
+        "import { sva, firstThatWorks } from '@panda/css'; sva({ slots: ['root', 'label'], variants: { size: { sm: {} } }, compoundVariants: [{ size: 'sm', css: { root: { color: firstThatWorks('oklch(60% 0.2 30)', 'red') }, label: { width: firstThatWorks('fit-content', 'auto') } } }] })",
+    );
+
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .c_firstThatWorks\(oklch\(60\%_0\.2_30\)\,_red\) {
+        color: red;
+        color: oklch(60% 0.2 30);
+      }
+      .width_firstThatWorks\(fit-content\,_auto\) {
+        width: auto;
+        width: fit-content;
+      }
+    }
+    ");
+}
+
+#[test]
+fn a_run_in_a_font_face_descriptor_emits_both_declarations() {
+    let config = config(serde_json::json!({
+        "globalFontface": {
+            "Inter": {
+                "src": "url('/fonts/inter.woff2') format('woff2')",
+                "fontDisplay": "firstThatWorks(optional, swap)"
+            }
+        }
+    }));
+    let css = compile_layer_css(&config, "", &[StylesheetLayer::Base]);
+
+    assert_snapshot!(css, @"
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      @font-face {
+        font-family: Inter;
+        src: url('/fonts/inter.woff2') format('woff2');
+        font-display: swap;
+        font-display: optional;
+      }
+    }
+    ");
+}
