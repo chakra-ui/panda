@@ -37,6 +37,10 @@ packages/compiler/wasi-worker.mjs
 .vercel
 _fresh
 
+## Nuxt (apps/spec-studio)
+.nuxt
+.output
+
 ## Panda
 .panda
 styled-system

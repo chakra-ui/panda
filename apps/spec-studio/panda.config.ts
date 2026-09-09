@@ -1,0 +1,179 @@
+import { defineConfig } from "@pandacss/dev";
+
+export default defineConfig({
+  presets: ["@pandacss/preset-base", "@pandacss/preset-panda"],
+  preflight: true,
+  include: ["./components/**/*.{vue,ts}", "./pages/**/*.{vue,ts}", "./*.{vue,ts}"],
+  exclude: ["**/node_modules/**"],
+  outdir: "styled-system",
+  jsxFramework: "vue",
+  conditions: {
+    extend: {
+      dark: '[data-theme="dark"] &',
+      light: '[data-theme="light"] &',
+    },
+  },
+  theme: {
+    extend: {
+      recipes: {
+        button: {
+          className: "button",
+          base: {
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "1.5",
+            fontFamily: "body",
+            fontWeight: "500",
+            rounded: "md",
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+            borderWidth: "1px",
+            borderColor: "transparent",
+            transition: "transform 0.12s ease, background 0.15s, border-color 0.15s, color 0.12s",
+            _focusVisible: { outline: "2px solid", outlineColor: "ink", outlineOffset: "2px" },
+            _disabled: { opacity: 0.4, cursor: "not-allowed", _hover: { transform: "none" } },
+          },
+          variants: {
+            variant: {
+              solid: {
+                bg: "ink",
+                color: "paper",
+                borderColor: "ink",
+                _hover: { transform: "translateY(-1px)" },
+              },
+              outline: {
+                bg: "paper",
+                color: "ink",
+                borderColor: "lineStrong",
+                _hover: { borderColor: "ink" },
+              },
+              ghost: { bg: "transparent", color: "muted", _hover: { color: "ink", bg: "subtle" } },
+            },
+            size: {
+              sm: { fontSize: "13px", px: "3", py: "2" },
+              md: { fontSize: "13.5px", px: "4", py: "2.5" },
+            },
+          },
+          defaultVariants: { variant: "solid", size: "md" },
+        },
+        tokenCell: {
+          className: "tokenCell",
+          base: {
+            display: "block",
+            w: "full",
+            textAlign: "left",
+            p: "0",
+            borderWidth: "0",
+            bg: "transparent",
+            cursor: "pointer",
+            transition: "transform 0.12s, background 0.12s",
+            _focusVisible: { outline: "2px solid", outlineColor: "ink" },
+          },
+          variants: {
+            layout: {
+              swatch: {
+                rounded: "lg",
+                _hover: { transform: "translateY(-2px)" },
+                _focusVisible: { outlineOffset: "2px" },
+              },
+              row: {
+                display: "grid",
+                gridTemplateColumns: {
+                  base: "minmax(0,1fr) auto",
+                  sm: "170px minmax(0,1fr) minmax(0,260px)",
+                },
+                alignItems: "center",
+                gap: "4",
+                px: "3",
+                py: "2.5",
+                rounded: "md",
+                _hover: { bg: "subtle" },
+                _focusVisible: { outlineOffset: "-2px" },
+              },
+            },
+          },
+          defaultVariants: { layout: "row" },
+        },
+        control: {
+          className: "control",
+          base: {
+            rounded: "md",
+            borderWidth: "1px",
+            borderColor: "lineStrong",
+            bg: "paper",
+            color: "ink",
+            outline: "none",
+            _focus: { borderColor: "ink" },
+            _placeholder: { color: "faint" },
+          },
+          variants: {
+            kind: {
+              search: {
+                w: "200px",
+                maxW: "full",
+                px: "3",
+                py: "2",
+                fontFamily: "body",
+                fontSize: "13px",
+              },
+              textarea: {
+                w: "full",
+                minH: "120px",
+                p: "3",
+                fontFamily: "mono",
+                fontSize: "12.5px",
+                resize: "vertical",
+              },
+            },
+          },
+          defaultVariants: { kind: "search" },
+        },
+      },
+      semanticTokens: {
+        colors: {
+          ink: { value: { base: "#0a0a0a", _dark: "#ededed" } },
+          paper: { value: { base: "#ffffff", _dark: "#0a0a0a" } },
+          canvas: { value: { base: "#ffffff", _dark: "#0a0a0a" } },
+          subtle: { value: { base: "#fafafa", _dark: "#161616" } },
+          line: { value: { base: "#ededed", _dark: "#262626" } },
+          lineStrong: { value: { base: "#e2e2e2", _dark: "#333333" } },
+          muted: { value: { base: "#727272", _dark: "#8f8f8f" } },
+          faint: { value: { base: "#a1a1a1", _dark: "#6b6b6b" } },
+          success: { value: { base: "#15864a", _dark: "#2fbd6e" } },
+          danger: { value: { base: "#c0362c", _dark: "#f0554b" } },
+        },
+      },
+      tokens: {
+        fonts: {
+          display: { value: "'Space Grotesk', system-ui, -apple-system, sans-serif" },
+          body: { value: "'Inter', system-ui, -apple-system, sans-serif" },
+          mono: { value: "'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace" },
+        },
+        shadows: {
+          card: { value: "0 1px 2px rgba(10,10,10,0.04), 0 1px 1px rgba(10,10,10,0.03)" },
+        },
+      },
+    },
+  },
+  globalCss: {
+    "html, body": {
+      bg: "canvas",
+      color: "ink",
+      fontFamily: "body",
+      margin: "0",
+      WebkitFontSmoothing: "antialiased",
+    },
+    "*, ::before, ::after": { boxSizing: "border-box", borderColor: "line", borderStyle: "solid" },
+    "::selection": { bg: "ink", color: "paper" },
+    a: { color: "inherit", textDecoration: "none" },
+    ".page-enter-active, .page-leave-active": {
+      transition: "opacity 0.25s ease, transform 0.25s ease",
+    },
+    ".page-enter-from, .page-leave-to": { opacity: "0", transform: "translateY(6px)" },
+    "@media (prefers-reduced-motion: reduce)": {
+      ".page-enter-active, .page-leave-active": { transition: "none" },
+      ".page-enter-from, .page-leave-to": { opacity: "1", transform: "none" },
+    },
+  },
+});
