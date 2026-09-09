@@ -7,7 +7,7 @@ use crate::{
     ImportSpecifier, ImportSpecifierKind, Literal, VisitorContext,
     jsx::{ExtractedJsx, Extractor},
     span_from_oxc,
-    style_tree::project_literal,
+    style_tree::{ProjectionRetention, project_style},
 };
 
 #[derive(Default)]
@@ -145,17 +145,20 @@ pub(crate) fn extract_call(
         &ctx.config.jsx,
         tag_name,
     );
-    let data = style
-        .as_ref()
-        .and_then(project_literal)
-        .unwrap_or_else(|| Literal::Object(vec![]));
+    let retain = extractor.retain_transform_facts;
+    let retention = if retain {
+        ProjectionRetention::Retain
+    } else {
+        ProjectionRetention::Discard
+    };
+    let (data, style) = project_style(style, retention);
+    let data = data.unwrap_or_else(|| Literal::Object(vec![]));
     let data_empty = matches!(&data, Literal::Object(entries) if entries.is_empty());
     if data_empty && !resolved.emit_empty {
         return None;
     }
 
     let kind = crate::jsx::jsx_kind(&ctx.config.matchers, &resolved.name, &resolved.alias);
-    let retain = extractor.retain_transform_facts;
     Some(ExtractedJsx {
         category: resolved.category,
         kind,
@@ -166,7 +169,7 @@ pub(crate) fn extract_call(
         closing_span: None,
         attributes: Vec::new(),
         panda_owned: resolved.panda_owned,
-        style: if retain { style } else { None },
+        style,
         source: if retain {
             crate::JsxSourceFacts {
                 kind: crate::JsxSourceKind::RuntimeCall,

@@ -89,13 +89,13 @@ describe('@pandacss/rollup', () => {
 
   it('watches source directories, config dependencies, and design-system files', async () => {
     const driver = createDriver([])
-    driver.scan.mockReturnValue(['/project/src/app.tsx'])
     mocks.createNodeDriver.mockResolvedValue(driver)
     const plugin = pandacss()[0] as unknown as TestPlugin
     const context = createContext()
 
     await plugin.buildStart.call(context)
 
+    expect(driver.scan).not.toHaveBeenCalled()
     expect(context.addWatchFile.mock.calls.map(([file]) => file)).toMatchInlineSnapshot(`
       [
         "/project/src",
@@ -108,6 +108,21 @@ describe('@pandacss/rollup', () => {
         "/project/node_modules/@acme/ds/src/button.tsx",
       ]
     `)
+  })
+
+  it('scans for watch files when a custom driver does not expose parsed files', async () => {
+    const driver = createDriver([])
+    driver.watchTargets.mockReturnValue({
+      files: undefined,
+      dirs: ['/project/src'],
+      config: ['/project/panda.shared.ts'],
+      sources: [],
+    })
+    mocks.createNodeDriver.mockResolvedValue(driver)
+
+    await (pandacss()[0] as unknown as TestPlugin).buildStart.call(createContext())
+
+    expect(driver.scan).toHaveBeenCalledOnce()
   })
 
   it.each([
@@ -184,7 +199,7 @@ function createDriver(diagnostics: Array<{ severity: 'error' | 'info' | 'warning
     applyChange: vi.fn(),
     codegen: vi.fn(),
     parseFiles: vi.fn(),
-    scan: vi.fn((): string[] => []),
+    scan: vi.fn(() => ['/project/src/app.tsx']),
     cssgen: vi.fn(() => ({ css: '.generated { color: red }', diagnostics })),
     designSystemDiagnostics: [],
     designSystemWatchTargets: vi.fn(() => [
@@ -201,7 +216,12 @@ function createDriver(diagnostics: Array<{ severity: 'error' | 'info' | 'warning
     reload: vi.fn(),
     resolvePath: vi.fn((path: string) => path),
     syncDesignSystemFileChange: vi.fn(async (): Promise<boolean> => false),
-    watchTargets: vi.fn(() => ({ dirs: ['/project/src'], config: ['/project/panda.shared.ts'], sources: [] })),
+    watchTargets: vi.fn(() => ({
+      files: ['/project/src/app.tsx'] as string[] | undefined,
+      dirs: ['/project/src'],
+      config: ['/project/panda.shared.ts'],
+      sources: [],
+    })),
   }
 }
 
