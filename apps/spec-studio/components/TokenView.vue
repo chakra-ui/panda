@@ -2,7 +2,7 @@
 import { computed, ref, watch } from "vue";
 import { Tabs, Field } from "@ark-ui/vue";
 import * as s from "./TokenView.styles";
-import { button, control } from "styled-system/recipes";
+import { button, control, segment } from "styled-system/recipes";
 import type { TokensFile } from "~/utils/tokens";
 import type { Variant } from "~/utils/token-model";
 
@@ -154,23 +154,17 @@ watch(activeType, () => (search.value = ""));
           <button
             v-for="v in props.variants"
             :key="v.id"
-            :class="[s.variantBtn, v.id === activeVariant?.id && s.variantOn]"
+            :class="segment({ active: v.id === activeVariant?.id })"
             @click="activeVariant = v"
           >
             {{ v.label }}
           </button>
         </div>
         <div v-if="canMatrix" :class="s.variants" role="group" aria-label="Layout">
-          <button
-            :class="[s.variantBtn, viewMode === 'grid' && s.variantOn]"
-            @click="viewMode = 'grid'"
-          >
+          <button :class="segment({ active: viewMode === 'grid' })" @click="viewMode = 'grid'">
             Grid
           </button>
-          <button
-            :class="[s.variantBtn, viewMode === 'matrix' && s.variantOn]"
-            @click="viewMode = 'matrix'"
-          >
+          <button :class="segment({ active: viewMode === 'matrix' })" @click="viewMode = 'matrix'">
             Matrix
           </button>
         </div>

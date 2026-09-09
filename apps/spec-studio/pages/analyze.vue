@@ -45,8 +45,7 @@ const scopedReport = computed(() =>
 
 const noUsage = computed(() => !!report.value?.length && report.value.every((c) => c.used === 0));
 
-async function onScope(e: Event) {
-  const v = (e.target as HTMLSelectElement).value;
+async function onScope(v: string) {
   await navigateTo({ path: "/analyze", query: v ? { category: v } : {} });
 }
 
@@ -296,30 +295,12 @@ function reset() {
         >.
       </p>
 
-      <div v-if="report" :class="s.scopeBar">
-        <label :class="s.scopeLabel" for="scope-cat">Category</label>
-        <div :class="s.scopeSelectWrap">
-          <select id="scope-cat" :class="s.scopeSelect" :value="scopeCategory" @change="onScope">
-            <option value="">All categories</option>
-            <option v-for="c in report" :key="c.type" :value="c.type">
-              {{ c.type }} · {{ c.used }}/{{ c.total }}
-            </option>
-          </select>
-          <svg
-            :class="s.scopeChevron"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M6 9l6 6 6-6" />
-          </svg>
-        </div>
-      </div>
+      <CategorySelect
+        v-if="report"
+        :categories="report.map((c) => c.type)"
+        :category="scopeCategory"
+        @change="onScope"
+      />
       <AnalyzeReport v-if="report" :report="scopedReport" />
     </template>
   </div>

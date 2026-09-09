@@ -130,22 +130,6 @@ export const variants = css({
   borderWidth: "1px",
   borderColor: "line",
 });
-export const variantBtn = css({
-  px: "2.5",
-  py: "1",
-  rounded: "sm",
-  cursor: "pointer",
-  fontFamily: "body",
-  fontSize: "12.5px",
-  color: "muted",
-  bg: "transparent",
-  borderWidth: "0",
-  whiteSpace: "nowrap",
-  transition: "background 0.12s, color 0.12s",
-  _hover: { color: "ink" },
-});
-export const variantOn = css({ bg: "paper", color: "ink", boxShadow: "0 1px 2px rgba(0,0,0,0.06)" });
-
 export const srOnly = css({
   position: "absolute",
   w: "1px",

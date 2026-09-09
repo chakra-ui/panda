@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { VueUiDonut, VueUiVerticalBar } from "vue-data-ui";
+import type { VueUiDonutConfig, VueUiVerticalBarConfig } from "vue-data-ui";
 import * as s from "./AnalyzeCharts.styles";
 import type { CategoryUsage } from "~/utils/analyze";
 
@@ -136,7 +137,7 @@ const barConfig = computed(() => ({
         {{ totals.used }} of {{ totals.total }} tokens used in your source
       </div>
       <div :class="s.donutBox">
-        <VueUiDonut :dataset="donutDataset" :config="donutConfig" />
+        <VueUiDonut :dataset="donutDataset" :config="donutConfig as unknown as VueUiDonutConfig" />
       </div>
     </div>
 
@@ -164,7 +165,7 @@ const barConfig = computed(() => ({
       <div :class="s.statMono">{{ topToken?.name ?? "—" }}</div>
       <div :class="s.statSub">most-used token{{ topToken ? ` · ×${topToken.uses}` : "" }}</div>
       <div :class="s.barBox">
-        <VueUiVerticalBar :dataset="bars" :config="barConfig" />
+        <VueUiVerticalBar :dataset="bars" :config="barConfig as unknown as VueUiVerticalBarConfig" />
       </div>
     </div>
   </div>
