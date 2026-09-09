@@ -69,6 +69,22 @@ export const val = css({
   whiteSpace: "nowrap",
 });
 export const copied = css({ color: "success" });
+export const contrast = css({ display: "flex", gap: "2", mt: "1" });
+export const contrastItem = css({ display: "flex", alignItems: "center", gap: "1" });
+export const contrastAa = css({
+  display: "grid",
+  placeItems: "center",
+  w: "22px",
+  h: "16px",
+  rounded: "2px",
+  borderWidth: "1px",
+  borderColor: "line",
+  fontFamily: "display",
+  fontWeight: "700",
+  fontSize: "11px",
+});
+export const contrastLabel = css({ fontFamily: "mono", fontSize: "10px", color: "faint" });
+export const contrastPass = css({ color: "success" });
 export const rows = css({ display: "flex", flexDir: "column", gap: "1" });
 export const rowName = css({ fontFamily: "mono", fontSize: "13px", color: "ink" });
 export const rowVal = css({

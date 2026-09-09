@@ -5,8 +5,19 @@ import * as s from "./TokenGrid.styles";
 import { tokenCell } from "styled-system/recipes";
 import { rendererFor, toNumber, type Category, type Token } from "~/utils/tokens";
 import { isSemantic } from "~/utils/token-model";
+import { contrastRatio, wcagLevel } from "~/utils/contrast";
 
 const props = defineProps<{ category: Category; search: string; resolveVars?: boolean }>();
+
+function contrast(value: string) {
+  const onWhite = contrastRatio(value, "#ffffff");
+  const onBlack = contrastRatio(value, "#000000");
+  if (onWhite == null || onBlack == null) return null;
+  return [
+    { bg: "#ffffff", ratio: onWhite, level: wcagLevel(onWhite) },
+    { bg: "#000000", ratio: onBlack, level: wcagLevel(onBlack) },
+  ];
+}
 
 const renderer = computed(() => rendererFor(props.category.type));
 
@@ -78,6 +89,14 @@ const maxScreen = computed(() => Math.max(...screenRows.value.map((t) => t.n), 1
                   clip.copied ? "copied name ✓" : t.value
                 }}</span>
               </Clipboard.Context>
+              <span v-if="contrast(t.value)" :class="s.contrast">
+                <span v-for="c in contrast(t.value)!" :key="c.bg" :class="s.contrastItem">
+                  <span :class="s.contrastAa" :style="{ background: c.bg, color: t.value }">Aa</span>
+                  <span :class="[s.contrastLabel, c.level !== 'Fail' && s.contrastPass]"
+                    >{{ c.ratio.toFixed(1) }} {{ c.level }}</span
+                  >
+                </span>
+              </span>
             </span>
           </Clipboard.Trigger>
         </Clipboard.Root>
