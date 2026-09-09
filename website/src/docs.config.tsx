@@ -175,7 +175,8 @@ export const docsTabs: TabItem[] = [
           { title: 'Conditional Styles', url: 'conditional-styles' },
           { title: 'Responsive Design', url: 'responsive-design' },
           { title: 'Layout Patterns', url: 'patterns' },
-          { title: 'Merging Styles', url: 'merging-styles' }
+          { title: 'Merging Styles', url: 'merging-styles' },
+          { title: 'Global Styles', url: 'global-styles' }
         ]
       },
       {
@@ -191,20 +192,20 @@ export const docsTabs: TabItem[] = [
           { title: 'Dynamic Styles', url: 'dynamic-styling' },
           { title: 'Static CSS Generation', url: 'static' },
           { title: 'Source Transforms', url: 'source-transforms' },
-          { title: 'Optimization', url: 'optimization' }
+          { title: 'Optimization', url: 'optimization' },
+          { title: 'Cascade Layers', url: 'cascade-layers' },
+          { title: 'Style isolation', url: 'style-isolation' }
         ]
       },
       {
         title: 'Advanced',
         items: [
-          { title: 'Global Styles', url: 'global-styles' },
           { title: 'Color opacity modifier', url: 'color-opacity-modifier' },
           { title: 'Virtual Color', url: 'virtual-color' },
-          { title: 'Cascade Layers', url: 'cascade-layers' },
-          { title: 'Style isolation', url: 'style-isolation' },
           { title: 'View Transition', url: 'view-transition' },
           { title: 'Position Try', url: 'position-try' },
-          { title: 'Keyframes', url: 'keyframes' }
+          { title: 'Keyframes', url: 'keyframes' },
+          { title: 'Value Fallbacks', url: 'first-that-works' }
         ]
       }
     ]

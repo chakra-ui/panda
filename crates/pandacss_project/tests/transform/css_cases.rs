@@ -1,6 +1,6 @@
 //! Static css() transform cases ported from extractor/compiler parity fixtures.
 
-use super::common::transform;
+use super::common::{project_with_jsx, transform, transform_with_project};
 use indoc::indoc;
 use insta::assert_snapshot;
 
@@ -295,4 +295,90 @@ fn raw_as_an_object_property_value_keeps_the_object_bare() {
         export const styles = { button: css.raw({ color: 'red' }) };
     "#};
     assert_snapshot!(transform("src/styles.tsx", source).code, @"export const styles = { button: { color: 'red' } };");
+}
+
+// --- `firstThatWorks()` ---
+
+#[test]
+fn a_static_fallback_run_rewrites_to_its_class() {
+    let source = indoc! {r#"
+        import { css, firstThatWorks } from '@panda/css';
+        export const a = css({ width: firstThatWorks('min(60rem, 100%)', '75%') });
+    "#};
+
+    let output = transform("src/styles.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const a = "width_firstThatWorks(min(60rem,_100%),_75%)";"#);
+}
+
+#[test]
+fn a_dynamic_fallback_member_keeps_the_runtime_call() {
+    let source = indoc! {r#"
+        import { css, firstThatWorks } from '@panda/css';
+        export const a = (enhanced) => css({ width: firstThatWorks(enhanced, '75%') });
+    "#};
+
+    let output = transform("src/styles.tsx", source);
+
+    assert_eq!(output.code, source);
+}
+
+#[test]
+fn a_nested_fallback_run_rewrites_to_its_classes() {
+    let source = indoc! {r#"
+        import { css, firstThatWorks } from '@panda/css';
+        export const a = css({
+          _hover: { color: firstThatWorks('oklch(60% 0.2 30)', 'red') },
+          width: [firstThatWorks('min(60rem, 100%)', '100%'), '75%'],
+        });
+    "#};
+
+    let output = transform("src/styles.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const a = "width_firstThatWorks(min(60rem,_100%),_100%) hover:color_firstThatWorks(oklch(60%_0.2_30),_red) sm:width_75%";"#);
+}
+
+#[test]
+fn a_standalone_call_inlines_to_its_value_form_and_drops_the_import() {
+    let source = indoc! {r#"
+        import { firstThatWorks } from '@panda/css';
+        export const width = firstThatWorks('min(60rem, 100%)', '75%');
+    "#};
+
+    let output = transform("src/styles.tsx", source);
+
+    assert!(output.changed);
+    assert!(!output.bailed);
+    assert!(!output.code.contains("@panda/css"));
+    assert_snapshot!(output.code, @r#"export const width = "firstThatWorks(min(60rem, 100%), 75%)";"#);
+}
+
+#[test]
+fn a_standalone_call_with_a_dynamic_member_keeps_the_runtime_import() {
+    let source = indoc! {r#"
+        import { firstThatWorks } from '@panda/css';
+        export const width = (enhanced) => firstThatWorks(enhanced, '75%');
+    "#};
+
+    let output = transform("src/styles.tsx", source);
+
+    assert!(output.bailed);
+    assert_eq!(output.code, source);
+}
+
+#[test]
+fn a_run_in_a_jsx_css_prop_rewrites_to_its_class() {
+    let source = indoc! {r#"
+        import { firstThatWorks } from '@panda/css';
+        import { Box } from '@panda/jsx';
+        export const el = <Box css={{ minHeight: firstThatWorks('100dvh', '100vh') }} />;
+    "#};
+
+    let output = transform_with_project(&project_with_jsx(), "src/app.tsx", source);
+
+    assert!(output.changed);
+    assert!(!output.code.contains("@panda/css"));
+    assert_snapshot!(output.code, @r#"export const el = <div className="min-height_firstThatWorks(100dvh,_100vh)" />;"#);
 }

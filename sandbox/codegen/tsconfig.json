@@ -8,6 +8,10 @@
 
     /* Bundler mode */
     "moduleResolution": "bundler",
+    "paths": {
+      "@pandacss/dev": ["../../packages/dev/src/index.ts"],
+      "@pandacss/types": ["../../packages/types/src/index.ts"]
+    },
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,

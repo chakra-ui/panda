@@ -20,6 +20,7 @@
   "devDependencies": {
     "@builder.io/qwik": "1.20.0",
     "@pandacss/cli": "workspace:*",
+    "@pandacss/dev": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/vite": "workspace:*",

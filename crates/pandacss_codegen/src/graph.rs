@@ -31,6 +31,7 @@ pub enum ArtifactId {
     ViewTransition,
     PositionTry,
     Keyframes,
+    FirstThatWorks,
 }
 
 impl ArtifactId {
@@ -58,6 +59,7 @@ impl ArtifactId {
         Self::ViewTransition,
         Self::PositionTry,
         Self::Keyframes,
+        Self::FirstThatWorks,
     ];
 
     #[must_use]
@@ -86,6 +88,7 @@ impl ArtifactId {
             Self::ViewTransition => "view-transition",
             Self::PositionTry => "position-try",
             Self::Keyframes => "keyframes",
+            Self::FirstThatWorks => "first-that-works",
         }
     }
 }
@@ -442,6 +445,13 @@ impl ArtifactGraph {
             ]),
         },
         ArtifactNode {
+            id: ArtifactId::FirstThatWorks,
+            dependencies: DependencySet::from_slice(&[
+                ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
+            ]),
+        },
+        ArtifactNode {
             id: ArtifactId::Cx,
             dependencies: DependencySet::from_slice(&[
                 ConfigDependency::CodegenFormat,
@@ -663,6 +673,9 @@ fn generate_node_inner(
         }
         ArtifactId::Keyframes => {
             crate::artifacts::keyframes::generate(ctx, options, node.dependencies)
+        }
+        ArtifactId::FirstThatWorks => {
+            crate::artifacts::first_that_works::generate(ctx, options, node.dependencies)
         }
         ArtifactId::Themes => crate::artifacts::themes::generate(ctx, options, node.dependencies),
         ArtifactId::Tokens => crate::artifacts::tokens::generate(ctx, options, node.dependencies),

@@ -6,6 +6,7 @@ mod css_index_artifact;
 mod cva_artifact;
 mod cx_artifact;
 mod emit;
+mod first_that_works_artifact;
 mod helpers_artifact;
 mod jsx_frameworks_artifact;
 mod keyframes_artifact;

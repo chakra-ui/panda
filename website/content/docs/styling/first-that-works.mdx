@@ -1,0 +1,173 @@
+---
+title: Value Fallbacks
+description:
+  Ship a modern CSS value with a fallback for browsers that don't support it yet. firstThatWorks() emits both
+  declarations in the order CSS needs.
+---
+
+## Why you need it
+
+Not every browser understands every value. `100dvh` is still new, and `sticky` used to be `-webkit-sticky`. CSS covers
+all three with one rule: write the property twice, the safe value first, the one you want second.
+
+```css
+.hero {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.header {
+  position: -webkit-sticky;
+  position: sticky;
+}
+
+.brand {
+  color: #0057b8;
+  color: color(display-p3 0 0.34 0.72);
+}
+```
+
+## Usage
+
+The way to do that in Panda is `firstThatWorks()`. It takes an ordered list of fallback values for a style property.
+
+```ts
+import { css, firstThatWorks } from 'styled-system/css'
+
+css({
+  minHeight: firstThatWorks('100dvh', '100vh'),
+})
+```
+
+```css
+.min-h_firstThatWorks\(100dvh\,_100vh\) {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+```
+
+## Common patterns
+
+- Wide-gamut color with an sRGB fallback:
+
+```ts
+css({
+  color: firstThatWorks('oklch(55% 0.18 250)', '#0057b8'),
+})
+```
+
+- Vendor-prefixed values, where each browser keeps the spelling it knows:
+
+```ts
+css({
+  position: firstThatWorks('sticky', '-webkit-sticky', 'relative'),
+})
+```
+
+- A newer sizing keyword behind the one every browser has:
+
+```ts
+css({
+  width: firstThatWorks('fit-content', '-moz-fit-content', 'auto'),
+})
+```
+
+- Color mixing that falls back to a token:
+
+```ts
+css({
+  bg: firstThatWorks('color-mix(in oklch, brand, white 20%)', 'brand.light'),
+})
+```
+
+## `!important`
+
+Mark the whole fallback, not one value:
+
+```ts
+css({
+  color: `${firstThatWorks('oklch(60% 0.2 30)', 'red')} !important`,
+})
+```
+
+Marking only some values is rejected and emits nothing. An important declaration wins whatever its position, so the
+others could never apply.
+
+## Troubleshooting
+
+`firstThatWorks(...)` isn't real CSS, so a malformed fallback emits nothing for that property rather than a broken
+declaration. Each case is reported in the build with its own code.
+
+- **Fewer than two values.** One value has nothing to fall back to:
+
+```ts
+// ❌ first_that_works_arity_invalid
+css({
+  width: firstThatWorks('100dvh'),
+})
+```
+
+- **An argument that isn't a single value.** Objects, arrays, booleans, and null have no declaration form:
+
+```ts
+// ❌ first_that_works_member_invalid
+css({
+  width: firstThatWorks({ base: '100dvh' }, '100vh'),
+})
+
+css({
+  width: firstThatWorks(['100dvh', '100svh'], '100vh'),
+})
+```
+
+- **Unbalanced brackets or quotes** in the written form:
+
+```ts
+// ❌ first_that_works_unbalanced
+css({
+  width: 'firstThatWorks(min(60rem, 100%, 75%)',
+})
+```
+
+- **A fallback inside a fallback.** One is already ordered, so list every value in it:
+
+```ts
+// ❌ first_that_works_nested
+css({
+  color: firstThatWorks(firstThatWorks('oklch(55% 0.18 250)', '#0057b8'), 'blue'),
+})
+
+// ✅
+css({
+  color: firstThatWorks('oklch(55% 0.18 250)', '#0057b8', 'blue'),
+})
+```
+
+- **`!important` on only some values.** An important declaration wins whatever its position, so mark the whole fallback:
+
+```ts
+// ❌ first_that_works_importance_mixed
+css({
+  color: firstThatWorks('oklch(60% 0.2 30) !important', 'red'),
+})
+
+// ✅
+css({
+  color: `${firstThatWorks('oklch(60% 0.2 30)', 'red')} !important`,
+})
+```
+
+- **A custom property.** A variable only fails when it's read, too late to recover, so put the fallback where it's read:
+
+```ts
+// ⚠️ first_that_works_custom_property
+css({
+  '--accent': firstThatWorks('oklch(55% 0.18 250)', '#0057b8'),
+})
+
+// ✅
+css({
+  '--accent': 'oklch(55% 0.18 250)',
+  color: 'var(--accent, #0057b8)',
+})
+```

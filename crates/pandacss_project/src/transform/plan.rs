@@ -368,6 +368,12 @@ fn push_css_call_rewrites(
                 plan.push(rewrite);
             }
         }
+        "firstThatWorks" => match resolve::rewrite_for_first_that_works_call(call.span, &call.data)
+        {
+            Some(rewrite) => plan.push(rewrite),
+            None if call.data.iter().any(Option::is_none) => plan.bailed = true,
+            None => {}
+        },
         name if CssFactory::from_name(name).is_some() => {
             let factory = CssFactory::from_name(name).expect("checked by guard");
             match resolve::rewrite_for_css_factory_call(project, factory, call.span, &call.data) {

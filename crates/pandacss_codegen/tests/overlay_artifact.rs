@@ -253,6 +253,7 @@ fn pure_consumer_virtualizes_entire_runtime() {
     assert!(!files.iter().any(|f| f.path == "css/cva.ts"));
     assert!(!files.iter().any(|f| f.path == "css/sva.ts"));
     assert!(!files.iter().any(|f| f.path == "css/view-transition.ts"));
+    assert!(!files.iter().any(|f| f.path == "css/first-that-works.ts"));
     assert!(!files.iter().any(|f| f.path == "css/conditions.ts"));
 
     let css_index = files
@@ -269,6 +270,7 @@ fn pure_consumer_virtualizes_entire_runtime() {
         export * from '@acme/ui/css/view-transition';
         export * from '@acme/ui/css/position-try';
         export * from '@acme/ui/css/keyframes';
+        export * from '@acme/ui/css/first-that-works';
         "}
         .trim()
     );

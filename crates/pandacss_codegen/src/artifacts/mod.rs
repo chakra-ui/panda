@@ -3,6 +3,7 @@ pub mod css;
 pub mod css_index;
 pub mod cva;
 pub mod cx;
+pub mod first_that_works;
 pub mod helpers;
 pub mod jsx;
 pub mod keyframes;

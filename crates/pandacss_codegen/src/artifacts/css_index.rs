@@ -16,6 +16,7 @@ pub fn module(ctx: CodegenContext<'_>) -> Module {
         "view-transition",
         "position-try",
         "keyframes",
+        "first-that-works",
     ];
 
     // Deep `export *` per module so both runtime values and their `.d.ts` companions

@@ -21,9 +21,32 @@ import type {
   TextStyles,
   ThemeVariant,
   Tokens,
+  FirstThatWorksMember,
   ViewTransitions,
   PositionTry,
 } from '@pandacss/types'
+
+type FirstThatWorksMemberOf<T> = Extract<T, FirstThatWorksMember>
+
+export function firstThatWorks<
+  T = FirstThatWorksMember,
+  A extends FirstThatWorksMemberOf<T> = FirstThatWorksMemberOf<T>,
+  B extends FirstThatWorksMemberOf<T> = FirstThatWorksMemberOf<T>,
+  C extends FirstThatWorksMemberOf<T> = never,
+  D extends FirstThatWorksMemberOf<T> = never,
+  E extends FirstThatWorksMemberOf<T> = never,
+  F extends FirstThatWorksMemberOf<T> = never,
+>(
+  first: A,
+  second: B,
+  third?: C,
+  fourth?: D,
+  fifth?: E,
+  sixth?: F,
+): T extends FirstThatWorksMember ? A | B | C | D | E | F : FirstThatWorksMemberOf<T>
+export function firstThatWorks(...values: unknown[]) {
+  return `firstThatWorks(${values.join(', ')})`
+}
 
 export function defineConfig<const T extends Config>(config: T): T & { name: string } {
   return Object.assign(config, { name: '__panda.config__' })

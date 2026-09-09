@@ -368,6 +368,7 @@ fn matchers_from_definitions(config: &ConfigDefinitions) -> Matchers {
                 "viewTransition",
                 "positionTry",
                 "keyframes",
+                "firstThatWorks",
             ]),
         },
         recipe: ExtractorMatcher {

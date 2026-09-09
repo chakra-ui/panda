@@ -4,6 +4,7 @@ mod conditional_output;
 mod cross_file;
 mod css_property;
 mod extract;
+mod first_that_works_calls;
 mod framework_astro;
 mod framework_svelte;
 mod framework_vue;

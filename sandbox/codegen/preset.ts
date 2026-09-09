@@ -1,3 +1,5 @@
+import { firstThatWorks } from '@pandacss/dev'
+
 const buttonRecipe = {
   className: 'button',
   description: 'The styles for the Button component',
@@ -107,14 +109,25 @@ const buttonWithCompoundVariantsRecipe = {
   },
 }
 
+// firstThatWorks() from @pandacss/dev, in the two config surfaces a recipe
+// author reaches for. __tests__/first-that-works.test.ts asserts the CSS.
+const probeRecipe = {
+  className: 'probe',
+  base: { color: firstThatWorks('oklch(55% 0.18 250)', '{colors.blue.700}') },
+}
+
 export default {
   name: 'codegen',
+  globalCss: {
+    body: { minHeight: firstThatWorks('100dvh', '100vh') },
+  },
   // Useful for theme customization
   theme: {
     extend: {
       recipes: {
         button: buttonRecipe,
         buttonWithCompoundVariants: buttonWithCompoundVariantsRecipe,
+        probe: probeRecipe,
       },
       slotRecipes: {
         slotButton,

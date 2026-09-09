@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { css } from '../styled-system/css/css'
+import { firstThatWorks } from '../styled-system/css/first-that-works'
 
 describe('css', () => {
   test('native CSS prop and value', () => {
@@ -420,5 +421,31 @@ describe('composed style arguments', () => {
   test('reflects a changed value in a rebuilt object', () => {
     expect(css(base, [{ color: 'blue' }])).toContain('c_blue')
     expect(css(base, [{ color: 'green' }])).toContain('c_green')
+  })
+})
+
+describe('firstThatWorks', () => {
+  test('builds the ordered value form, most-preferred first', () => {
+    expect(firstThatWorks('min(60rem, 100%)', '75%')).toMatchInlineSnapshot(`"firstThatWorks(min(60rem, 100%), 75%)"`)
+  })
+
+  test('class name matches the equivalent written string', () => {
+    expect(css({ width: firstThatWorks('min(60rem, 100%)', '75%') })).toBe(
+      css({ width: 'firstThatWorks(min(60rem, 100%), 75%)' }),
+    )
+  })
+
+  test('accepts three or more members', () => {
+    expect(firstThatWorks('oklch(60% 0.2 30)', 'color(display-p3 1 0 0)', 'red')).toMatchInlineSnapshot(
+      `"firstThatWorks(oklch(60% 0.2 30), color(display-p3 1 0 0), red)"`,
+    )
+  })
+
+  test('members may mix numbers and strings', () => {
+    expect(css({ padding: firstThatWorks('1rem', 4) })).toMatchInlineSnapshot(`"p_firstThatWorks(1rem,_4)"`)
+  })
+
+  test('swapping members changes the class', () => {
+    expect(css({ color: firstThatWorks('red', 'blue') })).not.toBe(css({ color: firstThatWorks('blue', 'red') }))
   })
 })

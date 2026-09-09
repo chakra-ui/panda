@@ -1,5 +1,5 @@
 import { assertType, describe, test } from 'vitest'
-import { css } from '../../styled-system-strict-tokens/css'
+import { css, firstThatWorks } from '../../styled-system-strict-tokens/css'
 
 describe('css', () => {
   test('native CSS prop and value', () => {
@@ -209,5 +209,61 @@ describe('css', () => {
 
     // @ts-expect-error a raw percentage needs the escape hatch under strictTokens
     assertType(css({ maskBottomFrom: '20%' }))
+  })
+})
+
+describe('firstThatWorks', () => {
+  test('members are checked against the property they are written in', () => {
+    assertType(css({ color: firstThatWorks('blue.300', 'red.200') }))
+    assertType(css({ position: firstThatWorks('absolute', 'sticky') }))
+  })
+
+  test('a member that is not valid for the property is rejected', () => {
+    // @ts-expect-error expected from strictTokens: true — not a color token
+    assertType(css({ color: firstThatWorks('blue.300', 'notAToken') }))
+    // @ts-expect-error expected from strictTokens: true — not a position keyword
+    assertType(css({ position: firstThatWorks('absolute', 'absolute123') }))
+  })
+
+  test('the arbitrary-value escape hatch still applies per member', () => {
+    assertType(css({ color: firstThatWorks('blue.300', '[oklch(60% 0.2 260)]') }))
+  })
+
+  test('each member is checked independently, so members may differ', () => {
+    assertType(css({ padding: firstThatWorks('4', 'auto') }))
+  })
+
+  test('an arbitrary length still needs the escape hatch, even in a run', () => {
+    assertType(css({ padding: firstThatWorks('[1rem]', '4') }))
+    // @ts-expect-error expected from strictTokens: true — 1rem is not a spacing token
+    assertType(css({ padding: firstThatWorks('1rem', '4') }))
+  })
+
+  test('a third invalid member is rejected', () => {
+    // @ts-expect-error expected from strictTokens: true — not a color token
+    assertType(css({ color: firstThatWorks('blue.300', 'red.200', 'nope') }))
+  })
+
+  test('a plain string is still rejected', () => {
+    // @ts-expect-error expected from strictTokens: true — only firstThatWorks() produces a run
+    assertType(css({ color: 'firstThatWorks(blue.300, oklch(60% 0.2 260))' }))
+  })
+
+  test('a responsive object is not a member, even when every member is one', () => {
+    // @ts-expect-error a member is one value, never a conditional object
+    assertType(css({ width: firstThatWorks({ base: 'full' }, { base: 'auto' }) }))
+  })
+
+  test('every member is typed by the property, up to six', () => {
+    assertType(css({ color: firstThatWorks('blue.300', 'red.200', 'blue.300', 'red.200', 'blue.300', 'red.200') }))
+    assertType(
+      // @ts-expect-error a seventh member has no typed position
+      css({ color: firstThatWorks('blue.300', 'red.200', 'blue.300', 'red.200', 'blue.300', 'red.200', 'blue.300') }),
+    )
+  })
+
+  test('a responsive array is not a member', () => {
+    // @ts-expect-error a member is one value, never a responsive array
+    assertType(css({ width: firstThatWorks(['full', 'auto'], ['auto']) }))
   })
 })
