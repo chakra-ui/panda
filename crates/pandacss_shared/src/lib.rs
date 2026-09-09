@@ -2,11 +2,11 @@
 //! no dependencies on other Panda crates.
 
 pub mod css_escape;
-pub mod css_fallback;
 pub mod css_factory;
 pub mod css_properties;
 pub mod diagnostic;
 pub mod error;
+pub mod first_that_works;
 pub mod hash;
 pub mod important;
 pub mod keyframes;
@@ -18,16 +18,17 @@ pub mod unit_conversion;
 pub mod view_transition;
 
 pub use css_escape::css_escape;
-pub use css_fallback::{
-    FALLBACK_FN, FALLBACK_MIN_MEMBERS, FALLBACK_SEPARATOR, FallbackError, format_fallback_value,
-    is_fallback_value, parse_fallback_run, parse_fallback_value, split_run_important,
-};
 pub use css_factory::CssFactory;
 pub use diagnostic::{
     Diagnostic, DiagnosticLabel, DiagnosticSeverity, SourceLocation, SourceRange, Span,
     codes as diagnostic_codes,
 };
 pub use error::{PandaError, PandaResult};
+pub use first_that_works::{
+    FIRST_THAT_WORKS_FN, FIRST_THAT_WORKS_MIN_MEMBERS, FIRST_THAT_WORKS_SEPARATOR,
+    FirstThatWorksError, format_first_that_works, is_first_that_works_value,
+    parse_first_that_works_run, parse_first_that_works_value, split_run_important,
+};
 pub use hash::{compound_class_name, compound_combo_string, fx_hash, to_hash, without_space};
 pub use important::{is_important, split_important, without_important};
 pub use keyframes::{InlineKeyframe, keyframes_base_name, keyframes_name};

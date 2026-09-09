@@ -112,6 +112,21 @@ impl Literal {
         }
     }
 
+    /// The text this value contributes to one CSS declaration. Objects,
+    /// arrays, booleans, null, and conditionals have no single-declaration form.
+    #[must_use]
+    pub fn to_css_value_text(&self) -> Option<String> {
+        match self {
+            Self::String(text) | Self::Token { value: text, .. } => Some(text.clone()),
+            Self::Number(number) => Some(number_to_js_string(*number)),
+            Self::Bool(_)
+            | Self::Null
+            | Self::Object(_)
+            | Self::Array(_)
+            | Self::Conditional(_) => None,
+        }
+    }
+
     #[must_use]
     pub fn to_json(&self) -> serde_json::Value {
         match self {
@@ -467,7 +482,7 @@ fn call_to_literal(
     let resolver = resolver?;
     resolver
         .resolve_token_call(call)
-        .or_else(|| resolver.resolve_fallback_call(call))
+        .or_else(|| resolver.resolve_first_that_works_call(call))
         .or_else(|| resolver.resolve_css_value_factory_call(call))
         .or_else(|| resolver.resolve_raw_style_call(call))
         .or_else(|| resolver.resolve_imported_recipe_raw_call(call))

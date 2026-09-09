@@ -21,19 +21,19 @@ import type {
   TextStyles,
   ThemeVariant,
   Tokens,
-  CssFallbackMember,
+  FirstThatWorksMember,
   ViewTransitions,
   PositionTry,
 } from '@pandacss/types'
 
-export function cssFallback<T>(first: T, second: T, ...rest: T[]): T
-export function cssFallback<A extends CssFallbackMember, B extends CssFallbackMember, R extends CssFallbackMember[]>(
-  first: A,
-  second: B,
-  ...rest: R
-): A | B | R[number]
-export function cssFallback(first: unknown, second: unknown, ...rest: unknown[]) {
-  return `fallback(${[first, second, ...rest].join(', ')})`
+export function firstThatWorks<T>(first: T, second: T, ...rest: T[]): T
+export function firstThatWorks<
+  A extends FirstThatWorksMember,
+  B extends FirstThatWorksMember,
+  R extends FirstThatWorksMember[],
+>(first: A, second: B, ...rest: R): A | B | R[number]
+export function firstThatWorks(first: unknown, second: unknown, ...rest: unknown[]) {
+  return `firstThatWorks(${[first, second, ...rest].join(', ')})`
 }
 
 export function defineConfig<const T extends Config>(config: T): T & { name: string } {

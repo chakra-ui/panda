@@ -297,26 +297,26 @@ fn raw_as_an_object_property_value_keeps_the_object_bare() {
     assert_snapshot!(transform("src/styles.tsx", source).code, @"export const styles = { button: { color: 'red' } };");
 }
 
-// --- `css.fallback()` ---
+// --- `firstThatWorks()` ---
 
 #[test]
 fn a_static_fallback_run_rewrites_to_its_class() {
     let source = indoc! {r#"
-        import { css } from '@panda/css';
-        export const a = css({ width: css.fallback('min(60rem, 100%)', '75%') });
+        import { css, firstThatWorks } from '@panda/css';
+        export const a = css({ width: firstThatWorks('min(60rem, 100%)', '75%') });
     "#};
 
     let output = transform("src/styles.tsx", source);
 
     assert!(output.changed);
-    assert_snapshot!(output.code, @r#"export const a = "width_fallback(min(60rem,_100%),_75%)";"#);
+    assert_snapshot!(output.code, @r#"export const a = "width_firstThatWorks(min(60rem,_100%),_75%)";"#);
 }
 
 #[test]
 fn a_dynamic_fallback_member_keeps_the_runtime_call() {
     let source = indoc! {r#"
-        import { css } from '@panda/css';
-        export const a = (enhanced) => css({ width: css.fallback(enhanced, '75%') });
+        import { css, firstThatWorks } from '@panda/css';
+        export const a = (enhanced) => css({ width: firstThatWorks(enhanced, '75%') });
     "#};
 
     let output = transform("src/styles.tsx", source);
@@ -327,15 +327,43 @@ fn a_dynamic_fallback_member_keeps_the_runtime_call() {
 #[test]
 fn a_nested_fallback_run_rewrites_to_its_classes() {
     let source = indoc! {r#"
-        import { css } from '@panda/css';
+        import { css, firstThatWorks } from '@panda/css';
         export const a = css({
-          _hover: { color: css.fallback('oklch(60% 0.2 30)', 'red') },
-          width: [css.fallback('min(60rem, 100%)', '100%'), '75%'],
+          _hover: { color: firstThatWorks('oklch(60% 0.2 30)', 'red') },
+          width: [firstThatWorks('min(60rem, 100%)', '100%'), '75%'],
         });
     "#};
 
     let output = transform("src/styles.tsx", source);
 
     assert!(output.changed);
-    assert_snapshot!(output.code, @r#"export const a = "width_fallback(min(60rem,_100%),_100%) hover:color_fallback(oklch(60%_0.2_30),_red) sm:width_75%";"#);
+    assert_snapshot!(output.code, @r#"export const a = "width_firstThatWorks(min(60rem,_100%),_100%) hover:color_firstThatWorks(oklch(60%_0.2_30),_red) sm:width_75%";"#);
+}
+
+#[test]
+fn a_standalone_call_inlines_to_its_value_form_and_drops_the_import() {
+    let source = indoc! {r#"
+        import { firstThatWorks } from '@panda/css';
+        export const width = firstThatWorks('min(60rem, 100%)', '75%');
+    "#};
+
+    let output = transform("src/styles.tsx", source);
+
+    assert!(output.changed);
+    assert!(!output.bailed);
+    assert!(!output.code.contains("@panda/css"));
+    assert_snapshot!(output.code, @r#"export const width = "firstThatWorks(min(60rem, 100%), 75%)";"#);
+}
+
+#[test]
+fn a_standalone_call_with_a_dynamic_member_keeps_the_runtime_import() {
+    let source = indoc! {r#"
+        import { firstThatWorks } from '@panda/css';
+        export const width = (enhanced) => firstThatWorks(enhanced, '75%');
+    "#};
+
+    let output = transform("src/styles.tsx", source);
+
+    assert!(output.bailed);
+    assert_eq!(output.code, source);
 }

@@ -1545,11 +1545,11 @@ fn a_jsx_style_prop_folds_a_fallback_run() {
     let report = project.parse_file(
         "app.tsx",
         indoc! {r"
-            import { css } from '@panda/css';
+            import { firstThatWorks } from '@panda/css';
             import { styled } from '@panda/jsx';
 
             export const El = () => (
-              <styled.div color={css.fallback('oklch(60% 0.2 30)', 'red')} />
+              <styled.div color={firstThatWorks('oklch(60% 0.2 30)', 'red')} />
             );
         "},
     );
@@ -1557,7 +1557,7 @@ fn a_jsx_style_prop_folds_a_fallback_run() {
     assert_eq!(report.jsx_usages, 1);
     assert_yaml_snapshot!(sorted_atoms(&project), @r#"
     - prop: color
-      value: "fallback(oklch(60% 0.2 30), red)"
+      value: "firstThatWorks(oklch(60% 0.2 30), red)"
       conditions: []
     "#);
 }
@@ -1573,11 +1573,11 @@ fn a_jsx_css_prop_folds_a_nested_fallback_run() {
     let report = project.parse_file(
         "app.tsx",
         indoc! {r"
-            import { css } from '@panda/css';
+            import { firstThatWorks } from '@panda/css';
             import { styled } from '@panda/jsx';
 
             export const El = () => (
-              <styled.div css={{ _hover: { color: css.fallback('oklch(60% 0.2 30)', 'red') } }} />
+              <styled.div css={{ _hover: { color: firstThatWorks('oklch(60% 0.2 30)', 'red') } }} />
             );
         "},
     );
@@ -1585,7 +1585,7 @@ fn a_jsx_css_prop_folds_a_nested_fallback_run() {
     assert_eq!(report.jsx_usages, 1);
     assert_yaml_snapshot!(sorted_atoms(&project), @r#"
     - prop: color
-      value: "fallback(oklch(60% 0.2 30), red)"
+      value: "firstThatWorks(oklch(60% 0.2 30), red)"
       conditions:
         - _hover
     "#);

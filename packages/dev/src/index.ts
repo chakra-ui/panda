@@ -1,7 +1,7 @@
 export type { Config, Preset, UserConfig } from '@pandacss/types'
 
 export {
-  cssFallback,
+  firstThatWorks,
   defineAnimationStyles,
   defineConditions,
   defineConfig,

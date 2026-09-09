@@ -1,4 +1,4 @@
-//! The `fallback(a, b)` CSS value form: an ordered run of values for one
+//! The `firstThatWorks(a, b)` CSS value form: an ordered run of values for one
 //! property, written as a single value so it stays one atom and one class.
 //!
 //! Members are authored most-preferred first, matching `var(--brand, red)`.
@@ -11,24 +11,24 @@ use std::borrow::Cow;
 
 use crate::important::is_important;
 
-/// The value-form name. `width: fallback(min(60rem, 100%), 75%)`.
-pub const FALLBACK_FN: &str = "fallback";
+/// The value-form name. `width: firstThatWorks(min(60rem, 100%), 75%)`.
+pub const FIRST_THAT_WORKS_FN: &str = "firstThatWorks";
 
 /// A run below two members is not a fallback; one value needs no baseline.
-pub const FALLBACK_MIN_MEMBERS: usize = 2;
+pub const FIRST_THAT_WORKS_MIN_MEMBERS: usize = 2;
 
-/// The generated `css.fallback()` joins with this too; differing text would
+/// The generated `firstThatWorks()` joins with this too; differing text would
 /// give the same authored run two class names.
-pub const FALLBACK_SEPARATOR: &str = ", ";
+pub const FIRST_THAT_WORKS_SEPARATOR: &str = ", ";
 
-/// Builds the `fallback(a, b)` text from already-stringified members.
+/// Builds the `firstThatWorks(a, b)` text from already-stringified members.
 #[must_use]
-pub fn format_fallback_value<'a>(members: impl IntoIterator<Item = &'a str>) -> String {
-    let mut out = String::from(FALLBACK_FN);
+pub fn format_first_that_works<'a>(members: impl IntoIterator<Item = &'a str>) -> String {
+    let mut out = String::from(FIRST_THAT_WORKS_FN);
     out.push('(');
     for (index, member) in members.into_iter().enumerate() {
         if index > 0 {
-            out.push_str(FALLBACK_SEPARATOR);
+            out.push_str(FIRST_THAT_WORKS_SEPARATOR);
         }
         out.push_str(member);
     }
@@ -36,62 +36,67 @@ pub fn format_fallback_value<'a>(members: impl IntoIterator<Item = &'a str>) -> 
     out
 }
 
-/// Whether a raw value is written in the `fallback(...)` form.
+/// Whether a raw value is written in the `firstThatWorks(...)` form.
 #[must_use]
-pub fn is_fallback_value(value: &str) -> bool {
+pub fn is_first_that_works_value(value: &str) -> bool {
     let value = value.trim_start();
-    value.len() > FALLBACK_FN.len()
-        && value.is_char_boundary(FALLBACK_FN.len())
-        && value[..FALLBACK_FN.len()].eq_ignore_ascii_case(FALLBACK_FN)
-        && value[FALLBACK_FN.len()..].trim_start().starts_with('(')
+    value.len() > FIRST_THAT_WORKS_FN.len()
+        && value.is_char_boundary(FIRST_THAT_WORKS_FN.len())
+        && value[..FIRST_THAT_WORKS_FN.len()].eq_ignore_ascii_case(FIRST_THAT_WORKS_FN)
+        && value[FIRST_THAT_WORKS_FN.len()..]
+            .trim_start()
+            .starts_with('(')
 }
 
-/// Why a value written in the `fallback(...)` form is not a run.
+/// Why a value written in the `firstThatWorks(...)` form is not a run.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum FallbackError {
+pub enum FirstThatWorksError {
     /// Unbalanced parens, brackets, or quotes.
     Unbalanced,
-    /// Fewer than [`FALLBACK_MIN_MEMBERS`] members.
+    /// Fewer than [`FIRST_THAT_WORKS_MIN_MEMBERS`] members.
     TooFewMembers,
     /// A member is itself a run.
     Nested,
 }
 
-/// Splits `fallback(a, b)` into its members, most-preferred first.
+/// Splits `firstThatWorks(a, b)` into its members, most-preferred first.
 ///
 /// `None` when the value is not the fallback form or is not a valid run.
 /// Commas inside parens, brackets, or quotes belong to the member —
-/// `fallback(min(60rem, 100%), 75%)` is two members, not three.
+/// `firstThatWorks(min(60rem, 100%), 75%)` is two members, not three.
 #[must_use]
-pub fn parse_fallback_value(value: &str) -> Option<Vec<&str>> {
-    is_fallback_value(value)
-        .then(|| parse_fallback_run(value).ok())
+pub fn parse_first_that_works_value(value: &str) -> Option<Vec<&str>> {
+    is_first_that_works_value(value)
+        .then(|| parse_first_that_works_run(value).ok())
         .flatten()
 }
 
-/// [`parse_fallback_value`] with the reason it failed, for diagnostics.
-/// Assumes [`is_fallback_value`] already passed.
+/// [`parse_first_that_works_value`] with the reason it failed, for diagnostics.
+/// Assumes [`is_first_that_works_value`] already passed.
 ///
 /// # Errors
-/// See [`FallbackError`].
-pub fn parse_fallback_run(value: &str) -> Result<Vec<&str>, FallbackError> {
+/// See [`FirstThatWorksError`].
+pub fn parse_first_that_works_run(value: &str) -> Result<Vec<&str>, FirstThatWorksError> {
     let value = value.trim();
     let (Some(open), true) = (value.find('('), value.ends_with(')')) else {
-        return Err(FallbackError::Unbalanced);
+        return Err(FirstThatWorksError::Unbalanced);
     };
     let inner = &value[open + 1..value.len() - 1];
 
-    let members = split_top_level_commas(inner).ok_or(FallbackError::Unbalanced)?;
+    let members = split_top_level_commas(inner).ok_or(FirstThatWorksError::Unbalanced)?;
     let members: Vec<&str> = members
         .into_iter()
         .map(str::trim)
         .filter(|member| !member.is_empty())
         .collect();
-    if members.iter().any(|member| is_fallback_value(member)) {
-        return Err(FallbackError::Nested);
+    if members
+        .iter()
+        .any(|member| is_first_that_works_value(member))
+    {
+        return Err(FirstThatWorksError::Nested);
     }
-    if members.len() < FALLBACK_MIN_MEMBERS {
-        return Err(FallbackError::TooFewMembers);
+    if members.len() < FIRST_THAT_WORKS_MIN_MEMBERS {
+        return Err(FirstThatWorksError::TooFewMembers);
     }
     Ok(members)
 }

@@ -8,7 +8,7 @@ use pandacss_extractor::{
     ExtractedCall, LineIndex, Literal, MatchCategory, StyleSourceOwnerKind, StyleSourceRef,
     extract_verbose,
 };
-use pandacss_shared::parse_fallback_value;
+use pandacss_shared::parse_first_that_works_value;
 use pandacss_tokens::{TokenCategory, TokenDictionary, TokenSuggestion};
 use pandacss_utility::Utility;
 use rustc_hash::FxHashMap;
@@ -727,7 +727,7 @@ fn walk_prop(
 
             // Each member is a value for this property in its own right, or its
             // tokens and keyframes look unused and get pruned.
-            let members = parse_fallback_value(raw).unwrap_or_else(|| vec![raw.as_str()]);
+            let members = parse_first_that_works_value(raw).unwrap_or_else(|| vec![raw.as_str()]);
 
             // A `Literal::Token` already has its path via `token_refs`, so skip
             // the category-relative heuristic to avoid duplicate sites.

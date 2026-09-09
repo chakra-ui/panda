@@ -2,8 +2,6 @@
 
 use std::collections::BTreeMap;
 
-use pandacss_shared::{FALLBACK_FN, FALLBACK_SEPARATOR};
-
 use crate::{
     Artifact, ArtifactFile, ArtifactId, CodegenContext, ConstDecl, DependencySet, Expr, ImportDecl,
     Item, ItemNode, Module, RuntimeImport, TsType,
@@ -69,11 +67,7 @@ fn module(ctx: CodegenContext<'_>) -> Module {
             declare: false,
             name: "css".into(),
             type_annotation: Some(TsType::Ref("CssFunction".into())),
-            init: Some(Expr::Raw(
-                CSS_EXPORT
-                    .replace("__FALLBACK_FN__", FALLBACK_FN)
-                    .replace("__FALLBACK_SEP__", FALLBACK_SEPARATOR),
-            )),
+            init: Some(Expr::Raw(CSS_EXPORT.into())),
             js_doc: None,
         })))
         .with_item(Item::runtime(ItemNode::RawStmt(
@@ -194,15 +188,6 @@ interface CssRawFunction {
   (styles: Styles): SystemStyleObject
 }
 
-type CssFallbackMember = string | number
-
-interface CssFallbackFunction {
-  // Uniform members: `T` comes from the property, so its values autocomplete.
-  <T>(first: T, second: T, ...rest: T[]): T
-  // Members of differing types: each position is inferred on its own.
-  <A extends CssFallbackMember, B extends CssFallbackMember, R extends CssFallbackMember[]>(first: A, second: B, ...rest: R): A | B | R[number]
-}
-
 interface CssFunction {
   (styles: Styles): string
   (styles: StyleList[]): string
@@ -210,7 +195,6 @@ interface CssFunction {
   (styles: Styles): string
 
   raw: CssRawFunction
-  fallback: CssFallbackFunction
 }";
 
 const CSS_EXPORT: &str = r"/* @__PURE__ */ Object.assign(
@@ -221,10 +205,6 @@ const CSS_EXPORT: &str = r"/* @__PURE__ */ Object.assign(
   {
     raw: function cssRaw(...styles: any[]) {
       return mergeCss(...styles)
-    },
-    // Separator is a contract with `pandacss_shared::css_fallback`.
-    fallback: function cssFallback(...values: any[]) {
-      return `__FALLBACK_FN__(${values.join('__FALLBACK_SEP__')})`
     },
   },
 )";

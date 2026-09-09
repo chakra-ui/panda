@@ -4,7 +4,7 @@ use std::collections::HashSet;
 
 use pandacss_encoder::{Atom, Encoder, compare_atoms_by_emit_order};
 use pandacss_extractor::{CallFacts, ExpressionKind, ExtractedCall, Literal, StyleTree};
-use pandacss_shared::CssFactory;
+use pandacss_shared::{CssFactory, FIRST_THAT_WORKS_MIN_MEMBERS, format_first_that_works};
 use pandacss_utility::ShorthandPolicy;
 
 use crate::PatternTransformFn;
@@ -272,6 +272,23 @@ fn object_value_has_drop(object: &pandacss_extractor::ObjectFacts, folded: &Lite
 /// start and its first argument.
 fn css_callee(source: &str, facts: &CallFacts) -> Option<String> {
     span_slice(source, facts.callee_span).map(str::to_owned)
+}
+
+/// Inline a standalone `firstThatWorks(...)` call to its value form. A dynamic
+/// member does not rewrite, so the runtime helper keeps producing it.
+pub(crate) fn rewrite_for_first_that_works_call(
+    span: pandacss_shared::Span,
+    args: &[Option<Literal>],
+) -> Option<Rewrite> {
+    if args.len() < FIRST_THAT_WORKS_MIN_MEMBERS {
+        return None;
+    }
+    let members = args
+        .iter()
+        .map(|arg| arg.as_ref()?.to_css_value_text())
+        .collect::<Option<Vec<_>>>()?;
+    let value = format_first_that_works(members.iter().map(String::as_str));
+    Some(Rewrite::replace(span, js::string(&value)))
 }
 
 /// Inline a css factory call to its generated name: object form hashes, string

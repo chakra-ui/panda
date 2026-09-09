@@ -22,7 +22,7 @@ pub fn any_matcher(module: &str) -> Matcher {
 
 pub fn panda_matchers() -> Matchers {
     Matchers {
-        css: matcher("@panda/css", ["css", "cva", "sva"]),
+        css: matcher("@panda/css", ["css", "cva", "sva", "firstThatWorks"]),
         recipe: any_matcher("@panda/recipes"),
         pattern: any_matcher("@panda/patterns"),
         jsx: Some(matcher("@panda/jsx", ["styled", "Box"])),
@@ -50,7 +50,7 @@ pub fn panda_config_with_token_dictionary(dictionary: TokenDictionary) -> Extrac
 
 pub fn css_matchers() -> Matchers {
     Matchers {
-        css: matcher("@panda/css", ["css", "cva", "sva"]),
+        css: matcher("@panda/css", ["css", "cva", "sva", "firstThatWorks"]),
         ..Default::default()
     }
 }

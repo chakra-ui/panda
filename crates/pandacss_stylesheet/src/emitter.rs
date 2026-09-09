@@ -13,10 +13,11 @@ use pandacss_encoder::{
 };
 use pandacss_extractor::Literal;
 use pandacss_shared::{
-    Diagnostic, FALLBACK_MIN_MEMBERS, FallbackError, InlineKeyframe, PositionTryStyle,
-    ViewTransitionStyle, css_escape, diagnostic_codes, find_matching_paren, hyphenate_property,
-    is_fallback_value, is_important, number_to_js_string, parse_fallback_run,
-    parse_fallback_value, split_important, to_hash, without_space,
+    Diagnostic, FIRST_THAT_WORKS_MIN_MEMBERS, FirstThatWorksError, InlineKeyframe,
+    PositionTryStyle, ViewTransitionStyle, css_escape, diagnostic_codes, find_matching_paren,
+    hyphenate_property, is_first_that_works_value, is_important, number_to_js_string,
+    parse_first_that_works_run, parse_first_that_works_value, split_important, to_hash,
+    without_space,
 };
 use pandacss_tokens::{TokenCssConditionVars, TokenCssVar, TokenCssVars, TokenDictionary};
 use pandacss_utility::{
@@ -156,7 +157,7 @@ pub(crate) fn emit(input: EmitInput<'_>, options: EmitOptions) -> EmitOutput {
     };
 
     let mut diagnostics = global_var_conflicts(config, usage.as_ref());
-    diagnostics.extend(cx.fallback_diagnostics(&atoms, recipes));
+    diagnostics.extend(cx.first_that_works_diagnostics(&atoms, recipes));
 
     if has_base_layer(config) {
         layer_ranges.base = Some(write_layer(&mut writer, &layers.base, |writer| {
@@ -262,41 +263,41 @@ fn finish_emit(
 
 /// A config `globalVars` string only conflicts with a utility's registration when the sheet
 /// actually reads that variable. Reserving the name is not itself a problem.
-/// Reports values written in the `fallback(...)` form that Panda drops.
+/// Reports values written in the `firstThatWorks(...)` form that Panda drops.
 /// Emission is silent by design, so without this the property just disappears.
-fn fallback_value_diagnostic(prop: &str, raw: &str) -> Option<Diagnostic> {
-    if !is_fallback_value(raw) {
+fn first_that_works_value_diagnostic(prop: &str, raw: &str) -> Option<Diagnostic> {
+    if !is_first_that_works_value(raw) {
         return None;
     }
     // A custom property only fails once `var()` substitutes it, too late to
     // recover an earlier declaration.
     if prop.starts_with("--") {
         return Some(Diagnostic::warning(
-            diagnostic_codes::CSS_FALLBACK_CUSTOM_PROPERTY,
+            diagnostic_codes::FIRST_THAT_WORKS_CUSTOM_PROPERTY,
             format!(
                 "`{prop}` is a custom property, so `{raw}` cannot fall back reliably. Put the \
                  fallback where the variable is read instead, with `var({prop}, …)`."
             ),
         ));
     }
-    match parse_fallback_run(raw) {
+    match parse_first_that_works_run(raw) {
         Ok(_) => None,
-        Err(FallbackError::Unbalanced) => Some(Diagnostic::error(
-            diagnostic_codes::CSS_FALLBACK_UNBALANCED,
+        Err(FirstThatWorksError::Unbalanced) => Some(Diagnostic::error(
+            diagnostic_codes::FIRST_THAT_WORKS_UNBALANCED,
             format!("`{prop}: {raw}` has unbalanced brackets or quotes, so no CSS was emitted."),
         )),
-        Err(FallbackError::TooFewMembers) => Some(Diagnostic::error(
-            diagnostic_codes::CSS_FALLBACK_ARITY_INVALID,
+        Err(FirstThatWorksError::TooFewMembers) => Some(Diagnostic::error(
+            diagnostic_codes::FIRST_THAT_WORKS_ARITY_INVALID,
             format!(
-                "`{prop}: {raw}` needs at least {FALLBACK_MIN_MEMBERS} values; one value has \
+                "`{prop}: {raw}` needs at least {FIRST_THAT_WORKS_MIN_MEMBERS} values; one value has \
                  nothing to fall back to. No CSS was emitted."
             ),
         )),
-        Err(FallbackError::Nested) => Some(Diagnostic::error(
-            diagnostic_codes::CSS_FALLBACK_NESTED,
+        Err(FirstThatWorksError::Nested) => Some(Diagnostic::error(
+            diagnostic_codes::FIRST_THAT_WORKS_NESTED,
             format!(
                 "`{prop}: {raw}` nests one fallback inside another. A run is already ordered, so \
-                 list every value in one `fallback(…)`. No CSS was emitted."
+                 list every value in one `firstThatWorks(…)`. No CSS was emitted."
             ),
         )),
     }
@@ -1211,8 +1212,8 @@ impl<'a> EmitContext<'a> {
         }
     }
 
-    /// One diagnostic per distinct dropped `fallback(...)` value.
-    fn fallback_diagnostics(
+    /// One diagnostic per distinct dropped `firstThatWorks(...)` value.
+    fn first_that_works_diagnostics(
         &self,
         atoms: &[&Atom],
         recipes: &EncodedRecipesSnapshot,
@@ -1235,37 +1236,37 @@ impl<'a> EmitContext<'a> {
             let Some(raw) = atom_value_to_string(value) else {
                 continue;
             };
-            if !is_fallback_value(&raw) {
+            if !is_first_that_works_value(&raw) {
                 continue;
             }
             if !seen.insert((prop.to_owned(), raw.to_string())) {
                 continue;
             }
-            if let Some(diagnostic) = fallback_value_diagnostic(prop, &raw) {
+            if let Some(diagnostic) = first_that_works_value_diagnostic(prop, &raw) {
                 diagnostics.push(diagnostic);
                 continue;
             }
-            if parse_fallback_value(&raw)
+            if parse_first_that_works_value(&raw)
                 .is_some_and(|members| run_importance_is_mixed(&members, important))
             {
                 diagnostics.push(Diagnostic::error(
-                    diagnostic_codes::CSS_FALLBACK_IMPORTANCE_MIXED,
+                    diagnostic_codes::FIRST_THAT_WORKS_IMPORTANCE_MIXED,
                     format!(
                         "`{prop}: {raw}` marks only some values `!important`, so the important \
                          one always wins and the rest never apply. Mark the whole run instead, \
-                         with `fallback(…) !important`. No CSS was emitted."
+                         with `firstThatWorks(…) !important`. No CSS was emitted."
                     ),
                 ));
                 continue;
             }
             // Parsed, but the members do not lower to one ordered cascade.
-            if let Some(members) = parse_fallback_value(&raw)
+            if let Some(members) = parse_first_that_works_value(&raw)
                 && self
-                    .fallback_declarations(prop, &members, important)
+                    .first_that_works_declarations(prop, &members, important)
                     .is_none()
             {
                 diagnostics.push(Diagnostic::warning(
-                    diagnostic_codes::CSS_FALLBACK_TRANSFORM_UNSUPPORTED,
+                    diagnostic_codes::FIRST_THAT_WORKS_TRANSFORM_UNSUPPORTED,
                     format!(
                         "`{prop}` lowers each value of `{raw}` to a different set of \
                          declarations, so Panda cannot order them into one fallback. No CSS was \
@@ -1291,9 +1292,9 @@ impl<'a> EmitContext<'a> {
             return;
         };
         // Expand like emission does, or a member's tokens look unused and get pruned.
-        if let Some(members) = parse_fallback_value(raw)
+        if let Some(members) = parse_first_that_works_value(raw)
             && let Some(declarations) =
-                self.fallback_declarations(atom.prop(), &members, atom.important())
+                self.first_that_works_declarations(atom.prop(), &members, atom.important())
         {
             Self::collect_declarations_usage(&declarations, token_dictionary, keyframes, marks);
             return;
@@ -1552,12 +1553,12 @@ impl<'a> EmitContext<'a> {
 
         // A run keeps the class name the whole value earns and only swaps in
         // the expanded declarations.
-        let run = parse_fallback_value(raw).and_then(|members| {
-            self.fallback_declarations(atom.prop(), &members, atom.important())
+        let run = parse_first_that_works_value(raw).and_then(|members| {
+            self.first_that_works_declarations(atom.prop(), &members, atom.important())
         });
-        // `fallback(…)` is not real CSS, so a malformed run emits nothing
+        // `firstThatWorks(…)` is not real CSS, so a malformed run emits nothing
         // rather than leaking its text into the sheet.
-        if run.is_none() && is_fallback_value(raw) {
+        if run.is_none() && is_first_that_works_value(raw) {
             return;
         }
 
@@ -1583,13 +1584,13 @@ impl<'a> EmitContext<'a> {
         }
     }
 
-    /// Ordered declarations for a `fallback(...)` value: for each output
+    /// Ordered declarations for a `firstThatWorks(...)` value: for each output
     /// property, every member's value in cascade order.
     ///
     /// `None` when the run is not provably one ordered cascade — a member
     /// lowering to a nested object, or members disagreeing on which properties
     /// they produce, as a multi-property utility transform can.
-    fn fallback_declarations(
+    fn first_that_works_declarations(
         &self,
         prop: &str,
         members: &[&str],
@@ -1607,8 +1608,11 @@ impl<'a> EmitContext<'a> {
             let Literal::Object(entries) = &result.styles else {
                 return None;
             };
-            let declarations =
-                declarations_from_entries(entries, important, fallback_member_numeric_hint(member));
+            let declarations = declarations_from_entries(
+                entries,
+                important,
+                first_that_works_member_numeric_hint(member),
+            );
             if declarations.is_empty() {
                 return None;
             }
@@ -2051,7 +2055,7 @@ impl<'a> EmitContext<'a> {
         }
 
         if self.config.optimize.property_fallback {
-            write_property_fallback(writer, &properties, self.config.css_var_root());
+            write_property_first_that_works(writer, &properties, self.config.css_var_root());
         }
 
         for property in properties {
@@ -2320,9 +2324,9 @@ impl<'a> EmitContext<'a> {
     ) -> Option<Vec<Declaration>> {
         let raw = atom_value_to_string(value);
         let raw = raw.as_deref()?;
-        if is_fallback_value(raw) {
-            let members = parse_fallback_value(raw)?;
-            return self.fallback_declarations(prop, &members, important);
+        if is_first_that_works_value(raw) {
+            let members = parse_first_that_works_value(raw)?;
+            return self.first_that_works_declarations(prop, &members, important);
         }
         // `_styles` variant so a `globalCss` custom-utility transform is applied
         // via the override map; falls back to the built-in when none exists.
@@ -2544,7 +2548,11 @@ const UNIVERSAL_SELECTOR: &str = "*, ::before, ::after, ::backdrop";
 /// Seeds registrations as plain declarations for engines that ignore `@property`. A
 /// non-inheriting registration has to land on every element, since that is what stops a
 /// child seeing its parent's value without the registration to do it.
-fn write_property_fallback(writer: &mut CssWriter, properties: &[GlobalVarProperty], root: &str) {
+fn write_property_first_that_works(
+    writer: &mut CssWriter,
+    properties: &[GlobalVarProperty],
+    root: &str,
+) {
     let (inheriting, isolated): (Vec<_>, Vec<_>) = properties
         .iter()
         .partition(|property| property.inherits == "true");
@@ -2756,7 +2764,7 @@ fn run_importance_is_mixed(members: &[&str], run_important: bool) -> bool {
             .any(|member| is_important(member) != is_important(members[0]))
 }
 
-fn fallback_member_numeric_hint(member: &str) -> Option<&str> {
+fn first_that_works_member_numeric_hint(member: &str) -> Option<&str> {
     if member.starts_with('0') && member.as_bytes().get(1).is_some_and(u8::is_ascii_digit) {
         return None;
     }

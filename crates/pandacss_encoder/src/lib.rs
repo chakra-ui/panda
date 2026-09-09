@@ -20,7 +20,7 @@ use smallvec::SmallVec;
 use pandacss_extractor::Literal;
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::{
-    is_fallback_value, number_to_js_string, push_number_to_js_string, split_important,
+    is_first_that_works_value, number_to_js_string, push_number_to_js_string, split_important,
     split_run_important,
 };
 
@@ -523,7 +523,7 @@ fn leaf_to_atom_value(value: &Literal) -> Option<EncodedLeaf> {
                 return None;
             }
             // Members carry their own importance; only a trailing marker is the run's.
-            let (value, important) = if is_fallback_value(s) {
+            let (value, important) = if is_first_that_works_value(s) {
                 split_run_important(s)
             } else {
                 split_important(s)
