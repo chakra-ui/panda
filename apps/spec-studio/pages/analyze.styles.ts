@@ -95,15 +95,34 @@ export const scanned = css({
   gap: "2",
 });
 export const toolbarActions = css({ display: "flex", alignItems: "center", gap: "2.5" });
-export const scopeNote = css({
-  display: "flex",
-  alignItems: "center",
-  gap: "3",
-  fontSize: "13px",
-  color: "muted",
-  mb: "5",
+export const scopeBar = css({ display: "flex", alignItems: "center", gap: "2.5", mb: "6" });
+export const scopeLabel = css({ fontSize: "13px", color: "muted", fontWeight: "500" });
+export const scopeSelectWrap = css({ position: "relative", display: "inline-flex", alignItems: "center" });
+export const scopeSelect = css({
+  appearance: "none",
+  fontFamily: "body",
+  fontSize: "13.5px",
+  fontWeight: "500",
+  color: "ink",
+  bg: "paper",
+  borderWidth: "1px",
+  borderColor: "lineStrong",
+  rounded: "md",
+  pl: "3",
+  pr: "9",
+  py: "2",
+  cursor: "pointer",
+  outline: "none",
+  transition: "border-color 0.15s",
+  _hover: { borderColor: "ink" },
+  _focusVisible: { borderColor: "ink" },
 });
-export const scopeClear = css({ color: "ink", textDecoration: "underline", _hover: { color: "muted" } });
+export const scopeChevron = css({
+  position: "absolute",
+  right: "3",
+  pointerEvents: "none",
+  color: "muted",
+});
 export const badge = css({
   fontFamily: "mono",
   fontSize: "10.5px",

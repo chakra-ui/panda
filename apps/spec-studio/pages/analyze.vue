@@ -31,6 +31,7 @@ const empty = ref(false);
 const mode = ref<"heuristic" | "precise">("heuristic");
 const analyzing = ref(false);
 const preciseFailed = ref(false);
+const preciseError = ref("");
 
 const route = useRoute();
 const scopeCategory = computed(() => String(route.query.category ?? ""));
@@ -43,6 +44,11 @@ const scopedReport = computed(() =>
 );
 
 const noUsage = computed(() => !!report.value?.length && report.value.every((c) => c.used === 0));
+
+async function onScope(e: Event) {
+  const v = (e.target as HTMLSelectElement).value;
+  await navigateTo({ path: "/analyze", query: v ? { category: v } : {} });
+}
 
 const usageSnapshot = computed(() =>
   report.value
@@ -138,6 +144,7 @@ async function analyzeFiles(input: File[]) {
 
   analyzing.value = true;
   preciseFailed.value = false;
+  preciseError.value = "";
   await new Promise((r) => requestAnimationFrame(() => r(null)));
 
   const filesMap = new Map<string, string>();
@@ -167,8 +174,15 @@ async function analyzeFiles(input: File[]) {
       mode.value = "precise";
       analyzing.value = false;
       return;
-    } catch {
+    } catch (e) {
       preciseFailed.value = true;
+      const raw = e instanceof Error ? e.message : String(e);
+      preciseError.value = raw
+        .replace(/\s+at\s+\S.*$/s, "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 180);
+      console.error("[spec-studio] precise analyze failed:", e);
     }
   }
   mode.value = "heuristic";
@@ -276,13 +290,36 @@ function reset() {
         <strong>Panda v2</strong>.
       </p>
       <p v-else-if="preciseFailed" :class="s.hint">
-        Name-match scan — the compiler couldn't read this <code>panda.config</code>.
+        Name-match scan — the compiler couldn't read this <code>panda.config</code><template
+          v-if="preciseError"
+        >: <code>{{ preciseError }}</code></template
+        >.
       </p>
 
-      <p v-if="report && scopeCategory" :class="s.scopeNote">
-        Scoped to <strong>{{ scopeCategory }}</strong>
-        <NuxtLink to="/analyze" :class="s.scopeClear">Show all categories</NuxtLink>
-      </p>
+      <div v-if="report" :class="s.scopeBar">
+        <label :class="s.scopeLabel" for="scope-cat">Category</label>
+        <div :class="s.scopeSelectWrap">
+          <select id="scope-cat" :class="s.scopeSelect" :value="scopeCategory" @change="onScope">
+            <option value="">All categories</option>
+            <option v-for="c in report" :key="c.type" :value="c.type">
+              {{ c.type }} · {{ c.used }}/{{ c.total }}
+            </option>
+          </select>
+          <svg
+            :class="s.scopeChevron"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </div>
+      </div>
       <AnalyzeReport v-if="report" :report="scopedReport" />
     </template>
   </div>

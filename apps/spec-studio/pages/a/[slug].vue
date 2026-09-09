@@ -18,6 +18,11 @@ const scopeCategory = computed(() => String(route.query.category ?? ""));
 const scopedReport = computed(() =>
   scopeCategory.value ? usage.report.filter((c) => c.type === scopeCategory.value) : usage.report,
 );
+
+async function onScope(e: Event) {
+  const v = (e.target as HTMLSelectElement).value;
+  await navigateTo({ path: `/a/${slug}`, query: v ? { category: v } : {} });
+}
 </script>
 
 <template>
@@ -52,10 +57,30 @@ const scopedReport = computed(() =>
       </span>
     </div>
 
-    <p v-if="scopeCategory" :class="s.scopeNote">
-      Scoped to <strong>{{ scopeCategory }}</strong>
-      <NuxtLink :to="`/a/${slug}`" :class="s.scopeClear">Show all categories</NuxtLink>
-    </p>
+    <div :class="s.scopeBar">
+      <label :class="s.scopeLabel" for="scope-cat">Category</label>
+      <div :class="s.scopeSelectWrap">
+        <select id="scope-cat" :class="s.scopeSelect" :value="scopeCategory" @change="onScope">
+          <option value="">All categories</option>
+          <option v-for="c in usage.report" :key="c.type" :value="c.type">
+            {{ c.type }} · {{ c.used }}/{{ c.total }}
+          </option>
+        </select>
+        <svg
+          :class="s.scopeChevron"
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </div>
+    </div>
     <AnalyzeReport :report="scopedReport" />
   </div>
 </template>
