@@ -6,8 +6,13 @@ import { button, control } from "styled-system/recipes";
 import type { TokensFile } from "~/utils/tokens";
 import type { Variant } from "~/utils/token-model";
 
-const props = defineProps<{ file: TokensFile; resolveVars?: boolean; variants?: Variant[] }>();
+const props = defineProps<{ file: TokensFile; resolveVars?: boolean; variants?: Variant[]; css?: string | null }>();
 defineEmits<{ reset: [] }>();
+
+const { status: shareStatus, share } = useShareSpec();
+const shareLabel = computed(() =>
+  ({ idle: "Share", sharing: "Sharing…", copied: "Link copied", error: "Try again" })[shareStatus.value],
+);
 
 const activeVariant = ref<Variant | undefined>(props.variants?.[0]);
 watch(
@@ -114,6 +119,29 @@ watch(activeType, () => (search.value = ""));
             </svg>
             Analyze usage
           </NuxtLink>
+          <button
+            :class="button({ variant: 'outline', size: 'sm' })"
+            :disabled="shareStatus === 'sharing'"
+            title="Create a shareable link to this system"
+            @click="share(props.file, props.css ?? null)"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="18" cy="5" r="3" />
+              <circle cx="6" cy="12" r="3" />
+              <circle cx="18" cy="19" r="3" />
+              <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
+            </svg>
+            {{ shareLabel }}
+          </button>
           <button :class="button({ variant: 'outline', size: 'sm' })" @click="$emit('reset')">
             <svg
               width="14"

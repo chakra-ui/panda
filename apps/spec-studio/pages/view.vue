@@ -15,6 +15,7 @@ const file = ref<TokensFile | null>(null);
 const ready = ref(false);
 const resolveVars = ref(false);
 const variants = ref<Variant[]>([]);
+const themeCss = ref<string | null>(null);
 
 onMounted(async () => {
   const raw = await loadTokens();
@@ -35,6 +36,7 @@ onMounted(async () => {
     document.head.appendChild(el);
     resolveVars.value = true;
     variants.value = theme.variants;
+    themeCss.value = theme.css;
   }
 });
 
@@ -52,6 +54,7 @@ async function reset() {
     :file="file"
     :resolve-vars="resolveVars"
     :variants="variants"
+    :css="themeCss"
     @reset="reset"
   />
   <p v-else :class="s.loading">Loading your system…</p>

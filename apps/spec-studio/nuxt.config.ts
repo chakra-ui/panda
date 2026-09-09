@@ -67,8 +67,15 @@ export default defineNuxtConfig({
     },
   },
   typescript: { typeCheck: false },
-  routeRules: { "/**": { prerender: true } },
-  nitro: { prerender: { crawlLinks: true, routes: ["/view", "/analyze"] } },
+  routeRules: {
+    "/": { prerender: true },
+    "/view": { prerender: true },
+    "/analyze": { prerender: true },
+    // Share pages + API are dynamic — they hit the DB at request time.
+    "/s/**": { prerender: false },
+    "/api/**": { prerender: false },
+  },
+  nitro: { prerender: { crawlLinks: false, routes: ["/", "/view", "/analyze"] } },
   vite: {
     resolve: { alias: { "styled-system": styledSystem } },
     ssr: { noExternal: ["styled-system", "@ark-ui/vue"] },
