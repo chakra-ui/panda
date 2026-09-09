@@ -4,13 +4,14 @@
 
 `CrossFileResolver` lets the same-file `Resolver` follow `import { x } from './tokens'` references and fold the imported
 value. Module resolution itself is delegated to `oxc_resolver` (relative paths, extension probing, tsconfig paths,
-package.json `exports`). The resolver caches per-session. Unchanged imported files are parsed and folded once across the
-batch; changed files replace their cached exports on the next lookup.
+package.json `exports`). The resolver keeps a validated cache across the compiler lifetime and pins analyzed exports in
+a short-lived `CrossFileSession`. `parseFiles()` shares one session, so each imported revision is read and validated
+once across the ordered batch. A later batch observes changed files on its first lookup.
 
 ## Cache shape
 
 ```rust
-Mutex<FxHashMap<PathBuf, CachedFileExports>>
+Mutex<FxHashMap<PathBuf, Arc<CachedFileExports>>>
 
 struct CachedFileExports {
     source_hash: u64,
@@ -34,8 +35,9 @@ stored as `deps` with the hash seen, `None` when the module could not be read. A
 Pure function exports are lowered to a closed owned IR **while the AST is live**, then the AST is dropped. The cache
 keeps descriptors, not `Program`s, so the resolver doesn't pin every imported file's allocator.
 
-The cache is behind a `Mutex`, not `RefCell`, so the resolver can be shared by `ExtractorConfig` in future
-parallel/bulk-file paths. The public type is `Send + Sync`.
+The long-lived cache is behind a `Mutex`, so `CrossFileResolver` remains `Send + Sync`. A `CrossFileSession` uses a
+`RefCell` because `parseFiles()` is ordered and synchronous. It pins `Arc<CachedFileExports>` entries without cloning
+their maps or adding a lock to repeated lookups.
 
 ## Watch invalidation
 
@@ -117,34 +119,38 @@ AST memory alive.
 ## Cycle guard
 
 ```rust
-in_flight: Mutex<FxHashSet<(PathBuf, String)>>
+CrossFileContext {
+    in_flight: RefCell<FxHashSet<(PathBuf, String)>>,
+}
 ```
 
 `a.ts` re-exports from `b.ts` which re-exports from `a.ts` would otherwise overflow the stack. The guard is best-effort:
-when the same `(path, export_name)` is already being resolved, return `None`. The guard is removed after the file's
-exports are collected.
+when the same `(path, export_name)` is already being resolved, return `None`. The guard belongs to one extraction
+traversal rather than the shared resolver, so independent consumers cannot be mistaken for a cycle.
 
 ## Lifecycle and sharing
 
-`CrossFileResolver` is **not** `Clone`. Wrap in `Arc` for shared ownership across sessions. The expected pattern: one
-resolver per build / dev-server session, threaded through `ExtractorConfig` for every `extract()` call in the batch.
+`CrossFileResolver` is **not** `Clone`. The expected pattern is one resolver per build or dev-server session, threaded
+through `ExtractorConfig`. Standalone `extract()` calls create a fresh short-lived session; callers processing a batch
+can reuse one explicitly.
 
 ```rust
 let cross_file = CrossFileResolver::new();
 let config = ExtractorConfig::new(matchers).with_cross_file(cross_file);
+let session = config.cross_file.as_ref().unwrap().session();
 for file in files {
-    let result = extract(file.source, file.path, &config);
+    let result = extract_in_session(file.source, file.path, &config, &session);
 }
 ```
 
-The `Project` façade does this automatically — `with_cross_file` on the project plumbs the resolver into the shared
-config.
+The `Project` façade does this automatically. `parse_file()` creates one session for the file; `parseFiles()` keeps one
+session for the complete ordered batch, including files processed through host callbacks.
 
 ## I/O failures
 
-A read failure removes the previous cache entry and returns no export, so a deleted or unreadable file never serves
-stale data. Parse failures use Oxc's partial AST and cache any exports that still fold, matching the JS extractor's
-best-effort recovery behavior. Recreating a previously resolved file refreshes its exports on the next lookup.
+A read failure on the first lookup removes the previous cache entry and returns no export, so a new session never serves
+stale data. A session that already observed the module keeps that revision for internal consistency. Parse failures use
+Oxc's partial AST and cache any exports that still fold, matching the JS extractor's best-effort recovery behavior.
 
 ## StyleTree hand-off
 

@@ -43,7 +43,8 @@ pub use extract::{
     CrossFileDependency, ExtractDebugResult, ExtractUsage, ExtractVerboseResult,
     ImportBindingFacts, ImportedRecipeRawCall, ModuleFacts, TokenRef,
     UnresolvedCrossFileDependency, analyze_module, extract, extract_debug, extract_for_transform,
-    extract_for_transform_with_recipe_resolver, extract_verbose, extract_with_raw_resolvers,
+    extract_for_transform_with_recipe_resolver, extract_in_session, extract_verbose,
+    extract_with_raw_resolvers, extract_with_raw_resolvers_in_session,
 };
 pub use imports::{
     ImportKind, ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind,
@@ -52,7 +53,7 @@ pub use imports::{
 pub use local_bindings::{LocalBindingCall, LocalCallBinding, LocalDeclarationKind};
 // Internal helpers that take Oxc-shaped inputs — kept out of the public
 // surface so consumers don't accidentally couple to oxc_ast / oxc_diagnostics.
-pub use cross_file::CrossFileResolver;
+pub use cross_file::{CrossFileResolver, CrossFileSession};
 pub(crate) use export_names::collect_export_info;
 pub use export_names::{ExportInfo, ReExport};
 pub use fragment::{

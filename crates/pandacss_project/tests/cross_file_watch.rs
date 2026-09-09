@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 use crate::common::{create_project, sorted_atoms};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
+use pandacss_encoder::AtomValue;
 use pandacss_extractor::CrossFileResolver;
 use pandacss_fs::{FileSystem as _, MemoryFileSystem};
 use pandacss_project::Project;
@@ -80,6 +81,29 @@ fn cold_build_affects_nothing() {
         vec!["/proj/App.tsx"]
     );
     assert!(project.take_affected_files().is_empty());
+}
+
+#[test]
+fn parse_session_keeps_one_cross_file_revision() {
+    let (fs, mut project) = watch_project(&[("tokens.ts", "export const brand = 'red';\n")]);
+
+    let session = project.parse_session();
+    project.parse_file_in_session("/proj/A.tsx", app_source(), &session);
+    write(&fs, "tokens.ts", "export const brand = 'blue';\n");
+    project.parse_file_in_session("/proj/B.tsx", app_source(), &session);
+    drop(session);
+    project.parse_file("/proj/C.tsx", app_source());
+
+    let values = ["A", "B", "C"].map(|name| {
+        let path = format!("/proj/{name}.tsx");
+        let file = project.get_file(&path).expect("parsed file");
+        let atom = file.atoms().iter().next().expect("color atom");
+        let AtomValue::String(value) = atom.value() else {
+            panic!("expected string atom")
+        };
+        value.to_string()
+    });
+    assert_eq!(values, ["red", "red", "blue"]);
 }
 
 #[test]
