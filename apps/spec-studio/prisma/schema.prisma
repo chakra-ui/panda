@@ -4,19 +4,36 @@ generator client {
 
 // ponytail: sqlite so the share API runs and is provable with zero external
 // infra. Production swaps this to postgresql (env DATABASE_URL), matching the
-// playground — the models below are provider-agnostic.
+// playground — the models below are provider-agnostic. Visibility is a string
+// here (sqlite has no enums); postgres can promote it to an enum.
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-// Phase 1: unlisted, view-only links. `code` is the deflate+base64url share
-// blob (utils/share.ts) — self-contained token model + @layer tokens CSS.
-// Versioning, edit-tokens, and visibility are the phase-2+ columns.
+// A stable share. /s/:slug always shows the latest version; /s/:slug@:n is a
+// frozen version. The editToken (hashed capability secret) lets its holder
+// publish new versions with no account — "claim" attaches it to a user later.
 model Spec {
+  id         String    @id @default(cuid())
+  slug       String    @unique
+  title      String?
+  editToken  String
+  visibility String    @default("unlisted")
+  latest     Int       @default(1)
+  versions   Version[]
+  createdAt  DateTime  @default(now())
+}
+
+// One immutable publish. `code` is the deflate+base64url share blob
+// (utils/share.ts) — self-contained token model + @layer tokens CSS.
+model Version {
   id        String   @id @default(cuid())
-  slug      String   @unique
-  title     String?
+  specId    String
+  spec      Spec     @relation(fields: [specId], references: [id], onDelete: Cascade)
+  number    Int
   code      String
   createdAt DateTime @default(now())
+
+  @@unique([specId, number])
 }
