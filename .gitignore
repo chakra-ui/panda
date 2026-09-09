@@ -57,3 +57,6 @@ storybook-static
 .parity-out
 .playwright-mcp
 
+
+.env
+.env.local

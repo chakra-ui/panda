@@ -98,6 +98,7 @@ export function useFolderDrop(onFiles: (files: File[]) => void | Promise<void>) 
 
   return {
     dragging,
+    busy,
     onPick,
     onDrop,
     onDragOver: (e: DragEvent) => {

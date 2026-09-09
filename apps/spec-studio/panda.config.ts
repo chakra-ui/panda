@@ -7,6 +7,13 @@ export default defineConfig({
   exclude: ["**/node_modules/**"],
   outdir: "styled-system",
   jsxFramework: "vue",
+  staticCss: {
+    recipes: {
+      tokenCell: ["*"],
+      button: ["*"],
+      control: ["*"],
+    },
+  },
   conditions: {
     extend: {
       dark: '[data-theme="dark"] &',
@@ -80,7 +87,7 @@ export default defineConfig({
               row: {
                 display: "grid",
                 gridTemplateColumns: {
-                  base: "minmax(0,1fr) auto",
+                  base: "auto minmax(0,1fr)",
                   sm: "170px minmax(0,1fr) minmax(0,260px)",
                 },
                 alignItems: "center",

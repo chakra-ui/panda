@@ -57,5 +57,9 @@ async function reset() {
     :css="themeCss"
     @reset="reset"
   />
-  <p v-else :class="s.loading">Loading your system…</p>
+  <div v-else :class="s.loading">
+    <img src="/panda.svg" alt="" :class="s.loadingLogo" />
+    <span :class="s.loadingSpinner" />
+    Loading your system…
+  </div>
 </template>

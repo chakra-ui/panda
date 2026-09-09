@@ -91,16 +91,21 @@ export const rowVal = css({
   fontFamily: "mono",
   fontSize: "12px",
   color: "faint",
-  textAlign: { base: "left", sm: "right" },
+  textAlign: "right",
   whiteSpace: "nowrap",
   minW: "0",
   overflow: "hidden",
   textOverflow: "ellipsis",
+  gridColumn: { base: "2", sm: "auto" },
+  gridRow: { base: "1", sm: "auto" },
 });
 export const track = css({
-  display: { base: "none", sm: "flex" },
+  display: "flex",
   minW: "0",
   alignItems: "center",
+  gridColumn: { base: "1 / -1", sm: "auto" },
+  gridRow: { base: "2", sm: "auto" },
+  mt: { base: "2", sm: "0" },
 });
 export const lane = css({
   display: "flex",

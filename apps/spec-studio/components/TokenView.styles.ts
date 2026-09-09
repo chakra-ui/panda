@@ -15,7 +15,6 @@ export const rail = css({
   maxH: { md: "100vh" },
   overflowY: { md: "auto" },
   overflowX: { base: "auto", md: "visible" },
-  borderRightWidth: { md: "1px" },
   borderBottomWidth: { base: "1px", md: "0" },
   py: { base: "3", md: "5" },
   px: { base: "4", md: "4" },
@@ -63,13 +62,20 @@ export const tab = css({
 
 export const count = css({ fontSize: "11px", fontFamily: "mono", opacity: 0.6 });
 
-export const main = css({ py: { base: "6", md: "8" }, px: { base: "5", md: "8" }, minW: "0" });
+export const main = css({
+  py: { base: "6", md: "8" },
+  px: { base: "5", md: "8" },
+  minW: "0",
+  borderLeftWidth: { md: "1px" },
+  minH: { md: "100vh" },
+});
 
 export const toolbar = css({
   display: "flex",
-  alignItems: "flex-start",
+  flexDir: { base: "column", md: "row" },
+  alignItems: { base: "stretch", md: "flex-start" },
   justifyContent: "space-between",
-  gap: "4",
+  gap: { base: "3", md: "4" },
   flexWrap: "wrap",
   mb: "4",
 });
@@ -87,7 +93,7 @@ export const actions = css({
   alignItems: "center",
   gap: "2.5",
   flexWrap: "wrap",
-  justifyContent: "flex-end",
+  justifyContent: { base: "flex-start", md: "flex-end" },
 });
 export const filterbar = css({
   display: "flex",
@@ -98,6 +104,11 @@ export const filterbar = css({
 });
 export const searchField = css({ flex: "1", minW: "220px" });
 export const searchInput = css({ w: "full" });
+
+export const actionGrow = css({ flexGrow: { base: "1", md: "0" } });
+export const actionFull = css({ w: { base: "full", md: "auto" } });
+export const shareBtn = css({ w: { base: "9", md: "auto" }, px: { base: "0", md: "3" }, justifyContent: "center", flexShrink: "0" });
+export const shareText = css({ display: { base: "none", md: "inline" } });
 
 export const variants = css({
   display: "flex",

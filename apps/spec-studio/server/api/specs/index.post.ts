@@ -1,4 +1,5 @@
 import { nanoid } from "nanoid";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../../utils/prisma";
 
@@ -25,9 +26,9 @@ export default defineEventHandler(async (event) => {
     data: {
       slug: nanoid(10),
       title: parsed.data.title ?? null,
-      tokens: parsed.data.tokens,
+      tokens: parsed.data.tokens as Prisma.InputJsonValue,
       css: parsed.data.css ? sanitizeCss(parsed.data.css) : null,
-      usage: parsed.data.usage === undefined ? undefined : (parsed.data.usage as object),
+      usage: parsed.data.usage === undefined ? undefined : (parsed.data.usage as Prisma.InputJsonValue),
     },
     select: { slug: true },
   });

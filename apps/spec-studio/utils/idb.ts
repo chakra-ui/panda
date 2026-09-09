@@ -14,12 +14,12 @@ function openDatabase(): Promise<IDBDatabase> {
 
 async function withStore<T>(
   mode: IDBTransactionMode,
-  operation: (store: IDBObjectStore) => IDBRequest<T>,
+  operation: (store: IDBObjectStore) => IDBRequest,
 ): Promise<T> {
   const database = await openDatabase();
   return await new Promise<T>((resolve, reject) => {
     const request = operation(database.transaction(STORE, mode).objectStore(STORE));
-    request.addEventListener("success", () => resolve(request.result));
+    request.addEventListener("success", () => resolve(request.result as T));
     request.addEventListener("error", () => reject(request.error));
   });
 }

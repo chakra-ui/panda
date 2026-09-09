@@ -63,7 +63,7 @@ watch(activeType, () => (search.value = ""));
         <div :class="s.actions">
           <NuxtLink
             to="/analyze"
-            :class="button({ variant: 'solid', size: 'sm' })"
+            :class="[button({ variant: 'solid', size: 'sm' }), s.actionGrow]"
             title="See which tokens are used, unused, and hot"
           >
             <svg
@@ -82,8 +82,9 @@ watch(activeType, () => (search.value = ""));
             Analyze usage
           </NuxtLink>
           <button
-            :class="button({ variant: 'outline', size: 'sm' })"
+            :class="[button({ variant: 'outline', size: 'sm' }), s.shareBtn]"
             :disabled="shareStatus === 'sharing'"
+            :aria-label="shareLabel"
             title="Create a shareable link to this system"
             @click="share(props.file, props.css ?? null)"
           >
@@ -102,9 +103,9 @@ watch(activeType, () => (search.value = ""));
               <circle cx="18" cy="19" r="3" />
               <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
             </svg>
-            {{ shareLabel }}
+            <span :class="s.shareText">{{ shareLabel }}</span>
           </button>
-          <button :class="button({ variant: 'outline', size: 'sm' })" @click="$emit('reset')">
+          <button :class="[button({ variant: 'outline', size: 'sm' }), s.actionFull]" @click="$emit('reset')">
             <svg
               width="14"
               height="14"
