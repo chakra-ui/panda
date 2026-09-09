@@ -133,8 +133,8 @@ export interface Driver {
   writeLayerCss(options: WriteLayerCssOptions): WriteCssResult
   /** Generate + write split stylesheet files under the configured `outdir`. */
   writeSplitCss(options?: WriteSplitCssOptions): WriteSplitCssResult
-  /** Watch targets for the host watcher: matched files, their base dirs, config deps. */
-  watchTargets(): { sources: string[]; dirs: string[]; config: string[] }
+  /** Watch targets for the host watcher: parsed files, source patterns, their base dirs, and config deps. */
+  watchTargets(): { files?: string[]; sources: string[]; dirs: string[]; config: string[] }
   /** Watch targets for hydrated design-system artifacts and source fallback files. */
   designSystemWatchTargets(): DesignSystemWatchTarget[]
   /** Classify a watched design-system file as an artifact or source fallback. */
@@ -245,10 +245,9 @@ export abstract class BaseDriver implements Driver {
 
   /** Record source ownership after a host watcher change. */
   protected trackSourceChange(change: SourceChange, applied: boolean): boolean {
+    if (change.kind === 'unlink') this.#scanOwnedFiles.delete(change.path)
     if (!this.#compiler.isSourceFile(change.path)) return applied
-    if (change.kind === 'unlink') {
-      this.#scanOwnedFiles.delete(change.path)
-    } else if (applied) {
+    if (applied) {
       this.#scanOwnedFiles.add(change.path)
     }
     return applied
@@ -342,9 +341,10 @@ export abstract class BaseDriver implements Driver {
     })
   }
 
-  watchTargets(): { sources: string[]; dirs: string[]; config: string[] } {
+  watchTargets(): { files: string[]; sources: string[]; dirs: string[]; config: string[] } {
     const sources = this.#compiler.sources()
     return {
+      files: [...this.#scanOwnedFiles],
       sources: sources.map((source) => source.pattern),
       dirs: [...new Set(sources.map((source) => source.base))],
       config: this.configDependencies,

@@ -281,6 +281,7 @@ describe('createNodeDriver', () => {
       driver.compiler.parseFileSource(explicit, explicitSource)
 
       expect(driver.parseFiles()).toHaveLength(2)
+      expect(driver.watchTargets().files).toEqual([join(rescanDir, 'a.tsx'), join(rescanDir, 'b.tsx')])
       expect(driver.compiler.getFile(explicit)).not.toBeNull()
       expect(driver.cssgen().css).toContain('red')
       expect(driver.cssgen().css).toContain('blue')
@@ -290,9 +291,18 @@ describe('createNodeDriver', () => {
       expect(driver.compiler.getFile(join(rescanDir, 'b.tsx'))).not.toBeNull()
       expect(driver.cssgen().css).toContain('blue')
 
+      const targeted = join(rescanDir, 'outside.ts')
+      writeFileSync(targeted, "import { css } from '@panda/css'; css({ color: 'orange' })")
+      expect(driver.parseFiles({ include: ['outside.ts'] })).toHaveLength(1)
+      expect(driver.watchTargets().files).toContain(targeted)
+      unlinkSync(targeted)
+      expect(driver.applyChange({ path: targeted, kind: 'unlink' })).toBe(true)
+      expect(driver.watchTargets().files).not.toContain(targeted)
+
       const added = join(rescanDir, 'added.tsx')
       writeFileSync(added, "import { css } from '@panda/css'; css({ color: 'purple' })")
       expect(driver.applyChange({ path: added, kind: 'add' })).toBe(true)
+      expect(driver.watchTargets().files).toContain(added)
       expect(driver.cssgen().css).toContain('purple')
 
       const removed = join(rescanDir, 'b.tsx')
@@ -300,6 +310,7 @@ describe('createNodeDriver', () => {
       unlinkSync(added)
 
       expect(driver.parseFiles()).toHaveLength(1)
+      expect(driver.watchTargets().files).toEqual([join(rescanDir, 'a.tsx')])
       expect(driver.compiler.getFile(removed)).toBeNull()
       expect(driver.compiler.getFile(added)).toBeNull()
       const incrementalCss = driver.cssgen().css
@@ -556,10 +567,12 @@ describe('createNodeDriver', () => {
     })
   })
 
-  it('lists watch targets (source patterns, base dirs, config deps)', async () => {
+  it('lists watch targets (parsed files, source patterns, base dirs, config deps)', async () => {
     const driver = await createNodeDriver({ cwd: dir })
+    driver.parseFiles()
     const targets = driver.watchTargets()
 
+    expect(targets.files).toEqual([join(dir, 'App.tsx')])
     expect(targets.sources).toMatchInlineSnapshot(`
       [
         "**/*.tsx",
