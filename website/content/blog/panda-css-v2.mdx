@@ -28,8 +28,9 @@ version:
 - **~99% fewer TypeScript type instantiations** on your generated types, for a lighter editor and CI.
 - **Design systems you can publish**: `panda lib` to author, `designSystem` to consume, with no re-extraction in the
   consuming app.
-- **New in the box**: `viewTransition()`, mask and scrollbar utilities, `@property`-registered variables, a first-party
-  ESLint plugin, a typography preset, and a rebuilt CLI.
+- **New in the box**: new styled-system factories (`viewTransition()`, `firstThatWorks()`, `keyframes()`,
+  `positionTry()`), mask and scrollbar utilities, `@property`-registered variables, config completions in your editor, a
+  first-party ESLint plugin, a typography preset, and a rebuilt CLI.
 - **ESM-only**, needs Node 22 or newer. It ships as a beta today.
 
 The rest of this post walks through why we rewrote the engine, what the new pipeline looks like, what it made faster,
@@ -208,11 +209,11 @@ item on the roadmap. Everything else about the output is at parity, minus the de
 
 Because the engine is plain Rust over Oxc, it compiles two ways. A native binding (`@pandacss/compiler`) powers the CLI,
 Vite, and PostCSS. A WebAssembly binding (`@pandacss/compiler-wasm`) runs the identical code in the browser, which is
-what the playground uses. The Wasm bundle is about 490 KB gzipped, and cross-file resolution works there too: edit a file
-in the playground and it lands in an in-memory filesystem the resolver reads at once.
+what the playground uses. The Wasm bundle is about 490 KB gzipped, and cross-file resolution works there too: edit a
+file in the playground and it lands in an in-memory filesystem the resolver reads at once.
 
-So for the first time the playground and your build run the same extractor and produce the same CSS, because they are the
-same code. For the mental model, see [Why Panda → How it works](/docs/get-started/getting-started#how-it-works).
+So for the first time the playground and your build run the same extractor and produce the same CSS, because they are
+the same code. For the mental model, see [Why Panda → How it works](/docs/get-started/getting-started#how-it-works).
 
 ## Faster
 
@@ -367,6 +368,53 @@ const slide = viewTransition({
 You can also name reusable transitions in your theme so a preset can share them, and `viewTransition('slide')` inlines
 the shared class. Unused named transitions stay out of your CSS.
 
+### Ordered value fallbacks
+
+`firstThatWorks()` ships a modern CSS value with a fallback for the browsers that don't support it yet. Write the value
+you want first, the same order as StyleX, and Panda emits both declarations in the order CSS needs:
+
+```ts
+import { css, firstThatWorks } from 'styled-system/css'
+
+css({
+  color: firstThatWorks('oklch(55% 0.18 250)', '#0057b8'),
+  minHeight: firstThatWorks('100dvh', '100vh')
+})
+```
+
+Each fallback is typed by the property it sits in, so members autocomplete and `strictTokens` still applies. It covers
+what you used to write by hand — a wide-gamut color with an sRGB fallback, `100dvh` behind `100vh`, or a vendor-prefixed
+value like `-webkit-sticky`.
+
+### Local keyframes and anchor fallbacks
+
+Two more factories follow the same shape as `viewTransition()`: a component-local block that emits its own at-rule and
+is tree-shaken to what your build actually references.
+
+`keyframes()` defines an animation next to the component that uses it, rather than in `theme.keyframes`:
+
+```ts
+import { css, keyframes } from 'styled-system/css'
+
+const fade = keyframes({ from: { opacity: 0 }, to: { opacity: 1 } })
+
+css({ animation: `${fade} 0.2s ease-in` })
+```
+
+`positionTry()` names a CSS anchor-positioning fallback and returns the ident for `positionTryFallbacks`, emitting the
+`@position-try` block for you:
+
+```ts
+import { css, positionTry } from 'styled-system/css'
+
+const fallback = positionTry({ top: 'anchor(bottom)' })
+
+css({ positionTryFallbacks: fallback })
+```
+
+Shared animations still belong in `theme.keyframes`, and shared fallbacks in the new `theme.positionTry`.
+`globalPositionTry` is gone — move its entries to `theme.positionTry` and reference them through the factory.
+
 ### New base-preset utilities
 
 The base preset picked up a batch of utilities for things that used to mean hand-writing raw CSS.
@@ -437,9 +485,30 @@ export default [panda.configs.recommended]
 ```
 
 You get rules like `no-invalid-token-paths`, `no-hardcoded-color` via `prefer-token`, `no-shorthand-longhand-mix`,
-`no-deprecated`, an autofixing `consistent-property-style`, and an opt-in `no-primitive-token` that nudges you toward
-semantic tokens when a matching category exists. The same rules run under [oxlint](https://oxc.rs) through a dedicated
-entry point.
+`no-deprecated`, and an autofixing `consistent-property-style`, plus opt-in rules like `no-primitive-token` (nudges you
+toward semantic tokens when a matching category exists) and `no-descendant-selectors` (keeps every style scoped to its
+own element). The same rules run under [oxlint](https://oxc.rs) through a dedicated entry point.
+
+### Config completions in your editor
+
+Editing `panda.config.ts` now gets real completions, diagnostics, and hover for your design system — token, recipe,
+condition, and utility names, resolved through your actual config after presets merge rather than guessed from static
+types. It ships as a TypeScript language service plugin (`@pandacss/typescript-plugin`) and a standalone LSP server
+(`@pandacss/language-server`), so any tsserver-backed editor can pick it up. VS Code registers it for you; other editors
+add it to `compilerOptions.plugins`:
+
+```jsonc
+// tsconfig.json
+{
+  "compilerOptions": {
+    "plugins": [{ "name": "@pandacss/typescript-plugin" }]
+  }
+}
+```
+
+Config authoring also picks up the typed `define*` helpers the rest of the config already had — `defineConditions` and
+`definePositionTry` join `defineTokens`, `defineRecipe`, and friends, so custom conditions and anchor fallbacks get the
+same autocomplete and type-checking when you author them outside `defineConfig`.
 
 ### A typography preset
 
@@ -470,6 +539,9 @@ Beyond the correctness of extraction, v2 does more to turn dynamic-looking code 
   everything known at build time into a single class, leaving only the spread for runtime.
 - **Shared classes hoist.** A class present in every branch of a conditional is emitted once instead of being repeated
   across branches.
+- **Slot recipes and `sva()` fold too.** A config slot-recipe call becomes an object of per-slot class strings, and an
+  inline `sva()` compiles even when variants style each slot differently — dynamic and responsive values stay on the
+  runtime.
 
 ### Codegen and type fixes
 
@@ -486,7 +558,8 @@ One rename to be aware of: the built-in CSS value types now carry a `Css` prefix
 The MCP server is now its own package — run `npx -y @pandacss/mcp` instead of the old `panda mcp` subcommand. Vue,
 Svelte, and Lightning CSS support are available as standalone opt-in plugins (`@pandacss/plugin-vue`,
 `@pandacss/plugin-svelte`, `@pandacss/plugin-lightningcss`), keeping the core install smaller for projects that don't
-need them. Source transforms in the Vite, webpack, and Rollup plugins are now opt-in behind `transform: true`.
+need them. Source transforms in the Vite, webpack, and Rollup plugins are now opt-in behind `transform: true`. There's
+also a new `@pandacss/bun` plugin that codegens and injects CSS for `Bun.build`, the Bun dev server, and `bun test`.
 
 ## Upgrading from v1
 
@@ -551,6 +624,10 @@ There's a new `withRootProvider` for a slot root that renders no slot of its own
 Ten options are gone: `studio`, `eject`, `emitTokensOnly`, `gitignore`, `clean`, `watch`, `poll`, `lightningcss`, and
 `browserslist`. `forceConsistentTypeExtension` became `forceImportExtension` (different semantics, not a rename), and
 `outExtension` now also accepts `'ts'`.
+
+The `syntax` option and the `template-literal` authoring mode are also removed. Drop `syntax` from your config and the
+`--syntax` flag from `panda init`, and write styles with the object form — `css({ color: 'red' })` instead of
+`` css`color: red` ``.
 
 ### CLI commands consolidated
 
