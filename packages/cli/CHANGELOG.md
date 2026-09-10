@@ -1,5 +1,36 @@
 # @pandacss/cli
 
+## 2.0.0-beta.17
+
+### Minor Changes
+
+- 597d2cb: `panda analyze` now prints a ranked table for utilities, patterns, and keyframes, with the configured names
+  no scanned file uses, instead of a single count. Running it without `--scope` prints every section, so the `all` value
+  is gone. Shorthands count as their longhand. `--unused` prints only the configured names nobody uses, one per line,
+  for pasting into a deprecation PR or diffing between runs.
+- 597d2cb: Remove the `--report` and `--ui` flags from `panda analyze`, along with the bundled HTML report and its live
+  server. The command keeps the usage summary, the token and recipe tables, `--scope`, `--limit`, `--json`, and
+  `--outfile`, so scripts and CI keep the same JSON report.
+
+### Patch Changes
+
+- 597d2cb: Fix `panda analyze` listing CSS keys from a local `cva` or `sva` body as recipes, and add a flat `usages`
+  list to the JSON report so scripts can answer "who uses this token" without joining tables.
+- Updated dependencies [597d2cb]
+- Updated dependencies [597d2cb]
+- Updated dependencies [5b9a056]
+- Updated dependencies [1ca20ab]
+- Updated dependencies [8d29caa]
+- Updated dependencies [323af68]
+- Updated dependencies [55cab2b]
+- Updated dependencies [bb47c38]
+- Updated dependencies [774529f]
+- Updated dependencies [e82613b]
+  - @pandacss/compiler-shared@2.0.0-beta.17
+  - @pandacss/compiler@2.0.0-beta.17
+  - @pandacss/types@2.0.0-beta.17
+  - @pandacss/config@2.0.0-beta.17
+
 ## 2.0.0-beta.16
 
 ### Major Changes

@@ -1,5 +1,25 @@
 # @pandacss/vite
 
+## 2.0.0-beta.17
+
+### Patch Changes
+
+- 57cd9f8: Regenerate styled-system output when an imported design-system artifact changes in watch mode.
+- 323af68: Reuse parsed source paths when registering bundler watch files, avoiding a second full project scan during
+  startup. Keep tracked paths in sync when explicitly parsed files are deleted.
+- Updated dependencies [597d2cb]
+- Updated dependencies [597d2cb]
+- Updated dependencies [5b9a056]
+- Updated dependencies [8d29caa]
+- Updated dependencies [323af68]
+- Updated dependencies [55cab2b]
+- Updated dependencies [bb47c38]
+- Updated dependencies [774529f]
+- Updated dependencies [e82613b]
+  - @pandacss/compiler-shared@2.0.0-beta.17
+  - @pandacss/compiler@2.0.0-beta.17
+  - @pandacss/transformer@2.0.0-beta.17
+
 ## 2.0.0-beta.16
 
 ### Patch Changes
