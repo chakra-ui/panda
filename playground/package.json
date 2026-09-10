@@ -45,9 +45,7 @@
     "react-dom": "19.2.8",
     "react-live-runner": "1.0.7",
     "sucrase": "3.35.1",
-    "ts-pattern": "5.9.0",
     "typescript": "6.0.3",
-    "usehooks-ts": "2.14.0",
     "util": "0.12.5",
     "zod": "3.25.76"
   },

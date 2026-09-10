@@ -1,9 +1,9 @@
 import { compile } from '@/src/lib/config/compile'
 import { getConfigError, validateConfig } from '@/src/lib/config/eval-config'
 import { getImports } from '@/src/lib/config/get-imports'
+import { useDebounceValue } from '@/src/lib/use-debounce-value'
 import type { Config } from '@pandacss/types'
 import { useEffect, useRef, useState } from 'react'
-import { useDebounce } from 'usehooks-ts'
 
 // Resolved on the main thread: a worker boundary would JSON-serialize the config
 // and strip function-valued utility `values` / `transform` from presets.
@@ -14,7 +14,7 @@ export const useConfig = (configStr: string) => {
   const [error, setError] = useState<Error | null>(() => (hasPresets ? null : getConfigError(configStr)))
 
   const [_isLoading, setIsLoading] = useState(true)
-  const isLoading = useDebounce(_isLoading, 500)
+  const isLoading = useDebounceValue(_isLoading, 500)
 
   const requestRef = useRef(0)
 

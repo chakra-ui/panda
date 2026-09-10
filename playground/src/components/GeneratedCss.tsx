@@ -6,7 +6,7 @@ import MonacoEditor from '@monaco-editor/react'
 import { format } from '@projectwallace/format-css'
 import * as React from 'react'
 import { useState } from 'react'
-import { useReadLocalStorage } from 'usehooks-ts'
+import { useLocalStorage } from '@/src/lib/use-local-storage'
 import type { CssFileArtifact } from '../hooks/usePanda'
 
 export const GeneratedCss = React.memo(function GeneratedCss({
@@ -24,9 +24,9 @@ export const GeneratedCss = React.memo(function GeneratedCss({
   const activeTab =
     selectedTab && cssArtifacts.some((file) => file.file === selectedTab)
       ? selectedTab
-      : (cssArtifacts[0]?.file ?? 'styles.css')
+      : cssArtifacts[0]?.file ?? 'styles.css'
 
-  const wordWrap = useReadLocalStorage<'off' | 'on' | undefined>('wordWrap') ?? undefined
+  const [wordWrap] = useLocalStorage<'on' | 'off'>('editor_wordWrap', 'off')
 
   const pretty = React.useMemo(() => {
     const content = cssArtifacts.find((file) => file.file === activeTab)?.code ?? ''
