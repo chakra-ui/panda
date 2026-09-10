@@ -22,6 +22,9 @@ use crate::{StyleObject, StyleTree, style_tree::expression_to_style_tree};
 pub(crate) struct StyledBinding {
     /// Symbol of the declaration, so a shadowing local can't be folded as this one.
     pub symbol_id: Option<SymbolId>,
+    /// Canonical name of the factory that built the chain (`styled`, `panda`, …),
+    /// so the fold reports the site as `<{factory}.{intrinsic}>`.
+    pub factory: String,
     pub intrinsic: String,
     /// Composed `base` styles, outermost-first, so element props still win.
     pub base: Vec<(String, StyleTree)>,
@@ -107,9 +110,7 @@ fn resolve_binding(
             let Expression::Identifier(callee) = call.callee.get_inner_expression() else {
                 return None;
             };
-            if !is_styled_factory(callee.name.as_str(), ctx) {
-                return None;
-            }
+            let factory = styled_factory_name(callee.name.as_str(), ctx)?;
             // A third `options` argument only folds when it is style-only
             // `defaultProps`; `shouldForwardProp` / `forwardProps` / `dataAttr`
             // are runtime behavior the fold cannot reproduce.
@@ -138,6 +139,7 @@ fn resolve_binding(
             base.extend(base_only_entries(config, ctx)?);
             Some(StyledBinding {
                 symbol_id: None,
+                factory,
                 intrinsic,
                 base,
                 default_props,
@@ -148,11 +150,12 @@ fn resolve_binding(
 }
 
 /// True when `name` is the local binding of Panda's imported JSX factory.
-fn is_styled_factory(name: &str, ctx: &VisitorContext<'_, '_>) -> bool {
-    ctx.aliases.get(name).is_some_and(|matched| {
-        ctx.config.matchers.is_jsx_factory(&matched.name)
-            || ctx.config.matchers.is_jsx_factory(&matched.alias)
-    })
+/// The canonical factory name behind a local callee, when it is a JSX factory.
+fn styled_factory_name(name: &str, ctx: &VisitorContext<'_, '_>) -> Option<String> {
+    let matched = ctx.aliases.get(name)?;
+    let matchers = &ctx.config.matchers;
+    (matchers.is_jsx_factory(&matched.name) || matchers.is_jsx_factory(&matched.alias))
+        .then(|| matched.name.clone())
 }
 
 /// The `base` entries of a cva config, or `None` when the config carries

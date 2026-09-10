@@ -345,7 +345,7 @@ impl Extractor<'_, '_, '_> {
                 }
 
                 let tag_name = id.name.as_str();
-                // A local `styled()` chain stands in for `<styled.{tag}>`, so the
+                // A local `styled()` chain stands in for `<{factory}.{tag}>`, so the
                 // fold reaches it with the machinery host factories already use.
                 // Only when the tag resolves to the symbol we recorded — a local
                 // binding may shadow the module-level chain.
@@ -356,7 +356,7 @@ impl Extractor<'_, '_, '_> {
                 {
                     return Some(ResolvedTag {
                         category: MatchCategory::Jsx,
-                        name: Cow::Owned(format!("styled.{}", binding.intrinsic)),
+                        name: Cow::Owned(format!("{}.{}", binding.factory, binding.intrinsic)),
                         alias: Cow::Borrowed(tag_name),
                         emit_empty: true,
                         panda_owned: true,
