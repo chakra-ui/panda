@@ -1,0 +1,47 @@
+<svg width="960" height="240" viewBox="0 0 960 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="App.tsx is parsed once. The same parse feeds extraction, which writes styles.css, and the transform, which rewrites the file in one edit pass into App.js with a source map.">
+  <style>
+    .surface { fill: #FBF9F3; }
+    .ink { fill: #1A1A17; }
+    .muted { fill: #5E584C; }
+    .box { fill: none; stroke: #1A1A17; stroke-width: 1.5; }
+    .accent { fill: #F6E458; stroke: #1A1A17; stroke-width: 1.5; }
+    .line { stroke: #1A1A17; stroke-width: 1.5; fill: none; }
+    .mono { font-family: 'Source Code Pro',ui-monospace,monospace; }
+    .sans { font-family: 'Onest','Segoe UI',system-ui,sans-serif; }
+    @media (prefers-color-scheme: dark) {
+      .surface { fill: #17171B; } .ink { fill: #F5F2E9; } .muted { fill: #B7B1A3; }
+      .box { stroke: #E7E2D6; } .accent { stroke: #17171B; } .line { stroke: #E7E2D6; }
+    }
+  </style>
+  <rect width="960" height="240" class="surface"/>
+
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M1 1 L8 5 L1 9" class="line" stroke-width="1.5"/>
+    </marker>
+  </defs>
+
+  <!-- input -->
+  <rect x="60" y="94" width="150" height="52" rx="8" class="box"/>
+  <text x="135" y="126" text-anchor="middle" class="ink mono" font-size="15">App.tsx</text>
+
+  <path d="M210 120 H292" class="line" marker-end="url(#a)"/>
+
+  <!-- parse -->
+  <rect x="300" y="94" width="170" height="52" rx="8" class="accent"/>
+  <text x="385" y="126" text-anchor="middle" class="ink mono" font-size="15" font-weight="700">parse once</text>
+
+  <!-- split -->
+  <path d="M470 120 H520 V62 H592" class="line" marker-end="url(#a)"/>
+  <path d="M520 120 V178 H592" class="line" marker-end="url(#a)"/>
+
+  <text x="600" y="48" class="muted mono" font-size="10.5" font-weight="700" letter-spacing="1.8">EXTRACTION</text>
+  <text x="600" y="164" class="muted mono" font-size="10.5" font-weight="700" letter-spacing="1.8">TRANSFORM · ONE EDIT PASS</text>
+
+  <!-- outputs -->
+  <rect x="600" y="56" width="300" height="46" rx="8" class="box"/>
+  <text x="750" y="85" text-anchor="middle" class="ink mono" font-size="15">styles.css</text>
+
+  <rect x="600" y="172" width="300" height="46" rx="8" class="box"/>
+  <text x="750" y="201" text-anchor="middle" class="ink mono" font-size="15">App.js + source map</text>
+</svg>

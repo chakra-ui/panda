@@ -1,0 +1,39 @@
+<svg width="960" height="250" viewBox="0 0 960 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="JavaScript shipped by a page built only from Panda calls, gzipped: 14.3 KB with transforms off, 0.4 KB with transforms on, and 4.0 KB with transforms on when the page also uses cva, sva, and cx">
+  <style>
+    .surface { fill: #FBF9F3; }
+    .ink { fill: #1A1A17; }
+    .muted { fill: #5E584C; }
+    .track { fill: #ECE7DA; }
+    .before { fill: #8C8578; }
+    .after { fill: #F6E458; stroke: #1A1A17; stroke-width: 1.5; }
+    .mono { font-family: 'Source Code Pro',ui-monospace,monospace; }
+    .sans { font-family: 'Onest','Segoe UI',system-ui,sans-serif; }
+    @media (prefers-color-scheme: dark) {
+      .surface { fill: #17171B; } .ink { fill: #F5F2E9; } .muted { fill: #B7B1A3; }
+      .track { fill: #26262B; } .before { fill: #7C766B; } .after { stroke: #17171B; }
+    }
+  </style>
+  <rect width="960" height="250" class="surface"/>
+
+  <text x="60" y="44" class="muted mono" font-size="10.5" font-weight="700" letter-spacing="1.8">JAVASCRIPT SHIPPED · GZIPPED</text>
+
+  <g class="sans">
+    <!-- off: 14.3 KB → 560px -->
+    <text x="300" y="91" text-anchor="end" class="ink" font-size="15">Transforms off</text>
+    <rect x="320" y="72" width="560" height="28" rx="6" class="track"/>
+    <rect x="320" y="72" width="560" height="28" rx="6" class="before"/>
+    <text x="870" y="91" text-anchor="end" class="ink mono" font-size="14" font-weight="700" fill="#FBF9F3">14.3 KB</text>
+
+    <!-- on: 0.4 KB → 16px -->
+    <text x="300" y="147" text-anchor="end" class="ink" font-size="15">Transforms on</text>
+    <rect x="320" y="128" width="560" height="28" rx="6" class="track"/>
+    <rect x="320" y="128" width="16" height="28" rx="6" class="after"/>
+    <text x="348" y="147" class="ink mono" font-size="14" font-weight="700">0.4 KB</text>
+
+    <!-- on + helpers: 4.0 KB → 157px -->
+    <text x="300" y="203" text-anchor="end" class="ink" font-size="15">Transforms on, with cva, sva, cx</text>
+    <rect x="320" y="184" width="560" height="28" rx="6" class="track"/>
+    <rect x="320" y="184" width="157" height="28" rx="6" class="after"/>
+    <text x="489" y="203" class="ink mono" font-size="14" font-weight="700">4.0 KB</text>
+  </g>
+</svg>
