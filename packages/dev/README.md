@@ -28,6 +28,7 @@ panda codegen
 ### Subpaths
 
 - `@pandacss/dev` — config helpers (`defineConfig`, `defineRecipe`, …)
+- `@pandacss/dev/define` — runtime-dependency-free config helpers for code bundled into published libraries
 - `@pandacss/dev/node` — config loading + compiler APIs for tooling
 - `@pandacss/dev/postcss` — the PostCSS plugin (re-export of `@pandacss/postcss`)
 - `@pandacss/dev/cli` — programmatic command runners

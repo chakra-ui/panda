@@ -29,8 +29,8 @@ pnpm --filter @acme/ds publish
 }
 ```
 
-`dist/panda/` has to ship. That is `lib.json`, `preset.mjs`, and `buildinfo.json`. `styled-system` has to ship if
-your `exports` point at it (the default after `panda lib`).
+`dist/panda/` has to ship. That is `lib.json`, `preset.mjs`, and `buildinfo.json`. `styled-system` has to ship if your
+`exports` point at it (the default after `panda lib`).
 
 `"files": ["dist"]` alone is not enough when codegen writes `styled-system/` at the package root. Either add
 `styled-system` to `files`, or set `outdir` under `dist`.
@@ -42,6 +42,28 @@ export default defineConfig({
 ```
 
 Do not add a root `panda.buildinfo.json`. That was the v1 path.
+
+## Bundle exported definitions
+
+If a public module exports tokens, recipes, patterns, or other Panda definitions, import its helpers from
+`@pandacss/dev/define`:
+
+```ts
+import { definePattern } from '@pandacss/dev/define'
+```
+
+Bundle that entry point into the library output so production code does not import `@pandacss/dev` at runtime:
+
+```ts filename="tsup.config.ts"
+import { defineConfig } from 'tsup'
+
+export default defineConfig({
+  noExternal: ['@pandacss/dev/define']
+})
+```
+
+Keep the `@pandacss/dev` peer dependency for Panda's design-system compatibility. Bundling `/define` only removes the
+runtime import from the library's JavaScript.
 
 ## Do not hand-write styled-system exports
 
@@ -76,16 +98,15 @@ See [Consume without Panda](/docs/design-systems/consume-without-panda).
 
 ## Peer range
 
-The design system and its apps must run the same Panda major. `panda lib` stamps that range from
-`@pandacss/dev` in `peerDependencies`, or from `--panda`. A mismatch fails the consumer with
-`design_system_peer_range_unsatisfied`.
+The design system and its apps must run the same Panda major. `panda lib` stamps that range from `@pandacss/dev` in
+`peerDependencies`, or from `--panda`. A mismatch fails the consumer with `design_system_peer_range_unsatisfied`.
 
 ```bash
 panda lib --panda '^2.0.0'
 ```
 
-The manifest `version` field is informational. Panda does not enforce it. Use semver when you rename or remove
-tokens: major if existing CSS or props change, minor for additions, patch for internal fixes.
+The manifest `version` field is informational. Panda does not enforce it. Use semver when you rename or remove tokens:
+major if existing CSS or props change, minor for additions, patch for internal fixes.
 
 ## Check the tarball
 
@@ -101,8 +122,8 @@ dist/panda/preset.mjs
 dist/panda/buildinfo.json
 ```
 
-and the `styled-system` files your `exports` point at. Confirm you do not see `.env` or a stray `src/` you meant
-to keep private.
+and the `styled-system` files your `exports` point at. Confirm you do not see `.env` or a stray `src/` you meant to keep
+private.
 
 If `package.json` `"files"` would drop the inferred fallback sources, `panda lib` warns
 `design_system_files_not_publishable`. Pass `--files` for what you actually publish:
