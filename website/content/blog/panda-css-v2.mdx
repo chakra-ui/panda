@@ -382,9 +382,10 @@ css({
 })
 ```
 
-Each fallback is typed by the property it sits in, so members autocomplete and `strictTokens` still applies. It covers
-what you used to write by hand — a wide-gamut color with an sRGB fallback, `100dvh` behind `100vh`, or a vendor-prefixed
-value like `-webkit-sticky`.
+Each fallback is typed by the property it sits in, so members autocomplete and `strictTokens` checks each one — under
+`strictTokens` an arbitrary value takes the usual bracket escape,
+`firstThatWorks('[oklch(55% 0.18 250)]', '[#0057b8]')`. It covers what you used to write by hand — a wide-gamut color
+with an sRGB fallback, `100dvh` behind `100vh`, or a vendor-prefixed value like `-webkit-sticky`.
 
 ### Local keyframes and anchor fallbacks
 
