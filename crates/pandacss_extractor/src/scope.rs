@@ -25,7 +25,7 @@ use pandacss_tokens::{TokenCategory, TokenDictionary};
 use rustc_hash::{FxHashMap, FxHashSet};
 use smallvec::SmallVec;
 
-use crate::cross_file::{CrossFileLookup, ExportEntry};
+use crate::cross_file::{CrossFileContext, ExportEntry};
 use crate::extract::{CrossFileDependency, UnresolvedCrossFileDependency};
 use crate::literal::expression_to_literal;
 use crate::matcher::{MatchCategory, MatchedImport, Matchers};
@@ -69,7 +69,7 @@ pub(crate) struct Resolver<'a, 'cb> {
     /// Config class-name prefix used to build `positionTry(...)` dashed-idents
     /// byte-identically to the emitter/transform. Empty for no prefix.
     prefix: &'a str,
-    cross_file: Option<&'a dyn CrossFileLookup>,
+    cross_file: Option<&'a CrossFileContext<'a>>,
     source_path: Option<PathBuf>,
     line_index: Option<&'a crate::LineIndex<'a>>,
     diagnostics: RefCell<Vec<crate::Diagnostic>>,
@@ -123,7 +123,7 @@ pub(crate) struct ResolverBuildInput<'a, 'cb> {
     pub matchers: Option<&'a Matchers>,
     pub tokens: Option<&'a TokenDictionary>,
     pub prefix: &'a str,
-    pub cross_file: Option<&'a dyn CrossFileLookup>,
+    pub cross_file: Option<&'a CrossFileContext<'a>>,
     pub source_path: Option<PathBuf>,
     pub line_index: Option<&'a crate::LineIndex<'a>>,
     pub pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
@@ -179,6 +179,10 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
 
     pub(crate) fn take_diagnostics(&self) -> Vec<crate::Diagnostic> {
         std::mem::take(&mut self.diagnostics.borrow_mut())
+    }
+
+    pub(crate) fn cross_file_context(&self) -> Option<&CrossFileContext<'a>> {
+        self.cross_file
     }
 
     /// Token paths resolved from `token()` / `token.var()` calls, with spans.

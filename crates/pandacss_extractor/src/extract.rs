@@ -13,8 +13,8 @@ use crate::scope::{
 };
 use crate::source_refs::StyleSourceRef;
 use crate::{
-    Diagnostic, ExportInfo, ExtractedCall, ExtractedJsx, ExtractorConfig, ImportRecord, Literal,
-    MatchCategory, MatchedImport, Span, VisitorContext, collect_imports,
+    CrossFileSession, Diagnostic, ExportInfo, ExtractedCall, ExtractedJsx, ExtractorConfig,
+    ImportRecord, Literal, MatchCategory, MatchedImport, Span, VisitorContext, collect_imports,
     collect_parser_diagnostics, match_import_records_resolved,
 };
 use oxc_allocator::Allocator;
@@ -173,7 +173,39 @@ pub fn extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsa
     let _span =
         tracing::trace_span!(target: "extract", "extract", path = path, source_len = source.len())
             .entered();
-    let outcome = run_extract(source, path, config, None, None, false, false);
+    let session = cross_file_session(config);
+    let outcome = run_extract(
+        source,
+        path,
+        config,
+        RunExtractOptions {
+            cross_file: session.as_ref(),
+            ..RunExtractOptions::default()
+        },
+    );
+    extract_usage(outcome)
+}
+
+/// Extract within an existing cross-file analysis session.
+///
+/// Reusing a session across project files validates each imported module once
+/// and gives every file a consistent view of its analyzed exports.
+#[must_use]
+pub fn extract_in_session(
+    source: &str,
+    path: &str,
+    config: &ExtractorConfig,
+    session: &CrossFileSession,
+) -> ExtractUsage {
+    let outcome = run_extract(
+        source,
+        path,
+        config,
+        RunExtractOptions {
+            cross_file: Some(session),
+            ..RunExtractOptions::default()
+        },
+    );
     extract_usage(outcome)
 }
 
@@ -187,7 +219,17 @@ pub fn extract_for_transform(source: &str, path: &str, config: &ExtractorConfig)
         source_len = source.len()
     )
     .entered();
-    let outcome = run_extract(source, path, config, None, None, false, true);
+    let session = cross_file_session(config);
+    let outcome = run_extract(
+        source,
+        path,
+        config,
+        RunExtractOptions {
+            cross_file: session.as_ref(),
+            retain_transform_facts: true,
+            ..RunExtractOptions::default()
+        },
+    );
     extract_usage(outcome)
 }
 
@@ -211,7 +253,18 @@ where
     .entered();
     let erased: &mut RecipeRawResolveFn<'_> = recipe_resolve;
     let cell: RecipeRawResolveCell<'_> = RefCell::new(erased);
-    let outcome = run_extract(source, path, config, None, Some(&cell), false, true);
+    let session = cross_file_session(config);
+    let outcome = run_extract(
+        source,
+        path,
+        config,
+        RunExtractOptions {
+            cross_file: session.as_ref(),
+            recipe_raw_resolve: Some(&cell),
+            retain_transform_facts: true,
+            ..RunExtractOptions::default()
+        },
+    );
     extract_usage(outcome)
 }
 
@@ -243,6 +296,30 @@ where
     P: FnMut(&str, &Literal) -> Result<Option<Literal>, Diagnostic>,
     R: FnMut(&str, &Literal, &Literal) -> Option<Literal>,
 {
+    let session = cross_file_session(config);
+    extract_with_raw_resolvers_in_session(
+        source,
+        path,
+        config,
+        session.as_ref(),
+        pattern_transform,
+        recipe_resolve,
+    )
+}
+
+/// [`extract_with_raw_resolvers`] within a shared cross-file analysis session.
+pub fn extract_with_raw_resolvers_in_session<P, R>(
+    source: &str,
+    path: &str,
+    config: &ExtractorConfig,
+    session: Option<&CrossFileSession>,
+    pattern_transform: Option<&mut P>,
+    recipe_resolve: &mut R,
+) -> ExtractUsage
+where
+    P: FnMut(&str, &Literal) -> Result<Option<Literal>, Diagnostic>,
+    R: FnMut(&str, &Literal, &Literal) -> Option<Literal>,
+{
     let has_pattern_transform = pattern_transform.is_some();
     let _span = tracing::trace_span!(
         target: "extract",
@@ -262,10 +339,12 @@ where
         source,
         path,
         config,
-        pattern_cell.as_ref(),
-        Some(&recipe_cell),
-        false,
-        false,
+        RunExtractOptions {
+            cross_file: session,
+            pattern_raw_transform: pattern_cell.as_ref(),
+            recipe_raw_resolve: Some(&recipe_cell),
+            ..RunExtractOptions::default()
+        },
     );
     extract_usage(outcome)
 }
@@ -274,7 +353,17 @@ where
 pub fn extract_debug(source: &str, path: &str, config: &ExtractorConfig) -> ExtractDebugResult {
     let _span = tracing::trace_span!(target: "extract", "extract_debug", path = path, source_len = source.len())
         .entered();
-    let outcome = run_extract(source, path, config, None, None, false, true);
+    let session = cross_file_session(config);
+    let outcome = run_extract(
+        source,
+        path,
+        config,
+        RunExtractOptions {
+            cross_file: session.as_ref(),
+            retain_transform_facts: true,
+            ..RunExtractOptions::default()
+        },
+    );
     ExtractDebugResult {
         imports: outcome.module.imports,
         matched: outcome.matched,
@@ -293,7 +382,17 @@ pub fn extract_verbose(source: &str, path: &str, config: &ExtractorConfig) -> Ex
         source_len = source.len()
     )
     .entered();
-    let outcome = run_extract(source, path, config, None, None, true, false);
+    let session = cross_file_session(config);
+    let outcome = run_extract(
+        source,
+        path,
+        config,
+        RunExtractOptions {
+            cross_file: session.as_ref(),
+            verbose: true,
+            ..RunExtractOptions::default()
+        },
+    );
     ExtractVerboseResult {
         calls: outcome.calls,
         jsx: outcome.jsx,
@@ -324,30 +423,55 @@ fn match_file_imports(
     config: &ExtractorConfig,
     path: &str,
     imports: &[ImportRecord],
+    session: Option<&CrossFileSession>,
 ) -> Vec<MatchedImport> {
     let file_path = std::path::Path::new(path);
     match_import_records_resolved(imports, &config.matchers, |specifier| {
-        config
-            .cross_file
-            .as_ref()
-            .and_then(|resolver| resolver.resolve_path(file_path, specifier))
+        session
+            .and_then(|session| session.resolve_path(file_path, specifier))
+            .or_else(|| {
+                config
+                    .cross_file
+                    .as_ref()
+                    .and_then(|resolver| resolver.resolve_path(file_path, specifier))
+            })
             .map(|resolved| resolved.to_string_lossy().into_owned())
     })
+}
+
+fn cross_file_session(config: &ExtractorConfig) -> Option<CrossFileSession> {
+    config
+        .cross_file
+        .as_ref()
+        .map(crate::CrossFileResolver::session)
+}
+
+#[derive(Clone, Copy, Default)]
+struct RunExtractOptions<'session, 'callback> {
+    cross_file: Option<&'session CrossFileSession>,
+    pattern_raw_transform: Option<&'callback PatternRawTransformCell<'callback>>,
+    recipe_raw_resolve: Option<&'callback RecipeRawResolveCell<'callback>>,
+    verbose: bool,
+    retain_transform_facts: bool,
 }
 
 #[allow(
     clippy::too_many_lines,
     reason = "single-parse pipeline stays readable as one ordered function; splitting would scatter the per-stage span+record pairs across helpers"
 )]
-fn run_extract<'cb>(
+fn run_extract(
     source: &str,
     path: &str,
     config: &ExtractorConfig,
-    pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
-    recipe_raw_resolve: Option<&'cb RecipeRawResolveCell<'cb>>,
-    verbose: bool,
-    retain_transform_facts: bool,
+    options: RunExtractOptions<'_, '_>,
 ) -> ExtractResult {
+    let RunExtractOptions {
+        cross_file,
+        pattern_raw_transform,
+        recipe_raw_resolve,
+        verbose,
+        retain_transform_facts,
+    } = options;
     let allocator = Allocator::default();
     let raw_source = source;
     let format = crate::adapter::SfcFormat::from_path(path);
@@ -372,7 +496,7 @@ fn run_extract<'cb>(
     let matched = {
         let span = tracing::trace_span!(target: "extract", "match_imports", matched_count = tracing::field::Empty);
         let _entered = span.enter();
-        let matched = match_file_imports(config, path, &imports);
+        let matched = match_file_imports(config, path, &imports, cross_file);
         span.record("matched_count", matched.len());
         matched
     };
@@ -426,6 +550,7 @@ fn run_extract<'cb>(
     }
 
     let line_index = crate::LineIndex::new(source);
+    let cross_file_context = cross_file.map(crate::cross_file::CrossFileContext::new);
     let resolver = {
         let _span = tracing::trace_span!(target: "parse", "resolve_scopes", path = path).entered();
         Resolver::build(crate::scope::ResolverBuildInput {
@@ -434,10 +559,7 @@ fn run_extract<'cb>(
             matchers: Some(&config.matchers),
             tokens: config.token_dictionary.as_deref(),
             prefix: config.class_name_prefix.as_str(),
-            cross_file: config
-                .cross_file
-                .as_ref()
-                .map(crate::CrossFileResolver::as_lookup),
+            cross_file: cross_file_context.as_ref(),
             source_path: Some(std::path::PathBuf::from(path)),
             line_index: Some(&line_index),
             pattern_raw_transform,

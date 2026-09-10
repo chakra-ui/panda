@@ -48,8 +48,9 @@ use smallvec::SmallVec;
 use pandacss_config::UserConfig;
 use pandacss_encoder::{Atom, Encoder, compare_atoms_by_emit_order};
 use pandacss_extractor::{
-    CrossFileDependency, CrossFileResolver, ExportInfo, ExtractedCall, ExtractedJsx, JsxKind,
-    LineIndex, Literal, MatchCategory, UnresolvedCrossFileDependency, extract,
+    CrossFileDependency, CrossFileResolver, CrossFileSession, ExportInfo, ExtractedCall,
+    ExtractedJsx, JsxKind, LineIndex, Literal, MatchCategory, UnresolvedCrossFileDependency,
+    extract,
 };
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::css_properties::is_css_property;
@@ -193,6 +194,11 @@ pub struct Project {
     hydrated_keyframes_order: Vec<Arc<str>>,
 }
 
+/// One consistent view of imported modules across ordered file parses.
+pub struct ParseSession {
+    cross_file: Option<CrossFileSession>,
+}
+
 pub struct ProjectStylesheetSnapshots<'a> {
     pub atoms: &'a [Atom],
     pub encoded_recipes: &'a EncodedRecipesSnapshot,
@@ -317,7 +323,37 @@ impl Project {
     /// Re-parsing a path *replaces* its previous bucket, so full rebuilds
     /// clear stale styles.
     pub fn parse_file(&mut self, path: &str, source: &str) -> ParseFileReport {
-        self.parse_file_inner(path, source, None, None, None, ParseMode::Replace)
+        let session = self.parse_session();
+        self.parse_file_in_session(path, source, &session)
+    }
+
+    /// Start an ordered parse session with one consistent cross-file view.
+    #[must_use]
+    pub fn parse_session(&self) -> ParseSession {
+        ParseSession {
+            cross_file: self
+                .config
+                .extractor_config
+                .cross_file
+                .as_ref()
+                .map(CrossFileResolver::session),
+        }
+    }
+
+    /// [`Self::parse_file`] within an existing [`ParseSession`].
+    pub fn parse_file_in_session(
+        &mut self,
+        path: &str,
+        source: &str,
+        session: &ParseSession,
+    ) -> ParseFileReport {
+        self.parse_file_inner(
+            path,
+            source,
+            session.cross_file.as_ref(),
+            ParseTransforms::default(),
+            ParseMode::Replace,
+        )
     }
 
     /// [`Self::parse_file`] with transform callbacks, rebuilt fresh per call
@@ -328,12 +364,23 @@ impl Project {
         source: &str,
         transforms: ParseTransforms<'_>,
     ) -> ParseFileReport {
+        let session = self.parse_session();
+        self.parse_file_with_in_session(path, source, &session, transforms)
+    }
+
+    /// [`Self::parse_file_with`] within an existing [`ParseSession`].
+    pub fn parse_file_with_in_session(
+        &mut self,
+        path: &str,
+        source: &str,
+        session: &ParseSession,
+        transforms: ParseTransforms<'_>,
+    ) -> ParseFileReport {
         self.parse_file_inner(
             path,
             source,
-            transforms.source,
-            transforms.pattern,
-            transforms.utility,
+            session.cross_file.as_ref(),
+            transforms,
             ParseMode::Replace,
         )
     }
@@ -354,11 +401,15 @@ impl Project {
         &mut self,
         path: &str,
         source: &str,
-        source_transform: Option<&mut SourceTransformFn<'_>>,
-        mut pattern_transform: Option<&mut PatternTransformFn<'_>>,
-        utility_transform: Option<&mut UtilityTransformFn<'_>>,
+        cross_file: Option<&CrossFileSession>,
+        transforms: ParseTransforms<'_>,
         mode: ParseMode,
     ) -> ParseFileReport {
+        let ParseTransforms {
+            source: source_transform,
+            pattern: mut pattern_transform,
+            utility: utility_transform,
+        } = transforms;
         let span = tracing::trace_span!(
             "file_parse",
             path = path,
@@ -421,10 +472,11 @@ impl Project {
                 let props = transform::recipe_inline::literal_variant_props(props)?;
                 transform::recipe_inline::resolve_inline_recipe_raw(self, factory, config, &props)
             };
-            pandacss_extractor::extract_with_raw_resolvers(
+            pandacss_extractor::extract_with_raw_resolvers_in_session(
                 source,
                 path,
                 &self.config.extractor_config,
+                cross_file,
                 has_pattern_transform.then_some(&mut raw_transform),
                 &mut resolve_recipe_raw,
             )
@@ -913,12 +965,12 @@ impl Project {
             self.mark_affected(path, Some(hash_source(source)), true);
             return false;
         }
+        let session = self.parse_session();
         self.parse_file_inner(
             path,
             source,
-            transforms.source,
-            transforms.pattern,
-            transforms.utility,
+            session.cross_file.as_ref(),
+            transforms,
             ParseMode::Additive,
         );
         true

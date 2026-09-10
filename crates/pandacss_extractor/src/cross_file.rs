@@ -12,8 +12,9 @@
 //! Folds top-level `export const X = <foldable>` and simple pure function
 //! exports into an owned descriptor.
 
+use std::cell::RefCell;
 use std::path::{Path, PathBuf};
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
@@ -85,13 +86,49 @@ fn default_resolve_options() -> ResolveOptions {
 
 /// Type-erased over `F: FileSystem` so `ExtractorConfig` stays non-generic.
 pub struct CrossFileResolver {
-    inner: Box<dyn CrossFileLookup>,
+    inner: Arc<dyn CrossFileLookup>,
+}
+
+/// One consistent view of imported modules across a batch of extractions.
+///
+/// The first lookup validates a module against the filesystem. Later lookups
+/// reuse that immutable analyzed export set, including when another resolver
+/// session refreshes the shared cache concurrently.
+pub struct CrossFileSession {
+    inner: Arc<dyn CrossFileLookup>,
+    files: RefCell<FxHashMap<PathBuf, Arc<CachedFileExports>>>,
+    unreadable: RefCell<FxHashSet<PathBuf>>,
+    unresolved: RefCell<FxHashMap<PathBuf, FxHashSet<String>>>,
+}
+
+/// Per-extraction recursion state over a shared analyzed-module session.
+pub(crate) struct CrossFileContext<'a> {
+    session: &'a CrossFileSession,
+    in_flight: RefCell<FxHashSet<(PathBuf, String)>>,
 }
 
 impl std::fmt::Debug for CrossFileResolver {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("CrossFileResolver")
             .field("cached_files", &self.inner.cache_len())
+            .finish_non_exhaustive()
+    }
+}
+
+impl std::fmt::Debug for CrossFileSession {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("CrossFileSession")
+            .field("analyzed_files", &self.files.borrow().len())
+            .field("unreadable_files", &self.unreadable.borrow().len())
+            .field(
+                "unresolved_imports",
+                &self
+                    .unresolved
+                    .borrow()
+                    .values()
+                    .map(FxHashSet::len)
+                    .sum::<usize>(),
+            )
             .finish_non_exhaustive()
     }
 }
@@ -120,12 +157,19 @@ impl CrossFileResolver {
         options: ResolveOptions,
     ) -> Self {
         Self {
-            inner: Box::new(ResolverImpl::new(fs, options)),
+            inner: Arc::new(ResolverImpl::new(fs, options)),
         }
     }
 
-    pub(crate) fn as_lookup(&self) -> &dyn CrossFileLookup {
-        self.inner.as_ref()
+    /// Start a consistent cross-file analysis batch.
+    #[must_use]
+    pub fn session(&self) -> CrossFileSession {
+        CrossFileSession {
+            inner: Arc::clone(&self.inner),
+            files: RefCell::default(),
+            unreadable: RefCell::default(),
+            unresolved: RefCell::default(),
+        }
     }
 
     #[must_use]
@@ -149,6 +193,94 @@ impl CrossFileResolver {
     pub fn clear_resolution_cache(&self) {
         self.inner.clear_resolution_cache();
     }
+}
+
+impl CrossFileSession {
+    fn cached_resolution(&self, path: &Path, name: &str) -> Option<CrossFileResolution> {
+        let files = self.files.borrow();
+        let cached = files.get(path)?;
+        Some(CrossFileResolution::from_cached(
+            path.to_path_buf(),
+            cached,
+            name,
+        ))
+    }
+
+    fn insert(&self, path: PathBuf, cached: Arc<CachedFileExports>) {
+        self.files.borrow_mut().insert(path, cached);
+    }
+
+    fn extend(&self, entries: impl IntoIterator<Item = (PathBuf, Arc<CachedFileExports>)>) {
+        self.files.borrow_mut().extend(entries);
+    }
+
+    fn is_unreadable(&self, path: &Path) -> bool {
+        self.unreadable.borrow().contains(path)
+    }
+
+    fn record_unreadable(&self, path: PathBuf) {
+        self.unreadable.borrow_mut().insert(path);
+    }
+
+    fn is_unresolved(&self, directory: &Path, specifier: &str) -> bool {
+        self.unresolved
+            .borrow()
+            .get(directory)
+            .is_some_and(|specifiers| specifiers.contains(specifier))
+    }
+
+    fn record_unresolved(&self, directory: &Path, specifier: &str) {
+        self.unresolved
+            .borrow_mut()
+            .entry(directory.to_path_buf())
+            .or_default()
+            .insert(specifier.to_owned());
+    }
+
+    #[must_use]
+    pub(crate) fn resolve_path(&self, from_file: &Path, specifier: &str) -> Option<PathBuf> {
+        self.inner.resolve_path(from_file, specifier)
+    }
+}
+
+impl<'a> CrossFileContext<'a> {
+    pub(crate) fn new(session: &'a CrossFileSession) -> Self {
+        Self {
+            session,
+            in_flight: RefCell::default(),
+        }
+    }
+
+    pub(crate) fn resolve_named_export(
+        &self,
+        from_file: &Path,
+        specifier: &str,
+        name: &str,
+        matchers: Option<&Matchers>,
+        tokens: Option<&TokenDictionary>,
+        prefix: &str,
+    ) -> CrossFileResolution {
+        self.session.inner.resolve_named_export(
+            self,
+            CrossFileRequest {
+                from_file,
+                specifier,
+                name,
+                matchers,
+                tokens,
+                prefix,
+            },
+        )
+    }
+}
+
+pub(crate) struct CrossFileRequest<'a> {
+    from_file: &'a Path,
+    specifier: &'a str,
+    name: &'a str,
+    matchers: Option<&'a Matchers>,
+    tokens: Option<&'a TokenDictionary>,
+    prefix: &'a str,
 }
 
 /// Folded export plus resolved path. `path` is a build dep even when the export does not fold.
@@ -200,17 +332,23 @@ impl CrossFileResolution {
         self.unresolved = unresolved;
         self
     }
+
+    fn from_cached(path: PathBuf, cached: &CachedFileExports, name: &str) -> Self {
+        Self::at_path(
+            path,
+            Some(cached.source_hash),
+            cached.exports.get(name).cloned(),
+            cached.deps.clone(),
+        )
+        .with_unresolved(cached.unresolved.clone())
+    }
 }
 
 pub(crate) trait CrossFileLookup: Send + Sync {
     fn resolve_named_export(
         &self,
-        from_file: &Path,
-        specifier: &str,
-        name: &str,
-        matchers: Option<&Matchers>,
-        tokens: Option<&TokenDictionary>,
-        prefix: &str,
+        context: &CrossFileContext<'_>,
+        request: CrossFileRequest<'_>,
     ) -> CrossFileResolution;
 
     fn resolve_path(&self, from_file: &Path, specifier: &str) -> Option<PathBuf>;
@@ -227,8 +365,7 @@ pub(crate) trait CrossFileLookup: Send + Sync {
 struct ResolverImpl<F: FileSystem + Clone> {
     inner: ResolverGeneric<F>,
     fs: F,
-    cache: Mutex<FxHashMap<PathBuf, CachedFileExports>>,
-    in_flight: Mutex<FxHashSet<(PathBuf, String)>>,
+    cache: Mutex<FxHashMap<PathBuf, Arc<CachedFileExports>>>,
 }
 
 impl<F: FileSystem + Clone> ResolverImpl<F> {
@@ -238,12 +375,11 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
             inner,
             fs,
             cache: Mutex::default(),
-            in_flight: Mutex::default(),
         }
     }
 
     fn extract_exports(
-        &self,
+        context: &CrossFileContext<'_>,
         path: &Path,
         source: &str,
         matchers: Option<&Matchers>,
@@ -263,7 +399,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
             matchers,
             tokens,
             prefix,
-            cross_file: Some(self),
+            cross_file: Some(context),
             source_path: Some(path.to_path_buf()),
             line_index: None,
             pattern_raw_transform: None,
@@ -271,7 +407,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
         });
 
         // Oxc recovers a partial AST on parse errors. Walk what we get.
-        let exports = collect_exports(&parser_return.program, path, self, &resolver, &matched);
+        let exports = collect_exports(&parser_return.program, path, context, &resolver, &matched);
         let deps = resolver
             .take_cross_file_deps()
             .into_iter()
@@ -293,6 +429,19 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
                 .map(|source| pandacss_shared::fx_hash(&source))
                 == *expected
         })
+    }
+
+    fn seed_session_dependencies(
+        &self,
+        session: &CrossFileSession,
+        deps: &[(PathBuf, Option<u64>)],
+    ) {
+        let cache = self.cache.lock().expect("cross-file cache poisoned");
+        let entries = deps.iter().filter_map(|(path, expected)| {
+            let cached = cache.get(path)?;
+            (Some(cached.source_hash) == *expected).then(|| (path.clone(), Arc::clone(cached)))
+        });
+        session.extend(entries);
     }
 
     fn unresolved_still_missing(&self, deps: &UnresolvedDependencies) -> bool {
@@ -351,20 +500,36 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
 
     fn resolve_named_export(
         &self,
-        from_file: &Path,
-        specifier: &str,
-        name: &str,
-        matchers: Option<&Matchers>,
-        tokens: Option<&TokenDictionary>,
-        prefix: &str,
+        context: &CrossFileContext<'_>,
+        request: CrossFileRequest<'_>,
     ) -> CrossFileResolution {
+        let CrossFileRequest {
+            from_file,
+            specifier,
+            name,
+            matchers,
+            tokens,
+            prefix,
+        } = request;
+        let session = context.session;
         let Some(directory) = from_file.parent() else {
             return CrossFileResolution::none();
         };
+        if session.is_unresolved(directory, specifier) {
+            return CrossFileResolution::unresolved(from_file, specifier);
+        }
         let Ok(resolution) = self.inner.resolve(directory, specifier) else {
+            session.record_unresolved(directory, specifier);
             return CrossFileResolution::unresolved(from_file, specifier);
         };
         let path = to_forward_slash(&resolution.full_path());
+
+        if let Some(resolution) = session.cached_resolution(&path, name) {
+            return resolution;
+        }
+        if session.is_unreadable(&path) {
+            return CrossFileResolution::at_path(path, None, None, Vec::new());
+        }
 
         // Read-fail drops the entry so a deleted file never serves stale exports.
         let Ok(source) = <F as oxc_resolver::FileSystem>::read_to_string(&self.fs, &path) else {
@@ -372,6 +537,7 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
                 .lock()
                 .expect("cross-file cache poisoned")
                 .remove(&path);
+            session.record_unreadable(path.clone());
             return CrossFileResolution::at_path(path, None, None, Vec::new());
         };
         let source_hash = pandacss_shared::fx_hash(&source);
@@ -379,56 +545,47 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         // Record `path` on every remaining exit. Resolved modules are deps even when they don't fold.
         let cached = {
             let guard = self.cache.lock().expect("cross-file cache poisoned");
-            guard.get(&path).and_then(|cached| {
-                if cached.source_hash != source_hash {
-                    return None;
-                }
-                Some((
-                    cached.exports.get(name).cloned(),
-                    cached.deps.clone(),
-                    cached.unresolved.clone(),
-                ))
-            })
+            guard
+                .get(&path)
+                .filter(|cached| cached.source_hash == source_hash)
+                .map(Arc::clone)
         };
-        if let Some((entry, deps, unresolved)) = cached
-            && self.provenance_fresh(&deps)
-            && self.unresolved_still_missing(&unresolved)
+        if let Some(cached) = cached
+            && self.provenance_fresh(&cached.deps)
+            && self.unresolved_still_missing(&cached.unresolved)
         {
-            return CrossFileResolution::at_path(path, Some(source_hash), entry, deps)
-                .with_unresolved(unresolved);
+            self.seed_session_dependencies(session, &cached.deps);
+            let result = CrossFileResolution::from_cached(path.clone(), &cached, name);
+            session.insert(path, cached);
+            return result;
         }
 
         // Cycle guard: `a.ts ↔ b.ts` would otherwise overflow the stack.
         let guard_key = (path.clone(), name.to_owned());
         {
-            let mut in_flight = self.in_flight.lock().expect("cross-file guard poisoned");
+            let mut in_flight = context.in_flight.borrow_mut();
             if !in_flight.insert(guard_key.clone()) {
                 return CrossFileResolution::at_path(path, Some(source_hash), None, Vec::new());
             }
         }
 
         let (exports, deps, unresolved) =
-            self.extract_exports(&path, &source, matchers, tokens, prefix);
-        self.in_flight
-            .lock()
-            .expect("cross-file guard poisoned")
-            .remove(&guard_key);
+            Self::extract_exports(context, &path, &source, matchers, tokens, prefix);
+        context.in_flight.borrow_mut().remove(&guard_key);
 
-        let entry = exports.get(name).cloned();
+        let cached = Arc::new(CachedFileExports {
+            source_hash,
+            exports,
+            deps,
+            unresolved,
+        });
+        let result = CrossFileResolution::from_cached(path.clone(), &cached, name);
         self.cache
             .lock()
             .expect("cross-file cache poisoned")
-            .insert(
-                path.clone(),
-                CachedFileExports {
-                    source_hash,
-                    exports,
-                    deps: deps.clone(),
-                    unresolved: unresolved.clone(),
-                },
-            );
-        CrossFileResolution::at_path(path, Some(source_hash), entry, deps)
-            .with_unresolved(unresolved)
+            .insert(path.clone(), Arc::clone(&cached));
+        session.insert(path, cached);
+        result
     }
 
     fn cache_len(&self) -> usize {
@@ -439,7 +596,7 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
 fn collect_exports(
     program: &Program<'_>,
     path: &Path,
-    lookup: &dyn CrossFileLookup,
+    context: &CrossFileContext<'_>,
     resolver: &Resolver<'_, '_>,
     matched: &[MatchedImport],
 ) -> FileExports {
@@ -449,7 +606,7 @@ fn collect_exports(
         let Statement::ExportNamedDeclaration(decl) = stmt else {
             continue;
         };
-        collect_from_named(decl, path, lookup, resolver, matched, &mut exports);
+        collect_from_named(decl, path, context, resolver, matched, &mut exports);
     }
 
     exports
@@ -487,7 +644,7 @@ fn exported_recipe(
 fn collect_from_named(
     decl: &ExportNamedDeclaration<'_>,
     path: &Path,
-    lookup: &dyn CrossFileLookup,
+    context: &CrossFileContext<'_>,
     resolver: &Resolver<'_, '_>,
     matched: &[MatchedImport],
     out: &mut FileExports,
@@ -510,7 +667,7 @@ fn collect_from_named(
         let exported = module_export_name(&specifier.exported);
         let local = module_export_name(&specifier.local);
         let entry = if let Some(source) = &decl.source {
-            let resolution = lookup.resolve_named_export(
+            let resolution = context.resolve_named_export(
                 path,
                 source.value.as_str(),
                 &local,

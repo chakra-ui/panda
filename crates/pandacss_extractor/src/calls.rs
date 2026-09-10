@@ -115,16 +115,20 @@ pub fn extract_calls(
         .with_options(crate::adapter::parse_options_for(format))
         .parse();
 
+    let cross_file = config
+        .cross_file
+        .as_ref()
+        .map(crate::CrossFileResolver::session);
+    let cross_file_context = cross_file
+        .as_ref()
+        .map(crate::cross_file::CrossFileContext::new);
     let resolver = crate::Resolver::build(crate::scope::ResolverBuildInput {
         program: &parser_return.program,
         matched,
         matchers: Some(&config.matchers),
         tokens: config.token_dictionary.as_deref(),
         prefix: config.class_name_prefix.as_str(),
-        cross_file: config
-            .cross_file
-            .as_ref()
-            .map(crate::CrossFileResolver::as_lookup),
+        cross_file: cross_file_context.as_ref(),
         source_path: Some(std::path::PathBuf::from(path)),
         line_index: None,
         pattern_raw_transform: None,

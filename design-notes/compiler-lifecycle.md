@@ -103,9 +103,9 @@ work; `cacheDir` is only a reserved API shape today.
 - **`compile()` must drain instance state.** `compiler.compile()` emits from exactly the `atoms()`/`recipes()` the
   instance accumulated; otherwise "compile" and "parseFile + atoms" drift into two different notions of project state.
   Keep that invariant.
-- **Batch ingestion + parallelism.** Phase 1 is single-file. A `parseFiles(iter)` seam (with `rayon`) is the natural
-  place for per-file parallelism without disturbing the single-file API (noted in
-  [project-lifecycle](./project-lifecycle.md)).
+- **Batch ingestion.** `parseFiles()` remains ordered so callbacks and per-file replacement keep their existing
+  semantics, but shares one cross-file analysis session across the batch. Parallelism requires a separate pure-analysis
+  phase and is not implied by the batch API.
 - **Static CSS ownership.** `pandacss_stylesheet` owns CSS emission and supported static CSS expansion. Per-theme JSON
   artifacts (`styled-system/themes/*`) are codegen'd in Rust for runtime `getTheme` / `injectTheme`.
 - **Incremental CSS emission.** `Project` updates its atom registry incrementally, but `compile()` still sorts and emits

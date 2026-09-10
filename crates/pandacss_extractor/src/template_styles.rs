@@ -71,6 +71,7 @@ pub(crate) fn collect_template_styles(
         path,
         matched,
         config,
+        cross_file: resolver.cross_file_context(),
         literals: literal_index.literals,
         retain_transform_facts,
     };
@@ -144,6 +145,7 @@ struct TemplateContext<'a> {
     path: &'a str,
     matched: &'a [MatchedImport],
     config: &'a ExtractorConfig,
+    cross_file: Option<&'a crate::cross_file::CrossFileContext<'a>>,
     literals: FxHashMap<(u32, u32), Literal>,
     retain_transform_facts: bool,
 }
@@ -622,11 +624,7 @@ fn parse_expression_literal(
             matchers: Some(&context.config.matchers),
             tokens: context.config.token_dictionary.as_deref(),
             prefix: context.config.class_name_prefix.as_str(),
-            cross_file: context
-                .config
-                .cross_file
-                .as_ref()
-                .map(crate::CrossFileResolver::as_lookup),
+            cross_file: context.cross_file,
             source_path: Some(std::path::PathBuf::from(context.path)),
             line_index: None,
             pattern_raw_transform: None,

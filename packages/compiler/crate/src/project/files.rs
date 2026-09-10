@@ -45,7 +45,8 @@ impl Compiler {
     )]
     pub fn parse_file_source(&mut self, env: Env, path: String, source: String) -> ParseFileReport {
         crate::init_tracing();
-        let report = self.parse_inner(&env, &path, &source);
+        let session = self.inner.parse_session();
+        let report = self.parse_inner(&env, &path, &source, &session);
         let _span =
             tracing::trace_span!(target: "css", "snapshot_parse_report", path = path.as_str())
                 .entered();
@@ -62,12 +63,13 @@ impl Compiler {
         env: &Env,
         path: &str,
         source: &str,
+        session: &pandacss_project::ParseSession,
     ) -> pandacss_project::ParseFileReport {
         let has_source_transforms = self.callbacks.has_source_transforms();
         let has_pattern_transforms = self.callbacks.has_pattern_transforms();
         let has_utility_transforms = self.callbacks.has_utility_transforms();
         if !has_source_transforms && !has_pattern_transforms && !has_utility_transforms {
-            return self.inner.parse_file(path, source);
+            return self.inner.parse_file_in_session(path, source, session);
         }
         let Compiler {
             inner, callbacks, ..
@@ -98,9 +100,10 @@ impl Compiler {
         let mut source_transform = |path: &str, source: &str| {
             apply_source_transforms(path, source, &callbacks.source_transforms, env)
         };
-        inner.parse_file_with(
+        inner.parse_file_with_in_session(
             path,
             source,
+            session,
             pandacss_project::ParseTransforms {
                 source: has_source_transforms.then_some(
                     &mut source_transform as &mut pandacss_project::SourceTransformFn<'_>,
@@ -258,10 +261,11 @@ impl Compiler {
         paths: Vec<String>,
     ) -> napi::Result<Vec<ParseFileReport>> {
         crate::init_tracing();
+        let session = self.inner.parse_session();
         let mut reports = Vec::with_capacity(paths.len());
         for path in paths {
             let report = match self.fs.read_to_string(std::path::Path::new(&path)) {
-                Ok(source) => self.parse_inner(&env, &path, &source),
+                Ok(source) => self.parse_inner(&env, &path, &source, &session),
                 Err(err) => self.inner.record_read_failure(&path, &err),
             };
             reports.push(convert_report(path, report));
