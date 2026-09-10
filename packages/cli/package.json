@@ -21,6 +21,15 @@
         "default": "./dist/index.mjs"
       }
     },
+    "./define": {
+      "source": "./src/define.ts",
+      "types": "./dist/define.d.ts",
+      "require": "./dist/define.js",
+      "import": {
+        "types": "./dist/define.d.mts",
+        "default": "./dist/define.mjs"
+      }
+    },
     "./presets": {
       "source": "./src/presets.ts",
       "types": "./dist/presets.d.ts",

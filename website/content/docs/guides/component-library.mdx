@@ -41,7 +41,7 @@ create-and-consume flow.
 **Library code**
 
 ```tsx filename="src/index.ts"
-import { definePreset } from '@pandacss/dev'
+import { definePreset } from '@pandacss/dev/define'
 
 export const acmePreset = definePreset({
   name: '@acme-org/panda-preset',
@@ -55,10 +55,20 @@ export const acmePreset = definePreset({
 })
 ```
 
-Build the preset code
+Build the preset code. Bundle the definition helper so the published preset does not require `@pandacss/dev` at runtime.
+
+```tsx filename="tsup.config.ts"
+import { defineConfig } from 'tsup'
+
+export default defineConfig({
+  entry: ['src/index.ts'],
+  format: ['esm', 'cjs'],
+  noExternal: ['@pandacss/dev/define']
+})
+```
 
 ```bash
-pnpm tsup src/index.ts
+pnpm tsup
 ```
 
 **App code**
