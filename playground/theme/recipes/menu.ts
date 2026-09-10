@@ -1,7 +1,4 @@
-import { defineParts, defineRecipe } from '@pandacss/dev'
-import { menuAnatomy } from '@ark-ui/react/menu'
-
-const parts = defineParts(menuAnatomy.build())
+import { defineSlotRecipe } from '@pandacss/dev'
 
 const itemStyle = {
   alignItems: 'center',
@@ -25,10 +22,11 @@ const itemStyle = {
   },
 } as const
 
-export const menu = defineRecipe({
+export const menu = defineSlotRecipe({
   className: 'menu',
+  slots: ['content', 'itemGroupLabel', 'itemGroup', 'item', 'triggerItem'],
   description: 'The styles for the menu component',
-  base: parts({
+  base: {
     content: {
       zIndex: '100',
       bg: { base: 'white', _dark: '#262626' },
@@ -62,5 +60,5 @@ export const menu = defineRecipe({
     },
     item: itemStyle,
     triggerItem: itemStyle,
-  }),
+  },
 })

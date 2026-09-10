@@ -94,6 +94,7 @@ export function useEditor(props: PandaEditorProps) {
 
   const monacoEditorRef = useRef<Parameters<OnMount>[0] | undefined>(undefined)
   const monacoRef = useRef<Parameters<OnMount>[1] | undefined>(undefined)
+  const [monacoReady, setMonacoReady] = useState(false)
 
   // Track the last known value for external change detection
   // We use refs to avoid re-renders - Monaco manages its own state (uncontrolled)
@@ -208,7 +209,6 @@ export function useEditor(props: PandaEditorProps) {
       monacoEditorRef.current = editor
 
       configureEditor(editor, monaco)
-      setupLibs(monaco)
 
       const typeSources = [
         {
@@ -249,8 +249,9 @@ export function jsxs(type: React.ElementType, props: unknown, key?: React.Key): 
       typeSources.map((src) => {
         monaco.languages.typescript.typescriptDefaults.addExtraLib(src.content, src.filePath)
       })
+      setMonacoReady(true)
     },
-    [configureEditor, setupLibs, getPandaTypes],
+    [configureEditor, getPandaTypes],
   )
 
   // Use ref to track current value for onChange - keeps callback stable
@@ -278,29 +279,30 @@ export function jsxs(type: React.ElementType, props: unknown, key?: React.Key): 
   const prevArtifactsRef = useRef<string>('')
   const libsDisposablesRef = useRef<ReturnType<typeof setupLibs>>([])
 
-  useUpdateEffect(() => {
-    // Create a signature of the artifact type definitions to detect actual changes
+  // Runs once both Monaco and the artifacts exist, whichever arrives last.
+  useEffect(() => {
+    const monaco = monacoRef.current
+    if (!monaco || !monacoReady) return
+
     const dtsSignature = artifacts
       .flatMap((a) => a?.files.filter((f) => f.file.endsWith('.d.ts')).map((f) => f.code) ?? [])
       .join('')
-
-    // Skip if the type definitions haven't actually changed
     if (prevArtifactsRef.current === dtsSignature) return
     prevArtifactsRef.current = dtsSignature
 
-    // Dispose previous libs before setting up new ones
     for (const lib of libsDisposablesRef.current) {
       lib?.dispose()
     }
+    libsDisposablesRef.current = setupLibs(monaco)
+  }, [artifacts, monacoReady, setupLibs])
 
-    libsDisposablesRef.current = setupLibs(monacoRef.current!)
-
+  useEffect(() => {
     return () => {
       for (const lib of libsDisposablesRef.current) {
         lib?.dispose()
       }
     }
-  }, [artifacts])
+  }, [])
 
   useUpdateEffect(() => {
     const autoImports = configureAutoImports({

@@ -9,7 +9,6 @@ export {
   defineGlobalStyles,
   defineKeyframes,
   defineLayerStyles,
-  defineParts,
   definePattern,
   definePlugin,
   definePreset,

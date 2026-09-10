@@ -1,13 +1,11 @@
-import { segmentGroupAnatomy } from '@ark-ui/react/segment-group'
-import { defineParts, defineRecipe } from '@pandacss/dev'
+import { defineSlotRecipe } from '@pandacss/dev'
 
-const parts = defineParts(segmentGroupAnatomy.build())
-
-export const segmentedRecipe = defineRecipe({
+export const segmentedRecipe = defineSlotRecipe({
   className: 'segmented',
+  slots: ['root', 'item', 'indicator', 'itemText'],
   description: 'A segmented control. Selection changes colour, never geometry.',
   jsx: ['Segmented'],
-  base: parts({
+  base: {
     root: {
       position: 'relative',
       display: 'inline-flex',
@@ -55,26 +53,26 @@ export const segmentedRecipe = defineRecipe({
       position: 'relative',
       zIndex: '1'
     }
-  }),
+  },
   variants: {
     size: {
-      sm: parts({
+      sm: {
         item: { minH: '9', px: '3', textStyle: 'sm' }
-      }),
-      md: parts({
+      },
+      md: {
         item: { minH: '10', px: '4' }
-      })
+      }
     },
     tone: {
-      neutral: parts({
+      neutral: {
         indicator: { bg: 'bg.muted' }
-      }),
-      accent: parts({
+      },
+      accent: {
         root: { rounded: 'lg' },
         indicator: { bg: 'accent.wash' },
         item: { minH: '11' }
-      }),
-      pill: parts({
+      },
+      pill: {
         root: {
           rounded: 'full',
           bg: 'bg.muted',
@@ -92,8 +90,8 @@ export const segmentedRecipe = defineRecipe({
           px: '4',
           gap: '2'
         }
-      }),
-      card: parts({
+      },
+      card: {
         root: {
           display: 'grid',
           gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
@@ -124,7 +122,7 @@ export const segmentedRecipe = defineRecipe({
             color: 'fg'
           }
         }
-      })
+      }
     }
   },
   defaultVariants: { size: 'md', tone: 'neutral' }

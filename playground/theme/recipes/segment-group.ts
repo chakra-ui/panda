@@ -1,12 +1,10 @@
-import { defineParts, defineRecipe } from '@pandacss/dev'
-import { segmentGroupAnatomy } from '@ark-ui/react/segment-group'
+import { defineSlotRecipe } from '@pandacss/dev'
 
-const parts = defineParts(segmentGroupAnatomy.build())
-
-export const segmentGroup = defineRecipe({
+export const segmentGroup = defineSlotRecipe({
   className: 'segmentGroup',
+  slots: ['root', 'indicator', 'item', 'itemText'],
   description: 'The styles for the segment group component',
-  base: parts({
+  base: {
     root: {
       display: 'flex',
       alignItems: 'center',
@@ -36,5 +34,5 @@ export const segmentGroup = defineRecipe({
         color: { base: 'gray.700', _dark: 'gray.300' },
       },
     },
-  }),
+  },
 })

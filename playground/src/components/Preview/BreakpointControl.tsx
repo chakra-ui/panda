@@ -13,6 +13,7 @@ export const BreakpointControl = ({ setResponsiveSize, breakpoints }: Breakpoint
   const onSelectBreakpoint = (value: keyof UseResponsiveView['breakpoints']) => {
     setResponsiveSize(breakpoints[value])
   }
+  const classes = menu()
 
   return (
     <Menu.Root positioning={{ placement: 'bottom-end' }} onSelect={({ value }) => onSelectBreakpoint(value)}>
@@ -33,13 +34,16 @@ export const BreakpointControl = ({ setResponsiveSize, breakpoints }: Breakpoint
           <ChevronDownIcon />
         </button>
       </Menu.Trigger>
-      <Menu.Positioner className={menu()}>
-        <Menu.Content>
+      <Menu.Positioner>
+        <Menu.Content className={classes.content}>
           {Object.keys(breakpoints).map((breakpoint) => (
             <Menu.Item
-              className={css({
-                color: 'text.complementary',
-              })}
+              className={cx(
+                classes.item,
+                css({
+                  color: 'text.complementary',
+                }),
+              )}
               key={breakpoint}
               value={breakpoint}
             >

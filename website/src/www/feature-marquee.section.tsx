@@ -14,13 +14,15 @@ const features = [
   'Variants'
 ]
 
+const classes = marquee()
+
 export const FeatureMarqueeSection = () => {
   return (
-    <Marquee.Root className={marquee()} speed={40} spacing="0.5rem" autoFill>
-      <Marquee.Viewport>
-        <Marquee.Content>
+    <Marquee.Root className={classes.root} speed={40} spacing="0.5rem" autoFill>
+      <Marquee.Viewport className={classes.viewport}>
+        <Marquee.Content className={classes.content}>
           {features.map(feature => (
-            <Marquee.Item key={feature}>
+            <Marquee.Item key={feature} className={classes.item}>
               <span>{feature}</span>
               <span aria-hidden>•</span>
             </Marquee.Item>

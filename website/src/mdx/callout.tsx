@@ -19,18 +19,11 @@ type Props = {
 
 export const Callout = (props: Props) => {
   const { children, type = 'default', emoji = TypeToEmoji[type] } = props
+  const classes = calloutRecipe({ type })
   return (
-    <div
-      data-scope="callout"
-      data-part="root"
-      className={calloutRecipe({ type })}
-    >
-      <div data-scope="callout" data-part="icon">
-        {emoji}
-      </div>
-      <div data-scope="callout" data-part="content">
-        {children}
-      </div>
+    <div className={classes.root}>
+      <div className={classes.icon}>{emoji}</div>
+      <div className={classes.content}>{children}</div>
     </div>
   )
 }

@@ -139,6 +139,31 @@ const { withContext } = createRecipeContext(button)
 `withRootProvider` is new — use it for a slot recipe's root when the root doesn't render a slot of its own. See
 [slot recipe context](/docs/recipes/slot-recipe-context).
 
+### defineParts is gone
+
+`defineParts` only renamed keys to selectors, so write the selector yourself. For a class per part, use
+`defineSlotRecipe` instead.
+
+```ts
+// ❌ v1
+const parts = defineParts(anatomy.build())
+base: parts({ control: { borderWidth: '1px' } })
+
+// ✅ v2 — the selector is the key
+base: { '& [data-part="control"]': { borderWidth: '1px' } }
+```
+
+If you'd rather keep the helper, copy it into your config:
+
+```ts
+import type { SystemStyleObject } from '@pandacss/types'
+
+const defineParts =
+  <T extends Record<string, { selector: string }>>(parts: T) =>
+  (config: Partial<Record<keyof T, SystemStyleObject>>): SystemStyleObject =>
+    Object.fromEntries(Object.entries(config).map(([key, value]) => [parts[key].selector, value]))
+```
+
 ### MCP moved to its own package
 
 The MCP server left the CLI. Run it from `@pandacss/mcp` with the `panda-mcp` binary:

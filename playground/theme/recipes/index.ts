@@ -6,6 +6,9 @@ import { toast } from './toast'
 
 export const recipes = {
   button,
+}
+
+export const slotRecipes = {
   splitter,
   segmentGroup,
   menu,

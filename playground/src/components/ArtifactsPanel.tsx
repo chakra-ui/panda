@@ -3,7 +3,7 @@ import { GeneratedCss } from '@/src/components/GeneratedCss'
 import { usePanda } from '@/src/hooks/usePanda'
 import { css, cva, cx } from '@/styled-system/css'
 import { Flex, panda } from '@/styled-system/jsx'
-import { segmentGroup } from '@/styled-system/recipes'
+import { segmentGroup, splitter } from '@/styled-system/recipes'
 import { SegmentGroup } from '@ark-ui/react/segment-group'
 import { Splitter } from '@ark-ui/react/splitter'
 import * as React from 'react'
@@ -32,12 +32,15 @@ export const ArtifactsPanel = React.memo(function ArtifactsPanel(props: Artifact
     setOpen((s) => !s)
   }
 
+  const splitterClasses = splitter()
+  const classes = segmentGroup()
+
   return (
     <>
-      <Splitter.ResizeTrigger id="editor:artifacts" asChild hidden={!open}>
+      <Splitter.ResizeTrigger id="editor:artifacts" asChild hidden={!open} className={splitterClasses.resizeTrigger}>
         <div />
       </Splitter.ResizeTrigger>
-      <Splitter.Panel id="artifacts" className={artifactsPanel({ open })}>
+      <Splitter.Panel id="artifacts" className={cx(splitterClasses.panel, artifactsPanel({ open }))}>
         <Flex
           w="full"
           h="12"
@@ -52,7 +55,7 @@ export const ArtifactsPanel = React.memo(function ArtifactsPanel(props: Artifact
         >
           <SegmentGroup.Root
             data-expanded={open ? '' : undefined}
-            className={cx(segmentGroup(), 'group')}
+            className={cx(classes.root, 'group')}
             value={activeTab}
             onClick={(e) => {
               if (open) e.stopPropagation()
@@ -60,37 +63,46 @@ export const ArtifactsPanel = React.memo(function ArtifactsPanel(props: Artifact
             onValueChange={(e) => setActiveTab(e.value as any)}
           >
             <SegmentGroup.Indicator
-              className={css({
-                background: { base: 'transparent', _groupExpanded: 'primary' },
-                width: 'var(--width)',
-                height: 'var(--height)',
-                top: 'var(--top)',
-                left: 'var(--left)',
-              })}
+              className={cx(
+                classes.indicator,
+                css({
+                  background: { base: 'transparent', _groupExpanded: 'primary' },
+                  width: 'var(--width)',
+                  height: 'var(--height)',
+                  top: 'var(--top)',
+                  left: 'var(--left)',
+                }),
+              )}
             />
             {tabs.map((option, id) => (
               <SegmentGroup.Item
                 key={id}
                 value={option.id}
                 data-expanded={open ? '' : undefined}
-                className={css({
-                  '&:not([data-expanded])': {
-                    bg: { base: 'gray.100', _dark: '#1d1e1fc4' },
-                    shadow: 'sm',
-                    rounded: 'md',
-                  },
-                })}
+                className={cx(
+                  classes.item,
+                  css({
+                    '&:not([data-expanded])': {
+                      bg: { base: 'gray.100', _dark: '#1d1e1fc4' },
+                      shadow: 'sm',
+                      rounded: 'md',
+                    },
+                  }),
+                )}
               >
                 <SegmentGroup.ItemText
-                  className={css({
-                    px: '2',
-                    _checked: {
-                      color: {
-                        base: { base: 'inherit', _hover: 'text.default' },
-                        _groupExpanded: 'black',
+                  className={cx(
+                    classes.itemText,
+                    css({
+                      px: '2',
+                      _checked: {
+                        color: {
+                          base: { base: 'inherit', _hover: 'text.default' },
+                          _groupExpanded: 'black',
+                        },
                       },
-                    },
-                  })}
+                    }),
+                  )}
                 >
                   {option.label}
                 </SegmentGroup.ItemText>

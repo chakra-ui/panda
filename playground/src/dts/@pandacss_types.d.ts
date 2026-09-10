@@ -11853,12 +11853,6 @@ export interface PrefixOptions {
 }
 export type ReqConf = Required<UserConfig>;
 export type ConfigPath = Exclude<Exclude<NonNullable<Keys<ReqConf>>, "theme"> | PathIn<ReqConf, "theme"> | PathIn<ReqConf, "patterns"> | PathIn<ReqConf, "staticCss"> | (string & {}), undefined>;
-export interface Part {
-	selector: string;
-}
-export interface Parts {
-	[key: string]: Part;
-}
 
 export {
 	CssProperties$1 as CssProperties,

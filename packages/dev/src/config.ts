@@ -7,7 +7,6 @@ import type {
   GlobalFontface,
   GlobalStyleObject,
   LayerStyles,
-  Parts,
   PatternConfig,
   PandaPlugin,
   Preset,
@@ -60,21 +59,6 @@ export function defineSlotRecipe<S extends string, T extends SlotRecipeVariantRe
   config: SlotRecipeConfig<S, T>,
 ): SlotRecipeConfig<S, T> {
   return config
-}
-
-export function defineParts<T extends Parts>(parts: T) {
-  return (config: Partial<Record<keyof T, SystemStyleObject>>): SystemStyleObject =>
-    Object.fromEntries(
-      Object.entries(config).map(([key, value]) => {
-        const part = parts[key as keyof T]
-        if (part == null) {
-          throw new Error(
-            `Part "${key}" does not exist in the anatomy. Available parts: ${Object.keys(parts).join(', ')}`,
-          )
-        }
-        return [part.selector, value]
-      }),
-    )
 }
 
 export function definePattern<T extends PatternConfig>(config: T): PatternConfig {

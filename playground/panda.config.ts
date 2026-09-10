@@ -1,5 +1,5 @@
 import { defineConfig } from '@pandacss/dev'
-import { recipes } from './theme/recipes'
+import { recipes, slotRecipes } from './theme/recipes'
 
 export default defineConfig({
   presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
@@ -58,6 +58,7 @@ export default defineConfig({
         },
       },
       recipes,
+      slotRecipes,
     },
   },
 

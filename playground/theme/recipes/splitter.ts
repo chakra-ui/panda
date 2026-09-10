@@ -1,12 +1,10 @@
-import { defineParts, defineRecipe } from '@pandacss/dev'
-import { splitterAnatomy } from '@ark-ui/react/splitter'
+import { defineSlotRecipe } from '@pandacss/dev'
 
-const parts = defineParts(splitterAnatomy.build())
-
-export const splitter = defineRecipe({
+export const splitter = defineSlotRecipe({
   className: 'splitter',
+  slots: ['root', 'panel', 'resizeTrigger'],
   description: 'The styles for the splitter component',
-  base: parts({
+  base: {
     root: {
       flex: '1',
     },
@@ -49,5 +47,5 @@ export const splitter = defineRecipe({
         },
       },
     },
-  }),
+  },
 })

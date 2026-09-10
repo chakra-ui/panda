@@ -7,6 +7,7 @@ import { Tabs as ArkTabs } from '@ark-ui/react/tabs'
 import * as React from 'react'
 
 const tabsStore = new SessionStore('docs-tabs')
+const classes = docsTabs()
 
 export const Tabs = (props: React.PropsWithChildren<{ items: string[] }>) => {
   const { items, children } = props
@@ -28,23 +29,28 @@ export const Tabs = (props: React.PropsWithChildren<{ items: string[] }>) => {
     <ArkTabs.Root
       value={value}
       onValueChange={e => tabsStore.setValue(storageKey, e.value)}
-      className={cx('docs-scrollbar', docsTabs())}
+      className={cx('docs-scrollbar', classes.root)}
     >
-      <ArkTabs.List>
+      <ArkTabs.List className={classes.list}>
         {items.map((item, index) => {
           return (
-            <ArkTabs.Trigger value={item} key={index}>
+            <ArkTabs.Trigger
+              value={item}
+              key={index}
+              className={classes.trigger}
+            >
               {item}
             </ArkTabs.Trigger>
           )
         })}
-        <ArkTabs.Indicator />
+        <ArkTabs.Indicator className={classes.indicator} />
       </ArkTabs.List>
       {React.Children.map(children, (child, index) => {
         if (!React.isValidElement<ArkTabs.TriggerProps>(child)) return child
         return React.cloneElement(child, {
           ...child.props,
-          value: items[index]
+          value: items[index],
+          className: classes.content
         })
       })}
     </ArkTabs.Root>

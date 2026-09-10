@@ -1,4 +1,3 @@
-import { codeTabs } from '@/styled-system/recipes'
 import { BrightProps, Code } from 'bright'
 import { CodeTabs, TabContent, TabsList } from './tabs'
 
@@ -20,7 +19,7 @@ function Root(brightProps: BrightProps) {
     : [title]
 
   return (
-    <CodeTabs defaultValue={titles[0]} className={codeTabs()}>
+    <CodeTabs defaultValue={titles[0]}>
       {/* @ts-expect-error Server Component */}
       <Code.Root {...brightProps} />
     </CodeTabs>

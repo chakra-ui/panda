@@ -1,58 +1,40 @@
-import { evalConfig, validateConfig, getConfigError } from '@/src/lib/config/eval-config'
+import { compile } from '@/src/lib/config/compile'
+import { getConfigError, validateConfig } from '@/src/lib/config/eval-config'
 import { getImports } from '@/src/lib/config/get-imports'
 import type { Config } from '@pandacss/types'
 import { useEffect, useRef, useState } from 'react'
-import { useDebounce, useUpdateEffect } from 'usehooks-ts'
+import { useDebounce } from 'usehooks-ts'
 
+// Resolved on the main thread: a worker boundary would JSON-serialize the config
+// and strip function-valued utility `values` / `transform` from presets.
 export const useConfig = (configStr: string) => {
   const hasPresets = getImports(configStr).length || validateConfig(configStr)?.presets?.length
 
-  const initialConfig = hasPresets ? null : validateConfig(configStr)
-  const [config, setConfig] = useState<Config | null>(initialConfig)
-
-  const initialError = hasPresets ? null : getConfigError(configStr)
-  const [error, setError] = useState<Error | null>(initialError)
+  const [config, setConfig] = useState<Config | null>(() => (hasPresets ? null : validateConfig(configStr)))
+  const [error, setError] = useState<Error | null>(() => (hasPresets ? null : getConfigError(configStr)))
 
   const [_isLoading, setIsLoading] = useState(true)
   const isLoading = useDebounce(_isLoading, 500)
 
-  const compileWorkerRef = useRef<Worker | undefined>(undefined)
+  const requestRef = useRef(0)
 
   useEffect(() => {
-    compileWorkerRef.current = new Worker(new URL('../lib/config/compile.worker.ts', import.meta.url))
-    if (hasPresets) compileWorkerRef.current?.postMessage(configStr)
-    else {
-      setIsLoading(false)
-    }
+    const request = ++requestRef.current
+    setIsLoading(true)
 
-    compileWorkerRef.current.onmessage = (event: MessageEvent<{ config: string; error: any }>) => {
-      setIsLoading(false)
-      if (event.data.error) {
-        return setError(event.data.error)
-      }
-      const newConfig = JSON.parse(event.data.config)
-      if (newConfig) setConfig(newConfig)
-      setError(null)
-    }
-
-    return () => {
-      compileWorkerRef.current?.terminate()
-    }
-  }, [])
-
-  useUpdateEffect(() => {
-    if (hasPresets) {
-      compileWorkerRef.current?.postMessage(configStr)
-      setIsLoading(true)
-    } else {
-      try {
-        const newConfig = evalConfig(configStr)
+    compile(configStr)
+      .then((newConfig) => {
+        if (request !== requestRef.current) return
         if (newConfig) setConfig(newConfig)
         setError(null)
-      } catch (error) {
+      })
+      .catch((error) => {
+        if (request !== requestRef.current) return
         setError(error as Error)
-      }
-    }
+      })
+      .finally(() => {
+        if (request === requestRef.current) setIsLoading(false)
+      })
   }, [configStr])
 
   return { config, isLoading, error }
