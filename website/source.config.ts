@@ -30,6 +30,14 @@ function remarkCodeTitle() {
 
       if (!filename) return
 
+      // Strip the filename attribute out of the code node's own meta so
+      // Shiki's meta-based transformers (word/line highlight) never scan it.
+      // A path with 2+ segments (`packages/ds/x.ts`) reads as `/ds/`, which
+      // `transformerMetaWordHighlight` parses as an explicit highlight word.
+      node.meta = (node.meta ?? '')
+        .replace(/filename=(".*?"|'.*?')/, '')
+        .trim()
+
       parent.children.splice(index, 1, {
         type: 'paragraph',
         children: [node],
