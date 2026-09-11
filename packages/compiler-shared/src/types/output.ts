@@ -201,10 +201,28 @@ export interface LayerNames {
 
 export interface SpecUtilityProperty {
   name: string
-  cssProperty?: string
-  tokenCategory?: string
+  cssProperty: string | null
+  mappedCssProperty: string | null
+  tokenCategory: string | null
   literals: string[]
+  primitive: SpecPrimitiveType | null
   alias: string
+}
+
+export type SpecPrimitiveType = 'string' | 'number' | 'boolean'
+
+export type SpecValueTypePart =
+  | { kind: 'tokenCategory'; value: string }
+  | { kind: 'cssProperty'; value: string }
+  | { kind: 'literal'; value: string }
+  | { kind: 'primitive'; value: SpecPrimitiveType }
+  | { kind: 'cssVars' }
+  | { kind: 'anyString' }
+  | { kind: 'anyNumber' }
+
+export interface SpecValueAlias {
+  name: string
+  parts: SpecValueTypePart[]
 }
 
 export interface SpecTokenCategory {
@@ -240,8 +258,103 @@ export interface SpecPattern {
   deprecated?: Deprecation
 }
 
+export type SpecConditionDefinition = string | { [key: string]: SpecConditionDefinition }
+
+export type SpecJsxSpecifier = string | { kind: 'regex'; source: string; flags: string }
+
+export interface SpecTokenValue {
+  value: string
+  condition?: string
+  originalValue?: string
+  description?: string
+  deprecated?: Deprecation
+}
+
+export interface SpecTokenDefinition {
+  path: string
+  category: string
+  cssVar: string
+  semantic: boolean
+  values: SpecTokenValue[]
+}
+
+export type SpecVariantSelection = string | number | boolean | SpecVariantSelection[]
+
+export interface SpecCompoundVariantDefinition {
+  css: unknown
+  className?: string
+  [variant: string]: unknown
+}
+
+export interface SpecRecipeDefinition {
+  name: string
+  className: string
+  description?: string
+  jsx: SpecJsxSpecifier[]
+  slots?: string[]
+  base?: unknown
+  variants: Record<string, Record<string, unknown>>
+  defaultVariants: Record<string, SpecVariantSelection>
+  compoundVariants: SpecCompoundVariantDefinition[]
+  staticCss?: unknown
+  deprecated?: Deprecation
+  metadata?: Record<string, unknown>
+}
+
+export interface SpecPatternPropertyDefinition {
+  type?: string
+  value?: unknown
+  property?: string
+  description?: string
+  metadata?: Record<string, unknown>
+}
+
+export interface SpecPatternDefinition {
+  name: string
+  jsxName: string
+  jsxElement: string
+  jsx: SpecJsxSpecifier[]
+  description?: string
+  properties: Record<string, SpecPatternPropertyDefinition>
+  defaultValues?: unknown
+  hasDynamicDefaultValues: boolean
+  hasTransform: boolean
+  strict: boolean
+  blocklist: string[]
+  deprecated?: Deprecation
+  metadata?: Record<string, unknown>
+}
+
+export interface SpecThemeDefinition {
+  name: string
+  condition: string
+  rootSelector: string
+}
+
+export interface SpecCatalog {
+  conditions: Record<string, SpecConditionDefinition>
+  tokens: Record<string, SpecTokenDefinition>
+  recipes: Record<string, SpecRecipeDefinition>
+  slotRecipes: Record<string, SpecRecipeDefinition>
+  patterns: Record<string, SpecPatternDefinition>
+  keyframes: Record<string, unknown>
+  textStyles: Record<string, unknown>
+  layerStyles: Record<string, unknown>
+  animationStyles: Record<string, unknown>
+  viewTransitions: Record<string, unknown>
+  positionTry: Record<string, unknown>
+  themes: Record<string, SpecThemeDefinition>
+}
+
 export interface Spec {
+  schemaVersion: number
+  options: {
+    strictTokens: boolean
+    strictPropertyValues: boolean
+    jsxStyleProps: 'all' | 'minimal' | 'none'
+  }
   conditions: { keys: string[]; breakpoints: string[]; containers: string[] }
+  selectors: { selectors: string[]; arbitrary: string[] }
   tokens: {
     categories: Record<string, SpecTokenCategory>
     colorPalettes: string[]
@@ -252,12 +365,15 @@ export interface Spec {
     properties: Record<string, SpecUtilityProperty>
     shorthands: Record<string, string>
     deprecated: Record<string, Deprecation>
+    aliases: Record<string, SpecValueAlias>
+    classNames: Record<string, string>
   }
   keyframes: { keys: string[] }
   patterns: Record<string, SpecPattern>
   recipes: Record<string, SpecRecipe>
   slotRecipes: Record<string, SpecSlotRecipe>
   propertyOrder: string[]
-  jsxFactory?: string
-  importMap?: ImportMapOutput
+  jsxFactory: string | null
+  importMap: ImportMapOutput | null
+  catalog: SpecCatalog
 }

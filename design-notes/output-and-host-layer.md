@@ -91,13 +91,15 @@ Three principles fall out of this:
 
 ## Introspection (`spec` + `introspect`)
 
-The engine exposes one **`compiler.spec()`** snapshot — `TypeData` (conditions, tokens incl. `deprecated`, utilities
-incl. `shorthands`/`deprecated`, patterns, recipes) plus `propertyOrder`, `jsxFactory`, `importMap`. It crosses the
-boundary once. **`introspect(spec)`** (in `@pandacss/compiler-shared`) indexes it into O(1) queries — `isValidProperty`,
-`resolveShorthand`, `getPropCategory`, `isColorProperty`, `isValidToken`/`isDeprecatedToken`/ `isColorToken`,
-`conditions`, `patterns`/`recipes`, `jsxFactory`, and `sortProps`/`compareProps` (canonical property order). The Driver
-caches it as `driver.introspect` (rebuilt on `reload`). This is the shared surface a linter, formatter, or reporter
-builds on — never a per-item engine call in a hot loop.
+The engine exposes one versioned **`compiler.spec()`** snapshot. It contains `TypeData` (conditions, tokens incl.
+`deprecated`, utilities incl. `shorthands`/`deprecated`, patterns, recipes), `propertyOrder`, `jsxFactory`, `importMap`,
+and a resolved definition `catalog`. It crosses the boundary once. [`design-system-spec.md`](./design-system-spec.md)
+owns the wire contract. **`introspect(spec)`** (in `@pandacss/compiler-shared`) indexes the compact fields into O(1)
+queries — `isValidProperty`, `resolveShorthand`, `getPropCategory`, `isColorProperty`,
+`isValidToken`/`isDeprecatedToken`/ `isColorToken`, `conditions`, `patterns`/`recipes`, `jsxFactory`, and
+`sortProps`/`compareProps` (canonical property order). The Driver caches it as `driver.introspect` (rebuilt on
+`reload`). This is the shared surface a linter, formatter, or reporter builds on — never a per-item engine call in a hot
+loop.
 
 ## The Driver interface (sketch)
 

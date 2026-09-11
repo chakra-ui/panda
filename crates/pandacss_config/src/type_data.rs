@@ -13,20 +13,158 @@ use serde_json::Value;
 use pandacss_shared::pascal_case;
 
 use crate::{
-    Deprecated, ImportMap, JsxStylePropsConfig, PatternConfig, PatternPropertyConfig, RecipeConfig,
-    UserConfig,
+    ConditionQuery, Deprecated, ImportMap, JsxSpecifier, JsxStylePropsConfig, PatternConfig,
+    PatternPropertyConfig, RecipeConfig, UserConfig, VariantSelection,
 };
+
+/// Current wire version for [`Spec`].
+pub const SPEC_SCHEMA_VERSION: u32 = 1;
 
 /// Tooling introspection snapshot: `TypeData` plus the bits it lacks
 /// (canonical property order, jsx factory, import map).
-#[derive(Debug, Clone, Default, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Spec {
+    pub schema_version: u32,
     #[serde(flatten)]
     pub types: TypeData,
     pub property_order: Vec<String>,
     pub jsx_factory: Option<String>,
     pub import_map: Option<ImportMap>,
+    pub catalog: SpecCatalog,
+}
+
+impl Default for Spec {
+    fn default() -> Self {
+        Self {
+            schema_version: SPEC_SCHEMA_VERSION,
+            types: TypeData::default(),
+            property_order: Vec::new(),
+            jsx_factory: None,
+            import_map: None,
+            catalog: SpecCatalog::default(),
+        }
+    }
+}
+
+/// Resolved design-system definitions for documentation and external tooling.
+#[derive(Debug, Clone, Default, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SpecCatalog {
+    pub conditions: BTreeMap<String, ConditionQuery>,
+    pub tokens: BTreeMap<String, SpecTokenDefinition>,
+    pub recipes: BTreeMap<String, SpecRecipeDefinition>,
+    pub slot_recipes: BTreeMap<String, SpecRecipeDefinition>,
+    pub patterns: BTreeMap<String, SpecPatternDefinition>,
+    pub keyframes: BTreeMap<String, Value>,
+    pub text_styles: BTreeMap<String, Value>,
+    pub layer_styles: BTreeMap<String, Value>,
+    pub animation_styles: BTreeMap<String, Value>,
+    pub view_transitions: BTreeMap<String, Value>,
+    pub position_try: BTreeMap<String, Value>,
+    pub themes: BTreeMap<String, SpecThemeDefinition>,
+}
+
+#[derive(Debug, Clone, Default, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SpecTokenDefinition {
+    pub path: String,
+    pub category: String,
+    pub css_var: String,
+    pub semantic: bool,
+    pub values: Vec<SpecTokenValue>,
+}
+
+#[derive(Debug, Clone, Default, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SpecTokenValue {
+    pub value: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub condition: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub original_value: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deprecated: Option<Deprecated>,
+}
+
+#[derive(Debug, Clone, Default, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SpecRecipeDefinition {
+    pub name: String,
+    pub class_name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    pub jsx: Vec<JsxSpecifier>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub slots: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub base: Option<Value>,
+    pub variants: BTreeMap<String, BTreeMap<String, Value>>,
+    pub default_variants: BTreeMap<String, VariantSelection>,
+    pub compound_variants: Vec<SpecCompoundVariantDefinition>,
+    #[serde(skip_serializing_if = "Value::is_null")]
+    pub static_css: Value,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deprecated: Option<Deprecated>,
+    #[serde(skip_serializing_if = "serde_json::Map::is_empty")]
+    pub metadata: serde_json::Map<String, Value>,
+}
+
+#[derive(Debug, Clone, Default, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SpecPatternDefinition {
+    pub name: String,
+    pub jsx_name: String,
+    pub jsx_element: String,
+    pub jsx: Vec<JsxSpecifier>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    pub properties: BTreeMap<String, SpecPatternPropertyDefinition>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub default_values: Option<Value>,
+    pub has_dynamic_default_values: bool,
+    pub has_transform: bool,
+    pub strict: bool,
+    pub blocklist: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deprecated: Option<Deprecated>,
+    #[serde(skip_serializing_if = "serde_json::Map::is_empty")]
+    pub metadata: serde_json::Map<String, Value>,
+}
+
+#[derive(Debug, Clone, Default, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SpecCompoundVariantDefinition {
+    pub css: Value,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub class_name: Option<String>,
+    #[serde(flatten)]
+    pub conditions: BTreeMap<String, VariantSelection>,
+}
+
+#[derive(Debug, Clone, Default, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SpecPatternPropertyDefinition {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub r#type: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub value: Option<Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub property: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    #[serde(skip_serializing_if = "serde_json::Map::is_empty")]
+    pub metadata: serde_json::Map<String, Value>,
+}
+
+#[derive(Debug, Clone, Default, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SpecThemeDefinition {
+    pub name: String,
+    pub condition: String,
+    pub root_selector: String,
 }
 
 /// The full derived type surface, one field per config section the `.d.ts`

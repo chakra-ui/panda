@@ -218,7 +218,7 @@ fn collect_token_category<T: TokenValueString>(
 ) {
     walk_token_group(group, &mut vec![category], &mut |path, token| {
         let token_path = TokenPath::from_segments(path);
-        let metadata = token_metadata(token, token_path.is_default);
+        let metadata = token_metadata(token, token_path.is_default, false);
         push_token(
             builder,
             context,
@@ -241,7 +241,7 @@ fn collect_semantic_category<T: TokenValueString>(
 ) {
     walk_token_group(group, &mut vec![category], &mut |path, token| {
         let token_path = TokenPath::from_segments(path);
-        let metadata = token_metadata(token, token_path.is_default);
+        let metadata = token_metadata(token, token_path.is_default, true);
 
         if let Some(condition) = forced_condition {
             visit_semantic_values(&token.value, None, &mut |nested_condition, value| {
@@ -334,9 +334,14 @@ struct TokenMetadata<'a> {
     deprecated: bool,
     deprecated_reason: Option<&'a str>,
     is_default: bool,
+    is_semantic: bool,
 }
 
-fn token_metadata<T>(token: &TokenEntry<T>, is_default: bool) -> TokenMetadata<'_> {
+fn token_metadata<T>(
+    token: &TokenEntry<T>,
+    is_default: bool,
+    is_semantic: bool,
+) -> TokenMetadata<'_> {
     let deprecated = token.deprecated.as_ref().is_some_and(|value| match value {
         Deprecated::Bool(value) => *value,
         Deprecated::Message(value) => !value.is_empty(),
@@ -350,6 +355,7 @@ fn token_metadata<T>(token: &TokenEntry<T>, is_default: bool) -> TokenMetadata<'
         deprecated,
         deprecated_reason,
         is_default,
+        is_semantic,
     }
 }
 
@@ -447,6 +453,9 @@ fn push_token(
         }
         if metadata.is_default {
             token.set_extension("isDefault", "true");
+        }
+        if metadata.is_semantic {
+            token = token.semantic();
         }
     }
 
@@ -580,6 +589,7 @@ fn add_negative_spacing_tokens(builder: &mut TokenDictionaryBuilder) {
 
         let mut negative = Token::new(path, value, "", TokenCategory::Spacing);
         negative.condition.clone_from(&token.condition);
+        negative.semantic = token.semantic;
         negative.original_value = Some(Arc::clone(&token.value));
         negative.description.clone_from(&token.description);
         negative.deprecated = token.deprecated;

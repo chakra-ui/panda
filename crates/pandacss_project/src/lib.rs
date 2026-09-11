@@ -31,6 +31,7 @@ mod parsed_file;
 mod patterns;
 mod recipes;
 mod runtime_config;
+mod spec;
 mod static_patterns;
 mod system;
 mod transform;
