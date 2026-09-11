@@ -1,5 +1,62 @@
 # @pandacss/dev
 
+## 2.0.0-beta.17
+
+### Major Changes
+
+- 1ca20ab: Remove `defineParts` and the `Parts` / `Part` types. Write the part selectors directly in your recipe, or use
+  `defineSlotRecipe` for a class per part.
+
+  If you still want the helper, it's a few lines you can keep in your own config:
+
+  ```ts
+  const defineParts =
+    <T extends Record<string, { selector: string }>>(parts: T) =>
+    (config: Partial<Record<keyof T, SystemStyleObject>>): SystemStyleObject =>
+      Object.fromEntries(Object.entries(config).map(([key, value]) => [parts[key].selector, value]))
+  ```
+
+### Minor Changes
+
+- 5b9a056: Add `firstThatWorks()` for ordered CSS value fallbacks, so one property can carry a modern value and a
+  supported one:
+
+  ```ts
+  import { css, firstThatWorks } from 'styled-system/css'
+
+  css({ color: firstThatWorks('oklch(55% 0.18 250)', '#0057b8') })
+  ```
+
+  ```css
+  .c_firstThatWorks\(oklch\(55\%_0\.18_250\)\,_\#0057b8\) {
+    color: #0057b8;
+    color: oklch(55% 0.18 250);
+  }
+  ```
+
+  Write the value you want first, as in StyleX. Members are typed by the property they sit in, so they autocomplete and
+  `strictTokens` still applies. Config recipes import `firstThatWorks` from `@pandacss/dev`, or write the
+  `firstThatWorks(a, b)` value form directly.
+
+### Patch Changes
+
+- Updated dependencies [597d2cb]
+- Updated dependencies [597d2cb]
+- Updated dependencies [5b9a056]
+- Updated dependencies [1ca20ab]
+- Updated dependencies [8d29caa]
+- Updated dependencies [323af68]
+- Updated dependencies [55cab2b]
+- Updated dependencies [bb47c38]
+- Updated dependencies [774529f]
+- Updated dependencies [e82613b]
+- Updated dependencies [597d2cb]
+  - @pandacss/cli@2.0.0-beta.17
+  - @pandacss/compiler@2.0.0-beta.17
+  - @pandacss/types@2.0.0-beta.17
+  - @pandacss/config@2.0.0-beta.17
+  - @pandacss/postcss@2.0.0-beta.17
+
 ## 2.0.0-beta.16
 
 ### Minor Changes

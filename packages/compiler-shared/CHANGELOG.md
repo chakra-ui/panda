@@ -1,5 +1,21 @@
 # @pandacss/compiler-shared
 
+## 2.0.0-beta.17
+
+### Patch Changes
+
+- 597d2cb: `panda analyze` now prints a ranked table for utilities, patterns, and keyframes, with the configured names
+  no scanned file uses, instead of a single count. Running it without `--scope` prints every section, so the `all` value
+  is gone. Shorthands count as their longhand. `--unused` prints only the configured names nobody uses, one per line,
+  for pasting into a deprecation PR or diffing between runs.
+- 597d2cb: Fix `panda analyze` listing CSS keys from a local `cva` or `sva` body as recipes, and add a flat `usages`
+  list to the JSON report so scripts can answer "who uses this token" without joining tables.
+- 323af68: Reuse parsed source paths when registering bundler watch files, avoiding a second full project scan during
+  startup. Keep tracked paths in sync when explicitly parsed files are deleted.
+- Updated dependencies [5b9a056]
+- Updated dependencies [1ca20ab]
+  - @pandacss/types@2.0.0-beta.17
+
 ## 2.0.0-beta.16
 
 ### Patch Changes
