@@ -145,7 +145,7 @@ impl TokenDictionaryBuilder {
             if token.deprecated {
                 deprecated_paths_cache.push(Arc::clone(&token.path));
             }
-            if parse_token_ref(token.original_value.as_deref()).is_some() {
+            if token.semantic {
                 semantic_categories.insert(token.category.clone());
             }
         }
@@ -233,7 +233,7 @@ fn build_suggestion_index(
             .or_default()
             .push(TokenSuggestion {
                 token: rel.to_owned(),
-                semantic: parse_token_ref(token.original_value.as_deref()).is_some(),
+                semantic: token.semantic,
                 conditional: by_path_condition.contains_key(&token.path),
             });
     }

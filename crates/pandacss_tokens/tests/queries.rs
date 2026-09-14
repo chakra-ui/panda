@@ -511,6 +511,27 @@ fn serde_roundtrip_rebuilds_indexes() {
 }
 
 #[test]
+fn serde_roundtrip_preserves_literal_semantic_identity() {
+    let original = TokenDictionary::builder()
+        .insert(
+            t(
+                "colors.accent",
+                "#ff00aa",
+                "var(--colors-accent)",
+                TokenCategory::Colors,
+            )
+            .semantic(),
+        )
+        .build();
+
+    let wire = serde_json::to_string(&original).expect("serialize");
+    let restored: TokenDictionary = serde_json::from_str(&wire).expect("deserialize");
+
+    assert!(restored.is_semantic_token("colors.accent"));
+    assert!(restored.has_semantic_tokens(&TokenCategory::Colors));
+}
+
+#[test]
 fn builder_push_supports_imperative_construction() {
     // Mirror what a JS bridge or a loop-built dictionary looks like:
     // hold a `&mut builder` and `push` tokens without taking ownership

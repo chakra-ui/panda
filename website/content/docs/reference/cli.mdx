@@ -21,6 +21,7 @@ The commands are:
 | `panda doctor`    | Validate your setup and print a project summary                        |
 | `panda debug`     | Dump resolved config and per-file extraction for bug reports           |
 | `panda lib`       | Publish a design system other apps can consume                        |
+| `panda spec`      | Write a versioned design-system catalog                               |
 | `panda buildinfo` | Write a portable `panda.buildinfo.json` only                          |
 
 ## Shared flags
@@ -385,9 +386,40 @@ pnpm panda lib --panda '^2.0.0'
 | `--outdir, -o <dir>` | Output directory for the artifacts (default `dist`)                                        | -       |
 | `--panda <range>` | Peer Panda version range to stamp (defaults to your `@pandacss/dev` peer, or the running major) | -       |
 | `--files <globs>` | Re-extract fallback globs for consumers, relative to the output dir (repeat or comma-separate) | -       |
-| `--minify, -m`    | Minify the generated build-info JSON                                                           | -       |
+| `--minify, -m`    | Minify the generated build-info and spec JSON                                                  | -       |
+
+`panda lib` also writes `panda/spec.json`, a versioned catalog of the resolved design system. The package manifest links
+to it through its `spec` field.
 
 `panda lib` also accepts the [shared flags](#shared-flags), `--include`, and `--watch` / `--watch-debounce`.
+
+---
+
+## spec
+
+Write a versioned JSON description of the resolved design system. The output includes tokens and their conditional
+values, conditions, recipes, slot recipes, patterns, keyframes, composition styles, and themes. Use it as the stable
+input for documentation or other design-system tooling.
+
+```bash
+pnpm panda spec
+
+# Write dist/catalog/spec.json
+pnpm panda spec --outdir ./dist/catalog
+
+# Remove JSON formatting
+pnpm panda spec --minify
+```
+
+| Flag                 | Description                                            | Related |
+| -------------------- | ------------------------------------------------------ | ------- |
+| `--outdir, -o <dir>` | Output directory (default `<configured outdir>/specs`) | -       |
+| `--minify, -m`       | Minify the generated JSON                              | -       |
+
+Read `schemaVersion` before consuming the file. External adapters can map the catalog to another format without changing
+Panda's config or compiler.
+
+`panda spec` also accepts the [shared flags](#shared-flags).
 
 ---
 

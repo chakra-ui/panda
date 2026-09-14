@@ -174,6 +174,10 @@ export interface DesignSystemManifestInput {
   panda: string
   preset: string
   buildInfo: string
+  /**
+   * Versioned semantic spec for documentation and external tooling.
+   */
+  spec?: string
   importMap?: DesignSystemManifestImportMap
   /**
    * Parent design-system link. Absent at a root.

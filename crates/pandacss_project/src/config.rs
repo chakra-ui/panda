@@ -228,13 +228,7 @@ fn pattern_definitions_from_config(
     patterns
         .iter()
         .map(|(name, config)| {
-            let mut jsx_names = vec![
-                config
-                    .jsx_name
-                    .clone()
-                    .unwrap_or_else(|| capitalize(name).into_owned()),
-            ];
-            collect_jsx_strings(&config.jsx, &mut jsx_names);
+            let jsx_names = pattern_jsx_names(name, config);
             Ok(PatternDefinition {
                 name: name.clone(),
                 jsx_names,
@@ -736,7 +730,18 @@ fn variant_selection_to_literal(value: &VariantSelection) -> Literal {
     }
 }
 
-fn recipe_jsx_names(name: &str, recipe: &RecipeConfig) -> Vec<String> {
+pub(super) fn pattern_jsx_names(name: &str, pattern: &PatternConfig) -> Vec<String> {
+    let mut names = vec![
+        pattern
+            .jsx_name
+            .clone()
+            .unwrap_or_else(|| capitalize(name).into_owned()),
+    ];
+    collect_jsx_strings(&pattern.jsx, &mut names);
+    names
+}
+
+pub(super) fn recipe_jsx_names(name: &str, recipe: &RecipeConfig) -> Vec<String> {
     let names: Vec<_> = recipe
         .jsx
         .iter()
@@ -750,7 +755,7 @@ fn recipe_jsx_names(name: &str, recipe: &RecipeConfig) -> Vec<String> {
     }
 }
 
-fn slot_recipe_jsx_names(name: &str, recipe: &RecipeConfig) -> Vec<String> {
+pub(super) fn slot_recipe_jsx_names(name: &str, recipe: &RecipeConfig) -> Vec<String> {
     let capitalized = capitalize(name);
     let mut names = recipe_jsx_names(name, recipe);
     for slot in &recipe.slots {

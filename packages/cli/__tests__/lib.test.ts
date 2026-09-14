@@ -54,6 +54,7 @@ describe('lib command', () => {
         "panda": "^2.0.0",
         "preset": "./preset.mjs",
         "schemaVersion": 1,
+        "spec": "./spec.json",
         "version": "1.2.3",
       }
     `)
@@ -61,6 +62,7 @@ describe('lib command', () => {
     const buildInfo = JSON.parse(readFileSync(join(dir, 'dist', 'panda', 'buildinfo.json'), 'utf8'))
     expect(Object.keys(buildInfo.modules).length).toBeGreaterThan(0)
     expect(readFileSync(join(dir, 'dist', 'panda', 'preset.mjs'), 'utf8')).toMatch(/as default|export default/)
+    expect(JSON.parse(readFileSync(join(dir, 'dist', 'panda', 'spec.json'), 'utf8')).schemaVersion).toBe(1)
 
     const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
     expect(pkg.exports).toMatchInlineSnapshot(`
@@ -198,6 +200,7 @@ describe('lib command', () => {
     expect(existsSync(join(dir, 'dist', 'panda', 'lib.json'))).toBe(false)
     expect(existsSync(join(dir, 'dist', 'panda', 'buildinfo.json'))).toBe(false)
     expect(existsSync(join(dir, 'dist', 'panda', 'preset.mjs'))).toBe(false)
+    expect(existsSync(join(dir, 'dist', 'panda', 'spec.json'))).toBe(false)
 
     const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
     expect(pkg.exports).toBeUndefined()

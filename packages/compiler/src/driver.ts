@@ -67,6 +67,7 @@ export interface WriteDesignSystemLibResult {
   manifestPath: string
   buildInfoPath: string
   presetPath: string
+  specPath: string
   exportsChanged: boolean
   parsedFileCount: number
   diagnostics: Diagnostic[]
@@ -496,6 +497,7 @@ export class NodeDriver extends BaseDriver {
     const manifestPath = this.compiler.path.join([pandaDir, 'lib.json'])
     const buildInfoPath = this.compiler.path.join([pandaDir, 'buildinfo.json'])
     const presetPath = this.compiler.path.join([pandaDir, 'preset.mjs'])
+    const specPath = this.compiler.path.join([pandaDir, 'spec.json'])
 
     const info = this.compiler.buildInfo.create({ panda: pandaRange })
     const buildInfo = this.compiler.buildInfo.normalize(info, {
@@ -519,6 +521,7 @@ export class NodeDriver extends BaseDriver {
       panda: pandaRange,
       preset: './preset.mjs',
       buildInfo: './buildinfo.json',
+      spec: './spec.json',
       importMap: defaultImportMap(identity.name),
       designSystem: typeof this.config.designSystem === 'string' ? this.config.designSystem : undefined,
       files: libFiles,
@@ -546,6 +549,11 @@ export class NodeDriver extends BaseDriver {
               code: preset.code,
               dependencies: [],
             },
+            {
+              path: 'panda/spec.json',
+              code: `${JSON.stringify(this.compiler.spec(), null, options.minify ? 0 : 2)}\n`,
+              dependencies: [],
+            },
           ],
         },
       ],
@@ -560,6 +568,7 @@ export class NodeDriver extends BaseDriver {
       manifestPath,
       buildInfoPath,
       presetPath,
+      specPath,
       exportsChanged,
       parsedFileCount: parsed.parsedFileCount,
       diagnostics: [...parsed.diagnostics, ...filesDiagnostics, ...exportConflictDiagnostics(identity.name, conflicts)],
@@ -650,6 +659,7 @@ function skippedDesignSystemLib(parsed: ParsedDesignSystemLib): WriteDesignSyste
     manifestPath: '',
     buildInfoPath: '',
     presetPath: '',
+    specPath: '',
     exportsChanged: false,
     parsedFileCount: parsed.parsedFileCount,
     diagnostics: parsed.diagnostics,

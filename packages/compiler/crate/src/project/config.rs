@@ -61,16 +61,11 @@ impl Compiler {
     /// Returns an error if the snapshot fails to serialize.
     #[napi]
     pub fn spec(&self) -> napi::Result<serde_json::Value> {
-        let types = self.inner.type_data(&self.user_config);
-        let property_order = pandacss_stylesheet::order_properties(
-            types.utilities.properties.keys().map(String::as_str),
-        );
-        let spec = pandacss_config::Spec {
-            types,
-            property_order,
-            jsx_factory: Some(self.user_config.jsx_factory().to_owned()),
-            import_map: self.user_config.import_map.clone(),
-        };
+        let spec = self.inner.spec(&self.user_config, |types| {
+            pandacss_stylesheet::order_properties(
+                types.utilities.properties.keys().map(String::as_str),
+            )
+        });
         serde_json::to_value(&spec).map_err(|err| napi::Error::from_reason(err.to_string()))
     }
 

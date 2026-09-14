@@ -2,7 +2,24 @@ import { describe, expect, it } from 'vitest'
 import { type Spec, introspect } from '../src'
 
 const spec: Spec = {
+  schemaVersion: 1,
+  options: { strictTokens: false, strictPropertyValues: false, jsxStyleProps: 'all' },
+  catalog: {
+    conditions: {},
+    tokens: {},
+    recipes: {},
+    slotRecipes: {},
+    patterns: {},
+    keyframes: {},
+    textStyles: {},
+    layerStyles: {},
+    animationStyles: {},
+    viewTransitions: {},
+    positionTry: {},
+    themes: {},
+  },
   conditions: { keys: ['base', '_hover', 'md'], breakpoints: ['md'], containers: [] },
+  selectors: { selectors: [], arbitrary: [] },
   tokens: {
     categories: { colors: { name: 'colors', typeName: 'ColorToken', values: ['red.500'] } },
     colorPalettes: ['red'],
@@ -11,11 +28,29 @@ const spec: Spec = {
   },
   utilities: {
     properties: {
-      color: { name: 'color', cssProperty: 'color', tokenCategory: 'colors', literals: [], alias: 'color' },
-      padding: { name: 'padding', cssProperty: 'padding', tokenCategory: 'spacing', literals: [], alias: 'padding' },
+      color: {
+        name: 'color',
+        cssProperty: 'color',
+        mappedCssProperty: null,
+        tokenCategory: 'colors',
+        literals: [],
+        primitive: null,
+        alias: 'color',
+      },
+      padding: {
+        name: 'padding',
+        cssProperty: 'padding',
+        mappedCssProperty: null,
+        tokenCategory: 'spacing',
+        literals: [],
+        primitive: null,
+        alias: 'padding',
+      },
     },
     shorthands: { p: 'padding' },
     deprecated: {},
+    aliases: {},
+    classNames: {},
   },
   keyframes: { keys: [] },
   patterns: {
@@ -26,6 +61,7 @@ const spec: Spec = {
   slotRecipes: { menu: { name: 'menu', typeName: 'Menu', slots: [], variants: {} } },
   propertyOrder: ['padding', 'color'],
   jsxFactory: 'styled',
+  importMap: null,
 }
 
 describe('introspect', () => {

@@ -26,16 +26,11 @@ impl WasmCompiler {
     /// # Errors
     /// Returns a JS error if the snapshot fails to serialize.
     pub fn spec(&self) -> Result<JsValue, JsValue> {
-        let types = self.inner.type_data(&self.user_config);
-        let property_order = pandacss_stylesheet::order_properties(
-            types.utilities.properties.keys().map(String::as_str),
-        );
-        let spec = pandacss_config::Spec {
-            types,
-            property_order,
-            jsx_factory: Some(self.user_config.jsx_factory().to_owned()),
-            import_map: self.user_config.import_map.clone(),
-        };
+        let spec = self.inner.spec(&self.user_config, |types| {
+            pandacss_stylesheet::order_properties(
+                types.utilities.properties.keys().map(String::as_str),
+            )
+        });
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         spec.serialize(&serializer)
             .map_err(|err| JsValue::from_str(&err.to_string()))

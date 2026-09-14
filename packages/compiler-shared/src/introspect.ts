@@ -48,7 +48,8 @@ export function introspect(spec: Spec): Introspection {
   const propRank = new Map(spec.propertyOrder.map((prop, index) => [prop, index]))
 
   const resolveShorthand = (prop: string) => shorthands[prop] ?? prop
-  const getPropCategory = (prop: string) => spec.utilities.properties[resolveShorthand(prop)]?.tokenCategory
+  const getPropCategory = (prop: string) =>
+    spec.utilities.properties[resolveShorthand(prop)]?.tokenCategory ?? undefined
   const category = (path: string) => path.slice(0, path.indexOf('.'))
 
   // Properties rank in emit order; unknown props sort after known ones; condition
@@ -74,7 +75,7 @@ export function introspect(spec: Spec): Introspection {
     isCondition: (key) => conditionRank.has(key),
     patterns: () => Object.keys(spec.patterns),
     recipes: () => [...Object.keys(spec.recipes), ...Object.keys(spec.slotRecipes)],
-    jsxFactory: () => spec.jsxFactory,
+    jsxFactory: () => spec.jsxFactory ?? undefined,
     compareProps: (a, b) => rankOf(a) - rankOf(b) || (a < b ? -1 : a > b ? 1 : 0),
     sortProps: (keys) => [...keys].sort((a, b) => rankOf(a) - rankOf(b) || (a < b ? -1 : a > b ? 1 : 0)),
   }

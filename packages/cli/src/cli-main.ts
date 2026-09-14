@@ -32,6 +32,7 @@ export async function main(argv = process.argv): Promise<void> {
         debug: () => import('./commands/debug').then((m) => m.debugCommand),
         buildinfo: () => import('./commands/buildinfo').then((m) => m.buildinfoCommand),
         lib: () => import('./commands/lib').then((m) => m.libCommand),
+        spec: () => import('./commands/spec').then((m) => m.specCommand),
         analyze: () => import('./commands/analyze').then((m) => m.analyzeCommand),
         codegen: () => import('./commands/codegen').then((m) => m.codegenCommand),
         cssgen: () => import('./commands/cssgen').then((m) => m.cssgenCommand),

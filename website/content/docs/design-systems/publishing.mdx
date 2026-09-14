@@ -29,8 +29,8 @@ pnpm --filter @acme/ds publish
 }
 ```
 
-`dist/panda/` has to ship. That is `lib.json`, `preset.mjs`, and `buildinfo.json`. `styled-system` has to ship if
-your `exports` point at it (the default after `panda lib`).
+`dist/panda/` has to ship. That is `lib.json`, `preset.mjs`, `buildinfo.json`, and `spec.json`. `styled-system` also has
+to ship if your `exports` point at it (the default after `panda lib`).
 
 `"files": ["dist"]` alone is not enough when codegen writes `styled-system/` at the package root. Either add
 `styled-system` to `files`, or set `outdir` under `dist`.
@@ -99,6 +99,7 @@ Confirm you see:
 dist/panda/lib.json
 dist/panda/preset.mjs
 dist/panda/buildinfo.json
+dist/panda/spec.json
 ```
 
 and the `styled-system` files your `exports` point at. Confirm you do not see `.env` or a stray `src/` you meant

@@ -17,6 +17,9 @@ describe('compiler.spec()', () => {
       color: spec.utilities.properties.color,
       conditions: spec.conditions.keys,
       tokenValues: spec.tokens.values,
+      schemaVersion: spec.schemaVersion,
+      catalogCondition: spec.catalog.conditions._hover,
+      catalogToken: spec.catalog.tokens['colors.red'],
       hasPropertyOrder: spec.propertyOrder.length > 0,
     }).toMatchInlineSnapshot(`
       {
@@ -36,6 +39,19 @@ describe('compiler.spec()', () => {
         "tokenValues": {
           "colors.colorPalette": "",
           "colors.red": "#f00",
+        },
+        "schemaVersion": 1,
+        "catalogCondition": "&:hover",
+        "catalogToken": {
+          "path": "colors.red",
+          "category": "colors",
+          "cssVar": "var(--colors-red)",
+          "semantic": false,
+          "values": [
+            {
+              "value": "#f00",
+            },
+          ],
         },
         "hasPropertyOrder": true,
       }

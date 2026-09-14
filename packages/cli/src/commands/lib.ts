@@ -34,7 +34,7 @@ export const libCommand = defineCommand({
       description:
         'Re-extract fallback globs for consumers, relative to the output dir (comma-separated, or repeat the flag)',
     },
-    minify: { type: 'boolean', description: 'Minify the generated build info JSON', alias: 'm' },
+    minify: { type: 'boolean', description: 'Minify the generated build info and spec JSON', alias: 'm' },
     ...outputArgs(),
     ...traceArgs(),
   }),
@@ -73,6 +73,7 @@ export async function runLib(flags: LibFlags = {}, output: OutputSink = consoleO
           manifestPath: generated.manifestPath,
           buildInfoPath: generated.buildInfoPath,
           presetPath: generated.presetPath,
+          specPath: generated.specPath,
           exportsChanged: generated.exportsChanged,
         },
         diagnostics: generated.diagnostics,
@@ -106,6 +107,7 @@ export async function runLib(flags: LibFlags = {}, output: OutputSink = consoleO
         manifestPath: generated.manifestPath,
         buildInfoPath: generated.buildInfoPath,
         presetPath: generated.presetPath,
+        specPath: generated.specPath,
         exportsChanged: generated.exportsChanged,
         diagnostics: generated.diagnostics,
       })

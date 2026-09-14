@@ -380,6 +380,10 @@ function validateManifest(spec: string, manifestPath: string, value: unknown): D
     issues.push('has a "designSystem" entry that must be a non-empty string')
   }
 
+  if (value.spec !== undefined && !isNonEmptyString(value.spec)) {
+    issues.push('has a "spec" entry that must be a non-empty string')
+  }
+
   if (
     value.files !== undefined &&
     (!Array.isArray(value.files) || !value.files.every((file) => isNonEmptyString(file)))

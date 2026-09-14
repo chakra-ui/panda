@@ -9,6 +9,7 @@ import type {
   FileInspectionResult,
   LayerCssOptions,
   SourceFileInput,
+  Spec,
   SplitCssOptions,
   WriteArtifactsOptions,
   WriteCssOptions,
@@ -167,16 +168,35 @@ class FallbackCompiler implements Compiler {
   stripLayerOrderStatements(css: string) {
     return css
   }
-  spec() {
+  spec(): Spec {
     return {
+      schemaVersion: -1,
+      options: { strictTokens: false, strictPropertyValues: false, jsxStyleProps: 'all' },
       conditions: { keys: [], breakpoints: [], containers: [] },
+      selectors: { selectors: [], arbitrary: [] },
       tokens: { categories: {}, colorPalettes: [], values: {}, deprecated: {} },
-      utilities: { properties: {}, shorthands: {}, deprecated: {} },
+      utilities: { properties: {}, shorthands: {}, deprecated: {}, aliases: {}, classNames: {} },
       keyframes: { keys: [] },
       patterns: {},
       recipes: {},
       slotRecipes: {},
       propertyOrder: [],
+      jsxFactory: null,
+      importMap: null,
+      catalog: {
+        conditions: {},
+        tokens: {},
+        recipes: {},
+        slotRecipes: {},
+        patterns: {},
+        keyframes: {},
+        textStyles: {},
+        layerStyles: {},
+        animationStyles: {},
+        viewTransitions: {},
+        positionTry: {},
+        themes: {},
+      },
     }
   }
   sources() {

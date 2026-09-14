@@ -5,6 +5,7 @@ export { runDebug } from './commands/debug'
 export { runDoctor } from './commands/doctor'
 export { runBuildinfo } from './commands/buildinfo'
 export { runLib } from './commands/lib'
+export { runSpec } from './commands/spec'
 export { runAnalyze } from './commands/analyze'
 export { projectSummary, type ProjectSummary } from './project-summary'
 export { runInit, setupGitIgnore } from './commands/init'
@@ -29,5 +30,7 @@ export type {
   InitResult,
   LibFlags,
   LibResult,
+  SpecFlags,
+  SpecResult,
   LogLevel,
 } from './schema'
