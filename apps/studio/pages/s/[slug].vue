@@ -7,7 +7,7 @@ import { saveTokens, saveTokenCss } from "~/utils/idb";
 const route = useRoute();
 const slug = String(route.params.slug);
 
-useHead({ title: "Shared system — Panda Spec Studio", meta: [{ name: "robots", content: "noindex" }] });
+useHead({ title: "Shared system — Panda Studio", meta: [{ name: "robots", content: "noindex" }] });
 
 const STYLE_ID = "panda-spec-token-vars";
 const resolveVars = ref(false);

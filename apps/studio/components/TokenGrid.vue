@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { Clipboard } from "@ark-ui/vue";
+import { Clipboard } from "@ark-ui/vue/clipboard";
 import * as s from "./TokenGrid.styles";
 import { tokenCell } from "styled-system/recipes";
 import { rendererFor, toNumber, type Category, type Token } from "~/utils/tokens";

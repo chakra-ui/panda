@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
-import { Toast, Toaster } from "@ark-ui/vue";
+import { Toast, Toaster } from "@ark-ui/vue/toast";
 import * as s from "./app.styles";
 import { useTheme } from "~/composables/useTheme";
 import { toaster } from "~/utils/toaster";
@@ -14,7 +14,7 @@ onMounted(sync);
     <header :class="s.header">
       <NuxtLink to="/" :class="s.brand">
         <span :class="s.brandBadge"><img src="/panda.svg" alt="" :class="s.brandLogo" /></span>
-        <span :class="s.brandName">Spec Studio</span>
+        <span :class="s.brandName">Studio</span>
       </NuxtLink>
       <div :class="s.headerRight">
         <a href="https://panda-css.com" target="_blank" rel="noopener" :class="s.headerLink"

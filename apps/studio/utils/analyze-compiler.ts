@@ -4,11 +4,7 @@ import { createConfigSnapshot } from "@pandacss/config/serialize";
 import { createUsageReport, type UsageReport } from "@pandacss/compiler-shared";
 import presetBase from "@pandacss/preset-base";
 import presetPanda from "@pandacss/preset-panda";
-
-export interface Source {
-  name: string;
-  text: string;
-}
+import type { Source } from "./analyze";
 
 const PRESETS: Record<string, unknown> = {
   "@pandacss/preset-base": presetBase,

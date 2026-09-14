@@ -1,4 +1,4 @@
-# @pandacss/spec-studio
+# studio
 
 ## 2.0.0-beta.17
 

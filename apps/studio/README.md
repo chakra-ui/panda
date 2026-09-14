@@ -1,8 +1,8 @@
-# Panda Spec Studio
+# Panda Studio
 
 Bring your Panda CSS design system and instantly **see** it — colors, spacing, type, radii, shadows — rendered straight from the JSON Panda emits. No install, no server, no account. Drop a file or paste JSON; it renders.
 
-![Colors rendered in Panda Spec Studio](docs/colors-light.png)
+![Colors rendered in Panda Studio](docs/colors-light.png)
 
 ## Get your `tokens.json`
 
@@ -16,16 +16,40 @@ Drop that file (or your whole `styled-system/` folder) onto the app — or paste
 
 ## Develop
 
-This app lives in the Panda monorepo and uses the workspace `@pandacss/*` packages. From the repo root:
+This app lives in the Panda monorepo but pins the **published** `@pandacss/*` betas rather than the workspace
+sources — `@pandacss/compiler-wasm` and `@pandacss/dev` need a Rust toolchain to build from source, which deploy
+builders don't have. From the repo root:
 
 ```bash
 pnpm install
-pnpm --filter @pandacss/spec-studio dev      # Nuxt dev server
-pnpm --filter @pandacss/spec-studio build     # nuxt prepare + panda codegen + nuxt build
-pnpm --filter @pandacss/spec-studio generate  # panda codegen + nuxt generate → static site
+pnpm --filter studio dev       # Nuxt dev server
+pnpm --filter studio build     # prisma generate + panda codegen + nuxt build
+pnpm --filter studio generate  # panda codegen + nuxt generate → static site
 ```
 
-`generate` produces a fully static site in `.output/public`, deployable to Vercel / Netlify / any static host.
+## Deploy
+
+Deployed to Vercel as **panda-studio-v2** off the `v2` branch, with root directory `apps/studio` and build command
+`cd ../../ && pnpm --filter studio build`. Pushing to `v2` deploys automatically; to deploy by hand:
+
+```bash
+pnpm --filter studio run deploy          # production
+pnpm --filter studio run deploy:preview  # preview URL
+```
+
+Note the `run` — `pnpm deploy` on its own is a pnpm builtin and will not reach this script. Both upload from the repo
+root (the build command needs the workspace) and pin the project by id, so the repo-root `.vercel` link — which points
+at the docs project — can't be picked up by accident. Needs the Vercel CLI on your PATH and `vercel login`.
+
+Sharing a spec (`/s/:slug`) writes to Postgres through Prisma, so the app needs the Node server — `build`, not
+`generate`. `generate` still produces a static `.output/public` if you only want the viewer without sharing.
+
+Environment variables:
+
+- `DATABASE_URL` — Postgres connection string. Shared with the playground's database, so it **must** carry a
+  distinct `?schema=` qualifier; `prisma db push` diffs the whole schema and would otherwise drop the playground's
+  tables.
+- `NUXT_PUBLIC_SITE_URL` — public origin, used for canonical and OG URLs. Relative URLs are emitted without it.
 
 ## What it does
 

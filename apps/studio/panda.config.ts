@@ -301,9 +301,9 @@ export default defineConfig({
       },
       tokens: {
         fonts: {
-          display: { value: "'Space Grotesk', system-ui, -apple-system, sans-serif" },
-          body: { value: "'Inter', system-ui, -apple-system, sans-serif" },
-          mono: { value: "'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace" },
+          display: { value: "'Onest', system-ui, -apple-system, sans-serif" },
+          body: { value: "'Onest', system-ui, -apple-system, sans-serif" },
+          mono: { value: "'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace" },
         },
         shadows: {
           card: { value: "0 1px 2px rgba(10,10,10,0.04), 0 1px 1px rgba(10,10,10,0.03)" },

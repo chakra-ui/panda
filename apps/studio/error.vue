@@ -19,7 +19,7 @@ const headline = computed(() =>
 );
 const detail = computed(() => (isNotFound ? path.value : props.error?.message || ""));
 
-useHead({ title: `${code} · Panda Spec Studio` });
+useHead({ title: `${code} · Panda Studio` });
 
 function goHome() {
   clearError({ redirect: "/" });
@@ -32,7 +32,7 @@ function goHome() {
     <div :class="s.content">
       <NuxtLink to="/" :class="[app.brand, s.brand]">
         <span :class="app.brandBadge"><img src="/panda.svg" alt="" :class="app.brandLogo" /></span>
-        <span :class="app.brandName">Spec Studio</span>
+        <span :class="app.brandName">Studio</span>
       </NuxtLink>
       <p :class="s.code">{{ code }}</p>
       <p :class="s.message">{{ headline }}</p>

@@ -124,7 +124,7 @@ export function useAnalyze() {
           .replace(/\s+/g, " ")
           .trim()
           .slice(0, 180);
-        console.error("[spec-studio] precise analyze failed:", e);
+        console.error("[studio] precise analyze failed:", e);
       }
     }
     mode.value = "heuristic";

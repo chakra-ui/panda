@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { Tabs, Field } from "@ark-ui/vue";
+import { Tabs } from "@ark-ui/vue/tabs";
+import { Field } from "@ark-ui/vue/field";
 import * as s from "./TokenView.styles";
 import { button, control, segment } from "styled-system/recipes";
 import type { TokensFile } from "~/utils/tokens";

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { Select, createListCollection } from "@ark-ui/vue";
+import { Select, createListCollection } from "@ark-ui/vue/select";
 import { select } from "styled-system/recipes";
 
 const props = defineProps<{ categories: string[]; category: string }>();

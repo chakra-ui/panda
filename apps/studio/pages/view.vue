@@ -8,7 +8,7 @@ import { droppedFiles } from "~/utils/dropped";
 import { useAnalyze } from "~/composables/useAnalyze";
 
 useHead({
-  title: "Your system — Panda Spec Studio",
+  title: "Your system — Panda Studio",
   meta: [{ name: "robots", content: "noindex" }],
 });
 

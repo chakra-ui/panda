@@ -1,0 +1,39 @@
+{
+  "name": "studio",
+  "version": "2.0.0-beta.17",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "prisma generate && nuxt prepare && panda codegen --silent && nuxt dev",
+    "build": "prisma generate && nuxt prepare && panda codegen --silent && nuxt build",
+    "deploy": "cd ../.. && VERCEL_ORG_ID=team_KrM4oUpO36KPkA0WWixqURnU VERCEL_PROJECT_ID=prj_sWWEEge4Xs6r7kw6tSroQ8f5pGWb vercel deploy --prod --scope chakra-ui --yes",
+    "deploy:preview": "cd ../.. && VERCEL_ORG_ID=team_KrM4oUpO36KPkA0WWixqURnU VERCEL_PROJECT_ID=prj_sWWEEge4Xs6r7kw6tSroQ8f5pGWb vercel deploy --scope chakra-ui --yes",
+    "generate": "panda codegen --silent && nuxt generate",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@ark-ui/vue": "^5.0.0",
+    "@prisma/client": "5.9.1",
+    "nanoid": "5.1.16",
+    "@pandacss/compiler-shared": "2.0.0-beta.16",
+    "@pandacss/compiler-wasm": "2.0.0-beta.16",
+    "@pandacss/config": "2.0.0-beta.16",
+    "@pandacss/preset-base": "2.0.0-beta.16",
+    "@pandacss/preset-panda": "2.0.0-beta.16",
+    "nuxt": "^3.13.0",
+    "sucrase": "^3.35.1",
+    "vue": "^3.5.0",
+    "vue-data-ui": "^3.25.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@pandacss/dev": "2.0.0-beta.16",
+    "@pandacss/postcss": "2.0.0-beta.16",
+    "@types/node": "^22.0.0",
+    "autoprefixer": "^10.4.0",
+    "prisma": "5.9.1",
+    "vitest": "^2.1.0"
+  }
+}

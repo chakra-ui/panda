@@ -30,7 +30,7 @@ const {
 } = useAnalyze();
 
 useHead({
-  title: "Analyze usage — Panda Spec Studio",
+  title: "Analyze usage — Panda Studio",
   meta: [{ name: "robots", content: "noindex" }],
 });
 

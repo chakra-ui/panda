@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { Field } from "@ark-ui/vue";
+import { Field } from "@ark-ui/vue/field";
 import * as s from "./index.styles";
 import { button, control } from "styled-system/recipes";
 import { parseTokens } from "~/utils/tokens";
@@ -78,7 +78,7 @@ async function onFiles(files: File[]) {
       <span>Reading your files…</span>
     </div>
     <div :class="s.left">
-      <p :class="s.kicker">Panda Spec Studio</p>
+      <p :class="s.kicker">Panda Studio</p>
       <h1 :class="s.h1">See your<br />design system</h1>
       <p :class="s.lede">
         Drop the <code>tokens.json</code> Panda emits and every category — colors, spacing, type,
@@ -160,7 +160,7 @@ async function onFiles(files: File[]) {
       <div :class="[s.floatCard, s.floatType]">
         <span :class="s.cardLabel">display / 3xl</span>
         <span :class="s.specimen">Ag</span>
-        <span :class="s.specimenSub">Space Grotesk</span>
+        <span :class="s.specimenSub">Onest</span>
       </div>
       <div :class="[s.floatCard, s.floatShadow]">
         <span :class="s.cardLabel">shadows / lg</span>

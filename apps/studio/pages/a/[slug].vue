@@ -13,7 +13,7 @@ const route = useRoute();
 const slug = String(route.params.slug);
 
 useHead({
-  title: "Usage — Panda Spec Studio",
+  title: "Usage — Panda Studio",
   meta: [{ name: "robots", content: "noindex" }],
 });
 
