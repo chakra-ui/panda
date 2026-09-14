@@ -1,7 +1,7 @@
 import { ref } from "vue";
-import { parseTokens, type TokensFile } from "~/utils/tokens";
-import { extractTokens } from "~/utils/extract-tokens";
-import { saveTokens, saveTokenCss } from "~/utils/idb";
+import { index, parseSpec, type DesignSystemIndex } from "~/utils/design-system";
+import { extractSpec } from "~/utils/extract-tokens";
+import { saveTokens } from "~/utils/idb";
 import {
   analyzeUsage,
   isSourceFile,
@@ -55,7 +55,7 @@ function mapPrecise(rep: {
 }
 
 export function useAnalyze() {
-  const file = ref<TokensFile | null>(null);
+  const ds = ref<DesignSystemIndex | null>(null);
   const report = ref<CategoryUsage[] | null>(null);
   const scannedCount = ref(0);
   const empty = ref(false);
@@ -65,17 +65,16 @@ export function useAnalyze() {
   const preciseError = ref("");
 
   async function analyzeFiles(input: File[]) {
-    const { tokensJson, css } = await extractTokens(input);
-    if (tokensJson) {
-      const parsed = parseTokens(tokensJson);
+    const raw = await extractSpec(input);
+    if (raw) {
+      const parsed = parseSpec(raw);
       if (parsed.ok) {
-        file.value = parsed.file;
-        await saveTokens(tokensJson);
-        await saveTokenCss(css);
+        ds.value = index(parsed.spec);
+        await saveTokens(raw);
       }
     }
 
-    if (!file.value) return;
+    if (!ds.value) return;
     const textFiles = input
       .filter((f) => {
         const path = pathOf(f);
@@ -128,7 +127,7 @@ export function useAnalyze() {
       }
     }
     mode.value = "heuristic";
-    report.value = analyzeUsage(file.value, sources);
+    report.value = analyzeUsage(ds.value, sources);
     analyzing.value = false;
   }
 
@@ -143,7 +142,7 @@ export function useAnalyze() {
   const drop = useFolderDrop(analyzeFiles);
 
   return {
-    file,
+    ds,
     report,
     scannedCount,
     empty,

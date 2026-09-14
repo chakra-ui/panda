@@ -64,6 +64,9 @@ Some topics span several notes. Keep the detailed contract in one place and link
 - [Compound variant cascade](./compound-variant-cascade.md) — give compounds their own `recipes.compound_variants`
   sub-layer (below `utilities`) so `css()` can override them; how the named compound class carries into the codegen
   recipe runtime, and the config-recipe vs `cva` fork.
+- [Design system spec document](./design-system-spec.md) — `specs/design-system.json`: one normalized document (`tokens`
+  / `values` / `conditions` / `themes`) replacing the lossy `specs/*.json` pair, why token references must survive
+  codegen, and what the generated `themes/` runtime keeps versus hands to tooling.
 - [Build info](./build-info.md) — `panda.buildinfo.json`: the portable encoder state a design system ships, its
   condensed format, per-module tree-shaking + import resolution, stacked DS-on-DS consume sketch, the version guard, and
   the engine/JS/CLI layering.

@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { ref } from "vue";
 import * as s from "./view.styles";
-import { parseTokens, type TokensFile } from "~/utils/tokens";
-import { buildThemeLayer, type Variant } from "~/utils/token-model";
-import { loadTokens, loadTokenCss, loadUsage, saveUsage, clearTokens } from "~/utils/idb";
+import { index, parseSpec, type DesignSystemIndex } from "~/utils/design-system";
+import { loadTokens, loadUsage, saveUsage, clearTokens } from "~/utils/idb";
 import { droppedFiles } from "~/utils/dropped";
 import { useAnalyze } from "~/composables/useAnalyze";
 
@@ -12,41 +11,25 @@ useHead({
   meta: [{ name: "robots", content: "noindex" }],
 });
 
-const STYLE_ID = "panda-spec-token-vars";
-const file = ref<TokensFile | null>(null);
+const ds = ref<DesignSystemIndex | null>(null);
 const ready = ref(false);
-const resolveVars = ref(false);
-const variants = ref<Variant[]>([]);
-const themeCss = ref<string | null>(null);
 const usage = ref<unknown>(null);
 
 const analyze = useAnalyze();
 
 onMounted(async () => {
   const raw = await loadTokens();
-  const result = raw ? parseTokens(raw) : null;
+  const result = raw ? parseSpec(raw) : null;
   if (!result?.ok) {
     await navigateTo("/");
     return;
   }
-  file.value = result.file;
+  ds.value = index(result.spec);
   usage.value = await loadUsage();
   ready.value = true;
 
-  const rawCss = await loadTokenCss();
-  if (rawCss) {
-    const theme = buildThemeLayer(rawCss);
-    const el = document.createElement("style");
-    el.id = STYLE_ID;
-    el.textContent = theme.css;
-    document.head.appendChild(el);
-    resolveVars.value = true;
-    variants.value = theme.variants;
-    themeCss.value = theme.css;
-  }
-
   if (!usage.value && droppedFiles.value.length) {
-    analyze.file.value = file.value;
+    analyze.ds.value = ds.value;
     await analyze.analyzeFiles(droppedFiles.value);
     if (analyze.report.value) {
       const snapshot = {
@@ -60,8 +43,6 @@ onMounted(async () => {
   }
 });
 
-onBeforeUnmount(() => document.getElementById(STYLE_ID)?.remove());
-
 async function reset() {
   await clearTokens();
   await navigateTo("/");
@@ -70,11 +51,8 @@ async function reset() {
 
 <template>
   <TokenView
-    v-if="ready && file"
-    :file="file"
-    :resolve-vars="resolveVars"
-    :variants="variants"
-    :css="themeCss"
+    v-if="ready && ds"
+    :ds="ds"
     :usage="usage"
     :analyze-href="'/analyze'"
     @reset="reset"

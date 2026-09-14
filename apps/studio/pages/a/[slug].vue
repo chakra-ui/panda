@@ -3,7 +3,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import * as s from "../analyze.styles";
 import { button } from "styled-system/recipes";
 import type { CategoryUsage } from "~/utils/analyze";
-import type { TokensFile } from "~/utils/tokens";
+import { index, type DesignSystemSpec } from "~/utils/design-system";
 import { droppedFiles } from "~/utils/dropped";
 import { useAnalyze } from "~/composables/useAnalyze";
 
@@ -17,13 +17,13 @@ useHead({
   meta: [{ name: "robots", content: "noindex" }],
 });
 
-const { data } = await useFetch<{ title: string | null; tokens: TokensFile; usage: Usage | null }>(
+const { data } = await useFetch<{ title: string | null; spec: DesignSystemSpec; usage: Usage | null }>(
   `/api/specs/${slug}`,
 );
-if (!data.value?.tokens) throw createError({ statusCode: 404, statusMessage: "Spec not found" });
+if (!data.value?.spec) throw createError({ statusCode: 404, statusMessage: "Spec not found" });
 
 const {
-  file,
+  ds,
   report,
   scannedCount,
   empty,
@@ -41,7 +41,7 @@ const {
   onDragLeave,
 } = useAnalyze();
 
-file.value = data.value.tokens;
+ds.value = index(data.value.spec);
 if (data.value.usage?.report) {
   report.value = data.value.usage.report;
   scannedCount.value = data.value.usage.scannedCount ?? 0;

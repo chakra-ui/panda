@@ -69,20 +69,3 @@ export async function loadUsage<T = unknown>(): Promise<T | null> {
   }
 }
 
-export async function saveTokenCss(css: string | null): Promise<void> {
-  try {
-    await withStore("readwrite", (store) =>
-      css ? store.put(css, KEY_CSS) : store.delete(KEY_CSS),
-    );
-  } catch {
-    return;
-  }
-}
-
-export async function loadTokenCss(): Promise<string | null> {
-  try {
-    return (await withStore<string | undefined>("readonly", (store) => store.get(KEY_CSS))) ?? null;
-  } catch {
-    return null;
-  }
-}

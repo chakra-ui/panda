@@ -1,5 +1,5 @@
 import { ref } from "vue";
-import type { TokensFile } from "~/utils/tokens";
+import type { DesignSystemSpec } from "~/utils/design-system";
 import { toaster } from "~/utils/toaster";
 
 type Status = "idle" | "sharing";
@@ -14,13 +14,13 @@ export function useShareSpec() {
   const status = ref<Status>("idle");
   const url = ref<string | null>(null);
 
-  async function share(file: TokensFile, css: string | null, options: ShareOptions = {}) {
+  async function share(spec: DesignSystemSpec, options: ShareOptions = {}) {
     status.value = "sharing";
     const started = Date.now();
     try {
       const { slug } = await $fetch<{ slug: string }>("/api/specs", {
         method: "POST",
-        body: { tokens: file, css, title: options.title, usage: options.usage },
+        body: { spec, title: options.title, usage: options.usage },
       });
       const full = new URL(`/${options.path ?? "s"}/${slug}`, location.origin).href;
       url.value = full;

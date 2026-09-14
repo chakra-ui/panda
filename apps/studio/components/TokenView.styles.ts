@@ -55,7 +55,7 @@ export const tab = css({
   bg: "transparent",
   borderWidth: "0",
   transition: "background 0.12s, color 0.12s",
-  _hover: { bg: "subtle", color: "ink" },
+  "&:is(:hover, [data-hover]):not([data-selected])": { bg: "subtle", color: "ink" },
   _focusVisible: { outline: "2px solid", outlineColor: "ink", outlineOffset: "-2px" },
   "&[data-selected]": { bg: "ink", color: "paper" },
 });
@@ -120,16 +120,6 @@ export const btnSpinner = css({
   animation: "spin 0.6s linear infinite",
 });
 
-export const variants = css({
-  display: "flex",
-  alignItems: "center",
-  gap: "1px",
-  p: "1",
-  rounded: "md",
-  bg: "subtle",
-  borderWidth: "1px",
-  borderColor: "line",
-});
 export const srOnly = css({
   position: "absolute",
   w: "1px",
@@ -140,4 +130,22 @@ export const srOnly = css({
   clip: "rect(0,0,0,0)",
   whiteSpace: "nowrap",
   borderWidth: "0",
+});
+export const previewBar = css({
+  display: "flex",
+  mb: "3",
+});
+export const previewArea = css({
+  w: "full",
+  minH: "auto",
+  fontFamily: "body",
+  fontSize: "13px",
+});
+export const railTheme = css({
+  display: { base: "none", md: "block" },
+  mb: "4",
+});
+export const themeBarMobile = css({
+  display: { base: "flex", md: "none" },
+  mb: "3",
 });

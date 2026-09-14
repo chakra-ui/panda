@@ -2,7 +2,7 @@
 import { computed, onMounted, watch } from "vue";
 import * as s from "./analyze.styles";
 import { button } from "styled-system/recipes";
-import { parseTokens } from "~/utils/tokens";
+import { index, parseSpec } from "~/utils/design-system";
 import { loadTokens, saveUsage, loadUsage } from "~/utils/idb";
 import type { CategoryUsage } from "~/utils/analyze";
 import { droppedFiles } from "~/utils/dropped";
@@ -11,7 +11,7 @@ import { useShareSpec } from "~/composables/useShareSpec";
 
 const { status: shareStatus, share } = useShareSpec();
 const {
-  file,
+  ds,
   report,
   scannedCount,
   empty,
@@ -57,14 +57,14 @@ const usageSnapshot = computed(() =>
 watch(usageSnapshot, (u) => saveUsage(u));
 
 function shareReport() {
-  if (!file.value || !usageSnapshot.value) return;
-  share(file.value, null, { title: "usage", path: "a", usage: usageSnapshot.value });
+  if (!ds.value || !usageSnapshot.value) return;
+  share(ds.value.spec, { title: "usage", path: "a", usage: usageSnapshot.value });
 }
 
 onMounted(async () => {
   const raw = await loadTokens();
-  const result = raw ? parseTokens(raw) : null;
-  if (result?.ok) file.value = result.file;
+  const result = raw ? parseSpec(raw) : null;
+  if (result?.ok) ds.value = index(result.spec);
   if (droppedFiles.value.length) {
     await analyzeFiles(droppedFiles.value);
     return;
@@ -84,7 +84,7 @@ onMounted(async () => {
 
 <template>
   <div :class="s.wrap">
-    <NuxtLink v-if="file" to="/view" :class="s.back">
+    <NuxtLink v-if="ds" to="/view" :class="s.back">
       <svg
         width="14"
         height="14"
@@ -120,7 +120,7 @@ onMounted(async () => {
         @dragover="onDragOver"
         @dragleave="onDragLeave"
       >
-        <p v-if="file" :class="s.dropHint">
+        <p v-if="ds" :class="s.dropHint">
           Your tokens are loaded, but usage needs your <strong>source</strong>. Drop your app folder
           or the whole repo and it'll scan which tokens you actually use.
         </p>
@@ -176,7 +176,7 @@ onMounted(async () => {
         Found <strong>0 token references</strong> in {{ scannedCount }} file{{
           scannedCount === 1 ? "" : "s"
         }}. The loaded tokens probably don't match this project — load this project's own
-        <code>tokens.json</code> (run <code>panda codegen</code>). Note this tool targets
+        <code>design-system.json</code> (run <code>panda codegen</code>). Note this tool targets
         <strong>Panda v2</strong>.
       </p>
       <p v-else-if="preciseFailed" :class="s.hint">

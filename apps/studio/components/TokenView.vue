@@ -1,21 +1,35 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, watch } from "vue";
 import { Tabs } from "@ark-ui/vue/tabs";
 import { Field } from "@ark-ui/vue/field";
 import * as s from "./TokenView.styles";
-import { button, control, segment } from "styled-system/recipes";
-import type { TokensFile } from "~/utils/tokens";
-import type { Variant } from "~/utils/token-model";
+import { button, control } from "styled-system/recipes";
+import {
+  hasPreview,
+  PREVIEW_TEXT,
+  themeNames,
+  wantsLargePreview,
+  type DesignSystemIndex,
+} from "~/utils/design-system";
 
 const props = defineProps<{
-  file: TokensFile;
-  resolveVars?: boolean;
-  variants?: Variant[];
-  css?: string | null;
+  ds: DesignSystemIndex;
   usage?: unknown;
   analyzeHref?: string;
 }>();
 defineEmits<{ reset: [] }>();
+
+const route = useRoute();
+const router = useRouter();
+
+/** Query params are the source of truth, so any view can be shared as a link. */
+const setQuery = (patch: Record<string, string | undefined>) =>
+  router.replace({ query: { ...route.query, ...patch } });
+
+const param = (key: string) => {
+  const value = route.query[key];
+  return typeof value === "string" ? value : undefined;
+};
 
 const { status: shareStatus, share } = useShareSpec();
 const analyzeLabel = computed(() => (props.usage ? "View usage" : "Analyze usage"));
@@ -23,41 +37,67 @@ const analyzeTo = computed(
   () => `${props.analyzeHref ?? "/analyze"}?category=${encodeURIComponent(activeType.value)}`,
 );
 
-const activeVariant = ref<Variant | undefined>(props.variants?.[0]);
-watch(
-  () => props.variants,
-  (v) => (activeVariant.value = v?.[0]),
+const categories = computed(() =>
+  props.ds.categories().map((type) => ({ type, count: props.ds.categoryPaths(type).length })),
 );
+const defaultType = computed(
+  () => categories.value.find((c) => c.type === "colors")?.type ?? categories.value[0]?.type ?? "",
+);
+const activeType = computed({
+  get() {
+    const wanted = param("category");
+    return wanted && categories.value.some((c) => c.type === wanted) ? wanted : defaultType.value;
+  },
+  set: (type) => setQuery({ category: type === defaultType.value ? undefined : type, search: undefined }),
+});
 
-const viewMode = ref<"grid" | "matrix">("grid");
-const canMatrix = computed(
-  () => activeType.value === "colors" && (props.variants?.length ?? 0) > 1,
-);
+const active = computed(() => categories.value.find((c) => c.type === activeType.value));
 
-const categories = computed(() => props.file.data);
-const activeType = ref(
-  (categories.value.find((c) => c.type === "colors") ?? categories.value[0])?.type ?? "",
-);
-const search = ref("");
-const active = computed(
-  () => categories.value.find((c) => c.type === activeType.value) ?? categories.value[0],
-);
+/** An exclusive identity: you are in one theme at a time. */
+const themes = computed(() => themeNames(props.ds));
+const theme = computed({
+  get() {
+    const wanted = param("theme");
+    return wanted && themes.value.includes(wanted) ? wanted : "";
+  },
+  set: (name) => setQuery({ theme: name || undefined }),
+});
 
-watch(activeType, () => (search.value = ""));
+const search = computed({
+  get: () => param("q") ?? "",
+  set: (value) => setQuery({ q: value || undefined }),
+});
+
+/** Typography tokens are judged against real copy, so let the reader supply it. */
+const showPreview = computed(() => hasPreview(activeType.value));
+const largePreview = computed(() => wantsLargePreview(activeType.value));
+const previewDefault = computed(() => PREVIEW_TEXT[activeType.value] ?? "");
+const previewText = computed({
+  get: () => param("text") ?? previewDefault.value,
+  set: (value) => setQuery({ text: value && value !== previewDefault.value ? value : undefined }),
+});
+
+watch(activeType, () => setQuery({ q: undefined, text: undefined }));
 </script>
 
 <template>
   <Tabs.Root
     v-model="activeType"
     orientation="vertical"
-    :class="[s.root, activeVariant?.class]"
-    v-bind="activeVariant?.attrs"
+    :class="s.root"
   >
     <Tabs.List :class="s.rail" aria-label="Token categories">
+      <div v-if="themes.length" :class="s.railTheme">
+        <ThemeSelect
+          :themes="themes"
+          :theme="theme"
+          @change="(value: string) => (theme = value)"
+        />
+      </div>
       <div :class="s.railHead">Categories</div>
       <Tabs.Trigger v-for="cat in categories" :key="cat.type" :value="cat.type" :class="s.tab">
         <span>{{ cat.type }}</span>
-        <span :class="s.count">{{ cat.values.length }}</span>
+        <span :class="s.count">{{ cat.count }}</span>
       </Tabs.Trigger>
     </Tabs.List>
 
@@ -66,7 +106,7 @@ watch(activeType, () => (search.value = ""));
         <div>
           <h1 :class="s.title">{{ active?.type }}</h1>
           <p :class="s.subtitle">
-            {{ active?.values.length }} tokens · click any token to copy its name
+            {{ active?.count }} tokens · click any token to copy its name
           </p>
         </div>
         <div :class="s.actions">
@@ -95,7 +135,7 @@ watch(activeType, () => (search.value = ""));
             :disabled="shareStatus === 'sharing'"
             aria-label="Share"
             title="Create a shareable link to this system"
-            @click="share(props.file, props.css ?? null, { usage: props.usage })"
+            @click="share(props.ds.spec, { usage: props.usage })"
           >
             <span v-if="shareStatus === 'sharing'" :class="s.btnSpinner" />
             <svg
@@ -136,6 +176,29 @@ watch(activeType, () => (search.value = ""));
         </div>
       </div>
 
+      <div v-if="showPreview" :class="s.previewBar">
+        <Field.Root :class="s.searchField">
+          <Field.Label :class="s.srOnly">Preview text</Field.Label>
+          <Field.Textarea
+            v-if="largePreview"
+            :class="[control({ kind: 'textarea' }), s.previewArea]"
+            v-model="previewText"
+            rows="3"
+            placeholder="Preview text…"
+          />
+          <Field.Input
+            v-else
+            :class="[control({ kind: 'search' }), s.searchInput]"
+            v-model="previewText"
+            placeholder="Preview text…"
+          />
+        </Field.Root>
+      </div>
+
+      <div v-if="themes.length" :class="s.themeBarMobile">
+        <ThemeSelect :themes="themes" :theme="theme" @change="(value: string) => (theme = value)" />
+      </div>
+
       <div :class="s.filterbar">
         <Field.Root :class="s.searchField">
           <Field.Label :class="s.srOnly">Filter tokens by name</Field.Label>
@@ -146,29 +209,7 @@ watch(activeType, () => (search.value = ""));
             placeholder="Filter by name…"
           />
         </Field.Root>
-        <div
-          v-if="(props.variants?.length ?? 0) > 1"
-          :class="s.variants"
-          role="group"
-          aria-label="Theme"
-        >
-          <button
-            v-for="v in props.variants"
-            :key="v.id"
-            :class="segment({ active: v.id === activeVariant?.id })"
-            @click="activeVariant = v"
-          >
-            {{ v.label }}
-          </button>
-        </div>
-        <div v-if="canMatrix" :class="s.variants" role="group" aria-label="Layout">
-          <button :class="segment({ active: viewMode === 'grid' })" @click="viewMode = 'grid'">
-            Grid
-          </button>
-          <button :class="segment({ active: viewMode === 'matrix' })" @click="viewMode = 'matrix'">
-            Matrix
-          </button>
-        </div>
+
       </div>
 
       <Tabs.Content
@@ -178,12 +219,13 @@ watch(activeType, () => (search.value = ""));
         :lazy-mount="true"
         :unmount-on-exit="true"
       >
-        <MatrixView
-          v-if="viewMode === 'matrix' && cat.type === 'colors'"
-          :category="cat"
-          :variants="props.variants ?? []"
+        <TokenGrid
+          :ds="props.ds"
+          :category="cat.type"
+          :theme="theme"
+          :search="search"
+          :preview="previewText"
         />
-        <TokenGrid v-else :category="cat" :search="search" :resolve-vars="props.resolveVars" />
       </Tabs.Content>
     </div>
   </Tabs.Root>

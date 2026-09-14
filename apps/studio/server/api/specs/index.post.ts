@@ -2,11 +2,11 @@ import { nanoid } from "nanoid";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../../utils/prisma";
-import { sanitizeCss } from "../../utils/sanitize-css";
 
 const body = z.object({
-  tokens: z.object({ data: z.array(z.unknown()).min(1) }).passthrough(),
-  css: z.string().nullish(),
+  spec: z
+    .object({ schemaVersion: z.number(), paths: z.array(z.string()).min(1) })
+    .passthrough(),
   title: z.string().max(120).nullish(),
   usage: z.unknown().optional(),
 });
@@ -19,8 +19,7 @@ export default defineEventHandler(async (event) => {
     data: {
       slug: nanoid(10),
       title: parsed.data.title ?? null,
-      tokens: parsed.data.tokens as Prisma.InputJsonValue,
-      css: parsed.data.css ? sanitizeCss(parsed.data.css) : null,
+      spec: parsed.data.spec as Prisma.InputJsonValue,
       usage: parsed.data.usage === undefined ? undefined : (parsed.data.usage as Prisma.InputJsonValue),
     },
     select: { slug: true },

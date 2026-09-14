@@ -1,4 +1,4 @@
-import type { TokensFile } from "~/utils/tokens";
+import type { DesignSystemIndex } from "~/utils/design-system";
 
 export interface TokenUse {
   name: string;
@@ -47,20 +47,22 @@ function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-export function analyzeUsage(file: TokensFile, sources: Source[]): CategoryUsage[] {
-  return file.data.map((cat) => {
-    const tokens: TokenUse[] = cat.values
-      .map((t) => {
-        const re = new RegExp(`(?<![\\w-])${escapeRegExp(t.name)}(?![\\w-])`, "g");
+export function analyzeUsage(ds: DesignSystemIndex, sources: Source[]): CategoryUsage[] {
+  return ds.categories().map((category) => {
+    const tokens: TokenUse[] = ds
+      .categoryPaths(category)
+      .map((path) => {
+        const name = ds.name(path);
+        const re = new RegExp(`(?<![\\w-])${escapeRegExp(name)}(?![\\w-])`, "g");
         let uses = 0;
         for (const s of sources) uses += s.text.match(re)?.length ?? 0;
-        return { name: t.name, uses };
+        return { name, uses };
       })
       .toSorted((a, b) => b.uses - a.uses);
     const used = tokens.filter((t) => t.uses > 0).length;
     const total = tokens.length;
     return {
-      type: cat.type,
+      type: category,
       total,
       used,
       unused: total - used,

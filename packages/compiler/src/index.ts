@@ -113,7 +113,7 @@ function build(config: SerializedConfig, callbacks: ProjectCallbacks, options?: 
 
   const prepared = prepareCompilerConfig(config)
   const compiler = nativeCompilerFromConfig(prepared, toNativeOptions(options), createUtilityValuesCallbacks(callbacks))
-  registerCallbacks(compiler, callbacks, options?.hooks, compiler.token_dictionary?.())
+  registerCallbacks(compiler, callbacks, options?.hooks, compiler.tokenDictionary?.())
   attachFileSystem(compiler)
   attachPathSystem(compiler)
   attachBuildInfo(compiler)

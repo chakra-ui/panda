@@ -1,38 +1,17 @@
-import { parseTokenDict } from "./panda-dict";
-import { extractTokenLayer } from "./token-css";
-
 const pathOf = (f: File) =>
   (f as File & { webkitRelativePath?: string }).webkitRelativePath || f.name;
 
-const cssRank = (p: string) =>
-  p.endsWith("styled-system/styles.css") ? 0 : p.includes("styled-system/") ? 1 : 2;
+const rank = (p: string) =>
+  p.endsWith("specs/design-system.json") ? 0 : p.endsWith("design-system.json") ? 1 : 2;
 
-export async function extractTokens(
-  files: File[],
-): Promise<{ tokensJson: string | null; css: string | null }> {
-  let tokensJson: string | null = null;
-  const target =
-    files.find((f) => f.name === "tokens.json") ??
-    (files.length === 1 && files[0].name.endsWith(".json") ? files[0] : undefined);
-  if (target) {
-    tokensJson = await target.text();
-  } else {
-    const dictFile = files.find((f) => /styled-system\/tokens\/index\.(mjs|js)$/.test(pathOf(f)));
-    if (dictFile) {
-      const parsed = parseTokenDict(await dictFile.text());
-      if (parsed) tokensJson = JSON.stringify(parsed);
-    }
-  }
+/** Find the generated design-system document in a dropped file or folder. */
+export async function extractSpec(files: File[]): Promise<string | null> {
+  const candidates = files
+    .filter((f) => f.name.endsWith(".json"))
+    .toSorted((a, b) => rank(pathOf(a)) - rank(pathOf(b)));
 
-  const cssCandidates = files
-    .filter((f) => f.name.endsWith(".css") && f.size <= 8_000_000)
-    .toSorted((a, b) => cssRank(pathOf(a)) - cssRank(pathOf(b)))
-    .slice(0, 12);
-  let css: string | null = null;
-  for (const f of cssCandidates) {
-    css = extractTokenLayer(await f.text());
-    if (css) break;
-  }
-
-  return { tokensJson, css };
+  const named = candidates.find((f) => rank(pathOf(f)) < 2);
+  if (named) return named.text();
+  // A lone JSON file is worth trying: the user may have renamed it.
+  return files.length === 1 && candidates.length === 1 ? candidates[0]!.text() : null;
 }

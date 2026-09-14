@@ -22,7 +22,8 @@ export const swatches = css({
   gap: "3",
 });
 export const chip = css({
-  display: "block",
+  display: "flex",
+  overflow: "hidden",
   h: "68px",
   rounded: "lg",
   borderWidth: "1px",
@@ -36,19 +37,11 @@ export const chip = css({
       "linear-gradient(45deg, #2a2a2a 25%, transparent 25%), linear-gradient(-45deg, #2a2a2a 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #2a2a2a 75%), linear-gradient(-45deg, transparent 75%, #2a2a2a 75%)",
   },
 });
-export const chipFill = css({ display: "block", w: "full", h: "full", rounded: "lg" });
-export const chipRef = css({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  w: "full",
+export const chipBand = css({
+  flex: "1",
+  minW: "0",
   h: "full",
-  rounded: "lg",
-  bg: "subtle",
-  color: "faint",
-  fontFamily: "mono",
-  fontSize: "12px",
-  letterSpacing: "0.02em",
+  "&:not(:first-child)": { borderLeftWidth: "1px", borderColor: "line" },
 });
 export const meta = css({ mt: "2", display: "flex", flexDir: "column", gap: "0.5" });
 export const name = css({
@@ -59,32 +52,7 @@ export const name = css({
   textOverflow: "ellipsis",
   whiteSpace: "nowrap",
 });
-export const val = css({
-  fontFamily: "mono",
-  fontSize: "11.5px",
-  color: "faint",
-  maxW: "full",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  whiteSpace: "nowrap",
-});
 export const copied = css({ color: "success" });
-export const contrast = css({ display: "flex", gap: "2", mt: "1" });
-export const contrastItem = css({ display: "flex", alignItems: "center", gap: "1" });
-export const contrastAa = css({
-  display: "grid",
-  placeItems: "center",
-  w: "22px",
-  h: "16px",
-  rounded: "2px",
-  borderWidth: "1px",
-  borderColor: "line",
-  fontFamily: "display",
-  fontWeight: "700",
-  fontSize: "11px",
-});
-export const contrastLabel = css({ fontFamily: "mono", fontSize: "10px", color: "faint" });
-export const contrastPass = css({ color: "success" });
 export const rows = css({ display: "flex", flexDir: "column", gap: "1" });
 export const rowName = css({ fontFamily: "mono", fontSize: "13px", color: "ink" });
 export const rowVal = css({
@@ -217,3 +185,104 @@ export const screenVal = css({
   color: "faint",
   textAlign: "right",
 });
+export const fontList = css({ display: "grid", gap: "3" });
+export const fontHead = css({
+  display: "grid",
+  gap: "1",
+  minW: "0",
+});
+export const fontName = css({ fontFamily: "mono", fontSize: "13px", color: "ink" });
+export const fontStack = css({
+  fontSize: "12px",
+  color: "faint",
+  minW: "0",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+});
+export const fontSpecimen = css({
+  color: "ink",
+  fontSize: { base: "24px", sm: "30px" },
+  lineHeight: "1.2",
+});
+export const fontScale = css({
+  display: "grid",
+  gap: "0.5",
+  color: "muted",
+  fontSize: { base: "12px", sm: "14px" },
+  letterSpacing: "0.04em",
+  whiteSpace: "nowrap",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+});
+export const chipConditions = css({
+  display: "flex",
+  gap: "2",
+  mt: "1.5",
+  fontFamily: "mono",
+  fontSize: "10px",
+  color: "faint",
+  "& > span": { flex: "1", minW: "0", overflow: "hidden", textOverflow: "ellipsis" },
+});
+export const swatchCell = css({
+  position: "relative",
+  "&:hover [data-part='trigger'][data-scope='popover']": { opacity: "1" },
+});
+export const infoTrigger = css({
+  position: "absolute",
+  top: "1.5",
+  right: "1.5",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  w: "22px",
+  h: "22px",
+  rounded: "full",
+  borderWidth: "0",
+  bg: "paper",
+  color: "muted",
+  opacity: "0",
+  cursor: "pointer",
+  transition: "opacity 0.12s, color 0.12s",
+  boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
+  _hover: { color: "ink" },
+  _focusVisible: { opacity: "1", outline: "2px solid", outlineColor: "ink", outlineOffset: "1px" },
+});
+export const info = css({
+  minW: "240px",
+  maxW: "320px",
+  p: "3",
+  bg: "paper",
+  borderWidth: "1px",
+  borderColor: "line",
+  rounded: "lg",
+  boxShadow: "0 12px 34px -10px rgba(0,0,0,0.32)",
+  zIndex: "40",
+  _focusVisible: { outline: "none" },
+});
+export const infoName = css({ fontFamily: "mono", fontSize: "12.5px", color: "ink", mb: "2" });
+export const infoList = css({ display: "grid", gap: "1.5" });
+export const infoTerm = css({
+  display: "flex",
+  alignItems: "center",
+  gap: "2",
+  fontFamily: "mono",
+  fontSize: "11px",
+  color: "muted",
+});
+export const infoSwatch = css({
+  w: "12px",
+  h: "12px",
+  rounded: "sm",
+  borderWidth: "1px",
+  borderColor: "line",
+  flexShrink: 0,
+});
+export const infoValue = css({
+  fontFamily: "mono",
+  fontSize: "11.5px",
+  color: "ink",
+  mb: "1",
+  wordBreak: "break-all",
+});
+export const infoTriggerOpen = css({ opacity: "1", color: "ink" });

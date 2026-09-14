@@ -65,10 +65,10 @@ interface WasmFromConfigOptions {
 
 /**
  * The raw wasm instance - superset of {@link Compiler} carrying the internal
- * `token_dictionary` the facade hides.
+ * `tokenDictionary` the facade hides.
  */
 interface RawWasmCompiler extends WasmCompiler {
-  token_dictionary?(): TokenDictionaryInput | undefined
+  tokenDictionary?(): TokenDictionaryInput | undefined
 }
 
 type RuntimeWasmCompiler = RawWasmCompiler &
@@ -109,7 +109,7 @@ export function build(
 
   const prepared = prepareCompilerConfig(config)
   const compiler = mod.WasmCompiler.fromConfig(fs, prepared, buildFromConfigOptions(callbacks)) as RuntimeWasmCompiler
-  registerCallbacks(compiler, callbacks, hooks, compiler.token_dictionary?.())
+  registerCallbacks(compiler, callbacks, hooks, compiler.tokenDictionary?.())
 
   // Expose host fs/path namespaces so the return shape matches native.
   Object.defineProperty(compiler, 'fs', { value: fs, enumerable: false })

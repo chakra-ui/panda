@@ -1,11 +1,9 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../../utils/prisma";
-import { sanitizeCss } from "../../utils/sanitize-css";
 
 const body = z.object({
   usage: z.unknown().optional(),
-  css: z.string().nullish(),
 });
 
 export default defineEventHandler(async (event) => {
@@ -21,7 +19,6 @@ export default defineEventHandler(async (event) => {
       data: {
         usage:
           parsed.data.usage === undefined ? undefined : (parsed.data.usage as Prisma.InputJsonValue),
-        css: parsed.data.css ? sanitizeCss(parsed.data.css) : undefined,
       },
       select: { slug: true },
     });

@@ -101,8 +101,8 @@ importers:
         specifier: ^5.0.0
         version: 5.39.1(vue@3.5.42(typescript@6.0.3))
       '@pandacss/compiler-shared':
-        specifier: 2.0.0-beta.16
-        version: 2.0.0-beta.16
+        specifier: workspace:*
+        version: link:../../packages/compiler-shared
       '@pandacss/compiler-wasm':
         specifier: 2.0.0-beta.16
         version: 2.0.0-beta.16
@@ -37328,7 +37328,7 @@ snapshots:
       lightningcss: 1.33.0
       picomatch: 4.0.7
       postcss: 8.5.28
-      rolldown: 1.2.7
+      rolldown: 1.2.8
       tinyglobby: 0.2.17
     optionalDependencies:
       '@types/node': 22.20.1
@@ -37345,7 +37345,7 @@ snapshots:
       lightningcss: 1.33.0
       picomatch: 4.0.7
       postcss: 8.5.28
-      rolldown: 1.2.7
+      rolldown: 1.2.8
       tinyglobby: 0.2.17
     optionalDependencies:
       '@types/node': 24.10.15
