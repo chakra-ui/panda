@@ -2,7 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js'
 import { createNodeDriver, type Driver } from '@pandacss/compiler'
-import { resolve } from 'path'
+import { resolve } from 'node:path'
 import * as z from 'zod/v4'
 
 const json = (data: unknown) => ({

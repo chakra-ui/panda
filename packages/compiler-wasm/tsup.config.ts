@@ -9,6 +9,7 @@ export default defineConfig([
     format: ['esm'],
     shims: true,
     dts: true,
+    removeNodeProtocol: false,
     clean: true,
   },
   {
@@ -16,6 +17,7 @@ export default defineConfig([
     format: ['esm'],
     shims: false,
     dts: true,
+    removeNodeProtocol: false,
     clean: false,
   },
 ])
