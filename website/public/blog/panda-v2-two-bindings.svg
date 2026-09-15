@@ -1,0 +1,78 @@
+<svg width="1200" height="470" viewBox="0 0 1200 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="One Rust engine compiles two ways: a native binding for the CLI, Vite, and PostCSS, and a WebAssembly binding for the browser, both producing identical CSS">
+  <style>
+    .surface { fill: #FBF9F3; }
+    .ink { fill: #1A1A17; }
+    .muted { fill: #5E584C; }
+    .card { fill: #FFFFFF; stroke: #1A1A17; stroke-width: 2; }
+    .yl { fill: #F6E458; }
+    .yltile { fill: #F6E458; stroke: #1A1A17; stroke-width: 2; }
+    .ony { fill: #1A1A17; }
+    .flow { stroke: #1A1A17; stroke-width: 3; fill: none; }
+    .sans { font-family: 'Onest','Segoe UI',system-ui,sans-serif; }
+    .mono { font-family: 'Source Code Pro',ui-monospace,monospace; }
+    @media (prefers-color-scheme: dark) {
+      .surface { fill: #17171B; } .ink { fill: #F5F2E9; } .muted { fill: #B7B1A3; }
+      .card { fill: #23232B; stroke: #3A3A42; } .flow { stroke: #E7E2D6; }
+    }
+  </style>
+  <rect width="1200" height="470" class="surface"/>
+
+  <rect x="60" y="40" width="52" height="7" rx="3.5" class="yl"/>
+  <text x="60" y="84" class="sans ink" font-size="29" font-weight="800" letter-spacing="-0.4">Same code, two runtimes</text>
+  <text x="60" y="114" class="sans muted" font-size="16.5">One Rust engine compiles two ways, and both sides produce identical CSS.</text>
+
+  <defs>
+    <marker id="e2" viewBox="0 0 10 10" refX="6.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+      <path d="M0 1 L9 5 L0 9" fill="none" stroke="currentColor" class="ink" stroke-width="2.2"/>
+    </marker>
+  </defs>
+
+  <g class="sans">
+    <!-- shared Rust core -->
+    <g transform="translate(450 124)">
+      <rect width="300" height="70" rx="16" class="card"/>
+      <rect x="20" y="16" width="54" height="26" rx="8" class="yl"/>
+      <text x="47" y="34" text-anchor="middle" class="ony mono" font-size="12" font-weight="700">RUST</text>
+      <text x="88" y="35" class="ink" font-size="16" font-weight="800">Shared Rust engine</text>
+      <text x="20" y="59" class="muted mono" font-size="12">parse → extract → encode → emit</text>
+    </g>
+
+    <!-- branch: core -> two bindings -->
+    <g class="flow">
+      <line x1="600" y1="194" x2="600" y2="214"/>
+      <line x1="310" y1="214" x2="890" y2="214"/>
+      <line x1="310" y1="214" x2="310" y2="242" marker-end="url(#e2)"/>
+      <line x1="890" y1="214" x2="890" y2="242" marker-end="url(#e2)"/>
+    </g>
+
+    <!-- native binding -->
+    <g transform="translate(100 244)">
+      <rect width="420" height="110" rx="16" class="card"/>
+      <text x="22" y="34" class="muted" font-size="13" font-weight="800" letter-spacing="1.5">NATIVE BINDING</text>
+      <text x="22" y="66" class="ink mono" font-size="18" font-weight="700">@pandacss/compiler</text>
+      <text x="22" y="92" class="muted" font-size="13.5">CLI · Vite · PostCSS, via NAPI</text>
+    </g>
+
+    <!-- wasm binding -->
+    <g transform="translate(680 244)">
+      <rect width="420" height="110" rx="16" class="card"/>
+      <text x="22" y="34" class="muted" font-size="13" font-weight="800" letter-spacing="1.5">WEBASSEMBLY BINDING</text>
+      <text x="22" y="66" class="ink mono" font-size="18" font-weight="700">@pandacss/compiler-wasm</text>
+      <text x="22" y="92" class="muted" font-size="13.5">Browser · Playground, ~490 KB gzipped</text>
+    </g>
+
+    <!-- converge: two bindings -> identical CSS -->
+    <g class="flow">
+      <line x1="310" y1="354" x2="310" y2="372"/>
+      <line x1="890" y1="354" x2="890" y2="372"/>
+      <line x1="310" y1="372" x2="890" y2="372"/>
+      <line x1="600" y1="372" x2="600" y2="388" marker-end="url(#e2)"/>
+    </g>
+
+    <!-- output tile -->
+    <g transform="translate(520 390)">
+      <rect width="160" height="40" rx="12" class="yltile"/>
+      <text x="80" y="26" text-anchor="middle" class="ony mono" font-size="15" font-weight="700">identical CSS</text>
+    </g>
+  </g>
+</svg>

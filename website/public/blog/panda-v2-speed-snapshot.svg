@@ -1,0 +1,74 @@
+<svg width="1200" height="470" viewBox="0 0 1200 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="How much faster is Panda 2.0: extraction 15 to 37 times faster, watch-mode re-parsing about 360 times faster, staticCss about 85 times faster, 99 percent fewer TypeScript type instantiations, runtime css() up to 4 times faster">
+  <style>
+    .surface { fill: #FBF9F3; }
+    .ink { fill: #1A1A17; }
+    .muted { fill: #5E584C; }
+    .card { fill: #FFFFFF; stroke: #1A1A17; stroke-width: 2; }
+    .yl { fill: #F6E458; }
+    .sans { font-family: 'Onest','Segoe UI',system-ui,sans-serif; }
+    .mono { font-family: 'Source Code Pro',ui-monospace,monospace; }
+    @media (prefers-color-scheme: dark) {
+      .surface { fill: #17171B; } .ink { fill: #F5F2E9; } .muted { fill: #B7B1A3; }
+      .card { fill: #23232B; stroke: #3A3A42; }
+    }
+  </style>
+  <rect width="1200" height="470" class="surface"/>
+
+  <rect x="60" y="40" width="52" height="7" rx="3.5" class="yl"/>
+  <text x="60" y="84" class="sans ink" font-size="29" font-weight="800" letter-spacing="-0.4">How much faster is Panda 2.0?</text>
+  <text x="60" y="114" class="sans muted" font-size="16.5">Measured against v1 on the same hardware, same source bytes.</text>
+
+  <g class="sans">
+    <!-- 1: Extraction -->
+    <g transform="translate(60 150)">
+      <rect width="200" height="260" rx="16" class="card"/>
+      <rect x="20" y="20" width="32" height="6" rx="3" class="yl"/>
+      <text x="20" y="48" class="muted" font-size="12" font-weight="800" letter-spacing="1">EXTRACTION</text>
+      <text x="100" y="158" text-anchor="middle" class="ink" font-size="34" font-weight="800">15&#8211;37&#215;</text>
+      <text x="100" y="200" text-anchor="middle" class="muted" font-size="11">faster</text>
+      <text x="100" y="220" text-anchor="middle" class="muted" font-size="11">cold build</text>
+    </g>
+
+    <!-- 2: Watch-mode re-parsing -->
+    <g transform="translate(280 150)">
+      <rect width="200" height="260" rx="16" class="card"/>
+      <rect x="20" y="20" width="32" height="6" rx="3" class="yl"/>
+      <text x="20" y="42" class="muted" font-size="12" font-weight="800" letter-spacing="1">WATCH-MODE</text>
+      <text x="20" y="58" class="muted" font-size="12" font-weight="800" letter-spacing="1">RE-PARSING</text>
+      <text x="100" y="158" text-anchor="middle" class="ink" font-size="34" font-weight="800">~360&#215;</text>
+      <text x="100" y="200" text-anchor="middle" class="muted" font-size="11">faster</text>
+      <text x="100" y="220" text-anchor="middle" class="muted" font-size="11">per file, steady state</text>
+    </g>
+
+    <!-- 3: staticCss -->
+    <g transform="translate(500 150)">
+      <rect width="200" height="260" rx="16" class="card"/>
+      <rect x="20" y="20" width="32" height="6" rx="3" class="yl"/>
+      <text x="20" y="48" class="muted mono" font-size="12" font-weight="700" letter-spacing="0.5">staticCss</text>
+      <text x="100" y="158" text-anchor="middle" class="ink" font-size="34" font-weight="800">~85&#215;</text>
+      <text x="100" y="200" text-anchor="middle" class="muted" font-size="11">faster</text>
+      <text x="100" y="220" text-anchor="middle" class="muted" font-size="11">29,000-rule config</text>
+    </g>
+
+    <!-- 4: Type instantiations -->
+    <g transform="translate(720 150)">
+      <rect width="200" height="260" rx="16" class="card"/>
+      <rect x="20" y="20" width="32" height="6" rx="3" class="yl"/>
+      <text x="20" y="42" class="muted" font-size="12" font-weight="800" letter-spacing="1">TYPE</text>
+      <text x="20" y="58" class="muted" font-size="12" font-weight="800" letter-spacing="1">INSTANTIATIONS</text>
+      <text x="100" y="158" text-anchor="middle" class="ink" font-size="34" font-weight="800">~99%</text>
+      <text x="100" y="200" text-anchor="middle" class="muted" font-size="11">fewer</text>
+      <text x="100" y="220" text-anchor="middle" class="muted" font-size="11">generated styled-system</text>
+    </g>
+
+    <!-- 5: Runtime css() -->
+    <g transform="translate(940 150)">
+      <rect width="200" height="260" rx="16" class="card"/>
+      <rect x="20" y="20" width="32" height="6" rx="3" class="yl"/>
+      <text x="20" y="48" class="muted mono" font-size="12" font-weight="700" letter-spacing="0.5">RUNTIME css()</text>
+      <text x="100" y="158" text-anchor="middle" class="ink" font-size="34" font-weight="800">~4&#215;</text>
+      <text x="100" y="200" text-anchor="middle" class="muted" font-size="11">faster, up to</text>
+      <text x="100" y="220" text-anchor="middle" class="muted" font-size="11">wrapper chains</text>
+    </g>
+  </g>
+</svg>
