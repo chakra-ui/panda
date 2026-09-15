@@ -10,7 +10,7 @@ publish that file next to your components.
 
 ## Emit a stylesheet
 
-Run codegen first, then pick how the CSS is shaped.
+Two shapes, depending on how the app wants to consume it.
 
 ### Bundled CSS file
 
@@ -62,25 +62,23 @@ Export the tree rather than a single file:
   "exports": {
     "./styles.css": "./dist/panda/styles.css",
     "./styles/*": "./dist/panda/styles/*"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "panda codegen && panda cssgen --splitting --outdir dist/panda && tsup"
   }
 }
 ```
 
-The app takes everything, or one recipe:
+Now the app imports everything, or only the recipes it renders:
 
 ```ts
 import '@acme/ds/styles.css'
 import '@acme/ds/styles/recipes/button.css'
 ```
 
-Only `styles.css` declares the layer order. Import leaves on their own and layers rank by first appearance instead,
-which is not the order Panda intends. If you cherry-pick, declare it yourself first:
-
-```css
-@layer reset, base, tokens, recipes, utilities;
-
-@import '@acme/ds/styles/recipes/button.css';
-```
+`styles.css` is where the `@layer` declarations live, and the individual files don't repeat them. Skip it and the app
+has to set the cascade order itself.
 
 ## Emit every variant
 
@@ -100,7 +98,7 @@ Name the recipes instead of `'*'` if the same package also ships for `designSyst
 
 ## Import it in the app
 
-The app needs just the CSS file and your components:
+The app needs the CSS and your components, nothing else:
 
 ```tsx filename="src/main.tsx"
 import '@acme/ds/styles.css'
@@ -111,12 +109,9 @@ export function App() {
 }
 ```
 
-```css filename="src/index.css"
-@layer reset, base, tokens, recipes, utilities;
-```
-
-Declare the layers yourself only if the app also loads other layered CSS of its own. The shipped file already carries
-the library's own rules.
+Two cases need the app to declare the cascade order itself: it has layered CSS of its own, or it cherry-picked files
+instead of importing `styles.css`. Copy the `@layer` lines from the top of `styles.css` into a stylesheet the app loads
+first. There are three of them, and the nested `recipes.*` lines matter as soon as you use more than one recipe.
 
 ## Managing style conflicts
 
