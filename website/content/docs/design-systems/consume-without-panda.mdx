@@ -82,25 +82,20 @@ which is not the order Panda intends. If you cherry-pick, declare it yourself fi
 @import '@acme/ds/styles/recipes/button.css';
 ```
 
-`panda lib` doesn't write any of these. That command is for apps that consume you through `designSystem`, not a plain
-stylesheet. Add the exports yourself.
-
 ## Emit every variant
 
-The app never scans your source, so the sheet holds only what the library itself rendered. A recipe your components
-never call is left out entirely, and a variant they never pass ships as a class name with no rule behind it.
-Pre-generate them:
+The app never scans your source, so the sheet holds only what your own components rendered. A recipe they never call is
+left out entirely; a variant they never pass ships as a class name with no rule behind it.
 
 ```ts filename="packages/ds/panda.config.ts"
 export default defineConfig({
   staticCss: {
-    recipes: { button: ['*'], card: ['*'] }
+    recipes: '*'
   }
 })
 ```
 
-`recipes: '*'` covers every recipe and is fine for a stylesheet-only package. List them instead if the same package also
-ships for `designSystem` consumers, where the app generates its own CSS and this file is dead weight. See
+Name the recipes instead of `'*'` if the same package also ships for `designSystem` consumers. See
 [Static CSS](/docs/styling/static).
 
 ## Import it in the app
@@ -125,8 +120,9 @@ the library's own rules.
 
 ## Managing style conflicts
 
-Two independently built stylesheets can emit the exact same class names (`.button`, `--colors-brand`). Set `prefix` in
-the library whose styles should yield:
+Two independently built stylesheets can emit the same class names (`.button`, `--colors-brand`), and an app without
+Panda can't deduplicate them. Set `prefix` in the library before you publish. Changing it later breaks everyone already
+importing your CSS.
 
 ```ts filename="packages/ds/panda.config.ts"
 export default defineConfig({
@@ -134,19 +130,7 @@ export default defineConfig({
 })
 ```
 
-```ts
-// also works: hash class names, or move CSS variables under a scoped root
-hash: true
-cssVarRoot: '#app'
-```
-
-Derive the prefix from the package's name and major version. A hardcoded one drifts the moment you forget to bump it.
-The full collision model, token scoping, and the limits of `prefix`: [Style isolation](/docs/styling/style-isolation).
-
-## Storybook still runs Panda
-
-Your stories call the same recipes your components do, so Storybook is a Panda consumer even though production only ever
-imports `styles.css`. See [Storybook](/docs/design-systems/storybook).
+`hash` and `cssVarRoot` do the same job differently. See [Style isolation](/docs/styling/style-isolation).
 
 ## Example
 
@@ -162,4 +146,5 @@ npx degit chakra-ui/panda-examples/examples/standalone-app my-app
 
 - [Build a design system](/docs/design-systems/build-a-design-system) if you also ship `panda lib` for Panda apps
 - [Consume with Panda](/docs/design-systems/consume-with-panda) when the app can run Panda
+- [Storybook](/docs/design-systems/storybook) because your stories run Panda even though the app doesn't
 - [`panda cssgen`](/docs/reference/cli#cssgen)
