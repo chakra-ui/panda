@@ -78,7 +78,7 @@ impl WasmCompiler {
     }
 
     /// Rust-built token dictionary projected into the small JS interop shape.
-    #[wasm_bindgen(js_name = token_dictionary)]
+    #[wasm_bindgen(js_name = tokenDictionary)]
     pub fn token_dictionary(&self) -> Result<JsValue, JsValue> {
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         match self.inner.config().token_dictionary() {

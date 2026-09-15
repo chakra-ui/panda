@@ -45,6 +45,9 @@ To get started, we will need to create a new Qwik project using `typescript` tem
 
 Install panda, the Vite plugin, and create your `panda.config.ts` file.
 
+`panda init` also installs `@pandacss/preset-base` and `@pandacss/preset-panda` and lists them under `presets`. Keep
+them there. Without them you get no utilities, tokens or conditions.
+
 <Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
   {/* <!-- prettier-ignore-start --> */}
   <Tab>
@@ -113,10 +116,11 @@ The plugin only runs with Vite. The `"prepare"` script covers type checking and 
 
 Set `jsxFramework: 'qwik'` and make sure your component paths are in `include`:
 
-```js {5,6} filename="panda.config.ts"
+```js {6,7} filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   preflight: true,
   include: ['./src/**/*.{js,jsx,ts,tsx}'],
   jsxFramework: 'qwik',

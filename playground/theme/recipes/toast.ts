@@ -1,17 +1,10 @@
-import { toastAnatomy } from '@ark-ui/react/toast'
-import { defineParts, defineRecipe } from '@pandacss/dev'
+import { defineSlotRecipe } from '@pandacss/dev'
 
-const parts = defineParts({
-  ...toastAnatomy.build(),
-  content: { selector: '& [data-part="content"]' },
-  ellipse: { selector: '& [data-part="ellipse"]' },
-  icon: { selector: '& [data-part="icon"]' },
-})
-
-export const toast = defineRecipe({
+export const toast = defineSlotRecipe({
   className: 'toast',
+  slots: ['group', 'root', 'content', 'title', 'description', 'icon'],
   description: 'A toast style',
-  base: parts({
+  base: {
     root: {
       display: 'inline-flex',
       px: '4',
@@ -62,5 +55,5 @@ export const toast = defineRecipe({
         height: '20px',
       },
     },
-  }),
+  },
 })

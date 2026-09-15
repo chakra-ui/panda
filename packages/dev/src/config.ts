@@ -7,7 +7,6 @@ import type {
   GlobalFontface,
   GlobalStyleObject,
   LayerStyles,
-  Parts,
   PatternConfig,
   PandaPlugin,
   Preset,
@@ -21,9 +20,32 @@ import type {
   TextStyles,
   ThemeVariant,
   Tokens,
+  FirstThatWorksMember,
   ViewTransitions,
   PositionTry,
 } from '@pandacss/types'
+
+type FirstThatWorksMemberOf<T> = Extract<T, FirstThatWorksMember>
+
+export function firstThatWorks<
+  T = FirstThatWorksMember,
+  A extends FirstThatWorksMemberOf<T> = FirstThatWorksMemberOf<T>,
+  B extends FirstThatWorksMemberOf<T> = FirstThatWorksMemberOf<T>,
+  C extends FirstThatWorksMemberOf<T> = never,
+  D extends FirstThatWorksMemberOf<T> = never,
+  E extends FirstThatWorksMemberOf<T> = never,
+  F extends FirstThatWorksMemberOf<T> = never,
+>(
+  first: A,
+  second: B,
+  third?: C,
+  fourth?: D,
+  fifth?: E,
+  sixth?: F,
+): T extends FirstThatWorksMember ? A | B | C | D | E | F : FirstThatWorksMemberOf<T>
+export function firstThatWorks(...values: unknown[]) {
+  return `firstThatWorks(${values.join(', ')})`
+}
 
 export function defineConfig<const T extends Config>(config: T): T & { name: string } {
   return Object.assign(config, { name: '__panda.config__' })
@@ -37,21 +59,6 @@ export function defineSlotRecipe<S extends string, T extends SlotRecipeVariantRe
   config: SlotRecipeConfig<S, T>,
 ): SlotRecipeConfig<S, T> {
   return config
-}
-
-export function defineParts<T extends Parts>(parts: T) {
-  return (config: Partial<Record<keyof T, SystemStyleObject>>): SystemStyleObject =>
-    Object.fromEntries(
-      Object.entries(config).map(([key, value]) => {
-        const part = parts[key as keyof T]
-        if (part == null) {
-          throw new Error(
-            `Part "${key}" does not exist in the anatomy. Available parts: ${Object.keys(parts).join(', ')}`,
-          )
-        }
-        return [part.selector, value]
-      }),
-    )
 }
 
 export function definePattern<T extends PatternConfig>(config: T): PatternConfig {
@@ -103,13 +110,13 @@ function createProxy() {
   })
 }
 
-export const defineTokens = createProxy() as {
+export const defineTokens = /* @__PURE__ */ createProxy() as {
   <Value>(definition: Value): Value
 } & {
   [K in keyof Required<Tokens>]: <Value>(definition: Value) => Value
 }
 
-export const defineSemanticTokens = createProxy() as {
+export const defineSemanticTokens = /* @__PURE__ */ createProxy() as {
   <Value>(definition: Value): Value
 } & {
   [K in keyof Required<SemanticTokens>]: <Value>(definition: Value) => Value

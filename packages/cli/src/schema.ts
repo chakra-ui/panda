@@ -125,15 +125,12 @@ export const debugFlagsSchema = infoFlagsSchema.extend({
   onlyConfig: booleanFlag,
 })
 
-export const analyzeFlagsSchema = commonFlagsSchema.extend({
-  // Scope to include in the report: all, tokens, recipes, utilities, patterns, keyframes (or token/recipe aliases)
-  scope: enumOf(['all', 'tokens', 'recipes', 'utilities', 'patterns', 'keyframes', 'token', 'recipe']),
+export const analyzeFlagsSchema = commonFlagsSchema.omit({ watch: true, watchDebounce: true }).extend({
+  // One section of the report; omit it for every section (token/recipe are aliases)
+  scope: enumOf(['tokens', 'recipes', 'utilities', 'patterns', 'keyframes', 'token', 'recipe']),
   outfile: stringFlag,
-  report: stringFlag,
   limit: numberLikeFlag,
-  ui: booleanFlag,
-  uiHost: stringFlag,
-  uiPort: numberLikeFlag,
+  unused: booleanFlag,
 })
 
 export type LogLevel = EnumValues<typeof logLevelSchema>
@@ -199,9 +196,7 @@ export interface BuildResult extends CommandResult {
 }
 
 export interface AnalyzeResult extends CommandResult, UsageReport {
-  scope: AnalyzeScope
-  report?: string
-  ui?: string
+  outfile?: string
 }
 
 export interface DebugResult extends CommandResult {

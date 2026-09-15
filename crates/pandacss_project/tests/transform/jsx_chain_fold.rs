@@ -1,6 +1,6 @@
 //! Folding `styled()` component chains to their intrinsic tag.
 
-use super::common::transform_jsx;
+use super::common::{project_with_panda_jsx, transform_jsx, transform_jsx_with_project};
 use indoc::indoc;
 use insta::assert_snapshot;
 
@@ -464,5 +464,24 @@ fn a_conditional_default_prop_folds() {
       defaultProps: { color: { base: 'blue', _hover: 'green' } },
     });
     export const el = <button className="color_blue hover:color_green" />;
+    "#);
+}
+
+#[test]
+fn folds_a_chain_built_with_a_custom_factory_name_to_its_tag() {
+    let source = indoc! {r#"
+        import { panda } from '@panda/jsx';
+        const Button = panda('button', { base: { color: 'red' } });
+        export const el = <Button type="submit">hi</Button>;
+    "#};
+
+    let output = transform_jsx_with_project(&project_with_panda_jsx(), "src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { cva as __pcva } from '@pandacss-internal/css';
+    import { panda } from '@panda/jsx';
+    const Button = /* @__PURE__ */ panda('button', /* @__PURE__ */ __pcva({ base: 'color_red' }));
+    export const el = <button type="submit" className="color_red">hi</button>;
     "#);
 }

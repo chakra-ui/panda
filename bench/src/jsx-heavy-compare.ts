@@ -22,11 +22,13 @@ const rustConfig = {
     tokens: ['@panda/tokens'],
   },
   jsxFactory: 'styled',
+  jsxFramework: 'react',
 }
 const rustSnapshot = createConfigSnapshot(rustConfig)
 
-const componentNames = new Set(['Box', 'Stack', 'Grid', 'styled.div'])
+const componentNames = new Set(['Box', 'Stack', 'Grid', 'styled.div', 'PrimaryAction', 'FieldInput'])
 const functionNames = new Set(['css'])
+const preflightNames = ['Box', 'FieldInput', 'Grid', 'PrimaryAction', 'Stack', 'css', 'styled.div']
 
 function main() {
   const args = parseArgs(process.argv.slice(2))
@@ -50,6 +52,27 @@ function main() {
   } as any)
 
   const rustExtractor = createCompilerFromSnapshot(rustSnapshot)
+  const preflightSource = generatedSource(8)
+  const jsPreflight = inspectJs(project, preflightSource, path)
+  const rustPreflight = rustExtractor.extractFileSource(path, preflightSource)
+  const rustPreflightNames = [...rustPreflight.calls, ...rustPreflight.jsx].map((item) => item.name).sort()
+
+  if (rustPreflight.diagnostics.length !== 0) {
+    throw new Error(`Rust extraction produced ${rustPreflight.diagnostics.length} diagnostics`)
+  }
+  if (!sameNames(jsPreflight.names, preflightNames)) {
+    throw new Error(
+      `Expected JS preflight names ${preflightNames.join(', ')}, received ${jsPreflight.names.join(', ')}`,
+    )
+  }
+  if (!sameNames(rustPreflightNames, preflightNames)) {
+    throw new Error(
+      `Expected Rust preflight names ${preflightNames.join(', ')}, received ${rustPreflightNames.join(', ')}`,
+    )
+  }
+  if (jsPreflight.count !== rustPreflightNames.length) {
+    throw new Error(`Extraction checksum mismatch: JS ${jsPreflight.count}, Rust ${rustPreflightNames.length}`)
+  }
 
   for (let i = 0; i < args.warm; i++) {
     runJs(project, source, path)
@@ -65,11 +88,20 @@ function main() {
 
   const rustStart = performance.now()
   let rustChecksum = 0
+  let rustDiagnostics = 0
   for (let i = 0; i < args.iterations; i++) {
     const result = rustExtractor.extractFileSource(path, source)
-    rustChecksum += result.calls.length + result.jsx.length + result.diagnostics.length
+    rustChecksum += result.calls.length + result.jsx.length
+    rustDiagnostics += result.diagnostics.length
   }
   const rustMs = performance.now() - rustStart
+
+  if (rustDiagnostics !== 0) {
+    throw new Error(`Rust extraction produced ${rustDiagnostics} diagnostics during measurement`)
+  }
+  if (jsChecksum !== rustChecksum) {
+    throw new Error(`Extraction checksum mismatch: JS ${jsChecksum}, Rust ${rustChecksum}`)
+  }
 
   console.log(
     JSON.stringify(
@@ -97,11 +129,18 @@ function main() {
 }
 
 function runJs(project: Project, source: string, path: string): number {
+  const result = extractJs(project, source, path)
+  let count = 0
+  for (const item of result.values()) count += item.queryList.length
+  return count
+}
+
+function extractJs(project: Project, source: string, path: string) {
   const sourceFile = project.createSourceFile(path, source, {
     overwrite: true,
     scriptKind: ts.ScriptKind.TSX,
   })
-  const result = jsExtract({
+  return jsExtract({
     ast: sourceFile,
     components: {
       matchTag: ({ tagName }) => componentNames.has(tagName),
@@ -114,9 +153,22 @@ function runJs(project: Project, source: string, path: string): number {
     },
     flags: { skipTraverseFiles: true },
   })
+}
+
+function inspectJs(project: Project, source: string, path: string): { count: number; names: string[] } {
+  const result = extractJs(project, source, path)
   let count = 0
-  for (const item of result.values()) count += item.queryList.length
-  return count
+  const names: string[] = []
+  for (const item of result.values()) {
+    count += item.queryList.length
+    names.push(...item.queryList.map((query) => query.name))
+  }
+  names.sort()
+  return { count, names }
+}
+
+function sameNames(actual: string[], expected: string[]): boolean {
+  return actual.length === expected.length && actual.every((name, index) => name === expected[index])
 }
 
 function parseArgs(argv: string[]): Args {
@@ -165,7 +217,7 @@ return <>
         source += `<PrimaryAction color='purple' />\n`
         break
       case 5:
-        source += `<FieldInput bg='gray.100' />\n`
+        source += `<FieldInput color='gray' />\n`
         break
       case 6:
         source += `<button.Root size='md' />\n`

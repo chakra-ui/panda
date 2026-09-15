@@ -67,7 +67,7 @@ export function pandacss(options: PandaRollupOptions = {}): Plugin[] {
       for (const dir of watchTargets.dirs) this.addWatchFile(driver!.resolvePath(dir))
       for (const config of watchTargets.config) this.addWatchFile(driver!.resolvePath(config))
       if (driver!.configPath) this.addWatchFile(driver!.configPath)
-      for (const file of driver!.scan()) this.addWatchFile(file)
+      for (const file of watchTargets.files ?? driver!.scan()) this.addWatchFile(file)
       for (const target of driver!.designSystemWatchTargets()) {
         this.addWatchFile(target.manifestPath)
         this.addWatchFile(target.buildInfoPath)
@@ -81,7 +81,8 @@ export function pandacss(options: PandaRollupOptions = {}): Plugin[] {
       const sourceChange = sourceChangeFromRollup(id, change.event)
       const designSystemFile = driver.isDesignSystemFile(id)
       if (designSystemFile) {
-        await driver.syncDesignSystemFileChange(sourceChange)
+        const changed = await driver.syncDesignSystemFileChange(sourceChange)
+        if (changed && designSystemFile === 'artifact') driver.codegen({ cwd, outdir })
       } else if (driver.isConfigFile(id)) {
         const diff = await driver.reload()
         if (diff.hasChanged) {

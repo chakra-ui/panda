@@ -139,9 +139,9 @@ can keep using `Project::from_config(config)` as the single entrypoint.
 
 ## Reflection: per-file parallelism
 
-Not yet done. Per-file parallelism is worth doing eventually via `rayon`, but it's tied to a deferred bulk-file API. A
-`parse_files(iter)` shape is the natural seam — once batch input lands, the parallelism can opt in there without
-disturbing the single-file API surface.
+Not yet done. The binding's `parseFiles()` loop is ordered and synchronous because source, pattern, and utility callbacks
+can call the JS host. It shares one `ParseSession` without changing callback or commit order. Future parallelism needs a
+separate pure-analysis phase; it should not turn `ParseSession` into a synchronized mutation API.
 
 ## Related
 

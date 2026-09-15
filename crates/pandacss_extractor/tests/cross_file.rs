@@ -4,12 +4,119 @@
 //! Fixtures use [`pandacss_fs::MemoryFileSystem`] so the resolver and our
 //! extractor share an in-memory tree — no tempdir, no disk I/O.
 
+use std::io;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
 use crate::common::{matcher, panda_config};
 use insta::assert_yaml_snapshot;
-use pandacss_extractor::{CrossFileResolver, ExtractUsage, ExtractorConfig, Matchers, extract};
-use pandacss_fs::MemoryFileSystem;
+use oxc_resolver::{FileMetadata, FileSystem as OxcFileSystem, ResolveError};
+use pandacss_extractor::{
+    CrossFileResolver, ExtractUsage, ExtractorConfig, Matchers, extract, extract_in_session,
+};
+use pandacss_fs::{FileSystem, MemoryFileSystem};
+
+#[derive(Clone)]
+struct CountingFileSystem {
+    inner: MemoryFileSystem,
+    reads: Arc<AtomicUsize>,
+    fail_source_reads: Arc<AtomicBool>,
+}
+
+impl CountingFileSystem {
+    fn new(inner: MemoryFileSystem) -> Self {
+        Self {
+            inner,
+            reads: Arc::default(),
+            fail_source_reads: Arc::default(),
+        }
+    }
+
+    fn reads(&self) -> usize {
+        self.reads.load(Ordering::Relaxed)
+    }
+
+    fn set_fail_source_reads(&self, fail: bool) {
+        self.fail_source_reads.store(fail, Ordering::Relaxed);
+    }
+
+    fn source_read_error(&self, path: &Path) -> Option<io::Error> {
+        (self.fail_source_reads.load(Ordering::Relaxed)
+            && path.extension().is_some_and(|extension| extension == "ts"))
+        .then(|| io::Error::new(io::ErrorKind::PermissionDenied, "fixture read failure"))
+    }
+}
+
+impl FileSystem for CountingFileSystem {
+    fn write(&self, path: &Path, content: &[u8]) -> io::Result<()> {
+        self.inner.write(path, content)
+    }
+
+    fn create_dir_all(&self, path: &Path) -> io::Result<()> {
+        self.inner.create_dir_all(path)
+    }
+
+    fn remove_file(&self, path: &Path) -> io::Result<()> {
+        self.inner.remove_file(path)
+    }
+
+    fn remove_dir_all(&self, path: &Path) -> io::Result<()> {
+        self.inner.remove_dir_all(path)
+    }
+
+    fn exists(&self, path: &Path) -> bool {
+        self.inner.exists(path)
+    }
+
+    fn read_dir(&self, path: &Path) -> io::Result<Vec<PathBuf>> {
+        self.inner.read_dir(path)
+    }
+}
+
+impl OxcFileSystem for CountingFileSystem {
+    fn new() -> Self {
+        Self::new(MemoryFileSystem::new())
+    }
+
+    fn read(&self, path: &Path) -> io::Result<Vec<u8>> {
+        if let Some(err) = self.source_read_error(path) {
+            return Err(err);
+        }
+        let result = OxcFileSystem::read(&self.inner, path);
+        if result.is_ok() {
+            self.reads.fetch_add(1, Ordering::Relaxed);
+        }
+        result
+    }
+
+    fn read_to_string(&self, path: &Path) -> io::Result<String> {
+        if let Some(err) = self.source_read_error(path) {
+            return Err(err);
+        }
+        let result = OxcFileSystem::read_to_string(&self.inner, path);
+        if result.is_ok() {
+            self.reads.fetch_add(1, Ordering::Relaxed);
+        }
+        result
+    }
+
+    fn metadata(&self, path: &Path) -> io::Result<FileMetadata> {
+        self.inner.metadata(path)
+    }
+
+    fn symlink_metadata(&self, path: &Path) -> io::Result<FileMetadata> {
+        self.inner.symlink_metadata(path)
+    }
+
+    fn read_link(&self, path: &Path) -> Result<PathBuf, ResolveError> {
+        self.inner.read_link(path)
+    }
+
+    fn canonicalize(&self, path: &Path) -> io::Result<PathBuf> {
+        self.inner.canonicalize(path)
+    }
+}
 
 /// Build an in-memory project at `/proj` with `main.tsx` plus N sibling
 /// files. Returns the populated FS + the absolute main.tsx path.
@@ -459,6 +566,34 @@ fn cyclic_imports_drop_safely_without_panic() {
 }
 
 #[test]
+fn cycle_guard_is_reset_between_extractions_in_one_session() {
+    let source = indoc::indoc! {r"
+        import { brand } from './a';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    let (fs, main) = project(
+        source,
+        &[
+            ("a.ts", "import { brand } from './b';\nexport { brand };\n"),
+            ("b.ts", "import { brand } from './a';\nexport { brand };\n"),
+        ],
+    );
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs));
+    let session = config
+        .cross_file
+        .as_ref()
+        .expect("cross-file resolver")
+        .session();
+
+    let first = extract_in_session(source, main.to_str().unwrap(), &config, &session);
+    let second = extract_in_session(source, main.to_str().unwrap(), &config, &session);
+
+    assert_yaml_snapshot!(shape(&first), @"calls: []");
+    assert_yaml_snapshot!(shape(&second), @"calls: []");
+}
+
+#[test]
 fn cache_reuses_across_multiple_extracts() {
     // Build one cross-file resolver, run extract() twice — the second run
     // should hit the cached tokens file. The contract is "two runs
@@ -659,6 +794,201 @@ fn cache_reloads_exports_through_a_re_export() {
           data:
             - color: blue
     ");
+}
+
+#[test]
+fn session_keeps_one_module_revision_while_other_sessions_refresh() {
+    let source = indoc::indoc! {r"
+        import { brand } from './barrel';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    let (fs, main) = project(
+        source,
+        &[
+            ("barrel.ts", "export { brand } from './tokens';\n"),
+            ("tokens.ts", "export const brand = 'red';\n"),
+        ],
+    );
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+    let session = config
+        .cross_file
+        .as_ref()
+        .expect("cross-file resolver")
+        .session();
+
+    let first = extract_in_session(source, main.to_str().unwrap(), &config, &session);
+    fs.add_file(
+        PathBuf::from("/proj/tokens.ts"),
+        b"export const brand = 'blue';\n".to_vec(),
+    );
+    let refreshed = extract(source, main.to_str().unwrap(), &config);
+    let same_session = extract_in_session(source, main.to_str().unwrap(), &config, &session);
+    let next_session = config
+        .cross_file
+        .as_ref()
+        .expect("cross-file resolver")
+        .session();
+    let next = extract_in_session(source, main.to_str().unwrap(), &config, &next_session);
+
+    assert_yaml_snapshot!(serde_json::json!({
+        "first": shape(&first),
+        "refreshed": shape(&refreshed),
+        "sameSession": shape(&same_session),
+        "nextSession": shape(&next),
+    }), @r"
+    first:
+      calls:
+        - name: css
+          data:
+            - color: red
+    refreshed:
+      calls:
+        - name: css
+          data:
+            - color: blue
+    sameSession:
+      calls:
+        - name: css
+          data:
+            - color: red
+    nextSession:
+      calls:
+        - name: css
+          data:
+            - color: blue
+    ");
+}
+
+#[test]
+fn session_keeps_an_unresolved_import_missing() {
+    let source = indoc::indoc! {r"
+        import { brand } from './tokens';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    let (fs, main) = project(source, &[]);
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+    let session = config
+        .cross_file
+        .as_ref()
+        .expect("cross-file resolver")
+        .session();
+
+    let missing = extract_in_session(source, main.to_str().unwrap(), &config, &session);
+    fs.add_file(
+        PathBuf::from("/proj/tokens.ts"),
+        b"export const brand = 'blue';\n".to_vec(),
+    );
+    config
+        .cross_file
+        .as_ref()
+        .expect("cross-file resolver")
+        .clear_resolution_cache();
+    let same_session = extract_in_session(source, main.to_str().unwrap(), &config, &session);
+    let next_session = config
+        .cross_file
+        .as_ref()
+        .expect("cross-file resolver")
+        .session();
+    let next = extract_in_session(source, main.to_str().unwrap(), &config, &next_session);
+
+    assert_yaml_snapshot!(serde_json::json!({
+        "missing": shape(&missing),
+        "sameSession": shape(&same_session),
+        "nextSession": shape(&next),
+    }), @r"
+    missing:
+      calls: []
+    sameSession:
+      calls: []
+    nextSession:
+      calls:
+        - name: css
+          data:
+            - color: blue
+    ");
+}
+
+#[test]
+fn session_keeps_an_unreadable_module_unavailable() {
+    let source = indoc::indoc! {r"
+        import { brand } from './tokens';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    let fs = MemoryFileSystem::new();
+    fs.add_file(
+        PathBuf::from("/proj/tokens.ts"),
+        b"export const brand = 'blue';\n".to_vec(),
+    );
+    let fs = CountingFileSystem::new(fs);
+    fs.set_fail_source_reads(true);
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+    let session = config
+        .cross_file
+        .as_ref()
+        .expect("cross-file resolver")
+        .session();
+
+    let unreadable = extract_in_session(source, "/proj/A.tsx", &config, &session);
+    fs.set_fail_source_reads(false);
+    let same_session = extract_in_session(source, "/proj/B.tsx", &config, &session);
+    let next_session = config
+        .cross_file
+        .as_ref()
+        .expect("cross-file resolver")
+        .session();
+    let next = extract_in_session(source, "/proj/C.tsx", &config, &next_session);
+
+    assert_yaml_snapshot!(serde_json::json!({
+        "unreadable": shape(&unreadable),
+        "sameSession": shape(&same_session),
+        "nextSession": shape(&next),
+    }), @r"
+    unreadable:
+      calls: []
+    sameSession:
+      calls: []
+    nextSession:
+      calls:
+        - name: css
+          data:
+            - color: blue
+    ");
+}
+
+#[test]
+fn session_reads_a_shared_re_export_chain_once() {
+    let fs = MemoryFileSystem::new();
+    fs.add_file(
+        PathBuf::from("/proj/barrel.ts"),
+        b"export { brand } from './tokens';\n".to_vec(),
+    );
+    fs.add_file(
+        PathBuf::from("/proj/tokens.ts"),
+        b"export const brand = 'red';\n".to_vec(),
+    );
+    let fs = CountingFileSystem::new(fs);
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+    let session = config
+        .cross_file
+        .as_ref()
+        .expect("cross-file resolver")
+        .session();
+    let source = indoc::indoc! {r"
+        import { brand } from './barrel';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+
+    for index in 0..20 {
+        let path = format!("/proj/consumer-{index}.tsx");
+        let result = extract_in_session(source, &path, &config, &session);
+        assert_eq!(result.calls.len(), 1);
+    }
+
+    assert_eq!(fs.reads(), 2, "each imported module should be read once");
 }
 
 #[test]

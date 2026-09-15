@@ -83,10 +83,10 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
       addWatchFile(file)
     }
     const inputFile = inputId.split('?')[0] ?? inputId
-    for (const file of driver.scan()) {
+    const watchTargets = driver.watchTargets()
+    for (const file of watchTargets.files ?? driver.scan()) {
       if (file !== inputFile) watch(file)
     }
-    const watchTargets = driver.watchTargets()
     for (const dir of watchTargets.dirs) {
       watch(driver.resolvePath(dir))
     }
@@ -206,7 +206,10 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
         const change = await sourceChangeFromHotUpdate(ctx, designSystemFile === 'source')
         const changed = await driver.syncDesignSystemFileChange(change)
         if (changed) {
-          if (designSystemFile === 'artifact') watchedFiles.clear()
+          if (designSystemFile === 'artifact') {
+            watchedFiles.clear()
+            codegen()
+          }
           warnDesignSystemDiagnostics((message) => ctx.server.config.logger.warn(message))
         }
         return withInvalidatedRoots(this.environment, ctx.modules)

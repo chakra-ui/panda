@@ -534,7 +534,7 @@ fn extractor_config_matching(_config: &UserConfig) -> ExtractorConfig {
             modules: vec!["../styled-system/tokens".to_owned()],
             names: NameMatcher::only(["token"]),
         },
-        jsx_factories: None,
+        jsx_factories: Some(vec!["panda".to_owned()]),
         ..Default::default()
     })
     .with_jsx(JsxExtractionConfig {
@@ -553,6 +553,7 @@ fn extractor_config_matching(_config: &UserConfig) -> ExtractorConfig {
         component_regex_blocklist_set: None,
         valid_style_props,
     })
+    .with_jsx_framework(true)
 }
 
 /// Hand-rolled JSON config mirroring the *shape* of `sandbox/vite-ts/panda.config.ts`.
@@ -565,6 +566,7 @@ const CONFIG_JSON: &str = r##"{
   "outdir": "styled-system",
   "include": ["./src/**/*.{tsx,jsx}"],
   "exclude": [],
+  "jsxFramework": "react",
   "jsxFactory": "panda",
   "importMap": {
     "css":     ["../styled-system/css"],

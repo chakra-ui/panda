@@ -1,12 +1,10 @@
-import { tabsAnatomy } from '@ark-ui/react/tabs'
-import { defineParts, defineRecipe } from '@pandacss/dev'
+import { defineSlotRecipe } from '@pandacss/dev'
 
-const parts = defineParts(tabsAnatomy.build())
-
-export const docsTabsRecipe = defineRecipe({
+export const docsTabsRecipe = defineSlotRecipe({
   className: 'docsTabs',
+  slots: ['root', 'list', 'trigger', 'indicator', 'content'],
   description: 'Underlined tabs for docs content',
-  base: parts({
+  base: {
     root: {
       overflowX: 'auto',
       overflowY: 'hidden',
@@ -52,5 +50,5 @@ export const docsTabsRecipe = defineRecipe({
       rounded: 'md',
       pt: '6'
     }
-  })
+  }
 })

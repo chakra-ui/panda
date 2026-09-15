@@ -1,15 +1,11 @@
-import { createAnatomy } from '@ark-ui/react/anatomy'
-import { defineParts, defineRecipe } from '@pandacss/dev'
+import { defineSlotRecipe } from '@pandacss/dev'
 
-const anatomy = createAnatomy('callout', ['root', 'icon', 'content'])
-
-const parts = defineParts(anatomy.build())
-
-export const calloutRecipe = defineRecipe({
+export const calloutRecipe = defineSlotRecipe({
   className: 'callout',
+  slots: ['root', 'icon', 'content'],
   description: 'A callout style',
   jsx: ['Callout'],
-  base: parts({
+  base: {
     root: {
       overflowX: 'auto',
       mt: '6',
@@ -30,10 +26,10 @@ export const calloutRecipe = defineRecipe({
       minWidth: 0,
       lineHeight: '1.75rem'
     }
-  }),
+  },
   variants: {
     type: {
-      default: parts({
+      default: {
         root: {
           borderColor: 'orange.100',
           bg: 'orange.50',
@@ -44,8 +40,8 @@ export const calloutRecipe = defineRecipe({
             color: 'orange.300'
           }
         }
-      }),
-      error: parts({
+      },
+      error: {
         root: {
           borderColor: 'red.100',
           bg: 'red.50',
@@ -56,8 +52,8 @@ export const calloutRecipe = defineRecipe({
             color: 'red.200'
           }
         }
-      }),
-      info: parts({
+      },
+      info: {
         root: {
           borderColor: 'blue.100',
           bg: 'blue.50',
@@ -68,8 +64,8 @@ export const calloutRecipe = defineRecipe({
             color: 'blue.200'
           }
         }
-      }),
-      warning: parts({
+      },
+      warning: {
         root: {
           borderColor: 'yellow.100',
           bg: 'yellow.50',
@@ -80,7 +76,7 @@ export const calloutRecipe = defineRecipe({
             color: 'yellow.200'
           }
         }
-      })
+      }
     }
   },
   defaultVariants: {

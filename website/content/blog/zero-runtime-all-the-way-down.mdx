@@ -1,0 +1,358 @@
+---
+title: Zero runtime, all the way down
+description:
+  Source transforms rewrite css(), patterns, and recipes into class strings at build time. The styling runtime leaves
+  your bundle.
+date: 2026-09-10
+author: sage
+tags: [announcement, source-transforms, performance]
+type: release
+---
+
+For years, "zero runtime" CSS-in-JS has meant one thing: no styles injected in the browser. The CSS is extracted at
+build time and shipped as a stylesheet. That part is real, and Panda has done it since day one.
+
+Now look at what still ships. `css({ color: 'red.300' })` is a function call. Something has to run it, in the browser,
+on every render, to turn that object into `c_red.300`. Same for `hstack()`, for `button({ variant })`, for
+`<Stack gap="4">`. The stylesheet left the runtime. The JavaScript that resolves your styles never did.
+
+## Source transforms
+
+Panda removes it with source transforms, a feature of the bundler plugins, `@pandacss/vite`, `@pandacss/webpack`,
+`@pandacss/rollup`, and `@pandacss/bun`. The bundler is the one place that sees your source on its way to the bundle, so
+it is the one place that can rewrite it. Turn transforms on and each call site becomes the string Panda already
+computed:
+
+```tsx
+// you write
+export const title = css({
+  fontSize: '2xl',
+  fontWeight: 'bold',
+  color: 'gray.900',
+  _hover: { color: 'blue.500' }
+})
+
+// your bundle ships
+export const title = 'c_gray.900 fs_2xl fw_bold hover:c_blue.500'
+```
+
+No call. No import. Nothing left to run. It is one flag on the plugin:
+
+```ts filename="vite.config.ts"
+import pandacss from '@pandacss/vite'
+
+export default defineConfig({
+  plugins: [pandacss({ transform: true })]
+})
+```
+
+The same flag exists on the webpack, Rollup, and Bun plugins, and the
+[source transforms guide](/docs/styling/source-transforms) has the full option list. The CLI and PostCSS paths still
+generate your CSS at build time, but they keep the runtime, because nothing in them rewrites source.
+
+## The numbers
+
+A page built from nothing but Panda calls ships 14.3 KB of JavaScript with transforms off, gzipped. With them on, it
+ships 0.4 KB.
+
+![JavaScript shipped by a page built only from Panda calls, gzipped: 14.3 KB with transforms off, 0.4 KB with transforms on, and 4.0 KB when the page also uses cva, sva, and cx](/blog/chart-zero-runtime.svg)
+
+The project is as small as it sounds: a Vite build with no framework and one file. This is the whole source:
+
+```ts filename="src/main.ts"
+import { css } from '../styled-system/css'
+import { center, hstack, stack } from '../styled-system/patterns'
+import { button } from '../styled-system/recipes'
+import { token } from '../styled-system/tokens'
+
+document.querySelector('#app')!.innerHTML = `
+  <main class="${center({ h: 'full', flexDirection: 'column' })}">
+    <h1 class="${css({
+      fontSize: '2xl',
+      fontWeight: 'bold',
+      color: 'gray.900',
+      _hover: { color: 'blue.500' }
+    })}">
+      Zero runtime
+    </h1>
+    <div class="${stack({ gap: '4' })}">
+      <section class="${css({
+        p: '6',
+        rounded: 'xl',
+        bg: 'white',
+        shadow: 'md',
+        borderColor: 'blue.500'
+      })}">
+        <p class="${css({ color: 'gray.700', lineHeight: 'relaxed' })}">
+          All of these class names are computed at build time.
+        </p>
+      </section>
+      <div class="${hstack({ gap: '3', justify: 'flex-end' })}">
+        <button class="${button({ variant: 'outline', size: 'sm' })}">Cancel</button>
+        <button class="${button({ variant: 'solid' })}">Save</button>
+      </div>
+    </div>
+  </main>
+`
+
+document.body.style.setProperty('--brand', token('colors.blue.500'))
+```
+
+And this is the whole bundle it produced, with line breaks added:
+
+```js
+document.querySelector('#app').innerHTML = `
+  <main class="ai_center d_flex flex-d_column h_full jc_center">
+    <h1 class="c_gray.900 fs_2xl fw_bold hover:c_blue.500">
+      Zero runtime
+    </h1>
+    <div class="d_flex flex-d_column gap_4">
+      <section class="bg_white bd-c_blue.500 bdr_xl bx-sh_md p_6">
+        <p class="c_gray.700 lh_relaxed">
+          All of these class names are computed at build time.
+        </p>
+      </section>
+      <div class="ai_center d_flex flex-d_row gap_3 jc_flex-end">
+        <button class="button button--size_sm button--variant_outline">Cancel</button>
+        <button class="button button--size_md button--variant_solid">Save</button>
+      </div>
+    </div>
+  </main>
+`
+
+document.body.style.setProperty('--brand', 'oklch(62.3% 0.214 259.815)')
+```
+
+That is all of it. The 0.4 KB is the app's own markup string. Even `token('colors.blue.500')` became its value, and not
+one byte of Panda shipped. Add `cva()`, `sva()`, and `cx()` to the page and about 4 KB of helpers come back, which is
+the third bar. More on those under [what stays in the bundle](#what-stays).
+
+In a real app the saving is a fixed cost: the runtime is the same size at nine components or nine hundred.
+
+## Why there was a runtime
+
+The CSS was never the problem. Panda has always extracted it at build time and shipped a static stylesheet. The runtime
+was about class names.
+
+- **Panda lets you write styles anywhere.** Inline, in a prop, inside a ternary, next to the markup. Extraction could
+  find those styles and write the CSS, but it could not replace the call itself.
+- **Replacing a call means rewriting your file.** That takes a compiler that understands the whole module, sitting in
+  the bundler's path for every file. v1's engine was a TypeScript program in Node, too slow and too far from the bundler
+  to do that.
+- **So the class-name lookup ran in the browser.** The generated `css()`, patterns, and recipes shipped as a small
+  runtime whose only job was to map a style object to the class names already in the stylesheet. No styles were computed
+  or injected, just looked up.
+
+The Rust engine already parses each file once, folds constants, and follows values across files. Rewriting the source is
+that same analysis with a printer on the end.
+
+## What ships now
+
+Every example below is the real output of the transformer on the v2 branch. Only the line breaks are ours.
+
+### Patterns
+
+A pattern component collapses to the element it renders. The component is gone, the import is gone, and React has one
+less wrapper to reconcile:
+
+```tsx
+// you write
+<Stack gap="4" direction="row">
+  {children}
+</Stack>
+
+// ships as
+<div className="d_flex flex-d_row gap_4">
+  {children}
+</div>
+```
+
+### Recipes
+
+A config recipe call resolves its variants at build time:
+
+```tsx
+// you write
+<button className={button({ variant: 'outline', size: 'sm' })}>
+  Cancel
+</button>
+
+// ships as
+<button className="button button--size_sm button--variant_outline">
+  Cancel
+</button>
+```
+
+### Ternaries
+
+A ternary on a runtime value is not a dynamic style. Both branches are known, so both are computed. The browser only
+picks:
+
+```tsx
+// you write
+<div className={css({ p: '4', color: error ? 'red.500' : 'gray.700' })} />
+
+// ships as
+<div className={error ? 'c_red.500 p_4' : 'c_gray.700 p_4'} />
+```
+
+### Style props
+
+Style props next to a caller-supplied `className` become a concatenation. No helper, no lookup:
+
+```tsx
+// you write
+<panda.div className={props.className} p="6" rounded="xl" bg="white" shadow="md">
+  {props.children}
+</panda.div>
+
+// ships as
+<div className={props.className + ' bg_white bdr_xl bx-sh_md p_6'}>
+  {props.children}
+</div>
+```
+
+## What stays
+
+### Unknown values
+
+A value that only exists at runtime keeps its call. This is a decision, not a failure:
+
+```tsx
+// you write
+export const box = (color: string) => css({ color, p: '4' })
+
+// ships as
+import { cx as __pcx } from '@pandacss-internal/css'
+
+export const box = (color: string) => __pcx('p_4', css({ color }))
+```
+
+Even here, `p_4` was computed ahead of time. Only the part that depends on `color` survives, joined by a `cx` helper
+that knows nothing about your theme.
+
+### Runtime variants
+
+An atomic recipe whose variant is chosen at runtime keeps a variant table. The table holds strings, not style objects:
+
+```tsx
+// you write
+const button = cva({
+  base: { px: '4', py: '2', rounded: 'md' },
+  variants: {
+    tone: {
+      primary: { bg: 'blue.500', color: 'white' },
+      ghost: { bg: 'transparent' }
+    }
+  }
+})
+
+// ships as
+import { cva as __pcva } from '@pandacss-internal/css'
+
+const button = /* @__PURE__ */ __pcva({
+  base: 'bdr_md py_2 px_4',
+  variants: {
+    tone: {
+      primary: 'bg_blue.500 c_white',
+      ghost: 'bg_transparent'
+    }
+  }
+})
+```
+
+`@pandacss-internal/css` is a virtual module the plugin serves. It holds `cx`, `cva`, and `sva`, a file imports only
+what it uses, and an unused factory tree-shakes away with its import.
+
+### Per call site
+
+One unsafe site never bails a whole file. Here the input spreads unknown props, so it keeps its runtime form. Its parent
+and sibling are rewritten anyway:
+
+```tsx
+// you write
+<panda.div display="flex" gap="2">
+  <panda.label fontWeight="medium">{props.label}</panda.label>
+  <panda.input {...props.inputProps} p="2" rounded="md" />
+</panda.div>
+
+// ships as
+<div className="d_flex gap_2">
+  <label className="fw_medium">{props.label}</label>
+  <panda.input {...props.inputProps} p="2" rounded="md" />
+</div>
+```
+
+Panda also only rewrites tags it owns: the factory, its own patterns, and modules you list under `importMap.jsx`. A
+library component that shares a name with a recipe's `jsx` list still gets its CSS extracted, but its source is never
+touched.
+
+## How it works
+
+The transform lives in the Rust compiler, next to extraction, and reuses the parse extraction already did:
+
+![App.tsx is parsed once. The same parse feeds extraction, which writes styles.css, and the transform, which rewrites the file in one edit pass into App.js with a source map.](/blog/transform-one-pass.svg)
+
+Dead-import cleanup runs on the rewritten text. A fully inlined import disappears. A partly live one narrows:
+
+```tsx
+// you write
+import { css, cx } from '../styled-system/css'
+export const label = css({ fontWeight: 'medium' })
+export const merged = (extra: string) => cx(extra, label)
+
+// ships as
+import { cx } from '../styled-system/css'
+export const label = 'fw_medium'
+export const merged = (extra: string) => cx(extra, label)
+```
+
+The transform lives in Rust, beside extraction, so the same code runs in the native binding and in WebAssembly. The
+playground rewrites exactly what your build does.
+
+## Keep styles static
+
+The transform folds what it can prove at build time. The compiler needs to know the value, not just the shape. Literals
+fold, and so does a constant in the same file or imported from another. A ternary with literal branches folds to two
+strings:
+
+```tsx
+// you write
+const cardStyle = { p: '6', rounded: 'xl' } as const
+export const card = css(cardStyle)
+
+<span className={css({ px: '2', bg: active ? 'green.100' : 'gray.100' })} />
+
+// ships as
+export const card = 'bdr_xl p_6'
+
+<span className={active ? 'bg_green.100 px_2' : 'bg_gray.100 px_2'} />
+```
+
+A value built at runtime keeps a call, even when every possible result is a token:
+
+```tsx
+// you write
+<span className={css({ px: '2', bg: tone + '.100' })} />
+<span className={css({ px: '2', bg: tones[tone] })} />
+
+// ships as
+<span className={__pcx('px_2', css({ bg: tone + '.100' }))} />
+<span className={__pcx('px_2', css({ bg: tones[tone] }))} />
+```
+
+So, to get the most out of transforms:
+
+- **Enumerate, don't compute.** A ternary, a `cva()` variant, or a config recipe variant folds. `tone + '.100'` never
+  will.
+- **Pass variant names through props, not style objects.** `<Badge tone="ok" />` resolves at the call site.
+  `<Badge styles={{ bg: 'green.100' }} />` forces a runtime `css()` inside `Badge`, and spreading that object keeps the
+  whole call, static keys included.
+- **Reserve runtime `css()` for values that are truly unknown.** User-picked colors, DOM measurements, API data. That is
+  what the fallback is for, and it still precomputes everything around the unknown value.
+
+The stylesheet left the runtime a long time ago. Now the JavaScript follows it.
+
+```bash
+pnpm add -D @pandacss/dev@beta
+```

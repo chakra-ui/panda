@@ -7,6 +7,7 @@ type ExamplesProps = {
 }
 
 export const Examples = (props: ExamplesProps) => {
+  const classes = menu()
   return (
     <Menu.Root
       positioning={{ placement: 'bottom-start' }}
@@ -19,10 +20,10 @@ export const Examples = (props: ExamplesProps) => {
           Examples
         </button>
       </Menu.Trigger>
-      <Menu.Positioner className={menu()}>
-        <Menu.Content>
+      <Menu.Positioner>
+        <Menu.Content className={classes.content}>
           {EXAMPLES.map((example) => (
-            <Menu.Item key={example.id} value={example.id}>
+            <Menu.Item key={example.id} value={example.id} className={classes.item}>
               {example.label}
             </Menu.Item>
           ))}

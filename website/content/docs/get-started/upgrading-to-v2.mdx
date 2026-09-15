@@ -52,7 +52,7 @@ Add integrations on the same tag when you need them: `@pandacss/postcss@beta`, `
 v2 is ESM only and needs Node 22 or newer. Set `"type": "module"` (or use `.mjs`) so your `panda.config.ts` loads as
 ESM.
 
-Want reproducible installs? Pin an exact version like `@pandacss/dev@2.0.0-beta.14`. `@beta` always resolves to the
+Want reproducible installs? Pin an exact version like `@pandacss/dev@2.0.0-beta.16`. `@beta` always resolves to the
 newest pre-release.
 
 ### Build
@@ -138,6 +138,31 @@ const { withContext } = createRecipeContext(button)
 
 `withRootProvider` is new — use it for a slot recipe's root when the root doesn't render a slot of its own. See
 [slot recipe context](/docs/recipes/slot-recipe-context).
+
+### defineParts is gone
+
+`defineParts` only renamed keys to selectors, so write the selector yourself. For a class per part, use
+`defineSlotRecipe` instead.
+
+```ts
+// ❌ v1
+const parts = defineParts(anatomy.build())
+base: parts({ control: { borderWidth: '1px' } })
+
+// ✅ v2 — the selector is the key
+base: { '& [data-part="control"]': { borderWidth: '1px' } }
+```
+
+If you'd rather keep the helper, copy it into your config:
+
+```ts
+import type { SystemStyleObject } from '@pandacss/types'
+
+const defineParts =
+  <T extends Record<string, { selector: string }>>(parts: T) =>
+  (config: Partial<Record<keyof T, SystemStyleObject>>): SystemStyleObject =>
+    Object.fromEntries(Object.entries(config).map(([key, value]) => [parts[key].selector, value]))
+```
 
 ### MCP moved to its own package
 
@@ -249,7 +274,7 @@ Beyond parity, v2 adds features worth turning on:
 
 Honest gaps in the beta. Expect them to change before stable:
 
-- **Studio.** The Astro-based `@pandacss/studio` is gone. A lighter, CLI-generated studio is planned. See
+- **Studio.** The Astro-based `@pandacss/studio` is gone. Render your tokens from the JSON spec instead — see
   [Studio](/docs/theming/studio).
 - **PostCSS plugin.** `@pandacss/postcss` v2 is experimental. If it misbehaves, use the Vite plugin or `panda build`.
 - **CSS minification.** `minify: true` works in the native emitter; full parity with the v1 LightningCSS path is still

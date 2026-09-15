@@ -23,6 +23,7 @@ fn reexports_css_modules() {
         export * from './view-transition';
         export * from './position-try';
         export * from './keyframes';
+        export * from './first-that-works';
         "}
         .trim()
     );
@@ -48,6 +49,7 @@ fn mjs_without_import_extensions_emits_dts_for_bundler_resolution() {
         export * from './view-transition';
         export * from './position-try';
         export * from './keyframes';
+        export * from './first-that-works';
         "}
         .trim()
     );
@@ -72,19 +74,21 @@ fn can_emit_import_extensions() {
         export * from './view-transition.js';
         export * from './position-try.js';
         export * from './keyframes.js';
+        export * from './first-that-works.js';
         "}
         .trim()
     );
     assert_eq!(
         file(index, "css/index.d.ts"),
         indoc! {r"
-        export * from './css.d.ts';
-        export * from './cva.d.ts';
-        export * from './cx.d.ts';
-        export * from './sva.d.ts';
-        export * from './view-transition.d.ts';
-        export * from './position-try.d.ts';
-        export * from './keyframes.d.ts';
+        export * from './css.js';
+        export * from './cva.js';
+        export * from './cx.js';
+        export * from './sva.js';
+        export * from './view-transition.js';
+        export * from './position-try.js';
+        export * from './keyframes.js';
+        export * from './first-that-works.js';
         "}
         .trim()
     );
@@ -104,19 +108,21 @@ fn can_emit_import_extensions() {
         export * from './view-transition.mjs';
         export * from './position-try.mjs';
         export * from './keyframes.mjs';
+        export * from './first-that-works.mjs';
         "}
         .trim()
     );
     assert_eq!(
         file(index, "css/index.d.mts"),
         indoc! {r"
-        export * from './css.d.mts';
-        export * from './cva.d.mts';
-        export * from './cx.d.mts';
-        export * from './sva.d.mts';
-        export * from './view-transition.d.mts';
-        export * from './position-try.d.mts';
-        export * from './keyframes.d.mts';
+        export * from './css.mjs';
+        export * from './cva.mjs';
+        export * from './cx.mjs';
+        export * from './sva.mjs';
+        export * from './view-transition.mjs';
+        export * from './position-try.mjs';
+        export * from './keyframes.mjs';
+        export * from './first-that-works.mjs';
         "}
         .trim()
     );

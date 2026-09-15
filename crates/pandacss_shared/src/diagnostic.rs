@@ -19,6 +19,14 @@ pub mod codes {
     pub const CONFIG_TOKEN_NESTED_VALUE: &str = "config_token_nested_value";
     pub const CONFIG_TOKEN_SELF_REFERENCE: &str = "config_token_self_reference";
     pub const CONFIG_TOKEN_UNKNOWN_REFERENCE: &str = "config_token_unknown_reference";
+    pub const FIRST_THAT_WORKS_ARITY_INVALID: &str = "first_that_works_arity_invalid";
+    pub const FIRST_THAT_WORKS_CUSTOM_PROPERTY: &str = "first_that_works_custom_property";
+    pub const FIRST_THAT_WORKS_IMPORTANCE_MIXED: &str = "first_that_works_importance_mixed";
+    pub const FIRST_THAT_WORKS_MEMBER_INVALID: &str = "first_that_works_member_invalid";
+    pub const FIRST_THAT_WORKS_NESTED: &str = "first_that_works_nested";
+    pub const FIRST_THAT_WORKS_TRANSFORM_UNSUPPORTED: &str =
+        "first_that_works_transform_unsupported";
+    pub const FIRST_THAT_WORKS_UNBALANCED: &str = "first_that_works_unbalanced";
     pub const DEPRECATED_TOKEN_USED: &str = "deprecated_token_used";
     pub const DEPRECATED_UTILITY_USED: &str = "deprecated_utility_used";
     pub const DESIGN_SYSTEM_UTILITY_UNREGISTERED: &str = "design_system_utility_unregistered";

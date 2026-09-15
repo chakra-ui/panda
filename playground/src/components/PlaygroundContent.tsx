@@ -21,6 +21,7 @@ interface Props {
   config: UseConfig
 }
 export const PlaygroundContent = (props: Props) => {
+  const splitterClasses = splitter()
   const { playground, config: _config } = props
 
   const {
@@ -116,25 +117,30 @@ export const PlaygroundContent = (props: Props) => {
           isResponsive={isResponsive}
         />
       </Toolbar>
-      <Splitter.Root panels={panels} onResize={onResizePanels} orientation={layout} className={splitter()}>
-        <Splitter.Panel id="left">
+      <Splitter.Root panels={panels} onResize={onResizePanels} orientation={layout} className={splitterClasses.root}>
+        <Splitter.Panel id="left" className={splitterClasses.panel}>
           <Splitter.Root
             panels={[{ id: 'editor', minSize: 5 }, { id: 'artifacts' }]}
             defaultSize={[50, 50]}
             orientation="vertical"
-            className={splitter()}
+            className={splitterClasses.root}
           >
-            <Splitter.Panel id="editor">
+            <Splitter.Panel id="editor" className={splitterClasses.panel}>
               <Editor value={state} onChange={setState} panda={panda} diffState={diffState} isLoading={isLoading} />
             </Splitter.Panel>
 
             <ArtifactsPanel panda={panda} />
           </Splitter.Root>
         </Splitter.Panel>
-        <Splitter.ResizeTrigger id="left:preview" asChild disabled={isPreviewMode}>
+        <Splitter.ResizeTrigger
+          id="left:preview"
+          asChild
+          disabled={isPreviewMode}
+          className={splitterClasses.resizeTrigger}
+        >
           <div />
         </Splitter.ResizeTrigger>
-        <Splitter.Panel id="preview" className={css({ zIndex: 3, pos: 'relative' })}>
+        <Splitter.Panel id="preview" className={cx(splitterClasses.panel, css({ zIndex: 3, pos: 'relative' }))}>
           <Preview
             source={_state.code}
             panda={panda}

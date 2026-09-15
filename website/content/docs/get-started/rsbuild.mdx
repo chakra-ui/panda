@@ -50,6 +50,9 @@ To get started, we will need to create a new Rsbuild project using `react-ts` te
 
 Install panda and create your `panda.config.ts` file.
 
+`panda init` also installs `@pandacss/preset-base` and `@pandacss/preset-panda` and lists them under `presets`. Keep
+them there. Without them you get no utilities, tokens or conditions.
+
 <Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   {/* <!-- prettier-ignore-start --> */}
   <Tab>
@@ -105,10 +108,11 @@ Open your `package.json` file and update the `scripts` section as follows:
 Make sure that all of the paths of your React components are included in the `include` section of the `panda.config.ts`
 file.
 
-```js {8} filename="panda.config.ts"
+```js {9} filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   // Whether to use css reset
   preflight: true,
 

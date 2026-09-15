@@ -5,7 +5,7 @@
 //! directly into the same `ExtractedJsx` shape the JSX visitor emits.
 
 use crate::adapter::{
-    blank_like, copy_range, find_bytes, find_matching_brace, has_extension, has_non_html_lang,
+    SfcFormat, blank_like, copy_range, find_bytes, find_matching_brace, has_non_html_lang,
     starts_with, tag_blocks,
 };
 use crate::{
@@ -53,11 +53,15 @@ pub(crate) fn collect_template_styles(
     if !config.has_jsx_framework {
         return Vec::new();
     }
+    // PERF(port): template extraction scans the full source and AST; only SFC formats need it.
+    let Some(format) = SfcFormat::from_path(path) else {
+        return Vec::new();
+    };
 
-    let context_source = template_context_source(source, path);
+    let context_source = template_context_source(source, format);
     let mut literal_index = TemplateLiteralIndex {
         resolver,
-        ranges: template_markup_ranges(source, path),
+        ranges: template_markup_ranges(source, format),
         literals: FxHashMap::default(),
     };
     literal_index.visit_program(program);
@@ -67,19 +71,15 @@ pub(crate) fn collect_template_styles(
         path,
         matched,
         config,
+        cross_file: resolver.cross_file_context(),
         literals: literal_index.literals,
         retain_transform_facts,
     };
-    if has_extension(path, "vue") {
-        return collect_vue_template_styles(source, matched, config, &context);
+    match format {
+        SfcFormat::Vue => collect_vue_template_styles(source, matched, config, &context),
+        SfcFormat::Svelte => collect_svelte_template_styles(source, matched, config, &context),
+        SfcFormat::Astro => collect_astro_template_styles(source, matched, config, &context),
     }
-    if has_extension(path, "svelte") {
-        return collect_svelte_template_styles(source, matched, config, &context);
-    }
-    if has_extension(path, "astro") {
-        return collect_astro_template_styles(source, matched, config, &context);
-    }
-    Vec::new()
 }
 
 /// Astro markup uses the same JSX attribute syntax as Svelte (`attr="x"`,
@@ -124,11 +124,11 @@ fn collect_astro_template_styles(
     out
 }
 
-fn template_context_source<'a>(source: &'a str, path: &str) -> Cow<'a, str> {
-    if has_extension(path, "vue") || has_extension(path, "svelte") {
-        return Cow::Owned(mask_script_blocks(source));
+fn template_context_source(source: &str, format: SfcFormat) -> Cow<'_, str> {
+    match format {
+        SfcFormat::Vue | SfcFormat::Svelte => Cow::Owned(mask_script_blocks(source)),
+        SfcFormat::Astro => crate::adapt_source(source, Some(format)),
     }
-    crate::adapt_source(source, path)
 }
 
 fn mask_script_blocks(source: &str) -> String {
@@ -145,6 +145,7 @@ struct TemplateContext<'a> {
     path: &'a str,
     matched: &'a [MatchedImport],
     config: &'a ExtractorConfig,
+    cross_file: Option<&'a crate::cross_file::CrossFileContext<'a>>,
     literals: FxHashMap<(u32, u32), Literal>,
     retain_transform_facts: bool,
 }
@@ -623,11 +624,7 @@ fn parse_expression_literal(
             matchers: Some(&context.config.matchers),
             tokens: context.config.token_dictionary.as_deref(),
             prefix: context.config.class_name_prefix.as_str(),
-            cross_file: context
-                .config
-                .cross_file
-                .as_ref()
-                .map(crate::CrossFileResolver::as_lookup),
+            cross_file: context.cross_file,
             source_path: Some(std::path::PathBuf::from(context.path)),
             line_index: None,
             pattern_raw_transform: None,
@@ -645,9 +642,9 @@ fn parse_expression_literal(
     None
 }
 
-fn template_markup_ranges(source: &str, path: &str) -> Vec<(u32, u32)> {
+fn template_markup_ranges(source: &str, format: SfcFormat) -> Vec<(u32, u32)> {
     let mut ranges = Vec::new();
-    if has_extension(path, "vue") {
+    if matches!(format, SfcFormat::Vue) {
         for block in tag_blocks(source, "template") {
             if !has_non_html_lang(source, block.open_start, block.open_end) {
                 push_range(&mut ranges, block.content_start, block.content_end);
@@ -657,7 +654,7 @@ fn template_markup_ranges(source: &str, path: &str) -> Vec<(u32, u32)> {
     }
 
     let mut excluded = Vec::new();
-    if has_extension(path, "astro")
+    if matches!(format, SfcFormat::Astro)
         && let Some(end) = crate::astro_adapter::frontmatter_end(source)
     {
         excluded.push((0, end));

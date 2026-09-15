@@ -11,19 +11,21 @@ export const toaster = createToaster({
   placement: 'top',
 })
 
+const classes = toastStyles()
+
 export const AppToastProvider = (props: AppToastProviderProps) => (
   <>
     <Portal>
-      <Toaster toaster={toaster} className={toastStyles()}>
+      <Toaster toaster={toaster} className={classes.group}>
         {function render(toast) {
           return (
-            <Toast.Root>
-              <div data-part="icon" data-type={toast.type}>
+            <Toast.Root className={classes.root}>
+              <div className={classes.icon} data-type={toast.type}>
                 {icon[toast.type as 'success' | 'error']}
               </div>
-              <div data-part="content">
-                <Toast.Title>{toast.title}</Toast.Title>
-                <Toast.Description>{toast.description}</Toast.Description>
+              <div className={classes.content}>
+                <Toast.Title className={classes.title}>{toast.title}</Toast.Title>
+                <Toast.Description className={classes.description}>{toast.description}</Toast.Description>
               </div>
             </Toast.Root>
           )

@@ -116,9 +116,13 @@ interface Driver {
   artifacts(filter?: ArtifactFilter): CodegenArtifact[] // {path,code}[] for custom sinks
   writeArtifacts(outdir: string, cwd?: string): string[] // engine-fs sink (disk/memory)
   compile(): CompileOutput // CSS string + manifest; caller routes css
-  watchTargets(): { sources: string[]; dirs: string[]; config: string[] } // patterns, base dirs, config deps
+  watchTargets(): { files?: string[]; sources: string[]; dirs: string[]; config: string[] }
 }
 ```
+
+`files` contains the source paths already discovered by `parseFiles()` and updated by watcher events. Bundler adapters
+reuse them for watch registration instead of scanning the project again. The field is optional so custom Driver
+implementations can fall back to `scan()`.
 
 Note what is **absent** vs v1's `Builder`: no `fileModifiedMap`, no `checkFilesChanged`, no `affecteds` bookkeeping, and
 no JS glob. The Rust `Project` (`refreshFile` / `removeFile` / `generateAffectedArtifacts`) owns incremental + affected

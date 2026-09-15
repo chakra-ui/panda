@@ -839,3 +839,82 @@ fn snapshot_token_details(dict: &TokenDictionary) -> Vec<serde_json::Value> {
         })
         .collect()
 }
+
+#[test]
+fn negative_spacing_covers_the_shapes_a_scale_can_take() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "spacing": {
+                    "4": { "value": "1rem" },
+                    "0.5": { "value": "0.125rem" },
+                    "2.5": { "value": "0.625rem" },
+                    "gutter": { "value": "2rem" },
+                    "inline": { "sm": { "value": "0.5rem" } },
+                    "-8": { "value": "-2rem" },
+                    "none": { "value": "0px" },
+                    "zero": { "value": "0" },
+                    "flat": { "value": "0rem" }
+                }
+            }
+        }
+    }))
+    .expect("config should deserialize");
+
+    let dictionary = TokenDictionary::from_config(&config)
+        .expect("token dictionary should build")
+        .expect("config defines tokens");
+
+    let negatives: Vec<&str> = dictionary
+        .iter()
+        .filter(|token| token.extension("isNegative") == Some("true"))
+        .map(|token| token.path.as_ref())
+        .collect();
+
+    assert_yaml_snapshot!(negatives, @r"
+    - spacing.-4
+    - spacing.-0.5
+    - spacing.-2.5
+    - spacing.-gutter
+    - spacing.-inline.sm
+    ");
+}
+
+#[test]
+fn negative_spacing_keeps_fractional_names_intact() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "spacing": {
+                    "4": { "value": "1rem" },
+                    "0.5": { "value": "0.125rem" },
+                    "2.5": { "value": "0.625rem" }
+                }
+            }
+        }
+    }))
+    .expect("config should deserialize");
+
+    let dictionary = TokenDictionary::from_config(&config)
+        .expect("token dictionary should build")
+        .expect("config defines tokens");
+
+    let negatives: Vec<&str> = dictionary
+        .iter()
+        .filter(|token| token.extension("isNegative") == Some("true"))
+        .map(|token| token.path.as_ref())
+        .collect();
+
+    // The negative of `0.5` is `-0.5`, not `0.-5`.
+    assert_yaml_snapshot!(negatives, @r"
+    - spacing.-4
+    - spacing.-0.5
+    - spacing.-2.5
+    ");
+
+    let half = dictionary
+        .token("spacing.-0.5")
+        .expect("fractional negative should exist");
+    assert_eq!(half.extension("prop"), Some("-0.5"));
+    assert_eq!(half.extension("originalPath"), Some("spacing.0.5"));
+}

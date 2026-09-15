@@ -1,8 +1,4 @@
-import { createAnatomy } from '@ark-ui/react/anatomy'
-import { defineParts, defineRecipe } from '@pandacss/dev'
-
-const anatomy = createAnatomy('button', ['leftIcon', 'rightIcon'])
-const parts = defineParts(anatomy.build())
+import { defineRecipe } from '@pandacss/dev'
 
 export const buttonRecipe = defineRecipe({
   className: 'button',
@@ -24,14 +20,12 @@ export const buttonRecipe = defineRecipe({
         boxShadow: '6px 6px 0px 0px var(--shadow-color, black)'
       }
     },
-    ...parts({
-      leftIcon: {
-        marginRight: 3
-      },
-      rightIcon: {
-        marginLeft: 3
-      }
-    })
+    '& [data-left-icon]': {
+      marginRight: 3
+    },
+    '& [data-right-icon]': {
+      marginLeft: 3
+    }
   },
   variants: {
     shape: {

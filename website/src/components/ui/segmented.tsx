@@ -22,9 +22,10 @@ interface Props {
 export function Segmented(props: Props) {
   const { label, options, value, onValueChange, size, tone, orientation } =
     props
+  const classes = segmented({ size, tone })
   return (
     <SegmentGroup.Root
-      className={segmented({ size, tone })}
+      className={classes.root}
       value={value}
       orientation={orientation}
       onValueChange={details => {
@@ -32,11 +33,17 @@ export function Segmented(props: Props) {
       }}
       aria-label={label}
     >
-      <SegmentGroup.Indicator />
+      <SegmentGroup.Indicator className={classes.indicator} />
       {options.map(option => (
-        <SegmentGroup.Item key={option.value} value={option.value}>
+        <SegmentGroup.Item
+          key={option.value}
+          value={option.value}
+          className={classes.item}
+        >
           {option.icon && <span aria-hidden>{option.icon}</span>}
-          <SegmentGroup.ItemText>{option.label}</SegmentGroup.ItemText>
+          <SegmentGroup.ItemText className={classes.itemText}>
+            {option.label}
+          </SegmentGroup.ItemText>
           <SegmentGroup.ItemHiddenInput />
         </SegmentGroup.Item>
       ))}

@@ -1374,7 +1374,7 @@ mean responsive values. The separate [ordered CSS value fallbacks](./css-value-f
 
 ```ts
 css({
-  width: css.fallback('75%', progression(3, 4)),
+  width: firstThatWorks('75%', progression(3, 4)),
 })
 ```
 
@@ -1469,7 +1469,7 @@ browser:
 ### Phase 4: fallback exploration
 
 1. Design ordered declaration fallback IR separately.
-2. Prototype `css.fallback()` without coupling it to custom functions.
+2. Prototype `firstThatWorks()` without coupling it to custom functions.
 3. Measure CSS-size and extraction costs.
 4. Do not ship compile-time function-body substitution as a fallback.
 

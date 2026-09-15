@@ -88,50 +88,6 @@ export const checkboxRecipe = defineSlotRecipe({
 })
 ```
 
-### `defineParts`
-
-For when you want one class on one DOM element to carry every part's styles, instead of a slot recipe's separate class
-per part. Pass a map of part name to selector, and you get back a function that turns per-part style objects into one
-combined style object keyed by those selectors:
-
-```ts
-import { defineParts, defineRecipe } from '@pandacss/dev'
-
-const parts = defineParts({
-  root: { selector: '& [data-part="root"]' },
-  control: { selector: '& [data-part="control"]' },
-  label: { selector: '& [data-part="label"]' }
-})
-
-export const checkboxRecipe = defineRecipe({
-  className: 'checkbox',
-  description: 'A checkbox style',
-  base: parts({
-    root: { display: 'flex', alignItems: 'center', gap: '2' },
-    control: { borderWidth: '1px', borderRadius: 'sm' },
-    label: { marginStart: '2' }
-  }),
-  variants: {
-    size: {
-      sm: parts({
-        control: { width: '8', height: '8' },
-        label: { fontSize: 'sm' }
-      }),
-      md: parts({
-        control: { width: '10', height: '10' },
-        label: { fontSize: 'md' }
-      })
-    }
-  },
-  defaultVariants: {
-    size: 'sm'
-  }
-})
-```
-
-This is the shape [Zag.js](https://zagjs.com/) and [Ark UI](https://ark-ui.com/) render to, `data-part` attributes on a
-single root, rather than Panda's own slot convention.
-
 ### `definePattern`
 
 For a [pattern](/docs/theming/patterns) authored outside `defineConfig`.

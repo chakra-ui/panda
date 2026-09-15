@@ -206,6 +206,36 @@ Panda emits the `@position-try` block and tree-shakes it. Reusable fallbacks
 belong in `theme.positionTry`, referenced by name (`positionTry('flip')`). See
 [Position Try](/docs/styling/position-try).
 
+## Value fallbacks
+
+`stylex.firstThatWorks` maps one to one to Panda's `firstThatWorks`. Same name, same order: the value you
+want first. Both emit the declarations reversed, so the browser keeps the last one it understands:
+
+```ts
+// before
+const styles = stylex.create({
+  header: { position: stylex.firstThatWorks('sticky', '-webkit-sticky', 'fixed') }
+})
+```
+
+```ts
+// after
+import { css, firstThatWorks } from '../styled-system/css'
+
+const header = css({ position: firstThatWorks('sticky', '-webkit-sticky', 'fixed') })
+```
+
+```css
+position: fixed;
+position: -webkit-sticky;
+position: sticky;
+```
+
+Two differences. StyleX folds `var()` members into one nested `var(a, var(b, c))`; Panda keeps each member
+as its own declaration, because its token variables always exist and a native `var(--x, red)` fallback passes
+through untouched. And Panda needs at least two values, since one has nothing to fall back to. See
+[Value Fallbacks](/docs/styling/first-that-works).
+
 ## Color modes
 
 StyleX keys a `defineVars` value to a media query. Panda's semantic tokens are the direct equivalent, branching on

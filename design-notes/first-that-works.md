@@ -1,0 +1,502 @@
+---
+title: Ordered CSS value fallbacks (`firstThatWorks()`)
+status: implemented
+scope:
+  - crates/pandacss_shared
+  - crates/pandacss_extractor
+  - crates/pandacss_project
+  - crates/pandacss_stylesheet
+  - crates/pandacss_codegen
+  - packages/types
+  - packages/dev
+related:
+  - atomic-encoding.md
+  - stylesheet.md
+  - style-tree.md
+  - css-custom-functions.md
+  - keyframes-factory.md
+  - position-try-api.md
+---
+
+# Ordered CSS value fallbacks (`firstThatWorks()`)
+
+## Summary
+
+Panda emits an ordered run of declarations for one property when the value is written in the `firstThatWorks()` form:
+
+```ts
+css({
+  width: 'firstThatWorks(min(60rem, 100%), 75%)',
+})
+```
+
+```css
+.width_firstThatWorks\(min\(60rem\,_100\%\)\,_75\%\) {
+  width: 75%;
+  width: min(60rem, 100%);
+}
+```
+
+Members are written most-preferred first, the same shape as `var(--brand, red)`. Panda emits them in reverse, because
+CSS keeps the last declaration it understands.
+
+This is the progressive-enhancement primitive CSS already has and Panda could not express. It pairs a newer value with a
+widely supported one:
+
+```ts
+css({
+  color: 'firstThatWorks(oklch(55% 0.18 250), #0057b8)',
+  paddingInline: 'firstThatWorks(clamp(1rem, 4vw, 3rem), 1rem)',
+})
+```
+
+The value form, `firstThatWorks()`, extraction, transform, diagnostics, and CSS emission across atomic,
+condition-wrapped, recipe, slot, grouped, and minified output are all implemented.
+
+## The value is a string, and that is the whole design
+
+An earlier draft of this note proposed a marker object, `{ __panda: 'fallback', values: [...] }`, carried by new
+`Fallback` variants on `StyleTree`, `Literal`, and `AtomValue`, plus a `FallbackScalar` type, a build-info wire change,
+and a `SCHEMA_VERSION` bump from 5 to 6.
+
+None of that shipped, because none of it was needed. A fallback run is one value for one property. Writing it as one
+string says exactly that, and every stage Panda already has treats a string correctly without being taught anything:
+
+| Stage        | What it needed for the string form             |
+| ------------ | ---------------------------------------------- |
+| Extraction   | nothing, it is a string literal                |
+| `StyleTree`  | nothing                                        |
+| `Literal`    | nothing                                        |
+| Encoder      | nothing, one atom with one value               |
+| Build info   | nothing, no schema bump                        |
+| Class naming | nothing, the existing arbitrary-value escaping |
+| Runtime      | nothing, no serialization contract to keep     |
+| Stylesheet   | expansion into a declaration run               |
+
+The whole feature is one new module in `pandacss_shared` and one branch in the stylesheet emitter: 233 changed lines
+across 4 files, plus 105 lines of parser.
+
+Three consequences are worth stating outright, because they were open problems in the marker design:
+
+**Token references keep working.** `collect_token_refs` scans raw value strings for `{colors.brand}` and `token(...)`,
+so a token inside a run is discovered for pruning exactly like a token inside `linear-gradient(...)`. The marker design
+needed per-member token identity plumbed through build info to get the same result.
+
+**There is no runtime parity contract.** Class names come from the value text through the same escaping every arbitrary
+value uses. Nothing in the generated runtime has to reproduce a canonical serialization byte for byte, so nothing can
+drift.
+
+**Design systems need no compatibility gate.** A published library's build info carries a string, which every consumer
+version already understands. The marker design needed schema 6 plus a peer-range check on the styled-system runtime.
+
+## Why not a responsive array
+
+Arrays already mean responsive values, and that meaning cannot change:
+
+```ts
+css({ width: ['100%', '50%'] }) // base, then the first breakpoint
+```
+
+A fallback marker sits inside a responsive array as a leaf, one run per breakpoint:
+
+```ts
+css({ width: ['firstThatWorks(min(60rem, 100%), 100%)', 'firstThatWorks(min(70rem, 75%), 75%)'] })
+```
+
+Multiple ordinary atoms cannot express a run either. Atoms live in hash sets and sort independently, and class attribute
+order does not decide which declaration wins in the stylesheet. The run has to stay one value all the way to emission.
+
+## What CSS fallbacks do and do not recover
+
+A fallback works when the browser rejects the later declaration at parse time:
+
+```css
+.card {
+  color: #0057b8;
+  color: oklch(55% 0.18 250);
+}
+```
+
+It does not recover from failures at computed-value time:
+
+```css
+.card {
+  color: red;
+  color: var(--possibly-invalid);
+}
+```
+
+If the second declaration becomes invalid after substitution, the browser applies the property's invalid-value behavior
+rather than restarting the cascade at `red`. `firstThatWorks()` preserves CSS semantics. It is not a `try`/`catch`.
+
+Custom-property declarations are excluded for the same reason. `--accent` accepts an arbitrary token stream, so an older
+browser keeps the second declaration and only discovers the unsupported value when `var(--accent)` is substituted, too
+late to recover the first.
+
+## The value form
+
+```text
+firstThatWorks(<value>, <value> [, <value>]...)
+```
+
+Parsed by `pandacss_shared::first_that_works`. Five rules define it.
+
+**Members are written most-preferred first.** `firstThatWorks(min(60rem, 100%), 75%)` means "use `min()`, fall back to
+75%", the same shape as `var(--brand, red)`. CSS takes the last declaration it understands, so the emitter writes the
+members in reverse. Source order is intent; output order is cascade.
+
+**Two members minimum.** One value has no baseline to fall back to.
+
+**Commas split only at the top level.** Nesting in parens, brackets, and quotes belongs to the member, so
+`firstThatWorks(min(60rem, 100%), 75%)` is two members and `firstThatWorks(var(--brand, blue), red)` is two members.
+
+**Runs do not compose.** `firstThatWorks(firstThatWorks(a, b), c)` is rejected. One property's members are already
+ordered, so nesting adds nothing, and expanding only the outer level would emit a declaration whose value is a function
+no browser implements.
+
+**The form means a run or nothing.** A value written as `firstThatWorks(...)` that does not parse as one emits no CSS
+for that property, rather than passing its text through. `firstThatWorks(red)`, `firstThatWorks(red, blue`, and a nested
+run all emit nothing. Sibling properties in the same rule are unaffected.
+
+That last rule is the one deliberate break from how Panda treats unknown values everywhere else, where the text passes
+through untouched. It exists because `firstThatWorks()` is not real CSS: passing it through guarantees a broken
+declaration, while passing through an unknown real function might still be valid in some browser. Every such drop is
+[reported](#diagnostics).
+
+## Emission
+
+`Emitter::first_that_works_declarations` lowers each member through the same utility transform an ordinary value would,
+so tokens, shorthands, arbitrary values, and default units behave identically per member:
+
+```ts
+css({ bg: 'firstThatWorks(oklch(55% 0.18 250), brand)' })
+```
+
+```css
+.bg_firstThatWorks\(oklch\(55\%_0\.18_250\)\,_brand\) {
+  background-color: var(--colors-brand);
+  background-color: oklch(55% 0.18 250);
+}
+```
+
+It returns `None`, emitting nothing, when the run is not provably one ordered cascade: a member lowering to a nested
+object, or members disagreeing on which properties they produce, which a multi-property utility transform can do.
+
+Two call sites share it. `collect_atom_rules` handles atomic CSS and keeps the class name the whole value already earns.
+`property_declarations` handles everything else, which is why recipes, slot recipes, compound variants, global CSS, text
+styles, keyframe stops, and view-transition bags work without a fallback-specific walker.
+
+At-rule descriptor blocks (`@position-try`, `@font-face`) are the one path that never runs a utility transform, so
+`write_at_rule_descriptors` writes a run's members verbatim, in the same reversed order. A malformed run there emits
+nothing but is not reported: the descriptor path has no diagnostic sink. That is the one gap in the diagnostics table
+below.
+
+### Class naming
+
+A run is named like any other arbitrary value, escaped, not hashed:
+
+```css
+.c_firstThatWorks\(blue\,_red\)
+.c_color-mix\(in_oklch\,_red\,_blue\)   /* already how Panda names this */
+```
+
+Order-sensitivity and deduplication both fall out of the text. `firstThatWorks(red, blue)` and
+`firstThatWorks(blue, red)` are different strings, so different classes, so different cascades. Identical runs are the
+same string, so one class.
+
+Hashing was considered and rejected. It would make `firstThatWorks()` the only value form with a bespoke naming rule, it
+would create a runtime parity contract where none is needed, and it would produce class names that say nothing when
+readable class names are the entire point of the default. Users who want short names set `hashClassNames: true`, which
+already hashes everything uniformly.
+
+### Declaration runs
+
+`append_declaration` used to replace an existing same-property declaration in place. It is now a one-member case of
+`append_declaration_run`, which appends an ordered run as a unit:
+
+1. No existing declaration for the property, append the run.
+2. Existing declaration is important and the incoming run is not, keep the existing one.
+3. Otherwise remove every existing declaration for that property and insert the run where the first one was.
+
+Inserting at the original position, not at the end, is what keeps declaration order stable for every non-fallback rule.
+Property deduplication stays on globally; ordinary style-object merging is still last-write-wins.
+
+```text
+existing   width: 50%
+incoming   width: firstThatWorks(min(60rem, 100%), 75%)
+result     width: 75%
+           width: min(60rem, 100%)
+```
+
+Grouped rule equality compares the full ordered declaration vector, so rules only merge when their runs match. The
+minifier preserves declaration order.
+
+A future CSS-aware optimizer must not drop the baseline because a later declaration sets the same property. That is the
+one thing about this feature an optimizer can silently break.
+
+## Non-goals
+
+- Recovering from invalid-at-computed-value-time behavior.
+- Custom-property declarations.
+- Falling back between different properties, such as `display` and `-webkit-box`.
+- Polyfilling unsupported values.
+- Dynamic, conditional, responsive, object, boolean, or null members.
+- Callback-backed multi-property utility transforms.
+- Replacing `@supports` where feature detection is the clearer tool.
+
+## The `firstThatWorks()` API
+
+The string form needs no API. `firstThatWorks()` adds type safety and discoverability. It is its own export from
+`styled-system/css`, next to `keyframes()` and `positionTry()`, not a method on `css`:
+
+```ts
+import { css, firstThatWorks } from 'styled-system/css'
+
+css({
+  width: firstThatWorks('min(60rem, 100%)', '75%'),
+})
+```
+
+The runtime is one line — it returns the string, joining with `FIRST_THAT_WORKS_SEPARATOR`:
+
+```ts
+export const firstThatWorks = (...values) => `firstThatWorks(${values.join(', ')})`
+```
+
+`Resolver::resolve_first_that_works_call` folds the same call at build time, so the class name is identical either way.
+A sandbox test asserts that directly, which is the only parity check the feature needs.
+
+Only Panda's own import folds. The named binding, a renamed one (`firstThatWorks as ftw`), and the namespace member
+(`p.firstThatWorks`) all resolve. A local of the same name is an ordinary call and folds to whatever it returns; another
+module's export of the same name, `theme.firstThatWorks(...)`, and `css.firstThatWorks(...)` are left alone.
+
+A value held in a constant folds too — `const width = firstThatWorks(...)` then `css({ width })` — because the call is a
+same-file binding like any other. A static call outside a style object is inlined to its value form by the transform,
+which then drops the dead import; a call with a dynamic member keeps the runtime export.
+
+A dynamic member leaves the whole property open rather than emitting only the baseline, which would make dev and
+production diverge.
+
+### Why `firstThatWorks`, and why standalone
+
+The name is StyleX's, and so is the argument order: the first argument is the one you want, and the emitted declarations
+run in reverse so the browser keeps the last one it understands. `firstThatWorks('sticky', 'fixed')` emits
+`position: fixed; position: sticky;` in both systems.
+
+`fallback(a, b)` was the working name and lost on two counts. It does not say which argument is the fallback —
+`var(--x, red)` puts it second, but the word reads just as naturally the other way, and the ordering is the one
+non-obvious thing about this feature. And `fallback` already means something else in every generated `styled-system`:
+`token(path, fallback?)` is a build-time default for a missing token, not a declaration run.
+
+Nobody else offers a function for this. Libraries that don't use arrays for responsive values use arrays for fallbacks
+(vanilla-extract, Emotion, Griffel, Fela), in CSS order. JSS uses a sibling `fallbacks` key. StyleX, which like Panda
+cannot use arrays, is the only named-function precedent, and its docs reject arrays outright. Matching it costs nothing
+and buys recognition for anyone arriving from there.
+
+Two deliberate differences from StyleX, for its migration guide: Panda does not collapse `var()` members into nested
+`var(a, var(b))` — its own token variables always exist, and native `var()` fallback already passes through — and it
+requires two members, where StyleX accepts one.
+
+Standalone rather than `css.firstThatWorks` for the same reason `keyframes()` and `positionTry()` are standalone: it
+produces a value, not a class. `css.raw` is the only method on `css`, and it earns that by being `css` with a different
+return type.
+
+### Members are typed by the property they sit in
+
+```ts
+type FirstThatWorksMember = string | number
+type FirstThatWorksMemberOf<T> = Extract<T, FirstThatWorksMember>
+
+type FirstThatWorksFn = <
+  T = FirstThatWorksMember,
+  A extends FirstThatWorksMemberOf<T> = FirstThatWorksMemberOf<T>,
+  B extends FirstThatWorksMemberOf<T> = FirstThatWorksMemberOf<T>,
+  C extends FirstThatWorksMemberOf<T> = never,
+  D extends FirstThatWorksMemberOf<T> = never,
+  E extends FirstThatWorksMemberOf<T> = never,
+  F extends FirstThatWorksMemberOf<T> = never,
+>(
+  first: A,
+  second: B,
+  third?: C,
+  fourth?: D,
+  fifth?: E,
+  sixth?: F,
+) => T extends FirstThatWorksMember ? A | B | C | D | E | F : FirstThatWorksMemberOf<T>
+```
+
+Every piece of that shape is load-bearing, measured through the TypeScript language service against the generated
+`styled-system` (TS 6.0), in both the default and the `strictTokens` output:
+
+- **`T` appears only in the return type**, so it can be inferred from one place: the property the call sits in. Inside
+  `width: firstThatWorks(…)`, `T` is width's `ConditionalValue<X>`.
+- **One type variable per position**, each constrained by `Extract<T, FirstThatWorksMember>`. A position with no
+  argument yet falls back to its constraint, so every slot completes from the property: 474 entries for `color` in the
+  default output, 309 under `strictTokens`, on the first member and on the fourth alike. A shared `T` would be inferred
+  from the first typed member (argument inference outranks return-type inference), narrowing every later slot to that
+  one literal.
+- **`Extract`, not an intersection.** `Extract<T, string | number>` drops the property's responsive object and array
+  forms, so `firstThatWorks({ base: 'full' }, { base: 'auto' })` is a type error, not a build-time
+  `first_that_works_member_invalid`. `T & string` also drops them but collapses the default output's `AnyString`
+  (`string & {}`) for the completion engine: zero completions there.
+- **Positional, capped at six.** A generic rest parameter (`R extends Member[]`) completes under `strictTokens` but not
+  in the default output. Six explicit positions complete everywhere; a seventh member is a type error. The positions
+  after the second are optional, so arity stays at two.
+- **`never` defaults and the conditional return.** With no contextual type, `T` takes its default and the call returns
+  the union of the members actually passed (`"full" | "auto"`), so a standalone constant keeps its literal type and
+  still satisfies `strictTokens` where it is used. With a contextual type the return is the property's scalar subset,
+  `Extract<T, FirstThatWorksMember>`, which is always assignable back. Returning `T` itself fails in config files, where
+  the contextual union carries the nested-selector index signature. Returning the literal union alone, with `T` kept
+  only as `Extract<T, never>`, turns the return into a union target with six naked type variables, and inference then
+  hands every empty position the whole contextual union: "union type too complex to represent" under `strictTokens`.
+- **`strictTokens` checks each member** through its constraint: `firstThatWorks('blue.300', 'notAToken')` fails on the
+  second argument, and the escape hatch applies per member (`firstThatWorks('[1rem]', '4')`).
+
+```ts
+css({ color: firstThatWorks('blue.300', 'red.200') }) // ok under strictTokens
+css({ color: firstThatWorks('blue.300', 'notAToken') }) // error: not a color token
+css({ padding: firstThatWorks('[1rem]', '4') }) // the escape hatch still applies per member
+css({ padding: firstThatWorks('1rem', 4) }) // members may differ in type
+css({ color: 'firstThatWorks(blue.300, red.200)' }) // error: a plain string is not a token
+```
+
+Rejected shapes, each measured the same way so they do not get retried:
+
+- **A shared `<T>(first: T, second: T, ...rest: T[]): T`**, the original. Completes on the first member only; every
+  later slot narrows to the sibling's literal.
+- **`NoInfer<T>` on the parameters.** The checker infers `T` from the property, but the completion engine yields nothing
+  for a `NoInfer<T>` parameter, and a standalone `const w = firstThatWorks(…)` no longer type-checks.
+- **StyleX's independent-parameter signature** with nothing linking the parameters to the return: zero completions.
+- **Intersecting the parameters with the scalar type**, `T & FirstThatWorksMember`: zero completions in the default
+  output, for the `AnyString` reason above.
+- **Returning `(A | B | R[number]) & T`** to keep literal returns: "union type too complex to represent".
+- **A phantom-branded `FirstThatWorksValue<T>`**: autocompleted but forced every member to one type.
+
+### `firstThatWorks()` for config recipes
+
+Config recipes load before `styled-system/css` exists, so they cannot import `firstThatWorks` from it. `@pandacss/dev`
+exports the same function under the same overload pair:
+
+```ts
+import { firstThatWorks, defineRecipe } from '@pandacss/dev'
+
+defineRecipe({
+  className: 'card',
+  base: { color: firstThatWorks('oklch(45% 0.16 250)', '{colors.blue.700}') },
+})
+```
+
+What it buys over the bare string: arity is a compile error, the function name cannot be silently mistyped, and the
+property's keyword union autocompletes inside the call — measured at 13 completions for `position`, versus 0 for a
+non-generic signature.
+
+What it does not buy: value validation. `@pandacss/types` has no token unions, and csstype admits `string & {}` for
+every property, so any string is a legal config value with or without the helper. Autocomplete and arity, not
+correctness.
+
+The separator is interpolated into codegen from `pandacss_shared::FIRST_THAT_WORKS_SEPARATOR`, so the parser and the
+generated runtime cannot drift. `@pandacss/dev` is the one hand-written copy, pinned by a test asserting it matches the
+generated export for the same values.
+
+### What the string form made unnecessary
+
+- **Config recipes can write the value form directly.** The marker draft _required_ a helper, because a config file
+  loads before `styled-system/css` exists and could not build a marker object. A string has no such problem:
+  `color: 'firstThatWorks(oklch(45% 0.16 250), {colors.blue.700})'` works as written. `firstThatWorks()` in
+  `@pandacss/dev` is therefore optional sugar rather than a dependency of the design — it exists for arity checking and
+  keyword autocomplete, which a bare string cannot offer.
+- **Patterns need no helper either.** A pattern transform returns a string like any other value, so
+  `PatternHelpers.fallback` is optional sugar rather than a requirement.
+- **Merging is already correct.** `css.raw({ width: 'firstThatWorks(...)' }, { width: '50%' })` yields `50%`, because a
+  string is an atomic value. No walker had to learn to stop at a marker.
+- **The transform needed almost no work.** A static `css({ width: firstThatWorks(...) })` rewrites to its class string
+  through the existing path, and the now-dead imports are dropped. The one addition is a standalone
+  `firstThatWorks(...)` call outside a style object, which inlines to its value form the way a `positionTry()` call
+  inlines to its ident.
+
+## Importance belongs to the run
+
+`!important` applies to a whole run or to none of it:
+
+```ts
+css({ color: 'firstThatWorks(oklch(60% 0.2 30), red) !important' })
+```
+
+Marking every member individually is accepted and means the same thing. Marking only some is rejected, because an
+important declaration beats the others whatever the order, so the rest could never apply:
+
+- `firstThatWorks(a !important, b)` leaves `b` unprotected, so a rule elsewhere beats it once `a` turns out unsupported.
+- `firstThatWorks(a, b !important)` is worse: the fallback always wins, so the preferred value never applies at all.
+
+This needs its own handling because `split_important` takes the first `!` anywhere in a value, which for a run would
+hoist one member's marker onto every declaration. `split_run_important` strips only a marker after the closing paren, so
+members keep their own and the mix stays visible long enough to reject.
+
+## Diagnostics
+
+Dropping a malformed run silently is the right emit behavior and the wrong developer experience, so every drop is
+reported. Seven codes, at two layers.
+
+The extractor reports misuse of the API, where a call span is available:
+
+| Code                              | Severity | Meaning                                   |
+| --------------------------------- | -------- | ----------------------------------------- |
+| `first_that_works_arity_invalid`  | error    | `firstThatWorks('x')` — one value         |
+| `first_that_works_member_invalid` | error    | an object, array, boolean, or null member |
+
+The stylesheet reports malformed values, which is the only layer that sees a hand-written string:
+
+| Code                                     | Severity | Meaning                                     |
+| ---------------------------------------- | -------- | ------------------------------------------- |
+| `first_that_works_arity_invalid`         | error    | fewer than two members                      |
+| `first_that_works_unbalanced`            | error    | unbalanced parens, brackets, or quotes      |
+| `first_that_works_nested`                | error    | a member is itself a run                    |
+| `first_that_works_importance_mixed`      | error    | only some members are `!important`          |
+| `first_that_works_custom_property`       | warning  | a custom property cannot recover reliably   |
+| `first_that_works_transform_unsupported` | warning  | members lower to different declaration sets |
+
+The two layers do not double-report. A refused `firstThatWorks()` never folds to a value, so no atom reaches the
+stylesheet; a hand-written string never goes through the extractor's fallback path.
+
+A **dynamic member** is deliberately not a fallback diagnostic. It is an ordinary runtime bailout and already reports
+`panda_call_unextractable`, like every other dynamic Panda call.
+
+Severities are fixed. The `validation: none | warn | error` mode gates config validation only, not style diagnostics —
+`imported_recipe_raw_dynamic` and the rest work the same way.
+
+Diagnostics are deduplicated per `(property, value)` and sorted by code, because atoms iterate from a hash set and an
+unsorted report would vary between runs.
+
+## Tests
+
+- `crates/pandacss_shared/tests/first_that_works.rs`, 16 tests, the parser: nesting, quotes, whitespace, arity,
+  unbalanced input, composition, and values that merely mention the name.
+- `crates/pandacss_extractor/tests/first_that_works_calls.rs`, 34 tests, folding `firstThatWorks()`: renamed and
+  namespace imports, a value held in a constant, local constants as members, a local of the same name, another module's
+  export, member calls on `css` or an unrelated object, every member shape that leaves the property open, the
+  diagnostics with their source spans, and every placement that reaches the evaluator through a different door:
+  `css.raw`, a `token()` or template-literal member, both arms of a conditional spread, a JSX condition prop, a
+  `styled()` config, a pattern call, a member imported from another file, and Vue and Svelte templates.
+- `crates/pandacss_stylesheet/tests/first_that_works.rs`, 72 tests, emission and diagnostics: declaration order,
+  conditions three deep, conditional value objects, responsive arrays, nested selectors, raw `@media`, recipes, slot
+  recipes, variants, important runs, minified output, token and shorthand resolution per member, order-sensitive class
+  identity, deduplication, token and keyframe survival under pruning, every rejection path, one diagnostic per code, and
+  every emission path: global CSS, text styles, inline and theme keyframe stops, `@position-try` and `@font-face`
+  descriptors, view-transition bags, `@supports`, and `cva` / `sva` compound variants.
+- `crates/pandacss_stylesheet/src/style_rules.rs`, run-append semantics, including in-place replacement and importance
+  precedence in both directions.
+- `crates/pandacss_project/tests/transform/css_cases.rs`, static rewrite plus dead-import cleanup, the dynamic-member
+  bailout, a standalone call inlined to its value form, and a JSX `css` prop rewritten to its class.
+- `crates/pandacss_codegen/tests/first_that_works_artifact.rs`, the generated `css/first-that-works` module in TS, JS,
+  and `.d.ts`.
+- `sandbox/codegen/__tests__`, the generated runtime: the written form, runtime/build class parity, and member typing
+  under `strictTokens`. The sandbox's `preset.ts` also uses `firstThatWorks` from `@pandacss/dev` in a `globalCss` rule
+  and a config recipe, so the fixture codegen bundles the helper through the real config loader, and
+  `src/first-that-works.tsx` imports the resulting recipe so `tsc` fails if it did not come out.
+
+## Related
+
+- [Atomic encoding](./atomic-encoding.md)
+- [Native stylesheet compiler](./stylesheet.md)
+- [StyleTree](./style-tree.md)
+- [CSS custom functions](./css-custom-functions.md)

@@ -1,0 +1,45 @@
+<svg width="1200" height="220" viewBox="0 0 1200 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Panda v1 ran on Node with a JavaScript runtime, Panda 2.0 runs on Rust and compiles anywhere">
+  <style>
+    .surface { fill: #FBF9F3; }
+    .ink { fill: #1A1A17; }
+    .muted { fill: #5E584C; }
+    .card { fill: #FFFFFF; stroke: #1A1A17; stroke-width: 2; }
+    .win { fill: #F6E458; stroke: #1A1A17; stroke-width: 2; }
+    .ony { fill: #1A1A17; }
+    .flow { stroke: #1A1A17; stroke-width: 3; fill: none; }
+    .sans { font-family: 'Onest','Segoe UI',system-ui,sans-serif; }
+    .mono { font-family: 'Source Code Pro',ui-monospace,monospace; }
+    @media (prefers-color-scheme: dark) {
+      .surface { fill: #17171B; } .ink { fill: #F5F2E9; } .muted { fill: #B7B1A3; }
+      .card { fill: #23232B; stroke: #3A3A42; } .flow { stroke: #E7E2D6; }
+    }
+  </style>
+  <rect width="1200" height="220" class="surface"/>
+
+  <defs>
+    <marker id="e4" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" class="ink"/>
+    </marker>
+  </defs>
+
+  <g class="sans">
+    <!-- v1: Node -->
+    <g transform="translate(140 35)">
+      <rect width="380" height="150" rx="18" class="card"/>
+      <text x="26" y="34" class="muted" font-size="13" font-weight="800" letter-spacing="1.5">PANDA v1</text>
+      <text x="26" y="98" class="ink" font-size="42" font-weight="800">Node</text>
+      <text x="26" y="126" class="muted" font-size="14.5">a JavaScript runtime</text>
+    </g>
+
+    <!-- arrow -->
+    <line x1="532" y1="110" x2="668" y2="110" class="flow" marker-end="url(#e4)"/>
+
+    <!-- v2: Rust -->
+    <g transform="translate(680 35)">
+      <rect width="380" height="150" rx="18" class="win"/>
+      <text x="26" y="34" class="ony" font-size="13" font-weight="800" letter-spacing="1.5">PANDA 2.0</text>
+      <text x="26" y="98" class="ony" font-size="42" font-weight="800">Rust</text>
+      <text x="26" y="126" class="ony" font-size="14.5" opacity="0.75">compiles anywhere</text>
+    </g>
+  </g>
+</svg>

@@ -1323,7 +1323,7 @@ fn can_emit_type_import_extensions() {
     let types = artifact(&artifacts, ArtifactId::Types);
 
     let system = file(types, "types/system.d.mts");
-    assert!(system.contains("import type { TokenValue } from './tokens.d.mts';"));
+    assert!(system.contains("import type { TokenValue } from './tokens.mjs';"));
     assert!(system.contains(
         "export type ColorValue = CssColorGlobals | TokenValue<\"colors\"> | CssVars | AnyString | AnyNumber"
     ));
@@ -1334,10 +1334,10 @@ fn can_emit_type_import_extensions() {
     assert_eq!(
         file(types, "types/index.d.mts"),
         indoc! {r"
-        export * from './tokens.d.mts';
-        export * from './system.d.mts';
-        export * from './pattern.d.mts';
-        export * from './recipe.d.mts';
+        export * from './tokens.mjs';
+        export * from './system.mjs';
+        export * from './pattern.mjs';
+        export * from './recipe.mjs';
         "}
         .trim()
     );

@@ -16,6 +16,7 @@ type NativeKeyboardEvent = KeyboardEvent;
 type NativeMouseEvent = MouseEvent;
 type NativeTouchEvent = TouchEvent;
 type NativePointerEvent = PointerEvent;
+type NativeSubmitEvent = SubmitEvent;
 type NativeToggleEvent = ToggleEvent;
 type NativeTransitionEvent = TransitionEvent;
 type NativeUIEvent = UIEvent;
@@ -225,12 +226,20 @@ declare namespace React {
 
     type ComponentState = any;
 
+    interface DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_KEY_TYPES {}
+
     /**
      * A value which uniquely identifies a node among items in an array.
      *
      * @see {@link https://react.dev/learn/rendering-lists#keeping-list-items-in-order-with-key React Docs}
      */
-    type Key = string | number | bigint;
+    type Key =
+        | string
+        | number
+        | bigint
+        | DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_KEY_TYPES[
+            keyof DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_KEY_TYPES
+        ];
 
     /**
      * @internal The props any component can receive.
@@ -399,7 +408,7 @@ declare namespace React {
      *
      * Where {@link ReactElement} only represents JSX, `ReactNode` represents everything that can be rendered.
      *
-     * @see {@link https://react-typescript-cheatsheet.netlify.app/docs/react-types/reactnode/ React TypeScript Cheatsheet}
+     * @see {@link https://react-typescript-cheatsheet.netlify.app/docs/reference/reactnode/ React TypeScript Cheatsheet}
      *
      * @example
      *
@@ -1422,7 +1431,7 @@ declare namespace React {
      * instead of this type, as they let you be explicit about whether or not to include
      * the `ref` prop.
      *
-     * @see {@link https://react-typescript-cheatsheet.netlify.app/docs/react-types/componentprops/ React TypeScript Cheatsheet}
+     * @see {@link https://react-typescript-cheatsheet.netlify.app/docs/reference/ComponentProps React TypeScript Cheatsheet}
      *
      * @example
      *
@@ -1450,7 +1459,7 @@ declare namespace React {
      * passed a string, indicating a DOM element (e.g. 'div', 'span', etc.) or the
      * type of a React component.
      *
-     * @see {@link https://react-typescript-cheatsheet.netlify.app/docs/react-types/componentprops/ React TypeScript Cheatsheet}
+     * @see {@link https://react-typescript-cheatsheet.netlify.app/docs/reference/ComponentProps React TypeScript Cheatsheet}
      *
      * @example
      *
@@ -1500,7 +1509,7 @@ declare namespace React {
      * passed a string, indicating a DOM element (e.g. 'div', 'span', etc.) or the
      * type of a React component.
      *
-     * @see {@link https://react-typescript-cheatsheet.netlify.app/docs/react-types/componentprops/ React TypeScript Cheatsheet}
+     * @see {@link https://react-typescript-cheatsheet.netlify.app/docs/reference/ComponentProps React TypeScript Cheatsheet}
      *
      * @example
      *
@@ -1884,7 +1893,7 @@ declare namespace React {
      *
      * @param callback A synchronous, void callback that will execute as a single, complete React commit.
      *
-     * @see https://reactjs.org/blog/2019/02/06/react-v16.8.0.html#testing-hooks
+     * @see {@link https://reactjs.org/blog/2019/02/06/react-v16.8.0.html#testing-hooks}
      */
     // NOTES
     // - the order of these signatures matters - typescript will check the signatures in source order.
@@ -1950,7 +1959,16 @@ declare namespace React {
         | FulfilledReactPromise<T>
         | RejectedReactPromise<T>;
 
-    export type Usable<T> = ReactPromise<T> | Context<T>;
+    /**
+     * A registry of renderer-specific {@link Usable} types.
+     *
+     * Renderers (e.g. `react-dom`) augment this interface via `declare module "react"`,
+     * adding an entry keyed by a renderer-specific string whose type becomes a valid
+     * argument to {@link use}. Only renderers should augment this interface.
+     */
+    export interface RendererUsable<T> {}
+
+    export type Usable<T> = ReactPromise<T> | Context<T> | RendererUsable<T>[keyof RendererUsable<T>];
 
     export function use<T>(usable: Usable<T>): T;
 
@@ -2065,15 +2083,28 @@ declare namespace React {
         target: EventTarget & Target;
     }
 
+    /**
+     * @deprecated FormEvent doesn't actually exist.
+     *             You probably meant to use {@link ChangeEvent}, {@link InputEvent}, {@link SubmitEvent}, or just {@link SyntheticEvent} instead
+     *             depending on the event type.
+     */
     interface FormEvent<T = Element> extends SyntheticEvent<T> {
     }
 
     interface InvalidEvent<T = Element> extends SyntheticEvent<T> {
-        target: EventTarget & T;
     }
 
-    interface ChangeEvent<T = Element> extends SyntheticEvent<T> {
-        target: EventTarget & T;
+    /**
+     * change events bubble in React so their target is generally unknown.
+     * Only for form elements we know their target type because form events can't
+     * be nested.
+     * This type exists purely to narrow `target` for form elements. It doesn't
+     * reflect a DOM event. Change events are just fired as standard {@link SyntheticEvent}.
+     */
+    interface ChangeEvent<CurrentTarget = Element, Target = Element> extends SyntheticEvent<CurrentTarget> {
+        // TODO: This is wrong for change event handlers on arbitrary. Should
+        // be EventTarget & Target, but kept for backward compatibility until React 20.
+        target: EventTarget & CurrentTarget;
     }
 
     interface InputEvent<T = Element> extends SyntheticEvent<T, NativeInputEvent> {
@@ -2143,6 +2174,13 @@ declare namespace React {
         shiftKey: boolean;
     }
 
+    interface SubmitEvent<T = Element> extends SyntheticEvent<T, NativeSubmitEvent> {
+        // `submitter` is available in react@canary
+        // submitter: HTMLElement | null;
+        // SubmitEvents are always targetted at HTMLFormElements.
+        target: EventTarget & HTMLFormElement;
+    }
+
     interface TouchEvent<T = Element> extends UIEvent<T, NativeTouchEvent> {
         altKey: boolean;
         changedTouches: TouchList;
@@ -2198,11 +2236,19 @@ declare namespace React {
     type CompositionEventHandler<T = Element> = EventHandler<CompositionEvent<T>>;
     type DragEventHandler<T = Element> = EventHandler<DragEvent<T>>;
     type FocusEventHandler<T = Element> = EventHandler<FocusEvent<T>>;
+    /**
+     * @deprecated FormEventHandler doesn't actually exist.
+     *             You probably meant to use {@link ChangeEventHandler}, {@link InputEventHandler}, {@link SubmitEventHandler}, or just {@link EventHandler} instead
+     *             depending on the event type.
+     */
     type FormEventHandler<T = Element> = EventHandler<FormEvent<T>>;
-    type ChangeEventHandler<T = Element> = EventHandler<ChangeEvent<T>>;
+    type ChangeEventHandler<CurrentTarget = Element, Target = Element> = EventHandler<
+        ChangeEvent<CurrentTarget, Target>
+    >;
     type InputEventHandler<T = Element> = EventHandler<InputEvent<T>>;
     type KeyboardEventHandler<T = Element> = EventHandler<KeyboardEvent<T>>;
     type MouseEventHandler<T = Element> = EventHandler<MouseEvent<T>>;
+    type SubmitEventHandler<T = Element> = EventHandler<SubmitEvent<T>>;
     type TouchEventHandler<T = Element> = EventHandler<TouchEvent<T>>;
     type PointerEventHandler<T = Element> = EventHandler<PointerEvent<T>>;
     type UIEventHandler<T = Element> = EventHandler<UIEvent<T>>;
@@ -2256,19 +2302,19 @@ declare namespace React {
         onBlur?: FocusEventHandler<T> | undefined;
         onBlurCapture?: FocusEventHandler<T> | undefined;
 
-        // Form Events
-        onChange?: FormEventHandler<T> | undefined;
-        onChangeCapture?: FormEventHandler<T> | undefined;
+        // form related Events
+        onChange?: ChangeEventHandler<T> | undefined;
+        onChangeCapture?: ChangeEventHandler<T> | undefined;
         onBeforeInput?: InputEventHandler<T> | undefined;
-        onBeforeInputCapture?: FormEventHandler<T> | undefined;
-        onInput?: FormEventHandler<T> | undefined;
-        onInputCapture?: FormEventHandler<T> | undefined;
-        onReset?: FormEventHandler<T> | undefined;
-        onResetCapture?: FormEventHandler<T> | undefined;
-        onSubmit?: FormEventHandler<T> | undefined;
-        onSubmitCapture?: FormEventHandler<T> | undefined;
-        onInvalid?: FormEventHandler<T> | undefined;
-        onInvalidCapture?: FormEventHandler<T> | undefined;
+        onBeforeInputCapture?: InputEventHandler<T> | undefined;
+        onInput?: InputEventHandler<T> | undefined;
+        onInputCapture?: InputEventHandler<T> | undefined;
+        onReset?: ReactEventHandler<T> | undefined;
+        onResetCapture?: ReactEventHandler<T> | undefined;
+        onSubmit?: SubmitEventHandler<T> | undefined;
+        onSubmitCapture?: SubmitEventHandler<T> | undefined;
+        onInvalid?: ReactEventHandler<T> | undefined;
+        onInvalidCapture?: ReactEventHandler<T> | undefined;
 
         // Image Events
         onLoad?: ReactEventHandler<T> | undefined;
@@ -2812,7 +2858,7 @@ declare namespace React {
 
         // Living Standard
         /**
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/inert
+         * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/inert}
          */
         inert?: boolean | undefined;
         /**
@@ -3129,7 +3175,7 @@ declare namespace React {
         alt?: string | undefined;
         crossOrigin?: CrossOrigin;
         decoding?: "async" | "auto" | "sync" | undefined;
-        fetchPriority?: "high" | "low" | "auto";
+        fetchPriority?: "high" | "low" | "auto" | undefined;
         height?: number | string | undefined;
         loading?: "eager" | "lazy" | undefined;
         referrerPolicy?: HTMLAttributeReferrerPolicy | undefined;
@@ -3275,7 +3321,9 @@ declare namespace React {
         value?: string | readonly string[] | number | undefined;
         width?: number | string | undefined;
 
-        onChange?: ChangeEventHandler<T> | undefined;
+        // No other element dispatching change events can be nested in a <input>
+        // so we know the target will be a HTMLInputElement.
+        onChange?: ChangeEventHandler<T, HTMLInputElement> | undefined;
     }
 
     interface KeygenHTMLAttributes<T> extends HTMLAttributes<T> {
@@ -3300,7 +3348,7 @@ declare namespace React {
         as?: string | undefined;
         blocking?: "render" | (string & {}) | undefined;
         crossOrigin?: CrossOrigin;
-        fetchPriority?: "high" | "low" | "auto";
+        fetchPriority?: "high" | "low" | "auto" | undefined;
         href?: string | undefined;
         hrefLang?: string | undefined;
         integrity?: string | undefined;
@@ -3440,7 +3488,9 @@ declare namespace React {
         required?: boolean | undefined;
         size?: number | undefined;
         value?: string | readonly string[] | number | undefined;
-        onChange?: ChangeEventHandler<T> | undefined;
+        // No other element dispatching change events can be nested in a <select>
+        // so we know the target will be a HTMLSelectElement.
+        onChange?: ChangeEventHandler<T, HTMLSelectElement> | undefined;
     }
 
     interface SourceHTMLAttributes<T> extends HTMLAttributes<T> {
@@ -3492,7 +3542,9 @@ declare namespace React {
         value?: string | readonly string[] | number | undefined;
         wrap?: string | undefined;
 
-        onChange?: ChangeEventHandler<T> | undefined;
+        // No other element dispatching change events can be nested in a <textarea>
+        // so we know the target will be a HTMLTextAreaElement.
+        onChange?: ChangeEventHandler<T, HTMLTextAreaElement> | undefined;
     }
 
     interface TdHTMLAttributes<T> extends HTMLAttributes<T> {
@@ -3564,6 +3616,9 @@ declare namespace React {
         method?: string | undefined;
         min?: number | string | undefined;
         name?: string | undefined;
+        nonce?: string | undefined;
+        part?: string | undefined;
+        slot?: string | undefined;
         style?: CSSProperties | undefined;
         target?: string | undefined;
         type?: string | undefined;
@@ -4083,7 +4138,6 @@ declare namespace React {
         componentStack?: string | null;
     }
 
-    // Keep in sync with JSX namespace in ./jsx-runtime.d.ts and ./jsx-dev-runtime.d.ts
     namespace JSX {
         // We don't just alias React.ElementType because React.ElementType
         // historically does more than we need it to.

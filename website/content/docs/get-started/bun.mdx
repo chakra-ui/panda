@@ -20,6 +20,9 @@ bun init
 
 ### Install Panda
 
+`panda init` also installs `@pandacss/preset-base` and `@pandacss/preset-panda` and lists them under `presets`. Keep
+them there. Without them you get no utilities, tokens or conditions.
+
 ```bash
 bun add -D @pandacss/dev @pandacss/bun
 bun panda init
@@ -113,6 +116,7 @@ before a build starts, and lets the folder stay gitignored.
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   preflight: true,
   include: ['./src/**/*.{js,jsx,ts,tsx}'],
   exclude: [],

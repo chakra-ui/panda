@@ -392,7 +392,7 @@ fn can_emit_import_extensions() {
     assert_eq!(
         file(patterns, "patterns/index.d.mts"),
         indoc! {r"
-        export * from './stack.d.mts';
+        export * from './stack.mjs';
         "}
         .trim()
     );

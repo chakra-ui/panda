@@ -23,10 +23,11 @@ const options = [
 
 export const LayoutControl = (props: LayoutControlProps) => {
   const { value, onChange, setResponsiveSize, breakpoints, isResponsive } = props
+  const classes = segmentGroup()
   return (
     <SegmentGroup.Root
       className={cx(
-        segmentGroup(),
+        classes.root,
         css({
           gap: '2',
           p: '1',
@@ -38,24 +39,30 @@ export const LayoutControl = (props: LayoutControlProps) => {
       onValueChange={(e) => onChange(e.value as any)}
     >
       <SegmentGroup.Indicator
-        className={css({
-          width: 'var(--width)',
-          height: 'var(--height)',
-          top: 'var(--top)',
-          left: 'var(--left)',
-        })}
+        className={cx(
+          classes.indicator,
+          css({
+            width: 'var(--width)',
+            height: 'var(--height)',
+            top: 'var(--top)',
+            left: 'var(--left)',
+          }),
+        )}
       />
       {options.map((option, id) => (
         <SegmentGroup.Item
-          className={css({
-            p: '1',
-          })}
+          className={cx(
+            classes.item,
+            css({
+              p: '1',
+            }),
+          )}
           key={id}
           value={option.id}
           aria-label={option.label}
           title={option.label}
         >
-          <SegmentGroup.ItemText>{option.icon}</SegmentGroup.ItemText>
+          <SegmentGroup.ItemText className={classes.itemText}>{option.icon}</SegmentGroup.ItemText>
           <SegmentGroup.ItemControl />
           <SegmentGroup.ItemHiddenInput />
         </SegmentGroup.Item>

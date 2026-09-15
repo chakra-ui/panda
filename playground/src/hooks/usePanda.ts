@@ -1,10 +1,10 @@
-import { artifactsPreviewJs, toLegacyArtifacts, type LegacyArtifact } from '@/src/lib/compiler/artifacts'
 import { PandaContext, usePandaContext } from '@/src/hooks/usePandaContext'
 import { State } from '@/src/hooks/usePlayground'
+import { artifactsPreviewJs, toLegacyArtifacts, type LegacyArtifact } from '@/src/lib/compiler/artifacts'
+import { useDebounceValue } from '@/src/lib/use-debounce-value'
 import type { Compiler, ExtractResult, WasmModule } from '@pandacss/compiler-wasm/web'
 import type { Config } from '@pandacss/types'
 import { useMemo, useRef } from 'react'
-import { useDebounceValue } from 'usehooks-ts'
 
 /**
  * How many recent source versions to keep parsed. Re-parsing the same path
@@ -23,8 +23,8 @@ interface SourceHistory {
 }
 
 export function usePanda(mod: WasmModule | null, state: State, config: Config | null) {
-  const [source] = useDebounceValue(state.code, 150)
-  const [css] = useDebounceValue(state.css, 150)
+  const source = useDebounceValue(state.code, 150)
+  const css = useDebounceValue(state.css, 150)
 
   const context = usePandaContext(mod, config)
   const compiler = context.compiler

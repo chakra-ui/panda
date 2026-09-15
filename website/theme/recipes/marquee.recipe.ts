@@ -1,13 +1,11 @@
-import { marqueeAnatomy } from '@ark-ui/react/marquee'
-import { defineParts, defineRecipe } from '@pandacss/dev'
+import { defineSlotRecipe } from '@pandacss/dev'
 
-const parts = defineParts(marqueeAnatomy.build())
-
-export const marqueeRecipe = defineRecipe({
+export const marqueeRecipe = defineSlotRecipe({
   className: 'marquee',
+  slots: ['root', 'viewport', 'content', 'item'],
   description: 'A continuous scrolling row that stops under reduced motion',
   jsx: ['FeatureMarquee'],
-  base: parts({
+  base: {
     root: {
       bg: 'bg',
       py: '5',
@@ -43,5 +41,5 @@ export const marqueeRecipe = defineRecipe({
       whiteSpace: 'nowrap',
       letterSpacing: 'tight'
     }
-  })
+  }
 })

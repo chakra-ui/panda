@@ -1,6 +1,4 @@
 import { calloutRecipe } from './callout.recipe'
-import { cardRecipe } from './card.recipe'
-import { navbarRecipe } from './navbar.recipe'
 import { docsTabsRecipe } from './docs-tabs.recipe'
 import { codeTabsRecipe } from './code-tabs.recipe'
 import { buttonRecipe } from './button.recipe'
@@ -12,17 +10,15 @@ import { textLinkRecipe } from './text-link.recipe'
 
 export const slotRecipes = {
   docCard: docCardRecipe,
-  docNav: docNavRecipe
+  docNav: docNavRecipe,
+  codeTabs: codeTabsRecipe,
+  callout: calloutRecipe,
+  docsTabs: docsTabsRecipe,
+  segmented: segmentedRecipe,
+  marquee: marqueeRecipe
 }
 
 export const recipes = {
   button: buttonRecipe,
-  codeTabs: codeTabsRecipe,
-  card: cardRecipe,
-  callout: calloutRecipe,
-  navbar: navbarRecipe,
-  docsTabs: docsTabsRecipe,
-  segmented: segmentedRecipe,
-  marquee: marqueeRecipe,
   textLink: textLinkRecipe
 }

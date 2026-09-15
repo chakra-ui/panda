@@ -31,13 +31,14 @@ export const Editor = memo(function Editor(props: PandaEditorProps) {
     onToggleWrap,
     immediateValue,
   } = useEditor(props)
+  const classes = segmentGroup()
 
   return (
     <Flex flex="1" direction="column" align="stretch" minW="0" minH="0">
       <div className={css({ flex: '1', width: 'full', minH: '0', display: 'flex', flexDirection: 'column' })}>
         <SegmentGroup.Root
           className={cx(
-            segmentGroup(),
+            classes.root,
             css({
               borderBottomWidth: '1px',
               pl: '6',
@@ -48,17 +49,22 @@ export const Editor = memo(function Editor(props: PandaEditorProps) {
           onValueChange={(e) => setActiveTab(e.value as any)}
         >
           <SegmentGroup.Indicator
-            className={css({
-              width: 'var(--width)',
-              height: 'var(--height)',
-              top: 'var(--top)',
-              left: 'var(--left)',
-            })}
+            className={cx(
+              classes.indicator,
+              css({
+                width: 'var(--width)',
+                height: 'var(--height)',
+                top: 'var(--top)',
+                left: 'var(--left)',
+              }),
+            )}
           />
           {tabs.map((option, id) => (
-            <SegmentGroup.Item key={id} value={option.id} aria-label={option.label}>
+            <SegmentGroup.Item key={id} value={option.id} aria-label={option.label} className={classes.item}>
               <SegmentGroup.ItemControl />
-              <SegmentGroup.ItemText className={css({ px: '2' })}>{option.label}</SegmentGroup.ItemText>
+              <SegmentGroup.ItemText className={cx(classes.itemText, css({ px: '2' }))}>
+                {option.label}
+              </SegmentGroup.ItemText>
               <SegmentGroup.ItemHiddenInput />
             </SegmentGroup.Item>
           ))}

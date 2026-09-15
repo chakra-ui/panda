@@ -2,26 +2,21 @@ import {
   createUsageReport,
   diagnosticsPass,
   type Diagnostic,
+  type NamedUsageReport,
   type RecipeUsageItem,
   type TokenCategoryUsage,
   type UsageReport,
 } from '@pandacss/compiler-shared'
 import { defineCommand } from 'citty'
-import { createHash } from 'node:crypto'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
-import { renderAnalyzeHtml } from '../analyze-report'
-import { startAnalyzeUiServer } from '../analyze-ui-server'
+import { dirname } from 'node:path'
 import { baseArgs, includeArgs, normalizeInclude, outputArgs, parseCliFlags, traceArgs } from '../args'
 import { normalizeCliDiagnostics } from '../diagnostics'
 import { consoleOutput, renderCommandDiagnostics, shouldPrintHumanSummary, type OutputSink } from '../output'
 import { setExitCode } from '../result'
 import type { AnalyzeFlags, AnalyzeResult, AnalyzeScope } from '../schema'
 import { analyzeFlagsSchema } from '../schema'
-import { parseMilliseconds, time } from '../timing'
-import { formatWatchError, startProjectWatch, type WatchEvent } from '../watch'
-import { createWatchLogger } from '../watch-logger'
-
+import { time } from '../timing'
 import { runCommand, type CommandRunContext } from '../run-command'
 
 export const analyzeCommand = defineCommand({
@@ -34,16 +29,11 @@ export const analyzeCommand = defineCommand({
     ...includeArgs(),
     scope: {
       type: 'string',
-      description:
-        'Scope to include in the report: all, tokens, recipes, utilities, patterns, keyframes (token/recipe supported as aliases)',
+      description: 'Print one section: tokens, recipes, utilities, patterns, or keyframes (token/recipe are aliases)',
     },
     limit: { type: 'string', description: 'Maximum rows to show per terminal report section' },
+    unused: { type: 'boolean', description: 'List only the configured names no scanned file uses, one per line' },
     outfile: { type: 'string', description: 'Output path for a JSON report' },
-    report: { type: 'string', description: 'Output directory for a static HTML report' },
-    ui: { type: 'boolean', description: 'Start an interactive analyze report UI' },
-    'ui-host': { type: 'string', description: 'Host for the analyze UI server' },
-    'ui-port': { type: 'string', description: 'Port for the analyze UI server' },
-    'watch-debounce': { type: 'string', description: 'UI refresh debounce in milliseconds' },
     ...outputArgs(),
     ...traceArgs(),
   }),
@@ -51,32 +41,13 @@ export const analyzeCommand = defineCommand({
 })
 
 export async function runAnalyze(flags: AnalyzeFlags = {}, output: OutputSink = consoleOutput): Promise<AnalyzeResult> {
-  let runCtx: CommandRunContext<AnalyzeFlags> | undefined
-  let sourceFingerprints = new Map<string, string>()
-
-  const result = (await runCommand({
+  return (await runCommand({
     command: 'analyze',
     flags,
     output,
-    keepTracing: !!flags.ui,
-    failData: () => {
-      const report = createUsageReport({ sourceCount: 0, files: [] })
-      return {
-        sourceCount: report.sourceCount,
-        scope: report.scope,
-        summary: report.summary,
-        facts: report.facts,
-        files: report.files,
-        sourceUsages: report.sourceUsages,
-        report: undefined,
-        ui: undefined,
-      }
-    },
+    failData: () => ({ ...createUsageReport({ sourceCount: 0, files: [] }), outfile: undefined }),
     async execute(ctx) {
-      const scope = normalizeScope(flags.scope)
-      runCtx = ctx
-      const current = analyzeOnce(ctx, scope)
-      sourceFingerprints = current.fingerprints
+      const current = analyzeOnce(ctx, normalizeScope(flags.scope))
       const { report } = current
 
       if (flags.outfile) {
@@ -84,32 +55,14 @@ export async function runAnalyze(flags: AnalyzeFlags = {}, output: OutputSink = 
         writeFileSync(flags.outfile, JSON.stringify(report, null, 2))
       }
 
-      if (flags.report) {
-        mkdirSync(flags.report, { recursive: true })
-        writeFileSync(join(flags.report, 'data.json'), JSON.stringify(report, null, 2))
-        writeFileSync(join(flags.report, 'index.html'), renderAnalyzeHtml(report))
-      }
-
       return {
-        data: {
-          sourceCount: report.sourceCount,
-          scope: report.scope,
-          summary: report.summary,
-          facts: report.facts,
-          views: report.views,
-          files: report.files,
-          sourceUsages: report.sourceUsages,
-          report: flags.report,
-          ui: undefined,
-        },
+        data: { ...report, outfile: flags.outfile },
         diagnostics: current.diagnostics,
         ok: current.ok,
       }
     },
     renderHuman(ctx, result) {
       renderCommandDiagnostics(result.diagnostics, ctx.output, flags, ctx.cwd)
-
-      if (flags.ui) return
 
       if (shouldPrintHumanSummary(flags)) {
         for (const line of renderAnalyzeSummary(result, flags)) {
@@ -119,90 +72,18 @@ export async function runAnalyze(flags: AnalyzeFlags = {}, output: OutputSink = 
         if (flags.outfile) {
           ctx.output.log(`analyze: wrote report to ${flags.outfile}`)
         }
-
-        if (flags.report) {
-          ctx.output.log(`analyze: wrote HTML report to ${flags.report}`)
-        }
       }
     },
   })) as AnalyzeResult
-
-  if (flags.ui && runCtx && result.driver) {
-    const watchLogger = createWatchLogger(runCtx.output)
-    const server = await startAnalyzeUiServer({
-      host: flags.uiHost,
-      port: flags.uiPort,
-      report: result,
-    })
-    result.ui = server.url
-    watchLogger.log(`analyze: UI running at ${server.url}`)
-
-    const refresh = async (reason: string) => {
-      const startedAt = performance.now()
-      const current = analyzeOnce(runCtx!, normalizeScope(flags.scope))
-      sourceFingerprints = current.fingerprints
-      Object.assign(result, current.report, {
-        diagnostics: current.diagnostics,
-        ok: current.ok,
-      })
-      server.update(current.report)
-      renderCommandDiagnostics(current.diagnostics, runCtx!.output, flags, runCtx!.cwd)
-      watchLogger.log(`analyze: refreshed ${reason} in ${Math.round(performance.now() - startedAt)}ms`, {
-        dedupeKey: `refresh:${reason}`,
-      })
-    }
-
-    const stopWatch = await startProjectWatch({
-      driver: result.driver,
-      cwd: runCtx.cwd,
-      outdir: '.panda/analyze-ui',
-      debounceMs: parseMilliseconds(flags.watchDebounce),
-      onError: (error) => watchLogger.error(`panda: failed to refresh analyze UI\n${formatWatchError(error)}`),
-      onSourceChange: async (events) => {
-        if (!hasSourceContentChange(runCtx!.cwd, sourceFingerprints, events)) return
-
-        const reason = formatAnalyzeUiChange(runCtx!.cwd, 'source', events)
-        watchLogger.log(`analyze: ${reason}`, { dedupeKey: `change:${reason}` })
-        result.driver!.applyChanges(events)
-        await refresh(reason)
-      },
-      // onSourceChange short-circuits when the fingerprints are unchanged; a
-      // dropped-events re-scan has no events to fingerprint, so refresh directly.
-      onRescan: async () => {
-        await refresh('re-scan')
-      },
-      onConfigChange: async (events) => {
-        const reason = formatAnalyzeUiChange(runCtx!.cwd, 'config', events)
-        watchLogger.log(`analyze: ${reason}`, { dedupeKey: `change:${reason}` })
-        const diff = await result.driver!.reload()
-        if (diff.hasChanged) {
-          await refresh(reason)
-        } else {
-          watchLogger.log('analyze: config unchanged')
-        }
-      },
-    })
-    watchLogger.log('analyze: watching for changes')
-
-    const stopTracing = result.stop
-    result.stop = async () => {
-      await stopWatch()
-      await server.close()
-      await stopTracing?.()
-    }
-  }
-
-  return result
 }
 
 interface AnalyzeOnceResult {
   report: UsageReport
   diagnostics: Diagnostic[]
-  fingerprints: Map<string, string>
   ok: boolean
 }
 
-function analyzeOnce(ctx: CommandRunContext<AnalyzeFlags>, scope: AnalyzeScope): AnalyzeOnceResult {
+function analyzeOnce(ctx: CommandRunContext<AnalyzeFlags>, scope: AnalyzeScope | 'all'): AnalyzeOnceResult {
   const scan = time({
     timings: ctx.timings,
     phase: 'scan',
@@ -212,7 +93,6 @@ function analyzeOnce(ctx: CommandRunContext<AnalyzeFlags>, scope: AnalyzeScope):
 
   const fileInputs: Array<{ path: string; source: string }> = []
   const fileDiagnostics: Diagnostic[] = []
-  const fingerprints = new Map<string, string>()
   const sourceByPath = new Map<string, string>()
 
   for (const source of sources) {
@@ -220,7 +100,6 @@ function analyzeOnce(ctx: CommandRunContext<AnalyzeFlags>, scope: AnalyzeScope):
       const contents = readFileSync(source, 'utf8')
       fileInputs.push({ path: source, source: contents })
       sourceByPath.set(source, contents)
-      fingerprints.set(normalizeWatchPath(ctx.cwd, source), hashSource(contents))
     } catch (error) {
       fileDiagnostics.push(
         ...normalizeCliDiagnostics(
@@ -258,70 +137,47 @@ function analyzeOnce(ctx: CommandRunContext<AnalyzeFlags>, scope: AnalyzeScope):
   return {
     report,
     diagnostics,
-    fingerprints,
     ok: diagnosticsPass(diagnostics, { maxWarnings: ctx.flags.maxWarnings }),
   }
 }
 
-function normalizeScope(scope: AnalyzeFlags['scope']): AnalyzeScope {
+function normalizeScope(scope: AnalyzeFlags['scope']): AnalyzeScope | 'all' {
   if (scope === 'token') return 'tokens'
   if (scope === 'recipe') return 'recipes'
   return scope ?? 'all'
 }
 
-function formatAnalyzeUiChange(cwd: string, kind: 'source' | 'config', events: WatchEvent[]): string {
-  if (events.length === 1) return `${kind} changed ${formatEventPath(cwd, events[0]!.path)}`
-
-  return `${events.length} ${kind} files changed`
-}
-
-function formatEventPath(cwd: string, path: string): string {
-  const relativePath = relative(cwd, normalizeWatchPath(cwd, path))
-  return relativePath && !relativePath.startsWith('..') ? relativePath : path
-}
-
-function hasSourceContentChange(cwd: string, fingerprints: Map<string, string>, events: WatchEvent[]): boolean {
-  return events.some((event) => {
-    const path = normalizeWatchPath(cwd, event.path)
-
-    if (event.kind === 'unlink') return fingerprints.has(path)
-
-    try {
-      return fingerprints.get(path) !== hashSource(readFileSync(path, 'utf8'))
-    } catch {
-      return true
-    }
-  })
-}
-
-function normalizeWatchPath(cwd: string, path: string): string {
-  return isAbsolute(path) ? path : resolve(cwd, path)
-}
-
-function hashSource(source: string): string {
-  return createHash('sha1').update(source).digest('hex')
-}
-
+// No `--scope` prints the summary and every section; one scope prints that section.
 function renderAnalyzeSummary(result: AnalyzeResult, flags: AnalyzeFlags): string[] {
   const scope = normalizeScope(flags.scope)
+  if (flags.unused) return renderUnused(result, scope)
+
   const limit = parseLimit(flags.limit)
   const lines = [`analyze: scanned ${result.sourceCount} files`]
+
+  const show = (section: AnalyzeScope) => scope === section || scope === 'all'
 
   if (scope === 'all') {
     lines.push('', 'Summary', ...renderScopeSummary(result))
   }
 
-  if (scope === 'all' || scope === 'tokens') {
+  if (show('tokens')) {
     lines.push('', ...renderTokenReport(result.views?.tokens.categories ?? [], limit))
   }
 
-  if (scope === 'all' || scope === 'recipes') {
+  if (show('recipes')) {
     lines.push('', ...renderRecipeReport(result.views?.recipes.recipes ?? [], limit))
   }
 
-  if (scope !== 'all' && scope !== 'tokens' && scope !== 'recipes') {
-    const summary = result.summary[scope]
-    lines.push(`${scope}: ${summary.used} uses, ${summary.unique} unique`)
+  const named: Array<['utilities' | 'patterns' | 'keyframes', string, string]> = [
+    ['utilities', 'Utilities', 'Utility'],
+    ['patterns', 'Patterns', 'Pattern'],
+    ['keyframes', 'Keyframes', 'Keyframe'],
+  ]
+  for (const [section, title, singular] of named) {
+    if (show(section)) {
+      lines.push('', ...renderNamedReport(title, singular, result.views?.[section], limit))
+    }
   }
 
   return lines.filter((line, index, all) => !(line === '' && all[index - 1] === ''))
@@ -370,6 +226,78 @@ function renderRecipeReport(recipes: RecipeUsageItem[], limit: number): string[]
   ])
 
   return ['Recipes', ...renderTable(['Recipe', 'Variants', 'Top variants', 'Files', 'Used as'], rows)]
+}
+
+// One name per line so the list pipes and diffs. A single scope drops the
+// headings entirely; the whole output is then the names.
+function renderUnused(result: AnalyzeResult, scope: AnalyzeScope | 'all'): string[] {
+  const views = result.views
+  if (!views) return ['No configured theme to compare against']
+
+  const sections: Array<[AnalyzeScope, string, string[]]> = [
+    ['tokens', 'Tokens', views.tokens.unused],
+    ['recipes', 'Recipes', views.recipes.unused],
+    ['utilities', 'Utilities', views.utilities.unused],
+    ['patterns', 'Patterns', views.patterns.unused],
+    ['keyframes', 'Keyframes', views.keyframes.unused],
+  ]
+
+  if (scope !== 'all') {
+    return sections.find(([section]) => section === scope)?.[2] ?? []
+  }
+
+  const lines = [`analyze: scanned ${result.sourceCount} files`, 'Unused in scanned sources']
+  for (const [, title, names] of sections) {
+    lines.push('', `${title} (${names.length})`, ...names)
+  }
+  return lines
+}
+
+function renderNamedReport(
+  title: string,
+  singular: string,
+  view: NamedUsageReport | undefined,
+  limit: number,
+): string[] {
+  if (!view || (view.items.length === 0 && view.total === 0)) return [`No ${title.toLowerCase()} found`]
+
+  const heading =
+    view.total > 0 ? `${title}   ${view.used}/${view.total} used (${formatPercent(view.percentUsed)})` : title
+  const lines = [heading]
+
+  if (view.items.length === 0) {
+    lines.push(`No ${title.toLowerCase()} used in scanned sources`)
+  } else {
+    const rows = view.items.slice(0, limit).map((item) => [item.name, String(item.uses), String(item.files)])
+    lines.push(...renderTable([singular, 'Uses', 'Files'], rows))
+  }
+
+  if (view.unused.length > 0) {
+    const shown = view.unused.slice(0, limit)
+    const more = view.unused.length - shown.length
+    const names = more > 0 ? [...shown, `+${more} more`] : shown
+    lines.push(...wrapList(`Unused in scanned sources (${view.unused.length}): `, names))
+  }
+
+  return lines
+}
+
+function wrapList(prefix: string, names: string[], width = 100): string[] {
+  const lines: string[] = []
+  let current = prefix
+
+  for (const [index, name] of names.entries()) {
+    const piece = index === names.length - 1 ? name : `${name}, `
+    if (current.length + piece.length > width && current !== prefix) {
+      lines.push(current.trimEnd())
+      current = `  ${piece}`
+    } else {
+      current += piece
+    }
+  }
+
+  lines.push(current.trimEnd())
+  return lines
 }
 
 function renderTable(headers: string[], rows: string[][]): string[] {

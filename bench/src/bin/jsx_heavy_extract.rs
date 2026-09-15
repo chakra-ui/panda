@@ -25,20 +25,24 @@ fn main() {
     let source = generated_source(args.elements);
     let config = config();
 
+    assert_fixture_contract(&config);
+
     for _ in 0..args.warm {
         let _ = extract(&source, "fixture.tsx", &config);
     }
 
     let start = Instant::now();
-    let mut checksum = 0usize;
+    let mut calls = 0usize;
+    let mut jsx = 0usize;
+    let mut diagnostics = 0usize;
     for _ in 0..args.iterations {
         let result = extract(&source, "fixture.tsx", &config);
-        checksum = checksum
-            .wrapping_add(result.calls.len())
-            .wrapping_add(result.jsx.len())
-            .wrapping_add(result.diagnostics.len());
+        calls = calls.wrapping_add(result.calls.len());
+        jsx = jsx.wrapping_add(result.jsx.len());
+        diagnostics = diagnostics.wrapping_add(result.diagnostics.len());
     }
     let elapsed_ms = start.elapsed().as_secs_f64() * 1000.0;
+    let checksum = calls.wrapping_add(jsx).wrapping_add(diagnostics);
 
     println!(
         "{}",
@@ -48,43 +52,83 @@ fn main() {
             "elements": args.elements,
             "iterations": args.iterations,
             "elapsedMs": elapsed_ms,
-            "perIterationMs": elapsed_ms / args.iterations.max(1) as f64,
+            "perIterationMs": elapsed_ms / args.iterations as f64,
+            "callsPerIteration": calls / args.iterations,
+            "jsxPerIteration": jsx / args.iterations,
+            "diagnosticsPerIteration": diagnostics / args.iterations,
             "checksum": checksum,
         })
     );
 }
 
+fn assert_fixture_contract(config: &ExtractorConfig) {
+    let preflight = extract(&generated_source(8), "fixture.tsx", config);
+    assert!(
+        preflight.diagnostics.is_empty(),
+        "JSX benchmark fixture produced diagnostics: {:?}",
+        preflight.diagnostics
+    );
+    assert_eq!(preflight.calls.len(), 1, "expected one css() call");
+    let mut jsx_names: Vec<_> = preflight
+        .jsx
+        .iter()
+        .map(|entry| entry.name.as_str())
+        .collect();
+    jsx_names.sort_unstable();
+    assert_eq!(
+        jsx_names,
+        [
+            "Box",
+            "FieldInput",
+            "Grid",
+            "PrimaryAction",
+            "Stack",
+            "styled.div"
+        ],
+        "expected the configured JSX component and factory cases"
+    );
+}
+
 fn parse_args() -> Args {
-    let mut args = Args {
+    parse_args_from(std::env::args().skip(1))
+}
+
+fn parse_args_from(argv: impl IntoIterator<Item = String>) -> Args {
+    let mut parsed = Args {
         elements: 2_000,
         warm: 10,
         iterations: 50,
     };
-    let mut iter = std::env::args().skip(1);
+    let mut iter = argv.into_iter();
     while let Some(arg) = iter.next() {
         match arg.as_str() {
             "--elements" => {
-                args.elements = iter
-                    .next()
-                    .and_then(|value| value.parse().ok())
-                    .unwrap_or(args.elements);
+                parsed.elements = parse_usize_value(&mut iter, "--elements");
             }
             "--warm" => {
-                args.warm = iter
-                    .next()
-                    .and_then(|value| value.parse().ok())
-                    .unwrap_or(args.warm);
+                parsed.warm = parse_usize_value(&mut iter, "--warm");
             }
             "--iterations" => {
-                args.iterations = iter
-                    .next()
-                    .and_then(|value| value.parse().ok())
-                    .unwrap_or(args.iterations);
+                parsed.iterations = parse_usize_value(&mut iter, "--iterations");
             }
             _ => {}
         }
     }
-    args
+    assert!(parsed.elements > 0, "--elements must be greater than zero");
+    assert!(
+        parsed.iterations > 0,
+        "--iterations must be greater than zero"
+    );
+    parsed
+}
+
+fn parse_usize_value(iter: &mut impl Iterator<Item = String>, flag: &str) -> usize {
+    let value = iter
+        .next()
+        .unwrap_or_else(|| panic!("missing {flag} value"));
+    value
+        .parse()
+        .unwrap_or_else(|_| panic!("invalid {flag} value: {value}"))
 }
 
 fn config() -> ExtractorConfig {
@@ -126,7 +170,7 @@ fn config() -> ExtractorConfig {
             modules: vec!["@panda/tokens".to_owned()],
             names: NameMatcher::only(["token"]),
         },
-        jsx_factories: None,
+        jsx_factories: Some(vec!["styled".to_owned()]),
         ..Default::default()
     })
     .with_jsx(JsxExtractionConfig {
@@ -145,6 +189,7 @@ fn config() -> ExtractorConfig {
         component_regex_blocklist_set: None,
         valid_style_props,
     })
+    .with_jsx_framework(true)
 }
 
 fn generated_source(elements: usize) -> String {
@@ -170,4 +215,20 @@ fn generated_source(elements: usize) -> String {
     }
     source.push_str("</>;\n}\ncss({ color: 'red' });\n");
     source
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{assert_fixture_contract, config, parse_args_from};
+
+    #[test]
+    fn fixture_exercises_jsx_extraction() {
+        assert_fixture_contract(&config());
+    }
+
+    #[test]
+    #[should_panic(expected = "--iterations must be greater than zero")]
+    fn zero_iterations_are_rejected() {
+        parse_args_from(["--iterations".to_owned(), "0".to_owned()]);
+    }
 }

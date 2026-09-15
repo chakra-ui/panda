@@ -23,6 +23,7 @@ pub enum ArtifactId {
     JsxPatterns,
     Patterns,
     Recipes,
+    Specs,
     Sva,
     Themes,
     Tokens,
@@ -30,6 +31,7 @@ pub enum ArtifactId {
     ViewTransition,
     PositionTry,
     Keyframes,
+    FirstThatWorks,
 }
 
 impl ArtifactId {
@@ -49,6 +51,7 @@ impl ArtifactId {
         Self::JsxIndex,
         Self::Patterns,
         Self::Recipes,
+        Self::Specs,
         Self::Sva,
         Self::Themes,
         Self::Tokens,
@@ -56,6 +59,7 @@ impl ArtifactId {
         Self::ViewTransition,
         Self::PositionTry,
         Self::Keyframes,
+        Self::FirstThatWorks,
     ];
 
     #[must_use]
@@ -76,6 +80,7 @@ impl ArtifactId {
             Self::JsxPatterns => "jsx-patterns",
             Self::Patterns => "patterns",
             Self::Recipes => "recipes",
+            Self::Specs => "specs",
             Self::Sva => "sva",
             Self::Themes => "themes",
             Self::Tokens => "tokens",
@@ -83,6 +88,7 @@ impl ArtifactId {
             Self::ViewTransition => "view-transition",
             Self::PositionTry => "position-try",
             Self::Keyframes => "keyframes",
+            Self::FirstThatWorks => "first-that-works",
         }
     }
 }
@@ -439,6 +445,13 @@ impl ArtifactGraph {
             ]),
         },
         ArtifactNode {
+            id: ArtifactId::FirstThatWorks,
+            dependencies: DependencySet::from_slice(&[
+                ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
+            ]),
+        },
+        ArtifactNode {
             id: ArtifactId::Cx,
             dependencies: DependencySet::from_slice(&[
                 ConfigDependency::CodegenFormat,
@@ -453,6 +466,10 @@ impl ArtifactGraph {
                 // Prefix/hash live in helpers (`toCssVar`); tokens only owns the value map.
                 ConfigDependency::Tokens,
             ]),
+        },
+        ArtifactNode {
+            id: ArtifactId::Specs,
+            dependencies: DependencySet::from_slice(&[ConfigDependency::Tokens]),
         },
         ArtifactNode {
             id: ArtifactId::CssIndex,
@@ -657,8 +674,12 @@ fn generate_node_inner(
         ArtifactId::Keyframes => {
             crate::artifacts::keyframes::generate(ctx, options, node.dependencies)
         }
+        ArtifactId::FirstThatWorks => {
+            crate::artifacts::first_that_works::generate(ctx, options, node.dependencies)
+        }
         ArtifactId::Themes => crate::artifacts::themes::generate(ctx, options, node.dependencies),
         ArtifactId::Tokens => crate::artifacts::tokens::generate(ctx, options, node.dependencies),
+        ArtifactId::Specs => crate::artifacts::specs::generate(ctx, options, node.dependencies),
         ArtifactId::Cx => crate::artifacts::cx::generate(ctx, options, node.dependencies),
         ArtifactId::Helpers => crate::artifacts::helpers::generate(ctx, options, node.dependencies),
         ArtifactId::JsxCreateRecipeContext => {

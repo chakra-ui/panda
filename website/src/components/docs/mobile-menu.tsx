@@ -113,24 +113,6 @@ export const MobileMenu = ({ pathname }: Props) => {
       </nav>
 
       <Stack gap="3">
-        <Link
-          href="/docs/get-started/cli"
-          className={css({
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minH: '14',
-            rounded: 'lg',
-            bg: 'accent',
-            color: 'black',
-            fontSize: 'lg',
-            fontWeight: 'bold',
-            textDecoration: 'none'
-          })}
-        >
-          Install Panda
-        </Link>
-
         <a
           href="https://play.panda-css.com/"
           target="_blank"

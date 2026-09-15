@@ -28,6 +28,7 @@ describe('@pandacss/vite design-system HMR', () => {
     await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
     plugin.transform.call({ addWatchFile, warn: vi.fn() }, CSS_ROOT, '/project/src/index.css')
 
+    expect(driver.scan).not.toHaveBeenCalled()
     expect(addWatchFile.mock.calls.map(([file]) => file)).toMatchInlineSnapshot(`
       [
         "/project/src/app.tsx",
@@ -42,7 +43,23 @@ describe('@pandacss/vite design-system HMR', () => {
     expect(driver.cssgen).toHaveBeenCalledWith({ emitLayerDeclaration: false, polyfill: false })
   })
 
-  it('registers new scan() matches on later CSS transforms without re-adding known files', async () => {
+  it('scans for watch files when a custom driver does not expose parsed files', async () => {
+    const { driver, pandacss } = await setup()
+    driver.watchTargets.mockReturnValue({
+      files: undefined,
+      sources: ['src/**/*.tsx'],
+      dirs: ['/project/src'],
+      config: ['panda.config.ts'],
+    })
+    const plugin = pandacss() as unknown as TestPlugin
+
+    await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
+    plugin.transform.call({ addWatchFile: vi.fn(), warn: vi.fn() }, CSS_ROOT, '/project/src/index.css')
+
+    expect(driver.scan).toHaveBeenCalledOnce()
+  })
+
+  it('registers newly parsed files on later CSS transforms without re-adding known files', async () => {
     const { driver, pandacss } = await setup()
     const plugin = pandacss() as unknown as TestPlugin
     const addWatchFile = vi.fn()
@@ -53,7 +70,12 @@ describe('@pandacss/vite design-system HMR', () => {
     expect(addWatchFile).toHaveBeenCalledWith('/project/src/app.tsx')
 
     addWatchFile.mockClear()
-    driver.scan.mockReturnValueOnce(['/project/src/app.tsx', '/project/src/new.tsx'])
+    driver.watchTargets.mockReturnValueOnce({
+      files: ['/project/src/app.tsx', '/project/src/new.tsx'],
+      sources: ['src/**/*.tsx'],
+      dirs: ['/project/src'],
+      config: ['panda.config.ts'],
+    })
     plugin.transform.call(ctx, CSS_ROOT, '/project/src/index.css')
 
     expect(addWatchFile.mock.calls.map(([file]) => file)).toEqual(['/project/src/new.tsx'])
@@ -107,6 +129,68 @@ describe('@pandacss/vite design-system HMR', () => {
         },
       ]
     `)
+  })
+
+  it('regenerates codegen when a design-system artifact changes', async () => {
+    const { driver, pandacss } = await setup()
+    const plugin = pandacss({ outdir: 'styled-system' }) as unknown as TestPlugin
+    const environment = createEnvironment()
+    driver.isDesignSystemFile.mockReturnValue('artifact')
+    driver.syncDesignSystemFileChange.mockResolvedValue(true)
+
+    await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
+    driver.codegen.mockClear()
+    await plugin.hotUpdate.call(
+      { environment },
+      artifactHotUpdate('/project/node_modules/@acme/ds/panda/lib.json', environment),
+    )
+
+    expect(driver.syncDesignSystemFileChange).toHaveBeenCalledWith({
+      path: '/project/node_modules/@acme/ds/panda/lib.json',
+      kind: 'change',
+    })
+    expect(driver.codegen).toHaveBeenCalledWith({ cwd: '/project', outdir: 'styled-system' })
+  })
+
+  it('skips codegen when a design-system artifact is unchanged', async () => {
+    const { driver, pandacss } = await setup()
+    const plugin = pandacss() as unknown as TestPlugin
+    const environment = createEnvironment()
+    driver.isDesignSystemFile.mockReturnValue('artifact')
+    driver.syncDesignSystemFileChange.mockResolvedValue(false)
+
+    await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
+    driver.codegen.mockClear()
+    await plugin.hotUpdate.call(
+      { environment },
+      artifactHotUpdate('/project/node_modules/@acme/ds/panda/lib.json', environment),
+    )
+
+    expect(driver.codegen).not.toHaveBeenCalled()
+  })
+
+  it('skips codegen when a design-system source file changes', async () => {
+    const { driver, pandacss } = await setup()
+    const plugin = pandacss() as unknown as TestPlugin
+    const environment = createEnvironment()
+    driver.syncDesignSystemFileChange.mockResolvedValue(true)
+
+    await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
+    driver.codegen.mockClear()
+    await plugin.hotUpdate.call(
+      { environment },
+      {
+        ...artifactHotUpdate('/project/node_modules/@acme/ds/src/button.css.ts', environment),
+        read: async () => "export const button = css({ fontSize: '20px' })",
+      },
+    )
+
+    expect(driver.syncDesignSystemFileChange).toHaveBeenCalledWith({
+      path: '/project/node_modules/@acme/ds/src/button.css.ts',
+      kind: 'change',
+      content: "export const button = css({ fontSize: '20px' })",
+    })
+    expect(driver.codegen).not.toHaveBeenCalled()
   })
 
   it.each([
@@ -301,6 +385,28 @@ async function setup() {
   return { createNodeDriver, createSourceTransformer, driver, pandacss }
 }
 
+function createEnvironment() {
+  return {
+    moduleGraph: {
+      getModuleById: vi.fn(),
+      invalidateModule: vi.fn(),
+    },
+  }
+}
+
+function artifactHotUpdate(file: string, environment: ReturnType<typeof createEnvironment>) {
+  return {
+    type: 'update',
+    file,
+    modules: [],
+    read: vi.fn(),
+    server: {
+      config: { logger: { warn: vi.fn() } },
+      environments: { client: environment },
+    },
+  }
+}
+
 function createMockDriver() {
   const sourceTransformer = {
     transformSource: vi.fn(
@@ -340,14 +446,19 @@ function createMockDriver() {
       },
     ]),
     isConfigFile: vi.fn(() => false),
-    isDesignSystemFile: vi.fn((file: string) =>
+    isDesignSystemFile: vi.fn((file: string): 'artifact' | 'source' | false =>
       file === '/project/node_modules/@acme/ds/src/button.css.ts' ? 'source' : false,
     ),
     isSourceFile: vi.fn((_file: string) => false),
     parseFiles: vi.fn(),
-    reload: vi.fn(async () => ({ hasChanged: true, dependencies: [], recipes: [], patterns: [], changes: [] })),
     scan: vi.fn(() => ['/project/src/app.tsx']),
-    watchTargets: vi.fn(() => ({ sources: ['src/**/*.tsx'], dirs: ['/project/src'], config: ['panda.config.ts'] })),
+    reload: vi.fn(async () => ({ hasChanged: true, dependencies: [], recipes: [], patterns: [], changes: [] })),
+    watchTargets: vi.fn(() => ({
+      files: ['/project/src/app.tsx'] as string[] | undefined,
+      sources: ['src/**/*.tsx'],
+      dirs: ['/project/src'],
+      config: ['panda.config.ts'],
+    })),
     resolvePath: vi.fn((file: string) => (file.startsWith('/') ? file : `/project/${file}`)),
     syncDesignSystemFileChange: vi.fn(async () => true),
   }

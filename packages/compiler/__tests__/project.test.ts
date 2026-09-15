@@ -156,6 +156,7 @@ describe('Compiler', () => {
         "themes",
         "types",
         "tokens",
+        "specs",
         "conditions",
       ]
     `)
@@ -169,7 +170,8 @@ describe('Compiler', () => {
     const types = artifact?.files.find((file) => file.path === 'css/index.d.ts')?.code
 
     expect(runtime).toContain('./css.js')
-    expect(types).toContain('./css.d.ts')
+    expect(types).toContain('./css.js')
+    expect(types).not.toContain('./css.d.ts')
   })
 
   it('expands staticCss.patterns through compile()', () => {

@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react'
 import { LiveProvider, useLiveContext } from 'react-live-runner'
-import { useIsClient } from 'usehooks-ts'
+import { useIsClient } from '@/src/lib/use-is-client'
 import { createPortal } from 'react-dom'
 import { usePreview } from '@/src/hooks/usePreview'
 import { css } from '@/styled-system/css'
@@ -30,9 +30,7 @@ export const Preview = memo(function Preview(props: PreviewProps) {
     if (!previewJs) return ''
 
     const defaultExportName = extractDefaultExportedFunctionName(source) ?? 'App'
-    return `${previewJs}\n${source
-      .replaceAll(/(?<!!)import.*/g, '')
-      .concat(`\nrender(<${defaultExportName} />)`)}`
+    return `${previewJs}\n${source.replaceAll(/(?<!!)import.*/g, '').concat(`\nrender(<${defaultExportName} />)`)}`
   }, [previewJs, source])
 
   const {

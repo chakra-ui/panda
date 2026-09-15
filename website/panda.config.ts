@@ -39,7 +39,6 @@ export default defineConfig({
       // used in .mdx files, e.g. <Callout type="default" /> or with the blockquote sign like: `> Blabla`
       // ts-morph can't parse MDX properly, so we need to specify it here
       callout: [{ type: ['*'] }],
-      card: [{ variant: ['*'] }],
       docCard: [{ mode: ['*'] }],
       docNav: [{ kind: ['*'] }],
       segmented: [{ size: ['*'], tone: ['*'] }],

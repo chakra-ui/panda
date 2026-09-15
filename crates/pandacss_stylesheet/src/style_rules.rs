@@ -148,39 +148,80 @@ pub(crate) fn write_with_wrappers(
     inner(writer, wrappers, 0, write);
 }
 
+/// Appends declarations, keeping fallback runs intact. Consecutive
+/// same-property declarations are one run; appending them one at a time would
+/// collapse the run to its last member.
 pub(crate) fn append_declarations(target: &mut Vec<Declaration>, declarations: Vec<Declaration>) {
+    let mut run: Vec<Declaration> = Vec::new();
     for declaration in declarations {
-        append_declaration(target, declaration);
+        if run
+            .first()
+            .is_some_and(|first| first.prop != declaration.prop)
+        {
+            append_declaration_run(target, std::mem::take(&mut run));
+        }
+        run.push(declaration);
     }
+    append_declaration_run(target, run);
 }
 
 pub(crate) fn append_declaration(target: &mut Vec<Declaration>, declaration: Declaration) {
-    if let Some(existing) = target
-        .iter_mut()
-        .find(|existing| existing.prop == declaration.prop)
-    {
-        // Importance outranks source order within one declaration block.
-        if existing.important && !declaration.important {
-            return;
-        }
-        *existing = declaration;
+    append_declaration_run(target, vec![declaration]);
+}
+
+/// Appends an ordered run of declarations that all share one property.
+///
+/// A run is one style value, so it replaces — or loses to — an existing run as
+/// a unit. Replaced in place, so declaration order stays stable.
+pub(crate) fn append_declaration_run(target: &mut Vec<Declaration>, run: Vec<Declaration>) {
+    let Some(prop) = run.first().map(|declaration| declaration.prop.clone()) else {
+        return;
+    };
+    let Some(first) = target.iter().position(|existing| existing.prop == prop) else {
+        target.extend(run);
+        return;
+    };
+
+    // Importance outranks source order within one declaration block.
+    if target[first].important && !run.iter().any(|declaration| declaration.important) {
         return;
     }
-    target.push(declaration);
+
+    target.retain(|existing| existing.prop != prop);
+    let tail = target.split_off(first);
+    target.extend(run);
+    target.extend(tail);
 }
 
 #[cfg(test)]
 mod tests {
     use insta::assert_yaml_snapshot;
 
-    use super::{Declaration, append_declaration};
+    use super::{Declaration, append_declaration, append_declaration_run};
 
     fn declaration(value: &str, important: bool) -> Declaration {
+        named_declaration("color", value, important)
+    }
+
+    fn named_declaration(prop: &str, value: &str, important: bool) -> Declaration {
         Declaration {
-            prop: "color".to_owned(),
+            prop: prop.to_owned(),
             value: value.to_owned(),
             important,
         }
+    }
+
+    fn dump(declarations: &[Declaration]) -> Vec<serde_json::Value> {
+        declarations
+            .iter()
+            .map(|declaration| {
+                serde_json::json!({
+                    "prop": declaration.prop,
+                    "value": declaration.value,
+                    "important": declaration.important,
+                })
+            })
+            .collect()
     }
 
     #[test]
@@ -225,5 +266,96 @@ mod tests {
           important: true
         "
         );
+    }
+
+    #[test]
+    fn a_run_replaces_an_existing_declaration_in_place() {
+        let mut declarations = vec![
+            named_declaration("display", "flex", false),
+            declaration("green", false),
+            named_declaration("margin", "auto", false),
+        ];
+        append_declaration_run(
+            &mut declarations,
+            vec![declaration("red", false), declaration("blue", false)],
+        );
+
+        // The run lands where the replaced declaration was, not at the end.
+        assert_yaml_snapshot!(dump(&declarations), @r"
+        - prop: display
+          value: flex
+          important: false
+        - prop: color
+          value: red
+          important: false
+        - prop: color
+          value: blue
+          important: false
+        - prop: margin
+          value: auto
+          important: false
+        ");
+    }
+
+    #[test]
+    fn a_later_scalar_replaces_a_whole_run() {
+        let mut declarations = Vec::new();
+        append_declaration_run(
+            &mut declarations,
+            vec![declaration("red", false), declaration("blue", false)],
+        );
+        append_declaration(&mut declarations, declaration("green", false));
+
+        // Last write wins as a unit — no member of the old run survives.
+        assert_yaml_snapshot!(dump(&declarations), @r"
+        - prop: color
+          value: green
+          important: false
+        ");
+    }
+
+    #[test]
+    fn a_normal_run_does_not_replace_an_important_declaration() {
+        let mut declarations = vec![declaration("green", true)];
+        append_declaration_run(
+            &mut declarations,
+            vec![declaration("red", false), declaration("blue", false)],
+        );
+
+        assert_yaml_snapshot!(dump(&declarations), @r"
+        - prop: color
+          value: green
+          important: true
+        ");
+    }
+
+    #[test]
+    fn an_important_run_replaces_a_normal_declaration() {
+        let mut declarations = vec![declaration("green", false)];
+        append_declaration_run(
+            &mut declarations,
+            vec![declaration("red", true), declaration("blue", true)],
+        );
+
+        assert_yaml_snapshot!(dump(&declarations), @r"
+        - prop: color
+          value: red
+          important: true
+        - prop: color
+          value: blue
+          important: true
+        ");
+    }
+
+    #[test]
+    fn an_empty_run_changes_nothing() {
+        let mut declarations = vec![declaration("green", false)];
+        append_declaration_run(&mut declarations, Vec::new());
+
+        assert_yaml_snapshot!(dump(&declarations), @r"
+        - prop: color
+          value: green
+          important: false
+        ");
     }
 }
