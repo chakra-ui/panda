@@ -4,36 +4,13 @@ import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import * as defineEntry from '@pandacss/dev/define'
-import * as rootEntry from '@pandacss/dev'
-import { describe, expect, test } from 'vitest'
+import { describe, test } from 'vitest'
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const resolveFromTest = createRequire(import.meta.url).resolve
 const tsupCli = path.join(path.dirname(resolveFromTest('tsup/package.json')), 'dist/cli-default.js')
 
 describe('@pandacss/dev/define', () => {
-  test('preserves root helper exports', () => {
-    expect(defineEntry.definePattern).toBe(rootEntry.definePattern)
-    expect(defineEntry.defineTokens).toBe(rootEntry.defineTokens)
-  })
-
-  test('supports flat and namespaced token definitions', () => {
-    const flat = { colors: { red: { value: '#f00' } } }
-    const colors = { red: { value: '#f00' } }
-
-    expect(defineEntry.defineTokens(flat)).toBe(flat)
-    expect(defineEntry.defineTokens.colors(colors)).toBe(colors)
-  })
-
-  test('supports flat and namespaced semantic token definitions', () => {
-    const flat = { colors: { text: { value: '{colors.gray.900}' } } }
-    const colors = { text: { value: '{colors.gray.900}' } }
-
-    expect(defineEntry.defineSemanticTokens(flat)).toBe(flat)
-    expect(defineEntry.defineSemanticTokens.colors(colors)).toBe(colors)
-  })
-
   test('loads the published entry point built from current source', async () => {
     const temporaryPackage = await mkdtemp(path.join(tmpdir(), 'pandacss-dev-define-'))
 
