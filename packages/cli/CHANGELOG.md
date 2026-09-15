@@ -1,5 +1,29 @@
 # @pandacss/cli
 
+## 2.0.0-beta.18
+
+### Minor Changes
+
+- aad2017: Add `--outdir` to `panda cssgen`, so `--splitting` can write its files somewhere you publish instead of only
+  the configured `outdir`. Passing `--outfile` alongside `--splitting` now says it's ignored rather than dropping it
+  silently.
+
+### Patch Changes
+
+- 4466ac3: Pin the presets `panda init` installs to the CLI's own version. An unpinned install resolved the `latest`
+  tag, so a v2 prerelease project got v1 presets.
+- c5c4e2b: Keep the `node:` prefix on built-in imports in the published output. tsup was stripping it, so Deno refused
+  to load Panda's files directly with `Import "child_process" not a dependency`.
+- Updated dependencies [c9dd0f0]
+- Updated dependencies [7e328bd]
+- Updated dependencies [c9dd0f0]
+- Updated dependencies [c5c4e2b]
+- Updated dependencies [c9dd0f0]
+  - @pandacss/compiler@2.0.0-beta.18
+  - @pandacss/compiler-shared@2.0.0-beta.18
+  - @pandacss/config@2.0.0-beta.18
+  - @pandacss/types@2.0.0-beta.18
+
 ## 2.0.0-beta.17
 
 ### Minor Changes

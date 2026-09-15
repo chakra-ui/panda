@@ -1,5 +1,15 @@
 # @pandacss/config
 
+## 2.0.0-beta.18
+
+### Patch Changes
+
+- c5c4e2b: Keep the `node:` prefix on built-in imports in the published output. tsup was stripping it, so Deno refused
+  to load Panda's files directly with `Import "child_process" not a dependency`.
+- Updated dependencies [c9dd0f0]
+  - @pandacss/compiler-shared@2.0.0-beta.18
+  - @pandacss/types@2.0.0-beta.18
+
 ## 2.0.0-beta.17
 
 ### Patch Changes

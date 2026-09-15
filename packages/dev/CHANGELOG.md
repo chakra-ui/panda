@@ -1,5 +1,27 @@
 # @pandacss/dev
 
+## 2.0.0-beta.18
+
+### Minor Changes
+
+- 49d48c2: Add `@pandacss/dev/define`, the config helpers as a standalone module. Design systems can bundle it with
+  `noExternal` without pulling in the rest of `@pandacss/dev`.
+
+### Patch Changes
+
+- Updated dependencies [aad2017]
+- Updated dependencies [c9dd0f0]
+- Updated dependencies [7e328bd]
+- Updated dependencies [4466ac3]
+- Updated dependencies [c9dd0f0]
+- Updated dependencies [c5c4e2b]
+- Updated dependencies [c9dd0f0]
+  - @pandacss/cli@2.0.0-beta.18
+  - @pandacss/compiler@2.0.0-beta.18
+  - @pandacss/config@2.0.0-beta.18
+  - @pandacss/postcss@2.0.0-beta.18
+  - @pandacss/types@2.0.0-beta.18
+
 ## 2.0.0-beta.17
 
 ### Major Changes
