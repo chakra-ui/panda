@@ -1,16 +1,12 @@
 ---
 title: Consume without Panda
-description: Ship a stylesheet the app imports. No designSystem, no app tokens.
+description: Ship a Panda design system as plain CSS, bundled or split per recipe, for apps that don't run Panda.
 ---
 
-If your app doesn't use Panda, `designSystem` and theme extension aren't available to it at all.
-
-To ship a stylesheet the app imports, run Panda in the library, generate a plain CSS file with `panda cssgen`, and
-publish that file next to your components.
+If the app doesn't run Panda, `designSystem` and theme extension are out. Ship it a plain stylesheet instead, in one
+file or several.
 
 ## Emit a stylesheet
-
-Two shapes, depending on how the app wants to consume it.
 
 ### Bundled CSS file
 
@@ -70,7 +66,7 @@ Export the tree rather than a single file:
 }
 ```
 
-Now the app imports everything, or only the recipes it renders:
+The app imports everything, or only the recipes it renders:
 
 ```ts
 import '@acme/ds/styles.css'
@@ -129,7 +125,7 @@ export default defineConfig({
 
 ## Example
 
-A Next.js app with no Panda installed at all, just the published CSS and components:
+A Next.js app with no Panda installed, just the published CSS and components:
 
 ```bash
 npx degit chakra-ui/panda-examples/examples/standalone-app my-app
