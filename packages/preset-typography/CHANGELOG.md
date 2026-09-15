@@ -1,5 +1,11 @@
 # @pandacss/preset-typography
 
+## 2.0.0-beta.18
+
+### Patch Changes
+
+- @pandacss/types@2.0.0-beta.18
+
 ## 2.0.0-beta.17
 
 ### Patch Changes
