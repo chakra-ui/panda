@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "categories": {
+    "colors": [0, 3],
+    "spacing": [3, 5]
+  },
+  "paths": ["colors.red.500", "colors.blue.600", "colors.fg", "spacing.4", "spacing.-4"],
+  "tokens": {
+    "colors.red.500": {
+      "category": "colors",
+      "cssVar": "--colors-red-500"
+    },
+    "colors.blue.600": {
+      "category": "colors",
+      "cssVar": "--colors-blue-600"
+    },
+    "colors.fg": {
+      "category": "colors",
+      "cssVar": "--colors-fg",
+      "semantic": true
+    },
+    "spacing.4": {
+      "category": "spacing",
+      "cssVar": "--spacing-4",
+      "description": "one rem"
+    },
+    "spacing.-4": {
+      "category": "spacing",
+      "description": "one rem"
+    }
+  },
+  "conditions": {
+    "_dark": "[data-theme=dark] &"
+  },
+  "themes": {
+    "brand": {
+      "id": "panda-theme-brand",
+      "selector": "[data-panda-theme=brand]"
+    }
+  },
+  "values": [
+    {
+      "token": "colors.blue.600",
+      "value": "#2563eb"
+    },
+    {
+      "token": "colors.fg",
+      "value": "#ef4444",
+      "refs": ["colors.red.500"]
+    },
+    {
+      "token": "colors.fg",
+      "condition": "_dark",
+      "value": "#2563eb",
+      "refs": ["colors.blue.600"]
+    },
+    {
+      "token": "colors.fg",
+      "theme": "brand",
+      "value": "#2563eb",
+      "refs": ["colors.blue.600"]
+    },
+    {
+      "token": "colors.red.500",
+      "value": "#ef4444"
+    },
+    {
+      "token": "spacing.-4",
+      "value": "calc(1rem * -1)",
+      "refs": ["spacing.4"]
+    },
+    {
+      "token": "spacing.4",
+      "value": "1rem"
+    }
+  ]
+}

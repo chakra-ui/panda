@@ -127,7 +127,7 @@ fn emits_js_runtime_and_declarations() {
     }
     ");
     assert_snapshot!(file(sva, "css/sva.d.mts"), @"
-    import type { SlotRecipeCreatorFn } from '../types/recipe.d.mts';
+    import type { SlotRecipeCreatorFn } from '../types/recipe.mjs';
 
     export declare const sva: SlotRecipeCreatorFn;
     ");

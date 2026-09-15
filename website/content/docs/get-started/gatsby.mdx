@@ -40,6 +40,9 @@ cd test-app
 Install Panda CSS and `gatsby-plugin-postcss` to your project. After that run the `panda init` command to setup Panda
 CSS in your project.
 
+`panda init` also installs `@pandacss/preset-base` and `@pandacss/preset-panda` and lists them under `presets`. Keep
+them there. Without them you get no utilities, tokens or conditions.
+
 ```bash
 npm install -D @pandacss/dev postcss gatsby-plugin-postcss
 npx panda init --postcss
@@ -97,10 +100,11 @@ file.
 > If you use [GraphQL Typegen](https://www.gatsbyjs.com/docs/how-to/local-development/graphql-typegen/), you'll need to update the `include` to
 > avoid infinite loop due to generated `src/gatsby-types.d.ts`.
 
-```js {6} filename="panda.config.ts"
+```js {7} filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   preflight: true,
   // Where to look for your css declarations
   include: ['./src/pages/*.{js,jsx,ts,tsx}', './src/components/**/*.{js,jsx,ts,tsx}'],

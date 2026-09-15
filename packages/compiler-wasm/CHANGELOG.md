@@ -1,5 +1,46 @@
 # @pandacss/compiler-wasm
 
+## 2.0.0-beta.17
+
+### Minor Changes
+
+- 5b9a056: Add `firstThatWorks()` for ordered CSS value fallbacks, so one property can carry a modern value and a
+  supported one:
+
+  ```ts
+  import { css, firstThatWorks } from 'styled-system/css'
+
+  css({ color: firstThatWorks('oklch(55% 0.18 250)', '#0057b8') })
+  ```
+
+  ```css
+  .c_firstThatWorks\(oklch\(55\%_0\.18_250\)\,_\#0057b8\) {
+    color: #0057b8;
+    color: oklch(55% 0.18 250);
+  }
+  ```
+
+  Write the value you want first, as in StyleX. Members are typed by the property they sit in, so they autocomplete and
+  `strictTokens` still applies. Config recipes import `firstThatWorks` from `@pandacss/dev`, or write the
+  `firstThatWorks(a, b)` value form directly.
+
+### Patch Changes
+
+- 8d29caa: Reuse cross-file analysis across `parseFiles()` batches so shared imported values are read and folded once
+  per batch.
+- 323af68: Reuse parsed source paths when registering bundler watch files, avoiding a second full project scan during
+  startup. Keep tracked paths in sync when explicitly parsed files are deleted.
+- 55cab2b: Reduce allocations during CSS call and JSX extraction by reusing owned style keys and values.
+- bb47c38: Speed up JSX extraction for JavaScript and TypeScript files by skipping template scans reserved for Vue,
+  Svelte, and Astro files.
+- Updated dependencies [597d2cb]
+- Updated dependencies [597d2cb]
+- Updated dependencies [5b9a056]
+- Updated dependencies [1ca20ab]
+- Updated dependencies [323af68]
+  - @pandacss/compiler-shared@2.0.0-beta.17
+  - @pandacss/types@2.0.0-beta.17
+
 ## 2.0.0-beta.16
 
 ### Major Changes

@@ -110,13 +110,13 @@ function createProxy() {
   })
 }
 
-export const defineTokens = createProxy() as {
+export const defineTokens = /* @__PURE__ */ createProxy() as {
   <Value>(definition: Value): Value
 } & {
   [K in keyof Required<Tokens>]: <Value>(definition: Value) => Value
 }
 
-export const defineSemanticTokens = createProxy() as {
+export const defineSemanticTokens = /* @__PURE__ */ createProxy() as {
   <Value>(definition: Value): Value
 } & {
   [K in keyof Required<SemanticTokens>]: <Value>(definition: Value) => Value

@@ -12,8 +12,8 @@ featured: true
 
 Today we're releasing Panda CSS 2.0.
 
-It’s the biggest change we’ve made to Panda since we first launched it, but if you’re already using Panda, something
-might surprise you: **the way you write Panda hasn’t really changed.**
+It's the biggest change we've made to Panda since we first launched it, but if you're already using Panda, something
+might surprise you: **the way you write Panda hasn't really changed.**
 
 You still use the same `css()` function, the same recipes and patterns. Your tokens, conditions, and JSX style props
 also work the same way.
@@ -31,8 +31,9 @@ Take a look at the difference:
 - **~99% fewer TypeScript type instantiations** on your generated types, for a lighter editor and CI.
 - **Design systems you can publish**: `panda lib` to author, `designSystem` to consume, with no re-extraction in the
   consuming app.
-- **New in the box**: `viewTransition()`, mask and scrollbar utilities, `@property`-registered variables, a first-party
-  ESLint plugin, a typography preset, and a rebuilt CLI.
+- **New in the box**: new styled-system factories (`viewTransition()`, `firstThatWorks()`, `keyframes()`,
+  `positionTry()`), mask and scrollbar utilities, `@property`-registered variables, config completions in your editor, a
+  first-party ESLint plugin, a typography preset, and a rebuilt CLI.
 - **ESM-only**, needs Node 22 or newer. It ships as a beta today.
 
 Over the rest of this post, we'll walk you through why we decided to rewrite the compiler, what changed in terms of
@@ -102,7 +103,7 @@ css({
 })
 ```
 
-### Cross File Resolution
+### Cross-file resolution
 
 Panda resolves values across files too. If a value is imported from another file, Panda parses that file once, folds the
 value you're using, and keeps a small descriptor instead of holding the whole file in memory.
@@ -117,7 +118,7 @@ import { brand } from './theme'
 css({ borderColor: brand }) // → '#4f46e5'
 ```
 
-### Better CSS Output
+### Better CSS output
 
 The old pipeline handed generation to PostCSS. v2 emits CSS natively in a dedicated crate. It does the CSS-aware work
 that matters for output quality:
@@ -262,7 +263,7 @@ Not all of Panda's work happens at build time. For styles that need to be resolv
 
 ![Runtime css() on dense SSR pages as a share of the unmemoized path: repeated inline 3x faster, a 3-level wrapper chain 4x, a 6-level chain 3x, repeated flat objects 30 to 40 percent faster](/blog/chart-runtime.svg)
 
-## New Features in v2
+## New features in v2
 
 The new engine is a big part of Panda 2.0, but there's quite a bit more in this release.
 
@@ -298,7 +299,7 @@ A few things make this approach an enjoyable user experience:
 - Works across different setups
 - Design systems can extend each other
 - You get better errors when something goes wrong
-- Ship only what you use symlinks, and Docker layers all work.
+- Ship only what you use
 
 ### View transitions
 
@@ -317,6 +318,54 @@ const slide = viewTransition({
 
 You can also name reusable transitions in your theme so a preset can share them, and `viewTransition('slide')` inlines
 the shared class. Unused named transitions stay out of your CSS.
+
+### Ordered value fallbacks
+
+`firstThatWorks()` ships a modern CSS value with a fallback for the browsers that don't support it yet. Write the value
+you want first, the same order as StyleX, and Panda emits both declarations in the order CSS needs:
+
+```ts
+import { css, firstThatWorks } from 'styled-system/css'
+
+css({
+  color: firstThatWorks('oklch(55% 0.18 250)', '#0057b8'),
+  minHeight: firstThatWorks('100dvh', '100vh')
+})
+```
+
+Each fallback is typed by the property it sits in, so members autocomplete and `strictTokens` checks each one — under
+`strictTokens` an arbitrary value takes the usual bracket escape,
+`firstThatWorks('[oklch(55% 0.18 250)]', '[#0057b8]')`. It covers what you used to write by hand — a wide-gamut color
+with an sRGB fallback, `100dvh` behind `100vh`, or a vendor-prefixed value like `-webkit-sticky`.
+
+### Local keyframes and anchor fallbacks
+
+Two more factories follow the same shape as `viewTransition()`: a component-local block that emits its own at-rule and
+is tree-shaken to what your build actually references.
+
+`keyframes()` defines an animation next to the component that uses it, rather than in `theme.keyframes`:
+
+```ts
+import { css, keyframes } from 'styled-system/css'
+
+const fade = keyframes({ from: { opacity: 0 }, to: { opacity: 1 } })
+
+css({ animation: `${fade} 0.2s ease-in` })
+```
+
+`positionTry()` names a CSS anchor-positioning fallback and returns the ident for `positionTryFallbacks`, emitting the
+`@position-try` block for you:
+
+```ts
+import { css, positionTry } from 'styled-system/css'
+
+const fallback = positionTry({ top: 'anchor(bottom)' })
+
+css({ positionTryFallbacks: fallback })
+```
+
+Shared animations still belong in `theme.keyframes`, and shared fallbacks in the new `theme.positionTry`.
+`globalPositionTry` is gone — move its entries to `theme.positionTry` and reference them through the factory.
 
 ### New base-preset utilities
 
@@ -377,9 +426,30 @@ export default [panda.configs.recommended]
 ```
 
 You get rules like `no-invalid-token-paths`, `no-hardcoded-color` via `prefer-token`, `no-shorthand-longhand-mix`,
-`no-deprecated`, an autofixing `consistent-property-style`, and an opt-in `no-primitive-token` that nudges you toward
-semantic tokens when a matching category exists. The same rules run under [oxlint](https://oxc.rs) through a dedicated
-entry point.
+`no-deprecated`, and an autofixing `consistent-property-style`, plus opt-in rules like `no-primitive-token` (nudges you
+toward semantic tokens when a matching category exists) and `no-descendant-selectors` (keeps every style scoped to its
+own element). The same rules run under [oxlint](https://oxc.rs) through a dedicated entry point.
+
+### Config completions in your editor
+
+Editing `panda.config.ts` now gets real completions, diagnostics, and hover for your design system — token, recipe,
+condition, and utility names, resolved through your actual config after presets merge rather than guessed from static
+types. It ships as a TypeScript language service plugin (`@pandacss/typescript-plugin`) and a standalone LSP server
+(`@pandacss/language-server`), so any tsserver-backed editor can pick it up. VS Code registers it for you; other editors
+add it to `compilerOptions.plugins`:
+
+```jsonc
+// tsconfig.json
+{
+  "compilerOptions": {
+    "plugins": [{ "name": "@pandacss/typescript-plugin" }]
+  }
+}
+```
+
+Config authoring also picks up the typed `define*` helpers the rest of the config already had — `defineConditions` and
+`definePositionTry` join `defineTokens`, `defineRecipe`, and friends, so custom conditions and anchor fallbacks get the
+same autocomplete and type-checking when you author them outside `defineConfig`.
 
 ### A typography preset
 
@@ -409,7 +479,8 @@ run `npx -y @pandacss/mcp`
 
 Vue, Svelte, and Lightning CSS support are available as standalone opt-in plugins (`@pandacss/plugin-vue`,
 `@pandacss/plugin-svelte`, `@pandacss/plugin-lightningcss`), keeping the core install smaller for projects that don't
-need them.
+need them. There's also a new `@pandacss/bun` plugin that codegens and injects CSS for `Bun.build`, the Bun dev server,
+and `bun test`.
 
 ## Upgrading from v1
 
@@ -489,6 +560,10 @@ identically in the CLI and in the browser.
 Ten options are gone: `studio`, `eject`, `emitTokensOnly`, `gitignore`, `clean`, `watch`, `poll`, `lightningcss`, and
 `browserslist`. `forceConsistentTypeExtension` became `forceImportExtension` (different semantics, not a rename), and
 `outExtension` now also accepts `'ts'`.
+
+The `syntax` option and the `template-literal` authoring mode are also removed. Drop `syntax` from your config and the
+`--syntax` flag from `panda init`, and write styles with the object form — `css({ color: 'red' })` instead of
+`` css`color: red` ``.
 
 ### CLI commands consolidated
 

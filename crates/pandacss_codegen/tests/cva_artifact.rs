@@ -133,10 +133,10 @@ fn emits_js_runtime_and_declarations() {
     }
     ");
     assert_snapshot!(file(cva, "css/cva.d.mts"), @"
-    import type { RecipeCreatorFn } from '../types/recipe.d.mts';
+    import type { RecipeCreatorFn } from '../types/recipe.mjs';
 
     export declare const cva: RecipeCreatorFn;
 
-    export { RecipeVariant, RecipeVariantProps } from '../types/recipe.d.mts';
+    export { RecipeVariant, RecipeVariantProps } from '../types/recipe.mjs';
     ");
 }

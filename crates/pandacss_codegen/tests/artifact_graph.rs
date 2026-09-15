@@ -232,3 +232,86 @@ fn prebuilt_empty_token_state_does_not_rebuild_theme_dictionary() {
     }
     "#);
 }
+
+/// A `.d.ts` that names another declaration file directly (`export * from
+/// './css.d.ts'`) is TS2846. Declaration specifiers must name the runtime
+/// module and let TypeScript map `./css.js` onto `./css.d.ts`.
+#[test]
+fn declaration_files_never_import_a_declaration_file_by_name() {
+    let config: pandacss_config::UserConfig = serde_json::from_value(serde_json::json!({
+        "jsxFramework": "react",
+        "jsxFactory": "styled",
+        "theme": {
+            "recipes": {
+                "button": { "className": "btn", "base": { "color": "red" } }
+            },
+            "slotRecipes": {
+                "card": { "className": "card", "slots": ["root"], "base": { "root": {} } }
+            }
+        },
+        "patterns": {
+            "stack": { "jsxName": "Stack", "properties": { "gap": { "property": "gap" } } }
+        }
+    }))
+    .expect("config should deserialize");
+    let input = CodegenInput {
+        config,
+        ..CodegenInput::default()
+    };
+
+    for format in [
+        pandacss_config::CodegenFormat::Js,
+        pandacss_config::CodegenFormat::Mjs,
+    ] {
+        let artifacts = ArtifactGraph.generate_with_input(
+            &input,
+            GenerateOptions {
+                format,
+                import_extensions: true,
+            },
+        );
+        let mut checked = 0;
+        for artifact in &artifacts {
+            for file in &artifact.files {
+                if !file.path.ends_with(".d.ts") && !file.path.ends_with(".d.mts") {
+                    continue;
+                }
+                checked += 1;
+                for line in file.code.lines() {
+                    assert!(
+                        !line.contains(".d.ts'") && !line.contains(".d.mts'"),
+                        "{} ({format:?}) references a declaration file directly: {line}",
+                        file.path
+                    );
+                }
+            }
+        }
+        assert!(checked > 10, "expected declaration files, saw {checked}");
+    }
+}
+
+/// `UnstyledProps` used to be re-declared in both recipe-context artifacts. A
+/// `.d.ts` exports its top-level declarations even without `export`, so the two
+/// collided through `jsx/index.d.ts`'s `export *` (TS2308).
+#[test]
+fn recipe_context_artifacts_share_one_unstyled_props_declaration() {
+    let config: pandacss_config::UserConfig = serde_json::from_value(serde_json::json!({
+        "jsxFramework": "react",
+        "jsxFactory": "styled"
+    }))
+    .expect("config should deserialize");
+    let input = CodegenInput {
+        config,
+        ..CodegenInput::default()
+    };
+    let artifacts = ArtifactGraph.generate_with_input(&input, GenerateOptions::default());
+
+    let declarations = artifacts
+        .iter()
+        .flat_map(|artifact| &artifact.files)
+        .filter(|file| file.code.contains("interface UnstyledProps"))
+        .map(|file| file.path.as_str())
+        .collect::<Vec<_>>();
+
+    assert_eq!(declarations, vec!["types/jsx.d.ts"]);
+}

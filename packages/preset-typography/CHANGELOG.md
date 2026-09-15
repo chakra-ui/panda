@@ -1,5 +1,13 @@
 # @pandacss/preset-typography
 
+## 2.0.0-beta.17
+
+### Patch Changes
+
+- Updated dependencies [5b9a056]
+- Updated dependencies [1ca20ab]
+  - @pandacss/types@2.0.0-beta.17
+
 ## 2.0.0-beta.16
 
 ### Patch Changes

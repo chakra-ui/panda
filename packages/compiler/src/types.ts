@@ -167,7 +167,7 @@ export interface RawCompiler
     RawFileSystemBinding,
     RawPathBinding {
   inspectFileSource(path: string, source: string): Omit<FileInspectionResult, 'path'>
-  token_dictionary?(): TokenDictionary | undefined
+  tokenDictionary?(): TokenDictionary | undefined
   registerUtilityTransform?(id: string, callback: (resolved: unknown, original: unknown) => unknown): void
   registerPatternTransform?(id: string, callback: (props: unknown, helpers: Record<string, unknown>) => unknown): void
   registerSourceTransform?(

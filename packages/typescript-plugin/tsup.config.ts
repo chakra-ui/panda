@@ -5,6 +5,7 @@ export default defineConfig([
     entry: ['src/index.ts', 'src/service/index.ts'],
     format: ['esm'],
     platform: 'node',
+    removeNodeProtocol: false,
   },
   {
     // tsserver's plugin loader does a plain CommonJS `require()` — see plugin.cjs
@@ -12,5 +13,6 @@ export default defineConfig([
     entry: ['src/index.ts'],
     format: ['cjs'],
     platform: 'node',
+    removeNodeProtocol: false,
   },
 ])

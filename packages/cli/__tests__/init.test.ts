@@ -4,6 +4,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { runInit, setupGitIgnore } from '../src'
 import { cleanupFixture, createFixture, linkWorkspaceDevPackage } from './helpers'
 
+const { version } = require('../package.json') as { version: string }
+const base = `@pandacss/preset-base@${version}`
+const panda = `@pandacss/preset-panda@${version}`
+
 const execSync = vi.hoisted(() => vi.fn())
 vi.mock('node:child_process', async (importOriginal) => {
   const actual = await importOriginal<typeof import('node:child_process')>()
@@ -136,7 +140,7 @@ describe('init command', () => {
 
       expect(execSync).toHaveBeenCalledOnce()
       expect(execSync).toHaveBeenCalledWith(
-        'npm install -D @pandacss/preset-base @pandacss/preset-panda',
+        `npm install -D ${base} ${panda}`,
         expect.objectContaining({ cwd: dir, stdio: 'ignore' }),
       )
       expect(result.presetsInstalled).toEqual(['@pandacss/preset-base', '@pandacss/preset-panda'])
@@ -155,10 +159,7 @@ describe('init command', () => {
 
       await runInit({ cwd: dir, codegen: false, logLevel: 'silent' })
 
-      expect(execSync).toHaveBeenCalledWith(
-        `${prefix} @pandacss/preset-base @pandacss/preset-panda`,
-        expect.objectContaining({ cwd: dir }),
-      )
+      expect(execSync).toHaveBeenCalledWith(`${prefix} ${base} ${panda}`, expect.objectContaining({ cwd: dir }))
     })
 
     it('defaults to npm when no lockfile is present', async () => {
@@ -206,7 +207,7 @@ describe('init command', () => {
     it('installs only the missing preset', async () => {
       const result = await initWithPkg({ name: 'app', devDependencies: { '@pandacss/preset-base': '*' } })
 
-      expect(execSync).toHaveBeenCalledWith('npm install -D @pandacss/preset-panda', expect.anything())
+      expect(execSync).toHaveBeenCalledWith(`npm install -D ${panda}`, expect.anything())
       expect(result.presetsInstalled).toEqual(['@pandacss/preset-panda'])
     })
 

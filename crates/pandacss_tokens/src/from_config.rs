@@ -555,23 +555,31 @@ fn add_negative_spacing_tokens(builder: &mut TokenDictionaryBuilder) {
     let mut negative_tokens = Vec::new();
     for token in tokens.iter() {
         if token.category != TokenCategory::Spacing
-            || token.value.as_ref() == "0rem"
+            || is_zero_length(&token.value)
             || token.extension("isNegative") == Some("true")
         {
             continue;
         }
 
-        let Some((prefix, last)) = token.path.rsplit_once('.') else {
+        // The marker goes in front of the whole token name. Splitting on the
+        // last dot would negate the tail of a dotted key: `spacing.0.5` is one
+        // key and must become `spacing.-0.5`, not `spacing.0.-5`.
+        let category = token.category.as_str();
+        let Some(name) = token
+            .path
+            .strip_prefix(category)
+            .and_then(|rest| rest.strip_prefix('.'))
+        else {
             continue;
         };
-        if last.starts_with('-') {
+        if name.starts_with('-') {
             continue;
         }
 
         let mut path = String::with_capacity(token.path.len() + 1);
-        path.push_str(prefix);
+        path.push_str(category);
         path.push_str(".-");
-        path.push_str(last);
+        path.push_str(name);
 
         let mut value = String::with_capacity("calc(".len() + token.var.len() + " * -1)".len());
         value.push_str("calc(");
@@ -585,7 +593,7 @@ fn add_negative_spacing_tokens(builder: &mut TokenDictionaryBuilder) {
         negative.deprecated = token.deprecated;
         negative.extensions.clone_from(&token.extensions);
         negative.set_extension("isNegative", "true");
-        negative.set_extension("prop", format!("-{last}"));
+        negative.set_extension("prop", format!("-{name}"));
         negative.set_extension("originalPath", token.path.as_ref());
 
         negative_tokens.push(negative);
@@ -594,6 +602,18 @@ fn add_negative_spacing_tokens(builder: &mut TokenDictionaryBuilder) {
     for token in negative_tokens {
         builder.push(token);
     }
+}
+
+/// `0`, `0px`, `0rem`, `0%`… — negating any of them just yields another zero.
+/// A compound value like `0 1px` is not a bare zero and still gets a negative.
+fn is_zero_length(value: &str) -> bool {
+    let trimmed = value.trim();
+    let split = trimmed
+        .find(|c: char| !c.is_ascii_digit() && c != '.')
+        .unwrap_or(trimmed.len());
+    let (number, unit) = trimmed.split_at(split);
+    number.parse::<f64>().is_ok_and(|n| n == 0.0)
+        && unit.chars().all(|c| c.is_ascii_alphabetic() || c == '%')
 }
 
 fn remove_empty_tokens(builder: &mut TokenDictionaryBuilder) {

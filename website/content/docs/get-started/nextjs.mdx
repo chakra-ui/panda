@@ -88,6 +88,9 @@ cd test-app
 
 Install Panda CSS dependency using your favorite package manager.
 
+`panda init` also installs `@pandacss/preset-base` and `@pandacss/preset-panda` and lists them under `presets`. Keep
+them there. Without them you get no utilities, tokens or conditions.
+
   <Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
   {/* <!-- prettier-ignore-start --> */}
     <Tab>
@@ -160,10 +163,11 @@ file.
 
 <RouteSwitchContent value="app-dir">
 
-```ts {7} filename="panda.config.ts"
+```ts {8} filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   // Whether to use css reset
   preflight: true,
   // Where to look for your css declarations
@@ -179,10 +183,11 @@ export default defineConfig({
 
 <RouteSwitchContent value="pages-dir">
 
-```ts {7} filename="panda.config.ts"
+```ts {8} filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   // Whether to use css reset
   preflight: true,
   // Where to look for your css declarations
