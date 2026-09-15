@@ -104,7 +104,7 @@ fn emits_js_runtime_and_declarations() {
     )
     "##);
     assert_snapshot!(file(tokens, "tokens/index.d.mts"), @"
-    import type { Token, TokenPath } from '../types/tokens.d.mts';
+    import type { Token, TokenPath } from '../types/tokens.mjs';
 
     interface TokenFn {
       (path: TokenPath, fallback?: string): string

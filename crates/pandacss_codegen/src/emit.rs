@@ -268,14 +268,8 @@ fn print_source(
 
     match (kind, target) {
         (_, EmitTarget::SourceTs) => format!("{source}.ts"),
-        (ImportKind::Value, EmitTarget::RuntimeJs) => {
+        (ImportKind::Value, EmitTarget::RuntimeJs) | (_, EmitTarget::Dts) => {
             let ext = format.unwrap_or(CodegenFormat::Mjs).runtime_extension();
-            format!("{source}.{ext}")
-        }
-        (ImportKind::Value | ImportKind::Type, EmitTarget::Dts) => {
-            let ext = format
-                .and_then(CodegenFormat::explicit_declaration_extension)
-                .unwrap_or("d.ts");
             format!("{source}.{ext}")
         }
         _ => source.to_string(),

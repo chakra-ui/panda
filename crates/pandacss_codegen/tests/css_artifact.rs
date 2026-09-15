@@ -240,7 +240,7 @@ fn emits_js_runtime_and_declarations() {
     export const assignCss = /* @__PURE__ */ createAssignCss(cssContext)
     "#);
     assert_snapshot!(file(css, "css/css.d.mts"), @"
-    import type { SystemStyleObject } from '../types/system.d.mts';
+    import type { SystemStyleObject } from '../types/system.mjs';
 
     type Styles = SystemStyleObject | undefined | null | false
     type StyleList = Styles | StyleList[]
