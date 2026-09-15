@@ -3,27 +3,39 @@ title: Build a design system
 description: Run panda lib in the package. Apps opt in with designSystem.
 ---
 
-You own the package. The apps that use it run Panda. Run `panda lib`, then point each app at the package.
+A design system here is one package that ships both your components and the Panda config they were built from,
+tokens, recipes, all of it. Apps that consume it don't re-extract your source. They load a small manifest you
+publish alongside the package.
+
+Build the package like a normal Panda project, run `panda lib` to publish that manifest, then add one field to
+each consuming app's config to point at it.
 
 The command is the same in a monorepo and on npm. Only the workflow around it differs:
 [Monorepo workflow](/docs/design-systems/monorepo-workflow) covers watch mode,
 [Publishing](/docs/design-systems/publishing) covers the npm tarball.
 
-If your apps do not run Panda, ship a stylesheet instead:
-[Consume without Panda](/docs/design-systems/consume-without-panda). If you only need tokens, without components,
-ship a [preset](/docs/theming/presets#creating-a-preset).
+<Callout type="info">
+  If your apps do not run Panda, ship a stylesheet instead:
+  [Consume without Panda](/docs/design-systems/consume-without-panda). If you only need tokens, without
+  components, ship a [preset](/docs/theming/presets#creating-a-preset).
+</Callout>
 
 ## Create the package
 
-This walkthrough uses a workspace package at `packages/ds` that ships TypeScript source directly, the usual shape
-when the consumers live in the same repo. [Publishing](/docs/design-systems/publishing) covers the built `dist`
-shape for npm.
+Start with a workspace package, `packages/ds` here, that ships its TypeScript source directly. That's the normal
+shape when consumers live in the same repo as the package. Publishing to npm instead?
+[Publishing](/docs/design-systems/publishing) covers the built `dist` shape.
+
+Add Panda to the package:
 
 ```bash
 pnpm add -D @pandacss/dev
 ```
 
 ## Configure the theme
+
+This is a normal `panda.config.ts`, nothing design-system-specific yet. Define the tokens and recipes your
+components will use, same as any Panda project:
 
 ```ts filename="packages/ds/panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -61,6 +73,8 @@ export default defineConfig({
 
 ## Author a component
 
+Generate the `styled-system` helpers, then write the component against them:
+
 ```bash
 panda codegen
 ```
@@ -78,11 +92,15 @@ export function Button(props: ComponentPropsWithoutRef<'button'>) {
 export { Button } from './button/button'
 ```
 
-Inside the package, import from the local `styled-system`. Consumers import the component from `@acme/ds`.
+Inside the package, `Button` imports from the local `styled-system`. Once published, consumers of this walkthrough
+just import `Button` itself from `@acme/ds`. An app that also wants your `css()` or `cva()` directly, to build its
+own components on the same tokens, can import those from `@acme/ds/css` too, covered in
+[Consume with Panda](/docs/design-systems/consume-with-panda).
 
 ## Set up package.json
 
-Write the `"."` entry yourself. Do not list `styled-system` exports. `panda lib` adds them.
+You write the `"."` entry, the package's main entry point. Leave every `styled-system` export out. `panda lib`
+generates and syncs those for you on every run. By hand, they'd drift out of date the moment you add a recipe:
 
 ```json filename="packages/ds/package.json"
 {
@@ -106,6 +124,8 @@ Write the `"."` entry yourself. Do not list `styled-system` exports. `panda lib`
 
 ## Run panda lib
 
+Run the `lib` script you just added:
+
 ```bash
 pnpm --filter @acme/ds lib
 ```
@@ -119,11 +139,13 @@ dist/panda/
 └── buildinfo.json   # the styles panda lib extracted from your source
 ```
 
-An app never imports these files. Setting `designSystem: '@acme/ds'` loads the manifest, merges the preset into the
-app's theme, and replays `buildinfo.json`. The app gets your styles without re-scanning your source.
+An app never imports these files directly. Setting `designSystem: '@acme/ds'` loads the manifest, merges the
+preset into the app's theme, and replays `buildinfo.json`. The app gets your styles without re-scanning your
+source at all.
 
-`panda lib` also syncs `package.json` exports. Your `"."` entry stays, the rest is generated. This walkthrough has
-no patterns, so `./patterns` is absent.
+`panda lib` also syncs `package.json` exports for you. Your `"."` entry stays untouched. Everything else is
+generated fresh each run. Only categories your package actually uses show up, so this walkthrough has no patterns
+and `./patterns` is absent:
 
 ```json filename="packages/ds/package.json"
 {
@@ -167,9 +189,13 @@ no patterns, so `./patterns` is absent.
 }
 ```
 
-Do not edit the generated subpaths. The next `panda lib` rewrites them.
+Don't hand-edit the generated subpaths. The next `panda lib` run overwrites them anyway.
 
 ## Fallback files
+
+"Stale" means `buildinfo.json` can't be read, doesn't match the running Panda version, or is malformed, not that
+your components changed since the last `panda lib` run. Here's what happens when a consuming app tries to hydrate
+it:
 
 ```
 app reads buildinfo.json
@@ -178,14 +204,16 @@ app reads buildinfo.json
     └─ no `files` → the build fails, nothing silently missing
 ```
 
-`panda lib` infers `files` from your `include`. For a built-only package where those paths don't ship, pass what
-you publish:
+`panda lib` infers `files` from your `include`, so the fallback usually just works. For a built-only package where
+those source paths don't actually ship (you publish `dist`, not `src`), tell it what you publish instead:
 
 ```bash
 panda lib --files './**/*.{js,mjs}'
 ```
 
 ## Point an app at it
+
+This is the one field from the intro, written in a real app config:
 
 ```ts filename="packages/app/panda.config.ts"
 export default defineConfig({
@@ -194,12 +222,12 @@ export default defineConfig({
 })
 ```
 
-Do not put the design system in `include`. Listing the package name there errors with `design_system_in_include`;
-a glob into its source re-extracts what the package already ships. The package loads through `designSystem`,
-nothing else.
+Do not put the design system in `include`. Listing the package name there errors with `design_system_in_include`.
+A glob into its source would re-extract what the package already ships. The package loads through `designSystem`
+alone, nothing else.
 
-Render a `<Button>` in the app and it comes out styled by the `button` recipe, with no Panda config for it in the
-app:
+Render a `<Button>` in the app and it comes out styled by the `button` recipe, with no Panda config for it
+anywhere in the app:
 
 ```tsx filename="packages/app/src/app.tsx"
 import { Button } from '@acme/ds'

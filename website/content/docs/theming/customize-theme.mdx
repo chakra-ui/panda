@@ -1,0 +1,223 @@
+---
+title: Theme
+description:
+  How to customize breakpoints, tokens, keyframes, and recipes, the same extend and override rules apply to every part
+  of your theme.
+---
+
+Everything under a Panda config's `theme` key can be customized. Put your changes under `theme.extend` and Panda merges
+them on top of the defaults. Write them directly under `theme` instead, and you replace that whole section. The same
+rule holds for every part of `theme`, breakpoints, tokens, keyframes, and recipes alike.
+
+## Adding to the defaults
+
+Put a new value under `theme.extend.<key>` and Panda merges it in alongside whatever's already there.
+
+**Breakpoints.** Add a `3xl` on top of the defaults (`sm`, `md`, `lg`, `xl`, `2xl`):
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      breakpoints: {
+        '3xl': '1800px'
+      }
+    }
+  }
+})
+```
+
+
+**Tokens.** Add a `brand` color alongside every color Panda ships:
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        colors: {
+          brand: { value: '#EA8433' }
+        }
+      }
+    }
+  }
+})
+```
+
+**Keyframes.** Add `fadein` alongside the defaults (`spin`, `ping`, `pulse`, `bounce`):
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  theme: {
+    extend: {
+      keyframes: {
+        fadein: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' }
+        }
+      }
+    }
+  }
+})
+```
+
+
+
+**Recipes.** Register a new [config recipe](/docs/recipes/config-recipe) without touching any recipe a preset already
+registered:
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  theme: {
+    extend: {
+      recipes: {
+        button: buttonRecipe
+      }
+    }
+  }
+})
+```
+
+Recipes aren't tokens, so there's no default list to show. A fresh config has none until you or a preset registers one.
+
+See every other token category (spacing, radii, shadows, sizing, fonts, font sizes) on
+[Default Theme](/docs/theming/theme).
+
+## Overriding one value
+
+The merge is per key, so you can replace a single entry and keep the rest of the category untouched.
+
+**Breakpoints.** Redefine `md` from `768px` to `800px`. `sm`, `lg`, `xl`, and `2xl` stay exactly as they were:
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  theme: {
+    extend: {
+      breakpoints: {
+        md: '800px'
+      }
+    }
+  }
+})
+```
+
+**Tokens.** Redefine `blue.500`. Every other shade in the scale, `blue.50` through `blue.950`, stays:
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        colors: {
+          blue: {
+            500: { value: '#2563eb' }
+          }
+        }
+      }
+    }
+  }
+})
+```
+
+**Keyframes.** Redefine `spin`. `ping`, `pulse`, and `bounce` stay:
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  theme: {
+    extend: {
+      keyframes: {
+        spin: {
+          to: { transform: 'rotate(180deg)' }
+        }
+      }
+    }
+  }
+})
+```
+
+**Recipes.** A preset's `button` recipe keeps its `variants`. Override just `className`, `base`, and `jsx`:
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  theme: {
+    extend: {
+      recipes: {
+        button: {
+          className: 'btn',
+          base: { rounded: 'full' },
+          jsx: ['Button', 'LinkButton']
+        }
+      }
+    }
+  }
+})
+```
+
+## Skipping extend
+
+Skip `extend` on any `theme` key, and what you wrote replaces that whole section instead of adding to it.
+
+**Breakpoints.** `sm`, `md`, `lg`, `xl`, and `2xl` are all gone. Only `3xl` exists now:
+
+```ts
+theme: {
+  breakpoints: {
+    '3xl': '1800px'
+  }
+}
+```
+
+**Tokens.** Every color Panda ships is gone. Only `brand` exists now:
+
+```ts
+theme: {
+  tokens: {
+    colors: {
+      brand: {
+        value: '#EA8433'
+      }
+    }
+  }
+}
+```
+
+**Keyframes.** `spin`, `ping`, `pulse`, and `bounce` are all gone. Only `fadein` exists now:
+
+```ts
+theme: {
+  keyframes: {
+    fadein: {
+      '0%': { opacity: '0' },
+      '100%': { opacity: '1' }
+    }
+  }
+}
+```
+
+**Recipes.** Any recipe a preset registered is gone. Only `button` exists now:
+
+```ts
+theme: {
+  recipes: {
+    button: buttonRecipe
+  }
+}
+```
+
+Add `extend` back to any of these and the defaults return, alongside whatever you added.
+
+## Starting from zero
+
+Everything here assumes you're extending a preset's theme. For no default tokens, breakpoints, or keyframes at all, see
+[Minimal setup](/docs/theming/minimal-setup).
+
+## See also
+
+- [Default Theme](/docs/theming/theme)
+- [Token Categories](/docs/theming/token-categories)
+- [Animation Styles](/docs/theming/animation-styles)
+- [Config recipes](/docs/recipes/config-recipe)
+- [Presets](/docs/theming/presets)
+- [Minimal setup](/docs/theming/minimal-setup)

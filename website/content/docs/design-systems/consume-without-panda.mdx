@@ -1,25 +1,23 @@
 ---
 title: Consume without Panda
-description: Ship a stylesheet the app imports. No designSystem, no app tokens.
+description: Ship a Panda design system as plain CSS, bundled or split per recipe, for apps that don't run Panda.
 ---
 
-The app does not run Panda, so it cannot use `designSystem` and cannot extend tokens. Instead, run Panda in the
-library, write a plain CSS file with `panda cssgen`, and publish that file next to your components. `panda cssgen`
-replaces the v1 `panda ship` command.
-
-If the app **does** run Panda, stop here and use
-[Consume with Panda](/docs/design-systems/consume-with-panda).
+If the app doesn't run Panda, `designSystem` and theme extension are out. Ship it a plain stylesheet instead, in one
+file or several.
 
 ## Emit a stylesheet
 
-In the library, after codegen:
+### Bundled CSS file
+
+Everything in one file. One import for the app, and the least to publish.
 
 ```bash
 panda codegen
 panda cssgen --outfile dist/styles.css
 ```
 
-```json filename="packages/ds/package.json"
+```json filename="packages/ds/package.json" {5}
 {
   "name": "@acme/ds",
   "exports": {
@@ -33,11 +31,70 @@ panda cssgen --outfile dist/styles.css
 }
 ```
 
-`panda lib` does **not** write this file. Add the `./styles.css` export yourself.
+### Split CSS files
+
+`--splitting` writes one file per layer and one per recipe, so a team can load only the recipes it renders. Pass
+`--outdir` to say where they land.
+
+```bash
+panda codegen
+panda cssgen --splitting --outdir dist/panda
+```
+
+```
+dist/panda/styles.css                 # layer order, then imports everything below
+dist/panda/styles/reset.css
+dist/panda/styles/global.css
+dist/panda/styles/tokens.css
+dist/panda/styles/utilities.css
+dist/panda/styles/recipes.css
+dist/panda/styles/recipes/button.css  # one per recipe
+```
+
+Export the tree rather than a single file:
+
+```json filename="packages/ds/package.json"
+{
+  "exports": {
+    "./styles.css": "./dist/panda/styles.css",
+    "./styles/*": "./dist/panda/styles/*"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "panda codegen && panda cssgen --splitting --outdir dist/panda && tsup"
+  }
+}
+```
+
+The app imports everything, or only the recipes it renders:
+
+```ts
+import '@acme/ds/styles.css'
+import '@acme/ds/styles/recipes/button.css'
+```
+
+`styles.css` is where the `@layer` declarations live, and the individual files don't repeat them. Skip it and the app
+has to set the cascade order itself.
+
+## Emit every variant
+
+The app never scans your source, so the sheet holds only what your own components rendered. A recipe they never call is
+left out entirely; a variant they never pass ships as a class name with no rule behind it.
+
+```ts filename="packages/ds/panda.config.ts"
+export default defineConfig({
+  staticCss: {
+    recipes: '*'
+  }
+})
+```
+
+Name the recipes instead of `'*'` if the same package also ships for `designSystem` consumers. See
+[Static CSS](/docs/styling/static).
 
 ## Import it in the app
 
-No `panda.config.ts`. No `@pandacss/dev`.
+The app needs the CSS and your components, nothing else:
 
 ```tsx filename="src/main.tsx"
 import '@acme/ds/styles.css'
@@ -48,68 +105,15 @@ export function App() {
 }
 ```
 
-```css filename="src/index.css"
-@layer reset, base, tokens, recipes, utilities;
-```
+Two cases need the app to declare the cascade order itself: it has layered CSS of its own, or it cherry-picked files
+instead of importing `styles.css`. Copy the `@layer` lines from the top of `styles.css` into a stylesheet the app loads
+first. There are three of them, and the nested `recipes.*` lines matter as soon as you use more than one recipe.
 
-Declare the layers in the app if you also load other layered CSS. The shipped file already contains the library's
-rules.
+## Managing style conflicts
 
-## Emit every variant
-
-The app never scans your source. Variants that only appear as props at runtime will not be in the sheet unless you
-pre-generate them in the library.
-
-```ts filename="packages/ds/panda.config.ts"
-export default defineConfig({
-  include: ['src/**/*.{ts,tsx}'],
-  staticCss: {
-    recipes: '*'
-  }
-})
-```
-
-That is fine for a library stylesheet. Heavy if you later consume the same package with `designSystem` and also ship
-this file. Prefer listing the recipes you need:
-
-```ts filename="packages/ds/panda.config.ts"
-export default defineConfig({
-  staticCss: {
-    recipes: {
-      button: ['*'],
-      card: ['*']
-    }
-  }
-})
-```
-
-See [Static CSS](/docs/styling/static).
-
-## What the app cannot do
-
-Without Panda in the app there is no theme merge, no local `styled-system`, and no token swap. Overrides like this
-only work in a Panda app:
-
-```ts filename="panda.config.ts"
-// requires the app to run Panda, see Consume with Panda
-export default defineConfig({
-  designSystem: '@acme/ds',
-  theme: {
-    extend: {
-      tokens: {
-        colors: { brand: { value: '#ff00aa' } }
-      }
-    }
-  }
-})
-```
-
-To change the look here, edit the tokens in the library and republish the CSS.
-
-## Two sheets on one page
-
-Two independently built stylesheets can emit the same class names (`.button`, `--colors-brand`). Set `prefix` in the
-library that should yield.
+Two independently built stylesheets can emit the same class names (`.button`, `--colors-brand`), and an app without
+Panda can't deduplicate them. Set `prefix` in the library before you publish. Changing it later breaks everyone already
+importing your CSS.
 
 ```ts filename="packages/ds/panda.config.ts"
 export default defineConfig({
@@ -117,23 +121,11 @@ export default defineConfig({
 })
 ```
 
-```ts
-// also works: hash class names, or move CSS variables
-hash: true
-cssVarRoot: '#app'
-```
-
-Derive the prefix from the package's name and major version. The full collision model, token scoping, and the
-limits of `prefix`: [Style isolation](/docs/styling/style-isolation).
-
-## Storybook still runs Panda
-
-Your stories import recipes. Storybook is a Panda consumer even when production only imports `styles.css`. See
-[Storybook](/docs/design-systems/storybook).
+`hash` and `cssVarRoot` do the same job differently. See [Style isolation](/docs/styling/style-isolation).
 
 ## Example
 
-A Next.js app with no Panda installed. It imports the published CSS and components:
+A Next.js app with no Panda installed, just the published CSS and components:
 
 ```bash
 npx degit chakra-ui/panda-examples/examples/standalone-app my-app
@@ -145,4 +137,5 @@ npx degit chakra-ui/panda-examples/examples/standalone-app my-app
 
 - [Build a design system](/docs/design-systems/build-a-design-system) if you also ship `panda lib` for Panda apps
 - [Consume with Panda](/docs/design-systems/consume-with-panda) when the app can run Panda
+- [Storybook](/docs/design-systems/storybook) because your stories run Panda even though the app doesn't
 - [`panda cssgen`](/docs/reference/cli#cssgen)

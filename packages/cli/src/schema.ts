@@ -46,6 +46,7 @@ export const codegenFlagsSchema = commonFlagsSchema.extend({
 })
 
 export const cssgenFlagsSchema = commonFlagsSchema.extend({
+  outdir: stringFlag,
   outfile: stringFlag,
   splitting: booleanFlag,
   check: booleanFlag,

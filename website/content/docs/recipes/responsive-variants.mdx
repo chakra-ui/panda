@@ -1,34 +1,40 @@
 ---
 title: Responsive variants
-description: Pass a breakpoint object as a variant value. Config recipes only, and only when the recipe has no compounds.
+description:
+  Pass a breakpoint object as a variant value. Config recipes only, and only when the recipe has no compounds.
 ---
 
-A variant is usually a literal: `size="sm"`. Config recipes also accept a condition object, the same shape you
-already use for [responsive styles](/docs/styling/responsive-design):
+A config recipe's variant can be a breakpoint object instead of a single value. `size: { base: 'sm', md: 'lg' }` means
+the button renders `sm` below the `md` breakpoint and `lg` at or above it, the same mobile-first object you already
+write for [responsive styles](/docs/styling/responsive-design):
 
 ```tsx
 import { button } from '../styled-system/recipes'
-
-<button className={button({ size: { base: 'sm', md: 'lg' } })}>Click me</button>
+;<button className={button({ size: { base: 'sm', md: 'lg' } })}>Click me</button>
 ```
 
-Generated types use `ConditionalValue` for that, so the object is typed.
+Panda generates CSS for both values: `sm` unconditioned, `lg` behind the `md` media query. The generated types still
+check the object against your real variant values, via `ConditionalValue`.
 
-This does not work on `cva` or `sva`. Those APIs have no responsive variant props. Use a config recipe, or render
-two views.
+Only a config recipe (`defineRecipe`, `defineSlotRecipe`) can do this. Atomic recipes (`cva` and `sva`) have no
+equivalent and no responsive variant form.
 
 ## Compounds turn it off
 
-Adding `compoundVariants` drops `ConditionalValue` from the types. Runtime throws if you pass an object anyway:
+Adding `compoundVariants` drops `ConditionalValue` from the generated types, so TypeScript won't even let you pass the
+object. Do it anyway at runtime, and Panda throws instead of silently guessing:
 
 ```
 [recipe:button:size] Conditions are not supported when using compound variants.
 ```
 
-The same rule applies to slot recipes. See [compound variants](/docs/recipes/compound-variants).
+Same rule for slot recipes.
 
-In most cases, two views are clearer than one call with a map. A `sm` button below `md` and an `lg` button above it
-is easier to follow than a nested object on the variant.
+## Consider rendering two views instead
+
+A `sm` button below `md` and an `lg` button above it, written as two separate elements instead of one recipe call, is
+usually easier to follow than a nested breakpoint object buried in a variant. Reach for the object above only when
+rendering two views really isn't practical.
 
 ## See also
 

@@ -10,7 +10,7 @@ import { parseMilliseconds, timeAsync } from '../timing'
 import { setExitCode } from '../result'
 import type { BuildFlags, BuildResult, RunContext } from '../schema'
 import { codegenOnce } from './codegen'
-import { cssgenOnce } from './cssgen'
+import { cssgenOnce, warnOutfileIgnored } from './cssgen'
 import { formatWatchError, startProjectWatch } from '../watch'
 import { createWatchLogger } from '../watch-logger'
 
@@ -108,6 +108,7 @@ export async function runBuild(flags: BuildFlags = {}, output: OutputSink = cons
       stale: [],
     }),
     async execute(ctx) {
+      warnOutfileIgnored('panda', flags, ctx.output)
       resolveOutdir = () => ctx.driver.getOutdir(flags.outdir)
       // `--outdir` relocates the default CSS file too, so codegen and css output stay under one root.
       resolveOutfile = () =>
