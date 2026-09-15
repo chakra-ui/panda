@@ -29,6 +29,7 @@ export const cssgenCommand = defineCommand({
     ...baseArgs(),
     ...includeArgs(),
     watch: { type: 'boolean', description: 'Watch files and rebuild', alias: 'w' },
+    outdir: { type: 'string', valueHint: 'dir', description: 'Output directory for split CSS files' },
     outfile: { type: 'string', description: 'Output file for extracted CSS', alias: 'o' },
     splitting: { type: 'boolean', description: 'Emit split CSS files' },
     minimal: { type: 'boolean', description: 'Emit usage CSS only (recipes and utilities)' },
@@ -63,9 +64,12 @@ export async function runCssgen(flags: CssgenFlags = {}, output: OutputSink = co
       stale: [],
     }),
     async execute(ctx) {
+      warnOutfileIgnored('cssgen', flags, ctx.output)
       resolveOutfile = () =>
-        flags.splitting || !flags.outfile ? ctx.driver.paths().styleFile : ctx.driver.resolvePath(flags.outfile!)
-      resolveOutdir = () => ctx.driver.paths().root
+        flags.splitting || !flags.outfile
+          ? ctx.driver.paths(flags.outdir).styleFile
+          : ctx.driver.resolvePath(flags.outfile!)
+      resolveOutdir = () => ctx.driver.getOutdir(flags.outdir)
 
       const outdir = resolveOutdir()
       const outfile = resolveOutfile()
@@ -153,6 +157,16 @@ function resolveMinify(ctx: RunContext, flags: CssgenFlags): boolean {
 
 function resolvePolyfill(ctx: RunContext, flags: CssgenFlags): boolean {
   return flags.polyfill ?? ctx.driver.config.polyfill === true
+}
+
+/** `--splitting` writes a tree, so a single `--outfile` cannot apply. Say so rather than dropping it silently. */
+export function warnOutfileIgnored(
+  command: string,
+  flags: { splitting?: boolean; outfile?: string } & Parameters<typeof shouldPrintHumanSummary>[0],
+  output: OutputSink,
+) {
+  if (!flags.splitting || !flags.outfile || !shouldPrintHumanSummary(flags)) return
+  output.log(`${command}: --outfile is ignored with --splitting. Use --outdir to choose where the files go.`)
 }
 
 function splitCssOptions(ctx: RunContext, flags: CssgenFlags): WriteSplitCssOptions {

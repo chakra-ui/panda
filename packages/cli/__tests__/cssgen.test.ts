@@ -256,6 +256,26 @@ describe('cssgen command', () => {
     expect(readFileSync(utilitiesFile, 'utf8')).toContain('red')
   })
 
+  it('sends split output to --outdir instead of the configured one', async () => {
+    dir = createFixture()
+
+    const result = await runCssgen({ cwd: dir, splitting: true, outdir: 'dist/panda', logLevel: 'silent' })
+
+    expect(result.outfile).toBe(join(dir, 'dist', 'panda', 'styles.css'))
+    expect(readFileSync(join(dir, 'dist', 'panda', 'styles', 'utilities.css'), 'utf8')).toContain('red')
+    expect(existsSync(join(dir, 'styled-system', 'styles.css'))).toBe(false)
+  })
+
+  it('says --outfile is ignored rather than dropping it silently under --splitting', async () => {
+    dir = createFixture()
+    const lines: string[] = []
+
+    await runCssgen({ cwd: dir, splitting: true, outfile: 'panda.css' }, { log: (line) => lines.push(line) })
+
+    expect(lines.join('\n')).toContain('--outfile is ignored with --splitting')
+    expect(existsSync(join(dir, 'panda.css'))).toBe(false)
+  })
+
   it('surfaces split stylesheet diagnostics in write mode', async () => {
     dir = createFixture(
       MINIMAL_CSS_CONFIG.replace(
