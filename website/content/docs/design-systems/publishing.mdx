@@ -45,14 +45,13 @@ Do not add a root `panda.buildinfo.json`. That was the v1 path.
 
 ## Bundle exported definitions
 
-If a public module exports tokens, recipes, patterns, or other Panda definitions, import its helpers from
-`@pandacss/dev/define`:
+If your package exports tokens, recipes, or patterns, import the helpers from `@pandacss/dev/define`:
 
 ```ts
 import { definePattern } from '@pandacss/dev/define'
 ```
 
-Bundle that entry point into the library output so production code does not import `@pandacss/dev` at runtime:
+Then bundle that entry into your output:
 
 ```ts filename="tsup.config.ts"
 import { defineConfig } from 'tsup'
@@ -62,8 +61,13 @@ export default defineConfig({
 })
 ```
 
-Keep the `@pandacss/dev` peer dependency for Panda's design-system compatibility. Bundling `/define` only removes the
-runtime import from the library's JavaScript.
+Skip this and your published JavaScript keeps a runtime `import` of `@pandacss/dev`. Apps that install Panda as a dev
+dependency then fail in production with `ERR_MODULE_NOT_FOUND`.
+
+Bundle the subpath, not the bare `@pandacss/dev`. `noExternal` matches whole packages, so the bare name also inlines
+`@pandacss/config` and `@pandacss/compiler-shared` if anything in your build touches `@pandacss/dev/node`.
+
+Keep `@pandacss/dev` in `peerDependencies`. Bundling removes the runtime import, not the version contract.
 
 ## Do not hand-write styled-system exports
 

@@ -2,5 +2,5 @@
 '@pandacss/dev': minor
 ---
 
-Add an `@pandacss/dev/define` entry point for bundling configuration helpers into published libraries without retaining
-a runtime dependency on the development package.
+Add `@pandacss/dev/define`, the config helpers as a standalone module. Design systems can bundle it with `noExternal`
+without pulling in the rest of `@pandacss/dev`.
