@@ -5,6 +5,7 @@ import { dirname, join, resolve } from 'node:path'
 import { createNodeDriver } from '@pandacss/compiler'
 import { findConfig } from '@pandacss/config'
 import { baseArgs, parseCliFlags } from '../args'
+import { readCliVersion } from '../version'
 import { initFlagsSchema } from '../schema'
 import {
   consoleOutput,
@@ -464,7 +465,8 @@ function declaredPackageManager(cwd: string): PackageManager | undefined {
 }
 
 function installCommand(pm: PackageManager, packages: string[]): string {
-  const list = packages.join(' ')
+  const version = readCliVersion()
+  const list = packages.map((name) => `${name}@${version}`).join(' ')
   switch (pm) {
     case 'pnpm':
       return `pnpm add -D ${list}`
