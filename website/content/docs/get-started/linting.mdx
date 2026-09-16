@@ -45,6 +45,11 @@ export default defineConfig([
 ])
 ```
 
+<Callout type="info">
+  `defineConfig` needs ESLint ≥9.22. On an older ESLint 9 release, drop the import and export the array directly:
+  `export default [await panda.configs.recommended(...)]`.
+</Callout>
+
 <Callout type="info">If `eslint.config.js` isn't ESM, rename it to `eslint.config.mjs`.</Callout>
 
 ## Oxlint setup
