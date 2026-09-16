@@ -20,19 +20,19 @@ values have a token waiting, which token paths resolve. One package, two entry p
 The recommended config preloads your Panda project so rules can resolve tokens and recipes:
 
 ```ts filename="eslint.config.mjs"
-import { defineConfig } from 'eslint/config'
 import panda from '@pandacss/eslint-plugin'
 
-export default defineConfig([await panda.configs.recommended({ configPath: './panda.config.ts' })])
+export default [
+  await panda.configs.recommended({ configPath: './panda.config.ts' }),
+]
 ```
 
 `recommended` turns on the rules marked **default** in the table below. Add any other rule as a second config entry:
 
 ```ts filename="eslint.config.mjs"
-import { defineConfig } from 'eslint/config'
 import panda from '@pandacss/eslint-plugin'
 
-export default defineConfig([
+export default [
   await panda.configs.recommended({ configPath: './panda.config.ts' }),
   {
     rules: {
@@ -40,7 +40,7 @@ export default defineConfig([
       '@pandacss/no-margin-properties': 'warn'
     }
   }
-])
+]
 ```
 
 <Callout type="info">If `eslint.config.js` isn't ESM, rename it to `eslint.config.mjs`.</Callout>
