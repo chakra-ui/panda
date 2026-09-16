@@ -3,12 +3,12 @@ title: Linting
 description: A Panda-aware lint rule set for ESLint and Oxlint, catching mistakes the compiler doesn't error on.
 ---
 
-A style object can be valid TypeScript and still be wrong. `color: '#ef4444'` renders fine but ignores the
-`red.500` token your theme already owns; `color: 'red.1000'` is quieter still: the compiler skips it, and you find
-out in the browser.
+A style object can be valid TypeScript and still be wrong. `color: '#ef4444'` renders fine but ignores the `red.500`
+token your theme already owns; `color: 'red.1000'` is quieter still: the compiler skips it, and you find out in the
+browser.
 
-The lint rules catch these in real time. They run on Panda's own compiler, so they know your actual theme: which
-raw values have a token waiting, which token paths resolve. One package, two entry points, same rules:
+The lint rules catch these in real time. They run on Panda's own compiler, so they know your actual theme: which raw
+values have a token waiting, which token paths resolve. One package, two entry points, same rules:
 
 ```txt
 @pandacss/eslint-plugin            # ESLint flat config
@@ -20,16 +20,35 @@ raw values have a token waiting, which token paths resolve. One package, two ent
 The recommended config preloads your Panda project so rules can resolve tokens and recipes:
 
 ```ts filename="eslint.config.mjs"
+import { defineConfig } from 'eslint/config'
 import panda from '@pandacss/eslint-plugin'
 
-export default [
-  await panda.configs.recommended({ configPath: './panda.config.ts' })
-]
+export default defineConfig([await panda.configs.recommended({ configPath: './panda.config.ts' })])
 ```
+
+`recommended` turns on the rules marked **default** in the table below. Add any other rule as a second config entry:
+
+```ts filename="eslint.config.mjs"
+import { defineConfig } from 'eslint/config'
+import panda from '@pandacss/eslint-plugin'
+
+export default defineConfig([
+  await panda.configs.recommended({ configPath: './panda.config.ts' }),
+  {
+    rules: {
+      '@pandacss/no-important': 'error',
+      '@pandacss/no-margin-properties': 'warn'
+    }
+  }
+])
+```
+
+<Callout type="info">If `eslint.config.js` isn't ESM, rename it to `eslint.config.mjs`.</Callout>
 
 ## Oxlint setup
 
-Register the plugin and pick your rules in `.oxlintrc.json`:
+Register the plugin in `.oxlintrc.json`. Oxlint has no `recommended` preset to import, so list every rule you want on,
+including the ones marked **default** below, oxlint won't turn them on for you:
 
 ```json filename=".oxlintrc.json"
 {
@@ -37,11 +56,47 @@ Register the plugin and pick your rules in `.oxlintrc.json`:
   "rules": {
     "@pandacss/no-invalid-token-paths": "error",
     "@pandacss/no-invalid-nesting": "error",
+    "@pandacss/file-not-included": "error",
+    "@pandacss/no-deprecated": "warn",
     "@pandacss/no-debug": "warn",
+    "@pandacss/extraction-diagnostics": "warn",
     "@pandacss/prefer-token": ["warn", { "categories": ["colors"] }]
   }
 }
 ```
+
+The Panda config is auto-discovered from the working directory. Point it elsewhere with `PANDA_CONFIG_PATH`:
+
+```sh
+PANDA_CONFIG_PATH=./apps/web/panda.config.ts oxlint
+```
+
+Alpha: needs `oxlint` and `@oxlint/plugins`, and binds one Panda project per run, a monorepo with several
+`panda.config.ts` files needs a small local plugin per project (see the
+[package README](https://github.com/chakra-ui/panda/blob/main/packages/eslint-plugin/README.md#oxlint)).
+
+## Recommended and opt-in rules
+
+| Rule                        | ESLint `recommended` | Severity |
+| --------------------------- | -------------------- | -------- |
+| `no-invalid-token-paths`    | default              | error    |
+| `no-invalid-nesting`        | default              | error    |
+| `file-not-included`         | default              | error    |
+| `no-deprecated`             | default              | warn     |
+| `no-debug`                  | default              | warn     |
+| `extraction-diagnostics`    | default              | warn     |
+| `prefer-token`              | default, colors only | warn     |
+| `no-primitive-token`        | opt-in               | —        |
+| `no-important`              | opt-in               | —        |
+| `no-margin-properties`      | opt-in               | —        |
+| `no-descendant-selectors`   | opt-in               | —        |
+| `no-physical-properties`    | opt-in               | —        |
+| `no-shorthand-longhand-mix` | opt-in               | —        |
+| `consistent-property-style` | opt-in               | —        |
+| `prefer-text-style`         | opt-in               | —        |
+
+"Recommended" means `panda.configs.recommended()` enables it for ESLint. Oxlint doesn't read that config at all, so
+nothing is automatic there, every row in your `.oxlintrc.json` `rules` block is something you opted into.
 
 ## Correctness rules
 
@@ -75,10 +130,12 @@ css({ _hover: { color: 'red.500' } })
 
 #### file-not-included
 
-A file that calls Panda's style functions but sits outside the config's `include` globs extracts nothing. Every
-`css()` call in it is dead.
+A file that calls Panda's style functions but sits outside the config's `include` globs extracts nothing. Every `css()`
+call in it is dead.
 
 ```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
 export default defineConfig({
   include: ['src/**/*.tsx']
   // ❌ lib/button.tsx calls css() but is not covered
@@ -100,8 +157,8 @@ css({ _hver: { color: 'red.500' } })
 
 #### no-deprecated
 
-Flags tokens, utilities, recipes, and patterns marked [`deprecated`](/docs/reference/deprecations) in the config.
-Scope it with `kinds` if you only care about some of them.
+Flags tokens, utilities, recipes, and patterns marked [`deprecated`](/docs/reference/deprecations) in the config. Scope
+it with `kinds` if you only care about some of them.
 
 ```tsx
 // theme: brand: { value: '#facc15', deprecated: 'use colors.accent instead' }
@@ -115,12 +172,13 @@ css({ color: 'accent' })
 
 ## Consistency rules
 
-Opt-in. These enforce house style across a team; turn on the ones that match yours.
+These enforce house style across a team. `prefer-token` is the exception, it's already on by default for colors;
+everything else here is opt-in, turn on the ones that match yours.
 
 #### prefer-token
 
-A raw value where a token exists for that category. The suggestion names the token, so the fix is a copy-paste.
-Defaults to colors; widen with `categories`.
+A raw value where a token exists for that category. The suggestion names the token, so the fix is a copy-paste. On by
+default, scoped to `colors`; widen with `categories` to cover more.
 
 ```tsx
 // ❌ raw value, theme has red.500
@@ -136,8 +194,8 @@ css({ color: 'red.500' })
 
 #### no-primitive-token
 
-Stricter than `prefer-token`: flags primitive palette tokens where a semantic token exists, so component code
-tracks intent instead of a palette.
+Stricter than `prefer-token`: flags primitive palette tokens where a semantic token exists, so component code tracks
+intent instead of a palette.
 
 ```tsx
 // ❌ primitive, theme defines fg.error
@@ -222,8 +280,8 @@ css({ display: 'flex', flexDirection: 'column', gap: '4' })
 
 #### no-descendant-selectors
 
-A selector that styles another element (`& > li`, `.foo &`) couples components through the DOM tree. Off by
-default; turn it on for StyleX-style per-element scoping.
+A selector that styles another element (`& > li`, `.foo &`) couples components through the DOM tree. Off by default;
+turn it on for StyleX-style per-element scoping.
 
 ```tsx
 // ❌ styles the children, not the element
@@ -248,6 +306,6 @@ css({ insetInlineStart: '0', marginInlineStart: '4' })
 ## See also
 
 - [Linting a design system](/docs/design-systems/linting) for enforcing token usage across consuming apps.
-- [Diagnostics Reference](/docs/reference/diagnostics) for the compiler-level diagnostic codes this plugin builds on
-  top of.
+- [Diagnostics Reference](/docs/reference/diagnostics) for the compiler-level diagnostic codes this plugin builds on top
+  of.
 - [Dynamic Styles](/docs/styling/dynamic-styling) for the extraction constraint the compiler enforces.
