@@ -23,7 +23,9 @@ The recommended config preloads your Panda project so rules can resolve tokens a
 import { defineConfig } from 'eslint/config'
 import panda from '@pandacss/eslint-plugin'
 
-export default defineConfig([await panda.configs.recommended({ configPath: './panda.config.ts' })])
+export default defineConfig([
+  await panda.configs.recommended({ configPath: './panda.config.ts' }),
+])
 ```
 
 `recommended` turns on the rules marked **default** in the table below. Add any other rule as a second config entry:
