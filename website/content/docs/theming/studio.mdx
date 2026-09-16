@@ -1,123 +1,46 @@
 ---
 title: Studio
-description: Render your design tokens from the JSON spec — a viewer you own.
+description: See your design system in the browser. No install, no account.
 ---
 
-Panda writes your design system to `styled-system/specs/tokens.json`. Render it however you like — a page, a Storybook
-story, an MDX doc. Panda hands you the data; the design is yours.
+[Studio](https://studio.panda-css.com/) renders your design system: every token, theme and condition, laid out the way
+each category deserves. `panda codegen` writes `styled-system/specs/design-system.json` — drop that file in, or the
+whole `styled-system/` folder, and you're looking at it. Nothing leaves your browser.
 
-## Tokens as data
+## View your tokens
 
-`panda codegen` writes `styled-system/specs/tokens.json` — tokens grouped by category, values resolved:
+Every category paints in a layout that fits it. Colors and gradients as swatches, spacing and sizes as a sorted scale,
+fonts as specimens, durations and easings as live chips, and everything else as a name/value table. Click any token to
+copy its name.
 
-```json
-{ "data": [{ "type": "colors", "values": [{ "name": "red.500", "value": "#ef4444" }] }] }
-```
+Discovered themes and a light/dark switch let semantic tokens show their real values, so `colors.fg` reads as the color
+it resolves to rather than a reference you have to chase.
 
-## A color grid
-
-```tsx
-import { grid } from 'styled-system/patterns'
-import tokens from 'styled-system/specs/tokens.json'
-
-export function Colors() {
-  const colors = tokens.data.find(group => group.type === 'colors')
-
-  return (
-    <div className={grid({ columns: 3, gap: '4', padding: '6' })}>
-      {colors?.values.map(color => (
-        <div key={color.name}>
-          <div style={{ background: color.value, height: 64, borderRadius: 8 }} />
-          <p>{color.name}</p>
-          <p>{color.value}</p>
-        </div>
-      ))}
-    </div>
-  )
-}
-```
-
-Every category shares the `{ name, value }` shape — swap `'colors'` for `'spacing'`, `'fonts'`, or `'radii'`. See
-[JSON Spec](/docs/theming/json-spec) for the full file.
-
-## Theme-aware tokens
-
-Semantic tokens — values that change with a condition like dark mode — live in `styled-system/specs/semantic-tokens.json`,
-each with its per-condition values:
-
-```json
-{
-  "data": [
-    {
-      "type": "colors",
-      "values": [
-        {
-          "name": "fg",
-          "values": [
-            { "condition": "base", "value": "#ef4444" },
-            { "condition": "_dark", "value": "#2563eb" }
-          ]
-        }
-      ]
-    }
-  ]
-}
-```
-
-Render each token with a swatch per condition:
-
-```tsx
-import semanticTokens from 'styled-system/specs/semantic-tokens.json'
-
-export function SemanticColors() {
-  const colors = semanticTokens.data.find(group => group.type === 'colors')
-
-  return (
-    <div>
-      {colors?.values.map(token => (
-        <div key={token.name}>
-          <p>{token.name}</p>
-          {token.values.map(({ condition, value }) => (
-            <div key={condition} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ background: value, width: 24, height: 24, borderRadius: 6 }} />
-              <span>{condition}</span>
-            </div>
-          ))}
-        </div>
-      ))}
-    </div>
-  )
-}
-```
-
-## Or use the viewer
-
-Don't want to build one? [Studio](https://studio.panda-css.com/) is a ready-made viewer for the same
-JSON. Drop your `tokens.json` or paste it, and every category renders with search and light and dark. No install, no
-account. It does three things.
-
-### View
-
-Drop `tokens.json`, or your whole `styled-system/` folder, and every category paints in a layout that fits it: colors and
-gradients as swatches, spacing and sizes as a sorted scale, fonts as specimens, durations and easings as live chips, and
-everything else as a name/value table. Click any token to copy its name. Discovered themes and light and dark let
-semantic tokens show their real values.
-
-### Analyze usage
+## Analyze token usage
 
 Drop your source files, or the whole repo folder, and Studio reports per category which tokens are used, unused, and
-hot. There are two tiers, and the drop picks one:
+hot. There are two tiers, and what you drop picks one:
 
 - **Include your `panda.config.ts`** and the real Panda compiler runs in your browser through `@pandacss/compiler-wasm`.
   Counts are exact, down to bare-numeric tokens like `spacing.4`.
-- **Leave it out** and a name-match scan runs instead: accurate for named tokens like `red.500`, approximate for numeric
+- **Leave it out** and a name-match scan runs instead. Accurate for named tokens like `red.500`, approximate for numeric
   ones.
 
 A badge on the report says which tier ran. Everything stays in the browser.
 
-### Share
+## Share a link
 
 The Share button saves the current system and gives you a read-only link at `/s/<slug>` that anyone can open. Share from
-Analyze and the usage report travels with it, at `/a/<slug>`. No account, no ownership: make a spec, get a link, send it.
+Analyze and the usage report travels with it, at `/a/<slug>`.
 
-The [Studio announcement](/blog/see-your-design-system) walks through all three.
+No account, no ownership: make a spec, get a link, send it. Sharing is the one action that stores anything, so treat the
+link as public.
+
+## Build your own
+
+Studio reads the same file you can. To render tokens in your own docs site or Storybook, see
+[JSON Spec](/docs/theming/json-spec).
+
+## Learn more
+
+The [Studio announcement](/blog/see-your-design-system) walks through all three tracks.

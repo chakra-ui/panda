@@ -1,83 +1,57 @@
 ---
 title: JSON Spec
-description: A JSON description of your design tokens for documentation sites and Storybook.
+description: Read your design system as JSON to render tokens in your own docs site or Storybook.
 ---
 
-A spec is a readable JSON representation of the tokens in your panda config. It's designed for **documentation** — render
-your palette, spacing scale, and type in your own docs site or Storybook.
+`panda codegen` writes `styled-system/specs/design-system.json` — every token, condition and theme in one file. It's
+there so you can render your own palette, spacing scale and type without reaching into `styled-system` internals.
 
-## Spec Generation
+The file is generated. Edit your tokens in `panda.config.ts`, not here.
 
-Run `panda codegen` (or a full `panda` build) and Panda writes `styled-system/specs/tokens.json` and
-`styled-system/specs/semantic-tokens.json`.
+## Read the spec
 
-## Spec Output
+It's a normalized index rather than a list of tokens, so don't walk it by hand. `@pandacss/compiler-shared` ships the
+reader:
 
-Two files describe your design system:
+```ts
+import { parseDesignSystem, indexDesignSystem } from '@pandacss/compiler-shared'
+import spec from 'styled-system/specs/design-system.json'
 
-```sh
-styled-system/
-└── specs/
-    ├── tokens.json            # Raw design tokens grouped by category
-    └── semantic-tokens.json   # Semantic tokens with their per-condition values
+const parsed = parseDesignSystem(spec)
+if (!parsed.ok) throw new Error(parsed.error)
+
+const ds = indexDesignSystem(parsed.value)
 ```
 
-Below is a breakdown of what each file contains and how it can be used.
+`parseDesignSystem` takes the imported object or a raw string. It's what turns a schema change into a sentence rather
+than an `undefined` three components deep:
 
-### `tokens.json`
-
-#### Structure
-
-This file contains an array of raw design tokens grouped by category
-
-```json
-{
-  "data": [
-    {
-      "type": "colors",
-      "values": [
-        {
-          "name": "purple.800",
-          "value": "#6b21a8"
-        }
-      ]
-    }
-  ]
-}
+```
+Document is schemaVersion 99; this build reads 1. Upgrade @pandacss/compiler-shared.
 ```
 
-Each category is `{ type, values }`, and each token in the `values` array includes:
+`ds.categories()` lists what's there. `ds.view(category)` returns render-ready rows:
 
-- **name**: token key relative to its category (e.g., `purple.800`, `md`, `primary`)
-- **value**: resolved CSS value (e.g., `"1rem"`, `"#6b21a8"`)
+```ts
+ds.view('colors')
+// [{ path: 'colors.red.500', name: 'red.500', value: 'oklch(63.7% 0.237 25.331)', cssVar: '--colors-red-500' }]
+```
 
-Base values only — theme and condition variants are left out to keep the file flat, and Panda's internal `colorPalette`
-tokens are filtered out.
+`path` is what the other methods take. `name` is what you type in `css({ ... })`.
 
-#### Usage
-
-Here's an example of how to document color tokens:
+## Render a category
 
 ```tsx
 import { grid } from 'styled-system/patterns'
-import tokens from 'styled-system/specs/tokens.json'
 
-const Demo = () => {
-  const colors = tokens.data.find(token => token.type === 'colors')
+export function Colors({ ds }) {
   return (
-    <div className={grid({ padding: '40px', columns: 3, gap: '4' })}>
-      {colors?.values.map(color => (
-        <div key={color.name}>
-          <p>{color.name}</p>
-          <p>{color.value}</p>
-          <div
-            style={{
-              width: '100px',
-              height: '100px',
-              background: color.value,
-              border: '1px solid lightgray'
-            }}
-          />
+    <div className={grid({ columns: 3, gap: '4', padding: '6' })}>
+      {ds.view('colors').map(token => (
+        <div key={token.path}>
+          <div style={{ background: token.value, height: 64, borderRadius: 8 }} />
+          <p>{token.name}</p>
+          <p>{token.value}</p>
         </div>
       ))}
     </div>
@@ -85,64 +59,33 @@ const Demo = () => {
 }
 ```
 
-Your color token documentation should look similar to this:
+Swap `'colors'` for any category `ds.categories()` reports. Every row has the same shape, so one component renders them
+all.
 
-![Token Spec Documentation](/token-spec.png)
+## Theme-aware tokens
 
-### `semantic-tokens.json`
+A semantic token carries one value per condition. `ds.states(path)` returns them, base first. A token that doesn't vary
+returns a single row, so you can render every token the same way:
 
-#### Structure
-
-This file contains an array of semantic token definitions grouped by category, with conditional values for different
-modes (e.g., light/dark).
-
-```json
-{
-  "data": [
-    {
-      "type": "colors",
-      "values": [
-        {
-          "name": "bg",
-          "values": [
-            { "condition": "base", "value": "#ffffff" },
-            { "condition": "_dark", "value": "#0a0a0a" }
-          ]
-        }
-      ]
-    }
-  ]
-}
+```ts
+ds.states('colors.fg')
+// [{ token: 'colors.fg', value: '#ef4444' },
+//  { token: 'colors.fg', condition: '_dark', value: '#2563eb' }]
 ```
-
-Each category is `{ type, values }`, and each semantic token in the `values` array includes:
-
-- **name**: the semantic token key (e.g., `bg`, `fg.muted`, `accent`)
-- **values**: an array of conditional mappings, each with a **condition** (e.g., `base`, `_dark`) and its resolved
-  **value**
-
-#### Usage
-
-Here's an example of how to document semantic color tokens with their conditional values:
 
 ```tsx
-import semanticTokens from 'styled-system/specs/semantic-tokens.json'
-
-const Demo = () => {
-  const colors = semanticTokens.data.find(token => token.type === 'colors')
+export function SemanticColors({ ds }) {
   return (
     <div>
-      {colors?.values.map(token => (
-        <div key={token.name}>
+      {ds.view('colors').map(token => (
+        <div key={token.path}>
           <p>{token.name}</p>
-          <div>
-            {token.values.map(({ condition, value }) => (
-              <div key={condition}>
-                <span>{condition}</span>
-                <p>{value}</p>
-              </div>
-            ))}
-          </div>
+          {ds.states(token.path).map(state => (
+            <div key={state.condition ?? 'base'} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ background: state.value, width: 24, height: 24, borderRadius: 6 }} />
+              <span>{state.condition ?? 'base'}</span>
+            </div>
+          ))}
         </div>
       ))}
     </div>
@@ -150,9 +93,14 @@ const Demo = () => {
 }
 ```
 
-## FAQs
+`ds.variants()` reports which theme and condition combinations actually carry overrides, so you can build a switcher
+without guessing. To resolve a whole category under one of them, pass it to `view`:
 
-### Can I edit the spec files directly?
+```ts
+ds.view('colors', { condition: '_dark' })
+```
 
-**No.** The spec files are **generated** — edit your tokens in `panda.config.ts` instead. They exist purely for
-documentation and visualization.
+## See also
+
+- [Studio](/docs/theming/studio) renders the same file with no setup
+- [Tokens](/docs/theming/tokens) for the token format itself
