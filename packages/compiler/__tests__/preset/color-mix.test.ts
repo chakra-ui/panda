@@ -2,12 +2,12 @@ import presetBase from '@pandacss/preset-base'
 import presetPanda from '@pandacss/preset-panda'
 import { applyConfigDefaults } from '@pandacss/compiler-shared'
 import { createConfigSnapshot, mergeConfigs } from '@pandacss/config'
-import type { UserConfig } from '@pandacss/types'
+import type { Config, UserConfig } from '@pandacss/types'
 import { describe, expect, it } from 'vitest'
 import { createCompilerFromSnapshot } from '../../src'
 import { importMap } from '../test-utils'
 
-function createPresetCompiler(overrides: Partial<UserConfig> = {}) {
+function createPresetCompiler(overrides: Partial<Config> = {}) {
   const merged = mergeConfigs([
     presetBase,
     presetPanda,
@@ -85,10 +85,12 @@ describe('preset color mix utility output', () => {
   it('preserves color mix transform declarations in recipe output', () => {
     const compiler = createPresetCompiler({
       theme: {
-        tokens: {
-          colors: {
-            border: {
-              muted: { value: '#d4d4d8' },
+        extend: {
+          tokens: {
+            colors: {
+              border: {
+                muted: { value: '#d4d4d8' },
+              },
             },
           },
         },

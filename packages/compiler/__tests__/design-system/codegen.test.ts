@@ -67,12 +67,15 @@ function createNestedDesignSystemFixture(): string {
     dir: marketingDir,
     name: '@acme/marketing',
     designSystem: '@acme/foundations',
+    // `extend` adds to the parent design system's palette; a bare `tokens` would replace it
     preset: `export default {
   name: '@acme/marketing',
   theme: {
-    tokens: {
-      colors: {
-        accent: { value: '#ff00aa' },
+    extend: {
+      tokens: {
+        colors: {
+          accent: { value: '#ff00aa' },
+        },
       },
     },
   },
