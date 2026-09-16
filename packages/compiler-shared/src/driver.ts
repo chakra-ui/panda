@@ -54,6 +54,11 @@ export interface SourceChange {
   content?: string
 }
 
+/** Where `--spec` puts the design-system document. */
+export interface SpecOptions extends CodegenOptions {
+  outfile?: string
+}
+
 /** Which artifacts to (re)generate. Omit for the full set. */
 export interface ArtifactFilter {
   dependencies?: CodegenDependency[]
@@ -119,6 +124,8 @@ export interface Driver {
   paths(outdir?: string): DriverPaths
   /** Generate + write artifacts under the configured `outdir` via the engine fs. Returns paths. */
   codegen(options?: CodegenOptions): string[]
+  /** Writes the design-system document. Never part of codegen output. */
+  spec(options?: SpecOptions): string[]
   /** Generate stylesheet CSS → `CompileOutput`; the caller routes the `css` string. */
   cssgen(options?: CompileOptions): CompileOutput
   /** CSS for selected cascade layers only. */
@@ -275,6 +282,22 @@ export abstract class BaseDriver implements Driver {
       cwd: options?.cwd,
       forceImportExtension: options?.forceImportExtension,
       overlay: this.codegenOverlay(),
+    })
+  }
+
+  spec(options?: SpecOptions): string[] {
+    const artifact = this.#compiler.generateArtifact('specs', { overlay: this.codegenOverlay() })
+    if (!artifact?.files.length) return []
+
+    const files = options?.outfile
+      ? [{ ...artifact, files: [{ ...artifact.files[0]!, path: options.outfile }] }]
+      : [artifact]
+
+    return this.#compiler.writeArtifacts({
+      // '' resolves to the cwd itself; '.' would leave a './' segment in the returned path
+      outdir: options?.outfile ? options.cwd ?? '' : this.getConfiguredOutdir(options?.outdir),
+      cwd: options?.cwd,
+      artifacts: files,
     })
   }
 

@@ -1,13 +1,13 @@
-use crate::common::{artifact, file, paths};
+use crate::common::{artifact, file, paths, user_config};
 use indoc::indoc;
-use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
+use pandacss_codegen::{ArtifactGraph, ArtifactId, CodegenContext, GenerateOptions};
 use pandacss_config::CodegenFormat;
 use serde_json::json;
 
 #[test]
 fn uses_config_conditions_and_breakpoints_for_ts_source() {
     let graph = ArtifactGraph;
-    let config: pandacss_config::UserConfig = serde_json::from_value(json!({
+    let config = user_config(json!({
         "conditions": {
             "hover": "&:hover",
             "supportsGrid": "@supports (display: grid)"
@@ -22,11 +22,10 @@ fn uses_config_conditions_and_breakpoints_for_ts_source() {
             },
             "containerNames": ["card"]
         }
-    }))
-    .expect("valid config");
+    }));
 
-    let artifacts = graph.generate_with_config(
-        &config,
+    let artifacts = graph.generate_all(
+        CodegenContext::config_only(&config),
         GenerateOptions {
             format: CodegenFormat::Ts,
             import_extensions: false,
@@ -77,7 +76,7 @@ fn uses_config_conditions_and_breakpoints_for_ts_source() {
 #[test]
 fn emits_js_runtime_and_declarations() {
     let graph = ArtifactGraph;
-    let config: pandacss_config::UserConfig = serde_json::from_value(json!({
+    let config = user_config(json!({
         "conditions": {
             "hover": "&:hover",
             "supportsGrid": "@supports (display: grid)"
@@ -88,11 +87,10 @@ fn emits_js_runtime_and_declarations() {
                 "sm": "640px"
             }
         }
-    }))
-    .expect("valid config");
+    }));
 
-    let artifacts = graph.generate_with_config(
-        &config,
+    let artifacts = graph.generate_all(
+        CodegenContext::config_only(&config),
         GenerateOptions {
             format: CodegenFormat::Js,
             import_extensions: false,
@@ -159,15 +157,14 @@ fn emits_js_runtime_and_declarations() {
 #[test]
 fn can_emit_import_extensions() {
     let graph = ArtifactGraph;
-    let config: pandacss_config::UserConfig = serde_json::from_value(json!({
+    let config = user_config(json!({
         "conditions": {
             "hover": "&:hover"
         }
-    }))
-    .expect("valid config");
+    }));
 
-    let artifacts = graph.generate_with_config(
-        &config,
+    let artifacts = graph.generate_all(
+        CodegenContext::config_only(&config),
         GenerateOptions {
             format: CodegenFormat::Js,
             import_extensions: true,

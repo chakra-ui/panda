@@ -13,6 +13,7 @@ export type CodegenArtifactId =
   | 'jsx-is-valid-prop'
   | 'jsx-patterns'
   | 'patterns'
+  | 'specs'
   | 'themes'
   | 'types'
 

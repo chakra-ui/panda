@@ -1,4 +1,4 @@
-use crate::common::{artifact, file, paths};
+use crate::common::{artifact, file, paths, user_config};
 use indoc::indoc;
 use pandacss_codegen::{
     ArtifactFile, ArtifactGraph, ArtifactId, CodegenInput, CodegenOverlay, GenerateOptions,
@@ -37,16 +37,14 @@ fn input_with(config: UserConfig, overlay: CodegenOverlay) -> CodegenInput {
 }
 
 fn recipes_config(recipes: &serde_json::Value) -> UserConfig {
-    serde_json::from_value(serde_json::json!({ "theme": { "recipes": recipes } }))
-        .expect("config should deserialize")
+    user_config(serde_json::json!({ "theme": { "recipes": recipes } }))
 }
 
 fn patterns_config(patterns: &serde_json::Value) -> UserConfig {
-    serde_json::from_value(serde_json::json!({
+    user_config(serde_json::json!({
         "jsxFramework": "react",
         "patterns": patterns,
     }))
-    .expect("config should deserialize")
 }
 
 fn config_with_app_recipe() -> UserConfig {
@@ -57,7 +55,7 @@ fn config_with_app_recipe() -> UserConfig {
 
 fn generate_with(config: UserConfig, overlay: CodegenOverlay) -> Vec<ArtifactFile> {
     ArtifactGraph
-        .generate_with_input(&input_with(config, overlay), options())
+        .generate_all(&input_with(config, overlay), options())
         .into_iter()
         .flat_map(|artifact| artifact.files)
         .collect()
@@ -66,7 +64,7 @@ fn generate_with(config: UserConfig, overlay: CodegenOverlay) -> Vec<ArtifactFil
 #[test]
 fn generic_runtime_is_still_emitted_locally() {
     let artifacts =
-        ArtifactGraph.generate_with_input(&input_with(UserConfig::default(), overlay()), options());
+        ArtifactGraph.generate_all(&input_with(UserConfig::default(), overlay()), options());
 
     assert!(!artifact(&artifacts, ArtifactId::Css).files.is_empty());
     assert!(!artifact(&artifacts, ArtifactId::Helpers).files.is_empty());
@@ -85,7 +83,7 @@ fn recipes_emits_only_app_delta() {
     overlay.css = "@ds/css".into();
     overlay.helpers = "@ds/helpers".into();
 
-    let artifacts = ArtifactGraph.generate_with_input(&input_with(config, overlay), options());
+    let artifacts = ArtifactGraph.generate_all(&input_with(config, overlay), options());
     let recipes = artifact(&artifacts, ArtifactId::Recipes);
 
     assert_eq!(
@@ -114,7 +112,7 @@ fn recipes_conflict_reexports_app_and_omits_ds_named() {
     // App redefined `button`, so it is excluded from owned_recipes (app wins).
     let overlay = overlay();
 
-    let artifacts = ArtifactGraph.generate_with_input(&input_with(config, overlay), options());
+    let artifacts = ArtifactGraph.generate_all(&input_with(config, overlay), options());
     let recipes = artifact(&artifacts, ArtifactId::Recipes);
 
     assert_eq!(
@@ -139,7 +137,7 @@ fn recipes_all_owned_skips_runtime() {
     let mut overlay = overlay();
     overlay.owned_recipes = vec!["button".into()];
 
-    let artifacts = ArtifactGraph.generate_with_input(&input_with(config, overlay), options());
+    let artifacts = ArtifactGraph.generate_all(&input_with(config, overlay), options());
     let recipes = artifact(&artifacts, ArtifactId::Recipes);
 
     assert_eq!(paths(recipes), vec!["recipes/index.ts"]);
@@ -158,7 +156,7 @@ fn patterns_emits_only_app_delta() {
     let mut overlay = overlay();
     overlay.owned_patterns = vec!["stack".into()];
 
-    let artifacts = ArtifactGraph.generate_with_input(&input_with(config, overlay), options());
+    let artifacts = ArtifactGraph.generate_all(&input_with(config, overlay), options());
     let patterns = artifact(&artifacts, ArtifactId::Patterns);
 
     assert_eq!(
@@ -188,7 +186,7 @@ fn jsx_reexports_owned_ds_pattern_and_emits_app_delta() {
     let mut overlay = overlay();
     overlay.owned_patterns = vec!["stack".into()];
 
-    let artifacts = ArtifactGraph.generate_with_input(&input_with(config, overlay), options());
+    let artifacts = ArtifactGraph.generate_all(&input_with(config, overlay), options());
 
     // The generic jsx factory is still emitted locally.
     assert!(
@@ -216,7 +214,7 @@ fn jsx_conflict_keeps_app_component_local() {
     // App redefined `stack`: excluded from owned_patterns, so it stays local.
     let overlay = overlay();
 
-    let artifacts = ArtifactGraph.generate_with_input(&input_with(config, overlay), options());
+    let artifacts = ArtifactGraph.generate_all(&input_with(config, overlay), options());
 
     assert_eq!(
         paths(artifact(&artifacts, ArtifactId::JsxPatterns)),
@@ -236,11 +234,10 @@ fn pure_consumer_virtualizes_entire_runtime() {
     overlay.virtualize_css = true;
     overlay.owned_recipes = vec!["button".into()];
 
-    let config: UserConfig = serde_json::from_value(serde_json::json!({
+    let config = user_config(serde_json::json!({
         "jsxFramework": "react",
         "theme": { "recipes": { "button": { "className": "button" } } },
-    }))
-    .expect("config");
+    }));
     let files = generate_with(config, overlay);
 
     let helpers = files

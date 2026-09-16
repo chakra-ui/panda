@@ -1,15 +1,18 @@
 use crate::common::{artifact, file, paths};
 use insta::assert_snapshot;
-use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
+use pandacss_codegen::{ArtifactGraph, ArtifactId, CodegenContext, GenerateOptions};
 use pandacss_config::{CodegenFormat, PrefixConfig, UserConfig};
 use serde_json::json;
 
 #[test]
 fn emits_ts_source_view_transition() {
-    let artifacts = ArtifactGraph.generate(GenerateOptions {
-        format: CodegenFormat::Ts,
-        import_extensions: false,
-    });
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&UserConfig::default()),
+        GenerateOptions {
+            format: CodegenFormat::Ts,
+            import_extensions: false,
+        },
+    );
     let vt = artifact(&artifacts, ArtifactId::ViewTransition);
 
     assert_eq!(paths(vt), vec!["css/view-transition.ts"]);
@@ -46,8 +49,8 @@ fn emits_prefixed_view_transition_runtime() {
         prefix: PrefixConfig::String("p".into()),
         ..Default::default()
     };
-    let artifacts = ArtifactGraph.generate_with_config(
-        &config,
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&config),
         GenerateOptions {
             format: CodegenFormat::Ts,
             import_extensions: false,
@@ -92,8 +95,8 @@ fn types_named_theme_bags_on_view_transition_fn() {
         "fade".into(),
         json!({ "old": { "opacity": 1 }, "new": { "opacity": 0 } }),
     );
-    let artifacts = ArtifactGraph.generate_with_config(
-        &config,
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&config),
         GenerateOptions {
             format: CodegenFormat::Ts,
             import_extensions: false,

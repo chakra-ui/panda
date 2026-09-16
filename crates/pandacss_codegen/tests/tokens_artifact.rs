@@ -1,13 +1,12 @@
 use std::collections::BTreeMap;
 
-use crate::common::{artifact, file, paths};
+use crate::common::{artifact, file, paths, user_config};
 use insta::assert_snapshot;
 use pandacss_codegen::{ArtifactGraph, ArtifactId, CodegenInput, GenerateOptions};
 use pandacss_config::{CodegenFormat, TokenTypeData, TypeData, UserConfig};
 
 fn config() -> UserConfig {
-    serde_json::from_value(serde_json::json!({ "prefix": { "cssVar": "pd" } }))
-        .expect("config should deserialize")
+    user_config(serde_json::json!({ "prefix": { "cssVar": "pd" } }))
 }
 
 fn token_values() -> TokenTypeData {
@@ -36,7 +35,7 @@ fn input() -> CodegenInput {
 
 #[test]
 fn emits_ts_source_tokens() {
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &input(),
         GenerateOptions {
             format: CodegenFormat::Ts,
@@ -73,7 +72,7 @@ fn emits_ts_source_tokens() {
 
 #[test]
 fn emits_js_runtime_and_declarations() {
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &input(),
         GenerateOptions {
             format: CodegenFormat::Mjs,

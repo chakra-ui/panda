@@ -113,7 +113,7 @@ impl Project {
         );
         let _entered = span.enter();
         let artifacts =
-            ArtifactGraph.generate_with_input(&self.codegen_input(user_config, overlay), options);
+            ArtifactGraph.generate_all(&self.codegen_input(user_config, overlay), options);
         span.record("artifact_count", artifacts.len());
         artifacts
     }
@@ -127,9 +127,10 @@ impl Project {
         overlay: Option<CodegenOverlay>,
     ) -> Option<Artifact> {
         let _span = tracing::trace_span!(target: "codegen", "artifact", id = id.as_str()).entered();
-        self.generate_artifacts(user_config, options, overlay)
-            .into_iter()
-            .find(|artifact| artifact.id == id)
+        let input = self.codegen_input(user_config, overlay);
+        ArtifactGraph
+            .generate(&input, options, ArtifactGraph.node(id))
+            .pop()
     }
 
     /// Regenerates only the artifacts whose config dependencies intersect `changed`.
@@ -147,11 +148,8 @@ impl Project {
             artifact_count = tracing::field::Empty
         );
         let _entered = span.enter();
-        let artifacts = ArtifactGraph.generate_affected_with_input(
-            &self.codegen_input(user_config, overlay),
-            changed,
-            options,
-        );
+        let input = self.codegen_input(user_config, overlay);
+        let artifacts = ArtifactGraph.generate(&input, options, ArtifactGraph.affected(changed));
         span.record("artifact_count", artifacts.len());
         artifacts
     }

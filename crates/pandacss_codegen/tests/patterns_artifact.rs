@@ -1,4 +1,4 @@
-use crate::common::{artifact, file, paths};
+use crate::common::{artifact, file, paths, user_config};
 use indoc::indoc;
 use insta::assert_snapshot;
 use pandacss_codegen::{
@@ -11,7 +11,7 @@ use pandacss_config::{
 use std::collections::BTreeMap;
 
 fn config() -> UserConfig {
-    serde_json::from_value(serde_json::json!({
+    user_config(serde_json::json!({
         "patterns": {
             "stack": {
                 "defaultValues": { "gap": "4" },
@@ -24,7 +24,6 @@ fn config() -> UserConfig {
             }
         }
     }))
-    .expect("config should deserialize")
 }
 
 fn input() -> CodegenInput {
@@ -127,7 +126,7 @@ fn utility_type_data() -> UtilityTypeData {
 #[test]
 fn emits_ts_source() {
     let graph = ArtifactGraph;
-    let artifacts = graph.generate_with_input(
+    let artifacts = graph.generate_all(
         &input(),
         GenerateOptions {
             format: CodegenFormat::Ts,
@@ -232,7 +231,7 @@ fn emits_ts_source() {
 #[test]
 fn emits_js_runtime_and_declarations() {
     let graph = ArtifactGraph;
-    let artifacts = graph.generate_with_input(
+    let artifacts = graph.generate_all(
         &input(),
         GenerateOptions {
             format: CodegenFormat::Js,
@@ -342,7 +341,7 @@ fn emits_js_runtime_and_declarations() {
 #[test]
 fn can_emit_import_extensions() {
     let graph = ArtifactGraph;
-    let artifacts = graph.generate_with_input(
+    let artifacts = graph.generate_all(
         &input(),
         GenerateOptions {
             format: CodegenFormat::Mjs,

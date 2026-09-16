@@ -47,8 +47,10 @@ pub struct PatternJsxCodegenMeta {
 }
 
 impl<'a> CodegenContext<'a> {
+    /// Config only: `types` and `patterns` come out empty, so `Types`, `Tokens`
+    /// and `Patterns` generate as if the system had none. Otherwise `from_input`.
     #[must_use]
-    pub fn new(config: &'a UserConfig) -> Self {
+    pub fn config_only(config: &'a UserConfig) -> Self {
         Self {
             config,
             types: empty_types(),
@@ -142,6 +144,12 @@ impl<'a> CodegenContext<'a> {
     }
 }
 
+impl<'a> From<&'a CodegenInput> for CodegenContext<'a> {
+    fn from(input: &'a CodegenInput) -> Self {
+        Self::from_input(input)
+    }
+}
+
 fn pattern_omit_keys(properties_name: &str, blocklist: &[String]) -> String {
     let mut keys = vec![format!("keyof {properties_name}")];
     keys.extend(blocklist.iter().map(|key| format!("{key:?}")));
@@ -168,7 +176,7 @@ mod tests {
     #[test]
     fn runtime_import_falls_back_to_local_without_overlay() {
         let config = UserConfig::default();
-        let ctx = CodegenContext::new(&config);
+        let ctx = CodegenContext::config_only(&config);
         assert_eq!(
             ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
             "../helpers"
@@ -183,7 +191,7 @@ mod tests {
             virtualize_helpers: true,
             ..Default::default()
         };
-        let mut ctx = CodegenContext::new(&config);
+        let mut ctx = CodegenContext::config_only(&config);
         ctx.overlay = Some(&overlay);
         assert_eq!(
             ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),

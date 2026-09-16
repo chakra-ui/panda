@@ -49,6 +49,7 @@ describe('cli smoke', () => {
       --include=<glob> Source file globs to scan, replacing the config include list
       -w, --watch Watch files and rebuild
       --outdir=<dir> Output directory for generated files
+      --spec=<file> Also write the design system spec, optionally to a path
       -o, --outfile=<file> Output file for extracted CSS
       --splitting Emit split CSS files
       --clean Clean the output directory before generating

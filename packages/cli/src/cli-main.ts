@@ -1,4 +1,5 @@
 import { defineCommand, renderUsage, runMain, type ArgsDef, type CommandDef } from 'citty'
+import { OPTIONAL_VALUE_FLAGS } from './args'
 import { ExitCode } from './result'
 import { readCliVersion } from './version'
 
@@ -49,8 +50,9 @@ export async function main(argv = process.argv): Promise<void> {
   await runMain(buildCommand, { rawArgs, showUsage: showPlainUsage })
 }
 
-function normalizeRawArgs(rawArgs: string[]): string[] {
-  return rawArgs.length === 1 && rawArgs[0] === '-v' ? ['--version'] : rawArgs
+export function normalizeRawArgs(rawArgs: string[]): string[] {
+  const args = rawArgs.length === 1 && rawArgs[0] === '-v' ? ['--version'] : rawArgs
+  return args.map((arg) => (OPTIONAL_VALUE_FLAGS.has(arg) ? `${arg}=` : arg))
 }
 
 function shouldUseDispatcher(rawArgs: string[]): boolean {

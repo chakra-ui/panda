@@ -1,6 +1,6 @@
 import { defineCommand, type ArgsDef } from 'citty'
 import { dedupeDiagnostics, diagnosticsPass, type Diagnostic } from '@pandacss/compiler-shared'
-import { baseArgs, includeArgs, outputArgs, parseCliFlags, traceArgs } from '../args'
+import { baseArgs, includeArgs, outputArgs, parseCliFlags, specArgs, traceArgs } from '../args'
 import { isCheckClean } from '../check'
 import { buildFlagsSchema } from '../schema'
 import { runCommand } from '../run-command'
@@ -22,6 +22,7 @@ export function buildArgs(): ArgsDef {
     ...includeArgs(),
     watch: { type: 'boolean', description: 'Watch files and rebuild', alias: 'w' },
     outdir: { type: 'string', valueHint: 'dir', description: 'Output directory for generated files' },
+    ...specArgs(),
     outfile: { type: 'string', valueHint: 'file', description: 'Output file for extracted CSS', alias: 'o' },
     splitting: { type: 'boolean', description: 'Emit split CSS files' },
     clean: { type: 'boolean', description: 'Clean the output directory before generating' },

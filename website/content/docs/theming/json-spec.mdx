@@ -3,8 +3,17 @@ title: JSON Spec
 description: Read your design system as JSON to render tokens in your own docs site or Storybook.
 ---
 
-`panda codegen` writes `styled-system/specs/design-system.json` — every token, condition and theme in one file. It's
-there so you can render your own palette, spacing scale and type without reaching into `styled-system` internals.
+`panda codegen --spec` writes `styled-system/specs/design-system.json` — every token, condition and theme in one file.
+It's there so you can render your own palette, spacing scale and type without reaching into `styled-system` internals.
+
+Your CSS doesn't need the file, so it's opt-in:
+
+```sh
+panda codegen --spec            # styled-system/specs/design-system.json
+panda codegen --spec=meta.json  # or wherever you want it
+```
+
+`panda build --spec` writes it as part of a full build.
 
 The file is generated. Edit your tokens in `panda.config.ts`, not here.
 
@@ -99,6 +108,18 @@ without guessing. To resolve a whole category under one of them, pass it to `vie
 ```ts
 ds.view('colors', { condition: '_dark' })
 ```
+
+## Ship it with a library
+
+`panda lib --spec` writes the spec beside `preset.mjs` rather than into an app's `styled-system`:
+
+```sh
+panda lib --spec
+# dist/panda/design-system.json
+```
+
+Ship it when you want consumers to render your tokens without running Panda themselves. It's large next to the rest of
+`panda lib` output, and anyone who installs your preset can generate their own from `preset.mjs`, so it stays a choice.
 
 ## See also
 

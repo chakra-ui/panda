@@ -9,6 +9,7 @@ import {
   type FlagsInfer,
   object,
   str,
+  booleanOrString,
   stringOrArray,
   stringOrNumber,
 } from './flags-schema'
@@ -20,6 +21,7 @@ export const traceOutputSchema = enumOf(['fmt', 'chrome-json'] satisfies readonl
 const booleanFlag = bool()
 const stringFlag = str()
 const numberLikeFlag = stringOrNumber()
+const specFlag = booleanOrString()
 
 export const commonFlagsSchema = object({
   cwd: stringFlag,
@@ -41,6 +43,7 @@ export const commonFlagsSchema = object({
 
 export const codegenFlagsSchema = commonFlagsSchema.extend({
   outdir: stringFlag,
+  spec: specFlag,
   clean: booleanFlag,
   check: booleanFlag,
 })
@@ -57,6 +60,7 @@ export const cssgenFlagsSchema = commonFlagsSchema.extend({
 
 export const buildFlagsSchema = commonFlagsSchema.extend({
   outdir: stringFlag,
+  spec: specFlag,
   outfile: stringFlag,
   splitting: booleanFlag,
   clean: booleanFlag,
@@ -96,6 +100,7 @@ export const buildinfoFlagsSchema = commonFlagsSchema.omit({ watch: true, watchD
 
 export const libFlagsSchema = commonFlagsSchema.extend({
   outdir: stringFlag,
+  spec: specFlag,
   panda: stringFlag,
   files: stringOrArray(),
   minify: booleanFlag,
@@ -158,6 +163,7 @@ export interface BuildinfoResult extends CommandResult {
 }
 
 export interface LibResult extends CommandResult<NodeDriver> {
+  specPath?: string
   manifestPath?: string
   buildInfoPath?: string
   presetPath?: string

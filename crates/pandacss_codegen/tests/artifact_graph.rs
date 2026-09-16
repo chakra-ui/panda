@@ -1,23 +1,28 @@
 use insta::assert_snapshot;
 use pandacss_codegen::{
-    ArtifactGraph, ArtifactId, CodegenInput, ConfigDependency, DependencySet, GenerateOptions,
+    ArtifactGraph, ArtifactId, CodegenContext, CodegenInput, ConfigDependency, DependencySet,
+    GenerateOptions,
 };
+use pandacss_config::UserConfig;
 
-use crate::common::{artifact, file, file_dependencies};
+use crate::common::{artifact, file, file_dependencies, user_config};
+/// Codegen artifacts a change to `dependency` forces Panda to rewrite.
+fn affected_ids(dependency: ConfigDependency) -> Vec<ArtifactId> {
+    ArtifactGraph
+        .generate(
+            CodegenContext::config_only(&UserConfig::default()),
+            GenerateOptions::default(),
+            ArtifactGraph.affected(DependencySet::one(dependency)),
+        )
+        .iter()
+        .map(|artifact| artifact.id)
+        .collect()
+}
 
 #[test]
-fn filters_artifacts_by_config_dependencies() {
-    let graph = ArtifactGraph;
-
-    let affected = graph.generate_affected(
-        DependencySet::one(ConfigDependency::CodegenFormat),
-        GenerateOptions::default(),
-    );
+fn switching_codegen_format_rewrites_every_artifact() {
     assert_eq!(
-        affected
-            .iter()
-            .map(|artifact| artifact.id)
-            .collect::<Vec<_>>(),
+        affected_ids(ConfigDependency::CodegenFormat),
         vec![
             ArtifactId::Helpers,
             ArtifactId::JsxIsValidProp,
@@ -44,16 +49,12 @@ fn filters_artifacts_by_config_dependencies() {
             ArtifactId::Conditions
         ]
     );
+}
 
-    let condition_changes = graph.generate_affected(
-        DependencySet::one(ConfigDependency::Conditions),
-        GenerateOptions::default(),
-    );
+#[test]
+fn adding_a_condition_rewrites_the_artifacts_that_read_conditions() {
     assert_eq!(
-        condition_changes
-            .iter()
-            .map(|artifact| artifact.id)
-            .collect::<Vec<_>>(),
+        affected_ids(ConfigDependency::Conditions),
         vec![
             ArtifactId::Recipes,
             ArtifactId::Themes,
@@ -62,16 +63,12 @@ fn filters_artifacts_by_config_dependencies() {
             ArtifactId::Conditions
         ]
     );
+}
 
-    let unaffected = graph.generate_affected(
-        DependencySet::one(ConfigDependency::Recipes),
-        GenerateOptions::default(),
-    );
+#[test]
+fn editing_a_recipe_leaves_css_and_pattern_artifacts_alone() {
     assert_eq!(
-        unaffected
-            .iter()
-            .map(|artifact| artifact.id)
-            .collect::<Vec<_>>(),
+        affected_ids(ConfigDependency::Recipes),
         vec![
             ArtifactId::JsxCreateRecipeContext,
             ArtifactId::JsxCreateSlotRecipeContext,
@@ -79,16 +76,12 @@ fn filters_artifacts_by_config_dependencies() {
             ArtifactId::Types
         ]
     );
+}
 
-    let pattern_changes = graph.generate_affected(
-        DependencySet::one(ConfigDependency::Patterns),
-        GenerateOptions::default(),
-    );
+#[test]
+fn editing_a_pattern_leaves_recipe_artifacts_alone() {
     assert_eq!(
-        pattern_changes
-            .iter()
-            .map(|artifact| artifact.id)
-            .collect::<Vec<_>>(),
+        affected_ids(ConfigDependency::Patterns),
         vec![
             ArtifactId::JsxPatterns,
             ArtifactId::JsxIndex,
@@ -96,24 +89,62 @@ fn filters_artifacts_by_config_dependencies() {
             ArtifactId::Types
         ]
     );
+}
 
-    let theme_changes = graph.generate_affected(
-        DependencySet::one(ConfigDependency::Themes),
-        GenerateOptions::default(),
-    );
+#[test]
+fn editing_a_theme_rewrites_only_themes_and_types() {
     assert_eq!(
-        theme_changes
-            .iter()
-            .map(|artifact| artifact.id)
-            .collect::<Vec<_>>(),
+        affected_ids(ConfigDependency::Themes),
         vec![ArtifactId::Themes, ArtifactId::Types]
     );
 }
 
 #[test]
+fn codegen_never_writes_the_design_system_spec() {
+    let ids: Vec<ArtifactId> = ArtifactGraph
+        .generate_all(
+            CodegenContext::config_only(&UserConfig::default()),
+            GenerateOptions::default(),
+        )
+        .iter()
+        .map(|artifact| artifact.id)
+        .collect();
+
+    assert!(!ids.contains(&ArtifactId::Specs));
+    assert_eq!(
+        ids,
+        ArtifactGraph
+            .styled_system()
+            .map(|node| node.id)
+            .collect::<Vec<_>>()
+    );
+}
+
+#[test]
+fn the_spec_is_still_reachable_by_id() {
+    let specs = ArtifactGraph.node(ArtifactId::Specs);
+    assert!(specs.is_some(), "`--spec` looks the node up by id");
+}
+
+/// `ALL` and `NODES` are hand-written; nothing else catches a missing entry.
+#[test]
+fn every_id_is_registered() {
+    let mut registered: Vec<ArtifactId> =
+        ArtifactGraph.nodes().iter().map(|node| node.id).collect();
+    let mut all = ArtifactId::ALL.to_vec();
+    registered.sort_unstable_by_key(|id| id.as_str());
+    all.sort_unstable_by_key(|id| id.as_str());
+
+    assert_eq!(registered, all);
+}
+
+#[test]
 fn emitted_files_carry_config_dependencies() {
     let graph = ArtifactGraph;
-    let artifacts = graph.generate(GenerateOptions::default());
+    let artifacts = graph.generate_all(
+        CodegenContext::config_only(&UserConfig::default()),
+        GenerateOptions::default(),
+    );
 
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
     assert!(file_dependencies(helpers, "helpers.mjs").contains(ConfigDependency::CodegenFormat));
@@ -125,7 +156,7 @@ fn emitted_files_carry_config_dependencies() {
     assert!(dependencies.contains(ConfigDependency::Conditions));
     assert!(dependencies.contains(ConfigDependency::Tokens));
 
-    let pattern_config = serde_json::from_value(serde_json::json!({
+    let pattern_config = user_config(serde_json::json!({
         "patterns": {
             "stack": {
                 "properties": {
@@ -133,9 +164,11 @@ fn emitted_files_carry_config_dependencies() {
                 }
             }
         }
-    }))
-    .expect("config should deserialize");
-    let artifacts = graph.generate_with_config(&pattern_config, GenerateOptions::default());
+    }));
+    let artifacts = graph.generate_all(
+        CodegenContext::config_only(&pattern_config),
+        GenerateOptions::default(),
+    );
     let patterns = artifact(&artifacts, ArtifactId::Patterns);
     let dependencies = file_dependencies(patterns, "patterns/stack.mjs");
     assert!(dependencies.contains(ConfigDependency::CodegenFormat));
@@ -154,7 +187,7 @@ fn emitted_files_carry_config_dependencies() {
     assert!(dependencies.contains(ConfigDependency::Tokens));
     assert!(dependencies.contains(ConfigDependency::Utilities));
 
-    let themes_config = serde_json::from_value(serde_json::json!({
+    let themes_config = user_config(serde_json::json!({
         "themes": {
             "primary": {
                 "tokens": {
@@ -164,9 +197,11 @@ fn emitted_files_carry_config_dependencies() {
                 }
             }
         }
-    }))
-    .expect("config should deserialize");
-    let artifacts = graph.generate_with_config(&themes_config, GenerateOptions::default());
+    }));
+    let artifacts = graph.generate_all(
+        CodegenContext::config_only(&themes_config),
+        GenerateOptions::default(),
+    );
     let themes = artifact(&artifacts, ArtifactId::Themes);
     let dependencies = file_dependencies(themes, "themes/index.mjs");
     assert!(dependencies.contains(ConfigDependency::CodegenFormat));
@@ -176,7 +211,7 @@ fn emitted_files_carry_config_dependencies() {
 
 #[test]
 fn standalone_theme_artifact_builds_token_dictionary() {
-    let config = serde_json::from_value(serde_json::json!({
+    let config = user_config(serde_json::json!({
         "themes": {
             "primary": {
                 "tokens": {
@@ -186,9 +221,11 @@ fn standalone_theme_artifact_builds_token_dictionary() {
                 }
             }
         }
-    }))
-    .expect("config should deserialize");
-    let artifacts = ArtifactGraph.generate_with_config(&config, GenerateOptions::default());
+    }));
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&config),
+        GenerateOptions::default(),
+    );
     let themes = artifact(&artifacts, ArtifactId::Themes);
     let primary = file(themes, "themes/theme-primary.json");
 
@@ -203,7 +240,7 @@ fn standalone_theme_artifact_builds_token_dictionary() {
 
 #[test]
 fn prebuilt_empty_token_state_does_not_rebuild_theme_dictionary() {
-    let config = serde_json::from_value(serde_json::json!({
+    let config = user_config(serde_json::json!({
         "themes": {
             "primary": {
                 "tokens": {
@@ -213,14 +250,13 @@ fn prebuilt_empty_token_state_does_not_rebuild_theme_dictionary() {
                 }
             }
         }
-    }))
-    .expect("config should deserialize");
+    }));
     let input = CodegenInput {
         config,
         token_dictionary_provided: true,
         ..CodegenInput::default()
     };
-    let artifacts = ArtifactGraph.generate_with_input(&input, GenerateOptions::default());
+    let artifacts = ArtifactGraph.generate_all(&input, GenerateOptions::default());
     let themes = artifact(&artifacts, ArtifactId::Themes);
     let primary = file(themes, "themes/theme-primary.json");
 
@@ -238,7 +274,7 @@ fn prebuilt_empty_token_state_does_not_rebuild_theme_dictionary() {
 /// module and let TypeScript map `./css.js` onto `./css.d.ts`.
 #[test]
 fn declaration_files_never_import_a_declaration_file_by_name() {
-    let config: pandacss_config::UserConfig = serde_json::from_value(serde_json::json!({
+    let config = user_config(serde_json::json!({
         "jsxFramework": "react",
         "jsxFactory": "styled",
         "theme": {
@@ -252,8 +288,7 @@ fn declaration_files_never_import_a_declaration_file_by_name() {
         "patterns": {
             "stack": { "jsxName": "Stack", "properties": { "gap": { "property": "gap" } } }
         }
-    }))
-    .expect("config should deserialize");
+    }));
     let input = CodegenInput {
         config,
         ..CodegenInput::default()
@@ -263,7 +298,7 @@ fn declaration_files_never_import_a_declaration_file_by_name() {
         pandacss_config::CodegenFormat::Js,
         pandacss_config::CodegenFormat::Mjs,
     ] {
-        let artifacts = ArtifactGraph.generate_with_input(
+        let artifacts = ArtifactGraph.generate_all(
             &input,
             GenerateOptions {
                 format,
@@ -295,16 +330,15 @@ fn declaration_files_never_import_a_declaration_file_by_name() {
 /// collided through `jsx/index.d.ts`'s `export *` (TS2308).
 #[test]
 fn recipe_context_artifacts_share_one_unstyled_props_declaration() {
-    let config: pandacss_config::UserConfig = serde_json::from_value(serde_json::json!({
+    let config = user_config(serde_json::json!({
         "jsxFramework": "react",
         "jsxFactory": "styled"
-    }))
-    .expect("config should deserialize");
+    }));
     let input = CodegenInput {
         config,
         ..CodegenInput::default()
     };
-    let artifacts = ArtifactGraph.generate_with_input(&input, GenerateOptions::default());
+    let artifacts = ArtifactGraph.generate_all(&input, GenerateOptions::default());
 
     let declarations = artifacts
         .iter()

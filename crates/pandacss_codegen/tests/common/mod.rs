@@ -1,4 +1,9 @@
 use pandacss_codegen::{Artifact, ArtifactId, DependencySet};
+use pandacss_config::UserConfig;
+
+pub fn user_config(value: serde_json::Value) -> UserConfig {
+    serde_json::from_value(value).expect("config should deserialize")
+}
 
 pub fn artifact(artifacts: &[Artifact], id: ArtifactId) -> &Artifact {
     artifacts

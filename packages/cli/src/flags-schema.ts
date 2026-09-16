@@ -20,6 +20,7 @@ type Field =
   | { kind: 'boolean' }
   | { kind: 'string' }
   | { kind: 'stringOrNumber' }
+  | { kind: 'booleanOrString' }
   | { kind: 'stringOrArray' }
   | { kind: 'enum'; values: readonly string[] }
 
@@ -29,13 +30,15 @@ type FieldValue<F extends Field> = F extends { kind: 'boolean' }
     ? string
     : F extends { kind: 'stringOrNumber' }
       ? string | number
-      : F extends { kind: 'stringOrArray' }
-        ? string | string[]
-        : F extends { kind: 'enum'; values: infer V }
-          ? V extends readonly (infer U)[]
-            ? U
+      : F extends { kind: 'booleanOrString' }
+        ? boolean | string
+        : F extends { kind: 'stringOrArray' }
+          ? string | string[]
+          : F extends { kind: 'enum'; values: infer V }
+            ? V extends readonly (infer U)[]
+              ? U
+              : never
             : never
-          : never
 
 export type Shape = Record<string, Field>
 type Infer<S extends Shape> = { [K in keyof S]?: FieldValue<S[K]> }
@@ -54,6 +57,11 @@ export function str(): { kind: 'string' } {
 
 export function stringOrNumber(): { kind: 'stringOrNumber' } {
   return { kind: 'stringOrNumber' }
+}
+
+/** A switch that may carry a path: `--spec` or `--spec=meta.json`. */
+export function booleanOrString(): { kind: 'booleanOrString' } {
+  return { kind: 'booleanOrString' }
 }
 
 export function stringOrArray(): { kind: 'stringOrArray' } {
@@ -90,6 +98,10 @@ function parseField(field: Field, value: unknown): { ok: true; value: unknown } 
       const numeric = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : Number.NaN
       return Number.isFinite(numeric) ? { ok: true, value } : { ok: false, message: 'expected a number' }
     }
+    case 'booleanOrString':
+      return typeof value === 'boolean' || typeof value === 'string'
+        ? { ok: true, value }
+        : { ok: false, message: `expected boolean or string, received ${typeLabel(value)}` }
     case 'stringOrArray':
       return typeof value === 'string' || (Array.isArray(value) && value.every((entry) => typeof entry === 'string'))
         ? { ok: true, value }

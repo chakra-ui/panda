@@ -63,8 +63,8 @@ async function onFiles(files: File[]) {
 
   const hasConfig = files.some((f) => /(^|\/)panda\.config\.(ts|js|mjs|cts|mts)$/.test(f.name));
   error.value = hasConfig
-    ? "Found a panda.config but no generated tokens. Run `panda codegen` in this project first, then drop the folder (or its styled-system/)."
-    : "No design system found in that drop. Run `panda codegen`, then drop the folder — we read styled-system/specs/design-system.json.";
+    ? "Found a panda.config but no design system spec. Run `panda codegen --spec` in this project first, then drop the folder (or its styled-system/)."
+    : "No design system found in that drop. Run `panda codegen --spec`, then drop the folder — we read styled-system/specs/design-system.json.";
 }
 </script>
 
@@ -145,7 +145,7 @@ async function onFiles(files: File[]) {
       <p v-if="error" :class="s.error">{{ error }}</p>
 
       <p :class="s.hintMono">
-        Get yours: run <strong>panda codegen</strong> →
+        Get yours: run <strong>panda codegen --spec</strong> →
         <strong>styled-system/specs/design-system.json</strong>
       </p>
     </div>

@@ -1,14 +1,18 @@
 use crate::common::{artifact, file, paths};
 use insta::assert_snapshot;
-use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
+use pandacss_codegen::{ArtifactGraph, ArtifactId, CodegenContext, GenerateOptions};
 use pandacss_config::CodegenFormat;
+use pandacss_config::UserConfig;
 
 #[test]
 fn emits_ts_source_first_that_works() {
-    let artifacts = ArtifactGraph.generate(GenerateOptions {
-        format: CodegenFormat::Ts,
-        import_extensions: false,
-    });
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&UserConfig::default()),
+        GenerateOptions {
+            format: CodegenFormat::Ts,
+            import_extensions: false,
+        },
+    );
     let ftw = artifact(&artifacts, ArtifactId::FirstThatWorks);
 
     assert_eq!(paths(ftw), vec!["css/first-that-works.ts"]);
@@ -40,10 +44,13 @@ fn emits_ts_source_first_that_works() {
 
 #[test]
 fn emits_js_and_dts_first_that_works() {
-    let artifacts = ArtifactGraph.generate(GenerateOptions {
-        format: CodegenFormat::Js,
-        import_extensions: false,
-    });
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&UserConfig::default()),
+        GenerateOptions {
+            format: CodegenFormat::Js,
+            import_extensions: false,
+        },
+    );
     let ftw = artifact(&artifacts, ArtifactId::FirstThatWorks);
 
     assert_eq!(

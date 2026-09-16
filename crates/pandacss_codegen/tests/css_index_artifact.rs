@@ -1,16 +1,20 @@
 use crate::common::{artifact, file, paths};
 use indoc::indoc;
-use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
+use pandacss_codegen::{ArtifactGraph, ArtifactId, CodegenContext, GenerateOptions};
 use pandacss_config::CodegenFormat;
+use pandacss_config::UserConfig;
 
 #[test]
 fn reexports_css_modules() {
     let graph = ArtifactGraph;
 
-    let ts = graph.generate(GenerateOptions {
-        format: CodegenFormat::Ts,
-        import_extensions: false,
-    });
+    let ts = graph.generate_all(
+        CodegenContext::config_only(&UserConfig::default()),
+        GenerateOptions {
+            format: CodegenFormat::Ts,
+            import_extensions: false,
+        },
+    );
     let index = artifact(&ts, ArtifactId::CssIndex);
     assert_eq!(paths(index), vec!["css/index.ts"]);
     assert_eq!(
@@ -33,10 +37,13 @@ fn reexports_css_modules() {
 fn mjs_without_import_extensions_emits_dts_for_bundler_resolution() {
     let graph = ArtifactGraph;
 
-    let mjs = graph.generate(GenerateOptions {
-        format: CodegenFormat::Mjs,
-        import_extensions: false,
-    });
+    let mjs = graph.generate_all(
+        CodegenContext::config_only(&UserConfig::default()),
+        GenerateOptions {
+            format: CodegenFormat::Mjs,
+            import_extensions: false,
+        },
+    );
     let index = artifact(&mjs, ArtifactId::CssIndex);
     assert_eq!(paths(index), vec!["css/index.mjs", "css/index.d.ts"]);
     assert_eq!(
@@ -59,10 +66,13 @@ fn mjs_without_import_extensions_emits_dts_for_bundler_resolution() {
 fn can_emit_import_extensions() {
     let graph = ArtifactGraph;
 
-    let js = graph.generate(GenerateOptions {
-        format: CodegenFormat::Js,
-        import_extensions: true,
-    });
+    let js = graph.generate_all(
+        CodegenContext::config_only(&UserConfig::default()),
+        GenerateOptions {
+            format: CodegenFormat::Js,
+            import_extensions: true,
+        },
+    );
     let index = artifact(&js, ArtifactId::CssIndex);
     assert_eq!(
         file(index, "css/index.js"),
@@ -93,10 +103,13 @@ fn can_emit_import_extensions() {
         .trim()
     );
 
-    let mjs = graph.generate(GenerateOptions {
-        format: CodegenFormat::Mjs,
-        import_extensions: true,
-    });
+    let mjs = graph.generate_all(
+        CodegenContext::config_only(&UserConfig::default()),
+        GenerateOptions {
+            format: CodegenFormat::Mjs,
+            import_extensions: true,
+        },
+    );
     let index = artifact(&mjs, ArtifactId::CssIndex);
     assert_eq!(
         file(index, "css/index.mjs"),

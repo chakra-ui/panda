@@ -6,7 +6,7 @@ Drop a Panda `design-system.json` and see your design system rendered — colors
 
 ## Get your `design-system.json`
 
-Run `panda codegen` in any Panda project and grab `styled-system/specs/design-system.json`. Drop it on the app, paste its contents, or hit **Load sample**.
+Run `panda codegen --spec` in any Panda project and grab `styled-system/specs/design-system.json`. Drop it on the app, paste its contents, or hit **Load sample**.
 
 ## Develop
 

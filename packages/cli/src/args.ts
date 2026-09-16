@@ -58,6 +58,21 @@ export function normalizeInclude(value: unknown): string[] | undefined {
   return globs.length > 0 ? globs : undefined
 }
 
+/** `--spec` takes an optional path. citty has no optional-value type, so it is
+ *  declared as a string and {@link OPTIONAL_VALUE_FLAGS} keeps a bare one honest. */
+export function specArgs(): ArgsDef {
+  return {
+    spec: {
+      type: 'string',
+      valueHint: 'file',
+      description: 'Also write the design system spec, optionally to a path',
+    },
+  }
+}
+
+/** String flags whose value is optional: a bare one must not eat the next token. */
+export const OPTIONAL_VALUE_FLAGS = new Set(['--spec'])
+
 export function traceArgs(): ArgsDef {
   return {
     profile: { type: 'boolean', description: 'Capture Rust compiler timings (trace.json, timings.json)' },

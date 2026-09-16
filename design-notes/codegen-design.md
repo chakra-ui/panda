@@ -84,7 +84,10 @@ pub enum CodegenFormat {
 - artifact generators for `helpers`, `selectors`, `cx`, `css/index`, `conditions`, `themes`, and the rest of the
   `ArtifactId` graph.
 
-The artifact graph includes every `ArtifactId` module in `crates/pandacss_codegen`. Sample nodes:
+The artifact graph holds every `ArtifactId` module in `crates/pandacss_codegen`. `ArtifactId::is_styled_system()` then
+splits them: `generate_all` and `affected` walk only the ones `panda codegen` writes, and `Specs` is excluded — it is
+opt-in behind `--spec` and reached through `node(Specs)`. See [Design system spec](./design-system-spec.md). Sample
+nodes:
 
 | Artifact     | Output stem    | Current dependencies                              |
 | ------------ | -------------- | ------------------------------------------------- |

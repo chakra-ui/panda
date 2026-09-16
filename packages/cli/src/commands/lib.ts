@@ -1,7 +1,8 @@
 import { defineCommand } from 'citty'
-import { baseArgs, includeArgs, normalizeInclude, outputArgs, parseCliFlags, traceArgs } from '../args'
+import { baseArgs, includeArgs, normalizeInclude, outputArgs, parseCliFlags, specArgs, traceArgs } from '../args'
 import { consoleOutput, renderCommandDiagnostics, shouldPrintHumanSummary, type OutputSink } from '../output'
 import { setExitCode } from '../result'
+import { writeSpec } from '../spec-output'
 import { runCommand } from '../run-command'
 import { libFlagsSchema } from '../schema'
 import { parseMilliseconds, timeAsync } from '../timing'
@@ -24,6 +25,7 @@ export const libCommand = defineCommand({
       description: `Output directory for the artifacts (default '${DEFAULT_OUTDIR}')`,
       alias: 'o',
     },
+    ...specArgs(),
     panda: {
       type: 'string',
       description:
@@ -67,9 +69,14 @@ export async function runLib(flags: LibFlags = {}, output: OutputSink = consoleO
           }),
       })
       parsedFileCount = generated.parsedFileCount
+      // published alongside preset.mjs and lib.json, not under the app's styled-system
+      const specFiles = writeSpec(driver, flags.spec, {
+        defaultOutfile: `${flags.outdir ?? DEFAULT_OUTDIR}/panda/design-system.json`,
+      })
 
       return {
         data: {
+          specPath: specFiles[0],
           manifestPath: generated.manifestPath,
           buildInfoPath: generated.buildInfoPath,
           presetPath: generated.presetPath,

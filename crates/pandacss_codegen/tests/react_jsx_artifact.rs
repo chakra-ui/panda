@@ -1,10 +1,10 @@
-use crate::common::{artifact, file, paths};
+use crate::common::{artifact, file, paths, user_config};
 use insta::assert_snapshot;
-use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
+use pandacss_codegen::{ArtifactGraph, ArtifactId, CodegenContext, GenerateOptions};
 use pandacss_config::UserConfig;
 
 fn react_config() -> UserConfig {
-    serde_json::from_value(serde_json::json!({
+    user_config(serde_json::json!({
         "jsxFramework": "react",
         "jsxFactory": "panda",
         "patterns": {
@@ -45,12 +45,14 @@ fn react_config() -> UserConfig {
             }
         }
     }))
-    .expect("config should deserialize")
 }
 
 #[test]
 fn emits_react_jsx_artifacts() {
-    let artifacts = ArtifactGraph.generate_with_config(&react_config(), GenerateOptions::default());
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&react_config()),
+        GenerateOptions::default(),
+    );
 
     assert_eq!(
         paths(artifact(&artifacts, ArtifactId::JsxIsValidProp)),
@@ -101,7 +103,10 @@ fn emits_react_jsx_artifacts() {
 
 #[test]
 fn react_jsx_index_exports_split_context_helpers_only() {
-    let artifacts = ArtifactGraph.generate_with_config(&react_config(), GenerateOptions::default());
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&react_config()),
+        GenerateOptions::default(),
+    );
     let index = file(artifact(&artifacts, ArtifactId::JsxIndex), "jsx/index.mjs");
 
     assert!(index.contains("export * from './factory'"));
@@ -114,7 +119,10 @@ fn react_jsx_index_exports_split_context_helpers_only() {
 
 #[test]
 fn react_jsx_pattern_component_spreads_raw_styles() {
-    let artifacts = ArtifactGraph.generate_with_config(&react_config(), GenerateOptions::default());
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&react_config()),
+        GenerateOptions::default(),
+    );
     let stack = file(
         artifact(&artifacts, ArtifactId::JsxPatterns),
         "jsx/stack.mjs",
@@ -140,7 +148,10 @@ fn react_jsx_pattern_component_spreads_raw_styles() {
 
 #[test]
 fn only_recipe_contexts_are_client_boundaries() {
-    let artifacts = ArtifactGraph.generate_with_config(&react_config(), GenerateOptions::default());
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&react_config()),
+        GenerateOptions::default(),
+    );
 
     // Recipe contexts call `createContext` and must be client boundaries.
     for (artifact_id, path) in [
@@ -173,7 +184,10 @@ fn only_recipe_contexts_are_client_boundaries() {
 
 #[test]
 fn create_recipe_context_delegates_to_factory() {
-    let artifacts = ArtifactGraph.generate_with_config(&react_config(), GenerateOptions::default());
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&react_config()),
+        GenerateOptions::default(),
+    );
     let code = file(
         artifact(&artifacts, ArtifactId::JsxCreateRecipeContext),
         "jsx/create-recipe-context.mjs",
@@ -189,7 +203,10 @@ fn create_recipe_context_delegates_to_factory() {
 fn create_slot_recipe_context_preserves_style_prop_modes() {
     let mut config = react_config();
     config.jsx_style_props = Some(pandacss_config::JsxStylePropsConfig::Minimal);
-    let artifacts = ArtifactGraph.generate_with_config(&config, GenerateOptions::default());
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&config),
+        GenerateOptions::default(),
+    );
     let code = file(
         artifact(&artifacts, ArtifactId::JsxCreateSlotRecipeContext),
         "jsx/create-slot-recipe-context.mjs",
@@ -203,7 +220,10 @@ fn create_slot_recipe_context_preserves_style_prop_modes() {
 
 #[test]
 fn react_types_include_jsx_factory_surface() {
-    let artifacts = ArtifactGraph.generate_with_config(&react_config(), GenerateOptions::default());
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&react_config()),
+        GenerateOptions::default(),
+    );
     let jsx = file(artifact(&artifacts, ArtifactId::Types), "types/jsx.d.ts");
     let index = file(artifact(&artifacts, ArtifactId::Types), "types/index.d.ts");
 
@@ -219,7 +239,7 @@ fn react_types_include_jsx_factory_surface() {
 
 #[test]
 fn is_valid_prop_includes_condition_keys() {
-    let config: UserConfig = serde_json::from_value(serde_json::json!({
+    let config = user_config(serde_json::json!({
         "jsxFramework": "react",
         "conditions": {
             "hover": "&:hover",
@@ -228,10 +248,12 @@ fn is_valid_prop_includes_condition_keys() {
         "theme": {
             "breakpoints": { "md": "768px" }
         }
-    }))
-    .expect("config should deserialize");
+    }));
 
-    let artifacts = ArtifactGraph.generate_with_config(&config, GenerateOptions::default());
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&config),
+        GenerateOptions::default(),
+    );
     let code = file(
         artifact(&artifacts, ArtifactId::JsxIsValidProp),
         "jsx/is-valid-prop.mjs",
@@ -248,14 +270,16 @@ fn is_valid_prop_includes_condition_keys() {
 
 #[test]
 fn is_valid_prop_omits_conditions_when_style_props_are_minimal() {
-    let config: UserConfig = serde_json::from_value(serde_json::json!({
+    let config = user_config(serde_json::json!({
         "jsxFramework": "react",
         "jsxStyleProps": "minimal",
         "conditions": { "hover": "&:hover" }
-    }))
-    .expect("config should deserialize");
+    }));
 
-    let artifacts = ArtifactGraph.generate_with_config(&config, GenerateOptions::default());
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&config),
+        GenerateOptions::default(),
+    );
     let code = file(
         artifact(&artifacts, ArtifactId::JsxIsValidProp),
         "jsx/is-valid-prop.mjs",
@@ -267,7 +291,10 @@ fn is_valid_prop_omits_conditions_when_style_props_are_minimal() {
 
 #[test]
 fn helper_owns_jsx_helpers() {
-    let artifacts = ArtifactGraph.generate_with_config(&react_config(), GenerateOptions::default());
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&react_config()),
+        GenerateOptions::default(),
+    );
     let factory = file(
         artifact(&artifacts, ArtifactId::JsxFactory),
         "jsx/factory.mjs",

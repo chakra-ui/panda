@@ -176,7 +176,7 @@ onMounted(async () => {
         Found <strong>0 token references</strong> in {{ scannedCount }} file{{
           scannedCount === 1 ? "" : "s"
         }}. The loaded tokens probably don't match this project — load this project's own
-        <code>design-system.json</code> (run <code>panda codegen</code>). Note this tool targets
+        <code>design-system.json</code> (run <code>panda codegen --spec</code>). Note this tool targets
         <strong>Panda v2</strong>.
       </p>
       <p v-else-if="preciseFailed" :class="s.hint">

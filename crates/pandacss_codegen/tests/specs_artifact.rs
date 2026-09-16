@@ -1,15 +1,14 @@
 use std::sync::Arc;
 
-use crate::common::{artifact, file};
+use crate::common::{file, user_config};
 use insta::assert_snapshot;
 use pandacss_codegen::{ArtifactGraph, ArtifactId, CodegenInput, GenerateOptions};
-use pandacss_config::UserConfig;
 use pandacss_tokens::TokenDictionary;
 
 /// A system with a theme, so the document has to split `_themeBrand:_dark`
 /// into a theme and a condition, and keep the reference the plain spec drops.
 fn themed_input() -> CodegenInput {
-    let config: UserConfig = serde_json::from_value(serde_json::json!({
+    let config = user_config(serde_json::json!({
         "conditions": { "dark": "[data-theme=dark] &" },
         "theme": {
             "tokens": {
@@ -32,8 +31,7 @@ fn themed_input() -> CodegenInput {
                 }
             }
         }
-    }))
-    .expect("config should deserialize");
+    }));
 
     let dictionary = TokenDictionary::from_config(&config)
         .expect("token dictionary should build")
@@ -53,8 +51,16 @@ fn themed_input() -> CodegenInput {
     reason = "the inline snapshot is the whole document; splitting it hides what is asserted"
 )]
 fn design_system_document_keeps_token_references_and_render_order() {
-    let artifacts = ArtifactGraph.generate_with_input(&themed_input(), GenerateOptions::default());
-    let specs = artifact(&artifacts, ArtifactId::Specs);
+    let input = themed_input();
+    let specs = ArtifactGraph
+        .generate(
+            &input,
+            GenerateOptions::default(),
+            ArtifactGraph.node(ArtifactId::Specs),
+        )
+        .pop()
+        .expect("specs artifact should exist");
+    let specs = &specs;
 
     // `schemaVersion` is the contract with `@pandacss/compiler-shared`: changing
     // the document's shape means bumping it here and there, and both suites
@@ -162,8 +168,14 @@ fn design_system_document_keeps_token_references_and_render_order() {
 
 #[test]
 fn emits_nothing_without_tokens() {
-    let artifacts =
-        ArtifactGraph.generate_with_input(&CodegenInput::default(), GenerateOptions::default());
+    let specs = ArtifactGraph
+        .generate(
+            &CodegenInput::default(),
+            GenerateOptions::default(),
+            ArtifactGraph.node(ArtifactId::Specs),
+        )
+        .pop()
+        .expect("specs artifact should exist");
 
-    assert!(artifact(&artifacts, ArtifactId::Specs).files.is_empty());
+    assert!(specs.files.is_empty());
 }

@@ -1,7 +1,8 @@
-use crate::common::{artifact, file, paths};
+use crate::common::{artifact, file, paths, user_config};
 use insta::assert_snapshot;
-use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
+use pandacss_codegen::{ArtifactGraph, ArtifactId, CodegenContext, GenerateOptions};
 use pandacss_config::CodegenFormat;
+use pandacss_config::UserConfig;
 
 fn function_block(source: &str, name: &str) -> String {
     let needle = format!("export function {name}");
@@ -672,10 +673,13 @@ export declare function withoutSpace<T extends string | number | boolean>(str: T
 )]
 fn emits_ts_source() {
     let graph = ArtifactGraph;
-    let artifacts = graph.generate(GenerateOptions {
-        format: CodegenFormat::Ts,
-        import_extensions: false,
-    });
+    let artifacts = graph.generate_all(
+        CodegenContext::config_only(&UserConfig::default()),
+        GenerateOptions {
+            format: CodegenFormat::Ts,
+            import_extensions: false,
+        },
+    );
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
     assert_eq!(paths(helpers), vec!["helpers.ts"]);
@@ -875,10 +879,9 @@ fn emits_ts_source() {
 
 #[test]
 fn emits_ts_to_css_var_and_color_mix() {
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &pandacss_codegen::CodegenInput {
-            config: serde_json::from_value(serde_json::json!({ "prefix": { "cssVar": "pd" } }))
-                .expect("config"),
+            config: user_config(serde_json::json!({ "prefix": { "cssVar": "pd" } })),
             ..pandacss_codegen::CodegenInput::default()
         },
         GenerateOptions {
@@ -922,10 +925,13 @@ fn emits_ts_to_css_var_and_color_mix() {
 #[test]
 fn emits_ts_with_defaults() {
     let graph = ArtifactGraph;
-    let artifacts = graph.generate(GenerateOptions {
-        format: CodegenFormat::Ts,
-        import_extensions: false,
-    });
+    let artifacts = graph.generate_all(
+        CodegenContext::config_only(&UserConfig::default()),
+        GenerateOptions {
+            format: CodegenFormat::Ts,
+            import_extensions: false,
+        },
+    );
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
     let source = file(helpers, "helpers.ts");
@@ -939,10 +945,13 @@ fn emits_ts_with_defaults() {
 #[test]
 fn emits_js_with_defaults() {
     let graph = ArtifactGraph;
-    let artifacts = graph.generate(GenerateOptions {
-        format: CodegenFormat::Js,
-        import_extensions: false,
-    });
+    let artifacts = graph.generate_all(
+        CodegenContext::config_only(&UserConfig::default()),
+        GenerateOptions {
+            format: CodegenFormat::Js,
+            import_extensions: false,
+        },
+    );
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
     let source = file(helpers, "helpers.js");
@@ -956,10 +965,13 @@ fn emits_js_with_defaults() {
 #[test]
 fn emits_js_get_compound_variant_css() {
     let graph = ArtifactGraph;
-    let artifacts = graph.generate(GenerateOptions {
-        format: CodegenFormat::Js,
-        import_extensions: false,
-    });
+    let artifacts = graph.generate_all(
+        CodegenContext::config_only(&UserConfig::default()),
+        GenerateOptions {
+            format: CodegenFormat::Js,
+            import_extensions: false,
+        },
+    );
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
     let source = file(helpers, "helpers.js");
@@ -978,10 +990,13 @@ fn emits_js_get_compound_variant_css() {
 #[test]
 fn emits_js_get_compound_variant_class_names() {
     let graph = ArtifactGraph;
-    let artifacts = graph.generate(GenerateOptions {
-        format: CodegenFormat::Js,
-        import_extensions: false,
-    });
+    let artifacts = graph.generate_all(
+        CodegenContext::config_only(&UserConfig::default()),
+        GenerateOptions {
+            format: CodegenFormat::Js,
+            import_extensions: false,
+        },
+    );
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
     let source = file(helpers, "helpers.js");
@@ -1000,10 +1015,13 @@ fn emits_js_get_compound_variant_class_names() {
 #[test]
 fn emits_js_get_slot_compound_variant() {
     let graph = ArtifactGraph;
-    let artifacts = graph.generate(GenerateOptions {
-        format: CodegenFormat::Js,
-        import_extensions: false,
-    });
+    let artifacts = graph.generate_all(
+        CodegenContext::config_only(&UserConfig::default()),
+        GenerateOptions {
+            format: CodegenFormat::Js,
+            import_extensions: false,
+        },
+    );
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
     let source = file(helpers, "helpers.js");
@@ -1030,10 +1048,13 @@ fn emits_js_get_slot_compound_variant() {
 #[test]
 fn emits_js_get_slot_recipes() {
     let graph = ArtifactGraph;
-    let artifacts = graph.generate(GenerateOptions {
-        format: CodegenFormat::Js,
-        import_extensions: false,
-    });
+    let artifacts = graph.generate_all(
+        CodegenContext::config_only(&UserConfig::default()),
+        GenerateOptions {
+            format: CodegenFormat::Js,
+            import_extensions: false,
+        },
+    );
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
     let source = file(helpers, "helpers.js");
@@ -1072,10 +1093,13 @@ fn emits_js_get_slot_recipes() {
 )]
 fn emits_js_runtime() {
     let graph = ArtifactGraph;
-    let artifacts = graph.generate(GenerateOptions {
-        format: CodegenFormat::Js,
-        import_extensions: false,
-    });
+    let artifacts = graph.generate_all(
+        CodegenContext::config_only(&UserConfig::default()),
+        GenerateOptions {
+            format: CodegenFormat::Js,
+            import_extensions: false,
+        },
+    );
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
     assert_eq!(paths(helpers), vec!["helpers.js", "helpers.d.ts"]);
@@ -1275,10 +1299,13 @@ fn emits_js_runtime() {
 #[test]
 fn emits_declarations() {
     let graph = ArtifactGraph;
-    let artifacts = graph.generate(GenerateOptions {
-        format: CodegenFormat::Js,
-        import_extensions: false,
-    });
+    let artifacts = graph.generate_all(
+        CodegenContext::config_only(&UserConfig::default()),
+        GenerateOptions {
+            format: CodegenFormat::Js,
+            import_extensions: false,
+        },
+    );
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
     assert_eq!(paths(helpers), vec!["helpers.js", "helpers.d.ts"]);

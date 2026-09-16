@@ -15,7 +15,7 @@ export function parseSpec(raw: string): ParseResult {
   if (!result.ok) {
     return {
       ok: false,
-      error: `${result.error} Drop the styled-system/specs/design-system.json that panda codegen writes.`,
+      error: `${result.error} Drop the styled-system/specs/design-system.json that panda codegen --spec writes.`,
     };
   }
   if (!result.value.paths.length) {

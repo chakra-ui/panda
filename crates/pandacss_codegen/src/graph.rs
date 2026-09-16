@@ -1,10 +1,10 @@
 //! The artifact graph: which `styled-system/*` files exist, what config each
 //! depends on, so a config diff regenerates only the affected artifacts.
 
-use pandacss_config::{CodegenFormat, UserConfig};
+use pandacss_config::CodegenFormat;
 use std::str::FromStr;
 
-use crate::{CodegenContext, CodegenInput, EmitMode, Module, SourceExt, emit_module};
+use crate::{CodegenContext, EmitMode, Module, SourceExt, emit_module};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum ArtifactId {
@@ -61,6 +61,38 @@ impl ArtifactId {
         Self::Keyframes,
         Self::FirstThatWorks,
     ];
+
+    /// Whether `panda codegen` writes this artifact. The spec is opt-in behind
+    /// `--spec`. Exhaustive, so a new variant has to answer before it compiles.
+    #[must_use]
+    pub fn is_styled_system(self) -> bool {
+        match self {
+            Self::Specs => false,
+            Self::Conditions
+            | Self::Css
+            | Self::CssIndex
+            | Self::Cva
+            | Self::Cx
+            | Self::Helpers
+            | Self::JsxCreateRecipeContext
+            | Self::JsxCreateSlotRecipeContext
+            | Self::JsxFactory
+            | Self::JsxHelper
+            | Self::JsxIndex
+            | Self::JsxIsValidProp
+            | Self::JsxPatterns
+            | Self::Patterns
+            | Self::Recipes
+            | Self::Sva
+            | Self::Themes
+            | Self::Tokens
+            | Self::Types
+            | Self::ViewTransition
+            | Self::PositionTry
+            | Self::Keyframes
+            | Self::FirstThatWorks => true,
+        }
+    }
 
     #[must_use]
     pub fn as_str(self) -> &'static str {
@@ -494,81 +526,48 @@ impl ArtifactGraph {
         Self::NODES
     }
 
-    #[must_use]
-    pub fn affected(self, changed: DependencySet) -> Vec<ArtifactNode> {
-        Self::NODES
-            .iter()
-            .copied()
-            .filter(|node| node.dependencies.intersects(changed))
-            .collect()
+    /// The nodes `panda codegen` writes.
+    pub fn styled_system(self) -> impl Iterator<Item = &'static ArtifactNode> {
+        Self::NODES.iter().filter(|node| node.id.is_styled_system())
     }
 
+    /// One node by id, whatever its kind. `Option` is `IntoIterator`, so it
+    /// composes with the other selectors.
     #[must_use]
-    pub fn generate(self, options: GenerateOptions) -> Vec<Artifact> {
-        self.generate_with_config(&UserConfig::default(), options)
+    pub fn node(self, id: ArtifactId) -> Option<&'static ArtifactNode> {
+        Self::NODES.iter().find(|node| node.id == id)
     }
 
+    /// The codegen nodes a config diff touches.
+    pub fn affected(self, changed: DependencySet) -> impl Iterator<Item = &'static ArtifactNode> {
+        self.styled_system()
+            .filter(move |node| node.dependencies.intersects(changed))
+    }
+
+    /// Generates the given nodes. Selection is the caller's, so a run can mix
+    /// sets — `styled_system().chain(node(Specs))` is one pass, not two.
     #[must_use]
-    pub fn generate_with_config(
+    pub fn generate<'a, 'n>(
         self,
-        config: &UserConfig,
+        source: impl Into<CodegenContext<'a>>,
         options: GenerateOptions,
+        nodes: impl IntoIterator<Item = &'n ArtifactNode>,
     ) -> Vec<Artifact> {
-        let ctx = CodegenContext::new(config);
-        Self::NODES
-            .iter()
+        let ctx = source.into();
+        nodes
+            .into_iter()
             .map(|node| generate_node(ctx, *node, options))
             .collect()
     }
 
+    /// Everything `panda codegen` writes.
     #[must_use]
-    pub fn generate_with_input(
+    pub fn generate_all<'a>(
         self,
-        input: &CodegenInput,
+        source: impl Into<CodegenContext<'a>>,
         options: GenerateOptions,
     ) -> Vec<Artifact> {
-        let ctx = CodegenContext::from_input(input);
-        Self::NODES
-            .iter()
-            .map(|node| generate_node(ctx, *node, options))
-            .collect()
-    }
-
-    #[must_use]
-    pub fn generate_affected(
-        self,
-        changed: DependencySet,
-        options: GenerateOptions,
-    ) -> Vec<Artifact> {
-        self.generate_affected_with_config(&UserConfig::default(), changed, options)
-    }
-
-    #[must_use]
-    pub fn generate_affected_with_config(
-        self,
-        config: &UserConfig,
-        changed: DependencySet,
-        options: GenerateOptions,
-    ) -> Vec<Artifact> {
-        let ctx = CodegenContext::new(config);
-        self.affected(changed)
-            .into_iter()
-            .map(|node| generate_node(ctx, node, options))
-            .collect()
-    }
-
-    #[must_use]
-    pub fn generate_affected_with_input(
-        self,
-        input: &CodegenInput,
-        changed: DependencySet,
-        options: GenerateOptions,
-    ) -> Vec<Artifact> {
-        let ctx = CodegenContext::from_input(input);
-        self.affected(changed)
-            .into_iter()
-            .map(|node| generate_node(ctx, node, options))
-            .collect()
+        self.generate(source, options, self.styled_system())
     }
 }
 

@@ -1,14 +1,18 @@
 use crate::common::{artifact, file, paths};
 use insta::assert_snapshot;
-use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
+use pandacss_codegen::{ArtifactGraph, ArtifactId, CodegenContext, GenerateOptions};
 use pandacss_config::CodegenFormat;
+use pandacss_config::UserConfig;
 
 #[test]
 fn emits_ts_source_cva() {
-    let artifacts = ArtifactGraph.generate(GenerateOptions {
-        format: CodegenFormat::Ts,
-        import_extensions: false,
-    });
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&UserConfig::default()),
+        GenerateOptions {
+            format: CodegenFormat::Ts,
+            import_extensions: false,
+        },
+    );
     let cva = artifact(&artifacts, ArtifactId::Cva);
 
     assert_eq!(paths(cva), vec!["css/cva.ts"]);
@@ -72,10 +76,13 @@ fn emits_ts_source_cva() {
 
 #[test]
 fn emits_js_runtime_and_declarations() {
-    let artifacts = ArtifactGraph.generate(GenerateOptions {
-        format: CodegenFormat::Mjs,
-        import_extensions: true,
-    });
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&UserConfig::default()),
+        GenerateOptions {
+            format: CodegenFormat::Mjs,
+            import_extensions: true,
+        },
+    );
     let cva = artifact(&artifacts, ArtifactId::Cva);
 
     assert_eq!(paths(cva), vec!["css/cva.mjs", "css/cva.d.mts"]);

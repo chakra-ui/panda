@@ -1,7 +1,7 @@
 ---
 title: See your design system, and what it uses
 description:
-  Studio renders your Panda tokens.json into colors, spacing, and type, and now tells you which tokens your code
+  Studio renders your Panda design-system.json into colors, spacing, and type, and now tells you which tokens your code
   actually uses and lets you share the whole thing as a link.
 date: 2026-09-09
 author: lope
@@ -9,10 +9,10 @@ tags: [announcement, tokens, tooling]
 type: release
 ---
 
-You already have a design system written down. It's the `tokens.json` Panda emits: every color, space, font, radius, and
+You already have a design system written down. It's the `design-system.json` Panda emits: every color, space, font, radius, and
 shadow, with values resolved. Describing the system was never the hard part. Seeing it was.
 
-![Studio, a full color system rendered straight from tokens.json](/blog/spec-studio-hero.png)
+![Studio, a full color system rendered straight from design-system.json](/blog/spec-studio-hero.png)
 
 Studio renders that file. Drop it in and every category paints. Colors become a swatch grid, spacing becomes a
 sorted scale, fonts become specimens, durations and easings become chips that animate. No install, no account, no config.
@@ -61,10 +61,10 @@ The hosted studio doesn't replace building your own viewer. The [Studio docs](/d
 about thirty lines: every category is `{ name, value }`, so a color grid is one `.map()`. Studio is just the version
 you don't have to build.
 
-Get your file with `panda codegen`:
+Get your file with `panda codegen --spec`:
 
 ```
-styled-system/specs/tokens.json
+styled-system/specs/design-system.json
 ```
 
 Open the studio, drop it in, and hit Analyze. Nothing leaves your browser until you press Share.

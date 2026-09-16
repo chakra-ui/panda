@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { dirname, join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { runBuild } from '../src'
-import { cleanupFixture, createFixture, normalizeOutput, writeSyntaxError } from './helpers'
+import { CONFIG_WITH_TOKENS, cleanupFixture, createFixture, normalizeOutput, writeSyntaxError } from './helpers'
 
 describe('build command (default panda)', () => {
   let dir: string | undefined
@@ -10,6 +10,25 @@ describe('build command (default panda)', () => {
   afterEach(() => {
     cleanupFixture(dir)
     dir = undefined
+  })
+
+  it('leaves the design system spec out of a plain build', async () => {
+    dir = createFixture(CONFIG_WITH_TOKENS)
+
+    await runBuild({ cwd: dir, logLevel: 'silent' })
+
+    expect(existsSync(join(dir, 'styled-system', 'specs', 'design-system.json'))).toBe(false)
+  })
+
+  it('writes the design system spec when --spec is passed', async () => {
+    dir = createFixture(CONFIG_WITH_TOKENS)
+
+    const result = await runBuild({ cwd: dir, spec: '', logLevel: 'silent' })
+
+    expect(result.files.some((path) => path.replace(/\\/g, '/').endsWith('specs/design-system.json'))).toBe(true)
+    expect(
+      JSON.parse(readFileSync(join(dir, 'styled-system', 'specs', 'design-system.json'), 'utf8')).schemaVersion,
+    ).toBe(1)
   })
 
   it('runs codegen and cssgen in one pass', async () => {

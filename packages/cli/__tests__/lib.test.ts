@@ -4,11 +4,11 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { runCodegen, runLib } from '../src'
-import { CONFIG } from './helpers'
+import { CONFIG, CONFIG_WITH_TOKENS } from './helpers'
 
-function createLibFixture(extraConfig = ''): string {
+function createLibFixture(extraConfig = '', base = CONFIG): string {
   const dir = realpathSync(mkdtempSync(join(tmpdir(), 'panda-cli-lib-')))
-  const config = extraConfig ? CONFIG.replace('export default {', `export default {\n${extraConfig}`) : CONFIG
+  const config = extraConfig ? base.replace('export default {', `export default {\n${extraConfig}`) : base
   writeFileSync(join(dir, 'panda.config.ts'), config)
   writeFileSync(
     join(dir, 'package.json'),
@@ -28,6 +28,25 @@ describe('lib command', () => {
   afterEach(() => {
     if (dir) rmSync(dir, { recursive: true, force: true })
     dir = undefined
+  })
+
+  it('leaves the design system spec out unless asked', async () => {
+    dir = createLibFixture('', CONFIG_WITH_TOKENS)
+
+    const result = await runLib({ cwd: dir, logLevel: 'silent' })
+
+    expect(result.specPath).toBeUndefined()
+    expect(existsSync(join(dir, 'dist', 'panda', 'design-system.json'))).toBe(false)
+  })
+
+  it('publishes the spec beside preset.mjs with --spec', async () => {
+    dir = createLibFixture('', CONFIG_WITH_TOKENS)
+
+    const result = await runLib({ cwd: dir, spec: '', logLevel: 'silent' })
+
+    // not under the consumer's styled-system — it ships with the package
+    expect(result.specPath).toBe(join(dir, 'dist', 'panda', 'design-system.json'))
+    expect(JSON.parse(readFileSync(join(dir, 'dist', 'panda', 'design-system.json'), 'utf8')).schemaVersion).toBe(1)
   })
 
   it('writes manifest, build info, and compiled preset; syncs exports', async () => {

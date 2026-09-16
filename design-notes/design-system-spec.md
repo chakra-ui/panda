@@ -12,6 +12,20 @@ This note describes `specs/design-system.json`, one normalized document keyed li
 definition tables the other two point at. The generated `themes/` runtime keeps shipping CSS — that is the correct fast
 path for `injectTheme` — and gains nothing heavier than a list of theme names.
 
+The spec is **not** part of `panda codegen` output. Measured against the rest of codegen, by semantic-token count:
+
+```
+semantic tokens   codegen    spec    spec share
+      0            1.42ms   0.00ms       0%
+    200            1.40ms   1.39ms      50%
+    800            4.40ms   4.91ms      53%
+   2000           13.99ms  12.70ms      48%
+```
+
+Roughly half of codegen, for a document nothing in the build reads. `--spec` asks for it (`panda codegen --spec`,
+`panda build --spec`, `panda lib --spec`). In the graph `ArtifactId::Specs` answers `is_styled_system()` with `false`,
+so `generate_all` and `affected` skip it and only `node(Specs)` reaches it.
+
 ## What the artifacts lose today
 
 `specs/tokens.json` and `specs/semantic-tokens.json` are two denormalized projections of one table, split only because

@@ -232,7 +232,7 @@ fn reserves_every_panda_owned_value_type() {
     for (scenario, mut bare) in [("default", input()), ("strict", strict_input())] {
         bare.types.utilities = UtilityTypeData::default();
 
-        let artifacts = ArtifactGraph.generate_with_input(
+        let artifacts = ArtifactGraph.generate_all(
             &bare,
             GenerateOptions {
                 format: CodegenFormat::Ts,
@@ -261,7 +261,7 @@ fn reserves_every_panda_owned_value_type() {
     reason = "inline snapshot for the full types artifact"
 )]
 fn emits_ts_source_types() {
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &input(),
         GenerateOptions {
             format: CodegenFormat::Ts,
@@ -601,7 +601,7 @@ fn token_value_allows_missing_utility_categories() {
         ..CodegenInput::default()
     };
 
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &input,
         GenerateOptions {
             format: CodegenFormat::Ts,
@@ -628,7 +628,7 @@ fn token_value_allows_missing_utility_categories() {
 fn empty_tokens_emit_no_index_signature() {
     // An index signature widens `keyof Tokens` to `string`, collapsing `TokenValue`
     // to bare `string` — which swallows the native CSS values it's unioned with.
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &CodegenInput::default(),
         GenerateOptions {
             format: CodegenFormat::Ts,
@@ -647,7 +647,7 @@ fn empty_tokens_emit_no_index_signature() {
 
 #[test]
 fn emits_ts_system_and_index_types() {
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &input(),
         GenerateOptions {
             format: CodegenFormat::Ts,
@@ -690,7 +690,7 @@ fn emits_ts_system_and_index_types() {
 
 #[test]
 fn emits_js_declaration_types() {
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &input(),
         GenerateOptions {
             format: CodegenFormat::Js,
@@ -755,7 +755,7 @@ fn emits_js_declaration_types() {
 
 #[test]
 fn emits_strict_value_types_without_repeating_large_unions() {
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &strict_input(),
         GenerateOptions {
             format: CodegenFormat::Ts,
@@ -836,7 +836,7 @@ fn strict_tokens_keep_per_category_globals() {
     input.types.options.strict_tokens = true;
     input.types.options.strict_property_values = true;
 
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &input,
         GenerateOptions {
             format: CodegenFormat::Ts,
@@ -905,7 +905,7 @@ fn mapped_property_unions_css_properties_under_strict_property_values() {
     };
     input.types.options.strict_property_values = true;
 
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &input,
         GenerateOptions {
             format: CodegenFormat::Ts,
@@ -955,7 +955,7 @@ fn mapped_property_unions_css_property_value_in_default_mode() {
         ..CodegenInput::default()
     };
 
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &input,
         GenerateOptions {
             format: CodegenFormat::Ts,
@@ -1003,7 +1003,7 @@ fn utility_inherits_native_css_values_in_default_mode() {
         ..CodegenInput::default()
     };
 
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &input,
         GenerateOptions {
             format: CodegenFormat::Ts,
@@ -1096,7 +1096,7 @@ fn utility_shorthand_unions_css_property_value_in_default_mode() {
         ..CodegenInput::default()
     };
 
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &input,
         GenerateOptions {
             format: CodegenFormat::Ts,
@@ -1150,7 +1150,7 @@ fn shorthand_of_valueless_native_property_emits_member() {
         ..CodegenInput::default()
     };
 
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &input,
         GenerateOptions {
             format: CodegenFormat::Ts,
@@ -1199,7 +1199,7 @@ fn utility_shorthand_omits_css_property_value_under_strict_tokens() {
     };
     input.types.options.strict_tokens = true;
 
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &input,
         GenerateOptions {
             format: CodegenFormat::Ts,
@@ -1248,7 +1248,7 @@ fn mapped_property_is_omitted_without_explicit_property_field() {
     };
     input.types.options.strict_property_values = true;
 
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &input,
         GenerateOptions {
             format: CodegenFormat::Ts,
@@ -1291,7 +1291,7 @@ fn value_alias_unions_are_rendered_without_obvious_duplicates() {
         },
     );
 
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &input,
         GenerateOptions {
             format: CodegenFormat::Ts,
@@ -1313,7 +1313,7 @@ fn value_alias_unions_are_rendered_without_obvious_duplicates() {
 
 #[test]
 fn can_emit_type_import_extensions() {
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &input(),
         GenerateOptions {
             format: CodegenFormat::Mjs,

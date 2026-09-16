@@ -1,4 +1,4 @@
-import { mkdtempSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -16,10 +16,16 @@ export const CONFIG = `export default {
 }
 `
 
+/** `CONFIG` plus a token, so the design system spec has something to emit. */
+export const CONFIG_WITH_TOKENS = CONFIG.replace(
+  '  outdir:',
+  "  theme: { tokens: { colors: { brand: { value: '#EA8433' } } } },\n  outdir:",
+)
+
 export const EMPTY_CONFIG = CONFIG.replace("include: ['**/*.tsx']", "include: ['missing/**/*.tsx']")
 
 export function createFixture(config = CONFIG, options: { config?: boolean; source?: boolean } = {}) {
-  const dir = mkdtempSync(join(tmpdir(), 'panda-cli-'))
+  const dir = realpathSync(mkdtempSync(join(tmpdir(), 'panda-cli-')))
   if (options.config !== false) {
     writeFileSync(join(dir, 'panda.config.ts'), config)
   }

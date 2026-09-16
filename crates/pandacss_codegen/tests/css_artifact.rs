@@ -1,16 +1,15 @@
 use std::collections::BTreeMap;
 
-use crate::common::{artifact, file, paths};
+use crate::common::{artifact, file, paths, user_config};
 use insta::assert_snapshot;
 use pandacss_codegen::{ArtifactGraph, ArtifactId, CodegenInput, GenerateOptions};
 use pandacss_config::{CodegenFormat, TypeData, UserConfig, UtilityTypeData};
 
 fn config() -> UserConfig {
-    serde_json::from_value(serde_json::json!({
+    user_config(serde_json::json!({
         "theme": { "breakpoints": { "sm": "30rem" } },
         "separator": "_"
     }))
-    .expect("config should deserialize")
 }
 
 fn utilities() -> UtilityTypeData {
@@ -49,7 +48,7 @@ fn input() -> CodegenInput {
 
 #[test]
 fn emits_ts_source_css() {
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &input(),
         GenerateOptions {
             format: CodegenFormat::Ts,
@@ -150,7 +149,7 @@ fn emits_ts_source_css() {
 fn emits_configured_separator_in_css_runtime() {
     let mut input = input();
     input.config.separator = "__".into();
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &input,
         GenerateOptions {
             format: CodegenFormat::Ts,
@@ -164,7 +163,7 @@ fn emits_configured_separator_in_css_runtime() {
 
 #[test]
 fn emits_js_runtime_and_declarations() {
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &input(),
         GenerateOptions {
             format: CodegenFormat::Mjs,
@@ -267,7 +266,7 @@ fn emits_js_runtime_and_declarations() {
 
 #[test]
 fn guards_empty_utility_metadata() {
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &CodegenInput::default(),
         GenerateOptions {
             format: CodegenFormat::Mjs,
@@ -285,7 +284,7 @@ fn guards_empty_utility_metadata() {
 
 #[test]
 fn the_css_runtime_stays_tree_shakeable() {
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &input(),
         GenerateOptions {
             format: CodegenFormat::Mjs,

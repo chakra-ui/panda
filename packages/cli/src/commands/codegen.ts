@@ -2,7 +2,7 @@ import { defineCommand } from 'citty'
 import { rmSync } from 'node:fs'
 import { type DiffConfigResult } from '@pandacss/compiler'
 import { diagnosticsPass } from '@pandacss/compiler-shared'
-import { baseArgs, outputArgs, parseCliFlags, traceArgs } from '../args'
+import { baseArgs, outputArgs, parseCliFlags, specArgs, traceArgs } from '../args'
 import { checkExpectedFiles, formatCheckSummary, isCheckClean } from '../check'
 import { codegenFlagsSchema } from '../schema'
 import { runCommand } from '../run-command'
@@ -10,6 +10,7 @@ import { normalizeCliDiagnostics } from '../diagnostics'
 import { consoleOutput, renderCommandDiagnostics, shouldPrintHumanSummary, type OutputSink } from '../output'
 import { parseMilliseconds, timeAsync } from '../timing'
 import { setExitCode } from '../result'
+import { writeSpec } from '../spec-output'
 import type { CheckOutput, CodegenFlags, CodegenResult, RunContext } from '../schema'
 import { formatWatchError, startProjectWatch } from '../watch'
 import { createWatchLogger } from '../watch-logger'
@@ -24,6 +25,7 @@ export const codegenCommand = defineCommand({
     watch: { type: 'boolean', description: 'Watch files and rebuild', alias: 'w' },
     outdir: { type: 'string', description: 'Output directory for generated files' },
     clean: { type: 'boolean', description: 'Clean the output directory before generating' },
+    ...specArgs(),
     ...outputArgs(),
     ...traceArgs(),
     'watch-debounce': { type: 'string', description: 'Watch rebuild debounce in milliseconds' },
@@ -118,6 +120,7 @@ export async function codegenOnce(
   }
 
   const files = ctx.driver.codegen({ outdir: flags.outdir })
+  files.push(...writeSpec(ctx.driver, flags.spec, { outdir: flags.outdir }))
 
   if (shouldPrintHumanSummary(flags)) {
     ctx.output.log(`codegen: wrote ${files.length} files to ${outdir}`)

@@ -1,10 +1,10 @@
-use crate::common::{artifact, file, paths};
+use crate::common::{artifact, file, paths, user_config};
 use insta::assert_snapshot;
 use pandacss_codegen::{ArtifactGraph, ArtifactId, CodegenInput, GenerateOptions};
 use pandacss_config::{CodegenFormat, TypeData, UserConfig};
 
 fn config() -> UserConfig {
-    serde_json::from_value(serde_json::json!({
+    user_config(serde_json::json!({
         "theme": {
             "breakpoints": {
                 "sm": "30rem"
@@ -64,7 +64,6 @@ fn config() -> UserConfig {
         "prefix": "p",
         "separator": "_"
     }))
-    .expect("config should deserialize")
 }
 
 fn input() -> CodegenInput {
@@ -85,7 +84,7 @@ fn input() -> CodegenInput {
     reason = "inline snapshots for the full recipe artifact"
 )]
 fn emits_ts_source_recipes() {
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &input(),
         GenerateOptions {
             format: CodegenFormat::Ts,
@@ -291,7 +290,7 @@ fn emits_ts_source_recipes() {
 fn emits_configured_separator_in_recipe_runtime() {
     let mut input = input();
     input.config.separator = "__".into();
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &input,
         GenerateOptions {
             format: CodegenFormat::Ts,
@@ -312,7 +311,7 @@ fn emits_configured_separator_in_recipe_runtime() {
     reason = "inline snapshots for the full recipe artifact"
 )]
 fn emits_js_runtime_and_declarations() {
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &input(),
         GenerateOptions {
             format: CodegenFormat::Mjs,
@@ -531,7 +530,7 @@ fn emits_js_runtime_and_declarations() {
 
 #[test]
 fn wires_class_name_hash_into_runtime() {
-    let config: UserConfig = serde_json::from_value(serde_json::json!({
+    let config = user_config(serde_json::json!({
         "hash": true,
         "theme": {
             "recipes": {
@@ -543,8 +542,7 @@ fn wires_class_name_hash_into_runtime() {
                 }
             }
         }
-    }))
-    .expect("config should deserialize");
+    }));
 
     let input = CodegenInput {
         types: TypeData {
@@ -555,7 +553,7 @@ fn wires_class_name_hash_into_runtime() {
         ..CodegenInput::default()
     };
 
-    let artifacts = ArtifactGraph.generate_with_input(
+    let artifacts = ArtifactGraph.generate_all(
         &input,
         GenerateOptions {
             format: CodegenFormat::Ts,

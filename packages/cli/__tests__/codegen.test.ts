@@ -2,7 +2,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { runCodegen } from '../src'
-import { cleanupFixture, createFixture } from './helpers'
+import { CONFIG, CONFIG_WITH_TOKENS, cleanupFixture, createFixture } from './helpers'
 
 describe('codegen command', () => {
   let dir: string | undefined
@@ -22,6 +22,33 @@ describe('codegen command', () => {
     expect(readFileSync(join(dir, 'styled-system', 'css', 'css.js'), 'utf8')).toContain('css')
 
     expect(logs[0]).toContain('codegen: wrote')
+  })
+
+  it('leaves the design system spec out unless asked', async () => {
+    dir = createFixture(CONFIG_WITH_TOKENS)
+
+    await runCodegen({ cwd: dir, logLevel: 'silent' })
+
+    expect(existsSync(join(dir, 'styled-system', 'specs', 'design-system.json'))).toBe(false)
+  })
+
+  it('writes the spec into the outdir with a bare --spec', async () => {
+    dir = createFixture(CONFIG_WITH_TOKENS)
+
+    const result = await runCodegen({ cwd: dir, spec: '', logLevel: 'silent' })
+    const specPath = join(dir, 'styled-system', 'specs', 'design-system.json')
+
+    expect(result.files).toContain(specPath)
+    expect(JSON.parse(readFileSync(specPath, 'utf8')).schemaVersion).toBe(1)
+  })
+
+  it('writes the spec where --spec=<file> says', async () => {
+    dir = createFixture(CONFIG_WITH_TOKENS)
+
+    const result = await runCodegen({ cwd: dir, spec: 'meta.json', logLevel: 'silent' })
+
+    expect(result.files).toContain(join(dir, 'meta.json'))
+    expect(existsSync(join(dir, 'styled-system', 'specs', 'design-system.json'))).toBe(false)
   })
 
   it('supports outdir overrides', async () => {

@@ -1,15 +1,18 @@
 use crate::common::{artifact, file, paths};
 use insta::assert_snapshot;
-use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
+use pandacss_codegen::{ArtifactGraph, ArtifactId, CodegenContext, GenerateOptions};
 use pandacss_config::{CodegenFormat, UserConfig};
 use serde_json::json;
 
 #[test]
 fn emits_ts_source_position_try() {
-    let artifacts = ArtifactGraph.generate(GenerateOptions {
-        format: CodegenFormat::Ts,
-        import_extensions: false,
-    });
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&UserConfig::default()),
+        GenerateOptions {
+            format: CodegenFormat::Ts,
+            import_extensions: false,
+        },
+    );
     let pt = artifact(&artifacts, ArtifactId::PositionTry);
 
     assert_eq!(paths(pt), vec!["css/position-try.ts"]);
@@ -42,8 +45,8 @@ fn types_named_theme_bags_on_position_try_fn() {
         .theme
         .position_try
         .insert("top".into(), json!({ "bottom": "anchor(top)" }));
-    let artifacts = ArtifactGraph.generate_with_config(
-        &config,
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&config),
         GenerateOptions {
             format: CodegenFormat::Ts,
             import_extensions: false,
