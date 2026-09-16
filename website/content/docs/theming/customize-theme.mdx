@@ -1,13 +1,10 @@
 ---
 title: Theme
-description:
-  How to customize breakpoints, tokens, keyframes, and recipes, the same extend and override rules apply to every part
-  of your theme.
+description: Add to a preset's breakpoints, tokens, keyframes and recipes with extend, or replace them without it.
 ---
 
 Everything under a Panda config's `theme` key can be customized. Put your changes under `theme.extend` and Panda merges
-them on top of the defaults. Write them directly under `theme` instead, and you replace that whole section. The same
-rule holds for every part of `theme`, breakpoints, tokens, keyframes, and recipes alike.
+them into what a preset already defined. Write them directly under `theme` instead and yours replaces it.
 
 ## Adding to the defaults
 
@@ -28,7 +25,6 @@ export default defineConfig({
   }
 })
 ```
-
 
 **Tokens.** Add a `brand` color alongside every color Panda ships:
 
@@ -62,8 +58,6 @@ export default defineConfig({
   }
 })
 ```
-
-
 
 **Recipes.** Register a new [config recipe](/docs/recipes/config-recipe) without touching any recipe a preset already
 registered:
@@ -157,19 +151,11 @@ export default defineConfig({
 
 ## Skipping extend
 
-Skip `extend` on any `theme` key, and what you wrote replaces that whole section instead of adding to it.
+Skip `extend` and what you write replaces what a preset defined, rather than merging into it. You replace the thing you
+name, and its siblings are untouched.
 
-**Breakpoints.** `sm`, `md`, `lg`, `xl`, and `2xl` are all gone. Only `3xl` exists now:
-
-```ts
-theme: {
-  breakpoints: {
-    '3xl': '1800px'
-  }
-}
-```
-
-**Tokens.** Every color Panda ships is gone. Only `brand` exists now:
+**One token scale.** The preset's colors are gone and only `brand` is left. `spacing`, `fonts` and every other scale
+stay:
 
 ```ts
 theme: {
@@ -183,7 +169,17 @@ theme: {
 }
 ```
 
-**Keyframes.** `spin`, `ping`, `pulse`, and `bounce` are all gone. Only `fadein` exists now:
+**One recipe.** Your `button` replaces the preset's, variants and all. Every other recipe it registered stays:
+
+```ts
+theme: {
+  recipes: {
+    button: buttonRecipe
+  }
+}
+```
+
+**One keyframe.** `fadein` replaces a preset keyframe of the same name. `spin`, `ping`, `pulse` and `bounce` stay:
 
 ```ts
 theme: {
@@ -196,17 +192,18 @@ theme: {
 }
 ```
 
-**Recipes.** Any recipe a preset registered is gone. Only `button` exists now:
+**Breakpoints are the exception**, because a breakpoint is a single value rather than a definition you could replace.
+Write them without `extend` and the whole set goes, leaving only `3xl`:
 
 ```ts
 theme: {
-  recipes: {
-    button: buttonRecipe
+  breakpoints: {
+    '3xl': '1800px'
   }
 }
 ```
 
-Add `extend` back to any of these and the defaults return, alongside whatever you added.
+Add `extend` back to any of these and the preset's values return, alongside whatever you added.
 
 ## Starting from zero
 

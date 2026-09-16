@@ -34,10 +34,15 @@ describe('resolveAuthoredPresets / designSystem', () => {
       preset: {
         name: '@acme/ds',
         theme: {
-          tokens: {
-            colors: {
-              brand: { value: 'ds' },
-              dsOnly: { value: 'ds' },
+          extend: {
+            tokens: {
+              colors: {
+                brand: { value: 'ds' },
+                dsOnly: { value: 'ds' },
+              },
+              spacing: {
+                gutter: { value: 'ds' },
+              },
             },
           },
         },
@@ -52,9 +57,11 @@ describe('resolveAuthoredPresets / designSystem', () => {
       {
         designSystem: '@acme/ds',
         theme: {
-          tokens: {
-            colors: {
-              brand: { value: 'app' },
+          extend: {
+            tokens: {
+              colors: {
+                brand: { value: 'app' },
+              },
             },
           },
         },
@@ -75,6 +82,50 @@ describe('resolveAuthoredPresets / designSystem', () => {
         "node_modules/@acme/ds/panda/lib.json",
         "node_modules/@acme/ds/panda/preset.mjs",
       ]
+    `)
+  })
+
+  test('a bare theme key in the app replaces what the design system published', async () => {
+    const { config } = await resolveAuthoredPresets(
+      {
+        designSystem: '@acme/ds',
+        theme: {
+          tokens: {
+            colors: {
+              brand: { value: 'app' },
+            },
+          },
+        },
+      },
+      cwd,
+    )
+
+    expect(tokenValues(config.theme?.tokens?.colors)).toMatchInlineSnapshot(`
+      {
+        "brand": "app",
+      }
+    `)
+  })
+
+  test('replacing one token scale leaves the other scales the design system published', async () => {
+    const { config } = await resolveAuthoredPresets(
+      {
+        designSystem: '@acme/ds',
+        theme: {
+          tokens: {
+            colors: {
+              brand: { value: 'app' },
+            },
+          },
+        },
+      },
+      cwd,
+    )
+
+    expect(tokenValues(config.theme?.tokens?.spacing)).toMatchInlineSnapshot(`
+      {
+        "gutter": "ds",
+      }
     `)
   })
 
@@ -141,6 +192,7 @@ describe('resolveAuthoredPresets / designSystem', () => {
           [
             "colors.brand",
             "colors.dsOnly",
+            "spacing.gutter",
           ],
         ],
         "userTokenPaths": [
@@ -415,10 +467,12 @@ describe('resolveAuthoredPresets / designSystem nested chains', () => {
       preset: {
         name: '@acme/marketing',
         theme: {
-          tokens: {
-            colors: {
-              brand: { value: 'mk' },
-              mkOnly: { value: 'mk' },
+          extend: {
+            tokens: {
+              colors: {
+                brand: { value: 'mk' },
+                mkOnly: { value: 'mk' },
+              },
             },
           },
         },
@@ -430,10 +484,12 @@ describe('resolveAuthoredPresets / designSystem nested chains', () => {
         name: '@acme/foundations',
         hash: true,
         theme: {
-          tokens: {
-            colors: {
-              brand: { value: 'fd' },
-              fdOnly: { value: 'fd' },
+          extend: {
+            tokens: {
+              colors: {
+                brand: { value: 'fd' },
+                fdOnly: { value: 'fd' },
+              },
             },
           },
         },
@@ -466,10 +522,12 @@ describe('resolveAuthoredPresets / designSystem nested chains', () => {
       preset: {
         name: '@acme/skinned',
         theme: {
-          tokens: {
-            colors: {
-              brand: { value: 'skin' },
-              skinOnly: { value: 'skin' },
+          extend: {
+            tokens: {
+              colors: {
+                brand: { value: 'skin' },
+                skinOnly: { value: 'skin' },
+              },
             },
           },
         },
@@ -482,10 +540,12 @@ describe('resolveAuthoredPresets / designSystem nested chains', () => {
       preset: {
         name: '@acme/raw-identity',
         theme: {
-          tokens: {
-            colors: {
-              brand: { value: 'raw' },
-              rawOnly: { value: 'raw' },
+          extend: {
+            tokens: {
+              colors: {
+                brand: { value: 'raw' },
+                rawOnly: { value: 'raw' },
+              },
             },
           },
         },
@@ -496,6 +556,32 @@ describe('resolveAuthoredPresets / designSystem nested chains', () => {
   afterAll(() => rmSync(cwd, { recursive: true, force: true }))
 
   test('merges ancestors root-first so the leaf and the app override the root', async () => {
+    const { config } = await resolveAuthoredPresets(
+      {
+        designSystem: '@acme/marketing',
+        theme: {
+          extend: {
+            tokens: {
+              colors: {
+                brand: { value: 'app' },
+              },
+            },
+          },
+        },
+      },
+      cwd,
+    )
+
+    expect(tokenValues(config.theme?.tokens?.colors)).toMatchInlineSnapshot(`
+      {
+        "brand": "app",
+        "fdOnly": "fd",
+        "mkOnly": "mk",
+      }
+    `)
+  })
+
+  test('a bare theme key in the app replaces the whole inherited chain', async () => {
     const { config } = await resolveAuthoredPresets(
       {
         designSystem: '@acme/marketing',
@@ -513,8 +599,6 @@ describe('resolveAuthoredPresets / designSystem nested chains', () => {
     expect(tokenValues(config.theme?.tokens?.colors)).toMatchInlineSnapshot(`
       {
         "brand": "app",
-        "fdOnly": "fd",
-        "mkOnly": "mk",
       }
     `)
   })

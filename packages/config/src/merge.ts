@@ -23,6 +23,19 @@ const sectionKeySet = new Set<string>(sectionKeys)
 const runtimeOnlyKeys = new Set(['presets', 'plugins', 'hooks', 'name', 'extend'])
 const tokenKeys = new Set(['description', 'extensions', 'type', 'value', 'deprecated'])
 
+const themeRegistryKeys = new Set([
+  'tokens',
+  'semanticTokens',
+  'keyframes',
+  'recipes',
+  'slotRecipes',
+  'textStyles',
+  'layerStyles',
+  'animationStyles',
+  'viewTransitions',
+  'positionTry',
+])
+
 /**
  * Same merge, but also records which config contributed each value
  * so the result can be traced back to its preset/config of origin.
@@ -36,7 +49,7 @@ export function mergeConfigsWithSources(configs: SourcedConfig[]) {
 
 /**
  * Merges an ordered list of configs (presets first, user config last) into one flat config.
- * Top-level keys replace; section keys deep-merge, with `extend` appending instead of replacing.
+ * A key written without `extend` replaces the entry it names; `extend` merges into it.
  */
 export function mergeConfigs(configs: ExtendableConfig[]): Dict
 export function mergeConfigs(configs: SourcedConfig[], tracker: SourceTracker): Dict
@@ -56,7 +69,9 @@ export function mergeConfigs(configs: ExtendableConfig[] | SourcedConfig[], trac
 
     for (const key of sectionKeys) {
       const section = config[key]
-      if (isPlainObject(section)) mergeSectionInto(key, sections[key], section, context)
+      if (!isPlainObject(section)) continue
+      applySectionBase(key, sections[key], section, context)
+      applySectionExtend(key, sections[key], section, context)
     }
   }
 
@@ -69,28 +84,55 @@ export function mergeConfigs(configs: ExtendableConfig[] | SourcedConfig[], trac
   return result
 }
 
-/**
- * Merges one config's section into the accumulated section.
- * Direct keys replace what previous configs set; `extend` keys deep-merge and concat arrays.
- */
-function mergeSectionInto(sectionName: string, target: Dict, section: Dict, context?: SourceContext) {
+function applySectionBase(sectionName: string, target: Dict, section: Dict, context?: SourceContext) {
   const childContext = context && { ...context, path: [sectionName] }
 
   for (const [key, value] of Object.entries(section)) {
     if (key === 'extend' || value === undefined || omitKeys.has(key)) continue
-    mergeValue(target, key, value, 'replace', childContext)
-  }
 
+    if (isRegistry(sectionName, key, value)) {
+      replaceRegistryEntries(target, key, value, childContext)
+    } else {
+      replaceValue(target, key, value, childContext)
+    }
+  }
+}
+
+function isRegistry(sectionName: string, key: string, value: unknown): value is Dict {
+  return sectionName === 'theme' && themeRegistryKeys.has(key) && isPlainObject(value)
+}
+
+/** A registry holds named entries, so a config replaces the entry it names rather than the whole key. */
+function replaceRegistryEntries(target: Dict, key: string, registry: Dict, context?: SourceContext) {
+  const entries = (isPlainObject(target[key]) ? target[key] : (target[key] = {})) as Dict
+  const entryContext = context && { ...context, path: context.path.concat(key) }
+
+  for (const [name, value] of Object.entries(registry)) {
+    if (value === undefined || omitKeys.has(name)) continue
+    replaceValue(entries, name, value, entryContext)
+  }
+}
+
+function applySectionExtend(sectionName: string, target: Dict, section: Dict, context?: SourceContext) {
   if (section.extend === undefined) return
 
   if (!isPlainObject(section.extend)) {
     throw new PandaError('CONFIG_ERROR', `💥 Config section \`${sectionName}.extend\` must be an object.`)
   }
 
+  const childContext = context && { ...context, path: [sectionName] }
+
   for (const [key, value] of Object.entries(section.extend)) {
     if (value === undefined || omitKeys.has(key)) continue
     mergeValue(target, key, value, 'concat', childContext)
   }
+}
+
+function replaceValue(target: Dict, key: string, value: unknown, context?: SourceContext) {
+  const path = context?.path.concat(key)
+  recordSource(context, path, value, target[key], 'replace')
+  target[key] = clone(value)
+  recordNestedSources(context, path, value)
 }
 
 /**

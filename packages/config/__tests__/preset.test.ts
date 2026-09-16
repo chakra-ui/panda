@@ -76,20 +76,8 @@ describe('resolveAuthoredPresets / precedence', () => {
         "accent": {
           "value": "user-extend",
         },
-        "baseOnly": {
-          "value": "preset-a-base",
-        },
         "brand": {
           "value": "user-base",
-        },
-        "presetB": {
-          "value": "preset-b-base",
-        },
-        "presetBExtend": {
-          "value": "preset-b-extend",
-        },
-        "shared": {
-          "value": "preset-b-base",
         },
         "userOnly": {
           "value": "user-extend",
@@ -163,20 +151,11 @@ describe('resolveAuthoredPresets / precedence', () => {
 
     expect(result.theme.tokens.colors).toMatchInlineSnapshot(`
       {
-        "fromInnerA": {
-          "value": "inner-a",
-        },
-        "fromInnerB": {
-          "value": "inner-b",
-        },
         "fromOuter": {
           "value": "outer",
         },
         "fromSibling": {
           "value": "sibling",
-        },
-        "innerSiblingWins": {
-          "value": "inner-b",
         },
         "parentWins": {
           "value": "outer",
@@ -220,9 +199,6 @@ describe('resolveAuthoredPresets / precedence', () => {
 
     expect(result.theme.tokens.spacing).toMatchInlineSnapshot(`
       {
-        "1": {
-          "value": "4px",
-        },
         "shared": {
           "value": "from-user",
         },
@@ -574,7 +550,7 @@ describe('resolveAuthoredPresets / section coverage', () => {
 })
 
 describe('resolveAuthoredPresets / token normalization', () => {
-  test('moves flat token metadata to DEFAULT when nested token values are merged in', async () => {
+  test('moves a flat token and its metadata to DEFAULT when nested values merge in', async () => {
     const result = await resolve(
       defineConfig({
         presets: [
@@ -597,11 +573,13 @@ describe('resolveAuthoredPresets / token normalization', () => {
           }),
         ],
         theme: {
-          tokens: {
-            colors: {
-              black: {
-                50: { value: '#fafafa' },
-                950: { value: '#030303' },
+          extend: {
+            tokens: {
+              colors: {
+                black: {
+                  50: { value: '#fafafa' },
+                  950: { value: '#030303' },
+                },
               },
             },
           },
@@ -629,43 +607,115 @@ describe('resolveAuthoredPresets / token normalization', () => {
     `)
   })
 
-  test('preserves an existing DEFAULT token value', async () => {
+  test('moves the flat token to DEFAULT whichever side authored it', async () => {
     const result = await resolve(
       defineConfig({
         presets: [
           definePreset({
-            name: 'flat-token',
+            name: 'nested-token',
             theme: {
               extend: {
-                tokens: {
-                  colors: {
-                    black: { value: '#000' },
-                  },
-                },
+                tokens: { colors: { black: { 50: { value: '#fafafa' }, 950: { value: '#030303' } } } },
               },
             },
           }),
         ],
         theme: {
-          tokens: {
-            colors: {
-              black: {
-                DEFAULT: { value: '#111' },
-                950: { value: '#030303' },
-              },
-            },
-          },
+          extend: { tokens: { colors: { black: { value: '#000' } } } },
         },
       }),
     )
 
     expect(result.theme.tokens.colors.black).toMatchInlineSnapshot(`
       {
+        "50": {
+          "value": "#fafafa",
+        },
         "950": {
           "value": "#030303",
         },
         "DEFAULT": {
+          "value": "#000",
+        },
+      }
+    `)
+  })
+
+  test('keeps an explicit DEFAULT over the flat value it would otherwise hoist', async () => {
+    const result = await resolve(
+      defineConfig({
+        presets: [
+          definePreset({
+            name: 'explicit-default',
+            theme: {
+              extend: {
+                tokens: { colors: { black: { value: '#000', DEFAULT: { value: '#111' } } } },
+              },
+            },
+          }),
+        ],
+        theme: {
+          extend: { tokens: { colors: { black: { 50: { value: '#fafafa' } } } } },
+        },
+      }),
+    )
+
+    expect(result.theme.tokens.colors.black).toMatchInlineSnapshot(`
+      {
+        "50": {
+          "value": "#fafafa",
+        },
+        "DEFAULT": {
           "value": "#111",
+        },
+      }
+    `)
+  })
+
+  test('hoists to DEFAULT even when one config authors both forms', async () => {
+    const result = await resolve(
+      defineConfig({
+        theme: {
+          extend: { tokens: { colors: { black: { value: '#000', 50: { value: '#fafafa' } } } } },
+        },
+      }),
+    )
+
+    expect(result.theme.tokens.colors.black).toMatchInlineSnapshot(`
+      {
+        "50": {
+          "value": "#fafafa",
+        },
+        "DEFAULT": {
+          "value": "#000",
+        },
+      }
+    `)
+  })
+
+  test('a bare token scale replaces the flat token instead of hoisting it', async () => {
+    const result = await resolve(
+      defineConfig({
+        presets: [
+          definePreset({
+            name: 'flat-token',
+            theme: {
+              extend: { tokens: { colors: { black: { value: '#000' }, white: { value: '#fff' } } } },
+            },
+          }),
+        ],
+        theme: {
+          tokens: { colors: { black: { 50: { value: '#fafafa' } } } },
+        },
+      }),
+    )
+
+    expect(result.theme.tokens.colors).toMatchInlineSnapshot(`
+      {
+        "black": {
+          "50": {
+            "value": "#fafafa",
+          },
         },
       }
     `)
@@ -836,5 +886,100 @@ describe('resolveAuthoredPresets / errors', () => {
         '/project',
       ),
     ).rejects.toThrow(/Config section `utilities\.extend` must be an object/)
+  })
+})
+
+describe('resolveAuthoredPresets / replacing without extend', () => {
+  test('a token category written without extend keeps the other categories a preset shipped', async () => {
+    const result = await resolve(
+      defineConfig({
+        presets: [
+          definePreset({
+            name: 'preset',
+            theme: {
+              tokens: {
+                colors: { brand: { value: 'preset' }, accent: { value: 'preset' } },
+                spacing: { gutter: { value: '16px' } },
+              },
+            },
+          }),
+        ],
+        theme: {
+          tokens: {
+            colors: { brand: { value: 'mine' } },
+          },
+        },
+      }),
+    )
+
+    expect(result.theme.tokens).toMatchInlineSnapshot(`
+      {
+        "colors": {
+          "brand": {
+            "value": "mine",
+          },
+        },
+        "spacing": {
+          "gutter": {
+            "value": "16px",
+          },
+        },
+      }
+    `)
+  })
+
+  test('a recipe written without extend leaves the other recipes a preset shipped', async () => {
+    const result = await resolve(
+      defineConfig({
+        presets: [
+          definePreset({
+            name: 'preset',
+            theme: {
+              recipes: {
+                button: { className: 'btn', base: { color: 'red' } },
+                card: { className: 'card', base: { color: 'blue' } },
+              },
+            },
+          }),
+        ],
+        theme: {
+          recipes: {
+            button: { className: 'btn', base: { color: 'green' } },
+          },
+        },
+      }),
+    )
+
+    expect(result.theme.recipes).toMatchInlineSnapshot(`
+      {
+        "button": {
+          "base": {
+            "color": "green",
+          },
+          "className": "btn",
+        },
+        "card": {
+          "base": {
+            "color": "blue",
+          },
+          "className": "card",
+        },
+      }
+    `)
+  })
+
+  test('a key whose entries are values, not a registry, replaces whole', async () => {
+    const result = await resolve(
+      defineConfig({
+        presets: [definePreset({ name: 'preset', theme: { breakpoints: { sm: '640px', md: '768px' } } })],
+        theme: { breakpoints: { tiny: '100px' } },
+      }),
+    )
+
+    expect(result.theme.breakpoints).toMatchInlineSnapshot(`
+      {
+        "tiny": "100px",
+      }
+    `)
   })
 })

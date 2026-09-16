@@ -183,9 +183,10 @@ See [MCP server](/docs/get-started/mcp-server).
 
 These v1 internals are gone; their work lives in `@pandacss/compiler` now. Drop direct imports of `@pandacss/core`,
 `@pandacss/extractor`, `@pandacss/generator`, `@pandacss/node`, `@pandacss/parser`, `@pandacss/token-dictionary`,
-`@pandacss/is-valid-prop`, `@pandacss/logger`, `@pandacss/reporter`, and the Astro `@pandacss/studio`. The same goes for
-`@pandacss/plugin-vue` and `@pandacss/plugin-svelte`: the compiler reads `.vue`, `.svelte`, and `.astro` files directly,
-so remove them from `plugins`. If you only use `@pandacss/dev` plus Vite or PostCSS, you're fine.
+`@pandacss/is-valid-prop`, `@pandacss/logger`, `@pandacss/reporter`, and the Astro `@pandacss/studio`, replaced by the
+hosted [Studio](https://studio.panda-css.com/). The same goes for `@pandacss/plugin-vue` and `@pandacss/plugin-svelte`:
+the compiler reads `.vue`, `.svelte`, and `.astro` files directly, so remove them from `plugins`. If you only use
+`@pandacss/dev` plus Vite or PostCSS, you're fine.
 
 ### Config options removed
 
@@ -200,6 +201,45 @@ semantics, not a rename. `outExtension` gains a `'ts'` value. See [Config](/docs
 Logging flags are consolidated: `--log-level silent|error|warn|info|debug` replaces `--silent`, `--quiet`, and
 `--verbose`. `--profile` replaces `--cpu-prof` and covers time in the Rust engine, not just the Node side. Shared flags
 are kebab-case (`--max-warnings`, `--watch-debounce`, …). See [CLI](/docs/reference/cli).
+
+### Theme keys without `extend` replace less than they did
+
+A theme key written without `extend` still replaces what a preset defined. What changed is how much it claims.
+
+v1 claimed the key directly under `theme`, so naming one scale claimed all of `tokens`:
+
+```ts
+theme: {
+  tokens: {
+    colors: {
+      brand: {
+        value: '#EA8433'
+      }
+    }
+  }
+}
+```
+
+- **v1**: color tokens replaced, and `spacing`, `fonts`, `radii` and `fontSizes` dropped with them.
+- **v2**: color tokens replaced, every other scale untouched.
+
+v2 claims the entry you name. The same holds a level down:
+
+```ts
+theme: {
+  recipes: {
+    button: myButton
+  }
+}
+```
+
+- **v1**: `button` replaced, and every other recipe a preset registered dropped with it.
+- **v2**: `button` replaced, the rest left alone.
+
+`breakpoints` is the exception. A breakpoint is a single value, not a definition, so writing them without `extend`
+replaces the whole set.
+
+Nothing to change if you already use `extend`.
 
 ### Border overrides sort by property, not source order
 
@@ -269,18 +309,6 @@ Beyond parity, v2 adds features worth turning on:
   [Consume with Panda](/docs/design-systems/consume-with-panda).
 - **Linting on the v2 engine.** The [ESLint & oxlint plugin](/docs/get-started/linting) lints against the same
   extraction the build uses.
-
-## Still being finalized
-
-Honest gaps in the beta. Expect them to change before stable:
-
-- **Studio.** The Astro-based `@pandacss/studio` is gone. Render your tokens from the JSON spec instead — see
-  [Studio](/docs/theming/studio).
-- **PostCSS plugin.** `@pandacss/postcss` v2 is experimental. If it misbehaves, use the Vite plugin or `panda build`.
-- **CSS minification.** `minify: true` works in the native emitter; full parity with the v1 LightningCSS path is still
-  open.
-- **Some presets and plugins.** A few v1 community presets aren't ported yet. Check engine coverage before you rely on
-  them.
 
 ## See also
 

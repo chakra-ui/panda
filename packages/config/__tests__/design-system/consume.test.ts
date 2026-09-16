@@ -34,10 +34,12 @@ describe('loadConfig / designSystem consume', () => {
       },
       preset: {
         theme: {
-          tokens: {
-            colors: {
-              brand: { value: 'ds' },
-              dsOnly: { value: 'ds' },
+          extend: {
+            tokens: {
+              colors: {
+                brand: { value: 'ds' },
+                dsOnly: { value: 'ds' },
+              },
             },
           },
         },
@@ -52,7 +54,7 @@ describe('loadConfig / designSystem consume', () => {
 
     const result = await loadConfig({ cwd })
 
-    expect(tokenColors(result.config)).toEqual({ brand: 'app', dsOnly: 'ds' })
+    expect(tokenColors(result.config)).toEqual({ brand: 'app' })
     // loadConfig serializes dual-root importMap into per-entry arrays.
     expect(result.config.importMap).toEqual({
       css: ['@acme/ds/css', 'styled-system/css'],
@@ -86,10 +88,12 @@ describe('loadConfig / designSystem consume', () => {
       },
       preset: {
         theme: {
-          tokens: {
-            colors: {
-              brand: { value: 'mk' },
-              mkOnly: { value: 'mk' },
+          extend: {
+            tokens: {
+              colors: {
+                brand: { value: 'mk' },
+                mkOnly: { value: 'mk' },
+              },
             },
           },
         },
@@ -101,10 +105,12 @@ describe('loadConfig / designSystem consume', () => {
       {
         preset: {
           theme: {
-            tokens: {
-              colors: {
-                brand: { value: 'fd' },
-                fdOnly: { value: 'fd' },
+            extend: {
+              tokens: {
+                colors: {
+                  brand: { value: 'fd' },
+                  fdOnly: { value: 'fd' },
+                },
               },
             },
           },
@@ -121,7 +127,7 @@ describe('loadConfig / designSystem consume', () => {
     const result = await loadConfig({ cwd })
 
     expect(result.metadata?.designSystem?.map((ds) => ds.name)).toEqual(['@acme/foundations', '@acme/marketing'])
-    expect(tokenColors(result.config)).toEqual({ brand: 'app', fdOnly: 'fd', mkOnly: 'mk' })
+    expect(tokenColors(result.config)).toEqual({ brand: 'app' })
     expect(result.metadata?.designSystem?.every((ds) => ds.optionMismatch === undefined)).toBe(true)
   })
 

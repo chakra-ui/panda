@@ -75,7 +75,7 @@ For nothing at all, `presets: []`. See [Minimal setup](/docs/theming/minimal-set
 
 Presets apply in the order you list them. Your config applies last, so it wins a conflict.
 
-Without `extend`, a section you write replaces that section from every preset:
+Without `extend`, what you write replaces the entry it names. Its siblings are untouched:
 
 ```ts filename="panda.config.ts"
 export default defineConfig({
@@ -86,7 +86,7 @@ export default defineConfig({
     }
   }
 })
-// tokens: brand. Every preset color is gone.
+// colors: brand. Every preset color is gone, other scales like spacing stay.
 ```
 
 With `extend`, your values deep-merge on top:
@@ -127,8 +127,8 @@ export default defineConfig({
 
 ### Overriding part of a preset
 
-The merge is deep, so you can change one token in a scale and keep the rest. `blue.500` is yours.
-`blue.50` through `blue.950` stay:
+The merge is deep, so you can change one token in a scale and keep the rest. `blue.500` is yours. `blue.50` through
+`blue.950` stay:
 
 ```ts filename="panda.config.ts"
 export default defineConfig({
@@ -191,7 +191,9 @@ To start with nothing at all, see [Minimal setup](/docs/theming/minimal-setup).
 theme: {
   tokens: {
     colors: {
-      brand: { value: '#EA8433' }
+      brand: {
+        value: '#EA8433'
+      }
     }
   }
 }
@@ -201,7 +203,9 @@ theme: {
   extend: {
     tokens: {
       colors: {
-        brand: { value: '#EA8433' }
+        brand: {
+          value: '#EA8433'
+        }
       }
     }
   }
@@ -215,7 +219,9 @@ theme: {
 theme: {
   extend: {
     colors: {
-      brand: { value: '#EA8433' }
+      brand: {
+        value: '#EA8433'
+      }
     }
   }
 }
@@ -225,7 +231,9 @@ theme: {
   extend: {
     tokens: {
       colors: {
-        brand: { value: '#EA8433' }
+        brand: {
+          value: '#EA8433'
+        }
       }
     }
   }
@@ -238,14 +246,16 @@ theme: {
 // ❌ not a config key
 extend: {
   theme: {
-    tokens: {}
+    tokens: {
+    }
   }
 }
 
 // ✅
 theme: {
   extend: {
-    tokens: {}
+    tokens: {
+    }
   }
 }
 ```

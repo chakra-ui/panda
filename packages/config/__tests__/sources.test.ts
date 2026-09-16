@@ -126,17 +126,11 @@ describe('config sources', () => {
       {
         "accentValue": 1,
         "active": 1,
-        "black": [
-          0,
-          1,
-        ],
-        "blackDefaultExtensions": 0,
-        "blackDefaultValue": 0,
+        "black": 1,
+        "blackDefaultExtensions": undefined,
+        "blackDefaultValue": undefined,
         "blackShadeValue": 1,
-        "brand": [
-          0,
-          1,
-        ],
+        "brand": 1,
         "brandDescription": 0,
         "brandValue": 1,
         "containerMd": 1,

@@ -117,10 +117,15 @@ Some topics span several notes. Keep the detailed contract in one place and link
 - [CLI studio generate command](./cli-studio-generate.md) — proposed `panda studio generate`: emit Storybook token
   stories + viewer components into the user's project (replacing the v1 Astro Studio server), fed by a `tokens.json`
   snapshot; scope vs deferred theme/contrast views.
+- [CLI studio open](./cli-studio-open.md) — proposed `panda studio`: open the hosted Studio with the spec in the URL
+  fragment, why a local server is the wrong shape here, payload sizes against browser URL limits, and `--share` as the
+  opt-in upload.
 - [Transformer](./transformer/README.md) — Rust-core host-neutral source transforms: planning, printing, the private
   `cx` runtime module, and adapter boundaries for Vite, Rollup, Rolldown, webpack, and Rspack.
 - [Config loading](./config-loading-design.md) — `@pandacss/config`: bundle + serialize a user config into the
   `{ config, callbacks }` snapshot, pattern `codegenSource` capture, and the `@pandacss/compiler/loader` integration.
+- [Config merge semantics](./config-merge-semantics.md) — what `extend` means, why replacement lands on the entry you
+  name, why `breakpoints` is the exception, and why extends are not collected and applied last.
 - [Panda lint plugins](./lint-plugins.md) — ESLint and Oxlint plugins backed by shared internal utilities,
   compiler-backed source inspection, and `inspectFileSource`.
 - [Config authoring language service](./config-authoring-language-service.md) — preset-aware editor intelligence for
