@@ -1,5 +1,64 @@
 # @pandacss/compiler-wasm
 
+## 2.0.0-beta.18
+
+### Minor Changes
+
+- c9dd0f0: Replace `specs/tokens.json` and `specs/semantic-tokens.json` with one `specs/design-system.json` covering
+  every token, condition and theme. It records what each token resolves through, so tools can answer what a semantic
+  token points at and what breaks when a primitive changes. Read it with `parseDesignSystem` and query it with
+  `indexDesignSystem` from `@pandacss/compiler-shared`.
+- 006e5c0: Let a component's `css` prop accept some properties but not others:
+
+  ```ts
+  import type { SystemStyleObjectWith } from '../styled-system/types'
+
+  interface ButtonProps {
+    css?: SystemStyleObjectWith<'margin' | 'marginTop' | 'width'>
+  }
+  ```
+
+  Conditions and nested selectors still work inside it. `SystemStyleObjectWithout<K>` is the inverse.
+
+- 4db4f75: `panda lib --spec` now records the spec in `panda/lib.json` as `spec`, relative to the manifest like `preset`
+  and `buildInfo`. Tooling that reads the manifest can tell whether a package shipped one instead of trying the path.
+
+  A `--spec` path that package.json `files` would not publish is left out with a `design_system_spec_not_publishable`
+  warning, so the manifest never points at a file that did not ship.
+
+- 8bbb6bb: The design system spec now describes more than tokens:
+
+  - `recipes`, `slotRecipes` and `patterns`, keyed by name, with variants, defaults and resolved property kinds
+  - `keyframes`, `colorPalettes`, `textStyles`, `layerStyles` and `animationStyles`
+  - `originalValue` on tokens: the value before reference expansion or derivation
+
+  Empty tables are left out. The reader gains `recipes()`, `slotRecipes()`, `patterns()`, `keyframes()`,
+  `colorPalettes()` and `composition(kind)`.
+
+### Patch Changes
+
+- 7e328bd: Fix `forceImportExtension` emitting declaration files that TypeScript rejects. Generated `.d.ts` re-exports
+  now point at the runtime module (`export * from './css.js'`) instead of the declaration file, which no longer fails
+  `tsc` with TS2846.
+
+  Also fix `jsx/index.d.ts` reporting a duplicate `UnstyledProps` export (TS2308) — the recipe context artifacts now
+  share the declaration in `types/jsx` instead of each redeclaring it.
+
+- c9dd0f0: Fix negative spacing tokens for names containing a dot. `spacing.0.5` now generates `spacing.-0.5` instead of
+  `spacing.0.-5`, so `mt: '-0.5'` resolves. Spacing tokens whose value is zero in any unit (`0`, `0px`, `0%`) no longer
+  get a meaningless negative twin.
+- c5c4e2b: Keep the `node:` prefix on built-in imports in the published output. tsup was stripping it, so Deno refused
+  to load Panda's files directly with `Import "child_process" not a dependency`.
+- c9dd0f0: Rename the compiler binding's `token_dictionary()` to `tokenDictionary()`, the only snake_case name on either
+  binding.
+- Updated dependencies [c9dd0f0]
+- Updated dependencies [048c70c]
+- Updated dependencies [4db4f75]
+- Updated dependencies [8bbb6bb]
+- Updated dependencies [c014979]
+  - @pandacss/compiler-shared@2.0.0-beta.18
+  - @pandacss/types@2.0.0-beta.18
+
 ## 2.0.0-beta.17
 
 ### Minor Changes

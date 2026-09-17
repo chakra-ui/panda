@@ -1,5 +1,60 @@
 # @pandacss/cli
 
+## 2.0.0-beta.18
+
+### Minor Changes
+
+- aad2017: Add `--outdir` to `panda cssgen`, so `--splitting` can write its files somewhere you publish instead of only
+  the configured `outdir`. Passing `--outfile` alongside `--splitting` now says it's ignored rather than dropping it
+  silently.
+- 048c70c: `panda codegen` no longer writes `styled-system/specs/design-system.json`. Pass `--spec` to get it. Nothing
+  else in the build reads the file, and on a config with a few hundred semantic tokens it was about half of codegen
+  time.
+
+  `--spec` works on `codegen`, `build` and `lib`. Add a path to put it somewhere else: `panda codegen --spec=meta.json`.
+  `panda lib --spec` writes it beside `preset.mjs` so you can ship it with a design system.
+
+- 4db4f75: `panda lib --spec` now records the spec in `panda/lib.json` as `spec`, relative to the manifest like `preset`
+  and `buildInfo`. Tooling that reads the manifest can tell whether a package shipped one instead of trying the path.
+
+  A `--spec` path that package.json `files` would not publish is left out with a `design_system_spec_not_publishable`
+  warning, so the manifest never points at a file that did not ship.
+
+- c014979: The design system spec now says where each token came from. `--spec` gives every token a `source` index into
+  a new `sources.entries` list of the presets and configs that contributed.
+
+  This answers "is this token ours or the parent design system's" without reproducing Panda's merge order — useful when
+  a product package builds on a shared one.
+
+  ```jsonc
+  "tokens": { "colors.accent": { "category": "colors", "source": 1 } },
+  "sources": {
+    "entries": [{ "kind": "preset", "name": "@acme/foundations" }, { "kind": "config", "file": "panda.config.ts" }]
+  }
+  ```
+
+### Patch Changes
+
+- 4466ac3: Pin the presets `panda init` installs to the CLI's own version. An unpinned install resolved the `latest`
+  tag, so a v2 prerelease project got v1 presets.
+- c5c4e2b: Keep the `node:` prefix on built-in imports in the published output. tsup was stripping it, so Deno refused
+  to load Panda's files directly with `Import "child_process" not a dependency`.
+- Updated dependencies [c9dd0f0]
+- Updated dependencies [7e328bd]
+- Updated dependencies [c9dd0f0]
+- Updated dependencies [c5c4e2b]
+- Updated dependencies [006e5c0]
+- Updated dependencies [048c70c]
+- Updated dependencies [4db4f75]
+- Updated dependencies [8bbb6bb]
+- Updated dependencies [c014979]
+- Updated dependencies [c09573a]
+- Updated dependencies [c9dd0f0]
+  - @pandacss/compiler@2.0.0-beta.18
+  - @pandacss/compiler-shared@2.0.0-beta.18
+  - @pandacss/config@2.0.0-beta.18
+  - @pandacss/types@2.0.0-beta.18
+
 ## 2.0.0-beta.17
 
 ### Minor Changes
