@@ -6,7 +6,6 @@
 export * from './types/diagnostics'
 export * from './types/extraction'
 export * from './types/output'
-export * from './types/spec'
 export * from './types/config'
 export * from './types/compiler'
 export * from './types/transformer'
