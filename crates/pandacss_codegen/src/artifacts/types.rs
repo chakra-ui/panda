@@ -671,7 +671,6 @@ fn system_module(
         r#"export type AtRuleType = "media" | "layer" | "container" | "supports" | "page" | "scope" | "starting-style""#.into(),
         "export type Selector = `${string}&` | `&${string}` | `@${AtRuleType}${string}`".into(),
         "export type AnySelector = Selector | string".into(),
-        "export type Nested<P> = P & {\n  [K in Selector]?: Nested<P>\n} & {\n  [K in AnySelector]?: Nested<P>\n} & {\n  [K in Condition]?: Nested<P>\n}".into(),
     ]);
     parts.extend(css_datatype_type_parts());
     parts.extend(vec![
@@ -680,6 +679,8 @@ fn system_module(
         "export type CssVarProperties = {\n  [K in `--${string}`]?: CssVarValue\n}".into(),
         "export type NestedStyles = {\n  [K in Selector | Condition]?: SystemStyleObject\n}".into(),
         "export interface SystemStyleObject extends SystemProperties, CssVarProperties, NestedStyles {}".into(),
+        "export type SystemStyleObjectWith<K extends keyof SystemProperties> = Pick<SystemProperties, K> & {\n  [S in Selector | Condition]?: SystemStyleObjectWith<K>\n}".into(),
+        "export type SystemStyleObjectWithout<K extends keyof SystemProperties> = SystemStyleObjectWith<Exclude<keyof SystemProperties, K>>".into(),
         "export interface GlobalStyleObject {\n  [selector: string]: SystemStyleObject\n}".into(),
         "export interface CssKeyframes {\n  [name: string]: {\n    [time: string]: SystemStyleObject\n  }\n}".into(),
         r#"export interface GlobalFontfaceRule {

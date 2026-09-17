@@ -462,7 +462,12 @@ fn emits_ts_source_types() {
     assert!(system.contains(
         "export type Selector = `${string}&` | `&${string}` | `@${AtRuleType}${string}`"
     ));
-    assert!(system.contains("export type Nested<P> = P & {"));
+    assert!(system.contains(
+        "export type SystemStyleObjectWith<K extends keyof SystemProperties> = Pick<SystemProperties, K> & {\n  [S in Selector | Condition]?: SystemStyleObjectWith<K>\n}"
+    ));
+    assert!(system.contains(
+        "export type SystemStyleObjectWithout<K extends keyof SystemProperties> = SystemStyleObjectWith<Exclude<keyof SystemProperties, K>>"
+    ));
     assert!(system.contains(
         "export interface SystemStyleObject extends SystemProperties, CssVarProperties, NestedStyles {}"
     ));
@@ -662,7 +667,7 @@ fn emits_ts_system_and_index_types() {
     assert!(system.contains(
         "export type NestedStyles = {\n  [K in Selector | Condition]?: SystemStyleObject\n}"
     ));
-    assert!(system.contains("  [K in AnySelector]?: Nested<P>"));
+    assert!(!system.contains("Nested<P>"));
     assert!(system.contains(
         "export interface GlobalStyleObject {\n  [selector: string]: SystemStyleObject\n}"
     ));
