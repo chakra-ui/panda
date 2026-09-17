@@ -1,5 +1,30 @@
 # @pandacss/config
 
+## 2.0.0-beta.18
+
+### Minor Changes
+
+- c09573a: `extend` now decides whether you add to a preset or replace it. Write a theme key without `extend` and it
+  replaces what a preset put there instead of merging into it.
+
+  Replacement happens at the entry you name, so `theme.tokens.colors` replaces the color scale and leaves `spacing`
+  alone, and `theme.recipes.button` replaces that one recipe. Keys whose entries are plain values, like `breakpoints`,
+  replace whole.
+
+  If you relied on a bare key merging, add `extend` to keep the old result.
+
+### Patch Changes
+
+- c5c4e2b: Keep the `node:` prefix on built-in imports in the published output. tsup was stripping it, so Deno refused
+  to load Panda's files directly with `Import "child_process" not a dependency`.
+- Updated dependencies [c9dd0f0]
+- Updated dependencies [048c70c]
+- Updated dependencies [4db4f75]
+- Updated dependencies [8bbb6bb]
+- Updated dependencies [c014979]
+  - @pandacss/compiler-shared@2.0.0-beta.18
+  - @pandacss/types@2.0.0-beta.18
+
 ## 2.0.0-beta.17
 
 ### Patch Changes

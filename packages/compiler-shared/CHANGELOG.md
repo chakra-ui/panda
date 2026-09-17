@@ -1,5 +1,52 @@
 # @pandacss/compiler-shared
 
+## 2.0.0-beta.18
+
+### Minor Changes
+
+- c9dd0f0: Replace `specs/tokens.json` and `specs/semantic-tokens.json` with one `specs/design-system.json` covering
+  every token, condition and theme. It records what each token resolves through, so tools can answer what a semantic
+  token points at and what breaks when a primitive changes. Read it with `parseDesignSystem` and query it with
+  `indexDesignSystem` from `@pandacss/compiler-shared`.
+- 048c70c: `panda codegen` no longer writes `styled-system/specs/design-system.json`. Pass `--spec` to get it. Nothing
+  else in the build reads the file, and on a config with a few hundred semantic tokens it was about half of codegen
+  time.
+
+  `--spec` works on `codegen`, `build` and `lib`. Add a path to put it somewhere else: `panda codegen --spec=meta.json`.
+  `panda lib --spec` writes it beside `preset.mjs` so you can ship it with a design system.
+
+- 4db4f75: `panda lib --spec` now records the spec in `panda/lib.json` as `spec`, relative to the manifest like `preset`
+  and `buildInfo`. Tooling that reads the manifest can tell whether a package shipped one instead of trying the path.
+
+  A `--spec` path that package.json `files` would not publish is left out with a `design_system_spec_not_publishable`
+  warning, so the manifest never points at a file that did not ship.
+
+- 8bbb6bb: The design system spec now describes more than tokens:
+
+  - `recipes`, `slotRecipes` and `patterns`, keyed by name, with variants, defaults and resolved property kinds
+  - `keyframes`, `colorPalettes`, `textStyles`, `layerStyles` and `animationStyles`
+  - `originalValue` on tokens: the value before reference expansion or derivation
+
+  Empty tables are left out. The reader gains `recipes()`, `slotRecipes()`, `patterns()`, `keyframes()`,
+  `colorPalettes()` and `composition(kind)`.
+
+- c014979: The design system spec now says where each token came from. `--spec` gives every token a `source` index into
+  a new `sources.entries` list of the presets and configs that contributed.
+
+  This answers "is this token ours or the parent design system's" without reproducing Panda's merge order — useful when
+  a product package builds on a shared one.
+
+  ```jsonc
+  "tokens": { "colors.accent": { "category": "colors", "source": 1 } },
+  "sources": {
+    "entries": [{ "kind": "preset", "name": "@acme/foundations" }, { "kind": "config", "file": "panda.config.ts" }]
+  }
+  ```
+
+### Patch Changes
+
+- @pandacss/types@2.0.0-beta.18
+
 ## 2.0.0-beta.17
 
 ### Patch Changes
