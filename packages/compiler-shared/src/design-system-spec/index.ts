@@ -11,3 +11,4 @@
 
 export * from './types'
 export * from './read'
+export { applySpecSources, type ConfigSourcesInput } from './sources'

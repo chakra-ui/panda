@@ -27,6 +27,26 @@ export interface DesignSystemSpec {
   themes: Record<string, DesignSystemTheme>
   /** Flat value table, keyed by `(token, theme, condition)` and sorted by it. */
   values: DesignSystemValue[]
+  /** The configs that contributed. Absent unless tracking was on. */
+  sources?: DesignSystemSources
+}
+
+/** One config in the merge chain — presets first, the user's config last. */
+export interface DesignSystemSourceEntry {
+  kind: 'config' | 'preset'
+  name?: string
+  specifier?: string
+  /** Path the config was loaded from, relative to the project root. */
+  file?: string
+}
+
+/**
+ * The definition table provenance points at. Tokens and themes carry their own
+ * `source`; conditions have no row object, so their origins live here.
+ */
+export interface DesignSystemSources {
+  entries: DesignSystemSourceEntry[]
+  conditions?: Record<string, number>
 }
 
 export interface DesignSystemToken {
@@ -39,11 +59,15 @@ export interface DesignSystemToken {
   deprecated?: boolean
   deprecatedReason?: string
   semantic?: boolean
+  /** Index into {@link DesignSystemSources.entries}. Absent when unplaceable. */
+  source?: number
 }
 
 export interface DesignSystemTheme {
   id: string
   selector: string | null
+  /** Index into {@link DesignSystemSources.entries}. */
+  source?: number
 }
 
 /** One token value. No `condition` and no `theme` means the base value. */

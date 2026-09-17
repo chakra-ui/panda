@@ -5,6 +5,7 @@
  * environment. See `design-notes/output-and-host-layer.md`.
  */
 
+import { applySpecSources, type ConfigSourcesInput, type DesignSystemSpec } from './design-system-spec'
 import { introspect } from './introspect'
 import type { Introspection } from './introspect'
 import { getResolvedConfigOutdir } from './defaults'
@@ -289,9 +290,8 @@ export abstract class BaseDriver implements Driver {
     const artifact = this.#compiler.generateArtifact('specs', { overlay: this.codegenOverlay() })
     if (!artifact?.files.length) return []
 
-    const files = options?.outfile
-      ? [{ ...artifact, files: [{ ...artifact.files[0]!, path: options.outfile }] }]
-      : [artifact]
+    const first = withSources(artifact.files[0]!, this.configSources())
+    const files = [{ ...artifact, files: [options?.outfile ? { ...first, path: options.outfile } : first] }]
 
     return this.#compiler.writeArtifacts({
       // '' resolves to the cwd itself; '.' would leave a './' segment in the returned path
@@ -302,6 +302,11 @@ export abstract class BaseDriver implements Driver {
   }
 
   protected codegenOverlay(): CodegenOverlay | undefined {
+    return undefined
+  }
+
+  /** Provenance for {@link spec}. Only a host that loads the config has it. */
+  protected configSources(): ConfigSourcesInput | undefined {
     return undefined
   }
 
@@ -397,4 +402,15 @@ export abstract class BaseDriver implements Driver {
   protected getConfiguredOutdir(outdir?: string): string {
     return outdir ?? getResolvedConfigOutdir(this.config)
   }
+}
+
+/** Round-trips the engine's JSON; `JSON.stringify(_, null, 2)` reproduces it byte for byte. */
+function withSources<T extends { code: string }>(file: T, sources: ConfigSourcesInput | undefined): T {
+  if (!sources) return file
+
+  const spec = JSON.parse(file.code) as DesignSystemSpec
+  const annotated = applySpecSources(spec, sources)
+  if (annotated === spec) return file
+
+  return { ...file, code: `${JSON.stringify(annotated, null, 2)}\n` }
 }

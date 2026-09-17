@@ -1,6 +1,9 @@
 import type { ArgsDef } from 'citty'
 import type { FlagsInfer, FlagsSchema, Issue, ParseResult, Shape } from './flags-schema'
 
+/** Safe at module scope: `String.replace` resets a global regex's lastIndex. */
+const UPPER_CASE = /[A-Z]/g
+
 export function baseArgs(): ArgsDef {
   return {
     cwd: { type: 'string', valueHint: 'dir', description: 'Current working directory' },
@@ -166,7 +169,7 @@ function omitKeys<T extends Record<string, unknown>>(value: T, keys: string[]): 
 function flagName(path: PropertyKey | undefined): string {
   if (path === undefined) return '<option>'
 
-  return `--${String(path).replace(/[A-Z]/g, (char) => `-${char.toLowerCase()}`)}`
+  return `--${String(path).replace(UPPER_CASE, (char) => `-${char.toLowerCase()}`)}`
 }
 
 function formatIssue(issue: Issue, flags: Record<string, unknown>): string {

@@ -48,6 +48,10 @@ ds.view('colors')
 
 `path` is what the other methods take. `name` is what you type in `css({ ... })`.
 
+`spec.tokens[path].originalValue` carries the base token's value before reference expansion or derivation, when Panda
+retains it. For example, a token referencing `{colors.red.500}` keeps that string while its resolved value is a color.
+The field is omitted when no original value was retained; it does not vary with the selected condition or theme.
+
 ## Render a category
 
 ```tsx
@@ -108,6 +112,21 @@ without guessing. To resolve a whole category under one of them, pass it to `vie
 ```ts
 ds.view('colors', { condition: '_dark' })
 ```
+
+## Where a token came from
+
+The spec carries a `sources` section: every preset and config that contributed, and which one defined each token.
+
+```ts
+const owner = (path: string) => spec.sources.entries[spec.tokens[path].source]
+
+owner('colors.bg.neutral') // { kind: 'preset', name: '@acme/foundations' }
+owner('colors.accent') // { kind: 'config', file: 'panda.config.ts' }
+```
+
+Each token carries a `source` index into `sources.entries`, the same way a value points at a condition. A token Panda
+can't place has no `source`. Themes carry theirs too; conditions have no row of their own, so they sit in
+`sources.conditions`.
 
 ## Ship it with a library
 

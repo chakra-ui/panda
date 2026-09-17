@@ -1,4 +1,5 @@
 import { createNodeDriver, type Diagnostic, type NodeDriver } from '@pandacss/compiler'
+import { specRequested } from './spec-output'
 import { diagnosticsPass } from '@pandacss/compiler-shared'
 import { normalizeInclude } from './args'
 import { configLoadDiagnostics, missingConfigDiagnostic, normalizeCliDiagnostics } from './diagnostics'
@@ -131,7 +132,13 @@ export async function runCommand<TFlags extends CommonFlags, TData extends objec
     driver = await timeAsync({
       timings,
       phase: 'config',
-      run: () => createNodeDriver({ cwd, configPath: flags.config, include: normalizeInclude(flags.include) }),
+      run: () =>
+        createNodeDriver({
+          cwd,
+          configPath: flags.config,
+          include: normalizeInclude(flags.include),
+          trackSources: specRequested((flags as { spec?: boolean | string }).spec) ? true : undefined,
+        }),
     })
   } catch (error) {
     const diagnostics = configLoadDiagnostics(error, { cwd, file: flags.config })

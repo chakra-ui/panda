@@ -28,6 +28,19 @@ describe('designSystem consumer codegen (full re-emit)', () => {
     expect(tokensDts).toContain('"accent"')
     expect(tokensDts).toMatch(/export type ColorToken =[\s\S]*"accent"[\s\S]*"bg\.neutral"/)
   })
+
+  it('says which package in the chain defined each token', async () => {
+    cwd = createNestedDesignSystemFixture()
+
+    const driver = await createNodeDriver({ cwd })
+    driver.spec()
+
+    const spec = JSON.parse(readFileSync(join(cwd, 'styled-system', 'specs', 'design-system.json'), 'utf8'))
+    const owner = (path: string) => spec.sources.entries[spec.tokens[path].source]?.name
+
+    expect(owner('colors.bg.neutral')).toBe('@acme/foundations')
+    expect(owner('colors.accent')).toBe('@acme/marketing')
+  })
 })
 
 function createNestedDesignSystemFixture(): string {
