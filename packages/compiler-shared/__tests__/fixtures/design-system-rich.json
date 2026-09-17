@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "categories": {
+    "colors": [0, 1]
+  },
+  "paths": ["colors.red.500"],
+  "tokens": {
+    "colors.red.500": {
+      "category": "colors",
+      "cssVar": "--colors-red-500",
+      "source": 0
+    }
+  },
+  "conditions": {},
+  "themes": {},
+  "values": [
+    {
+      "token": "colors.red.500",
+      "value": "#ef4444"
+    }
+  ],
+  "colorPalettes": ["red"],
+  "keyframes": ["spin"],
+  "textStyles": {
+    "body": {
+      "description": "Paragraph copy"
+    },
+    "heading.lg": {}
+  },
+  "layerStyles": {
+    "card": {}
+  },
+  "animationStyles": {
+    "fade": {}
+  },
+  "recipes": {
+    "button": {
+      "className": "btn",
+      "variants": {
+        "disabled": {
+          "values": ["true"],
+          "allowsBoolean": true
+        },
+        "size": {
+          "values": ["md", "sm"],
+          "allowsBoolean": false
+        }
+      },
+      "defaultVariants": {
+        "size": "md"
+      },
+      "deprecated": "use link",
+      "description": "The primary action"
+    }
+  },
+  "slotRecipes": {
+    "card": {
+      "slots": ["root", "body"],
+      "variants": {
+        "tone": {
+          "values": ["neutral"],
+          "allowsBoolean": false
+        }
+      }
+    }
+  },
+  "patterns": {
+    "stack": {
+      "jsxName": "VStack",
+      "jsx": ["VStack"],
+      "properties": {
+        "align": {
+          "kind": "enum",
+          "values": ["start", "center"]
+        },
+        "gap": {
+          "kind": "token",
+          "category": "spacing",
+          "description": "Space between"
+        },
+        "wrap": {
+          "kind": "primitive",
+          "primitive": "boolean"
+        }
+      },
+      "defaultValues": {
+        "gap": "4"
+      },
+      "strict": false,
+      "description": "Vertical flow"
+    }
+  },
+  "sources": {
+    "entries": [
+      {
+        "kind": "config",
+        "file": "panda.config.ts"
+      }
+    ]
+  }
+}

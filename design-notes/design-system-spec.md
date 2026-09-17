@@ -106,9 +106,15 @@ One file, top-level keys as tables.
 }
 ```
 
-Token metadata also includes optional `originalValue`, copied from the base dictionary token's `original_value`.
-It preserves the value before reference expansion or derivation and is omitted when the dictionary retains none.
-This additive field keeps schema version 1; condition and theme values remain in the `values` table.
+Token metadata also includes optional `originalValue`, copied from the base dictionary token's `original_value`. It
+preserves the value before reference expansion or derivation and is omitted when the dictionary retains none. This
+additive field keeps schema version 1; condition and theme values remain in the `values` table.
+
+Beyond tokens, the file carries the tables v1 wrote as separate spec files, keyed by name and omitted when empty:
+`colorPalettes`, `keyframes`, `textStyles`, `layerStyles`, `animationStyles`, `recipes`, `slotRecipes` and `patterns`.
+Recipes and patterns are read from the typegen index (`ctx.types`), so a `config_only` context lists none of them;
+composition styles come straight from the theme, with nested groups flattened to `heading.lg`. Style objects, compound
+variants and `staticCss` are deliberately not here — that is the catalog question, not the parity floor.
 
 Two decisions worth stating outright.
 

@@ -415,3 +415,156 @@ describe('a design system far larger than any real one', () => {
     expect(ds.resolve('colors.semantic.2999', { theme: 'brand' })?.value).toBe('s2999')
   })
 })
+
+/** The same emitter on a system with recipes, patterns and composition styles. */
+const richRaw = readFileSync(join(here, 'fixtures', 'design-system-rich.json'), 'utf8')
+
+const loadRich = () => {
+  const result = parseDesignSystem(richRaw)
+  if (!result.ok) throw new Error(result.error)
+  return indexDesignSystem(result.value)
+}
+
+describe('listing recipes, patterns and composition styles', () => {
+  it('lists a recipe with its variants, defaults and deprecation', () => {
+    expect(loadRich().recipes()).toMatchInlineSnapshot(`
+      {
+        "button": {
+          "className": "btn",
+          "defaultVariants": {
+            "size": "md",
+          },
+          "deprecated": "use link",
+          "description": "The primary action",
+          "variants": {
+            "disabled": {
+              "allowsBoolean": true,
+              "values": [
+                "true",
+              ],
+            },
+            "size": {
+              "allowsBoolean": false,
+              "values": [
+                "md",
+                "sm",
+              ],
+            },
+          },
+        },
+      }
+    `)
+  })
+
+  it('lists a slot recipe with its slots', () => {
+    expect(loadRich().slotRecipes()).toMatchInlineSnapshot(`
+      {
+        "card": {
+          "slots": [
+            "root",
+            "body",
+          ],
+          "variants": {
+            "tone": {
+              "allowsBoolean": false,
+              "values": [
+                "neutral",
+              ],
+            },
+          },
+        },
+      }
+    `)
+  })
+
+  it('lists a pattern with the property kinds typegen resolved', () => {
+    expect(loadRich().patterns()).toMatchInlineSnapshot(`
+      {
+        "stack": {
+          "defaultValues": {
+            "gap": "4",
+          },
+          "description": "Vertical flow",
+          "jsx": [
+            "VStack",
+          ],
+          "jsxName": "VStack",
+          "properties": {
+            "align": {
+              "kind": "enum",
+              "values": [
+                "start",
+                "center",
+              ],
+            },
+            "gap": {
+              "category": "spacing",
+              "description": "Space between",
+              "kind": "token",
+            },
+            "wrap": {
+              "kind": "primitive",
+              "primitive": "boolean",
+            },
+          },
+          "strict": false,
+        },
+      }
+    `)
+  })
+
+  it('flattens nested composition styles to dotted names', () => {
+    const ds = loadRich()
+
+    expect({
+      text: ds.composition('textStyles'),
+      layer: ds.composition('layerStyles'),
+      animation: ds.composition('animationStyles'),
+      keyframes: ds.keyframes(),
+      palettes: ds.colorPalettes(),
+    }).toMatchInlineSnapshot(`
+      {
+        "animation": {
+          "fade": {},
+        },
+        "keyframes": [
+          "spin",
+        ],
+        "layer": {
+          "card": {},
+        },
+        "palettes": [
+          "red",
+        ],
+        "text": {
+          "body": {
+            "description": "Paragraph copy",
+          },
+          "heading.lg": {},
+        },
+      }
+    `)
+  })
+
+  it('reads as empty on a token-only system', () => {
+    const ds = load()
+
+    expect({
+      recipes: ds.recipes(),
+      slotRecipes: ds.slotRecipes(),
+      patterns: ds.patterns(),
+      keyframes: ds.keyframes(),
+      palettes: ds.colorPalettes(),
+      text: ds.composition('textStyles'),
+    }).toMatchInlineSnapshot(`
+      {
+        "keyframes": [],
+        "palettes": [],
+        "patterns": {},
+        "recipes": {},
+        "slotRecipes": {},
+        "text": {},
+      }
+    `)
+  })
+})

@@ -1,3 +1,6 @@
+use std::collections::BTreeMap;
+
+use pandacss_config::{Deprecated, JsxSpecifier, PatternPropertyTypeData, VariantTypeData};
 use pandacss_tokens::{TokenCategory, TokenDictionary};
 use serde_json::{Value, json};
 
@@ -46,7 +49,7 @@ fn build_design_system(ctx: CodegenContext<'_>, dictionary: &TokenDictionary) ->
 
     let known: std::collections::HashSet<&str> = paths.iter().copied().collect();
 
-    json!({
+    let mut document = json!({
         "schemaVersion": DESIGN_SYSTEM_SCHEMA_VERSION,
         "categories": Value::Object(category_ranges),
         "paths": paths,
@@ -54,7 +57,256 @@ fn build_design_system(ctx: CodegenContext<'_>, dictionary: &TokenDictionary) ->
         "conditions": Value::Object(condition_table(ctx.config)),
         "themes": Value::Object(theme_table(ctx.config)),
         "values": value_rows(ctx.config, dictionary, &known),
-    })
+    });
+
+    // Empty sections are omitted, so a token-only system reads exactly as before.
+    let table = document.as_object_mut().expect("document is an object");
+    for (key, section) in [
+        ("colorPalettes", name_list(&ctx.types.tokens.color_palettes)),
+        ("keyframes", name_list(&ctx.types.keyframes.keys)),
+        (
+            "textStyles",
+            composition_table(&ctx.config.theme.text_styles),
+        ),
+        (
+            "layerStyles",
+            composition_table(&ctx.config.theme.layer_styles),
+        ),
+        (
+            "animationStyles",
+            composition_table(&ctx.config.theme.animation_styles),
+        ),
+        ("recipes", recipe_table(ctx)),
+        ("slotRecipes", slot_recipe_table(ctx)),
+        ("patterns", pattern_table(ctx)),
+    ] {
+        if let Some(section) = section {
+            table.insert(key.to_owned(), section);
+        }
+    }
+    document
+}
+
+fn name_list(names: &[String]) -> Option<Value> {
+    if names.is_empty() {
+        return None;
+    }
+    let mut sorted = names.to_vec();
+    sorted.sort();
+    Some(json!(sorted))
+}
+
+/// `heading.lg` for a nested group; an entry is a leaf once it carries `value`.
+fn composition_table(styles: &Value) -> Option<Value> {
+    let mut entries = BTreeMap::new();
+    collect_composition("", styles, &mut entries);
+    if entries.is_empty() {
+        return None;
+    }
+    let rows = entries.into_iter().map(|(name, description)| {
+        let mut row = serde_json::Map::new();
+        insert_optional(&mut row, "description", description.map(|d| json!(d)));
+        (name, Value::Object(row))
+    });
+    Some(Value::Object(rows.collect()))
+}
+
+fn collect_composition(prefix: &str, node: &Value, out: &mut BTreeMap<String, Option<String>>) {
+    let Some(map) = node.as_object() else { return };
+    for (key, child) in map {
+        let Some(child_map) = child.as_object() else {
+            continue;
+        };
+        let name = if prefix.is_empty() {
+            key.clone()
+        } else {
+            format!("{prefix}.{key}")
+        };
+        if child_map.contains_key("value") {
+            let description = child_map
+                .get("description")
+                .and_then(Value::as_str)
+                .map(str::to_owned);
+            out.insert(name, description);
+        } else {
+            collect_composition(&name, child, out);
+        }
+    }
+}
+
+fn recipe_table(ctx: CodegenContext<'_>) -> Option<Value> {
+    let index = &ctx.types.recipes.recipes;
+    if index.is_empty() {
+        return None;
+    }
+    let rows = index.iter().map(|(name, definition)| {
+        let config = ctx.config.theme.recipes.get(name);
+        let mut row = serde_json::Map::new();
+        insert_optional(
+            &mut row,
+            "className",
+            config
+                .and_then(|c| c.class_name.as_deref())
+                .map(|c| json!(c)),
+        );
+        row.insert("variants".to_owned(), variant_table(&definition.variants));
+        insert_optional(
+            &mut row,
+            "defaultVariants",
+            config.and_then(default_variants),
+        );
+        insert_optional(
+            &mut row,
+            "deprecated",
+            deprecated_value(definition.deprecated.as_ref()),
+        );
+        insert_optional(
+            &mut row,
+            "description",
+            config.and_then(|c| description_of(&c.extra)),
+        );
+        (name.clone(), Value::Object(row))
+    });
+    Some(Value::Object(rows.collect()))
+}
+
+fn slot_recipe_table(ctx: CodegenContext<'_>) -> Option<Value> {
+    let index = &ctx.types.recipes.slot_recipes;
+    if index.is_empty() {
+        return None;
+    }
+    let rows = index.iter().map(|(name, definition)| {
+        let config = ctx.config.theme.slot_recipes.get(name);
+        let mut row = serde_json::Map::new();
+        insert_optional(
+            &mut row,
+            "className",
+            config
+                .and_then(|c| c.class_name.as_deref())
+                .map(|c| json!(c)),
+        );
+        row.insert("slots".to_owned(), json!(definition.slots));
+        row.insert("variants".to_owned(), variant_table(&definition.variants));
+        insert_optional(
+            &mut row,
+            "defaultVariants",
+            config.and_then(default_variants),
+        );
+        insert_optional(
+            &mut row,
+            "deprecated",
+            deprecated_value(definition.deprecated.as_ref()),
+        );
+        insert_optional(
+            &mut row,
+            "description",
+            config.and_then(|c| description_of(&c.extra)),
+        );
+        (name.clone(), Value::Object(row))
+    });
+    Some(Value::Object(rows.collect()))
+}
+
+fn variant_table(variants: &BTreeMap<String, VariantTypeData>) -> Value {
+    let rows = variants.iter().map(|(name, variant)| {
+        (
+            name.clone(),
+            json!({ "values": variant.values, "allowsBoolean": variant.allows_boolean }),
+        )
+    });
+    Value::Object(rows.collect())
+}
+
+fn default_variants(config: &pandacss_config::RecipeConfig) -> Option<Value> {
+    if config.default_variants.is_empty() {
+        return None;
+    }
+    serde_json::to_value(&config.default_variants).ok()
+}
+
+fn pattern_table(ctx: CodegenContext<'_>) -> Option<Value> {
+    let index = &ctx.types.patterns.patterns;
+    if index.is_empty() {
+        return None;
+    }
+    let rows = index.iter().map(|(name, definition)| {
+        let config = ctx.config.patterns.get(name);
+        let mut row = serde_json::Map::new();
+        let jsx_name = config
+            .and_then(|c| c.jsx_name.clone())
+            .unwrap_or_else(|| definition.type_name.clone());
+        row.insert("jsxName".to_owned(), json!(jsx_name));
+        // Regex matchers have no serial form; names are enough to find the component.
+        let jsx: Vec<&str> = config
+            .map(|c| c.jsx.iter().filter_map(JsxSpecifier::as_string).collect())
+            .unwrap_or_default();
+        if !jsx.is_empty() {
+            row.insert("jsx".to_owned(), json!(jsx));
+        }
+        row.insert(
+            "properties".to_owned(),
+            pattern_properties(&definition.properties),
+        );
+        // A function default has no static form; only an object is emitted.
+        let defaults = config
+            .and_then(|c| c.default_values.as_ref())
+            .filter(|v| v.is_object());
+        insert_optional(&mut row, "defaultValues", defaults.cloned());
+        row.insert("strict".to_owned(), json!(definition.strict));
+        if !definition.blocklist.is_empty() {
+            row.insert("blocklist".to_owned(), json!(definition.blocklist));
+        }
+        insert_optional(
+            &mut row,
+            "deprecated",
+            deprecated_value(definition.deprecated.as_ref()),
+        );
+        insert_optional(
+            &mut row,
+            "description",
+            config.and_then(|c| description_of(&c.extra)),
+        );
+        (name.clone(), Value::Object(row))
+    });
+    Some(Value::Object(rows.collect()))
+}
+
+/// The typegen kind, flattened into the row: `{ kind: "token", category: "spacing" }`.
+fn pattern_properties(properties: &BTreeMap<String, PatternPropertyTypeData>) -> Value {
+    let rows = properties.iter().map(|(name, property)| {
+        let mut row = match serde_json::to_value(&property.kind) {
+            Ok(Value::Object(map)) => map,
+            _ => serde_json::Map::new(),
+        };
+        row.retain(|_, value| !value.is_null());
+        insert_optional(
+            &mut row,
+            "description",
+            property.description.as_deref().map(|d| json!(d)),
+        );
+        (name.clone(), Value::Object(row))
+    });
+    Value::Object(rows.collect())
+}
+
+fn deprecated_value(deprecated: Option<&Deprecated>) -> Option<Value> {
+    deprecated
+        .filter(|d| d.is_active())
+        .and_then(|d| serde_json::to_value(d).ok())
+}
+
+/// `description` is not a modelled recipe or pattern field; it rides in `extra`.
+fn description_of(extra: &serde_json::Map<String, Value>) -> Option<Value> {
+    extra
+        .get("description")
+        .and_then(Value::as_str)
+        .map(|d| json!(d))
+}
+
+fn insert_optional(row: &mut serde_json::Map<String, Value>, key: &str, value: Option<Value>) {
+    if let Some(value) = value {
+        row.insert(key.to_owned(), value);
+    }
 }
 
 /// Dictionary order within a category, so `spacing.4` precedes `spacing.10`.

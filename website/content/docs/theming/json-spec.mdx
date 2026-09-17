@@ -113,6 +113,24 @@ without guessing. To resolve a whole category under one of them, pass it to `vie
 ds.view('colors', { condition: '_dark' })
 ```
 
+## Recipes, patterns and composition styles
+
+The same file lists the rest of the system, each as a table keyed by name. A table the system doesn't use is left out.
+
+```ts
+ds.recipes().button
+// { className: 'btn', variants: { size: { values: ['md', 'sm'], allowsBoolean: false } }, defaultVariants: { size: 'md' } }
+
+ds.patterns().stack.properties.gap
+// { kind: 'token', category: 'spacing', description: 'Space between' }
+
+ds.composition('textStyles')
+// { body: { description: 'Paragraph copy' }, 'heading.lg': {} }
+```
+
+`slotRecipes()`, `keyframes()` and `colorPalettes()` read the same way. A pattern property's `kind` is what typegen
+resolved for it: `enum` with its values, `token` with its category, `property` with the CSS property, or a `primitive`.
+
 ## Where a token came from
 
 The spec carries a `sources` section: every preset and config that contributed, and which one defined each token.

@@ -1,4 +1,12 @@
-import type { DesignSystemSpec, DesignSystemToken, DesignSystemValue } from './types'
+import type {
+  DesignSystemPattern,
+  DesignSystemRecipe,
+  DesignSystemSlotRecipe,
+  DesignSystemSpec,
+  DesignSystemStyle,
+  DesignSystemToken,
+  DesignSystemValue,
+} from './types'
 
 /**
  * Outcome of reading a generated spec document. Parsing never throws: callers
@@ -105,7 +113,17 @@ export interface DesignSystemIndex {
    * do not vary return a single row, so callers can render uniformly.
    */
   states(path: string, theme?: string): DesignSystemValue[]
+  /** Recipes keyed by name. Empty when the system defines none. */
+  recipes(): Record<string, DesignSystemRecipe>
+  slotRecipes(): Record<string, DesignSystemSlotRecipe>
+  patterns(): Record<string, DesignSystemPattern>
+  keyframes(): string[]
+  colorPalettes(): string[]
+  /** `textStyles`, `layerStyles` or `animationStyles`, keyed by name. */
+  composition(kind: CompositionKind): Record<string, DesignSystemStyle>
 }
+
+export type CompositionKind = 'textStyles' | 'layerStyles' | 'animationStyles'
 
 export function indexDesignSystem(spec: DesignSystemSpec): DesignSystemIndex {
   let byToken: Map<string, DesignSystemValue[]> | undefined
@@ -143,6 +161,13 @@ export function indexDesignSystem(spec: DesignSystemSpec): DesignSystemIndex {
     },
 
     token: (path) => spec.tokens[path],
+
+    recipes: () => spec.recipes ?? {},
+    slotRecipes: () => spec.slotRecipes ?? {},
+    patterns: () => spec.patterns ?? {},
+    keyframes: () => spec.keyframes ?? [],
+    colorPalettes: () => spec.colorPalettes ?? [],
+    composition: (kind) => spec[kind] ?? {},
 
     valuesFor(path) {
       build()
