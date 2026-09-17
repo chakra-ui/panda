@@ -106,6 +106,10 @@ One file, top-level keys as tables.
 }
 ```
 
+Token metadata also includes optional `originalValue`, copied from the base dictionary token's `original_value`.
+It preserves the value before reference expansion or derivation and is omitted when the dictionary retains none.
+This additive field keeps schema version 1; condition and theme values remain in the `values` table.
+
 Two decisions worth stating outright.
 
 **Ship `value` and `refs` together.** Pointers alone would push resolution onto every consumer, cycle handling included

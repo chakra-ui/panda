@@ -65,6 +65,7 @@ describe('reading a design system a project generated', () => {
       {
         "category": "colors",
         "cssVar": "--colors-fg",
+        "originalValue": "{colors.red.500}",
         "semantic": true,
       }
     `)
@@ -75,6 +76,35 @@ describe('reading a design system a project generated', () => {
 
     expect(ds.token('spacing.-4')?.cssVar).toBeUndefined()
     expect(ds.token('spacing.4')?.cssVar).toBe('--spacing-4')
+  })
+
+  it('exposes retained original values through token metadata and views', () => {
+    const ds = load()
+
+    expect({
+      semantic: ds.token('colors.fg')?.originalValue,
+      derived: ds.token('spacing.-4')?.originalValue,
+      primitive: ds.token('colors.red.500')?.originalValue,
+      dark: ds.view('colors', { condition: '_dark' }).find((token) => token.path === 'colors.fg'),
+    }).toMatchInlineSnapshot(`
+      {
+        "dark": {
+          "category": "colors",
+          "cssVar": "--colors-fg",
+          "name": "fg",
+          "originalValue": "{colors.red.500}",
+          "path": "colors.fg",
+          "refs": [
+            "colors.blue.600",
+          ],
+          "semantic": true,
+          "value": "#2563eb",
+        },
+        "derived": "1rem",
+        "primitive": undefined,
+        "semantic": "{colors.red.500}",
+      }
+    `)
   })
 })
 
@@ -234,6 +264,7 @@ describe('presenting a category to a user', () => {
           "category": "spacing",
           "description": "one rem",
           "name": "-4",
+          "originalValue": "1rem",
           "path": "spacing.-4",
           "refs": [
             "spacing.4",

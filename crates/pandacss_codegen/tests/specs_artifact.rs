@@ -97,6 +97,7 @@ fn design_system_document_keeps_token_references_and_render_order() {
         "colors.fg": {
           "category": "colors",
           "cssVar": "--colors-fg",
+          "originalValue": "{colors.red.500}",
           "semantic": true
         },
         "spacing.4": {
@@ -106,6 +107,7 @@ fn design_system_document_keeps_token_references_and_render_order() {
         },
         "spacing.-4": {
           "category": "spacing",
+          "originalValue": "1rem",
           "description": "one rem"
         }
       },

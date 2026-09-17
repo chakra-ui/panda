@@ -92,6 +92,9 @@ fn token_table(
             if let Some(css_var) = custom_property(&token.var) {
                 entry.insert("cssVar".to_owned(), json!(css_var));
             }
+            if let Some(original_value) = token.original_value.as_deref() {
+                entry.insert("originalValue".to_owned(), json!(original_value));
+            }
             if let Some(description) = token.description.as_ref() {
                 entry.insert("description".to_owned(), json!(description.as_ref()));
             }

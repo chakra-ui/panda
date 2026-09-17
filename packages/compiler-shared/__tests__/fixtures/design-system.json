@@ -17,6 +17,7 @@
     "colors.fg": {
       "category": "colors",
       "cssVar": "--colors-fg",
+      "originalValue": "{colors.red.500}",
       "semantic": true
     },
     "spacing.4": {
@@ -26,6 +27,7 @@
     },
     "spacing.-4": {
       "category": "spacing",
+      "originalValue": "1rem",
       "description": "one rem"
     }
   },

@@ -33,6 +33,8 @@ export interface DesignSystemToken {
   category: string
   /** The custom property, e.g. `--colors-red-500`. Absent for derived tokens. */
   cssVar?: string
+  /** Base token value before reference expansion or derivation, when retained. */
+  originalValue?: string
   description?: string
   deprecated?: boolean
   deprecatedReason?: string
