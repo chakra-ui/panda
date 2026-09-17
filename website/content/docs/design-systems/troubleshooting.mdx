@@ -63,6 +63,15 @@ publish:
 panda lib --files './**/*.{js,mjs}'
 ```
 
+## The spec will not publish
+
+```
+design_system_spec_not_publishable
+```
+
+`panda lib --spec=<file>` wrote the spec somewhere `package.json` `"files"` would drop, so the manifest leaves it out.
+Use a bare `--spec` to write it beside `preset.mjs`, or add the path to `"files"`.
+
 ## panda lib overwrote an export
 
 ```

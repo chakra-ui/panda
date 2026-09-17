@@ -46,6 +46,8 @@ export const libCommand = defineCommand({
 export async function runLib(flags: LibFlags = {}, output: OutputSink = consoleOutput): Promise<LibResult> {
   let parsedFileCount = 0
   let runCwd = flags.cwd ?? process.cwd()
+  // beside preset.mjs and lib.json, not under the app's styled-system
+  const specOutfile = `${flags.outdir ?? DEFAULT_OUTDIR}/panda/design-system.json`
 
   const result = (await runCommand({
     command: 'lib',
@@ -56,6 +58,8 @@ export async function runLib(flags: LibFlags = {}, output: OutputSink = consoleO
     async execute({ driver, cwd, timings }) {
       runCwd = cwd
 
+      // written first so lib.json can point at it
+      const specFiles = writeSpec(driver, flags.spec, { defaultOutfile: specOutfile })
       const generated = await timeAsync({
         timings,
         phase: 'lib',
@@ -66,13 +70,10 @@ export async function runLib(flags: LibFlags = {}, output: OutputSink = consoleO
             panda: flags.panda,
             minify: flags.minify,
             maxWarnings: flags.maxWarnings,
+            spec: specFiles[0],
           }),
       })
       parsedFileCount = generated.parsedFileCount
-      // published alongside preset.mjs and lib.json, not under the app's styled-system
-      const specFiles = writeSpec(driver, flags.spec, {
-        defaultOutfile: `${flags.outdir ?? DEFAULT_OUTDIR}/panda/design-system.json`,
-      })
 
       return {
         data: {
@@ -101,15 +102,18 @@ export async function runLib(flags: LibFlags = {}, output: OutputSink = consoleO
     const watchLogger = createWatchLogger(output)
 
     const regenerate = async () => {
+      const specFiles = writeSpec(driver, flags.spec, { defaultOutfile: specOutfile })
       const generated = await driver.writeDesignSystemLib({
         outdir: flags.outdir,
         files: normalizeInclude(flags.files),
         panda: flags.panda,
         minify: flags.minify,
         maxWarnings: flags.maxWarnings,
+        spec: specFiles[0],
       })
 
       Object.assign(result, {
+        specPath: specFiles[0],
         manifestPath: generated.manifestPath,
         buildInfoPath: generated.buildInfoPath,
         presetPath: generated.presetPath,

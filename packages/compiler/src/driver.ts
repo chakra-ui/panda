@@ -63,6 +63,8 @@ export interface WriteDesignSystemLibOptions {
   panda?: string
   minify?: boolean
   maxWarnings?: number | string
+  /** An already-written spec file; recorded in lib.json relative to the manifest. */
+  spec?: string
 }
 
 export interface WriteDesignSystemLibResult {
@@ -523,12 +525,23 @@ export class NodeDriver extends BaseDriver {
       packageName: identity.name,
     })
 
+    const { spec, diagnostics: specDiagnostics } = resolvePublishableSpec({
+      spec: options.spec,
+      compiler: this.compiler,
+      outRoot,
+      pandaDir,
+      packageRoot: this.compiler.path.dirname(identity.packagePath),
+      publishFiles: identity.publishFiles,
+      packageName: identity.name,
+    })
+
     const manifest = this.compiler.designSystem.create({
       name: identity.name,
       version: identity.version,
       panda: pandaRange,
       preset: './preset.mjs',
       buildInfo: './buildinfo.json',
+      spec,
       importMap: defaultImportMap(identity.name),
       designSystem: typeof this.config.designSystem === 'string' ? this.config.designSystem : undefined,
       files: libFiles,
@@ -572,8 +585,50 @@ export class NodeDriver extends BaseDriver {
       presetPath,
       exportsChanged,
       parsedFileCount: parsed.parsedFileCount,
-      diagnostics: [...parsed.diagnostics, ...filesDiagnostics, ...exportConflictDiagnostics(identity.name, conflicts)],
+      diagnostics: [
+        ...parsed.diagnostics,
+        ...filesDiagnostics,
+        ...specDiagnostics,
+        ...exportConflictDiagnostics(identity.name, conflicts),
+      ],
     }
+  }
+}
+
+/** The manifest-relative spec path, or a warning instead when package.json `files` would not ship it. */
+function resolvePublishableSpec(options: {
+  spec?: string
+  compiler: Compiler
+  outRoot: string
+  pandaDir: string
+  packageRoot: string
+  publishFiles?: string[]
+  packageName: string
+}): { spec?: string; diagnostics: Diagnostic[] } {
+  if (!options.spec) return { diagnostics: [] }
+
+  const absolute = options.compiler.path.resolve(options.spec)
+  const { unpublished } = filterPublishableLibFiles({
+    files: [toPosixRelative(options.outRoot, absolute)],
+    packageRoot: options.packageRoot,
+    outRoot: options.outRoot,
+    publishFiles: options.publishFiles,
+  })
+  if (unpublished.length > 0) {
+    return { diagnostics: [specNotPublishableDiagnostic(options.packageName, unpublished[0]!)] }
+  }
+
+  return { spec: toPosixRelative(options.pandaDir, absolute), diagnostics: [] }
+}
+
+function specNotPublishableDiagnostic(name: string, spec: string): Diagnostic {
+  return {
+    code: 'design_system_spec_not_publishable',
+    severity: 'warning',
+    category: 'designSystem',
+    message:
+      `\`panda lib\` left the spec out of ${JSON.stringify(name)}'s manifest because package.json \`"files"\` would not publish ${JSON.stringify(spec)}. ` +
+      `A bare \`--spec\` writes it beside preset.mjs, inside what you publish.`,
   }
 }
 

@@ -865,6 +865,58 @@ describe('NodeDriver writeDesignSystemLib', () => {
     expect(result.diagnostics.filter((d) => d.code === 'design_system_files_not_publishable')).toEqual([])
   })
 
+  it('leaves a spec that package.json files would not publish out of the manifest', async () => {
+    dir = createLibProject()
+    writeFileTree(dir, {
+      'package.json': JSON.stringify(
+        {
+          name: '@acme/ds',
+          version: '1.2.3',
+          files: ['dist'],
+          peerDependencies: { '@pandacss/dev': '^2.0.0' },
+        },
+        null,
+        2,
+      ),
+    })
+
+    const driver = await createNodeDriver({ cwd: dir })
+    const result = await driver.writeDesignSystemLib({ spec: join(dir, 'meta.json') })
+
+    const manifest = JSON.parse(readFileSync(join(dir, 'dist', 'panda', 'lib.json'), 'utf8'))
+    expect(manifest.spec).toBeUndefined()
+    expect(result.diagnostics).toContainEqual(
+      expect.objectContaining({
+        code: 'design_system_spec_not_publishable',
+        severity: 'warning',
+        category: 'designSystem',
+      }),
+    )
+  })
+
+  it('records a spec inside the published output even with package.json files set', async () => {
+    dir = createLibProject()
+    writeFileTree(dir, {
+      'package.json': JSON.stringify(
+        {
+          name: '@acme/ds',
+          version: '1.2.3',
+          files: ['dist'],
+          peerDependencies: { '@pandacss/dev': '^2.0.0' },
+        },
+        null,
+        2,
+      ),
+    })
+
+    const driver = await createNodeDriver({ cwd: dir })
+    const result = await driver.writeDesignSystemLib({ spec: join(dir, 'dist', 'panda', 'design-system.json') })
+
+    const manifest = JSON.parse(readFileSync(join(dir, 'dist', 'panda', 'lib.json'), 'utf8'))
+    expect(manifest.spec).toBe('./design-system.json')
+    expect(result.diagnostics.filter((d) => d.code === 'design_system_spec_not_publishable')).toEqual([])
+  })
+
   it('does not publish hydrated parent build info as fallback files', async () => {
     dir = createLibProject("  designSystem: '@acme/foundations',")
 

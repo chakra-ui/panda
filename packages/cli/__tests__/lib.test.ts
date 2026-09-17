@@ -37,6 +37,7 @@ describe('lib command', () => {
 
     expect(result.specPath).toBeUndefined()
     expect(existsSync(join(dir, 'dist', 'panda', 'design-system.json'))).toBe(false)
+    expect(readManifest(dir).spec).toBeUndefined()
   })
 
   it('publishes the spec beside preset.mjs with --spec', async () => {
@@ -47,6 +48,35 @@ describe('lib command', () => {
     // not under the consumer's styled-system — it ships with the package
     expect(result.specPath).toBe(join(dir, 'dist', 'panda', 'design-system.json'))
     expect(JSON.parse(readFileSync(join(dir, 'dist', 'panda', 'design-system.json'), 'utf8')).schemaVersion).toBe(1)
+    expect(readManifest(dir).spec).toBe('./design-system.json')
+  })
+
+  it('records a custom --spec path relative to the manifest', async () => {
+    dir = createLibFixture('', CONFIG_WITH_TOKENS)
+
+    await runLib({ cwd: dir, spec: 'meta.json', logLevel: 'silent' })
+
+    expect(existsSync(join(dir, 'meta.json'))).toBe(true)
+    expect(readManifest(dir).spec).toBe('../../meta.json')
+  })
+
+  it('warns and leaves the spec out of the manifest when package.json files would not publish it', async () => {
+    dir = createLibFixture('', CONFIG_WITH_TOKENS)
+    writeFileSync(
+      join(dir, 'package.json'),
+      JSON.stringify(
+        { name: '@acme/ds', version: '1.2.3', files: ['dist'], peerDependencies: { '@pandacss/dev': '^2.0.0' } },
+        null,
+        2,
+      ),
+    )
+
+    const result = await runLib({ cwd: dir, spec: 'meta.json', logLevel: 'silent' })
+
+    // the file still lands where asked; only the pointer is withheld
+    expect(existsSync(join(dir, 'meta.json'))).toBe(true)
+    expect(readManifest(dir).spec).toBeUndefined()
+    expect(result.diagnostics.some((d) => d.code === 'design_system_spec_not_publishable')).toBe(true)
   })
 
   it('writes manifest, build info, and compiled preset; syncs exports', async () => {

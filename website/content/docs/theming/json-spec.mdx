@@ -137,6 +137,9 @@ panda lib --spec
 # dist/panda/design-system.json
 ```
 
+`panda/lib.json` records it as `spec`, so tooling that reads the manifest can tell whether a package shipped one. Keep
+it inside what you publish: a path `"files"` would drop is left out of the manifest with a warning.
+
 Ship it when you want consumers to render your tokens without running Panda themselves. It's large next to the rest of
 `panda lib` output, and anyone who installs your preset can generate their own from `preset.mjs`, so it stays a choice.
 

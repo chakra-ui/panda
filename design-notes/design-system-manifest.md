@@ -108,9 +108,9 @@ hash-space questions. We should not add that surface without clear demand.
 
 ## The manifest is the package contract
 
-The library publishes machine artifacts under a private `panda/` folder. Consumers resolve
-`@acme/ds/panda/lib.json`. `preset` and `buildInfo` are relative to the manifest file; `files` are relative to the
-lib outdir (parent of `panda/`). The same layout works from `node_modules`, a workspace symlink, or a Docker layer.
+The library publishes machine artifacts under a private `panda/` folder. Consumers resolve `@acme/ds/panda/lib.json`.
+`preset`, `buildInfo` and `spec` are relative to the manifest file; `files` are relative to the lib outdir (parent of
+`panda/`). The same layout works from `node_modules`, a workspace symlink, or a Docker layer.
 
 ```jsonc
 {
@@ -120,6 +120,7 @@ lib outdir (parent of `panda/`). The same layout works from `node_modules`, a wo
   "panda": "^2.0.0", // peer range the consumer must satisfy
   "preset": "./preset.mjs", // compiled preset module
   "buildInfo": "./buildinfo.json",
+  "spec": "./design-system.json", // only when built with `panda lib --spec`
   "importMap": {
     "css": "@acme/ds/css",
     "recipes": "@acme/ds/recipes",
@@ -136,6 +137,8 @@ Field meanings:
 
 - `preset`: compiled `.mjs` config. It carries token definitions, recipes, utilities, conditions, and font-face config.
 - `buildInfo`: portable extraction cache. It carries token usage and encoded atoms/recipes.
+- `spec`: the design system spec, for documentation and external tooling. Consumers don't need it to compile CSS; absent
+  unless the library ran `panda lib --spec`.
 - `importMap`: package roots used by the library's compiled JSX.
 - `designSystem`: this library's parent design system, if any.
 - `panda` and `schemaVersion`: compatibility guards.
@@ -249,6 +252,9 @@ When package.json `"files"` would not publish an inferred fallback path (classic
 points at `../src/...`), `panda lib` omits those paths from the manifest and warns with
 `design_system_files_not_publishable` instead of shipping a recovery list that fail-closes after install. Explicit
 `--files` skips that filter.
+
+The same filter guards `--spec`. A spec written outside what package.json publishes is left out of the manifest with
+`design_system_spec_not_publishable`, so a consumer is never pointed at a file that did not ship.
 
 ### Monorepo task runners own the chain
 
@@ -566,6 +572,7 @@ Setup is where this feature succeeds or fails. Diagnostics should say what happe
 | `design_system_artifact_conflict`      | warning       | design system and app both define the same recipe/pattern       |
 | `design_system_export_overwritten`     | warning       | `panda lib` overwrote a differing package.json export subpath   |
 | `design_system_files_not_publishable`  | warning       | inferred fallback `files` would not ship in the npm tarball     |
+| `design_system_spec_not_publishable`   | warning       | `--spec` path would not ship in the npm tarball; left out       |
 
 Errors stop the build. Warnings continue only when Panda has a clear source fallback. Token conflicts are grouped once
 per design-system package, and the app config wins them. CLI exit status and `--max-warnings` are calculated from the

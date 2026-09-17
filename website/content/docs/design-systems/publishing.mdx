@@ -136,6 +136,9 @@ If `package.json` `"files"` would drop the inferred fallback sources, `panda lib
 panda lib --files './**/*.{js,mjs}'
 ```
 
+`--spec` gets the same check. A spec written outside `"files"` is left out of `lib.json` with
+`design_system_spec_not_publishable`; a bare `--spec` lands beside `preset.mjs`, inside what you publish.
+
 ## See also
 
 - [Build a design system](/docs/design-systems/build-a-design-system)

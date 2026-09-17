@@ -174,6 +174,10 @@ export interface DesignSystemManifestInput {
   panda: string
   preset: string
   buildInfo: string
+  /**
+   * Published design system spec, relative to the manifest. Only with `panda lib --spec`.
+   */
+  spec?: string
   importMap?: DesignSystemManifestImportMap
   /**
    * Parent design-system link. Absent at a root.
