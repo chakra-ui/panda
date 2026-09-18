@@ -165,6 +165,7 @@
     "preserve-node-protocol",
     "preset-resolved-hook-utils",
     "preset-typography",
+    "project-state-and-transform-fixes",
     "property-fallback",
     "pure-transformed-recipe-factories",
     "quiet-utility-values-callbacks",
