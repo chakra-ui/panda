@@ -21,10 +21,6 @@ Some topics span several notes. Keep the detailed contract in one place and link
   design-system architecture.
 - `stylesheet.md` owns CSS emission, writer minification, adjacent rule merging, and the missing CSS-aware optimizer
   boundary. Other notes should summarize and link to it.
-- `cli-design-md.md` owns `panda design-md`, the Panda → DESIGN.md mapping, and drift/CI contracts. Not the Google spec
-  or MCP tools.
-- `agent-skills.md` owns the official end-user Agent Skills pack (inventory, format, layering vs DESIGN.md / MCP /
-  `AGENTS.md`). Not contributor/Rust subagents under `.claude/agents/`.
 
 ## Index
 
@@ -110,10 +106,6 @@ Some topics span several notes. Keep the detailed contract in one place and link
   flags, diagnostics, CI contracts, watch behavior, debug artifacts, and observability.
 - [CLI analyze command](./cli-analyze.md) — implemented `panda analyze` usage-report command: naming, scopes,
   JSON/report outputs, UI mode, and the `inspectFileSource` aggregation boundary.
-- [CLI DESIGN.md export](./cli-design-md.md) — planned `panda design-md`: export resolved theme/recipes to Google's
-  DESIGN.md, prose scaffold patterns (reference corpus + tiers), `--check` drift gate.
-- [Official Panda agent skills](./agent-skills.md) — job-shaped Agent Skills for end-user Panda usage (`panda-styling`,
-  recipes, tokens, setup, design-system, migrate-v2): format contract, layering vs DESIGN.md/MCP, ship phases.
 - [CLI studio generate command](./cli-studio-generate.md) — proposed `panda studio generate`: emit Storybook token
   stories + viewer components into the user's project (replacing the v1 Astro Studio server), fed by a `tokens.json`
   snapshot; scope vs deferred theme/contrast views.

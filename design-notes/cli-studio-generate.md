@@ -52,7 +52,7 @@ panda studio generate -c panda.config.ts
 - `panda studio generate` flags: `--outdir <dir>` (default `styled-system/studio` — codegen's home; re-runnable,
   discoverable), plus shared `--config`/`-c`, `--cwd`. Framework is read from `config.jsxFramework`.
 
-Shared flags follow the standard CLI set in [`cli-design-md`](./cli-design-md.md).
+Shared flags follow the standard CLI set in [`cli`](./cli.md).
 
 ## The three layers
 
@@ -261,5 +261,5 @@ tokens from the sandbox config. This is the Phase 4 gate and the proof attached 
 
 ## Related
 
-- [cli-design-md](./cli-design-md.md) — shared CLI flag set and command conventions.
+- [cli](./cli.md) — shared CLI flag set and command conventions.
 - [codegen-design](./codegen-design.md) — the artifact codegen model `generate` mirrors.

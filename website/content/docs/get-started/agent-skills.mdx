@@ -1,63 +1,86 @@
 ---
 title: Agent Skills
-description: Portable, job-shaped skill packs that teach AI coding agents how to use Panda correctly.
+description: Official skills that teach AI coding agents how to use Panda correctly.
 ---
 
-<Callout type="info">
-  Agent Skills are coming soon and aren't published yet, so treat the shape below as a preview. For AI agent support
-  that works today, see [LLMs.txt](/docs/get-started/llms-txt) and [MCP Server](/docs/get-started/mcp-server).
-</Callout>
+Panda ships three official skills that teach AI coding agents how to write Panda: one for styling, one for theme and
+recipe architecture, one for the v1 to v2 upgrade.
 
-## The problem it's meant to solve
+They exist because the usual failures are invisible. An agent writes `css({ color: brandColor })`, the class lands on
+the element, and no CSS is emitted. Panda reads your source at build time, and a value it can't read produces nothing.
 
-AI coding agents are a normal part of how Panda projects get written today, but without something grounding them,
-agents commonly reach for the wrong instincts: emitting Tailwind class strings or Emotion-style patterns in a Panda
-project, inventing raw hex or spacing values instead of using tokens, or wiring a design system by hand
-(`include: ['…/panda.buildinfo.json']`) instead of the newer dedicated mechanism. Community skill packs for Panda
-exist today but are thin and unofficial, while some other libraries already ship official ones.
-
-## How this differs from LLMs.txt and MCP
-
-Panda already has two other AI-facing mechanisms, and Agent Skills is meant to be a third, distinct one, not a
-replacement for either:
-
-- **[LLMs.txt](/docs/get-started/llms-txt)** hands an agent the documentation itself, a static content dump for context.
-- **[MCP Server](/docs/get-started/mcp-server)** answers "what exists right now" in your specific project, live token,
-  recipe, and pattern lookups.
-- **Agent Skills** would answer "how do I do this correctly," procedural, decision-oriented guidance (which API to
-  reach for, what not to do), read once per task rather than queried live.
-
-## The planned skills
-
-Rather than one large reference document, the plan is six small, job-shaped skills, so an agent loads only the one
-relevant to the task in front of it:
-
-| Skill | Job |
-| --- | --- |
-| `panda-styling` | Write or edit styles in application or component code |
-| `panda-recipes` | Build or change recipes, slot recipes, or `cva`/`sva` |
-| `panda-tokens` | Author or extend theme tokens and conditions |
-| `panda-setup` | Install, initialize, and wire up a build tool |
-| `panda-design-system` | Publish or consume a design system |
-| `panda-migrate-v2` | Upgrade from v1, or navigate a v2 beta |
-
-Each skill is planned to stay short (roughly 200 to 300 lines), lead with when an agent should reach for it, and
-include short do/don't examples rather than long prose, along the lines of what
-[skills.sh](https://skills.sh/) already hosts for other libraries.
-
-## Installing skills (once published)
-
-The install experience is expected to follow the same shape as any other package on the open skills ecosystem:
+## Install
 
 ```bash
-npx skills add <owner>/<repo>@panda-styling
+npx skills add chakra-ui/panda
 ```
 
-Where exactly Panda's skills will be published from (the main repo, or a dedicated skills-only repo) isn't finalized,
-so treat the exact install path above as illustrative rather than a real command to run today.
+That installs all three. Each loads on its own triggers, so you never have to name one.
 
-## See also
+Skills use the open [Agent Skills](https://skills.sh) format and work with any agent that supports it, including Claude
+Code, Cursor, and VS Code.
 
-- [LLMs.txt](/docs/get-started/llms-txt) and [MCP Server](/docs/get-started/mcp-server) for the AI-facing tooling that
-  exists today.
-- [Upgrading to v2](/docs/get-started/upgrading-to-v2) for the broader context this feature is part of.
+## Available skills
+
+### `panda-css`
+
+Day-to-day styling in a project that already has Panda set up.
+
+It reads your config and generated output before writing anything, so token names come from
+`styled-system/types/tokens.d.ts` instead of from guesswork. It covers choosing between `css()`, a pattern, and a
+recipe, and it covers the extraction rules that decide whether a style reaches the stylesheet at all.
+
+Loads when you're building or changing components, when a style renders a class name but no CSS, or when styles don't
+apply.
+
+### `panda-css-theming`
+
+The decisions that are hard to reverse once a codebase has a few hundred call sites.
+
+Where a value belongs across primitives, semantic tokens, composite styles, and recipes. How to name things so a rebrand
+touches the config instead of every component. Dark mode and [multiple themes](/docs/theming/multiple-themes). And when
+a style graduates from a `css()` call to a `cva`, to a config recipe, to a slot recipe.
+
+Loads when you're setting up theming, adding brand colors, wiring dark mode, shipping more than one theme, designing a
+variant API, or cleaning up a theme that's drifted.
+
+### `panda-css-migrate`
+
+Upgrading v1 to v2, and debugging a project that worked on 1.x and breaks on 2.x.
+
+An ordered checklist, then the old-to-new list: hooks moving onto plugins, `createStyleContext` splitting in two,
+template literal styles going away, `panda ship` becoming `panda lib`. It links
+[Upgrading to v2](/docs/get-started/upgrading-to-v2) rather than restating it.
+
+Loads when you're installing `@pandacss/dev@beta`, when a build fails after upgrading, or when CSS output changes.
+
+## LLMs.txt and MCP
+
+Three surfaces, three questions:
+
+- [LLMs.txt](/docs/get-started/llms-txt): what is this API?
+- [MCP Server](/docs/get-started/mcp-server): what exists in this project right now?
+- Agent Skills: how do I do this correctly?
+
+Skills point at the other two rather than duplicating them.
+
+## Wire up the linter
+
+`@pandacss/eslint-plugin` catches unresolved tokens, nested selectors missing `&`, files outside `include`, deprecated
+APIs, and hardcoded values that have tokens.
+
+A rule that runs beats a rule an agent might read. Use both: the skills stop the mistake being written, the linter stops
+it being merged. See [Linting](/docs/get-started/linting).
+
+## Add your project's rules
+
+Skills load on their own. A line in your repo's `AGENTS.md`, or whatever file your agent reads first, still helps it
+orient before it starts:
+
+```md
+This project uses Panda CSS. Use the official Panda skills (`panda-css`, `panda-css-theming`). Prefer css(), patterns,
+and recipes. Never invent token names or write Tailwind classes.
+```
+
+If your team has conventions the skills can't know, such as which recipes are off limits or which scales are frozen,
+that file is where they go. The skills teach Panda. Only you can teach your project.

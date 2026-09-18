@@ -139,7 +139,6 @@ read through `parseDesignSystem` and `indexDesignSystem`.
 - [cli-studio-generate](./cli-studio-generate.md)
 - [cli-analyze](./cli-analyze.md)
 - [design-system-spec](./design-system-spec.md)
-- [cli-design-md](./cli-design-md.md)
 - [Discussion #3795](https://github.com/chakra-ui/panda/discussions/3795) — versioned spec, `panda spec`, default
   publication
 - [Discussion #3809](https://github.com/chakra-ui/panda/discussions/3809) — definitions vs usage vs output request
