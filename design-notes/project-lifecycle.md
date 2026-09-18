@@ -13,6 +13,12 @@ bindings' `parseFiles` follows the same rule via `record_read_failure`: last-goo
 report with a `source_not_found` / `source_read_failed` warning. It is a warning, not an error, because file diagnostics
 fold into CSS output and `panda build` fails on any error. `parseFiles` never prunes; only `remove_file` drops a path.
 
+## Dependency state
+
+`DependencyIndex` owns resolved import edges, unresolved requests, and the pending watch refresh queue. `Project` keeps
+file buckets and marks queued importers uncacheable; the index does not parse files or change host refresh behavior.
+Removing an importer borrows its dependency list rather than cloning it.
+
 ## Construction
 
 ```rust

@@ -384,3 +384,33 @@ fn reexport_cycle_does_not_loop() {
       conditions: []
     ");
 }
+
+#[test]
+fn removing_one_importer_preserves_the_other_importers_dependency() {
+    let source = indoc! {r"
+        import { brand } from './tokens';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    let (fs, mut project) = watch_project(&[
+        ("First.tsx", source),
+        ("Second.tsx", source),
+        ("tokens.ts", "export const brand = 'red';\n"),
+    ]);
+    project.parse_file("/proj/First.tsx", source);
+    project.parse_file("/proj/Second.tsx", source);
+    project.remove_file("/proj/First.tsx");
+
+    write(&fs, "tokens.ts", "export const brand = 'blue';\n");
+    project.parse_file("/proj/tokens.ts", "export const brand = 'blue';\n");
+
+    assert_yaml_snapshot!(json!({
+        "importers": project.importers_of("/proj/tokens.ts"),
+        "affected": project.take_affected_files(),
+    }), @"
+    importers:
+      - /proj/Second.tsx
+    affected:
+      - /proj/Second.tsx
+    ");
+}

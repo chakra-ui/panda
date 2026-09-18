@@ -19,6 +19,14 @@ use crate::literal::{
 use crate::pure_fn::fold_accessor_expr;
 use crate::{Literal, Resolver, span_from_oxc};
 
+mod queries;
+
+pub use queries::{
+    has_nested_spread_branches, style_tree_has_open_local_value, style_tree_has_open_spread,
+    style_tree_has_open_value, style_tree_has_rewrite_sites, style_tree_has_runtime_branch,
+    style_tree_has_value_and, style_tree_is_open, style_tree_object_entry,
+};
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum StyleTree {
     String(String),

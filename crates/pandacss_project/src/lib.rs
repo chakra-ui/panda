@@ -23,6 +23,7 @@
 mod build_info;
 mod codegen;
 mod config;
+mod dependency_index;
 mod design_system;
 mod error;
 mod hook_filter;
@@ -36,6 +37,8 @@ mod system;
 mod transform;
 mod transform_cache;
 mod usages;
+
+use dependency_index::DependencyIndex;
 
 use std::collections::BTreeMap;
 use std::hash::Hash;
@@ -157,12 +160,7 @@ pub struct Project {
         Option<(bool, FxHashMap<UtilityStyleKey, Literal>, Vec<Diagnostic>)>,
     merged_utility_styles_snapshot_cache: Option<FxHashMap<UtilityStyleKey, Literal>>,
     parse_epoch: u64,
-    /// Reverse index: cross-file module path → importer → source hash it folded.
-    importers: FxHashMap<String, FxHashMap<Arc<str>, Option<u64>>>,
-    /// Failed cross-file requests keyed by the project file that attempted them.
-    unresolved_importers: FxHashMap<Arc<str>, Vec<UnresolvedCrossFileDependency>>,
-    /// Drained by the host, which re-parses through its transform-aware path.
-    affected_files: FxHashSet<Arc<str>>,
+    dependencies: DependencyIndex,
     /// Recipes keyed by `(file, span)` so re-parsing a path drops every
     /// matching entry and span shifts don't leave orphans.
     config_recipes: BTreeMap<RecipeKey, Recipe>,
@@ -277,9 +275,7 @@ impl Project {
             config_utility_styles_cache: None,
             merged_utility_styles_snapshot_cache: None,
             parse_epoch: 0,
-            importers: FxHashMap::default(),
-            unresolved_importers: FxHashMap::default(),
-            affected_files: FxHashSet::default(),
+            dependencies: DependencyIndex::default(),
             config_recipes,
             config_slot_recipes,
             inline_recipes: BTreeMap::new(),
@@ -1029,29 +1025,15 @@ impl Project {
     /// Known files whose folded imports changed since the last call. Re-parse
     /// each through the host's transform-aware path, then call again until empty.
     pub fn take_affected_files(&mut self) -> Vec<String> {
-        let mut affected = std::mem::take(&mut self.affected_files)
-            .into_iter()
-            .map(|path| path.as_ref().to_owned())
-            .collect::<Vec<_>>();
-        affected.sort();
-        affected
+        self.dependencies.take_affected()
     }
 
     /// Known files that folded a value out of `path`, directly or through a re-export.
     #[must_use]
     pub fn importers_of(&self, path: &str) -> Vec<String> {
-        let mut out = self
-            .dependency_key(path)
-            .and_then(|key| self.importers.get(&key))
-            .map(|importers| {
-                importers
-                    .keys()
-                    .map(|path| path.as_ref().to_owned())
-                    .collect::<Vec<_>>()
-            })
-            .unwrap_or_default();
-        out.sort();
-        out
+        self.dependency_key(path)
+            .map(|key| self.dependencies.importers_of(&key))
+            .unwrap_or_default()
     }
 
     /// Clears every path's state. Keeps the compiled [`Config`].
@@ -1082,9 +1064,7 @@ impl Project {
         self.hydrated_position_try_order.clear();
         self.hydrated_keyframes.clear();
         self.hydrated_keyframes_order.clear();
-        self.importers.clear();
-        self.unresolved_importers.clear();
-        self.affected_files.clear();
+        self.dependencies.clear();
         if let Some(resolver) = self.config.extractor_config.cross_file.as_ref() {
             resolver.clear_resolution_cache();
         }
@@ -1177,25 +1157,14 @@ impl Project {
     fn mark_affected(&mut self, path: &str, source_hash: Option<u64>, retry_unresolved: bool) {
         let mut affected = self
             .dependency_key(path)
-            .and_then(|key| self.importers.get(&key))
-            .into_iter()
-            .flat_map(|importers| importers.iter())
-            .filter(|(importer, seen)| **seen != source_hash && importer.as_ref() != path)
-            .map(|(importer, _)| Arc::clone(importer))
-            .collect::<FxHashSet<_>>();
+            .map(|key| self.dependencies.changed_importers(&key, path, source_hash))
+            .unwrap_or_default();
 
         if retry_unresolved
-            && !self.unresolved_importers.is_empty()
+            && self.dependencies.has_unresolved()
             && let Some(resolver) = self.config.extractor_config.cross_file.as_ref()
         {
-            let newly_resolved = self
-                .unresolved_importers
-                .iter()
-                .filter(|(importer, deps)| {
-                    importer.as_ref() != path && resolver.any_resolvable(deps)
-                })
-                .map(|(importer, _)| Arc::clone(importer))
-                .collect::<Vec<_>>();
+            let newly_resolved = self.dependencies.newly_resolved(path, resolver);
             if !newly_resolved.is_empty() {
                 resolver.clear_resolution_cache();
                 affected.extend(newly_resolved);
@@ -1206,16 +1175,16 @@ impl Project {
             if let Some(entry) = self.files.get_mut(importer.as_ref()) {
                 entry.cacheable = false;
             }
-            self.affected_files.insert(importer);
+            self.dependencies.queue(importer);
         }
     }
 
     /// Host paths may differ from the resolver's realpath form (`/var` vs `/private/var`).
     fn dependency_key(&self, path: &str) -> Option<String> {
-        if self.importers.is_empty() {
+        if !self.dependencies.has_importers() {
             return None;
         }
-        if self.importers.contains_key(path) {
+        if self.dependencies.contains_dependency(path) {
             return Some(path.to_owned());
         }
         let resolver = self.config.extractor_config.cross_file.as_ref()?;
@@ -1224,43 +1193,11 @@ impl Project {
     }
 
     fn unindex_file_deps(&mut self, path: &str) {
-        self.unresolved_importers.remove(path);
-        let Some(deps) = self.files.get(path).map(|entry| entry.dependencies.clone()) else {
-            return;
-        };
-        for dep in deps {
-            let Some(importers) = self.importers.get_mut(&dep.path) else {
-                continue;
-            };
-            importers.remove(path);
-            if importers.is_empty() {
-                self.importers.remove(&dep.path);
-            }
-        }
-    }
-
-    fn index_file_deps(&mut self, path: &str, dependencies: &[CrossFileDependency]) {
-        if dependencies.is_empty() {
-            return;
-        }
-        let importer = Arc::<str>::from(path);
-        for dep in dependencies {
-            self.importers
-                .entry(dep.path.clone())
-                .or_default()
-                .insert(Arc::clone(&importer), dep.source_hash);
-        }
-    }
-
-    fn index_unresolved_file_deps(
-        &mut self,
-        path: &Arc<str>,
-        dependencies: &[UnresolvedCrossFileDependency],
-    ) {
-        if !dependencies.is_empty() {
-            self.unresolved_importers
-                .insert(Arc::clone(path), dependencies.to_vec());
-        }
+        let dependencies = self
+            .files
+            .get(path)
+            .map_or(&[][..], |entry| entry.dependencies.as_slice());
+        self.dependencies.remove_file(path, dependencies);
     }
 
     fn add_file_state(
@@ -1269,10 +1206,12 @@ impl Project {
         entry: FileEntry,
         unresolved_dependencies: &[UnresolvedCrossFileDependency],
     ) {
-        self.affected_files.remove(path.as_ref());
+        self.dependencies.remove_affected(path.as_ref());
         self.unindex_file_deps(path.as_ref());
-        self.index_file_deps(path.as_ref(), &entry.dependencies);
-        self.index_unresolved_file_deps(&path, unresolved_dependencies);
+        self.dependencies
+            .index_file(path.as_ref(), &entry.dependencies);
+        self.dependencies
+            .index_unresolved(&path, unresolved_dependencies);
         self.invalidate_stylesheet_snapshots();
         for atom in &entry.atoms {
             let atoms_cache = &mut self.atoms_cache;
@@ -1300,10 +1239,12 @@ impl Project {
             return;
         }
 
-        self.affected_files.remove(path.as_ref());
+        self.dependencies.remove_affected(path.as_ref());
         self.unindex_file_deps(path.as_ref());
-        self.index_file_deps(path.as_ref(), &entry.dependencies);
-        self.index_unresolved_file_deps(&path, unresolved_dependencies);
+        self.dependencies
+            .index_file(path.as_ref(), &entry.dependencies);
+        self.dependencies
+            .index_unresolved(&path, unresolved_dependencies);
         self.invalidate_stylesheet_snapshots();
         let mut missing_atoms = Vec::new();
         let mut missing_utility_styles = Vec::new();
@@ -1357,7 +1298,7 @@ impl Project {
     }
 
     fn remove_file_entry(&mut self, path: &str) -> Option<FileEntry> {
-        self.affected_files.remove(path);
+        self.dependencies.remove_affected(path);
         self.unindex_file_deps(path);
         let entry = self.files.remove(path)?;
         self.invalidate_stylesheet_snapshots();

@@ -11,6 +11,13 @@ Encoding and NAPI `Literal` `data` both use the same projection rules. Transform
 [`project_literal`](../crates/pandacss_extractor/src/style_tree.rs); normal extraction consumes the tree and moves its
 owned strings into `Literal`. The extractor does not run a separate `expression_to_literal` walk over the same AST.
 
+## Structural queries
+
+The extractor owns structural queries in `style_tree/queries.rs`; project lowering consumes those queries alongside the
+retained tree. Whole-tree analysis includes spanless `Branches`, while local open-value analysis deliberately skips
+those alternatives because they have no local condition to rewrite. A logical spread is distinct from a logical property
+value. These policies share one open-value walker and are covered by focused inline snapshots.
+
 ## Shape
 
 ```rust

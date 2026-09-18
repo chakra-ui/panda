@@ -16,7 +16,6 @@ mod cross_file;
 mod design_system_imports;
 mod export_names;
 mod extract;
-mod fragment;
 mod imports;
 mod jsx;
 mod jsx_react_runtime;
@@ -56,11 +55,6 @@ pub use local_bindings::{LocalBindingCall, LocalCallBinding, LocalDeclarationKin
 pub use cross_file::{CrossFileResolver, CrossFileSession};
 pub(crate) use export_names::collect_export_info;
 pub use export_names::{ExportInfo, ReExport};
-pub use fragment::{
-    FragmentCall, FragmentLogicalAnd, FragmentLogicalOrNullish, FragmentProperty, FragmentTernary,
-    LogicalOrNullishOp, is_logical_expression, parse_call_fragment, parse_logical_and_fragment,
-    parse_logical_or_nullish_fragment, parse_object_fragment, parse_ternary_fragment,
-};
 pub(crate) use imports::{collect_imports, collect_parser_diagnostics};
 pub use jsx::{
     ExtractedJsx, ExtractedJsxResult, JsxAttr, JsxSourceFacts, JsxSourceKind, extract_jsx,
@@ -75,7 +69,12 @@ pub use pandacss_shared::{
     Diagnostic, DiagnosticLabel, DiagnosticSeverity, SourceLocation, SourceRange, Span,
     diagnostic_codes,
 };
-pub use style_tree::{StyleObject, StyleSpread, StyleTree, project_literal};
+pub use style_tree::{
+    StyleObject, StyleSpread, StyleTree, has_nested_spread_branches, project_literal,
+    style_tree_has_open_local_value, style_tree_has_open_spread, style_tree_has_open_value,
+    style_tree_has_rewrite_sites, style_tree_has_runtime_branch, style_tree_has_value_and,
+    style_tree_is_open, style_tree_object_entry,
+};
 pub use transform_facts::{
     ConditionalExpressionFacts, ExpressionFacts, ExpressionKind, LogicalExpressionFacts,
     LogicalExpressionOperator, ObjectFacts, ObjectLiteralContext, ObjectPropertyFacts,

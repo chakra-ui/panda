@@ -1125,3 +1125,8 @@ and concise arrow bodies need parentheses; arguments, conditional arms, and alre
 The same fact is carried for Panda calls and local/imported recipe raw calls. The printer does not infer grammar from
 surrounding source text. Static raw variant selection consumes `ExpressionFacts::static_scalar_key`, derived from
 parsed scalar values with JavaScript number formatting, rather than interpreting authored numeric text.
+
+### Shared tree analysis
+
+Generic StyleTree queries live in extractor. The unused standalone fragment parsers are removed; transform continues to
+consume facts from the original Oxc parse, with lowering and printing kept together in `style_lower.rs`.
