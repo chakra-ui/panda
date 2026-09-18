@@ -1,5 +1,14 @@
 # @pandacss/typescript-plugin
 
+## 2.0.0-beta.19
+
+### Patch Changes
+
+- Updated dependencies [1f702e2]
+  - @pandacss/compiler@2.0.0-beta.19
+  - @pandacss/compiler-shared@2.0.0-beta.19
+  - @pandacss/types@2.0.0-beta.19
+
 ## 2.0.0-beta.18
 
 ### Patch Changes
