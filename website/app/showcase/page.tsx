@@ -79,7 +79,7 @@ function ShowcaseCard(props: { data: Showcase }) {
           <Box textStyle="sm" fontWeight="semibold">
             {data.name}
           </Box>
-          <Box textStyle="eyebrow" color="fg.subtle" mt="1.5">
+          <Box textStyle="sm" color="fg.muted" lineHeight="1.6" mt="1">
             {data.description}
           </Box>
         </Box>
