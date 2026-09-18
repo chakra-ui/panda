@@ -10700,6 +10700,7 @@ export interface GenericProperties {
  * Native css props
  * -----------------------------------------------------------------------------*/
 export type NestedCssProperties = Nested<CssProperties$1>;
+export type FirstThatWorksMember = String$1 | Number$1;
 export type SystemStyleObject = Nested<(SystemProperties | GenericProperties) & CssVarProperties>;
 export interface ViewTransitionStyleObject {
 	group?: SystemStyleObject;

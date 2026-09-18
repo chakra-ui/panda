@@ -39,10 +39,10 @@ export default async function BlogPage() {
     <Box maxW="72rem" mx="auto" px="6" pt="16" pb="24">
       <Box
         as="h1"
-        fontSize={{ base: '5xl', md: '6xl' }}
+        fontSize={{ base: '4xl', md: '5xl' }}
         fontWeight="bold"
         letterSpacing="tighter"
-        lineHeight="1"
+        lineHeight="1.05"
         mb="12"
       >
         Latest Updates

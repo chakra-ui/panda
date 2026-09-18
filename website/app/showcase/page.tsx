@@ -30,9 +30,14 @@ const cardStyles = css({
   overflow: 'hidden',
   textDecoration: 'none',
   color: 'fg',
-  transitionProperty: 'border-color, background-color',
+  transitionProperty: 'background-color',
   transitionDuration: '150ms',
-  _hover: { borderColor: 'fg.subtle', bg: 'bg.subtle' }
+  _hover: { bg: 'bg.subtle' },
+  _focusVisible: {
+    outline: '2px solid',
+    outlineColor: 'blue.500',
+    outlineOffset: '2px'
+  }
 })
 
 function ShowcaseCard(props: { data: Showcase }) {

@@ -6,22 +6,25 @@ console.time('bundle-types')
 const __dirname = new URL('.', import.meta.url).pathname
 const tsconfigPath = path.join(__dirname, '../tsconfig.json')
 const dts = (relative: string) => path.join(__dirname, '../node_modules/' + relative)
+const outfile = (name: string) => path.join(__dirname, '../src/dts/', name.replaceAll('/', '_') + '.d.ts')
 
-const dtsFiles = {
-  ['@pandacss/dev']: dts('@pandacss/dev/dist/index.d.ts'),
+// Inlined, not re-exported: the editor resolves neither a bare package specifier
+// nor @pandacss/dev's './define.js' sibling.
+const bundles = [
+  { name: '@pandacss/types', entry: 'panda-types.ts' },
+  { name: '@pandacss/dev', entry: 'panda-dev.ts' },
+]
+
+const copies = {
   ['react']: dts('@types/react/index.d.ts'),
 }
 
 console.log('Generating dts bundles...')
 const bundledDts = generateDtsBundle(
-  [
-    {
-      filePath: path.join(__dirname, 'panda-types.ts'),
-      // @pandacss/types resolves to a published package, which the generator would
-      // re-export rather than inline. The editor needs the declarations themselves.
-      libraries: { inlinedLibraries: ['@pandacss/types'] },
-    },
-  ],
+  bundles.map(({ name, entry }) => ({
+    filePath: path.join(__dirname, entry),
+    libraries: { inlinedLibraries: [name] },
+  })),
   { preferredConfigPath: tsconfigPath },
 )
 
@@ -29,11 +32,16 @@ const outdir = path.join(__dirname, '../src/dts/')
 console.log('Writing dts bundles in', outdir)
 
 await getOrCreateDir(outdir)
-await fs.writeFile(outdir + '@pandacss/types'.replaceAll('/', '_') + '.d.ts', bundledDts[0])
 await Promise.all(
-  Object.keys(dtsFiles).map((name) => {
+  bundles.map(({ name }, index) => {
+    console.log('Bundling', name)
+    return fs.writeFile(outfile(name), bundledDts[index])
+  }),
+)
+await Promise.all(
+  Object.keys(copies).map((name) => {
     console.log('Copying', name)
-    return fs.copyFile((dtsFiles as any)[name], outdir + name.replaceAll('/', '_') + '.d.ts')
+    return fs.copyFile((copies as any)[name], outfile(name))
   }),
 )
 
