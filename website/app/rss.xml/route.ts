@@ -1,4 +1,5 @@
 import { docsConfig } from '@/docs.config'
+import { resolveAuthors } from '@/lib/authors'
 import { blogSource } from '@/lib/source'
 
 export const dynamic = 'force-static'
@@ -31,9 +32,11 @@ export function GET() {
         post.description
           ? `      <description>${escapeXml(post.description)}</description>`
           : '',
-        ...(post.author ?? []).map(
-          name => `      <dc:creator>${escapeXml(name)}</dc:creator>`
-        ),
+        ...(post.author ?? []).map(nick => {
+          const author = resolveAuthors([nick])[0]
+          const label = author ? `${author.name} (${nick})` : nick
+          return `      <dc:creator>${escapeXml(label)}</dc:creator>`
+        }),
         ...(post.tags ?? []).map(
           tag => `      <category>${escapeXml(tag)}</category>`
         ),
