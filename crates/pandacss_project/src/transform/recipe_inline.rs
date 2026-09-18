@@ -503,7 +503,6 @@ fn styled_config_arg(call: &pandacss_extractor::ExtractedCall) -> Option<(usize,
 /// string-branch desugar of the definition — the runtime `raw` returns style
 /// objects and the desugared one returns class strings.
 pub(crate) fn raw_call_variant_props(
-    source: &str,
     args: &[Option<ExpressionFacts>],
 ) -> Option<Vec<(String, String)>> {
     if args.len() > 1 {
@@ -525,29 +524,10 @@ pub(crate) fn raw_call_variant_props(
         }
         let key = prop.key.as_ref()?;
         let value = prop.value.as_ref()?;
-        let value = static_variant_value(source, value)?;
+        let value = value.static_scalar_key.clone()?;
         upsert_prop(&mut props, key.clone(), value);
     }
     Some(props)
-}
-
-/// Variant values are looked up as object keys at runtime, so every static
-/// literal reduces to its string form.
-fn static_variant_value(source: &str, facts: &ExpressionFacts) -> Option<String> {
-    if let Some(value) = facts.string_value.as_ref() {
-        return Some(value.clone());
-    }
-    if facts.kind != ExpressionKind::Static {
-        return None;
-    }
-    let start = usize::try_from(facts.span.start).ok()?;
-    let end = usize::try_from(facts.span.end).ok()?;
-    let text = source.get(start..end)?.trim();
-    match text {
-        "true" | "false" => Some(text.to_owned()),
-        _ if text.parse::<f64>().is_ok() => Some(text.to_owned()),
-        _ => None,
-    }
 }
 
 fn upsert_prop(props: &mut Vec<(String, String)>, key: String, value: String) {

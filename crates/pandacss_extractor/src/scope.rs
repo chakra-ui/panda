@@ -850,6 +850,10 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         let mut folded = self.imported_recipe_raw_calls.borrow_mut();
         if !folded.iter().any(|call| call.span == span) {
             folded.push(ImportedRecipeRawCall {
+                object_literal_context: crate::transform_facts::object_literal_context(
+                    call,
+                    &self.semantic,
+                ),
                 span,
                 styles: styles.clone(),
             });

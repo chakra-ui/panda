@@ -1,18 +1,17 @@
 //! Resolve static style literals to atomic class name strings.
 
-use std::collections::HashSet;
-
 use pandacss_encoder::{Atom, Encoder, compare_atoms_by_emit_order};
-use pandacss_extractor::{CallFacts, ExpressionKind, ExtractedCall, Literal, StyleTree};
+use pandacss_extractor::{
+    CallFacts, ExpressionKind, ExtractedCall, Literal, ObjectLiteralContext, StyleTree,
+};
 use pandacss_shared::{CssFactory, FIRST_THAT_WORKS_MIN_MEMBERS, format_first_that_works};
 use pandacss_utility::ShorthandPolicy;
 
 use crate::PatternTransformFn;
 use crate::Project;
 
-use super::helper::CX_HELPER_LOCAL;
 use super::js;
-use super::plan::{HelperCxMode, Rewrite, TransformHelperFacts};
+use super::plan::{HelperCxMode, Rewrite};
 use super::style_lower::{self, LowerTarget};
 
 /// Returns `None` when the literal cannot be encoded to stable class strings.
@@ -20,29 +19,32 @@ pub(crate) fn classes_for_css_args(
     project: &Project,
     args: &[Option<Literal>],
 ) -> Option<Vec<String>> {
-    if args.is_empty() || args.iter().any(Option::is_none) {
+    if args.iter().any(Option::is_none) {
         return None;
     }
 
-    let conditions = project.config().conditions().clone();
-    let mut atoms: Vec<Atom> = Vec::new();
+    if args.iter().flatten().all(empty_css_arg) {
+        return Some(Vec::new());
+    }
 
+    let mut layers = Vec::new();
     for arg in args.iter().flatten() {
         if !is_static_style_literal(arg) {
             return None;
         }
-        let mut encoder = Encoder::with_conditions(conditions.clone());
-        encode_css_arg(project, &mut encoder, arg);
-        let batch: Vec<Atom> = encoder.into_atoms().into_iter().collect();
-        let batch_keys: HashSet<(String, Vec<Box<str>>)> = batch
-            .iter()
-            .map(|atom| (atom.prop().to_owned(), atom.conditions().to_vec()))
-            .collect();
-        atoms.retain(|atom| {
-            !batch_keys.contains(&(atom.prop().to_owned(), atom.conditions().to_vec()))
-        });
-        atoms.extend(batch);
+        collect_css_layers(arg, &mut layers);
     }
+    let style = if layers.len() > 1 {
+        project.merged_style_literal(&layers)?
+    } else {
+        layers.into_iter().next().flatten()?
+    };
+    if empty_css_arg(&style) {
+        return Some(Vec::new());
+    }
+    let mut encoder = Encoder::with_conditions(project.config().conditions().clone());
+    encode_css_arg(project, &mut encoder, &style);
+    let mut atoms: Vec<Atom> = encoder.into_atoms().into_iter().collect();
 
     if atoms.is_empty() {
         return None;
@@ -60,6 +62,35 @@ pub(crate) fn classes_for_css_args(
     }
 
     Some(classes)
+}
+
+fn collect_css_layers(arg: &Literal, layers: &mut Vec<Option<Literal>>) {
+    match arg {
+        Literal::Array(items) | Literal::Conditional(items) => {
+            for item in items {
+                collect_css_layers(item, layers);
+            }
+        }
+        Literal::Object(entries) if !entries.is_empty() => layers.push(Some(arg.clone())),
+        _ => {}
+    }
+}
+
+fn empty_css_arg(arg: &Literal) -> bool {
+    match arg {
+        Literal::Object(entries) => entries.iter().all(|(_, value)| empty_css_value(value)),
+        Literal::Array(items) | Literal::Conditional(items) => items.iter().all(empty_css_arg),
+        _ => true,
+    }
+}
+
+fn empty_css_value(value: &Literal) -> bool {
+    match value {
+        Literal::Null => true,
+        Literal::Object(entries) => entries.iter().all(|(_, value)| empty_css_value(value)),
+        Literal::Array(items) | Literal::Conditional(items) => items.iter().all(empty_css_value),
+        _ => false,
+    }
 }
 
 fn encode_css_arg(
@@ -115,163 +146,54 @@ pub(crate) fn rewrite_for_css_call(
     facts: &CallFacts,
     helper_cx: HelperCxMode,
 ) -> Option<Rewrite> {
-    // StyleTree is the sole conditional rewrite path. Bail leaves the call;
-    // open spreads must not fall through to a silent-static rewrite.
-    if let Some(tree) = style_args.first().and_then(|value| value.as_ref()) {
-        if style_lower::style_tree_has_rewrite_sites(tree) {
-            let expr =
-                style_lower::lower_style_tree(project, source, tree, LowerTarget::Css, None)?;
-            return Some(Rewrite::replace_preserving(
-                span,
-                style_lower::print_class_expr(&expr),
-                style_lower::preserved_source_spans(tree),
-            ));
-        }
-        if tree.is_open() || style_lower::style_tree_has_open_spread(tree) {
-            return None;
-        }
+    if let Some(rewrite) = rewrite_finite_css_call(project, source, span, args, style_args) {
+        return Some(rewrite);
+    }
+    super::css_partial::rewrite(project, source, span, style_args, facts, helper_cx)
+}
+
+fn rewrite_finite_css_call(
+    project: &Project,
+    source: &str,
+    span: pandacss_shared::Span,
+    args: &[Option<Literal>],
+    style_args: &[Option<StyleTree>],
+) -> Option<Rewrite> {
+    if style_args
+        .iter()
+        .flatten()
+        .any(style_lower::style_tree_is_open)
+    {
+        return None;
+    }
+    if style_args
+        .iter()
+        .flatten()
+        .any(style_lower::style_tree_has_rewrite_sites)
+    {
+        let (expr, preserved) = if args.len() == 1 {
+            let tree = style_args.first()?.as_ref()?;
+            if matches!(tree, StyleTree::Object(_))
+                && !style_lower::style_tree_has_value_and(tree)
+                && !style_lower::has_nested_spread_branches(tree)
+            {
+                let expr =
+                    style_lower::lower_style_tree(project, source, tree, LowerTarget::Css, None)?;
+                (expr, style_lower::preserved_source_spans(tree))
+            } else {
+                style_lower::lower_css_args(project, source, style_args)?
+            }
+        } else {
+            style_lower::lower_css_args(project, source, style_args)?
+        };
+        return Some(Rewrite::replace_preserving(
+            span,
+            style_lower::print_class_expr(&expr),
+            preserved,
+        ));
     }
     let classes = classes_for_css_args(project, args)?;
-    match analyze_css_arg(source, args, facts) {
-        CssArgShape::AllStatic => {
-            // StyleTree `Open` leaves (e.g. `a || 'gray'`) must not silent-rewrite
-            // from encode-peeled Literal data. Top-level mixed uses Open props via
-            // the branch below instead.
-            if style_args
-                .first()
-                .and_then(|value| value.as_ref())
-                .is_some_and(style_lower::style_tree_has_open_value)
-            {
-                return None;
-            }
-            Some(Rewrite::replace(span, js::string(&classes.join(" "))))
-        }
-        // A dynamic prop is nested (or otherwise unclean); leave the call so
-        // nothing is silently dropped.
-        CssArgShape::NeedsBail => None,
-        // Inline the static props and keep the open-ended dynamic ones in a
-        // runtime `css()` call, merged by `cx` — matches the runtime output.
-        CssArgShape::TopLevelMixed {
-            dynamic,
-            mut preserved,
-        } => {
-            if helper_cx == HelperCxMode::False {
-                return None;
-            }
-            let callee = css_callee(source, facts)?;
-            preserved.push(facts.callee_span);
-            Some(Rewrite {
-                start: span.start,
-                end: span.end,
-                content: format!(
-                    "{CX_HELPER_LOCAL}({}, {callee}({{ {} }}))",
-                    js::string(&classes.join(" ")),
-                    dynamic.join(", ")
-                ),
-                preserved,
-                helper: TransformHelperFacts::cx(),
-            })
-        }
-    }
-}
-
-enum CssArgShape {
-    AllStatic,
-    NeedsBail,
-    /// Source of each open-ended dynamic top-level prop (`width: props.w`).
-    TopLevelMixed {
-        dynamic: Vec<String>,
-        preserved: Vec<pandacss_shared::Span>,
-    },
-}
-
-/// Classify a single-object `css()` arg into fully static, a clean top-level
-/// static+dynamic mix, or "needs bail" (nested drop / spread / unparseable).
-fn analyze_css_arg(source: &str, args: &[Option<Literal>], facts: &CallFacts) -> CssArgShape {
-    // When the arg can't be analyzed cleanly, fall back to the plain rewrite
-    // (unchanged behavior); only a *detected* nested drop bails.
-    if args.len() != 1 {
-        return CssArgShape::AllStatic;
-    }
-    let Some(Some(Literal::Object(folded))) = args.first() else {
-        return CssArgShape::AllStatic;
-    };
-    let Some(object) = facts
-        .args
-        .first()
-        .and_then(Option::as_ref)
-        .and_then(|argument| argument.object.as_ref())
-    else {
-        return CssArgShape::AllStatic;
-    };
-
-    let mut dynamic = Vec::new();
-    let mut preserved = Vec::new();
-    for prop in &object.properties {
-        // A spread reaching here already folded in (unresolvable bare-identifier
-        // spreads bailed earlier); its props are already in `folded`.
-        if prop.is_spread() {
-            continue;
-        }
-        let Some(key) = prop.key.as_deref() else {
-            return CssArgShape::NeedsBail;
-        };
-        match folded.iter().find(|(folded_key, _)| folded_key == key) {
-            None => {
-                let Some(raw) = span_slice(source, prop.span) else {
-                    return CssArgShape::NeedsBail;
-                };
-                dynamic.push(raw.to_owned());
-                preserved.push(prop.span);
-            }
-            Some((_, folded_value)) => {
-                if prop
-                    .value
-                    .as_ref()
-                    .and_then(|value| value.object.as_ref())
-                    .is_some_and(|value| object_value_has_drop(value, folded_value))
-                {
-                    return CssArgShape::NeedsBail;
-                }
-            }
-        }
-    }
-
-    if dynamic.is_empty() {
-        CssArgShape::AllStatic
-    } else {
-        CssArgShape::TopLevelMixed { dynamic, preserved }
-    }
-}
-
-/// `true` when the source object literal has any prop the folded value dropped
-/// (recursively) — i.e. folding lost a nested dynamic prop.
-fn object_value_has_drop(object: &pandacss_extractor::ObjectFacts, folded: &Literal) -> bool {
-    let Literal::Object(folded) = folded else {
-        return true;
-    };
-    object.properties.iter().any(|prop| {
-        if prop.is_spread() {
-            return false;
-        }
-        let Some(key) = prop.key.as_deref() else {
-            return true;
-        };
-        match folded.iter().find(|(folded_key, _)| folded_key == key) {
-            None => true,
-            Some((_, folded_value)) => prop
-                .value
-                .as_ref()
-                .and_then(|value| value.object.as_ref())
-                .is_some_and(|value| object_value_has_drop(value, folded_value)),
-        }
-    })
-}
-
-/// The callee text of a call, e.g. `css` or `p.css`, from between the call
-/// start and its first argument.
-fn css_callee(source: &str, facts: &CallFacts) -> Option<String> {
-    span_slice(source, facts.callee_span).map(str::to_owned)
+    Some(Rewrite::replace(span, js::string(&classes.join(" "))))
 }
 
 /// Inline a standalone `firstThatWorks(...)` call to its value form. A dynamic
@@ -412,7 +334,6 @@ pub(crate) fn rewrite_for_pattern_call(
 /// Emitted as two edits around the argument rather than one call-wide rewrite so
 /// nested rewrites (token folding) inside the object still apply.
 pub(crate) fn rewrites_for_identity_raw_call(
-    source: &str,
     span: pandacss_shared::Span,
     arg_spans: &[pandacss_shared::Span],
     facts: &CallFacts,
@@ -424,7 +345,7 @@ pub(crate) fn rewrites_for_identity_raw_call(
         return None;
     }
 
-    let (open, close) = if object_literal_needs_parens(source, span.start) {
+    let (open, close) = if facts.object_literal_context.needs_parentheses() {
         ("(", ")")
     } else {
         ("", "")
@@ -449,19 +370,16 @@ pub(crate) fn rewrites_for_identity_raw_call(
 /// branch rather than data, so anything carrying one is left alone.
 pub(crate) fn rewrite_for_merged_raw_call(
     project: &Project,
-    source: &str,
-    span: pandacss_shared::Span,
-    args: &[Option<Literal>],
+    call: &ExtractedCall,
 ) -> Option<Rewrite> {
-    let merged = project.merged_style_literal(args)?;
-    rewrite_for_style_literal(source, span, &merged)
+    let merged = project.merged_style_literal(&call.data)?;
+    rewrite_for_style_literal(call.span, call.facts.object_literal_context, &merged)
 }
 
 /// Fold `pattern.raw(props)` to the style object the pattern's transform
 /// returns — the same value the runtime would hand back.
 pub(crate) fn rewrite_for_pattern_raw_call(
     project: &Project,
-    source: &str,
     call: &ExtractedCall,
     pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> Option<Rewrite> {
@@ -470,7 +388,7 @@ pub(crate) fn rewrite_for_pattern_raw_call(
     }
     let styles =
         project.style_literal_for_pattern_call(&call.name, &call.data, pattern_transform)?;
-    rewrite_for_style_literal(source, call.span, &styles)
+    rewrite_for_style_literal(call.span, call.facts.object_literal_context, &styles)
 }
 
 /// Replace a whole call with the object literal it evaluates to.
@@ -478,41 +396,20 @@ pub(crate) fn rewrite_for_pattern_raw_call(
 /// `Literal::Conditional` is a runtime branch rather than data, so anything
 /// carrying one is left alone.
 pub(crate) fn rewrite_for_style_literal(
-    source: &str,
     span: pandacss_shared::Span,
+    position: ObjectLiteralContext,
     styles: &Literal,
 ) -> Option<Rewrite> {
     if !matches!(styles, Literal::Object(_)) || styles.has_conditional() {
         return None;
     }
     let object = serde_json::to_string(styles).ok()?;
-    let content = if object_literal_needs_parens(source, span.start) {
+    let content = if position.needs_parentheses() {
         format!("({object})")
     } else {
         object
     };
     Some(Rewrite::replace(span, content))
-}
-
-/// A bare object literal needs parentheses wherever `{` would open a block —
-/// a concise arrow body or statement position.
-fn object_literal_needs_parens(source: &str, at: u32) -> bool {
-    let Some(before) = usize::try_from(at).ok().and_then(|at| source.get(..at)) else {
-        return true;
-    };
-    let trimmed = before.trim_end();
-    // Without a semicolon, a line break ends the previous statement, so this
-    // call starts one and `{` would open a block.
-    let starts_a_line = before[trimmed.len()..].contains('\n');
-    match trimmed.chars().next_back() {
-        Some('>') => trimmed.ends_with("=>"),
-        None | Some(';' | '{' | '}') => true,
-        // These can only continue an expression, so the literal is unambiguous.
-        Some(
-            '(' | '[' | ',' | '=' | ':' | '?' | '+' | '-' | '*' | '/' | '%' | '&' | '|' | '!' | '~',
-        ) => false,
-        Some(_) => starts_a_line,
-    }
 }
 
 pub(crate) fn span_slice(source: &str, span: pandacss_shared::Span) -> Option<&str> {

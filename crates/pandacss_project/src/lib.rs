@@ -426,9 +426,19 @@ impl Project {
                 && entry.parse_epoch == self.parse_epoch
         }) {
             span.record("cache_hit", true);
+            self.parse_attempt_diagnostics.remove(path);
             return self.files.get(path).expect("checked above").report.clone();
         }
         span.record("cache_hit", false);
+        let mode = if self
+            .files
+            .get(path)
+            .is_some_and(|entry| entry.parse_epoch != self.parse_epoch)
+        {
+            ParseMode::Replace
+        } else {
+            mode
+        };
 
         let transformed_source;
         let source = match source_transform {
@@ -1064,6 +1074,8 @@ impl Project {
         self.position_try_spans.clear();
         self.inline_keyframes.clear();
         self.inline_keyframe_spans.clear();
+        self.hydrated_recipes.clear();
+        self.hydrated_recipe_order.clear();
         self.hydrated_view_transitions.clear();
         self.hydrated_view_transition_order.clear();
         self.hydrated_position_try.clear();
@@ -1080,8 +1092,11 @@ impl Project {
 
     /// Forces the next `parse_file` for any path to recompute, even if its
     /// source text is unchanged. Call when external transform callbacks change.
+    /// Also clears callback-derived config styles and static recipe snapshots.
     pub fn bump_parse_epoch(&mut self) {
         self.parse_epoch = self.parse_epoch.wrapping_add(1);
+        self.config_utility_styles_cache = None;
+        self.static_encoded_recipes_snapshot_cache = None;
     }
 
     fn drop_file_state(&mut self, path: &str) {
@@ -1266,10 +1281,9 @@ impl Project {
             });
         }
         for (key, styles) in &entry.utility_styles {
-            let utility_styles_cache = &mut self.utility_styles_cache;
-            refcount_add(&mut self.utility_styles_counts, key, || {
-                utility_styles_cache.insert(key.clone(), styles.clone());
-            });
+            refcount_add(&mut self.utility_styles_counts, key, || {});
+            self.utility_styles_cache
+                .insert(key.clone(), styles.clone());
         }
         self.encoded_recipes_cache.add_from(&entry.encoded_recipes);
         self.files.insert(path, entry);
@@ -2022,10 +2036,12 @@ impl Project {
                     self.collect_style_entry_overrides(key, item, transform, out, diagnostics);
                 }
             }
-            serde_json::Value::String(_) | serde_json::Value::Number(_) => {
+            serde_json::Value::String(_)
+            | serde_json::Value::Number(_)
+            | serde_json::Value::Bool(_) => {
                 self.transform_style_leaf(key, value, transform, out, diagnostics);
             }
-            serde_json::Value::Bool(_) | serde_json::Value::Null => {}
+            serde_json::Value::Null => {}
         }
     }
 
@@ -2534,6 +2550,7 @@ fn json_scalar_to_atom_value(value: &serde_json::Value) -> Option<AtomValue> {
                 .map_or_else(|| value.to_string(), pandacss_shared::number_to_js_string)
                 .into_boxed_str(),
         )),
+        serde_json::Value::Bool(value) => Some(AtomValue::Bool(*value)),
         _ => None,
     }
 }

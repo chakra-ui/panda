@@ -1255,3 +1255,22 @@ fn leaves_a_file_with_no_panda_api_and_no_raw_call_alone() {
         output.code
     );
 }
+
+#[test]
+fn parenthesizes_an_imported_raw_result_after_an_arrow_body_comment() {
+    let button = indoc! {r#"
+        import { cva } from '@panda/css';
+        export const button = cva({ base: { color: 'red' } });
+    "#};
+    let source = indoc! {r#"
+        import { button } from './button';
+        export const styles = () => /* object */ button.raw({});
+    "#};
+    let output =
+        super::common::transform_cross_file("src/a.tsx", source, &[("src/button.ts", button)]);
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { button } from './button';
+    export const styles = () => /* object */ ({"color":"red"});
+    "#);
+}

@@ -5,6 +5,8 @@
 //! class-name resolution and [`ParseTransforms`] bag as [`Project::parse_file_with`].
 
 mod apply;
+mod css_keys;
+mod css_partial;
 mod helper;
 mod imports;
 mod js;

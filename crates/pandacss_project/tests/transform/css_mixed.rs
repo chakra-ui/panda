@@ -223,25 +223,33 @@ fn bails_on_fully_dynamic_object() {
 }
 
 #[test]
-fn bails_on_nested_partial_object() {
+fn splits_nested_partial_object() {
     let source = indoc! {r#"
         import { css } from '@panda/css';
         export const cls = css({ color: 'red', _hover: { color: 'blue', padding: props.p } });
     "#};
     let out = css(source);
-    assert!(!out.changed);
-    assert_eq!(out.code, source);
+    assert!(out.changed);
+    assert_snapshot!(out.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    import { css } from '@panda/css';
+    export const cls = __pcx("color_red hover:color_blue", css({ _hover: { padding: props.p } }));
+    "#);
 }
 
 #[test]
-fn bails_on_deeply_nested_partial_object() {
+fn splits_deeply_nested_partial_object() {
     let source = indoc! {r#"
         import { css } from '@panda/css';
         export const cls = css({ _hover: { _dark: { color: 'red', margin: props.m } } });
     "#};
     let out = css(source);
-    assert!(!out.changed);
-    assert_eq!(out.code, source);
+    assert!(out.changed);
+    assert_snapshot!(out.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    import { css } from '@panda/css';
+    export const cls = __pcx("hover:dark:color_red", css({ _hover: { _dark: { margin: props.m } } }));
+    "#);
 }
 
 #[test]

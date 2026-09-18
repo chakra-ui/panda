@@ -868,7 +868,6 @@ impl super::Project {
             };
             token_refs.push(path.into());
         }
-        self.set_hydrated_recipes(name, recipes);
 
         let Some(view_transitions) = view_transitions_from_build(
             &info.view_transitions,
@@ -877,7 +876,6 @@ impl super::Project {
         ) else {
             return false;
         };
-        self.set_hydrated_view_transitions(name, view_transitions);
 
         let Some(position_try) = position_try_from_build(
             &info.position_try,
@@ -886,13 +884,15 @@ impl super::Project {
         ) else {
             return false;
         };
-        self.set_hydrated_position_try(name, position_try);
 
         let Some(keyframes) =
             keyframes_from_build(&info.keyframes, &info.strings, selected_keyframes.as_ref())
         else {
             return false;
         };
+        self.set_hydrated_recipes(name, recipes);
+        self.set_hydrated_view_transitions(name, view_transitions);
+        self.set_hydrated_position_try(name, position_try);
         self.set_hydrated_keyframes(name, keyframes);
 
         let key: Arc<str> = Arc::from(format!("{HYDRATED_FILE_PREFIX}{name}").as_str());

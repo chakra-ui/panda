@@ -241,9 +241,11 @@ pub(crate) fn build_plan(
     // An imported recipe's definition file precomputes its class strings, so
     // its runtime `raw` would hand back a string — pin the styles here instead.
     for raw_call in &extracted.imported_recipe_raw_calls {
-        if let Some(rewrite) =
-            resolve::rewrite_for_style_literal(source, raw_call.span, &raw_call.styles)
-        {
+        if let Some(rewrite) = resolve::rewrite_for_style_literal(
+            raw_call.span,
+            raw_call.object_literal_context,
+            &raw_call.styles,
+        ) {
             plan.push(rewrite);
         }
     }
@@ -256,7 +258,6 @@ pub(crate) fn build_plan(
             push_raw_rewrites(
                 &mut plan,
                 project,
-                source,
                 call,
                 targets,
                 pattern_transform.as_deref_mut(),
@@ -343,8 +344,7 @@ fn push_css_call_rewrites(
     helper_cx: HelperCxMode,
 ) {
     match call.name.as_str() {
-        "cva" | "sva"
-            if !push_inline_recipe_raw_rewrites(plan, project, source, extracted, call) => {}
+        "cva" | "sva" if !push_inline_recipe_raw_rewrites(plan, project, extracted, call) => {}
         "cva" => {
             if let Some(rewrite) = super::recipe_inline::rewrite_for_cva_call(
                 project,
@@ -410,7 +410,6 @@ fn push_css_call_rewrites(
 fn push_inline_recipe_raw_rewrites(
     plan: &mut TransformPlan,
     project: &Project,
-    source: &str,
     extracted: &ExtractUsage,
     call: &ExtractedCall,
 ) -> bool {
@@ -436,8 +435,7 @@ fn push_inline_recipe_raw_rewrites(
 
     let mut rewrites = Vec::with_capacity(binding.raw_calls.len());
     for raw_call in &binding.raw_calls {
-        let Some(props) = super::recipe_inline::raw_call_variant_props(source, &raw_call.args)
-        else {
+        let Some(props) = super::recipe_inline::raw_call_variant_props(&raw_call.args) else {
             return false;
         };
         let Some(styles) =
@@ -445,8 +443,11 @@ fn push_inline_recipe_raw_rewrites(
         else {
             return false;
         };
-        let Some(rewrite) = resolve::rewrite_for_style_literal(source, raw_call.span, &styles)
-        else {
+        let Some(rewrite) = resolve::rewrite_for_style_literal(
+            raw_call.span,
+            raw_call.object_literal_context,
+            &styles,
+        ) else {
             return false;
         };
         rewrites.push(rewrite);
@@ -465,7 +466,6 @@ fn push_inline_recipe_raw_rewrites(
 fn push_raw_rewrites(
     plan: &mut TransformPlan,
     project: &Project,
-    source: &str,
     call: &ExtractedCall,
     targets: &TransformTargets,
     pattern_transform: Option<&mut PatternTransformFn<'_>>,
@@ -473,21 +473,18 @@ fn push_raw_rewrites(
     match call.category {
         MatchCategory::Pattern if targets.patterns_enabled() => {
             if let Some(rewrite) =
-                resolve::rewrite_for_pattern_raw_call(project, source, call, pattern_transform)
+                resolve::rewrite_for_pattern_raw_call(project, call, pattern_transform)
             {
                 plan.push(rewrite);
             }
         }
         MatchCategory::Css if targets.css_enabled() && call.name == "css" => {
-            push_identity_or_merged_raw(plan, project, source, call);
+            push_identity_or_merged_raw(plan, project, call);
         }
         MatchCategory::Recipe if targets.recipes_enabled() => {
-            if let Some(rewrites) = resolve::rewrites_for_identity_raw_call(
-                source,
-                call.span,
-                &call.arg_spans,
-                &call.facts,
-            ) {
+            if let Some(rewrites) =
+                resolve::rewrites_for_identity_raw_call(call.span, &call.arg_spans, &call.facts)
+            {
                 plan.extend(rewrites);
             }
         }
@@ -495,19 +492,12 @@ fn push_raw_rewrites(
     }
 }
 
-fn push_identity_or_merged_raw(
-    plan: &mut TransformPlan,
-    project: &Project,
-    source: &str,
-    call: &ExtractedCall,
-) {
+fn push_identity_or_merged_raw(plan: &mut TransformPlan, project: &Project, call: &ExtractedCall) {
     if let Some(rewrites) =
-        resolve::rewrites_for_identity_raw_call(source, call.span, &call.arg_spans, &call.facts)
+        resolve::rewrites_for_identity_raw_call(call.span, &call.arg_spans, &call.facts)
     {
         plan.extend(rewrites);
-    } else if let Some(rewrite) =
-        resolve::rewrite_for_merged_raw_call(project, source, call.span, &call.data)
-    {
+    } else if let Some(rewrite) = resolve::rewrite_for_merged_raw_call(project, call) {
         plan.push(rewrite);
     }
 }

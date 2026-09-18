@@ -78,6 +78,13 @@ for event in watcher {
 
 ## Atoms cache
 
+When external transform callbacks change, bindings call `bump_parse_epoch` so unchanged source files are reprocessed
+on their next parse. This also clears config utility overrides and static recipe snapshots, which must be recomputed
+on the next compile even when no source file is parsed. A refresh in a new parse epoch replaces the old file bucket
+instead of accumulating callback-derived declarations. Shared utility keys adopt the newly parsed declarations.
+A successful cached parse clears diagnostics from a previous failed read. `clear` removes hydrated recipe groups
+along with the other hydrated styles.
+
 ```rust
 atoms_cache: FxHashSet<Atom>
 atom_counts: FxHashMap<Atom, u32>

@@ -1,8 +1,114 @@
 import { describe, expect, it } from 'vitest'
 import { createCompilerFromSnapshot } from '../src'
+import type { RawCompiler } from '../src/types'
 import { importMap } from './test-utils'
 
 describe('Compiler callbacks', () => {
+  it('refreshes config CSS when replacing a registered utility transform', () => {
+    let calls = 0
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          utilities: {
+            size: { transform: { kind: 'js-callback', id: 'utilities.size.transform' } },
+          },
+          globalCss: { html: { size: '4px' } },
+          theme: {
+            recipes: { button: { base: { size: '8px' } } },
+          },
+          staticCss: { recipes: { button: ['*'] } },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.size.transform': (value) => ({ width: value }),
+          },
+        },
+      },
+      { crossFile: false },
+    ) as RawCompiler
+
+    const initial = compiler.compile()
+    expect(initial.diagnostics).toEqual([])
+    expect(initial.css).toContain('width: 4px')
+    expect(initial.css).toContain('width: 8px')
+
+    compiler.registerUtilityTransform!('utilities.size.transform', (value) => {
+      calls += 1
+      return { height: value }
+    })
+
+    const replaced = compiler.compile()
+    expect(replaced.diagnostics).toEqual([])
+    expect(replaced.css).toContain('height: 4px')
+    expect(replaced.css).toContain('height: 8px')
+    expect(replaced.css).not.toContain('width:')
+    expect(calls).toBe(2)
+    expect(compiler.compile().css).toBe(replaced.css)
+    expect(calls).toBe(2)
+  })
+
+  it('replaces shared source and recipe CSS when refreshing after a callback change', () => {
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          utilities: {
+            size: { transform: { kind: 'js-callback', id: 'utilities.size.transform' } },
+          },
+          theme: { recipes: { button: { base: { size: '8px' } } } },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.size.transform': (value) => ({ width: value }),
+          },
+        },
+      },
+      { crossFile: false },
+    ) as RawCompiler
+    const source = `import { css } from '@panda/css'; import { button } from '@panda/recipes'; css({ size: '4px' }); button({})`
+    const paths = ['/virtual/a.ts', '/virtual/b.ts']
+    for (const path of paths) compiler.parseFileSource(path, source)
+    expect(compiler.compile().css).toContain('width: 8px')
+    compiler.registerUtilityTransform!('utilities.size.transform', (value) => ({ height: value }))
+    for (const path of paths) expect(compiler.refreshFileSource(path, source)).toBe(true)
+    const output = compiler.compile()
+    expect(output.diagnostics).toEqual([])
+    expect(output.css).toContain('height: 4px')
+    expect(output.css).toContain('height: 8px')
+    expect(output.css).not.toContain('width:')
+  })
+
+  it('transforms boolean utility values in config CSS', () => {
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          utilities: {
+            flag: { transform: { kind: 'js-callback', id: 'utilities.flag.transform' } },
+          },
+          globalCss: { html: { flag: true } },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.flag.transform': (value) => ({ display: value ? 'flex' : 'none' }),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+    const output = compiler.compile()
+    expect(output.diagnostics).toEqual([])
+    expect(output.css).toContain('display: flex')
+    expect(output.css).not.toContain('flag:')
+  })
+
   it('applies filtered parser:before callbacks before extraction', () => {
     const seen: string[] = []
     const compiler = createCompilerFromSnapshot(

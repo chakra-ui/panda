@@ -78,7 +78,7 @@ pub use pandacss_shared::{
 pub use style_tree::{StyleObject, StyleSpread, StyleTree, project_literal};
 pub use transform_facts::{
     ConditionalExpressionFacts, ExpressionFacts, ExpressionKind, LogicalExpressionFacts,
-    LogicalExpressionOperator, ObjectFacts, ObjectPropertyFacts,
+    LogicalExpressionOperator, ObjectFacts, ObjectLiteralContext, ObjectPropertyFacts,
 };
 
 // Internal-only: keep `VisitorContext` accessible to sibling modules but out

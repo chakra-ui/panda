@@ -39,6 +39,7 @@ pub enum ClassExpr {
 #[derive(Debug, Clone, Copy)]
 pub(crate) enum LowerTarget<'a> {
     Css,
+    CssArgs,
     Jsx(&'a ExtractedJsx),
     Recipe(&'a str),
     SlotRecipe { recipe: &'a str, slot: &'a str },
@@ -53,6 +54,24 @@ impl LowerTarget<'_> {
     ) -> Option<String> {
         let classes = match self {
             Self::Css => classes_for_css_args(project, &[Some(lit)])?,
+            Self::CssArgs => {
+                let Literal::Object(entries) = lit else {
+                    return None;
+                };
+                let mut args = entries
+                    .into_iter()
+                    .map(|(key, value)| Some((key.parse::<usize>().ok()?, value)))
+                    .collect::<Option<Vec<_>>>()?;
+                args.sort_by_key(|(index, _)| *index);
+                if args.iter().any(|(_, value)| literal_has_conditional(value)) {
+                    return None;
+                }
+                let args = args
+                    .into_iter()
+                    .map(|(_, value)| Some(value))
+                    .collect::<Vec<_>>();
+                classes_for_css_args(project, &args)?
+            }
             Self::Jsx(jsx) => {
                 let branch_jsx = ExtractedJsx {
                     data: lit,
@@ -81,7 +100,7 @@ impl LowerTarget<'_> {
         match self {
             Self::Css => true,
             Self::Jsx(jsx) => matches!(jsx.kind, JsxKind::Factory | JsxKind::Component),
-            Self::Recipe(_) | Self::SlotRecipe { .. } => false,
+            Self::CssArgs | Self::Recipe(_) | Self::SlotRecipe { .. } => false,
         }
     }
 
@@ -109,7 +128,7 @@ impl LowerTarget<'_> {
             Self::Jsx(jsx) if jsx.kind == JsxKind::Pattern => {
                 config.patterns.default_value_keys(&jsx.name)
             }
-            Self::Css | Self::Jsx(_) => FxHashSet::default(),
+            Self::Css | Self::CssArgs | Self::Jsx(_) => FxHashSet::default(),
         }
     }
 }
@@ -141,14 +160,80 @@ pub(crate) fn style_tree_has_rewrite_sites(tree: &StyleTree) -> bool {
     }
 }
 
-/// True when `StyleTree` has a rewrite-critical open spread (`||` / `??` / bare rest).
-/// Top-level open *property* values are excluded — those use the mixed static/`cx` path.
+pub(crate) fn has_nested_spread_branches(tree: &StyleTree) -> bool {
+    match tree {
+        StyleTree::Object(object) => {
+            object.spreads.iter().any(|spread| match spread {
+                StyleSpread::Ternary {
+                    consequent,
+                    alternate,
+                    ..
+                } => {
+                    style_tree_has_runtime_branch(consequent)
+                        || style_tree_has_runtime_branch(alternate)
+                }
+                StyleSpread::And { value, .. } => style_tree_has_runtime_branch(value),
+                _ => false,
+            }) || object
+                .entries
+                .iter()
+                .any(|(_, value)| has_nested_spread_branches(value))
+        }
+        StyleTree::Ternary {
+            consequent,
+            alternate,
+            ..
+        } => has_nested_spread_branches(consequent) || has_nested_spread_branches(alternate),
+        StyleTree::And { value, .. } => has_nested_spread_branches(value),
+        StyleTree::Array(items) | StyleTree::Branches(items) => {
+            items.iter().any(has_nested_spread_branches)
+        }
+        _ => false,
+    }
+}
+
+/// Property logical values retain the unknown falsy value of their test.
 #[must_use]
+pub(crate) fn style_tree_has_value_and(tree: &StyleTree) -> bool {
+    match tree {
+        StyleTree::And { .. } => true,
+        StyleTree::Object(object) => {
+            object
+                .entries
+                .iter()
+                .any(|(_, value)| style_tree_has_value_and(value))
+                || object.spreads.iter().any(|spread| match spread {
+                    StyleSpread::Ternary {
+                        consequent,
+                        alternate,
+                        ..
+                    } => {
+                        style_tree_has_value_and(consequent) || style_tree_has_value_and(alternate)
+                    }
+                    StyleSpread::And { value, .. } => style_tree_has_value_and(value),
+                    _ => false,
+                })
+        }
+        StyleTree::Ternary {
+            consequent,
+            alternate,
+            ..
+        } => style_tree_has_value_and(consequent) || style_tree_has_value_and(alternate),
+        StyleTree::Array(items) | StyleTree::Branches(items) => {
+            items.iter().any(style_tree_has_value_and)
+        }
+        _ => false,
+    }
+}
+
 /// Carries something only the runtime can resolve: an open leaf, spread, or value.
+#[must_use]
 pub(crate) fn style_tree_is_open(tree: &StyleTree) -> bool {
     tree.is_open() || style_tree_has_open_spread(tree) || style_tree_has_open_value(tree)
 }
 
+/// True for open spreads; open property values are handled separately.
+#[must_use]
 pub(crate) fn style_tree_has_open_spread(tree: &StyleTree) -> bool {
     match tree {
         StyleTree::Object(obj) => {
@@ -396,6 +481,117 @@ fn collect_preserved_source_spans(tree: &StyleTree, spans: &mut Vec<Span>) {
     }
 }
 
+fn literal_has_conditional(value: &Literal) -> bool {
+    match value {
+        Literal::Conditional(_) => true,
+        Literal::Object(entries) => entries
+            .iter()
+            .any(|(_, value)| literal_has_conditional(value)),
+        Literal::Array(items) => items.iter().any(literal_has_conditional),
+        _ => false,
+    }
+}
+
+fn tree_combination_leaves(tree: &StyleTree) -> usize {
+    match tree {
+        StyleTree::Ternary {
+            consequent,
+            alternate,
+            ..
+        } => tree_combination_leaves(consequent).saturating_add(tree_combination_leaves(alternate)),
+        StyleTree::And { value, .. } => tree_combination_leaves(value).saturating_add(1),
+        StyleTree::Object(object) => {
+            let entries = object
+                .entries
+                .iter()
+                .map(|(_, value)| tree_combination_leaves(value));
+            let spreads = object.spreads.iter().map(|spread| match spread {
+                StyleSpread::Ternary {
+                    consequent,
+                    alternate,
+                    ..
+                } => tree_combination_leaves(consequent)
+                    .saturating_add(tree_combination_leaves(alternate)),
+                StyleSpread::And { value, .. } => tree_combination_leaves(value).saturating_add(1),
+                StyleSpread::Open { .. } | StyleSpread::OpenWithFallback { .. } => usize::MAX,
+            });
+            entries.chain(spreads).fold(1, usize::saturating_mul)
+        }
+        StyleTree::Array(items) => items
+            .iter()
+            .map(tree_combination_leaves)
+            .fold(1, usize::saturating_mul),
+        StyleTree::Branches(_) => usize::MAX,
+        _ => 1,
+    }
+}
+
+/// Keep argument boundaries until each selected branch is merged by the CSS encoder.
+#[must_use]
+pub(crate) fn lower_css_args(
+    project: &Project,
+    source: &str,
+    args: &[Option<StyleTree>],
+) -> Option<(ClassExpr, Vec<Span>)> {
+    let entries = args
+        .iter()
+        .enumerate()
+        .map(|(index, tree)| Some((index.to_string(), tree.as_ref()?.clone())))
+        .collect::<Option<Vec<_>>>()?;
+    let tree = StyleTree::Object(StyleObject {
+        entries,
+        spreads: Vec::new(),
+    });
+    if let Some(lowered) = lower_independent_args(project, source, args) {
+        return Some(lowered);
+    }
+    if tree_combination_leaves(&tree) > MAX_COMBINATION_LEAVES {
+        return None;
+    }
+    let expr = lower_style_tree(project, source, &tree, LowerTarget::CssArgs, None)?;
+    Some((expr, preserved_source_spans(&tree)))
+}
+
+fn lower_independent_args(
+    project: &Project,
+    source: &str,
+    args: &[Option<StyleTree>],
+) -> Option<(ClassExpr, Vec<Span>)> {
+    if args.len() == 1 {
+        let StyleTree::Object(object) = args.first()?.as_ref()? else {
+            return None;
+        };
+        if !object.spreads.is_empty() || object.entries.len() < 2 {
+            return None;
+        }
+        let args = object
+            .entries
+            .iter()
+            .map(|entry| {
+                Some(StyleTree::Object(StyleObject {
+                    entries: vec![entry.clone()],
+                    spreads: Vec::new(),
+                }))
+            })
+            .collect::<Vec<_>>();
+        return lower_independent_args(project, source, &args);
+    }
+    if args.len() > MAX_CONDITIONAL_SITES {
+        return None;
+    }
+    let mut keys = super::css_keys::StyleKeys::default();
+    let mut exprs = Vec::new();
+    let mut spans = Vec::new();
+    for tree in args {
+        let tree = tree.as_ref()?;
+        super::css_keys::insert_disjoint(&mut keys, super::css_keys::style_keys(project, tree)?)?;
+        let (expr, preserved) = lower_css_args(project, source, &[Some(tree.clone())])?;
+        exprs.push(expr);
+        spans.extend(preserved);
+    }
+    Some((prune_empty(ClassExpr::Join(exprs)), spans))
+}
+
 #[must_use]
 pub(crate) fn lower_style_tree(
     project: &Project,
@@ -516,6 +712,13 @@ fn lower_default_bearing_sites(
     ctx: &LowerCtx<'_>,
     pattern_transform: &mut Option<&mut PatternTransformFn<'_>>,
 ) -> SiteLowering {
+    if matches!(ctx.target, LowerTarget::CssArgs) {
+        if combination_leaves(sites) > MAX_COMBINATION_LEAVES {
+            return SiteLowering::Deferred;
+        }
+        return lower_combinations(sites, shared_base, ctx, pattern_transform)
+            .map_or(SiteLowering::Deferred, SiteLowering::Combined);
+    }
     let props = ctx.target.default_bearing_props(ctx.project);
     if props.is_empty() {
         return SiteLowering::PerSite;
@@ -584,6 +787,9 @@ fn lower_combinations(
         // Only reached for keys with no default, where the falsy arm simply
         // drops the key.
         Site::PropertyAnd { path, test, value } => {
+            if matches!(ctx.target, LowerTarget::CssArgs) && path.len() > 1 {
+                return None;
+            }
             let test_src = span_slice(ctx.source, *test)?.to_owned();
             let yes = lower_arm_combinations(path, value, rest, entries, ctx, pattern_transform)?;
             let no = lower_combinations(rest, entries, ctx, pattern_transform)?;
@@ -599,15 +805,130 @@ fn lower_combinations(
             let test_src = span_slice(ctx.source, *test)?.to_owned();
             let mut affected = affected_keys_from_arms(consequent, alternate);
             affected.retain(|key| !overridden.contains(key));
-            let yes_entries =
-                spread_branch_entries(ctx, path, &affected, consequent, overridden, entries)?;
-            let yes = lower_combinations(rest, &yes_entries, ctx, pattern_transform)?;
-            let no_entries =
-                spread_branch_entries(ctx, path, &affected, alternate, overridden, entries)?;
-            let no = lower_combinations(rest, &no_entries, ctx, pattern_transform)?;
+            let yes = lower_spread_combinations(
+                ctx,
+                path,
+                &affected,
+                consequent,
+                overridden,
+                rest,
+                entries,
+                pattern_transform,
+            )?;
+            let no = lower_spread_combinations(
+                ctx,
+                path,
+                &affected,
+                alternate,
+                overridden,
+                rest,
+                entries,
+                pattern_transform,
+            )?;
             Some(ternary(test_src, yes, no))
         }
     }
+}
+
+#[allow(
+    clippy::too_many_arguments,
+    reason = "continuation carries the selected spread and remaining sites"
+)]
+fn lower_spread_combinations(
+    ctx: &LowerCtx<'_>,
+    path: &[PathSeg],
+    affected: &HashSet<String>,
+    branch: &StyleTree,
+    overridden: &[String],
+    rest: &[Site],
+    entries: &[(String, Literal)],
+    pattern_transform: &mut Option<&mut PatternTransformFn<'_>>,
+) -> Option<ClassExpr> {
+    if matches!(ctx.target, LowerTarget::CssArgs) {
+        match branch {
+            StyleTree::Ternary {
+                test,
+                consequent,
+                alternate,
+            } => {
+                let yes = lower_spread_combinations(
+                    ctx,
+                    path,
+                    affected,
+                    consequent,
+                    overridden,
+                    rest,
+                    entries,
+                    pattern_transform,
+                )?;
+                let no = lower_spread_combinations(
+                    ctx,
+                    path,
+                    affected,
+                    alternate,
+                    overridden,
+                    rest,
+                    entries,
+                    pattern_transform,
+                )?;
+                return Some(ternary(span_slice(ctx.source, *test)?.to_owned(), yes, no));
+            }
+            StyleTree::And { test, value } => {
+                let yes = lower_spread_combinations(
+                    ctx,
+                    path,
+                    affected,
+                    value,
+                    overridden,
+                    rest,
+                    entries,
+                    pattern_transform,
+                )?;
+                let no = lower_spread_combinations(
+                    ctx,
+                    path,
+                    affected,
+                    &StyleTree::Object(StyleObject::default()),
+                    overridden,
+                    rest,
+                    entries,
+                    pattern_transform,
+                )?;
+                return Some(ternary(span_slice(ctx.source, *test)?.to_owned(), yes, no));
+            }
+            StyleTree::Object(object) => {
+                let mut sites = Vec::new();
+                collect_sites(object, &mut path.to_vec(), &mut sites)?;
+                if !sites.is_empty() {
+                    let affected_paths = affected_paths_by_site(&sites);
+                    if affected_paths_overlap(&affected_paths) || affected_paths.iter().flatten().any(|nested| {
+                        matches!(nested.get(path.len()), Some(PathSeg::Key(key)) if overridden.contains(key))
+                    }) {
+                        return None;
+                    }
+                    let base = projected_base(object)
+                        .into_iter()
+                        .filter(|(key, _)| !overridden.contains(key))
+                        .collect();
+                    let mut next = spread_literal_entries(ctx, path, affected, base, entries)?;
+                    let full_base = next.clone();
+                    for nested in affected_paths.iter().flatten() {
+                        remove_base_path(&mut next, nested);
+                    }
+                    sites.sort_by_key(Site::test_start);
+                    sites.extend_from_slice(rest);
+                    let nested_ctx = LowerCtx {
+                        full_base: &full_base,
+                        ..*ctx
+                    };
+                    return lower_combinations(&sites, &next, &nested_ctx, pattern_transform);
+                }
+            }
+            _ => {}
+        }
+    }
+    let next = spread_branch_entries(ctx, path, affected, branch, overridden, entries)?;
+    lower_combinations(rest, &next, ctx, pattern_transform)
 }
 
 fn lower_arm_combinations(
@@ -630,6 +951,52 @@ fn lower_arm_combinations(
         return Some(ternary(test_src, yes, no));
     }
     let mut next = entries.to_vec();
+    if matches!(ctx.target, LowerTarget::CssArgs) {
+        let mut sites = Vec::new();
+        let mut nested_path = path.to_vec();
+        let base = match arm {
+            StyleTree::Object(object) => {
+                collect_sites(object, &mut nested_path, &mut sites)?;
+                Literal::Object(projected_base(object))
+            }
+            StyleTree::Array(items) => {
+                collect_array_sites(items, &mut nested_path, &mut sites)?;
+                Literal::Array(base_entries_from_array(items))
+            }
+            StyleTree::And { test, value } => {
+                if path.len() > 1 {
+                    return None;
+                }
+                let yes =
+                    lower_arm_combinations(path, value, rest, entries, ctx, pattern_transform)?;
+                let no = lower_arm_combinations(
+                    path,
+                    &StyleTree::Null,
+                    rest,
+                    entries,
+                    ctx,
+                    pattern_transform,
+                )?;
+                return Some(ternary(span_slice(ctx.source, *test)?.to_owned(), yes, no));
+            }
+            _ => project_literal(arm)?,
+        };
+        if !sites.is_empty() {
+            sites.sort_by_key(Site::test_start);
+            if affected_paths_overlap(&affected_paths_by_site(&sites)) {
+                return None;
+            }
+            apply_branch(&mut next, path, base.clone());
+            let mut full_base = ctx.full_base.to_vec();
+            apply_branch(&mut full_base, path, base);
+            let nested_ctx = LowerCtx {
+                full_base: &full_base,
+                ..*ctx
+            };
+            sites.extend_from_slice(rest);
+            return lower_combinations(&sites, &next, &nested_ctx, pattern_transform);
+        }
+    }
     apply_branch(&mut next, path, project_literal(arm)?);
     lower_combinations(rest, &next, ctx, pattern_transform)
 }
@@ -659,26 +1026,20 @@ fn arm_leaves(arm: &StyleTree) -> usize {
     }
 }
 
-/// Drop conditions that don't change the class list, rather than print
-/// `a ? "" : ""`.
+/// Remove empty literals while preserving evaluation of conditional tests.
 fn prune_empty(expr: ClassExpr) -> ClassExpr {
     match expr {
         ClassExpr::Lit(value) => ClassExpr::Lit(value),
         ClassExpr::Ternary { test, yes, no } => {
             let yes = prune_empty(*yes);
             let no = prune_empty(*no);
-            // Arms that resolve alike make the condition pointless — but only
-            // drop it when evaluating the test can't be observed.
-            if yes == no && test_is_side_effect_free(&test) {
-                return yes;
-            }
             ternary(test, yes, no)
         }
         ClassExpr::Join(parts) => {
             let mut kept: Vec<ClassExpr> = parts
                 .into_iter()
                 .map(prune_empty)
-                .filter(|part| !is_empty_expr(part))
+                .filter(|part| !matches!(part, ClassExpr::Lit(value) if value.is_empty()))
                 .collect();
             match kept.len() {
                 0 => ClassExpr::Lit(String::new()),
@@ -687,27 +1048,6 @@ fn prune_empty(expr: ClassExpr) -> ClassExpr {
             }
         }
     }
-}
-
-/// An identifier or dotted path, optionally negated. Anything else — a call, an
-/// assignment, an index — is left in place, since the transform must not drop an
-/// expression the source may rely on running.
-fn test_is_side_effect_free(test: &str) -> bool {
-    let test = test.trim().trim_start_matches('!').trim_start();
-    !test.is_empty()
-        && test.split('.').all(|segment| {
-            let mut chars = segment.chars();
-            chars
-                .next()
-                .is_some_and(|first| first.is_ascii_alphabetic() || first == '_' || first == '$')
-                && chars.all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '$')
-        })
-}
-
-fn is_empty_expr(expr: &ClassExpr) -> bool {
-    let mut empty = true;
-    for_each_leaf(expr, &mut |leaf| empty &= leaf.is_empty());
-    empty
 }
 
 /// Emit the tokens every leaf shares once, in front of the rest.
@@ -799,7 +1139,7 @@ enum PathSeg {
     Index(usize),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Site {
     PropertyTernary {
         path: Vec<PathSeg>,
@@ -1407,6 +1747,16 @@ fn spread_branch_entries(
         Some(_) => return None,
         None => Vec::new(),
     };
+    spread_literal_entries(ctx, path, affected, branch_obj, base)
+}
+
+fn spread_literal_entries(
+    ctx: &LowerCtx<'_>,
+    path: &[PathSeg],
+    affected: &HashSet<String>,
+    branch_obj: Vec<(String, Literal)>,
+    base: &[(String, Literal)],
+) -> Option<Vec<(String, Literal)>> {
     // Spreading an object that omits an affected key leaves the static value in
     // place, so resolve the branch against `full_base` before encoding.
     let mut resolved = entries_at_path_for_keys(ctx.full_base, path, affected);

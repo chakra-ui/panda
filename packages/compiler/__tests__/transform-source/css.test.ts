@@ -27,7 +27,7 @@ const compiler = createTransformProject({
     display: {},
     fontWeight: {},
     fontSize: {},
-    width: {},
+    width: { className: 'width', shorthand: 'w' },
     height: {},
     opacity: {},
     outline: {},
@@ -43,6 +43,762 @@ describe('compiler.transformSource: css', () => {
         "native": true,
       }
     `)
+  })
+
+  describe('conditional argument merging', () => {
+    test('keeps static styles after a conditional first argument', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  { color: state.a ? 'red' : 'blue' },",
+        "  { padding: '4px' },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(
+        `"const cls = (state.a ? "color_red" : "color_blue") + " " + "padding_4px""`,
+      )
+    })
+
+    test('keeps static styles before a conditional last argument', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  { padding: '4px' },",
+        "  { color: state.a ? 'red' : 'blue' },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(
+        `"const cls = "padding_4px" + " " + (state.a ? "color_red" : "color_blue")"`,
+      )
+    })
+
+    test('lets the last conditional argument win for the same property', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  { color: state.a ? 'red' : 'blue' },",
+        "  { color: state.b ? 'green' : 'pink' },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(
+        `"const cls = state.a ? (state.b ? "color_green" : "color_pink") : state.b ? "color_green" : "color_pink""`,
+      )
+    })
+
+    test('keeps evaluating a condition overwritten by a static argument', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  { color: state.a ? 'red' : 'blue' },",
+        "  { color: 'green', padding: '4px' },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(
+        `"const cls = state.a ? "color_green padding_4px" : "color_green padding_4px""`,
+      )
+    })
+
+    test('preserves override order across three arguments', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  { color: state.a ? 'red' : 'blue' },",
+        "  { padding: state.b ? '4px' : '2px' },",
+        "  { color: 'green' },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(
+        `"const cls = "color_green" + " " + (state.a ? (state.b ? "padding_4px" : "padding_2px") : state.b ? "padding_4px" : "padding_2px")"`,
+      )
+    })
+
+    test('preserves numeric argument order when there are more than ten arguments', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  state.a ? { color: 'red' } : { color: 'blue' },",
+        "  { color: 'green' },",
+        "  { color: 'green' },",
+        "  { color: 'green' },",
+        "  { color: 'green' },",
+        "  { color: 'green' },",
+        "  { color: 'green' },",
+        "  { color: 'green' },",
+        "  { color: 'green' },",
+        "  { color: 'green' },",
+        "  { color: 'green' },",
+        "  { color: 'green' },",
+        "  { color: 'pink' },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(`"const cls = state.a ? "color_pink" : "color_pink""`)
+    })
+  })
+
+  describe('conditional object arguments', () => {
+    test('merges a whole-object branch before a static override', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  state.a ? { color: 'red', padding: '4px' } : { color: 'blue' },",
+        "  { color: 'green' },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(`"const cls = state.a ? "color_green padding_4px" : "color_green""`)
+    })
+
+    test('keeps earlier properties absent from a later object branch', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  { color: 'red' },",
+        "  state.a ? { color: 'blue' } : { padding: '4px' },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(`"const cls = state.a ? "color_blue" : "color_red padding_4px""`)
+    })
+
+    test('merges a logical whole-object argument when truthy', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  { padding: '2px' },",
+        "  state.a && { padding: '4px' },",
+        "  { color: state.b ? 'red' : 'blue' },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(
+        `"const cls = state.a ? (state.b ? "color_red padding_4px" : "color_blue padding_4px") : state.b ? "color_red padding_2px" : "color_blue padding_2px""`,
+      )
+    })
+
+    test('ignores null and false arguments', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        '  null,',
+        "  { color: state.a ? 'red' : 'blue' },",
+        '  false,',
+        "  { padding: '4px' },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(
+        `"const cls = state.a ? "color_red padding_4px" : "color_blue padding_4px""`,
+      )
+    })
+
+    test('keeps later styles when an object branch is empty', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  state.a ? {} : { color: 'red' },",
+        "  { padding: '4px' },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(`"const cls = (state.a ? "" : "color_red") + " " + "padding_4px""`)
+    })
+
+    test('evaluates a logical argument only in the selected branch', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  state.a ? (state.b && { color: 'red' }) : { color: 'blue' },",
+        "  { padding: '4px' },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(
+        `"const cls = (state.a ? (state.b ? "color_red" : "") : "color_blue") + " " + "padding_4px""`,
+      )
+    })
+
+    test('lowers conditional arrays of style objects', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  state.a ? [{ color: state.b ? 'red' : 'blue' }, { padding: '2px' }] : [{ padding: '4px' }],",
+        "  { color: 'green' },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(
+        `"const cls = state.a ? (state.b ? "color_green padding_2px" : "color_green padding_2px") : "color_green padding_4px""`,
+      )
+    })
+  })
+
+  describe('nested styles and spreads', () => {
+    test('merges hover declarations across arguments', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  { _hover: { color: state.a ? 'red' : 'blue', padding: '4px' } },",
+        "  { _hover: { color: state.b ? 'green' : 'pink' } },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(
+        `"const cls = "hover:padding_4px" + " " + (state.a ? (state.b ? "hover:color_green" : "hover:color_pink") : state.b ? "hover:color_green" : "hover:color_pink")"`,
+      )
+    })
+
+    test('lets later arguments override conditional spread values', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  { color: 'red', ...(state.a ? { padding: '4px' } : { padding: '2px' }) },",
+        "  { padding: state.b ? '8px' : '6px' },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(
+        `"const cls = "color_red" + " " + (state.a ? (state.b ? "padding_8px" : "padding_6px") : state.b ? "padding_8px" : "padding_6px")"`,
+      )
+    })
+
+    test('lowers conditional responsive array slots', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  { padding: [state.a ? '4px' : '2px', '8px'] },",
+        "  { color: state.b ? 'red' : 'blue' },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(
+        `"const cls = (state.a ? "padding_4px sm:padding_8px" : "padding_2px sm:padding_8px") + " " + (state.b ? "color_red" : "color_blue")"`,
+      )
+    })
+
+    test('preserves nested value-ternary evaluation', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  { color: state.a ? (state.b ? 'red' : 'green') : 'blue' },",
+        "  { padding: '4px' },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(
+        `"const cls = (state.a ? (state.b ? "color_red" : "color_green") : "color_blue") + " " + "padding_4px""`,
+      )
+    })
+
+    test('lowers conditional properties inside whole-object branches', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  state.a ? { color: state.b ? 'red' : 'green' } : { color: 'blue' },",
+        "  { padding: '4px' },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(
+        `"const cls = (state.a ? (state.b ? "color_red" : "color_green") : "color_blue") + " " + "padding_4px""`,
+      )
+    })
+
+    test('keeps base styles when a spread branch omits them', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  { padding: '2px', ...(state.a ? { padding: '4px' } : {}) },",
+        "  { color: state.b ? 'red' : 'blue' },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(
+        `"const cls = (state.a ? "padding_4px" : "padding_2px") + " " + (state.b ? "color_red" : "color_blue")"`,
+      )
+    })
+
+    test('keeps base styles when a logical spread is falsy', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  { padding: '2px', ...(state.a && { padding: '4px' }) },",
+        "  { color: state.b ? 'red' : 'blue' },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(
+        `"const cls = (state.a ? "padding_4px" : "padding_2px") + " " + (state.b ? "color_red" : "color_blue")"`,
+      )
+    })
+  })
+
+  describe('runtime preservation', () => {
+    test('keeps property-level logical values whose falsy result is unknown', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  { padding: state.a && '4px' },",
+        "  { color: state.b ? 'red' : 'blue' },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(`
+        "import { cx as __pcx } from '@pandacss-internal/css';
+        import { css } from '@panda/css'
+        const cls = __pcx(css({ padding: state.a && '4px' }), state.b ? "color_red" : "color_blue")"
+      `)
+    })
+
+    test('keeps a dynamic value in the last argument', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  { color: state.a ? 'red' : 'blue' },",
+        '  { width: props.width },',
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(`
+        "import { cx as __pcx } from '@pandacss-internal/css';
+        import { css } from '@panda/css'
+        const cls = __pcx(state.a ? "color_red" : "color_blue", css({ width: props.width }))"
+      `)
+    })
+
+    test('keeps a dynamic value in the first argument', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        '  { width: props.width },',
+        "  { color: state.a ? 'red' : 'blue' },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(`
+        "import { cx as __pcx } from '@pandacss-internal/css';
+        import { css } from '@panda/css'
+        const cls = __pcx(css({ width: props.width }), state.a ? "color_red" : "color_blue")"
+      `)
+    })
+
+    test('keeps an open spread in a later argument', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  { color: state.a ? 'red' : 'blue' },",
+        '  { ...props },',
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(false)
+      expect(result.code).toMatchInlineSnapshot(`
+        "import { css } from '@panda/css'
+        const cls = css(
+          { color: state.a ? 'red' : 'blue' },
+          { ...props },
+        )"
+      `)
+    })
+
+    test('keeps an entirely open later argument', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  { color: state.a ? 'red' : 'blue' },",
+        '  props,',
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(false)
+      expect(result.code).toMatchInlineSnapshot(`
+        "import { css } from '@panda/css'
+        const cls = css(
+          { color: state.a ? 'red' : 'blue' },
+          props,
+        )"
+      `)
+    })
+
+    test('keeps a dynamic logical fallback', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  { color: state.a ? 'red' : 'blue' },",
+        "  { width: props.width || '4px' },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(`
+        "import { cx as __pcx } from '@pandacss-internal/css';
+        import { css } from '@panda/css'
+        const cls = __pcx(state.a ? "color_red" : "color_blue", css({ width: props.width || '4px' }))"
+      `)
+    })
+
+    test('keeps a dynamic nullish fallback', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  { color: state.a ? 'red' : 'blue' },",
+        "  { width: props.width ?? '4px' },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(`
+        "import { cx as __pcx } from '@pandacss-internal/css';
+        import { css } from '@panda/css'
+        const cls = __pcx(state.a ? "color_red" : "color_blue", css({ width: props.width ?? '4px' }))"
+      `)
+    })
+
+    test('keeps a nested dynamic hover value', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  { color: state.a ? 'red' : 'blue' },",
+        '  { _hover: { width: props.width } },',
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(`
+        "import { cx as __pcx } from '@pandacss-internal/css';
+        import { css } from '@panda/css'
+        const cls = __pcx(state.a ? "color_red" : "color_blue", css({ _hover: { width: props.width } }))"
+      `)
+    })
+
+    test('keeps unknown responsive array slots', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  { color: state.a ? 'red' : 'blue' },",
+        "  { padding: ['4px', props.padding] },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(`
+        "import { cx as __pcx } from '@pandacss-internal/css';
+        import { css } from '@panda/css'
+        const cls = __pcx(state.a ? "color_red" : "color_blue", css({ padding: ['4px', props.padding] }))"
+      `)
+    })
+
+    test('lowers nested conditions inside a finite spread branch', () => {
+      const source = lines(
+        "import { css } from '@panda/css'",
+        'const cls = css(',
+        "  { ...(state.a ? { color: state.b ? 'red' : 'blue' } : {}) },",
+        "  { padding: '4px' },",
+        ')',
+      )
+      const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+      expect(result.changed).toBe(true)
+      expect(result.code).toMatchInlineSnapshot(
+        `"const cls = (state.a ? (state.b ? "color_red" : "color_blue") : "") + " " + "padding_4px""`,
+      )
+    })
+  })
+
+  test('lowers interacting conditions at the 16-leaf budget', () => {
+    const source = lines(
+      "import { css } from '@panda/css'",
+      "const cls = css({ color: a ? 'red' : 'blue' }, { color: b ? 'red' : 'blue' }, { color: c ? 'red' : 'blue' }, { color: d ? 'red' : 'blue' })",
+    )
+    const result = compiler.transformSource({ path: 'src/edge.ts', source })
+    expect(result.changed).toBe(true)
+    expect(result.code).toMatchInlineSnapshot(
+      `"const cls = a ? (b ? (c ? (d ? "color_red" : "color_blue") : d ? "color_red" : "color_blue") : c ? (d ? "color_red" : "color_blue") : d ? "color_red" : "color_blue") : b ? (c ? (d ? "color_red" : "color_blue") : d ? "color_red" : "color_blue") : c ? (d ? "color_red" : "color_blue") : d ? "color_red" : "color_blue""`,
+    )
+  })
+
+  test('lets a null declaration remove an earlier argument value', () => {
+    const source = lines(
+      "import { css } from '@panda/css'",
+      "const cls = css({ color: 'red', padding: '4px' }, { color: state.ready ? 'blue' : null })",
+    )
+    const result = compiler.transformSource({ path: 'src/edge.ts', source })
+    expect(result.changed).toBe(true)
+    expect(result.code).toMatchInlineSnapshot(`"const cls = state.ready ? "color_blue padding_4px" : "padding_4px""`)
+  })
+
+  test('lets a scalar condition override remove an earlier subtree', () => {
+    const source = lines(
+      "import { css } from '@panda/css'",
+      "const cls = css({ _hover: { color: 'red' }, padding: '4px' }, { _hover: state.ready ? { color: 'blue' } : null })",
+    )
+    const result = compiler.transformSource({ path: 'src/edge.ts', source })
+    expect(result.changed).toBe(true)
+    expect(result.code).toMatchInlineSnapshot(
+      `"const cls = state.ready ? "padding_4px hover:color_blue" : "padding_4px""`,
+    )
+  })
+
+  test('lowers arguments whose final merged style is empty', () => {
+    const source = lines("import { css } from '@panda/css'", "const cls = css({ color: 'red' }, { color: null })")
+    const result = compiler.transformSource({ path: 'src/edge.ts', source })
+    expect(result.changed).toBe(true)
+    expect(result.code).toMatchInlineSnapshot(`"const cls = """`)
+  })
+
+  test('keeps nested spread reads that later properties override', () => {
+    const source = lines(
+      "import { css } from '@panda/css'",
+      "const cls = css({ ...(state.a ? { color: state.b ? 'red' : 'blue' } : {}), color: 'green' }, { padding: '4px' })",
+    )
+    const result = compiler.transformSource({ path: 'src/edge.ts', source })
+    expect(result.changed).toBe(false)
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { css } from '@panda/css'
+      const cls = css({ ...(state.a ? { color: state.b ? 'red' : 'blue' } : {}), color: 'green' }, { padding: '4px' })"
+    `)
+  })
+
+  test('keeps whole-object unions without a local branch expression at runtime', () => {
+    const source = lines(
+      "import { css } from '@panda/css'",
+      "function render(styles: { color: 'red' } | { color: 'blue' }) { return css(styles) }",
+    )
+    const result = compiler.transformSource({ path: 'src/edge.ts', source })
+    expect(result.changed).toBe(false)
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { css } from '@panda/css'
+      function render(styles: { color: 'red' } | { color: 'blue' }) { return css(styles) }"
+    `)
+  })
+
+  test('keeps oversized interacting conditions at runtime', () => {
+    const source = lines(
+      "import { css } from '@panda/css'",
+      "const cls = css({ color: a ? 'red' : 'blue' }, { color: b ? 'red' : 'blue' }, { color: c ? 'red' : 'blue' }, { color: d ? 'red' : 'blue' }, { color: e ? 'red' : 'blue' })",
+    )
+    const result = compiler.transformSource({ path: 'src/edge.ts', source })
+    expect(result.changed).toBe(false)
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { css } from '@panda/css'
+      const cls = css({ color: a ? 'red' : 'blue' }, { color: b ? 'red' : 'blue' }, { color: c ? 'red' : 'blue' }, { color: d ? 'red' : 'blue' }, { color: e ? 'red' : 'blue' })"
+    `)
+  })
+
+  test('keeps shorthand conflicts between finite and runtime arguments', () => {
+    const source = lines(
+      "import { css } from '@panda/css'",
+      "const cls = css({ width: state.ready ? '4px' : '8px' }, { w: props.width })",
+    )
+    const result = compiler.transformSource({ path: 'src/edge.ts', source })
+    expect(result.changed).toBe(false)
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { css } from '@panda/css'
+      const cls = css({ width: state.ready ? '4px' : '8px' }, { w: props.width })"
+    `)
+  })
+
+  test('keeps condition conflicts across equivalent object shapes', () => {
+    const source = lines(
+      "import { css } from '@panda/css'",
+      "const cls = css({ _hover: { color: state.ready ? 'red' : 'blue' } }, { color: { _hover: props.color } })",
+    )
+    const result = compiler.transformSource({ path: 'src/edge.ts', source })
+    expect(result.changed).toBe(false)
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { css } from '@panda/css'
+      const cls = css({ _hover: { color: state.ready ? 'red' : 'blue' } }, { color: { _hover: props.color } })"
+    `)
+  })
+
+  test('keeps responsive conflicts with unknown array slots', () => {
+    const source = lines(
+      "import { css } from '@panda/css'",
+      "const cls = css({ sm: { padding: state.ready ? '4px' : '8px' } }, { padding: ['2px', props.padding] })",
+    )
+    const result = compiler.transformSource({ path: 'src/edge.ts', source })
+    expect(result.changed).toBe(false)
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { css } from '@panda/css'
+      const cls = css({ sm: { padding: state.ready ? '4px' : '8px' } }, { padding: ['2px', props.padding] })"
+    `)
+  })
+
+  test('preserves runtime argument order when a nested scope is revisited', () => {
+    const source = lines(
+      "import { css } from '@panda/css'",
+      "const cls = css({ color: 'red', _hover: { width: props.first } }, { _dark: { height: props.second } }, { _hover: { padding: props.third } })",
+    )
+    const result = compiler.transformSource({ path: 'src/edge.ts', source })
+    expect(result.changed).toBe(true)
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { cx as __pcx } from '@pandacss-internal/css';
+      import { css } from '@panda/css'
+      const cls = __pcx("color_red", css({ _hover: { width: props.first } }, { _dark: { height: props.second } }, { _hover: { padding: props.third } }))"
+    `)
+  })
+
+  test('preserves interleaved conditional and dynamic property reads', () => {
+    const source = lines(
+      "import { css } from '@panda/css'",
+      "const cls = css({ width: props.first, color: state.ready ? 'red' : 'blue', height: props.last })",
+    )
+    const result = compiler.transformSource({ path: 'src/edge.ts', source })
+    expect(result.changed).toBe(true)
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { cx as __pcx } from '@pandacss-internal/css';
+      import { css } from '@panda/css'
+      const cls = __pcx(css({ width: props.first }), state.ready ? "color_red" : "color_blue", css({ height: props.last }))"
+    `)
+  })
+
+  test('keeps mixed objects with folded spreads whose property provenance is lost', () => {
+    const source = lines(
+      "import { css } from '@panda/css'",
+      "const cls = css({ width: props.first, ...{ width: '4px' }, height: props.last })",
+    )
+    const result = compiler.transformSource({ path: 'src/edge.ts', source })
+    expect(result.changed).toBe(false)
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { css } from '@panda/css'
+      const cls = css({ width: props.first, ...{ width: '4px' }, height: props.last })"
+    `)
+  })
+
+  test('keeps scalar condition overrides alongside runtime subtrees', () => {
+    const source = lines(
+      "import { css } from '@panda/css'",
+      "const cls = css({ color: 'red', _hover: null }, { _hover: { width: props.width } })",
+    )
+    const result = compiler.transformSource({ path: 'src/edge.ts', source })
+    expect(result.changed).toBe(false)
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { css } from '@panda/css'
+      const cls = css({ color: 'red', _hover: null }, { _hover: { width: props.width } })"
+    `)
+  })
+
+  test('lowers independent conditions in one large object', () => {
+    const source = lines(
+      "import { css } from '@panda/css'",
+      "const cls = css({ color: a ? 'red' : 'blue', padding: b ? '4px' : '8px', width: c ? '4px' : '8px', height: d ? '4px' : '8px', margin: e ? '4px' : '8px' })",
+    )
+    const result = compiler.transformSource({ path: 'src/edge.ts', source })
+    expect(result.changed).toBe(true)
+    expect(result.code).toMatchInlineSnapshot(
+      `"const cls = (a ? "color_red" : "color_blue") + " " + (b ? "padding_4px" : "padding_8px") + " " + (c ? "width_4px" : "width_8px") + " " + (d ? "height_4px" : "height_8px") + " " + (e ? "margin_4px" : "margin_8px")"`,
+    )
+  })
+
+  test('lowers a nested spread branch while retaining its base fallback', () => {
+    const source = lines(
+      "import { css } from '@panda/css'",
+      "const cls = css({ color: 'green', ...(state.a ? { color: state.b ? 'red' : 'blue' } : {}) }, { padding: '4px' })",
+    )
+    const result = compiler.transformSource({ path: 'src/edge.ts', source })
+    expect(result.changed).toBe(true)
+    expect(result.code).toMatchInlineSnapshot(
+      `"const cls = (state.a ? (state.b ? "color_red" : "color_blue") : "color_green") + " " + "padding_4px""`,
+    )
+  })
+
+  test('keeps helper-disabled partial calls at runtime', () => {
+    const source = lines(
+      "import { css } from '@panda/css'",
+      "const cls = css({ color: state.ready ? 'red' : 'blue' }, { width: props.width })",
+    )
+    const result = compiler.transformSource({ path: 'src/edge.ts', source, helperCx: 'false' })
+    expect(result.changed).toBe(false)
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { css } from '@panda/css'
+      const cls = css({ color: state.ready ? 'red' : 'blue' }, { width: props.width })"
+    `)
+  })
+
+  test('preserves condition order when an earlier read can throw', () => {
+    const source = lines(
+      "import { css } from '@panda/css'",
+      "const cls = css({ color: state.a ? 'red' : 'red' }, { padding: state.b ? '4px' : '4px' })",
+    )
+    const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+    expect(result.changed).toBe(true)
+    expect(result.code).toMatchInlineSnapshot(
+      `"const cls = (state.a ? "color_red" : "color_red") + " " + (state.b ? "padding_4px" : "padding_4px")"`,
+    )
+  })
+
+  test('lowers four independent conditional arguments', () => {
+    const source = lines(
+      "import { css } from '@panda/css'",
+      'const cls = css(',
+      "  { color: flags[0] ? '1px' : '2px' },",
+      "  { padding: flags[1] ? '1px' : '2px' },",
+      "  { width: flags[2] ? '1px' : '2px' },",
+      "  { height: flags[3] ? '1px' : '2px' },",
+      ')',
+    )
+    const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+    expect(result.changed).toBe(true)
+    expect(result.code).toMatchInlineSnapshot(
+      `"const cls = (flags[0] ? "color_1px" : "color_2px") + " " + (flags[1] ? "padding_1px" : "padding_2px") + " " + (flags[2] ? "width_1px" : "width_2px") + " " + (flags[3] ? "height_1px" : "height_2px")"`,
+    )
+  })
+
+  test('lowers independent conditions beyond the combination budget', () => {
+    const source = lines(
+      "import { css } from '@panda/css'",
+      'const cls = css(',
+      "  { color: flags[0] ? '1px' : '2px' },",
+      "  { padding: flags[1] ? '1px' : '2px' },",
+      "  { width: flags[2] ? '1px' : '2px' },",
+      "  { height: flags[3] ? '1px' : '2px' },",
+      "  { margin: flags[4] ? '1px' : '2px' },",
+      ')',
+    )
+    const result = compiler.transformSource({ path: 'src/conditional.ts', source })
+    expect(result.changed).toBe(true)
+    expect(result.code).toMatchInlineSnapshot(
+      `"const cls = (flags[0] ? "color_1px" : "color_2px") + " " + (flags[1] ? "padding_1px" : "padding_2px") + " " + (flags[2] ? "width_1px" : "width_2px") + " " + (flags[3] ? "height_1px" : "height_2px") + " " + (flags[4] ? "margin_1px" : "margin_2px")"`,
+    )
+  })
+
+  test('preserves member reads when conditional arms share all classes', () => {
+    const source = lines(
+      "import { css } from '@panda/css'",
+      "const cls = css({ color: state.ready ? 'red' : 'red', padding: other.ready ? '4px' : '4px' })",
+    )
+    const result = compiler.transformSource({ path: 'src/button.tsx', source })
+    expect(result.changed).toBe(true)
+    expect(result.code).toMatchInlineSnapshot(
+      `"const cls = (state.ready ? "color_red" : "color_red") + " " + (other.ready ? "padding_4px" : "padding_4px")"`,
+    )
   })
 
   test('rewrites static css() calls to class strings', () => {
@@ -88,7 +844,7 @@ describe('compiler.transformSource: css', () => {
     `)
   })
 
-  test('leaves a css object with a nested partial dynamic prop untouched', () => {
+  test('splits nested static and dynamic styles', () => {
     const source = lines(
       "import { css } from '@panda/css'",
       "export const cls = css({ color: 'red', _hover: { color: 'blue', padding: props.p } })",
@@ -97,9 +853,10 @@ describe('compiler.transformSource: css', () => {
     const result = compiler.transformSource({ path: 'src/styles.tsx', source })
     expect({ changed: result.changed, code: result.code }).toMatchInlineSnapshot(`
       {
-        "changed": false,
-        "code": "import { css } from '@panda/css'
-      export const cls = css({ color: 'red', _hover: { color: 'blue', padding: props.p } })",
+        "changed": true,
+        "code": "import { cx as __pcx } from '@pandacss-internal/css';
+      import { css } from '@panda/css'
+      export const cls = __pcx("color_red hover:color_blue", css({ _hover: { padding: props.p } }))",
       }
     `)
   })
@@ -307,15 +1064,14 @@ describe('compiler.transformSource: css', () => {
     `)
   })
 
-  test('leaves an empty css() object untouched', () => {
+  test('lowers an empty css() object to an empty class string', () => {
     const source = lines("import { css } from '@panda/css'", 'export const cls = css({})')
 
     const result = compiler.transformSource({ path: 'src/button.tsx', source })
     expect({ changed: result.changed, code: result.code }).toMatchInlineSnapshot(`
       {
-        "changed": false,
-        "code": "import { css } from '@panda/css'
-      export const cls = css({})",
+        "changed": true,
+        "code": "export const cls = """,
       }
     `)
   })
@@ -628,7 +1384,7 @@ describe('compiler.transformSource: css', () => {
     `)
   })
 
-  test('bails on a nested condition block mixing static and dynamic props', () => {
+  test('splits deeply nested static and dynamic styles', () => {
     const source = lines(
       "import { css } from '@panda/css'",
       "export const cls = css({ _hover: { _dark: { color: 'red', margin: props.m } } })",
@@ -637,10 +1393,11 @@ describe('compiler.transformSource: css', () => {
     const result = compiler.transformSource({ path: 'src/button.tsx', source })
     expect({ changed: result.changed, bailed: result.bailed, code: result.code }).toMatchInlineSnapshot(`
       {
-        "changed": false,
-        "bailed": true,
-        "code": "import { css } from '@panda/css'
-      export const cls = css({ _hover: { _dark: { color: 'red', margin: props.m } } })",
+        "changed": true,
+        "bailed": false,
+        "code": "import { cx as __pcx } from '@pandacss-internal/css';
+      import { css } from '@panda/css'
+      export const cls = __pcx("hover:dark:color_red", css({ _hover: { _dark: { margin: props.m } } }))",
       }
     `)
   })

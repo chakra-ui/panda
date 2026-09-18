@@ -173,7 +173,8 @@ See [view-transition-api.md](./view-transition-api.md).
 
 `validate` checks the wire `schemaVersion` and required top-level shape without changing state. `hydrate` calls it
 first. If any intern, atom, recipe, token-ref, or view-transition index is invalid, the engine rejects the entire input
-and returns `{ ok: false, reason: 'corrupt' }`. It does not throw or hydrate partial CSS.
+and returns `{ ok: false, reason: 'corrupt' }`. It does not throw or hydrate partial CSS. All hydrated sections are reconstructed before any project state is
+changed, including position-try and keyframe blocks; a rejected replacement keeps the previous library state.
 
 When `files` is available, the host recovers by extracting the library source again. Manifest schema and Panda version
 range checks are separate package-contract gates and remain fail-closed.

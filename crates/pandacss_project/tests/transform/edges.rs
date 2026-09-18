@@ -569,17 +569,16 @@ fn jsx_runtime_skips_logical_and_style_prop() {
 
 // --- property-level && (Bug 1) ---
 
-edge_snapshot!(
-    css_property_logical_and_emits_conditional,
-    transform(
-        "src/styles.tsx",
-        indoc! {r#"
+#[test]
+fn css_property_logical_and_preserves_unknown_falsy_value() {
+    let source = indoc! {r#"
             import { css } from '@panda/css';
             export const cls = css({ color: isError && 'red' });
-        "#},
-    ),
-    @r#"export const cls = isError ? "color_red" : "";"#
-);
+        "#};
+    let output = transform("src/styles.tsx", source);
+    assert!(!output.changed);
+    assert_eq!(output.code, source);
+}
 
 edge_snapshot!(
     css_property_logical_and_with_static_sibling,
@@ -590,20 +589,23 @@ edge_snapshot!(
             export const cls = css({ color: isError && 'red', padding: '4px' });
         "#},
     ),
-    @r#"export const cls = isError ? "color_red padding_4px" : "padding_4px";"#
+    @r#"
+import { cx as __pcx } from '@pandacss-internal/css';
+import { css } from '@panda/css';
+export const cls = __pcx("padding_4px", css({ color: isError && 'red' }));
+"#
 );
 
-edge_snapshot!(
-    css_property_logical_and_under_hover,
-    transform(
-        "src/styles.tsx",
-        indoc! {r#"
+#[test]
+fn css_property_logical_and_under_hover() {
+    let source = indoc! {r#"
             import { css } from '@panda/css';
             export const cls = css({ _hover: { color: isError && 'red' } });
-        "#},
-    ),
-    @r#"export const cls = isError ? "hover:color_red" : "";"#
-);
+        "#};
+    let output = transform("src/styles.tsx", source);
+    assert!(!output.changed);
+    assert_eq!(output.code, source);
+}
 
 edge_snapshot!(
     jsx_property_logical_and_under_hover,

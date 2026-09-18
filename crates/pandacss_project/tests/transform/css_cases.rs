@@ -154,12 +154,13 @@ transform_snapshot!(
 );
 
 transform_snapshot!(
-    empty_object_arg_is_left_unchanged,
+    empty_object_arg_lowers_to_empty_classes,
     r#"
         import { css } from '@panda/css';
         export const cls = css({});
     "#,
-    false
+    true,
+    @r#"export const cls = "";"#
 );
 
 transform_snapshot!(

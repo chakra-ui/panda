@@ -81,10 +81,13 @@ The project transformer consumes compact owned facts from this parse instead of 
 - `ModuleFacts` keeps imports, resolved import-reference spans, `local_call_bindings` (same-file
   bindings whose initializer is a collected Panda call, plus plain `binding(...)` reference sites from
   Oxc `Semantic`), and the directive-prologue boundary.
-- `CallFacts` keeps callee shape, argument spans, and expression facts.
+- `CallFacts` keeps callee shape, argument spans, expression facts, and the grammar context for replacing the call
+  with an object literal. Oxc semantic ancestors identify statement starts, including concise arrow bodies and
+  expressions whose first token comes from the call. Local and imported recipe raw calls carry the same context.
 - `JsxSourceFacts` and `JsxAttr` keep element/runtime shape, property facts, and cooked values.
 - `ExpressionFacts` keeps only the kinds, precedence, static keys, and branch structure needed by rewrites.
-  Includes `parenthesize_for_logical_and` for re-emitting conditions as `cond && class`.
+  Includes `static_scalar_key` (the JavaScript key spelling of a static string, boolean, or number, derived from
+  parsed Oxc values) and `parenthesize_for_logical_and` for re-emitting conditions as `cond && class`.
 
 These records use spans and small enums rather than cloned Oxc nodes, so the allocator still drops after extraction.
 `extract_for_transform` retains them; the regular extraction path skips their recursive payload and semantic

@@ -1090,3 +1090,38 @@ file captures the behavior contract without tying the design note to branch hist
 - [Hooks](../hooks.md)
 - [Compiler lifecycle](../compiler-lifecycle.md)
 - [Output & host layer (Driver)](../output-and-host-layer.md)
+
+### Preserving evaluation during style lowering
+
+Multi-argument `css()` calls keep argument boundaries through branch lowering. A private `CssArgs` target encodes
+selected arguments in their original order at each leaf, using the shared `merged_style_literal` normalizer and deep
+merge before encoding. This preserves later overrides, including null values and scalar scope replacements, and
+unrelated declarations. Nested object and spread branches resolve their own sites before continuing to later arguments.
+
+CSS planning shares one conflict model across three paths:
+
+- Interacting finite arguments use combined branch lowering, bounded to 16 leaves.
+- Independent finite arguments join separate class expressions, bounded to 64 arguments, avoiding a Cartesian product.
+- Mixed objects use an ordered fragment plan: finite expressions become classes; open properties retain their original
+  source spans in runtime `css()` calls. Nested objects split recursively, while responsive arrays remain whole
+  properties.
+
+Independence is proved using canonical property-and-condition keys from the existing encoder and normalizer, with marker
+values instead of unresolved values. Shorthand aliases and equivalent condition placement therefore conflict. Every
+fragment must be disjoint; opaque arguments, spreads without source provenance, and scalar scope overrides that lack a
+canonical leaf key keep the original runtime call. The helper never resolves style conflicts.
+
+The partial printer preserves property evaluation order and original runtime argument boundaries. Adjacent runtime
+properties can share a call, but residual objects from different arguments remain separate arguments. Only literal class
+strings can be hoisted ahead of runtime expressions. Conditional reads remain in their original sequence, even when both
+arms yield the same classes. Their source spans remain live for import analysis and source maps.
+
+Property-level `&&` remains a runtime property because its falsy value need not be `false`. Whole-object logical
+arguments can be lowered because falsy arguments add no styles. Unresolved branches and unsupported normalization fail
+closed rather than being interpreted as empty CSS. Proven empty objects lower to an empty class string.
+
+Object replacements consume `ObjectLiteralContext` recorded from Oxc parent nodes during extraction. Statement starts
+and concise arrow bodies need parentheses; arguments, conditional arms, and already parenthesized expressions do not.
+The same fact is carried for Panda calls and local/imported recipe raw calls. The printer does not infer grammar from
+surrounding source text. Static raw variant selection consumes `ExpressionFacts::static_scalar_key`, derived from
+parsed scalar values with JavaScript number formatting, rather than interpreting authored numeric text.

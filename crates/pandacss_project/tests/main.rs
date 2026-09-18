@@ -14,6 +14,7 @@ mod lifecycle;
 mod parsed_file;
 mod patterns;
 mod scan;
+mod state_and_transforms;
 mod static_patterns;
 mod svelte;
 mod transform;

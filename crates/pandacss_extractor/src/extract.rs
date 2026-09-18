@@ -30,6 +30,7 @@ use serde::Serialize;
 /// transform must rewrite this site to the styles it resolved to.
 #[derive(Debug, Clone, PartialEq)]
 pub struct ImportedRecipeRawCall {
+    pub object_literal_context: crate::ObjectLiteralContext,
     pub span: Span,
     pub styles: Literal,
 }

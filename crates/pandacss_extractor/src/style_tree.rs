@@ -535,9 +535,8 @@ fn array_to_style_tree(
             }
             element => {
                 let expr = element.as_expression()?;
-                // Unresolvable slots become Null so breakpoint arity is preserved
-                // (same as array_to_literal).
-                items.push(expression_to_style_tree(expr, resolver).unwrap_or(StyleTree::Null));
+                // Projection keeps breakpoint arity; transform must retain unknown slots.
+                items.push(expression_to_style_tree(expr, resolver).unwrap_or(StyleTree::Open));
             }
         }
     }

@@ -47,6 +47,7 @@ pub enum LocalDeclarationKind {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LocalBindingCall {
+    pub object_literal_context: crate::ObjectLiteralContext,
     /// Whole `binding(...)` expression — the rewrite range.
     pub span: Span,
     /// One entry per argument. `None` is a spread element.
@@ -171,7 +172,7 @@ fn classify_reference(semantic: &Semantic<'_>, node_id: NodeId, ref_span: Span) 
             if !callee_is_ref || call.optional || call.type_arguments.is_some() {
                 return ReferenceKind::Other;
             }
-            ReferenceKind::PlainCall(binding_call(call))
+            ReferenceKind::PlainCall(binding_call(call, semantic))
         }
         AstKind::StaticMemberExpression(member) => {
             if member.property.name != "raw"
@@ -192,7 +193,7 @@ fn classify_reference(semantic: &Semantic<'_>, node_id: NodeId, ref_span: Span) 
                         && span_from_oxc(call.callee.get_inner_expression().span())
                             == span_from_oxc(member.span) =>
                 {
-                    ReferenceKind::RawCall(binding_call(call))
+                    ReferenceKind::RawCall(binding_call(call, semantic))
                 }
                 // `const fn = styles.raw`, `styles.raw?.(…)`, `f(styles.raw)` —
                 // the function escapes, so its semantics must not change.
@@ -203,8 +204,12 @@ fn classify_reference(semantic: &Semantic<'_>, node_id: NodeId, ref_span: Span) 
     }
 }
 
-fn binding_call(call: &oxc_ast::ast::CallExpression<'_>) -> LocalBindingCall {
+fn binding_call(
+    call: &oxc_ast::ast::CallExpression<'_>,
+    semantic: &Semantic<'_>,
+) -> LocalBindingCall {
     LocalBindingCall {
+        object_literal_context: crate::transform_facts::object_literal_context(call, semantic),
         span: span_from_oxc(call.span),
         args: call
             .arguments

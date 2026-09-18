@@ -35,6 +35,7 @@ pub enum CallCalleeKind {
 pub struct CallFacts {
     pub callee_kind: CallCalleeKind,
     pub callee_span: Span,
+    pub object_literal_context: crate::ObjectLiteralContext,
     pub raw: bool,
     /// One entry per argument; `true` only for a direct empty object literal.
     pub direct_empty_object_args: Vec<bool>,
@@ -46,6 +47,7 @@ impl Default for CallFacts {
         Self {
             callee_kind: CallCalleeKind::default(),
             callee_span: Span { start: 0, end: 0 },
+            object_literal_context: crate::ObjectLiteralContext::default(),
             raw: false,
             direct_empty_object_args: Vec::new(),
             args: Vec::new(),
@@ -453,7 +455,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                     arg_spans,
                     style_args,
                     facts: if retain {
-                        call_facts(call, raw)
+                        call_facts(call, raw, resolver)
                     } else {
                         CallFacts::default()
                     },
@@ -485,10 +487,18 @@ fn call_callee_kind(callee: &Expression<'_>) -> CallCalleeKind {
     }
 }
 
-fn call_facts(call: &CallExpression<'_>, raw: bool) -> CallFacts {
+fn call_facts(
+    call: &CallExpression<'_>,
+    raw: bool,
+    resolver: Option<&crate::Resolver<'_, '_>>,
+) -> CallFacts {
     CallFacts {
         callee_kind: call_callee_kind(&call.callee),
         callee_span: span_from_oxc(call.callee.span()),
+        object_literal_context: resolver
+            .map_or(crate::ObjectLiteralContext::StatementStart, |resolver| {
+                crate::transform_facts::object_literal_context(call, resolver.semantic())
+            }),
         raw,
         direct_empty_object_args: call
             .arguments

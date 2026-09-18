@@ -401,7 +401,7 @@ fn rewrites_conditional_on_a_non_variant_key() {
     assert!(!output.bailed);
     assert_snapshot!(
         output.code,
-        @r#"export const cls = "button button--size_sm button--variant_solid";"#
+        @r#"export const cls = "button button--size_sm button--variant_solid" + (isDark ? "" : "");"#
     );
 }
 

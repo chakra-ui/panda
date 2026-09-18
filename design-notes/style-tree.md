@@ -128,10 +128,15 @@ A missing StyleTree on a dynamic conditional is an extraction bug. Do not restor
      site instead of rewriting only its static parts.
    - A tree without rewrite sites uses the static or mixed `classes_for_css_args` and analyze path. Top-level open props
      may become `cx(static, css({…}))`; open spreads keep the call unchanged.
+   - Multi-argument CSS lowering wraps trees under ordered argument keys and resolves finite branch combinations
+     before encoding all arguments together. Argument keys are sorted numerically at encoding because selecting a
+     whole-argument branch may reinsert its key. Open values and combinations above 16 leaves retain runtime calls.
    - A missing tree uses the static path only.
 
 With a dynamic left operand, `||` and `??` produce `OpenWithFallback(right)` when the right side folds. Transform bails,
 while encode uses the right side for `data`. If the right side does not fold, the result is `Open`.
+Unknown array slots also retain `Open` in the tree; projection emits `Null` for those slots to keep breakpoint arity
+without letting transform silently drop runtime values.
 
 ## Resolved questions
 

@@ -6,6 +6,61 @@ use oxc_span::GetSpan;
 use oxc_syntax::precedence::{GetPrecedence, Precedence};
 
 use crate::{Span, span_from_oxc};
+use oxc_ast::AstKind;
+use oxc_semantic::Semantic;
+
+/// Grammar context for replacing a call with an object literal.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum ObjectLiteralContext {
+    #[default]
+    Expression,
+    StatementStart,
+}
+
+impl ObjectLiteralContext {
+    #[must_use]
+    pub const fn needs_parentheses(self) -> bool {
+        matches!(self, Self::StatementStart)
+    }
+}
+
+/// Follow only expressions whose first token comes from this call.
+#[must_use]
+pub(crate) fn object_literal_context(
+    call: &CallExpression<'_>,
+    semantic: &Semantic<'_>,
+) -> ObjectLiteralContext {
+    let mut child = call.span;
+    for parent in semantic.nodes().ancestor_kinds(call.node_id.get()) {
+        let starts_with_child = match parent {
+            AstKind::ExpressionStatement(_) => return ObjectLiteralContext::StatementStart,
+            AstKind::ParenthesizedExpression(_) => return ObjectLiteralContext::Expression,
+            AstKind::StaticMemberExpression(value) => value.object.span() == child,
+            AstKind::ComputedMemberExpression(value) => value.object.span() == child,
+            AstKind::CallExpression(value) => value.callee.span() == child,
+            AstKind::TaggedTemplateExpression(value) => value.tag.span() == child,
+            AstKind::BinaryExpression(value) => value.left.span() == child,
+            AstKind::LogicalExpression(value) => value.left.span() == child,
+            AstKind::ConditionalExpression(value) => value.test.span() == child,
+            AstKind::SequenceExpression(value) => value
+                .expressions
+                .first()
+                .is_some_and(|value| value.span() == child),
+            AstKind::AssignmentExpression(value) => value.left.span() == child,
+            AstKind::TSAsExpression(value) => value.expression.span() == child,
+            AstKind::TSSatisfiesExpression(value) => value.expression.span() == child,
+            AstKind::TSNonNullExpression(value) => value.expression.span() == child,
+            AstKind::TSInstantiationExpression(value) => value.expression.span() == child,
+            AstKind::ChainExpression(_) => true,
+            _ => false,
+        };
+        if !starts_with_child {
+            return ObjectLiteralContext::Expression;
+        }
+        child = parent.span();
+    }
+    ObjectLiteralContext::Expression
+}
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum ExpressionKind {
@@ -29,6 +84,8 @@ pub struct ExpressionFacts {
     pub kind: ExpressionKind,
     pub identifier: Option<String>,
     pub string_value: Option<String>,
+    /// JavaScript property-key spelling of a static string, boolean, or number.
+    pub static_scalar_key: Option<String>,
     pub call_name: Option<String>,
     pub object: Option<ObjectFacts>,
     pub conditional: Option<Box<ConditionalExpressionFacts>>,
@@ -49,6 +106,7 @@ impl Default for ExpressionFacts {
             kind: ExpressionKind::Other,
             identifier: None,
             string_value: None,
+            static_scalar_key: None,
             call_name: None,
             object: None,
             conditional: None,
@@ -121,6 +179,7 @@ pub(crate) fn expression_facts(expression: &Expression<'_>) -> ExpressionFacts {
     let inner = expression.get_inner_expression();
     let mut facts = ExpressionFacts {
         span: span_from_oxc(expression.span()),
+        static_scalar_key: static_scalar_key(inner),
         parenthesize_for_addition: needs_addition_parentheses(expression),
         parenthesize_for_logical_and: needs_logical_and_parentheses(expression),
         ..Default::default()
@@ -191,6 +250,32 @@ pub(crate) fn expression_facts(expression: &Expression<'_>) -> ExpressionFacts {
     }
 
     facts
+}
+
+fn static_scalar_key(expression: &Expression<'_>) -> Option<String> {
+    match expression {
+        Expression::StringLiteral(value) => Some(value.value.to_string()),
+        Expression::BooleanLiteral(value) => Some(value.value.to_string()),
+        Expression::NumericLiteral(value) => {
+            Some(pandacss_shared::number_to_js_string(value.value))
+        }
+        Expression::TemplateLiteral(value) if value.expressions.is_empty() => value
+            .quasis
+            .first()?
+            .value
+            .cooked
+            .as_ref()
+            .map(ToString::to_string),
+        Expression::UnaryExpression(_) => {
+            match crate::literal::expression_to_literal(expression, None)? {
+                value @ (crate::Literal::Number(_) | crate::Literal::Bool(_)) => {
+                    crate::literal::literal_to_property_key(&value)
+                }
+                _ => None,
+            }
+        }
+        _ => None,
+    }
 }
 
 #[must_use]
