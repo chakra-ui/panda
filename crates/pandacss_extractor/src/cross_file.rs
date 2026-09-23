@@ -204,10 +204,12 @@ impl CrossFileResolver {
         self.inner.dependency_key(path)
     }
 
-    /// Whether any previously unresolved dependency can now be resolved.
+    /// Check previously unresolved requests against one fresh resolver view.
+    ///
+    /// The result at each index corresponds to the request at the same index.
     #[must_use]
-    pub fn any_resolvable(&self, dependencies: &[UnresolvedCrossFileDependency]) -> bool {
-        self.inner.any_resolvable(dependencies)
+    pub fn check_resolvable(&self, dependencies: &[UnresolvedCrossFileDependency]) -> Vec<bool> {
+        self.inner.check_resolvable(dependencies)
     }
 
     /// Clear cached filesystem lookups before retrying unresolved dependencies.
@@ -376,7 +378,7 @@ pub(crate) trait CrossFileLookup: Send + Sync {
 
     fn dependency_key(&self, path: &Path) -> Option<PathBuf>;
 
-    fn any_resolvable(&self, dependencies: &[UnresolvedCrossFileDependency]) -> bool;
+    fn check_resolvable(&self, dependencies: &[UnresolvedCrossFileDependency]) -> Vec<bool>;
 
     fn clear_resolution_cache(&self);
 
@@ -502,20 +504,23 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         Some(to_forward_slash(&parent.join(path.file_name()?)))
     }
 
-    fn any_resolvable(&self, dependencies: &[UnresolvedCrossFileDependency]) -> bool {
+    fn check_resolvable(&self, dependencies: &[UnresolvedCrossFileDependency]) -> Vec<bool> {
         let resolver = ResolverGeneric::<F>::new_with_file_system(
             self.fs.clone(),
             self.inner.options().clone(),
         );
-        dependencies.iter().any(|dep| {
-            resolve_with(
-                &self.fs,
-                &resolver,
-                Path::new(&dep.from_file),
-                &dep.specifier,
-            )
-            .is_some()
-        })
+        dependencies
+            .iter()
+            .map(|dep| {
+                resolve_with(
+                    &self.fs,
+                    &resolver,
+                    Path::new(&dep.from_file),
+                    &dep.specifier,
+                )
+                .is_some()
+            })
+            .collect()
     }
 
     fn clear_resolution_cache(&self) {

@@ -15,11 +15,13 @@ fold into CSS output and `panda build` fails on any error. `parseFiles` never pr
 
 ## Dependency state
 
-`DependencyIndex` owns resolved import edges, unresolved requests, and the pending watch refresh queue. `Project` keeps
-file buckets and marks queued importers uncacheable; the index does not parse files or change host refresh behavior.
-Removing an importer borrows its dependency list rather than cloning it. A cold `ParseBatch` pins one cross-file view;
-registering a new file in that batch does not act like a filesystem event because every path was already visible to the
-resolver before parsing began.
+`DependencyGraph` owns both directions of resolved import edges, grouped unresolved requests, and the pending watch
+refresh queue. `Project` keeps file buckets and marks queued importers uncacheable; the graph does not parse files or
+change host refresh behavior. Replacing or removing an importer updates both directions atomically, so file buckets do
+not duplicate dependency state. Unresolved requests are grouped by importer directory and module specifier,
+which is the resolution context needed to probe a newly created file once and fan the result out to every importer. A
+cold `ParseBatch` pins one cross-file view; registering a new file in that batch does not act like a filesystem event
+because every path was already visible to the resolver before parsing began.
 
 ## Construction
 

@@ -152,6 +152,14 @@ fn app_source() -> &'static str {
     "}
 }
 
+fn missing_theme_source() -> &'static str {
+    indoc! {r"
+        import { brand } from './theme';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "}
+}
+
 fn barrel_app_source() -> &'static str {
     indoc! {r"
         import { brand } from './barrel';
@@ -234,6 +242,65 @@ fn batch_parse_does_not_probe_new_paths_after_resolving_an_import() {
     }
 
     assert_eq!(fs.probes(), 0);
+}
+
+#[test]
+fn creating_one_module_probes_a_shared_pending_request_once() {
+    let memory = MemoryFileSystem::new();
+    let fs = CountingFileSystem::new(memory.clone());
+    let mut project =
+        create_project(json!({})).with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+    let batch = project.parse_batch();
+    for index in 0..64 {
+        project.parse_file_in_batch(
+            &format!("/proj/App-{index}.tsx"),
+            missing_theme_source(),
+            &batch,
+            ParseTransforms::default(),
+        );
+    }
+    drop(batch);
+
+    write(&memory, "theme.ts", "export const brand = 'red';\n");
+    fs.reset();
+    project.parse_file("/proj/theme.ts", "export const brand = 'red';\n");
+
+    assert!(
+        fs.probes() < 20,
+        "one directory + specifier should be resolved once, got {} filesystem probes",
+        fs.probes()
+    );
+    assert_eq!(project.take_affected_files().len(), 64);
+}
+
+#[test]
+fn pending_requests_with_the_same_specifier_stay_scoped_to_their_directory() {
+    let memory = MemoryFileSystem::new();
+    let fs = CountingFileSystem::new(memory.clone());
+    let mut project =
+        create_project(json!({})).with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+    let batch = project.parse_batch();
+    for directory in ["a", "b"] {
+        for index in 0..4 {
+            project.parse_file_in_batch(
+                &format!("/proj/{directory}/App-{index}.tsx"),
+                missing_theme_source(),
+                &batch,
+                ParseTransforms::default(),
+            );
+        }
+    }
+    drop(batch);
+
+    write(&memory, "a/theme.ts", "export const brand = 'red';\n");
+    project.parse_file("/proj/a/theme.ts", "export const brand = 'red';\n");
+
+    assert_eq!(
+        project.take_affected_files(),
+        (0..4)
+            .map(|index| format!("/proj/a/App-{index}.tsx"))
+            .collect::<Vec<_>>()
+    );
 }
 
 #[test]
@@ -392,6 +459,35 @@ fn removing_an_unresolved_importer_drops_its_pending_request() {
 
     assert!(project.take_affected_files().is_empty());
     assert_yaml_snapshot!(sorted_atoms(&project), @"[]");
+}
+
+#[test]
+fn replacing_an_importer_replaces_its_pending_request() {
+    let other_source = missing_theme_source().replace("./theme", "./other");
+    let (fs, mut project) = watch_project(&[("App.tsx", missing_theme_source())]);
+    project.parse_file("/proj/App.tsx", missing_theme_source());
+    project.parse_file("/proj/App.tsx", &other_source);
+
+    write(&fs, "theme.ts", "export const brand = 'red';\n");
+    project.parse_file("/proj/theme.ts", "export const brand = 'red';\n");
+
+    assert!(project.take_affected_files().is_empty());
+}
+
+#[test]
+fn removing_the_first_importer_keeps_the_shared_pending_request() {
+    let (fs, mut project) = watch_project(&[
+        ("A.tsx", missing_theme_source()),
+        ("B.tsx", missing_theme_source()),
+    ]);
+    project.parse_file("/proj/A.tsx", missing_theme_source());
+    project.parse_file("/proj/B.tsx", missing_theme_source());
+    assert!(project.remove_file("/proj/A.tsx"));
+
+    write(&fs, "theme.ts", "export const brand = 'red';\n");
+    project.parse_file("/proj/theme.ts", "export const brand = 'red';\n");
+
+    assert_eq!(project.take_affected_files(), vec!["/proj/B.tsx"]);
 }
 
 #[test]

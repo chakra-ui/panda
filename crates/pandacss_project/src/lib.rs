@@ -23,7 +23,7 @@
 mod build_info;
 mod codegen;
 mod config;
-mod dependency_index;
+mod dependency_graph;
 mod design_system;
 mod error;
 mod hook_filter;
@@ -38,7 +38,7 @@ mod transform;
 mod transform_cache;
 mod usages;
 
-use dependency_index::DependencyIndex;
+use dependency_graph::DependencyGraph;
 
 use std::collections::BTreeMap;
 use std::hash::Hash;
@@ -160,7 +160,7 @@ pub struct Project {
         Option<(bool, FxHashMap<UtilityStyleKey, Literal>, Vec<Diagnostic>)>,
     merged_utility_styles_snapshot_cache: Option<FxHashMap<UtilityStyleKey, Literal>>,
     parse_epoch: u64,
-    dependencies: DependencyIndex,
+    dependencies: DependencyGraph,
     /// Recipes keyed by `(file, span)` so re-parsing a path drops every
     /// matching entry and span shifts don't leave orphans.
     config_recipes: BTreeMap<RecipeKey, Recipe>,
@@ -228,8 +228,6 @@ struct FileEntry {
     /// Top-level export facts for the build-info `exports` map. Empty for
     /// hydrated/synthetic files.
     exports: ExportInfo,
-    /// Cross-file modules this file folded. Used to maintain [`Project::importers`].
-    dependencies: Vec<CrossFileDependency>,
     diagnostics: Vec<Diagnostic>,
     report: ParseFileReport,
 }
@@ -275,7 +273,7 @@ impl Project {
             config_utility_styles_cache: None,
             merged_utility_styles_snapshot_cache: None,
             parse_epoch: 0,
-            dependencies: DependencyIndex::default(),
+            dependencies: DependencyGraph::default(),
             config_recipes,
             config_slot_recipes,
             inline_recipes: BTreeMap::new(),
@@ -916,17 +914,21 @@ impl Project {
             utility_styles,
             token_refs,
             exports,
-            dependencies,
             diagnostics: report.diagnostics.clone(),
             report: report.clone(),
         };
         self.parse_attempt_diagnostics.remove(path);
         match mode {
             ParseMode::Replace => {
-                self.add_file_state(path_key, entry, &unresolved_dependencies);
+                self.add_file_state(path_key, entry, &dependencies, &unresolved_dependencies);
             }
             ParseMode::Additive => {
-                self.add_file_state_additive(path_key, entry, &unresolved_dependencies);
+                self.add_file_state_additive(
+                    path_key,
+                    entry,
+                    &dependencies,
+                    &unresolved_dependencies,
+                );
             }
         }
         report
@@ -1195,26 +1197,15 @@ impl Project {
         Some(key.to_string_lossy().into_owned())
     }
 
-    fn unindex_file_deps(&mut self, path: &str) {
-        let dependencies = self
-            .files
-            .get(path)
-            .map_or(&[][..], |entry| entry.dependencies.as_slice());
-        self.dependencies.remove_file(path, dependencies);
-    }
-
     fn add_file_state(
         &mut self,
         path: Arc<str>,
         entry: FileEntry,
+        resolved_dependencies: &[CrossFileDependency],
         unresolved_dependencies: &[UnresolvedCrossFileDependency],
     ) {
-        self.dependencies.remove_affected(path.as_ref());
-        self.unindex_file_deps(path.as_ref());
         self.dependencies
-            .index_file(path.as_ref(), &entry.dependencies);
-        self.dependencies
-            .index_unresolved(&path, unresolved_dependencies);
+            .replace_file(&path, resolved_dependencies, unresolved_dependencies);
         self.invalidate_stylesheet_snapshots();
         for atom in &entry.atoms {
             let atoms_cache = &mut self.atoms_cache;
@@ -1235,19 +1226,16 @@ impl Project {
         &mut self,
         path: Arc<str>,
         entry: FileEntry,
+        resolved_dependencies: &[CrossFileDependency],
         unresolved_dependencies: &[UnresolvedCrossFileDependency],
     ) {
         if !self.files.contains_key(&path) {
-            self.add_file_state(path, entry, unresolved_dependencies);
+            self.add_file_state(path, entry, resolved_dependencies, unresolved_dependencies);
             return;
         }
 
-        self.dependencies.remove_affected(path.as_ref());
-        self.unindex_file_deps(path.as_ref());
         self.dependencies
-            .index_file(path.as_ref(), &entry.dependencies);
-        self.dependencies
-            .index_unresolved(&path, unresolved_dependencies);
+            .replace_file(&path, resolved_dependencies, unresolved_dependencies);
         self.invalidate_stylesheet_snapshots();
         let mut missing_atoms = Vec::new();
         let mut missing_utility_styles = Vec::new();
@@ -1276,7 +1264,6 @@ impl Project {
             existing.cacheable = entry.cacheable;
             existing.token_refs = entry.token_refs;
             existing.exports = entry.exports;
-            existing.dependencies.clone_from(&entry.dependencies);
             existing.diagnostics = entry.diagnostics;
             existing.report = entry.report;
             missing_recipes
@@ -1301,8 +1288,7 @@ impl Project {
     }
 
     fn remove_file_entry(&mut self, path: &str) -> Option<FileEntry> {
-        self.dependencies.remove_affected(path);
-        self.unindex_file_deps(path);
+        self.dependencies.remove_file(path);
         let entry = self.files.remove(path)?;
         self.invalidate_stylesheet_snapshots();
         for atom in &entry.atoms {
