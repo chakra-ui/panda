@@ -138,67 +138,61 @@ fn run(fs: &MemoryFileSystem, main_path: &Path, source: &str) -> ExtractUsage {
     extract(source, main_path.to_str().unwrap(), &config)
 }
 
+#[cfg(feature = "os")]
 #[test]
-#[cfg_attr(
-    target_os = "windows",
-    ignore = "oxc_resolver resolves tsconfig paths aliases differently on Windows; pre-existing on v2"
-)]
 fn tsconfig_path_alias_import_is_matched() {
-    // tsconfig `paths` aliases styled-system to `@styles/*`. `@styles/css` shares
-    // no substring with `styled-system/css`, so matching must resolve the alias.
-    let fs = MemoryFileSystem::new();
-    fs.add_file(
-        PathBuf::from("/proj/tsconfig.json"),
-        br#"{ "compilerOptions": { "baseUrl": ".", "paths": { "@styles/*": ["./styled-system/*"] } } }"#.to_vec(),
-    );
-    fs.add_file(
-        PathBuf::from("/proj/styled-system/css.ts"),
-        b"export const css = 0;\n".to_vec(),
-    );
-    let main = PathBuf::from("/proj/main.tsx");
+    use pandacss_fs::OsFileSystem;
+
+    let tmp = tempfile::tempdir().unwrap();
+    let dir = tmp.path();
+    std::fs::write(
+        dir.join("tsconfig.json"),
+        br#"{ "compilerOptions": { "baseUrl": ".", "paths": { "@styles/*": ["./styled-system/*"] } } }"#,
+    )
+    .unwrap();
+    std::fs::create_dir_all(dir.join("styled-system")).unwrap();
+    std::fs::write(dir.join("styled-system/css.ts"), b"export const css = 0;\n").unwrap();
+    let main = dir.join("main.tsx");
     let source = indoc::indoc! {r"
         import { css } from '@styles/css';
         css({ color: 'red' });
     "};
-    fs.add_file(main.clone(), source.as_bytes().to_vec());
+    std::fs::write(&main, source).unwrap();
 
     let matchers = Matchers {
         css: matcher("styled-system/css", ["css", "cva", "sva"]),
         ..Default::default()
     };
-    let config =
-        ExtractorConfig::new(matchers).with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+    let config = ExtractorConfig::new(matchers)
+        .with_cross_file(CrossFileResolver::with_fs(OsFileSystem::default()));
     let result = extract(source, main.to_str().unwrap(), &config);
 
     assert_eq!(result.calls.len(), 1, "aliased css() should extract");
     assert_eq!(result.calls[0].name, "css");
 }
 
+#[cfg(feature = "os")]
 #[test]
-#[cfg_attr(
-    target_os = "windows",
-    ignore = "oxc_resolver resolves tsconfig paths aliases differently on Windows; pre-existing on v2"
-)]
 fn tsconfig_path_alias_value_folds() {
-    let fs = MemoryFileSystem::new();
-    fs.add_file(
-        PathBuf::from("/proj/tsconfig.json"),
-        br#"{ "compilerOptions": { "baseUrl": ".", "paths": { "@tokens": ["./tokens.ts"] } } }"#
-            .to_vec(),
-    );
-    fs.add_file(
-        PathBuf::from("/proj/tokens.ts"),
-        b"export const brand = '#ef4444';\n".to_vec(),
-    );
-    let main = PathBuf::from("/proj/main.tsx");
+    use pandacss_fs::OsFileSystem;
+
+    let tmp = tempfile::tempdir().unwrap();
+    let dir = tmp.path();
+    std::fs::write(
+        dir.join("tsconfig.json"),
+        br#"{ "compilerOptions": { "baseUrl": ".", "paths": { "@tokens": ["./tokens.ts"] } } }"#,
+    )
+    .unwrap();
+    std::fs::write(dir.join("tokens.ts"), b"export const brand = '#ef4444';\n").unwrap();
+    let main = dir.join("main.tsx");
     let source = indoc::indoc! {r"
         import { brand } from '@tokens';
         import { css } from '@panda/css';
         css({ color: brand });
     "};
-    fs.add_file(main.clone(), source.as_bytes().to_vec());
+    std::fs::write(&main, source).unwrap();
 
-    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(OsFileSystem::default()));
     let result = extract(source, main.to_str().unwrap(), &config);
 
     assert_yaml_snapshot!(shape(&result), @r##"
