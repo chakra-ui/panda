@@ -34,6 +34,7 @@ tracing = { workspace = true }
 [dev-dependencies]
 indoc = { workspace = true }
 insta = { workspace = true }
+oxc_resolver = { workspace = true }
 pandacss_fs = { workspace = true, features = ["memory"] }
 
 [lints]

@@ -261,7 +261,7 @@ impl Compiler {
         paths: Vec<String>,
     ) -> napi::Result<Vec<ParseFileReport>> {
         crate::init_tracing();
-        let session = self.inner.parse_session();
+        let session = self.inner.parse_batch_session();
         let mut reports = Vec::with_capacity(paths.len());
         for path in paths {
             let report = match self.fs.read_to_string(std::path::Path::new(&path)) {

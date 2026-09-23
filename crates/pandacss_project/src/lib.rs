@@ -195,6 +195,13 @@ pub struct Project {
 /// One consistent view of imported modules across ordered file parses.
 pub struct ParseSession {
     cross_file: Option<CrossFileSession>,
+    new_file_policy: NewFilePolicy,
+}
+
+#[derive(Clone, Copy)]
+enum NewFilePolicy {
+    RetryUnresolved,
+    FilesAlreadyVisible,
 }
 
 pub struct ProjectStylesheetSnapshots<'a> {
@@ -326,6 +333,18 @@ impl Project {
     /// Start an ordered parse session with one consistent cross-file view.
     #[must_use]
     pub fn parse_session(&self) -> ParseSession {
+        self.parse_session_with_policy(NewFilePolicy::RetryUnresolved)
+    }
+
+    /// Start an ordered bulk parse for files that are already visible to the
+    /// resolver. Missing imports do not need to be retried as each path is
+    /// registered because parsing a file does not change the filesystem.
+    #[must_use]
+    pub fn parse_batch_session(&self) -> ParseSession {
+        self.parse_session_with_policy(NewFilePolicy::FilesAlreadyVisible)
+    }
+
+    fn parse_session_with_policy(&self, new_file_policy: NewFilePolicy) -> ParseSession {
         ParseSession {
             cross_file: self
                 .config
@@ -333,6 +352,7 @@ impl Project {
                 .cross_file
                 .as_ref()
                 .map(CrossFileResolver::session),
+            new_file_policy,
         }
     }
 
@@ -346,7 +366,7 @@ impl Project {
         self.parse_file_inner(
             path,
             source,
-            session.cross_file.as_ref(),
+            session,
             ParseTransforms::default(),
             ParseMode::Replace,
         )
@@ -372,13 +392,7 @@ impl Project {
         session: &ParseSession,
         transforms: ParseTransforms<'_>,
     ) -> ParseFileReport {
-        self.parse_file_inner(
-            path,
-            source,
-            session.cross_file.as_ref(),
-            transforms,
-            ParseMode::Replace,
-        )
+        self.parse_file_inner(path, source, session, transforms, ParseMode::Replace)
     }
 
     /// Stateless extraction with this project's matchers and token dictionary —
@@ -397,7 +411,7 @@ impl Project {
         &mut self,
         path: &str,
         source: &str,
-        cross_file: Option<&CrossFileSession>,
+        session: &ParseSession,
         transforms: ParseTransforms<'_>,
         mode: ParseMode,
     ) -> ParseFileReport {
@@ -415,7 +429,9 @@ impl Project {
         let _guard = span.enter();
         let source_hash = hash_source(source);
         let is_new_file = !self.files.contains_key(path);
-        self.mark_affected(path, Some(source_hash), is_new_file);
+        let retry_unresolved =
+            is_new_file && matches!(session.new_file_policy, NewFilePolicy::RetryUnresolved);
+        self.mark_affected(path, Some(source_hash), retry_unresolved);
         if self.files.get(path).is_some_and(|entry| {
             entry.cacheable
                 && entry.source_hash == source_hash
@@ -482,7 +498,7 @@ impl Project {
                 source,
                 path,
                 &self.config.extractor_config,
-                cross_file,
+                session.cross_file.as_ref(),
                 has_pattern_transform.then_some(&mut raw_transform),
                 &mut resolve_recipe_raw,
             )
@@ -972,13 +988,7 @@ impl Project {
             return false;
         }
         let session = self.parse_session();
-        self.parse_file_inner(
-            path,
-            source,
-            session.cross_file.as_ref(),
-            transforms,
-            ParseMode::Additive,
-        );
+        self.parse_file_inner(path, source, &session, transforms, ParseMode::Additive);
         true
     }
 

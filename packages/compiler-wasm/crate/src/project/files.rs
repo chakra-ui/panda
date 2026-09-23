@@ -157,7 +157,7 @@ impl WasmCompiler {
     pub fn parse_files(&mut self, paths: JsValue) -> Result<JsValue, JsValue> {
         let paths: Vec<String> = serde_wasm_bindgen::from_value(paths)
             .map_err(|err| JsValue::from_str(&format!("invalid source paths: {err}")))?;
-        let session = self.inner.parse_session();
+        let session = self.inner.parse_batch_session();
         let mut reports = Vec::with_capacity(paths.len());
         for path in paths {
             let report = match self.fs.read_to_string(Path::new(&path)) {

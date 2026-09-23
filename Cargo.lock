@@ -1225,6 +1225,7 @@ dependencies = [
  "fast-glob",
  "indoc",
  "insta",
+ "oxc_resolver",
  "pandacss_codegen",
  "pandacss_config",
  "pandacss_encoder",
