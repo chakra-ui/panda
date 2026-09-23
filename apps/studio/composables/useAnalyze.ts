@@ -10,49 +10,11 @@ import {
   MAX_FILES,
   type CategoryUsage,
 } from "~/utils/analyze";
+import { summarizeTokenUsage } from "@pandacss/compiler-shared";
 import { useFolderDrop } from "~/composables/useFolderDrop";
 
 const pathOf = (f: File) =>
   (f as File & { webkitRelativePath?: string }).webkitRelativePath || f.name;
-
-function mapPrecise(rep: {
-  facts?: { tokens?: { path: string; category: string }[] };
-  views?: {
-    tokens?: {
-      categories?: {
-        category: string;
-        total: number;
-        used: number;
-        unused: number;
-        percentUsed: number;
-        top?: { name: string; uses: number }[];
-      }[];
-    };
-  };
-}): CategoryUsage[] {
-  const byCat = new Map<string, string[]>();
-  for (const t of rep.facts?.tokens ?? []) {
-    const name = t.path.startsWith(`${t.category}.`) ? t.path.slice(t.category.length + 1) : t.path;
-    const list = byCat.get(t.category) ?? [];
-    list.push(name);
-    byCat.set(t.category, list);
-  }
-  return (rep.views?.tokens?.categories ?? []).map((c) => {
-    const usedNames = new Set((c.top ?? []).filter((t) => t.uses > 0).map((t) => t.name));
-    const unusedNames = (byCat.get(c.category) ?? []).filter((n) => !usedNames.has(n));
-    return {
-      type: c.category,
-      total: c.total,
-      used: c.used,
-      unused: c.unused,
-      percent: c.percentUsed,
-      tokens: [
-        ...(c.top ?? []).map((t) => ({ name: t.name, uses: t.uses })),
-        ...unusedNames.map((n) => ({ name: n, uses: 0 })),
-      ],
-    };
-  });
-}
 
 export function useAnalyze() {
   const ds = ref<DesignSystemIndex | null>(null);
@@ -111,7 +73,7 @@ export function useAnalyze() {
     if (configPath && import.meta.client) {
       try {
         const rep = await analyzePrecise({ configPath, files: filesMap, sources });
-        report.value = mapPrecise(rep as never);
+        report.value = summarizeTokenUsage(rep as never);
         mode.value = "precise";
         analyzing.value = false;
         return;
