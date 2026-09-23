@@ -174,6 +174,41 @@ fn tsconfig_path_alias_import_is_matched() {
     assert_eq!(result.calls[0].name, "css");
 }
 
+#[test]
+#[cfg_attr(
+    target_os = "windows",
+    ignore = "oxc_resolver resolves tsconfig paths aliases differently on Windows; pre-existing on v2"
+)]
+fn tsconfig_path_alias_value_folds() {
+    let fs = MemoryFileSystem::new();
+    fs.add_file(
+        PathBuf::from("/proj/tsconfig.json"),
+        br#"{ "compilerOptions": { "baseUrl": ".", "paths": { "@tokens": ["./tokens.ts"] } } }"#
+            .to_vec(),
+    );
+    fs.add_file(
+        PathBuf::from("/proj/tokens.ts"),
+        b"export const brand = '#ef4444';\n".to_vec(),
+    );
+    let main = PathBuf::from("/proj/main.tsx");
+    let source = indoc::indoc! {r"
+        import { brand } from '@tokens';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    fs.add_file(main.clone(), source.as_bytes().to_vec());
+
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+    let result = extract(source, main.to_str().unwrap(), &config);
+
+    assert_yaml_snapshot!(shape(&result), @r##"
+    calls:
+      - name: css
+        data:
+          - color: "#ef4444"
+    "##);
+}
+
 fn assert_send_sync<T: Send + Sync>() {}
 
 #[test]
