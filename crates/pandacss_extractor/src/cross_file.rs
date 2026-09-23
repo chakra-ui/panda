@@ -508,7 +508,13 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
             self.inner.options().clone(),
         );
         dependencies.iter().any(|dep| {
-            resolve_with(&self.fs, &resolver, Path::new(&dep.from_file), &dep.specifier).is_some()
+            resolve_with(
+                &self.fs,
+                &resolver,
+                Path::new(&dep.from_file),
+                &dep.specifier,
+            )
+            .is_some()
         })
     }
 

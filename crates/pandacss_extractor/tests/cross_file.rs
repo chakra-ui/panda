@@ -192,7 +192,8 @@ fn tsconfig_path_alias_value_folds() {
     "};
     std::fs::write(&main, source).unwrap();
 
-    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(OsFileSystem::default()));
+    let config =
+        panda_config().with_cross_file(CrossFileResolver::with_fs(OsFileSystem::default()));
     let result = extract(source, main.to_str().unwrap(), &config);
 
     assert_yaml_snapshot!(shape(&result), @r##"
