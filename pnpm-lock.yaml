@@ -101,8 +101,8 @@ importers:
         specifier: ^5.0.0
         version: 5.39.1(vue@3.5.42(typescript@6.0.3))
       '@pandacss/compiler-shared':
-        specifier: 2.0.0-beta.18
-        version: 2.0.0-beta.18
+        specifier: workspace:*
+        version: link:../../packages/compiler-shared
       '@pandacss/compiler-wasm':
         specifier: 2.0.0-beta.18
         version: 2.0.0-beta.18

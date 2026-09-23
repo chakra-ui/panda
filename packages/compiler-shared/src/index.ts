@@ -14,6 +14,7 @@
 
 export * from './types'
 export * from './inspection'
+export * from './category-usage'
 export * from './build-info'
 export * from './design-system'
 export * from './diagnostics'

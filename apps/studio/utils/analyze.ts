@@ -1,17 +1,8 @@
 import type { DesignSystemIndex } from "~/utils/design-system";
 
-export interface TokenUse {
-  name: string;
-  uses: number;
-}
-export interface CategoryUsage {
-  type: string;
-  total: number;
-  used: number;
-  unused: number;
-  percent: number;
-  tokens: TokenUse[];
-}
+export type { TokenUse, CategoryUsage } from "@pandacss/compiler-shared";
+import type { CategoryUsage } from "@pandacss/compiler-shared";
+
 export interface Source {
   name: string;
   text: string;
