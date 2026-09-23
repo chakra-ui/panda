@@ -72,11 +72,12 @@ refresh, so dev CSS keeps the old atom alongside the new one until the next full
 Host paths may not match the resolver's realpath form (`/var` vs `/private/var`). `dependency_key` normalizes through
 the resolver's filesystem. A deleted file canonicalizes its parent so unlink events still match.
 
-Failed resolutions are retained as `(from_file, specifier)` requests. When a new file enters the project, `Project`
-probes only those requests with a fresh resolver. If one now resolves, the long-lived resolver cache is cleared and its
-importer is reported through `affectedFiles()`. Nested requests are also stored on cached exports, so creating a module
-behind a re-export invalidates the cached miss. A cold `parseFiles()` batch skips these retries because parsing a path
-does not create it on the filesystem; actual incremental additions keep the retry behavior.
+Failed resolutions are retained in the dependency graph and grouped by `(from_directory, specifier)`
+resolution context. When a new file enters the project, one fresh resolver checks each unique group once and the graph
+fans successful results out to every importer in that group. The long-lived resolver cache is then cleared and those
+importers are reported through `affectedFiles()`. Nested requests are also stored on cached exports, so creating a
+module behind a re-export invalidates the cached miss. A cold `parseFiles()` batch skips these retries because parsing
+a path does not create it on the filesystem; actual incremental additions keep the retry behavior.
 
 ## What folds
 

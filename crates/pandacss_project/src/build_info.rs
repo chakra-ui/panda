@@ -911,10 +911,10 @@ impl super::Project {
                 utility_styles: FxHashMap::default(),
                 token_refs,
                 exports: pandacss_extractor::ExportInfo::default(),
-                dependencies: Vec::new(),
                 diagnostics: Vec::new(),
                 report: ParseFileReport::default(),
             },
+            &[],
             &[],
         );
         true
