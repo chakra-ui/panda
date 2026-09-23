@@ -3,4 +3,4 @@
 '@pandacss/compiler-wasm': patch
 ---
 
-Group unresolved imports by directory and specifier, so adding a file in watch mode checks each missing module once instead of once per importer.
+Speed up watch updates when many files import the same missing module. Panda now checks that import once when the module is added, then refreshes every affected file.
