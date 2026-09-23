@@ -72,6 +72,27 @@ fn to_forward_slash(path: &Path) -> PathBuf {
     PathBuf::from(path.to_string_lossy().replace('\\', "/"))
 }
 
+fn resolve_with<F: FileSystem + Clone>(
+    fs: &F,
+    resolver: &ResolverGeneric<F>,
+    from_file: &Path,
+    specifier: &str,
+) -> Option<PathBuf> {
+    if <F as oxc_resolver::FileSystem>::metadata(fs, from_file)
+        .is_ok_and(oxc_resolver::FileMetadata::is_file)
+    {
+        return resolver
+            .resolve_file(from_file, specifier)
+            .ok()
+            .map(|resolution| to_forward_slash(&resolution.full_path()));
+    }
+    let directory = from_file.parent()?;
+    resolver
+        .resolve(directory, specifier)
+        .ok()
+        .map(|resolution| to_forward_slash(&resolution.full_path()))
+}
+
 fn default_resolve_options() -> ResolveOptions {
     ResolveOptions {
         extensions: [".tsx", ".ts", ".jsx", ".mjs", ".cjs", ".js", ".json"]
@@ -454,20 +475,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
     }
 
     fn resolve_auto(&self, from_file: &Path, specifier: &str) -> Option<PathBuf> {
-        if <F as oxc_resolver::FileSystem>::metadata(&self.fs, from_file)
-            .is_ok_and(oxc_resolver::FileMetadata::is_file)
-        {
-            return self
-                .inner
-                .resolve_file(from_file, specifier)
-                .ok()
-                .map(|resolution| to_forward_slash(&resolution.full_path()));
-        }
-        let directory = from_file.parent()?;
-        self.inner
-            .resolve(directory, specifier)
-            .ok()
-            .map(|resolution| to_forward_slash(&resolution.full_path()))
+        resolve_with(&self.fs, &self.inner, from_file, specifier)
     }
 }
 
@@ -500,15 +508,7 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
             self.inner.options().clone(),
         );
         dependencies.iter().any(|dep| {
-            let from_file = Path::new(&dep.from_file);
-            if <F as oxc_resolver::FileSystem>::metadata(&self.fs, from_file)
-                .is_ok_and(oxc_resolver::FileMetadata::is_file)
-            {
-                return resolver.resolve_file(from_file, &dep.specifier).is_ok();
-            }
-            from_file
-                .parent()
-                .is_some_and(|directory| resolver.resolve(directory, &dep.specifier).is_ok())
+            resolve_with(&self.fs, &resolver, Path::new(&dep.from_file), &dep.specifier).is_some()
         })
     }
 
