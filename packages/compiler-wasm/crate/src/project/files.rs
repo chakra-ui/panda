@@ -35,8 +35,7 @@ impl WasmCompiler {
     /// Returns a JS error if serializing the per-call report fails.
     #[wasm_bindgen(js_name = parseFileSource)]
     pub fn parse_file_source(&mut self, path: &str, source: &str) -> Result<JsValue, JsValue> {
-        let session = self.inner.parse_session();
-        let report = self.parse_inner(path, source, &session);
+        let report = self.parse_inner(path, source, None);
         let _span = tracing::trace_span!("boundary_encode", method = "parse_file_report").entered();
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         parse_file_report(path, report)
@@ -157,11 +156,11 @@ impl WasmCompiler {
     pub fn parse_files(&mut self, paths: JsValue) -> Result<JsValue, JsValue> {
         let paths: Vec<String> = serde_wasm_bindgen::from_value(paths)
             .map_err(|err| JsValue::from_str(&format!("invalid source paths: {err}")))?;
-        let session = self.inner.parse_session();
+        let batch = self.inner.parse_batch();
         let mut reports = Vec::with_capacity(paths.len());
         for path in paths {
             let report = match self.fs.read_to_string(Path::new(&path)) {
-                Ok(source) => self.parse_inner(&path, &source, &session),
+                Ok(source) => self.parse_inner(&path, &source, Some(&batch)),
                 Err(err) => self.inner.record_read_failure(&path, &err),
             };
             reports.push(parse_file_report(&path, report));
@@ -203,13 +202,21 @@ impl WasmCompiler {
         &mut self,
         path: &str,
         source: &str,
-        session: &pandacss_project::ParseSession,
+        batch: Option<&pandacss_project::ParseBatch>,
     ) -> pandacss_project::ParseFileReport {
         let has_source_transforms = self.callbacks.has_source_transforms();
         let has_pattern_transforms = self.callbacks.has_pattern_transforms();
         let has_utility_transforms = self.callbacks.has_utility_transforms();
         if !has_source_transforms && !has_pattern_transforms && !has_utility_transforms {
-            return self.inner.parse_file_in_session(path, source, session);
+            return match batch {
+                Some(batch) => self.inner.parse_file_in_batch(
+                    path,
+                    source,
+                    batch,
+                    pandacss_project::ParseTransforms::default(),
+                ),
+                None => self.inner.parse_file(path, source),
+            };
         }
         let WasmCompiler {
             inner, callbacks, ..
@@ -238,21 +245,18 @@ impl WasmCompiler {
         let mut source_transform = |path: &str, source: &str| {
             apply_source_transforms(path, source, &callbacks.source_transforms)
         };
-        inner.parse_file_with_in_session(
-            path,
-            source,
-            session,
-            pandacss_project::ParseTransforms {
-                source: has_source_transforms.then_some(
-                    &mut source_transform as &mut pandacss_project::SourceTransformFn<'_>,
-                ),
-                pattern: has_pattern_transforms
-                    .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
-                utility: has_utility_transforms.then_some(
-                    &mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>,
-                ),
-            },
-        )
+        let transforms = pandacss_project::ParseTransforms {
+            source: has_source_transforms
+                .then_some(&mut source_transform as &mut pandacss_project::SourceTransformFn<'_>),
+            pattern: has_pattern_transforms
+                .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
+            utility: has_utility_transforms
+                .then_some(&mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>),
+        };
+        match batch {
+            Some(batch) => inner.parse_file_in_batch(path, source, batch, transforms),
+            None => inner.parse_file_with(path, source, transforms),
+        }
     }
 
     /// Stateless single-file extraction — raw `{ calls, jsx, diagnostics }`,

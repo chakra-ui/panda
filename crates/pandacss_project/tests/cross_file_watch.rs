@@ -1,15 +1,108 @@
 //! Watch-session cascade: changing a folded module marks its importers affected.
 
+use std::io;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 use crate::common::{create_project, sorted_atoms};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
+use oxc_resolver::{FileMetadata, FileSystem as OxcFileSystem, ResolveError};
 use pandacss_encoder::AtomValue;
 use pandacss_extractor::CrossFileResolver;
-use pandacss_fs::{FileSystem as _, MemoryFileSystem};
-use pandacss_project::Project;
+use pandacss_fs::{FileSystem, MemoryFileSystem};
+use pandacss_project::{ParseTransforms, Project};
 use serde_json::json;
+
+#[derive(Clone)]
+struct CountingFileSystem {
+    inner: MemoryFileSystem,
+    probes: Arc<AtomicUsize>,
+}
+
+impl CountingFileSystem {
+    fn new(inner: MemoryFileSystem) -> Self {
+        Self {
+            inner,
+            probes: Arc::default(),
+        }
+    }
+
+    fn reset(&self) {
+        self.probes.store(0, Ordering::Relaxed);
+    }
+
+    fn probes(&self) -> usize {
+        self.probes.load(Ordering::Relaxed)
+    }
+
+    fn record_probe(&self) {
+        self.probes.fetch_add(1, Ordering::Relaxed);
+    }
+}
+
+impl FileSystem for CountingFileSystem {
+    fn write(&self, path: &Path, content: &[u8]) -> io::Result<()> {
+        self.inner.write(path, content)
+    }
+
+    fn create_dir_all(&self, path: &Path) -> io::Result<()> {
+        self.inner.create_dir_all(path)
+    }
+
+    fn remove_file(&self, path: &Path) -> io::Result<()> {
+        self.inner.remove_file(path)
+    }
+
+    fn remove_dir_all(&self, path: &Path) -> io::Result<()> {
+        self.inner.remove_dir_all(path)
+    }
+
+    fn exists(&self, path: &Path) -> bool {
+        self.inner.exists(path)
+    }
+
+    fn read_dir(&self, path: &Path) -> io::Result<Vec<PathBuf>> {
+        self.inner.read_dir(path)
+    }
+}
+
+impl OxcFileSystem for CountingFileSystem {
+    fn new() -> Self {
+        Self::new(MemoryFileSystem::new())
+    }
+
+    fn read(&self, path: &Path) -> io::Result<Vec<u8>> {
+        self.record_probe();
+        OxcFileSystem::read(&self.inner, path)
+    }
+
+    fn read_to_string(&self, path: &Path) -> io::Result<String> {
+        self.record_probe();
+        OxcFileSystem::read_to_string(&self.inner, path)
+    }
+
+    fn metadata(&self, path: &Path) -> io::Result<FileMetadata> {
+        self.record_probe();
+        self.inner.metadata(path)
+    }
+
+    fn symlink_metadata(&self, path: &Path) -> io::Result<FileMetadata> {
+        self.record_probe();
+        self.inner.symlink_metadata(path)
+    }
+
+    fn read_link(&self, path: &Path) -> Result<PathBuf, ResolveError> {
+        self.record_probe();
+        self.inner.read_link(path)
+    }
+
+    fn canonicalize(&self, path: &Path) -> io::Result<PathBuf> {
+        self.record_probe();
+        self.inner.canonicalize(path)
+    }
+}
 
 fn watch_project(files: &[(&str, &str)]) -> (MemoryFileSystem, Project) {
     let fs = MemoryFileSystem::new();
@@ -84,14 +177,84 @@ fn cold_build_affects_nothing() {
 }
 
 #[test]
-fn parse_session_keeps_one_cross_file_revision() {
+fn batch_parse_does_not_retry_missing_imports_for_each_file() {
+    let memory = MemoryFileSystem::new();
+    let fs = CountingFileSystem::new(memory.clone());
+    write(&memory, "App.tsx", app_source());
+    for index in 0..16 {
+        write(&memory, &format!("unrelated-{index}.tsx"), "export {};\n");
+    }
+    let mut project =
+        create_project(json!({})).with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+    let batch = project.parse_batch();
+    project.parse_file_in_batch(
+        "/proj/App.tsx",
+        app_source(),
+        &batch,
+        ParseTransforms::default(),
+    );
+
+    fs.reset();
+    for index in 0..16 {
+        project.parse_file_in_batch(
+            &format!("/proj/unrelated-{index}.tsx"),
+            "export {};\n",
+            &batch,
+            ParseTransforms::default(),
+        );
+    }
+
+    assert_eq!(fs.probes(), 0);
+}
+
+#[test]
+fn batch_parse_does_not_probe_new_paths_after_resolving_an_import() {
+    let memory = MemoryFileSystem::new();
+    let fs = CountingFileSystem::new(memory.clone());
+    write(&memory, "App.tsx", app_source());
+    write(&memory, "tokens.ts", "export const brand = 'red';\n");
+    let mut project =
+        create_project(json!({})).with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+    let batch = project.parse_batch();
+    project.parse_file_in_batch(
+        "/proj/App.tsx",
+        app_source(),
+        &batch,
+        ParseTransforms::default(),
+    );
+
+    fs.reset();
+    for index in 0..16 {
+        project.parse_file_in_batch(
+            &format!("/proj/unrelated-{index}.tsx"),
+            "export {};\n",
+            &batch,
+            ParseTransforms::default(),
+        );
+    }
+
+    assert_eq!(fs.probes(), 0);
+}
+
+#[test]
+fn parse_batch_keeps_one_cross_file_revision() {
     let (fs, mut project) = watch_project(&[("tokens.ts", "export const brand = 'red';\n")]);
 
-    let session = project.parse_session();
-    project.parse_file_in_session("/proj/A.tsx", app_source(), &session);
+    let batch = project.parse_batch();
+    project.parse_file_in_batch(
+        "/proj/A.tsx",
+        app_source(),
+        &batch,
+        ParseTransforms::default(),
+    );
     write(&fs, "tokens.ts", "export const brand = 'blue';\n");
-    project.parse_file_in_session("/proj/B.tsx", app_source(), &session);
-    drop(session);
+    project.parse_file_in_batch(
+        "/proj/B.tsx",
+        app_source(),
+        &batch,
+        ParseTransforms::default(),
+    );
+    drop(batch);
     project.parse_file("/proj/C.tsx", app_source());
 
     let values = ["A", "B", "C"].map(|name| {

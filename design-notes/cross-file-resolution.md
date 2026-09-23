@@ -4,9 +4,12 @@
 
 `CrossFileResolver` lets the same-file `Resolver` follow `import { x } from './tokens'` references and fold the imported
 value. Module resolution itself is delegated to `oxc_resolver` (relative paths, extension probing, tsconfig paths,
-package.json `exports`). The resolver keeps a validated cache across the compiler lifetime and pins analyzed exports in
-a short-lived `CrossFileSession`. `parseFiles()` shares one session, so each imported revision is read and validated
-once across the ordered batch. A later batch observes changed files on its first lookup.
+package.json `exports`). On-disk importers resolve from the file path so auto-discovered tsconfig aliases apply;
+virtual importers fall back to directory resolution. The resolver keeps a validated cache across the compiler lifetime
+and pins analyzed exports in a short-lived `CrossFileSession`. `parseFiles()` shares one session, so each imported
+revision is read and validated once across the ordered batch. Files in that batch are already visible to the resolver,
+so registering each path does not retry every previously unresolved import. A later batch observes changed files on its
+first lookup.
 
 ## Cache shape
 
@@ -72,7 +75,8 @@ the resolver's filesystem. A deleted file canonicalizes its parent so unlink eve
 Failed resolutions are retained as `(from_file, specifier)` requests. When a new file enters the project, `Project`
 probes only those requests with a fresh resolver. If one now resolves, the long-lived resolver cache is cleared and its
 importer is reported through `affectedFiles()`. Nested requests are also stored on cached exports, so creating a module
-behind a re-export invalidates the cached miss.
+behind a re-export invalidates the cached miss. A cold `parseFiles()` batch skips these retries because parsing a path
+does not create it on the filesystem; actual incremental additions keep the retry behavior.
 
 ## What folds
 
