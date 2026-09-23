@@ -28,10 +28,10 @@ const config = {
       to('/discord', 'https://discord.gg/VQrkpsgSx7'),
       to('/play', 'https://play.panda-css.com'),
       to('/learn', 'https://pandamastery.com'),
-      to('/docs/getting-started', '/docs/get-started/getting-started'),
+      to('/docs/getting-started', '/docs/get-started/why-panda'),
 
       // Tab roots. `tabLandingHref` in docs.config sends unlisted tabs here.
-      to('/docs/get-started', '/docs/get-started/getting-started'),
+      to('/docs/get-started', '/docs/get-started/why-panda'),
       to('/docs/styling', '/docs/styling/overview'),
       to('/docs/recipes', '/docs/recipes/overview'),
       to('/docs/theming', '/docs/theming/theme'),
@@ -40,8 +40,8 @@ const config = {
 
       // v1 docs paths that no longer exist, grouped by their v1 section.
       // Exact rules come before the wildcards.
-      to('/docs/overview/why-panda', '/docs/get-started/getting-started'),
-      to('/docs/overview/getting-started', '/docs/get-started/getting-started'),
+      to('/docs/overview/why-panda', '/docs/get-started/why-panda'),
+      to('/docs/overview/getting-started', '/docs/get-started/why-panda'),
       to('/docs/overview/faq', '/docs/get-started/faq'),
       to(
         '/docs/overview/browser-support',
@@ -121,6 +121,10 @@ const config = {
       to('/docs/guides/preset', '/docs/theming/presets'),
       to('/docs/guides/component-library', '/docs/design-systems/overview'),
       to('/docs/guides/design-system', '/docs/design-systems/overview'),
+      to(
+        '/docs/guides/isolated-declarations',
+        '/docs/design-systems/isolated-declarations'
+      ),
 
       to(
         '/docs/migration/styled-components',

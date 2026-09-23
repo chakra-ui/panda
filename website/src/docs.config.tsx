@@ -104,7 +104,7 @@ export const docsTabs: TabItem[] = [
         title: 'Overview',
         items: [
           { title: 'Welcome to Panda', href: '/docs' },
-          { title: 'Why Panda', url: 'getting-started' },
+          { title: 'Why Panda', url: 'why-panda' },
           { title: 'Thinking in Panda', url: 'thinking-in-panda' },
           { title: 'FAQs', url: 'faq' },
           { title: 'Upgrading to v2', url: 'upgrading-to-v2' }
