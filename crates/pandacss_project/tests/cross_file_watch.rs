@@ -12,7 +12,7 @@ use oxc_resolver::{FileMetadata, FileSystem as OxcFileSystem, ResolveError};
 use pandacss_encoder::AtomValue;
 use pandacss_extractor::CrossFileResolver;
 use pandacss_fs::{FileSystem, MemoryFileSystem};
-use pandacss_project::Project;
+use pandacss_project::{ParseTransforms, Project};
 use serde_json::json;
 
 #[derive(Clone)]
@@ -186,15 +186,21 @@ fn batch_parse_does_not_retry_missing_imports_for_each_file() {
     }
     let mut project =
         create_project(json!({})).with_cross_file(CrossFileResolver::with_fs(fs.clone()));
-    let session = project.parse_batch_session();
-    project.parse_file_in_session("/proj/App.tsx", app_source(), &session);
+    let batch = project.parse_batch();
+    project.parse_file_in_batch(
+        "/proj/App.tsx",
+        app_source(),
+        &batch,
+        ParseTransforms::default(),
+    );
 
     fs.reset();
     for index in 0..16 {
-        project.parse_file_in_session(
+        project.parse_file_in_batch(
             &format!("/proj/unrelated-{index}.tsx"),
             "export {};\n",
-            &session,
+            &batch,
+            ParseTransforms::default(),
         );
     }
 
@@ -202,14 +208,53 @@ fn batch_parse_does_not_retry_missing_imports_for_each_file() {
 }
 
 #[test]
-fn parse_session_keeps_one_cross_file_revision() {
+fn batch_parse_does_not_probe_new_paths_after_resolving_an_import() {
+    let memory = MemoryFileSystem::new();
+    let fs = CountingFileSystem::new(memory.clone());
+    write(&memory, "App.tsx", app_source());
+    write(&memory, "tokens.ts", "export const brand = 'red';\n");
+    let mut project =
+        create_project(json!({})).with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+    let batch = project.parse_batch();
+    project.parse_file_in_batch(
+        "/proj/App.tsx",
+        app_source(),
+        &batch,
+        ParseTransforms::default(),
+    );
+
+    fs.reset();
+    for index in 0..16 {
+        project.parse_file_in_batch(
+            &format!("/proj/unrelated-{index}.tsx"),
+            "export {};\n",
+            &batch,
+            ParseTransforms::default(),
+        );
+    }
+
+    assert_eq!(fs.probes(), 0);
+}
+
+#[test]
+fn parse_batch_keeps_one_cross_file_revision() {
     let (fs, mut project) = watch_project(&[("tokens.ts", "export const brand = 'red';\n")]);
 
-    let session = project.parse_session();
-    project.parse_file_in_session("/proj/A.tsx", app_source(), &session);
+    let batch = project.parse_batch();
+    project.parse_file_in_batch(
+        "/proj/A.tsx",
+        app_source(),
+        &batch,
+        ParseTransforms::default(),
+    );
     write(&fs, "tokens.ts", "export const brand = 'blue';\n");
-    project.parse_file_in_session("/proj/B.tsx", app_source(), &session);
-    drop(session);
+    project.parse_file_in_batch(
+        "/proj/B.tsx",
+        app_source(),
+        &batch,
+        ParseTransforms::default(),
+    );
+    drop(batch);
     project.parse_file("/proj/C.tsx", app_source());
 
     let values = ["A", "B", "C"].map(|name| {

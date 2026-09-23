@@ -192,16 +192,9 @@ pub struct Project {
     hydrated_keyframes_order: Vec<Arc<str>>,
 }
 
-/// One consistent view of imported modules across ordered file parses.
-pub struct ParseSession {
+/// One consistent view of imported modules across a cold parse batch.
+pub struct ParseBatch {
     cross_file: Option<CrossFileSession>,
-    new_file_policy: NewFilePolicy,
-}
-
-#[derive(Clone, Copy)]
-enum NewFilePolicy {
-    RetryUnresolved,
-    FilesAlreadyVisible,
 }
 
 pub struct ProjectStylesheetSnapshots<'a> {
@@ -326,50 +319,24 @@ impl Project {
     /// Re-parsing a path *replaces* its previous bucket, so full rebuilds
     /// clear stale styles.
     pub fn parse_file(&mut self, path: &str, source: &str) -> ParseFileReport {
-        let session = self.parse_session();
-        self.parse_file_in_session(path, source, &session)
+        self.parse_file_with(path, source, ParseTransforms::default())
     }
 
-    /// Start an ordered parse session with one consistent cross-file view.
+    /// Start an ordered cold batch with one consistent cross-file view.
+    /// Every source path must already be visible to the resolver.
     #[must_use]
-    pub fn parse_session(&self) -> ParseSession {
-        self.parse_session_with_policy(NewFilePolicy::RetryUnresolved)
-    }
-
-    /// Start an ordered bulk parse for files that are already visible to the
-    /// resolver. Missing imports do not need to be retried as each path is
-    /// registered because parsing a file does not change the filesystem.
-    #[must_use]
-    pub fn parse_batch_session(&self) -> ParseSession {
-        self.parse_session_with_policy(NewFilePolicy::FilesAlreadyVisible)
-    }
-
-    fn parse_session_with_policy(&self, new_file_policy: NewFilePolicy) -> ParseSession {
-        ParseSession {
-            cross_file: self
-                .config
-                .extractor_config
-                .cross_file
-                .as_ref()
-                .map(CrossFileResolver::session),
-            new_file_policy,
+    pub fn parse_batch(&self) -> ParseBatch {
+        ParseBatch {
+            cross_file: self.cross_file_session(),
         }
     }
 
-    /// [`Self::parse_file`] within an existing [`ParseSession`].
-    pub fn parse_file_in_session(
-        &mut self,
-        path: &str,
-        source: &str,
-        session: &ParseSession,
-    ) -> ParseFileReport {
-        self.parse_file_inner(
-            path,
-            source,
-            session,
-            ParseTransforms::default(),
-            ParseMode::Replace,
-        )
+    fn cross_file_session(&self) -> Option<CrossFileSession> {
+        self.config
+            .extractor_config
+            .cross_file
+            .as_ref()
+            .map(CrossFileResolver::session)
     }
 
     /// [`Self::parse_file`] with transform callbacks, rebuilt fresh per call
@@ -380,19 +347,40 @@ impl Project {
         source: &str,
         transforms: ParseTransforms<'_>,
     ) -> ParseFileReport {
-        let session = self.parse_session();
-        self.parse_file_with_in_session(path, source, &session, transforms)
+        let source_hash = hash_source(source);
+        let is_new_file = !self.files.contains_key(path);
+        self.mark_affected(path, Some(source_hash), is_new_file);
+        let cross_file = self.cross_file_session();
+        self.parse_file_inner(
+            path,
+            source,
+            source_hash,
+            cross_file.as_ref(),
+            transforms,
+            ParseMode::Replace,
+        )
     }
 
-    /// [`Self::parse_file_with`] within an existing [`ParseSession`].
-    pub fn parse_file_with_in_session(
+    /// Parse one file within an existing cold [`ParseBatch`].
+    pub fn parse_file_in_batch(
         &mut self,
         path: &str,
         source: &str,
-        session: &ParseSession,
+        batch: &ParseBatch,
         transforms: ParseTransforms<'_>,
     ) -> ParseFileReport {
-        self.parse_file_inner(path, source, session, transforms, ParseMode::Replace)
+        let source_hash = hash_source(source);
+        if self.files.contains_key(path) {
+            self.mark_affected(path, Some(source_hash), false);
+        }
+        self.parse_file_inner(
+            path,
+            source,
+            source_hash,
+            batch.cross_file.as_ref(),
+            transforms,
+            ParseMode::Replace,
+        )
     }
 
     /// Stateless extraction with this project's matchers and token dictionary —
@@ -411,7 +399,8 @@ impl Project {
         &mut self,
         path: &str,
         source: &str,
-        session: &ParseSession,
+        source_hash: u64,
+        cross_file: Option<&CrossFileSession>,
         transforms: ParseTransforms<'_>,
         mode: ParseMode,
     ) -> ParseFileReport {
@@ -427,11 +416,6 @@ impl Project {
             cache_hit = tracing::field::Empty
         );
         let _guard = span.enter();
-        let source_hash = hash_source(source);
-        let is_new_file = !self.files.contains_key(path);
-        let retry_unresolved =
-            is_new_file && matches!(session.new_file_policy, NewFilePolicy::RetryUnresolved);
-        self.mark_affected(path, Some(source_hash), retry_unresolved);
         if self.files.get(path).is_some_and(|entry| {
             entry.cacheable
                 && entry.source_hash == source_hash
@@ -498,7 +482,7 @@ impl Project {
                 source,
                 path,
                 &self.config.extractor_config,
-                session.cross_file.as_ref(),
+                cross_file,
                 has_pattern_transform.then_some(&mut raw_transform),
                 &mut resolve_recipe_raw,
             )
@@ -982,13 +966,22 @@ impl Project {
         source: &str,
         transforms: ParseTransforms<'_>,
     ) -> bool {
+        let source_hash = hash_source(source);
         if !self.files.contains_key(path) {
             // Untracked modules (outside `include`) still feed folded values.
-            self.mark_affected(path, Some(hash_source(source)), true);
+            self.mark_affected(path, Some(source_hash), true);
             return false;
         }
-        let session = self.parse_session();
-        self.parse_file_inner(path, source, &session, transforms, ParseMode::Additive);
+        self.mark_affected(path, Some(source_hash), false);
+        let cross_file = self.cross_file_session();
+        self.parse_file_inner(
+            path,
+            source,
+            source_hash,
+            cross_file.as_ref(),
+            transforms,
+            ParseMode::Additive,
+        );
         true
     }
 

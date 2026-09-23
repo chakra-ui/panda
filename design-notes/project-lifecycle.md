@@ -17,7 +17,9 @@ fold into CSS output and `panda build` fails on any error. `parseFiles` never pr
 
 `DependencyIndex` owns resolved import edges, unresolved requests, and the pending watch refresh queue. `Project` keeps
 file buckets and marks queued importers uncacheable; the index does not parse files or change host refresh behavior.
-Removing an importer borrows its dependency list rather than cloning it.
+Removing an importer borrows its dependency list rather than cloning it. A cold `ParseBatch` pins one cross-file view;
+registering a new file in that batch does not act like a filesystem event because every path was already visible to the
+resolver before parsing began.
 
 ## Construction
 
@@ -153,8 +155,8 @@ can keep using `Project::from_config(config)` as the single entrypoint.
 ## Reflection: per-file parallelism
 
 Not yet done. The binding's `parseFiles()` loop is ordered and synchronous because source, pattern, and utility callbacks
-can call the JS host. It shares one `ParseSession` without changing callback or commit order. Future parallelism needs a
-separate pure-analysis phase; it should not turn `ParseSession` into a synchronized mutation API.
+can call the JS host. It shares one `ParseBatch` without changing callback or commit order. Future parallelism needs a
+separate pure-analysis phase; it should not turn `ParseBatch` into a synchronized mutation API.
 
 ## Related
 

@@ -45,8 +45,7 @@ impl Compiler {
     )]
     pub fn parse_file_source(&mut self, env: Env, path: String, source: String) -> ParseFileReport {
         crate::init_tracing();
-        let session = self.inner.parse_session();
-        let report = self.parse_inner(&env, &path, &source, &session);
+        let report = self.parse_inner(&env, &path, &source, None);
         let _span =
             tracing::trace_span!(target: "css", "snapshot_parse_report", path = path.as_str())
                 .entered();
@@ -63,13 +62,21 @@ impl Compiler {
         env: &Env,
         path: &str,
         source: &str,
-        session: &pandacss_project::ParseSession,
+        batch: Option<&pandacss_project::ParseBatch>,
     ) -> pandacss_project::ParseFileReport {
         let has_source_transforms = self.callbacks.has_source_transforms();
         let has_pattern_transforms = self.callbacks.has_pattern_transforms();
         let has_utility_transforms = self.callbacks.has_utility_transforms();
         if !has_source_transforms && !has_pattern_transforms && !has_utility_transforms {
-            return self.inner.parse_file_in_session(path, source, session);
+            return match batch {
+                Some(batch) => self.inner.parse_file_in_batch(
+                    path,
+                    source,
+                    batch,
+                    pandacss_project::ParseTransforms::default(),
+                ),
+                None => self.inner.parse_file(path, source),
+            };
         }
         let Compiler {
             inner, callbacks, ..
@@ -100,21 +107,18 @@ impl Compiler {
         let mut source_transform = |path: &str, source: &str| {
             apply_source_transforms(path, source, &callbacks.source_transforms, env)
         };
-        inner.parse_file_with_in_session(
-            path,
-            source,
-            session,
-            pandacss_project::ParseTransforms {
-                source: has_source_transforms.then_some(
-                    &mut source_transform as &mut pandacss_project::SourceTransformFn<'_>,
-                ),
-                pattern: has_pattern_transforms
-                    .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
-                utility: has_utility_transforms.then_some(
-                    &mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>,
-                ),
-            },
-        )
+        let transforms = pandacss_project::ParseTransforms {
+            source: has_source_transforms
+                .then_some(&mut source_transform as &mut pandacss_project::SourceTransformFn<'_>),
+            pattern: has_pattern_transforms
+                .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
+            utility: has_utility_transforms
+                .then_some(&mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>),
+        };
+        match batch {
+            Some(batch) => inner.parse_file_in_batch(path, source, batch, transforms),
+            None => inner.parse_file_with(path, source, transforms),
+        }
     }
 
     /// Source paths matching the config's `include`/`exclude` (overridable via
@@ -261,11 +265,11 @@ impl Compiler {
         paths: Vec<String>,
     ) -> napi::Result<Vec<ParseFileReport>> {
         crate::init_tracing();
-        let session = self.inner.parse_batch_session();
+        let batch = self.inner.parse_batch();
         let mut reports = Vec::with_capacity(paths.len());
         for path in paths {
             let report = match self.fs.read_to_string(std::path::Path::new(&path)) {
-                Ok(source) => self.parse_inner(&env, &path, &source, &session),
+                Ok(source) => self.parse_inner(&env, &path, &source, Some(&batch)),
                 Err(err) => self.inner.record_read_failure(&path, &err),
             };
             reports.push(convert_report(path, report));
