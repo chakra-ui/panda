@@ -2,6 +2,13 @@ import type { ParserOptions } from '@pandacss/core'
 import { PandaError, getOrCreateSet } from '@pandacss/shared'
 import type { ParserResultInterface, ResultItem } from '@pandacss/types'
 
+function cartesian<T>(arrays: T[][]): T[][] {
+  if (arrays.length === 0) return [[]]
+  const [first, ...rest] = arrays
+  const restProduct = cartesian(rest)
+  return first.flatMap((item) => restProduct.map((combo) => [item, ...combo]))
+}
+
 export class ParserResult implements ParserResultInterface {
   /** Ordered list of all ResultItem */
   all: ResultItem[] = []
@@ -55,7 +62,68 @@ export class ParserResult implements ParserResultInterface {
     this.css.add(this.append(Object.assign({ type: 'css' }, result)))
 
     const encoder = this.encoder
-    result.data.forEach((obj) => encoder.processAtomic(obj))
+    const grouped = this.context.config.cssMode === 'grouped'
+
+    if (!grouped || result.data.length <= 1) {
+      result.data.forEach((obj) => (grouped ? encoder.processGrouped(obj) : encoder.processAtomic(obj)))
+      return
+    }
+
+    // Multiple entries in grouped mode (ternaries, css.raw merging):
+    // reconstruct the combinations the runtime would evaluate to.
+    const keyCounts = new Map<string, number>()
+    for (const obj of result.data) {
+      for (const key of Object.keys(obj)) {
+        keyCounts.set(key, (keyCounts.get(key) || 0) + 1)
+      }
+    }
+
+    const hasOverlap = Array.from(keyCounts.values()).some((c) => c > 1)
+
+    if (!hasOverlap) {
+      // No overlapping keys (css.raw merge): combine all entries into one group
+      encoder.processGrouped(Object.assign({}, ...result.data))
+      return
+    }
+
+    // Overlapping keys (ternary branches): separate base from branches,
+    // then generate cartesian product of branch groups merged with base
+    const overlappingKeys = new Set<string>()
+    keyCounts.forEach((count, key) => {
+      if (count > 1) overlappingKeys.add(key)
+    })
+
+    const base: Record<string, any> = {}
+    const branchEntries: Record<string, any>[] = []
+
+    for (const obj of result.data) {
+      if (Object.keys(obj).some((k) => overlappingKeys.has(k))) {
+        branchEntries.push(obj)
+      } else {
+        Object.assign(base, obj)
+      }
+    }
+
+    // Group branch entries by sorted key set (entries with same keys are alternatives)
+    const branchGroups = new Map<string, Record<string, any>[]>()
+    for (const entry of branchEntries) {
+      const keySet = Object.keys(entry).sort().join('\0')
+      const group = branchGroups.get(keySet) || []
+      group.push(entry)
+      branchGroups.set(keySet, group)
+    }
+
+    const groupArrays = Array.from(branchGroups.values())
+    const totalCombinations = groupArrays.reduce((acc, g) => acc * g.length, 1)
+
+    if (totalCombinations > 32) {
+      result.data.forEach((obj) => encoder.processGrouped(obj))
+      return
+    }
+
+    for (const combo of cartesian(groupArrays)) {
+      encoder.processGrouped(Object.assign({}, base, ...combo))
+    }
   }
 
   setCva(result: ResultItem) {
@@ -82,7 +150,8 @@ export class ParserResult implements ParserResultInterface {
     this.jsx.add(this.append(Object.assign({ type: 'jsx' }, result)))
 
     const encoder = this.encoder
-    result.data.forEach((obj) => encoder.processStyleProps(obj))
+    const grouped = this.context.config.cssMode === 'grouped'
+    result.data.forEach((obj) => encoder.processStyleProps(obj, grouped))
   }
 
   setPattern(name: string, result: ResultItem) {

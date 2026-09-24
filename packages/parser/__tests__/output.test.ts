@@ -1,6 +1,97 @@
 import { describe, expect, test } from 'vitest'
 import { parseAndExtract } from './fixture'
 
+describe('cssMode config', () => {
+  test('css() produces a single grouped class when cssMode is grouped', () => {
+    const code = `
+    import { css } from "styled-system/css"
+
+    css({ color: "red", padding: "8px" })
+    `
+
+    const result = parseAndExtract(code, { cssMode: 'grouped' })
+
+    expect(result.encoder.grouped.size).toBe(1)
+    expect(result.encoder.atomic.size).toBe(0)
+
+    expect(result.css).toContain('color: red')
+    expect(result.css).toContain('padding: 8px')
+
+    const classMatches = result.css.match(/\.\w+\s*\{/g) ?? []
+    expect(classMatches).toHaveLength(1)
+  })
+
+  test('css() remains atomic when cssMode is not set', () => {
+    const code = `
+    import { css } from "styled-system/css"
+
+    css({ color: "red", padding: "8px" })
+    `
+
+    const result = parseAndExtract(code)
+
+    expect(result.encoder.grouped.size).toBe(0)
+    expect(result.encoder.atomic.size).toBe(2)
+  })
+
+  test('grouped css() with conditions', () => {
+    const code = `
+    import { css } from "styled-system/css"
+
+    css({
+      color: "blue",
+      _hover: { color: "red" }
+    })
+    `
+
+    const result = parseAndExtract(code, { cssMode: 'grouped' })
+
+    expect(result.encoder.grouped.size).toBe(1)
+    expect(result.css).toContain('color: blue')
+    expect(result.css).toContain('color: red')
+    expect(result.css).toContain(':hover')
+  })
+
+  test('multiple css() calls produce separate groups', () => {
+    const code = `
+    import { css } from "styled-system/css"
+
+    css({ color: "red" })
+    css({ padding: "8px" })
+    `
+
+    const result = parseAndExtract(code, { cssMode: 'grouped' })
+
+    expect(result.encoder.grouped.size).toBe(2)
+  })
+
+  test('identical css() calls are deduplicated', () => {
+    const code = `
+    import { css } from "styled-system/css"
+
+    css({ color: "red", padding: "8px" })
+    css({ color: "red", padding: "8px" })
+    `
+
+    const result = parseAndExtract(code, { cssMode: 'grouped' })
+
+    expect(result.encoder.grouped.size).toBe(1)
+  })
+
+  test('recipes are unaffected by cssMode', () => {
+    const code = `
+    import { css } from "styled-system/css"
+
+    css({ color: "red" })
+    `
+
+    const result = parseAndExtract(code, { cssMode: 'grouped' })
+
+    expect(result.encoder.grouped.size).toBe(1)
+    expect(result.encoder.recipes.size).toBe(0)
+  })
+})
+
 describe('extract to css output pipeline', () => {
   test('css with base', () => {
     const code = `

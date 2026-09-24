@@ -98,6 +98,7 @@ export function generateCssFn(ctx: Context) {
 
     const context = {
       ${hash.className ? 'hash: true,' : ''}
+      ${ctx.config.cssMode === 'grouped' ? 'grouped: true,' : ''}
       conditions: {
         shift: sortConditions,
         finalize: finalizeConditions,

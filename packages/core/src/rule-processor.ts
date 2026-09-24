@@ -3,6 +3,7 @@ import { PandaError } from '@pandacss/shared'
 import type {
   AtomicRecipeRule,
   AtomicRule,
+  GroupedRule,
   RecipeDefinition,
   RecipeVariantsRule,
   SlotRecipeDefinition,
@@ -60,6 +61,21 @@ export class RuleProcessor {
     return {
       styles,
       getClassNames: () => Array.from(decoder.classNames.keys()),
+      toCss: this.toCss.bind(this),
+    }
+  }
+
+  grouped(styles: SystemStyleObject): GroupedRule {
+    const { encoder, decoder } = this.getParamsOrThrow()
+
+    encoder.processGrouped(styles)
+    decoder.collect(encoder)
+
+    const groupedResults = Array.from(decoder.grouped)
+
+    return {
+      styles,
+      getClassNames: () => groupedResults.map((r) => r.className),
       toCss: this.toCss.bind(this),
     }
   }
