@@ -147,6 +147,40 @@ fn semantic_token_reference_expands_to_var_not_value() {
 }
 
 #[test]
+fn semantic_token_without_base_resolves_as_color_category_value() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "value": "red" },
+                    "blue": { "value": "blue" }
+                }
+            },
+            "semanticTokens": {
+                "colors": {
+                    "withBase": { "value": { "base": "{colors.red}", "_dark": "{colors.blue}" } },
+                    "onlyDark": { "value": { "_dark": "{colors.blue}" } }
+                }
+            }
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_eq!(
+        dict.category_value_str("colors", "withBase"),
+        Some("var(--colors-with-base)")
+    );
+    assert_eq!(
+        dict.category_value_str("colors", "onlyDark"),
+        Some("var(--colors-only-dark)")
+    );
+}
+
+#[test]
 fn dictionary_resolves_token_metadata_and_semantic_suggestions() {
     let config: UserConfig = serde_json::from_value(json!({
         "theme": {

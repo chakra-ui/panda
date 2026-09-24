@@ -307,6 +307,59 @@ fn transform_supports_generated_color_palette_utility() {
 }
 
 #[test]
+fn transform_resolves_base_less_semantic_color_to_var() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "value": "red" },
+                    "blue": { "value": "blue" }
+                }
+            },
+            "semanticTokens": {
+                "colors": {
+                    "onlyDark": { "value": { "_dark": "{colors.blue}" } }
+                }
+            }
+        }
+    }))
+    .expect("config");
+    let tokens = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+    let utility = Utility::from_config_with_options(
+        &utility_config(json!({
+            "color": { "values": "colors" }
+        })),
+        UtilityOptions {
+            tokens: Some(Arc::new(tokens)),
+            ..UtilityOptions::default()
+        },
+    );
+
+    let result = utility
+        .transform("color", &Literal::String("onlyDark".into()))
+        .expect("transform");
+
+    assert_debug_snapshot!(result, @r#"
+    UtilityTransformResult {
+        layer: None,
+        class_name: "color_onlyDark",
+        styles: Object(
+            [
+                (
+                    "color",
+                    String(
+                        "var(--colors-only-dark)",
+                    ),
+                ),
+            ],
+        ),
+    }
+    "#);
+}
+
+#[test]
 fn disabled_color_palette_generation_does_not_register_utility() {
     let config: UserConfig = serde_json::from_value(json!({
         "theme": {
