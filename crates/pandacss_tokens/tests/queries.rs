@@ -147,6 +147,75 @@ fn semantic_token_reference_expands_to_var_not_value() {
 }
 
 #[test]
+fn conditional_tokens_without_base_resolve_as_category_and_runtime_values() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "value": "red" },
+                    "blue": { "value": "blue" }
+                }
+            },
+            "semanticTokens": {
+                "colors": {
+                    "withBase": { "value": { "base": "{colors.red}", "_dark": "{colors.blue}" } },
+                    "onlyDark": { "value": { "_dark": "{colors.blue}" } }
+                },
+                "spacing": {
+                    "gutter": { "value": { "_compact": "1rem" } }
+                }
+            }
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_eq!(
+        dict.category_value_str("colors", "withBase"),
+        Some("var(--colors-with-base)")
+    );
+    assert_eq!(
+        dict.category_value_str("colors", "onlyDark"),
+        Some("var(--colors-only-dark)")
+    );
+    assert_eq!(
+        dict.category_value_str("spacing", "gutter"),
+        Some("var(--spacing-gutter)")
+    );
+    assert_eq!(
+        dict.category_value_str("spacing", "-gutter"),
+        Some("calc(var(--spacing-gutter) * -1)")
+    );
+
+    assert_eq!(
+        dict.runtime_value_str("colors.withBase", None),
+        Some("var(--colors-with-base)")
+    );
+    assert_eq!(
+        dict.runtime_value_str("colors.onlyDark", None),
+        Some("var(--colors-only-dark)")
+    );
+
+    let type_data = dict.type_data();
+    assert_eq!(
+        type_data.values.get("colors.withBase"),
+        Some(&String::new())
+    );
+    assert_eq!(
+        type_data.values.get("colors.onlyDark"),
+        Some(&String::new())
+    );
+    assert!(
+        type_data.categories["spacing"]
+            .values
+            .contains(&"gutter".to_owned())
+    );
+}
+
+#[test]
 fn dictionary_resolves_token_metadata_and_semantic_suggestions() {
     let config: UserConfig = serde_json::from_value(json!({
         "theme": {

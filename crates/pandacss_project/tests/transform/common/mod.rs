@@ -188,7 +188,19 @@ pub fn project_with_tokens() -> Project {
             "theme": {
                 "tokens": {
                     "colors": {
-                        "red": { "500": { "value": "#ef4444" } }
+                        "red": { "500": { "value": "#ef4444" } },
+                        "blue": { "500": { "value": "#3b82f6" } }
+                    }
+                },
+                "semanticTokens": {
+                    "colors": {
+                        "primary": {
+                            "value": {
+                                "base": "{colors.red.500}",
+                                "_dark": "{colors.blue.500}"
+                            }
+                        },
+                        "onlyDark": { "value": { "_dark": "{colors.blue.500}" } }
                     }
                 }
             }

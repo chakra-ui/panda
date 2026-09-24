@@ -307,6 +307,74 @@ fn transform_supports_generated_color_palette_utility() {
 }
 
 #[test]
+fn transform_resolves_base_less_semantic_tokens_to_vars() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "value": "red" },
+                    "blue": { "value": "blue" }
+                }
+            },
+            "semanticTokens": {
+                "colors": {
+                    "onlyDark": { "value": { "_dark": "{colors.blue}" } }
+                },
+                "spacing": {
+                    "gutter": { "value": { "_compact": "1rem" } }
+                }
+            }
+        }
+    }))
+    .expect("config");
+    let tokens = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+    let utility = Utility::from_config_with_options(
+        &utility_config(json!({
+            "color": { "values": "colors" },
+            "margin": { "values": "spacing" }
+        })),
+        UtilityOptions {
+            tokens: Some(Arc::new(tokens)),
+            ..UtilityOptions::default()
+        },
+    );
+
+    let result = utility
+        .transform("color", &Literal::String("onlyDark".into()))
+        .expect("transform");
+
+    assert_debug_snapshot!(result, @r#"
+    UtilityTransformResult {
+        layer: None,
+        class_name: "color_onlyDark",
+        styles: Object(
+            [
+                (
+                    "color",
+                    String(
+                        "var(--colors-only-dark)",
+                    ),
+                ),
+            ],
+        ),
+    }
+    "#);
+
+    let result = utility
+        .transform("margin", &Literal::String("gutter".into()))
+        .expect("transform");
+    assert_eq!(
+        result.styles,
+        Literal::Object(vec![(
+            "margin".into(),
+            Literal::String("var(--spacing-gutter)".into()),
+        )])
+    );
+}
+
+#[test]
 fn disabled_color_palette_generation_does_not_register_utility() {
     let config: UserConfig = serde_json::from_value(json!({
         "theme": {

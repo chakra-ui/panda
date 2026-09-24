@@ -38,7 +38,7 @@ pub use token::{Token, TokenExtensions};
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct TokenDictionary {
     tokens: Vec<Token>,
-    /// path -> base token index; base wins over conditional (matches JS `rawValues` keying).
+    /// Path -> representative token index; base wins over conditional for raw lookups.
     #[cfg_attr(feature = "serde", serde(skip))]
     by_path: FxHashMap<Arc<str>, usize>,
     #[cfg_attr(feature = "serde", serde(skip))]
@@ -266,13 +266,31 @@ impl TokenDictionary {
         self.get_str(path, fallback).map(str::to_owned)
     }
 
+    /// Runtime `token()` value. Conditional tokens must keep their own variable
+    /// so their active condition, rather than one representative value, wins.
+    #[must_use]
+    pub fn runtime_value_str<'a>(
+        &'a self,
+        path: &str,
+        fallback: Option<&'a str>,
+    ) -> Option<&'a str> {
+        let Some(token) = self.token(path) else {
+            return fallback;
+        };
+        if self.by_path_condition.contains_key(path) && !token.var.is_empty() {
+            Some(token.var.as_ref())
+        } else {
+            Some(token.value.as_ref())
+        }
+    }
+
     /// Allocating variant of [`Self::get_var_str`].
     #[must_use]
     pub fn get_var(&self, path: &str, fallback: Option<&str>) -> Option<String> {
         self.get_var_str(path, fallback).map(str::to_owned)
     }
 
-    /// JSON-safe `{ path -> value }` / `{ path -> var }` projection for JS interop.
+    /// JSON-safe runtime `{ path -> value }` / `{ path -> var }` projection for JS interop.
     #[must_use]
     pub fn flat_maps(&self) -> (BTreeMap<String, String>, BTreeMap<String, String>) {
         let mut indexes: Vec<usize> = self.by_path.values().copied().collect();
@@ -283,7 +301,10 @@ impl TokenDictionary {
         let mut vars = BTreeMap::new();
         for index in indexes {
             let token = &self.tokens[index];
-            values.insert(token.path.to_string(), token.value.to_string());
+            let value = self
+                .runtime_value_str(token.path.as_ref(), None)
+                .unwrap_or(token.value.as_ref());
+            values.insert(token.path.to_string(), value.to_owned());
             if !token.var.is_empty() {
                 vars.insert(token.path.to_string(), token.var.to_string());
             }
