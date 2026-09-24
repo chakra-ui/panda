@@ -307,7 +307,7 @@ fn transform_supports_generated_color_palette_utility() {
 }
 
 #[test]
-fn transform_resolves_base_less_semantic_color_to_var() {
+fn transform_resolves_base_less_semantic_tokens_to_vars() {
     let config: UserConfig = serde_json::from_value(json!({
         "theme": {
             "tokens": {
@@ -319,6 +319,9 @@ fn transform_resolves_base_less_semantic_color_to_var() {
             "semanticTokens": {
                 "colors": {
                     "onlyDark": { "value": { "_dark": "{colors.blue}" } }
+                },
+                "spacing": {
+                    "gutter": { "value": { "_compact": "1rem" } }
                 }
             }
         }
@@ -329,7 +332,8 @@ fn transform_resolves_base_less_semantic_color_to_var() {
         .expect("non-empty dictionary");
     let utility = Utility::from_config_with_options(
         &utility_config(json!({
-            "color": { "values": "colors" }
+            "color": { "values": "colors" },
+            "margin": { "values": "spacing" }
         })),
         UtilityOptions {
             tokens: Some(Arc::new(tokens)),
@@ -357,6 +361,17 @@ fn transform_resolves_base_less_semantic_color_to_var() {
         ),
     }
     "#);
+
+    let result = utility
+        .transform("margin", &Literal::String("gutter".into()))
+        .expect("transform");
+    assert_eq!(
+        result.styles,
+        Literal::Object(vec![(
+            "margin".into(),
+            Literal::String("var(--spacing-gutter)".into()),
+        )])
+    );
 }
 
 #[test]

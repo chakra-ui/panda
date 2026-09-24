@@ -34,6 +34,23 @@ fn inlines_token_var_call_to_css_var() {
 }
 
 #[test]
+fn inlines_conditional_token_calls_to_their_own_css_vars() {
+    let source = indoc! {r#"
+        import { token } from '@panda/tokens';
+        export const primary = token('colors.primary');
+        export const onlyDark = token('colors.onlyDark');
+    "#};
+
+    let output = transform_tokens(source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    export const primary = "var(--colors-primary)";
+    export const onlyDark = "var(--colors-only-dark)";
+    "#);
+}
+
+#[test]
 fn uses_fallback_for_missing_token() {
     let source = indoc! {r#"
         import { token } from '@panda/tokens';

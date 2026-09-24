@@ -22,7 +22,10 @@ const tokenCompiler = createTransformProject({
       opacity: { half: { value: '0.5' } },
     },
     semanticTokens: {
-      colors: { primary: { value: { base: '{colors.red.500}', _dark: '{colors.blue.500}' } } },
+      colors: {
+        primary: { value: { base: '{colors.red.500}', _dark: '{colors.blue.500}' } },
+        onlyDark: { value: { _dark: '{colors.blue.500}' } },
+      },
     },
   },
   utilities: {
@@ -232,10 +235,17 @@ describe('compiler.transformSource: tokens', () => {
     `)
   })
 
-  test('resolves a semantic token to its css variable', () => {
-    const source = lines("import { token } from '@panda/tokens'", "export const c = token('colors.primary')")
+  test('resolves conditional semantic tokens to their own css variables', () => {
+    const source = lines(
+      "import { token } from '@panda/tokens'",
+      "export const primary = token('colors.primary')",
+      "export const onlyDark = token('colors.onlyDark')",
+    )
     const result = tokenCompiler.transformSource({ path: 'src/theme.ts', source })
-    expect(result.code).toMatchInlineSnapshot(`"export const c = "var(--colors-red-500)""`)
+    expect(result.code).toMatchInlineSnapshot(`
+      "export const primary = "var(--colors-primary)"
+      export const onlyDark = "var(--colors-only-dark)""
+    `)
   })
 
   test('resolves token.var() of a semantic token to its css variable', () => {

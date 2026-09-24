@@ -147,7 +147,7 @@ fn semantic_token_reference_expands_to_var_not_value() {
 }
 
 #[test]
-fn semantic_token_without_base_resolves_as_color_category_value() {
+fn conditional_tokens_without_base_resolve_as_category_and_runtime_values() {
     let config: UserConfig = serde_json::from_value(json!({
         "theme": {
             "tokens": {
@@ -160,6 +160,9 @@ fn semantic_token_without_base_resolves_as_color_category_value() {
                 "colors": {
                     "withBase": { "value": { "base": "{colors.red}", "_dark": "{colors.blue}" } },
                     "onlyDark": { "value": { "_dark": "{colors.blue}" } }
+                },
+                "spacing": {
+                    "gutter": { "value": { "_compact": "1rem" } }
                 }
             }
         }
@@ -177,6 +180,38 @@ fn semantic_token_without_base_resolves_as_color_category_value() {
     assert_eq!(
         dict.category_value_str("colors", "onlyDark"),
         Some("var(--colors-only-dark)")
+    );
+    assert_eq!(
+        dict.category_value_str("spacing", "gutter"),
+        Some("var(--spacing-gutter)")
+    );
+    assert_eq!(
+        dict.category_value_str("spacing", "-gutter"),
+        Some("calc(var(--spacing-gutter) * -1)")
+    );
+
+    assert_eq!(
+        dict.runtime_value_str("colors.withBase", None),
+        Some("var(--colors-with-base)")
+    );
+    assert_eq!(
+        dict.runtime_value_str("colors.onlyDark", None),
+        Some("var(--colors-only-dark)")
+    );
+
+    let type_data = dict.type_data();
+    assert_eq!(
+        type_data.values.get("colors.withBase"),
+        Some(&String::new())
+    );
+    assert_eq!(
+        type_data.values.get("colors.onlyDark"),
+        Some(&String::new())
+    );
+    assert!(
+        type_data.categories["spacing"]
+            .values
+            .contains(&"gutter".to_owned())
     );
 }
 

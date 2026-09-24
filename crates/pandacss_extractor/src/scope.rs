@@ -1109,10 +1109,10 @@ fn token_call_resolution(
         });
     }
 
-    if let Some(value) = dict.get(path, None) {
+    if let Some(value) = dict.runtime_value_str(path, None) {
         return Some(TokenCallResolution {
-            needs_css_var: is_css_var_value(&value),
-            value,
+            needs_css_var: is_css_var_value(value),
+            value: value.to_owned(),
             ref_path: path.to_owned(),
             token_path: Some(path.to_owned()),
         });
