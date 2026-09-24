@@ -3,7 +3,6 @@ name: Rust Quality
 on:
   push:
     branches:
-      - main
       - v2
     paths:
       - ".github/workflows/rust.yml"
@@ -18,7 +17,6 @@ on:
       - "packages/compiler/**"
   pull_request:
     branches:
-      - main
       - v2
     paths:
       - ".github/workflows/rust.yml"
@@ -34,7 +32,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/v2' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/v2' }}
 
 env:
   CARGO_TERM_COLOR: always
