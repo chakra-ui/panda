@@ -147,8 +147,8 @@ If Panda is taking too long to process your files, add `--profile` to any comman
 `panda codegen`, `panda debug`) to profile the whole run, including time spent in the Rust engine. This lets you (or us
 as maintainers) see which part of the process is taking the most time.
 
-This writes a `.panda/trace.json` file — open it in `chrome://tracing` or [ui.perfetto.dev](https://ui.perfetto.dev) — along
-with a `.panda/timings.json` summary.
+This writes a `.panda/trace.json` file — open it in `chrome://tracing` or [ui.perfetto.dev](https://ui.perfetto.dev) —
+along with a `.panda/timings.json` summary.
 
 ```bash
 pnpm panda --profile
@@ -159,8 +159,8 @@ pnpm panda --profile
 ### Why are my styles not applied?
 
 Check that the [`@layer` rules](/docs/styling/cascade-layers#layer-css) are set and the corresponding `.css` file is
-included. [If you're not using `postcss`](/docs/get-started/cli), ensure that `styled-system/styles.css` is imported
-and that the `panda` command has been run (or is running with `--watch`).
+included. [If you're not using `postcss`](/docs/get-started/cli), ensure that `styled-system/styles.css` is imported and
+that the `panda` command has been run (or is running with `--watch`).
 
 ### Some CSS is missing when using absolute imports
 
@@ -259,9 +259,9 @@ the postcss plugin again, and sometimes it can be more than needed for your usag
 of the postcss plugin by checking if the filesystem or your config have actually changed, but sometimes it might not be
 enough.
 
-In those rare cases, you might want to swap to using the [CLI](/docs/get-started/cli) instead, as it will always be
-more performant than the postcss alternative since we directly watch for filesystem changes and only run the
-extract/codegen steps when needed.
+In those rare cases, you might want to swap to using the [CLI](/docs/get-started/cli) instead, as it will always be more
+performant than the postcss alternative since we directly watch for filesystem changes and only run the extract/codegen
+steps when needed.
 
 If you want to keep the convenience of having just one command to run, you can use something like `concurrently` for
 that:

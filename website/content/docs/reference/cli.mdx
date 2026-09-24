@@ -9,51 +9,52 @@ Use the `panda` CLI to scaffold a project, generate your styled-system and CSS, 
 
 The commands are:
 
-| Command           | What it does                                                            |
-| ----------------- | ---------------------------------------------------------------------- |
-| `panda init`      | Scaffold `panda.config.ts` and run the first codegen                   |
-| `panda dev`       | Watch files and rebuild the system and CSS on change                   |
-| `panda build`     | Generate the system and CSS once (bare `panda` runs this)              |
-| `panda check`     | Check generated files without writing (use in CI)                      |
-| `panda codegen`   | Generate the `styled-system` output only                              |
-| `panda cssgen`    | Generate CSS only                                                      |
-| `panda analyze`   | Report token, recipe, and utility usage across your sources            |
-| `panda doctor`    | Validate your setup and print a project summary                        |
-| `panda debug`     | Dump resolved config and per-file extraction for bug reports           |
-| `panda lib`       | Publish a design system other apps can consume                        |
-| `panda buildinfo` | Write a portable `panda.buildinfo.json` only                          |
+| Command           | What it does                                                 |
+| ----------------- | ------------------------------------------------------------ |
+| `panda init`      | Scaffold `panda.config.ts` and run the first codegen         |
+| `panda dev`       | Watch files and rebuild the system and CSS on change         |
+| `panda build`     | Generate the system and CSS once (bare `panda` runs this)    |
+| `panda check`     | Check generated files without writing (use in CI)            |
+| `panda codegen`   | Generate the `styled-system` output only                     |
+| `panda cssgen`    | Generate CSS only                                            |
+| `panda analyze`   | Report token, recipe, and utility usage across your sources  |
+| `panda doctor`    | Validate your setup and print a project summary              |
+| `panda debug`     | Dump resolved config and per-file extraction for bug reports |
+| `panda lib`       | Publish a design system other apps can consume               |
+| `panda buildinfo` | Write a portable `panda.buildinfo.json` only                 |
 
 ## Shared flags
 
 Most commands accept these flags.
 
-| Flag                    | Description                                                                          |
-| ----------------------- | ----------------------------------------------------------------------------------- |
-| `--cwd <dir>`           | Current working directory                                                            |
-| `--config, -c <path>`   | Path to the Panda config file                                                        |
-| `--json`                | Print the result as JSON (for scripts)                                               |
-| `--format <format>`     | Diagnostic output format: `human`, `pretty`, `json`, or `github`                     |
-| `--log-level <level>`   | Output level: `silent`, `error`, `warn`, `info`, or `debug`                          |
-| `--max-warnings <n>`    | Fail when warning diagnostics exceed this count                                      |
-| `--logfile <file>`      | Write human output to a log file                                                     |
-| `--no-color`            | Disable ANSI colors (or set the `NO_COLOR` environment variable)                     |
-| `--profile`             | Capture compiler timings — see [Profiling a slow build](#profiling-a-slow-build)     |
-| `--trace`               | Enable compiler tracing                                                              |
-| `--trace-output <fmt>`  | Trace output: `fmt` or `chrome-json`                                                 |
-| `--trace-file <file>`   | Trace output file for `chrome-json` tracing                                          |
+| Flag                   | Description                                                                      |
+| ---------------------- | -------------------------------------------------------------------------------- |
+| `--cwd <dir>`          | Current working directory                                                        |
+| `--config, -c <path>`  | Path to the Panda config file                                                    |
+| `--json`               | Print the result as JSON (for scripts)                                           |
+| `--format <format>`    | Diagnostic output format: `human`, `pretty`, `json`, or `github`                 |
+| `--log-level <level>`  | Output level: `silent`, `error`, `warn`, `info`, or `debug`                      |
+| `--max-warnings <n>`   | Fail when warning diagnostics exceed this count                                  |
+| `--logfile <file>`     | Write human output to a log file                                                 |
+| `--no-color`           | Disable ANSI colors (or set the `NO_COLOR` environment variable)                 |
+| `--profile`            | Capture compiler timings — see [Profiling a slow build](#profiling-a-slow-build) |
+| `--trace`              | Enable compiler tracing                                                          |
+| `--trace-output <fmt>` | Trace output: `fmt` or `chrome-json`                                             |
+| `--trace-file <file>`  | Trace output file for `chrome-json` tracing                                      |
 
-Commands that scan your source files (`dev`, `build`, `check`, `cssgen`, `analyze`, `debug`, `lib`, `buildinfo`) also take `--include`:
+Commands that scan your source files (`dev`, `build`, `check`, `cssgen`, `analyze`, `debug`, `lib`, `buildinfo`) also
+take `--include`:
 
-| Flag                | Description                                                                       |
-| ------------------- | -------------------------------------------------------------------------------- |
-| `--include <glob>`  | Source globs to scan, replacing the config `include` list (repeat or comma-separate) |
+| Flag               | Description                                                                          |
+| ------------------ | ------------------------------------------------------------------------------------ |
+| `--include <glob>` | Source globs to scan, replacing the config `include` list (repeat or comma-separate) |
 
 Commands that watch (`dev`, `build`, `codegen`, `cssgen`, `lib`) also take:
 
-| Flag                     | Description                            |
-| ------------------------ | -------------------------------------- |
-| `--watch, -w`            | Watch files and rebuild on change      |
-| `--watch-debounce <ms>`  | Debounce watch rebuilds, in milliseconds |
+| Flag                    | Description                              |
+| ----------------------- | ---------------------------------------- |
+| `--watch, -w`           | Watch files and rebuild on change        |
+| `--watch-debounce <ms>` | Debounce watch rebuilds, in milliseconds |
 
 `panda init` is the exception: it doesn't take `--watch`, `--max-warnings`, or the tracing flags.
 
@@ -74,19 +75,19 @@ pnpm panda init --interactive
 pnpm panda init --postcss
 ```
 
-| Flag                          | Description                                                       | Related                                                       |
-| ----------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------ |
-| `--interactive, -i`           | Run the setup wizard                                             | -                                                            |
-| `--force, -f`                 | Overwrite an existing config file                               | -                                                            |
-| `--postcss, -p`               | Emit a [PostCSS](https://postcss.org/) config file             | -                                                            |
-| `--outdir <dir>`              | Output directory for generated files                            | [`config.outdir`](/docs/reference/config#outdir)             |
-| `--out-extension <ext>`       | Generated runtime file extension: `ts`, `js`, or `mjs`         | [`config.outExtension`](/docs/reference/config#outextension) |
-| `--jsx-framework <framework>` | JSX framework: `react`, `preact`, `vue`, `solid`, or `qwik`    | [`config.jsxFramework`](/docs/reference/config#jsxframework) |
-| `--jsx-style-props <mode>`    | JSX style props: `all`, `minimal`, or `none`                   | -                                                            |
-| `--strict-tokens`             | Set `strictTokens` to `true`                                   | [`config.strictTokens`](/docs/reference/config#stricttokens) |
-| `--skip-presets`              | Skip adding and installing the default presets                 | -                                                            |
-| `--no-gitignore`              | Don't update `.gitignore` with the output directory            | -                                                            |
-| `--no-codegen`                | Don't run codegen after setup                                  | -                                                            |
+| Flag                          | Description                                                 | Related                                                      |
+| ----------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------ |
+| `--interactive, -i`           | Run the setup wizard                                        | -                                                            |
+| `--force, -f`                 | Overwrite an existing config file                           | -                                                            |
+| `--postcss, -p`               | Emit a [PostCSS](https://postcss.org/) config file          | -                                                            |
+| `--outdir <dir>`              | Output directory for generated files                        | [`config.outdir`](/docs/reference/config#outdir)             |
+| `--out-extension <ext>`       | Generated runtime file extension: `ts`, `js`, or `mjs`      | [`config.outExtension`](/docs/reference/config#outextension) |
+| `--jsx-framework <framework>` | JSX framework: `react`, `preact`, `vue`, `solid`, or `qwik` | [`config.jsxFramework`](/docs/reference/config#jsxframework) |
+| `--jsx-style-props <mode>`    | JSX style props: `all`, `minimal`, or `none`                | -                                                            |
+| `--strict-tokens`             | Set `strictTokens` to `true`                                | [`config.strictTokens`](/docs/reference/config#stricttokens) |
+| `--skip-presets`              | Skip adding and installing the default presets              | -                                                            |
+| `--no-gitignore`              | Don't update `.gitignore` with the output directory         | -                                                            |
+| `--no-codegen`                | Don't run codegen after setup                               | -                                                            |
 
 `panda init` also accepts the [shared flags](#shared-flags), except `--watch`, `--max-warnings`, and the tracing flags.
 
@@ -103,13 +104,13 @@ pnpm panda dev
 pnpm panda dev --include "./src/**/*.tsx"
 ```
 
-| Flag                 | Description                                                    | Related                                            |
-| -------------------- | ------------------------------------------------------------- | -------------------------------------------------- |
-| `--outdir <dir>`     | Output directory for generated files                         | [`config.outdir`](/docs/reference/config#outdir)   |
-| `--outfile, -o <file>` | Output file for extracted CSS                              | -                                                  |
-| `--splitting`        | Emit split CSS files (one per layer and recipe)             | -                                                  |
-| `--clean`            | Clean the output directory before generating                | -     |
-| `--polyfill`         | Polyfill cascade layers with `:not(#\\#)` for older browsers | [`config.polyfill`](/docs/reference/config#polyfill) |
+| Flag                   | Description                                                  | Related                                              |
+| ---------------------- | ------------------------------------------------------------ | ---------------------------------------------------- |
+| `--outdir <dir>`       | Output directory for generated files                         | [`config.outdir`](/docs/reference/config#outdir)     |
+| `--outfile, -o <file>` | Output file for extracted CSS                                | -                                                    |
+| `--splitting`          | Emit split CSS files (one per layer and recipe)              | -                                                    |
+| `--clean`              | Clean the output directory before generating                 | -                                                    |
+| `--polyfill`           | Polyfill cascade layers with `:not(#\\#)` for older browsers | [`config.polyfill`](/docs/reference/config#polyfill) |
 
 `panda dev` also accepts the [shared flags](#shared-flags), `--include`, and `--watch-debounce`.
 
@@ -135,15 +136,15 @@ pnpm panda build --include "./src/components/**"
 pnpm panda build --splitting
 ```
 
-| Flag                   | Description                                                    | Related                                            |
-| ---------------------- | ------------------------------------------------------------- | -------------------------------------------------- |
-| `--watch, -w`          | Watch files and rebuild on change                           | -                                                  |
-| `--outdir <dir>`       | Output directory for generated files                        | [`config.outdir`](/docs/reference/config#outdir)   |
-| `--outfile, -o <file>` | Output file for extracted CSS                              | -                                                  |
-| `--splitting`          | Emit split CSS files (one per layer and recipe)             | -                                                  |
-| `--clean`              | Clean the output directory before generating                | -     |
+| Flag                   | Description                                                  | Related                                              |
+| ---------------------- | ------------------------------------------------------------ | ---------------------------------------------------- |
+| `--watch, -w`          | Watch files and rebuild on change                            | -                                                    |
+| `--outdir <dir>`       | Output directory for generated files                         | [`config.outdir`](/docs/reference/config#outdir)     |
+| `--outfile, -o <file>` | Output file for extracted CSS                                | -                                                    |
+| `--splitting`          | Emit split CSS files (one per layer and recipe)              | -                                                    |
+| `--clean`              | Clean the output directory before generating                 | -                                                    |
 | `--polyfill`           | Polyfill cascade layers with `:not(#\\#)` for older browsers | [`config.polyfill`](/docs/reference/config#polyfill) |
-| `--check`              | Check generated files without writing                       | -                                                  |
+| `--check`              | Check generated files without writing                        | -                                                    |
 
 `panda build` also accepts the [shared flags](#shared-flags), `--include`, and `--watch-debounce`.
 
@@ -158,12 +159,12 @@ so use it in CI to catch a `styled-system` that drifted from your config or sour
 pnpm panda check
 ```
 
-| Flag                   | Description                                                    | Related                                            |
-| ---------------------- | ------------------------------------------------------------- | -------------------------------------------------- |
-| `--outdir <dir>`       | Output directory to check                                    | [`config.outdir`](/docs/reference/config#outdir)   |
-| `--outfile, -o <file>` | CSS file to check                                           | -                                                  |
-| `--splitting`          | Check split CSS output instead of a single file             | -                                                  |
-| `--polyfill`           | Account for the cascade-layer polyfill when checking        | [`config.polyfill`](/docs/reference/config#polyfill) |
+| Flag                   | Description                                          | Related                                              |
+| ---------------------- | ---------------------------------------------------- | ---------------------------------------------------- |
+| `--outdir <dir>`       | Output directory to check                            | [`config.outdir`](/docs/reference/config#outdir)     |
+| `--outfile, -o <file>` | CSS file to check                                    | -                                                    |
+| `--splitting`          | Check split CSS output instead of a single file      | -                                                    |
+| `--polyfill`           | Account for the cascade-layer polyfill when checking | [`config.polyfill`](/docs/reference/config#polyfill) |
 
 `panda check` also accepts the [shared flags](#shared-flags) and `--include`.
 
@@ -184,12 +185,12 @@ pnpm panda codegen --clean
 pnpm panda codegen --watch
 ```
 
-| Flag              | Description                                  | Related                                          |
-| ----------------- | -------------------------------------------- | ------------------------------------------------ |
-| `--watch, -w`     | Watch the config and rebuild on change      | -                                                |
-| `--outdir <dir>`  | Output directory for generated files        | [`config.outdir`](/docs/reference/config#outdir) |
-| `--clean`         | Clean the output directory before generating | -   |
-| `--check`         | Check generated files without writing        | -                                                |
+| Flag             | Description                                  | Related                                          |
+| ---------------- | -------------------------------------------- | ------------------------------------------------ |
+| `--watch, -w`    | Watch the config and rebuild on change       | -                                                |
+| `--outdir <dir>` | Output directory for generated files         | [`config.outdir`](/docs/reference/config#outdir) |
+| `--clean`        | Clean the output directory before generating | -                                                |
+| `--check`        | Check generated files without writing        | -                                                |
 
 `panda codegen` also accepts the [shared flags](#shared-flags) and `--watch-debounce`.
 
@@ -209,15 +210,15 @@ pnpm panda cssgen --minimal
 pnpm panda cssgen --splitting
 ```
 
-| Flag                   | Description                                                    | Related                                            |
-| ---------------------- | ------------------------------------------------------------- | -------------------------------------------------- |
-| `--watch, -w`          | Watch files and rebuild on change                           | -                                                  |
-| `--outfile, -o <file>` | Output file for extracted CSS (default `./styled-system/styles.css`) | -                                          |
-| `--minimal`            | Emit usage CSS only (recipes and utilities)                 | -                                                  |
-| `--minify, -m`         | Minify the emitted CSS (overrides `config.minify`)         | [`config.minify`](/docs/reference/config#minify)   |
-| `--splitting`          | Emit split CSS files (one per layer and recipe)            | -                                                  |
-| `--polyfill`           | Polyfill cascade layers with `:not(#\\#)` for older browsers | [`config.polyfill`](/docs/reference/config#polyfill) |
-| `--check`              | Check that the CSS is up to date without writing            | -                                                  |
+| Flag                   | Description                                                          | Related                                              |
+| ---------------------- | -------------------------------------------------------------------- | ---------------------------------------------------- |
+| `--watch, -w`          | Watch files and rebuild on change                                    | -                                                    |
+| `--outfile, -o <file>` | Output file for extracted CSS (default `./styled-system/styles.css`) | -                                                    |
+| `--minimal`            | Emit usage CSS only (recipes and utilities)                          | -                                                    |
+| `--minify, -m`         | Minify the emitted CSS (overrides `config.minify`)                   | [`config.minify`](/docs/reference/config#minify)     |
+| `--splitting`          | Emit split CSS files (one per layer and recipe)                      | -                                                    |
+| `--polyfill`           | Polyfill cascade layers with `:not(#\\#)` for older browsers         | [`config.polyfill`](/docs/reference/config#polyfill) |
+| `--check`              | Check that the CSS is up to date without writing                     | -                                                    |
 
 `panda cssgen` also accepts the [shared flags](#shared-flags), `--include`, and `--watch-debounce`.
 
@@ -290,10 +291,9 @@ You then choose how to import them:
 
 ## analyze
 
-Report which tokens, recipes, utilities, patterns, and keyframes your project uses, and which configured ones no
-scanned file touches. It scans the whole project, following your `include` and `exclude` options, and prints a
-summary followed by one section per category. For what to do with the report, see
-[Find what nobody uses](/docs/design-systems/analyze).
+Report which tokens, recipes, utilities, patterns, and keyframes your project uses, and which configured ones no scanned
+file touches. It scans the whole project, following your `include` and `exclude` options, and prints a summary followed
+by one section per category. For what to do with the report, see [Find what nobody uses](/docs/design-systems/analyze).
 
 ```bash
 pnpm panda analyze
@@ -308,12 +308,12 @@ pnpm panda analyze --unused
 pnpm panda analyze --outfile analyze.json
 ```
 
-| Flag                | Description                                                                                | Related |
-| ------------------- | ----------------------------------------------------------------------------------------- | ------- |
-| `--scope <scope>`   | Print one section: `tokens`, `recipes`, `utilities`, `patterns`, or `keyframes` (`token`/`recipe` are aliases) | -       |
-| `--limit <n>`       | Maximum rows per section in the terminal report                                           | -       |
-| `--unused`          | List only the configured names no scanned file uses, one per line; with `--scope`, names only | -       |
-| `--outfile <path>`  | Write the report as JSON to this path                                                     | -       |
+| Flag               | Description                                                                                                    | Related |
+| ------------------ | -------------------------------------------------------------------------------------------------------------- | ------- |
+| `--scope <scope>`  | Print one section: `tokens`, `recipes`, `utilities`, `patterns`, or `keyframes` (`token`/`recipe` are aliases) | -       |
+| `--limit <n>`      | Maximum rows per section in the terminal report                                                                | -       |
+| `--unused`         | List only the configured names no scanned file uses, one per line; with `--scope`, names only                  | -       |
+| `--outfile <path>` | Write the report as JSON to this path                                                                          | -       |
 
 `panda analyze` also accepts the [shared flags](#shared-flags) and `--include`.
 
@@ -354,12 +354,12 @@ pnpm panda debug --only-config
 pnpm panda debug --zip
 ```
 
-| Flag             | Description                                                                | Related |
-| ---------------- | ------------------------------------------------------------------------- | ------- |
-| `--outdir <dir>` | Debug output directory (default `<styled-system>/debug`)                  | -       |
-| `--dry`          | Print the dump to stdout instead of writing files                        | -       |
-| `--zip`          | Write the dump as a single `<outdir>.zip` archive                         | -       |
-| `--only-config`  | Only dump the resolved config, skip per-file extraction                  | -       |
+| Flag             | Description                                              | Related |
+| ---------------- | -------------------------------------------------------- | ------- |
+| `--outdir <dir>` | Debug output directory (default `<styled-system>/debug`) | -       |
+| `--dry`          | Print the dump to stdout instead of writing files        | -       |
+| `--zip`          | Write the dump as a single `<outdir>.zip` archive        | -       |
+| `--only-config`  | Only dump the resolved config, skip per-file extraction  | -       |
 
 `panda debug` also accepts the [shared flags](#shared-flags) and `--include`. `--profile` writes files to disk, so it
 can't be combined with `--dry`. `--zip` can't be combined with `--dry` or `--profile`.
@@ -384,12 +384,12 @@ pnpm panda lib --files './**/*.{js,mjs}'
 pnpm panda lib --panda '^2.0.0'
 ```
 
-| Flag              | Description                                                                                     | Related |
-| ----------------- | ---------------------------------------------------------------------------------------------- | ------- |
-| `--outdir, -o <dir>` | Output directory for the artifacts (default `dist`)                                        | -       |
-| `--panda <range>` | Peer Panda version range to stamp (defaults to your `@pandacss/dev` peer, or the running major) | -       |
-| `--files <globs>` | Re-extract fallback globs for consumers, relative to the output dir (repeat or comma-separate) | -       |
-| `--minify, -m`    | Minify the generated build-info JSON                                                           | -       |
+| Flag                 | Description                                                                                     | Related |
+| -------------------- | ----------------------------------------------------------------------------------------------- | ------- |
+| `--outdir, -o <dir>` | Output directory for the artifacts (default `dist`)                                             | -       |
+| `--panda <range>`    | Peer Panda version range to stamp (defaults to your `@pandacss/dev` peer, or the running major) | -       |
+| `--files <globs>`    | Re-extract fallback globs for consumers, relative to the output dir (repeat or comma-separate)  | -       |
+| `--minify, -m`       | Minify the generated build-info JSON                                                            | -       |
 
 `panda lib` also accepts the [shared flags](#shared-flags), `--include`, and `--watch` / `--watch-debounce`.
 
@@ -407,11 +407,11 @@ pnpm panda buildinfo
 pnpm panda buildinfo --outfile ./dist/panda.buildinfo.json
 ```
 
-| Flag                   | Description                                                                                | Related |
-| ---------------------- | ----------------------------------------------------------------------------------------- | ------- |
-| `--outfile, -o <path>` | Output path (default `./<outdir>/panda.buildinfo.json`)                                   | -       |
-| `--panda <range>`      | Peer Panda version range to stamp (defaults to the running Panda's major)                 | -       |
-| `--minify, -m`         | Minify the generated JSON                                                                  | -       |
+| Flag                   | Description                                                               | Related |
+| ---------------------- | ------------------------------------------------------------------------- | ------- |
+| `--outfile, -o <path>` | Output path (default `./<outdir>/panda.buildinfo.json`)                   | -       |
+| `--panda <range>`      | Peer Panda version range to stamp (defaults to the running Panda's major) | -       |
+| `--minify, -m`         | Minify the generated JSON                                                 | -       |
 
 `panda buildinfo` also accepts the [shared flags](#shared-flags) and `--include`.
 

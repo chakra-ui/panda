@@ -4,16 +4,36 @@ description:
   The define* helpers for authoring config, recipes, tokens, and themes in their own files with full type checking.
 ---
 
-Every function on this page does exactly one thing at runtime: return its argument unchanged. `defineRecipe` is
-literally `(config) => config`. So why call them at all?
+Use the `define*` helpers when you split your config across files. They give you autocomplete and type errors in files
+that never import `defineConfig`.
 
-Because of what they do at the type level. Write a recipe as a plain object inside `defineConfig({...})` and TypeScript
-infers its type from context, no wrapper needed. Move that same object into its own file, `recipes/button.ts`, and
-there's no longer any context to infer from, it's just an object literal with whatever type you happen to give it.
-Wrapping it in `defineRecipe(...)` restores that context: the function's parameter type constrains what you write, so
-your editor autocompletes and flags errors while you type, in a file that never imports `defineConfig` at all.
+## Why wrap?
 
-## Style and config helpers
+Inside `defineConfig`, TypeScript knows what shape each object should have. Move a recipe into its own file and that
+knowledge is gone:
+
+```ts filename="recipes/button.ts"
+// No autocomplete, and this mistake passes silently
+export const button = {
+  variants: { size: { sm: {}, md: {} } },
+  defaultVariants: { size: 'lg' }
+}
+```
+
+Wrap it and the editor checks it again:
+
+```ts filename="recipes/button.ts"
+import { defineRecipe } from '@pandacss/dev'
+
+export const button = defineRecipe({
+  variants: { size: { sm: {}, md: {} } },
+  defaultVariants: { size: 'lg' } // ❌ '"lg"' is not assignable to '"sm" | "md"'
+})
+```
+
+Each helper returns its argument unchanged, so there's no runtime cost.
+
+## Config
 
 ### `defineConfig`
 
@@ -28,9 +48,46 @@ export default defineConfig({
 })
 ```
 
+### `definePreset`
+
+For a [preset](/docs/theming/presets#creating-a-preset).
+
+```ts
+import { definePreset } from '@pandacss/dev'
+
+export const pandaPreset = definePreset({
+  theme: {
+    extend: {
+      tokens: {
+        colors: { primary: { value: 'blue.500' } }
+      }
+    }
+  }
+})
+```
+
+### `definePlugin`
+
+For a [plugin](/docs/theming/plugins#share-a-plugin) that carries a shareable `hooks` map.
+
+```ts
+import { definePlugin } from '@pandacss/dev'
+
+export const plugin = definePlugin({
+  name: 'css-report',
+  hooks: {
+    'cssgen:done': ({ path, content }) => {
+      console.log(`generated ${content.length} bytes`, path)
+    }
+  }
+})
+```
+
+## Recipes and patterns
+
 ### `defineRecipe`
 
-For a [config recipe](/docs/recipes/config-recipe) authored outside `defineConfig`.
+For a [config recipe](/docs/recipes/config-recipe).
 
 ```ts
 import { defineRecipe } from '@pandacss/dev'
@@ -48,15 +105,14 @@ export const buttonRecipe = defineRecipe({
     }
   },
   defaultVariants: {
-    visual: 'funky',
-    size: 'sm'
+    visual: 'funky'
   }
 })
 ```
 
 ### `defineSlotRecipe`
 
-Same idea, for a [config slot recipe](/docs/recipes/config-recipe#config-slot-recipe).
+For a [config slot recipe](/docs/recipes/config-recipe#config-slot-recipe).
 
 ```ts
 import { defineSlotRecipe } from '@pandacss/dev'
@@ -88,152 +144,9 @@ export const checkboxRecipe = defineSlotRecipe({
 })
 ```
 
-### `definePattern`
-
-For a [pattern](/docs/theming/patterns) authored outside `defineConfig`.
-
-```ts
-import { definePattern } from '@pandacss/dev'
-
-const visuallyHidden = definePattern({
-  transform(props) {
-    return {
-      srOnly: true,
-      ...props
-    }
-  }
-})
-```
-
-### `definePreset`
-
-For a [preset](/docs/theming/presets#creating-a-preset).
-
-```ts
-import { definePreset } from '@pandacss/dev'
-
-export const pandaPreset = definePreset({
-  theme: {
-    extend: {
-      tokens: {
-        colors: { primary: { value: 'blue.500' } }
-      }
-    }
-  }
-})
-```
-
-### `definePlugin`
-
-For a [plugin](/docs/theming/plugins#share-a-plugin), the object that carries a shareable `hooks` map.
-
-```ts
-import { definePlugin } from '@pandacss/dev'
-
-export const plugin = definePlugin({
-  name: 'css-report',
-  hooks: {
-    'cssgen:done': ({ path, content }) => {
-      console.log(`generated ${content.length} bytes`, path)
-    }
-  }
-})
-```
-
-### `defineKeyframes`
-
-For [`@keyframes`](/docs/theming/theme#keyframes) authored outside `defineConfig`.
-
-```ts
-import { defineKeyframes } from '@pandacss/dev'
-
-export const keyframes = defineKeyframes({
-  fadeIn: {
-    '0%': { opacity: '0' },
-    '100%': { opacity: '1' }
-  }
-})
-```
-
-### `defineGlobalStyles`
-
-For [global styles](/docs/styling/global-styles) authored outside `defineConfig`.
-
-```ts
-import { defineGlobalStyles } from '@pandacss/dev'
-
-const globalCss = defineGlobalStyles({
-  'html, body': {
-    color: 'gray.900',
-    lineHeight: '1.5'
-  }
-})
-```
-
-### `defineUtility`
-
-For a custom [utility](/docs/theming/utilities) authored outside `defineConfig`.
-
-```ts
-import { defineUtility } from '@pandacss/dev'
-
-export const br = defineUtility({
-  className: 'rounded',
-  values: 'radii',
-  transform(value) {
-    return { borderRadius: value }
-  }
-})
-```
-
-### `defineConditions`
-
-For custom [conditions](/docs/theming/conditions) authored outside `defineConfig`.
-
-```ts
-import { defineConditions } from '@pandacss/dev'
-
-export const conditions = defineConditions({
-  groupHover: '.group:hover &',
-  cardHover: '[data-card]:hover &'
-})
-```
-
-### `defineViewTransitions`
-
-For named [view transitions](/docs/styling/view-transition) authored outside `defineConfig`.
-
-```ts
-import { defineViewTransitions } from '@pandacss/dev'
-
-export const viewTransitions = defineViewTransitions({
-  slide: {
-    group: { animationDuration: '0.4s' },
-    old: { opacity: 0 },
-    new: { opacity: 1 }
-  }
-})
-```
-
-### `definePositionTry`
-
-For named [position-try fallbacks](/docs/styling/position-try) authored outside `defineConfig`.
-
-```ts
-import { definePositionTry } from '@pandacss/dev'
-
-export const positionTry = definePositionTry({
-  bottom: {
-    top: 'anchor(bottom)',
-    insetInlineStart: 'anchor(start)'
-  }
-})
-```
-
 ### `defineStyles`
 
-For a chunk of `SystemStyleObject` you want to reuse across variants, spread it into each one instead of repeating the
-properties:
+For a style object you want to reuse. Spread it into each variant instead of repeating the properties:
 
 ```ts {3, 14, 18} filename="recipes/button.ts"
 import { defineRecipe, defineStyles } from '@pandacss/dev'
@@ -261,52 +174,24 @@ export const buttonRecipe = defineRecipe({
 })
 ```
 
-## Composite style helpers
+### `definePattern`
 
-Text styles, layer styles, and animation styles follow the same pattern as the helpers above, a typed wrapper for
-authoring them outside `defineConfig`. Each has its own full page, since the value objects have more shape to them than
-a plain style object:
-
-- [`defineTextStyles`](/docs/theming/text-styles)
-- [`defineLayerStyles`](/docs/theming/layer-styles)
-- [`defineAnimationStyles`](/docs/theming/animation-styles)
-
-## Multi-brand theming helpers
-
-`defineThemeVariant` wraps a single theme variant, the same `{ tokens, semanticTokens }` shape used for
-[multi-theme tokens](/docs/theming/multiple-themes):
+For a [pattern](/docs/theming/patterns).
 
 ```ts
-import { defineThemeVariant } from '@pandacss/dev'
+import { definePattern } from '@pandacss/dev'
 
-export const darkTheme = defineThemeVariant({
-  tokens: {
-    colors: { bg: { value: '{colors.gray.900}' } }
+const visuallyHidden = definePattern({
+  transform(props) {
+    return {
+      srOnly: true,
+      ...props
+    }
   }
 })
 ```
 
-`defineThemeContract` goes further: define the token shape every theme must implement once, and it returns a checked
-version of `defineThemeVariant` that rejects a theme missing one of those tokens. See
-[Theme contract](/docs/theming/multiple-themes#theme-contract) for the full example.
-
-### `defineGlobalFontface`
-
-For [`globalFontface`](/docs/theming/fonts#global-font-face) authored outside `defineConfig`:
-
-```ts
-import { defineGlobalFontface } from '@pandacss/dev'
-
-export const fonts = defineGlobalFontface({
-  Inter: {
-    src: 'url(/fonts/inter.woff2) format("woff2")',
-    fontWeight: 400,
-    fontStyle: 'normal'
-  }
-})
-```
-
-## Token helpers
+## Tokens
 
 ### `defineTokens`
 
@@ -322,8 +207,7 @@ const theme = {
 }
 ```
 
-Scope it to one token category when you're authoring that category in its own file, `defineTokens.colors(...)`
-type-checks against just the `colors` shape instead of the full token tree:
+Keeping one category per file? Use `defineTokens.colors(...)` to check against just the `colors` shape:
 
 ```ts filename="tokens/colors.ts"
 import { defineTokens } from '@pandacss/dev'
@@ -335,7 +219,7 @@ export const colors = defineTokens.colors({
 
 ### `defineSemanticTokens`
 
-Same idea, for tokens whose value depends on a condition like color mode:
+For tokens whose value depends on a condition, like color mode.
 
 ```ts
 import { defineSemanticTokens } from '@pandacss/dev'
@@ -351,6 +235,8 @@ const theme = {
 }
 ```
 
+The per-category form works here too:
+
 ```ts filename="tokens/colors.semantic.ts"
 import { defineSemanticTokens } from '@pandacss/dev'
 
@@ -360,3 +246,141 @@ export const colors = defineSemanticTokens.colors({
   }
 })
 ```
+
+## Theme and global styles
+
+### `defineKeyframes`
+
+For [`@keyframes`](/docs/theming/theme#keyframes).
+
+```ts
+import { defineKeyframes } from '@pandacss/dev'
+
+export const keyframes = defineKeyframes({
+  fadeIn: {
+    '0%': { opacity: '0' },
+    '100%': { opacity: '1' }
+  }
+})
+```
+
+### `defineGlobalStyles`
+
+For [global styles](/docs/styling/global-styles).
+
+```ts
+import { defineGlobalStyles } from '@pandacss/dev'
+
+const globalCss = defineGlobalStyles({
+  'html, body': {
+    color: 'gray.900',
+    lineHeight: '1.5'
+  }
+})
+```
+
+### `defineGlobalFontface`
+
+For [`globalFontface`](/docs/theming/fonts#global-font-face).
+
+```ts
+import { defineGlobalFontface } from '@pandacss/dev'
+
+export const fonts = defineGlobalFontface({
+  Inter: {
+    src: 'url(/fonts/inter.woff2) format("woff2")',
+    fontWeight: 400,
+    fontStyle: 'normal'
+  }
+})
+```
+
+### `defineConditions`
+
+For custom [conditions](/docs/theming/conditions).
+
+```ts
+import { defineConditions } from '@pandacss/dev'
+
+export const conditions = defineConditions({
+  groupHover: '.group:hover &',
+  cardHover: '[data-card]:hover &'
+})
+```
+
+### `defineUtility`
+
+For a custom [utility](/docs/theming/utilities).
+
+```ts
+import { defineUtility } from '@pandacss/dev'
+
+export const br = defineUtility({
+  className: 'rounded',
+  values: 'radii',
+  transform(value) {
+    return { borderRadius: value }
+  }
+})
+```
+
+### `defineViewTransitions`
+
+For named [view transitions](/docs/styling/view-transition).
+
+```ts
+import { defineViewTransitions } from '@pandacss/dev'
+
+export const viewTransitions = defineViewTransitions({
+  slide: {
+    group: { animationDuration: '0.4s' },
+    old: { opacity: 0 },
+    new: { opacity: 1 }
+  }
+})
+```
+
+### `definePositionTry`
+
+For named [position-try fallbacks](/docs/styling/position-try).
+
+```ts
+import { definePositionTry } from '@pandacss/dev'
+
+export const positionTry = definePositionTry({
+  bottom: {
+    top: 'anchor(bottom)',
+    insetInlineStart: 'anchor(start)'
+  }
+})
+```
+
+### Text, layer, and animation styles
+
+These have their own pages:
+
+- [`defineTextStyles`](/docs/theming/text-styles)
+- [`defineLayerStyles`](/docs/theming/layer-styles)
+- [`defineAnimationStyles`](/docs/theming/animation-styles)
+
+## Multiple themes
+
+### `defineThemeVariant`
+
+For a single theme variant, using the `{ tokens, semanticTokens }` shape from
+[multi-theme tokens](/docs/theming/multiple-themes).
+
+```ts
+import { defineThemeVariant } from '@pandacss/dev'
+
+export const darkTheme = defineThemeVariant({
+  tokens: {
+    colors: { bg: { value: '{colors.gray.900}' } }
+  }
+})
+```
+
+### `defineThemeContract`
+
+Declare the tokens every theme must provide. It returns a stricter `defineThemeVariant` that rejects a theme missing any
+of them. See [Theme contract](/docs/theming/multiple-themes#theme-contract).

@@ -6,8 +6,8 @@ description: The recipes/ folder — generated modules for every config recipe i
 **Folder:** `styled-system/recipes/`  
 **Import:** `import { button } from '../styled-system/recipes'`
 
-Codegen writes one module per **config** recipe (for example `recipes/button.ts`) plus `recipes/index.ts`. Each
-export is a function: pass variants, get a class name (or a slot map for slot recipes).
+Codegen writes one module per **config** recipe (for example `recipes/button.ts`) plus `recipes/index.ts`. Each export
+is a function: pass variants, get a class name (or a slot map for slot recipes).
 
 ```ts
 import { button } from '../styled-system/recipes'
@@ -30,10 +30,10 @@ Exact type names follow the theme key (`button` → `ButtonVariant` / `ButtonVar
 
 ## Atomic vs config
 
-| Need | Use |
-| ---- | --- |
+| Need                            | Use                                                                           |
+| ------------------------------- | ----------------------------------------------------------------------------- |
 | Variants local to one component | [`cva`](/docs/reference/css#cva) / [`sva`](/docs/reference/css#sva) in `css/` |
-| Shared design-system recipe | Config recipe → this `recipes/` folder |
+| Shared design-system recipe     | Config recipe → this `recipes/` folder                                        |
 
 ## Full guides
 

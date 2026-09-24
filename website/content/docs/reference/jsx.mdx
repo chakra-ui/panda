@@ -6,18 +6,18 @@ description: The jsx/ folder — styled factory, JSX patterns, and recipe contex
 **Folder:** `styled-system/jsx/`  
 **Import:** `import { styled, Stack } from '../styled-system/jsx'`
 
-Generated only when [`jsxFramework`](/docs/reference/config#jsxframework) is set (for example `'react'`). Without
-that flag, this folder is absent and style props are not extracted from JSX.
+Generated only when [`jsxFramework`](/docs/reference/config#jsxframework) is set (for example `'react'`). Without that
+flag, this folder is absent and style props are not extracted from JSX.
 
 ## Key files
 
-| File | Export | Role |
-| ---- | ------ | ---- |
-| `jsx/factory` | `styled` | `styled.div`, `styled('button')`, factory API |
-| `jsx/<pattern>` | `Stack`, `Grid`, … | JSX form of each pattern |
-| `jsx/create-recipe-context` | `createRecipeContext` | Context for a single-element recipe |
-| `jsx/create-slot-recipe-context` | `createSlotRecipeContext` | Context for a slot recipe |
-| `jsx/index` | barrel | Re-exports factory, patterns, helpers |
+| File                             | Export                    | Role                                          |
+| -------------------------------- | ------------------------- | --------------------------------------------- |
+| `jsx/factory`                    | `styled`                  | `styled.div`, `styled('button')`, factory API |
+| `jsx/<pattern>`                  | `Stack`, `Grid`, …        | JSX form of each pattern                      |
+| `jsx/create-recipe-context`      | `createRecipeContext`     | Context for a single-element recipe           |
+| `jsx/create-slot-recipe-context` | `createSlotRecipeContext` | Context for a slot recipe                     |
+| `jsx/index`                      | barrel                    | Re-exports factory, patterns, helpers         |
 
 ## Style props
 
@@ -40,9 +40,11 @@ Same atomic CSS as [`css()`](/docs/reference/css); different authoring surface.
 ```tsx
 import { Stack, Circle } from '../styled-system/jsx'
 
-<Stack gap="4" direction="row">
-  <Circle size="12" />
-</Stack>
+const Demo = () => (
+  <Stack gap="4" direction="row">
+    <Circle size="12" />
+  </Stack>
+)
 ```
 
 Function form lives under [`patterns/`](/docs/reference/patterns).
@@ -50,8 +52,8 @@ Function form lives under [`patterns/`](/docs/reference/patterns).
 ## Recipe context
 
 Use `createRecipeContext` / `createSlotRecipeContext` to push recipe variants through a compound component tree
-(headless UI, design-system packages). Guides: [Slot recipe context](/docs/recipes/slot-recipe-context)
-and [Recipe context](/docs/recipes/recipe-context).
+(headless UI, design-system packages). Guides: [Slot recipe context](/docs/recipes/slot-recipe-context) and
+[Recipe context](/docs/recipes/recipe-context).
 
 ## See also
 
