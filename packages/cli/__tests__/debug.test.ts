@@ -1,5 +1,6 @@
 import { chmodSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { strFromU8, unzipSync } from 'fflate'
 import { afterEach, describe, expect, it } from 'vitest'
 import { runDebug } from '../src'
 import { cleanupFixture, createFixture, writeSyntaxError } from './helpers'
@@ -79,6 +80,58 @@ describe('debug command', () => {
     await runDebug({ cwd: dir, outdir: 'debug-out', logLevel: 'silent' })
 
     expect(existsSync(join(dir, 'debug-out', 'config.json'))).toBe(true)
+  })
+
+  it('--zip bundles the dump into one archive for a bug report', async () => {
+    dir = createFixture()
+
+    const result = await runDebug({ cwd: dir, zip: true, logLevel: 'silent' })
+    const archive = join(dir, 'styled-system', 'debug.zip')
+
+    expect(result.archive).toBe(archive)
+    expect(result.outdir).toBeUndefined()
+    expect(existsSync(join(dir, 'styled-system', 'debug'))).toBe(false)
+
+    const entries = unzipSync(readFileSync(archive))
+    expect(Object.keys(entries).sort()).toMatchInlineSnapshot(`
+      [
+        "App.tsx.extract.json",
+        "config.json",
+        "styles.css",
+        "system-info.json",
+      ]
+    `)
+    expect(strFromU8(entries['styles.css'])).toContain('red')
+  })
+
+  it('--zip with a custom --outdir writes <outdir>.zip', async () => {
+    dir = createFixture()
+
+    const result = await runDebug({ cwd: dir, outdir: 'reports/panda', zip: true, logLevel: 'silent' })
+
+    expect(result.archive).toBe(join(dir, 'reports', 'panda.zip'))
+    expect(existsSync(join(dir, 'reports', 'panda.zip'))).toBe(true)
+  })
+
+  it('--zip with a trailing-slash --outdir still writes <outdir>.zip', async () => {
+    dir = createFixture()
+
+    const result = await runDebug({ cwd: dir, outdir: 'reports/panda/', zip: true, logLevel: 'silent' })
+
+    expect(result.archive).toBe(join(dir, 'reports', 'panda.zip'))
+    expect(existsSync(join(dir, 'reports', 'panda.zip'))).toBe(true)
+  })
+
+  it('rejects --zip combined with --dry', async () => {
+    dir = createFixture()
+
+    await expect(runDebug({ cwd: dir, zip: true, dry: true })).rejects.toThrow(/--zip.*--dry/)
+  })
+
+  it('rejects --zip combined with --profile', async () => {
+    dir = createFixture()
+
+    await expect(runDebug({ cwd: dir, zip: true, profile: true })).rejects.toThrow(/--zip or --profile/)
   })
 
   it('--profile with --outdir writes trace.json and timings.json into the bundle', async () => {

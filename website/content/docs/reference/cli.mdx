@@ -349,16 +349,20 @@ pnpm panda debug --dry
 
 # Only dump the resolved config
 pnpm panda debug --only-config
+
+# Bundle the dump into one archive to attach to an issue
+pnpm panda debug --zip
 ```
 
 | Flag             | Description                                                                | Related |
 | ---------------- | ------------------------------------------------------------------------- | ------- |
 | `--outdir <dir>` | Debug output directory (default `<styled-system>/debug`)                  | -       |
 | `--dry`          | Print the dump to stdout instead of writing files                        | -       |
+| `--zip`          | Write the dump as a single `<outdir>.zip` archive                         | -       |
 | `--only-config`  | Only dump the resolved config, skip per-file extraction                  | -       |
 
 `panda debug` also accepts the [shared flags](#shared-flags) and `--include`. `--profile` writes files to disk, so it
-can't be combined with `--dry`.
+can't be combined with `--dry`. `--zip` can't be combined with `--dry` or `--profile`.
 
 ---
 

@@ -1,6 +1,7 @@
 import { defineCommand } from 'citty'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
+import { strToU8, zipSync } from 'fflate'
 import { diagnosticsPass, type Diagnostic } from '@pandacss/compiler-shared'
 import { includeArgs, parseCliFlags, runtimeArgs } from '../args'
 import { runCommand } from '../run-command'
@@ -26,6 +27,7 @@ export const debugCommand = defineCommand({
     ...includeArgs(),
     outdir: { type: 'string', description: 'Debug output directory (used as-is; default <styled-system>/debug)' },
     dry: { type: 'boolean', description: 'Print the dump to stdout instead of writing files' },
+    zip: { type: 'boolean', description: 'Write the dump as a single <outdir>.zip archive' },
     onlyConfig: { type: 'boolean', description: 'Only dump the resolved config, skip per-file extraction' },
   }),
   run: async ({ args }) => setExitCode(await runDebug(parseCliFlags(debugFlagsSchema, args))),
@@ -34,6 +36,12 @@ export const debugCommand = defineCommand({
 export async function runDebug(flags: DebugFlags = {}, output: OutputSink = consoleOutput): Promise<DebugResult> {
   if (flags.profile && flags.dry) {
     throw new Error('--profile writes trace.json/timings.json to disk; drop --dry or --profile.')
+  }
+  if (flags.zip && flags.dry) {
+    throw new Error('--zip writes an archive to disk; drop --dry or --zip.')
+  }
+  if (flags.zip && flags.profile) {
+    throw new Error('--profile traces are written outside the archive; drop --zip or --profile.')
   }
 
   // Default debug outdir needs config, resolved after tracing must already start.
@@ -103,18 +111,23 @@ export async function runDebug(flags: DebugFlags = {}, output: OutputSink = cons
         { cwd },
       )
 
-      const files = flags.dry ? writeDryDump(ctx.output, dump) : writeDiskDump(outdir, dump)
+      const archive = flags.zip ? `${resolve(outdir)}.zip` : undefined
+      const files = flags.dry
+        ? writeDryDump(ctx.output, dump)
+        : archive
+          ? writeZipDump(archive, dump)
+          : writeDiskDump(outdir, dump)
 
       if (shouldPrintHumanSummary(flags)) {
         ctx.output.log(
           flags.dry
             ? `debug: ${Object.keys(dump).length} files (dry run)`
-            : `debug: wrote ${files.length} files to ${outdir}`,
+            : `debug: wrote ${files.length} files to ${archive ?? outdir}`,
         )
       }
 
       return {
-        data: { outdir: flags.dry ? undefined : outdir, files, sourceCount: sources.length },
+        data: { outdir: flags.dry || archive ? undefined : outdir, archive, files, sourceCount: sources.length },
         diagnostics,
         ok: diagnosticsPass(diagnostics, { maxWarnings: flags.maxWarnings }),
       }
@@ -132,6 +145,13 @@ function writeDiskDump(outdir: string, dump: Record<string, string>): string[] {
     writeFileSync(target, content)
     return target
   })
+}
+
+function writeZipDump(archive: string, dump: Record<string, string>): string[] {
+  const entries = Object.fromEntries(Object.entries(dump).map(([name, content]) => [name, strToU8(content)]))
+  mkdirSync(dirname(archive), { recursive: true })
+  writeFileSync(archive, zipSync(entries))
+  return Object.keys(dump)
 }
 
 function writeDryDump(output: OutputSink, dump: Record<string, string>): string[] {

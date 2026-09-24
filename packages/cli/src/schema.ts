@@ -128,6 +128,7 @@ export const doctorFlagsSchema = infoFlagsSchema.omit({ include: true })
 export const debugFlagsSchema = infoFlagsSchema.extend({
   outdir: stringFlag,
   dry: booleanFlag,
+  zip: booleanFlag,
   onlyConfig: booleanFlag,
 })
 
@@ -208,6 +209,8 @@ export interface AnalyzeResult extends CommandResult, UsageReport {
 
 export interface DebugResult extends CommandResult {
   outdir?: string
+  /** `--zip` archive path; `files` then lists the entries inside it. */
+  archive?: string
   /** Debug files written (or, in `--dry`, the files that would be written). */
   files: string[]
   sourceCount: number
