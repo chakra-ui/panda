@@ -104,18 +104,18 @@ If you are interested in the detailed specification you can visit https://www.co
 
 1. Fork of the panda repository and clone your fork
 
-2. Create a new branch out of the `main` branch. We follow the convention `[type/scope]`. For example
+2. Create a new branch out of the `v1` branch. We follow the convention `[type/scope]`. For example
    `fix/accordion-hook` or `docs/menu-typo`. `type` can be either `docs`, `fix`, `feat`, `build`, or any other
    conventional commit type. `scope` is just a short id that describes the scope of work.
 
 3. Make and commit your changes following the
-   [commit convention](https://github.com/chakra-ui/panda/blob/main/CONTRIBUTING.md#commit-convention). As you develop,
+   [commit convention](https://github.com/chakra-ui/panda/blob/v1/CONTRIBUTING.md#commit-convention). As you develop,
    you can run `pnpm pkg <module> build` and `pnpm pkg <module> test` to make sure everything works as expected. Please
    note that you might have to run `pnpm boot` first in order to build all dependencies.
 
 4. Run `pnpm changeset` to create a detailed description of your changes. This will be used to generate a changelog when
    we publish an update. [Learn more about Changeset](https://github.com/atlassian/changesets/tree/master/packages/cli).
-   Please note that you might have to run `git fetch origin main:master` (where origin will be your fork on GitHub)
+   Please note that you might have to run `git fetch origin v1:v1` (where origin will be your fork on GitHub)
    before `pnpm changeset` works.
 5. Also, if you provide `jsx` snippets to the changeset, please turn off the live preview by doing the following at the
    beginning of the snippet: ` ```jsx live=false`
