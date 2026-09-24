@@ -7,7 +7,7 @@ on:
       - '.changeset/**'
       - 'packages/**'
     branches:
-      - main
+      - v1
 
 jobs:
   release:
@@ -46,7 +46,7 @@ jobs:
           payload: |
             {
               "package_name": "@pandacss/dev",
-              "changelog_url": "https://github.com/chakra-ui/panda/blob/main/CHANGELOG.md"
+              "changelog_url": "https://github.com/chakra-ui/panda/blob/v1/CHANGELOG.md"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

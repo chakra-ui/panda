@@ -3,14 +3,14 @@ name: Quality
 on:
   push:
     branches:
-      - main
+      - v1
   pull_request:
     branches:
-      - main
+      - v1
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/v1' }}
 
 jobs:
   prettier:

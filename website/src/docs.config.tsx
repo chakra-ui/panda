@@ -95,7 +95,7 @@ export const docsNavigation: NavItem = {
         },
         {
           title: 'Changelog',
-          href: 'https://github.com/chakra-ui/panda/blob/main/CHANGELOG.md',
+          href: 'https://github.com/chakra-ui/panda/blob/v1/CHANGELOG.md',
           external: true
         }
       ]
