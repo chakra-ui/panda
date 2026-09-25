@@ -17,7 +17,7 @@ fn css_matchers() -> Matchers {
     }
 }
 
-fn first_arg(source: &str, name: &str) -> pandacss_extractor::Literal {
+fn first_arg(source: &str, name: &str) -> pandacss_literal::Literal {
     let result = extract(source, "fixture.tsx", &ExtractorConfig::new(css_matchers()));
     result
         .calls

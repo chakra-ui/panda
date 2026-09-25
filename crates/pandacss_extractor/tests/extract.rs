@@ -1,9 +1,8 @@
 use crate::common::{extract_shape, panda_config, panda_config_with_jsx, panda_jsx_config};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
-use pandacss_extractor::{
-    JsxExtractionConfig, Literal, extract, extract_debug, extract_for_transform,
-};
+use pandacss_extractor::{JsxExtractionConfig, extract, extract_debug, extract_transform};
+use pandacss_literal::Literal;
 
 #[test]
 fn single_pass_extract_combines_calls_and_jsx() {
@@ -354,14 +353,14 @@ fn uppercase_component_extracts_with_jsx_framework() {
 }
 
 #[test]
-fn extract_for_transform_marks_symbols_unresolved_when_extraction_is_skipped() {
+fn extract_transform_marks_symbols_unresolved_when_extraction_is_skipped() {
     // JSX-only matches without a jsx framework skip visitor walks. Transform still
     // gets import records, but must not treat empty binding facts as authoritative.
     let source = indoc! {r#"
         import { Box } from "@panda/jsx"
         export const el = <Box color="red" />
     "#};
-    let result = extract_for_transform(source, "fixture.tsx", &panda_config());
+    let result = extract_transform(source, "fixture.tsx", &panda_config());
 
     assert!(!result.module.symbols_resolved);
     assert!(result.module.import_bindings.is_empty());
@@ -371,12 +370,12 @@ fn extract_for_transform_marks_symbols_unresolved_when_extraction_is_skipped() {
 }
 
 #[test]
-fn extract_for_transform_resolves_symbols_for_normal_css_files() {
+fn extract_transform_resolves_symbols_for_normal_css_files() {
     let source = indoc! {r#"
         import { css } from "@panda/css"
         export const cls = css({ color: "red" })
     "#};
-    let result = extract_for_transform(source, "fixture.tsx", &panda_config());
+    let result = extract_transform(source, "fixture.tsx", &panda_config());
 
     assert!(result.module.symbols_resolved);
     assert!(
@@ -409,7 +408,7 @@ fn normal_and_transform_extraction_project_the_same_data() {
     "#};
     let config = panda_jsx_config();
     let normal = extract(source, "fixture.tsx", &config);
-    let transform = extract_for_transform(source, "fixture.tsx", &config);
+    let transform = extract_transform(source, "fixture.tsx", &config);
 
     assert_eq!(normal.diagnostics, transform.diagnostics);
     assert_eq!(normal.calls.len(), transform.calls.len());

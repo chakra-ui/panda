@@ -8,14 +8,14 @@ use std::sync::Arc;
 use pandacss_config::{
     CallbackRef, DEFAULT_SEPARATOR, StringOrStringArray, UtilityConfig, UtilityValues,
 };
-use pandacss_extractor::Literal;
+use pandacss_literal::Literal;
 use pandacss_shared::{
     css_escape, hyphenate_property, number_to_js_string, split_important, to_hash, without_space,
 };
 use pandacss_tokens::{TokenCategory, TokenDictionary};
 use rustc_hash::{FxHashMap, FxHashSet};
-use serde_json::Value;
 
+mod compositions;
 mod normalize;
 mod runtime_class;
 mod token_ref;
@@ -153,12 +153,6 @@ impl Utility {
     }
 
     #[must_use]
-    pub fn with_token_dictionary(mut self, dictionary: TokenDictionary) -> Self {
-        self.tokens = Some(Arc::new(dictionary));
-        self
-    }
-
-    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.properties.is_empty() && self.shorthands.is_empty()
     }
@@ -266,9 +260,7 @@ impl Utility {
     }
 
     pub fn register_compositions(&mut self, theme: &pandacss_config::Theme) {
-        register_composition_group(self, "textStyle", &theme.text_styles);
-        register_composition_group(self, "layerStyle", &theme.layer_styles);
-        register_composition_group(self, "animationStyle", &theme.animation_styles);
+        compositions::register(self, theme);
     }
 
     #[must_use]
@@ -691,64 +683,6 @@ pub(crate) fn split_top_level_slash(value: &str) -> Option<(&str, &str)> {
     }
 
     None
-}
-
-const COMPOSITIONS_LAYER: &str = "compositions";
-
-fn register_composition_group(utility: &mut Utility, prop_name: &str, source: &Value) {
-    let Value::Object(root) = source else {
-        return;
-    };
-
-    let mut values: FxHashMap<String, Literal> = FxHashMap::default();
-    walk_composition_tree(root, "", &mut values);
-
-    if values.is_empty() {
-        return;
-    }
-    utility.register_property(
-        prop_name.to_owned(),
-        UtilityProperty {
-            class_name: Some(prop_name.to_owned()),
-            css_property: None,
-            mapped_css_property: None,
-            layer: Some(COMPOSITIONS_LAYER.to_owned()),
-            values,
-            values_category: None,
-            transform_callback_id: None,
-        },
-    );
-}
-
-fn walk_composition_tree(
-    node: &serde_json::Map<String, Value>,
-    prefix: &str,
-    out: &mut FxHashMap<String, Literal>,
-) {
-    for (key, value) in node {
-        let path = if prefix.is_empty() {
-            key.clone()
-        } else {
-            format!("{prefix}.{key}")
-        };
-
-        match value {
-            Value::Object(entries) => {
-                if let Some(styles) = entries.get("value") {
-                    if let Some(literal) = Literal::from_json(styles) {
-                        out.insert(path, literal);
-                    }
-                } else {
-                    walk_composition_tree(entries, &path, out);
-                }
-            }
-            _ => {
-                if let Some(literal) = Literal::from_json(value) {
-                    out.insert(path, literal);
-                }
-            }
-        }
-    }
 }
 
 fn default_class_name(shorthand: Option<&StringOrStringArray>) -> Option<String> {

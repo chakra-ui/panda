@@ -8,7 +8,7 @@ rust-version.workspace = true
 publish = false
 
 [dependencies]
-pandacss_extractor = { workspace = true }
+pandacss_literal = { workspace = true }
 pandacss_recipes = { workspace = true }
 pandacss_shared = { workspace = true }
 rustc-hash = { workspace = true }
@@ -20,6 +20,7 @@ tracing = { workspace = true }
 [dev-dependencies]
 indoc = { workspace = true }
 insta = { workspace = true }
+pandacss_extractor = { workspace = true }
 
 [lints]
 workspace = true

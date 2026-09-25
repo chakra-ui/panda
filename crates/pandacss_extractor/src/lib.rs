@@ -33,6 +33,8 @@ mod template_styles;
 mod transform_facts;
 mod vue_adapter;
 
+use pandacss_literal::Literal;
+
 pub use calls::{CallCalleeKind, CallFacts, ExtractedCall, ExtractedCallsResult, extract_calls};
 pub use design_system_imports::{
     DesignSystemImportSelection, DesignSystemPackageQuery, collect_design_system_imports,
@@ -41,9 +43,9 @@ pub use design_system_imports::{
 pub use extract::{
     CrossFileDependency, ExtractDebugResult, ExtractUsage, ExtractVerboseResult,
     ImportBindingFacts, ImportedRecipeRawCall, ModuleFacts, TokenRef,
-    UnresolvedCrossFileDependency, analyze_module, extract, extract_debug, extract_for_transform,
-    extract_for_transform_with_recipe_resolver, extract_in_session, extract_verbose,
-    extract_with_raw_resolvers, extract_with_raw_resolvers_in_session,
+    UnresolvedCrossFileDependency, analyze_module, extract, extract_debug, extract_in_session,
+    extract_transform, extract_transform_with_recipes, extract_verbose, extract_with_raw_resolvers,
+    extract_with_raw_resolvers_in_session,
 };
 pub use imports::{
     ImportKind, ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind,
@@ -59,7 +61,6 @@ pub(crate) use imports::{collect_imports, collect_parser_diagnostics};
 pub use jsx::{
     ExtractedJsx, ExtractedJsxResult, JsxAttr, JsxSourceFacts, JsxSourceKind, extract_jsx,
 };
-pub use literal::Literal;
 pub use matcher::{
     ExtractorConfig, JsxExtractionConfig, JsxKind, JsxStyleProps, MatchCategory, MatchedImport,
     Matcher, Matchers, NameMatcher, TokenDictionary, match_import_records,

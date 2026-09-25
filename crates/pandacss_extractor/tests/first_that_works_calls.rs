@@ -10,7 +10,8 @@
 use indoc::indoc;
 
 use crate::common::panda_config;
-use pandacss_extractor::{ExtractUsage, Literal, extract};
+use pandacss_extractor::{ExtractUsage, extract};
+use pandacss_literal::Literal;
 
 /// The folded value of a property in the first `css({...})` argument.
 /// `None` when the property dropped or did not fold to a string.

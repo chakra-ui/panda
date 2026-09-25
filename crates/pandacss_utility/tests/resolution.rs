@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use insta::{assert_debug_snapshot, assert_snapshot};
-use pandacss_extractor::Literal;
+use pandacss_literal::Literal;
 use pandacss_shared::to_hash;
 use pandacss_tokens::{Token, TokenCategory, TokenDictionary};
 use pandacss_utility::{Utility, UtilityOptions};

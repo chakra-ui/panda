@@ -10,32 +10,10 @@
 
 use rustc_hash::FxHashSet;
 use serde::Serialize;
-use serde_json::Value;
 
-use pandacss_shared::{capitalize, number_to_js_string};
+use pandacss_shared::number_to_js_string;
 
-pub use pandacss_extractor::Literal;
-
-#[must_use]
-pub fn recipe_jsx_names(name: &str, recipe: &Value) -> Vec<String> {
-    match recipe.get("jsx") {
-        Some(Value::Array(items)) => items
-            .iter()
-            .filter_map(Value::as_str)
-            .map(str::to_owned)
-            .collect(),
-        _ => vec![capitalize(name).into_owned()],
-    }
-}
-
-#[must_use]
-pub fn slot_recipe_jsx_names(name: &str, recipe: &Value) -> Vec<String> {
-    let capitalized = capitalize(name);
-    let mut names = recipe_jsx_names(name, recipe);
-    names.push(format!("{capitalized}.Root"));
-    names.push(format!("{capitalized}Root"));
-    names
-}
+pub use pandacss_literal::Literal;
 
 /// `cva({ base, variants, compoundVariants, defaultVariants })`.
 #[derive(Debug, Clone, Default, PartialEq, Serialize)]

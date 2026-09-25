@@ -1,9 +1,10 @@
 #![allow(dead_code)]
 
 use pandacss_extractor::{
-    ExtractUsage, ExtractorConfig, ImportScanResult, JsxExtractionConfig, JsxKind, Literal,
-    Matcher, Matchers, NameMatcher, TokenDictionary,
+    ExtractUsage, ExtractorConfig, ImportScanResult, JsxExtractionConfig, JsxKind, Matcher,
+    Matchers, NameMatcher, TokenDictionary,
 };
+use pandacss_literal::Literal;
 use serde::Serialize;
 
 pub fn matcher<const N: usize>(module: &str, names: [&str; N]) -> Matcher {

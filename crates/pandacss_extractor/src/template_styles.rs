@@ -136,7 +136,7 @@ fn mask_script_blocks(source: &str) -> String {
     for block in tag_blocks(source, "script") {
         copy_range(&mut mask, source, block.content_start, block.content_end);
     }
-    String::from_utf8(mask).expect("source mask remains valid utf-8")
+    crate::adapter::finish_mask(mask)
 }
 
 struct TemplateContext<'a> {

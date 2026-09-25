@@ -5,9 +5,8 @@
 
 use indoc::indoc;
 
-use pandacss_extractor::{
-    ExtractUsage, ExtractorConfig, Literal, Matcher, Matchers, NameMatcher, extract,
-};
+use pandacss_extractor::{ExtractUsage, ExtractorConfig, Matcher, Matchers, NameMatcher, extract};
+use pandacss_literal::Literal;
 
 fn keyframes_config(prefix: &str) -> ExtractorConfig {
     let matchers = Matchers {

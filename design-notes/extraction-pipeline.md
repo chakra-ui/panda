@@ -90,7 +90,7 @@ The project transformer consumes compact owned facts from this parse instead of 
   parsed Oxc values) and `parenthesize_for_logical_and` for re-emitting conditions as `cond && class`.
 
 These records use spans and small enums rather than cloned Oxc nodes, so the allocator still drops after extraction.
-`extract_for_transform` retains them; the regular extraction path skips their recursive payload and semantic
+`extract_transform` retains them; the regular extraction path skips their recursive payload and semantic
 import-reference list. Import cleanup compares semantic reference spans with rewrite spans; a rewrite also lists source
 spans copied into its output so nested live references are preserved.
 

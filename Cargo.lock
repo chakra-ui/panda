@@ -99,14 +99,13 @@ dependencies = [
  "pandacss_encoder",
  "pandacss_extractor",
  "pandacss_fs",
+ "pandacss_literal",
  "pandacss_project",
- "pandacss_recipes",
  "pandacss_shared",
  "pandacss_tokens",
  "pandacss_tracing",
  "serde",
  "serde_json",
- "smallvec",
  "tracing",
 ]
 
@@ -122,14 +121,13 @@ dependencies = [
  "pandacss_encoder",
  "pandacss_extractor",
  "pandacss_fs",
+ "pandacss_literal",
  "pandacss_project",
- "pandacss_recipes",
  "pandacss_shared",
  "pandacss_tokens",
  "serde",
  "serde-wasm-bindgen",
  "serde_json",
- "smallvec",
  "tracing",
  "wasm-bindgen",
 ]
@@ -1159,12 +1157,15 @@ dependencies = [
  "pandacss_config",
  "pandacss_encoder",
  "pandacss_fs",
+ "pandacss_literal",
  "pandacss_project",
  "pandacss_shared",
  "pandacss_stylesheet",
  "pandacss_tokens",
+ "pandacss_utility",
  "serde",
  "serde_json",
+ "thiserror",
  "tracing",
 ]
 
@@ -1186,6 +1187,7 @@ dependencies = [
  "indoc",
  "insta",
  "pandacss_extractor",
+ "pandacss_literal",
  "pandacss_recipes",
  "pandacss_shared",
  "rustc-hash",
@@ -1212,6 +1214,7 @@ dependencies = [
  "oxc_syntax",
  "pandacss_config",
  "pandacss_fs",
+ "pandacss_literal",
  "pandacss_shared",
  "pandacss_tokens",
  "regex",
@@ -1236,6 +1239,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "pandacss_literal"
+version = "0.0.0"
+dependencies = [
+ "pandacss_shared",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "pandacss_project"
 version = "0.0.0"
 dependencies = [
@@ -1247,6 +1259,7 @@ dependencies = [
  "pandacss_encoder",
  "pandacss_extractor",
  "pandacss_fs",
+ "pandacss_literal",
  "pandacss_recipes",
  "pandacss_shared",
  "pandacss_tokens",
@@ -1267,10 +1280,10 @@ dependencies = [
  "indoc",
  "insta",
  "pandacss_extractor",
+ "pandacss_literal",
  "pandacss_shared",
  "rustc-hash",
  "serde",
- "serde_json",
  "tracing",
 ]
 
@@ -1296,16 +1309,13 @@ dependencies = [
  "insta",
  "pandacss_config",
  "pandacss_encoder",
- "pandacss_extractor",
+ "pandacss_literal",
  "pandacss_project",
  "pandacss_shared",
  "pandacss_tokens",
  "pandacss_utility",
  "rustc-hash",
- "serde",
  "serde_json",
- "smallvec",
- "thiserror",
  "tracing",
 ]
 
@@ -1343,7 +1353,7 @@ dependencies = [
  "insta",
  "pandacss_config",
  "pandacss_encoder",
- "pandacss_extractor",
+ "pandacss_literal",
  "pandacss_shared",
  "pandacss_tokens",
  "rustc-hash",

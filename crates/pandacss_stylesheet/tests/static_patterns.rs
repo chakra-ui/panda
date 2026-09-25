@@ -5,7 +5,7 @@
 
 use crate::common::config;
 use insta::assert_snapshot;
-use pandacss_extractor::Literal;
+use pandacss_literal::Literal;
 use pandacss_project::{Diagnostic, Project, System};
 use pandacss_stylesheet::{StylesheetInput, StylesheetLayer, StylesheetOptions};
 use serde_json::json;

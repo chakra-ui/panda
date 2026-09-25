@@ -33,6 +33,7 @@ rustc-hash = { workspace = true }
 regex = { workspace = true }
 smallvec = { workspace = true }
 pandacss_fs = { workspace = true }
+pandacss_literal = { workspace = true }
 pandacss_shared = { workspace = true }
 pandacss_tokens = { workspace = true }
 tracing = { workspace = true }

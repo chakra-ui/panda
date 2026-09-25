@@ -90,11 +90,10 @@ deeper nesting spills to the heap and remains correct.
 ## Conditional expansion
 
 A `Literal::Conditional(branches)` (a non-foldable ternary — see `literal-evaluator.md`) could resolve to **any** branch
-at runtime, so both walkers (`walk` and `walk_with`) recurse into every branch under the **same** path and emit each
+at runtime, so the walker recurses into every branch under the **same** path and emits each
 branch's atoms — the union, not a choice. `{ color: cond ? 'red' : 'blue' }` → `.c_red` + `.c_blue`; a conditional value
 under a condition (`{ _hover: cond ? a : b }`) keeps `_hover` on both branches; nested conditionals expand recursively.
-Conditionals are therefore consumed before reaching a leaf and never produce a degenerate `?(red|blue)` value. The two
-walkers must stay in sync here.
+Conditionals are therefore consumed before reaching a leaf and never produce a degenerate `?(red|blue)` value.
 
 Conditionals expand at **two levels**, because an array means different things in each position (merge-list as a `css()`
 arg, responsive array as a property value):

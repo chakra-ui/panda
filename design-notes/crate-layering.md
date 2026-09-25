@@ -11,7 +11,7 @@ accidentally coupling a leaf crate to walker machinery.
 
 ### Tier 0 — infrastructure
 
-`pandacss_fs`, `pandacss_shared`.
+`pandacss_fs`, `pandacss_shared`, `pandacss_literal`.
 
 `pandacss_fs` is the filesystem abstraction with `os` / `memory` feature-gated impls. Core crates depend on the
 `FileSystem` trait, never `std::fs` directly, so the same code compiles to `wasm32-unknown-unknown`. See
@@ -22,14 +22,16 @@ accidentally coupling a leaf crate to walker machinery.
 and the codegen (`CssProperties` interface members) read it, so "valid to extract" and "offered in the types" can't
 diverge.
 
+`pandacss_literal` owns the host-neutral extracted value tree shared by parsing, recipes, encoding, utility metadata,
+and project transforms. Keeping this IR below the process crates prevents leaf data crates from pulling Oxc machinery.
+
 ### Tier 1 — leaf data + parsing
 
 `pandacss_config`, `pandacss_tokens`, `pandacss_recipes`.
 
-Pure data models with parsing from serializable config or `pandacss_extractor::Literal` to typed shapes. No traversal,
+Pure data models with parsing from serializable config or `pandacss_literal::Literal` to typed shapes. No traversal,
 no encoding, no I/O. `pandacss_config::UserConfig` is the canonical resolved config input consumed by project/system
-construction. `pandacss_recipes` depends on `pandacss_extractor` for `Literal`, but only as a serializable input shape —
-not for walker machinery.
+construction.
 
 ### Tier 2 — process
 

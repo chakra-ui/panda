@@ -2,7 +2,8 @@
 
 ## Summary
 
-`pandacss_extractor::Literal` is the typed value the extractor reads out of source.
+`pandacss_literal::Literal` is the host-neutral typed value the extractor reads out of source. Downstream
+transformation crates depend on `pandacss_literal` directly, so they do not pull in Oxc.
 `expression_to_literal(expr, resolver)` folds an Oxc expression into a `Literal` when it resolves to a static value. The
 fold rules match `ts-evaluator` semantics so the Rust extractor sees the same values the JS extractor sees — the goal is
 parity with the JS path before defaulting to Rust.

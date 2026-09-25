@@ -130,7 +130,7 @@ Use Oxc as the source of truth for JavaScript and TypeScript structure.
   collection.
 - Carry only the owned facts needed after the allocator drops: spans, small enums, static keys, precedence, callee
   shape, and finite branch structure. Do not retain or clone the full AST.
-- Keep transform facts off the normal extraction path. `extract_for_transform` opts into recursive expression facts, JSX
+- Keep transform facts off the normal extraction path. `extract_transform` opts into recursive expression facts, JSX
   source metadata, and semantic import-reference lists.
 - Slice source only at an Oxc-provided span to preserve authored text. Do not use `starts_with`, `contains`, delimiter
   matching, or identifier-name scans to recover syntax already represented by the AST.
@@ -160,7 +160,7 @@ Use Oxc as the source of truth for JavaScript and TypeScript structure.
 | `std::HashMap` for hot internal keys     | Slower than needed                         | `FxHashMap` (standard here)                          |
 | Re-parse per entrypoint in prod          | `extract()` is single-parse                | Use combined `extract()` on hot path                 |
 | Infer JS syntax from source text         | Misreads comments, strings, and wrappers   | Carry compact Oxc facts across the parse boundary    |
-| Retain transform facts for every extract | Adds recursive allocations to the hot path | Opt in through `extract_for_transform`               |
+| Retain transform facts for every extract | Adds recursive allocations to the hot path | Opt in through `extract_transform`                   |
 
 | Smell                            | Action                                  |
 | -------------------------------- | --------------------------------------- |

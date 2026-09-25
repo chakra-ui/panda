@@ -6,7 +6,7 @@ use pandacss_config::{
     Deprecated, PrimitiveType, UtilityPropertyTypeData, UtilityTypeData, ValueAliasTypeData,
     ValueTypePart, value_alias_name,
 };
-use pandacss_extractor::Literal;
+use pandacss_literal::Literal;
 use pandacss_shared::hyphenate_property;
 use pandacss_tokens::{TokenCategory, TokenDictionary};
 use rustc_hash::FxHashMap;

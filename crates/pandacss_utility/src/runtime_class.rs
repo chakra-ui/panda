@@ -4,7 +4,7 @@
 use std::cmp::Ordering;
 
 use pandacss_encoder::{ConditionMatcher, ConditionSet};
-use pandacss_extractor::Literal;
+use pandacss_literal::Literal;
 use pandacss_shared::{split_important, to_hash, without_space};
 
 use crate::{Utility, literal_to_class_value};

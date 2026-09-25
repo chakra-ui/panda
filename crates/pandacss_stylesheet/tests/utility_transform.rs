@@ -5,8 +5,9 @@
 
 use insta::assert_snapshot;
 use pandacss_config::UserConfig;
-use pandacss_extractor::{Diagnostic, Literal};
+use pandacss_literal::Literal;
 use pandacss_project::{AtomValue, ParseTransforms, Project, System, UtilityTransformFn};
+use pandacss_shared::Diagnostic;
 use pandacss_stylesheet::{StylesheetInput, StylesheetLayer, StylesheetOptions};
 
 use crate::common::config;

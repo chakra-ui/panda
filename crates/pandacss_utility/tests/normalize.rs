@@ -1,4 +1,4 @@
-use pandacss_extractor::Literal;
+use pandacss_literal::Literal;
 use pandacss_utility::{StyleNormalizer, Utility, UtilityOptions};
 use serde_json::json;
 

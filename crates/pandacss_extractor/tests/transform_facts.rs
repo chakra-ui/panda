@@ -1,7 +1,7 @@
 use crate::common::panda_config;
 use indoc::indoc;
 use insta::{assert_debug_snapshot, assert_yaml_snapshot};
-use pandacss_extractor::extract_for_transform;
+use pandacss_extractor::extract_transform;
 use serde_json::json;
 
 #[test]
@@ -10,7 +10,7 @@ fn records_statement_context_through_an_arrow_body_comment() {
         import { css } from '@panda/css';
         const styles = () => /* object */ css.raw({ color: 'red' });
     "};
-    let result = extract_for_transform(source, "fixture.ts", &panda_config());
+    let result = extract_transform(source, "fixture.ts", &panda_config());
     assert!(result.diagnostics.is_empty());
     assert_debug_snapshot!(result.calls[0].facts.object_literal_context, @"StatementStart");
 }
@@ -21,7 +21,7 @@ fn records_expression_context_for_a_call_argument() {
         import { css } from '@panda/css';
         accept(css.raw({ color: 'red' }));
     "};
-    let result = extract_for_transform(source, "fixture.ts", &panda_config());
+    let result = extract_transform(source, "fixture.ts", &panda_config());
     assert!(result.diagnostics.is_empty());
     assert_debug_snapshot!(result.calls[0].facts.object_literal_context, @"Expression");
 }
@@ -33,7 +33,7 @@ fn records_context_and_scalar_keys_for_local_raw_calls() {
         const styles = cva({ base: { color: 'red' } });
         const raw = () => /* object */ styles.raw({ size: (0x10 as const), enabled: false, label: '  wide  ' });
     "};
-    let result = extract_for_transform(source, "fixture.ts", &panda_config());
+    let result = extract_transform(source, "fixture.ts", &panda_config());
     assert!(result.diagnostics.is_empty());
     let call = &result.module.local_call_bindings[0].raw_calls[0];
     assert_debug_snapshot!(call.object_literal_context, @"StatementStart");
@@ -57,7 +57,7 @@ fn leaves_unsupported_and_runtime_values_without_scalar_keys() {
         const styles = cva({ base: { color: 'red' } });
         const raw = styles.raw({ size: props.size, pattern: /sm/, large: 1n });
     "};
-    let result = extract_for_transform(source, "fixture.ts", &panda_config());
+    let result = extract_transform(source, "fixture.ts", &panda_config());
     assert!(result.diagnostics.is_empty());
     let call = &result.module.local_call_bindings[0].raw_calls[0];
     let object = call.args[0].as_ref().unwrap().object.as_ref().unwrap();

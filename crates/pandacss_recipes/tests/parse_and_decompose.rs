@@ -364,7 +364,7 @@ fn sva_atomic_styles_per_slot_groups_by_slot_in_declaration_order() {
         });
     "};
     let recipe = parse_slot_recipe(src);
-    let materialized: Vec<(String, Vec<&pandacss_extractor::Literal>)> = recipe
+    let materialized: Vec<(String, Vec<&pandacss_literal::Literal>)> = recipe
         .atomic_styles_per_slot()
         .map(|(slot, iter)| (slot.to_owned(), iter.collect()))
         .collect();

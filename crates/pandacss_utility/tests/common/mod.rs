@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use pandacss_config::UtilityConfig;
-use pandacss_extractor::Literal;
+use pandacss_literal::Literal;
 use pandacss_tokens::TokenDictionary;
 use pandacss_utility::{Utility, UtilityOptions};
 use serde_json::Value;

@@ -11,7 +11,7 @@ use pandacss_encoder::{
     Atom, AtomValue, ConditionSet, EncodedRecipesSnapshot, Encoder, RecipeStyleEntry,
     RecipeStyleGroupSnapshot,
 };
-use pandacss_extractor::Literal;
+use pandacss_literal::Literal;
 use pandacss_shared::{
     Diagnostic, FIRST_THAT_WORKS_MIN_MEMBERS, FirstThatWorksError, InlineKeyframe,
     PositionTryStyle, ViewTransitionStyle, css_escape, diagnostic_codes, find_matching_paren,

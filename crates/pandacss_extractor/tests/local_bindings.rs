@@ -1,8 +1,8 @@
-//! Local call-binding facts for transform (`extract_for_transform` only).
+//! Local call-binding facts for transform (`extract_transform` only).
 
 use crate::common::panda_config;
 use indoc::indoc;
-use pandacss_extractor::{ExpressionKind, LocalDeclarationKind, extract, extract_for_transform};
+use pandacss_extractor::{ExpressionKind, LocalDeclarationKind, extract, extract_transform};
 
 #[test]
 fn collects_plain_calls_for_cva_binding() {
@@ -12,7 +12,7 @@ fn collects_plain_calls_for_cva_binding() {
         export const a = recipe({ on: x })
         export const b = recipe()
     "};
-    let result = extract_for_transform(source, "fixture.tsx", &panda_config());
+    let result = extract_transform(source, "fixture.tsx", &panda_config());
     assert_eq!(result.module.local_call_bindings.len(), 1);
     let binding = &result.module.local_call_bindings[0];
     assert_eq!(binding.local, "recipe");
@@ -35,7 +35,7 @@ fn shadowed_binding_is_not_collected_as_call() {
           return recipe({ color: 'blue' })
         }
     "};
-    let result = extract_for_transform(source, "fixture.tsx", &panda_config());
+    let result = extract_transform(source, "fixture.tsx", &panda_config());
     let binding = result
         .module
         .local_call_bindings
@@ -54,7 +54,7 @@ fn rename_marks_other_references() {
         const other = recipe
         export const cls = other({})
     "};
-    let result = extract_for_transform(source, "fixture.tsx", &panda_config());
+    let result = extract_transform(source, "fixture.tsx", &panda_config());
     let binding = result
         .module
         .local_call_bindings
@@ -73,7 +73,7 @@ fn member_raw_call_is_other_reference() {
         export const raw = recipe.raw({ color: 'blue' })
         export const cls = recipe({})
     "};
-    let result = extract_for_transform(source, "fixture.tsx", &panda_config());
+    let result = extract_transform(source, "fixture.tsx", &panda_config());
     let binding = result
         .module
         .local_call_bindings
@@ -92,7 +92,7 @@ fn mutated_let_binding_is_skipped() {
         recipe = cva({ base: { color: 'blue' } })
         export const cls = recipe({})
     "};
-    let result = extract_for_transform(source, "fixture.tsx", &panda_config());
+    let result = extract_transform(source, "fixture.tsx", &panda_config());
     assert!(
         result
             .module
@@ -122,7 +122,7 @@ fn collects_raw_calls_on_a_local_cva_binding() {
         export const b = styles({ size: 'lg' });
     "};
 
-    let result = extract_for_transform(src, "fixture.tsx", &panda_config());
+    let result = extract_transform(src, "fixture.tsx", &panda_config());
     let binding = &result.module.local_call_bindings[0];
 
     assert_eq!(binding.local, "styles");
@@ -143,7 +143,7 @@ fn a_bare_raw_reference_is_not_a_raw_call() {
         export const fn = styles.raw;
     "};
 
-    let result = extract_for_transform(src, "fixture.tsx", &panda_config());
+    let result = extract_transform(src, "fixture.tsx", &panda_config());
     let binding = &result.module.local_call_bindings[0];
 
     assert!(binding.raw_calls.is_empty());
@@ -162,7 +162,7 @@ fn a_non_raw_member_call_is_not_a_raw_call() {
         export const keys = styles.splitVariantProps({ size: 'sm' });
     "};
 
-    let result = extract_for_transform(src, "fixture.tsx", &panda_config());
+    let result = extract_transform(src, "fixture.tsx", &panda_config());
     let binding = &result.module.local_call_bindings[0];
 
     assert!(binding.raw_calls.is_empty());
@@ -177,7 +177,7 @@ fn an_optional_chained_raw_call_is_opaque() {
         export const out = styles?.raw({});
     "};
 
-    let result = extract_for_transform(src, "fixture.tsx", &panda_config());
+    let result = extract_transform(src, "fixture.tsx", &panda_config());
     let binding = &result.module.local_call_bindings[0];
 
     assert!(binding.raw_calls.is_empty());
@@ -192,7 +192,7 @@ fn raw_passed_as_a_value_is_opaque() {
         export const out = [].map(styles.raw);
     "};
 
-    let result = extract_for_transform(src, "fixture.tsx", &panda_config());
+    let result = extract_transform(src, "fixture.tsx", &panda_config());
     let binding = &result.module.local_call_bindings[0];
 
     assert!(binding.raw_calls.is_empty());
@@ -207,7 +207,7 @@ fn a_direct_raw_call_is_not_opaque() {
         export const out = styles.raw({ size: 'sm' });
     "};
 
-    let result = extract_for_transform(src, "fixture.tsx", &panda_config());
+    let result = extract_transform(src, "fixture.tsx", &panda_config());
     let binding = &result.module.local_call_bindings[0];
 
     assert_eq!(binding.raw_calls.len(), 1);
@@ -222,7 +222,7 @@ fn a_non_raw_member_access_is_not_opaque_raw() {
         export const keys = styles.variantKeys;
     "};
 
-    let result = extract_for_transform(src, "fixture.tsx", &panda_config());
+    let result = extract_transform(src, "fixture.tsx", &panda_config());
     let binding = &result.module.local_call_bindings[0];
 
     assert!(!binding.has_opaque_raw_access);

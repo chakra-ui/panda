@@ -30,6 +30,7 @@ with workspace support.
 
 /crates/           # Rust workspace — the v2 Oxc-based compiler engine
   /extractor/      # Oxc-based AST scanning + extraction
+  /literal/        # Host-neutral extracted value IR
   /encoder/        # Style usage → atomic rules
   /stylesheet/     # Native CSS emission (replaces planned emitter/optimizer split)
   /project/        # Project lifecycle, recipes, config resolution
@@ -338,6 +339,7 @@ tests → design note.
 @pandacss/compiler (v2, NAPI)
   └─ crates/* (Rust workspace, all `pandacss_*`-prefixed)
       ├─ pandacss_extractor (Oxc parsing + scan_imports + match_imports)
+      ├─ pandacss_literal (host-neutral extracted value IR)
       ├─ pandacss_encoder, pandacss_recipes, pandacss_tokens, pandacss_project
       ├─ pandacss_stylesheet (native CSS emission), pandacss_compiler (CSS/codegen orchestration), pandacss_config
       ├─ packages/compiler/crate (compiler_napi cdylib — native NAPI)

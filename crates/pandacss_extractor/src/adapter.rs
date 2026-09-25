@@ -97,6 +97,10 @@ pub(crate) fn blank_like(source: &str) -> Vec<u8> {
         .collect()
 }
 
+pub(crate) fn finish_mask(mask: Vec<u8>) -> String {
+    String::from_utf8(mask).expect("source mask remains valid utf-8")
+}
+
 pub(crate) fn copy_range(mask: &mut [u8], source: &str, start: usize, end: usize) {
     if start >= end || end > source.len() {
         return;

@@ -1,8 +1,8 @@
 //! Vue SFC source adapter.
 
 use crate::adapter::{
-    JsState, blank_like, copy_expression, copy_range, find_bytes, find_tag_end, has_non_html_lang,
-    starts_with, tag_blocks,
+    JsState, blank_like, copy_expression, copy_range, find_bytes, find_tag_end, finish_mask,
+    has_non_html_lang, starts_with, tag_blocks,
 };
 
 #[must_use]
@@ -20,7 +20,7 @@ pub(crate) fn mask_vue(source: &str) -> String {
         copy_vue_template_expressions(&mut mask, source, block.content_start, block.content_end);
     }
 
-    String::from_utf8(mask).expect("source mask remains valid utf-8")
+    finish_mask(mask)
 }
 
 fn copy_vue_template_expressions(mask: &mut [u8], source: &str, start: usize, end: usize) {

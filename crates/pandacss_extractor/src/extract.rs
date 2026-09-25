@@ -69,7 +69,7 @@ pub struct ModuleFacts {
     pub imports: Vec<ImportRecord>,
     pub import_bindings: Vec<ImportBindingFacts>,
     /// Local bindings initialized from a collected Panda call site.
-    /// Populated only by [`extract_for_transform`].
+    /// Populated only by [`extract_transform`].
     pub local_call_bindings: Vec<crate::LocalCallBinding>,
     /// Safe helper-import insertion point after a hashbang/directive prologue.
     pub after_directives: u32,
@@ -212,10 +212,10 @@ pub fn extract_in_session(
 
 /// Extract source while retaining the Oxc facts required by source transforms.
 #[must_use]
-pub fn extract_for_transform(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsage {
+pub fn extract_transform(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsage {
     let _span = tracing::trace_span!(
         target: "extract",
-        "extract_for_transform",
+        "extract_transform",
         path = path,
         source_len = source.len()
     )
@@ -234,9 +234,9 @@ pub fn extract_for_transform(source: &str, path: &str, config: &ExtractorConfig)
     extract_usage(outcome)
 }
 
-/// [`extract_for_transform`] plus the project-supplied resolver for imported
+/// [`extract_transform`] plus the project-supplied resolver for imported
 /// inline `cva`/`sva` recipes, so `imported.raw(props)` folds to its styles.
-pub fn extract_for_transform_with_recipe_resolver<R>(
+pub fn extract_transform_with_recipes<R>(
     source: &str,
     path: &str,
     config: &ExtractorConfig,
@@ -247,7 +247,7 @@ where
 {
     let _span = tracing::trace_span!(
         target: "extract",
-        "extract_for_transform",
+        "extract_transform",
         path = path,
         source_len = source.len()
     )

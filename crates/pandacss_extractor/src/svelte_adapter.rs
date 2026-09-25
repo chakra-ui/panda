@@ -1,8 +1,8 @@
 //! Svelte source adapter.
 
 use crate::adapter::{
-    blank_like, copy_expression, copy_range, find_bytes, find_matching_brace, starts_with,
-    tag_blocks,
+    blank_like, copy_expression, copy_range, find_bytes, find_matching_brace, finish_mask,
+    starts_with, tag_blocks,
 };
 
 #[must_use]
@@ -30,7 +30,7 @@ pub(crate) fn mask_svelte(source: &str) -> String {
 
     copy_svelte_markup_expressions(&mut mask, source, &excluded);
 
-    String::from_utf8(mask).expect("source mask remains valid utf-8")
+    finish_mask(mask)
 }
 
 fn copy_svelte_markup_expressions(mask: &mut [u8], source: &str, excluded: &[(usize, usize)]) {

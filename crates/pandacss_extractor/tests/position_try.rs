@@ -5,9 +5,8 @@
 
 use indoc::indoc;
 
-use pandacss_extractor::{
-    ExtractUsage, ExtractorConfig, Literal, Matcher, Matchers, NameMatcher, extract,
-};
+use pandacss_extractor::{ExtractUsage, ExtractorConfig, Matcher, Matchers, NameMatcher, extract};
+use pandacss_literal::Literal;
 
 /// css matcher that recognises `positionTry` alongside `css`, plus an optional
 /// class-name prefix threaded into folded idents.

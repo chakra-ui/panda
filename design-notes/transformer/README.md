@@ -217,7 +217,7 @@ package. In practice that means extending the compiler boundary with a transform
 The current Rust implementation carries transform-only module, call, JSX, property, and expression facts beside the
 serialized extraction result. They are compact owned records backed by original-source spans, not cloned AST nodes.
 Planning uses those facts for call shape, precedence, static keys, import liveness, and helper placement. Source slicing
-is reserved for copying text at an Oxc-provided span. Only `extract_for_transform` retains this payload; normal
+is reserved for copying text at an Oxc-provided span. Only `extract_transform` retains this payload; normal
 extraction avoids the extra allocations.
 
 ### Phase 2: plan

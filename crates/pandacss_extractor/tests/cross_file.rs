@@ -1426,7 +1426,8 @@ fn imported_conditional_object_keeps_encode_branches() {
 // its hashed name when imported and used in another, exactly as it folds
 // same-file. All three share the css barrel and the same value-fold path.
 
-use pandacss_extractor::{Literal, NameMatcher};
+use pandacss_extractor::NameMatcher;
+use pandacss_literal::Literal;
 
 /// css matcher that recognises the three value/class factories alongside `css`,
 /// with an optional class-name prefix threaded into the folded names.

@@ -16,6 +16,7 @@ crates/
   pandacss_encoder/
   pandacss_extractor/
   pandacss_fs/
+  pandacss_literal/
   pandacss_project/
   pandacss_recipes/
   pandacss_shared/

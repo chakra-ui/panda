@@ -11,7 +11,8 @@ use indoc::indoc;
 use insta::assert_yaml_snapshot;
 
 use crate::common::{panda_config, panda_config_with_token_dictionary};
-use pandacss_extractor::{ExtractUsage, Literal, TokenDictionary, extract};
+use pandacss_extractor::{ExtractUsage, TokenDictionary, extract};
+use pandacss_literal::Literal;
 use pandacss_tokens::{Token, TokenCategory};
 
 /// Pull a string-valued property out of the first `css({...})` argument.

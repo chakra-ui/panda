@@ -3,7 +3,7 @@
 
 use std::borrow::Cow;
 
-use pandacss_extractor::Literal;
+use pandacss_literal::Literal;
 
 use crate::Utility;
 
@@ -148,6 +148,10 @@ impl pandacss_encoder::NormalizeAtomic for StyleNormalizer<'_> {
 
     fn normalize_leaf<'a>(&self, _: &str, value: &'a Literal) -> Cow<'a, Literal> {
         Cow::Borrowed(value)
+    }
+
+    fn expands_arrays(&self) -> bool {
+        true
     }
 
     fn array_condition(&self, index: usize) -> Option<&str> {

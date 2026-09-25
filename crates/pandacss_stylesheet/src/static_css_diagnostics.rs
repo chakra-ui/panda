@@ -1,5 +1,5 @@
 use pandacss_config::{RecipeConfig, UserConfig};
-use pandacss_extractor::Literal;
+use pandacss_literal::Literal;
 use pandacss_shared::css_properties::is_css_property;
 use pandacss_shared::{Diagnostic, diagnostic_codes};
 use pandacss_tokens::TokenDictionary;

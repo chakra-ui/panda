@@ -15,16 +15,13 @@ path = "tests/main.rs"
 [dependencies]
 pandacss_config = { workspace = true }
 pandacss_encoder = { workspace = true }
-pandacss_extractor = { workspace = true }
+pandacss_literal = { workspace = true }
 pandacss_shared = { workspace = true }
 pandacss_tokens = { workspace = true }
 pandacss_utility = { workspace = true }
 indexmap = { workspace = true }
 rustc-hash = { workspace = true }
-serde = { workspace = true }
 serde_json = { workspace = true }
-smallvec = { workspace = true }
-thiserror = { workspace = true }
 tracing = { workspace = true }
 
 [dev-dependencies]

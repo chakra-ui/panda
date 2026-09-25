@@ -392,6 +392,12 @@ struct ResolverImpl<F: FileSystem + Clone> {
 }
 
 impl<F: FileSystem + Clone> ResolverImpl<F> {
+    fn cache(&self) -> std::sync::MutexGuard<'_, FxHashMap<PathBuf, Arc<CachedFileExports>>> {
+        self.cache
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+    }
+
     fn new(fs: F, options: ResolveOptions) -> Self {
         let inner = ResolverGeneric::<F>::new_with_file_system(fs.clone(), options);
         Self {
@@ -459,7 +465,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
         session: &CrossFileSession,
         deps: &[(PathBuf, Option<u64>)],
     ) {
-        let cache = self.cache.lock().expect("cross-file cache poisoned");
+        let cache = self.cache();
         let entries = deps.iter().filter_map(|(path, expected)| {
             let cached = cache.get(path)?;
             (Some(cached.source_hash) == *expected).then(|| (path.clone(), Arc::clone(cached)))
@@ -561,10 +567,7 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
 
         // Read-fail drops the entry so a deleted file never serves stale exports.
         let Ok(source) = <F as oxc_resolver::FileSystem>::read_to_string(&self.fs, &path) else {
-            self.cache
-                .lock()
-                .expect("cross-file cache poisoned")
-                .remove(&path);
+            self.cache().remove(&path);
             session.record_unreadable(path.clone());
             return CrossFileResolution::at_path(path, None, None, Vec::new());
         };
@@ -572,7 +575,7 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
 
         // Record `path` on every remaining exit. Resolved modules are deps even when they don't fold.
         let cached = {
-            let guard = self.cache.lock().expect("cross-file cache poisoned");
+            let guard = self.cache();
             guard
                 .get(&path)
                 .filter(|cached| cached.source_hash == source_hash)
@@ -608,16 +611,13 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
             unresolved,
         });
         let result = CrossFileResolution::from_cached(path.clone(), &cached, name);
-        self.cache
-            .lock()
-            .expect("cross-file cache poisoned")
-            .insert(path.clone(), Arc::clone(&cached));
+        self.cache().insert(path.clone(), Arc::clone(&cached));
         session.insert(path, cached);
         result
     }
 
     fn cache_len(&self) -> usize {
-        self.cache.lock().expect("cross-file cache poisoned").len()
+        self.cache().len()
     }
 }
 

@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use insta::assert_debug_snapshot;
 use pandacss_config::UserConfig;
-use pandacss_extractor::Literal;
+use pandacss_literal::Literal;
 use pandacss_tokens::{Token, TokenCategory, TokenDictionary};
 use pandacss_utility::{Utility, UtilityOptions};
 use serde_json::json;

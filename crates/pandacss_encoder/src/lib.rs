@@ -1,4 +1,4 @@
-//! Atomic style encoder: decomposes a style object ([`pandacss_extractor::Literal::Object`])
+//! Atomic style encoder: decomposes a style object ([`pandacss_literal::Literal::Object`])
 //! or recipe ([`pandacss_recipes::Recipe`] / [`SlotRecipe`]) into flat [`Atom`] records, one
 //! per `(prop, value, condition_chain)`. No CSS syntax here — the emitter handles that.
 //!
@@ -17,7 +17,7 @@ use rustc_hash::FxHashSet;
 use serde::{Serialize, Serializer};
 use smallvec::SmallVec;
 
-use pandacss_extractor::Literal;
+use pandacss_literal::Literal;
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::{
     is_first_that_works_value, number_to_js_string, push_number_to_js_string, split_important,
@@ -261,6 +261,11 @@ pub trait NormalizeAtomic {
         Cow::Borrowed(value)
     }
 
+    /// Whether arrays are responsive values rather than literal leaves.
+    fn expands_arrays(&self) -> bool {
+        false
+    }
+
     /// Synthetic condition name for a responsive `Literal::Array` item (e.g.
     /// `"sm"`). `None` means arrays don't encode.
     fn array_condition(&self, _index: usize) -> Option<&str> {
@@ -312,7 +317,7 @@ impl<C: ConditionMatcher> Encoder<C> {
         let _entered = span.enter();
         let before = self.atoms.len();
         let mut path = SmallVec::new();
-        self.walk(style, &mut path);
+        self.walk(style, &NoNormalize, &mut path);
         span.record("atom_count", self.atoms.len() - before);
     }
 
@@ -324,7 +329,7 @@ impl<C: ConditionMatcher> Encoder<C> {
         let _entered = span.enter();
         let before = self.atoms.len();
         let mut path = SmallVec::new();
-        self.walk_with(style, norm, &mut path);
+        self.walk(style, norm, &mut path);
         span.record("atom_count", self.atoms.len() - before);
     }
 
@@ -358,38 +363,7 @@ impl<C: ConditionMatcher> Encoder<C> {
         span.record("atom_count", self.atoms.len() - before);
     }
 
-    fn walk<'a>(
-        &mut self,
-        value: &'a Literal,
-        path: &mut SmallVec<[PathSegment<'a>; INLINE_PATH]>,
-    ) {
-        if let Literal::Object(entries) = value {
-            for (key, child) in entries {
-                let is_condition = self.conditions.is_condition(key);
-                path.push(PathSegment {
-                    name: key,
-                    is_condition,
-                });
-                self.walk(child, path);
-                path.pop();
-            }
-            return;
-        }
-
-        // `cond ? a : b` could take either branch at runtime — emit both under the same path.
-        if let Literal::Conditional(branches) = value {
-            for branch in branches {
-                self.walk(branch, path);
-            }
-            return;
-        }
-
-        if let Some(atom) = Self::atom_from_path(path, value) {
-            self.atoms.insert(atom);
-        }
-    }
-
-    fn walk_with<'a, N: NormalizeAtomic>(
+    fn walk<'a, N: NormalizeAtomic>(
         &mut self,
         value: &'a Literal,
         norm: &'a N,
@@ -404,11 +378,11 @@ impl<C: ConditionMatcher> Encoder<C> {
                         name: resolved,
                         is_condition,
                     });
-                    self.walk_with(child, norm, path);
+                    self.walk(child, norm, path);
                     path.pop();
                 }
             }
-            Literal::Array(items) => {
+            Literal::Array(items) if norm.expands_arrays() => {
                 for (index, item) in items.iter().enumerate() {
                     let Some(cond) = norm.array_condition(index) else {
                         continue;
@@ -420,14 +394,14 @@ impl<C: ConditionMatcher> Encoder<C> {
                         name: cond,
                         is_condition: true,
                     });
-                    self.walk_with(item, norm, path);
+                    self.walk(item, norm, path);
                     path.pop();
                 }
             }
             Literal::Conditional(branches) => {
                 // Either branch could run at runtime — emit both under the same path.
                 for branch in branches {
-                    self.walk_with(branch, norm, path);
+                    self.walk(branch, norm, path);
                 }
             }
             _ => {
