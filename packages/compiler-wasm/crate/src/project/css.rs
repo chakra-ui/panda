@@ -1,8 +1,8 @@
 use super::WasmCompiler;
 use super::transforms::{apply_pattern_transform, apply_utility_transform};
 
-use pandacss_extractor::Literal;
 use pandacss_fs::{FileSystem, PathSystem};
+use pandacss_literal::Literal;
 use serde::Serialize as _;
 use std::path::Path;
 use wasm_bindgen::prelude::*;

@@ -3,9 +3,7 @@ use super::WasmCompiler;
 use serde::Serialize as _;
 use wasm_bindgen::prelude::*;
 
-use super::interop::utility_value_source_to_json;
 use super::serde_types::ResolveUtilityValueInputSerde;
-use super::transforms::json_value_to_literal;
 
 #[wasm_bindgen]
 impl WasmCompiler {
@@ -31,7 +29,7 @@ impl WasmCompiler {
     pub fn resolve_utility_value(&self, input: JsValue) -> Result<JsValue, JsValue> {
         let input: ResolveUtilityValueInputSerde = serde_wasm_bindgen::from_value(input)
             .map_err(|err| JsValue::from_str(&err.to_string()))?;
-        let Some(value) = json_value_to_literal(&input.value) else {
+        let Some(value) = pandacss_literal::Literal::from_json_strict(&input.value) else {
             return Err(JsValue::from_str(
                 "resolveUtilityValue() requires a JSON-serializable value",
             ));
@@ -46,7 +44,7 @@ impl WasmCompiler {
             "className": resolved.class_name,
             "cssValue": resolved.css_value.to_json(),
             "important": resolved.important,
-            "source": utility_value_source_to_json(resolved.source),
+            "source": pandacss_compiler::utility_value_source_json(resolved.source),
         });
 
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);

@@ -1,7 +1,7 @@
 use std::num::NonZeroUsize;
 
 use lru::LruCache;
-use pandacss_extractor::Literal;
+use pandacss_literal::Literal;
 use pandacss_project::{AtomValueCacheKey, LiteralCacheKey};
 
 const MAX_TRANSFORM_CACHE_ENTRIES: usize = 4096;

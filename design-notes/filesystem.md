@@ -256,8 +256,8 @@ because the native `os` feature is not available.
 
 The fs engine is no longer just the cross-file resolver's read backend — it also powers **source discovery**. The
 binding `Compiler` holds a clone of the same fs instance it gives the resolver (`OsFileSystem` on native, the host's
-`MemoryFileSystem` on wasm) and exposes two entrypoints, backed by the generic
-`pandacss_project::scan_files(fs, opts, parse)` helper:
+`MemoryFileSystem` on wasm) and exposes two entrypoints. Each binding adapter composes `FileSystem::glob`,
+`read_to_string`, and `Project::parse_file`; project remains responsible for parsing, not host filesystem traversal:
 
 - `glob(opts)` → `Vec<PathBuf>` — discovery only (the host's watch list).
 - `scan(opts)` → `{ count, diagnostics }` — glob + `read_to_string` + `parse_file` each, entirely in Rust.

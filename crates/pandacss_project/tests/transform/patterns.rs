@@ -4,7 +4,8 @@ use super::common::{
 };
 use indoc::indoc;
 use insta::assert_snapshot;
-use pandacss_extractor::{Diagnostic, Literal};
+use pandacss_extractor::Diagnostic;
+use pandacss_literal::Literal;
 use pandacss_project::{ParseTransforms, Project, System};
 use pandacss_project::{TransformOptions, transform_source};
 use serde_json::json;

@@ -23,7 +23,7 @@
 mod build_info;
 mod config;
 mod dependency_graph;
-mod design_system;
+mod diagnostics;
 mod error;
 mod hook_filter;
 mod inspection;
@@ -35,10 +35,13 @@ mod static_patterns;
 mod system;
 mod transform;
 mod transform_cache;
-mod type_data;
 mod usages;
 
 use dependency_graph::DependencyGraph;
+use diagnostics::{
+    dynamic_style_value_diagnostic, push_deprecated_utility_diagnostics,
+    push_invalid_color_opacity_modifier_diagnostics, push_unknown_condition_diagnostics,
+};
 
 use std::collections::BTreeMap;
 use std::hash::Hash;
@@ -51,10 +54,10 @@ use smallvec::SmallVec;
 use pandacss_config::UserConfig;
 use pandacss_encoder::{Atom, Encoder, compare_atoms_by_emit_order};
 use pandacss_extractor::{
-    CrossFileDependency, CrossFileResolver, CrossFileSession, ExportInfo, ExtractedCall,
-    ExtractedJsx, JsxKind, LineIndex, Literal, MatchCategory, UnresolvedCrossFileDependency,
-    extract,
+    CrossFileDependency, CrossFileResolver, CrossFileSession, ExportInfo, ExtractedJsx, JsxKind,
+    LineIndex, MatchCategory, UnresolvedCrossFileDependency, extract,
 };
+use pandacss_literal::Literal;
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::css_properties::is_css_property;
 use pandacss_shared::{
@@ -70,9 +73,6 @@ pub type UtilityStyleKey = (Box<str>, AtomValue);
 pub use build_info::{
     BuildAtom, BuildInfo, BuildKeyframe, BuildValue, BuildViewTransition, ModuleEntry,
     SCHEMA_VERSION,
-};
-pub use design_system::{
-    DesignSystemManifest, MANIFEST_SCHEMA_VERSION, ManifestImportMap, ManifestInput,
 };
 pub use error::{ConfigError, Result};
 pub use hook_filter::HookFilter;
@@ -2563,36 +2563,6 @@ fn jsx_factory_static_style(config: Option<&Literal>) -> Option<JsxFactoryStatic
     })
 }
 
-/// Globs `opts` through `fs`, reads every match, and hands `(path, source)` to
-/// `parse`, skipping unreadable files. Returns the file count.
-///
-/// `parse` is a callback rather than an owned [`Project`] so the binding layer
-/// can wire per-call transforms, or collect `(path, source)` pairs first when
-/// it needs `&mut self` interleaved.
-///
-/// # Errors
-/// Propagates an I/O error from the initial glob (e.g. a bad `cwd`).
-pub fn scan_files<F, P>(
-    fs: &F,
-    opts: &pandacss_fs::GlobOptions,
-    mut parse: P,
-) -> std::io::Result<usize>
-where
-    F: pandacss_fs::FileSystem,
-    P: FnMut(&str, &str),
-{
-    let _span = tracing::trace_span!("scan").entered();
-    let mut count = 0;
-    for path in fs.glob(opts)? {
-        let Ok(source) = fs.read_to_string(&path) else {
-            continue;
-        };
-        parse(path.to_string_lossy().as_ref(), &source);
-        count += 1;
-    }
-    Ok(count)
-}
-
 pub type PatternTransformFn<'a> =
     dyn FnMut(&str, &Literal) -> std::result::Result<Option<Literal>, Diagnostic> + 'a;
 
@@ -2613,234 +2583,6 @@ pub struct ParseTransforms<'a> {
     pub source: Option<&'a mut SourceTransformFn<'a>>,
     pub pattern: Option<&'a mut PatternTransformFn<'a>>,
     pub utility: Option<&'a mut UtilityTransformFn<'a>>,
-}
-
-/// Walks every call/jsx usage, collects diagnostic strings via `collect`, and
-/// builds a [`Diagnostic`] per string via `build`. Shared by the three
-/// `push_*_diagnostics` functions below.
-fn push_usage_diagnostics(
-    calls: &[ExtractedCall],
-    jsx: &[ExtractedJsx],
-    line_index: &LineIndex<'_>,
-    out: &mut Vec<Diagnostic>,
-    mut collect: impl FnMut(&Literal, &mut Vec<String>),
-    mut build: impl FnMut(&str, pandacss_extractor::Span, &LineIndex<'_>) -> Diagnostic,
-) {
-    let mut seen: Vec<String> = Vec::new();
-    for call in calls {
-        seen.clear();
-        for lit in call.data.iter().flatten() {
-            collect(lit, &mut seen);
-        }
-        for item in seen.drain(..) {
-            out.push(build(&item, call.span, line_index));
-        }
-    }
-    for entry in jsx {
-        seen.clear();
-        collect(&entry.data, &mut seen);
-        for item in seen.drain(..) {
-            out.push(build(&item, entry.span, line_index));
-        }
-    }
-}
-
-fn push_deprecated_utility_diagnostics(
-    calls: &[ExtractedCall],
-    jsx: &[ExtractedJsx],
-    utility: &Utility,
-    line_index: &LineIndex<'_>,
-    out: &mut Vec<Diagnostic>,
-) {
-    let deprecated = utility.deprecated_props();
-    push_usage_diagnostics(
-        calls,
-        jsx,
-        line_index,
-        out,
-        |lit, seen| collect_deprecated_props(lit, utility, deprecated, seen),
-        deprecated_utility_diagnostic,
-    );
-}
-
-fn collect_deprecated_props(
-    value: &Literal,
-    utility: &Utility,
-    deprecated: &FxHashSet<String>,
-    out: &mut Vec<String>,
-) {
-    match value {
-        Literal::Object(entries) => {
-            for (key, child) in entries {
-                let canonical = utility.resolve_shorthand(key);
-                if deprecated.contains(canonical) {
-                    let name = canonical.to_owned();
-                    if !out.contains(&name) {
-                        out.push(name);
-                    }
-                }
-                collect_deprecated_props(child, utility, deprecated, out);
-            }
-        }
-        Literal::Array(items) | Literal::Conditional(items) => {
-            for item in items {
-                collect_deprecated_props(item, utility, deprecated, out);
-            }
-        }
-        Literal::String(_)
-        | Literal::Token { .. }
-        | Literal::Number(_)
-        | Literal::Bool(_)
-        | Literal::Null => {}
-    }
-}
-
-fn deprecated_utility_diagnostic(
-    prop: &str,
-    span: pandacss_extractor::Span,
-    line_index: &LineIndex<'_>,
-) -> Diagnostic {
-    let mut diagnostic = Diagnostic::warning(
-        diagnostic_codes::DEPRECATED_UTILITY_USED,
-        format!("utility \"{prop}\" is deprecated"),
-    );
-    diagnostic.span = Some(span);
-    diagnostic.location = Some(line_index.locate_range(span.start, span.end));
-    diagnostic
-}
-
-/// Warns on `_`-prefixed style keys that aren't a known condition (typos like
-/// `_hovr`). The encoder just drops these (`pandacss_encoder::atom_from_path`),
-/// so without this the typo emits nothing and no one notices.
-fn push_unknown_condition_diagnostics(
-    calls: &[ExtractedCall],
-    jsx: &[ExtractedJsx],
-    conditions: &ProjectConditionMatcher,
-    line_index: &LineIndex<'_>,
-    out: &mut Vec<Diagnostic>,
-) {
-    push_usage_diagnostics(
-        calls,
-        jsx,
-        line_index,
-        out,
-        |lit, seen| collect_unknown_conditions(lit, conditions, seen),
-        |key, span, line_index| unknown_condition_diagnostic(key, conditions, span, line_index),
-    );
-}
-
-fn collect_unknown_conditions(
-    value: &Literal,
-    conditions: &ProjectConditionMatcher,
-    out: &mut Vec<String>,
-) {
-    match value {
-        Literal::Object(entries) => {
-            for (key, child) in entries {
-                if key.starts_with('_')
-                    && !conditions.is_condition(key)
-                    && !out.iter().any(|seen| seen == key)
-                {
-                    out.push(key.clone());
-                }
-                collect_unknown_conditions(child, conditions, out);
-            }
-        }
-        Literal::Array(items) | Literal::Conditional(items) => {
-            for item in items {
-                collect_unknown_conditions(item, conditions, out);
-            }
-        }
-        Literal::String(_)
-        | Literal::Token { .. }
-        | Literal::Number(_)
-        | Literal::Bool(_)
-        | Literal::Null => {}
-    }
-}
-
-fn unknown_condition_diagnostic(
-    key: &str,
-    conditions: &ProjectConditionMatcher,
-    span: pandacss_extractor::Span,
-    line_index: &LineIndex<'_>,
-) -> Diagnostic {
-    let suggestion =
-        pandacss_shared::closest_match(key, conditions.names().filter(|n| n.starts_with('_')))
-            .map(|name| format!(", did you mean `{name}`?"))
-            .unwrap_or_default();
-    let mut diagnostic = Diagnostic::warning(
-        diagnostic_codes::UNKNOWN_CONDITION,
-        format!("unknown condition `{key}`{suggestion}"),
-    );
-    diagnostic.span = Some(span);
-    diagnostic.location = Some(line_index.locate_range(span.start, span.end));
-    diagnostic
-}
-
-fn push_invalid_color_opacity_modifier_diagnostics(
-    calls: &[ExtractedCall],
-    jsx: &[ExtractedJsx],
-    utility: &Utility,
-    line_index: &LineIndex<'_>,
-    out: &mut Vec<Diagnostic>,
-) {
-    push_usage_diagnostics(
-        calls,
-        jsx,
-        line_index,
-        out,
-        |lit, seen| collect_invalid_color_opacity_modifiers(lit, utility, seen),
-        invalid_color_opacity_modifier_diagnostic,
-    );
-}
-
-fn collect_invalid_color_opacity_modifiers(
-    value: &Literal,
-    utility: &Utility,
-    out: &mut Vec<String>,
-) {
-    match value {
-        Literal::Object(entries) => {
-            for (key, child) in entries {
-                let canonical = utility.resolve_shorthand(key);
-                if utility.token_category(canonical) == Some("colors")
-                    && let Literal::String(value) | Literal::Token { value, .. } = child
-                    && utility.is_invalid_color_opacity_modifier(value)
-                    && !out.contains(value)
-                {
-                    out.push(value.clone());
-                }
-                collect_invalid_color_opacity_modifiers(child, utility, out);
-            }
-        }
-        Literal::Array(items) | Literal::Conditional(items) => {
-            for item in items {
-                collect_invalid_color_opacity_modifiers(item, utility, out);
-            }
-        }
-        Literal::String(_)
-        | Literal::Token { .. }
-        | Literal::Number(_)
-        | Literal::Bool(_)
-        | Literal::Null => {}
-    }
-}
-
-fn invalid_color_opacity_modifier_diagnostic(
-    value: &str,
-    span: pandacss_extractor::Span,
-    line_index: &LineIndex<'_>,
-) -> Diagnostic {
-    let mut diagnostic = Diagnostic::warning(
-        diagnostic_codes::INVALID_COLOR_OPACITY_MODIFIER,
-        format!(
-            "Color value `{value}` has an invalid opacity modifier; expected a number (e.g. `40`) or an opacity token (e.g. `half`)"
-        ),
-    );
-    diagnostic.span = Some(span);
-    diagnostic.location = Some(line_index.locate_range(span.start, span.end));
-    diagnostic
 }
 
 /// Runs the JS transform per atom without decomposing it. The returned style
@@ -2907,23 +2649,6 @@ pub(crate) fn is_empty_style_object(styles: &Literal) -> bool {
     matches!(styles, Literal::Object(entries) if entries.is_empty())
 }
 
-fn dynamic_style_value_diagnostic(
-    category: MatchCategory,
-    name: &str,
-    span: pandacss_extractor::Span,
-    line_index: &LineIndex<'_>,
-) -> Diagnostic {
-    let mut diagnostic = Diagnostic::warning(
-        diagnostic_codes::PANDA_CALL_UNEXTRACTABLE,
-        format!(
-            "{category:?} call `{name}` received a dynamic argument, so no static CSS was generated for this call"
-        ),
-    );
-    diagnostic.span = Some(span);
-    diagnostic.location = Some(line_index.locate_range(span.start, span.end));
-    diagnostic
-}
-
 pub(crate) fn with_callback_target(
     mut diagnostic: Diagnostic,
     kind: &str,
@@ -2983,7 +2708,6 @@ pub struct ProjectSummary {
 }
 
 pub use pandacss_encoder::{AtomValue, ConditionMatcher};
-pub use pandacss_extractor::Literal as ExtractedLiteral;
 pub use pandacss_extractor::{
     Diagnostic, DiagnosticSeverity, Matcher, NameMatcher, SourceLocation, SourceRange, Span,
 };

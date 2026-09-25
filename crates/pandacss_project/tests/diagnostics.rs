@@ -2,9 +2,8 @@ use crate::common::{create_config, create_project, sorted_atoms};
 use indoc::indoc;
 use insta::{assert_snapshot, assert_yaml_snapshot};
 use pandacss_encoder::AtomValue;
-use pandacss_project::{
-    Diagnostic, ExtractedLiteral, ParseTransforms, Project, SourceTransformFn, System,
-};
+use pandacss_literal::Literal;
+use pandacss_project::{Diagnostic, ParseTransforms, Project, SourceTransformFn, System};
 use pandacss_shared::diagnostic_codes;
 use serde_json::json;
 
@@ -189,7 +188,7 @@ fn config_utility_transform_failures_are_reported_and_retried_but_success_is_cac
                 "utility callback failed",
             ))
         } else {
-            Ok(None::<ExtractedLiteral>)
+            Ok(None::<Literal>)
         }
     };
 
@@ -256,7 +255,7 @@ fn static_recipe_utility_transform_failures_are_reported_and_retried() {
     let mut calls = 0;
     let mut transform = |_prop: &str, _resolved: &AtomValue, _original: &AtomValue| {
         calls += 1;
-        Err::<Option<ExtractedLiteral>, _>(Diagnostic::warning(
+        Err::<Option<Literal>, _>(Diagnostic::warning(
             diagnostic_codes::TRANSFORM_CALLBACK_FAILED,
             "utility callback failed",
         ))

@@ -4,7 +4,7 @@
 
 use pandacss_config::{PatternConfig, PatternPropertyConfig, UserConfig};
 use pandacss_encoder::{Atom, ConditionSet, Encoder};
-use pandacss_extractor::Literal;
+use pandacss_literal::Literal;
 use pandacss_shared::{Diagnostic, diagnostic_codes};
 use pandacss_tokens::{TokenCategory, TokenDictionary};
 use pandacss_utility::{StyleNormalizer, Utility};

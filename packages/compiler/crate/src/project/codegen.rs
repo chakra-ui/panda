@@ -81,7 +81,7 @@ impl Compiler {
             &id,
             core_options(options),
         )
-        .map_err(napi::Error::from_reason)?
+        .map_err(|error| napi::Error::from_reason(error.to_string()))?
         .map(Into::into);
         crate::flush_tracing();
         Ok(artifact)
@@ -104,7 +104,7 @@ impl Compiler {
             &dependencies,
             core_options(options),
         )
-        .map_err(napi::Error::from_reason)?
+        .map_err(|error| napi::Error::from_reason(error.to_string()))?
         .into_iter()
         .map(Into::into)
         .collect();

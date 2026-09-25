@@ -28,11 +28,12 @@ use pandacss_config::{
 };
 use pandacss_fs::{MemoryFileSystem, PosixPathSystem};
 
-use self::interop::{format_config_diagnostics, format_deserialize_error, with_wasm_fs};
+use self::interop::{format_deserialize_error, with_wasm_fs};
 use self::transforms::{
     get_pattern_transform_refs, get_utility_transform_refs, resolve_utility_values_callbacks,
     utility_value_callbacks_from_options,
 };
+use pandacss_compiler::format_config_diagnostics;
 
 /// JS-facing project handle. Constructed once per session with a
 /// [`WasmFileSystem`] (whose contents the cross-file resolver reads),

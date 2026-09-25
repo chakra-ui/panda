@@ -11,8 +11,8 @@ use crate::compile::CompileFileManifest;
 use crate::convert::{convert_diagnostic, to_call, to_jsx};
 use crate::extract::ExtractResult;
 use pandacss_encoder::AtomValue;
-use pandacss_extractor::Literal;
 use pandacss_fs::{FileSystem, OxcResolverFileSystem, PathSystem};
+use pandacss_literal::Literal;
 
 #[napi(object)]
 pub struct DesignSystemImportPackageQuery {

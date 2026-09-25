@@ -2,7 +2,8 @@ use super::{SourceTransformCallback, WasmCompiler};
 
 use lru::LruCache;
 use pandacss_encoder::AtomValue;
-use pandacss_extractor::{DiagnosticSeverity, Literal, diagnostic_codes};
+use pandacss_extractor::{DiagnosticSeverity, diagnostic_codes};
+use pandacss_literal::Literal;
 use pandacss_tokens::TokenCategory;
 use serde::Serialize as _;
 use std::collections::HashMap;
@@ -15,7 +16,7 @@ use crate::cache::{
 };
 use pandacss_config::{CallbackRef, JsxSpecifier, UserConfig, UtilityConfig, UtilityValues};
 
-use super::interop::{atom_value_to_json, capitalize, js_error_message};
+use super::interop::js_error_message;
 
 /*
  * Callback registration.
@@ -272,18 +273,18 @@ pub(super) fn apply_utility_transform(
     );
 
     // Positional = resolved value; second arg = original alias (`args.raw`).
-    let resolved_js =
-        serde_wasm_bindgen::to_value(&atom_value_to_json(resolved)).map_err(|err| {
-            callback_diagnostic(format!(
-                "Failed to serialize utility transform value for `{prop}`: {err}"
-            ))
-        })?;
-    let original_js =
-        serde_wasm_bindgen::to_value(&atom_value_to_json(original)).map_err(|err| {
-            callback_diagnostic(format!(
-                "Failed to serialize utility transform value for `{prop}`: {err}"
-            ))
-        })?;
+    let resolved_js = serde_wasm_bindgen::to_value(&pandacss_compiler::atom_value_json(resolved))
+        .map_err(|err| {
+        callback_diagnostic(format!(
+            "Failed to serialize utility transform value for `{prop}`: {err}"
+        ))
+    })?;
+    let original_js = serde_wasm_bindgen::to_value(&pandacss_compiler::atom_value_json(original))
+        .map_err(|err| {
+        callback_diagnostic(format!(
+            "Failed to serialize utility transform value for `{prop}`: {err}"
+        ))
+    })?;
     let result = callback
         .call2(&JsValue::NULL, &resolved_js, &original_js)
         .map_err(|err| {
@@ -302,7 +303,7 @@ pub(super) fn apply_utility_transform(
                 "Utility transform callback `{id}` for `{prop}` returned an invalid style object: {err}"
             ))
         })?;
-        match json_value_to_literal(&value) {
+        match Literal::from_json_strict(&value) {
             Some(object @ Literal::Object(_)) => object,
             _ => Literal::Object(Vec::new()),
         }
@@ -388,7 +389,7 @@ pub(super) fn apply_pattern_transform(
                 "Pattern transform callback `{id}` for `{name}` returned an invalid style object: {err}"
             ))
         })?;
-        json_value_to_literal(&value).map(Some).ok_or_else(|| {
+        Literal::from_json_strict(&value).map(Some).ok_or_else(|| {
             callback_diagnostic(format!(
                 "Pattern transform callback `{id}` for `{name}` returned an invalid style object"
             ))
@@ -432,7 +433,7 @@ pub(super) fn get_pattern_transform_refs(config: &UserConfig) -> HashMap<String,
             continue;
         };
         refs.insert(name.clone(), id.clone());
-        refs.insert(capitalize(name), id.clone());
+        refs.insert(pandacss_shared::capitalize(name).into_owned(), id.clone());
         if let Some(jsx_name) = &pattern.jsx_name {
             refs.insert(jsx_name.clone(), id.clone());
         }
@@ -453,27 +454,6 @@ fn callback_ref_id(value: &CallbackRef) -> Option<String> {
     (value.kind == "js-callback")
         .then(|| value.id.clone())
         .flatten()
-}
-
-pub(super) fn json_value_to_literal(value: &serde_json::Value) -> Option<Literal> {
-    match value {
-        serde_json::Value::String(value) => Some(Literal::String(value.clone())),
-        serde_json::Value::Number(value) => value.as_f64().map(Literal::Number),
-        serde_json::Value::Bool(value) => Some(Literal::Bool(*value)),
-        serde_json::Value::Null => Some(Literal::Null),
-        serde_json::Value::Array(items) => items
-            .iter()
-            .map(json_value_to_literal)
-            .collect::<Option<Vec<_>>>()
-            .map(Literal::Array),
-        serde_json::Value::Object(entries) => {
-            let mut out = Vec::with_capacity(entries.len());
-            for (key, value) in entries {
-                out.push((key.clone(), json_value_to_literal(value)?));
-            }
-            Some(Literal::Object(out))
-        }
-    }
 }
 
 fn callback_diagnostic(message: String) -> pandacss_extractor::Diagnostic {

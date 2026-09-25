@@ -1,6 +1,7 @@
 //! React runtime call rewrites (`jsx`, `jsxs`, `createElement`, …).
 
-use pandacss_extractor::{ExtractedJsx, JsxKind, Literal, StyleObject, StyleTree, project_literal};
+use pandacss_extractor::{ExtractedJsx, JsxKind, StyleObject, StyleTree, project_literal};
+use pandacss_literal::Literal;
 
 use crate::PatternTransformFn;
 use crate::Project;

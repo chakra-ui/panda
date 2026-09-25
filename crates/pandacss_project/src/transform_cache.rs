@@ -3,7 +3,7 @@
 //! when their paths differ (relevant for build-info round-trips).
 
 use pandacss_encoder::AtomValue;
-use pandacss_extractor::Literal;
+use pandacss_literal::Literal;
 
 /// Owned, bounded cache key for values passed to utility transform callbacks.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

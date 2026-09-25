@@ -3,7 +3,7 @@
 use crate::common::{create_project, sorted_atoms};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
-use pandacss_extractor::Literal;
+use pandacss_literal::Literal;
 use pandacss_project::ParseTransforms;
 use serde_json::json;
 

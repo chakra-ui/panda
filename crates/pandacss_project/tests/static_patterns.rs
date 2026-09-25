@@ -1,7 +1,7 @@
 use crate::common::create_config;
 use insta::assert_snapshot;
 use pandacss_encoder::{Atom, AtomValue};
-use pandacss_extractor::Literal;
+use pandacss_literal::Literal;
 use pandacss_project::{Diagnostic, Project, System};
 use serde_json::json;
 

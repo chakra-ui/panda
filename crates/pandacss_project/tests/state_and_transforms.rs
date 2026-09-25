@@ -1,6 +1,6 @@
 use crate::common::{create_config, create_project};
 use pandacss_encoder::AtomValue;
-use pandacss_extractor::Literal;
+use pandacss_literal::Literal;
 use pandacss_project::{ParseTransforms, TransformOptions};
 use serde_json::json;
 

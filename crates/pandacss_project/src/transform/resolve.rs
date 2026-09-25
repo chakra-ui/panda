@@ -2,8 +2,9 @@
 
 use pandacss_encoder::{Atom, Encoder, compare_atoms_by_emit_order};
 use pandacss_extractor::{
-    CallFacts, ExpressionKind, ExtractedCall, Literal, ObjectLiteralContext, StyleTree,
+    CallFacts, ExpressionKind, ExtractedCall, ObjectLiteralContext, StyleTree,
 };
+use pandacss_literal::Literal;
 use pandacss_shared::{CssFactory, FIRST_THAT_WORKS_MIN_MEMBERS, format_first_that_works};
 use pandacss_utility::ShorthandPolicy;
 

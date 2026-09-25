@@ -18,9 +18,9 @@ impl Compiler {
         &self,
         input: serde_json::Value,
     ) -> napi::Result<serde_json::Value> {
-        let input: pandacss_project::ManifestInput = serde_json::from_value(input)
+        let input: pandacss_compiler::ManifestInput = serde_json::from_value(input)
             .map_err(|err| napi::Error::from_reason(err.to_string()))?;
-        let manifest = self.inner.design_system_manifest(input);
+        let manifest = pandacss_compiler::design_system_manifest(input);
         serde_json::to_value(&manifest).map_err(|err| napi::Error::from_reason(err.to_string()))
     }
 
@@ -29,6 +29,6 @@ impl Compiler {
     #[napi(js_name = designSystemManifestSchemaVersion)]
     #[must_use]
     pub fn design_system_manifest_schema_version(&self) -> u32 {
-        pandacss_project::MANIFEST_SCHEMA_VERSION
+        pandacss_compiler::MANIFEST_SCHEMA_VERSION
     }
 }

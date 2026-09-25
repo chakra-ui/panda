@@ -3,8 +3,9 @@
 use pandacss_extractor::StyleSourceOwnerKind;
 use pandacss_extractor::StyleSourceRef;
 use pandacss_extractor::{
-    ExtractedCall, ExtractedJsx, JsxKind, LineIndex, Literal, MatchCategory, TokenRef,
+    ExtractedCall, ExtractedJsx, JsxKind, LineIndex, MatchCategory, TokenRef,
 };
+use pandacss_literal::Literal;
 use pandacss_tokens::{ResolvedTokenPath, TokenDictionary};
 use serde::Serialize;
 use serde_json::Value;

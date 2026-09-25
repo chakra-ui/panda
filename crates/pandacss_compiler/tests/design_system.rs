@@ -1,9 +1,10 @@
-//! `Project::design_system_manifest` — produce a `panda/lib.json` value from
+//! `design_system_manifest` — produce a `panda/lib.json` value from
 //! host-supplied identity + paths, stamping the engine-owned schema version, and
 //! round-trip it through JSON. Pure (no fs).
 
-use crate::common::create_project;
-use pandacss_project::{DesignSystemManifest, MANIFEST_SCHEMA_VERSION, ManifestInput};
+use pandacss_compiler::{
+    DesignSystemManifest, MANIFEST_SCHEMA_VERSION, ManifestInput, design_system_manifest,
+};
 use serde_json::{from_value, json, to_value};
 
 fn full_input() -> ManifestInput {
@@ -23,8 +24,7 @@ fn full_input() -> ManifestInput {
 
 #[test]
 fn stamps_schema_version_and_carries_input_fields() {
-    let project = create_project(json!({}));
-    let manifest = project.design_system_manifest(full_input());
+    let manifest = design_system_manifest(full_input());
 
     assert_eq!(manifest.schema_version, MANIFEST_SCHEMA_VERSION);
     assert_eq!(manifest.name, "@acme/ds");
@@ -41,7 +41,6 @@ fn stamps_schema_version_and_carries_input_fields() {
 
 #[test]
 fn omits_optional_fields_when_absent() {
-    let project = create_project(json!({}));
     let input: ManifestInput = from_value(json!({
         "name": "@acme/ds",
         "panda": "^2.0.0",
@@ -50,7 +49,7 @@ fn omits_optional_fields_when_absent() {
     }))
     .expect("deserialize minimal input");
 
-    let manifest = project.design_system_manifest(input);
+    let manifest = design_system_manifest(input);
     let json = to_value(&manifest).expect("serialize manifest");
 
     // Engine stamps the version; absent optionals don't appear on the wire.
@@ -64,8 +63,7 @@ fn omits_optional_fields_when_absent() {
 
 #[test]
 fn round_trips_through_json() {
-    let project = create_project(json!({}));
-    let manifest = project.design_system_manifest(full_input());
+    let manifest = design_system_manifest(full_input());
 
     let json = serde_json::to_string(&manifest).expect("serialize manifest");
     let restored: DesignSystemManifest = serde_json::from_str(&json).expect("deserialize manifest");

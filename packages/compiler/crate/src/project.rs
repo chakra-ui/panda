@@ -29,10 +29,11 @@ use pandacss_config::{
 };
 use pandacss_fs::OsPathSystem;
 
-use self::interop::{apply_project_options, format_config_diagnostics};
+use self::interop::apply_project_options;
 use self::transforms::{
     get_pattern_transform_refs, get_utility_transform_refs, resolve_utility_values_callbacks,
 };
+use pandacss_compiler::format_config_diagnostics;
 
 /// Opaque `theme` handle passed into `utility.values` callbacks.
 pub struct JsCallbackArg(pub(crate) napi::sys::napi_value);

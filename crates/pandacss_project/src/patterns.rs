@@ -4,7 +4,7 @@ use std::sync::Arc;
 use regex::Regex;
 use rustc_hash::{FxHashMap, FxHashSet};
 
-use pandacss_extractor::Literal;
+use pandacss_literal::Literal;
 
 use crate::config::PatternDefinition;
 

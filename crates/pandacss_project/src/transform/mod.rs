@@ -21,7 +21,8 @@ pub(crate) mod recipe_inline;
 mod resolve;
 mod style_lower;
 
-use pandacss_extractor::{Literal, extract_for_transform_with_recipe_resolver};
+use pandacss_extractor::extract_transform_with_recipes;
+use pandacss_literal::Literal;
 
 use crate::ParseTransforms;
 use crate::Project;
@@ -98,7 +99,7 @@ impl Project {
                 let props = recipe_inline::literal_variant_props(props)?;
                 recipe_inline::resolve_inline_recipe_raw(self, factory, config, &props)
             };
-            extract_for_transform_with_recipe_resolver(
+            extract_transform_with_recipes(
                 source,
                 path,
                 self.config().extractor_config(),

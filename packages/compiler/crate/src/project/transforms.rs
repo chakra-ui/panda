@@ -3,18 +3,19 @@ use super::{
     UtilityValueCallbacks,
 };
 
-use super::interop::{atom_value_to_json, capitalize, json_value_to_literal};
 use crate::cache::{
     MAX_TRANSFORM_CACHE_KEY_BYTES, PatternTransformCacheKey, UtilityTransformCacheKey,
 };
 use lru::LruCache;
 use napi::bindgen_prelude::{FnArgs, FunctionRef, JsValue};
 use napi_derive::napi;
+use pandacss_compiler::atom_value_json;
 use pandacss_config::{
     CallbackRef, JsxSpecifier, PatternConfig, UserConfig, UtilityConfig, UtilityValues,
 };
 use pandacss_encoder::AtomValue;
-use pandacss_extractor::{DiagnosticSeverity, Literal, diagnostic_codes};
+use pandacss_extractor::{DiagnosticSeverity, diagnostic_codes};
+use pandacss_literal::Literal;
 use pandacss_tokens::TokenCategory;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -246,8 +247,8 @@ pub(super) fn apply_utility_transform(
     }
     tracing::trace!(name: "utility_transform_cache_miss", cache = "utility_transform", action = "miss", target = prop);
 
-    let resolved_json = atom_value_to_json(resolved);
-    let original_json = atom_value_to_json(original);
+    let resolved_json = atom_value_json(resolved);
+    let original_json = atom_value_json(original);
     let transform = callback.borrow_back(env).map_err(|err| {
         callback_diagnostic(format!(
             "Failed to borrow utility transform callback `{id}` for `{prop}`: {err}"
@@ -261,7 +262,7 @@ pub(super) fn apply_utility_transform(
                 err.reason
             ))
         })?;
-    let styles = match json_value_to_literal(&result) {
+    let styles = match Literal::from_json_strict(&result) {
         Some(object @ Literal::Object(_)) => object,
         _ => Literal::Object(Vec::new()),
     };
@@ -333,7 +334,7 @@ pub(super) fn apply_pattern_transform(
     let transformed = if result.is_null() {
         None
     } else {
-        json_value_to_literal(&result).map(Some).ok_or_else(|| {
+        Literal::from_json_strict(&result).map(Some).ok_or_else(|| {
             callback_diagnostic(format!(
                 "Pattern transform callback `{id}` for `{name}` returned an invalid style object"
             ))
@@ -377,7 +378,7 @@ pub(super) fn get_pattern_transform_refs(config: &UserConfig) -> HashMap<String,
             continue;
         };
         refs.insert(name.clone(), id.clone());
-        refs.insert(capitalize(name), id.clone());
+        refs.insert(pandacss_shared::capitalize(name).into_owned(), id.clone());
         if let Some(jsx_name) = pattern.jsx_name.as_deref() {
             refs.insert(jsx_name.to_owned(), id.clone());
         }

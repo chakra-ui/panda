@@ -98,7 +98,7 @@ impl Compiler {
         } = self;
         let pattern_cache = &mut callbacks.transform_cache.pattern;
         let utility_cache = &mut callbacks.transform_cache.utility;
-        let mut pattern_transform = |name: &str, styles: &pandacss_extractor::Literal| {
+        let mut pattern_transform = |name: &str, styles: &pandacss_literal::Literal| {
             apply_pattern_transform(
                 name,
                 styles,

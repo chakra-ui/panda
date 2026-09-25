@@ -1348,9 +1348,8 @@ fn hydrate_rejects_corrupt_view_transition_class_index() {
 
 #[test]
 fn a_hydrated_atom_gets_its_transform_recomputed_by_the_consumer() {
-    use pandacss_project::{
-        Diagnostic, ExtractedLiteral as Literal, ParseTransforms, UtilityTransformFn,
-    };
+    use pandacss_literal::Literal;
+    use pandacss_project::{Diagnostic, ParseTransforms, UtilityTransformFn};
 
     // The library's preset ships this utility, so the consumer's own config
     // declares it too and holds the callback.
@@ -1425,9 +1424,8 @@ fn a_hydrated_atom_gets_its_transform_recomputed_by_the_consumer() {
 
 #[test]
 fn hydrating_a_utility_the_consumer_never_merged_warns() {
-    use pandacss_project::{
-        Diagnostic, ExtractedLiteral as Literal, ParseTransforms, UtilityTransformFn,
-    };
+    use pandacss_literal::Literal;
+    use pandacss_project::{Diagnostic, ParseTransforms, UtilityTransformFn};
 
     let lib_overrides = json!({
         "utilities": {
@@ -1513,8 +1511,8 @@ fn box_size_transform(
     prop: &str,
     resolved: &AtomValue,
     _original: &AtomValue,
-) -> Result<Option<pandacss_project::ExtractedLiteral>, pandacss_project::Diagnostic> {
-    use pandacss_project::ExtractedLiteral as Literal;
+) -> Result<Option<pandacss_literal::Literal>, pandacss_project::Diagnostic> {
+    use pandacss_literal::Literal;
     if prop != "boxSize" {
         return Ok(None);
     }
@@ -1577,7 +1575,8 @@ fn one_transform_result_covers_a_hydrated_atom_used_under_many_conditions() {
 
 #[test]
 fn the_consumer_own_usage_wins_over_a_hydrated_atom_with_the_same_key() {
-    use pandacss_project::{ExtractedLiteral as Literal, ParseTransforms, UtilityTransformFn};
+    use pandacss_literal::Literal;
+    use pandacss_project::{ParseTransforms, UtilityTransformFn};
 
     let mut lib_transform = box_size_transform;
     let mut lib = create_project(box_size_config());

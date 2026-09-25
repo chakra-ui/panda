@@ -267,30 +267,7 @@ pub(crate) fn to_jsx(j: pandacss_extractor::ExtractedJsx) -> ExtractedJsx {
 /// distinguished — same rule the literal evaluator uses (2^53 safe-integer
 /// boundary).
 pub(crate) fn to_atom_value(v: &pandacss_encoder::AtomValue) -> serde_json::Value {
-    match v {
-        // Token atoms expose the resolved CSS string at the JS boundary; path
-        // identity is preserved only in build-info serialization.
-        pandacss_encoder::AtomValue::String(s)
-        | pandacss_encoder::AtomValue::Token { value: s, .. } => {
-            serde_json::Value::String(s.to_string())
-        }
-        pandacss_encoder::AtomValue::Number(s) => parse_number_string(s),
-        pandacss_encoder::AtomValue::Bool(b) => serde_json::Value::Bool(*b),
-        pandacss_encoder::AtomValue::Null => serde_json::Value::Null,
-    }
-}
-
-fn parse_number_string(s: &str) -> serde_json::Value {
-    if let Ok(n) = s.parse::<i64>() {
-        return serde_json::Value::from(n);
-    }
-    if let Ok(f) = s.parse::<f64>()
-        && let Some(num) = serde_json::Number::from_f64(f)
-    {
-        return serde_json::Value::Number(num);
-    }
-    // Unparseable — preserve the raw string rather than drop.
-    serde_json::Value::String(s.to_string())
+    pandacss_compiler::atom_value_json(v)
 }
 
 /// Sort by `(prop, conditions, value)` so snapshot tests don't depend on

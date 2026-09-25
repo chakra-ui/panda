@@ -5,9 +5,9 @@
 
 use pandacss_encoder::ConditionMatcher;
 use pandacss_extractor::{
-    ExtractedCall, LineIndex, Literal, MatchCategory, StyleSourceOwnerKind, StyleSourceRef,
-    extract_verbose,
+    ExtractedCall, LineIndex, MatchCategory, StyleSourceOwnerKind, StyleSourceRef, extract_verbose,
 };
+use pandacss_literal::Literal;
 use pandacss_shared::parse_first_that_works_value;
 use pandacss_tokens::{TokenCategory, TokenDictionary, TokenSuggestion};
 use pandacss_utility::Utility;

@@ -74,27 +74,20 @@ pub struct ManifestInput {
     pub files: Vec<String>,
 }
 
-impl super::Project {
-    /// Builds a [`DesignSystemManifest`] from host-supplied fields, stamping
-    /// [`MANIFEST_SCHEMA_VERSION`]. Pure (no fs); stays a `Project` method so a
-    /// later phase can fill `importMap`/parent `designSystem` from config.
-    #[must_use]
-    #[allow(
-        clippy::unused_self,
-        reason = "stays a Project method so the next phase can read config-derived fields here"
-    )]
-    pub fn design_system_manifest(&self, input: ManifestInput) -> DesignSystemManifest {
-        DesignSystemManifest {
-            schema_version: MANIFEST_SCHEMA_VERSION,
-            name: input.name,
-            version: input.version,
-            panda: input.panda,
-            preset: input.preset,
-            build_info: input.build_info,
-            spec: input.spec,
-            import_map: input.import_map,
-            design_system: input.design_system,
-            files: input.files,
-        }
+/// Builds a [`DesignSystemManifest`] from host-supplied fields, stamping
+/// [`MANIFEST_SCHEMA_VERSION`].
+#[must_use]
+pub fn design_system_manifest(input: ManifestInput) -> DesignSystemManifest {
+    DesignSystemManifest {
+        schema_version: MANIFEST_SCHEMA_VERSION,
+        name: input.name,
+        version: input.version,
+        panda: input.panda,
+        preset: input.preset,
+        build_info: input.build_info,
+        spec: input.spec,
+        import_map: input.import_map,
+        design_system: input.design_system,
+        files: input.files,
     }
 }

@@ -1,4 +1,5 @@
-use pandacss_project::{ExtractedLiteral as Literal, literal_cache_key};
+use pandacss_literal::Literal;
+use pandacss_project::literal_cache_key;
 
 #[test]
 fn equivalent_literal_trees_produce_equal_cache_keys() {

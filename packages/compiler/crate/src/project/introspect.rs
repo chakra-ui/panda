@@ -1,4 +1,3 @@
-use super::interop::{json_value_to_literal, utility_value_source_to_json};
 use super::{
     Compiler, Diagnostic, ProjectSummary, ResolveUtilityValueInput, ResolvedUtilityValue,
     SourceEntry,
@@ -41,7 +40,7 @@ impl Compiler {
         &self,
         input: ResolveUtilityValueInput,
     ) -> napi::Result<Option<ResolvedUtilityValue>> {
-        let Some(value) = json_value_to_literal(&input.value) else {
+        let Some(value) = pandacss_literal::Literal::from_json_strict(&input.value) else {
             return Err(napi::Error::from_reason(
                 "resolveUtilityValue() requires a JSON-serializable value",
             ));
@@ -56,7 +55,7 @@ impl Compiler {
             class_name: resolved.class_name,
             css_value: resolved.css_value.to_json(),
             important: resolved.important,
-            source: utility_value_source_to_json(resolved.source),
+            source: pandacss_compiler::utility_value_source_json(resolved.source),
         }))
     }
 

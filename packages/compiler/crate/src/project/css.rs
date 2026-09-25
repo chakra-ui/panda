@@ -11,8 +11,8 @@ use crate::compile::{
     CompileOptions, CompileOutput, CssOutputOptions, LayerCssOptions, WriteLayerCssOptions,
 };
 use pandacss_encoder::AtomValue;
-use pandacss_extractor::Literal;
 use pandacss_fs::{FileSystem, PathSystem};
+use pandacss_literal::Literal;
 
 fn with_stylesheet_transforms<R>(
     compiler: &mut Compiler,

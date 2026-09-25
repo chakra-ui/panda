@@ -1,7 +1,8 @@
 //! Canonical merge keys shared by finite and partial CSS lowering.
 
 use pandacss_encoder::Encoder;
-use pandacss_extractor::{Literal, StyleObject, StyleSpread, StyleTree, project_literal};
+use pandacss_extractor::{StyleObject, StyleSpread, StyleTree, project_literal};
+use pandacss_literal::Literal;
 use pandacss_utility::ShorthandPolicy;
 use rustc_hash::FxHashSet;
 

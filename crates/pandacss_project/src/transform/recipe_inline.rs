@@ -1,7 +1,8 @@
 //! Inline `cva()` / `sva()` call transforms to string-branch runtime configs.
 
 use crate::Project;
-use pandacss_extractor::{ExpressionFacts, ExpressionKind, Literal, StyleTree};
+use pandacss_extractor::{ExpressionFacts, ExpressionKind, StyleTree};
+use pandacss_literal::Literal;
 use pandacss_recipes::{
     CompoundVariant, Recipe, SlotCompoundVariant, SlotRecipe, VariantGroup, VariantOption,
 };

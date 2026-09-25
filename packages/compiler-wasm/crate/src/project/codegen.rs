@@ -69,7 +69,7 @@ impl WasmCompiler {
             id,
             generate_artifact_options_from_js(options)?,
         )
-        .map_err(|err| JsValue::from_str(&err))?;
+        .map_err(|err| JsValue::from_str(&err.to_string()))?;
         serialize(&artifact)
     }
 
@@ -90,7 +90,7 @@ impl WasmCompiler {
             &dependencies,
             generate_artifact_options_from_js(options)?,
         )
-        .map_err(|err| JsValue::from_str(&err))?;
+        .map_err(|err| JsValue::from_str(&err.to_string()))?;
         serialize(&artifacts)
     }
 }

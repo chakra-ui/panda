@@ -1,6 +1,7 @@
 //! Plans disjoint finite and runtime fragments without re-parsing source.
 
-use pandacss_extractor::{CallFacts, Literal, ObjectFacts, StyleObject, StyleTree};
+use pandacss_extractor::{CallFacts, ObjectFacts, StyleObject, StyleTree};
+use pandacss_literal::Literal;
 use pandacss_shared::Span;
 
 use crate::Project;

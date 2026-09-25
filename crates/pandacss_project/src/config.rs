@@ -10,9 +10,10 @@ use pandacss_config::{
     PatternConfig, RecipeConfig, VariantSelection,
 };
 use pandacss_extractor::{
-    ExtractorConfig, JsxExtractionConfig, JsxKind, JsxStyleProps, Literal,
-    Matcher as ExtractorMatcher, Matchers, NameMatcher as ExtractorNameMatcher,
+    ExtractorConfig, JsxExtractionConfig, JsxKind, JsxStyleProps, Matcher as ExtractorMatcher,
+    Matchers, NameMatcher as ExtractorNameMatcher,
 };
+use pandacss_literal::Literal;
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::css_properties::css_property_names;
 use pandacss_shared::{PositionTryStyle, ViewTransitionStyle, capitalize, compile_js_regex};
@@ -612,26 +613,7 @@ fn non_callback_literal_from_json(value: &Value) -> Option<Literal> {
     {
         return None;
     }
-    json_value_to_literal(value)
-}
-
-fn json_value_to_literal(value: &Value) -> Option<Literal> {
-    match value {
-        Value::String(value) => Some(Literal::String(value.clone())),
-        Value::Number(value) => value.as_f64().map(Literal::Number),
-        Value::Bool(value) => Some(Literal::Bool(*value)),
-        Value::Null => Some(Literal::Null),
-        Value::Array(items) => items
-            .iter()
-            .map(json_value_to_literal)
-            .collect::<Option<Vec<_>>>()
-            .map(Literal::Array),
-        Value::Object(entries) => entries
-            .iter()
-            .map(|(key, value)| json_value_to_literal(value).map(|value| (key.clone(), value)))
-            .collect::<Option<Vec<_>>>()
-            .map(Literal::Object),
-    }
+    Literal::from_json_strict(value)
 }
 
 fn recipe_config_to_literal(config: &RecipeConfig, include_slots: bool) -> Literal {
@@ -650,7 +632,7 @@ fn recipe_config_to_literal(config: &RecipeConfig, include_slots: bool) -> Liter
         ));
     }
 
-    if let Some(base) = config.base.as_ref().and_then(json_value_to_literal) {
+    if let Some(base) = config.base.as_ref().and_then(Literal::from_json_strict) {
         entries.push(("base".to_owned(), base));
     }
 
@@ -693,7 +675,7 @@ fn variants_to_literal(config: &RecipeConfig) -> Literal {
                         options
                             .iter()
                             .filter_map(|(key, value)| {
-                                json_value_to_literal(value).map(|value| (key.clone(), value))
+                                Literal::from_json_strict(value).map(|value| (key.clone(), value))
                             })
                             .collect(),
                     ),
@@ -718,7 +700,7 @@ fn compound_variant_to_literal(config: &CompoundVariantConfig) -> Option<Literal
         .iter()
         .map(|(key, value)| (key.clone(), variant_selection_to_literal(value)))
         .collect();
-    entries.push(("css".to_owned(), json_value_to_literal(&config.css)?));
+    entries.push(("css".to_owned(), Literal::from_json_strict(&config.css)?));
     if let Some(class_name) = &config.class_name {
         entries.push(("className".to_owned(), Literal::String(class_name.clone())));
     }

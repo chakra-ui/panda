@@ -1,5 +1,5 @@
 use crate::common::create_project;
-use pandacss_extractor::Literal;
+use pandacss_literal::Literal;
 use pandacss_project::{ResolvedUtilityValue, UtilityValueSource};
 use pandacss_shared::to_hash;
 use serde_json::json;

@@ -85,7 +85,7 @@ pub(super) fn slice_to_atom_serde(atoms: &[CoreAtom]) -> Vec<AtomSerde> {
         .into_iter()
         .map(|atom| AtomSerde {
             prop: atom.prop().to_string(),
-            value: atom_value_to_json(atom.value()),
+            value: pandacss_compiler::atom_value_json(atom.value()),
             conditions: atom
                 .conditions()
                 .iter()
@@ -113,7 +113,7 @@ pub(super) fn collect_sorted_atoms<S: std::hash::BuildHasher>(
         .into_iter()
         .map(|atom| AtomSerde {
             prop: atom.prop().to_string(),
-            value: atom_value_to_json(atom.value()),
+            value: pandacss_compiler::atom_value_json(atom.value()),
             conditions: atom
                 .conditions()
                 .iter()
@@ -183,20 +183,9 @@ pub(super) fn format_deserialize_error(
     } else {
         format!(
             "invalid config: {error}\n{}",
-            format_config_diagnostics(diagnostics)
+            pandacss_compiler::format_config_diagnostics(diagnostics)
         )
     }
-}
-
-pub(super) fn format_config_diagnostics(diagnostics: &[pandacss_shared::Diagnostic]) -> String {
-    let mut message = String::from("Invalid config:");
-    for diagnostic in diagnostics {
-        message.push_str("\n- [");
-        message.push_str(&diagnostic.code);
-        message.push_str("] ");
-        message.push_str(&diagnostic.message);
-    }
-    message
 }
 
 pub(super) fn js_error_message(value: &JsValue) -> String {
@@ -204,61 +193,6 @@ pub(super) fn js_error_message(value: &JsValue) -> String {
         return error.message().into();
     }
     value.as_string().unwrap_or_else(|| format!("{value:?}"))
-}
-
-pub(super) fn capitalize(value: &str) -> String {
-    let mut chars = value.chars();
-    let Some(first) = chars.next() else {
-        return String::new();
-    };
-    first.to_uppercase().chain(chars).collect()
-}
-
-/*
- * JSON boundary conversion.
- */
-pub(super) fn atom_value_to_json(v: &pandacss_encoder::AtomValue) -> serde_json::Value {
-    match v {
-        // Resolved CSS string at the boundary; token path is build-info-only.
-        pandacss_encoder::AtomValue::String(s)
-        | pandacss_encoder::AtomValue::Token { value: s, .. } => {
-            serde_json::Value::String(s.to_string())
-        }
-        pandacss_encoder::AtomValue::Number(s) => parse_number_string(s),
-        pandacss_encoder::AtomValue::Bool(b) => serde_json::Value::Bool(*b),
-        pandacss_encoder::AtomValue::Null => serde_json::Value::Null,
-    }
-}
-
-pub(super) fn utility_value_source_to_json(
-    source: pandacss_project::UtilityValueSource,
-) -> serde_json::Value {
-    match source {
-        pandacss_project::UtilityValueSource::ValueMap { key, aliases } => {
-            serde_json::json!({ "type": "value-map", "key": key, "aliases": aliases })
-        }
-        pandacss_project::UtilityValueSource::Literal { aliases } => {
-            serde_json::json!({ "type": "literal", "aliases": aliases })
-        }
-        pandacss_project::UtilityValueSource::TokenReference => {
-            serde_json::json!({ "type": "token-reference" })
-        }
-        pandacss_project::UtilityValueSource::Arbitrary => {
-            serde_json::json!({ "type": "arbitrary" })
-        }
-    }
-}
-
-pub(super) fn parse_number_string(s: &str) -> serde_json::Value {
-    if let Ok(n) = s.parse::<i64>() {
-        return serde_json::Value::from(n);
-    }
-    if let Ok(f) = s.parse::<f64>()
-        && let Some(num) = serde_json::Number::from_f64(f)
-    {
-        return serde_json::Value::Number(num);
-    }
-    serde_json::Value::String(s.to_string())
 }
 
 pub(super) fn value_sort_key(v: &pandacss_encoder::AtomValue) -> String {

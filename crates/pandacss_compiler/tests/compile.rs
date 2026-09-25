@@ -1,6 +1,9 @@
 use indoc::indoc;
-use pandacss_compiler::{CssOutputOptions, compile_css, compile_layers, compile_split_css};
-use pandacss_project::{ExtractedLiteral as Literal, Project, System};
+use pandacss_compiler::{
+    CssOutputOptions, compile_css, compile_keyframes, compile_layers, compile_split_css,
+};
+use pandacss_literal::Literal;
+use pandacss_project::{Project, System};
 use serde_json::json;
 
 fn project_with_source() -> (pandacss_config::UserConfig, Project) {
@@ -115,4 +118,63 @@ fn shared_compile_entrypoints_use_the_same_project_state() {
             .any(|file| file.code.contains("color: red"))
     );
     assert!(split.diagnostics.is_empty());
+}
+
+#[test]
+fn compile_reports_manifest_ranges_and_project_diagnostics() {
+    let config: pandacss_config::UserConfig = serde_json::from_value(json!({
+        "importMap": { "css": ["@panda/css"] },
+        "conditions": { "hover": "&:hover" }
+    }))
+    .expect("valid serialized config");
+    let system = System::new(config.clone()).expect("valid project config");
+    let mut project = Project::new(system);
+    project.parse_file(
+        "/src/app.tsx",
+        "import { css } from '@panda/css'; css({ color: 'red', _hovr: { color: 'blue' } })",
+    );
+
+    let output = compile_css(
+        &mut project,
+        &config,
+        None,
+        None,
+        &CssOutputOptions::default(),
+    );
+
+    assert_eq!(output.manifest.files.len(), 1);
+    assert_eq!(output.manifest.files[0].hash.len(), 16);
+    let utilities = output.layer_ranges.utilities.expect("utilities range");
+    assert!(utilities.start < utilities.end);
+    assert!(
+        output
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.code == "unknown_condition")
+    );
+}
+
+#[test]
+fn compile_keyframes_uses_the_shared_prepared_stylesheet() {
+    let config: pandacss_config::UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "keyframes": {
+                "spin": { "to": { "transform": "rotate(360deg)" } }
+            }
+        }
+    }))
+    .expect("valid serialized config");
+    let system = System::new(config.clone()).expect("valid project config");
+    let mut project = Project::new(system);
+
+    let output = compile_keyframes(
+        &mut project,
+        &config,
+        None,
+        None,
+        &CssOutputOptions::default(),
+    );
+
+    assert!(output.css.contains("@keyframes spin"));
+    assert!(output.diagnostics.is_empty());
 }

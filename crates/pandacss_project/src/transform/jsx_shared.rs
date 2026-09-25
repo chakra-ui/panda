@@ -2,7 +2,8 @@
 
 use std::collections::HashSet;
 
-use pandacss_extractor::{ExtractedJsx, JsxKind, Literal, StyleTree};
+use pandacss_extractor::{ExtractedJsx, JsxKind, StyleTree};
+use pandacss_literal::Literal;
 
 use crate::PatternTransformFn;
 use crate::Project;

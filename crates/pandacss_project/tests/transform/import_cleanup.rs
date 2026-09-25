@@ -182,7 +182,7 @@ fn inject_cx_import_still_idempotent() {
 
 #[test]
 fn leaves_imports_alone_when_transform_skips_symbol_resolution() {
-    // No jsxFramework → extract_for_transform skips visitor walks and sets
+    // No jsxFramework → extract_transform skips visitor walks and sets
     // symbols_resolved=false. Dead-import cleanup must not run on empty binding facts.
     let source = indoc! {r#"
         import { Box } from '@panda/jsx';

@@ -1,6 +1,8 @@
-use pandacss_config::{Spec, UserConfig};
+use pandacss_config::{SelectorTypeData, Spec, TypeData, UserConfig};
 use pandacss_fs::PathSystem;
 use pandacss_project::Project;
+use pandacss_tokens::TokenDictionary;
+use pandacss_utility::Utility;
 use serde::Serialize;
 
 /// Resolved cascade-layer names exposed to compiler hosts.
@@ -20,10 +22,32 @@ pub struct SourceEntry {
     pub pattern: String,
 }
 
+pub(crate) fn type_data(project: &Project, user_config: &UserConfig) -> TypeData {
+    let _span = tracing::trace_span!(target: "codegen", "type_data").entered();
+    let token_dictionary = project.config().token_dictionary();
+    TypeData {
+        options: user_config.typegen_options(),
+        conditions: user_config.condition_type_data(),
+        selectors: SelectorTypeData::default(),
+        tokens: token_dictionary
+            .as_deref()
+            .map(TokenDictionary::type_data)
+            .unwrap_or_default(),
+        utilities: project
+            .config()
+            .utility()
+            .map(Utility::type_data)
+            .unwrap_or_default(),
+        keyframes: user_config.keyframe_type_data(),
+        patterns: user_config.pattern_type_data(),
+        recipes: user_config.recipe_type_data(),
+    }
+}
+
 /// Build the tooling spec from project-derived types and stylesheet ordering.
 #[must_use]
 pub fn compiler_spec(project: &Project, user_config: &UserConfig) -> Spec {
-    let types = project.type_data(user_config);
+    let types = type_data(project, user_config);
     let property_order = pandacss_stylesheet::order_properties(
         types.utilities.properties.keys().map(String::as_str),
     );

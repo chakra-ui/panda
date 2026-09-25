@@ -1,8 +1,8 @@
 use super::WasmCompiler;
 
 use pandacss_encoder::AtomValue;
-use pandacss_extractor::Literal;
 use pandacss_fs::{FileSystem, GlobOptions, OxcResolverFileSystem, PathSystem};
+use pandacss_literal::Literal;
 use serde::Serialize as _;
 use std::path::{Path, PathBuf};
 use wasm_bindgen::prelude::*;

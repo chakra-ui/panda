@@ -5,8 +5,9 @@ use std::collections::HashSet;
 use rustc_hash::FxHashSet;
 
 use pandacss_extractor::{
-    ExtractedJsx, JsxKind, Literal, StyleObject, StyleSpread, StyleTree, project_literal,
+    ExtractedJsx, JsxKind, StyleObject, StyleSpread, StyleTree, project_literal,
 };
+use pandacss_literal::Literal;
 use pandacss_shared::Span;
 
 use crate::PatternTransformFn;

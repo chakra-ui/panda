@@ -7,6 +7,15 @@ use pandacss_config::UserConfig;
 use pandacss_project::Project;
 use serde::{Deserialize, Serialize};
 
+/// Invalid codegen selection supplied by a compiler host.
+#[derive(Debug, thiserror::Error)]
+pub enum CodegenError {
+    #[error("unknown codegen artifact `{0}`")]
+    UnknownArtifact(String),
+    #[error("unknown config dependency `{0}`")]
+    UnknownDependency(String),
+}
+
 /// Host-neutral codegen options shared by native and WASM bindings.
 #[derive(Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -74,10 +83,10 @@ pub fn generate_artifact(
     user_config: &UserConfig,
     id: &str,
     options: GenerateArtifactOptions,
-) -> Result<Option<CodegenArtifact>, String> {
+) -> Result<Option<CodegenArtifact>, CodegenError> {
     let id = id
         .parse::<ArtifactId>()
-        .map_err(|()| format!("unknown codegen artifact `{id}`"))?;
+        .map_err(|()| CodegenError::UnknownArtifact(id.to_owned()))?;
     let _span = tracing::trace_span!(target: "codegen", "artifact", id = id.as_str()).entered();
     let generate_options = generate_options(user_config, options.force_import_extension);
     let input = codegen_input(project, user_config, options.overlay);
@@ -96,7 +105,7 @@ pub fn generate_affected_artifacts(
     user_config: &UserConfig,
     dependencies: &[String],
     options: GenerateArtifactOptions,
-) -> Result<Vec<CodegenArtifact>, String> {
+) -> Result<Vec<CodegenArtifact>, CodegenError> {
     let changed = dependency_set_from_names(dependencies)?;
     let span = tracing::trace_span!(
         target: "codegen",
@@ -122,10 +131,9 @@ fn codegen_input(
     let patterns = pattern_codegen_meta(user_config);
     CodegenInput {
         config: user_config.clone(),
-        types: project.type_data(user_config),
+        types: crate::views::type_data(project, user_config),
         patterns,
-        token_dictionary,
-        token_dictionary_provided: true,
+        token_dictionary: pandacss_codegen::TokenDictionarySource::Provided(token_dictionary),
         overlay: overlay.map(Into::into),
     }
 }
@@ -140,12 +148,12 @@ fn generate_options(
     }
 }
 
-fn dependency_set_from_names(dependencies: &[String]) -> Result<DependencySet, String> {
+fn dependency_set_from_names(dependencies: &[String]) -> Result<DependencySet, CodegenError> {
     let mut set = DependencySet::EMPTY;
     for dependency in dependencies {
         let parsed = dependency
             .parse::<pandacss_codegen::ConfigDependency>()
-            .map_err(|()| format!("unknown config dependency `{dependency}`"))?;
+            .map_err(|()| CodegenError::UnknownDependency(dependency.clone()))?;
         set = set.union(DependencySet::one(parsed));
     }
     Ok(set)

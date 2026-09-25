@@ -5,7 +5,7 @@ use napi::bindgen_prelude::Env;
 use napi_derive::napi;
 
 use crate::convert::to_atoms;
-use pandacss_extractor::Literal;
+use pandacss_literal::Literal;
 
 #[napi]
 impl Compiler {

@@ -18,7 +18,8 @@ use pandacss_encoder::{
     Atom, AtomValue, ConditionMatcher, EncodedRecipesSnapshot, Encoder, RecipeStyleEntry,
     RecipeStyleGroup, RecipeStyleGroupSnapshot, atom_value_sort_key, compare_atoms_by_emit_order,
 };
-use pandacss_extractor::{Diagnostic, Literal};
+use pandacss_extractor::Diagnostic;
+use pandacss_literal::Literal;
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::{compound_class_name, number_to_js_string, split_important};
 use pandacss_utility::{StyleNormalizer, Utility};
@@ -647,26 +648,8 @@ fn static_recipe_rules(config: &UserConfig) -> Option<BTreeMap<String, Vec<Liter
 
 fn static_rule_array(value: &Value) -> Vec<Literal> {
     match value {
-        Value::Array(items) => items.iter().filter_map(json_value_to_literal).collect(),
-        _ => json_value_to_literal(value).into_iter().collect(),
-    }
-}
-
-fn json_value_to_literal(value: &Value) -> Option<Literal> {
-    match value {
-        Value::String(value) => Some(Literal::String(value.clone())),
-        Value::Number(value) => value.as_f64().map(Literal::Number),
-        Value::Bool(value) => Some(Literal::Bool(*value)),
-        Value::Null => Some(Literal::Null),
-        Value::Array(items) => Some(Literal::Array(
-            items.iter().filter_map(json_value_to_literal).collect(),
-        )),
-        Value::Object(entries) => Some(Literal::Object(
-            entries
-                .iter()
-                .filter_map(|(key, value)| Some((key.clone(), json_value_to_literal(value)?)))
-                .collect(),
-        )),
+        Value::Array(items) => items.iter().filter_map(Literal::from_json).collect(),
+        _ => Literal::from_json(value).into_iter().collect(),
     }
 }
 

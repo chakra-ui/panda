@@ -1,7 +1,7 @@
 use super::WasmCompiler;
 
 use pandacss_encoder::Atom as CoreAtom;
-use pandacss_extractor::Literal;
+use pandacss_literal::Literal;
 use serde::Serialize as _;
 use wasm_bindgen::prelude::*;
 

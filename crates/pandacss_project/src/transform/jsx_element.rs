@@ -3,9 +3,10 @@
 use std::fmt::Write as _;
 
 use pandacss_extractor::{
-    ExtractedJsx, JsxExtractionConfig, JsxKind, Literal, StyleObject, StyleSpread, StyleTree,
+    ExtractedJsx, JsxExtractionConfig, JsxKind, StyleObject, StyleSpread, StyleTree,
     project_literal,
 };
+use pandacss_literal::Literal;
 use pandacss_shared::Span;
 
 use crate::PatternTransformFn;
