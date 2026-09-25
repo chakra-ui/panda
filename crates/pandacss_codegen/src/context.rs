@@ -14,8 +14,7 @@ pub struct CodegenContext<'a> {
     pub config: &'a UserConfig,
     pub types: &'a TypeData,
     pub patterns: &'a BTreeMap<String, PatternCodegenMeta>,
-    pub token_dictionary: Option<&'a TokenDictionary>,
-    pub token_dictionary_provided: bool,
+    pub token_dictionary: TokenDictionaryRef<'a>,
     pub overlay: Option<&'a CodegenOverlay>,
 }
 
@@ -24,9 +23,33 @@ pub struct CodegenInput {
     pub config: UserConfig,
     pub types: TypeData,
     pub patterns: BTreeMap<String, PatternCodegenMeta>,
-    pub token_dictionary: Option<Arc<TokenDictionary>>,
-    pub token_dictionary_provided: bool,
+    pub token_dictionary: TokenDictionarySource,
     pub overlay: Option<CodegenOverlay>,
+}
+
+/// Whether codegen builds tokens from config or consumes compiled token state.
+#[derive(Debug, Clone, Default)]
+pub enum TokenDictionarySource {
+    #[default]
+    BuildFromConfig,
+    Provided(Option<Arc<TokenDictionary>>),
+}
+
+/// Borrowed token source used while generating artifacts.
+#[derive(Debug, Clone, Copy)]
+pub enum TokenDictionaryRef<'a> {
+    BuildFromConfig,
+    Provided(Option<&'a TokenDictionary>),
+}
+
+impl<'a> TokenDictionaryRef<'a> {
+    #[must_use]
+    pub const fn dictionary(self) -> Option<&'a TokenDictionary> {
+        match self {
+            Self::BuildFromConfig | Self::Provided(None) => None,
+            Self::Provided(Some(dictionary)) => Some(dictionary),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -55,8 +78,7 @@ impl<'a> CodegenContext<'a> {
             config,
             types: empty_types(),
             patterns: empty_patterns(),
-            token_dictionary: None,
-            token_dictionary_provided: false,
+            token_dictionary: TokenDictionaryRef::BuildFromConfig,
             overlay: None,
         }
     }
@@ -67,9 +89,12 @@ impl<'a> CodegenContext<'a> {
             config: &input.config,
             types: &input.types,
             patterns: &input.patterns,
-            token_dictionary: input.token_dictionary.as_deref(),
-            token_dictionary_provided: input.token_dictionary_provided
-                || input.token_dictionary.is_some(),
+            token_dictionary: match &input.token_dictionary {
+                TokenDictionarySource::BuildFromConfig => TokenDictionaryRef::BuildFromConfig,
+                TokenDictionarySource::Provided(dictionary) => {
+                    TokenDictionaryRef::Provided(dictionary.as_deref())
+                }
+            },
             overlay: input.overlay.as_ref(),
         }
     }

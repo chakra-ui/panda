@@ -19,6 +19,7 @@ pub fn generate(
 ) -> Artifact {
     let files = ctx
         .token_dictionary
+        .dictionary()
         .map(|dictionary| ArtifactFile {
             path: "specs/design-system.json".to_owned(),
             code: serde_json::to_string_pretty(&build_design_system(ctx, dictionary))

@@ -20,7 +20,10 @@ pub use ast::{
     ImportSpecifier, InterfaceDecl, Item, ItemNode, ItemRole, JsDoc, JsxAttr, JsxElement, JsxName,
     Module, ObjectProp, Param, Stmt, TsMember, TsMemberName, TsType, TypeAliasDecl,
 };
-pub use context::{CodegenContext, CodegenInput, PatternCodegenMeta, PatternJsxCodegenMeta};
+pub use context::{
+    CodegenContext, CodegenInput, PatternCodegenMeta, PatternJsxCodegenMeta, TokenDictionaryRef,
+    TokenDictionarySource,
+};
 pub use emit::{EmitMode, EmitTarget, PrintedFiles, SourceExt, emit_module};
 pub use graph::{
     Artifact, ArtifactFile, ArtifactGraph, ArtifactId, ArtifactNode, ConfigDependency,

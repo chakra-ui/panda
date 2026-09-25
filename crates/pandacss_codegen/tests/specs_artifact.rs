@@ -40,8 +40,9 @@ fn themed_input() -> CodegenInput {
 
     CodegenInput {
         config,
-        token_dictionary: Some(Arc::new(dictionary)),
-        token_dictionary_provided: true,
+        token_dictionary: pandacss_codegen::TokenDictionarySource::Provided(Some(Arc::new(
+            dictionary,
+        ))),
         ..CodegenInput::default()
     }
 }
@@ -241,8 +242,9 @@ fn rich_input() -> CodegenInput {
     CodegenInput {
         config,
         types,
-        token_dictionary: Some(Arc::new(dictionary)),
-        token_dictionary_provided: true,
+        token_dictionary: pandacss_codegen::TokenDictionarySource::Provided(Some(Arc::new(
+            dictionary,
+        ))),
         ..CodegenInput::default()
     }
 }

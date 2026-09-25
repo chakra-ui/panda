@@ -253,7 +253,7 @@ fn prebuilt_empty_token_state_does_not_rebuild_theme_dictionary() {
     }));
     let input = CodegenInput {
         config,
-        token_dictionary_provided: true,
+        token_dictionary: pandacss_codegen::TokenDictionarySource::Provided(None),
         ..CodegenInput::default()
     };
     let artifacts = ArtifactGraph.generate_all(&input, GenerateOptions::default());

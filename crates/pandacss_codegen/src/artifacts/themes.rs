@@ -2,6 +2,7 @@
 //! helper that lazy-loads and injects the selected theme CSS.
 
 use pandacss_config::CodegenFormat;
+use pandacss_tokens::TokenDictionary;
 use serde_json::json;
 
 use crate::{
@@ -53,18 +54,21 @@ pub fn generate(
 }
 
 fn theme_artifacts(ctx: CodegenContext<'_>) -> Vec<ThemeArtifact> {
-    let entries = if ctx.token_dictionary_provided {
-        pandacss_stylesheet::theme_css_entries_from_dictionary(
-            ctx.config,
-            ctx.token_dictionary,
-            false,
-        )
-    } else {
-        pandacss_stylesheet::theme_css_entries(ctx.config, false)
-            .expect("theme artifact token dictionary should build")
+    let built;
+    let dictionary = match ctx.token_dictionary {
+        crate::TokenDictionaryRef::BuildFromConfig => {
+            built = TokenDictionary::from_config(ctx.config)
+                .inspect_err(|error| {
+                    tracing::warn!(target: "codegen", %error, "theme tokens failed to build");
+                })
+                .ok()
+                .flatten();
+            built.as_ref()
+        }
+        crate::TokenDictionaryRef::Provided(dictionary) => dictionary,
     };
 
-    entries
+    pandacss_stylesheet::theme_css_entries_from_dictionary(ctx.config, dictionary, false)
         .into_iter()
         .map(|(name, css)| ThemeArtifact { name, css })
         .collect()

@@ -571,26 +571,6 @@ pub fn theme_css_from_dictionary(
         .and_then(|dictionary| emitter::emit_theme_css(config, dictionary, theme_name, minify))
 }
 
-/// Generate CSS custom-property overrides for every configured theme.
-///
-/// # Errors
-///
-/// Returns an error when token dictionary construction fails.
-pub fn theme_css_entries(
-    config: &UserConfig,
-    minify: bool,
-) -> Result<Vec<(String, String)>, pandacss_tokens::TokenError> {
-    let _span =
-        tracing::trace_span!(target: "css", "theme_vars", theme_count = config.themes.len())
-            .entered();
-    let token_dictionary = TokenDictionary::from_config(config)?;
-    Ok(theme_css_entries_from_dictionary(
-        config,
-        token_dictionary.as_ref(),
-        minify,
-    ))
-}
-
 #[must_use]
 pub fn theme_css_entries_from_dictionary(
     config: &UserConfig,
