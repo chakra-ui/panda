@@ -13,8 +13,7 @@
 
 use std::{fs, path::PathBuf};
 
-use pandacss_codegen::GenerateOptions;
-use pandacss_config::{CodegenFormat, UserConfig};
+use pandacss_config::UserConfig;
 use pandacss_project::{Project, System};
 use serde_json::{Value, json};
 
@@ -68,13 +67,13 @@ fn generate_fixture(name: &str, fixture: Value) {
     // styled-system and how the legacy side is generated. This is what makes the
     // comparison real-world: `skipLibCheck` skips the generated `.d.ts` bodies, so
     // the cost a user pays is on-demand instantiation from `usage`, not lib checking.
-    let artifacts = project.generate_artifacts(
+    let artifacts = pandacss_compiler::generate_artifacts(
+        &project,
         &user_config,
-        GenerateOptions {
-            format: CodegenFormat::Js,
-            import_extensions: false,
+        pandacss_compiler::GenerateArtifactOptions {
+            force_import_extension: Some(false),
+            overlay: None,
         },
-        None,
     );
 
     let out_dir = fixtures_dir()

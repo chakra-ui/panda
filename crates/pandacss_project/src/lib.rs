@@ -21,7 +21,6 @@
 //! ```
 
 mod build_info;
-mod codegen;
 mod config;
 mod dependency_graph;
 mod design_system;
@@ -36,6 +35,7 @@ mod static_patterns;
 mod system;
 mod transform;
 mod transform_cache;
+mod type_data;
 mod usages;
 
 use dependency_graph::DependencyGraph;

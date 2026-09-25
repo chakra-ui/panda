@@ -13,7 +13,6 @@ name = "integration"
 path = "tests/main.rs"
 
 [dependencies]
-pandacss_codegen = { workspace = true }
 pandacss_config = { workspace = true }
 pandacss_encoder = { workspace = true }
 pandacss_extractor = { workspace = true }

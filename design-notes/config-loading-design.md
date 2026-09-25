@@ -151,7 +151,7 @@ strings — unlike `stringifyJson`), so esbuild/Rolldown-emitted transforms, inc
 
 1. `crates/pandacss_config` — `PatternConfig.codegen_source: Option<String>` (`#[serde(rename = "codegenSource")]`)
    deserializes the field.
-2. `crates/pandacss_project::codegen_input()` — `pattern_codegen_meta()` maps each pattern's `codegen_source` into
+2. `crates/pandacss_compiler::codegen_input()` — `pattern_codegen_meta()` maps each pattern's `codegen_source` into
    `PatternCodegenMeta { config_source }`.
 3. `crates/pandacss_codegen` — `patterns.rs::pattern_config_source()` embeds a non-empty `config_source` verbatim;
    patterns without one fall back to the identity transform `(s) => s` (`fallback_pattern_config_source`).

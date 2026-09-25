@@ -1,5 +1,5 @@
 [package]
-name = "pandacss_bench"
+name = "pandacss_compiler"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -8,18 +8,21 @@ rust-version.workspace = true
 publish = false
 
 [dependencies]
-pandacss_compiler = { workspace = true }
+pandacss_codegen = { workspace = true }
 pandacss_config = { workspace = true }
-pandacss_extractor = { workspace = true }
+pandacss_encoder = { workspace = true }
+pandacss_fs = { workspace = true, default-features = false }
 pandacss_project = { workspace = true }
+pandacss_shared = { workspace = true }
 pandacss_stylesheet = { workspace = true }
 pandacss_tokens = { workspace = true }
-pandacss_tracing = { workspace = true }
-regex = { workspace = true }
-rustc-hash = { workspace = true }
-serde_json = { workspace = true }
+serde = { workspace = true }
 tracing = { workspace = true }
-tracing-subscriber = { workspace = true }
+
+[dev-dependencies]
+indoc = { workspace = true }
+insta = { workspace = true }
+serde_json = { workspace = true }
 
 [lints]
 workspace = true

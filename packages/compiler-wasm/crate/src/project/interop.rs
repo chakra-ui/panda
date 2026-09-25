@@ -149,17 +149,6 @@ pub(super) fn parse_file_report(
     }
 }
 
-/// Resolve a glob's watch base dir against `cwd` (empty base → `cwd` itself).
-pub(super) fn resolve_base(cwd: &str, pattern: &str) -> String {
-    let cwd = std::path::Path::new(cwd);
-    let base = pandacss_fs::base_dir(pattern);
-    if base.is_empty() {
-        cwd.to_string_lossy().into_owned()
-    } else {
-        cwd.join(base).to_string_lossy().into_owned()
-    }
-}
-
 pub(super) fn glob_options(
     user_config: &UserConfig,
     options: JsValue,

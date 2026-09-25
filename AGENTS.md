@@ -30,12 +30,10 @@ with workspace support.
 
 /crates/           # Rust workspace — the v2 Oxc-based compiler engine
   /extractor/      # Oxc-based AST scanning + extraction
-  /engine/         # Orchestrator (extract → encode → emit → optimize → cache)
   /encoder/        # Style usage → atomic rules
   /stylesheet/     # Native CSS emission (replaces planned emitter/optimizer split)
   /project/        # Project lifecycle, recipes, config resolution
-  /optimizer/      # lightningcss wrapper (placeholder)
-  /cache/          # File/rule caches
+  /compiler/       # Host-neutral CSS, codegen, and derived-view orchestration
   /config/         # Serializable config types
 
 /bench/            # Rust + TS benchmark harness for the OSS-2400 spike
@@ -267,7 +265,7 @@ reference.
 | Extract / encode        | `pandacss_project` parse arm                                               | Turn matched calls into project IR.                                                                                                                                                                             |
 | Usages                  | `pandacss_project` usages walk                                             | Visit style slots so unused-keyframe / unused-token pruning still sees them.                                                                                                                                    |
 | Transform               | `pandacss_project/src/transform`                                           | Rewrite static calls. Leave the runtime import for dynamic ones. Clean up dead imports when fully inlined.                                                                                                      |
-| Stylesheet              | `pandacss_stylesheet` (+ `StylesheetInput` in project/compiler/wasm/bench) | Emit CSS. Add insta snapshots.                                                                                                                                                                                  |
+| Stylesheet              | `pandacss_stylesheet` (+ orchestration in `pandacss_compiler`)             | Emit CSS. Add insta snapshots.                                                                                                                                                                                  |
 | Design note             | `design-notes/` + index                                                    | API shape, non-goals, pipeline.                                                                                                                                                                                 |
 | Tests                   | crate tests + `sandbox/codegen` when user-facing                           | Extract, transform (rewrite + dead import), stylesheet, codegen artifact, sandbox.                                                                                                                              |
 | Changeset               | `.changeset/`                                                              | Short user-facing copy when the API ships.                                                                                                                                                                      |
@@ -341,7 +339,7 @@ tests → design note.
   └─ crates/* (Rust workspace, all `pandacss_*`-prefixed)
       ├─ pandacss_extractor (Oxc parsing + scan_imports + match_imports)
       ├─ pandacss_encoder, pandacss_recipes, pandacss_tokens, pandacss_project
-      ├─ pandacss_stylesheet (native CSS emission), pandacss_engine, pandacss_cache, pandacss_config
+      ├─ pandacss_stylesheet (native CSS emission), pandacss_compiler (CSS/codegen orchestration), pandacss_config
       ├─ packages/compiler/crate (compiler_napi cdylib — native NAPI)
       └─ packages/compiler-wasm/crate (compiler_wasm cdylib — browser wasm-bindgen)
 ```

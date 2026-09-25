@@ -3,8 +3,8 @@ use super::WasmCompiler;
 use serde::Serialize as _;
 use wasm_bindgen::prelude::*;
 
-use super::interop::{resolve_base, utility_value_source_to_json};
-use super::serde_types::{ResolveUtilityValueInputSerde, SourceEntrySerde};
+use super::interop::utility_value_source_to_json;
+use super::serde_types::ResolveUtilityValueInputSerde;
 use super::transforms::json_value_to_literal;
 
 #[wasm_bindgen]
@@ -108,15 +108,7 @@ impl WasmCompiler {
     /// # Errors
     /// Returns a JS error if serialization fails.
     pub fn sources(&self) -> Result<JsValue, JsValue> {
-        let entries: Vec<SourceEntrySerde> = self
-            .user_config
-            .include
-            .iter()
-            .map(|pattern| SourceEntrySerde {
-                base: resolve_base(&self.user_config.cwd, pattern),
-                pattern: pattern.clone(),
-            })
-            .collect();
+        let entries = pandacss_compiler::source_entries(&self.user_config, &self.paths);
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         entries
             .serialize(&serializer)

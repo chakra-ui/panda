@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 
 use fast_glob::glob_match;
 
-use crate::FileSystem;
+use crate::{FileSystem, PathSystem};
 
 #[must_use]
 pub fn effective_excludes(opts: &GlobOptions) -> Vec<String> {
@@ -100,6 +100,18 @@ pub fn relative_glob(pattern: &str) -> &str {
         normalized
     } else {
         normalized[base.len()..].trim_start_matches('/')
+    }
+}
+
+/// Resolve the static watch directory for `pattern` against `cwd`.
+/// Patterns without a static prefix watch `cwd` itself.
+#[must_use]
+pub fn resolve_glob_base(paths: &impl PathSystem, cwd: &str, pattern: &str) -> String {
+    let base = base_dir(pattern);
+    if base.is_empty() {
+        cwd.to_owned()
+    } else {
+        paths.join(&[cwd, base])
     }
 }
 

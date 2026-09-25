@@ -1,4 +1,4 @@
-use super::interop::{json_value_to_literal, resolve_base, utility_value_source_to_json};
+use super::interop::{json_value_to_literal, utility_value_source_to_json};
 use super::{
     Compiler, Diagnostic, ProjectSummary, ResolveUtilityValueInput, ResolvedUtilityValue,
     SourceEntry,
@@ -112,12 +112,11 @@ impl Compiler {
     #[napi]
     #[must_use]
     pub fn sources(&self) -> Vec<SourceEntry> {
-        self.user_config
-            .include
-            .iter()
-            .map(|pattern| SourceEntry {
-                base: resolve_base(&self.user_config.cwd, pattern),
-                pattern: pandacss_fs::relative_glob(pattern).to_owned(),
+        pandacss_compiler::source_entries(&self.user_config, &self.paths)
+            .into_iter()
+            .map(|entry| SourceEntry {
+                base: entry.base,
+                pattern: entry.pattern,
             })
             .collect()
     }

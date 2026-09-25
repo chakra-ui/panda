@@ -4,39 +4,30 @@ use super::{
 };
 
 use napi_derive::napi;
-use pandacss_codegen::{
-    Artifact, ArtifactId, CodegenOverlay as CodegenCrateOverlay, ConfigDependency, DependencySet,
-    GenerateOptions,
-};
-use pandacss_config::UserConfig;
 use pandacss_fs::PathSystem;
 
-/*
- * Codegen entrypoints.
- */
 #[napi]
 impl Compiler {
     /// Generate artifacts and write them under `outdir`.
-    ///
-    /// # Errors
-    /// Returns an error if a file fails to write.
     #[napi(js_name = writeArtifacts)]
     #[allow(
         clippy::needless_pass_by_value,
         reason = "NAPI requires owned arguments"
     )]
     pub fn write_artifacts(&self, options: WriteArtifactsOptions) -> napi::Result<Vec<String>> {
-        let artifacts = if let Some(artifacts) = options.artifacts {
-            artifacts
-        } else {
-            let generate = generate_options(&self.user_config, options.force_import_extension);
-            let overlay = options.overlay.map(to_crate_overlay);
-            self.inner
-                .generate_artifacts(&self.user_config, generate, overlay)
-                .into_iter()
-                .map(to_codegen_artifact)
-                .collect()
-        };
+        let artifacts = options.artifacts.unwrap_or_else(|| {
+            pandacss_compiler::generate_artifacts(
+                &self.inner,
+                &self.user_config,
+                pandacss_compiler::GenerateArtifactOptions {
+                    force_import_extension: options.force_import_extension,
+                    overlay: options.overlay.map(to_core_overlay),
+                },
+            )
+            .into_iter()
+            .map(Into::into)
+            .collect()
+        });
         let cwd = options.cwd.unwrap_or_else(|| self.user_config.cwd.clone());
         let root = self.paths.resolve(&cwd, &options.outdir);
         let mut written = Vec::new();
@@ -61,14 +52,14 @@ impl Compiler {
         options: Option<GenerateArtifactOptions>,
     ) -> napi::Result<Vec<CodegenArtifact>> {
         crate::init_tracing();
-        // No span here — `codegen_generate` (below, one layer in) is the real work.
-        let (generate, overlay) = split_options(&self.user_config, options);
-        let artifacts = self
-            .inner
-            .generate_artifacts(&self.user_config, generate, overlay)
-            .into_iter()
-            .map(to_codegen_artifact)
-            .collect();
+        let artifacts = pandacss_compiler::generate_artifacts(
+            &self.inner,
+            &self.user_config,
+            core_options(options),
+        )
+        .into_iter()
+        .map(Into::into)
+        .collect();
         crate::flush_tracing();
         Ok(artifacts)
     }
@@ -84,15 +75,14 @@ impl Compiler {
         options: Option<GenerateArtifactOptions>,
     ) -> napi::Result<Option<CodegenArtifact>> {
         crate::init_tracing();
-        // No span here — `artifact` (below, one layer in) is the real work.
-        let id = id
-            .parse::<ArtifactId>()
-            .map_err(|()| napi::Error::from_reason(format!("unknown codegen artifact `{id}`")))?;
-        let (generate, overlay) = split_options(&self.user_config, options);
-        let artifact = self
-            .inner
-            .generate_artifact(&self.user_config, id, generate, overlay)
-            .map(to_codegen_artifact);
+        let artifact = pandacss_compiler::generate_artifact(
+            &self.inner,
+            &self.user_config,
+            &id,
+            core_options(options),
+        )
+        .map_err(napi::Error::from_reason)?
+        .map(Into::into);
         crate::flush_tracing();
         Ok(artifact)
     }
@@ -108,50 +98,34 @@ impl Compiler {
         options: Option<GenerateArtifactOptions>,
     ) -> napi::Result<Vec<CodegenArtifact>> {
         crate::init_tracing();
-        // No span here — `affected_artifacts` (below, one layer in) is the real work.
-        let changed = dependency_set_from_strings(dependencies)?;
-        let (generate, overlay) = split_options(&self.user_config, options);
-        let artifacts = self
-            .inner
-            .generate_affected_artifacts(&self.user_config, changed, generate, overlay)
-            .into_iter()
-            .map(to_codegen_artifact)
-            .collect();
+        let artifacts = pandacss_compiler::generate_affected_artifacts(
+            &self.inner,
+            &self.user_config,
+            &dependencies,
+            core_options(options),
+        )
+        .map_err(napi::Error::from_reason)?
+        .into_iter()
+        .map(Into::into)
+        .collect();
         crate::flush_tracing();
         Ok(artifacts)
     }
 }
 
-/*
- * Codegen boundary conversion.
- */
-fn generate_options(
-    user_config: &UserConfig,
-    force_import_extension: Option<bool>,
-) -> GenerateOptions {
-    let import_extensions = force_import_extension.unwrap_or(user_config.force_import_extension);
-
-    GenerateOptions {
-        format: user_config.out_extension,
-        import_extensions,
-    }
-}
-
-fn split_options(
-    user_config: &UserConfig,
+fn core_options(
     options: Option<GenerateArtifactOptions>,
-) -> (GenerateOptions, Option<CodegenCrateOverlay>) {
-    let (force_import_extension, overlay) = options.map_or((None, None), |options| {
-        (options.force_import_extension, options.overlay)
-    });
-    (
-        generate_options(user_config, force_import_extension),
-        overlay.map(to_crate_overlay),
-    )
+) -> pandacss_compiler::GenerateArtifactOptions {
+    options.map_or_else(Default::default, |options| {
+        pandacss_compiler::GenerateArtifactOptions {
+            force_import_extension: options.force_import_extension,
+            overlay: options.overlay.map(to_core_overlay),
+        }
+    })
 }
 
-fn to_crate_overlay(overlay: CodegenOverlay) -> CodegenCrateOverlay {
-    CodegenCrateOverlay {
+fn to_core_overlay(overlay: CodegenOverlay) -> pandacss_compiler::CodegenOverlay {
+    pandacss_compiler::CodegenOverlay {
         jsx: overlay.jsx,
         recipes: overlay.recipes,
         patterns: overlay.patterns,
@@ -164,36 +138,21 @@ fn to_crate_overlay(overlay: CodegenOverlay) -> CodegenCrateOverlay {
     }
 }
 
-fn to_codegen_artifact(artifact: Artifact) -> CodegenArtifact {
-    CodegenArtifact {
-        id: artifact.id.as_str().to_owned(),
-        files: artifact
-            .files
-            .into_iter()
-            .map(|file| CodegenFile {
-                path: file.path,
-                code: file.code,
-                dependencies: dependency_names(file.dependencies),
-            })
-            .collect(),
+impl From<pandacss_compiler::CodegenArtifact> for CodegenArtifact {
+    fn from(artifact: pandacss_compiler::CodegenArtifact) -> Self {
+        Self {
+            id: artifact.id,
+            files: artifact.files.into_iter().map(Into::into).collect(),
+        }
     }
 }
 
-fn dependency_names(dependencies: DependencySet) -> Vec<String> {
-    dependencies
-        .to_vec()
-        .into_iter()
-        .map(|dependency| dependency.as_str().to_owned())
-        .collect()
-}
-
-fn dependency_set_from_strings(dependencies: Vec<String>) -> napi::Result<DependencySet> {
-    let mut set = DependencySet::EMPTY;
-    for dependency in dependencies {
-        let dependency = dependency.parse::<ConfigDependency>().map_err(|()| {
-            napi::Error::from_reason(format!("unknown config dependency `{dependency}`"))
-        })?;
-        set = set.union(DependencySet::one(dependency));
+impl From<pandacss_compiler::CodegenFile> for CodegenFile {
+    fn from(file: pandacss_compiler::CodegenFile) -> Self {
+        Self {
+            path: file.path,
+            code: file.code,
+            dependencies: file.dependencies,
+        }
     }
-    Ok(set)
 }

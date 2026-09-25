@@ -249,7 +249,9 @@ jobs:
       # The real pre-publish only runs inside the publish step; validate the
       # release packages here so the dry run and every push exercise it.
       - name: Validate release packages
-        run: pnpm --filter @pandacss/compiler exec napi pre-publish --dry-run --npm-dir npm --no-gh-release
+        run: |
+          pnpm --filter @pandacss/compiler exec napi pre-publish --dry-run --npm-dir npm --no-gh-release
+          pnpm --filter @pandacss/compiler-wasm verify:package
 
       - name: Verify dry-run artifacts
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}

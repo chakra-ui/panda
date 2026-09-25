@@ -1,6 +1,8 @@
-use crate::common::create_config;
+mod common;
+
+use common::create_config;
 use insta::assert_snapshot;
-use pandacss_codegen::{ArtifactId, ConfigDependency, GenerateOptions};
+use pandacss_compiler::{GenerateArtifactOptions, generate_affected_artifacts, generate_artifact};
 use pandacss_project::{Project, System};
 use serde_json::json;
 
@@ -24,9 +26,14 @@ fn generates_artifacts_from_resolved_project_state() {
     let system = System::new(config.clone()).expect("valid project config");
     let project = Project::new(system);
 
-    let artifact = project
-        .generate_artifact(&config, ArtifactId::Types, GenerateOptions::default(), None)
-        .expect("types artifact");
+    let artifact = generate_artifact(
+        &project,
+        &config,
+        "types",
+        GenerateArtifactOptions::default(),
+    )
+    .expect("valid artifact id")
+    .expect("types artifact");
     let tokens = artifact
         .files
         .iter()
@@ -79,6 +86,7 @@ fn generates_artifacts_from_resolved_project_state() {
 )]
 fn generates_theme_artifact_files() {
     let config = create_config(json!({
+        "outExtension": "mjs",
         "conditions": {
             "osDark": "@media (prefers-color-scheme: dark)"
         },
@@ -136,14 +144,14 @@ fn generates_theme_artifact_files() {
     }));
     let system = System::new(config.clone()).expect("valid project config");
     let project = Project::new(system);
-    let artifact = project
-        .generate_artifact(
-            &config,
-            ArtifactId::Themes,
-            GenerateOptions::default(),
-            None,
-        )
-        .expect("themes artifact");
+    let artifact = generate_artifact(
+        &project,
+        &config,
+        "themes",
+        GenerateArtifactOptions::default(),
+    )
+    .expect("valid artifact id")
+    .expect("themes artifact");
 
     let mut files = artifact
         .files
@@ -272,14 +280,14 @@ fn falls_back_to_identity_transform_without_codegen_source() {
 
 /// The generated `patterns/stack` runtime module (skips the `.d.ts` declaration).
 fn pattern_runtime_code(project: &Project, config: &pandacss_config::UserConfig) -> String {
-    let artifact = project
-        .generate_artifact(
-            config,
-            ArtifactId::Patterns,
-            GenerateOptions::default(),
-            None,
-        )
-        .expect("patterns artifact");
+    let artifact = generate_artifact(
+        project,
+        config,
+        "patterns",
+        GenerateArtifactOptions::default(),
+    )
+    .expect("valid artifact id")
+    .expect("patterns artifact");
     artifact
         .files
         .into_iter()
@@ -294,18 +302,19 @@ fn generates_affected_artifacts_by_dependency() {
     let system = System::new(config.clone()).expect("valid project config");
     let project = Project::new(system);
 
-    let artifacts = project.generate_affected_artifacts(
+    let artifacts = generate_affected_artifacts(
+        &project,
         &config,
-        pandacss_codegen::DependencySet::one(ConfigDependency::Tokens),
-        GenerateOptions::default(),
-        None,
-    );
+        &["tokens".to_owned()],
+        GenerateArtifactOptions::default(),
+    )
+    .expect("valid dependency");
     let ids = artifacts
         .into_iter()
         .map(|artifact| artifact.id)
         .collect::<Vec<_>>();
 
-    assert_snapshot!(format!("{ids:?}"), @"[Patterns, Themes, Types, Tokens, Conditions]");
+    assert_snapshot!(format!("{ids:?}"), @r#"["patterns", "themes", "types", "tokens", "conditions"]"#);
 }
 
 #[test]
@@ -324,9 +333,14 @@ fn keyframes_typegen_inlines_names_and_stays_out_of_tokens() {
     let system = System::new(config.clone()).expect("valid project config");
     let project = Project::new(system);
 
-    let artifact = project
-        .generate_artifact(&config, ArtifactId::Types, GenerateOptions::default(), None)
-        .expect("types artifact");
+    let artifact = generate_artifact(
+        &project,
+        &config,
+        "types",
+        GenerateArtifactOptions::default(),
+    )
+    .expect("valid artifact id")
+    .expect("types artifact");
     let system_code = &artifact
         .files
         .iter()

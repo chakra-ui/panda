@@ -48,21 +48,30 @@ subset to produce CSS strings. It depends on `pandacss_encoder` for snapshot/ato
 project is a dev-dep used only for test wiring). It is an emitter/minifying writer, not a CSS optimizer; see
 [stylesheet.md](./stylesheet.md) for the canonical boundary.
 
-### Tier 3 — façade
+### Tier 3 — project state
 
 `pandacss_project`.
 
-The `Project` crate wires everything together. `System` compiles immutable config-derived runtime state from
+`Project` wires extraction and encoding into long-lived state. `System` compiles immutable config-derived runtime state from
 `pandacss_config::UserConfig` into `pandacss_project::Config`; `Project` owns mutable build/watch state. This crate is
-the primary entry point for `@pandacss/compiler` and the recommended entry point for any Rust consumer. Read-only DX
-surface; the binding talks to this, not to the lower tiers directly. See [project-lifecycle](./project-lifecycle.md).
+independent of CSS rendering: it exposes borrowed stylesheet snapshots but does not depend on `pandacss_stylesheet`.
+See [project-lifecycle](./project-lifecycle.md).
+
+### Tier 4 — compile orchestration
+
+`pandacss_compiler`.
+
+The compiler crate is the host-neutral application layer. Its small `css`, `codegen`, and `views` modules compose
+project state with stylesheet emission, artifact generation, and host-facing derived data. Native and WASM bindings
+bridge callbacks, serialize results, and perform IO; neither binding reimplements compiler policy. This keeps project
+state, CSS emission, code generation, and filesystem primitives as independent lower-level concerns while making their
+composition explicit in one higher-level crate.
 
 ### Future crates
 
 Don't keep empty placeholder crates. When the implementation exists, add the crate at the boundary it actually earns:
 
 - CSS optimization — Tier 2 only once a real CSS-aware optimizer exists.
-- Compile orchestration — Tier 3 only if it does more than `Project` plus emitter calls.
 - Persistent cache — separate infrastructure/process crate only once real cache behavior exists.
 
 ## Standing answers to merge questions

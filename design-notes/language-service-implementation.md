@@ -344,7 +344,7 @@ to `color`) without special-casing either.
 Two completion positions, both gated the same required-`define*()`-call way as recipes/globalCss:
 
 - **Category names** (`colors`, `spacing`, ...) — only at the full form's own top-level object (`SpecIndex.resolveTokenCategories`, sourced from `spec.tokens.categories`); not offered for the per-category form, since it's already inside one.
-- **Condition names** inside a token's `value: {...}` object, plus the literal `base` key (the semantic-token default-value convention — confirmed against `crates/pandacss_project/tests/codegen.rs:106-124`'s real fixtures, which use `base`/`_osDark`). Detection walks up through nested conditional values (`value: { _dark: { sm: ... } }`) since `SemanticToken`'s value type is recursive (`packages/types/src/tokens.ts:13-20`).
+- **Condition names** inside a token's `value: {...}` object, plus the literal `base` key (the semantic-token default-value convention — confirmed against `crates/pandacss_compiler/tests/codegen.rs` fixtures, which use `base`/`_osDark`). Detection walks up through nested conditional values (`value: { _dark: { sm: ... } }`) since `SemanticToken`'s value type is recursive (`packages/types/src/tokens.ts:13-20`).
 
 Token-ref values inside a semantic token (`value: '{colors.red.500}'`) already worked before this — that path is the
 pre-existing ungated string-literal token-ref scan, unrelated to define*-gating.

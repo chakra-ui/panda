@@ -174,7 +174,7 @@ benchmarks first.
 2. materialize callback-expanded atoms only when JS utility transforms are registered
 3. snapshot dynamic recipes
 4. compute a static recipe snapshot from the compiled project/config
-5. call `pandacss_stylesheet::compile()`
+5. call the shared `pandacss_compiler` output function, which owns stylesheet assembly and diagnostics
 
 The binding caches the parsed `UserConfig` on `Project` construction so each compile does not clone and deserialize the
 entire JSON config again. The current output is `{ css, sourceMap, manifest, diagnostics }`; `sourceMap` and manifest

@@ -37,6 +37,7 @@
     "build:js": "tsup",
     "build:fast": "tsup --no-dts",
     "build:wasm": "tsx build-wasm.ts",
+    "verify:package": "node verify-package.mjs",
     "dev": "pnpm build:fast --watch",
     "test": "vitest run"
   },

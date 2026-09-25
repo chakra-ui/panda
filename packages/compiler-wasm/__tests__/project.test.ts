@@ -84,6 +84,40 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
     `)
   })
 
+  it('applies codegen overlays', async () => {
+    const compiler = await createCompiler(baseConfig)
+    const artifact = compiler.generateArtifact('css-index', {
+      overlay: {
+        jsx: '@acme/ds/jsx',
+        recipes: '@acme/ds/recipes',
+        patterns: '@acme/ds/patterns',
+        css: '@acme/ds/css',
+        helpers: '@acme/ds/helpers',
+        ownedRecipes: [],
+        ownedPatterns: [],
+        virtualizeHelpers: true,
+        virtualizeCss: true,
+      },
+    })
+    const code = artifact?.files.find((file) => file.path.startsWith('css/index.'))?.code
+
+    expect(code).toContain("export * from '@acme/ds/css/css'")
+    expect(code).not.toContain("export * from './css'")
+  })
+
+  it('returns watcher globs relative to their resolved base directory', async () => {
+    const compiler = await createCompiler({
+      ...baseConfig,
+      cwd: '/repo',
+      include: ['src/**/*.{ts,tsx}', '**/*.vue'],
+    })
+
+    expect(compiler.sources()).toEqual([
+      { base: '/repo/src', pattern: '**/*.{ts,tsx}' },
+      { base: '/repo', pattern: '**/*.vue' },
+    ])
+  })
+
   it('derives JSX pattern matchers from config', async () => {
     const compiler = await createCompiler({
       cwd: '/virtual',

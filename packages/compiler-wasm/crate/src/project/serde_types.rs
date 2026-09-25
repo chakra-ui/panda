@@ -2,22 +2,12 @@ use serde::Deserialize;
 
 #[derive(serde::Serialize)]
 #[serde(rename_all = "camelCase")]
-pub(super) struct CompileOutputSerde {
-    pub(super) css: String,
-    pub(super) source_map: Option<String>,
-    pub(super) manifest: CompileManifestSerde,
-    pub(super) layer_ranges: CompileLayerRangesSerde,
-    pub(super) diagnostics: Vec<pandacss_shared::Diagnostic>,
-}
-
-#[derive(serde::Serialize)]
-#[serde(rename_all = "camelCase")]
 pub(super) struct WriteCssResultSerde {
     pub(super) path: String,
     pub(super) css: String,
     pub(super) source_map: Option<String>,
-    pub(super) manifest: CompileManifestSerde,
-    pub(super) layer_ranges: CompileLayerRangesSerde,
+    pub(super) manifest: pandacss_compiler::CompileManifest,
+    pub(super) layer_ranges: pandacss_compiler::CompileLayerRanges,
     pub(super) diagnostics: Vec<pandacss_shared::Diagnostic>,
 }
 
@@ -26,14 +16,7 @@ pub(super) struct WriteCssResultSerde {
 pub(super) struct WriteSplitCssResultSerde {
     pub(super) root: String,
     pub(super) paths: Vec<String>,
-    pub(super) files: Vec<SplitCssFileSerde>,
-    pub(super) diagnostics: Vec<pandacss_shared::Diagnostic>,
-}
-
-#[derive(serde::Serialize)]
-#[serde(rename_all = "camelCase")]
-pub(super) struct SplitCssResultSerde {
-    pub(super) files: Vec<SplitCssFileSerde>,
+    pub(super) files: Vec<pandacss_compiler::SplitCssFile>,
     pub(super) diagnostics: Vec<pandacss_shared::Diagnostic>,
 }
 
@@ -45,11 +28,7 @@ pub(super) struct CompileOptionsSerde {
     pub(super) polyfill: Option<bool>,
 }
 
-#[derive(Default, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub(super) struct GenerateArtifactOptionsSerde {
-    pub(super) force_import_extension: Option<bool>,
-}
+pub(super) type GenerateArtifactOptionsSerde = pandacss_compiler::GenerateArtifactOptions;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -64,6 +43,7 @@ pub(super) struct WriteArtifactsOptionsSerde {
     pub(super) outdir: String,
     pub(super) cwd: Option<String>,
     pub(super) force_import_extension: Option<bool>,
+    pub(super) overlay: Option<pandacss_compiler::CodegenOverlay>,
     pub(super) artifacts: Option<Vec<CodegenArtifactSerde>>,
 }
 
@@ -119,33 +99,9 @@ pub(super) struct WriteSplitCssOptionsSerde {
 
 #[derive(serde::Serialize)]
 #[serde(rename_all = "camelCase")]
-pub(super) struct CompileManifestSerde {
-    pub(super) files: Vec<CompileFileManifestSerde>,
-    pub(super) tokens: Vec<String>,
-}
-
-#[derive(serde::Serialize)]
-#[serde(rename_all = "camelCase")]
 pub(super) struct CompileFileManifestSerde {
     pub(super) path: String,
     pub(super) hash: String,
-}
-
-#[derive(serde::Serialize)]
-#[serde(rename_all = "camelCase")]
-pub(super) struct CompileLayerRangesSerde {
-    pub(super) reset: Option<CompileLayerRangeSerde>,
-    pub(super) base: Option<CompileLayerRangeSerde>,
-    pub(super) tokens: Option<CompileLayerRangeSerde>,
-    pub(super) recipes: Option<CompileLayerRangeSerde>,
-    pub(super) utilities: Option<CompileLayerRangeSerde>,
-}
-
-#[derive(serde::Serialize)]
-#[serde(rename_all = "camelCase")]
-pub(super) struct CompileLayerRangeSerde {
-    pub(super) start: u32,
-    pub(super) end: u32,
 }
 
 #[derive(serde::Serialize)]
@@ -180,13 +136,6 @@ pub(super) struct CodegenFileSerde {
     pub(super) dependencies: Vec<String>,
 }
 
-/// One file in a `--splitting` output set. Host writes `path -> code`.
-#[derive(serde::Serialize)]
-pub(super) struct SplitCssFileSerde {
-    pub(super) path: String,
-    pub(super) code: String,
-}
-
 #[derive(Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct AtomSerde {
@@ -213,23 +162,6 @@ pub(super) struct ParseFileReportSerde {
     pub(super) sva_calls: u32,
     pub(super) jsx_usages: u32,
     pub(super) diagnostics: Vec<pandacss_project::Diagnostic>,
-}
-
-/// Serialized source entry. Mirrors the native `SourceEntry`.
-#[derive(serde::Serialize)]
-pub(super) struct SourceEntrySerde {
-    pub(super) base: String,
-    pub(super) pattern: String,
-}
-
-/// Serialized resolved cascade-layer names. Mirrors the native `LayerNames`.
-#[derive(serde::Serialize)]
-pub(super) struct LayerNamesSerde<'a> {
-    pub(super) reset: &'a str,
-    pub(super) base: &'a str,
-    pub(super) tokens: &'a str,
-    pub(super) recipes: &'a str,
-    pub(super) utilities: &'a str,
 }
 
 /// Glob overrides accepted by `scan`/`glob`; omitted fields fall back to the

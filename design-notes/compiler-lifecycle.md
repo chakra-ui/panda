@@ -55,12 +55,13 @@ writer-level minification, and adjacent rule merging.
 No native CSS optimizer runs today. `StylesheetOptions::minify` controls only writer formatting. The optimizer boundary
 is owned by [stylesheet.md](./stylesheet.md).
 
-### 6 · Output — ✅ built · `compiler_napi` + `pandacss_stylesheet`
+### 6 · Output — ✅ built · `pandacss_compiler`
 
 `compile()`, layer/keyframe CSS, and their write variants return `{ css, …, diagnostics }`; `getSplitCss()` returns
 `{ files, diagnostics }`. In every result, `diagnostics` is the complete canonical output set: config, latest file
 parse attempt, static pattern, config/static utility transform, and stylesheet diagnostics. Hosts must not merge old
-parse reports back into it.
+parse reports back into it. `pandacss_compiler` composes project snapshots with stylesheet emission; native and WASM
+bindings call those same functions and only convert the result to their respective JS boundary shapes.
 
 > CSS output = **static** (config-derived: tokens, reset, base, global) **+ dynamic** (extraction-derived: atoms,
 > recipes). Emission merges both, so it is _not_ a pure function of the extraction registry.

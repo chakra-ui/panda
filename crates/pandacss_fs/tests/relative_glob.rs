@@ -1,4 +1,4 @@
-use pandacss_fs::{base_dir, relative_glob};
+use pandacss_fs::{PosixPathSystem, base_dir, relative_glob, resolve_glob_base};
 
 #[test]
 fn strips_the_static_base_dir_prefix() {
@@ -64,4 +64,18 @@ fn base_dir_joined_with_relative_glob_reconstructs_the_pattern() {
             "pattern: {pattern}"
         );
     }
+}
+
+#[test]
+fn resolves_the_watch_base_against_cwd() {
+    let paths = PosixPathSystem;
+    assert_eq!(
+        resolve_glob_base(&paths, "/repo", "src/**/*.tsx"),
+        "/repo/src"
+    );
+    assert_eq!(resolve_glob_base(&paths, "/repo", "**/*.tsx"), "/repo");
+    assert_eq!(
+        resolve_glob_base(&paths, "/repo/app", "../shared/**/*.tsx"),
+        "/repo/shared"
+    );
 }

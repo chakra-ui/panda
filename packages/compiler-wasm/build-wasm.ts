@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process'
-import { existsSync, writeFileSync } from 'node:fs'
+import { existsSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -30,19 +30,32 @@ function ensureWasmPack() {
 }
 
 function build(target: 'web' | 'nodejs', outDir: string) {
+  const output = resolve(packageRoot, outDir)
+  rmSync(output, { recursive: true, force: true })
+
   run('wasm-pack', [
     'build',
     cratePath,
     '--target',
     target,
     '--out-dir',
-    resolve(packageRoot, outDir),
+    output,
     '--out-name',
     'compiler_wasm',
     '--release',
     // Strip the generated package.json so consumers see ours instead.
     '--no-pack',
   ])
+
+  // wasm-pack writes `*` here, which makes npm omit the generated module
+  // even though the package's `files` allowlist includes the directory.
+  rmSync(resolve(output, '.gitignore'), { force: true })
+
+  for (const file of ['compiler_wasm.js', 'compiler_wasm.d.ts', 'compiler_wasm_bg.wasm']) {
+    if (!existsSync(resolve(output, file))) {
+      throw new Error(`wasm artifact missing after build: ${outDir}/${file}`)
+    }
+  }
 }
 
 function writePackageType(outDir: string, type: 'commonjs' | 'module') {

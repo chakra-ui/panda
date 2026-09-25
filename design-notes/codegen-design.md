@@ -4,6 +4,7 @@ date: 2026-05-29
 status: accepted
 scope:
   - crates/pandacss_codegen
+  - crates/pandacss_compiler
   - crates/pandacss_config
 ---
 
@@ -86,8 +87,14 @@ pub enum CodegenFormat {
 
 The artifact graph holds every `ArtifactId` module in `crates/pandacss_codegen`. `ArtifactId::is_styled_system()` then
 splits them: `generate_all` and `affected` walk only the ones `panda codegen` writes, and `Specs` is excluded — it is
-opt-in behind `--spec` and reached through `node(Specs)`. See [Design system spec](./design-system-spec.md). Sample
-nodes:
+opt-in behind `--spec` and reached through `node(Specs)`. See [Design system spec](./design-system-spec.md).
+
+`pandacss_codegen` owns artifact definitions and rendering. `pandacss_compiler` owns application-level orchestration:
+it derives `CodegenInput` from project/config state, applies host-provided overlays, selects all/one/affected graph
+nodes, and returns host-neutral artifact files. Native and WASM bindings only deserialize options, write files, and
+convert boundary errors.
+
+Sample nodes:
 
 | Artifact     | Output stem    | Current dependencies                              |
 | ------------ | -------------- | ------------------------------------------------- |

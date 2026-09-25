@@ -94,7 +94,7 @@ dependencies = [
  "napi",
  "napi-build",
  "napi-derive",
- "pandacss_codegen",
+ "pandacss_compiler",
  "pandacss_config",
  "pandacss_encoder",
  "pandacss_extractor",
@@ -102,7 +102,6 @@ dependencies = [
  "pandacss_project",
  "pandacss_recipes",
  "pandacss_shared",
- "pandacss_stylesheet",
  "pandacss_tokens",
  "pandacss_tracing",
  "serde",
@@ -118,7 +117,7 @@ dependencies = [
  "console_error_panic_hook",
  "js-sys",
  "lru",
- "pandacss_codegen",
+ "pandacss_compiler",
  "pandacss_config",
  "pandacss_encoder",
  "pandacss_extractor",
@@ -126,7 +125,6 @@ dependencies = [
  "pandacss_project",
  "pandacss_recipes",
  "pandacss_shared",
- "pandacss_stylesheet",
  "pandacss_tokens",
  "serde",
  "serde-wasm-bindgen",
@@ -1118,7 +1116,7 @@ dependencies = [
 name = "pandacss_bench"
 version = "0.0.0"
 dependencies = [
- "pandacss_codegen",
+ "pandacss_compiler",
  "pandacss_config",
  "pandacss_extractor",
  "pandacss_project",
@@ -1147,6 +1145,25 @@ dependencies = [
  "pandacss_shared",
  "pandacss_stylesheet",
  "pandacss_tokens",
+ "serde_json",
+ "tracing",
+]
+
+[[package]]
+name = "pandacss_compiler"
+version = "0.0.0"
+dependencies = [
+ "indoc",
+ "insta",
+ "pandacss_codegen",
+ "pandacss_config",
+ "pandacss_encoder",
+ "pandacss_fs",
+ "pandacss_project",
+ "pandacss_shared",
+ "pandacss_stylesheet",
+ "pandacss_tokens",
+ "serde",
  "serde_json",
  "tracing",
 ]
@@ -1226,7 +1243,6 @@ dependencies = [
  "indoc",
  "insta",
  "oxc_resolver",
- "pandacss_codegen",
  "pandacss_config",
  "pandacss_encoder",
  "pandacss_extractor",

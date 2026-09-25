@@ -75,11 +75,13 @@ impl WasmCompiler {
     #[wasm_bindgen(js_name = encodedRecipes)]
     pub fn encoded_recipes(&mut self) -> Result<JsValue, JsValue> {
         let _span = tracing::trace_span!("boundary_encode", method = "encoded_recipes").entered();
-        let snapshot = serde_json::to_value(self.inner.encoded_recipes().snapshot())
-            .map_err(|err| JsValue::from_str(&err.to_string()))?;
-        let json =
-            serde_json::to_string(&snapshot).map_err(|err| JsValue::from_str(&err.to_string()))?;
-        js_sys::JSON::parse(&json)
+        let snapshot = self.inner.encoded_recipes().snapshot();
+        let serializer = serde_wasm_bindgen::Serializer::new()
+            .serialize_maps_as_objects(true)
+            .serialize_missing_as_null(true);
+        snapshot
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
     }
 
     /// `staticCss.patterns` expansion as raw atoms, without compiling.

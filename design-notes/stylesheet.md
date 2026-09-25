@@ -103,7 +103,8 @@ selectors become ancestors, and pseudo-elements are emitted after pseudo-classes
 
 ## Performance
 
-- `Project.compile()` passes borrowed atoms into stylesheet compilation; generated static atoms live in a local buffer.
+- `pandacss_compiler` passes borrowed project snapshots into stylesheet compilation; generated static
+  atoms live in a local buffer.
 - `TokenDictionary` and `Utility` are built once per compile and shared by static expansion and emission.
 - Sort keys are precomputed once per atom or recipe entry, avoiding allocation inside the comparator.
 - Empty static recipe snapshots skip `merge_encoded_recipes()`.
