@@ -25,6 +25,32 @@ Here are some examples of what you can do with hooks:
 - restrict `strictTokens` to a specific set of token categories, ex: only affect `colors` and `spacing` tokens and
   therefore allow any value for `fontSizes` and `lineHeights`
 
+## How hooks run
+
+Every hook receives a single object argument. Destructure the fields you need, like `({ config, utils })`. The fields
+differ per hook and are listed in the [reference](#reference) below.
+
+In a typical `panda` run, hooks fire in this order:
+
+1. `preset:resolved`, once per preset
+2. `config:resolved`, once, after all presets are merged
+3. `tokens:created`, `utility:created`, then `context:created`, while Panda sets itself up
+4. `codegen:prepare`, then `codegen:done`, when writing the `styled-system` folder
+5. `parser:before`, then `parser:after`, once per source file
+6. `cssgen:done`, once per CSS chunk, then `css:optimize` on the final CSS
+
+`config:change` runs in watch mode whenever the config file or one of its imports changes.
+
+Some hooks let you change a value by returning a new one: `preset:resolved`, `config:resolved`, `parser:before`,
+`codegen:prepare`, `cssgen:done` and `css:optimize`. Return nothing to keep the value as it is. When several plugins
+define the same hook, each one receives the value returned by the previous one, and `original` holds the value from
+before any hook changed it.
+
+Other hooks, like `tokens:created`, don't use their return value. They pass you a `configure` function instead. Call it
+to swap out a piece of Panda's internals, such as how token names are formatted.
+
+If a hook throws, Panda logs the error with the plugin's name and keeps going.
+
 ## Examples
 
 ### Prefixing token names
@@ -72,8 +98,8 @@ export default defineConfig({
 
 ### Modifying the config
 
-Here's an example of how to leveraging the provided `utils` functions in the `config:resolved` hook to remove the
-`stack` pattern from the resolved config.
+Here's how to use the provided `utils` functions in the `config:resolved` hook to remove the `stack` pattern from the
+resolved config.
 
 ```ts
 import { defineConfig } from '@pandacss/dev'
@@ -162,8 +188,7 @@ export default defineConfig({
 
 Get the snippets for the removal logic from our Github Sandbox in the
 [remove-unused-css-vars](https://github.com/chakra-ui/panda/blob/v1/sandbox/vite-ts/remove-unused-css-vars.ts) and
-[remove-unused-keyframes](https://github.com/chakra-ui/panda/blob/v1/sandbox/vite-ts/remove-unused-keyframes.ts)
-files.
+[remove-unused-keyframes](https://github.com/chakra-ui/panda/blob/v1/sandbox/vite-ts/remove-unused-keyframes.ts) files.
 
 > Note: Using this means you can't use the JS function [`token.var`](/docs/guides/dynamic-styling#using-tokenvar) (or
 > [token(xxx)](/docs/guides/dynamic-styling#using-token) where `xxx` is the path to a
@@ -200,58 +225,370 @@ export default defineConfig({
 
 ## Reference
 
+Each hook below lists the fields on its argument object, what it expects you to return, and a full example. Hooks marked
+async can return a promise.
+
+### `preset:resolved`
+
+Runs once for each preset, before presets are merged into your config. Use it to remove or change parts of a preset.
+
+- `preset`: the preset's config object
+- `name`: the preset's `name` field, like `@pandacss/preset-panda`
+- `utils`: helpers for editing the preset. See [`utils`](#utils)
+- `original`: the preset before any hook changed it
+
+Returns the updated preset, or nothing to keep it. Async.
+
 ```ts
-export interface PandaHooks {
-  /**
-   * Called when the config is resolved, after all the presets are loaded and merged.
-   * This is the first hook called, you can use it to tweak the config before the context is created.
-   */
-  'config:resolved': (args: ConfigResolvedHookArgs) => MaybeAsyncReturn<void | ConfigResolvedHookArgs['config']>
-  /**
-   * Called when a preset is resolved, allowing you to modify it before it's merged into the config.
-   */
-  'preset:resolved': (args: PresetResolvedHookArgs) => MaybeAsyncReturn<void | PresetResolvedHookArgs['preset']>
-  /**
-   * Called when the token engine has been created
-   */
-  'tokens:created': (args: TokenCreatedHookArgs) => MaybeAsyncReturn
-  /**
-   * Called when the classname engine has been created
-   */
-  'utility:created': (args: UtilityCreatedHookArgs) => MaybeAsyncReturn
-  /**
-   * Called when the Panda context has been created and the API is ready to be used.
-   */
-  'context:created': (args: ContextCreatedHookArgs) => void
-  /**
-   * Called when the config file or one of its dependencies (imports) has changed.
-   */
-  'config:change': (args: ConfigChangeHookArgs) => MaybeAsyncReturn
-  /**
-   * Called after reading the file content but before parsing it.
-   * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
-   * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
-   */
-  'parser:before': (args: ParserResultBeforeHookArgs) => string | void
-  /**
-   * Called after the file styles are extracted and processed into the resulting ParserResult object.
-   * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
-   */
-  'parser:after': (args: ParserResultAfterHookArgs) => void
-  /**
-   * Called right before writing the codegen files to disk.
-   * You can use this hook to tweak the codegen files before they are written to disk.
-   */
-  'codegen:prepare': (args: CodegenPrepareHookArgs) => MaybeAsyncReturn<Artifact[]>
-  /**
-   * Called after the codegen is completed
-   */
-  'codegen:done': (args: CodegenDoneHookArgs) => MaybeAsyncReturn
-  /**
-   * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
-   * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
-   * You can use it to tweak the CSS content before it's written to disk or injected through the postcss plugin.
-   */
-  'cssgen:done': (args: CssgenDoneHookArgs) => string | void
-}
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  hooks: {
+    'preset:resolved': ({ preset, name, utils }) => {
+      // Drop the default keyframes (spin, ping, pulse, bounce) and keep the rest of the preset
+      if (name === '@pandacss/preset-panda') {
+        return utils.omit(preset, ['theme.keyframes'])
+      }
+    }
+  }
+})
+```
+
+### `config:resolved`
+
+Runs once, after every preset is merged into your config and before Panda uses it. Use it to tweak the final config.
+
+- `config`: the merged config
+- `path`: absolute path to your config file
+- `dependencies`: file paths your config imports, directly or indirectly
+- `utils`: helpers for editing the config. See [`utils`](#utils)
+- `original`: the config before any hook changed it
+
+Returns the updated config, or nothing to keep it. Async.
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  hooks: {
+    'config:resolved': ({ config }) => {
+      // Only enforce strict tokens in CI, so local prototyping stays flexible
+      return { ...config, strictTokens: process.env.CI === 'true' }
+    }
+  }
+})
+```
+
+#### `utils`
+
+`preset:resolved` and `config:resolved` both receive these helpers. Paths use dot notation, like
+`'theme.tokens.colors'`.
+
+- `omit(obj, paths)`: returns a copy of `obj` without the given paths
+- `pick(obj, paths)`: returns a copy of `obj` with only the given paths
+- `traverse(obj, callback, options?)`: walks every nested value in `obj`. The callback receives
+  `{ value, path, key, parent, depth }`. Pass `{ separator, maxDepth }` to change the path separator (default `.`) or
+  stop at a given depth
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  hooks: {
+    'config:resolved': ({ config, utils }) => {
+      // Warn about color tokens that use a raw hex value
+      utils.traverse(config.theme?.tokens?.colors, ({ key, value, path }) => {
+        if (key === 'value' && typeof value === 'string' && value.startsWith('#')) {
+          const tokenPath = path.replace(/\.value$/, '')
+          console.warn(`colors.${tokenPath} uses a hex value: ${value}`)
+        }
+      })
+    }
+  }
+})
+```
+
+### `tokens:created`
+
+Runs when Panda builds the token dictionary from your theme. Nothing to return. Call `configure` with any of these
+options:
+
+- `formatTokenName(path)`: receives the token path as an array (like `['colors', 'red', '500']`) and returns the name
+  used in `token()` and in generated types. Default is `path.join('.')`
+- `formatCssVar(path, options)`: returns `{ var, ref }` for a token, where `var` is the CSS variable name (like
+  `--colors-red-500`) and `ref` is how other CSS refers to it (like `var(--colors-red-500)`). `options` holds the
+  `prefix` and `hash` settings from your config, and an optional `fallback` value
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  hooks: {
+    'tokens:created': ({ configure }) => {
+      configure({
+        // --colors-red-500 becomes --ds-colors-red-500
+        formatCssVar: (path, { fallback }) => {
+          const variable = `--ds-${path.join('-')}` as const
+          return {
+            var: variable,
+            ref: fallback ? `var(${variable}, ${fallback})` : `var(${variable})`
+          }
+        }
+      })
+    }
+  }
+})
+```
+
+See [Prefixing token names](#prefixing-token-names) for a `formatTokenName` example.
+
+### `utility:created`
+
+Runs when Panda builds the engine that turns style props into class names. Nothing to return. Call `configure` with:
+
+- `toHash(path, toHash)`: builds the hashed class name when `hash: true` is set. `path` is the parts of the class name
+  (conditions, property and value) and `toHash` is Panda's default hash function for a single string. Default is
+  `toHash(path.join(':'))`
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  hash: true,
+  hooks: {
+    'utility:created': ({ configure }) => {
+      configure({
+        // Prefix hashed class names so they're easy to spot in devtools
+        toHash: (path, toHash) => `ds-${toHash(path.join(':'))}`
+      })
+    }
+  }
+})
+```
+
+### `context:created`
+
+Runs once Panda has finished setting up and its API is ready. Use it to read the final state. Nothing to return.
+
+- `ctx.config`: the resolved config
+- `ctx.configPath`: path to your config file
+- `ctx.configDependencies`: file paths your config imports
+- `ctx.processor`: generates CSS on demand with `css()`, `cva()`, `sva()` and `recipe()`. Each returns an object with
+  `getClassNames()` and `toCss()`
+- `ctx.classNames`: map of every utility class name Panda knows about
+- `ctx.generatedClassNames`: map of the class names found in your app code
+- `logger`: Panda's logger, so your messages match the rest of the CLI output
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  hooks: {
+    'context:created': ({ ctx, logger }) => {
+      const { toCss } = ctx.processor.css({ color: 'red.500', _hover: { color: 'red.600' } })
+      logger.info('hooks', `Sample output:\n${toCss()}`)
+    }
+  }
+})
+```
+
+### `config:change`
+
+Runs in watch mode after the config file or one of its imports changes. Async. Nothing to return.
+
+- `config`: the new config
+- `changes.hasConfigChanged`: whether the config values changed
+- `changes.artifacts`: a `Set` of the `styled-system` artifact ids that need to be regenerated
+- `changes.diffs`: the list of individual differences between the old and new config
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  hooks: {
+    'config:change': ({ changes }) => {
+      if (!changes.hasConfigChanged) return
+      console.log('Regenerating:', Array.from(changes.artifacts).join(', '))
+    }
+  }
+})
+```
+
+### `parser:before`
+
+Runs for each source file, after Panda reads it and before it parses it. Use it to turn another syntax (a templating
+language, say) into TSX that Panda can extract styles from.
+
+- `filePath`: absolute path of the file
+- `content`: the file content
+- `configure`: changes how JSX is extracted from this file. Accepts:
+  - `matchTag(tag, isPandaComponent)`: return `false` to skip a JSX element
+  - `matchTagProp(tag, prop)`: return `false` to skip a prop on a JSX element
+  - `matchTagMode`: `'extend'` (default) keeps Panda's own tag matching and adds yours. `'override'` uses only yours
+- `original`: the file content before any hook changed it
+
+Returns the transformed content, or nothing to keep it.
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  hooks: {
+    'parser:before': ({ filePath, content }) => {
+      // Skip style extraction for Storybook stories
+      if (filePath.endsWith('.stories.tsx')) {
+        return ''
+      }
+      return content
+    }
+  }
+})
+```
+
+See [Configuring JSX extraction](#configuring-jsx-extraction) for a `configure` example.
+
+### `parser:after`
+
+Runs for each source file, after Panda extracts its styles. Use it to inspect the results, or add results from your own
+parser. Nothing to return.
+
+- `filePath`: absolute path of the file
+- `result`: what Panda extracted from the file, grouped by kind (`css`, `cva`, `jsx`, `recipe`, `pattern` and so on), or
+  `undefined` if the file wasn't parsed
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  hooks: {
+    'parser:after': ({ filePath, result }) => {
+      if (!result || result.isEmpty()) return
+      console.log(`${filePath}: ${result.css.size} css() calls, ${result.jsx.size} styled JSX elements`)
+    }
+  }
+})
+```
+
+### `codegen:prepare`
+
+Runs right before Panda writes the `styled-system` folder. Use it to change or add generated files.
+
+- `artifacts`: list of artifacts about to be written. Each has an `id` (like `'css-fn'` or `'design-tokens'`), an
+  optional `dir`, and `files`, a list of `{ file, code }`
+- `changed`: ids of the artifacts that changed, or `undefined` on a full codegen
+- `original`: the artifacts before any hook changed them
+
+Returns the updated list of artifacts, or nothing to keep it. Async.
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  hooks: {
+    'codegen:prepare': ({ artifacts }) => {
+      const cssFn = artifacts.find(artifact => artifact.id === 'css-fn')
+      cssFn?.files.forEach(file => {
+        if (file.code) file.code = `// Generated by Panda. Do not edit.\n${file.code}`
+      })
+      return artifacts
+    }
+  }
+})
+```
+
+### `codegen:done`
+
+Runs after the `styled-system` folder is written. Async. Nothing to return.
+
+- `changed`: ids of the artifacts that were regenerated, or `undefined` on a full codegen
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+import { execSync } from 'node:child_process'
+
+export default defineConfig({
+  // ...
+  hooks: {
+    'codegen:done': () => {
+      // Format the generated files with your own Prettier config
+      execSync('prettier --write styled-system')
+    }
+  }
+})
+```
+
+### `cssgen:done`
+
+Runs each time Panda generates a chunk of CSS. Use it to change the CSS before it's written to disk or injected by the
+PostCSS plugin.
+
+- `artifact`: which chunk this is. One of `'reset'` (preflight), `'global'`, `'static'`, `'tokens'`, `'keyframes'`, or
+  `'styles.css'` for the final output that includes the others plus the styles found in your code
+- `content`: the CSS
+- `original`: the CSS before any hook changed it
+
+Returns the updated CSS, or nothing to keep it. Check `artifact` so you only change the chunk you mean to.
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  // ...
+  hooks: {
+    'cssgen:done': ({ artifact, content }) => {
+      if (artifact === 'styles.css') {
+        return `/* Acme Design System v2.1.0 */\n${content}`
+      }
+    }
+  }
+})
+```
+
+See [Remove unused variables from final css](#remove-unused-variables-from-final-css) for another example.
+
+### `css:optimize`
+
+Runs when Panda optimizes the final CSS. Use it to replace the default PostCSS optimizer with your own. The
+`lightningcss: true` option is built on this hook, and the example below is roughly what it does. Reach for the hook
+when you need different lightningcss options or another optimizer.
+
+- `css`: the CSS to optimize
+- `minify`: whether the output should be minified
+- `browserslist`: the browser targets from your config
+- `original`: the CSS before any hook changed it
+
+Returns the optimized CSS.
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+import { Features, browserslistToTargets, transform } from 'lightningcss'
+import browserslist from 'browserslist'
+
+export default defineConfig({
+  // ...
+  hooks: {
+    'css:optimize': ({ css, minify, browserslist: queries }) => {
+      const { code } = transform({
+        filename: 'styles.css',
+        code: Buffer.from(css),
+        minify: minify ?? false,
+        // Panda's output uses nested rules and media ranges, so let lightningcss lower them
+        include: Features.Nesting | Features.MediaRangeSyntax,
+        targets: browserslistToTargets(browserslist(queries)),
+        errorRecovery: true
+      })
+      return code.toString()
+    }
+  }
+})
 ```
