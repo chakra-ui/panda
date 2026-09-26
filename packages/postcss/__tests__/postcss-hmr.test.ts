@@ -5,7 +5,7 @@ import postcss from 'postcss'
 import { describe, expect, it } from 'vitest'
 import pandacss from '../src/index'
 
-const INPUT = '@layer reset, base, tokens, recipes, utilities;'
+const CSS_ROOT = '@layer reset, base, tokens, recipes, utilities;'
 
 describe('@pandacss/postcss HMR flow', () => {
   it('keeps prior atoms available when a known source file changes', async () => {
@@ -30,7 +30,7 @@ describe('@pandacss/postcss HMR flow', () => {
   },
 }
 `,
-        'src/index.css': INPUT,
+        'src/index.css': CSS_ROOT,
         'src/App.tsx': appSource('88px'),
       })
 
@@ -68,7 +68,7 @@ describe('@pandacss/postcss HMR flow', () => {
   },
 }
 `,
-        'src/index.css': INPUT,
+        'src/index.css': CSS_ROOT,
         'src/App.tsx': '',
         'node_modules/@acme/ds/package.json': JSON.stringify({
           name: '@acme/ds',

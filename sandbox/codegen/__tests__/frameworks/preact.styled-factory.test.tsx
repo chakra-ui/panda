@@ -6,7 +6,7 @@ import tlp = require('@testing-library/preact')
 const render = tlp.render
 import { buttonWithCompoundVariants } from '../../styled-system-preact/recipes'
 
-describe('styled factory - cva', () => {
+describe('styled factory with an inline recipe', () => {
   const Button = styled('button', {
     base: {
       color: 'red.500',
@@ -131,7 +131,7 @@ describe('styled factory - cva', () => {
     )
   })
 
-  test('all together', () => {
+  test('variant, style prop, css prop and className combined', () => {
     const { container } = render(
       <Button className="custom-btn" css={{ color: 'red.200', fontSize: 'xl' }} size="lg" mx="2">
         Click me
@@ -219,21 +219,9 @@ describe('styled factory - cva', () => {
       </button>
     `)
   })
-
-  test('html props', () => {
-    const { container } = render(
-      <styled.div htmlWidth={123} height="123">
-        Click me
-      </styled.div>,
-    )
-
-    expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
-      `"<div width="123" class="h_123">Click me</div>"`,
-    )
-  })
 })
 
-describe('styled factory - button recipe', () => {
+describe('styled factory with the buttonWithCompoundVariants config recipe', () => {
   const Button = styled('button', buttonWithCompoundVariants)
 
   test('base styles', () => {
@@ -324,7 +312,7 @@ describe('styled factory - button recipe', () => {
     )
   })
 
-  test('all together', () => {
+  test('variant, style prop, css prop and className combined', () => {
     const { container } = render(
       <Button className="custom-btn" css={{ color: 'red.200', fontSize: 'xl' }} size="md" visual="outline" mx="2">
         Click me
@@ -333,6 +321,20 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
       `"<button class="button button--visual_outline button--size_md button--compound__size_md__visual_outline mx_2 c_red.200 fs_xl custom-btn">Click me</button>"`,
+    )
+  })
+})
+
+describe('styled elements and patterns', () => {
+  test('html props', () => {
+    const { container } = render(
+      <styled.div htmlWidth={123} height="123">
+        Click me
+      </styled.div>,
+    )
+
+    expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
+      `"<div width="123" class="h_123">Click me</div>"`,
     )
   })
 

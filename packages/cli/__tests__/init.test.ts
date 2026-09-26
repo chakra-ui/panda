@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { runInit, setupGitIgnore } from '../src'
-import { cleanupFixture, createFixture, linkWorkspaceDevPackage } from './helpers'
+import { cleanupFixture, createEmptyFixture, createFixture, linkWorkspaceDevPackage } from './helpers'
 
 const { version } = require('../package.json') as { version: string }
 const base = `@pandacss/preset-base@${version}`
@@ -24,7 +24,7 @@ describe('init command', () => {
   })
 
   it('writes a config and updates gitignore by default', async () => {
-    dir = createFixture(undefined, { config: false, source: false })
+    dir = createEmptyFixture()
     writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'app' }))
 
     const result = await runInit({ cwd: dir, codegen: false, logLevel: 'silent' })
@@ -45,7 +45,7 @@ describe('init command', () => {
   })
 
   it('rejects --interactive with --json', async () => {
-    dir = createFixture(undefined, { config: false, source: false })
+    dir = createEmptyFixture()
     const logs: string[] = []
     const result = await runInit(
       { cwd: dir, interactive: true, json: true, codegen: false },
@@ -59,13 +59,13 @@ describe('init command', () => {
   })
 
   it('writes strictTokens when set', async () => {
-    dir = createFixture(undefined, { config: false, source: false })
+    dir = createEmptyFixture()
     await runInit({ cwd: dir, codegen: false, logLevel: 'silent', strictTokens: true })
     expect(readFileSync(join(dir, 'panda.config.ts'), 'utf8')).toContain('strictTokens: true')
   })
 
   it('writes jsxStyleProps and outExtension when set', async () => {
-    dir = createFixture(undefined, { config: false, source: false })
+    dir = createEmptyFixture()
     await runInit({
       cwd: dir,
       codegen: false,
@@ -81,7 +81,7 @@ describe('init command', () => {
   })
 
   it('supports outdir overrides for config and gitignore', async () => {
-    dir = createFixture(undefined, { config: false, source: false })
+    dir = createEmptyFixture()
 
     const result = await runInit({ cwd: dir, outdir: 'system', codegen: false, logLevel: 'silent' })
 
@@ -91,7 +91,7 @@ describe('init command', () => {
   })
 
   it('--no-gitignore leaves gitignore untouched', async () => {
-    dir = createFixture(undefined, { config: false, source: false })
+    dir = createEmptyFixture()
     writeFileSync(join(dir, '.gitignore'), 'node_modules\n')
 
     const result = await runInit({ cwd: dir, gitignore: false, codegen: false, logLevel: 'silent' })
@@ -101,7 +101,7 @@ describe('init command', () => {
   })
 
   it('does not duplicate existing gitignore entries', () => {
-    dir = createFixture(undefined, { config: false, source: false })
+    dir = createEmptyFixture()
     writeFileSync(join(dir, '.gitignore'), '# Panda\nstyled-system\n')
 
     expect(setupGitIgnore(dir)).toBe(false)
@@ -109,7 +109,7 @@ describe('init command', () => {
   })
 
   it('runs codegen by default', async () => {
-    dir = createFixture(undefined, { config: false, source: true })
+    dir = createFixture(undefined, { config: false })
     linkWorkspaceDevPackage(dir)
     writeFileSync(
       join(dir, 'package.json'),
@@ -130,7 +130,7 @@ describe('init command', () => {
       writeFileSync(join(at, 'package.json'), JSON.stringify(manifest))
 
     const initWithPkg = (manifest?: Record<string, unknown>, flags: Record<string, unknown> = {}) => {
-      dir = createFixture(undefined, { config: false, source: false })
+      dir = createEmptyFixture()
       writePkg(dir, manifest)
       return runInit({ cwd: dir, codegen: false, logLevel: 'silent', ...flags })
     }
@@ -146,20 +146,54 @@ describe('init command', () => {
       expect(result.presetsInstalled).toEqual(['@pandacss/preset-base', '@pandacss/preset-panda'])
     })
 
-    it.each([
-      ['pnpm-lock.yaml', 'pnpm add -D'],
-      ['yarn.lock', 'yarn add -D'],
-      ['bun.lockb', 'bun add -d'],
-      ['bun.lock', 'bun add -d'],
-      ['package-lock.json', 'npm install -D'],
-    ])('detects the package manager from %s', async (lockfile, prefix) => {
-      dir = createFixture(undefined, { config: false, source: false })
+    it('installs presets with pnpm when the project has a pnpm-lock.yaml', async () => {
+      dir = createEmptyFixture()
       writePkg(dir)
-      writeFileSync(join(dir, lockfile), '')
+      writeFileSync(join(dir, 'pnpm-lock.yaml'), '')
 
       await runInit({ cwd: dir, codegen: false, logLevel: 'silent' })
 
-      expect(execSync).toHaveBeenCalledWith(`${prefix} ${base} ${panda}`, expect.objectContaining({ cwd: dir }))
+      expect(execSync).toHaveBeenCalledWith(`pnpm add -D ${base} ${panda}`, expect.objectContaining({ cwd: dir }))
+    })
+
+    it('installs presets with yarn when the project has a yarn.lock', async () => {
+      dir = createEmptyFixture()
+      writePkg(dir)
+      writeFileSync(join(dir, 'yarn.lock'), '')
+
+      await runInit({ cwd: dir, codegen: false, logLevel: 'silent' })
+
+      expect(execSync).toHaveBeenCalledWith(`yarn add -D ${base} ${panda}`, expect.objectContaining({ cwd: dir }))
+    })
+
+    it('installs presets with bun when the project has a binary bun.lockb', async () => {
+      dir = createEmptyFixture()
+      writePkg(dir)
+      writeFileSync(join(dir, 'bun.lockb'), '')
+
+      await runInit({ cwd: dir, codegen: false, logLevel: 'silent' })
+
+      expect(execSync).toHaveBeenCalledWith(`bun add -d ${base} ${panda}`, expect.objectContaining({ cwd: dir }))
+    })
+
+    it('installs presets with bun when the project has a text bun.lock', async () => {
+      dir = createEmptyFixture()
+      writePkg(dir)
+      writeFileSync(join(dir, 'bun.lock'), '')
+
+      await runInit({ cwd: dir, codegen: false, logLevel: 'silent' })
+
+      expect(execSync).toHaveBeenCalledWith(`bun add -d ${base} ${panda}`, expect.objectContaining({ cwd: dir }))
+    })
+
+    it('installs presets with npm when the project has a package-lock.json', async () => {
+      dir = createEmptyFixture()
+      writePkg(dir)
+      writeFileSync(join(dir, 'package-lock.json'), '')
+
+      await runInit({ cwd: dir, codegen: false, logLevel: 'silent' })
+
+      expect(execSync).toHaveBeenCalledWith(`npm install -D ${base} ${panda}`, expect.objectContaining({ cwd: dir }))
     })
 
     it('defaults to npm when no lockfile is present', async () => {
@@ -169,7 +203,7 @@ describe('init command', () => {
     })
 
     it('prefers pnpm when multiple lockfiles are present', async () => {
-      dir = createFixture(undefined, { config: false, source: false })
+      dir = createEmptyFixture()
       writePkg(dir)
       writeFileSync(join(dir, 'package-lock.json'), '')
       writeFileSync(join(dir, 'pnpm-lock.yaml'), '')
@@ -180,7 +214,7 @@ describe('init command', () => {
     })
 
     it('honors the corepack packageManager field over lockfiles', async () => {
-      dir = createFixture(undefined, { config: false, source: false })
+      dir = createEmptyFixture()
       writePkg(dir, { name: 'app', packageManager: 'pnpm@9.1.0' })
       writeFileSync(join(dir, 'package-lock.json'), '')
 
@@ -190,7 +224,7 @@ describe('init command', () => {
     })
 
     it('walks up to find the lockfile in a monorepo parent', async () => {
-      dir = createFixture(undefined, { config: false, source: false })
+      dir = createEmptyFixture()
       const child = join(dir, 'packages', 'app')
       mkdirSync(child, { recursive: true })
       writePkg(child)
@@ -240,7 +274,7 @@ describe('init command', () => {
     })
 
     it('fails codegen when @pandacss/dev is not installed', async () => {
-      dir = createFixture(undefined, { config: false, source: false })
+      dir = createEmptyFixture()
       writePkg(dir)
 
       const result = await runInit({ cwd: dir, skipPresets: true, logLevel: 'silent' })
@@ -265,7 +299,7 @@ describe('init command', () => {
       execSync.mockImplementation(() => {
         throw new Error('install failed')
       })
-      dir = createFixture(undefined, { config: false, source: false })
+      dir = createEmptyFixture()
       writePkg(dir)
       const logs: string[] = []
 
@@ -275,7 +309,7 @@ describe('init command', () => {
     })
 
     it('scaffolds a bare config and skips install when there is no package.json', async () => {
-      dir = createFixture(undefined, { config: false, source: false })
+      dir = createEmptyFixture()
 
       const result = await runInit({ cwd: dir, codegen: false, logLevel: 'silent' })
 
@@ -285,7 +319,7 @@ describe('init command', () => {
     })
 
     it('hints to install presets manually when there is no usable package.json', async () => {
-      dir = createFixture(undefined, { config: false, source: false })
+      dir = createEmptyFixture()
       const logs: string[] = []
 
       await runInit({ cwd: dir, codegen: false }, { log: (message) => logs.push(message) })
@@ -295,7 +329,7 @@ describe('init command', () => {
     })
 
     it('scaffolds a bare config when package.json is unparseable', async () => {
-      dir = createFixture(undefined, { config: false, source: false })
+      dir = createEmptyFixture()
       writeFileSync(join(dir, 'package.json'), '{ not valid json')
 
       const result = await runInit({ cwd: dir, codegen: false, logLevel: 'silent' })

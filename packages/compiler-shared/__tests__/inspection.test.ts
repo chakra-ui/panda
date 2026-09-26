@@ -3,6 +3,95 @@ import { describe, expect, test } from 'vitest'
 import { createUsageReport } from '../src'
 import type { FileInspectionBatch, FileInspectionResult, SourceRange, Spec, UsageReport } from '../src'
 
+type StyleEntry = FileInspectionResult['styleEntries'][number]
+
+const line1: SourceRange = { start: { line: 1, column: 1 }, end: { line: 1, column: 10 } }
+const line2: SourceRange = { start: { line: 2, column: 1 }, end: { line: 2, column: 10 } }
+const span = { start: 0, end: 4 }
+
+const spec: Spec = {
+  conditions: { keys: [], breakpoints: [], containers: [] },
+  tokens: {
+    categories: {
+      colors: { name: 'colors', typeName: 'ColorsToken', values: ['red.500', 'blue.500'] },
+    },
+    colorPalettes: [],
+    values: { 'colors.red.500': '#ef4444', 'colors.blue.500': '#3b82f6' },
+    deprecated: {},
+  },
+  utilities: {
+    properties: {
+      color: { name: 'color', tokenCategory: 'colors', literals: [], alias: 'ColorsValue' },
+    },
+    shorthands: {},
+    deprecated: {},
+  },
+  keyframes: { keys: ['spin'] },
+  patterns: {},
+  recipes: {
+    button: {
+      name: 'button',
+      typeName: 'ButtonRecipe',
+      variants: {
+        size: { values: ['sm', 'md'], allowsBoolean: false },
+        variant: { values: ['solid', 'outline'], allowsBoolean: false },
+      },
+    },
+  },
+  slotRecipes: {},
+  propertyOrder: [],
+}
+
+function file(input: Partial<FileInspectionResult> = {}): FileInspectionResult {
+  return {
+    path: 'app.tsx',
+    usages: [],
+    diagnostics: [],
+    calls: [],
+    jsx: [],
+    tokenRefs: [],
+    componentEntries: [],
+    styleEntries: [],
+    ...input,
+  }
+}
+
+/** A `css({ ... })` utility entry on line 1 unless the test overrides it. */
+function styleEntry(entry: Pick<StyleEntry, 'name' | 'path' | 'sourceValue'> & Partial<StyleEntry>): StyleEntry {
+  return {
+    kind: 'utility',
+    syntax: 'css-call',
+    owner: { kind: 'call', index: 0 },
+    origin: 'local',
+    span,
+    range: line1,
+    resolvedValue: entry.sourceValue,
+    fixable: 'safe',
+    ...entry,
+  }
+}
+
+function condense(report: UsageReport) {
+  const row = (value: unknown) => inspect(value, { breakLength: Infinity, compact: true, depth: null })
+  const rows = (items: unknown[]) => items.map(row)
+  const { views } = report
+
+  return {
+    ...report,
+    summary: Object.fromEntries(Object.entries(report.summary).map(([scope, entry]) => [scope, row(entry)])),
+    files: rows(report.files),
+    usages: rows(report.usages),
+    facts: Object.fromEntries(Object.entries(report.facts).map(([table, items]) => [table, rows(items)])),
+    views: views && {
+      tokens: { categories: rows(views.tokens.categories), unused: views.tokens.unused },
+      recipes: { recipes: rows(views.recipes.recipes), unused: views.recipes.unused },
+      utilities: { ...views.utilities, items: rows(views.utilities.items) },
+      patterns: { ...views.patterns, items: rows(views.patterns.items) },
+      keyframes: { ...views.keyframes, items: rows(views.keyframes.items) },
+    },
+  }
+}
+
 describe('createUsageReport', () => {
   test('summarizes usage directly from file inspection results', () => {
     const inspection: FileInspectionBatch = {
@@ -10,37 +99,21 @@ describe('createUsageReport', () => {
       files: [
         file({
           usages: [
-            { kind: 'token', name: 'colors.red.500', range },
-            { kind: 'keyframe', name: 'spin', range },
+            { kind: 'token', name: 'colors.red.500', range: line1 },
+            { kind: 'keyframe', name: 'spin', range: line1 },
           ],
-          componentEntries: [{ kind: 'jsx-recipe', name: 'button', span: { start: 0, end: 4 }, range }],
+          componentEntries: [{ kind: 'jsx-recipe', name: 'button', span, range: line1 }],
           styleEntries: [
-            {
-              kind: 'utility',
-              syntax: 'css-call',
-              owner: { kind: 'call', index: 0 },
-              origin: 'local',
-              span: { start: 0, end: 4 },
-              range,
-              path: ['color'],
-              name: 'color',
-              sourceValue: 'red.500',
-              resolvedValue: 'red.500',
-              fixable: 'safe',
-            },
-            {
+            styleEntry({ name: 'color', path: ['color'], sourceValue: 'red.500' }),
+            styleEntry({
               kind: 'pattern-prop',
               syntax: 'pattern-call',
               owner: { kind: 'call', index: 1 },
-              origin: 'local',
-              span: { start: 0, end: 4 },
-              range: rawRange,
-              path: ['gap'],
+              range: line2,
               name: 'stack',
+              path: ['gap'],
               sourceValue: '4',
-              resolvedValue: '4',
-              fixable: 'safe',
-            },
+            }),
           ],
         }),
       ],
@@ -127,44 +200,29 @@ describe('createUsageReport', () => {
       files: [
         file({
           usages: [
-            { kind: 'token', name: 'colors.red.500', range },
-            { kind: 'recipe', name: 'button', range },
+            { kind: 'token', name: 'colors.red.500', range: line1 },
+            { kind: 'recipe', name: 'button', range: line1 },
           ],
           calls: [
-            { category: 'css', name: 'css', alias: 'css', data: [], span: { start: 0, end: 4 }, range },
-            { category: 'recipe', name: 'button', alias: 'button', data: [], span: { start: 0, end: 4 }, range },
+            { category: 'css', name: 'css', alias: 'css', data: [], span, range: line1 },
+            { category: 'recipe', name: 'button', alias: 'button', data: [], span, range: line1 },
           ],
-          componentEntries: [
-            { kind: 'jsx-recipe', name: 'Button', recipe: 'button', span: { start: 0, end: 4 }, range },
-          ],
+          componentEntries: [{ kind: 'jsx-recipe', name: 'Button', recipe: 'button', span, range: line1 }],
           styleEntries: [
-            {
-              kind: 'utility',
-              syntax: 'css-call',
-              owner: { kind: 'call', index: 0 },
-              origin: 'local',
-              span: { start: 0, end: 4 },
-              range,
-              path: ['color'],
+            styleEntry({
               name: 'color',
+              path: ['color'],
               sourceValue: '#ef4444',
-              resolvedValue: '#ef4444',
-              fixable: 'safe',
-              valueSpans: [{ value: '#ef4444', span: { start: 0, end: 4 } }],
-            },
-            {
+              valueSpans: [{ value: '#ef4444', span }],
+            }),
+            styleEntry({
               kind: 'recipe-variant',
               syntax: 'recipe-call',
               owner: { kind: 'call', index: 1 },
-              origin: 'local',
-              span: { start: 0, end: 4 },
-              range,
-              path: ['variants', 'size', 'sm'],
               name: 'button',
+              path: ['variants', 'size', 'sm'],
               sourceValue: 'sm',
-              resolvedValue: 'sm',
-              fixable: 'safe',
-            },
+            }),
           ],
         }),
       ],
@@ -270,27 +328,16 @@ describe('createUsageReport', () => {
   })
 
   test('does not report CSS keys inside a local cva or sva body as recipes', () => {
-    const entry = (name: string, path: string[]): FileInspectionResult['styleEntries'][number] => ({
-      kind: 'recipe-variant',
-      syntax: 'recipe-call',
-      owner: { kind: 'call', index: 0 },
-      origin: 'local',
-      span: { start: 0, end: 4 },
-      range,
-      path,
-      name,
-      sourceValue: '1',
-      resolvedValue: '1',
-      fixable: 'safe',
-    })
+    const cvaEntry = (name: string, path: string[]) =>
+      styleEntry({ kind: 'recipe-variant', syntax: 'recipe-call', name, path, sourceValue: '1' })
     const inspection: FileInspectionBatch = {
       sourceCount: 1,
       files: [
         file({
-          calls: [{ category: 'css', name: 'cva', alias: 'cva', data: [], span: { start: 0, end: 4 }, range }],
+          calls: [{ category: 'css', name: 'cva', alias: 'cva', data: [], span, range: line1 }],
           styleEntries: [
-            entry('--dialog-margin', ['variants', 'placement', 'center', 'content', '--dialog-margin']),
-            entry('pointerEvents', ['variants', 'scrollBehavior', 'outside', 'positioner', 'pointerEvents']),
+            cvaEntry('--dialog-margin', ['variants', 'placement', 'center', 'content', '--dialog-margin']),
+            cvaEntry('pointerEvents', ['variants', 'scrollBehavior', 'outside', 'positioner', 'pointerEvents']),
           ],
         }),
       ],
@@ -311,30 +358,16 @@ describe('createUsageReport', () => {
       files: [
         file({
           path: 'b.tsx',
-          usages: [{ kind: 'keyframe', name: 'spin', range }],
+          usages: [{ kind: 'keyframe', name: 'spin', range: line1 }],
         }),
         file({
           path: 'a.tsx',
           usages: [
             { kind: 'token', name: 'colors.red.500', range: later },
-            { kind: 'recipe', name: 'button', range },
+            { kind: 'recipe', name: 'button', range: line1 },
           ],
-          componentEntries: [{ kind: 'jsx-pattern', name: 'stack', span: { start: 0, end: 4 }, range: rawRange }],
-          styleEntries: [
-            {
-              kind: 'utility',
-              syntax: 'css-call',
-              owner: { kind: 'call', index: 0 },
-              origin: 'local',
-              span: { start: 0, end: 4 },
-              range: rawRange,
-              path: ['color'],
-              name: 'color',
-              sourceValue: 'red.500',
-              resolvedValue: 'red.500',
-              fixable: 'safe',
-            },
-          ],
+          componentEntries: [{ kind: 'jsx-pattern', name: 'stack', span, range: line2 }],
+          styleEntries: [styleEntry({ name: 'color', path: ['color'], sourceValue: 'red.500', range: line2 })],
         }),
       ],
     }
@@ -352,28 +385,20 @@ describe('createUsageReport', () => {
   })
 
   test('ranks utilities, patterns, and keyframes against what the config declares', () => {
-    const utility = (name: string, canonicalName?: string): FileInspectionResult['styleEntries'][number] => ({
-      kind: 'utility',
-      syntax: 'css-call',
-      owner: { kind: 'call', index: 0 },
-      origin: 'local',
-      span: { start: 0, end: 4 },
-      range,
-      path: [name],
-      name,
-      canonicalName,
-      sourceValue: 'red.500',
-      resolvedValue: 'red.500',
-      fixable: 'safe',
-    })
     const inspection: FileInspectionBatch = {
       sourceCount: 2,
       files: [
-        file({ path: 'a.tsx', styleEntries: [utility('c', 'color'), utility('color')] }),
+        file({
+          path: 'a.tsx',
+          styleEntries: [
+            styleEntry({ name: 'c', canonicalName: 'color', path: ['c'], sourceValue: 'red.500' }),
+            styleEntry({ name: 'color', path: ['color'], sourceValue: 'red.500' }),
+          ],
+        }),
         file({
           path: 'b.tsx',
-          usages: [{ kind: 'pattern', name: 'stack', range }],
-          styleEntries: [utility('color')],
+          usages: [{ kind: 'pattern', name: 'stack', range: line1 }],
+          styleEntries: [styleEntry({ name: 'color', path: ['color'], sourceValue: 'red.500' })],
         }),
       ],
     }
@@ -408,10 +433,8 @@ describe('createUsageReport', () => {
         sourceCount: 1,
         files: [
           file({
-            usages: [{ kind: 'token', name: 'colors.red.500', range }],
-            componentEntries: [
-              { kind: 'jsx-recipe', name: 'Button', recipe: 'button', span: { start: 0, end: 4 }, range },
-            ],
+            usages: [{ kind: 'token', name: 'colors.red.500', range: line1 }],
+            componentEntries: [{ kind: 'jsx-recipe', name: 'Button', recipe: 'button', span, range: line1 }],
           }),
         ],
       },
@@ -436,20 +459,14 @@ describe('createUsageReport', () => {
             },
           ],
           styleEntries: [
-            {
-              kind: 'utility',
-              syntax: 'css-call',
-              owner: { kind: 'call', index: 0 },
-              origin: 'local',
+            styleEntry({
+              name: 'color',
+              path: ['color'],
+              sourceValue: 'red.500',
               span: { start: 0, end: source.length },
               range: { start: { line: 2, column: 3 }, end: { line: 2, column: 20 } },
-              path: ['color'],
-              name: 'color',
-              sourceValue: 'red.500',
-              resolvedValue: 'red.500',
-              fixable: 'safe',
               valueSpans: [{ value: 'red.500', span: { start: valueStart, end: valueStart + "'red.500'".length } }],
-            },
+            }),
           ],
         }),
       ],
@@ -465,77 +482,3 @@ describe('createUsageReport', () => {
     ])
   })
 })
-
-const range: SourceRange = {
-  start: { line: 1, column: 1 },
-  end: { line: 1, column: 10 },
-}
-const rawRange: SourceRange = {
-  start: { line: 2, column: 1 },
-  end: { line: 2, column: 10 },
-}
-const spec: Spec = {
-  conditions: { keys: [], breakpoints: [], containers: [] },
-  tokens: {
-    categories: {
-      colors: { name: 'colors', typeName: 'ColorsToken', values: ['red.500', 'blue.500'] },
-    },
-    colorPalettes: [],
-    values: { 'colors.red.500': '#ef4444', 'colors.blue.500': '#3b82f6' },
-    deprecated: {},
-  },
-  utilities: {
-    properties: {
-      color: { name: 'color', tokenCategory: 'colors', literals: [], alias: 'ColorsValue' },
-    },
-    shorthands: {},
-    deprecated: {},
-  },
-  keyframes: { keys: ['spin'] },
-  patterns: {},
-  recipes: {
-    button: {
-      name: 'button',
-      typeName: 'ButtonRecipe',
-      variants: {
-        size: { values: ['sm', 'md'], allowsBoolean: false },
-        variant: { values: ['solid', 'outline'], allowsBoolean: false },
-      },
-    },
-  },
-  slotRecipes: {},
-  propertyOrder: [],
-}
-function file(input: Partial<FileInspectionResult> = {}): FileInspectionResult {
-  return {
-    path: 'app.tsx',
-    usages: [],
-    diagnostics: [],
-    calls: [],
-    jsx: [],
-    tokenRefs: [],
-    componentEntries: [],
-    styleEntries: [],
-    ...input,
-  }
-}
-function condense(report: UsageReport) {
-  const row = (value: unknown) => inspect(value, { breakLength: Infinity, compact: true, depth: null })
-  const rows = (items: unknown[]) => items.map(row)
-  const { views } = report
-
-  return {
-    ...report,
-    summary: Object.fromEntries(Object.entries(report.summary).map(([scope, entry]) => [scope, row(entry)])),
-    files: rows(report.files),
-    usages: rows(report.usages),
-    facts: Object.fromEntries(Object.entries(report.facts).map(([table, items]) => [table, rows(items)])),
-    views: views && {
-      tokens: { categories: rows(views.tokens.categories), unused: views.tokens.unused },
-      recipes: { recipes: rows(views.recipes.recipes), unused: views.recipes.unused },
-      utilities: { ...views.utilities, items: rows(views.utilities.items) },
-      patterns: { ...views.patterns, items: rows(views.patterns.items) },
-      keyframes: { ...views.keyframes, items: rows(views.keyframes.items) },
-    },
-  }
-}

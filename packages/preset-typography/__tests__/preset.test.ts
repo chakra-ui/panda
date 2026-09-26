@@ -4,7 +4,7 @@ import { assembleStyles } from '../src/styles'
 import { createProseRecipe } from '../src/recipe'
 
 describe('@pandacss/preset-typography', () => {
-  test('factory returns a named preset with prose recipe and semantic tokens', () => {
+  test('the default preset adds a prose recipe and prose color tokens', () => {
     const preset = createTypographyPreset()
 
     expect(preset.name).toBe('@pandacss/preset-typography')
@@ -37,7 +37,7 @@ describe('@pandacss/preset-typography', () => {
     })
   })
 
-  test('size filtering and defaultSize', () => {
+  test('limits the prose sizes and picks the default size', () => {
     const preset = createTypographyPreset({
       sizes: ['sm', 'lg'],
       defaultSize: 'lg',
@@ -56,7 +56,7 @@ describe('@pandacss/preset-typography', () => {
     expect(() => createTypographyPreset({ sizes: [] })).toThrow(/at least one size/)
   })
 
-  test('custom name, className, and semantic token options', () => {
+  test('renames the recipe, its class, and the token prefix', () => {
     const preset = createTypographyPreset({
       name: 'article',
       className: 'rich-text',
@@ -77,12 +77,12 @@ describe('@pandacss/preset-typography', () => {
     expect(preset.theme?.extend?.recipes?.article?.base?.color).toBe('copy.body')
   })
 
-  test('semanticTokens.enabled: false omits color tokens', () => {
+  test('leaves out the prose color tokens when semantic tokens are disabled', () => {
     const preset = createTypographyPreset({ semanticTokens: { enabled: false } })
     expect(preset.theme?.extend?.semanticTokens).toBeUndefined()
   })
 
-  test('notProse wraps nested selectors', () => {
+  test('notProse lets content opt out of prose styles', () => {
     const recipe = createProseRecipe({ notProse: true }).prose
     const keys = Object.keys(recipe.base ?? {})
 
@@ -90,13 +90,13 @@ describe('@pandacss/preset-typography', () => {
     expect(keys.some((key) => key === 'a' || key === '& a')).toBe(false)
   })
 
-  test('custom notProse class string', () => {
+  test('notProse accepts a custom opt-out class', () => {
     const recipe = createProseRecipe({ notProse: 'skip-prose' }).prose
     const keys = Object.keys(recipe.base ?? {})
     expect(keys.some((key) => key.includes('skip-prose'))).toBe(true)
   })
 
-  test('assembleStyles nests selectors with &', () => {
+  test('element styles become nested & selectors', () => {
     const styles = assembleStyles({
       root: { color: 'red' },
       elements: {

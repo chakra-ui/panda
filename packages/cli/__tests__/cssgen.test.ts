@@ -5,36 +5,17 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { runCssgen, writeCssgenOutput } from '../src'
 import {
   cleanupFixture,
-  CONFIG,
   createFixture,
-  EMPTY_CONFIG,
   normalizeOutput,
+  pandaConfig,
   writeSyntaxError,
   writeWarningSource,
 } from './helpers'
 
-const MINIMAL_CSS_CONFIG = `export default {
-  outdir: 'styled-system',
-  include: ['**/*.tsx'],
-  importMap: {
-    css: ['@panda/css'],
-    recipe: ['@panda/recipes'],
-    pattern: ['@panda/patterns'],
-    jsx: ['@panda/jsx'],
-    tokens: ['@panda/tokens'],
-  },
-  theme: {
-    tokens: {
-      colors: {
-        red: { value: '#f00' },
-      },
-    },
-  },
-  utilities: {
-    color: { className: 'c', values: 'colors' },
-  },
-}
-`
+const RED_TOKEN_AND_COLOR_UTILITY = [
+  "theme: { tokens: { colors: { red: { value: '#f00' } } } },",
+  "utilities: { color: { className: 'c', values: 'colors' } },",
+]
 
 describe('cssgen command', () => {
   let dir: string | undefined
@@ -66,7 +47,7 @@ describe('cssgen command', () => {
   })
 
   it('minify: true in config writes compact CSS without the flag', async () => {
-    dir = createFixture(CONFIG.replace('export default {', 'export default {\n  minify: true,'))
+    dir = createFixture(pandaConfig('minify: true,'))
 
     await runCssgen({ cwd: dir, logLevel: 'silent' })
 
@@ -77,7 +58,11 @@ describe('cssgen command', () => {
   })
 
   it('reports zero parsed files when no sources match', async () => {
-    dir = createFixture(EMPTY_CONFIG)
+    dir = createFixture(`export default {
+      outdir: 'styled-system',
+      include: ['missing/**/*.tsx'],
+      importMap: { css: ['@panda/css'] },
+    }`)
 
     const result = await runCssgen({ cwd: dir, logLevel: 'silent' })
 
@@ -206,14 +191,13 @@ describe('cssgen command', () => {
     )
   })
 
-  it('supports error-level output and max warning policy', async () => {
+  it('--log-level error hides warnings from the output but keeps them in the result', async () => {
     dir = createFixture()
     writeWarningSource(dir)
 
     const logs: string[] = []
 
     const errorLevel = await runCssgen({ cwd: dir, logLevel: 'error' }, { log: (message) => logs.push(message) })
-    const strict = await runCssgen({ cwd: dir, logLevel: 'silent', maxWarnings: 0 })
 
     expect(errorLevel.diagnostics.map(({ code, file, severity }) => ({ code, file, severity }))).toMatchInlineSnapshot(`
       [
@@ -226,6 +210,13 @@ describe('cssgen command', () => {
     `)
 
     expect(normalizeOutput(logs.join('\n'), dir)).toMatchInlineSnapshot(`""`)
+  })
+
+  it('--max-warnings 0 fails the run on a warning', async () => {
+    dir = createFixture()
+    writeWarningSource(dir)
+
+    const strict = await runCssgen({ cwd: dir, logLevel: 'silent', maxWarnings: 0 })
 
     expect({ exitCode: strict.exitCode, ok: strict.ok }).toMatchInlineSnapshot(`
       {
@@ -278,10 +269,7 @@ describe('cssgen command', () => {
 
   it('surfaces split stylesheet diagnostics in write mode', async () => {
     dir = createFixture(
-      MINIMAL_CSS_CONFIG.replace(
-        'export default {',
-        "export default {\n  staticCss: { css: [{ properties: { colr: 'red' } }] },",
-      ),
+      pandaConfig("staticCss: { css: [{ properties: { colr: 'red' } }] },", ...RED_TOKEN_AND_COLOR_UTILITY),
     )
 
     const result = await runCssgen({ cwd: dir, splitting: true, logLevel: 'silent' })
@@ -383,7 +371,7 @@ describe('cssgen command', () => {
   })
 
   it('--minimal emits usage CSS without token definitions', async () => {
-    dir = createFixture(MINIMAL_CSS_CONFIG)
+    dir = createFixture(pandaConfig(...RED_TOKEN_AND_COLOR_UTILITY))
 
     await runCssgen({ cwd: dir, minimal: true, logLevel: 'silent' })
 
@@ -397,7 +385,7 @@ describe('cssgen command', () => {
   })
 
   it('--splitting --minimal skips foundation CSS files', async () => {
-    dir = createFixture(MINIMAL_CSS_CONFIG)
+    dir = createFixture(pandaConfig(...RED_TOKEN_AND_COLOR_UTILITY))
 
     await runCssgen({ cwd: dir, splitting: true, minimal: true, logLevel: 'silent' })
 
@@ -414,7 +402,7 @@ describe('cssgen command', () => {
   })
 
   it('--splitting --minimal --minify writes compact usage CSS files', async () => {
-    dir = createFixture(MINIMAL_CSS_CONFIG)
+    dir = createFixture(pandaConfig(...RED_TOKEN_AND_COLOR_UTILITY))
 
     await runCssgen({ cwd: dir, splitting: true, minimal: true, minify: true, logLevel: 'silent' })
 

@@ -13,7 +13,7 @@ const Icon = withProvider('span', 'icon')
 const Label = withContext('span', 'root')
 
 describe('style context - preact', () => {
-  test('withProvider', () => {
+  test('context slots inherit the root variant, a nested provider slot does not', () => {
     const { container } = render(
       <Root visual="outline">
         <Icon>Icon</Icon>
@@ -26,7 +26,7 @@ describe('style context - preact', () => {
     )
   })
 
-  test('withContext', () => {
+  test('a context slot inherits the variant from its provider', () => {
     const { container } = render(
       <Root visual="solid">
         <Label>Click me</Label>
@@ -38,7 +38,7 @@ describe('style context - preact', () => {
     )
   })
 
-  test('default props', () => {
+  test('defaultProps land on the rendered element', () => {
     const RootWithDefaults = withRootProvider('div', { defaultProps: { 'data-testid': 'button-root' } })
 
     const { container } = render(
@@ -57,6 +57,8 @@ describe('style context - preact', () => {
 
     const { container } = render(<RootWithForward visual="outline" />)
 
-    expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(`"<div visual="outline" data-slot="root" class="slot-button__root slot-button__root--visual_outline"></div>"`)
+    expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
+      `"<div visual="outline" data-slot="root" class="slot-button__root slot-button__root--visual_outline"></div>"`,
+    )
   })
 })

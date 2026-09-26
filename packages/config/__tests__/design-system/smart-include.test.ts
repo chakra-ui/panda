@@ -30,26 +30,10 @@ describe('resolveAuthoredPresets / smart include', () => {
     pkg('widgets', { 'index.js': 'export const Widget = () => {}' })
     pkg('components', { 'index.js': 'export const PackageComponent = () => {}' })
 
-    pkg('@acme/sealed', { 'dist/index.js': 'export const Sealed = () => {}' }, { exports: { '.': './dist/index.js' } })
-    pkg('@acme/broken', { 'index.js': 'export const Broken = () => {}' }, { exports: { '.': 42 } })
-
     pkg('@acme/ds', { 'panda/lib.json': manifest('@acme/ds') })
     pkg('@acme/ds2', { 'panda/lib.json': manifest('@acme/ds2') })
 
-    pkg(
-      '@acme/sealed-ds',
-      { 'dist/index.js': 'export default {}', 'panda/lib.json': manifest('@acme/sealed-ds') },
-      { exports: { '.': './dist/index.js' } },
-    )
-
-    // The exact shape `panda lib` syncs: only the manifest and preset are
-    // exported — neither `.` nor `./package.json`.
-    pkg(
-      '@acme/lib-ds',
-      { 'panda/lib.json': manifest('@acme/lib-ds'), 'panda/preset.mjs': 'export default {}' },
-      { exports: { './panda/*': './panda/*' } },
-    )
-
+    // A local ./components dir that shares its name with the installed package.
     mkdirSync(join(cwd, 'components'), { recursive: true })
   })
 
@@ -97,11 +81,15 @@ describe('resolveAuthoredPresets / smart include', () => {
   })
 
   test('resolves a package whose exports hide ./package.json via its entry', async () => {
+    pkg('@acme/sealed', { 'dist/index.js': 'export const Sealed = () => {}' }, { exports: { '.': './dist/index.js' } })
+
     const { config } = await resolveAuthoredPresets({ include: ['@acme/sealed'] } as any, cwd)
     expect(config.include).toEqual([`node_modules/@acme/sealed/**/*.{${EXT}}`])
   })
 
   test('rejects when package resolution fails for an unexpected reason', async () => {
+    pkg('@acme/broken', { 'index.js': 'export const Broken = () => {}' }, { exports: { '.': 42 } })
+
     await expect(resolveAuthoredPresets({ include: ['@acme/broken'] } as any, cwd)).rejects.toMatchObject({
       message: expect.stringMatching(/Failed to resolve include package "@acme\/broken"/),
       diagnostics: [
@@ -122,6 +110,12 @@ describe('resolveAuthoredPresets / smart include', () => {
   })
 
   test('detects a manifest on disk even when exports would hide it', async () => {
+    pkg(
+      '@acme/sealed-ds',
+      { 'dist/index.js': 'export default {}', 'panda/lib.json': manifest('@acme/sealed-ds') },
+      { exports: { '.': './dist/index.js' } },
+    )
+
     await expect(resolveAuthoredPresets({ include: ['@acme/sealed-ds'] } as any, cwd)).rejects.toMatchObject({
       message: expect.stringMatching(/Design system in `include`: "@acme\/sealed-ds"/),
       diagnostics: [{ code: 'design_system_in_include', severity: 'error', category: 'config' }],
@@ -129,6 +123,12 @@ describe('resolveAuthoredPresets / smart include', () => {
   })
 
   test('detects a `panda lib` package whose exports expose only the manifest', async () => {
+    pkg(
+      '@acme/lib-ds',
+      { 'panda/lib.json': manifest('@acme/lib-ds'), 'panda/preset.mjs': 'export default {}' },
+      { exports: { './panda/*': './panda/*' } },
+    )
+
     await expect(resolveAuthoredPresets({ include: ['@acme/lib-ds'] } as any, cwd)).rejects.toMatchObject({
       message: expect.stringMatching(/Design system in `include`: "@acme\/lib-ds"/),
       diagnostics: [{ code: 'design_system_in_include', severity: 'error', category: 'config' }],

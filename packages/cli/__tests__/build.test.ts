@@ -115,8 +115,8 @@ describe('build command (default panda)', () => {
   })
 
   it('applies the warning budget to design-system diagnostics and keeps JSON output machine-clean', async () => {
-    dir = createFixture()
-    writeStaleDesignSystemFixture(dir)
+    dir = createFixture(`export default { designSystem: '@acme/ds', include: ['**/*.tsx'] }`)
+    writeStaleDesignSystemPackage(dir)
     const stdout: string[] = []
     const stderr: string[] = []
 
@@ -224,8 +224,8 @@ describe('build command (default panda)', () => {
   })
 })
 
-function writeStaleDesignSystemFixture(root: string): void {
-  writeFileSync(join(root, 'panda.config.ts'), `export default { designSystem: '@acme/ds', include: ['**/*.tsx'] }`)
+/** An installed `@acme/ds` whose buildinfo was written by a newer, incompatible Panda. */
+function writeStaleDesignSystemPackage(root: string): void {
   const files: Record<string, string> = {
     'node_modules/@acme/ds/package.json': JSON.stringify({
       name: '@acme/ds',

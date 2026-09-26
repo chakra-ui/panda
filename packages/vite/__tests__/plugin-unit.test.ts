@@ -142,7 +142,7 @@ describe('@pandacss/vite design-system HMR', () => {
     driver.codegen.mockClear()
     await plugin.hotUpdate.call(
       { environment },
-      artifactHotUpdate('/project/node_modules/@acme/ds/panda/lib.json', environment),
+      hotUpdateEvent('/project/node_modules/@acme/ds/panda/lib.json', environment),
     )
 
     expect(driver.syncDesignSystemFileChange).toHaveBeenCalledWith({
@@ -163,7 +163,7 @@ describe('@pandacss/vite design-system HMR', () => {
     driver.codegen.mockClear()
     await plugin.hotUpdate.call(
       { environment },
-      artifactHotUpdate('/project/node_modules/@acme/ds/panda/lib.json', environment),
+      hotUpdateEvent('/project/node_modules/@acme/ds/panda/lib.json', environment),
     )
 
     expect(driver.codegen).not.toHaveBeenCalled()
@@ -180,7 +180,7 @@ describe('@pandacss/vite design-system HMR', () => {
     await plugin.hotUpdate.call(
       { environment },
       {
-        ...artifactHotUpdate('/project/node_modules/@acme/ds/src/button.css.ts', environment),
+        ...hotUpdateEvent('/project/node_modules/@acme/ds/src/button.css.ts', environment),
         read: async () => "export const button = css({ fontSize: '20px' })",
       },
     )
@@ -193,46 +193,69 @@ describe('@pandacss/vite design-system HMR', () => {
     expect(driver.codegen).not.toHaveBeenCalled()
   })
 
-  it.each([
-    ['create', 'add', true],
-    ['update', 'change', true],
-    ['delete', 'unlink', false],
-  ] as const)('maps Vite %s events to Panda %s changes', async (type, kind, readsSource) => {
+  it('parses a newly created source file', async () => {
     const { driver, pandacss } = await setup()
     const plugin = pandacss() as unknown as TestPlugin
-    const environment = {
-      moduleGraph: {
-        getModuleById: vi.fn(),
-        invalidateModule: vi.fn(),
-      },
-    }
+    const environment = createEnvironment()
     const read = vi.fn(async () => "export const cls = css({ color: 'red' })")
     driver.isSourceFile.mockReturnValue(true)
 
     await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
     await plugin.hotUpdate.call(
       { environment },
-      {
-        type,
-        file: '/project/src/app.tsx',
-        modules: [],
-        read,
-        server: {
-          config: { logger: { warn: vi.fn() } },
-          environments: { client: environment },
-        },
-      },
+      { ...hotUpdateEvent('/project/src/app.tsx', environment), type: 'create', read },
     )
 
     expect(driver.applyChange).toHaveBeenCalledWith({
       path: '/project/src/app.tsx',
-      kind,
-      ...(readsSource ? { content: "export const cls = css({ color: 'red' })" } : {}),
+      kind: 'add',
+      content: "export const cls = css({ color: 'red' })",
     })
-    expect(read).toHaveBeenCalledTimes(readsSource ? 1 : 0)
+    expect(read).toHaveBeenCalledTimes(1)
   })
 
-  it('invalidates the stylesheet root in a non-client environment without touching the shared driver', async () => {
+  it('re-parses an edited source file', async () => {
+    const { driver, pandacss } = await setup()
+    const plugin = pandacss() as unknown as TestPlugin
+    const environment = createEnvironment()
+    const read = vi.fn(async () => "export const cls = css({ color: 'red' })")
+    driver.isSourceFile.mockReturnValue(true)
+
+    await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
+    await plugin.hotUpdate.call(
+      { environment },
+      { ...hotUpdateEvent('/project/src/app.tsx', environment), type: 'update', read },
+    )
+
+    expect(driver.applyChange).toHaveBeenCalledWith({
+      path: '/project/src/app.tsx',
+      kind: 'change',
+      content: "export const cls = css({ color: 'red' })",
+    })
+    expect(read).toHaveBeenCalledTimes(1)
+  })
+
+  it('drops a deleted source file without reading it', async () => {
+    const { driver, pandacss } = await setup()
+    const plugin = pandacss() as unknown as TestPlugin
+    const environment = createEnvironment()
+    const read = vi.fn(async () => "export const cls = css({ color: 'red' })")
+    driver.isSourceFile.mockReturnValue(true)
+
+    await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
+    await plugin.hotUpdate.call(
+      { environment },
+      { ...hotUpdateEvent('/project/src/app.tsx', environment), type: 'delete', read },
+    )
+
+    expect(driver.applyChange).toHaveBeenCalledWith({
+      path: '/project/src/app.tsx',
+      kind: 'unlink',
+    })
+    expect(read).toHaveBeenCalledTimes(0)
+  })
+
+  it('ignores a non-source file change in the SSR environment', async () => {
     const { driver, pandacss } = await setup()
     const plugin = pandacss() as unknown as TestPlugin
     const root = { id: '/project/src/index.css' }
@@ -248,12 +271,30 @@ describe('@pandacss/vite design-system HMR', () => {
     await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
     plugin.transform.call({ addWatchFile: vi.fn(), warn: vi.fn() }, CSS_ROOT, '/project/src/index.css')
 
-    const untouched = await plugin.hotUpdate.call(
+    const modules = await plugin.hotUpdate.call(
       { environment: ssr },
       { type: 'delete', file: '/project/README.md', modules: [], read: vi.fn(), server: { environments: { client } } },
     )
-    expect(untouched).toEqual([])
+
+    expect(modules).toEqual([])
     expect(ssr.moduleGraph.invalidateModule).not.toHaveBeenCalled()
+  })
+
+  it('invalidates the SSR stylesheet root on a source delete without touching the shared driver', async () => {
+    const { driver, pandacss } = await setup()
+    const plugin = pandacss() as unknown as TestPlugin
+    const root = { id: '/project/src/index.css' }
+    const client = { moduleGraph: {} }
+    const ssr = {
+      moduleGraph: {
+        getModuleById: vi.fn((id: string) => (id === root.id ? root : undefined)),
+        invalidateModule: vi.fn(),
+      },
+    }
+    driver.isSourceFile.mockImplementation((file: string): boolean => file === '/project/src/app.tsx')
+
+    await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
+    plugin.transform.call({ addWatchFile: vi.fn(), warn: vi.fn() }, CSS_ROOT, '/project/src/index.css')
 
     const modules = await plugin.hotUpdate.call(
       { environment: ssr },
@@ -394,7 +435,7 @@ function createEnvironment() {
   }
 }
 
-function artifactHotUpdate(file: string, environment: ReturnType<typeof createEnvironment>) {
+function hotUpdateEvent(file: string, environment: ReturnType<typeof createEnvironment>) {
   return {
     type: 'update',
     file,

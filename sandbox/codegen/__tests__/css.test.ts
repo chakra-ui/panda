@@ -87,14 +87,16 @@ describe('css', () => {
     expect(className).toMatchInlineSnapshot('"hover:dark:bg_pink.100 hover:dark:sm:bg_pink.200"')
   })
 
-  test('same prop', () => {
+  test('longhand written after its shorthand wins', () => {
     const className = css({ bgColor: 'red.100', backgroundColor: 'red.200' })
 
     expect(className).toMatchInlineSnapshot(`"bg-c_red.200"`)
+  })
 
-    const className2 = css({ backgroundColor: 'red.300', bgColor: 'red.400' })
+  test('shorthand written after its longhand wins', () => {
+    const className = css({ backgroundColor: 'red.300', bgColor: 'red.400' })
 
-    expect(className2).toMatchInlineSnapshot(`"bg-c_red.400"`)
+    expect(className).toMatchInlineSnapshot(`"bg-c_red.400"`)
   })
 
   test('merging styles', () => {
@@ -125,10 +127,7 @@ describe('css', () => {
   })
 
   test('important value', () => {
-    // The runtime must strip `!important` before naming, then mark the class
-    // with a trailing `!` — matching the cssgen rule (`.p_0\!`). Hashing the raw
-    // string (`p_0_!important`) names a class cssgen never writes, so the
-    // `!important` declaration silently never applies.
+    // must match the emitted `.p_0\!` rule, or the !important declaration never applies
     const className = css({ padding: '0 !important' })
 
     expect(className).toMatchInlineSnapshot('"p_0!"')
@@ -320,7 +319,7 @@ describe('css.raw', () => {
     `)
   })
 
-  test('same prop', () => {
+  test('keeps both shorthand and longhand when the longhand comes last', () => {
     const styles = css.raw({ bgColor: 'red.100', backgroundColor: 'red.200' })
 
     expect(styles).toMatchInlineSnapshot(`
@@ -329,10 +328,12 @@ describe('css.raw', () => {
         "bgColor": "red.100",
       }
     `)
+  })
 
-    const styles2 = css.raw({ backgroundColor: 'red.300', bgColor: 'red.400' })
+  test('keeps both shorthand and longhand when the shorthand comes last', () => {
+    const styles = css.raw({ backgroundColor: 'red.300', bgColor: 'red.400' })
 
-    expect(styles2).toMatchInlineSnapshot(`
+    expect(styles).toMatchInlineSnapshot(`
       {
         "backgroundColor": "red.300",
         "bgColor": "red.400",

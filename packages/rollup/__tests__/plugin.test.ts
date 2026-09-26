@@ -125,20 +125,40 @@ describe('@pandacss/rollup', () => {
     expect(driver.scan).toHaveBeenCalledOnce()
   })
 
-  it.each([
-    ['create', 'add'],
-    ['update', 'change'],
-    ['delete', 'unlink'],
-  ] as const)('maps Rollup %s events to Panda %s changes', async (event, kind) => {
+  it('tells Panda about a created file when Rollup reports a create event', async () => {
     const driver = createDriver([])
     driver.isSourceFile.mockReturnValue(true)
     mocks.createNodeDriver.mockResolvedValue(driver)
     const plugin = pandacss()[0] as unknown as TestPlugin
 
     await plugin.buildStart.call(createContext())
-    await plugin.watchChange('/project/src/app.tsx', { event })
+    await plugin.watchChange('/project/src/app.tsx', { event: 'create' })
 
-    expect(driver.applyChange).toHaveBeenCalledWith({ path: '/project/src/app.tsx', kind })
+    expect(driver.applyChange).toHaveBeenCalledWith({ path: '/project/src/app.tsx', kind: 'add' })
+  })
+
+  it('tells Panda about an updated file when Rollup reports a update event', async () => {
+    const driver = createDriver([])
+    driver.isSourceFile.mockReturnValue(true)
+    mocks.createNodeDriver.mockResolvedValue(driver)
+    const plugin = pandacss()[0] as unknown as TestPlugin
+
+    await plugin.buildStart.call(createContext())
+    await plugin.watchChange('/project/src/app.tsx', { event: 'update' })
+
+    expect(driver.applyChange).toHaveBeenCalledWith({ path: '/project/src/app.tsx', kind: 'change' })
+  })
+
+  it('tells Panda about a deleted file when Rollup reports a delete event', async () => {
+    const driver = createDriver([])
+    driver.isSourceFile.mockReturnValue(true)
+    mocks.createNodeDriver.mockResolvedValue(driver)
+    const plugin = pandacss()[0] as unknown as TestPlugin
+
+    await plugin.buildStart.call(createContext())
+    await plugin.watchChange('/project/src/app.tsx', { event: 'delete' })
+
+    expect(driver.applyChange).toHaveBeenCalledWith({ path: '/project/src/app.tsx', kind: 'unlink' })
   })
 
   it('regenerates codegen when a design-system artifact changes', async () => {

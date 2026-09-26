@@ -1,59 +1,19 @@
-import { mkdtempSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
-import tsParser from '@typescript-eslint/parser'
-import { type Rule, RuleTester } from 'eslint'
-import { afterAll, describe, it } from 'vitest'
-import { createPandaPlugin } from '../src'
-import type { RuleModuleLike } from '../src/rules/shared'
+import { createPandaRuleTester, withCss } from './panda-rule-tester'
 
-const hooks = RuleTester as unknown as {
-  afterAll: typeof afterAll
-  describe: typeof describe
-  it: typeof it
-  itOnly: typeof it.only
-}
-hooks.afterAll = afterAll
-hooks.describe = describe
-hooks.it = it
-hooks.itOnly = it.only
-
-const asRule = (rule: RuleModuleLike) => rule as unknown as Rule.RuleModule
-
-function createTempProject() {
-  const dir = mkdtempSync(join(tmpdir(), 'panda-consistent-prop-'))
-  writeFileSync(
-    join(dir, 'panda.config.ts'),
-    `export default {
-      outdir: 'styled-system',
-      jsxFramework: 'react',
-      importMap: { css: ['@panda/css'], jsx: ['@panda/jsx'] },
-      theme: { tokens: { colors: { red: { 500: { value: '#f00' } } }, spacing: { 4: { value: '1rem' } } } },
-      utilities: {
-        color: { className: 'c', values: 'colors' },
-        margin: { className: 'm', shorthand: 'm' },
-        marginLeft: { className: 'ml', shorthand: 'ml' },
-        padding: { className: 'p', shorthand: 'p' },
-      },
-    }`,
-  )
-  return dir
-}
-
-const ruleTester = new RuleTester({
-  languageOptions: {
-    parser: tsParser,
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    parserOptions: { ecmaFeatures: { jsx: true } },
+const ruleTester = await createPandaRuleTester(`export default {
+  outdir: 'styled-system',
+  jsxFramework: 'react',
+  importMap: { css: ['@panda/css'], jsx: ['@panda/jsx'] },
+  theme: { tokens: { colors: { red: { 500: { value: '#f00' } } }, spacing: { 4: { value: '1rem' } } } },
+  utilities: {
+    color: { className: 'c', values: 'colors' },
+    margin: { className: 'm', shorthand: 'm' },
+    marginLeft: { className: 'ml', shorthand: 'ml' },
+    padding: { className: 'p', shorthand: 'p' },
   },
-})
+}`)
 
-const dir = createTempProject()
-const plugin = await createPandaPlugin({ cwd: dir })
-const withCss = (...lines: string[]) => ["import { css } from '@panda/css'", ...lines].join('\n')
-
-ruleTester.run('consistent-property-style', asRule(plugin.rules['consistent-property-style']), {
+ruleTester.run('consistent-property-style', {
   valid: [
     // Default `longhand`: canonical names and alias-less props are fine.
     { filename: 'app.tsx', code: withCss("css({ marginLeft: '4', color: 'red.500' })") },

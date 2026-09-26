@@ -1,4 +1,4 @@
-import { describe, expect, it, test } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import {
   buildCodegenOverlay,
   collectArtifactConflicts,
@@ -22,38 +22,16 @@ function ds(
   }
 }
 
-function pureConsumerMetadata() {
+const NOTHING_AUTHORED = { conditions: false, breakpoints: false, utilities: false, tokens: false }
+
+/** An app that consumes `@acme/ui` and authors only what `authored` turns on. */
+function uiConsumer({
+  authored = {},
+  compatible = true,
+}: { authored?: Partial<typeof NOTHING_AUTHORED>; compatible?: boolean } = {}) {
   return {
     designSystem: [ds({ name: '@acme/ui', specifier: '@acme/ui' })],
-    overlayInput: {
-      authored: {
-        conditions: false,
-        breakpoints: false,
-        utilities: false,
-        tokens: false,
-      },
-      compatible: true,
-    },
-  }
-}
-
-function metadataWith(
-  overrides: Partial<{
-    conditions: boolean
-    breakpoints: boolean
-    utilities: boolean
-    tokens: boolean
-    compatible: boolean
-  }>,
-) {
-  const base = pureConsumerMetadata()
-  const { compatible, ...authored } = overrides
-  return {
-    ...base,
-    overlayInput: {
-      authored: { ...base.overlayInput.authored, ...authored },
-      compatible: compatible ?? base.overlayInput.compatible,
-    },
+    overlayInput: { authored: { ...NOTHING_AUTHORED, ...authored }, compatible },
   }
 }
 
@@ -78,33 +56,33 @@ describe('buildCodegenOverlay', () => {
     })
   })
 
-  it('virtualizes entire runtime for a pure consumer', () => {
-    const overlay = buildCodegenOverlay(pureConsumerMetadata())
+  test('virtualizes entire runtime for a pure consumer', () => {
+    const overlay = buildCodegenOverlay(uiConsumer())
     expect(overlay?.virtualizeHelpers).toBe(true)
     expect(overlay?.virtualizeCss).toBe(true)
     expect(overlay?.css).toBe('@acme/ui/css')
     expect(overlay?.helpers).toBe('@acme/ui/helpers')
   })
 
-  it('keeps css local when app authors conditions', () => {
-    const overlay = buildCodegenOverlay(metadataWith({ conditions: true }))
+  test('keeps css local when app authors conditions', () => {
+    const overlay = buildCodegenOverlay(uiConsumer({ authored: { conditions: true } }))
     expect(overlay?.virtualizeHelpers).toBe(true)
     expect(overlay?.virtualizeCss).toBe(false)
   })
 
-  it('keeps the whole css/ dir local when app authors only utilities', () => {
-    const overlay = buildCodegenOverlay(metadataWith({ utilities: true }))
+  test('keeps the whole css/ dir local when app authors only utilities', () => {
+    const overlay = buildCodegenOverlay(uiConsumer({ authored: { utilities: true } }))
     expect(overlay?.virtualizeHelpers).toBe(true)
     expect(overlay?.virtualizeCss).toBe(false)
   })
 
-  it('keeps css local when the app extends tokens, so css() sees the added token', () => {
-    const overlay = buildCodegenOverlay(metadataWith({ tokens: true }))
+  test('keeps css local when the app extends tokens, so css() sees the added token', () => {
+    const overlay = buildCodegenOverlay(uiConsumer({ authored: { tokens: true } }))
     expect(overlay?.virtualizeCss).toBe(false)
   })
 
-  it('returns undefined when globals are incompatible (full local tree)', () => {
-    expect(buildCodegenOverlay(metadataWith({ compatible: false }))).toBeUndefined()
+  test('returns undefined when globals are incompatible (full local tree)', () => {
+    expect(buildCodegenOverlay(uiConsumer({ compatible: false }))).toBeUndefined()
   })
 
   test('excludes app-redefined names from the owned sets', () => {
@@ -290,7 +268,7 @@ describe('collectExportMissingDiagnostics', () => {
           },
         }),
       ],
-      overlayInput: pureConsumerMetadata().overlayInput,
+      overlayInput: { authored: NOTHING_AUTHORED, compatible: true },
     })
 
     const messages = diagnostics.map((d) => d.message).join('\n')
@@ -314,7 +292,7 @@ describe('collectExportMissingDiagnostics', () => {
         }),
       ],
       userRecipeNames: ['button', 'card'],
-      overlayInput: pureConsumerMetadata().overlayInput,
+      overlayInput: { authored: NOTHING_AUTHORED, compatible: true },
     })
 
     const messages = diagnostics.map((d) => d.message).join('\n')
@@ -361,10 +339,7 @@ describe('collectExportMissingDiagnostics', () => {
     expect(
       collectExportMissingDiagnostics({
         designSystem: [ds({ name: '@acme/ds', specifier: '@acme/ds', recipeNames: ['button'] })],
-        overlayInput: {
-          authored: { conditions: false, breakpoints: false, utilities: false, tokens: false },
-          compatible: false,
-        },
+        overlayInput: { authored: NOTHING_AUTHORED, compatible: false },
       }),
     ).toEqual([])
   })

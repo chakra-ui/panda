@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { runCodegen, runLib } from '../src'
-import { CONFIG, CONFIG_WITH_TOKENS, cleanupFixture, createFixture } from './helpers'
+import { CONFIG, CONFIG_WITH_TOKENS, cleanupFixture, createFixture, pandaConfig } from './helpers'
 
 describe('codegen command', () => {
   let dir: string | undefined
@@ -42,11 +42,7 @@ describe('codegen command', () => {
     expect((await runLib({ cwd: parent, logLevel: 'silent' })).ok).toBe(true)
     writeFileSync(
       join(dir, 'panda.config.ts'),
-      CONFIG_WITH_TOKENS.replace(
-        'export default {',
-        `export default {
-      designSystem: '@acme/ds',`,
-      ),
+      pandaConfig("designSystem: '@acme/ds',", "theme: { tokens: { colors: { brand: { value: '#EA8433' } } } },"),
     )
 
     const result = await runCodegen({ cwd: dir, logLevel: 'silent' })
@@ -71,10 +67,12 @@ describe('codegen command', () => {
 
     await runCodegen({ cwd: dir, spec: '', logLevel: 'silent' })
     const spec = JSON.parse(readFileSync(join(dir, 'styled-system', 'specs', 'design-system.json'), 'utf8'))
-    for (const name of ['brand', 'accent']) {
-      expect(spec.sources.entries[spec.tokens[`colors.${name}`].source].name).toBe('brand-preset')
-      expect(spec.sources.entries[spec.tokens[`colors.${name}.500`].source].kind).toBe('config')
-    }
+    const ownerOf = (path: string) => spec.sources.entries[spec.tokens[path].source]
+
+    expect(ownerOf('colors.brand').name).toBe('brand-preset')
+    expect(ownerOf('colors.brand.500').kind).toBe('config')
+    expect(ownerOf('colors.accent').name).toBe('brand-preset')
+    expect(ownerOf('colors.accent.500').kind).toBe('config')
   })
 
   it('writes the spec into the outdir with a bare --spec', async () => {

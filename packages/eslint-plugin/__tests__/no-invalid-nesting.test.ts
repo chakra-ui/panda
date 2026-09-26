@@ -1,57 +1,17 @@
-import { mkdtempSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
-import tsParser from '@typescript-eslint/parser'
-import { type Rule, RuleTester } from 'eslint'
-import { afterAll, describe, it } from 'vitest'
-import { createPandaPlugin } from '../src'
-import type { RuleModuleLike } from '../src/rules/shared'
+import { createPandaRuleTester, withCss } from './panda-rule-tester'
 
-const hooks = RuleTester as unknown as {
-  afterAll: typeof afterAll
-  describe: typeof describe
-  it: typeof it
-  itOnly: typeof it.only
-}
-hooks.afterAll = afterAll
-hooks.describe = describe
-hooks.it = it
-hooks.itOnly = it.only
-
-const asRule = (rule: RuleModuleLike) => rule as unknown as Rule.RuleModule
-
-function createTempProject() {
-  const dir = mkdtempSync(join(tmpdir(), 'panda-invalid-nesting-'))
-  writeFileSync(
-    join(dir, 'panda.config.ts'),
-    `export default {
-      outdir: 'styled-system',
-      importMap: { css: ['@panda/css'] },
-      theme: { tokens: { colors: { red: { 500: { value: '#f00' } } } } },
-      utilities: { color: { className: 'c', values: 'colors' } },
-      conditions: { hover: '&:hover' },
-    }`,
-  )
-  return dir
-}
-
-const ruleTester = new RuleTester({
-  languageOptions: {
-    parser: tsParser,
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    parserOptions: { ecmaFeatures: { jsx: true } },
-  },
-})
-
-const dir = createTempProject()
-const plugin = await createPandaPlugin({ cwd: dir })
-const withCss = (...lines: string[]) => ["import { css } from '@panda/css'", ...lines].join('\n')
+const ruleTester = await createPandaRuleTester(`export default {
+  outdir: 'styled-system',
+  importMap: { css: ['@panda/css'] },
+  theme: { tokens: { colors: { red: { 500: { value: '#f00' } } } } },
+  utilities: { color: { className: 'c', values: 'colors' } },
+  conditions: { hover: '&:hover' },
+}`)
 
 const message = (name: string) =>
   `Nested selector "${name}" has no "&", so Panda ignores it. Use "&${name}" or a condition like "_hover".`
 
-ruleTester.run('no-invalid-nesting', asRule(plugin.rules['no-invalid-nesting']), {
+ruleTester.run('no-invalid-nesting', {
   valid: [
     // Proper `&` selector.
     { filename: 'app.tsx', code: withCss("css({ '&:hover': { color: 'red.500' } })") },

@@ -93,11 +93,46 @@ describe('cli smoke', () => {
     expect(result.stdout).not.toContain('`info`')
   })
 
-  it.each(['build', 'dev', 'check', 'doctor', 'analyze', 'cssgen'])('prints help for panda %s', (command) => {
-    const result = runCli([command, '--help'])
+  it('prints help for panda build --help', () => {
+    const result = runCli(['build', '--help'])
 
     expect(result.exitCode).toBe(0)
-    expect(result.stdout).toContain(`panda ${command} v${version}`)
+    expect(result.stdout).toContain(`panda build v${version}`)
+  })
+
+  it('prints help for panda dev --help', () => {
+    const result = runCli(['dev', '--help'])
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain(`panda dev v${version}`)
+  })
+
+  it('prints help for panda check --help', () => {
+    const result = runCli(['check', '--help'])
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain(`panda check v${version}`)
+  })
+
+  it('prints help for panda doctor --help', () => {
+    const result = runCli(['doctor', '--help'])
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain(`panda doctor v${version}`)
+  })
+
+  it('prints help for panda analyze --help', () => {
+    const result = runCli(['analyze', '--help'])
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain(`panda analyze v${version}`)
+  })
+
+  it('prints help for panda cssgen --help', () => {
+    const result = runCli(['cssgen', '--help'])
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain(`panda cssgen v${version}`)
   })
 
   it('documents cssgen --minimal', () => {
@@ -109,12 +144,36 @@ describe('cli smoke', () => {
     expect(result.stdout).toContain('Emit usage CSS only')
   })
 
-  it.each(['inspect', 'validate', 'info', 'frobnicate'])('rejects unknown command %s', (command) => {
-    const result = runCli([command])
+  it('rejects the removed inspect command', () => {
+    const result = runCli(['inspect'])
 
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('USAGE')
-    expect(result.stderr).toBe(`Unknown command ${command}\n`)
+    expect(result.stderr).toBe('Unknown command inspect\n')
+  })
+
+  it('rejects the removed validate command', () => {
+    const result = runCli(['validate'])
+
+    expect(result.exitCode).toBe(1)
+    expect(result.stdout).toContain('USAGE')
+    expect(result.stderr).toBe('Unknown command validate\n')
+  })
+
+  it('rejects the removed info command', () => {
+    const result = runCli(['info'])
+
+    expect(result.exitCode).toBe(1)
+    expect(result.stdout).toContain('USAGE')
+    expect(result.stderr).toBe('Unknown command info\n')
+  })
+
+  it('rejects a made-up frobnicate command', () => {
+    const result = runCli(['frobnicate'])
+
+    expect(result.exitCode).toBe(1)
+    expect(result.stdout).toContain('USAGE')
+    expect(result.stderr).toBe('Unknown command frobnicate\n')
   })
 
   it('rejects invalid flag values', () => {

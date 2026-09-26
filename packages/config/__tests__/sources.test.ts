@@ -21,7 +21,7 @@ describe('config sources', () => {
     expect(result.metadata).toBeUndefined()
   })
 
-  test('tracks compact source ids for resolved config paths when requested', async () => {
+  test('records which source set each config path: the preset (0), the user config (1), or both', async () => {
     const result = await resolveAuthoredPresets(
       defineConfig({
         outdir: 'styled-system',

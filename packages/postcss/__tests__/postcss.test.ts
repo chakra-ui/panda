@@ -2,7 +2,7 @@ import postcss from 'postcss'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const PROJECT_CWD = '/project'
-const INPUT = '@layer reset, base, tokens, recipes, utilities;'
+const CSS_ROOT = '@layer reset, base, tokens, recipes, utilities;'
 
 interface MockDriver {
   compiler: {
@@ -38,7 +38,7 @@ describe('@pandacss/postcss', () => {
   it('skips node_modules CSS files by default', async () => {
     const { createNodeDriver, run } = await setup()
 
-    const result = await run(INPUT, {}, '/project/node_modules/pkg/styles.css')
+    const result = await run(CSS_ROOT, {}, '/project/node_modules/pkg/styles.css')
 
     expect(result.css).toMatchInlineSnapshot(`"@layer reset, base, tokens, recipes, utilities;"`)
     expect(createNodeDriver).not.toHaveBeenCalled()
@@ -47,7 +47,7 @@ describe('@pandacss/postcss', () => {
   it('allows configured node_modules CSS files through the guard', async () => {
     const { createNodeDriver, run } = await setup()
 
-    await run(INPUT, { allow: [/node_modules\/pkg/] }, '/project/node_modules/pkg/styles.css')
+    await run(CSS_ROOT, { allow: [/node_modules\/pkg/] }, '/project/node_modules/pkg/styles.css')
 
     expect(createNodeDriver).toHaveBeenCalledTimes(1)
   })
@@ -55,7 +55,7 @@ describe('@pandacss/postcss', () => {
   it('skips non-CSS files', async () => {
     const { createNodeDriver, run } = await setup()
 
-    const result = await run(INPUT, {}, '/project/styles.js')
+    const result = await run(CSS_ROOT, {}, '/project/styles.js')
 
     expect(result.css).toMatchInlineSnapshot(`"@layer reset, base, tokens, recipes, utilities;"`)
     expect(createNodeDriver).not.toHaveBeenCalled()
@@ -71,7 +71,7 @@ describe('@pandacss/postcss', () => {
     expect(createNodeDriver).not.toHaveBeenCalled()
   })
 
-  it('uses the compiler layer check before injecting generated CSS', async () => {
+  it('leaves a stylesheet alone when it has layer blocks but no Panda layer declaration', async () => {
     const { driver, run } = await setup()
     driver.compiler.hasLayerDeclaration.mockReturnValue(false)
 
@@ -85,7 +85,7 @@ describe('@pandacss/postcss', () => {
   it('processes the stylesheet root and registers watch dependencies', async () => {
     const { driver, run } = await setup()
 
-    const result = await run(INPUT)
+    const result = await run(CSS_ROOT)
 
     expect(driver.codegen).toHaveBeenCalledWith({ cwd: PROJECT_CWD, outdir: undefined })
     expect(driver.scan).toHaveBeenCalledTimes(1)
@@ -130,7 +130,7 @@ describe('@pandacss/postcss', () => {
       diagnostics: [{ severity: 'warning', code: 'panda_call_unextractable', message: 'dynamic style value' }],
     })
 
-    const result = await run(INPUT)
+    const result = await run(CSS_ROOT)
 
     expect(result.warnings().map((warning) => warning.text)).toMatchInlineSnapshot(`
       [
@@ -149,7 +149,7 @@ describe('@pandacss/postcss', () => {
       },
     ]
 
-    const result = await run(INPUT)
+    const result = await run(CSS_ROOT)
 
     expect(result.warnings()).toEqual([])
     expect(result.messages.filter((message) => message.type === 'pandacss-diagnostic')).toMatchInlineSnapshot(`
@@ -179,7 +179,7 @@ describe('@pandacss/postcss', () => {
       },
     ])
 
-    const result = await run(INPUT)
+    const result = await run(CSS_ROOT)
 
     expect(result.messages.filter((message) => message.type === 'dependency')).toMatchInlineSnapshot(`
       [
@@ -232,7 +232,7 @@ describe('@pandacss/postcss', () => {
       diagnostics: [{ severity: 'error', code: 'config_load_error', message: 'bad config' }],
     })
 
-    await expect(run(INPUT)).rejects.toThrowErrorMatchingInlineSnapshot(
+    await expect(run(CSS_ROOT)).rejects.toThrowErrorMatchingInlineSnapshot(
       `[CssSyntaxError: pandacss: /project/styles.css:1:1: error config_load_error bad config]`,
     )
   })
@@ -252,7 +252,7 @@ describe('@pandacss/postcss', () => {
       ],
     })
 
-    const result = await run(INPUT)
+    const result = await run(CSS_ROOT)
 
     expect(result.warnings().map((warning) => warning.text)).toMatchInlineSnapshot(`
       [
@@ -265,7 +265,7 @@ describe('@pandacss/postcss', () => {
     vi.stubEnv('ROLLUP_WATCH', 'true')
     const { run } = await setup()
 
-    const result = await run(INPUT)
+    const result = await run(CSS_ROOT)
 
     expect(result.messages).toMatchInlineSnapshot(`
       [
@@ -295,8 +295,8 @@ describe('@pandacss/postcss', () => {
     const { createNodeDriver, driver, pandacss } = await setup()
     const processor = postcss([pandacss({ cwd: PROJECT_CWD })])
 
-    await processor.process(INPUT, { from: '/project/one.css' })
-    await processor.process(INPUT, { from: '/project/two.css' })
+    await processor.process(CSS_ROOT, { from: '/project/one.css' })
+    await processor.process(CSS_ROOT, { from: '/project/two.css' })
 
     expect(createNodeDriver).toHaveBeenCalledTimes(1)
     expect(driver.reload).not.toHaveBeenCalled()
@@ -313,7 +313,7 @@ describe('@pandacss/postcss', () => {
     const { createNodeDriver, driver, pandacss } = await setup()
     const processor = postcss([pandacss({ cwd: PROJECT_CWD })])
 
-    await processor.process(INPUT, { from: '/project/one.css' })
+    await processor.process(CSS_ROOT, { from: '/project/one.css' })
     expect(createNodeDriver).toHaveBeenCalledTimes(1)
     expect(driver.reload).not.toHaveBeenCalled()
     expect(driver.codegen).toHaveBeenCalledTimes(1)
@@ -326,7 +326,7 @@ describe('@pandacss/postcss', () => {
       patterns: [],
       changes: [],
     })
-    await processor.process(INPUT, { from: '/project/two.css' })
+    await processor.process(CSS_ROOT, { from: '/project/two.css' })
 
     expect(driver.reload).toHaveBeenCalledTimes(1)
     expect(driver.codegen).toHaveBeenCalledTimes(2)
@@ -336,8 +336,8 @@ describe('@pandacss/postcss', () => {
     const { driver, pandacss } = await setup()
     const processor = postcss([pandacss({ cwd: PROJECT_CWD })])
 
-    await processor.process(INPUT, { from: '/project/styles.css' })
-    await processor.process(INPUT, { from: '/project/styles.css' })
+    await processor.process(CSS_ROOT, { from: '/project/styles.css' })
+    await processor.process(CSS_ROOT, { from: '/project/styles.css' })
 
     expect(driver.applyChanges).toHaveBeenCalledTimes(1)
     expect(driver.applyChanges).toHaveBeenCalledWith([{ path: '/project/src/App.tsx', kind: 'add' }])
@@ -353,9 +353,9 @@ describe('@pandacss/postcss', () => {
     const { driver, pandacss } = await setup()
     const processor = postcss([pandacss({ cwd: PROJECT_CWD })])
 
-    await processor.process(INPUT, { from: '/project/styles.css' })
+    await processor.process(CSS_ROOT, { from: '/project/styles.css' })
     stamp = '2:10'
-    await processor.process(INPUT, { from: '/project/styles.css' })
+    await processor.process(CSS_ROOT, { from: '/project/styles.css' })
 
     expect(driver.applyChanges).toHaveBeenNthCalledWith(1, [{ path: '/project/src/App.tsx', kind: 'add' }])
     expect(driver.applyChanges).toHaveBeenNthCalledWith(2, [{ path: '/project/src/App.tsx', kind: 'change' }])
@@ -368,8 +368,8 @@ describe('@pandacss/postcss', () => {
       .mockReturnValueOnce(['/project/src/App.tsx'])
     const processor = postcss([pandacss({ cwd: PROJECT_CWD })])
 
-    await processor.process(INPUT, { from: '/project/styles.css' })
-    await processor.process(INPUT, { from: '/project/styles.css' })
+    await processor.process(CSS_ROOT, { from: '/project/styles.css' })
+    await processor.process(CSS_ROOT, { from: '/project/styles.css' })
 
     expect(driver.applyChanges).toHaveBeenNthCalledWith(1, [
       { path: '/project/src/App.tsx', kind: 'add' },
@@ -389,7 +389,9 @@ describe('@pandacss/postcss', () => {
     })
     const processor = postcss([pandacss({ cwd: PROJECT_CWD })])
 
-    await Promise.all([1, 2, 3, 4].map((index) => processor.process(INPUT, { from: `/project/styles-${index}.css` })))
+    await Promise.all(
+      [1, 2, 3, 4].map((index) => processor.process(CSS_ROOT, { from: `/project/styles-${index}.css` })),
+    )
 
     expect(createNodeDriver).toHaveBeenCalledTimes(1)
     expect(order).toMatchInlineSnapshot(`
@@ -426,7 +428,7 @@ async function setup(options: { createDelay?: () => Promise<void> } = {}) {
 function createMockDriver(): MockDriver {
   return {
     compiler: {
-      hasLayerDeclaration: vi.fn((css: string) => css.includes(INPUT)),
+      hasLayerDeclaration: vi.fn((css: string) => css.includes(CSS_ROOT)),
       stripLayerOrderStatements: vi.fn((css: string) =>
         css.replace(/@layer\s+reset,\s*base,\s*tokens,\s*recipes,\s*utilities;/g, ''),
       ),

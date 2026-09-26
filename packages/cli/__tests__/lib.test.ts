@@ -4,16 +4,17 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { runCodegen, runLib } from '../src'
-import { CONFIG, CONFIG_WITH_TOKENS } from './helpers'
+import { CONFIG, CONFIG_WITH_TOKENS, pandaConfig } from './helpers'
 
-function createLibFixture(extraConfig = '', base = CONFIG): string {
+const DS_PACKAGE_JSON = { name: '@acme/ds', version: '1.2.3', peerDependencies: { '@pandacss/dev': '^2.0.0' } }
+
+function createLibFixture({
+  config = CONFIG,
+  packageJson = DS_PACKAGE_JSON,
+}: { config?: string; packageJson?: Record<string, unknown> } = {}): string {
   const dir = realpathSync(mkdtempSync(join(tmpdir(), 'panda-cli-lib-')))
-  const config = extraConfig ? base.replace('export default {', `export default {\n${extraConfig}`) : base
   writeFileSync(join(dir, 'panda.config.ts'), config)
-  writeFileSync(
-    join(dir, 'package.json'),
-    JSON.stringify({ name: '@acme/ds', version: '1.2.3', peerDependencies: { '@pandacss/dev': '^2.0.0' } }, null, 2),
-  )
+  writeFileSync(join(dir, 'package.json'), JSON.stringify(packageJson, null, 2))
   writeFileSync(join(dir, 'button.tsx'), "import { css } from '@panda/css'; css({ color: 'red' })")
   return dir
 }
@@ -31,7 +32,7 @@ describe('lib command', () => {
   })
 
   it('leaves the design system spec out unless asked', async () => {
-    dir = createLibFixture('', CONFIG_WITH_TOKENS)
+    dir = createLibFixture({ config: CONFIG_WITH_TOKENS })
 
     const result = await runLib({ cwd: dir, logLevel: 'silent' })
 
@@ -41,7 +42,7 @@ describe('lib command', () => {
   })
 
   it('publishes the spec beside preset.mjs with --spec', async () => {
-    dir = createLibFixture('', CONFIG_WITH_TOKENS)
+    dir = createLibFixture({ config: CONFIG_WITH_TOKENS })
 
     const result = await runLib({ cwd: dir, spec: '', logLevel: 'silent' })
 
@@ -52,7 +53,7 @@ describe('lib command', () => {
   })
 
   it('records a custom --spec path relative to the manifest', async () => {
-    dir = createLibFixture('', CONFIG_WITH_TOKENS)
+    dir = createLibFixture({ config: CONFIG_WITH_TOKENS })
 
     await runLib({ cwd: dir, spec: 'meta.json', logLevel: 'silent' })
 
@@ -61,15 +62,15 @@ describe('lib command', () => {
   })
 
   it('warns and leaves the spec out of the manifest when package.json files would not publish it', async () => {
-    dir = createLibFixture('', CONFIG_WITH_TOKENS)
-    writeFileSync(
-      join(dir, 'package.json'),
-      JSON.stringify(
-        { name: '@acme/ds', version: '1.2.3', files: ['dist'], peerDependencies: { '@pandacss/dev': '^2.0.0' } },
-        null,
-        2,
-      ),
-    )
+    dir = createLibFixture({
+      config: CONFIG_WITH_TOKENS,
+      packageJson: {
+        name: '@acme/ds',
+        version: '1.2.3',
+        files: ['dist'],
+        peerDependencies: { '@pandacss/dev': '^2.0.0' },
+      },
+    })
 
     const result = await runLib({ cwd: dir, spec: 'meta.json', logLevel: 'silent' })
 
@@ -121,15 +122,9 @@ describe('lib command', () => {
   })
 
   it('replaces an unpublishable catalog: peer range with the running major', async () => {
-    dir = createLibFixture()
-    writeFileSync(
-      join(dir, 'package.json'),
-      JSON.stringify(
-        { name: '@acme/ds', version: '1.2.3', peerDependencies: { '@pandacss/dev': 'catalog:' } },
-        null,
-        2,
-      ),
-    )
+    dir = createLibFixture({
+      packageJson: { name: '@acme/ds', version: '1.2.3', peerDependencies: { '@pandacss/dev': 'catalog:' } },
+    })
 
     const result = await runLib({ cwd: dir, logLevel: 'silent' })
     expect(result.ok).toBe(true)
@@ -140,15 +135,9 @@ describe('lib command', () => {
   })
 
   it('honors an explicit --panda range over an unpublishable peer', async () => {
-    dir = createLibFixture()
-    writeFileSync(
-      join(dir, 'package.json'),
-      JSON.stringify(
-        { name: '@acme/ds', version: '1.2.3', peerDependencies: { '@pandacss/dev': 'workspace:*' } },
-        null,
-        2,
-      ),
-    )
+    dir = createLibFixture({
+      packageJson: { name: '@acme/ds', version: '1.2.3', peerDependencies: { '@pandacss/dev': 'workspace:*' } },
+    })
 
     const result = await runLib({ cwd: dir, panda: '2.0.0-beta.8', logLevel: 'silent' })
     expect(result.ok).toBe(true)
@@ -188,28 +177,58 @@ describe('lib command', () => {
     expect(pkg.exports['./jsx']).toBeUndefined()
   })
 
-  it.each(['workspace:*', 'workspace:^', 'catalog:', 'npm:@pandacss/dev@^2.0.0'])(
-    'publishes a portable Panda range for %s peers',
-    async (peer) => {
-      dir = createLibFixture()
-      writeFileSync(
-        join(dir, 'package.json'),
-        JSON.stringify({ name: '@acme/ds', version: '1.2.3', peerDependencies: { '@pandacss/dev': peer } }, null, 2),
-      )
+  it('publishes a portable Panda range when the peer uses workspace:*', async () => {
+    dir = createLibFixture({
+      packageJson: { name: '@acme/ds', version: '1.2.3', peerDependencies: { '@pandacss/dev': 'workspace:*' } },
+    })
 
-      const result = await runLib({ cwd: dir, logLevel: 'silent' })
+    const result = await runLib({ cwd: dir, logLevel: 'silent' })
 
-      expect(result.ok).toBe(true)
-      expect(readManifest(dir).panda).toBe('^2.0.0')
-    },
-  )
+    expect(result.ok).toBe(true)
+    expect(readManifest(dir).panda).toBe('^2.0.0')
+  })
+
+  it('publishes a portable Panda range when the peer uses workspace:^', async () => {
+    dir = createLibFixture({
+      packageJson: { name: '@acme/ds', version: '1.2.3', peerDependencies: { '@pandacss/dev': 'workspace:^' } },
+    })
+
+    const result = await runLib({ cwd: dir, logLevel: 'silent' })
+
+    expect(result.ok).toBe(true)
+    expect(readManifest(dir).panda).toBe('^2.0.0')
+  })
+
+  it('publishes a portable Panda range when the peer uses a pnpm catalog', async () => {
+    dir = createLibFixture({
+      packageJson: { name: '@acme/ds', version: '1.2.3', peerDependencies: { '@pandacss/dev': 'catalog:' } },
+    })
+
+    const result = await runLib({ cwd: dir, logLevel: 'silent' })
+
+    expect(result.ok).toBe(true)
+    expect(readManifest(dir).panda).toBe('^2.0.0')
+  })
+
+  it('publishes a portable Panda range when the peer is an npm: alias', async () => {
+    dir = createLibFixture({
+      packageJson: {
+        name: '@acme/ds',
+        version: '1.2.3',
+        peerDependencies: { '@pandacss/dev': 'npm:@pandacss/dev@^2.0.0' },
+      },
+    })
+
+    const result = await runLib({ cwd: dir, logLevel: 'silent' })
+
+    expect(result.ok).toBe(true)
+    expect(readManifest(dir).panda).toBe('^2.0.0')
+  })
 
   it('warns when panda lib overwrites an existing conflicting package export', async () => {
-    dir = createLibFixture()
-    writeFileSync(
-      join(dir, 'package.json'),
-      JSON.stringify({ name: '@acme/ds', version: '1.2.3', exports: { './panda/*': './custom/panda/*' } }, null, 2),
-    )
+    dir = createLibFixture({
+      packageJson: { name: '@acme/ds', version: '1.2.3', exports: { './panda/*': './custom/panda/*' } },
+    })
 
     const result = await runLib({ cwd: dir, logLevel: 'silent' })
 
@@ -220,11 +239,9 @@ describe('lib command', () => {
   })
 
   it('preserves an existing string root export when syncing package exports', async () => {
-    dir = createLibFixture()
-    writeFileSync(
-      join(dir, 'package.json'),
-      JSON.stringify({ name: '@acme/ds', version: '1.2.3', exports: './dist/index.js' }, null, 2),
-    )
+    dir = createLibFixture({
+      packageJson: { name: '@acme/ds', version: '1.2.3', exports: './dist/index.js' },
+    })
 
     const result = await runLib({ cwd: dir, logLevel: 'silent' })
     expect(result.ok).toBe(true)
@@ -264,7 +281,7 @@ describe('lib command', () => {
   })
 
   it('reads the declared parent designSystem during config load', async () => {
-    dir = createLibFixture("  designSystem: '@acme/foundations',")
+    dir = createLibFixture({ config: pandaConfig("designSystem: '@acme/foundations',") })
     const result = await runLib({ cwd: dir, logLevel: 'silent' })
     expect(result.ok).toBe(false)
     expect(result.diagnostics.some((d) => d.message?.includes('foundations'))).toBe(true)

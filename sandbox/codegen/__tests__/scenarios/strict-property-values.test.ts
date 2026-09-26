@@ -1,7 +1,7 @@
 import { assertType, describe, test } from 'vitest'
 import { css } from '../../styled-system-strict-property-values/css'
 
-describe('css', () => {
+describe('css with strictPropertyValues', () => {
   test('native CSS prop and value', () => {
     assertType(css({ display: 'flex' }))
 
@@ -13,12 +13,12 @@ describe('css', () => {
 
     assertType(css({ pos: 'absolute' }))
 
-    // @ts-expect-error always expected
+    // @ts-expect-error expected from strictPropertyValues: true
     assertType(css({ pos: 'absolute123' }))
     assertType(css({ flex: '0 1' }))
 
     assertType(css({ borderTop: '1px solid red' }))
-    // @ts-expect-error expected
+    // @ts-expect-error expected from strictPropertyValues: true
     assertType(css({ borderTopStyle: 'aaa' }))
   })
 

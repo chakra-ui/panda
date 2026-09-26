@@ -4,7 +4,7 @@ import { Box, Stack, styled } from '../../styled-system-jsx-minimal/jsx'
 import { render } from '@testing-library/react'
 import { buttonWithCompoundVariants } from '../../styled-system-jsx-none/recipes'
 
-describe('styled factory - cva', () => {
+describe('styled factory with an inline recipe', () => {
   const Button = styled('button', {
     base: {
       color: 'red.500',
@@ -81,9 +81,9 @@ describe('styled factory - cva', () => {
     `)
   })
 
-  test('style prop', () => {
+  test('style prop stays an HTML attribute', () => {
     const { container } = render(
-      // @ts-expect-error
+      // @ts-expect-error style props are not typed with jsxStyleProps: 'none'
       <Button className="custom-btn" mx="2">
         Click me
       </Button>,
@@ -99,9 +99,9 @@ describe('styled factory - cva', () => {
     `)
   })
 
-  test('style prop with variant', () => {
+  test('style prop stays an HTML attribute alongside a variant', () => {
     const { container } = render(
-      // @ts-expect-error
+      // @ts-expect-error style props are not typed with jsxStyleProps: 'none'
       <Button className="custom-btn" size="sm" mx="2">
         Click me
       </Button>,
@@ -149,9 +149,9 @@ describe('styled factory - cva', () => {
     `)
   })
 
-  test('all together', () => {
+  test('variant, style prop, css prop and className combined', () => {
     const { container } = render(
-      // @ts-expect-error
+      // @ts-expect-error style props are not typed with jsxStyleProps: 'none'
       <Button className="custom-btn" css={{ color: 'red.200', fontSize: 'xl' }} size="lg" mx="2">
         Click me
       </Button>,
@@ -168,7 +168,7 @@ describe('styled factory - cva', () => {
   })
 })
 
-describe('styled factory - button recipe', () => {
+describe('styled factory with the buttonWithCompoundVariants config recipe', () => {
   const Button = styled('button', buttonWithCompoundVariants)
 
   test('base styles', () => {
@@ -211,9 +211,9 @@ describe('styled factory - button recipe', () => {
     `)
   })
 
-  test('style prop', () => {
+  test('style prop stays an HTML attribute', () => {
     const { container } = render(
-      // @ts-expect-error
+      // @ts-expect-error style props are not typed with jsxStyleProps: 'none'
       <Button className="custom-btn" mx="2">
         Click me
       </Button>,
@@ -229,9 +229,9 @@ describe('styled factory - button recipe', () => {
     `)
   })
 
-  test('style prop with variant', () => {
+  test('style prop stays an HTML attribute alongside a variant', () => {
     const { container } = render(
-      // @ts-expect-error
+      // @ts-expect-error style props are not typed with jsxStyleProps: 'none'
       <Button className="custom-btn" size="sm" mx="2">
         Click me
       </Button>,
@@ -279,9 +279,9 @@ describe('styled factory - button recipe', () => {
     `)
   })
 
-  test('all together', () => {
+  test('variant, style prop, css prop and className combined', () => {
     const { container } = render(
-      // @ts-expect-error
+      // @ts-expect-error style props are not typed with jsxStyleProps: 'none'
       <Button className="custom-btn" css={{ color: 'red.200', fontSize: 'xl' }} size="md" visual="outline" mx="2">
         Click me
       </Button>,
@@ -296,10 +296,12 @@ describe('styled factory - button recipe', () => {
       </button>
     `)
   })
+})
 
+describe('styled elements and patterns', () => {
   test('html props', () => {
     const { container } = render(
-      // @ts-expect-error
+      // @ts-expect-error style props are not typed with jsxStyleProps: 'none'
       <styled.div htmlWidth={123} height="123">
         Click me
       </styled.div>,
@@ -316,7 +318,7 @@ describe('styled factory - button recipe', () => {
     `)
   })
 
-  test('box pattern', () => {
+  test('Box leaves style props as HTML attributes', () => {
     const { container } = render(<Box color="red.300">Click me</Box>)
 
     expect(container.firstChild).toMatchInlineSnapshot(
@@ -331,7 +333,7 @@ describe('styled factory - button recipe', () => {
     )
   })
 
-  test('stack pattern', () => {
+  test('Stack applies its pattern props but not style props', () => {
     const { container } = render(
       <Stack direction="column" color="red.400">
         Click me

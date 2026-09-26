@@ -328,14 +328,11 @@ describe('resolveAuthoredPresets / designSystem', () => {
 
   // Manifest and package resolution failures.
 
-  test.each([
-    ['schemaVersion', { schemaVersion: 0 }, 'positive integer "schemaVersion"'],
-    ['name', { name: '  ' }, 'missing a "name" entry'],
-    ['panda', { panda: '' }, 'missing a "panda" entry'],
-    ['files', { files: './button.js' }, '"files" entry'],
-    ['importMap', { importMap: { css: ['@acme/ds/css'] } }, '"importMap.css" entry'],
-  ])('validates the complete manifest shape before loading its preset (%s)', async (field, manifest, message) => {
-    const name = `@acme/invalid-${field}`
+  async function expectInvalidManifestRejectedBeforePresetLoads(
+    name: string,
+    manifest: Record<string, unknown>,
+    message: string,
+  ) {
     writeDesignSystemPackage({
       cwd,
       name,
@@ -354,6 +351,42 @@ describe('resolveAuthoredPresets / designSystem', () => {
         },
       ],
     })
+  }
+
+  test('rejects a manifest with a non-positive schemaVersion before loading its preset', async () => {
+    await expectInvalidManifestRejectedBeforePresetLoads(
+      '@acme/invalid-schemaVersion',
+      { schemaVersion: 0 },
+      'positive integer "schemaVersion"',
+    )
+  })
+
+  test('rejects a manifest with a blank name before loading its preset', async () => {
+    await expectInvalidManifestRejectedBeforePresetLoads('@acme/invalid-name', { name: '  ' }, 'missing a "name" entry')
+  })
+
+  test('rejects a manifest with an empty panda range before loading its preset', async () => {
+    await expectInvalidManifestRejectedBeforePresetLoads(
+      '@acme/invalid-panda',
+      { panda: '' },
+      'missing a "panda" entry',
+    )
+  })
+
+  test('rejects a manifest whose files entry is a string before loading its preset', async () => {
+    await expectInvalidManifestRejectedBeforePresetLoads(
+      '@acme/invalid-files',
+      { files: './button.js' },
+      '"files" entry',
+    )
+  })
+
+  test('rejects a manifest whose importMap.css is an array before loading its preset', async () => {
+    await expectInvalidManifestRejectedBeforePresetLoads(
+      '@acme/invalid-importMap',
+      { importMap: { css: ['@acme/ds/css'] } },
+      '"importMap.css" entry',
+    )
   })
 
   test('rejects a package that does not resolve', async () => {
@@ -495,62 +528,6 @@ describe('resolveAuthoredPresets / designSystem nested chains', () => {
         },
       },
     })
-
-    // Invalid chains.
-    writeDesignSystemPackage({
-      cwd,
-      name: '@acme/loop-a',
-      manifest: { designSystem: '@acme/loop-b' },
-    })
-    writeDesignSystemPackage({
-      cwd,
-      name: '@acme/loop-b',
-      manifest: { designSystem: '@acme/loop-a' },
-    })
-
-    writeDesignSystemPackage({
-      cwd,
-      name: '@acme/orphan',
-      manifest: { designSystem: '@acme/ghost' },
-    })
-
-    // Package specifier and manifest name may differ.
-    writeDesignSystemPackage({
-      cwd,
-      name: '@acme/skinned',
-      manifest: { designSystem: '@acme/raw' },
-      preset: {
-        name: '@acme/skinned',
-        theme: {
-          extend: {
-            tokens: {
-              colors: {
-                brand: { value: 'skin' },
-                skinOnly: { value: 'skin' },
-              },
-            },
-          },
-        },
-      },
-    })
-    writeDesignSystemPackage({
-      cwd,
-      name: '@acme/raw',
-      manifest: { name: '@acme/raw-identity' },
-      preset: {
-        name: '@acme/raw-identity',
-        theme: {
-          extend: {
-            tokens: {
-              colors: {
-                brand: { value: 'raw' },
-                rawOnly: { value: 'raw' },
-              },
-            },
-          },
-        },
-      },
-    })
   })
 
   afterAll(() => rmSync(cwd, { recursive: true, force: true }))
@@ -642,6 +619,9 @@ describe('resolveAuthoredPresets / designSystem nested chains', () => {
   })
 
   test('rejects a cycle in the parent chain', async () => {
+    writeDesignSystemPackage({ cwd, name: '@acme/loop-a', manifest: { designSystem: '@acme/loop-b' } })
+    writeDesignSystemPackage({ cwd, name: '@acme/loop-b', manifest: { designSystem: '@acme/loop-a' } })
+
     await expect(resolveAuthoredPresets({ designSystem: '@acme/loop-a' }, cwd)).rejects.toMatchObject({
       message: expect.stringMatching(/Design-system cycle: @acme\/loop-a → @acme\/loop-b → @acme\/loop-a/),
       diagnostics: [{ code: 'design_system_cycle', severity: 'error', category: 'config' }],
@@ -649,6 +629,8 @@ describe('resolveAuthoredPresets / designSystem nested chains', () => {
   })
 
   test('rejects a parent that is not installed alongside its declaring library', async () => {
+    writeDesignSystemPackage({ cwd, name: '@acme/orphan', manifest: { designSystem: '@acme/ghost' } })
+
     await expect(resolveAuthoredPresets({ designSystem: '@acme/orphan' }, cwd)).rejects.toMatchObject({
       message: expect.stringMatching(/designSystem "@acme\/orphan" extends "@acme\/ghost"/),
       diagnostics: [{ code: 'design_system_parent_not_found', severity: 'error', category: 'config' }],
@@ -656,6 +638,25 @@ describe('resolveAuthoredPresets / designSystem nested chains', () => {
   })
 
   test('links the chain by specifier, so a parent whose manifest name differs still merges as the root', async () => {
+    writeDesignSystemPackage({
+      cwd,
+      name: '@acme/skinned',
+      manifest: { designSystem: '@acme/raw' },
+      preset: {
+        name: '@acme/skinned',
+        theme: { extend: { tokens: { colors: { brand: { value: 'skin' }, skinOnly: { value: 'skin' } } } } },
+      },
+    })
+    writeDesignSystemPackage({
+      cwd,
+      name: '@acme/raw',
+      manifest: { name: '@acme/raw-identity' },
+      preset: {
+        name: '@acme/raw-identity',
+        theme: { extend: { tokens: { colors: { brand: { value: 'raw' }, rawOnly: { value: 'raw' } } } } },
+      },
+    })
+
     const { config, metadata } = await resolveAuthoredPresets({ designSystem: '@acme/skinned' }, cwd)
 
     expect(tokenValues(config.theme?.tokens?.colors)).toMatchInlineSnapshot(`

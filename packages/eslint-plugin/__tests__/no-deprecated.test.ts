@@ -1,88 +1,49 @@
-import { mkdtempSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
-import tsParser from '@typescript-eslint/parser'
-import { type Rule, RuleTester } from 'eslint'
-import { afterAll, describe, it } from 'vitest'
-import { createPandaPlugin } from '../src'
-import type { RuleModuleLike } from '../src/rules/shared'
-
-const hooks = RuleTester as unknown as {
-  afterAll: typeof afterAll
-  describe: typeof describe
-  it: typeof it
-  itOnly: typeof it.only
-}
-hooks.afterAll = afterAll
-hooks.describe = describe
-hooks.it = it
-hooks.itOnly = it.only
-
-const asRule = (rule: RuleModuleLike) => rule as unknown as Rule.RuleModule
+import { createPandaRuleTester } from './panda-rule-tester'
 
 // A design system mid-migration: deprecated tokens (one with a "use X instead"
 // hint), a deprecated `opacity` utility, a deprecated `button` recipe, and a
 // deprecated `stack` pattern — each also usable as a JSX component.
-function createTempProject() {
-  const dir = mkdtempSync(join(tmpdir(), 'panda-no-deprecated-'))
-  writeFileSync(
-    join(dir, 'panda.config.ts'),
-    `export default {
-      outdir: 'styled-system',
-      jsxFramework: 'react',
-      importMap: {
-        css: ['@panda/css'],
-        tokens: ['@panda/tokens'],
-        recipes: ['@panda/recipes'],
-        patterns: ['@panda/patterns'],
-        jsx: ['@panda/jsx'],
-      },
-      conditions: { hover: '&:is(:hover)' },
-      theme: {
-        tokens: {
-          colors: {
-            red: { 500: { value: '#f00' } },
-            old: { value: '#000', deprecated: true },
-            legacy: { value: '#111', deprecated: 'use colors.red.500 instead' },
-          },
-        },
-        recipes: {
-          button: {
-            className: 'button',
-            jsx: ['Button'],
-            base: {},
-            variants: { size: { sm: {}, md: {} } },
-            deprecated: 'use Action instead',
-          },
-        },
-      },
-      patterns: {
-        stack: { jsxName: 'Stack', jsx: ['Stack'], properties: {}, transform: () => ({}), deprecated: 'use Flex instead' },
-      },
-      utilities: {
-        color: { className: 'c', values: 'colors' },
-        opacity: { className: 'op', deprecated: true },
-      },
-    }`,
-  )
-  return dir
-}
-
-const ruleTester = new RuleTester({
-  languageOptions: {
-    parser: tsParser,
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    parserOptions: { ecmaFeatures: { jsx: true } },
+const ruleTester = await createPandaRuleTester(`export default {
+  outdir: 'styled-system',
+  jsxFramework: 'react',
+  importMap: {
+    css: ['@panda/css'],
+    tokens: ['@panda/tokens'],
+    recipes: ['@panda/recipes'],
+    patterns: ['@panda/patterns'],
+    jsx: ['@panda/jsx'],
   },
-})
-
-const dir = createTempProject()
-const plugin = await createPandaPlugin({ cwd: dir })
+  conditions: { hover: '&:is(:hover)' },
+  theme: {
+    tokens: {
+      colors: {
+        red: { 500: { value: '#f00' } },
+        old: { value: '#000', deprecated: true },
+        legacy: { value: '#111', deprecated: 'use colors.red.500 instead' },
+      },
+    },
+    recipes: {
+      button: {
+        className: 'button',
+        jsx: ['Button'],
+        base: {},
+        variants: { size: { sm: {}, md: {} } },
+        deprecated: 'use Action instead',
+      },
+    },
+  },
+  patterns: {
+    stack: { jsxName: 'Stack', jsx: ['Stack'], properties: {}, transform: () => ({}), deprecated: 'use Flex instead' },
+  },
+  utilities: {
+    color: { className: 'c', values: 'colors' },
+    opacity: { className: 'op', deprecated: true },
+  },
+}`)
 
 const tokenDeprecated = { message: 'Panda token "colors.old" is deprecated.' }
 
-ruleTester.run('no-deprecated', asRule(plugin.rules['no-deprecated']), {
+ruleTester.run('no-deprecated', {
   valid: [
     // Non-deprecated token, condition, and array — nothing to flag.
     {

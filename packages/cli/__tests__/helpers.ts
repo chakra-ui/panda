@@ -3,26 +3,29 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-export const CONFIG = `export default {
-  outdir: 'styled-system',
-  include: ['**/*.tsx'],
-  importMap: {
-    css: ['@panda/css'],
-    recipe: ['@panda/recipes'],
-    pattern: ['@panda/patterns'],
-    jsx: ['@panda/jsx'],
-    tokens: ['@panda/tokens'],
-  },
+/** The fixture config, with `extraLines` added as top-level keys before `outdir`. */
+export function pandaConfig(...extraLines: string[]) {
+  return [
+    'export default {',
+    ...extraLines.map((line) => `  ${line}`),
+    "  outdir: 'styled-system',",
+    "  include: ['**/*.tsx'],",
+    '  importMap: {',
+    "    css: ['@panda/css'],",
+    "    recipe: ['@panda/recipes'],",
+    "    pattern: ['@panda/patterns'],",
+    "    jsx: ['@panda/jsx'],",
+    "    tokens: ['@panda/tokens'],",
+    '  },',
+    '}',
+    '',
+  ].join('\n')
 }
-`
 
-/** `CONFIG` plus a token, so the design system spec has something to emit. */
-export const CONFIG_WITH_TOKENS = CONFIG.replace(
-  '  outdir:',
-  "  theme: { tokens: { colors: { brand: { value: '#EA8433' } } } },\n  outdir:",
-)
+export const CONFIG = pandaConfig()
 
-export const EMPTY_CONFIG = CONFIG.replace("include: ['**/*.tsx']", "include: ['missing/**/*.tsx']")
+/** A token gives the design system spec something to emit. */
+export const CONFIG_WITH_TOKENS = pandaConfig("theme: { tokens: { colors: { brand: { value: '#EA8433' } } } },")
 
 export function createFixture(config = CONFIG, options: { config?: boolean; source?: boolean } = {}) {
   const dir = realpathSync(mkdtempSync(join(tmpdir(), 'panda-cli-')))
@@ -33,6 +36,10 @@ export function createFixture(config = CONFIG, options: { config?: boolean; sour
     writeFileSync(join(dir, 'App.tsx'), "import { css } from '@panda/css'; css({ color: 'red' })")
   }
   return dir
+}
+
+export function createEmptyFixture() {
+  return createFixture(CONFIG, { config: false, source: false })
 }
 
 export function cleanupFixture(dir: string | undefined) {

@@ -2,17 +2,36 @@ import { describe, expect, test } from 'vitest'
 import { defaultImportMap, resolvePublishedPandaRange, syncExports } from '../../src/design-system/package'
 
 describe('design-system/package', () => {
-  test.each([
-    ['workspace:*', '^2.0.0'],
-    ['workspace:^', '^2.0.0'],
-    ['workspace:~', '~2.0.0'],
-    ['catalog:', '^2.0.0'],
-    ['workspace:^2.1.0', '^2.1.0'],
-    ['^2.2.0', '^2.2.0'],
-    ['npm:@pandacss/dev@^3.0.0', '^3.0.0'],
-    ['npm:some2pkg@^3.0.0', '^3.0.0'],
-  ])('normalizes a publish-time Panda range of %s', (range, expected) => {
-    expect(resolvePublishedPandaRange(range, '2.0.0-beta.8')).toBe(expected)
+  test('publishes a workspace:* Panda peer as a caret range on the installed major', () => {
+    expect(resolvePublishedPandaRange('workspace:*', '2.0.0-beta.8')).toBe('^2.0.0')
+  })
+
+  test('publishes a workspace:^ Panda peer as a caret range on the installed major', () => {
+    expect(resolvePublishedPandaRange('workspace:^', '2.0.0-beta.8')).toBe('^2.0.0')
+  })
+
+  test('publishes a workspace:~ Panda peer as a tilde range on the installed major', () => {
+    expect(resolvePublishedPandaRange('workspace:~', '2.0.0-beta.8')).toBe('~2.0.0')
+  })
+
+  test('publishes a catalog: Panda peer as a caret range on the installed major', () => {
+    expect(resolvePublishedPandaRange('catalog:', '2.0.0-beta.8')).toBe('^2.0.0')
+  })
+
+  test('strips the workspace: protocol from an explicit workspace range', () => {
+    expect(resolvePublishedPandaRange('workspace:^2.1.0', '2.0.0-beta.8')).toBe('^2.1.0')
+  })
+
+  test('keeps a plain semver Panda range as-is', () => {
+    expect(resolvePublishedPandaRange('^2.2.0', '2.0.0-beta.8')).toBe('^2.2.0')
+  })
+
+  test('uses the version of an npm: alias to @pandacss/dev', () => {
+    expect(resolvePublishedPandaRange('npm:@pandacss/dev@^3.0.0', '2.0.0-beta.8')).toBe('^3.0.0')
+  })
+
+  test('uses the version of an npm: alias whose package name contains a digit', () => {
+    expect(resolvePublishedPandaRange('npm:some2pkg@^3.0.0', '2.0.0-beta.8')).toBe('^3.0.0')
   })
 
   test('keeps the wildcard fallback when no Panda peer is declared', () => {

@@ -5,7 +5,7 @@ import { describe, expect, test } from 'vitest'
 import { Box, Stack, styled } from '../../styled-system-qwik/jsx'
 import { buttonWithCompoundVariants } from '../../styled-system-qwik/recipes'
 
-describe('styled factory - cva', async () => {
+describe('styled factory with an inline recipe', async () => {
   const Button = styled('button', {
     base: {
       color: 'red.500',
@@ -142,7 +142,7 @@ describe('styled factory - cva', async () => {
     )
   })
 
-  test('all together', async () => {
+  test('variant, style prop, css prop and className combined', async () => {
     const { render, screen } = await createDOM()
     await render(
       <Button class="custom-btn" css={{ color: 'red.200', fontSize: 'xl' }} size="lg" mx="2">
@@ -225,20 +225,9 @@ describe('styled factory - cva', async () => {
       `"<button class="fw_semibold h_20 color-palette_blue bd-w_4px c_white px_20 fs_40px">Click me</button>"`,
     )
   })
-
-  test('html props', async () => {
-    const { render, screen } = await createDOM()
-    await render(
-      <styled.div htmlWidth={123} height="123">
-        Click me
-      </styled.div>,
-    )
-    const container = screen.querySelector('div')!
-    expect(container.outerHTML).toMatchInlineSnapshot(`"<div width="123" class="h_123">Click me</div>"`)
-  })
 })
 
-describe('styled factory - button recipe', async () => {
+describe('styled factory with the buttonWithCompoundVariants config recipe', async () => {
   const Button = styled('button', buttonWithCompoundVariants)
 
   test('base styles', async () => {
@@ -338,7 +327,7 @@ describe('styled factory - button recipe', async () => {
     )
   })
 
-  test('all together', async () => {
+  test('variant, style prop, css prop and className combined', async () => {
     const { render, screen } = await createDOM()
     await render(
       <Button class="custom-btn" css={{ color: 'red.200', fontSize: 'xl' }} size="md" visual="outline" mx="2">
@@ -350,6 +339,19 @@ describe('styled factory - button recipe', async () => {
     expect(container.outerHTML).toMatchInlineSnapshot(
       `"<button class="button button--visual_outline button--size_md button--compound__size_md__visual_outline mx_2 c_red.200 fs_xl custom-btn">Click me</button>"`,
     )
+  })
+})
+
+describe('styled elements and patterns', async () => {
+  test('html props', async () => {
+    const { render, screen } = await createDOM()
+    await render(
+      <styled.div htmlWidth={123} height="123">
+        Click me
+      </styled.div>,
+    )
+    const container = screen.querySelector('div')!
+    expect(container.outerHTML).toMatchInlineSnapshot(`"<div width="123" class="h_123">Click me</div>"`)
   })
 
   test('box pattern', async () => {

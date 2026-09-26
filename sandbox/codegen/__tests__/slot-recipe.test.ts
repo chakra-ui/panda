@@ -1,7 +1,9 @@
 import { describe, expect, test } from 'vitest'
 import { slotButton } from '../styled-system/recipes/'
 
-describe('sva', () => {
+// slotButton is defined in ../preset.ts: slots root + icon, visual solid | outline | unstyled (default unstyled)
+
+describe('config slot recipe', () => {
   test('base styles', () => {
     const result = slotButton()
 

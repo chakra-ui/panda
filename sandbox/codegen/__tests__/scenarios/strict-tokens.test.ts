@@ -1,7 +1,7 @@
 import { assertType, describe, test } from 'vitest'
 import { css, firstThatWorks } from '../../styled-system-strict-tokens/css'
 
-describe('css', () => {
+describe('css with strictTokens', () => {
   test('native CSS prop and value', () => {
     assertType(css({ display: 'flex' }))
 
@@ -212,7 +212,7 @@ describe('css', () => {
   })
 })
 
-describe('firstThatWorks', () => {
+describe('firstThatWorks with strictTokens', () => {
   test('members are checked against the property they are written in', () => {
     assertType(css({ color: firstThatWorks('blue.300', 'red.200') }))
     assertType(css({ position: firstThatWorks('absolute', 'sticky') }))

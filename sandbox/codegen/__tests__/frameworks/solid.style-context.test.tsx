@@ -12,7 +12,7 @@ const Icon = withProvider('span', 'icon')
 const Label = withContext('span', 'root')
 
 describe('style context - solid', () => {
-  test('withProvider', () => {
+  test('context slots inherit the root variant, a nested provider slot does not', () => {
     const { container } = render(() => (
       <Root visual="outline">
         <Icon>Icon</Icon>
@@ -41,7 +41,7 @@ describe('style context - solid', () => {
     `)
   })
 
-  test('withContext', () => {
+  test('a context slot inherits the variant from its provider', () => {
     const { container } = render(() => (
       <Root visual="solid">
         <Label>Click me</Label>

@@ -147,19 +147,22 @@ describe('watch helpers', () => {
     }
   })
 
-  it('formats watch lifecycle status messages', () => {
-    const batch = {
-      source: [{ kind: 'change' as const, path: '/src/App.tsx' }],
-      config: [],
-    }
+  it('shows a source change outside the project as an absolute path', () => {
+    expect(
+      formatWatchChange('/project', { source: [{ kind: 'change', path: '/src/App.tsx' }], config: [] }),
+    ).toMatchInlineSnapshot(`"watch: source changed /src/App.tsx"`)
+  })
 
-    expect(formatWatchChange('/project', batch)).toMatchInlineSnapshot(`"watch: source changed /src/App.tsx"`)
+  it('shows a source change inside the project relative to it', () => {
     expect(
       formatWatchChange('/project', {
         source: [{ kind: 'change', path: '/project/src/App.tsx' }],
         config: [],
       }),
     ).toMatchInlineSnapshot(`"watch: source changed src/App.tsx"`)
+  })
+
+  it('counts config changes instead of listing them', () => {
     expect(
       formatWatchChange('/project', {
         source: [],
@@ -169,11 +172,22 @@ describe('watch helpers', () => {
         ],
       }),
     ).toMatchInlineSnapshot(`"watch: 2 config files changed"`)
+  })
+
+  it('announces readiness with what it watches', () => {
     expect(
       formatWatchReady({ sourceDirs: 2, configFiles: 1, debounceMs: 25, outdir: 'styled-system' }),
     ).toMatchInlineSnapshot(`"watch: ready (2 source dirs, 1 config files, debounce 25ms, outdir styled-system)"`)
+  })
+
+  it('reports the start and end of a source rebuild', () => {
+    const batch = { source: [{ kind: 'change' as const, path: '/src/App.tsx' }], config: [] }
+
     expect(formatWatchRebuildStart(batch)).toMatchInlineSnapshot(`"watch: rebuilding (1 source, 0 config)"`)
     expect(formatWatchRebuildSuccess(batch)).toMatchInlineSnapshot(`"watch: rebuilt 1 source events"`)
+  })
+
+  it('reports a config-only rebuild as a config reload', () => {
     expect(
       formatWatchRebuildSuccess({ source: [], config: [{ kind: 'change', path: '/panda.config.ts' }] }),
     ).toMatchInlineSnapshot(`"watch: config reloaded"`)

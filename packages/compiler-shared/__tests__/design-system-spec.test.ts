@@ -136,7 +136,7 @@ describe('following the reference graph the old spec threw away', () => {
     expect(ds.unreferenced('colors')).toEqual(['colors.fg'])
   })
 
-  it('reports no references for a token nothing uses', () => {
+  it('counts a derived negative token as a reference to its source', () => {
     expect(load().referencesTo('spacing.4')).toEqual(['spacing.-4'])
   })
 })

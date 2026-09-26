@@ -1,7 +1,7 @@
 import { assertType, describe, test } from 'vitest'
 import { css } from '../../styled-system-strict/css'
 
-describe('css', () => {
+describe('css with strictTokens and strictPropertyValues', () => {
   test('native CSS prop and value', () => {
     assertType(css({ display: 'flex' }))
 
@@ -203,7 +203,7 @@ describe('css', () => {
   })
 })
 
-describe('css.raw', () => {
+describe('css.raw with strictTokens and strictPropertyValues', () => {
   test('native CSS prop and value', () => {
     assertType(css.raw({ display: 'flex' }))
 

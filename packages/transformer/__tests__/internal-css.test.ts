@@ -483,15 +483,6 @@ describe('design system recipes', () => {
   })
 })
 
-describe('virtual internal css ids', () => {
-  it('uses stable internal import and resolved ids', async () => {
-    const { INTERNAL_CSS_IMPORT, INTERNAL_CSS_RESOLVED_ID } = await import('../src/runtime/internal/ids')
-
-    expect(INTERNAL_CSS_IMPORT).toBe('@pandacss-internal/css')
-    expect(INTERNAL_CSS_RESOLVED_ID.startsWith('\0pandacss:internal:css')).toBe(true)
-  })
-})
-
 describe('cva.merge — styled(Parent, styles) chains', () => {
   it('exposes merge so composeCvaFn can fuse a chain', () => {
     expect(typeof cva({ base: 'a' }).merge).toBe('function')

@@ -1,78 +1,38 @@
-import { mkdtempSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
-import tsParser from '@typescript-eslint/parser'
-import { type Rule, RuleTester } from 'eslint'
-import { afterAll, describe, it } from 'vitest'
-import { createPandaPlugin } from '../src'
-import type { RuleModuleLike } from '../src/rules/shared'
+import { createPandaRuleTester, withCss } from './panda-rule-tester'
 
-const hooks = RuleTester as unknown as {
-  afterAll: typeof afterAll
-  describe: typeof describe
-  it: typeof it
-  itOnly: typeof it.only
-}
-hooks.afterAll = afterAll
-hooks.describe = describe
-hooks.it = it
-hooks.itOnly = it.only
-
-const asRule = (rule: RuleModuleLike) => rule as unknown as Rule.RuleModule
-
-function createTempProject() {
-  const dir = mkdtempSync(join(tmpdir(), 'panda-no-primitive-token-'))
-  writeFileSync(
-    join(dir, 'panda.config.ts'),
-    `export default {
-      outdir: 'styled-system',
-      importMap: {
-        css: ['@panda/css'],
-        tokens: ['@panda/tokens'],
-        jsx: ['@panda/jsx'],
-      },
-      theme: {
-        tokens: {
-          colors: {
-            red: { 500: { value: '#f00' } },
-            blue: { 500: { value: '#00f' } },
-            gray: { 500: { value: '#888' } },
-          },
-          spacing: { 4: { value: '1rem' } },
-        },
-        semanticTokens: {
-          colors: {
-            fg: {
-              error: { value: '{colors.red.500}' },
-              accent: { value: '{colors.blue.500}' },
-            },
-          },
-        },
-      },
-      utilities: {
-        color: { className: 'c', values: 'colors' },
-        backgroundColor: { className: 'bg', values: 'colors', shorthand: 'bg' },
-        padding: { className: 'p', values: 'spacing', shorthand: 'p' },
-      },
-    }`,
-  )
-  return dir
-}
-
-const ruleTester = new RuleTester({
-  languageOptions: {
-    parser: tsParser,
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    parserOptions: { ecmaFeatures: { jsx: true } },
+const ruleTester = await createPandaRuleTester(`export default {
+  outdir: 'styled-system',
+  importMap: {
+    css: ['@panda/css'],
+    tokens: ['@panda/tokens'],
+    jsx: ['@panda/jsx'],
   },
-})
+  theme: {
+    tokens: {
+      colors: {
+        red: { 500: { value: '#f00' } },
+        blue: { 500: { value: '#00f' } },
+        gray: { 500: { value: '#888' } },
+      },
+      spacing: { 4: { value: '1rem' } },
+    },
+    semanticTokens: {
+      colors: {
+        fg: {
+          error: { value: '{colors.red.500}' },
+          accent: { value: '{colors.blue.500}' },
+        },
+      },
+    },
+  },
+  utilities: {
+    color: { className: 'c', values: 'colors' },
+    backgroundColor: { className: 'bg', values: 'colors', shorthand: 'bg' },
+    padding: { className: 'p', values: 'spacing', shorthand: 'p' },
+  },
+}`)
 
-const dir = createTempProject()
-const plugin = await createPandaPlugin({ cwd: dir })
-const withCss = (...lines: string[]) => ["import { css } from '@panda/css'", ...lines].join('\n')
-
-ruleTester.run('no-primitive-token', asRule(plugin.rules['no-primitive-token']), {
+ruleTester.run('no-primitive-token', {
   valid: [
     { filename: 'app.tsx', code: withCss("css({ color: 'fg.error', bg: 'fg.accent' })") },
     // Spacing has primitive tokens but no semantic tokens, so it is skipped by default.

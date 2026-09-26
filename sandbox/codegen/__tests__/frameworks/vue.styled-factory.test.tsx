@@ -4,7 +4,7 @@ import { Box, Stack, styled } from '../../styled-system-vue/jsx'
 import { render } from '@testing-library/vue'
 import { buttonWithCompoundVariants } from '../../styled-system-vue/recipes'
 
-describe('styled factory - cva', () => {
+describe('styled factory with an inline recipe', () => {
   const Button = styled('button', {
     base: {
       color: 'red.500',
@@ -157,7 +157,7 @@ describe('styled factory - cva', () => {
     `)
   })
 
-  test('all together', () => {
+  test('variant, style prop, css prop and className combined', () => {
     const { container } = render(
       <Button class="custom-btn" css={{ color: 'red.200', fontSize: 'xl' }} size="lg" mx="2">
         Click me
@@ -249,26 +249,9 @@ describe('styled factory - cva', () => {
       </button>
     `)
   })
-
-  test('html props', () => {
-    const { container } = render(
-      <styled.div htmlWidth={123} height="123">
-        Click me
-      </styled.div>,
-    )
-    const { firstChild } = container as HTMLElement
-    expect(firstChild).toMatchInlineSnapshot(`
-      <div
-        class="h_123"
-        width="123"
-      >
-        Click me
-      </div>
-    `)
-  })
 })
 
-describe('styled factory - button recipe', () => {
+describe('styled factory with the buttonWithCompoundVariants config recipe', () => {
   const Button = styled('button', buttonWithCompoundVariants)
 
   test('base styles', () => {
@@ -387,7 +370,7 @@ describe('styled factory - button recipe', () => {
     `)
   })
 
-  test('all together', () => {
+  test('variant, style prop, css prop and className combined', () => {
     const { container } = render(
       <Button class="custom-btn" css={{ color: 'red.200', fontSize: 'xl' }} size="md" visual="outline" mx="2">
         Click me
@@ -400,6 +383,25 @@ describe('styled factory - button recipe', () => {
       >
         Click me
       </button>
+    `)
+  })
+})
+
+describe('styled elements and patterns', () => {
+  test('html props', () => {
+    const { container } = render(
+      <styled.div htmlWidth={123} height="123">
+        Click me
+      </styled.div>,
+    )
+    const { firstChild } = container as HTMLElement
+    expect(firstChild).toMatchInlineSnapshot(`
+      <div
+        class="h_123"
+        width="123"
+      >
+        Click me
+      </div>
     `)
   })
 
