@@ -269,7 +269,7 @@ fn static_scalar_key(expression: &Expression<'_>) -> Option<String> {
         Expression::UnaryExpression(_) => {
             match crate::literal::expression_to_literal(expression, None)? {
                 value @ (crate::Literal::Number(_) | crate::Literal::Bool(_)) => {
-                    crate::literal::literal_to_property_key(&value)
+                    value.to_property_key()
                 }
                 _ => None,
             }

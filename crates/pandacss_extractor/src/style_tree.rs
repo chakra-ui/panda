@@ -13,9 +13,7 @@ use oxc_span::GetSpan;
 
 use pandacss_shared::Span;
 
-use crate::literal::{
-    expression_to_literal, literal_to_property_key, property_key_to_string, truthy,
-};
+use crate::literal::{expression_to_literal, property_key_to_string};
 use crate::pure_fn::fold_accessor_expr;
 use crate::{Literal, Resolver, span_from_oxc};
 
@@ -164,7 +162,10 @@ pub fn project_literal(tree: &StyleTree) -> Option<Literal> {
             consequent,
             alternate,
             ..
-        } => finish_ternary(project_literal(consequent), project_literal(alternate)),
+        } => pandacss_literal::merge_optional_branches(
+            project_literal(consequent),
+            project_literal(alternate),
+        ),
         StyleTree::Branches(items) => {
             finish_branches(items.len(), items.iter().map(project_literal))
         }
@@ -202,7 +203,7 @@ pub(crate) fn into_project_literal(tree: StyleTree) -> Option<Literal> {
             consequent,
             alternate,
             ..
-        } => finish_ternary(
+        } => pandacss_literal::merge_optional_branches(
             into_project_literal(*consequent),
             into_project_literal(*alternate),
         ),
@@ -236,15 +237,6 @@ fn finish_branches(
         1 => out.pop(),
         _ if out[1..].iter().all(|item| item == &out[0]) => Some(out.swap_remove(0)),
         _ => Some(Literal::Conditional(out)),
-    }
-}
-
-fn finish_ternary(consequent: Option<Literal>, alternate: Option<Literal>) -> Option<Literal> {
-    match (consequent, alternate) {
-        (Some(left), Some(right)) if left == right => Some(left),
-        (Some(left), Some(right)) => Some(Literal::Conditional(vec![left, right])),
-        (Some(only), None) | (None, Some(only)) => Some(only),
-        (None, None) => None,
     }
 }
 
@@ -373,7 +365,7 @@ pub(crate) fn expression_to_style_tree(
 
         Expression::ConditionalExpression(c) => {
             if let Some(test) = expression_to_literal(&c.test, resolver) {
-                return if truthy(&test) {
+                return if test.is_truthy() {
                     expression_to_style_tree(&c.consequent, resolver)
                 } else {
                     expression_to_style_tree(&c.alternate, resolver)
@@ -400,14 +392,14 @@ pub(crate) fn expression_to_style_tree(
             if let Some(left) = expression_to_literal(&l.left, resolver) {
                 return match l.operator {
                     LogicalOperator::And => {
-                        if truthy(&left) {
+                        if left.is_truthy() {
                             expression_to_style_tree(&l.right, resolver)
                         } else {
                             Some(literal_to_style_tree(left))
                         }
                     }
                     LogicalOperator::Or => {
-                        if truthy(&left) {
+                        if left.is_truthy() {
                             Some(literal_to_style_tree(left))
                         } else {
                             expression_to_style_tree(&l.right, resolver)
@@ -482,7 +474,7 @@ fn computed_member_to_style_tree(
 ) -> Option<StyleTree> {
     let object = expression_to_style_tree(&member.object, resolver)?;
     let key_literal = expression_to_literal(&member.expression, resolver)?;
-    let key = literal_to_property_key(&key_literal)?;
+    let key = key_literal.to_property_key()?;
     lookup_style_member(&object, &key)
 }
 
@@ -626,7 +618,7 @@ fn push_style_spread(
     match argument {
         Expression::ConditionalExpression(c) => {
             if let Some(test) = expression_to_literal(&c.test, resolver) {
-                let branch = if truthy(&test) {
+                let branch = if test.is_truthy() {
                     &c.consequent
                 } else {
                     &c.alternate
@@ -649,12 +641,12 @@ fn push_style_spread(
             if let Some(left) = expression_to_literal(&l.left, resolver) {
                 match l.operator {
                     LogicalOperator::And => {
-                        if truthy(&left) {
+                        if left.is_truthy() {
                             merge_static_spread_object(entries, spreads, &l.right, resolver);
                         }
                     }
                     LogicalOperator::Or => {
-                        if truthy(&left) {
+                        if left.is_truthy() {
                             merge_static_spread_object(entries, spreads, &l.left, resolver);
                         } else {
                             merge_static_spread_object(entries, spreads, &l.right, resolver);

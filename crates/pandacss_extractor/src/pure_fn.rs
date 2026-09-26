@@ -11,8 +11,8 @@ use oxc_ast::ast::{
 };
 
 use crate::literal::{
-    coerce_to_number, coerce_to_string, collapse_whitespace, expression_to_literal, is_string_like,
-    less_than, literal_to_property_key, loose_eq, strict_eq, truthy,
+    collapse_whitespace, expression_to_literal, less_than,
+    loose_eq, strict_eq,
 };
 use crate::{Literal, Resolver};
 
@@ -488,7 +488,7 @@ fn eval_expr(expr: &OwnedPureExpr, args: &[Literal]) -> Option<Literal> {
             for (i, quasi) in quasis.iter().enumerate() {
                 out.push_str(quasi);
                 if let Some(e) = exprs.get(i) {
-                    out.push_str(&coerce_to_string(&eval_expr(e, args)?)?);
+                    out.push_str(&eval_expr(e, args)?.to_loose_string()?);
                 }
             }
             Some(Literal::String(collapse_whitespace(&out)))
@@ -497,15 +497,15 @@ fn eval_expr(expr: &OwnedPureExpr, args: &[Literal]) -> Option<Literal> {
             let left_val = eval_expr(left, args)?;
             let right_val = eval_expr(right, args)?;
             // JS `+`: any string operand → concatenation, else numeric add.
-            if is_string_like(&left_val) || is_string_like(&right_val) {
+            if left_val.is_string_like() || right_val.is_string_like() {
                 Some(Literal::String(collapse_whitespace(&format!(
                     "{}{}",
-                    coerce_to_string(&left_val)?,
-                    coerce_to_string(&right_val)?
+                    left_val.to_loose_string()?,
+                    right_val.to_loose_string()?
                 ))))
             } else {
                 Some(Literal::Number(
-                    coerce_to_number(&left_val)? + coerce_to_number(&right_val)?,
+                    left_val.to_number()? + right_val.to_number()?,
                 ))
             }
         }
@@ -522,14 +522,14 @@ fn eval_expr(expr: &OwnedPureExpr, args: &[Literal]) -> Option<Literal> {
             let left_val = eval_expr(left, args)?;
             match op {
                 PureLogicalOp::And => {
-                    if truthy(&left_val) {
+                    if left_val.is_truthy() {
                         eval_expr(right, args)
                     } else {
                         Some(left_val)
                     }
                 }
                 PureLogicalOp::Or => {
-                    if truthy(&left_val) {
+                    if left_val.is_truthy() {
                         Some(left_val)
                     } else {
                         eval_expr(right, args)
@@ -549,7 +549,7 @@ fn eval_expr(expr: &OwnedPureExpr, args: &[Literal]) -> Option<Literal> {
             consequent,
             alternate,
         } => {
-            if truthy(&eval_expr(test, args)?) {
+            if eval_expr(test, args)?.is_truthy() {
                 eval_expr(consequent, args)
             } else {
                 eval_expr(alternate, args)
@@ -560,7 +560,7 @@ fn eval_expr(expr: &OwnedPureExpr, args: &[Literal]) -> Option<Literal> {
             for (key, value) in entries {
                 let key_name = match key {
                     OwnedKey::Static(s) => s.clone(),
-                    OwnedKey::Computed(e) => literal_to_property_key(&eval_expr(e, args)?)?,
+                    OwnedKey::Computed(e) => eval_expr(e, args)?.to_property_key()?,
                 };
                 let value = eval_expr(value, args)?;
                 Literal::upsert_object_entry(&mut out, key_name, value);
@@ -576,40 +576,25 @@ fn eval_expr(expr: &OwnedPureExpr, args: &[Literal]) -> Option<Literal> {
         }
         OwnedPureExpr::Member { object, prop } => {
             let object = eval_expr(object, args)?;
-            match object {
-                Literal::Object(entries) => {
-                    entries.into_iter().find(|(k, _)| k == prop).map(|(_, v)| v)
-                }
-                _ => None,
-            }
+            object.get_member(prop)
         }
         OwnedPureExpr::Index { object, index } => {
             let object = eval_expr(object, args)?;
             let index = eval_expr(index, args)?;
-            let key = literal_to_property_key(&index)?;
-            match object {
-                Literal::Array(items) => {
-                    let idx = key.parse::<usize>().ok()?;
-                    items.get(idx).cloned()
-                }
-                Literal::Object(entries) => entries
-                    .into_iter()
-                    .find(|(name, _)| name == &key)
-                    .map(|(_, v)| v),
-                _ => None,
-            }
+            let key = index.to_property_key()?;
+            object.get_member(&key)
         }
     }
 }
 
 fn eval_unary(op: PureUnaryOp, v: &Literal) -> Option<Literal> {
     match op {
-        PureUnaryOp::Plus => coerce_to_number(v).map(Literal::Number),
+        PureUnaryOp::Plus => v.to_number().map(Literal::Number),
         PureUnaryOp::Minus => match v {
             Literal::Number(n) => Some(Literal::Number(-n)),
             _ => None,
         },
-        PureUnaryOp::Not => Some(Literal::Bool(!truthy(v))),
+        PureUnaryOp::Not => Some(Literal::Bool(!v.is_truthy())),
     }
 }
 
@@ -620,8 +605,8 @@ fn eval_binary(op: PureBinaryOp, left: &Literal, right: &Literal) -> Option<Lite
         | PureBinaryOp::Div
         | PureBinaryOp::Rem
         | PureBinaryOp::Exp => {
-            let a = coerce_to_number(left)?;
-            let b = coerce_to_number(right)?;
+            let a = left.to_number()?;
+            let b = right.to_number()?;
             let n = match op {
                 PureBinaryOp::Sub => a - b,
                 PureBinaryOp::Mul => a * b,

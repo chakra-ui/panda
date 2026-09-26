@@ -11,8 +11,6 @@
 use rustc_hash::FxHashSet;
 use serde::Serialize;
 
-use pandacss_shared::number_to_js_string;
-
 pub use pandacss_literal::Literal;
 
 // === Type Definitions ===
@@ -358,7 +356,7 @@ fn parse_string_map_owned(literal: Literal) -> Vec<(String, String)> {
     };
     entries
         .into_iter()
-        .filter_map(|(k, v)| variant_condition_value(&v).map(|value| (k, value)))
+        .filter_map(|(k, v)| v.to_condition_string().map(|value| (k, value)))
         .collect()
 }
 
@@ -430,20 +428,10 @@ fn variant_condition_values(value: &Literal) -> Option<Vec<String>> {
         Literal::Array(values) => {
             let values = values
                 .iter()
-                .map(variant_condition_value)
+                .map(Literal::to_condition_string)
                 .collect::<Option<Vec<_>>>()?;
             (!values.is_empty()).then_some(values)
         }
-        value => variant_condition_value(value).map(|value| vec![value]),
-    }
-}
-
-fn variant_condition_value(value: &Literal) -> Option<String> {
-    match value {
-        Literal::String(value) | Literal::Token { value, .. } => Some(value.clone()),
-        Literal::Number(value) => Some(number_to_js_string(*value)),
-        Literal::Bool(true) => Some("true".to_owned()),
-        Literal::Bool(false) => Some("false".to_owned()),
-        Literal::Null | Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_) => None,
+        value => value.to_condition_string().map(|value| vec![value]),
     }
 }
