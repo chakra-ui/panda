@@ -131,6 +131,8 @@ pub(crate) struct ResolverBuildInput<'a, 'cb> {
 }
 
 impl<'a, 'cb> Resolver<'a, 'cb> {
+    // === Construction & Initialization ===
+
     pub(crate) fn build(input: ResolverBuildInput<'a, 'cb>) -> Self {
         Self::build_from_input(input)
     }
@@ -176,6 +178,8 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             recipe_raw_resolve,
         }
     }
+
+    // === Result Extraction ===
 
     pub(crate) fn take_diagnostics(&self) -> Vec<crate::Diagnostic> {
         std::mem::take(&mut self.diagnostics.borrow_mut())
@@ -242,6 +246,8 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             .extend(resolution.unresolved.iter().cloned());
     }
 
+    // === Accessors ===
+
     pub(crate) fn semantic(&self) -> &Semantic<'a> {
         &self.semantic
     }
@@ -289,6 +295,8 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
     pub(crate) fn prefix(&self) -> &'a str {
         self.prefix
     }
+
+    // === Pure Function Resolution ===
 
     /// Fold a pure local/imported callable: `f()`, `(() => 'x')()`, etc.
     pub(crate) fn resolve_pure_call(&self, call: &CallExpression<'_>) -> Option<Literal> {
@@ -375,6 +383,8 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             })
     }
 
+    // === Identifier & Symbol Resolution ===
+
     /// `Some(symbol_id)` when the identifier binds to a declaration in
     /// this file. `None` for free/global references.
     pub(crate) fn symbol_for_identifier(
@@ -427,6 +437,8 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             .symbol_flags(symbol_id)
             .contains(SymbolFlags::Import)
     }
+
+    // === Token Call Resolution ===
 
     /// Resolve `token('path')` / `token.var('path')` to its dictionary value.
     /// Mirrors the JS extractor's `maybe-box-node.ts`.
@@ -758,6 +770,8 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         self.record_cross_file_resolution(&resolution);
         resolution.entry
     }
+
+    // === Raw Style & Special Call Resolution ===
 
     pub(crate) fn resolve_raw_style_call(&self, call: &CallExpression<'_>) -> Option<Literal> {
         let (name, category) = self.match_raw_style_call(call)?;
