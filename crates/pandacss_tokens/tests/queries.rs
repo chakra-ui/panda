@@ -3,9 +3,8 @@
 //! deprecation flags, metadata round-trips, serde, builder `push`, borrow
 //! behavior, and color-mix / opacity-modifier resolution.
 
-use crate::common::{snapshot_token_values, snapshot_tokens, t};
+use crate::common::{build_dictionary, snapshot_token_values, snapshot_tokens, t};
 use insta::assert_yaml_snapshot;
-use pandacss_config::UserConfig;
 use pandacss_tokens::{TokenCategory, TokenDictionary};
 use serde_json::json;
 
@@ -58,14 +57,10 @@ fn fallback_used_when_path_missing() {
     "##);
 }
 
-// --- JS parity: format-flat.test.ts ---
+// --- path to var map ---
 
 #[test]
-fn flat_path_to_var_map_matches_js() {
-    // Adapted from packages/token-dictionary/__tests__/format-flat.test.ts.
-    // The JS test builds a colors object with red/blue/green/pink and
-    // asserts `view.values` is `path → var(--colors-…)`. We assemble the
-    // same shape and assert path → var via the dictionary's var index.
+fn each_token_path_maps_to_its_css_var() {
     let dict = TokenDictionary::builder()
         .extend([
             t(
@@ -112,7 +107,7 @@ fn flat_path_to_var_map_matches_js() {
 
 #[test]
 fn semantic_token_reference_expands_to_var_not_value() {
-    let config: UserConfig = serde_json::from_value(json!({
+    let dict = build_dictionary(json!({
         "theme": {
             "tokens": {
                 "colors": {
@@ -127,12 +122,7 @@ fn semantic_token_reference_expands_to_var_not_value() {
                 }
             }
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_eq!(
         dict.get_str("colors.primary", None),
@@ -148,7 +138,7 @@ fn semantic_token_reference_expands_to_var_not_value() {
 
 #[test]
 fn conditional_tokens_without_base_resolve_as_category_and_runtime_values() {
-    let config: UserConfig = serde_json::from_value(json!({
+    let dict = build_dictionary(json!({
         "theme": {
             "tokens": {
                 "colors": {
@@ -166,12 +156,7 @@ fn conditional_tokens_without_base_resolve_as_category_and_runtime_values() {
                 }
             }
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_eq!(
         dict.category_value_str("colors", "withBase"),
@@ -217,7 +202,7 @@ fn conditional_tokens_without_base_resolve_as_category_and_runtime_values() {
 
 #[test]
 fn dictionary_resolves_token_metadata_and_semantic_suggestions() {
-    let config: UserConfig = serde_json::from_value(json!({
+    let dict = build_dictionary(json!({
         "theme": {
             "tokens": {
                 "colors": {
@@ -237,12 +222,7 @@ fn dictionary_resolves_token_metadata_and_semantic_suggestions() {
                 }
             }
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     let primitive = dict
         .resolve_token_path(&TokenCategory::Colors, "red.500/40")
@@ -323,7 +303,7 @@ fn color_mix_resolves_token_and_opacity_modifiers() {
     "##);
 }
 
-// --- JS parity: format-vars.test.ts (reverse var lookup) ---
+// --- reverse var lookup ---
 
 #[test]
 fn reverse_var_lookup() {
@@ -350,7 +330,7 @@ fn reverse_var_lookup() {
     assert!(dict.token_by_var("var(--nonexistent)").is_none());
 }
 
-// --- JS parity: semantic-token.test.ts (conditional precedence) ---
+// --- conditional precedence ---
 
 #[test]
 fn unconditional_token_wins_over_conditional_via_get() {
@@ -682,7 +662,7 @@ fn extend_flat_builds_a_usable_dictionary() {
 fn virtual_color_palette_tokens_resolve_to_their_css_var() {
     // Parity with v1's `isVirtual -> varRef` rule: `token()` and `token.var()`
     // both yield the virtual var, never the dotted path string.
-    let config: UserConfig = serde_json::from_value(json!({
+    let dict = build_dictionary(json!({
         "theme": {
             "tokens": {
                 "colors": {
@@ -693,12 +673,7 @@ fn virtual_color_palette_tokens_resolve_to_their_css_var() {
                 }
             }
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     let resolutions = [
         (
@@ -730,15 +705,10 @@ fn snapshot_token_vars(dict: &TokenDictionary) -> std::collections::BTreeMap<Str
         .collect()
 }
 
-// --- runtime `toCssVar` parity ---
-//
-// Generated helpers `toCssVar` derives every var-ref from the path instead of
-// storing it on the token map. This mirrors that helper in Rust and asserts it
-// reproduces the dictionary's real `token.var` for tricky names (uppercase,
-// escape-needing `/`) across prefix + hash settings. If the runtime JS drifts
-// from `css_var_variable`/`push_css_var_name`, this fails.
+// --- runtime `toCssVar` ---
+// The generated `toCssVar` rebuilds var refs from the token path, so it must match `token.var`.
 
-fn mirror_sanitize(out: &mut String, value: &str) {
+fn sanitize_css_var_name(out: &mut String, value: &str) {
     for ch in value.chars() {
         if ch.is_ascii_uppercase() {
             out.push('-');
@@ -756,13 +726,13 @@ fn mirror_sanitize(out: &mut String, value: &str) {
     }
 }
 
-fn mirror_to_var(path: &str, prefix: &str, hash: bool) -> String {
+fn runtime_to_css_var(path: &str, prefix: &str, hash: bool) -> String {
     let name = path.replace('.', "-");
     let body = if hash {
         pandacss_shared::to_hash(&name)
     } else {
         let mut sanitized = String::new();
-        mirror_sanitize(&mut sanitized, &name);
+        sanitize_css_var_name(&mut sanitized, &name);
         sanitized
     };
 
@@ -771,7 +741,7 @@ fn mirror_to_var(path: &str, prefix: &str, hash: bool) -> String {
         if hash {
             out.push_str(prefix);
         } else {
-            mirror_sanitize(&mut out, prefix);
+            sanitize_css_var_name(&mut out, prefix);
         }
         out.push('-');
     }
@@ -780,35 +750,42 @@ fn mirror_to_var(path: &str, prefix: &str, hash: bool) -> String {
     out
 }
 
-#[test]
-fn runtime_to_var_reproduces_every_token_var() {
-    for (prefix, hash) in [("", false), ("pd", false), ("panda", true)] {
-        let config: UserConfig = serde_json::from_value(json!({
-            "prefix": { "cssVar": prefix },
-            "hash": { "cssVar": hash },
-            "theme": {
-                "tokens": {
-                    "colors": {
-                        "red": { "500": { "value": "#f00" } },
-                        "brandPrimary": { "value": "#111" }
-                    },
-                    "sizes": { "1/2": { "value": "50%" } }
-                }
+fn assert_runtime_to_css_var_matches_token_vars(prefix: &str, hash: bool) {
+    let dict = build_dictionary(json!({
+        "prefix": { "cssVar": prefix },
+        "hash": { "cssVar": hash },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "500": { "value": "#f00" } },
+                    "brandPrimary": { "value": "#111" }
+                },
+                "sizes": { "1/2": { "value": "50%" } }
             }
-        }))
-        .expect("config");
-
-        let dict = TokenDictionary::from_config(&config)
-            .expect("token dictionary")
-            .expect("non-empty dictionary");
-
-        for token in dict.iter() {
-            assert_eq!(
-                mirror_to_var(&token.path, prefix, hash),
-                token.var.as_ref(),
-                "path={} prefix={prefix:?} hash={hash}",
-                token.path,
-            );
         }
+    }));
+
+    for token in dict.iter() {
+        assert_eq!(
+            runtime_to_css_var(&token.path, prefix, hash),
+            token.var.as_ref(),
+            "path={} prefix={prefix:?} hash={hash}",
+            token.path,
+        );
     }
+}
+
+#[test]
+fn runtime_to_css_var_reproduces_token_vars() {
+    assert_runtime_to_css_var_matches_token_vars("", false);
+}
+
+#[test]
+fn runtime_to_css_var_reproduces_prefixed_token_vars() {
+    assert_runtime_to_css_var_matches_token_vars("pd", false);
+}
+
+#[test]
+fn runtime_to_css_var_reproduces_hashed_token_vars() {
+    assert_runtime_to_css_var_matches_token_vars("panda", true);
 }

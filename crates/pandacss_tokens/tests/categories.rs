@@ -1,13 +1,12 @@
 //! Category access: `category_values`, semantic category values, negative
 //! category calc values, and `TokenCategory` parsing round-trips.
 
-use crate::common::t;
+use crate::common::{build_dictionary, t};
 use insta::assert_yaml_snapshot;
-use pandacss_config::UserConfig;
 use pandacss_tokens::{TokenCategory, TokenDictionary};
 use serde_json::json;
 
-// --- JS parity: format-by-category.test.ts ---
+// --- values by category ---
 
 #[test]
 fn category_values_grouped_by_category() {
@@ -35,7 +34,7 @@ fn category_values_grouped_by_category() {
 
 #[test]
 fn semantic_category_values_emit_var_refs() {
-    let config: UserConfig = serde_json::from_value(json!({
+    let dict = build_dictionary(json!({
         "theme": {
             "tokens": {
                 "colors": {
@@ -53,12 +52,7 @@ fn semantic_category_values_emit_var_refs() {
                 }
             }
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(json!({
         "primary": dict.category_value_str("colors", "primary"),

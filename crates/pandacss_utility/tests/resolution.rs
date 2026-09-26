@@ -10,7 +10,7 @@ use serde_json::json;
 use crate::common::utility_config;
 
 #[test]
-fn resolve_values_value_maps_a_string_category_to_a_token_var() {
+fn values_category_resolves_a_token_key_to_its_var() {
     let tokens = TokenDictionary::builder()
         .insert(Token::new(
             "spacing.4",
@@ -29,13 +29,11 @@ fn resolve_values_value_maps_a_string_category_to_a_token_var() {
         },
     );
 
-    // Node passes this resolved value as the positional argument to the
-    // transform callback (`getPropertyRawValue` of the `spacing` category).
     assert_snapshot!(utility.resolve_values_value("spaceX", "4"), @"var(--spacing-4)");
 }
 
 #[test]
-fn resolve_values_value_maps_an_inline_value_alias() {
+fn inline_values_map_resolves_an_alias_to_its_value() {
     let utility = Utility::from_config(&utility_config(json!({
         "marginX": { "values": { "sm": "20px", "md": "40px" } }
     })));
@@ -44,7 +42,7 @@ fn resolve_values_value_maps_an_inline_value_alias() {
 }
 
 #[test]
-fn resolve_values_value_passes_through_when_no_category_matches() {
+fn utility_without_values_passes_the_raw_value_through() {
     let utility = Utility::from_config(&utility_config(json!({
         "size": {}
     })));
@@ -54,7 +52,7 @@ fn resolve_values_value_passes_through_when_no_category_matches() {
 }
 
 #[test]
-fn class_name_value_uses_authored_literal() {
+fn class_name_uses_the_authored_value_not_its_alias() {
     let utility = Utility::from_config(&utility_config(json!({
         "marginBottom": {
             "className": "mb",

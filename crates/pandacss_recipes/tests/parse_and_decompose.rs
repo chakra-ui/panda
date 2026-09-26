@@ -1,8 +1,4 @@
 //! `Recipe` / `SlotRecipe` parsing + atomic decomposition.
-//!
-//! Fixtures mirror real-world `cva` / `sva` shapes from the JS
-//! reference — `packages/parser/__tests__/*.test.ts` plus the panda
-//! preset configs.
 
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
@@ -19,9 +15,6 @@ fn cva_matchers() -> Matchers {
     }
 }
 
-/// Parse the first `cva(...)` call's argument and turn it into a
-/// typed `Recipe`. Compact helper so each test focuses on the recipe
-/// shape, not the extractor wiring.
 fn parse_recipe(source: &str) -> Recipe {
     let result = extract(source, "fixture.tsx", &ExtractorConfig::new(cva_matchers()));
     let arg = result

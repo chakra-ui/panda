@@ -139,9 +139,8 @@ fn every_id_is_registered() {
 }
 
 #[test]
-fn emitted_files_carry_config_dependencies() {
-    let graph = ArtifactGraph;
-    let artifacts = graph.generate_all(
+fn helpers_and_conditions_track_their_config_dependencies() {
+    let artifacts = ArtifactGraph.generate_all(
         CodegenContext::config_only(&UserConfig::default()),
         GenerateOptions::default(),
     );
@@ -155,8 +154,11 @@ fn emitted_files_carry_config_dependencies() {
     assert!(dependencies.contains(ConfigDependency::CodegenFormat));
     assert!(dependencies.contains(ConfigDependency::Conditions));
     assert!(dependencies.contains(ConfigDependency::Tokens));
+}
 
-    let pattern_config = user_config(serde_json::json!({
+#[test]
+fn pattern_files_track_patterns_tokens_and_utilities() {
+    let config = user_config(serde_json::json!({
         "patterns": {
             "stack": {
                 "properties": {
@@ -165,16 +167,25 @@ fn emitted_files_carry_config_dependencies() {
             }
         }
     }));
-    let artifacts = graph.generate_all(
-        CodegenContext::config_only(&pattern_config),
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&config),
         GenerateOptions::default(),
     );
+
     let patterns = artifact(&artifacts, ArtifactId::Patterns);
     let dependencies = file_dependencies(patterns, "patterns/stack.mjs");
     assert!(dependencies.contains(ConfigDependency::CodegenFormat));
     assert!(dependencies.contains(ConfigDependency::Patterns));
     assert!(dependencies.contains(ConfigDependency::Tokens));
     assert!(dependencies.contains(ConfigDependency::Utilities));
+}
+
+#[test]
+fn type_declarations_track_tokens_themes_and_utilities() {
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&UserConfig::default()),
+        GenerateOptions::default(),
+    );
 
     let types = artifact(&artifacts, ArtifactId::Types);
     let dependencies = file_dependencies(types, "types/tokens.d.ts");
@@ -186,8 +197,11 @@ fn emitted_files_carry_config_dependencies() {
     assert!(dependencies.contains(ConfigDependency::CodegenFormat));
     assert!(dependencies.contains(ConfigDependency::Tokens));
     assert!(dependencies.contains(ConfigDependency::Utilities));
+}
 
-    let themes_config = user_config(serde_json::json!({
+#[test]
+fn theme_files_track_themes_and_tokens() {
+    let config = user_config(serde_json::json!({
         "themes": {
             "primary": {
                 "tokens": {
@@ -198,10 +212,11 @@ fn emitted_files_carry_config_dependencies() {
             }
         }
     }));
-    let artifacts = graph.generate_all(
-        CodegenContext::config_only(&themes_config),
+    let artifacts = ArtifactGraph.generate_all(
+        CodegenContext::config_only(&config),
         GenerateOptions::default(),
     );
+
     let themes = artifact(&artifacts, ArtifactId::Themes);
     let dependencies = file_dependencies(themes, "themes/index.mjs");
     assert!(dependencies.contains(ConfigDependency::CodegenFormat));
@@ -210,7 +225,7 @@ fn emitted_files_carry_config_dependencies() {
 }
 
 #[test]
-fn standalone_theme_artifact_builds_token_dictionary() {
+fn theme_css_is_built_from_config_tokens() {
     let config = user_config(serde_json::json!({
         "themes": {
             "primary": {
@@ -239,7 +254,7 @@ fn standalone_theme_artifact_builds_token_dictionary() {
 }
 
 #[test]
-fn prebuilt_empty_token_state_does_not_rebuild_theme_dictionary() {
+fn provided_empty_token_state_leaves_theme_css_empty() {
     let config = user_config(serde_json::json!({
         "themes": {
             "primary": {

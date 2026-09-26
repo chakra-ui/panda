@@ -3,9 +3,8 @@
 //! expansion, css-var prefix/hash options, alias-chain resolution, deep
 //! semantic conditions, and spacing middlewares.
 
-use crate::common::{snapshot_token_values, snapshot_tokens};
+use crate::common::{build_dictionary, snapshot_token_values, snapshot_tokens};
 use insta::assert_yaml_snapshot;
-use pandacss_config::UserConfig;
 use pandacss_tokens::TokenDictionary;
 use serde_json::json;
 
@@ -14,8 +13,8 @@ use serde_json::json;
     clippy::too_many_lines,
     reason = "fixture-heavy config test keeps related token assertions together"
 )]
-fn from_config_collects_theme_tokens_semantic_tokens_and_breakpoints() {
-    let config: UserConfig = serde_json::from_value(json!({
+fn theme_tokens_semantic_tokens_and_breakpoints_are_collected() {
+    let dict = build_dictionary(json!({
         "theme": {
             "breakpoints": {
                 "sm": "640px",
@@ -48,12 +47,7 @@ fn from_config_collects_theme_tokens_semantic_tokens_and_breakpoints() {
                 }
             }
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(snapshot_tokens(&dict), @r##"
     - path: colors.red.500
@@ -139,8 +133,8 @@ fn from_config_collects_theme_tokens_semantic_tokens_and_breakpoints() {
 }
 
 #[test]
-fn from_config_collects_theme_variant_tokens_as_theme_conditions() {
-    let config: UserConfig = serde_json::from_value(json!({
+fn tokens_in_named_themes_become_theme_conditions() {
+    let dict = build_dictionary(json!({
         "theme": {
             "tokens": {
                 "colors": {
@@ -162,12 +156,7 @@ fn from_config_collects_theme_variant_tokens_as_theme_conditions() {
                 }
             }
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(snapshot_tokens(&dict), @r##"
     - path: colors.bg
@@ -211,8 +200,8 @@ fn from_config_collects_theme_variant_tokens_as_theme_conditions() {
 }
 
 #[test]
-fn from_config_transforms_composite_token_values() {
-    let config: UserConfig = serde_json::from_value(json!({
+fn composite_token_values_are_serialized_to_css() {
+    let dict = build_dictionary(json!({
         "theme": {
             "tokens": {
                 "colors": {
@@ -264,12 +253,7 @@ fn from_config_transforms_composite_token_values() {
                 }
             }
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
     assets.logo: "url(\"/logo.svg\")"
@@ -286,8 +270,8 @@ fn from_config_transforms_composite_token_values() {
 }
 
 #[test]
-fn from_config_expands_color_mix_references() {
-    let config: UserConfig = serde_json::from_value(json!({
+fn color_mix_references_are_expanded() {
+    let dict = build_dictionary(json!({
         "theme": {
             "tokens": {
                 "colors": {
@@ -311,12 +295,7 @@ fn from_config_expands_color_mix_references() {
                 }
             }
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
     colors.border: "color-mix(in oklab, var(--colors-pink) 30%, transparent)"
@@ -331,8 +310,8 @@ fn from_config_expands_color_mix_references() {
 }
 
 #[test]
-fn from_config_expands_alpha_modifier_reference_in_non_color_categories() {
-    let config: UserConfig = serde_json::from_value(json!({
+fn alpha_modifier_references_expand_in_non_color_categories() {
+    let dict = build_dictionary(json!({
         "theme": {
             "tokens": {
                 "colors": { "ink": { "value": "#000000" } },
@@ -350,12 +329,7 @@ fn from_config_expands_alpha_modifier_reference_in_non_color_categories() {
                 },
             },
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
     borders.embeddedAlpha: "1px solid color-mix(in oklab, var(--colors-ink) 10%, transparent)"
@@ -368,8 +342,8 @@ fn from_config_expands_alpha_modifier_reference_in_non_color_categories() {
 }
 
 #[test]
-fn from_config_resolves_slash_keyed_token_reference_over_color_mix() {
-    let config: UserConfig = serde_json::from_value(json!({
+fn slash_keyed_token_reference_wins_over_color_mix() {
+    let dict = build_dictionary(json!({
         "theme": {
             "tokens": {
                 "sizes": { "1/2": { "value": "50%" } },
@@ -378,12 +352,7 @@ fn from_config_resolves_slash_keyed_token_reference_over_color_mix() {
                 "sizes": { "half": { "value": "{sizes.1/2}" } },
             },
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(snapshot_token_values(&dict), @r#"
     sizes.1/2: 50%
@@ -392,8 +361,8 @@ fn from_config_resolves_slash_keyed_token_reference_over_color_mix() {
 }
 
 #[test]
-fn from_config_serializes_composite_shadow_semantic_token() {
-    let config: UserConfig = serde_json::from_value(json!({
+fn composite_shadow_semantic_token_is_serialized() {
+    let dict = build_dictionary(json!({
         "theme": {
             "tokens": {
                 "colors": { "ink": { "value": "#000000" } },
@@ -406,12 +375,7 @@ fn from_config_serializes_composite_shadow_semantic_token() {
                 },
             },
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
     colors.colorPalette: var(--colors-color-palette)
@@ -424,8 +388,8 @@ fn from_config_serializes_composite_shadow_semantic_token() {
 /// `SemanticValue` variant order they deserialize as conditions, producing
 /// `borders.card@color` / `assets.grid@type` instead of one serialized value.
 #[test]
-fn from_config_serializes_composite_border_and_asset_semantic_tokens() {
-    let config: UserConfig = serde_json::from_value(json!({
+fn composite_border_and_asset_semantic_tokens_are_serialized() {
+    let dict = build_dictionary(json!({
         "theme": {
             "tokens": {
                 "colors": { "ink": { "value": "#000000" } },
@@ -442,12 +406,7 @@ fn from_config_serializes_composite_border_and_asset_semantic_tokens() {
                 },
             },
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
     assets.grid: "url(\"data:image/svg+xml,%3csvg/%3e\")"
@@ -463,8 +422,8 @@ fn from_config_serializes_composite_border_and_asset_semantic_tokens() {
 /// a real conditions map whose branches are composites must still split into
 /// per-condition tokens for every category that has a composite form.
 #[test]
-fn from_config_keeps_conditions_for_composite_semantic_tokens() {
-    let config: UserConfig = serde_json::from_value(json!({
+fn composite_semantic_tokens_keep_their_conditions() {
+    let dict = build_dictionary(json!({
         "theme": {
             "tokens": {
                 "colors": { "ink": { "value": "#000000" }, "snow": { "value": "#ffffff" } },
@@ -496,12 +455,7 @@ fn from_config_keeps_conditions_for_composite_semantic_tokens() {
                 },
             },
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
     assets.grid: "url(\"data:image/svg+xml,%3csvg/%3e\")"
@@ -520,8 +474,8 @@ fn from_config_keeps_conditions_for_composite_semantic_tokens() {
 
 /// Shadow arrays and the `inset` flag also flow through the composite path.
 #[test]
-fn from_config_serializes_shadow_arrays_and_inset_semantic_tokens() {
-    let config: UserConfig = serde_json::from_value(json!({
+fn shadow_arrays_and_inset_semantic_tokens_are_serialized() {
+    let dict = build_dictionary(json!({
         "theme": {
             "tokens": {
                 "colors": { "ink": { "value": "#000000" }, "snow": { "value": "#ffffff" } },
@@ -537,12 +491,7 @@ fn from_config_serializes_shadow_arrays_and_inset_semantic_tokens() {
                 },
             },
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
     colors.colorPalette: var(--colors-color-palette)
@@ -558,8 +507,8 @@ fn from_config_serializes_shadow_arrays_and_inset_semantic_tokens() {
 /// is a percentage along the gradient and a numeric placement is an angle;
 /// emitting either unitless gives a gradient that renders wrong, or not at all.
 #[test]
-fn from_config_gives_numeric_gradient_values_their_css_unit() {
-    let config: UserConfig = serde_json::from_value(json!({
+fn numeric_gradient_values_get_their_css_unit() {
+    let dict = build_dictionary(json!({
         "theme": {
             "tokens": {
                 "gradients": {
@@ -572,12 +521,7 @@ fn from_config_gives_numeric_gradient_values_their_css_unit() {
                 },
             },
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
     gradients.angled: "linear-gradient(45deg, red, blue)"
@@ -587,8 +531,8 @@ fn from_config_gives_numeric_gradient_values_their_css_unit() {
 }
 
 #[test]
-fn from_config_uses_css_var_prefix_and_hash_options() {
-    let config: UserConfig = serde_json::from_value(json!({
+fn css_var_prefix_and_hash_options_shape_token_vars() {
+    let dict = build_dictionary(json!({
         "prefix": {
             "cssVar": "panda"
         },
@@ -606,12 +550,7 @@ fn from_config_uses_css_var_prefix_and_hash_options() {
                 }
             }
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(snapshot_tokens(&dict), @r##"
     - path: colors.red.500
@@ -632,8 +571,8 @@ fn from_config_uses_css_var_prefix_and_hash_options() {
 }
 
 #[test]
-fn from_config_resolves_alias_chains_like_js_dictionary() {
-    let config: UserConfig = serde_json::from_value(json!({
+fn token_alias_chains_reference_the_previous_link() {
+    let dict = build_dictionary(json!({
         "theme": {
             "tokens": {
                 "colors": {
@@ -643,12 +582,7 @@ fn from_config_resolves_alias_chains_like_js_dictionary() {
                 }
             }
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
     colors.border: var(--colors-pink)
@@ -659,8 +593,8 @@ fn from_config_resolves_alias_chains_like_js_dictionary() {
 }
 
 #[test]
-fn from_config_flattens_deep_semantic_conditions_like_js() {
-    let config: UserConfig = serde_json::from_value(json!({
+fn nested_semantic_conditions_are_joined_with_colons() {
+    let dict = build_dictionary(json!({
         "theme": {
             "semanticTokens": {
                 "colors": {
@@ -675,12 +609,7 @@ fn from_config_flattens_deep_semantic_conditions_like_js() {
                 }
             }
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(snapshot_tokens(&dict), @r##"
     - path: colors.pink
@@ -712,8 +641,8 @@ fn from_config_flattens_deep_semantic_conditions_like_js() {
     clippy::too_many_lines,
     reason = "fixture-heavy middleware test keeps related spacing assertions together"
 )]
-fn from_config_applies_spacing_middlewares() {
-    let config: UserConfig = serde_json::from_value(json!({
+fn spacing_tokens_get_negative_counterparts() {
+    let dict = build_dictionary(json!({
         "theme": {
             "tokens": {
                 "spacing": {
@@ -736,12 +665,7 @@ fn from_config_applies_spacing_middlewares() {
                 }
             }
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(snapshot_token_details(&dict), @r#"
     - path: sizes.full
@@ -842,7 +766,7 @@ fn snapshot_token_details(dict: &TokenDictionary) -> Vec<serde_json::Value> {
 
 #[test]
 fn negative_spacing_covers_the_shapes_a_scale_can_take() {
-    let config: UserConfig = serde_json::from_value(json!({
+    let dictionary = build_dictionary(json!({
         "theme": {
             "tokens": {
                 "spacing": {
@@ -858,12 +782,7 @@ fn negative_spacing_covers_the_shapes_a_scale_can_take() {
                 }
             }
         }
-    }))
-    .expect("config should deserialize");
-
-    let dictionary = TokenDictionary::from_config(&config)
-        .expect("token dictionary should build")
-        .expect("config defines tokens");
+    }));
 
     let negatives: Vec<&str> = dictionary
         .iter()
@@ -882,7 +801,7 @@ fn negative_spacing_covers_the_shapes_a_scale_can_take() {
 
 #[test]
 fn negative_spacing_keeps_fractional_names_intact() {
-    let config: UserConfig = serde_json::from_value(json!({
+    let dictionary = build_dictionary(json!({
         "theme": {
             "tokens": {
                 "spacing": {
@@ -892,12 +811,7 @@ fn negative_spacing_keeps_fractional_names_intact() {
                 }
             }
         }
-    }))
-    .expect("config should deserialize");
-
-    let dictionary = TokenDictionary::from_config(&config)
-        .expect("token dictionary should build")
-        .expect("config defines tokens");
+    }));
 
     let negatives: Vec<&str> = dictionary
         .iter()

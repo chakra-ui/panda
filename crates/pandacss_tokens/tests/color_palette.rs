@@ -2,15 +2,14 @@
 //! semantic defaults, include/exclude options (JS parity), semantic-token
 //! includes, and disabling generation.
 
-use crate::common::snapshot_token_values;
+use crate::common::{build_dictionary, snapshot_token_values};
 use insta::assert_yaml_snapshot;
-use pandacss_config::UserConfig;
 use pandacss_tokens::TokenDictionary;
 use serde_json::json;
 
 #[test]
-fn from_config_builds_color_palette_view() {
-    let config: UserConfig = serde_json::from_value(json!({
+fn color_palettes_are_built_from_color_tokens() {
+    let dict = build_dictionary(json!({
         "theme": {
             "tokens": {
                 "colors": {
@@ -29,12 +28,7 @@ fn from_config_builds_color_palette_view() {
                 }
             }
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
     colors.button.light.accent.secondary: "#123456"
@@ -64,8 +58,8 @@ fn from_config_builds_color_palette_view() {
 }
 
 #[test]
-fn from_config_color_palette_handles_default_keyword() {
-    let config: UserConfig = serde_json::from_value(json!({
+fn color_palette_handles_default_keyword() {
+    let dict = build_dictionary(json!({
         "theme": {
             "tokens": {
                 "colors": {
@@ -79,12 +73,7 @@ fn from_config_color_palette_handles_default_keyword() {
                 }
             }
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
     colors.brand: green
@@ -107,8 +96,8 @@ fn from_config_color_palette_handles_default_keyword() {
 }
 
 #[test]
-fn from_config_color_palette_handles_nested_semantic_defaults() {
-    let config: UserConfig = serde_json::from_value(json!({
+fn color_palette_handles_nested_semantic_defaults() {
+    let dict = build_dictionary(json!({
         "theme": {
             "semanticTokens": {
                 "colors": {
@@ -133,12 +122,7 @@ fn from_config_color_palette_handles_nested_semantic_defaults() {
                 }
             }
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(snapshot_token_values(&dict), @"
     colors.button.dark: navy
@@ -171,8 +155,8 @@ fn from_config_color_palette_handles_nested_semantic_defaults() {
 }
 
 #[test]
-fn from_config_respects_color_palette_options() {
-    let config: UserConfig = serde_json::from_value(json!({
+fn color_palette_options_are_respected() {
+    let dict = build_dictionary(json!({
         "theme": {
             "colorPalette": {
                 "include": ["red*"]
@@ -189,12 +173,7 @@ fn from_config_respects_color_palette_options() {
                 }
             }
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
     colors.blue.500: "#3b82f6"
@@ -211,8 +190,8 @@ fn from_config_respects_color_palette_options() {
 }
 
 #[test]
-fn from_config_color_palette_include_exclude_match_js_cases() {
-    let include_config: UserConfig = serde_json::from_value(json!({
+fn color_palette_include_keeps_only_the_listed_palettes() {
+    let include_dict = build_dictionary(json!({
         "theme": {
             "colorPalette": {
                 "include": ["red", "blue"]
@@ -234,11 +213,7 @@ fn from_config_color_palette_include_exclude_match_js_cases() {
                 }
             }
         }
-    }))
-    .expect("config");
-    let include_dict = TokenDictionary::from_config(&include_config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(snapshot_color_palettes(&include_dict), @r##"
     blue:
@@ -248,8 +223,11 @@ fn from_config_color_palette_include_exclude_match_js_cases() {
       "--colors-color-palette-500": var(--colors-red-500)
       "--colors-color-palette-700": var(--colors-red-700)
     "##);
+}
 
-    let exclude_config: UserConfig = serde_json::from_value(json!({
+#[test]
+fn color_palette_exclude_drops_the_listed_palettes() {
+    let exclude_dict = build_dictionary(json!({
         "theme": {
             "colorPalette": {
                 "exclude": ["red"]
@@ -271,11 +249,7 @@ fn from_config_color_palette_include_exclude_match_js_cases() {
                 }
             }
         }
-    }))
-    .expect("config");
-    let exclude_dict = TokenDictionary::from_config(&exclude_config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(snapshot_color_palettes(&exclude_dict), @r##"
     blue:
@@ -288,8 +262,8 @@ fn from_config_color_palette_include_exclude_match_js_cases() {
 }
 
 #[test]
-fn from_config_color_palette_include_supports_semantic_tokens() {
-    let config: UserConfig = serde_json::from_value(json!({
+fn color_palette_include_supports_semantic_tokens() {
+    let dict = build_dictionary(json!({
         "theme": {
             "colorPalette": {
                 "include": ["primary"]
@@ -309,12 +283,7 @@ fn from_config_color_palette_include_supports_semantic_tokens() {
                 }
             }
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(snapshot_color_palettes(&dict), @r##"
     primary:
@@ -323,8 +292,8 @@ fn from_config_color_palette_include_supports_semantic_tokens() {
 }
 
 #[test]
-fn from_config_can_disable_color_palette_generation() {
-    let config: UserConfig = serde_json::from_value(json!({
+fn color_palette_generation_can_be_disabled() {
+    let dict = build_dictionary(json!({
         "theme": {
             "colorPalette": {
                 "enabled": false
@@ -337,12 +306,7 @@ fn from_config_can_disable_color_palette_generation() {
                 }
             }
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(json!({ "values": snapshot_token_values(&dict) }), @r##"
     values:
@@ -352,8 +316,8 @@ fn from_config_can_disable_color_palette_generation() {
 }
 
 #[test]
-fn from_config_conditional_only_semantic_color_joins_palette() {
-    let config: UserConfig = serde_json::from_value(json!({
+fn conditional_only_semantic_color_joins_its_palette() {
+    let dict = build_dictionary(json!({
         "theme": {
             "semanticTokens": {
                 "colors": {
@@ -365,12 +329,7 @@ fn from_config_conditional_only_semantic_color_joins_palette() {
                 }
             }
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(snapshot_color_palettes(&dict), @r##"
     blue:

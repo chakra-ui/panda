@@ -6,12 +6,11 @@ use pandacss_tokens::{Token, TokenCategory, TokenDictionary};
 use pandacss_utility::{Utility, UtilityOptions};
 use serde_json::json;
 
-use crate::common::{bg_value, color_opacity_utility, utility_config};
+use crate::common::utility_config;
 
-/// A `background`/`bg` + `color` utility bound to the `colors` category with a
-/// `red.300` color token and a `half` opacity token, so opacity modifiers can
-/// resolve against the dictionary.
-fn color_opacity_with_tokens() -> Utility {
+/// `bg` and `color` utilities on the `colors` category, with a `red.300` color
+/// token and a `half` (0.5) opacity token.
+fn color_utilities() -> Utility {
     let tokens = TokenDictionary::builder()
         .insert(Token::new(
             "colors.red.300",
@@ -45,13 +44,26 @@ fn color_opacity_with_tokens() -> Utility {
     )
 }
 
+fn bg_value(utility: &Utility, value: &str) -> String {
+    let result = utility
+        .transform("bg", &Literal::String(value.into()))
+        .expect("transform result");
+    match result.styles {
+        Literal::Object(entries) => match &entries[0].1 {
+            Literal::String(value) => value.clone(),
+            other => panic!("expected string value, got {other:?}"),
+        },
+        other => panic!("expected object styles, got {other:?}"),
+    }
+}
+
 #[test]
 #[allow(
     clippy::too_many_lines,
     reason = "snapshot-heavy fixture keeps related color opacity assertions together"
 )]
-fn transform_supports_color_opacity_modifiers() {
-    let utility = color_opacity_with_tokens();
+fn slash_opacity_modifiers_become_color_mix() {
+    let utility = color_utilities();
 
     let direct_token = utility.transform("bg", &Literal::String("red.300/40".into()));
     let direct_raw = utility.transform("bg", &Literal::String("red/30".into()));
@@ -131,8 +143,8 @@ fn transform_supports_color_opacity_modifiers() {
 }
 
 #[test]
-fn color_opacity_modifier_splits_top_level_slash() {
-    let utility = color_opacity_utility();
+fn raw_color_with_percent_modifier_becomes_color_mix() {
+    let utility = color_utilities();
     assert_eq!(
         bg_value(&utility, "red/40"),
         "color-mix(in oklab, red 40%, transparent)"
@@ -140,9 +152,8 @@ fn color_opacity_modifier_splits_top_level_slash() {
 }
 
 #[test]
-fn color_opacity_modifier_resolves_opacity_token_to_percent() {
-    // `half` is an `opacity` token worth `0.5`, so the modifier resolves to 50%.
-    let utility = color_opacity_with_tokens();
+fn opacity_token_modifier_resolves_to_percent() {
+    let utility = color_utilities();
     assert_eq!(
         bg_value(&utility, "red.300/half"),
         "color-mix(in oklab, var(--colors-red-300) 50%, transparent)"
@@ -150,9 +161,9 @@ fn color_opacity_modifier_resolves_opacity_token_to_percent() {
 }
 
 #[test]
-fn color_opacity_modifier_ignores_slash_inside_color_function() {
+fn slash_inside_rgb_function_is_not_a_modifier() {
     // `/` inside `rgb(... / a)` is not a modifier — value passes through unchanged.
-    let utility = color_opacity_utility();
+    let utility = color_utilities();
     assert_eq!(
         bg_value(&utility, "rgb(251 146 60 / 0.3)"),
         "rgb(251 146 60 / 0.3)"
@@ -160,10 +171,10 @@ fn color_opacity_modifier_ignores_slash_inside_color_function() {
 }
 
 #[test]
-fn color_opacity_modifier_passes_through_after_color_function() {
+fn modifier_after_color_function_passes_through() {
     // The tokens-side resolver can't parse `color(display-p3 ...)`, so the value
     // is emitted verbatim instead of producing a `color-mix`.
-    let utility = color_opacity_utility();
+    let utility = color_utilities();
     assert_eq!(
         bg_value(&utility, "color(display-p3 1 0 0 / 0.5)/40"),
         "color(display-p3 1 0 0 / 0.5)/40"
@@ -171,46 +182,46 @@ fn color_opacity_modifier_passes_through_after_color_function() {
 }
 
 #[test]
-fn color_opacity_modifier_passes_through_escaped_and_quoted_slashes() {
+fn escaped_and_quoted_slashes_pass_through() {
     // The resolver rejects these color values, so they pass through unchanged
     // rather than producing a `color-mix`.
-    let utility = color_opacity_utility();
+    let utility = color_utilities();
     assert_eq!(bg_value(&utility, r"foo\/bar/40"), r"foo\/bar/40");
     assert_eq!(bg_value(&utility, r#"url("/x/y")/40"#), r#"url("/x/y")/40"#);
 }
 
 #[test]
-fn color_opacity_modifier_passes_through_empty_color_segment() {
+fn modifier_without_color_passes_through() {
     // A leading `/40` has an empty color segment the resolver can't parse.
-    let utility = color_opacity_utility();
+    let utility = color_utilities();
     assert_eq!(bg_value(&utility, "/40"), "/40");
 }
 
 #[test]
-fn color_opacity_modifier_passes_through_empty_opacity_segment() {
+fn color_with_trailing_slash_passes_through() {
     // A trailing `red/` has an empty opacity segment the resolver can't parse.
-    let utility = color_opacity_utility();
+    let utility = color_utilities();
     assert_eq!(bg_value(&utility, "red/"), "red/");
 }
 
 #[test]
-fn is_invalid_color_opacity_modifier_flags_unresolvable_opacity() {
+fn unknown_opacity_token_is_an_invalid_modifier() {
     // A slash-modified color whose opacity token is unknown can't become a
     // `color-mix`, so it is reported as invalid.
-    let utility = color_opacity_with_tokens();
+    let utility = color_utilities();
     assert!(utility.is_invalid_color_opacity_modifier("red.300/unknown"));
 }
 
 #[test]
-fn is_invalid_color_opacity_modifier_accepts_resolvable_modifier() {
-    let utility = color_opacity_with_tokens();
+fn percent_and_opacity_token_modifiers_are_valid() {
+    let utility = color_utilities();
     assert!(!utility.is_invalid_color_opacity_modifier("red.300/40"));
     assert!(!utility.is_invalid_color_opacity_modifier("red.300/half"));
 }
 
 #[test]
-fn is_invalid_color_opacity_modifier_ignores_values_without_modifier() {
+fn color_without_modifier_is_not_flagged() {
     // No top-level slash means there is no opacity modifier to validate.
-    let utility = color_opacity_with_tokens();
+    let utility = color_utilities();
     assert!(!utility.is_invalid_color_opacity_modifier("red.300"));
 }

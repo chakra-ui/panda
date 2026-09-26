@@ -214,6 +214,53 @@ fn recipe_type_data() -> RecipeTypeData {
     }
 }
 
+fn utility(name: &str, css_property: &str, alias: &str) -> UtilityPropertyTypeData {
+    UtilityPropertyTypeData {
+        name: name.into(),
+        css_property: Some(css_property.into()),
+        alias: alias.into(),
+        ..UtilityPropertyTypeData::default()
+    }
+}
+
+fn value_alias(name: &str, parts: Vec<ValueTypePart>) -> ValueAliasTypeData {
+    ValueAliasTypeData {
+        name: name.into(),
+        parts,
+    }
+}
+
+fn utilities_input(
+    properties: Vec<UtilityPropertyTypeData>,
+    aliases: Vec<ValueAliasTypeData>,
+) -> CodegenInput {
+    CodegenInput {
+        types: TypeData {
+            utilities: UtilityTypeData {
+                properties: properties
+                    .into_iter()
+                    .map(|p| (p.name.clone(), p))
+                    .collect(),
+                aliases: aliases.into_iter().map(|a| (a.name.clone(), a)).collect(),
+                ..UtilityTypeData::default()
+            },
+            ..TypeData::default()
+        },
+        ..CodegenInput::default()
+    }
+}
+
+fn system_types(input: &CodegenInput) -> String {
+    let artifacts = ArtifactGraph.generate_all(
+        input,
+        GenerateOptions {
+            format: CodegenFormat::Ts,
+            ..GenerateOptions::default()
+        },
+    );
+    file(artifact(&artifacts, ArtifactId::Types), "types/system.ts").to_owned()
+}
+
 fn declared_type_name(line: &str) -> Option<&str> {
     let rest = line
         .strip_prefix("export type ")
@@ -564,47 +611,28 @@ fn emits_ts_source_types() {
 
 #[test]
 fn token_value_allows_missing_utility_categories() {
-    let input = CodegenInput {
-        types: TypeData {
-            tokens: TokenTypeData {
-                categories: BTreeMap::from([(
-                    "spacing".into(),
-                    TokenCategoryTypeData {
-                        name: "spacing".into(),
-                        type_name: "SpacingToken".into(),
-                        values: vec!["4".into()],
-                    },
-                )]),
-                ..TokenTypeData::default()
-            },
-            utilities: UtilityTypeData {
-                properties: BTreeMap::from([(
-                    "color".into(),
-                    UtilityPropertyTypeData {
-                        name: "color".into(),
-                        css_property: Some("color".into()),
-                        token_category: Some("colors".into()),
-                        alias: "ColorsValue".into(),
-                        ..UtilityPropertyTypeData::default()
-                    },
-                )]),
-                aliases: BTreeMap::from([(
-                    "ColorsValue".into(),
-                    ValueAliasTypeData {
-                        name: "ColorsValue".into(),
-                        parts: vec![
-                            ValueTypePart::TokenCategory("colors".into()),
-                            ValueTypePart::CssVars,
-                            ValueTypePart::AnyString,
-                        ],
-                    },
-                )]),
-                ..UtilityTypeData::default()
-            },
-            ..TypeData::default()
+    let mut input = utilities_input(
+        vec![UtilityPropertyTypeData {
+            token_category: Some("colors".into()),
+            ..utility("color", "color", "ColorsValue")
+        }],
+        vec![value_alias(
+            "ColorsValue",
+            vec![
+                ValueTypePart::TokenCategory("colors".into()),
+                ValueTypePart::CssVars,
+                ValueTypePart::AnyString,
+            ],
+        )],
+    );
+    input.types.tokens.categories = BTreeMap::from([(
+        "spacing".into(),
+        TokenCategoryTypeData {
+            name: "spacing".into(),
+            type_name: "SpacingToken".into(),
+            values: vec!["4".into()],
         },
-        ..CodegenInput::default()
-    };
+    )]);
 
     let artifacts = ArtifactGraph.generate_all(
         &input,
@@ -786,72 +814,36 @@ fn emits_strict_value_types_without_repeating_large_unions() {
 
 #[test]
 fn strict_tokens_keep_per_category_globals() {
-    let mut input = CodegenInput {
-        types: TypeData {
-            utilities: UtilityTypeData {
-                properties: BTreeMap::from([
-                    (
-                        "width".into(),
-                        UtilityPropertyTypeData {
-                            name: "width".into(),
-                            css_property: Some("width".into()),
-                            token_category: Some("sizes".into()),
-                            alias: "SizeValue".into(),
-                            ..UtilityPropertyTypeData::default()
-                        },
-                    ),
-                    (
-                        "display".into(),
-                        UtilityPropertyTypeData {
-                            name: "display".into(),
-                            css_property: Some("display".into()),
-                            alias: "DisplayValue".into(),
-                            ..UtilityPropertyTypeData::default()
-                        },
-                    ),
-                ]),
-                aliases: BTreeMap::from([
-                    (
-                        "SizeValue".into(),
-                        ValueAliasTypeData {
-                            name: "SizeValue".into(),
-                            parts: vec![
-                                ValueTypePart::TokenCategory("sizes".into()),
-                                ValueTypePart::CssVars,
-                            ],
-                        },
-                    ),
-                    (
-                        "DisplayValue".into(),
-                        ValueAliasTypeData {
-                            name: "DisplayValue".into(),
-                            parts: vec![
-                                ValueTypePart::Literal("flex".into()),
-                                ValueTypePart::Literal("block".into()),
-                            ],
-                        },
-                    ),
-                ]),
-                ..UtilityTypeData::default()
+    let mut input = utilities_input(
+        vec![
+            UtilityPropertyTypeData {
+                token_category: Some("sizes".into()),
+                ..utility("width", "width", "SizeValue")
             },
-            ..TypeData::default()
-        },
-        ..CodegenInput::default()
-    };
+            utility("display", "display", "DisplayValue"),
+        ],
+        vec![
+            value_alias(
+                "SizeValue",
+                vec![
+                    ValueTypePart::TokenCategory("sizes".into()),
+                    ValueTypePart::CssVars,
+                ],
+            ),
+            value_alias(
+                "DisplayValue",
+                vec![
+                    ValueTypePart::Literal("flex".into()),
+                    ValueTypePart::Literal("block".into()),
+                ],
+            ),
+        ],
+    );
     input.types.options.strict_tokens = true;
     input.types.options.strict_property_values = true;
 
-    let artifacts = ArtifactGraph.generate_all(
-        &input,
-        GenerateOptions {
-            format: CodegenFormat::Ts,
-            ..GenerateOptions::default()
-        },
-    );
-    let types = artifact(&artifacts, ArtifactId::Types);
-    let system = file(types, "types/system.ts");
+    let system = system_types(&input);
 
-    // The per-category globals aliases are emitted once as static types.
     assert!(
         system.contains(
             r#"export type CssColorGlobals = CssGlobals | "currentColor" | "transparent""#
@@ -862,62 +854,41 @@ fn strict_tokens_keep_per_category_globals() {
     ));
     assert!(system.contains(r#"export type CssAutoGlobals = CssGlobals | "auto""#));
 
-    // sizes-backed property unions in CssDimensionGlobals.
     assert!(system.contains(
         r#"export type SizeValue = WithEscapeHatch<CssDimensionGlobals | TokenValue<"sizes"> | CssVars>"#
     ));
-    // strictPropertyValues keyword property keeps the base CssGlobals + CssVars alongside
-    // OnlyKnown; configured utility values take precedence over the csstype table.
+    // Configured utility values take precedence over the csstype keyword table.
     assert!(system.contains(
         r#"export type DisplayValue = WithEscapeHatch<CssGlobals | CssVars | OnlyKnown<"flex" | "block">>"#
     ));
 }
 
+fn float_with_explicit_property_input() -> CodegenInput {
+    utilities_input(
+        vec![UtilityPropertyTypeData {
+            mapped_css_property: Some("float".into()),
+            literals: vec!["end".into(), "start".into()],
+            ..utility("float", "float", "FloatValue")
+        }],
+        vec![value_alias(
+            "FloatValue",
+            vec![
+                ValueTypePart::CssProperty("float".into()),
+                ValueTypePart::Literal("end".into()),
+                ValueTypePart::Literal("start".into()),
+                ValueTypePart::CssVars,
+                ValueTypePart::AnyString,
+            ],
+        )],
+    )
+}
+
 #[test]
 fn mapped_property_unions_css_properties_under_strict_property_values() {
-    let mut input = CodegenInput {
-        types: TypeData {
-            utilities: UtilityTypeData {
-                properties: BTreeMap::from([(
-                    "float".into(),
-                    UtilityPropertyTypeData {
-                        name: "float".into(),
-                        css_property: Some("float".into()),
-                        mapped_css_property: Some("float".into()),
-                        literals: vec!["end".into(), "start".into()],
-                        alias: "FloatValue".into(),
-                        ..UtilityPropertyTypeData::default()
-                    },
-                )]),
-                aliases: BTreeMap::from([(
-                    "FloatValue".into(),
-                    ValueAliasTypeData {
-                        name: "FloatValue".into(),
-                        parts: vec![
-                            ValueTypePart::CssProperty("float".into()),
-                            ValueTypePart::Literal("end".into()),
-                            ValueTypePart::Literal("start".into()),
-                            ValueTypePart::CssVars,
-                            ValueTypePart::AnyString,
-                        ],
-                    },
-                )]),
-                ..UtilityTypeData::default()
-            },
-            ..TypeData::default()
-        },
-        ..CodegenInput::default()
-    };
+    let mut input = float_with_explicit_property_input();
     input.types.options.strict_property_values = true;
 
-    let artifacts = ArtifactGraph.generate_all(
-        &input,
-        GenerateOptions {
-            format: CodegenFormat::Ts,
-            ..GenerateOptions::default()
-        },
-    );
-    let system = file(artifact(&artifacts, ArtifactId::Types), "types/system.ts");
+    let system = system_types(&input);
 
     assert!(system.contains(
         r#"export type FloatValue = WithEscapeHatch<CssGlobals | CssVars | OnlyKnown<"end" | "start" | PropertyValueMap["float"]>>"#
@@ -926,48 +897,7 @@ fn mapped_property_unions_css_properties_under_strict_property_values() {
 
 #[test]
 fn mapped_property_unions_css_property_value_in_default_mode() {
-    let input = CodegenInput {
-        types: TypeData {
-            utilities: UtilityTypeData {
-                properties: BTreeMap::from([(
-                    "float".into(),
-                    UtilityPropertyTypeData {
-                        name: "float".into(),
-                        css_property: Some("float".into()),
-                        mapped_css_property: Some("float".into()),
-                        literals: vec!["end".into(), "start".into()],
-                        alias: "FloatValue".into(),
-                        ..UtilityPropertyTypeData::default()
-                    },
-                )]),
-                aliases: BTreeMap::from([(
-                    "FloatValue".into(),
-                    ValueAliasTypeData {
-                        name: "FloatValue".into(),
-                        parts: vec![
-                            ValueTypePart::CssProperty("float".into()),
-                            ValueTypePart::Literal("end".into()),
-                            ValueTypePart::Literal("start".into()),
-                            ValueTypePart::CssVars,
-                            ValueTypePart::AnyString,
-                        ],
-                    },
-                )]),
-                ..UtilityTypeData::default()
-            },
-            ..TypeData::default()
-        },
-        ..CodegenInput::default()
-    };
-
-    let artifacts = ArtifactGraph.generate_all(
-        &input,
-        GenerateOptions {
-            format: CodegenFormat::Ts,
-            ..GenerateOptions::default()
-        },
-    );
-    let system = file(artifact(&artifacts, ArtifactId::Types), "types/system.ts");
+    let system = system_types(&float_with_explicit_property_input());
 
     assert!(system.contains(r"export type FloatValue = "));
     assert!(system.contains(r#""end" | "start""#));
@@ -977,45 +907,20 @@ fn mapped_property_unions_css_property_value_in_default_mode() {
 
 #[test]
 fn utility_inherits_native_css_values_in_default_mode() {
-    let input = CodegenInput {
-        types: TypeData {
-            utilities: UtilityTypeData {
-                properties: BTreeMap::from([(
-                    "textAlign".into(),
-                    UtilityPropertyTypeData {
-                        name: "textAlign".into(),
-                        css_property: Some("textAlign".into()),
-                        alias: "TextAlignValue".into(),
-                        ..UtilityPropertyTypeData::default()
-                    },
-                )]),
-                aliases: BTreeMap::from([(
-                    "TextAlignValue".into(),
-                    ValueAliasTypeData {
-                        name: "TextAlignValue".into(),
-                        parts: vec![
-                            ValueTypePart::Primitive(PrimitiveType::String),
-                            ValueTypePart::Primitive(PrimitiveType::Number),
-                            ValueTypePart::CssVars,
-                            ValueTypePart::AnyString,
-                        ],
-                    },
-                )]),
-                ..UtilityTypeData::default()
-            },
-            ..TypeData::default()
-        },
-        ..CodegenInput::default()
-    };
-
-    let artifacts = ArtifactGraph.generate_all(
-        &input,
-        GenerateOptions {
-            format: CodegenFormat::Ts,
-            ..GenerateOptions::default()
-        },
+    let input = utilities_input(
+        vec![utility("textAlign", "textAlign", "TextAlignValue")],
+        vec![value_alias(
+            "TextAlignValue",
+            vec![
+                ValueTypePart::Primitive(PrimitiveType::String),
+                ValueTypePart::Primitive(PrimitiveType::Number),
+                ValueTypePart::CssVars,
+                ValueTypePart::AnyString,
+            ],
+        )],
     );
-    let system = file(artifact(&artifacts, ArtifactId::Types), "types/system.ts");
+
+    let system = system_types(&input);
 
     let text_align_value = system
         .lines()
@@ -1034,81 +939,32 @@ fn utility_inherits_native_css_values_in_default_mode() {
 
 #[test]
 fn utility_shorthand_unions_css_property_value_in_default_mode() {
-    let input = CodegenInput {
-        types: TypeData {
-            utilities: UtilityTypeData {
-                properties: BTreeMap::from([
-                    (
-                        "background".into(),
-                        UtilityPropertyTypeData {
-                            name: "background".into(),
-                            css_property: Some("background".into()),
-                            token_category: Some("colors".into()),
-                            alias: "ColorsValue".into(),
-                            ..UtilityPropertyTypeData::default()
-                        },
-                    ),
-                    (
-                        "backgroundColor".into(),
-                        UtilityPropertyTypeData {
-                            name: "backgroundColor".into(),
-                            css_property: Some("backgroundColor".into()),
-                            token_category: Some("colors".into()),
-                            alias: "ColorsValue".into(),
-                            ..UtilityPropertyTypeData::default()
-                        },
-                    ),
-                    (
-                        "bg".into(),
-                        UtilityPropertyTypeData {
-                            name: "bg".into(),
-                            css_property: Some("background".into()),
-                            token_category: Some("colors".into()),
-                            alias: "ColorsValue".into(),
-                            ..UtilityPropertyTypeData::default()
-                        },
-                    ),
-                    (
-                        "bgColor".into(),
-                        UtilityPropertyTypeData {
-                            name: "bgColor".into(),
-                            css_property: Some("backgroundColor".into()),
-                            token_category: Some("colors".into()),
-                            alias: "ColorsValue".into(),
-                            ..UtilityPropertyTypeData::default()
-                        },
-                    ),
-                ]),
-                shorthands: BTreeMap::from([
-                    ("bg".into(), "background".into()),
-                    ("bgColor".into(), "backgroundColor".into()),
-                ]),
-                aliases: BTreeMap::from([(
-                    "ColorsValue".into(),
-                    ValueAliasTypeData {
-                        name: "ColorsValue".into(),
-                        parts: vec![
-                            ValueTypePart::TokenCategory("colors".into()),
-                            ValueTypePart::CssVars,
-                            ValueTypePart::AnyString,
-                        ],
-                    },
-                )]),
-                ..UtilityTypeData::default()
-            },
-            ..TypeData::default()
-        },
-        ..CodegenInput::default()
+    let colors = |name: &str, css_property: &str| UtilityPropertyTypeData {
+        token_category: Some("colors".into()),
+        ..utility(name, css_property, "ColorsValue")
     };
-
-    let artifacts = ArtifactGraph.generate_all(
-        &input,
-        GenerateOptions {
-            format: CodegenFormat::Ts,
-            ..GenerateOptions::default()
-        },
+    let mut input = utilities_input(
+        vec![
+            colors("background", "background"),
+            colors("backgroundColor", "backgroundColor"),
+            colors("bg", "background"),
+            colors("bgColor", "backgroundColor"),
+        ],
+        vec![value_alias(
+            "ColorsValue",
+            vec![
+                ValueTypePart::TokenCategory("colors".into()),
+                ValueTypePart::CssVars,
+                ValueTypePart::AnyString,
+            ],
+        )],
     );
-    let system = file(artifact(&artifacts, ArtifactId::Types), "types/system.ts");
+    input.types.utilities.shorthands = BTreeMap::from([
+        ("bg".into(), "background".into()),
+        ("bgColor".into(), "backgroundColor".into()),
+    ]);
+
+    let system = system_types(&input);
 
     assert!(system.contains(r"  bg?: ConditionalValue<ColorsValue | CssAny>"));
     assert!(system.contains(
@@ -1124,45 +980,16 @@ fn utility_shorthand_unions_css_property_value_in_default_mode() {
 
 #[test]
 fn shorthand_of_valueless_native_property_emits_member() {
-    let input = CodegenInput {
-        types: TypeData {
-            utilities: UtilityTypeData {
-                properties: BTreeMap::from([
-                    (
-                        "position".into(),
-                        UtilityPropertyTypeData {
-                            name: "position".into(),
-                            css_property: Some("position".into()),
-                            alias: "PositionValue".into(),
-                            ..UtilityPropertyTypeData::default()
-                        },
-                    ),
-                    (
-                        "pos".into(),
-                        UtilityPropertyTypeData {
-                            name: "pos".into(),
-                            css_property: Some("position".into()),
-                            alias: "PositionValue".into(),
-                            ..UtilityPropertyTypeData::default()
-                        },
-                    ),
-                ]),
-                shorthands: BTreeMap::from([("pos".into(), "position".into())]),
-                ..UtilityTypeData::default()
-            },
-            ..TypeData::default()
-        },
-        ..CodegenInput::default()
-    };
-
-    let artifacts = ArtifactGraph.generate_all(
-        &input,
-        GenerateOptions {
-            format: CodegenFormat::Ts,
-            ..GenerateOptions::default()
-        },
+    let mut input = utilities_input(
+        vec![
+            utility("position", "position", "PositionValue"),
+            utility("pos", "position", "PositionValue"),
+        ],
+        vec![],
     );
-    let system = file(artifact(&artifacts, ArtifactId::Types), "types/system.ts");
+    input.types.utilities.shorthands = BTreeMap::from([("pos".into(), "position".into())]);
+
+    let system = system_types(&input);
 
     assert!(
         system.contains("  pos?: ConditionalValue<"),
@@ -1172,46 +999,23 @@ fn shorthand_of_valueless_native_property_emits_member() {
 
 #[test]
 fn utility_shorthand_omits_css_property_value_under_strict_tokens() {
-    let mut input = CodegenInput {
-        types: TypeData {
-            utilities: UtilityTypeData {
-                properties: BTreeMap::from([(
-                    "bgColor".into(),
-                    UtilityPropertyTypeData {
-                        name: "bgColor".into(),
-                        css_property: Some("backgroundColor".into()),
-                        token_category: Some("colors".into()),
-                        alias: "ColorsValue".into(),
-                        ..UtilityPropertyTypeData::default()
-                    },
-                )]),
-                aliases: BTreeMap::from([(
-                    "ColorsValue".into(),
-                    ValueAliasTypeData {
-                        name: "ColorsValue".into(),
-                        parts: vec![
-                            ValueTypePart::TokenCategory("colors".into()),
-                            ValueTypePart::CssVars,
-                            ValueTypePart::AnyString,
-                        ],
-                    },
-                )]),
-                ..UtilityTypeData::default()
-            },
-            ..TypeData::default()
-        },
-        ..CodegenInput::default()
-    };
+    let mut input = utilities_input(
+        vec![UtilityPropertyTypeData {
+            token_category: Some("colors".into()),
+            ..utility("bgColor", "backgroundColor", "ColorsValue")
+        }],
+        vec![value_alias(
+            "ColorsValue",
+            vec![
+                ValueTypePart::TokenCategory("colors".into()),
+                ValueTypePart::CssVars,
+                ValueTypePart::AnyString,
+            ],
+        )],
+    );
     input.types.options.strict_tokens = true;
 
-    let artifacts = ArtifactGraph.generate_all(
-        &input,
-        GenerateOptions {
-            format: CodegenFormat::Ts,
-            ..GenerateOptions::default()
-        },
-    );
-    let system = file(artifact(&artifacts, ArtifactId::Types), "types/system.ts");
+    let system = system_types(&input);
 
     assert!(system.contains(r"  bgColor?: ConditionalValue<ColorsValue>"));
     assert!(!system.contains(
@@ -1221,46 +1025,23 @@ fn utility_shorthand_omits_css_property_value_under_strict_tokens() {
 
 #[test]
 fn mapped_property_is_omitted_without_explicit_property_field() {
-    let mut input = CodegenInput {
-        types: TypeData {
-            utilities: UtilityTypeData {
-                properties: BTreeMap::from([(
-                    "gap".into(),
-                    UtilityPropertyTypeData {
-                        name: "gap".into(),
-                        css_property: Some("gap".into()),
-                        token_category: Some("spacing".into()),
-                        alias: "SpacingValue".into(),
-                        ..UtilityPropertyTypeData::default()
-                    },
-                )]),
-                aliases: BTreeMap::from([(
-                    "SpacingValue".into(),
-                    ValueAliasTypeData {
-                        name: "SpacingValue".into(),
-                        parts: vec![
-                            ValueTypePart::TokenCategory("spacing".into()),
-                            ValueTypePart::CssVars,
-                            ValueTypePart::AnyString,
-                        ],
-                    },
-                )]),
-                ..UtilityTypeData::default()
-            },
-            ..TypeData::default()
-        },
-        ..CodegenInput::default()
-    };
+    let mut input = utilities_input(
+        vec![UtilityPropertyTypeData {
+            token_category: Some("spacing".into()),
+            ..utility("gap", "gap", "SpacingValue")
+        }],
+        vec![value_alias(
+            "SpacingValue",
+            vec![
+                ValueTypePart::TokenCategory("spacing".into()),
+                ValueTypePart::CssVars,
+                ValueTypePart::AnyString,
+            ],
+        )],
+    );
     input.types.options.strict_property_values = true;
 
-    let artifacts = ArtifactGraph.generate_all(
-        &input,
-        GenerateOptions {
-            format: CodegenFormat::Ts,
-            ..GenerateOptions::default()
-        },
-    );
-    let system = file(artifact(&artifacts, ArtifactId::Types), "types/system.ts");
+    let system = system_types(&input);
 
     assert!(system.contains(
         r#"export type SpacingValue = CssAutoGlobals | TokenValue<"spacing"> | CssVars | AnyString | AnyNumber"#
@@ -1272,20 +1053,16 @@ fn mapped_property_is_omitted_without_explicit_property_field() {
 #[test]
 fn value_alias_unions_are_rendered_without_obvious_duplicates() {
     let mut input = input();
-    input.types.utilities.properties.insert(
-        "mixed".into(),
-        UtilityPropertyTypeData {
-            name: "mixed".into(),
-            css_property: Some("customProp".into()),
-            alias: "MixedValue".into(),
-            ..UtilityPropertyTypeData::default()
-        },
-    );
+    input
+        .types
+        .utilities
+        .properties
+        .insert("mixed".into(), utility("mixed", "customProp", "MixedValue"));
     input.types.utilities.aliases.insert(
         "MixedValue".into(),
-        ValueAliasTypeData {
-            name: "MixedValue".into(),
-            parts: vec![
+        value_alias(
+            "MixedValue",
+            vec![
                 ValueTypePart::TokenCategory("colors".into()),
                 ValueTypePart::TokenCategory("spacing".into()),
                 ValueTypePart::CssVars,
@@ -1293,17 +1070,10 @@ fn value_alias_unions_are_rendered_without_obvious_duplicates() {
                 ValueTypePart::Primitive(PrimitiveType::Number),
                 ValueTypePart::AnyNumber,
             ],
-        },
+        ),
     );
 
-    let artifacts = ArtifactGraph.generate_all(
-        &input,
-        GenerateOptions {
-            format: CodegenFormat::Ts,
-            ..GenerateOptions::default()
-        },
-    );
-    let system = file(artifact(&artifacts, ArtifactId::Types), "types/system.ts");
+    let system = system_types(&input);
 
     assert!(system.contains(
         r#"export type MixedValue = CssAutoGlobals | CssColorGlobals | TokenValue<"colors"> | TokenValue<"spacing"> | CssVars | number"#

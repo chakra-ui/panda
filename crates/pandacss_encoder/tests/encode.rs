@@ -41,14 +41,13 @@ fn sorted(atoms: &rustc_hash::FxHashSet<Atom>) -> Vec<&Atom> {
     out
 }
 
-fn encoder(names: &'static [&'static str]) -> Encoder<ConditionSet> {
+fn encoder_with_only_conditions(names: &'static [&'static str]) -> Encoder<ConditionSet> {
     Encoder::with_conditions(ConditionSet::from_names(names.iter().copied()))
 }
 
-const STANDARD_CONDITIONS: &[&str] = &["base", "sm", "md", "lg", "xl", "2xl"];
-
-fn encoder_with(extra: &'static [&'static str]) -> Encoder<ConditionSet> {
-    let mut names = STANDARD_CONDITIONS.to_vec();
+/// Knows `base` plus the default breakpoints (`sm`..`2xl`), and any `extra` conditions.
+fn encoder_with_breakpoints(extra: &'static [&'static str]) -> Encoder<ConditionSet> {
+    let mut names = vec!["base", "sm", "md", "lg", "xl", "2xl"];
     names.extend(extra);
     Encoder::with_conditions(ConditionSet::from_names(names))
 }
@@ -59,7 +58,7 @@ fn flat_style_object_emits_one_atom_per_property() {
         "import { css } from '@panda/css';\ncss({ color: 'red', padding: '4px' });",
         "css",
     );
-    let mut encoder = encoder_with(&[]);
+    let mut encoder = encoder_with_breakpoints(&[]);
     encoder.process_atomic(&lit);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @r"
     - prop: color
@@ -80,7 +79,7 @@ fn nested_condition_creates_condition_chain() {
         "},
         "css",
     );
-    let mut encoder = encoder_with(&["_hover"]);
+    let mut encoder = encoder_with_breakpoints(&["_hover"]);
     encoder.process_atomic(&lit);
     // `base` drops from the condition chain (it's the unconditional
     // fallback); `_hover` and `md` stay.
@@ -112,7 +111,7 @@ fn important_string_values_are_structural_metadata() {
         "},
         "css",
     );
-    let mut encoder = encoder_with(&["_hover"]);
+    let mut encoder = encoder_with_breakpoints(&["_hover"]);
     encoder.process_atomic(&lit);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @r"
     - prop: background
@@ -144,7 +143,7 @@ fn absolute_url_string_values_are_skipped() {
         "},
         "css",
     );
-    let mut encoder = encoder_with(&[]);
+    let mut encoder = encoder_with_breakpoints(&[]);
     encoder.process_atomic(&lit);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @r"
     - prop: color
@@ -162,7 +161,7 @@ fn deeply_nested_conditions_stack_in_order() {
         "},
         "css",
     );
-    let mut encoder = encoder_with(&["_hover"]);
+    let mut encoder = encoder_with_breakpoints(&["_hover"]);
     encoder.process_atomic(&lit);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @r"
     - prop: color
@@ -185,7 +184,7 @@ fn long_condition_chain_spills_past_inline_budget() {
         "},
         "css",
     );
-    let mut encoder = encoder_with(&["_hover"]);
+    let mut encoder = encoder_with_breakpoints(&["_hover"]);
     encoder.process_atomic(&lit);
 
     let atoms = sorted(encoder.atoms());
@@ -218,7 +217,8 @@ fn deep_walk_path_spills_past_inline_budget() {
         "},
         "css",
     );
-    let mut encoder = encoder_with(&["d1", "d2", "d3", "d4", "d5", "d6", "d7", "d8", "d9"]);
+    let mut encoder =
+        encoder_with_breakpoints(&["d1", "d2", "d3", "d4", "d5", "d6", "d7", "d8", "d9"]);
     encoder.process_atomic(&lit);
 
     let atoms = sorted(encoder.atoms());
@@ -243,14 +243,11 @@ fn deep_walk_path_spills_past_inline_budget() {
 
 #[test]
 fn dedup_keeps_only_one_atom_for_repeated_pairs() {
-    // Behavioral assertion: feed the same object three times, get
-    // the same two atoms — set dedup at work. No need for the full
-    // shape snapshot here; the count is the contract.
     let lit = first_arg(
         "import { css } from '@panda/css';\ncss({ color: 'red', padding: '4px' });",
         "css",
     );
-    let mut encoder = encoder_with(&[]);
+    let mut encoder = encoder_with_breakpoints(&[]);
     encoder.process_atomic(&lit);
     encoder.process_atomic(&lit);
     encoder.process_atomic(&lit);
@@ -260,7 +257,7 @@ fn dedup_keeps_only_one_atom_for_repeated_pairs() {
 // --- recipe processing ---
 
 #[test]
-fn process_atomic_recipe_emits_base_plus_variants_plus_compound() {
+fn recipe_emits_atoms_for_base_variants_and_compound_variants() {
     let lit = first_arg(
         indoc! {r"
             import { cva } from '@panda/css';
@@ -277,7 +274,7 @@ fn process_atomic_recipe_emits_base_plus_variants_plus_compound() {
         "cva",
     );
     let recipe = Recipe::from_literal(&lit).expect("Recipe");
-    let mut encoder = encoder_with(&[]);
+    let mut encoder = encoder_with_breakpoints(&[]);
     encoder.process_atomic_recipe(&recipe);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @r#"
     - prop: color
@@ -296,7 +293,7 @@ fn process_atomic_recipe_emits_base_plus_variants_plus_compound() {
 }
 
 #[test]
-fn process_atomic_slot_recipe_emits_atoms_across_slots() {
+fn slot_recipe_emits_atoms_for_every_slot() {
     let lit = first_arg(
         indoc! {r"
             import { sva } from '@panda/css';
@@ -313,7 +310,7 @@ fn process_atomic_slot_recipe_emits_atoms_across_slots() {
         "sva",
     );
     let recipe = SlotRecipe::from_literal(&lit).expect("SlotRecipe");
-    let mut encoder = encoder_with(&[]);
+    let mut encoder = encoder_with_breakpoints(&[]);
     encoder.process_atomic_slot_recipe(&recipe);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @r#"
     - prop: padding
@@ -339,7 +336,7 @@ fn custom_condition_matcher_recognizes_named_conditions() {
         "},
         "css",
     );
-    let mut encoder = encoder(&["base", "small", "medium"]);
+    let mut encoder = encoder_with_only_conditions(&["base", "small", "medium"]);
     encoder.process_atomic(&lit);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @r"
     - prop: color
@@ -362,7 +359,7 @@ fn raw_selector_and_at_rule_keys_are_conditions() {
         "},
         "css",
     );
-    let mut encoder = encoder_with(&[]);
+    let mut encoder = encoder_with_breakpoints(&[]);
     encoder.process_atomic(&lit);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @r#"
     - prop: color
@@ -376,14 +373,12 @@ fn raw_selector_and_at_rule_keys_are_conditions() {
 // --- composite leaf values ---
 
 #[test]
-fn array_value_serializes_as_joined_repr() {
-    // Responsive arrays serialize to `[a,b,c]` for v1 — emitter can
-    // expand per-breakpoint later.
+fn responsive_array_value_is_kept_as_one_joined_atom() {
     let lit = first_arg(
         "import { css } from '@panda/css';\ncss({ color: ['red', 'blue', 'green'] });",
         "css",
     );
-    let mut encoder = encoder_with(&[]);
+    let mut encoder = encoder_with_breakpoints(&[]);
     encoder.process_atomic(&lit);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @r#"
     - prop: color
@@ -400,7 +395,7 @@ fn unresolved_underscore_condition_emits_nothing() {
         "import { css } from '@panda/css';\ncss({ _hovr: { color: 'red' } });",
         "css",
     );
-    let mut encoder = encoder_with(&["_hover"]);
+    let mut encoder = encoder_with_breakpoints(&["_hover"]);
     encoder.process_atomic(&lit);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @"[]");
 }
@@ -411,7 +406,7 @@ fn unresolved_underscore_condition_nested_under_property_emits_nothing() {
         "import { css } from '@panda/css';\ncss({ color: { _hovr: 'red' } });",
         "css",
     );
-    let mut encoder = encoder_with(&["_hover"]);
+    let mut encoder = encoder_with_breakpoints(&["_hover"]);
     encoder.process_atomic(&lit);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @"[]");
 }
@@ -422,7 +417,7 @@ fn known_underscore_condition_still_emits() {
         "import { css } from '@panda/css';\ncss({ _hover: { color: 'red' } });",
         "css",
     );
-    let mut encoder = encoder_with(&["_hover"]);
+    let mut encoder = encoder_with_breakpoints(&["_hover"]);
     encoder.process_atomic(&lit);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @r"
     - prop: color
@@ -439,7 +434,7 @@ fn custom_property_names_are_unaffected() {
         "import { css } from '@panda/css';\ncss({ '--foo': 'red' });",
         "css",
     );
-    let mut encoder = encoder_with(&[]);
+    let mut encoder = encoder_with_breakpoints(&[]);
     encoder.process_atomic(&lit);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @r#"
     - prop: "--foo"
@@ -454,7 +449,7 @@ fn value_level_conditional_expands_both_branches() {
         "import { css } from '@panda/css';\ncss({ color: cond ? 'red' : 'blue' });",
         "css",
     );
-    let mut encoder = encoder_with(&[]);
+    let mut encoder = encoder_with_breakpoints(&[]);
     encoder.process_atomic(&lit);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @r"
     - prop: color
@@ -472,7 +467,7 @@ fn nested_conditional_expands_every_branch() {
         "import { css } from '@panda/css';\ncss({ color: a ? 'red' : (b ? 'green' : 'blue') });",
         "css",
     );
-    let mut encoder = encoder_with(&[]);
+    let mut encoder = encoder_with_breakpoints(&[]);
     encoder.process_atomic(&lit);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @r"
     - prop: color
@@ -493,7 +488,7 @@ fn conditional_under_a_condition_keeps_the_condition_on_both_branches() {
         "import { css } from '@panda/css';\ncss({ _hover: { color: cond ? 'red' : 'blue' } });",
         "css",
     );
-    let mut encoder = encoder_with(&["_hover"]);
+    let mut encoder = encoder_with_breakpoints(&["_hover"]);
     encoder.process_atomic(&lit);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @r"
     - prop: color
@@ -513,7 +508,7 @@ fn conditional_branch_important_is_preserved() {
         "import { css } from '@panda/css';\ncss({ color: cond ? 'red !important' : 'blue' });",
         "css",
     );
-    let mut encoder = encoder_with(&[]);
+    let mut encoder = encoder_with_breakpoints(&[]);
     encoder.process_atomic(&lit);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @r"
     - prop: color
@@ -527,13 +522,13 @@ fn conditional_branch_important_is_preserved() {
 }
 
 #[test]
-fn fused_walker_also_expands_conditionals() {
+fn encoding_without_normalization_also_expands_conditionals() {
     use pandacss_encoder::NoNormalize;
     let lit = first_arg(
         "import { css } from '@panda/css';\ncss({ color: cond ? 'red' : 'blue' });",
         "css",
     );
-    let mut encoder = encoder_with(&[]);
+    let mut encoder = encoder_with_breakpoints(&[]);
     encoder.process_atomic_with(&lit, &NoNormalize);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @r"
     - prop: color

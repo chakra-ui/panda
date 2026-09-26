@@ -12,13 +12,11 @@ fn options() -> GenerateOptions {
     }
 }
 
-fn overlay() -> CodegenOverlay {
+fn design_system_overlay() -> CodegenOverlay {
     CodegenOverlay {
         jsx: "@ds/jsx".into(),
         recipes: "@ds/recipes".into(),
         patterns: "@ds/patterns".into(),
-        owned_recipes: Vec::new(),
-        owned_patterns: Vec::new(),
         ..Default::default()
     }
 }
@@ -47,12 +45,6 @@ fn patterns_config(patterns: &serde_json::Value) -> UserConfig {
     }))
 }
 
-fn config_with_app_recipe() -> UserConfig {
-    recipes_config(&serde_json::json!({
-        "button": { "className": "button" },
-    }))
-}
-
 fn generate_with(config: UserConfig, overlay: CodegenOverlay) -> Vec<ArtifactFile> {
     ArtifactGraph
         .generate_all(&input_with(config, overlay), options())
@@ -62,9 +54,11 @@ fn generate_with(config: UserConfig, overlay: CodegenOverlay) -> Vec<ArtifactFil
 }
 
 #[test]
-fn generic_runtime_is_still_emitted_locally() {
-    let artifacts =
-        ArtifactGraph.generate_all(&input_with(UserConfig::default(), overlay()), options());
+fn design_system_consumer_still_emits_css_and_helpers_locally() {
+    let artifacts = ArtifactGraph.generate_all(
+        &input_with(UserConfig::default(), design_system_overlay()),
+        options(),
+    );
 
     assert!(!artifact(&artifacts, ArtifactId::Css).files.is_empty());
     assert!(!artifact(&artifacts, ArtifactId::Helpers).files.is_empty());
@@ -72,12 +66,12 @@ fn generic_runtime_is_still_emitted_locally() {
 }
 
 #[test]
-fn recipes_emits_only_app_delta() {
+fn app_recipes_are_emitted_and_design_system_recipes_reexported() {
     let config = recipes_config(&serde_json::json!({
         "button": { "className": "button" },
         "card": { "className": "card" },
     }));
-    let mut overlay = overlay();
+    let mut overlay = design_system_overlay();
     overlay.owned_recipes = vec!["button".into()];
     overlay.virtualize_css = true;
     overlay.css = "@ds/css".into();
@@ -105,12 +99,12 @@ fn recipes_emits_only_app_delta() {
 }
 
 #[test]
-fn recipes_conflict_reexports_app_and_omits_ds_named() {
+fn app_redefining_a_design_system_recipe_keeps_its_own_copy() {
     let config = recipes_config(&serde_json::json!({
         "button": { "className": "button" },
     }));
     // App redefined `button`, so it is excluded from owned_recipes (app wins).
-    let overlay = overlay();
+    let overlay = design_system_overlay();
 
     let artifacts = ArtifactGraph.generate_all(&input_with(config, overlay), options());
     let recipes = artifact(&artifacts, ArtifactId::Recipes);
@@ -130,11 +124,11 @@ fn recipes_conflict_reexports_app_and_omits_ds_named() {
 }
 
 #[test]
-fn recipes_all_owned_skips_runtime() {
+fn recipes_all_from_the_design_system_skip_the_local_runtime() {
     let config = recipes_config(&serde_json::json!({
         "button": { "className": "button" },
     }));
-    let mut overlay = overlay();
+    let mut overlay = design_system_overlay();
     overlay.owned_recipes = vec!["button".into()];
 
     let artifacts = ArtifactGraph.generate_all(&input_with(config, overlay), options());
@@ -148,12 +142,12 @@ fn recipes_all_owned_skips_runtime() {
 }
 
 #[test]
-fn patterns_emits_only_app_delta() {
+fn app_patterns_are_emitted_and_design_system_patterns_reexported() {
     let config = patterns_config(&serde_json::json!({
         "stack": { "properties": { "gap": { "property": "gap" } } },
         "grid": { "properties": { "gap": { "property": "gap" } } },
     }));
-    let mut overlay = overlay();
+    let mut overlay = design_system_overlay();
     overlay.owned_patterns = vec!["stack".into()];
 
     let artifacts = ArtifactGraph.generate_all(&input_with(config, overlay), options());
@@ -178,12 +172,12 @@ fn patterns_emits_only_app_delta() {
 }
 
 #[test]
-fn jsx_reexports_owned_ds_pattern_and_emits_app_delta() {
+fn jsx_components_of_design_system_patterns_are_reexported() {
     let config = patterns_config(&serde_json::json!({
         "stack": { "properties": { "gap": { "property": "gap" } } },
         "grid": { "properties": { "gap": { "property": "gap" } } },
     }));
-    let mut overlay = overlay();
+    let mut overlay = design_system_overlay();
     overlay.owned_patterns = vec!["stack".into()];
 
     let artifacts = ArtifactGraph.generate_all(&input_with(config, overlay), options());
@@ -207,12 +201,12 @@ fn jsx_reexports_owned_ds_pattern_and_emits_app_delta() {
 }
 
 #[test]
-fn jsx_conflict_keeps_app_component_local() {
+fn app_redefining_a_design_system_pattern_keeps_its_jsx_component() {
     let config = patterns_config(&serde_json::json!({
         "stack": { "properties": { "gap": { "property": "gap" } } },
     }));
     // App redefined `stack`: excluded from owned_patterns, so it stays local.
-    let overlay = overlay();
+    let overlay = design_system_overlay();
 
     let artifacts = ArtifactGraph.generate_all(&input_with(config, overlay), options());
 
@@ -226,8 +220,8 @@ fn jsx_conflict_keeps_app_component_local() {
 }
 
 #[test]
-fn pure_consumer_virtualizes_entire_runtime() {
-    let mut overlay = overlay();
+fn pure_consumer_reexports_the_whole_design_system_runtime() {
+    let mut overlay = design_system_overlay();
     overlay.css = "@acme/ui/css".into();
     overlay.helpers = "@acme/ui/helpers".into();
     overlay.virtualize_helpers = true;
@@ -299,14 +293,17 @@ fn pure_consumer_virtualizes_entire_runtime() {
 }
 
 #[test]
-fn app_only_recipe_keeps_local_runtime_when_ds_owns_none() {
-    let mut overlay = overlay();
+fn app_only_recipe_keeps_local_runtime_when_design_system_owns_none() {
+    let mut overlay = design_system_overlay();
     overlay.css = "@acme/ui/css".into();
     overlay.helpers = "@acme/ui/helpers".into();
     overlay.virtualize_helpers = true;
     overlay.virtualize_css = true;
 
-    let files = generate_with(config_with_app_recipe(), overlay);
+    let files = generate_with(
+        recipes_config(&serde_json::json!({ "button": { "className": "button" } })),
+        overlay,
+    );
 
     let recipe_runtime = files
         .iter()
@@ -322,13 +319,16 @@ fn app_only_recipe_keeps_local_runtime_when_ds_owns_none() {
 
 #[test]
 fn redeclared_conditions_keep_conditions_and_css_local() {
-    let mut overlay = overlay();
+    let mut overlay = design_system_overlay();
     overlay.css = "@acme/ui/css".into();
     overlay.helpers = "@acme/ui/helpers".into();
     overlay.virtualize_helpers = true;
     overlay.virtualize_css = false;
 
-    let files = generate_with(config_with_app_recipe(), overlay);
+    let files = generate_with(
+        recipes_config(&serde_json::json!({ "button": { "className": "button" } })),
+        overlay,
+    );
 
     assert!(files.iter().any(|f| f.path == "css/conditions.ts"));
     assert!(files.iter().any(|f| f.path == "css/cx.ts"));

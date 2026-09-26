@@ -2,9 +2,30 @@ mod common;
 
 use common::create_config;
 use insta::assert_snapshot;
-use pandacss_compiler::{GenerateArtifactOptions, generate_affected_artifacts, generate_artifact};
+use pandacss_compiler::{
+    CodegenArtifact, GenerateArtifactOptions, generate_affected_artifacts, generate_artifact,
+};
+use pandacss_config::UserConfig;
 use pandacss_project::{Project, System};
 use serde_json::json;
+
+fn generate(config: &UserConfig, id: &str) -> CodegenArtifact {
+    let project = Project::new(System::new(config.clone()).expect("valid project config"));
+    generate_artifact(&project, config, id, GenerateArtifactOptions::default())
+        .expect("valid artifact id")
+        .unwrap_or_else(|| panic!("{id} artifact should be generated"))
+}
+
+fn file_code<'a>(artifact: &'a CodegenArtifact, path: &str) -> &'a str {
+    artifact
+        .files
+        .iter()
+        .find(|file| file.path == path)
+        .map_or_else(
+            || panic!("{path} should be generated"),
+            |file| file.code.as_str(),
+        )
+}
 
 #[test]
 fn generates_artifacts_from_resolved_project_state() {
@@ -23,29 +44,11 @@ fn generates_artifacts_from_resolved_project_state() {
             }
         }
     }));
-    let system = System::new(config.clone()).expect("valid project config");
-    let project = Project::new(system);
+    let artifact = generate(&config, "types");
+    let tokens = file_code(&artifact, "types/tokens.d.ts");
+    let system = file_code(&artifact, "types/system.d.ts");
 
-    let artifact = generate_artifact(
-        &project,
-        &config,
-        "types",
-        GenerateArtifactOptions::default(),
-    )
-    .expect("valid artifact id")
-    .expect("types artifact");
-    let tokens = artifact
-        .files
-        .iter()
-        .find(|file| file.path == "types/tokens.d.ts")
-        .expect("tokens file");
-    let system = artifact
-        .files
-        .iter()
-        .find(|file| file.path == "types/system.d.ts")
-        .expect("system file");
-
-    assert_snapshot!(tokens.code, @r#"
+    assert_snapshot!(tokens, @r#"
     export type ColorToken = "colorPalette.500" | "red.500"
 
     export interface Tokens {
@@ -67,7 +70,7 @@ fn generates_artifacts_from_resolved_project_state() {
 
     // `types/system` is the merged surface (own csstype + properties + selectors +
     // system-types) — ~540 members, so assert its shape rather than full content.
-    let code = &system.code;
+    let code = system;
     assert!(code.contains("export type CssAny = CssGlobals | (string & {}) | number"));
     assert!(code.contains("export interface SystemProperties {"));
     assert!(!code.contains("export interface CssProperties {"));
@@ -142,16 +145,7 @@ fn generates_theme_artifact_files() {
             }
         }
     }));
-    let system = System::new(config.clone()).expect("valid project config");
-    let project = Project::new(system);
-    let artifact = generate_artifact(
-        &project,
-        &config,
-        "themes",
-        GenerateArtifactOptions::default(),
-    )
-    .expect("valid artifact id")
-    .expect("themes artifact");
+    let artifact = generate(&config, "themes");
 
     let mut files = artifact
         .files
@@ -170,24 +164,16 @@ fn generates_theme_artifact_files() {
         ]
     );
 
-    let default_theme = artifact
-        .files
-        .iter()
-        .find(|file| file.path == "themes/theme-default.json")
-        .expect("default theme json");
-    assert_snapshot!(default_theme.code, @r#"
+    let default_theme = file_code(&artifact, "themes/theme-default.json");
+    assert_snapshot!(default_theme, @r#"
     {
       "name": "default",
       "id": "panda-theme-default",
       "css": "[data-panda-theme=default] {\n  --colors-primary: blue;\n  --colors-text: var(--colors-blue-600);\n}\n@media (prefers-color-scheme: dark) {\n  [data-panda-theme=default] {\n    --colors-text: var(--colors-blue-400);\n  }\n}"
     }
     "#);
-    let empty_theme = artifact
-        .files
-        .iter()
-        .find(|file| file.path == "themes/theme-empty.json")
-        .expect("empty theme json");
-    assert_snapshot!(empty_theme.code, @r#"
+    let empty_theme = file_code(&artifact, "themes/theme-empty.json");
+    assert_snapshot!(empty_theme, @r#"
     {
       "name": "empty",
       "id": "panda-theme-empty",
@@ -195,12 +181,8 @@ fn generates_theme_artifact_files() {
     }
     "#);
 
-    let index_types = artifact
-        .files
-        .iter()
-        .find(|file| file.path == "themes/index.d.ts")
-        .expect("themes index types");
-    assert_snapshot!(index_types.code, @r#"
+    let index_types = file_code(&artifact, "themes/index.d.ts");
+    assert_snapshot!(index_types, @r#"
     export type ThemeName = "default" | "empty" | "pink"
     export type ThemeByName = {
       "default": {
@@ -240,10 +222,7 @@ fn embeds_pattern_codegen_source_from_config() {
             }
         }
     }));
-    let system = System::new(config.clone()).expect("valid project config");
-    let project = Project::new(system);
-
-    let code = pattern_runtime_code(&project, &config);
+    let code = pattern_runtime_code(&config);
     assert!(
         code.contains("display: \"flex\""),
         "expected the user transform body, got:\n{code}"
@@ -268,10 +247,7 @@ fn falls_back_to_identity_transform_without_codegen_source() {
             }
         }
     }));
-    let system = System::new(config.clone()).expect("valid project config");
-    let project = Project::new(system);
-
-    let code = pattern_runtime_code(&project, &config);
+    let code = pattern_runtime_code(&config);
     assert!(
         code.contains("(s) => s"),
         "expected the identity fallback, got:\n{code}"
@@ -279,16 +255,8 @@ fn falls_back_to_identity_transform_without_codegen_source() {
 }
 
 /// The generated `patterns/stack` runtime module (skips the `.d.ts` declaration).
-fn pattern_runtime_code(project: &Project, config: &pandacss_config::UserConfig) -> String {
-    let artifact = generate_artifact(
-        project,
-        config,
-        "patterns",
-        GenerateArtifactOptions::default(),
-    )
-    .expect("valid artifact id")
-    .expect("patterns artifact");
-    artifact
+fn pattern_runtime_code(config: &UserConfig) -> String {
+    generate(config, "patterns")
         .files
         .into_iter()
         .find(|file| file.path.starts_with("patterns/stack") && !file.path.ends_with(".d.ts"))
@@ -330,29 +298,9 @@ fn keyframes_typegen_inlines_names_and_stays_out_of_tokens() {
             "animationName": { "values": "keyframes" }
         }
     }));
-    let system = System::new(config.clone()).expect("valid project config");
-    let project = Project::new(system);
-
-    let artifact = generate_artifact(
-        &project,
-        &config,
-        "types",
-        GenerateArtifactOptions::default(),
-    )
-    .expect("valid artifact id")
-    .expect("types artifact");
-    let system_code = &artifact
-        .files
-        .iter()
-        .find(|file| file.path == "types/system.d.ts")
-        .expect("system file")
-        .code;
-    let tokens_code = &artifact
-        .files
-        .iter()
-        .find(|file| file.path == "types/tokens.d.ts")
-        .expect("tokens file")
-        .code;
+    let artifact = generate(&config, "types");
+    let system_code = file_code(&artifact, "types/system.d.ts");
+    let tokens_code = file_code(&artifact, "types/tokens.d.ts");
 
     assert!(system_code.contains(
         r#"export type KeyframesValue = WithEscapeHatch<CssGlobals | "probeKf" | CssVars>"#

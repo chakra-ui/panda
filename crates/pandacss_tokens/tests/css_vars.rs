@@ -1,9 +1,8 @@
 //! `css_vars` view: base vs conditional grouping, theme-prefix handling, and
 //! expanded reference / color-mix values.
 
-use crate::common::t;
+use crate::common::{build_dictionary, t};
 use insta::assert_yaml_snapshot;
-use pandacss_config::UserConfig;
 use pandacss_tokens::{TokenCategory, TokenDictionary};
 use serde_json::json;
 
@@ -92,7 +91,7 @@ fn css_vars_view_does_not_skip_user_conditions_with_theme_prefix() {
 
 #[test]
 fn css_vars_view_uses_expanded_reference_and_color_mix_values() {
-    let config: UserConfig = serde_json::from_value(json!({
+    let dict = build_dictionary(json!({
         "theme": {
             "tokens": {
                 "colors": {
@@ -114,12 +113,7 @@ fn css_vars_view_uses_expanded_reference_and_color_mix_values() {
                 }
             }
         }
-    }))
-    .expect("config");
-
-    let dict = TokenDictionary::from_config(&config)
-        .expect("token dictionary")
-        .expect("non-empty dictionary");
+    }));
 
     assert_yaml_snapshot!(snapshot_css_vars(&dict), @r##"
     base:

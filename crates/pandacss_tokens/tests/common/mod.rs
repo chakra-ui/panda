@@ -1,7 +1,15 @@
 //! Shared builders and snapshot helpers for the tokens integration suite.
 
+use pandacss_config::UserConfig;
 use pandacss_tokens::{Token, TokenCategory, TokenDictionary};
 use serde_json::json;
+
+pub fn build_dictionary(config: serde_json::Value) -> TokenDictionary {
+    let config: UserConfig = serde_json::from_value(config).expect("config should deserialize");
+    TokenDictionary::from_config(&config)
+        .expect("token dictionary should build")
+        .expect("config defines tokens")
+}
 
 pub fn t(path: &str, value: &str, var: &str, category: TokenCategory) -> Token {
     Token::new(path, value, var, category)
