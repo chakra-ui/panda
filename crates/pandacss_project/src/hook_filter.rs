@@ -1,4 +1,5 @@
 use fast_glob::glob_match;
+use pandacss_fs::normalize_glob_pattern;
 use pandacss_shared::regex::compile_js_regex;
 
 #[derive(Debug, Clone, Default)]
@@ -79,7 +80,9 @@ enum IdPattern {
 impl IdPattern {
     fn matches(&self, path: &str) -> bool {
         match self {
-            Self::Glob(pattern) => glob_match(normalize_glob(pattern).as_bytes(), path.as_bytes()),
+            Self::Glob(pattern) => {
+                glob_match(normalize_glob_pattern(pattern).as_bytes(), path.as_bytes())
+            }
             Self::Regex(regex) => regex.is_match(path),
         }
     }
@@ -176,8 +179,4 @@ fn parse_regex(value: &serde_json::Value) -> std::result::Result<regex::Regex, S
         .unwrap_or_default();
     compile_js_regex(source, flags)
         .ok_or_else(|| format!("invalid hook filter regex /{source}/{flags}"))
-}
-
-fn normalize_glob(pattern: &str) -> &str {
-    pattern.strip_prefix("./").unwrap_or(pattern)
 }

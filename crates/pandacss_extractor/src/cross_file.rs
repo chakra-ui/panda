@@ -24,7 +24,7 @@ use oxc_ast::ast::{
 use oxc_parser::Parser;
 use oxc_resolver::{ResolveOptions, ResolverGeneric, TsconfigDiscovery};
 use oxc_span::SourceType;
-use pandacss_fs::FileSystem;
+use pandacss_fs::{FileSystem, to_forward_slash};
 use rustc_hash::{FxHashMap, FxHashSet};
 
 use crate::Literal;
@@ -68,8 +68,8 @@ struct CachedFileExports {
     unresolved: UnresolvedDependencies,
 }
 
-fn to_forward_slash(path: &Path) -> PathBuf {
-    PathBuf::from(path.to_string_lossy().replace('\\', "/"))
+fn forward_slash_path(path: &Path) -> PathBuf {
+    PathBuf::from(to_forward_slash(path))
 }
 
 fn resolve_with<F: FileSystem + Clone>(
@@ -84,13 +84,13 @@ fn resolve_with<F: FileSystem + Clone>(
         return resolver
             .resolve_file(from_file, specifier)
             .ok()
-            .map(|resolution| to_forward_slash(&resolution.full_path()));
+            .map(|resolution| forward_slash_path(&resolution.full_path()));
     }
     let directory = from_file.parent()?;
     resolver
         .resolve(directory, specifier)
         .ok()
-        .map(|resolution| to_forward_slash(&resolution.full_path()))
+        .map(|resolution| forward_slash_path(&resolution.full_path()))
 }
 
 fn default_resolve_options() -> ResolveOptions {
@@ -497,17 +497,17 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         self.inner
             .resolve_file(from_file, specifier)
             .ok()
-            .map(|resolution| to_forward_slash(&resolution.full_path()))
+            .map(|resolution| forward_slash_path(&resolution.full_path()))
     }
 
     /// Deleted files canonicalize the parent so unlink events still match.
     fn dependency_key(&self, path: &Path) -> Option<PathBuf> {
         let fs = &self.fs;
         if let Ok(real) = <F as oxc_resolver::FileSystem>::canonicalize(fs, path) {
-            return Some(to_forward_slash(&real));
+            return Some(forward_slash_path(&real));
         }
         let parent = <F as oxc_resolver::FileSystem>::canonicalize(fs, path.parent()?).ok()?;
-        Some(to_forward_slash(&parent.join(path.file_name()?)))
+        Some(forward_slash_path(&parent.join(path.file_name()?)))
     }
 
     fn check_resolvable(&self, dependencies: &[UnresolvedCrossFileDependency]) -> Vec<bool> {

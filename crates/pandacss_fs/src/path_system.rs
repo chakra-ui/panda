@@ -1,5 +1,7 @@
 use std::path::{Path, PathBuf};
 
+use crate::path::normalize_posix;
+
 /// Host-specific path operations (join/resolve), kept separate from
 /// [`crate::FileSystem`] since they need no IO.
 pub trait PathSystem: Send + Sync {
@@ -95,36 +97,5 @@ impl PathSystem for PosixPathSystem {
         } else {
             path[..index].to_owned()
         }
-    }
-}
-
-fn normalize_posix(path: &str) -> String {
-    let absolute = path.starts_with('/');
-    let mut parts = Vec::new();
-
-    for part in path.split('/') {
-        match part {
-            "" | "." => {}
-            ".." => {
-                if matches!(parts.last(), Some(last) if *last != "..") {
-                    parts.pop();
-                } else if !absolute {
-                    parts.push(part);
-                }
-            }
-            part => parts.push(part),
-        }
-    }
-
-    if absolute {
-        if parts.is_empty() {
-            "/".to_owned()
-        } else {
-            format!("/{}", parts.join("/"))
-        }
-    } else if parts.is_empty() {
-        ".".to_owned()
-    } else {
-        parts.join("/")
     }
 }

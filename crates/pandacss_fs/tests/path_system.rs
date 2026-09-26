@@ -1,4 +1,9 @@
-use pandacss_fs::{OsPathSystem, PathSystem, PosixPathSystem};
+use std::path::Path;
+
+use pandacss_fs::{
+    OsPathSystem, PathSystem, PosixPathSystem, normalize_glob_pattern, normalize_lexical,
+    to_forward_slash,
+};
 
 #[test]
 fn posix_path_system_resolves_and_joins() {
@@ -73,4 +78,59 @@ fn safe_relative_paths_reject_root_escape_on_every_host() {
         assert!(!paths.is_safe_relative("/tmp/outside.css"));
         assert!(!paths.is_safe_relative("C:\\tmp\\outside.css"));
     }
+}
+
+#[test]
+fn windows_separators_become_forward_slashes() {
+    assert_eq!(
+        to_forward_slash(Path::new(r"C:\project\src\App.tsx")),
+        "C:/project/src/App.tsx"
+    );
+}
+
+#[test]
+fn forward_slash_paths_are_left_alone() {
+    assert_eq!(
+        to_forward_slash(Path::new("/project/src/App.tsx")),
+        "/project/src/App.tsx"
+    );
+}
+
+#[test]
+fn lexical_normalize_resolves_dot_segments_inside_the_path() {
+    assert_eq!(
+        normalize_lexical(Path::new("src/components/./../utils/x.ts")),
+        "src/utils/x.ts"
+    );
+}
+
+#[test]
+fn lexical_normalize_keeps_a_leading_parent_segment() {
+    assert_eq!(
+        normalize_lexical(Path::new("components/../../shared/x")),
+        "../shared/x"
+    );
+}
+
+#[test]
+fn lexical_normalize_stops_parent_segments_at_the_root() {
+    assert_eq!(normalize_lexical(Path::new("/project/../../x")), "/x");
+}
+
+#[test]
+fn lexical_normalize_handles_windows_separators() {
+    assert_eq!(
+        normalize_lexical(Path::new(r"src\components\..\utils\x.ts")),
+        "src/utils/x.ts"
+    );
+}
+
+#[test]
+fn glob_pattern_loses_a_leading_current_dir_prefix() {
+    assert_eq!(normalize_glob_pattern("./src/**/*.tsx"), "src/**/*.tsx");
+}
+
+#[test]
+fn glob_pattern_outside_cwd_is_left_alone() {
+    assert_eq!(normalize_glob_pattern("../shared/**"), "../shared/**");
 }

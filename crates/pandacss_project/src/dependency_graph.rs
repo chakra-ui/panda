@@ -5,6 +5,7 @@ use std::path::Path;
 use std::sync::Arc;
 
 use pandacss_extractor::{CrossFileDependency, CrossFileResolver, UnresolvedCrossFileDependency};
+use pandacss_fs::to_forward_slash;
 use rustc_hash::{FxHashMap, FxHashSet};
 
 #[derive(Clone, PartialEq, Eq, Hash)]
@@ -18,7 +19,7 @@ impl ResolutionRequest {
         let from_file = Path::new(&dependency.from_file);
         let directory = from_file.parent().unwrap_or(from_file);
         Self {
-            directory: Arc::from(directory.to_string_lossy().replace('\\', "/")),
+            directory: Arc::from(to_forward_slash(directory)),
             specifier: Arc::from(dependency.specifier.as_str()),
         }
     }

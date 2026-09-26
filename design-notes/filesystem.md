@@ -176,12 +176,18 @@ crates/pandacss_fs/
     lib.rs            re-exports + feature gates
     file_system.rs    FileSystem trait + GlobOptions type
     glob.rs           GlobOptions + base_dir/walk_roots scoping + default walker (fast-glob matches)
+    path.rs           to_forward_slash + normalize_lexical (pure path strings, no IO)
+    path_system.rs    PathSystem trait + OsPathSystem/PosixPathSystem (join, dirname, resolve)
     os.rs             #[cfg(feature = "os")] OsFileSystem
     memory.rs         #[cfg(feature = "memory")] MemoryFileSystem
 ```
 
 Tier-0 — sits below Tier 1 (`pandacss_tokens`, `pandacss_recipes`) in [crate-layering](./crate-layering.md). No
 Panda-specific data shapes; pure infrastructure.
+
+Path-string rules (`/` separators, `.`/`..` folding, a leading `./` on glob patterns) live here too, even though they
+do no IO, so every crate normalizes paths the same way. A leading `..` is kept, so a path outside the project root
+never collapses onto a project module.
 
 ## WASM constraints
 

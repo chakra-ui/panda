@@ -906,6 +906,41 @@ fn build_info_resolves_named_re_exports() {
 }
 
 #[test]
+fn re_export_from_a_parent_folder_resolves_to_the_styled_module() {
+    let mut project = jsx_button_project();
+    project.parse_file(
+        "button.tsx",
+        "import { Button } from './ui'; export function ActionButton() { return <Button />; }",
+    );
+    project.parse_file(
+        "components/index.ts",
+        "export { ActionButton } from '../button';",
+    );
+
+    let info = project.build_info("^2.0.0".into());
+    assert_eq!(
+        info.exports.get("ActionButton").map(String::as_str),
+        Some("button.tsx")
+    );
+}
+
+#[test]
+fn re_export_that_climbs_above_the_project_root_does_not_match_a_project_module() {
+    let mut project = jsx_button_project();
+    project.parse_file(
+        "button.tsx",
+        "import { Button } from './ui'; export function ActionButton() { return <Button />; }",
+    );
+    project.parse_file(
+        "components/index.ts",
+        "export { ActionButton as OutsideButton } from '../../button';",
+    );
+
+    let info = project.build_info("^2.0.0".into());
+    assert_eq!(info.exports.get("OutsideButton"), None);
+}
+
+#[test]
 fn build_info_resolves_aliased_re_exports() {
     // Public barrel name differs from the source export (`ActionButton as Button`).
     let mut project = jsx_button_project();

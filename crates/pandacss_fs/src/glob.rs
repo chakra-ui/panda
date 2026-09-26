@@ -13,16 +13,17 @@ pub fn effective_excludes(opts: &GlobOptions) -> Vec<String> {
     opts.exclude.clone()
 }
 
-/// Strip a leading `./` so `./src/**` matches the cwd-relative `src/App.tsx`, like
+/// Strips a leading `./` so `./src/**` matches the cwd-relative `src/App.tsx`, like
 /// fast-glob/tinyglobby do on the JS side. `../x` (outside cwd) passes through.
-pub(crate) fn normalize_pattern(pattern: &str) -> &str {
+#[must_use]
+pub fn normalize_glob_pattern(pattern: &str) -> &str {
     pattern.strip_prefix("./").unwrap_or(pattern)
 }
 
 pub(crate) fn matches_any(patterns: &[String], rel_bytes: &[u8]) -> bool {
     patterns
         .iter()
-        .any(|pat| glob_match(normalize_pattern(pat).as_bytes(), rel_bytes))
+        .any(|pat| glob_match(normalize_glob_pattern(pat).as_bytes(), rel_bytes))
 }
 
 /// `path` relative to `cwd`, or `path` itself if it isn't a descendant.
@@ -82,7 +83,7 @@ pub fn matches_globs(path: &Path, opts: &GlobOptions) -> bool {
 #[must_use]
 pub fn base_dir(pattern: &str) -> &str {
     // Normalize first so `./src/**` hoists to `src`, not `./src`.
-    let pattern = normalize_pattern(pattern);
+    let pattern = normalize_glob_pattern(pattern);
     let glob_at = pattern.find(['*', '?', '[', '{']).unwrap_or(pattern.len());
     match pattern[..glob_at].rfind('/') {
         Some(slash) => &pattern[..slash],
@@ -94,7 +95,7 @@ pub fn base_dir(pattern: &str) -> &str {
 /// `**/*.tsx`. Paired with `base_dir`, gives a watcher a `(dir, glob)` pair.
 #[must_use]
 pub fn relative_glob(pattern: &str) -> &str {
-    let normalized = normalize_pattern(pattern);
+    let normalized = normalize_glob_pattern(pattern);
     let base = base_dir(pattern);
     if base.is_empty() {
         normalized

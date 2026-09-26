@@ -5,7 +5,7 @@
 //! `design-notes/build-info.md`.
 
 use std::collections::{BTreeMap, BTreeSet};
-use std::path::{Component, Path, PathBuf};
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use pandacss_encoder::{
@@ -16,6 +16,7 @@ use pandacss_extractor::{
     DesignSystemImportSelection, ExportInfo, ReExport, ScanImportsOptions,
     design_system_usage_from_import_records, scan_imports_with,
 };
+use pandacss_fs::normalize_lexical;
 use pandacss_shared::{InlineKeyframe, PositionTryStyle, ViewTransitionStyle};
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde::{Deserialize, Serialize};
@@ -1042,7 +1043,7 @@ impl ExportResolver {
         for (path, entry) in files {
             let path = path.to_string();
             normalized_files
-                .entry(normalize_path(Path::new(&path)))
+                .entry(normalize_lexical(Path::new(&path)))
                 .or_insert_with(|| path.clone());
             export_files.insert(path, entry.exports.clone());
         }
@@ -1174,7 +1175,7 @@ impl ExportResolver {
             .parent()
             .map_or_else(PathBuf::new, Path::to_path_buf)
             .join(source);
-        let base = normalize_path(&base);
+        let base = normalize_lexical(&base);
 
         let mut candidates = vec![base.clone()];
 
@@ -1192,29 +1193,5 @@ impl ExportResolver {
         candidates
             .into_iter()
             .find_map(|candidate| self.normalized_files.get(&candidate).cloned())
-    }
-}
-
-fn normalize_path(path: &Path) -> String {
-    let mut absolute = false;
-    let mut parts = Vec::new();
-    for component in path.components() {
-        match component {
-            Component::RootDir => absolute = true,
-            Component::CurDir => {}
-            Component::ParentDir => {
-                parts.pop();
-            }
-            Component::Normal(part) => parts.push(part.to_string_lossy().into_owned()),
-            Component::Prefix(prefix) => {
-                parts.push(prefix.as_os_str().to_string_lossy().into_owned());
-            }
-        }
-    }
-    let joined = parts.join("/");
-    if absolute {
-        format!("/{joined}")
-    } else {
-        joined
     }
 }
