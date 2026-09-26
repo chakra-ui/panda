@@ -10,10 +10,7 @@ use oxc_ast::ast::{
     ObjectPropertyKind, PropertyKey, PropertyKind, Statement, UnaryOperator,
 };
 
-use crate::literal::{
-    collapse_whitespace, expression_to_literal, less_than,
-    loose_eq, strict_eq,
-};
+use crate::literal::{collapse_whitespace, expression_to_literal, less_than, loose_eq, strict_eq};
 use crate::{Literal, Resolver};
 
 /// Owned, closed representation of a pure function body.

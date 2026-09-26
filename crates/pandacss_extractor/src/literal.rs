@@ -221,7 +221,6 @@ fn computed_member_to_literal(
     object.get_member(&key)
 }
 
-
 fn chain_to_literal(
     chain: &ChainExpression<'_>,
     resolver: Option<&Resolver<'_, '_>>,
@@ -486,4 +485,3 @@ pub(crate) fn template_literal_to_literal(
     out.push_str(tail.value.cooked.as_ref()?.as_str());
     Some(Literal::String(collapse_whitespace(&out).trim().to_owned()))
 }
-
