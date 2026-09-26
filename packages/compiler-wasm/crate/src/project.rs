@@ -21,7 +21,7 @@ use std::collections::HashMap;
 use wasm_bindgen::prelude::*;
 
 use crate::fs::WasmFileSystem;
-use pandacss_compiler::{LoadSystemError, LoadedSystem, TransformCache};
+use pandacss_compiler::{LoadedSystem, TransformCache};
 use pandacss_config::UserConfig;
 use pandacss_fs::{MemoryFileSystem, PosixPathSystem};
 
@@ -115,10 +115,7 @@ impl WasmCompiler {
         } = pandacss_compiler::load_system(config_value, |config, token_dictionary| {
             resolve_utility_values_callbacks(config, token_dictionary, &utility_values_callbacks)
         })
-        .map_err(|err| match err {
-            LoadSystemError::Host(err) => err,
-            err => JsValue::from_str(&err.message().unwrap_or_default()),
-        })?;
+        .map_err(crate::error::load_system_error)?;
         let callbacks = CallbackHost::from_config(&user_config);
         let project = pandacss_project::Project::new(system);
 

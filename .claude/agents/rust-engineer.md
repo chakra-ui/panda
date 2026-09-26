@@ -101,7 +101,10 @@ Apply **`crates/RUST_GUIDE.md`** in full. Highlights:
 - Flag missing `// SAFETY:` on `unsafe` and unjustified `unsafe impl Send/Sync`.
 - Flag unnecessary `.clone()`, `String` where `&str` works, `Vec` where slices suffice.
 - Internal maps: `rustc_hash::FxHashMap` (document with `PERF(port):` when non-obvious).
-- Error types: `thiserror` in library crates; propagate with `?`, not `.unwrap()` in library code.
+- Error types belong to the crate or operation that has enough context to name the failure. Use `thiserror`, preserve
+  wrapped causes with `#[source]`, and propagate with `?`; do not add a workspace-wide umbrella error or erase a source
+  into `String` before the NAPI/WASM/application boundary. `pandacss_shared::Diagnostic` is the shared recoverable
+  reporting schema, not a reason to centralize fatal error enums.
 
 ## Testing workflow
 

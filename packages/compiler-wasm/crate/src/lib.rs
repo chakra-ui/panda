@@ -13,6 +13,7 @@
     reason = "wasm-bindgen boundary reports errors as JS exceptions"
 )]
 
+mod error;
 mod extract;
 mod fs;
 mod matcher;

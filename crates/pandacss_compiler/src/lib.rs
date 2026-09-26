@@ -10,6 +10,7 @@ mod codegen;
 mod css;
 mod design_system;
 mod design_system_imports;
+mod error;
 mod hook_filter;
 mod host;
 mod inspection;
@@ -37,6 +38,7 @@ pub use design_system::{
     design_system_manifest,
 };
 pub use design_system_imports::{DesignSystemImportQuery, design_system_import_selections};
+pub use error::{LoadSystemError, LoadSystemErrorKind};
 pub use hook_filter::HookFilter;
 pub use host::{
     atom_value_json, format_config_diagnostics, sorted_atoms, token_suggestion_json,
@@ -48,7 +50,7 @@ pub use inspection::{
     UsageSite,
 };
 pub use output::{WriteError, write_output_file, write_relative_files};
-pub use setup::{LoadSystemError, LoadedSystem, load_system};
+pub use setup::{LoadedSystem, load_system};
 pub use usages::{inspect_file_source, suggest_semantic_tokens, suggest_tokens};
 pub use views::{
     LayerNames, SourceEntry, SourceGlobOverrides, compiler_spec, has_layer_declaration,

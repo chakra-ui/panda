@@ -26,8 +26,19 @@ pub use builder::TokenDictionaryBuilder;
 pub use category::TokenCategory;
 pub use color_palette::ColorPaletteView;
 pub use from_config::TokenDictionaryOptions;
-pub use pandacss_shared::PandaError as TokenError;
 pub use token::{Token, TokenExtensions};
+
+/// A failure while constructing or resolving the token dictionary.
+#[derive(Debug, thiserror::Error)]
+#[error("Token error: {0}")]
+pub struct TokenError(String);
+
+impl TokenError {
+    #[must_use]
+    pub fn token(message: impl Into<String>) -> Self {
+        Self(message.into())
+    }
+}
 
 /// Snapshot of a token dictionary. Immutable once built.
 ///

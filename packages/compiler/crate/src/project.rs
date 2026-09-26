@@ -22,7 +22,7 @@ use std::collections::HashMap;
 
 use crate::Diagnostic;
 use napi::bindgen_prelude::{Env, FnArgs, FunctionRef};
-use pandacss_compiler::{LoadSystemError, LoadedSystem, TransformCache};
+use pandacss_compiler::{LoadedSystem, TransformCache};
 use pandacss_config::UserConfig;
 use pandacss_fs::OsPathSystem;
 
@@ -313,10 +313,7 @@ impl Compiler {
                 &env,
             )
         })
-        .map_err(|err| match err {
-            LoadSystemError::Host(err) => err,
-            err => napi::Error::from_reason(err.message().unwrap_or_default()),
-        })?;
+        .map_err(crate::error::load_system_error)?;
         let callbacks = CallbackHost::from_config(&user_config);
         let project = pandacss_project::Project::new(system);
         let fs = pandacss_fs::OsFileSystem::default();

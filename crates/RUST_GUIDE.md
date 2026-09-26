@@ -116,7 +116,8 @@ Non-obvious rules beyond "run rustfmt" (see `AGENTS.md` for fmt/clippy commands)
 | Prefer `&str` / `Cow<str>`         | Over allocating `String` when borrowing suffices                              |
 | Atoms use `Box<str>`               | Write-once after encoding — `design-notes/performance-budget.md`              |
 | Propagate with `?`                 | Not `.unwrap()` in library crates                                             |
-| `thiserror` for library errors     | Structured variants with context                                              |
+| `thiserror` for library errors     | Crate/operation-owned types; preserve wrapped causes with `#[source]`          |
+| No workspace-wide umbrella error  | Share `Diagnostic`; convert typed errors only at NAPI/WASM/application edges   |
 | Parse-error contract               | Oxc recovers; treat non-empty `diagnostics` as authoritative for strict paths |
 | `lazy_static!` / `once_cell::Lazy` | Prefer `OnceLock` / `LazyLock`                                                |
 

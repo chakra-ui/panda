@@ -23,7 +23,7 @@ use pandacss_utility::{Utility, UtilityOptions};
 use crate::patterns::PatternRegistry;
 use crate::recipes::{RecipeRegistry, StyleResolver};
 use crate::system::ConfigRecipe;
-use crate::{ConfigError, ProjectConditionMatcher, Result, System};
+use crate::{ProjectConditionMatcher, Result, System, SystemError};
 
 /// Compiles a user config into a [`System`]: extractor matchers, utility
 /// metadata, conditions, and pattern/recipe registries. Reuses
@@ -149,8 +149,8 @@ fn theme_view_transitions(
 }
 
 #[allow(clippy::needless_pass_by_value, reason = "used as a map_err callback")]
-fn config_error_from_token_error(error: TokenError) -> ConfigError {
-    ConfigError::config(format!("invalid token config: {error}"))
+fn config_error_from_token_error(error: TokenError) -> SystemError {
+    SystemError::Token(error)
 }
 
 #[derive(Debug, Clone)]
@@ -598,7 +598,7 @@ fn jsx_regexes(items: &[JsxSpecifier], path: &str) -> Result<Vec<Regex>> {
             continue;
         };
         let regex = compile_js_regex(&item.source, &item.flags).ok_or_else(|| {
-            ConfigError::regex(path, index, format!("/{}/{}", item.source, item.flags))
+            SystemError::regex(path, index, format!("/{}/{}", item.source, item.flags))
         })?;
         out.push(regex);
     }

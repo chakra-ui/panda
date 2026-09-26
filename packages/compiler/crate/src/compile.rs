@@ -132,14 +132,11 @@ pub fn compile(input: Option<CompileInput>) -> CompileOutput {
             pandacss_project::Project::new(loaded.system),
             loaded.user_config,
         ),
-        Err(pandacss_compiler::LoadSystemError::Invalid(diagnostics)) => {
+        Err(pandacss_compiler::LoadSystemError::Validation { diagnostics, .. }) => {
             return diagnostics_only_output(diagnostics);
         }
         Err(err) => {
-            return error_output(
-                diagnostic_codes::COMPILE_PLACEHOLDER,
-                err.message().unwrap_or_default(),
-            );
+            return error_output(diagnostic_codes::COMPILE_PLACEHOLDER, err.to_string());
         }
     };
 

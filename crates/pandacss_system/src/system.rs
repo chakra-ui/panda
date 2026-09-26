@@ -69,7 +69,7 @@ impl From<UserConfig> for SystemInput {
 
 impl System {
     /// # Errors
-    /// Returns a `ConfigError` when validation fails in error mode or the
+    /// Returns a [`crate::SystemError`] when validation fails in error mode or the
     /// config can't be compiled (invalid tokens/recipes).
     pub fn new(input: impl Into<SystemInput>) -> Result<Self> {
         let _span = tracing::debug_span!(target: "config", "compile_config").entered();
@@ -78,7 +78,7 @@ impl System {
             .diagnostics
             .unwrap_or_else(|| validate_config(&input.config));
         if input.config.validation == ValidationMode::Error && !diagnostics.is_empty() {
-            return Err(crate::ConfigError::config(format_config_diagnostics(
+            return Err(crate::SystemError::config(format_config_diagnostics(
                 &diagnostics,
             )));
         }

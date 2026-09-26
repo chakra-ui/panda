@@ -14,6 +14,7 @@
 mod calls;
 mod compile;
 mod convert;
+mod error;
 mod extract;
 mod imports;
 mod jsx;

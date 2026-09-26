@@ -5,7 +5,6 @@ pub mod css_escape;
 pub mod css_factory;
 pub mod css_properties;
 pub mod diagnostic;
-pub mod error;
 pub mod first_that_works;
 pub mod hash;
 pub mod important;
@@ -24,7 +23,6 @@ pub use diagnostic::{
     Diagnostic, DiagnosticLabel, DiagnosticSeverity, SourceLocation, SourceRange, Span,
     codes as diagnostic_codes,
 };
-pub use error::{PandaError, PandaResult};
 pub use first_that_works::{
     FIRST_THAT_WORKS_FN, FIRST_THAT_WORKS_MIN_MEMBERS, FIRST_THAT_WORKS_SEPARATOR,
     FirstThatWorksError, format_first_that_works, is_first_that_works_value,

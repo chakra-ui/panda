@@ -17,7 +17,7 @@ mod system;
 
 pub use callbacks::{ParseTransforms, PatternTransformFn, SourceTransformFn, UtilityTransformFn};
 pub use config::class_attribute_for_jsx_framework;
-pub use error::{ConfigError, Result};
+pub use error::{Result, SystemError};
 pub use inline_recipe_raw::{
     is_recipe_config, literal_variant_props, raw_call_variant_props, resolve_inline_recipe_raw,
 };

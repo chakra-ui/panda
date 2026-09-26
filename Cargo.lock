@@ -1302,7 +1302,6 @@ dependencies = [
  "ryu",
  "serde",
  "serde_json",
- "thiserror",
 ]
 
 [[package]]
@@ -1341,6 +1340,7 @@ dependencies = [
  "rustc-hash",
  "serde_json",
  "smallvec",
+ "thiserror",
  "tracing",
 ]
 
@@ -1356,6 +1356,7 @@ dependencies = [
  "rustc-hash",
  "serde",
  "serde_json",
+ "thiserror",
  "tracing",
 ]
 

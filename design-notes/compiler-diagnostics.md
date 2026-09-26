@@ -2,10 +2,11 @@
 
 ## Summary
 
-Recoverable compiler issues use `Diagnostic` from `pandacss_shared`. Fatal setup failures still use
-`PandaError`/`Result`, so callers can distinguish "the operation failed" from "the operation completed with warnings or
-source-level errors". When setup fails for structured user-facing reasons, `PandaError` carries diagnostics so CLI,
-JSON, and GitHub output can keep the specific codes.
+Recoverable compiler issues use `Diagnostic` from `pandacss_shared`. Fatal host-neutral setup failures use the
+operation-specific `pandacss_compiler::LoadSystemError<E>`, so callers can distinguish "the operation failed" from
+"the operation completed with warnings or source-level errors". It carries a stable kind/code, structured source, and
+diagnostics while preserving a host callback error as its original native or WASM type. Other operations keep their
+own narrow errors, such as `CodegenError` and `WriteError`; bindings convert them only at the JS boundary.
 
 ## Stable Codes
 
@@ -70,6 +71,16 @@ Diagnostics serialize as camelCase fields:
 Rust crates should reuse the shared diagnostic type. JS/NAPI bindings may mirror the shape for `napi`, but conversion
 must preserve `code`, `severity`, `span`, and `location`.
 
+Fatal errors follow a different ownership rule: define a meaningful `std::error::Error` type in the crate or operation
+that owns the failure. Higher layers may wrap it with `#[source]` and add context, but must not flatten it to a `String`
+until the NAPI, WASM, CLI, or other application boundary. Do not introduce a workspace-wide error enum: it couples the
+lowest shared crate to failures owned by higher tiers and turns unrelated API errors into one unstable catch-all.
+
+This means `TokenError` belongs to `pandacss_tokens`, `SystemError` belongs to `pandacss_system`, and setup orchestration
+returns `LoadSystemError<E>`. `LoadSystemError<E>` keeps validation diagnostics and wraps token/system causes while
+preserving the host callback's native error type. The TypeScript `packages/config` `PandaError` class is a separate
+config-loader boundary contract and is unaffected by the Rust error hierarchy.
+
 Config validation diagnostics are collected before typed config deserialization so malformed-but-readable config can
 surface actionable warnings. Binding layers pass those diagnostics into `pandacss_project` instead of validating again,
 which keeps project construction to one validation pass on the hot binding path.
@@ -83,7 +94,7 @@ Prefer emitting diagnostics at the layer that owns the facts:
 - The stylesheet owns CSS generation diagnostics, including static CSS authoring issues and unsupported stylesheet
   modes.
 
-Fatal config/setup errors should still throw. Attach diagnostics to the thrown `PandaError` when the failure has stable,
+Fatal config/setup errors should still throw. Attach diagnostics to the thrown `LoadSystemError` when the failure has stable,
 actionable causes, such as design-system resolution failures or manifest-bearing packages listed in `include`. Plain
 unexpected config-load failures still become `config_load_error`.
 
