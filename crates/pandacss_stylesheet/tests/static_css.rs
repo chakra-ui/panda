@@ -589,52 +589,12 @@ fn expands_static_css_slot_recipe_wildcard() {
 }
 
 #[test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "keeps the recipe config next to the CSS it produces"
+)]
 fn static_recipe_compositions_resolve_token_values() {
-    let config = config(composition_recipe_fixture());
-    let css = compile_output(&config, "", StylesheetOptions::default())
-        .get_layer_css(&[StylesheetLayer::Recipes]);
-    assert_snapshot!(css, @r"
-    @layer recipes {
-      @layer base {
-        .label {
-          font-size: var(--font-sizes-sm);
-        }
-      }
-      @layer variants {
-        .label--tone_danger {
-          color: var(--colors-red-500);
-        }
-      }
-      @layer compound_variants {
-        .label--compound__tone_danger {
-          animation-duration: var(--durations-fast);
-          animation-name: fade-in;
-        }
-      }
-    }
-    @layer recipes.slots {
-      @layer base {
-        .field__label {
-          font-size: var(--font-sizes-sm);
-        }
-      }
-      @layer variants {
-        .field__label--tone_danger {
-          color: var(--colors-red-500);
-        }
-      }
-      @layer compound_variants {
-        .field__helper--compound__tone_danger {
-          animation-duration: var(--durations-fast);
-          animation-name: fade-in;
-        }
-      }
-    }
-    ");
-}
-
-fn composition_recipe_fixture() -> serde_json::Value {
-    serde_json::json!({
+    let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
         "theme": {
             "tokens": {
@@ -709,7 +669,47 @@ fn composition_recipe_fixture() -> serde_json::Value {
             "color": { "className": "c", "values": "colors" },
             "fontSize": { "className": "fs", "values": "fontSizes" }
         }
-    })
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @r"
+    @layer recipes {
+      @layer base {
+        .label {
+          font-size: var(--font-sizes-sm);
+        }
+      }
+      @layer variants {
+        .label--tone_danger {
+          color: var(--colors-red-500);
+        }
+      }
+      @layer compound_variants {
+        .label--compound__tone_danger {
+          animation-duration: var(--durations-fast);
+          animation-name: fade-in;
+        }
+      }
+    }
+    @layer recipes.slots {
+      @layer base {
+        .field__label {
+          font-size: var(--font-sizes-sm);
+        }
+      }
+      @layer variants {
+        .field__label--tone_danger {
+          color: var(--colors-red-500);
+        }
+      }
+      @layer compound_variants {
+        .field__helper--compound__tone_danger {
+          animation-duration: var(--durations-fast);
+          animation-name: fade-in;
+        }
+      }
+    }
+    ");
 }
 
 #[test]

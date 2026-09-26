@@ -5,7 +5,7 @@ use indoc::indoc;
 use pandacss_extractor::{ExpressionKind, LocalDeclarationKind, extract, extract_transform};
 
 #[test]
-fn collects_plain_calls_for_cva_binding() {
+fn collects_each_call_of_a_local_cva_recipe() {
     let source = indoc! {r"
         import { cva } from '@panda/css'
         const recipe = cva({ base: { color: 'red' }, variants: { on: { true: { opacity: '0.5' } } } })
@@ -47,7 +47,7 @@ fn shadowed_binding_is_not_collected_as_call() {
 }
 
 #[test]
-fn rename_marks_other_references() {
+fn aliasing_a_local_cva_marks_other_references() {
     let source = indoc! {r"
         import { cva } from '@panda/css'
         const recipe = cva({ base: { color: 'red' } })
@@ -66,7 +66,7 @@ fn rename_marks_other_references() {
 }
 
 #[test]
-fn member_raw_call_is_other_reference() {
+fn raw_call_on_a_local_cva_marks_other_references() {
     let source = indoc! {r"
         import { cva } from '@panda/css'
         const recipe = cva({ base: { color: 'red' } })
@@ -103,7 +103,7 @@ fn mutated_let_binding_is_skipped() {
 }
 
 #[test]
-fn extract_hot_path_keeps_local_bindings_empty() {
+fn plain_extract_does_not_collect_local_bindings() {
     let source = indoc! {r"
         import { cva } from '@panda/css'
         const recipe = cva({ base: { color: 'red' } })

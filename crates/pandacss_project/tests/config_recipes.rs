@@ -6,8 +6,8 @@ use insta::assert_yaml_snapshot;
 use serde_json::json;
 
 #[test]
-fn tracks_and_encodes_config_recipes() {
-    let mut project = create_project(json!({
+fn config_recipes_are_registered_but_emit_nothing_until_used() {
+    let project = create_project(json!({
         "theme": {
             "recipes": {
                 "button": {
@@ -43,6 +43,33 @@ fn tracks_and_encodes_config_recipes() {
     variants: []
     atomic: []
     ");
+}
+
+#[test]
+fn clearing_the_project_keeps_config_recipes_registered() {
+    let mut project = create_project(json!({
+        "theme": {
+            "recipes": {
+                "button": {
+                    "base": { "display": "inline-flex" },
+                    "variants": {
+                        "size": {
+                            "sm": { "fontSize": "12px" }
+                        }
+                    }
+                }
+            },
+            "slotRecipes": {
+                "card": {
+                    "slots": ["root", "label"],
+                    "base": {
+                        "root": { "padding": "4px" },
+                        "label": { "color": "red" }
+                    }
+                }
+            }
+        }
+    }));
 
     project.parse_file(
         "fixture.tsx",
@@ -86,7 +113,7 @@ fn tracks_and_encodes_config_recipes() {
 }
 
 #[test]
-fn splits_recipe_component_variant_and_style_props() {
+fn recipe_components_split_variant_props_from_style_props() {
     let mut project = create_project(json!({
         "jsxFramework": "react",
         "theme": {
@@ -172,7 +199,7 @@ fn splits_recipe_component_variant_and_style_props() {
 }
 
 #[test]
-fn dotted_recipe_variant_values_do_not_emit_style_props() {
+fn dotted_variant_value_selects_the_variant_instead_of_a_token() {
     let mut project = create_project(json!({
         "jsxFramework": "react",
         "theme": {
@@ -216,7 +243,7 @@ fn dotted_recipe_variant_values_do_not_emit_style_props() {
 }
 
 #[test]
-fn recipe_function_calls_encode_config_recipes() {
+fn recipe_calls_emit_selected_variants_and_ignore_non_variant_args() {
     let mut project = create_project(json!({
         "theme": {
             "recipes": {
@@ -1004,7 +1031,7 @@ fn recipe_variant_runtime_ternaries_encode_all_literal_branches() {
 }
 
 #[test]
-fn recipe_compound_variants_emit_all_on_first_usage() {
+fn using_a_recipe_emits_every_compound_variant_by_default() {
     let mut project = create_project(json!({
         "theme": {
             "recipes": {
@@ -1081,7 +1108,7 @@ fn recipe_compound_variants_emit_all_on_first_usage() {
 }
 
 #[test]
-fn recipe_compound_variants_emit_only_when_selected_with_smart_mode() {
+fn smart_compound_variants_emit_only_the_selected_combination() {
     let mut project = create_project(json!({
         "optimize": { "smartCompoundVariants": true },
         "theme": {
@@ -1152,7 +1179,7 @@ fn recipe_compound_variants_emit_only_when_selected_with_smart_mode() {
 }
 
 #[test]
-fn recipe_compound_variants_emit_runtime_combo_with_eager_mode() {
+fn compound_variant_emits_by_default_even_when_its_combination_is_not_selected() {
     let mut project = create_project(json!({
         "theme": {
             "recipes": {
@@ -1207,9 +1234,9 @@ fn recipe_compound_variants_emit_runtime_combo_with_eager_mode() {
     ");
 }
 
-#[test]
-fn recipe_compound_variant_array_value_means_any_of() {
-    let config = json!({
+/// Smart compound mode, one compound variant for `size: ["sm", "md"]`.
+fn badge_with_compound_for_sm_or_md() -> pandacss_project::Project {
+    create_project(json!({
         "optimize": {
             "smartCompoundVariants": true
         },
@@ -1232,10 +1259,12 @@ fn recipe_compound_variant_array_value_means_any_of() {
                 }
             }
         }
-    });
-    let mut project = create_project(config.clone());
+    }))
+}
 
-    // `md` is included in `["sm", "md"]`, so the compound group is emitted.
+#[test]
+fn compound_variant_listing_several_values_emits_when_any_is_selected() {
+    let mut project = badge_with_compound_for_sm_or_md();
     project.parse_file(
         "fixture.ts",
         indoc! {r"
@@ -1264,9 +1293,11 @@ fn recipe_compound_variant_array_value_means_any_of() {
             conditions: []
     atomic: []
     ");
+}
 
-    let mut project = create_project(config);
-    // `lg` is not included in `["sm", "md"]`, so the compound group is skipped.
+#[test]
+fn compound_variant_listing_several_values_is_skipped_when_none_is_selected() {
+    let mut project = badge_with_compound_for_sm_or_md();
     project.parse_file(
         "fixture.ts",
         indoc! {r"
@@ -1290,7 +1321,7 @@ fn recipe_compound_variant_array_value_means_any_of() {
 }
 
 #[test]
-fn recipe_compound_variants_emit_unconditional_atoms_by_default() {
+fn compound_variant_ignores_responsive_selection_conditions_by_default() {
     let mut project = create_project(json!({
         "theme": {
             "breakpoints": {
@@ -1366,7 +1397,7 @@ fn recipe_compound_variants_emit_unconditional_atoms_by_default() {
 }
 
 #[test]
-fn recipe_compound_variants_inherit_selected_conditions_with_smart_mode() {
+fn smart_compound_variant_inherits_the_responsive_condition_of_its_selection() {
     let mut project = create_project(json!({
         "optimize": { "smartCompoundVariants": true },
         "theme": {
@@ -1445,7 +1476,7 @@ fn recipe_compound_variants_inherit_selected_conditions_with_smart_mode() {
 }
 
 #[test]
-fn recipe_compound_variants_combine_selected_conditions_with_smart_mode() {
+fn smart_compound_variant_combines_the_conditions_of_its_selections() {
     let mut project = create_project(json!({
         "optimize": { "smartCompoundVariants": true },
         "theme": {
@@ -1928,7 +1959,7 @@ fn slot_recipe_base_and_variants_preserve_nested_conditions() {
 }
 
 #[test]
-fn slot_recipe_compound_variants_emit_all_on_first_usage() {
+fn using_a_slot_recipe_emits_every_compound_variant_by_default() {
     let mut project = create_project(json!({
         "theme": {
             "slotRecipes": {
@@ -2015,7 +2046,7 @@ fn slot_recipe_compound_variants_emit_all_on_first_usage() {
 }
 
 #[test]
-fn slot_recipe_compound_variants_emit_only_when_selected_with_smart_mode() {
+fn smart_slot_compound_variants_emit_only_the_selected_combination() {
     let mut project = create_project(json!({
         "optimize": { "smartCompoundVariants": true },
         "theme": {
@@ -2095,13 +2126,9 @@ fn slot_recipe_compound_variants_emit_only_when_selected_with_smart_mode() {
     "#);
 }
 
-#[test]
-#[allow(
-    clippy::too_many_lines,
-    reason = "exhaustive compound-variant CSS fixture"
-)]
-fn slot_recipe_compound_variant_array_value_means_any_of() {
-    let config = json!({
+/// Smart compound mode, one slot compound variant for `size: ["sm", "md"], active: true`.
+fn tabs_with_compound_for_sm_or_md() -> pandacss_project::Project {
+    create_project(json!({
         "optimize": {
             "smartCompoundVariants": true
         },
@@ -2139,9 +2166,12 @@ fn slot_recipe_compound_variant_array_value_means_any_of() {
                 }
             }
         }
-    });
-    let mut project = create_project(config.clone());
+    }))
+}
 
+#[test]
+fn slot_compound_variant_listing_several_values_emits_when_any_is_selected() {
+    let mut project = tabs_with_compound_for_sm_or_md();
     project.parse_file(
         "fixture.ts",
         indoc! {r"
@@ -2177,8 +2207,11 @@ fn slot_recipe_compound_variant_array_value_means_any_of() {
             conditions: []
     atomic: []
     "#);
+}
 
-    let mut project = create_project(config);
+#[test]
+fn slot_compound_variant_listing_several_values_is_skipped_when_none_is_selected() {
+    let mut project = tabs_with_compound_for_sm_or_md();
     project.parse_file(
         "fixture.ts",
         indoc! {r"

@@ -1,12 +1,9 @@
 use insta::assert_snapshot;
-use pandacss_encoder::EncodedRecipesSnapshot;
 use pandacss_project::{Project, System};
 use pandacss_shared::DiagnosticSeverity;
-use pandacss_stylesheet::{
-    StylesheetInput, StylesheetLayer, StylesheetOptions, UtilityStyleOverrides,
-};
+use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
-use crate::common::{compile_css, compile_output, config};
+use crate::common::{compile_css, compile_output, config, empty_input, project_input};
 
 fn compile_project_output(
     project: &mut Project,
@@ -14,19 +11,7 @@ fn compile_project_output(
 ) -> pandacss_stylesheet::StylesheetOutput {
     let snapshots = project.stylesheet_snapshots(config);
     pandacss_stylesheet::compile(
-        StylesheetInput {
-            config,
-            token_dictionary: None,
-            atoms: snapshots.atoms,
-            utility_styles: snapshots.utility_styles,
-            view_transitions: &[],
-            position_try: &[],
-            inline_keyframes: &[],
-            encoded_recipes: snapshots.encoded_recipes,
-            static_encoded_recipes: Some(snapshots.static_encoded_recipes),
-            static_pattern_atoms: &[],
-            token_refs: snapshots.token_refs,
-        },
+        project_input(config, &snapshots),
         &StylesheetOptions {
             include_static: true,
             ..StylesheetOptions::default()
@@ -766,7 +751,7 @@ fn emits_nested_semantic_token_conditions() {
 }
 
 #[test]
-fn get_layer_css_concatenates_layers_without_extra_blank_line() {
+fn requested_layers_join_without_a_blank_line_between_them() {
     let config = config(serde_json::json!({
         "globalVars": {
             "--brand": "red"
@@ -779,29 +764,7 @@ fn get_layer_css_concatenates_layers_without_extra_blank_line() {
             }
         }
     }));
-    let recipes = EncodedRecipesSnapshot {
-        base: Vec::new(),
-        variants: Vec::new(),
-        compounds: Vec::new(),
-        atomic: Vec::new(),
-    };
-    let empty_utility_styles = UtilityStyleOverrides::default();
-    let output = pandacss_stylesheet::compile(
-        StylesheetInput {
-            config: &config,
-            token_dictionary: None,
-            atoms: &[],
-            utility_styles: &empty_utility_styles,
-            view_transitions: &[],
-            position_try: &[],
-            inline_keyframes: &[],
-            encoded_recipes: &recipes,
-            static_encoded_recipes: None,
-            static_pattern_atoms: &[],
-            token_refs: &[],
-        },
-        &StylesheetOptions::default(),
-    );
+    let output = pandacss_stylesheet::compile(empty_input(&config), &StylesheetOptions::default());
     let css = output.get_layer_css(&[StylesheetLayer::Base, StylesheetLayer::Tokens]);
     assert_snapshot!(css, @"
     @layer base {
@@ -832,29 +795,7 @@ fn token_build_errors_are_reported_as_diagnostics() {
             }
         }
     }));
-    let recipes = EncodedRecipesSnapshot {
-        base: Vec::new(),
-        variants: Vec::new(),
-        compounds: Vec::new(),
-        atomic: Vec::new(),
-    };
-    let empty_utility_styles = UtilityStyleOverrides::default();
-    let output = pandacss_stylesheet::compile(
-        StylesheetInput {
-            config: &config,
-            token_dictionary: None,
-            atoms: &[],
-            utility_styles: &empty_utility_styles,
-            view_transitions: &[],
-            position_try: &[],
-            inline_keyframes: &[],
-            encoded_recipes: &recipes,
-            static_encoded_recipes: None,
-            static_pattern_atoms: &[],
-            token_refs: &[],
-        },
-        &StylesheetOptions::default(),
-    );
+    let output = pandacss_stylesheet::compile(empty_input(&config), &StylesheetOptions::default());
     let diagnostics = output
         .diagnostics
         .iter()

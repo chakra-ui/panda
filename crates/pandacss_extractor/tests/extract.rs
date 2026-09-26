@@ -5,9 +5,7 @@ use pandacss_extractor::{JsxExtractionConfig, extract, extract_debug, extract_tr
 use pandacss_literal::Literal;
 
 #[test]
-fn single_pass_extract_combines_calls_and_jsx() {
-    // One source containing imports, matched calls, unmatched calls, and JSX.
-    // The combined entrypoint should produce all four sections from one parse.
+fn debug_extract_reports_imports_matches_calls_and_jsx_together() {
     assert_yaml_snapshot!(
         extract_debug(
             indoc! {r#"
@@ -86,7 +84,7 @@ fn single_pass_extract_combines_calls_and_jsx() {
 }
 
 #[test]
-fn extract_with_namespace() {
+fn namespace_import_extracts_css_and_cva_calls() {
     assert_yaml_snapshot!(
         extract_debug(
             indoc! {r#"
@@ -144,12 +142,7 @@ fn extract_with_namespace() {
 }
 
 #[test]
-fn extract_skips_visitor_work_when_no_panda_imports_match() {
-    // Fast path: a file with no Panda imports produces no calls and no
-    // JSX (Panda's JSX matchers require imported components like
-    // `styled` / `Box`), so we skip building the resolver and walking
-    // both visitors entirely. Behaviour-only assertion — the speedup
-    // belongs in the bench harness.
+fn file_without_panda_imports_extracts_nothing() {
     let result = extract(
         indoc! {r#"
             import { useState } from "react"
@@ -169,9 +162,7 @@ fn extract_skips_visitor_work_when_no_panda_imports_match() {
 }
 
 #[test]
-fn extract_surfaces_parse_errors_even_with_no_panda_imports() {
-    // The fast-path skip mustn't swallow parse diagnostics — a syntax
-    // error in a Panda-free file still surfaces as a diagnostic.
+fn parse_error_in_file_without_panda_imports_still_surfaces() {
     let result = extract(
         "import { useState } from 'react'\nconst x = ;",
         "fixture.tsx",
@@ -181,7 +172,7 @@ fn extract_surfaces_parse_errors_even_with_no_panda_imports() {
 }
 
 #[test]
-fn extract_debug_skips_work_but_keeps_unmatched_imports() {
+fn debug_extract_keeps_non_panda_imports_when_nothing_matches() {
     assert_yaml_snapshot!(
         extract_debug(
             indoc! {r#"
@@ -216,19 +207,25 @@ fn extract_debug_skips_work_but_keeps_unmatched_imports() {
 }
 
 #[test]
-fn configured_jsx_components_require_jsx_framework() {
+fn configured_jsx_component_is_skipped_without_jsx_framework() {
     let mut jsx = JsxExtractionConfig::default();
     jsx.component_names.insert("Card".into());
 
     let result = extract(
         "<Card color='red' onClick={handler} />",
         "fixture.tsx",
-        &panda_config_with_jsx(jsx.clone()),
+        &panda_config_with_jsx(jsx),
     );
     assert_yaml_snapshot!(extract_shape(&result), @"
     calls: []
     jsx: []
     ");
+}
+
+#[test]
+fn configured_jsx_component_extracts_with_jsx_framework() {
+    let mut jsx = JsxExtractionConfig::default();
+    jsx.component_names.insert("Card".into());
 
     assert_yaml_snapshot!(
         extract(
@@ -262,20 +259,8 @@ fn extract_surfaces_parse_errors() {
 }
 
 #[test]
-fn parse_error_contract_diagnostics_and_partial_extractions() {
-    // Contract: when Oxc encounters a parse error in TSX, it still tries to
-    // recover and emit a partial AST. Our extractors run on whatever AST
-    // Oxc returns, so callers may see extractions AND diagnostics in the
-    // same result. Diagnostics are the authoritative signal: code that
-    // needs strict correctness should check `diagnostics.is_empty()`
-    // before trusting `calls`/`jsx`. Build pipelines that already tolerate
-    // ts-morph's recovery behaviour don't need to change.
-    //
-    // This test asserts the *contract*, not the recovery quality (which is
-    // Oxc-version-dependent). Specifically:
-    //   - a parse error always surfaces at least one diagnostic
-    //   - extractions before the error point are returned when Oxc emits
-    //     them; we don't assert how many or where the cutoff falls.
+fn parse_error_after_a_valid_call_surfaces_a_warning() {
+    // Recovered calls are Oxc-version dependent, so only the diagnostic is asserted.
     let result = extract_debug(
         indoc! {r#"
             import { css } from "@panda/css"
@@ -290,9 +275,6 @@ fn parse_error_contract_diagnostics_and_partial_extractions() {
         "parse error must surface as a diagnostic"
     );
     assert_yaml_snapshot!(result.diagnostics[0].severity, @"warning");
-    // No assertion on `result.calls` — Oxc's recovery may or may not
-    // expose the pre-error css() call depending on parser behaviour.
-    // The point is that the API doesn't crash and surfaces the error.
 }
 
 #[test]
@@ -353,7 +335,7 @@ fn uppercase_component_extracts_with_jsx_framework() {
 }
 
 #[test]
-fn extract_transform_marks_symbols_unresolved_when_extraction_is_skipped() {
+fn transform_extract_marks_symbols_unresolved_when_jsx_is_skipped() {
     // JSX-only matches without a jsx framework skip visitor walks. Transform still
     // gets import records, but must not treat empty binding facts as authoritative.
     let source = indoc! {r#"
@@ -370,7 +352,7 @@ fn extract_transform_marks_symbols_unresolved_when_extraction_is_skipped() {
 }
 
 #[test]
-fn extract_transform_resolves_symbols_for_normal_css_files() {
+fn transform_extract_resolves_symbols_for_css_calls() {
     let source = indoc! {r#"
         import { css } from "@panda/css"
         export const cls = css({ color: "red" })
@@ -440,7 +422,7 @@ fn factory_options_json(source: &str) -> serde_json::Value {
 }
 
 #[test]
-fn styled_default_props_folds_solid_callable_forms() {
+fn styled_default_props_arrow_expression_folds() {
     assert_yaml_snapshot!(
         factory_options_json(indoc! {r#"
             import { styled } from "@panda/jsx"
@@ -451,6 +433,10 @@ fn styled_default_props_folds_solid_callable_forms() {
       marginTop: 8px
     "#
     );
+}
+
+#[test]
+fn styled_default_props_arrow_with_return_folds() {
     assert_yaml_snapshot!(
         factory_options_json(indoc! {r#"
             import { styled } from "@panda/jsx"
@@ -465,6 +451,10 @@ fn styled_default_props_folds_solid_callable_forms() {
       marginTop: 8px
     "#
     );
+}
+
+#[test]
+fn styled_default_props_function_expression_folds() {
     assert_yaml_snapshot!(
         factory_options_json(indoc! {r#"
             import { styled } from "@panda/jsx"
@@ -479,6 +469,10 @@ fn styled_default_props_folds_solid_callable_forms() {
       marginTop: 8px
     "#
     );
+}
+
+#[test]
+fn styled_default_props_named_function_expression_folds() {
     assert_yaml_snapshot!(
         factory_options_json(indoc! {r#"
             import { styled } from "@panda/jsx"
@@ -493,6 +487,10 @@ fn styled_default_props_folds_solid_callable_forms() {
       marginTop: 8px
     "#
     );
+}
+
+#[test]
+fn styled_default_props_method_folds() {
     assert_yaml_snapshot!(
         factory_options_json(indoc! {r#"
             import { styled } from "@panda/jsx"
@@ -507,6 +505,10 @@ fn styled_default_props_folds_solid_callable_forms() {
       marginTop: 8px
     "#
     );
+}
+
+#[test]
+fn styled_default_props_getter_folds() {
     assert_yaml_snapshot!(
         factory_options_json(indoc! {r#"
             import { styled } from "@panda/jsx"
@@ -524,7 +526,7 @@ fn styled_default_props_folds_solid_callable_forms() {
 }
 
 #[test]
-fn styled_default_props_folds_identifier_bound_functions() {
+fn styled_default_props_referencing_a_local_arrow_folds() {
     assert_yaml_snapshot!(
         factory_options_json(indoc! {r#"
             import { styled } from "@panda/jsx"
@@ -536,6 +538,10 @@ fn styled_default_props_folds_identifier_bound_functions() {
       marginTop: 8px
     "#
     );
+}
+
+#[test]
+fn styled_default_props_referencing_a_function_declaration_folds() {
     assert_yaml_snapshot!(
         factory_options_json(indoc! {r#"
             import { styled } from "@panda/jsx"
@@ -551,7 +557,7 @@ fn styled_default_props_folds_identifier_bound_functions() {
     );
 }
 
-fn styled_recipe_ident(source: &str) -> Option<String> {
+fn styled_recipe_name(source: &str) -> Option<String> {
     extract(source, "factory.tsx", &panda_jsx_config())
         .calls
         .iter()
@@ -560,33 +566,45 @@ fn styled_recipe_ident(source: &str) -> Option<String> {
 }
 
 #[test]
-fn styled_recipe_ident_resolves_import_member_and_local_alias() {
+fn styled_with_imported_recipe_records_the_recipe_name() {
     assert_eq!(
-        styled_recipe_ident(indoc! {r#"
+        styled_recipe_name(indoc! {r#"
             import { styled } from "@panda/jsx"
             import { button } from "@panda/recipes"
             styled('div', button, { defaultProps: { size: 'sm' } })
         "#}),
         Some("button".into())
     );
+}
+
+#[test]
+fn styled_with_renamed_recipe_import_records_the_imported_name() {
     assert_eq!(
-        styled_recipe_ident(indoc! {r#"
+        styled_recipe_name(indoc! {r#"
             import { styled } from "@panda/jsx"
             import { button as btn } from "@panda/recipes"
             styled('div', btn, { defaultProps: { size: 'sm' } })
         "#}),
         Some("button".into())
     );
+}
+
+#[test]
+fn styled_with_namespace_recipe_member_records_the_recipe_name() {
     assert_eq!(
-        styled_recipe_ident(indoc! {r#"
+        styled_recipe_name(indoc! {r#"
             import { styled } from "@panda/jsx"
             import * as recipes from "@panda/recipes"
             styled('div', recipes.button, { defaultProps: { size: 'sm' } })
         "#}),
         Some("button".into())
     );
+}
+
+#[test]
+fn styled_with_local_alias_of_a_recipe_records_the_recipe_name() {
     assert_eq!(
-        styled_recipe_ident(indoc! {r#"
+        styled_recipe_name(indoc! {r#"
             import { styled } from "@panda/jsx"
             import { button } from "@panda/recipes"
             const recipe = button
@@ -594,8 +612,12 @@ fn styled_recipe_ident_resolves_import_member_and_local_alias() {
         "#}),
         Some("button".into())
     );
+}
+
+#[test]
+fn styled_with_local_alias_of_a_namespace_member_records_the_recipe_name() {
     assert_eq!(
-        styled_recipe_ident(indoc! {r#"
+        styled_recipe_name(indoc! {r#"
             import { styled } from "@panda/jsx"
             import * as recipes from "@panda/recipes"
             const recipe = recipes.button
@@ -603,8 +625,12 @@ fn styled_recipe_ident_resolves_import_member_and_local_alias() {
         "#}),
         Some("button".into())
     );
+}
+
+#[test]
+fn styled_with_member_of_an_aliased_namespace_records_the_recipe_name() {
     assert_eq!(
-        styled_recipe_ident(indoc! {r#"
+        styled_recipe_name(indoc! {r#"
             import { styled } from "@panda/jsx"
             import * as recipes from "@panda/recipes"
             const r = recipes
@@ -615,9 +641,9 @@ fn styled_recipe_ident_resolves_import_member_and_local_alias() {
 }
 
 #[test]
-fn styled_recipe_ident_skips_mutated_and_deep_members() {
+fn styled_with_reassigned_recipe_binding_records_no_recipe() {
     assert_eq!(
-        styled_recipe_ident(indoc! {r#"
+        styled_recipe_name(indoc! {r#"
             import { styled } from "@panda/jsx"
             import { button } from "@panda/recipes"
             let recipe = button
@@ -626,8 +652,12 @@ fn styled_recipe_ident_skips_mutated_and_deep_members() {
         "#}),
         None
     );
+}
+
+#[test]
+fn styled_with_recipe_raw_member_records_no_recipe() {
     assert_eq!(
-        styled_recipe_ident(indoc! {r#"
+        styled_recipe_name(indoc! {r#"
             import { styled } from "@panda/jsx"
             import * as recipes from "@panda/recipes"
             styled('div', recipes.button.raw, { defaultProps: { size: 'sm' } })

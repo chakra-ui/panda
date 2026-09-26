@@ -211,7 +211,7 @@ mod tests {
     }
 
     #[test]
-    fn named_and_default() {
+    fn named_and_default_imports_select_their_names() {
         assert_eq!(
             collect(
                 "import { Button, Card as C } from '@acme/ds'\nimport B from '@acme/ds'",
@@ -225,11 +225,15 @@ mod tests {
     }
 
     #[test]
-    fn namespace_and_side_effect_are_all() {
+    fn namespace_import_selects_all_exports() {
         assert_eq!(
             collect("import * as DS from '@acme/ds'", &["@acme/ds"], &[]),
             DesignSystemImportSelection::All
         );
+    }
+
+    #[test]
+    fn side_effect_import_selects_all_exports() {
         assert_eq!(
             collect("import '@acme/ds'", &["@acme/ds"], &[]),
             DesignSystemImportSelection::All
@@ -237,7 +241,7 @@ mod tests {
     }
 
     #[test]
-    fn export_from_and_export_all() {
+    fn named_reexport_selects_the_imported_name() {
         assert_eq!(
             collect(
                 "export { Button as Btn } from '@acme/ds'",
@@ -248,6 +252,10 @@ mod tests {
                 names: vec!["Button".into()],
             }
         );
+    }
+
+    #[test]
+    fn export_all_selects_all_exports() {
         assert_eq!(
             collect("export * from '@acme/ds'", &["@acme/ds"], &[]),
             DesignSystemImportSelection::All
@@ -325,7 +333,7 @@ mod tests {
     }
 
     #[test]
-    fn skips_excluded_and_type_only() {
+    fn excluded_modules_and_type_only_imports_select_nothing() {
         assert_eq!(
             collect(
                 "import { css } from '@acme/ds/css'\nimport type { Button } from '@acme/ds'",
@@ -337,7 +345,7 @@ mod tests {
     }
 
     #[test]
-    fn batch_one_scan_two_packages() {
+    fn one_scan_selects_names_for_each_package() {
         let source = "import { Button } from '@acme/ds'\nimport { Stack } from '@acme/base'";
         let selections = collect_design_system_imports_for_packages(
             [("fixture.tsx", source)],
@@ -366,8 +374,12 @@ mod tests {
     }
 
     #[test]
-    fn into_load_imports() {
+    fn all_selection_loads_every_export() {
         assert_eq!(DesignSystemImportSelection::All.into_load_imports(), None);
+    }
+
+    #[test]
+    fn names_selection_loads_only_those_names() {
         assert_eq!(
             DesignSystemImportSelection::Names {
                 names: vec!["Button".into()]
@@ -378,7 +390,7 @@ mod tests {
     }
 
     #[test]
-    fn subpath_imports_collect_stem() {
+    fn subpath_imports_also_select_the_subpath_name() {
         assert_eq!(
             collect(
                 "import Badge from '@acme/ds/badge'\nimport { Panel } from '@acme/ds/panel'",
@@ -397,11 +409,15 @@ mod tests {
     }
 
     #[test]
-    fn dynamic_import_and_require_are_all() {
+    fn dynamic_import_selects_all_exports() {
         assert_eq!(
             collect("const ds = await import('@acme/ds')", &["@acme/ds"], &[]),
             DesignSystemImportSelection::All
         );
+    }
+
+    #[test]
+    fn require_selects_all_exports() {
         assert_eq!(
             collect("const ds = require('@acme/ds')", &["@acme/ds"], &[]),
             DesignSystemImportSelection::All

@@ -5,7 +5,7 @@ use insta::assert_snapshot;
 use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
 #[test]
-fn output_css_with_base() {
+fn base_and_breakpoint_values_emit_mobile_first() {
     let cfg = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
         "theme": {
@@ -41,7 +41,7 @@ fn output_css_with_base() {
 }
 
 #[test]
-fn output_basic_css_usage() {
+fn a_token_value_resolves_to_its_css_var() {
     let cfg = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
         "theme": {
@@ -70,7 +70,7 @@ fn output_basic_css_usage() {
 }
 
 #[test]
-fn output_config_recipe() {
+fn a_recipe_call_emits_base_used_variants_and_matching_compound() {
     let cfg = config(serde_json::json!({
         "importMap": {
             "css": ["@panda/css"],
@@ -150,7 +150,7 @@ fn output_config_recipe() {
 }
 
 #[test]
-fn output_jsx_with_recipe_props() {
+fn a_ts_file_containing_jsx_emits_nothing() {
     let cfg = config(serde_json::json!({
         "importMap": {
             "css": ["@panda/css"],
@@ -201,7 +201,7 @@ fn output_jsx_with_recipe_props() {
 }
 
 #[test]
-fn output_custom_import_map() {
+fn css_imported_through_a_custom_import_map_is_extracted() {
     let cfg = config(serde_json::json!({
         "importMap": {
             "css": ["controlled-import-map/css"],
@@ -247,7 +247,7 @@ fn output_custom_import_map() {
 }
 
 #[test]
-fn output_runtime_conditions() {
+fn a_const_ternary_emits_only_the_branch_it_folds_to() {
     let cfg = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
         "theme": {
@@ -281,7 +281,7 @@ fn output_runtime_conditions() {
 }
 
 #[test]
-fn output_array_syntax() {
+fn a_single_item_responsive_array_emits_the_base_value() {
     let cfg = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
         "theme": {

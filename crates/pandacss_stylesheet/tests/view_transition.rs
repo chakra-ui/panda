@@ -1,30 +1,29 @@
-use crate::common::{compile_layer_css, compile_output, config};
+use crate::common::{compile_layer_css, compile_output, config, empty_input};
 use indoc::indoc;
 use insta::assert_snapshot;
-use pandacss_encoder::EncodedRecipesSnapshot;
+use pandacss_config::UserConfig;
 use pandacss_stylesheet::{
-    StylesheetInput, StylesheetLayer, StylesheetOptions, UtilityStyleOverrides, ViewTransitionStyle,
+    StylesheetInput, StylesheetLayer, StylesheetOptions, ViewTransitionStyle,
 };
 use serde_json::json;
 
-fn empty_recipes() -> EncodedRecipesSnapshot {
-    EncodedRecipesSnapshot {
-        base: Vec::new(),
-        variants: Vec::new(),
-        compounds: Vec::new(),
-        atomic: Vec::new(),
-    }
+fn utilities_css(cfg: &UserConfig, style: ViewTransitionStyle) -> String {
+    pandacss_stylesheet::compile(
+        StylesheetInput {
+            view_transitions: &[style],
+            ..empty_input(cfg)
+        },
+        &StylesheetOptions {
+            emit_layer_declaration: true,
+            ..StylesheetOptions::default()
+        },
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities])
 }
 
 #[test]
-fn emits_bag_class_and_functional_pseudos() {
-    let cfg = config(json!({
-        "outdir": "styled-system",
-        "include": [],
-        "exclude": [],
-        "jsxFramework": "react",
-        "preflight": false,
-    }));
+fn a_view_transition_emits_a_class_and_one_pseudo_rule_per_phase() {
+    let cfg = config(json!({}));
     let options = json!({
         "group": {
             "animationDuration": "0.4s",
@@ -34,29 +33,8 @@ fn emits_bag_class_and_functional_pseudos() {
         "new": { "animationName": "slideInRight" },
     });
     let style = ViewTransitionStyle::from_options(&options, "");
-    let recipes = empty_recipes();
-    let empty_utility_styles = UtilityStyleOverrides::default();
-    let output = pandacss_stylesheet::compile(
-        StylesheetInput {
-            config: &cfg,
-            token_dictionary: None,
-            atoms: &[],
-            utility_styles: &empty_utility_styles,
-            view_transitions: &[style],
-            position_try: &[],
-            inline_keyframes: &[],
-            encoded_recipes: &recipes,
-            static_encoded_recipes: None,
-            static_pattern_atoms: &[],
-            token_refs: &[],
-        },
-        &StylesheetOptions {
-            emit_layer_declaration: true,
-            ..StylesheetOptions::default()
-        },
-    );
 
-    assert_snapshot!(output.get_layer_css(&[StylesheetLayer::Utilities]), @r"
+    assert_snapshot!(utilities_css(&cfg, style), @r"
     @layer utilities {
       .vt_kcBjZF {
         view-transition-class: vt_kcBjZF;
@@ -76,14 +54,8 @@ fn emits_bag_class_and_functional_pseudos() {
 }
 
 #[test]
-fn emits_image_pair_slot() {
-    let cfg = config(json!({
-        "outdir": "styled-system",
-        "include": [],
-        "exclude": [],
-        "jsxFramework": "react",
-        "preflight": false,
-    }));
+fn image_pair_styles_target_the_image_pair_pseudo() {
+    let cfg = config(json!({}));
     let style = ViewTransitionStyle::from_options(
         &json!({
             "imagePair": { "isolation": "isolate" },
@@ -91,29 +63,8 @@ fn emits_image_pair_slot() {
         }),
         "",
     );
-    let recipes = empty_recipes();
-    let empty_utility_styles = UtilityStyleOverrides::default();
-    let output = pandacss_stylesheet::compile(
-        StylesheetInput {
-            config: &cfg,
-            token_dictionary: None,
-            atoms: &[],
-            utility_styles: &empty_utility_styles,
-            view_transitions: &[style],
-            position_try: &[],
-            inline_keyframes: &[],
-            encoded_recipes: &recipes,
-            static_encoded_recipes: None,
-            static_pattern_atoms: &[],
-            token_refs: &[],
-        },
-        &StylesheetOptions {
-            emit_layer_declaration: true,
-            ..StylesheetOptions::default()
-        },
-    );
 
-    assert_snapshot!(output.get_layer_css(&[StylesheetLayer::Utilities]), @r"
+    assert_snapshot!(utilities_css(&cfg, style), @r"
     @layer utilities {
       .vt_hAXJbB {
         view-transition-class: vt_hAXJbB;
@@ -129,20 +80,9 @@ fn emits_image_pair_slot() {
 }
 
 #[test]
-fn extracts_from_source_via_project() {
+fn a_view_transition_call_in_source_emits_its_class_and_pseudos() {
     let cfg = config(json!({
-        "outdir": "styled-system",
-        "include": [],
-        "exclude": [],
-        "jsxFramework": "react",
-        "preflight": false,
-        "importMap": {
-            "css": ["@panda/css"],
-            "recipe": [],
-            "pattern": [],
-            "jsx": [],
-            "tokens": []
-        },
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
     }));
     let source = indoc! {"
         import { viewTransition } from '@panda/css'
@@ -178,21 +118,10 @@ fn extracts_from_source_via_project() {
 }
 
 #[test]
-fn optimize_keyframes_keeps_view_transition_references() {
+fn keyframe_pruning_keeps_keyframes_a_view_transition_uses() {
     let cfg = config(json!({
-        "outdir": "styled-system",
-        "include": [],
-        "exclude": [],
-        "jsxFramework": "react",
-        "preflight": false,
         "optimize": { "removeUnusedKeyframes": true },
-        "importMap": {
-            "css": ["@panda/css"],
-            "recipe": [],
-            "pattern": [],
-            "jsx": [],
-            "tokens": []
-        },
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
         "theme": {
             "keyframes": {
                 "slideOutLeft": {
@@ -246,40 +175,14 @@ fn optimize_keyframes_keeps_view_transition_references() {
 }
 
 #[test]
-fn applies_prefix_to_class_and_property() {
+fn prefix_applies_to_the_view_transition_class() {
     let cfg = config(json!({
-        "outdir": "styled-system",
-        "include": [],
-        "exclude": [],
-        "jsxFramework": "react",
-        "preflight": false,
         "prefix": "p",
     }));
     let style =
         ViewTransitionStyle::from_options(&json!({ "old": { "animationName": "fade" } }), "p");
-    let recipes = empty_recipes();
-    let empty_utility_styles = UtilityStyleOverrides::default();
-    let output = pandacss_stylesheet::compile(
-        StylesheetInput {
-            config: &cfg,
-            token_dictionary: None,
-            atoms: &[],
-            utility_styles: &empty_utility_styles,
-            view_transitions: &[style],
-            position_try: &[],
-            inline_keyframes: &[],
-            encoded_recipes: &recipes,
-            static_encoded_recipes: None,
-            static_pattern_atoms: &[],
-            token_refs: &[],
-        },
-        &StylesheetOptions {
-            emit_layer_declaration: true,
-            ..StylesheetOptions::default()
-        },
-    );
 
-    assert_snapshot!(output.get_layer_css(&[StylesheetLayer::Utilities]), @r"
+    assert_snapshot!(utilities_css(&cfg, style), @r"
     @layer utilities {
       .p-vt_iYkyvX {
         view-transition-class: p-vt_iYkyvX;
@@ -292,20 +195,9 @@ fn applies_prefix_to_class_and_property() {
 }
 
 #[test]
-fn emits_named_theme_view_transition_when_used() {
+fn a_theme_view_transition_emits_when_used_by_name() {
     let cfg = config(json!({
-        "outdir": "styled-system",
-        "include": [],
-        "exclude": [],
-        "jsxFramework": "react",
-        "preflight": false,
-        "importMap": {
-            "css": ["@panda/css"],
-            "recipe": [],
-            "pattern": [],
-            "jsx": [],
-            "tokens": []
-        },
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
         "theme": {
             "viewTransitions": {
                 "slide": {
@@ -347,20 +239,9 @@ fn emits_named_theme_view_transition_when_used() {
 }
 
 #[test]
-fn skips_unused_theme_view_transition() {
+fn an_unused_theme_view_transition_emits_nothing() {
     let cfg = config(json!({
-        "outdir": "styled-system",
-        "include": [],
-        "exclude": [],
-        "jsxFramework": "react",
-        "preflight": false,
-        "importMap": {
-            "css": ["@panda/css"],
-            "recipe": [],
-            "pattern": [],
-            "jsx": [],
-            "tokens": []
-        },
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
         "theme": {
             "viewTransitions": {
                 "slide": { "old": { "opacity": 0 } },
@@ -379,21 +260,10 @@ fn skips_unused_theme_view_transition() {
 }
 
 #[test]
-fn named_theme_view_transition_marks_keyframes() {
+fn keyframe_pruning_keeps_keyframes_a_theme_view_transition_uses() {
     let cfg = config(json!({
-        "outdir": "styled-system",
-        "include": [],
-        "exclude": [],
-        "jsxFramework": "react",
-        "preflight": false,
         "optimize": { "removeUnusedKeyframes": true },
-        "importMap": {
-            "css": ["@panda/css"],
-            "recipe": [],
-            "pattern": [],
-            "jsx": [],
-            "tokens": []
-        },
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
         "theme": {
             "keyframes": {
                 "slideOutLeft": {
@@ -422,21 +292,10 @@ fn named_theme_view_transition_marks_keyframes() {
 }
 
 #[test]
-fn emits_prefixed_named_theme_view_transition() {
+fn prefix_applies_to_a_theme_view_transition() {
     let cfg = config(json!({
-        "outdir": "styled-system",
-        "include": [],
-        "exclude": [],
-        "jsxFramework": "react",
-        "preflight": false,
         "prefix": "p",
-        "importMap": {
-            "css": ["@panda/css"],
-            "recipe": [],
-            "pattern": [],
-            "jsx": [],
-            "tokens": []
-        },
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
         "theme": {
             "viewTransitions": {
                 "slide": { "old": { "opacity": 0 } }
@@ -456,20 +315,9 @@ fn emits_prefixed_named_theme_view_transition() {
 }
 
 #[test]
-fn folded_const_name_emits_theme_bag() {
+fn a_theme_view_transition_named_through_a_const_still_emits() {
     let cfg = config(json!({
-        "outdir": "styled-system",
-        "include": [],
-        "exclude": [],
-        "jsxFramework": "react",
-        "preflight": false,
-        "importMap": {
-            "css": ["@panda/css"],
-            "recipe": [],
-            "pattern": [],
-            "jsx": [],
-            "tokens": []
-        },
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
         "theme": {
             "viewTransitions": {
                 "slide": { "old": { "opacity": 0 } }
@@ -487,20 +335,9 @@ fn folded_const_name_emits_theme_bag() {
 }
 
 #[test]
-fn unbound_dynamic_name_does_not_emit_theme_bag() {
+fn a_theme_view_transition_named_by_an_unknown_variable_emits_nothing() {
     let cfg = config(json!({
-        "outdir": "styled-system",
-        "include": [],
-        "exclude": [],
-        "jsxFramework": "react",
-        "preflight": false,
-        "importMap": {
-            "css": ["@panda/css"],
-            "recipe": [],
-            "pattern": [],
-            "jsx": [],
-            "tokens": []
-        },
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
         "theme": {
             "viewTransitions": {
                 "slide": { "old": { "opacity": 0 } }

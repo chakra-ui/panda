@@ -1,18 +1,120 @@
-use super::common::{
-    project_with_config_slot_recipe, project_with_prefixed_recipes, project_with_rich_recipes,
-    transform_recipes, transform_with_options,
-};
+//! Config recipe and slot recipe calls.
+//!
+//! `transform_recipes` uses a `button` with only a `size` variant (default `md`).
+//! `transform_with_button` uses the fuller `button` below.
+
+use super::common::{create_config, transform_recipes, transform_with_options};
 use indoc::indoc;
 use insta::assert_snapshot;
-use pandacss_project::{Project, TransformOptions, TransformTargets, transform_source};
+use pandacss_project::{
+    Project, System, TransformOptions, TransformOutput, TransformTargets, transform_source,
+};
+use serde_json::json;
 
-/// Transform with all default targets on, the shape a real build sees.
-fn transform_button(project: &Project, source: &str) -> pandacss_project::TransformOutput {
+fn transform_with_default_targets(project: &Project, source: &str) -> TransformOutput {
     transform_source(
         project,
         "src/button.tsx",
         source,
         &TransformOptions::default(),
+    )
+}
+
+fn transform_with_button(source: &str) -> TransformOutput {
+    let project = Project::new(
+        System::new(create_config(json!({
+            "theme": {
+                "recipes": {
+                    "button": {
+                        "className": "button",
+                        "base": { "display": "inline-flex" },
+                        "defaultVariants": { "size": "md", "variant": "solid" },
+                        "variants": {
+                            "size": {
+                                "sm": { "fontSize": "12px" },
+                                "md": { "fontSize": "16px" },
+                                "lg": { "fontSize": "18px" }
+                            },
+                            "variant": {
+                                "solid": { "color": "white" },
+                                "outline": { "color": "blue" }
+                            },
+                            "block": {
+                                "true": { "display": "flex" }
+                            }
+                        },
+                        "compoundVariants": [
+                            { "size": "sm", "variant": "outline", "css": { "padding": "2px" } }
+                        ]
+                    }
+                }
+            }
+        })))
+        .expect("config"),
+    );
+    transform_with_default_targets(&project, source)
+}
+
+fn transform_with_tabs(source: &str) -> TransformOutput {
+    let project = Project::new(
+        System::new(create_config(json!({
+            "theme": {
+                "slotRecipes": {
+                    "tabs": {
+                        "className": "tabs",
+                        "slots": ["root", "trigger", "indicator"],
+                        "base": {
+                            "root": { "display": "flex" },
+                            "trigger": { "color": "blue" }
+                        },
+                        "defaultVariants": { "size": "lg" },
+                        "variants": {
+                            "size": {
+                                "sm": { "root": { "gap": "4px" }, "trigger": { "fontSize": "12px" } },
+                                "lg": { "root": { "gap": "8px" }, "trigger": { "fontSize": "16px" } }
+                            },
+                            "fitted": {
+                                "true": { "trigger": { "flex": "1" } }
+                            }
+                        },
+                        "compoundVariants": [
+                            { "size": "sm", "fitted": true, "css": { "trigger": { "padding": "0" } } }
+                        ]
+                    }
+                }
+            }
+        })))
+        .expect("config"),
+    );
+    transform_with_default_targets(&project, source)
+}
+
+fn prefixed_button_and_tabs(hash: bool) -> Project {
+    Project::new(
+        System::new(create_config(json!({
+            "prefix": "pd",
+            "hash": hash,
+            "theme": {
+                "recipes": {
+                    "button": {
+                        "className": "button",
+                        "base": { "display": "flex" },
+                        "variants": { "size": { "sm": { "padding": "4px" } }, "block": { "true": { "width": "100%" } } },
+                        "compoundVariants": [{ "size": "sm", "block": true, "css": { "gap": "0" } }]
+                    }
+                },
+                "slotRecipes": {
+                    "tabs": {
+                        "className": "tabs",
+                        "slots": ["root", "trigger"],
+                        "base": { "root": { "display": "flex" } },
+                        "variants": { "size": { "sm": { "root": { "gap": "4px" } } } },
+                        "compoundVariants": [{ "size": "sm", "css": { "trigger": { "padding": "0" } } }]
+                    }
+                }
+            }
+        })))
+        .expect("config"),
     )
 }
 
@@ -66,7 +168,7 @@ fn selects_multiple_variants_in_one_call() {
         export const cls = button({ size: 'lg', variant: 'outline' });
     "#};
 
-    let output = transform_button(&project_with_rich_recipes(), source);
+    let output = transform_with_button(source);
 
     assert!(output.changed);
     assert!(!output.bailed);
@@ -80,7 +182,7 @@ fn overrides_a_single_default_variant() {
         export const cls = button({ variant: 'outline' });
     "#};
 
-    let output = transform_button(&project_with_rich_recipes(), source);
+    let output = transform_with_button(source);
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"export const cls = "button button--size_md button--variant_outline";"#);
@@ -93,7 +195,7 @@ fn applies_boolean_variant() {
         export const cls = button({ block: true });
     "#};
 
-    let output = transform_button(&project_with_rich_recipes(), source);
+    let output = transform_with_button(source);
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"export const cls = "button button--block_true button--size_md button--variant_solid";"#);
@@ -106,7 +208,7 @@ fn applies_compound_variant_when_combination_matches() {
         export const cls = button({ size: 'sm', variant: 'outline' });
     "#};
 
-    let output = transform_button(&project_with_rich_recipes(), source);
+    let output = transform_with_button(source);
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"export const cls = "button button--size_sm button--variant_outline button--compound__size_sm__variant_outline";"#);
@@ -119,7 +221,7 @@ fn omits_compound_variant_when_combination_does_not_match() {
         export const cls = button({ size: 'lg', variant: 'outline' });
     "#};
 
-    let output = transform_button(&project_with_rich_recipes(), source);
+    let output = transform_with_button(source);
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"export const cls = "button button--size_lg button--variant_outline";"#);
@@ -133,7 +235,7 @@ fn rewrites_two_recipe_calls_in_one_file() {
         export const large = button({ size: 'lg' });
     "#};
 
-    let output = transform_button(&project_with_rich_recipes(), source);
+    let output = transform_with_button(source);
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
@@ -177,7 +279,7 @@ fn rewrites_variant_ternary_with_defaults_as_class_expression() {
         export const cls = button({ size: isSmall ? 'sm' : 'lg' });
     "#};
 
-    let output = transform_button(&project_with_rich_recipes(), source);
+    let output = transform_with_button(source);
 
     assert!(output.changed);
     assert!(!output.bailed);
@@ -196,7 +298,7 @@ fn rewrites_two_conditional_variants_as_a_decision_tree() {
         export const cls = button({ size: isSmall ? 'sm' : 'lg', variant: isSolid ? 'solid' : 'outline' });
     "#};
 
-    let output = transform_button(&project_with_rich_recipes(), source);
+    let output = transform_with_button(source);
 
     assert!(output.changed);
     assert!(!output.bailed);
@@ -217,7 +319,7 @@ fn rewrites_three_conditional_variants_as_a_decision_tree() {
         });
     "#};
 
-    let output = transform_button(&project_with_rich_recipes(), source);
+    let output = transform_with_button(source);
 
     assert!(output.changed);
     assert!(!output.bailed);
@@ -242,7 +344,7 @@ fn leaves_too_many_conditional_props_to_runtime() {
         });
     "#};
 
-    let output = transform_button(&project_with_rich_recipes(), source);
+    let output = transform_with_button(source);
 
     assert!(!output.changed);
     assert!(!output.bailed);
@@ -256,7 +358,7 @@ fn rewrites_variant_ternary_that_reaches_a_compound_variant() {
         export const cls = button({ variant: 'outline', size: isSmall ? 'sm' : 'md' });
     "#};
 
-    let output = transform_button(&project_with_rich_recipes(), source);
+    let output = transform_with_button(source);
 
     assert!(output.changed);
     assert!(!output.bailed);
@@ -275,7 +377,7 @@ fn leaves_logical_and_variant_to_runtime() {
         export const cls = button({ size: isSmall && 'sm' });
     "#};
 
-    let output = transform_button(&project_with_rich_recipes(), source);
+    let output = transform_with_button(source);
 
     assert!(!output.changed);
     assert!(!output.bailed);
@@ -289,7 +391,7 @@ fn rewrites_logical_and_variant_spread() {
         export const cls = button({ ...(isSmall && { size: 'sm' }) });
     "#};
 
-    let output = transform_button(&project_with_rich_recipes(), source);
+    let output = transform_with_button(source);
 
     assert!(output.changed);
     assert!(!output.bailed);
@@ -306,7 +408,7 @@ fn rewrites_spread_ternary_selecting_different_variants() {
         export const cls = button({ ...(isSmall ? { size: 'sm' } : { variant: 'outline' }) });
     "#};
 
-    let output = transform_button(&project_with_rich_recipes(), source);
+    let output = transform_with_button(source);
 
     assert!(output.changed);
     assert!(!output.bailed);
@@ -323,7 +425,7 @@ fn rewrites_static_variant_beside_conditional_spread() {
         export const cls = button({ variant: 'outline', ...(isSmall && { size: 'sm' }) });
     "#};
 
-    let output = transform_button(&project_with_rich_recipes(), source);
+    let output = transform_with_button(source);
 
     assert!(output.changed);
     assert!(!output.bailed);
@@ -340,7 +442,7 @@ fn rewrites_boolean_variant_ternary() {
         export const cls = button({ block: isWide ? true : false });
     "#};
 
-    let output = transform_button(&project_with_rich_recipes(), source);
+    let output = transform_with_button(source);
 
     assert!(output.changed);
     assert!(!output.bailed);
@@ -357,7 +459,7 @@ fn rewrites_nested_variant_ternary() {
         export const cls = button({ size: isSmall ? 'sm' : isMedium ? 'md' : 'lg' });
     "#};
 
-    let output = transform_button(&project_with_rich_recipes(), source);
+    let output = transform_with_button(source);
 
     assert!(output.changed);
     assert!(!output.bailed);
@@ -376,7 +478,7 @@ fn rewrites_variant_ternary_with_an_unknown_option() {
         export const cls = button({ size: isSmall ? 'sm' : 'nope' });
     "#};
 
-    let output = transform_button(&project_with_rich_recipes(), source);
+    let output = transform_with_button(source);
 
     assert!(output.changed);
     assert!(!output.bailed);
@@ -395,7 +497,7 @@ fn rewrites_conditional_on_a_non_variant_key() {
         export const cls = button({ size: 'sm', tone: isDark ? 1 : 2 });
     "#};
 
-    let output = transform_button(&project_with_rich_recipes(), source);
+    let output = transform_with_button(source);
 
     assert!(output.changed);
     assert!(!output.bailed);
@@ -413,7 +515,7 @@ fn leaves_responsive_variant_arm_to_runtime() {
         export const cls = button({ size: isSmall ? { base: 'sm', md: 'lg' } : 'sm' });
     "#};
 
-    let output = transform_button(&project_with_rich_recipes(), source);
+    let output = transform_with_button(source);
 
     assert!(!output.changed);
     assert!(!output.bailed);
@@ -427,7 +529,7 @@ fn rewrites_conditional_variant_beside_conditional_spread() {
         export const cls = button({ size: isSmall ? 'sm' : 'lg', ...(isOutline && { variant: 'outline' }) });
     "#};
 
-    let output = transform_button(&project_with_rich_recipes(), source);
+    let output = transform_with_button(source);
 
     assert!(output.changed);
     assert!(!output.bailed);
@@ -444,7 +546,7 @@ fn leaves_conditional_variant_with_extra_argument_to_runtime() {
         export const cls = button({ size: isSmall ? 'sm' : 'lg' }, overrides);
     "#};
 
-    let output = transform_button(&project_with_rich_recipes(), source);
+    let output = transform_with_button(source);
 
     assert!(!output.changed);
     assert!(!output.bailed);
@@ -458,7 +560,7 @@ fn leaves_unknown_recipe_call_unchanged() {
         export const cls = badge({ size: 'sm' });
     "#};
 
-    let output = transform_button(&project_with_rich_recipes(), source);
+    let output = transform_with_button(source);
 
     assert!(!output.changed);
     assert_eq!(output.code, source);
@@ -471,7 +573,7 @@ fn rewrites_a_slot_recipe_call_to_an_object_of_slot_classes() {
         export const classes = tabs({ size: 'sm' });
     "#};
 
-    let output = transform_button(&project_with_config_slot_recipe(), source);
+    let output = transform_with_tabs(source);
 
     assert!(output.changed);
     assert!(!output.bailed);
@@ -485,7 +587,7 @@ fn applies_slot_recipe_default_variants() {
         export const classes = tabs();
     "#};
 
-    let output = transform_button(&project_with_config_slot_recipe(), source);
+    let output = transform_with_tabs(source);
 
     assert_snapshot!(output.code, @r#"export const classes = { root: "tabs__root tabs__root--size_lg", trigger: "tabs__trigger tabs__trigger--size_lg", indicator: "tabs__indicator tabs__indicator--size_lg" };"#);
 }
@@ -497,7 +599,7 @@ fn applies_a_slot_compound_variant_only_to_the_slots_it_styles() {
         export const classes = tabs({ size: 'sm', fitted: true });
     "#};
 
-    let output = transform_button(&project_with_config_slot_recipe(), source);
+    let output = transform_with_tabs(source);
 
     assert_snapshot!(output.code, @r#"export const classes = { root: "tabs__root tabs__root--fitted_true tabs__root--size_sm", trigger: "tabs__trigger tabs__trigger--fitted_true tabs__trigger--size_sm tabs__trigger--compound__fitted_true__size_sm", indicator: "tabs__indicator tabs__indicator--fitted_true tabs__indicator--size_sm" };"#);
 }
@@ -509,7 +611,7 @@ fn rewrites_a_conditional_slot_variant_per_slot() {
         export const classes = tabs({ size: isSmall ? 'sm' : 'lg' });
     "#};
 
-    let output = transform_button(&project_with_config_slot_recipe(), source);
+    let output = transform_with_tabs(source);
 
     assert!(output.changed);
     assert!(!output.bailed);
@@ -523,7 +625,7 @@ fn rewrites_two_conditional_slot_variants_as_a_decision_tree_per_slot() {
         export const classes = tabs({ size: isSmall ? 'sm' : 'lg', fitted: isFitted ? true : false });
     "#};
 
-    let output = transform_button(&project_with_config_slot_recipe(), source);
+    let output = transform_with_tabs(source);
 
     assert!(output.changed);
     assert!(!output.bailed);
@@ -537,7 +639,7 @@ fn rewrites_a_slot_variant_ternary_that_reaches_a_compound_variant() {
         export const classes = tabs({ fitted: true, size: isSmall ? 'sm' : 'lg' });
     "#};
 
-    let output = transform_button(&project_with_config_slot_recipe(), source);
+    let output = transform_with_tabs(source);
 
     assert_snapshot!(output.code, @r#"export const classes = { root: "tabs__root tabs__root--fitted_true" + " " + (isSmall ? "tabs__root--size_sm" : "tabs__root--size_lg"), trigger: "tabs__trigger tabs__trigger--fitted_true" + " " + (isSmall ? "tabs__trigger--size_sm tabs__trigger--compound__fitted_true__size_sm" : "tabs__trigger--size_lg"), indicator: "tabs__indicator tabs__indicator--fitted_true" + " " + (isSmall ? "tabs__indicator--size_sm" : "tabs__indicator--size_lg") };"#);
 }
@@ -549,7 +651,7 @@ fn rewrites_a_nested_slot_variant_ternary() {
         export const classes = tabs({ size: isSmall ? 'sm' : isLarge ? 'lg' : 'sm' });
     "#};
 
-    let output = transform_button(&project_with_config_slot_recipe(), source);
+    let output = transform_with_tabs(source);
 
     assert_snapshot!(output.code, @r#"export const classes = { root: "tabs__root" + " " + (isSmall ? "tabs__root--size_sm" : isLarge ? "tabs__root--size_lg" : "tabs__root--size_sm"), trigger: "tabs__trigger" + " " + (isSmall ? "tabs__trigger--size_sm" : isLarge ? "tabs__trigger--size_lg" : "tabs__trigger--size_sm"), indicator: "tabs__indicator" + " " + (isSmall ? "tabs__indicator--size_sm" : isLarge ? "tabs__indicator--size_lg" : "tabs__indicator--size_sm") };"#);
 }
@@ -561,7 +663,7 @@ fn rewrites_a_logical_and_slot_variant_spread() {
         export const classes = tabs({ ...(isFitted && { fitted: true }) });
     "#};
 
-    let output = transform_button(&project_with_config_slot_recipe(), source);
+    let output = transform_with_tabs(source);
 
     assert_snapshot!(output.code, @r#"export const classes = { root: "tabs__root tabs__root--size_lg" + (isFitted ? " tabs__root--fitted_true" : ""), trigger: "tabs__trigger tabs__trigger--size_lg" + (isFitted ? " tabs__trigger--fitted_true" : ""), indicator: "tabs__indicator tabs__indicator--size_lg" + (isFitted ? " tabs__indicator--fitted_true" : "") };"#);
 }
@@ -573,7 +675,7 @@ fn leaves_an_open_ended_slot_variant_ternary_to_runtime() {
         export const classes = tabs({ size: isSmall ? props.size : 'sm' });
     "#};
 
-    let output = transform_button(&project_with_config_slot_recipe(), source);
+    let output = transform_with_tabs(source);
 
     assert!(!output.changed);
     assert!(!output.bailed);
@@ -587,7 +689,7 @@ fn leaves_a_logical_and_slot_variant_to_runtime() {
         export const classes = tabs({ fitted: isFitted && true });
     "#};
 
-    let output = transform_button(&project_with_config_slot_recipe(), source);
+    let output = transform_with_tabs(source);
 
     assert!(!output.changed);
     assert_eq!(output.code, source);
@@ -600,7 +702,7 @@ fn leaves_a_responsive_slot_variant_inside_a_ternary_to_runtime() {
         export const classes = tabs({ size: isSmall ? { base: 'sm', md: 'lg' } : 'lg' });
     "#};
 
-    let output = transform_button(&project_with_config_slot_recipe(), source);
+    let output = transform_with_tabs(source);
 
     assert!(!output.changed);
     assert_eq!(output.code, source);
@@ -619,7 +721,7 @@ fn leaves_too_many_conditional_slot_props_to_runtime() {
         });
     "#};
 
-    let output = transform_button(&project_with_config_slot_recipe(), source);
+    let output = transform_with_tabs(source);
 
     assert!(!output.changed);
     assert!(!output.bailed);
@@ -633,7 +735,7 @@ fn drops_a_false_boolean_slot_variant_and_its_compound() {
         export const classes = tabs({ size: 'sm', fitted: false });
     "#};
 
-    let output = transform_button(&project_with_config_slot_recipe(), source);
+    let output = transform_with_tabs(source);
 
     assert_snapshot!(output.code, @r#"export const classes = { root: "tabs__root tabs__root--size_sm", trigger: "tabs__trigger tabs__trigger--size_sm", indicator: "tabs__indicator tabs__indicator--size_sm" };"#);
 }
@@ -645,7 +747,7 @@ fn rewrites_a_boolean_slot_variant_ternary() {
         export const classes = tabs({ size: 'sm', fitted: isFitted ? true : false });
     "#};
 
-    let output = transform_button(&project_with_config_slot_recipe(), source);
+    let output = transform_with_tabs(source);
 
     assert_snapshot!(output.code, @r#"export const classes = { root: "tabs__root tabs__root--size_sm" + (isFitted ? " tabs__root--fitted_true" : ""), trigger: "tabs__trigger tabs__trigger--size_sm" + (isFitted ? " tabs__trigger--fitted_true tabs__trigger--compound__fitted_true__size_sm" : ""), indicator: "tabs__indicator tabs__indicator--size_sm" + (isFitted ? " tabs__indicator--fitted_true" : "") };"#);
 }
@@ -657,7 +759,7 @@ fn leaves_a_bare_identifier_slot_variant_to_runtime() {
         export const classes = tabs({ size: 'sm', fitted: isFitted });
     "#};
 
-    let output = transform_button(&project_with_config_slot_recipe(), source);
+    let output = transform_with_tabs(source);
 
     assert!(!output.changed);
     assert_eq!(output.code, source);
@@ -671,7 +773,7 @@ fn applies_the_class_prefix_to_recipe_and_slot_recipe_classes() {
         export const classes = tabs({ size: 'sm' });
     "#};
 
-    let output = transform_button(&project_with_prefixed_recipes(false), source);
+    let output = transform_with_default_targets(&prefixed_button_and_tabs(false), source);
 
     assert_snapshot!(output.code, @r#"
     export const cls = "pd-button pd-button--block_true pd-button--size_sm pd-button--compound__block_true__size_sm";
@@ -687,7 +789,7 @@ fn hashes_recipe_and_slot_recipe_classes_like_the_runtime() {
         export const classes = tabs({ size: 'sm' });
     "#};
 
-    let output = transform_button(&project_with_prefixed_recipes(true), source);
+    let output = transform_with_default_targets(&prefixed_button_and_tabs(true), source);
 
     let hashed = |name: &str| format!("pd-{}", pandacss_shared::to_hash(name));
     // Compound classes are hashed once when named and again by the runtime, like the emitter.
@@ -713,7 +815,7 @@ fn leaves_dynamic_slot_recipe_call_unchanged() {
         export const classes = tabs(props);
     "#};
 
-    let output = transform_button(&project_with_config_slot_recipe(), source);
+    let output = transform_with_tabs(source);
 
     assert!(!output.changed);
     assert_eq!(output.code, source);
@@ -726,7 +828,7 @@ fn leaves_responsive_slot_variant_to_runtime() {
         export const classes = tabs({ size: { base: 'sm', md: 'lg' } });
     "#};
 
-    let output = transform_button(&project_with_config_slot_recipe(), source);
+    let output = transform_with_tabs(source);
 
     assert!(!output.changed);
     assert_eq!(output.code, source);

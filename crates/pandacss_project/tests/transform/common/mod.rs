@@ -145,42 +145,6 @@ pub fn project_with_recipes() -> Project {
     )
 }
 
-/// `button` recipe with multiple variants, a boolean variant, and a compound
-/// variant, in default (eager) compound mode.
-pub fn project_with_rich_recipes() -> Project {
-    Project::new(
-        System::new(create_config(json!({
-            "theme": {
-                "recipes": {
-                    "button": {
-                        "className": "button",
-                        "base": { "display": "inline-flex" },
-                        "defaultVariants": { "size": "md", "variant": "solid" },
-                        "variants": {
-                            "size": {
-                                "sm": { "fontSize": "12px" },
-                                "md": { "fontSize": "16px" },
-                                "lg": { "fontSize": "18px" }
-                            },
-                            "variant": {
-                                "solid": { "color": "white" },
-                                "outline": { "color": "blue" }
-                            },
-                            "block": {
-                                "true": { "display": "flex" }
-                            }
-                        },
-                        "compoundVariants": [
-                            { "size": "sm", "variant": "outline", "css": { "padding": "2px" } }
-                        ]
-                    }
-                }
-            }
-        })))
-        .expect("config"),
-    )
-}
-
 /// Project with a token dictionary for `token()` / `token.var()` transforms.
 pub fn project_with_tokens() -> Project {
     Project::new(
@@ -201,71 +165,6 @@ pub fn project_with_tokens() -> Project {
                             }
                         },
                         "onlyDark": { "value": { "_dark": "{colors.blue.500}" } }
-                    }
-                }
-            }
-        })))
-        .expect("config"),
-    )
-}
-
-/// Config slot recipe — call-form usage is left to the runtime.
-pub fn project_with_config_slot_recipe() -> Project {
-    Project::new(
-        System::new(create_config(json!({
-            "theme": {
-                "slotRecipes": {
-                    "tabs": {
-                        "className": "tabs",
-                        "slots": ["root", "trigger", "indicator"],
-                        "base": {
-                            "root": { "display": "flex" },
-                            "trigger": { "color": "blue" }
-                        },
-                        "defaultVariants": { "size": "lg" },
-                        "variants": {
-                            "size": {
-                                "sm": { "root": { "gap": "4px" }, "trigger": { "fontSize": "12px" } },
-                                "lg": { "root": { "gap": "8px" }, "trigger": { "fontSize": "16px" } }
-                            },
-                            "fitted": {
-                                "true": { "trigger": { "flex": "1" } }
-                            }
-                        },
-                        "compoundVariants": [
-                            { "size": "sm", "fitted": true, "css": { "trigger": { "padding": "0" } } }
-                        ]
-                    }
-                }
-            }
-        })))
-        .expect("config"),
-    )
-}
-
-/// `prefix` and optional `hash` on top of a recipe and a slot recipe, to check
-/// transformed classes match the selectors the stylesheet emits.
-pub fn project_with_prefixed_recipes(hash: bool) -> Project {
-    Project::new(
-        System::new(create_config(json!({
-            "prefix": "pd",
-            "hash": hash,
-            "theme": {
-                "recipes": {
-                    "button": {
-                        "className": "button",
-                        "base": { "display": "flex" },
-                        "variants": { "size": { "sm": { "padding": "4px" } }, "block": { "true": { "width": "100%" } } },
-                        "compoundVariants": [{ "size": "sm", "block": true, "css": { "gap": "0" } }]
-                    }
-                },
-                "slotRecipes": {
-                    "tabs": {
-                        "className": "tabs",
-                        "slots": ["root", "trigger"],
-                        "base": { "root": { "display": "flex" } },
-                        "variants": { "size": { "sm": { "root": { "gap": "4px" } } } },
-                        "compoundVariants": [{ "size": "sm", "css": { "trigger": { "padding": "0" } } }]
                     }
                 }
             }
@@ -400,82 +299,34 @@ pub fn transform_jsx_shorthands(path: &str, source: &str) -> pandacss_project::T
     transform_jsx_with_project(&project_with_jsx_shorthands(), path, source)
 }
 
+/// React JSX with shorthands on, merged with `overrides`.
+fn jsx_project(overrides: Value) -> Project {
+    let mut config = json!({
+        "jsxFramework": "react",
+        "shorthands": true,
+        "utilities": {
+            "color": {},
+            "padding": {},
+            "backgroundColor": { "shorthand": "bg" },
+            "margin": {}
+        },
+        "conditions": {
+            "hover": "&:hover",
+            "dark": ".dark &"
+        },
+        "theme": {
+            "breakpoints": {
+                "sm": "640px",
+                "md": "768px"
+            }
+        }
+    });
+    merge_json(&mut config, overrides);
+    Project::new(System::new(create_config(config)).expect("config"))
+}
+
 pub fn project_with_jsx() -> Project {
-    Project::new(
-        System::new(create_config(json!({
-            "jsxFramework": "react",
-            "shorthands": true,
-            "utilities": {
-                "color": {},
-                "padding": {},
-                "backgroundColor": { "shorthand": "bg" },
-                "margin": {}
-            },
-            "conditions": {
-                "hover": "&:hover",
-                "dark": ".dark &"
-            },
-            "theme": {
-                "breakpoints": {
-                    "sm": "640px",
-                    "md": "768px"
-                }
-            }
-        })))
-        .expect("config"),
-    )
-}
-
-pub fn project_with_jsx_solid() -> Project {
-    Project::new(
-        System::new(create_config(json!({
-            "jsxFramework": "solid",
-            "shorthands": true,
-            "utilities": {
-                "color": {},
-                "padding": {},
-                "backgroundColor": { "shorthand": "bg" },
-                "margin": {}
-            },
-            "conditions": {
-                "hover": "&:hover",
-                "dark": ".dark &"
-            },
-            "theme": {
-                "breakpoints": {
-                    "sm": "640px",
-                    "md": "768px"
-                }
-            }
-        })))
-        .expect("config"),
-    )
-}
-
-pub fn project_with_jsx_qwik() -> Project {
-    Project::new(
-        System::new(create_config(json!({
-            "jsxFramework": "qwik",
-            "shorthands": true,
-            "utilities": {
-                "color": {},
-                "padding": {},
-                "backgroundColor": { "shorthand": "bg" },
-                "margin": {}
-            },
-            "conditions": {
-                "hover": "&:hover",
-                "dark": ".dark &"
-            },
-            "theme": {
-                "breakpoints": {
-                    "sm": "640px",
-                    "md": "768px"
-                }
-            }
-        })))
-        .expect("config"),
-    )
+    jsx_project(json!({}))
 }
 
 pub fn project_with_jsx_recipes() -> Project {
@@ -567,34 +418,6 @@ pub fn project_with_jsx_slot_recipes() -> Project {
                             }
                         }
                     }
-                }
-            }
-        })))
-        .expect("config"),
-    )
-}
-
-pub fn project_with_jsx_extended() -> Project {
-    Project::new(
-        System::new(create_config(json!({
-            "jsxFramework": "react",
-            "shorthands": true,
-            "utilities": {
-                "color": {},
-                "padding": {},
-                "backgroundColor": { "shorthand": "bg" },
-                "margin": {}
-            },
-            "conditions": {
-                "hover": "&:hover",
-                "dark": ".dark &",
-                "peerHover": ".peer:hover ~ &",
-                "groupHover": ".group:hover &"
-            },
-            "theme": {
-                "breakpoints": {
-                    "sm": "640px",
-                    "md": "768px"
                 }
             }
         })))
@@ -714,8 +537,17 @@ pub fn transform_jsx_slot_recipes(path: &str, source: &str) -> pandacss_project:
     transform_jsx_with_project(&project_with_jsx_slot_recipes(), path, source)
 }
 
-pub fn transform_jsx_extended(path: &str, source: &str) -> pandacss_project::TransformOutput {
-    transform_jsx_with_project(&project_with_jsx_extended(), path, source)
+pub fn transform_jsx_with_peer_and_group_hover(
+    path: &str,
+    source: &str,
+) -> pandacss_project::TransformOutput {
+    let project = jsx_project(json!({
+        "conditions": {
+            "peerHover": ".peer:hover ~ &",
+            "groupHover": ".group:hover &"
+        }
+    }));
+    transform_jsx_with_project(&project, path, source)
 }
 
 pub fn transform_jsx_patterns(path: &str, source: &str) -> pandacss_project::TransformOutput {
@@ -743,20 +575,6 @@ pub fn jsx_only_options() -> TransformOptions {
     }
 }
 
-pub fn jsx_options_with_helper(helper_cx: pandacss_project::HelperCxMode) -> TransformOptions {
-    TransformOptions {
-        helper_cx,
-        targets: TransformTargets {
-            css: false,
-            patterns: false,
-            recipes: false,
-            tokens: false,
-            jsx: true,
-        },
-        ..TransformOptions::default()
-    }
-}
-
 pub fn transform_jsx_with_helper(
     path: &str,
     source: &str,
@@ -766,7 +584,10 @@ pub fn transform_jsx_with_helper(
         &project_with_jsx(),
         path,
         source,
-        &jsx_options_with_helper(helper_cx),
+        &TransformOptions {
+            helper_cx,
+            ..jsx_only_options()
+        },
     )
 }
 
@@ -774,12 +595,13 @@ pub fn transform_jsx(path: &str, source: &str) -> pandacss_project::TransformOut
     transform_source(&project_with_jsx(), path, source, &jsx_only_options())
 }
 
-pub fn transform_jsx_solid(path: &str, source: &str) -> pandacss_project::TransformOutput {
-    transform_source(&project_with_jsx_solid(), path, source, &jsx_only_options())
-}
-
-pub fn transform_jsx_qwik(path: &str, source: &str) -> pandacss_project::TransformOutput {
-    transform_source(&project_with_jsx_qwik(), path, source, &jsx_only_options())
+pub fn transform_jsx_for_framework(
+    framework: &str,
+    path: &str,
+    source: &str,
+) -> pandacss_project::TransformOutput {
+    let project = jsx_project(json!({ "jsxFramework": framework }));
+    transform_source(&project, path, source, &jsx_only_options())
 }
 
 /// Transform output has to be valid source. Feeding it back through the

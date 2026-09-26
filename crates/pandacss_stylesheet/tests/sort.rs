@@ -568,7 +568,7 @@ fn sorts_container_queries_by_resolved_width() {
 }
 
 #[test]
-fn sorts_recipe_entries_with_the_same_priority_model() {
+fn recipe_shorthands_sort_before_longhands_like_utilities() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
         "conditions": {
@@ -806,7 +806,7 @@ fn coalesces_duplicate_recipe_declarations_by_css_property() {
 }
 
 #[test]
-fn sorts_recipe_atomic_atoms_with_dynamic_atoms() {
+fn static_recipe_css_and_css_utilities_on_one_property_stay_in_their_own_layers() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
         "staticCss": {

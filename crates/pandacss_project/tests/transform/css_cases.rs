@@ -1,21 +1,17 @@
-//! Static css() transform cases ported from extractor/compiler parity fixtures.
+//! Static `css()` rewrites, `.raw()` folding, and `firstThatWorks()`.
 
 use super::common::{project_with_jsx, transform, transform_with_project};
 use indoc::indoc;
 use insta::assert_snapshot;
 
 macro_rules! transform_snapshot {
-    ($name:ident, $source:expr, $changed:expr) => {
+    ($name:ident, $source:expr, unchanged) => {
         #[test]
         fn $name() {
             let source = indoc! { $source };
             let output = transform("src/styles.tsx", source);
-            assert_eq!(output.changed, $changed);
-            if $changed {
-                assert_snapshot!(output.code, @$source);
-            } else {
-                assert_eq!(output.code, source);
-            }
+            assert!(!output.changed);
+            assert_eq!(output.code, source);
         }
     };
     ($name:ident, $source:expr, $changed:expr, @$snapshot:literal) => {
@@ -169,7 +165,7 @@ transform_snapshot!(
         import { css } from '@panda/css';
         export const cls = css();
     "#,
-    false
+    unchanged
 );
 
 transform_snapshot!(
@@ -178,7 +174,7 @@ transform_snapshot!(
         import { css } from '@panda/css';
         export const cls = css({ ...styles, color: 'red' });
     "#,
-    false
+    unchanged
 );
 
 transform_snapshot!(
@@ -187,11 +183,11 @@ transform_snapshot!(
         import { css } from '@panda/css';
         export const cls = css({ color: `${dynamic}px` });
     "#,
-    false
+    unchanged
 );
 
 transform_snapshot!(
-    logical_or_in_value_bails,
+    constant_logical_or_in_value_folds_to_the_left_side,
     r#"
         import { css } from '@panda/css';
         export const cls = css({ color: 'red' || 'blue' });

@@ -1,5 +1,4 @@
-//! Conditional / nested CSS transform parity — scenarios from encoder, project,
-//! compiler runtime-parity, and sandbox codegen fixtures.
+//! Conditions, responsive arrays, and multi-argument merges in `css()`.
 
 use super::common::transform;
 use indoc::indoc;
@@ -167,7 +166,7 @@ conditional_snapshot!(
     @r#"export const cls = "hover:dark:color_pink.100 hover:dark:sm:color_pink.200";"#
 );
 
-// --- raw selectors & at-rules (encoder raw_selector_and_at_rule_keys) ---
+// --- raw selectors & at-rules ---
 
 conditional_snapshot!(
     arbitrary_selector_key,
@@ -189,7 +188,7 @@ conditional_snapshot!(
     @r#"export const cls = "[@media_(hover:_hover)]:[&:hover]:color_red";"#
 );
 
-// --- important + whitespace under conditions (runtime-parity) ---
+// --- important + whitespace under conditions ---
 
 conditional_snapshot!(
     important_with_condition_prefixes,
@@ -227,7 +226,7 @@ conditional_snapshot!(
     @r#"export const cls = "hover:margin_1rem_2rem";"#
 );
 
-// --- multi-arg merge (css.test merging styles) ---
+// --- multi-arg merge ---
 
 conditional_snapshot!(
     merge_args_last_write_wins_for_same_hover_color,

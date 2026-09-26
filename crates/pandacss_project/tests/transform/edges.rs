@@ -1,8 +1,9 @@
 //! Edge-case coverage for nested condition blocks, finite conditionals, and bailouts.
 
 use super::common::{
-    transform, transform_jsx, transform_jsx_extended, transform_jsx_patterns,
-    transform_jsx_recipes, transform_jsx_shorthands, transform_jsx_slot_recipes, transform_recipes,
+    transform, transform_jsx, transform_jsx_patterns, transform_jsx_recipes,
+    transform_jsx_shorthands, transform_jsx_slot_recipes, transform_jsx_with_peer_and_group_hover,
+    transform_recipes,
 };
 use indoc::indoc;
 use insta::assert_snapshot;
@@ -121,7 +122,7 @@ export const el = (
 
 edge_snapshot!(
     jsx_peer_hover_nested_conditional,
-    transform_jsx_extended(
+    transform_jsx_with_peer_and_group_hover(
         "src/app.tsx",
         indoc! {r#"
             import { Box } from '@panda/jsx';
@@ -139,7 +140,7 @@ export const el = (
 
 edge_snapshot!(
     jsx_group_hover_nested_conditional,
-    transform_jsx_extended(
+    transform_jsx_with_peer_and_group_hover(
         "src/app.tsx",
         indoc! {r#"
             import { Box } from '@panda/jsx';
@@ -567,7 +568,7 @@ fn jsx_runtime_skips_logical_and_style_prop() {
     assert_eq!(output.code, source);
 }
 
-// --- property-level && (Bug 1) ---
+// --- property-level && ---
 
 #[test]
 fn css_property_logical_and_preserves_unknown_falsy_value() {
@@ -631,7 +632,7 @@ edge_snapshot!(
     @r#"export const el = <div className={isError ? "hover:color_red" : ""} />;"#
 );
 
-// --- nested conditional spreads under condition blocks (Bug 3) ---
+// --- conditional spreads inside condition blocks ---
 
 edge_snapshot!(
     css_nested_ternary_spread_under_hover,
@@ -759,7 +760,7 @@ edge_snapshot!(
     @r#"export const el = <div className={(isReady && isError) ? "color_red" : "color_blue"} />;"#
 );
 
-// --- responsive array under nested block (css static model) ---
+// --- responsive array inside nested conditions ---
 
 edge_snapshot!(
     css_nested_responsive_array_under_condition,
@@ -895,7 +896,7 @@ edge_snapshot!(
     @r#"export const cls = unk ? "padding_1" : "padding_2";"#
 );
 
-// --- StyleTree extensions ---
+// --- ternaries inside arrays and spreads ---
 
 edge_snapshot!(
     css_responsive_array_slot_ternary,
@@ -987,7 +988,7 @@ export const el = (
 "#
 );
 
-// --- v1 kitchen-sink (parser output / css.raw edge cases) ---
+// --- arrays, member access, and css.raw spreads ---
 
 edge_snapshot!(
     jsx_array_whole_arm_ternary,

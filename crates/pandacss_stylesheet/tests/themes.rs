@@ -4,7 +4,7 @@
 use insta::assert_snapshot;
 use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
-use crate::common::{compile_output, config};
+use crate::common::{compile_output, config, merge};
 
 /// A neutral default plus `matcha` and `gothic`, both pre-generated.
 fn themed_config(overrides: serde_json::Value) -> pandacss_config::UserConfig {
@@ -55,20 +55,18 @@ fn themed_config(overrides: serde_json::Value) -> pandacss_config::UserConfig {
     config(value)
 }
 
-/// Deep-merge `patch` into `target`; a `null` in the patch removes the key.
-fn merge(target: &mut serde_json::Value, patch: serde_json::Value) {
-    match (target, patch) {
-        (serde_json::Value::Object(target), serde_json::Value::Object(patch)) => {
-            for (key, value) in patch {
-                if value.is_null() {
-                    target.remove(&key);
-                } else {
-                    merge(target.entry(key).or_insert(serde_json::Value::Null), value);
-                }
-            }
+/// Only `gothic` is kept, with its `accent` value replaced.
+fn gothic_with(
+    conditions: &serde_json::Value,
+    value: &serde_json::Value,
+) -> pandacss_config::UserConfig {
+    themed_config(serde_json::json!({
+        "conditions": conditions,
+        "themes": {
+            "matcha": null,
+            "gothic": { "semanticTokens": { "colors": { "accent": { "value": value } } } }
         }
-        (target, patch) => *target = patch,
-    }
+    }))
 }
 
 fn tokens_layer(config: &pandacss_config::UserConfig, source: &str) -> String {
@@ -127,18 +125,10 @@ fn dark_inside_a_theme_declares_above_on_and_inside_the_root() {
 
 #[test]
 fn light_and_dark_variants_inside_a_theme() {
-    let config = themed_config(serde_json::json!({
-        "themes": {
-            "matcha": null,
-            "gothic": {
-                "semanticTokens": {
-                    "colors": {
-                        "accent": { "value": { "base": "{colors.purple}", "_light": "{colors.white}", "_dark": "{colors.black}" } }
-                    }
-                }
-            }
-        }
-    }));
+    let config = gothic_with(
+        &serde_json::json!({}),
+        &serde_json::json!({ "base": "{colors.purple}", "_light": "{colors.white}", "_dark": "{colors.black}" }),
+    );
 
     assert_snapshot!(tokens_layer(&config, ""), @"
     @layer tokens {
@@ -202,16 +192,10 @@ fn a_parent_condition_with_several_selectors_meets_the_theme_at_each_boundary() 
 
 #[test]
 fn media_condition_inside_a_theme_wraps_the_theme_root() {
-    let config = themed_config(serde_json::json!({
-        "themes": {
-            "matcha": null,
-            "gothic": {
-                "semanticTokens": {
-                    "colors": { "accent": { "value": { "base": "{colors.purple}", "_osDark": "{colors.black}" } } }
-                }
-            }
-        }
-    }));
+    let config = gothic_with(
+        &serde_json::json!({}),
+        &serde_json::json!({ "base": "{colors.purple}", "_osDark": "{colors.black}" }),
+    );
 
     assert_snapshot!(tokens_layer(&config, ""), @"
     @layer tokens {
@@ -245,18 +229,10 @@ fn media_condition_inside_a_theme_wraps_the_theme_root() {
 
 #[test]
 fn dark_then_breakpoint_inside_a_theme_wraps_each_boundary() {
-    let config = themed_config(serde_json::json!({
-        "themes": {
-            "matcha": null,
-            "gothic": {
-                "semanticTokens": {
-                    "colors": {
-                        "accent": { "value": { "base": "{colors.purple}", "_dark": { "base": "{colors.black}", "md": "{colors.white}" } } }
-                    }
-                }
-            }
-        }
-    }));
+    let config = gothic_with(
+        &serde_json::json!({}),
+        &serde_json::json!({ "base": "{colors.purple}", "_dark": { "base": "{colors.black}", "md": "{colors.white}" } }),
+    );
 
     assert_snapshot!(tokens_layer(&config, ""), @"
     @layer tokens {
@@ -593,19 +569,6 @@ fn a_theme_condition_on_atomic_styles_still_matches_the_whole_subtree() {
       }
     }
     ");
-}
-
-fn gothic_with(
-    conditions: &serde_json::Value,
-    value: &serde_json::Value,
-) -> pandacss_config::UserConfig {
-    themed_config(serde_json::json!({
-        "conditions": conditions,
-        "themes": {
-            "matcha": null,
-            "gothic": { "semanticTokens": { "colors": { "accent": { "value": value } } } }
-        }
-    }))
 }
 
 #[test]

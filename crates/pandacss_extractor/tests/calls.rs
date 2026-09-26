@@ -1,28 +1,32 @@
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
 
-use crate::common::css_matchers;
+use crate::common::{css_matchers, panda_matchers};
 use pandacss_extractor::{
     ExtractedCallsResult, ExtractorConfig, ImportSpecifierKind, MatchCategory, MatchedImport,
-    Matcher, Matchers, NameMatcher, extract_calls,
+    NameMatcher, extract_calls,
 };
 
-fn css(alias: &str) -> MatchedImport {
+fn css_export(name: &str, alias: &str) -> MatchedImport {
     MatchedImport {
         category: MatchCategory::Css,
         module: "@panda/css".into(),
-        name: "css".into(),
+        name: name.into(),
         alias: alias.into(),
         kind: ImportSpecifierKind::Named,
     }
 }
 
-fn cva(alias: &str) -> MatchedImport {
+fn css(alias: &str) -> MatchedImport {
+    css_export("css", alias)
+}
+
+fn pattern(name: &str) -> MatchedImport {
     MatchedImport {
-        category: MatchCategory::Css,
-        module: "@panda/css".into(),
-        name: "cva".into(),
-        alias: alias.into(),
+        category: MatchCategory::Pattern,
+        module: "@panda/patterns".into(),
+        name: name.into(),
+        alias: name.into(),
         kind: ImportSpecifierKind::Named,
     }
 }
@@ -57,65 +61,19 @@ fn namespace(alias: &str, module: &str, category: MatchCategory) -> MatchedImpor
     }
 }
 
-fn panda_matchers(prefix: &str) -> Matchers {
-    Matchers {
-        css: Matcher {
-            modules: vec![format!("{prefix}/css")],
-            names: NameMatcher::only(["css", "cva", "sva"]),
-        },
-        recipe: Matcher {
-            modules: vec![format!("{prefix}/recipes")],
-            names: NameMatcher::Any,
-        },
-        pattern: Matcher {
-            modules: vec![format!("{prefix}/patterns")],
-            names: NameMatcher::Any,
-        },
-        jsx: Some(Matcher {
-            modules: vec![format!("{prefix}/jsx")],
-            names: NameMatcher::only(["styled", "Box"]),
-        }),
-        tokens: Matcher {
-            modules: vec![format!("{prefix}/tokens")],
-            names: NameMatcher::only(["token"]),
-        },
-        jsx_factories: Some(vec!["styled".into()]),
-        ..Default::default()
-    }
-}
-
 fn extract(source: &str, matched: &[MatchedImport]) -> ExtractedCallsResult {
-    extract_calls(
-        source,
-        "fixture.tsx",
-        matched,
-        &ExtractorConfig::new(css_matchers()),
-    )
+    extract_with_config(source, matched, &ExtractorConfig::new(css_matchers()))
 }
 
-fn extract_with(
-    source: &str,
-    matched: &[MatchedImport],
-    matchers: &Matchers,
-) -> ExtractedCallsResult {
-    extract_calls(
-        source,
-        "fixture.tsx",
-        matched,
-        &ExtractorConfig::new(matchers.clone()),
-    )
+fn extract_with_all_panda_modules(source: &str, matched: &[MatchedImport]) -> ExtractedCallsResult {
+    extract_with_config(source, matched, &ExtractorConfig::new(panda_matchers()))
 }
 
-fn extract_with_jsx(
-    source: &str,
-    matched: &[MatchedImport],
-    matchers: &Matchers,
-) -> ExtractedCallsResult {
-    extract_calls(
+fn extract_with_jsx_framework(source: &str, matched: &[MatchedImport]) -> ExtractedCallsResult {
+    extract_with_config(
         source,
-        "fixture.tsx",
         matched,
-        &ExtractorConfig::new(matchers.clone()).with_jsx_framework(true),
+        &ExtractorConfig::new(panda_matchers()).with_jsx_framework(true),
     )
 }
 
@@ -129,11 +87,7 @@ fn extract_with_config(
 
 #[test]
 fn duplicate_object_keys_keep_first_position_with_last_value() {
-    // ES object-initializer semantics: a later property with the same key
-    // overwrites the earlier value but keeps the *position* of the first
-    // occurrence in enumeration order. Our `upsert` helper has to honor
-    // both halves of that rule; this test pins it so a future refactor
-    // can't silently change extraction order.
+    // Matches JS object semantics: the later value wins, the first position stays.
     assert_yaml_snapshot!(
         extract("css({ color: 'red', padding: '4px', color: 'blue' })", &[css("css")]),
         @"
@@ -196,9 +150,6 @@ fn template_literal_value_whitespace_is_collapsed_outside_quotes() {
 
 #[test]
 fn spread_overwrite_keeps_spread_position() {
-    // Same upsert semantics but the duplicate enters through an inline
-    // literal spread. The key from the spread keeps its position; the
-    // explicit later property only changes the value.
     assert_yaml_snapshot!(
         extract(
             "css({ ...{ color: 'red', padding: '4px' }, color: 'blue' })",
@@ -279,27 +230,9 @@ fn aliased_raw_css_cva_and_sva_calls_normalize_to_imported_names() {
                 randomAlias.raw({ color: 'pink' })
             "},
             &[
-                MatchedImport {
-                    category: MatchCategory::Css,
-                    module: "@panda/css".into(),
-                    name: "css".into(),
-                    alias: "styledCss".into(),
-                    kind: ImportSpecifierKind::Named,
-                },
-                MatchedImport {
-                    category: MatchCategory::Css,
-                    module: "@panda/css".into(),
-                    name: "cva".into(),
-                    alias: "componentVariant".into(),
-                    kind: ImportSpecifierKind::Named,
-                },
-                MatchedImport {
-                    category: MatchCategory::Css,
-                    module: "@panda/css".into(),
-                    name: "sva".into(),
-                    alias: "slotVariant".into(),
-                    kind: ImportSpecifierKind::Named,
-                },
+                css_export("css", "styledCss"),
+                css_export("cva", "componentVariant"),
+                css_export("sva", "slotVariant"),
             ],
         ),
         @"
@@ -342,16 +275,7 @@ fn aliased_raw_css_cva_and_sva_calls_normalize_to_imported_names() {
 fn zero_arg_pattern_call_emits_base_styles() {
     // `center()` with no props still renders the pattern's base styles, so it
     // must extract (with empty data) instead of being dropped.
-    let result = extract(
-        "const x = center()",
-        &[MatchedImport {
-            category: MatchCategory::Pattern,
-            module: "@panda/patterns".into(),
-            name: "center".into(),
-            alias: "center".into(),
-            kind: ImportSpecifierKind::Named,
-        }],
-    );
+    let result = extract("const x = center()", &[pattern("center")]);
 
     assert_yaml_snapshot!(result, @r"
     calls:
@@ -368,12 +292,10 @@ fn zero_arg_pattern_call_emits_base_styles() {
 
 #[test]
 fn namespace_raw_pattern_call_normalizes_to_property_name() {
-    let matchers = panda_matchers("@panda");
     assert_yaml_snapshot!(
-        extract_with(
+        extract_with_all_panda_modules(
             "p.stack.raw({ gap: '4' })",
             &[namespace("p", "@panda/patterns", MatchCategory::Pattern)],
-            &matchers,
         ),
         @r#"
     calls:
@@ -460,8 +382,7 @@ fn array_value() {
 }
 
 #[test]
-fn aliased_local_binding() {
-    // import { css as nCss } from "@panda/css"
+fn aliased_css_import_extracts_under_its_imported_name() {
     assert_yaml_snapshot!(extract("nCss({ color: 'red' })", &[css("nCss")]), @"
     calls:
       - category: css
@@ -485,7 +406,7 @@ fn multiple_calls_in_one_source() {
                 const b = css({ color: 'blue' })
                 const c = cva({ base: { color: 'green' } })
             "},
-            &[css("css"), cva("cva")],
+            &[css("css"), css_export("cva", "cva")],
         ),
         @"
     calls:
@@ -546,8 +467,7 @@ fn ignores_unmatched_callees() {
 
 #[test]
 fn skips_non_literal_arguments() {
-    // Identifier args, member access, conditionals — none extractable yet.
-    // Phase 5 (static evaluator) will resolve same-file constants.
+    // None of these identifiers are bound in the file.
     assert_yaml_snapshot!(
         extract(
             indoc! {"
@@ -677,10 +597,6 @@ fn finds_calls_inside_jsx() {
 
 #[test]
 fn finds_panda_call_nested_in_non_panda_call_args() {
-    // Grounded in css-2.test.ts:547 — `cx('card', css({ background: 'white' }),
-    // className)`. `cx` isn't a Panda call, but the visitor descends into its
-    // arguments and still extracts the inner `css()`. Mirrors ts-morph's
-    // exhaustive `getDescendantsOfKind(CallExpression)`.
     assert_yaml_snapshot!(
         extract("cx('card', css({ background: 'white' }), className)", &[css("css")]),
         @"
@@ -758,16 +674,9 @@ fn parse_error_surfaces_diagnostic() {
 fn multi_arg_call_extracts_all_literal_args() {
     // styled('div', { base: { color: 'red' } }) — both args are literal.
     assert_yaml_snapshot!(
-        extract_with_jsx(
+        extract_with_jsx_framework(
             "styled('div', { base: { color: 'red' } })",
-            &[MatchedImport {
-                category: MatchCategory::Jsx,
-                module: "@panda/jsx".into(),
-                name: "styled".into(),
-                alias: "styled".into(),
-                kind: ImportSpecifierKind::Named,
-            }],
-            &panda_matchers("@panda"),
+            &[jsx_factory("styled")],
         ),
         @"
     calls:
@@ -787,19 +696,11 @@ fn multi_arg_call_extracts_all_literal_args() {
 }
 
 #[test]
-fn non_literal_args_are_omitted_from_data() {
-    // First arg is an identifier (non-literal), second is a literal object.
-    // Output omits the identifier; positional alignment with source is lost.
+fn non_literal_arg_keeps_a_null_slot_in_data() {
     assert_yaml_snapshot!(
         extract(
             "pattern(template, { color: 'red' })",
-            &[MatchedImport {
-                category: MatchCategory::Pattern,
-                module: "@panda/patterns".into(),
-                name: "pattern".into(),
-                alias: "pattern".into(),
-                kind: ImportSpecifierKind::Named,
-            }],
+            &[pattern("pattern")],
         ),
         @"
     calls:
@@ -819,16 +720,16 @@ fn non_literal_args_are_omitted_from_data() {
 
 #[test]
 fn jsx_factory_property_call_extracts_recipe_config() {
-    let mut matchers = panda_matchers("@panda");
+    let mut matchers = panda_matchers();
     if let Some(jsx) = &mut matchers.jsx {
         jsx.names = NameMatcher::only(["panda"]);
     }
     matchers.jsx_factories = Some(vec!["panda".into()]);
 
-    let result = extract_with_jsx(
+    let result = extract_with_config(
         "panda.div({ base: { color: 'red' }, variants: { size: { sm: { fontSize: '12px' } } } })",
         &[jsx_factory("panda")],
-        &matchers,
+        &ExtractorConfig::new(matchers).with_jsx_framework(true),
     );
 
     assert_yaml_snapshot!(result.calls[0].data, @r#"
@@ -843,10 +744,9 @@ fn jsx_factory_property_call_extracts_recipe_config() {
 
 #[test]
 fn jsx_factory_call_tagged_template_does_not_extract() {
-    let result = extract_with_jsx(
+    let result = extract_with_jsx_framework(
         "styled('span')`color: red; padding: 4px;`",
         &[jsx_factory("styled")],
-        &panda_matchers("@panda"),
     );
 
     assert_yaml_snapshot!(result, @r"
@@ -859,11 +759,11 @@ fn jsx_factory_call_tagged_template_does_not_extract() {
 // Mirrors `packages/parser/__tests__/namespace.test.ts`.
 
 #[test]
-fn js_parity_namespace_css_aliases() {
+fn namespace_import_extracts_css_cva_and_sva_calls() {
     // panda.css(...), panda.cva(...), panda.sva(...) all resolve via the
     // css matcher's name allowlist.
     assert_yaml_snapshot!(
-        extract_with(
+        extract_with_all_panda_modules(
             indoc! {r#"
                 import * as panda from "@panda/css"
                 panda.css({ color: "red" })
@@ -871,7 +771,6 @@ fn js_parity_namespace_css_aliases() {
                 panda.sva({ base: { root: { color: "green" } } })
             "#},
             &[namespace("panda", "@panda/css", MatchCategory::Css)],
-            &panda_matchers("@panda"),
         ),
         @"
     calls:
@@ -908,16 +807,15 @@ fn js_parity_namespace_css_aliases() {
 }
 
 #[test]
-fn js_parity_namespace_pattern() {
+fn namespace_import_extracts_any_pattern_call() {
     // p.stack({...}) — pattern matcher names is None, so any property qualifies.
     assert_yaml_snapshot!(
-        extract_with(
+        extract_with_all_panda_modules(
             indoc! {r#"
                 import * as p from "@panda/patterns"
                 p.stack({ mt: "40px" })
             "#},
             &[namespace("p", "@panda/patterns", MatchCategory::Pattern)],
-            &panda_matchers("@panda"),
         ),
         @"
     calls:
@@ -935,16 +833,15 @@ fn js_parity_namespace_pattern() {
 }
 
 #[test]
-fn js_parity_namespace_recipe() {
+fn namespace_import_extracts_any_recipe_call() {
     // recipes.cardStyle({...}) — recipe matcher names is None.
     assert_yaml_snapshot!(
-        extract_with(
+        extract_with_all_panda_modules(
             indoc! {r#"
                 import * as recipes from "@panda/recipes"
                 recipes.cardStyle({ rounded: true })
             "#},
             &[namespace("recipes", "@panda/recipes", MatchCategory::Recipe)],
-            &panda_matchers("@panda"),
         ),
         @"
     calls:
@@ -965,10 +862,9 @@ fn js_parity_namespace_recipe() {
 fn namespace_property_outside_name_allowlist_is_skipped() {
     // panda.somethingElse(...) — `somethingElse` is not in [css, cva, sva].
     assert_yaml_snapshot!(
-        extract_with(
+        extract_with_all_panda_modules(
             "panda.somethingElse({ color: 'red' })",
             &[namespace("panda", "@panda/css", MatchCategory::Css)],
-            &panda_matchers("@panda"),
         ),
         @"
     calls: []
@@ -981,10 +877,9 @@ fn namespace_property_outside_name_allowlist_is_skipped() {
 fn called_namespace_alias_without_property_is_skipped() {
     // `panda(...)` (calling the namespace itself) is not a Panda call.
     assert_yaml_snapshot!(
-        extract_with(
+        extract_with_all_panda_modules(
             "panda({ color: 'red' })",
             &[namespace("panda", "@panda/css", MatchCategory::Css)],
-            &panda_matchers("@panda"),
         ),
         @"
     calls: []
@@ -994,8 +889,6 @@ fn called_namespace_alias_without_property_is_skipped() {
 }
 
 // --- constant folding + AST unwraps ---
-// Anything in this section operates on already-literal operands. Identifier
-// references and member access still fall through to `None` until Phase 5.
 
 #[test]
 fn parenthesized_argument_unwraps() {
@@ -1212,9 +1105,7 @@ fn template_literal_without_interpolation() {
 
 #[test]
 fn template_literal_with_interpolation_is_skipped() {
-    // Interpolated template literals need identifier/scope resolution
-    // (Phase 5). For now they're dropped; the surrounding `css()` call
-    // still extracts if other args are extractable, otherwise skipped.
+    // `dynamic` is not bound in the file.
     assert_yaml_snapshot!(
         extract("css({ color: `${dynamic}px` })", &[css("css")]),
         @"
@@ -1972,7 +1863,7 @@ fn array_value_preserves_elision_holes() {
 fn multiline_template_literal_with_interpolation_folds() {
     // Template spans multiple lines, with a const-bound interpolation.
     // Newlines and indentation collapse like v1's `trimWhitespace` path.
-    let result = extract_with(
+    let result = extract(
         indoc! {r"
             const angle = '135deg';
             css({
@@ -1984,7 +1875,6 @@ fn multiline_template_literal_with_interpolation_folds() {
             });
         "},
         &[css("css")],
-        &css_matchers(),
     );
     let lit = serde_json::to_value(&result.calls[0].data[0]).unwrap();
     let bg = lit["backgroundImage"].as_str().unwrap();
@@ -2024,13 +1914,12 @@ fn satisfies_operator_is_transparent_for_call_args() {
 fn non_null_assertion_unwraps_through_member_access() {
     // `tokens!.color` — the `!` is a TS non-null assertion, a runtime
     // no-op. Inner member access folds normally.
-    let result = extract_with(
+    let result = extract(
         indoc! {r"
             const tokens = { color: 'red' };
             css({ color: tokens!.color });
         "},
         &[css("css")],
-        &css_matchers(),
     );
     let json = serde_json::to_value(&result.calls[0].data[0]).unwrap();
     assert_eq!(json["color"], "red");

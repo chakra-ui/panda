@@ -8,9 +8,9 @@ use pandacss_config::UserConfig;
 use pandacss_literal::Literal;
 use pandacss_project::{AtomValue, ParseTransforms, Project, System, UtilityTransformFn};
 use pandacss_shared::Diagnostic;
-use pandacss_stylesheet::{StylesheetInput, StylesheetLayer, StylesheetOptions};
+use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
-use crate::common::config;
+use crate::common::{config, merge, project_input};
 
 /// One leaf declaration shorthand for building a transform's return object.
 fn decl(prop: &str, value: &str) -> (String, Literal) {
@@ -52,19 +52,7 @@ where
         &mut transform as &mut UtilityTransformFn<'_>,
     );
     pandacss_stylesheet::compile(
-        StylesheetInput {
-            config: cfg,
-            token_dictionary: None,
-            atoms: snapshots.atoms,
-            utility_styles: snapshots.utility_styles,
-            view_transitions: snapshots.view_transitions,
-            position_try: snapshots.position_try,
-            inline_keyframes: snapshots.inline_keyframes,
-            encoded_recipes: snapshots.encoded_recipes,
-            static_encoded_recipes: Some(snapshots.static_encoded_recipes),
-            static_pattern_atoms: &[],
-            token_refs: snapshots.token_refs,
-        },
+        project_input(cfg, &snapshots),
         &StylesheetOptions::default(),
     )
     .get_layer_css(layers)
@@ -289,19 +277,7 @@ fn override_styles_are_refcounted_across_files() {
     let compile = |project: &mut Project| {
         let snapshots = project.stylesheet_snapshots(&cfg);
         pandacss_stylesheet::compile(
-            StylesheetInput {
-                config: &cfg,
-                token_dictionary: None,
-                atoms: snapshots.atoms,
-                utility_styles: snapshots.utility_styles,
-                view_transitions: snapshots.view_transitions,
-                position_try: snapshots.position_try,
-                inline_keyframes: snapshots.inline_keyframes,
-                encoded_recipes: snapshots.encoded_recipes,
-                static_encoded_recipes: Some(snapshots.static_encoded_recipes),
-                static_pattern_atoms: &[],
-                token_refs: snapshots.token_refs,
-            },
+            project_input(&cfg, &snapshots),
             &StylesheetOptions::default(),
         )
         .get_layer_css(&[StylesheetLayer::Utilities])
@@ -328,14 +304,17 @@ fn override_styles_are_refcounted_across_files() {
     assert_snapshot!(compile(&mut project), @"");
 }
 
-/// Config for a CSS-variable utility with a shorthand, whose transform emits a
-/// custom property. The closure returns styles only for the canonical `colorVar`
-/// key — mirroring the real JS ref map, which is keyed by canonical name — so a
-/// style authored via the `colorVarShort` shorthand only transforms if it was
-/// normalized to the canonical key first.
-fn color_variable_config() -> UserConfig {
-    config(serde_json::json!({
-        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+/// `colorVar` (shorthand `colorVarShort`) is a custom utility whose transform
+/// writes `--color-var`; `scenario` adds the styles that use it.
+#[allow(
+    clippy::needless_pass_by_value,
+    reason = "owned json reads naturally at call sites"
+)]
+fn color_var_config(scenario: serde_json::Value) -> UserConfig {
+    let mut value = serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": ["@panda/jsx"], "tokens": [] },
+        "jsxFramework": "react",
+        "conditions": { "hover": "&:hover" },
         "theme": { "tokens": { "colors": {
             "red": { "value": "#f00" },
             "blue": { "value": "#00f" },
@@ -349,15 +328,19 @@ fn color_variable_config() -> UserConfig {
                 "transform": { "kind": "js-callback", "id": "colorVar" }
             }
         }
-    }))
+    });
+    merge(&mut value, scenario);
+    config(value)
 }
 
+/// Returns styles only for the canonical `colorVar` key, like the real JS ref
+/// map, so a `colorVarShort` style only transforms if it was normalized first.
 #[allow(
     clippy::unnecessary_wraps,
     clippy::result_large_err,
     reason = "signature must match UtilityTransformFn"
 )]
-fn color_variable_transform(
+fn color_var_transform(
     prop: &str,
     resolved: &AtomValue,
     _original: &AtomValue,
@@ -372,51 +355,16 @@ fn color_variable_transform(
     }
 }
 
-/// Adds a config recipe and slot recipe (both authored with the `colorVarShort`
-/// shorthand) to [`color_variable_config`], plus the jsx/recipe import maps their
-/// usage needs.
-fn color_variable_recipe_config() -> UserConfig {
-    config(serde_json::json!({
-        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": ["@panda/jsx"], "tokens": [] },
-        "jsxFramework": "react",
-        "theme": {
-            "tokens": { "colors": {
-                "blue": { "value": "#00f" },
-                "green": { "value": "#0f0" }
-            } },
-            "recipes": {
-                "button": {
-                    "className": "button",
-                    "base": { "colorVarShort": "blue" }
-                }
-            },
-            "slotRecipes": {
-                "card": {
-                    "className": "card",
-                    "slots": ["root"],
-                    "base": { "root": { "colorVarShort": "green" } }
-                }
-            }
-        },
-        "utilities": {
-            "colorVar": {
-                "className": "cv",
-                "shorthand": "colorVarShort",
-                "values": "colors",
-                "transform": { "kind": "js-callback", "id": "colorVar" }
-            }
-        }
-    }))
-}
-
 #[test]
 fn config_recipe_applies_custom_utility_transform_via_shorthand() {
-    let cfg = color_variable_recipe_config();
+    let cfg = color_var_config(serde_json::json!({
+        "theme": { "recipes": { "button": { "className": "button", "base": { "colorVarShort": "blue" } } } }
+    }));
     let css = compile_layer_with_transform(
         &cfg,
         "import { button } from '@panda/recipes'; button()",
         &[StylesheetLayer::Recipes],
-        color_variable_transform,
+        color_var_transform,
     );
     assert_snapshot!(css, @r"
     @layer recipes {
@@ -431,12 +379,18 @@ fn config_recipe_applies_custom_utility_transform_via_shorthand() {
 
 #[test]
 fn config_slot_recipe_applies_custom_utility_transform_via_shorthand() {
-    let cfg = color_variable_recipe_config();
+    let cfg = color_var_config(serde_json::json!({
+        "theme": { "slotRecipes": { "card": {
+            "className": "card",
+            "slots": ["root"],
+            "base": { "root": { "colorVarShort": "green" } }
+        } } }
+    }));
     let css = compile_layer_with_transform(
         &cfg,
         "import { card } from '@panda/recipes'; card()",
         &[StylesheetLayer::Recipes],
-        color_variable_transform,
+        color_var_transform,
     );
     assert_snapshot!(css, @r"
     @layer recipes.slots {
@@ -451,12 +405,12 @@ fn config_slot_recipe_applies_custom_utility_transform_via_shorthand() {
 
 #[test]
 fn styled_recipe_applies_custom_utility_transform_via_shorthand() {
-    let cfg = color_variable_recipe_config();
+    let cfg = color_var_config(serde_json::json!({}));
     let css = compile_layer_with_transform(
         &cfg,
         "import { styled } from '@panda/jsx'; const B = styled.div({ base: { colorVarShort: 'blue' } })",
         &[StylesheetLayer::Utilities],
-        color_variable_transform,
+        color_var_transform,
     );
     assert_snapshot!(css, @r"
     @layer utilities {
@@ -469,12 +423,12 @@ fn styled_recipe_applies_custom_utility_transform_via_shorthand() {
 
 #[test]
 fn styled_style_object_applies_custom_utility_transform_via_shorthand() {
-    let cfg = color_variable_recipe_config();
+    let cfg = color_var_config(serde_json::json!({}));
     let css = compile_layer_with_transform(
         &cfg,
         "import { styled } from '@panda/jsx'; const B = styled.div({ colorVarShort: 'blue' })",
         &[StylesheetLayer::Utilities],
-        color_variable_transform,
+        color_var_transform,
     );
     assert_snapshot!(css, @r"
     @layer utilities {
@@ -485,32 +439,12 @@ fn styled_style_object_applies_custom_utility_transform_via_shorthand() {
     ");
 }
 
-#[allow(
-    clippy::needless_pass_by_value,
-    reason = "owned json reads naturally at call sites"
-)]
-fn global_css_config(body: serde_json::Value) -> UserConfig {
-    config(serde_json::json!({
-        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
-        "conditions": { "hover": "&:hover" },
-        "theme": { "tokens": { "colors": { "blue": { "value": "#00f" }, "red": { "value": "#f00" } } } },
-        "utilities": {
-            "colorVar": {
-                "className": "cv",
-                "shorthand": "colorVarShort",
-                "values": "colors",
-                "transform": { "kind": "js-callback", "id": "colorVar" }
-            }
-        },
-        "globalCss": { "body": body }
-    }))
-}
-
 #[test]
 fn global_css_applies_custom_utility_transform_via_shorthand() {
-    let cfg = global_css_config(serde_json::json!({ "colorVarShort": "blue" }));
-    let css =
-        compile_layer_with_transform(&cfg, "", &[StylesheetLayer::Base], color_variable_transform);
+    let cfg = color_var_config(
+        serde_json::json!({ "globalCss": { "body": { "colorVarShort": "blue" } } }),
+    );
+    let css = compile_layer_with_transform(&cfg, "", &[StylesheetLayer::Base], color_var_transform);
     assert_snapshot!(css, @r"
     @layer base {
       :root {
@@ -525,9 +459,9 @@ fn global_css_applies_custom_utility_transform_via_shorthand() {
 
 #[test]
 fn global_css_applies_custom_utility_transform_via_canonical_name() {
-    let cfg = global_css_config(serde_json::json!({ "colorVar": "blue" }));
-    let css =
-        compile_layer_with_transform(&cfg, "", &[StylesheetLayer::Base], color_variable_transform);
+    let cfg =
+        color_var_config(serde_json::json!({ "globalCss": { "body": { "colorVar": "blue" } } }));
+    let css = compile_layer_with_transform(&cfg, "", &[StylesheetLayer::Base], color_var_transform);
     assert_snapshot!(css, @r"
     @layer base {
       :root {
@@ -542,9 +476,10 @@ fn global_css_applies_custom_utility_transform_via_canonical_name() {
 
 #[test]
 fn global_css_applies_custom_utility_transform_to_conditional_value() {
-    let cfg = global_css_config(serde_json::json!({ "colorVarShort": { "_hover": "blue" } }));
-    let css =
-        compile_layer_with_transform(&cfg, "", &[StylesheetLayer::Base], color_variable_transform);
+    let cfg = color_var_config(
+        serde_json::json!({ "globalCss": { "body": { "colorVarShort": { "_hover": "blue" } } } }),
+    );
+    let css = compile_layer_with_transform(&cfg, "", &[StylesheetLayer::Base], color_var_transform);
     assert_snapshot!(css, @r"
     @layer base {
       :root {
@@ -559,11 +494,10 @@ fn global_css_applies_custom_utility_transform_to_conditional_value() {
 
 #[test]
 fn global_css_applies_custom_utility_transform_to_base_and_conditional_values() {
-    let cfg = global_css_config(
-        serde_json::json!({ "colorVarShort": { "base": "red", "_hover": "blue" } }),
-    );
-    let css =
-        compile_layer_with_transform(&cfg, "", &[StylesheetLayer::Base], color_variable_transform);
+    let cfg = color_var_config(serde_json::json!({
+        "globalCss": { "body": { "colorVarShort": { "base": "red", "_hover": "blue" } } }
+    }));
+    let css = compile_layer_with_transform(&cfg, "", &[StylesheetLayer::Base], color_var_transform);
     assert_snapshot!(css, @r"
     @layer base {
       :root {
@@ -581,9 +515,10 @@ fn global_css_applies_custom_utility_transform_to_base_and_conditional_values() 
 
 #[test]
 fn global_css_applies_custom_utility_transform_under_nested_condition() {
-    let cfg = global_css_config(serde_json::json!({ "_hover": { "colorVarShort": "blue" } }));
-    let css =
-        compile_layer_with_transform(&cfg, "", &[StylesheetLayer::Base], color_variable_transform);
+    let cfg = color_var_config(serde_json::json!({
+        "globalCss": { "body": { "_hover": { "colorVarShort": "blue" } } }
+    }));
+    let css = compile_layer_with_transform(&cfg, "", &[StylesheetLayer::Base], color_var_transform);
     assert_snapshot!(css, @r"
     @layer base {
       :root {
@@ -596,40 +531,16 @@ fn global_css_applies_custom_utility_transform_under_nested_condition() {
     ");
 }
 
-/// [`color_variable_config`] plus a `composition` (text/layer/animation style)
-/// authored with the `colorVarShort` shorthand.
-fn composition_config(kind: &str, value: &serde_json::Value) -> UserConfig {
-    let mut cfg = serde_json::json!({
-        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
-        "conditions": { "hover": "&:hover" },
-        "theme": {
-            "tokens": { "colors": { "blue": { "value": "#00f" }, "red": { "value": "#f00" } } },
-            "recipes": {},
-        },
-        "utilities": {
-            "colorVar": {
-                "className": "cv",
-                "shorthand": "colorVarShort",
-                "values": "colors",
-                "transform": { "kind": "js-callback", "id": "colorVar" }
-            }
-        }
-    });
-    cfg["theme"][kind] = serde_json::json!({ "brand": { "value": value.clone() } });
-    config(cfg)
-}
-
 #[test]
 fn layer_style_applies_custom_utility_transform_via_shorthand() {
-    let cfg = composition_config(
-        "layerStyles",
-        &serde_json::json!({ "colorVarShort": "blue" }),
-    );
+    let cfg = color_var_config(serde_json::json!({
+        "theme": { "layerStyles": { "brand": { "value": { "colorVarShort": "blue" } } } }
+    }));
     let css = compile_layer_with_transform(
         &cfg,
         "import { css } from '@panda/css'; css({ layerStyle: 'brand' });",
         &[StylesheetLayer::Utilities],
-        color_variable_transform,
+        color_var_transform,
     );
     assert_snapshot!(css, @r"
     @layer utilities {
@@ -644,15 +555,14 @@ fn layer_style_applies_custom_utility_transform_via_shorthand() {
 
 #[test]
 fn text_style_applies_custom_utility_transform_via_shorthand() {
-    let cfg = composition_config(
-        "textStyles",
-        &serde_json::json!({ "colorVarShort": "blue" }),
-    );
+    let cfg = color_var_config(serde_json::json!({
+        "theme": { "textStyles": { "brand": { "value": { "colorVarShort": "blue" } } } }
+    }));
     let css = compile_layer_with_transform(
         &cfg,
         "import { css } from '@panda/css'; css({ textStyle: 'brand' });",
         &[StylesheetLayer::Utilities],
-        color_variable_transform,
+        color_var_transform,
     );
     assert_snapshot!(css, @r"
     @layer utilities {
@@ -667,15 +577,14 @@ fn text_style_applies_custom_utility_transform_via_shorthand() {
 
 #[test]
 fn layer_style_applies_custom_utility_transform_to_conditional_value() {
-    let cfg = composition_config(
-        "layerStyles",
-        &serde_json::json!({ "colorVarShort": { "_hover": "blue" } }),
-    );
+    let cfg = color_var_config(serde_json::json!({
+        "theme": { "layerStyles": { "brand": { "value": { "colorVarShort": { "_hover": "blue" } } } } }
+    }));
     let css = compile_layer_with_transform(
         &cfg,
         "import { css } from '@panda/css'; css({ layerStyle: 'brand' });",
         &[StylesheetLayer::Utilities],
-        color_variable_transform,
+        color_var_transform,
     );
     assert_snapshot!(css, @r"
     @layer utilities {
@@ -690,12 +599,12 @@ fn layer_style_applies_custom_utility_transform_to_conditional_value() {
 
 #[test]
 fn css_applies_custom_utility_transform_via_shorthand() {
-    let cfg = color_variable_config();
+    let cfg = color_var_config(serde_json::json!({}));
     let utilities = compile_layer_with_transform(
         &cfg,
         "import { css } from '@panda/css'; css({ colorVarShort: 'red' });",
         &[StylesheetLayer::Utilities],
-        color_variable_transform,
+        color_var_transform,
     );
     assert_snapshot!(utilities, @r"
     @layer utilities {
@@ -708,12 +617,12 @@ fn css_applies_custom_utility_transform_via_shorthand() {
 
 #[test]
 fn cva_base_applies_custom_utility_transform_via_shorthand() {
-    let cfg = color_variable_config();
+    let cfg = color_var_config(serde_json::json!({}));
     let utilities = compile_layer_with_transform(
         &cfg,
         "import { cva } from '@panda/css'; export const b = cva({ base: { colorVarShort: 'blue' } });",
         &[StylesheetLayer::Utilities],
-        color_variable_transform,
+        color_var_transform,
     );
     assert_snapshot!(utilities, @r"
     @layer utilities {
@@ -726,12 +635,12 @@ fn cva_base_applies_custom_utility_transform_via_shorthand() {
 
 #[test]
 fn cva_variant_applies_custom_utility_transform_via_shorthand() {
-    let cfg = color_variable_config();
+    let cfg = color_var_config(serde_json::json!({}));
     let utilities = compile_layer_with_transform(
         &cfg,
         "import { cva } from '@panda/css'; export const b = cva({ variants: { tone: { brand: { colorVarShort: 'blue' } } } });",
         &[StylesheetLayer::Utilities],
-        color_variable_transform,
+        color_var_transform,
     );
     assert_snapshot!(utilities, @r"
     @layer utilities {
@@ -744,12 +653,12 @@ fn cva_variant_applies_custom_utility_transform_via_shorthand() {
 
 #[test]
 fn sva_base_applies_custom_utility_transform_via_shorthand() {
-    let cfg = color_variable_config();
+    let cfg = color_var_config(serde_json::json!({}));
     let utilities = compile_layer_with_transform(
         &cfg,
         "import { sva } from '@panda/css'; export const c = sva({ slots: ['root'], base: { root: { colorVarShort: 'green' } } });",
         &[StylesheetLayer::Utilities],
-        color_variable_transform,
+        color_var_transform,
     );
     assert_snapshot!(utilities, @r"
     @layer utilities {
@@ -762,12 +671,12 @@ fn sva_base_applies_custom_utility_transform_via_shorthand() {
 
 #[test]
 fn cva_base_applies_custom_utility_transform_via_canonical_name() {
-    let cfg = color_variable_config();
+    let cfg = color_var_config(serde_json::json!({}));
     let utilities = compile_layer_with_transform(
         &cfg,
         "import { cva } from '@panda/css'; export const b = cva({ base: { colorVar: 'blue' } });",
         &[StylesheetLayer::Utilities],
-        color_variable_transform,
+        color_var_transform,
     );
     assert_snapshot!(utilities, @r"
     @layer utilities {

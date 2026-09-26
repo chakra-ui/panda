@@ -173,7 +173,7 @@ fn build_info_round_trips_runtime_token_refs_with_module_provenance() {
     );
 }
 
-fn lib_project() -> pandacss_project::Project {
+fn button_and_card_library() -> pandacss_project::Project {
     let mut project = create_project(json!({}));
     project.parse_file(
         "button.tsx",
@@ -190,7 +190,7 @@ fn lib_project() -> pandacss_project::Project {
 
 #[test]
 fn hydrate_reproduces_every_atom() {
-    let source = lib_project();
+    let source = button_and_card_library();
     let info = source.build_info("^2.0.0".into());
 
     let mut consumer = create_project(json!({}));
@@ -265,7 +265,7 @@ fn build_info_excludes_hydrated_parent_token_refs() {
 
 #[test]
 fn hydrate_rejects_a_corrupt_intern_table() {
-    let source = lib_project();
+    let source = button_and_card_library();
     let mut info = source.build_info("^2.0.0".into());
     assert!(!info.atoms.is_empty());
     // Point an atom's prop at a string index past the intern table.
@@ -305,7 +305,7 @@ fn hydrate_rejects_corrupt_token_ref_indices() {
 
 #[test]
 fn hydrate_rejects_a_corrupt_recipe_entry() {
-    let source = recipe_lib_project();
+    let source = button_and_tabs_recipe_library();
     let mut info = source.build_info("^2.0.0".into());
     let group = info
         .recipes
@@ -322,7 +322,7 @@ fn hydrate_rejects_a_corrupt_recipe_entry() {
 
 #[test]
 fn hydrate_rejects_a_corrupt_module_atom_index() {
-    let source = lib_project();
+    let source = button_and_card_library();
     let mut info = source.build_info("^2.0.0".into());
     let invalid_index = u32::try_from(info.atoms.len()).expect("atom count fits in u32");
     info.modules
@@ -337,7 +337,7 @@ fn hydrate_rejects_a_corrupt_module_atom_index() {
 
 #[test]
 fn hydrate_rejects_a_corrupt_module_recipe_index() {
-    let source = recipe_lib_project();
+    let source = button_and_tabs_recipe_library();
     let mut info = source.build_info("^2.0.0".into());
     let recipe_count =
         info.recipes.base.len() + info.recipes.variants.len() + info.recipes.compounds.len();
@@ -357,7 +357,7 @@ fn hydrate_rejects_a_corrupt_module_recipe_index() {
 
 #[test]
 fn hydrate_with_module_filter_emits_only_imported_modules() {
-    let source = lib_project();
+    let source = button_and_card_library();
     let info = source.build_info("^2.0.0".into());
 
     // Import only `button` — `card`'s `margin: 8px` must not hydrate.
@@ -376,7 +376,7 @@ fn hydrate_with_module_filter_emits_only_imported_modules() {
 
 /// A library exposing a config recipe (`button`) and a slot recipe (`tabs`),
 /// each used from a distinct module so recipe provenance is per-file.
-fn recipe_lib_project() -> pandacss_project::Project {
+fn button_and_tabs_recipe_library() -> pandacss_project::Project {
     let mut project = create_project(json!({
         "theme": {
             "recipes": {
@@ -415,7 +415,7 @@ fn emit_recipes(project: &mut pandacss_project::Project) -> serde_json::Value {
 
 #[test]
 fn build_info_serializes_recipes_with_per_module_provenance() {
-    let source = recipe_lib_project();
+    let source = button_and_tabs_recipe_library();
     let info = source.build_info("^2.0.0".into());
 
     // `button` base+variant attribute to `button.tsx`; `tabs` variant to `tabs.tsx`.
@@ -450,10 +450,10 @@ fn build_info_serializes_recipes_with_per_module_provenance() {
     ");
 }
 
-/// Same two recipes as [`recipe_lib_project`], but each is consumed through
+/// Same two recipes as [`button_and_tabs_recipe_library`], but each is consumed through
 /// **JSX** — a config recipe component (`<Button>`) and a slot recipe member tag
 /// (`<Tabs.Root>`) — so we prove JSX usage feeds per-module recipe provenance.
-fn jsx_recipe_lib_project() -> pandacss_project::Project {
+fn button_and_tabs_jsx_recipe_library() -> pandacss_project::Project {
     let mut project = create_project(json!({
         "jsxFramework": "react",
         "theme": {
@@ -486,7 +486,7 @@ fn jsx_recipe_lib_project() -> pandacss_project::Project {
 
 #[test]
 fn build_info_attributes_jsx_recipe_usage_to_its_module() {
-    let source = jsx_recipe_lib_project();
+    let source = button_and_tabs_jsx_recipe_library();
     let info = source.build_info("^2.0.0".into());
 
     // `<Button>` → button base+variant in button.tsx; `<Tabs.Root>` → tabs in tabs.tsx.
@@ -503,7 +503,7 @@ fn build_info_attributes_jsx_recipe_usage_to_its_module() {
 
 #[test]
 fn hydrate_reproduces_jsx_recipe_usage() {
-    let mut source = jsx_recipe_lib_project();
+    let mut source = button_and_tabs_jsx_recipe_library();
     let info = source.build_info("^2.0.0".into());
 
     let mut consumer = create_project(json!({}));
@@ -513,7 +513,7 @@ fn hydrate_reproduces_jsx_recipe_usage() {
 
 #[test]
 fn hydrate_with_module_filter_tree_shakes_jsx_recipes() {
-    let source = jsx_recipe_lib_project();
+    let source = button_and_tabs_jsx_recipe_library();
     let info = source.build_info("^2.0.0".into());
 
     // Import only the `<Button>` module — the `<Tabs.Root>` slot recipe drops.
@@ -542,7 +542,7 @@ fn hydrate_with_module_filter_tree_shakes_jsx_recipes() {
 
 #[test]
 fn hydrate_reproduces_every_recipe() {
-    let mut source = recipe_lib_project();
+    let mut source = button_and_tabs_recipe_library();
     let info = source.build_info("^2.0.0".into());
 
     let mut consumer = create_project(json!({}));
@@ -619,7 +619,7 @@ fn hydrate_reproduces_compound_recipe_variants() {
 
 #[test]
 fn hydrate_with_module_filter_emits_only_imported_recipes() {
-    let source = recipe_lib_project();
+    let source = button_and_tabs_recipe_library();
     let info = source.build_info("^2.0.0".into());
 
     // Import only `button` — the `tabs` slot recipe must not hydrate.
@@ -1004,7 +1004,7 @@ fn build_info_exports_round_trip_through_json() {
 
 #[test]
 fn hydrate_rejects_incompatible_schema_version() {
-    let source = lib_project();
+    let source = button_and_card_library();
     let mut info = source.build_info("^2.0.0".into());
     info.schema_version = 999;
 
@@ -1512,10 +1512,53 @@ fn hydrate_rejects_corrupt_view_transition_class_index() {
     assert!(!consumer.hydrate("@acme/ds", &info, None));
 }
 
+/// A `boxSize` utility whose JS transform expands to `width`/`height`.
+fn box_size_config() -> serde_json::Value {
+    json!({
+        "theme": {
+            "tokens": { "sizes": { "4": { "value": "1rem" }, "8": { "value": "2rem" } } },
+            "breakpoints": { "md": "768px" }
+        },
+        "conditions": { "hover": "&:hover", "focus": "&:focus" },
+        "utilities": {
+            "boxSize": {
+                "className": "size",
+                "values": "sizes",
+                "transform": { "kind": "js-callback", "id": "boxSize" }
+            }
+        }
+    })
+}
+
+#[allow(
+    clippy::unnecessary_wraps,
+    clippy::result_large_err,
+    reason = "signature must match UtilityTransformFn"
+)]
+fn box_size_transform(
+    prop: &str,
+    resolved: &AtomValue,
+    _original: &AtomValue,
+) -> Result<Option<pandacss_literal::Literal>, pandacss_project::Diagnostic> {
+    use pandacss_literal::Literal;
+    if prop != "boxSize" {
+        return Ok(None);
+    }
+    let value = match resolved {
+        AtomValue::String(value) | AtomValue::Number(value) | AtomValue::Token { value, .. } => {
+            value.to_string()
+        }
+        AtomValue::Bool(_) | AtomValue::Null => return Ok(None),
+    };
+    Ok(Some(Literal::Object(vec![
+        ("width".to_owned(), Literal::String(value.clone())),
+        ("height".to_owned(), Literal::String(value)),
+    ])))
+}
+
 #[test]
 fn a_hydrated_atom_gets_its_transform_recomputed_by_the_consumer() {
-    use pandacss_literal::Literal;
-    use pandacss_project::{Diagnostic, ParseTransforms, UtilityTransformFn};
+    use pandacss_project::{ParseTransforms, UtilityTransformFn};
 
     // The library's preset ships this utility, so the consumer's own config
     // declares it too and holds the callback.
@@ -1530,24 +1573,7 @@ fn a_hydrated_atom_gets_its_transform_recomputed_by_the_consumer() {
         }
     });
 
-    let mut transform = |prop: &str,
-                         resolved: &AtomValue,
-                         _original: &AtomValue|
-     -> Result<Option<Literal>, Diagnostic> {
-        if prop != "boxSize" {
-            return Ok(None);
-        }
-        let value = match resolved {
-            AtomValue::String(value)
-            | AtomValue::Number(value)
-            | AtomValue::Token { value, .. } => value.to_string(),
-            AtomValue::Bool(_) | AtomValue::Null => return Ok(None),
-        };
-        Ok(Some(Literal::Object(vec![
-            ("width".to_owned(), Literal::String(value.clone())),
-            ("height".to_owned(), Literal::String(value)),
-        ])))
-    };
+    let mut transform = box_size_transform;
 
     let mut lib = create_project(config_overrides.clone());
     lib.parse_file_with(
@@ -1590,8 +1616,7 @@ fn a_hydrated_atom_gets_its_transform_recomputed_by_the_consumer() {
 
 #[test]
 fn hydrating_a_utility_the_consumer_never_merged_warns() {
-    use pandacss_literal::Literal;
-    use pandacss_project::{Diagnostic, ParseTransforms, UtilityTransformFn};
+    use pandacss_project::{ParseTransforms, UtilityTransformFn};
 
     let lib_overrides = json!({
         "utilities": {
@@ -1602,24 +1627,7 @@ fn hydrating_a_utility_the_consumer_never_merged_warns() {
         }
     });
 
-    let mut transform = |prop: &str,
-                         resolved: &AtomValue,
-                         _original: &AtomValue|
-     -> Result<Option<Literal>, Diagnostic> {
-        if prop != "boxSize" {
-            return Ok(None);
-        }
-        let value = match resolved {
-            AtomValue::String(value)
-            | AtomValue::Number(value)
-            | AtomValue::Token { value, .. } => value.to_string(),
-            AtomValue::Bool(_) | AtomValue::Null => return Ok(None),
-        };
-        Ok(Some(Literal::Object(vec![
-            ("width".to_owned(), Literal::String(value.clone())),
-            ("height".to_owned(), Literal::String(value)),
-        ])))
-    };
+    let mut transform = box_size_transform;
 
     let mut lib = create_project(lib_overrides.clone());
     lib.parse_file_with(
@@ -1647,51 +1655,6 @@ fn hydrating_a_utility_the_consumer_never_merged_warns() {
     assert!(unregistered[0].contains("boxSize"), "{}", unregistered[0]);
     assert!(unregistered[0].contains("box-size"), "{}", unregistered[0]);
     assert!(!unregistered[0].contains("color"), "{}", unregistered[0]);
-}
-
-/// Shared fixture for the hydrated-transform tests: a `boxSize` utility whose
-/// JS transform expands to `width`/`height`.
-fn box_size_config() -> serde_json::Value {
-    json!({
-        "theme": {
-            "tokens": { "sizes": { "4": { "value": "1rem" }, "8": { "value": "2rem" } } },
-            "breakpoints": { "md": "768px" }
-        },
-        "conditions": { "hover": "&:hover", "focus": "&:focus" },
-        "utilities": {
-            "boxSize": {
-                "className": "size",
-                "values": "sizes",
-                "transform": { "kind": "js-callback", "id": "boxSize" }
-            }
-        }
-    })
-}
-
-#[allow(
-    clippy::unnecessary_wraps,
-    clippy::result_large_err,
-    reason = "signature must match UtilityTransformFn"
-)]
-fn box_size_transform(
-    prop: &str,
-    resolved: &AtomValue,
-    _original: &AtomValue,
-) -> Result<Option<pandacss_literal::Literal>, pandacss_project::Diagnostic> {
-    use pandacss_literal::Literal;
-    if prop != "boxSize" {
-        return Ok(None);
-    }
-    let value = match resolved {
-        AtomValue::String(value) | AtomValue::Number(value) | AtomValue::Token { value, .. } => {
-            value.to_string()
-        }
-        AtomValue::Bool(_) | AtomValue::Null => return Ok(None),
-    };
-    Ok(Some(Literal::Object(vec![
-        ("width".to_owned(), Literal::String(value.clone())),
-        ("height".to_owned(), Literal::String(value)),
-    ])))
 }
 
 #[test]

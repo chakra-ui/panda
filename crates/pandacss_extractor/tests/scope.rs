@@ -1,9 +1,5 @@
-//! Phase 5 scope-resolution tests.
-//!
-//! Exercises identifier / member-access / destructuring resolution and
-//! function-parameter shadowing — the surfaces that flipped on with
-//! `oxc_semantic` integration. These tests use the combined `extract()`
-//! entrypoint so the resolver is always present.
+//! Same-file binding resolution: identifiers, member access, destructuring,
+//! shadowing, and pure helper calls.
 
 use crate::common::{panda_config, panda_jsx_config};
 use indoc::indoc;
@@ -81,10 +77,6 @@ fn chained_identifiers_resolve_transitively() {
 
 #[test]
 fn chained_css_raw_spreads_resolve_transitively() {
-    // Grounded in JS `css-raw-spread.test.ts` › "handles spreading across
-    // multiple files": sharedStyles → buttonStyles (spreads shared) → button
-    // (spreads buttonStyles, incl. a nested `_hover` re-spread). Each `css.raw`
-    // const folds and merges through the chain.
     let src = indoc! {r"
         import { css } from '@panda/css';
         const sharedStyles = css.raw({
@@ -105,9 +97,6 @@ fn chained_css_raw_spreads_resolve_transitively() {
           }
         })
     "};
-    // Assert the final css() call's merged data (the JS fixture's 3rd entry).
-    // Key order is source-insertion order here vs. the JS snapshot's sorted
-    // keys — same keys/values.
     let calls = run(src).calls;
     let last = calls.last().expect("final css() call");
     assert_yaml_snapshot!(last.data, @"
@@ -127,8 +116,6 @@ fn chained_css_raw_spreads_resolve_transitively() {
 
 #[test]
 fn css_raw_spread_in_cva_base_folds() {
-    // Grounded in JS `css-raw-variants.test.ts` › "spreads css.raw in cva base
-    // styles": the css.raw const spreads into the cva `base` before extraction.
     let src = indoc! {r"
         import { css, cva } from '@panda/css';
         const baseStyles = css.raw({ display: 'flex', alignItems: 'center', gap: '2' });
@@ -157,9 +144,6 @@ fn css_raw_spread_in_cva_base_folds() {
 
 #[test]
 fn css_raw_spread_in_arbitrary_selectors_folds() {
-    // Grounded in JS `css-raw-spread.test.ts` › "handles spreading css.raw in
-    // arbitrary selectors": resetStyles spreads at top level and into `& li`,
-    // a nested `&:hover`, and a `[data-selected]` selector object.
     let src = indoc! {r"
         import { css } from '@panda/css';
         const resetStyles = css.raw({ margin: 0, padding: 0, boxSizing: 'border-box' });
@@ -201,8 +185,6 @@ fn css_raw_spread_in_arbitrary_selectors_folds() {
 
 #[test]
 fn let_unmutated_resolves() {
-    // `let` is fine for static folding when not reassigned — same call
-    // ts-evaluator makes.
     let src = indoc! {r"
         import { css } from '@panda/css';
         let color = 'red';
@@ -222,8 +204,6 @@ fn let_unmutated_resolves() {
 
 #[test]
 fn let_mutated_drops_resolution() {
-    // Mutation invalidates folding: the value at the call site isn't the
-    // initializer. We bail rather than guess.
     let src = indoc! {r"
         import { css } from '@panda/css';
         let color = 'red';
@@ -260,8 +240,6 @@ fn var_unmutated_resolves() {
 
 #[test]
 fn shorthand_property_resolves_via_resolver() {
-    // `{ color }` is `{ color: color }` — the value side is an Identifier
-    // which the resolver folds.
     let src = indoc! {r"
         import { css } from '@panda/css';
         const color = 'red';
@@ -1028,7 +1006,6 @@ fn impure_math_random_helper_does_not_fold() {
 
 #[test]
 fn pure_helper_object_return_spreads_into_css() {
-    // v1: `getColorConfig()` via ts-evaluator → BoxNodeObject, then spread.
     let src = indoc! {r"
         import { css } from '@panda/css';
         const getColorConfig = () => ({ color: 'teal.600', backgroundColor: 'teal.650' });
@@ -1055,8 +1032,7 @@ fn pure_helper_object_return_spreads_into_jsx() {
 
 #[test]
 fn pure_helper_body_object_spread_does_not_fold() {
-    // Object spread inside the pure body is out of IR scope (v1 folded via VM).
-    // Outer static siblings still extract (lenient object / spread skip).
+    // The helper's inner spread doesn't fold; the static siblings still extract.
     let src = indoc! {r"
         import { css } from '@panda/css';
         const base = { color: 'red' };
@@ -1110,7 +1086,6 @@ fn nested_pure_call_in_body_does_not_fold() {
 
 #[test]
 fn object_entries_factory_does_not_fold() {
-    // v1 folded this via ts-evaluator's ECMA preset; static pure_fn does not.
     let src = indoc! {r"
         import { css } from '@panda/css';
         const pickKey = () => Object.entries({ color: 'red' }).map(([k]) => k)[0];
@@ -1216,10 +1191,7 @@ fn function_expression_iife_folds() {
 
 #[test]
 fn class_static_method_reference_does_not_fold() {
-    // A plain reference pulled off a class isn't an arrow/function/
-    // parenthesized initializer, so `lower_callable_expr` never reaches a
-    // body — classes are out of scope entirely (v1 folded via ts-evaluator's
-    // full TS interpreter).
+    // Class members are never evaluated.
     let src = indoc! {r"
         import { css } from '@panda/css';
         class Colors {
@@ -1384,9 +1356,7 @@ fn closure_captures_outer_const() {
 // --- unfoldable bindings ---
 
 #[test]
-fn function_expression_initializer_drops() {
-    // `getColor` binds to an arrow function, not a literal. Resolver
-    // bails on FunctionExpression / ArrowFunctionExpression initializers.
+fn function_used_as_a_value_drops() {
     let src = indoc! {r"
         import { css } from '@panda/css';
         const getColor = () => 'red';
@@ -1417,9 +1387,6 @@ fn identifier_without_initializer_drops() {
 
 #[test]
 fn chained_element_access_on_resolved_object() {
-    // `colors['red']['500']` — two consecutive computed-member
-    // expressions. Each step folds the previous result through the
-    // standard lookup path; works the same as `colors.red[500]`.
     let src = indoc! {r"
         import { css } from '@panda/css';
         const colors = { red: { 500: '#ef4444' } };

@@ -349,14 +349,10 @@ fn tsx_source_parses_jsx() {
     );
 }
 
-// JS parity: scan_imports returns the unfiltered raw list. The import-map
-// filtering in `getImportDeclarations()` will move to Rust later; these
-// snapshots are the anchors for that comparison.
+// scan_imports lists every import; matching against Panda modules happens later.
 
 #[test]
-fn js_parity_named_alias_from_panda_css() {
-    // packages/parser/__tests__/import.test.ts
-    // JS field mapping: imported↔name, local↔alias, module↔mod.
+fn aliased_panda_css_import_keeps_imported_and_local_names() {
     assert_yaml_snapshot!(
         scan(indoc! {r#"
             import { css as nCss } from "@panda/css"
@@ -384,8 +380,7 @@ fn js_parity_named_alias_from_panda_css() {
 }
 
 #[test]
-fn js_parity_styled_system_relative() {
-    // packages/parser/__tests__/import-map.test.ts (first fixture)
+fn relative_styled_system_imports_are_listed() {
     assert_yaml_snapshot!(
         scan(indoc! {r#"
             import { css } from "../styled-system/css";
@@ -427,8 +422,7 @@ fn js_parity_styled_system_relative() {
 }
 
 #[test]
-fn js_parity_multiple_packages() {
-    // packages/parser/__tests__/import-map.test.ts (second fixture)
+fn imports_from_several_org_packages_are_all_listed() {
     assert_yaml_snapshot!(
         scan(indoc! {r#"
             import { cardStyle } from "@acme/org/recipes"

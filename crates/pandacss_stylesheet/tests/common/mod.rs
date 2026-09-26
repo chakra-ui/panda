@@ -1,5 +1,6 @@
 use pandacss_config::UserConfig;
-use pandacss_project::{Project, System};
+use pandacss_encoder::EncodedRecipesSnapshot;
+use pandacss_project::{Project, ProjectStylesheetSnapshots, System};
 use pandacss_stylesheet::{StylesheetInput, StylesheetLayer, StylesheetOptions, StylesheetOutput};
 
 pub fn config(value: serde_json::Value) -> UserConfig {
@@ -35,29 +36,9 @@ pub fn compile_output(
     source: &str,
     options: StylesheetOptions,
 ) -> StylesheetOutput {
-    let system = System::new(config.clone()).expect("valid project");
-    let mut project = Project::new(system);
-    project.parse_file("/style.ts", source);
+    let mut project = project_with_source(config, source);
     let snapshots = project.stylesheet_snapshots(config);
-    pandacss_stylesheet::compile(
-        StylesheetInput {
-            config,
-            token_dictionary: None,
-            atoms: snapshots.atoms,
-            utility_styles: snapshots.utility_styles,
-            view_transitions: snapshots.view_transitions,
-            position_try: snapshots.position_try,
-            inline_keyframes: snapshots.inline_keyframes,
-            encoded_recipes: snapshots.encoded_recipes,
-            static_encoded_recipes: Some(snapshots.static_encoded_recipes),
-            static_pattern_atoms: &[],
-            token_refs: snapshots.token_refs,
-        },
-        &StylesheetOptions {
-            include_static: true,
-            ..options
-        },
-    )
+    pandacss_stylesheet::compile(project_input(config, &snapshots), &with_static(options))
 }
 
 #[allow(dead_code)]
@@ -70,29 +51,9 @@ pub fn compile_keyframes_output(
     source: &str,
     options: StylesheetOptions,
 ) -> StylesheetOutput {
-    let system = System::new(config.clone()).expect("valid project");
-    let mut project = Project::new(system);
-    project.parse_file("/style.ts", source);
+    let mut project = project_with_source(config, source);
     let snapshots = project.stylesheet_snapshots(config);
-    pandacss_stylesheet::compile_keyframes(
-        StylesheetInput {
-            config,
-            token_dictionary: None,
-            atoms: snapshots.atoms,
-            utility_styles: snapshots.utility_styles,
-            view_transitions: snapshots.view_transitions,
-            position_try: snapshots.position_try,
-            inline_keyframes: snapshots.inline_keyframes,
-            encoded_recipes: snapshots.encoded_recipes,
-            static_encoded_recipes: Some(snapshots.static_encoded_recipes),
-            static_pattern_atoms: &[],
-            token_refs: snapshots.token_refs,
-        },
-        &StylesheetOptions {
-            include_static: true,
-            ..options
-        },
-    )
+    pandacss_stylesheet::compile_keyframes(project_input(config, &snapshots), &with_static(options))
 }
 
 #[allow(dead_code)]
@@ -105,32 +66,91 @@ pub fn split_output(
 }
 
 #[allow(dead_code)]
+#[allow(
+    clippy::needless_pass_by_value,
+    reason = "test helper; owned options read more naturally at call sites"
+)]
 pub fn split_result(
     config: &UserConfig,
     source: &str,
     options: StylesheetOptions,
 ) -> pandacss_stylesheet::SplitCssOutput {
+    let mut project = project_with_source(config, source);
+    let snapshots = project.stylesheet_snapshots(config);
+    pandacss_stylesheet::split_css(&project_input(config, &snapshots), &with_static(options))
+}
+
+fn project_with_source(config: &UserConfig, source: &str) -> Project {
     let system = System::new(config.clone()).expect("valid project");
     let mut project = Project::new(system);
     project.parse_file("/style.ts", source);
-    let snapshots = project.stylesheet_snapshots(config);
-    pandacss_stylesheet::split_css(
-        &StylesheetInput {
-            config,
-            token_dictionary: None,
-            atoms: snapshots.atoms,
-            utility_styles: snapshots.utility_styles,
-            view_transitions: snapshots.view_transitions,
-            position_try: snapshots.position_try,
-            inline_keyframes: snapshots.inline_keyframes,
-            encoded_recipes: snapshots.encoded_recipes,
-            static_encoded_recipes: Some(snapshots.static_encoded_recipes),
-            static_pattern_atoms: &[],
-            token_refs: snapshots.token_refs,
-        },
-        &StylesheetOptions {
-            include_static: true,
-            ..options
-        },
-    )
+    project
+}
+
+fn with_static(options: StylesheetOptions) -> StylesheetOptions {
+    StylesheetOptions {
+        include_static: true,
+        ..options
+    }
+}
+
+/// Everything the project extracted, ready to compile.
+#[allow(dead_code)]
+pub fn project_input<'a>(
+    config: &'a UserConfig,
+    snapshots: &ProjectStylesheetSnapshots<'a>,
+) -> StylesheetInput<'a> {
+    StylesheetInput {
+        config,
+        token_dictionary: None,
+        atoms: snapshots.atoms,
+        utility_styles: snapshots.utility_styles,
+        view_transitions: snapshots.view_transitions,
+        position_try: snapshots.position_try,
+        inline_keyframes: snapshots.inline_keyframes,
+        encoded_recipes: snapshots.encoded_recipes,
+        static_encoded_recipes: Some(snapshots.static_encoded_recipes),
+        static_pattern_atoms: &[],
+        token_refs: snapshots.token_refs,
+    }
+}
+
+/// No source usage at all; tests fill in the one input they exercise.
+#[allow(dead_code)]
+pub fn empty_input(config: &UserConfig) -> StylesheetInput<'_> {
+    StylesheetInput {
+        config,
+        token_dictionary: None,
+        atoms: &[],
+        utility_styles: Box::leak(Box::default()),
+        view_transitions: &[],
+        position_try: &[],
+        inline_keyframes: &[],
+        encoded_recipes: Box::leak(Box::new(EncodedRecipesSnapshot {
+            base: Vec::new(),
+            variants: Vec::new(),
+            compounds: Vec::new(),
+            atomic: Vec::new(),
+        })),
+        static_encoded_recipes: None,
+        static_pattern_atoms: &[],
+        token_refs: &[],
+    }
+}
+
+/// Deep-merge `patch` into `target`; a `null` in the patch removes the key.
+#[allow(dead_code)]
+pub fn merge(target: &mut serde_json::Value, patch: serde_json::Value) {
+    match (target, patch) {
+        (serde_json::Value::Object(target), serde_json::Value::Object(patch)) => {
+            for (key, value) in patch {
+                if value.is_null() {
+                    target.remove(&key);
+                } else {
+                    merge(target.entry(key).or_insert(serde_json::Value::Null), value);
+                }
+            }
+        }
+        (target, patch) => *target = patch,
+    }
 }

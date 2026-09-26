@@ -14,7 +14,7 @@ fn css_only(modules: &[&str]) -> Matchers {
     }
 }
 
-fn panda_org(prefix: &str) -> Matchers {
+fn all_categories_under(prefix: &str) -> Matchers {
     Matchers {
         css: Matcher {
             modules: vec![format!("{prefix}/css")],
@@ -54,8 +54,7 @@ fn matches_named_alias_from_panda_css() {
 }
 
 #[test]
-fn substring_match_on_module() {
-    // JS uses includes(): "../styled-system/css" should match modules = ["styled-system/css"]
+fn relative_import_matches_configured_module_by_substring() {
     let scan = scan_imports("import { css } from '../styled-system/css';\n", "f.tsx");
     assert_yaml_snapshot!(match_imports(&scan, &css_only(&["styled-system/css"])), @r#"
     - category: css
@@ -76,7 +75,7 @@ fn matches_generated_outdir_relative_modules() {
         "#},
         "src/components/card.tsx",
     );
-    assert_yaml_snapshot!(match_imports(&scan, &panda_org("styled-system")), @r#"
+    assert_yaml_snapshot!(match_imports(&scan, &all_categories_under("styled-system")), @r#"
     - category: css
       module: "../../styled-system/css"
       name: css
@@ -144,7 +143,7 @@ fn namespace_import_bypasses_name_allowlist() {
 }
 
 #[test]
-fn matches_each_category_in_panda_org_layout() {
+fn matches_each_category_under_the_panda_prefix() {
     let scan = scan_imports(
         indoc! {r#"
             import { css } from "@panda/css"
@@ -155,7 +154,7 @@ fn matches_each_category_in_panda_org_layout() {
         "#},
         "f.tsx",
     );
-    assert_yaml_snapshot!(match_imports(&scan, &panda_org("@panda")), @r#"
+    assert_yaml_snapshot!(match_imports(&scan, &all_categories_under("@panda")), @r#"
     - category: css
       module: "@panda/css"
       name: css
@@ -190,13 +189,8 @@ fn matches_each_category_in_panda_org_layout() {
 }
 
 #[test]
-fn js_parity_multiple_packages() {
-    // Mirrors the import-map.test.ts multi-package fixture: only imports
-    // matching the configured importMap should survive. Here the matcher
-    // accepts `@acme/org/recipes` and `@bar/org/recipes` for recipes,
-    // `@foo/org/css` for css, plus a pattern module — dropping the
-    // non-matching `styled-system/recipes` and `@bar/org/patterns` (which
-    // matches neither the configured recipe nor css modules).
+fn only_imports_from_configured_org_packages_match() {
+    // `styled-system/recipes` and `@bar/org/patterns` are not configured.
     let scan = scan_imports(
         indoc! {r#"
             import { cardStyle } from "@acme/org/recipes"
@@ -241,23 +235,16 @@ fn js_parity_multiple_packages() {
     "#);
 }
 
-// --- Module-matching ambiguity (reviewer #36) ---
-//
-// `mod_matches` is substring-based by design (mirrors the JS `ImportMap`
-// rule). When a module string matches more than one category's substring
-// list, the first category in declaration order wins. The traversal
-// order in `match_import_records` is: css, tokens, recipe, pattern, jsx.
-// These tests pin that precedence so a future refactor can't reorder it
-// silently.
+// --- module-matching ambiguity ---
+// Module matching is substring-based; on overlap the first category wins,
+// in the order css, tokens, recipe, pattern, jsx.
 
 #[test]
 fn overlapping_modules_pick_css_over_recipe() {
-    // Both categories' module lists contain "panda" so the import would
-    // match either by substring. Category priority must pick css first.
     let scan = scan_imports("import { css } from '@panda/css';\n", "f.tsx");
     let matchers = Matchers {
         css: Matcher {
-            modules: vec!["@panda".into()], // any "@panda" module
+            modules: vec!["@panda".into()],
             names: NameMatcher::only(["css"]),
         },
         recipe: Matcher {
@@ -277,8 +264,6 @@ fn overlapping_modules_pick_css_over_recipe() {
 
 #[test]
 fn overlapping_modules_pick_tokens_before_recipe() {
-    // Category priority after css is tokens, then recipe. If a broad
-    // modules entry overlaps, `token` should remain a token import.
     let scan = scan_imports("import { token } from '@panda/tokens';\n", "f.tsx");
     let matchers = Matchers {
         tokens: Matcher {
@@ -301,11 +286,7 @@ fn overlapping_modules_pick_tokens_before_recipe() {
 }
 
 #[test]
-fn substring_match_intentionally_loose_for_org_namespacing() {
-    // Modules can be referenced with various org prefixes; the matcher's
-    // substring check is what makes `@my-co/panda-css` match a Panda
-    // config keyed by just `"panda-css"`. Lock that behavior in so we
-    // don't accidentally tighten it.
+fn org_scoped_module_matches_a_shorter_configured_module() {
     let scan = scan_imports("import { css } from '@my-co/panda-css';\n", "f.tsx");
     let matchers = Matchers {
         css: Matcher {
@@ -320,23 +301,17 @@ fn substring_match_intentionally_loose_for_org_namespacing() {
 }
 
 #[test]
-fn extremely_short_substring_over_matches() {
-    // Documents the failure mode: a single-character or very short
-    // `modules` entry will substring-match almost anything. This test
-    // demonstrates the hazard so users understand why they should
-    // configure with full module paths.
+fn one_letter_configured_module_matches_unrelated_packages() {
     let scan = scan_imports(
         "import { unrelated } from 'totally-unrelated-package';\n",
         "f.tsx",
     );
     let matchers = Matchers {
         css: Matcher {
-            modules: vec!["a".into()], // too short — over-matches
+            modules: vec!["a".into()],
             names: NameMatcher::Any,
         },
         ..Default::default()
     };
-    // The matcher correctly applies its substring rule; the lesson is
-    // that this is the user's bug to fix in their config.
     assert_eq!(match_imports(&scan, &matchers).len(), 1);
 }

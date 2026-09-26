@@ -1,5 +1,4 @@
-//! Spreads, cross-file resolution, shorthands, and
-//! conditional-spread parity with extractor / compiler fixtures.
+//! Spreads, cross-file values, and preset-style shorthands in `css()`.
 
 use super::common::{transform, transform_cross_file, transform_jsx, transform_with_shorthands};
 use indoc::indoc;
@@ -25,7 +24,7 @@ macro_rules! advanced_snapshot {
     };
 }
 
-// --- css.raw identifier spreads (raw_spreads.rs) ---
+// --- css.raw identifier spreads ---
 
 advanced_snapshot!(
     css_raw_spread_merges_into_call,
@@ -92,7 +91,7 @@ export const cls = "color_blue padding_8px hover:color_blue hover:opacity_0.9 ho
 "#
 );
 
-// --- conditional spreads (conditional_output.rs) ---
+// --- conditional spreads ---
 
 advanced_snapshot!(
     logical_and_spread_merges_padding,
@@ -183,20 +182,51 @@ fn dynamic_property_before_static_duplicate_still_bails() {
     assert_eq!(output.code, source);
 }
 
+fn assert_bails_unchanged(source: &str) {
+    let output = transform("src/styles.tsx", source);
+    assert!(!output.changed, "{}", output.code);
+    assert!(output.bailed);
+    assert_eq!(output.code, source);
+}
+
 #[test]
-fn overlapping_conditional_spreads_bail() {
-    for source in [
-        "import { css } from '@panda/css';\nexport const cls = css({ ...(a ? { color: 'red' } : { color: 'blue' }), ...(b ? { color: 'green' } : { color: 'yellow' }) });\n",
-        "import { css } from '@panda/css';\nexport const cls = css({ ...(a ? { color: 'red' } : { color: 'blue' }), ...(b && { color: 'green' }) });\n",
-        "import { css } from '@panda/css';\nexport const cls = css({ _hover: { ...(a ? { color: 'red' } : { color: 'blue' }), ...(b ? { color: 'green' } : { color: 'yellow' }) } });\n",
-        "import { css } from '@panda/css';\nexport const cls = css({ color: a ? 'red' : 'blue', ...(b ? { color: 'green' } : { color: 'yellow' }) });\n",
-        "import { css } from '@panda/css';\nexport const cls = css({ _hover: { color: a ? 'red' : 'blue' }, ...(b ? { _hover: { padding: '1' } } : {}) });\n",
-    ] {
-        let output = transform("src/styles.tsx", source);
-        assert!(!output.changed, "{}", output.code);
-        assert!(output.bailed);
-        assert_eq!(output.code, source);
-    }
+fn two_ternary_spreads_setting_the_same_property_bail() {
+    assert_bails_unchanged(indoc! {r#"
+        import { css } from '@panda/css';
+        export const cls = css({ ...(a ? { color: 'red' } : { color: 'blue' }), ...(b ? { color: 'green' } : { color: 'yellow' }) });
+    "#});
+}
+
+#[test]
+fn a_ternary_and_a_logical_spread_setting_the_same_property_bail() {
+    assert_bails_unchanged(indoc! {r#"
+        import { css } from '@panda/css';
+        export const cls = css({ ...(a ? { color: 'red' } : { color: 'blue' }), ...(b && { color: 'green' }) });
+    "#});
+}
+
+#[test]
+fn two_ternary_spreads_setting_the_same_hover_property_bail() {
+    assert_bails_unchanged(indoc! {r#"
+        import { css } from '@panda/css';
+        export const cls = css({ _hover: { ...(a ? { color: 'red' } : { color: 'blue' }), ...(b ? { color: 'green' } : { color: 'yellow' }) } });
+    "#});
+}
+
+#[test]
+fn a_conditional_property_overridden_by_a_conditional_spread_bails() {
+    assert_bails_unchanged(indoc! {r#"
+        import { css } from '@panda/css';
+        export const cls = css({ color: a ? 'red' : 'blue', ...(b ? { color: 'green' } : { color: 'yellow' }) });
+    "#});
+}
+
+#[test]
+fn a_conditional_hover_block_overridden_by_a_conditional_spread_bails() {
+    assert_bails_unchanged(indoc! {r#"
+        import { css } from '@panda/css';
+        export const cls = css({ _hover: { color: a ? 'red' : 'blue' }, ...(b ? { _hover: { padding: '1' } } : {}) });
+    "#});
 }
 
 advanced_snapshot!(
@@ -334,16 +364,19 @@ advanced_snapshot!(
 );
 
 #[test]
-fn opaque_object_members_keep_conditional_calls_unchanged() {
-    for source in [
-        "import { css } from '@panda/css';\nexport const cls = css({ ...getStyles(), ...(cond ? { color: 'red' } : { color: 'blue' }) });\n",
-        "import { css } from '@panda/css';\nexport const cls = css({ [recordKey()]: 'value', ...(cond ? { color: 'red' } : { color: 'blue' }) });\n",
-    ] {
-        let output = transform("src/styles.tsx", source);
-        assert!(!output.changed, "{}", output.code);
-        assert!(output.bailed);
-        assert_eq!(output.code, source);
-    }
+fn a_function_call_spread_beside_a_conditional_spread_bails() {
+    assert_bails_unchanged(indoc! {r#"
+        import { css } from '@panda/css';
+        export const cls = css({ ...getStyles(), ...(cond ? { color: 'red' } : { color: 'blue' }) });
+    "#});
+}
+
+#[test]
+fn a_computed_key_beside_a_conditional_spread_bails() {
+    assert_bails_unchanged(indoc! {r#"
+        import { css } from '@panda/css';
+        export const cls = css({ [recordKey()]: 'value', ...(cond ? { color: 'red' } : { color: 'blue' }) });
+    "#});
 }
 
 #[test]
@@ -415,7 +448,7 @@ advanced_snapshot!(
     @r#"export const cls = unk ? "hover:color_red" : "hover:color_blue";"#
 );
 
-// --- cross-file spreads under conditions (cross_file.rs) ---
+// --- cross-file values and spreads ---
 
 #[test]
 fn helper_injection_does_not_panic_on_multibyte_source() {
@@ -535,7 +568,7 @@ export const cls = "color_red margin-top_8px padding_4px";
 "#
 );
 
-// --- preset-style shorthands (project.test / css.test) ---
+// --- preset-style shorthands ---
 
 advanced_snapshot!(
     utility_and_shorthand_props_resolve,
@@ -573,7 +606,7 @@ advanced_snapshot!(
     @r#"export const cls = "hover:bg-c_yellow.200";"#
 );
 
-// --- || / ?? spreads bail when left is dynamic (Bug 2) ---
+// --- || / ?? spreads bail when left is dynamic ---
 
 #[test]
 fn logical_or_spread_with_dynamic_left_bails() {

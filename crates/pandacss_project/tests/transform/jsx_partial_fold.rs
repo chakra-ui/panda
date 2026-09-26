@@ -1,6 +1,6 @@
 //! Folding static styles past an opaque rest-props spread.
 
-use super::common::{transform_jsx, transform_jsx_solid, transform_jsx_with_helper};
+use super::common::{transform_jsx, transform_jsx_for_framework, transform_jsx_with_helper};
 use indoc::indoc;
 use insta::assert_snapshot;
 
@@ -143,7 +143,7 @@ fn partial_fold_uses_the_frameworks_class_attribute() {
         export const Btn = (props) => <styled.button {...props} color="red" />;
     "#};
 
-    let output = transform_jsx_solid("src/app.tsx", source);
+    let output = transform_jsx_for_framework("solid", "src/app.tsx", source);
 
     assert!(output.changed);
     assert_snapshot!(output.code, @"

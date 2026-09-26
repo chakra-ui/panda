@@ -214,7 +214,6 @@ fn preflight_options_with_defaults_emit_default_block_without_diagnostics() {
 
 #[test]
 fn preflight_scope_emits_no_diagnostic() {
-    // scope/level are supported now — no "unsupported" warning.
     let config = config(serde_json::json!({
         "preflight": { "scope": ".pd-reset" }
     }));

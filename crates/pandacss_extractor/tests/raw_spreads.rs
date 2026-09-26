@@ -18,7 +18,7 @@ fn run_styled_system(source: &str) -> ExtractUsage {
 }
 
 #[test]
-fn css_raw_spread_with_computed_property_name_matches_js_fixture() {
+fn css_raw_spread_under_a_computed_selector_key_folds() {
     let src = indoc! {r"
         import { css } from '@panda/css';
         const baseStyles = css.raw({
@@ -140,7 +140,7 @@ fn pattern_raw_result_spread_inside_nested_selector_matches_issue_3278() {
 }
 
 #[test]
-fn css_raw_spread_deeply_nested_conditions_match_js_fixture() {
+fn css_raw_spread_inside_deeply_nested_conditions_folds() {
     let src = indoc! {r#"
         import { css } from '@panda/css';
         const baseStyles = css.raw({ padding: '10px' });
@@ -167,7 +167,7 @@ fn css_raw_spread_deeply_nested_conditions_match_js_fixture() {
 }
 
 #[test]
-fn css_raw_conditional_spreads_with_static_test_match_js_fixture() {
+fn css_raw_conditional_spread_with_static_test_picks_one_branch() {
     let src = indoc! {r"
         import { css } from '@panda/css';
         const baseStyles = css.raw({ color: 'blue', padding: '8px' });
@@ -192,7 +192,7 @@ fn css_raw_conditional_spreads_with_static_test_match_js_fixture() {
 }
 
 #[test]
-fn css_raw_spread_inside_array_value_matches_js_fixture() {
+fn css_raw_spread_inside_array_value_folds() {
     let src = indoc! {r"
         import { css } from '@panda/css';
         const baseStyles = css.raw({ color: 'green', fontSize: '16px' });
@@ -218,7 +218,7 @@ fn css_raw_spread_inside_array_value_matches_js_fixture() {
 }
 
 #[test]
-fn css_raw_spread_with_renamed_import_matches_js_fixture() {
+fn css_raw_spread_through_renamed_import_folds() {
     let src = indoc! {r"
         import { css as pandaCss } from '@panda/css';
         const baseStyles = pandaCss.raw({
@@ -245,7 +245,7 @@ fn css_raw_spread_with_renamed_import_matches_js_fixture() {
 }
 
 #[test]
-fn css_raw_nullish_spreads_are_ignored_match_js_fixture() {
+fn css_raw_nullish_spreads_are_ignored() {
     let src = indoc! {r"
         import { css } from '@panda/css';
         const baseStyles = undefined;
@@ -273,7 +273,7 @@ fn css_raw_nullish_spreads_are_ignored_match_js_fixture() {
 }
 
 #[test]
-fn css_raw_function_return_spread_degrades_like_js_fixture() {
+fn css_raw_function_return_spread_is_dropped() {
     let src = indoc! {r"
         import { css } from '@panda/css';
         const baseStyles = css.raw({ display: 'flex', gap: '10px' });
@@ -299,7 +299,7 @@ fn css_raw_function_return_spread_degrades_like_js_fixture() {
 }
 
 #[test]
-fn css_raw_spread_in_cva_variant_matches_js_fixture() {
+fn css_raw_spread_in_cva_variant_folds() {
     let src = indoc! {r"
         import { css, cva } from '@panda/css';
         const hoverStyles = css.raw({ bg: 'blue.500', color: 'white' });
@@ -330,7 +330,7 @@ fn css_raw_spread_in_cva_variant_matches_js_fixture() {
 }
 
 #[test]
-fn css_raw_spread_in_sva_slot_matches_js_fixture() {
+fn css_raw_spread_in_sva_slot_folds() {
     let src = indoc! {r"
         import { css, sva } from '@panda/css';
         const rootStyles = css.raw({ display: 'flex', gap: '2' });
@@ -423,7 +423,7 @@ fn css_raw_child_selector_spread_matches_issue_1370() {
 }
 
 #[test]
-fn css_raw_logical_and_spread_matches_js_fixture() {
+fn css_raw_logical_and_spread_folds() {
     let src = indoc! {r"
         import { css } from '@panda/css';
 

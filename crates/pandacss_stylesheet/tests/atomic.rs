@@ -638,13 +638,8 @@ fn multiline_value_collapses_whitespace_in_class_and_declaration() {
 
 #[test]
 fn nested_pseudo_then_descendant_keeps_the_pseudo_on_the_parent() {
-    // Two nested arbitrary `&` selectors form a parent->descendant chain:
-    // `&:last-child` (outer) then `& .divider` (inner) must compose as
-    // `.cls:last-child .divider` — the pseudo stays on the class-bearing parent.
-    // The condition sort floated the relational `& .divider` (pseudo-rank 0)
-    // ahead of the pseudo `&:last-child` (rank > 0), relocating the pseudo onto
-    // the descendant (`.cls .divider:last-child`) — a different, wrong selector.
-    // Author order of raw nested-selector keys must be preserved. Matches v1.
+    // Raw nested selectors keep author order; sorting them would move
+    // `:last-child` onto `.divider` and select a different element.
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
         "utilities": { "display": { "className": "d" } }

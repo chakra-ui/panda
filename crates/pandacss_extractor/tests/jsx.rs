@@ -18,7 +18,7 @@ fn styled(alias: &str) -> MatchedImport {
     }
 }
 
-fn pattern_component(name: &str) -> MatchedImport {
+fn jsx_component(name: &str) -> MatchedImport {
     MatchedImport {
         category: MatchCategory::Jsx,
         module: "@panda/jsx".into(),
@@ -251,8 +251,8 @@ fn compiled_react_runtime_ignores_unrelated_jsx_member_calls() {
 }
 
 #[test]
-fn compiled_react_runtime_supports_legacy_namespace_alias_and_babel_forms() {
-    let namespace = indoc! {r"
+fn compiled_react_runtime_namespace_import_extracts_css_prop() {
+    let source = indoc! {r"
         import * as jsxRuntime from 'react/jsx-runtime';
 
         const sharedStyles = {
@@ -280,7 +280,22 @@ fn compiled_react_runtime_supports_legacy_namespace_alias_and_babel_forms() {
           });
         };
     "};
-    let sequence_alias = indoc! {r"
+
+    let result = extract_react_runtime(source);
+
+    assert_yaml_snapshot!(jsx_data_for(&result.jsx, "ColorBox"), @r#"
+    - css:
+        color: black
+        backgroundColor: RebeccaPurple
+    - css:
+        color: white
+        backgroundColor: SteelBlue
+    "#);
+}
+
+#[test]
+fn compiled_react_runtime_sequence_expression_calls_extract_css_prop() {
+    let source = indoc! {r"
         import * as import_jsx_runtime from 'react/jsx-runtime';
 
         const sharedStyles = {
@@ -308,7 +323,22 @@ fn compiled_react_runtime_supports_legacy_namespace_alias_and_babel_forms() {
           });
         };
     "};
-    let babel_alias = indoc! {r"
+
+    let result = extract_react_runtime(source);
+
+    assert_yaml_snapshot!(jsx_data_for(&result.jsx, "ColorBox"), @r#"
+    - css:
+        color: black
+        backgroundColor: RebeccaPurple
+    - css:
+        color: white
+        backgroundColor: SteelBlue
+    "#);
+}
+
+#[test]
+fn compiled_react_runtime_babel_aliased_calls_extract_css_prop() {
+    let source = indoc! {r"
         import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from 'react/jsx-runtime';
 
         const sharedStyles = {
@@ -337,24 +367,21 @@ fn compiled_react_runtime_supports_legacy_namespace_alias_and_babel_forms() {
         };
     "};
 
-    insta::allow_duplicates! {
-        for source in [namespace, sequence_alias, babel_alias] {
-            let result = extract_react_runtime(source);
-            assert_yaml_snapshot!(jsx_data_for(&result.jsx, "ColorBox"), @r#"
-            - css:
-                color: black
-                backgroundColor: RebeccaPurple
-            - css:
-                color: white
-                backgroundColor: SteelBlue
-            "#);
-        }
-    }
+    let result = extract_react_runtime(source);
+
+    assert_yaml_snapshot!(jsx_data_for(&result.jsx, "ColorBox"), @r#"
+    - css:
+        color: black
+        backgroundColor: RebeccaPurple
+    - css:
+        color: white
+        backgroundColor: SteelBlue
+    "#);
 }
 
 #[test]
-fn compiled_react_runtime_supports_legacy_bundled_namespace_forms() {
-    let vite_like = indoc! {r"
+fn vite_bundled_react_runtime_extracts_css_prop() {
+    let source = indoc! {r"
         var jsxRuntimeExports = requireJsxRuntime();
 
         const sharedStyles = {
@@ -382,7 +409,22 @@ fn compiled_react_runtime_supports_legacy_bundled_namespace_forms() {
           });
         };
     "};
-    let webpack_like = indoc! {r"
+
+    let result = extract_react_runtime(source);
+
+    assert_yaml_snapshot!(jsx_data_for(&result.jsx, "ColorBox"), @r#"
+    - css:
+        color: black
+        backgroundColor: RebeccaPurple
+    - css:
+        color: white
+        backgroundColor: SteelBlue
+    "#);
+}
+
+#[test]
+fn webpack_bundled_react_runtime_extracts_css_prop() {
+    let source = indoc! {r"
         var jsx_runtime = __webpack_require__(848);
 
         const sharedStyles = {
@@ -410,7 +452,22 @@ fn compiled_react_runtime_supports_legacy_bundled_namespace_forms() {
           });
         };
     "};
-    let parcel_like = indoc! {r"
+
+    let result = extract_react_runtime(source);
+
+    assert_yaml_snapshot!(jsx_data_for(&result.jsx, "ColorBox"), @r#"
+    - css:
+        color: black
+        backgroundColor: RebeccaPurple
+    - css:
+        color: white
+        backgroundColor: SteelBlue
+    "#);
+}
+
+#[test]
+fn parcel_bundled_react_runtime_extracts_css_prop() {
+    let source = indoc! {r"
         var parcelJsxExports = parcelRequire('1jDou');
 
         const sharedStyles = {
@@ -439,19 +496,16 @@ fn compiled_react_runtime_supports_legacy_bundled_namespace_forms() {
         };
     "};
 
-    insta::allow_duplicates! {
-        for source in [vite_like, webpack_like, parcel_like] {
-            let result = extract_react_runtime(source);
-            assert_yaml_snapshot!(jsx_data_for(&result.jsx, "ColorBox"), @r#"
-            - css:
-                color: black
-                backgroundColor: RebeccaPurple
-            - css:
-                color: white
-                backgroundColor: SteelBlue
-            "#);
-        }
-    }
+    let result = extract_react_runtime(source);
+
+    assert_yaml_snapshot!(jsx_data_for(&result.jsx, "ColorBox"), @r#"
+    - css:
+        color: black
+        backgroundColor: RebeccaPurple
+    - css:
+        color: white
+        backgroundColor: SteelBlue
+    "#);
 }
 
 #[test]
@@ -531,9 +585,8 @@ fn local_factory_alias_extracts_by_uppercase_component_name() {
 
 #[test]
 fn named_component_with_string_attrs() {
-    // <Box color="red" />
     assert_yaml_snapshot!(
-        extract("<Box color='red' fontSize='lg' />", &[pattern_component("Box")]),
+        extract("<Box color='red' fontSize='lg' />", &[jsx_component("Box")]),
         @"
     jsx:
       - category: jsx
@@ -553,7 +606,6 @@ fn named_component_with_string_attrs() {
 
 #[test]
 fn styled_factory_member() {
-    // <styled.div color="red" />
     assert_yaml_snapshot!(
         extract("<styled.div color='red' />", &[styled("styled")]),
         @"
@@ -604,7 +656,7 @@ fn configured_named_member_component_extracts() {
     assert_yaml_snapshot!(
         extract_with_jsx_config(
             "<Tabs.Trigger value='button' color='red' />",
-            &[pattern_component("Tabs")],
+            &[jsx_component("Tabs")],
             jsx,
         ),
         @"
@@ -626,11 +678,10 @@ fn configured_named_member_component_extracts() {
 
 #[test]
 fn expression_container_literal_values() {
-    // <Box fontSize={42} disabled={true} count={null} />
     assert_yaml_snapshot!(
         extract(
             "<Box fontSize={42} disabled={true} count={null} />",
-            &[pattern_component("Box")],
+            &[jsx_component("Box")],
         ),
         @"
     jsx:
@@ -652,8 +703,7 @@ fn expression_container_literal_values() {
 
 #[test]
 fn boolean_shorthand_attribute() {
-    // <Box rounded /> — no value → true
-    assert_yaml_snapshot!(extract("<Box rounded />", &[pattern_component("Box")]), @"
+    assert_yaml_snapshot!(extract("<Box rounded />", &[jsx_component("Box")]), @"
     jsx:
       - category: jsx
         kind: component
@@ -670,11 +720,10 @@ fn boolean_shorthand_attribute() {
 
 #[test]
 fn object_value_attribute() {
-    // <Box css={{ color: 'red', fontSize: 'lg' }} />
     assert_yaml_snapshot!(
         extract(
             "<Box css={{ color: 'red', fontSize: 'lg' }} />",
-            &[pattern_component("Box")],
+            &[jsx_component("Box")],
         ),
         @"
     jsx:
@@ -696,11 +745,10 @@ fn object_value_attribute() {
 
 #[test]
 fn responsive_object_value() {
-    // <Box mt={{ base: '4px', md: '8px' }} />
     assert_yaml_snapshot!(
         extract(
             "<Box mt={{ base: '4px', md: '8px' }} />",
-            &[pattern_component("Box")],
+            &[jsx_component("Box")],
         ),
         @"
     jsx:
@@ -722,11 +770,10 @@ fn responsive_object_value() {
 
 #[test]
 fn non_literal_attribute_is_skipped() {
-    // <Box color={dynamicColor} /> — identifier, not literal
     assert_yaml_snapshot!(
         extract(
             "<Box color={dynamicColor} fontSize='lg' />",
-            &[pattern_component("Box")],
+            &[jsx_component("Box")],
         ),
         @"
     jsx:
@@ -746,11 +793,10 @@ fn non_literal_attribute_is_skipped() {
 
 #[test]
 fn literal_object_spread_is_merged() {
-    // <Box {...{ color: 'red', size: 'md' }} fontSize='lg' />
     assert_yaml_snapshot!(
         extract(
             "<Box {...{ color: 'red', size: 'md' }} fontSize='lg' />",
-            &[pattern_component("Box")],
+            &[jsx_component("Box")],
         ),
         @"
     jsx:
@@ -772,13 +818,10 @@ fn literal_object_spread_is_merged() {
 
 #[test]
 fn conditional_spread_unions_both_branches() {
-    // <Box {...(cond ? { color: 'a' } : { color: 'b' })} /> — node tracks the
-    // branches as spreadConditions; both are separately applicable, so the key
-    // folds to a Conditional the encoder expands.
     assert_yaml_snapshot!(
         extract(
             "<Box {...(cond ? { color: 'a' } : { color: 'b' })} />",
-            &[pattern_component("Box")],
+            &[jsx_component("Box")],
         ),
         @"
     jsx:
@@ -805,7 +848,7 @@ fn conditional_spread_with_distinct_keys_merges_both() {
     assert_yaml_snapshot!(
         extract(
             "<Box {...(cond ? { color: 'a' } : { padding: 'b' })} />",
-            &[pattern_component("Box")],
+            &[jsx_component("Box")],
         ),
         @"
     jsx:
@@ -831,7 +874,7 @@ fn conditional_spread_colliding_with_explicit_prop_unions_all_order_independentl
     assert_yaml_snapshot!(
         extract(
             "<Box {...(cond ? { color: 'a' } : { color: 'b' })} color='c' />",
-            &[pattern_component("Box")],
+            &[jsx_component("Box")],
         ),
         @"
     jsx:
@@ -856,11 +899,10 @@ fn conditional_spread_colliding_with_explicit_prop_unions_all_order_independentl
 
 #[test]
 fn non_literal_spread_is_ignored() {
-    // <Box {...rest} color='red' /> — identifier spread skipped, color kept
     assert_yaml_snapshot!(
         extract(
             "<Box {...rest} color='red' />",
-            &[pattern_component("Box")],
+            &[jsx_component("Box")],
         ),
         @"
     jsx:
@@ -880,7 +922,6 @@ fn non_literal_spread_is_ignored() {
 
 #[test]
 fn nested_jsx_elements() {
-    // Recurses into children — both <Box> and <styled.div> get extracted.
     assert_yaml_snapshot!(
         extract(
             indoc! {"
@@ -888,7 +929,7 @@ fn nested_jsx_elements() {
                     <styled.div color='blue' />
                 </Box>
             "},
-            &[styled("styled"), pattern_component("Box")],
+            &[styled("styled"), jsx_component("Box")],
         ),
         @"
     jsx:
@@ -917,13 +958,10 @@ fn nested_jsx_elements() {
 
 #[test]
 fn extracts_unmatched_uppercase_components_with_style_props() {
-    // Unknown uppercase components match legacy behavior, then props are filtered.
-    // Wrapped in fragment because adjacent top-level self-closing JSX
-    // confuses ASI (Oxc emits a "missing semicolon" diagnostic otherwise).
     assert_yaml_snapshot!(
         extract(
             "<><Box color='red' /><Unrelated color='blue' /></>",
-            &[pattern_component("Box")],
+            &[jsx_component("Box")],
         ),
         @"
     jsx:
@@ -950,13 +988,10 @@ fn extracts_unmatched_uppercase_components_with_style_props() {
     );
 }
 
-// --- JS parity: namespace.test.ts JSX fixtures ---
+// --- namespace and aliased imports ---
 
 #[test]
-fn js_parity_namespace_styled_member() {
-    // import * as JSX from "@panda/jsx"
-    // <JSX.styled.div color="red" />
-    // Wrap in fragment so adjacent self-closing JSX parses cleanly.
+fn namespace_jsx_import_extracts_styled_and_components() {
     assert_yaml_snapshot!(
         extract(
             indoc! {"
@@ -1003,19 +1038,11 @@ fn js_parity_namespace_styled_member() {
 }
 
 #[test]
-fn js_parity_aliased_styled() {
-    // import { styled as aliased } from "@panda/jsx"
-    // <aliased.button marginTop="40px" /> → name = "styled.button" (uses imported name)
+fn aliased_styled_import_extracts_under_imported_name() {
     assert_yaml_snapshot!(
         extract(
             "<aliased.button marginTop='40px' marginBottom='42px' />",
-            &[MatchedImport {
-                category: MatchCategory::Jsx,
-                module: "@panda/jsx".into(),
-                name: "styled".into(),
-                alias: "aliased".into(),
-                kind: ImportSpecifierKind::Named,
-            }],
+            &[styled("aliased")],
         ),
         @"
     jsx:
@@ -1036,7 +1063,7 @@ fn js_parity_aliased_styled() {
 
 #[test]
 fn parse_error_surfaces_diagnostic() {
-    let result = extract("<Box color='red'", &[pattern_component("Box")]);
+    let result = extract("<Box color='red'", &[jsx_component("Box")]);
     assert!(result.jsx.is_empty());
     assert!(!result.diagnostics.is_empty());
 }
@@ -1044,12 +1071,10 @@ fn parse_error_surfaces_diagnostic() {
 // --- regression tests for over-extraction ---
 
 #[test]
-fn named_pattern_component_member_chain_is_not_extracted() {
-    // `<Box.Item />` is dot access into a component, not a Panda factory call.
-    // Only `styled` (and any future configured factories) accept member chains
-    // on a named import; recipe/pattern components do not.
+fn member_of_a_named_component_is_not_extracted() {
+    // Only factories like `styled` accept member tags on a named import.
     assert_yaml_snapshot!(
-        extract("<Box.Item color='red' />", &[pattern_component("Box")]),
+        extract("<Box.Item color='red' />", &[jsx_component("Box")]),
         @r#"
     jsx: []
     diagnostics: []
@@ -1059,7 +1084,6 @@ fn named_pattern_component_member_chain_is_not_extracted() {
 
 #[test]
 fn styled_factory_member_chain_is_extracted() {
-    // Sanity check that the factory restriction doesn't break `<styled.x>`.
     assert_yaml_snapshot!(
         extract("<styled.section color='red' />", &[styled("styled")]),
         @"
@@ -1082,7 +1106,7 @@ fn styled_factory_member_chain_is_extracted() {
 fn matched_jsx_element_with_no_props_emits_empty_object() {
     // Component is the signal even without props (e.g. recipe usage).
     assert_yaml_snapshot!(
-        extract("<Box />", &[pattern_component("Box")]),
+        extract("<Box />", &[jsx_component("Box")]),
         @"
     jsx:
       - category: jsx
@@ -1099,15 +1123,11 @@ fn matched_jsx_element_with_no_props_emits_empty_object() {
 }
 
 // --- constant folding + AST unwraps inside JSX expression containers ---
-// JSX attribute values that wrap an expression in `{...}` route through the
-// shared literal evaluator, so anything `expression_to_literal` can fold
-// (parens, TS casts, unary/binary on literals, template literals, spreads,
-// computed keys) should work inside `<Box prop={...} />` too.
 
 #[test]
 fn parenthesized_attribute_value() {
     assert_yaml_snapshot!(
-        extract("<Box style={({ color: 'red' })} />", &[pattern_component("Box")]),
+        extract("<Box style={({ color: 'red' })} />", &[jsx_component("Box")]),
         @"
     jsx:
       - category: jsx
@@ -1130,7 +1150,7 @@ fn ts_as_const_attribute_value() {
     assert_yaml_snapshot!(
         extract(
             "<Box style={{ color: 'red' } as const} />",
-            &[pattern_component("Box")],
+            &[jsx_component("Box")],
         ),
         @"
     jsx:
@@ -1154,7 +1174,7 @@ fn ts_satisfies_attribute_value() {
     assert_yaml_snapshot!(
         extract(
             "<Box style={{ color: 'red' } satisfies any} />",
-            &[pattern_component("Box")],
+            &[jsx_component("Box")],
         ),
         @"
     jsx:
@@ -1197,7 +1217,7 @@ fn jsx_style_multiline_template_literal_collapses_whitespace() {
         />
     "##};
 
-    let result = extract(source, &[pattern_component("Box")]);
+    let result = extract(source, &[jsx_component("Box")]);
     assert_yaml_snapshot!(jsx_data_for(&result.jsx, "Box"), @r##"
     - marginTop: "3"
       display: flex
@@ -1214,7 +1234,7 @@ fn unary_in_attribute_value() {
     assert_yaml_snapshot!(
         extract(
             "<Box margin={-4} opacity={-0.5} disabled={!false} />",
-            &[pattern_component("Box")],
+            &[jsx_component("Box")],
         ),
         @"
     jsx:
@@ -1239,7 +1259,7 @@ fn binary_in_attribute_value() {
     assert_yaml_snapshot!(
         extract(
             "<Box width={'50' + '%'} margin={2 + 3} padding={2 * 4} />",
-            &[pattern_component("Box")],
+            &[jsx_component("Box")],
         ),
         @"
     jsx:
@@ -1264,7 +1284,7 @@ fn template_literal_attribute_value() {
     assert_yaml_snapshot!(
         extract(
             "<Box color={`red`} font={`sans \\n serif`} />",
-            &[pattern_component("Box")],
+            &[jsx_component("Box")],
         ),
         @r#"
     jsx:
@@ -1285,12 +1305,10 @@ fn template_literal_attribute_value() {
 
 #[test]
 fn template_literal_with_interpolation_attribute_is_skipped() {
-    // Interpolated template literals need identifier/scope resolution.
-    // The attribute is dropped; the element itself is still matched.
     assert_yaml_snapshot!(
         extract(
             "<Box color={`${dynamic}px`} fontSize='lg' />",
-            &[pattern_component("Box")],
+            &[jsx_component("Box")],
         ),
         @"
     jsx:
@@ -1313,7 +1331,7 @@ fn literal_object_spread_inside_attribute_object() {
     assert_yaml_snapshot!(
         extract(
             "<Box style={{ ...{ color: 'red', size: 'lg' }, fontSize: 14 }} />",
-            &[pattern_component("Box")],
+            &[jsx_component("Box")],
         ),
         @"
     jsx:
@@ -1339,7 +1357,7 @@ fn computed_key_inside_attribute_object() {
     assert_yaml_snapshot!(
         extract(
             "<Box style={{ ['col' + 'or']: 'red', [42]: 'fortytwo' }} />",
-            &[pattern_component("Box")],
+            &[jsx_component("Box")],
         ),
         @r#"
     jsx:
@@ -1361,13 +1379,10 @@ fn computed_key_inside_attribute_object() {
 
 #[test]
 fn literal_object_spread_attribute() {
-    // Top-level `{...{...}}` JSX spread attribute, not nested inside an
-    // object value. Already worked; covered now with the new expression
-    // forms (parens around a literal object).
     assert_yaml_snapshot!(
         extract(
             "<Box {...({ color: 'red' } as const)} fontSize='lg' />",
-            &[pattern_component("Box")],
+            &[jsx_component("Box")],
         ),
         @"
     jsx:
@@ -1392,7 +1407,7 @@ fn nested_folding_inside_attribute() {
     assert_yaml_snapshot!(
         extract(
             "<Box style={((({ ['m' + 'argin']: -2 * 4, color: `red` } as const)))} />",
-            &[pattern_component("Box")],
+            &[jsx_component("Box")],
         ),
         @"
     jsx:
@@ -1413,7 +1428,7 @@ fn nested_folding_inside_attribute() {
 }
 
 #[test]
-fn css_prop_aliases_extract_like_js_parser_fixture() {
+fn css_prop_aliases_extract_on_styled_factory() {
     assert_yaml_snapshot!(
         extract(
             "<styled.div css={{ bg: 'red.200' }} inputCss={{ color: 'blue.300' }} />",
@@ -1439,7 +1454,7 @@ fn css_prop_aliases_extract_like_js_parser_fixture() {
 }
 
 #[test]
-fn css_prop_aliases_with_array_values_extract_like_js_parser_fixture() {
+fn css_prop_aliases_with_array_values_extract() {
     assert_yaml_snapshot!(
         extract(
             "<styled.div inputCss={[{ bg: 'red.200' }, { color: 'blue.300' }]} />",
@@ -1464,7 +1479,7 @@ fn css_prop_aliases_with_array_values_extract_like_js_parser_fixture() {
 }
 
 #[test]
-fn css_prop_aliases_extract_in_minimal_mode_like_js_parser_fixture() {
+fn css_prop_aliases_extract_in_minimal_mode() {
     assert_yaml_snapshot!(
         extract_with_jsx_config(
             "<styled.div color='red' css={{ bg: 'red.200' }} wrapperCss={{ p: '4' }} />",
@@ -1530,14 +1545,11 @@ fn css_prop_aliases_extract_on_configured_components_in_minimal_mode() {
 
 #[test]
 fn explicit_then_spread_then_explicit_keeps_first_position() {
-    // Three `color` writes: explicit, spread, explicit. Last value
-    // wins on the value side; first occurrence keeps the slot. Same
-    // upsert contract as the call-args spread test; verifies JSX uses
-    // the same merge path.
+    // Last `color` value wins; the first `color` keeps its position.
     assert_yaml_snapshot!(
         extract(
             "<Box color='never.100' padding='4' {...{ color: 'never.200' }} color='after.300' margin={2} />",
-            &[pattern_component("Box")],
+            &[jsx_component("Box")],
         ),
         @r#"
     jsx:
@@ -1631,7 +1643,7 @@ fn attribute_with_nested_jsx_element_drops_that_attribute() {
     assert_yaml_snapshot!(
         extract(
             "<Box icon={<svg />} ml='2' />",
-            &[pattern_component("Box")],
+            &[jsx_component("Box")],
         ),
         @r#"
     jsx:
@@ -1657,7 +1669,7 @@ fn spread_with_nested_jsx_element_drops_the_spread() {
     assert_yaml_snapshot!(
         extract(
             "<Box ml='4' {...{ icon: <svg /> }} />",
-            &[pattern_component("Box")],
+            &[jsx_component("Box")],
         ),
         @r#"
     jsx:
@@ -1703,7 +1715,7 @@ fn pattern_jsx_name_is_classified_as_pattern() {
     let result = extract_jsx(
         "<Stack gap='4' />",
         "fixture.tsx",
-        &[pattern_component("Stack")],
+        &[jsx_component("Stack")],
         &config,
     );
     assert_eq!(result.jsx.len(), 1);
@@ -1718,7 +1730,7 @@ fn recipe_jsx_name_is_classified_as_recipe() {
     let result = extract_jsx(
         "<Button size='lg' />",
         "fixture.tsx",
-        &[pattern_component("Button")],
+        &[jsx_component("Button")],
         &config,
     );
     assert_eq!(result.jsx.len(), 1);
@@ -1728,7 +1740,7 @@ fn recipe_jsx_name_is_classified_as_recipe() {
 
 #[test]
 fn plain_configured_component_is_classified_as_component() {
-    let result = extract("<Box color='red' />", &[pattern_component("Box")]);
+    let result = extract("<Box color='red' />", &[jsx_component("Box")]);
     assert_eq!(result.jsx.len(), 1);
     assert_eq!(result.jsx[0].name, "Box");
     assert_eq!(result.jsx[0].kind, JsxKind::Component);

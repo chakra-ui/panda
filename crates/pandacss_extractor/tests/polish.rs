@@ -1,10 +1,5 @@
-//! Polish slice — features added together as a single step toward
-//! closing the gap to the JS extractor:
-//!
-//! - TypeScript `enum` member resolution (`Sizes.Small`)
-//! - Function parameter `TSTypeLiteral` resolution (`function f(x: { c: 'red' })`)
-//! - Configurable JSX factory names via `Matchers.jsx_factories`
-//! - Destructuring with default values (`const { x = 'red' } = obj`)
+//! TS enums, literal-typed function params, custom JSX factory names,
+//! destructuring defaults, and `undefined` values.
 
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
@@ -83,9 +78,6 @@ fn numeric_enum_member_resolves() {
 
 #[test]
 fn enum_member_without_initializer_drops_that_path() {
-    // `Sizes.Auto` has no initializer — JS would auto-increment from
-    // the prior value. We skip uninitialized members (JS extractor does
-    // the same), so the member lookup misses and the call drops.
     let src = indoc! {r"
         import { css } from '@panda/css';
         enum Sizes { Small = '4px', Auto }
@@ -123,8 +115,6 @@ fn function_param_with_type_literal_resolves_member() {
 
 #[test]
 fn function_param_without_annotation_still_drops() {
-    // No type annotation on the param → no fallback path. JS extractor
-    // bails too.
     let src = indoc! {r"
         import { css } from '@panda/css';
         function paint(props) {
@@ -194,9 +184,6 @@ fn unfoldable_type_literal_member_leaves_siblings_unresolved() {
 
 #[test]
 fn function_param_with_non_literal_type_drops() {
-    // `string` type annotation — not a literal type. We need a
-    // `TSLiteralType('red')` to extract a value; bare `string` provides
-    // no static information.
     let src = indoc! {r"
         import { css } from '@panda/css';
         function paint(props: { color: string }) {
@@ -213,10 +200,7 @@ fn function_param_with_non_literal_type_drops() {
 // --- JSX factory configuration ---
 
 #[test]
-fn jsx_factory_names_are_explicitly_configured() {
-    // The extractor consumes resolved factory names from config; it doesn't
-    // own a hard-coded default. `<Panda.foo>` should NOT match unless
-    // `Panda` is passed in `jsx_factories`.
+fn factory_member_tag_is_ignored_unless_listed_as_a_jsx_factory() {
     let src = indoc! {r"
         import { Panda } from '@panda/jsx';
         const a = <Panda.div color='red' />;
@@ -230,7 +214,6 @@ fn jsx_factory_names_are_explicitly_configured() {
 
 #[test]
 fn custom_jsx_factory_extracts_member_chain() {
-    // Passing `Panda` as a resolved JSX factory enables `<Panda.div>`.
     let src = indoc! {r"
         import { Panda } from '@panda/jsx';
         const a = <Panda.div color='red' />;
@@ -250,8 +233,6 @@ fn custom_jsx_factory_extracts_member_chain() {
 
 #[test]
 fn custom_jsx_factory_excludes_default_styled() {
-    // Factory names are explicit, not additive. If only `Panda` is passed,
-    // `<styled.div>` does not match.
     let src = indoc! {r"
         import { styled } from '@panda/jsx';
         const a = <styled.div color='red' />;
@@ -307,8 +288,6 @@ fn destructure_default_skipped_when_key_present() {
 
 #[test]
 fn destructure_default_with_object_literal_value() {
-    // Default value can itself be a non-trivial literal — object,
-    // array, etc. — and the resolver folds it normally.
     let src = indoc! {r"
         import { css } from '@panda/css';
         const props = {};

@@ -144,37 +144,19 @@ fn refresh_affected(project: &mut Project, fs: &MemoryFileSystem) -> Vec<String>
     }
 }
 
-fn app_source() -> &'static str {
-    indoc! {r"
-        import { brand } from './tokens';
-        import { css } from '@panda/css';
-        css({ color: brand });
-    "}
-}
-
-fn missing_theme_source() -> &'static str {
-    indoc! {r"
-        import { brand } from './theme';
-        import { css } from '@panda/css';
-        css({ color: brand });
-    "}
-}
-
-fn barrel_app_source() -> &'static str {
-    indoc! {r"
-        import { brand } from './barrel';
-        import { css } from '@panda/css';
-        css({ color: brand });
-    "}
+fn app_importing_brand_from(module: &str) -> String {
+    format!(
+        "import {{ brand }} from '{module}';\nimport {{ css }} from '@panda/css';\ncss({{ color: brand }});\n"
+    )
 }
 
 #[test]
 fn cold_build_affects_nothing() {
     let (_fs, mut project) = watch_project(&[
-        ("App.tsx", app_source()),
+        ("App.tsx", &app_importing_brand_from("./tokens")),
         ("tokens.ts", "export const brand = 'red';\n"),
     ]);
-    project.parse_file("/proj/App.tsx", app_source());
+    project.parse_file("/proj/App.tsx", &app_importing_brand_from("./tokens"));
     project.parse_file("/proj/tokens.ts", "export const brand = 'red';\n");
 
     assert_eq!(
@@ -188,7 +170,7 @@ fn cold_build_affects_nothing() {
 fn batch_parse_does_not_retry_missing_imports_for_each_file() {
     let memory = MemoryFileSystem::new();
     let fs = CountingFileSystem::new(memory.clone());
-    write(&memory, "App.tsx", app_source());
+    write(&memory, "App.tsx", &app_importing_brand_from("./tokens"));
     for index in 0..16 {
         write(&memory, &format!("unrelated-{index}.tsx"), "export {};\n");
     }
@@ -197,7 +179,7 @@ fn batch_parse_does_not_retry_missing_imports_for_each_file() {
     let batch = project.parse_batch();
     project.parse_file_in_batch(
         "/proj/App.tsx",
-        app_source(),
+        &app_importing_brand_from("./tokens"),
         &batch,
         ParseTransforms::default(),
     );
@@ -219,14 +201,14 @@ fn batch_parse_does_not_retry_missing_imports_for_each_file() {
 fn batch_parse_does_not_probe_new_paths_after_resolving_an_import() {
     let memory = MemoryFileSystem::new();
     let fs = CountingFileSystem::new(memory.clone());
-    write(&memory, "App.tsx", app_source());
+    write(&memory, "App.tsx", &app_importing_brand_from("./tokens"));
     write(&memory, "tokens.ts", "export const brand = 'red';\n");
     let mut project =
         create_project(json!({})).with_cross_file(CrossFileResolver::with_fs(fs.clone()));
     let batch = project.parse_batch();
     project.parse_file_in_batch(
         "/proj/App.tsx",
-        app_source(),
+        &app_importing_brand_from("./tokens"),
         &batch,
         ParseTransforms::default(),
     );
@@ -254,7 +236,7 @@ fn creating_one_module_probes_a_shared_pending_request_once() {
     for index in 0..64 {
         project.parse_file_in_batch(
             &format!("/proj/App-{index}.tsx"),
-            missing_theme_source(),
+            &app_importing_brand_from("./theme"),
             &batch,
             ParseTransforms::default(),
         );
@@ -284,7 +266,7 @@ fn pending_requests_with_the_same_specifier_stay_scoped_to_their_directory() {
         for index in 0..4 {
             project.parse_file_in_batch(
                 &format!("/proj/{directory}/App-{index}.tsx"),
-                missing_theme_source(),
+                &app_importing_brand_from("./theme"),
                 &batch,
                 ParseTransforms::default(),
             );
@@ -310,19 +292,19 @@ fn parse_batch_keeps_one_cross_file_revision() {
     let batch = project.parse_batch();
     project.parse_file_in_batch(
         "/proj/A.tsx",
-        app_source(),
+        &app_importing_brand_from("./tokens"),
         &batch,
         ParseTransforms::default(),
     );
     write(&fs, "tokens.ts", "export const brand = 'blue';\n");
     project.parse_file_in_batch(
         "/proj/B.tsx",
-        app_source(),
+        &app_importing_brand_from("./tokens"),
         &batch,
         ParseTransforms::default(),
     );
     drop(batch);
-    project.parse_file("/proj/C.tsx", app_source());
+    project.parse_file("/proj/C.tsx", &app_importing_brand_from("./tokens"));
 
     let values = ["A", "B", "C"].map(|name| {
         let path = format!("/proj/{name}.tsx");
@@ -339,10 +321,10 @@ fn parse_batch_keeps_one_cross_file_revision() {
 #[test]
 fn editing_a_token_file_affects_its_importer() {
     let (fs, mut project) = watch_project(&[
-        ("App.tsx", app_source()),
+        ("App.tsx", &app_importing_brand_from("./tokens")),
         ("tokens.ts", "export const brand = 'red';\n"),
     ]);
-    project.parse_file("/proj/App.tsx", app_source());
+    project.parse_file("/proj/App.tsx", &app_importing_brand_from("./tokens"));
     project.parse_file("/proj/tokens.ts", "export const brand = 'red';\n");
 
     write(&fs, "tokens.ts", "export const brand = 'blue';\n");
@@ -359,11 +341,11 @@ fn editing_a_token_file_affects_its_importer() {
 #[test]
 fn editing_a_reexported_token_affects_the_importer() {
     let (fs, mut project) = watch_project(&[
-        ("App.tsx", barrel_app_source()),
+        ("App.tsx", &app_importing_brand_from("./barrel")),
         ("barrel.ts", "export { brand } from './tokens';\n"),
         ("tokens.ts", "export const brand = 'red';\n"),
     ]);
-    project.parse_file("/proj/App.tsx", barrel_app_source());
+    project.parse_file("/proj/App.tsx", &app_importing_brand_from("./barrel"));
 
     write(&fs, "tokens.ts", "export const brand = 'blue';\n");
     project.parse_file("/proj/tokens.ts", "export const brand = 'blue';\n");
@@ -379,10 +361,10 @@ fn editing_a_reexported_token_affects_the_importer() {
 #[test]
 fn editing_a_token_file_that_is_not_a_project_file_still_affects_importers() {
     let (fs, mut project) = watch_project(&[
-        ("App.tsx", app_source()),
+        ("App.tsx", &app_importing_brand_from("./tokens")),
         ("tokens.ts", "export const brand = 'red';\n"),
     ]);
-    project.parse_file("/proj/App.tsx", app_source());
+    project.parse_file("/proj/App.tsx", &app_importing_brand_from("./tokens"));
 
     write(&fs, "tokens.ts", "export const brand = 'blue';\n");
     assert!(!project.refresh_file("/proj/tokens.ts", "export const brand = 'blue';\n"));
@@ -397,8 +379,8 @@ fn editing_a_token_file_that_is_not_a_project_file_still_affects_importers() {
 
 #[test]
 fn creating_a_missing_index_module_affects_its_importer() {
-    let (fs, mut project) = watch_project(&[("App.tsx", app_source())]);
-    project.parse_file("/proj/App.tsx", app_source());
+    let (fs, mut project) = watch_project(&[("App.tsx", &app_importing_brand_from("./tokens"))]);
+    project.parse_file("/proj/App.tsx", &app_importing_brand_from("./tokens"));
 
     assert!(project.take_affected_files().is_empty());
     assert_yaml_snapshot!(sorted_atoms(&project), @"[]");
@@ -417,10 +399,10 @@ fn creating_a_missing_index_module_affects_its_importer() {
 #[test]
 fn creating_a_missing_reexported_token_file_affects_the_importer() {
     let (fs, mut project) = watch_project(&[
-        ("App.tsx", barrel_app_source()),
+        ("App.tsx", &app_importing_brand_from("./barrel")),
         ("barrel.ts", "export { brand } from './tokens';\n"),
     ]);
-    project.parse_file("/proj/App.tsx", barrel_app_source());
+    project.parse_file("/proj/App.tsx", &app_importing_brand_from("./barrel"));
 
     assert!(project.take_affected_files().is_empty());
     assert_yaml_snapshot!(sorted_atoms(&project), @"[]");
@@ -438,8 +420,8 @@ fn creating_a_missing_reexported_token_file_affects_the_importer() {
 
 #[test]
 fn creating_an_unrelated_file_does_not_affect_an_unresolved_importer() {
-    let (fs, mut project) = watch_project(&[("App.tsx", app_source())]);
-    project.parse_file("/proj/App.tsx", app_source());
+    let (fs, mut project) = watch_project(&[("App.tsx", &app_importing_brand_from("./tokens"))]);
+    project.parse_file("/proj/App.tsx", &app_importing_brand_from("./tokens"));
 
     write(&fs, "other.ts", "export const value = 'blue';\n");
     assert!(!project.refresh_file("/proj/other.ts", "export const value = 'blue';\n"));
@@ -450,8 +432,8 @@ fn creating_an_unrelated_file_does_not_affect_an_unresolved_importer() {
 
 #[test]
 fn removing_an_unresolved_importer_drops_its_pending_request() {
-    let (fs, mut project) = watch_project(&[("App.tsx", app_source())]);
-    project.parse_file("/proj/App.tsx", app_source());
+    let (fs, mut project) = watch_project(&[("App.tsx", &app_importing_brand_from("./tokens"))]);
+    project.parse_file("/proj/App.tsx", &app_importing_brand_from("./tokens"));
     assert!(project.remove_file("/proj/App.tsx"));
 
     write(&fs, "tokens.ts", "export const brand = 'red';\n");
@@ -463,9 +445,9 @@ fn removing_an_unresolved_importer_drops_its_pending_request() {
 
 #[test]
 fn replacing_an_importer_replaces_its_pending_request() {
-    let other_source = missing_theme_source().replace("./theme", "./other");
-    let (fs, mut project) = watch_project(&[("App.tsx", missing_theme_source())]);
-    project.parse_file("/proj/App.tsx", missing_theme_source());
+    let other_source = app_importing_brand_from("./other");
+    let (fs, mut project) = watch_project(&[("App.tsx", &app_importing_brand_from("./theme"))]);
+    project.parse_file("/proj/App.tsx", &app_importing_brand_from("./theme"));
     project.parse_file("/proj/App.tsx", &other_source);
 
     write(&fs, "theme.ts", "export const brand = 'red';\n");
@@ -477,11 +459,11 @@ fn replacing_an_importer_replaces_its_pending_request() {
 #[test]
 fn removing_the_first_importer_keeps_the_shared_pending_request() {
     let (fs, mut project) = watch_project(&[
-        ("A.tsx", missing_theme_source()),
-        ("B.tsx", missing_theme_source()),
+        ("A.tsx", &app_importing_brand_from("./theme")),
+        ("B.tsx", &app_importing_brand_from("./theme")),
     ]);
-    project.parse_file("/proj/A.tsx", missing_theme_source());
-    project.parse_file("/proj/B.tsx", missing_theme_source());
+    project.parse_file("/proj/A.tsx", &app_importing_brand_from("./theme"));
+    project.parse_file("/proj/B.tsx", &app_importing_brand_from("./theme"));
     assert!(project.remove_file("/proj/A.tsx"));
 
     write(&fs, "theme.ts", "export const brand = 'red';\n");
@@ -492,12 +474,12 @@ fn removing_the_first_importer_keeps_the_shared_pending_request() {
 
 #[test]
 fn clear_drops_pending_requests_and_cached_resolution_misses() {
-    let (fs, mut project) = watch_project(&[("App.tsx", app_source())]);
-    project.parse_file("/proj/App.tsx", app_source());
+    let (fs, mut project) = watch_project(&[("App.tsx", &app_importing_brand_from("./tokens"))]);
+    project.parse_file("/proj/App.tsx", &app_importing_brand_from("./tokens"));
     project.clear();
 
     write(&fs, "tokens.ts", "export const brand = 'red';\n");
-    project.parse_file("/proj/App.tsx", app_source());
+    project.parse_file("/proj/App.tsx", &app_importing_brand_from("./tokens"));
 
     assert!(project.take_affected_files().is_empty());
     assert_yaml_snapshot!(sorted_atoms(&project), @r"
@@ -510,10 +492,10 @@ fn clear_drops_pending_requests_and_cached_resolution_misses() {
 #[test]
 fn removing_a_token_file_drops_the_folded_atom() {
     let (fs, mut project) = watch_project(&[
-        ("App.tsx", app_source()),
+        ("App.tsx", &app_importing_brand_from("./tokens")),
         ("tokens.ts", "export const brand = 'red';\n"),
     ]);
-    project.parse_file("/proj/App.tsx", app_source());
+    project.parse_file("/proj/App.tsx", &app_importing_brand_from("./tokens"));
     project.parse_file("/proj/tokens.ts", "export const brand = 'red';\n");
 
     fs.remove_file(Path::new("/proj/tokens.ts")).unwrap();
@@ -531,12 +513,12 @@ fn unrelated_importer_is_left_alone() {
         css({ color: brand, padding: '4px' });
     "};
     let (fs, mut project) = watch_project(&[
-        ("App.tsx", app_source()),
+        ("App.tsx", &app_importing_brand_from("./tokens")),
         ("Other.tsx", other),
         ("tokens.ts", "export const brand = 'red';\n"),
         ("other.ts", "export const brand = 'navy';\n"),
     ]);
-    project.parse_file("/proj/App.tsx", app_source());
+    project.parse_file("/proj/App.tsx", &app_importing_brand_from("./tokens"));
     project.parse_file("/proj/Other.tsx", other);
 
     write(&fs, "tokens.ts", "export const brand = 'blue';\n");
@@ -564,11 +546,11 @@ fn two_importers_are_both_affected() {
         css({ background: brand });
     "};
     let (fs, mut project) = watch_project(&[
-        ("App.tsx", app_source()),
+        ("App.tsx", &app_importing_brand_from("./tokens")),
         ("Card.tsx", second),
         ("tokens.ts", "export const brand = 'red';\n"),
     ]);
-    project.parse_file("/proj/App.tsx", app_source());
+    project.parse_file("/proj/App.tsx", &app_importing_brand_from("./tokens"));
     project.parse_file("/proj/Card.tsx", second);
 
     write(&fs, "tokens.ts", "export const brand = 'blue';\n");
@@ -591,14 +573,14 @@ fn two_importers_are_both_affected() {
 #[test]
 fn refreshing_an_importer_clears_it_from_the_affected_set() {
     let (fs, mut project) = watch_project(&[
-        ("App.tsx", app_source()),
+        ("App.tsx", &app_importing_brand_from("./tokens")),
         ("tokens.ts", "export const brand = 'red';\n"),
     ]);
-    project.parse_file("/proj/App.tsx", app_source());
+    project.parse_file("/proj/App.tsx", &app_importing_brand_from("./tokens"));
 
     write(&fs, "tokens.ts", "export const brand = 'blue';\n");
     project.parse_file("/proj/tokens.ts", "export const brand = 'blue';\n");
-    project.refresh_file("/proj/App.tsx", app_source());
+    project.refresh_file("/proj/App.tsx", &app_importing_brand_from("./tokens"));
 
     assert!(project.take_affected_files().is_empty());
 }
@@ -606,10 +588,10 @@ fn refreshing_an_importer_clears_it_from_the_affected_set() {
 #[test]
 fn removing_an_importer_does_not_report_it_affected() {
     let (fs, mut project) = watch_project(&[
-        ("App.tsx", app_source()),
+        ("App.tsx", &app_importing_brand_from("./tokens")),
         ("tokens.ts", "export const brand = 'red';\n"),
     ]);
-    project.parse_file("/proj/App.tsx", app_source());
+    project.parse_file("/proj/App.tsx", &app_importing_brand_from("./tokens"));
 
     write(&fs, "tokens.ts", "export const brand = 'blue';\n");
     project.parse_file("/proj/tokens.ts", "export const brand = 'blue';\n");
@@ -621,17 +603,13 @@ fn removing_an_importer_does_not_report_it_affected() {
 
 #[test]
 fn reexport_cycle_does_not_loop() {
-    let app = indoc! {r"
-        import { brand } from './a';
-        import { css } from '@panda/css';
-        css({ color: brand });
-    "};
+    let app = app_importing_brand_from("./a");
     let (fs, mut project) = watch_project(&[
-        ("App.tsx", app),
+        ("App.tsx", &app),
         ("a.ts", "import { brand } from './b';\nexport { brand };\n"),
         ("b.ts", "import { brand } from './a';\nexport { brand };\n"),
     ]);
-    project.parse_file("/proj/App.tsx", app);
+    project.parse_file("/proj/App.tsx", &app);
 
     write(&fs, "a.ts", "export const brand = 'blue';\n");
     project.parse_file("/proj/a.ts", "export const brand = 'blue';\n");
@@ -646,18 +624,14 @@ fn reexport_cycle_does_not_loop() {
 
 #[test]
 fn removing_one_importer_preserves_the_other_importers_dependency() {
-    let source = indoc! {r"
-        import { brand } from './tokens';
-        import { css } from '@panda/css';
-        css({ color: brand });
-    "};
+    let source = app_importing_brand_from("./tokens");
     let (fs, mut project) = watch_project(&[
-        ("First.tsx", source),
-        ("Second.tsx", source),
+        ("First.tsx", &source),
+        ("Second.tsx", &source),
         ("tokens.ts", "export const brand = 'red';\n"),
     ]);
-    project.parse_file("/proj/First.tsx", source);
-    project.parse_file("/proj/Second.tsx", source);
+    project.parse_file("/proj/First.tsx", &source);
+    project.parse_file("/proj/Second.tsx", &source);
     project.remove_file("/proj/First.tsx");
 
     write(&fs, "tokens.ts", "export const brand = 'blue';\n");

@@ -1,10 +1,5 @@
-//! `Literal::Conditional` output for ternaries and logical operators
-//! whose deciding side isn't statically foldable.
-//!
-//! Mirrors `BoxNodeConditional` from the JS extractor: when `cond ? a : b`
-//! or `a && b` / `a || b` / `a ?? b` can't be reduced to a single value,
-//! we emit both alternatives so the downstream encoder can generate
-//! atomic-CSS-style output.
+//! Ternaries and logical operators whose test isn't static emit every
+//! possible value as a `conditional` so each one gets CSS.
 
 use crate::common::{panda_config, panda_jsx_config};
 use indoc::indoc;
@@ -45,9 +40,6 @@ fn ternary_with_non_literal_test_emits_both_branches() {
 
 #[test]
 fn ternary_with_literal_test_still_picks_one_branch() {
-    // When the test folds, we still resolve to exactly the chosen
-    // branch — no Conditional wrapper. This is the existing scope-test
-    // behavior; new logic must not regress it.
     let src = indoc! {r"
         import { css } from '@panda/css';
         const dark = true;
@@ -67,10 +59,6 @@ fn ternary_with_literal_test_still_picks_one_branch() {
 
 #[test]
 fn ternary_with_one_unresolvable_branch_keeps_the_resolvable_one() {
-    // The test isn't foldable and one branch (`maybeFn()`) can't fold, but the
-    // other (`'black'`) can — and it's a possible runtime value, so emit it.
-    // Matches node's `maybeResolveConditionalExpression`, which returns the
-    // single resolvable branch.
     let src = indoc! {r"
         import { css } from '@panda/css';
         css({ color: dark ? maybeFn() : 'black' });
@@ -89,7 +77,6 @@ fn ternary_with_one_unresolvable_branch_keeps_the_resolvable_one() {
 
 #[test]
 fn ternary_with_unresolvable_alternate_keeps_the_consequent() {
-    // Mirror of the above, resolvable branch on the consequent side.
     let src = indoc! {r"
         import { css } from '@panda/css';
         css({ color: dark ? 'red' : maybeFn() });
@@ -108,8 +95,6 @@ fn ternary_with_unresolvable_alternate_keeps_the_consequent() {
 
 #[test]
 fn ternary_with_equal_branches_collapses_to_a_single_value() {
-    // Both branches fold to the same value — node returns it directly rather
-    // than a `Conditional`, so no duplicate atom shows up.
     let src = indoc! {r"
         import { css } from '@panda/css';
         css({ color: dark ? 'red' : 'red' });
@@ -123,6 +108,30 @@ fn ternary_with_equal_branches_collapses_to_a_single_value() {
       span:
         start: 34
         end: 70
+    ");
+}
+
+#[test]
+fn ternary_with_dynamic_test_and_const_branches_emits_conditional() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const a = 'red';
+        const b = 'blue';
+        css({ color: isFocused ? a : b });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color:
+            kind: conditional
+            branches:
+              - red
+              - blue
+      span:
+        start: 69
+        end: 102
     ");
 }
 
@@ -170,40 +179,6 @@ fn logical_and_with_unresolvable_left_emits_right_operand() {
       span:
         start: 60
         end: 99
-    ");
-}
-
-#[test]
-fn logical_and_with_both_literal_emits_conditional() {
-    // Both sides fold: emit conditional alternatives. Left was unfolded
-    // (test case above) — here we use a string literal on the left so
-    // the test isn't picking up the short-circuit path.
-    //
-    // NB: a string-literal-left would normally short-circuit (`'red'`
-    // is truthy → result is right), so we use a *number* literal of
-    // zero on the left to force the falsy short-circuit: `0 && 'red'`
-    // resolves to `0`. To exercise the *Conditional* branch we need a
-    // non-foldable left; that's what the next test covers using a
-    // bracketed call that resolves both sides explicitly.
-    let src = indoc! {r"
-        import { css } from '@panda/css';
-        const a = 'red';
-        const b = 'blue';
-        css({ color: isFocused ? a : b });
-    "};
-    assert_yaml_snapshot!(run(src).calls, @"
-    - category: css
-      name: css
-      alias: css
-      data:
-        - color:
-            kind: conditional
-            branches:
-              - red
-              - blue
-      span:
-        start: 69
-        end: 102
     ");
 }
 

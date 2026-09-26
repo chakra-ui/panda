@@ -108,6 +108,45 @@ fn leaves_pattern_call_with_dynamic_value_unchanged() {
     assert_eq!(output.code, source);
 }
 
+/// `stack` pattern requiring a JS transform, like preset-base `stack`/`hstack`.
+fn stack_project() -> Project {
+    Project::new(
+        System::new(create_config(json!({
+            "utilities": {
+                "display": { "className": "d" },
+                "gap": {}
+            },
+            "patterns": {
+                "stack": {
+                    "transform": { "kind": "js", "id": "stack" },
+                    "properties": {
+                        "gap": { "type": "property", "property": "gap" }
+                    }
+                }
+            }
+        })))
+        .expect("config"),
+    )
+}
+
+/// Stands in for the JS `stack` transform the binding layer supplies.
+#[allow(
+    clippy::unnecessary_wraps,
+    clippy::result_large_err,
+    reason = "signature must match PatternTransformFn"
+)]
+fn stack_to_flex(_name: &str, styles: &Literal) -> Result<Option<Literal>, Diagnostic> {
+    let mut out = vec![("display".to_string(), Literal::String("flex".to_string()))];
+    if let Literal::Object(entries) = styles {
+        for (key, value) in entries {
+            if key == "gap" {
+                out.push(("gap".to_string(), value.clone()));
+            }
+        }
+    }
+    Ok(Some(Literal::Object(out)))
+}
+
 #[test]
 fn leaves_pattern_with_js_transform_unchanged_without_callback() {
     let project = stack_project();
@@ -116,15 +155,7 @@ fn leaves_pattern_with_js_transform_unchanged_without_callback() {
         export const cls = stack({ gap: '4px' });
     "#};
 
-    let output = transform_source(
-        &project,
-        "src/layout.tsx",
-        source,
-        &TransformOptions {
-            targets: patterns_only_options().targets,
-            ..TransformOptions::default()
-        },
-    );
+    let output = transform_source(&project, "src/layout.tsx", source, &patterns_only_options());
 
     assert!(!output.changed);
     assert_eq!(output.code, source);
@@ -138,27 +169,12 @@ fn inlines_js_transform_pattern_when_transform_callback_is_supplied() {
         export const cls = stack({ gap: '4px' });
     "#};
 
-    // Stand in for the JS pattern transform the binding layer supplies.
-    let mut stack_transform =
-        |_name: &str, styles: &Literal| -> Result<Option<Literal>, Diagnostic> {
-            let mut out = vec![("display".to_string(), Literal::String("flex".to_string()))];
-            if let Literal::Object(entries) = styles {
-                for (key, value) in entries {
-                    if key == "gap" {
-                        out.push(("gap".to_string(), value.clone()));
-                    }
-                }
-            }
-            Ok(Some(Literal::Object(out)))
-        };
+    let mut stack_transform = stack_to_flex;
 
     let output = project.transform_source_with(
         "src/layout.tsx",
         source,
-        &TransformOptions {
-            targets: patterns_only_options().targets,
-            ..TransformOptions::default()
-        },
+        &patterns_only_options(),
         ParseTransforms {
             pattern: Some(&mut stack_transform),
             ..Default::default()
@@ -177,15 +193,7 @@ fn pattern_target_does_not_rewrite_css_calls() {
         export const cls = css({ color: 'red' });
     "#};
 
-    let output = transform_source(
-        &project,
-        "src/layout.tsx",
-        source,
-        &TransformOptions {
-            targets: patterns_only_options().targets,
-            ..TransformOptions::default()
-        },
-    );
+    let output = transform_source(&project, "src/layout.tsx", source, &patterns_only_options());
 
     assert!(!output.changed);
     assert_eq!(output.code, source);
@@ -854,18 +862,7 @@ fn pattern_raw_folds_through_a_js_transform_callback() {
         export const styles = stack.raw({ gap: '4px' });
     "#};
 
-    let mut stack_transform =
-        |_name: &str, styles: &Literal| -> Result<Option<Literal>, Diagnostic> {
-            let mut out = vec![("display".to_string(), Literal::String("flex".to_string()))];
-            if let Literal::Object(entries) = styles {
-                for (key, value) in entries {
-                    if key == "gap" {
-                        out.push(("gap".to_string(), value.clone()));
-                    }
-                }
-            }
-            Ok(Some(Literal::Object(out)))
-        };
+    let mut stack_transform = stack_to_flex;
 
     let output = stack_project().transform_source_with(
         "src/layout.tsx",
@@ -906,25 +903,4 @@ fn pattern_raw_stays_intact_when_the_js_transform_declines() {
 
     assert!(!output.changed);
     assert_eq!(output.code, source);
-}
-
-/// `stack` pattern requiring a JS transform, like preset-base `stack`/`hstack`.
-fn stack_project() -> Project {
-    Project::new(
-        System::new(create_config(json!({
-            "utilities": {
-                "display": { "className": "d" },
-                "gap": {}
-            },
-            "patterns": {
-                "stack": {
-                    "transform": { "kind": "js", "id": "stack" },
-                    "properties": {
-                        "gap": { "type": "property", "property": "gap" }
-                    }
-                }
-            }
-        })))
-        .expect("config"),
-    )
 }

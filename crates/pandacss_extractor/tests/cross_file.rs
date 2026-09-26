@@ -133,9 +133,17 @@ fn project(main_source: &str, siblings: &[(&str, &str)]) -> (MemoryFileSystem, P
     (fs, main_path)
 }
 
-fn run(fs: &MemoryFileSystem, main_path: &Path, source: &str) -> ExtractUsage {
+fn read_source(fs: &MemoryFileSystem, path: &Path) -> String {
+    String::from_utf8(oxc_resolver::FileSystem::read(fs, path).unwrap()).unwrap()
+}
+
+fn run(fs: &MemoryFileSystem, main_path: &Path) -> ExtractUsage {
     let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
-    extract(source, main_path.to_str().unwrap(), &config)
+    extract(
+        &read_source(fs, main_path),
+        main_path.to_str().unwrap(),
+        &config,
+    )
 }
 
 #[cfg(feature = "os")]
@@ -236,8 +244,7 @@ fn named_const_import_resolves_to_value() {
         "},
         &[("tokens.ts", "export const brand = '#ef4444';\n")],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r##"
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r##"
     calls:
       - name: css
         data:
@@ -258,8 +265,7 @@ fn imported_object_folds_member_access() {
             "export const tokens = { primary: '#3b82f6', secondary: '#a78bfa' };\n",
         )],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r##"
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r##"
     calls:
       - name: css
         data:
@@ -281,8 +287,7 @@ fn exported_object_can_reference_file_local_const() {
             "const base = { color: 'red' };\nexport const button = { ...base, padding: '4px' };\n",
         )],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r"
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r"
     calls:
       - name: css
         data:
@@ -308,8 +313,7 @@ fn exported_alias_chain_resolves_whole_object() {
             "},
         )],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r"
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r"
     calls:
       - name: css
         data:
@@ -333,8 +337,7 @@ fn exported_object_can_reference_imported_const() {
             ),
         ],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r"
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r"
     calls:
       - name: css
         data:
@@ -352,8 +355,7 @@ fn imported_object_spreads_under_condition() {
         "},
         &[("styles.ts", "export const hover = { color: 'red' };\n")],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r"
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r"
     calls:
       - name: css
         data:
@@ -379,8 +381,7 @@ fn exported_css_raw_object_folds_into_importing_css_call() {
             "},
         )],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r"
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r"
     calls:
       - name: css
         data:
@@ -409,8 +410,7 @@ fn re_exported_css_raw_object_spreads_into_importing_css_call() {
             ("styles.ts", "export { button } from './base';\n"),
         ],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r"
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r"
     calls:
       - name: css
         data:
@@ -435,8 +435,7 @@ fn exported_css_raw_object_spreads_under_condition() {
             "},
         )],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r"
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r"
     calls:
       - name: css
         data:
@@ -459,8 +458,7 @@ fn aliased_import_resolves_by_exported_name() {
         "},
         &[("tokens.ts", "export const brand = '#ef4444';\n")],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r##"
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r##"
     calls:
       - name: css
         data:
@@ -480,8 +478,7 @@ fn extensionless_import_resolves_through_probed_extensions() {
         "},
         &[("tokens.ts", "export const brand = '#ef4444';\n")],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r##"
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r##"
     calls:
       - name: css
         data:
@@ -501,8 +498,7 @@ fn unresolvable_specifier_drops_outer_call() {
         "},
         &[],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    let result = run(&fs, &main, &src);
+    let result = run(&fs, &main);
 
     assert_yaml_snapshot!(shape(&result), @"calls: []");
     assert_eq!(
@@ -524,16 +520,11 @@ fn missing_export_drops_outer_call() {
         "},
         &[("tokens.ts", "export const brand = '#ef4444';\n")],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @"calls: []");
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @"calls: []");
 }
 
 #[test]
-fn export_let_currently_folds_too() {
-    // `export let` is a `VariableDeclaration` and our top-level collector
-    // folds any unmutated initializer regardless of `const` vs `let`.
-    // Documenting the lax behavior: if a downstream emitter needs strict
-    // const-only handling, the contract gets tightened.
+fn exported_let_folds_like_const() {
     let (fs, main) = project(
         indoc::indoc! {r"
             import { brand } from './tokens';
@@ -542,8 +533,7 @@ fn export_let_currently_folds_too() {
         "},
         &[("tokens.ts", "export let brand = '#ef4444';\n")],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r##"
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r##"
     calls:
       - name: css
         data:
@@ -553,8 +543,6 @@ fn export_let_currently_folds_too() {
 
 #[test]
 fn no_cross_file_resolver_means_no_folding() {
-    // Without `with_cross_file`, the resolver bails on import-bound
-    // symbols and the outer call drops.
     let (fs, main) = project(
         indoc::indoc! {r"
             import { brand } from './tokens';
@@ -563,7 +551,7 @@ fn no_cross_file_resolver_means_no_folding() {
         "},
         &[("tokens.ts", "export const brand = '#ef4444';\n")],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
+    let src = read_source(&fs, &main);
     let config = panda_config();
     let result = extract(&src, main.to_str().unwrap(), &config);
     assert_yaml_snapshot!(shape(&result), @"calls: []");
@@ -573,10 +561,6 @@ fn no_cross_file_resolver_means_no_folding() {
 
 #[test]
 fn cyclic_imports_drop_safely_without_panic() {
-    // `a.ts` re-exports from `b.ts` which (contrived) imports back from
-    // `a.ts`. The cycle guard returns `None` for the recursive case so
-    // the resolver doesn't overflow the stack. Outcome shape is empty
-    // because the chain can't fold; the contract is "doesn't crash".
     let (fs, main) = project(
         indoc::indoc! {r"
             import { brand } from './a';
@@ -588,11 +572,7 @@ fn cyclic_imports_drop_safely_without_panic() {
             ("b.ts", "import { brand } from './a';\nexport { brand };\n"),
         ],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    // No assertion on output beyond "didn't crash and produced *some*
-    // result"; we don't currently fold `export { x } from './…'`
-    // re-exports, so the cycle path produces `calls: []`.
-    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @"calls: []");
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @"calls: []");
 }
 
 #[test]
@@ -624,11 +604,7 @@ fn cycle_guard_is_reset_between_extractions_in_one_session() {
 }
 
 #[test]
-fn cache_reuses_across_multiple_extracts() {
-    // Build one cross-file resolver, run extract() twice — the second run
-    // should hit the cached tokens file. The contract is "two runs
-    // produce identical output". A cache-invalidation regression would
-    // diverge.
+fn repeated_extracts_with_one_resolver_produce_the_same_output() {
     let (fs, main) = project(
         indoc::indoc! {r"
             import { brand } from './tokens';
@@ -637,7 +613,7 @@ fn cache_reuses_across_multiple_extracts() {
         "},
         &[("tokens.ts", "export const brand = '#ef4444';\n")],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
+    let src = read_source(&fs, &main);
     let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
     let a = extract(&src, main.to_str().unwrap(), &config);
     let b = extract(&src, main.to_str().unwrap(), &config);
@@ -1169,9 +1145,7 @@ fn cache_keeps_an_unrelated_importer_stable_when_another_module_changes() {
 // --- in-memory FS specific tests ----------------------------------------
 
 #[test]
-fn memory_fs_isolation_between_projects() {
-    // Two separate MemoryFileSystem instances can't see each other —
-    // important for parallel test isolation.
+fn separate_projects_do_not_share_files() {
     let (fs_a, main_a) = project(
         "import { brand } from './tokens';\nimport { css } from '@panda/css';\ncss({ color: brand });\n",
         &[("tokens.ts", "export const brand = '#aaa';\n")],
@@ -1181,19 +1155,14 @@ fn memory_fs_isolation_between_projects() {
         &[("tokens.ts", "export const brand = '#bbb';\n")],
     );
 
-    let src_a = String::from_utf8(oxc_resolver::FileSystem::read(&fs_a, &main_a).unwrap()).unwrap();
-    let src_b = String::from_utf8(oxc_resolver::FileSystem::read(&fs_b, &main_b).unwrap()).unwrap();
-
-    let ra = run(&fs_a, &main_a, &src_a);
-    let rb = run(&fs_b, &main_b, &src_b);
+    let ra = run(&fs_a, &main_a);
+    let rb = run(&fs_b, &main_b);
 
     assert_ne!(shape(&ra), shape(&rb));
 }
 
 #[test]
-fn fs_mutation_after_resolver_construction_visible() {
-    // Add the tokens file AFTER constructing the resolver. The shared
-    // FS handle means the resolver sees the new file on first lookup.
+fn file_added_after_resolver_creation_is_visible() {
     let fs = MemoryFileSystem::new();
     fs.add_file(
         PathBuf::from("/proj/main.tsx"),
@@ -1201,14 +1170,13 @@ fn fs_mutation_after_resolver_construction_visible() {
     );
     let resolver = CrossFileResolver::with_fs(fs.clone());
 
-    // Now add the imported file. The resolver shares state via Arc<RwLock>.
     fs.add_file(
         PathBuf::from("/proj/tokens.ts"),
         b"export const brand = '#ef4444';\n".to_vec(),
     );
 
     let main = PathBuf::from("/proj/main.tsx");
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
+    let src = read_source(&fs, &main);
     let config = panda_config().with_cross_file(resolver);
     let result = extract(&src, main.to_str().unwrap(), &config);
 
@@ -1235,8 +1203,7 @@ fn deep_import_chain_resolves_through_re_export() {
             ("b.ts", "export const brand = '#ef4444';\n"),
         ],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r##"
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r##"
     calls:
       - name: css
         data:
@@ -1256,8 +1223,7 @@ fn imported_pure_arrow_call_folds() {
         "},
         &[("helpers.ts", "export const getColor = () => 'red';\n")],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r##"
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r##"
     calls:
       - name: css
         data:
@@ -1278,8 +1244,7 @@ fn imported_group_hover_helper_folds_computed_key() {
             "export const groupHover = (name: string) => `.${name}:is(:hover, [data-hover]) &`;\n",
         )],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r#"
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r#"
     calls:
       - name: css
         data:
@@ -1301,8 +1266,7 @@ fn imported_function_declaration_call_folds() {
             "export function getColor() {\n  return 'teal.500';\n}\n",
         )],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r##"
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r##"
     calls:
       - name: css
         data:
@@ -1326,8 +1290,7 @@ fn re_exported_pure_fn_call_folds() {
             ),
         ],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r#"
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r#"
     calls:
       - name: css
         data:
@@ -1347,8 +1310,7 @@ fn bare_imported_function_value_does_not_fold() {
         "},
         &[("helpers.ts", "export const getColor = () => 'red';\n")],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    assert!(run(&fs, &main, &src).calls.is_empty());
+    assert!(run(&fs, &main).calls.is_empty());
 }
 
 #[test]
@@ -1366,8 +1328,7 @@ fn imported_aliased_pure_fn_export_does_not_fold() {
             "const f = () => 'red';\nconst g = f;\nexport { g };\n",
         )],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    assert!(run(&fs, &main, &src).calls.is_empty());
+    assert!(run(&fs, &main).calls.is_empty());
 }
 
 #[test]
@@ -1383,8 +1344,7 @@ fn imported_pure_helper_object_return_spreads() {
             "export const getColorConfig = () => ({ color: 'teal.600', backgroundColor: 'teal.650' });\n",
         )],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r##"
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r##"
     calls:
       - name: css
         data:
@@ -1407,8 +1367,7 @@ fn imported_conditional_object_keeps_encode_branches() {
             "export const colors = { color: isDark ? 'red' : 'blue' };\n",
         )],
     );
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r"
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r"
     calls:
       - name: css
         data:
@@ -1446,7 +1405,7 @@ fn factory_config(prefix: &str, fs: &MemoryFileSystem) -> ExtractorConfig {
 }
 
 fn run_factory(fs: &MemoryFileSystem, main: &Path, prefix: &str) -> ExtractUsage {
-    let src = String::from_utf8(oxc_resolver::FileSystem::read(fs, main).unwrap()).unwrap();
+    let src = read_source(fs, main);
     extract(&src, main.to_str().unwrap(), &factory_config(prefix, fs))
 }
 
