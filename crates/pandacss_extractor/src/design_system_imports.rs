@@ -102,8 +102,8 @@ where
     records
 }
 
-fn selection_from_records(
-    records: &[ImportRecord],
+fn selection_from_records<'r>(
+    records: impl IntoIterator<Item = &'r ImportRecord>,
     roots: &[&str],
     excluded: &BTreeSet<&str>,
 ) -> DesignSystemImportSelection {
@@ -113,7 +113,7 @@ fn selection_from_records(
         if record.type_only || !is_design_system_module(&record.module, roots, excluded) {
             continue;
         }
-        if record.kind == ImportKind::SideEffect {
+        if matches!(record.kind, ImportKind::SideEffect | ImportKind::ExportAll) {
             return DesignSystemImportSelection::All;
         }
         // Deep imports (`@acme/ds/button`) — keep the subpath stem so
@@ -134,6 +134,37 @@ fn selection_from_records(
 
     DesignSystemImportSelection::Names {
         names: names.into_iter().collect(),
+    }
+}
+
+/// How a design system's own file uses a parent package.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DesignSystemUsage {
+    /// Exports the file imports or re-exports by name.
+    pub referenced_exports: DesignSystemImportSelection,
+    /// `export * from` the parent: names the file doesn't list fall through to it.
+    pub star_reexport: bool,
+}
+
+/// Like [`selection_from_import_records`], but keeps `export *` out of `referenced_exports`.
+#[must_use]
+pub fn design_system_usage_from_import_records(
+    records: &[ImportRecord],
+    package_roots: &[&str],
+    exclude_modules: &[&str],
+) -> DesignSystemUsage {
+    let roots = normalize_roots(package_roots);
+    let excluded: BTreeSet<&str> = exclude_modules.iter().copied().collect();
+    let star_reexport = records.iter().any(|record| {
+        record.kind == ImportKind::ExportAll
+            && is_design_system_module(&record.module, &roots, &excluded)
+    });
+    let referenced_exports = records
+        .iter()
+        .filter(|record| record.kind != ImportKind::ExportAll);
+    DesignSystemUsage {
+        referenced_exports: selection_from_records(referenced_exports, &roots, &excluded),
+        star_reexport,
     }
 }
 
@@ -220,6 +251,76 @@ mod tests {
         assert_eq!(
             collect("export * from '@acme/ds'", &["@acme/ds"], &[]),
             DesignSystemImportSelection::All
+        );
+    }
+
+    use indoc::indoc;
+
+    fn usage(source: &str) -> DesignSystemUsage {
+        let records = scan_imports_with(
+            source,
+            "fixture.tsx",
+            ScanImportsOptions {
+                reexports: true,
+                dynamic: true,
+            },
+        )
+        .imports;
+        design_system_usage_from_import_records(&records, &["@acme/ds"], &["@acme/ds/css"])
+    }
+
+    #[test]
+    fn usage_keeps_export_all_out_of_imports() {
+        assert_eq!(
+            usage(indoc! {"
+                export * from '@acme/ds'
+                export { Card } from '@acme/ds'
+            "}),
+            DesignSystemUsage {
+                referenced_exports: DesignSystemImportSelection::Names {
+                    names: vec!["Card".into()],
+                },
+                star_reexport: true,
+            }
+        );
+    }
+
+    #[test]
+    fn usage_treats_namespace_import_as_all() {
+        assert_eq!(
+            usage("import * as DS from '@acme/ds'"),
+            DesignSystemUsage {
+                referenced_exports: DesignSystemImportSelection::All,
+                star_reexport: false,
+            }
+        );
+    }
+
+    #[test]
+    fn usage_treats_side_effect_import_as_all() {
+        assert_eq!(
+            usage(indoc! {"
+                import '@acme/ds'
+                export * from '@acme/ds'
+            "}),
+            DesignSystemUsage {
+                referenced_exports: DesignSystemImportSelection::All,
+                star_reexport: true,
+            }
+        );
+    }
+
+    #[test]
+    fn usage_ignores_export_all_from_other_packages() {
+        assert_eq!(
+            usage(indoc! {"
+                export * from './local'
+                export * from '@acme/ds/css'
+            "}),
+            DesignSystemUsage {
+                referenced_exports: DesignSystemImportSelection::Names { names: vec![] },
+                star_reexport: false,
+            }
         );
     }
 

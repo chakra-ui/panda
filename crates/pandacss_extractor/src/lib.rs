@@ -37,8 +37,9 @@ use pandacss_literal::Literal;
 
 pub use calls::{CallCalleeKind, CallFacts, ExtractedCall, ExtractedCallsResult, extract_calls};
 pub use design_system_imports::{
-    DesignSystemImportSelection, DesignSystemPackageQuery, collect_design_system_imports,
-    collect_design_system_imports_for_packages, selection_from_import_records,
+    DesignSystemImportSelection, DesignSystemPackageQuery, DesignSystemUsage,
+    collect_design_system_imports, collect_design_system_imports_for_packages,
+    design_system_usage_from_import_records, selection_from_import_records,
 };
 pub use extract::{
     CrossFileDependency, ExtractDebugResult, ExtractUsage, ExtractVerboseResult,

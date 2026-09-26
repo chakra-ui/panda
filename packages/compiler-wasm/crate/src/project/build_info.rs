@@ -12,10 +12,39 @@ impl WasmCompiler {
     /// # Errors
     /// Returns a JS error if serializing the build info fails.
     #[wasm_bindgen(js_name = serializeBuildInfo)]
-    pub fn serialize_build_info(&self, panda: String) -> Result<JsValue, JsValue> {
+    pub fn serialize_build_info(
+        &self,
+        panda: String,
+        dependencies: JsValue,
+    ) -> Result<JsValue, JsValue> {
+        #[derive(serde::Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct DependencyQuery {
+            name: String,
+            package_roots: Vec<String>,
+            exclude_modules: Option<Vec<String>>,
+        }
+
         let _span =
             tracing::trace_span!("boundary_encode", method = "serialize_build_info").entered();
-        let info = self.inner.build_info(panda);
+        let dependencies: Vec<DependencyQuery> =
+            if dependencies.is_undefined() || dependencies.is_null() {
+                Vec::new()
+            } else {
+                serde_wasm_bindgen::from_value(dependencies)
+                    .map_err(|err| JsValue::from_str(&err.to_string()))?
+            };
+        let dependencies: Vec<pandacss_project::DesignSystemDependency> = dependencies
+            .into_iter()
+            .map(|dependency| pandacss_project::DesignSystemDependency {
+                name: dependency.name,
+                roots: dependency.package_roots,
+                exclude_modules: dependency.exclude_modules.unwrap_or_default(),
+            })
+            .collect();
+        let info = self
+            .inner
+            .build_info_with_dependencies(panda, &dependencies);
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         info.serialize(&serializer)
             .map_err(|err| JsValue::from_str(&err.to_string()))

@@ -4,7 +4,7 @@
 //! encoding; per-module atom indices drive tree-shaking. See
 //! `design-notes/build-info.md`.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Component, Path, PathBuf};
 use std::sync::Arc;
 
@@ -12,7 +12,10 @@ use pandacss_encoder::{
     Atom, AtomValue, ConditionList, EncodedRecipesSnapshot, RecipeStyleEntry,
     RecipeStyleGroupSnapshot,
 };
-use pandacss_extractor::ExportInfo;
+use pandacss_extractor::{
+    DesignSystemImportSelection, ExportInfo, ReExport, ScanImportsOptions,
+    design_system_usage_from_import_records, scan_imports_with,
+};
 use pandacss_shared::{InlineKeyframe, PositionTryStyle, ViewTransitionStyle};
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde::{Deserialize, Serialize};
@@ -60,6 +63,24 @@ pub struct BuildInfo {
     /// must hydrate. Omitted when empty.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub exports: BTreeMap<String, String>,
+    /// Design-system dependencies re-exported with `export *`.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub star_reexport_dependencies: Vec<String>,
+    /// Design-system dependencies tracked in module `dependency_imports`.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub design_system_dependencies: Vec<String>,
+}
+
+/// A design-system dependency whose imports
+/// [`crate::Project::build_info_with_dependencies`] records.
+#[derive(Debug, Clone, Default)]
+pub struct DesignSystemDependency {
+    /// Package name, used as the key in module `dependency_imports`.
+    pub name: String,
+    /// Import specifiers that resolve to the package (`@acme/ds`).
+    pub roots: Vec<String>,
+    /// Subpaths that aren't components (`@acme/ds/css`).
+    pub exclude_modules: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -179,6 +200,9 @@ pub struct ModuleEntry {
     pub position_try: Vec<u32>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub keyframes: Vec<u32>,
+    /// Design-system dependency → imported export names (`*` = all).
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub dependency_imports: BTreeMap<String, Vec<String>>,
 }
 
 #[allow(
@@ -597,11 +621,22 @@ impl super::Project {
     /// (`panda buildinfo`), not on the compile hot path. The caller supplies
     /// only the published `panda` range; `config_fingerprint` is derived here.
     #[must_use]
+    pub fn build_info(&self, panda: String) -> BuildInfo {
+        self.build_info_with_dependencies(panda, &[])
+    }
+
+    /// [`Self::build_info`], also recording which design-system dependency
+    /// exports each module imports.
+    #[must_use]
     #[allow(
         clippy::cast_possible_truncation,
         reason = "a project never holds u32::MAX atoms"
     )]
-    pub fn build_info(&self, panda: String) -> BuildInfo {
+    pub fn build_info_with_dependencies(
+        &self,
+        panda: String,
+        dependencies: &[DesignSystemDependency],
+    ) -> BuildInfo {
         let config_fingerprint = self.config_fingerprint.to_string();
 
         // Deduped, emit-ordered — modules reference this index space. Only this
@@ -663,7 +698,7 @@ impl super::Project {
         let (build_keyframes, file_keyframes) =
             collect_build_keyframes(&self.inline_keyframes, &mut interner);
 
-        let (modules, styled_modules) = Self::build_module_entries(
+        let (mut modules, mut styled_modules) = Self::build_module_entries(
             &self.files,
             &position,
             &recipe_index,
@@ -672,7 +707,9 @@ impl super::Project {
             &file_position_try,
             &file_keyframes,
         );
-        let exports = ExportResolver::new(&self.files, styled_modules).resolve_all();
+        let usage = record_dependency_usage(&self.files, dependencies, &mut modules);
+        styled_modules.extend(usage.modules.iter().cloned());
+        let exports = ExportResolver::new(&self.files, styled_modules, usage.modules).resolve_all();
 
         BuildInfo {
             schema_version: SCHEMA_VERSION,
@@ -687,6 +724,11 @@ impl super::Project {
             keyframes: build_keyframes,
             modules,
             exports,
+            star_reexport_dependencies: usage.star_reexports.into_iter().collect(),
+            design_system_dependencies: dependencies
+                .iter()
+                .map(|dependency| dependency.name.clone())
+                .collect(),
         }
     }
 
@@ -765,6 +807,7 @@ impl super::Project {
                     view_transitions: view_transition_indices,
                     position_try: position_try_indices,
                     keyframes: keyframe_indices,
+                    dependency_imports: BTreeMap::new(),
                 },
             );
         }
@@ -921,12 +964,65 @@ impl super::Project {
     }
 }
 
+/// Modules that import a design-system dependency and star-reexported dependencies.
+#[derive(Default)]
+struct DependencyUsage {
+    modules: FxHashSet<String>,
+    star_reexports: BTreeSet<String>,
+}
+
+fn record_dependency_usage(
+    files: &FxHashMap<Arc<str>, FileEntry>,
+    dependencies: &[DesignSystemDependency],
+    modules: &mut BTreeMap<String, ModuleEntry>,
+) -> DependencyUsage {
+    let mut usage = DependencyUsage::default();
+    if dependencies.is_empty() {
+        return usage;
+    }
+    let options = ScanImportsOptions {
+        reexports: true,
+        dynamic: true,
+    };
+    for (path, entry) in files {
+        if path.starts_with(HYDRATED_FILE_PREFIX) || entry.source.is_empty() {
+            continue;
+        }
+        let records = scan_imports_with(&entry.source, path, options).imports;
+        for dependency in dependencies {
+            let roots: Vec<&str> = dependency.roots.iter().map(String::as_str).collect();
+            let excluded: Vec<&str> = dependency
+                .exclude_modules
+                .iter()
+                .map(String::as_str)
+                .collect();
+            let file_usage = design_system_usage_from_import_records(&records, &roots, &excluded);
+            if file_usage.star_reexport {
+                usage.star_reexports.insert(dependency.name.clone());
+            }
+            let names = match file_usage.referenced_exports {
+                DesignSystemImportSelection::All => vec!["*".to_owned()],
+                DesignSystemImportSelection::Names { names } if names.is_empty() => continue,
+                DesignSystemImportSelection::Names { names } => names,
+            };
+            if let Some(module) = modules.get_mut(path.as_ref()) {
+                module
+                    .dependency_imports
+                    .insert(dependency.name.clone(), names);
+                usage.modules.insert(path.to_string());
+            }
+        }
+    }
+    usage
+}
+
 /// Resolves export surfaces across already-parsed project files. Modules that
 /// contribute styles (`styled_modules`) map to themselves; the rest resolve
 /// via re-export edges collected at extraction time.
 struct ExportResolver {
     files: BTreeMap<String, ExportInfo>,
     styled_modules: FxHashSet<String>,
+    dependency_modules: FxHashSet<String>,
     /// Normalized path → original `Project.files` key (handles `./` prefixes).
     normalized_files: BTreeMap<String, String>,
     surface_memo: BTreeMap<String, BTreeMap<String, String>>,
@@ -936,7 +1032,11 @@ struct ExportResolver {
 }
 
 impl ExportResolver {
-    fn new(files: &FxHashMap<Arc<str>, FileEntry>, styled_modules: FxHashSet<String>) -> Self {
+    fn new(
+        files: &FxHashMap<Arc<str>, FileEntry>,
+        styled_modules: FxHashSet<String>,
+        dependency_modules: FxHashSet<String>,
+    ) -> Self {
         let mut export_files = BTreeMap::new();
         let mut normalized_files = BTreeMap::new();
         for (path, entry) in files {
@@ -949,6 +1049,7 @@ impl ExportResolver {
         Self {
             files: export_files,
             styled_modules,
+            dependency_modules,
             normalized_files,
             surface_memo: BTreeMap::new(),
             export_memo: BTreeMap::new(),
@@ -996,11 +1097,7 @@ impl ExportResolver {
 
         // Named re-exports: resolve the imported binding in the target module.
         for re_export in &info.re_exports {
-            let Some(target) = self.resolve_source(path, &re_export.source) else {
-                continue;
-            };
-
-            if let Some(module) = self.resolve_export(&target, &re_export.imported) {
+            if let Some(module) = self.resolve_re_export(path, re_export) {
                 surface.insert(re_export.exported.clone(), module);
             }
         }
@@ -1036,10 +1133,7 @@ impl ExportResolver {
             info.re_exports
                 .iter()
                 .filter(|re_export| re_export.exported == name)
-                .find_map(|re_export| {
-                    let target = self.resolve_source(path, &re_export.source)?;
-                    self.resolve_export(&target, &re_export.imported)
-                })
+                .find_map(|re_export| self.resolve_re_export(path, re_export))
                 .or_else(|| {
                     // Default bindings are not re-exported through `export *`.
                     if name == "default" {
@@ -1057,6 +1151,17 @@ impl ExportResolver {
         self.resolving_exports.remove(&key);
         self.export_memo.insert(key, result.clone());
         result
+    }
+
+    fn resolve_re_export(&mut self, path: &str, re_export: &ReExport) -> Option<String> {
+        match self.resolve_source(path, &re_export.source) {
+            Some(target) => self.resolve_export(&target, &re_export.imported),
+            // Re-exported from a design-system dependency: this module carries the edge.
+            None => self
+                .dependency_modules
+                .contains(path)
+                .then(|| path.to_owned()),
+        }
     }
 
     fn resolve_source(&self, from: &str, source: &str) -> Option<String> {

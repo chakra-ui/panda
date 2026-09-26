@@ -5,7 +5,7 @@ use crate::common::{create_config, create_project, sorted_atoms};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
 use pandacss_encoder::AtomValue;
-use pandacss_project::{BuildInfo, BuildValue};
+use pandacss_project::{BuildInfo, BuildValue, DesignSystemDependency};
 use serde_json::json;
 
 #[test]
@@ -711,6 +711,172 @@ fn build_info_tracks_named_specifier_exports() {
         !info.exports.contains_key("CardImpl"),
         "the local name is not exported"
     );
+}
+
+fn acme_ds_dependency() -> DesignSystemDependency {
+    DesignSystemDependency {
+        name: "@acme/ds".into(),
+        roots: vec!["@acme/ds".into()],
+        exclude_modules: vec!["@acme/ds/css".into()],
+    }
+}
+
+fn dependency_view(info: &BuildInfo) -> serde_json::Value {
+    let modules: serde_json::Map<String, serde_json::Value> = info
+        .modules
+        .iter()
+        .filter(|(_, entry)| !entry.dependency_imports.is_empty())
+        .map(|(key, entry)| (key.clone(), json!(entry.dependency_imports)))
+        .collect();
+    json!({
+        "designSystemDependencies": info.design_system_dependencies,
+        "modules": modules,
+        "exports": info.exports,
+        "starReexportDependencies": info.star_reexport_dependencies,
+    })
+}
+
+#[test]
+fn middle_design_system_records_the_parent_exports_it_uses() {
+    let mut project = create_project(json!({ "jsxFramework": "react" }));
+    project.parse_file("index.tsx", "export { Icon } from '@acme/ds';");
+    project.parse_file(
+        "check-icon.tsx",
+        indoc! {r"
+            import { Icon } from '@acme/ds/icon';
+            export const CheckIcon = () => <Icon name='check' />;
+        "},
+    );
+    project.parse_file(
+        "card.tsx",
+        indoc! {r"
+            import { css } from '@acme/ds/css';
+            import type { Size } from '@acme/ds';
+            export const Card = () => <div className={css({ padding: '4px' })} />;
+        "},
+    );
+
+    let info = project.build_info_with_dependencies("^2.0.0".into(), &[acme_ds_dependency()]);
+
+    assert_yaml_snapshot!(dependency_view(&info), @r#"
+    designSystemDependencies:
+      - "@acme/ds"
+    modules:
+      check-icon.tsx:
+        "@acme/ds":
+          - Icon
+          - icon
+      index.tsx:
+        "@acme/ds":
+          - Icon
+    exports:
+      CheckIcon: check-icon.tsx
+      Icon: index.tsx
+    starReexportDependencies: []
+    "#);
+}
+
+#[test]
+fn middle_design_system_export_all_forwards_the_parent_without_using_it() {
+    let mut project = create_project(json!({ "jsxFramework": "react" }));
+    project.parse_file(
+        "index.tsx",
+        indoc! {"
+            export * from '@acme/ds';
+            export { CheckIcon } from './check-icon';
+        "},
+    );
+    project.parse_file(
+        "check-icon.tsx",
+        "import { Icon } from '@acme/ds'; export const CheckIcon = () => <Icon />;",
+    );
+
+    let info = project.build_info_with_dependencies("^2.0.0".into(), &[acme_ds_dependency()]);
+
+    assert_yaml_snapshot!(dependency_view(&info), @r#"
+    designSystemDependencies:
+      - "@acme/ds"
+    modules:
+      check-icon.tsx:
+        "@acme/ds":
+          - Icon
+    exports:
+      CheckIcon: check-icon.tsx
+    starReexportDependencies:
+      - "@acme/ds"
+    "#);
+}
+
+#[test]
+fn middle_design_system_namespace_reexport_maps_to_its_module() {
+    let mut project = create_project(json!({ "jsxFramework": "react" }));
+    project.parse_file(
+        "index.tsx",
+        indoc! {"
+            export * as DS from '@acme/ds';
+            export * as Local from './check-icon';
+        "},
+    );
+    project.parse_file(
+        "check-icon.tsx",
+        "import { Icon } from '@acme/ds'; export const CheckIcon = () => <Icon />;",
+    );
+
+    let info = project.build_info_with_dependencies("^2.0.0".into(), &[acme_ds_dependency()]);
+
+    assert_yaml_snapshot!(dependency_view(&info), @r#"
+    designSystemDependencies:
+      - "@acme/ds"
+    modules:
+      check-icon.tsx:
+        "@acme/ds":
+          - Icon
+      index.tsx:
+        "@acme/ds":
+          - "*"
+    exports:
+      CheckIcon: check-icon.tsx
+      DS: index.tsx
+    starReexportDependencies: []
+    "#);
+}
+
+#[test]
+fn middle_design_system_namespace_import_uses_the_whole_parent() {
+    let mut project = create_project(json!({ "jsxFramework": "react" }));
+    project.parse_file(
+        "toolbar.tsx",
+        "import * as DS from '@acme/ds'; export const Toolbar = () => <DS.Button />;",
+    );
+
+    let info = project.build_info_with_dependencies("^2.0.0".into(), &[acme_ds_dependency()]);
+
+    assert_yaml_snapshot!(dependency_view(&info), @r#"
+    designSystemDependencies:
+      - "@acme/ds"
+    modules:
+      toolbar.tsx:
+        "@acme/ds":
+          - "*"
+    exports:
+      Toolbar: toolbar.tsx
+    starReexportDependencies: []
+    "#);
+}
+
+#[test]
+fn library_without_a_parent_design_system_records_no_dependencies() {
+    let mut project = create_project(json!({ "jsxFramework": "react" }));
+    project.parse_file("index.tsx", "export { Icon } from '@acme/ds';");
+
+    let info = project.build_info("^2.0.0".into());
+
+    assert_yaml_snapshot!(dependency_view(&info), @"
+    designSystemDependencies: []
+    modules: {}
+    exports: {}
+    starReexportDependencies: []
+    ");
 }
 
 fn jsx_button_project() -> pandacss_project::Project {

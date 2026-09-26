@@ -94,6 +94,33 @@ describe('compiler.buildInfo', () => {
     })
   })
 
+  it('validate() reports a malformed designSystemDependencies list as corrupt', () => {
+    const app = consumer()
+    const malformed = {
+      ...libBuildInfo(),
+      designSystemDependencies: { '@acme/ds': true },
+    } as unknown as BuildInfoArtifact
+
+    expect(app.buildInfo.validate(malformed)).toEqual({ ok: false, reason: 'corrupt' })
+  })
+
+  it('validate() reports a malformed starReexportDependencies list as corrupt', () => {
+    const app = consumer()
+    const malformed = { ...libBuildInfo(), starReexportDependencies: '@acme/ds' } as unknown as BuildInfoArtifact
+
+    expect(app.buildInfo.validate(malformed)).toEqual({ ok: false, reason: 'corrupt' })
+  })
+
+  it('validate() reports malformed module dependency imports as corrupt', () => {
+    const app = consumer()
+    const malformed = {
+      ...libBuildInfo(),
+      modules: { 'icon.tsx': { dependencyImports: { '@acme/ds': 'Icon' } } },
+    } as unknown as BuildInfoArtifact
+
+    expect(app.buildInfo.validate(malformed)).toEqual({ ok: false, reason: 'corrupt' })
+  })
+
   it('create() preserves token identity alongside the resolved value', () => {
     // Build info keeps both the token path and the resolved value at extraction time.
     const lib = createProject({
@@ -336,7 +363,7 @@ describe('compiler.buildInfo', () => {
 
     // A bare consumer (no recipe config) resolves the barrel name, hydrates only
     // that module, and gets the recipe CSS — fully self-contained.
-    const app = createProject({})
+    const app = createProject()
     const only = app.buildInfo.modulesFor(info, ['ActionButton'])
     expect(only).toEqual(['button.tsx'])
     expect(app.buildInfo.hydrate(info, { name: '@acme/ds', only }).modules).toEqual(['button.tsx'])
@@ -360,14 +387,14 @@ describe('compiler.buildInfo', () => {
   // --- JSX style props → atoms through hydrate ---
 
   it('hydrates JSX style props into consumer utilities CSS', () => {
-    const lib = createProject({})
+    const lib = createProject()
     lib.parseFileSource(
       'card.tsx',
       "import { Box } from '@panda/jsx'\nexport const Card = () => <Box color='red' padding='4px' />",
     )
     const info = lib.buildInfo.create({ panda: '^2.0.0' })
 
-    const app = createProject({})
+    const app = createProject()
     expect(app.buildInfo.hydrate(info, { name: '@acme/ds' })).toEqual({
       ok: true,
       modules: ['card.tsx'],
@@ -386,7 +413,7 @@ describe('compiler.buildInfo', () => {
   })
 
   it('tree-shakes JSX style props to the imported module', () => {
-    const lib = createProject({})
+    const lib = createProject()
     lib.parseFileSource('card.tsx', "import { Box } from '@panda/jsx'\nexport const Card = () => <Box color='red' />")
     lib.parseFileSource(
       'panel.tsx',
@@ -394,7 +421,7 @@ describe('compiler.buildInfo', () => {
     )
     const info = lib.buildInfo.create({ panda: '^2.0.0' })
 
-    const app = createProject({})
+    const app = createProject()
     expect(app.buildInfo.hydrate(info, { name: '@acme/ds', only: ['card.tsx'] })).toEqual({
       ok: true,
       modules: ['card.tsx'],
@@ -427,7 +454,7 @@ describe('compiler.buildInfo', () => {
     )
     const info = lib.buildInfo.create({ panda: '^2.0.0' })
 
-    const app = createProject({})
+    const app = createProject()
     expect(app.buildInfo.hydrate(info, { name: '@acme/ds' })).toEqual({
       ok: true,
       modules: ['button.tsx'],
@@ -652,7 +679,7 @@ describe('compiler.buildInfo', () => {
   // --- viewTransition() bags through hydrate ---
 
   it('hydrate() emits viewTransition bag CSS and tree-shakes unused modules', () => {
-    const lib = createProject({})
+    const lib = createProject()
     lib.parseFileSource(
       'slide.ts',
       `import { viewTransition } from '@panda/css'
@@ -675,7 +702,7 @@ describe('compiler.buildInfo', () => {
     expect(info.modules['slide.ts']?.viewTransitions?.length).toBe(1)
     expect(info.modules['fade.ts']?.viewTransitions?.length).toBe(1)
 
-    const app = createProject({})
+    const app = createProject()
     expect(app.buildInfo.hydrate(info, { name: '@acme/ds', only: ['slide.ts'] })).toEqual({
       ok: true,
       modules: ['slide.ts'],

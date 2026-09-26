@@ -34,7 +34,7 @@ const TREESHAKE_CONFIG = `export default {
 
 /** Realistic DS package: cva, sva, styled('div', …), and styled.a(…). */
 function componentLibBuildInfo() {
-  const lib = createProject({})
+  const lib = createProject()
 
   lib.parseFileSource(
     'badge.tsx',
@@ -169,7 +169,7 @@ function jsxRecipeLibBuildInfo() {
 
 /** Two components in one module — importing either hydrates both. */
 function sharedFileLibBuildInfo() {
-  const lib = createProject({})
+  const lib = createProject()
   lib.parseFileSource(
     'ui.tsx',
     `
@@ -1226,6 +1226,145 @@ describe('hydrateDesignSystem (consumer)', () => {
     })
   })
 
+  describe('treeshakeDesignSystem with a stacked design system', () => {
+    it('keeps parent styles the middle design system wraps', async () => {
+      cwd = createStackedFixture({
+        app: ["import { CheckIcon } from '@acme/ui'", 'export const App = () => <CheckIcon />'].join('\n'),
+      })
+
+      expect(styleLayers(await createNodeDriver({ cwd })).utilities).toMatchInlineSnapshot(`
+        "@layer utilities {
+          .width_20px {
+            width: 20px;
+          }
+        }
+        "
+      `)
+    })
+
+    it('keeps parent styles the middle design system re-exports', async () => {
+      cwd = createStackedFixture({
+        app: ["import { Icon } from '@acme/ui'", 'export const App = () => <Icon />'].join('\n'),
+      })
+
+      expect(styleLayers(await createNodeDriver({ cwd })).utilities).toMatchInlineSnapshot(`
+        "@layer utilities {
+          .width_20px {
+            width: 20px;
+          }
+        }
+        "
+      `)
+    })
+
+    it('keeps the whole parent when the middle build info predates dependency tracking', async () => {
+      cwd = createStackedFixture({
+        app: ["import { CheckIcon } from '@acme/ui'", 'export const App = () => <CheckIcon />'].join('\n'),
+        uiBuildInfo: uiLibBuildInfo({ trackDependencies: false }),
+      })
+
+      expect(styleLayers(await createNodeDriver({ cwd })).utilities).toMatchInlineSnapshot(`
+        "@layer utilities {
+          .color_blue {
+            color: blue;
+          }
+          .color_red {
+            color: red;
+          }
+          .width_20px {
+            width: 20px;
+          }
+        }
+        "
+      `)
+    })
+
+    it('narrows the parent when the app skips a middle design system built before dependency tracking', async () => {
+      cwd = createStackedFixture({
+        app: ["import { Button } from '@acme/ds'", 'export const App = () => <Button />'].join('\n'),
+        uiBuildInfo: uiLibBuildInfo({ trackDependencies: false }),
+      })
+
+      expect(styleLayers(await createNodeDriver({ cwd })).utilities).toMatchInlineSnapshot(`
+        "@layer utilities {
+          .color_red {
+            color: red;
+          }
+        }
+        "
+      `)
+    })
+
+    it('keeps parent styles re-exported through export * alongside other imports', async () => {
+      cwd = createStackedFixture({
+        app: [
+          "import { Button, CheckIcon } from '@acme/ui'",
+          'export const App = () => <><Button /><CheckIcon /></>',
+        ].join('\n'),
+        uiBuildInfo: uiStarLibBuildInfo(),
+      })
+
+      expect(styleLayers(await createNodeDriver({ cwd })).utilities).toMatchInlineSnapshot(`
+        "@layer utilities {
+          .color_red {
+            color: red;
+          }
+          .width_20px {
+            width: 20px;
+          }
+        }
+        "
+      `)
+    })
+
+    it('keeps the parent narrow when an unused middle component imports it as a namespace', async () => {
+      cwd = createStackedFixture({
+        app: ["import { CheckIcon } from '@acme/ui'", 'export const App = () => <CheckIcon />'].join('\n'),
+        uiBuildInfo: uiNamespaceLibBuildInfo(),
+      })
+
+      expect(styleLayers(await createNodeDriver({ cwd })).utilities).toMatchInlineSnapshot(`
+        "@layer utilities {
+          .width_20px {
+            width: 20px;
+          }
+        }
+        "
+      `)
+    })
+
+    it('keeps the whole parent the middle design system re-exports as a namespace', async () => {
+      cwd = createStackedFixture({
+        app: [
+          "import { DS, CheckIcon } from '@acme/ui'",
+          'export const App = () => <><DS.Button /><CheckIcon /></>',
+        ].join('\n'),
+        uiBuildInfo: uiNamespaceReexportLibBuildInfo(),
+      })
+
+      expect(styleLayers(await createNodeDriver({ cwd })).utilities).toMatchInlineSnapshot(`
+        "@layer utilities {
+          .color_blue {
+            color: blue;
+          }
+          .color_red {
+            color: red;
+          }
+          .width_20px {
+            width: 20px;
+          }
+        }
+        "
+      `)
+    })
+
+    it('hydrates nothing when the app does not import the stacked design system', async () => {
+      cwd = createStackedFixture({ app: 'export const App = () => null' })
+
+      expect(styleLayers(await createNodeDriver({ cwd })).utilities).toMatchInlineSnapshot(`""`)
+    })
+  })
+
   it('warns on a conflict after resolving mixed token authoring forms', async () => {
     cwd = createFixture({
       config: `export default {
@@ -1298,6 +1437,146 @@ function createFixture(options: DesignSystemFixture = {}): string {
     'node_modules/@acme/ds/dist/button.js':
       options.source ?? "import { css } from '@acme/ds/css'\ncss({ color: 'rebeccapurple' })",
     'node_modules/@acme/ds/dist/panda/buildinfo.json': buildInfo,
+  })
+
+  return root
+}
+
+function dsLibBuildInfo() {
+  const lib = createProject()
+  lib.parseFileSource(
+    'button.tsx',
+    [
+      "import { css } from '@panda/css'",
+      "export const Button = () => <button className={css({ color: 'red' })} />",
+    ].join('\n'),
+  )
+  lib.parseFileSource(
+    'icon.tsx',
+    [
+      "import { css } from '@panda/css'",
+      "const iconClass = css({ width: '20px' })",
+      'export const Icon = () => <svg className={iconClass} />',
+    ].join('\n'),
+  )
+  lib.parseFileSource(
+    'unused.tsx',
+    [
+      "import { css } from '@panda/css'",
+      "const unusedClass = css({ color: 'blue' })",
+      'export const Unused = () => <div className={unusedClass} />',
+    ].join('\n'),
+  )
+  return lib.buildInfo.create({ panda: '^2.0.0' })
+}
+
+/** `@acme/ui` extends `@acme/ds`: re-exports `Icon` and wraps it in `CheckIcon`. */
+function uiLibBuildInfo({ trackDependencies = true } = {}) {
+  const lib = createProject()
+  lib.parseFileSource(
+    'index.tsx',
+    ["export { Icon } from '@acme/ds'", "export { CheckIcon } from './check-icon'"].join('\n'),
+  )
+  lib.parseFileSource(
+    'check-icon.tsx',
+    ["import { Icon } from '@acme/ds'", "export const CheckIcon = () => <Icon name='check' />"].join('\n'),
+  )
+  return lib.buildInfo.create({
+    panda: '^2.0.0',
+    ...(trackDependencies
+      ? {
+          designSystemDependencies: [
+            { name: '@acme/ds', packageRoots: ['@acme/ds'], excludeModules: ['@acme/ds/css'] },
+          ],
+        }
+      : {}),
+  })
+}
+
+/** `@acme/ui` forwards all of `@acme/ds` with `export *`. */
+function uiStarLibBuildInfo() {
+  const lib = createProject()
+  lib.parseFileSource('index.tsx', ["export * from '@acme/ds'", "export { CheckIcon } from './check-icon'"].join('\n'))
+  lib.parseFileSource(
+    'check-icon.tsx',
+    ["import { Icon } from '@acme/ds'", "export const CheckIcon = () => <Icon name='check' />"].join('\n'),
+  )
+  return lib.buildInfo.create({
+    panda: '^2.0.0',
+    designSystemDependencies: [{ name: '@acme/ds', packageRoots: ['@acme/ds'], excludeModules: ['@acme/ds/css'] }],
+  })
+}
+
+/** `@acme/ui` has a `Toolbar` that uses all of `@acme/ds` through a namespace import. */
+function uiNamespaceLibBuildInfo() {
+  const lib = createProject()
+  lib.parseFileSource(
+    'toolbar.tsx',
+    ["import * as DS from '@acme/ds'", 'export const Toolbar = () => <DS.Button />'].join('\n'),
+  )
+  lib.parseFileSource(
+    'check-icon.tsx',
+    ["import { Icon } from '@acme/ds'", "export const CheckIcon = () => <Icon name='check' />"].join('\n'),
+  )
+  return lib.buildInfo.create({
+    panda: '^2.0.0',
+    designSystemDependencies: [{ name: '@acme/ds', packageRoots: ['@acme/ds'], excludeModules: ['@acme/ds/css'] }],
+  })
+}
+
+/** `@acme/ui` exposes all of `@acme/ds` as the `DS` namespace. */
+function uiNamespaceReexportLibBuildInfo() {
+  const lib = createProject()
+  lib.parseFileSource(
+    'index.tsx',
+    ["export * as DS from '@acme/ds'", "export { CheckIcon } from './check-icon'"].join('\n'),
+  )
+  lib.parseFileSource(
+    'check-icon.tsx',
+    ["import { Icon } from '@acme/ds'", "export const CheckIcon = () => <Icon name='check' />"].join('\n'),
+  )
+  return lib.buildInfo.create({
+    panda: '^2.0.0',
+    designSystemDependencies: [{ name: '@acme/ds', packageRoots: ['@acme/ds'], excludeModules: ['@acme/ds/css'] }],
+  })
+}
+
+interface StackedFixture {
+  app: string
+  uiBuildInfo?: unknown
+}
+
+function createStackedFixture(options: StackedFixture): string {
+  const root = realpathSync(mkdtempSync(join(tmpdir(), 'panda-ds-stacked-')))
+  const lib = (name: string, buildInfo: unknown, parent?: string) => ({
+    [`node_modules/${name}/package.json`]: json({
+      name,
+      version: '1.0.0',
+      exports: { './panda/*': './dist/panda/*' },
+    }),
+    [`node_modules/${name}/dist/panda/lib.json`]: json({
+      schemaVersion: 1,
+      name,
+      version: '1.0.0',
+      panda: '^2.0.0',
+      preset: './preset.mjs',
+      buildInfo: './buildinfo.json',
+      importMap: { css: `${name}/css` },
+      ...(parent ? { designSystem: parent } : {}),
+    }),
+    [`node_modules/${name}/dist/panda/preset.mjs`]: 'export default {}',
+    [`node_modules/${name}/dist/panda/buildinfo.json`]: json(buildInfo),
+  })
+
+  writeFileTree(root, {
+    'panda.config.ts': `export default {
+      designSystem: '@acme/ui',
+      optimize: { treeshakeDesignSystem: true },
+      include: ['**/*.tsx'],
+    }`,
+    'App.tsx': options.app,
+    ...lib('@acme/ds', dsLibBuildInfo()),
+    ...lib('@acme/ui', options.uiBuildInfo ?? uiLibBuildInfo(), '@acme/ds'),
   })
 
   return root

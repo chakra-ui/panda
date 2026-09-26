@@ -224,10 +224,17 @@ export default defineConfig({
 ```
 
 Panda walks the parent chain, merges presets root-first, and hydrates each layer. The app emits a full local
-`styled-system` instead of re-exporting. Output is correct, just not deduped.
+`styled-system` runtime instead of re-exporting one package's runtime.
+
+With `optimize.treeshakeDesignSystem`, Panda also follows selected components through the chain. If a selected leaf
+module depends on a parent component, Panda keeps the parent CSS it needs. Namespace and side-effect imports in a
+selected design-system module keep all modules from that parent.
 
 You cannot point `designSystem` at two unrelated packages. Put the second package in `include` instead if it only
 consumes the first, not a design system in its own right.
+
+Building the child package? See
+[Extend another design system](/docs/design-systems/build-a-design-system#extend-another-design-system).
 
 ## Troubleshooting
 

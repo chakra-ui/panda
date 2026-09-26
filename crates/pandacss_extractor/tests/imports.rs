@@ -580,7 +580,7 @@ fn reexports_opt_in_covers_export_from() {
           start: 34
           end: 70
       - module: "@acme/ds"
-        kind: sideEffect
+        kind: exportAll
         typeOnly: false
         specifiers: []
         span:

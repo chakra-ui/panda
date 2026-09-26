@@ -11,10 +11,10 @@ pub struct ExportInfo {
     /// Export names declared by this module (`export const X`, `export { X as Y }`,
     /// `export default ...`). Resolved to the same module when it contributes CSS.
     pub local: Vec<String>,
-    /// Named re-exports (`export { X as Y } from './x'`).
+    /// Named re-exports (`export { X as Y } from './x'`), including namespace
+    /// stars (`export * as NS from './x'`) with `imported: "*"`.
     pub re_exports: Vec<ReExport>,
-    /// Star re-export sources (`export * from './x'`). Namespace stars are
-    /// intentionally omitted because `modulesFor()` has no namespace shape yet.
+    /// Star re-export sources (`export * from './x'`).
     pub export_all: Vec<String>,
 }
 
@@ -71,12 +71,19 @@ pub fn collect_export_info(program: &Program<'_>) -> ExportInfo {
             }
 
             Statement::ExportAllDeclaration(decl) => {
-                // `export * as NS from './x'` needs namespace handling — skip for now.
-                if decl.export_kind == ImportOrExportKind::Type || decl.exported.is_some() {
+                if decl.export_kind == ImportOrExportKind::Type {
                     continue;
                 }
 
-                info.export_all.push(decl.source.value.to_string());
+                let source = decl.source.value.to_string();
+                match &decl.exported {
+                    Some(exported) => info.re_exports.push(ReExport {
+                        source,
+                        imported: "*".to_owned(),
+                        exported: module_export_name(exported),
+                    }),
+                    None => info.export_all.push(source),
+                }
             }
 
             _ => {}

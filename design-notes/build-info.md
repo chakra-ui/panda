@@ -61,18 +61,19 @@ via the manifest — see [design-system-manifest.md](./design-system-manifest.md
 `{ width, height }`) produces styles the Rust engine can't derive from the atom alone, so it's tempting to serialize
 them onto the atom. They aren't, for the same reason token definitions aren't: the consumer already has the function.
 `preset.mjs` ships `utilities` (only app-only keys are stripped), `createConfigSnapshot` runs after the preset merge and
-registers every `utilities.*.transform` as a callback, so the consumer can call it. `Project::collect_hydrated_utility_styles`
-recomputes the styles at snapshot time, keyed by `(prop, value)` exactly as the parse-time pass does.
+registers every `utilities.*.transform` as a callback, so the consumer can call it.
+`Project::collect_hydrated_utility_styles` recomputes the styles at snapshot time, keyed by `(prop, value)` exactly as
+the parse-time pass does.
 
 Shipping the result instead would mean a wire-format bump, a copy per condition (the styles key off `(prop, value)` but
 atoms also key off conditions), and the producer's resolved `var(--…)` baked into the artifact. Recipes are different:
-their transform is applied to the carrier atom's conditions at extraction and baked into `entries`, so they need
-nothing at hydrate time.
+their transform is applied to the carrier atom's conditions at extraction and baked into `entries`, so they need nothing
+at hydrate time.
 
 Recompute only works when the consumer actually merged the library's preset. If it didn't, the utility is unknown and
-the atom emits as the kebab-cased name (`box-size`). `Project::collect_unregistered_hydrated_utility_diagnostics` catches
-that: a hydrated prop that's neither a known utility nor a CSS property raises `design_system_utility_unregistered`, so
-the silent fallback surfaces as a warning instead.
+the atom emits as the kebab-cased name (`box-size`). `Project::collect_unregistered_hydrated_utility_diagnostics`
+catches that: a hydrated prop that's neither a known utility nor a CSS property raises
+`design_system_utility_unregistered`, so the silent fallback surfaces as a warning instead.
 
 Runtime `token()` / `token.var()` calls that require a CSS variable are carried separately in `tokenRefs`. They may not
 produce an atom or recipe—for example, an exported `token.var('colors.brand')` value—but still seed `removeUnusedTokens`
@@ -128,6 +129,13 @@ Every merged, layer, keyframe, or split CSS read/write runs the shared Driver pr
 hook to call `syncDesignSystemTreeShake`. The scan prefers in-memory source from `applyChange` over disk, so watch hosts
 generate CSS from the latest imports.
 
+In a stacked chain, `panda lib` on a middle design system records per module which dependency exports it imports
+(`modules[key].dependencyImports`, with the tracked packages in `designSystemDependencies`). The consumer walks the
+chain nearest-first and adds each selected module's dependency imports to its ancestors' selections. An ancestor missing
+from `designSystemDependencies`, unreadable build info, or an `*` entry (a namespace import in a selected module) means
+that ancestor hydrates fully. `export * from '<dependency>'` is recorded in top-level `starReexportDependencies`
+instead: app imports that resolve to no middle module are forwarded to that dependency by name.
+
 If `imports` is non-empty but nothing resolves (missing `exports` map, typo), load **fails open** to full hydrate —
 better over-include CSS than ship an empty sheet. Modules that only publish `tokenRefs` stay selected under narrowing so
 token pruning still sees live refs.
@@ -141,7 +149,8 @@ its export resolves to the recipe-carrying module. Consumer lookup is O(1) via `
 locally-declared exports (`export function/const/class`, `export { local as Public }`), named re-exports
 (`export { X as Y } from './y'`), star re-exports (`export * from './y'`), and default re-exports
 (`export { default as Button } from './button'`). Namespace stars (`export * as DS from './ds'`) intentionally fall back
-to the namespace-import path for now.
+to the namespace-import path for now; from a design-system dependency they map to the re-exporting module, whose `*`
+dependency import hydrates that whole dependency.
 
 ## Recipes, slot recipes, patterns
 
@@ -173,8 +182,9 @@ See [view-transition-api.md](./view-transition-api.md).
 
 `validate` checks the wire `schemaVersion` and required top-level shape without changing state. `hydrate` calls it
 first. If any intern, atom, recipe, token-ref, or view-transition index is invalid, the engine rejects the entire input
-and returns `{ ok: false, reason: 'corrupt' }`. It does not throw or hydrate partial CSS. All hydrated sections are reconstructed before any project state is
-changed, including position-try and keyframe blocks; a rejected replacement keeps the previous library state.
+and returns `{ ok: false, reason: 'corrupt' }`. It does not throw or hydrate partial CSS. All hydrated sections are
+reconstructed before any project state is changed, including position-try and keyframe blocks; a rejected replacement
+keeps the previous library state.
 
 When `files` is available, the host recovers by extracting the library source again. Manifest schema and Panda version
 range checks are separate package-contract gates and remain fail-closed.
@@ -221,7 +231,7 @@ output-affecting contracts must match, while token values can differ so consumer
 
 A design system built on another design system still ships **its own** build info + preset. Build info answers “what did
 **this package’s source files** extract?” — not “what does the whole inherited stack know?” Preset merge answers “what
-**config contract** does the consumer need?” — including upstream tokens, utilities, and recipes.
+**config contract** does the consumer need?” — including dependency tokens, utilities, and recipes.
 
 **Rule of thumb:** preset chain = config inheritance; build info = per-package extraction cache.
 
@@ -233,7 +243,7 @@ artifacts:
 | Artifact    | Role                                                                                                                                                             |
 | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `preset`    | Executable config — usually `presets: ['@acme/base/preset']` plus local extensions. Defines the encoding contract (utilities, recipes, conditions, token paths). |
-| `buildInfo` | Portable encoder state from **`panda buildinfo` on this repo’s sources only**. Does not embed upstream build info.                                               |
+| `buildInfo` | Portable encoder state from **`panda buildinfo` on this repo’s sources only**. Does not embed dependency build info.                                             |
 
 Example stack:
 
@@ -373,8 +383,10 @@ What's left is virtual overlay polish and the items below.
 - ✅ **Import-based hydration narrowing** — `optimize.treeshakeDesignSystem` (see
   [Opt-in consume narrowing](#opt-in-consume-narrowing)). Covered in
   `packages/compiler/__tests__/design-system/hydrate.test.ts`.
-- ⬜ **Plural dependency metadata** — transitive build info for a middle DS that re-exports upstream components without
-  making that upstream package its `manifest.designSystem` parent.
+- ✅ **Stacked tree-shaking** — middle build info records dependency imports so parent styles a middle DS uses survive
+  narrowing.
+- ⬜ **Plural dependency metadata** — transitive build info for a middle DS that re-exports dependency components
+  without making that package its `manifest.designSystem` parent.
 - ⬜ **Per-package CSS layers** — emit hydrated CSS under package-scoped layers such as `@layer ds-acme-ui`.
 - ⬜ **cssgen scan cost** — with the flag on, every `cssgen` / `writeCss` re-globs and import-scans the full `include`
   set before the tree-shake key short-circuit. Fine for small apps; may want a cheaper dirty check later.

@@ -5,6 +5,7 @@ import type {
   BuildInfoHydrateOptions,
   BuildInfoHydrateResult,
   BuildInfoNormalizeOptions,
+  BuildInfoDesignSystemDependency,
 } from './types'
 
 /**
@@ -14,7 +15,7 @@ import type {
  * supplies the published `panda` range.
  */
 export interface BuildInfoNative {
-  serializeBuildInfo(panda: string): BuildInfoArtifact
+  serializeBuildInfo(panda: string, designSystemDependencies?: BuildInfoDesignSystemDependency[]): BuildInfoArtifact
   applyBuildInfo(name: string, buildInfo: BuildInfoArtifact, only?: string[]): boolean
   buildInfoSchemaVersion(): number
   configFingerprint(): string
@@ -32,7 +33,7 @@ export class BuildInfo {
   }
 
   create(options: BuildInfoCreateOptions): BuildInfoArtifact {
-    return this.#native.serializeBuildInfo(options.panda)
+    return this.#native.serializeBuildInfo(options.panda, options.designSystemDependencies)
   }
 
   validate(info: BuildInfoArtifact): BuildInfoCompatibility {
@@ -43,21 +44,21 @@ export class BuildInfo {
   }
 
   modulesFor(info: BuildInfoArtifact, exportNames: string[]): string[] {
-    const exports = isRecord(info.exports) ? info.exports : {}
-    const moduleKeys = isRecord(info.modules) ? new Set(Object.keys(info.modules)) : new Set<string>()
+    const resolve = moduleResolver(info)
     const modules = new Set<string>()
 
     for (const name of exportNames) {
-      const fromExport = exports[name]
-      if (typeof fromExport === 'string') {
-        modules.add(fromExport)
-        continue
-      }
-      const fromKey = resolveModuleKey(name, moduleKeys)
-      if (fromKey) modules.add(fromKey)
+      const module = resolve(name)
+      if (module) modules.add(module)
     }
 
     return [...modules]
+  }
+
+  /** Names that resolve to no module here and may come from a star re-export. */
+  unresolvedExports(info: BuildInfoArtifact, exportNames: string[]): string[] {
+    const resolve = moduleResolver(info)
+    return exportNames.filter((name) => !resolve(name))
   }
 
   /** Modules that publish token refs — keep them under treeshake. */
@@ -67,6 +68,23 @@ export class BuildInfo {
       if (info.modules[key]?.tokenRefs?.length) out.push(key)
     }
     return out
+  }
+
+  /** Export names `modules` import from `packageName`; `undefined` = all of it. */
+  importsFromDependency(
+    info: BuildInfoArtifact,
+    modules: string[] | undefined,
+    packageName: string,
+  ): string[] | undefined {
+    if (!info.designSystemDependencies?.includes(packageName)) return undefined
+    const names = new Set<string>()
+    for (const key of modules ?? Object.keys(info.modules)) {
+      const imported = info.modules[key]?.dependencyImports?.[packageName]
+      if (!imported) continue
+      if (imported.includes('*')) return undefined
+      for (const name of imported) names.add(name)
+    }
+    return [...names]
   }
 
   normalize(info: BuildInfoArtifact, options: BuildInfoNormalizeOptions): BuildInfoArtifact {
@@ -120,12 +138,33 @@ function hasBuildInfoShape(info: Record<string, unknown>): boolean {
     (info.viewTransitions === undefined || Array.isArray(info.viewTransitions)) &&
     isRecord(info.modules) &&
     (info.exports === undefined || isRecord(info.exports)) &&
-    (info.recipes === undefined || isRecord(info.recipes))
+    (info.recipes === undefined || isRecord(info.recipes)) &&
+    (info.designSystemDependencies === undefined || isStringArray(info.designSystemDependencies)) &&
+    (info.starReexportDependencies === undefined || isStringArray(info.starReexportDependencies)) &&
+    Object.values(info.modules).every(hasDependencyImportsShape)
   )
+}
+
+function hasDependencyImportsShape(entry: unknown): boolean {
+  if (!isRecord(entry) || entry.dependencyImports === undefined) return true
+  return isRecord(entry.dependencyImports) && Object.values(entry.dependencyImports).every(isStringArray)
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === 'string')
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function moduleResolver(info: BuildInfoArtifact): (name: string) => string | undefined {
+  const exports = isRecord(info.exports) ? info.exports : {}
+  const moduleKeys = isRecord(info.modules) ? new Set(Object.keys(info.modules)) : new Set<string>()
+  return (name) => {
+    const fromExport = exports[name]
+    return typeof fromExport === 'string' ? fromExport : resolveModuleKey(name, moduleKeys)
+  }
 }
 
 const MODULE_KEY_EXTENSIONS = ['.tsx', '.ts', '.jsx', '.js', '.mjs', '.cjs'] as const

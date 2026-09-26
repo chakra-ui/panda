@@ -13,6 +13,7 @@
 import type {
   Atom,
   BuildInfoArtifact,
+  BuildInfoDesignSystemDependency,
   DesignSystemManifest,
   DesignSystemManifestInput,
   CodegenArtifact,
@@ -161,7 +162,7 @@ export declare class WasmCompiler {
   staticPatternAtoms(): StaticPatternResult
   // Flat build-info primitives (the `BuildInfo` namespace is built over these
   // in `web.ts`, mirroring the native binding).
-  serializeBuildInfo(panda: string): BuildInfoArtifact
+  serializeBuildInfo(panda: string, designSystemDependencies?: BuildInfoDesignSystemDependency[]): BuildInfoArtifact
   applyBuildInfo(name: string, buildInfo: BuildInfoArtifact, only?: string[]): boolean
   buildInfoSchemaVersion(): number
   configFingerprint(): string

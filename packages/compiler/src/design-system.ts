@@ -1,4 +1,9 @@
-import { type BuildInfoArtifact, type Compiler, type Diagnostic } from '@pandacss/compiler-shared'
+import {
+  type BuildInfoArtifact,
+  type BuildInfoDesignSystemDependency,
+  type Compiler,
+  type Diagnostic,
+} from '@pandacss/compiler-shared'
 import {
   collectArtifactConflicts,
   readPandaVersion,
@@ -56,7 +61,8 @@ export function hydrateDesignSystem(
 
   const pandaVersion = readPandaVersion()
   const diagnostics: Diagnostic[] = []
-  const selections = treeshake ? importSelections ?? collectImportSelections(compiler, chain) : undefined
+  const appSelections = treeshake ? importSelections ?? collectImportSelections(compiler, chain) : undefined
+  const selections = appSelections && withDependencyImports(compiler, chain, appSelections)
 
   for (let i = 0; i < chain.length; i++) {
     const ds = chain[i]!
@@ -66,8 +72,84 @@ export function hydrateDesignSystem(
 
   return {
     diagnostics,
-    treeshakeKey: treeshakeKeyFromSelections(chain, selections),
+    treeshakeKey: treeshakeKeyFromSelections(chain, appSelections),
   }
+}
+
+type ModuleSelection = { kind: 'all' } | { kind: 'none' } | { kind: 'names'; names: string[] }
+
+const ALL_MODULES: ModuleSelection = { kind: 'all' }
+const NO_MODULES: ModuleSelection = { kind: 'none' }
+
+/** Add what each design system imports from its dependencies, nearest first. */
+function withDependencyImports(
+  compiler: Compiler,
+  chain: ResolvedDesignSystem[],
+  appSelections: Array<string[] | null | undefined>,
+): Array<string[] | null> {
+  const selections = appSelections.map(selectionFromScan)
+
+  for (let i = chain.length - 1; i > 0; i--) {
+    const selected = selections[i]!
+    if (selected.kind === 'none') continue
+    const info = readBuildInfo(compiler, chain[i]!)
+
+    for (let ancestorIndex = 0; ancestorIndex < i; ancestorIndex++) {
+      const imported = info
+        ? compiler.designSystem.dependencyImports(info, selectionToImports(selected), chain[ancestorIndex]!.name)
+        : undefined
+      selections[ancestorIndex] = mergeSelection(selections[ancestorIndex]!, selectionFromImports(imported))
+    }
+  }
+
+  return selections.map(selectionToScan)
+}
+
+function selectionFromScan(selection: string[] | null | undefined): ModuleSelection {
+  if (selection == null) return ALL_MODULES
+  return selection.length === 0 ? NO_MODULES : { kind: 'names', names: selection }
+}
+
+function selectionFromImports(imports: string[] | undefined): ModuleSelection {
+  if (imports === undefined) return ALL_MODULES
+  return imports.length === 0 ? NO_MODULES : { kind: 'names', names: imports }
+}
+
+function selectionToImports(selection: ModuleSelection): string[] | undefined {
+  if (selection.kind === 'all') return undefined
+  return selection.kind === 'none' ? [] : selection.names
+}
+
+function selectionToScan(selection: ModuleSelection): string[] | null {
+  if (selection.kind === 'all') return null
+  return selection.kind === 'none' ? [] : selection.names
+}
+
+function mergeSelection(current: ModuleSelection, added: ModuleSelection): ModuleSelection {
+  if (current.kind === 'all' || added.kind === 'all') return ALL_MODULES
+  if (current.kind === 'none') return added
+  if (added.kind === 'none') return current
+  return { kind: 'names', names: [...new Set([...current.names, ...added.names])] }
+}
+
+function readBuildInfo(compiler: Compiler, ds: ResolvedDesignSystem): BuildInfoArtifact | undefined {
+  if (ds.optionMismatch?.length) return undefined
+  try {
+    const content = compiler.fs.readFile(ds.buildInfoPath)
+    if (content == null) return undefined
+    const info = JSON.parse(content) as BuildInfoArtifact
+    return compiler.buildInfo.validate(info).ok ? info : undefined
+  } catch {
+    return undefined
+  }
+}
+
+export function designSystemDependencies(chain: ResolvedDesignSystem[] | undefined): BuildInfoDesignSystemDependency[] {
+  return (chain ?? []).map((ds) => ({
+    name: ds.name,
+    packageRoots: getPackageRoots(ds),
+    excludeModules: getExcludedModules(ds),
+  }))
 }
 
 /** One scan for the whole chain. `null` = full hydrate; `string[]` = narrow. */

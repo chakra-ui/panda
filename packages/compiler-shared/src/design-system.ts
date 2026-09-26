@@ -59,6 +59,19 @@ export class DesignSystem {
 
     return { ok: true, name: manifest.name, modules: result.modules }
   }
+
+  /** Export names needed from `dependencyName` for `imports`; `undefined` = all of it. */
+  dependencyImports(
+    buildInfo: DesignSystemLoadOptions['buildInfo'],
+    imports: string[] | undefined,
+    dependencyName: string,
+  ): string[] | undefined {
+    const modules = resolveHydrateOnly(this.#buildInfo, buildInfo, imports)
+    const imported = this.#buildInfo.importsFromDependency(buildInfo, modules, dependencyName)
+    if (imported === undefined || !buildInfo.starReexportDependencies?.includes(dependencyName)) return imported
+    if (imports === undefined) return undefined
+    return [...new Set([...imported, ...this.#buildInfo.unresolvedExports(buildInfo, imports)])]
+  }
 }
 
 /**

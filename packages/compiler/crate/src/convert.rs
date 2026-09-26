@@ -62,8 +62,12 @@ fn convert_range(range: pandacss_extractor::SourceRange) -> crate::SourceRange {
 
 pub(crate) fn convert_kind(k: pandacss_extractor::ImportKind) -> ImportKind {
     match k {
-        pandacss_extractor::ImportKind::SideEffect => ImportKind::SideEffect,
         pandacss_extractor::ImportKind::Value => ImportKind::Value,
+        // Keep the public scanImports contract stable; the extractor only needs
+        // this distinction while producing design-system build info.
+        pandacss_extractor::ImportKind::SideEffect | pandacss_extractor::ImportKind::ExportAll => {
+            ImportKind::SideEffect
+        }
     }
 }
 

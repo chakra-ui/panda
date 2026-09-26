@@ -95,6 +95,8 @@ export interface BuildModuleEntry {
   recipes?: number[]
   tokenRefs?: number[]
   viewTransitions?: number[]
+  /** Design-system dependency → imported export names (`*` = all). */
+  dependencyImports?: Record<string, string[]>
 }
 
 export interface BuildViewTransition {
@@ -119,6 +121,10 @@ export interface BuildInfoArtifact {
   viewTransitions?: BuildViewTransition[]
   modules: Record<string, BuildModuleEntry>
   exports?: Record<string, string>
+  /** Design-system dependencies re-exported with `export *`. */
+  starReexportDependencies?: string[]
+  /** Dependencies tracked in module `dependencyImports`. */
+  designSystemDependencies?: string[]
 }
 
 export type BuildInfoIncompatibility = 'schemaVersion' | 'pandaRange' | 'corrupt'
@@ -127,6 +133,14 @@ export type BuildInfoCompatibility = { ok: true } | { ok: false; reason: BuildIn
 
 export interface BuildInfoCreateOptions {
   panda: string
+  /** Design-system dependencies whose imports each module records. */
+  designSystemDependencies?: BuildInfoDesignSystemDependency[]
+}
+
+export interface BuildInfoDesignSystemDependency {
+  name: string
+  packageRoots: string[]
+  excludeModules?: string[]
 }
 
 export interface BuildInfoNormalizeOptions {

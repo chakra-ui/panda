@@ -71,8 +71,8 @@ use pandacss_utility::{ShorthandPolicy, StyleNormalizer, Utility};
 pub type UtilityStyleKey = (Box<str>, AtomValue);
 
 pub use build_info::{
-    BuildAtom, BuildInfo, BuildKeyframe, BuildValue, BuildViewTransition, ModuleEntry,
-    SCHEMA_VERSION,
+    BuildAtom, BuildInfo, BuildKeyframe, BuildValue, BuildViewTransition, DesignSystemDependency,
+    ModuleEntry, SCHEMA_VERSION,
 };
 pub use error::{ConfigError, Result};
 pub use hook_filter::HookFilter;

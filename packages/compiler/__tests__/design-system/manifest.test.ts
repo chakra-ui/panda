@@ -2,7 +2,7 @@ import type { DesignSystemManifest, DesignSystemManifestInput } from '@pandacss/
 import { describe, expect, it } from 'vitest'
 import { createProject } from '../test-utils'
 
-const project = () => createProject({})
+const project = () => createProject()
 
 const fullInput: DesignSystemManifestInput = {
   name: '@acme/ds',

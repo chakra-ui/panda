@@ -42,6 +42,8 @@ pub enum ImportKind {
     /// `import "side-effect"` — no specifiers.
     SideEffect,
     Value,
+    /// `export * from "mod"` — forwards every export, binds nothing.
+    ExportAll,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
@@ -191,7 +193,7 @@ pub(crate) fn collect_imports_with(
                         }],
                     )
                 } else {
-                    (ImportKind::SideEffect, Vec::new())
+                    (ImportKind::ExportAll, Vec::new())
                 };
                 out.push(ImportRecord {
                     module,

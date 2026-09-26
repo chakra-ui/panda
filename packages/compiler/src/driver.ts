@@ -44,7 +44,12 @@ import {
 } from '@pandacss/config'
 import { statSync } from 'node:fs'
 import { dirname, resolve as resolvePath } from 'node:path'
-import { collectImportSelections, hydrateDesignSystem, treeshakeKeyFromSelections } from './design-system'
+import {
+  collectImportSelections,
+  hydrateDesignSystem,
+  treeshakeKeyFromSelections,
+  designSystemDependencies,
+} from './design-system'
 import { createProjectFromLoadedConfig, treeshakeDesignSystemEnabled } from './tooling/create-project'
 
 export interface NodeDriverOptions {
@@ -509,7 +514,10 @@ export class NodeDriver extends BaseDriver {
     const buildInfoPath = this.compiler.path.join([pandaDir, 'buildinfo.json'])
     const presetPath = this.compiler.path.join([pandaDir, 'preset.mjs'])
 
-    const info = this.compiler.buildInfo.create({ panda: pandaRange })
+    const info = this.compiler.buildInfo.create({
+      panda: pandaRange,
+      designSystemDependencies: designSystemDependencies(this.#loaded.metadata?.designSystem),
+    })
     const buildInfo = this.compiler.buildInfo.normalize(info, {
       mapModuleKey: (key) => toRelativeKey(key, this.#options.cwd),
     })
