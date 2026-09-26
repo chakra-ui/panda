@@ -1,7 +1,7 @@
 use super::WasmCompiler;
 
 use pandacss_encoder::AtomValue;
-use pandacss_fs::{FileSystem, GlobOptions, OxcResolverFileSystem, PathSystem};
+use pandacss_fs::{FileSystem, OxcResolverFileSystem, PathSystem};
 use pandacss_literal::Literal;
 use serde::Serialize as _;
 use std::path::{Path, PathBuf};
@@ -138,12 +138,10 @@ impl WasmCompiler {
     #[wasm_bindgen(js_name = isSourceFile)]
     #[must_use]
     pub fn is_source_file(&self, path: &str) -> bool {
-        let opts = GlobOptions {
-            include: self.user_config.include.clone(),
-            exclude: self.user_config.scan_exclude(),
-            cwd: PathBuf::from(&self.user_config.cwd),
-            absolute: true,
-        };
+        let opts = pandacss_compiler::source_glob_options(
+            &self.user_config,
+            pandacss_compiler::SourceGlobOverrides::default(),
+        );
         pandacss_fs::matches_globs(std::path::Path::new(path), &opts)
     }
 

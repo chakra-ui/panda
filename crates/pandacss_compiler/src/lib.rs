@@ -25,6 +25,6 @@ pub use design_system::{
 };
 pub use host::{atom_value_json, format_config_diagnostics, utility_value_source_json};
 pub use views::{
-    LayerNames, SourceEntry, compiler_spec, has_layer_declaration, layer_names, source_entries,
-    strip_layer_order_statements,
+    LayerNames, SourceEntry, SourceGlobOverrides, compiler_spec, has_layer_declaration,
+    layer_names, source_entries, source_glob_options, strip_layer_order_statements,
 };

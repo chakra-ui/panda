@@ -163,12 +163,3 @@ pub(super) struct ParseFileReportSerde {
     pub(super) jsx_usages: u32,
     pub(super) diagnostics: Vec<pandacss_project::Diagnostic>,
 }
-
-/// Glob overrides accepted by `scan`/`glob`; omitted fields fall back to the
-/// config's `include`/`exclude`/`cwd`.
-#[derive(Default, Deserialize)]
-pub(super) struct GlobOverrides {
-    pub(super) include: Option<Vec<String>>,
-    pub(super) exclude: Option<Vec<String>>,
-    pub(super) cwd: Option<String>,
-}

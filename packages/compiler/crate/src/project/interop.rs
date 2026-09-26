@@ -27,20 +27,14 @@ pub(super) fn glob_options(
     user_config: &UserConfig,
     options: Option<&ScanOptions>,
 ) -> pandacss_fs::GlobOptions {
-    pandacss_fs::GlobOptions {
-        include: options
-            .and_then(|opts| opts.include.clone())
-            .unwrap_or_else(|| user_config.include.clone()),
-        exclude: options
-            .and_then(|opts| opts.exclude.clone())
-            .unwrap_or_else(|| user_config.scan_exclude()),
-        cwd: std::path::PathBuf::from(
-            options
-                .and_then(|opts| opts.cwd.clone())
-                .unwrap_or_else(|| user_config.cwd.clone()),
-        ),
-        absolute: true,
-    }
+    let overrides = options.map_or_else(pandacss_compiler::SourceGlobOverrides::default, |opts| {
+        pandacss_compiler::SourceGlobOverrides {
+            include: opts.include.clone(),
+            exclude: opts.exclude.clone(),
+            cwd: opts.cwd.clone(),
+        }
+    });
+    pandacss_compiler::source_glob_options(user_config, overrides)
 }
 
 pub(super) fn apply_project_options(

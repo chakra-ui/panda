@@ -1,5 +1,6 @@
 use pandacss_compiler::{
-    compiler_spec, has_layer_declaration, layer_names, source_entries, strip_layer_order_statements,
+    SourceGlobOverrides, compiler_spec, has_layer_declaration, layer_names, source_entries,
+    source_glob_options, strip_layer_order_statements,
 };
 use pandacss_fs::PosixPathSystem;
 use pandacss_project::{Project, System};
@@ -20,6 +21,45 @@ fn source_entries_are_rebased_for_watchers() {
     assert_eq!(entries[0].pattern, "**/*.{ts,tsx}");
     assert_eq!(entries[1].base, "/repo");
     assert_eq!(entries[1].pattern, "**/*.vue");
+}
+
+#[test]
+fn source_scan_uses_the_config_include_exclude_and_cwd_by_default() {
+    let config: pandacss_config::UserConfig = serde_json::from_value(json!({
+        "cwd": "/repo",
+        "include": ["src/**/*.tsx"],
+        "exclude": ["src/legacy/**"]
+    }))
+    .expect("valid serialized config");
+
+    let opts = source_glob_options(&config, SourceGlobOverrides::default());
+
+    assert_eq!(opts.include, ["src/**/*.tsx"]);
+    assert_eq!(opts.exclude, config.scan_exclude());
+    assert_eq!(opts.cwd, std::path::Path::new("/repo"));
+    assert!(opts.absolute);
+}
+
+#[test]
+fn source_scan_overrides_replace_the_config_values() {
+    let config: pandacss_config::UserConfig = serde_json::from_value(json!({
+        "cwd": "/repo",
+        "include": ["src/**/*.tsx"]
+    }))
+    .expect("valid serialized config");
+
+    let opts = source_glob_options(
+        &config,
+        SourceGlobOverrides {
+            include: Some(vec!["app/**/*.vue".into()]),
+            exclude: Some(vec!["app/vendor/**".into()]),
+            cwd: Some("/other".into()),
+        },
+    );
+
+    assert_eq!(opts.include, ["app/**/*.vue"]);
+    assert_eq!(opts.exclude, ["app/vendor/**"]);
+    assert_eq!(opts.cwd, std::path::Path::new("/other"));
 }
 
 #[test]

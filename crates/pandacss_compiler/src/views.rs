@@ -1,9 +1,9 @@
 use pandacss_config::{SelectorTypeData, Spec, TypeData, UserConfig};
-use pandacss_fs::PathSystem;
+use pandacss_fs::{GlobOptions, PathSystem};
 use pandacss_project::Project;
 use pandacss_tokens::TokenDictionary;
 use pandacss_utility::Utility;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 /// Resolved cascade-layer names exposed to compiler hosts.
 #[derive(Serialize)]
@@ -83,6 +83,36 @@ pub fn source_entries(user_config: &UserConfig, paths: &impl PathSystem) -> Vec<
             pattern: pandacss_fs::relative_glob(pattern).to_owned(),
         })
         .collect()
+}
+
+/// Host overrides for a source scan. Omitted fields fall back to the config's
+/// `include`, `exclude` and `cwd`.
+#[derive(Clone, Debug, Default, Deserialize)]
+pub struct SourceGlobOverrides {
+    pub include: Option<Vec<String>>,
+    pub exclude: Option<Vec<String>>,
+    pub cwd: Option<String>,
+}
+
+/// Glob options that decide which files count as project sources.
+#[must_use]
+pub fn source_glob_options(
+    user_config: &UserConfig,
+    overrides: SourceGlobOverrides,
+) -> GlobOptions {
+    GlobOptions {
+        include: overrides
+            .include
+            .unwrap_or_else(|| user_config.include.clone()),
+        exclude: overrides
+            .exclude
+            .unwrap_or_else(|| user_config.scan_exclude()),
+        cwd: overrides
+            .cwd
+            .unwrap_or_else(|| user_config.cwd.clone())
+            .into(),
+        absolute: true,
+    }
 }
 
 /// Whether CSS declares this compiler's configured Panda layer order.

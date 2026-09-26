@@ -1,8 +1,8 @@
+use pandacss_compiler::SourceGlobOverrides;
 use pandacss_encoder::Atom as CoreAtom;
 use pandacss_extractor::CrossFileResolver;
 use pandacss_fs::GlobOptions;
 use serde::de::DeserializeOwned;
-use std::path::PathBuf;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::*;
 
@@ -10,7 +10,7 @@ use crate::fs::WasmFileSystem;
 use pandacss_config::UserConfig;
 
 use super::serde_types::{
-    AtomSerde, CompileOptionsSerde, CssOutputOptionsSerde, GlobOverrides, ParseFileReportSerde,
+    AtomSerde, CompileOptionsSerde, CssOutputOptionsSerde, ParseFileReportSerde,
     WriteCssOptionsSerde, WriteLayerCssOptionsSerde, WriteSplitCssOptionsSerde,
 };
 
@@ -153,22 +153,16 @@ pub(super) fn glob_options(
     user_config: &UserConfig,
     options: JsValue,
 ) -> Result<GlobOptions, JsValue> {
-    let overrides: GlobOverrides = if options.is_undefined() || options.is_null() {
-        GlobOverrides::default()
+    let overrides = if options.is_undefined() || options.is_null() {
+        SourceGlobOverrides::default()
     } else {
         serde_wasm_bindgen::from_value(options)
             .map_err(|err| JsValue::from_str(&format!("invalid scan options: {err}")))?
     };
-    Ok(GlobOptions {
-        include: overrides
-            .include
-            .unwrap_or_else(|| user_config.include.clone()),
-        exclude: overrides
-            .exclude
-            .unwrap_or_else(|| user_config.scan_exclude()),
-        cwd: PathBuf::from(overrides.cwd.unwrap_or_else(|| user_config.cwd.clone())),
-        absolute: true,
-    })
+    Ok(pandacss_compiler::source_glob_options(
+        user_config,
+        overrides,
+    ))
 }
 
 /*
