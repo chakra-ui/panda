@@ -1,6 +1,6 @@
 //! Thin E2E parse → CSS corpus (legacy output.test.ts subset, no pattern callbacks).
 
-use crate::common::{compile_layer_css, compile_output, config};
+use crate::common::{compile_layer_css, compile_output, compile_tsx_layer_css, config};
 use insta::assert_snapshot;
 use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
@@ -150,7 +150,7 @@ fn a_recipe_call_emits_base_used_variants_and_matching_compound() {
 }
 
 #[test]
-fn a_ts_file_containing_jsx_emits_nothing() {
+fn recipe_call_css_call_and_jsx_recipe_component_emit_recipe_and_utility_css() {
     let cfg = config(serde_json::json!({
         "importMap": {
             "css": ["@panda/css"],
@@ -159,6 +159,7 @@ fn a_ts_file_containing_jsx_emits_nothing() {
             "jsx": ["@panda/jsx"],
             "tokens": []
         },
+        "jsxFramework": "react",
         "theme": {
             "tokens": {
                 "colors": {
@@ -185,7 +186,7 @@ fn a_ts_file_containing_jsx_emits_nothing() {
             "padding": { "className": "p", "values": "spacing" }
         }
     }));
-    let css = compile_layer_css(
+    let css = compile_tsx_layer_css(
         &cfg,
         concat!(
             "import { css } from '@panda/css';\n",
@@ -197,7 +198,20 @@ fn a_ts_file_containing_jsx_emits_nothing() {
         ),
         &[StylesheetLayer::Recipes, StylesheetLayer::Utilities],
     );
-    assert_snapshot!(css, @"");
+    assert_snapshot!(css, @r"
+    @layer recipes {
+      @layer variants {
+        .badge--size_sm {
+          padding: var(--spacing-2);
+        }
+      }
+    }
+    @layer utilities {
+      .c_red\.500 {
+        color: var(--colors-red-500);
+      }
+    }
+    ");
 }
 
 #[test]

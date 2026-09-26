@@ -27,6 +27,21 @@ pub fn compile_layer_css(config: &UserConfig, source: &str, layers: &[Stylesheet
 }
 
 #[allow(dead_code)]
+pub fn compile_tsx_layer_css(
+    config: &UserConfig,
+    source: &str,
+    layers: &[StylesheetLayer],
+) -> String {
+    let mut project = project_with_file(config, "/style.tsx", source);
+    let snapshots = project.stylesheet_snapshots(config);
+    pandacss_stylesheet::compile(
+        project_input(config, &snapshots),
+        &with_static(StylesheetOptions::default()),
+    )
+    .get_layer_css(layers)
+}
+
+#[allow(dead_code)]
 #[allow(
     clippy::needless_pass_by_value,
     reason = "test helper; owned options read more naturally at call sites"
@@ -81,9 +96,13 @@ pub fn split_result(
 }
 
 fn project_with_source(config: &UserConfig, source: &str) -> Project {
+    project_with_file(config, "/style.ts", source)
+}
+
+fn project_with_file(config: &UserConfig, path: &str, source: &str) -> Project {
     let system = System::new(config.clone()).expect("valid project");
     let mut project = Project::new(system);
-    project.parse_file("/style.ts", source);
+    project.parse_file(path, source);
     project
 }
 
