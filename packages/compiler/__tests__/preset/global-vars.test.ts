@@ -1,21 +1,9 @@
-import presetBase from '@pandacss/preset-base'
-import presetPanda from '@pandacss/preset-panda'
-import { applyConfigDefaults } from '@pandacss/compiler-shared'
-import { createConfigSnapshot, mergeConfigs } from '@pandacss/config'
 import type { UserConfig } from '@pandacss/types'
 import { describe, expect, it } from 'vitest'
-import { createCompilerFromSnapshot } from '../../src'
-import { importMap } from '../test-utils'
+import { createPresetCompiler } from '../preset-compiler'
 
 function compile(source: string, overrides: Partial<UserConfig> = {}) {
-  const merged = mergeConfigs([
-    presetBase,
-    presetPanda,
-    { cwd: '/virtual', outdir: 'styled-system', importMap, ...overrides },
-  ]) as UserConfig
-  const compiler = createCompilerFromSnapshot(createConfigSnapshot(applyConfigDefaults(merged, '/virtual')), {
-    crossFile: false,
-  })
+  const compiler = createPresetCompiler(overrides)
   compiler.parseFileSource('/virtual/Vars.tsx', `import { css } from '@panda/css'\n${source}`)
   return compiler
 }

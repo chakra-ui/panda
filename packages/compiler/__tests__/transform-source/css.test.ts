@@ -1260,8 +1260,7 @@ describe('compiler.transformSource: css', () => {
     `)
   })
 
-  // NOTE: `false` currently emits a literal `margin_false` atomic class instead of
-  // being dropped like `null`/`undefined`. See report — likely a bug.
+  // Likely a bug: `false` should be dropped like `null`/`undefined`.
   test('emits a class for a false property value (current behavior)', () => {
     const source = lines("import { css } from '@panda/css'", 'export const cls = css({ margin: false })')
 

@@ -57,7 +57,7 @@ describeIfBuilt('@pandacss/compiler-wasm extract', () => {
     `)
   })
 
-  it('cross-file imports fold through the shared memory FS', async () => {
+  it('resolves a style value imported from another file', async () => {
     const compiler = await createCompiler(baseConfig)
     compiler.fs.addFile?.('/proj/tokens.ts', "export const brand = '#ef4444';\n")
     const raw = compiler.extractFileSource(
@@ -84,7 +84,7 @@ describeIfBuilt('@pandacss/compiler-wasm extract', () => {
     `)
   })
 
-  it('extract reports parse-error diagnostics', async () => {
+  it('reports a diagnostic for a file that fails to parse', async () => {
     const compiler = await createCompiler(baseConfig)
     const raw = compiler.extractFileSource(
       '/src/code.tsx',

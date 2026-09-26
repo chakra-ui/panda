@@ -1,27 +1,5 @@
-import presetBase from '@pandacss/preset-base'
-import presetPanda from '@pandacss/preset-panda'
-import { applyConfigDefaults } from '@pandacss/compiler-shared'
-import { createConfigSnapshot, mergeConfigs } from '@pandacss/config'
-import type { Config, UserConfig } from '@pandacss/types'
 import { describe, expect, it } from 'vitest'
-import { createCompilerFromSnapshot } from '../../src'
-import { importMap } from '../test-utils'
-
-function createPresetCompiler(overrides: Partial<Config> = {}) {
-  const merged = mergeConfigs([
-    presetBase,
-    presetPanda,
-    {
-      cwd: '/virtual',
-      outdir: 'styled-system',
-      importMap,
-      ...overrides,
-    },
-  ]) as UserConfig
-  const resolved = applyConfigDefaults(merged, '/virtual')
-  const snapshot = createConfigSnapshot(resolved)
-  return createCompilerFromSnapshot(snapshot, { crossFile: false })
-}
+import { createPresetCompiler } from '../preset-compiler'
 
 describe('preset color mix utility output', () => {
   it('emits direct color-mix declarations for createColorMixTransform utilities', () => {

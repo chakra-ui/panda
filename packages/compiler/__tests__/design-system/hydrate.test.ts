@@ -1059,41 +1059,88 @@ describe('hydrateDesignSystem (consumer)', () => {
       expect(driver.syncDesignSystemTreeShake()).toBe(false)
     })
 
-    const cssOutputs: Array<[string, (driver: NodeDriver, root: string) => unknown]> = [
-      ['cssgen', (driver) => driver.cssgen()],
-      ['getLayerCss', (driver) => driver.getLayerCss({ layers: ['utilities'] })],
-      ['getKeyframeCss', (driver) => driver.getKeyframeCss()],
-      ['getSplitCss', (driver) => driver.getSplitCss()],
-      ['writeCss', (driver, root) => driver.writeCss({ outfile: join(root, 'styles.css') })],
-      [
-        'writeLayerCss',
-        (driver, root) => driver.writeLayerCss({ outfile: join(root, 'utilities.css'), layers: ['utilities'] }),
-      ],
-      ['writeSplitCss', (driver, root) => driver.writeSplitCss({ outdir: join(root, 'split') })],
-    ]
-
-    it.each(cssOutputs)('%s syncs changed design-system imports before CSS output', async (_, emit) => {
+    async function swapBadgeImportForAlert() {
       cwd = createFixture({
         config: TREESHAKE_CONFIG,
-        app: "import { Badge } from '@acme/ds'\nexport const App = () => <Badge>New</Badge>",
+        app: ["import { Badge } from '@acme/ds'", 'export const App = () => <Badge>New</Badge>'].join('\n'),
         buildInfo: componentLibBuildInfo(),
       })
-      const driver = await createNodeDriver({ cwd })
-      const appPath = join(cwd, 'App.tsx')
+      const root = cwd
+      const driver = await createNodeDriver({ cwd: root })
 
       driver.cssgen()
       driver.applyChange({
-        path: appPath,
+        path: join(root, 'App.tsx'),
         kind: 'change',
-        content:
-          "import { Alert } from '@acme/ds'\nexport const App = () => <Alert title='Heads up' description='Details' />",
+        content: [
+          "import { Alert } from '@acme/ds'",
+          "export const App = () => <Alert title='Heads up' description='Details' />",
+        ].join('\n'),
       })
 
-      emit(driver, cwd)
+      return { driver, root }
+    }
 
+    function expectSyncedToAlertImport(driver: NodeDriver) {
       expect(driver.syncDesignSystemTreeShake()).toBe(false)
       expect(driver.getLayerCss({ layers: ['utilities'] }).css).toContain('.background_aliceblue')
       expect(driver.getLayerCss({ layers: ['utilities'] }).css).not.toContain('.color_crimson')
+    }
+
+    it('syncs changed design-system imports before cssgen emits CSS', async () => {
+      const { driver } = await swapBadgeImportForAlert()
+
+      driver.cssgen()
+
+      expectSyncedToAlertImport(driver)
+    })
+
+    it('syncs changed design-system imports before getLayerCss emits CSS', async () => {
+      const { driver } = await swapBadgeImportForAlert()
+
+      driver.getLayerCss({ layers: ['utilities'] })
+
+      expectSyncedToAlertImport(driver)
+    })
+
+    it('syncs changed design-system imports before getKeyframeCss emits CSS', async () => {
+      const { driver } = await swapBadgeImportForAlert()
+
+      driver.getKeyframeCss()
+
+      expectSyncedToAlertImport(driver)
+    })
+
+    it('syncs changed design-system imports before getSplitCss emits CSS', async () => {
+      const { driver } = await swapBadgeImportForAlert()
+
+      driver.getSplitCss()
+
+      expectSyncedToAlertImport(driver)
+    })
+
+    it('syncs changed design-system imports before writeCss emits CSS', async () => {
+      const { driver, root } = await swapBadgeImportForAlert()
+
+      driver.writeCss({ outfile: join(root, 'styles.css') })
+
+      expectSyncedToAlertImport(driver)
+    })
+
+    it('syncs changed design-system imports before writeLayerCss emits CSS', async () => {
+      const { driver, root } = await swapBadgeImportForAlert()
+
+      driver.writeLayerCss({ outfile: join(root, 'utilities.css'), layers: ['utilities'] })
+
+      expectSyncedToAlertImport(driver)
+    })
+
+    it('syncs changed design-system imports before writeSplitCss emits CSS', async () => {
+      const { driver, root } = await swapBadgeImportForAlert()
+
+      driver.writeSplitCss({ outdir: join(root, 'split') })
+
+      expectSyncedToAlertImport(driver)
     })
 
     it('does not treat styled-system subpath imports as design-system components', async () => {
@@ -1227,8 +1274,17 @@ describe('hydrateDesignSystem (consumer)', () => {
   })
 
   describe('treeshakeDesignSystem with a stacked design system', () => {
-    it('keeps parent styles the middle design system wraps', async () => {
+    // App → @acme/ui → @acme/ds, where @acme/ds ships Button (color: red), Icon (width: 20px), Badge (color: blue).
+
+    it('keeps @acme/ds Icon styles when the app uses an @acme/ui component that wraps Icon', async () => {
       cwd = createStackedFixture({
+        ui: {
+          'index.tsx': ["export { Icon } from '@acme/ds'", "export { CheckIcon } from './check-icon'"].join('\n'),
+          'check-icon.tsx': [
+            "import { Icon } from '@acme/ds'",
+            "export const CheckIcon = () => <Icon name='check' />",
+          ].join('\n'),
+        },
         app: ["import { CheckIcon } from '@acme/ui'", 'export const App = () => <CheckIcon />'].join('\n'),
       })
 
@@ -1242,8 +1298,15 @@ describe('hydrateDesignSystem (consumer)', () => {
       `)
     })
 
-    it('keeps parent styles the middle design system re-exports', async () => {
+    it('keeps @acme/ds Icon styles when the app imports Icon re-exported from @acme/ui', async () => {
       cwd = createStackedFixture({
+        ui: {
+          'index.tsx': ["export { Icon } from '@acme/ds'", "export { CheckIcon } from './check-icon'"].join('\n'),
+          'check-icon.tsx': [
+            "import { Icon } from '@acme/ds'",
+            "export const CheckIcon = () => <Icon name='check' />",
+          ].join('\n'),
+        },
         app: ["import { Icon } from '@acme/ui'", 'export const App = () => <Icon />'].join('\n'),
       })
 
@@ -1257,10 +1320,17 @@ describe('hydrateDesignSystem (consumer)', () => {
       `)
     })
 
-    it('keeps the whole parent when the middle build info predates dependency tracking', async () => {
+    it('keeps all of @acme/ds when @acme/ui was built without recording which @acme/ds components it uses', async () => {
       cwd = createStackedFixture({
+        ui: {
+          'index.tsx': ["export { Icon } from '@acme/ds'", "export { CheckIcon } from './check-icon'"].join('\n'),
+          'check-icon.tsx': [
+            "import { Icon } from '@acme/ds'",
+            "export const CheckIcon = () => <Icon name='check' />",
+          ].join('\n'),
+        },
+        uiTracksDependencies: false,
         app: ["import { CheckIcon } from '@acme/ui'", 'export const App = () => <CheckIcon />'].join('\n'),
-        uiBuildInfo: uiLibBuildInfo({ trackDependencies: false }),
       })
 
       expect(styleLayers(await createNodeDriver({ cwd })).utilities).toMatchInlineSnapshot(`
@@ -1279,10 +1349,17 @@ describe('hydrateDesignSystem (consumer)', () => {
       `)
     })
 
-    it('narrows the parent when the app skips a middle design system built before dependency tracking', async () => {
+    it('keeps only Button styles when the app imports Button straight from @acme/ds, next to an older @acme/ui build', async () => {
       cwd = createStackedFixture({
+        ui: {
+          'index.tsx': ["export { Icon } from '@acme/ds'", "export { CheckIcon } from './check-icon'"].join('\n'),
+          'check-icon.tsx': [
+            "import { Icon } from '@acme/ds'",
+            "export const CheckIcon = () => <Icon name='check' />",
+          ].join('\n'),
+        },
+        uiTracksDependencies: false,
         app: ["import { Button } from '@acme/ds'", 'export const App = () => <Button />'].join('\n'),
-        uiBuildInfo: uiLibBuildInfo({ trackDependencies: false }),
       })
 
       expect(styleLayers(await createNodeDriver({ cwd })).utilities).toMatchInlineSnapshot(`
@@ -1295,13 +1372,19 @@ describe('hydrateDesignSystem (consumer)', () => {
       `)
     })
 
-    it('keeps parent styles re-exported through export * alongside other imports', async () => {
+    it('keeps Button and Icon styles when @acme/ui forwards @acme/ds with export *', async () => {
       cwd = createStackedFixture({
+        ui: {
+          'index.tsx': ["export * from '@acme/ds'", "export { CheckIcon } from './check-icon'"].join('\n'),
+          'check-icon.tsx': [
+            "import { Icon } from '@acme/ds'",
+            "export const CheckIcon = () => <Icon name='check' />",
+          ].join('\n'),
+        },
         app: [
           "import { Button, CheckIcon } from '@acme/ui'",
           'export const App = () => <><Button /><CheckIcon /></>',
         ].join('\n'),
-        uiBuildInfo: uiStarLibBuildInfo(),
       })
 
       expect(styleLayers(await createNodeDriver({ cwd })).utilities).toMatchInlineSnapshot(`
@@ -1317,10 +1400,16 @@ describe('hydrateDesignSystem (consumer)', () => {
       `)
     })
 
-    it('keeps the parent narrow when an unused middle component imports it as a namespace', async () => {
+    it('drops Button styles when only an unused @acme/ui Toolbar imports @acme/ds as a namespace', async () => {
       cwd = createStackedFixture({
+        ui: {
+          'toolbar.tsx': ["import * as DS from '@acme/ds'", 'export const Toolbar = () => <DS.Button />'].join('\n'),
+          'check-icon.tsx': [
+            "import { Icon } from '@acme/ds'",
+            "export const CheckIcon = () => <Icon name='check' />",
+          ].join('\n'),
+        },
         app: ["import { CheckIcon } from '@acme/ui'", 'export const App = () => <CheckIcon />'].join('\n'),
-        uiBuildInfo: uiNamespaceLibBuildInfo(),
       })
 
       expect(styleLayers(await createNodeDriver({ cwd })).utilities).toMatchInlineSnapshot(`
@@ -1333,13 +1422,19 @@ describe('hydrateDesignSystem (consumer)', () => {
       `)
     })
 
-    it('keeps the whole parent the middle design system re-exports as a namespace', async () => {
+    it('keeps all of @acme/ds when the app uses it through a namespace @acme/ui re-exports', async () => {
       cwd = createStackedFixture({
+        ui: {
+          'index.tsx': ["export * as DS from '@acme/ds'", "export { CheckIcon } from './check-icon'"].join('\n'),
+          'check-icon.tsx': [
+            "import { Icon } from '@acme/ds'",
+            "export const CheckIcon = () => <Icon name='check' />",
+          ].join('\n'),
+        },
         app: [
           "import { DS, CheckIcon } from '@acme/ui'",
           'export const App = () => <><DS.Button /><CheckIcon /></>',
         ].join('\n'),
-        uiBuildInfo: uiNamespaceReexportLibBuildInfo(),
       })
 
       expect(styleLayers(await createNodeDriver({ cwd })).utilities).toMatchInlineSnapshot(`
@@ -1358,8 +1453,17 @@ describe('hydrateDesignSystem (consumer)', () => {
       `)
     })
 
-    it('hydrates nothing when the app does not import the stacked design system', async () => {
-      cwd = createStackedFixture({ app: 'export const App = () => null' })
+    it('emits no @acme/ds styles when the app does not import either design system', async () => {
+      cwd = createStackedFixture({
+        ui: {
+          'index.tsx': ["export { Icon } from '@acme/ds'", "export { CheckIcon } from './check-icon'"].join('\n'),
+          'check-icon.tsx': [
+            "import { Icon } from '@acme/ds'",
+            "export const CheckIcon = () => <Icon name='check' />",
+          ].join('\n'),
+        },
+        app: 'export const App = () => null',
+      })
 
       expect(styleLayers(await createNodeDriver({ cwd })).utilities).toMatchInlineSnapshot(`""`)
     })
@@ -1442,48 +1546,29 @@ function createFixture(options: DesignSystemFixture = {}): string {
   return root
 }
 
-function dsLibBuildInfo() {
-  const lib = createProject()
-  lib.parseFileSource(
-    'button.tsx',
-    [
-      "import { css } from '@panda/css'",
-      "export const Button = () => <button className={css({ color: 'red' })} />",
-    ].join('\n'),
-  )
-  lib.parseFileSource(
-    'icon.tsx',
-    [
-      "import { css } from '@panda/css'",
-      "const iconClass = css({ width: '20px' })",
-      'export const Icon = () => <svg className={iconClass} />',
-    ].join('\n'),
-  )
-  lib.parseFileSource(
-    'unused.tsx',
-    [
-      "import { css } from '@panda/css'",
-      "const unusedClass = css({ color: 'blue' })",
-      'export const Unused = () => <div className={unusedClass} />',
-    ].join('\n'),
-  )
-  return lib.buildInfo.create({ panda: '^2.0.0' })
+const ACME_DS_FILES: Record<string, string> = {
+  'button.tsx': [
+    "import { css } from '@panda/css'",
+    "export const Button = () => <button className={css({ color: 'red' })} />",
+  ].join('\n'),
+  'icon.tsx': [
+    "import { css } from '@panda/css'",
+    "const iconClass = css({ width: '20px' })",
+    'export const Icon = () => <svg className={iconClass} />',
+  ].join('\n'),
+  'badge.tsx': [
+    "import { css } from '@panda/css'",
+    "const badgeClass = css({ color: 'blue' })",
+    'export const Badge = () => <div className={badgeClass} />',
+  ].join('\n'),
 }
 
-/** `@acme/ui` extends `@acme/ds`: re-exports `Icon` and wraps it in `CheckIcon`. */
-function uiLibBuildInfo({ trackDependencies = true } = {}) {
+function libBuildInfo(files: Record<string, string>, { dependsOnAcmeDs = false } = {}) {
   const lib = createProject()
-  lib.parseFileSource(
-    'index.tsx',
-    ["export { Icon } from '@acme/ds'", "export { CheckIcon } from './check-icon'"].join('\n'),
-  )
-  lib.parseFileSource(
-    'check-icon.tsx',
-    ["import { Icon } from '@acme/ds'", "export const CheckIcon = () => <Icon name='check' />"].join('\n'),
-  )
+  for (const [path, source] of Object.entries(files)) lib.parseFileSource(path, source)
   return lib.buildInfo.create({
     panda: '^2.0.0',
-    ...(trackDependencies
+    ...(dependsOnAcmeDs
       ? {
           designSystemDependencies: [
             { name: '@acme/ds', packageRoots: ['@acme/ds'], excludeModules: ['@acme/ds/css'] },
@@ -1493,57 +1578,12 @@ function uiLibBuildInfo({ trackDependencies = true } = {}) {
   })
 }
 
-/** `@acme/ui` forwards all of `@acme/ds` with `export *`. */
-function uiStarLibBuildInfo() {
-  const lib = createProject()
-  lib.parseFileSource('index.tsx', ["export * from '@acme/ds'", "export { CheckIcon } from './check-icon'"].join('\n'))
-  lib.parseFileSource(
-    'check-icon.tsx',
-    ["import { Icon } from '@acme/ds'", "export const CheckIcon = () => <Icon name='check' />"].join('\n'),
-  )
-  return lib.buildInfo.create({
-    panda: '^2.0.0',
-    designSystemDependencies: [{ name: '@acme/ds', packageRoots: ['@acme/ds'], excludeModules: ['@acme/ds/css'] }],
-  })
-}
-
-/** `@acme/ui` has a `Toolbar` that uses all of `@acme/ds` through a namespace import. */
-function uiNamespaceLibBuildInfo() {
-  const lib = createProject()
-  lib.parseFileSource(
-    'toolbar.tsx',
-    ["import * as DS from '@acme/ds'", 'export const Toolbar = () => <DS.Button />'].join('\n'),
-  )
-  lib.parseFileSource(
-    'check-icon.tsx',
-    ["import { Icon } from '@acme/ds'", "export const CheckIcon = () => <Icon name='check' />"].join('\n'),
-  )
-  return lib.buildInfo.create({
-    panda: '^2.0.0',
-    designSystemDependencies: [{ name: '@acme/ds', packageRoots: ['@acme/ds'], excludeModules: ['@acme/ds/css'] }],
-  })
-}
-
-/** `@acme/ui` exposes all of `@acme/ds` as the `DS` namespace. */
-function uiNamespaceReexportLibBuildInfo() {
-  const lib = createProject()
-  lib.parseFileSource(
-    'index.tsx',
-    ["export * as DS from '@acme/ds'", "export { CheckIcon } from './check-icon'"].join('\n'),
-  )
-  lib.parseFileSource(
-    'check-icon.tsx',
-    ["import { Icon } from '@acme/ds'", "export const CheckIcon = () => <Icon name='check' />"].join('\n'),
-  )
-  return lib.buildInfo.create({
-    panda: '^2.0.0',
-    designSystemDependencies: [{ name: '@acme/ds', packageRoots: ['@acme/ds'], excludeModules: ['@acme/ds/css'] }],
-  })
-}
-
 interface StackedFixture {
+  /** `@acme/ui` source files; `@acme/ui` extends `@acme/ds`. */
+  ui: Record<string, string>
+  /** `false` simulates an `@acme/ui` build that did not record its `@acme/ds` usage. */
+  uiTracksDependencies?: boolean
   app: string
-  uiBuildInfo?: unknown
 }
 
 function createStackedFixture(options: StackedFixture): string {
@@ -1575,8 +1615,8 @@ function createStackedFixture(options: StackedFixture): string {
       include: ['**/*.tsx'],
     }`,
     'App.tsx': options.app,
-    ...lib('@acme/ds', dsLibBuildInfo()),
-    ...lib('@acme/ui', options.uiBuildInfo ?? uiLibBuildInfo(), '@acme/ds'),
+    ...lib('@acme/ds', libBuildInfo(ACME_DS_FILES)),
+    ...lib('@acme/ui', libBuildInfo(options.ui, { dependsOnAcmeDs: options.uiTracksDependencies ?? true }), '@acme/ds'),
   })
 
   return root

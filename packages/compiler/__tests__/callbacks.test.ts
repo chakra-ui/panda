@@ -6,29 +6,23 @@ import { importMap } from './test-utils'
 describe('Compiler callbacks', () => {
   it('refreshes config CSS when replacing a registered utility transform', () => {
     let calls = 0
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          utilities: {
-            size: { transform: { kind: 'js-callback', id: 'utilities.size.transform' } },
-          },
-          globalCss: { html: { size: '4px' } },
-          theme: {
-            recipes: { button: { base: { size: '8px' } } },
-          },
-          staticCss: { recipes: { button: ['*'] } },
+    const compiler = createCallbackCompiler({
+      config: {
+        utilities: {
+          size: { transform: { kind: 'js-callback', id: 'utilities.size.transform' } },
         },
-        callbacks: {
-          'utility.transform': {
-            'utilities.size.transform': (value) => ({ width: value }),
-          },
+        globalCss: { html: { size: '4px' } },
+        theme: {
+          recipes: { button: { base: { size: '8px' } } },
+        },
+        staticCss: { recipes: { button: ['*'] } },
+      },
+      callbacks: {
+        'utility.transform': {
+          'utilities.size.transform': (value) => ({ width: value }),
         },
       },
-      { crossFile: false },
-    ) as RawCompiler
+    }) as RawCompiler
 
     const initial = compiler.compile()
     expect(initial.diagnostics).toEqual([])
@@ -51,25 +45,19 @@ describe('Compiler callbacks', () => {
   })
 
   it('replaces shared source and recipe CSS when refreshing after a callback change', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          utilities: {
-            size: { transform: { kind: 'js-callback', id: 'utilities.size.transform' } },
-          },
-          theme: { recipes: { button: { base: { size: '8px' } } } },
+    const compiler = createCallbackCompiler({
+      config: {
+        utilities: {
+          size: { transform: { kind: 'js-callback', id: 'utilities.size.transform' } },
         },
-        callbacks: {
-          'utility.transform': {
-            'utilities.size.transform': (value) => ({ width: value }),
-          },
+        theme: { recipes: { button: { base: { size: '8px' } } } },
+      },
+      callbacks: {
+        'utility.transform': {
+          'utilities.size.transform': (value) => ({ width: value }),
         },
       },
-      { crossFile: false },
-    ) as RawCompiler
+    }) as RawCompiler
     const source = `import { css } from '@panda/css'; import { button } from '@panda/recipes'; css({ size: '4px' }); button({})`
     const paths = ['/virtual/a.ts', '/virtual/b.ts']
     for (const path of paths) compiler.parseFileSource(path, source)
@@ -84,25 +72,19 @@ describe('Compiler callbacks', () => {
   })
 
   it('transforms boolean utility values in config CSS', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          utilities: {
-            flag: { transform: { kind: 'js-callback', id: 'utilities.flag.transform' } },
-          },
-          globalCss: { html: { flag: true } },
+    const compiler = createCallbackCompiler({
+      config: {
+        utilities: {
+          flag: { transform: { kind: 'js-callback', id: 'utilities.flag.transform' } },
         },
-        callbacks: {
-          'utility.transform': {
-            'utilities.flag.transform': (value) => ({ display: value ? 'flex' : 'none' }),
-          },
+        globalCss: { html: { flag: true } },
+      },
+      callbacks: {
+        'utility.transform': {
+          'utilities.flag.transform': (value) => ({ display: value ? 'flex' : 'none' }),
         },
       },
-      { crossFile: false },
-    )
+    })
     const output = compiler.compile()
     expect(output.diagnostics).toEqual([])
     expect(output.css).toContain('display: flex')
@@ -111,34 +93,28 @@ describe('Compiler callbacks', () => {
 
   it('applies filtered parser:before callbacks before extraction', () => {
     const seen: string[] = []
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-        },
-        hooks: {
-          'parser:before': [
-            {
-              id: 'plugins.0.hooks.parser:before.0',
-              hash: 'fn1-test',
-              filter: { id: { include: ['**/*.tsx'] }, code: { include: 'css(' } },
-            },
-          ],
-        },
-        callbacks: {
-          'parser:before': {
-            'plugins.0.hooks.parser:before.0': ({ filePath, content }) => {
-              seen.push(filePath)
-              return content.replace('__COLOR__', "'red'")
-            },
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+      },
+      hooks: {
+        'parser:before': [
+          {
+            id: 'plugins.0.hooks.parser:before.0',
+            hash: 'fn1-test',
+            filter: { id: { include: ['**/*.tsx'] }, code: { include: 'css(' } },
+          },
+        ],
+      },
+      callbacks: {
+        'parser:before': {
+          'plugins.0.hooks.parser:before.0': ({ filePath, content }) => {
+            seen.push(filePath)
+            return content.replace('__COLOR__', "'red'")
           },
         },
       },
-      { crossFile: false },
-    )
+    })
 
     compiler.parseFileSource('/virtual/Button.js', `import { css } from '@panda/css'; css({ color: __COLOR__ })`)
     compiler.parseFileSource('/virtual/Button.tsx', `import { css } from '@panda/css'; css({ color: __COLOR__ })`)
@@ -156,30 +132,24 @@ describe('Compiler callbacks', () => {
   })
 
   it('rejects async parser:before callbacks on the hot path', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-        },
-        hooks: {
-          'parser:before': [
-            {
-              id: 'plugins.0.hooks.parser:before.0',
-              hash: 'fn1-test',
-            },
-          ],
-        },
-        callbacks: {
-          'parser:before': {
-            'plugins.0.hooks.parser:before.0': (() => Promise.resolve('')) as any,
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+      },
+      hooks: {
+        'parser:before': [
+          {
+            id: 'plugins.0.hooks.parser:before.0',
+            hash: 'fn1-test',
           },
+        ],
+      },
+      callbacks: {
+        'parser:before': {
+          'plugins.0.hooks.parser:before.0': (() => Promise.resolve('')) as any,
         },
       },
-      { crossFile: false },
-    )
+    })
 
     const report = compiler.parseFileSource(
       '/virtual/Button.tsx',
@@ -192,28 +162,22 @@ describe('Compiler callbacks', () => {
   it('reports the latest parser failure while retaining last-good stylesheet state', () => {
     let shouldFail = false
     const hookId = 'plugins.0.hooks.parser:before.0'
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          utilities: { color: { className: 'c' } },
-        },
-        hooks: {
-          'parser:before': [{ id: hookId, hash: 'parser-latest-attempt' }],
-        },
-        callbacks: {
-          'parser:before': {
-            [hookId]: ({ content }) => {
-              if (shouldFail) throw new Error('boom')
-              return content
-            },
+    const compiler = createCallbackCompiler({
+      config: {
+        utilities: { color: { className: 'c' } },
+      },
+      hooks: {
+        'parser:before': [{ id: hookId, hash: 'parser-latest-attempt' }],
+      },
+      callbacks: {
+        'parser:before': {
+          [hookId]: ({ content }) => {
+            if (shouldFail) throw new Error('boom')
+            return content
           },
         },
       },
-      { crossFile: false },
-    )
+    })
     const path = '/virtual/Button.tsx'
     compiler.parseFileSource(path, `import { css } from '@panda/css'; css({ color: 'red' })`)
     shouldFail = true
@@ -248,33 +212,27 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies js-backed utility transform callbacks from a config bundle', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          utilities: {
-            size: {
-              transform: {
-                kind: 'js-callback',
-                id: 'utilities.size.transform',
-              },
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        utilities: {
+          size: {
+            transform: {
+              kind: 'js-callback',
+              id: 'utilities.size.transform',
             },
           },
         },
-        callbacks: {
-          'utility.transform': {
-            'utilities.size.transform': (value) => ({
-              width: value,
-              height: value,
-            }),
-          },
+      },
+      callbacks: {
+        'utility.transform': {
+          'utilities.size.transform': (value) => ({
+            width: value,
+            height: value,
+          }),
         },
       },
-      { crossFile: false },
-    )
+    })
 
     compiler.parseFileSource(
       '/virtual/Button.tsx',
@@ -300,33 +258,27 @@ describe('Compiler callbacks', () => {
 
   it('retries failed config-authored utility transforms and caches the recovered stylesheet snapshot', () => {
     let calls = 0
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          utilities: {
-            size: {
-              transform: { kind: 'js-callback', id: 'utilities.size.transform' },
-            },
-          },
-          globalCss: {
-            html: { size: '4px' },
+    const compiler = createCallbackCompiler({
+      config: {
+        utilities: {
+          size: {
+            transform: { kind: 'js-callback', id: 'utilities.size.transform' },
           },
         },
-        callbacks: {
-          'utility.transform': {
-            'utilities.size.transform': (value) => {
-              calls += 1
-              if (calls === 1) throw new Error('boom')
-              return { width: value, height: value }
-            },
+        globalCss: {
+          html: { size: '4px' },
+        },
+      },
+      callbacks: {
+        'utility.transform': {
+          'utilities.size.transform': (value) => {
+            calls += 1
+            if (calls === 1) throw new Error('boom')
+            return { width: value, height: value }
           },
         },
       },
-      { crossFile: false },
-    )
+    })
 
     const failed = compiler.compile()
     const recovered = compiler.compile()
@@ -358,50 +310,44 @@ describe('Compiler callbacks', () => {
   })
 
   it('passes token helpers to utility transform callbacks', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          utilities: {
-            tint: {
-              transform: {
-                kind: 'js-callback',
-                id: 'utilities.tint.transform',
-              },
-            },
-          },
-          theme: {
-            tokens: {
-              colors: {
-                red: {
-                  500: { value: '#f00' },
-                },
-              },
-              opacity: {
-                50: { value: '0.5' },
-              },
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        utilities: {
+          tint: {
+            transform: {
+              kind: 'js-callback',
+              id: 'utilities.tint.transform',
             },
           },
         },
-        callbacks: {
-          'utility.transform': {
-            'utilities.tint.transform': (value, args) => {
-              const mix = args.utils.colorMix(value)
-              return {
-                color: args.token('colors.red.500'),
-                opacity: args.token.raw('opacity.50')?.value,
-                backgroundColor: mix.value,
-                '--raw': args.raw,
-              }
+        theme: {
+          tokens: {
+            colors: {
+              red: {
+                500: { value: '#f00' },
+              },
+            },
+            opacity: {
+              50: { value: '0.5' },
             },
           },
         },
       },
-      { crossFile: false },
-    )
+      callbacks: {
+        'utility.transform': {
+          'utilities.tint.transform': (value, args) => {
+            const mix = args.utils.colorMix(value)
+            return {
+              color: args.token('colors.red.500'),
+              opacity: args.token.raw('opacity.50')?.value,
+              backgroundColor: mix.value,
+              '--raw': args.raw,
+            }
+          },
+        },
+      },
+    })
 
     compiler.parseFileSource(
       '/virtual/Button.tsx',
@@ -421,55 +367,49 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies utility transform callbacks to encoded config recipes', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          utilities: {
-            size: {
-              transform: {
-                kind: 'js-callback',
-                id: 'utilities.size.transform',
-              },
-            },
-          },
-          theme: {
-            recipes: {
-              button: {
-                base: { size: '4px' },
-                variants: {
-                  size: {
-                    sm: { size: '8px' },
-                  },
-                },
-              },
-            },
-            slotRecipes: {
-              tabs: {
-                slots: ['root'],
-                variants: {
-                  size: {
-                    sm: { root: { size: '12px' } },
-                  },
-                },
-              },
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        utilities: {
+          size: {
+            transform: {
+              kind: 'js-callback',
+              id: 'utilities.size.transform',
             },
           },
         },
-        callbacks: {
-          'utility.transform': {
-            'utilities.size.transform': (value) => ({
-              width: value,
-              height: value,
-            }),
+        theme: {
+          recipes: {
+            button: {
+              base: { size: '4px' },
+              variants: {
+                size: {
+                  sm: { size: '8px' },
+                },
+              },
+            },
+          },
+          slotRecipes: {
+            tabs: {
+              slots: ['root'],
+              variants: {
+                size: {
+                  sm: { root: { size: '12px' } },
+                },
+              },
+            },
           },
         },
       },
-      { crossFile: false },
-    )
+      callbacks: {
+        'utility.transform': {
+          'utilities.size.transform': (value) => ({
+            width: value,
+            height: value,
+          }),
+        },
+      },
+    })
 
     compiler.parseFileSource(
       '/virtual/recipes.ts',
@@ -543,43 +483,37 @@ describe('Compiler callbacks', () => {
   })
 
   it('resolves utility values callbacks from a config bundle', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          conditions: {
-            hover: '&:hover',
-          },
-          utilities: {
-            space: {
-              values: {
-                kind: 'js-callback',
-                id: 'utilities.space.values',
-              },
-            },
-          },
-          theme: {
-            tokens: {
-              spacing: {
-                4: { value: '1rem' },
-              },
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        conditions: {
+          hover: '&:hover',
+        },
+        utilities: {
+          space: {
+            values: {
+              kind: 'js-callback',
+              id: 'utilities.space.values',
             },
           },
         },
-        callbacks: {
-          'utility.values': {
-            'utilities.space.values': (theme) => ({
-              ...(theme('spacing') ?? {}),
-              compact: '2px',
-            }),
+        theme: {
+          tokens: {
+            spacing: {
+              4: { value: '1rem' },
+            },
           },
         },
       },
-      { crossFile: false },
-    )
+      callbacks: {
+        'utility.values': {
+          'utilities.space.values': (theme) => ({
+            ...(theme('spacing') ?? {}),
+            compact: '2px',
+          }),
+        },
+      },
+    })
 
     compiler.parseFileSource(
       '/virtual/Button.tsx',
@@ -611,31 +545,25 @@ describe('Compiler callbacks', () => {
   })
 
   it('keeps the utility usable when the values callback returns nothing', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          utilities: {
-            space: {
-              property: 'margin',
-              values: {
-                kind: 'js-callback',
-                id: 'utilities.space.values',
-              },
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        utilities: {
+          space: {
+            property: 'margin',
+            values: {
+              kind: 'js-callback',
+              id: 'utilities.space.values',
             },
           },
         },
-        callbacks: {
-          'utility.values': {
-            'utilities.space.values': (theme) => theme('spacing'),
-          },
+      },
+      callbacks: {
+        'utility.values': {
+          'utilities.space.values': (theme) => theme('spacing'),
         },
       },
-      { crossFile: false },
-    )
+    })
 
     compiler.parseFileSource(
       '/virtual/Button.tsx',
@@ -647,41 +575,35 @@ describe('Compiler callbacks', () => {
   })
 
   it('resolves utility values functions from a config snapshot', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          utilities: {
-            inset: {
-              property: 'inset',
-              values: {
-                kind: 'js-callback',
-                id: 'utilities.inset.values',
-              },
-            },
-          },
-          theme: {
-            tokens: {
-              spacing: {
-                2: { value: '0.5rem' },
-              },
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        utilities: {
+          inset: {
+            property: 'inset',
+            values: {
+              kind: 'js-callback',
+              id: 'utilities.inset.values',
             },
           },
         },
-        callbacks: {
-          'utility.values': {
-            'utilities.inset.values': (theme) => ({
-              ...(theme('spacing') ?? {}),
-              full: '100%',
-            }),
+        theme: {
+          tokens: {
+            spacing: {
+              2: { value: '0.5rem' },
+            },
           },
         },
       },
-      { crossFile: false },
-    )
+      callbacks: {
+        'utility.values': {
+          'utilities.inset.values': (theme) => ({
+            ...(theme('spacing') ?? {}),
+            full: '100%',
+          }),
+        },
+      },
+    })
 
     compiler.parseFileSource(
       '/virtual/Dialog.tsx',
@@ -712,40 +634,9 @@ describe('Compiler callbacks', () => {
 
   it('throws when serialized callback refs are missing callbacks', () => {
     expect(() =>
-      createCompilerFromSnapshot(
-        {
-          config: {
-            cwd: '/virtual',
-            outdir: 'styled-system',
-            importMap,
-            jsxFramework: 'react',
-            utilities: {
-              size: {
-                transform: {
-                  kind: 'js-callback',
-                  id: 'utilities.size.transform',
-                },
-              },
-            },
-          },
-          callbacks: {},
-        },
-        { crossFile: false },
-      ),
-    ).toThrow('Missing utility.transform callback `utilities.size.transform` for `size`')
-  })
-
-  it('applies utility transform callbacks under conditions', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
+      createCallbackCompiler({
         config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
           jsxFramework: 'react',
-          conditions: {
-            hover: '&:hover',
-          },
           utilities: {
             size: {
               transform: {
@@ -755,17 +646,36 @@ describe('Compiler callbacks', () => {
             },
           },
         },
-        callbacks: {
-          'utility.transform': {
-            'utilities.size.transform': (value) => ({
-              width: value,
-              height: value,
-            }),
+        callbacks: {},
+      }),
+    ).toThrow('Missing utility.transform callback `utilities.size.transform` for `size`')
+  })
+
+  it('applies utility transform callbacks under conditions', () => {
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        conditions: {
+          hover: '&:hover',
+        },
+        utilities: {
+          size: {
+            transform: {
+              kind: 'js-callback',
+              id: 'utilities.size.transform',
+            },
           },
         },
       },
-      { crossFile: false },
-    )
+      callbacks: {
+        'utility.transform': {
+          'utilities.size.transform': (value) => ({
+            width: value,
+            height: value,
+          }),
+        },
+      },
+    })
 
     compiler.parseFileSource(
       '/virtual/Button.tsx',
@@ -787,33 +697,27 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies utility transform callbacks from JSX props', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          utilities: {
-            size: {
-              transform: {
-                kind: 'js-callback',
-                id: 'utilities.size.transform',
-              },
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        utilities: {
+          size: {
+            transform: {
+              kind: 'js-callback',
+              id: 'utilities.size.transform',
             },
           },
         },
-        callbacks: {
-          'utility.transform': {
-            'utilities.size.transform': (value) => ({
-              width: value,
-              height: value,
-            }),
-          },
+      },
+      callbacks: {
+        'utility.transform': {
+          'utilities.size.transform': (value) => ({
+            width: value,
+            height: value,
+          }),
         },
       },
-      { crossFile: false },
-    )
+    })
 
     compiler.parseFileSource(
       '/virtual/Card.tsx',
@@ -834,33 +738,27 @@ describe('Compiler callbacks', () => {
 
   it('caches utility transform callback results', () => {
     let calls = 0
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          utilities: {
-            size: {
-              transform: {
-                kind: 'js-callback',
-                id: 'utilities.size.transform',
-              },
-            },
-          },
-        },
-        callbacks: {
-          'utility.transform': {
-            'utilities.size.transform': (value) => {
-              calls += 1
-              return { width: value, height: value }
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        utilities: {
+          size: {
+            transform: {
+              kind: 'js-callback',
+              id: 'utilities.size.transform',
             },
           },
         },
       },
-      { crossFile: false },
-    )
+      callbacks: {
+        'utility.transform': {
+          'utilities.size.transform': (value) => {
+            calls += 1
+            return { width: value, height: value }
+          },
+        },
+      },
+    })
 
     compiler.parseFileSource(
       '/virtual/Button.tsx',
@@ -874,32 +772,26 @@ describe('Compiler callbacks', () => {
   })
 
   it('reports utility transform callback failures during parseFile', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          utilities: {
-            size: {
-              transform: {
-                kind: 'js-callback',
-                id: 'utilities.size.transform',
-              },
-            },
-          },
-        },
-        callbacks: {
-          'utility.transform': {
-            'utilities.size.transform': () => {
-              throw new Error('boom')
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        utilities: {
+          size: {
+            transform: {
+              kind: 'js-callback',
+              id: 'utilities.size.transform',
             },
           },
         },
       },
-      { crossFile: false },
-    )
+      callbacks: {
+        'utility.transform': {
+          'utilities.size.transform': () => {
+            throw new Error('boom')
+          },
+        },
+      },
+    })
 
     const report = compiler.parseFileSource(
       '/virtual/Button.tsx',
@@ -929,34 +821,28 @@ describe('Compiler callbacks', () => {
 
   it('does not cache failed utility transform callbacks', () => {
     let calls = 0
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          utilities: {
-            size: {
-              transform: {
-                kind: 'js-callback',
-                id: 'utilities.size.transform',
-              },
-            },
-          },
-        },
-        callbacks: {
-          'utility.transform': {
-            'utilities.size.transform': (value) => {
-              calls += 1
-              if (calls === 1) throw new Error('boom')
-              return { width: value, height: value }
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        utilities: {
+          size: {
+            transform: {
+              kind: 'js-callback',
+              id: 'utilities.size.transform',
             },
           },
         },
       },
-      { crossFile: false },
-    )
+      callbacks: {
+        'utility.transform': {
+          'utilities.size.transform': (value) => {
+            calls += 1
+            if (calls === 1) throw new Error('boom')
+            return { width: value, height: value }
+          },
+        },
+      },
+    })
 
     const source = `import { css } from '@panda/css'
        css({ size: '4px' })`
@@ -986,30 +872,24 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies utility transform callbacks during refreshFile', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          utilities: {
-            size: {
-              transform: {
-                kind: 'js-callback',
-                id: 'utilities.size.transform',
-              },
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        utilities: {
+          size: {
+            transform: {
+              kind: 'js-callback',
+              id: 'utilities.size.transform',
             },
           },
         },
-        callbacks: {
-          'utility.transform': {
-            'utilities.size.transform': (value) => ({ width: value, height: value }),
-          },
+      },
+      callbacks: {
+        'utility.transform': {
+          'utilities.size.transform': (value) => ({ width: value, height: value }),
         },
       },
-      { crossFile: false },
-    )
+    })
 
     compiler.parseFileSource(
       '/virtual/Button.tsx',
@@ -1042,40 +922,34 @@ describe('Compiler callbacks', () => {
 
   it('shares utility transform cache between atoms and encoded recipes', () => {
     let calls = 0
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          utilities: {
-            size: {
-              transform: {
-                kind: 'js-callback',
-                id: 'utilities.size.transform',
-              },
-            },
-          },
-          theme: {
-            recipes: {
-              button: {
-                base: { size: '4px' },
-              },
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        utilities: {
+          size: {
+            transform: {
+              kind: 'js-callback',
+              id: 'utilities.size.transform',
             },
           },
         },
-        callbacks: {
-          'utility.transform': {
-            'utilities.size.transform': (value) => {
-              calls += 1
-              return { width: value, height: value }
+        theme: {
+          recipes: {
+            button: {
+              base: { size: '4px' },
             },
           },
         },
       },
-      { crossFile: false },
-    )
+      callbacks: {
+        'utility.transform': {
+          'utilities.size.transform': (value) => {
+            calls += 1
+            return { width: value, height: value }
+          },
+        },
+      },
+    })
 
     compiler.parseFileSource(
       '/virtual/Button.tsx',
@@ -1091,48 +965,42 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies pattern transform callbacks before encoding', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          conditions: {
-            hover: '&:hover',
-          },
-          theme: {
-            breakpoints: {
-              tablet: '768px',
-            },
-          },
-          patterns: {
-            stack: {
-              properties: {
-                gap: {},
-              },
-              transform: {
-                kind: 'js-callback',
-                id: 'patterns.stack.transform',
-              },
-            },
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        conditions: {
+          hover: '&:hover',
+        },
+        theme: {
+          breakpoints: {
+            tablet: '768px',
           },
         },
-        callbacks: {
-          'pattern.transform': {
-            'patterns.stack.transform': (props, helpers) => ({
-              display: 'flex',
-              gap: helpers.map(props.gap, (value) =>
-                helpers.isCssUnit(value) || helpers.isCssVar(value) || helpers.isCssFunction(value)
-                  ? value
-                  : `token(spacing.${value}, ${value})`,
-              ),
-            }),
+        patterns: {
+          stack: {
+            properties: {
+              gap: {},
+            },
+            transform: {
+              kind: 'js-callback',
+              id: 'patterns.stack.transform',
+            },
           },
         },
       },
-      { crossFile: false },
-    )
+      callbacks: {
+        'pattern.transform': {
+          'patterns.stack.transform': (props, helpers) => ({
+            display: 'flex',
+            gap: helpers.map(props.gap, (value) =>
+              helpers.isCssUnit(value) || helpers.isCssVar(value) || helpers.isCssFunction(value)
+                ? value
+                : `token(spacing.${value}, ${value})`,
+            ),
+          }),
+        },
+      },
+    })
 
     compiler.parseFileSource(
       '/virtual/Stack.tsx',
@@ -1171,40 +1039,34 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies pattern transform callbacks from pattern function calls', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          conditions: {
-            hover: '&:hover',
-          },
-          patterns: {
-            stack: {
-              properties: {
-                gap: {},
-              },
-              transform: {
-                kind: 'js-callback',
-                id: 'patterns.stack.transform',
-              },
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        conditions: {
+          hover: '&:hover',
+        },
+        patterns: {
+          stack: {
+            properties: {
+              gap: {},
+            },
+            transform: {
+              kind: 'js-callback',
+              id: 'patterns.stack.transform',
             },
           },
         },
-        callbacks: {
-          'pattern.transform': {
-            'patterns.stack.transform': (props) => ({
-              display: 'flex',
-              flexDirection: 'column',
-              gap: props.gap,
-            }),
-          },
+      },
+      callbacks: {
+        'pattern.transform': {
+          'patterns.stack.transform': (props) => ({
+            display: 'flex',
+            flexDirection: 'column',
+            gap: props.gap,
+          }),
         },
       },
-      { crossFile: false },
-    )
+    })
 
     compiler.parseFileSource(
       '/virtual/Stack.ts',
@@ -1241,38 +1103,32 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies pattern transform callbacks from JSX pattern components', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          patterns: {
-            stack: {
-              jsxName: 'Stack',
-              properties: {
-                gap: {},
-              },
-              transform: {
-                kind: 'js-callback',
-                id: 'patterns.stack.transform',
-              },
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        patterns: {
+          stack: {
+            jsxName: 'Stack',
+            properties: {
+              gap: {},
+            },
+            transform: {
+              kind: 'js-callback',
+              id: 'patterns.stack.transform',
             },
           },
         },
-        callbacks: {
-          'pattern.transform': {
-            'patterns.stack.transform': (props) => ({
-              display: 'flex',
-              flexDirection: 'column',
-              gap: props.gap,
-            }),
-          },
+      },
+      callbacks: {
+        'pattern.transform': {
+          'patterns.stack.transform': (props) => ({
+            display: 'flex',
+            flexDirection: 'column',
+            gap: props.gap,
+          }),
         },
       },
-      { crossFile: false },
-    )
+    })
 
     compiler.parseFileSource(
       '/virtual/Stack.tsx',
@@ -1303,40 +1159,34 @@ describe('Compiler callbacks', () => {
 
   it('caches pattern transform callback results across function calls and JSX components', () => {
     let calls = 0
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          patterns: {
-            stack: {
-              jsxName: 'Stack',
-              properties: {
-                gap: {},
-              },
-              transform: {
-                kind: 'js-callback',
-                id: 'patterns.stack.transform',
-              },
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        patterns: {
+          stack: {
+            jsxName: 'Stack',
+            properties: {
+              gap: {},
             },
-          },
-        },
-        callbacks: {
-          'pattern.transform': {
-            'patterns.stack.transform': (props) => {
-              calls += 1
-              return {
-                display: 'flex',
-                gap: props.gap,
-              }
+            transform: {
+              kind: 'js-callback',
+              id: 'patterns.stack.transform',
             },
           },
         },
       },
-      { crossFile: false },
-    )
+      callbacks: {
+        'pattern.transform': {
+          'patterns.stack.transform': (props) => {
+            calls += 1
+            return {
+              display: 'flex',
+              gap: props.gap,
+            }
+          },
+        },
+      },
+    })
 
     compiler.parseFileSource(
       '/virtual/Stack.tsx',
@@ -1366,40 +1216,34 @@ describe('Compiler callbacks', () => {
 
   it('does not cache thrown pattern transform callbacks', () => {
     let calls = 0
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          patterns: {
-            stack: {
-              properties: {
-                gap: {},
-              },
-              transform: {
-                kind: 'js-callback',
-                id: 'patterns.stack.transform',
-              },
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        patterns: {
+          stack: {
+            properties: {
+              gap: {},
             },
-          },
-        },
-        callbacks: {
-          'pattern.transform': {
-            'patterns.stack.transform': (props) => {
-              calls += 1
-              if (calls === 1) throw new Error('boom')
-              return {
-                display: 'flex',
-                gap: props.gap,
-              }
+            transform: {
+              kind: 'js-callback',
+              id: 'patterns.stack.transform',
             },
           },
         },
       },
-      { crossFile: false },
-    )
+      callbacks: {
+        'pattern.transform': {
+          'patterns.stack.transform': (props) => {
+            calls += 1
+            if (calls === 1) throw new Error('boom')
+            return {
+              display: 'flex',
+              gap: props.gap,
+            }
+          },
+        },
+      },
+    })
 
     compiler.parseFileSource(
       '/virtual/Stack.ts',
@@ -1430,40 +1274,34 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies object defaultValues before pattern transform callbacks', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          patterns: {
-            stack: {
-              jsxName: 'Stack',
-              properties: {
-                gap: {},
-              },
-              defaultValues: {
-                gap: '4px',
-              },
-              transform: {
-                kind: 'js-callback',
-                id: 'patterns.stack.transform',
-              },
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        patterns: {
+          stack: {
+            jsxName: 'Stack',
+            properties: {
+              gap: {},
+            },
+            defaultValues: {
+              gap: '4px',
+            },
+            transform: {
+              kind: 'js-callback',
+              id: 'patterns.stack.transform',
             },
           },
         },
-        callbacks: {
-          'pattern.transform': {
-            'patterns.stack.transform': (props) => ({
-              display: 'flex',
-              gap: props.gap,
-            }),
-          },
+      },
+      callbacks: {
+        'pattern.transform': {
+          'patterns.stack.transform': (props) => ({
+            display: 'flex',
+            gap: props.gap,
+          }),
         },
       },
-      { crossFile: false },
-    )
+    })
 
     compiler.parseFileSource(
       '/virtual/Stack.tsx',
@@ -1490,46 +1328,40 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies function defaultValues before pattern transform callbacks', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          patterns: {
-            stack: {
-              jsxName: 'Stack',
-              properties: {
-                gap: {},
-              },
-              defaultValues: {
-                kind: 'js-callback',
-                id: 'patterns.stack.defaultValues',
-              },
-              transform: {
-                kind: 'js-callback',
-                id: 'patterns.stack.transform',
-              },
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        patterns: {
+          stack: {
+            jsxName: 'Stack',
+            properties: {
+              gap: {},
+            },
+            defaultValues: {
+              kind: 'js-callback',
+              id: 'patterns.stack.defaultValues',
+            },
+            transform: {
+              kind: 'js-callback',
+              id: 'patterns.stack.transform',
             },
           },
         },
-        callbacks: {
-          'pattern.defaultValues': {
-            'patterns.stack.defaultValues': (props) => ({
-              gap: props.dense ? '2px' : '4px',
-            }),
-          },
-          'pattern.transform': {
-            'patterns.stack.transform': (props) => ({
-              display: 'flex',
-              gap: props.gap,
-            }),
-          },
+      },
+      callbacks: {
+        'pattern.defaultValues': {
+          'patterns.stack.defaultValues': (props) => ({
+            gap: props.dense ? '2px' : '4px',
+          }),
+        },
+        'pattern.transform': {
+          'patterns.stack.transform': (props) => ({
+            display: 'flex',
+            gap: props.gap,
+          }),
         },
       },
-      { crossFile: false },
-    )
+    })
 
     compiler.parseFileSource(
       '/virtual/Stack.tsx',
@@ -1561,49 +1393,43 @@ describe('Compiler callbacks', () => {
   })
 
   it('routes stack and hstack imports to their pattern transforms', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          patterns: {
-            stack: {
-              properties: { align: {} },
-              defaultValues: { direction: 'column', gap: '8px' },
-              transform: {
-                kind: 'js-callback',
-                id: 'patterns.stack.transform',
-              },
-            },
-            hstack: {
-              properties: { justify: {} },
-              defaultValues: { gap: '8px' },
-              transform: {
-                kind: 'js-callback',
-                id: 'patterns.hstack.transform',
-              },
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        patterns: {
+          stack: {
+            properties: { align: {} },
+            defaultValues: { direction: 'column', gap: '8px' },
+            transform: {
+              kind: 'js-callback',
+              id: 'patterns.stack.transform',
             },
           },
-        },
-        callbacks: {
-          'pattern.transform': {
-            'patterns.stack.transform': (props) => ({
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: props.align,
-            }),
-            'patterns.hstack.transform': (props) => ({
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: props.justify,
-            }),
+          hstack: {
+            properties: { justify: {} },
+            defaultValues: { gap: '8px' },
+            transform: {
+              kind: 'js-callback',
+              id: 'patterns.hstack.transform',
+            },
           },
         },
       },
-      { crossFile: false },
-    )
+      callbacks: {
+        'pattern.transform': {
+          'patterns.stack.transform': (props) => ({
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: props.align,
+          }),
+          'patterns.hstack.transform': (props) => ({
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: props.justify,
+          }),
+        },
+      },
+    })
 
     compiler.parseFileSource(
       '/virtual/Button.tsx',
@@ -1644,43 +1470,37 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies pattern transform callbacks from JSX with align and conditional gap', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          conditions: {
-            hover: '&:hover',
-          },
-          patterns: {
-            stack: {
-              jsxName: 'Stack',
-              properties: {
-                align: {},
-                gap: {},
-              },
-              transform: {
-                kind: 'js-callback',
-                id: 'patterns.stack.transform',
-              },
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        conditions: {
+          hover: '&:hover',
+        },
+        patterns: {
+          stack: {
+            jsxName: 'Stack',
+            properties: {
+              align: {},
+              gap: {},
+            },
+            transform: {
+              kind: 'js-callback',
+              id: 'patterns.stack.transform',
             },
           },
         },
-        callbacks: {
-          'pattern.transform': {
-            'patterns.stack.transform': (props) => ({
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: props.align,
-              gap: props.gap,
-            }),
-          },
+      },
+      callbacks: {
+        'pattern.transform': {
+          'patterns.stack.transform': (props) => ({
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: props.align,
+            gap: props.gap,
+          }),
         },
       },
-      { crossFile: false },
-    )
+    })
 
     compiler.parseFileSource(
       '/virtual/Stack.tsx',
@@ -1722,44 +1542,38 @@ describe('Compiler callbacks', () => {
   })
 
   it('expands staticCss.patterns through pattern transform callbacks', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          utilities: {
-            alignItems: { className: 'ai' },
-          },
-          patterns: {
-            stack: {
-              properties: {
-                align: { type: 'enum', value: ['center', 'start'] },
-              },
-              transform: {
-                kind: 'js-callback',
-                id: 'patterns.stack.transform',
-              },
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        utilities: {
+          alignItems: { className: 'ai' },
+        },
+        patterns: {
+          stack: {
+            properties: {
+              align: { type: 'enum', value: ['center', 'start'] },
             },
-          },
-          staticCss: {
-            patterns: {
-              stack: [{ properties: { align: ['center'] } }],
+            transform: {
+              kind: 'js-callback',
+              id: 'patterns.stack.transform',
             },
           },
         },
-        callbacks: {
-          'pattern.transform': {
-            'patterns.stack.transform': (props) => ({
-              display: 'flex',
-              alignItems: props.align,
-            }),
+        staticCss: {
+          patterns: {
+            stack: [{ properties: { align: ['center'] } }],
           },
         },
       },
-      { crossFile: false },
-    )
+      callbacks: {
+        'pattern.transform': {
+          'patterns.stack.transform': (props) => ({
+            display: 'flex',
+            alignItems: props.align,
+          }),
+        },
+      },
+    })
 
     expect(compiler.staticPatternAtoms()).toMatchInlineSnapshot(`
       {
@@ -1781,31 +1595,25 @@ describe('Compiler callbacks', () => {
   })
 
   it('emits one grouped class with token-resolved values for a multi-declaration transform', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          theme: { tokens: { spacing: { '4': { value: '1rem' } } } },
-          utilities: {
-            spaceX: {
-              className: 'space-x',
-              values: 'spacing',
-              transform: { kind: 'js-callback', id: 'utilities.spaceX.transform' },
-            },
-          },
-        },
-        callbacks: {
-          'utility.transform': {
-            // `value` is the resolved token (`var(--spacing-4)`).
-            'utilities.spaceX.transform': (value) => ({ marginLeft: value, marginRight: value }),
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        theme: { tokens: { spacing: { '4': { value: '1rem' } } } },
+        utilities: {
+          spaceX: {
+            className: 'space-x',
+            values: 'spacing',
+            transform: { kind: 'js-callback', id: 'utilities.spaceX.transform' },
           },
         },
       },
-      { crossFile: false },
-    )
+      callbacks: {
+        'utility.transform': {
+          // `value` is the resolved token (`var(--spacing-4)`).
+          'utilities.spaceX.transform': (value) => ({ marginLeft: value, marginRight: value }),
+        },
+      },
+    })
 
     compiler.parseFileSource('/virtual/Button.tsx', `import { css } from '@panda/css'\ncss({ spaceX: '4' })`)
 
@@ -1821,30 +1629,24 @@ describe('Compiler callbacks', () => {
   })
 
   it('preserves !important across a transform result', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          theme: { tokens: { colors: { red: { '500': { value: '#f00' } } } } },
-          utilities: {
-            boxColor: {
-              className: 'bc',
-              values: 'colors',
-              transform: { kind: 'js-callback', id: 'utilities.boxColor.transform' },
-            },
-          },
-        },
-        callbacks: {
-          'utility.transform': {
-            'utilities.boxColor.transform': (value) => ({ color: value }),
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        theme: { tokens: { colors: { red: { '500': { value: '#f00' } } } } },
+        utilities: {
+          boxColor: {
+            className: 'bc',
+            values: 'colors',
+            transform: { kind: 'js-callback', id: 'utilities.boxColor.transform' },
           },
         },
       },
-      { crossFile: false },
-    )
+      callbacks: {
+        'utility.transform': {
+          'utilities.boxColor.transform': (value) => ({ color: value }),
+        },
+      },
+    })
 
     compiler.parseFileSource('/virtual/Button.tsx', `import { css } from '@panda/css'\ncss({ boxColor: 'red.500!' })`)
 
@@ -1859,29 +1661,23 @@ describe('Compiler callbacks', () => {
   })
 
   it('lowers a condition returned by a transform to a selector', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          conditions: { hover: '&:hover' },
-          utilities: {
-            debug: {
-              className: 'debug',
-              transform: { kind: 'js-callback', id: 'utilities.debug.transform' },
-            },
-          },
-        },
-        callbacks: {
-          'utility.transform': {
-            'utilities.debug.transform': () => ({ _hover: { border: '2px solid blue' } }),
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        conditions: { hover: '&:hover' },
+        utilities: {
+          debug: {
+            className: 'debug',
+            transform: { kind: 'js-callback', id: 'utilities.debug.transform' },
           },
         },
       },
-      { crossFile: false },
-    )
+      callbacks: {
+        'utility.transform': {
+          'utilities.debug.transform': () => ({ _hover: { border: '2px solid blue' } }),
+        },
+      },
+    })
 
     compiler.parseFileSource('/virtual/Button.tsx', `import { css } from '@panda/css'\ncss({ debug: true })`)
 
@@ -1896,37 +1692,31 @@ describe('Compiler callbacks', () => {
   })
 
   it('emits grouped CSS for a radii token utility with transform', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          theme: {
-            tokens: {
-              radii: {
-                sm: { value: '4px' },
-                md: { value: '8px' },
-              },
-            },
-          },
-          utilities: {
-            br: {
-              className: 'rounded',
-              values: 'radii',
-              transform: { kind: 'js-callback', id: 'utilities.br.transform' },
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        theme: {
+          tokens: {
+            radii: {
+              sm: { value: '4px' },
+              md: { value: '8px' },
             },
           },
         },
-        callbacks: {
-          'utility.transform': {
-            'utilities.br.transform': (value) => ({ borderRadius: value }),
+        utilities: {
+          br: {
+            className: 'rounded',
+            values: 'radii',
+            transform: { kind: 'js-callback', id: 'utilities.br.transform' },
           },
         },
       },
-      { crossFile: false },
-    )
+      callbacks: {
+        'utility.transform': {
+          'utilities.br.transform': (value) => ({ borderRadius: value }),
+        },
+      },
+    })
 
     compiler.parseFileSource(
       '/virtual/Card.tsx',
@@ -1949,45 +1739,39 @@ describe('Compiler callbacks', () => {
   })
 
   it('emits grouped CSS for a string-value gradientBorder utility with nested pseudo styles', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          utilities: {
-            gradientBorder: {
-              className: 'gradient-border',
-              transform: { kind: 'js-callback', id: 'utilities.gradientBorder.transform' },
-            },
-          },
-        },
-        callbacks: {
-          'utility.transform': {
-            'utilities.gradientBorder.transform': (value) => ({
-              '--after-inset': 'calc(var(--gradient-border-width, 2px) + var(--gradient-border-offset, 0px) + 1px)',
-              '--gradient-border-start': 'calc(var(--parent-h, 48px) / 2 + var(--gradient-border-offset, 0px))',
-              '--gradient-border-end': 'calc(var(--gradient-border-start) + var(--gradient-border-width, 2px))',
-              '&::after': {
-                content: '""',
-                display: 'inline-block',
-                position: 'absolute',
-                inset: 'calc(var(--after-inset) * -1)',
-                pointerEvents: 'none',
-                backgroundImage: value,
-                maskImage:
-                  'radial-gradient(transparent calc(var(--gradient-border-start) - 1px), black var(--gradient-border-start), black var(--gradient-border-end), transparent calc(var(--gradient-border-end) + 1px))',
-                backgroundSize: 'cover',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'center',
-              },
-            }),
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        utilities: {
+          gradientBorder: {
+            className: 'gradient-border',
+            transform: { kind: 'js-callback', id: 'utilities.gradientBorder.transform' },
           },
         },
       },
-      { crossFile: false },
-    )
+      callbacks: {
+        'utility.transform': {
+          'utilities.gradientBorder.transform': (value) => ({
+            '--after-inset': 'calc(var(--gradient-border-width, 2px) + var(--gradient-border-offset, 0px) + 1px)',
+            '--gradient-border-start': 'calc(var(--parent-h, 48px) / 2 + var(--gradient-border-offset, 0px))',
+            '--gradient-border-end': 'calc(var(--gradient-border-start) + var(--gradient-border-width, 2px))',
+            '&::after': {
+              content: '""',
+              display: 'inline-block',
+              position: 'absolute',
+              inset: 'calc(var(--after-inset) * -1)',
+              pointerEvents: 'none',
+              backgroundImage: value,
+              maskImage:
+                'radial-gradient(transparent calc(var(--gradient-border-start) - 1px), black var(--gradient-border-start), black var(--gradient-border-end), transparent calc(var(--gradient-border-end) + 1px))',
+              backgroundSize: 'cover',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'center',
+            },
+          }),
+        },
+      },
+    })
 
     compiler.parseFileSource(
       '/virtual/Frame.tsx',
@@ -2020,29 +1804,23 @@ describe('Compiler callbacks', () => {
   })
 
   it('emits grouped CSS for an enum value utility with transform', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          utilities: {
-            stackDir: {
-              className: 'stack-dir',
-              values: ['row', 'column'],
-              transform: { kind: 'js-callback', id: 'utilities.stackDir.transform' },
-            },
-          },
-        },
-        callbacks: {
-          'utility.transform': {
-            'utilities.stackDir.transform': (value) => ({ flexDirection: value }),
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        utilities: {
+          stackDir: {
+            className: 'stack-dir',
+            values: ['row', 'column'],
+            transform: { kind: 'js-callback', id: 'utilities.stackDir.transform' },
           },
         },
       },
-      { crossFile: false },
-    )
+      callbacks: {
+        'utility.transform': {
+          'utilities.stackDir.transform': (value) => ({ flexDirection: value }),
+        },
+      },
+    })
 
     compiler.parseFileSource(
       '/virtual/Stack.tsx',
@@ -2061,28 +1839,22 @@ describe('Compiler callbacks', () => {
   })
 
   it('emits grouped CSS for a raw number utility value with transform', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          utilities: {
-            layer: {
-              className: 'layer',
-              transform: { kind: 'js-callback', id: 'utilities.layer.transform' },
-            },
-          },
-        },
-        callbacks: {
-          'utility.transform': {
-            'utilities.layer.transform': (value) => ({ zIndex: value }),
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        utilities: {
+          layer: {
+            className: 'layer',
+            transform: { kind: 'js-callback', id: 'utilities.layer.transform' },
           },
         },
       },
-      { crossFile: false },
-    )
+      callbacks: {
+        'utility.transform': {
+          'utilities.layer.transform': (value) => ({ zIndex: value }),
+        },
+      },
+    })
 
     compiler.parseFileSource(
       '/virtual/Overlay.tsx',
@@ -2101,34 +1873,28 @@ describe('Compiler callbacks', () => {
   })
 
   it('emits grouped CSS for a value-map utility without transform', () => {
-    const compiler = createCompilerFromSnapshot(
-      {
-        config: {
-          cwd: '/virtual',
-          outdir: 'styled-system',
-          importMap,
-          jsxFramework: 'react',
-          theme: {
-            tokens: {
-              radii: {
-                sm: { value: '4px' },
-              },
-            },
-          },
-          utilities: {
-            pill: {
-              className: 'pill',
-              values: {
-                sm: { borderRadius: '9999px', paddingInline: '0.75rem' },
-                md: { borderRadius: '{radii.sm}', paddingInline: '1rem' },
-              },
+    const compiler = createCallbackCompiler({
+      config: {
+        jsxFramework: 'react',
+        theme: {
+          tokens: {
+            radii: {
+              sm: { value: '4px' },
             },
           },
         },
-        callbacks: {},
+        utilities: {
+          pill: {
+            className: 'pill',
+            values: {
+              sm: { borderRadius: '9999px', paddingInline: '0.75rem' },
+              md: { borderRadius: '{radii.sm}', paddingInline: '1rem' },
+            },
+          },
+        },
       },
-      { crossFile: false },
-    )
+      callbacks: {},
+    })
 
     compiler.parseFileSource(
       '/virtual/Badge.tsx',
@@ -2152,3 +1918,10 @@ describe('Compiler callbacks', () => {
     `)
   })
 })
+
+function createCallbackCompiler({ config, ...snapshot }: Parameters<typeof createCompilerFromSnapshot>[0]) {
+  return createCompilerFromSnapshot(
+    { ...snapshot, config: { cwd: '/virtual', outdir: 'styled-system', importMap, ...config } },
+    { crossFile: false },
+  )
+}

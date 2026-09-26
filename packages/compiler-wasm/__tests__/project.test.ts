@@ -2,7 +2,7 @@ import { expect, it } from 'vitest'
 
 import { createCompiler } from '../src'
 import type { Atom } from '../src'
-import { baseConfig, describeIfBuilt, describeMissingWasm } from './helpers'
+import { baseConfig, describeIfBuilt, describeMissingWasm, importMap } from './helpers'
 
 describeIfBuilt('@pandacss/compiler-wasm project', () => {
   it('extracts atoms from a css() call', async () => {
@@ -30,13 +30,7 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
     const compiler = await createCompiler({
       cwd: '/virtual',
       outdir: 'styled-system',
-      importMap: {
-        css: ['@panda/css'],
-        recipe: ['@panda/recipes'],
-        pattern: ['@panda/patterns'],
-        jsx: ['@panda/jsx'],
-        tokens: ['@panda/tokens'],
-      },
+      importMap,
       jsxFactory: 'styled',
     })
 
@@ -122,13 +116,7 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
     const compiler = await createCompiler({
       cwd: '/virtual',
       outdir: 'styled-system',
-      importMap: {
-        css: ['@panda/css'],
-        recipe: ['@panda/recipes'],
-        pattern: ['@panda/patterns'],
-        jsx: ['@panda/jsx'],
-        tokens: ['@panda/tokens'],
-      },
+      importMap,
       jsxFramework: 'react',
       patterns: {
         stack: {
@@ -151,7 +139,7 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
     `)
   })
 
-  it('cross-file imports fold via the shared WasmFileSystem', async () => {
+  it('resolves a style value imported from another file', async () => {
     const compiler = await createCompiler(baseConfig)
     compiler.fs.addFile?.('/proj/tokens.ts', "export const brand = '#ef4444'\n")
     compiler.parseFileSource(
@@ -186,7 +174,7 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
       `)
   })
 
-  it('refresh and remove update the atom set', async () => {
+  it('updates atoms when a file is edited or removed', async () => {
     const compiler = await createCompiler(baseConfig)
     compiler.parseFileSource('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
     expect(compiler.refreshFileSource('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'blue' })`)).toBe(true)
@@ -210,7 +198,7 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
     expect(compiler.atoms() as Atom[]).toEqual([])
   })
 
-  it('parseFiles reports a removed vfs file instead of skipping it, and keeps its last styles', async () => {
+  it('warns about a deleted source file and keeps its styles until the file is removed', async () => {
     const compiler = await createCompiler(baseConfig)
     compiler.fs.addFile?.('/virtual/keep.tsx', "import { css } from '@panda/css'; css({ color: 'red' })")
     compiler.fs.addFile?.('/virtual/gone.tsx', "import { css } from '@panda/css'; css({ color: 'blue' })")
@@ -278,13 +266,7 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
     const compiler = await createCompiler({
       cwd: '/virtual',
       outdir: 'styled-system',
-      importMap: {
-        css: ['@panda/css'],
-        recipe: ['@panda/recipes'],
-        pattern: ['@panda/patterns'],
-        jsx: ['@panda/jsx'],
-        tokens: ['@panda/tokens'],
-      },
+      importMap,
       theme: {
         recipes: {
           button: {
@@ -333,13 +315,7 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
     const compiler = await createCompiler({
       cwd: '/virtual',
       outdir: 'styled-system',
-      importMap: {
-        css: ['@panda/css'],
-        recipe: ['@panda/recipes'],
-        pattern: ['@panda/patterns'],
-        jsx: ['@panda/jsx'],
-        tokens: ['@panda/tokens'],
-      },
+      importMap,
       jsxFramework: 'react',
       theme: {
         recipes: {
@@ -444,13 +420,7 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
     const compiler = await createCompiler({
       cwd: '/virtual',
       outdir: 'styled-system',
-      importMap: {
-        css: ['@panda/css'],
-        recipe: ['@panda/recipes'],
-        pattern: ['@panda/patterns'],
-        jsx: ['@panda/jsx'],
-        tokens: ['@panda/tokens'],
-      },
+      importMap,
       theme: {
         recipes: {
           button: {
@@ -547,13 +517,7 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
     const compiler = await createCompiler({
       cwd: '/virtual',
       outdir: 'styled-system',
-      importMap: {
-        css: ['@panda/css'],
-        recipe: ['@panda/recipes'],
-        pattern: ['@panda/patterns'],
-        jsx: ['@panda/jsx'],
-        tokens: ['@panda/tokens'],
-      },
+      importMap,
       theme: {
         breakpoints: {
           md: '768px',
@@ -610,6 +574,21 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
           },
         ],
         "atomic": [],
+      }
+    `)
+  })
+
+  it('writes split CSS under the configured outdir by default', async () => {
+    const compiler = await createCompiler(baseConfig)
+    const result = compiler.writeSplitCss({})
+
+    expect({
+      root: result.root,
+      pathsAreContained: result.paths.every((path) => path.startsWith(`${result.root}/`)),
+    }).toMatchInlineSnapshot(`
+      {
+        "root": "/virtual/styled-system",
+        "pathsAreContained": true,
       }
     `)
   })

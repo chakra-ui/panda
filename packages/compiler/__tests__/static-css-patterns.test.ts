@@ -1,27 +1,7 @@
-import presetBase from '@pandacss/preset-base'
-import presetPanda from '@pandacss/preset-panda'
-import { applyConfigDefaults } from '@pandacss/compiler-shared'
-import { createConfigSnapshot, mergeConfigs } from '@pandacss/config'
-import type { UserConfig } from '@pandacss/types'
 import { describe, expect, it } from 'vitest'
+import { createPresetCompiler } from './preset-compiler'
 import { createCompilerFromSnapshot } from '../src'
 import { importMap } from './test-utils'
-
-function createPresetCompiler(overrides: Partial<UserConfig> = {}) {
-  const merged = mergeConfigs([
-    presetBase,
-    presetPanda,
-    {
-      cwd: '/virtual',
-      outdir: 'styled-system',
-      importMap,
-      ...overrides,
-    },
-  ]) as UserConfig
-  const resolved = applyConfigDefaults(merged, '/virtual')
-  const snapshot = createConfigSnapshot(resolved)
-  return createCompilerFromSnapshot(snapshot, { crossFile: false })
-}
 
 function utilitiesCss(compiler: ReturnType<typeof createPresetCompiler>) {
   return compiler.getLayerCss({ layers: ['utilities'] }).css ?? ''

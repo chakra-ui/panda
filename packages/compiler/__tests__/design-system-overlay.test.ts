@@ -22,7 +22,10 @@ describe('overlay codegen — in-memory artifacts', () => {
   })
 
   it('re-exports DS recipes and emits only the app recipe delta', async () => {
-    cwd = setup({ card: recipe('card') })
+    cwd = createOverlayFixture({
+      dsPreset: { theme: { recipes: { button: recipe('button'), badge: recipe('badge') } } },
+      appConfig: { theme: { recipes: { card: recipe('card') } } },
+    })
     const driver = await createNodeDriver({ cwd })
     const files = artifactFiles(driver)
 
@@ -45,7 +48,10 @@ describe('overlay codegen — in-memory artifacts', () => {
   })
 
   it('lets the app win a recipe name and warns on the conflict', async () => {
-    cwd = setup({ button: recipe('button'), card: recipe('card') })
+    cwd = createOverlayFixture({
+      dsPreset: { theme: { recipes: { button: recipe('button'), badge: recipe('badge') } } },
+      appConfig: { theme: { recipes: { button: recipe('button'), card: recipe('card') } } },
+    })
     const driver = await createNodeDriver({ cwd })
     const files = artifactFiles(driver)
 
@@ -73,73 +79,84 @@ describe('overlay codegen — overlay input', () => {
   })
 
   it('keeps css local when the app authors conditions', async () => {
-    cwd = setupAppConfig({ conditions: { brand: '&[data-brand]' } })
+    cwd = createOverlayFixture({ appConfig: { conditions: { brand: '&[data-brand]' } } })
     const driver = await createNodeDriver({ cwd })
-    const overlay = (driver as unknown as { codegenOverlay(): { virtualizeCss: boolean } }).codegenOverlay()
+    const overlay = codegenOverlay(driver)
 
     expect(overlay?.virtualizeCss).toBe(false)
   })
 
   it('virtualizes css for a pure consumer', async () => {
-    cwd = setupAppConfig({})
+    cwd = createOverlayFixture()
     const driver = await createNodeDriver({ cwd })
-    const overlay = (
-      driver as unknown as { codegenOverlay(): { virtualizeHelpers: boolean; virtualizeCss: boolean } }
-    ).codegenOverlay()
+    const overlay = codegenOverlay(driver)
 
     expect(overlay?.virtualizeHelpers).toBe(true)
     expect(overlay?.virtualizeCss).toBe(true)
   })
 
   it('does not treat nested DS presets (conditions/utilities) as app-authored', async () => {
-    cwd = setupAppConfigWithNestedDsPreset()
+    cwd = createOverlayFixture({
+      dsPreset: { presets: ['@acme/base'] },
+      files: {
+        'node_modules/@acme/base/package.json': json({ name: '@acme/base', version: '1.0.0', main: './preset.mjs' }),
+        'node_modules/@acme/base/preset.mjs': `export default {
+          conditions: { brand: '&[data-brand]' },
+          utilities: { marginX: { className: 'mx', values: 'spacing' } },
+        }`,
+      },
+    })
     const driver = await createNodeDriver({ cwd })
-    const overlay = (
-      driver as unknown as { codegenOverlay(): { virtualizeHelpers: boolean; virtualizeCss: boolean } }
-    ).codegenOverlay()
+    const overlay = codegenOverlay(driver)
 
     expect(overlay?.virtualizeHelpers).toBe(true)
     expect(overlay?.virtualizeCss).toBe(true)
   })
 
   it('keeps css local when the app authors utilities', async () => {
-    cwd = setupAppConfig({ utilities: { marginX: { className: 'mx', values: 'spacing' } } })
+    cwd = createOverlayFixture({ appConfig: { utilities: { marginX: { className: 'mx', values: 'spacing' } } } })
     const driver = await createNodeDriver({ cwd })
-    const overlay = (driver as unknown as { codegenOverlay(): { virtualizeCss: boolean } }).codegenOverlay()
+    const overlay = codegenOverlay(driver)
 
     expect(overlay?.virtualizeCss).toBe(false)
   })
 
   it('disables the overlay entirely when the app diverges on a global option', async () => {
-    cwd = setupAppConfig({ jsxFramework: 'vue' })
+    cwd = createOverlayFixture({ appConfig: { jsxFramework: 'vue' } })
     const driver = await createNodeDriver({ cwd })
-    const overlay = (driver as unknown as { codegenOverlay(): unknown }).codegenOverlay()
+    const overlay = codegenOverlay(driver)
 
     expect(overlay).toBeUndefined()
   })
 
   it('stays virtualized when the app repeats the same global option as the design system', async () => {
-    cwd = setupAppConfig({ jsxFramework: 'react' })
+    cwd = createOverlayFixture({ appConfig: { jsxFramework: 'react' } })
     const driver = await createNodeDriver({ cwd })
-    const overlay = (driver as unknown as { codegenOverlay(): { virtualizeHelpers: boolean } }).codegenOverlay()
+    const overlay = codegenOverlay(driver)
 
     expect(overlay?.virtualizeHelpers).toBe(true)
   })
 
   it('disables the overlay when the app diverges on shorthands (prop-type surface)', async () => {
-    cwd = setupAppConfig({ shorthands: false })
+    cwd = createOverlayFixture({ appConfig: { shorthands: false } })
     const driver = await createNodeDriver({ cwd })
-    const overlay = (driver as unknown as { codegenOverlay(): unknown }).codegenOverlay()
+    const overlay = codegenOverlay(driver)
 
     expect(overlay).toBeUndefined()
   })
 
   it('keeps css local when an app preset authors tokens', async () => {
-    cwd = setupAppPreset({
-      theme: { tokens: { colors: { brand: { value: 'tomato' } } } },
+    cwd = createOverlayFixture({
+      files: {
+        'panda.config.ts': [
+          "import appPreset from './app-preset.mjs'",
+          "export default { designSystem: '@acme/ds', include: ['**/*.tsx'], presets: [appPreset] }",
+        ].join('\n'),
+        'app-preset.mjs': "export default { theme: { tokens: { colors: { brand: { value: 'tomato' } } } } }",
+      },
     })
     const driver = await createNodeDriver({ cwd })
-    const overlay = (driver as unknown as { codegenOverlay(): { virtualizeCss: boolean } }).codegenOverlay()
+    const overlay = codegenOverlay(driver)
 
     expect(overlay).toBeDefined()
     expect(overlay?.virtualizeCss).toBe(false)
@@ -155,8 +172,10 @@ describe('overlay codegen — export missing diagnostics', () => {
   })
 
   it('surfaces design_system_export_missing when the DS package.json lacks required subpaths', async () => {
-    cwd = setupAppConfigExports({
-      './panda/*': './dist/panda/*',
+    cwd = createOverlayFixture({
+      dsExports: {
+        './panda/*': './dist/panda/*',
+      },
     })
     const driver = await createNodeDriver({ cwd })
 
@@ -166,11 +185,13 @@ describe('overlay codegen — export missing diagnostics', () => {
   })
 
   it('surfaces no design_system_export_missing diagnostics when exports cover the required subpaths', async () => {
-    cwd = setupAppConfigExports({
-      './panda/*': './dist/panda/*',
-      './helpers': './dist/helpers.mjs',
-      './css': './dist/css/index.mjs',
-      './css/*': './dist/css/*.mjs',
+    cwd = createOverlayFixture({
+      dsExports: {
+        './panda/*': './dist/panda/*',
+        './helpers': './dist/helpers.mjs',
+        './css': './dist/css/index.mjs',
+        './css/*': './dist/css/*.mjs',
+      },
     })
     const driver = await createNodeDriver({ cwd })
 
@@ -179,10 +200,12 @@ describe('overlay codegen — export missing diagnostics', () => {
   })
 
   it('surfaces design_system_export_missing for a missing bare ./css export', async () => {
-    cwd = setupAppConfigExports({
-      './panda/*': './dist/panda/*',
-      './helpers': './dist/helpers.mjs',
-      './css/*': './dist/css/*.mjs',
+    cwd = createOverlayFixture({
+      dsExports: {
+        './panda/*': './dist/panda/*',
+        './helpers': './dist/helpers.mjs',
+        './css/*': './dist/css/*.mjs',
+      },
     })
     const driver = await createNodeDriver({ cwd })
 
@@ -200,7 +223,10 @@ describe('overlay codegen — written to disk', () => {
   })
 
   it('re-exports DS recipes and writes only the app recipe delta', async () => {
-    cwd = setup({ card: recipe('card') })
+    cwd = createOverlayFixture({
+      dsPreset: { theme: { recipes: { button: recipe('button'), badge: recipe('badge') } } },
+      appConfig: { theme: { recipes: { card: recipe('card') } } },
+    })
     const files = await codegenToDisk(cwd)
 
     expect(read(cwd, 'recipes/index.js')).toBe(
@@ -225,7 +251,10 @@ describe('overlay codegen — written to disk', () => {
   })
 
   it('lets the app win a recipe name and drops it from the DS re-export', async () => {
-    cwd = setup({ button: recipe('button'), card: recipe('card') })
+    cwd = createOverlayFixture({
+      dsPreset: { theme: { recipes: { button: recipe('button'), badge: recipe('badge') } } },
+      appConfig: { theme: { recipes: { button: recipe('button'), card: recipe('card') } } },
+    })
     await codegenToDisk(cwd)
 
     expect(read(cwd, 'recipes/index.js')).toBe(
@@ -241,19 +270,35 @@ async function codegenToDisk(cwd: string): Promise<string[]> {
   return tree(join(cwd, 'styled-system'))
 }
 
-function setup(appRecipes: Record<string, unknown>): string {
+interface OverlayFixture {
+  /** Keys spread into the app's `panda.config.ts`. */
+  appConfig?: Record<string, unknown>
+  /** Keys added to the `@acme/ds` preset (always `jsxFramework: 'react'`). */
+  dsPreset?: Record<string, unknown>
+  dsExports?: Record<string, string>
+  /** Extra files; also overrides any default file, e.g. `panda.config.ts`. */
+  files?: Record<string, string>
+}
+
+/** An app on `@acme/ds`, a published design system whose build info is stale so it is re-extracted. */
+function createOverlayFixture({
+  appConfig = {},
+  dsPreset = {},
+  dsExports = { './panda/*': './dist/panda/*' },
+  files = {},
+}: OverlayFixture = {}): string {
   const root = realpathSync(mkdtempSync(join(tmpdir(), 'panda-ds-overlay-')))
   writeFileTree(root, {
     'panda.config.ts': `export default {
       designSystem: '@acme/ds',
       include: ['**/*.tsx'],
-      theme: { recipes: ${JSON.stringify(appRecipes)} },
+      ...${JSON.stringify(appConfig)},
     }`,
     'App.tsx': "import { css } from '@panda/css'; css({ color: 'red' })",
     'node_modules/@acme/ds/package.json': json({
       name: '@acme/ds',
       version: '1.0.0',
-      exports: { './panda/*': './dist/panda/*' },
+      exports: dsExports,
     }),
     'node_modules/@acme/ds/dist/panda/lib.json': json({
       schemaVersion: 1,
@@ -271,171 +316,20 @@ function setup(appRecipes: Record<string, unknown>): string {
         tokens: '@acme/ds/tokens',
       },
     }),
-    'node_modules/@acme/ds/dist/panda/preset.mjs': `export default { jsxFramework: 'react', theme: { recipes: {
-      button: ${JSON.stringify(recipe('button'))},
-      badge: ${JSON.stringify(recipe('badge'))},
-    } } }`,
+    'node_modules/@acme/ds/dist/panda/preset.mjs': `export default ${JSON.stringify({ jsxFramework: 'react', ...dsPreset })}`,
     'node_modules/@acme/ds/dist/comp.js': "import { css } from '@acme/ds/css'\ncss({ color: 'rebeccapurple' })",
     'node_modules/@acme/ds/dist/panda/buildinfo.json': json({ schemaVersion: 999, modules: {}, atoms: [] }),
+    ...files,
   })
   return root
 }
 
-function setupAppConfig(extra: Record<string, unknown>): string {
-  const root = realpathSync(mkdtempSync(join(tmpdir(), 'panda-ds-appkeys-')))
-  writeFileTree(root, {
-    'panda.config.ts': `export default {
-      designSystem: '@acme/ds',
-      include: ['**/*.tsx'],
-      ...${JSON.stringify(extra)},
-    }`,
-    'App.tsx': "import { css } from '@panda/css'; css({ color: 'red' })",
-    'node_modules/@acme/ds/package.json': json({
-      name: '@acme/ds',
-      version: '1.0.0',
-      exports: { './panda/*': './dist/panda/*' },
-    }),
-    'node_modules/@acme/ds/dist/panda/lib.json': json({
-      schemaVersion: 1,
-      name: '@acme/ds',
-      version: '1.0.0',
-      panda: '^2.0.0',
-      preset: './preset.mjs',
-      buildInfo: './buildinfo.json',
-      files: ['./**/*.js'],
-      importMap: {
-        css: '@acme/ds/css',
-        recipes: '@acme/ds/recipes',
-        patterns: '@acme/ds/patterns',
-        jsx: '@acme/ds/jsx',
-        tokens: '@acme/ds/tokens',
-      },
-    }),
-    'node_modules/@acme/ds/dist/panda/preset.mjs': `export default { jsxFramework: 'react' }`,
-    'node_modules/@acme/ds/dist/comp.js': "import { css } from '@acme/ds/css'\ncss({ color: 'rebeccapurple' })",
-    'node_modules/@acme/ds/dist/panda/buildinfo.json': json({ schemaVersion: 999, modules: {}, atoms: [] }),
-  })
-  return root
-}
-
-/** DS preset pulls in a nested preset that authors conditions/utilities — must not taint the app. */
-function setupAppConfigWithNestedDsPreset(): string {
-  const root = realpathSync(mkdtempSync(join(tmpdir(), 'panda-ds-nested-preset-')))
-  writeFileTree(root, {
-    'panda.config.ts': `export default {
-      designSystem: '@acme/ds',
-      include: ['**/*.tsx'],
-    }`,
-    'App.tsx': "import { css } from '@panda/css'; css({ color: 'red' })",
-    'node_modules/@acme/base/package.json': json({ name: '@acme/base', version: '1.0.0', main: './preset.mjs' }),
-    'node_modules/@acme/base/preset.mjs': `export default {
-      conditions: { brand: '&[data-brand]' },
-      utilities: { marginX: { className: 'mx', values: 'spacing' } },
-    }`,
-    'node_modules/@acme/ds/package.json': json({
-      name: '@acme/ds',
-      version: '1.0.0',
-      exports: { './panda/*': './dist/panda/*' },
-    }),
-    'node_modules/@acme/ds/dist/panda/lib.json': json({
-      schemaVersion: 1,
-      name: '@acme/ds',
-      version: '1.0.0',
-      panda: '^2.0.0',
-      preset: './preset.mjs',
-      buildInfo: './buildinfo.json',
-      files: ['./**/*.js'],
-      importMap: {
-        css: '@acme/ds/css',
-        recipes: '@acme/ds/recipes',
-        patterns: '@acme/ds/patterns',
-        jsx: '@acme/ds/jsx',
-        tokens: '@acme/ds/tokens',
-      },
-    }),
-    'node_modules/@acme/ds/dist/panda/preset.mjs': `export default {
-      jsxFramework: 'react',
-      presets: ['@acme/base'],
-    }`,
-    'node_modules/@acme/ds/dist/comp.js': "import { css } from '@acme/ds/css'\ncss({ color: 'rebeccapurple' })",
-    'node_modules/@acme/ds/dist/panda/buildinfo.json': json({ schemaVersion: 999, modules: {}, atoms: [] }),
-  })
-  return root
-}
-
-function setupAppPreset(preset: Record<string, unknown>): string {
-  const root = realpathSync(mkdtempSync(join(tmpdir(), 'panda-ds-app-preset-')))
-  writeFileTree(root, {
-    'panda.config.ts': `import appPreset from './app-preset.mjs'
-export default {
-  designSystem: '@acme/ds',
-  include: ['**/*.tsx'],
-  presets: [appPreset],
-}`,
-    'app-preset.mjs': `export default ${JSON.stringify(preset)}`,
-    'App.tsx': "import { css } from '@panda/css'; css({ color: 'red' })",
-    'node_modules/@acme/ds/package.json': json({
-      name: '@acme/ds',
-      version: '1.0.0',
-      exports: { './panda/*': './dist/panda/*' },
-    }),
-    'node_modules/@acme/ds/dist/panda/lib.json': json({
-      schemaVersion: 1,
-      name: '@acme/ds',
-      version: '1.0.0',
-      panda: '^2.0.0',
-      preset: './preset.mjs',
-      buildInfo: './buildinfo.json',
-      files: ['./**/*.js'],
-      importMap: {
-        css: '@acme/ds/css',
-        recipes: '@acme/ds/recipes',
-        patterns: '@acme/ds/patterns',
-        jsx: '@acme/ds/jsx',
-        tokens: '@acme/ds/tokens',
-      },
-    }),
-    'node_modules/@acme/ds/dist/panda/preset.mjs': `export default { jsxFramework: 'react' }`,
-    'node_modules/@acme/ds/dist/comp.js': "import { css } from '@acme/ds/css'\ncss({ color: 'rebeccapurple' })",
-    'node_modules/@acme/ds/dist/panda/buildinfo.json': json({ schemaVersion: 999, modules: {}, atoms: [] }),
-  })
-  return root
-}
-
-function setupAppConfigExports(exports: Record<string, string>): string {
-  const root = realpathSync(mkdtempSync(join(tmpdir(), 'panda-ds-exports-')))
-  writeFileTree(root, {
-    'panda.config.ts': `export default {
-      designSystem: '@acme/ds',
-      include: ['**/*.tsx'],
-    }`,
-    'App.tsx': "import { css } from '@panda/css'; css({ color: 'red' })",
-    'node_modules/@acme/ds/package.json': json({
-      name: '@acme/ds',
-      version: '1.0.0',
-      exports,
-    }),
-    'node_modules/@acme/ds/dist/panda/lib.json': json({
-      schemaVersion: 1,
-      name: '@acme/ds',
-      version: '1.0.0',
-      panda: '^2.0.0',
-      preset: './preset.mjs',
-      buildInfo: './buildinfo.json',
-      files: ['./**/*.js'],
-      importMap: {
-        css: '@acme/ds/css',
-        recipes: '@acme/ds/recipes',
-        patterns: '@acme/ds/patterns',
-        jsx: '@acme/ds/jsx',
-        tokens: '@acme/ds/tokens',
-      },
-    }),
-    'node_modules/@acme/ds/dist/panda/preset.mjs': `export default { jsxFramework: 'react' }`,
-    'node_modules/@acme/ds/dist/comp.js': "import { css } from '@acme/ds/css'\ncss({ color: 'rebeccapurple' })",
-    'node_modules/@acme/ds/dist/panda/buildinfo.json': json({ schemaVersion: 999, modules: {}, atoms: [] }),
-  })
-  return root
+function codegenOverlay(driver: Awaited<ReturnType<typeof createNodeDriver>>) {
+  return (
+    driver as unknown as {
+      codegenOverlay(): { virtualizeHelpers: boolean; virtualizeCss: boolean } | undefined
+    }
+  ).codegenOverlay()
 }
 
 function recipe(className: string): unknown {

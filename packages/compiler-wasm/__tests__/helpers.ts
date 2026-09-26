@@ -12,16 +12,18 @@ export function describeIfBuilt(name: string, fn: () => void) {
   return wasmAvailable ? describe(name, fn) : describe.skip(name, fn)
 }
 
+export const importMap = {
+  css: ['@panda/css'],
+  recipe: ['@panda/recipes'],
+  pattern: ['@panda/patterns'],
+  jsx: ['@panda/jsx'],
+  tokens: ['@panda/tokens'],
+}
+
 export const baseConfig = {
   cwd: '/virtual',
   outdir: 'styled-system',
-  importMap: {
-    css: ['@panda/css'],
-    recipe: ['@panda/recipes'],
-    pattern: ['@panda/patterns'],
-    jsx: ['@panda/jsx'],
-    tokens: ['@panda/tokens'],
-  },
+  importMap,
   jsxFramework: 'react',
   jsxFactory: 'styled',
 }

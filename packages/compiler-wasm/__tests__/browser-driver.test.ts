@@ -1,19 +1,14 @@
 import { createConfigSnapshot } from '@pandacss/config'
 import { describe, expect, it } from 'vitest'
 import { createBrowserDriver } from '../src'
+import { importMap } from './helpers'
 
 const snapshot = createConfigSnapshot({
   cwd: '/proj',
   outdir: 'styled-system',
   include: ['**/*.tsx'],
   exclude: ['**/generated/**'],
-  importMap: {
-    css: ['@panda/css'],
-    recipe: ['@panda/recipes'],
-    pattern: ['@panda/patterns'],
-    jsx: ['@panda/jsx'],
-    tokens: ['@panda/tokens'],
-  },
+  importMap,
   patterns: {
     stack: {
       properties: { gap: {} },

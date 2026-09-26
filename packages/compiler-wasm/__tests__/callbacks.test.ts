@@ -2,7 +2,7 @@ import { expect, it } from 'vitest'
 
 import { createCompilerFromSnapshot, createCompilerFromWasmModule, loadWasm } from '../src'
 import type { Atom } from '../src'
-import { baseConfig, describeIfBuilt, describeMissingWasm } from './helpers'
+import { baseConfig, describeIfBuilt, describeMissingWasm, importMap } from './helpers'
 
 describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
   it('reports the latest parser failure while retaining last-good stylesheet state', async () => {
@@ -153,21 +153,6 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
     `)
   })
 
-  it('defaults writeSplitCss to the configured outdir', async () => {
-    const compiler = await createCompilerFromSnapshot({ config: baseConfig })
-    const result = compiler.writeSplitCss({})
-
-    expect({
-      root: result.root,
-      pathsAreContained: result.paths.every((path) => path.startsWith(`${result.root}/`)),
-    }).toMatchInlineSnapshot(`
-      {
-        "root": "/virtual/styled-system",
-        "pathsAreContained": true,
-      }
-    `)
-  })
-
   it('passes token helpers to utility transform callbacks', async () => {
     const compiler = await createCompilerFromSnapshot({
       config: {
@@ -226,13 +211,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       config: {
         cwd: '/virtual',
         outdir: 'styled-system',
-        importMap: {
-          css: ['@panda/css'],
-          recipe: ['@panda/recipes'],
-          pattern: ['@panda/patterns'],
-          jsx: ['@panda/jsx'],
-          tokens: ['@panda/tokens'],
-        },
+        importMap,
         utilities: {
           size: {
             transform: {
@@ -350,13 +329,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       config: {
         cwd: '/virtual',
         outdir: 'styled-system',
-        importMap: {
-          css: ['@panda/css'],
-          recipe: ['@panda/recipes'],
-          pattern: ['@panda/patterns'],
-          jsx: ['@panda/jsx'],
-          tokens: ['@panda/tokens'],
-        },
+        importMap,
         conditions: {
           hover: '&:hover',
         },
@@ -415,13 +388,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
         config: {
           cwd: '/virtual',
           outdir: 'styled-system',
-          importMap: {
-            css: ['@panda/css'],
-            recipe: ['@panda/recipes'],
-            pattern: ['@panda/patterns'],
-            jsx: ['@panda/jsx'],
-            tokens: ['@panda/tokens'],
-          },
+          importMap,
           utilities: {
             size: {
               transform: {
@@ -441,13 +408,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       config: {
         cwd: '/virtual',
         outdir: 'styled-system',
-        importMap: {
-          css: ['@panda/css'],
-          recipe: ['@panda/recipes'],
-          pattern: ['@panda/patterns'],
-          jsx: ['@panda/jsx'],
-          tokens: ['@panda/tokens'],
-        },
+        importMap,
         conditions: {
           hover: '&:hover',
         },
@@ -698,13 +659,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
         config: {
           cwd: '/virtual',
           outdir: 'styled-system',
-          importMap: {
-            css: ['@panda/css'],
-            recipe: ['@panda/recipes'],
-            pattern: ['@panda/patterns'],
-            jsx: ['@panda/jsx'],
-            tokens: ['@panda/tokens'],
-          },
+          importMap,
           utilities: {
             size: {
               transform: {
@@ -751,13 +706,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       config: {
         cwd: '/virtual',
         outdir: 'styled-system',
-        importMap: {
-          css: ['@panda/css'],
-          recipe: ['@panda/recipes'],
-          pattern: ['@panda/patterns'],
-          jsx: ['@panda/jsx'],
-          tokens: ['@panda/tokens'],
-        },
+        importMap,
         jsxFramework: 'react',
         conditions: {
           hover: '&:hover',
