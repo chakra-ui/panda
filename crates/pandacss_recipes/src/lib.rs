@@ -15,6 +15,8 @@ use pandacss_shared::number_to_js_string;
 
 pub use pandacss_literal::Literal;
 
+// === Type Definitions ===
+
 /// `cva({ base, variants, compoundVariants, defaultVariants })`.
 #[derive(Debug, Clone, Default, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -88,6 +90,8 @@ pub struct SlotCompoundVariant {
     pub class_name: Option<String>,
 }
 
+// === Recipe Implementation ===
+
 impl Recipe {
     /// `None` only when `literal` isn't an object. A partial shape (missing
     /// `base` or `variants`) parses with empty fields instead of failing.
@@ -133,6 +137,8 @@ impl Recipe {
             .chain(self.compound_variants.iter().map(|c| &c.css))
     }
 }
+
+// === SlotRecipe Implementation ===
 
 impl SlotRecipe {
     #[must_use]
@@ -259,6 +265,8 @@ impl SlotRecipe {
         from_base.chain(from_variants).chain(from_compounds)
     }
 }
+
+// === Parsing Helpers ===
 
 fn object_entries_owned(literal: Literal) -> Option<Vec<(String, Literal)>> {
     if let Literal::Object(entries) = literal {
@@ -414,6 +422,8 @@ fn parse_slot_compound_variants_owned(literal: Literal) -> Vec<SlotCompoundVaria
         })
         .collect()
 }
+
+// === Condition Value Parsing ===
 
 fn variant_condition_values(value: &Literal) -> Option<Vec<String>> {
     match value {

@@ -28,6 +28,8 @@ pub use color_palette::ColorPaletteView;
 pub use from_config::TokenDictionaryOptions;
 pub use token::{Token, TokenExtensions};
 
+// === Type Definitions ===
+
 /// A failure while constructing or resolving the token dictionary.
 #[derive(Debug, thiserror::Error)]
 #[error("Token error: {0}")]
@@ -79,6 +81,8 @@ pub struct TokenDictionary {
     color_palettes: ColorPaletteView,
 }
 
+// === Supporting Types ===
+
 /// A token that carries a given value — a candidate the developer can pick.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
@@ -109,6 +113,8 @@ pub struct ResolvedTokenPath {
     pub semantic_category: bool,
 }
 
+// === TokenDictionary Deserialization ===
+
 #[cfg(feature = "serde")]
 impl<'de> Deserialize<'de> for TokenDictionary {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
@@ -124,7 +130,11 @@ impl<'de> Deserialize<'de> for TokenDictionary {
     }
 }
 
+// === TokenDictionary Implementation ===
+
 impl TokenDictionary {
+    // === Construction & Configuration ===
+
     #[must_use]
     pub fn new() -> Self {
         Self::default()
@@ -174,6 +184,8 @@ impl TokenDictionary {
     pub fn iter(&self) -> impl Iterator<Item = &Token> + '_ {
         self.tokens.iter()
     }
+
+    // === CSS Variables ===
 
     #[must_use]
     pub fn css_vars(&self) -> TokenCssVars<'_> {
@@ -226,6 +238,8 @@ impl TokenDictionary {
         view
     }
 
+    // === Category & Condition Operations ===
+
     pub fn iter_category<'a>(
         &'a self,
         category: &'a TokenCategory,
@@ -252,6 +266,8 @@ impl TokenDictionary {
         &self.conditions_order
     }
 
+    // === Token Queries ===
+
     #[must_use]
     pub fn token(&self, path: &str) -> Option<&Token> {
         self.by_path.get(path).map(|&i| &self.tokens[i])
@@ -271,10 +287,34 @@ impl TokenDictionary {
         self.by_var.get(var).map(|&i| &self.tokens[i])
     }
 
+    /// Zero-allocation `token('path', fallback)` lookup.
+    #[must_use]
+    pub fn get_str<'a>(&'a self, path: &str, fallback: Option<&'a str>) -> Option<&'a str> {
+        if let Some(token) = self.token(path) {
+            return Some(token.value.as_ref());
+        }
+        fallback
+    }
+
+    /// Zero-allocation `token.var('path', fallback)` lookup.
+    #[must_use]
+    pub fn get_var_str<'a>(&'a self, path: &str, fallback: Option<&'a str>) -> Option<&'a str> {
+        if let Some(token) = self.token(path) {
+            return Some(token.var.as_ref());
+        }
+        fallback
+    }
+
     /// Allocating variant of [`Self::get_str`]; prefer the borrow form when possible.
     #[must_use]
     pub fn get(&self, path: &str, fallback: Option<&str>) -> Option<String> {
         self.get_str(path, fallback).map(str::to_owned)
+    }
+
+    /// Allocating variant of [`Self::get_var_str`].
+    #[must_use]
+    pub fn get_var(&self, path: &str, fallback: Option<&str>) -> Option<String> {
+        self.get_var_str(path, fallback).map(str::to_owned)
     }
 
     /// Runtime `token()` value. Conditional tokens must keep their own variable
@@ -293,12 +333,6 @@ impl TokenDictionary {
         } else {
             Some(token.value.as_ref())
         }
-    }
-
-    /// Allocating variant of [`Self::get_var_str`].
-    #[must_use]
-    pub fn get_var(&self, path: &str, fallback: Option<&str>) -> Option<String> {
-        self.get_var_str(path, fallback).map(str::to_owned)
     }
 
     /// JSON-safe runtime `{ path -> value }` / `{ path -> var }` projection for JS interop.
@@ -323,23 +357,7 @@ impl TokenDictionary {
         (values, vars)
     }
 
-    /// Zero-allocation `token('path', fallback)` lookup.
-    #[must_use]
-    pub fn get_str<'a>(&'a self, path: &str, fallback: Option<&'a str>) -> Option<&'a str> {
-        if let Some(token) = self.token(path) {
-            return Some(token.value.as_ref());
-        }
-        fallback
-    }
-
-    /// Zero-allocation `token.var('path', fallback)` lookup.
-    #[must_use]
-    pub fn get_var_str<'a>(&'a self, path: &str, fallback: Option<&'a str>) -> Option<&'a str> {
-        if let Some(token) = self.token(path) {
-            return Some(token.var.as_ref());
-        }
-        fallback
-    }
+    // === Utilities ===
 
     #[must_use]
     pub fn is_valid_opacity_modifier(&self, raw_opacity: &str) -> bool {
@@ -368,6 +386,8 @@ impl TokenDictionary {
 
         Some(compose_color_mix(color, &opacity))
     }
+
+    // === Category Values ===
 
     /// Snapshot of `{ path -> value }` for one category. Base tokens only —
     /// conditional variants live under their own indices.
@@ -405,6 +425,8 @@ impl TokenDictionary {
             .get(key)
             .map(|&i| category_value(&self.tokens[i]))
     }
+
+    // === Token Resolution & Metadata ===
 
     /// Resolve a full or category-relative token path, preserving a trailing `/modifier`.
     #[must_use]
@@ -456,6 +478,8 @@ impl TokenDictionary {
     pub fn has_semantic_tokens(&self, category: &TokenCategory) -> bool {
         self.semantic_categories.contains(category)
     }
+
+    // === Suggestions ===
 
     /// Tokens carrying `value` in `category`, ranked safe-equivalents first.
     #[must_use]
