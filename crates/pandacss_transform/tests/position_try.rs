@@ -1,8 +1,9 @@
 use super::common::{create_config, transform, transform_with_project};
 use indoc::indoc;
 use insta::assert_snapshot;
-use pandacss_project::{Project, System};
+use pandacss_project::Project;
 use pandacss_shared::position_try_ident;
+use pandacss_system::System;
 use serde_json::json;
 
 #[test]

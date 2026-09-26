@@ -10,13 +10,14 @@ use pandacss_tokens::{ResolvedTokenPath, TokenDictionary};
 use serde::Serialize;
 use serde_json::Value;
 
-use crate::{Project, SourceRange, Span};
+use pandacss_extractor::{Diagnostic, SourceRange, Span};
+use pandacss_system::System;
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FileInspectionResult {
     pub usages: Vec<UsageSite>,
-    pub diagnostics: Vec<crate::Diagnostic>,
+    pub diagnostics: Vec<Diagnostic>,
     pub calls: Vec<InspectionCall>,
     pub jsx: Vec<InspectionJsx>,
     pub token_refs: Vec<TokenRefSite>,
@@ -285,18 +286,18 @@ pub(crate) fn token_ref_site(
 }
 
 pub(crate) fn component_entry(
-    project: &Project,
+    system: &System,
     jsx: &ExtractedJsx,
     range: &SourceRange,
 ) -> ComponentEntryRef {
-    let recipe_names = project.config.recipes.find_by_jsx(&jsx.name);
+    let recipe_names = system.jsx_recipe_names(&jsx.name);
     let recipe = recipe_names.first().map(|name| (*name).to_owned());
     let slot = recipe
         .as_deref()
-        .and_then(|name| project.config.recipes.slot_for_jsx(name, &jsx.name))
+        .and_then(|name| system.jsx_recipe_slot(name, &jsx.name))
         .map(ToOwned::to_owned);
     let pattern = matches!(jsx.kind, JsxKind::Pattern)
-        .then(|| project.config.patterns.resolve_name(&jsx.name))
+        .then(|| system.jsx_pattern_name(&jsx.name))
         .flatten()
         .map(ToOwned::to_owned);
     let kind = match jsx.kind {

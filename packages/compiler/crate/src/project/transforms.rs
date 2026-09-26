@@ -3,18 +3,13 @@ use super::{
     UtilityValueCallbacks,
 };
 
-use crate::cache::{
-    MAX_TRANSFORM_CACHE_KEY_BYTES, PatternTransformCacheKey, UtilityTransformCacheKey,
-};
-use lru::LruCache;
 use napi::bindgen_prelude::{FnArgs, FunctionRef, JsValue};
 use napi_derive::napi;
-use pandacss_compiler::atom_value_json;
-use pandacss_config::{
-    CallbackRef, JsxSpecifier, PatternConfig, UserConfig, UtilityConfig, UtilityValues,
+use pandacss_compiler::{
+    CallbackError, PatternTransformCache, UtilityTransformCache, utility_values_callback_id,
 };
+use pandacss_config::UserConfig;
 use pandacss_encoder::AtomValue;
-use pandacss_extractor::{DiagnosticSeverity, diagnostic_codes};
 use pandacss_literal::Literal;
 use pandacss_tokens::TokenCategory;
 use std::collections::HashMap;
@@ -67,7 +62,7 @@ impl Compiler {
     ) -> napi::Result<()> {
         let filter = filter
             .as_ref()
-            .map(pandacss_project::HookFilter::from_json)
+            .map(pandacss_compiler::HookFilter::from_json)
             .transpose()
             .map_err(|err| {
                 napi::Error::from_reason(format!(
@@ -162,17 +157,6 @@ fn create_theme_function(
     })
 }
 
-fn utility_values_callback_id(utility: &UtilityConfig) -> Option<&str> {
-    let UtilityValues::Map(values) = utility.values.as_ref()? else {
-        return None;
-    };
-    let kind = values.get("kind")?.as_str()?;
-    if kind != "js-callback" {
-        return None;
-    }
-    values.get("id")?.as_str()
-}
-
 /*
  * Parse-time transform callbacks.
  */
@@ -186,32 +170,20 @@ pub(super) fn apply_source_transforms(
     callbacks: &[(String, SourceTransformCallback)],
     env: &napi::Env,
 ) -> Result<Option<String>, pandacss_extractor::Diagnostic> {
-    let mut current: Option<String> = None;
-    for (id, entry) in callbacks {
-        let input = current.as_deref().unwrap_or(source);
-        if !entry.filter.admits(path, input) {
-            continue;
-        }
-
-        let transform = entry.callback.borrow_back(env).map_err(|err| {
-            callback_diagnostic(format!(
-                "Failed to borrow parser:before callback `{id}` for `{path}`: {err}"
-            ))
-        })?;
-        let result = transform
-            .call(FnArgs::from((path.to_owned(), input.to_owned())))
-            .map_err(|err| {
-                callback_diagnostic(format!(
-                    "parser:before callback `{id}` for `{path}` threw: {}",
-                    err.reason
-                ))
-            })?;
-        if let Some(next) = result {
-            current = Some(next);
-        }
-    }
-
-    Ok(current)
+    pandacss_compiler::apply_source_transforms(
+        path,
+        source,
+        callbacks
+            .iter()
+            .map(|(id, entry)| (id.as_str(), &entry.filter, &entry.callback)),
+        |callback, path, input| {
+            callback
+                .borrow_back(env)
+                .map_err(|err| CallbackError::Unavailable(err.to_string()))?
+                .call(FnArgs::from((path.to_owned(), input.to_owned())))
+                .map_err(|err| CallbackError::Threw(err.reason.clone()))
+        },
+    )
 }
 
 #[allow(
@@ -224,51 +196,24 @@ pub(super) fn apply_utility_transform(
     original: &AtomValue,
     utility_transform_refs: &HashMap<String, String>,
     callbacks: &HashMap<String, UtilityTransformRef>,
-    cache: &mut LruCache<UtilityTransformCacheKey, Literal>,
+    cache: &mut UtilityTransformCache,
     env: &napi::Env,
 ) -> Result<Option<Literal>, pandacss_extractor::Diagnostic> {
-    let Some(id) = utility_transform_refs.get(prop) else {
-        return Ok(None);
-    };
-    let Some(callback) = callbacks.get(id) else {
-        return Err(callback_diagnostic(format!(
-            "Missing utility transform callback `{id}` for `{prop}`"
-        )));
-    };
-
-    let cache_key = UtilityTransformCacheKey {
-        id: id.clone(),
-        prop: prop.to_owned(),
-        value: pandacss_project::atom_value_cache_key(original),
-    };
-    if let Some(cached) = cache.get(&cache_key).cloned() {
-        tracing::trace!(name: "utility_transform_cache_hit", cache = "utility_transform", action = "hit", target = prop);
-        return Ok(Some(cached));
-    }
-    tracing::trace!(name: "utility_transform_cache_miss", cache = "utility_transform", action = "miss", target = prop);
-
-    let resolved_json = atom_value_json(resolved);
-    let original_json = atom_value_json(original);
-    let transform = callback.borrow_back(env).map_err(|err| {
-        callback_diagnostic(format!(
-            "Failed to borrow utility transform callback `{id}` for `{prop}`: {err}"
-        ))
-    })?;
-    let result = transform
-        .call(FnArgs::from((resolved_json, original_json)))
-        .map_err(|err| {
-            callback_diagnostic(format!(
-                "Utility transform callback `{id}` for `{prop}` threw: {}",
-                err.reason
-            ))
-        })?;
-    let styles = match Literal::from_json_strict(&result) {
-        Some(object @ Literal::Object(_)) => object,
-        _ => Literal::Object(Vec::new()),
-    };
-    trace_cache_store("utility_transform", prop, cache.len(), cache.cap().get());
-    cache.put(cache_key, styles.clone());
-    Ok(Some(styles))
+    pandacss_compiler::apply_utility_transform(
+        prop,
+        resolved,
+        original,
+        utility_transform_refs,
+        callbacks,
+        cache,
+        |callback, resolved, original| {
+            callback
+                .borrow_back(env)
+                .map_err(|err| CallbackError::Unavailable(err.to_string()))?
+                .call(FnArgs::from((resolved, original)))
+                .map_err(|err| CallbackError::Threw(err.reason.clone()))
+        },
+    )
 }
 
 #[allow(
@@ -280,141 +225,21 @@ pub(super) fn apply_pattern_transform(
     styles: &Literal,
     pattern_transform_refs: &HashMap<String, String>,
     callbacks: &HashMap<String, FunctionRef<FnArgs<(serde_json::Value,)>, serde_json::Value>>,
-    cache: &mut LruCache<PatternTransformCacheKey, Option<Literal>>,
+    cache: &mut PatternTransformCache,
     env: &napi::Env,
 ) -> Result<Option<Literal>, pandacss_extractor::Diagnostic> {
-    let Some(id) = pattern_transform_refs.get(name) else {
-        return Ok(None);
-    };
-    let Some(callback) = callbacks.get(id) else {
-        return Err(callback_diagnostic(format!(
-            "Missing pattern transform callback `{id}` for `{name}`"
-        )));
-    };
-
-    let cache_key =
-        pandacss_project::literal_cache_key(styles, MAX_TRANSFORM_CACHE_KEY_BYTES).map(|props| {
-            PatternTransformCacheKey {
-                id: id.clone(),
-                name: name.to_owned(),
-                props,
-            }
-        });
-    if let Some(cached) = cache_key.as_ref().and_then(|key| cache.get(key)).cloned() {
-        tracing::trace!(name: "pattern_transform_cache_hit", cache = "pattern_transform", action = "hit", target = name);
-        return Ok(cached);
-    }
-    tracing::trace!(
-        name: "pattern_transform_cache_miss",
-        cache = "pattern_transform",
-        action = if cache_key.is_some() {
-            "miss"
-        } else {
-            "skip_oversized_key"
-        },
-        target = name,
-    );
-
-    let props = serde_json::to_value(styles).map_err(|err| {
-        callback_diagnostic(format!(
-            "Failed to serialize pattern props for `{name}`: {err}"
-        ))
-    })?;
-    let transform = callback.borrow_back(env).map_err(|err| {
-        callback_diagnostic(format!(
-            "Failed to borrow pattern transform callback `{id}` for `{name}`: {err}"
-        ))
-    })?;
-    let result = transform.call(FnArgs::from((props,))).map_err(|err| {
-        callback_diagnostic(format!(
-            "Pattern transform callback `{id}` for `{name}` threw: {}",
-            err.reason
-        ))
-    })?;
-    let transformed = if result.is_null() {
-        None
-    } else {
-        Literal::from_json_strict(&result).map(Some).ok_or_else(|| {
-            callback_diagnostic(format!(
-                "Pattern transform callback `{id}` for `{name}` returned an invalid style object"
-            ))
-        })?
-    };
-    if let Some(cache_key) = cache_key {
-        trace_cache_store("pattern_transform", name, cache.len(), cache.cap().get());
-        cache.put(cache_key, transformed.clone());
-    }
-    Ok(transformed)
-}
-
-fn trace_cache_store(cache: &'static str, target: &str, len: usize, capacity: usize) {
-    tracing::trace!(
-        name: "transform_cache_store",
+    pandacss_compiler::apply_pattern_transform(
+        name,
+        styles,
+        pattern_transform_refs,
+        callbacks,
         cache,
-        action = "store",
-        target,
-        entries = len.saturating_add(1).min(capacity),
-        evicted = len == capacity
-    );
-}
-
-/*
- * Callback ref lookup.
- */
-pub(super) fn get_utility_transform_refs(config: &UserConfig) -> HashMap<String, String> {
-    let mut refs = HashMap::new();
-    for (prop, utility) in &config.utilities {
-        if let Some(id) = utility_callback_id(utility) {
-            refs.insert(prop.clone(), id.to_owned());
-        }
-    }
-    refs
-}
-
-pub(super) fn get_pattern_transform_refs(config: &UserConfig) -> HashMap<String, String> {
-    let mut refs = HashMap::new();
-    for (name, pattern) in &config.patterns {
-        let Some(id) = pattern_callback_id(pattern).map(str::to_owned) else {
-            continue;
-        };
-        refs.insert(name.clone(), id.clone());
-        refs.insert(pandacss_shared::capitalize(name).into_owned(), id.clone());
-        if let Some(jsx_name) = pattern.jsx_name.as_deref() {
-            refs.insert(jsx_name.to_owned(), id.clone());
-        }
-        for item in &pattern.jsx {
-            if let JsxSpecifier::String(jsx_name) = item {
-                refs.insert(jsx_name.to_owned(), id.clone());
-            }
-        }
-    }
-    refs
-}
-
-fn utility_callback_id(utility: &UtilityConfig) -> Option<&str> {
-    callback_ref_id(utility.transform.as_ref()?)
-}
-
-fn pattern_callback_id(pattern: &PatternConfig) -> Option<&str> {
-    callback_ref_id(pattern.transform.as_ref()?)
-}
-
-fn callback_ref_id(value: &CallbackRef) -> Option<&str> {
-    (value.kind == "js-callback")
-        .then_some(value.id.as_deref())
-        .flatten()
-}
-
-fn callback_diagnostic(message: String) -> pandacss_extractor::Diagnostic {
-    pandacss_extractor::Diagnostic {
-        code: diagnostic_codes::TRANSFORM_CALLBACK_FAILED.to_owned(),
-        message,
-        severity: DiagnosticSeverity::Warning,
-        file: None,
-        category: None,
-        span: None,
-        location: None,
-        labels: None,
-        help: None,
-    }
+        |callback, props| {
+            callback
+                .borrow_back(env)
+                .map_err(|err| CallbackError::Unavailable(err.to_string()))?
+                .call(FnArgs::from((props,)))
+                .map_err(|err| CallbackError::Threw(err.reason.clone()))
+        },
+    )
 }

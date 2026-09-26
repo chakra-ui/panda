@@ -1,8 +1,9 @@
 use super::{SourceTransformCallback, WasmCompiler};
 
-use lru::LruCache;
+use pandacss_compiler::{
+    CallbackError, PatternTransformCache, UtilityTransformCache, utility_values_callback_id,
+};
 use pandacss_encoder::AtomValue;
-use pandacss_extractor::{DiagnosticSeverity, diagnostic_codes};
 use pandacss_literal::Literal;
 use pandacss_tokens::TokenCategory;
 use serde::Serialize as _;
@@ -11,10 +12,7 @@ use std::sync::Arc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::*;
 
-use crate::cache::{
-    MAX_TRANSFORM_CACHE_KEY_BYTES, PatternTransformCacheKey, UtilityTransformCacheKey,
-};
-use pandacss_config::{CallbackRef, JsxSpecifier, UserConfig, UtilityConfig, UtilityValues};
+use pandacss_config::UserConfig;
 
 use super::interop::js_error_message;
 
@@ -48,13 +46,13 @@ impl WasmCompiler {
         callback: js_sys::Function,
     ) -> Result<(), JsValue> {
         let filter = if filter.is_null() || filter.is_undefined() {
-            pandacss_project::HookFilter::default()
+            pandacss_compiler::HookFilter::default()
         } else {
             let value: serde_json::Value =
                 serde_wasm_bindgen::from_value(filter).map_err(|err| {
                     JsValue::from_str(&format!("invalid parser:before filter: {err}"))
                 })?;
-            pandacss_project::HookFilter::from_json(&value).map_err(|err| {
+            pandacss_compiler::HookFilter::from_json(&value).map_err(|err| {
                 JsValue::from_str(&format!(
                     "Invalid parser:before filter for callback `{id}`: {err}"
                 ))
@@ -172,17 +170,6 @@ pub(super) fn utility_value_callbacks_from_options(
     Ok(callbacks)
 }
 
-fn utility_values_callback_id(utility: &UtilityConfig) -> Option<&str> {
-    let UtilityValues::Map(values) = utility.values.as_ref()? else {
-        return None;
-    };
-    let kind = values.get("kind")?.as_str()?;
-    if kind != "js-callback" {
-        return None;
-    }
-    values.get("id")?.as_str()
-}
-
 /*
  * Parse-time transform callbacks.
  */
@@ -195,38 +182,29 @@ pub(super) fn apply_source_transforms(
     source: &str,
     callbacks: &[(String, SourceTransformCallback)],
 ) -> Result<Option<String>, pandacss_extractor::Diagnostic> {
-    let mut current: Option<String> = None;
-    for (id, entry) in callbacks {
-        let input = current.as_deref().unwrap_or(source);
-        if !entry.filter.admits(path, input) {
-            continue;
-        }
-
-        let result = entry
-            .callback
-            .call2(
-                &JsValue::NULL,
-                &JsValue::from_str(path),
-                &JsValue::from_str(input),
-            )
-            .map_err(|err| {
-                callback_diagnostic(format!(
-                    "parser:before callback `{id}` for `{path}` threw: {}",
-                    js_error_message(&err)
-                ))
-            })?;
-        if result.is_null() || result.is_undefined() {
-            continue;
-        }
-        let Some(next) = result.as_string() else {
-            return Err(callback_diagnostic(format!(
-                "parser:before callback `{id}` for `{path}` must return a string or undefined"
-            )));
-        };
-        current = Some(next);
-    }
-
-    Ok(current)
+    pandacss_compiler::apply_source_transforms(
+        path,
+        source,
+        callbacks
+            .iter()
+            .map(|(id, entry)| (id.as_str(), &entry.filter, &entry.callback)),
+        |callback, path, input| {
+            let result = callback
+                .call2(
+                    &JsValue::NULL,
+                    &JsValue::from_str(path),
+                    &JsValue::from_str(input),
+                )
+                .map_err(|err| CallbackError::Threw(js_error_message(&err)))?;
+            if result.is_null() || result.is_undefined() {
+                return Ok(None);
+            }
+            result
+                .as_string()
+                .map(Some)
+                .ok_or_else(|| CallbackError::InvalidResult(String::new()))
+        },
+    )
 }
 
 #[allow(
@@ -239,78 +217,24 @@ pub(super) fn apply_utility_transform(
     original: &AtomValue,
     utility_transform_refs: &HashMap<String, String>,
     callbacks: &HashMap<String, js_sys::Function>,
-    cache: &mut LruCache<UtilityTransformCacheKey, Literal>,
+    cache: &mut UtilityTransformCache,
 ) -> Result<Option<Literal>, pandacss_extractor::Diagnostic> {
-    let Some(id) = utility_transform_refs.get(prop) else {
-        return Ok(None);
-    };
-    let Some(callback) = callbacks.get(id) else {
-        return Err(callback_diagnostic(format!(
-            "Missing utility transform callback `{id}` for `{prop}`"
-        )));
-    };
-
-    // Keyed on the original alias (the resolved value is a function of it).
-    let cache_key = UtilityTransformCacheKey {
-        id: id.clone(),
-        prop: prop.to_owned(),
-        value: pandacss_project::atom_value_cache_key(original),
-    };
-    if let Some(cached) = cache.get(&cache_key).cloned() {
-        tracing::trace!(
-            cache = "utility_transform",
-            action = "hit",
-            target = prop,
-            entries = cache.len()
-        );
-        return Ok(Some(cached));
-    }
-    tracing::trace!(
-        cache = "utility_transform",
-        action = "miss",
-        target = prop,
-        entries = cache.len()
-    );
-
-    // Positional = resolved value; second arg = original alias (`args.raw`).
-    let resolved_js = serde_wasm_bindgen::to_value(&pandacss_compiler::atom_value_json(resolved))
-        .map_err(|err| {
-        callback_diagnostic(format!(
-            "Failed to serialize utility transform value for `{prop}`: {err}"
-        ))
-    })?;
-    let original_js = serde_wasm_bindgen::to_value(&pandacss_compiler::atom_value_json(original))
-        .map_err(|err| {
-        callback_diagnostic(format!(
-            "Failed to serialize utility transform value for `{prop}`: {err}"
-        ))
-    })?;
-    let result = callback
-        .call2(&JsValue::NULL, &resolved_js, &original_js)
-        .map_err(|err| {
-            callback_diagnostic(format!(
-                "Utility transform callback `{id}` for `{prop}` threw: {}",
-                js_error_message(&err)
-            ))
-        })?;
-    // Keep the style object whole for the emitter; non-object/empty → empty
-    // object, which drops the carrier atom downstream.
-    let styles = if result.is_null() || result.is_undefined() {
-        Literal::Object(Vec::new())
-    } else {
-        let value: serde_json::Value = serde_wasm_bindgen::from_value(result).map_err(|err| {
-            callback_diagnostic(format!(
-                "Utility transform callback `{id}` for `{prop}` returned an invalid style object: {err}"
-            ))
-        })?;
-        match Literal::from_json_strict(&value) {
-            Some(object @ Literal::Object(_)) => object,
-            _ => Literal::Object(Vec::new()),
-        }
-    };
-    trace_cache_store("utility_transform", prop, cache.len(), cache.cap().get());
-    cache.put(cache_key, styles.clone());
-    Ok(Some(styles))
+    pandacss_compiler::apply_utility_transform(
+        prop,
+        resolved,
+        original,
+        utility_transform_refs,
+        callbacks,
+        cache,
+        |callback, resolved, original| {
+            let resolved = to_js(&resolved)?;
+            let original = to_js(&original)?;
+            let result = callback
+                .call2(&JsValue::NULL, &resolved, &original)
+                .map_err(|err| CallbackError::Threw(js_error_message(&err)))?;
+            from_js(result)
+        },
+    )
 }
 
 #[allow(
@@ -322,150 +246,35 @@ pub(super) fn apply_pattern_transform(
     styles: &Literal,
     pattern_transform_refs: &HashMap<String, String>,
     callbacks: &HashMap<String, js_sys::Function>,
-    cache: &mut LruCache<PatternTransformCacheKey, Option<Literal>>,
+    cache: &mut PatternTransformCache,
 ) -> Result<Option<Literal>, pandacss_extractor::Diagnostic> {
-    let Some(id) = pattern_transform_refs.get(name) else {
-        return Ok(None);
-    };
-    let Some(callback) = callbacks.get(id) else {
-        return Err(callback_diagnostic(format!(
-            "Missing pattern transform callback `{id}` for `{name}`"
-        )));
-    };
-
-    let cache_key =
-        pandacss_project::literal_cache_key(styles, MAX_TRANSFORM_CACHE_KEY_BYTES).map(|props| {
-            PatternTransformCacheKey {
-                id: id.clone(),
-                name: name.to_owned(),
-                props,
-            }
-        });
-    if let Some(cached) = cache_key.as_ref().and_then(|key| cache.get(key)).cloned() {
-        tracing::trace!(
-            cache = "pattern_transform",
-            action = "hit",
-            target = name,
-            entries = cache.len()
-        );
-        return Ok(cached);
-    }
-    tracing::trace!(
-        cache = "pattern_transform",
-        action = if cache_key.is_some() {
-            "miss"
-        } else {
-            "skip_oversized_key"
-        },
-        target = name,
-        entries = cache.len()
-    );
-
-    let props_value = serde_json::to_value(styles).map_err(|err| {
-        callback_diagnostic(format!(
-            "Failed to serialize pattern props for `{name}`: {err}"
-        ))
-    })?;
-
-    let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
-    let props = props_value.serialize(&serializer).map_err(|err| {
-        callback_diagnostic(format!(
-            "Failed to serialize pattern props for `{name}`: {err}"
-        ))
-    })?;
-    let result = callback
-        .call2(&JsValue::NULL, &props, &JsValue::NULL)
-        .map_err(|err| {
-            callback_diagnostic(format!(
-                "Pattern transform callback `{id}` for `{name}` threw: {}",
-                js_error_message(&err)
-            ))
-        })?;
-    let transformed = if result.is_null() || result.is_undefined() {
-        None
-    } else {
-        let value: serde_json::Value = serde_wasm_bindgen::from_value(result).map_err(|err| {
-            callback_diagnostic(format!(
-                "Pattern transform callback `{id}` for `{name}` returned an invalid style object: {err}"
-            ))
-        })?;
-        Literal::from_json_strict(&value).map(Some).ok_or_else(|| {
-            callback_diagnostic(format!(
-                "Pattern transform callback `{id}` for `{name}` returned an invalid style object"
-            ))
-        })?
-    };
-    if let Some(cache_key) = cache_key {
-        trace_cache_store("pattern_transform", name, cache.len(), cache.cap().get());
-        cache.put(cache_key, transformed.clone());
-    }
-    Ok(transformed)
-}
-
-fn trace_cache_store(cache: &'static str, target: &str, len: usize, capacity: usize) {
-    tracing::trace!(
+    pandacss_compiler::apply_pattern_transform(
+        name,
+        styles,
+        pattern_transform_refs,
+        callbacks,
         cache,
-        action = "store",
-        target,
-        entries = len.saturating_add(1).min(capacity),
-        evicted = len == capacity
-    );
+        |callback, props| {
+            let props = to_js(&props)?;
+            let result = callback
+                .call2(&JsValue::NULL, &props, &JsValue::NULL)
+                .map_err(|err| CallbackError::Threw(js_error_message(&err)))?;
+            from_js(result)
+        },
+    )
 }
 
-/*
- * Callback ref lookup.
- */
-pub(super) fn get_utility_transform_refs(config: &UserConfig) -> HashMap<String, String> {
-    let mut refs = HashMap::new();
-    for (prop, utility) in &config.utilities {
-        if let Some(id) = utility_callback_id(utility) {
-            refs.insert(prop.clone(), id);
-        }
+fn to_js(value: &serde_json::Value) -> Result<JsValue, CallbackError> {
+    let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+    value
+        .serialize(&serializer)
+        .map_err(|err| CallbackError::Serialize(err.to_string()))
+}
+
+fn from_js(value: JsValue) -> Result<serde_json::Value, CallbackError> {
+    if value.is_null() || value.is_undefined() {
+        return Ok(serde_json::Value::Null);
     }
-
-    refs
-}
-
-pub(super) fn get_pattern_transform_refs(config: &UserConfig) -> HashMap<String, String> {
-    let mut refs = HashMap::new();
-    for (name, pattern) in &config.patterns {
-        let Some(id) = pattern.transform.as_ref().and_then(callback_ref_id) else {
-            continue;
-        };
-        refs.insert(name.clone(), id.clone());
-        refs.insert(pandacss_shared::capitalize(name).into_owned(), id.clone());
-        if let Some(jsx_name) = &pattern.jsx_name {
-            refs.insert(jsx_name.clone(), id.clone());
-        }
-        for specifier in &pattern.jsx {
-            if let JsxSpecifier::String(jsx_name) = specifier {
-                refs.insert(jsx_name.clone(), id.clone());
-            }
-        }
-    }
-    refs
-}
-
-fn utility_callback_id(utility: &UtilityConfig) -> Option<String> {
-    utility.transform.as_ref().and_then(callback_ref_id)
-}
-
-fn callback_ref_id(value: &CallbackRef) -> Option<String> {
-    (value.kind == "js-callback")
-        .then(|| value.id.clone())
-        .flatten()
-}
-
-fn callback_diagnostic(message: String) -> pandacss_extractor::Diagnostic {
-    pandacss_extractor::Diagnostic {
-        code: diagnostic_codes::TRANSFORM_CALLBACK_FAILED.to_owned(),
-        message,
-        severity: DiagnosticSeverity::Warning,
-        file: None,
-        category: None,
-        span: None,
-        location: None,
-        labels: None,
-        help: None,
-    }
+    serde_wasm_bindgen::from_value(value)
+        .map_err(|err| CallbackError::InvalidResult(err.to_string()))
 }

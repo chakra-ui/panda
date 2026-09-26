@@ -1593,7 +1593,7 @@ fn box_size_transform(
 
 #[test]
 fn a_hydrated_atom_gets_its_transform_recomputed_by_the_consumer() {
-    use pandacss_project::{ParseTransforms, UtilityTransformFn};
+    use pandacss_system::{ParseTransforms, UtilityTransformFn};
 
     // The library's preset ships this utility, so the consumer's own config
     // declares it too and holds the callback.
@@ -1651,7 +1651,7 @@ fn a_hydrated_atom_gets_its_transform_recomputed_by_the_consumer() {
 
 #[test]
 fn hydrating_a_utility_the_consumer_never_merged_warns() {
-    use pandacss_project::{ParseTransforms, UtilityTransformFn};
+    use pandacss_system::{ParseTransforms, UtilityTransformFn};
 
     let lib_overrides = json!({
         "utilities": {
@@ -1694,7 +1694,7 @@ fn hydrating_a_utility_the_consumer_never_merged_warns() {
 
 #[test]
 fn one_transform_result_covers_a_hydrated_atom_used_under_many_conditions() {
-    use pandacss_project::{ParseTransforms, UtilityTransformFn};
+    use pandacss_system::{ParseTransforms, UtilityTransformFn};
 
     let mut transform = box_size_transform;
     let mut lib = create_project(box_size_config());
@@ -1740,7 +1740,7 @@ fn one_transform_result_covers_a_hydrated_atom_used_under_many_conditions() {
 #[test]
 fn the_consumer_own_usage_wins_over_a_hydrated_atom_with_the_same_key() {
     use pandacss_literal::Literal;
-    use pandacss_project::{ParseTransforms, UtilityTransformFn};
+    use pandacss_system::{ParseTransforms, UtilityTransformFn};
 
     let mut lib_transform = box_size_transform;
     let mut lib = create_project(box_size_config());
@@ -1797,7 +1797,7 @@ fn the_consumer_own_usage_wins_over_a_hydrated_atom_with_the_same_key() {
 
 #[test]
 fn a_module_filter_only_recomputes_transforms_for_imported_modules() {
-    use pandacss_project::{ParseTransforms, UtilityTransformFn};
+    use pandacss_system::{ParseTransforms, UtilityTransformFn};
 
     let mut transform = box_size_transform;
     let mut lib = create_project(box_size_config());
@@ -1833,7 +1833,7 @@ fn a_module_filter_only_recomputes_transforms_for_imported_modules() {
 
 #[test]
 fn a_consumer_without_the_transform_callback_still_hydrates() {
-    use pandacss_project::{ParseTransforms, UtilityTransformFn};
+    use pandacss_system::{ParseTransforms, UtilityTransformFn};
 
     let mut transform = box_size_transform;
     let mut lib = create_project(box_size_config());

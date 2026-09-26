@@ -253,7 +253,7 @@ let fs = MemoryFileSystem::from_iter([
 let resolver = CrossFileResolver::with_fs(fs);
 ```
 
-`ExtractorConfig` stores an optional `CrossFileResolver`. `Project::from_config(config)` is the primary production
+`ExtractorConfig` stores an optional `CrossFileResolver`. `Project::new(System::new(config)?)` is the primary production
 constructor; callers that need cross-file evaluation attach a resolver with `with_cross_file` before parsing files.
 Matcher-only constructors remain lower-level/test entrypoints. On wasm, callers must provide a memory-backed resolver
 because the native `os` feature is not available.

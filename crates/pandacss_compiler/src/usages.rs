@@ -18,141 +18,141 @@ use crate::inspection::{
     StyleEntrySyntax, UsageKind, UsageSite, ValueSpanRef, call_view, component_entry, jsx_view,
     style_entry, token_ref_site, token_value_ref,
 };
-use crate::{Project, ProjectConditionMatcher, SourceRange, Span};
+use pandacss_encoder::ConditionSet;
+use pandacss_extractor::{SourceRange, Span};
+use pandacss_system::System;
 
 struct Cx<'a> {
     utility: Option<&'a Utility>,
     tokens: Option<&'a TokenDictionary>,
-    conditions: &'a ProjectConditionMatcher,
+    conditions: &'a ConditionSet,
     keyframes: &'a rustc_hash::FxHashSet<String>,
 }
 
-impl Project {
-    /// Classifies every Panda usage in a file with its source range, plus
-    /// file-local diagnostics. On-demand — not part of the build path.
-    #[must_use]
-    pub fn inspect_file_source(&self, path: &str, source: &str) -> FileInspectionResult {
-        let result = extract_verbose(source, path, &self.config.extractor_config);
-        let line_index = LineIndex::new(source);
-        let dict = self.config.token_dictionary();
-        let cx = Cx {
-            utility: self.config.utility(),
-            tokens: dict.as_deref(),
-            conditions: &self.config.conditions,
-            keyframes: &self.config.keyframes,
+/// Classifies every Panda usage in a file with its source range, plus
+/// file-local diagnostics. On-demand — not part of the build path.
+#[must_use]
+pub fn inspect_file_source(system: &System, path: &str, source: &str) -> FileInspectionResult {
+    let result = extract_verbose(source, path, system.extractor_config());
+    let line_index = LineIndex::new(source);
+    let dict = system.token_dictionary();
+    let cx = Cx {
+        utility: system.utility(),
+        tokens: dict.as_deref(),
+        conditions: system.conditions(),
+        keyframes: system.keyframes(),
+    };
+
+    let mut sites = Vec::new();
+    let mut style_entries = Vec::new();
+    let mut component_entries = Vec::new();
+    let source_refs = source_ref_map(&result.style_source_refs);
+
+    {
+        let call_ctx = CallStyleCtx {
+            cx: &cx,
+            line_index: &line_index,
+            source_refs: &source_refs,
         };
-
-        let mut sites = Vec::new();
-        let mut style_entries = Vec::new();
-        let mut component_entries = Vec::new();
-        let source_refs = source_ref_map(&result.style_source_refs);
-
-        {
-            let call_ctx = CallStyleCtx {
-                cx: &cx,
-                line_index: &line_index,
-                source_refs: &source_refs,
-            };
-            let mut accum = InspectAccum {
-                sites: &mut sites,
-                style_entries: &mut style_entries,
-            };
-            for (index, call) in result.calls.iter().enumerate() {
-                collect_call_styles(call, index, &call_ctx, &mut accum);
-            }
+        let mut accum = InspectAccum {
+            sites: &mut sites,
+            style_entries: &mut style_entries,
+        };
+        for (index, call) in result.calls.iter().enumerate() {
+            collect_call_styles(call, index, &call_ctx, &mut accum);
         }
+    }
 
-        for (index, jsx) in result.jsx.iter().enumerate() {
-            let range = line_index.locate_range(jsx.span.start, jsx.span.end);
-            component_entries.push(component_entry(self, jsx, &range));
-            match jsx.category {
-                MatchCategory::Recipe => sites.push(site(UsageKind::Recipe, &jsx.name, &range)),
-                MatchCategory::Pattern => sites.push(site(UsageKind::Pattern, &jsx.name, &range)),
-                _ => {
-                    if let Literal::Object(entries) = &jsx.data {
-                        walk_object(entries, &cx, &range, &mut sites);
-                        StyleEntryCollector {
-                            cx: &cx,
-                            span: jsx.span,
-                            range,
-                            line_index: &line_index,
-                            source_refs: &source_refs,
-                            owner_kind: StyleSourceOwnerKind::Jsx,
-                            owner_index: u32::try_from(index).unwrap_or(u32::MAX),
-                        }
-                        .collect(
-                            entries,
-                            StyleEntrySyntax::JsxProp,
-                            &mut Vec::new(),
-                            &mut style_entries,
-                        );
+    for (index, jsx) in result.jsx.iter().enumerate() {
+        let range = line_index.locate_range(jsx.span.start, jsx.span.end);
+        component_entries.push(component_entry(system, jsx, &range));
+        match jsx.category {
+            MatchCategory::Recipe => sites.push(site(UsageKind::Recipe, &jsx.name, &range)),
+            MatchCategory::Pattern => sites.push(site(UsageKind::Pattern, &jsx.name, &range)),
+            _ => {
+                if let Literal::Object(entries) = &jsx.data {
+                    walk_object(entries, &cx, &range, &mut sites);
+                    StyleEntryCollector {
+                        cx: &cx,
+                        span: jsx.span,
+                        range,
+                        line_index: &line_index,
+                        source_refs: &source_refs,
+                        owner_kind: StyleSourceOwnerKind::Jsx,
+                        owner_index: u32::try_from(index).unwrap_or(u32::MAX),
                     }
+                    .collect(
+                        entries,
+                        StyleEntrySyntax::JsxProp,
+                        &mut Vec::new(),
+                        &mut style_entries,
+                    );
                 }
             }
         }
+    }
 
-        // `token()`/`token.var()` resolve to a value/var during extraction, so
-        // the path only comes from the extractor's captured refs. The span is
-        // the call itself — tighter than the enclosing style call.
-        for token_ref in &result.token_refs {
-            let range = line_index.locate_range(token_ref.span.start, token_ref.span.end);
-            sites.push(site(UsageKind::Token, &token_ref.path, &range));
-        }
-        let token_refs = result
-            .token_refs
+    // `token()`/`token.var()` resolve to a value/var during extraction, so
+    // the path only comes from the extractor's captured refs. The span is
+    // the call itself — tighter than the enclosing style call.
+    for token_ref in &result.token_refs {
+        let range = line_index.locate_range(token_ref.span.start, token_ref.span.end);
+        sites.push(site(UsageKind::Token, &token_ref.path, &range));
+    }
+    let token_refs = result
+        .token_refs
+        .iter()
+        .map(|token_ref| token_ref_site(token_ref, &line_index, cx.tokens))
+        .collect();
+
+    FileInspectionResult {
+        usages: sites,
+        diagnostics: result.diagnostics,
+        calls: result
+            .calls
             .iter()
-            .map(|token_ref| token_ref_site(token_ref, &line_index, cx.tokens))
-            .collect();
-
-        FileInspectionResult {
-            usages: sites,
-            diagnostics: result.diagnostics,
-            calls: result
-                .calls
-                .iter()
-                .map(|call| {
-                    call_view(
-                        call,
-                        line_index.locate_range(call.span.start, call.span.end),
-                    )
-                })
-                .collect(),
-            jsx: result
-                .jsx
-                .iter()
-                .map(|jsx| jsx_view(jsx, line_index.locate_range(jsx.span.start, jsx.span.end)))
-                .collect(),
-            token_refs,
-            component_entries,
-            style_entries,
-        }
+            .map(|call| {
+                call_view(
+                    call,
+                    line_index.locate_range(call.span.start, call.span.end),
+                )
+            })
+            .collect(),
+        jsx: result
+            .jsx
+            .iter()
+            .map(|jsx| jsx_view(jsx, line_index.locate_range(jsx.span.start, jsx.span.end)))
+            .collect(),
+        token_refs,
+        component_entries,
+        style_entries,
     }
+}
 
-    /// Tokens carrying `value` on `prop`, ranked with safe equivalents first.
-    /// The lint rule lists these and lets the developer choose.
-    #[must_use]
-    pub fn suggest_tokens(&self, prop: &str, value: &str) -> Vec<TokenSuggestion> {
-        let Some(utility) = self.config.utility() else {
-            return Vec::new();
-        };
-        let canonical = utility.resolve_shorthand(prop);
-        let Some(category) = utility.token_category(canonical) else {
-            return Vec::new();
-        };
-        let Some(dict) = self.config.token_dictionary() else {
-            return Vec::new();
-        };
-        dict.suggest_tokens(&TokenCategory::from_path_segment(category), value)
-    }
+/// Tokens carrying `value` on `prop`, ranked with safe equivalents first.
+/// The lint rule lists these and lets the developer choose.
+#[must_use]
+pub fn suggest_tokens(system: &System, prop: &str, value: &str) -> Vec<TokenSuggestion> {
+    let Some(utility) = system.utility() else {
+        return Vec::new();
+    };
+    let canonical = utility.resolve_shorthand(prop);
+    let Some(category) = utility.token_category(canonical) else {
+        return Vec::new();
+    };
+    let Some(dict) = system.token_dictionary() else {
+        return Vec::new();
+    };
+    dict.suggest_tokens(&TokenCategory::from_path_segment(category), value)
+}
 
-    /// Semantic tokens that carry the same value as `path`, ranked for tooling.
-    #[must_use]
-    pub fn suggest_semantic_tokens(&self, path: &str) -> Vec<TokenSuggestion> {
-        let Some(dict) = self.config.token_dictionary() else {
-            return Vec::new();
-        };
-        dict.suggest_semantic_tokens(path)
-    }
+/// Semantic tokens that carry the same value as `path`, ranked for tooling.
+#[must_use]
+pub fn suggest_semantic_tokens(system: &System, path: &str) -> Vec<TokenSuggestion> {
+    let Some(dict) = system.token_dictionary() else {
+        return Vec::new();
+    };
+    dict.suggest_semantic_tokens(path)
 }
 
 type SourceRefKey = (StyleSourceOwnerKind, u32, Vec<String>);

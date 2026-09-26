@@ -13,6 +13,7 @@ pandacss_config = { workspace = true }
 pandacss_extractor = { workspace = true }
 pandacss_project = { workspace = true }
 pandacss_stylesheet = { workspace = true }
+pandacss_system = { workspace = true }
 pandacss_tokens = { workspace = true }
 pandacss_tracing = { workspace = true }
 regex = { workspace = true }

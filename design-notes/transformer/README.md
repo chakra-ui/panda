@@ -25,7 +25,7 @@ What ships on the v2 branch today:
 | Piece                                   | Status                                                                               |
 | --------------------------------------- | ------------------------------------------------------------------------------------ |
 | `pandacss_transform`                    | Inspect, plan, print, dead-import cleanup, helper import sync                        |
-| `transform_source_with(&Config, …)`     | Same `ParseTransforms` bag as `parse_file_with` (pattern / source / utility)         |
+| `transform_source_with(&System, …)`     | Same `ParseTransforms` bag as `parse_file_with` (pattern / source / utility)         |
 | Rust printer                            | Single `string_wizard::MagicString` pass; v3 source map on changed output            |
 | `@pandacss/transformer`                 | `transformSource`, host-neutral hooks, internal runtime, optional `unplugin` exports |
 | `@pandacss/vite` / `webpack` / `rollup` | CSS-root, codegen, and HMR by default; source rewrite via `transform: true`          |
@@ -40,7 +40,7 @@ Options and bindings use `helper.cx` and `needsCx` / `needsCva` / `needsSva` for
 
 This folder owns:
 
-- the `pandacss_transform` crate shape (`transform_source` / `transform_source_with`, taking `&Config`)
+- the `pandacss_transform` crate shape (`transform_source` / `transform_source_with`, taking `&System`)
 - the `@pandacss/transformer` (`packages/transformer`) facade shape
 - the private `cx` helper and internal css runtime module
 - the abstract `@pandacss-internal/css` import ID
@@ -78,7 +78,7 @@ webpack, Rspack, Rollup, or Rolldown support more expensive than it needs to be.
 
 ## Goals
 
-1. Put transform semantics in `pandacss_project::transform` (same façade as parse / class-name resolution).
+1. Put transform semantics in `pandacss_transform`, reading the same `System` class-name resolution as parse.
 2. Keep `@pandacss/transformer` as a thin facade for host-facing ergonomics.
 3. Keep bundler packages thin. They adapt host APIs, not transform semantics.
 4. Keep the `cx` helper private and tiny.
@@ -128,7 +128,7 @@ Transform semantics stay in Rust. Bundler packages depend on `@pandacss/transfor
 
 ## Package boundaries
 
-`pandacss_project::transform` should be internal-first. `@pandacss/transformer` should also be internal-first. Neither
+`pandacss_transform` should be internal-first. `@pandacss/transformer` should also be internal-first. Neither
 should promise a stable public API yet.
 
 The Rust crate depends on:
@@ -156,7 +156,7 @@ pandacss_transform
   - plan / apply / resolve / imports / helper
   - recipe_inline (cva/sva/styled)
   - style_lower (StyleTree conditionals), jsx.rs + jsx_*.rs
-  - transform_source / transform_source_with (&Config + ParseTransforms)
+  - transform_source / transform_source_with (&System + ParseTransforms)
 
 @pandacss/transformer  (packages/transformer)
   - transformSource → compiler binding
@@ -273,7 +273,7 @@ The printer is also responsible for:
 
 Printing lives in Rust.
 
-`pandacss_project::transform` collects rewrites, import edits, and helper prepends into one edit list, then applies them
+`pandacss_transform` collects rewrites, import edits, and helper prepends into one edit list, then applies them
 with `string_wizard::MagicString` and emits a v3 source map when output changes.
 
 That keeps plan decisions, edit application, dead-import cleanup, helper import sync, and source maps on the same side
@@ -1008,7 +1008,7 @@ The host package should not:
 
 Responsibility split today:
 
-- **Rust (`pandacss_project::transform`)** — plan rewrites, apply edits (`string_wizard`), dead-import cleanup, sync
+- **Rust (`pandacss_transform`)** — plan rewrites, apply edits (`string_wizard`), dead-import cleanup, sync
   internal css import, `cx` merge printing for JSX.
 - **`@pandacss/transformer`** — `transformSource` binding, host-neutral hooks, bundled runtime for
   `@pandacss-internal/css`, optional `unplugin` wrapper.
@@ -1032,7 +1032,7 @@ equivalent host-native primitive.
 
 ### Done (v2 branch)
 
-- `pandacss_project::transform` with css, jsx, recipes, patterns, styled/cva/sva inlines
+- `pandacss_transform` with css, jsx, recipes, patterns, styled/cva/sva inlines
 - Rust printing via `string_wizard` + source maps
 - `@pandacss/transformer` facade and internal css virtual module
 - Vite transform hooks (CSS-root and HMR remain in `@pandacss/vite`)

@@ -90,7 +90,6 @@ dependencies = [
 name = "compiler_napi"
 version = "0.0.0"
 dependencies = [
- "lru",
  "napi",
  "napi-build",
  "napi-derive",
@@ -102,6 +101,7 @@ dependencies = [
  "pandacss_literal",
  "pandacss_project",
  "pandacss_shared",
+ "pandacss_system",
  "pandacss_tokens",
  "pandacss_tracing",
  "pandacss_transform",
@@ -116,7 +116,6 @@ version = "0.0.0"
 dependencies = [
  "console_error_panic_hook",
  "js-sys",
- "lru",
  "pandacss_compiler",
  "pandacss_config",
  "pandacss_encoder",
@@ -125,6 +124,7 @@ dependencies = [
  "pandacss_literal",
  "pandacss_project",
  "pandacss_shared",
+ "pandacss_system",
  "pandacss_tokens",
  "serde",
  "serde-wasm-bindgen",
@@ -1120,6 +1120,7 @@ dependencies = [
  "pandacss_extractor",
  "pandacss_project",
  "pandacss_stylesheet",
+ "pandacss_system",
  "pandacss_tokens",
  "pandacss_tracing",
  "regex",
@@ -1152,18 +1153,24 @@ dependencies = [
 name = "pandacss_compiler"
 version = "0.0.0"
 dependencies = [
+ "fast-glob",
  "indoc",
  "insta",
+ "lru",
  "pandacss_codegen",
  "pandacss_config",
  "pandacss_encoder",
+ "pandacss_extractor",
  "pandacss_fs",
  "pandacss_literal",
  "pandacss_project",
  "pandacss_shared",
  "pandacss_stylesheet",
+ "pandacss_system",
  "pandacss_tokens",
  "pandacss_utility",
+ "regex",
+ "rustc-hash",
  "serde",
  "serde_json",
  "thiserror",
@@ -1252,7 +1259,6 @@ dependencies = [
 name = "pandacss_project"
 version = "0.0.0"
 dependencies = [
- "fast-glob",
  "indoc",
  "insta",
  "oxc_resolver",
@@ -1263,14 +1269,12 @@ dependencies = [
  "pandacss_literal",
  "pandacss_recipes",
  "pandacss_shared",
- "pandacss_tokens",
+ "pandacss_system",
  "pandacss_utility",
- "regex",
  "rustc-hash",
  "serde",
  "serde_json",
  "smallvec",
- "string_wizard",
  "tracing",
 ]
 
@@ -1313,10 +1317,30 @@ dependencies = [
  "pandacss_literal",
  "pandacss_project",
  "pandacss_shared",
+ "pandacss_system",
  "pandacss_tokens",
  "pandacss_utility",
  "rustc-hash",
  "serde_json",
+ "tracing",
+]
+
+[[package]]
+name = "pandacss_system"
+version = "0.0.0"
+dependencies = [
+ "pandacss_config",
+ "pandacss_encoder",
+ "pandacss_extractor",
+ "pandacss_literal",
+ "pandacss_recipes",
+ "pandacss_shared",
+ "pandacss_tokens",
+ "pandacss_utility",
+ "regex",
+ "rustc-hash",
+ "serde_json",
+ "smallvec",
  "tracing",
 ]
 
@@ -1361,6 +1385,7 @@ dependencies = [
  "pandacss_project",
  "pandacss_recipes",
  "pandacss_shared",
+ "pandacss_system",
  "pandacss_utility",
  "rustc-hash",
  "serde_json",

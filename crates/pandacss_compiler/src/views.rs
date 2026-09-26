@@ -24,7 +24,7 @@ pub struct SourceEntry {
 
 pub(crate) fn type_data(project: &Project, user_config: &UserConfig) -> TypeData {
     let _span = tracing::trace_span!(target: "codegen", "type_data").entered();
-    let token_dictionary = project.config().token_dictionary();
+    let token_dictionary = project.system().token_dictionary();
     TypeData {
         options: user_config.typegen_options(),
         conditions: user_config.condition_type_data(),
@@ -34,7 +34,7 @@ pub(crate) fn type_data(project: &Project, user_config: &UserConfig) -> TypeData
             .map(TokenDictionary::type_data)
             .unwrap_or_default(),
         utilities: project
-            .config()
+            .system()
             .utility()
             .map(Utility::type_data)
             .unwrap_or_default(),

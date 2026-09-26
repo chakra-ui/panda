@@ -36,10 +36,13 @@ impl WasmExtractor {
         // moved into `to_core_matchers`.
         let token_dictionary = input.token_dictionary.take().map(to_core_token_dictionary);
         let has_jsx_framework = input.jsx_framework.is_some();
+        let class_attribute =
+            pandacss_system::class_attribute_for_jsx_framework(input.jsx_framework.as_deref());
         let core_matchers = to_core_matchers(input);
 
         let mut config = ExtractorConfig::new(core_matchers);
         config.has_jsx_framework = has_jsx_framework;
+        config.class_attribute = class_attribute;
         config.token_dictionary = token_dictionary.map(std::sync::Arc::new);
         config.cross_file = Some(CrossFileResolver::with_fs(fs.inner.clone()));
 

@@ -10,8 +10,8 @@ use pandacss_extractor::{
 use pandacss_literal::Literal;
 use pandacss_shared::Span;
 
-use pandacss_project::Config;
-use pandacss_project::PatternTransformFn;
+use pandacss_system::PatternTransformFn;
+use pandacss_system::System;
 
 use super::js;
 use super::resolve::{classes_for_css_args, span_slice};
@@ -49,12 +49,12 @@ pub(crate) enum LowerTarget<'a> {
 impl LowerTarget<'_> {
     fn encode(
         self,
-        config: &Config,
+        system: &System,
         lit: Literal,
         pattern_transform: Option<&mut PatternTransformFn<'_>>,
     ) -> Option<String> {
         let classes = match self {
-            Self::Css => classes_for_css_args(config, &[Some(lit)])?,
+            Self::Css => classes_for_css_args(system, &[Some(lit)])?,
             Self::CssArgs => {
                 let Literal::Object(entries) = lit else {
                     return None;
@@ -71,7 +71,7 @@ impl LowerTarget<'_> {
                     .into_iter()
                     .map(|(_, value)| Some(value))
                     .collect::<Vec<_>>();
-                classes_for_css_args(config, &args)?
+                classes_for_css_args(system, &args)?
             }
             Self::Jsx(jsx) => {
                 let branch_jsx = ExtractedJsx {
@@ -79,12 +79,12 @@ impl LowerTarget<'_> {
                     style: None,
                     ..jsx.clone()
                 };
-                config.class_names_for_jsx_usage(&branch_jsx, pattern_transform)?
+                system.class_names_for_jsx_usage(&branch_jsx, pattern_transform)?
             }
             Self::Recipe(recipe_name) => {
-                config.class_names_for_recipe_call(recipe_name, &[Some(lit)])?
+                system.class_names_for_recipe_call(recipe_name, &[Some(lit)])?
             }
-            Self::SlotRecipe { recipe, slot } => config
+            Self::SlotRecipe { recipe, slot } => system
                 .class_names_for_slot_recipe_call(recipe, &[Some(lit)])?
                 .into_iter()
                 .find(|(name, _)| name == slot)
@@ -114,18 +114,18 @@ impl LowerTarget<'_> {
     /// Keys whose absence from a branch doesn't mean "unset": a recipe fills in
     /// `defaultVariants`, a pattern its `defaultValues`. Branches that touch
     /// these can't be lowered one site at a time — see [`lower_combinations`].
-    fn default_bearing_props(self, config: &Config) -> FxHashSet<&str> {
+    fn default_bearing_props(self, system: &System) -> FxHashSet<&str> {
         match self {
             Self::Recipe(recipe_name)
             | Self::SlotRecipe {
                 recipe: recipe_name,
                 ..
-            } => config.recipe_variant_props(recipe_name),
+            } => system.recipe_variant_props(recipe_name),
             Self::Jsx(jsx) if jsx.kind == JsxKind::Recipe => {
-                config.jsx_recipe_variant_props(&jsx.name)
+                system.jsx_recipe_variant_props(&jsx.name)
             }
             Self::Jsx(jsx) if jsx.kind == JsxKind::Pattern => {
-                config.pattern_default_value_keys(&jsx.name)
+                system.pattern_default_value_keys(&jsx.name)
             }
             Self::Css | Self::CssArgs | Self::Jsx(_) => FxHashSet::default(),
         }
@@ -327,7 +327,7 @@ fn tree_combination_leaves(tree: &StyleTree) -> usize {
 /// Keep argument boundaries until each selected branch is merged by the CSS encoder.
 #[must_use]
 pub(crate) fn lower_css_args(
-    config: &Config,
+    system: &System,
     source: &str,
     args: &[Option<StyleTree>],
 ) -> Option<(ClassExpr, Vec<Span>)> {
@@ -340,18 +340,18 @@ pub(crate) fn lower_css_args(
         entries,
         spreads: Vec::new(),
     });
-    if let Some(lowered) = lower_independent_args(config, source, args) {
+    if let Some(lowered) = lower_independent_args(system, source, args) {
         return Some(lowered);
     }
     if tree_combination_leaves(&tree) > MAX_COMBINATION_LEAVES {
         return None;
     }
-    let expr = lower_style_tree(config, source, &tree, LowerTarget::CssArgs, None)?;
+    let expr = lower_style_tree(system, source, &tree, LowerTarget::CssArgs, None)?;
     Some((expr, preserved_source_spans(&tree)))
 }
 
 fn lower_independent_args(
-    config: &Config,
+    system: &System,
     source: &str,
     args: &[Option<StyleTree>],
 ) -> Option<(ClassExpr, Vec<Span>)> {
@@ -372,7 +372,7 @@ fn lower_independent_args(
                 }))
             })
             .collect::<Vec<_>>();
-        return lower_independent_args(config, source, &args);
+        return lower_independent_args(system, source, &args);
     }
     if args.len() > MAX_CONDITIONAL_SITES {
         return None;
@@ -382,8 +382,8 @@ fn lower_independent_args(
     let mut spans = Vec::new();
     for tree in args {
         let tree = tree.as_ref()?;
-        super::css_keys::insert_disjoint(&mut keys, super::css_keys::style_keys(config, tree)?)?;
-        let (expr, preserved) = lower_css_args(config, source, &[Some(tree.clone())])?;
+        super::css_keys::insert_disjoint(&mut keys, super::css_keys::style_keys(system, tree)?)?;
+        let (expr, preserved) = lower_css_args(system, source, &[Some(tree.clone())])?;
         exprs.push(expr);
         spans.extend(preserved);
     }
@@ -392,7 +392,7 @@ fn lower_independent_args(
 
 #[must_use]
 pub(crate) fn lower_style_tree(
-    config: &Config,
+    system: &System,
     source: &str,
     tree: &StyleTree,
     target: LowerTarget<'_>,
@@ -411,7 +411,7 @@ pub(crate) fn lower_style_tree(
         && is_object_tree(alternate)
     {
         return lower_whole_arg_ternary(
-            config,
+            system,
             source,
             *test,
             consequent,
@@ -422,7 +422,7 @@ pub(crate) fn lower_style_tree(
     }
 
     let StyleTree::Object(obj) = tree else {
-        return encode_tree(config, tree, target, pattern_transform.as_deref_mut())
+        return encode_tree(system, tree, target, pattern_transform.as_deref_mut())
             .map(ClassExpr::Lit);
     };
 
@@ -433,7 +433,7 @@ pub(crate) fn lower_style_tree(
         return None;
     }
     if sites.is_empty() {
-        return encode_tree(config, tree, target, pattern_transform.as_deref_mut())
+        return encode_tree(system, tree, target, pattern_transform.as_deref_mut())
             .map(ClassExpr::Lit);
     }
 
@@ -453,7 +453,7 @@ pub(crate) fn lower_style_tree(
         source,
         shared_base: &shared_base,
         full_base: &full_base,
-        config,
+        system,
         target,
     };
     match lower_default_bearing_sites(
@@ -517,7 +517,7 @@ fn lower_default_bearing_sites(
         return lower_combinations(sites, shared_base, ctx, pattern_transform)
             .map_or(SiteLowering::Deferred, SiteLowering::Combined);
     }
-    let props = ctx.target.default_bearing_props(ctx.config);
+    let props = ctx.target.default_bearing_props(ctx.system);
     if props.is_empty() {
         return SiteLowering::PerSite;
     }
@@ -560,7 +560,7 @@ fn lower_combinations(
 ) -> Option<ClassExpr> {
     let Some((site, rest)) = sites.split_first() else {
         return encode_literal_object(
-            ctx.config,
+            ctx.system,
             entries,
             ctx.target,
             pattern_transform.as_deref_mut(),
@@ -1145,7 +1145,7 @@ fn is_object_tree(tree: &StyleTree) -> bool {
 }
 
 fn lower_whole_arg_ternary(
-    config: &Config,
+    system: &System,
     source: &str,
     test: Span,
     consequent: &StyleTree,
@@ -1157,8 +1157,8 @@ fn lower_whole_arg_ternary(
         return None;
     }
     let test_src = span_slice(source, test)?;
-    let yes = encode_tree(config, consequent, target, pattern_transform.as_deref_mut())?;
-    let no = encode_tree(config, alternate, target, pattern_transform)?;
+    let yes = encode_tree(system, consequent, target, pattern_transform.as_deref_mut())?;
+    let no = encode_tree(system, alternate, target, pattern_transform)?;
     let expr = ternary(test_src.to_owned(), ClassExpr::Lit(yes), ClassExpr::Lit(no));
     Some(if target.hoist_single_site() {
         hoist_into_join(vec![expr])
@@ -1178,7 +1178,7 @@ struct LowerCtx<'a> {
     /// Every static entry, including the ones sites own. A spread branch that
     /// omits an affected key falls back to the value here.
     full_base: &'a [(String, Literal)],
-    config: &'a Config,
+    system: &'a System,
     target: LowerTarget<'a>,
 }
 
@@ -1249,13 +1249,13 @@ fn lower_property_and(
     let mut truthy = ctx.shared_base.to_vec();
     apply_branch(&mut truthy, path, lit);
     let yes = encode_literal_object(
-        ctx.config,
+        ctx.system,
         &truthy,
         ctx.target,
         pattern_transform.as_deref_mut(),
     )?;
     let no = encode_literal_object(
-        ctx.config,
+        ctx.system,
         ctx.shared_base,
         ctx.target,
         pattern_transform.as_deref_mut(),
@@ -1336,7 +1336,7 @@ fn lower_property_arm(
     let mut next = ctx.shared_base.to_vec();
     apply_branch(&mut next, path, lit);
     let classes = encode_literal_object(
-        ctx.config,
+        ctx.system,
         &next,
         ctx.target,
         pattern_transform.as_deref_mut(),
@@ -1500,7 +1500,7 @@ fn encode_spread_branch(
     pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> Option<String> {
     let next = spread_branch_entries(ctx, path, affected, branch, overridden, ctx.shared_base)?;
-    encode_literal_object(ctx.config, &next, ctx.target, pattern_transform)
+    encode_literal_object(ctx.system, &next, ctx.target, pattern_transform)
 }
 
 /// The entries a spread branch resolves to, layered over `base`.
@@ -1589,21 +1589,21 @@ fn affected_keys_from_arm(tree: &StyleTree) -> HashSet<String> {
 }
 
 fn encode_tree(
-    config: &Config,
+    system: &System,
     tree: &StyleTree,
     target: LowerTarget<'_>,
     pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> Option<String> {
-    target.encode(config, project_literal(tree)?, pattern_transform)
+    target.encode(system, project_literal(tree)?, pattern_transform)
 }
 
 fn encode_literal_object(
-    config: &Config,
+    system: &System,
     entries: &[(String, Literal)],
     target: LowerTarget<'_>,
     pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> Option<String> {
-    match target.encode(config, Literal::Object(entries.to_vec()), pattern_transform) {
+    match target.encode(system, Literal::Object(entries.to_vec()), pattern_transform) {
         Some(classes) => Some(classes),
         None => target.unresolved_branch_is_empty().then(String::new),
     }

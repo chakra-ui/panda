@@ -65,59 +65,16 @@ impl WasmCompiler {
     /// Returns a JS error when the scan fails or serialization fails.
     #[wasm_bindgen(js_name = designSystemImportSelections)]
     pub fn design_system_import_selections(&self, packages: JsValue) -> Result<JsValue, JsValue> {
-        #[derive(serde::Deserialize)]
-        #[serde(rename_all = "camelCase")]
-        struct PackageQuery {
-            package_roots: Vec<String>,
-            exclude_modules: Option<Vec<String>>,
-        }
-
-        let packages: Vec<PackageQuery> = serde_wasm_bindgen::from_value(packages)
-            .map_err(|err| JsValue::from_str(&err.to_string()))?;
-
-        let paths = self.scan_paths(JsValue::UNDEFINED)?;
-        let sources: Vec<(String, String)> = paths
-            .into_iter()
-            .filter_map(|path| {
-                let source = self.source_for_import_scan(&path)?;
-                Some((path.to_string_lossy().into_owned(), source))
-            })
-            .collect();
-
-        let root_lists: Vec<Vec<&str>> = packages
-            .iter()
-            .map(|pkg| pkg.package_roots.iter().map(String::as_str).collect())
-            .collect();
-        let exclude_lists: Vec<Vec<&str>> = packages
-            .iter()
-            .map(|pkg| {
-                pkg.exclude_modules
-                    .as_ref()
-                    .map(|mods| mods.iter().map(String::as_str).collect())
-                    .unwrap_or_default()
-            })
-            .collect();
-        let queries: Vec<pandacss_extractor::DesignSystemPackageQuery<'_>> = root_lists
-            .iter()
-            .zip(exclude_lists.iter())
-            .map(
-                |(roots, excluded)| pandacss_extractor::DesignSystemPackageQuery {
-                    package_roots: roots.as_slice(),
-                    exclude_modules: excluded.as_slice(),
-                },
-            )
-            .collect();
-
-        let selections: Vec<Option<Vec<String>>> =
-            pandacss_extractor::collect_design_system_imports_for_packages(
-                sources
-                    .iter()
-                    .map(|(path, source)| (path.as_str(), source.as_str())),
-                &queries,
-            )
-            .into_iter()
-            .map(pandacss_extractor::DesignSystemImportSelection::into_load_imports)
-            .collect();
+        let packages: Vec<pandacss_compiler::DesignSystemImportQuery> =
+            serde_wasm_bindgen::from_value(packages)
+                .map_err(|err| JsValue::from_str(&err.to_string()))?;
+        let selections = pandacss_compiler::design_system_import_selections(
+            &self.inner,
+            &self.fs,
+            &self.user_config,
+            &packages,
+        )
+        .map_err(|err| JsValue::from_str(&format!("scan failed: {err}")))?;
         serde_wasm_bindgen::to_value(&selections).map_err(|err| JsValue::from_str(&err.to_string()))
     }
 
@@ -177,23 +134,6 @@ impl WasmCompiler {
             .map_err(|err| JsValue::from_str(&format!("scan failed: {err}")))
     }
 
-    /// Prefer the project's in-memory source (watch `applyChange`) over the vfs.
-    fn source_for_import_scan(&self, path: &Path) -> Option<String> {
-        let path_str = path.to_string_lossy();
-        if let Some(source) = self.inner.file_source(path_str.as_ref()) {
-            return Some(source.to_owned());
-        }
-        if let Ok(real) = self.fs.canonicalize(path) {
-            let real_str = real.to_string_lossy();
-            if real_str != path_str
-                && let Some(source) = self.inner.file_source(real_str.as_ref())
-            {
-                return Some(source.to_owned());
-            }
-        }
-        self.fs.read_to_string(path).ok()
-    }
-
     /// Shared parse path used by `parse_file` and `parseFiles` — wires the
     /// registered transform callbacks (if any) and returns the core report.
     fn parse_inner(
@@ -211,7 +151,7 @@ impl WasmCompiler {
                     path,
                     source,
                     batch,
-                    pandacss_project::ParseTransforms::default(),
+                    pandacss_system::ParseTransforms::default(),
                 ),
                 None => self.inner.parse_file(path, source),
             };
@@ -243,13 +183,13 @@ impl WasmCompiler {
         let mut source_transform = |path: &str, source: &str| {
             apply_source_transforms(path, source, &callbacks.source_transforms)
         };
-        let transforms = pandacss_project::ParseTransforms {
+        let transforms = pandacss_system::ParseTransforms {
             source: has_source_transforms
-                .then_some(&mut source_transform as &mut pandacss_project::SourceTransformFn<'_>),
+                .then_some(&mut source_transform as &mut pandacss_system::SourceTransformFn<'_>),
             pattern: has_pattern_transforms
-                .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
+                .then_some(&mut transform as &mut pandacss_system::PatternTransformFn<'_>),
             utility: has_utility_transforms
-                .then_some(&mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>),
+                .then_some(&mut utility_transform as &mut pandacss_system::UtilityTransformFn<'_>),
         };
         match batch {
             Some(batch) => inner.parse_file_in_batch(path, source, batch, transforms),
@@ -327,14 +267,14 @@ impl WasmCompiler {
         inner.refresh_file_with(
             path,
             source,
-            pandacss_project::ParseTransforms {
+            pandacss_system::ParseTransforms {
                 source: has_source_transforms.then_some(
-                    &mut source_transform as &mut pandacss_project::SourceTransformFn<'_>,
+                    &mut source_transform as &mut pandacss_system::SourceTransformFn<'_>,
                 ),
                 pattern: has_pattern_transforms
-                    .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
+                    .then_some(&mut transform as &mut pandacss_system::PatternTransformFn<'_>),
                 utility: has_utility_transforms.then_some(
-                    &mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>,
+                    &mut utility_transform as &mut pandacss_system::UtilityTransformFn<'_>,
                 ),
             },
         )

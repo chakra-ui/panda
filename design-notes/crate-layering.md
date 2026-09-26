@@ -11,7 +11,7 @@ accidentally coupling a leaf crate to walker machinery.
 
 ### Tier 0 — infrastructure
 
-`pandacss_fs`, `pandacss_shared`, `pandacss_literal`.
+`pandacss_fs`, `pandacss_shared`, `pandacss_literal`, `pandacss_tracing`.
 
 `pandacss_fs` is the filesystem abstraction with `os` / `memory` feature-gated impls. Core crates depend on the
 `FileSystem` trait, never `std::fs` directly, so the same code compiles to `wasm32-unknown-unknown`. See
@@ -35,7 +35,7 @@ construction.
 
 ### Tier 2 — process
 
-`pandacss_extractor`, `pandacss_encoder`, `pandacss_stylesheet`.
+`pandacss_extractor`, `pandacss_encoder`, `pandacss_utility`, `pandacss_stylesheet`, `pandacss_codegen`.
 
 `pandacss_extractor` parses sources via Oxc and produces `Literal` values plus `ExtractedCall` / `ExtractedJsx` records.
 `pandacss_encoder` consumes Tier 1 types (`Recipe`, `SlotRecipe`, `Literal`) and produces atomic `Atom` records. They're
@@ -50,27 +50,40 @@ subset to produce CSS strings. It depends on `pandacss_encoder` for snapshot/ato
 project is a dev-dep used only for test wiring). It is an emitter/minifying writer, not a CSS optimizer; see
 [stylesheet.md](./stylesheet.md) for the canonical boundary.
 
-### Tier 3 — project state
+`pandacss_codegen` renders the generated styled-system artifacts from config and tokens. It depends on
+`pandacss_stylesheet` for one thing, theme CSS entries, so theme files and the stylesheet share one emitter.
 
-`pandacss_project`.
+### Tier 3 — compiled config
 
-`Project` wires extraction and encoding into long-lived state. `System` compiles immutable config-derived runtime state
-from `pandacss_config::UserConfig` into `pandacss_project::Config`; `Project` owns mutable build/watch state. This crate
-is independent of CSS rendering: it exposes borrowed stylesheet snapshots but does not depend on `pandacss_stylesheet`.
-See [project-lifecycle](./project-lifecycle.md).
+`pandacss_system`.
 
-`pandacss_transform` sits beside it and depends on it read-only: it rewrites source with the compiled `Config` (class
-names, recipes, patterns) and needs no mutable `Project`. See [transformer](./transformer/README.md).
+`System` compiles a `pandacss_config::UserConfig` once into the read-only runtime model: extractor matchers, utility
+metadata, conditions, recipe and pattern registries, and the style-encoding and class-name helpers that extraction and
+transforms share. It holds no build or watch state; the only setup-time change is attaching a cross-file resolver. The
+refcounted recipe cache type lives here with the registry it reads, but its instances belong to a `Project`.
 
-### Tier 4 — compile orchestration
+### Tier 4 — project state and source rewrite
+
+`pandacss_project`, `pandacss_transform`.
+
+`Project` wraps an `Arc<System>` and owns mutable build/watch state: parsed files, refcounted atom and recipe caches,
+the dependency graph, and build info. It is independent of CSS rendering: it exposes borrowed stylesheet snapshots but
+does not depend on `pandacss_stylesheet`. See [project-lifecycle](./project-lifecycle.md).
+
+`pandacss_transform` depends on `pandacss_system` only (the project is a dev-dep for test wiring): it rewrites source
+from a `&System`, so hosts can transform without project state. See [transformer](./transformer/README.md).
+
+### Tier 5 — compile orchestration
 
 `pandacss_compiler`.
 
-The compiler crate is the host-neutral application layer. Its small `css`, `codegen`, and `views` modules compose
-project state with stylesheet emission, artifact generation, and host-facing derived data. Native and WASM bindings
-bridge callbacks, serialize results, and perform IO; neither binding reimplements compiler policy. This keeps project
-state, CSS emission, code generation, and filesystem primitives as independent lower-level concerns while making their
-composition explicit in one higher-level crate.
+The compiler crate is the host-neutral application layer. Its `css`, `codegen`, and `views` modules compose project
+state with stylesheet emission, artifact generation, and host-facing derived data; it also owns host policy (config
+setup, the transform-callback runtime and its memoization keys, output writing) and tooling views
+(`inspect_file_source`, token suggestions).
+Native and WASM bindings bridge callbacks, serialize results, and perform IO; neither binding reimplements compiler
+policy. This keeps project state, CSS emission, code generation, and filesystem primitives as independent lower-level
+concerns while making their composition explicit in one higher-level crate.
 
 ### Future crates
 
@@ -113,11 +126,12 @@ The crate layout makes that direction visible at the dependency level. When aske
 data direction:
 
 - New parsing of a `Literal` shape → Tier 1 (`pandacss_recipes`, `pandacss_tokens`, or a new sibling).
-- New resolved-config input shape → Tier 1 (`pandacss_config`) plus compilation in Tier 3 (`pandacss_project::System`).
+- New resolved-config input shape → Tier 1 (`pandacss_config`) plus compilation in Tier 3 (`pandacss_system::System`).
 - New traversal that emits atoms → Tier 2 (extend `pandacss_encoder`).
 - New CSS emission from atoms/recipes/static CSS → Tier 2 (`pandacss_stylesheet`).
 - New CSS optimization after emission → future Tier 2 CSS-aware optimizer.
-- New cross-cutting orchestration that owns multi-file state → Tier 3 (`pandacss_project`).
+- New read-only question about styles given a config → Tier 3 (`pandacss_system`).
+- New cross-cutting orchestration that owns multi-file state → Tier 4 (`pandacss_project`).
 - New I/O or mutation → probably a new crate, not any existing one.
 
 ## Related

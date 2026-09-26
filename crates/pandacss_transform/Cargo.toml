@@ -17,9 +17,9 @@ pandacss_config = { workspace = true }
 pandacss_encoder = { workspace = true }
 pandacss_extractor = { workspace = true }
 pandacss_literal = { workspace = true }
-pandacss_project = { workspace = true }
 pandacss_recipes = { workspace = true }
 pandacss_shared = { workspace = true }
+pandacss_system = { workspace = true }
 pandacss_utility = { workspace = true }
 rustc-hash = { workspace = true }
 serde_json = { workspace = true }
@@ -27,6 +27,7 @@ string_wizard = { workspace = true }
 tracing = { workspace = true }
 
 [dev-dependencies]
+pandacss_project = { workspace = true }
 indoc = { workspace = true }
 insta = { workspace = true }
 pandacss_fs = { workspace = true, features = ["memory"] }

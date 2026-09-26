@@ -6,7 +6,8 @@ use super::common::{
 };
 use indoc::indoc;
 use insta::assert_snapshot;
-use pandacss_project::{Project, System};
+use pandacss_project::Project;
+use pandacss_system::System;
 use pandacss_transform::{HelperCxMode, inject_cx_import, sync_internal_css_import};
 use serde_json::json;
 

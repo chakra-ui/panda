@@ -97,7 +97,7 @@ The shipping rule is met, verified on the unmodified Rollup plugin:
 Scope: standalone Rollup and Rolldown, plus `tsdown` (the Rolldown library bundler). Rolldown-powered Vite runs Vite
 plugins, so it stays with `@pandacss/vite`, not this.
 
-Rolldown maintains `string_wizard`, which Panda uses in `pandacss_project::transform` for edits and source maps. That
+Rolldown maintains `string_wizard`, which Panda uses in `pandacss_transform` for edits and source maps. That
 affects printer choice, not the host contract.
 
 ## webpack

@@ -168,7 +168,8 @@ pub(crate) fn to_core_matcher(m: Matcher) -> pandacss_extractor::Matcher {
 /// JS-wire compat) → core `ExtractorConfig`.
 pub(crate) fn to_core_config(m: Matchers) -> pandacss_extractor::ExtractorConfig {
     let has_jsx_framework = m.jsx_framework.is_some();
-    let class_attribute = class_attribute_for_jsx_framework(m.jsx_framework.as_deref());
+    let class_attribute =
+        pandacss_system::class_attribute_for_jsx_framework(m.jsx_framework.as_deref());
     let token_dictionary = m
         .token_dictionary
         .clone()
@@ -188,15 +189,6 @@ pub(crate) fn to_core_config(m: Matchers) -> pandacss_extractor::ExtractorConfig
         // session class wires it up explicitly. Free-function callers
         // extract single files anyway, so a per-call cache wouldn't help.
         cross_file: None,
-    }
-}
-
-/// Mirrors `pandacss_project::config::class_attribute_for_framework` for the
-/// flat NAPI `Matchers` shape, whose `jsx_framework` is a wire string.
-fn class_attribute_for_jsx_framework(value: Option<&str>) -> &'static str {
-    match value {
-        Some("solid" | "vue" | "qwik") => "class",
-        _ => "className",
     }
 }
 
@@ -274,33 +266,20 @@ pub(crate) fn to_atom_value(v: &pandacss_encoder::AtomValue) -> serde_json::Valu
     pandacss_compiler::atom_value_json(v)
 }
 
-/// Sort by `(prop, conditions, value)` so snapshot tests don't depend on
-/// hash-set iteration order.
 pub(crate) fn to_atoms<S: std::hash::BuildHasher>(
     atoms: &std::collections::HashSet<pandacss_encoder::Atom, S>,
 ) -> Vec<crate::Atom> {
-    let mut sorted: Vec<&pandacss_encoder::Atom> = atoms.iter().collect();
-    sort_atoms(&mut sorted);
-    sorted.into_iter().map(serialize_atom).collect()
+    pandacss_compiler::sorted_atoms(atoms)
+        .into_iter()
+        .map(serialize_atom)
+        .collect()
 }
 
 pub(crate) fn slice_to_atoms(atoms: &[pandacss_encoder::Atom]) -> Vec<crate::Atom> {
-    let mut sorted: Vec<&pandacss_encoder::Atom> = atoms.iter().collect();
-    sort_atoms(&mut sorted);
-    sorted.into_iter().map(serialize_atom).collect()
-}
-
-fn sort_atoms(sorted: &mut [&pandacss_encoder::Atom]) {
-    sorted.sort_by(|a, b| {
-        a.prop()
-            .cmp(b.prop())
-            .then_with(|| {
-                let a_conds: Vec<&str> = a.conditions().iter().map(AsRef::as_ref).collect();
-                let b_conds: Vec<&str> = b.conditions().iter().map(AsRef::as_ref).collect();
-                a_conds.cmp(&b_conds)
-            })
-            .then_with(|| value_sort_key(a.value()).cmp(&value_sort_key(b.value())))
-    });
+    pandacss_compiler::sorted_atoms(atoms)
+        .into_iter()
+        .map(serialize_atom)
+        .collect()
 }
 
 fn serialize_atom(atom: &pandacss_encoder::Atom) -> crate::Atom {
@@ -312,16 +291,5 @@ fn serialize_atom(atom: &pandacss_encoder::Atom) -> crate::Atom {
             .iter()
             .map(std::string::ToString::to_string)
             .collect::<Vec<String>>(),
-    }
-}
-
-// Lexicographic sort key over the variant tag + raw bytes — stable, cheap.
-fn value_sort_key(v: &pandacss_encoder::AtomValue) -> String {
-    match v {
-        pandacss_encoder::AtomValue::String(s)
-        | pandacss_encoder::AtomValue::Token { value: s, .. } => format!("s:{s}"),
-        pandacss_encoder::AtomValue::Number(s) => format!("n:{s}"),
-        pandacss_encoder::AtomValue::Bool(b) => format!("b:{b}"),
-        pandacss_encoder::AtomValue::Null => "z:".to_owned(),
     }
 }

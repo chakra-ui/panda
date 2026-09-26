@@ -1,8 +1,5 @@
 use crate::{Diagnostic, DiagnosticSeverity};
 use napi_derive::napi;
-use pandacss_config::{
-    UserConfig, ValidationMode, validate_config_value, validation_mode_from_value,
-};
 use pandacss_shared::diagnostic_codes;
 
 #[napi(object)]
@@ -128,32 +125,20 @@ pub fn compile(input: Option<CompileInput>) -> CompileOutput {
         );
     };
 
-    let raw_diagnostics = validate_config_value(&config_value);
-    if validation_mode_from_value(&config_value) == ValidationMode::Error
-        && !raw_diagnostics.is_empty()
-    {
-        return diagnostics_only_output(raw_diagnostics);
-    }
-    let user_config: UserConfig = match serde_json::from_value(config_value) {
-        Ok(config) => config,
-        Err(err) => {
-            return error_output(
-                diagnostic_codes::COMPILE_PLACEHOLDER,
-                format!("invalid config: {err}"),
-            );
+    let loaded =
+        pandacss_compiler::load_system(config_value, |_, _| Ok::<(), std::convert::Infallible>(()));
+    let (mut project, user_config) = match loaded {
+        Ok(loaded) => (
+            pandacss_project::Project::new(loaded.system),
+            loaded.user_config,
+        ),
+        Err(pandacss_compiler::LoadSystemError::Invalid(diagnostics)) => {
+            return diagnostics_only_output(diagnostics);
         }
-    };
-
-    let mut project = match pandacss_project::System::new(pandacss_project::SystemInput {
-        config: user_config.clone(),
-        diagnostics: Some(raw_diagnostics),
-        token_dictionary: None,
-    }) {
-        Ok(system) => pandacss_project::Project::new(system),
         Err(err) => {
             return error_output(
                 diagnostic_codes::COMPILE_PLACEHOLDER,
-                format!("invalid config: {err}"),
+                err.message().unwrap_or_default(),
             );
         }
     };

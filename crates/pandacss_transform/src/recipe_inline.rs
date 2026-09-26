@@ -2,9 +2,9 @@
 
 use pandacss_extractor::StyleTree;
 use pandacss_literal::Literal;
-use pandacss_project::Config;
-use pandacss_project::is_recipe_config;
 use pandacss_recipes::{CompoundVariant, Recipe, SlotCompoundVariant, SlotRecipe};
+use pandacss_system::System;
+use pandacss_system::is_recipe_config;
 
 use super::helper::{CVA_HELPER_LOCAL, SVA_HELPER_LOCAL};
 use super::js;
@@ -13,7 +13,7 @@ use super::resolve::is_static_style_literal;
 use super::style_lower::{self, LowerTarget};
 
 pub(crate) fn rewrite_for_cva_call(
-    config: &Config,
+    system: &System,
     source: &str,
     span: pandacss_shared::Span,
     args: &[Option<Literal>],
@@ -25,7 +25,7 @@ pub(crate) fn rewrite_for_cva_call(
         return None;
     }
     let style = style_args.first().and_then(|value| value.as_ref());
-    let encoded = encode_cva_config(config, source, definition, style)?;
+    let encoded = encode_cva_config(system, source, definition, style)?;
     Some(Rewrite {
         start: span.start,
         end: span.end,
@@ -38,7 +38,7 @@ pub(crate) fn rewrite_for_cva_call(
 }
 
 pub(crate) fn rewrite_for_sva_call(
-    config: &Config,
+    system: &System,
     span: pandacss_shared::Span,
     args: &[Option<Literal>],
 ) -> Option<Rewrite> {
@@ -46,7 +46,7 @@ pub(crate) fn rewrite_for_sva_call(
     if !is_static_slot_config(definition) {
         return None;
     }
-    let encoded = encode_sva_config(config, definition)?;
+    let encoded = encode_sva_config(system, definition)?;
     Some(Rewrite {
         start: span.start,
         end: span.end,
@@ -57,22 +57,22 @@ pub(crate) fn rewrite_for_sva_call(
 }
 
 pub(crate) fn encode_cva_config(
-    config: &Config,
+    system: &System,
     source: &str,
     definition: &Literal,
     style: Option<&StyleTree>,
 ) -> Option<String> {
     if is_recipe_config(definition) {
         let recipe = Recipe::from_literal(definition)?;
-        print_recipe_config(config, source, &recipe, style)
+        print_recipe_config(system, source, &recipe, style)
     } else {
-        print_plain_style_as_base(config, source, definition, style)
+        print_plain_style_as_base(system, source, definition, style)
     }
 }
 
-pub(crate) fn encode_sva_config(config: &Config, definition: &Literal) -> Option<String> {
+pub(crate) fn encode_sva_config(system: &System, definition: &Literal) -> Option<String> {
     let recipe = SlotRecipe::from_literal(definition)?;
-    print_slot_recipe_config(config, &recipe)
+    print_slot_recipe_config(system, &recipe)
 }
 
 fn is_static_slot_config(definition: &Literal) -> bool {
@@ -100,23 +100,23 @@ fn is_static_slot_config(definition: &Literal) -> bool {
 }
 
 fn print_plain_style_as_base(
-    config: &Config,
+    system: &System,
     source: &str,
     definition: &Literal,
     style: Option<&StyleTree>,
 ) -> Option<String> {
-    if let Some(expr) = style_tree_class_expression(config, source, style) {
+    if let Some(expr) = style_tree_class_expression(system, source, style) {
         return Some(format!("{{ base: {expr} }}"));
     }
     if definition.has_conditional() {
         return None;
     }
-    let classes = config.class_names_for_style_literal(definition)?;
+    let classes = system.class_names_for_style_literal(definition)?;
     Some(format!("{{ base: '{}' }}", js::escape(&classes.join(" "))))
 }
 
 fn print_recipe_config(
-    config: &Config,
+    system: &System,
     source: &str,
     recipe: &Recipe,
     style: Option<&StyleTree>,
@@ -125,7 +125,7 @@ fn print_recipe_config(
 
     if let Some(base) = &recipe.base {
         let base_tree = style.and_then(|tree| style_lower::style_tree_object_entry(tree, "base"));
-        let base_part = print_recipe_base(config, source, base, base_tree)?;
+        let base_part = print_recipe_base(system, source, base, base_tree)?;
         parts.push(format!("base: {base_part}"));
     }
 
@@ -140,7 +140,7 @@ fn print_recipe_config(
                 if !is_static_style_literal(&option.style) {
                     return None;
                 }
-                let classes = config.class_names_for_style_literal(&option.style)?;
+                let classes = system.class_names_for_style_literal(&option.style)?;
                 options.push(format!(
                     "{}: '{}'",
                     js::key(&option.key),
@@ -158,7 +158,7 @@ fn print_recipe_config(
         let compounds = recipe
             .compound_variants
             .iter()
-            .map(|compound| print_compound_variant(config, compound))
+            .map(|compound| print_compound_variant(system, compound))
             .collect::<Option<Vec<_>>>()?;
         parts.push(format!("compoundVariants: [{}]", compounds.join(", ")));
     }
@@ -172,12 +172,12 @@ fn print_recipe_config(
 
 /// `base` value as a JS expression: quoted class string, or unquoted ternary.
 fn print_recipe_base(
-    config: &Config,
+    system: &System,
     source: &str,
     base: &Literal,
     base_tree: Option<&StyleTree>,
 ) -> Option<String> {
-    if let Some(expr) = style_tree_class_expression(config, source, base_tree) {
+    if let Some(expr) = style_tree_class_expression(system, source, base_tree) {
         return Some(expr);
     }
     if base.has_conditional() {
@@ -186,7 +186,7 @@ fn print_recipe_base(
     if !is_static_style_literal(base) {
         return None;
     }
-    let classes = config.class_names_for_style_literal(base)?;
+    let classes = system.class_names_for_style_literal(base)?;
     if classes.is_empty() {
         return None;
     }
@@ -194,7 +194,7 @@ fn print_recipe_base(
 }
 
 fn style_tree_class_expression(
-    config: &Config,
+    system: &System,
     source: &str,
     tree: Option<&StyleTree>,
 ) -> Option<String> {
@@ -202,11 +202,11 @@ fn style_tree_class_expression(
     if !style_lower::style_tree_has_rewrite_sites(tree) {
         return None;
     }
-    style_lower::lower_style_tree(config, source, tree, LowerTarget::Css, None)
+    style_lower::lower_style_tree(system, source, tree, LowerTarget::Css, None)
         .map(|expr| style_lower::print_class_expr(&expr))
 }
 
-fn print_slot_recipe_config(config: &Config, recipe: &SlotRecipe) -> Option<String> {
+fn print_slot_recipe_config(system: &System, recipe: &SlotRecipe) -> Option<String> {
     let mut parts = Vec::new();
 
     if !recipe.slots.is_empty() {
@@ -225,7 +225,7 @@ fn print_slot_recipe_config(config: &Config, recipe: &SlotRecipe) -> Option<Stri
             if style.has_conditional() {
                 return None;
             }
-            let classes = config.class_names_for_style_literal(style)?;
+            let classes = system.class_names_for_style_literal(style)?;
             base_parts.push(format!(
                 "{}: '{}'",
                 js::key(slot),
@@ -240,7 +240,7 @@ fn print_slot_recipe_config(config: &Config, recipe: &SlotRecipe) -> Option<Stri
         for group in &recipe.variants {
             let mut options = Vec::new();
             for option in &group.options {
-                let encoded = print_slot_variant_option(config, recipe, option)?;
+                let encoded = print_slot_variant_option(system, recipe, option)?;
                 options.push(format!("{}: {encoded}", js::key(&option.key)));
             }
             groups.push(js::field(&group.name, js::object(options)));
@@ -254,7 +254,7 @@ fn print_slot_recipe_config(config: &Config, recipe: &SlotRecipe) -> Option<Stri
         let compounds = recipe
             .compound_variants
             .iter()
-            .map(|compound| print_slot_compound_variant(config, compound))
+            .map(|compound| print_slot_compound_variant(system, compound))
             .collect::<Option<Vec<_>>>()?;
         parts.push(format!("compoundVariants: [{}]", compounds.join(", ")));
     }
@@ -291,7 +291,7 @@ fn format_variant_value(value: &str) -> String {
 /// One class string when the option styles every slot the same way, else a
 /// per-slot map so classes never leak onto slots the option doesn't style.
 fn print_slot_variant_option(
-    config: &Config,
+    system: &System,
     recipe: &SlotRecipe,
     option: &pandacss_recipes::SlotVariantOption,
 ) -> Option<String> {
@@ -300,7 +300,7 @@ fn print_slot_variant_option(
         if style.has_conditional() {
             return None;
         }
-        let classes = config.class_names_for_style_literal(style)?.join(" ");
+        let classes = system.class_names_for_style_literal(style)?.join(" ");
         if !classes.is_empty() {
             per_slot.push((slot.as_str(), classes));
         }
@@ -331,7 +331,7 @@ fn slot_names(recipe: &SlotRecipe) -> Vec<&str> {
     }
 }
 
-fn print_compound_variant(config: &Config, compound: &CompoundVariant) -> Option<String> {
+fn print_compound_variant(system: &System, compound: &CompoundVariant) -> Option<String> {
     if compound.css.has_conditional() {
         return None;
     }
@@ -339,7 +339,7 @@ fn print_compound_variant(config: &Config, compound: &CompoundVariant) -> Option
     let classes = if let Some(class_name) = &compound.class_name {
         class_name.clone()
     } else {
-        config
+        system
             .class_names_for_style_literal(&compound.css)?
             .join(" ")
     };
@@ -347,14 +347,14 @@ fn print_compound_variant(config: &Config, compound: &CompoundVariant) -> Option
     Some(js::object(parts))
 }
 
-fn print_slot_compound_variant(config: &Config, compound: &SlotCompoundVariant) -> Option<String> {
+fn print_slot_compound_variant(system: &System, compound: &SlotCompoundVariant) -> Option<String> {
     let mut parts = print_compound_conditions(&compound.conditions);
     let mut css_parts = Vec::new();
     for (slot, style) in &compound.css {
         if style.has_conditional() {
             return None;
         }
-        let classes = config.class_names_for_style_literal(style)?;
+        let classes = system.class_names_for_style_literal(style)?;
         css_parts.push(format!(
             "{}: '{}'",
             js::key(slot),
@@ -390,7 +390,7 @@ fn print_compound_conditions(conditions: &[(String, Vec<String>)]) -> Vec<String
 }
 
 pub(crate) fn rewrite_styled_config_arg(
-    config: &Config,
+    system: &System,
     source: &str,
     arg_spans: &[pandacss_shared::Span],
     config_arg_index: usize,
@@ -399,7 +399,7 @@ pub(crate) fn rewrite_styled_config_arg(
 ) -> Option<Rewrite> {
     let arg = arg_spans.get(config_arg_index)?;
     let content = {
-        let encoded = encode_cva_config(config, source, definition, style)?;
+        let encoded = encode_cva_config(system, source, definition, style)?;
         format!("/* @__PURE__ */ {CVA_HELPER_LOCAL}({encoded})")
     };
     Some(Rewrite {
@@ -415,7 +415,7 @@ pub(crate) fn rewrite_styled_config_arg(
 
 /// `styled('tag', config)` / `styled.tag(config)` factory call transforms.
 pub(crate) fn rewrites_for_styled_call(
-    config: &Config,
+    system: &System,
     source: &str,
     call: &pandacss_extractor::ExtractedCall,
 ) -> Option<[Rewrite; 2]> {
@@ -432,7 +432,7 @@ pub(crate) fn rewrites_for_styled_call(
         .get(config_index)
         .and_then(|value| value.as_ref());
     let definition = rewrite_styled_config_arg(
-        config,
+        system,
         source,
         &call.arg_spans,
         config_index,

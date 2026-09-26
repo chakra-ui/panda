@@ -12,7 +12,8 @@ use oxc_resolver::{FileMetadata, FileSystem as OxcFileSystem, ResolveError};
 use pandacss_encoder::AtomValue;
 use pandacss_extractor::CrossFileResolver;
 use pandacss_fs::{FileSystem, MemoryFileSystem};
-use pandacss_project::{ParseTransforms, Project};
+use pandacss_project::Project;
+use pandacss_system::ParseTransforms;
 use serde_json::json;
 
 #[derive(Clone)]

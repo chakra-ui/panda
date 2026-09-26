@@ -18,22 +18,15 @@ mod serde_types;
 mod transforms;
 
 use std::collections::HashMap;
-use std::sync::Arc;
 use wasm_bindgen::prelude::*;
 
-use crate::cache::TransformCache;
 use crate::fs::WasmFileSystem;
-use pandacss_config::{
-    UserConfig, ValidationMode, validate_config_value, validation_mode_from_value,
-};
+use pandacss_compiler::{LoadSystemError, LoadedSystem, TransformCache};
+use pandacss_config::UserConfig;
 use pandacss_fs::{MemoryFileSystem, PosixPathSystem};
 
-use self::interop::{format_deserialize_error, with_wasm_fs};
-use self::transforms::{
-    get_pattern_transform_refs, get_utility_transform_refs, resolve_utility_values_callbacks,
-    utility_value_callbacks_from_options,
-};
-use pandacss_compiler::format_config_diagnostics;
+use self::interop::with_wasm_fs;
+use self::transforms::{resolve_utility_values_callbacks, utility_value_callbacks_from_options};
 
 /// JS-facing project handle. Constructed once per session with a
 /// [`WasmFileSystem`] (whose contents the cross-file resolver reads),
@@ -70,15 +63,15 @@ struct CallbackHost {
 }
 
 struct SourceTransformCallback {
-    filter: pandacss_project::HookFilter,
+    filter: pandacss_compiler::HookFilter,
     callback: js_sys::Function,
 }
 
 impl CallbackHost {
     fn from_config(config: &UserConfig) -> Self {
         Self {
-            utility_transform_refs: get_utility_transform_refs(config),
-            pattern_transform_refs: get_pattern_transform_refs(config),
+            utility_transform_refs: pandacss_compiler::utility_transform_refs(config),
+            pattern_transform_refs: pandacss_compiler::pattern_transform_refs(config),
             utility_transforms: HashMap::new(),
             pattern_transforms: HashMap::new(),
             source_transforms: Vec::new(),
@@ -115,34 +108,18 @@ impl WasmCompiler {
 
         let config_value: serde_json::Value = serde_wasm_bindgen::from_value(config)
             .map_err(|err| JsValue::from_str(&format!("invalid config: {err}")))?;
-        let config_snapshot = config_value.clone();
-        let raw_diagnostics = validate_config_value(&config_snapshot);
-        if validation_mode_from_value(&config_snapshot) == ValidationMode::Error
-            && !raw_diagnostics.is_empty()
-        {
-            return Err(JsValue::from_str(&format_config_diagnostics(
-                &raw_diagnostics,
-            )));
-        }
-        let mut config: UserConfig = serde_json::from_value(config_value)
-            .map_err(|err| JsValue::from_str(&format_deserialize_error(&err, &raw_diagnostics)))?;
-        let token_dictionary = pandacss_tokens::TokenDictionary::from_config(&config)
-            .map_err(|err| JsValue::from_str(&format!("invalid token config: {err}")))?
-            .map(Arc::new);
-        resolve_utility_values_callbacks(
-            &mut config,
-            token_dictionary.as_ref(),
-            &utility_values_callbacks,
-        )?;
-        let callbacks = CallbackHost::from_config(&config);
-        let user_config = config.clone();
-        let config_snapshot = serde_json::to_value(&config).unwrap_or(config_snapshot);
-        let system = pandacss_project::System::new(pandacss_project::SystemInput {
-            config,
-            diagnostics: Some(raw_diagnostics),
-            token_dictionary,
+        let LoadedSystem {
+            system,
+            user_config,
+            snapshot: config_snapshot,
+        } = pandacss_compiler::load_system(config_value, |config, token_dictionary| {
+            resolve_utility_values_callbacks(config, token_dictionary, &utility_values_callbacks)
         })
-        .map_err(|err| JsValue::from_str(&format!("invalid config: {err}")))?;
+        .map_err(|err| match err {
+            LoadSystemError::Host(err) => err,
+            err => JsValue::from_str(&err.message().unwrap_or_default()),
+        })?;
+        let callbacks = CallbackHost::from_config(&user_config);
         let project = pandacss_project::Project::new(system);
 
         Ok(Self {

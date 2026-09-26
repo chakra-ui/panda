@@ -1,7 +1,8 @@
 use pandacss_config::UserConfig;
 use pandacss_encoder::EncodedRecipesSnapshot;
-use pandacss_project::{Project, ProjectStylesheetSnapshots, System};
+use pandacss_project::{Project, ProjectStylesheetSnapshots};
 use pandacss_stylesheet::{StylesheetInput, StylesheetLayer, StylesheetOptions, StylesheetOutput};
+use pandacss_system::System;
 
 pub fn config(value: serde_json::Value) -> UserConfig {
     serde_json::from_value(value).expect("valid config")

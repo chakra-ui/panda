@@ -9,9 +9,8 @@ use pandacss_shared::Diagnostic;
 use pandacss_tokens::TokenDictionary;
 use serde::Serialize;
 
-use pandacss_project::{
-    PatternTransformFn, Project, ProjectStylesheetSnapshots, UtilityTransformFn,
-};
+use pandacss_project::{Project, ProjectStylesheetSnapshots};
+use pandacss_system::{PatternTransformFn, UtilityTransformFn};
 
 /// CSS emission overrides supplied by a host method.
 #[derive(Clone, Default)]
@@ -284,7 +283,7 @@ fn compile_prelude(
     let (static_pattern_atoms, static_pattern_diagnostics) =
         project.static_pattern_atoms(user_config, pattern_transform);
     CompilePrelude {
-        token_dictionary: project.config().token_dictionary(),
+        token_dictionary: project.system().token_dictionary(),
         static_pattern_atoms,
         static_pattern_diagnostics,
     }

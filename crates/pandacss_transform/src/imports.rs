@@ -3,8 +3,8 @@
 use pandacss_extractor::{
     ImportKind, ImportRecord, ImportSpecifier, ImportSpecifierKind, ModuleFacts,
 };
-use pandacss_project::Config;
 use pandacss_shared::Span;
+use pandacss_system::System;
 
 use super::apply::Edit;
 use super::helper::INTERNAL_CSS_MODULE;
@@ -13,13 +13,13 @@ use super::plan::Rewrite;
 /// Plan remove/narrow edits for Panda imports whose bindings are unused in `usage_source`.
 #[must_use]
 pub(crate) fn plan_panda_import_edits(
-    config: &Config,
+    system: &System,
     path: &str,
     source: &str,
     module: &ModuleFacts,
     rewrites: &[Rewrite],
 ) -> Vec<Edit> {
-    let extractor = config.extractor_config();
+    let extractor = system.extractor_config();
     let matchers = &extractor.matchers;
     if !matchers.has_module_matchers() {
         return Vec::new();

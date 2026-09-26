@@ -195,7 +195,8 @@ fn rewrites_four_independent_conditionals_on_multiline_element() {
 #[test]
 fn skips_jsx_rewrite_when_conditional_site_count_exceeds_budget() {
     use super::common::{create_config, transform_jsx_with_project};
-    use pandacss_project::{Project, System};
+    use pandacss_project::Project;
+    use pandacss_system::System;
     use serde_json::{Map, Value, json};
 
     let mut utilities = Map::new();

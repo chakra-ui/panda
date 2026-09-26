@@ -92,7 +92,7 @@ impl Compiler {
         let has_pattern_transforms = self.callbacks.has_pattern_transforms();
         let has_utility_transforms = self.callbacks.has_utility_transforms();
         if !has_source_transforms && !has_pattern_transforms && !has_utility_transforms {
-            return transform_source(self.inner.config(), path, source, options);
+            return transform_source(self.inner.system(), path, source, options);
         }
         let Compiler {
             inner, callbacks, ..
@@ -124,19 +124,19 @@ impl Compiler {
             apply_source_transforms(path, source, &callbacks.source_transforms, env)
         };
         transform_source_with(
-            inner.config(),
+            inner.system(),
             path,
             source,
             options,
-            pandacss_project::ParseTransforms {
+            pandacss_system::ParseTransforms {
                 source: has_source_transforms.then_some(
-                    &mut source_transform as &mut pandacss_project::SourceTransformFn<'_>,
+                    &mut source_transform as &mut pandacss_system::SourceTransformFn<'_>,
                 ),
                 pattern: has_pattern_transforms.then_some(
-                    &mut pattern_transform as &mut pandacss_project::PatternTransformFn<'_>,
+                    &mut pattern_transform as &mut pandacss_system::PatternTransformFn<'_>,
                 ),
                 utility: has_utility_transforms.then_some(
-                    &mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>,
+                    &mut utility_transform as &mut pandacss_system::UtilityTransformFn<'_>,
                 ),
             },
         )
@@ -145,15 +145,8 @@ impl Compiler {
 
 fn into_transform_options(input: &TransformSourceInput) -> TransformOptions {
     TransformOptions {
-        mode: match input.mode.as_deref() {
-            Some("serve") => TransformMode::Serve,
-            _ => TransformMode::Build,
-        },
-        helper_cx: match input.helper_cx.as_deref() {
-            Some("true") => HelperCxMode::True,
-            Some("false") => HelperCxMode::False,
-            _ => HelperCxMode::Auto,
-        },
+        mode: TransformMode::from_name(input.mode.as_deref()),
+        helper_cx: HelperCxMode::from_name(input.helper_cx.as_deref()),
         targets: TransformTargets {
             css: input.targets_css.unwrap_or(false),
             patterns: input.targets_patterns.unwrap_or(false),

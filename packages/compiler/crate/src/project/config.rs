@@ -70,7 +70,7 @@ impl Compiler {
     #[must_use]
     pub fn token_dictionary(&self) -> Option<TokenDictionary> {
         self.inner
-            .config()
+            .system()
             .token_dictionary()
             .as_deref()
             .map(from_core_token_dictionary)

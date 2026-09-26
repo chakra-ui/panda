@@ -127,7 +127,7 @@ fn codegen_input(
     overlay: Option<CodegenOverlay>,
 ) -> CodegenInput {
     let _span = tracing::trace_span!(target: "codegen", "codegen_input").entered();
-    let token_dictionary = project.config().token_dictionary();
+    let token_dictionary = project.system().token_dictionary();
     let patterns = pattern_codegen_meta(user_config);
     CodegenInput {
         config: user_config.clone(),

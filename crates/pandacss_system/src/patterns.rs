@@ -10,6 +10,7 @@ use crate::config::PatternDefinition;
 
 /// Maps a pattern's config name and every JSX tag/regex it matches to its entry.
 #[derive(Debug, Clone, Default)]
+#[doc(hidden)]
 pub(crate) struct PatternRegistry {
     exact: FxHashMap<String, PatternEntry>,
     regexes: Vec<(Regex, PatternEntry)>,
@@ -22,6 +23,9 @@ struct PatternEntry {
     requires_transform: bool,
 }
 
+/// A pattern call's name and styles after `defaultValues` are applied, ready
+/// for the host `transform` callback.
+#[doc(hidden)]
 pub(crate) struct PatternTransformInput<'a> {
     pub(crate) name: &'a str,
     pub(crate) styles: Cow<'a, Literal>,
@@ -55,6 +59,7 @@ impl PatternRegistry {
         registry
     }
 
+    #[doc(hidden)]
     pub(crate) fn transform_input<'a>(
         &'a self,
         name: &'a str,
@@ -90,6 +95,7 @@ impl PatternRegistry {
     }
 
     /// Resolve a pattern name or JSX tag to the canonical pattern name.
+    #[doc(hidden)]
     pub(crate) fn resolve_name(&self, name: &str) -> Option<&str> {
         self.find(name).map(|entry| entry.base_name.as_str())
     }

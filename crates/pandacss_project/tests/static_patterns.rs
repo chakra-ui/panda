@@ -2,7 +2,8 @@ use crate::common::create_config;
 use insta::assert_snapshot;
 use pandacss_encoder::{Atom, AtomValue};
 use pandacss_literal::Literal;
-use pandacss_project::{Diagnostic, Project, System};
+use pandacss_project::{Diagnostic, Project};
+use pandacss_system::System;
 use serde_json::json;
 
 fn build(overrides: serde_json::Value) -> (Project, pandacss_config::UserConfig) {

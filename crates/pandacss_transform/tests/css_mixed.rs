@@ -259,7 +259,7 @@ fn bails_on_mixed_object_when_cx_helper_disabled() {
         export const cls = css({ color: 'red', width: props.w });
     "#};
     let out = transform_source(
-        project().config(),
+        project().system(),
         "src/x.tsx",
         source,
         &TransformOptions {

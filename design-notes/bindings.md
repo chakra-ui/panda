@@ -31,17 +31,19 @@ packages/compiler/crate/src/                  # NAPI
   jsx.rs        ExtractedJsx mirror + extract_jsx
   extract.rs    ExtractResult / ExtractDebugResult + extract / extract_debug
   compile.rs    legacy CompileInput / Output mirrors
-  project.rs    Project class; config-based construction, parseFile, atoms, recipes, compile
+  project.rs    Compiler class; config-based construction (via pandacss_compiler::load_system)
+  project/      Compiler methods by area: files, css, codegen, recipes, build_info, design_system,
+                introspect, transform_source, transforms (JS callback bridge), interop, config
   session.rs    Extractor class (recommended batch entrypoint)
   convert.rs    pandacss_extractor::X ↔ X conversion helpers
 
 packages/compiler-wasm/crate/src/             # WASM
   lib.rs        re-exports + installPanicHook
-  cache.rs      utility/pattern transform callback caches
   fs.rs         WasmFileSystem (handle over MemoryFileSystem)
   matcher.rs    MatchersInput shape + to_core_matchers / to_core_token_dictionary
   extract.rs    WasmExtractor (parseFile)
-  project.rs    WasmProject; config-based construction, parseFile, atoms, recipes
+  project.rs    WasmCompiler; config-based construction (via pandacss_compiler::load_system)
+  project/      WasmCompiler methods by area (same split as NAPI) + serde_types for JS option shapes
 ```
 
 NAPI uses napi-rs's macro pattern (`#[napi(object)]` for plain data, `#[napi]` for constructable classes) with a
@@ -49,6 +51,11 @@ per-function mirror module. Wasm uses `#[wasm_bindgen]` plus `serde-wasm-bindgen
 serde-serialized JS objects rather than declared mirror types — less code to maintain at the cost of slightly higher
 per-call serialization overhead. The wasm side is the playground path, not the production hot path, so the trade is
 worth it.
+
+Anything both bindings would otherwise implement lives in `pandacss_compiler`, and each binding supplies only the host
+call or IO primitive: config → `System` setup (`load_system`), the transform-callback runtime and its cache
+(`apply_*_transform`, `TransformCache`), source glob options, the design-system import scan, output writing, the stable
+atom order, and tooling views (`inspect_file_source`, token suggestions, `HookFilter`).
 
 ## ExtractedArg: tagged for unambiguous null (NAPI)
 
@@ -84,10 +91,10 @@ encoding directly — no equivalent shape needed.
 
 ## Project class (NAPI)
 
-`Project.fromConfig(config)` is the preferred production entrypoint. The JS side passes the resolved, serialized Panda
-config snapshot; the binding deserializes it into `pandacss_config::UserConfig` and calls
-`pandacss_project::Project::from_config(config)`. That path is fallible: config compilation errors, such as invalid
-serialized JSX regexes, are mapped to `napi::Error`.
+`Compiler.fromConfig(config)` is the preferred production entrypoint. The JS side passes the resolved, serialized Panda
+config snapshot; the binding hands it to `pandacss_compiler::load_system` (validate, deserialize, build tokens, resolve
+`utility.values` callbacks, compile a `System`) and wraps the result in `Project::new`. That path is fallible: config
+compilation errors, such as invalid serialized JSX regexes, are mapped to `napi::Error`.
 
 The matcher-based project constructor was intentionally removed. Raw matcher flows belong to the extractor session
 (`new Extractor(matchers)`) and staged extraction helpers; stateful projects are config-derived only.

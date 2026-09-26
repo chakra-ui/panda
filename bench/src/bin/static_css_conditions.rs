@@ -105,11 +105,11 @@ struct CompileRun {
 fn compile_once(config: &UserConfig) -> CompileRun {
     let start = Instant::now();
 
-    let system = pandacss_project::System::new(config.clone()).expect("system");
+    let system = pandacss_system::System::new(config.clone()).expect("system");
     let mut project = Project::new(system);
     project.parse_file("bench/static-css.tsx", "export const App = () => null\n");
 
-    let token_dictionary = project.config().token_dictionary();
+    let token_dictionary = project.system().token_dictionary();
     let snapshots = project.stylesheet_snapshots(config);
 
     let output = pandacss_stylesheet::compile(

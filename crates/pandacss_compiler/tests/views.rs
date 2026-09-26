@@ -3,7 +3,8 @@ use pandacss_compiler::{
     source_glob_options, strip_layer_order_statements,
 };
 use pandacss_fs::PosixPathSystem;
-use pandacss_project::{Project, System};
+use pandacss_project::Project;
+use pandacss_system::System;
 use serde_json::json;
 
 #[test]

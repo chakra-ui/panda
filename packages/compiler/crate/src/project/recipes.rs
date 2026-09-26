@@ -128,7 +128,7 @@ impl Compiler {
             };
             inner.static_pattern_atoms(
                 user_config,
-                Some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
+                Some(&mut transform as &mut pandacss_system::PatternTransformFn<'_>),
             )
         } else {
             inner.static_pattern_atoms(user_config, None)

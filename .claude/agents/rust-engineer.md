@@ -47,14 +47,17 @@ When `.clone()` is the obvious fix, ask **who should own this data** in the comp
 
 ### Crate tiers (dependencies point one way)
 
-| Tier | Crates                                                                              | Rule                                         |
-| ---- | ----------------------------------------------------------------------------------- | -------------------------------------------- |
-| 0    | `pandacss_fs`, `pandacss_shared`                                                    | No parsing/encoding; FS trait, not `std::fs` |
-| 1    | `pandacss_config`, `pandacss_tokens`, `pandacss_recipes`                            | Pure data + parsing; no traversal            |
-| 2    | `pandacss_extractor`, `pandacss_encoder`, `pandacss_stylesheet`, `pandacss_utility` | Process axis; siblings, not cycles           |
-| 3    | `pandacss_project`, `pandacss_engine`, `pandacss_codegen`                           | Façade / orchestration                       |
+| Tier | Crates                                                                                                  | Rule                                         |
+| ---- | ------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| 0    | `pandacss_fs`, `pandacss_shared`, `pandacss_literal`, `pandacss_tracing`                                | No parsing/encoding; FS trait, not `std::fs` |
+| 1    | `pandacss_config`, `pandacss_tokens`, `pandacss_recipes`                                                | Pure data + parsing; no traversal            |
+| 2    | `pandacss_extractor`, `pandacss_encoder`, `pandacss_utility`, `pandacss_stylesheet`, `pandacss_codegen` | Process axis; siblings, not cycles           |
+| 3    | `pandacss_system`                                                                                       | Compiled config; read-only                   |
+| 4    | `pandacss_project`, `pandacss_transform`                                                                | Build/watch state; source rewrite            |
+| 5    | `pandacss_compiler`                                                                                     | Orchestration + host policy                  |
 
-Never import Tier 3 from Tier 1/2. Never put compiler logic in NAPI cdylibs.
+Never import a higher tier from a lower one. Never put compiler logic in NAPI/wasm cdylibs — shared host policy goes in
+`pandacss_compiler`.
 
 ### Toolchain
 
@@ -103,8 +106,8 @@ Apply **`crates/RUST_GUIDE.md`** in full. Highlights:
 ## Testing workflow
 
 - Public API tests live in `crates/<name>/tests/`, not `src/` (except private helper unit tests).
-- Consolidated harness: `pandacss_stylesheet`, `pandacss_project`, `pandacss_extractor`, `pandacss_codegen` use
-  `tests/main.rs` + `autotests = false`.
+- Consolidated harness: `pandacss_stylesheet`, `pandacss_project`, `pandacss_transform`, `pandacss_extractor`,
+  `pandacss_codegen` use `tests/main.rs` + `autotests = false`.
 - Snapshots: `assert_snapshot!` for CSS, `assert_yaml_snapshot!` for structured data; update via
   `cargo insta review -p <crate>`.
 - Prefer crate-scoped iteration:

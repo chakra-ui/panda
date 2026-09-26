@@ -73,7 +73,7 @@ impl Compiler {
                     path,
                     source,
                     batch,
-                    pandacss_project::ParseTransforms::default(),
+                    pandacss_system::ParseTransforms::default(),
                 ),
                 None => self.inner.parse_file(path, source),
             };
@@ -107,13 +107,13 @@ impl Compiler {
         let mut source_transform = |path: &str, source: &str| {
             apply_source_transforms(path, source, &callbacks.source_transforms, env)
         };
-        let transforms = pandacss_project::ParseTransforms {
+        let transforms = pandacss_system::ParseTransforms {
             source: has_source_transforms
-                .then_some(&mut source_transform as &mut pandacss_project::SourceTransformFn<'_>),
+                .then_some(&mut source_transform as &mut pandacss_system::SourceTransformFn<'_>),
             pattern: has_pattern_transforms
-                .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
+                .then_some(&mut transform as &mut pandacss_system::PatternTransformFn<'_>),
             utility: has_utility_transforms
-                .then_some(&mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>),
+                .then_some(&mut utility_transform as &mut pandacss_system::UtilityTransformFn<'_>),
         };
         match batch {
             Some(batch) => inner.parse_file_in_batch(path, source, batch, transforms),
@@ -154,50 +154,20 @@ impl Compiler {
         &self,
         packages: Vec<DesignSystemImportPackageQuery>,
     ) -> napi::Result<Vec<Option<Vec<String>>>> {
-        let paths = self.scan_paths(None)?;
-        let sources: Vec<(String, String)> = paths
+        let packages: Vec<pandacss_compiler::DesignSystemImportQuery> = packages
             .into_iter()
-            .filter_map(|path| {
-                let source = self.source_for_import_scan(&path)?;
-                Some((path.to_string_lossy().into_owned(), source))
+            .map(|pkg| pandacss_compiler::DesignSystemImportQuery {
+                package_roots: pkg.package_roots,
+                exclude_modules: pkg.exclude_modules,
             })
             .collect();
-
-        let root_lists: Vec<Vec<&str>> = packages
-            .iter()
-            .map(|pkg| pkg.package_roots.iter().map(String::as_str).collect())
-            .collect();
-        let exclude_lists: Vec<Vec<&str>> = packages
-            .iter()
-            .map(|pkg| {
-                pkg.exclude_modules
-                    .as_ref()
-                    .map(|mods| mods.iter().map(String::as_str).collect())
-                    .unwrap_or_default()
-            })
-            .collect();
-        let queries: Vec<pandacss_extractor::DesignSystemPackageQuery<'_>> = root_lists
-            .iter()
-            .zip(exclude_lists.iter())
-            .map(
-                |(roots, excluded)| pandacss_extractor::DesignSystemPackageQuery {
-                    package_roots: roots.as_slice(),
-                    exclude_modules: excluded.as_slice(),
-                },
-            )
-            .collect();
-
-        Ok(
-            pandacss_extractor::collect_design_system_imports_for_packages(
-                sources
-                    .iter()
-                    .map(|(path, source)| (path.as_str(), source.as_str())),
-                &queries,
-            )
-            .into_iter()
-            .map(pandacss_extractor::DesignSystemImportSelection::into_load_imports)
-            .collect(),
+        pandacss_compiler::design_system_import_selections(
+            &self.inner,
+            &self.fs,
+            &self.user_config,
+            &packages,
         )
+        .map_err(|err| napi::Error::from_reason(format!("scan failed: {err}")))
     }
 
     /// Resolve a path to its real on-disk location (absolute, symlinks followed) so
@@ -285,23 +255,6 @@ impl Compiler {
             .map_err(|err| napi::Error::from_reason(format!("scan failed: {err}")))
     }
 
-    /// Prefer the project's in-memory source (watch `applyChange`) over disk.
-    fn source_for_import_scan(&self, path: &std::path::Path) -> Option<String> {
-        let path_str = path.to_string_lossy();
-        if let Some(source) = self.inner.file_source(path_str.as_ref()) {
-            return Some(source.to_owned());
-        }
-        if let Ok(real) = self.fs.canonicalize(path) {
-            let real_str = real.to_string_lossy();
-            if real_str != path_str
-                && let Some(source) = self.inner.file_source(real_str.as_ref())
-            {
-                return Some(source.to_owned());
-            }
-        }
-        self.fs.read_to_string(path).ok()
-    }
-
     /// Stateless single-file extraction — raw `calls` + `jsx` + diagnostics,
     /// using the project's configured matchers + token dictionary. Unlike
     /// `parseFile`, it registers nothing; it's the read-only peek companion.
@@ -387,14 +340,14 @@ impl Compiler {
         inner.refresh_file_with(
             &path,
             &source,
-            pandacss_project::ParseTransforms {
+            pandacss_system::ParseTransforms {
                 source: has_source_transforms.then_some(
-                    &mut source_transform as &mut pandacss_project::SourceTransformFn<'_>,
+                    &mut source_transform as &mut pandacss_system::SourceTransformFn<'_>,
                 ),
                 pattern: has_pattern_transforms
-                    .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
+                    .then_some(&mut transform as &mut pandacss_system::PatternTransformFn<'_>),
                 utility: has_utility_transforms.then_some(
-                    &mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>,
+                    &mut utility_transform as &mut pandacss_system::UtilityTransformFn<'_>,
                 ),
             },
         )

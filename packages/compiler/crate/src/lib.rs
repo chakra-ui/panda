@@ -11,7 +11,6 @@
     reason = "NAPI boundary: JS-exception error reporting; helpers borrow Env"
 )]
 
-mod cache;
 mod calls;
 mod compile;
 mod convert;

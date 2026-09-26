@@ -27,12 +27,14 @@ use pandacss_utility::{StyleNormalizer, Utility};
 use std::hash::Hash;
 
 use crate::config::{RecipeDefinition, SlotRecipeDefinition};
-use crate::{ProjectConditionMatcher, literal_entries, refcount_add, refcount_remove};
+use crate::{ProjectConditionMatcher, literal_entries};
+use pandacss_shared::refcount::{refcount_add, refcount_remove};
 
 /// Compiled config recipes, indexed for resolution and JSX-tag lookup.
 /// `jsx_to_recipes` handles exact tag matches; `regex_jsx_*` handle the
 /// regex-specifier matches via a single combined [`RegexSet`].
 #[derive(Debug, Clone, Default)]
+#[doc(hidden)]
 pub(crate) struct RecipeRegistry {
     class_name_prefix: Box<str>,
     hash_class_names: bool,
@@ -252,6 +254,7 @@ impl RecipeRegistry {
             .push(recipe_name.into());
     }
 
+    #[doc(hidden)]
     pub(crate) fn find_by_jsx<'a>(&'a self, tag: &str) -> SmallVec<[&'a str; 2]> {
         let mut out = SmallVec::new();
         if let Some(names) = self.jsx_to_recipes.get(tag) {
@@ -268,6 +271,7 @@ impl RecipeRegistry {
         out
     }
 
+    #[doc(hidden)]
     pub(crate) fn style_props_for_recipes(
         &self,
         recipe_names: &[&str],
@@ -325,6 +329,7 @@ impl RecipeRegistry {
             .map(|node| node.slots.as_slice())
     }
 
+    #[doc(hidden)]
     pub(crate) fn slot_for_jsx<'a>(&'a self, recipe_name: &str, tag: &str) -> Option<&'a str> {
         let recipe = self.slot_recipe(recipe_name)?;
         let tag_slot = tag.rsplit('.').next().unwrap_or(tag).to_ascii_lowercase();
@@ -482,6 +487,7 @@ impl RecipeRegistry {
         Some(per_slot)
     }
 
+    #[doc(hidden)]
     pub(crate) fn process_static_css(
         &self,
         encoded: &mut EncodedRecipes,
@@ -946,7 +952,8 @@ impl Default for EncodedRecipes {
 }
 
 #[derive(Debug, Default)]
-pub(crate) struct EncodedRecipesCache {
+#[doc(hidden)]
+pub struct EncodedRecipesCache {
     view: EncodedRecipes,
     base_counts: FxHashMap<RecipePartKey, CountedRecipeStyleGroup>,
     variant_counts: FxHashMap<RecipeVariantKey, CountedRecipeStyleGroup>,
@@ -1002,7 +1009,9 @@ impl RecipeGroupKey for RecipeVariantKey {
 }
 
 impl EncodedRecipes {
-    pub(crate) fn new(smart_compound_variants: bool) -> Self {
+    #[must_use]
+    #[doc(hidden)]
+    pub fn new(smart_compound_variants: bool) -> Self {
         Self {
             base: FxHashMap::default(),
             variants: FxHashMap::default(),
@@ -1013,7 +1022,8 @@ impl EncodedRecipes {
         }
     }
 
-    pub(crate) fn clear(&mut self) {
+    #[doc(hidden)]
+    pub fn clear(&mut self) {
         self.base.clear();
         self.variants.clear();
         self.compounds.clear();
@@ -1021,14 +1031,18 @@ impl EncodedRecipes {
         self.compounds_emitted.clear();
     }
 
-    pub(crate) fn is_empty(&self) -> bool {
+    #[must_use]
+    #[doc(hidden)]
+    pub fn is_empty(&self) -> bool {
         self.base.is_empty()
             && self.variants.is_empty()
             && self.compounds.is_empty()
             && self.atomic.is_empty()
     }
 
-    pub(crate) fn extend_missing_from(&mut self, source: &Self) -> Self {
+    #[must_use]
+    #[doc(hidden)]
+    pub fn extend_missing_from(&mut self, source: &Self) -> Self {
         let mut missing = Self::default();
         extend_missing_recipe_groups(&mut self.base, &mut missing.base, &source.base);
         extend_missing_recipe_groups(&mut self.variants, &mut missing.variants, &source.variants);
@@ -1047,6 +1061,7 @@ impl EncodedRecipes {
 
     /// Records one usage's style groups: `base`, selected variants, and
     /// matching compounds. Unknown recipe names are no-ops.
+    #[doc(hidden)]
     pub(crate) fn process_usage(
         &mut self,
         recipes: &RecipeRegistry,
@@ -1244,6 +1259,7 @@ impl EncodedRecipes {
     }
 
     #[must_use]
+    #[doc(hidden)]
     pub fn snapshot(&self) -> EncodedRecipesSnapshot {
         EncodedRecipesSnapshot {
             base: sorted_group_snapshots(&self.base),
@@ -1253,7 +1269,8 @@ impl EncodedRecipes {
         }
     }
 
-    pub(crate) fn transform_utilities(
+    #[doc(hidden)]
+    pub fn transform_utilities(
         &mut self,
         utility: Option<&Utility>,
         conditions: &ProjectConditionMatcher,
@@ -1479,7 +1496,8 @@ fn flat_transform_recipe_value(value: &Literal) -> Option<(AtomValue, bool)> {
 }
 
 impl EncodedRecipesCache {
-    pub(crate) fn clear(&mut self) {
+    #[doc(hidden)]
+    pub fn clear(&mut self) {
         self.view.clear();
         self.base_counts.clear();
         self.variant_counts.clear();
@@ -1487,15 +1505,20 @@ impl EncodedRecipesCache {
         self.atomic_counts.clear();
     }
 
-    pub(crate) fn is_empty(&self) -> bool {
+    #[must_use]
+    #[doc(hidden)]
+    pub fn is_empty(&self) -> bool {
         self.view.is_empty()
     }
 
-    pub(crate) fn view(&self) -> &EncodedRecipes {
+    #[must_use]
+    #[doc(hidden)]
+    pub fn view(&self) -> &EncodedRecipes {
         &self.view
     }
 
-    pub(crate) fn add_from(&mut self, recipes: &EncodedRecipes) {
+    #[doc(hidden)]
+    pub fn add_from(&mut self, recipes: &EncodedRecipes) {
         add_recipe_groups(&mut self.view.base, &mut self.base_counts, &recipes.base);
         add_recipe_groups(
             &mut self.view.variants,
@@ -1515,7 +1538,8 @@ impl EncodedRecipesCache {
         }
     }
 
-    pub(crate) fn remove_from(&mut self, recipes: &EncodedRecipes) {
+    #[doc(hidden)]
+    pub fn remove_from(&mut self, recipes: &EncodedRecipes) {
         remove_recipe_groups(&mut self.view.base, &mut self.base_counts, &recipes.base);
         remove_recipe_groups(
             &mut self.view.variants,

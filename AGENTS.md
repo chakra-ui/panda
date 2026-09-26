@@ -33,7 +33,8 @@ with workspace support.
   /literal/        # Host-neutral extracted value IR
   /encoder/        # Style usage → atomic rules
   /stylesheet/     # Native CSS emission (replaces planned emitter/optimizer split)
-  /project/        # Project lifecycle, recipes, config resolution
+  /system/         # Compiled config: System, class names, recipe/pattern registries
+  /project/        # Project lifecycle: parsed files, atom/recipe caches, build info
   /transform/      # Source rewrite (static calls → class strings)
   /compiler/       # Host-neutral CSS, codegen, and derived-view orchestration
   /config/         # Serializable config types
@@ -242,7 +243,7 @@ ASCII in the terminal, mermaid in markdown docs. The diagram replaces the prose;
 
 1. User config → `packages/config/` (`loadConfig`, `bundleConfig`, snapshot)
 2. Config types/hooks → `packages/types/src/config.ts`
-3. Resolved config → `@pandacss/compiler` (NAPI) → Rust `pandacss_config` / `pandacss_project`
+3. Resolved config → `@pandacss/compiler` (NAPI) → Rust `pandacss_config` → `pandacss_system`
 4. Codegen + CSS emission happen inside the Rust engine (`crates/*`)
 
 ### CSS Processing Flow (v2, Rust)
@@ -260,7 +261,7 @@ reference.
 
 | Stage                   | Where                                                                      | What to do                                                                                                                                                                                                      |
 | ----------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Allowlist / `importMap` | `pandacss_project` extractor config + `normalizeImportMap`                 | Add the call name under the right `MatchCategory`. New entrypoint → new `importMap` key + matcher; shared barrel → extend an existing category (like `viewTransition` on the css allowlist). |
+| Allowlist / `importMap` | `pandacss_system` extractor config + `normalizeImportMap`                  | Add the call name under the right `MatchCategory`. New entrypoint → new `importMap` key + matcher; shared barrel → extend an existing category (like `viewTransition` on the css allowlist). |
 | Types                   | `packages/types` (+ codegen types if mirrored)                             | Public options / return types.                                                                                                                                                                                  |
 | Codegen                 | `pandacss_codegen` artifact + `css/index` barrel                           | Emit the factory. Reuse helpers (`toHash`, `memo`, …). Skip the artifact for syntaxes that don't support it.                                                                                                    |
 | Hash contract           | `pandacss_shared`                                                          | If runtime class names must match Rust emit, share one serialize/hash — don't fork two algorithms.                                                                                                              |
@@ -341,7 +342,7 @@ tests → design note.
   └─ crates/* (Rust workspace, all `pandacss_*`-prefixed)
       ├─ pandacss_extractor (Oxc parsing + scan_imports + match_imports)
       ├─ pandacss_literal (host-neutral extracted value IR)
-      ├─ pandacss_encoder, pandacss_recipes, pandacss_tokens, pandacss_project, pandacss_transform
+      ├─ pandacss_encoder, pandacss_recipes, pandacss_tokens, pandacss_system, pandacss_project, pandacss_transform
       ├─ pandacss_stylesheet (native CSS emission), pandacss_compiler (CSS/codegen orchestration), pandacss_config
       ├─ packages/compiler/crate (compiler_napi cdylib — native NAPI)
       └─ packages/compiler-wasm/crate (compiler_wasm cdylib — browser wasm-bindgen)
@@ -437,7 +438,7 @@ cargo nextest run -p pandacss_transform recipes --locked
 # Lib unit tests in src/ (private helpers)
 cargo nextest run -p pandacss_stylesheet grouped --lib --locked
 cargo nextest run -p pandacss_stylesheet sort --lib --locked
-cargo nextest run -p pandacss_project compound_tests --lib --locked
+cargo nextest run -p pandacss_system compound_tests --lib --locked
 
 # Full integration binary for a crate
 cargo nextest run -p pandacss_stylesheet --locked
@@ -471,7 +472,7 @@ See `design-notes/rust-testing.md` for the full testing strategy.
 
 - **Public-API tests live in `crates/<name>/tests/`** — not in `src/`. Inline `#[cfg(test)] mod tests` is reserved for
   private helpers (rare), e.g. `pandacss_shared::unit_conversion::to_rem`, `pandacss_stylesheet::grouped`,
-  `pandacss_stylesheet::sort`, `pandacss_project::recipes::compound_tests`.
+  `pandacss_stylesheet::sort`, `pandacss_system::recipes::compound_tests`.
 - **Consolidated harness** — `pandacss_stylesheet`, `pandacss_project`, `pandacss_transform`, `pandacss_extractor`, and
   `pandacss_codegen` use one integration binary (`tests/main.rs` + `autotests = false` in `Cargo.toml`). Suite files
   are submodules (`mod atomic;`, …), not separate binaries. Shared helpers live under `tests/common/` and are imported via

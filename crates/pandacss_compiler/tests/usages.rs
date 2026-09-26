@@ -1,9 +1,13 @@
-use crate::common::create_project;
+mod common;
+
+use common::create_config;
 use indoc::indoc;
 use insta::{assert_snapshot, assert_yaml_snapshot};
 use serde_json::json;
 
-use pandacss_project::{FileInspectionResult, Span};
+use pandacss_compiler::{FileInspectionResult, StyleEntryKind, inspect_file_source};
+use pandacss_project::Span;
+use pandacss_system::System;
 
 /// One line per usage: `kind name` (ranges are covered by the binding tests).
 fn summary(result: &FileInspectionResult) -> String {
@@ -39,8 +43,8 @@ fn span_text(source: &str, span: Option<Span>) -> &str {
         .unwrap_or("")
 }
 
-fn project() -> pandacss_project::Project {
-    create_project(json!({
+fn system() -> System {
+    system_with(json!({
         "jsxFramework": "react",
         "theme": {
             "tokens": {
@@ -69,9 +73,14 @@ fn project() -> pandacss_project::Project {
     }))
 }
 
+fn system_with(overrides: serde_json::Value) -> System {
+    System::new(create_config(overrides)).expect("valid config")
+}
+
 #[test]
 fn bare_category_value_resolves_to_token() {
-    let result = project().inspect_file_source(
+    let result = inspect_file_source(
+        &system(),
         "a.tsx",
         "import { css } from '@panda/css'\ncss({ color: 'red.500' })",
     );
@@ -83,8 +92,11 @@ fn bare_category_value_resolves_to_token() {
 
 #[test]
 fn shorthand_value_resolves_to_canonical_property_and_token() {
-    let result =
-        project().inspect_file_source("a.tsx", "import { css } from '@panda/css'\ncss({ p: '4' })");
+    let result = inspect_file_source(
+        &system(),
+        "a.tsx",
+        "import { css } from '@panda/css'\ncss({ p: '4' })",
+    );
     assert_snapshot!(summary(&result), @r"
     Property padding
     Token spacing.4
@@ -93,7 +105,8 @@ fn shorthand_value_resolves_to_canonical_property_and_token() {
 
 #[test]
 fn css_call_collects_every_style_object_argument() {
-    let result = project().inspect_file_source(
+    let result = inspect_file_source(
+        &system(),
         "a.tsx",
         "import { css } from '@panda/css'\ncss({ color: 'red.500' }, { p: '4' })",
     );
@@ -105,7 +118,8 @@ fn css_call_collects_every_style_object_argument() {
 
 #[test]
 fn opacity_modifier_still_captures_the_base_token() {
-    let result = project().inspect_file_source(
+    let result = inspect_file_source(
+        &system(),
         "a.tsx",
         "import { css } from '@panda/css'\ncss({ color: 'red.300/40' })",
     );
@@ -117,7 +131,8 @@ fn opacity_modifier_still_captures_the_base_token() {
 
 #[test]
 fn curly_reference_in_arbitrary_value_is_captured() {
-    let result = project().inspect_file_source(
+    let result = inspect_file_source(
+        &system(),
         "a.tsx",
         "import { css } from '@panda/css'\ncss({ '--ring': '{colors.red.500}' })",
     );
@@ -129,7 +144,8 @@ fn curly_reference_in_arbitrary_value_is_captured() {
 
 #[test]
 fn curly_reference_with_opacity_modifier_is_captured() {
-    let result = project().inspect_file_source(
+    let result = inspect_file_source(
+        &system(),
         "a.tsx",
         "import { css } from '@panda/css'\ncss({ '--ring': '{colors.red.300/40}' })",
     );
@@ -141,7 +157,8 @@ fn curly_reference_with_opacity_modifier_is_captured() {
 
 #[test]
 fn unresolved_token_in_style_object_is_preserved_for_tooling() {
-    let result = project().inspect_file_source(
+    let result = inspect_file_source(
+        &system(),
         "a.tsx",
         "import { css } from '@panda/css'\nimport { token } from '@panda/tokens'\ncss({ color: token('colors.ghost') })",
     );
@@ -166,7 +183,8 @@ fn unresolved_token_in_style_object_is_preserved_for_tooling() {
 
 #[test]
 fn curly_reference_interpolated_in_longhand_value_is_captured() {
-    let result = project().inspect_file_source(
+    let result = inspect_file_source(
+        &system(),
         "a.tsx",
         "import { css } from '@panda/css'\ncss({ border: '1px solid {colors.red.300}' })",
     );
@@ -178,7 +196,8 @@ fn curly_reference_interpolated_in_longhand_value_is_captured() {
 
 #[test]
 fn token_fn_interpolated_in_longhand_value_is_captured() {
-    let result = project().inspect_file_source(
+    let result = inspect_file_source(
+        &system(),
         "a.tsx",
         "import { css } from '@panda/css'\ncss({ border: '1px solid token(colors.red.300)' })",
     );
@@ -190,7 +209,8 @@ fn token_fn_interpolated_in_longhand_value_is_captured() {
 
 #[test]
 fn whole_value_token_path_is_captured() {
-    let result = project().inspect_file_source(
+    let result = inspect_file_source(
+        &system(),
         "a.tsx",
         "import { css } from '@panda/css'\ncss({ '--ring': 'colors.red.500' })",
     );
@@ -202,7 +222,8 @@ fn whole_value_token_path_is_captured() {
 
 #[test]
 fn token_fn_call_is_captured_via_resolved_var() {
-    let result = project().inspect_file_source(
+    let result = inspect_file_source(
+        &system(),
         "a.tsx",
         indoc! {r"
             import { css } from '@panda/css'
@@ -218,7 +239,8 @@ fn token_fn_call_is_captured_via_resolved_var() {
 
 #[test]
 fn inspection_exposes_token_ref_details() {
-    let result = project().inspect_file_source(
+    let result = inspect_file_source(
+        &system(),
         "a.tsx",
         indoc! {r"
             import { css } from '@panda/css'
@@ -257,7 +279,8 @@ fn inspection_exposes_token_ref_details() {
 
 #[test]
 fn inspection_exposes_token_metadata_on_token_refs() {
-    let result = project().inspect_file_source(
+    let result = inspect_file_source(
+        &system(),
         "a.tsx",
         indoc! {r"
             import { token } from '@panda/tokens'
@@ -312,7 +335,7 @@ fn inspection_exposes_safe_style_entries_for_local_object_props() {
           '& svg': { color: 'red.300' },
         })
     "};
-    let result = project().inspect_file_source("a.tsx", source);
+    let result = inspect_file_source(&system(), "a.tsx", source);
 
     assert_snapshot!(style_summary(&result), @r###"
     Utility CssCall Safe p -> Some("padding") path=p
@@ -368,12 +391,12 @@ fn inspection_exposes_token_metadata_on_style_value_spans() {
           p: '4',
         })
     "};
-    let result = project().inspect_file_source("a.tsx", source);
+    let result = inspect_file_source(&system(), "a.tsx", source);
 
     let spans = result
         .style_entries
         .iter()
-        .filter(|entry| entry.kind == pandacss_project::StyleEntryKind::Utility)
+        .filter(|entry| entry.kind == StyleEntryKind::Utility)
         .flat_map(|entry| {
             entry.value_spans.iter().map(|span| {
                 let token = span.token.as_ref().expect("token metadata");
@@ -433,7 +456,7 @@ fn inspection_treats_jsx_css_props_as_nested_style_objects() {
         import { Box } from '@panda/jsx'
         const el = <Box color='red' css={{ p: '4' }} inputCss={{ color: 'red.500' }} />
     "};
-    let result = project().inspect_file_source("a.tsx", source);
+    let result = inspect_file_source(&system(), "a.tsx", source);
 
     let entries = result
         .style_entries
@@ -478,7 +501,7 @@ fn inspection_descends_array_css_prop() {
         import { Box } from '@panda/jsx'
         const el = <Box css={[{ color: 'red.500' }, { p: '4' }]} />
     "};
-    let result = project().inspect_file_source("a.tsx", source);
+    let result = inspect_file_source(&system(), "a.tsx", source);
 
     let entries = result
         .style_entries
@@ -512,7 +535,8 @@ fn inspection_descends_array_css_prop() {
 
 #[test]
 fn framework_template_style_entries_stay_report_only() {
-    let result = project().inspect_file_source(
+    let result = inspect_file_source(
+        &system(),
         "a.vue",
         indoc! {r#"
             <script setup>
@@ -533,21 +557,21 @@ fn framework_template_style_entries_stay_report_only() {
 
 #[test]
 fn inspection_exposes_recipe_component_entries() {
-    let result = create_project(json!({
-        "jsxFramework": "react",
-        "theme": {
-            "recipes": {
-                "button": { "jsx": ["Button"], "base": { "color": "red.500" } }
-            },
-            "slotRecipes": {
-                "custom": {
-                    "slots": ["root", "label"],
-                    "base": { "root": { "color": "red.500" } }
+    let result = inspect_file_source(
+        &system_with(json!({
+            "jsxFramework": "react",
+            "theme": {
+                "recipes": {
+                    "button": { "jsx": ["Button"], "base": { "color": "red.500" } }
+                },
+                "slotRecipes": {
+                    "custom": {
+                        "slots": ["root", "label"],
+                        "base": { "root": { "color": "red.500" } }
+                    }
                 }
             }
-        }
-    }))
-    .inspect_file_source(
+        })),
         "a.tsx",
         indoc! {r"
             import { Button, CustomRoot } from '@panda/jsx'
@@ -581,7 +605,8 @@ fn inspection_exposes_recipe_component_entries() {
 
 #[test]
 fn animation_name_captures_keyframe() {
-    let result = project().inspect_file_source(
+    let result = inspect_file_source(
+        &system(),
         "a.tsx",
         "import { css } from '@panda/css'\ncss({ animationName: 'spin' })",
     );
@@ -593,7 +618,8 @@ fn animation_name_captures_keyframe() {
 
 #[test]
 fn animation_name_captures_multiple_comma_separated_keyframes() {
-    let result = project().inspect_file_source(
+    let result = inspect_file_source(
+        &system(),
         "a.tsx",
         "import { css } from '@panda/css'\ncss({ animationName: 'spin, fade' })",
     );
@@ -606,7 +632,8 @@ fn animation_name_captures_multiple_comma_separated_keyframes() {
 
 #[test]
 fn animation_shorthand_captures_keyframe_anywhere_in_value() {
-    let result = project().inspect_file_source(
+    let result = inspect_file_source(
+        &system(),
         "a.tsx",
         "import { css } from '@panda/css'\ncss({ animation: 'spin 1s linear infinite' })",
     );
@@ -618,7 +645,8 @@ fn animation_shorthand_captures_keyframe_anywhere_in_value() {
 
 #[test]
 fn animation_shorthand_captures_multiple_keyframes() {
-    let result = project().inspect_file_source(
+    let result = inspect_file_source(
+        &system(),
         "a.tsx",
         "import { css } from '@panda/css'\ncss({ animation: 'spin 1s, fade 2s' })",
     );
@@ -645,7 +673,7 @@ fn inspection_collects_style_entries_for_cva_recipes() {
           ],
         })
     "};
-    let result = project().inspect_file_source("a.tsx", source);
+    let result = inspect_file_source(&system(), "a.tsx", source);
 
     assert_snapshot!(style_summary(&result), @r###"
     Utility RecipeCall Safe color -> None path=base.color
@@ -656,7 +684,7 @@ fn inspection_collects_style_entries_for_cva_recipes() {
     let spans = result
         .style_entries
         .iter()
-        .filter(|entry| matches!(entry.kind, pandacss_project::StyleEntryKind::Utility))
+        .filter(|entry| matches!(entry.kind, StyleEntryKind::Utility))
         .map(|entry| {
             json!({
                 "path": entry.path,
@@ -699,7 +727,7 @@ fn inspection_collects_style_entries_for_sva_slot_recipes() {
           },
         })
     "};
-    let result = project().inspect_file_source("a.tsx", source);
+    let result = inspect_file_source(&system(), "a.tsx", source);
 
     assert_snapshot!(style_summary(&result), @r"
     Utility RecipeCall Safe color -> None path=base.root.color
@@ -720,7 +748,7 @@ fn inspection_collects_style_entries_for_styled_factory() {
           },
         })
     "};
-    let result = project().inspect_file_source("a.tsx", source);
+    let result = inspect_file_source(&system(), "a.tsx", source);
 
     assert_snapshot!(style_summary(&result), @r"
     Utility RecipeCall Safe color -> None path=base.color
@@ -740,7 +768,7 @@ fn inspection_collects_styled_factory_default_props() {
           },
         })
     "};
-    let result = project().inspect_file_source("a.tsx", source);
+    let result = inspect_file_source(&system(), "a.tsx", source);
 
     assert_snapshot!(summary(&result), @r"
     Property color
@@ -775,7 +803,7 @@ fn inspection_collects_function_default_props() {
           },
         })
     "};
-    let result = project().inspect_file_source("a.tsx", source);
+    let result = inspect_file_source(&system(), "a.tsx", source);
 
     assert_snapshot!(summary(&result), @r"
     Property color
@@ -801,29 +829,32 @@ fn inspection_collects_imported_recipe_default_props() {
           },
         })
     "};
-    let result = create_project(json!({
-        "jsxFramework": "react",
-        "theme": {
-            "tokens": {
-                "colors": { "red": { "500": { "value": "#e00" } } }
-            },
-            "recipes": {
-                "button": {
-                    "className": "button",
-                    "variants": {
-                        "size": {
-                            "sm": { "padding": "1" },
-                            "md": { "padding": "2" }
+    let result = inspect_file_source(
+        &system_with(json!({
+            "jsxFramework": "react",
+            "theme": {
+                "tokens": {
+                    "colors": { "red": { "500": { "value": "#e00" } } }
+                },
+                "recipes": {
+                    "button": {
+                        "className": "button",
+                        "variants": {
+                            "size": {
+                                "sm": { "padding": "1" },
+                                "md": { "padding": "2" }
+                            }
                         }
                     }
                 }
+            },
+            "utilities": {
+                "color": { "className": "c", "values": "colors" }
             }
-        },
-        "utilities": {
-            "color": { "className": "c", "values": "colors" }
-        }
-    }))
-    .inspect_file_source("a.tsx", source);
+        })),
+        "a.tsx",
+        source,
+    );
 
     assert_snapshot!(summary(&result), @r"
     Recipe button
@@ -847,29 +878,32 @@ fn inspection_collects_namespace_and_aliased_recipe_default_props() {
           defaultProps: { size: 'sm' },
         })
     "};
-    let result = create_project(json!({
-        "jsxFramework": "react",
-        "theme": {
-            "tokens": {
-                "colors": { "red": { "500": { "value": "#e00" } } }
-            },
-            "recipes": {
-                "button": {
-                    "className": "button",
-                    "variants": {
-                        "size": {
-                            "sm": { "padding": "1" },
-                            "md": { "padding": "2" }
+    let result = inspect_file_source(
+        &system_with(json!({
+            "jsxFramework": "react",
+            "theme": {
+                "tokens": {
+                    "colors": { "red": { "500": { "value": "#e00" } } }
+                },
+                "recipes": {
+                    "button": {
+                        "className": "button",
+                        "variants": {
+                            "size": {
+                                "sm": { "padding": "1" },
+                                "md": { "padding": "2" }
+                            }
                         }
                     }
                 }
+            },
+            "utilities": {
+                "color": { "className": "c", "values": "colors" }
             }
-        },
-        "utilities": {
-            "color": { "className": "c", "values": "colors" }
-        }
-    }))
-    .inspect_file_source("a.tsx", source);
+        })),
+        "a.tsx",
+        source,
+    );
 
     assert_snapshot!(summary(&result), @r"
     Recipe button
@@ -883,7 +917,8 @@ fn inspection_collects_namespace_and_aliased_recipe_default_props() {
 
 #[test]
 fn reports_named_view_transition_and_position_try_usages() {
-    let result = project().inspect_file_source(
+    let result = inspect_file_source(
+        &system(),
         "a.tsx",
         indoc! {r"
             import { viewTransition, positionTry } from '@panda/css'
@@ -901,7 +936,8 @@ fn reports_named_view_transition_and_position_try_usages() {
 fn collects_position_try_and_view_transition_styles_as_entries() {
     // Lint rules operate on style entries, so the descriptor/slot bodies of
     // positionTry / viewTransition must surface as entries, not just usage sites.
-    let result = project().inspect_file_source(
+    let result = inspect_file_source(
+        &system(),
         "a.tsx",
         indoc! {r"
             import { positionTry, viewTransition } from '@panda/css'

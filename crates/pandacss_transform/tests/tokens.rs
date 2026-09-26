@@ -124,7 +124,7 @@ fn skips_token_rewrites_when_only_css_target_is_enabled() {
     "#};
 
     let output = transform_source(
-        project_with_tokens().config(),
+        project_with_tokens().system(),
         "src/theme.ts",
         source,
         &TransformOptions {

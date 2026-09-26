@@ -7,9 +7,9 @@
 
 Compound-variant styles must beat the recipe's own base + simple variants (they are the more specific refinement) but
 lose to a user `css()` override (the escape hatch). Today they do neither reliably: the static encoder atomizes compound
-styles into the **utilities** layer (`pandacss_project::recipes::extend_compound_atoms` → `encoded.atomic`), one layer
-_above_ the recipe's base/variants, which are emitted as named groups in the **recipes** layer. So a compound sits next
-to `css()` and wins by emit order — `cx(button({…}), css({ bg: 'red' }))` can't override the compound (#3480, #3503).
+styles into the **utilities** layer, one layer _above_ the recipe's base/variants, which are emitted as named groups in
+the **recipes** layer. So a compound sits next to `css()` and wins by emit order — `cx(button({…}), css({ bg: 'red' }))`
+can't override the compound (#3480, #3503).
 
 The fix is to give compounds their own cascade slot: emit them as recipe **groups** (a class + entries, like
 base/variants) in a `recipes.compound_variants` sub-layer, so the precedence becomes:
@@ -26,7 +26,7 @@ order: `base < variants < compound_variants`.
 
 ## Static emission
 
-- **Project encoding** (`pandacss_project::recipes`): stop pushing compound styles into `encoded.atomic`. Add
+- **Recipe encoding** (`pandacss_system::recipes`): stop pushing compound styles into `encoded.atomic`. Add
   `encoded.compounds: Vec<RecipeStyleGroupSnapshot>` and encode each matched/eager compound as a grouped style — a
   `class_name` plus its `RecipeStyleEntry`s — the same shape as base/variants. The eager (`emit_eager_compounds`) and
   `smartCompoundVariants` paths change from "emit atoms for every/selected combo" to "emit one **named class** per

@@ -14,7 +14,7 @@ impl WasmCompiler {
     /// Returns a JS error if serialization fails.
     #[wasm_bindgen(js_name = inspectFileSource)]
     pub fn inspect_file_source(&self, path: &str, source: &str) -> Result<JsValue, JsValue> {
-        let result = self.inner.inspect_file_source(path, source);
+        let result = pandacss_compiler::inspect_file_source(self.inner.system(), path, source);
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         result
             .serialize(&serializer)
@@ -59,18 +59,11 @@ impl WasmCompiler {
     /// Returns a JS error if serialization fails.
     #[wasm_bindgen(js_name = suggestTokens)]
     pub fn suggest_tokens(&self, prop: &str, value: &str) -> Result<JsValue, JsValue> {
-        let suggestions: Vec<serde_json::Value> = self
-            .inner
-            .suggest_tokens(prop, value)
-            .into_iter()
-            .map(|suggestion| {
-                serde_json::json!({
-                    "token": suggestion.token,
-                    "semantic": suggestion.semantic,
-                    "conditional": suggestion.conditional,
-                })
-            })
-            .collect();
+        let suggestions: Vec<serde_json::Value> =
+            pandacss_compiler::suggest_tokens(self.inner.system(), prop, value)
+                .into_iter()
+                .map(|suggestion| pandacss_compiler::token_suggestion_json(&suggestion))
+                .collect();
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         suggestions
             .serialize(&serializer)
@@ -83,18 +76,11 @@ impl WasmCompiler {
     /// Returns a JS error if serialization fails.
     #[wasm_bindgen(js_name = suggestSemanticTokens)]
     pub fn suggest_semantic_tokens(&self, path: &str) -> Result<JsValue, JsValue> {
-        let suggestions: Vec<serde_json::Value> = self
-            .inner
-            .suggest_semantic_tokens(path)
-            .into_iter()
-            .map(|suggestion| {
-                serde_json::json!({
-                    "token": suggestion.token,
-                    "semantic": suggestion.semantic,
-                    "conditional": suggestion.conditional,
-                })
-            })
-            .collect();
+        let suggestions: Vec<serde_json::Value> =
+            pandacss_compiler::suggest_semantic_tokens(self.inner.system(), path)
+                .into_iter()
+                .map(|suggestion| pandacss_compiler::token_suggestion_json(&suggestion))
+                .collect();
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         suggestions
             .serialize(&serializer)

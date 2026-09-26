@@ -5,7 +5,8 @@ use crate::common::{create_config, create_project};
 use indoc::indoc;
 use pandacss_encoder::AtomValue;
 use pandacss_literal::Literal;
-use pandacss_project::{BuildInfo, ParseTransforms, Project};
+use pandacss_project::{BuildInfo, Project};
+use pandacss_system::ParseTransforms;
 use serde_json::json;
 
 #[test]
@@ -124,7 +125,7 @@ fn global_css_boolean_utility_values_run_the_utility_transform() {
             "body": { "flag": false }
         }
     }));
-    let mut project = Project::new(pandacss_project::System::new(config.clone()).unwrap());
+    let mut project = Project::new(pandacss_system::System::new(config.clone()).unwrap());
     let mut calls = Vec::new();
     let mut callback = |_: &str, _: &AtomValue, raw: &AtomValue| {
         calls.push(raw.clone());
@@ -147,7 +148,7 @@ fn refreshing_after_a_parse_epoch_bump_uses_the_new_utility_transform() {
         },
         "theme": { "recipes": { "button": { "base": { "size": "4px" } } } }
     }));
-    let mut project = Project::new(pandacss_project::System::new(config.clone()).unwrap());
+    let mut project = Project::new(pandacss_system::System::new(config.clone()).unwrap());
     let source = "import { css } from '@panda/css'; import { button } from '@panda/recipes'; css({ size: '4px' }); button({})";
     let styles = |property: &str| {
         Some(Literal::Object(vec![(

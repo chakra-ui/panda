@@ -61,7 +61,7 @@ impl WasmCompiler {
     #[wasm_bindgen(js_name = tokenDictionary)]
     pub fn token_dictionary(&self) -> Result<JsValue, JsValue> {
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
-        match self.inner.config().token_dictionary() {
+        match self.inner.system().token_dictionary() {
             Some(dictionary) => from_core_token_dictionary(dictionary.as_ref())
                 .serialize(&serializer)
                 .map_err(|err| JsValue::from_str(&err.to_string())),

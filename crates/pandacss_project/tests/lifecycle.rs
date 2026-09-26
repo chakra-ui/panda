@@ -237,7 +237,7 @@ fn identical_source_parse_is_a_noop() {
 #[test]
 fn stylesheet_snapshots_update_after_project_changes() {
     let config = create_config(json!({}));
-    let system = pandacss_project::System::new(config.clone()).unwrap();
+    let system = pandacss_system::System::new(config.clone()).unwrap();
     let mut project = pandacss_project::Project::new(system);
 
     project.parse_file(
@@ -264,7 +264,7 @@ fn stylesheet_snapshots_include_implicit_uppercase_jsx_styles() {
     let config = create_config(json!({
         "jsxFramework": "react"
     }));
-    let system = pandacss_project::System::new(config.clone()).unwrap();
+    let system = pandacss_system::System::new(config.clone()).unwrap();
     let mut project = pandacss_project::Project::new(system);
 
     project.parse_file("card.tsx", "const el = <Card color='red' padding='4px' />;");
@@ -293,7 +293,7 @@ fn replacing_file_swaps_named_view_transitions() {
         }
     }));
     let mut project = pandacss_project::Project::new(
-        pandacss_project::System::new(config.clone()).expect("valid project config"),
+        pandacss_system::System::new(config.clone()).expect("valid project config"),
     );
 
     project.parse_file(

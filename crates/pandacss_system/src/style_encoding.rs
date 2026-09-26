@@ -5,11 +5,11 @@ use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_utility::{ShorthandPolicy, StyleNormalizer};
 
 use crate::{
-    Config, PatternTransformFn, ProjectConditionMatcher, literal_entries, merge_style_entry,
+    PatternTransformFn, ProjectConditionMatcher, System, literal_entries, merge_style_entry,
     merge_style_props,
 };
 
-impl Config {
+impl System {
     fn process_atomic(
         &self,
         encoder: &mut Encoder<ProjectConditionMatcher>,
@@ -23,7 +23,8 @@ impl Config {
 
     /// Normalizes inline `cva`/`sva` styles like `css()`, so a shorthand key
     /// reaches its canonical form before the (canonically-keyed) transform runs.
-    pub(crate) fn process_recipe_atoms(
+    #[doc(hidden)]
+    pub fn process_recipe_atoms(
         &self,
         encoder: &mut Encoder<ProjectConditionMatcher>,
         recipe: &Recipe,
@@ -34,7 +35,8 @@ impl Config {
     }
 
     /// Slot-recipe counterpart to [`Self::process_recipe_atoms`].
-    pub(crate) fn process_slot_recipe_atoms(
+    #[doc(hidden)]
+    pub fn process_slot_recipe_atoms(
         &self,
         encoder: &mut Encoder<ProjectConditionMatcher>,
         recipe: &SlotRecipe,
@@ -50,11 +52,8 @@ impl Config {
     /// and a conditional could resolve to either branch — so recurse into both,
     /// treating each element/branch as its own arg. Only style objects reach
     /// `process_atomic`, which still expands value-level conditionals.
-    pub(crate) fn process_css_arg(
-        &self,
-        encoder: &mut Encoder<ProjectConditionMatcher>,
-        arg: &Literal,
-    ) {
+    #[doc(hidden)]
+    pub fn process_css_arg(&self, encoder: &mut Encoder<ProjectConditionMatcher>, arg: &Literal) {
         match arg {
             Literal::Array(items) | Literal::Conditional(items) => {
                 for item in items {
@@ -68,7 +67,8 @@ impl Config {
     }
 
     /// Encode style leftovers from inline `styled` `defaultProps`.
-    pub(crate) fn process_inline_default_prop_styles(
+    #[doc(hidden)]
+    pub fn process_inline_default_prop_styles(
         &self,
         encoder: &mut Encoder<ProjectConditionMatcher>,
         default_props: &Literal,
@@ -96,7 +96,8 @@ impl Config {
         }
     }
 
-    pub(crate) fn process_style_props(
+    #[doc(hidden)]
+    pub fn process_style_props(
         &self,
         encoder: &mut Encoder<ProjectConditionMatcher>,
         style: &Literal,
@@ -172,9 +173,8 @@ impl Config {
         }
     }
 
-    /// Encode one style object into atoms for build-time transforms without
-    /// mutating project file state.
-    pub fn encode_atomic_for_transform(
+    /// Encode one user-facing style object into atoms.
+    pub fn encode_style(
         &self,
         encoder: &mut Encoder<ProjectConditionMatcher>,
         style: &Literal,
@@ -267,7 +267,7 @@ impl Config {
 
     /// Resolve one encoded atom to the runtime `css()` class string.
     #[must_use]
-    pub fn atomic_class_name_for_transform(&self, atom: &Atom) -> Option<String> {
+    pub fn atomic_class_name(&self, atom: &Atom) -> Option<String> {
         let utility = self.utility()?;
         let literal = atom_value_to_transform_literal(atom.value())?;
         pandacss_utility::runtime_class_name_for_atom(
@@ -329,7 +329,7 @@ impl Config {
     #[must_use]
     pub fn class_names_for_style_literal(&self, style: &Literal) -> Option<Vec<String>> {
         let mut encoder = Encoder::with_conditions(self.conditions.clone());
-        self.encode_atomic_for_transform(&mut encoder, style, ShorthandPolicy::UserFacing);
+        self.encode_style(&mut encoder, style, ShorthandPolicy::UserFacing);
         let mut atoms: Vec<Atom> = encoder.into_atoms().into_iter().collect();
         if atoms.is_empty() {
             return None;
@@ -337,7 +337,7 @@ impl Config {
         atoms.sort_by(compare_atoms_by_emit_order);
         let classes: Vec<String> = atoms
             .iter()
-            .filter_map(|atom| self.atomic_class_name_for_transform(atom))
+            .filter_map(|atom| self.atomic_class_name(atom))
             .collect();
         if classes.is_empty() {
             None

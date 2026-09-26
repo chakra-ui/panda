@@ -7,7 +7,8 @@
 //!
 //! ```rust,ignore
 //! use pandacss_config::UserConfig;
-//! use pandacss_project::{Project, System};
+//! use pandacss_project::Project;
+//! use pandacss_system::System;
 //!
 //! let config = UserConfig::default();
 //! let system = System::new(config)?;
@@ -21,22 +22,9 @@
 //! ```
 
 mod build_info;
-mod config;
 mod dependency_graph;
 mod diagnostics;
-mod error;
-mod hook_filter;
-mod inline_recipe_raw;
-mod inspection;
 mod parsed_file;
-mod patterns;
-mod recipes;
-mod runtime_config;
-mod static_patterns;
-mod style_encoding;
-mod system;
-mod transform_cache;
-mod usages;
 
 use dependency_graph::DependencyGraph;
 use diagnostics::{
@@ -45,7 +33,6 @@ use diagnostics::{
 };
 
 use std::collections::BTreeMap;
-use std::hash::Hash;
 use std::path::Path;
 use std::sync::Arc;
 
@@ -75,67 +62,30 @@ pub use build_info::{
     BuildAtom, BuildInfo, BuildKeyframe, BuildValue, BuildViewTransition, DesignSystemDependency,
     ModuleEntry, SCHEMA_VERSION,
 };
-pub use error::{ConfigError, Result};
-pub use hook_filter::HookFilter;
-pub use inline_recipe_raw::{
-    is_recipe_config, literal_variant_props, raw_call_variant_props, resolve_inline_recipe_raw,
-};
-pub use inspection::{
-    ComponentEntryKind, ComponentEntryRef, FileInspectionResult, StyleEntryFixability,
-    StyleEntryKind, StyleEntryOrigin, StyleEntryRef, StyleEntrySyntax, TokenRefSite, UsageKind,
-    UsageSite,
-};
 pub use pandacss_encoder::{
     EncodedRecipesSnapshot, RecipeStyleEntry, RecipeStyleGroup, RecipeStyleGroupSnapshot,
 };
 pub use pandacss_utility::{ResolvedUtilityValue, UtilityValueSource};
 pub use parsed_file::ParsedFile;
-pub use recipes::EncodedRecipes;
-use recipes::EncodedRecipesCache;
-pub use runtime_config::Config;
-pub use system::{System, SystemInput};
-pub use transform_cache::{
-    AtomValueCacheKey, LiteralCacheKey, atom_value_cache_key, literal_cache_key,
-};
-
 pub(crate) type ProjectConditionMatcher = pandacss_encoder::ConditionSet;
 
-/// Bump `counts[key]`, running `on_first` on the 0→1 transition. Shared by
-/// every refcounted cache in this crate — a value stays materialized as long
-/// as at least one file references it.
-pub(crate) fn refcount_add<K: Eq + Hash + Clone>(
-    counts: &mut FxHashMap<K, u32>,
-    key: &K,
-    on_first: impl FnOnce(),
-) {
-    let count = counts.entry(key.clone()).or_insert(0);
-    *count += 1;
-    if *count == 1 {
-        on_first();
-    }
-}
+use pandacss_shared::refcount::{refcount_add, refcount_remove};
+use pandacss_system::{
+    EncodedRecipes, EncodedRecipesCache, ParseTransforms, PatternTransformFn, System,
+    UtilityTransformFn, atom_value_summary, is_empty_style_object, literal_entries,
+    resolved_atom_value, with_callback_target,
+};
 
-/// Inverse of [`refcount_add`]: decrement, then run `on_zero` and drop the
-/// key at the 1→0 transition.
-pub(crate) fn refcount_remove<K: Eq + Hash + Clone>(
-    counts: &mut FxHashMap<K, u32>,
-    key: &K,
-    on_zero: impl FnOnce(),
-) {
-    if let Some(count) = counts.get_mut(key) {
-        *count -= 1;
-        if *count == 0 {
-            counts.remove(key);
-            on_zero();
-        }
-    }
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub(crate) struct RecipeKey {
+    pub(crate) file: Arc<str>,
+    pub(crate) span_start: u32,
 }
 
 /// One project. Hold one per build / dev-server session and feed
 /// every file through `parse_file`.
 pub struct Project {
-    config: Arc<Config>,
-    config_fingerprint: Arc<str>,
+    system: Arc<System>,
     files: FxHashMap<Arc<str>, FileEntry>,
     /// Diagnostics from a source-transform attempt that failed before a new
     /// [`FileEntry`] could replace the last-good file state.
@@ -242,12 +192,6 @@ enum ParseMode {
     Additive,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub(crate) struct RecipeKey {
-    pub(crate) file: Arc<str>,
-    pub(crate) span_start: u32,
-}
-
 impl Project {
     #[must_use]
     #[allow(
@@ -255,14 +199,34 @@ impl Project {
         reason = "Project conceptually takes ownership of the System"
     )]
     pub fn new(system: System) -> Self {
-        let config = system.config_arc();
-        let config_fingerprint = system.config_fingerprint_arc();
+        let system = Arc::new(system);
         let config_diagnostics = system.diagnostics().to_vec();
-        let config_recipes = config.config_recipes.clone();
-        let config_slot_recipes = config.config_slot_recipes.clone();
+        let config_recipes = system
+            .config_recipes()
+            .map(|(source, index, recipe)| {
+                (
+                    RecipeKey {
+                        file: source,
+                        span_start: index,
+                    },
+                    recipe.clone(),
+                )
+            })
+            .collect();
+        let config_slot_recipes = system
+            .config_slot_recipes()
+            .map(|(source, index, recipe)| {
+                (
+                    RecipeKey {
+                        file: source,
+                        span_start: index,
+                    },
+                    recipe.clone(),
+                )
+            })
+            .collect();
         Self {
-            config,
-            config_fingerprint,
+            system,
             files: FxHashMap::default(),
             parse_attempt_diagnostics: FxHashMap::default(),
             atoms_cache: FxHashSet::default(),
@@ -306,14 +270,13 @@ impl Project {
     }
 
     /// # Panics
-    /// Panics if the config `Arc` is already shared. Call right after
-    /// [`Self::new`], before any clone of the config escapes.
+    /// Panics if the system `Arc` is already shared. Call right after
+    /// [`Self::new`], before any clone of the system escapes.
     #[must_use]
     pub fn with_cross_file(mut self, resolver: CrossFileResolver) -> Self {
-        Arc::get_mut(&mut self.config)
-            .expect("project config is uniquely owned during construction")
-            .extractor_config
-            .cross_file = Some(resolver);
+        Arc::get_mut(&mut self.system)
+            .expect("project system is uniquely owned during construction")
+            .set_cross_file(resolver);
         self
     }
 
@@ -334,8 +297,8 @@ impl Project {
     }
 
     fn cross_file_session(&self) -> Option<CrossFileSession> {
-        self.config
-            .extractor_config
+        self.system
+            .extractor_config()
             .cross_file
             .as_ref()
             .map(CrossFileResolver::session)
@@ -390,7 +353,7 @@ impl Project {
     /// `compiler.extractFileSource(...)` on the bindings.
     #[must_use]
     pub fn extract(&self, path: &str, source: &str) -> pandacss_extractor::ExtractUsage {
-        extract(source, path, &self.config.extractor_config)
+        extract(source, path, self.system.extractor_config())
     }
 
     #[allow(
@@ -465,25 +428,25 @@ impl Project {
         };
 
         let result = {
-            let compiled = self.config.as_ref();
+            let compiled = self.system.as_ref();
             let has_pattern_transform = pattern_transform.is_some();
             let mut raw_transform = |name: &str, styles: &Literal| {
-                let pattern = compiled.patterns.transform_input(name, styles);
+                let (pattern_name, pattern_styles) = compiled.pattern_transform_input(name, styles);
                 let Some(transform) = pattern_transform.as_deref_mut() else {
                     return Ok(Some(styles.clone()));
                 };
-                transform(pattern.name, pattern.styles.as_ref()).map_err(|diagnostic| {
-                    with_callback_target(diagnostic, "pattern", pattern.name, None)
+                transform(pattern_name, pattern_styles.as_ref()).map_err(|diagnostic| {
+                    with_callback_target(diagnostic, "pattern", pattern_name, None)
                 })
             };
             let mut resolve_recipe_raw = |factory: &str, config: &Literal, props: &Literal| {
-                let props = inline_recipe_raw::literal_variant_props(props)?;
-                inline_recipe_raw::resolve_inline_recipe_raw(&self.config, factory, config, &props)
+                let props = pandacss_system::literal_variant_props(props)?;
+                pandacss_system::resolve_inline_recipe_raw(&self.system, factory, config, &props)
             };
             pandacss_extractor::extract_with_raw_resolvers_in_session(
                 source,
                 path,
-                &self.config.extractor_config,
+                self.system.extractor_config(),
                 cross_file,
                 has_pattern_transform.then_some(&mut raw_transform),
                 &mut resolve_recipe_raw,
@@ -502,7 +465,7 @@ impl Project {
 
         let mut diagnostics = result.diagnostics;
         let line_index = LineIndex::new(source);
-        if let Some(utility) = self.config.utility.as_ref() {
+        if let Some(utility) = self.system.utility() {
             if !utility.deprecated_props().is_empty() {
                 push_deprecated_utility_diagnostics(
                     &result.calls,
@@ -523,7 +486,7 @@ impl Project {
         push_unknown_condition_diagnostics(
             &result.calls,
             &result.jsx,
-            &self.config.conditions,
+            self.system.conditions(),
             &line_index,
             &mut diagnostics,
         );
@@ -542,11 +505,11 @@ impl Project {
 
         let path_key: Arc<str> = Arc::from(path);
 
-        let compiled = self.config.as_ref();
-        let mut encoder = Encoder::with_conditions(compiled.conditions.clone());
-        let mut encoded_recipes = EncodedRecipes::new(compiled.optimize.smart_compound_variants);
+        let compiled = self.system.as_ref();
+        let mut encoder = Encoder::with_conditions(compiled.conditions().clone());
+        let mut encoded_recipes = EncodedRecipes::new(compiled.optimize().smart_compound_variants);
         let empty_object = Literal::Object(Vec::new());
-        let diagnose_unextractable_calls = !compiled.extractor_config.has_jsx_framework;
+        let diagnose_unextractable_calls = !compiled.extractor_config().has_jsx_framework;
         for call in result.calls {
             if diagnose_unextractable_calls
                 && call.category != MatchCategory::Recipe
@@ -567,7 +530,7 @@ impl Project {
                     // every arg's atoms, not just the first.
                     let mut processed = false;
                     for arg in data.into_iter().flatten() {
-                        self.config.process_css_arg(&mut encoder, &arg);
+                        self.system.process_css_arg(&mut encoder, &arg);
                         processed = true;
                     }
                     if processed {
@@ -582,7 +545,7 @@ impl Project {
                         tracing::trace_span!(target: "encode", "recipe_resolution", kind = "cva")
                             .entered();
                     if let Some(recipe) = Recipe::from_literal_owned(arg) {
-                        self.config.process_recipe_atoms(&mut encoder, &recipe);
+                        self.system.process_recipe_atoms(&mut encoder, &recipe);
                         self.inline_recipes.insert(
                             RecipeKey {
                                 file: Arc::clone(&path_key),
@@ -605,7 +568,7 @@ impl Project {
                         tracing::trace_span!(target: "encode", "recipe_resolution", kind = "sva")
                             .entered();
                     if let Some(recipe) = SlotRecipe::from_literal_owned(arg) {
-                        self.config.process_slot_recipe_atoms(&mut encoder, &recipe);
+                        self.system.process_slot_recipe_atoms(&mut encoder, &recipe);
                         self.inline_slot_recipes.insert(
                             RecipeKey {
                                 file: Arc::clone(&path_key),
@@ -627,10 +590,10 @@ impl Project {
                     let style = match &arg {
                         Literal::Object(_) => PositionTryStyle::from_options(
                             &arg.to_json(),
-                            &self.config.class_name_prefix,
+                            self.system.class_name_prefix(),
                         ),
                         Literal::String(name) => {
-                            let Some(style) = self.config.position_try(name) else {
+                            let Some(style) = self.system.position_try(name) else {
                                 continue;
                             };
                             style.clone()
@@ -659,10 +622,10 @@ impl Project {
                     let style = match &arg {
                         Literal::Object(_) => ViewTransitionStyle::from_options(
                             &arg.to_json(),
-                            &self.config.class_name_prefix,
+                            self.system.class_name_prefix(),
                         ),
                         Literal::String(name) => {
-                            let Some(style) = self.config.view_transition(name) else {
+                            let Some(style) = self.system.view_transition(name) else {
                                 continue;
                             };
                             style.clone()
@@ -691,7 +654,7 @@ impl Project {
                     let arg = data.into_iter().next().flatten().unwrap();
                     let keyframe = InlineKeyframe::from_options(
                         &arg.to_json(),
-                        &self.config.class_name_prefix,
+                        self.system.class_name_prefix(),
                     );
                     if keyframe.is_empty() {
                         continue;
@@ -717,10 +680,11 @@ impl Project {
                         .filter(|literal| matches!(literal, Literal::Object(_)))
                         .unwrap_or(&empty_object);
                     if let Some(transform) = pattern_transform.as_deref_mut() {
-                        let pattern = compiled.patterns.transform_input(&call.name, arg);
-                        match transform(pattern.name, pattern.styles.as_ref()) {
+                        let (pattern_name, pattern_styles) =
+                            compiled.pattern_transform_input(&call.name, arg);
+                        match transform(pattern_name, pattern_styles.as_ref()) {
                             Ok(Some(style)) => {
-                                self.config.process_style_props(
+                                self.system.process_style_props(
                                     &mut encoder,
                                     &style,
                                     ShorthandPolicy::Internal,
@@ -748,13 +712,7 @@ impl Project {
                         name = call.name.as_str()
                     )
                     .entered();
-                    encoded_recipes.process_usage(
-                        &compiled.recipes,
-                        &call.name,
-                        arg,
-                        &compiled.conditions,
-                        &compiled.breakpoints,
-                    );
+                    compiled.process_recipe_usage(&mut encoded_recipes, &call.name, arg);
                 }
                 (MatchCategory::Jsx, _) => {
                     let mut args = data.into_iter();
@@ -765,22 +723,19 @@ impl Project {
                     if let Some(recipe_name) = call.jsx_recipe_ident.as_deref()
                         && let Some(default_props) = default_props
                     {
-                        if let Some(style_props) = compiled
-                            .recipes
-                            .style_props_for_recipes(&[recipe_name], default_props)
+                        if let Some(style_props) =
+                            compiled.recipe_style_props(&[recipe_name], default_props)
                         {
-                            self.config.process_style_props(
+                            self.system.process_style_props(
                                 &mut encoder,
                                 &style_props,
                                 ShorthandPolicy::UserFacing,
                             );
                         }
-                        encoded_recipes.process_usage(
-                            &compiled.recipes,
+                        compiled.process_recipe_usage(
+                            &mut encoded_recipes,
                             recipe_name,
                             default_props,
-                            &compiled.conditions,
-                            &compiled.breakpoints,
                         );
                         report.jsx_usages += 1;
                         continue;
@@ -789,7 +744,7 @@ impl Project {
                     let mut inline_variant_keys: &[(String, Literal)] = &[];
                     match style {
                         Some(JsxFactoryStaticStyle::Style(style)) => {
-                            self.config.process_style_props(
+                            self.system.process_style_props(
                                 &mut encoder,
                                 style,
                                 ShorthandPolicy::UserFacing,
@@ -800,7 +755,7 @@ impl Project {
                                 continue;
                             };
                             inline_variant_keys = recipe_variant_entries(config).unwrap_or(&[]);
-                            self.config.process_recipe_atoms(&mut encoder, &recipe);
+                            self.system.process_recipe_atoms(&mut encoder, &recipe);
                             self.inline_recipes.insert(
                                 RecipeKey {
                                     file: Arc::clone(&path_key),
@@ -817,7 +772,7 @@ impl Project {
                         None => {}
                     }
                     if let Some(default_props) = default_props {
-                        self.config.process_inline_default_prop_styles(
+                        self.system.process_inline_default_prop_styles(
                             &mut encoder,
                             default_props,
                             inline_variant_keys,
@@ -830,7 +785,7 @@ impl Project {
         }
 
         for jsx in result.jsx {
-            let recipe_names = compiled.recipes.find_by_jsx(&jsx.name);
+            let recipe_names = compiled.jsx_recipe_names(&jsx.name);
             if !recipe_names.is_empty() {
                 let _span = tracing::trace_span!(
                     target: "encode",
@@ -840,24 +795,15 @@ impl Project {
                     recipe_count = recipe_names.len()
                 )
                 .entered();
-                if let Some(style_props) = compiled
-                    .recipes
-                    .style_props_for_recipes(&recipe_names, &jsx.data)
-                {
-                    self.config.process_style_props(
+                if let Some(style_props) = compiled.recipe_style_props(&recipe_names, &jsx.data) {
+                    self.system.process_style_props(
                         &mut encoder,
                         &style_props,
                         ShorthandPolicy::Internal,
                     );
                 }
                 for recipe_name in &recipe_names {
-                    encoded_recipes.process_usage(
-                        &compiled.recipes,
-                        recipe_name,
-                        &jsx.data,
-                        &compiled.conditions,
-                        &compiled.breakpoints,
-                    );
+                    compiled.process_recipe_usage(&mut encoded_recipes, recipe_name, &jsx.data);
                 }
                 report.jsx_usages += 1;
                 continue;
@@ -865,8 +811,9 @@ impl Project {
 
             let (style, shorthand_policy) =
                 if let Some(transform) = pattern_transform.as_deref_mut() {
-                    let pattern = compiled.patterns.transform_input(&jsx.name, &jsx.data);
-                    match transform(pattern.name, pattern.styles.as_ref()) {
+                    let (pattern_name, pattern_styles) =
+                        compiled.pattern_transform_input(&jsx.name, &jsx.data);
+                    match transform(pattern_name, pattern_styles.as_ref()) {
                         Ok(Some(style)) => (style, ShorthandPolicy::Internal),
                         Ok(None) => (jsx.data.clone(), ShorthandPolicy::UserFacing),
                         Err(diagnostic) => {
@@ -879,7 +826,7 @@ impl Project {
                 } else {
                     (jsx.data.clone(), ShorthandPolicy::UserFacing)
                 };
-            self.config
+            self.system
                 .process_style_props(&mut encoder, &style, shorthand_policy);
             report.jsx_usages += 1;
         }
@@ -887,7 +834,7 @@ impl Project {
         let mut atoms = encoder.into_atoms();
         let mut utility_styles = FxHashMap::default();
         if let Some(transform) = utility_transform {
-            let utility = compiled.utility.as_ref();
+            let utility = compiled.utility();
             atoms = transform_atoms(
                 atoms,
                 utility,
@@ -897,8 +844,8 @@ impl Project {
             );
             encoded_recipes.transform_utilities(
                 utility,
-                &compiled.conditions,
-                &compiled.breakpoints,
+                compiled.conditions(),
+                compiled.breakpoints(),
                 transform,
                 &mut report.diagnostics,
             );
@@ -1079,7 +1026,7 @@ impl Project {
         self.hydrated_keyframes.clear();
         self.hydrated_keyframes_order.clear();
         self.dependencies.clear();
-        if let Some(resolver) = self.config.extractor_config.cross_file.as_ref() {
+        if let Some(resolver) = self.system.extractor_config().cross_file.as_ref() {
             resolver.clear_resolution_cache();
         }
     }
@@ -1176,7 +1123,7 @@ impl Project {
 
         if retry_unresolved
             && self.dependencies.has_unresolved()
-            && let Some(resolver) = self.config.extractor_config.cross_file.as_ref()
+            && let Some(resolver) = self.system.extractor_config().cross_file.as_ref()
         {
             let newly_resolved = self.dependencies.newly_resolved(path, resolver);
             if !newly_resolved.is_empty() {
@@ -1201,7 +1148,7 @@ impl Project {
         if self.dependencies.contains_dependency(path) {
             return Some(path.to_owned());
         }
-        let resolver = self.config.extractor_config.cross_file.as_ref()?;
+        let resolver = self.system.extractor_config().cross_file.as_ref()?;
         let key = resolver.dependency_key(Path::new(path))?;
         Some(key.to_string_lossy().into_owned())
     }
@@ -1392,7 +1339,7 @@ impl Project {
         prop: &str,
         value: &Literal,
     ) -> Option<ResolvedUtilityValue> {
-        self.config
+        self.system
             .utility()
             .and_then(|utility| utility.resolve_utility_value(prop, value))
     }
@@ -1409,14 +1356,9 @@ impl Project {
         pattern_transform: Option<&mut PatternTransformFn<'_>>,
     ) -> (Vec<Atom>, Vec<Diagnostic>) {
         let mut diagnostics = Vec::new();
-        let atoms = static_patterns::expand_static_patterns(
-            user_config,
-            &self.config.patterns,
-            self.config.utility.as_ref(),
-            self.config.token_dictionary().as_deref(),
-            pattern_transform,
-            &mut diagnostics,
-        );
+        let atoms =
+            self.system
+                .static_pattern_atoms(user_config, pattern_transform, &mut diagnostics);
         (atoms, diagnostics)
     }
 
@@ -1577,18 +1519,14 @@ impl Project {
             return;
         }
         let mut encoded = EncodedRecipes::default();
-        self.config.recipes.process_static_css(
-            &mut encoded,
-            user_config,
-            &self.config.conditions,
-            &self.config.breakpoints,
-        );
+        self.system
+            .process_static_recipe_css(&mut encoded, user_config);
         let mut diagnostics = Vec::new();
         if let Some(transform) = utility_transform.as_deref_mut() {
             encoded.transform_utilities(
-                self.config.utility.as_ref(),
-                &self.config.conditions,
-                &self.config.breakpoints,
+                self.system.utility(),
+                self.system.conditions(),
+                self.system.breakpoints(),
                 transform,
                 &mut diagnostics,
             );
@@ -1829,8 +1767,7 @@ impl Project {
         let mut overrides = FxHashMap::default();
         let mut diagnostics = Vec::new();
 
-        let (Some(transform), Some(utility)) = (utility_transform, self.config.utility.as_ref())
-        else {
+        let (Some(transform), Some(utility)) = (utility_transform, self.system.utility()) else {
             return (overrides, diagnostics);
         };
 
@@ -1854,7 +1791,7 @@ impl Project {
     }
 
     fn collect_unregistered_hydrated_utility_diagnostics(&self) -> Vec<Diagnostic> {
-        let utility = self.config.utility.as_ref();
+        let utility = self.system.utility();
         let mut seen: FxHashSet<(&str, &str)> = FxHashSet::default();
         let mut diagnostics = Vec::new();
         for (path, entry) in &self.files {
@@ -1905,7 +1842,7 @@ impl Project {
     }
 
     fn is_transform_utility(&self, key: &str) -> bool {
-        self.config.utility.as_ref().is_some_and(|utility| {
+        self.system.utility().is_some_and(|utility| {
             utility
                 .callback_transform_id(utility.resolve_shorthand(key))
                 .is_some()
@@ -1920,7 +1857,7 @@ impl Project {
         out: &mut FxHashMap<UtilityStyleKey, Literal>,
         diagnostics: &mut Vec<Diagnostic>,
     ) {
-        let Some(utility) = self.config.utility.as_ref() else {
+        let Some(utility) = self.system.utility() else {
             return;
         };
         let canonical = utility.resolve_shorthand(key);
@@ -2039,26 +1976,15 @@ impl Project {
     }
 
     #[must_use]
-    pub fn config(&self) -> &Config {
-        &self.config
+    pub fn system(&self) -> &System {
+        &self.system
     }
 
     /// Engine-owned fingerprint of the resolved config's output-affecting fields,
     /// stamped into [`BuildInfo`] as `configFingerprint`.
     #[must_use]
     pub fn config_fingerprint(&self) -> &str {
-        &self.config_fingerprint
-    }
-}
-
-/// Style-object key for a condition name: the condition itself when it's a
-/// registered condition key, otherwise `_`-prefixed shorthand (`_hover`).
-/// Shared by static-CSS expansion for recipes and for patterns.
-pub(crate) fn condition_style_key(config: &UserConfig, condition: &str) -> String {
-    if config.is_condition_key(condition) {
-        condition.to_owned()
-    } else {
-        format!("_{condition}")
+        self.system.config_fingerprint()
     }
 }
 
@@ -2075,34 +2001,6 @@ fn json_scalar_to_atom_value(value: &serde_json::Value) -> Option<AtomValue> {
         serde_json::Value::Bool(value) => Some(AtomValue::Bool(*value)),
         _ => None,
     }
-}
-
-/// `mergeProps` — deep merge left to right, no normalization.
-#[must_use]
-pub fn merge_style_props(objects: &[&Literal]) -> Literal {
-    let mut merged = Vec::new();
-    for object in objects {
-        if let Literal::Object(entries) = object {
-            for (key, value) in entries {
-                merge_style_entry(&mut merged, key.clone(), value.clone());
-            }
-        }
-    }
-    Literal::Object(merged)
-}
-
-/// One `mergeProps` step: nested objects merge, everything else is replaced.
-/// Arrays count as values, matching the runtime `isObject`.
-pub(crate) fn merge_style_entry(entries: &mut Vec<(String, Literal)>, key: String, value: Literal) {
-    if let Some((_, existing)) = entries.iter_mut().find(|(name, _)| name == &key)
-        && let (Literal::Object(target), Literal::Object(incoming)) = (&mut *existing, &value)
-    {
-        for (nested_key, nested_value) in incoming.clone() {
-            merge_style_entry(target, nested_key, nested_value);
-        }
-        return;
-    }
-    Literal::upsert_object_entry(entries, key, value);
 }
 
 enum JsxFactoryStaticStyle<'a> {
@@ -2142,28 +2040,6 @@ fn jsx_factory_static_style(config: Option<&Literal>) -> Option<JsxFactoryStatic
     })
 }
 
-pub type PatternTransformFn<'a> =
-    dyn FnMut(&str, &Literal) -> std::result::Result<Option<Literal>, Diagnostic> + 'a;
-
-pub type SourceTransformFn<'a> =
-    dyn FnMut(&str, &str) -> std::result::Result<Option<String>, Diagnostic> + 'a;
-
-/// JS `transform` for a custom utility: `(prop, resolved_value, original_value)`
-/// → raw style object (NOT decomposed atoms; className/layer stay with the
-/// [`Utility`]). `Ok(None)` = no transform for this prop, keep the atom.
-pub type UtilityTransformFn<'a> = dyn FnMut(&str, &AtomValue, &AtomValue) -> std::result::Result<Option<Literal>, Diagnostic>
-    + 'a;
-
-/// Per-call transform callbacks for [`Project::parse_file_with`] /
-/// [`Project::refresh_file_with`]. Passed in rather than stored on the
-/// project, because the binding layer rebuilds them fresh each call.
-#[derive(Default)]
-pub struct ParseTransforms<'a> {
-    pub source: Option<&'a mut SourceTransformFn<'a>>,
-    pub pattern: Option<&'a mut PatternTransformFn<'a>>,
-    pub utility: Option<&'a mut UtilityTransformFn<'a>>,
-}
-
 /// Runs the JS transform per atom without decomposing it. The returned style
 /// object is recorded in `overrides` for the emitter to swap in as one class.
 fn transform_atoms(
@@ -2200,70 +2076,8 @@ fn transform_atoms(
     out
 }
 
-/// The `values`-resolved value to feed the transform (`spacing.4` ->
-/// `var(--spacing-4)`), or the original verbatim if no category matches.
-pub(crate) fn resolved_atom_value(
-    utility: Option<&Utility>,
-    prop: &str,
-    value: &AtomValue,
-) -> AtomValue {
-    let raw = match value {
-        AtomValue::String(raw) | AtomValue::Number(raw) | AtomValue::Token { value: raw, .. } => {
-            raw
-        }
-        AtomValue::Bool(_) | AtomValue::Null => return value.clone(),
-    };
-    let Some(utility) = utility else {
-        return value.clone();
-    };
-    let resolved = utility.resolve_values_value(prop, raw);
-    if resolved.as_str() == raw.as_ref() {
-        value.clone()
-    } else {
-        AtomValue::String(resolved.into())
-    }
-}
-
-pub(crate) fn is_empty_style_object(styles: &Literal) -> bool {
-    matches!(styles, Literal::Object(entries) if entries.is_empty())
-}
-
-pub(crate) fn with_callback_target(
-    mut diagnostic: Diagnostic,
-    kind: &str,
-    name: &str,
-    value: Option<&str>,
-) -> Diagnostic {
-    if diagnostic.code != diagnostic_codes::TRANSFORM_CALLBACK_FAILED {
-        return diagnostic;
-    }
-    let target = value.map_or_else(
-        || format!("{kind} `{name}`"),
-        |value| format!("{kind} `{name}` with value `{value}`"),
-    );
-    diagnostic.message = format!("{} ({target})", diagnostic.message);
-    diagnostic
-}
-
-pub(crate) fn atom_value_summary(value: &AtomValue) -> String {
-    match value {
-        AtomValue::String(value) | AtomValue::Number(value) | AtomValue::Token { value, .. } => {
-            value.to_string()
-        }
-        AtomValue::Bool(value) => value.to_string(),
-        AtomValue::Null => "null".to_owned(),
-    }
-}
-
 fn hash_source(source: &str) -> u64 {
     pandacss_shared::fx_hash(source)
-}
-
-pub(crate) fn literal_entries(value: &Literal) -> Option<&[(String, Literal)]> {
-    match value {
-        Literal::Object(entries) => Some(entries.as_slice()),
-        _ => None,
-    }
 }
 
 /// What flowed through a single `parse_file` call.

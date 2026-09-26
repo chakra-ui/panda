@@ -76,7 +76,7 @@ silently filtered.
 
 `pandacss_config::UserConfig` is the Rust-facing resolved config input. Config resolution still lives on the JS side;
 Rust does not execute `panda.config.*`, presets, hooks, or plugins. The resolved config flows into
-`pandacss_project::System::new(config)`, which compiles extractor matchers, JSX config, utility metadata, conditions,
+`pandacss_system::System::new(config)`, which compiles extractor matchers, JSX config, utility metadata, conditions,
 breakpoints, patterns, recipes, and token dictionary data into runtime structures.
 
 **Why:** Panda's config supports recipes, hooks, presets, conditions, and a long tail of advanced features.
@@ -84,7 +84,7 @@ Reimplementing the resolution semantics in Rust would multiply the surface for p
 JSON serialization per session) isn't on the hot path.
 
 Config compilation is fallible. Invalid runtime structures that Rust must compile, such as serialized JSX regexes,
-return `pandacss_project::ConfigError` through `System::new(config)` / `Project::from_config(config)` instead of being
+return `pandacss_system::ConfigError` through `System::new(config)` instead of being
 silently ignored or panicking. `pandacss_config::Theme` is typed for the structural fields Rust consumes today
 (`breakpoints`, recipes, slot recipes, theme variants, containers, color palette). Nested style/token trees still use
 `serde_json::Value` where the Rust port has not claimed the full semantic shape yet.

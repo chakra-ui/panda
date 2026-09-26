@@ -114,7 +114,7 @@ fn transform_output_metadata_for_static_rewrite() {
     "#};
 
     let output = transform_source(
-        project().config(),
+        project().system(),
         "src/button.tsx",
         source,
         &TransformOptions::default(),

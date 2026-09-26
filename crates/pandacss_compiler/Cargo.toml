@@ -11,12 +11,19 @@ publish = false
 pandacss_codegen = { workspace = true }
 pandacss_config = { workspace = true }
 pandacss_encoder = { workspace = true }
+pandacss_extractor = { workspace = true }
 pandacss_fs = { workspace = true, default-features = false }
+pandacss_literal = { workspace = true }
 pandacss_project = { workspace = true }
 pandacss_shared = { workspace = true }
 pandacss_stylesheet = { workspace = true }
+pandacss_system = { workspace = true }
 pandacss_tokens = { workspace = true }
 pandacss_utility = { workspace = true }
+fast-glob = { workspace = true }
+lru = { workspace = true }
+regex = { workspace = true }
+rustc-hash = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
@@ -25,7 +32,6 @@ tracing = { workspace = true }
 [dev-dependencies]
 indoc = { workspace = true }
 insta = { workspace = true }
-pandacss_literal = { workspace = true }
 
 [lints]
 workspace = true

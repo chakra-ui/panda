@@ -1,10 +1,9 @@
 use super::WasmCompiler;
 use super::transforms::{apply_pattern_transform, apply_utility_transform};
 
-use pandacss_fs::{FileSystem, PathSystem};
+use pandacss_fs::PathSystem;
 use pandacss_literal::Literal;
 use serde::Serialize as _;
-use std::path::Path;
 use wasm_bindgen::prelude::*;
 
 use super::interop::{
@@ -20,8 +19,8 @@ fn with_stylesheet_transforms<R>(
     build: impl FnOnce(
         &mut pandacss_project::Project,
         &pandacss_config::UserConfig,
-        Option<&mut pandacss_project::PatternTransformFn<'_>>,
-        Option<&mut pandacss_project::UtilityTransformFn<'_>>,
+        Option<&mut pandacss_system::PatternTransformFn<'_>>,
+        Option<&mut pandacss_system::UtilityTransformFn<'_>>,
     ) -> R,
 ) -> R {
     let has_pattern_transforms = compiler.callbacks.has_pattern_transforms();
@@ -58,9 +57,9 @@ fn with_stylesheet_transforms<R>(
         inner,
         user_config,
         has_pattern_transforms
-            .then_some(&mut pattern_transform as &mut pandacss_project::PatternTransformFn<'_>),
+            .then_some(&mut pattern_transform as &mut pandacss_system::PatternTransformFn<'_>),
         has_utility_transforms
-            .then_some(&mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>),
+            .then_some(&mut utility_transform as &mut pandacss_system::UtilityTransformFn<'_>),
     )
 }
 
@@ -75,30 +74,12 @@ impl WasmCompiler {
         files: impl IntoIterator<Item = (&'a str, &'a str)>,
         label: &str,
     ) -> Result<Vec<String>, JsValue> {
-        let mut written = Vec::new();
-        for (path, code) in files {
-            if !self.paths.is_safe_relative(path) {
-                return Err(JsValue::from_str(&format!(
-                    "{label} output path must be a contained relative path: {path}"
-                )));
-            }
-            let target = self.paths.join(&[root, path]);
-            self.write_target_file(&target, code)?;
-            written.push(target);
-        }
-        Ok(written)
+        pandacss_compiler::write_relative_files(&self.fs, &self.paths, root, files, label)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
     }
 
     pub(super) fn write_target_file(&self, target: &str, code: &str) -> Result<(), JsValue> {
-        let parent = self.paths.dirname(target);
-        if !parent.is_empty() {
-            self.fs
-                .create_dir_all(Path::new(&parent))
-                .map_err(|err| JsValue::from_str(&err.to_string()))?;
-        }
-        self.fs
-            .write_if_changed(Path::new(target), code.as_bytes())
-            .map(|_| ())
+        pandacss_compiler::write_output_file(&self.fs, &self.paths, target, code)
             .map_err(|err| JsValue::from_str(&err.to_string()))
     }
 

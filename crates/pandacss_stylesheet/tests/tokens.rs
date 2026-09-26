@@ -1,7 +1,8 @@
 use insta::assert_snapshot;
-use pandacss_project::{Project, System};
+use pandacss_project::Project;
 use pandacss_shared::DiagnosticSeverity;
 use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
+use pandacss_system::System;
 
 use crate::common::{compile_css, compile_output, config, empty_input, project_input};
 

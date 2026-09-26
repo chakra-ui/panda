@@ -6,7 +6,8 @@ use pandacss_compiler::{
     CodegenArtifact, GenerateArtifactOptions, generate_affected_artifacts, generate_artifact,
 };
 use pandacss_config::UserConfig;
-use pandacss_project::{Project, System};
+use pandacss_project::Project;
+use pandacss_system::System;
 use serde_json::json;
 
 fn generate(config: &UserConfig, id: &str) -> CodegenArtifact {

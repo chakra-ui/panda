@@ -241,7 +241,7 @@ fn run_cold(config: &UserConfig, sources: &[(PathBuf, String)]) -> ColdRun {
     let total_start = Instant::now();
 
     let t0 = Instant::now();
-    let system = pandacss_project::System::new(config.clone()).expect("system");
+    let system = pandacss_system::System::new(config.clone()).expect("system");
     let mut project = Project::new(system);
     let from_config = t0.elapsed();
 
@@ -252,7 +252,7 @@ fn run_cold(config: &UserConfig, sources: &[(PathBuf, String)]) -> ColdRun {
     let parse_files = t0.elapsed();
 
     let atoms_count = project.atoms().len();
-    let token_dictionary = project.config().token_dictionary();
+    let token_dictionary = project.system().token_dictionary();
 
     let t0 = Instant::now();
     let snapshots = project.stylesheet_snapshots(config);
@@ -296,7 +296,7 @@ fn run_cold(config: &UserConfig, sources: &[(PathBuf, String)]) -> ColdRun {
 
 fn run_watch(config: &UserConfig, sources: &[(PathBuf, String)]) -> WatchRun {
     // Set up a steady-state project once per watch run.
-    let system = pandacss_project::System::new(config.clone()).expect("system");
+    let system = pandacss_system::System::new(config.clone()).expect("system");
     let mut project = Project::new(system);
     for (path, source) in sources {
         project.parse_file(path.to_str().expect("utf8"), source);
@@ -316,7 +316,7 @@ fn run_watch(config: &UserConfig, sources: &[(PathBuf, String)]) -> WatchRun {
     project.parse_file(target.0.to_str().expect("utf8"), &mutated);
     let reparse = t0.elapsed();
 
-    let token_dictionary = project.config().token_dictionary();
+    let token_dictionary = project.system().token_dictionary();
     let t0 = Instant::now();
     let snapshots = project.stylesheet_snapshots(config);
     let snapshots_t = t0.elapsed();

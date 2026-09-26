@@ -1,9 +1,9 @@
 //! Host-neutral source transforms for Panda CSS.
 //!
 //! Static `css({...})`, pattern/recipe, and JSX sites compile to class string
-//! literals where safe. Reads only the resolved [`Config`], so hosts can transform
-//! without a mutable [`pandacss_project::Project`]; class names come from the same
-//! `Config` helpers extraction uses.
+//! literals where safe. Reads only the compiled [`System`], so hosts can transform
+//! without a mutable project; class names come from the same `System` helpers
+//! extraction uses.
 
 mod apply;
 mod css_keys;
@@ -25,7 +25,7 @@ mod style_lower;
 use pandacss_extractor::extract_transform_with_recipes;
 use pandacss_literal::Literal;
 
-use pandacss_project::{Config, ParseTransforms};
+use pandacss_system::{ParseTransforms, System};
 
 pub use helper::{
     CSS_HELPER_LOCAL, CVA_HELPER_LOCAL, CX_HELPER_LOCAL, CX_HELPER_MODULE, INTERNAL_CSS_MODULE,
@@ -37,22 +37,22 @@ pub use plan::{
     TransformTargets,
 };
 
-/// Rewrite one source file with `config` (`ParseTransforms` empty).
+/// Rewrite one source file with `system` (`ParseTransforms` empty).
 #[must_use]
 pub fn transform_source(
-    config: &Config,
+    system: &System,
     path: &str,
     source: &str,
     options: &TransformOptions,
 ) -> TransformOutput {
-    transform_source_with(config, path, source, options, ParseTransforms::default())
+    transform_source_with(system, path, source, options, ParseTransforms::default())
 }
 
 /// Rewrite one source file, applying the same callback bag as
-/// [`pandacss_project::Project::parse_file_with`] (especially `source` + `pattern`).
+/// `Project::parse_file_with` (especially `source` + `pattern`).
 #[must_use]
 pub fn transform_source_with(
-    config: &Config,
+    system: &System,
     path: &str,
     source: &str,
     options: &TransformOptions,
@@ -95,25 +95,25 @@ pub fn transform_source_with(
     let extracted = {
         let _span = tracing::trace_span!(target: "transform", "transform_extract").entered();
         let mut resolve_recipe_raw = |factory: &str, definition: &Literal, props: &Literal| {
-            let props = pandacss_project::literal_variant_props(props)?;
-            pandacss_project::resolve_inline_recipe_raw(config, factory, definition, &props)
+            let props = pandacss_system::literal_variant_props(props)?;
+            pandacss_system::resolve_inline_recipe_raw(system, factory, definition, &props)
         };
         extract_transform_with_recipes(
             source,
             path,
-            config.extractor_config(),
+            system.extractor_config(),
             &mut resolve_recipe_raw,
         )
     };
     let plan = {
         let _span = tracing::trace_span!(target: "transform", "transform_plan").entered();
-        plan::build_plan(config, source, &extracted, options, transforms.pattern)
+        plan::build_plan(system, source, &extracted, options, transforms.pattern)
     };
     let diagnostics = extracted.diagnostics;
 
     let (code, map) = {
         let _span = tracing::trace_span!(target: "transform", "transform_print").entered();
-        let edits = apply::build_transform_edits(config, path, source, &plan, options.helper_cx);
+        let edits = apply::build_transform_edits(system, path, source, &plan, options.helper_cx);
         apply::apply_edits(source, path, &edits)
     };
     let changed = code != source;

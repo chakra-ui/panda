@@ -28,6 +28,7 @@ tracing = { workspace = true }
 indoc = { workspace = true }
 insta = { workspace = true }
 pandacss_project = { workspace = true }
+pandacss_system = { workspace = true }
 
 [lints]
 workspace = true

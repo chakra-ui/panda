@@ -6,7 +6,7 @@ use pandacss_literal::Literal;
 use pandacss_utility::ShorthandPolicy;
 use rustc_hash::FxHashSet;
 
-use pandacss_project::Config;
+use pandacss_system::System;
 
 type StyleKey = (String, Vec<Box<str>>);
 pub(super) type StyleKeys = FxHashSet<StyleKey>;
@@ -14,15 +14,15 @@ pub(super) type StyleKeys = FxHashSet<StyleKey>;
 /// Values do not affect merge conflicts. Encode marker values through the same
 /// normalizer as real styles to resolve shorthands and responsive conditions.
 #[must_use]
-pub(super) fn style_keys(config: &Config, tree: &StyleTree) -> Option<StyleKeys> {
+pub(super) fn style_keys(system: &System, tree: &StyleTree) -> Option<StyleKeys> {
     let literal = project_literal(&marker_tree(tree)?)?;
     let mut keys = StyleKeys::default();
-    collect_keys(config, &literal, &mut Vec::new(), &mut keys)?;
+    collect_keys(system, &literal, &mut Vec::new(), &mut keys)?;
     Some(keys)
 }
 
 fn collect_keys(
-    config: &Config,
+    system: &System,
     value: &Literal,
     path: &mut Vec<String>,
     keys: &mut StyleKeys,
@@ -31,18 +31,18 @@ fn collect_keys(
         Literal::Object(entries) => {
             for (key, value) in entries {
                 path.push(key.clone());
-                collect_keys(config, value, path, keys)?;
+                collect_keys(system, value, path, keys)?;
                 path.pop();
             }
         }
         Literal::Conditional(items) => {
             for item in items {
-                collect_keys(config, item, path, keys)?;
+                collect_keys(system, item, path, keys)?;
             }
         }
         Literal::Array(items) if path.is_empty() => {
             for item in items {
-                collect_keys(config, item, path, keys)?;
+                collect_keys(system, item, path, keys)?;
             }
         }
         _ => {
@@ -50,8 +50,8 @@ fn collect_keys(
             for key in path.iter().rev() {
                 literal = Literal::Object(vec![(key.clone(), literal)]);
             }
-            let mut encoder = Encoder::with_conditions(config.conditions().clone());
-            config.encode_atomic_for_transform(&mut encoder, &literal, ShorthandPolicy::UserFacing);
+            let mut encoder = Encoder::with_conditions(system.conditions().clone());
+            system.encode_style(&mut encoder, &literal, ShorthandPolicy::UserFacing);
             let atoms = encoder.into_atoms();
             // A scalar at a selector/condition scope can overwrite its subtree.
             // Without a canonical leaf key, independence cannot be proved.

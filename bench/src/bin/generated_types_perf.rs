@@ -14,7 +14,8 @@
 use std::{fs, path::PathBuf};
 
 use pandacss_config::UserConfig;
-use pandacss_project::{Project, System};
+use pandacss_project::Project;
+use pandacss_system::System;
 use serde_json::{Value, json};
 
 fn fixtures_dir() -> PathBuf {

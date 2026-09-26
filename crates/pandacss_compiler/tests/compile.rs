@@ -3,7 +3,8 @@ use pandacss_compiler::{
     CssOutputOptions, compile_css, compile_keyframes, compile_layers, compile_split_css,
 };
 use pandacss_literal::Literal;
-use pandacss_project::{Project, System};
+use pandacss_project::Project;
+use pandacss_system::System;
 use serde_json::json;
 
 fn project_with_source() -> (pandacss_config::UserConfig, Project) {

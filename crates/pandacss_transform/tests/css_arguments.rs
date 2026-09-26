@@ -1,6 +1,7 @@
 //! Multi-argument `css()` calls and constant ternaries in the source transform.
 
-use pandacss_project::{Project, System};
+use pandacss_project::Project;
+use pandacss_system::System;
 use pandacss_transform::{TransformOptions, TransformOutput, transform_source};
 use serde_json::json;
 
@@ -19,7 +20,7 @@ fn transform_css(source: &str) -> TransformOutput {
         }
     }));
     transform_source(
-        project.config(),
+        project.system(),
         "file.ts",
         source,
         &TransformOptions::default(),

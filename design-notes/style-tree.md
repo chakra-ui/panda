@@ -88,7 +88,7 @@ Maps `StyleTree` to `Option<Literal>` for encoding:
 
 ## Lower API
 
-`pandacss_project::transform::style_lower`:
+`pandacss_transform::style_lower`:
 
 - `lower_style_tree(...) -> LowerResult { Static(String), Expr(ClassExpr), Bail }`
 - `print_class_expr` for nested ternaries / multi-site `Join`

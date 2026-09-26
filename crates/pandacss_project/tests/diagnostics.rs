@@ -3,8 +3,9 @@ use indoc::indoc;
 use insta::{assert_snapshot, assert_yaml_snapshot};
 use pandacss_encoder::AtomValue;
 use pandacss_literal::Literal;
-use pandacss_project::{Diagnostic, ParseTransforms, Project, SourceTransformFn, System};
+use pandacss_project::{Diagnostic, Project};
 use pandacss_shared::diagnostic_codes;
+use pandacss_system::{ParseTransforms, SourceTransformFn, System};
 use serde_json::json;
 
 fn summary(diagnostics: &[Diagnostic]) -> String {

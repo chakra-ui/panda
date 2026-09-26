@@ -22,7 +22,7 @@ impl Compiler {
         path: String,
         source: String,
     ) -> napi::Result<serde_json::Value> {
-        let result = self.inner.inspect_file_source(&path, &source);
+        let result = pandacss_compiler::inspect_file_source(self.inner.system(), &path, &source);
         serde_json::to_value(&result).map_err(|err| napi::Error::from_reason(err.to_string()))
     }
 
@@ -68,18 +68,11 @@ impl Compiler {
         reason = "NAPI requires owned arguments"
     )]
     pub fn suggest_tokens(&self, prop: String, value: String) -> serde_json::Value {
-        let suggestions: Vec<serde_json::Value> = self
-            .inner
-            .suggest_tokens(&prop, &value)
-            .into_iter()
-            .map(|suggestion| {
-                serde_json::json!({
-                    "token": suggestion.token,
-                    "semantic": suggestion.semantic,
-                    "conditional": suggestion.conditional,
-                })
-            })
-            .collect();
+        let suggestions: Vec<serde_json::Value> =
+            pandacss_compiler::suggest_tokens(self.inner.system(), &prop, &value)
+                .into_iter()
+                .map(|suggestion| pandacss_compiler::token_suggestion_json(&suggestion))
+                .collect();
         serde_json::Value::Array(suggestions)
     }
 
@@ -91,18 +84,11 @@ impl Compiler {
         reason = "NAPI requires owned arguments"
     )]
     pub fn suggest_semantic_tokens(&self, path: String) -> serde_json::Value {
-        let suggestions: Vec<serde_json::Value> = self
-            .inner
-            .suggest_semantic_tokens(&path)
-            .into_iter()
-            .map(|suggestion| {
-                serde_json::json!({
-                    "token": suggestion.token,
-                    "semantic": suggestion.semantic,
-                    "conditional": suggestion.conditional,
-                })
-            })
-            .collect();
+        let suggestions: Vec<serde_json::Value> =
+            pandacss_compiler::suggest_semantic_tokens(self.inner.system(), &path)
+                .into_iter()
+                .map(|suggestion| pandacss_compiler::token_suggestion_json(&suggestion))
+                .collect();
         serde_json::Value::Array(suggestions)
     }
 

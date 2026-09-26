@@ -19,21 +19,15 @@ mod transforms;
 
 use napi_derive::napi;
 use std::collections::HashMap;
-use std::sync::Arc;
 
 use crate::Diagnostic;
-use crate::cache::TransformCache;
 use napi::bindgen_prelude::{Env, FnArgs, FunctionRef};
-use pandacss_config::{
-    UserConfig, ValidationMode, validate_config_value, validation_mode_from_value,
-};
+use pandacss_compiler::{LoadSystemError, LoadedSystem, TransformCache};
+use pandacss_config::UserConfig;
 use pandacss_fs::OsPathSystem;
 
 use self::interop::apply_project_options;
-use self::transforms::{
-    get_pattern_transform_refs, get_utility_transform_refs, resolve_utility_values_callbacks,
-};
-use pandacss_compiler::format_config_diagnostics;
+use self::transforms::resolve_utility_values_callbacks;
 
 /// Opaque `theme` handle passed into `utility.values` callbacks.
 pub struct JsCallbackArg(pub(crate) napi::sys::napi_value);
@@ -252,7 +246,7 @@ type UtilityTransformRef =
 type SourceTransformRef = FunctionRef<FnArgs<(String, String)>, Option<String>>;
 
 struct SourceTransformCallback {
-    filter: pandacss_project::HookFilter,
+    filter: pandacss_compiler::HookFilter,
     callback: SourceTransformRef,
 }
 
@@ -269,8 +263,8 @@ struct CallbackHost {
 impl CallbackHost {
     fn from_config(config: &UserConfig) -> Self {
         Self {
-            utility_transform_refs: get_utility_transform_refs(config),
-            pattern_transform_refs: get_pattern_transform_refs(config),
+            utility_transform_refs: pandacss_compiler::utility_transform_refs(config),
+            pattern_transform_refs: pandacss_compiler::pattern_transform_refs(config),
             utility_transforms: HashMap::new(),
             pattern_transforms: HashMap::new(),
             source_transforms: Vec::new(),
@@ -307,45 +301,23 @@ impl Compiler {
     ) -> napi::Result<Self> {
         crate::init_tracing();
         let opts = options.unwrap_or(ProjectOptions { cross_file: None });
-        let config_snapshot = config.clone();
-        let raw_diagnostics = validate_config_value(&config_snapshot);
-        if validation_mode_from_value(&config_snapshot) == ValidationMode::Error
-            && !raw_diagnostics.is_empty()
-        {
-            return Err(napi::Error::from_reason(format_config_diagnostics(
-                &raw_diagnostics,
-            )));
-        }
-        let mut config: UserConfig = serde_json::from_value(config).map_err(|err| {
-            let reason = if raw_diagnostics.is_empty() {
-                format!("invalid config: {err}")
-            } else {
-                format!(
-                    "invalid config: {err}\n{}",
-                    format_config_diagnostics(&raw_diagnostics)
-                )
-            };
-            napi::Error::from_reason(reason)
-        })?;
-        let token_dictionary = pandacss_tokens::TokenDictionary::from_config(&config)
-            .map_err(|err| napi::Error::from_reason(format!("invalid token config: {err}")))?
-            .map(Arc::new);
-        resolve_utility_values_callbacks(
-            &mut config,
-            token_dictionary.as_ref(),
-            utility_values_callbacks.as_ref(),
-            &env,
-        )?;
-        let callbacks = CallbackHost::from_config(&config);
-        let user_config = config.clone();
-        let config_snapshot =
-            serde_json::to_value(&config).unwrap_or_else(|_| config_snapshot.clone());
-        let system = pandacss_project::System::new(pandacss_project::SystemInput {
-            config,
-            diagnostics: Some(raw_diagnostics),
-            token_dictionary,
+        let LoadedSystem {
+            system,
+            user_config,
+            snapshot: config_snapshot,
+        } = pandacss_compiler::load_system(config, |config, token_dictionary| {
+            resolve_utility_values_callbacks(
+                config,
+                token_dictionary,
+                utility_values_callbacks.as_ref(),
+                &env,
+            )
         })
-        .map_err(|err| napi::Error::from_reason(format!("invalid config: {err}")))?;
+        .map_err(|err| match err {
+            LoadSystemError::Host(err) => err,
+            err => napi::Error::from_reason(err.message().unwrap_or_default()),
+        })?;
+        let callbacks = CallbackHost::from_config(&user_config);
         let project = pandacss_project::Project::new(system);
         let fs = pandacss_fs::OsFileSystem::default();
         Ok(Self {

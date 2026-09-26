@@ -70,57 +70,31 @@ pub(super) fn write_split_css_options_from_js(
  * Atom serialization.
  */
 pub(super) fn slice_to_atom_serde(atoms: &[CoreAtom]) -> Vec<AtomSerde> {
-    let mut sorted: Vec<&CoreAtom> = atoms.iter().collect();
-    sorted.sort_by(|a, b| {
-        a.prop()
-            .cmp(b.prop())
-            .then_with(|| {
-                let a_conds: Vec<&str> = a.conditions().iter().map(AsRef::as_ref).collect();
-                let b_conds: Vec<&str> = b.conditions().iter().map(AsRef::as_ref).collect();
-                a_conds.cmp(&b_conds)
-            })
-            .then_with(|| value_sort_key(a.value()).cmp(&value_sort_key(b.value())))
-    });
-    sorted
+    pandacss_compiler::sorted_atoms(atoms)
         .into_iter()
-        .map(|atom| AtomSerde {
-            prop: atom.prop().to_string(),
-            value: pandacss_compiler::atom_value_json(atom.value()),
-            conditions: atom
-                .conditions()
-                .iter()
-                .map(std::string::ToString::to_string)
-                .collect::<Vec<String>>(),
-        })
+        .map(atom_serde)
         .collect()
 }
 
 pub(super) fn collect_sorted_atoms<S: std::hash::BuildHasher>(
     atoms: &std::collections::HashSet<pandacss_encoder::Atom, S>,
 ) -> Vec<AtomSerde> {
-    let mut sorted: Vec<&pandacss_encoder::Atom> = atoms.iter().collect();
-    sorted.sort_by(|a, b| {
-        a.prop()
-            .cmp(b.prop())
-            .then_with(|| {
-                let a_conds: Vec<&str> = a.conditions().iter().map(AsRef::as_ref).collect();
-                let b_conds: Vec<&str> = b.conditions().iter().map(AsRef::as_ref).collect();
-                a_conds.cmp(&b_conds)
-            })
-            .then_with(|| value_sort_key(a.value()).cmp(&value_sort_key(b.value())))
-    });
-    sorted
+    pandacss_compiler::sorted_atoms(atoms)
         .into_iter()
-        .map(|atom| AtomSerde {
-            prop: atom.prop().to_string(),
-            value: pandacss_compiler::atom_value_json(atom.value()),
-            conditions: atom
-                .conditions()
-                .iter()
-                .map(std::string::ToString::to_string)
-                .collect::<Vec<String>>(),
-        })
+        .map(atom_serde)
         .collect()
+}
+
+fn atom_serde(atom: &CoreAtom) -> AtomSerde {
+    AtomSerde {
+        prop: atom.prop().to_string(),
+        value: pandacss_compiler::atom_value_json(atom.value()),
+        conditions: atom
+            .conditions()
+            .iter()
+            .map(std::string::ToString::to_string)
+            .collect::<Vec<String>>(),
+    }
 }
 
 /*
@@ -168,33 +142,9 @@ pub(super) fn glob_options(
 /*
  * Diagnostics.
  */
-pub(super) fn format_deserialize_error(
-    error: &serde_json::Error,
-    diagnostics: &[pandacss_shared::Diagnostic],
-) -> String {
-    if diagnostics.is_empty() {
-        format!("invalid config: {error}")
-    } else {
-        format!(
-            "invalid config: {error}\n{}",
-            pandacss_compiler::format_config_diagnostics(diagnostics)
-        )
-    }
-}
-
 pub(super) fn js_error_message(value: &JsValue) -> String {
     if let Some(error) = value.dyn_ref::<js_sys::Error>() {
         return error.message().into();
     }
     value.as_string().unwrap_or_else(|| format!("{value:?}"))
-}
-
-pub(super) fn value_sort_key(v: &pandacss_encoder::AtomValue) -> String {
-    match v {
-        pandacss_encoder::AtomValue::String(s)
-        | pandacss_encoder::AtomValue::Token { value: s, .. } => format!("s:{s}"),
-        pandacss_encoder::AtomValue::Number(s) => format!("n:{s}"),
-        pandacss_encoder::AtomValue::Bool(b) => format!("b:{b}"),
-        pandacss_encoder::AtomValue::Null => "z:".to_owned(),
-    }
 }

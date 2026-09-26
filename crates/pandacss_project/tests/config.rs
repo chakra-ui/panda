@@ -3,7 +3,8 @@
 use crate::common::{create_config, create_project, sorted_atoms};
 use indoc::indoc;
 use insta::{assert_snapshot, assert_yaml_snapshot};
-use pandacss_project::{Project, System};
+use pandacss_project::Project;
+use pandacss_system::System;
 use serde_json::json;
 
 #[test]

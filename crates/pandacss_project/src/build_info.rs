@@ -21,8 +21,8 @@ use pandacss_shared::{InlineKeyframe, PositionTryStyle, ViewTransitionStyle};
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde::{Deserialize, Serialize};
 
-use crate::recipes::EncodedRecipes;
 use crate::{FileEntry, ParseFileReport};
+use pandacss_system::EncodedRecipes;
 
 /// Bumped when the on-disk shape changes; a consumer with a different
 /// `SCHEMA_VERSION` falls back to re-extracting the library's source.
@@ -638,7 +638,7 @@ impl super::Project {
         panda: String,
         dependencies: &[DesignSystemDependency],
     ) -> BuildInfo {
-        let config_fingerprint = self.config_fingerprint.to_string();
+        let config_fingerprint = self.system.config_fingerprint().to_string();
 
         // Deduped, emit-ordered — modules reference this index space. Only this
         // project's own atoms are serialized; hydrated parent atoms (under

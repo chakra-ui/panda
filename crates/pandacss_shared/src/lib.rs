@@ -11,6 +11,7 @@ pub mod hash;
 pub mod important;
 pub mod keyframes;
 pub mod position_try;
+pub mod refcount;
 pub mod regex;
 pub mod stringify;
 pub mod strings;

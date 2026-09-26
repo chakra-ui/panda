@@ -175,7 +175,7 @@ dimensions still reuse the existing `JsxExtractionConfig` concepts:
 | `ignore` (tag)          | **new** `tag_blocklist` / `tag_regex_blocklist`                  |
 | `from` (include/ignore) | resolved at import time (see Phase 2)                            |
 
-The bridge (`pandacss_project::config::jsx_extraction_config_from_definitions`) builds these from `config.jsxMatchTag`,
+The bridge (`pandacss_system::config::jsx_extraction_config_from_definitions`) builds these from `config.jsxMatchTag`,
 reusing the existing `collect_jsx_strings` / `jsx_regexes` string-vs-regex helpers, then `.with_regex_sets()`.
 
 The only genuinely new field is a **tag blocklist**: `tag_blocklist: FxHashSet<String>` + `tag_regex_blocklist` + its

@@ -7,8 +7,9 @@ use crate::common::{config, project_input};
 use insta::assert_snapshot;
 use pandacss_config::UserConfig;
 use pandacss_literal::Literal;
-use pandacss_project::{Diagnostic, PatternTransformFn, Project, System};
+use pandacss_project::{Diagnostic, Project};
 use pandacss_stylesheet::{StylesheetInput, StylesheetLayer, StylesheetOptions};
+use pandacss_system::{PatternTransformFn, System};
 use serde_json::json;
 
 fn static_pattern_utilities(cfg: &UserConfig, transform: &mut PatternTransformFn<'_>) -> String {

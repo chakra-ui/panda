@@ -2,7 +2,7 @@
 
 ## Summary
 
-`Project` is the Tier-3 façade that owns build / dev-server session state. The primary construction path is
+`Project` is the Tier-4 façade that owns build / dev-server session state. The primary construction path is
 `UserConfig -> System -> Project`: `System::new(config)` compiles immutable config-derived runtime state, then `Project`
 owns the mutable per-file buckets and caches. Source files flow in through `parse_file`; the project extracts usages,
 decomposes `cva()` / `sva()` recipes, and feeds the results into a shared atomic encoder. The contract is **per-file
@@ -26,24 +26,22 @@ because every path was already visible to the resolver before parsing began.
 ## Construction
 
 ```rust
-let mut project = Project::from_config(config)?;
-
-// Equivalent lower-level shape when the caller wants to keep the compiled system.
-let system = System::new(config)?;
+let system = System::new(config)?; // pandacss_system
 let mut project = Project::new(system);
 ```
 
 Config-derived construction is fallible. `pandacss_config::UserConfig` is the deserialized resolved input shape from the
-JS config loader. `System::new(config) -> pandacss_project::Result<System>` compiles it into fast Rust runtime
+JS config loader. `System::new(config) -> pandacss_system::Result<System>` compiles it into fast Rust runtime
 structures: extractor matchers, JSX extraction config, utility metadata, conditions, breakpoints, patterns, recipes, and
-the token dictionary bridge. `Project::from_config(config)` simply builds a `System` and wraps it in a fresh project.
+the token dictionary bridge. `Project::new(system)` wraps it in fresh build/watch state; hosts go through
+`pandacss_compiler::load_system`, which adds validation, token setup, and `utility.values` callbacks.
 
 The config model is typed at the structural boundary. Fields such as `prefix`, `hash`, `jsxStyleProps`, `conditions`,
 `utilities`, `patterns`, recipes, slot recipes, and theme tokens deserialize into Rust structs/enums before the project
 sees them. `serde_json::Value` remains only for intentionally dynamic style payloads and extension bags:
 `SystemStyleObject`-like values, pattern `defaultValues`, utility value maps, token extensions, static/global CSS
 payloads, and unknown flattened config fields. That keeps the hot project path from repeatedly walking raw JSON while
-still accepting Panda's open-ended CSS object shapes. The compiled runtime config is `pandacss_project::Config`; the raw
+still accepting Panda's open-ended CSS object shapes. The compiled runtime config is `pandacss_system::System`; the raw
 `UserConfig` is not stored in Rust project state.
 
 ## Lifecycle methods
@@ -147,12 +145,12 @@ Re-process via `Project::refresh_file` or `parse_file`.
 ## Cross-file resolver
 
 ```rust
-let project = Project::from_config(config)?.with_cross_file(resolver);
+let project = Project::new(System::new(config)?).with_cross_file(resolver);
 ```
 
 `with_cross_file` is a construction-time convenience that patches the compiled extractor config before files are parsed.
-Longer term, filesystem and resolver setup should be folded into the config/system creation path so production callers
-can keep using `Project::from_config(config)` as the single entrypoint.
+It delegates to `System::set_cross_file`. Longer term, filesystem and resolver setup should be folded into the
+config/system creation path so production callers have a single entrypoint.
 
 ## Reflection: per-file parallelism
 

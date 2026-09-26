@@ -176,7 +176,7 @@ integration tests — pure functions with no public API surface. Examples:
 - `pandacss_shared::unit_conversion::to_rem`
 - `pandacss_stylesheet::grouped` — tree grouping + CSS emit
 - `pandacss_stylesheet::sort` — breakpoint rem conversion, sort keys
-- `pandacss_project::recipes::compound_tests` — eager vs smart compound variants
+- `pandacss_system::recipes::compound_tests` — eager vs smart compound variants
 
 Default to `tests/` for anything that exercises the crate's public API or documents expected behavior for porting
 parity. If a `src/` test starts needing dev-deps or sibling crates, move it to integration tests.

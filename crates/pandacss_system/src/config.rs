@@ -22,20 +22,18 @@ use pandacss_utility::{Utility, UtilityOptions};
 
 use crate::patterns::PatternRegistry;
 use crate::recipes::{RecipeRegistry, StyleResolver};
-use crate::runtime_config::Config;
-use crate::{ConfigError, ProjectConditionMatcher, RecipeKey, Result};
+use crate::system::ConfigRecipe;
+use crate::{ConfigError, ProjectConditionMatcher, Result, System};
 
-pub(crate) fn compile_config(config: &pandacss_config::UserConfig) -> Result<Config> {
-    compile_config_with_token_dictionary(config, None)
-}
-
-/// Compiles a user config into the immutable runtime [`Config`]: extractor
-/// matchers, utility metadata, conditions, and pattern/recipe registries.
-/// Reuses `token_dictionary` if the caller already built one.
-pub(crate) fn compile_config_with_token_dictionary(
+/// Compiles a user config into a [`System`]: extractor matchers, utility
+/// metadata, conditions, and pattern/recipe registries. Reuses
+/// `token_dictionary` if the caller already built one.
+pub(crate) fn compile_system(
     config: &pandacss_config::UserConfig,
     token_dictionary: Option<Arc<TokenDictionary>>,
-) -> Result<Config> {
+    config_fingerprint: Arc<str>,
+    diagnostics: Vec<pandacss_shared::Diagnostic>,
+) -> Result<System> {
     let entries = {
         let _span = tracing::trace_span!(target: "config", "config_entries").entered();
         ConfigDefinitions::from_config(config)?
@@ -92,7 +90,7 @@ pub(crate) fn compile_config_with_token_dictionary(
         )
     };
 
-    Ok(Config {
+    Ok(System {
         extractor_config,
         utility,
         class_name_prefix: config.prefix.class_name().unwrap_or_default().to_owned(),
@@ -111,6 +109,8 @@ pub(crate) fn compile_config_with_token_dictionary(
         view_transitions: theme_view_transitions(config),
         position_try: theme_position_try(config),
         optimize: config.optimize,
+        config_fingerprint,
+        diagnostics,
     })
 }
 
@@ -297,30 +297,26 @@ fn slot_recipe_definitions(
     Ok(out)
 }
 
-/// Builds the `(file, span) -> Recipe` map config recipes share with inline
-/// `cva()`/`sva()` ones (see [`RecipeKey`]): `{prefix}.{name}` keyed by
-/// declaration order, so config recipes sort deterministically too.
+/// Records each config recipe's stable config path and declaration order.
 fn config_recipe_keys<D, T: Clone>(
     prefix: &str,
     definitions: &[D],
     name: impl Fn(&D) -> &str,
     index: impl Fn(&D) -> u32,
     recipe: impl Fn(&D) -> &T,
-) -> BTreeMap<RecipeKey, T> {
-    let mut out = BTreeMap::new();
+) -> Vec<ConfigRecipe<T>> {
+    let mut out = Vec::with_capacity(definitions.len());
     for definition in definitions {
-        out.insert(
-            RecipeKey {
-                file: Arc::from(format!("{prefix}.{}", name(definition))),
-                span_start: index(definition),
-            },
+        out.push((
+            Arc::from(format!("{prefix}.{}", name(definition))),
+            index(definition),
             recipe(definition).clone(),
-        );
+        ));
     }
     out
 }
 
-fn config_recipes_from_definitions(recipes: &[RecipeDefinition]) -> BTreeMap<RecipeKey, Recipe> {
+fn config_recipes_from_definitions(recipes: &[RecipeDefinition]) -> Vec<ConfigRecipe<Recipe>> {
     config_recipe_keys(
         "theme.recipes",
         recipes,
@@ -332,7 +328,7 @@ fn config_recipes_from_definitions(recipes: &[RecipeDefinition]) -> BTreeMap<Rec
 
 fn config_slot_recipes_from_definitions(
     recipes: &[SlotRecipeDefinition],
-) -> BTreeMap<RecipeKey, SlotRecipe> {
+) -> Vec<ConfigRecipe<SlotRecipe>> {
     config_recipe_keys(
         "theme.slotRecipes",
         recipes,
@@ -560,10 +556,15 @@ fn jsx_style_props_from_config(config: &pandacss_config::UserConfig) -> JsxStyle
     }
 }
 
-/// Solid/Vue/Qwik use `class` on intrinsic elements; everything else `className`.
 fn class_attribute_for_framework(framework: Option<&JsxFramework>) -> &'static str {
-    match framework {
-        Some(JsxFramework::Solid | JsxFramework::Vue | JsxFramework::Qwik) => "class",
+    class_attribute_for_jsx_framework(framework.map(JsxFramework::as_str))
+}
+
+/// Solid/Vue/Qwik use `class` on intrinsic elements; everything else `className`.
+#[must_use]
+pub fn class_attribute_for_jsx_framework(name: Option<&str>) -> &'static str {
+    match name {
+        Some("solid" | "vue" | "qwik") => "class",
         _ => "className",
     }
 }

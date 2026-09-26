@@ -5,7 +5,7 @@ use pandacss_extractor::{ExpressionFacts, ExpressionKind};
 use pandacss_literal::Literal;
 use pandacss_recipes::{CompoundVariant, Recipe, SlotRecipe, VariantGroup, VariantOption};
 
-use crate::{Config, merge_style_props};
+use crate::{System, merge_style_props};
 
 // ---------------------------------------------------------------------------
 // `binding.raw(props)` on an inline cva/sva — folds to the resolved styles.
@@ -75,7 +75,7 @@ fn compound_matches(conditions: &[(String, Vec<String>)], computed: &[(String, S
 /// Mirror of the generated `cva(...).raw` — base, matching variants, then
 /// compound css, merged by `mergeCss`.
 pub(crate) fn resolve_cva_raw_styles(
-    config: &Config,
+    config: &System,
     recipe: &Recipe,
     props: &[(String, String)],
 ) -> Option<Literal> {
@@ -105,7 +105,7 @@ pub(crate) fn resolve_cva_raw_styles(
 
 /// Mirror of the generated `sva(...).raw` — one resolved style object per slot.
 pub(crate) fn resolve_sva_raw_styles(
-    config: &Config,
+    config: &System,
     recipe: &SlotRecipe,
     props: &[(String, String)],
 ) -> Option<Literal> {
@@ -188,7 +188,7 @@ pub fn literal_variant_props(props: &Literal) -> Option<Vec<(String, String)>> {
 
 #[must_use]
 pub fn resolve_inline_recipe_raw(
-    config: &Config,
+    config: &System,
     factory: &str,
     definition: &Literal,
     props: &[(String, String)],

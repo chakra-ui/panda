@@ -7,7 +7,7 @@ use string_wizard::{MagicString, MagicStringOptions, SourceMapOptions};
 use super::helper;
 use super::imports;
 use super::plan::{HelperCxMode, Rewrite, TransformPlan};
-use pandacss_project::Config;
+use pandacss_system::System;
 
 /// One edit recorded against the original source indices.
 #[derive(Debug, Clone)]
@@ -29,7 +29,7 @@ pub(crate) enum Edit {
 
 #[must_use]
 pub(crate) fn build_transform_edits(
-    config: &Config,
+    system: &System,
     path: &str,
     source: &str,
     plan: &TransformPlan,
@@ -47,7 +47,7 @@ pub(crate) fn build_transform_edits(
 
     if !plan.bailed && plan.module.symbols_resolved {
         edits.extend(imports::plan_panda_import_edits(
-            config,
+            system,
             path,
             source,
             &plan.module,
@@ -201,7 +201,7 @@ mod tests {
 
     use super::*;
     use crate::TransformHelperFacts;
-    use pandacss_project::System;
+    use pandacss_system::System;
 
     fn test_system() -> System {
         let config: pandacss_config::UserConfig = serde_json::from_value(json!({
@@ -214,7 +214,7 @@ mod tests {
                 "tokens": ["@panda/tokens"]
             }
         }))
-        .expect("config");
+        .expect("system");
         System::new(config).expect("system")
     }
 
@@ -237,7 +237,6 @@ mod tests {
     #[test]
     fn unresolved_symbols_skip_dead_import_cleanup_even_when_rewrites_cover_refs() {
         let system = test_system();
-        let config = system.config();
         let source =
             "import { css } from '@panda/css';\nexport const cls = css({ color: 'red' });\n";
         let call_span = Span { start: 51, end: 72 };
@@ -268,7 +267,7 @@ mod tests {
         };
 
         let edits =
-            build_transform_edits(config, "src/styles.ts", source, &plan, HelperCxMode::Auto);
+            build_transform_edits(&system, "src/styles.ts", source, &plan, HelperCxMode::Auto);
         let out = project_edits(source, &edits);
 
         assert!(out.contains("import { css } from '@panda/css';"));
@@ -278,7 +277,6 @@ mod tests {
     #[test]
     fn unresolved_symbols_still_insert_helper_import_when_plan_requires_it() {
         let system = test_system();
-        let config = system.config();
         let source = "export const cls = \"color_red\";\n";
         let plan = TransformPlan {
             rewrites: Vec::new(),
@@ -299,7 +297,7 @@ mod tests {
         };
 
         let edits =
-            build_transform_edits(config, "src/styles.ts", source, &plan, HelperCxMode::Auto);
+            build_transform_edits(&system, "src/styles.ts", source, &plan, HelperCxMode::Auto);
         let out = project_edits(source, &edits);
 
         assert!(out.contains("import { cx as __pcx } from '@pandacss-internal/css';"));
@@ -308,7 +306,6 @@ mod tests {
     #[test]
     fn unresolved_symbols_do_not_infer_helper_demand_from_live_references() {
         let system = test_system();
-        let config = system.config();
         let source = concat!(
             "import { cx as __pcx } from '@pandacss-internal/css';\n",
             "export const cls = __pcx('a', 'b');\n",
@@ -343,7 +340,7 @@ mod tests {
         };
 
         let edits =
-            build_transform_edits(config, "src/styles.ts", source, &plan, HelperCxMode::Auto);
+            build_transform_edits(&system, "src/styles.ts", source, &plan, HelperCxMode::Auto);
 
         // Without resolved symbols and without plan helper demand, import sync is skipped
         // entirely — including removal of the existing internal import.
