@@ -6,14 +6,13 @@
 use super::common::{create_config, transform_recipes, transform_with_options};
 use indoc::indoc;
 use insta::assert_snapshot;
-use pandacss_project::{
-    Project, System, TransformOptions, TransformOutput, TransformTargets, transform_source,
-};
+use pandacss_project::{Project, System};
+use pandacss_transform::{TransformOptions, TransformOutput, TransformTargets, transform_source};
 use serde_json::json;
 
 fn transform_with_default_targets(project: &Project, source: &str) -> TransformOutput {
     transform_source(
-        project,
+        project.config(),
         "src/button.tsx",
         source,
         &TransformOptions::default(),

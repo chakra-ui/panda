@@ -3,8 +3,8 @@
 use pandacss_extractor::{ExtractedJsx, JsxKind, StyleObject, StyleTree, project_literal};
 use pandacss_literal::Literal;
 
-use crate::PatternTransformFn;
-use crate::Project;
+use pandacss_project::Config;
+use pandacss_project::PatternTransformFn;
 
 use super::helper::format_object_class_name;
 use super::jsx_parse::{
@@ -20,7 +20,7 @@ use super::resolve::span_slice;
 use super::style_lower;
 
 pub(super) fn rewrites_for_jsx_runtime_call(
-    project: &Project,
+    config: &Config,
     source: &str,
     jsx: &ExtractedJsx,
     helper_cx: HelperCxMode,
@@ -43,7 +43,7 @@ pub(super) fn rewrites_for_jsx_runtime_call(
     };
     if jsx.kind == JsxKind::Recipe {
         return recipe_style_prop_rewrite(
-            project,
+            config,
             source,
             jsx,
             callee,
@@ -54,7 +54,7 @@ pub(super) fn rewrites_for_jsx_runtime_call(
         .map_or_else(Vec::new, |rewrite| vec![rewrite]);
     }
     let Some(spread_plan) = plan_slot_spreads(
-        project,
+        config,
         source,
         jsx,
         &props.properties,
@@ -64,7 +64,7 @@ pub(super) fn rewrites_for_jsx_runtime_call(
     };
     if props.has_unresolved_as_prop()
         || style_slots_should_skip(
-            project,
+            config,
             source,
             jsx,
             &props.properties,
@@ -77,10 +77,10 @@ pub(super) fn rewrites_for_jsx_runtime_call(
         return Vec::new();
     };
     let Some(class_name) = plan_class_name(
-        project,
+        config,
         source,
         jsx,
-        props.existing_class_name(project.config().extractor_config().class_attribute),
+        props.existing_class_name(config.extractor_config().class_attribute),
         helper_cx,
         pattern_transform,
     ) else {
@@ -101,11 +101,11 @@ pub(super) fn rewrites_for_jsx_runtime_call(
         ConditionalSpreadPlan::Runtime(rewrite) => Some(rewrite),
         ConditionalSpreadPlan::StyleOnly => None,
     };
-    let Some(selected) = select_slots(project, jsx, &props.properties, &class_name, runtime_spread)
+    let Some(selected) = select_slots(config, jsx, &props.properties, &class_name, runtime_spread)
     else {
         return Vec::new();
     };
-    args[1] = print_props_object(project, &selected, &class_name);
+    args[1] = print_props_object(config, &selected, &class_name);
     let mut preserved = selected.preserved;
     preserved.push(callee_span);
     preserved.extend(jsx.source.args.iter().skip(2).map(|argument| argument.span));
@@ -125,7 +125,7 @@ pub(super) fn rewrites_for_jsx_runtime_call(
 
 /// The object spelling of `jsx_element::recipe_style_prop_rewrite`.
 fn recipe_style_prop_rewrite(
-    project: &Project,
+    config: &Config,
     source: &str,
     jsx: &ExtractedJsx,
     callee: &str,
@@ -140,10 +140,9 @@ fn recipe_style_prop_rewrite(
     {
         return None;
     }
-    let extractor = project.config().extractor_config();
+    let extractor = config.extractor_config();
     let class_attr = extractor.class_attribute;
-    let recipes = &project.config().recipes;
-    let variant_props = recipes.variant_props_for(&recipes.find_by_jsx(&jsx.name));
+    let variant_props = config.jsx_recipe_variant_props(&jsx.name);
 
     let folds = |prop: &ParsedProperty| {
         prop.key.as_deref().is_some_and(|key| {
@@ -180,7 +179,7 @@ fn recipe_style_prop_rewrite(
         ..jsx.clone()
     };
     let class_name = plan_class_name(
-        project,
+        config,
         source,
         &style_jsx,
         props.existing_class_name(class_attr),
@@ -234,11 +233,11 @@ fn recipe_style_prop_rewrite(
 
 /// `{ …props, className: … }` — the object spelling of the selected slots.
 fn print_props_object(
-    project: &Project,
+    config: &Config,
     selected: &SelectedSlots,
     class_name: &super::helper::ClassNamePrint,
 ) -> String {
-    let class_attr = project.config().extractor_config().class_attribute;
+    let class_attr = config.extractor_config().class_attribute;
     let mut parts = selected.parts.clone();
     if !selected.embedded_class {
         parts.push(format_object_class_name(class_attr, class_name));

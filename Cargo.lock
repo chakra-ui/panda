@@ -104,6 +104,7 @@ dependencies = [
  "pandacss_shared",
  "pandacss_tokens",
  "pandacss_tracing",
+ "pandacss_transform",
  "serde",
  "serde_json",
  "tracing",
@@ -1344,6 +1345,27 @@ dependencies = [
  "tracing",
  "tracing-chrome",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "pandacss_transform"
+version = "0.0.0"
+dependencies = [
+ "indoc",
+ "insta",
+ "pandacss_config",
+ "pandacss_encoder",
+ "pandacss_extractor",
+ "pandacss_fs",
+ "pandacss_literal",
+ "pandacss_project",
+ "pandacss_recipes",
+ "pandacss_shared",
+ "pandacss_utility",
+ "rustc-hash",
+ "serde_json",
+ "string_wizard",
+ "tracing",
 ]
 
 [[package]]

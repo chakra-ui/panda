@@ -34,6 +34,7 @@ with workspace support.
   /encoder/        # Style usage → atomic rules
   /stylesheet/     # Native CSS emission (replaces planned emitter/optimizer split)
   /project/        # Project lifecycle, recipes, config resolution
+  /transform/      # Source rewrite (static calls → class strings)
   /compiler/       # Host-neutral CSS, codegen, and derived-view orchestration
   /config/         # Serializable config types
 
@@ -265,7 +266,7 @@ reference.
 | Hash contract           | `pandacss_shared`                                                          | If runtime class names must match Rust emit, share one serialize/hash — don't fork two algorithms.                                                                                                              |
 | Extract / encode        | `pandacss_project` parse arm                                               | Turn matched calls into project IR.                                                                                                                                                                             |
 | Usages                  | `pandacss_project` usages walk                                             | Visit style slots so unused-keyframe / unused-token pruning still sees them.                                                                                                                                    |
-| Transform               | `pandacss_project/src/transform`                                           | Rewrite static calls. Leave the runtime import for dynamic ones. Clean up dead imports when fully inlined.                                                                                                      |
+| Transform               | `pandacss_transform`                                                       | Rewrite static calls. Leave the runtime import for dynamic ones. Clean up dead imports when fully inlined.                                                                                                      |
 | Stylesheet              | `pandacss_stylesheet` (+ orchestration in `pandacss_compiler`)             | Emit CSS. Add insta snapshots.                                                                                                                                                                                  |
 | Design note             | `design-notes/` + index                                                    | API shape, non-goals, pipeline.                                                                                                                                                                                 |
 | Tests                   | crate tests + `sandbox/codegen` when user-facing                           | Extract, transform (rewrite + dead import), stylesheet, codegen artifact, sandbox.                                                                                                                              |
@@ -340,7 +341,7 @@ tests → design note.
   └─ crates/* (Rust workspace, all `pandacss_*`-prefixed)
       ├─ pandacss_extractor (Oxc parsing + scan_imports + match_imports)
       ├─ pandacss_literal (host-neutral extracted value IR)
-      ├─ pandacss_encoder, pandacss_recipes, pandacss_tokens, pandacss_project
+      ├─ pandacss_encoder, pandacss_recipes, pandacss_tokens, pandacss_project, pandacss_transform
       ├─ pandacss_stylesheet (native CSS emission), pandacss_compiler (CSS/codegen orchestration), pandacss_config
       ├─ packages/compiler/crate (compiler_napi cdylib — native NAPI)
       └─ packages/compiler-wasm/crate (compiler_wasm cdylib — browser wasm-bindgen)
@@ -431,6 +432,7 @@ cargo nextest run -p pandacss_stylesheet atomic::emits_dynamic_atomic_css --lock
 
 # Integration suites (consolidated crates: module::test_name)
 cargo nextest run -p pandacss_project config_recipes --locked
+cargo nextest run -p pandacss_transform recipes --locked
 
 # Lib unit tests in src/ (private helpers)
 cargo nextest run -p pandacss_stylesheet grouped --lib --locked
@@ -470,9 +472,9 @@ See `design-notes/rust-testing.md` for the full testing strategy.
 - **Public-API tests live in `crates/<name>/tests/`** — not in `src/`. Inline `#[cfg(test)] mod tests` is reserved for
   private helpers (rare), e.g. `pandacss_shared::unit_conversion::to_rem`, `pandacss_stylesheet::grouped`,
   `pandacss_stylesheet::sort`, `pandacss_project::recipes::compound_tests`.
-- **Consolidated harness** — `pandacss_stylesheet`, `pandacss_project`, `pandacss_extractor`, and `pandacss_codegen` use
-  one integration binary (`tests/main.rs` + `autotests = false` in `Cargo.toml`). Suite files are submodules
-  (`mod atomic;`, …), not separate binaries. Shared helpers live under `tests/common/` and are imported via
+- **Consolidated harness** — `pandacss_stylesheet`, `pandacss_project`, `pandacss_transform`, `pandacss_extractor`, and
+  `pandacss_codegen` use one integration binary (`tests/main.rs` + `autotests = false` in `Cargo.toml`). Suite files
+  are submodules (`mod atomic;`, …), not separate binaries. Shared helpers live under `tests/common/` and are imported via
   `use crate::common::…`.
 - **Autodiscovered layout** — lighter crates (`pandacss_config`, `pandacss_encoder`, `pandacss_fs`, etc.) keep Cargo's
   default one-binary-per-`tests/*.rs` layout for targeted filtering without `main.rs` bookkeeping.

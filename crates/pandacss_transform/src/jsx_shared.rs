@@ -5,8 +5,8 @@ use std::collections::HashSet;
 use pandacss_extractor::{ExtractedJsx, JsxKind, StyleTree};
 use pandacss_literal::Literal;
 
-use crate::PatternTransformFn;
-use crate::Project;
+use pandacss_project::Config;
+use pandacss_project::PatternTransformFn;
 
 use super::helper::{
     ClassNamePrint, ExistingClassName, merge_class_name_fragments, merge_class_name_with_expression,
@@ -51,18 +51,18 @@ pub(super) fn style_prop_keys(data: &Literal) -> HashSet<&str> {
 /// already carried. `existing` is the only thing the two JSX syntaxes disagree
 /// on, so both go through here.
 pub(super) fn plan_class_name(
-    project: &Project,
+    config: &Config,
     file_source: &str,
     jsx: &ExtractedJsx,
     existing: ExistingClassName<'_>,
     helper_cx: HelperCxMode,
     mut pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> Option<ClassNamePrint> {
-    let class_attr = project.config().extractor_config().class_attribute;
+    let class_attr = config.extractor_config().class_attribute;
     let lowered = match jsx.style.as_ref() {
         Some(tree) if style_lower::style_tree_has_rewrite_sites(tree) => {
             style_lower::lower_style_tree(
-                project,
+                config,
                 file_source,
                 tree,
                 LowerTarget::Jsx(jsx),
@@ -70,7 +70,7 @@ pub(super) fn plan_class_name(
             )?
         }
         _ => ClassExpr::Lit(
-            project
+            config
                 .class_names_for_jsx_usage(jsx, pattern_transform)?
                 .join(" "),
         ),
@@ -197,7 +197,7 @@ pub(super) fn resolve_element_tag(
 /// Whether the site's own style tree rules out a rewrite, independent of how
 /// its props are spelled.
 fn style_tree_should_skip(
-    project: &Project,
+    config: &Config,
     source: &str,
     jsx: &ExtractedJsx,
     pattern_transform: Option<&mut PatternTransformFn<'_>>,
@@ -207,7 +207,7 @@ fn style_tree_should_skip(
     };
     if style_lower::style_tree_has_rewrite_sites(tree) {
         return style_lower::lower_style_tree(
-            project,
+            config,
             source,
             tree,
             LowerTarget::Jsx(jsx),
@@ -222,17 +222,17 @@ fn style_tree_should_skip(
 /// Whether any slot carries something the transform can't account for. A skip
 /// leaves the whole site untouched, so this stays conservative.
 pub(super) fn style_slots_should_skip(
-    project: &Project,
+    config: &Config,
     source: &str,
     jsx: &ExtractedJsx,
     slots: &[impl StyleSlot],
     pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> bool {
-    if style_tree_should_skip(project, source, jsx, pattern_transform) {
+    if style_tree_should_skip(config, source, jsx, pattern_transform) {
         return true;
     }
 
-    let extractor_config = project.config().extractor_config();
+    let extractor_config = config.extractor_config();
     let jsx_config = &extractor_config.jsx;
     let class_attr = extractor_config.class_attribute;
     let tag_name = &jsx.name;
@@ -274,13 +274,13 @@ pub(super) fn style_slots_should_skip(
 /// Plans conditional spread rewrites for a site. `None` means the site must
 /// stay unchanged.
 pub(super) fn plan_slot_spreads(
-    project: &Project,
+    config: &Config,
     source: &str,
     jsx: &ExtractedJsx,
     slots: &[impl StyleSlot],
     syntax: SpreadSyntax,
 ) -> Option<ConditionalSpreadPlan> {
-    let extractor = project.config().extractor_config();
+    let extractor = config.extractor_config();
     let class_attr = extractor.class_attribute;
     let plan = plan_conditional_spreads(
         source,
@@ -314,13 +314,13 @@ pub(super) struct SelectedSlots {
 
 /// Drops the slots that folded into the class name and keeps the rest as-is.
 pub(super) fn select_slots(
-    project: &Project,
+    config: &Config,
     jsx: &ExtractedJsx,
     slots: &[impl StyleSlot],
     class_name: &ClassNamePrint,
     runtime_spread: Option<&ConditionalSpreadRewrite>,
 ) -> Option<SelectedSlots> {
-    let extractor_config = project.config().extractor_config();
+    let extractor_config = config.extractor_config();
     let jsx_config = &extractor_config.jsx;
     let class_attr = extractor_config.class_attribute;
     let tag_name = &jsx.name;

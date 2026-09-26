@@ -24,8 +24,8 @@ What ships on the v2 branch today:
 
 | Piece                                   | Status                                                                               |
 | --------------------------------------- | ------------------------------------------------------------------------------------ |
-| `pandacss_project::transform`           | Inspect, plan, print, dead-import cleanup, helper import sync                        |
-| `Project::transform_source_with`        | Same `ParseTransforms` bag as `parse_file_with` (pattern / source / utility)         |
+| `pandacss_transform`                    | Inspect, plan, print, dead-import cleanup, helper import sync                        |
+| `transform_source_with(&Config, …)`     | Same `ParseTransforms` bag as `parse_file_with` (pattern / source / utility)         |
 | Rust printer                            | Single `string_wizard::MagicString` pass; v3 source map on changed output            |
 | `@pandacss/transformer`                 | `transformSource`, host-neutral hooks, internal runtime, optional `unplugin` exports |
 | `@pandacss/vite` / `webpack` / `rollup` | CSS-root, codegen, and HMR by default; source rewrite via `transform: true`          |
@@ -40,7 +40,7 @@ Options and bindings use `helper.cx` and `needsCx` / `needsCva` / `needsSva` for
 
 This folder owns:
 
-- the `pandacss_project::transform` module shape (`Project::transform_source` / `transform_source_with`)
+- the `pandacss_transform` crate shape (`transform_source` / `transform_source_with`, taking `&Config`)
 - the `@pandacss/transformer` (`packages/transformer`) facade shape
 - the private `cx` helper and internal css runtime module
 - the abstract `@pandacss-internal/css` import ID
@@ -152,11 +152,11 @@ It does not depend on bundler packages.
 The recommended architecture is:
 
 ```txt
-pandacss_project::transform
+pandacss_transform
   - plan / apply / resolve / imports / helper
   - recipe_inline (cva/sva/styled)
   - style_lower (StyleTree conditionals), jsx.rs + jsx_*.rs
-  - Project::transform_source / transform_source_with (+ ParseTransforms)
+  - transform_source / transform_source_with (&Config + ParseTransforms)
 
 @pandacss/transformer  (packages/transformer)
   - transformSource → compiler binding
@@ -182,8 +182,8 @@ At a high level, the transformer design owns four things:
 Implemented layout:
 
 ```txt
-crates/pandacss_project/src/transform/
-  mod.rs, plan.rs, apply.rs, resolve.rs, imports.rs, helper.rs
+crates/pandacss_transform/src/
+  lib.rs, plan.rs, apply.rs, resolve.rs, imports.rs, helper.rs
   recipe_inline.rs, style_lower.rs, jsx_skip.rs
   jsx.rs, jsx_element.rs, jsx_runtime.rs,
   jsx_parse.rs, jsx_shared.rs

@@ -14,7 +14,6 @@ mod patterns;
 mod state_and_transforms;
 mod static_patterns;
 mod svelte;
-mod transform;
 mod transform_cache;
 mod usages;
 mod utility_value;

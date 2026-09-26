@@ -1,11 +1,10 @@
 //! Inline `cva()` / `sva()` call transforms to string-branch runtime configs.
 
-use crate::Project;
-use pandacss_extractor::{ExpressionFacts, ExpressionKind, StyleTree};
+use pandacss_extractor::StyleTree;
 use pandacss_literal::Literal;
-use pandacss_recipes::{
-    CompoundVariant, Recipe, SlotCompoundVariant, SlotRecipe, VariantGroup, VariantOption,
-};
+use pandacss_project::Config;
+use pandacss_project::is_recipe_config;
+use pandacss_recipes::{CompoundVariant, Recipe, SlotCompoundVariant, SlotRecipe};
 
 use super::helper::{CVA_HELPER_LOCAL, SVA_HELPER_LOCAL};
 use super::js;
@@ -14,19 +13,19 @@ use super::resolve::is_static_style_literal;
 use super::style_lower::{self, LowerTarget};
 
 pub(crate) fn rewrite_for_cva_call(
-    project: &Project,
+    config: &Config,
     source: &str,
     span: pandacss_shared::Span,
     args: &[Option<Literal>],
     _arg_spans: &[pandacss_shared::Span],
     style_args: &[Option<StyleTree>],
 ) -> Option<Rewrite> {
-    let config = args.first().and_then(|arg| arg.as_ref())?;
-    if !is_static_style_literal(config) {
+    let definition = args.first().and_then(|arg| arg.as_ref())?;
+    if !is_static_style_literal(definition) {
         return None;
     }
     let style = style_args.first().and_then(|value| value.as_ref());
-    let encoded = encode_cva_config(project, source, config, style)?;
+    let encoded = encode_cva_config(config, source, definition, style)?;
     Some(Rewrite {
         start: span.start,
         end: span.end,
@@ -39,15 +38,15 @@ pub(crate) fn rewrite_for_cva_call(
 }
 
 pub(crate) fn rewrite_for_sva_call(
-    project: &Project,
+    config: &Config,
     span: pandacss_shared::Span,
     args: &[Option<Literal>],
 ) -> Option<Rewrite> {
-    let config = args.first().and_then(|arg| arg.as_ref())?;
-    if !is_static_slot_config(config) {
+    let definition = args.first().and_then(|arg| arg.as_ref())?;
+    if !is_static_slot_config(definition) {
         return None;
     }
-    let encoded = encode_sva_config(project, config)?;
+    let encoded = encode_sva_config(config, definition)?;
     Some(Rewrite {
         start: span.start,
         end: span.end,
@@ -58,38 +57,26 @@ pub(crate) fn rewrite_for_sva_call(
 }
 
 pub(crate) fn encode_cva_config(
-    project: &Project,
+    config: &Config,
     source: &str,
-    config: &Literal,
+    definition: &Literal,
     style: Option<&StyleTree>,
 ) -> Option<String> {
-    if is_recipe_config(config) {
-        let recipe = Recipe::from_literal(config)?;
-        print_recipe_config(project, source, &recipe, style)
+    if is_recipe_config(definition) {
+        let recipe = Recipe::from_literal(definition)?;
+        print_recipe_config(config, source, &recipe, style)
     } else {
-        print_plain_style_as_base(project, source, config, style)
+        print_plain_style_as_base(config, source, definition, style)
     }
 }
 
-pub(crate) fn encode_sva_config(project: &Project, config: &Literal) -> Option<String> {
-    let recipe = SlotRecipe::from_literal(config)?;
-    print_slot_recipe_config(project, &recipe)
+pub(crate) fn encode_sva_config(config: &Config, definition: &Literal) -> Option<String> {
+    let recipe = SlotRecipe::from_literal(definition)?;
+    print_slot_recipe_config(config, &recipe)
 }
 
-fn is_recipe_config(config: &Literal) -> bool {
-    let Literal::Object(entries) = config else {
-        return false;
-    };
-    entries.iter().any(|(key, _)| {
-        matches!(
-            key.as_str(),
-            "base" | "variants" | "defaultVariants" | "compoundVariants"
-        )
-    })
-}
-
-fn is_static_slot_config(config: &Literal) -> bool {
-    let Some(recipe) = SlotRecipe::from_literal(config) else {
+fn is_static_slot_config(definition: &Literal) -> bool {
+    let Some(recipe) = SlotRecipe::from_literal(definition) else {
         return false;
     };
     recipe
@@ -113,23 +100,23 @@ fn is_static_slot_config(config: &Literal) -> bool {
 }
 
 fn print_plain_style_as_base(
-    project: &Project,
+    config: &Config,
     source: &str,
-    config: &Literal,
+    definition: &Literal,
     style: Option<&StyleTree>,
 ) -> Option<String> {
-    if let Some(expr) = style_tree_class_expression(project, source, style) {
+    if let Some(expr) = style_tree_class_expression(config, source, style) {
         return Some(format!("{{ base: {expr} }}"));
     }
-    if config.has_conditional() {
+    if definition.has_conditional() {
         return None;
     }
-    let classes = project.class_names_for_style_literal(config)?;
+    let classes = config.class_names_for_style_literal(definition)?;
     Some(format!("{{ base: '{}' }}", js::escape(&classes.join(" "))))
 }
 
 fn print_recipe_config(
-    project: &Project,
+    config: &Config,
     source: &str,
     recipe: &Recipe,
     style: Option<&StyleTree>,
@@ -138,7 +125,7 @@ fn print_recipe_config(
 
     if let Some(base) = &recipe.base {
         let base_tree = style.and_then(|tree| style_lower::style_tree_object_entry(tree, "base"));
-        let base_part = print_recipe_base(project, source, base, base_tree)?;
+        let base_part = print_recipe_base(config, source, base, base_tree)?;
         parts.push(format!("base: {base_part}"));
     }
 
@@ -153,7 +140,7 @@ fn print_recipe_config(
                 if !is_static_style_literal(&option.style) {
                     return None;
                 }
-                let classes = project.class_names_for_style_literal(&option.style)?;
+                let classes = config.class_names_for_style_literal(&option.style)?;
                 options.push(format!(
                     "{}: '{}'",
                     js::key(&option.key),
@@ -171,7 +158,7 @@ fn print_recipe_config(
         let compounds = recipe
             .compound_variants
             .iter()
-            .map(|compound| print_compound_variant(project, compound))
+            .map(|compound| print_compound_variant(config, compound))
             .collect::<Option<Vec<_>>>()?;
         parts.push(format!("compoundVariants: [{}]", compounds.join(", ")));
     }
@@ -185,12 +172,12 @@ fn print_recipe_config(
 
 /// `base` value as a JS expression: quoted class string, or unquoted ternary.
 fn print_recipe_base(
-    project: &Project,
+    config: &Config,
     source: &str,
     base: &Literal,
     base_tree: Option<&StyleTree>,
 ) -> Option<String> {
-    if let Some(expr) = style_tree_class_expression(project, source, base_tree) {
+    if let Some(expr) = style_tree_class_expression(config, source, base_tree) {
         return Some(expr);
     }
     if base.has_conditional() {
@@ -199,7 +186,7 @@ fn print_recipe_base(
     if !is_static_style_literal(base) {
         return None;
     }
-    let classes = project.class_names_for_style_literal(base)?;
+    let classes = config.class_names_for_style_literal(base)?;
     if classes.is_empty() {
         return None;
     }
@@ -207,7 +194,7 @@ fn print_recipe_base(
 }
 
 fn style_tree_class_expression(
-    project: &Project,
+    config: &Config,
     source: &str,
     tree: Option<&StyleTree>,
 ) -> Option<String> {
@@ -215,11 +202,11 @@ fn style_tree_class_expression(
     if !style_lower::style_tree_has_rewrite_sites(tree) {
         return None;
     }
-    style_lower::lower_style_tree(project, source, tree, LowerTarget::Css, None)
+    style_lower::lower_style_tree(config, source, tree, LowerTarget::Css, None)
         .map(|expr| style_lower::print_class_expr(&expr))
 }
 
-fn print_slot_recipe_config(project: &Project, recipe: &SlotRecipe) -> Option<String> {
+fn print_slot_recipe_config(config: &Config, recipe: &SlotRecipe) -> Option<String> {
     let mut parts = Vec::new();
 
     if !recipe.slots.is_empty() {
@@ -238,7 +225,7 @@ fn print_slot_recipe_config(project: &Project, recipe: &SlotRecipe) -> Option<St
             if style.has_conditional() {
                 return None;
             }
-            let classes = project.class_names_for_style_literal(style)?;
+            let classes = config.class_names_for_style_literal(style)?;
             base_parts.push(format!(
                 "{}: '{}'",
                 js::key(slot),
@@ -253,7 +240,7 @@ fn print_slot_recipe_config(project: &Project, recipe: &SlotRecipe) -> Option<St
         for group in &recipe.variants {
             let mut options = Vec::new();
             for option in &group.options {
-                let encoded = print_slot_variant_option(project, recipe, option)?;
+                let encoded = print_slot_variant_option(config, recipe, option)?;
                 options.push(format!("{}: {encoded}", js::key(&option.key)));
             }
             groups.push(js::field(&group.name, js::object(options)));
@@ -267,7 +254,7 @@ fn print_slot_recipe_config(project: &Project, recipe: &SlotRecipe) -> Option<St
         let compounds = recipe
             .compound_variants
             .iter()
-            .map(|compound| print_slot_compound_variant(project, compound))
+            .map(|compound| print_slot_compound_variant(config, compound))
             .collect::<Option<Vec<_>>>()?;
         parts.push(format!("compoundVariants: [{}]", compounds.join(", ")));
     }
@@ -304,7 +291,7 @@ fn format_variant_value(value: &str) -> String {
 /// One class string when the option styles every slot the same way, else a
 /// per-slot map so classes never leak onto slots the option doesn't style.
 fn print_slot_variant_option(
-    project: &Project,
+    config: &Config,
     recipe: &SlotRecipe,
     option: &pandacss_recipes::SlotVariantOption,
 ) -> Option<String> {
@@ -313,7 +300,7 @@ fn print_slot_variant_option(
         if style.has_conditional() {
             return None;
         }
-        let classes = project.class_names_for_style_literal(style)?.join(" ");
+        let classes = config.class_names_for_style_literal(style)?.join(" ");
         if !classes.is_empty() {
             per_slot.push((slot.as_str(), classes));
         }
@@ -344,7 +331,7 @@ fn slot_names(recipe: &SlotRecipe) -> Vec<&str> {
     }
 }
 
-fn print_compound_variant(project: &Project, compound: &CompoundVariant) -> Option<String> {
+fn print_compound_variant(config: &Config, compound: &CompoundVariant) -> Option<String> {
     if compound.css.has_conditional() {
         return None;
     }
@@ -352,7 +339,7 @@ fn print_compound_variant(project: &Project, compound: &CompoundVariant) -> Opti
     let classes = if let Some(class_name) = &compound.class_name {
         class_name.clone()
     } else {
-        project
+        config
             .class_names_for_style_literal(&compound.css)?
             .join(" ")
     };
@@ -360,17 +347,14 @@ fn print_compound_variant(project: &Project, compound: &CompoundVariant) -> Opti
     Some(js::object(parts))
 }
 
-fn print_slot_compound_variant(
-    project: &Project,
-    compound: &SlotCompoundVariant,
-) -> Option<String> {
+fn print_slot_compound_variant(config: &Config, compound: &SlotCompoundVariant) -> Option<String> {
     let mut parts = print_compound_conditions(&compound.conditions);
     let mut css_parts = Vec::new();
     for (slot, style) in &compound.css {
         if style.has_conditional() {
             return None;
         }
-        let classes = project.class_names_for_style_literal(style)?;
+        let classes = config.class_names_for_style_literal(style)?;
         css_parts.push(format!(
             "{}: '{}'",
             js::key(slot),
@@ -406,16 +390,16 @@ fn print_compound_conditions(conditions: &[(String, Vec<String>)]) -> Vec<String
 }
 
 pub(crate) fn rewrite_styled_config_arg(
-    project: &Project,
+    config: &Config,
     source: &str,
     arg_spans: &[pandacss_shared::Span],
     config_arg_index: usize,
-    config: &Literal,
+    definition: &Literal,
     style: Option<&StyleTree>,
 ) -> Option<Rewrite> {
     let arg = arg_spans.get(config_arg_index)?;
     let content = {
-        let encoded = encode_cva_config(project, source, config, style)?;
+        let encoded = encode_cva_config(config, source, definition, style)?;
         format!("/* @__PURE__ */ {CVA_HELPER_LOCAL}({encoded})")
     };
     Some(Rewrite {
@@ -431,7 +415,7 @@ pub(crate) fn rewrite_styled_config_arg(
 
 /// `styled('tag', config)` / `styled.tag(config)` factory call transforms.
 pub(crate) fn rewrites_for_styled_call(
-    project: &Project,
+    config: &Config,
     source: &str,
     call: &pandacss_extractor::ExtractedCall,
 ) -> Option<[Rewrite; 2]> {
@@ -442,17 +426,17 @@ pub(crate) fn rewrites_for_styled_call(
         return None;
     }
 
-    let (config_index, config) = styled_config_arg(call)?;
+    let (config_index, definition) = styled_config_arg(call)?;
     let style = call
         .style_args
         .get(config_index)
         .and_then(|value| value.as_ref());
-    let config = rewrite_styled_config_arg(
-        project,
+    let definition = rewrite_styled_config_arg(
+        config,
         source,
         &call.arg_spans,
         config_index,
-        config,
+        definition,
         style,
     )?;
     let callee_span = call.facts.callee_span;
@@ -466,7 +450,7 @@ pub(crate) fn rewrites_for_styled_call(
         preserved: vec![callee_span],
         helper: TransformHelperFacts::none(),
     };
-    Some([outer, config])
+    Some([outer, definition])
 }
 
 fn is_jsx_factory_call(call: &pandacss_extractor::ExtractedCall) -> bool {
@@ -484,212 +468,12 @@ fn styled_config_arg(call: &pandacss_extractor::ExtractedCall) -> Option<(usize,
             if !matches!(tag, Literal::String(_)) {
                 return None;
             }
-            let config = call.data.get(1).and_then(|arg| arg.as_ref())?;
-            Some((1, config))
+            let definition = call.data.get(1).and_then(|arg| arg.as_ref())?;
+            Some((1, definition))
         }
         pandacss_extractor::CallCalleeKind::StaticMember => {
-            let config = call.data.first().and_then(|arg| arg.as_ref())?;
-            Some((0, config))
+            let definition = call.data.first().and_then(|arg| arg.as_ref())?;
+            Some((0, definition))
         }
     }
-}
-
-// ---------------------------------------------------------------------------
-// `binding.raw(props)` on an inline cva/sva — folds to the resolved styles.
-// ---------------------------------------------------------------------------
-
-/// Static variant selection from a `.raw({ … })` argument.
-///
-/// `None` means the call can't be resolved at build time, which also blocks the
-/// string-branch desugar of the definition — the runtime `raw` returns style
-/// objects and the desugared one returns class strings.
-pub(crate) fn raw_call_variant_props(
-    args: &[Option<ExpressionFacts>],
-) -> Option<Vec<(String, String)>> {
-    if args.len() > 1 {
-        return None;
-    }
-    let Some(arg) = args.first() else {
-        return Some(Vec::new());
-    };
-    let facts = arg.as_ref()?;
-    if facts.kind != ExpressionKind::Object {
-        return None;
-    }
-    let object = facts.object.as_ref()?;
-
-    let mut props = Vec::with_capacity(object.properties.len());
-    for prop in &object.properties {
-        if prop.is_spread() || prop.is_accessor_or_method {
-            return None;
-        }
-        let key = prop.key.as_ref()?;
-        let value = prop.value.as_ref()?;
-        let value = value.static_scalar_key.clone()?;
-        upsert_prop(&mut props, key.clone(), value);
-    }
-    Some(props)
-}
-
-fn upsert_prop(props: &mut Vec<(String, String)>, key: String, value: String) {
-    if let Some(entry) = props.iter_mut().find(|(name, _)| name == &key) {
-        entry.1 = value;
-    } else {
-        props.push((key, value));
-    }
-}
-
-/// `withDefaults(defaultVariants, props)` — defaults first, props override.
-fn computed_variants(
-    default_variants: &[(String, String)],
-    props: &[(String, String)],
-) -> Vec<(String, String)> {
-    let mut computed = default_variants.to_vec();
-    for (key, value) in props {
-        upsert_prop(&mut computed, key.clone(), value.clone());
-    }
-    computed
-}
-
-fn compound_matches(conditions: &[(String, Vec<String>)], computed: &[(String, String)]) -> bool {
-    conditions.iter().all(|(key, expected)| {
-        computed
-            .iter()
-            .find(|(name, _)| name == key)
-            .is_some_and(|(_, actual)| expected.iter().any(|value| value == actual))
-    })
-}
-
-/// Mirror of the generated `cva(...).raw` — base, matching variants, then
-/// compound css, merged by `mergeCss`.
-pub(crate) fn resolve_cva_raw_styles(
-    project: &Project,
-    recipe: &Recipe,
-    props: &[(String, String)],
-) -> Option<Literal> {
-    let computed = computed_variants(&recipe.default_variants, props);
-    let empty = Literal::Object(Vec::new());
-
-    let mut styles = vec![Some(recipe.base.clone().unwrap_or_else(|| empty.clone()))];
-    for (key, value) in &computed {
-        let Some(group) = recipe.variants.iter().find(|group| &group.name == key) else {
-            continue;
-        };
-        if let Some(option) = group.options.iter().find(|option| &option.key == value) {
-            styles.push(Some(option.style.clone()));
-        }
-    }
-
-    let compounds: Vec<&Literal> = recipe
-        .compound_variants
-        .iter()
-        .filter(|compound| compound_matches(&compound.conditions, &computed))
-        .map(|compound| &compound.css)
-        .collect();
-    styles.push(Some(crate::merge_style_props(&compounds)));
-
-    project.merged_style_literal(&styles)
-}
-
-/// Mirror of the generated `sva(...).raw` — one resolved style object per slot.
-pub(crate) fn resolve_sva_raw_styles(
-    project: &Project,
-    recipe: &SlotRecipe,
-    props: &[(String, String)],
-) -> Option<Literal> {
-    let mut slots = Vec::with_capacity(recipe.slots.len());
-    for slot in &recipe.slots {
-        let per_slot = slot_recipe_for(recipe, slot);
-        slots.push((
-            slot.clone(),
-            resolve_cva_raw_styles(project, &per_slot, props)?,
-        ));
-    }
-    Some(Literal::Object(slots))
-}
-
-/// The per-slot `cva` config `sva` builds internally via `getSlotRecipes`.
-fn slot_recipe_for(recipe: &SlotRecipe, slot: &str) -> Recipe {
-    let pick = |entries: &[(String, Literal)]| {
-        entries
-            .iter()
-            .find(|(name, _)| name == slot)
-            .map(|(_, style)| style.clone())
-    };
-
-    Recipe {
-        base: pick(&recipe.base),
-        variants: recipe
-            .variants
-            .iter()
-            .map(|group| VariantGroup {
-                name: group.name.clone(),
-                options: group
-                    .options
-                    .iter()
-                    .filter_map(|option| {
-                        pick(&option.styles).map(|style| VariantOption {
-                            key: option.key.clone(),
-                            style,
-                        })
-                    })
-                    .collect(),
-            })
-            .collect(),
-        compound_variants: recipe
-            .compound_variants
-            .iter()
-            .filter_map(|compound| {
-                pick(&compound.css).map(|css| CompoundVariant {
-                    conditions: compound.conditions.clone(),
-                    css,
-                    class_name: compound.class_name.clone(),
-                })
-            })
-            .collect(),
-        default_variants: recipe.default_variants.clone(),
-    }
-}
-
-/// Resolve `binding.raw(props)` for an inline `cva` or `sva` definition.
-/// Variant props folded from an expression, as `resolve_inline_recipe_raw`
-/// wants them. `None` if any value isn't a static scalar.
-pub(crate) fn literal_variant_props(props: &Literal) -> Option<Vec<(String, String)>> {
-    let Literal::Object(entries) = props else {
-        return None;
-    };
-    let mut out = Vec::with_capacity(entries.len());
-    for (key, value) in entries {
-        let text = match value {
-            Literal::String(text) => text.clone(),
-            Literal::Bool(flag) => flag.to_string(),
-            Literal::Number(number) => pandacss_shared::number_to_js_string(*number),
-            // An explicitly absent variant falls back to `defaultVariants`.
-            Literal::Null => continue,
-            _ => return None,
-        };
-        upsert_prop(&mut out, key.clone(), text);
-    }
-    Some(out)
-}
-
-pub(crate) fn resolve_inline_recipe_raw(
-    project: &Project,
-    factory: &str,
-    config: &Literal,
-    props: &[(String, String)],
-) -> Option<Literal> {
-    if factory == "sva" {
-        let recipe = SlotRecipe::from_literal(config)?;
-        return resolve_sva_raw_styles(project, &recipe, props);
-    }
-    let recipe = if is_recipe_config(config) {
-        Recipe::from_literal(config)?
-    } else {
-        Recipe {
-            base: Some(config.clone()),
-            ..Recipe::default()
-        }
-    };
-    resolve_cva_raw_styles(project, &recipe, props)
 }

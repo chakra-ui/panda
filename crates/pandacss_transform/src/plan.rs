@@ -4,8 +4,8 @@ use pandacss_extractor::{ExtractUsage, ExtractedCall, MatchCategory};
 use pandacss_shared::CssFactory;
 use rustc_hash::FxHashSet;
 
-use crate::PatternTransformFn;
-use crate::Project;
+use pandacss_project::Config;
+use pandacss_project::PatternTransformFn;
 
 use super::resolve;
 
@@ -212,7 +212,7 @@ impl Rewrite {
 }
 
 pub(crate) fn build_plan(
-    project: &Project,
+    config: &Config,
     source: &str,
     extracted: &ExtractUsage,
     options: &TransformOptions,
@@ -257,7 +257,7 @@ pub(crate) fn build_plan(
         if call.facts.raw {
             push_raw_rewrites(
                 &mut plan,
-                project,
+                config,
                 call,
                 targets,
                 pattern_transform.as_deref_mut(),
@@ -268,7 +268,7 @@ pub(crate) fn build_plan(
             MatchCategory::Css if targets.css_enabled() => {
                 push_css_call_rewrites(
                     &mut plan,
-                    project,
+                    config,
                     source,
                     extracted,
                     call,
@@ -277,7 +277,7 @@ pub(crate) fn build_plan(
             }
             MatchCategory::Recipe if targets.recipes_enabled() => {
                 if let Some(rewrite) = resolve::rewrite_for_recipe_call(
-                    project,
+                    config,
                     source,
                     &call.name,
                     call.span,
@@ -290,7 +290,7 @@ pub(crate) fn build_plan(
             }
             MatchCategory::Pattern if targets.patterns_enabled() => {
                 if let Some(rewrite) = resolve::rewrite_for_pattern_call(
-                    project,
+                    config,
                     &call.name,
                     call.span,
                     &call.data,
@@ -303,7 +303,7 @@ pub(crate) fn build_plan(
             }
             MatchCategory::Jsx if targets.jsx_enabled() => {
                 if let Some(rewrites) =
-                    super::recipe_inline::rewrites_for_styled_call(project, source, call)
+                    super::recipe_inline::rewrites_for_styled_call(config, source, call)
                 {
                     plan.extend(rewrites);
                 }
@@ -315,7 +315,7 @@ pub(crate) fn build_plan(
     if targets.jsx_enabled() {
         for jsx in &extracted.jsx {
             let rewrites = super::jsx::rewrites_for_jsx_element(
-                project,
+                config,
                 source,
                 jsx,
                 options.helper_cx,
@@ -337,17 +337,17 @@ pub(crate) fn build_plan(
 /// `viewTransition` helper, or a plain `css()`.
 fn push_css_call_rewrites(
     plan: &mut TransformPlan,
-    project: &Project,
+    config: &Config,
     source: &str,
     extracted: &ExtractUsage,
     call: &ExtractedCall,
     helper_cx: HelperCxMode,
 ) {
     match call.name.as_str() {
-        "cva" | "sva" if !push_inline_recipe_raw_rewrites(plan, project, extracted, call) => {}
+        "cva" | "sva" if !push_inline_recipe_raw_rewrites(plan, config, extracted, call) => {}
         "cva" => {
             if let Some(rewrite) = super::recipe_inline::rewrite_for_cva_call(
-                project,
+                config,
                 source,
                 call.span,
                 &call.data,
@@ -363,7 +363,7 @@ fn push_css_call_rewrites(
         }
         "sva" => {
             if let Some(rewrite) =
-                super::recipe_inline::rewrite_for_sva_call(project, call.span, &call.data)
+                super::recipe_inline::rewrite_for_sva_call(config, call.span, &call.data)
             {
                 plan.push(rewrite);
             }
@@ -376,7 +376,7 @@ fn push_css_call_rewrites(
         },
         name if CssFactory::from_name(name).is_some() => {
             let factory = CssFactory::from_name(name).expect("checked by guard");
-            match resolve::rewrite_for_css_factory_call(project, factory, call.span, &call.data) {
+            match resolve::rewrite_for_css_factory_call(config, factory, call.span, &call.data) {
                 Some(rewrite) => plan.push(rewrite),
                 None if call.data.first().is_some_and(Option::is_none) => {
                     plan.bailed = true;
@@ -385,7 +385,7 @@ fn push_css_call_rewrites(
             }
         }
         _ => match resolve::rewrite_for_css_call(
-            project,
+            config,
             source,
             call.span,
             &call.data,
@@ -409,7 +409,7 @@ fn push_css_call_rewrites(
 /// original runtime.
 fn push_inline_recipe_raw_rewrites(
     plan: &mut TransformPlan,
-    project: &Project,
+    config: &Config,
     extracted: &ExtractUsage,
     call: &ExtractedCall,
 ) -> bool {
@@ -429,17 +429,17 @@ fn push_inline_recipe_raw_rewrites(
     if binding.raw_calls.is_empty() {
         return true;
     }
-    let Some(config) = call.data.first().and_then(|arg| arg.as_ref()) else {
+    let Some(definition) = call.data.first().and_then(|arg| arg.as_ref()) else {
         return false;
     };
 
     let mut rewrites = Vec::with_capacity(binding.raw_calls.len());
     for raw_call in &binding.raw_calls {
-        let Some(props) = super::recipe_inline::raw_call_variant_props(&raw_call.args) else {
+        let Some(props) = pandacss_project::raw_call_variant_props(&raw_call.args) else {
             return false;
         };
         let Some(styles) =
-            super::recipe_inline::resolve_inline_recipe_raw(project, &call.name, config, &props)
+            pandacss_project::resolve_inline_recipe_raw(config, &call.name, definition, &props)
         else {
             return false;
         };
@@ -465,7 +465,7 @@ fn push_inline_recipe_raw_rewrites(
 /// transform, so both are replaced by the computed object.
 fn push_raw_rewrites(
     plan: &mut TransformPlan,
-    project: &Project,
+    config: &Config,
     call: &ExtractedCall,
     targets: &TransformTargets,
     pattern_transform: Option<&mut PatternTransformFn<'_>>,
@@ -473,13 +473,13 @@ fn push_raw_rewrites(
     match call.category {
         MatchCategory::Pattern if targets.patterns_enabled() => {
             if let Some(rewrite) =
-                resolve::rewrite_for_pattern_raw_call(project, call, pattern_transform)
+                resolve::rewrite_for_pattern_raw_call(config, call, pattern_transform)
             {
                 plan.push(rewrite);
             }
         }
         MatchCategory::Css if targets.css_enabled() && call.name == "css" => {
-            push_identity_or_merged_raw(plan, project, call);
+            push_identity_or_merged_raw(plan, config, call);
         }
         MatchCategory::Recipe if targets.recipes_enabled() => {
             if let Some(rewrites) =
@@ -492,12 +492,12 @@ fn push_raw_rewrites(
     }
 }
 
-fn push_identity_or_merged_raw(plan: &mut TransformPlan, project: &Project, call: &ExtractedCall) {
+fn push_identity_or_merged_raw(plan: &mut TransformPlan, config: &Config, call: &ExtractedCall) {
     if let Some(rewrites) =
         resolve::rewrites_for_identity_raw_call(call.span, &call.arg_spans, &call.facts)
     {
         plan.extend(rewrites);
-    } else if let Some(rewrite) = resolve::rewrite_for_merged_raw_call(project, call) {
+    } else if let Some(rewrite) = resolve::rewrite_for_merged_raw_call(config, call) {
         plan.push(rewrite);
     }
 }

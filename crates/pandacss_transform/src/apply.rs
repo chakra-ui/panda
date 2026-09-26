@@ -7,7 +7,7 @@ use string_wizard::{MagicString, MagicStringOptions, SourceMapOptions};
 use super::helper;
 use super::imports;
 use super::plan::{HelperCxMode, Rewrite, TransformPlan};
-use crate::Project;
+use pandacss_project::Config;
 
 /// One edit recorded against the original source indices.
 #[derive(Debug, Clone)]
@@ -29,7 +29,7 @@ pub(crate) enum Edit {
 
 #[must_use]
 pub(crate) fn build_transform_edits(
-    project: &Project,
+    config: &Config,
     path: &str,
     source: &str,
     plan: &TransformPlan,
@@ -47,7 +47,7 @@ pub(crate) fn build_transform_edits(
 
     if !plan.bailed && plan.module.symbols_resolved {
         edits.extend(imports::plan_panda_import_edits(
-            project,
+            config,
             path,
             source,
             &plan.module,
@@ -125,7 +125,7 @@ pub(crate) fn apply_edits(source: &str, path: &str, edits: &[Edit]) -> (String, 
 #[must_use]
 #[cfg(test)]
 pub(crate) fn project_edits(source: &str, edits: &[Edit]) -> String {
-    apply_edits(source, "project.ts", edits).0
+    apply_edits(source, "config.ts", edits).0
 }
 
 /// Apply helper-only import sync without target rewrites.
@@ -200,9 +200,10 @@ mod tests {
     use serde_json::json;
 
     use super::*;
-    use crate::{Project, System, TransformHelperFacts};
+    use crate::TransformHelperFacts;
+    use pandacss_project::System;
 
-    fn test_project() -> Project {
+    fn test_system() -> System {
         let config: pandacss_config::UserConfig = serde_json::from_value(json!({
             "outdir": "styled-system",
             "importMap": {
@@ -214,7 +215,7 @@ mod tests {
             }
         }))
         .expect("config");
-        Project::new(System::new(config).expect("system"))
+        System::new(config).expect("system")
     }
 
     fn css_import_record() -> ImportRecord {
@@ -235,7 +236,8 @@ mod tests {
 
     #[test]
     fn unresolved_symbols_skip_dead_import_cleanup_even_when_rewrites_cover_refs() {
-        let project = test_project();
+        let system = test_system();
+        let config = system.config();
         let source =
             "import { css } from '@panda/css';\nexport const cls = css({ color: 'red' });\n";
         let call_span = Span { start: 51, end: 72 };
@@ -266,7 +268,7 @@ mod tests {
         };
 
         let edits =
-            build_transform_edits(&project, "src/styles.ts", source, &plan, HelperCxMode::Auto);
+            build_transform_edits(config, "src/styles.ts", source, &plan, HelperCxMode::Auto);
         let out = project_edits(source, &edits);
 
         assert!(out.contains("import { css } from '@panda/css';"));
@@ -275,7 +277,8 @@ mod tests {
 
     #[test]
     fn unresolved_symbols_still_insert_helper_import_when_plan_requires_it() {
-        let project = test_project();
+        let system = test_system();
+        let config = system.config();
         let source = "export const cls = \"color_red\";\n";
         let plan = TransformPlan {
             rewrites: Vec::new(),
@@ -296,7 +299,7 @@ mod tests {
         };
 
         let edits =
-            build_transform_edits(&project, "src/styles.ts", source, &plan, HelperCxMode::Auto);
+            build_transform_edits(config, "src/styles.ts", source, &plan, HelperCxMode::Auto);
         let out = project_edits(source, &edits);
 
         assert!(out.contains("import { cx as __pcx } from '@pandacss-internal/css';"));
@@ -304,7 +307,8 @@ mod tests {
 
     #[test]
     fn unresolved_symbols_do_not_infer_helper_demand_from_live_references() {
-        let project = test_project();
+        let system = test_system();
+        let config = system.config();
         let source = concat!(
             "import { cx as __pcx } from '@pandacss-internal/css';\n",
             "export const cls = __pcx('a', 'b');\n",
@@ -339,7 +343,7 @@ mod tests {
         };
 
         let edits =
-            build_transform_edits(&project, "src/styles.ts", source, &plan, HelperCxMode::Auto);
+            build_transform_edits(config, "src/styles.ts", source, &plan, HelperCxMode::Auto);
 
         // Without resolved symbols and without plan helper demand, import sync is skipped
         // entirely — including removal of the existing internal import.

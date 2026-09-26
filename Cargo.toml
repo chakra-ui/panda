@@ -35,6 +35,7 @@ pandacss_extractor = { path = "crates/pandacss_extractor", default-features = fa
 pandacss_fs = { path = "crates/pandacss_fs", default-features = false }
 pandacss_literal = { path = "crates/pandacss_literal" }
 pandacss_project = { path = "crates/pandacss_project" }
+pandacss_transform = { path = "crates/pandacss_transform" }
 pandacss_recipes = { path = "crates/pandacss_recipes" }
 pandacss_shared = { path = "crates/pandacss_shared" }
 pandacss_stylesheet = { path = "crates/pandacss_stylesheet" }

@@ -19,7 +19,7 @@ tests should inherit that corpus instead of replacing it.
 
 | Layer                           | Location                                              | Status                                                |
 | ------------------------------- | ----------------------------------------------------- | ----------------------------------------------------- |
-| Rust transformer snapshots      | `crates/pandacss_project/tests/transform/`            | via `cargo nextest run -p pandacss_project transform` |
+| Rust transformer snapshots      | `crates/pandacss_transform/tests/`                    | via `cargo nextest run -p pandacss_transform`         |
 | JS facade + runtime             | `packages/transformer/__tests__/`                     | covered                                               |
 | Rolldown tree-shaking           | `packages/transformer/__tests__/tree-shaking.test.ts` | covered                                               |
 | Vite plugin                     | `packages/vite/__tests__/`                            | covered                                               |

@@ -109,8 +109,11 @@ fn escapes_a_quoted_class_name_without_the_cx_helper() {
         export const el = <Box className={props.className} color={'[var(--x, "red")]'} css={{ padding: '2' }} />;
     "#};
 
-    let output =
-        transform_jsx_with_helper("src/app.tsx", source, pandacss_project::HelperCxMode::False);
+    let output = transform_jsx_with_helper(
+        "src/app.tsx",
+        source,
+        pandacss_transform::HelperCxMode::False,
+    );
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"export const el = <div className={props.className + " color_[var(--x,_\"red\")] padding_2"} />;"#);
@@ -124,8 +127,11 @@ fn escapes_a_quoted_class_name_through_the_cx_helper() {
         export const el = <Box className={props.className} color={'[var(--x, "red")]'} css={{ padding: '2' }} />;
     "#};
 
-    let output =
-        transform_jsx_with_helper("src/app.tsx", source, pandacss_project::HelperCxMode::True);
+    let output = transform_jsx_with_helper(
+        "src/app.tsx",
+        source,
+        pandacss_transform::HelperCxMode::True,
+    );
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
@@ -153,7 +159,7 @@ fn keeps_an_entity_class_name_in_the_attribute_form() {
 #[test]
 fn injects_cn_for_dynamic_class_name_with_conditional_style_prop() {
     use super::common::transform_jsx_with_helper;
-    use pandacss_project::HelperCxMode;
+    use pandacss_transform::HelperCxMode;
 
     let source = indoc! {r#"
         import { Box } from '@panda/jsx';

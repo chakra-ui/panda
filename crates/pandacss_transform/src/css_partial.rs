@@ -4,7 +4,7 @@ use pandacss_extractor::{CallFacts, ObjectFacts, StyleObject, StyleTree};
 use pandacss_literal::Literal;
 use pandacss_shared::Span;
 
-use crate::Project;
+use pandacss_project::Config;
 
 use super::css_keys::{StyleKeys, insert_disjoint, style_keys};
 use super::helper::CX_HELPER_LOCAL;
@@ -31,7 +31,7 @@ enum ObjectMember {
 
 #[must_use]
 pub(super) fn rewrite(
-    project: &Project,
+    config: &Config,
     source: &str,
     span: Span,
     trees: &[Option<StyleTree>],
@@ -63,13 +63,13 @@ pub(super) fn rewrite(
     let mut preserved = vec![facts.callee_span];
     let callee = span_slice(source, facts.callee_span)?;
     for fragment in &fragments {
-        insert_disjoint(&mut keys, style_keys(project, &fragment.tree)?)?;
+        insert_disjoint(&mut keys, style_keys(config, &fragment.tree)?)?;
         if let Some(runtime) = &fragment.runtime {
             preserved.push(runtime.span);
             printed.push(None);
         } else {
             let (expr, spans) =
-                style_lower::lower_css_args(project, source, &[Some(fragment.tree.clone())])?;
+                style_lower::lower_css_args(config, source, &[Some(fragment.tree.clone())])?;
             preserved.extend(spans);
             finite.push(fragment.tree.clone());
             printed.push(Some(expr));
@@ -83,7 +83,7 @@ pub(super) fn rewrite(
         .flatten()
         .all(|expr| matches!(expr, ClassExpr::Lit(_)))
     {
-        print_pure_split(project, source, callee, &finite, &fragments)?
+        print_pure_split(config, source, callee, &finite, &fragments)?
     } else {
         print_ordered_split(source, callee, &fragments, &printed)?
     };
@@ -173,7 +173,7 @@ fn wrap(scopes: &[String], key: &str, value: StyleTree) -> StyleTree {
 }
 
 fn print_pure_split(
-    project: &Project,
+    config: &Config,
     source: &str,
     callee: &str,
     finite: &[StyleTree],
@@ -183,7 +183,7 @@ fn print_pure_split(
         .iter()
         .map(pandacss_extractor::project_literal)
         .collect::<Vec<Option<Literal>>>();
-    let classes = classes_for_css_args(project, &args)?;
+    let classes = classes_for_css_args(config, &args)?;
     let runtime = print_runtime(source, callee, fragments)?;
     Some(format!(
         "{CX_HELPER_LOCAL}({}, {runtime})",

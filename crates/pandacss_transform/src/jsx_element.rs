@@ -9,8 +9,8 @@ use pandacss_extractor::{
 use pandacss_literal::Literal;
 use pandacss_shared::Span;
 
-use crate::PatternTransformFn;
-use crate::Project;
+use pandacss_project::Config;
+use pandacss_project::PatternTransformFn;
 
 use super::helper::{self, CX_HELPER_LOCAL};
 use super::jsx_parse::{
@@ -24,7 +24,7 @@ use super::plan::{HelperCxMode, Rewrite, TransformHelperFacts};
 use super::style_lower;
 
 pub(super) fn rewrites_for_jsx_opening_element(
-    project: &Project,
+    config: &Config,
     source: &str,
     jsx: &ExtractedJsx,
     helper_cx: HelperCxMode,
@@ -34,7 +34,7 @@ pub(super) fn rewrites_for_jsx_opening_element(
         ParsedOpeningElement::from_ast(source, &jsx.attributes, jsx.closing_span.is_none());
     if jsx.kind == JsxKind::Recipe {
         return recipe_style_prop_rewrite(
-            project,
+            config,
             source,
             jsx,
             &parsed,
@@ -44,7 +44,7 @@ pub(super) fn rewrites_for_jsx_opening_element(
         .map_or_else(Vec::new, |rewrite| vec![rewrite]);
     }
     if let Some(rewrite) = partial_fold_rewrite(
-        project,
+        config,
         source,
         jsx,
         &parsed,
@@ -54,7 +54,7 @@ pub(super) fn rewrites_for_jsx_opening_element(
         return vec![rewrite];
     }
     let Some(spread_plan) = plan_slot_spreads(
-        project,
+        config,
         source,
         jsx,
         &parsed.attributes,
@@ -64,7 +64,7 @@ pub(super) fn rewrites_for_jsx_opening_element(
     };
     if parsed.has_unresolved_as_prop()
         || style_slots_should_skip(
-            project,
+            config,
             source,
             jsx,
             &parsed.attributes,
@@ -73,9 +73,9 @@ pub(super) fn rewrites_for_jsx_opening_element(
     {
         return Vec::new();
     }
-    let class_attr = project.config().extractor_config().class_attribute;
+    let class_attr = config.extractor_config().class_attribute;
     let Some(class_name) = plan_class_name(
-        project,
+        config,
         source,
         jsx,
         parsed.existing_class_name(class_attr),
@@ -92,13 +92,8 @@ pub(super) fn rewrites_for_jsx_opening_element(
         ConditionalSpreadPlan::Runtime(rewrite) => Some(rewrite),
         ConditionalSpreadPlan::StyleOnly => None,
     };
-    let Some(selected) = select_slots(
-        project,
-        jsx,
-        &parsed.attributes,
-        &class_name,
-        runtime_spread,
-    ) else {
+    let Some(selected) = select_slots(config, jsx, &parsed.attributes, &class_name, runtime_spread)
+    else {
         return Vec::new();
     };
     let mut rewrites = vec![Rewrite {
@@ -124,7 +119,7 @@ pub(super) fn rewrites_for_jsx_opening_element(
 /// The component behind a recipe's `jsx: [...]` is the user's: it picks its own
 /// element and resolves the recipe itself, so the tag and variant props stay.
 fn recipe_style_prop_rewrite(
-    project: &Project,
+    config: &Config,
     source: &str,
     jsx: &ExtractedJsx,
     parsed: &ParsedOpeningElement,
@@ -135,10 +130,9 @@ fn recipe_style_prop_rewrite(
     if parsed.attributes.iter().any(ParsedAttribute::is_spread) {
         return None;
     }
-    let extractor = project.config().extractor_config();
+    let extractor = config.extractor_config();
     let class_attr = extractor.class_attribute;
-    let recipes = &project.config().recipes;
-    let variant_props = recipes.variant_props_for(&recipes.find_by_jsx(&jsx.name));
+    let variant_props = config.jsx_recipe_variant_props(&jsx.name);
 
     let folds = |attr: &ParsedAttribute| {
         attr.name
@@ -174,7 +168,7 @@ fn recipe_style_prop_rewrite(
         ..jsx.clone()
     };
     let class_name = plan_class_name(
-        project,
+        config,
         source,
         &style_jsx,
         parsed.existing_class_name(class_attr),
@@ -222,7 +216,7 @@ fn recipe_style_prop_rewrite(
 /// the factory then merges after the spread's own styles — the same precedence
 /// JSX gives them today, since a later attribute overwrites a spread's key.
 fn partial_fold_rewrite(
-    project: &Project,
+    config: &Config,
     source: &str,
     jsx: &ExtractedJsx,
     parsed: &ParsedOpeningElement,
@@ -234,7 +228,7 @@ fn partial_fold_rewrite(
     if jsx.kind != JsxKind::Factory || helper_cx == HelperCxMode::False {
         return None;
     }
-    let extractor = project.config().extractor_config();
+    let extractor = config.extractor_config();
     let class_attr = extractor.class_attribute;
     if parsed
         .attributes
@@ -268,7 +262,7 @@ fn partial_fold_rewrite(
         ..jsx.clone()
     };
     let class_name = plan_class_name(
-        project,
+        config,
         source,
         &folded_jsx,
         parsed.existing_class_name(class_attr),

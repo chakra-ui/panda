@@ -4,7 +4,7 @@ use super::common::{
 };
 use indoc::indoc;
 use insta::assert_snapshot;
-use pandacss_project::{HelperCxMode, TransformMode, TransformOptions, TransformTargets};
+use pandacss_transform::{HelperCxMode, TransformMode, TransformOptions, TransformTargets};
 
 #[test]
 fn build_mode_is_default() {

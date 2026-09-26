@@ -2,8 +2,8 @@
 
 use pandacss_extractor::{ExtractedJsx, JsxSourceKind};
 
-use crate::PatternTransformFn;
-use crate::Project;
+use pandacss_project::Config;
+use pandacss_project::PatternTransformFn;
 
 use super::jsx_element;
 use super::jsx_runtime;
@@ -12,7 +12,7 @@ use super::plan::{HelperCxMode, Rewrite};
 /// Rewrite one extracted JSX site (opening element or runtime call).
 #[must_use]
 pub(crate) fn rewrites_for_jsx_element(
-    project: &Project,
+    config: &Config,
     source: &str,
     jsx: &ExtractedJsx,
     helper_cx: HelperCxMode,
@@ -28,7 +28,7 @@ pub(crate) fn rewrites_for_jsx_element(
     match jsx.source.kind {
         JsxSourceKind::Element | JsxSourceKind::FrameworkTemplate => {
             jsx_element::rewrites_for_jsx_opening_element(
-                project,
+                config,
                 source,
                 jsx,
                 helper_cx,
@@ -36,7 +36,7 @@ pub(crate) fn rewrites_for_jsx_element(
             )
         }
         JsxSourceKind::RuntimeCall => jsx_runtime::rewrites_for_jsx_runtime_call(
-            project,
+            config,
             source,
             jsx,
             helper_cx,

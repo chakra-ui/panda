@@ -8,8 +8,8 @@ use pandacss_literal::Literal;
 use pandacss_shared::{CssFactory, FIRST_THAT_WORKS_MIN_MEMBERS, format_first_that_works};
 use pandacss_utility::ShorthandPolicy;
 
-use crate::PatternTransformFn;
-use crate::Project;
+use pandacss_project::Config;
+use pandacss_project::PatternTransformFn;
 
 use super::js;
 use super::plan::{HelperCxMode, Rewrite};
@@ -17,7 +17,7 @@ use super::style_lower::{self, LowerTarget};
 
 /// Returns `None` when the literal cannot be encoded to stable class strings.
 pub(crate) fn classes_for_css_args(
-    project: &Project,
+    config: &Config,
     args: &[Option<Literal>],
 ) -> Option<Vec<String>> {
     if args.iter().any(Option::is_none) {
@@ -36,15 +36,15 @@ pub(crate) fn classes_for_css_args(
         collect_css_layers(arg, &mut layers);
     }
     let style = if layers.len() > 1 {
-        project.merged_style_literal(&layers)?
+        config.merged_style_literal(&layers)?
     } else {
         layers.into_iter().next().flatten()?
     };
     if empty_css_arg(&style) {
         return Some(Vec::new());
     }
-    let mut encoder = Encoder::with_conditions(project.config().conditions().clone());
-    encode_css_arg(project, &mut encoder, &style);
+    let mut encoder = Encoder::with_conditions(config.conditions().clone());
+    encode_css_arg(config, &mut encoder, &style);
     let mut atoms: Vec<Atom> = encoder.into_atoms().into_iter().collect();
 
     if atoms.is_empty() {
@@ -55,7 +55,7 @@ pub(crate) fn classes_for_css_args(
 
     let classes: Vec<String> = atoms
         .iter()
-        .filter_map(|atom| project.atomic_class_name_for_transform(atom))
+        .filter_map(|atom| config.atomic_class_name_for_transform(atom))
         .collect();
 
     if classes.is_empty() {
@@ -95,7 +95,7 @@ fn empty_css_value(value: &Literal) -> bool {
 }
 
 fn encode_css_arg(
-    project: &Project,
+    config: &Config,
     encoder: &mut Encoder<pandacss_encoder::ConditionSet>,
     arg: &Literal,
 ) {
@@ -103,11 +103,13 @@ fn encode_css_arg(
         Literal::Array(items) | Literal::Conditional(items) => {
             for item in items {
                 if !matches!(item, Literal::Null | Literal::Bool(false)) {
-                    encode_css_arg(project, encoder, item);
+                    encode_css_arg(config, encoder, item);
                 }
             }
         }
-        _ => project.encode_atomic_for_transform(encoder, arg, ShorthandPolicy::UserFacing),
+        _ => {
+            config.encode_atomic_for_transform(encoder, arg, ShorthandPolicy::UserFacing);
+        }
     }
 }
 
@@ -139,7 +141,7 @@ pub(crate) fn css_call_should_bail(args: &[Option<Literal>]) -> bool {
 }
 
 pub(crate) fn rewrite_for_css_call(
-    project: &Project,
+    config: &Config,
     source: &str,
     span: pandacss_shared::Span,
     args: &[Option<Literal>],
@@ -147,14 +149,14 @@ pub(crate) fn rewrite_for_css_call(
     facts: &CallFacts,
     helper_cx: HelperCxMode,
 ) -> Option<Rewrite> {
-    if let Some(rewrite) = rewrite_finite_css_call(project, source, span, args, style_args) {
+    if let Some(rewrite) = rewrite_finite_css_call(config, source, span, args, style_args) {
         return Some(rewrite);
     }
-    super::css_partial::rewrite(project, source, span, style_args, facts, helper_cx)
+    super::css_partial::rewrite(config, source, span, style_args, facts, helper_cx)
 }
 
 fn rewrite_finite_css_call(
-    project: &Project,
+    config: &Config,
     source: &str,
     span: pandacss_shared::Span,
     args: &[Option<Literal>],
@@ -179,13 +181,13 @@ fn rewrite_finite_css_call(
                 && !style_lower::has_nested_spread_branches(tree)
             {
                 let expr =
-                    style_lower::lower_style_tree(project, source, tree, LowerTarget::Css, None)?;
+                    style_lower::lower_style_tree(config, source, tree, LowerTarget::Css, None)?;
                 (expr, style_lower::preserved_source_spans(tree))
             } else {
-                style_lower::lower_css_args(project, source, style_args)?
+                style_lower::lower_css_args(config, source, style_args)?
             }
         } else {
-            style_lower::lower_css_args(project, source, style_args)?
+            style_lower::lower_css_args(config, source, style_args)?
         };
         return Some(Rewrite::replace_preserving(
             span,
@@ -193,7 +195,7 @@ fn rewrite_finite_css_call(
             preserved,
         ));
     }
-    let classes = classes_for_css_args(project, args)?;
+    let classes = classes_for_css_args(config, args)?;
     Some(Rewrite::replace(span, js::string(&classes.join(" "))))
 }
 
@@ -217,19 +219,17 @@ pub(crate) fn rewrite_for_first_that_works_call(
 /// Inline a css factory call to its generated name: object form hashes, string
 /// form resolves a named `theme` bag. Dynamic/unknown args don't rewrite.
 pub(crate) fn rewrite_for_css_factory_call(
-    project: &Project,
+    config: &Config,
     factory: CssFactory,
     span: pandacss_shared::Span,
     args: &[Option<Literal>],
 ) -> Option<Rewrite> {
     let arg = args.first()?.as_ref()?;
     let name = match arg {
-        Literal::Object(_) => factory.ident(&arg.to_json(), &project.config().class_name_prefix),
+        Literal::Object(_) => factory.ident(&arg.to_json(), config.class_name_prefix()),
         Literal::String(name) => match factory {
-            CssFactory::PositionTry => project.config().position_try(name)?.ident.clone(),
-            CssFactory::ViewTransition => {
-                project.config().view_transition(name)?.class_name.clone()
-            }
+            CssFactory::PositionTry => config.position_try(name)?.ident.clone(),
+            CssFactory::ViewTransition => config.view_transition(name)?.class_name.clone(),
             CssFactory::Keyframes => return None,
         },
         _ => return None,
@@ -238,7 +238,7 @@ pub(crate) fn rewrite_for_css_factory_call(
 }
 
 pub(crate) fn rewrite_for_recipe_call(
-    project: &Project,
+    config: &Config,
     source: &str,
     recipe_name: &str,
     span: pandacss_shared::Span,
@@ -253,7 +253,7 @@ pub(crate) fn rewrite_for_recipe_call(
     // Finite conditionals become a class ternary. Flattening both branches is
     // never correct — if we can't emit the expression, leave the call.
     if let Some(tree) = tree.filter(|tree| style_lower::style_tree_has_rewrite_sites(tree)) {
-        let content = lower_recipe_call(project, source, recipe_name, tree)?;
+        let content = lower_recipe_call(config, source, recipe_name, tree)?;
         return Some(Rewrite::replace_preserving(
             span,
             content,
@@ -263,22 +263,22 @@ pub(crate) fn rewrite_for_recipe_call(
     if tree.is_some_and(style_lower::style_tree_is_open) {
         return None;
     }
-    let content = resolve_recipe_call(project, recipe_name, args)?;
+    let content = resolve_recipe_call(config, recipe_name, args)?;
     Some(Rewrite::replace(span, content))
 }
 
 /// A recipe call resolves to one class string; a slot recipe call to an object
 /// literal with one per slot.
 fn resolve_recipe_call(
-    project: &Project,
+    config: &Config,
     recipe_name: &str,
     args: &[Option<Literal>],
 ) -> Option<String> {
-    if project.slot_recipe_slots(recipe_name).is_none() {
-        let classes = project.class_names_for_recipe_call(recipe_name, args)?;
+    if config.slot_recipe_slots(recipe_name).is_none() {
+        let classes = config.class_names_for_recipe_call(recipe_name, args)?;
         return Some(js::string(&classes.join(" ")));
     }
-    let slots = project.class_names_for_slot_recipe_call(recipe_name, args)?;
+    let slots = config.class_names_for_slot_recipe_call(recipe_name, args)?;
     let fields = slots
         .iter()
         .map(|(slot, classes)| js::field(slot, js::string(&classes.join(" "))));
@@ -286,14 +286,14 @@ fn resolve_recipe_call(
 }
 
 fn lower_recipe_call(
-    project: &Project,
+    config: &Config,
     source: &str,
     recipe_name: &str,
     tree: &StyleTree,
 ) -> Option<String> {
-    let Some(slots) = project.slot_recipe_slots(recipe_name) else {
+    let Some(slots) = config.slot_recipe_slots(recipe_name) else {
         let target = LowerTarget::Recipe(recipe_name);
-        let expr = style_lower::lower_style_tree(project, source, tree, target, None)?;
+        let expr = style_lower::lower_style_tree(config, source, tree, target, None)?;
         return Some(style_lower::print_class_expr(&expr));
     };
     let fields = slots
@@ -303,7 +303,7 @@ fn lower_recipe_call(
                 recipe: recipe_name,
                 slot,
             };
-            let expr = style_lower::lower_style_tree(project, source, tree, target, None)?;
+            let expr = style_lower::lower_style_tree(config, source, tree, target, None)?;
             Some(js::field(slot, style_lower::print_class_expr(&expr)))
         })
         .collect::<Option<Vec<_>>>()?;
@@ -311,7 +311,7 @@ fn lower_recipe_call(
 }
 
 pub(crate) fn rewrite_for_pattern_call(
-    project: &Project,
+    config: &Config,
     pattern_name: &str,
     span: pandacss_shared::Span,
     args: &[Option<Literal>],
@@ -322,7 +322,7 @@ pub(crate) fn rewrite_for_pattern_call(
     if pattern_call_has_unextractable_args(args, style_args, facts) {
         return None;
     }
-    let classes = project.class_names_for_pattern_call(pattern_name, args, pattern_transform)?;
+    let classes = config.class_names_for_pattern_call(pattern_name, args, pattern_transform)?;
     Some(Rewrite::replace(span, js::string(&classes.join(" "))))
 }
 
@@ -370,17 +370,17 @@ pub(crate) fn rewrites_for_identity_raw_call(
 /// Only static object arguments qualify. `Literal::Conditional` is a runtime
 /// branch rather than data, so anything carrying one is left alone.
 pub(crate) fn rewrite_for_merged_raw_call(
-    project: &Project,
+    config: &Config,
     call: &ExtractedCall,
 ) -> Option<Rewrite> {
-    let merged = project.merged_style_literal(&call.data)?;
+    let merged = config.merged_style_literal(&call.data)?;
     rewrite_for_style_literal(call.span, call.facts.object_literal_context, &merged)
 }
 
 /// Fold `pattern.raw(props)` to the style object the pattern's transform
 /// returns — the same value the runtime would hand back.
 pub(crate) fn rewrite_for_pattern_raw_call(
-    project: &Project,
+    config: &Config,
     call: &ExtractedCall,
     pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> Option<Rewrite> {
@@ -388,7 +388,7 @@ pub(crate) fn rewrite_for_pattern_raw_call(
         return None;
     }
     let styles =
-        project.style_literal_for_pattern_call(&call.name, &call.data, pattern_transform)?;
+        config.style_literal_for_pattern_call(&call.name, &call.data, pattern_transform)?;
     rewrite_for_style_literal(call.span, call.facts.object_literal_context, &styles)
 }
 

@@ -485,7 +485,7 @@ unsorted report would vary between runs.
   descriptors, view-transition bags, `@supports`, and `cva` / `sva` compound variants.
 - `crates/pandacss_stylesheet/src/style_rules.rs`, run-append semantics, including in-place replacement and importance
   precedence in both directions.
-- `crates/pandacss_project/tests/transform/css_cases.rs`, static rewrite plus dead-import cleanup, the dynamic-member
+- `crates/pandacss_transform/tests/css_cases.rs`, static rewrite plus dead-import cleanup, the dynamic-member
   bailout, a standalone call inlined to its value form, and a JSX `css` prop rewritten to its class.
 - `crates/pandacss_codegen/tests/first_that_works_artifact.rs`, the generated `css/first-that-works` module in TS, JS,
   and `.d.ts`.

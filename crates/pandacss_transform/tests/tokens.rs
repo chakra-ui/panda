@@ -1,9 +1,9 @@
 use super::common::{project_with_tokens, transform_with_project};
 use indoc::indoc;
 use insta::assert_snapshot;
-use pandacss_project::{TransformOptions, TransformTargets, transform_source};
+use pandacss_transform::{TransformOptions, TransformTargets, transform_source};
 
-fn transform_tokens(source: &str) -> pandacss_project::TransformOutput {
+fn transform_tokens(source: &str) -> pandacss_transform::TransformOutput {
     transform_with_project(&project_with_tokens(), "src/theme.ts", source)
 }
 
@@ -124,7 +124,7 @@ fn skips_token_rewrites_when_only_css_target_is_enabled() {
     "#};
 
     let output = transform_source(
-        &project_with_tokens(),
+        project_with_tokens().config(),
         "src/theme.ts",
         source,
         &TransformOptions {

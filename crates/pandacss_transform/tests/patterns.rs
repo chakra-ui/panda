@@ -7,7 +7,7 @@ use insta::assert_snapshot;
 use pandacss_extractor::Diagnostic;
 use pandacss_literal::Literal;
 use pandacss_project::{ParseTransforms, Project, System};
-use pandacss_project::{TransformOptions, transform_source};
+use pandacss_transform::{TransformOptions, transform_source, transform_source_with};
 use serde_json::json;
 
 #[test]
@@ -155,7 +155,12 @@ fn leaves_pattern_with_js_transform_unchanged_without_callback() {
         export const cls = stack({ gap: '4px' });
     "#};
 
-    let output = transform_source(&project, "src/layout.tsx", source, &patterns_only_options());
+    let output = transform_source(
+        project.config(),
+        "src/layout.tsx",
+        source,
+        &patterns_only_options(),
+    );
 
     assert!(!output.changed);
     assert_eq!(output.code, source);
@@ -171,7 +176,8 @@ fn inlines_js_transform_pattern_when_transform_callback_is_supplied() {
 
     let mut stack_transform = stack_to_flex;
 
-    let output = project.transform_source_with(
+    let output = transform_source_with(
+        project.config(),
         "src/layout.tsx",
         source,
         &patterns_only_options(),
@@ -193,7 +199,12 @@ fn pattern_target_does_not_rewrite_css_calls() {
         export const cls = css({ color: 'red' });
     "#};
 
-    let output = transform_source(&project, "src/layout.tsx", source, &patterns_only_options());
+    let output = transform_source(
+        project.config(),
+        "src/layout.tsx",
+        source,
+        &patterns_only_options(),
+    );
 
     assert!(!output.changed);
     assert_eq!(output.code, source);
@@ -241,9 +252,9 @@ fn raw_project() -> Project {
     )
 }
 
-fn transform_raw(source: &str) -> pandacss_project::TransformOutput {
+fn transform_raw(source: &str) -> pandacss_transform::TransformOutput {
     transform_source(
-        &raw_project(),
+        raw_project().config(),
         "src/layout.tsx",
         source,
         &patterns_only_options(),
@@ -697,7 +708,8 @@ fn pattern_raw_with_a_ternary_stays_intact_under_a_js_transform() {
         Ok(Some(styles.clone()))
     };
 
-    let output = stack_project().transform_source_with(
+    let output = transform_source_with(
+        stack_project().config(),
         "src/layout.tsx",
         source,
         &patterns_only_options(),
@@ -820,11 +832,11 @@ fn pattern_raw_stays_intact_when_patterns_are_not_targeted() {
     "#};
 
     let output = transform_source(
-        &raw_project(),
+        raw_project().config(),
         "src/layout.tsx",
         source,
         &TransformOptions {
-            targets: pandacss_project::TransformTargets {
+            targets: pandacss_transform::TransformTargets {
                 patterns: false,
                 css: true,
                 ..Default::default()
@@ -845,7 +857,7 @@ fn pattern_raw_needing_a_js_transform_stays_intact_without_a_callback() {
     "#};
 
     let output = transform_source(
-        &stack_project(),
+        stack_project().config(),
         "src/layout.tsx",
         source,
         &patterns_only_options(),
@@ -864,7 +876,8 @@ fn pattern_raw_folds_through_a_js_transform_callback() {
 
     let mut stack_transform = stack_to_flex;
 
-    let output = stack_project().transform_source_with(
+    let output = transform_source_with(
+        stack_project().config(),
         "src/layout.tsx",
         source,
         &patterns_only_options(),
@@ -891,7 +904,8 @@ fn pattern_raw_stays_intact_when_the_js_transform_declines() {
     let mut decline =
         |_name: &str, _styles: &Literal| -> Result<Option<Literal>, Diagnostic> { Ok(None) };
 
-    let output = stack_project().transform_source_with(
+    let output = transform_source_with(
+        stack_project().config(),
         "src/layout.tsx",
         source,
         &patterns_only_options(),

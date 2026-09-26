@@ -66,12 +66,36 @@ impl Config {
     }
 
     #[must_use]
-    pub(crate) fn view_transition(&self, name: &str) -> Option<&ViewTransitionStyle> {
+    pub fn view_transition(&self, name: &str) -> Option<&ViewTransitionStyle> {
         self.view_transitions.get(name)
     }
 
     #[must_use]
-    pub(crate) fn position_try(&self, name: &str) -> Option<&PositionTryStyle> {
+    pub fn position_try(&self, name: &str) -> Option<&PositionTryStyle> {
         self.position_try.get(name)
+    }
+
+    #[must_use]
+    pub fn class_name_prefix(&self) -> &str {
+        &self.class_name_prefix
+    }
+
+    /// Variant prop names of the config recipes a JSX tag renders.
+    #[must_use]
+    pub fn jsx_recipe_variant_props(&self, jsx_name: &str) -> FxHashSet<&str> {
+        self.recipes
+            .variant_props_for(&self.recipes.find_by_jsx(jsx_name))
+    }
+
+    /// Variant prop names of one config recipe.
+    #[must_use]
+    pub fn recipe_variant_props(&self, recipe_name: &str) -> FxHashSet<&str> {
+        self.recipes.variant_props_for(&[recipe_name])
+    }
+
+    /// Prop names a pattern fills from its `defaultValues`.
+    #[must_use]
+    pub fn pattern_default_value_keys(&self, pattern_name: &str) -> FxHashSet<&str> {
+        self.patterns.default_value_keys(pattern_name)
     }
 }

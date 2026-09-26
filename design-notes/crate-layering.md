@@ -54,10 +54,13 @@ project is a dev-dep used only for test wiring). It is an emitter/minifying writ
 
 `pandacss_project`.
 
-`Project` wires extraction and encoding into long-lived state. `System` compiles immutable config-derived runtime state from
-`pandacss_config::UserConfig` into `pandacss_project::Config`; `Project` owns mutable build/watch state. This crate is
-independent of CSS rendering: it exposes borrowed stylesheet snapshots but does not depend on `pandacss_stylesheet`.
+`Project` wires extraction and encoding into long-lived state. `System` compiles immutable config-derived runtime state
+from `pandacss_config::UserConfig` into `pandacss_project::Config`; `Project` owns mutable build/watch state. This crate
+is independent of CSS rendering: it exposes borrowed stylesheet snapshots but does not depend on `pandacss_stylesheet`.
 See [project-lifecycle](./project-lifecycle.md).
+
+`pandacss_transform` sits beside it and depends on it read-only: it rewrites source with the compiled `Config` (class
+names, recipes, patterns) and needs no mutable `Project`. See [transformer](./transformer/README.md).
 
 ### Tier 4 — compile orchestration
 
@@ -88,10 +91,11 @@ transitively. Merging is reversible later; splitting clean code post-merge is an
 (via `fast-glob`), and the binding/JS host calls it explicitly. When `.gitignore`-aware walking lands, it goes in a
 separate `pandacss_discover` crate built on `pandacss_fs` + the `ignore` crate.
 
-**"Should `pandacss_project` mutate source files?"** — `ParsedFile` stays read-only (not a ts-morph `SourceFile` analog —
-no `copy()` / `move()` / `applyTextChanges()` on file state). Source rewrite is different: `Project::transform_source`
-/ `transform_source_with` take source text and return a new string (+ map). That lives in `pandacss_project::transform`
-so rewrite shares `ParseTransforms` with `parse_file_with`.
+**"Should `pandacss_project` mutate source files?"** — `ParsedFile` stays read-only (not a ts-morph `SourceFile` analog
+— no `copy()` / `move()` / `applyTextChanges()` on file state). Source rewrite lives in `pandacss_transform`:
+`transform_source` / `transform_source_with` take a read-only `&Config` plus source text and return a new string (+
+map). It shares `ParseTransforms` and the `Config` class-name helpers with `parse_file_with`, but never touches project
+build/watch state.
 
 **"Should `pandacss_extractor` know about `pandacss_tokens`?"** — Yes, but narrowly. `pandacss_extractor` depends on
 `pandacss_tokens` so the static evaluator can fold `token('colors.red.500')` calls. The dependency is one-directional;

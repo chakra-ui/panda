@@ -1,4 +1,4 @@
-//! Integration tests for `pandacss_project` source transforms.
+//! Integration tests for `pandacss_transform` source transforms.
 #![allow(
     clippy::needless_raw_string_hashes,
     reason = "fixture sources use a consistent raw-string style across the transformer suites"
@@ -21,6 +21,7 @@ mod common;
 mod advanced;
 mod bailout;
 mod conditional;
+mod css_arguments;
 mod css_cases;
 mod css_mixed;
 mod edges;

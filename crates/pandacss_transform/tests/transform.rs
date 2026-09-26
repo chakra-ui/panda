@@ -1,7 +1,7 @@
 use super::common::{project, transform};
 use indoc::indoc;
 use insta::assert_snapshot;
-use pandacss_project::{TransformOptions, transform_source};
+use pandacss_transform::{TransformOptions, transform_source};
 
 #[test]
 fn rewrites_static_css_call_to_class_string() {
@@ -114,7 +114,7 @@ fn transform_output_metadata_for_static_rewrite() {
     "#};
 
     let output = transform_source(
-        &project(),
+        project().config(),
         "src/button.tsx",
         source,
         &TransformOptions::default(),

@@ -102,7 +102,7 @@ Static object-literal calls rewrite to `"vt_xxx"` (plus `prefix-`) via `view_tra
 encode/emit. Static `'slide'` rewrites to `"vt_slide"` when that name exists in the merged theme. Fully dynamic args
 (`viewTransition(options)`) stay for the codegen runtime factory, same as `css(options)`. The factory also maps a string
 to `vt_{name}` so types match if transform did not run. Mixed files inline the static sites and keep the import when a
-dynamic call remains. Tests live in `crates/pandacss_project/tests/transform/view_transition.rs`.
+dynamic call remains. Tests live in `crates/pandacss_transform/tests/view_transition.rs`.
 
 ### Shipping from a design system
 

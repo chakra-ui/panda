@@ -3,7 +3,7 @@
 use super::common::{transform, transform_jsx, transform_jsx_with_helper};
 use indoc::indoc;
 use insta::assert_snapshot;
-use pandacss_project::{
+use pandacss_transform::{
     CX_HELPER_LOCAL, CX_HELPER_MODULE, HelperCxMode, TransformHelperFacts, inject_cx_import,
     sync_internal_css_import,
 };

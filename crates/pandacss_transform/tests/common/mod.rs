@@ -2,7 +2,7 @@ use pandacss_config::UserConfig;
 use pandacss_extractor::CrossFileResolver;
 use pandacss_fs::MemoryFileSystem;
 use pandacss_project::{Project, System};
-use pandacss_project::{TransformOptions, TransformTargets, transform_source};
+use pandacss_transform::{TransformOptions, TransformTargets, transform_source};
 use serde_json::{Value, json};
 use std::path::PathBuf;
 
@@ -74,24 +74,29 @@ pub fn project() -> Project {
     Project::new(System::new(create_config(json!({}))).expect("config"))
 }
 
-pub fn transform(path: &str, source: &str) -> pandacss_project::TransformOutput {
-    transform_source(&project(), path, source, &TransformOptions::default())
+pub fn transform(path: &str, source: &str) -> pandacss_transform::TransformOutput {
+    transform_source(
+        project().config(),
+        path,
+        source,
+        &TransformOptions::default(),
+    )
 }
 
 pub fn transform_with_project(
     project: &Project,
     path: &str,
     source: &str,
-) -> pandacss_project::TransformOutput {
-    transform_source(project, path, source, &TransformOptions::default())
+) -> pandacss_transform::TransformOutput {
+    transform_source(project.config(), path, source, &TransformOptions::default())
 }
 
 pub fn transform_with_options(
     path: &str,
     source: &str,
     options: TransformOptions,
-) -> pandacss_project::TransformOutput {
-    transform_source(&project(), path, source, &options)
+) -> pandacss_transform::TransformOutput {
+    transform_source(project().config(), path, source, &options)
 }
 
 pub fn patterns_only_options() -> TransformOptions {
@@ -201,18 +206,18 @@ pub fn project_with_pattern() -> Project {
     )
 }
 
-pub fn transform_recipes(path: &str, source: &str) -> pandacss_project::TransformOutput {
+pub fn transform_recipes(path: &str, source: &str) -> pandacss_transform::TransformOutput {
     transform_source(
-        &project_with_recipes(),
+        project_with_recipes().config(),
         path,
         source,
         &recipes_only_options(),
     )
 }
 
-pub fn transform_patterns(path: &str, source: &str) -> pandacss_project::TransformOutput {
+pub fn transform_patterns(path: &str, source: &str) -> pandacss_transform::TransformOutput {
     transform_source(
-        &project_with_pattern(),
+        project_with_pattern().config(),
         path,
         source,
         &patterns_only_options(),
@@ -244,7 +249,7 @@ pub fn transform_cross_file(
     main_path: &str,
     main_source: &str,
     siblings: &[(&str, &str)],
-) -> pandacss_project::TransformOutput {
+) -> pandacss_transform::TransformOutput {
     let project = project_with_files(main_path, main_source, siblings);
     transform_with_project(&project, &format!("/proj/{main_path}"), main_source)
 }
@@ -276,7 +281,7 @@ pub fn shorthands_project() -> Project {
     )
 }
 
-pub fn transform_with_shorthands(path: &str, source: &str) -> pandacss_project::TransformOutput {
+pub fn transform_with_shorthands(path: &str, source: &str) -> pandacss_transform::TransformOutput {
     transform_with_project(&shorthands_project(), path, source)
 }
 
@@ -295,7 +300,7 @@ pub fn project_with_jsx_shorthands() -> Project {
     )
 }
 
-pub fn transform_jsx_shorthands(path: &str, source: &str) -> pandacss_project::TransformOutput {
+pub fn transform_jsx_shorthands(path: &str, source: &str) -> pandacss_transform::TransformOutput {
     transform_jsx_with_project(&project_with_jsx_shorthands(), path, source)
 }
 
@@ -525,22 +530,22 @@ pub fn transform_jsx_with_project(
     project: &Project,
     path: &str,
     source: &str,
-) -> pandacss_project::TransformOutput {
-    transform_source(project, path, source, &jsx_only_options())
+) -> pandacss_transform::TransformOutput {
+    transform_source(project.config(), path, source, &jsx_only_options())
 }
 
-pub fn transform_jsx_recipes(path: &str, source: &str) -> pandacss_project::TransformOutput {
+pub fn transform_jsx_recipes(path: &str, source: &str) -> pandacss_transform::TransformOutput {
     transform_jsx_with_project(&project_with_jsx_recipes(), path, source)
 }
 
-pub fn transform_jsx_slot_recipes(path: &str, source: &str) -> pandacss_project::TransformOutput {
+pub fn transform_jsx_slot_recipes(path: &str, source: &str) -> pandacss_transform::TransformOutput {
     transform_jsx_with_project(&project_with_jsx_slot_recipes(), path, source)
 }
 
 pub fn transform_jsx_with_peer_and_group_hover(
     path: &str,
     source: &str,
-) -> pandacss_project::TransformOutput {
+) -> pandacss_transform::TransformOutput {
     let project = jsx_project(json!({
         "conditions": {
             "peerHover": ".peer:hover ~ &",
@@ -550,15 +555,18 @@ pub fn transform_jsx_with_peer_and_group_hover(
     transform_jsx_with_project(&project, path, source)
 }
 
-pub fn transform_jsx_patterns(path: &str, source: &str) -> pandacss_project::TransformOutput {
+pub fn transform_jsx_patterns(path: &str, source: &str) -> pandacss_transform::TransformOutput {
     transform_jsx_with_project(&project_with_jsx_patterns(), path, source)
 }
 
-pub fn transform_panda_jsx(path: &str, source: &str) -> pandacss_project::TransformOutput {
+pub fn transform_panda_jsx(path: &str, source: &str) -> pandacss_transform::TransformOutput {
     transform_jsx_with_project(&project_with_panda_jsx(), path, source)
 }
 
-pub fn transform_panda_jsx_patterns(path: &str, source: &str) -> pandacss_project::TransformOutput {
+pub fn transform_panda_jsx_patterns(
+    path: &str,
+    source: &str,
+) -> pandacss_transform::TransformOutput {
     transform_jsx_with_project(&project_with_panda_jsx_patterns(), path, source)
 }
 
@@ -578,10 +586,10 @@ pub fn jsx_only_options() -> TransformOptions {
 pub fn transform_jsx_with_helper(
     path: &str,
     source: &str,
-    helper_cx: pandacss_project::HelperCxMode,
-) -> pandacss_project::TransformOutput {
+    helper_cx: pandacss_transform::HelperCxMode,
+) -> pandacss_transform::TransformOutput {
     transform_source(
-        &project_with_jsx(),
+        project_with_jsx().config(),
         path,
         source,
         &TransformOptions {
@@ -591,17 +599,22 @@ pub fn transform_jsx_with_helper(
     )
 }
 
-pub fn transform_jsx(path: &str, source: &str) -> pandacss_project::TransformOutput {
-    transform_source(&project_with_jsx(), path, source, &jsx_only_options())
+pub fn transform_jsx(path: &str, source: &str) -> pandacss_transform::TransformOutput {
+    transform_source(
+        project_with_jsx().config(),
+        path,
+        source,
+        &jsx_only_options(),
+    )
 }
 
 pub fn transform_jsx_for_framework(
     framework: &str,
     path: &str,
     source: &str,
-) -> pandacss_project::TransformOutput {
+) -> pandacss_transform::TransformOutput {
     let project = jsx_project(json!({ "jsxFramework": framework }));
-    transform_source(&project, path, source, &jsx_only_options())
+    transform_source(project.config(), path, source, &jsx_only_options())
 }
 
 /// Transform output has to be valid source. Feeding it back through the

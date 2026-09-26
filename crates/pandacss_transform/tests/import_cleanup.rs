@@ -6,7 +6,8 @@ use super::common::{
 };
 use indoc::indoc;
 use insta::assert_snapshot;
-use pandacss_project::{HelperCxMode, Project, System, inject_cx_import, sync_internal_css_import};
+use pandacss_project::{Project, System};
+use pandacss_transform::{HelperCxMode, inject_cx_import, sync_internal_css_import};
 use serde_json::json;
 
 #[test]
@@ -156,7 +157,7 @@ fn sync_internal_css_import_narrows_symbols_to_live_helpers() {
     let out = sync_internal_css_import(
         source,
         "fixture.ts",
-        &pandacss_project::TransformHelperFacts {
+        &pandacss_transform::TransformHelperFacts {
             needs_cx: true,
             needs_cva: false,
             needs_sva: false,

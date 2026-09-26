@@ -1,9 +1,9 @@
 //! Dead Panda import cleanup after rewrites are applied.
 
-use crate::Project;
 use pandacss_extractor::{
     ImportKind, ImportRecord, ImportSpecifier, ImportSpecifierKind, ModuleFacts,
 };
+use pandacss_project::Config;
 use pandacss_shared::Span;
 
 use super::apply::Edit;
@@ -13,14 +13,14 @@ use super::plan::Rewrite;
 /// Plan remove/narrow edits for Panda imports whose bindings are unused in `usage_source`.
 #[must_use]
 pub(crate) fn plan_panda_import_edits(
-    project: &Project,
+    config: &Config,
     path: &str,
     source: &str,
     module: &ModuleFacts,
     rewrites: &[Rewrite],
 ) -> Vec<Edit> {
-    let config = project.config().extractor_config();
-    let matchers = &config.matchers;
+    let extractor = config.extractor_config();
+    let matchers = &extractor.matchers;
     if !matchers.has_module_matchers() {
         return Vec::new();
     }
@@ -33,7 +33,7 @@ pub(crate) fn plan_panda_import_edits(
             continue;
         }
         let is_panda = matchers.record_is_panda_import(record, |specifier| {
-            config
+            extractor
                 .cross_file
                 .as_ref()
                 .and_then(|resolver| resolver.resolve_path(file_path, specifier))

@@ -4,9 +4,9 @@
 use super::common::{project, transform};
 use indoc::indoc;
 use insta::assert_snapshot;
-use pandacss_project::{HelperCxMode, TransformOptions, TransformTargets, transform_source};
+use pandacss_transform::{HelperCxMode, TransformOptions, TransformTargets, transform_source};
 
-fn css(source: &str) -> pandacss_project::TransformOutput {
+fn css(source: &str) -> pandacss_transform::TransformOutput {
     transform("src/x.tsx", source)
 }
 
@@ -259,7 +259,7 @@ fn bails_on_mixed_object_when_cx_helper_disabled() {
         export const cls = css({ color: 'red', width: props.w });
     "#};
     let out = transform_source(
-        &project(),
+        project().config(),
         "src/x.tsx",
         source,
         &TransformOptions {

@@ -104,7 +104,7 @@ Static object calls rewrite to `"--pt_xxx"` (plus `{prefix}-`) via `position_try
 Static `'bottom'` rewrites to `"--pt_bottom"` when that name exists in the merged theme. Fully dynamic args
 (`positionTry(options)`) stay for the codegen runtime factory, same as `css(options)`. `positionTry.raw` is skipped.
 Mixed files inline the static sites and keep the import when a dynamic call remains. Tests live in
-`crates/pandacss_project/tests/transform/position_try.rs`.
+`crates/pandacss_transform/tests/position_try.rs`.
 
 Descriptor values feed usage marking (token refs → CSS vars) so unused-token pruning still sees them.
 

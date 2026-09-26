@@ -124,7 +124,7 @@ fn an_existing_class_name_blocks_the_partial_fold() {
 
 #[test]
 fn helper_cx_false_blocks_the_partial_fold() {
-    use pandacss_project::HelperCxMode;
+    use pandacss_transform::HelperCxMode;
 
     let source = indoc! {r#"
         import { styled } from '@panda/jsx';

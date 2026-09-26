@@ -7,8 +7,9 @@ use crate::convert::convert_diagnostic;
 use napi::bindgen_prelude::Env;
 use napi_derive::napi;
 use pandacss_encoder::AtomValue;
-use pandacss_project::{
+use pandacss_transform::{
     HelperCxMode, TransformMode, TransformOptions, TransformTargets, transform_source,
+    transform_source_with,
 };
 
 #[napi(object)]
@@ -79,19 +80,19 @@ impl Compiler {
     }
 
     /// Shared transform path — wires the same pattern/source/utility callbacks as
-    /// `parse_inner`, then calls `Project::transform_source_with`.
+    /// `parse_inner`, then calls `pandacss_transform::transform_source_with`.
     fn transform_inner(
         &mut self,
         env: &Env,
         path: &str,
         source: &str,
         options: &TransformOptions,
-    ) -> pandacss_project::TransformOutput {
+    ) -> pandacss_transform::TransformOutput {
         let has_source_transforms = self.callbacks.has_source_transforms();
         let has_pattern_transforms = self.callbacks.has_pattern_transforms();
         let has_utility_transforms = self.callbacks.has_utility_transforms();
         if !has_source_transforms && !has_pattern_transforms && !has_utility_transforms {
-            return transform_source(&self.inner, path, source, options);
+            return transform_source(self.inner.config(), path, source, options);
         }
         let Compiler {
             inner, callbacks, ..
@@ -122,7 +123,8 @@ impl Compiler {
         let mut source_transform = |path: &str, source: &str| {
             apply_source_transforms(path, source, &callbacks.source_transforms, env)
         };
-        inner.transform_source_with(
+        transform_source_with(
+            inner.config(),
             path,
             source,
             options,
