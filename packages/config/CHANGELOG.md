@@ -1,5 +1,14 @@
 # @pandacss/config
 
+## 2.0.0-beta.19
+
+### Patch Changes
+
+- Updated dependencies [384cfff]
+- Updated dependencies [5078304]
+  - @pandacss/compiler-shared@2.0.0-beta.19
+  - @pandacss/types@2.0.0-beta.19
+
 ## 2.0.0-beta.18
 
 ### Minor Changes

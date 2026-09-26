@@ -1,5 +1,15 @@
 # @pandacss/compiler-shared
 
+## 2.0.0-beta.19
+
+### Patch Changes
+
+- 384cfff: Fix conditional tokens resolving to a raw token name or one condition's value. Token-backed utilities and
+  `token()` now use the token's CSS variable, including semantic tokens without `base`.
+- 5078304: `optimize.treeshakeDesignSystem` now keeps the parent styles a stacked design system uses, instead of
+  dropping them. Rebuild the middle design system with `panda lib` to pick this up.
+  - @pandacss/types@2.0.0-beta.19
+
 ## 2.0.0-beta.18
 
 ### Minor Changes

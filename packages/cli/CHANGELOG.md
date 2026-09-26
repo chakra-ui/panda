@@ -1,5 +1,24 @@
 # @pandacss/cli
 
+## 2.0.0-beta.19
+
+### Minor Changes
+
+- 35e2ffc: Add `panda debug --zip` to write the debug dump as a single `.zip` archive, so it's easier to attach to a bug
+  report.
+
+### Patch Changes
+
+- Updated dependencies [384cfff]
+- Updated dependencies [c7f0dae]
+- Updated dependencies [f256055]
+- Updated dependencies [1f702e2]
+- Updated dependencies [5078304]
+  - @pandacss/compiler@2.0.0-beta.19
+  - @pandacss/compiler-shared@2.0.0-beta.19
+  - @pandacss/config@2.0.0-beta.19
+  - @pandacss/types@2.0.0-beta.19
+
 ## 2.0.0-beta.18
 
 ### Minor Changes
