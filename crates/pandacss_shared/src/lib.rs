@@ -1,21 +1,34 @@
 //! Shared helpers for Panda Rust crates. Bottom of the dependency graph —
 //! no dependencies on other Panda crates.
 
+// === CSS Escaping & Factory ===
+
 pub mod css_escape;
 pub mod css_factory;
 pub mod css_properties;
+
+// === Diagnostics & Errors ===
+
 pub mod diagnostic;
+
+// === Value Parsing ===
+
 pub mod first_that_works;
 pub mod hash;
 pub mod important;
 pub mod keyframes;
 pub mod position_try;
-pub mod refcount;
 pub mod regex;
 pub mod stringify;
 pub mod strings;
 pub mod unit_conversion;
 pub mod view_transition;
+
+// === Utilities ===
+
+pub mod refcount;
+
+// === Re-exports ===
 
 pub use css_escape::css_escape;
 pub use css_factory::CssFactory;

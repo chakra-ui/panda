@@ -26,4 +26,5 @@ pub use crate::memory::MemoryFileSystem;
 #[cfg(feature = "os")]
 pub use crate::os::OsFileSystem;
 
+// External compatibility re-export for oxc integration
 pub use oxc_resolver::FileSystem as OxcResolverFileSystem;

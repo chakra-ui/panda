@@ -15,14 +15,20 @@ use tracing_subscriber::util::SubscriberInitExt;
 mod aggregator;
 pub use aggregator::{SlowestInstance, SpanStat, SpanTimings, SpanTimingsLayer};
 
+// === Configuration ===
+
 const DEFAULT_FILTER: &str = "info";
 const DEFAULT_TRACE_FILE: &str = ".panda/trace.json";
 const FMT_SUMMARY_LIMIT: usize = 20;
+
+// === Static Storage ===
 
 static CHROME_GUARD: OnceLock<Mutex<Option<FlushGuard>>> = OnceLock::new();
 static FMT_TIMINGS: OnceLock<Mutex<Option<Arc<SpanTimings>>>> = OnceLock::new();
 static ENV_CONFIG: OnceLock<Option<TraceConfig>> = OnceLock::new();
 static INIT_RESULT: OnceLock<bool> = OnceLock::new();
+
+// === Core Types ===
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TraceOutput {
@@ -41,6 +47,8 @@ pub struct TraceConfig {
     pub filter: String,
     pub output: TraceOutput,
 }
+
+// === Initialization ===
 
 impl TraceConfig {
     #[must_use]
@@ -177,6 +185,8 @@ fn store_fmt_timings(timings: Arc<SpanTimings>) {
     }
 }
 
+// === Lifecycle (Flush / Shutdown) ===
+
 pub fn flush() {
     let Some(guard_slot) = CHROME_GUARD.get() else {
         return;
@@ -231,6 +241,8 @@ fn shutdown_chrome_json() -> bool {
     };
     slot.take().is_some()
 }
+
+// === Rendering ===
 
 #[derive(Debug, serde::Serialize)]
 #[serde(rename_all = "camelCase")]

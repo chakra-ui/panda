@@ -1,5 +1,7 @@
 //! Serialized configuration types consumed by the Panda Rust runtime.
 
+// === Module Declarations ===
+
 mod ranges;
 mod theme;
 mod type_data;
@@ -9,6 +11,8 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value;
+
+// === Exported Types ===
 
 pub use theme::{
     Asset, AssetType, AssetValue, Border, BorderStyle, BorderValue, ColorPaletteOptions,
@@ -26,9 +30,13 @@ pub use type_data::{
 };
 pub use validate::{validate_config, validate_config_value, validation_mode_from_value};
 
+// === Type Aliases ===
+
 pub type Conditions = BTreeMap<String, ConditionQuery>;
 pub type PatternMap = BTreeMap<String, PatternConfig>;
 pub type UtilityMap = BTreeMap<String, UtilityConfig>;
+
+// === Default Constants ===
 
 pub const DEFAULT_OUTDIR: &str = "styled-system";
 pub const DEFAULT_JSX_FACTORY: &str = "styled";
@@ -36,6 +44,8 @@ pub const DEFAULT_SEPARATOR: &str = "_";
 pub const DEFAULT_CSS_VAR_ROOT: &str = ":where(:root, :host)";
 pub const DEFAULT_JSX_COMPONENT_NAMES: &[&str] = &["Box"];
 pub const DEFAULT_PATTERN_JSX_ELEMENT: &str = "div";
+
+// === Helper Default Functions ===
 
 fn default_outdir() -> String {
     DEFAULT_OUTDIR.to_owned()
@@ -52,6 +62,8 @@ fn default_separator() -> String {
 fn default_true() -> bool {
     true
 }
+
+// === Core Config Type ===
 
 /// JSON-safe resolved config snapshot from the JS side. JS still executes
 /// `panda.config.*`, resolves presets, and runs config-phase plugins; Rust
@@ -130,6 +142,8 @@ pub struct UserConfig {
     #[serde(flatten)]
     pub extra: serde_json::Map<String, Value>,
 }
+
+// === UserConfig Implementation ===
 
 impl Default for UserConfig {
     fn default() -> Self {

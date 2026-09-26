@@ -23,6 +23,8 @@ pub enum Literal {
     Conditional(Vec<Literal>),
 }
 
+// === Object Entry Operations ===
+
 impl Literal {
     // PERF(port): style objects stay below the point where a hash map wins.
     pub fn upsert_object_entry(entries: &mut Vec<(String, Self)>, key: String, value: Self) {
@@ -30,17 +32,6 @@ impl Literal {
             entry.1 = value;
         } else {
             entries.push((key, value));
-        }
-    }
-
-    /// True when any value in the tree is decided only at runtime.
-    #[must_use]
-    pub fn has_conditional(&self) -> bool {
-        match self {
-            Self::Conditional(_) => true,
-            Self::Object(entries) => entries.iter().any(|(_, value)| value.has_conditional()),
-            Self::Array(items) => items.iter().any(Self::has_conditional),
-            _ => false,
         }
     }
 
@@ -65,7 +56,26 @@ impl Literal {
         }
         Self::Conditional(branches)
     }
+}
 
+// === Structural Queries ===
+
+impl Literal {
+    /// True when any value in the tree is decided only at runtime.
+    #[must_use]
+    pub fn has_conditional(&self) -> bool {
+        match self {
+            Self::Conditional(_) => true,
+            Self::Object(entries) => entries.iter().any(|(_, value)| value.has_conditional()),
+            Self::Array(items) => items.iter().any(Self::has_conditional),
+            _ => false,
+        }
+    }
+}
+
+// === JSON Conversion ===
+
+impl Literal {
     /// Converts JSON while dropping nested children that cannot be represented.
     #[must_use]
     pub fn from_json(value: &serde_json::Value) -> Option<Self> {
@@ -106,7 +116,11 @@ impl Literal {
                 .map(Self::Object),
         }
     }
+}
 
+// === Format Conversion ===
+
+impl Literal {
     /// Returns the text contributed to one CSS declaration.
     #[must_use]
     pub fn to_css_value_text(&self) -> Option<String> {
@@ -147,6 +161,8 @@ impl Literal {
     }
 }
 
+// === Serialization ===
+
 impl Serialize for Literal {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match self {
@@ -177,6 +193,8 @@ impl Serialize for Literal {
         }
     }
 }
+
+// === Helper Functions ===
 
 #[allow(
     clippy::cast_possible_truncation,
