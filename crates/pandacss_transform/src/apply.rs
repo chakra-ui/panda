@@ -267,6 +267,7 @@ mod tests {
                 symbols_resolved: false,
             },
             bailed: false,
+            hashed_recipe: None,
         };
 
         let edits =
@@ -300,6 +301,7 @@ mod tests {
                 symbols_resolved: false,
             },
             bailed: false,
+            hashed_recipe: None,
         };
 
         let edits =
@@ -346,6 +348,7 @@ mod tests {
                 symbols_resolved: false,
             },
             bailed: false,
+            hashed_recipe: None,
         };
 
         let edits =

@@ -335,6 +335,10 @@ pub fn project_with_jsx() -> Project {
     jsx_project(json!({}))
 }
 
+pub fn project_with_jsx_and(overrides: Value) -> Project {
+    jsx_project(overrides)
+}
+
 pub fn project_with_jsx_recipes() -> Project {
     Project::new(
         System::new(create_config(json!({

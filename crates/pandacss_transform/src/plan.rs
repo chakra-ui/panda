@@ -156,9 +156,15 @@ pub(crate) struct TransformPlan {
     pub helper: TransformHelperFacts,
     pub module: pandacss_extractor::ModuleFacts,
     pub bailed: bool,
+    /// First `cva` / `sva` / `styled` config left on the runtime because class names are hashed.
+    pub hashed_recipe: Option<pandacss_shared::Span>,
 }
 
 impl TransformPlan {
+    fn skip_hashed_recipe(&mut self, span: pandacss_shared::Span) {
+        self.hashed_recipe.get_or_insert(span);
+    }
+
     fn push(&mut self, rewrite: Rewrite) {
         self.rewrites.push(rewrite);
     }
@@ -241,6 +247,7 @@ pub(crate) fn build_plan(
         helper: TransformHelperFacts::default(),
         module: extracted.module.clone(),
         bailed: false,
+        hashed_recipe: None,
     };
 
     let targets = &options.targets;
@@ -317,11 +324,7 @@ pub(crate) fn build_plan(
                 }
             }
             MatchCategory::Jsx if targets.jsx_enabled() => {
-                if let Some(rewrites) =
-                    super::recipe_inline::rewrites_for_styled_call(system, source, call)
-                {
-                    plan.extend(rewrites);
-                }
+                push_styled_call_rewrites(&mut plan, system, source, call);
             }
             _ => {}
         }
@@ -348,6 +351,24 @@ pub(crate) fn build_plan(
     plan
 }
 
+/// `styled(tag, config)` factory calls; hashed class names keep the config on the runtime.
+fn push_styled_call_rewrites(
+    plan: &mut TransformPlan,
+    system: &System,
+    source: &str,
+    call: &ExtractedCall,
+) {
+    let Some(rewrites) = super::recipe_inline::rewrites_for_styled_call(system, source, call)
+    else {
+        return;
+    };
+    if system.hashes_class_names() {
+        plan.skip_hashed_recipe(call.span);
+    } else {
+        plan.extend(rewrites);
+    }
+}
+
 /// Dispatch one `css`-entrypoint call: the inline recipe factories, the
 /// `viewTransition` helper, or a plain `css()`.
 fn push_css_call_rewrites(
@@ -360,6 +381,8 @@ fn push_css_call_rewrites(
 ) {
     let attach_surface = recipe_needs_observable_surface(extracted, call);
     match call.name.as_str() {
+        // Specialized recipes rely on `cx` resolving conflicts, which hashed class names defeat.
+        "cva" | "sva" if system.hashes_class_names() => plan.skip_hashed_recipe(call.span),
         "cva" | "sva" if !push_inline_recipe_raw_rewrites(plan, system, extracted, call) => {}
         "cva" => {
             if let Some(rewrite) = super::recipe_inline::rewrite_for_specialized_cva_call(

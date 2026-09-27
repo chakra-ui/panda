@@ -52,6 +52,7 @@ pub mod codes {
     pub const IMPORTED_RECIPE_RAW_DYNAMIC: &str = "imported_recipe_raw_dynamic";
     pub const TOKEN_DICTIONARY_BUILD_FAILED: &str = "token_dictionary_build_failed";
     pub const TRANSFORM_CALLBACK_FAILED: &str = "transform_callback_failed";
+    pub const TRANSFORM_HASHED_RECIPE_SKIPPED: &str = "transform_hashed_recipe_skipped";
     pub const UNKNOWN_CONDITION: &str = "unknown_condition";
 }
 

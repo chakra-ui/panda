@@ -109,7 +109,11 @@ pub fn transform_source_with(
         let _span = tracing::trace_span!(target: "transform", "transform_plan").entered();
         plan::build_plan(system, source, &extracted, options, transforms.pattern)
     };
-    let diagnostics = extracted.diagnostics;
+    let mut diagnostics = extracted.diagnostics;
+    diagnostics.extend(
+        plan.hashed_recipe
+            .map(|span| hashed_recipe_warning(path, span)),
+    );
 
     let (code, map) = {
         let _span = tracing::trace_span!(target: "transform", "transform_print").entered();
@@ -133,4 +137,13 @@ pub fn transform_source_with(
         dependencies: plan.dependencies,
         helper: plan.helper,
     }
+}
+
+fn hashed_recipe_warning(path: &str, span: pandacss_shared::Span) -> pandacss_shared::Diagnostic {
+    pandacss_shared::Diagnostic::warning(
+        pandacss_shared::diagnostic_codes::TRANSFORM_HASHED_RECIPE_SKIPPED,
+        "Class names are hashed, so `cva`, `sva`, and `styled` configs in this file weren't transformed and run at runtime instead. Other styles may not transform as expected either.",
+    )
+    .with_file(path)
+    .with_span(span)
 }

@@ -109,7 +109,7 @@ describe('transformed recipes inside the styled-system runtime', () => {
     `)
   })
 
-  it('lets the child base win over a parent variant when extending with styled()', async () => {
+  it('keeps styled-system precedence when a child base overlaps a parent variant', async () => {
     const { original, transformed } = await load(
       [
         "import { createElement } from 'react'",
@@ -121,21 +121,17 @@ describe('transformed recipes inside the styled-system runtime', () => {
         '})',
         "const Card = styled(Base, { base: { fontSize: '14px' } })",
         'export const card = createElement(Card, {})',
+        "export const styled14 = createElement(Card, { bg: 'red' })",
       ].join('\n'),
     )
 
-    expect({ original: render(original, 'card'), transformed: render(transformed, 'card') }).toMatchInlineSnapshot(`
+    expect(render(transformed, 'card')).toEqual(render(original, 'card'))
+    expect(render(transformed, 'styled14')).toEqual(render(original, 'styled14'))
+    expect(render(transformed, 'card')).toMatchInlineSnapshot(`
       {
-        "original": {
-          "children": undefined,
-          "className": "fs_12px",
-          "type": "div",
-        },
-        "transformed": {
-          "children": undefined,
-          "className": "fs_14px",
-          "type": "div",
-        },
+        "children": undefined,
+        "className": "fs_12px",
+        "type": "div",
       }
     `)
   })

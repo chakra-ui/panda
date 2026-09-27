@@ -111,20 +111,19 @@ at runtime rather than emitted per recipe:
 - `raw(props)` deep-merges `base`, the selected variant options, and matching compound `css`, in the generated
   runtime's order. SVA resolves each slot the same way. Shorthands stay as written (`{ bg: 'red' }`), where the
   styled-system `raw` normalizes them (`{ backgroundColor: 'red' }`); `css()` produces the same classes from either.
-- `merge(other)` composes classes, `cx(parent(props), child(props))`, with both sets of defaults applied first. The
-  conflict-aware internal `cx` lets the child win. `raw` composes the same way so the style-prop path agrees with the
-  class path.
-- A merged recipe is only ever a chain parent, so it keeps `defaultVariants` and no merged `config`. Its `variantMap`
-  is a shallow union.
+- `merge(other, cva)` rebuilds the recipe with the styled-system `cva` that the generated `composeCvaFn` passes in,
+  then defers to styled-system's own `merge`. `styled(Base, …)` chains therefore resolve exactly like untransformed
+  code, including a parent variant overriding the child's `base`.
+- A manual `.merge()` call gets no `cva`, so it falls back to class composition: `cx(parent(props), child(props))` with
+  both sets of defaults applied. There the child wins conflicts wholesale, unlike styled-system's config merge.
 
-Class composition changes one precedence rule. Styled-system merges configs, so a parent variant still overrides the
-child's `base`. Composition applies the child last, so the child's `base` wins:
+### Hashed class names
 
-```js
-const Base = styled('div', { variants: { size: { sm: { fontSize: '12px' } } }, defaultVariants: { size: 'sm' } })
-const Card = styled(Base, { base: { fontSize: '14px' } })
-// styled-system: fs_12px   transformed: fs_14px
-```
+With `hash: true` or `hash.className`, class names carry no property key, so `cx` can't tell which class a variant
+should override. The transform leaves `cva`, `sva`, and `styled` configs untouched in that mode and styled-system handles
+them at runtime. Everything else — `css()`, config recipes, `token()` — keeps transforming, since it only inlines class
+strings. Each file with a skipped config gets one `transform_hashed_recipe_skipped` warning pointing at the first one.
+Hashing only CSS variables (`hash: { cssVar: true, className: false }`) specializes as usual.
 
 The interop tests in `packages/transformer/__tests__/styled-system-interop.test.ts` run each case untransformed and
 transformed through the real generated runtime and compare the rendered classes.

@@ -109,6 +109,7 @@ pub(crate) fn compile_system(
         view_transitions: theme_view_transitions(config),
         position_try: theme_position_try(config),
         optimize: config.optimize,
+        hash_class_names: config.hash.class_name(),
         config_fingerprint,
         diagnostics,
     })

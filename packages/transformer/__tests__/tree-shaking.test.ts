@@ -70,14 +70,14 @@ describe('transformed source tree shaking', () => {
       	let t = n.length;
       	if (t > 0 && n.charCodeAt(t - 1) === 33 && (t -= 1), t === 0) return null;
       	let e = 0, s = -1;
-      	for (let c = 0; c < t; c++) {
-      		let d = n.charCodeAt(c);
-      		d === 91 ? e++ : d === 93 ? e-- : d === 58 && e === 0 && (s = c);
+      	for (let a = 0; a < t; a++) {
+      		let d = n.charCodeAt(a);
+      		d === 91 ? e++ : d === 93 ? e-- : d === 58 && e === 0 && (s = a);
       	}
       	let o = s + 1, i = n.indexOf(r, o);
       	if (i < o + 1 || i >= t) return null;
-      	let a = n.slice(o, i);
-      	return s === -1 ? a : \`\${n.slice(0, s)}:\${a}\`;
+      	let c = n.slice(o, i);
+      	return s === -1 ? c : \`\${n.slice(0, s)}:\${c}\`;
       }
       function O(n, r) {
       	for (let t of n) if (t) {
@@ -91,15 +91,15 @@ describe('transformed source tree shaking', () => {
       function X(n, r) {
       	let t = /* @__PURE__ */ new Map(), e = [], s = 0;
       	for (let i of r) {
-      		let a = 0;
-      		for (let c = 0; c <= i.length; c++) {
-      			if (c !== i.length && i.charCodeAt(c) !== 32) continue;
-      			if (c === a) {
-      				a = c + 1;
+      		let c = 0;
+      		for (let a = 0; a <= i.length; a++) {
+      			if (a !== i.length && i.charCodeAt(a) !== 32) continue;
+      			if (a === c) {
+      				c = a + 1;
       				continue;
       			}
-      			let d = i.slice(a, c);
-      			a = c + 1;
+      			let d = i.slice(c, a);
+      			c = a + 1;
       			let u = M(d, n);
       			if (u !== null) t.has(u) || e.push(u), t.set(u, d);
       			else {
@@ -167,15 +167,15 @@ describe('transformed source tree shaking', () => {
       		...n.config?.defaultVariants,
       		...r.config?.defaultVariants
       	}, e = [.../* @__PURE__ */ new Set([...n.variantKeys ?? [], ...r.variantKeys ?? []])], s = (i = {}) => V(t, i), o = P((i) => {
-      		let a = s(i);
-      		return g(n(a), r(a));
+      		let c = s(i);
+      		return g(n(c), r(c));
       	}, { defaultVariants: t }, e, {
       		...n.variantMap,
       		...r.variantMap
       	});
       	return o.raw = (i) => {
-      		let a = s(i);
-      		return S(n.raw(a), r.raw(a));
+      		let c = s(i);
+      		return S(n.raw(c), r.raw(c));
       	}, o;
       }
       function P(n, r, t, e, s) {
@@ -186,13 +186,13 @@ describe('transformed source tree shaking', () => {
       		variantMap: e,
       		...s && { classNameMap: s },
       		config: r,
-      		raw: (a = {}) => s ? W(o, a) : F(o, a),
-      		merge: (a) => Y(n, a),
-      		getVariantProps: (a = {}) => V(i, a),
-      		splitVariantProps: (a) => {
-      			let c = {}, d = {};
-      			for (let u in a) (t.includes(u) ? c : d)[u] = a[u];
-      			return [c, d];
+      		raw: (c = {}) => s ? W(o, c) : F(o, c),
+      		merge: (c, a) => a ? a(r).merge(c) : Y(n, c),
+      		getVariantProps: (c = {}) => V(i, c),
+      		splitVariantProps: (c) => {
+      			let a = {}, d = {};
+      			for (let u in c) (t.includes(u) ? a : d)[u] = c[u];
+      			return [a, d];
       		}
       	});
       }

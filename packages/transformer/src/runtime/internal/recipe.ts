@@ -58,9 +58,8 @@ function resolveSlotRaw(config: RecipeConfig, props: Props): Record<string, Styl
 }
 
 /**
- * Compose two recipes at the class level. The child's classes come last, so it wins any conflict
- * through the conflict-aware `cx`. `raw` composes the same way to keep both paths consistent.
- * A merged recipe is only ever a chain parent, so it carries `defaultVariants` and no merged config.
+ * Fallback for a manual `.merge()` call, which has no styled-system `cva` to rebuild from. Composes classes,
+ * so the child wins any conflict through the conflict-aware `cx`; `raw` composes the same way.
  */
 function mergeRecipes(parent: RecipeLike, child: RecipeLike) {
   const defaultVariants = { ...parent.config?.defaultVariants, ...child.config?.defaultVariants }
@@ -103,7 +102,9 @@ export function attachRecipe<F extends (props?: Props) => any, C extends object>
     config,
     raw: (props: Props = {}): any =>
       classNameMap ? resolveSlotRaw(recipeConfig, props) : resolveRaw(recipeConfig, props),
-    merge: (other: RecipeLike) => mergeRecipes(fn as unknown as RecipeLike, other),
+    // The styled factory passes its own `cva`, so chains merge exactly like styled-system.
+    merge: (other: RecipeLike, cva?: (config: C) => { merge(other: RecipeLike): unknown }) =>
+      cva ? cva(config).merge(other) : mergeRecipes(fn as unknown as RecipeLike, other),
     getVariantProps: (props: Props = {}) => withDefaults(defaults, props),
     splitVariantProps: (props: Props) => {
       const variantProps: Props = {}

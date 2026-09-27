@@ -1,9 +1,10 @@
 //! Inline `cva()` / `sva()` call transforms.
 
-use super::common::{project_with_jsx, transform, transform_with_project};
+use super::common::{project_with_jsx, project_with_jsx_and, transform, transform_with_project};
 use indoc::indoc;
-use insta::assert_snapshot;
+use insta::{assert_snapshot, assert_yaml_snapshot};
 use pandacss_transform::TransformOutput;
+use serde_json::json;
 
 #[test]
 fn rewrites_inline_cva_to_a_specialized_function() {
@@ -1541,4 +1542,81 @@ fn parenthesizes_an_imported_raw_result_after_an_arrow_body_comment() {
     import { button } from './button';
     export const styles = () => /* object */ ({"color":"red"});
     "#);
+}
+
+#[test]
+fn leaves_cva_sva_and_styled_on_the_runtime_with_hashed_class_names() {
+    let source = indoc! {r#"
+        import { cva, sva } from '@panda/css';
+        import { styled } from '@panda/jsx';
+        export const button = cva({
+          base: { color: 'red' },
+          variants: { size: { sm: { fontSize: '12px' } } },
+        });
+        export const tabs = sva({ slots: ['root'], base: { root: { display: 'flex' } } });
+        export const Card = styled('div', { base: { color: 'blue' } });
+        export const styles = button.raw({ size: 'sm' });
+    "#};
+
+    let output = transform_with_project(
+        &project_with_jsx_and(json!({ "hash": true })),
+        "src/recipes.tsx",
+        source,
+    );
+
+    assert!(!output.changed);
+    assert!(!output.helper.needs_attach_recipe);
+    assert_eq!(output.code, source);
+    assert_yaml_snapshot!(output.diagnostics, @r#"
+    - code: transform_hashed_recipe_skipped
+      message: "Class names are hashed, so `cva`, `sva`, and `styled` configs in this file weren't transformed and run at runtime instead. Other styles may not transform as expected either."
+      severity: warning
+      file: src/recipes.tsx
+      span:
+        start: 98
+        end: 184
+    "#);
+}
+
+#[test]
+fn still_transforms_plain_css_with_hashed_class_names() {
+    let source = indoc! {r#"
+        import { css, cva } from '@panda/css';
+        export const cls = css({ color: 'red' });
+        export const button = cva({ base: { color: 'red' } });
+    "#};
+
+    let output = transform_with_project(
+        &project_with_jsx_and(json!({ "hash": { "className": true, "cssVar": false } })),
+        "src/recipes.ts",
+        source,
+    );
+
+    assert_eq!(output.diagnostics.len(), 1);
+    assert_snapshot!(output.code, @r#"
+    import { cva } from '@panda/css';
+    export const cls = "hihALq";
+    export const button = cva({ base: { color: 'red' } });
+    "#);
+}
+
+#[test]
+fn specializes_cva_when_only_css_variables_are_hashed() {
+    let source = indoc! {r#"
+        import { cva } from '@panda/css';
+        export const button = cva({ base: { color: 'red' } });
+    "#};
+
+    let output = transform_with_project(
+        &project_with_jsx_and(json!({ "hash": { "className": false, "cssVar": true } })),
+        "src/recipes.ts",
+        source,
+    );
+
+    assert!(output.helper.needs_attach_recipe);
+    assert!(output.diagnostics.is_empty());
+    assert_snapshot!(output.code, @"
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
+    export const button = /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {});
+    ");
 }
