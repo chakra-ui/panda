@@ -146,4 +146,4 @@ export function createCx(options: CxOptions = {}) {
 }
 
 /** Default transform-time `cx` — mirrors styled-system naming with Panda merge semantics. */
-export const cx = createCx()
+export const cx = /* @__PURE__ */ createCx()

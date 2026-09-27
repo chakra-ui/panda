@@ -1,79 +1,6 @@
-import { posix } from 'node:path'
-import { createCompiler } from '@pandacss/compiler'
-import { rolldown } from 'rolldown'
 import { describe, expect, it } from 'vitest'
-import {
-  createSourceTransformer,
-  getInternalCssRuntimeSource,
-  INTERNAL_CSS_IMPORT,
-  INTERNAL_CSS_RESOLVED_ID,
-} from '../src'
-
-function createFixtureCompiler() {
-  return createCompiler({
-    cwd: '/virtual',
-    outdir: 'styled-system',
-    outExtension: 'mjs',
-    jsxFramework: 'react',
-    jsxFactory: 'styled',
-    importMap: {
-      css: ['@panda/css'],
-      recipe: ['@panda/recipes'],
-      pattern: ['@panda/patterns'],
-      jsx: ['@panda/jsx'],
-      tokens: ['@panda/tokens'],
-    },
-    utilities: {
-      backgroundColor: { className: 'bg', shorthand: 'bg' },
-      borderRadius: { className: 'bdr' },
-    },
-  })
-}
-
-async function bundle(compiler: ReturnType<typeof createCompiler>, code: string) {
-  const modules = new Map<string, string>([['/entry.tsx', code]])
-  for (const artifact of compiler.generateArtifacts()) {
-    for (const file of artifact.files) {
-      if (file.path.endsWith('.mjs')) modules.set(posix.join('/styled-system', file.path), file.code)
-    }
-  }
-  modules.set(INTERNAL_CSS_RESOLVED_ID, getInternalCssRuntimeSource())
-
-  const build = await rolldown({
-    cwd: '/',
-    input: '/entry.tsx',
-    external: ['react', 'react/jsx-runtime'],
-    plugins: [
-      {
-        name: 'panda-tree-shaking-fixture',
-        resolveId(source, importer) {
-          if (modules.has(source)) return source
-          if (source === '@panda/jsx') return '/styled-system/jsx/index.mjs'
-          if (source === INTERNAL_CSS_IMPORT) return INTERNAL_CSS_RESOLVED_ID
-          if (!importer || !source.startsWith('.')) return null
-
-          const resolved = posix.normalize(posix.join(posix.dirname(importer), source))
-          for (const candidate of [resolved, `${resolved}.mjs`]) {
-            if (modules.has(candidate)) return candidate
-          }
-          return null
-        },
-        load(id) {
-          return modules.get(id) ?? null
-        },
-      },
-    ],
-  })
-
-  try {
-    const { output } = await build.generate({ format: 'esm', codeSplitting: false })
-    const chunk = output.find((item) => item.type === 'chunk')
-    if (!chunk || chunk.type !== 'chunk') throw new Error('expected an output chunk')
-    return chunk.code
-  } finally {
-    await build.close()
-  }
-}
+import { createSourceTransformer } from '../src'
+import { bundle, createFixtureCompiler } from './fixtures/styled-system'
 
 describe('transformed source tree shaking', () => {
   it('drops unused transformed recipe factories and their runtime', async () => {
@@ -95,70 +22,6 @@ describe('transformed source tree shaking', () => {
     expect(code).toMatchInlineSnapshot(`
       "import "react";
       import { jsx } from "react/jsx-runtime";
-      //#region \\0pandacss:internal:css
-      var H = "_";
-      function A(n, r) {
-      	let t = n.length;
-      	if (t > 0 && n.charCodeAt(t - 1) === 33 && (t -= 1), t === 0) return null;
-      	let e = 0, s = -1;
-      	for (let i = 0; i < t; i++) {
-      		let l = n.charCodeAt(i);
-      		l === 91 ? e++ : l === 93 ? e-- : l === 58 && e === 0 && (s = i);
-      	}
-      	let o = s + 1, a = n.indexOf(r, o);
-      	if (a < o + 1 || a >= t) return null;
-      	let u = n.slice(o, a);
-      	return s === -1 ? u : \`\${n.slice(0, s)}:\${u}\`;
-      }
-      function S(n, r) {
-      	for (let t of n) if (t) {
-      		if (Array.isArray(t)) {
-      			S(t, r);
-      			continue;
-      		}
-      		t !== "" && r.push(t);
-      	}
-      }
-      function L(n, r) {
-      	let t = /* @__PURE__ */ new Map(), e = [], s = 0;
-      	for (let a of r) {
-      		let u = 0;
-      		for (let i = 0; i <= a.length; i++) {
-      			if (i !== a.length && a.charCodeAt(i) !== 32) continue;
-      			if (i === u) {
-      				u = i + 1;
-      				continue;
-      			}
-      			let l = a.slice(u, i);
-      			u = i + 1;
-      			let f = A(l, n);
-      			if (f !== null) t.has(f) || e.push(f), t.set(f, l);
-      			else {
-      				let c = \`__\${s++}\`;
-      				e.push(c), t.set(c, l);
-      			}
-      		}
-      	}
-      	if (e.length === 0) return "";
-      	if (e.length === 1) return t.get(e[0]);
-      	let o = t.get(e[0]);
-      	for (let a = 1; a < e.length; a++) o += \` \${t.get(e[a])}\`;
-      	return o;
-      }
-      function P(n = {}) {
-      	let r = n.separator ?? H;
-      	return function(...e) {
-      		if (e.length === 1) {
-      			let o = e[0];
-      			if (typeof o == "string") return o;
-      			if (!o) return "";
-      		}
-      		let s = [];
-      		return S(e, s), s.length === 0 ? "" : s.length === 1 ? s[0] : L(r, s);
-      	};
-      }
-      P();
-      //#endregion
       //#region styled-system/helpers.mjs
       const htmlProps = [
       	"htmlSize",
@@ -202,57 +65,57 @@ describe('transformed source tree shaking', () => {
 
     expect(code).toMatchInlineSnapshot(`
       "//#region \\0pandacss:internal:css
-      var H = "_";
-      function A(n, r) {
+      var $ = "_";
+      function M(n, r) {
       	let t = n.length;
       	if (t > 0 && n.charCodeAt(t - 1) === 33 && (t -= 1), t === 0) return null;
       	let e = 0, s = -1;
-      	for (let i = 0; i < t; i++) {
-      		let l = n.charCodeAt(i);
-      		l === 91 ? e++ : l === 93 ? e-- : l === 58 && e === 0 && (s = i);
+      	for (let c = 0; c < t; c++) {
+      		let d = n.charCodeAt(c);
+      		d === 91 ? e++ : d === 93 ? e-- : d === 58 && e === 0 && (s = c);
       	}
-      	let o = s + 1, a = n.indexOf(r, o);
-      	if (a < o + 1 || a >= t) return null;
-      	let u = n.slice(o, a);
-      	return s === -1 ? u : \`\${n.slice(0, s)}:\${u}\`;
+      	let o = s + 1, i = n.indexOf(r, o);
+      	if (i < o + 1 || i >= t) return null;
+      	let a = n.slice(o, i);
+      	return s === -1 ? a : \`\${n.slice(0, s)}:\${a}\`;
       }
-      function S(n, r) {
+      function O(n, r) {
       	for (let t of n) if (t) {
       		if (Array.isArray(t)) {
-      			S(t, r);
+      			O(t, r);
       			continue;
       		}
       		t !== "" && r.push(t);
       	}
       }
-      function L(n, r) {
+      function X(n, r) {
       	let t = /* @__PURE__ */ new Map(), e = [], s = 0;
-      	for (let a of r) {
-      		let u = 0;
-      		for (let i = 0; i <= a.length; i++) {
-      			if (i !== a.length && a.charCodeAt(i) !== 32) continue;
-      			if (i === u) {
-      				u = i + 1;
+      	for (let i of r) {
+      		let a = 0;
+      		for (let c = 0; c <= i.length; c++) {
+      			if (c !== i.length && i.charCodeAt(c) !== 32) continue;
+      			if (c === a) {
+      				a = c + 1;
       				continue;
       			}
-      			let l = a.slice(u, i);
-      			u = i + 1;
-      			let f = A(l, n);
-      			if (f !== null) t.has(f) || e.push(f), t.set(f, l);
+      			let d = i.slice(a, c);
+      			a = c + 1;
+      			let u = M(d, n);
+      			if (u !== null) t.has(u) || e.push(u), t.set(u, d);
       			else {
-      				let c = \`__\${s++}\`;
-      				e.push(c), t.set(c, l);
+      				let f = \`__\${s++}\`;
+      				e.push(f), t.set(f, d);
       			}
       		}
       	}
       	if (e.length === 0) return "";
       	if (e.length === 1) return t.get(e[0]);
       	let o = t.get(e[0]);
-      	for (let a = 1; a < e.length; a++) o += \` \${t.get(e[a])}\`;
+      	for (let i = 1; i < e.length; i++) o += \` \${t.get(e[i])}\`;
       	return o;
       }
-      function P(n = {}) {
-      	let r = n.separator ?? H;
+      function N(n = {}) {
+      	let r = n.separator ?? $;
       	return function(...e) {
       		if (e.length === 1) {
       			let o = e[0];
@@ -260,37 +123,85 @@ describe('transformed source tree shaking', () => {
       			if (!o) return "";
       		}
       		let s = [];
-      		return S(e, s), s.length === 0 ? "" : s.length === 1 ? s[0] : L(r, s);
+      		return O(e, s), s.length === 0 ? "" : s.length === 1 ? s[0] : X(r, s);
       	};
       }
-      var V = P();
-      function C(n, r) {
+      var g = /* @__PURE__ */ N();
+      function V(n, r) {
       	let t = { ...n };
       	for (let e in r) r[e] !== void 0 && (t[e] = r[e]);
       	return t;
       }
-      function B(n, r, t, e, s) {
-      	let o = r.defaultVariants ?? {};
+      function x(n, r) {
+      	for (let t in n) {
+      		if (t === "css" || t === "className" || t === "classNames") continue;
+      		let e = n[t], s = r[t];
+      		if (Array.isArray(e)) {
+      			if (!e.includes(s)) return !1;
+      		} else if (s !== e) return !1;
+      	}
+      	return !0;
+      }
+      var H = (n) => n != null && typeof n == "object" && !Array.isArray(n);
+      function S(...n) {
+      	let r = {};
+      	for (let t of n) if (H(t)) for (let e in t) {
+      		let s = t[e];
+      		r[e] = H(s) ? S(r[e], s) : s;
+      	}
+      	return r;
+      }
+      function F(n, r, t = (e) => e) {
+      	let e = V(n.defaultVariants ?? {}, r), s = n.variants ?? {}, o = [t(n.base)];
+      	for (let i in e) o.push(t(s[i]?.[e[i]]));
+      	for (let i of n.compoundVariants ?? []) x(i, e) && o.push(t(i.css));
+      	return S(...o);
+      }
+      function W(n, r) {
+      	let t = {};
+      	for (let e of n.slots ?? Object.keys(n.base ?? {})) t[e] = F(n, r, (s) => s?.[e]);
+      	return t;
+      }
+      function Y(n, r) {
+      	let t = {
+      		...n.config?.defaultVariants,
+      		...r.config?.defaultVariants
+      	}, e = [.../* @__PURE__ */ new Set([...n.variantKeys ?? [], ...r.variantKeys ?? []])], s = (i = {}) => V(t, i), o = P((i) => {
+      		let a = s(i);
+      		return g(n(a), r(a));
+      	}, { defaultVariants: t }, e, {
+      		...n.variantMap,
+      		...r.variantMap
+      	});
+      	return o.raw = (i) => {
+      		let a = s(i);
+      		return S(n.raw(a), r.raw(a));
+      	}, o;
+      }
+      function P(n, r, t, e, s) {
+      	let o = r, i = o.defaultVariants ?? {};
       	return Object.assign(n, {
       		__cva__: !s,
       		variantKeys: t,
       		variantMap: e,
       		...s && { classNameMap: s },
       		config: r,
-      		getVariantProps: (a = {}) => C(o, a),
+      		raw: (a = {}) => s ? W(o, a) : F(o, a),
+      		merge: (a) => Y(n, a),
+      		getVariantProps: (a = {}) => V(i, a),
       		splitVariantProps: (a) => {
-      			let u = {}, i = {};
-      			for (let l in a) (t.includes(l) ? u : i)[l] = a[l];
-      			return [u, i];
+      			let c = {}, d = {};
+      			for (let u in a) (t.includes(u) ? c : d)[u] = a[u];
+      			return [c, d];
       		}
       	});
       }
       //#endregion
       //#region entry.tsx
-      const button = /* @__PURE__ */ B((p = {}) => {
+      const button = /* @__PURE__ */ P((p = {}) => {
       	p ??= {};
       	const _p0 = p["rounded"];
-      	return V("bg_red", { true: "bdr_xl" }[_p0 === void 0 ? void 0 : _p0]);
+      	return g("bg_red", { true: "bdr_xl" }[_p0 === void 0 ? void 0 : _p0]);
       }, {
       	base: { bg: "red" },
       	variants: { rounded: { true: { borderRadius: "xl" } } }

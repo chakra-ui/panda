@@ -31,10 +31,12 @@ What ships on the v2 branch today:
 | `@pandacss/vite` / `webpack` / `rollup` | CSS-root, codegen, and HMR by default; source rewrite via `transform: true`          |
 | Internal runtime module                 | `@pandacss-internal/css` → `\0pandacss:internal:css`; symbols injected on demand     |
 
-Runtime symbols today: `cx as __pcx`, `cva as __pcva`, `sva as __psva`. An inline `sva()` variant option encodes
-to one string when it styles every slot alike, otherwise to a per-slot map the runtime projects onto each slot.
+Runtime symbols today: `cx as __pcx` and `attachRecipe as __pr`. Static `cva()` / `sva()` / styled configs compile to
+recipe-specific functions; see [recipe specialization](./recipe-specialization.mdx). `cva as __pcva` and `sva as __psva`
+stay exported by the runtime but are no longer emitted.
 
-Options and bindings use `helper.cx` and `needsCx` / `needsCva` / `needsSva` for internal runtime demand.
+Options and bindings use `helper.cx` and `needsCx` / `needsAttachRecipe` (plus the legacy `needsCva` / `needsSva`) for
+internal runtime demand.
 
 ## Canonical scope
 
@@ -400,13 +402,15 @@ loader ordering.
 
 The class-merge helper is `cx`. Transformed source aliases it to `__pcx` so user `cx` bindings do not collide.
 
-Recipe inlines use `cva as __pcva` and `sva as __psva` from the same internal module when those rewrites run.
+Static recipes compile to recipe-specific functions. A recipe that escapes its module (exported, passed as a value,
+or read through a property) is wrapped in `attachRecipe as __pr`, which attaches the styled-system recipe surface
+(`raw`, `merge`, `config`, `variantKeys`, …) so the recipe keeps working inside the generated `styled` factory and
+`createSlotRecipeContext`. Call-only local recipes stay plain functions with no import. `local_call_bindings` decides
+which is which and backs the `.raw()` interlock.
 
-Boolean-only inline `cva` (`variants: { x: { true: … } }`, no compounds, ≤12 keys) dispatches through the internal
-`booleanBitset`; anything else compound-free goes through the mixed-radix `variantTable`. Lowering call sites to
-`__pcx(cond && class)` instead was measured and rejected — a reused prop tuple resolves faster through the memoized
-table than through an uncached `cx` (css-in-js-bench `btn-variant`). `local_call_bindings` remains, because the
-`.raw()` interlock needs it.
+The earlier `__pcva` runtime dispatched through a memoized `booleanBitset` / `variantTable`, which beat uncached
+`__pcx(cond && class)` lowering on a reused prop tuple (css-in-js-bench `btn-variant`). Specialized functions do not
+memoize yet; that needs a benchmark before it lands.
 
 Import shape in transformed code:
 
@@ -417,8 +421,11 @@ import { cx as __pcx } from '@pandacss-internal/css'
 Hosts resolve that specifier to an internal module ID and return bundled runtime source from `@pandacss/transformer`
 (today: `\0pandacss:internal:css`).
 
-Only symbols the file uses are injected. A file with only `__pcva` gets `cva as __pcva`; a file with only static classes
-gets no import.
+Only symbols the file uses are injected. A file whose only escaping recipe needs no class merge gets
+`attachRecipe as __pr`; a file with only static classes gets no import.
+
+The runtime is prebuilt with syntax and identifier minification but not whitespace minification: esbuild drops
+`/* @__PURE__ */` when it strips whitespace, and the app bundler needs that annotation to tree-shake an unused `cx`.
 
 ### Why `@pandacss-internal/css`
 
@@ -849,8 +856,8 @@ an element's own `css` prop replaces the default wholesale rather than merging p
 `BaseComponent.__base__`, so `Base`'s own `forwardRef` — and its defaults — never run at runtime;
 inheriting only `base` matches that.
 
-The `styled()` definition itself still desugars to `__pcva(…)` as before. The transform marks both
-the outer `styled()` call and the nested `__pcva()` call as pure. This lets bundlers drop the entire
+The `styled()` definition itself compiles its config to a specialized `__pr(…)` recipe. The transform marks both
+the outer `styled()` call and the nested `__pr()` call as pure. This lets bundlers drop the entire
 definition after the fold, including evaluation of the now-unused recipe config. Transformed
 standalone `cva()` and `sva()` factories carry the same annotation.
 

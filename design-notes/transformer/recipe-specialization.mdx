@@ -72,17 +72,18 @@ Callable specialization is implemented in the Rust transformer:
 - [x] Base-only recipes avoid `__pcx`; slot variant lookups that can never contribute a class are omitted.
 - [x] The original `cva` / `sva` import is removed when every transformed use in the module is consumed.
 - [x] No successfully specialized definition imports or calls `__pcva` or `__psva`.
-- [x] Exported or otherwise escaping recipes attach `__cva__`, `variantKeys`, `variantMap`, `config`,
+- [x] Exported or otherwise escaping recipes attach `__cva__`, `variantKeys`, `variantMap`, `config`, `raw`, `merge`,
   `getVariantProps`, `splitVariantProps`, and SVA's `classNameMap` through one shared `attachRecipe` helper.
+- [x] Escaping recipes work inside the generated styled-system runtime: `styled` with style props, `styled(Base, …)`
+  chains in both directions, and `createSlotRecipeContext`.
 - [x] An unresolved dynamic or opaque `.raw()` use prevents specialization and preserves the author's original
   `cva`/`sva` call instead of substituting a semantically incorrect string runtime.
-- [ ] `.merge`, dynamic `.raw()` sidecars, memoization, static call-site collapse, and byte-cost candidate selection
-  remain later phases below.
+- [ ] Memoization, static call-site collapse, build-time chain merge, and byte-cost candidate selection remain later
+  phases below.
 
 The current output deliberately specializes the callable contract. `.raw()` calls that can be resolved statically are
 folded before the definition is lowered; unresolved raw access keeps the original factory call. The metadata surface is
-attached only when the recipe escapes, so call-only locals stay plain functions with no helper import. `.merge` and
-dynamic `.raw` remain separate compatibility steps and should attach through the same helper.
+attached only when the recipe escapes, so call-only locals stay plain functions with no helper import.
 
 ```js
 import { cx as __pcx, attachRecipe as __pr } from '@pandacss-internal/css'
@@ -98,9 +99,35 @@ export const button = /* @__PURE__ */ __pr(
 export const tabs = /* @__PURE__ */ __pr(specializedTabs, config, ['size'], { size: ['sm'] }, { root: 'tabs__root' })
 ```
 
-`attachRecipe` owns the `getVariantProps` / `splitVariantProps` closures so they are not copied into every exported
+`attachRecipe` owns every closure on the surface, so nothing but the callable, `config`, and two literals is emitted per
 recipe. `variantKeys` and `variantMap` stay compiler-emitted literals: deriving them from `config` inside the helper
 measured larger after minification. `config` is public surface and is still emitted per recipe.
+
+### Styled-system interop
+
+The generated `styled` factory and `createSlotRecipeContext` read `.raw` and `.merge`, so both are derived from `config`
+at runtime rather than emitted per recipe:
+
+- `raw(props)` deep-merges `base`, the selected variant options, and matching compound `css`, in the generated
+  runtime's order. SVA resolves each slot the same way. Shorthands stay as written (`{ bg: 'red' }`), where the
+  styled-system `raw` normalizes them (`{ backgroundColor: 'red' }`); `css()` produces the same classes from either.
+- `merge(other)` composes classes, `cx(parent(props), child(props))`, with both sets of defaults applied first. The
+  conflict-aware internal `cx` lets the child win. `raw` composes the same way so the style-prop path agrees with the
+  class path.
+- A merged recipe is only ever a chain parent, so it keeps `defaultVariants` and no merged `config`. Its `variantMap`
+  is a shallow union.
+
+Class composition changes one precedence rule. Styled-system merges configs, so a parent variant still overrides the
+child's `base`. Composition applies the child last, so the child's `base` wins:
+
+```js
+const Base = styled('div', { variants: { size: { sm: { fontSize: '12px' } } }, defaultVariants: { size: 'sm' } })
+const Card = styled(Base, { base: { fontSize: '14px' } })
+// styled-system: fs_12px   transformed: fs_14px
+```
+
+The interop tests in `packages/transformer/__tests__/styled-system-interop.test.ts` run each case untransformed and
+transformed through the real generated runtime and compare the rendered classes.
 
 ## Goals
 

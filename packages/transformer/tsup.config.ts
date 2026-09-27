@@ -23,11 +23,13 @@ const internalCssRuntimeBuild: Options = {
   format: ['esm'],
   platform: 'neutral',
   removeNodeProtocol: false,
-  minify: true,
   bundle: true,
   dts: false,
   clean: false,
   esbuildOptions(options) {
+    // Whitespace minification drops `/* @__PURE__ */`, which the app bundler needs to tree-shake `cx`.
+    options.minifySyntax = true
+    options.minifyIdentifiers = true
     options.define = {
       ...options.define,
       __PANDA_CX_SEPARATOR__: JSON.stringify(CX_SEPARATOR_PLACEHOLDER),
