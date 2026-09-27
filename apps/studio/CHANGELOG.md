@@ -1,5 +1,21 @@
 # studio
 
+## 2.0.0-beta.19
+
+### Patch Changes
+
+- Updated dependencies [384cfff]
+- Updated dependencies [c7f0dae]
+- Updated dependencies [f256055]
+- Updated dependencies [1f702e2]
+- Updated dependencies [1cf1b01]
+- Updated dependencies [5078304]
+  - @pandacss/compiler-shared@2.0.0-beta.19
+  - @pandacss/compiler-wasm@2.0.0-beta.19
+  - @pandacss/config@2.0.0-beta.19
+  - @pandacss/preset-base@2.0.0-beta.19
+  - @pandacss/preset-panda@2.0.0-beta.19
+
 ## 2.0.0-beta.18
 
 ### Patch Changes

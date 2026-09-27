@@ -1,5 +1,33 @@
 # @pandacss/compiler
 
+## 2.0.0-beta.19
+
+### Patch Changes
+
+- 384cfff: Fix conditional tokens resolving to a raw token name or one condition's value. Token-backed utilities and
+  `token()` now use the token's CSS variable, including semantic tokens without `base`.
+- c7f0dae: Fold values imported through a tsconfig `paths` alias, so aliased tokens and styles are included in the
+  output. Bulk parsing also avoids retrying unresolved imports for every file, preventing cross-file extraction from
+  slowing down as projects grow.
+- f256055: Speed up watch updates when many files import the same missing module. Panda now checks that import once when
+  the module is added, then refreshes every affected file.
+- 1f702e2: - Transform more conditional and partially dynamic `css()` calls while preserving styles, overrides, and
+  evaluation order.
+  - Refresh source styles, config styles, and recipes when replacing a utility transform, so generated CSS stays
+    current.
+  - Apply boolean utility transforms in config styles, including `globalCss`.
+  - Remove imported recipe CSS when clearing a project and keep existing styles when replacement build info is invalid.
+  - Clear stale file-read errors after a successful retry with unchanged source.
+  - Keep `.raw()` object output valid in arrow bodies and statements, and select numeric recipe variants using
+    JavaScript values.
+- 5078304: `optimize.treeshakeDesignSystem` now keeps the parent styles a stacked design system uses, instead of
+  dropping them. Rebuild the middle design system with `panda lib` to pick this up.
+- Updated dependencies [384cfff]
+- Updated dependencies [5078304]
+  - @pandacss/compiler-shared@2.0.0-beta.19
+  - @pandacss/config@2.0.0-beta.19
+  - @pandacss/types@2.0.0-beta.19
+
 ## 2.0.0-beta.18
 
 ### Minor Changes
