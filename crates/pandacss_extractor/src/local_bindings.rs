@@ -34,6 +34,10 @@ pub struct LocalCallBinding {
     /// reference, or `binding?.raw(…)`. The value escapes, so a caller that
     /// rewrites `raw` semantics cannot prove it has seen every use.
     pub has_opaque_raw_access: bool,
+    /// A reference other than a direct call or direct `.raw(...)` call. This
+    /// is the escape bit source specialization uses after all direct raw calls
+    /// have been folded.
+    pub has_non_call_references: bool,
     /// Any reference that is not a plain call (`binding.raw`, value use, export, …).
     pub has_other_references: bool,
 }
@@ -101,6 +105,7 @@ impl<'a> BindingCollector<'a, '_> {
         let mut calls = Vec::new();
         let mut raw_calls = Vec::new();
         let mut has_opaque_raw_access = false;
+        let mut has_non_call_references = false;
         let mut has_other_references = false;
         for reference in self.semantic.symbol_references(symbol_id) {
             let node_id = reference.node_id();
@@ -113,9 +118,13 @@ impl<'a> BindingCollector<'a, '_> {
                 }
                 ReferenceKind::OpaqueRawAccess => {
                     has_opaque_raw_access = true;
+                    has_non_call_references = true;
                     has_other_references = true;
                 }
-                ReferenceKind::Other => has_other_references = true,
+                ReferenceKind::Other => {
+                    has_non_call_references = true;
+                    has_other_references = true;
+                }
             }
         }
         calls.sort_by_key(|call| call.span.start);
@@ -128,6 +137,7 @@ impl<'a> BindingCollector<'a, '_> {
             calls,
             raw_calls,
             has_opaque_raw_access,
+            has_non_call_references,
             has_other_references,
         });
     }

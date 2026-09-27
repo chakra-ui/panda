@@ -265,6 +265,31 @@ fn parses_sva_with_explicit_slots() {
 }
 
 #[test]
+fn parses_sva_class_name_prefix() {
+    let src = indoc! {r"
+        import { sva } from '@panda/css';
+        const card = sva({
+          slots: ['root', 'header'],
+          className: 'card',
+        });
+    "};
+    let recipe = parse_slot_recipe(src);
+    assert_eq!(recipe.class_name.as_deref(), Some("card"));
+}
+
+#[test]
+fn ignores_an_sva_class_name_map() {
+    let src = indoc! {r"
+        import { sva } from '@panda/css';
+        const card = sva({
+          slots: ['root', 'header'],
+          className: { root: 'card-root', header: 'card-header' },
+        });
+    "};
+    assert!(parse_slot_recipe(src).class_name.is_none());
+}
+
+#[test]
 fn sva_with_missing_slots_infers_from_base_and_variants() {
     // No `slots` key at all — `infer_slots` collects every slot name
     // that appears anywhere in `base` or variant option styles.

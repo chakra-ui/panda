@@ -164,9 +164,9 @@ fn the_partial_fold_reads_the_spread_class_name_defensively() {
 
     let output = transform_jsx("src/app.tsx", source);
 
-    assert!(
-        output.code.contains("props?.className"),
-        "expected an optional read, got: {}",
-        output.code
-    );
+    assert_snapshot!(output.code, @"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    import { styled } from '@panda/jsx';
+    export const El = ({ ...props }) => <styled.div {...props} className={__pcx('color_red', props?.className)} />;
+    ");
 }

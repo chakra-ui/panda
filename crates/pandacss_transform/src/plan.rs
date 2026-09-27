@@ -39,22 +39,6 @@ impl TransformHelperFacts {
             needs_sva: false,
         }
     }
-
-    pub(crate) const fn cva() -> Self {
-        Self {
-            needs_cx: false,
-            needs_cva: true,
-            needs_sva: false,
-        }
-    }
-
-    pub(crate) const fn sva() -> Self {
-        Self {
-            needs_cx: false,
-            needs_cva: false,
-            needs_sva: true,
-        }
-    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -366,28 +350,31 @@ fn push_css_call_rewrites(
     call: &ExtractedCall,
     helper_cx: HelperCxMode,
 ) {
+    let attach_surface = recipe_needs_observable_surface(extracted, call);
     match call.name.as_str() {
         "cva" | "sva" if !push_inline_recipe_raw_rewrites(plan, system, extracted, call) => {}
         "cva" => {
-            if let Some(rewrite) = super::recipe_inline::rewrite_for_cva_call(
+            if let Some(rewrite) = super::recipe_inline::rewrite_for_specialized_cva_call(
                 system,
                 source,
                 call.span,
                 &call.data,
                 &call.arg_spans,
                 &call.style_args,
+                attach_surface,
             ) {
-                // Keep call sites as `__pcva` runtime — boolean bitset
-                // + memo beats `__pcx(cond && slot)` when prop tuples
-                // reuse (css-in-js-bench btn-variant). Call-site
-                // lowering must stay opt-in, never the default.
                 plan.push(rewrite);
             }
         }
         "sva" => {
-            if let Some(rewrite) =
-                super::recipe_inline::rewrite_for_sva_call(system, call.span, &call.data)
-            {
+            if let Some(rewrite) = super::recipe_inline::rewrite_for_specialized_sva_call(
+                system,
+                source,
+                call.span,
+                &call.data,
+                &call.arg_spans,
+                attach_surface,
+            ) {
                 plan.push(rewrite);
             }
         }
@@ -422,6 +409,24 @@ fn push_css_call_rewrites(
             None => {}
         },
     }
+}
+
+fn recipe_needs_observable_surface(extracted: &ExtractUsage, call: &ExtractedCall) -> bool {
+    let Some(binding) = extracted
+        .module
+        .local_call_bindings
+        .iter()
+        .find(|binding| binding.init_span == call.span)
+    else {
+        return true;
+    };
+    binding.has_non_call_references
+        || binding.has_opaque_raw_access
+        || extracted
+            .exports
+            .local
+            .iter()
+            .any(|exported| exported == &binding.local)
 }
 
 /// Fold `binding.raw(props)` for an inline `cva`/`sva` definition, and report

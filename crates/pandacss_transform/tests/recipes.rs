@@ -791,21 +791,10 @@ fn hashes_recipe_and_slot_recipe_classes_like_the_runtime() {
 
     let output = transform_with_default_targets(&prefixed_button_and_tabs(true), source);
 
-    let hashed = |name: &str| format!("pd-{}", pandacss_shared::to_hash(name));
-    // Compound classes are hashed once when named and again by the runtime, like the emitter.
-    let compound =
-        pandacss_shared::compound_class_name("tabs__trigger", &[("size", "sm")], None, "_", true);
-    assert!(output.code.contains(&format!(
-        "export const cls = \"{} {}\";",
-        hashed("button"),
-        hashed("button--size_sm")
-    )));
-    assert!(output.code.contains(&format!(
-        "trigger: \"{} {} {}\"",
-        hashed("tabs__trigger"),
-        hashed("tabs__trigger--size_sm"),
-        hashed(&compound)
-    )));
+    assert_snapshot!(output.code, @r#"
+    export const cls = "pd-ervFBh pd-kzJAEF";
+    export const classes = { root: "pd-grSSrt pd-cKClhh", trigger: "pd-cyGTIb pd-fQWEUL pd-grYSIK" };
+    "#);
 }
 
 #[test]

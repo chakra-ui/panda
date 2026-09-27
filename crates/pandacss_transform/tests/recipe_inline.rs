@@ -3,9 +3,10 @@
 use super::common::{project_with_jsx, transform, transform_with_project};
 use indoc::indoc;
 use insta::assert_snapshot;
+use pandacss_transform::TransformOutput;
 
 #[test]
-fn rewrites_inline_cva_to_string_branch_config() {
+fn rewrites_inline_cva_to_a_specialized_function() {
     let source = indoc! {r#"
         import { cva } from '@panda/css';
         export const button = cva({
@@ -23,15 +24,24 @@ fn rewrites_inline_cva_to_string_branch_config() {
     let output = transform("src/recipes.ts", source);
 
     assert!(output.changed);
-    assert!(output.helper.needs_cva);
+    assert!(!output.helper.needs_cva);
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
-    export const button = /* @__PURE__ */ __pcva({ base: 'background-color_blue color_red', variants: { size: { sm: 'fs_12px', md: 'fs_16px' } }, defaultVariants: { size: 'md' } });
+    import { cx as __pcx } from '@pandacss-internal/css';
+    export const button = /* @__PURE__ */ (() => { const c = {
+      base: { color: 'red', backgroundColor: 'blue' },
+      variants: {
+        size: {
+          sm: { fontSize: '12px' },
+          md: { fontSize: '16px' },
+        },
+      },
+      defaultVariants: { size: 'md' },
+    }, d = c.defaultVariants ?? {}, k = ["size"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'md' : _p0; return __pcx('background-color_blue color_red', { sm: "fs_12px", md: "fs_16px" }[v0]); }; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: { size: ["sm", "md"] }, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
     "#);
 }
 
 #[test]
-fn rewrites_inline_sva_to_string_branch_config() {
+fn rewrites_inline_sva_to_a_specialized_function() {
     let source = indoc! {r#"
         import { sva } from '@panda/css';
         export const tabs = sva({
@@ -54,10 +64,45 @@ fn rewrites_inline_sva_to_string_branch_config() {
     let output = transform("src/recipes.ts", source);
 
     assert!(output.changed);
-    assert!(output.helper.needs_sva);
+    assert!(!output.helper.needs_sva);
     assert_snapshot!(output.code, @r#"
-    import { sva as __psva } from '@pandacss-internal/css';
-    export const tabs = /* @__PURE__ */ __psva({ slots: ['root', 'trigger'], base: { root: 'd_flex', trigger: 'cursor_pointer' }, variants: { size: { sm: 'fs_12px' } } });
+    import { cx as __pcx } from '@pandacss-internal/css';
+    export const tabs = /* @__PURE__ */ (() => { const c = {
+      slots: ['root', 'trigger'],
+      base: {
+        root: { display: 'flex' },
+        trigger: { cursor: 'pointer' },
+      },
+      variants: {
+        size: {
+          sm: {
+            root: { fontSize: '12px' },
+            trigger: { fontSize: '12px' },
+          },
+        },
+      },
+    }, d = c.defaultVariants ?? {}, k = ["size"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: __pcx("d_flex", { sm: "fs_12px" }[v0]), trigger: __pcx("cursor_pointer", { sm: "fs_12px" }[v0]) }; }; return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: { size: ["sm"] }, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    "#);
+}
+
+#[test]
+fn specializes_sva_class_names_without_a_recipe_runtime() {
+    let source = indoc! {r#"
+        import { sva } from '@panda/css';
+        export const tabs = sva({
+          slots: ['root', 'trigger'],
+          className: 'tabs',
+        });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert!(!output.helper.needs_sva);
+    assert_snapshot!(output.code, @r#"
+    export const tabs = /* @__PURE__ */ (() => { const c = {
+      slots: ['root', 'trigger'],
+      className: 'tabs',
+    }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => ({ root: "tabs__root", trigger: "tabs__trigger" }); return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: {}, classNameMap: { root: "tabs__root", trigger: "tabs__trigger" }, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
     "#);
 }
 
@@ -85,10 +130,24 @@ fn rewrites_cva_with_compound_variants() {
     let output = transform("src/recipes.ts", source);
 
     assert!(output.changed);
-    assert!(output.helper.needs_cva);
+    assert!(!output.helper.needs_cva);
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
-    export const button = /* @__PURE__ */ __pcva({ base: 'color_white', variants: { size: { sm: 'fs_12px' }, intent: { danger: 'background-color_red' } }, defaultVariants: { size: 'sm', intent: 'danger' }, compoundVariants: [{ size: 'sm', intent: 'danger', css: 'color_black' }] });
+    import { cx as __pcx } from '@pandacss-internal/css';
+    export const button = /* @__PURE__ */ (() => { const c = {
+      base: { color: 'white' },
+      variants: {
+        size: {
+          sm: { fontSize: '12px' },
+        },
+        intent: {
+          danger: { backgroundColor: 'red' },
+        },
+      },
+      compoundVariants: [
+        { size: 'sm', intent: 'danger', css: { color: 'black' } },
+      ],
+      defaultVariants: { size: 'sm', intent: 'danger' },
+    }, d = c.defaultVariants ?? {}, k = ["size", "intent"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'sm' : _p0; const _p1 = p["intent"], v1 = _p1 === void 0 ? 'danger' : _p1; return __pcx('color_white', { sm: "fs_12px" }[v0], { danger: "background-color_red" }[v1], v0 === 'sm' && v1 === 'danger' && "color_black"); }; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: { size: ["sm"], intent: ["danger"] }, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
     "#);
 }
 
@@ -126,11 +185,22 @@ fn rewrites_sva_variants_per_slot_when_slots_differ() {
     let output = transform("src/recipes.ts", source);
 
     assert!(output.changed);
-    assert!(output.helper.needs_sva);
-    assert_snapshot!(output.code, @"
-    import { sva as __psva } from '@pandacss-internal/css';
-    export const card = /* @__PURE__ */ __psva({ slots: ['root', 'header', 'body'], base: { root: 'd_grid' }, variants: { size: { sm: { root: 'padding_4px', header: 'fs_12px' }, lg: { root: 'padding_16px', header: 'fs_20px', body: 'gap_8px' } } }, defaultVariants: { size: 'lg' }, compoundVariants: [{ size: 'sm', css: { body: 'd_none' } }] });
-    ");
+    assert!(!output.helper.needs_sva);
+    assert_snapshot!(output.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    export const card = /* @__PURE__ */ (() => { const c = {
+      slots: ['root', 'header', 'body'],
+      base: { root: { display: 'grid' } },
+      variants: {
+        size: {
+          sm: { root: { padding: '4px' }, header: { fontSize: '12px' } },
+          lg: { root: { padding: '16px' }, header: { fontSize: '20px' }, body: { gap: '8px' } },
+        },
+      },
+      defaultVariants: { size: 'lg' },
+      compoundVariants: [{ size: 'sm', css: { body: { display: 'none' } } }],
+    }, d = c.defaultVariants ?? {}, k = ["size"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'lg' : _p0; return { root: __pcx("d_grid", { sm: "padding_4px", lg: "padding_16px" }[v0]), header: ({ sm: "fs_12px", lg: "fs_20px" }[v0]) || '', body: __pcx({ lg: "gap_8px" }[v0], v0 === 'sm' && "d_none") }; }; return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: { size: ["sm", "lg"] }, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    "#);
 }
 
 #[test]
@@ -145,10 +215,12 @@ fn keeps_an_sva_variant_off_the_slots_it_does_not_style() {
 
     let output = transform("src/recipes.ts", source);
 
-    assert_snapshot!(output.code, @"
-    import { sva as __psva } from '@pandacss-internal/css';
-    export const tabs = /* @__PURE__ */ __psva({ slots: ['root', 'trigger'], variants: { size: { sm: { root: 'fs_12px' } } } });
-    ");
+    assert_snapshot!(output.code, @r#"
+    export const tabs = /* @__PURE__ */ (() => { const c = {
+      slots: ['root', 'trigger'],
+      variants: { size: { sm: { root: { fontSize: '12px' } } } },
+    }, d = c.defaultVariants ?? {}, k = ["size"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: ({ sm: "fs_12px" }[v0]) || '', trigger: '' }; }; return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: { size: ["sm"] }, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    "#);
 }
 
 #[test]
@@ -169,10 +241,18 @@ fn rewrites_sva_boolean_variant_that_styles_one_slot() {
 
     let output = transform("src/recipes.ts", source);
 
-    assert_snapshot!(output.code, @"
-    import { sva as __psva } from '@pandacss-internal/css';
-    export const tabs = /* @__PURE__ */ __psva({ slots: ['root', 'trigger'], variants: { fitted: { true: { trigger: 'flex_1' }, false: { trigger: 'flex_none' } } }, defaultVariants: { fitted: true } });
-    ");
+    assert_snapshot!(output.code, @r#"
+    export const tabs = /* @__PURE__ */ (() => { const c = {
+      slots: ['root', 'trigger'],
+      variants: {
+        fitted: {
+          true: { trigger: { flex: '1' } },
+          false: { trigger: { flex: 'none' } },
+        },
+      },
+      defaultVariants: { fitted: true },
+    }, d = c.defaultVariants ?? {}, k = ["fitted"], f = (p = {}) => { p ??= {}; const _p0 = p["fitted"], v0 = _p0 === void 0 ? true : _p0; return { root: '', trigger: ({ true: "flex_1", false: "flex_none" }[v0]) || '' }; }; return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: { fitted: ["true", "false"] }, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    "#);
 }
 
 #[test]
@@ -187,10 +267,12 @@ fn rewrites_sva_boolean_variant_shared_by_every_slot() {
 
     let output = transform("src/recipes.ts", source);
 
-    assert_snapshot!(output.code, @"
-    import { sva as __psva } from '@pandacss-internal/css';
-    export const card = /* @__PURE__ */ __psva({ slots: ['root', 'title'], variants: { muted: { true: 'opacity_0.5' } } });
-    ");
+    assert_snapshot!(output.code, @r#"
+    export const card = /* @__PURE__ */ (() => { const c = {
+      slots: ['root', 'title'],
+      variants: { muted: { true: { root: { opacity: '0.5' }, title: { opacity: '0.5' } } } },
+    }, d = c.defaultVariants ?? {}, k = ["muted"], f = (p = {}) => { p ??= {}; const _p0 = p["muted"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: ({ true: "opacity_0.5" }[v0]) || '', title: ({ true: "opacity_0.5" }[v0]) || '' }; }; return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: { muted: ["true"] }, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    "#);
 }
 
 #[test]
@@ -209,10 +291,17 @@ fn rewrites_sva_boolean_compound_condition_as_a_boolean() {
 
     let output = transform("src/recipes.ts", source);
 
-    assert_snapshot!(output.code, @"
-    import { sva as __psva } from '@pandacss-internal/css';
-    export const tabs = /* @__PURE__ */ __psva({ slots: ['root', 'trigger'], variants: { size: { sm: { root: 'gap_4px' } }, fitted: { true: { trigger: 'flex_1' } } }, compoundVariants: [{ size: 'sm', fitted: true, css: { trigger: 'padding_0' } }] });
-    ");
+    assert_snapshot!(output.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    export const tabs = /* @__PURE__ */ (() => { const c = {
+      slots: ['root', 'trigger'],
+      variants: {
+        size: { sm: { root: { gap: '4px' } } },
+        fitted: { true: { trigger: { flex: '1' } } },
+      },
+      compoundVariants: [{ size: 'sm', fitted: true, css: { trigger: { padding: '0' } } }],
+    }, d = c.defaultVariants ?? {}, k = ["size", "fitted"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; const _p1 = p["fitted"], v1 = _p1 === void 0 ? void 0 : _p1; return { root: ({ sm: "gap_4px" }[v0]) || '', trigger: __pcx({ true: "flex_1" }[v1], v0 === 'sm' && v1 === true && "padding_0") }; }; return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: { size: ["sm"], fitted: ["true"] }, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    "#);
 }
 
 #[test]
@@ -230,10 +319,16 @@ fn rewrites_cva_boolean_compound_condition_as_a_boolean() {
 
     let output = transform("src/recipes.ts", source);
 
-    assert_snapshot!(output.code, @"
-    import { cva as __pcva } from '@pandacss-internal/css';
-    export const button = /* @__PURE__ */ __pcva({ variants: { size: { sm: 'fs_12px' }, block: { true: 'd_flex' } }, compoundVariants: [{ size: 'sm', block: true, css: 'padding_0' }] });
-    ");
+    assert_snapshot!(output.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    export const button = /* @__PURE__ */ (() => { const c = {
+      variants: {
+        size: { sm: { fontSize: '12px' } },
+        block: { true: { display: 'flex' } },
+      },
+      compoundVariants: [{ size: 'sm', block: true, css: { padding: '0' } }],
+    }, d = c.defaultVariants ?? {}, k = ["size", "block"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; const _p1 = p["block"], v1 = _p1 === void 0 ? void 0 : _p1; return __pcx({ sm: "fs_12px" }[v0], { true: "d_flex" }[v1], v0 === 'sm' && v1 === true && "padding_0"); }; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: { size: ["sm"], block: ["true"] }, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    "#);
 }
 
 #[test]
@@ -248,10 +343,12 @@ fn rewrites_sva_responsive_slot_styles_to_conditional_classes() {
 
     let output = transform("src/recipes.ts", source);
 
-    assert_snapshot!(output.code, @"
-    import { sva as __psva } from '@pandacss-internal/css';
-    export const tabs = /* @__PURE__ */ __psva({ slots: ['root', 'trigger'], variants: { size: { sm: { root: 'fs_12px md:fs_14px' } } } });
-    ");
+    assert_snapshot!(output.code, @r#"
+    export const tabs = /* @__PURE__ */ (() => { const c = {
+      slots: ['root', 'trigger'],
+      variants: { size: { sm: { root: { fontSize: { base: '12px', md: '14px' } } } } },
+    }, d = c.defaultVariants ?? {}, k = ["size"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: ({ sm: "fs_12px md:fs_14px" }[v0]) || '', trigger: '' }; }; return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: { size: ["sm"] }, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    "#);
 }
 
 #[test]
@@ -269,10 +366,16 @@ fn derives_sva_slots_from_base_when_slots_is_omitted() {
 
     let output = transform("src/recipes.ts", source);
 
-    assert_snapshot!(output.code, @"
-    import { sva as __psva } from '@pandacss-internal/css';
-    export const card = /* @__PURE__ */ __psva({ slots: ['root', 'title'], base: { root: 'd_grid', title: 'font-weight_700' }, variants: { muted: { true: 'opacity_0.5' }, size: { sm: { title: 'fs_12px' } } } });
-    ");
+    assert_snapshot!(output.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    export const card = /* @__PURE__ */ (() => { const c = {
+      base: { root: { display: 'grid' }, title: { fontWeight: '700' } },
+      variants: {
+        muted: { true: { root: { opacity: '0.5' }, title: { opacity: '0.5' } } },
+        size: { sm: { title: { fontSize: '12px' } } },
+      },
+    }, d = c.defaultVariants ?? {}, k = ["muted", "size"], f = (p = {}) => { p ??= {}; const _p0 = p["muted"], v0 = _p0 === void 0 ? void 0 : _p0; const _p1 = p["size"], v1 = _p1 === void 0 ? void 0 : _p1; return { root: __pcx("d_grid", { true: "opacity_0.5" }[v0]), title: __pcx("font-weight_700", { true: "opacity_0.5" }[v0], { sm: "fs_12px" }[v1]) }; }; return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: { muted: ["true"], size: ["sm"] }, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    "#);
 }
 
 #[test]
@@ -287,10 +390,12 @@ fn encodes_an_sva_option_with_no_styles_as_an_empty_map() {
 
     let output = transform("src/recipes.ts", source);
 
-    assert_snapshot!(output.code, @"
-    import { sva as __psva } from '@pandacss-internal/css';
-    export const tabs = /* @__PURE__ */ __psva({ slots: ['root', 'trigger'], variants: { size: { sm: { root: 'gap_4px' }, md: {} } } });
-    ");
+    assert_snapshot!(output.code, @r#"
+    export const tabs = /* @__PURE__ */ (() => { const c = {
+      slots: ['root', 'trigger'],
+      variants: { size: { sm: { root: { gap: '4px' } }, md: {} } },
+    }, d = c.defaultVariants ?? {}, k = ["size"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: ({ sm: "gap_4px" }[v0]) || '', trigger: '' }; }; return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: { size: ["sm", "md"] }, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    "#);
 }
 
 #[test]
@@ -306,10 +411,14 @@ fn quotes_sva_slot_names_that_are_not_identifiers() {
 
     let output = transform("src/recipes.ts", source);
 
-    assert_snapshot!(output.code, @"
-    import { sva as __psva } from '@pandacss-internal/css';
-    export const field = /* @__PURE__ */ __psva({ slots: ['root', 'helper-text'], base: { 'helper-text': 'fs_12px' }, variants: { invalid: { true: { 'helper-text': 'color_red' } } } });
-    ");
+    assert_snapshot!(output.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    export const field = /* @__PURE__ */ (() => { const c = {
+      slots: ['root', 'helper-text'],
+      base: { 'helper-text': { fontSize: '12px' } },
+      variants: { invalid: { true: { 'helper-text': { color: 'red' } } } },
+    }, d = c.defaultVariants ?? {}, k = ["invalid"], f = (p = {}) => { p ??= {}; const _p0 = p["invalid"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: '', 'helper-text': __pcx("fs_12px", { true: "color_red" }[v0]) }; }; return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: { invalid: ["true"] }, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    "#);
 }
 
 #[test]
@@ -331,11 +440,20 @@ fn rewrites_styled_with_full_recipe_config() {
     let output = transform_with_project(&project_with_jsx(), "src/app.tsx", source);
 
     assert!(output.changed);
-    assert!(output.helper.needs_cva);
+    assert!(!output.helper.needs_cva);
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
+    import { cx as __pcx } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    export const Card = /* @__PURE__ */ styled('div', /* @__PURE__ */ __pcva({ base: 'color_red padding_8px', variants: { size: { sm: 'fs_12px', md: 'fs_16px' } }, defaultVariants: { size: 'md' } }));
+    export const Card = /* @__PURE__ */ styled('div', /* @__PURE__ */ (() => { const c = {
+      base: { color: 'red', padding: '8px' },
+      variants: {
+        size: {
+          sm: { fontSize: '12px' },
+          md: { fontSize: '16px' },
+        },
+      },
+      defaultVariants: { size: 'md' },
+    }, d = c.defaultVariants ?? {}, k = ["size"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'md' : _p0; return __pcx('color_red padding_8px', { sm: "fs_12px", md: "fs_16px" }[v0]); }; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: { size: ["sm", "md"] }, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })());
     "#);
 }
 
@@ -349,15 +467,14 @@ fn rewrites_an_aliased_styled_factory_from_its_callee_shape() {
     let output = transform_with_project(&project_with_jsx(), "src/app.tsx", source);
 
     assert!(output.changed);
-    assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
+    assert_snapshot!(output.code, @"
     import { styled as s } from '@panda/jsx';
-    export const Card = /* @__PURE__ */ s('div', /* @__PURE__ */ __pcva({ base: 'color_red' }));
-    "#);
+    export const Card = /* @__PURE__ */ s('div', /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })());
+    ");
 }
 
 #[test]
-fn injects_cx_cva_and_sva_symbols_in_one_import() {
+fn injects_only_cx_when_cva_and_sva_are_specialized() {
     let source = indoc! {r#"
         import { Box, styled } from '@panda/jsx';
         import { cva, sva } from '@panda/css';
@@ -371,13 +488,16 @@ fn injects_cx_cva_and_sva_symbols_in_one_import() {
 
     assert!(output.changed);
     assert!(output.helper.needs_cx);
-    assert!(output.helper.needs_cva);
-    assert!(output.helper.needs_sva);
-    assert!(output.code.starts_with(
-        "import { cx as __pcx, cva as __pcva, sva as __psva } from '@pandacss-internal/css';\n"
-    ));
-    assert!(!output.code.contains("import { cva"));
-    assert!(!output.code.contains("import { Box"));
+    assert!(!output.helper.needs_cva);
+    assert!(!output.helper.needs_sva);
+    assert_snapshot!(output.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    import { styled } from '@panda/jsx';
+    export const el = <div className={__pcx(props.className, isError ? "color_red" : "color_blue")} />;
+    export const button = /* @__PURE__ */ (() => { const c = { base: { color: 'blue' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_blue'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    export const tabs = /* @__PURE__ */ (() => { const c = { base: { root: { display: 'flex' } } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => ({ root: "d_flex" }); return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: {}, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    export const Card = /* @__PURE__ */ styled('div', /* @__PURE__ */ (() => { const c = { base: { color: 'green' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_green'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })());
+    "#);
 }
 
 #[test]
@@ -390,15 +510,12 @@ fn rewrites_cva_base_with_property_conditional() {
     let output = transform("src/recipes.ts", source);
 
     assert!(output.changed);
-    assert!(output.helper.needs_cva);
-    assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
-    export const button = /* @__PURE__ */ __pcva({ base: cond ? "color_red" : "color_blue" });
-    "#);
+    assert!(!output.helper.needs_cva);
+    assert_snapshot!(output.code, @r#"export const button = /* @__PURE__ */ (() => { const c = { base: { color: cond ? 'red' : 'blue' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => cond ? "color_red" : "color_blue"; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();"#);
 }
 
 #[test]
-fn injects_both_cva_and_sva_symbols_when_needed() {
+fn emits_no_helper_import_for_single_fragment_cva_and_sva() {
     let source = indoc! {r#"
         import { cva, sva } from '@panda/css';
         export const button = cva({ base: { color: 'red' } });
@@ -408,19 +525,16 @@ fn injects_both_cva_and_sva_symbols_when_needed() {
     let output = transform("src/recipes.ts", source);
 
     assert!(output.changed);
-    assert!(output.helper.needs_cva);
-    assert!(output.helper.needs_sva);
-    assert!(
-        output.code.starts_with(
-            "import { cva as __pcva, sva as __psva } from '@pandacss-internal/css';\n"
-        )
-    );
+    assert!(!output.helper.needs_cva);
+    assert!(!output.helper.needs_sva);
+    assert_snapshot!(output.code, @r#"
+    export const button = /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    export const tabs = /* @__PURE__ */ (() => { const c = { base: { root: { display: 'flex' } } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => ({ root: "d_flex" }); return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: {}, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    "#);
 }
 
 #[test]
-fn keeps_boolean_cva_call_sites_on_memoized_runtime() {
-    // Call-site → `__pcx` lowering is intentionally off: reused prop tuples
-    // win with `__pcva` boolean bitset + memo (bench btn-variant).
+fn specializes_a_local_boolean_cva_to_a_cx_function() {
     let source = indoc! {r#"
         import { cva } from '@panda/css';
         const recipe = cva({
@@ -441,11 +555,11 @@ fn keeps_boolean_cva_call_sites_on_memoized_runtime() {
     let output = transform("src/recipes.ts", source);
 
     assert!(output.changed);
-    assert!(output.helper.needs_cva);
-    assert!(!output.helper.needs_cx);
+    assert!(!output.helper.needs_cva);
+    assert!(output.helper.needs_cx);
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
-    const recipe = /* @__PURE__ */ __pcva({ base: 'd_inline-flex', variants: { r0: { true: 'opacity_0.5' }, r1: { true: 'fs_12px' } }, defaultVariants: { r0: true } });
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const recipe = (p = {}) => { p ??= {}; const _p0 = p["r0"], v0 = _p0 === void 0 ? true : _p0; const _p1 = p["r1"], v1 = _p1 === void 0 ? void 0 : _p1; return __pcx('d_inline-flex', { true: "opacity_0.5" }[v0], { true: "fs_12px" }[v1]); };
     export const cls = recipe({
       r0: !active,
       r1: variant === 'secondary' || variant === 'outline',
@@ -455,7 +569,7 @@ fn keeps_boolean_cva_call_sites_on_memoized_runtime() {
 }
 
 #[test]
-fn does_not_lower_non_boolean_cva_call_sites() {
+fn specializes_a_local_string_variant_cva() {
     let source = indoc! {r#"
         import { cva } from '@panda/css';
         const button = cva({
@@ -470,9 +584,161 @@ fn does_not_lower_non_boolean_cva_call_sites() {
     let output = transform("src/recipes.ts", source);
 
     assert!(output.changed);
-    assert!(output.helper.needs_cva);
+    assert!(!output.helper.needs_cva);
+    assert!(output.helper.needs_cx);
+    assert_snapshot!(output.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const button = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return __pcx('color_red', { sm: "fs_12px", md: "fs_16px" }[v0]); };
+    export const cls = button({ size: 'sm' });
+    "#);
+}
+
+#[test]
+fn specializes_local_cva_compounds_and_array_conditions() {
+    let source = indoc! {r#"
+        import { cva } from '@panda/css';
+        const button = cva({
+          variants: {
+            size: { sm: { fontSize: '12px' }, md: { fontSize: '16px' } },
+            tone: { danger: { color: 'red' } },
+          },
+          compoundVariants: [
+            { size: ['sm', 'md'], tone: 'danger', css: { fontWeight: 'bold' } },
+          ],
+        });
+        export const cls = button({ size, tone });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert!(!output.helper.needs_cva);
+    assert!(output.helper.needs_cx);
+    assert_snapshot!(output.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const button = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; const _p1 = p["tone"], v1 = _p1 === void 0 ? void 0 : _p1; return __pcx({ sm: "fs_12px", md: "fs_16px" }[v0], { danger: "color_red" }[v1], (v0 === 'sm' || v0 === 'md') && v1 === 'danger' && "font-weight_bold"); };
+    export const cls = button({ size, tone });
+    "#);
+}
+
+#[test]
+fn specializes_a_local_sva_per_slot() {
+    let source = indoc! {r#"
+        import { sva } from '@panda/css';
+        const tabs = sva({
+          slots: ['root', 'trigger'],
+          className: 'tabs',
+          base: { root: { display: 'flex' }, trigger: { cursor: 'pointer' } },
+          variants: {
+            size: {
+              sm: { root: { gap: '4px' } },
+              lg: { root: { gap: '8px' }, trigger: { fontSize: '16px' } },
+            },
+          },
+          defaultVariants: { size: 'sm' },
+          compoundVariants: [{ size: 'lg', css: { trigger: { fontWeight: 'bold' } } }],
+        });
+        export const classes = tabs({ size });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert!(!output.helper.needs_sva);
+    assert!(output.helper.needs_cx);
+    assert_snapshot!(output.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const tabs = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'sm' : _p0; return { root: __pcx("d_flex", "tabs__root", { sm: "gap_4px", lg: "gap_8px" }[v0]), trigger: __pcx("cursor_pointer", "tabs__trigger", { lg: "fs_16px" }[v0], v0 === 'lg' && "font-weight_bold") }; };
+    export const classes = tabs({ size });
+    "#);
+}
+
+#[test]
+fn specializes_an_sva_class_name_prefix_without_a_runtime_helper() {
+    let source = indoc! {r#"
+        import { sva } from '@panda/css';
+        const tabs = sva({ className: 'tabs', slots: ['root', 'trigger'] });
+        export const classes = tabs();
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert!(!output.helper.needs_sva);
     assert!(!output.helper.needs_cx);
-    assert!(output.code.contains("button({ size: 'sm' })"));
+    assert_snapshot!(output.code, @r#"
+    const tabs = (p = {}) => ({ root: "tabs__root", trigger: "tabs__trigger" });
+    export const classes = tabs();
+    "#);
+}
+
+#[test]
+fn specializes_an_escaped_local_recipe_without_a_recipe_runtime() {
+    let source = indoc! {r#"
+        import { cva } from '@panda/css';
+        const button = cva({ base: { color: 'red' } });
+        consume(button);
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert!(!output.helper.needs_cva);
+    assert_snapshot!(output.code, @"
+    const button = /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    consume(button);
+    ");
+}
+
+#[test]
+fn attaches_the_lightweight_cva_surface_when_observed() {
+    let source = indoc! {r#"
+        import { cva } from '@panda/css';
+        const button = cva({
+          variants: { size: { sm: { fontSize: '12px' }, lg: { fontSize: '16px' } } },
+          defaultVariants: { size: 'sm' },
+        });
+        export const meta = [button.__cva__, button.variantKeys, button.variantMap, button.config];
+        export const selected = button.getVariantProps({ size: undefined, id: 'save' });
+        export const split = button.splitVariantProps({ size: 'lg', id: 'save' });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert_snapshot!(output.code, @r#"
+    const button = /* @__PURE__ */ (() => { const c = {
+      variants: { size: { sm: { fontSize: '12px' }, lg: { fontSize: '16px' } } },
+      defaultVariants: { size: 'sm' },
+    }, d = c.defaultVariants ?? {}, k = ["size"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'sm' : _p0; return ({ sm: "fs_12px", lg: "fs_16px" }[v0]) || ''; }; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: { size: ["sm", "lg"] }, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    export const meta = [button.__cva__, button.variantKeys, button.variantMap, button.config];
+    export const selected = button.getVariantProps({ size: undefined, id: 'save' });
+    export const split = button.splitVariantProps({ size: 'lg', id: 'save' });
+    "#);
+}
+
+#[test]
+fn attaches_the_lightweight_sva_surface_when_observed() {
+    let source = indoc! {r#"
+        import { sva } from '@panda/css';
+        const tabs = sva({
+          slots: ['root', 'trigger'],
+          className: 'tabs',
+          variants: { size: { sm: { root: { fontSize: '12px' } } } },
+        });
+        export const meta = [tabs.__cva__, tabs.variantKeys, tabs.variantMap, tabs.classNameMap, tabs.config];
+        export const selected = tabs.getVariantProps({ size: 'sm' });
+        export const split = tabs.splitVariantProps({ size: 'sm', id: 'tabs' });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert_snapshot!(output.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const tabs = /* @__PURE__ */ (() => { const c = {
+      slots: ['root', 'trigger'],
+      className: 'tabs',
+      variants: { size: { sm: { root: { fontSize: '12px' } } } },
+    }, d = c.defaultVariants ?? {}, k = ["size"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: __pcx("tabs__root", { sm: "fs_12px" }[v0]), trigger: "tabs__trigger" }; }; return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: { size: ["sm"] }, classNameMap: { root: "tabs__root", trigger: "tabs__trigger" }, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    export const meta = [tabs.__cva__, tabs.variantKeys, tabs.variantMap, tabs.classNameMap, tabs.config];
+    export const selected = tabs.getVariantProps({ size: 'sm' });
+    export const split = tabs.splitVariantProps({ size: 'sm', id: 'tabs' });
+    "#);
 }
 
 // ---------------------------------------------------------------------------
@@ -492,8 +758,7 @@ fn folds_cva_raw_with_base_only() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
-    const styles = /* @__PURE__ */ __pcva({ base: 'color_red' });
+    const styles = (p = {}) => 'color_red';
     export const out = {"color":"red"};
     "#);
 }
@@ -514,8 +779,8 @@ fn folds_cva_raw_applying_default_variants() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
-    const styles = /* @__PURE__ */ __pcva({ base: 'color_red', variants: { size: { sm: 'padding_4px', lg: 'padding_8px' } }, defaultVariants: { size: 'sm' } });
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'sm' : _p0; return __pcx('color_red', { sm: "padding_4px", lg: "padding_8px" }[v0]); };
     export const out = {"color":"red","padding":"4px"};
     "#);
 }
@@ -536,8 +801,8 @@ fn folds_cva_raw_with_an_explicit_variant_overriding_the_default() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
-    const styles = /* @__PURE__ */ __pcva({ base: 'color_red', variants: { size: { sm: 'padding_4px', lg: 'padding_8px' } }, defaultVariants: { size: 'sm' } });
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'sm' : _p0; return __pcx('color_red', { sm: "padding_4px", lg: "padding_8px" }[v0]); };
     export const out = {"color":"red","padding":"8px"};
     "#);
 }
@@ -557,8 +822,8 @@ fn folds_cva_raw_ignoring_an_unknown_variant_value() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
-    const styles = /* @__PURE__ */ __pcva({ base: 'color_red', variants: { size: { sm: 'padding_4px' } } });
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return __pcx('color_red', { sm: "padding_4px" }[v0]); };
     export const out = {"color":"red"};
     "#);
 }
@@ -581,8 +846,8 @@ fn folds_cva_raw_with_a_matching_compound_variant() {
     assert_snapshot!(
         output.code,
         @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
-    const styles = /* @__PURE__ */ __pcva({ base: 'color_red', variants: { size: { sm: 'padding_4px' }, tone: { a: 'color_blue' } }, compoundVariants: [{ size: 'sm', tone: 'a', css: 'margin_2px' }] });
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; const _p1 = p["tone"], v1 = _p1 === void 0 ? void 0 : _p1; return __pcx('color_red', { sm: "padding_4px" }[v0], { a: "color_blue" }[v1], v0 === 'sm' && v1 === 'a' && "margin_2px"); };
     export const out = {"color":"blue","padding":"4px","margin":"2px"};
     "#
     );
@@ -604,8 +869,8 @@ fn folds_cva_raw_skipping_an_unmatched_compound_variant() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
-    const styles = /* @__PURE__ */ __pcva({ base: 'color_red', variants: { size: { sm: 'padding_4px' }, tone: { a: 'color_blue' } }, compoundVariants: [{ size: 'sm', tone: 'a', css: 'margin_2px' }] });
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; const _p1 = p["tone"], v1 = _p1 === void 0 ? void 0 : _p1; return __pcx('color_red', { sm: "padding_4px" }[v0], { a: "color_blue" }[v1], v0 === 'sm' && v1 === 'a' && "margin_2px"); };
     export const out = {"color":"red","padding":"4px"};
     "#);
 }
@@ -625,8 +890,8 @@ fn folds_cva_raw_with_a_boolean_variant() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
-    const styles = /* @__PURE__ */ __pcva({ base: 'color_red', variants: { on: { true: 'opacity_0.5' } } });
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const styles = (p = {}) => { p ??= {}; const _p0 = p["on"], v0 = _p0 === void 0 ? void 0 : _p0; return __pcx('color_red', { true: "opacity_0.5" }[v0]); };
     export const out = {"color":"red","opacity":"0.5"};
     "#);
 }
@@ -650,8 +915,8 @@ fn folds_sva_raw_to_one_object_per_slot() {
     assert_snapshot!(
         output.code,
         @r#"
-    import { sva as __psva } from '@pandacss-internal/css';
-    const styles = /* @__PURE__ */ __psva({ slots: ['root', 'icon'], base: { root: 'color_red', icon: 'padding_1px' }, variants: { size: { sm: { root: 'padding_4px' } } }, defaultVariants: { size: 'sm' } });
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'sm' : _p0; return { root: __pcx("color_red", { sm: "padding_4px" }[v0]), icon: "padding_1px" }; };
     export const out = {"root":{"color":"red","padding":"4px"},"icon":{"padding":"1px"}};
     "#
     );
@@ -702,8 +967,8 @@ fn cva_raw_and_plain_calls_coexist_when_raw_folds() {
     assert_snapshot!(
         output.code,
         @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
-    const styles = /* @__PURE__ */ __pcva({ base: 'color_red', variants: { size: { sm: 'padding_4px' } } });
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return __pcx('color_red', { sm: "padding_4px" }[v0]); };
     export const out = {"color":"red","padding":"4px"};
     export const cls = styles({ size: props.size });
     "#
@@ -739,15 +1004,11 @@ fn folds_sva_raw_applying_default_variants_per_slot() {
     let output = transform("src/a.tsx", sva_compound_source!("{}"));
 
     assert!(output.changed);
-    assert!(
-        output.code.ends_with(concat!(
-            r#"export const out = {"root":{"color":"red","padding":"4px"},"#,
-            r#""icon":{"padding":"1px"}};"#,
-            "\n"
-        )),
-        "{}",
-        output.code
-    );
+    assert_snapshot!(output.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'sm' : _p0; const _p1 = p["tone"], v1 = _p1 === void 0 ? void 0 : _p1; return { root: __pcx("color_red", { sm: "padding_4px", lg: "padding_8px" }[v0], { a: "color_blue" }[v1], v0 === 'sm' && v1 === 'a' && "outline_1px"), icon: __pcx("padding_1px", { lg: "margin_2px" }[v0], v0 === 'sm' && v1 === 'a' && "border_9px", v0 === 'lg' && "border_3px") }; };
+    export const out = {"root":{"color":"red","padding":"4px"},"icon":{"padding":"1px"}};
+    "#);
 }
 
 #[test]
@@ -758,15 +1019,11 @@ fn folds_sva_raw_applying_a_matching_compound_variant_to_every_slot() {
     );
 
     assert!(output.changed);
-    assert!(
-        output.code.ends_with(concat!(
-            r#"export const out = {"root":{"color":"blue","padding":"4px","outline":"1px"},"#,
-            r#""icon":{"padding":"1px","border":"9px"}};"#,
-            "\n"
-        )),
-        "{}",
-        output.code
-    );
+    assert_snapshot!(output.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'sm' : _p0; const _p1 = p["tone"], v1 = _p1 === void 0 ? void 0 : _p1; return { root: __pcx("color_red", { sm: "padding_4px", lg: "padding_8px" }[v0], { a: "color_blue" }[v1], v0 === 'sm' && v1 === 'a' && "outline_1px"), icon: __pcx("padding_1px", { lg: "margin_2px" }[v0], v0 === 'sm' && v1 === 'a' && "border_9px", v0 === 'lg' && "border_3px") }; };
+    export const out = {"root":{"color":"blue","padding":"4px","outline":"1px"},"icon":{"padding":"1px","border":"9px"}};
+    "#);
 }
 
 #[test]
@@ -774,15 +1031,11 @@ fn folds_sva_raw_when_a_compound_variant_touches_one_slot_only() {
     let output = transform("src/a.tsx", sva_compound_source!("{ size: 'lg' }"));
 
     assert!(output.changed);
-    assert!(
-        output.code.ends_with(concat!(
-            r#"export const out = {"root":{"color":"red","padding":"8px"},"#,
-            r#""icon":{"padding":"1px","margin":"2px","border":"3px"}};"#,
-            "\n"
-        )),
-        "{}",
-        output.code
-    );
+    assert_snapshot!(output.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'sm' : _p0; const _p1 = p["tone"], v1 = _p1 === void 0 ? void 0 : _p1; return { root: __pcx("color_red", { sm: "padding_4px", lg: "padding_8px" }[v0], { a: "color_blue" }[v1], v0 === 'sm' && v1 === 'a' && "outline_1px"), icon: __pcx("padding_1px", { lg: "margin_2px" }[v0], v0 === 'sm' && v1 === 'a' && "border_9px", v0 === 'lg' && "border_3px") }; };
+    export const out = {"root":{"color":"red","padding":"8px"},"icon":{"padding":"1px","margin":"2px","border":"3px"}};
+    "#);
 }
 
 macro_rules! cva_array_compound_source {
@@ -799,46 +1052,51 @@ macro_rules! cva_array_compound_source {
     };
 }
 
-fn assert_folds_to(source: &str, expected: &str) {
+fn fold_raw(source: &str) -> TransformOutput {
     let output = transform("src/a.tsx", source);
 
     assert!(output.changed);
-    assert!(
-        output
-            .code
-            .ends_with(&format!("export const out = {expected};\n")),
-        "{}",
-        output.code
-    );
+    output
 }
 
 #[test]
 fn folds_cva_raw_with_the_first_value_of_an_array_compound_condition() {
-    assert_folds_to(
-        cva_array_compound_source!("{ size: 'sm' }"),
-        r#"{"color":"red","padding":"4px","margin":"2px"}"#,
-    );
+    let output = fold_raw(cva_array_compound_source!("{ size: 'sm' }"));
+    assert_snapshot!(output.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return __pcx('color_red', { sm: "padding_4px", md: "padding_6px", lg: "padding_8px" }[v0], (v0 === 'sm' || v0 === 'md') && "margin_2px"); };
+    export const out = {"color":"red","padding":"4px","margin":"2px"};
+    "#);
 }
 
 #[test]
 fn folds_cva_raw_with_a_later_value_of_an_array_compound_condition() {
-    assert_folds_to(
-        cva_array_compound_source!("{ size: 'md' }"),
-        r#"{"color":"red","padding":"6px","margin":"2px"}"#,
-    );
+    let output = fold_raw(cva_array_compound_source!("{ size: 'md' }"));
+    assert_snapshot!(output.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return __pcx('color_red', { sm: "padding_4px", md: "padding_6px", lg: "padding_8px" }[v0], (v0 === 'sm' || v0 === 'md') && "margin_2px"); };
+    export const out = {"color":"red","padding":"6px","margin":"2px"};
+    "#);
 }
 
 #[test]
 fn folds_cva_raw_skipping_an_array_compound_condition_that_excludes_the_value() {
-    assert_folds_to(
-        cva_array_compound_source!("{ size: 'lg' }"),
-        r#"{"color":"red","padding":"8px"}"#,
-    );
+    let output = fold_raw(cva_array_compound_source!("{ size: 'lg' }"));
+    assert_snapshot!(output.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return __pcx('color_red', { sm: "padding_4px", md: "padding_6px", lg: "padding_8px" }[v0], (v0 === 'sm' || v0 === 'md') && "margin_2px"); };
+    export const out = {"color":"red","padding":"8px"};
+    "#);
 }
 
 #[test]
 fn folds_cva_raw_when_a_compound_condition_names_an_unselected_variant() {
-    assert_folds_to(cva_array_compound_source!("{}"), r#"{"color":"red"}"#);
+    let output = fold_raw(cva_array_compound_source!("{}"));
+    assert_snapshot!(output.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return __pcx('color_red', { sm: "padding_4px", md: "padding_6px", lg: "padding_8px" }[v0], (v0 === 'sm' || v0 === 'md') && "margin_2px"); };
+    export const out = {"color":"red"};
+    "#);
 }
 
 /// The desugared runtime's `raw` returns class strings, so the definition may
@@ -934,11 +1192,10 @@ fn folds_a_raw_call_nested_inside_a_function() {
     let output = transform("src/a.tsx", source);
 
     assert!(output.changed);
-    assert!(
-        output.code.contains(r#"return {"color":"red"};"#),
-        "{}",
-        output.code
-    );
+    assert_snapshot!(output.code, @r#"
+    const styles = (p = {}) => 'color_red';
+    export function f() { return {"color":"red"}; }
+    "#);
 }
 
 #[test]
@@ -953,18 +1210,12 @@ fn folds_every_static_raw_call_on_one_binding() {
     let output = transform("src/a.tsx", source);
 
     assert!(output.changed);
-    assert!(
-        output
-            .code
-            .contains(r#"export const a = {"color":"red","padding":"4px"};"#),
-        "{}",
-        output.code
-    );
-    assert!(
-        output.code.contains(r#"export const b = {"color":"red"};"#),
-        "{}",
-        output.code
-    );
+    assert_snapshot!(output.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return __pcx('color_red', { sm: "padding_4px" }[v0]); };
+    export const a = {"color":"red","padding":"4px"};
+    export const b = {"color":"red"};
+    "#);
 }
 
 #[test]
@@ -980,12 +1231,10 @@ fn a_shadowed_raw_call_does_not_block_the_desugar() {
     let output = transform("src/a.tsx", source);
 
     assert!(output.changed);
-    assert!(output.code.contains("__pcva("), "{}", output.code);
-    assert!(
-        output.code.contains("return styles.raw({});"),
-        "{}",
-        output.code
-    );
+    assert_snapshot!(output.code, @"
+    const styles = (p = {}) => 'color_red';
+    export function f(styles) { return styles.raw({}); }
+    ");
 }
 
 #[test]
@@ -1008,7 +1257,10 @@ fn folds_an_imported_cva_raw_call() {
         super::common::transform_cross_file("src/a.tsx", source, &[("src/button.ts", button)]);
 
     assert!(output.changed);
-    assert!(!output.code.contains("button.raw"), "{}", output.code);
+    assert_snapshot!(output.code, @r#"
+    import { button } from './button';
+    export const cls = "color_blue padding_8px";
+    "#);
 }
 
 #[test]
@@ -1032,11 +1284,11 @@ fn an_imported_cva_raw_call_applies_default_variants() {
         super::common::transform_cross_file("src/a.tsx", source, &[("src/button.ts", button)]);
 
     assert!(output.changed);
-    assert!(
-        output.code.contains(r#"{"color":"red","padding":"4px"}"#),
-        "{}",
-        output.code
-    );
+    assert_snapshot!(output.code, @r#"
+    import { button } from './button';
+    export const styles = {"color":"red","padding":"4px"};
+    export const cls = "color_blue";
+    "#);
 }
 
 #[test]
@@ -1059,11 +1311,11 @@ fn folds_an_imported_sva_raw_call_per_slot() {
         super::common::transform_cross_file("src/a.tsx", source, &[("src/parts.ts", recipe)]);
 
     assert!(output.changed);
-    assert!(
-        output.code.contains(r#""root":{"display":"flex"}"#),
-        "{}",
-        output.code
-    );
+    assert_snapshot!(output.code, @r#"
+    import { parts } from './parts';
+    export const styles = {"root":{"display":"flex"},"label":{"color":"red"}};
+    export const cls = "color_blue";
+    "#);
 }
 
 #[test]
@@ -1085,7 +1337,11 @@ fn an_imported_recipe_raw_with_dynamic_props_keeps_the_call() {
     let output =
         super::common::transform_cross_file("src/a.tsx", source, &[("src/button.ts", button)]);
 
-    assert!(output.code.contains("button.raw"), "{}", output.code);
+    assert_snapshot!(output.code, @r#"
+    import { button } from './button';
+    export const styles = (size) => button.raw({ size });
+    export const cls = "color_blue";
+    "#);
     // The definition file precomputes its classes, so this returns a string at
     // runtime. Warn rather than fail silently.
     let warning = output
@@ -1093,11 +1349,7 @@ fn an_imported_recipe_raw_with_dynamic_props_keeps_the_call() {
         .iter()
         .find(|diagnostic| diagnostic.code == "imported_recipe_raw_dynamic")
         .expect("diagnostic");
-    assert!(
-        warning.message.contains("statically known variants"),
-        "{}",
-        warning.message
-    );
+    assert_snapshot!(warning.message, @"`button.raw(...)` needs statically known variants because `button` is defined in another file. It will return a class string, not a style object. Pass literal variant values, or move the composition into the file that defines `button`.");
 }
 
 #[test]
@@ -1180,9 +1432,8 @@ fn folds_a_raw_call_with_no_arguments() {
         export const cls = css(button.raw(), { color: 'blue' });
     "#};
     assert_snapshot!(transform("src/styles.tsx", source).code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
     import { css } from '@panda/css';
-    const button = /* @__PURE__ */ __pcva({ base: 'color_red' });
+    const button = (p = {}) => 'color_red';
     export const cls = css({"color":"red"}, { color: 'blue' });
     "#);
 }
@@ -1199,11 +1450,11 @@ fn folds_a_raw_call_with_no_arguments_on_a_recipe_with_defaults() {
         export const styles = button.raw();
     "#};
     let output = transform("src/styles.tsx", source);
-    assert!(
-        output.code.contains(r#""fontSize":"20px""#),
-        "default variant should be applied: {}",
-        output.code
-    );
+    assert_snapshot!(output.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const button = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'lg' : _p0; return __pcx('color_red', { sm: "fs_12px", lg: "fs_20px" }[v0]); };
+    export const styles = {"color":"red","fontSize":"20px"};
+    "#);
 }
 
 // --- a consumer that imports the recipe but nothing from Panda ---
@@ -1229,11 +1480,10 @@ fn folds_a_raw_call_in_a_file_that_imports_no_panda_api() {
         super::common::transform_cross_file("main.tsx", source, &[("recipes.ts", recipes)]);
 
     assert!(output.changed, "the raw call should fold: {}", output.code);
-    assert!(
-        output.code.contains(r#""fontSize":"12px""#),
-        "expected resolved styles, got: {}",
-        output.code
-    );
+    assert_snapshot!(output.code, @r#"
+    import { button } from './recipes';
+    export const styles = {"color":"red","fontSize":"12px"};
+    "#);
 }
 
 #[test]

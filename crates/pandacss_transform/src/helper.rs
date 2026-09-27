@@ -509,7 +509,6 @@ mod tests {
             r#"isError ? "color_red" : "color_blue""#,
             true,
         );
-        assert!(!print.attribute.contains("__pcx"));
         assert!(!print.needs_cx);
         assert_eq!(
             print.attribute,
@@ -594,7 +593,7 @@ mod tests {
         let module = pandacss_extractor::analyze_module(source, "fixture.ts");
         let edits = super::super::imports::plan_internal_css_import_removals(source, &module);
         let out = super::super::apply::project_edits(source, &edits);
-        assert!(!out.contains("@pandacss-internal/css"));
+        insta::assert_snapshot!(out, @"        export const x = 1;");
     }
 
     #[test]
@@ -620,8 +619,10 @@ mod tests {
                 needs_sva: false,
             },
         );
-        assert!(out.starts_with("import { cva as __pcva }"));
-        assert!(out.contains("export const button = __pcva"));
+        insta::assert_snapshot!(out, @"
+        import { cva as __pcva } from '@pandacss-internal/css';
+        export const button = __pcva({ base: 'color_red' });
+        ");
     }
 
     #[test]
@@ -634,7 +635,9 @@ mod tests {
     fn inject_cx_import_prepends_when_missing() {
         let source = "export const x = __pcx('a');\n";
         let out = inject_cx_import(source);
-        assert!(out.starts_with("import { cx as __pcx }"));
-        assert!(out.contains("export const x = __pcx('a');"));
+        insta::assert_snapshot!(out, @"
+        import { cx as __pcx } from '@pandacss-internal/css';
+        export const x = __pcx('a');
+        ");
     }
 }

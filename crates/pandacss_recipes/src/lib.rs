@@ -58,6 +58,10 @@ pub struct CompoundVariant {
 pub struct SlotRecipe {
     /// Slot names; inferred from `base` + variant option keys when omitted.
     pub slots: Vec<String>,
+    /// Prefix for generated slot classes (`{class_name}__{slot}`). These
+    /// classes affect callable output but stay out of `.raw()` style objects.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub class_name: Option<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub base: Vec<(String, Literal)>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -155,6 +159,7 @@ impl SlotRecipe {
         let entries = object_entries_owned(literal)?;
 
         let mut slots: Vec<String> = Vec::new();
+        let mut class_name: Option<String> = None;
         let mut base: Vec<(String, Literal)> = Vec::new();
         let mut variants: Vec<SlotVariantGroup> = Vec::new();
         let mut compound_variants: Vec<SlotCompoundVariant> = Vec::new();
@@ -163,6 +168,13 @@ impl SlotRecipe {
         for (key, value) in entries {
             match key.as_str() {
                 "slots" => slots = parse_string_array_owned(value),
+                "className" => {
+                    if let Literal::String(value) = value
+                        && !value.is_empty()
+                    {
+                        class_name = Some(value);
+                    }
+                }
                 "base" => base = parse_slot_styles_owned(value),
                 "variants" => variants = parse_slot_variants_owned(value),
                 "compoundVariants" => {
@@ -179,6 +191,7 @@ impl SlotRecipe {
 
         Some(SlotRecipe {
             slots,
+            class_name,
             base,
             variants,
             compound_variants,

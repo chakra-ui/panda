@@ -19,8 +19,6 @@ fn rewrites_a_static_keyframes_object_to_the_name_string() {
 
     assert!(output.changed);
     assert!(!output.bailed);
-    assert!(!output.code.contains("keyframes("));
-    assert!(!output.code.contains("@panda/css"));
     assert_snapshot!(output.code, @r#"export const spin = "kf_fhCilR";"#);
 }
 

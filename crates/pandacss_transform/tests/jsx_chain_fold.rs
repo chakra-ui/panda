@@ -16,9 +16,8 @@ fn element_props_win_over_the_chain_base() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red' }));
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })());
     export const el = <button type="submit" className="color_blue" />;
     "#);
 }
@@ -36,9 +35,8 @@ fn an_alias_of_a_folded_chain_still_folds() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red' }));
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })());
     const Alias = Button;
     export const el = <button className="color_red" />;
     "#);
@@ -56,9 +54,8 @@ fn folds_a_styled_definition_to_its_intrinsic_tag() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red' }));
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })());
     export const el = <button className="color_red">hi</button>;
     "#);
 }
@@ -77,9 +74,8 @@ fn folds_a_multi_level_chain_with_the_outermost_level_winning() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const L0 = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red margin_0' }));
+    const L0 = /* @__PURE__ */ styled('button', /* @__PURE__ */ (() => { const c = { base: { color: 'red', margin: '0' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red margin_0'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })());
     const L1 = styled(L0, { base: { color: 'blue' } });
     const L2 = styled(L1, { base: { color: 'green' } });
     export const el = <button className="color_green margin_0">hi</button>;
@@ -98,9 +94,8 @@ fn the_as_prop_retargets_a_folded_chain() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red' }));
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })());
     export const el = <a href="/home" className="color_red" />;
     "#);
 }
@@ -117,7 +112,13 @@ fn a_chain_defined_inside_a_function_is_not_folded() {
 
     let output = transform_jsx("src/app.tsx", source);
 
-    assert!(output.code.contains(r#"<Button />"#), "{}", output.code);
+    assert_snapshot!(output.code, @"
+    import { styled } from '@panda/jsx';
+    export function App() {
+      const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })());
+      return <Button />;
+    }
+    ");
 }
 
 #[test]
@@ -131,7 +132,12 @@ fn a_non_local_base_component_blocks_the_chain_fold() {
 
     let output = transform_jsx("src/app.tsx", source);
 
-    assert!(output.code.contains(r#"<Button />"#), "{}", output.code);
+    assert_snapshot!(output.code, @"
+    import { styled } from '@panda/jsx';
+    import { Other } from './other';
+    const Button = styled(Other, { base: { color: 'red' } });
+    export const el = <Button />;
+    ");
 }
 
 #[test]
@@ -144,7 +150,11 @@ fn a_rebindable_let_declaration_blocks_the_chain_fold() {
 
     let output = transform_jsx("src/app.tsx", source);
 
-    assert!(output.code.contains(r#"<Button />"#), "{}", output.code);
+    assert_snapshot!(output.code, @"
+    import { styled } from '@panda/jsx';
+    let Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })());
+    export const el = <Button />;
+    ");
 }
 
 #[test]
@@ -158,7 +168,11 @@ fn an_html_default_prop_blocks_the_chain_fold() {
 
     let output = transform_jsx("src/app.tsx", source);
 
-    assert!(output.code.contains(r#"<Button />"#), "{}", output.code);
+    assert_snapshot!(output.code, @"
+    import { styled } from '@panda/jsx';
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })(), { defaultProps: { type: 'submit' } });
+    export const el = <Button />;
+    ");
 }
 
 #[test]
@@ -174,11 +188,15 @@ fn variants_block_the_chain_fold() {
 
     let output = transform_jsx("src/app.tsx", source);
 
-    assert!(
-        output.code.contains(r#"<Button size="sm" />"#),
-        "{}",
-        output.code
-    );
+    assert_snapshot!(output.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    import { styled } from '@panda/jsx';
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ (() => { const c = {
+      base: { color: 'red' },
+      variants: { size: { sm: { padding: '4px' } } },
+    }, d = c.defaultVariants ?? {}, k = ["size"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return __pcx('color_red', { sm: "padding_4px" }[v0]); }; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: { size: ["sm"] }, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })());
+    export const el = <Button size="sm" />;
+    "#);
 }
 
 #[test]
@@ -196,17 +214,14 @@ fn a_local_binding_shadowing_a_folded_chain_is_left_alone() {
 
     let output = transform_jsx("src/app.tsx", source);
 
-    assert!(
-        !output.code.contains("<button"),
-        "shadowed component must not fold to the chain's tag: {}",
-        output.code
-    );
-    // the element keeps its own identity and gains no class from the chain
-    assert!(
-        output.code.contains(r#"<Button href="/go">go</Button>"#),
-        "shadowed element should be untouched: {}",
-        output.code
-    );
+    assert_snapshot!(output.code, @r#"
+    import { styled } from '@panda/jsx';
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })());
+    export const Link = () => {
+      const Button = (props) => <a {...props} />;
+      return <Button href="/go">go</Button>;
+    };
+    "#);
 }
 
 #[test]
@@ -223,9 +238,8 @@ fn style_only_default_props_fold_into_the_class_string() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red' }), {
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })(), {
       defaultProps: { margin: '0' },
     });
     export const el = <button className="color_red margin_0">hi</button>;
@@ -246,9 +260,8 @@ fn a_shorthand_default_prop_folds() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red' }), {
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })(), {
       defaultProps: { bg: 'blue' },
     });
     export const el = <button className="bg_blue color_red" />;
@@ -269,9 +282,8 @@ fn default_props_win_over_the_chain_base() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red' }), {
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })(), {
       defaultProps: { color: 'blue' },
     });
     export const el = <button className="color_blue" />;
@@ -292,9 +304,8 @@ fn element_props_win_over_default_props() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red' }), {
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })(), {
       defaultProps: { color: 'blue' },
     });
     export const el = <button className="color_green" />;
@@ -316,9 +327,8 @@ fn an_alias_of_a_chain_with_default_props_still_folds() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red' }), {
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })(), {
       defaultProps: { margin: '0' },
     });
     const Alias = Button;
@@ -343,9 +353,8 @@ fn wrapping_a_chain_drops_the_inner_levels_default_props() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Base = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red' }), {
+    const Base = /* @__PURE__ */ styled('button', /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })(), {
       defaultProps: { margin: '0' },
     });
     const Button = styled(Base, { base: { padding: '4px' } });
@@ -367,7 +376,13 @@ fn a_css_prop_default_blocks_the_chain_fold() {
 
     let output = transform_jsx("src/app.tsx", source);
 
-    assert!(output.code.contains(r#"<Button />"#), "{}", output.code);
+    assert_snapshot!(output.code, @"
+    import { styled } from '@panda/jsx';
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })(), {
+      defaultProps: { css: { margin: '0' } },
+    });
+    export const el = <Button />;
+    ");
 }
 
 #[test]
@@ -383,7 +398,14 @@ fn should_forward_prop_blocks_the_chain_fold() {
 
     let output = transform_jsx("src/app.tsx", source);
 
-    assert!(output.code.contains(r#"<Button />"#), "{}", output.code);
+    assert_snapshot!(output.code, @"
+    import { styled } from '@panda/jsx';
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })(), {
+      defaultProps: { margin: '0' },
+      shouldForwardProp: (prop) => prop !== 'margin',
+    });
+    export const el = <Button />;
+    ");
 }
 
 #[test]
@@ -401,10 +423,9 @@ fn a_statically_resolved_spread_in_default_props_still_folds() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
     const shared = { margin: '0' };
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red' }), {
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })(), {
       defaultProps: { ...shared, color: 'blue' },
     });
     export const el = <button className="color_blue margin_0" />;
@@ -424,7 +445,14 @@ fn an_unresolvable_spread_in_default_props_blocks_the_chain_fold() {
 
     let output = transform_jsx("src/app.tsx", source);
 
-    assert!(output.code.contains(r#"<Button />"#), "{}", output.code);
+    assert_snapshot!(output.code, @"
+    import { styled } from '@panda/jsx';
+    import { shared } from './shared';
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })(), {
+      defaultProps: { ...shared, color: 'blue' },
+    });
+    export const el = <Button />;
+    ");
 }
 
 #[test]
@@ -441,7 +469,13 @@ fn an_unknown_default_prop_blocks_the_chain_fold() {
 
     let output = transform_jsx("src/app.tsx", source);
 
-    assert!(output.code.contains(r#"<Button />"#), "{}", output.code);
+    assert_snapshot!(output.code, @"
+    import { styled } from '@panda/jsx';
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })(), {
+      defaultProps: { color: 'blue', role: 'button' },
+    });
+    export const el = <Button />;
+    ");
 }
 
 #[test]
@@ -458,9 +492,8 @@ fn a_conditional_default_prop_folds() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pcva({ base: 'color_red' }), {
+    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })(), {
       defaultProps: { color: { base: 'blue', _hover: 'green' } },
     });
     export const el = <button className="color_blue hover:color_green" />;
@@ -479,9 +512,8 @@ fn folds_a_chain_built_with_a_custom_factory_name_to_its_tag() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
     import { panda } from '@panda/jsx';
-    const Button = /* @__PURE__ */ panda('button', /* @__PURE__ */ __pcva({ base: 'color_red' }));
+    const Button = /* @__PURE__ */ panda('button', /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })());
     export const el = <button type="submit" className="color_red">hi</button>;
     "#);
 }

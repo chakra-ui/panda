@@ -192,6 +192,7 @@ fn separated_import(
 
 #[cfg(test)]
 mod tests {
+    use insta::assert_snapshot;
     use pandacss_extractor::{
         ImportBindingFacts, ImportKind, ImportRecord, ImportSpecifier, ImportSpecifierKind,
         ModuleFacts,
@@ -270,8 +271,10 @@ mod tests {
             build_transform_edits(&system, "src/styles.ts", source, &plan, HelperCxMode::Auto);
         let out = project_edits(source, &edits);
 
-        assert!(out.contains("import { css } from '@panda/css';"));
-        assert!(out.contains("\"color_red\""));
+        assert_snapshot!(out, @r#"
+        import { css } from '@panda/css';
+        export const cls "color_red"});
+        "#);
     }
 
     #[test]
@@ -300,7 +303,10 @@ mod tests {
             build_transform_edits(&system, "src/styles.ts", source, &plan, HelperCxMode::Auto);
         let out = project_edits(source, &edits);
 
-        assert!(out.contains("import { cx as __pcx } from '@pandacss-internal/css';"));
+        assert_snapshot!(out, @r#"
+        import { cx as __pcx } from '@pandacss-internal/css';
+        export const cls = "color_red";
+        "#);
     }
 
     #[test]

@@ -201,12 +201,11 @@ fn splits_injects_the_cx_helper_import() {
         export const cls = css({ color: 'red', width: props.w });
     "#});
     assert!(out.changed);
-    assert!(out.code.contains("__pcx"));
-    assert!(
-        out.code.contains("cx as __pcx"),
-        "cx import should be injected: {}",
-        out.code
-    );
+    assert_snapshot!(out.code, @r#"
+    import { cx as __pcx } from '@pandacss-internal/css';
+    import { css } from '@panda/css';
+    export const cls = __pcx("color_red", css({ width: props.w }));
+    "#);
 }
 
 // ─── bail cases: leave the call untouched, never drop a dynamic prop ───
@@ -281,7 +280,6 @@ fn fully_static_object_inlines_without_cx() {
         export const cls = css({ color: 'red', padding: '2' });
     "#});
     assert!(out.changed);
-    assert!(!out.code.contains("__pcx"));
     assert_snapshot!(out.code, @r#"export const cls = "color_red padding_2";"#);
 }
 
@@ -292,7 +290,6 @@ fn finite_conditional_stays_a_ternary_not_a_split() {
         export const cls = css({ color: isError ? 'red' : 'blue' });
     "#});
     assert!(out.changed);
-    assert!(!out.code.contains("__pcx"));
     assert_snapshot!(out.code, @r#"export const cls = isError ? "color_red" : "color_blue";"#);
 }
 
@@ -303,7 +300,6 @@ fn arbitrary_selector_only_object_inlines_static() {
         export const cls = css({ ['&:data-panda']: { display: 'flex' } });
     "#});
     assert!(out.changed);
-    assert!(!out.code.contains("__pcx"));
     assert_snapshot!(out.code, @r#"export const cls = "[&:data-panda]:d_flex";"#);
 }
 
@@ -315,7 +311,6 @@ fn multi_arg_css_is_not_split() {
         export const cls = css({ color: 'red' }, { padding: '2' });
     "#});
     assert!(out.changed);
-    assert!(!out.code.contains("__pcx"));
     assert_snapshot!(out.code, @r#"export const cls = "color_red padding_2";"#);
 }
 
@@ -348,7 +343,13 @@ fn css_prop_forwarded_through_typed_destructured_param_is_not_dropped() {
         );
     "#});
     assert!(!out.bailed);
-    assert!(out.code.contains("css(base, cssProp)"), "{}", out.code);
+    assert_snapshot!(out.code, @"
+    import { css } from '@panda/css';
+    const base = { color: 'red' };
+    export const L0 = ({ css: cssProp, children }: { css?: any; children?: any }) => (
+      <button className={css(base, cssProp)}>{children}</button>
+    );
+    ");
 }
 
 #[test]
@@ -360,5 +361,10 @@ fn typed_destructured_param_with_concrete_type_is_not_dropped() {
           css(base, extra);
     "#});
     assert!(!out.bailed);
-    assert!(out.code.contains("css(base, extra)"), "{}", out.code);
+    assert_snapshot!(out.code, @"
+    import { css } from '@panda/css';
+    const base = { color: 'red' };
+    export const L0 = ({ extra }: { extra?: Record<string, string> }) =>
+      css(base, extra);
+    ");
 }

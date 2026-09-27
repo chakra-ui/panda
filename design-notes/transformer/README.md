@@ -61,6 +61,7 @@ Related notes:
 - [Output & host layer (Driver)](../output-and-host-layer.md)
 - [Extraction pipeline](../extraction-pipeline.md)
 - [StyleTree](../style-tree.md) — span-backed extract IR for conditional class lowering
+- [Recipe specialization](./recipe-specialization.mdx) — compile `cva` and `sva` into compact recipe functions
 - [Prototype logic](./prototype-logic.md)
 
 ## Problem
