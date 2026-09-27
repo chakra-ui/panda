@@ -10,10 +10,15 @@ use pandacss_system::System;
 use super::resolve;
 
 #[derive(Debug, Clone, Default)]
+#[allow(
+    clippy::struct_excessive_bools,
+    reason = "one flag per internal runtime import"
+)]
 pub struct TransformHelperFacts {
     pub needs_cx: bool,
     pub needs_cva: bool,
     pub needs_sva: bool,
+    pub needs_attach_recipe: bool,
 }
 
 impl TransformHelperFacts {
@@ -21,6 +26,7 @@ impl TransformHelperFacts {
         self.needs_cx |= other.needs_cx;
         self.needs_cva |= other.needs_cva;
         self.needs_sva |= other.needs_sva;
+        self.needs_attach_recipe |= other.needs_attach_recipe;
     }
 
     /// Content that calls no internal runtime symbol.
@@ -29,6 +35,7 @@ impl TransformHelperFacts {
             needs_cx: false,
             needs_cva: false,
             needs_sva: false,
+            needs_attach_recipe: false,
         }
     }
 
@@ -37,6 +44,7 @@ impl TransformHelperFacts {
             needs_cx: true,
             needs_cva: false,
             needs_sva: false,
+            needs_attach_recipe: false,
         }
     }
 }

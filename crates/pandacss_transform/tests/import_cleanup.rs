@@ -80,8 +80,9 @@ fn removes_css_import_when_cva_is_specialized() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
     export const cls = "color_red";
-    export const button = /* @__PURE__ */ (() => { const c = { base: { color: 'blue' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_blue'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    export const button = /* @__PURE__ */ __pr((p = {}) => 'color_blue', { base: { color: 'blue' } }, [], {});
     "#);
 }
 
@@ -112,9 +113,10 @@ fn keeps_styled_import_when_factory_call_stays_live() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
     export const el = <div className="color_red" />;
-    export const Card = /* @__PURE__ */ styled('div', /* @__PURE__ */ (() => { const c = { base: { color: 'blue' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_blue'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })());
+    export const Card = /* @__PURE__ */ styled('div', /* @__PURE__ */ __pr((p = {}) => 'color_blue', { base: { color: 'blue' } }, [], {}));
     "#);
 }
 
@@ -158,8 +160,7 @@ fn sync_internal_css_import_narrows_symbols_to_live_helpers() {
         "fixture.ts",
         &pandacss_transform::TransformHelperFacts {
             needs_cx: true,
-            needs_cva: false,
-            needs_sva: false,
+            ..Default::default()
         },
         HelperCxMode::Auto,
     );

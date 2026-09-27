@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cva, css, cx, sva } from '../src/runtime/internal'
+import { attachRecipe, cva, css, cx, sva } from '../src/runtime/internal'
 import { isInternalCssImport } from '../src/runtime/internal/ids'
 
 describe('@pandacss-internal/css runtime', () => {
@@ -323,8 +323,8 @@ describe('design system recipes', () => {
       loading: ['true'],
     })
     expect(button.splitVariantProps({ size: 'sm', onClick: 'fn', id: 'save' })).toEqual([
-      { onClick: 'fn', id: 'save' },
       { size: 'sm' },
+      { onClick: 'fn', id: 'save' },
     ])
     expect(button.getVariantProps({ variant: 'ghost' })).toEqual({ size: 'md', variant: 'ghost' })
   })
@@ -440,8 +440,12 @@ describe('design system recipes', () => {
       }),
     )
 
-    expect(danger.raw({ size: 'sm' })).toContain('px_2')
-    expect(danger.raw({})).toContain('bg_red.500')
+    expect(danger.raw({ size: 'sm' })).toMatchInlineSnapshot(
+      `"d_inline-flex items_center justify_center rounded_6px fw_500 cursor_pointer bg_red.500 px_2 py_1 fs_sm bd_1px_solid c_blue.500"`,
+    )
+    expect(danger.raw({})).toMatchInlineSnapshot(
+      `"d_inline-flex items_center justify_center rounded_6px fw_500 cursor_pointer bg_red.500 px_4 py_2 fs_md bd_1px_solid c_blue.500"`,
+    )
     agreesWithRaw(danger, [{}, { size: 'sm' }, { size: 'lg', loading: true }])
   })
 
@@ -479,7 +483,7 @@ describe('design system recipes', () => {
 
   it('exposes card slot metadata for splitting props', () => {
     expect(card.variantKeys).toEqual(['density', 'raised'])
-    expect(card.splitVariantProps({ raised: true, onClick: 'fn' })).toEqual([{ onClick: 'fn' }, { raised: true }])
+    expect(card.splitVariantProps({ raised: true, onClick: 'fn' })).toEqual([{ raised: true }, { onClick: 'fn' }])
   })
 })
 
@@ -632,5 +636,52 @@ describe('sva with per-slot variant classes', () => {
     })
 
     expect(card({ size: 'sm' })).toEqual({ root: 'd_grid', title: 'fw_bold fs_12px' })
+  })
+})
+
+describe('attachRecipe — specialized recipe surface', () => {
+  const button = attachRecipe(
+    (props: Record<string, unknown> = {}) => (props.size === 'lg' ? 'fs_16px' : 'fs_12px'),
+    {
+      variants: { size: { sm: { fontSize: '12px' }, lg: { fontSize: '16px' } } },
+      defaultVariants: { size: 'sm' },
+    },
+    ['size'],
+    { size: ['sm', 'lg'] },
+  )
+
+  it('keeps the specialized function callable', () => {
+    expect(button({ size: 'lg' })).toBe('fs_16px')
+  })
+
+  it('exposes cva metadata on an exported recipe', () => {
+    expect(button.__cva__).toBe(true)
+    expect(button.variantKeys).toEqual(['size'])
+    expect(button.variantMap).toEqual({ size: ['sm', 'lg'] })
+    expect(button.config.defaultVariants).toEqual({ size: 'sm' })
+    expect('classNameMap' in button).toBe(false)
+  })
+
+  it('fills defaults for absent and undefined variant props', () => {
+    expect(button.getVariantProps()).toEqual({ size: 'sm' })
+    expect(button.getVariantProps({ size: undefined, id: 'save' })).toEqual({ size: 'sm', id: 'save' })
+  })
+
+  it('splits variant props first, like the generated styled-system recipe', () => {
+    expect(button.splitVariantProps({ size: 'lg', id: 'save' })).toEqual([{ size: 'lg' }, { id: 'save' }])
+  })
+
+  it('marks a recipe with a class name map as a slot recipe', () => {
+    const tabs = attachRecipe(
+      () => ({ root: 'tabs__root', trigger: 'tabs__trigger' }),
+      { slots: ['root', 'trigger'], className: 'tabs' },
+      [],
+      {},
+      { root: 'tabs__root', trigger: 'tabs__trigger' },
+    )
+
+    expect(tabs.__cva__).toBe(false)
+    expect(tabs.classNameMap).toEqual({ root: 'tabs__root', trigger: 'tabs__trigger' })
+    expect(tabs.getVariantProps({ id: 'tabs' })).toEqual({ id: 'tabs' })
   })
 })

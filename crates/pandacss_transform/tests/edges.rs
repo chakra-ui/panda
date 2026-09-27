@@ -788,8 +788,9 @@ fn styled_call_syntax_rewrites_config_to_specialized_function() {
     assert!(output.changed);
     assert!(!output.helper.needs_cva);
     assert_snapshot!(output.code, @"
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    export const Card = /* @__PURE__ */ styled('div', /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })());
+    export const Card = /* @__PURE__ */ styled('div', /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}));
     ");
 }
 
@@ -805,8 +806,9 @@ fn styled_member_call_rewrites_style_object_to_specialized_function() {
     assert!(output.changed);
     assert!(!output.helper.needs_cva);
     assert_snapshot!(output.code, @"
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    export const Card = /* @__PURE__ */ styled.div(/* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })());
+    export const Card = /* @__PURE__ */ styled.div(/* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}));
     ");
 }
 

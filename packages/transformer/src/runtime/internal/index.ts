@@ -2,3 +2,4 @@ export { cx, createCx, getMergeKey, splitClassName, type CxOptions, type CxSepar
 export { css } from './css'
 export { cva, type StringCvaConfig } from './cva'
 export { sva } from './sva'
+export { attachRecipe } from './recipe'

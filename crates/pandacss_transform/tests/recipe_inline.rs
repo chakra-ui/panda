@@ -26,8 +26,8 @@ fn rewrites_inline_cva_to_a_specialized_function() {
     assert!(output.changed);
     assert!(!output.helper.needs_cva);
     assert_snapshot!(output.code, @r#"
-    import { cx as __pcx } from '@pandacss-internal/css';
-    export const button = /* @__PURE__ */ (() => { const c = {
+    import { cx as __pcx, attachRecipe as __pr } from '@pandacss-internal/css';
+    export const button = /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'md' : _p0; return __pcx('background-color_blue color_red', { sm: "fs_12px", md: "fs_16px" }[v0]); }, {
       base: { color: 'red', backgroundColor: 'blue' },
       variants: {
         size: {
@@ -36,7 +36,7 @@ fn rewrites_inline_cva_to_a_specialized_function() {
         },
       },
       defaultVariants: { size: 'md' },
-    }, d = c.defaultVariants ?? {}, k = ["size"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'md' : _p0; return __pcx('background-color_blue color_red', { sm: "fs_12px", md: "fs_16px" }[v0]); }; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: { size: ["sm", "md"] }, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    }, ["size"], { size: ["sm", "md"] });
     "#);
 }
 
@@ -66,8 +66,8 @@ fn rewrites_inline_sva_to_a_specialized_function() {
     assert!(output.changed);
     assert!(!output.helper.needs_sva);
     assert_snapshot!(output.code, @r#"
-    import { cx as __pcx } from '@pandacss-internal/css';
-    export const tabs = /* @__PURE__ */ (() => { const c = {
+    import { cx as __pcx, attachRecipe as __pr } from '@pandacss-internal/css';
+    export const tabs = /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: __pcx("d_flex", { sm: "fs_12px" }[v0]), trigger: __pcx("cursor_pointer", { sm: "fs_12px" }[v0]) }; }, {
       slots: ['root', 'trigger'],
       base: {
         root: { display: 'flex' },
@@ -81,7 +81,7 @@ fn rewrites_inline_sva_to_a_specialized_function() {
           },
         },
       },
-    }, d = c.defaultVariants ?? {}, k = ["size"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: __pcx("d_flex", { sm: "fs_12px" }[v0]), trigger: __pcx("cursor_pointer", { sm: "fs_12px" }[v0]) }; }; return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: { size: ["sm"] }, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    }, ["size"], { size: ["sm"] }, {});
     "#);
 }
 
@@ -99,10 +99,11 @@ fn specializes_sva_class_names_without_a_recipe_runtime() {
 
     assert!(!output.helper.needs_sva);
     assert_snapshot!(output.code, @r#"
-    export const tabs = /* @__PURE__ */ (() => { const c = {
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
+    export const tabs = /* @__PURE__ */ __pr((p = {}) => ({ root: "tabs__root", trigger: "tabs__trigger" }), {
       slots: ['root', 'trigger'],
       className: 'tabs',
-    }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => ({ root: "tabs__root", trigger: "tabs__trigger" }); return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: {}, classNameMap: { root: "tabs__root", trigger: "tabs__trigger" }, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    }, [], {}, { root: "tabs__root", trigger: "tabs__trigger" });
     "#);
 }
 
@@ -132,8 +133,8 @@ fn rewrites_cva_with_compound_variants() {
     assert!(output.changed);
     assert!(!output.helper.needs_cva);
     assert_snapshot!(output.code, @r#"
-    import { cx as __pcx } from '@pandacss-internal/css';
-    export const button = /* @__PURE__ */ (() => { const c = {
+    import { cx as __pcx, attachRecipe as __pr } from '@pandacss-internal/css';
+    export const button = /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'sm' : _p0; const _p1 = p["intent"], v1 = _p1 === void 0 ? 'danger' : _p1; return __pcx('color_white', { sm: "fs_12px" }[v0], { danger: "background-color_red" }[v1], v0 === 'sm' && v1 === 'danger' && "color_black"); }, {
       base: { color: 'white' },
       variants: {
         size: {
@@ -147,7 +148,7 @@ fn rewrites_cva_with_compound_variants() {
         { size: 'sm', intent: 'danger', css: { color: 'black' } },
       ],
       defaultVariants: { size: 'sm', intent: 'danger' },
-    }, d = c.defaultVariants ?? {}, k = ["size", "intent"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'sm' : _p0; const _p1 = p["intent"], v1 = _p1 === void 0 ? 'danger' : _p1; return __pcx('color_white', { sm: "fs_12px" }[v0], { danger: "background-color_red" }[v1], v0 === 'sm' && v1 === 'danger' && "color_black"); }; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: { size: ["sm"], intent: ["danger"] }, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    }, ["size", "intent"], { size: ["sm"], intent: ["danger"] });
     "#);
 }
 
@@ -187,8 +188,8 @@ fn rewrites_sva_variants_per_slot_when_slots_differ() {
     assert!(output.changed);
     assert!(!output.helper.needs_sva);
     assert_snapshot!(output.code, @r#"
-    import { cx as __pcx } from '@pandacss-internal/css';
-    export const card = /* @__PURE__ */ (() => { const c = {
+    import { cx as __pcx, attachRecipe as __pr } from '@pandacss-internal/css';
+    export const card = /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'lg' : _p0; return { root: __pcx("d_grid", { sm: "padding_4px", lg: "padding_16px" }[v0]), header: ({ sm: "fs_12px", lg: "fs_20px" }[v0]) || '', body: __pcx({ lg: "gap_8px" }[v0], v0 === 'sm' && "d_none") }; }, {
       slots: ['root', 'header', 'body'],
       base: { root: { display: 'grid' } },
       variants: {
@@ -199,7 +200,7 @@ fn rewrites_sva_variants_per_slot_when_slots_differ() {
       },
       defaultVariants: { size: 'lg' },
       compoundVariants: [{ size: 'sm', css: { body: { display: 'none' } } }],
-    }, d = c.defaultVariants ?? {}, k = ["size"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'lg' : _p0; return { root: __pcx("d_grid", { sm: "padding_4px", lg: "padding_16px" }[v0]), header: ({ sm: "fs_12px", lg: "fs_20px" }[v0]) || '', body: __pcx({ lg: "gap_8px" }[v0], v0 === 'sm' && "d_none") }; }; return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: { size: ["sm", "lg"] }, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    }, ["size"], { size: ["sm", "lg"] }, {});
     "#);
 }
 
@@ -216,10 +217,11 @@ fn keeps_an_sva_variant_off_the_slots_it_does_not_style() {
     let output = transform("src/recipes.ts", source);
 
     assert_snapshot!(output.code, @r#"
-    export const tabs = /* @__PURE__ */ (() => { const c = {
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
+    export const tabs = /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: ({ sm: "fs_12px" }[v0]) || '', trigger: '' }; }, {
       slots: ['root', 'trigger'],
       variants: { size: { sm: { root: { fontSize: '12px' } } } },
-    }, d = c.defaultVariants ?? {}, k = ["size"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: ({ sm: "fs_12px" }[v0]) || '', trigger: '' }; }; return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: { size: ["sm"] }, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    }, ["size"], { size: ["sm"] }, {});
     "#);
 }
 
@@ -242,7 +244,8 @@ fn rewrites_sva_boolean_variant_that_styles_one_slot() {
     let output = transform("src/recipes.ts", source);
 
     assert_snapshot!(output.code, @r#"
-    export const tabs = /* @__PURE__ */ (() => { const c = {
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
+    export const tabs = /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["fitted"], v0 = _p0 === void 0 ? true : _p0; return { root: '', trigger: ({ true: "flex_1", false: "flex_none" }[v0]) || '' }; }, {
       slots: ['root', 'trigger'],
       variants: {
         fitted: {
@@ -251,7 +254,7 @@ fn rewrites_sva_boolean_variant_that_styles_one_slot() {
         },
       },
       defaultVariants: { fitted: true },
-    }, d = c.defaultVariants ?? {}, k = ["fitted"], f = (p = {}) => { p ??= {}; const _p0 = p["fitted"], v0 = _p0 === void 0 ? true : _p0; return { root: '', trigger: ({ true: "flex_1", false: "flex_none" }[v0]) || '' }; }; return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: { fitted: ["true", "false"] }, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    }, ["fitted"], { fitted: ["true", "false"] }, {});
     "#);
 }
 
@@ -268,10 +271,11 @@ fn rewrites_sva_boolean_variant_shared_by_every_slot() {
     let output = transform("src/recipes.ts", source);
 
     assert_snapshot!(output.code, @r#"
-    export const card = /* @__PURE__ */ (() => { const c = {
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
+    export const card = /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["muted"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: ({ true: "opacity_0.5" }[v0]) || '', title: ({ true: "opacity_0.5" }[v0]) || '' }; }, {
       slots: ['root', 'title'],
       variants: { muted: { true: { root: { opacity: '0.5' }, title: { opacity: '0.5' } } } },
-    }, d = c.defaultVariants ?? {}, k = ["muted"], f = (p = {}) => { p ??= {}; const _p0 = p["muted"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: ({ true: "opacity_0.5" }[v0]) || '', title: ({ true: "opacity_0.5" }[v0]) || '' }; }; return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: { muted: ["true"] }, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    }, ["muted"], { muted: ["true"] }, {});
     "#);
 }
 
@@ -292,15 +296,15 @@ fn rewrites_sva_boolean_compound_condition_as_a_boolean() {
     let output = transform("src/recipes.ts", source);
 
     assert_snapshot!(output.code, @r#"
-    import { cx as __pcx } from '@pandacss-internal/css';
-    export const tabs = /* @__PURE__ */ (() => { const c = {
+    import { cx as __pcx, attachRecipe as __pr } from '@pandacss-internal/css';
+    export const tabs = /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; const _p1 = p["fitted"], v1 = _p1 === void 0 ? void 0 : _p1; return { root: ({ sm: "gap_4px" }[v0]) || '', trigger: __pcx({ true: "flex_1" }[v1], v0 === 'sm' && v1 === true && "padding_0") }; }, {
       slots: ['root', 'trigger'],
       variants: {
         size: { sm: { root: { gap: '4px' } } },
         fitted: { true: { trigger: { flex: '1' } } },
       },
       compoundVariants: [{ size: 'sm', fitted: true, css: { trigger: { padding: '0' } } }],
-    }, d = c.defaultVariants ?? {}, k = ["size", "fitted"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; const _p1 = p["fitted"], v1 = _p1 === void 0 ? void 0 : _p1; return { root: ({ sm: "gap_4px" }[v0]) || '', trigger: __pcx({ true: "flex_1" }[v1], v0 === 'sm' && v1 === true && "padding_0") }; }; return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: { size: ["sm"], fitted: ["true"] }, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    }, ["size", "fitted"], { size: ["sm"], fitted: ["true"] }, {});
     "#);
 }
 
@@ -320,14 +324,14 @@ fn rewrites_cva_boolean_compound_condition_as_a_boolean() {
     let output = transform("src/recipes.ts", source);
 
     assert_snapshot!(output.code, @r#"
-    import { cx as __pcx } from '@pandacss-internal/css';
-    export const button = /* @__PURE__ */ (() => { const c = {
+    import { cx as __pcx, attachRecipe as __pr } from '@pandacss-internal/css';
+    export const button = /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; const _p1 = p["block"], v1 = _p1 === void 0 ? void 0 : _p1; return __pcx({ sm: "fs_12px" }[v0], { true: "d_flex" }[v1], v0 === 'sm' && v1 === true && "padding_0"); }, {
       variants: {
         size: { sm: { fontSize: '12px' } },
         block: { true: { display: 'flex' } },
       },
       compoundVariants: [{ size: 'sm', block: true, css: { padding: '0' } }],
-    }, d = c.defaultVariants ?? {}, k = ["size", "block"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; const _p1 = p["block"], v1 = _p1 === void 0 ? void 0 : _p1; return __pcx({ sm: "fs_12px" }[v0], { true: "d_flex" }[v1], v0 === 'sm' && v1 === true && "padding_0"); }; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: { size: ["sm"], block: ["true"] }, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    }, ["size", "block"], { size: ["sm"], block: ["true"] });
     "#);
 }
 
@@ -344,10 +348,11 @@ fn rewrites_sva_responsive_slot_styles_to_conditional_classes() {
     let output = transform("src/recipes.ts", source);
 
     assert_snapshot!(output.code, @r#"
-    export const tabs = /* @__PURE__ */ (() => { const c = {
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
+    export const tabs = /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: ({ sm: "fs_12px md:fs_14px" }[v0]) || '', trigger: '' }; }, {
       slots: ['root', 'trigger'],
       variants: { size: { sm: { root: { fontSize: { base: '12px', md: '14px' } } } } },
-    }, d = c.defaultVariants ?? {}, k = ["size"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: ({ sm: "fs_12px md:fs_14px" }[v0]) || '', trigger: '' }; }; return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: { size: ["sm"] }, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    }, ["size"], { size: ["sm"] }, {});
     "#);
 }
 
@@ -367,14 +372,14 @@ fn derives_sva_slots_from_base_when_slots_is_omitted() {
     let output = transform("src/recipes.ts", source);
 
     assert_snapshot!(output.code, @r#"
-    import { cx as __pcx } from '@pandacss-internal/css';
-    export const card = /* @__PURE__ */ (() => { const c = {
+    import { cx as __pcx, attachRecipe as __pr } from '@pandacss-internal/css';
+    export const card = /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["muted"], v0 = _p0 === void 0 ? void 0 : _p0; const _p1 = p["size"], v1 = _p1 === void 0 ? void 0 : _p1; return { root: __pcx("d_grid", { true: "opacity_0.5" }[v0]), title: __pcx("font-weight_700", { true: "opacity_0.5" }[v0], { sm: "fs_12px" }[v1]) }; }, {
       base: { root: { display: 'grid' }, title: { fontWeight: '700' } },
       variants: {
         muted: { true: { root: { opacity: '0.5' }, title: { opacity: '0.5' } } },
         size: { sm: { title: { fontSize: '12px' } } },
       },
-    }, d = c.defaultVariants ?? {}, k = ["muted", "size"], f = (p = {}) => { p ??= {}; const _p0 = p["muted"], v0 = _p0 === void 0 ? void 0 : _p0; const _p1 = p["size"], v1 = _p1 === void 0 ? void 0 : _p1; return { root: __pcx("d_grid", { true: "opacity_0.5" }[v0]), title: __pcx("font-weight_700", { true: "opacity_0.5" }[v0], { sm: "fs_12px" }[v1]) }; }; return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: { muted: ["true"], size: ["sm"] }, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    }, ["muted", "size"], { muted: ["true"], size: ["sm"] }, {});
     "#);
 }
 
@@ -391,10 +396,11 @@ fn encodes_an_sva_option_with_no_styles_as_an_empty_map() {
     let output = transform("src/recipes.ts", source);
 
     assert_snapshot!(output.code, @r#"
-    export const tabs = /* @__PURE__ */ (() => { const c = {
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
+    export const tabs = /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: ({ sm: "gap_4px" }[v0]) || '', trigger: '' }; }, {
       slots: ['root', 'trigger'],
       variants: { size: { sm: { root: { gap: '4px' } }, md: {} } },
-    }, d = c.defaultVariants ?? {}, k = ["size"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: ({ sm: "gap_4px" }[v0]) || '', trigger: '' }; }; return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: { size: ["sm", "md"] }, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    }, ["size"], { size: ["sm", "md"] }, {});
     "#);
 }
 
@@ -412,12 +418,12 @@ fn quotes_sva_slot_names_that_are_not_identifiers() {
     let output = transform("src/recipes.ts", source);
 
     assert_snapshot!(output.code, @r#"
-    import { cx as __pcx } from '@pandacss-internal/css';
-    export const field = /* @__PURE__ */ (() => { const c = {
+    import { cx as __pcx, attachRecipe as __pr } from '@pandacss-internal/css';
+    export const field = /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["invalid"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: '', 'helper-text': __pcx("fs_12px", { true: "color_red" }[v0]) }; }, {
       slots: ['root', 'helper-text'],
       base: { 'helper-text': { fontSize: '12px' } },
       variants: { invalid: { true: { 'helper-text': { color: 'red' } } } },
-    }, d = c.defaultVariants ?? {}, k = ["invalid"], f = (p = {}) => { p ??= {}; const _p0 = p["invalid"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: '', 'helper-text': __pcx("fs_12px", { true: "color_red" }[v0]) }; }; return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: { invalid: ["true"] }, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    }, ["invalid"], { invalid: ["true"] }, {});
     "#);
 }
 
@@ -442,9 +448,9 @@ fn rewrites_styled_with_full_recipe_config() {
     assert!(output.changed);
     assert!(!output.helper.needs_cva);
     assert_snapshot!(output.code, @r#"
-    import { cx as __pcx } from '@pandacss-internal/css';
+    import { cx as __pcx, attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    export const Card = /* @__PURE__ */ styled('div', /* @__PURE__ */ (() => { const c = {
+    export const Card = /* @__PURE__ */ styled('div', /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'md' : _p0; return __pcx('color_red padding_8px', { sm: "fs_12px", md: "fs_16px" }[v0]); }, {
       base: { color: 'red', padding: '8px' },
       variants: {
         size: {
@@ -453,7 +459,7 @@ fn rewrites_styled_with_full_recipe_config() {
         },
       },
       defaultVariants: { size: 'md' },
-    }, d = c.defaultVariants ?? {}, k = ["size"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'md' : _p0; return __pcx('color_red padding_8px', { sm: "fs_12px", md: "fs_16px" }[v0]); }; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: { size: ["sm", "md"] }, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })());
+    }, ["size"], { size: ["sm", "md"] }));
     "#);
 }
 
@@ -468,13 +474,14 @@ fn rewrites_an_aliased_styled_factory_from_its_callee_shape() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @"
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled as s } from '@panda/jsx';
-    export const Card = /* @__PURE__ */ s('div', /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })());
+    export const Card = /* @__PURE__ */ s('div', /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}));
     ");
 }
 
 #[test]
-fn injects_only_cx_when_cva_and_sva_are_specialized() {
+fn injects_cx_and_the_recipe_surface_when_cva_and_sva_are_specialized() {
     let source = indoc! {r#"
         import { Box, styled } from '@panda/jsx';
         import { cva, sva } from '@panda/css';
@@ -488,15 +495,16 @@ fn injects_only_cx_when_cva_and_sva_are_specialized() {
 
     assert!(output.changed);
     assert!(output.helper.needs_cx);
+    assert!(output.helper.needs_attach_recipe);
     assert!(!output.helper.needs_cva);
     assert!(!output.helper.needs_sva);
     assert_snapshot!(output.code, @r#"
-    import { cx as __pcx } from '@pandacss-internal/css';
+    import { cx as __pcx, attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
     export const el = <div className={__pcx(props.className, isError ? "color_red" : "color_blue")} />;
-    export const button = /* @__PURE__ */ (() => { const c = { base: { color: 'blue' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_blue'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
-    export const tabs = /* @__PURE__ */ (() => { const c = { base: { root: { display: 'flex' } } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => ({ root: "d_flex" }); return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: {}, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
-    export const Card = /* @__PURE__ */ styled('div', /* @__PURE__ */ (() => { const c = { base: { color: 'green' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_green'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })());
+    export const button = /* @__PURE__ */ __pr((p = {}) => 'color_blue', { base: { color: 'blue' } }, [], {});
+    export const tabs = /* @__PURE__ */ __pr((p = {}) => ({ root: "d_flex" }), { base: { root: { display: 'flex' } } }, [], {}, {});
+    export const Card = /* @__PURE__ */ styled('div', /* @__PURE__ */ __pr((p = {}) => 'color_green', { base: { color: 'green' } }, [], {}));
     "#);
 }
 
@@ -511,11 +519,14 @@ fn rewrites_cva_base_with_property_conditional() {
 
     assert!(output.changed);
     assert!(!output.helper.needs_cva);
-    assert_snapshot!(output.code, @r#"export const button = /* @__PURE__ */ (() => { const c = { base: { color: cond ? 'red' : 'blue' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => cond ? "color_red" : "color_blue"; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();"#);
+    assert_snapshot!(output.code, @r#"
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
+    export const button = /* @__PURE__ */ __pr((p = {}) => cond ? "color_red" : "color_blue", { base: { color: cond ? 'red' : 'blue' } }, [], {});
+    "#);
 }
 
 #[test]
-fn emits_no_helper_import_for_single_fragment_cva_and_sva() {
+fn exported_single_fragment_cva_and_sva_skip_cx() {
     let source = indoc! {r#"
         import { cva, sva } from '@panda/css';
         export const button = cva({ base: { color: 'red' } });
@@ -525,11 +536,12 @@ fn emits_no_helper_import_for_single_fragment_cva_and_sva() {
     let output = transform("src/recipes.ts", source);
 
     assert!(output.changed);
-    assert!(!output.helper.needs_cva);
-    assert!(!output.helper.needs_sva);
+    assert!(!output.helper.needs_cx);
+    assert!(output.helper.needs_attach_recipe);
     assert_snapshot!(output.code, @r#"
-    export const button = /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
-    export const tabs = /* @__PURE__ */ (() => { const c = { base: { root: { display: 'flex' } } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => ({ root: "d_flex" }); return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: {}, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
+    export const button = /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {});
+    export const tabs = /* @__PURE__ */ __pr((p = {}) => ({ root: "d_flex" }), { base: { root: { display: 'flex' } } }, [], {}, {});
     "#);
 }
 
@@ -663,6 +675,7 @@ fn specializes_an_sva_class_name_prefix_without_a_runtime_helper() {
 
     assert!(!output.helper.needs_sva);
     assert!(!output.helper.needs_cx);
+    assert!(!output.helper.needs_attach_recipe);
     assert_snapshot!(output.code, @r#"
     const tabs = (p = {}) => ({ root: "tabs__root", trigger: "tabs__trigger" });
     export const classes = tabs();
@@ -679,9 +692,11 @@ fn specializes_an_escaped_local_recipe_without_a_recipe_runtime() {
 
     let output = transform("src/recipes.ts", source);
 
+    assert!(output.helper.needs_attach_recipe);
     assert!(!output.helper.needs_cva);
     assert_snapshot!(output.code, @"
-    const button = /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
+    const button = /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {});
     consume(button);
     ");
 }
@@ -701,11 +716,13 @@ fn attaches_the_lightweight_cva_surface_when_observed() {
 
     let output = transform("src/recipes.ts", source);
 
+    assert!(output.helper.needs_attach_recipe);
     assert_snapshot!(output.code, @r#"
-    const button = /* @__PURE__ */ (() => { const c = {
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
+    const button = /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'sm' : _p0; return ({ sm: "fs_12px", lg: "fs_16px" }[v0]) || ''; }, {
       variants: { size: { sm: { fontSize: '12px' }, lg: { fontSize: '16px' } } },
       defaultVariants: { size: 'sm' },
-    }, d = c.defaultVariants ?? {}, k = ["size"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'sm' : _p0; return ({ sm: "fs_12px", lg: "fs_16px" }[v0]) || ''; }; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: { size: ["sm", "lg"] }, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    }, ["size"], { size: ["sm", "lg"] });
     export const meta = [button.__cva__, button.variantKeys, button.variantMap, button.config];
     export const selected = button.getVariantProps({ size: undefined, id: 'save' });
     export const split = button.splitVariantProps({ size: 'lg', id: 'save' });
@@ -728,13 +745,14 @@ fn attaches_the_lightweight_sva_surface_when_observed() {
 
     let output = transform("src/recipes.ts", source);
 
+    assert!(output.helper.needs_attach_recipe);
     assert_snapshot!(output.code, @r#"
-    import { cx as __pcx } from '@pandacss-internal/css';
-    const tabs = /* @__PURE__ */ (() => { const c = {
+    import { cx as __pcx, attachRecipe as __pr } from '@pandacss-internal/css';
+    const tabs = /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: __pcx("tabs__root", { sm: "fs_12px" }[v0]), trigger: "tabs__trigger" }; }, {
       slots: ['root', 'trigger'],
       className: 'tabs',
       variants: { size: { sm: { root: { fontSize: '12px' } } } },
-    }, d = c.defaultVariants ?? {}, k = ["size"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: __pcx("tabs__root", { sm: "fs_12px" }[v0]), trigger: "tabs__trigger" }; }; return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: { size: ["sm"] }, classNameMap: { root: "tabs__root", trigger: "tabs__trigger" }, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })();
+    }, ["size"], { size: ["sm"] }, { root: "tabs__root", trigger: "tabs__trigger" });
     export const meta = [tabs.__cva__, tabs.variantKeys, tabs.variantMap, tabs.classNameMap, tabs.config];
     export const selected = tabs.getVariantProps({ size: 'sm' });
     export const split = tabs.splitVariantProps({ size: 'sm', id: 'tabs' });

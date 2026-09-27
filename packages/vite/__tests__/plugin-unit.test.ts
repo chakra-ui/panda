@@ -348,7 +348,7 @@ describe('@pandacss/vite design-system HMR', () => {
         },
       ],
       dependencies: ['/project/theme.ts'],
-      helper: { needsCx: false, needsCva: false, needsSva: false },
+      helper: { needsCx: false, needsCva: false, needsSva: false, needsAttachRecipe: false },
     })
 
     await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
@@ -383,7 +383,7 @@ describe('@pandacss/vite design-system HMR', () => {
         bailed: false,
         diagnostics: [],
         dependencies: [],
-        helper: { needsCx: false, needsCva: false, needsSva: false },
+        helper: { needsCx: false, needsCva: false, needsSva: false, needsAttachRecipe: false },
       })),
     }
 
@@ -458,7 +458,7 @@ function createMockDriver() {
         bailed: false,
         diagnostics: [],
         dependencies: [],
-        helper: { needsCx: false, needsCva: false, needsSva: false },
+        helper: { needsCx: false, needsCva: false, needsSva: false, needsAttachRecipe: false },
       }),
     ),
   }

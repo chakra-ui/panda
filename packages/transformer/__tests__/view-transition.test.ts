@@ -37,6 +37,7 @@ describe('transformer: viewTransition', () => {
         "changed": true,
         "code": "export const slide = "vt_gnOaDr"",
         "helper": {
+          "needsAttachRecipe": false,
           "needsCva": false,
           "needsCx": false,
           "needsSva": false,
@@ -63,6 +64,7 @@ describe('transformer: viewTransition', () => {
         "changed": true,
         "code": "export const slide = "vt_slide"",
         "helper": {
+          "needsAttachRecipe": false,
           "needsCva": false,
           "needsCx": false,
           "needsSva": false,

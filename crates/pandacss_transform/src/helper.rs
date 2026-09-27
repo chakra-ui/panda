@@ -19,6 +19,9 @@ pub const CVA_HELPER_LOCAL: &str = "__pcva";
 /// Local alias for transformed inline `sva()` configs.
 pub const SVA_HELPER_LOCAL: &str = "__psva";
 
+/// Local alias for `attachRecipe`, which attaches the observable surface to specialized recipes.
+pub const RECIPE_HELPER_LOCAL: &str = "__pr";
+
 /// Local alias for transformed `css()` call sites that still need runtime join.
 pub const CSS_HELPER_LOCAL: &str = "__pcss";
 
@@ -343,8 +346,9 @@ pub(crate) fn plan_internal_css_import_line(
     let needs_cx = helper_cx != HelperCxMode::False && helper.needs_cx;
     let needs_cva = helper.needs_cva;
     let needs_sva = helper.needs_sva;
+    let needs_attach_recipe = helper.needs_attach_recipe;
 
-    if !needs_cx && !needs_cva && !needs_sva {
+    if !needs_cx && !needs_cva && !needs_sva && !needs_attach_recipe {
         return None;
     }
 
@@ -357,6 +361,9 @@ pub(crate) fn plan_internal_css_import_line(
     }
     if needs_sva {
         specs.push(format!("sva as {SVA_HELPER_LOCAL}"));
+    }
+    if needs_attach_recipe {
+        specs.push(format!("attachRecipe as {RECIPE_HELPER_LOCAL}"));
     }
 
     Some(format!(
@@ -617,6 +624,7 @@ mod tests {
                 needs_cx: false,
                 needs_cva: true,
                 needs_sva: false,
+                needs_attach_recipe: false,
             },
         );
         insta::assert_snapshot!(out, @"

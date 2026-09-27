@@ -193,7 +193,7 @@ class FallbackCompiler implements Compiler {
       bailed: false,
       diagnostics: [],
       dependencies: [],
-      helper: { needsCx: false, needsCva: false, needsSva: false },
+      helper: { needsCx: false, needsCva: false, needsSva: false, needsAttachRecipe: false },
     }
   }
   inspectFile(input: SourceFileInput): FileInspectionResult {

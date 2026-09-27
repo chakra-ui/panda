@@ -407,14 +407,14 @@ describe('compiler.transformSource: inline cva / sva / styled', () => {
 
     const result = recipeCompiler.transformSource({ path: 'src/recipes.ts', source })
     expect(result.code).toMatchInlineSnapshot(`
-      "import { cx as __pcx } from '@pandacss-internal/css';
-      export const button = /* @__PURE__ */ (() => { const c = {
+      "import { cx as __pcx, attachRecipe as __pr } from '@pandacss-internal/css';
+      export const button = /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'md' : _p0; return __pcx('background-color_blue color_red', { sm: "fs_12px", md: "fs_16px" }[v0]); }, {
         base: { color: 'red', backgroundColor: 'blue' },
         variants: {
           size: { sm: { fontSize: '12px' }, md: { fontSize: '16px' } },
         },
         defaultVariants: { size: 'md' },
-      }, d = c.defaultVariants ?? {}, k = ["size"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'md' : _p0; return __pcx('background-color_blue color_red', { sm: "fs_12px", md: "fs_16px" }[v0]); }; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: { size: ["sm", "md"] }, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })()"
+      }, ["size"], { size: ["sm", "md"] })"
     `)
   })
 
@@ -423,7 +423,10 @@ describe('compiler.transformSource: inline cva / sva / styled', () => {
 
     const result = recipeCompiler.transformSource({ path: 'src/recipes.ts', source })
     expect(result.code).toMatchInlineSnapshot(
-      `"export const button = /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })()"`,
+      `
+      "import { attachRecipe as __pr } from '@pandacss-internal/css';
+      export const button = /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {})"
+    `,
     )
   })
 
@@ -443,8 +446,8 @@ describe('compiler.transformSource: inline cva / sva / styled', () => {
 
     const result = recipeCompiler.transformSource({ path: 'src/recipes.ts', source })
     expect(result.code).toMatchInlineSnapshot(`
-      "import { cx as __pcx } from '@pandacss-internal/css';
-      export const button = /* @__PURE__ */ (() => { const c = {
+      "import { cx as __pcx, attachRecipe as __pr } from '@pandacss-internal/css';
+      export const button = /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'sm' : _p0; const _p1 = p["intent"], v1 = _p1 === void 0 ? 'danger' : _p1; return __pcx('color_white', { sm: "fs_12px" }[v0], { danger: "background-color_red" }[v1], v0 === 'sm' && v1 === 'danger' && "color_black"); }, {
         base: { color: 'white' },
         variants: {
           size: { sm: { fontSize: '12px' } },
@@ -452,7 +455,7 @@ describe('compiler.transformSource: inline cva / sva / styled', () => {
         },
         compoundVariants: [{ size: 'sm', intent: 'danger', css: { color: 'black' } }],
         defaultVariants: { size: 'sm', intent: 'danger' },
-      }, d = c.defaultVariants ?? {}, k = ["size", "intent"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'sm' : _p0; const _p1 = p["intent"], v1 = _p1 === void 0 ? 'danger' : _p1; return __pcx('color_white', { sm: "fs_12px" }[v0], { danger: "background-color_red" }[v1], v0 === 'sm' && v1 === 'danger' && "color_black"); }; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: { size: ["sm"], intent: ["danger"] }, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })()"
+      }, ["size", "intent"], { size: ["sm"], intent: ["danger"] })"
     `)
   })
 
@@ -470,14 +473,14 @@ describe('compiler.transformSource: inline cva / sva / styled', () => {
 
     const result = recipeCompiler.transformSource({ path: 'src/recipes.ts', source })
     expect(result.code).toMatchInlineSnapshot(`
-      "import { cx as __pcx } from '@pandacss-internal/css';
-      export const tabs = /* @__PURE__ */ (() => { const c = {
+      "import { cx as __pcx, attachRecipe as __pr } from '@pandacss-internal/css';
+      export const tabs = /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: __pcx("d_flex", { sm: "fs_12px" }[v0]), trigger: __pcx("cursor_pointer", { sm: "fs_12px" }[v0]) }; }, {
         slots: ['root', 'trigger'],
         base: { root: { display: 'flex' }, trigger: { cursor: 'pointer' } },
         variants: {
           size: { sm: { root: { fontSize: '12px' }, trigger: { fontSize: '12px' } } },
         },
-      }, d = c.defaultVariants ?? {}, k = ["size"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: __pcx("d_flex", { sm: "fs_12px" }[v0]), trigger: __pcx("cursor_pointer", { sm: "fs_12px" }[v0]) }; }; return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: { size: ["sm"] }, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })()"
+      }, ["size"], { size: ["sm"] }, {})"
     `)
   })
 
@@ -495,15 +498,15 @@ describe('compiler.transformSource: inline cva / sva / styled', () => {
 
     const result = recipeCompiler.transformSource({ path: 'src/panel.tsx', source })
     expect(result.code).toMatchInlineSnapshot(`
-      "import { cx as __pcx } from '@pandacss-internal/css';
+      "import { cx as __pcx, attachRecipe as __pr } from '@pandacss-internal/css';
       import { styled } from '@panda/jsx'
-      export const Panel = /* @__PURE__ */ styled('div', /* @__PURE__ */ (() => { const c = {
+      export const Panel = /* @__PURE__ */ styled('div', /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'md' : _p0; return __pcx('color_red padding_8px', { sm: "fs_12px", md: "fs_16px" }[v0]); }, {
         base: { color: 'red', padding: '8px' },
         variants: {
           size: { sm: { fontSize: '12px' }, md: { fontSize: '16px' } },
         },
         defaultVariants: { size: 'md' },
-      }, d = c.defaultVariants ?? {}, k = ["size"], f = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'md' : _p0; return __pcx('color_red padding_8px', { sm: "fs_12px", md: "fs_16px" }[v0]); }; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: { size: ["sm", "md"] }, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })())"
+      }, ["size"], { size: ["sm", "md"] }))"
     `)
   })
 
@@ -556,8 +559,9 @@ describe('compiler.transformSource: inline cva / sva / styled', () => {
 
     const result = recipeCompiler.transformSource({ path: 'src/recipes.ts', source })
     expect(result.code).toMatchInlineSnapshot(`
-      "export const button = /* @__PURE__ */ (() => { const c = { base: { color: 'red' } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => 'color_red'; return Object.assign(f, { __cva__: true, variantKeys: k, variantMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })()
-      export const tabs = /* @__PURE__ */ (() => { const c = { base: { root: { display: 'flex' } } }, d = c.defaultVariants ?? {}, k = [], f = (p = {}) => ({ root: "d_flex" }); return Object.assign(f, { __cva__: false, variantKeys: k, variantMap: {}, classNameMap: {}, config: c, getVariantProps: (p = {}) => { const o = { ...d }; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }, splitVariantProps: p => { const r = {}, v = {}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; } }); })()"
+      "import { attachRecipe as __pr } from '@pandacss-internal/css';
+      export const button = /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {})
+      export const tabs = /* @__PURE__ */ __pr((p = {}) => ({ root: "d_flex" }), { base: { root: { display: 'flex' } } }, [], {}, {})"
     `)
   })
 })
@@ -577,7 +581,21 @@ describe('compiler.transformSource: recipe JSX components', () => {
     recipeCompiler.parseFileSource('src/card-usage.tsx', source)
 
     expect(recipeCompiler.transformSource({ path: 'src/card-usage.tsx', source }).changed).toBe(false)
-    expect(recipeCompiler.getLayerCss({ layers: ['recipes'] }).css).toContain('card--raised_true')
+    expect(recipeCompiler.getLayerCss({ layers: ['recipes'] }).css).toMatchInlineSnapshot(`
+      "@layer recipes {
+        @layer base {
+          .card {
+            display: block;
+          }
+        }
+        @layer variants {
+          .card--raised_true {
+            box-shadow: md;
+          }
+        }
+      }
+      "
+    `)
   })
 
   test('keeps variant props on the element and folds the style props', () => {

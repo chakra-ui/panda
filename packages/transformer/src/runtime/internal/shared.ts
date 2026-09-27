@@ -22,13 +22,13 @@ export function splitVariantProps(
   props: Record<string, unknown>,
   variantKeySet: Set<string>,
 ): [Record<string, unknown>, Record<string, unknown>] {
-  const rest: Record<string, unknown> = {}
   const variantProps: Record<string, unknown> = {}
+  const rest: Record<string, unknown> = {}
   for (const key in props) {
     if (variantKeySet.has(key)) variantProps[key] = props[key]
     else rest[key] = props[key]
   }
-  return [rest, variantProps]
+  return [variantProps, rest]
 }
 
 export function toVariantMap(variants: VariantMap): Record<string, string[]> {

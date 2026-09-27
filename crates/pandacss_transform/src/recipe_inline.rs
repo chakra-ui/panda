@@ -7,7 +7,7 @@ use pandacss_recipes::{Recipe, SlotRecipe, SlotVariantOption, VariantOption};
 use pandacss_system::System;
 use pandacss_system::is_recipe_config;
 
-use super::helper::CX_HELPER_LOCAL;
+use super::helper::{CX_HELPER_LOCAL, RECIPE_HELPER_LOCAL};
 use super::js;
 use super::plan::{Rewrite, TransformHelperFacts};
 use super::resolve::is_static_style_literal;
@@ -52,11 +52,7 @@ pub(crate) fn rewrite_for_specialized_cva_call(
         end: span.end,
         content: printed.code,
         preserved,
-        helper: if printed.needs_cx {
-            TransformHelperFacts::cx()
-        } else {
-            TransformHelperFacts::none()
-        },
+        helper: recipe_helper_facts(printed.needs_cx, attach_surface),
     })
 }
 
@@ -87,12 +83,16 @@ pub(crate) fn rewrite_for_specialized_sva_call(
         end: span.end,
         content: printed.code,
         preserved,
-        helper: if printed.needs_cx {
-            TransformHelperFacts::cx()
-        } else {
-            TransformHelperFacts::none()
-        },
+        helper: recipe_helper_facts(printed.needs_cx, attach_surface),
     })
+}
+
+fn recipe_helper_facts(needs_cx: bool, attach_surface: bool) -> TransformHelperFacts {
+    TransformHelperFacts {
+        needs_cx,
+        needs_attach_recipe: attach_surface,
+        ..TransformHelperFacts::none()
+    }
 }
 
 struct SpecializedRecipePrint {
@@ -111,18 +111,13 @@ fn recipe_config_source(source: &str, span: pandacss_shared::Span, definition: &
 
 fn print_complete_cva_surface(callable: &str, config: &str, recipe: &Recipe) -> String {
     let keys = print_variant_keys(recipe.variants.iter().map(|group| group.name.as_str()));
-    let map = js::object(recipe.variants.iter().map(|group| {
-        let values = group
-            .options
-            .iter()
-            .map(|option| js::string(&option.key))
-            .collect::<Vec<_>>()
-            .join(", ");
-        js::field(&group.name, format!("[{values}]"))
+    let map = print_variant_map(recipe.variants.iter().map(|group| {
+        (
+            group.name.as_str(),
+            group.options.iter().map(|option| option.key.as_str()),
+        )
     }));
-    format!(
-        "/* @__PURE__ */ (() => {{ const c = {config}, d = c.defaultVariants ?? {{}}, k = {keys}, f = {callable}; return Object.assign(f, {{ __cva__: true, variantKeys: k, variantMap: {map}, config: c, getVariantProps: (p = {{}}) => {{ const o = {{ ...d }}; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }}, splitVariantProps: p => {{ const r = {{}}, v = {{}}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; }} }}); }})()"
-    )
+    format!("/* @__PURE__ */ {RECIPE_HELPER_LOCAL}({callable}, {config}, {keys}, {map})")
 }
 
 fn print_complete_sva_surface(callable: &str, config: &str, recipe: &SlotRecipe) -> String {
@@ -132,14 +127,11 @@ fn print_complete_sva_surface(callable: &str, config: &str, recipe: &SlotRecipe)
         recipe.slots.iter().collect::<Vec<_>>()
     };
     let keys = print_variant_keys(recipe.variants.iter().map(|group| group.name.as_str()));
-    let map = js::object(recipe.variants.iter().map(|group| {
-        let values = group
-            .options
-            .iter()
-            .map(|option| js::string(&option.key))
-            .collect::<Vec<_>>()
-            .join(", ");
-        js::field(&group.name, format!("[{values}]"))
+    let map = print_variant_map(recipe.variants.iter().map(|group| {
+        (
+            group.name.as_str(),
+            group.options.iter().map(|option| option.key.as_str()),
+        )
     }));
     let class_name_map = recipe.class_name.as_ref().map_or_else(
         || "{}".to_owned(),
@@ -152,8 +144,18 @@ fn print_complete_sva_surface(callable: &str, config: &str, recipe: &SlotRecipe)
         },
     );
     format!(
-        "/* @__PURE__ */ (() => {{ const c = {config}, d = c.defaultVariants ?? {{}}, k = {keys}, f = {callable}; return Object.assign(f, {{ __cva__: false, variantKeys: k, variantMap: {map}, classNameMap: {class_name_map}, config: c, getVariantProps: (p = {{}}) => {{ const o = {{ ...d }}; for (const x in p) if (p[x] !== void 0) o[x] = p[x]; return o; }}, splitVariantProps: p => {{ const r = {{}}, v = {{}}; for (const x in p) (k.includes(x) ? v : r)[x] = p[x]; return [v, r]; }} }}); }})()"
+        "/* @__PURE__ */ {RECIPE_HELPER_LOCAL}({callable}, {config}, {keys}, {map}, {class_name_map})"
     )
+}
+
+fn print_variant_map<'a, O>(groups: impl Iterator<Item = (&'a str, O)>) -> String
+where
+    O: Iterator<Item = &'a str>,
+{
+    js::object(groups.map(|(name, options)| {
+        let values = options.map(js::string).collect::<Vec<_>>().join(", ");
+        js::field(name, format!("[{values}]"))
+    }))
 }
 
 fn print_variant_keys<'a>(keys: impl Iterator<Item = &'a str>) -> String {
@@ -580,11 +582,7 @@ pub(crate) fn rewrite_styled_config_arg(
         end: arg.end,
         content: printed.code,
         preserved,
-        helper: if printed.needs_cx {
-            TransformHelperFacts::cx()
-        } else {
-            TransformHelperFacts::none()
-        },
+        helper: recipe_helper_facts(printed.needs_cx, true),
     })
 }
 

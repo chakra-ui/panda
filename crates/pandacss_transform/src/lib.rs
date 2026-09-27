@@ -29,8 +29,8 @@ use pandacss_system::{ParseTransforms, System};
 
 pub use helper::{
     CSS_HELPER_LOCAL, CVA_HELPER_LOCAL, CX_HELPER_LOCAL, CX_HELPER_MODULE, INTERNAL_CSS_MODULE,
-    SVA_HELPER_LOCAL, inject_cx_import, inject_internal_css_import, inject_internal_css_import_at,
-    sync_internal_css_import,
+    RECIPE_HELPER_LOCAL, SVA_HELPER_LOCAL, inject_cx_import, inject_internal_css_import,
+    inject_internal_css_import_at, sync_internal_css_import,
 };
 pub use plan::{
     HelperCxMode, TransformHelperFacts, TransformMode, TransformOptions, TransformOutput,

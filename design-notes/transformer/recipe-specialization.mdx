@@ -73,36 +73,34 @@ Callable specialization is implemented in the Rust transformer:
 - [x] The original `cva` / `sva` import is removed when every transformed use in the module is consumed.
 - [x] No successfully specialized definition imports or calls `__pcva` or `__psva`.
 - [x] Exported or otherwise escaping recipes attach `__cva__`, `variantKeys`, `variantMap`, `config`,
-  `getVariantProps`, `splitVariantProps`, and SVA's `classNameMap`.
+  `getVariantProps`, `splitVariantProps`, and SVA's `classNameMap` through one shared `attachRecipe` helper.
 - [x] An unresolved dynamic or opaque `.raw()` use prevents specialization and preserves the author's original
   `cva`/`sva` call instead of substituting a semantically incorrect string runtime.
 - [ ] `.merge`, dynamic `.raw()` sidecars, memoization, static call-site collapse, and byte-cost candidate selection
   remain later phases below.
 
 The current output deliberately specializes the callable contract. `.raw()` calls that can be resolved statically are
-folded before the definition is lowered; unresolved raw access keeps the original factory call. The lightweight
-metadata surface is attached only when the recipe escapes, so call-only locals do not pay for it. `.merge` and dynamic
-`.raw` remain separate compatibility steps.
+folded before the definition is lowered; unresolved raw access keeps the original factory call. The metadata surface is
+attached only when the recipe escapes, so call-only locals stay plain functions with no helper import. `.merge` and
+dynamic `.raw` remain separate compatibility steps and should attach through the same helper.
 
 ```js
-const button = (() => {
-  const config = {
-    variants: { size: { sm: { fontSize: '12px' } } },
-    defaultVariants: { size: 'sm' },
-  }
-  const variantKeys = Object.keys(config.variants ?? {})
-  const fn = props => ({ sm: 'fs_12px' })[props.size ?? 'sm'] || ''
+import { cx as __pcx, attachRecipe as __pr } from '@pandacss-internal/css'
 
-  return Object.assign(fn, {
-    __cva__: true,
-    variantKeys,
-    variantMap: { size: ['sm'] },
-    config,
-    getVariantProps,
-    splitVariantProps,
-  })
-})()
+export const button = /* @__PURE__ */ __pr(
+  (p = {}) => ({ sm: 'fs_12px' })[p.size ?? 'sm'] || '',
+  { variants: { size: { sm: { fontSize: '12px' } } }, defaultVariants: { size: 'sm' } },
+  ['size'],
+  { size: ['sm'] },
+)
+
+// sva passes a fifth `classNameMap` argument, which also sets `__cva__: false`
+export const tabs = /* @__PURE__ */ __pr(specializedTabs, config, ['size'], { size: ['sm'] }, { root: 'tabs__root' })
 ```
+
+`attachRecipe` owns the `getVariantProps` / `splitVariantProps` closures so they are not copied into every exported
+recipe. `variantKeys` and `variantMap` stay compiler-emitted literals: deriving them from `config` inside the helper
+measured larger after minification. `config` is public surface and is still emitted per recipe.
 
 ## Goals
 
