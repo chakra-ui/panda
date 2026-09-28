@@ -37,7 +37,6 @@ export interface NavItem {
 export interface TabItem {
   key: string
   title: string
-  side: 'left' | 'right'
   items: NavItem[]
 }
 
@@ -98,7 +97,6 @@ export const docsTabs: TabItem[] = [
   {
     key: 'get-started',
     title: 'Get Started',
-    side: 'left',
     items: [
       {
         title: 'Overview',
@@ -165,7 +163,6 @@ export const docsTabs: TabItem[] = [
   {
     key: 'styling',
     title: 'Styling',
-    side: 'left',
     items: [
       {
         title: 'Write styles',
@@ -213,7 +210,6 @@ export const docsTabs: TabItem[] = [
   {
     key: 'recipes',
     title: 'Recipes',
-    side: 'left',
     items: [
       {
         title: 'Write recipes',
@@ -246,7 +242,6 @@ export const docsTabs: TabItem[] = [
   {
     key: 'theming',
     title: 'Theming',
-    side: 'left',
     items: [
       {
         title: 'Theme',
@@ -291,7 +286,6 @@ export const docsTabs: TabItem[] = [
   {
     key: 'design-systems',
     title: 'Design Systems',
-    side: 'left',
     items: [
       {
         title: 'Start',
@@ -336,7 +330,6 @@ export const docsTabs: TabItem[] = [
   {
     key: 'reference',
     title: 'Reference',
-    side: 'right',
     items: [
       {
         title: 'CLI & Config',

@@ -39,8 +39,8 @@ export default function DocsWelcomePage() {
         flexShrink="0"
         w="290px"
         position="sticky"
-        top="calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height))"
-        height="calc(100vh - var(--navbar-height) - var(--banner-height) - var(--tabbar-height))"
+        top="calc(var(--navbar-height) + var(--banner-height))"
+        height="calc(100vh - var(--navbar-height) - var(--banner-height))"
       >
         <Box
           overflowY="auto"

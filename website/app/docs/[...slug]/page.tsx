@@ -73,8 +73,8 @@ export default async function DocsPage(props: DocsPageProps) {
           flexShrink="0"
           w="290px"
           position="sticky"
-          top="calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height))"
-          height="calc(100vh - var(--navbar-height) - var(--banner-height) - var(--tabbar-height))"
+          top="calc(var(--navbar-height) + var(--banner-height))"
+          height="calc(100vh - var(--navbar-height) - var(--banner-height))"
         >
           <Box
             overflowY="auto"
@@ -121,10 +121,10 @@ export default async function DocsPage(props: DocsPageProps) {
           flexShrink="0"
           w="72"
           position="sticky"
-          top="calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height))"
+          top="calc(var(--navbar-height) + var(--banner-height))"
           pt="10"
           pr="6"
-          maxH="calc(100vh - var(--navbar-height) - var(--banner-height) - var(--tabbar-height) - 1rem)"
+          maxH="calc(100vh - var(--navbar-height) - var(--banner-height) - 1rem)"
         >
           {!hideToc && (
             <Box overflowY="auto" height="100%" className="scroll-area">

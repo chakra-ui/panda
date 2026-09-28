@@ -30,12 +30,11 @@ const trigger = css({
   cursor: 'pointer'
 })
 
-/** The hamburger covers the site; this covers the current section. */
+/** The hamburger covers the site; this covers the docs. */
 export const MobileBrowse = () => {
   const pathname = usePathname()
   const dialog = useDialog()
 
-  // `/docs` has no tab segment — same fallback as TabBar.
   const tabKey = pathname?.split('/')[2] || defaultTabKey
   const tab = getTab(tabKey)
   const classes = drawerSlotRecipe({ size: 'xs', placement: 'start' })
@@ -78,7 +77,7 @@ export const MobileBrowse = () => {
                 color: 'fg.subtle'
               })}
             >
-              {tab.title}
+              Docs
               <Dialog.CloseTrigger
                 className={css({
                   display: 'flex',

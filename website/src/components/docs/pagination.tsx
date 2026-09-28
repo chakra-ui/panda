@@ -1,4 +1,4 @@
-import { docsTabs, type NavItem } from '@/docs.config'
+import { docsTabs } from '@/docs.config'
 import { ChevronRightIcon } from '@/icons'
 import { css } from '@/styled-system/css'
 import { Box, HStack } from '@/styled-system/jsx'
@@ -14,35 +14,20 @@ interface Props {
   slug: string
 }
 
-// Scoped to one tab so prev/next never crosses a tab boundary.
-function flattenTab(tabKey: string, groups: NavItem[]): PaginationItem[] {
-  const result: PaginationItem[] = []
-
-  for (const group of groups) {
-    for (const item of group.items || []) {
-      if (item.external) continue
-      const url = item.url ? `${tabKey}/${item.url}` : item.href
-      if (!url) continue
-      result.push({ title: item.title, url, category: group.title })
-    }
-  }
-
-  return result
-}
+const allPages: PaginationItem[] = docsTabs.flatMap(tab =>
+  tab.items.flatMap(group =>
+    (group.items || []).flatMap(item => {
+      if (item.external) return []
+      const url = item.url ? `${tab.key}/${item.url}` : item.href
+      return url ? [{ title: item.title, url, category: group.title }] : []
+    })
+  )
+)
 
 function getPagination(currentSlug: string): {
   prev?: PaginationItem
   next?: PaginationItem
 } {
-  const tabKey = currentSlug.split('/')[0]
-  const tab = docsTabs.find(t => t.key === tabKey)
-
-  if (!tab) {
-    return {}
-  }
-
-  const allPages = flattenTab(tabKey, tab.items)
-
   const currentIndex = allPages.findIndex(page => {
     return page.url === currentSlug
   })
