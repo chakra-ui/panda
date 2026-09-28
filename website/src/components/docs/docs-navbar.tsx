@@ -16,11 +16,6 @@ import { ThemeSwitch } from '@/mdx/theme-switch'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-/**
- * Docs-only; `mdx/navbar.tsx` still serves the marketing pages. Fixed rather
- * than sticky: the layout's `main` padding is computed
- * against `--navbar-height` assuming this bar is out of flow.
- */
 const siteLinks = [
   {
     title: 'Docs',

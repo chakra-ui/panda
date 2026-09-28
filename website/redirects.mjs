@@ -1,9 +1,3 @@
-/**
- * IMPORTANT: every `source` here must be a path that shipped on the v1
- * site (panda-css.com, `main` in chakra-ui/panda). Never add redirects for
- * v2-branch reshuffles: a page renamed or moved before v2 ships has no
- * inbound links to protect. Update the surviving page's links instead.
- */
 const to = (source, destination) => ({
   source,
   destination,
@@ -11,8 +5,6 @@ const to = (source, destination) => ({
 })
 
 export const v1DocsRedirects = [
-  // v1 docs paths that no longer exist, grouped by their v1 section.
-  // Exact rules come before the wildcards.
   to('/docs/overview/why-panda', '/docs/get-started/why-panda'),
   to('/docs/overview/getting-started', '/docs/get-started/why-panda'),
   to('/docs/overview/faq', '/docs/get-started/faq'),
@@ -101,13 +93,11 @@ export const v1DocsRedirects = [
 ]
 
 export const redirects = [
-  // Carried over from the v1 site.
   to('/discord', 'https://discord.gg/VQrkpsgSx7'),
   to('/play', 'https://play.panda-css.com'),
   to('/learn', 'https://pandamastery.com'),
   to('/docs/getting-started', '/docs/get-started/why-panda'),
 
-  // Tab roots. `tabLandingHref` in docs.config sends unlisted tabs here.
   to('/docs/get-started', '/docs/get-started/why-panda'),
   to('/docs/styling', '/docs/styling/overview'),
   to('/docs/recipes', '/docs/recipes/overview'),

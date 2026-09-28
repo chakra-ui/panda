@@ -30,7 +30,6 @@ const trigger = css({
   cursor: 'pointer'
 })
 
-/** The hamburger covers the site; this covers the docs. */
 export const MobileBrowse = () => {
   const pathname = usePathname()
   const dialog = useDialog()

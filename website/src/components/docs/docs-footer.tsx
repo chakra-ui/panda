@@ -2,10 +2,6 @@ import { css } from '@/styled-system/css'
 import { Box } from '@/styled-system/jsx'
 import Link from 'next/link'
 
-/**
- * Slim by design: pagination, page actions and the sidebar's community menu
- * already cover what the site footer offers.
- */
 export const DocsFooter = () => {
   return (
     <Box
