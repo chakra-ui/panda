@@ -171,7 +171,7 @@ describe('memoRecipe', () => {
   it('ignores props the recipe does not declare', () => {
     const { resolve, variantMap, calls } = compiled(button)
     const recipe = memoRecipe(resolve, variantMap)
-    recipe({ size: 'sm', onClick: () => {} })
+    recipe({ size: 'sm', onClick: () => undefined })
     recipe({ size: 'sm', id: 'save' })
     expect(calls()).toBe(1)
   })

@@ -268,7 +268,9 @@ pub(crate) fn build_plan(
         return plan;
     }
 
-    push_imported_recipe_rewrites(&mut plan, system, extracted);
+    if targets.css_enabled() {
+        push_imported_recipe_rewrites(&mut plan, system, extracted);
+    }
 
     for call in &extracted.calls {
         // `.raw()` returns a style object, never a class string. Rewriting it
@@ -446,6 +448,11 @@ fn push_imported_recipe_rewrites(
                 definition,
                 props,
             } => {
+                // Like local cva/sva definitions, imported calls rely on cx
+                // understanding class names to preserve conflict semantics.
+                if system.hashes_class_names() {
+                    continue;
+                }
                 match pandacss_system::inline_recipe_classes(system, factory, definition, props) {
                     Some(InlineRecipeClasses::Cva(classes)) => Some(super::js::string(&classes)),
                     // One shared object per distinct result, like the runtime memo.

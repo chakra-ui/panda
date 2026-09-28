@@ -3,7 +3,7 @@
 use super::common::{project_with_jsx, project_with_jsx_and, transform, transform_with_project};
 use indoc::indoc;
 use insta::{assert_snapshot, assert_yaml_snapshot};
-use pandacss_transform::TransformOutput;
+use pandacss_transform::{TransformOptions, TransformOutput, TransformTargets, transform_source};
 use serde_json::json;
 
 #[test]
@@ -1760,6 +1760,51 @@ fn folds_a_static_call_on_an_imported_cva_to_its_classes() {
     export const fallback = "color_red padding_4px";
     "#);
     assert_yaml_snapshot!(output.dependencies, @"- /proj/src/button.ts");
+}
+
+#[test]
+fn does_not_fold_an_imported_cva_when_the_css_target_is_disabled() {
+    let source =
+        "import { button } from './button';\nexport const large = button({ size: 'lg' });\n";
+    let project = super::common::project_with_files(
+        "src/a.ts",
+        source,
+        &[("src/button.ts", IMPORTED_BUTTON)],
+    );
+    let output = transform_source(
+        project.system(),
+        "/proj/src/a.ts",
+        source,
+        &TransformOptions {
+            targets: TransformTargets {
+                css: false,
+                patterns: false,
+                recipes: true,
+                tokens: false,
+                jsx: false,
+            },
+            ..TransformOptions::default()
+        },
+    );
+
+    assert!(!output.changed);
+    assert_eq!(output.code, source);
+}
+
+#[test]
+fn keeps_an_imported_cva_call_at_runtime_with_hashed_class_names() {
+    let source =
+        "import { button } from './button';\nexport const large = button({ size: 'lg' });\n";
+    let project = super::common::project_with_files_and(
+        "src/a.ts",
+        source,
+        &[("src/button.ts", IMPORTED_BUTTON)],
+        json!({ "hash": true }),
+    );
+    let output = transform_with_project(&project, "/proj/src/a.ts", source);
+
+    assert!(!output.changed);
+    assert_eq!(output.code, source);
 }
 
 #[test]
