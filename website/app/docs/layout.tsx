@@ -1,5 +1,6 @@
 import { DocsNavbar } from '@/components/docs/docs-navbar'
 import { MobileBrowse } from '@/components/docs/mobile-browse'
+import { TabBar } from '@/components/docs/tab-bar'
 import { DocsFooter } from '@/components/docs/docs-footer'
 import { SkipNavContent, SkipNavLink } from '@/mdx/skip-nav'
 import { css } from '@/styled-system/css'
@@ -12,20 +13,32 @@ export default function DocsLayout(props: React.PropsWithChildren) {
       className={css({
         '--navbar-height': '4rem',
         '--menu-height': '3.75rem',
-        '--banner-height': { base: '3.5rem', md: '2.5rem' }
+        '--banner-height': { base: '3.5rem', md: '2.5rem' },
+        '--tabbar-height': '2.75rem'
       })}
     >
       <SkipNavLink styled />
       <DocsNavbar />
+      <div
+        className={css({
+          position: 'fixed',
+          insetX: '0',
+          top: 'calc(var(--navbar-height) + var(--banner-height))',
+          zIndex: '10',
+          bg: 'bg'
+        })}
+      >
+        <TabBar />
+      </div>
       <main
         className={css({
-          pt: 'calc(var(--navbar-height) + var(--banner-height))',
+          pt: 'calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height))',
           position: 'relative',
           _before: {
             content: '""',
             display: 'none',
             position: 'absolute',
-            top: 'calc(var(--navbar-height) + var(--banner-height))',
+            top: 'calc(var(--navbar-height) + var(--banner-height) + var(--tabbar-height))',
             bottom: '0',
             insetInlineStart: '290px',
             width: '1px',

@@ -36,9 +36,15 @@ export const globalCss = defineGlobalStyles({
   'html.dark, html[data-theme="dark"]': {
     colorScheme: 'dark'
   },
+  /**
+   * Anchor offset for the fixed navbar/banner/tab bar. It lives on the target
+   * rather than on `html`, because the layouts declare these custom properties
+   * on their own wrapper — `html` can't see them and would fall back to
+   * desktop-only guesses (wrong on mobile, and blind to the docs tab bar).
+   */
   ':is(h1, h2, h3, h4, h5, h6, [data-scroll-target])': {
     scrollMarginTop:
-      'calc(var(--navbar-height, 4rem) + var(--banner-height, 2.5rem) + 1.5rem)'
+      'calc(var(--navbar-height, 4rem) + var(--banner-height, 2.5rem) + var(--tabbar-height, 0px) + 1.5rem)'
   },
   body: {
     bg: 'bg',

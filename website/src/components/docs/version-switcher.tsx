@@ -1,6 +1,6 @@
 'use client'
 
-import { menuContent, menuItem } from '@/components/docs/community-links'
+import { communityContent, communityItem } from '@/components/docs/tab-bar'
 import { getV1Href } from '@/lib/v1-href'
 import { css, cx } from '@/styled-system/css'
 import { Menu } from '@ark-ui/react/menu'
@@ -19,12 +19,14 @@ export function VersionSwitcher() {
       </Menu.Trigger>
       <Portal>
         <Menu.Positioner>
-          <Menu.Content className={cx(menuContent, css({ minW: '10rem' }))}>
-            <Menu.Item value="v2" className={menuItem}>
+          <Menu.Content
+            className={cx(communityContent, css({ minW: '10rem' }))}
+          >
+            <Menu.Item value="v2" className={communityItem}>
               v2
               <LuCheck size={14} aria-hidden />
             </Menu.Item>
-            <Menu.Item value="v1" asChild className={menuItem}>
+            <Menu.Item value="v1" asChild className={communityItem}>
               <a href={getV1Href(pathname)}>
                 v1
                 <LuArrowUpRight size={13} aria-hidden />
