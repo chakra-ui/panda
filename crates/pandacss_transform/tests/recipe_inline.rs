@@ -1886,3 +1886,108 @@ fn folds_imported_recipe_calls_in_a_project_with_a_jsx_framework() {
     export const styles = {"color":"red","padding":"8px","fontSize":"20px"};
     "#);
 }
+
+#[test]
+fn folds_calls_on_a_recipe_re_exported_by_name() {
+    let index = "export { button } from './button';\n";
+    let source = indoc! {r#"
+        import { button } from './index';
+        export const large = button({ size: 'lg' });
+        export const styles = button.raw({ size: 'lg' });
+    "#};
+
+    let output = super::common::transform_cross_file(
+        "src/a.tsx",
+        source,
+        &[("src/button.ts", IMPORTED_BUTTON), ("src/index.ts", index)],
+    );
+
+    assert_snapshot!(output.code, @r#"
+    import { button } from './index';
+    export const large = "color_red padding_8px fs_20px";
+    export const styles = {"color":"red","padding":"8px","fontSize":"20px"};
+    "#);
+}
+
+#[test]
+fn keeps_calls_on_a_recipe_re_exported_through_export_star() {
+    let index = "export * from './button';\n";
+    let source = indoc! {r#"
+        import { button } from './index';
+        export const large = button({ size: 'lg' });
+    "#};
+
+    let output = super::common::transform_cross_file(
+        "src/a.tsx",
+        source,
+        &[("src/button.ts", IMPORTED_BUTTON), ("src/index.ts", index)],
+    );
+
+    assert_snapshot!(output.code, @"
+    import { button } from './index';
+    export const large = button({ size: 'lg' });
+    ");
+}
+
+#[test]
+fn folds_calls_on_a_recipe_re_exported_under_another_name() {
+    let index = "export { button as primaryButton } from './button';\n";
+    let source = indoc! {r#"
+        import { primaryButton } from './index';
+        export const large = primaryButton({ size: 'lg' });
+    "#};
+
+    let output = super::common::transform_cross_file(
+        "src/a.tsx",
+        source,
+        &[("src/button.ts", IMPORTED_BUTTON), ("src/index.ts", index)],
+    );
+
+    assert_snapshot!(output.code, @r#"
+    import { primaryButton } from './index';
+    export const large = "color_red padding_8px fs_20px";
+    "#);
+}
+
+#[test]
+fn specializes_a_recipe_built_with_an_aliased_cva_import() {
+    let source = indoc! {r#"
+        import { cva as recipe } from '@panda/css';
+        const button = recipe({
+          base: { color: 'red' },
+          variants: { size: { sm: { fontSize: '12px' }, lg: { fontSize: '16px' } } },
+        });
+        export const classes = (props) => button(props);
+    "#};
+
+    let output = transform("src/button.ts", source);
+
+    assert_snapshot!(output.code, @r#"
+    import { cx as __pcx, memoRecipe as __pm } from '@pandacss-internal/css';
+    const button = /* @__PURE__ */ __pm((p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return __pcx('color_red', { sm: "fs_12px", lg: "fs_16px" }[v0]); }, { size: ["sm", "lg"] });
+    export const classes = (props) => button(props);
+    "#);
+}
+
+#[test]
+fn folds_calls_on_an_imported_recipe_built_with_an_aliased_cva_import() {
+    let button = indoc! {r#"
+        import { cva as recipe } from '@panda/css';
+        export const button = recipe({
+          base: { color: 'red' },
+          variants: { size: { sm: { padding: '4px' }, lg: { padding: '8px' } } },
+        });
+    "#};
+    let source = indoc! {r#"
+        import { button } from './button';
+        export const large = button({ size: 'lg' });
+    "#};
+
+    let output =
+        super::common::transform_cross_file("src/a.tsx", source, &[("src/button.ts", button)]);
+
+    assert_snapshot!(output.code, @r#"
+    import { button } from './button';
+    export const large = "color_red padding_8px";
+    "#);
+}

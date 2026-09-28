@@ -74,15 +74,21 @@ Callable specialization is implemented in the Rust transformer:
   style objects.
 - [x] Base-only recipes avoid `__pcx`; slot variant lookups that can never contribute a class are omitted.
 - [x] The original `cva` / `sva` import is removed when every transformed use in the module is consumed.
-- [x] No successfully specialized definition imports or calls `__pcva` or `__psva`.
+- [x] The generic `__pcva` and `__psva` runtimes are removed from the transformer.
 - [x] Exported or otherwise escaping recipes attach `__cva__`, `variantKeys`, `variantMap`, `config`, `raw`, `merge`,
   `getVariantProps`, `splitVariantProps`, and SVA's `classNameMap` through one shared `attachRecipe` helper.
 - [x] Escaping recipes work inside the generated styled-system runtime: `styled` with style props, `styled(Base, …)`
   chains in both directions, and `createSlotRecipeContext`.
 - [x] An unresolved dynamic or opaque `.raw()` use prevents specialization and preserves the author's original
   `cva`/`sva` call instead of substituting a semantically incorrect string runtime.
-- [ ] Memoization, static call-site collapse, build-time chain merge, and byte-cost candidate selection remain later
-  phases below.
+- [x] Call-only and escaping recipes are memoized (see [Memoization](#memoization)).
+- [x] Static calls fold at the call site: local `.raw()` calls, and `.raw()` and plain calls on recipes imported from
+  another file, including named and renamed re-exports (see [Imported recipes](#imported-recipes)).
+- [x] Selection matches the runtime: only `undefined` falls back to a default, `null` selects no option, a `null` props
+  object behaves like `{}`, and compound conditions and defaults keep the type written in the config, so `2` and `'2'`
+  or `true` and `'true'` are different values.
+- [ ] Dynamic `.raw()` sidecars, build-time `.merge()` chains, and byte-cost candidate selection remain later phases
+  below.
 
 The current output deliberately specializes the callable contract. `.raw()` calls that can be resolved statically are
 folded before the definition is lowered; unresolved raw access keeps the original factory call. The metadata surface is

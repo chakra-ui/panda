@@ -274,4 +274,45 @@ describe('transformed recipes inside the styled-system runtime', () => {
       }
     `)
   })
+
+  it('treats a null props object like no props, as styled-system does', async () => {
+    const { original, transformed } = await load(
+      [
+        "import { cva, sva } from '@panda/css'",
+        'const config = {',
+        "  base: { bg: 'red' },",
+        "  variants: { size: { sm: { fontSize: '12px' }, lg: { fontSize: '16px' } } },",
+        "  compoundVariants: [{ size: 'lg', css: { bg: 'blue' } }],",
+        "  defaultVariants: { size: 'lg' },",
+        '}',
+        'export const button = cva(config)',
+        'const local = cva(config)',
+        'export const called = (props) => local(props)',
+        'const tabs = sva({',
+        "  slots: ['root', 'trigger'],",
+        "  base: { root: { bg: 'red' } },",
+        "  variants: { size: { sm: { trigger: { fontSize: '12px' } }, lg: { trigger: { fontSize: '16px' } } } },",
+        "  defaultVariants: { size: 'lg' },",
+        '})',
+        'export const slots = (props) => tabs(props)',
+      ].join('\n'),
+    )
+
+    const results = (exports: Record<string, any>) => ({
+      exported: exports.button(null),
+      called: exports.called(null),
+      slots: exports.slots(null),
+    })
+    expect(results(transformed)).toEqual(results(original))
+    expect(results(transformed)).toMatchInlineSnapshot(`
+      {
+        "called": "bg_blue fs_16px",
+        "exported": "bg_blue fs_16px",
+        "slots": {
+          "root": "bg_red",
+          "trigger": "fs_16px",
+        },
+      }
+    `)
+  })
 })

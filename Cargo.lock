@@ -1378,6 +1378,7 @@ version = "0.0.0"
 dependencies = [
  "indoc",
  "insta",
+ "oxc_sourcemap",
  "pandacss_config",
  "pandacss_encoder",
  "pandacss_extractor",

@@ -99,6 +99,8 @@ semantics as same-file extraction. Call sites apply `OwnedPureFn` with folded ar
 
 - `export default …` — same surface as named exports but currently skipped to keep the v1 contract narrow.
 - Namespace/default imports in the importing file — they don't map cleanly to one named export.
+- `export * from './mod'` — only named re-exports are followed, so a value reached through a star re-export stays on
+  the runtime.
 - Impure or unsupported callables, bare function values used without a call, classes, and anything the literal evaluator
   intentionally rejects.
 
