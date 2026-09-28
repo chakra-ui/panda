@@ -656,16 +656,15 @@ importers:
 
   packages/postcss:
     dependencies:
+      '@pandacss/logger':
+        specifier: workspace:*
+        version: link:../logger
       '@pandacss/node':
         specifier: workspace:*
         version: link:../node
       postcss:
         specifier: 8.5.14
         version: 8.5.14
-    devDependencies:
-      '@pandacss/logger':
-        specifier: workspace:*
-        version: link:../logger
 
   packages/preset-atlaskit:
     dependencies:
