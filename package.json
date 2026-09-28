@@ -24,6 +24,7 @@
     "prettier-fix": "prettier --write packages",
     "typecheck": "tsc --noEmit",
     "release": "changeset publish --tag v1",
+    "release:sync-tags": "node scripts/sync-v1-dist-tags.mjs",
     "release-dev": "changeset version --snapshot dev && changeset publish --tag dev",
     "prepare-studio": "pnpm --filter=./packages/studio codegen",
     "build-studio": "pnpm --filter=./sandbox/vite-ts exec pnpm panda studio --build",

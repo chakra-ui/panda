@@ -38,6 +38,14 @@ jobs:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
           NPM_CONFIG_PROVENANCE: true
 
+      - name: Sync v1 dist-tags
+        if: steps.changesets.outputs.published == 'true'
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > "$RUNNER_TEMP/.npmrc"
+          NPM_CONFIG_USERCONFIG="$RUNNER_TEMP/.npmrc" node scripts/sync-v1-dist-tags.mjs --apply
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Slack Notification
         if: steps.changesets.outputs.published == 'true'
         uses: slackapi/slack-github-action@v2
