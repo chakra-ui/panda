@@ -1,4 +1,5 @@
 import { cx } from './cx'
+import { memoRecipe } from './memo'
 import { compoundMatches, withDefaults, type CompoundVariant, type VariantValue } from './shared'
 
 type Style = Record<string, unknown>
@@ -70,7 +71,11 @@ function mergeRecipes(parent: RecipeLike, child: RecipeLike) {
       const selected = resolve(props)
       return cx(parent(selected), child(selected))
     },
-    { defaultVariants },
+    // Compounds from either side rule out the coercing table memo.
+    {
+      defaultVariants,
+      compoundVariants: [...(parent.config?.compoundVariants ?? []), ...(child.config?.compoundVariants ?? [])],
+    },
     variantKeys,
     { ...parent.variantMap, ...child.variantMap },
   )
@@ -94,7 +99,8 @@ export function attachRecipe<F extends (props?: Props) => any, C extends object>
 ) {
   const recipeConfig = config as RecipeConfig
   const defaults = recipeConfig.defaultVariants ?? {}
-  return Object.assign(fn, {
+  const recipe = memoRecipe(fn, variantMap, recipeConfig.compoundVariants?.length) as F
+  return Object.assign(recipe, {
     __cva__: !classNameMap,
     variantKeys,
     variantMap,
@@ -104,7 +110,7 @@ export function attachRecipe<F extends (props?: Props) => any, C extends object>
       classNameMap ? resolveSlotRaw(recipeConfig, props) : resolveRaw(recipeConfig, props),
     // The styled factory passes its own `cva`, so chains merge exactly like styled-system.
     merge: (other: RecipeLike, cva?: (config: C) => { merge(other: RecipeLike): unknown }) =>
-      cva ? cva(config).merge(other) : mergeRecipes(fn as unknown as RecipeLike, other),
+      cva ? cva(config).merge(other) : mergeRecipes(recipe as unknown as RecipeLike, other),
     getVariantProps: (props: Props = {}) => withDefaults(defaults, props),
     splitVariantProps: (props: Props) => {
       const variantProps: Props = {}

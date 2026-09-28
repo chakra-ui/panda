@@ -484,7 +484,7 @@ describe('compiler.transformSource: inline cva / sva / styled', () => {
     `)
   })
 
-  test('rewrites a styled factory with a full recipe config', () => {
+  test('marks a styled factory with a full recipe config pure and leaves the config to styled-system', () => {
     const source = lines(
       "import { styled } from '@panda/jsx'",
       "export const Panel = styled('div', {",
@@ -498,15 +498,14 @@ describe('compiler.transformSource: inline cva / sva / styled', () => {
 
     const result = recipeCompiler.transformSource({ path: 'src/panel.tsx', source })
     expect(result.code).toMatchInlineSnapshot(`
-      "import { cx as __pcx, attachRecipe as __pr } from '@pandacss-internal/css';
-      import { styled } from '@panda/jsx'
-      export const Panel = /* @__PURE__ */ styled('div', /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? 'md' : _p0; return __pcx('color_red padding_8px', { sm: "fs_12px", md: "fs_16px" }[v0]); }, {
+      "import { styled } from '@panda/jsx'
+      export const Panel = /* @__PURE__ */ styled('div', {
         base: { color: 'red', padding: '8px' },
         variants: {
           size: { sm: { fontSize: '12px' }, md: { fontSize: '16px' } },
         },
         defaultVariants: { size: 'md' },
-      }, ["size"], { size: ["sm", "md"] }))"
+      })"
     `)
   })
 

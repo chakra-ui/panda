@@ -22,6 +22,9 @@ pub const SVA_HELPER_LOCAL: &str = "__psva";
 /// Local alias for `attachRecipe`, which attaches the observable surface to specialized recipes.
 pub const RECIPE_HELPER_LOCAL: &str = "__pr";
 
+/// Local alias for `memoRecipe`, which memoizes call-only specialized recipes.
+pub const MEMO_HELPER_LOCAL: &str = "__pm";
+
 /// Local alias for transformed `css()` call sites that still need runtime join.
 pub const CSS_HELPER_LOCAL: &str = "__pcss";
 
@@ -347,8 +350,9 @@ pub(crate) fn plan_internal_css_import_line(
     let needs_cva = helper.needs_cva;
     let needs_sva = helper.needs_sva;
     let needs_attach_recipe = helper.needs_attach_recipe;
+    let needs_memo_recipe = helper.needs_memo_recipe;
 
-    if !needs_cx && !needs_cva && !needs_sva && !needs_attach_recipe {
+    if !needs_cx && !needs_cva && !needs_sva && !needs_attach_recipe && !needs_memo_recipe {
         return None;
     }
 
@@ -364,6 +368,9 @@ pub(crate) fn plan_internal_css_import_line(
     }
     if needs_attach_recipe {
         specs.push(format!("attachRecipe as {RECIPE_HELPER_LOCAL}"));
+    }
+    if needs_memo_recipe {
+        specs.push(format!("memoRecipe as {MEMO_HELPER_LOCAL}"));
     }
 
     Some(format!(
@@ -625,6 +632,7 @@ mod tests {
                 needs_cva: true,
                 needs_sva: false,
                 needs_attach_recipe: false,
+                needs_memo_recipe: false,
             },
         );
         insta::assert_snapshot!(out, @"

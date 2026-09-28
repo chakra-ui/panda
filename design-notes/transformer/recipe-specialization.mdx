@@ -63,7 +63,10 @@ Callable specialization is implemented in the Rust transformer:
 
 - [x] Static `cva` bindings compile to recipe-specific functions, including exported and otherwise escaping bindings.
 - [x] Static `sva` bindings compile to per-slot recipe-specific functions, including exported bindings.
-- [x] `styled(tag, config)` and member-form styled configs use the same specialized callable instead of `__pcva`.
+- [x] `styled(tag, config)` and member-form styled calls are only marked `/* @__PURE__ */`; a literal config stays a
+  plain object for styled-system's own `cva`. Compiling it saved about 7% of a variant-only render but pulled in about
+  2 KB of internal runtime, and styled-system's `cva` ships with the factory regardless. A `cva()` passed to `styled` is
+  still specialized, as an escaping recipe.
 - [x] Defaults, boolean options, unknown values, scalar compounds, array compounds, and slot-local compounds are
   represented directly in the generated function.
 - [x] Static local `.raw()` calls fold to style objects first and no longer prevent callable specialization.
@@ -117,10 +120,29 @@ at runtime rather than emitted per recipe:
 - A manual `.merge()` call gets no `cva`, so it falls back to class composition: `cx(parent(props), child(props))` with
   both sets of defaults applied. There the child wins conflicts wholesale, unlike styled-system's config merge.
 
+### Memoization
+
+A specialized recipe is memoized by `memoRecipe`: `attachRecipe` applies it to escaping recipes, and call-only locals
+emit `/* @__PURE__ */ __pm(fn, variantMap[, 1])`. A recipe reached only through folded `.raw()` calls, or with no
+variants, stays a bare function. The design follows the `cva` resolver in `shadcn-ui/cn`:
+
+- **Dense table** (up to 256 slots): each prop maps to an option index and the result is interned per combination.
+  Lookups coerce the prop to a key, so without compounds `true` and `'true'` share a slot, and an undeclared `false` or
+  `null` gets a cached no-class state. With compounds (the trailing `1`), booleans and `null` get their own states
+  because compounds compare strictly.
+- **Ring** (16 rows) above the table cap: recent prop tuples compared with `===`. A miss costs a short scan, not a key
+  string, so wide recipes whose calls rarely repeat stay close to unmemoized cost.
+- **Bypass**: object and function prop values never hit a cache, so mutating one can't serve a stale result. No-props
+  calls return an interned result.
+
+`bench/src/recipe-runtime.ts` compares specialized recipes with the old `__pcva` runtime and the styled-system `cva`.
+On Node 24 the memoized recipes match or beat `__pcva` on every workload; compounds and `sva` drop from about 150 ns to
+about 40 ns per call.
+
 ### Hashed class names
 
 With `hash: true` or `hash.className`, class names carry no property key, so `cx` can't tell which class a variant
-should override. The transform leaves `cva`, `sva`, and `styled` configs untouched in that mode and styled-system handles
+should override. The transform leaves `cva` and `sva` calls untouched in that mode and styled-system handles
 them at runtime. Everything else — `css()`, config recipes, `token()` — keeps transforming, since it only inlines class
 strings. Each file with a skipped config gets one `transform_hashed_recipe_skipped` warning pointing at the first one.
 Hashing only CSS variables (`hash: { cssVar: true, className: false }`) specializes as usual.
@@ -817,6 +839,9 @@ recipe({ platform: 'touch' })
 Specialization must retain every key referenced by a compound condition, even when it is absent from `variantKeys`.
 Dropping unknown props before compound matching would lose the compound.
 
+The transform currently leaves such a recipe on the runtime: the memo keys on declared variants only, so it would return
+a stale result when an undeclared compound prop changes. `cva` types reject the shape anyway.
+
 An empty condition set always matches:
 
 ```js
@@ -1452,7 +1477,7 @@ partial recipe.
 - Generate specialized `sva` callables with shared selection and independent slot output.
 - Keep recipes with unresolved `.raw()` access as their original source call.
 - Specialize exported and escaping callable recipes without introducing `__pcva` or `__psva`.
-- Specialize `styled` config arguments through the same printer.
+- ~~Specialize `styled` config arguments through the same printer.~~ Dropped: the bytes outweighed the render gain.
 
 ### Phase 2: static raw folding
 

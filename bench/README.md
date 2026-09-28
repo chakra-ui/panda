@@ -38,6 +38,19 @@ styling runtime that ships to the app. Four sections:
 Numbers track whatever the current compiler emits, so a runtime regression shows up as the guard flipping or the ratios
 widening. To compare against v1, run the same shapes under `@pandacss/dev@1.12.0` in a throwaway project.
 
+## Transformed recipe benchmark (`recipe-runtime`)
+
+```sh
+pnpm --filter @pandacss/transformer build:fast   # the transformer and its internal runtime
+pnpm --filter=./bench recipe-runtime             # CALLS=200000, RENDERS=20000 by default
+```
+
+Runs each recipe three ways — the styled-system `cva`/`sva`, the old `__pcva` string-branch runtime, and the
+transformer's specialized output — and checks all three return the same classes before timing them. Sections: recipe
+calls per workload, the internal `cx` against a plain join, bundle bytes, and `styled()` configs rendered with
+`react-dom/server`. The transformer and `rolldown` load from `packages/transformer`, so the bench adds no dependencies
+of its own.
+
 ## staticCss condition sweep (`static_css_conditions`)
 
 ```sh

@@ -462,10 +462,9 @@ fn helper_injection_does_not_panic_on_multibyte_source() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
     // « guillemet comment »
-    export const Box = /* @__PURE__ */ styled.div(/* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}));
+    export const Box = /* @__PURE__ */ styled.div({ color: 'red' });
     ");
 }
 

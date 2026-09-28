@@ -29,8 +29,8 @@ use pandacss_system::{ParseTransforms, System};
 
 pub use helper::{
     CSS_HELPER_LOCAL, CVA_HELPER_LOCAL, CX_HELPER_LOCAL, CX_HELPER_MODULE, INTERNAL_CSS_MODULE,
-    RECIPE_HELPER_LOCAL, SVA_HELPER_LOCAL, inject_cx_import, inject_internal_css_import,
-    inject_internal_css_import_at, sync_internal_css_import,
+    MEMO_HELPER_LOCAL, RECIPE_HELPER_LOCAL, SVA_HELPER_LOCAL, inject_cx_import,
+    inject_internal_css_import, inject_internal_css_import_at, sync_internal_css_import,
 };
 pub use plan::{
     HelperCxMode, TransformHelperFacts, TransformMode, TransformOptions, TransformOutput,
@@ -142,7 +142,7 @@ pub fn transform_source_with(
 fn hashed_recipe_warning(path: &str, span: pandacss_shared::Span) -> pandacss_shared::Diagnostic {
     pandacss_shared::Diagnostic::warning(
         pandacss_shared::diagnostic_codes::TRANSFORM_HASHED_RECIPE_SKIPPED,
-        "Class names are hashed, so `cva`, `sva`, and `styled` configs in this file weren't transformed and run at runtime instead. Other styles may not transform as expected either.",
+        "Class names are hashed, so `cva` and `sva` recipes in this file weren't transformed and run at runtime instead. Other styles may not transform as expected either.",
     )
     .with_file(path)
     .with_span(span)

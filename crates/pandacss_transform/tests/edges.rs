@@ -777,7 +777,7 @@ edge_snapshot!(
 );
 
 #[test]
-fn styled_call_syntax_rewrites_config_to_specialized_function() {
+fn styled_call_syntax_is_marked_pure() {
     let source = indoc! {r#"
         import { styled } from '@panda/jsx';
         export const Card = styled('div', { color: 'red' });
@@ -788,14 +788,13 @@ fn styled_call_syntax_rewrites_config_to_specialized_function() {
     assert!(output.changed);
     assert!(!output.helper.needs_cva);
     assert_snapshot!(output.code, @"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    export const Card = /* @__PURE__ */ styled('div', /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}));
+    export const Card = /* @__PURE__ */ styled('div', { color: 'red' });
     ");
 }
 
 #[test]
-fn styled_member_call_rewrites_style_object_to_specialized_function() {
+fn styled_member_call_is_marked_pure() {
     let source = indoc! {r#"
         import { styled } from '@panda/jsx';
         export const Card = styled.div({ color: 'red' });
@@ -806,9 +805,8 @@ fn styled_member_call_rewrites_style_object_to_specialized_function() {
     assert!(output.changed);
     assert!(!output.helper.needs_cva);
     assert_snapshot!(output.code, @"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    export const Card = /* @__PURE__ */ styled.div(/* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}));
+    export const Card = /* @__PURE__ */ styled.div({ color: 'red' });
     ");
 }
 

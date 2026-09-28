@@ -16,6 +16,7 @@ export interface TransformHelperFacts {
   needsCva: boolean
   needsSva: boolean
   needsAttachRecipe: boolean
+  needsMemoRecipe: boolean
 }
 
 export interface TransformSourceResult {

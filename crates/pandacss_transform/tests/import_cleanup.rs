@@ -113,10 +113,9 @@ fn keeps_styled_import_when_factory_call_stays_live() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
     export const el = <div className="color_red" />;
-    export const Card = /* @__PURE__ */ styled('div', /* @__PURE__ */ __pr((p = {}) => 'color_blue', { base: { color: 'blue' } }, [], {}));
+    export const Card = /* @__PURE__ */ styled('div', { color: 'blue' });
     "#);
 }
 

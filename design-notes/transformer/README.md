@@ -31,7 +31,7 @@ What ships on the v2 branch today:
 | `@pandacss/vite` / `webpack` / `rollup` | CSS-root, codegen, and HMR by default; source rewrite via `transform: true`          |
 | Internal runtime module                 | `@pandacss-internal/css` → `\0pandacss:internal:css`; symbols injected on demand     |
 
-Runtime symbols today: `cx as __pcx` and `attachRecipe as __pr`. Static `cva()` / `sva()` / styled configs compile to
+Runtime symbols today: `cx as __pcx`, `attachRecipe as __pr`, and `memoRecipe as __pm`. Static `cva()` / `sva()` / styled configs compile to
 recipe-specific functions; see [recipe specialization](./recipe-specialization.mdx). `cva as __pcva` and `sva as __psva`
 stay exported by the runtime but are no longer emitted.
 
@@ -409,9 +409,19 @@ or read through a property) is wrapped in `attachRecipe as __pr`, which attaches
 the file gets a `transform_hashed_recipe_skipped` warning. `local_call_bindings` decides
 which is which and backs the `.raw()` interlock.
 
-The earlier `__pcva` runtime dispatched through a memoized `booleanBitset` / `variantTable`, which beat uncached
-`__pcx(cond && class)` lowering on a reused prop tuple (css-in-js-bench `btn-variant`). Specialized functions do not
-memoize yet; that needs a benchmark before it lands.
+Specialized functions are memoized by `memoRecipe` (see [recipe specialization](./recipe-specialization.mdx#memoization)).
+
+`cx` resolves conflicts by merge key (conditions and property, up to the separator). Its hot paths follow `cnfast` and
+tailwind-merge:
+
+- A per-part cache of token bounds, key ends, and FNV-1a key hashes in `Int32Array`s. A part is admitted on its second
+  sighting, so one-off class strings never fill it (about 170 KiB retained after heavy churn, against about 1 MB when
+  every part was cached). A call merges those numbers through an open-addressed table stamped per call, confirms a hash
+  match character by character, and slices strings only for the classes that survive a conflict.
+- No whole-call cache: recipes are memoized before they reach `cx`, and on a realistic JSX `className` mix the call cache
+  cost more than it saved.
+- ASCII whitespace separates classes, so multi-line template literals merge. Output is single-space normalized, except
+  a lone part, which is returned untouched.
 
 Import shape in transformed code:
 
@@ -857,10 +867,9 @@ an element's own `css` prop replaces the default wholesale rather than merging p
 `BaseComponent.__base__`, so `Base`'s own `forwardRef` — and its defaults — never run at runtime;
 inheriting only `base` matches that.
 
-The `styled()` definition itself compiles its config to a specialized `__pr(…)` recipe. The transform marks both
-the outer `styled()` call and the nested `__pr()` call as pure. This lets bundlers drop the entire
-definition after the fold, including evaluation of the now-unused recipe config. Transformed
-standalone `cva()` and `sva()` factories carry the same annotation.
+The `styled()` definition keeps its config as written, and the transform marks the call pure. This lets bundlers drop
+the entire definition after the fold, including the `styled` factory when nothing else uses it. Transformed standalone
+`cva()` and `sva()` factories carry the same annotation.
 
 ### JSX pattern props
 

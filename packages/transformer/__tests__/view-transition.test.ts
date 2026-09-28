@@ -40,6 +40,7 @@ describe('transformer: viewTransition', () => {
           "needsAttachRecipe": false,
           "needsCva": false,
           "needsCx": false,
+          "needsMemoRecipe": false,
           "needsSva": false,
         },
       }
@@ -67,6 +68,7 @@ describe('transformer: viewTransition', () => {
           "needsAttachRecipe": false,
           "needsCva": false,
           "needsCx": false,
+          "needsMemoRecipe": false,
           "needsSva": false,
         },
       }

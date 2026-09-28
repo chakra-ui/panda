@@ -46,6 +46,7 @@ pub struct TransformSourceHelperFacts {
     pub needs_cva: bool,
     pub needs_sva: bool,
     pub needs_attach_recipe: bool,
+    pub needs_memo_recipe: bool,
 }
 
 #[napi]
@@ -81,6 +82,7 @@ impl Compiler {
                 needs_cva: output.helper.needs_cva,
                 needs_sva: output.helper.needs_sva,
                 needs_attach_recipe: output.helper.needs_attach_recipe,
+                needs_memo_recipe: output.helper.needs_memo_recipe,
             },
         }
     }

@@ -16,9 +16,8 @@ fn element_props_win_over_the_chain_base() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}));
+    const Button = /* @__PURE__ */ styled('button', { base: { color: 'red' } });
     export const el = <button type="submit" className="color_blue" />;
     "#);
 }
@@ -36,9 +35,8 @@ fn an_alias_of_a_folded_chain_still_folds() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}));
+    const Button = /* @__PURE__ */ styled('button', { base: { color: 'red' } });
     const Alias = Button;
     export const el = <button className="color_red" />;
     "#);
@@ -56,9 +54,8 @@ fn folds_a_styled_definition_to_its_intrinsic_tag() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}));
+    const Button = /* @__PURE__ */ styled('button', { base: { color: 'red' } });
     export const el = <button className="color_red">hi</button>;
     "#);
 }
@@ -77,9 +74,8 @@ fn folds_a_multi_level_chain_with_the_outermost_level_winning() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const L0 = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pr((p = {}) => 'color_red margin_0', { base: { color: 'red', margin: '0' } }, [], {}));
+    const L0 = /* @__PURE__ */ styled('button', { base: { color: 'red', margin: '0' } });
     const L1 = styled(L0, { base: { color: 'blue' } });
     const L2 = styled(L1, { base: { color: 'green' } });
     export const el = <button className="color_green margin_0">hi</button>;
@@ -98,9 +94,8 @@ fn the_as_prop_retargets_a_folded_chain() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}));
+    const Button = /* @__PURE__ */ styled('button', { base: { color: 'red' } });
     export const el = <a href="/home" className="color_red" />;
     "#);
 }
@@ -118,10 +113,9 @@ fn a_chain_defined_inside_a_function_is_not_folded() {
     let output = transform_jsx("src/app.tsx", source);
 
     assert_snapshot!(output.code, @"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
     export function App() {
-      const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}));
+      const Button = /* @__PURE__ */ styled('button', { base: { color: 'red' } });
       return <Button />;
     }
     ");
@@ -157,9 +151,8 @@ fn a_rebindable_let_declaration_blocks_the_chain_fold() {
     let output = transform_jsx("src/app.tsx", source);
 
     assert_snapshot!(output.code, @"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    let Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}));
+    let Button = /* @__PURE__ */ styled('button', { base: { color: 'red' } });
     export const el = <Button />;
     ");
 }
@@ -176,9 +169,8 @@ fn an_html_default_prop_blocks_the_chain_fold() {
     let output = transform_jsx("src/app.tsx", source);
 
     assert_snapshot!(output.code, @"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}), { defaultProps: { type: 'submit' } });
+    const Button = /* @__PURE__ */ styled('button', { base: { color: 'red' } }, { defaultProps: { type: 'submit' } });
     export const el = <Button />;
     ");
 }
@@ -197,12 +189,11 @@ fn variants_block_the_chain_fold() {
     let output = transform_jsx("src/app.tsx", source);
 
     assert_snapshot!(output.code, @r#"
-    import { cx as __pcx, attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return __pcx('color_red', { sm: "padding_4px" }[v0]); }, {
+    const Button = /* @__PURE__ */ styled('button', {
       base: { color: 'red' },
       variants: { size: { sm: { padding: '4px' } } },
-    }, ["size"], { size: ["sm"] }));
+    });
     export const el = <Button size="sm" />;
     "#);
 }
@@ -223,9 +214,8 @@ fn a_local_binding_shadowing_a_folded_chain_is_left_alone() {
     let output = transform_jsx("src/app.tsx", source);
 
     assert_snapshot!(output.code, @r#"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}));
+    const Button = /* @__PURE__ */ styled('button', { base: { color: 'red' } });
     export const Link = () => {
       const Button = (props) => <a {...props} />;
       return <Button href="/go">go</Button>;
@@ -247,9 +237,8 @@ fn style_only_default_props_fold_into_the_class_string() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}), {
+    const Button = /* @__PURE__ */ styled('button', { base: { color: 'red' } }, {
       defaultProps: { margin: '0' },
     });
     export const el = <button className="color_red margin_0">hi</button>;
@@ -270,9 +259,8 @@ fn a_shorthand_default_prop_folds() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}), {
+    const Button = /* @__PURE__ */ styled('button', { base: { color: 'red' } }, {
       defaultProps: { bg: 'blue' },
     });
     export const el = <button className="bg_blue color_red" />;
@@ -293,9 +281,8 @@ fn default_props_win_over_the_chain_base() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}), {
+    const Button = /* @__PURE__ */ styled('button', { base: { color: 'red' } }, {
       defaultProps: { color: 'blue' },
     });
     export const el = <button className="color_blue" />;
@@ -316,9 +303,8 @@ fn element_props_win_over_default_props() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}), {
+    const Button = /* @__PURE__ */ styled('button', { base: { color: 'red' } }, {
       defaultProps: { color: 'blue' },
     });
     export const el = <button className="color_green" />;
@@ -340,9 +326,8 @@ fn an_alias_of_a_chain_with_default_props_still_folds() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}), {
+    const Button = /* @__PURE__ */ styled('button', { base: { color: 'red' } }, {
       defaultProps: { margin: '0' },
     });
     const Alias = Button;
@@ -367,9 +352,8 @@ fn wrapping_a_chain_drops_the_inner_levels_default_props() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Base = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}), {
+    const Base = /* @__PURE__ */ styled('button', { base: { color: 'red' } }, {
       defaultProps: { margin: '0' },
     });
     const Button = styled(Base, { base: { padding: '4px' } });
@@ -392,9 +376,8 @@ fn a_css_prop_default_blocks_the_chain_fold() {
     let output = transform_jsx("src/app.tsx", source);
 
     assert_snapshot!(output.code, @"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}), {
+    const Button = /* @__PURE__ */ styled('button', { base: { color: 'red' } }, {
       defaultProps: { css: { margin: '0' } },
     });
     export const el = <Button />;
@@ -415,9 +398,8 @@ fn should_forward_prop_blocks_the_chain_fold() {
     let output = transform_jsx("src/app.tsx", source);
 
     assert_snapshot!(output.code, @"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}), {
+    const Button = /* @__PURE__ */ styled('button', { base: { color: 'red' } }, {
       defaultProps: { margin: '0' },
       shouldForwardProp: (prop) => prop !== 'margin',
     });
@@ -440,10 +422,9 @@ fn a_statically_resolved_spread_in_default_props_still_folds() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
     const shared = { margin: '0' };
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}), {
+    const Button = /* @__PURE__ */ styled('button', { base: { color: 'red' } }, {
       defaultProps: { ...shared, color: 'blue' },
     });
     export const el = <button className="color_blue margin_0" />;
@@ -464,10 +445,9 @@ fn an_unresolvable_spread_in_default_props_blocks_the_chain_fold() {
     let output = transform_jsx("src/app.tsx", source);
 
     assert_snapshot!(output.code, @"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
     import { shared } from './shared';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}), {
+    const Button = /* @__PURE__ */ styled('button', { base: { color: 'red' } }, {
       defaultProps: { ...shared, color: 'blue' },
     });
     export const el = <Button />;
@@ -489,9 +469,8 @@ fn an_unknown_default_prop_blocks_the_chain_fold() {
     let output = transform_jsx("src/app.tsx", source);
 
     assert_snapshot!(output.code, @"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}), {
+    const Button = /* @__PURE__ */ styled('button', { base: { color: 'red' } }, {
       defaultProps: { color: 'blue', role: 'button' },
     });
     export const el = <Button />;
@@ -512,9 +491,8 @@ fn a_conditional_default_prop_folds() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { styled } from '@panda/jsx';
-    const Button = /* @__PURE__ */ styled('button', /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}), {
+    const Button = /* @__PURE__ */ styled('button', { base: { color: 'red' } }, {
       defaultProps: { color: { base: 'blue', _hover: 'green' } },
     });
     export const el = <button className="color_blue hover:color_green" />;
@@ -533,9 +511,8 @@ fn folds_a_chain_built_with_a_custom_factory_name_to_its_tag() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"
-    import { attachRecipe as __pr } from '@pandacss-internal/css';
     import { panda } from '@panda/jsx';
-    const Button = /* @__PURE__ */ panda('button', /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {}));
+    const Button = /* @__PURE__ */ panda('button', { base: { color: 'red' } });
     export const el = <button type="submit" className="color_red">hi</button>;
     "#);
 }

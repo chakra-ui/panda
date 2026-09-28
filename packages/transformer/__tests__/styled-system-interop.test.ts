@@ -26,17 +26,19 @@ function render(exports: Record<string, any>, name: string) {
 }
 
 describe('transformed recipes inside the styled-system runtime', () => {
-  it('renders a styled component whose config was specialized', async () => {
+  it('renders a styled component built from a transformed cva', async () => {
     const { attachesRecipe, original, transformed } = await load(
       [
         "import { createElement } from 'react'",
         "import { styled } from '@panda/jsx'",
+        "import { cva } from '@panda/css'",
         "export { render } from 'react'",
-        "const Button = styled('button', {",
+        'const button = cva({',
         "  base: { bg: 'red', fontSize: '14px' },",
         "  variants: { size: { sm: { fontSize: '12px' }, lg: { fontSize: '16px' } } },",
         "  defaultVariants: { size: 'sm' },",
         '})',
+        "const Button = styled('button', button)",
         'export const plain = createElement(Button, {})',
         "export const large = createElement(Button, { size: 'lg' })",
       ].join('\n'),
@@ -54,17 +56,19 @@ describe('transformed recipes inside the styled-system runtime', () => {
     `)
   })
 
-  it('merges style props over a specialized styled config through raw', async () => {
+  it('merges style props over a transformed cva through raw', async () => {
     const { original, transformed } = await load(
       [
         "import { createElement } from 'react'",
         "import { styled } from '@panda/jsx'",
+        "import { cva } from '@panda/css'",
         "export { render } from 'react'",
-        "const Button = styled('button', {",
+        'const button = cva({',
         "  base: { bg: 'red' },",
         "  variants: { size: { sm: { fontSize: '12px' }, lg: { fontSize: '16px' } } },",
         "  defaultVariants: { size: 'sm' },",
         '})',
+        "const Button = styled('button', button)",
         "export const overridden = createElement(Button, { size: 'lg', bg: 'blue' })",
       ].join('\n'),
     )
@@ -79,17 +83,19 @@ describe('transformed recipes inside the styled-system runtime', () => {
     `)
   })
 
-  it('extends a specialized styled component with styled()', async () => {
+  it('extends a styled component built from a transformed cva with styled()', async () => {
     const { original, transformed } = await load(
       [
         "import { createElement } from 'react'",
         "import { styled } from '@panda/jsx'",
+        "import { cva } from '@panda/css'",
         "export { render } from 'react'",
-        "const Base = styled('div', {",
+        'const base = cva({',
         "  base: { bg: 'red' },",
         "  variants: { size: { sm: { fontSize: '12px' }, lg: { fontSize: '16px' } } },",
         "  defaultVariants: { size: 'sm' },",
         '})',
+        "const Base = styled('div', base)",
         "const Card = styled(Base, { base: { borderRadius: 'xl' }, variants: { size: { lg: { bg: 'blue' } } } })",
         'export const small = createElement(Card, {})',
         "export const large = createElement(Card, { size: 'lg' })",
@@ -114,11 +120,13 @@ describe('transformed recipes inside the styled-system runtime', () => {
       [
         "import { createElement } from 'react'",
         "import { styled } from '@panda/jsx'",
+        "import { cva } from '@panda/css'",
         "export { render } from 'react'",
-        "const Base = styled('div', {",
+        'const base = cva({',
         "  variants: { size: { sm: { fontSize: '12px' } } },",
         "  defaultVariants: { size: 'sm' },",
         '})',
+        "const Base = styled('div', base)",
         "const Card = styled(Base, { base: { fontSize: '14px' } })",
         'export const card = createElement(Card, {})',
         "export const styled14 = createElement(Card, { bg: 'red' })",
@@ -134,6 +142,24 @@ describe('transformed recipes inside the styled-system runtime', () => {
         "type": "div",
       }
     `)
+  })
+
+  it('leaves a literal styled config to styled-system', async () => {
+    const { attachesRecipe, original, transformed } = await load(
+      [
+        "import { createElement } from 'react'",
+        "import { styled } from '@panda/jsx'",
+        "export { render } from 'react'",
+        "const Button = styled('button', {",
+        "  base: { bg: 'red' },",
+        "  variants: { size: { sm: { fontSize: '12px' }, lg: { fontSize: '16px' } } },",
+        '})',
+        "export const large = createElement(Button, { size: 'lg', bg: 'blue' })",
+      ].join('\n'),
+    )
+
+    expect(attachesRecipe).toBe(false)
+    expect(render(transformed, 'large')).toEqual(render(original, 'large'))
   })
 
   it('uses an exported specialized cva as the child of an untransformed styled component', async () => {
