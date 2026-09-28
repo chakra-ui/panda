@@ -25,14 +25,25 @@ use oxc_span::SourceType;
 use rustc_hash::FxHashSet;
 use serde::Serialize;
 
-/// A folded `imported.raw(props)` call on an inline `cva`/`sva` exported from
-/// another file. The definition file precomputes its class strings, so the
-/// transform must rewrite this site to the styles it resolved to.
+/// A folded call on an inline `cva`/`sva` exported from another file: either
+/// `imported.raw(props)`, rewritten to the styles it resolved to, or a plain
+/// `imported(props)` on a `cva`, rewritten to its class string.
 #[derive(Debug, Clone, PartialEq)]
 pub struct ImportedRecipeRawCall {
     pub object_literal_context: crate::ObjectLiteralContext,
     pub span: Span,
     pub styles: Literal,
+    /// A plain call: the runtime returns classes, so the site becomes a class string.
+    pub returns_classes: bool,
+    /// Set for a plain call on an `sva`: its slots, which the result object lists.
+    pub slots: Option<ImportedSlots>,
+}
+
+/// An imported `sva`'s slot names, in order, and its `className` prefix.
+#[derive(Debug, Clone, PartialEq)]
+pub struct ImportedSlots {
+    pub names: Vec<String>,
+    pub class_name: Option<String>,
 }
 
 /// A resolved `token()` / `token.var()` call site: the referenced token path and
@@ -514,14 +525,14 @@ fn run_extract(
         exports
     };
 
-    // A file with no Panda imports can still consume one: `button.raw(...)` on
-    // a recipe imported from another module. The definition file desugars
-    // independently, so skipping here would leave the call reading a class
-    // string. Only relevant when the project supplied a recipe resolver.
+    // A file with no Panda imports can still consume one: `button(...)` or
+    // `button.raw(...)` on a recipe imported from another module, which folds to
+    // classes or styles here. Only relevant when the project supplied a recipe
+    // resolver.
     let would_skip = should_skip_extraction(&matched, config);
     let consumes_imported_recipe = would_skip
         && recipe_raw_resolve.is_some()
-        && calls_raw_on_an_imported_binding(&parser_return.program, &imports);
+        && calls_an_imported_binding(&parser_return.program, &imports);
 
     if would_skip && !consumes_imported_recipe {
         let module = if retain_transform_facts {
@@ -769,7 +780,7 @@ fn after_line_terminator(start: u32, source: &str) -> u32 {
 ///
 /// Deliberately syntactic: no resolution, no filesystem. A false positive
 /// costs one file's extraction, which then finds nothing.
-fn calls_raw_on_an_imported_binding(program: &Program<'_>, imports: &[ImportRecord]) -> bool {
+fn calls_an_imported_binding(program: &Program<'_>, imports: &[ImportRecord]) -> bool {
     let locals: FxHashSet<&str> = imports
         .iter()
         .filter(|record| !record.type_only)
@@ -796,15 +807,20 @@ struct ImportedRawCallFinder<'a> {
 
 impl<'a> oxc_ast_visit::Visit<'a> for ImportedRawCallFinder<'_> {
     fn visit_call_expression(&mut self, call: &oxc_ast::ast::CallExpression<'a>) {
-        if !self.found
-            && let oxc_ast::ast::Expression::StaticMemberExpression(member) =
-                call.callee.get_inner_expression()
-            && member.property.name == "raw"
-            && let oxc_ast::ast::Expression::Identifier(object) =
-                member.object.get_inner_expression()
-            && self.locals.contains(object.name.as_str())
-        {
-            self.found = true;
+        if !self.found {
+            let callee = match call.callee.get_inner_expression() {
+                oxc_ast::ast::Expression::StaticMemberExpression(member)
+                    if member.property.name == "raw" =>
+                {
+                    member.object.get_inner_expression()
+                }
+                callee => callee,
+            };
+            if let oxc_ast::ast::Expression::Identifier(object) = callee
+                && self.locals.contains(object.name.as_str())
+            {
+                self.found = true;
+            }
         }
         oxc_ast_visit::walk::walk_call_expression(self, call);
     }

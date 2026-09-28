@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { createCompiler } from '@pandacss/compiler'
 import { describe, expect, it } from 'vitest'
 import { createSourceTransformer } from '../src'
 import { bundle, createFixtureCompiler } from './fixtures/styled-system'
@@ -317,6 +320,37 @@ describe('transformed source tree shaking', () => {
       }, ["rounded"], { rounded: ["true"] });
       //#endregion
       export { button };
+      "
+    `)
+  })
+
+  it('drops imported cva and sva recipes once every call site in another file folds', async () => {
+    const dir = join(__dirname, 'fixtures/imported-recipe')
+    const compiler = createCompiler({
+      cwd: dir,
+      outdir: 'styled-system',
+      importMap: { css: ['@panda/css'] },
+      utilities: { backgroundColor: { className: 'bg', shorthand: 'bg' }, fontSize: { className: 'fs' } },
+    })
+    const transformer = createSourceTransformer(compiler)
+    const transform = (file: string) =>
+      transformer.transformSource({ path: join(dir, file), source: readFileSync(join(dir, file), 'utf8') }).code
+
+    const code = await bundle(compiler, transform('app.tsx'), {
+      modules: { '/button.js': transform('button.js'), '/tabs.js': transform('tabs.js') },
+    })
+
+    expect(code).toMatchInlineSnapshot(`
+      "//#region entry.tsx
+      const __ps0 = {
+      	root: "bg_red",
+      	trigger: "fs_12px"
+      };
+      const large = "bg_red fs_16px";
+      const small = "bg_red fs_12px";
+      const slots = __ps0;
+      //#endregion
+      export { large, slots, small };
       "
     `)
   })

@@ -870,9 +870,56 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
                 ),
                 span,
                 styles: styles.clone(),
+                returns_classes: false,
+                slots: None,
             });
         }
         Some(styles)
+    }
+
+    /// Fold a plain `button(props)` call where `button` is an imported inline
+    /// `cva` or `sva` and the props are static.
+    pub(crate) fn resolve_imported_recipe_call(&self, call: &CallExpression<'_>) {
+        let Some(resolve) = self.recipe_raw_resolve else {
+            return;
+        };
+        let Expression::Identifier(callee) = call.callee.get_inner_expression() else {
+            return;
+        };
+        if !self.is_import_binding(callee) || self.aliases.contains_key(callee.name.as_str()) {
+            return;
+        }
+        let Some(symbol_id) = self.symbol_for_identifier(callee) else {
+            return;
+        };
+        let Some(ExportEntry::Recipe(recipe)) = self.resolve_import_entry(symbol_id) else {
+            return;
+        };
+        let slots = match recipe.factory.as_str() {
+            "cva" => None,
+            "sva" => match imported_slots(&recipe.config) {
+                Some(slots) => Some(slots),
+                None => return,
+            },
+            _ => return,
+        };
+        let Some(styles) = self.resolve_recipe_raw_styles(call, &recipe, resolve) else {
+            return;
+        };
+        let span = crate::span_from_oxc(call.span);
+        let mut folded = self.imported_recipe_raw_calls.borrow_mut();
+        if !folded.iter().any(|call| call.span == span) {
+            folded.push(ImportedRecipeRawCall {
+                object_literal_context: crate::transform_facts::object_literal_context(
+                    call,
+                    &self.semantic,
+                ),
+                span,
+                styles,
+                returns_classes: true,
+                slots,
+            });
+        }
     }
 
     /// [`StyleTree`] for a `.raw(...)` arg. Pattern transform: project → transform → rehydrate.
@@ -1442,4 +1489,35 @@ fn ts_type_to_literal(ts_type: &oxc_ast::ast::TSType<'_>) -> Option<Literal> {
         oxc_ast::ast::TSLiteral::BooleanLiteral(b) => Some(Literal::Bool(b.value)),
         _ => None,
     }
+}
+
+/// Slot names from `slots`, or the keys of `base` when `slots` is omitted, plus the `className` prefix.
+fn imported_slots(config: &Literal) -> Option<crate::ImportedSlots> {
+    let Literal::Object(entries) = config else {
+        return None;
+    };
+    let entry = |key: &str| {
+        entries
+            .iter()
+            .find(|(name, _)| name == key)
+            .map(|(_, value)| value)
+    };
+    let names = match (entry("slots"), entry("base")) {
+        (Some(Literal::Array(slots)), _) => slots
+            .iter()
+            .map(|slot| match slot {
+                Literal::String(name) => Some(name.clone()),
+                _ => None,
+            })
+            .collect::<Option<Vec<_>>>()?,
+        (None, Some(Literal::Object(base))) => base.iter().map(|(name, _)| name.clone()).collect(),
+        (None, None) => Vec::new(),
+        _ => return None,
+    };
+    let class_name = match entry("className") {
+        Some(Literal::String(name)) => Some(name.clone()),
+        None => None,
+        _ => return None,
+    };
+    Some(crate::ImportedSlots { names, class_name })
 }

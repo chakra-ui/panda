@@ -65,10 +65,12 @@ interface BundleOptions {
   format?: 'esm' | 'cjs'
   /** Resolve `@styled-system/css` to the generated css entry, outside the transform's import map. */
   exposeRuntime?: boolean
+  /** More source modules next to the entry, keyed by path (e.g. `/button.js`). */
+  modules?: Record<string, string>
 }
 
 export async function bundle(compiler: Compiler, code: string, options: BundleOptions = {}) {
-  const modules = new Map<string, string>([['/entry.tsx', code]])
+  const modules = new Map<string, string>([['/entry.tsx', code], ...Object.entries(options.modules ?? {})])
   for (const artifact of compiler.generateArtifacts()) {
     for (const file of artifact.files) {
       if (file.path.endsWith('.mjs')) modules.set(posix.join('/styled-system', file.path), file.code)
@@ -93,7 +95,7 @@ export async function bundle(compiler: Compiler, code: string, options: BundleOp
           if (!importer || !source.startsWith('.')) return null
 
           const resolved = posix.normalize(posix.join(posix.dirname(importer), source))
-          for (const candidate of [resolved, `${resolved}.mjs`]) {
+          for (const candidate of [resolved, `${resolved}.mjs`, `${resolved}.js`]) {
             if (modules.has(candidate)) return candidate
           }
           return null

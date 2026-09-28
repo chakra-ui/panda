@@ -55,6 +55,23 @@ pub(crate) fn build_transform_edits(
         ));
     }
 
+    if !plan.hoisted.is_empty() {
+        edits.push(Edit::Insert {
+            at: imports::internal_css_import_insertion_point(&plan.module),
+            content: plan.hoisted.iter().enumerate().fold(
+                String::new(),
+                |mut out, (index, value)| {
+                    out.push_str("const ");
+                    out.push_str(&super::plan::hoisted_name(index));
+                    out.push_str(" = ");
+                    out.push_str(value);
+                    out.push_str(";\n");
+                    out
+                },
+            ),
+        });
+    }
+
     if plan.module.symbols_resolved || helper_facts_required(&plan.helper) {
         edits.extend(imports::plan_internal_css_import_removals(
             source,
@@ -274,6 +291,7 @@ mod tests {
             },
             bailed: false,
             hashed_recipe: None,
+            hoisted: Vec::new(),
         };
 
         let edits =
@@ -309,6 +327,7 @@ mod tests {
             },
             bailed: false,
             hashed_recipe: None,
+            hoisted: Vec::new(),
         };
 
         let edits =
@@ -356,6 +375,7 @@ mod tests {
             },
             bailed: false,
             hashed_recipe: None,
+            hoisted: Vec::new(),
         };
 
         let edits =

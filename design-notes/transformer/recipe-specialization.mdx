@@ -139,6 +139,23 @@ variants, stays a bare function. The design follows the `cva` resolver in `shadc
 On Node 24 the memoized recipes match or beat `__pcva` on every workload; compounds and `sva` drop from about 150 ns to
 about 40 ns per call.
 
+### Imported recipes
+
+A static call on a `cva` imported from another file folds to its class string in the calling file, through the same
+cross-file resolution that folds imported `.raw(...)` calls. The recipe file becomes a dependency of the caller, so
+editing it re-transforms importers. The import stays; when every consumer folds, the definition's
+`/* @__PURE__ */ __pr(...)` is an unused pure export and the bundler drops it, `config` included.
+
+A static call on an imported `sva` folds to its slot object, `{ root: "…", trigger: "…" }` with the `className__slot`
+classes the runtime adds. The runtime returns the same object for the same props, so the object is hoisted to a
+module-level `const __psN`, shared by every identical call in the file; an inline literal would be a new object on every
+render and break reference checks such as effect dependencies. Two files folding the same props get two objects, where
+the runtime memo would share one; nothing comparing slot objects across files by reference is expected.
+
+Dynamic props, spreads, and anything that passes the recipe around keep the runtime call. Widening the
+extraction gate from `x.raw(...)` to any `x(...)` on an imported binding measured within noise on the 187-file website
+(27 vs 28 ms warm).
+
 ### Hashed class names
 
 With `hash: true` or `hash.className`, class names carry no property key, so `cx` can't tell which class a variant

@@ -162,9 +162,24 @@ pub(crate) struct TransformPlan {
     pub bailed: bool,
     /// First `cva` / `sva` call left on the runtime because class names are hashed.
     pub hashed_recipe: Option<pandacss_shared::Span>,
+    /// Values of module-level constants (`__ps0`, …) the rewrites reference, deduplicated.
+    pub hoisted: Vec<String>,
 }
 
 impl TransformPlan {
+    /// A module-level constant holding `value`, so every evaluation sees the same object.
+    fn hoist(&mut self, value: String) -> String {
+        let index = self
+            .hoisted
+            .iter()
+            .position(|hoisted| *hoisted == value)
+            .unwrap_or_else(|| {
+                self.hoisted.push(value);
+                self.hoisted.len() - 1
+            });
+        hoisted_name(index)
+    }
+
     fn skip_hashed_recipe(&mut self, span: pandacss_shared::Span) {
         self.hashed_recipe.get_or_insert(span);
     }
@@ -252,6 +267,7 @@ pub(crate) fn build_plan(
         module: extracted.module.clone(),
         bailed: false,
         hashed_recipe: None,
+        hoisted: Vec::new(),
     };
 
     let targets = &options.targets;
@@ -264,17 +280,7 @@ pub(crate) fn build_plan(
         return plan;
     }
 
-    // An imported recipe's definition file precomputes its class strings, so
-    // its runtime `raw` would hand back a string — pin the styles here instead.
-    for raw_call in &extracted.imported_recipe_raw_calls {
-        if let Some(rewrite) = resolve::rewrite_for_style_literal(
-            raw_call.span,
-            raw_call.object_literal_context,
-            &raw_call.styles,
-        ) {
-            plan.push(rewrite);
-        }
-    }
+    push_imported_recipe_rewrites(&mut plan, system, extracted);
 
     for call in &extracted.calls {
         // `.raw()` returns a style object, never a class string. Rewriting it
@@ -428,6 +434,85 @@ fn push_css_call_rewrites(
             None => {}
         },
     }
+}
+
+/// Calls on a recipe imported from another file, resolved through its
+/// definition: `.raw(...)` pins the styles, a plain call becomes classes.
+fn push_imported_recipe_rewrites(
+    plan: &mut TransformPlan,
+    system: &System,
+    extracted: &ExtractUsage,
+) {
+    for call in &extracted.imported_recipe_raw_calls {
+        let content = match (&call.slots, call.returns_classes) {
+            (_, false) => resolve::rewrite_for_style_literal(
+                call.span,
+                call.object_literal_context,
+                &call.styles,
+            )
+            .map(|rewrite| rewrite.content),
+            (None, true) => {
+                recipe_classes(system, &call.styles).map(|classes| super::js::string(&classes))
+            }
+            (Some(slots), true) => {
+                slot_classes(system, &call.styles, slots).map(|object| plan.hoist(object))
+            }
+        };
+        if let Some(content) = content {
+            plan.push(Rewrite {
+                start: call.span.start,
+                end: call.span.end,
+                content,
+                preserved: Vec::new(),
+                helper: TransformHelperFacts::none(),
+            });
+        }
+    }
+}
+
+/// The class string resolved styles encode to; empty styles give no classes.
+fn recipe_classes(system: &System, styles: &pandacss_literal::Literal) -> Option<String> {
+    match styles {
+        pandacss_literal::Literal::Object(entries) if entries.is_empty() => Some(String::new()),
+        styles => Some(system.class_names_for_style_literal(styles)?.join(" ")),
+    }
+}
+
+/// `{ slot: "classes" }` for an imported `sva`, with the `className__slot` class the runtime adds.
+fn slot_classes(
+    system: &System,
+    styles: &pandacss_literal::Literal,
+    slots: &pandacss_extractor::ImportedSlots,
+) -> Option<String> {
+    let pandacss_literal::Literal::Object(entries) = styles else {
+        return None;
+    };
+    let empty = pandacss_literal::Literal::Object(Vec::new());
+    let fields = slots
+        .names
+        .iter()
+        .map(|slot| {
+            let style = entries
+                .iter()
+                .find(|(name, _)| name == slot)
+                .map_or(&empty, |(_, style)| style);
+            let mut classes = recipe_classes(system, style)?;
+            if let Some(prefix) = &slots.class_name {
+                if !classes.is_empty() {
+                    classes.push(' ');
+                }
+                classes.push_str(prefix);
+                classes.push_str("__");
+                classes.push_str(slot);
+            }
+            Some(super::js::field(slot, super::js::string(&classes)))
+        })
+        .collect::<Option<Vec<_>>>()?;
+    Some(super::js::object(fields))
+}
+
+pub(crate) fn hoisted_name(index: usize) -> String {
+    format!("__ps{index}")
 }
 
 /// How a `cva`/`sva` definition is used in its module, which decides what the rewrite ships.

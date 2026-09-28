@@ -1708,3 +1708,137 @@ fn keeps_a_recipe_whose_compound_selects_an_undeclared_prop_on_the_runtime() {
     assert!(!output.changed);
     assert_eq!(output.code, source);
 }
+
+const IMPORTED_BUTTON: &str = indoc! {r#"
+    import { cva } from '@panda/css';
+    export const button = cva({
+      base: { color: 'red', padding: '2px' },
+      variants: { size: { sm: { padding: '4px' }, lg: { padding: '8px' } } },
+      compoundVariants: [{ size: 'lg', css: { fontSize: '20px' } }],
+      defaultVariants: { size: 'sm' },
+    });
+"#};
+
+#[test]
+fn folds_a_static_call_on_an_imported_cva_to_its_classes() {
+    let source = indoc! {r#"
+        import { button } from './button';
+        export const large = button({ size: 'lg' });
+        export const fallback = button();
+    "#};
+
+    let output = super::common::transform_cross_file(
+        "src/a.tsx",
+        source,
+        &[("src/button.ts", IMPORTED_BUTTON)],
+    );
+
+    assert_snapshot!(output.code, @r#"
+    import { button } from './button';
+    export const large = "color_red fs_20px padding_8px";
+    export const fallback = "color_red padding_4px";
+    "#);
+    assert_yaml_snapshot!(output.dependencies, @"- /proj/src/button.ts");
+}
+
+#[test]
+fn keeps_a_dynamic_call_on_an_imported_cva() {
+    let source = indoc! {r#"
+        import { button } from './button';
+        export const cls = (size) => button({ size });
+    "#};
+
+    let output = super::common::transform_cross_file(
+        "src/a.tsx",
+        source,
+        &[("src/button.ts", IMPORTED_BUTTON)],
+    );
+
+    assert!(!output.changed);
+    assert!(output.diagnostics.is_empty());
+}
+
+#[test]
+fn hoists_a_static_call_on_an_imported_sva_to_one_slot_object() {
+    let tabs = indoc! {r#"
+        import { sva } from '@panda/css';
+        export const tabs = sva({
+          slots: ['root', 'trigger', 'indicator'],
+          className: 'tabs',
+          base: { root: { display: 'flex' }, trigger: { color: 'red' } },
+          variants: { size: { sm: { trigger: { padding: '4px' } }, lg: { trigger: { padding: '8px' } } } },
+          defaultVariants: { size: 'sm' },
+        });
+    "#};
+    let source = indoc! {r#"
+        import { tabs } from './tabs';
+        export function Tabs() {
+          const classes = tabs({ size: 'lg' });
+          const again = tabs({ size: 'lg' });
+          return [classes, again, tabs()];
+        }
+    "#};
+
+    let output = super::common::transform_cross_file("src/a.tsx", source, &[("src/tabs.ts", tabs)]);
+
+    assert_snapshot!(output.code, @r#"
+    const __ps0 = { root: "d_flex tabs__root", trigger: "color_red padding_8px tabs__trigger", indicator: "tabs__indicator" };
+    const __ps1 = { root: "d_flex tabs__root", trigger: "color_red padding_4px tabs__trigger", indicator: "tabs__indicator" };
+    import { tabs } from './tabs';
+    export function Tabs() {
+      const classes = __ps0;
+      const again = __ps0;
+      return [classes, again, __ps1];
+    }
+    "#);
+}
+
+#[test]
+fn derives_imported_sva_slots_from_base_when_slots_is_omitted() {
+    let card = indoc! {r#"
+        import { sva } from '@panda/css';
+        export const card = sva({ base: { root: { display: 'grid' }, title: { color: 'red' } } });
+    "#};
+    let source = indoc! {r#"
+        import { card } from './card';
+        export const classes = card();
+    "#};
+
+    let output = super::common::transform_cross_file("src/a.tsx", source, &[("src/card.ts", card)]);
+
+    assert_snapshot!(output.code, @r#"
+    const __ps0 = { root: "d_grid", title: "color_red" };
+    import { card } from './card';
+    export const classes = __ps0;
+    "#);
+}
+
+#[test]
+fn keeps_a_dynamic_call_on_an_imported_sva() {
+    let tabs = indoc! {r#"
+        import { sva } from '@panda/css';
+        export const tabs = sva({ slots: ['root'], base: { root: { color: 'red' } } });
+    "#};
+    let source = indoc! {r#"
+        import { tabs } from './tabs';
+        export const classes = (props) => tabs(props);
+    "#};
+
+    let output = super::common::transform_cross_file("src/a.tsx", source, &[("src/tabs.ts", tabs)]);
+
+    assert!(!output.changed);
+}
+
+#[test]
+fn leaves_a_call_on_an_imported_plain_function_alone() {
+    let helper = "export const format = (value) => String(value);\n";
+    let source = indoc! {r#"
+        import { format } from './format';
+        export const text = format({ size: 'lg' });
+    "#};
+
+    let output =
+        super::common::transform_cross_file("src/a.tsx", source, &[("src/format.ts", helper)]);
+
+    assert!(!output.changed);
+}
