@@ -22,22 +22,6 @@ describe('transformed source tree shaking', () => {
     expect(code).toMatchInlineSnapshot(`
       "import "react";
       import { jsx } from "react/jsx-runtime";
-      //#region styled-system/helpers.mjs
-      const htmlProps = [
-      	"htmlSize",
-      	"htmlTranslate",
-      	"htmlWidth",
-      	"htmlHeight"
-      ];
-      function convertHTMLProp(key) {
-      	return htmlProps.includes(key) ? key.replace("html", "").toLowerCase() : key;
-      }
-      function normalizeHTMLProps(props) {
-      	return Object.fromEntries(Object.entries(props).map(([key, value]) => [convertHTMLProp(key), value]));
-      }
-      normalizeHTMLProps.keys = htmlProps;
-      new Set("base".split(","));
-      //#endregion
       //#region entry.tsx
       function App() {
       	return /* @__PURE__ */ jsx("article", { className: "bg_red bdr_xl" });
