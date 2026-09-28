@@ -28,10 +28,10 @@ export const MobileNavBar = () => {
         <Link href="/" className={center({ flexShrink: '0' })}>
           <Icon icon="LogoWithText" />
         </Link>
-        <VersionSwitcher />
       </HStack>
 
       <HStack gap="4">
+        <VersionSwitcher />
         <ThemeSwitchIconButton />
         <MobileNavDrawer
           trigger={

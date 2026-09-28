@@ -26,7 +26,7 @@ export const VersionSwitcher = () => {
   const pathname = usePathname() ?? '/'
 
   return (
-    <Menu.Root lazyMount positioning={{ placement: 'bottom-start' }}>
+    <Menu.Root lazyMount positioning={{ placement: 'bottom-end' }}>
       <Menu.Trigger asChild>
         <Button
           size="xs"

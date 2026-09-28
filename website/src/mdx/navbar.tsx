@@ -11,7 +11,7 @@ import { docsConfig } from '@/docs.config'
 import { GithubIcon, MenuIcon } from '@/icons'
 import { useMatchMedia } from '@/lib/use-match-media'
 import { css, cx } from '@/styled-system/css'
-import { Center, HStack } from '@/styled-system/jsx'
+import { Center } from '@/styled-system/jsx'
 import { navbar } from '@/styled-system/recipes'
 import { Icon } from '@/theme/icons'
 import { Dialog, useDialog } from '@ark-ui/react/dialog'
@@ -41,29 +41,24 @@ export const Navbar = () => {
       <V1Banner />
 
       <nav data-scope="navbar" data-part="nav">
-        <HStack gap="3" marginEnd="auto">
-          {docsConfig.logoUrl ? (
-            <Anchor
-              data-scope="navbar"
-              data-part="logo-link"
-              href={
-                typeof docsConfig.logoUrl === 'string'
-                  ? docsConfig.logoUrl
-                  : '/'
-              }
-              className={css({
-                _hover: { opacity: 0.75 }
-              })}
-            >
-              <Icon icon="LogoWithText" />
-            </Anchor>
-          ) : (
-            <div data-scope="navbar" data-part="logo-link">
-              <Icon icon="LogoWithText" />
-            </div>
-          )}
-          <VersionSwitcher />
-        </HStack>
+        {docsConfig.logoUrl ? (
+          <Anchor
+            data-scope="navbar"
+            data-part="logo-link"
+            href={
+              typeof docsConfig.logoUrl === 'string' ? docsConfig.logoUrl : '/'
+            }
+            className={css({
+              _hover: { opacity: 0.75 }
+            })}
+          >
+            <Icon icon="LogoWithText" />
+          </Anchor>
+        ) : (
+          <div data-scope="navbar" data-part="logo-link">
+            <Icon icon="LogoWithText" />
+          </div>
+        )}
 
         {items.map(item => {
           const active =
@@ -93,6 +88,8 @@ export const Navbar = () => {
         })}
 
         <CommandMenu trigger={<SearchButton />} mediaQuery="max-width: 640px" />
+
+        <VersionSwitcher />
 
         {docsConfig.docsRepositoryBase ? (
           <Anchor

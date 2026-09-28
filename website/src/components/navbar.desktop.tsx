@@ -26,7 +26,6 @@ export const DesktopNavBar = () => {
         <Link href="/" className={center({ flexShrink: '0' })}>
           <Icon icon="LogoWithText" />
         </Link>
-        <VersionSwitcher />
         <V1MiniBanner />
       </HStack>
 
@@ -38,6 +37,7 @@ export const DesktopNavBar = () => {
         <NavLink href="https://play.panda-css.com/" isExternal>
           Playground
         </NavLink>
+        <VersionSwitcher />
         <NavLink href="https://github.com/chakra-ui/panda" isExternal>
           <FaGithub className={css({ fontSize: '2xl' })} />
         </NavLink>
