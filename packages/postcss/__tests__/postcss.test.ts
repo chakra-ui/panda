@@ -49,6 +49,23 @@ describe('PostCSS plugin', () => {
     expect(result.css.length).toBeGreaterThan(2)
   })
 
+  test('skip codegen when `codegen` is false', async () => {
+    const input = '@layer reset, base, tokens, recipes, utilities;'
+    const configPath = join(__dirname, 'samples', 'panda.config.cjs')
+    const emitSpy = vi.spyOn(builder, 'emit')
+
+    try {
+      const result = await run(input, { configPath, codegen: false })
+      expect(emitSpy).not.toHaveBeenCalled()
+      expect(result.css.length).toBeGreaterThan(2)
+
+      await run(input, { configPath })
+      expect(emitSpy).toHaveBeenCalledTimes(1)
+    } finally {
+      emitSpy.mockRestore()
+    }
+  })
+
   test('register `include` as dependencies', async () => {
     const input = '@layer reset, base, tokens, recipes, utilities;'
     const configPath = join(__dirname, 'samples', 'panda.config.cjs')

@@ -255,6 +255,17 @@ export default defineConfig({
 })
 ```
 
+If your app uses the PostCSS plugin, set `codegen: false` so it doesn't write a local `styled-system` folder that
+nothing imports:
+
+```js filename="postcss.config.cjs"
+module.exports = {
+  plugins: {
+    '@pandacss/dev/postcss': { codegen: false }
+  }
+}
+```
+
 Mark the `@acme-org/styled-system` as an external package in your library build tool. This ensures that the generated JS
 runtime code is imported only once, avoiding duplication.
 

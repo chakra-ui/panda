@@ -12,6 +12,7 @@ export interface PluginOptions {
   cwd?: string
   logfile?: string
   allow?: RegExp[]
+  codegen?: boolean
 }
 
 const interopDefault = (obj: any) => (obj && obj.__esModule ? obj.default : obj)
@@ -25,7 +26,7 @@ export const builder = new Builder()
 let builderGuard: Promise<void> | undefined
 
 export const pandacss: PluginCreator<PluginOptions> = (options = {}) => {
-  const { configPath, cwd, logfile, allow } = options
+  const { configPath, cwd, logfile, allow, codegen = true } = options
 
   if (!stream && logfile) {
     stream = setLogStream({ cwd, logfile })
@@ -41,7 +42,7 @@ export const pandacss: PluginCreator<PluginOptions> = (options = {}) => {
     // ignore non-panda css file
     if (!builder.isValidRoot(root)) return
 
-    await builder.emit()
+    if (codegen) await builder.emit()
 
     builder.extract()
 
