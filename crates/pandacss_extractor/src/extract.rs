@@ -25,25 +25,25 @@ use oxc_span::SourceType;
 use rustc_hash::FxHashSet;
 use serde::Serialize;
 
-/// A folded call on an inline `cva`/`sva` exported from another file: either
-/// `imported.raw(props)`, rewritten to the styles it resolved to, or a plain
-/// `imported(props)` on a `cva`, rewritten to its class string.
+/// A static call on an inline `cva`/`sva` exported from another file, for the transform to fold.
 #[derive(Debug, Clone, PartialEq)]
-pub struct ImportedRecipeRawCall {
+pub struct ImportedRecipeFold {
     pub object_literal_context: crate::ObjectLiteralContext,
     pub span: Span,
-    pub styles: Literal,
-    /// Set for a plain call: the runtime returns classes, which the transform resolves from it.
-    pub call: Option<ImportedRecipeCall>,
+    pub kind: ImportedRecipeFoldKind,
 }
 
-/// A plain `imported(props)` call with static props, as the transform needs to resolve it.
 #[derive(Debug, Clone, PartialEq)]
-pub struct ImportedRecipeCall {
-    /// `"cva"` or `"sva"`.
-    pub factory: String,
-    pub definition: Literal,
-    pub props: Literal,
+pub enum ImportedRecipeFoldKind {
+    /// `imported.raw(props)`, already resolved to its styles.
+    Raw(Literal),
+    /// `imported(props)`, which the transform resolves to classes.
+    Call {
+        /// `"cva"` or `"sva"`.
+        factory: String,
+        definition: Literal,
+        props: Literal,
+    },
 }
 
 /// A resolved `token()` / `token.var()` call site: the referenced token path and
@@ -129,9 +129,9 @@ pub struct ExtractUsage {
     /// Original-parse module and symbol facts used by source transforms.
     #[serde(skip)]
     pub module: ModuleFacts,
-    /// Folded `.raw(...)` calls on recipes imported from another file.
+    /// Static calls on recipes imported from another file.
     #[serde(skip)]
-    pub imported_recipe_raw_calls: Vec<ImportedRecipeRawCall>,
+    pub imported_recipe_folds: Vec<ImportedRecipeFold>,
 }
 
 impl ExtractUsage {
@@ -290,7 +290,7 @@ fn extract_usage(outcome: ExtractResult) -> ExtractUsage {
         dependencies: outcome.dependencies,
         unresolved_dependencies: outcome.unresolved_dependencies,
         module: outcome.module,
-        imported_recipe_raw_calls: outcome.imported_recipe_raw_calls,
+        imported_recipe_folds: outcome.imported_recipe_folds,
     }
 }
 
@@ -428,7 +428,7 @@ struct ExtractResult {
     exports: ExportInfo,
     dependencies: Vec<CrossFileDependency>,
     unresolved_dependencies: Vec<UnresolvedCrossFileDependency>,
-    imported_recipe_raw_calls: Vec<ImportedRecipeRawCall>,
+    imported_recipe_folds: Vec<ImportedRecipeFold>,
 }
 
 fn match_file_imports(
@@ -560,7 +560,7 @@ fn run_extract(
             exports,
             dependencies: Vec::new(),
             unresolved_dependencies: Vec::new(),
-            imported_recipe_raw_calls: Vec::new(),
+            imported_recipe_folds: Vec::new(),
         };
     }
 
@@ -645,7 +645,7 @@ fn run_extract(
     let token_refs = dedupe_token_refs(token_refs);
     let dependencies = resolver.take_cross_file_deps();
     let unresolved_dependencies = resolver.take_unresolved_cross_file_deps();
-    let imported_recipe_raw_calls = resolver.take_imported_recipe_raw_calls();
+    let imported_recipe_folds = resolver.take_imported_recipe_folds();
     let module = if retain_transform_facts {
         let local_call_bindings = if calls.is_empty() {
             Vec::new()
@@ -679,7 +679,7 @@ fn run_extract(
         exports,
         dependencies,
         unresolved_dependencies,
-        imported_recipe_raw_calls,
+        imported_recipe_folds,
     }
 }
 

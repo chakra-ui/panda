@@ -786,7 +786,6 @@ fn styled_call_syntax_is_marked_pure() {
     let output = transform_jsx("src/app.tsx", source);
 
     assert!(output.changed);
-    assert!(!output.helper.needs_cva);
     assert_snapshot!(output.code, @"
     import { styled } from '@panda/jsx';
     export const Card = /* @__PURE__ */ styled('div', { color: 'red' });
@@ -803,7 +802,6 @@ fn styled_member_call_is_marked_pure() {
     let output = transform_jsx("src/app.tsx", source);
 
     assert!(output.changed);
-    assert!(!output.helper.needs_cva);
     assert_snapshot!(output.code, @"
     import { styled } from '@panda/jsx';
     export const Card = /* @__PURE__ */ styled.div({ color: 'red' });

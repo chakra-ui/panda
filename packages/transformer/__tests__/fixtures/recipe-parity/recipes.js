@@ -52,3 +52,18 @@ export const tabs = sva({
   compoundVariants: [{ size: 'lg', fitted: true, css: { trigger: { padding: '12px' }, indicator: { color: 'blue' } } }],
   defaultVariants: { size: 'sm' },
 })
+
+// Compounds compare values strictly, so a number and its string spelling select different compounds.
+export const grid = cva({
+  base: { display: 'grid' },
+  variants: {
+    cols: { 1: { padding: '1px' }, 2: { padding: '2px' } },
+    dense: { true: { margin: '0' }, false: { margin: '4px' } },
+  },
+  compoundVariants: [
+    { cols: 2, css: { color: 'red' } },
+    { cols: '1', css: { color: 'blue' } },
+    { dense: 'true', css: { opacity: '0.5' } },
+  ],
+  defaultVariants: { cols: 2 },
+})

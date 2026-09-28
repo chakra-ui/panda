@@ -10,17 +10,21 @@ type Props = Record<string, unknown>
 const dir = join(__dirname, 'fixtures/recipe-parity')
 const recipesSource = readFileSync(join(dir, 'recipes.js'), 'utf8')
 
-/** Every prop combination each fixture recipe is called with; `undefined` means the prop is omitted. */
+/**
+ * Every prop combination each fixture recipe is called with; `undefined` means the prop is omitted.
+ * `null` is passed through: unlike an omitted prop, it doesn't fall back to the default.
+ */
 const matrix: Record<string, Record<string, unknown[]>> = {
   shorthand: { tone: [undefined, 'blue', 'green'] },
   conditions: { size: [undefined, 'sm', 'lg'] },
   compounds: {
-    size: [undefined, 'sm', 'md', 'lg'],
+    size: [undefined, null, 'sm', 'md', 'lg'],
     tone: [undefined, 'solid', 'ghost'],
-    disabled: [undefined, true, false],
+    disabled: [undefined, null, true, false],
   },
   important: { tone: [undefined, 'blue', 'loud'] },
-  tabs: { size: [undefined, 'sm', 'lg'], fitted: [undefined, true] },
+  tabs: { size: [undefined, null, 'sm', 'lg'], fitted: [undefined, true] },
+  grid: { cols: [undefined, null, 1, '1', 2, '2'], dense: [undefined, true, 'true', false] },
 }
 
 function combinations(axes: Record<string, unknown[]>): Props[] {
@@ -38,6 +42,9 @@ const callerSource = [
   `export { ${Object.keys(matrix).join(', ')} }`,
   'export const folded = [',
   ...calls.map(({ recipe, props }) => `  ${recipe}(${JSON.stringify(props)}),`),
+  ']',
+  'export const foldedRaw = [',
+  ...calls.map(({ recipe, props }) => `  ${recipe}.raw(${JSON.stringify(props)}),`),
   ']',
 ].join('\n')
 
@@ -78,7 +85,7 @@ describe('imported recipe calls fold to what the runtime returns', () => {
       transformer.transformSource({ path: join(dir, file), source }).code
 
     const foldedCaller = transform('app.tsx', callerSource)
-    const unfoldedCalls = foldedCaller.match(new RegExp(`\\b(${Object.keys(matrix).join('|')})\\(`, 'g')) ?? []
+    const unfoldedCalls = foldedCaller.match(new RegExp(`\\b(${Object.keys(matrix).join('|')})(\\.raw)?\\(`, 'g')) ?? []
     expect(unfoldedCalls).toEqual([])
 
     const transformed = await run(compiler, foldedCaller, { '/recipes.js': transform('recipes.js', recipesSource) })
@@ -93,6 +100,13 @@ describe('imported recipe calls fold to what the runtime returns', () => {
       return agree ? [] : [{ recipe, props, folded, runtime, styledSystem }]
     })
     expect(mismatches).toEqual([])
+
+    const rawMismatches = calls.flatMap(({ recipe, props }, index) => {
+      const folded = transformed.foldedRaw[index]
+      const styledSystem = original[recipe].raw(props)
+      return JSON.stringify(folded) === JSON.stringify(styledSystem) ? [] : [{ recipe, props, folded, styledSystem }]
+    })
+    expect(rawMismatches).toEqual([])
   })
 
   it('only folds to classes the stylesheet defines', async () => {

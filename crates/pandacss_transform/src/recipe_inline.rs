@@ -1,9 +1,9 @@
-//! Inline `cva()` / `sva()` transforms to specialized functions or compact
-//! string-branch configs when the complete recipe surface remains observable.
+//! Inline `cva()` / `sva()` calls compiled to recipe-specific functions, memoized when only
+//! called and wrapped with `attachRecipe` when the recipe escapes.
 
 use pandacss_extractor::StyleTree;
 use pandacss_literal::Literal;
-use pandacss_recipes::{Recipe, SlotRecipe, SlotVariantOption, VariantOption};
+use pandacss_recipes::{Recipe, SlotRecipe, SlotVariantOption, VariantOption, VariantValue};
 use pandacss_system::System;
 use pandacss_system::is_recipe_config;
 
@@ -136,7 +136,6 @@ fn recipe_helper_facts(needs_cx: bool, attach_surface: bool, memo: bool) -> Tran
         needs_cx,
         needs_attach_recipe: attach_surface,
         needs_memo_recipe: memo,
-        ..TransformHelperFacts::none()
     }
 }
 
@@ -144,7 +143,7 @@ fn recipe_helper_facts(needs_cx: bool, attach_surface: bool, memo: bool) -> Tran
 /// would return stale classes. Such configs stay on the runtime (`cva` types reject them anyway).
 fn compounds_select_declared_variants<'a>(
     variant_names: &[&str],
-    mut compounds: impl Iterator<Item = &'a Vec<(String, Vec<String>)>>,
+    mut compounds: impl Iterator<Item = &'a Vec<(String, Vec<VariantValue>)>>,
 ) -> bool {
     compounds.all(|conditions| {
         conditions
@@ -386,7 +385,7 @@ fn print_specialized_sva(system: &System, recipe: &SlotRecipe) -> Option<Special
 fn selection_names<'a>(
     variants: impl Iterator<Item = &'a str>,
     compounds: impl Iterator<Item = &'a str>,
-    defaults: &'a [(String, String)],
+    defaults: &'a [(String, VariantValue)],
 ) -> Vec<String> {
     let mut names = Vec::new();
     for name in variants
@@ -404,7 +403,7 @@ fn selection_index(selections: &[String], name: &str) -> Option<usize> {
     selections.iter().position(|selection| selection == name)
 }
 
-fn print_selection_setup(selections: &[String], defaults: &[(String, String)]) -> String {
+fn print_selection_setup(selections: &[String], defaults: &[(String, VariantValue)]) -> String {
     selections
         .iter()
         .enumerate()
@@ -485,7 +484,7 @@ enum VariantLookupPrint {
 }
 
 fn print_compound_condition(
-    conditions: &[(String, Vec<String>)],
+    conditions: &[(String, Vec<VariantValue>)],
     selections: &[String],
 ) -> Option<String> {
     if conditions.is_empty() {
@@ -620,11 +619,18 @@ fn style_tree_class_expression(
         .map(|expr| style_lower::print_class_expr(&expr))
 }
 
-/// Booleans stay booleans so the runtime's strict compound matching sees the prop value.
-fn format_variant_value(value: &str) -> String {
+/// The value as the config wrote it, since compounds compare props strictly.
+fn format_variant_value(value: &VariantValue) -> String {
     match value {
-        "true" | "false" => value.to_owned(),
-        other => format!("'{}'", js::escape(other)),
+        VariantValue::String(text) => format!("'{}'", js::escape(text)),
+        VariantValue::Number(number) if number.is_nan() => "NaN".to_owned(),
+        VariantValue::Number(number) if number.is_infinite() => if *number > 0.0 {
+            "Infinity"
+        } else {
+            "-Infinity"
+        }
+        .to_owned(),
+        VariantValue::Number(_) | VariantValue::Bool(_) => value.key(),
     }
 }
 

@@ -3,7 +3,7 @@
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
 use pandacss_extractor::{ExtractorConfig, Matcher, Matchers, NameMatcher, extract};
-use pandacss_recipes::{Recipe, SlotRecipe};
+use pandacss_recipes::{Recipe, SlotRecipe, VariantValue};
 
 fn cva_matchers() -> Matchers {
     Matchers {
@@ -131,7 +131,7 @@ fn parses_boolean_default_variants() {
     let recipe = parse_recipe(src);
     assert_eq!(
         recipe.default_variants,
-        vec![("muted".to_owned(), "true".to_owned())]
+        vec![("muted".to_owned(), VariantValue::Bool(true))]
     );
 }
 

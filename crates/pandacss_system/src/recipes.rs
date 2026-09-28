@@ -20,7 +20,7 @@ use pandacss_encoder::{
 };
 use pandacss_extractor::Diagnostic;
 use pandacss_literal::Literal;
-use pandacss_recipes::{Recipe, SlotRecipe};
+use pandacss_recipes::{Recipe, SlotRecipe, VariantValue};
 use pandacss_shared::{compound_class_name, number_to_js_string, split_important};
 use pandacss_utility::{StyleNormalizer, Utility};
 
@@ -723,15 +723,10 @@ fn resolve_recipe_base(
     })
 }
 
-fn default_variant_map(defaults: &[(String, String)]) -> FxHashMap<Box<str>, Box<str>> {
+fn default_variant_map(defaults: &[(String, VariantValue)]) -> FxHashMap<Box<str>, Box<str>> {
     defaults
         .iter()
-        .map(|(name, value)| {
-            (
-                name.clone().into_boxed_str(),
-                value.clone().into_boxed_str(),
-            )
-        })
+        .map(|(name, value)| (name.clone().into_boxed_str(), value.key().into_boxed_str()))
         .collect()
 }
 
@@ -919,7 +914,7 @@ fn canonical_compound_pairs(conditions: &[(Box<str>, Vec<Box<str>>)]) -> Vec<(St
 }
 
 fn intern_variant_condition_values(
-    pairs: &[(String, Vec<String>)],
+    pairs: &[(String, Vec<VariantValue>)],
 ) -> Vec<(Box<str>, Vec<Box<str>>)> {
     pairs
         .iter()
@@ -928,7 +923,7 @@ fn intern_variant_condition_values(
                 name.clone().into_boxed_str(),
                 values
                     .iter()
-                    .map(|value| value.clone().into_boxed_str())
+                    .map(|value| value.key().into_boxed_str())
                     .collect(),
             )
         })

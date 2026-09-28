@@ -10,14 +10,8 @@ use pandacss_system::System;
 use super::resolve;
 
 #[derive(Debug, Clone, Default)]
-#[allow(
-    clippy::struct_excessive_bools,
-    reason = "one flag per internal runtime import"
-)]
 pub struct TransformHelperFacts {
     pub needs_cx: bool,
-    pub needs_cva: bool,
-    pub needs_sva: bool,
     pub needs_attach_recipe: bool,
     pub needs_memo_recipe: bool,
 }
@@ -25,8 +19,6 @@ pub struct TransformHelperFacts {
 impl TransformHelperFacts {
     pub(crate) fn merge(&mut self, other: &Self) {
         self.needs_cx |= other.needs_cx;
-        self.needs_cva |= other.needs_cva;
-        self.needs_sva |= other.needs_sva;
         self.needs_attach_recipe |= other.needs_attach_recipe;
         self.needs_memo_recipe |= other.needs_memo_recipe;
     }
@@ -35,8 +27,6 @@ impl TransformHelperFacts {
     pub(crate) const fn none() -> Self {
         Self {
             needs_cx: false,
-            needs_cva: false,
-            needs_sva: false,
             needs_attach_recipe: false,
             needs_memo_recipe: false,
         }
@@ -45,8 +35,6 @@ impl TransformHelperFacts {
     pub(crate) const fn cx() -> Self {
         Self {
             needs_cx: true,
-            needs_cva: false,
-            needs_sva: false,
             needs_attach_recipe: false,
             needs_memo_recipe: false,
         }
@@ -443,22 +431,22 @@ fn push_imported_recipe_rewrites(
     system: &System,
     extracted: &ExtractUsage,
 ) {
+    use pandacss_extractor::ImportedRecipeFoldKind;
     use pandacss_system::InlineRecipeClasses;
-    for folded in &extracted.imported_recipe_raw_calls {
-        let content = match &folded.call {
-            None => resolve::rewrite_for_style_literal(
+    for folded in &extracted.imported_recipe_folds {
+        let content = match &folded.kind {
+            ImportedRecipeFoldKind::Raw(styles) => resolve::rewrite_for_style_literal(
                 folded.span,
                 folded.object_literal_context,
-                &folded.styles,
+                styles,
             )
             .map(|rewrite| rewrite.content),
-            Some(call) => {
-                match pandacss_system::inline_recipe_classes(
-                    system,
-                    &call.factory,
-                    &call.definition,
-                    &call.props,
-                ) {
+            ImportedRecipeFoldKind::Call {
+                factory,
+                definition,
+                props,
+            } => {
+                match pandacss_system::inline_recipe_classes(system, factory, definition, props) {
                     Some(InlineRecipeClasses::Cva(classes)) => Some(super::js::string(&classes)),
                     // One shared object per distinct result, like the runtime memo.
                     Some(InlineRecipeClasses::Sva(slots)) => Some(plan.hoist(super::js::object(

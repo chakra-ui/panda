@@ -184,39 +184,6 @@ async function load(code: string) {
   return import(fromOut(writeModule(code)))
 }
 
-/** The pre-specialization `__pcva` input: every style object pre-encoded to its class string. */
-function toStringConfig(css: (style: unknown) => string, workload: Workload): Config {
-  const { factory, config } = workload
-  const mapValues = <T, U>(obj: Record<string, T>, fn: (value: T) => U) =>
-    Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, fn(value)]))
-  if (factory === 'cva') {
-    const cls = (style: unknown) => (style ? css(style) : '')
-    return {
-      base: cls(config.base),
-      variants: mapValues(config.variants ?? {}, (group: Config) => mapValues(group, cls)),
-      defaultVariants: config.defaultVariants,
-      compoundVariants: (config.compoundVariants ?? []).map(({ css: style, ...conditions }: Config) => ({
-        ...conditions,
-        className: cls(style),
-      })),
-    }
-  }
-  const perSlot = (styles: Config | undefined) =>
-    Object.fromEntries(
-      config.slots.filter((slot: string) => styles?.[slot]).map((slot: string) => [slot, css(styles![slot])]),
-    )
-  return {
-    slots: config.slots,
-    base: perSlot(config.base),
-    variants: mapValues(config.variants ?? {}, (group: Config) => mapValues(group, perSlot)),
-    defaultVariants: config.defaultVariants,
-    compoundVariants: (config.compoundVariants ?? []).map(({ css: style, ...conditions }: Config) => ({
-      ...conditions,
-      css: perSlot(style),
-    })),
-  }
-}
-
 const recipeSource = (workload: Workload, name: string) =>
   `export const ${name} = ${workload.factory}(${JSON.stringify(workload.config)})`
 
@@ -304,24 +271,15 @@ async function main() {
   const rows: string[][] = []
   for (const workload of WORKLOADS) {
     const sys: Recipe = system[workload.factory](workload.config)
-    const legacy: Recipe = internal[workload.factory](toStringConfig(system.css, workload))
     const source = `import { ${workload.factory} } from 'styled-system/css'\n${recipeSource(workload, 'recipe')}`
     const specialized: Recipe = (await load(transform(source))).recipe
-    const parity = sameOutput(sys, specialized, workload.props) && sameOutput(sys, legacy, workload.props)
+    const parity = sameOutput(sys, specialized, workload.props)
 
     const sysNs = nsPerCall(sys, workload.props)
-    const legacyNs = nsPerCall(legacy, workload.props)
     const specializedNs = nsPerCall(specialized, workload.props)
-    rows.push([
-      workload.name,
-      ns(sysNs),
-      ns(legacyNs),
-      ns(specializedNs),
-      ratio(specializedNs, legacyNs),
-      parity ? '✓' : '✗',
-    ])
+    rows.push([workload.name, ns(sysNs), ns(specializedNs), ratio(specializedNs, sysNs), parity ? '✓' : '✗'])
   }
-  table(['workload', 'styled-system', 'old __pcva', 'specialized', 'spec/old', 'same classes'], rows)
+  table(['workload', 'styled-system', 'specialized', 'spec/sys', 'same classes'], rows)
 
   section('2 · cx — ns per call against a plain join')
   {
@@ -379,13 +337,6 @@ async function main() {
   {
     const exported = WORKLOADS.map((workload, i) => recipeSource(workload, `r${i}`)).join('\n')
     const sysEntry = writeModule(`import { cva, sva } from './styled-system/css/index.js'\n${exported}`)
-    const legacyEntry = writeModule(
-      `import { cva, sva } from './internal-css.mjs'\n` +
-        WORKLOADS.map(
-          (workload, i) =>
-            `export const r${i} = ${workload.factory}(${JSON.stringify(toStringConfig(system.css, workload))})`,
-        ).join('\n'),
-    )
     const specializedEntry = writeModule(transform(`import { cva, sva } from 'styled-system/css'\n${exported}`))
     const localEntry = writeModule(
       transform(
@@ -400,7 +351,6 @@ async function main() {
       ['approach', 'min / gzip'],
       [
         ['styled-system cva/sva (incl. css runtime)', kb(await bundleBytes(sysEntry))],
-        ['old __pcva string branches', kb(await bundleBytes(legacyEntry))],
         ['specialized, exported (attachRecipe)', kb(await bundleBytes(specializedEntry))],
         ['specialized, call-only locals', kb(await bundleBytes(localEntry))],
       ],

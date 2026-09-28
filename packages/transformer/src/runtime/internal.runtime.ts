@@ -1,1 +1,1 @@
-export { cx, css, cva, sva, attachRecipe, memoRecipe } from './internal'
+export { cx, css, attachRecipe, memoRecipe } from './internal'

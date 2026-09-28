@@ -150,7 +150,7 @@ fn removes_stale_internal_css_import_on_rebuild_without_helper_usage() {
 #[test]
 fn sync_internal_css_import_narrows_symbols_to_live_helpers() {
     let source = indoc! {r#"
-        import { cx as __pcx, cva as __pcva } from '@pandacss-internal/css';
+        import { cx as __pcx, memoRecipe as __pm } from '@pandacss-internal/css';
         export const cls = __pcx('a', 'b');
     "#};
 

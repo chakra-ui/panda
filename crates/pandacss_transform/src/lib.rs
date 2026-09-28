@@ -28,9 +28,9 @@ use pandacss_literal::Literal;
 use pandacss_system::{ParseTransforms, System};
 
 pub use helper::{
-    CSS_HELPER_LOCAL, CVA_HELPER_LOCAL, CX_HELPER_LOCAL, CX_HELPER_MODULE, INTERNAL_CSS_MODULE,
-    MEMO_HELPER_LOCAL, RECIPE_HELPER_LOCAL, SVA_HELPER_LOCAL, inject_cx_import,
-    inject_internal_css_import, inject_internal_css_import_at, sync_internal_css_import,
+    CSS_HELPER_LOCAL, CX_HELPER_LOCAL, CX_HELPER_MODULE, INTERNAL_CSS_MODULE, MEMO_HELPER_LOCAL,
+    RECIPE_HELPER_LOCAL, inject_cx_import, inject_internal_css_import,
+    inject_internal_css_import_at, sync_internal_css_import,
 };
 pub use plan::{
     HelperCxMode, TransformHelperFacts, TransformMode, TransformOptions, TransformOutput,
@@ -95,8 +95,7 @@ pub fn transform_source_with(
     let extracted = {
         let _span = tracing::trace_span!(target: "transform", "transform_extract").entered();
         let mut resolve_recipe_raw = |factory: &str, definition: &Literal, props: &Literal| {
-            let props = pandacss_system::literal_variant_props(props)?;
-            pandacss_system::resolve_inline_recipe_raw(system, factory, definition, &props)
+            pandacss_system::resolve_inline_recipe_raw(system, factory, definition, props)
         };
         extract_transform_with_recipes(
             source,

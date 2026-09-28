@@ -166,11 +166,7 @@ pub(crate) fn apply_helper_sync(
 }
 
 fn helper_facts_required(helper: &super::plan::TransformHelperFacts) -> bool {
-    helper.needs_cx
-        || helper.needs_cva
-        || helper.needs_sva
-        || helper.needs_attach_recipe
-        || helper.needs_memo_recipe
+    helper.needs_cx || helper.needs_attach_recipe || helper.needs_memo_recipe
 }
 
 fn helper_facts_with_live_references(
@@ -185,10 +181,6 @@ fn helper_facts_with_live_references(
     super::plan::TransformHelperFacts {
         needs_cx: helper.needs_cx
             || imports::binding_has_live_reference(module, helper::CX_HELPER_LOCAL, rewrites),
-        needs_cva: helper.needs_cva
-            || imports::binding_has_live_reference(module, helper::CVA_HELPER_LOCAL, rewrites),
-        needs_sva: helper.needs_sva
-            || imports::binding_has_live_reference(module, helper::SVA_HELPER_LOCAL, rewrites),
         needs_attach_recipe: helper.needs_attach_recipe
             || imports::binding_has_live_reference(module, helper::RECIPE_HELPER_LOCAL, rewrites),
         needs_memo_recipe: helper.needs_memo_recipe
@@ -313,8 +305,6 @@ mod tests {
             dependencies: Vec::new(),
             helper: TransformHelperFacts {
                 needs_cx: true,
-                needs_cva: false,
-                needs_sva: false,
                 needs_attach_recipe: false,
                 needs_memo_recipe: false,
             },

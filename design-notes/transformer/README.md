@@ -32,10 +32,9 @@ What ships on the v2 branch today:
 | Internal runtime module                 | `@pandacss-internal/css` → `\0pandacss:internal:css`; symbols injected on demand     |
 
 Runtime symbols today: `cx as __pcx`, `attachRecipe as __pr`, and `memoRecipe as __pm`. Static `cva()` / `sva()` / styled configs compile to
-recipe-specific functions; see [recipe specialization](./recipe-specialization.mdx). `cva as __pcva` and `sva as __psva`
-stay exported by the runtime but are no longer emitted.
+recipe-specific functions; see [recipe specialization](./recipe-specialization.mdx).
 
-Options and bindings use `helper.cx` and `needsCx` / `needsAttachRecipe` (plus the legacy `needsCva` / `needsSva`) for
+Options and bindings use `helper.cx` and `needsCx` / `needsAttachRecipe` / `needsMemoRecipe` for
 internal runtime demand.
 
 ## Canonical scope
@@ -306,8 +305,8 @@ interface TransformResult {
   dependencies: string[]
   helper: {
     needsCx: boolean
-    needsCva: boolean
-    needsSva: boolean
+    needsAttachRecipe: boolean
+    needsMemoRecipe: boolean
   }
 }
 
@@ -319,7 +318,7 @@ Important boundaries:
 - the JS facade accepts source text and a transformer binding
 - it does not accept a Vite plugin context, a webpack loader context, or a Rollup plugin object
 - it reports dependency paths, but does not register them with any host directly
-- helper facts in bindings: `needsCx`, `needsCva`, `needsSva` — which internal runtime symbols the rewritten file uses
+- helper facts in bindings: `needsCx`, `needsAttachRecipe`, `needsMemoRecipe` — which internal runtime symbols the rewritten file uses
 
 Suggested binding shape:
 

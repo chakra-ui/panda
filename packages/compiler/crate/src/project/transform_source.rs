@@ -37,14 +37,8 @@ pub struct TransformSourceResult {
 }
 
 #[napi(object)]
-#[allow(
-    clippy::struct_excessive_bools,
-    reason = "one flag per internal runtime import"
-)]
 pub struct TransformSourceHelperFacts {
     pub needs_cx: bool,
-    pub needs_cva: bool,
-    pub needs_sva: bool,
     pub needs_attach_recipe: bool,
     pub needs_memo_recipe: bool,
 }
@@ -79,8 +73,6 @@ impl Compiler {
             dependencies: output.dependencies,
             helper: TransformSourceHelperFacts {
                 needs_cx: output.helper.needs_cx,
-                needs_cva: output.helper.needs_cva,
-                needs_sva: output.helper.needs_sva,
                 needs_attach_recipe: output.helper.needs_attach_recipe,
                 needs_memo_recipe: output.helper.needs_memo_recipe,
             },

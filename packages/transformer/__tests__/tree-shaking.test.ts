@@ -52,268 +52,268 @@ describe('transformed source tree shaking', () => {
 
     expect(code).toMatchInlineSnapshot(`
       "//#region \\0pandacss:internal:css
-      var Y = "_";
-      var Z = 2048;
-      var I = 32;
-      var nn = 33;
-      var w = 4;
-      function H(n = Z) {
-      	let e = 0, t = /* @__PURE__ */ new Map(), r = /* @__PURE__ */ new Map(), s = (o, i) => {
-      		t.set(o, i), ++e > n && (e = 0, r = t, t = /* @__PURE__ */ new Map());
+      var z = "_";
+      var X = 2048;
+      var M = 32;
+      var G = 33;
+      var m = 4;
+      function H(e = X) {
+      	let o = 0, t = /* @__PURE__ */ new Map(), s = /* @__PURE__ */ new Map(), r = (i, n) => {
+      		t.set(i, n), ++o > e && (o = 0, s = t, t = /* @__PURE__ */ new Map());
       	};
       	return {
-      		get(o) {
-      			let i = t.get(o);
-      			return i === void 0 && (i = r.get(o)) !== void 0 && s(o, i), i;
+      		get(i) {
+      			let n = t.get(i);
+      			return n === void 0 && (n = s.get(i)) !== void 0 && r(i, n), n;
       		},
-      		set: s
+      		set: r
       	};
       }
-      function tn(n, e, t, r) {
-      	let s = 0, o = n.length > 0, i = 0;
-      	for (let u = 0; u <= n.length; u++) {
-      		let a = u === n.length ? I : n.charCodeAt(u);
-      		if (a !== I && (a < 9 || a > 13)) continue;
-      		if ((a !== I || u === i) && (o = !1), u === i) {
-      			i = u + 1;
+      function W(e, o, t, s) {
+      	let r = 0, i = e.length > 0, n = 0;
+      	for (let l = 0; l <= e.length; l++) {
+      		let a = l === e.length ? M : e.charCodeAt(l);
+      		if (a !== M && (a < 9 || a > 13)) continue;
+      		if ((a !== M || l === n) && (i = !1), l === n) {
+      			n = l + 1;
       			continue;
       		}
-      		let g = r + s * w;
-      		s++, t[g] = i, t[g + 1] = u, t[g + 2] = -1;
-      		let p = u;
-      		n.charCodeAt(p - 1) === nn && p--;
-      		let c = 0, l = i;
-      		for (let m = i; m < p; m++) {
-      			let R = n.charCodeAt(m);
-      			R === 91 ? c++ : R === 93 ? c-- : R === 58 && c === 0 && (l = m + 1);
+      		let C = s + r * m;
+      		r++, t[C] = n, t[C + 1] = l, t[C + 2] = -1;
+      		let h = l;
+      		e.charCodeAt(h - 1) === G && h--;
+      		let u = 0, _ = n;
+      		for (let R = n; R < h; R++) {
+      			let g = e.charCodeAt(R);
+      			g === 91 ? u++ : g === 93 ? u-- : g === 58 && u === 0 && (_ = R + 1);
       		}
-      		let d = n.indexOf(e, l);
-      		if (d > l && d < p) {
-      			let m = 2166136261;
-      			for (let R = i; R < d; R++) m = Math.imul(m ^ n.charCodeAt(R), 16777619);
-      			t[g + 2] = d, t[g + 3] = m;
+      		let p = e.indexOf(o, _);
+      		if (p > _ && p < h) {
+      			let R = 2166136261;
+      			for (let g = n; g < p; g++) R = Math.imul(R ^ e.charCodeAt(g), 16777619);
+      			t[C + 2] = p, t[C + 3] = R;
       		}
-      		i = u + 1;
+      		n = l + 1;
       	}
-      	return o ? s : -s;
+      	return i ? r : -r;
       }
-      function D(n = {}) {
-      	let e = n.separator ?? Y, t = H(), r = H(512), s = [], o = /* @__PURE__ */ new Int32Array(256), i = /* @__PURE__ */ new Int32Array(64), u = /* @__PURE__ */ new Int32Array(64), a = 128, g = new Int32Array(a), p = new Int32Array(a), c = 0;
-      	function l(f) {
-      		if (f) if (typeof f == "string") s.push(f);
-      		else for (let y = 0; y < f.length; y++) l(f[y]);
+      function K(e = {}) {
+      	let o = e.separator ?? z, t = H(), s = H(512), r = [], i = /* @__PURE__ */ new Int32Array(256), n = /* @__PURE__ */ new Int32Array(64), l = /* @__PURE__ */ new Int32Array(64), a = 128, C = new Int32Array(a), h = new Int32Array(a), u = 0;
+      	function _(c) {
+      		if (c) if (typeof c == "string") r.push(c);
+      		else for (let f = 0; f < c.length; f++) _(c[f]);
       	}
-      	function d(f) {
-      		if (f <= i.length) return;
-      		let y = i.length;
-      		for (; y < f;) y *= 2;
-      		let b = (A, S) => {
-      			let h = new Int32Array(S);
-      			return h.set(A), h;
+      	function p(c) {
+      		if (c <= n.length) return;
+      		let f = n.length;
+      		for (; f < c;) f *= 2;
+      		let w = (P, x) => {
+      			let d = new Int32Array(x);
+      			return d.set(P), d;
       		};
-      		o = b(o, y * w), i = b(i, y), u = b(u, y);
+      		i = w(i, f * m), n = w(n, f), l = w(l, f);
       	}
-      	function m(f, y) {
-      		let b = o[f * w], A = o[y * w], S = o[f * w + 2] - b;
-      		if (o[y * w + 2] - A !== S) return !1;
-      		let h = s[i[f]], C = s[i[y]];
-      		for (let V = 0; V < S; V++) if (h.charCodeAt(b + V) !== C.charCodeAt(A + V)) return !1;
+      	function R(c, f) {
+      		let w = i[c * m], P = i[f * m], x = i[c * m + 2] - w;
+      		if (i[f * m + 2] - P !== x) return !1;
+      		let d = r[n[c]], A = r[n[f]];
+      		for (let y = 0; y < x; y++) if (d.charCodeAt(w + y) !== A.charCodeAt(P + y)) return !1;
       		return !0;
       	}
-      	function R() {
-      		let f = 0, y = !0;
-      		for (let h = 0; h < s.length; h++) {
-      			let C = s[h], V = t.get(C), x;
-      			if (V !== void 0) {
-      				x = V[0], d(f + Math.abs(x));
-      				let v = f * w;
-      				for (let O = 1; O < V.length; O++) o[v + O - 1] = V[O];
-      			} else if (d(f + C.length), x = tn(C, e, o, f * w), r.get(C) === void 0) r.set(C, !0);
+      	function g() {
+      		let c = 0, f = !0;
+      		for (let d = 0; d < r.length; d++) {
+      			let A = r[d], y = t.get(A), S;
+      			if (y !== void 0) {
+      				S = y[0], p(c + Math.abs(S));
+      				let T = c * m;
+      				for (let V = 1; V < y.length; V++) i[T + V - 1] = y[V];
+      			} else if (p(c + A.length), S = W(A, o, i, c * m), s.get(A) === void 0) s.set(A, !0);
       			else {
-      				let v = new Int32Array(1 + Math.abs(x) * w);
-      				v[0] = x, v.set(o.subarray(f * w, (f + Math.abs(x)) * w), 1), t.set(C, v);
+      				let T = new Int32Array(1 + Math.abs(S) * m);
+      				T[0] = S, T.set(i.subarray(c * m, (c + Math.abs(S)) * m), 1), t.set(A, T);
       			}
-      			x <= 0 && (y = !1);
-      			let P = f + Math.abs(x);
-      			for (; f < P; f++) i[f] = h;
+      			S <= 0 && (f = !1);
+      			let O = c + Math.abs(S);
+      			for (; c < O; c++) n[c] = d;
       		}
-      		if (f * 2 > a) {
-      			for (; f * 2 > a;) a *= 2;
-      			g = new Int32Array(a), p = new Int32Array(a), c = 0;
+      		if (c * 2 > a) {
+      			for (; c * 2 > a;) a *= 2;
+      			C = new Int32Array(a), h = new Int32Array(a), u = 0;
       		}
-      		++c === 2147483647 && (c = 1, p.fill(0));
-      		let b = a - 1, A = !1;
-      		for (let h = 0; h < f; h++) {
-      			if (u[h] = h, o[h * w + 2] < 0) continue;
-      			let C = o[h * w + 3], V = C & b, x = -1;
-      			for (; p[V] === c;) {
-      				let P = g[V];
-      				if (o[P * w + 3] === C && m(P, h)) {
-      					x = P;
+      		++u === 2147483647 && (u = 1, h.fill(0));
+      		let w = a - 1, P = !1;
+      		for (let d = 0; d < c; d++) {
+      			if (l[d] = d, i[d * m + 2] < 0) continue;
+      			let A = i[d * m + 3], y = A & w, S = -1;
+      			for (; h[y] === u;) {
+      				let O = C[y];
+      				if (i[O * m + 3] === A && R(O, d)) {
+      					S = O;
       					break;
       				}
-      				V = V + 1 & b;
+      				y = y + 1 & w;
       			}
-      			x === -1 ? (p[V] = c, g[V] = h) : (u[x] = h, u[h] = -1, A = !0);
+      			S === -1 ? (h[y] = u, C[y] = d) : (l[S] = d, l[d] = -1, P = !0);
       		}
-      		if (!A && y) {
-      			let h = s[0];
-      			for (let C = 1; C < s.length; C++) h += " " + s[C];
-      			return h;
+      		if (!P && f) {
+      			let d = r[0];
+      			for (let A = 1; A < r.length; A++) d += " " + r[A];
+      			return d;
       		}
-      		let S = "";
-      		for (let h = 0; h < f; h++) {
-      			let C = u[h];
-      			if (C === -1) continue;
-      			let V = s[i[C]].slice(o[C * w], o[C * w + 1]);
-      			S = S ? S + " " + V : V;
+      		let x = "";
+      		for (let d = 0; d < c; d++) {
+      			let A = l[d];
+      			if (A === -1) continue;
+      			let y = r[n[A]].slice(i[A * m], i[A * m + 1]);
+      			x = x ? x + " " + y : y;
       		}
-      		return S;
+      		return x;
       	}
-      	return function(...y) {
-      		s.length = 0;
-      		for (let A = 0; A < y.length; A++) l(y[A]);
-      		let b = s.length;
-      		return b === 0 ? "" : b === 1 ? s[0] : R();
+      	return function(...f) {
+      		r.length = 0;
+      		for (let P = 0; P < f.length; P++) _(f[P]);
+      		let w = r.length;
+      		return w === 0 ? "" : w === 1 ? r[0] : g();
       	};
       }
-      var k = /* @__PURE__ */ D();
-      function _(n, e) {
-      	let t = { ...n };
-      	for (let r in e) e[r] !== void 0 && (t[r] = e[r]);
-      	return t;
-      }
-      function N(n, e) {
-      	for (let t in n) {
-      		if (t === "css" || t === "className" || t === "classNames") continue;
-      		let r = n[t], s = e[t];
-      		if (Array.isArray(r)) {
-      			if (!r.includes(s)) return !1;
-      		} else if (s !== r) return !1;
-      	}
-      	return !0;
-      }
-      var J = (n) => n !== null && (typeof n == "object" || typeof n == "function");
-      var fn = [
+      var b = /* @__PURE__ */ K();
+      var B = (e) => e !== null && (typeof e == "object" || typeof e == "function");
+      var F = [
       	"true",
       	"false",
       	"null"
       ];
-      function ln(n, e, t, r) {
-      	let s = 1, o = [], i = [], u = [], a = [], g = e.map((l) => {
-      		let d = /* @__PURE__ */ Object.create(null), m = 1;
-      		for (let R of t[l]) d[R] = m++;
-      		if (r) i.push(m++), u.push(m++), a.push(m++);
+      function q(e, o, t, s) {
+      	let r = 1, i = [], n = [], l = [], a = [], C = o.map((_) => {
+      		let p = /* @__PURE__ */ Object.create(null), R = 1;
+      		for (let g of t[_]) p[g] = R++;
+      		if (s) n.push(R++), l.push(R++), a.push(R++);
       		else {
-      			for (let R of fn) d[R] ??= m++;
-      			i.push(d.true), u.push(d.false), a.push(d.null);
+      			for (let g of F) p[g] ??= R++;
+      			n.push(p.true), l.push(p.false), a.push(p.null);
       		}
-      		return o.push(m), s *= m, d;
+      		return i.push(R), r *= R, p;
       	});
-      	if (s > 256) return null;
-      	let p = new Array(s), c;
-      	return (l) => {
-      		if (l == null) return c === void 0 ? c = n() : c;
-      		let d = 0;
-      		for (let R = 0; R < e.length; R++) {
-      			let f = l[e[R]], y = 0;
-      			if (f === !0) y = i[R];
-      			else if (f === !1) y = u[R];
-      			else if (f === null) y = a[R];
-      			else if (typeof f == "string") y = g[R][f];
-      			else if (f !== void 0) {
-      				if (r || J(f)) return n(l);
-      				y = g[R][String(f)];
+      	if (r > 256) return null;
+      	let h = new Array(r), u;
+      	return (_) => {
+      		if (_ == null) return u === void 0 ? u = e() : u;
+      		let p = 0;
+      		for (let g = 0; g < o.length; g++) {
+      			let c = _[o[g]], f = 0;
+      			if (c === !0) f = n[g];
+      			else if (c === !1) f = l[g];
+      			else if (c === null) f = a[g];
+      			else if (typeof c == "string") f = C[g][c];
+      			else if (c !== void 0) {
+      				if (s || B(c)) return e(_);
+      				f = C[g][String(c)];
       			}
-      			if (y === void 0) return n(l);
-      			d = d * o[R] + y;
+      			if (f === void 0) return e(_);
+      			p = p * i[g] + f;
       		}
-      		let m = p[d];
-      		return m === void 0 && (p[d] = m = n(l)), m;
+      		let R = h[p];
+      		return R === void 0 && (h[p] = R = e(_)), R;
       	};
       }
-      function dn(n, e) {
-      	let t = e.length, r = new Array(16 * t), s = new Array(16), o = 0, i = 0, u;
+      function J(e, o) {
+      	let t = o.length, s = new Array(16 * t), r = new Array(16), i = 0, n = 0, l;
       	return (a) => {
-      		if (a == null) return u === void 0 ? u = n() : u;
-      		n: for (let c = 0; c < o; c++) {
-      			let l = c * t;
-      			for (let d = 0; d < t; d++) if (a[e[d]] !== r[l + d]) continue n;
-      			return s[c];
+      		if (a == null) return l === void 0 ? l = e() : l;
+      		e: for (let u = 0; u < i; u++) {
+      			let _ = u * t;
+      			for (let p = 0; p < t; p++) if (a[o[p]] !== s[_ + p]) continue e;
+      			return r[u];
       		}
-      		for (let c = 0; c < t; c++) if (J(a[e[c]])) return n(a);
-      		let g = n(a), p = i * t;
-      		for (let c = 0; c < t; c++) r[p + c] = a[e[c]];
-      		return s[i] = g, i === o && o++, i = (i + 1) % 16, g;
+      		for (let u = 0; u < t; u++) if (B(a[o[u]])) return e(a);
+      		let C = e(a), h = n * t;
+      		for (let u = 0; u < t; u++) s[h + u] = a[o[u]];
+      		return r[n] = C, n === i && i++, n = (n + 1) % 16, C;
       	};
       }
-      function j(n, e, t) {
-      	let r = Object.keys(e);
-      	return r.length === 0 ? n : ln(n, r, e, !!t) ?? dn(n, r);
+      function k(e, o, t) {
+      	let s = Object.keys(o);
+      	return s.length === 0 ? e : q(e, s, o, !!t) ?? J(e, s);
       }
-      var Q = (n) => n != null && typeof n == "object" && !Array.isArray(n);
-      function L(...n) {
-      	let e = {};
-      	for (let t of n) if (Q(t)) for (let r in t) {
-      		let s = t[r];
-      		e[r] = Q(s) ? L(e[r], s) : s;
-      	}
-      	return e;
-      }
-      function U(n, e, t = (r) => r) {
-      	let r = _(n.defaultVariants ?? {}, e), s = n.variants ?? {}, o = [t(n.base)];
-      	for (let i in r) o.push(t(s[i]?.[r[i]]));
-      	for (let i of n.compoundVariants ?? []) N(i, r) && o.push(t(i.css));
-      	return L(...o);
-      }
-      function pn(n, e) {
-      	let t = {};
-      	for (let r of n.slots ?? Object.keys(n.base ?? {})) t[r] = U(n, e, (s) => s?.[r]);
+      function E(e, o) {
+      	let t = { ...e };
+      	for (let s in o) o[s] !== void 0 && (t[s] = o[s]);
       	return t;
       }
-      function gn(n, e) {
+      function j(e, o) {
+      	for (let t in e) {
+      		if (t === "css" || t === "className" || t === "classNames") continue;
+      		let s = e[t], r = o[t];
+      		if (Array.isArray(s)) {
+      			if (!s.includes(r)) return !1;
+      		} else if (r !== s) return !1;
+      	}
+      	return !0;
+      }
+      var D = (e) => e != null && typeof e == "object" && !Array.isArray(e);
+      function I(...e) {
+      	let o = {};
+      	for (let t of e) if (D(t)) for (let s in t) {
+      		let r = t[s];
+      		o[s] = D(r) ? I(o[s], r) : r;
+      	}
+      	return o;
+      }
+      function v(e, o, t = (s) => s) {
+      	let s = E(e.defaultVariants ?? {}, o), r = e.variants ?? {}, i = [t(e.base)];
+      	for (let n in s) i.push(t(r[n]?.[s[n]]));
+      	for (let n of e.compoundVariants ?? []) j(n, s) && i.push(t(n.css));
+      	return I(...i);
+      }
+      function Q(e, o) {
+      	let t = {};
+      	for (let s of e.slots ?? Object.keys(e.base ?? {})) t[s] = v(e, o, (r) => r?.[s]);
+      	return t;
+      }
+      function U(e, o) {
       	let t = {
-      		...n.config?.defaultVariants,
-      		...e.config?.defaultVariants
-      	}, r = [.../* @__PURE__ */ new Set([...n.variantKeys ?? [], ...e.variantKeys ?? []])], s = (i = {}) => _(t, i), o = B((i) => {
-      		let u = s(i);
-      		return k(n(u), e(u));
+      		...e.config?.defaultVariants,
+      		...o.config?.defaultVariants
+      	}, s = [.../* @__PURE__ */ new Set([...e.variantKeys ?? [], ...o.variantKeys ?? []])], r = (n = {}) => E(t, n), i = L((n) => {
+      		let l = r(n);
+      		return b(e(l), o(l));
       	}, {
       		defaultVariants: t,
-      		compoundVariants: [...n.config?.compoundVariants ?? [], ...e.config?.compoundVariants ?? []]
-      	}, r, {
-      		...n.variantMap,
-      		...e.variantMap
+      		compoundVariants: [...e.config?.compoundVariants ?? [], ...o.config?.compoundVariants ?? []]
+      	}, s, {
+      		...e.variantMap,
+      		...o.variantMap
       	});
-      	return o.raw = (i) => {
-      		let u = s(i);
-      		return L(n.raw(u), e.raw(u));
-      	}, o;
+      	return i.raw = (n) => {
+      		let l = r(n);
+      		return I(e.raw(l), o.raw(l));
+      	}, i;
       }
-      function B(n, e, t, r, s) {
-      	let o = e, i = o.defaultVariants ?? {}, u = j(n, r, o.compoundVariants?.length);
-      	return Object.assign(u, {
-      		__cva__: !s,
+      function L(e, o, t, s, r) {
+      	let i = o, n = i.defaultVariants ?? {}, l = k(e, s, i.compoundVariants?.length);
+      	return Object.assign(l, {
+      		__cva__: !r,
       		variantKeys: t,
-      		variantMap: r,
-      		...s && { classNameMap: s },
-      		config: e,
-      		raw: (a = {}) => s ? pn(o, a) : U(o, a),
-      		merge: (a, g) => g ? g(e).merge(a) : gn(u, a),
-      		getVariantProps: (a = {}) => _(i, a),
+      		variantMap: s,
+      		...r && { classNameMap: r },
+      		config: o,
+      		raw: (a = {}) => r ? Q(i, a) : v(i, a),
+      		merge: (a, C) => C ? C(o).merge(a) : U(l, a),
+      		getVariantProps: (a = {}) => E(n, a),
       		splitVariantProps: (a) => {
-      			let g = {}, p = {};
-      			for (let c in a) (t.includes(c) ? g : p)[c] = a[c];
-      			return [g, p];
+      			let C = {}, h = {};
+      			for (let u in a) (t.includes(u) ? C : h)[u] = a[u];
+      			return [C, h];
       		}
       	});
       }
       //#endregion
       //#region entry.tsx
-      const button = /* @__PURE__ */ B((p = {}) => {
+      const button = /* @__PURE__ */ L((p = {}) => {
       	p ??= {};
       	const _p0 = p["rounded"];
-      	return k("bg_red", { true: "bdr_xl" }[_p0 === void 0 ? void 0 : _p0]);
+      	return b("bg_red", { true: "bdr_xl" }[_p0 === void 0 ? void 0 : _p0]);
       }, {
       	base: { bg: "red" },
       	variants: { rounded: { true: { borderRadius: "xl" } } }

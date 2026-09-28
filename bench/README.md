@@ -60,8 +60,8 @@ pnpm --filter @pandacss/transformer build:fast   # the transformer and its inter
 pnpm --filter=./bench recipe-runtime             # CALLS=200000, RENDERS=20000 by default
 ```
 
-Runs each recipe three ways — the styled-system `cva`/`sva`, the old `__pcva` string-branch runtime, and the
-transformer's specialized output — and checks all three return the same classes before timing them. Sections: recipe
+Runs each recipe two ways — the styled-system `cva`/`sva` and the transformer's specialized output — and checks
+both return the same classes before timing them. Sections: recipe
 calls per workload, the internal `cx` against a plain join, bundle bytes, and `styled()` configs rendered with
 `react-dom/server`. The transformer and `rolldown` load from `packages/transformer`, so the bench adds no dependencies
 of its own.

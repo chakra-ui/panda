@@ -43,7 +43,7 @@ describe('transformSource', () => {
         bailed: false,
         diagnostics: [],
         dependencies: ['/project/tokens.ts'],
-        helper: { needsCx: false, needsCva: false, needsSva: false, needsAttachRecipe: false, needsMemoRecipe: false },
+        helper: { needsCx: false, needsAttachRecipe: false, needsMemoRecipe: false },
       })),
     } as NativeSourceTransformer
 
@@ -75,10 +75,8 @@ describe('transformSource', () => {
         "diagnostics": [],
         "helper": {
           "needsAttachRecipe": false,
-          "needsCva": false,
           "needsCx": false,
           "needsMemoRecipe": false,
-          "needsSva": false,
         },
         "map": null,
       }
@@ -94,7 +92,7 @@ describe('transformSource', () => {
         bailed: false,
         diagnostics: [],
         dependencies: [],
-        helper: { needsCx: false, needsCva: false, needsSva: false, needsAttachRecipe: false, needsMemoRecipe: false },
+        helper: { needsCx: false, needsAttachRecipe: false, needsMemoRecipe: false },
       })),
     } as NativeSourceTransformer
 
@@ -115,10 +113,8 @@ describe('transformSource', () => {
         "diagnostics": [],
         "helper": {
           "needsAttachRecipe": false,
-          "needsCva": false,
           "needsCx": false,
           "needsMemoRecipe": false,
-          "needsSva": false,
         },
         "map": null,
       }
@@ -142,7 +138,7 @@ describe('runSourceTransform', () => {
         bailed: false,
         diagnostics: [diagnostic],
         dependencies: ['/project/tokens.ts'],
-        helper: { needsCx: false, needsCva: false, needsSva: false, needsAttachRecipe: false, needsMemoRecipe: false },
+        helper: { needsCx: false, needsAttachRecipe: false, needsMemoRecipe: false },
       })),
     } as unknown as Compiler
 

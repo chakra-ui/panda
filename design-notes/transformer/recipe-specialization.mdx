@@ -135,9 +135,9 @@ variants, stays a bare function. The design follows the `cva` resolver in `shadc
 - **Bypass**: object and function prop values never hit a cache, so mutating one can't serve a stale result. No-props
   calls return an interned result.
 
-`bench/src/recipe-runtime.ts` compares specialized recipes with the old `__pcva` runtime and the styled-system `cva`.
-On Node 24 the memoized recipes match or beat `__pcva` on every workload; compounds and `sva` drop from about 150 ns to
-about 40 ns per call.
+`bench/src/recipe-runtime.ts` compares specialized recipes with the styled-system `cva`. Before the generic `__pcva`
+runtime was removed, the memoized recipes matched or beat it on every workload; compounds and `sva` dropped from about
+150 ns to about 40 ns per call.
 
 ### Imported recipes
 

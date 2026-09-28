@@ -19,8 +19,8 @@ pub use callbacks::{ParseTransforms, PatternTransformFn, SourceTransformFn, Util
 pub use config::class_attribute_for_jsx_framework;
 pub use error::{Result, SystemError};
 pub use inline_recipe_raw::{
-    InlineRecipeClasses, inline_recipe_classes, is_recipe_config, literal_variant_props,
-    raw_call_variant_props, resolve_inline_recipe_raw,
+    InlineRecipeClasses, inline_recipe_classes, is_recipe_config, raw_call_variant_props,
+    resolve_inline_recipe_raw,
 };
 pub use recipes::{EncodedRecipes, EncodedRecipesCache};
 pub use style_values::{
