@@ -2,5 +2,5 @@
 '@pandacss/compiler': patch
 ---
 
-Fix transformed class names for conditions nested inside a breakpoint or selector (`md: { _hover: … }`), which pointed
-at a class the stylesheet didn't define.
+Fix transformed classes losing their styles when a selector or breakpoint wraps a condition, like
+`'& > h3': { _before: … }` or `md: { _hover: … }`. The transform named these classes differently from the stylesheet.

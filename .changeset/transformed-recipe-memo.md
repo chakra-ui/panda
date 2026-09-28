@@ -4,6 +4,6 @@
 '@pandacss/transformer': patch
 ---
 
-Memoize transformed `cva` and `sva` recipes, and make the internal `cx` merge faster: repeated calls are now 5–14x
-quicker, and `cx` splits classes on newlines and tabs too. A recipe whose base can't be compiled now stays on the
-runtime instead of losing its base classes.
+Speed up transformed `cva` and `sva` recipes by caching results per prop combination, and speed up class merging.
+Classes split across newlines or tabs now merge too, and a recipe whose base can't be compiled stays on the runtime
+instead of losing its base classes.
