@@ -42,6 +42,7 @@ export interface SearchItem {
 export interface SearchDocInput {
   url: string
   title: string
+  category?: string
   description?: string
   structuredData: StructuredData
 }
@@ -70,7 +71,7 @@ export function getSearchIndex(
       content: pageContent,
       type: 'page',
       description: doc.description || pageContent.slice(0, 150) + '...',
-      breadcrumb: [doc.title]
+      breadcrumb: [doc.category ?? doc.title]
     })
 
     for (const heading of headings) {

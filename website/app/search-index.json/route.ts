@@ -1,3 +1,4 @@
+import { getTab } from '@/docs.config'
 import { getSearchIndex } from '@/lib/search-index'
 import { blogSource, docsSource } from '@/lib/source'
 
@@ -8,6 +9,7 @@ export function GET() {
     docsSource.getPages().map(page => ({
       url: page.url,
       title: page.data.title,
+      category: getTab(page.url.split('/')[2])?.title,
       description: page.data.description,
       structuredData: page.data.structuredData
     })),

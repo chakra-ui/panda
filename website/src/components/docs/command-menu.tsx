@@ -2,12 +2,10 @@
 import { Badge } from '@/components/ui/badge'
 import { dialogSlotRecipe } from '@/components/ui/dialog'
 import { SEARCH_HOTKEY } from '@/components/docs/search'
-import { Segmented } from '@/components/ui/segmented'
 import {
   convertToSearchItems,
   filterSearchItems,
-  type SearchIndex,
-  type SearchSection
+  type SearchIndex
 } from '@/lib/search-index'
 import { useMatchMedia } from '@/lib/use-match-media'
 import { css, cx } from '@/styled-system/css'
@@ -26,9 +24,6 @@ import {
   useState
 } from 'react'
 import { Box, Center, HStack, Stack } from 'styled-system/jsx'
-
-const SECTIONS = ['All', 'Docs', 'Reference', 'Blog'] as const
-type SectionFilter = (typeof SECTIONS)[number]
 
 const SUGGESTIONS = ['recipes', 'tokens', 'conditions', 'staticCss']
 
@@ -106,7 +101,6 @@ export const CommandMenu = (props: Props) => {
 
   const [open, setOpen] = useState(false)
   const [inputValue, setInputValue] = useState('')
-  const [section, setSection] = useState<SectionFilter>('All')
   const inputValueState = useDeferredValue(inputValue)
 
   const searchIndex = useSearchIndex(open)
@@ -122,14 +116,10 @@ export const CommandMenu = (props: Props) => {
     [items, searchIndex, inputValueState]
   )
 
-  const filteredItems = useMemo(() => {
-    const all = Object.values(matches).flat()
-    const scoped =
-      section === 'All'
-        ? all
-        : all.filter(item => item.section === (section as SearchSection))
-    return scoped.slice(0, limit)
-  }, [matches, limit, section])
+  const filteredItems = useMemo(
+    () => Object.values(matches).flat().slice(0, limit),
+    [matches, limit]
+  )
 
   const router = useRouter()
 
@@ -213,7 +203,7 @@ export const CommandMenu = (props: Props) => {
               </Combobox.Control>
 
               <HStack
-                justify="space-between"
+                justify="flex-end"
                 gap="4"
                 px="4"
                 py="2.5"
@@ -221,17 +211,6 @@ export const CommandMenu = (props: Props) => {
                 borderColor="border"
                 flexWrap="wrap"
               >
-                <Segmented
-                  label="Filter results"
-                  size="sm"
-                  tone="pill"
-                  value={section}
-                  onValueChange={value => setSection(value as SectionFilter)}
-                  options={SECTIONS.map(item => ({
-                    value: item,
-                    label: item
-                  }))}
-                />
                 <HStack
                   gap="3"
                   textStyle="eyebrow"
@@ -340,9 +319,7 @@ export const CommandMenu = (props: Props) => {
                           <Stack gap="1">
                             <Box fontWeight="semibold">
                               {item.label}
-                              {item.type === 'heading' && (
-                                <Badge>{item.category}</Badge>
-                              )}
+                              <Badge>{item.category}</Badge>
                             </Box>
                             <Box textStyle="sm" color="fg.muted" lineClamp={2}>
                               {item.description}
