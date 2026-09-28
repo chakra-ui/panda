@@ -88,6 +88,11 @@ export const v1DocsRedirects = [
     '/docs/migration/styled-components',
     '/docs/get-started/styled-components'
   ),
+  to('/docs/migration/stitches', '/docs'),
+  to('/docs/migration/theme-ui', '/docs'),
+
+  to('/docs/theming/spec', '/docs/theming/json-spec'),
+  to('/docs/theming/usage', '/docs/theming/tokens'),
 
   to('/docs/installation/:path*', '/docs/get-started/:path*'),
   to('/docs/concepts/:path*', '/docs/styling/:path*'),

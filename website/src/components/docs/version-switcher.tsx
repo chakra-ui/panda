@@ -12,7 +12,7 @@ export function VersionSwitcher() {
   const pathname = usePathname() ?? '/'
 
   return (
-    <Menu.Root lazyMount positioning={{ placement: 'bottom-start' }}>
+    <Menu.Root lazyMount positioning={{ placement: 'bottom-end' }}>
       <Menu.Trigger aria-label="Docs version" className={trigger}>
         v2
         <LuChevronDown size={14} aria-hidden />
@@ -44,8 +44,8 @@ const trigger = css({
   flexShrink: '0',
   textStyle: 'sm',
   fontWeight: 'medium',
-  px: '2',
-  py: '1',
+  px: '2.5',
+  py: '1.5',
   rounded: 'md',
   borderWidth: '1px',
   borderColor: 'border',

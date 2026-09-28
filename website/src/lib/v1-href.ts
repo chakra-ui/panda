@@ -15,7 +15,34 @@ for (const { source, destination } of [...v1DocsRedirects].sort(
   if (!v1PathByV2Path.has(path)) v1PathByV2Path.set(path, source)
 }
 
+const v1InstallGuides = new Set([
+  'angular',
+  'astro',
+  'cli',
+  'ember',
+  'gatsby',
+  'nextjs',
+  'nuxt',
+  'postcss',
+  'preact',
+  'qwik',
+  'react-router',
+  'redwood',
+  'remix',
+  'rsbuild',
+  'solidjs',
+  'storybook',
+  'svelte',
+  'vite',
+  'vue'
+])
+
 export function getV1Href(pathname: string): string {
   if (!pathname.startsWith('/docs/')) return `${V1_URL}${pathname}`
-  return `${V1_URL}${v1PathByV2Path.get(pathname) ?? '/'}`
+  const mapped = v1PathByV2Path.get(pathname)
+  if (mapped) return `${V1_URL}${mapped}`
+  const guide = pathname.match(/^\/docs\/get-started\/([^/]+)$/)?.[1]
+  if (guide && v1InstallGuides.has(guide))
+    return `${V1_URL}/docs/installation/${guide}`
+  return `${V1_URL}/`
 }

@@ -66,8 +66,6 @@ export function DocsNavbar() {
             <Icon icon="LogoWithText" />
           </Anchor>
 
-          <VersionSwitcher />
-
           <HStack gap="1" flexShrink="0" display={{ base: 'none', lg: 'flex' }}>
             {siteLinks.map(link => {
               const active = link.match(pathname ?? '')
@@ -126,6 +124,8 @@ export function DocsNavbar() {
           flexShrink="0"
           justifySelf="end"
         >
+          <VersionSwitcher />
+
           <Anchor
             href="https://play.panda-css.com/"
             newWindow
