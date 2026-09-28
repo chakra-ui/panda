@@ -1,4 +1,5 @@
 import { Navbar } from '@/components/navbar'
+import { getV2Href } from '@/lib/v2-url'
 import { css } from '@/styled-system/css'
 import { CommunitySection } from '@/www/community.section'
 import { CourseSection } from '@/www/course.section'
@@ -13,6 +14,11 @@ import { StartBuildingSection } from '@/www/start-building.section'
 import { TestimonialsSection } from '@/www/testimonials.section'
 import { TryPandaSection } from '@/www/try-panda.section'
 import { WorksEverywhereSection } from '@/www/works-everywhere.section'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  alternates: { canonical: getV2Href('/') }
+}
 
 export default function Page() {
   return (

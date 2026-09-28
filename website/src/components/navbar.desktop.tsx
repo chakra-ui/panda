@@ -4,9 +4,10 @@ import { center } from '@/styled-system/patterns'
 import { Icon } from '@/theme/icons'
 import Link from 'next/link'
 import { FaGithub } from 'react-icons/fa'
-import { CourseMiniBanner } from './course-banner'
 import { NavLink } from './nav-link'
 import { ThemeSwitchIconButton } from './theme-switch-button'
+import { V1MiniBanner } from './v1-banner'
+import { VersionSwitcher } from './version-switcher'
 
 export const DesktopNavBar = () => {
   return (
@@ -25,7 +26,8 @@ export const DesktopNavBar = () => {
         <Link href="/" className={center({ flexShrink: '0' })}>
           <Icon icon="LogoWithText" />
         </Link>
-        <CourseMiniBanner />
+        <VersionSwitcher />
+        <V1MiniBanner />
       </HStack>
 
       <HStack gap="4">

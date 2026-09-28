@@ -2,6 +2,7 @@ import { blog } from '.velite'
 import { MDXContent } from '@/components/docs/mdx-content'
 import { Toc } from '@/components/ui/toc'
 import { generateOgImageUrl } from '@/lib/og-image'
+import { getV2Href } from '@/lib/v2-url'
 import { css } from '@/styled-system/css'
 import { Box, Stack, panda } from '@/styled-system/jsx'
 import { Metadata } from 'next'
@@ -35,6 +36,7 @@ export async function generateMetadata({
   return {
     title: `${post.title} | Panda CSS Blog`,
     description: post.description,
+    alternates: { canonical: getV2Href(`/blog/${slug}`) },
     openGraph: {
       title: post.title,
       description: post.description,

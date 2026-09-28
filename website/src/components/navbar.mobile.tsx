@@ -9,6 +9,7 @@ import { MenuIcon } from '@/icons'
 import { NavLink } from './nav-link'
 import { ThemeSwitchIconButton } from './theme-switch-button'
 import { drawerSlotRecipe } from './ui/drawer'
+import { VersionSwitcher } from './version-switcher'
 
 export const MobileNavBar = () => {
   return (
@@ -23,9 +24,12 @@ export const MobileNavBar = () => {
       position="relative"
       justify="space-between"
     >
-      <Link href="/" className={center({ flexShrink: '0' })}>
-        <Icon icon="LogoWithText" />
-      </Link>
+      <HStack gap="3">
+        <Link href="/" className={center({ flexShrink: '0' })}>
+          <Icon icon="LogoWithText" />
+        </Link>
+        <VersionSwitcher />
+      </HStack>
 
       <HStack gap="4">
         <ThemeSwitchIconButton />

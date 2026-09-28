@@ -1,6 +1,7 @@
 'use client'
 
-import { CourseBanner } from '@/components/course-banner'
+import { V1Banner } from '@/components/v1-banner'
+import { VersionSwitcher } from '@/components/version-switcher'
 import { CommandMenu } from '@/components/docs/command-menu'
 import { SearchButton } from '@/components/docs/search'
 import { Sidebar } from '@/components/docs/sidebar'
@@ -10,7 +11,7 @@ import { docsConfig } from '@/docs.config'
 import { GithubIcon, MenuIcon } from '@/icons'
 import { useMatchMedia } from '@/lib/use-match-media'
 import { css, cx } from '@/styled-system/css'
-import { Center } from '@/styled-system/jsx'
+import { Center, HStack } from '@/styled-system/jsx'
 import { navbar } from '@/styled-system/recipes'
 import { Icon } from '@/theme/icons'
 import { Dialog, useDialog } from '@ark-ui/react/dialog'
@@ -37,27 +38,32 @@ export const Navbar = () => {
     <div data-scope="navbar" data-part="root" className={navbar()}>
       <div data-scope="navbar" data-part="blur" />
 
-      <CourseBanner />
+      <V1Banner />
 
       <nav data-scope="navbar" data-part="nav">
-        {docsConfig.logoUrl ? (
-          <Anchor
-            data-scope="navbar"
-            data-part="logo-link"
-            href={
-              typeof docsConfig.logoUrl === 'string' ? docsConfig.logoUrl : '/'
-            }
-            className={css({
-              _hover: { opacity: 0.75 }
-            })}
-          >
-            <Icon icon="LogoWithText" />
-          </Anchor>
-        ) : (
-          <div data-scope="navbar" data-part="logo-link">
-            <Icon icon="LogoWithText" />
-          </div>
-        )}
+        <HStack gap="3" marginEnd="auto">
+          {docsConfig.logoUrl ? (
+            <Anchor
+              data-scope="navbar"
+              data-part="logo-link"
+              href={
+                typeof docsConfig.logoUrl === 'string'
+                  ? docsConfig.logoUrl
+                  : '/'
+              }
+              className={css({
+                _hover: { opacity: 0.75 }
+              })}
+            >
+              <Icon icon="LogoWithText" />
+            </Anchor>
+          ) : (
+            <div data-scope="navbar" data-part="logo-link">
+              <Icon icon="LogoWithText" />
+            </div>
+          )}
+          <VersionSwitcher />
+        </HStack>
 
         {items.map(item => {
           const active =

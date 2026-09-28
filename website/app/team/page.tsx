@@ -2,6 +2,7 @@ import { Navbar } from '@/components/navbar'
 import { teamMembers } from '@/docs.config'
 import { generateOgImageUrl } from '@/lib/og-image'
 import { fetchGithubUsers, type GitHubUser } from '@/lib/github-utils'
+import { getV2Href } from '@/lib/v2-url'
 import { css } from '@/styled-system/css'
 import { Container, Grid, HStack, panda, Stack } from '@/styled-system/jsx'
 import { FooterSection } from '@/www/footer.section'
@@ -18,6 +19,7 @@ export const metadata: Metadata = {
   title: 'Team',
   description:
     'Panda CSS is maintained by a passionate team of engineers. It also receives contributions from engineers around the world.',
+  alternates: { canonical: getV2Href('/team') },
   openGraph: {
     title: ogTitle,
     description: ogDescription,
