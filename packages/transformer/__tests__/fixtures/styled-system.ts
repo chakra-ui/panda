@@ -118,8 +118,12 @@ export async function bundle(compiler: Compiler, code: string, options: BundleOp
 }
 
 /** Bundle transformed source with the real generated styled-system and evaluate its exports. */
-export async function run(compiler: Compiler, code: string): Promise<Record<string, any>> {
-  const commonjs = await bundle(compiler, code, { format: 'cjs', exposeRuntime: true })
+export async function run(
+  compiler: Compiler,
+  code: string,
+  modules?: Record<string, string>,
+): Promise<Record<string, any>> {
+  const commonjs = await bundle(compiler, code, { format: 'cjs', exposeRuntime: true, modules })
   const module = { exports: {} as Record<string, any> }
   new Function('module', 'exports', commonjs)(module, module.exports)
   return module.exports

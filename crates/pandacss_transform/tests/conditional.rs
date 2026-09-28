@@ -185,7 +185,7 @@ conditional_snapshot!(
         export const cls = css({ color: { '&:hover': { '@media (hover: hover)': 'red' } } });
     "#,
     true,
-    @r#"export const cls = "[@media_(hover:_hover)]:[&:hover]:color_red";"#
+    @r#"export const cls = "[&:hover]:[@media_(hover:_hover)]:color_red";"#
 );
 
 // --- important + whitespace under conditions ---

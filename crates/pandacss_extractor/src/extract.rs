@@ -33,17 +33,17 @@ pub struct ImportedRecipeRawCall {
     pub object_literal_context: crate::ObjectLiteralContext,
     pub span: Span,
     pub styles: Literal,
-    /// A plain call: the runtime returns classes, so the site becomes a class string.
-    pub returns_classes: bool,
-    /// Set for a plain call on an `sva`: its slots, which the result object lists.
-    pub slots: Option<ImportedSlots>,
+    /// Set for a plain call: the runtime returns classes, which the transform resolves from it.
+    pub call: Option<ImportedRecipeCall>,
 }
 
-/// An imported `sva`'s slot names, in order, and its `className` prefix.
+/// A plain `imported(props)` call with static props, as the transform needs to resolve it.
 #[derive(Debug, Clone, PartialEq)]
-pub struct ImportedSlots {
-    pub names: Vec<String>,
-    pub class_name: Option<String>,
+pub struct ImportedRecipeCall {
+    /// `"cva"` or `"sva"`.
+    pub factory: String,
+    pub definition: Literal,
+    pub props: Literal,
 }
 
 /// A resolved `token()` / `token.var()` call site: the referenced token path and
@@ -530,7 +530,10 @@ fn run_extract(
     // classes or styles here. Only relevant when the project supplied a recipe
     // resolver.
     let would_skip = should_skip_extraction(&matched, config);
-    let consumes_imported_recipe = would_skip
+    let collects_calls = should_collect_calls(&matched, config);
+    // Checked whenever calls wouldn't be collected anyway, including JSX projects,
+    // which never skip extraction but only collect calls for files importing Panda.
+    let consumes_imported_recipe = !collects_calls
         && recipe_raw_resolve.is_some()
         && calls_an_imported_binding(&parser_return.program, &imports);
 
@@ -581,7 +584,7 @@ fn run_extract(
     let ctx = VisitorContext::new(&matched, config).with_resolver(&resolver);
 
     let (calls, call_diagnostics, mut token_refs, mut style_source_refs) =
-        if consumes_imported_recipe || should_collect_calls(&matched, config) {
+        if consumes_imported_recipe || collects_calls {
             let span = tracing::trace_span!(target: "extract", "extract_calls", call_count = tracing::field::Empty);
             let _entered = span.enter();
             let result = if verbose {

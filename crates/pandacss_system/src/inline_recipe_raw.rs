@@ -221,3 +221,200 @@ pub fn is_recipe_config(config: &Literal) -> bool {
         )
     })
 }
+
+// ---------------------------------------------------------------------------
+// `binding(props)` on an inline cva/sva — folds to the classes the compiled
+// recipe returns at runtime.
+// ---------------------------------------------------------------------------
+
+/// What a static call on an inline recipe returns: a class string, or one per slot.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum InlineRecipeClasses {
+    Cva(String),
+    Sva(Vec<(String, String)>),
+}
+
+/// A prop value as the compiled recipe sees it: strict for compounds, coerced for lookups.
+#[derive(Debug, Clone, PartialEq)]
+enum Selected {
+    Missing,
+    Null,
+    Bool(bool),
+    Number(String),
+    String(String),
+}
+
+impl Selected {
+    fn from_literal(value: &Literal) -> Option<Self> {
+        Some(match value {
+            Literal::String(text) => Self::String(text.clone()),
+            Literal::Bool(flag) => Self::Bool(*flag),
+            Literal::Number(number) => Self::Number(pandacss_shared::number_to_js_string(*number)),
+            Literal::Null => Self::Null,
+            _ => return None,
+        })
+    }
+
+    /// Defaults and compound values print `"true"`/`"false"` as booleans, everything else as strings.
+    fn from_config(value: &str) -> Self {
+        match value {
+            "true" => Self::Bool(true),
+            "false" => Self::Bool(false),
+            other => Self::String(other.to_owned()),
+        }
+    }
+
+    /// The property key a `{ …options }[value]` lookup coerces to.
+    fn lookup_key(&self) -> Option<String> {
+        match self {
+            Self::Missing => None,
+            Self::Null => Some("null".to_owned()),
+            Self::Bool(flag) => Some(flag.to_string()),
+            Self::Number(text) | Self::String(text) => Some(text.clone()),
+        }
+    }
+}
+
+/// Mirror of the compiled recipe for static props: defaults fill `undefined`, each variant
+/// group adds its option's classes in declared order, then matching compounds, and the
+/// fragments merge like `cx` (first position keeps the slot, the last class for a key wins).
+#[must_use]
+pub fn inline_recipe_classes(
+    system: &System,
+    factory: &str,
+    definition: &Literal,
+    props: &Literal,
+) -> Option<InlineRecipeClasses> {
+    let Literal::Object(entries) = props else {
+        return None;
+    };
+    let props = entries
+        .iter()
+        .map(|(key, value)| Some((key.clone(), Selected::from_literal(value)?)))
+        .collect::<Option<Vec<_>>>()?;
+
+    if factory == "sva" {
+        let recipe = SlotRecipe::from_literal(definition)?;
+        let slots = if recipe.slots.is_empty() {
+            recipe.base.iter().map(|(slot, _)| slot.clone()).collect()
+        } else {
+            recipe.slots.clone()
+        };
+        let classes = slots
+            .iter()
+            .map(|slot| {
+                let mut classes =
+                    recipe_fragments(system, &slot_recipe_for(&recipe, slot), &props)?;
+                if let Some(prefix) = &recipe.class_name {
+                    classes.push(format!("{prefix}__{slot}"));
+                }
+                Some((slot.clone(), merge_classes(system, classes)))
+            })
+            .collect::<Option<Vec<_>>>()?;
+        return Some(InlineRecipeClasses::Sva(classes));
+    }
+
+    let recipe = if is_recipe_config(definition) {
+        Recipe::from_literal(definition)?
+    } else {
+        Recipe {
+            base: Some(definition.clone()),
+            ..Recipe::default()
+        }
+    };
+    let classes = recipe_fragments(system, &recipe, &props)?;
+    Some(InlineRecipeClasses::Cva(merge_classes(system, classes)))
+}
+
+/// Classes of every fragment the compiled recipe joins, in its order.
+fn recipe_fragments(
+    system: &System,
+    recipe: &Recipe,
+    props: &[(String, Selected)],
+) -> Option<Vec<String>> {
+    let selected = |name: &str| match props.iter().find(|(key, _)| key == name) {
+        Some((_, value)) => value.clone(),
+        None => recipe
+            .default_variants
+            .iter()
+            .find(|(key, _)| key == name)
+            .map_or(Selected::Missing, |(_, value)| Selected::from_config(value)),
+    };
+    let mut classes = Vec::new();
+    if let Some(base) = &recipe.base {
+        add_style_classes(system, &mut classes, base)?;
+    }
+    for group in &recipe.variants {
+        let Some(key) = selected(&group.name).lookup_key() else {
+            continue;
+        };
+        if let Some(option) = group.options.iter().find(|option| option.key == key) {
+            add_style_classes(system, &mut classes, &option.style)?;
+        }
+    }
+    for compound in &recipe.compound_variants {
+        let matches = compound.conditions.iter().all(|(name, values)| {
+            let actual = selected(name);
+            values
+                .iter()
+                .any(|value| Selected::from_config(value) == actual)
+        });
+        if matches {
+            match &compound.class_name {
+                Some(class_name) => classes.push(class_name.clone()),
+                None => add_style_classes(system, &mut classes, &compound.css)?,
+            }
+        }
+    }
+    Some(classes)
+}
+
+/// An empty style adds nothing; anything the encoder can't handle keeps the call on the runtime.
+fn add_style_classes(system: &System, classes: &mut Vec<String>, style: &Literal) -> Option<()> {
+    if !matches!(style, Literal::Object(entries) if entries.is_empty()) {
+        classes.extend(system.class_names_for_style_literal(style)?);
+    }
+    Some(())
+}
+
+/// `cx`: a class keyed by its conditions and property keeps the first position and the last value.
+fn merge_classes(system: &System, classes: Vec<String>) -> String {
+    let separator = system
+        .utility()
+        .map_or("_", pandacss_utility::Utility::separator);
+    let mut out: Vec<String> = Vec::with_capacity(classes.len());
+    let mut slots: Vec<(String, usize)> = Vec::new();
+    for class in classes {
+        let Some(key) = merge_key(&class, separator) else {
+            out.push(class);
+            continue;
+        };
+        if let Some((_, slot)) = slots.iter().find(|(existing, _)| *existing == key) {
+            out[*slot] = class;
+        } else {
+            slots.push((key.to_owned(), out.len()));
+            out.push(class);
+        }
+    }
+    out.join(" ")
+}
+
+/// Conditions and property: the prefix up to the separator after the last top-level `:`.
+fn merge_key<'a>(class: &'a str, separator: &str) -> Option<&'a str> {
+    let end = class.strip_suffix('!').unwrap_or(class).len();
+    if end == 0 {
+        return None;
+    }
+    let mut depth = 0i32;
+    let mut property_start = 0;
+    for (index, byte) in class.bytes().enumerate().take(end) {
+        match byte {
+            b'[' => depth += 1,
+            b']' => depth -= 1,
+            b':' if depth == 0 => property_start = index + 1,
+            _ => {}
+        }
+    }
+    let separator_at = property_start + class[property_start..end].find(separator)?;
+    (separator_at > property_start).then(|| &class[..separator_at])
+}

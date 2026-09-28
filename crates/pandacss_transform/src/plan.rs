@@ -443,72 +443,43 @@ fn push_imported_recipe_rewrites(
     system: &System,
     extracted: &ExtractUsage,
 ) {
-    for call in &extracted.imported_recipe_raw_calls {
-        let content = match (&call.slots, call.returns_classes) {
-            (_, false) => resolve::rewrite_for_style_literal(
-                call.span,
-                call.object_literal_context,
-                &call.styles,
+    use pandacss_system::InlineRecipeClasses;
+    for folded in &extracted.imported_recipe_raw_calls {
+        let content = match &folded.call {
+            None => resolve::rewrite_for_style_literal(
+                folded.span,
+                folded.object_literal_context,
+                &folded.styles,
             )
             .map(|rewrite| rewrite.content),
-            (None, true) => {
-                recipe_classes(system, &call.styles).map(|classes| super::js::string(&classes))
-            }
-            (Some(slots), true) => {
-                slot_classes(system, &call.styles, slots).map(|object| plan.hoist(object))
+            Some(call) => {
+                match pandacss_system::inline_recipe_classes(
+                    system,
+                    &call.factory,
+                    &call.definition,
+                    &call.props,
+                ) {
+                    Some(InlineRecipeClasses::Cva(classes)) => Some(super::js::string(&classes)),
+                    // One shared object per distinct result, like the runtime memo.
+                    Some(InlineRecipeClasses::Sva(slots)) => Some(plan.hoist(super::js::object(
+                        slots.iter().map(|(slot, classes)| {
+                            super::js::field(slot, super::js::string(classes))
+                        }),
+                    ))),
+                    None => None,
+                }
             }
         };
         if let Some(content) = content {
             plan.push(Rewrite {
-                start: call.span.start,
-                end: call.span.end,
+                start: folded.span.start,
+                end: folded.span.end,
                 content,
                 preserved: Vec::new(),
                 helper: TransformHelperFacts::none(),
             });
         }
     }
-}
-
-/// The class string resolved styles encode to; empty styles give no classes.
-fn recipe_classes(system: &System, styles: &pandacss_literal::Literal) -> Option<String> {
-    match styles {
-        pandacss_literal::Literal::Object(entries) if entries.is_empty() => Some(String::new()),
-        styles => Some(system.class_names_for_style_literal(styles)?.join(" ")),
-    }
-}
-
-/// `{ slot: "classes" }` for an imported `sva`, with the `className__slot` class the runtime adds.
-fn slot_classes(
-    system: &System,
-    styles: &pandacss_literal::Literal,
-    slots: &pandacss_extractor::ImportedSlots,
-) -> Option<String> {
-    let pandacss_literal::Literal::Object(entries) = styles else {
-        return None;
-    };
-    let empty = pandacss_literal::Literal::Object(Vec::new());
-    let fields = slots
-        .names
-        .iter()
-        .map(|slot| {
-            let style = entries
-                .iter()
-                .find(|(name, _)| name == slot)
-                .map_or(&empty, |(_, style)| style);
-            let mut classes = recipe_classes(system, style)?;
-            if let Some(prefix) = &slots.class_name {
-                if !classes.is_empty() {
-                    classes.push(' ');
-                }
-                classes.push_str(prefix);
-                classes.push_str("__");
-                classes.push_str(slot);
-            }
-            Some(super::js::field(slot, super::js::string(&classes)))
-        })
-        .collect::<Option<Vec<_>>>()?;
-    Some(super::js::object(fields))
 }
 
 pub(crate) fn hoisted_name(index: usize) -> String {

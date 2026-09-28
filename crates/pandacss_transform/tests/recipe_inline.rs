@@ -1735,7 +1735,7 @@ fn folds_a_static_call_on_an_imported_cva_to_its_classes() {
 
     assert_snapshot!(output.code, @r#"
     import { button } from './button';
-    export const large = "color_red fs_20px padding_8px";
+    export const large = "color_red padding_8px fs_20px";
     export const fallback = "color_red padding_4px";
     "#);
     assert_yaml_snapshot!(output.dependencies, @"- /proj/src/button.ts");
@@ -1841,4 +1841,27 @@ fn leaves_a_call_on_an_imported_plain_function_alone() {
         super::common::transform_cross_file("src/a.tsx", source, &[("src/format.ts", helper)]);
 
     assert!(!output.changed);
+}
+
+#[test]
+fn folds_imported_recipe_calls_in_a_project_with_a_jsx_framework() {
+    let source = indoc! {r#"
+        import { button } from './button';
+        export const large = button({ size: 'lg' });
+        export const styles = button.raw({ size: 'lg' });
+    "#};
+    let project = super::common::project_with_files_and(
+        "src/a.tsx",
+        source,
+        &[("src/button.ts", IMPORTED_BUTTON)],
+        json!({ "jsxFramework": "react" }),
+    );
+
+    let output = transform_with_project(&project, "/proj/src/a.tsx", source);
+
+    assert_snapshot!(output.code, @r#"
+    import { button } from './button';
+    export const large = "color_red padding_8px fs_20px";
+    export const styles = {"color":"red","padding":"8px","fontSize":"20px"};
+    "#);
 }

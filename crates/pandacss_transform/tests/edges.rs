@@ -97,7 +97,7 @@ edge_snapshot!(
     ),
     @r#"
 export const el = (
-  <div className={t ? "md:color_blue hover:md:color_white" : "md:color_blue hover:md:color_black"} />
+  <div className={t ? "md:color_blue md:hover:color_white" : "md:color_blue md:hover:color_black"} />
 );
 "#
 );

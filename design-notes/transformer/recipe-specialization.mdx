@@ -142,7 +142,11 @@ about 40 ns per call.
 ### Imported recipes
 
 A static call on a `cva` imported from another file folds to its class string in the calling file, through the same
-cross-file resolution that folds imported `.raw(...)` calls. The recipe file becomes a dependency of the caller, so
+cross-file resolution that folds imported `.raw(...)` calls. The fold evaluates the call the way the compiled recipe
+does (`pandacss_system::inline_recipe_classes`): defaults fill `undefined`, each fragment encodes on its own, compounds
+compare strictly, and the classes merge like `cx`. Merging style objects first would disagree with the runtime when a
+fragment nests the same conditions in another order. `imported-recipe-parity.test.ts` checks every fold against the
+transformed and the styled-system recipe, and that each folded class exists in the stylesheet. The recipe file becomes a dependency of the caller, so
 editing it re-transforms importers. The import stays; when every consumer folds, the definition's
 `/* @__PURE__ */ __pr(...)` is an unused pure export and the bundler drops it, `config` included.
 

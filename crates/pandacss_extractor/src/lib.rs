@@ -43,7 +43,7 @@ pub use design_system_imports::{
 };
 pub use extract::{
     CrossFileDependency, ExtractDebugResult, ExtractUsage, ExtractVerboseResult,
-    ImportBindingFacts, ImportedRecipeRawCall, ImportedSlots, ModuleFacts, TokenRef,
+    ImportBindingFacts, ImportedRecipeCall, ImportedRecipeRawCall, ModuleFacts, TokenRef,
     UnresolvedCrossFileDependency, analyze_module, extract, extract_debug, extract_in_session,
     extract_transform, extract_transform_with_recipes, extract_verbose, extract_with_raw_resolvers,
     extract_with_raw_resolvers_in_session,
