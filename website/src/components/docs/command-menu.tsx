@@ -23,7 +23,7 @@ import {
   useMemo,
   useState
 } from 'react'
-import { Box, Center, HStack, Stack } from 'styled-system/jsx'
+import { Box, Center, Stack } from 'styled-system/jsx'
 
 const SUGGESTIONS = ['recipes', 'tokens', 'conditions', 'staticCss']
 
@@ -204,27 +204,6 @@ export const CommandMenu = (props: Props) => {
                   })}
                 />
               </Combobox.Control>
-
-              <HStack
-                justify="flex-end"
-                gap="4"
-                px="4"
-                py="2.5"
-                borderBottomWidth="1px"
-                borderColor="border"
-                flexWrap="wrap"
-              >
-                <HStack
-                  gap="3"
-                  textStyle="eyebrow"
-                  color="fg.subtle"
-                  display={{ base: 'none', md: 'flex' }}
-                >
-                  <span>&uarr;&darr; move</span>
-                  <span>&crarr; open</span>
-                  <span>esc close</span>
-                </HStack>
-              </HStack>
 
               <Combobox.Content
                 className={cx(
