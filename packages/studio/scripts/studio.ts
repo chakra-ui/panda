@@ -19,18 +19,16 @@ export async function buildStudio({ outDir, configPath, base }: BuildOpts) {
   const { default: react } = await import('@astrojs/react')
   const { default: studio } = await import('@pandacss/astro-plugin-studio')
 
-  try {
-    process.env.PUBLIC_CONFIG_PATH = configPath
-    await astro.build({
-      outDir,
-      root: appPath,
-      integrations: [react(), studio()],
-      devToolbar: { enabled: false },
-      base,
-    })
-  } catch (error) {
-    console.log(error)
-  }
+  process.env.PUBLIC_CONFIG_PATH = configPath
+  await astro.build({
+    outDir,
+    root: appPath,
+    integrations: [react(), studio()],
+    devToolbar: { enabled: false },
+    base,
+    // prerender chunks are written to outDir, which may not be able to resolve studio's dependencies
+    vite: { resolve: { noExternal: true } },
+  })
 }
 
 export async function serveStudio({ configPath, port, host, outDir, base }: BuildOpts) {
