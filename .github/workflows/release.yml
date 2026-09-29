@@ -276,16 +276,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
 
-      # changesets publishes packages without a stable release to `latest`, so
-      # the `beta` tag falls behind.
-      - name: Sync beta dist-tag
-        if: steps.changesets.outputs.published == 'true'
-        # Run with node, not pnpm: pre-publish just rewrote the compiler
-        # package.json and pnpm would refuse on the frozen lockfile.
-        run: node scripts/sync-beta-dist-tag.mjs --apply
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       - name: Send Slack notification
         if: steps.changesets.outputs.published == 'true'
         uses: slackapi/slack-github-action@v3
