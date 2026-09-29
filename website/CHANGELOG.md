@@ -1,5 +1,14 @@
 # website
 
+## 1.0.1
+
+### Patch Changes
+
+- Updated dependencies [bb3d117]
+  - @pandacss/preset-base@2.0.0
+  - @pandacss/preset-panda@2.0.0
+  - @pandacss/preset-typography@2.0.0
+
 ## 1.0.1-beta.18
 
 ### Patch Changes
