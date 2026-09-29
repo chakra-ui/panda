@@ -4,7 +4,7 @@ import { dialogSlotRecipe } from '@/components/ui/dialog'
 import { SEARCH_HOTKEY } from '@/components/docs/search'
 import {
   convertToSearchItems,
-  filterSearchItems,
+  createSearchFilter,
   type SearchIndex
 } from '@/lib/search-index'
 import { useMatchMedia } from '@/lib/use-match-media'
@@ -105,15 +105,17 @@ export const CommandMenu = (props: Props) => {
 
   const searchIndex = useSearchIndex(open)
   const prefetchSearchIndex = usePrefetchSearchIndex()
-  const items = useMemo(
-    () => (searchIndex ? convertToSearchItems(searchIndex) : []),
+  const search = useMemo(
+    () =>
+      searchIndex
+        ? createSearchFilter(convertToSearchItems(searchIndex))
+        : null,
     [searchIndex]
   )
 
   const matches = useMemo(
-    () =>
-      searchIndex ? filterSearchItems(items, searchIndex, inputValueState) : {},
-    [items, searchIndex, inputValueState]
+    () => (search ? search(inputValueState) : {}),
+    [search, inputValueState]
   )
 
   const filteredItems = useMemo(

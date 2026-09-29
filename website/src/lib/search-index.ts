@@ -116,46 +116,43 @@ export function convertToSearchItems(searchIndex: SearchIndex): SearchItem[] {
   )
 }
 
-export function filterSearchItems(
-  items: SearchItem[],
-  _searchIndex: SearchIndex,
-  query: string
-): Record<string, SearchItem[]> {
-  if (!query) {
-    const pages = items.filter(item => item.type === 'page')
-    return pages.length ? { '': pages } : {}
-  }
+const fuseOptions = {
+  keys: [
+    { name: 'label', weight: 0.5 }, // Title gets highest weight
+    { name: 'description', weight: 0.2 }, // Description
+    { name: 'content', weight: 0.2 }, // Content matching
+    { name: 'category', weight: 0.1 } // Category/breadcrumb
+  ],
+  threshold: 0.2, // More strict matching
+  distance: 100, // Maximum allowed distance
+  location: 0, // Prefer matches at beginning
+  minMatchCharLength: 2, // Minimum character match length
+  includeScore: true, // Include relevance score
+  includeMatches: true, // Include match details
+  ignoreLocation: false, // Consider match position
+  findAllMatches: false, // Stop at the first match; the menu never highlights, and it is ~3x faster
+  useExtendedSearch: true // Enable advanced search patterns
+}
 
-  const fuseOptions = {
-    keys: [
-      { name: 'label', weight: 0.5 }, // Title gets highest weight
-      { name: 'description', weight: 0.2 }, // Description
-      { name: 'content', weight: 0.2 }, // Content matching
-      { name: 'category', weight: 0.1 } // Category/breadcrumb
-    ],
-    threshold: 0.2, // More strict matching
-    distance: 100, // Maximum allowed distance
-    location: 0, // Prefer matches at beginning
-    minMatchCharLength: 2, // Minimum character match length
-    includeScore: true, // Include relevance score
-    includeMatches: true, // Include match details
-    ignoreLocation: false, // Consider match position
-    findAllMatches: true, // Find all matching patterns
-    useExtendedSearch: true // Enable advanced search patterns
-  }
-
+/** Builds the Fuse index once; the returned function only searches it. */
+export function createSearchFilter(items: SearchItem[]) {
   const fuse = new Fuse(items, fuseOptions)
-  const results = fuse.search(query)
+  const pages = items.filter(item => item.type === 'page')
 
-  const sortedResults = results
-    .sort((a, b) => {
-      if (a.item.type === 'page' && b.item.type === 'heading') return -1
-      if (a.item.type === 'heading' && b.item.type === 'page') return 1
+  return (query: string): Record<string, SearchItem[]> => {
+    if (!query) return pages.length ? { '': pages } : {}
 
-      return (a.score || 1) - (b.score || 1)
-    })
-    .map(result => result.item)
-    .slice(0, 15)
+    const sortedResults = fuse
+      .search(query)
+      .sort((a, b) => {
+        if (a.item.type === 'page' && b.item.type === 'heading') return -1
+        if (a.item.type === 'heading' && b.item.type === 'page') return 1
 
-  return sortedResults.length > 0 ? { '': sortedResults } : {}
+        return (a.score || 1) - (b.score || 1)
+      })
+      .map(result => result.item)
+      .slice(0, 15)
+
+    return sortedResults.length > 0 ? { '': sortedResults } : {}
+  }
 }
