@@ -1651,7 +1651,7 @@ fn specializes_cva_when_only_css_variables_are_hashed() {
 }
 
 #[test]
-fn keeps_cva_on_the_runtime_when_its_base_cannot_be_encoded() {
+fn specializes_cva_in_a_project_without_utilities() {
     let config: pandacss_config::UserConfig = serde_json::from_value(json!({
         "outdir": "styled-system",
         "importMap": { "css": ["@panda/css"] },
@@ -1666,8 +1666,10 @@ fn keeps_cva_on_the_runtime_when_its_base_cannot_be_encoded() {
 
     let output = transform_with_project(&project, "src/recipes.ts", source);
 
-    assert!(!output.changed);
-    assert_eq!(output.code, source);
+    assert_snapshot!(output.code, @"
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
+    export const button = /* @__PURE__ */ __pr((p = {}) => 'color_red', { base: { color: 'red' } }, [], {});
+    ");
 }
 
 #[test]

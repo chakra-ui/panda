@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { createCompiler } from '@pandacss/compiler'
 import { createSourceTransformer } from '../src'
 import { createFixtureCompiler, run } from './fixtures/styled-system'
 
@@ -313,6 +314,88 @@ describe('transformed recipes inside the styled-system runtime', () => {
           "trigger": "fs_16px",
         },
       }
+    `)
+  })
+})
+
+describe('transformed styles in a project without presets', () => {
+  it('returns the class names styled-system builds without utilities', async () => {
+    const compiler = createCompiler({
+      cwd: '/virtual',
+      outdir: 'styled-system',
+      outExtension: 'mjs',
+      importMap: { css: ['@panda/css'] },
+    })
+    const source = [
+      "import { css, cva, sva } from '@panda/css'",
+      "export const plain = css({ color: 'red.100', marginTop: '4px' })",
+      "export const important = css({ color: 'red !important' })",
+      "const button = cva({ base: { display: 'flex' }, variants: { size: { lg: { paddingInline: '2px' } } } })",
+      "export const large = button({ size: 'lg' })",
+      "const tabs = sva({ slots: ['root'], base: { root: { gap: '2px' } } })",
+      'export const slots = tabs()',
+    ].join('\n')
+    const result = createSourceTransformer(compiler).transformSource({ path: 'src/app.tsx', source })
+    const pick = ({ plain, important, large, slots }: Record<string, any>) => ({ plain, important, large, slots })
+
+    const transformed = pick(await run(compiler, result.code))
+    expect(transformed).toEqual(pick(await run(compiler, source)))
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { cx as __pcx, memoRecipe as __pm } from '@pandacss-internal/css';
+      export const plain = "color_red.100 margin-top_4px"
+      export const important = "color_red!"
+      const button = /* @__PURE__ */ __pm((p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return __pcx('display_flex', { lg: "padding-inline_2px" }[v0]); }, { size: ["lg"] })
+      export const large = button({ size: 'lg' })
+      const tabs = (p = {}) => ({ root: "gap_2px" })
+      export const slots = tabs()"
+    `)
+    expect(transformed).toMatchInlineSnapshot(`
+      {
+        "important": "color_red!",
+        "large": "display_flex padding-inline_2px",
+        "plain": "color_red.100 margin-top_4px",
+        "slots": {
+          "root": "gap_2px",
+        },
+      }
+    `)
+  })
+
+  it('folds raw selectors and at-rules to the classes styled-system and the stylesheet use', async () => {
+    const compiler = createCompiler({
+      cwd: '/virtual',
+      outdir: 'styled-system',
+      outExtension: 'mjs',
+      importMap: { css: ['@panda/css'] },
+    })
+    const source = [
+      "import { css } from '@panda/css'",
+      "export const hover = css({ '&:hover': { color: 'red' } })",
+      "export const attribute = css({ '[data-state=open] &': { color: 'red' } })",
+      "export const parent = css({ '.dark &': { color: 'red' } })",
+      "export const media = css({ '@media (min-width: 768px)': { '&:hover': { color: 'red' } } })",
+      "export const supports = css({ '@supports (display: grid)': { display: 'grid' } })",
+      "export const propertyLevel = css({ color: { base: 'red', '&:hover': 'blue' } })",
+    ].join('\n')
+    const result = createSourceTransformer(compiler).transformSource({ path: 'src/app.tsx', source })
+    const pick = ({ hover, attribute, parent, media, supports, propertyLevel }: Record<string, any>) => ({
+      hover,
+      attribute,
+      parent,
+      media,
+      supports,
+      propertyLevel,
+    })
+
+    const transformed = pick(await run(compiler, result.code))
+    expect(transformed).toEqual(pick(await run(compiler, source)))
+    expect(result.code).toMatchInlineSnapshot(`
+      "export const hover = "[&:hover]:color_red"
+      export const attribute = "[[data-state=open]_&]:color_red"
+      export const parent = "[.dark_&]:color_red"
+      export const media = "[@media_(min-width:_768px)]:[&:hover]:color_red"
+      export const supports = "[@supports_(display:_grid)]:display_grid"
+      export const propertyLevel = "color_red [&:hover]:color_blue""
     `)
   })
 })

@@ -35,6 +35,8 @@ pub(crate) type ConfigRecipe<T> = (Arc<str>, u32, T);
 pub struct System {
     pub(crate) extractor_config: ExtractorConfig,
     pub(crate) utility: Option<Utility>,
+    /// The empty utility map [`Self::utility`] drops, kept so class names match the runtime's defaults.
+    pub(crate) empty_utility: Option<Utility>,
     /// Kept when [`Self::utility`] is dropped (empty utilities map).
     pub(crate) class_name_prefix: String,
     pub(crate) conditions: ProjectConditionMatcher,
