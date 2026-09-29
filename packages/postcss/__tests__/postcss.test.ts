@@ -15,6 +15,7 @@ interface MockDriver {
   configDependencies: string[]
   configPath: string
   codegen: ReturnType<typeof vi.fn>
+  needsCodegen: ReturnType<typeof vi.fn>
   cssgen: ReturnType<typeof vi.fn>
   designSystemDiagnostics: Array<{ severity: 'info' | 'warning' | 'error'; code: string; message: string }>
   designSystemWatchTargets: ReturnType<typeof vi.fn>
@@ -119,6 +120,41 @@ describe('@pandacss/postcss', () => {
         },
       ]
     `)
+  })
+
+  it('skips codegen but still emits CSS when the driver does not need it', async () => {
+    const { driver, run } = await setup()
+    driver.needsCodegen.mockReturnValue(false)
+
+    const result = await run(CSS_ROOT, { outdir: 'out' })
+    await run(CSS_ROOT, { outdir: 'out' })
+
+    expect(driver.needsCodegen).toHaveBeenCalledOnce()
+    expect(driver.needsCodegen).toHaveBeenCalledWith('out')
+    expect(driver.codegen).not.toHaveBeenCalled()
+    expect(result.css).toMatchInlineSnapshot(
+      `"@layer reset, base, tokens, recipes, utilities;.text_red { color: red }"`,
+    )
+  })
+
+  it('re-checks codegen after a config change', async () => {
+    let stamp = '1:10'
+    vi.doMock('../src/fs-stamp', () => ({
+      readFileStamp: () => stamp,
+    }))
+
+    const { driver, run } = await setup()
+    driver.needsCodegen.mockReturnValue(false)
+    driver.reload.mockResolvedValue({ hasChanged: true, dependencies: [], recipes: [], patterns: [], changes: [] })
+    await run(CSS_ROOT)
+
+    stamp = '2:20'
+    driver.needsCodegen.mockReturnValue(true)
+    await run(CSS_ROOT)
+
+    expect(driver.reload).toHaveBeenCalledOnce()
+    expect(driver.needsCodegen).toHaveBeenCalledTimes(2)
+    expect(driver.codegen).toHaveBeenCalledOnce()
   })
 
   it('emits compiler warnings with severity and code', async () => {
@@ -440,6 +476,7 @@ function createMockDriver(): MockDriver {
     configDependencies: ['panda.config.ts', 'panda.tokens.ts'],
     configPath: '/project/panda.config.ts',
     codegen: vi.fn(() => ['/project/styled-system/css/css.mjs']),
+    needsCodegen: vi.fn(() => true),
     cssgen: vi.fn(() => ({
       css: '.text_red { color: red }',
       manifest: { files: [], tokens: [] },

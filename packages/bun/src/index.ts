@@ -109,9 +109,9 @@ function createDriverLoader(options: PandaPluginOptions) {
     const cwd = options.cwd ?? process.cwd()
     if (!driver) {
       driver = await createNodeDriver({ cwd, configPath })
-      driver.codegen({ cwd, outdir })
+      if (driver.needsCodegen(outdir)) driver.codegen({ cwd, outdir })
     } else if ((await driver.reload()).hasChanged) {
-      driver.codegen({ cwd, outdir })
+      if (driver.needsCodegen(outdir)) driver.codegen({ cwd, outdir })
     }
 
     for (const report of driver.parseFiles()) {

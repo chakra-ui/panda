@@ -125,6 +125,7 @@ export interface Driver {
   paths(outdir?: string): DriverPaths
   /** Generate + write artifacts under the configured `outdir` via the engine fs. Returns paths. */
   codegen(options?: CodegenOptions): string[]
+  needsCodegen(outdir?: string): boolean
   /** Writes the design-system document. Never part of codegen output. */
   spec(options?: SpecOptions): string[]
   /** Generate stylesheet CSS → `CompileOutput`; the caller routes the `css` string. */
@@ -284,6 +285,10 @@ export abstract class BaseDriver implements Driver {
       forceImportExtension: options?.forceImportExtension,
       overlay: this.codegenOverlay(),
     })
+  }
+
+  needsCodegen(_outdir?: string): boolean {
+    return true
   }
 
   spec(options?: SpecOptions): string[] {

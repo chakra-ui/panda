@@ -395,6 +395,10 @@ is the equivalent of:
 }
 ```
 
+When every entry points to an installed package, like `@scope/styled-system` above, the bundler plugins (PostCSS, Vite,
+Rollup, webpack and Bun) skip codegen, so no local `outdir` is written. CSS is still generated. Codegen still runs for
+relative paths, tsconfig aliases, the `outdir` name, packages that aren't installed, and any `designSystem` app.
+
 Pass an array to match imports from more than one root, for example a shared design system package alongside the app's
 own local `styled-system` output:
 
