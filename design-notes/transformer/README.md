@@ -123,7 +123,7 @@ Its job:
 
 - call the Rust transformer through `@pandacss/compiler`
 - expose `transformSource` and host-neutral plugin hooks
-- own internal runtime source (`cx`, `css`, `cva`, `sva`) served from `@pandacss-internal/css`
+- own internal runtime source (`cx`, `css`, `attachRecipe`, `memoRecipe`) served from `@pandacss-internal/css`
 - optionally wrap hooks with `unplugin` for Rollup/webpack-style hosts
 
 Transform semantics stay in Rust. Bundler packages depend on `@pandacss/transformer`, not the other way around.
@@ -163,7 +163,7 @@ pandacss_transform
 @pandacss/transformer  (packages/transformer)
   - transformSource → compiler binding
   - createPandaSourcePluginHooks (resolveId / load / transform)
-  - runtime/internal (cx, css, cva, sva bundled for virtual module)
+  - runtime/internal (cx, css, attachRecipe, memoRecipe bundled for virtual module)
   - pandaTransformer — optional unplugin wrapper
 
 @pandacss/vite | @pandacss/rollup | @pandacss/webpack | future rspack package
@@ -192,7 +192,7 @@ crates/pandacss_transform/src/
 
 packages/transformer/src/
   index.ts, transform.ts, hooks.ts, plugin.ts
-  runtime/internal/   # cx, css, cva, sva, load, ids
+  runtime/internal/   # cx, css, recipe, memo, load, ids
 ```
 
 ## The three-phase model
@@ -700,12 +700,19 @@ replaced by the merged object literal.
 - dynamic keys
 - normalized branch trees that exceed the branch budget
 - `css.raw(...)` carrying a runtime branch — there is no object to print
+- a property nested under a key that is not a condition (`{ foo: { color } }`) — the runtime names that class
+  differently from the encoder; see [atomic encoding](../atomic-encoding.md#property-selection-rule)
 
 Important rule:
 
 - for `css(...)`, open-ended dynamic means preserve the original `css(...)` call
 
 That is safe because the runtime function already exists on that surface.
+
+Class names must match the styled-system runtime, including in a project without a preset. With no utilities
+configured, the compiler still names classes through an empty utility map (`System::empty_utility`), which gives the
+runtime's defaults: `color_red`, `margin-top_4px`, and raw selectors and at-rules such as `[&:hover]:color_red`.
+Condition shorthands like `_hover` and `md` only exist when a preset or config defines them.
 
 ### JSX style props
 

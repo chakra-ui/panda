@@ -28,7 +28,7 @@ pub enum Literal {
 Three notable choices:
 
 - **`Object` keeps keys in source order** as a `Vec`, not a map. Extraction never looks up by key; downstream code that
-  does can build whatever index it needs. The order matters because Panda's encoder reads the deepest non-condition key
+  does can build whatever index it needs. The order matters because Panda's encoder reads the outermost non-condition key
   as the property name.
 - **`Number` is `f64`**, not split into int/float. JS only has one number type. The custom `Serialize` impl re-emits
   integers as `i64` when they fit (precision boundary at 2^53) to match the shape the JS extractor produces.
