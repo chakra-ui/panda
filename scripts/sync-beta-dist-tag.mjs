@@ -19,13 +19,13 @@ const targets = readdirSync('packages', { withFileTypes: true })
 
 if (!targets.length) throw new Error('No publishable prerelease packages found under packages/.')
 
-const plan = targets.map((pkg) => {
-  const published = distTags(pkg.name)
-  if (!published) return { pkg, state: 'unpublished' }
-  if (!published.versions.includes(pkg.version)) return { pkg, state: 'not-on-registry' }
-  const current = published.tags[tag]
-  return { pkg, current, state: current === pkg.version ? 'ok' : 'stale' }
-})
+let plan = targets.map(planFor)
+
+// Right after `changeset publish`, `npm view` can omit the new versions for minutes.
+for (let attempt = 0; apply && attempt < 36 && plan.some((entry) => entry.state === 'not-on-registry'); attempt++) {
+  await new Promise((resolve) => setTimeout(resolve, 5000))
+  plan = plan.map((entry) => (entry.state === 'not-on-registry' ? planFor(entry.pkg) : entry))
+}
 
 for (const { pkg, current, state } of plan) {
   const label = pkg.name.padEnd(30)
@@ -70,6 +70,14 @@ if (unresolved.length || failed.length) {
 }
 
 console.log(`\nMoved ${tag} for ${stale.length} package(s).`)
+
+function planFor(pkg) {
+  const published = distTags(pkg.name, { fresh: true })
+  if (!published) return { pkg, state: 'unpublished' }
+  if (!published.versions.includes(pkg.version)) return { pkg, state: 'not-on-registry' }
+  const current = published.tags[tag]
+  return { pkg, current, state: current === pkg.version ? 'ok' : 'stale' }
+}
 
 function distTags(name, { fresh = false } = {}) {
   try {
