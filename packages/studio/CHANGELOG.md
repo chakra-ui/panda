@@ -1,5 +1,19 @@
 # @pandacss/studio
 
+## 1.12.2
+
+### Patch Changes
+
+- bf8ce51: Fix `panda studio --build` producing an empty site (and a 404) when studio's dependencies can't be resolved
+  from the output directory, which is common with pnpm. Build errors now also fail the command instead of being logged
+  and ignored.
+  - @pandacss/astro-plugin-studio@1.12.2
+  - @pandacss/config@1.12.2
+  - @pandacss/logger@1.12.2
+  - @pandacss/shared@1.12.2
+  - @pandacss/token-dictionary@1.12.2
+  - @pandacss/types@1.12.2
+
 ## 1.12.1
 
 ### Patch Changes

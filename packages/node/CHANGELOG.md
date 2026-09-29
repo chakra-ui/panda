@@ -1,5 +1,22 @@
 # @pandacss/node
 
+## 1.12.2
+
+### Patch Changes
+
+- @pandacss/config@1.12.2
+- @pandacss/core@1.12.2
+- @pandacss/generator@1.12.2
+- @pandacss/logger@1.12.2
+- @pandacss/parser@1.12.2
+- @pandacss/plugin-lightningcss@1.12.2
+- @pandacss/plugin-svelte@1.12.2
+- @pandacss/plugin-vue@1.12.2
+- @pandacss/reporter@1.12.2
+- @pandacss/shared@1.12.2
+- @pandacss/token-dictionary@1.12.2
+- @pandacss/types@1.12.2
+
 ## 1.12.1
 
 ### Patch Changes
