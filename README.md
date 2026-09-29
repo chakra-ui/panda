@@ -108,14 +108,14 @@ function Example() {
 ## Contributing
 
 Feel like contributing? That's awesome! We have a
-[contributing guide](https://github.com/chakra-ui/panda/blob/main/CONTRIBUTING.md) to help guide you.
+[contributing guide](https://github.com/chakra-ui/panda/blob/v2/CONTRIBUTING.md) to help guide you.
 
 ### Want to help improve the docs?
 
-Our docsite lives in the [monorepo](./website/pages/docs/).
+Our docs live in [`website/content/docs`](./website/content/docs/).
 
 If you're interested in contributing to the documentation, check out the
-[contributing guide](https://github.com/chakra-ui/panda/blob/main/CONTRIBUTING.md).
+[contributing guide](https://github.com/chakra-ui/panda/blob/v2/CONTRIBUTING.md).
 
 ## Support
 

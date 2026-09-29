@@ -16,7 +16,8 @@ git clone https://github.com/<your_github_username>/panda.git
 cd panda
 ```
 
-3. Setup all the dependencies and packages by running `pnpm install`. This command will install dependencies.
+3. Install [Rust](https://rustup.rs/). `rust-toolchain.toml` pins the version, so `rustup` picks it up automatically.
+   Then install dependencies with `pnpm install`.
 
 > If you run into any issues during this step, kindly reach out to the Panda CSS team here:
 > [Panda Discord](https://discord.gg/VQrkpsgSx7)
@@ -28,18 +29,27 @@ following structure:
 
 ### Directory Structure
 
-| Package                                       | Description                                                 |
-| --------------------------------------------- | ----------------------------------------------------------- |
-| [cli](packages/cli)                           | CLI package installed by the end user                       |
-| [core](packages/core)                         | Contains core features of Panda (utility, recipes, etc)     |
-| [config](packages/config)                     | Contains functions for reading and merging the panda config |
-| [extractor](packages/extractor)               | Contains code for fast AST parsing and scanning             |
-| [generator](packages/generator)               | Contains codegen artifacts (js, css, jsx)                   |
-| [parser](packages/parser)                     | Contains code for parsing a source code                     |
-| [is-valid-prop](packages/is-valid-prop)       | Contains code for checking if a prop is a valid css prop    |
-| [node](packages/node)                         | Contains the Node.js API of Panda's features                |
-| [token-dictionary](packages/token-dictionary) | Contains code used to process tokens and semantic tokens    |
-| [shared](packages/shared)                     | Contains shared TS                                          |
+- [`crates/`](crates): the Rust compiler engine (extraction, CSS emission, codegen, source transforms). Start with
+  [`crates/RUST_GUIDE.md`](crates/RUST_GUIDE.md).
+- [`packages/`](packages): the published `@pandacss/*` packages.
+  - [`dev`](packages/dev): the package users install, with config helpers and the `panda` CLI
+  - [`cli`](packages/cli): the `panda` command
+  - [`compiler`](packages/compiler): native Node binding for the Rust engine
+  - [`compiler-wasm`](packages/compiler-wasm): WebAssembly binding for the browser and the playground
+  - [`compiler-shared`](packages/compiler-shared): TypeScript contract shared by both bindings
+  - [`config`](packages/config): loads, bundles, and serializes a Panda config
+  - [`types`](packages/types): public types
+  - [`preset-base`](packages/preset-base), [`preset-panda`](packages/preset-panda),
+    [`preset-typography`](packages/preset-typography): presets
+  - [`postcss`](packages/postcss), [`vite`](packages/vite), [`webpack`](packages/webpack), [`rollup`](packages/rollup),
+    [`bun`](packages/bun): build integrations
+  - [`transformer`](packages/transformer): source transforms used by the bundler plugins
+  - [`eslint-plugin`](packages/eslint-plugin), [`language-server`](packages/language-server),
+    [`typescript-plugin`](packages/typescript-plugin), [`mcp`](packages/mcp): editor, lint, and AI tooling
+- [`apps/`](apps): the [playground](apps/playground) and [Studio](apps/studio).
+- [`website/`](website): the docs site and blog.
+- [`sandbox/`](sandbox): example projects used as integration tests.
+- [`design-notes/`](design-notes): architecture decisions for the Rust engine.
 
 ### Tooling
 
@@ -51,16 +61,17 @@ following structure:
 
 ### Commands
 
-**`pnpm install`**: bootstraps the entire project, symlinks all dependencies for cross-component development and builds
-all components.
+**`pnpm install`**: installs dependencies and builds the TypeScript packages.
 
-**`pnpm dev`**: starts tsup with watch mode for all packages.
+**`pnpm dev`**: starts tsup in watch mode for all packages.
 
-**`pnpm build`**: run build for all packages.
+**`pnpm build`**: builds all packages.
 
-**`pnpm test`**: run test for all packages.
+**`pnpm test <path>`**: runs Vitest, for example `pnpm test packages/cli`.
 
-**`pnpm release`**: publish changed packages.
+**`pnpm test:compiler`**: rebuilds the native binding and runs the compiler tests. Use it after changing Rust code.
+
+**`pnpm rust:test`**, **`pnpm rust:fmt`**, **`pnpm rust:clippy`**: Rust tests, formatting, and lints. CI runs all three.
 
 ## Think you found a bug?
 
@@ -104,19 +115,15 @@ If you are interested in the detailed specification you can visit https://www.co
 
 1. Fork of the panda repository and clone your fork
 
-2. Create a new branch out of the `main` branch. We follow the convention `[type/scope]`. For example
-   `fix/accordion-hook` or `docs/menu-typo`. `type` can be either `docs`, `fix`, `feat`, `build`, or any other
-   conventional commit type. `scope` is just a short id that describes the scope of work.
+2. Create a new branch out of the `v2` branch. We follow the convention `[type/scope]`. For example `fix/accordion-hook`
+   or `docs/menu-typo`. `type` can be either `docs`, `fix`, `feat`, `build`, or any other conventional commit type.
+   `scope` is just a short id that describes the scope of work.
 
-3. Make and commit your changes following the
-   [commit convention](https://github.com/chakra-ui/panda/blob/main/CONTRIBUTING.md#commit-convention). As you develop,
-   you can run `pnpm pkg <module> build` and `pnpm pkg <module> test` to make sure everything works as expected. Please
-   note that you might have to run `pnpm boot` first in order to build all dependencies.
+3. Make and commit your changes following the [commit convention](#commit-convention). As you develop, run
+   `pnpm test <path>` for the packages you touched, and `pnpm test:compiler` if you changed Rust code.
 
 4. Run `pnpm changeset` to create a detailed description of your changes. This will be used to generate a changelog when
    we publish an update. [Learn more about Changeset](https://github.com/atlassian/changesets/tree/master/packages/cli).
-   Please note that you might have to run `git fetch origin main:master` (where origin will be your fork on GitHub)
-   before `pnpm changeset` works.
 5. Also, if you provide `jsx` snippets to the changeset, please turn off the live preview by doing the following at the
    beginning of the snippet: ` ```jsx live=false`
 
@@ -134,7 +141,7 @@ way we can.
 
 ## Want to help improve the docs?
 
-Our docsite lives in the [monorepo](./website/pages/docs/).
+Our docs live in [`website/content/docs`](./website/content/docs/).
 
 ## License
 

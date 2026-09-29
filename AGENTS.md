@@ -87,18 +87,18 @@ Recent Rust parity work (P1-6 / P2-7) tightened TS alignment — treat these as 
 
 ```bash
 # ✅ Correct
-pnpm test packages/core
-pnpm test packages/parser
+pnpm test packages/cli
+pnpm test packages/config
 
 # ❌ Incorrect
-cd packages/core && pnpm test
+cd packages/cli && pnpm test
 ```
 
 **Key test commands:**
 
 ```bash
 pnpm test <path>              # Run tests for specific package/file
-pnpm test packages/core       # Test all core package tests
+pnpm test packages/cli        # Test one package
 pnpm build                    # Build all packages
 pnpm build:fast               # Fast build without type definitions
 ```
@@ -116,7 +116,7 @@ pnpm update <package> --ignore-scripts
 
 1. Update package.json versions
 2. Run `pnpm install --ignore-scripts`
-3. Run `pnpm test packages/core` to verify CSS output unchanged
+3. Run `cargo nextest run -p pandacss_stylesheet` and `sandbox/codegen` to verify CSS output unchanged
 4. Check for browserslist warnings in sandbox projects
 5. Create changeset if changes affect users
 
@@ -371,10 +371,10 @@ error-message work, or help/usage reviews — no need to consult external CLI gu
 
 **Before committing CLI changes:** `pnpm test packages/cli`
 
-## Rust / Oxc Engine (v2 migration)
+## Rust / Oxc Engine
 
-The repo is in the middle of porting the compiler hot path from `ts-morph` + `ts-evaluator` to a Rust/Oxc engine.
-JS-facing APIs stay stable; Rust ships behind `@pandacss/compiler`.
+Panda 2.0 replaced the `ts-morph` + `ts-evaluator` compiler with a Rust/Oxc engine. JS-facing APIs stay stable; Rust
+ships behind `@pandacss/compiler`.
 
 **Read first** before touching Rust:
 
@@ -588,9 +588,9 @@ If a change breaks things:
 ```bash
 git checkout packages/          # Revert package.json changes
 pnpm install --ignore-scripts   # Restore dependencies
-pnpm test packages/core         # Verify tests pass
+pnpm test packages/cli          # Verify tests pass
 ```
 
 ---
 
-**Last Updated**: 2026-07-22 **Project Version**: v2 branch (Rust/Oxc migration in progress)
+**Last Updated**: 2026-09-29 **Project Version**: 2.0 (`v2` branch; 1.x maintenance on `v1`)
