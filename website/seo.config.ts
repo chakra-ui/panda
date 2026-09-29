@@ -1,4 +1,5 @@
 import { getPublicUrl } from '@/lib/public-url'
+import { v2Url } from '@/lib/v2-url'
 import type { Metadata } from 'next'
 
 const defineMetadata = <T extends Metadata>(metadata: T) => metadata
@@ -7,6 +8,7 @@ const publicUrl = getPublicUrl()
 
 const seoConfig = defineMetadata({
   metadataBase: new URL(publicUrl),
+  alternates: { canonical: new URL(v2Url) },
   title: {
     template: '%s - Panda CSS',
     default:

@@ -1,6 +1,7 @@
 'use client'
 
-import { CourseBanner } from '@/components/course-banner'
+import { V1Banner } from '@/components/v1-banner'
+import { VersionSwitcher } from '@/components/version-switcher'
 import { CommandMenu } from '@/components/docs/command-menu'
 import { SearchButton } from '@/components/docs/search'
 import { Sidebar } from '@/components/docs/sidebar'
@@ -37,7 +38,7 @@ export const Navbar = () => {
     <div data-scope="navbar" data-part="root" className={navbar()}>
       <div data-scope="navbar" data-part="blur" />
 
-      <CourseBanner />
+      <V1Banner />
 
       <nav data-scope="navbar" data-part="nav">
         {docsConfig.logoUrl ? (
@@ -87,6 +88,8 @@ export const Navbar = () => {
         })}
 
         <CommandMenu trigger={<SearchButton />} mediaQuery="max-width: 640px" />
+
+        <VersionSwitcher />
 
         {docsConfig.docsRepositoryBase ? (
           <Anchor

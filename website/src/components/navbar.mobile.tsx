@@ -9,6 +9,7 @@ import { MenuIcon } from '@/icons'
 import { NavLink } from './nav-link'
 import { ThemeSwitchIconButton } from './theme-switch-button'
 import { drawerSlotRecipe } from './ui/drawer'
+import { VersionSwitcher } from './version-switcher'
 
 export const MobileNavBar = () => {
   return (
@@ -28,6 +29,7 @@ export const MobileNavBar = () => {
       </Link>
 
       <HStack gap="4">
+        <VersionSwitcher />
         <ThemeSwitchIconButton />
         <MobileNavDrawer
           trigger={
