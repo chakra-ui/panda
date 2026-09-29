@@ -1,5 +1,9 @@
+import { readFileSync } from 'node:fs'
 import { createMDX } from 'fumadocs-mdx/next'
 import { redirects } from './redirects.mjs'
+
+const pandaPackage = new URL('../packages/dev/package.json', import.meta.url)
+const pandaVersion = JSON.parse(readFileSync(pandaPackage, 'utf8')).version
 
 /** @type {import('next').NextConfig} */
 const config = {
@@ -13,6 +17,9 @@ const config = {
   },
   async redirects() {
     return redirects
+  },
+  env: {
+    NEXT_PUBLIC_PANDA_VERSION: pandaVersion
   },
   reactStrictMode: true,
   images: {
