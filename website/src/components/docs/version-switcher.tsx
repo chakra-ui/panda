@@ -1,8 +1,12 @@
 'use client'
 
-import { communityContent, communityItem } from '@/components/docs/tab-bar'
+import {
+  communityContent,
+  communityItem,
+  communityTrigger
+} from '@/components/docs/tab-bar'
 import { getV1Href } from '@/lib/v1-href'
-import { css, cx } from '@/styled-system/css'
+import { css } from '@/styled-system/css'
 import { Menu } from '@ark-ui/react/menu'
 import { Portal } from '@ark-ui/react/portal'
 import { usePathname } from 'next/navigation'
@@ -19,9 +23,7 @@ export function VersionSwitcher() {
       </Menu.Trigger>
       <Portal>
         <Menu.Positioner>
-          <Menu.Content
-            className={cx(communityContent, css({ minW: '10rem' }))}
-          >
+          <Menu.Content className={css(communityContent, { minW: '10rem' })}>
             <Menu.Item value="v2" className={communityItem}>
               v2
               <LuCheck size={14} aria-hidden />
@@ -39,23 +41,14 @@ export function VersionSwitcher() {
   )
 }
 
-const trigger = css({
-  display: 'flex',
-  alignItems: 'center',
+const trigger = css(communityTrigger, {
   gap: '1',
   flexShrink: '0',
-  textStyle: 'sm',
   fontWeight: 'medium',
   px: '2.5',
   py: '1.5',
-  rounded: 'md',
+  h: 'auto',
   borderWidth: '1px',
   borderColor: 'border',
-  color: 'fg.muted',
-  cursor: 'pointer',
-  whiteSpace: 'nowrap',
-  transitionProperty: 'color, background-color',
-  transitionDuration: '150ms',
-  _hover: { color: 'fg', bg: 'bg.subtle' },
-  _open: { color: 'fg', bg: 'bg.subtle' }
+  _open: { bg: 'bg.subtle' }
 })
