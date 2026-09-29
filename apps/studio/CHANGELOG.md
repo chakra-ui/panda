@@ -1,5 +1,16 @@
 # studio
 
+## 2.0.0
+
+### Patch Changes
+
+- Updated dependencies [bb3d117]
+  - @pandacss/compiler-shared@2.0.0
+  - @pandacss/compiler-wasm@2.0.0
+  - @pandacss/config@2.0.0
+  - @pandacss/preset-base@2.0.0
+  - @pandacss/preset-panda@2.0.0
+
 ## 2.0.0-beta.20
 
 ### Patch Changes
