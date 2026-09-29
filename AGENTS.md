@@ -46,7 +46,7 @@ with workspace support.
   /vite-ts/        # Vite integration example
   /next-js-*/      # Next.js examples
 
-/playground/       # Interactive playground application
+/apps/playground/  # Interactive playground application
 
 /website/          # Documentation site
 ```

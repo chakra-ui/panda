@@ -29,7 +29,6 @@ export default defineConfig({
       'sandbox/codegen/__tests__/frameworks',
       // playground and website are out of the workspace until migrated to the
       // Rust compiler stack — their tests can't resolve deps from root.
-      'playground/**',
       'website/**',
       'apps/**',
       // Bun sandbox runs under `bun test`.

@@ -47,7 +47,7 @@ pnpm --filter=./bench transform-audit              # every project with a panda 
 pnpm --filter=./bench transform-audit website      # or specific projects
 ```
 
-Transforms every source file of each real project in the repo (`website`, `playground`, the sandboxes) with that
+Transforms every source file of each real project in the repo (`website`, `apps/playground`, the sandboxes) with that
 project's own config, and checks that every class the transform folded in is defined by the project's stylesheet. It
 exits non-zero on a miss. Classes the runtime also returns but whose styles are empty are listed in `EMPTY_RULES` with
 the reason. This caught condition chains the transform named in a different order than the stylesheet
