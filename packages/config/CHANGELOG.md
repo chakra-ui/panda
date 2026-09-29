@@ -302,3 +302,7 @@
 
 - Fix the `preset:resolved` hook missing its `utils` argument. Plugin authors can now use `omit` / `pick` / `traverse`
   inside `preset:resolved` (matching `config:resolved` and v1).
+
+## 1.x and earlier
+
+See the [v1 changelog](https://github.com/chakra-ui/panda/blob/v1/packages/config/CHANGELOG.md).

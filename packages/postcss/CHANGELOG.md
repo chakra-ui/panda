@@ -249,3 +249,7 @@
 ### Patch Changes
 
 - Add an experimental PostCSS integration backed by the v2 compiler driver.
+
+## 1.x and earlier
+
+See the [v1 changelog](https://github.com/chakra-ui/panda/blob/v1/packages/postcss/CHANGELOG.md).

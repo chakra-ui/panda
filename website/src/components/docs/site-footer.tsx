@@ -54,7 +54,7 @@ export const footerColumns: FooterColumn[] = [
       { title: 'Roadmap', href: 'https://panda-css.canny.io/' },
       {
         title: 'Changelog',
-        href: `${docsConfig.docsRepositoryBase}/blob/main/CHANGELOG.md`
+        href: `${docsConfig.docsRepositoryBase}/blob/v2/packages/dev/CHANGELOG.md`
       }
     ]
   }

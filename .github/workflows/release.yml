@@ -284,7 +284,7 @@ jobs:
           payload: |
             {
               "package_name": "@pandacss/cli",
-              "changelog_url": "https://github.com/chakra-ui/panda/blob/v2/CHANGELOG.md"
+              "changelog_url": "https://github.com/chakra-ui/panda/blob/v2/packages/cli/CHANGELOG.md"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

@@ -350,3 +350,7 @@
 
   - Add a `panda-mcp` binary so users can run the server with `npx -y @pandacss/mcp` or `pnpm dlx @pandacss/mcp`
   - Remove the `panda mcp` and `panda init-mcp` CLI bridge commands
+
+## 1.x and earlier
+
+See the [v1 changelog](https://github.com/chakra-ui/panda/blob/v1/packages/cli/CHANGELOG.md).
