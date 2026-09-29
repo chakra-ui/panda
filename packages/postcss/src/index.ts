@@ -3,7 +3,7 @@ import { Builder, setLogStream } from '@pandacss/node'
 import { createRequire } from 'module'
 import path from 'path'
 import type { PluginCreator, TransformCallback } from 'postcss'
-import { getExternalImportMap } from './external-import-map'
+import { getExternalPackages } from './external-import-map'
 
 const customRequire = createRequire(__dirname)
 
@@ -44,7 +44,11 @@ export const pandacss: PluginCreator<PluginOptions> = (options = {}) => {
     // ignore non-panda css file
     if (!builder.isValidRoot(root)) return
 
-    const external = getExternalImportMap(builder.getContextOrThrow().config)
+    const { config, imports } = builder.getContextOrThrow()
+    const external = getExternalPackages(
+      config,
+      Object.values(imports.matchers).flatMap((m) => m.mods),
+    )
     if (external) {
       const names = external.join(', ')
       if (loggedSkip !== names) logger.info('postcss', `Skipping codegen, importMap points to ${names}`)
