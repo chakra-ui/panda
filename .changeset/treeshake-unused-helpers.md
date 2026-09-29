@@ -2,5 +2,7 @@
 '@pandacss/compiler': patch
 ---
 
-Let bundlers drop the generated condition list and `normalizeHTMLProps` when nothing uses them. With a full preset, the
-condition list alone is about 2.7 KB.
+Shrink generated styled-system output:
+
+- Bundlers can drop the condition list and `normalizeHTMLProps` when nothing uses them, about 2.7 KB with the full
+  preset.

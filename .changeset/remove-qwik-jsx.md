@@ -5,5 +5,8 @@
 '@pandacss/cli': major
 ---
 
-Remove Qwik JSX support. `jsxFramework: 'qwik'` no longer generates `styled`, `Box`, or pattern components; use `css()`,
-`cva()`, and pattern functions with Qwik's `class` attribute instead.
+Remove Qwik JSX support:
+
+- `jsxFramework: 'qwik'` no longer generates `styled`, `Box`, or pattern components.
+- To migrate, remove `jsxFramework` and style Qwik components with `css()`, `cva()`, and pattern functions on the
+  `class` attribute.
