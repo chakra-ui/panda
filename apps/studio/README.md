@@ -10,7 +10,7 @@ Run `panda codegen --spec` in any Panda project and grab `styled-system/specs/de
 
 ## Develop
 
-Pins the **published** `@pandacss/*` betas, not the workspace sources — `@pandacss/compiler-wasm` needs a Rust toolchain that deploy builders don't have.
+Pins the **published** `@pandacss/*` packages, not the workspace sources — `@pandacss/compiler-wasm` needs a Rust toolchain that deploy builders don't have.
 
 ```bash
 pnpm install

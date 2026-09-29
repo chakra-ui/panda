@@ -31,15 +31,6 @@ gh workflow run release.yml \
   -f dry_run=true
 ```
 
-For example, to test a pull request branch from a fork:
-
-```sh
-gh workflow run release.yml \
-  --repo Adebesin-Cell/panda \
-  --ref chore/v2-beta-release-setup \
-  -f dry_run=true
-```
-
 Then watch the run:
 
 ```sh

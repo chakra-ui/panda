@@ -37,7 +37,7 @@
 
 ## 🐼 Panda v2
 
-Panda v2 rewrites the compiler in Rust on the Oxc engine. Upgrading from v1? Follow the
+Panda v2 is here, with the compiler rewritten in Rust on the Oxc engine. Upgrading from v1? Follow the
 **[upgrade guide](https://panda-css.com/docs/get-started/upgrading-to-v2)**.
 
 ## Documentation
@@ -92,30 +92,35 @@ function Example() {
 
 ## Directory Structure
 
-| Package                                       | Description                                                 |
-| --------------------------------------------- | ----------------------------------------------------------- |
-| [cli](packages/cli)                           | CLI package installed by the end user                       |
-| [core](packages/core)                         | Contains core features of Panda (utility, recipes, etc)     |
-| [config](packages/config)                     | Contains functions for reading and merging the panda config |
-| [extractor](packages/extractor)               | Contains code for fast AST parsing and scanning             |
-| [generator](packages/generator)               | Contains codegen artifacts (js, css, jsx)                   |
-| [parser](packages/parser)                     | Contains code for parsing a source code                     |
-| [is-valid-prop](packages/is-valid-prop)       | Contains code for checking if a prop is a valid css prop    |
-| [node](packages/node)                         | Contains the Node.js API of Panda's features                |
-| [token-dictionary](packages/token-dictionary) | Contains code used to process tokens and semantic tokens    |
-| [shared](packages/shared)                     | Contains shared TS functions                                |
+| Package                                         | Description                                                  |
+| ----------------------------------------------- | ------------------------------------------------------------ |
+| [dev](packages/dev)                             | User-facing package: config helpers and the `panda` binary   |
+| [cli](packages/cli)                             | The `panda` CLI, powered by the Rust compiler                |
+| [compiler](packages/compiler)                   | Native Rust binding for the compiler engine                  |
+| [compiler-wasm](packages/compiler-wasm)         | WebAssembly binding for the compiler engine (browser target) |
+| [config](packages/config)                       | Loads, bundles, and serializes the panda config              |
+| [types](packages/types)                         | Public types                                                 |
+| [postcss](packages/postcss)                     | PostCSS plugin                                               |
+| [vite](packages/vite)                           | Vite plugin                                                  |
+| [webpack](packages/webpack)                     | webpack plugin (Next.js compatible)                          |
+| [rollup](packages/rollup)                       | Rollup plugin                                                |
+| [bun](packages/bun)                             | Bun plugin                                                   |
+| [preset-base](packages/preset-base)             | Base preset with conditions and utilities                    |
+| [preset-panda](packages/preset-panda)           | Default theme preset                                         |
+| [preset-typography](packages/preset-typography) | Prose typography preset                                      |
+| [eslint-plugin](packages/eslint-plugin)         | ESLint rules                                                 |
+| [mcp](packages/mcp)                             | MCP server for AI assistants                                 |
+| [crates](crates)                                | Rust compiler engine built on Oxc                            |
 
 ## Contributing
 
-Feel like contributing? That's awesome! We have a
-[contributing guide](https://github.com/chakra-ui/panda/blob/main/CONTRIBUTING.md) to help guide you.
+Feel like contributing? That's awesome! We have a [contributing guide](./CONTRIBUTING.md) to help guide you.
 
 ### Want to help improve the docs?
 
-Our docsite lives in the [monorepo](./website/pages/docs/).
+Our docsite lives in the [monorepo](./website/content/docs/).
 
-If you're interested in contributing to the documentation, check out the
-[contributing guide](https://github.com/chakra-ui/panda/blob/main/CONTRIBUTING.md).
+If you're interested in contributing to the documentation, check out the [contributing guide](./CONTRIBUTING.md).
 
 ## Support
 
