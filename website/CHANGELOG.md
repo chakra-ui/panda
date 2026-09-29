@@ -1,5 +1,13 @@
 # website
 
+## 1.0.1-beta.18
+
+### Patch Changes
+
+- @pandacss/preset-base@2.0.0-beta.20
+- @pandacss/preset-panda@2.0.0-beta.20
+- @pandacss/preset-typography@2.0.0-beta.20
+
 ## 1.0.1-beta.17
 
 ### Patch Changes

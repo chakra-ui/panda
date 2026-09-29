@@ -1,5 +1,21 @@
 # @pandacss/compiler-shared
 
+## 2.0.0-beta.20
+
+### Patch Changes
+
+- 883ecd6: Ship less recipe code with `transform: true`:
+
+  - Static `cva` and `sva` calls, including imported ones, compile into small per-recipe functions. Fully compiled
+    recipes drop out of the bundle.
+  - Compiled recipes keep their API and work with `styled` and `createSlotRecipeContext`. With hashed class names they
+    stay on the runtime.
+  - Fix transformed classes not matching the runtime for nested conditions (`md: { _hover: … }`), projects without a
+    preset, compound variants, and `splitVariantProps` order.
+
+- Updated dependencies [9e45720]
+  - @pandacss/types@2.0.0-beta.20
+
 ## 2.0.0-beta.19
 
 ### Patch Changes

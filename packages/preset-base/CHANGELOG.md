@@ -1,5 +1,12 @@
 # @pandacss/preset-base
 
+## 2.0.0-beta.20
+
+### Patch Changes
+
+- Updated dependencies [9e45720]
+  - @pandacss/types@2.0.0-beta.20
+
 ## 2.0.0-beta.19
 
 ### Patch Changes
