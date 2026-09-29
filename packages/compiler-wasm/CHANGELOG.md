@@ -1,5 +1,22 @@
 # @pandacss/compiler-wasm
 
+## 2.0.0-beta.20
+
+### Major Changes
+
+- 9e45720: Remove Qwik JSX support:
+
+  - `jsxFramework: 'qwik'` no longer generates `styled`, `Box`, or pattern components.
+  - To migrate, remove `jsxFramework` and style Qwik components with `css()`, `cva()`, and pattern functions on the
+    `class` attribute.
+
+### Patch Changes
+
+- Updated dependencies [9e45720]
+- Updated dependencies [883ecd6]
+  - @pandacss/types@2.0.0-beta.20
+  - @pandacss/compiler-shared@2.0.0-beta.20
+
 ## 2.0.0-beta.19
 
 ### Patch Changes

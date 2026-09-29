@@ -1,5 +1,15 @@
 # @pandacss/types
 
+## 2.0.0-beta.20
+
+### Major Changes
+
+- 9e45720: Remove Qwik JSX support:
+
+  - `jsxFramework: 'qwik'` no longer generates `styled`, `Box`, or pattern components.
+  - To migrate, remove `jsxFramework` and style Qwik components with `css()`, `cva()`, and pattern functions on the
+    `class` attribute.
+
 ## 2.0.0-beta.19
 
 ## 2.0.0-beta.18

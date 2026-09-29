@@ -1,5 +1,54 @@
 # @pandacss/compiler
 
+## 2.0.0-beta.20
+
+### Major Changes
+
+- 9e45720: Remove Qwik JSX support:
+
+  - `jsxFramework: 'qwik'` no longer generates `styled`, `Box`, or pattern components.
+  - To migrate, remove `jsxFramework` and style Qwik components with `css()`, `cva()`, and pattern functions on the
+    `class` attribute.
+
+### Patch Changes
+
+- 882730a: Follow `export * from` barrel files:
+
+  - Tokens, style values, and recipes imported through a barrel are extracted and folded like direct imports.
+  - Large `export { … } from` barrels process much faster.
+
+  ```ts
+  // components/index.ts
+  export * from './button'
+  export * from './tokens'
+
+  // app.tsx
+  import { button, brand } from './components'
+
+  button({ size: 'lg' }) // folds to its class string
+  css({ color: brand }) // extracts the `brand` color
+  ```
+
+- 883ecd6: Ship less recipe code with `transform: true`:
+
+  - Static `cva` and `sva` calls, including imported ones, compile into small per-recipe functions. Fully compiled
+    recipes drop out of the bundle.
+  - Compiled recipes keep their API and work with `styled` and `createSlotRecipeContext`. With hashed class names they
+    stay on the runtime.
+  - Fix transformed classes not matching the runtime for nested conditions (`md: { _hover: … }`), projects without a
+    preset, compound variants, and `splitVariantProps` order.
+
+- 882730a: Shrink generated styled-system output:
+
+  - Bundlers can drop the condition list and `normalizeHTMLProps` when nothing uses them, about 2.7 KB with the full
+    preset.
+
+- Updated dependencies [9e45720]
+- Updated dependencies [883ecd6]
+  - @pandacss/types@2.0.0-beta.20
+  - @pandacss/compiler-shared@2.0.0-beta.20
+  - @pandacss/config@2.0.0-beta.20
+
 ## 2.0.0-beta.19
 
 ### Patch Changes
