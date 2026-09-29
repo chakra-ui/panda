@@ -107,13 +107,6 @@ const options: TestUserConfig = {
       globals: true,
     },
   },
-  qwik: {
-    test: {
-      include: ['**/__tests__/**/frameworks/qwik.*.{test,spec}.{j,t}s?(x)'],
-      typecheck: { enabled: typecheck, include: ['**/__tests__/**/frameworks/qwik.*.{test,spec}.{j,t}s?(x)'] },
-      environment: 'node',
-    },
-  },
 } as Record<string, UserConfig>
 
 const mode = process.env.MODE ?? 'react'

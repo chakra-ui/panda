@@ -5,8 +5,6 @@ mod jsx_helper;
 mod preact_jsx;
 mod preact_pattern_jsx;
 mod preact_recipe_context;
-mod qwik_jsx;
-mod qwik_pattern_jsx;
 mod react_jsx;
 mod react_pattern_jsx;
 mod react_recipe_context;
@@ -162,16 +160,7 @@ fn framework_files(
     stem: &str,
     module: fn(CodegenContext<'_>) -> Module,
 ) -> Vec<ArtifactFile> {
-    if !matches!(
-        ctx.config.jsx_framework.as_ref(),
-        Some(
-            JsxFramework::React
-                | JsxFramework::Preact
-                | JsxFramework::Qwik
-                | JsxFramework::Solid
-                | JsxFramework::Vue
-        )
-    ) {
+    if !has_jsx_framework(ctx) {
         return Vec::new();
     }
 
@@ -250,7 +239,6 @@ fn pattern_files(
         let module = match ctx.config.jsx_framework.as_ref() {
             Some(JsxFramework::React) => react_pattern_jsx::module(ctx, name, pattern),
             Some(JsxFramework::Preact) => preact_pattern_jsx::module(ctx, name, pattern),
-            Some(JsxFramework::Qwik) => qwik_pattern_jsx::module(ctx, name, pattern),
             Some(JsxFramework::Solid) => solid_pattern_jsx::module(ctx, name, pattern),
             Some(JsxFramework::Vue) => vue_pattern_jsx::module(ctx, name, pattern),
             _ => Module::new(),
@@ -271,13 +259,7 @@ fn pattern_files(
 fn has_jsx_framework(ctx: CodegenContext<'_>) -> bool {
     matches!(
         ctx.config.jsx_framework.as_ref(),
-        Some(
-            JsxFramework::React
-                | JsxFramework::Preact
-                | JsxFramework::Qwik
-                | JsxFramework::Solid
-                | JsxFramework::Vue
-        )
+        Some(JsxFramework::React | JsxFramework::Preact | JsxFramework::Solid | JsxFramework::Vue)
     )
 }
 
@@ -379,7 +361,6 @@ fn factory_module(ctx: CodegenContext<'_>) -> Module {
     match ctx.config.jsx_framework.as_ref() {
         Some(JsxFramework::React) => react_jsx::module(ctx, &factory, &component, &upper),
         Some(JsxFramework::Preact) => preact_jsx::module(ctx, &factory, &component, &upper),
-        Some(JsxFramework::Qwik) => qwik_jsx::module(ctx, &factory, &component, &upper),
         Some(JsxFramework::Solid) => solid_jsx::module(ctx, &factory, &component, &upper),
         Some(JsxFramework::Vue) => vue_jsx::module(ctx, &factory, &component, &upper),
         _ => Module::new(),

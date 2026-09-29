@@ -921,9 +921,6 @@ importers:
         specifier: 19.2.8
         version: 19.2.8(react@19.2.8)
     devDependencies:
-      '@builder.io/qwik':
-        specifier: 1.20.0
-        version: 1.20.0(vite@7.3.6(@types/node@24.10.15)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.33.0)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0))
       '@pandacss/cli':
         specifier: workspace:*
         version: link:../../packages/cli
