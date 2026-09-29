@@ -1,15 +1,6 @@
 import type { StructuredData } from 'fumadocs-core/mdx-plugins/remark-structure'
 import Fuse from 'fuse.js'
 
-export type SearchSection = 'Docs' | 'Reference' | 'Blog'
-
-/** The tab a result belongs to, derived from its url. */
-export function sectionOf(url: string): SearchSection {
-  if (url.startsWith('/blog')) return 'Blog'
-  if (url.startsWith('/docs/reference')) return 'Reference'
-  return 'Docs'
-}
-
 export interface SearchRecord {
   id: string
   url: string
@@ -20,7 +11,6 @@ export interface SearchRecord {
   headingLevel?: number
   description?: string
   breadcrumb?: string[]
-  section?: SearchSection
 }
 
 export interface SearchIndex {
@@ -32,7 +22,6 @@ export interface SearchIndex {
 export interface SearchItem {
   label: string
   value: string
-  section: SearchSection
   category: string
   description: string
   content?: string
@@ -42,6 +31,7 @@ export interface SearchItem {
 export interface SearchDocInput {
   url: string
   title: string
+  category?: string
   description?: string
   structuredData: StructuredData
 }
@@ -70,7 +60,7 @@ export function getSearchIndex(
       content: pageContent,
       type: 'page',
       description: doc.description || pageContent.slice(0, 150) + '...',
-      breadcrumb: [doc.title]
+      breadcrumb: [doc.category ?? doc.title]
     })
 
     for (const heading of headings) {
@@ -79,7 +69,7 @@ export function getSearchIndex(
         .map(entry => entry.content)
         .join('\n')
 
-      if (sectionContent.length <= 50) continue
+      if (!sectionContent) continue
 
       searchRecords.push({
         id: `${doc.url}#${heading.id}`,
@@ -109,10 +99,7 @@ export function getSearchIndex(
   return {
     generated: new Date().toISOString(),
     totalRecords: searchRecords.length,
-    records: searchRecords.map(record => ({
-      ...record,
-      section: sectionOf(record.url)
-    }))
+    records: searchRecords
   }
 }
 
@@ -121,7 +108,6 @@ export function convertToSearchItems(searchIndex: SearchIndex): SearchItem[] {
     (record: SearchRecord): SearchItem => ({
       label: record.title,
       value: record.url,
-      section: record.section ?? sectionOf(record.url),
       category: record.breadcrumb?.join(' › ') || 'Documentation',
       description: record.description || '',
       content: record.content,
@@ -136,7 +122,6 @@ export function filterSearchItems(
   query: string
 ): Record<string, SearchItem[]> {
   if (!query) {
-    // No query: hand back every page so the caller can scope by section itself.
     const pages = items.filter(item => item.type === 'page')
     return pages.length ? { '': pages } : {}
   }
