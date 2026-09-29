@@ -1,5 +1,5 @@
 import { Monaco as MonacoType } from '@monaco-editor/react'
-import * as Monaco from 'monaco-editor'
+import type * as Monaco from 'monaco-editor'
 import { Dict } from '@pandacss/types'
 
 const IMPORT_COMMAND = 'resolveImport'
@@ -36,7 +36,7 @@ export const configureAutoImports = (opts: AutoImportOpts) => {
       monaco.editor.addCommand({
         id: IMPORT_COMMAND,
         run: (_, ...args: any) => {
-          handleCommand(editor, range, args)
+          handleCommand(monaco, editor, range, args)
         },
       })
 
@@ -113,21 +113,22 @@ const buildSuggestions = (opts: BuildSuggestionsOpts): Monaco.languages.Completi
 }
 
 const handleCommand = (
+  monaco: MonacoType,
   editor: Monaco.editor.IStandaloneCodeEditor,
   range: Monaco.IRange,
   [imp, model]: [ImportObject, Monaco.editor.ITextModel],
 ) => {
-  const edits = getTextEdits(model, imp)
+  const edits = getTextEdits(monaco, model, imp)
 
   editor.executeEdits('', edits, ([ops]: any) => {
     const isNewImport = !ops.text
     const line = range.startLineNumber + (isNewImport ? 1 : 0)
     const column = range.startColumn + imp.name.length
-    return [new Monaco.Selection(line, column, line, column)]
+    return [new monaco.Selection(line, column, line, column)]
   })
 }
 
-const getTextEdits = (model: Monaco.editor.ITextModel, imp: ImportObject) => {
+const getTextEdits = (monaco: MonacoType, model: Monaco.editor.ITextModel, imp: ImportObject) => {
   const edits = new Array<Monaco.editor.IIdentifiedSingleEditOperation>()
 
   const { importResolved, fileResolved, imports } = parseResolved(model, imp)
@@ -135,12 +136,12 @@ const getTextEdits = (model: Monaco.editor.ITextModel, imp: ImportObject) => {
 
   if (fileResolved) {
     edits.push({
-      range: new Monaco.Range(0, 0, model.getLineCount(), 0),
+      range: new monaco.Range(0, 0, model.getLineCount(), 0),
       text: mergeImports(model, imp, imports[0].path),
     })
   } else {
     edits.push({
-      range: new Monaco.Range(0, 0, 0, 0),
+      range: new monaco.Range(0, 0, 0, 0),
       text: createImportStatement(imp, true),
     })
   }

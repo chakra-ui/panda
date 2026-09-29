@@ -15,8 +15,8 @@ export function Providers({ children }: PropsWithChildren) {
     initWasm()
   }, [])
 
-  // client-side + lightningcss-wasm isn't loaded yet
-  if (typeof window !== 'undefined' && !hasWasm) {
+  // render nothing on the server too, so hydration matches while lightningcss-wasm loads
+  if (!hasWasm) {
     return null
   }
 

@@ -3,7 +3,7 @@
  * @see https://marketplace.visualstudio.com/items?itemName=jdinhlife.gruvbox
  */
 
-import { editor } from 'monaco-editor'
+import type { editor } from 'monaco-editor'
 
 export const pandaTheme: editor.IStandaloneThemeData = {
   inherit: true,

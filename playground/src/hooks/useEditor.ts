@@ -1,7 +1,7 @@
 import { UsePanda } from '@/src/hooks/usePanda'
 import { TypingsSourceResolver } from '@/src/lib/typings-source-resolver'
 import { BeforeMount, EditorProps, Monaco as MonacoType, OnChange, OnMount } from '@monaco-editor/react'
-import * as Monaco from 'monaco-editor'
+import type * as Monaco from 'monaco-editor'
 import { AutoTypings, LocalStorageCache } from 'monaco-editor-auto-typings/custom-editor'
 import { MonacoJsxSyntaxHighlight, getWorker } from 'monaco-jsx-syntax-highlight'
 import { useTheme } from 'next-themes'
