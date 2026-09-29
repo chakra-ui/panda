@@ -22,7 +22,8 @@ if (!targets.length) throw new Error('No publishable prerelease packages found u
 let plan = targets.map(planFor)
 
 // Right after `changeset publish`, `npm view` can omit the new versions for minutes.
-for (let attempt = 0; apply && attempt < 36 && plan.some((entry) => entry.state === 'not-on-registry'); attempt++) {
+const deadline = Date.now() + 3 * 60_000
+while (apply && Date.now() < deadline && plan.some((entry) => entry.state === 'not-on-registry')) {
   await new Promise((resolve) => setTimeout(resolve, 5000))
   plan = plan.map((entry) => (entry.state === 'not-on-registry' ? planFor(entry.pkg) : entry))
 }
