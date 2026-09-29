@@ -148,3 +148,72 @@ fn transform_output_metadata_for_static_rewrite() {
     has_map: true
     "#);
 }
+
+#[test]
+fn source_map_points_past_a_collapsed_recipe_to_the_original_lines() {
+    let source = indoc! {r#"
+        import { cva } from '@panda/css';
+        const button = cva({
+          base: { color: 'red' },
+          variants: {
+            size: { sm: { fontSize: '12px' }, lg: { fontSize: '16px' } },
+          },
+        });
+        export const classes = (props) => button(props);
+    "#};
+
+    let output = transform("src/button.tsx", source);
+    let map = output.map.expect("transform should emit a source map");
+    let map = oxc_sourcemap::SourceMap::from_json_string(&map).expect("valid source map");
+
+    let original_line = |needle: &str| {
+        u32::try_from(
+            source
+                .lines()
+                .position(|line| line.contains(needle))
+                .unwrap(),
+        )
+        .unwrap()
+    };
+    let generated_line = |needle: &str| {
+        u32::try_from(
+            output
+                .code
+                .lines()
+                .position(|line| line.contains(needle))
+                .unwrap(),
+        )
+        .unwrap()
+    };
+    let source_line_of = |needle: &str| {
+        map.get_tokens()
+            .find(|token| token.get_dst_line() == generated_line(needle))
+            .map(|token| token.get_src_line())
+    };
+
+    assert_eq!(
+        source_line_of("const button"),
+        Some(original_line("const button"))
+    );
+    assert_eq!(
+        source_line_of("export const classes"),
+        Some(original_line("export const classes"))
+    );
+}
+
+#[test]
+fn leaves_a_property_nested_under_an_unknown_key_to_the_runtime() {
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        export const nested = css({ foo: { color: 'red' } });
+        export const responsive = css({ color: { base: 'red', _hover: 'blue' } });
+    "#};
+
+    let output = transform("src/button.tsx", source);
+
+    assert_snapshot!(output.code, @r#"
+    import { css } from '@panda/css';
+    export const nested = css({ foo: { color: 'red' } });
+    export const responsive = "color_red hover:color_blue";
+    "#);
+}

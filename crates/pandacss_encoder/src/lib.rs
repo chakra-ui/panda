@@ -280,6 +280,7 @@ impl NormalizeAtomic for NoNormalize {}
 pub struct Encoder<C: ConditionMatcher> {
     conditions: C,
     atoms: FxHashSet<Atom>,
+    nested_properties: bool,
 }
 
 impl<C: ConditionMatcher> Encoder<C> {
@@ -287,7 +288,16 @@ impl<C: ConditionMatcher> Encoder<C> {
         Self {
             conditions,
             atoms: FxHashSet::default(),
+            nested_properties: false,
         }
+    }
+
+    /// Whether a style path nested one property under another (`{ foo: { color } }`). The
+    /// encoder keeps the outer key as the property; the styled-system runtime keeps the inner
+    /// one and treats the outer as a condition, so the two name the class differently.
+    #[must_use]
+    pub fn has_nested_properties(&self) -> bool {
+        self.nested_properties
     }
 
     /// Iteration order isn't stable — sort by `(prop, conditions, value)` for determinism.
@@ -405,6 +415,7 @@ impl<C: ConditionMatcher> Encoder<C> {
                 }
             }
             _ => {
+                self.nested_properties |= path.iter().filter(|s| !s.is_condition).nth(1).is_some();
                 let prop = path.iter().find(|s| !s.is_condition).map(|s| s.name);
                 let normalized = match prop {
                     Some(prop) => norm.normalize_leaf(prop, value),

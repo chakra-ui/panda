@@ -133,6 +133,10 @@ fn collects_raw_calls_on_a_local_cva_binding() {
         binding.has_other_references,
         ".raw still counts as a non-plain reference"
     );
+    assert!(
+        !binding.has_non_call_references,
+        "a direct raw call can be consumed before specialization"
+    );
 }
 
 #[test]
@@ -152,6 +156,7 @@ fn a_bare_raw_reference_is_not_a_raw_call() {
         "the function escapes as a value"
     );
     assert!(binding.has_other_references);
+    assert!(binding.has_non_call_references);
 }
 
 #[test]
@@ -167,6 +172,7 @@ fn a_non_raw_member_call_is_not_a_raw_call() {
 
     assert!(binding.raw_calls.is_empty());
     assert!(binding.has_other_references);
+    assert!(binding.has_non_call_references);
 }
 
 #[test]
@@ -227,4 +233,5 @@ fn a_non_raw_member_access_is_not_opaque_raw() {
 
     assert!(!binding.has_opaque_raw_access);
     assert!(binding.has_other_references);
+    assert!(binding.has_non_call_references);
 }

@@ -97,7 +97,7 @@ edge_snapshot!(
     ),
     @r#"
 export const el = (
-  <div className={t ? "md:color_blue hover:md:color_white" : "md:color_blue hover:md:color_black"} />
+  <div className={t ? "md:color_blue md:hover:color_white" : "md:color_blue md:hover:color_black"} />
 );
 "#
 );
@@ -777,7 +777,7 @@ edge_snapshot!(
 );
 
 #[test]
-fn styled_call_syntax_rewrites_config_to_string_branch_cva() {
+fn styled_call_syntax_is_marked_pure() {
     let source = indoc! {r#"
         import { styled } from '@panda/jsx';
         export const Card = styled('div', { color: 'red' });
@@ -786,16 +786,14 @@ fn styled_call_syntax_rewrites_config_to_string_branch_cva() {
     let output = transform_jsx("src/app.tsx", source);
 
     assert!(output.changed);
-    assert!(output.helper.needs_cva);
-    assert_snapshot!(output.code, @r"
-    import { cva as __pcva } from '@pandacss-internal/css';
+    assert_snapshot!(output.code, @"
     import { styled } from '@panda/jsx';
-    export const Card = /* @__PURE__ */ styled('div', /* @__PURE__ */ __pcva({ base: 'color_red' }));
+    export const Card = /* @__PURE__ */ styled('div', { color: 'red' });
     ");
 }
 
 #[test]
-fn styled_member_call_rewrites_style_object_to_string_branch_cva() {
+fn styled_member_call_is_marked_pure() {
     let source = indoc! {r#"
         import { styled } from '@panda/jsx';
         export const Card = styled.div({ color: 'red' });
@@ -804,11 +802,9 @@ fn styled_member_call_rewrites_style_object_to_string_branch_cva() {
     let output = transform_jsx("src/app.tsx", source);
 
     assert!(output.changed);
-    assert!(output.helper.needs_cva);
-    assert_snapshot!(output.code, @r"
-    import { cva as __pcva } from '@pandacss-internal/css';
+    assert_snapshot!(output.code, @"
     import { styled } from '@panda/jsx';
-    export const Card = /* @__PURE__ */ styled.div(/* @__PURE__ */ __pcva({ base: 'color_red' }));
+    export const Card = /* @__PURE__ */ styled.div({ color: 'red' });
     ");
 }
 

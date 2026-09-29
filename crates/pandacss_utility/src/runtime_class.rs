@@ -28,11 +28,16 @@ pub fn runtime_class_name_for_atom(
         base.push('!');
     }
 
-    let mut finalized = atom_conditions
+    // Like the runtime's `shift` then `finalize`: sort the raw paths (`_hover`), then strip them.
+    let mut ordered = atom_conditions
         .iter()
-        .map(|condition| finalize_condition_path(condition.as_ref(), conditions))
+        .map(AsRef::as_ref)
+        .collect::<Vec<&str>>();
+    sort_condition_paths(&mut ordered, |key| conditions.is_condition(key));
+    let finalized = ordered
+        .into_iter()
+        .map(|condition| finalize_condition_path(condition, conditions))
         .collect::<Vec<_>>();
-    sort_condition_paths(&mut finalized, |key| conditions.is_condition(key));
 
     if utility.hash_class_names() {
         let mut parts = finalized;
@@ -59,7 +64,7 @@ fn finalize_condition_path(path: &str, conditions: &ConditionSet) -> String {
     }
 }
 
-fn sort_condition_paths(paths: &mut [String], is_condition: impl Fn(&str) -> bool) {
+fn sort_condition_paths(paths: &mut [&str], is_condition: impl Fn(&str) -> bool) {
     paths.sort_by(|a, b| {
         let aa = is_condition(a);
         let bb = is_condition(b);

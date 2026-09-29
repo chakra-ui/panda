@@ -12,47 +12,31 @@ use super::resolve;
 #[derive(Debug, Clone, Default)]
 pub struct TransformHelperFacts {
     pub needs_cx: bool,
-    pub needs_cva: bool,
-    pub needs_sva: bool,
+    pub needs_attach_recipe: bool,
+    pub needs_memo_recipe: bool,
 }
 
 impl TransformHelperFacts {
     pub(crate) fn merge(&mut self, other: &Self) {
         self.needs_cx |= other.needs_cx;
-        self.needs_cva |= other.needs_cva;
-        self.needs_sva |= other.needs_sva;
+        self.needs_attach_recipe |= other.needs_attach_recipe;
+        self.needs_memo_recipe |= other.needs_memo_recipe;
     }
 
     /// Content that calls no internal runtime symbol.
     pub(crate) const fn none() -> Self {
         Self {
             needs_cx: false,
-            needs_cva: false,
-            needs_sva: false,
+            needs_attach_recipe: false,
+            needs_memo_recipe: false,
         }
     }
 
     pub(crate) const fn cx() -> Self {
         Self {
             needs_cx: true,
-            needs_cva: false,
-            needs_sva: false,
-        }
-    }
-
-    pub(crate) const fn cva() -> Self {
-        Self {
-            needs_cx: false,
-            needs_cva: true,
-            needs_sva: false,
-        }
-    }
-
-    pub(crate) const fn sva() -> Self {
-        Self {
-            needs_cx: false,
-            needs_cva: false,
-            needs_sva: true,
+            needs_attach_recipe: false,
+            needs_memo_recipe: false,
         }
     }
 }
@@ -164,9 +148,30 @@ pub(crate) struct TransformPlan {
     pub helper: TransformHelperFacts,
     pub module: pandacss_extractor::ModuleFacts,
     pub bailed: bool,
+    /// First `cva` / `sva` call left on the runtime because class names are hashed.
+    pub hashed_recipe: Option<pandacss_shared::Span>,
+    /// Values of module-level constants (`__ps0`, …) the rewrites reference, deduplicated.
+    pub hoisted: Vec<String>,
 }
 
 impl TransformPlan {
+    /// A module-level constant holding `value`, so every evaluation sees the same object.
+    fn hoist(&mut self, value: String) -> String {
+        let index = self
+            .hoisted
+            .iter()
+            .position(|hoisted| *hoisted == value)
+            .unwrap_or_else(|| {
+                self.hoisted.push(value);
+                self.hoisted.len() - 1
+            });
+        hoisted_name(index)
+    }
+
+    fn skip_hashed_recipe(&mut self, span: pandacss_shared::Span) {
+        self.hashed_recipe.get_or_insert(span);
+    }
+
     fn push(&mut self, rewrite: Rewrite) {
         self.rewrites.push(rewrite);
     }
@@ -249,6 +254,8 @@ pub(crate) fn build_plan(
         helper: TransformHelperFacts::default(),
         module: extracted.module.clone(),
         bailed: false,
+        hashed_recipe: None,
+        hoisted: Vec::new(),
     };
 
     let targets = &options.targets;
@@ -261,16 +268,8 @@ pub(crate) fn build_plan(
         return plan;
     }
 
-    // An imported recipe's definition file precomputes its class strings, so
-    // its runtime `raw` would hand back a string — pin the styles here instead.
-    for raw_call in &extracted.imported_recipe_raw_calls {
-        if let Some(rewrite) = resolve::rewrite_for_style_literal(
-            raw_call.span,
-            raw_call.object_literal_context,
-            &raw_call.styles,
-        ) {
-            plan.push(rewrite);
-        }
+    if targets.css_enabled() {
+        push_imported_recipe_rewrites(&mut plan, system, extracted);
     }
 
     for call in &extracted.calls {
@@ -325,10 +324,8 @@ pub(crate) fn build_plan(
                 }
             }
             MatchCategory::Jsx if targets.jsx_enabled() => {
-                if let Some(rewrites) =
-                    super::recipe_inline::rewrites_for_styled_call(system, source, call)
-                {
-                    plan.extend(rewrites);
+                if let Some(rewrite) = super::recipe_inline::rewrite_for_styled_call(source, call) {
+                    plan.push(rewrite);
                 }
             }
             _ => {}
@@ -366,28 +363,33 @@ fn push_css_call_rewrites(
     call: &ExtractedCall,
     helper_cx: HelperCxMode,
 ) {
+    let usage = recipe_usage(extracted, call);
     match call.name.as_str() {
+        // Specialized recipes rely on `cx` resolving conflicts, which hashed class names defeat.
+        "cva" | "sva" if system.hashes_class_names() => plan.skip_hashed_recipe(call.span),
         "cva" | "sva" if !push_inline_recipe_raw_rewrites(plan, system, extracted, call) => {}
         "cva" => {
-            if let Some(rewrite) = super::recipe_inline::rewrite_for_cva_call(
+            if let Some(rewrite) = super::recipe_inline::rewrite_for_specialized_cva_call(
                 system,
                 source,
                 call.span,
                 &call.data,
                 &call.arg_spans,
                 &call.style_args,
+                usage,
             ) {
-                // Keep call sites as `__pcva` runtime — boolean bitset
-                // + memo beats `__pcx(cond && slot)` when prop tuples
-                // reuse (css-in-js-bench btn-variant). Call-site
-                // lowering must stay opt-in, never the default.
                 plan.push(rewrite);
             }
         }
         "sva" => {
-            if let Some(rewrite) =
-                super::recipe_inline::rewrite_for_sva_call(system, call.span, &call.data)
-            {
+            if let Some(rewrite) = super::recipe_inline::rewrite_for_specialized_sva_call(
+                system,
+                source,
+                call.span,
+                &call.data,
+                &call.arg_spans,
+                usage,
+            ) {
                 plan.push(rewrite);
             }
         }
@@ -421,6 +423,95 @@ fn push_css_call_rewrites(
             None if resolve::css_call_should_bail(&call.data) => plan.bailed = true,
             None => {}
         },
+    }
+}
+
+/// Calls on a recipe imported from another file, resolved through its
+/// definition: `.raw(...)` pins the styles, a plain call becomes classes.
+fn push_imported_recipe_rewrites(
+    plan: &mut TransformPlan,
+    system: &System,
+    extracted: &ExtractUsage,
+) {
+    use pandacss_extractor::ImportedRecipeFoldKind;
+    use pandacss_system::InlineRecipeClasses;
+    for folded in &extracted.imported_recipe_folds {
+        let content = match &folded.kind {
+            ImportedRecipeFoldKind::Raw(styles) => resolve::rewrite_for_style_literal(
+                folded.span,
+                folded.object_literal_context,
+                styles,
+            )
+            .map(|rewrite| rewrite.content),
+            ImportedRecipeFoldKind::Call {
+                factory,
+                definition,
+                props,
+            } => {
+                // Like local cva/sva definitions, imported calls rely on cx
+                // understanding class names to preserve conflict semantics.
+                if system.hashes_class_names() {
+                    continue;
+                }
+                match pandacss_system::inline_recipe_classes(system, factory, definition, props) {
+                    Some(InlineRecipeClasses::Cva(classes)) => Some(super::js::string(&classes)),
+                    // One shared object per distinct result, like the runtime memo.
+                    Some(InlineRecipeClasses::Sva(slots)) => Some(plan.hoist(super::js::object(
+                        slots.iter().map(|(slot, classes)| {
+                            super::js::field(slot, super::js::string(classes))
+                        }),
+                    ))),
+                    None => None,
+                }
+            }
+        };
+        if let Some(content) = content {
+            plan.push(Rewrite {
+                start: folded.span.start,
+                end: folded.span.end,
+                content,
+                preserved: Vec::new(),
+                helper: TransformHelperFacts::none(),
+            });
+        }
+    }
+}
+
+pub(crate) fn hoisted_name(index: usize) -> String {
+    format!("__ps{index}")
+}
+
+/// How a `cva`/`sva` definition is used in its module, which decides what the rewrite ships.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum RecipeUsage {
+    /// Exported or referenced as a value: attach the full recipe surface.
+    Escapes,
+    /// Only called directly: memoize the bare function.
+    Called,
+    /// Only reached through folded `.raw()` calls: nothing calls the function at runtime.
+    Unused,
+}
+
+fn recipe_usage(extracted: &ExtractUsage, call: &ExtractedCall) -> RecipeUsage {
+    let Some(binding) = extracted
+        .module
+        .local_call_bindings
+        .iter()
+        .find(|binding| binding.init_span == call.span)
+    else {
+        return RecipeUsage::Escapes;
+    };
+    let exported = extracted
+        .exports
+        .local
+        .iter()
+        .any(|exported| exported == &binding.local);
+    if binding.has_non_call_references || binding.has_opaque_raw_access || exported {
+        RecipeUsage::Escapes
+    } else if binding.calls.is_empty() {
+        RecipeUsage::Unused
+    } else {
+        RecipeUsage::Called
     }
 }
 

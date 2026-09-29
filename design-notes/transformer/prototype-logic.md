@@ -47,7 +47,7 @@ virtual module:
 import { cx as __pcx } from '@pandacss-internal/css'
 ```
 
-`@pandacss/transformer` bundles `cx`, `css`, `cva`, and `sva` for that module. Only symbols the file uses are imported.
+`@pandacss/transformer` bundles `cx`, `css`, `attachRecipe`, and `memoRecipe` for that module. Only symbols the file uses are imported.
 
 ## `className` merge logic to preserve
 
@@ -132,7 +132,7 @@ Today:
 | --------------------------- | ------------------------------------------------------------- |
 | single-file orchestrator    | `transform_source` in Rust; `transformSource` in JS           |
 | per-target inline functions | `plan.rs`, `jsx.rs`, `recipe_inline.rs`, `styled.rs`, …       |
-| helper-needed booleans      | `TransformHelperFacts` (`needs_cx`, `needs_cva`, `needs_sva`) |
+| helper-needed booleans      | `TransformHelperFacts` (`needs_cx`, `needs_attach_recipe`, `needs_memo_recipe`) |
 | direct helper prepend       | `plan_internal_css_prepend` + `string_wizard` prepend         |
 | JSX concat branch           | `helper.rs` merge + `__pcx` emission                          |
 

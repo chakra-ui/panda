@@ -398,6 +398,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
         // Records the fold so the transform can pin the styles at this site.
         if let Some(resolver) = self.ctx.resolver {
             resolver.resolve_imported_recipe_raw_call(call);
+            resolver.resolve_imported_recipe_call(call);
         }
 
         if let Some(resolved) = self.resolve_callee(call) {

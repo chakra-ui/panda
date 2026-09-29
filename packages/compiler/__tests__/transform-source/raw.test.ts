@@ -98,8 +98,7 @@ describe('raw object replacement context', () => {
     const result = compiler.transformSource({ path: 'src/raw.ts', source })
     expect(result.changed).toBe(true)
     expect(result.code).toMatchInlineSnapshot(`
-      "import { cva as __pcva } from '@pandacss-internal/css';
-      const styles = /* @__PURE__ */ __pcva({ base: 'color_red' })
+      "const styles = (p = {}) => 'color_red'
       const raw = () => /* object */ ({"color":"red"})"
     `)
   })
@@ -115,8 +114,7 @@ describe('raw static variant selection', () => {
     const result = compiler.transformSource({ path: 'src/raw.ts', source })
     expect(result.changed).toBe(true)
     expect(result.code).toMatchInlineSnapshot(`
-      "import { cva as __pcva } from '@pandacss-internal/css';
-      const styles = /* @__PURE__ */ __pcva({ variants: { size: { '100': 'color_red' } } })
+      "const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return ({ '100': "color_red" }[v0]) || ''; }
       const raw = {"color":"red"}"
     `)
   })
@@ -130,8 +128,7 @@ describe('raw static variant selection', () => {
     const result = compiler.transformSource({ path: 'src/raw.ts', source })
     expect(result.changed).toBe(true)
     expect(result.code).toMatchInlineSnapshot(`
-      "import { cva as __pcva } from '@pandacss-internal/css';
-      const styles = /* @__PURE__ */ __pcva({ variants: { size: { '16': 'color_red' } } })
+      "const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return ({ '16': "color_red" }[v0]) || ''; }
       const raw = {"color":"red"}"
     `)
   })
@@ -145,8 +142,7 @@ describe('raw static variant selection', () => {
     const result = compiler.transformSource({ path: 'src/raw.ts', source })
     expect(result.changed).toBe(true)
     expect(result.code).toMatchInlineSnapshot(`
-      "import { cva as __pcva } from '@pandacss-internal/css';
-      const styles = /* @__PURE__ */ __pcva({ variants: { size: { '2': 'color_red' } } })
+      "const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return ({ '2': "color_red" }[v0]) || ''; }
       const raw = {"color":"red"}"
     `)
   })
@@ -160,8 +156,7 @@ describe('raw static variant selection', () => {
     const result = compiler.transformSource({ path: 'src/raw.ts', source })
     expect(result.changed).toBe(true)
     expect(result.code).toMatchInlineSnapshot(`
-      "import { cva as __pcva } from '@pandacss-internal/css';
-      const styles = /* @__PURE__ */ __pcva({ variants: { size: { '8': 'color_red' } } })
+      "const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return ({ '8': "color_red" }[v0]) || ''; }
       const raw = {"color":"red"}"
     `)
   })
@@ -175,8 +170,7 @@ describe('raw static variant selection', () => {
     const result = compiler.transformSource({ path: 'src/raw.ts', source })
     expect(result.changed).toBe(true)
     expect(result.code).toMatchInlineSnapshot(`
-      "import { cva as __pcva } from '@pandacss-internal/css';
-      const styles = /* @__PURE__ */ __pcva({ variants: { size: { '1000': 'color_red' } } })
+      "const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return ({ '1000': "color_red" }[v0]) || ''; }
       const raw = {"color":"red"}"
     `)
   })
@@ -190,8 +184,7 @@ describe('raw static variant selection', () => {
     const result = compiler.transformSource({ path: 'src/raw.ts', source })
     expect(result.changed).toBe(true)
     expect(result.code).toMatchInlineSnapshot(`
-      "import { cva as __pcva } from '@pandacss-internal/css';
-      const styles = /* @__PURE__ */ __pcva({ variants: { size: { '1': 'color_red' } } })
+      "const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return ({ '1': "color_red" }[v0]) || ''; }
       const raw = {"color":"red"}"
     `)
   })
@@ -205,8 +198,7 @@ describe('raw static variant selection', () => {
     const result = compiler.transformSource({ path: 'src/raw.ts', source })
     expect(result.changed).toBe(true)
     expect(result.code).toMatchInlineSnapshot(`
-      "import { cva as __pcva } from '@pandacss-internal/css';
-      const styles = /* @__PURE__ */ __pcva({ variants: { size: { '0': 'color_red' } } })
+      "const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return ({ '0': "color_red" }[v0]) || ''; }
       const raw = {"color":"red"}"
     `)
   })
@@ -220,8 +212,7 @@ describe('raw static variant selection', () => {
     const result = compiler.transformSource({ path: 'src/raw.ts', source })
     expect(result.changed).toBe(true)
     expect(result.code).toMatchInlineSnapshot(`
-      "import { cva as __pcva } from '@pandacss-internal/css';
-      const styles = /* @__PURE__ */ __pcva({ variants: { size: { '-2': 'color_red' } } })
+      "const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return ({ '-2': "color_red" }[v0]) || ''; }
       const raw = {"color":"red"}"
     `)
   })
@@ -235,8 +226,7 @@ describe('raw static variant selection', () => {
     const result = compiler.transformSource({ path: 'src/raw.ts', source })
     expect(result.changed).toBe(true)
     expect(result.code).toMatchInlineSnapshot(`
-      "import { cva as __pcva } from '@pandacss-internal/css';
-      const styles = /* @__PURE__ */ __pcva({ variants: { enabled: { false: 'opacity_0.5' } } })
+      "const styles = (p = {}) => { p ??= {}; const _p0 = p["enabled"], v0 = _p0 === void 0 ? void 0 : _p0; return ({ false: "opacity_0.5" }[v0]) || ''; }
       const raw = {"opacity":"0.5"}"
     `)
   })
@@ -250,8 +240,7 @@ describe('raw static variant selection', () => {
     const result = compiler.transformSource({ path: 'src/raw.ts', source })
     expect(result.changed).toBe(true)
     expect(result.code).toMatchInlineSnapshot(`
-      "import { cva as __pcva } from '@pandacss-internal/css';
-      const styles = /* @__PURE__ */ __pcva({ variants: { size: { '100': 'color_red' } } })
+      "const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return ({ '100': "color_red" }[v0]) || ''; }
       const raw = {"color":"red"}"
     `)
   })
@@ -265,8 +254,7 @@ describe('raw static variant selection', () => {
     const result = compiler.transformSource({ path: 'src/raw.ts', source })
     expect(result.changed).toBe(true)
     expect(result.code).toMatchInlineSnapshot(`
-      "import { sva as __psva } from '@pandacss-internal/css';
-      const styles = /* @__PURE__ */ __psva({ slots: ['root'], variants: { size: { '16': 'color_red' } } })
+      "const styles = (p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: ({ '16': "color_red" }[v0]) || '' }; }
       const raw = {"root":{"color":"red"}}"
     `)
   })

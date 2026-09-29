@@ -63,14 +63,13 @@ fn removes_fully_inlined_css_import_from_relative_styled_system_path() {
     let output = transform_with_project(&project, "src/button.tsx", source);
 
     assert!(output.changed);
-    assert!(!output.code.contains("styled-system/css"));
     assert_snapshot!(output.code, @r#"
     export const cls = "color_red";
     "#);
 }
 
 #[test]
-fn narrows_partial_css_import_when_only_cva_stays_live() {
+fn removes_css_import_when_cva_is_specialized() {
     let source = indoc! {r#"
         import { css, cva } from '@panda/css';
         export const cls = css({ color: 'red' });
@@ -80,12 +79,10 @@ fn narrows_partial_css_import_when_only_cva_stays_live() {
     let output = transform("src/styles.ts", source);
 
     assert!(output.changed);
-    assert!(output.code.contains("import { cva as __pcva }"));
-    assert!(!output.code.contains("import { css"));
     assert_snapshot!(output.code, @r#"
-    import { cva as __pcva } from '@pandacss-internal/css';
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
     export const cls = "color_red";
-    export const button = /* @__PURE__ */ __pcva({ base: 'color_blue' });
+    export const button = /* @__PURE__ */ __pr((p = {}) => 'color_blue', { base: { color: 'blue' } }, [], {});
     "#);
 }
 
@@ -115,8 +112,11 @@ fn keeps_styled_import_when_factory_call_stays_live() {
     let output = transform_with_project(&project_with_jsx(), "src/app.tsx", source);
 
     assert!(output.changed);
-    assert!(output.code.contains("import { styled } from '@panda/jsx';"));
-    assert!(!output.code.contains("Box"));
+    assert_snapshot!(output.code, @r#"
+    import { styled } from '@panda/jsx';
+    export const el = <div className="color_red" />;
+    export const Card = /* @__PURE__ */ styled('div', { color: 'blue' });
+    "#);
 }
 
 #[test]
@@ -142,7 +142,6 @@ fn removes_stale_internal_css_import_on_rebuild_without_helper_usage() {
     let output = transform_jsx_with_helper("src/app.tsx", source, HelperCxMode::Auto);
 
     assert!(output.changed);
-    assert!(!output.code.contains("@pandacss-internal/css"));
     assert_snapshot!(output.code, @r#"
     export const el = <div className="color_red" />;
     "#);
@@ -151,7 +150,7 @@ fn removes_stale_internal_css_import_on_rebuild_without_helper_usage() {
 #[test]
 fn sync_internal_css_import_narrows_symbols_to_live_helpers() {
     let source = indoc! {r#"
-        import { cx as __pcx, cva as __pcva } from '@pandacss-internal/css';
+        import { cx as __pcx, memoRecipe as __pm } from '@pandacss-internal/css';
         export const cls = __pcx('a', 'b');
     "#};
 
@@ -160,8 +159,7 @@ fn sync_internal_css_import_narrows_symbols_to_live_helpers() {
         "fixture.ts",
         &pandacss_transform::TransformHelperFacts {
             needs_cx: true,
-            needs_cva: false,
-            needs_sva: false,
+            ..Default::default()
         },
         HelperCxMode::Auto,
     );

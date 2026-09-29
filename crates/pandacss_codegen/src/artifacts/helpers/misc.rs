@@ -416,11 +416,13 @@ pub(super) fn normalize_html_props() -> Item {
               return htmlProps.includes(key) ? key.replace('html', '').toLowerCase() : key
             }
 
-            export function normalizeHTMLProps(props: Record<string, any>) {
-              return Object.fromEntries(Object.entries(props).map(([key, value]) => [convertHTMLProp(key), value]))
-            }
-
-            normalizeHTMLProps.keys = htmlProps
+            // `Object.assign` keeps `.keys` inside a pure expression, so an unused helper tree-shakes away.
+            export const normalizeHTMLProps = /* @__PURE__ */ Object.assign(
+              function normalizeHTMLProps(props: Record<string, any>) {
+                return Object.fromEntries(Object.entries(props).map(([key, value]) => [convertHTMLProp(key), value]))
+              },
+              { keys: htmlProps },
+            )
         "}
         .trim()
         .into(),

@@ -38,7 +38,7 @@ fn uses_config_conditions_and_breakpoints_for_ts_source() {
         indoc! {r#"
         import { withoutSpace } from '../helpers';
 
-        const conditions = new Set("@/md,@/mdDown,@/mdOnly,@card/md,@card/mdDown,@card/mdOnly,_hover,_supportsGrid,base,md,mdDown,mdOnly,sm,smDown,smOnly,smToMd".split(','))
+        const conditions = /* @__PURE__ */ new Set(/* @__PURE__ */ "@/md,@/mdDown,@/mdOnly,@card/md,@card/mdDown,@card/mdOnly,_hover,_supportsGrid,base,md,mdDown,mdOnly,sm,smDown,smOnly,smToMd".split(','))
         const conditionRe = /^@|&/
         const underscoreRe = /^_/
         const selectorRe = /&|@/
@@ -106,7 +106,7 @@ fn emits_js_runtime_and_declarations() {
         indoc! {r#"
         import { withoutSpace } from '../helpers';
 
-        const conditions = new Set("_hover,_supportsGrid,base,md,mdDown,mdOnly,sm,smDown,smOnly,smToMd".split(','))
+        const conditions = /* @__PURE__ */ new Set(/* @__PURE__ */ "_hover,_supportsGrid,base,md,mdDown,mdOnly,sm,smDown,smOnly,smToMd".split(','))
         const conditionRe = /^@|&/
         const underscoreRe = /^_/
         const selectorRe = /&|@/

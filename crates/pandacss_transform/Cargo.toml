@@ -30,6 +30,7 @@ tracing = { workspace = true }
 pandacss_project = { workspace = true }
 indoc = { workspace = true }
 insta = { workspace = true }
+oxc_sourcemap = { workspace = true }
 pandacss_fs = { workspace = true, features = ["memory"] }
 
 [lints]

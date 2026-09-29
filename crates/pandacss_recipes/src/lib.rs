@@ -25,9 +25,43 @@ pub struct Recipe {
     pub variants: Vec<VariantGroup>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub compound_variants: Vec<CompoundVariant>,
-    /// Source-order `(variant_name, chosen_key)` pairs.
+    /// Source-order `(variant_name, chosen_value)` pairs.
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub default_variants: Vec<(String, String)>,
+    pub default_variants: Vec<(String, VariantValue)>,
+}
+
+/// A variant value as the config wrote it. Option lookups coerce it to a property key;
+/// compound conditions compare it strictly, so `2` and `'2'` differ.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(untagged)]
+pub enum VariantValue {
+    String(String),
+    Number(f64),
+    Bool(bool),
+}
+
+impl VariantValue {
+    #[must_use]
+    pub fn from_literal(value: &Literal) -> Option<Self> {
+        Some(match value {
+            Literal::String(text) | Literal::Token { value: text, .. } => {
+                Self::String(text.clone())
+            }
+            Literal::Number(number) => Self::Number(*number),
+            Literal::Bool(flag) => Self::Bool(*flag),
+            _ => return None,
+        })
+    }
+
+    /// The property key an `options[value]` lookup coerces the value to.
+    #[must_use]
+    pub fn key(&self) -> String {
+        match self {
+            Self::String(text) => text.clone(),
+            Self::Number(number) => pandacss_shared::number_to_js_string(*number),
+            Self::Bool(flag) => flag.to_string(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize)]
@@ -46,7 +80,7 @@ pub struct VariantOption {
 /// for `css` to layer on top of base + per-variant styles.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct CompoundVariant {
-    pub conditions: Vec<(String, Vec<String>)>,
+    pub conditions: Vec<(String, Vec<VariantValue>)>,
     pub css: Literal,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub class_name: Option<String>,
@@ -58,6 +92,10 @@ pub struct CompoundVariant {
 pub struct SlotRecipe {
     /// Slot names; inferred from `base` + variant option keys when omitted.
     pub slots: Vec<String>,
+    /// Prefix for generated slot classes (`{class_name}__{slot}`). These
+    /// classes affect callable output but stay out of `.raw()` style objects.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub class_name: Option<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub base: Vec<(String, Literal)>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -65,7 +103,7 @@ pub struct SlotRecipe {
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub compound_variants: Vec<SlotCompoundVariant>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub default_variants: Vec<(String, String)>,
+    pub default_variants: Vec<(String, VariantValue)>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize)]
@@ -82,7 +120,7 @@ pub struct SlotVariantOption {
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct SlotCompoundVariant {
-    pub conditions: Vec<(String, Vec<String>)>,
+    pub conditions: Vec<(String, Vec<VariantValue>)>,
     pub css: Vec<(String, Literal)>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub class_name: Option<String>,
@@ -113,7 +151,7 @@ impl Recipe {
                 "compoundVariants" => {
                     recipe.compound_variants = parse_compound_variants_owned(value);
                 }
-                "defaultVariants" => recipe.default_variants = parse_string_map_owned(value),
+                "defaultVariants" => recipe.default_variants = parse_default_variants_owned(value),
                 _ => {}
             }
         }
@@ -155,20 +193,28 @@ impl SlotRecipe {
         let entries = object_entries_owned(literal)?;
 
         let mut slots: Vec<String> = Vec::new();
+        let mut class_name: Option<String> = None;
         let mut base: Vec<(String, Literal)> = Vec::new();
         let mut variants: Vec<SlotVariantGroup> = Vec::new();
         let mut compound_variants: Vec<SlotCompoundVariant> = Vec::new();
-        let mut default_variants: Vec<(String, String)> = Vec::new();
+        let mut default_variants: Vec<(String, VariantValue)> = Vec::new();
 
         for (key, value) in entries {
             match key.as_str() {
                 "slots" => slots = parse_string_array_owned(value),
+                "className" => {
+                    if let Literal::String(value) = value
+                        && !value.is_empty()
+                    {
+                        class_name = Some(value);
+                    }
+                }
                 "base" => base = parse_slot_styles_owned(value),
                 "variants" => variants = parse_slot_variants_owned(value),
                 "compoundVariants" => {
                     compound_variants = parse_slot_compound_variants_owned(value);
                 }
-                "defaultVariants" => default_variants = parse_string_map_owned(value),
+                "defaultVariants" => default_variants = parse_default_variants_owned(value),
                 _ => {}
             }
         }
@@ -179,6 +225,7 @@ impl SlotRecipe {
 
         Some(SlotRecipe {
             slots,
+            class_name,
             base,
             variants,
             compound_variants,
@@ -296,7 +343,7 @@ fn parse_variants_owned(literal: Literal) -> Vec<VariantGroup> {
 
 /// Parsed compound-variant entries, before `css` is projected into shape `C`.
 struct CompoundVariantEntries<C> {
-    conditions: Vec<(String, Vec<String>)>,
+    conditions: Vec<(String, Vec<VariantValue>)>,
     css: Option<C>,
     class_name: Option<String>,
 }
@@ -308,7 +355,7 @@ fn parse_compound_variant_entries<C>(
     entries: Vec<(String, Literal)>,
     parse_css: impl Fn(Literal) -> C,
 ) -> CompoundVariantEntries<C> {
-    let mut conditions: Vec<(String, Vec<String>)> = Vec::new();
+    let mut conditions: Vec<(String, Vec<VariantValue>)> = Vec::new();
     let mut css: Option<C> = None;
     let mut class_name: Option<String> = None;
 
@@ -350,13 +397,13 @@ fn parse_compound_variants_owned(literal: Literal) -> Vec<CompoundVariant> {
         .collect()
 }
 
-fn parse_string_map_owned(literal: Literal) -> Vec<(String, String)> {
+fn parse_default_variants_owned(literal: Literal) -> Vec<(String, VariantValue)> {
     let Some(entries) = object_entries_owned(literal) else {
         return Vec::new();
     };
     entries
         .into_iter()
-        .filter_map(|(k, v)| v.to_condition_string().map(|value| (k, value)))
+        .filter_map(|(k, v)| VariantValue::from_literal(&v).map(|value| (k, value)))
         .collect()
 }
 
@@ -423,15 +470,15 @@ fn parse_slot_compound_variants_owned(literal: Literal) -> Vec<SlotCompoundVaria
 
 // === Condition Value Parsing ===
 
-fn variant_condition_values(value: &Literal) -> Option<Vec<String>> {
+fn variant_condition_values(value: &Literal) -> Option<Vec<VariantValue>> {
     match value {
         Literal::Array(values) => {
             let values = values
                 .iter()
-                .map(Literal::to_condition_string)
+                .map(VariantValue::from_literal)
                 .collect::<Option<Vec<_>>>()?;
             (!values.is_empty()).then_some(values)
         }
-        value => value.to_condition_string().map(|value| vec![value]),
+        value => VariantValue::from_literal(value).map(|value| vec![value]),
     }
 }

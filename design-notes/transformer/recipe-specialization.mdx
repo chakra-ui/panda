@@ -1,0 +1,1621 @@
+# Compile `cva` and `sva` into specialized functions
+
+## Summary
+
+Replace inline `cva(config)` and `sva(config)` calls with specialized recipe functions generated from each recipe's
+known configuration. The transformed application should not ship the generated Panda `cva` or `sva` factories, and it
+should not need the generic `__pcva` or `__psva` transformer runtimes.
+
+The common class-producing path should use only precomputed strings and, when branches must be combined at runtime,
+`__pcx`.
+
+```tsx
+const button = cva({
+  base: { color: 'red' },
+  variants: {
+    size: {
+      sm: { padding: '4px' },
+      lg: { padding: '8px' },
+    },
+  },
+  defaultVariants: { size: 'sm' },
+})
+```
+
+can become:
+
+```js
+const button = (props = {}) =>
+  __pcx(
+    'color_red',
+    {
+      sm: 'padding_4px',
+      lg: 'padding_8px',
+    }[props.size ?? 'sm'],
+  )
+```
+
+The compiler may choose an even smaller equivalent representation when all combinations are finite:
+
+```js
+const button = (props = {}) =>
+  ({
+    sm: 'color_red padding_4px',
+    lg: 'color_red padding_8px',
+  })[props.size ?? 'sm']
+```
+
+Static calls should collapse completely:
+
+```js
+button({ size: 'sm' })
+// becomes
+;('color_red padding_4px')
+```
+
+This preserves recipes as callable values when they escape or cross modules, while removing the generic recipe factory
+from runtime application code. The transformed ABI is the callable recipe contract; reflective recipe metadata remains
+an explicit later phase.
+
+## Implementation status
+
+Callable specialization is implemented in the Rust transformer:
+
+- [x] Static `cva` bindings compile to recipe-specific functions, including exported and otherwise escaping bindings.
+- [x] Static `sva` bindings compile to per-slot recipe-specific functions, including exported bindings.
+- [x] `styled(tag, config)` and member-form styled calls are only marked `/* @__PURE__ */`; a literal config stays a
+  plain object for styled-system's own `cva`. Compiling it saved about 7% of a variant-only render but pulled in about
+  2 KB of internal runtime, and styled-system's `cva` ships with the factory regardless. A `cva()` passed to `styled` is
+  still specialized, as an escaping recipe.
+- [x] Defaults, boolean options, unknown values, scalar compounds, array compounds, and slot-local compounds are
+  represented directly in the generated function.
+- [x] Static local `.raw()` calls fold to style objects first and no longer prevent callable specialization.
+- [x] The `sva.className` prefix expands to `{className}__{slot}` in callable output and remains excluded from raw
+  style objects.
+- [x] Base-only recipes avoid `__pcx`; slot variant lookups that can never contribute a class are omitted.
+- [x] The original `cva` / `sva` import is removed when every transformed use in the module is consumed.
+- [x] The generic `__pcva` and `__psva` runtimes are removed from the transformer.
+- [x] Exported or otherwise escaping recipes attach `__cva__`, `variantKeys`, `variantMap`, `config`, `raw`, `merge`,
+  `getVariantProps`, `splitVariantProps`, and SVA's `classNameMap` through one shared `attachRecipe` helper.
+- [x] Escaping recipes work inside the generated styled-system runtime: `styled` with style props, `styled(Base, …)`
+  chains in both directions, and `createSlotRecipeContext`.
+- [x] An unresolved dynamic or opaque `.raw()` use prevents specialization and preserves the author's original
+  `cva`/`sva` call instead of substituting a semantically incorrect string runtime.
+- [x] Call-only and escaping recipes are memoized (see [Memoization](#memoization)).
+- [x] Static calls fold at the call site: local `.raw()` calls, and `.raw()` and plain calls on recipes imported from
+  another file, including named, renamed, and `export *` re-exports (see [Imported recipes](#imported-recipes)).
+- [x] Selection matches the runtime: only `undefined` falls back to a default, `null` selects no option, a `null` props
+  object behaves like `{}`, and compound conditions and defaults keep the type written in the config, so `2` and `'2'`
+  or `true` and `'true'` are different values.
+- [ ] Dynamic `.raw()` sidecars, build-time `.merge()` chains, and byte-cost candidate selection remain later phases
+  below.
+
+The current output deliberately specializes the callable contract. `.raw()` calls that can be resolved statically are
+folded before the definition is lowered; unresolved raw access keeps the original factory call. The metadata surface is
+attached only when the recipe escapes, so call-only locals stay plain functions with no helper import.
+
+```js
+import { cx as __pcx, attachRecipe as __pr } from '@pandacss-internal/css'
+
+export const button = /* @__PURE__ */ __pr(
+  (p = {}) => ({ sm: 'fs_12px' })[p.size ?? 'sm'] || '',
+  { variants: { size: { sm: { fontSize: '12px' } } }, defaultVariants: { size: 'sm' } },
+  ['size'],
+  { size: ['sm'] },
+)
+
+// sva passes a fifth `classNameMap` argument, which also sets `__cva__: false`
+export const tabs = /* @__PURE__ */ __pr(specializedTabs, config, ['size'], { size: ['sm'] }, { root: 'tabs__root' })
+```
+
+`attachRecipe` owns every closure on the surface, so nothing but the callable, `config`, and two literals is emitted per
+recipe. `variantKeys` and `variantMap` stay compiler-emitted literals: deriving them from `config` inside the helper
+measured larger after minification. `config` is public surface and is still emitted per recipe.
+
+### Styled-system interop
+
+The generated `styled` factory and `createSlotRecipeContext` read `.raw` and `.merge`, so both are derived from `config`
+at runtime rather than emitted per recipe:
+
+- `raw(props)` deep-merges `base`, the selected variant options, and matching compound `css`, in the generated
+  runtime's order. SVA resolves each slot the same way. Shorthands stay as written (`{ bg: 'red' }`), where the
+  styled-system `raw` normalizes them (`{ backgroundColor: 'red' }`); `css()` produces the same classes from either.
+- `merge(other, cva)` rebuilds the recipe with the styled-system `cva` that the generated `composeCvaFn` passes in,
+  then defers to styled-system's own `merge`. `styled(Base, …)` chains therefore resolve exactly like untransformed
+  code, including a parent variant overriding the child's `base`.
+- A manual `.merge()` call gets no `cva`, so it falls back to class composition: `cx(parent(props), child(props))` with
+  both sets of defaults applied. There the child wins conflicts wholesale, unlike styled-system's config merge.
+
+### Memoization
+
+A specialized recipe is memoized by `memoRecipe`: `attachRecipe` applies it to escaping recipes, and call-only locals
+emit `/* @__PURE__ */ __pm(fn, variantMap[, 1])`. A recipe reached only through folded `.raw()` calls, or with no
+variants, stays a bare function. The design follows the `cva` resolver in `shadcn-ui/cn`:
+
+- **Dense table** (up to 256 slots): each prop maps to an option index and the result is interned per combination.
+  Lookups coerce the prop to a key, so without compounds `true` and `'true'` share a slot, and an undeclared `false` or
+  `null` gets a cached no-class state. With compounds (the trailing `1`), booleans and `null` get their own states
+  because compounds compare strictly.
+- **Ring** (16 rows) above the table cap: recent prop tuples compared with `===`. A miss costs a short scan, not a key
+  string, so wide recipes whose calls rarely repeat stay close to unmemoized cost.
+- **Bypass**: object and function prop values never hit a cache, so mutating one can't serve a stale result. No-props
+  calls return an interned result.
+
+`bench/src/recipe-runtime.ts` compares specialized recipes with the styled-system `cva`. Before the generic `__pcva`
+runtime was removed, the memoized recipes matched or beat it on every workload; compounds and `sva` dropped from about
+150 ns to about 40 ns per call.
+
+### Imported recipes
+
+A static call on a `cva` imported from another file folds to its class string in the calling file, through the same
+cross-file resolution that folds imported `.raw(...)` calls. The fold evaluates the call the way the compiled recipe
+does (`pandacss_system::inline_recipe_classes`): defaults fill `undefined`, each fragment encodes on its own, compounds
+compare strictly, and the classes merge like `cx`. Merging style objects first would disagree with the runtime when a
+fragment nests the same conditions in another order. `imported-recipe-parity.test.ts` checks every fold against the
+transformed and the styled-system recipe, and that each folded class exists in the stylesheet. The recipe file becomes a dependency of the caller, so
+editing it re-transforms importers. The import stays; when every consumer folds, the definition's
+`/* @__PURE__ */ __pr(...)` is an unused pure export and the bundler drops it, `config` included.
+
+A static call on an imported `sva` folds to its slot object, `{ root: "…", trigger: "…" }` with the `className__slot`
+classes the runtime adds. The runtime returns the same object for the same props, so the object is hoisted to a
+module-level `const __psN`, shared by every identical call in the file; an inline literal would be a new object on every
+render and break reference checks such as effect dependencies. Two files folding the same props get two objects, where
+the runtime memo would share one; nothing comparing slot objects across files by reference is expected.
+
+Dynamic props, spreads, and anything that passes the recipe around keep the runtime call. Widening the
+extraction gate from `x.raw(...)` to any `x(...)` on an imported binding measured within noise on the 187-file website
+(27 vs 28 ms warm).
+
+### Hashed class names
+
+With `hash: true` or `hash.className`, class names carry no property key, so `cx` can't tell which class a variant
+should override. The transform leaves `cva` and `sva` calls untouched in that mode and styled-system handles
+them at runtime. Everything else — `css()`, config recipes, `token()` — keeps transforming, since it only inlines class
+strings. Each file with a skipped config gets one `transform_hashed_recipe_skipped` warning pointing at the first one.
+Hashing only CSS variables (`hash: { cssVar: true, className: false }`) specializes as usual.
+
+The interop tests in `packages/transformer/__tests__/styled-system-interop.test.ts` run each case untransformed and
+transformed through the real generated runtime and compare the rendered classes.
+
+## Goals
+
+1. Remove transformed `cva` and `sva` factory calls from application bundles.
+2. Remove the generic `__pcva` and `__psva` transformer runtimes.
+3. Keep the common recipe call path limited to strings, property lookup, conditions, and optional `__pcx` calls.
+4. Preserve the observable behavior of recipe functions, including `.raw()`.
+5. Choose the smallest correct representation per recipe instead of imposing one lowering strategy on every recipe.
+6. Preserve CSS output exactly. This work changes JavaScript output, not emitted CSS contracts.
+
+## Non-goals
+
+1. Changing recipe selection, default variant, or compound variant semantics.
+2. Changing class ordering or conflict resolution.
+3. Making open-ended style values statically extractable.
+4. Expanding the public `cva` or `sva` API as part of the transform.
+5. Treating `cva.raw(config)` or `sva.raw(config)` as supported APIs without first defining their types and runtime
+   behavior.
+
+## Why replace the factory
+
+The previous transformer converted a recipe definition into a string-branch config and passed it to `__pcva` or
+`__psva`. That kept a generic recipe interpreter in the bundle. It also changed the meaning of `.raw()`: the internal
+string runtime resolved class strings, while generated Panda recipes resolve style objects.
+
+Static `.raw()` folding compensates for this within a file, but it cannot prove every future use of an exported recipe.
+An imported recipe called with dynamic `.raw(props)` can therefore observe the wrong value.
+
+Specialization moves the recipe interpretation into the compiler:
+
+```text
+author config
+    │
+    ├─ encode class branches ──► specialized callable ──► class string
+    │
+    └─ retain raw branches ────► optional raw resolver ─► style object
+```
+
+There is no generic `cva` or `sva` factory left to run in the application.
+
+## One recipe IR, several output forms
+
+The transformer should first compile `cva` and `sva` into a host-neutral recipe IR. Printing then chooses among several
+equivalent JavaScript forms.
+
+```rust
+struct CompiledRecipe {
+    kind: RecipeKind,
+    base: CompiledBranch,
+    variants: Vec<CompiledVariant>,
+    default_variants: Vec<VariantSelection>,
+    compounds: Vec<CompiledCompound>,
+    slots: Vec<String>,
+    observable_surface: RecipeSurface,
+}
+
+enum RecipeKind {
+    Cva,
+    Sva,
+}
+```
+
+The exact Rust types may differ. The important boundary is that extraction and encoding decide recipe semantics once;
+the printer does not reconstruct them from source text.
+
+Candidate output forms, ordered from simplest to most capable:
+
+1. A string or per-slot object literal for a fully static call.
+2. An inline conditional expression for a one-off dynamic call.
+3. A specialized function with additive class branches and `__pcx`.
+4. A specialized function backed by a table of final results.
+5. A specialized function with an attached raw resolver and observable metadata.
+
+The compiler should estimate minified bytes for valid candidates and select the smallest one. Correctness and the
+configured state-space limits take precedence over size.
+
+## `cva` class specialization
+
+For additive variants, generate compact lookups:
+
+```js
+const size = { sm: 'padding_4px', lg: 'padding_8px' }
+const tone = { neutral: 'color_gray', danger: 'color_red' }
+
+const button = (props = {}) => __pcx('display_inline-flex', size[props.size ?? 'sm'], tone[props.tone ?? 'neutral'])
+```
+
+Compound variants become conditional fragments:
+
+```js
+const button = (props = {}) => {
+  const size = props.size ?? 'sm'
+  const tone = props.tone ?? 'neutral'
+
+  return __pcx(
+    'display_inline-flex',
+    sizeClasses[size],
+    toneClasses[tone],
+    size === 'lg' && tone === 'danger' && 'font-weight_bold',
+  )
+}
+```
+
+Array compound conditions use membership checks or a compiler-selected lookup when that is smaller.
+
+Boolean variants should use direct conditions instead of allocating lookup objects when shorter:
+
+```js
+const button = (props = {}) => __pcx('display_inline-flex', (props.disabled ?? false) && 'opacity_0.5')
+```
+
+The printer must preserve JavaScript property lookup semantics for string, number, and boolean variant values. Explicit
+`undefined` continues to select the default; unknown values add no variant class.
+
+## `sva` class specialization
+
+An `sva` recipe returns one class string per slot. Specialization should share variant selection work across slots while
+keeping slot output independent.
+
+```tsx
+const tabs = sva({
+  slots: ['root', 'trigger'],
+  base: {
+    root: { display: 'flex' },
+    trigger: { cursor: 'pointer' },
+  },
+  variants: {
+    size: {
+      sm: {
+        root: { fontSize: '12px' },
+        trigger: { padding: '4px' },
+      },
+    },
+  },
+})
+```
+
+can become:
+
+```js
+const tabs = (props = {}) => {
+  const size = props.size
+
+  return {
+    root: __pcx('display_flex', size === 'sm' && 'font-size_12px'),
+    trigger: __pcx('cursor_pointer', size === 'sm' && 'padding_4px'),
+  }
+}
+```
+
+A variant that does not style a slot must not leak classes onto that slot. Compound variants should only contribute to
+the slots named by their `css` object. Slot names that are not JavaScript identifiers must remain quoted.
+
+When every slot and state has a finite result, the compiler may emit a state table:
+
+```js
+const tabs = (props = {}) =>
+  ({
+    sm: { root: 'display_flex font-size_12px', trigger: 'cursor_pointer padding_4px' },
+    lg: { root: 'display_flex font-size_20px', trigger: 'cursor_pointer padding_8px' },
+  })[props.size ?? 'sm']
+```
+
+The table form is valid only if returning shared objects cannot change observable behavior. Otherwise each call must
+produce a fresh slot object, for example by selecting strings and constructing the result object at the call site.
+
+## Compound variant specialization
+
+Compound variants use the same computed selection for `cva` and `sva`:
+
+1. Start with `defaultVariants`.
+2. Apply call-site props in property order.
+3. Ignore an explicit `undefined`, so the corresponding default remains selected.
+4. Let every other supplied value, including `null` and `false`, override the default.
+5. Evaluate compound variants in declaration order.
+6. Select a compound only when every condition matches.
+
+A scalar condition uses strict JavaScript equality. An array condition uses `Array.prototype.includes`, whose
+SameValueZero behavior differs from strict equality for `NaN`. Boolean and numeric selections must not be coerced to
+strings for compound matching.
+
+```tsx
+const button = cva({
+  base: { display: 'inline-flex' },
+  variants: {
+    size: {
+      sm: { fontSize: '12px' },
+      md: { fontSize: '16px' },
+      lg: { fontSize: '20px' },
+    },
+    tone: {
+      neutral: { color: 'gray' },
+      danger: { color: 'red' },
+    },
+  },
+  defaultVariants: { size: 'md', tone: 'neutral' },
+  compoundVariants: [
+    { size: ['md', 'lg'], tone: 'danger', css: { fontWeight: 'bold' } },
+    { size: 'lg', tone: 'danger', css: { textTransform: 'uppercase' } },
+  ],
+})
+```
+
+The direct conditional form is:
+
+```js
+const button = (props = {}) => {
+  const size = props.size === undefined ? 'md' : props.size
+  const tone = props.tone === undefined ? 'neutral' : props.tone
+
+  return __pcx(
+    'display_inline-flex',
+    sizeClasses[size],
+    toneClasses[tone],
+    (size === 'md' || size === 'lg') && tone === 'danger' && 'font-weight_bold',
+    size === 'lg' && tone === 'danger' && 'text-transform_uppercase',
+  )
+}
+```
+
+Every matching compound contributes. Compound classes are appended after base and ordinary variant classes, in authored
+order, so later compounds retain the same conflict precedence as the generated runtime.
+
+The printer may choose a smaller matcher for each compound:
+
+- one equality check for a scalar condition
+- an `||` chain for a short array condition
+- a shared `Set` or lookup object when several compounds reuse a larger condition set
+- a bit mask or final-result table when the complete finite state space is smaller
+
+The printer must compare the whole recipe output. A lookup that saves bytes in one condition may cost more after its
+declaration and references are included. Full state tables remain subject to the configured state-count ceiling.
+
+### Compound variants in `cva.raw()`
+
+The raw resolver selects the same compounds and merges their `css` objects after base and selected variant styles:
+
+```text
+base
+  → selected variants in computed-property order
+  → every matching compound in declaration order
+```
+
+Later layers win using Panda's `mergeCss` semantics, including nested selectors, conditions, responsive values,
+shorthands, and longhand conflicts. Object spread is only valid when the compiler has already normalized the complete
+result and proved that a shallow object literal is equivalent.
+
+For a small finite state space, each raw state may return a precomputed fresh object literal:
+
+```js
+button.raw = (props = {}) => {
+  const size = props.size === undefined ? 'md' : props.size
+  const tone = props.tone === undefined ? 'neutral' : props.tone
+
+  if (size === 'lg' && tone === 'danger') {
+    return {
+      display: 'inline-flex',
+      fontSize: '20px',
+      color: 'red',
+      fontWeight: 'bold',
+      textTransform: 'uppercase',
+    }
+  }
+
+  // Other compiler-generated states follow.
+}
+```
+
+For a larger state space, keep the style fragments compact and use the optional shared raw merge helper. Static
+`.raw({...})` calls continue to fold directly to their final object and need neither path.
+
+### Slot class names in `sva`
+
+The public `sva` definition accepts one class-name prefix, not a per-slot map:
+
+```tsx
+const tabs = sva({
+  className: 'tabs',
+  slots: ['root', 'trigger'],
+})
+```
+
+Generated Panda expands that prefix with `__{slot}`. Specialization must do the same without `__psva`:
+
+```js
+const tabs = () => ({
+  root: 'tabs__root',
+  trigger: 'tabs__trigger',
+})
+```
+
+The private string-branch runtime may receive an encoded per-slot `className` map, but that is not the source API.
+These generated classes appear in callable output and `classNameMap`; they do not become styles in `.raw()`.
+
+### Compound variants in `sva`
+
+An `sva` compound is matched once against the computed selection, then its `css` entry is projected onto the slots it
+styles. It must not add a class or raw style to an unmentioned slot.
+
+```tsx
+const tabs = sva({
+  slots: ['root', 'trigger', 'indicator'],
+  variants: {
+    size: {
+      sm: { root: { gap: '4px' } },
+      lg: { root: { gap: '8px' } },
+    },
+    fitted: {
+      true: { trigger: { flex: '1' } },
+    },
+  },
+  compoundVariants: [
+    {
+      size: 'lg',
+      fitted: true,
+      css: {
+        trigger: { fontWeight: 'bold' },
+        indicator: { height: '2px' },
+      },
+    },
+  ],
+})
+```
+
+can specialize to:
+
+```js
+const tabs = (props = {}) => {
+  const size = props.size
+  const fitted = props.fitted
+  const largeAndFitted = size === 'lg' && fitted === true
+
+  return {
+    root: __pcx(size === 'sm' && 'gap_4px', size === 'lg' && 'gap_8px'),
+    trigger: __pcx(fitted === true && 'flex_1', largeAndFitted && 'font-weight_bold'),
+    indicator: largeAndFitted ? 'height_2px' : '',
+  }
+}
+```
+
+Shared predicates such as `largeAndFitted` should be hoisted within the specialized call when multiple slots consume
+them and doing so reduces output or avoids repeated work. `sva.raw()` follows the same predicate but merges a separate
+fresh style object for each slot.
+
+When multiple matching compounds style the same slot, append their class fragments and merge their raw fragments in
+declaration order. Compounds that style every slot identically may share one class fragment internally, but the returned
+slot object must retain the configured slot keys.
+
+## Observable recipe surface
+
+The generated recipe functions expose more than their call signature. Specialization must account for:
+
+- `__cva__`
+- `variantKeys`
+- `variantMap`
+- `raw`
+- `__memoizedRaw__`
+- `config`
+- `merge`
+- `getVariantProps`
+- `splitVariantProps`
+- `classNameMap` for slot recipes
+
+For a local binding, Oxc symbol references determine which properties are observed. Unobserved properties should not be
+emitted. A recipe passed as a value, returned, stored in an opaque container, or accessed through an unknown property is
+considered escaped.
+
+For an escaped or exported recipe, the transform must either emit the complete compatible surface or preserve the
+original runtime. It must not emit a partial object whose missing properties fail only in another module.
+
+### Suggested surface modes
+
+```rust
+enum RecipeSurface {
+    CallOnly,
+    CallAndStaticRaw,
+    CallAndDynamicRaw,
+    Complete,
+}
+```
+
+- `CallOnly` emits only the specialized callable.
+- `CallAndStaticRaw` folds every raw call and emits no `.raw` property.
+- `CallAndDynamicRaw` attaches a raw resolver and its memoized counterpart.
+- `Complete` emits all public metadata and composition behavior.
+
+## Raw recipe semantics
+
+`cva(config).raw(props)` returns a freshly resolved style object. `sva(config).raw(props)` returns a fresh object whose
+values are resolved style objects for each slot. Neither returns class strings.
+
+### Static raw calls
+
+Resolve them completely during the transform:
+
+```js
+button.raw({ size: 'sm' })
+// becomes
+{ color: 'red', padding: '4px' }
+```
+
+```js
+tabs.raw({ size: 'sm' })
+// becomes
+{
+  root: { display: 'flex', fontSize: '12px' },
+  trigger: { cursor: 'pointer', padding: '4px' },
+}
+```
+
+This is both the smallest result and the strongest correctness guarantee.
+
+### Dynamic raw calls
+
+If the recipe remains local and its state space is small, generate a decision function returning fresh object literals:
+
+```js
+button.raw = (props = {}) => {
+  const size = props.size ?? 'sm'
+
+  return size === 'lg' ? { color: 'red', padding: '8px' } : { color: 'red', padding: '4px' }
+}
+```
+
+Returning a shared object from a table is not equivalent: callers can mutate the result, and the generated Panda raw
+resolver creates a merged result for each non-memoized `.raw()` call.
+
+For larger or structurally complex raw recipes, use a small shared raw merge helper rather than duplicating merge code
+per recipe. This helper is separate from `__pcx`: class conflict resolution cannot reproduce nested style-object merge
+semantics.
+
+The helper should only enter a bundle containing an observable dynamic `.raw()` path. Applications that only call
+recipes normally should pay nothing for raw support.
+
+### `cva.raw(config)` and `sva.raw(config)`
+
+Direct factory-member calls are distinct from `cva(config).raw(props)` and `sva(config).raw(props)`.
+
+The generated `RecipeCreatorFn` and `SlotRecipeCreatorFn` do not currently expose a `raw` member. Until such an API has
+defined types and runtime behavior, the transformer should issue a targeted diagnostic and preserve the call. It should
+not silently reinterpret the call as ordinary `cva(config)` or `sva(config)`.
+
+If these forms become public APIs, their contract must be added to generated types, generated runtimes, extraction,
+transform, and tests together.
+
+## `merge` and composed recipes
+
+Known recipe composition should be compiled rather than interpreted at runtime.
+
+```js
+const merged = base.merge(override)
+```
+
+When both operands resolve to compiled recipes, combine their IR before printing:
+
+- override base styles follow base styles
+- variant keys use the runtime's stable union order
+- matching variant branches combine with the same class conflict rules
+- override defaults win
+- compound variants append in source order
+- raw configs merge with `mergeCss` semantics
+
+An unknown `.merge(other)` operand requires the complete runtime surface. The first implementation may preserve the
+original recipe for this case. It must not approximate the merge with object spread or `__pcx` alone.
+
+`styled(Base, recipe)` chains should consume the same compiled recipe IR so `styled`, `cva`, and `sva` do not develop
+separate composition semantics.
+
+## Bundle-size selection
+
+The printer should compare valid candidates using estimated minified bytes. Raw source length is a useful first
+implementation, but the benchmark gate must measure real minified output.
+
+Inputs to the decision include:
+
+- number of call sites
+- number of variant groups and options
+- number of compound variants
+- number of slots
+- finite state-space size
+- whether the recipe is exported or escapes
+- whether raw or metadata properties are observed
+- duplication introduced by inlining
+- helper imports already required by the module
+
+Suggested constraints:
+
+- cap full state-table generation with a named constant
+- do not multiply slot count by state count without checking the emitted byte estimate
+- share lookup tables between the callable and raw resolver when doing so is smaller
+- hoist a table only when it has multiple consumers or reduces bytes
+- omit `__pcx` when every selected state is already a final class string
+- do not retain memoization by default when selection is only a property lookup
+
+The same recipe may therefore lower differently in different modules:
+
+```text
+one static call       → string literal
+one dynamic call      → inline expression
+several dynamic calls → specialized function
+small finite domain   → final-result table
+observable raw        → specialized function plus raw sidecar
+opaque full API use   → complete compatible function or preserve runtime
+```
+
+## Extraction and planning
+
+Use Oxc semantic symbols, not identifier text, to classify recipe bindings and references.
+
+For every local `cva` or `sva` initializer, collect:
+
+- direct calls
+- direct `.raw()` calls
+- static property reads
+- `.merge()` calls
+- exports and re-exports
+- opaque escapes
+- optional or computed member access
+- mutation of the binding
+
+Planning is all-or-nothing for removing a definition. The transform may delete the original `cva` or `sva` call only
+when every reference is either rewritten or supported by the emitted specialized function.
+
+Nested rewrites must preserve source spans used by token folding and import liveness. Cross-file resolution continues to
+record dependencies so watch mode re-transforms consumers after a recipe definition changes.
+
+## Bailouts
+
+Preserve the original runtime when equivalence cannot be proven, including:
+
+- a mutated recipe binding
+- unresolved or open-ended recipe configuration
+- an escaped recipe whose complete public surface cannot be emitted
+- unknown `.merge()` operands
+- computed property access on the recipe function
+- branch or state-space limits exceeded without a compact specialized fallback
+- parse diagnostics on a path requiring strict correctness
+
+A bailout must preserve the whole recipe definition and its dependent calls. Partial rewriting must not leave consumers
+expecting properties that the preserved or specialized function does not provide.
+
+The long-term goal is that every statically extractable recipe has a specialized fallback, leaving preservation only for
+truly dynamic configurations.
+
+## Edge cases and required invariants
+
+Specialization changes the shape of generated JavaScript, so equivalence includes evaluation, ordering, identity, and
+function-object behavior—not only the final class names in the simplest examples.
+
+### Missing, `undefined`, `null`, and false values
+
+Only `undefined` preserves a default variant. `null`, `false`, `0`, and the empty string are explicit selections.
+
+```js
+const recipe = cva({
+  variants: {
+    enabled: { true: { opacity: 1 }, false: { opacity: 0.5 } },
+    count: { 0: { margin: 0 }, 1: { margin: 1 } },
+  },
+  defaultVariants: { enabled: true, count: 1 },
+})
+
+recipe({ enabled: undefined }) // keeps enabled=true
+recipe({ enabled: false })     // selects the false branch
+recipe({ count: 0 })           // selects the "0" property
+recipe({ count: null })        // overrides the default, selects no branch
+```
+
+Generated selection should therefore use an explicit undefined check:
+
+```js
+const enabled = props.enabled === undefined ? true : props.enabled
+```
+
+This is not equivalent:
+
+```js
+// Wrong: false, 0, null, and "" incorrectly select the default.
+const enabled = props.enabled || true
+```
+
+The no-argument and explicit-`undefined` calls are equivalent. The transform should test `recipe()`,
+`recipe(undefined)`, and `recipe({ key: undefined })` independently.
+
+At runtime, the generated helpers also tolerate a `null` props object and fall back to defaults, even though TypeScript
+does not advertise that call:
+
+```js
+recipe(null) // behaves like recipe({}) in the generated runtime
+```
+
+A specialized function that immediately reads `props.size` would throw. Full JavaScript parity requires a nullish
+normalization before property reads:
+
+```js
+function recipe(props) {
+  props ??= {}
+  // specialized selection
+}
+```
+
+Primitive props are also outside the declared type but can have JavaScript enumeration behavior. Either preserve that
+behavior in the complete surface or explicitly scope specialization to `null | undefined | Record<string, unknown>`.
+
+### Variant lookup and compound matching use different coercion
+
+Ordinary variant lookup is JavaScript property access, so booleans and numbers select string-named object keys.
+Compound scalar matching remains type-sensitive.
+
+```js
+const recipe = cva({
+  variants: {
+    active: {
+      true: { opacity: 1 },
+    },
+  },
+  compoundVariants: [
+    { active: true, css: { fontWeight: 'bold' } },
+  ],
+})
+
+recipe({ active: true })   // variant and compound match
+recipe({ active: 'true' }) // variant matches; boolean compound does not
+```
+
+A specialized lookup may rely on property-key coercion for the ordinary branch:
+
+```js
+const className = activeClasses[props.active]
+```
+
+It must not reuse that coerced key for compound matching:
+
+```js
+const compound = props.active === true && 'font-weight_bold'
+```
+
+Numeric keys must use the repository's JavaScript number formatting contract, including `-0` becoming the same property
+key as `0`.
+
+### Variant merge order can depend on prop enumeration
+
+The generated raw resolver starts with defaults, overlays defined props, then visits the resulting object's enumerable
+keys. Overwriting an existing default does not move that key; a newly supplied key is appended according to JavaScript
+property ordering rules.
+
+```js
+const recipe = cva({
+  variants: {
+    tone: { danger: { color: 'red' } },
+    emphasis: { loud: { color: 'blue' } },
+  },
+})
+
+recipe.raw({ tone: 'danger', emphasis: 'loud' })
+recipe.raw({ emphasis: 'loud', tone: 'danger' })
+```
+
+Those calls can produce different winning raw `color` values. The class path can also be order-sensitive when variant
+branches emit conflicting atomic properties and `__pcx` resolves the conflict.
+
+A fixed lowering such as this is only valid when the compiler proves the groups cannot conflict:
+
+```js
+// Valid only after a non-conflict proof.
+__pcx(toneClasses[props.tone], emphasisClasses[props.emphasis])
+```
+
+Otherwise the specialized function must preserve computed-key order or use a table keyed by the complete ordered
+selection. Static call sites already provide their authored property order and can be resolved exactly.
+
+### Compound conditions may reference non-variant props
+
+Although generated types steer compound conditions toward variant keys, runtime matching reads the computed props
+object. A condition can therefore observe a key that has no ordinary variant branch.
+
+```js
+const recipe = cva({
+  base: { display: 'flex' },
+  compoundVariants: [
+    { platform: 'touch', css: { minHeight: '44px' } },
+  ],
+})
+
+recipe({ platform: 'touch' })
+```
+
+Specialization must retain every key referenced by a compound condition, even when it is absent from `variantKeys`.
+Dropping unknown props before compound matching would lose the compound.
+
+The transform currently leaves such a recipe on the runtime: the memo keys on declared variants only, so it would return
+a stale result when an undeclared compound prop changes. `cva` types reject the shape anyway.
+
+An empty condition set always matches:
+
+```js
+const recipe = cva({
+  compoundVariants: [{ css: { boxSizing: 'border-box' } }],
+})
+```
+
+An empty expected array never matches:
+
+```js
+const recipe = cva({
+  compoundVariants: [{ size: [], css: { color: 'red' } }],
+})
+```
+
+Multiple matching compounds all contribute; the transform must not stop after the first match.
+
+### Duplicate keys, spreads, and computed configuration
+
+Static duplicate properties use JavaScript last-write behavior before the recipe is compiled.
+
+```js
+const recipe = cva({
+  defaultVariants: {
+    size: 'sm',
+    size: 'lg',
+  },
+})
+```
+
+Static spreads may be folded when their complete order is known:
+
+```js
+const shared = { size: 'sm' }
+
+const recipe = cva({
+  defaultVariants: {
+    ...shared,
+    size: 'lg',
+  },
+})
+```
+
+An unresolved spread must preserve the runtime because it can add variants, defaults, compounds, or slots:
+
+```js
+const recipe = cva({
+  base: { color: 'red' },
+  ...runtimeConfig,
+})
+```
+
+Likewise, computed recipe keys and accessors are bailouts unless Oxc and the evaluator prove their values and evaluation
+order:
+
+```js
+const recipe = cva({
+  [sectionName]: styles,
+  get variants() {
+    return createVariants()
+  },
+})
+```
+
+The transform must not run `createVariants()` at build time or duplicate its runtime evaluation.
+
+### Configuration evaluation happens once
+
+Even a statically extractable config can refer to bindings whose initialization has observable identity. Printing the
+raw config beside every call would evaluate or allocate it more than once.
+
+```js
+const base = { color: 'red' }
+const recipe = cva({ base })
+```
+
+If `.config` or dynamic `.raw()` is observable, emit one retained raw configuration sidecar:
+
+```js
+const recipeConfig = { base }
+const recipe = createSpecializedRecipe(recipeConfig)
+```
+
+Do not duplicate it into each method:
+
+```js
+// Wrong: creates unrelated config objects and can duplicate expressions.
+recipe.raw = props => resolveRaw({ base }, props)
+recipe.config = { base }
+```
+
+Calls, tagged templates, getters, and other effectful expressions inside a config remain bailouts unless the existing
+literal evaluator proves they are pure under its documented rules.
+
+### Mutable configuration and mutable recipe properties
+
+The generated runtime exposes `.config`, and JavaScript callers can replace recipe methods or mutate nested config
+objects. A precompiled table cannot observe arbitrary later mutation.
+
+```js
+const button = cva({ base: { color: 'red' } })
+
+button.config.base.color = 'blue'
+button.raw = customResolver
+button.variantKeys.push('tone')
+```
+
+The transform should use semantic references to detect direct writes, updates, deletes, and known mutation calls:
+
+```js
+button.raw = customResolver
+delete button.config
+Object.assign(button, extension)
+Object.defineProperty(button, 'raw', descriptor)
+```
+
+These forms require the complete compatible surface or a bailout. An opaque escape is also conservative because a
+callee can mutate the function object:
+
+```js
+registerRecipe(button)
+```
+
+The design may eventually declare recipe metadata immutable, but the transform must not assume that before the public
+contract and generated types enforce it.
+
+Exported mutation cannot be disproved with per-file analysis:
+
+```js
+// recipes.ts
+export const button = cva({ base: { color: 'red' } })
+
+// consumer.ts
+import { button } from './recipes'
+button.config.base.color = 'blue'
+```
+
+Before complete exported specialization ships, choose one explicit contract:
+
+1. Make recipe configuration and metadata readonly and document mutation as unsupported.
+2. Emit a mutation-aware representation that invalidates and rebuilds compiled tables.
+3. Preserve the original runtime for exported recipes whose configuration remains mutable.
+
+Option 1 produces the smallest bundle. Option 2 approaches a generic recipe interpreter and works against the size
+goal. Option 3 is the safe migration fallback but means the generic factory has not been eliminated for every recipe.
+The implementation must not claim full specialization until this decision is resolved.
+
+### Property descriptors and enumeration
+
+The generated runtimes attach metadata with `Object.assign`, making those properties writable, enumerable, and
+configurable. A complete compatibility surface must consider reflective use:
+
+```js
+Object.keys(button)
+const clone = { ...button }
+Object.getOwnPropertyDescriptor(button, 'raw')
+```
+
+Attaching methods through prototype syntax or non-enumerable definitions changes this behavior:
+
+```js
+// Not descriptor-equivalent to Object.assign(button, { raw }).
+Object.defineProperty(button, 'raw', { value: raw })
+```
+
+Call-only specialization can omit the surface entirely. Complete specialization should use `Object.assign` or explicit
+descriptors that match it, then let minification decide the final syntax.
+
+### Props getters and proxies
+
+The generated runtime compacts enumerable props and can therefore observe getters, inherited enumerable keys, and
+proxy traps—even for keys that do not name a configured variant.
+
+```js
+const props = new Proxy(
+  { size: 'sm' },
+  {
+    ownKeys(target) {
+      console.log('enumerated')
+      return Reflect.ownKeys(target)
+    },
+    get(target, key) {
+      console.log('read', key)
+      return Reflect.get(target, key)
+    },
+  },
+)
+
+button(props)
+```
+
+A compact specialized function usually reads only the keys it needs:
+
+```js
+const size = props.size === undefined ? 'md' : props.size
+```
+
+It should cache that read so a getter is not invoked twice:
+
+```js
+// Wrong: reads props.size twice when it is defined.
+const size = props.size === undefined ? 'md' : props.size
+
+// Correct single-read specialization.
+const suppliedSize = props.size
+const size = suppliedSize === undefined ? 'md' : suppliedSize
+```
+
+Even the single-read form does not reproduce enumeration of unrelated keys. The project therefore needs a documented
+input contract: recipe props are plain data records, and getter/proxy side effects are not preserved by source
+specialization. If that contract is unacceptable, escaped recipes require an enumeration-based resolver and lose much
+of the size benefit.
+
+### Direct, optional, bound, and reflective calls
+
+The smallest specialized callable naturally supports direct invocation:
+
+```js
+button({ size: 'sm' })
+```
+
+Other JavaScript call forms need classification:
+
+```js
+button?.({ size: 'sm' })
+button.call(null, { size: 'sm' })
+button.apply(null, [{ size: 'sm' }])
+const bound = button.bind(null, { size: 'sm' })
+Reflect.apply(button, null, [{ size: 'sm' }])
+```
+
+An emitted specialized function continues to support these forms. A transform that deletes the binding and only lowers
+direct call sites must treat them as escapes. Constructor use is outside the recipe contract and should be diagnosed or
+preserved, not rewritten:
+
+```js
+new button({ size: 'sm' })
+```
+
+Optional and computed property access is similarly conservative:
+
+```js
+button?.raw(props)
+button[method](props)
+```
+
+### Function aliases, destructuring, and callbacks
+
+Symbol identity must follow aliases rather than searching source text:
+
+```js
+const recipe = cva(config)
+const alias = recipe
+
+alias({ size: 'sm' })
+```
+
+Destructured methods can escape their owner:
+
+```js
+const { raw } = recipe
+items.map(raw)
+```
+
+Passing the callable itself is also an escape unless the receiving API is modeled:
+
+```js
+items.map(recipe)
+registry.set('button', recipe)
+```
+
+A specialized function with the required surface remains valid. Call-site-only lowering may proceed only when every
+resolved reference has been consumed.
+
+### Raw object identity and memoized identity
+
+Direct `.raw()` and `.__memoizedRaw__()` have different identity behavior.
+
+```js
+const first = button.raw({ size: 'sm' })
+const second = button.raw({ size: 'sm' })
+
+first === second // false for the non-memoized raw resolver
+```
+
+The memoized raw resolver may return its cached object:
+
+```js
+const first = button.__memoizedRaw__({ size: 'sm' })
+const second = button.__memoizedRaw__({ size: 'sm' })
+
+first === second // true while that entry remains cached
+```
+
+Consequently, a state table may store class strings, but it must not return shared raw objects from `.raw()`. It may
+store raw templates only if each call materializes a fresh result with equivalent nested identity.
+
+The normal `sva` callable is itself memoized and returns an object of slot class strings. Repeated equivalent calls can
+therefore return the same object:
+
+```js
+const first = tabs({ size: 'sm' })
+const second = tabs({ size: 'sm' })
+
+first === second // true for a retained memoized surface
+```
+
+If the result identity is observable because an `sva` function escapes, specialization must preserve memoization or emit
+the complete runtime surface. A fully consumed call site can use a fresh literal because no identity comparison remains.
+
+### Raw merging is recursive and normalization-aware
+
+Object spread is not a replacement for `mergeCss`:
+
+```js
+const recipe = cva({
+  base: {
+    _hover: { color: 'red', background: 'white' },
+  },
+  variants: {
+    tone: {
+      danger: {
+        _hover: { color: 'darkred' },
+      },
+    },
+  },
+})
+```
+
+A shallow spread loses `background`:
+
+```js
+// Wrong.
+{
+  ...base,
+  ...danger,
+}
+```
+
+The equivalent raw result keeps the nested sibling:
+
+```js
+{
+  _hover: {
+    color: 'darkred',
+    background: 'white',
+  },
+}
+```
+
+Shorthands and longhands introduce another ordering constraint:
+
+```js
+const recipe = cva({
+  base: { px: '4' },
+  variants: {
+    flush: { true: { paddingLeft: '0' } },
+  },
+})
+```
+
+The raw sidecar must reuse the canonical Panda merge/normalization semantics instead of implementing an independent
+object merge in the printer.
+
+### Unusual variant and slot names
+
+Generated JavaScript must safely handle keys that are not identifiers or overlap with object prototypes:
+
+```js
+const recipe = cva({
+  variants: {
+    'visual-style': {
+      '__proto__': { color: 'red' },
+      'with space': { color: 'blue' },
+    },
+  },
+})
+```
+
+```js
+const parts = sva({
+  slots: ['root', 'leading-icon', '__proto__'],
+  base: {
+    root: { display: 'flex' },
+    'leading-icon': { marginRight: '2' },
+    '__proto__': { position: 'relative' },
+  },
+})
+```
+
+The printer must quote unsafe keys and avoid object-literal `__proto__` setter behavior. Depending on the candidate,
+`Object.create(null)`, a `Map`, computed property definitions, or an escaped JSON key may be required. `constructor` and
+`prototype` deserve the same regression coverage.
+
+Integer-like keys follow JavaScript's enumeration order, not source order:
+
+```js
+const variants = {
+  scale: {
+    10: styles10,
+    2: styles2,
+    1: styles1,
+  },
+}
+```
+
+`variantMap` and any complete compatibility surface must match `Object.keys` ordering.
+
+### Empty recipes, missing branches, and empty strings
+
+The following are valid degenerate states and should not force a helper import:
+
+```js
+const empty = cva({})
+empty() // ""
+```
+
+```js
+const recipe = cva({
+  variants: {
+    size: {
+      sm: {},
+    },
+  },
+})
+
+recipe({ size: 'unknown' }) // ""
+```
+
+An `sva` result must retain every configured slot even when its class is empty:
+
+```js
+const parts = sva({ slots: ['root', 'icon'] })
+
+parts() // { root: "", icon: "" }
+```
+
+An omitted `slots` field currently exposes a contract discrepancy that must be resolved before specialization. The
+generated `getSlotRecipes` runtime uses an empty slot list, while the transformer runtime and existing transform tests
+can derive slots from `base`:
+
+```js
+const parts = sva({
+  base: {
+    root: { display: 'flex' },
+    icon: { width: '4' },
+  },
+})
+```
+
+The implementation must choose one canonical behavior, align generated and transformed runtimes, and lock it with
+codegen plus transform tests. Specialization must not silently pick whichever behavior produces smaller output.
+Duplicate slots and slot enumeration order also need explicit parity tests.
+
+### `sva` class names and partial slot variants
+
+Slot recipes can add configured class names independently of atomic classes:
+
+```js
+const parts = sva({
+  slots: ['root', 'icon'],
+  className: 'button',
+  variants: {
+    compact: {
+      true: {
+        root: { minHeight: '8' },
+      },
+    },
+  },
+})
+```
+
+The specialized result keeps the slot class name and does not copy the root variant onto `icon`:
+
+```js
+{
+  root: __pcx('button__root', compact && 'min-height_8'),
+  icon: 'button__icon',
+}
+```
+
+Hashed class names, configured prefixes, separators, important modifiers, and condition ordering must come from
+`System`; the JavaScript printer must not reproduce those algorithms.
+
+### Static folding must preserve expression context
+
+Replacing a call with an object literal can require parentheses:
+
+```js
+const getStyles = () => button.raw({ size: 'sm' })
+```
+
+must not become a block body:
+
+```js
+// Wrong.
+const getStyles = () => { color: 'red' }
+```
+
+The correct replacement is:
+
+```js
+const getStyles = () => ({ color: 'red' })
+```
+
+The existing Oxc-derived `ObjectLiteralContext` should remain the source of truth. The printer must also retain comments,
+directive prologues, hashbangs, semicolon safety, and source-map spans.
+
+### Exports, re-exports, cycles, and live bindings
+
+An exported specialized recipe must be a stable first-class value:
+
+```js
+// recipe.ts
+export const button = cva(config)
+
+// index.ts
+export { button } from './recipe'
+
+// consumer.ts
+import { button } from './index'
+button({ size: dynamicSize })
+```
+
+Cross-file compilation must follow aliases and re-exports without assuming that every consumer imports Panda directly.
+Dependency edges must invalidate consumers when the recipe config changes.
+
+Cycles must fail closed rather than partially specializing one side:
+
+```js
+// a.ts
+import { extension } from './b'
+export const recipe = cva({ ...extension })
+
+// b.ts
+import { recipe } from './a'
+export const extension = derive(recipe)
+```
+
+During HMR, a transformed module must not temporarily expose a string where consumers expect a callable recipe.
+
+### Framework adapters consume recipe metadata
+
+Generated JSX factories inspect recipe properties such as `__cva__`, `raw`, `__memoizedRaw__`, `variantKeys`, and
+`classNameMap`.
+
+```js
+const getRaw = recipe.__memoizedRaw__ || recipe.raw
+const [variantProps, restProps] = recipe.splitVariantProps(props)
+```
+
+A recipe passed to `styled`, a recipe context, or a framework adapter is therefore escaped unless that integration is
+compiled in the same plan. Removing apparently unused metadata from the definition alone would break another generated
+module.
+
+`cva` and `sva` must use the same escape classification across React, Preact, Solid, and Vue artifacts.
+
+### Partial transform targets
+
+Users can enable only part of the source transformer. Recipe specialization must not leave references to helpers that a
+disabled target would have produced.
+
+```js
+transformSource(source, {
+  targets: {
+    recipes: true,
+    jsx: false,
+  },
+})
+```
+
+If a specialized recipe is consumed by an untransformed `styled` or JSX path, it must expose the complete compatible
+surface. Conversely, disabling recipe transforms must preserve the original `cva`/`sva` imports and calls.
+
+### Size cliffs and shared-helper accounting
+
+Inlining is not always smaller:
+
+```js
+button(a)
+button(b)
+button(c)
+button(d)
+```
+
+Repeating a large conditional four times can exceed one specialized function plus four calls. The cost model must count:
+
+```text
+declaration bytes
++ call-site bytes
++ lookup tables
++ helper import bytes not already paid by the module
++ raw and metadata sidecars
+```
+
+It must also guard against Cartesian expansion:
+
+```text
+6 sizes × 6 tones × 4 densities × 3 states = 432 final states
+```
+
+The table candidate should be rejected above a named state or byte threshold. Additive lookup plus `__pcx` remains the
+bounded fallback. Gzip size is a benchmark signal, not a safe per-file selection metric; the deterministic compiler
+decision should use a stable minified-byte estimate.
+
+### Diagnostics and parse recovery
+
+Oxc can return extractions and diagnostics from the same partially recovered program. Strict specialization must stop
+when diagnostics overlap the recipe or any reference required for its escape analysis.
+
+```js
+const button = cva({
+  variants: {
+    size: {
+      sm: { color: 'red' }
+      // missing comma
+      lg: { color: 'blue' },
+    },
+  },
+})
+```
+
+The transformer should preserve the source and surface the parse diagnostic. It must not specialize the recovered
+partial recipe.
+
+## Implementation phases
+
+### Phase 1: callable specialization
+
+- Add the compiled recipe IR.
+- Generate specialized `cva` callables for base, variants, defaults, booleans, and compounds.
+- Generate specialized `sva` callables with shared selection and independent slot output.
+- Keep recipes with unresolved `.raw()` access as their original source call.
+- Specialize exported and escaping callable recipes without introducing `__pcva` or `__psva`.
+- ~~Specialize `styled` config arguments through the same printer.~~ Dropped: the bytes outweighed the render gain.
+
+### Phase 2: static raw folding
+
+- Reuse the existing inline raw resolver.
+- Fold all statically selected local and imported raw calls.
+- Delete raw support from recipes whose raw uses are fully consumed.
+- Keep dynamic and opaque raw recipes on the original runtime.
+
+### Phase 3: dynamic raw sidecars
+
+- Generate fresh-object raw decision functions for small finite recipes.
+- Add a shared raw merge helper for larger nested recipes.
+- Support per-slot `sva.raw()` output.
+- Restore `__memoizedRaw__` parity when that property is observable.
+- Remove the imported dynamic raw warning once exported specialized recipes retain correct raw behavior.
+
+### Phase 4: complete recipe surface
+
+- Extend the lightweight metadata surface where reflection requires descriptor-level parity.
+- Compile known `.merge()` chains at build time.
+- Add the compatible complete surface for exported or escaped recipes.
+- Add metadata compatibility without reintroducing the generic `__pcva` and `__psva` runtimes.
+
+### Phase 5: byte-cost optimization
+
+- Generate multiple valid candidates per recipe.
+- Compare estimated minified size.
+- Tune state-table and inlining thresholds against the benchmark corpus.
+- Record performance and bundle-size budgets before changing defaults.
+
+## Test matrix
+
+### `cva`
+
+- base only
+- string, number, and boolean variants
+- default variants and explicit `undefined`
+- unknown variant values
+- compounds with scalar and array conditions
+- overlapping properties resolved in source order
+- conditional base styles
+- static, dynamic, and escaping calls
+- static and dynamic `.raw()`
+- fresh raw object identity
+- nested selectors and responsive raw objects
+- `variantKeys`, `variantMap`, `config`, `getVariantProps`, and `splitVariantProps`
+- static and unknown `.merge()` operands
+- local, exported, imported, and re-exported recipes
+- aliased imports and shadowed identifiers
+
+### `sva`
+
+- explicit slots and slots derived from base
+- variants that style all slots
+- variants that style only one slot
+- defaults and compounds per slot
+- `className` / `classNameMap`
+- static and dynamic `.raw()` returning one fresh object per slot
+- slots requiring quoted keys
+- exported and re-exported slot recipes
+- composition through `styled`
+
+### Output integrity
+
+- no `cva`, `sva`, `__pcva`, or `__psva` in fully specialized output
+- `__pcx` imported only when selected output calls it
+- dead Panda imports removed through semantic reference tracking
+- source maps cover generated replacements
+- watch dependencies refresh consumers after recipe changes
+- no CSS snapshot changes
+
+## Validation gates
+
+Run from the repository root:
+
+```sh
+cargo nextest run -p pandacss_transform --locked
+cargo nextest run -p pandacss_extractor --locked
+cargo nextest run -p pandacss_project --locked
+pnpm test:compiler
+pnpm rust:fmt
+pnpm rust:clippy
+```
+
+Before accepting the default strategy, add benchmark cases for:
+
+- one recipe used once
+- one recipe used many times
+- many small recipes
+- boolean-only variants
+- compound-heavy recipes
+- multi-slot recipes
+- recipes with and without observable raw behavior
+- exported recipes consumed from another module
+
+Measure at least:
+
+- raw JavaScript bytes
+- minified JavaScript bytes
+- gzip bytes
+- cold call time
+- repeated call time
+- transform time
+
+The default may change only when the specialized output preserves semantics, does not change CSS snapshots, and meets
+the agreed bundle-size and runtime budgets.
+
+## Decision
+
+Compile `cva` and `sva` definitions into specialized recipe functions. Use `__pcx` only where runtime class conflict
+resolution is needed. Treat raw style resolution as an optional sidecar paid for only by recipes that expose it.
+
+Static call-site folding remains the smallest output and should run before function specialization. A generic recipe
+runtime is a fallback during migration, not the target architecture.

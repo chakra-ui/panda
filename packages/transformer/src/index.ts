@@ -7,7 +7,7 @@ export {
   type CxSeparator,
   type PandaClassPart,
 } from './runtime/internal/cx'
-export { css, cva, sva, type StringCvaConfig } from './runtime/internal'
+export { css } from './runtime/internal'
 export {
   buildInternalCssRuntimeSource,
   getInternalCssRuntimeSource,

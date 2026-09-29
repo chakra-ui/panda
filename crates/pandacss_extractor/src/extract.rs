@@ -25,14 +25,25 @@ use oxc_span::SourceType;
 use rustc_hash::FxHashSet;
 use serde::Serialize;
 
-/// A folded `imported.raw(props)` call on an inline `cva`/`sva` exported from
-/// another file. The definition file precomputes its class strings, so the
-/// transform must rewrite this site to the styles it resolved to.
+/// A static call on an inline `cva`/`sva` exported from another file, for the transform to fold.
 #[derive(Debug, Clone, PartialEq)]
-pub struct ImportedRecipeRawCall {
+pub struct ImportedRecipeFold {
     pub object_literal_context: crate::ObjectLiteralContext,
     pub span: Span,
-    pub styles: Literal,
+    pub kind: ImportedRecipeFoldKind,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum ImportedRecipeFoldKind {
+    /// `imported.raw(props)`, already resolved to its styles.
+    Raw(Literal),
+    /// `imported(props)`, which the transform resolves to classes.
+    Call {
+        /// `"cva"` or `"sva"`.
+        factory: String,
+        definition: Literal,
+        props: Literal,
+    },
 }
 
 /// A resolved `token()` / `token.var()` call site: the referenced token path and
@@ -118,9 +129,9 @@ pub struct ExtractUsage {
     /// Original-parse module and symbol facts used by source transforms.
     #[serde(skip)]
     pub module: ModuleFacts,
-    /// Folded `.raw(...)` calls on recipes imported from another file.
+    /// Static calls on recipes imported from another file.
     #[serde(skip)]
-    pub imported_recipe_raw_calls: Vec<ImportedRecipeRawCall>,
+    pub imported_recipe_folds: Vec<ImportedRecipeFold>,
 }
 
 impl ExtractUsage {
@@ -279,7 +290,7 @@ fn extract_usage(outcome: ExtractResult) -> ExtractUsage {
         dependencies: outcome.dependencies,
         unresolved_dependencies: outcome.unresolved_dependencies,
         module: outcome.module,
-        imported_recipe_raw_calls: outcome.imported_recipe_raw_calls,
+        imported_recipe_folds: outcome.imported_recipe_folds,
     }
 }
 
@@ -417,7 +428,7 @@ struct ExtractResult {
     exports: ExportInfo,
     dependencies: Vec<CrossFileDependency>,
     unresolved_dependencies: Vec<UnresolvedCrossFileDependency>,
-    imported_recipe_raw_calls: Vec<ImportedRecipeRawCall>,
+    imported_recipe_folds: Vec<ImportedRecipeFold>,
 }
 
 fn match_file_imports(
@@ -514,14 +525,17 @@ fn run_extract(
         exports
     };
 
-    // A file with no Panda imports can still consume one: `button.raw(...)` on
-    // a recipe imported from another module. The definition file desugars
-    // independently, so skipping here would leave the call reading a class
-    // string. Only relevant when the project supplied a recipe resolver.
+    // A file with no Panda imports can still consume one: `button(...)` or
+    // `button.raw(...)` on a recipe imported from another module, which folds to
+    // classes or styles here. Only relevant when the project supplied a recipe
+    // resolver.
     let would_skip = should_skip_extraction(&matched, config);
-    let consumes_imported_recipe = would_skip
+    let collects_calls = should_collect_calls(&matched, config);
+    // Checked whenever calls wouldn't be collected anyway, including JSX projects,
+    // which never skip extraction but only collect calls for files importing Panda.
+    let consumes_imported_recipe = !collects_calls
         && recipe_raw_resolve.is_some()
-        && calls_raw_on_an_imported_binding(&parser_return.program, &imports);
+        && calls_an_imported_binding(&parser_return.program, &imports);
 
     if would_skip && !consumes_imported_recipe {
         let module = if retain_transform_facts {
@@ -546,7 +560,7 @@ fn run_extract(
             exports,
             dependencies: Vec::new(),
             unresolved_dependencies: Vec::new(),
-            imported_recipe_raw_calls: Vec::new(),
+            imported_recipe_folds: Vec::new(),
         };
     }
 
@@ -570,7 +584,7 @@ fn run_extract(
     let ctx = VisitorContext::new(&matched, config).with_resolver(&resolver);
 
     let (calls, call_diagnostics, mut token_refs, mut style_source_refs) =
-        if consumes_imported_recipe || should_collect_calls(&matched, config) {
+        if consumes_imported_recipe || collects_calls {
             let span = tracing::trace_span!(target: "extract", "extract_calls", call_count = tracing::field::Empty);
             let _entered = span.enter();
             let result = if verbose {
@@ -631,7 +645,7 @@ fn run_extract(
     let token_refs = dedupe_token_refs(token_refs);
     let dependencies = resolver.take_cross_file_deps();
     let unresolved_dependencies = resolver.take_unresolved_cross_file_deps();
-    let imported_recipe_raw_calls = resolver.take_imported_recipe_raw_calls();
+    let imported_recipe_folds = resolver.take_imported_recipe_folds();
     let module = if retain_transform_facts {
         let local_call_bindings = if calls.is_empty() {
             Vec::new()
@@ -665,7 +679,7 @@ fn run_extract(
         exports,
         dependencies,
         unresolved_dependencies,
-        imported_recipe_raw_calls,
+        imported_recipe_folds,
     }
 }
 
@@ -769,7 +783,7 @@ fn after_line_terminator(start: u32, source: &str) -> u32 {
 ///
 /// Deliberately syntactic: no resolution, no filesystem. A false positive
 /// costs one file's extraction, which then finds nothing.
-fn calls_raw_on_an_imported_binding(program: &Program<'_>, imports: &[ImportRecord]) -> bool {
+fn calls_an_imported_binding(program: &Program<'_>, imports: &[ImportRecord]) -> bool {
     let locals: FxHashSet<&str> = imports
         .iter()
         .filter(|record| !record.type_only)
@@ -796,15 +810,20 @@ struct ImportedRawCallFinder<'a> {
 
 impl<'a> oxc_ast_visit::Visit<'a> for ImportedRawCallFinder<'_> {
     fn visit_call_expression(&mut self, call: &oxc_ast::ast::CallExpression<'a>) {
-        if !self.found
-            && let oxc_ast::ast::Expression::StaticMemberExpression(member) =
-                call.callee.get_inner_expression()
-            && member.property.name == "raw"
-            && let oxc_ast::ast::Expression::Identifier(object) =
-                member.object.get_inner_expression()
-            && self.locals.contains(object.name.as_str())
-        {
-            self.found = true;
+        if !self.found {
+            let callee = match call.callee.get_inner_expression() {
+                oxc_ast::ast::Expression::StaticMemberExpression(member)
+                    if member.property.name == "raw" =>
+                {
+                    member.object.get_inner_expression()
+                }
+                callee => callee,
+            };
+            if let oxc_ast::ast::Expression::Identifier(object) = callee
+                && self.locals.contains(object.name.as_str())
+            {
+                self.found = true;
+            }
         }
         oxc_ast_visit::walk::walk_call_expression(self, call);
     }

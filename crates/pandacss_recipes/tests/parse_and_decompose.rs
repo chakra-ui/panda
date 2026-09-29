@@ -3,7 +3,7 @@
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
 use pandacss_extractor::{ExtractorConfig, Matcher, Matchers, NameMatcher, extract};
-use pandacss_recipes::{Recipe, SlotRecipe};
+use pandacss_recipes::{Recipe, SlotRecipe, VariantValue};
 
 fn cva_matchers() -> Matchers {
     Matchers {
@@ -131,7 +131,7 @@ fn parses_boolean_default_variants() {
     let recipe = parse_recipe(src);
     assert_eq!(
         recipe.default_variants,
-        vec![("muted".to_owned(), "true".to_owned())]
+        vec![("muted".to_owned(), VariantValue::Bool(true))]
     );
 }
 
@@ -262,6 +262,31 @@ fn parses_sva_with_explicit_slots() {
               - - header
                 - fontSize: 20
     ");
+}
+
+#[test]
+fn parses_sva_class_name_prefix() {
+    let src = indoc! {r"
+        import { sva } from '@panda/css';
+        const card = sva({
+          slots: ['root', 'header'],
+          className: 'card',
+        });
+    "};
+    let recipe = parse_slot_recipe(src);
+    assert_eq!(recipe.class_name.as_deref(), Some("card"));
+}
+
+#[test]
+fn ignores_an_sva_class_name_map() {
+    let src = indoc! {r"
+        import { sva } from '@panda/css';
+        const card = sva({
+          slots: ['root', 'header'],
+          className: { root: 'card-root', header: 'card-header' },
+        });
+    "};
+    assert!(parse_slot_recipe(src).class_name.is_none());
 }
 
 #[test]

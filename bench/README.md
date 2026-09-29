@@ -38,6 +38,34 @@ styling runtime that ships to the app. Four sections:
 Numbers track whatever the current compiler emits, so a runtime regression shows up as the guard flipping or the ratios
 widening. To compare against v1, run the same shapes under `@pandacss/dev@1.12.0` in a throwaway project.
 
+## Transform audit (`transform-audit`)
+
+```sh
+pnpm --filter @pandacss/compiler build:native      # the transform runs through the native binding
+pnpm --filter @pandacss/transformer build:fast
+pnpm --filter=./bench transform-audit              # every project with a panda config
+pnpm --filter=./bench transform-audit website      # or specific projects
+```
+
+Transforms every source file of each real project in the repo (`website`, `playground`, the sandboxes) with that
+project's own config, and checks that every class the transform folded in is defined by the project's stylesheet. It
+exits non-zero on a miss. Classes the runtime also returns but whose styles are empty are listed in `EMPTY_RULES` with
+the reason. This caught condition chains the transform named in a different order than the stylesheet
+(`md: { _hover }`), which no unit test did.
+
+## Transformed recipe benchmark (`recipe-runtime`)
+
+```sh
+pnpm --filter @pandacss/transformer build:fast   # the transformer and its internal runtime
+pnpm --filter=./bench recipe-runtime             # CALLS=200000, RENDERS=20000 by default
+```
+
+Runs each recipe two ways — the styled-system `cva`/`sva` and the transformer's specialized output — and checks
+both return the same classes before timing them. Sections: recipe
+calls per workload, the internal `cx` against a plain join, bundle bytes, and `styled()` configs rendered with
+`react-dom/server`. The transformer and `rolldown` load from `packages/transformer`, so the bench adds no dependencies
+of its own.
+
 ## staticCss condition sweep (`static_css_conditions`)
 
 ```sh

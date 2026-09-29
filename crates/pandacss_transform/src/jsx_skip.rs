@@ -60,7 +60,7 @@ mod tests {
     }
 
     #[test]
-    fn allows_qwik_array_class_expression() {
+    fn allows_array_class_expression() {
         assert!(!super::dynamic_class_name_expression_should_skip(&facts(
             ExpressionKind::Array,
             None,
@@ -68,7 +68,7 @@ mod tests {
     }
 
     #[test]
-    fn allows_qwik_record_class_expression() {
+    fn allows_record_class_expression() {
         assert!(!super::dynamic_class_name_expression_should_skip(&facts(
             ExpressionKind::Object,
             None,

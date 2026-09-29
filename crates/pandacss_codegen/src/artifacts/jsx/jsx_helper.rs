@@ -5,7 +5,7 @@ use crate::{
 pub(super) fn module(ctx: CodegenContext<'_>) -> Module {
     Module::new()
         .with_import(ImportDecl::value(
-            ["css"],
+            ["css", "cva"],
             &ctx.runtime_import(RuntimeImport::CssIndex, "../css/index"),
         ))
         .with_item(raw_runtime(JSX_HELPER_RUNTIME))
@@ -50,7 +50,7 @@ const JSX_HELPER_RUNTIME: &str = r"export const composeShouldForwardProps = (tag
 export const composeCvaFn = (cvaA, cvaB) => {
   if (cvaA && !cvaB) return cvaA
   if (!cvaA && cvaB) return cvaB
-  if ((cvaA.__cva__ && cvaB.__cva__) || (cvaA.__recipe__ && cvaB.__recipe__)) return cvaA.merge(cvaB)
+  if ((cvaA.__cva__ && cvaB.__cva__) || (cvaA.__recipe__ && cvaB.__recipe__)) return cvaA.merge(cvaB, cva)
   const error = new TypeError('Cannot merge cva with recipe. Please use either cva or recipe.')
   TypeError.captureStackTrace?.(error)
   throw error

@@ -114,16 +114,15 @@ The plugin only runs with Vite. The `"prepare"` script covers type checking and 
 
 ### Configure the content
 
-Set `jsxFramework: 'qwik'` and make sure your component paths are in `include`:
+Make sure your component paths are in `include`:
 
-```js {6,7} filename="panda.config.ts"
+```js {6} filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   preflight: true,
   include: ['./src/**/*.{js,jsx,ts,tsx}'],
-  jsxFramework: 'qwik',
   outdir: 'styled-system'
 })
 ```

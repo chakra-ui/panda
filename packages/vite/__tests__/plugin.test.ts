@@ -42,12 +42,12 @@ function createFixture(style = `{ color: 'red' }`, config = CONFIG) {
   return dir
 }
 
-async function startServer(dir: string): Promise<ViteDevServer> {
+async function startServer(dir: string, options?: Parameters<typeof pandacss>[0]): Promise<ViteDevServer> {
   const server = await createServer({
     root: dir,
     logLevel: 'silent',
     configFile: false,
-    plugins: [pandacss()],
+    plugins: [pandacss(options)],
     // A listening server keeps the HMR machinery live. Tests emit watcher events themselves, so the
     // real file watcher stays off; otherwise its own events race the emitted ones.
     server: { port: 0, strictPort: false, watch: null },
@@ -108,6 +108,26 @@ async function waitForWarning(warnings: string[], needle: string): Promise<strin
   throw new Error(`timed out waiting for warning ${JSON.stringify(needle)}`)
 }
 
+const RECIPE_CONFIG = CONFIG.replace(
+  '  importMap: {',
+  "  utilities: { color: { className: 'c' }, fontSize: { className: 'fs' } },\n  importMap: {",
+)
+
+const BUTTON = (fontSize: string) => `import { cva } from '@panda/css'
+export const button = cva({ base: { color: 'red' }, variants: { size: { lg: { fontSize: '${fontSize}' } } } })
+`
+
+/** The class string the transform folded `button({ size: 'lg' })` to in `Toolbar.tsx`. */
+async function foldedButton(server: ViteDevServer, needle: string): Promise<string> {
+  for (let attempt = 0; attempt < 50; attempt++) {
+    const code = (await server.transformRequest('/Toolbar.tsx'))?.code ?? ''
+    const folded = /cls = "([^"]*)"/.exec(code)?.[1]
+    if (folded?.includes(needle)) return folded
+    await new Promise((done) => setTimeout(done, 100))
+  }
+  throw new Error(`timed out waiting for ${JSON.stringify(needle)} in the folded class`)
+}
+
 describe('@pandacss/vite', () => {
   let dir: string | undefined
   let server: ViteDevServer | undefined
@@ -117,6 +137,24 @@ describe('@pandacss/vite', () => {
     server = undefined
     if (dir) rmSync(dir, { recursive: true, force: true })
     dir = undefined
+  })
+
+  it('re-folds a recipe call when the recipe file it imports changes', async () => {
+    dir = createFixture(`{ color: 'red' }`, RECIPE_CONFIG)
+    const recipeFile = join(dir, 'button.ts')
+    writeFileSync(recipeFile, BUTTON('16px'))
+    writeFileSync(
+      join(dir, 'Toolbar.tsx'),
+      "import { button } from './button'\nexport const cls = button({ size: 'lg' })\n",
+    )
+    server = await startServer(dir, { transform: true })
+
+    expect(await foldedButton(server, '16px')).toMatchInlineSnapshot(`"c_red fs_16px"`)
+
+    writeFileSync(recipeFile, BUTTON('20px'))
+    server.watcher.emit('change', recipeFile)
+
+    expect(await foldedButton(server, '20px')).toMatchInlineSnapshot(`"c_red fs_20px"`)
   })
 
   it('injects the stylesheet into the CSS file that declares Panda layers', async () => {

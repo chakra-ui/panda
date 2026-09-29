@@ -122,7 +122,7 @@ pub fn generate(
 fn runtime_consts(keys: &[String]) -> String {
     let conditions = keys.join(",");
     format!(
-        r#"const conditions = new Set("{conditions}".split(','))
+        r#"const conditions = /* @__PURE__ */ new Set(/* @__PURE__ */ "{conditions}".split(','))
 const conditionRe = /^@|&/
 const underscoreRe = /^_/
 const selectorRe = /&|@/"#

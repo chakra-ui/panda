@@ -55,6 +55,23 @@ pub(crate) fn build_transform_edits(
         ));
     }
 
+    if !plan.hoisted.is_empty() {
+        edits.push(Edit::Insert {
+            at: imports::internal_css_import_insertion_point(&plan.module),
+            content: plan.hoisted.iter().enumerate().fold(
+                String::new(),
+                |mut out, (index, value)| {
+                    out.push_str("const ");
+                    out.push_str(&super::plan::hoisted_name(index));
+                    out.push_str(" = ");
+                    out.push_str(value);
+                    out.push_str(";\n");
+                    out
+                },
+            ),
+        });
+    }
+
     if plan.module.symbols_resolved || helper_facts_required(&plan.helper) {
         edits.extend(imports::plan_internal_css_import_removals(
             source,
@@ -149,7 +166,7 @@ pub(crate) fn apply_helper_sync(
 }
 
 fn helper_facts_required(helper: &super::plan::TransformHelperFacts) -> bool {
-    helper.needs_cx || helper.needs_cva || helper.needs_sva
+    helper.needs_cx || helper.needs_attach_recipe || helper.needs_memo_recipe
 }
 
 fn helper_facts_with_live_references(
@@ -164,10 +181,10 @@ fn helper_facts_with_live_references(
     super::plan::TransformHelperFacts {
         needs_cx: helper.needs_cx
             || imports::binding_has_live_reference(module, helper::CX_HELPER_LOCAL, rewrites),
-        needs_cva: helper.needs_cva
-            || imports::binding_has_live_reference(module, helper::CVA_HELPER_LOCAL, rewrites),
-        needs_sva: helper.needs_sva
-            || imports::binding_has_live_reference(module, helper::SVA_HELPER_LOCAL, rewrites),
+        needs_attach_recipe: helper.needs_attach_recipe
+            || imports::binding_has_live_reference(module, helper::RECIPE_HELPER_LOCAL, rewrites),
+        needs_memo_recipe: helper.needs_memo_recipe
+            || imports::binding_has_live_reference(module, helper::MEMO_HELPER_LOCAL, rewrites),
     }
 }
 
@@ -192,6 +209,7 @@ fn separated_import(
 
 #[cfg(test)]
 mod tests {
+    use insta::assert_snapshot;
     use pandacss_extractor::{
         ImportBindingFacts, ImportKind, ImportRecord, ImportSpecifier, ImportSpecifierKind,
         ModuleFacts,
@@ -264,14 +282,18 @@ mod tests {
                 symbols_resolved: false,
             },
             bailed: false,
+            hashed_recipe: None,
+            hoisted: Vec::new(),
         };
 
         let edits =
             build_transform_edits(&system, "src/styles.ts", source, &plan, HelperCxMode::Auto);
         let out = project_edits(source, &edits);
 
-        assert!(out.contains("import { css } from '@panda/css';"));
-        assert!(out.contains("\"color_red\""));
+        assert_snapshot!(out, @r#"
+        import { css } from '@panda/css';
+        export const cls "color_red"});
+        "#);
     }
 
     #[test]
@@ -283,8 +305,8 @@ mod tests {
             dependencies: Vec::new(),
             helper: TransformHelperFacts {
                 needs_cx: true,
-                needs_cva: false,
-                needs_sva: false,
+                needs_attach_recipe: false,
+                needs_memo_recipe: false,
             },
             module: ModuleFacts {
                 imports: Vec::new(),
@@ -294,13 +316,18 @@ mod tests {
                 symbols_resolved: false,
             },
             bailed: false,
+            hashed_recipe: None,
+            hoisted: Vec::new(),
         };
 
         let edits =
             build_transform_edits(&system, "src/styles.ts", source, &plan, HelperCxMode::Auto);
         let out = project_edits(source, &edits);
 
-        assert!(out.contains("import { cx as __pcx } from '@pandacss-internal/css';"));
+        assert_snapshot!(out, @r#"
+        import { cx as __pcx } from '@pandacss-internal/css';
+        export const cls = "color_red";
+        "#);
     }
 
     #[test]
@@ -337,6 +364,8 @@ mod tests {
                 symbols_resolved: false,
             },
             bailed: false,
+            hashed_recipe: None,
+            hoisted: Vec::new(),
         };
 
         let edits =
