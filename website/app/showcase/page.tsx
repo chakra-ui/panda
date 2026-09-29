@@ -1,6 +1,5 @@
 import { Navbar } from '@/components/navbar'
 import { generateOgImageUrl } from '@/lib/og-image'
-import { getV2Href } from '@/lib/v2-url'
 import { showcases } from '@/showcase'
 import { css } from '@/styled-system/css'
 import { Container, Grid, panda, Stack } from '@/styled-system/jsx'
@@ -17,7 +16,6 @@ export const metadata: Metadata = {
   title: 'Showcase',
   description:
     'Panda CSS is a powerful tool for building modern web applications.',
-  alternates: { canonical: getV2Href('/showcase') },
   openGraph: {
     title: ogTitle,
     description: ogDescription,

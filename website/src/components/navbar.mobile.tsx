@@ -24,11 +24,9 @@ export const MobileNavBar = () => {
       position="relative"
       justify="space-between"
     >
-      <HStack gap="3">
-        <Link href="/" className={center({ flexShrink: '0' })}>
-          <Icon icon="LogoWithText" />
-        </Link>
-      </HStack>
+      <Link href="/" className={center({ flexShrink: '0' })}>
+        <Icon icon="LogoWithText" />
+      </Link>
 
       <HStack gap="4">
         <VersionSwitcher />

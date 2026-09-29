@@ -1,6 +1,5 @@
 import { blog } from '.velite'
 import { generateOgImageUrl } from '@/lib/og-image'
-import { getV2Href } from '@/lib/v2-url'
 import { css } from '@/styled-system/css'
 import { Box, Container, Stack, panda } from '@/styled-system/jsx'
 import type { Metadata } from 'next'
@@ -12,7 +11,6 @@ const ogDescription = 'News, updates, and deep dives from the Panda CSS team'
 export const metadata: Metadata = {
   title: 'Blog',
   description: ogDescription,
-  alternates: { canonical: getV2Href('/blog') },
   openGraph: {
     title: ogTitle,
     description: ogDescription,

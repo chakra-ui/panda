@@ -6,7 +6,6 @@ import { Pagination } from '@/components/docs/pagination'
 import { Sidebar } from '@/components/docs/sidebar'
 import { Toc } from '@/components/ui/toc'
 import { generateOgImageUrl } from '@/lib/og-image'
-import { getV2Href } from '@/lib/v2-url'
 import { css } from '@/styled-system/css'
 import { Box } from '@/styled-system/jsx'
 import { notFound } from 'next/navigation'
@@ -24,13 +23,11 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: DocsPageProps) {
   const { slug } = await params
   const doc = docs.find(doc => doc.slug.endsWith(slug.join('/')))
-  const alternates = { canonical: getV2Href(`/docs/${slug.join('/')}`) }
   
   if (!doc) {
     return {
       title: 'Panda CSS',
-      description: 'Build modern websites using build time and type-safe CSS-in-JS',
-      alternates
+      description: 'Build modern websites using build time and type-safe CSS-in-JS'
     }
   }
 
@@ -43,7 +40,6 @@ export async function generateMetadata({ params }: DocsPageProps) {
   return {
     title: `${doc.title} | Panda CSS`,
     description: doc.description,
-    alternates,
     openGraph: {
       title: doc.title,
       description: doc.description,
