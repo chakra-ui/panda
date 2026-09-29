@@ -43,9 +43,8 @@ const socialStyles = css({
 })
 
 function MemberRow({ user }: { user: GitHubUser }) {
-  const role =
-    teamMembers.find(member => member.login === user.login)?.role ??
-    'Contributor'
+  const member = teamMembers.find(member => member.login === user.login)
+  const role = member?.role ?? 'Contributor'
 
   return (
     <Box
@@ -67,7 +66,7 @@ function MemberRow({ user }: { user: GitHubUser }) {
 
       <Box minW="0">
         <Box textStyle="lg" fontWeight="semibold">
-          {user.name || user.login}
+          {member?.name || user.name || user.login}
         </Box>
         <Box textStyle="eyebrow" color="fg.subtle" mt="1.5">
           {role}
