@@ -114,14 +114,14 @@ export function TabBar() {
 function CommunityMenu() {
   return (
     <Menu.Root lazyMount positioning={{ placement: 'bottom-end' }}>
-      <Menu.Trigger className={communityTrigger}>
+      <Menu.Trigger className={css(communityTrigger)}>
         <LuUsers size={16} />
         Community
         <LuChevronDown size={14} />
       </Menu.Trigger>
       <Portal>
         <Menu.Positioner>
-          <Menu.Content className={communityContent}>
+          <Menu.Content className={css(communityContent)}>
             {communityLinks.map(link => (
               <Menu.Item
                 key={link.title}
@@ -146,7 +146,7 @@ function CommunityMenu() {
   )
 }
 
-const communityTrigger = css({
+export const communityTrigger = css.raw({
   display: 'flex',
   alignItems: 'center',
   gap: '2',
@@ -165,7 +165,7 @@ const communityTrigger = css({
   _open: { color: 'fg' }
 })
 
-const communityContent = css({
+export const communityContent = css.raw({
   minW: '13rem',
   bg: 'bg',
   borderWidth: '1px',
@@ -177,7 +177,7 @@ const communityContent = css({
   outline: '0'
 })
 
-const communityItem = css({
+export const communityItem = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',

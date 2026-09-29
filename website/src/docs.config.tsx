@@ -1,5 +1,6 @@
 export interface TeamMember {
   login: string
+  name?: string
   role: string
   /** Advisors shaped the work Panda stands on, but don't maintain it today. */
   status: 'maintainer' | 'advisor'
@@ -11,7 +12,12 @@ export const teamMembers: TeamMember[] = [
     role: 'Creator & Lead Maintainer',
     status: 'maintainer'
   },
-  { login: 'Adebesin-Cell', role: 'Maintainer', status: 'maintainer' },
+  {
+    login: 'Adebesin-Cell',
+    name: 'Adebesin Tolulope',
+    role: 'Maintainer',
+    status: 'maintainer'
+  },
   { login: 'anubra266', role: 'Creator, Tark UI', status: 'advisor' },
   { login: 'astahmer', role: 'Creator', status: 'advisor' },
   { login: 'cschroeter', role: 'Creator @ Park UI', status: 'advisor' },

@@ -1,7 +1,15 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { VueUiDonut, VueUiVerticalBar } from "vue-data-ui";
-import type { VueUiDonutConfig, VueUiVerticalBarConfig } from "vue-data-ui";
+import {
+  VueUiDonut,
+  type VueUiDonutConfig,
+  type VueUiDonutDatasetItem,
+} from "vue-data-ui/vue-ui-donut";
+import {
+  VueUiHorizontalBar,
+  type VueUiHorizontalBarConfig,
+  type VueUiHorizontalBarDatasetItem,
+} from "vue-data-ui/vue-ui-horizontal-bar";
 import * as s from "./AnalyzeCharts.styles";
 import type { CategoryUsage } from "~/utils/analyze";
 
@@ -35,19 +43,18 @@ const topToken = computed(() => {
   return all.toSorted((a, b) => b.uses - a.uses)[0] ?? null;
 });
 
-const donutDataset = computed(() => [
+const donutDataset = computed<VueUiDonutDatasetItem[]>(() => [
   { name: "used", values: [totals.value.used], color: ACCENT },
   { name: "unused", values: [totals.value.unused], color: MUTED.value },
 ]);
 
-const donutConfig = computed(() => ({
+const donutConfig = computed<VueUiDonutConfig>(() => ({
   responsive: true,
   userOptions: { show: false },
   style: {
     chart: {
       backgroundColor: "transparent",
       color: GREY,
-      title: { show: false },
       legend: { show: true, backgroundColor: "transparent", color: GREY, fontSize: 13 },
       tooltip: {
         show: true,
@@ -73,7 +80,7 @@ const donutConfig = computed(() => ({
   },
 }));
 
-const bars = computed(() =>
+const bars = computed<VueUiHorizontalBarDatasetItem[]>(() =>
   props.report
     .flatMap((c) =>
       c.tokens
@@ -85,14 +92,13 @@ const bars = computed(() =>
     .map((t) => ({ name: t.name, value: t.uses, color: ACCENT })),
 );
 
-const barConfig = computed(() => ({
+const barConfig = computed<VueUiHorizontalBarConfig>(() => ({
   userOptions: { show: false },
   table: { show: false },
   style: {
     chart: {
       backgroundColor: "transparent",
       color: INK.value,
-      title: { show: false },
       legend: { show: false },
       layout: {
         bars: {
@@ -137,7 +143,7 @@ const barConfig = computed(() => ({
         {{ totals.used }} of {{ totals.total }} tokens used in your source
       </div>
       <div :class="s.donutBox">
-        <VueUiDonut :dataset="donutDataset" :config="donutConfig as unknown as VueUiDonutConfig" />
+        <VueUiDonut :dataset="donutDataset" :config="donutConfig" />
       </div>
     </div>
 
@@ -165,7 +171,7 @@ const barConfig = computed(() => ({
       <div :class="s.statMono">{{ topToken?.name ?? "—" }}</div>
       <div :class="s.statSub">most-used token{{ topToken ? ` · ×${topToken.uses}` : "" }}</div>
       <div :class="s.barBox">
-        <VueUiVerticalBar :dataset="bars" :config="barConfig as unknown as VueUiVerticalBarConfig" />
+        <VueUiHorizontalBar :dataset="bars" :config="barConfig" />
       </div>
     </div>
   </div>

@@ -3,6 +3,7 @@
 import { CourseBanner } from '@/components/course-banner'
 import { CommandMenu } from '@/components/docs/command-menu'
 import { SearchButton } from '@/components/docs/search'
+import { VersionSwitcher } from '@/components/docs/version-switcher'
 import { Anchor } from '@/components/ui/anchor'
 import { docsConfig } from '@/docs.config'
 import { GithubIcon, MenuIcon } from '@/icons'
@@ -15,11 +16,6 @@ import { ThemeSwitch } from '@/mdx/theme-switch'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-/**
- * Docs-only; `mdx/navbar.tsx` still serves the marketing pages. Fixed rather
- * than sticky: the layout's TabBar offset and `main` padding are computed
- * against `--navbar-height` assuming this bar is out of flow.
- */
 const siteLinks = [
   {
     title: 'Docs',
@@ -39,7 +35,7 @@ export function DocsNavbar() {
 
   return (
     <Box as="header" position="fixed" top="0" insetX="0" zIndex="20" bg="bg">
-      <CourseBanner />
+      <CourseBanner inverted={pathname === '/'} />
 
       <HStack
         h="var(--navbar-height, 4rem)"
@@ -123,6 +119,8 @@ export function DocsNavbar() {
           flexShrink="0"
           justifySelf="end"
         >
+          <VersionSwitcher />
+
           <Anchor
             href="https://play.panda-css.com/"
             newWindow
