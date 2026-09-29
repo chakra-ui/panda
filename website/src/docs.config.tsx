@@ -157,7 +157,6 @@ export const docsTabs: TabItem[] = [
           { title: 'React Router', url: 'react-router' },
           { title: 'Remix', url: 'remix' },
           { title: 'SolidJS', url: 'solidjs' },
-          { title: 'Qwik', url: 'qwik' },
           { title: 'Preact', url: 'preact' },
           { title: 'Angular', url: 'angular' },
           { title: 'Rsbuild', url: 'rsbuild' },

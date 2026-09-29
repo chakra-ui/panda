@@ -194,6 +194,21 @@ Ten options are gone: `studio` (and its sub-options), `eject`, `emitTokensOnly`,
 `lightningcss`, and `browserslist`. `forceConsistentTypeExtension` is replaced by `forceImportExtension` — different
 semantics, not a rename. `outExtension` gains a `'ts'` value. See [Config](/docs/reference/config).
 
+### Qwik JSX is removed
+
+`jsxFramework: 'qwik'` no longer generates `styled`, `Box`, or pattern components. Drop the option and style with
+`css()`, `cva()`, and pattern functions; Qwik's `class` accepts their output directly.
+
+```tsx
+// ❌ v1
+import { Box } from 'styled-system/jsx'
+<Box color="red.500" />
+
+// ✅ v2
+import { css } from 'styled-system/css'
+<div class={css({ color: 'red.500' })} />
+```
+
 ### CLI commands and flags
 
 `panda inspect`, `panda validate`, and `panda info` are removed. Use `panda doctor` (add `--json` for scripts).

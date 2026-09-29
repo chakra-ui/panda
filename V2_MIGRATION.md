@@ -124,7 +124,7 @@ Make sure the project resolves ESM — add `"type": "module"` to `package.json` 
 ```bash
 panda init --postcss              # also write postcss.config.cjs
 panda init --gitignore            # add styled-system to .gitignore (on by default)
-panda init --jsxFramework react   # JSX helpers (react | preact | vue | solid | qwik)
+panda init --jsxFramework react   # JSX helpers (react | preact | vue | solid)
 panda init --outdir src/styled-system
 panda init -i                     # interactive wizard (TTY only; not a log mode)
 ```
@@ -260,7 +260,7 @@ production.
 ### Extraction
 
 - **Compiled-JSX extraction.** `css` props are picked up from compiled runtime helpers (`jsx(...)` / `_jsx(...)`), so
-  React, Preact, Vue, Solid, and Qwik builds work — not just raw JSX source.
+  React, Preact, Vue, and Solid builds work — not just raw JSX source.
 - **Cross-file static composition.** You can keep shared styles in another file and compose them with `css(...)`. v2
   folds named local imports when the value is static. Aliases, re-exports, object spreads, and Panda `.raw()` helpers
   work. Default imports, namespace imports, and runtime values are skipped.
@@ -503,6 +503,21 @@ const Button = styled('button', {
 ```
 
 Run `panda codegen --clean` after you migrate so the old runtime is regenerated.
+
+### Qwik JSX is removed
+
+`jsxFramework: 'qwik'` no longer generates `styled`, `Box`, or pattern components. Drop the option and style with
+`css()`, `cva()`, and pattern functions; Qwik's `class` accepts their output directly.
+
+```tsx
+// ❌ v1
+import { Box } from 'styled-system/jsx'
+<Box color="red.500" />
+
+// ✅ v2
+import { css } from 'styled-system/css'
+<div class={css({ color: 'red.500' })} />
+```
 
 ### `--cpu-prof` is now `--profile`
 

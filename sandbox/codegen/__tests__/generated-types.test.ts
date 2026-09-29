@@ -56,10 +56,6 @@ describe('generated .d.ts', () => {
     expectEachTypeDeclaredOnce('styled-system-preact')
   })
 
-  test('the qwik scenario declares each type once', () => {
-    expectEachTypeDeclaredOnce('styled-system-qwik')
-  })
-
   test('the solid scenario declares each type once', () => {
     expectEachTypeDeclaredOnce('styled-system-solid')
   })

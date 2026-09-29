@@ -6,7 +6,6 @@ import { NextjsLogo } from '@/icons/nextjs'
 import { NuxtLogo } from '@/icons/nuxt'
 import { PreactLogo } from '@/icons/preact'
 import { ReactRouterLogo } from '@/icons/react-router'
-import { QwikLogo } from '@/icons/qwik'
 import { RedwoodLogo } from '@/icons/redwood'
 import { RsbuildLogo } from '@/icons/rsbuild'
 import { RemixLogo } from '@/icons/remix'
@@ -74,11 +73,6 @@ const logoMap = {
     name: 'Solid',
     logo: SolidjsLogo,
     href: '/docs/get-started/solidjs'
-  },
-  qwik: {
-    name: 'Qwik',
-    logo: QwikLogo,
-    href: '/docs/get-started/qwik'
   },
   preact: {
     name: 'Preact',

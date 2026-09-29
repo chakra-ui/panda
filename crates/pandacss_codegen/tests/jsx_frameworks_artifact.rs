@@ -32,12 +32,6 @@ fn emits_pattern_jsx_for_non_react_frameworks() {
             "import type { FunctionComponent } from 'preact';",
         ),
         (
-            "qwik",
-            "from '@builder.io/qwik';",
-            "function Stack(props)",
-            "import type { Component } from '@builder.io/qwik';",
-        ),
-        (
             "solid",
             "from 'solid-js';",
             "createComponent(panda[\"section\"], mergedProps)",
@@ -165,19 +159,14 @@ fn emits_recipe_contexts_for_supported_non_react_frameworks() {
 }
 
 #[test]
-fn skips_recipe_contexts_for_qwik() {
+fn qwik_no_longer_generates_jsx_components() {
     let artifacts = ArtifactGraph.generate_all(
         CodegenContext::config_only(&config("qwik")),
         GenerateOptions::default(),
     );
-    let recipe = artifact(&artifacts, ArtifactId::JsxCreateRecipeContext);
-    let slot_recipe = artifact(&artifacts, ArtifactId::JsxCreateSlotRecipeContext);
-    let index = file(artifact(&artifacts, ArtifactId::JsxIndex), "jsx/index.mjs");
 
-    assert!(paths(recipe).is_empty());
-    assert!(paths(slot_recipe).is_empty());
-    assert!(!index.contains("create-recipe-context"));
-    assert!(!index.contains("create-slot-recipe-context"));
+    assert!(paths(artifact(&artifacts, ArtifactId::JsxFactory)).is_empty());
+    assert!(paths(artifact(&artifacts, ArtifactId::JsxPatterns)).is_empty());
 }
 
 #[test]
@@ -246,12 +235,6 @@ fn emits_object_jsx_factory_for_non_react_frameworks() {
             "import type { ComponentProps, JSX } from 'preact';",
         ),
         (
-            "qwik",
-            "from '@builder.io/qwik';",
-            "function PandaComponent(props)",
-            "import type { Component, QwikIntrinsicElements } from '@builder.io/qwik';",
-        ),
-        (
             "solid",
             "from 'solid-js';",
             "createComponent(",
@@ -300,7 +283,7 @@ fn emits_object_jsx_factory_for_non_react_frameworks() {
 
 #[test]
 fn types_index_reexports_jsx_for_non_react_frameworks() {
-    for framework in ["preact", "qwik", "solid", "vue"] {
+    for framework in ["preact", "solid", "vue"] {
         let artifacts = ArtifactGraph.generate_all(
             CodegenContext::config_only(&config(framework)),
             GenerateOptions {

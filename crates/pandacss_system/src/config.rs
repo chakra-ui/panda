@@ -566,11 +566,11 @@ fn class_attribute_for_framework(framework: Option<&JsxFramework>) -> &'static s
     class_attribute_for_jsx_framework(framework.map(JsxFramework::as_str))
 }
 
-/// Solid/Vue/Qwik use `class` on intrinsic elements; everything else `className`.
+/// Solid/Vue use `class` on intrinsic elements; everything else `className`.
 #[must_use]
 pub fn class_attribute_for_jsx_framework(name: Option<&str>) -> &'static str {
     match name {
-        Some("solid" | "vue" | "qwik") => "class",
+        Some("solid" | "vue") => "class",
         _ => "className",
     }
 }

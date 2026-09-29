@@ -27,7 +27,6 @@ const TARGETS = [
   'sandbox/next-js-pages',
   'sandbox/solid-ts',
   'sandbox/preact-ts',
-  'sandbox/qwik-ts',
   'sandbox/remix',
   'sandbox/storybook',
   'sandbox/nuxt',

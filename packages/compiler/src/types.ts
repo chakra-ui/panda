@@ -56,7 +56,7 @@ export interface Matcher {
   names?: string[]
 }
 
-export type JsxFramework = 'react' | 'solid' | 'preact' | 'vue' | 'qwik' | (string & {})
+export type JsxFramework = 'react' | 'solid' | 'preact' | 'vue' | (string & {})
 
 export interface Matchers {
   css: Matcher

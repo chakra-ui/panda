@@ -178,7 +178,7 @@ pub struct ExtractorConfig {
     pub matchers: Matchers,
     pub jsx: JsxExtractionConfig,
     pub has_jsx_framework: bool,
-    /// `"className"` for React/Preact, `"class"` for Solid/Vue/Qwik.
+    /// `"className"` for React/Preact, `"class"` for Solid/Vue.
     pub class_attribute: &'static str,
     /// When `Some`, `token('x.y')` calls fold to the looked-up value.
     pub token_dictionary: Option<Arc<TokenDictionary>>,

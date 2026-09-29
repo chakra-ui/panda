@@ -48,7 +48,7 @@ export const initCommand = defineCommand({
       description: 'Generated runtime file extension: js, mjs, or ts',
     },
     outdir: { type: 'string', description: 'Output directory for generated files' },
-    'jsx-framework': { type: 'string', description: 'JSX framework: react, preact, vue, solid, or qwik' },
+    'jsx-framework': { type: 'string', description: 'JSX framework: react, preact, vue, or solid' },
     'jsx-style-props': {
       type: 'string',
       description: 'JSX style props: all, minimal, or none',

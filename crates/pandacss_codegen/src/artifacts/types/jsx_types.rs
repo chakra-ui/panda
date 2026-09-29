@@ -41,30 +41,6 @@ fn object_literal_module(
                 upper_name,
                 html_props_name,
             ))),
-        Some(JsxFramework::Qwik) => Module::new()
-            .with_import(ImportDecl::ty(
-                ["Component", "QwikIntrinsicElements"],
-                "@builder.io/qwik",
-            ))
-            .with_import(ImportDecl::ty(
-                ["RecipeDefinition", "RecipeSelection", "RecipeVariantRecord"],
-                "./recipe",
-            ))
-            .with_import(ImportDecl::ty(
-                [
-                    "Assign",
-                    "DistributiveUnion",
-                    "JsxStyleProps",
-                    "PatchedHTMLProps",
-                    "Pretty",
-                ],
-                "./system",
-            ))
-            .with_item(type_raw(qwik_jsx_type_code(
-                component_name,
-                upper_name,
-                html_props_name,
-            ))),
         Some(JsxFramework::Solid) => Module::new()
             .with_import(ImportDecl::ty(
                 ["Accessor", "Component", "ComponentProps", "JSX"],
@@ -240,70 +216,6 @@ fn solid_jsx_type_code(component_name: &str, upper_name: &str, html_props_name: 
         "defaultProps?: MaybeAccessor<Partial<TProps> & DataAttrs>",
     );
     code
-}
-
-fn qwik_jsx_type_code(component_name: &str, upper_name: &str, html_props_name: &str) -> String {
-    let mut code = r#"export type ElementType = keyof QwikIntrinsicElements | Component<any>
-
-export type ComponentPropsOf<T extends ElementType> = T extends keyof QwikIntrinsicElements
-  ? QwikIntrinsicElements[T]
-  : T extends Component<infer P>
-    ? P
-    : never
-
-interface AnyProps {
-  [k: string]: unknown
-}
-
-export type DataAttrs = Record<`data-${string}`, unknown>
-
-export interface UnstyledProps {
-  unstyled?: boolean | undefined
-}
-
-export interface AsProps {
-  as?: ElementType | undefined
-}
-
-export interface __COMPONENT__<T extends ElementType, P extends AnyProps = {}> extends Component<Assign<ComponentPropsOf<T> & UnstyledProps & AsProps, Assign<PatchedHTMLProps, Assign<JsxStyleProps, P>>>> {}
-
-interface RuntimeRecipeFn {
-  __type: any
-}
-
-export interface JsxFactoryOptions<TProps extends AnyProps> {
-  dataAttr?: boolean
-  defaultProps?: Partial<TProps> & DataAttrs
-  shouldForwardProp?: (prop: string, variantKeys: string[]) => boolean
-  forwardProps?: string[]
-}
-
-export type JsxRecipeProps<T extends ElementType, P extends AnyProps> = ComponentPropsOf<T> & UnstyledProps & AsProps & P
-
-export type JsxElement<T extends ElementType, P extends AnyProps> = T extends __COMPONENT__<infer A, infer B>
-  ? __COMPONENT__<A, Pretty<DistributiveUnion<P, B>>>
-  : __COMPONENT__<T, P>
-
-export interface JsxFactory {
-  <T extends ElementType>(component: T): __COMPONENT__<T, {}>
-  <T extends ElementType, P extends RecipeVariantRecord = {}>(component: T, recipe: RecipeDefinition<P>, options?: JsxFactoryOptions<JsxRecipeProps<T, RecipeSelection<P>>>): JsxElement<T, RecipeSelection<P>>
-  <T extends ElementType, P extends RuntimeRecipeFn>(component: T, recipeFn: P, options?: JsxFactoryOptions<JsxRecipeProps<T, P["__type"]>>): JsxElement<T, P["__type"]>
-}
-
-export type JsxElements = {
-  [K in keyof QwikIntrinsicElements]: __COMPONENT__<K, {}>
-}
-
-export type __UPPER__ = JsxFactory & JsxElements
-
-export type __HTML_PROPS__<T extends ElementType> = Assign<ComponentPropsOf<T> & UnstyledProps & AsProps, JsxStyleProps>
-
-export type StyledVariantProps<T extends __COMPONENT__<any, any>> = T extends __COMPONENT__<any, infer Props> ? Props : never"#
-        .to_owned();
-
-    code = code.replace("__COMPONENT__", component_name);
-    code = code.replace("__UPPER__", upper_name);
-    code.replace("__HTML_PROPS__", html_props_name)
 }
 
 fn vue_jsx_type_code(component_name: &str, upper_name: &str, html_props_name: &str) -> String {
