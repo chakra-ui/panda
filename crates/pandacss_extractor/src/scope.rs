@@ -285,18 +285,6 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             .collect()
     }
 
-    pub(crate) fn tokens(&self) -> Option<&'a TokenDictionary> {
-        self.tokens
-    }
-
-    pub(crate) fn matchers(&self) -> Option<&'a Matchers> {
-        self.matchers
-    }
-
-    pub(crate) fn prefix(&self) -> &'a str {
-        self.prefix
-    }
-
     // === Pure Function Resolution ===
 
     /// Fold a pure local/imported callable: `f()`, `(() => 'x')()`, etc.

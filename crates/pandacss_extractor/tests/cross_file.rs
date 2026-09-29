@@ -1623,3 +1623,415 @@ fn imported_factory_consts_fold_together_in_one_call() {
         )
     );
 }
+
+// --- `export * from` barrels ----------------------------------------------
+
+const BRAND_IMPORT: &str = indoc::indoc! {r"
+    import { brand } from './barrel';
+    import { css } from '@panda/css';
+    css({ color: brand });
+"};
+
+#[test]
+fn token_behind_a_star_barrel_folds() {
+    let (fs, main) = project(
+        BRAND_IMPORT,
+        &[
+            (
+                "barrel.ts",
+                "export * from './buttons';\nexport * from './tokens';\n",
+            ),
+            ("buttons.ts", "export const size = 'lg';\n"),
+            ("tokens.ts", "export const brand = 'red';\n"),
+        ],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @"
+    calls:
+      - name: css
+        data:
+          - color: red
+    ");
+}
+
+#[test]
+fn token_behind_nested_star_barrels_folds() {
+    let (fs, main) = project(
+        BRAND_IMPORT,
+        &[
+            ("barrel.ts", "export * from './theme';\n"),
+            ("theme.ts", "export * from './tokens';\n"),
+            ("tokens.ts", "export const brand = 'red';\n"),
+        ],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @"
+    calls:
+      - name: css
+        data:
+          - color: red
+    ");
+}
+
+#[test]
+fn barrel_export_shadows_the_same_name_behind_a_star() {
+    let (fs, main) = project(
+        BRAND_IMPORT,
+        &[
+            (
+                "barrel.ts",
+                "export * from './tokens';\nexport const brand = globalThis.brand;\n",
+            ),
+            ("tokens.ts", "export const brand = 'red';\n"),
+        ],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @"calls: []");
+}
+
+#[test]
+fn barrel_namespace_export_shadows_the_same_name_behind_a_star() {
+    let (fs, main) = project(
+        BRAND_IMPORT,
+        &[
+            (
+                "barrel.ts",
+                "export * as brand from './palette';\nexport * from './tokens';\n",
+            ),
+            ("palette.ts", "export const red = 'red';\n"),
+            ("tokens.ts", "export const brand = 'red';\n"),
+        ],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @"calls: []");
+}
+
+#[test]
+fn star_barrel_does_not_re_export_default() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { default as brand } from './barrel';
+            import { css } from '@panda/css';
+            css({ color: brand });
+        "},
+        &[
+            ("barrel.ts", "export * from './tokens';\n"),
+            ("tokens.ts", "export default 'red';\n"),
+        ],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @"calls: []");
+}
+
+#[test]
+fn name_exported_by_two_star_modules_does_not_fold() {
+    let (fs, main) = project(
+        BRAND_IMPORT,
+        &[
+            (
+                "barrel.ts",
+                "export * from './light';\nexport * from './dark';\n",
+            ),
+            ("light.ts", "export const brand = 'red';\n"),
+            ("dark.ts", "export const brand = 'blue';\n"),
+        ],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @"calls: []");
+}
+
+#[test]
+fn star_barrels_that_import_each_other_still_fold() {
+    let (fs, main) = project(
+        BRAND_IMPORT,
+        &[
+            ("barrel.ts", "export * from './theme';\n"),
+            (
+                "theme.ts",
+                "export * from './barrel';\nexport const brand = 'red';\n",
+            ),
+        ],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @"
+    calls:
+      - name: css
+        data:
+          - color: red
+    ");
+}
+
+#[test]
+fn missing_name_in_star_barrels_that_import_each_other_does_not_loop() {
+    let (fs, main) = project(
+        BRAND_IMPORT,
+        &[
+            ("barrel.ts", "export * from './theme';\n"),
+            ("theme.ts", "export * from './barrel';\n"),
+        ],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @"calls: []");
+}
+
+#[test]
+fn star_barrel_does_not_follow_a_package() {
+    let (fs, main) = project(
+        BRAND_IMPORT,
+        &[
+            ("barrel.ts", "export * from 'tokens-pkg';\n"),
+            (
+                "node_modules/tokens-pkg/package.json",
+                r#"{ "name": "tokens-pkg", "main": "index.js" }"#,
+            ),
+            (
+                "node_modules/tokens-pkg/index.js",
+                "export const brand = 'red';\n",
+            ),
+        ],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @"calls: []");
+}
+
+#[test]
+fn a_fold_through_a_star_barrel_depends_on_the_barrel_and_the_module_it_came_from() {
+    let (fs, main) = project(
+        BRAND_IMPORT,
+        &[
+            (
+                "barrel.ts",
+                "export * from './buttons';\nexport * from './tokens';\n",
+            ),
+            ("buttons.ts", "export const size = 'lg';\n"),
+            ("tokens.ts", "export const brand = 'red';\n"),
+        ],
+    );
+    let deps = run(&fs, &main)
+        .dependencies
+        .iter()
+        .map(|dep| dep.path.clone())
+        .collect::<Vec<_>>();
+    assert_yaml_snapshot!(deps, @"
+    - /proj/barrel.ts
+    - /proj/tokens.ts
+    ");
+}
+
+#[test]
+fn a_miss_in_a_star_barrel_depends_only_on_the_barrel() {
+    let (fs, main) = project(
+        BRAND_IMPORT,
+        &[
+            (
+                "barrel.ts",
+                "export * from './buttons';\nexport * from './sizes';\n",
+            ),
+            ("buttons.ts", "export const variant = 'solid';\n"),
+            ("sizes.ts", "export const size = 'lg';\n"),
+        ],
+    );
+    let deps = run(&fs, &main)
+        .dependencies
+        .iter()
+        .map(|dep| dep.path.clone())
+        .collect::<Vec<_>>();
+    assert_yaml_snapshot!(deps, @"- /proj/barrel.ts");
+}
+
+#[test]
+fn editing_a_module_behind_a_star_barrel_refolds() {
+    let (fs, main) = project(
+        BRAND_IMPORT,
+        &[
+            ("barrel.ts", "export * from './tokens';\n"),
+            ("tokens.ts", "export const brand = 'red';\n"),
+        ],
+    );
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+
+    let before = extract(BRAND_IMPORT, main.to_str().unwrap(), &config);
+    fs.add_file(
+        PathBuf::from("/proj/tokens.ts"),
+        b"export const brand = 'blue';\n".to_vec(),
+    );
+    let after = extract(BRAND_IMPORT, main.to_str().unwrap(), &config);
+
+    assert_yaml_snapshot!(serde_json::json!({
+        "before": shape(&before),
+        "after": shape(&after),
+    }), @"
+    before:
+      calls:
+        - name: css
+          data:
+            - color: red
+    after:
+      calls:
+        - name: css
+          data:
+            - color: blue
+    ");
+}
+
+#[test]
+fn two_star_paths_to_the_same_module_still_fold() {
+    let (fs, main) = project(
+        BRAND_IMPORT,
+        &[
+            (
+                "barrel.ts",
+                "export * from './buttons';\nexport * from './theme';\n",
+            ),
+            ("buttons.ts", "export * from './tokens';\n"),
+            ("theme.ts", "export * from './tokens';\n"),
+            ("tokens.ts", "export const brand = 'red';\n"),
+        ],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @"
+    calls:
+      - name: css
+        data:
+          - color: red
+    ");
+}
+
+#[test]
+fn barrel_type_export_does_not_shadow_the_value_behind_a_star() {
+    let (fs, main) = project(
+        BRAND_IMPORT,
+        &[
+            (
+                "barrel.ts",
+                "export * from './tokens';\nexport type brand = string;\nexport type { Theme as brandTheme } from './types';\n",
+            ),
+            ("tokens.ts", "export const brand = 'red';\n"),
+            ("types.ts", "export interface Theme {}\n"),
+        ],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @"
+    calls:
+      - name: css
+        data:
+          - color: red
+    ");
+}
+
+#[test]
+fn type_only_star_barrel_does_not_provide_values() {
+    let (fs, main) = project(
+        BRAND_IMPORT,
+        &[
+            ("barrel.ts", "export type * from './tokens';\n"),
+            ("tokens.ts", "export const brand = 'red';\n"),
+        ],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @"calls: []");
+}
+
+#[test]
+fn a_barrel_reached_first_through_a_cycle_still_folds_later() {
+    let from_theme = indoc::indoc! {r"
+        import { brand } from './theme';
+        import { css } from '@panda/css';
+        css({ color: brand });
+    "};
+    let (fs, main) = project(
+        BRAND_IMPORT,
+        &[
+            (
+                "barrel.ts",
+                "export * from './theme';\nexport * from './tokens';\n",
+            ),
+            ("theme.ts", "export * from './barrel';\n"),
+            ("tokens.ts", "export const brand = 'red';\n"),
+        ],
+    );
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+
+    let through_barrel = extract(BRAND_IMPORT, main.to_str().unwrap(), &config);
+    let through_theme = extract(from_theme, main.to_str().unwrap(), &config);
+
+    assert_yaml_snapshot!(serde_json::json!({
+        "through_barrel": shape(&through_barrel),
+        "through_theme": shape(&through_theme),
+    }), @"
+    through_barrel:
+      calls:
+        - name: css
+          data:
+            - color: red
+    through_theme:
+      calls:
+        - name: css
+          data:
+            - color: red
+    ");
+}
+
+// --- named re-export barrels -----------------------------------------------
+
+#[test]
+fn a_fold_through_a_named_barrel_depends_on_the_barrel_and_the_module_it_came_from() {
+    let (fs, main) = project(
+        BRAND_IMPORT,
+        &[
+            (
+                "barrel.ts",
+                "export { size } from './buttons';\nexport { brand } from './tokens';\n",
+            ),
+            ("buttons.ts", "export const size = 'lg';\n"),
+            ("tokens.ts", "export const brand = 'red';\n"),
+        ],
+    );
+    let usage = run(&fs, &main);
+    let deps = usage
+        .dependencies
+        .iter()
+        .map(|dep| dep.path.clone())
+        .collect::<Vec<_>>();
+    assert_yaml_snapshot!(serde_json::json!({ "calls": shape(&usage)["calls"], "deps": deps }), @"
+    calls:
+      - name: css
+        data:
+          - color: red
+    deps:
+      - /proj/barrel.ts
+      - /proj/tokens.ts
+    ");
+}
+
+#[test]
+fn an_imported_binding_exported_again_folds() {
+    let (fs, main) = project(
+        BRAND_IMPORT,
+        &[
+            (
+                "barrel.ts",
+                "import { brand as color } from './tokens';\nexport { color as brand };\n",
+            ),
+            ("tokens.ts", "export const brand = 'red';\n"),
+        ],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @"
+    calls:
+      - name: css
+        data:
+          - color: red
+    ");
+}
+
+#[test]
+fn named_re_exports_that_point_at_each_other_do_not_loop() {
+    let (fs, main) = project(
+        BRAND_IMPORT,
+        &[
+            ("barrel.ts", "export { brand } from './theme';\n"),
+            ("theme.ts", "export { brand } from './barrel';\n"),
+        ],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @"calls: []");
+}
+
+#[test]
+fn a_type_only_re_export_does_not_forward_a_value() {
+    let (fs, main) = project(
+        BRAND_IMPORT,
+        &[
+            ("barrel.ts", "export type { brand } from './tokens';\n"),
+            ("tokens.ts", "export const brand = 'red';\n"),
+        ],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @"calls: []");
+}

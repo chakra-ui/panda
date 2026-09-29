@@ -19,21 +19,52 @@ Mutex<FxHashMap<PathBuf, Arc<CachedFileExports>>>
 struct CachedFileExports {
     source_hash: u64,
     exports: FxHashMap<String, ExportEntry>,
+    declared: FxHashSet<String>,                    // every value name the module exports itself
+    star_sources: Vec<String>,                      // `export * from '…'`
+    re_exports: FxHashMap<String, (String, String)>, // name → (specifier, name there)
     deps: Vec<(PathBuf, Option<u64>)>,
 }
 
 enum ExportEntry {
     Literal(Literal),
     PureFn(OwnedPureFn),
+    Recipe(ExportedRecipe),
 }
 ```
 
 `path → (source hash, exported_name → folded literal or pure-fn descriptor, nested provenance)`.
 
 The resolver reads and hashes the current source before using a cache entry. Matching source hashes avoid another parse
-and fold; changed sources replace the entry. Nested modules folded into this file (re-exports, imported aliases) are
-stored as `deps` with the hash seen, `None` when the module could not be read. A dep hash miss busts the entry, so
-`export { brand } from './tokens'` does not keep the old value after `tokens.ts` changes.
+and fold; changed sources replace the entry. Nested modules folded into this file (imported aliases used in an exported
+value) are stored as `deps` with the hash seen, `None` when the module could not be read. A dep hash miss busts the entry.
+
+## Barrels
+
+Re-exports are forwarded on lookup instead of folded into the barrel's cache entry:
+
+- `export { brand } from './tokens'` and `import { brand } from './tokens'; export { brand }` record
+  `brand → ('./tokens', 'brand')`. A lookup resolves that one module and depends on it.
+- `export * from './tokens'` records the specifier. Each barrel gets a `StarIndex` (name → providing star, plus the
+  module that declares it), built once per barrel revision and shared across sessions. A lookup resolves only the
+  providing module.
+
+So a barrel's cache entry only depends on its own text, and checking it reads one file. Before this, a barrel of 1000
+`export { … } from` lines listed all 1000 modules as deps, and every transformed importer re-read and re-hashed them:
+`bench/src/barrel-cross-file.ts` measured 14.7 s to transform 1000 importers, now 125 ms.
+
+Star lookups follow the spec's `ResolveExport` (and esbuild / Rollup / rolldown):
+
+- the barrel's own exports, including `export * as ns` and named re-exports, shadow star exports; `default` is never
+  star-exported;
+- type-only exports (`export type *`, `export type { … }`, interfaces, type aliases, `declare`) are not values;
+- a name two stars reach from **different** declaring modules is ambiguous and doesn't fold; two paths to the same
+  module (a diamond) fold;
+- stars into `node_modules` aren't followed: package barrels hold nothing foldable and can be large;
+- an index built while a barrel cycle was open isn't cached, so a lookup that starts elsewhere still finds the name.
+
+A stale index can only miss a fold. The providing module is re-resolved on every lookup, so a module that drops the name
+stops folding at once; a module that gains it is picked up when the barrel itself changes. Two paths reaching the same
+name through different `export { … } from` modules count as ambiguous, which is a missed fold, not a wrong one.
 
 Pure function exports are lowered to a closed owned IR **while the AST is live**, then the AST is dropped. The cache
 keeps descriptors, not `Program`s, so the resolver doesn't pin every imported file's allocator.
@@ -87,7 +118,7 @@ Top-level named exports where the exported value resolves to a static literal **
 - `export let x = <foldable>` / `export var x = <foldable>` when the binding is not mutated
 - `export const f = (name) => \`.${name}:hover &\``/`export function f() { return '…' }` when the body lowers
 - exported aliases, e.g. `const button = base; export { button }`
-- re-exports, e.g. `export { button } from './base'` (literals and pure fns)
+- re-exports, e.g. `export { button } from './base'` and `export * from './base'` (see [Barrels](#barrels))
 - file-local alias chains, e.g. `const button = base; export const primary = button`
 - imported aliases inside the exported file
 - `css.raw(...)`, `cva.raw(...)`, and pattern raw calls when their imports match the configured Panda matchers
@@ -99,8 +130,6 @@ semantics as same-file extraction. Call sites apply `OwnedPureFn` with folded ar
 
 - `export default …` — same surface as named exports but currently skipped to keep the v1 contract narrow.
 - Namespace/default imports in the importing file — they don't map cleanly to one named export.
-- `export * from './mod'` — only named re-exports are followed, so a value reached through a star re-export stays on
-  the runtime.
 - Impure or unsupported callables, bare function values used without a call, classes, and anything the literal evaluator
   intentionally rejects.
 
@@ -128,6 +157,8 @@ AST memory alive.
 ```rust
 CrossFileContext {
     in_flight: RefCell<FxHashSet<(PathBuf, String)>>,
+    // Lookups through a loaded module: `Some(name)` for a named re-export, `None` for its star index.
+    forwarding: RefCell<FxHashSet<(PathBuf, Option<String>)>>,
 }
 ```
 

@@ -1955,7 +1955,7 @@ fn folds_calls_on_a_recipe_re_exported_by_name() {
 }
 
 #[test]
-fn keeps_calls_on_a_recipe_re_exported_through_export_star() {
+fn folds_calls_on_a_recipe_re_exported_through_export_star() {
     let index = "export * from './button';\n";
     let source = indoc! {r#"
         import { button } from './index';
@@ -1968,10 +1968,10 @@ fn keeps_calls_on_a_recipe_re_exported_through_export_star() {
         &[("src/button.ts", IMPORTED_BUTTON), ("src/index.ts", index)],
     );
 
-    assert_snapshot!(output.code, @"
+    assert_snapshot!(output.code, @r#"
     import { button } from './index';
-    export const large = button({ size: 'lg' });
-    ");
+    export const large = "color_red padding_8px fs_20px";
+    "#);
 }
 
 #[test]
@@ -2034,5 +2034,25 @@ fn folds_calls_on_an_imported_recipe_built_with_an_aliased_cva_import() {
     assert_snapshot!(output.code, @r#"
     import { button } from './button';
     export const large = "color_red padding_8px";
+    "#);
+}
+
+#[test]
+fn folds_calls_on_an_imported_recipe_exported_again() {
+    let index = "import { button } from './button';\nexport { button };\n";
+    let source = indoc! {r#"
+        import { button } from './index';
+        export const large = button({ size: 'lg' });
+    "#};
+
+    let output = super::common::transform_cross_file(
+        "src/a.tsx",
+        source,
+        &[("src/button.ts", IMPORTED_BUTTON), ("src/index.ts", index)],
+    );
+
+    assert_snapshot!(output.code, @r#"
+    import { button } from './index';
+    export const large = "color_red padding_8px fs_20px";
     "#);
 }

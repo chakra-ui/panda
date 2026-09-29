@@ -83,7 +83,7 @@ Callable specialization is implemented in the Rust transformer:
   `cva`/`sva` call instead of substituting a semantically incorrect string runtime.
 - [x] Call-only and escaping recipes are memoized (see [Memoization](#memoization)).
 - [x] Static calls fold at the call site: local `.raw()` calls, and `.raw()` and plain calls on recipes imported from
-  another file, including named and renamed re-exports (see [Imported recipes](#imported-recipes)).
+  another file, including named, renamed, and `export *` re-exports (see [Imported recipes](#imported-recipes)).
 - [x] Selection matches the runtime: only `undefined` falls back to a default, `null` selects no option, a `null` props
   object behaves like `{}`, and compound conditions and defaults keep the type written in the config, so `2` and `'2'`
   or `true` and `'true'` are different values.
