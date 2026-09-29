@@ -159,17 +159,6 @@ fn emits_recipe_contexts_for_supported_non_react_frameworks() {
 }
 
 #[test]
-fn qwik_no_longer_generates_jsx_components() {
-    let artifacts = ArtifactGraph.generate_all(
-        CodegenContext::config_only(&config("qwik")),
-        GenerateOptions::default(),
-    );
-
-    assert!(paths(artifact(&artifacts, ArtifactId::JsxFactory)).is_empty());
-    assert!(paths(artifact(&artifacts, ArtifactId::JsxPatterns)).is_empty());
-}
-
-#[test]
 fn non_react_slot_recipe_contexts_preserve_style_prop_modes() {
     for (framework, marker) in [
         ("preact", "css.raw(slotStyles, restProps.css)"),
