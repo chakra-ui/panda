@@ -398,4 +398,39 @@ describe('transformed styles in a project without presets', () => {
       export const propertyLevel = "color_red [&:hover]:color_blue""
     `)
   })
+
+  it('leaves a property nested under an unknown key to the runtime', async () => {
+    const compiler = createFixtureCompiler()
+    const source = [
+      "import { createElement } from 'react'",
+      "import { css, cva } from '@panda/css'",
+      "import { styled } from '@panda/jsx'",
+      "export { render } from 'react'",
+      "export const nested = css({ foo: { color: 'red' } })",
+      "export const mixed = css({ fontSize: '12px', foo: { color: 'red' } })",
+      "export const recipe = cva({ base: { foo: { color: 'red' } } })()",
+      "export const element = createElement(styled.div, { css: { foo: { color: 'red' } } })",
+    ].join('\n')
+    const result = createSourceTransformer(compiler).transformSource({ path: 'src/app.tsx', source })
+    const original = await run(compiler, source)
+    const transformed = await run(compiler, result.code)
+
+    expect(transformed.nested).toBe(original.nested)
+    expect(transformed.mixed).toBe(original.mixed)
+    expect(transformed.recipe).toBe(original.recipe)
+    expect(render(transformed, 'element')).toEqual(render(original, 'element'))
+    expect({
+      nested: transformed.nested,
+      mixed: transformed.mixed,
+      recipe: transformed.recipe,
+      element: render(transformed, 'element').className,
+    }).toMatchInlineSnapshot(`
+      {
+        "element": "color:foo_red",
+        "mixed": "fs_12px color:foo_red",
+        "nested": "color:foo_red",
+        "recipe": "color:foo_red",
+      }
+    `)
+  })
 })

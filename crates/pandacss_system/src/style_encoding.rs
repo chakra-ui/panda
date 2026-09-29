@@ -330,6 +330,10 @@ impl System {
     pub fn class_names_for_style_literal(&self, style: &Literal) -> Option<Vec<String>> {
         let mut encoder = Encoder::with_conditions(self.conditions.clone());
         self.encode_style(&mut encoder, style, ShorthandPolicy::UserFacing);
+        // The runtime names these classes differently; leave the call to it.
+        if encoder.has_nested_properties() {
+            return None;
+        }
         let mut atoms: Vec<Atom> = encoder.into_atoms().into_iter().collect();
         if atoms.is_empty() {
             return None;

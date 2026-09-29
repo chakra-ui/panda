@@ -200,3 +200,20 @@ fn source_map_points_past_a_collapsed_recipe_to_the_original_lines() {
         Some(original_line("export const classes"))
     );
 }
+
+#[test]
+fn leaves_a_property_nested_under_an_unknown_key_to_the_runtime() {
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        export const nested = css({ foo: { color: 'red' } });
+        export const responsive = css({ color: { base: 'red', _hover: 'blue' } });
+    "#};
+
+    let output = transform("src/button.tsx", source);
+
+    assert_snapshot!(output.code, @r#"
+    import { css } from '@panda/css';
+    export const nested = css({ foo: { color: 'red' } });
+    export const responsive = "color_red hover:color_blue";
+    "#);
+}
