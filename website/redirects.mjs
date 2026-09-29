@@ -105,7 +105,6 @@ export const redirects = [
   to('/docs/theming', '/docs/theming/theme'),
   to('/docs/design-systems', '/docs/design-systems/overview'),
   to('/docs/reference', '/docs/reference/cli'),
-  to('/docs/get-started/qwik', 'https://v1.panda-css.com/docs/installation/qwik'),
 
   ...v1DocsRedirects
 ]
