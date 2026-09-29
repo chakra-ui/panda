@@ -255,6 +255,9 @@ export default defineConfig({
 })
 ```
 
+When `importMap` points to an installed package like this, the PostCSS plugin skips codegen, so no local
+`styled-system` folder is written in your app.
+
 Mark the `@acme-org/styled-system` as an external package in your library build tool. This ensures that the generated JS
 runtime code is imported only once, avoiding duplication.
 
