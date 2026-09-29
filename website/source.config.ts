@@ -7,6 +7,7 @@ import {
   transformerNotationHighlight,
   transformerNotationWordHighlight
 } from '@shikijs/transformers'
+import type { Stringifier } from 'fumadocs-core/mdx-plugins'
 import { defineConfig } from 'fumadocs-mdx/config'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import type { ShikiTransformer } from 'shiki'
@@ -77,6 +78,27 @@ const transformerEmptyLineSpace: ShikiTransformer = {
   }
 }
 
+type MdastNode = Parameters<Stringifier>[0]
+
+const cardTextAttributes = new Set(['title', 'description'])
+
+function toPlainText(node: MdastNode): string {
+  if (node.type === 'mdxJsxFlowElement' && node.children.length === 0) {
+    return node.attributes
+      .flatMap(attribute =>
+        attribute.type === 'mdxJsxAttribute' &&
+        cardTextAttributes.has(attribute.name) &&
+        typeof attribute.value === 'string'
+          ? [attribute.value]
+          : []
+      )
+      .join(' ')
+  }
+  if ('value' in node) return node.value
+  if ('children' in node) return node.children.map(toPlainText).join('')
+  return ''
+}
+
 export default defineConfig({
   mdxOptions: {
     // We run our own Shiki pass below, and neither of the other two default
@@ -88,6 +110,9 @@ export default defineConfig({
     // Appended, so `remarkStructure` (search index) sees plain code nodes and
     // skips them instead of indexing every snippet.
     remarkPlugins: v => [...v, remarkCodeTitle],
+    remarkStructureOptions: {
+      stringify: toPlainText
+    },
     // `v` ends with fumadocs' `rehypeToc`; the anchor is appended after it so
     // heading links don't leak into table-of-contents titles.
     rehypePlugins: v => [

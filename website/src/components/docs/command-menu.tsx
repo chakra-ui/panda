@@ -40,7 +40,7 @@ interface Props {
 let searchIndexPromise: Promise<SearchIndex> | null = null
 
 function loadSearchIndex(): Promise<SearchIndex> {
-  searchIndexPromise ??= fetch('/search-index.json')
+  searchIndexPromise ??= fetch('/search-index.json', { cache: 'no-cache' })
     .then(response => {
       if (!response.ok) throw new Error(`search index: ${response.status}`)
       return response.json() as Promise<SearchIndex>
@@ -141,7 +141,10 @@ export const CommandMenu = (props: Props) => {
       lazyMount
       unmountOnExit
       open={open}
-      onOpenChange={event => setOpen(event.open)}
+      onOpenChange={event => {
+        setOpen(event.open)
+        if (!event.open) setInputValue('')
+      }}
     >
       <Dialog.Trigger
         asChild
@@ -305,10 +308,6 @@ export const CommandMenu = (props: Props) => {
                               bg: 'transparent',
                               transitionProperty: 'background-color',
                               transitionDuration: '150ms'
-                            },
-                            _hover: {
-                              bg: 'bg.subtle',
-                              _before: { bg: 'accent.emphasis' }
                             },
                             _highlighted: {
                               bg: 'bg.muted',

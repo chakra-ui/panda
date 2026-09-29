@@ -69,7 +69,7 @@ export function getSearchIndex(
         .map(entry => entry.content)
         .join('\n')
 
-      if (sectionContent.length <= 50) continue
+      if (!sectionContent) continue
 
       searchRecords.push({
         id: `${doc.url}#${heading.id}`,
