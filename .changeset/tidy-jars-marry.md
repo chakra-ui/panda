@@ -1,6 +1,8 @@
 ---
 '@pandacss/shared': patch
+'@pandacss/generator': patch
 ---
 
-Speed up `memo` for single-string arguments by using the string itself as the cache key instead of
-`JSON.stringify(args)`. This mainly benefits `hypenateProperty`, which runs once per style property at runtime.
+Improve runtime performance of JSX style props. Checking whether a prop is a style prop no longer goes through a cache
+that serialized its arguments on every call, so rendering styled components is faster. `memo` also skips
+`JSON.stringify` for single-string arguments.

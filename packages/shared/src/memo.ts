@@ -1,6 +1,5 @@
 export const memo = <T extends (...args: any[]) => any>(fn: T): T => {
   const cache = new Map()
-  // kept apart from `cache` so a raw string key can never collide with a JSON key
   const stringCache = new Map()
 
   const get = (...args: any[]) => {
