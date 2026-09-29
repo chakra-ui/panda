@@ -66,8 +66,6 @@ fn rewrites_styled_button_with_nested_ternaries_and_undefined_width() {
 
     assert!(output.changed);
     assert!(!output.bailed);
-    assert!(!output.code.contains("styled.button"));
-    assert!(output.code.contains("<button"));
     assert_snapshot!(output.code, @r#"
     export const Button = ({ $active, $fullWidth, $variant, children }) => (
       <button className={"d_inline-flex" + " " + ($variant === "ghost" ? "bg_transparent" : $variant === "secondary" ? "bg_#f3f4f6" : !$active ? "bg_#d1d5db" : "bg_#2563eb") + " " + ($variant === "ghost" ? "color_#2563eb" : $variant === "secondary" ? "color_#111827" : !$active ? "color_#6b7280" : "color_#ffffff") + ($fullWidth ? " width_100%" : "")}>{children}</button>
@@ -85,7 +83,11 @@ fn shadowed_undefined_alternate_still_bails_jsx_rewrite() {
 
     let output = transform_jsx("src/app.tsx", source);
 
-    assert!(!output.changed || output.code.contains("<Box"));
+    assert_snapshot!(output.code, @"
+    import { Box } from '@panda/jsx';
+    let undefined = dynamic;
+    export const el = <Box width={full ? '100%' : undefined} />;
+    ");
 }
 
 #[test]

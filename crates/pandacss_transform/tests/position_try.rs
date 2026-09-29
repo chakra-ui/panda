@@ -24,9 +24,7 @@ fn rewrites_a_static_position_try_object_to_the_ident_string() {
 
     assert!(output.changed);
     assert!(!output.bailed);
-    assert!(!output.code.contains("positionTry("));
-    assert!(!output.code.contains("@panda/css"));
-    assert!(expected.starts_with("--pt_"));
+    assert_snapshot!(expected, @"--pt_dAuNmh");
     assert_snapshot!(output.code, @r#"
     export const bottom = "--pt_dAuNmh";
     "#);
@@ -114,8 +112,6 @@ fn rewrites_a_named_theme_position_try_to_its_stable_ident() {
     let output = transform_with_project(&project, "src/pt.ts", source);
 
     assert!(output.changed);
-    assert!(!output.code.contains("positionTry("));
-    assert!(!output.code.contains("@panda/css"));
     assert_snapshot!(output.code, @r#"
     export const bottom = "--pt_bottom";
     "#);

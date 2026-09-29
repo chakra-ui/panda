@@ -268,7 +268,7 @@ impl System {
     /// Resolve one encoded atom to the runtime `css()` class string.
     #[must_use]
     pub fn atomic_class_name(&self, atom: &Atom) -> Option<String> {
-        let utility = self.utility()?;
+        let utility = self.utility().or(self.empty_utility.as_ref())?;
         let literal = atom_value_to_transform_literal(atom.value())?;
         pandacss_utility::runtime_class_name_for_atom(
             utility,
@@ -330,6 +330,10 @@ impl System {
     pub fn class_names_for_style_literal(&self, style: &Literal) -> Option<Vec<String>> {
         let mut encoder = Encoder::with_conditions(self.conditions.clone());
         self.encode_style(&mut encoder, style, ShorthandPolicy::UserFacing);
+        // The runtime names these classes differently; leave the call to it.
+        if encoder.has_nested_properties() {
+            return None;
+        }
         let mut atoms: Vec<Atom> = encoder.into_atoms().into_iter().collect();
         if atoms.is_empty() {
             return None;

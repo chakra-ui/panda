@@ -185,7 +185,7 @@ conditional_snapshot!(
         export const cls = css({ color: { '&:hover': { '@media (hover: hover)': 'red' } } });
     "#,
     true,
-    @r#"export const cls = "[@media_(hover:_hover)]:[&:hover]:color_red";"#
+    @r#"export const cls = "[&:hover]:[@media_(hover:_hover)]:color_red";"#
 );
 
 // --- important + whitespace under conditions ---
@@ -369,10 +369,5 @@ fn a_conditional_with_nothing_to_add_leaves_no_stray_space() {
 
     let output = transform("src/styles.tsx", source);
 
-    assert!(
-        !output.code.contains(r#"" " + (wide ? " "#),
-        "separator should move inside the branch: {}",
-        output.code
-    );
     assert_snapshot!(output.code, @r#"export const cls = "d_flex" + (wide ? " width_100%" : "") + " " + (tall ? "margin_2px" : "margin_1px");"#);
 }

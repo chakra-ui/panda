@@ -461,7 +461,11 @@ fn helper_injection_does_not_panic_on_multibyte_source() {
     let output = transform_jsx("src/box.tsx", source);
 
     assert!(output.changed);
-    assert!(output.code.contains("__pcva"));
+    assert_snapshot!(output.code, @"
+    import { styled } from '@panda/jsx';
+    // « guillemet comment »
+    export const Box = /* @__PURE__ */ styled.div({ color: 'red' });
+    ");
 }
 
 #[test]

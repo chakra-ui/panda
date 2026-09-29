@@ -440,8 +440,7 @@ impl Project {
                 })
             };
             let mut resolve_recipe_raw = |factory: &str, config: &Literal, props: &Literal| {
-                let props = pandacss_system::literal_variant_props(props)?;
-                pandacss_system::resolve_inline_recipe_raw(&self.system, factory, config, &props)
+                pandacss_system::resolve_inline_recipe_raw(&self.system, factory, config, props)
             };
             pandacss_extractor::extract_with_raw_resolvers_in_session(
                 source,

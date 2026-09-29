@@ -320,7 +320,6 @@ fn cn_false_never_injects_helper_import() {
 
     assert!(output.changed);
     assert!(!output.helper.needs_cx);
-    assert!(!output.code.contains("@pandacss-internal/css"));
     assert_snapshot!(output.code, @r#"export const el = <div className={props.className + " " + (isError ? "color_red" : "color_blue")} />;"#);
 }
 
@@ -338,7 +337,6 @@ fn a_user_symbol_named_like_the_helper_does_not_request_the_import() {
 
     assert!(output.changed);
     assert!(!output.helper.needs_cx);
-    assert!(!output.code.contains("@pandacss-internal/css"));
     assert_snapshot!(
         output.code,
         @r#"export const make = (__pcx) => __pcx ? "color_red" : "color_blue";"#

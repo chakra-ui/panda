@@ -52,6 +52,9 @@ fn collect_keys(
             }
             let mut encoder = Encoder::with_conditions(system.conditions().clone());
             system.encode_style(&mut encoder, &literal, ShorthandPolicy::UserFacing);
+            if encoder.has_nested_properties() {
+                return None;
+            }
             let atoms = encoder.into_atoms();
             // A scalar at a selector/condition scope can overwrite its subtree.
             // Without a canonical leaf key, independence cannot be proved.

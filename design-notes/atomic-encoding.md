@@ -126,6 +126,12 @@ The leaf property is the **outermost non-condition key**:
 `find` walks outer→inner (first non-condition wins); the condition chain keeps every condition segment in order, minus
 `base` (a "no conditions apply" shorthand).
 
+A path with two non-condition keys, like `{ foo: { color: 'red' } }` where `foo` is not a condition, has no agreed
+reading. The encoder keeps the outer key (`foo: red`, class `foo_red`); the styled-system runtime keeps the inner one
+and treats the outer as a condition (`color:foo_red`). Neither produces a working style. The encoder records the case
+(`Encoder::has_nested_properties`) and the source transform leaves such calls to the runtime; CSS emission ignores the
+flag.
+
 ## Condition matcher
 
 ```rust

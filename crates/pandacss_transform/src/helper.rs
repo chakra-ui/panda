@@ -13,11 +13,11 @@ pub const CX_HELPER_MODULE: &str = INTERNAL_CSS_MODULE;
 /// Local alias injected into transformed source to avoid user `cx` collisions.
 pub const CX_HELPER_LOCAL: &str = "__pcx";
 
-/// Local alias for transformed inline `cva()` configs (future styled/cva transforms).
-pub const CVA_HELPER_LOCAL: &str = "__pcva";
+/// Local alias for `attachRecipe`, which attaches the observable surface to specialized recipes.
+pub const RECIPE_HELPER_LOCAL: &str = "__pr";
 
-/// Local alias for transformed inline `sva()` configs.
-pub const SVA_HELPER_LOCAL: &str = "__psva";
+/// Local alias for `memoRecipe`, which memoizes call-only specialized recipes.
+pub const MEMO_HELPER_LOCAL: &str = "__pm";
 
 /// Local alias for transformed `css()` call sites that still need runtime join.
 pub const CSS_HELPER_LOCAL: &str = "__pcss";
@@ -332,19 +332,15 @@ pub(crate) fn format_object_class_name(class_attr: &str, print: &ClassNamePrint)
 
 /// Plan the internal css helper import line for required transform symbols.
 #[must_use]
-#[allow(
-    clippy::similar_names,
-    reason = "needs_cva/needs_sva mirror TransformHelperFacts fields"
-)]
 pub(crate) fn plan_internal_css_import_line(
     helper: &TransformHelperFacts,
     helper_cx: HelperCxMode,
 ) -> Option<String> {
     let needs_cx = helper_cx != HelperCxMode::False && helper.needs_cx;
-    let needs_cva = helper.needs_cva;
-    let needs_sva = helper.needs_sva;
+    let needs_attach_recipe = helper.needs_attach_recipe;
+    let needs_memo_recipe = helper.needs_memo_recipe;
 
-    if !needs_cx && !needs_cva && !needs_sva {
+    if !needs_cx && !needs_attach_recipe && !needs_memo_recipe {
         return None;
     }
 
@@ -352,11 +348,11 @@ pub(crate) fn plan_internal_css_import_line(
     if needs_cx {
         specs.push(format!("cx as {CX_HELPER_LOCAL}"));
     }
-    if needs_cva {
-        specs.push(format!("cva as {CVA_HELPER_LOCAL}"));
+    if needs_attach_recipe {
+        specs.push(format!("attachRecipe as {RECIPE_HELPER_LOCAL}"));
     }
-    if needs_sva {
-        specs.push(format!("sva as {SVA_HELPER_LOCAL}"));
+    if needs_memo_recipe {
+        specs.push(format!("memoRecipe as {MEMO_HELPER_LOCAL}"));
     }
 
     Some(format!(
@@ -509,7 +505,6 @@ mod tests {
             r#"isError ? "color_red" : "color_blue""#,
             true,
         );
-        assert!(!print.attribute.contains("__pcx"));
         assert!(!print.needs_cx);
         assert_eq!(
             print.attribute,
@@ -594,7 +589,7 @@ mod tests {
         let module = pandacss_extractor::analyze_module(source, "fixture.ts");
         let edits = super::super::imports::plan_internal_css_import_removals(source, &module);
         let out = super::super::apply::project_edits(source, &edits);
-        assert!(!out.contains("@pandacss-internal/css"));
+        insta::assert_snapshot!(out, @"        export const x = 1;");
     }
 
     #[test]
@@ -611,17 +606,19 @@ mod tests {
 
     #[test]
     fn inject_internal_css_import_merges_required_symbols() {
-        let source = "export const button = __pcva({ base: 'color_red' });\n";
+        let source = "export const button = __pr(() => 'color_red', {});\n";
         let out = inject_internal_css_import(
             source,
             &TransformHelperFacts {
                 needs_cx: false,
-                needs_cva: true,
-                needs_sva: false,
+                needs_attach_recipe: true,
+                needs_memo_recipe: false,
             },
         );
-        assert!(out.starts_with("import { cva as __pcva }"));
-        assert!(out.contains("export const button = __pcva"));
+        insta::assert_snapshot!(out, @"
+        import { attachRecipe as __pr } from '@pandacss-internal/css';
+        export const button = __pr(() => 'color_red', {});
+        ");
     }
 
     #[test]
@@ -634,7 +631,9 @@ mod tests {
     fn inject_cx_import_prepends_when_missing() {
         let source = "export const x = __pcx('a');\n";
         let out = inject_cx_import(source);
-        assert!(out.starts_with("import { cx as __pcx }"));
-        assert!(out.contains("export const x = __pcx('a');"));
+        insta::assert_snapshot!(out, @"
+        import { cx as __pcx } from '@pandacss-internal/css';
+        export const x = __pcx('a');
+        ");
     }
 }

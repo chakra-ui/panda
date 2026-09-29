@@ -35,6 +35,8 @@ pub(crate) type ConfigRecipe<T> = (Arc<str>, u32, T);
 pub struct System {
     pub(crate) extractor_config: ExtractorConfig,
     pub(crate) utility: Option<Utility>,
+    /// The empty utility map [`Self::utility`] drops, kept so class names match the runtime's defaults.
+    pub(crate) empty_utility: Option<Utility>,
     /// Kept when [`Self::utility`] is dropped (empty utilities map).
     pub(crate) class_name_prefix: String,
     pub(crate) conditions: ProjectConditionMatcher,
@@ -47,6 +49,7 @@ pub struct System {
     pub(crate) view_transitions: BTreeMap<String, ViewTransitionStyle>,
     pub(crate) position_try: BTreeMap<String, PositionTryStyle>,
     pub(crate) optimize: OptimizeConfig,
+    pub(crate) hash_class_names: bool,
     pub(crate) config_fingerprint: Arc<str>,
     pub(crate) diagnostics: Vec<Diagnostic>,
 }
@@ -188,6 +191,12 @@ impl System {
     #[doc(hidden)]
     pub fn optimize(&self) -> &OptimizeConfig {
         &self.optimize
+    }
+
+    /// `hash: true` or `hash.className`: generated class names are opaque hashes.
+    #[must_use]
+    pub const fn hashes_class_names(&self) -> bool {
+        self.hash_class_names
     }
 
     #[must_use]

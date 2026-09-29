@@ -13,7 +13,7 @@ Transformed source imports the internal runtime module:
 import { cx as __pcx } from '@pandacss-internal/css'
 ```
 
-Inline recipe rewrites may also need `cva as __pcva` or `sva as __psva` from the same module. Hosts resolve
+Specialized recipes may also need `attachRecipe as __pr` or `memoRecipe as __pm` from the same module. Hosts resolve
 `@pandacss-internal/css` to an internal ID and return bundled runtime source from `@pandacss/transformer`.
 
 ## Support matrix

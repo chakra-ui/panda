@@ -45,6 +45,10 @@ pub(crate) fn classes_for_css_args(
     }
     let mut encoder = Encoder::with_conditions(system.conditions().clone());
     encode_css_arg(system, &mut encoder, &style);
+    // The runtime names these classes differently; leave the call to it.
+    if encoder.has_nested_properties() {
+        return None;
+    }
     let mut atoms: Vec<Atom> = encoder.into_atoms().into_iter().collect();
 
     if atoms.is_empty() {

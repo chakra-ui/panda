@@ -231,6 +231,15 @@ pub fn project_with_files(
     main_source: &str,
     siblings: &[(&str, &str)],
 ) -> Project {
+    project_with_files_and(main_path, main_source, siblings, json!({}))
+}
+
+pub fn project_with_files_and(
+    main_path: &str,
+    main_source: &str,
+    siblings: &[(&str, &str)],
+    overrides: Value,
+) -> Project {
     let fs = MemoryFileSystem::new();
     for (name, contents) in siblings {
         fs.add_file(
@@ -241,7 +250,7 @@ pub fn project_with_files(
     let main = PathBuf::from(format!("/proj/{main_path}"));
     fs.add_file(main.clone(), main_source.as_bytes().to_vec());
 
-    let mut project = Project::new(System::new(create_config(json!({}))).expect("config"));
+    let mut project = Project::new(System::new(create_config(overrides)).expect("config"));
     project = project.with_cross_file(CrossFileResolver::with_fs(fs));
     project
 }
@@ -333,6 +342,10 @@ fn jsx_project(overrides: Value) -> Project {
 
 pub fn project_with_jsx() -> Project {
     jsx_project(json!({}))
+}
+
+pub fn project_with_jsx_and(overrides: Value) -> Project {
+    jsx_project(overrides)
 }
 
 pub fn project_with_jsx_recipes() -> Project {

@@ -37,9 +37,9 @@ describe('transformer: viewTransition', () => {
         "changed": true,
         "code": "export const slide = "vt_gnOaDr"",
         "helper": {
-          "needsCva": false,
+          "needsAttachRecipe": false,
           "needsCx": false,
-          "needsSva": false,
+          "needsMemoRecipe": false,
         },
       }
     `)
@@ -63,9 +63,9 @@ describe('transformer: viewTransition', () => {
         "changed": true,
         "code": "export const slide = "vt_slide"",
         "helper": {
-          "needsCva": false,
+          "needsAttachRecipe": false,
           "needsCx": false,
-          "needsSva": false,
+          "needsMemoRecipe": false,
         },
       }
     `)

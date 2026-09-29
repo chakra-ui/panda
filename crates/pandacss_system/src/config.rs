@@ -69,7 +69,11 @@ pub(crate) fn compile_system(
         .unwrap_or_default()
         .clone_into(&mut extractor_config.class_name_prefix);
 
-    let utility = (!utility.is_empty()).then_some(utility);
+    let (utility, empty_utility) = if utility.is_empty() {
+        (None, Some(utility))
+    } else {
+        (Some(utility), None)
+    };
     let patterns = {
         let _span = tracing::trace_span!(target: "config", "config_patterns").entered();
         PatternRegistry::from_definitions(&entries.patterns)
@@ -93,6 +97,7 @@ pub(crate) fn compile_system(
     Ok(System {
         extractor_config,
         utility,
+        empty_utility,
         class_name_prefix: config.prefix.class_name().unwrap_or_default().to_owned(),
         conditions,
         breakpoints: entries.breakpoints,
@@ -109,6 +114,7 @@ pub(crate) fn compile_system(
         view_transitions: theme_view_transitions(config),
         position_try: theme_position_try(config),
         optimize: config.optimize,
+        hash_class_names: config.hash.class_name(),
         config_fingerprint,
         diagnostics,
     })

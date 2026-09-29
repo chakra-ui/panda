@@ -18,8 +18,8 @@ use std::sync::{Arc, Mutex};
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    BindingPattern, Declaration, ExportNamedDeclaration, Expression, Program, Statement,
-    VariableDeclaration,
+    BindingPattern, Declaration, ExportNamedDeclaration, Expression, ImportDeclarationSpecifier,
+    Program, Statement, VariableDeclaration,
 };
 use oxc_parser::Parser;
 use oxc_resolver::{ResolveOptions, ResolverGeneric, TsconfigDiscovery};
@@ -55,6 +55,9 @@ pub struct ExportedRecipe {
 
 type FileExports = FxHashMap<String, ExportEntry>;
 
+/// Exported name → (module specifier, name in that module).
+type ReExports = FxHashMap<String, (String, String)>;
+
 /// Modules read while folding and the hash seen; `None` = unreadable.
 type Provenance = Vec<(PathBuf, Option<u64>)>;
 type UnresolvedDependencies = Vec<(PathBuf, String)>;
@@ -62,10 +65,21 @@ type UnresolvedDependencies = Vec<(PathBuf, String)>;
 struct CachedFileExports {
     source_hash: u64,
     exports: FileExports,
+    /// Every name the module exports itself, foldable or not. These shadow `export *`.
+    declared: FxHashSet<String>,
+    /// `export * from '…'` specifiers, looked up lazily for names the module doesn't declare.
+    star_sources: Vec<String>,
+    /// Names forwarded from another module, resolved on lookup so the barrel doesn't depend on them.
+    re_exports: ReExports,
     /// Modules folded while collecting this file's exports. A hash miss busts this entry.
     deps: Provenance,
     /// Failed nested resolutions. A newly resolvable request invalidates this entry.
     unresolved: UnresolvedDependencies,
+}
+
+fn is_package_path(path: &Path) -> bool {
+    path.components()
+        .any(|component| component.as_os_str() == "node_modules")
 }
 
 fn forward_slash_path(path: &Path) -> PathBuf {
@@ -126,6 +140,8 @@ pub struct CrossFileSession {
 pub(crate) struct CrossFileContext<'a> {
     session: &'a CrossFileSession,
     in_flight: RefCell<FxHashSet<(PathBuf, String)>>,
+    /// Lookups through a loaded module: `Some(name)` for a named re-export, `None` for its star index.
+    forwarding: RefCell<FxHashSet<(PathBuf, Option<String>)>>,
 }
 
 impl std::fmt::Debug for CrossFileResolver {
@@ -219,14 +235,8 @@ impl CrossFileResolver {
 }
 
 impl CrossFileSession {
-    fn cached_resolution(&self, path: &Path, name: &str) -> Option<CrossFileResolution> {
-        let files = self.files.borrow();
-        let cached = files.get(path)?;
-        Some(CrossFileResolution::from_cached(
-            path.to_path_buf(),
-            cached,
-            name,
-        ))
+    fn module(&self, path: &Path) -> Option<Arc<CachedFileExports>> {
+        self.files.borrow().get(path).map(Arc::clone)
     }
 
     fn insert(&self, path: PathBuf, cached: Arc<CachedFileExports>) {
@@ -271,6 +281,7 @@ impl<'a> CrossFileContext<'a> {
         Self {
             session,
             in_flight: RefCell::default(),
+            forwarding: RefCell::default(),
         }
     }
 
@@ -297,6 +308,7 @@ impl<'a> CrossFileContext<'a> {
     }
 }
 
+#[derive(Clone, Copy)]
 pub(crate) struct CrossFileRequest<'a> {
     from_file: &'a Path,
     specifier: &'a str,
@@ -309,6 +321,8 @@ pub(crate) struct CrossFileRequest<'a> {
 /// Folded export plus resolved path. `path` is a build dep even when the export does not fold.
 pub(crate) struct CrossFileResolution {
     pub(crate) entry: Option<ExportEntry>,
+    /// The module exports the name, whether or not it folds.
+    declared: bool,
     pub(crate) path: Option<PathBuf>,
     pub(crate) source_hash: Option<u64>,
     pub(crate) provenance: Provenance,
@@ -319,6 +333,7 @@ impl CrossFileResolution {
     fn none() -> Self {
         Self {
             entry: None,
+            declared: false,
             path: None,
             source_hash: None,
             provenance: Vec::new(),
@@ -329,6 +344,7 @@ impl CrossFileResolution {
     fn unresolved(from_file: &Path, specifier: &str) -> Self {
         Self {
             entry: None,
+            declared: false,
             path: None,
             source_hash: None,
             provenance: Vec::new(),
@@ -344,6 +360,7 @@ impl CrossFileResolution {
     ) -> Self {
         Self {
             entry,
+            declared: false,
             path: Some(path),
             source_hash,
             provenance,
@@ -356,14 +373,26 @@ impl CrossFileResolution {
         self
     }
 
+    /// Take the value from the module the name is forwarded to, and depend on it.
+    fn forward_to(&mut self, nested: Self) {
+        self.entry = nested.entry;
+        self.unresolved.extend(nested.unresolved);
+        if let Some(path) = nested.path {
+            self.provenance.push((path, nested.source_hash));
+        }
+        self.provenance.extend(nested.provenance);
+    }
+
     fn from_cached(path: PathBuf, cached: &CachedFileExports, name: &str) -> Self {
-        Self::at_path(
+        let mut resolution = Self::at_path(
             path,
             Some(cached.source_hash),
             cached.exports.get(name).cloned(),
             cached.deps.clone(),
         )
-        .with_unresolved(cached.unresolved.clone())
+        .with_unresolved(cached.unresolved.clone());
+        resolution.declared = cached.declared.contains(name);
+        resolution
     }
 }
 
@@ -389,6 +418,25 @@ struct ResolverImpl<F: FileSystem + Clone> {
     inner: ResolverGeneric<F>,
     fs: F,
     cache: Mutex<FxHashMap<PathBuf, Arc<CachedFileExports>>>,
+    star_indexes: Mutex<FxHashMap<PathBuf, Arc<StarIndex>>>,
+}
+
+/// Which `export *` source provides each name a barrel re-exports, built once per barrel revision.
+///
+/// Lookups re-resolve the name in the providing module, so a stale index can only miss a fold:
+/// a module that drops the name no longer resolves, and one that gains it is found once the
+/// barrel itself changes.
+struct StarIndex {
+    source_hash: u64,
+    names: FxHashMap<String, StarProvider>,
+}
+
+#[derive(Clone)]
+enum StarProvider {
+    /// `star` indexes `star_sources`; `origin` is the module that declares the name.
+    One { star: usize, origin: Arc<Path> },
+    /// Different modules declare the name, which JS rejects as ambiguous.
+    Ambiguous,
 }
 
 impl<F: FileSystem + Clone> ResolverImpl<F> {
@@ -404,6 +452,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
             inner,
             fs,
             cache: Mutex::default(),
+            star_indexes: Mutex::default(),
         }
     }
 
@@ -414,7 +463,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
         matchers: Option<&Matchers>,
         tokens: Option<&TokenDictionary>,
         prefix: &str,
-    ) -> (FileExports, Provenance, UnresolvedDependencies) {
+    ) -> (ModuleExports, Provenance, UnresolvedDependencies) {
         let allocator = Allocator::default();
         let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
         let parser_return = Parser::new(&allocator, source, source_type).parse();
@@ -436,7 +485,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
         });
 
         // Oxc recovers a partial AST on parse errors. Walk what we get.
-        let exports = collect_exports(&parser_return.program, path, context, &resolver, &matched);
+        let exports = collect_exports(&parser_return.program, &resolver, &matched);
         let deps = resolver
             .take_cross_file_deps()
             .into_iter()
@@ -484,6 +533,291 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
 
     fn resolve_auto(&self, from_file: &Path, specifier: &str) -> Option<PathBuf> {
         resolve_with(&self.fs, &self.inner, from_file, specifier)
+    }
+
+    /// The analyzed exports of the module `request.specifier` points to, or the resolution to
+    /// return when there is none.
+    fn load_module(
+        &self,
+        context: &CrossFileContext<'_>,
+        request: CrossFileRequest<'_>,
+    ) -> Result<(PathBuf, Arc<CachedFileExports>), Box<CrossFileResolution>> {
+        let CrossFileRequest {
+            from_file,
+            specifier,
+            name,
+            matchers,
+            tokens,
+            prefix,
+        } = request;
+        let session = context.session;
+        let Some(directory) = from_file.parent() else {
+            return Err(Box::new(CrossFileResolution::none()));
+        };
+        if session.is_unresolved(directory, specifier) {
+            return Err(Box::new(CrossFileResolution::unresolved(
+                from_file, specifier,
+            )));
+        }
+        let Some(path) = self.resolve_auto(from_file, specifier) else {
+            session.record_unresolved(directory, specifier);
+            return Err(Box::new(CrossFileResolution::unresolved(
+                from_file, specifier,
+            )));
+        };
+
+        if let Some(cached) = session.module(&path) {
+            return Ok((path, cached));
+        }
+        if session.is_unreadable(&path) {
+            return Err(Box::new(CrossFileResolution::at_path(
+                path,
+                None,
+                None,
+                Vec::new(),
+            )));
+        }
+
+        // Read-fail drops the entry so a deleted file never serves stale exports.
+        let Ok(source) = <F as oxc_resolver::FileSystem>::read_to_string(&self.fs, &path) else {
+            self.cache().remove(&path);
+            session.record_unreadable(path.clone());
+            return Err(Box::new(CrossFileResolution::at_path(
+                path,
+                None,
+                None,
+                Vec::new(),
+            )));
+        };
+        let source_hash = pandacss_shared::fx_hash(&source);
+
+        // Record `path` on every remaining exit. Resolved modules are deps even when they don't fold.
+        let cached = {
+            let guard = self.cache();
+            guard
+                .get(&path)
+                .filter(|cached| cached.source_hash == source_hash)
+                .map(Arc::clone)
+        };
+        if let Some(cached) = cached
+            && self.provenance_fresh(&cached.deps)
+            && self.unresolved_still_missing(&cached.unresolved)
+        {
+            self.seed_session_dependencies(session, &cached.deps);
+            session.insert(path.clone(), Arc::clone(&cached));
+            return Ok((path, cached));
+        }
+
+        // Cycle guard: `a.ts ↔ b.ts` would otherwise overflow the stack.
+        let guard_key = (path.clone(), name.to_owned());
+        {
+            let mut in_flight = context.in_flight.borrow_mut();
+            if !in_flight.insert(guard_key.clone()) {
+                return Err(Box::new(CrossFileResolution::at_path(
+                    path,
+                    Some(source_hash),
+                    None,
+                    Vec::new(),
+                )));
+            }
+        }
+
+        let (module, deps, unresolved) =
+            Self::extract_exports(context, &path, &source, matchers, tokens, prefix);
+        context.in_flight.borrow_mut().remove(&guard_key);
+
+        let cached = Arc::new(CachedFileExports {
+            source_hash,
+            exports: module.exports,
+            declared: module.declared,
+            star_sources: module.star_sources,
+            re_exports: module.re_exports,
+            deps,
+            unresolved,
+        });
+        self.cache().insert(path.clone(), Arc::clone(&cached));
+        session.insert(path.clone(), Arc::clone(&cached));
+        Ok((path, cached))
+    }
+
+    /// `export { local as name } from './module'`, or an imported binding exported again.
+    fn resolve_re_export(
+        &self,
+        context: &CrossFileContext<'_>,
+        request: CrossFileRequest<'_>,
+        path: &Path,
+        cached: &CachedFileExports,
+        specifier: &str,
+        local: &str,
+    ) -> CrossFileResolution {
+        let mut resolution =
+            CrossFileResolution::from_cached(path.to_path_buf(), cached, request.name);
+        resolution.declared = true;
+        let guard_key = (path.to_path_buf(), Some(request.name.to_owned()));
+        if !context.forwarding.borrow_mut().insert(guard_key.clone()) {
+            return resolution;
+        }
+        let nested = self.resolve_named_export(
+            context,
+            CrossFileRequest {
+                from_file: path,
+                specifier,
+                name: local,
+                ..request
+            },
+        );
+        context.forwarding.borrow_mut().remove(&guard_key);
+        resolution.forward_to(nested);
+        resolution
+    }
+
+    /// `export * from` re-exports every name the barrel doesn't declare itself, except `default`.
+    fn resolve_through_stars(
+        &self,
+        context: &CrossFileContext<'_>,
+        request: CrossFileRequest<'_>,
+        path: &Path,
+        cached: &CachedFileExports,
+    ) -> CrossFileResolution {
+        let mut resolution =
+            CrossFileResolution::from_cached(path.to_path_buf(), cached, request.name);
+        let (index, _) = self.star_index(context, request, path, cached);
+        match index.names.get(request.name) {
+            None => {}
+            Some(StarProvider::Ambiguous) => resolution.declared = true,
+            Some(StarProvider::One { star, .. }) => {
+                let nested = self.resolve_named_export(
+                    context,
+                    CrossFileRequest {
+                        from_file: path,
+                        specifier: &cached.star_sources[*star],
+                        ..request
+                    },
+                );
+                resolution.declared = nested.declared;
+                resolution.forward_to(nested);
+            }
+        }
+        resolution
+    }
+
+    fn star_index(
+        &self,
+        context: &CrossFileContext<'_>,
+        request: CrossFileRequest<'_>,
+        path: &Path,
+        cached: &CachedFileExports,
+    ) -> (Arc<StarIndex>, bool) {
+        let existing = self
+            .star_indexes()
+            .get(path)
+            .filter(|index| index.source_hash == cached.source_hash)
+            .map(Arc::clone);
+        if let Some(index) = existing {
+            return (index, true);
+        }
+        let (index, complete) = self.build_star_index(context, request, path, cached);
+        let index = Arc::new(index);
+        // Built while a barrel cycle was open, the index may lack names from the barrel being built.
+        if complete {
+            self.star_indexes()
+                .insert(path.to_path_buf(), Arc::clone(&index));
+        }
+        (index, complete)
+    }
+
+    fn build_star_index(
+        &self,
+        context: &CrossFileContext<'_>,
+        request: CrossFileRequest<'_>,
+        path: &Path,
+        cached: &CachedFileExports,
+    ) -> (StarIndex, bool) {
+        let mut index = StarIndex {
+            source_hash: cached.source_hash,
+            names: FxHashMap::default(),
+        };
+        let guard_key = (path.to_path_buf(), None);
+        if !context.forwarding.borrow_mut().insert(guard_key.clone()) {
+            return (index, false);
+        }
+        let mut complete = true;
+        for (star, specifier) in cached.star_sources.iter().enumerate() {
+            // Package barrels hold nothing foldable and can be large.
+            let Some(target) = self.resolve_auto(path, specifier) else {
+                continue;
+            };
+            if is_package_path(&target) {
+                continue;
+            }
+            let child_request = CrossFileRequest {
+                from_file: path,
+                specifier,
+                ..request
+            };
+            let Ok((child_path, child)) = self.load_module(context, child_request) else {
+                continue;
+            };
+            let origin: Arc<Path> = Arc::from(child_path.as_path());
+            for name in &child.declared {
+                if name != "default" {
+                    add_star_provider(&mut index.names, name, star, &origin);
+                }
+            }
+            if child.star_sources.is_empty() {
+                continue;
+            }
+            let (child_index, child_complete) =
+                self.star_index(context, child_request, &child_path, &child);
+            complete &= child_complete;
+            for (name, provider) in &child_index.names {
+                if child.declared.contains(name) {
+                    continue;
+                }
+                match provider {
+                    StarProvider::One { origin, .. } => {
+                        add_star_provider(&mut index.names, name, star, origin);
+                    }
+                    StarProvider::Ambiguous => {
+                        index.names.insert(name.clone(), StarProvider::Ambiguous);
+                    }
+                }
+            }
+        }
+        context.forwarding.borrow_mut().remove(&guard_key);
+        (index, complete)
+    }
+
+    fn star_indexes(&self) -> std::sync::MutexGuard<'_, FxHashMap<PathBuf, Arc<StarIndex>>> {
+        self.star_indexes
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+    }
+}
+
+/// Two paths to the same declaring module are one binding (a diamond), not an ambiguity.
+fn add_star_provider(
+    names: &mut FxHashMap<String, StarProvider>,
+    name: &str,
+    star: usize,
+    origin: &Arc<Path>,
+) {
+    match names.get(name) {
+        None => {
+            names.insert(
+                name.to_owned(),
+                StarProvider::One {
+                    star,
+                    origin: Arc::clone(origin),
+                },
+            );
+        }
+        Some(StarProvider::One {
+            origin: existing, ..
+        }) if existing == origin => {}
+        Some(_) => {
+            names.insert(name.to_owned(), StarProvider::Ambiguous);
+        }
     }
 }
 
@@ -538,82 +872,20 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         context: &CrossFileContext<'_>,
         request: CrossFileRequest<'_>,
     ) -> CrossFileResolution {
-        let CrossFileRequest {
-            from_file,
-            specifier,
-            name,
-            matchers,
-            tokens,
-            prefix,
-        } = request;
-        let session = context.session;
-        let Some(directory) = from_file.parent() else {
-            return CrossFileResolution::none();
+        let (path, cached) = match self.load_module(context, request) {
+            Ok(module) => module,
+            Err(resolution) => return *resolution,
         };
-        if session.is_unresolved(directory, specifier) {
-            return CrossFileResolution::unresolved(from_file, specifier);
+        if let Some((specifier, local)) = cached.re_exports.get(request.name) {
+            return self.resolve_re_export(context, request, &path, &cached, specifier, local);
         }
-        let Some(path) = self.resolve_auto(from_file, specifier) else {
-            session.record_unresolved(directory, specifier);
-            return CrossFileResolution::unresolved(from_file, specifier);
-        };
-
-        if let Some(resolution) = session.cached_resolution(&path, name) {
-            return resolution;
-        }
-        if session.is_unreadable(&path) {
-            return CrossFileResolution::at_path(path, None, None, Vec::new());
-        }
-
-        // Read-fail drops the entry so a deleted file never serves stale exports.
-        let Ok(source) = <F as oxc_resolver::FileSystem>::read_to_string(&self.fs, &path) else {
-            self.cache().remove(&path);
-            session.record_unreadable(path.clone());
-            return CrossFileResolution::at_path(path, None, None, Vec::new());
-        };
-        let source_hash = pandacss_shared::fx_hash(&source);
-
-        // Record `path` on every remaining exit. Resolved modules are deps even when they don't fold.
-        let cached = {
-            let guard = self.cache();
-            guard
-                .get(&path)
-                .filter(|cached| cached.source_hash == source_hash)
-                .map(Arc::clone)
-        };
-        if let Some(cached) = cached
-            && self.provenance_fresh(&cached.deps)
-            && self.unresolved_still_missing(&cached.unresolved)
+        if cached.declared.contains(request.name)
+            || request.name == "default"
+            || cached.star_sources.is_empty()
         {
-            self.seed_session_dependencies(session, &cached.deps);
-            let result = CrossFileResolution::from_cached(path.clone(), &cached, name);
-            session.insert(path, cached);
-            return result;
+            return CrossFileResolution::from_cached(path, &cached, request.name);
         }
-
-        // Cycle guard: `a.ts ↔ b.ts` would otherwise overflow the stack.
-        let guard_key = (path.clone(), name.to_owned());
-        {
-            let mut in_flight = context.in_flight.borrow_mut();
-            if !in_flight.insert(guard_key.clone()) {
-                return CrossFileResolution::at_path(path, Some(source_hash), None, Vec::new());
-            }
-        }
-
-        let (exports, deps, unresolved) =
-            Self::extract_exports(context, &path, &source, matchers, tokens, prefix);
-        context.in_flight.borrow_mut().remove(&guard_key);
-
-        let cached = Arc::new(CachedFileExports {
-            source_hash,
-            exports,
-            deps,
-            unresolved,
-        });
-        let result = CrossFileResolution::from_cached(path.clone(), &cached, name);
-        self.cache().insert(path.clone(), Arc::clone(&cached));
-        session.insert(path, cached);
-        result
+        self.resolve_through_stars(context, request, &path, &cached)
     }
 
     fn cache_len(&self) -> usize {
@@ -621,23 +893,76 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
     }
 }
 
+/// What a module exports: the folded values, every name it declares, and its `export *` sources.
+struct ModuleExports {
+    exports: FileExports,
+    declared: FxHashSet<String>,
+    star_sources: Vec<String>,
+    re_exports: ReExports,
+}
+
 fn collect_exports(
     program: &Program<'_>,
-    path: &Path,
-    context: &CrossFileContext<'_>,
     resolver: &Resolver<'_, '_>,
     matched: &[MatchedImport],
-) -> FileExports {
-    let mut exports = FxHashMap::default();
+) -> ModuleExports {
+    let mut module = ModuleExports {
+        exports: FxHashMap::default(),
+        declared: FxHashSet::default(),
+        star_sources: Vec::new(),
+        re_exports: FxHashMap::default(),
+    };
+    let imported = imported_bindings(program);
 
     for stmt in &program.body {
-        let Statement::ExportNamedDeclaration(decl) = stmt else {
-            continue;
-        };
-        collect_from_named(decl, path, context, resolver, matched, &mut exports);
+        match stmt {
+            Statement::ExportNamedDeclaration(decl) => {
+                if !decl.export_kind.is_type() {
+                    declare_named(decl, &mut module.declared);
+                }
+                collect_from_named(decl, &imported, resolver, matched, &mut module);
+            }
+            Statement::ExportDefaultDeclaration(_) => {
+                module.declared.insert("default".to_owned());
+            }
+            Statement::ExportAllDeclaration(decl) if !decl.export_kind.is_type() => {
+                match &decl.exported {
+                    Some(exported) => {
+                        module.declared.insert(module_export_name(exported));
+                    }
+                    None => module.star_sources.push(decl.source.value.to_string()),
+                }
+            }
+            _ => {}
+        }
     }
 
-    exports
+    module
+}
+
+fn declare_named(decl: &ExportNamedDeclaration<'_>, declared: &mut FxHashSet<String>) {
+    match &decl.declaration {
+        Some(Declaration::VariableDeclaration(var)) if !var.declare => {
+            for declarator in &var.declarations {
+                for id in declarator.id.get_binding_identifiers() {
+                    declared.insert(id.name.to_string());
+                }
+            }
+        }
+        // Types and ambient declarations have no runtime binding.
+        Some(declaration) if declaration.is_type() || declaration.declare() => {}
+        Some(declaration) => {
+            if let Some(id) = declaration.id() {
+                declared.insert(id.name.to_string());
+            }
+        }
+        None => {}
+    }
+    for specifier in &decl.specifiers {
+        if !specifier.export_kind.is_type() {
+            declared.insert(module_export_name(&specifier.exported));
+        }
+    }
 }
 
 /// `cva` / `sva` when `callee` is a recipe factory imported in this file.
@@ -669,14 +994,44 @@ fn exported_recipe(
     Some(ExportedRecipe { factory, config })
 }
 
+/// Local name → (module specifier, imported name) for each value import, so `export { x }` of an
+/// imported binding forwards like `export { x } from`.
+fn imported_bindings(program: &Program<'_>) -> FxHashMap<String, (String, String)> {
+    let mut bindings = FxHashMap::default();
+    for stmt in &program.body {
+        let Statement::ImportDeclaration(decl) = stmt else {
+            continue;
+        };
+        if decl.import_kind.is_type() {
+            continue;
+        }
+        for specifier in decl.specifiers.iter().flatten() {
+            let imported = match specifier {
+                ImportDeclarationSpecifier::ImportSpecifier(spec)
+                    if !spec.import_kind.is_type() =>
+                {
+                    module_export_name(&spec.imported)
+                }
+                ImportDeclarationSpecifier::ImportDefaultSpecifier(_) => "default".to_owned(),
+                _ => continue,
+            };
+            bindings.insert(
+                specifier.local().name.to_string(),
+                (decl.source.value.to_string(), imported),
+            );
+        }
+    }
+    bindings
+}
+
 fn collect_from_named(
     decl: &ExportNamedDeclaration<'_>,
-    path: &Path,
-    context: &CrossFileContext<'_>,
+    imported: &FxHashMap<String, (String, String)>,
     resolver: &Resolver<'_, '_>,
     matched: &[MatchedImport],
-    out: &mut FileExports,
+    module: &mut ModuleExports,
 ) {
+    let out = &mut module.exports;
     match &decl.declaration {
         Some(Declaration::VariableDeclaration(var)) => {
             collect_from_var(var, resolver, matched, out);
@@ -690,30 +1045,34 @@ fn collect_from_named(
         }
         _ => {}
     }
+    if decl.export_kind.is_type() {
+        return;
+    }
 
     for specifier in &decl.specifiers {
+        if specifier.export_kind.is_type() {
+            continue;
+        }
         let exported = module_export_name(&specifier.exported);
         let local = module_export_name(&specifier.local);
-        let entry = if let Some(source) = &decl.source {
-            let resolution = context.resolve_named_export(
-                path,
-                source.value.as_str(),
-                &local,
-                resolver.matchers(),
-                resolver.tokens(),
-                resolver.prefix(),
-            );
-            resolver.record_cross_file_resolution(&resolution);
-            resolution.entry
-        } else if let Some(value) = resolver.resolve_root_name(&local) {
-            Some(ExportEntry::Literal(value))
-        } else {
-            resolver
-                .lookup_root_pure_fn(&local)
-                .map(ExportEntry::PureFn)
+        let forwarded = match &decl.source {
+            Some(source) => Some((source.value.to_string(), local.clone())),
+            None => imported.get(&local).cloned(),
         };
+        if let Some(target) = forwarded {
+            module.re_exports.insert(exported, target);
+            continue;
+        }
+        let entry = resolver
+            .resolve_root_name(&local)
+            .map(ExportEntry::Literal)
+            .or_else(|| {
+                resolver
+                    .lookup_root_pure_fn(&local)
+                    .map(ExportEntry::PureFn)
+            });
         if let Some(entry) = entry {
-            out.insert(exported, entry);
+            module.exports.insert(exported, entry);
         }
     }
 }

@@ -36,7 +36,8 @@ use crate::style_tree::{
     StyleTree, expression_to_style_tree, literal_to_style_tree, project_literal,
 };
 use crate::{
-    ImportBindingFacts, ImportRecord, ImportSpecifierKind, ImportedRecipeRawCall, Literal, TokenRef,
+    ImportBindingFacts, ImportRecord, ImportSpecifierKind, ImportedRecipeFold,
+    ImportedRecipeFoldKind, Literal, TokenRef,
 };
 
 pub(crate) type PatternRawTransformFn<'a> =
@@ -74,7 +75,7 @@ pub(crate) struct Resolver<'a, 'cb> {
     line_index: Option<&'a crate::LineIndex<'a>>,
     diagnostics: RefCell<Vec<crate::Diagnostic>>,
     token_refs: RefCell<Vec<TokenRef>>,
-    imported_recipe_raw_calls: RefCell<Vec<ImportedRecipeRawCall>>,
+    imported_recipe_folds: RefCell<Vec<ImportedRecipeFold>>,
     /// Cross-file modules read during this file's extraction (nested re-export /
     /// imported-alias modules included), with the source hash folded.
     cross_file_deps: RefCell<FxHashMap<PathBuf, Option<u64>>>,
@@ -171,7 +172,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             line_index,
             diagnostics: RefCell::default(),
             token_refs: RefCell::default(),
-            imported_recipe_raw_calls: RefCell::default(),
+            imported_recipe_folds: RefCell::default(),
             cross_file_deps: RefCell::default(),
             unresolved_cross_file_deps: RefCell::default(),
             pattern_raw_transform,
@@ -197,9 +198,9 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         std::mem::take(&mut self.token_refs.borrow_mut())
     }
 
-    /// Folded `imported.raw(props)` call sites, for the transform to rewrite.
-    pub(crate) fn take_imported_recipe_raw_calls(&self) -> Vec<ImportedRecipeRawCall> {
-        std::mem::take(&mut self.imported_recipe_raw_calls.borrow_mut())
+    /// Static calls on imported recipes, for the transform to rewrite.
+    pub(crate) fn take_imported_recipe_folds(&self) -> Vec<ImportedRecipeFold> {
+        std::mem::take(&mut self.imported_recipe_folds.borrow_mut())
     }
 
     pub(crate) fn take_cross_file_deps(&self) -> Vec<CrossFileDependency> {
@@ -282,18 +283,6 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
                 }
             })
             .collect()
-    }
-
-    pub(crate) fn tokens(&self) -> Option<&'a TokenDictionary> {
-        self.tokens
-    }
-
-    pub(crate) fn matchers(&self) -> Option<&'a Matchers> {
-        self.matchers
-    }
-
-    pub(crate) fn prefix(&self) -> &'a str {
-        self.prefix
     }
 
     // === Pure Function Resolution ===
@@ -799,20 +788,44 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         }
     }
 
-    fn resolve_recipe_raw_styles(
+    /// The variant props of a recipe call: none, or one static object.
+    fn recipe_call_props(&self, call: &CallExpression<'_>) -> Option<Literal> {
+        match call.arguments.as_slice() {
+            [] => Some(Literal::Object(Vec::new())),
+            [arg] => expression_to_literal(arg.as_expression()?, Some(self)),
+            _ => None,
+        }
+    }
+
+    /// The inline `cva`/`sva` an import binding resolves to in its defining file.
+    fn imported_recipe(
         &self,
-        call: &CallExpression<'_>,
-        recipe: &crate::cross_file::ExportedRecipe,
-        resolve: &RecipeRawResolveCell<'_>,
-    ) -> Option<Literal> {
-        if call.arguments.len() > 1 {
+        binding: &IdentifierReference<'_>,
+    ) -> Option<crate::cross_file::ExportedRecipe> {
+        // Panda's own `.raw` surfaces are handled by `resolve_raw_style_call`.
+        if !self.is_import_binding(binding) || self.aliases.contains_key(binding.name.as_str()) {
             return None;
         }
-        let props = match call.arguments.first() {
-            None => Literal::Object(Vec::new()),
-            Some(arg) => expression_to_literal(arg.as_expression()?, Some(self))?,
-        };
-        (resolve.borrow_mut())(&recipe.factory, &recipe.config, &props)
+        let symbol_id = self.symbol_for_identifier(binding)?;
+        match self.resolve_import_entry(symbol_id)? {
+            ExportEntry::Recipe(recipe) => Some(recipe),
+            _ => None,
+        }
+    }
+
+    fn push_imported_recipe_fold(&self, call: &CallExpression<'_>, kind: ImportedRecipeFoldKind) {
+        let span = crate::span_from_oxc(call.span);
+        let mut folds = self.imported_recipe_folds.borrow_mut();
+        if !folds.iter().any(|fold| fold.span == span) {
+            folds.push(ImportedRecipeFold {
+                object_literal_context: crate::transform_facts::object_literal_context(
+                    call,
+                    &self.semantic,
+                ),
+                span,
+                kind,
+            });
+        }
     }
 
     /// The definition file precomputes its class strings independently, so a
@@ -843,36 +856,47 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
     ) -> Option<Literal> {
         let resolve = self.recipe_raw_resolve?;
         let (object, path) = flatten_static_member_path(&call.callee)?;
-        if path.as_slice() != ["raw"] || !self.is_import_binding(object) {
+        if path.as_slice() != ["raw"] {
             return None;
         }
-        // Panda's own `.raw` surfaces are handled by `resolve_raw_style_call`.
-        if self.aliases.contains_key(object.name.as_str()) {
-            return None;
-        }
-
-        let symbol_id = self.symbol_for_identifier(object)?;
-        let ExportEntry::Recipe(recipe) = self.resolve_import_entry(symbol_id)? else {
-            return None;
-        };
-
-        let Some(styles) = self.resolve_recipe_raw_styles(call, &recipe, resolve) else {
+        let recipe = self.imported_recipe(object)?;
+        let styles = self
+            .recipe_call_props(call)
+            .and_then(|props| (resolve.borrow_mut())(&recipe.factory, &recipe.config, &props));
+        let Some(styles) = styles else {
             self.report_dynamic_imported_raw(call, object.name.as_str());
             return None;
         };
-        let span = crate::span_from_oxc(call.span);
-        let mut folded = self.imported_recipe_raw_calls.borrow_mut();
-        if !folded.iter().any(|call| call.span == span) {
-            folded.push(ImportedRecipeRawCall {
-                object_literal_context: crate::transform_facts::object_literal_context(
-                    call,
-                    &self.semantic,
-                ),
-                span,
-                styles: styles.clone(),
-            });
-        }
+        self.push_imported_recipe_fold(call, ImportedRecipeFoldKind::Raw(styles.clone()));
         Some(styles)
+    }
+
+    /// Record a plain `button(props)` call where `button` is an imported inline
+    /// `cva` or `sva` and the props are static.
+    pub(crate) fn resolve_imported_recipe_call(&self, call: &CallExpression<'_>) {
+        if self.recipe_raw_resolve.is_none() {
+            return;
+        }
+        let Expression::Identifier(callee) = call.callee.get_inner_expression() else {
+            return;
+        };
+        let Some(recipe) = self.imported_recipe(callee) else {
+            return;
+        };
+        if recipe.factory != "cva" && recipe.factory != "sva" {
+            return;
+        }
+        let Some(props) = self.recipe_call_props(call) else {
+            return;
+        };
+        self.push_imported_recipe_fold(
+            call,
+            ImportedRecipeFoldKind::Call {
+                factory: recipe.factory,
+                definition: recipe.config,
+                props,
+            },
+        );
     }
 
     /// [`StyleTree`] for a `.raw(...)` arg. Pattern transform: project → transform → rehydrate.

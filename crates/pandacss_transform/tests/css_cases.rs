@@ -348,7 +348,6 @@ fn a_standalone_call_inlines_to_its_value_form_and_drops_the_import() {
 
     assert!(output.changed);
     assert!(!output.bailed);
-    assert!(!output.code.contains("@panda/css"));
     assert_snapshot!(output.code, @r#"export const width = "firstThatWorks(min(60rem, 100%), 75%)";"#);
 }
 
@@ -376,6 +375,5 @@ fn a_run_in_a_jsx_css_prop_rewrites_to_its_class() {
     let output = transform_with_project(&project_with_jsx(), "src/app.tsx", source);
 
     assert!(output.changed);
-    assert!(!output.code.contains("@panda/css"));
     assert_snapshot!(output.code, @r#"export const el = <div className="min-height_firstThatWorks(100dvh,_100vh)" />;"#);
 }

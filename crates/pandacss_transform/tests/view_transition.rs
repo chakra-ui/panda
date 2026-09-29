@@ -29,8 +29,6 @@ fn rewrites_static_view_transition_to_bag_class_string() {
 
     assert!(output.changed);
     assert!(!output.bailed);
-    assert!(!output.code.contains("viewTransition("));
-    assert!(!output.code.contains("@panda/css"));
     assert_eq!(expected, "vt_kXwuyX");
     assert_snapshot!(output.code, @r#"
     export const slide = "vt_kXwuyX";
@@ -50,7 +48,6 @@ fn removes_fully_inlined_view_transition_import() {
     let output = transform("src/vt.ts", source);
 
     assert!(output.changed);
-    assert!(!output.code.contains("import"));
     assert_snapshot!(output.code, @r#"
     export const slide = "vt_gnOaDr";
     "#);
@@ -70,7 +67,6 @@ fn inlines_view_transition_alongside_css_and_drops_dead_import() {
     let output = transform("src/vt.ts", source);
 
     assert!(output.changed);
-    assert!(!output.code.contains("@panda/css"));
     assert_snapshot!(output.code, @r#"
     export const cls = "color_red";
     export const slide = "vt_gnOaDr";
@@ -105,8 +101,6 @@ fn keeps_runtime_import_when_only_static_sibling_is_inlined() {
     let output = transform("src/vt.ts", source);
 
     assert!(output.changed);
-    assert!(output.code.contains("import { viewTransition }"));
-    assert!(output.code.contains("viewTransition(options)"));
     assert_snapshot!(output.code, @r#"
     import { viewTransition } from '@panda/css';
     export const slide = "vt_gnOaDr";
@@ -204,8 +198,6 @@ fn rewrites_named_theme_view_transition_to_stable_class() {
     let output = transform_with_project(&project, "src/vt.ts", source);
 
     assert!(output.changed);
-    assert!(!output.code.contains("viewTransition("));
-    assert!(!output.code.contains("@panda/css"));
     assert_snapshot!(output.code, @r#"
     export const slide = "vt_slide";
     "#);
@@ -281,7 +273,6 @@ fn rewrites_same_file_const_name_to_theme_class() {
     let output = transform_with_project(&project, "src/vt.ts", source);
 
     assert!(output.changed);
-    assert!(!output.code.contains("viewTransition("));
     assert_snapshot!(output.code, @r#"
     const name = 'slide';
     export const slide = "vt_slide";
