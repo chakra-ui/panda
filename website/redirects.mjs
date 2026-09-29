@@ -97,6 +97,7 @@ export const redirects = [
   to('/play', 'https://play.panda-css.com'),
   to('/learn', 'https://pandamastery.com'),
   to('/docs/getting-started', '/docs/get-started/why-panda'),
+  to('/docs/get-started/getting-started', '/docs/get-started/why-panda'),
 
   to('/docs/get-started', '/docs/get-started/why-panda'),
   to('/docs/styling', '/docs/styling/overview'),
