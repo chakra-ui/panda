@@ -148,7 +148,8 @@ that same analysis with a printer on the end.
 
 ## What ships now
 
-Every example below is the real output of the transformer in Panda 2.0. Only the line breaks are ours.
+Every example below is the real output of the transformer in Panda 2.0. Only the line breaks are ours, unless the
+example says it's simplified.
 
 ### Patterns
 
@@ -182,6 +183,33 @@ A config recipe call resolves its variants at build time:
   Cancel
 </button>
 ```
+
+### Recipes you import
+
+A `cva()` defined in one file and called in another folds too, `.raw()` included. The call becomes its classes, the
+`.raw()` call becomes a plain style object:
+
+```tsx
+// button.ts
+export const button = cva({
+  base: { color: 'red', padding: '2px' },
+  variants: { size: { sm: { padding: '4px' }, lg: { padding: '8px' } } },
+  compoundVariants: [{ size: 'lg', css: { fontSize: '20px' } }],
+  defaultVariants: { size: 'sm' },
+})
+
+// you write
+import { button } from './button'
+export const large = button({ size: 'lg' })
+export const styles = button.raw({ size: 'lg' })
+
+// ships as
+import { button } from './button';
+export const large = "color_red padding_8px fs_20px";
+export const styles = {"color":"red","padding":"8px","fontSize":"20px"};
+```
+
+When every call to a recipe folds like this, nothing reads `button` any more, and the bundler drops the recipe too.
 
 ### Ternaries
 
@@ -233,36 +261,34 @@ that knows nothing about your theme.
 
 ### Runtime variants
 
-An atomic recipe whose variant is chosen at runtime keeps a variant table. The table holds strings, not style objects:
+A `cva()` whose variant is picked at runtime compiles into a small function made for that one recipe. Every class is
+already a string, so all that's left at runtime is a lookup:
 
 ```tsx
 // you write
 const button = cva({
-  base: { px: '4', py: '2', rounded: 'md' },
+  base: { color: 'red' },
   variants: {
-    tone: {
-      primary: { bg: 'blue.500', color: 'white' },
-      ghost: { bg: 'transparent' }
-    }
-  }
+    size: { sm: { padding: '4px' }, lg: { padding: '8px' } }
+  },
+  defaultVariants: { size: 'sm' }
 })
 
-// ships as
-import { cva as __pcva } from '@pandacss-internal/css'
-
-const button = /* @__PURE__ */ __pcva({
-  base: 'bdr_md py_2 px_4',
-  variants: {
-    tone: {
-      primary: 'bg_blue.500 c_white',
-      ghost: 'bg_transparent'
-    }
-  }
-})
+// ships as (simplified)
+const button = (props = {}) =>
+  __pcx('color_red', { sm: 'padding_4px', lg: 'padding_8px' }[props.size ?? 'sm'])
 ```
 
-`@pandacss-internal/css` is a virtual module the plugin serves. It holds `cx`, `cva`, and `sva`, a file imports only
-what it uses, and an unused factory tree-shakes away with its import.
+The real output also handles `null` props the way the runtime does, and caches the result per prop combination, so a
+component that re-renders with the same props gets its class string back for free. Slot recipes from `sva()` compile the
+same way, with one class string per slot.
+
+A recipe you export or pass around keeps its full API, including `variantKeys`, `splitVariantProps`, `.raw()`, and
+working with `styled()` and `createSlotRecipeContext`. The compiled function gets that API from one shared helper,
+not from a copy of the recipe runtime.
+
+`@pandacss-internal/css` is a virtual module the plugin serves. It holds `cx` and the small helpers compiled recipes
+lean on. A file imports only what it uses, and an unused helper tree-shakes away with its import.
 
 ### Per call site
 
