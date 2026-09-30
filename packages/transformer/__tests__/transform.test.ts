@@ -12,6 +12,11 @@ describe('shouldTransform', () => {
     expect(shouldTransform('/project/logo.png')).toMatchInlineSnapshot(`false`)
   })
 
+  it('matches svelte components but not their sub-requests', () => {
+    expect(shouldTransform('/project/src/routes/+page.svelte')).toMatchInlineSnapshot(`true`)
+    expect(shouldTransform('/project/src/App.svelte?svelte&type=style&lang.css')).toMatchInlineSnapshot(`false`)
+  })
+
   it('respects include and exclude patterns', () => {
     expect(
       shouldTransform('/project/src/App.tsx', {
