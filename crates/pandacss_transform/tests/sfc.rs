@@ -347,3 +347,44 @@ fn leaves_astro_client_scripts_untouched() {
     </script>
     "#);
 }
+
+#[test]
+fn keeps_the_astro_fence_when_removing_a_semicolon_less_last_import() {
+    let source = indoc! {r"
+        ---
+        import Card from './Card.astro'
+        import { css } from '@panda/css'
+        import { hstack } from '@panda/patterns'
+        ---
+
+        <div class={hstack({ gap: '2' })}><Card class={css({ color: 'red' })} /></div>
+    "};
+
+    assert_snapshot!(transform("src/pages/index.astro", source).code, @r#"
+    ---
+    import Card from './Card.astro'
+    ---
+
+    <div class={"gap_2"}><Card class={"color_red"} /></div>
+    "#);
+}
+
+#[test]
+fn keeps_astro_frontmatter_separate_from_template_expressions() {
+    let source = indoc! {r"
+        ---
+        import { css } from '@panda/css'
+        const theme = { color: 'red' }
+        ---
+
+        <p class={css({ color: theme.color })}>x</p>
+    "};
+
+    assert_snapshot!(transform("src/Card.astro", source).code, @r#"
+    ---
+    const theme = { color: 'red' }
+    ---
+
+    <p class={"color_red"}>x</p>
+    "#);
+}

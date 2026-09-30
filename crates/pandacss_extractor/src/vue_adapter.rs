@@ -27,7 +27,6 @@ pub(crate) fn mask_vue(source: &str) -> String {
     finish_mask(mask)
 }
 
-/// A template expression written inside a quoted attribute value.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct QuotedExpression {
     pub start: usize,
