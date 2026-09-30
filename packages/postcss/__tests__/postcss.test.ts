@@ -49,6 +49,19 @@ describe('PostCSS plugin', () => {
     expect(result.css.length).toBeGreaterThan(2)
   })
 
+  test('run codegen when importMap is local', async () => {
+    const input = '@layer reset, base, tokens, recipes, utilities;'
+    const configPath = join(__dirname, 'samples', 'panda.config.cjs')
+    const emitSpy = vi.spyOn(builder, 'emit')
+
+    try {
+      await run(input, { configPath })
+      expect(emitSpy).toHaveBeenCalledTimes(1)
+    } finally {
+      emitSpy.mockRestore()
+    }
+  })
+
   test('register `include` as dependencies', async () => {
     const input = '@layer reset, base, tokens, recipes, utilities;'
     const configPath = join(__dirname, 'samples', 'panda.config.cjs')

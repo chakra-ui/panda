@@ -1,7 +1,9 @@
+import { logger } from '@pandacss/logger'
 import { Builder, setLogStream } from '@pandacss/node'
 import { createRequire } from 'module'
 import path from 'path'
 import type { PluginCreator, TransformCallback } from 'postcss'
+import { getExternalPackages } from './external-import-map'
 
 const customRequire = createRequire(__dirname)
 
@@ -23,6 +25,7 @@ let stream: ReturnType<typeof setLogStream> | undefined
 // export for unit test
 export const builder = new Builder()
 let builderGuard: Promise<void> | undefined
+let loggedSkip: string | undefined
 
 export const pandacss: PluginCreator<PluginOptions> = (options = {}) => {
   const { configPath, cwd, logfile, allow } = options
@@ -41,7 +44,18 @@ export const pandacss: PluginCreator<PluginOptions> = (options = {}) => {
     // ignore non-panda css file
     if (!builder.isValidRoot(root)) return
 
-    await builder.emit()
+    const { config, imports } = builder.getContextOrThrow()
+    const external = getExternalPackages(
+      config,
+      Object.values(imports.matchers).flatMap((m) => m.mods),
+    )
+    if (external) {
+      const names = external.join(', ')
+      if (loggedSkip !== names) logger.info('postcss', `Skipping codegen, importMap points to ${names}`)
+      loggedSkip = names
+    } else {
+      await builder.emit()
+    }
 
     builder.extract()
 

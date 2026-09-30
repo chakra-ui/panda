@@ -38,11 +38,9 @@
     "dist"
   ],
   "dependencies": {
+    "@pandacss/logger": "workspace:*",
     "@pandacss/node": "workspace:*",
     "postcss": "8.5.14"
-  },
-  "devDependencies": {
-    "@pandacss/logger": "workspace:*"
   },
   "engines": {
     "node": ">=20"
