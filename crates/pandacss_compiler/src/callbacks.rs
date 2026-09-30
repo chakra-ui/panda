@@ -380,6 +380,16 @@ pub fn apply_pattern_transform<C, S: BuildHasher, T: BuildHasher>(
     if !styles.has_conditional() {
         return transform_pattern_props(name, id, callback, styles, cache, &mut call);
     }
+    let cache_key = literal_cache_key(styles, MAX_TRANSFORM_CACHE_KEY_BYTES).map(|props| {
+        PatternTransformCacheKey {
+            id: id.clone(),
+            name: name.to_owned(),
+            props,
+        }
+    });
+    if let Some(cached) = cache_key.as_ref().and_then(|key| cache.0.get(key)).cloned() {
+        return Ok(cached);
+    }
     let mut branches = Vec::new();
     for variant in conditional_variants(styles) {
         if let Some(style) =
@@ -389,11 +399,15 @@ pub fn apply_pattern_transform<C, S: BuildHasher, T: BuildHasher>(
             branches.push(style);
         }
     }
-    Ok(match branches.len() {
+    let transformed = match branches.len() {
         0 => None,
         1 => branches.pop(),
         _ => Some(Literal::Conditional(branches)),
-    })
+    };
+    if let Some(cache_key) = cache_key {
+        cache.0.put(cache_key, transformed.clone());
+    }
+    Ok(transformed)
 }
 
 #[allow(
