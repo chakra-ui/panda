@@ -1,5 +1,18 @@
 # @pandacss/compiler
 
+## 2.0.1
+
+### Patch Changes
+
+- 0ad1e26: Fix ternary values in pattern props, like `<Box bg={on ? 'green.500' : 'red.500'} />` or
+  `hstack({ gap: on ? '1' : '3' })`. Each branch now gets its own CSS instead of a broken `bg_conditional` rule and a
+  breakpoint-only second branch.
+- f9459ce: Fix `pandacss({ transform: true })` to compile static style calls in `.svelte`, `.vue`, and `.astro` files
+  during Vite builds.
+  - @pandacss/compiler-shared@2.0.1
+  - @pandacss/config@2.0.1
+  - @pandacss/types@2.0.1
+
 ## 2.0.0
 
 ### Major Changes

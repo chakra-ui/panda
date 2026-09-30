@@ -1,5 +1,18 @@
 # @pandacss/vite
 
+## 2.0.1
+
+### Patch Changes
+
+- f9459ce: Fix `pandacss({ transform: true })` to compile static style calls in `.svelte`, `.vue`, and `.astro` files
+  during Vite builds.
+- Updated dependencies [0ad1e26]
+- Updated dependencies [f9459ce]
+- Updated dependencies [abea127]
+  - @pandacss/compiler@2.0.1
+  - @pandacss/transformer@2.0.1
+  - @pandacss/compiler-shared@2.0.1
+
 ## 2.0.0
 
 ### Major Changes

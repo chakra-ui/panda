@@ -1,5 +1,16 @@
 # @pandacss/bun
 
+## 2.0.1
+
+### Patch Changes
+
+- Updated dependencies [0ad1e26]
+- Updated dependencies [f9459ce]
+- Updated dependencies [abea127]
+  - @pandacss/compiler@2.0.1
+  - @pandacss/transformer@2.0.1
+  - @pandacss/compiler-shared@2.0.1
+
 ## 2.0.0
 
 ### Major Changes
