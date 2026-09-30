@@ -154,43 +154,46 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
       return sourceHooks?.load(id) ?? null
     },
 
-    transform(code, id) {
-      const transformer = transformEnabled ? resolveSourceTransformer() : undefined
-      if (transformer) {
-        const sourceResult = runSourceTransform(
-          this,
-          {
-            getCompiler: () => driver?.compiler,
-            getTransformer: () => transformer,
-          },
-          code,
-          id,
-        )
-        if (sourceResult) {
-          warnDiagnostics((message) => this.warn(message), sourceResult.diagnostics, 'while transforming source', id)
-          return { code: sourceResult.code, map: sourceResult.map }
+    transform: {
+      order: 'pre',
+      handler(code, id) {
+        const transformer = transformEnabled ? resolveSourceTransformer() : undefined
+        if (transformer) {
+          const sourceResult = runSourceTransform(
+            this,
+            {
+              getCompiler: () => driver?.compiler,
+              getTransformer: () => transformer,
+            },
+            code,
+            id,
+          )
+          if (sourceResult) {
+            warnDiagnostics((message) => this.warn(message), sourceResult.diagnostics, 'while transforming source', id)
+            return { code: sourceResult.code, map: sourceResult.map }
+          }
         }
-      }
 
-      if (!driver || extname(id.split('?')[0] ?? id) !== '.css') return null
-      if (!driver.compiler.hasLayerDeclaration(code)) return null
+        if (!driver || extname(id.split('?')[0] ?? id) !== '.css') return null
+        if (!driver.compiler.hasLayerDeclaration(code)) return null
 
-      rootIds.add(id)
-      addPandaWatchFiles((file) => this.addWatchFile(file), id)
-      warnDesignSystemDiagnostics((message) => {
-        if (resolvedConfig) {
-          resolvedConfig.logger.warn(message)
-        } else {
-          this.warn(message)
-        }
-      })
+        rootIds.add(id)
+        addPandaWatchFiles((file) => this.addWatchFile(file), id)
+        warnDesignSystemDiagnostics((message) => {
+          if (resolvedConfig) {
+            resolvedConfig.logger.warn(message)
+          } else {
+            this.warn(message)
+          }
+        })
 
-      const polyfill = driver.config.polyfill === true
-      const output = driver.cssgen({ emitLayerDeclaration: false, polyfill })
-      warnDiagnostics((message) => this.warn(message), output.diagnostics, 'while compiling the stylesheet')
+        const polyfill = driver.config.polyfill === true
+        const output = driver.cssgen({ emitLayerDeclaration: false, polyfill })
+        warnDiagnostics((message) => this.warn(message), output.diagnostics, 'while compiling the stylesheet')
 
-      const entry = polyfill ? driver.compiler.stripLayerOrderStatements(code) : code
-      return { code: `${entry}\n${output.css}`, map: null }
+        const entry = polyfill ? driver.compiler.stripLayerOrderStatements(code) : code
+        return { code: `${entry}\n${output.css}`, map: null }
+      },
     },
 
     async hotUpdate(ctx: HotUpdateOptions) {

@@ -12,6 +12,17 @@ describe('shouldTransform', () => {
     expect(shouldTransform('/project/logo.png')).toMatchInlineSnapshot(`false`)
   })
 
+  it('matches svelte, vue and astro components but not their sub-requests', () => {
+    expect(shouldTransform('/project/src/routes/+page.svelte')).toMatchInlineSnapshot(`true`)
+    expect(shouldTransform('/project/src/App.vue')).toMatchInlineSnapshot(`true`)
+    expect(shouldTransform('/project/src/pages/index.astro')).toMatchInlineSnapshot(`true`)
+    expect(shouldTransform('/project/src/App.svelte?svelte&type=style&lang.css')).toMatchInlineSnapshot(`false`)
+    expect(shouldTransform('/project/src/App.vue?vue&type=style&index=0&scoped=true&lang.css')).toMatchInlineSnapshot(
+      `false`,
+    )
+    expect(shouldTransform('/project/src/Card.astro?astro&type=script&index=0&lang.ts')).toMatchInlineSnapshot(`false`)
+  })
+
   it('respects include and exclude patterns', () => {
     expect(
       shouldTransform('/project/src/App.tsx', {

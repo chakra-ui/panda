@@ -41,6 +41,7 @@ mod patterns;
 mod position_try;
 mod recipe_inline;
 mod recipes;
+mod sfc;
 mod targets;
 mod tokens;
 #[allow(

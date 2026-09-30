@@ -21,14 +21,12 @@ use crate::adapter::{
 pub(crate) fn mask_astro(source: &str) -> String {
     let mut mask = blank_like(source);
 
-    // Frontmatter JS → module scope. Terminate it with `;` (written into the now-blank
-    // closing fence) so a semicolon-less last statement (`const x = {…}`) can't merge
-    // with the first parenthesized template expression via ASI (`{…}(expr)`).
     let template_start = match frontmatter_body(source) {
         Some((body_start, body_end, after_close)) => {
             copy_range(&mut mask, source, body_start, body_end);
-            if body_end < mask.len() {
-                mask[body_end] = b';';
+            if body_end + 1 < after_close {
+                mask[body_end] = b'0';
+                mask[body_end + 1] = b';';
             }
             after_close
         }

@@ -53,6 +53,7 @@ pub use imports::{
     ScanImportsOptions, scan_imports, scan_imports_with,
 };
 pub use local_bindings::{LocalBindingCall, LocalCallBinding, LocalDeclarationKind};
+pub use vue_adapter::{QuotedExpression, vue_quoted_expressions};
 // Internal helpers that take Oxc-shaped inputs — kept out of the public
 // surface so consumers don't accidentally couple to oxc_ast / oxc_diagnostics.
 pub use cross_file::{CrossFileResolver, CrossFileSession};

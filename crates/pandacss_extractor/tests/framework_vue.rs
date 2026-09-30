@@ -63,6 +63,30 @@ fn template_calls_and_style_props_extract_together() {
 }
 
 #[test]
+fn v_pre_subtrees_do_not_extract_template_calls() {
+    let source = indoc! {r#"
+        <script setup>
+        import { css } from '@panda/css';
+        </script>
+        <template>
+          <div :class="css({ color: 'red' })" v-pre>
+            <span :class="css({ color: 'blue' })">{{ css({ color: 'green' }) }}</span>
+          </div>
+          <p :class="css({ color: 'purple' })" />
+        </template>
+    "#};
+
+    let result = extract(source, "Literal.vue", &panda_config());
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: purple
+    jsx: []
+    ");
+}
+
+#[test]
 fn nested_template_branches_emit_component_style_props() {
     let source = indoc! {r#"
         <template>

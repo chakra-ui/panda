@@ -13,35 +13,113 @@ pub(crate) fn mask_vue(source: &str) -> String {
         copy_range(&mut mask, source, block.content_start, block.content_end);
     }
 
-    for block in tag_blocks(source, "template") {
-        if has_non_html_lang(source, block.open_start, block.open_end) {
-            continue;
-        }
-        copy_vue_template_expressions(&mut mask, source, block.content_start, block.content_end);
-    }
+    visit_template_expressions(source, &mut |expr| {
+        copy_expression(
+            &mut mask,
+            source,
+            expr.start,
+            expr.end,
+            expr.before,
+            expr.after,
+        );
+    });
 
     finish_mask(mask)
 }
 
-fn copy_vue_template_expressions(mask: &mut [u8], source: &str, start: usize, end: usize) {
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct QuotedExpression {
+    pub start: usize,
+    pub end: usize,
+    pub quote: u8,
+}
+
+#[must_use]
+pub fn vue_quoted_expressions(source: &str) -> Vec<QuotedExpression> {
+    let mut quoted = Vec::new();
+    visit_template_expressions(source, &mut |expr| {
+        if let Some(quote) = expr.quote {
+            quoted.push(QuotedExpression {
+                start: expr.start,
+                end: expr.end,
+                quote,
+            });
+        }
+    });
+    quoted
+}
+
+struct TemplateExpression {
+    start: usize,
+    end: usize,
+    before: usize,
+    after: usize,
+    quote: Option<u8>,
+}
+
+fn visit_template_expressions(source: &str, visit: &mut impl FnMut(TemplateExpression)) {
+    for block in tag_blocks(source, "template") {
+        if has_non_html_lang(source, block.open_start, block.open_end) {
+            continue;
+        }
+        visit_block_expressions(source, block.content_start, block.content_end, visit);
+    }
+}
+
+fn visit_block_expressions(
+    source: &str,
+    start: usize,
+    end: usize,
+    visit: &mut impl FnMut(TemplateExpression),
+) {
     let bytes = source.as_bytes();
     let mut cursor = start;
+    let mut v_pre_depth = 0usize;
     while cursor < end {
         if starts_with(bytes, cursor, b"<!--") {
             cursor = find_bytes(bytes, b"-->", cursor + 4).map_or(end, |index| index + 3);
             continue;
         }
-        if starts_with(bytes, cursor, b"{{")
+        if v_pre_depth == 0
+            && starts_with(bytes, cursor, b"{{")
             && let Some(close) = find_vue_interpolation_end(source, cursor + 2, end)
         {
-            copy_expression(mask, source, cursor + 2, close, cursor, close);
+            visit(TemplateExpression {
+                start: cursor + 2,
+                end: close,
+                before: cursor,
+                after: close,
+                quote: None,
+            });
             cursor = close + 2;
             continue;
         }
         if bytes[cursor] == b'<'
             && let Some(tag_end) = find_tag_end(source, cursor + 1)
         {
-            copy_vue_tag_expressions(mask, source, cursor + 1, tag_end);
+            let tag_start = cursor + 1;
+            let closing = bytes.get(tag_start) == Some(&b'/');
+            let name_start = tag_start + usize::from(closing);
+            let name_end = (name_start..tag_end)
+                .find(|&index| bytes[index].is_ascii_whitespace() || bytes[index] == b'/')
+                .unwrap_or(tag_end);
+            let name = source.get(name_start..name_end).unwrap_or_default();
+            if !name.is_empty() && name.as_bytes()[0].is_ascii_alphabetic() {
+                if closing {
+                    v_pre_depth = v_pre_depth.saturating_sub(1);
+                } else if v_pre_depth == 0 {
+                    let has_v_pre = visit_tag_expressions(source, tag_start, tag_end, visit);
+                    if has_v_pre
+                        && bytes.get(tag_end.saturating_sub(1)) != Some(&b'/')
+                        && !is_void_tag(name)
+                    {
+                        v_pre_depth = 1;
+                    }
+                } else if bytes.get(tag_end.saturating_sub(1)) != Some(&b'/') && !is_void_tag(name)
+                {
+                    v_pre_depth += 1;
+                }
+            }
             cursor = tag_end + 1;
             continue;
         }
@@ -49,9 +127,25 @@ fn copy_vue_template_expressions(mask: &mut [u8], source: &str, start: usize, en
     }
 }
 
-fn copy_vue_tag_expressions(mask: &mut [u8], source: &str, start: usize, end: usize) {
+fn is_void_tag(name: &str) -> bool {
+    [
+        "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param",
+        "source", "track", "wbr",
+    ]
+    .iter()
+    .any(|void| name.eq_ignore_ascii_case(void))
+}
+
+fn visit_tag_expressions(
+    source: &str,
+    start: usize,
+    end: usize,
+    visit: &mut impl FnMut(TemplateExpression),
+) -> bool {
     let bytes = source.as_bytes();
     let mut cursor = start;
+    let mut v_pre = false;
+    let mut expressions = Vec::new();
     while cursor < end && !bytes[cursor].is_ascii_whitespace() {
         cursor += 1;
     }
@@ -84,6 +178,9 @@ fn copy_vue_tag_expressions(mask: &mut [u8], source: &str, start: usize, end: us
             cursor += 1;
         }
         let name_end = cursor;
+        if source.get(name_start..name_end) == Some("v-pre") {
+            v_pre = true;
+        }
         while cursor < end && bytes[cursor].is_ascii_whitespace() {
             cursor += 1;
         }
@@ -98,38 +195,58 @@ fn copy_vue_tag_expressions(mask: &mut [u8], source: &str, start: usize, end: us
             break;
         }
 
-        let (value_start, value_end, before, after) = if matches!(bytes[cursor], b'\'' | b'"') {
-            let quote = bytes[cursor];
-            let before = cursor;
-            cursor += 1;
-            let value_start = cursor;
-            while cursor < end && bytes[cursor] != quote {
+        let (value_start, value_end, before, after, quote) =
+            if matches!(bytes[cursor], b'\'' | b'"') {
+                let quote = bytes[cursor];
+                let before = cursor;
                 cursor += 1;
-            }
-            let value_end = cursor;
-            let after = cursor;
-            if cursor < end {
-                cursor += 1;
-            }
-            (value_start, value_end, before, after)
-        } else {
-            let value_start = cursor;
-            while cursor < end
-                && !bytes[cursor].is_ascii_whitespace()
-                && !matches!(bytes[cursor], b'>')
-            {
-                cursor += 1;
-            }
-            (value_start, cursor, value_start.saturating_sub(1), cursor)
-        };
+                let value_start = cursor;
+                while cursor < end && bytes[cursor] != quote {
+                    cursor += 1;
+                }
+                let value_end = cursor;
+                let after = cursor;
+                if cursor < end {
+                    cursor += 1;
+                }
+                (value_start, value_end, before, after, Some(quote))
+            } else {
+                let value_start = cursor;
+                while cursor < end
+                    && !bytes[cursor].is_ascii_whitespace()
+                    && !matches!(bytes[cursor], b'>')
+                {
+                    cursor += 1;
+                }
+                (
+                    value_start,
+                    cursor,
+                    value_start.saturating_sub(1),
+                    cursor,
+                    None,
+                )
+            };
 
         if let Some(name) = source.get(name_start..name_end)
             && let Some((expr_start, expr_end)) =
                 vue_expression_range(name, source, value_start, value_end)
         {
-            copy_expression(mask, source, expr_start, expr_end, before, after);
+            expressions.push(TemplateExpression {
+                start: expr_start,
+                end: expr_end,
+                before,
+                after,
+                quote,
+            });
         }
     }
+
+    if !v_pre {
+        for expression in expressions {
+            visit(expression);
+        }
+    }
+    v_pre
 }
 
 fn vue_expression_range(

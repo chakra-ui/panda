@@ -75,10 +75,11 @@ function toNativeOptions(options: TransformerOptions): TransformSourceOptions {
 }
 
 const SOURCE_RE = /\.(c|m)?(t|j)sx?$/
+const SFC_RE = /\.(svelte|vue|astro)$/
 
 export function shouldTransform(path: string, options: TransformerOptions = {}): boolean {
-  const id = path.split('?')[0] ?? path
-  if (!SOURCE_RE.test(id)) return false
+  const [id = path, query] = path.split('?')
+  if (!SOURCE_RE.test(id) && !(SFC_RE.test(id) && query === undefined)) return false
   if (options.include && !matchesAny(id, options.include)) return false
   if (options.exclude && matchesAny(id, options.exclude)) return false
   return true
