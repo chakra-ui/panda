@@ -1,5 +1,15 @@
 # studio
 
+## 2.0.1
+
+### Patch Changes
+
+- @pandacss/compiler-shared@2.0.1
+- @pandacss/compiler-wasm@2.0.1
+- @pandacss/config@2.0.1
+- @pandacss/preset-base@2.0.1
+- @pandacss/preset-panda@2.0.1
+
 ## 2.0.0
 
 ### Patch Changes
