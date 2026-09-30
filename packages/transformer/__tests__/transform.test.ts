@@ -27,12 +27,24 @@ describe('shouldTransform', () => {
     expect(stripVueBlockQuery('/project/src/App.vue?vue&type=script&setup=true&lang=js')).toMatchInlineSnapshot(
       `"/project/src/App.vue"`,
     )
-    expect(stripVueBlockQuery('/project/src/App.vue?type=style&vue&index=0')).toMatchInlineSnapshot(
+    expect(stripVueBlockQuery('/project/src/App.vue?vue&type=style&index=0')).toMatchInlineSnapshot(
+      `"/project/src/App.vue"`,
+    )
+    expect(stripVueBlockQuery('/project/src/App.vue?vue&type=custom&index=0')).toMatchInlineSnapshot(
       `"/project/src/App.vue"`,
     )
     expect(stripVueBlockQuery('/project/src/App.vue?raw')).toMatchInlineSnapshot(`"/project/src/App.vue?raw"`)
     expect(stripVueBlockQuery('/project/src/App.vue?url')).toMatchInlineSnapshot(`"/project/src/App.vue?url"`)
     expect(stripVueBlockQuery('/project/src/App.vue?vue')).toMatchInlineSnapshot(`"/project/src/App.vue?vue"`)
+    expect(stripVueBlockQuery('/project/src/App.vue?type=style&vue')).toMatchInlineSnapshot(
+      `"/project/src/App.vue?type=style&vue"`,
+    )
+    expect(stripVueBlockQuery('/project/src/App.vue?raw&vue&type=style')).toMatchInlineSnapshot(
+      `"/project/src/App.vue?raw&vue&type=style"`,
+    )
+    expect(stripVueBlockQuery('/project/src/App.vue?vue=false&type=script')).toMatchInlineSnapshot(
+      `"/project/src/App.vue?vue=false&type=script"`,
+    )
     expect(stripVueBlockQuery('/project/src/App.vue?vue&type=other')).toMatchInlineSnapshot(
       `"/project/src/App.vue?vue&type=other"`,
     )

@@ -76,19 +76,10 @@ function toNativeOptions(options: TransformerOptions): TransformSourceOptions {
 
 const SOURCE_RE = /\.(c|m)?(t|j)sx?$/
 const SFC_RE = /\.(svelte|vue|astro)$/
+const VUE_BLOCK_QUERY_RE = /^(.+\.vue)\?vue&type=(?:script|template|style|custom)(?:&|$)/
 
 export function stripVueBlockQuery(id: string): string {
-  const queryStart = id.indexOf('?')
-  if (queryStart === -1) return id
-
-  const path = id.slice(0, queryStart)
-  if (!path.endsWith('.vue')) return id
-
-  const query = new URLSearchParams(id.slice(queryStart + 1))
-  const type = query.get('type')
-  return query.has('vue') && (type === 'script' || type === 'template' || type === 'style' || type === 'custom')
-    ? path
-    : id
+  return VUE_BLOCK_QUERY_RE.exec(id)?.[1] ?? id
 }
 
 export function shouldTransform(path: string, options: TransformerOptions = {}): boolean {
