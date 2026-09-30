@@ -63,7 +63,6 @@ fn never_passes_a_ternary_to_the_callback() {
     assert_eq!(
         received,
         vec![
-            json!({ "align": "center" }),
             json!({ "align": "center", "gap": "1" }),
             json!({ "align": "center", "gap": "3" }),
         ]
@@ -71,7 +70,6 @@ fn never_passes_a_ternary_to_the_callback() {
     assert_eq!(
         result,
         Some(Literal::Conditional(vec![
-            object(&[("display", string("flex"))]),
             object(&[("display", string("flex")), ("gap", string("1"))]),
             object(&[("display", string("flex")), ("gap", string("3"))]),
         ]))
@@ -96,7 +94,6 @@ fn splits_ternaries_inside_arrays_and_nested_ternaries() {
     assert_eq!(
         received,
         vec![
-            json!({ "gap": [null, "4"] }),
             json!({ "gap": ["1", "4"] }),
             json!({ "gap": ["2", "4"] }),
             json!({ "gap": ["3", "4"] }),
@@ -113,6 +110,28 @@ fn collapses_branches_that_transform_to_the_same_style() {
 
     let (result, received) = transform(&styles);
 
-    assert_eq!(received.len(), 3);
+    assert_eq!(received.len(), 2);
     assert_eq!(result, Some(object(&[("display", string("flex"))])));
+}
+
+#[test]
+fn fills_other_ternaries_with_a_real_branch() {
+    let styles = object(&[
+        ("gap", Literal::Conditional(vec![string("1"), string("3")])),
+        (
+            "color",
+            Literal::Conditional(vec![string("red"), string("blue")]),
+        ),
+    ]);
+
+    let (_, received) = transform(&styles);
+
+    assert_eq!(
+        received,
+        vec![
+            json!({ "gap": "1", "color": "red" }),
+            json!({ "gap": "3", "color": "red" }),
+            json!({ "gap": "1", "color": "blue" }),
+        ]
+    );
 }

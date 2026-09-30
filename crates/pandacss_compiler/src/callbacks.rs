@@ -470,11 +470,11 @@ fn transform_pattern_props<C>(
 }
 
 fn conditional_variants(styles: &Literal) -> Vec<Literal> {
-    let mut variants = vec![strip_conditionals(styles)];
+    let mut variants = Vec::new();
     let mut index = 0;
     while let Some(branches) = nth_conditional(styles, index) {
         for branch in branches {
-            let variant = replace_nth_conditional(styles, index, branch, &mut 0);
+            let variant = select_branch(styles, index, branch, &mut 0);
             for expanded in conditional_variants(&variant) {
                 if !variants.contains(&expanded) {
                     variants.push(expanded);
@@ -483,29 +483,10 @@ fn conditional_variants(styles: &Literal) -> Vec<Literal> {
         }
         index += 1;
     }
-    variants
-}
-
-fn strip_conditionals(value: &Literal) -> Literal {
-    match value {
-        Literal::Object(entries) => Literal::Object(
-            entries
-                .iter()
-                .filter(|(_, value)| !matches!(value, Literal::Conditional(_)))
-                .map(|(key, value)| (key.clone(), strip_conditionals(value)))
-                .collect(),
-        ),
-        Literal::Array(items) => Literal::Array(
-            items
-                .iter()
-                .map(|item| match item {
-                    Literal::Conditional(_) => Literal::Null,
-                    item => strip_conditionals(item),
-                })
-                .collect(),
-        ),
-        value => value.clone(),
+    if variants.is_empty() {
+        variants.push(styles.clone());
     }
+    variants
 }
 
 fn nth_conditional(value: &Literal, index: usize) -> Option<&[Literal]> {
@@ -525,35 +506,26 @@ fn nth_conditional(value: &Literal, index: usize) -> Option<&[Literal]> {
     visit(value, index, &mut 0)
 }
 
-fn replace_nth_conditional(
-    value: &Literal,
-    index: usize,
-    branch: &Literal,
-    seen: &mut usize,
-) -> Literal {
+fn select_branch(value: &Literal, index: usize, branch: &Literal, seen: &mut usize) -> Literal {
     match value {
-        Literal::Conditional(_) => {
+        Literal::Conditional(branches) => {
             *seen += 1;
             if *seen == index + 1 {
                 branch.clone()
             } else {
-                Literal::Null
+                branches.first().cloned().unwrap_or(Literal::Null)
             }
         }
         Literal::Object(entries) => Literal::Object(
             entries
                 .iter()
-                .filter_map(|(key, value)| {
-                    let next = replace_nth_conditional(value, index, branch, seen);
-                    let dropped = matches!(value, Literal::Conditional(_)) && next == Literal::Null;
-                    (!dropped).then(|| (key.clone(), next))
-                })
+                .map(|(key, value)| (key.clone(), select_branch(value, index, branch, seen)))
                 .collect(),
         ),
         Literal::Array(items) => Literal::Array(
             items
                 .iter()
-                .map(|item| replace_nth_conditional(item, index, branch, seen))
+                .map(|item| select_branch(item, index, branch, seen))
                 .collect(),
         ),
         value => value.clone(),

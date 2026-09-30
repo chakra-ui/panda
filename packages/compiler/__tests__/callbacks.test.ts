@@ -1207,7 +1207,6 @@ describe('Compiler callbacks', () => {
       `)
       expect(received).toMatchInlineSnapshot(`
         [
-          {},
           {
             "gap": "1px",
           },
@@ -1249,21 +1248,17 @@ describe('Compiler callbacks', () => {
         [
           {
             "align": "center",
-          },
-          {
-            "align": "center",
             "gap": "1px",
-          },
-          {
-            "align": "center",
-            "gap": "2px",
-          },
-          {
-            "align": "center",
             "color": "red",
           },
           {
             "align": "center",
+            "gap": "2px",
+            "color": "red",
+          },
+          {
+            "align": "center",
+            "gap": "1px",
             "color": "blue",
           },
         ]
