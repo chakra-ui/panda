@@ -7,6 +7,7 @@ use string_wizard::{MagicString, MagicStringOptions, SourceMapOptions};
 use super::helper;
 use super::imports;
 use super::plan::{HelperCxMode, Rewrite, TransformPlan};
+use pandacss_extractor::QuotedExpression;
 use pandacss_system::System;
 
 /// One edit recorded against the original source indices.
@@ -36,12 +37,17 @@ pub(crate) fn build_transform_edits(
     helper_cx: HelperCxMode,
 ) -> Vec<Edit> {
     let mut edits = Vec::new();
+    let quoted = if is_vue(path) {
+        pandacss_extractor::vue_quoted_expressions(source)
+    } else {
+        Vec::new()
+    };
 
     for rewrite in &plan.rewrites {
         edits.push(Edit::Update {
             start: rewrite.start,
             end: rewrite.end,
-            content: rewrite.content.clone(),
+            content: escape_attribute_quote(&quoted, rewrite.start, &rewrite.content),
         });
     }
 
@@ -87,6 +93,21 @@ pub(crate) fn build_transform_edits(
     }
 
     edits
+}
+
+fn is_vue(path: &str) -> bool {
+    std::path::Path::new(path)
+        .extension()
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("vue"))
+}
+
+fn escape_attribute_quote(quoted: &[QuotedExpression], at: u32, content: &str) -> String {
+    let at = at as usize;
+    match quoted.iter().find(|expr| expr.start <= at && at < expr.end) {
+        Some(expr) if expr.quote == b'"' => content.replace('"', "&quot;"),
+        Some(_) => content.replace('\'', "&#39;"),
+        None => content.to_owned(),
+    }
 }
 
 /// Apply edits and emit transformed code plus an optional source map JSON string.

@@ -13,17 +13,66 @@ pub(crate) fn mask_vue(source: &str) -> String {
         copy_range(&mut mask, source, block.content_start, block.content_end);
     }
 
-    for block in tag_blocks(source, "template") {
-        if has_non_html_lang(source, block.open_start, block.open_end) {
-            continue;
-        }
-        copy_vue_template_expressions(&mut mask, source, block.content_start, block.content_end);
-    }
+    visit_template_expressions(source, &mut |expr| {
+        copy_expression(
+            &mut mask,
+            source,
+            expr.start,
+            expr.end,
+            expr.before,
+            expr.after,
+        );
+    });
 
     finish_mask(mask)
 }
 
-fn copy_vue_template_expressions(mask: &mut [u8], source: &str, start: usize, end: usize) {
+/// A template expression written inside a quoted attribute value.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct QuotedExpression {
+    pub start: usize,
+    pub end: usize,
+    pub quote: u8,
+}
+
+#[must_use]
+pub fn vue_quoted_expressions(source: &str) -> Vec<QuotedExpression> {
+    let mut quoted = Vec::new();
+    visit_template_expressions(source, &mut |expr| {
+        if let Some(quote) = expr.quote {
+            quoted.push(QuotedExpression {
+                start: expr.start,
+                end: expr.end,
+                quote,
+            });
+        }
+    });
+    quoted
+}
+
+struct TemplateExpression {
+    start: usize,
+    end: usize,
+    before: usize,
+    after: usize,
+    quote: Option<u8>,
+}
+
+fn visit_template_expressions(source: &str, visit: &mut impl FnMut(TemplateExpression)) {
+    for block in tag_blocks(source, "template") {
+        if has_non_html_lang(source, block.open_start, block.open_end) {
+            continue;
+        }
+        visit_block_expressions(source, block.content_start, block.content_end, visit);
+    }
+}
+
+fn visit_block_expressions(
+    source: &str,
+    start: usize,
+    end: usize,
+    visit: &mut impl FnMut(TemplateExpression),
+) {
     let bytes = source.as_bytes();
     let mut cursor = start;
     while cursor < end {
@@ -34,14 +83,20 @@ fn copy_vue_template_expressions(mask: &mut [u8], source: &str, start: usize, en
         if starts_with(bytes, cursor, b"{{")
             && let Some(close) = find_vue_interpolation_end(source, cursor + 2, end)
         {
-            copy_expression(mask, source, cursor + 2, close, cursor, close);
+            visit(TemplateExpression {
+                start: cursor + 2,
+                end: close,
+                before: cursor,
+                after: close,
+                quote: None,
+            });
             cursor = close + 2;
             continue;
         }
         if bytes[cursor] == b'<'
             && let Some(tag_end) = find_tag_end(source, cursor + 1)
         {
-            copy_vue_tag_expressions(mask, source, cursor + 1, tag_end);
+            visit_tag_expressions(source, cursor + 1, tag_end, visit);
             cursor = tag_end + 1;
             continue;
         }
@@ -49,7 +104,12 @@ fn copy_vue_template_expressions(mask: &mut [u8], source: &str, start: usize, en
     }
 }
 
-fn copy_vue_tag_expressions(mask: &mut [u8], source: &str, start: usize, end: usize) {
+fn visit_tag_expressions(
+    source: &str,
+    start: usize,
+    end: usize,
+    visit: &mut impl FnMut(TemplateExpression),
+) {
     let bytes = source.as_bytes();
     let mut cursor = start;
     while cursor < end && !bytes[cursor].is_ascii_whitespace() {
@@ -98,36 +158,49 @@ fn copy_vue_tag_expressions(mask: &mut [u8], source: &str, start: usize, end: us
             break;
         }
 
-        let (value_start, value_end, before, after) = if matches!(bytes[cursor], b'\'' | b'"') {
-            let quote = bytes[cursor];
-            let before = cursor;
-            cursor += 1;
-            let value_start = cursor;
-            while cursor < end && bytes[cursor] != quote {
+        let (value_start, value_end, before, after, quote) =
+            if matches!(bytes[cursor], b'\'' | b'"') {
+                let quote = bytes[cursor];
+                let before = cursor;
                 cursor += 1;
-            }
-            let value_end = cursor;
-            let after = cursor;
-            if cursor < end {
-                cursor += 1;
-            }
-            (value_start, value_end, before, after)
-        } else {
-            let value_start = cursor;
-            while cursor < end
-                && !bytes[cursor].is_ascii_whitespace()
-                && !matches!(bytes[cursor], b'>')
-            {
-                cursor += 1;
-            }
-            (value_start, cursor, value_start.saturating_sub(1), cursor)
-        };
+                let value_start = cursor;
+                while cursor < end && bytes[cursor] != quote {
+                    cursor += 1;
+                }
+                let value_end = cursor;
+                let after = cursor;
+                if cursor < end {
+                    cursor += 1;
+                }
+                (value_start, value_end, before, after, Some(quote))
+            } else {
+                let value_start = cursor;
+                while cursor < end
+                    && !bytes[cursor].is_ascii_whitespace()
+                    && !matches!(bytes[cursor], b'>')
+                {
+                    cursor += 1;
+                }
+                (
+                    value_start,
+                    cursor,
+                    value_start.saturating_sub(1),
+                    cursor,
+                    None,
+                )
+            };
 
         if let Some(name) = source.get(name_start..name_end)
             && let Some((expr_start, expr_end)) =
                 vue_expression_range(name, source, value_start, value_end)
         {
-            copy_expression(mask, source, expr_start, expr_end, before, after);
+            visit(TemplateExpression {
+                start: expr_start,
+                end: expr_end,
+                before,
+                after,
+                quote,
+            });
         }
     }
 }
