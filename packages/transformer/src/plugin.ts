@@ -22,21 +22,21 @@ export const pandaTransformer = createUnplugin<PandaTransformerOptions>((options
     getTransformer: options.getTransformer,
   }))
 
-  const loadsWholeVueSfc = meta.framework === 'webpack' || meta.framework === 'rspack'
-  const toId = (id: string) => (loadsWholeVueSfc ? stripVueBlockQuery(id) : id)
+  const isWebpackLike = meta.framework === 'webpack' || meta.framework === 'rspack'
+  const transformId = (id: string) => (isWebpackLike ? stripVueBlockQuery(id) : id)
 
   return {
     name: 'pandacss-transformer',
     enforce: 'pre',
     ...hooks,
     transform(code, id) {
-      return hooks.transform.call(this, code, toId(id))
+      return hooks.transform.call(this, code, transformId(id))
     },
     loadInclude(id) {
       return id === INTERNAL_CSS_RESOLVED_ID
     },
     transformInclude(id) {
-      return shouldTransform(toId(id), transformOptions)
+      return shouldTransform(transformId(id), transformOptions)
     },
   }
 })
