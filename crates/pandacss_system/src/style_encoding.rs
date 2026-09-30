@@ -104,6 +104,12 @@ impl System {
         policy: ShorthandPolicy,
     ) {
         let _span = tracing::trace_span!(target: "encode", "encode_props").entered();
+        if let Literal::Conditional(branches) = style {
+            for branch in branches {
+                self.process_style_props(encoder, branch, policy);
+            }
+            return;
+        }
         let Literal::Object(entries) = style else {
             self.process_atomic(encoder, style, policy);
             return;

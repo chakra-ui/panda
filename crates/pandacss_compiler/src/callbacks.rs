@@ -367,7 +367,7 @@ pub fn apply_pattern_transform<C, S: BuildHasher, T: BuildHasher>(
     refs: &HashMap<String, String, S>,
     callbacks: &HashMap<String, C, T>,
     cache: &mut PatternTransformCache,
-    call: impl FnOnce(&C, serde_json::Value) -> Result<serde_json::Value, CallbackError>,
+    mut call: impl FnMut(&C, serde_json::Value) -> Result<serde_json::Value, CallbackError>,
 ) -> Result<Option<Literal>, Diagnostic> {
     let Some(id) = refs.get(name) else {
         return Ok(None);
@@ -377,11 +377,42 @@ pub fn apply_pattern_transform<C, S: BuildHasher, T: BuildHasher>(
             "Missing pattern transform callback `{id}` for `{name}`"
         )));
     };
+    if !styles.has_conditional() {
+        return transform_pattern_props(name, id, callback, styles, cache, &mut call);
+    }
+    let mut branches = Vec::new();
+    for variant in conditional_variants(styles) {
+        if let Some(style) =
+            transform_pattern_props(name, id, callback, &variant, cache, &mut call)?
+            && !branches.contains(&style)
+        {
+            branches.push(style);
+        }
+    }
+    Ok(match branches.len() {
+        0 => None,
+        1 => branches.pop(),
+        _ => Some(Literal::Conditional(branches)),
+    })
+}
+
+#[allow(
+    clippy::result_large_err,
+    reason = "Err mirrors the shared Result<_, Diagnostic> transform-callback contract"
+)]
+fn transform_pattern_props<C>(
+    name: &str,
+    id: &str,
+    callback: &C,
+    styles: &Literal,
+    cache: &mut PatternTransformCache,
+    call: &mut impl FnMut(&C, serde_json::Value) -> Result<serde_json::Value, CallbackError>,
+) -> Result<Option<Literal>, Diagnostic> {
     let cache = &mut cache.0;
 
     let cache_key = literal_cache_key(styles, MAX_TRANSFORM_CACHE_KEY_BYTES).map(|props| {
         PatternTransformCacheKey {
-            id: id.clone(),
+            id: id.to_owned(),
             name: name.to_owned(),
             props,
         }
@@ -436,6 +467,97 @@ pub fn apply_pattern_transform<C, S: BuildHasher, T: BuildHasher>(
         cache.put(cache_key, transformed.clone());
     }
     Ok(transformed)
+}
+
+fn conditional_variants(styles: &Literal) -> Vec<Literal> {
+    let mut variants = vec![strip_conditionals(styles)];
+    let mut index = 0;
+    while let Some(branches) = nth_conditional(styles, index) {
+        for branch in branches {
+            let variant = replace_nth_conditional(styles, index, branch, &mut 0);
+            for expanded in conditional_variants(&variant) {
+                if !variants.contains(&expanded) {
+                    variants.push(expanded);
+                }
+            }
+        }
+        index += 1;
+    }
+    variants
+}
+
+fn strip_conditionals(value: &Literal) -> Literal {
+    match value {
+        Literal::Object(entries) => Literal::Object(
+            entries
+                .iter()
+                .filter(|(_, value)| !matches!(value, Literal::Conditional(_)))
+                .map(|(key, value)| (key.clone(), strip_conditionals(value)))
+                .collect(),
+        ),
+        Literal::Array(items) => Literal::Array(
+            items
+                .iter()
+                .map(|item| match item {
+                    Literal::Conditional(_) => Literal::Null,
+                    item => strip_conditionals(item),
+                })
+                .collect(),
+        ),
+        value => value.clone(),
+    }
+}
+
+fn nth_conditional(value: &Literal, index: usize) -> Option<&[Literal]> {
+    fn visit<'a>(value: &'a Literal, index: usize, seen: &mut usize) -> Option<&'a [Literal]> {
+        match value {
+            Literal::Conditional(branches) => {
+                *seen += 1;
+                (*seen == index + 1).then_some(branches.as_slice())
+            }
+            Literal::Object(entries) => entries
+                .iter()
+                .find_map(|(_, value)| visit(value, index, seen)),
+            Literal::Array(items) => items.iter().find_map(|item| visit(item, index, seen)),
+            _ => None,
+        }
+    }
+    visit(value, index, &mut 0)
+}
+
+fn replace_nth_conditional(
+    value: &Literal,
+    index: usize,
+    branch: &Literal,
+    seen: &mut usize,
+) -> Literal {
+    match value {
+        Literal::Conditional(_) => {
+            *seen += 1;
+            if *seen == index + 1 {
+                branch.clone()
+            } else {
+                Literal::Null
+            }
+        }
+        Literal::Object(entries) => Literal::Object(
+            entries
+                .iter()
+                .filter_map(|(key, value)| {
+                    let next = replace_nth_conditional(value, index, branch, seen);
+                    let dropped = matches!(value, Literal::Conditional(_)) && next == Literal::Null;
+                    (!dropped).then(|| (key.clone(), next))
+                })
+                .collect(),
+        ),
+        Literal::Array(items) => Literal::Array(
+            items
+                .iter()
+                .map(|item| replace_nth_conditional(item, index, branch, seen))
+                .collect(),
+        ),
+        value => value.clone(),
+    }
 }
 
 fn trace_cache_store(cache: &'static str, target: &str, len: usize, capacity: usize) {
