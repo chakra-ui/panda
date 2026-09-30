@@ -2,7 +2,7 @@ import type { Compiler, NativeSourceTransformer, TransformSourceResult } from '@
 import { describe, expect, it, vi } from 'vitest'
 import { runSourceTransform } from '../src/hooks'
 import { INTERNAL_CSS_IMPORT, INTERNAL_CSS_RESOLVED_ID } from '../src/runtime/internal/ids'
-import { createSourceTransformer, shouldTransform, transformSource } from '../src/transform'
+import { createSourceTransformer, shouldTransform, stripSfcQuery, transformSource } from '../src/transform'
 
 describe('shouldTransform', () => {
   it('matches source files and ignores assets', () => {
@@ -21,6 +21,16 @@ describe('shouldTransform', () => {
       `false`,
     )
     expect(shouldTransform('/project/src/Card.astro?astro&type=script&index=0&lang.ts')).toMatchInlineSnapshot(`false`)
+  })
+
+  it('strips sub-request queries from single-file components only', () => {
+    expect(stripSfcQuery('/project/src/App.vue?vue&type=script&setup=true&lang=js')).toMatchInlineSnapshot(
+      `"/project/src/App.vue"`,
+    )
+    expect(stripSfcQuery('/project/src/App.svelte?svelte&type=style')).toMatchInlineSnapshot(
+      `"/project/src/App.svelte"`,
+    )
+    expect(stripSfcQuery('/project/src/App.tsx?import')).toMatchInlineSnapshot(`"/project/src/App.tsx?import"`)
   })
 
   it('respects include and exclude patterns', () => {
