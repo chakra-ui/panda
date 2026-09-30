@@ -109,3 +109,241 @@ fn rewrites_svelte_and_astro_expressions() {
     <div class={"color_red"}></div>
     "#);
 }
+
+#[test]
+fn escapes_quotes_in_long_form_vue_bindings() {
+    let source = indoc! {r#"
+        <script setup>
+        import { css } from '@panda/css';
+        </script>
+
+        <template>
+          <div v-bind:class="css({ color: 'red' })" />
+        </template>
+    "#};
+
+    assert_snapshot!(transform("src/App.vue", source).code, @r#"
+    <script setup>
+    </script>
+
+    <template>
+      <div v-bind:class="&quot;color_red&quot;" />
+    </template>
+    "#);
+}
+
+#[test]
+fn escapes_quotes_in_vue_array_and_object_bindings() {
+    let source = indoc! {r#"
+        <script setup>
+        import { css } from '@panda/css';
+        defineProps(['active']);
+        </script>
+
+        <template>
+          <div :class="[css({ color: 'red' }), 'static']" />
+          <div :class="{ [css({ color: 'blue' })]: active }" />
+        </template>
+    "#};
+
+    assert_snapshot!(transform("src/App.vue", source).code, @r#"
+    <script setup>
+    defineProps(['active']);
+    </script>
+
+    <template>
+      <div :class="[&quot;color_red&quot;, 'static']" />
+      <div :class="{ [&quot;color_blue&quot;]: active }" />
+    </template>
+    "#);
+}
+
+#[test]
+fn escapes_quotes_in_vue_pattern_calls() {
+    let source = indoc! {r#"
+        <script setup>
+        import { hstack } from '@panda/patterns';
+        </script>
+
+        <template>
+          <div :class="hstack({ gap: '2' })" />
+        </template>
+    "#};
+
+    assert_snapshot!(transform("src/App.vue", source).code, @r#"
+    <script setup>
+    </script>
+
+    <template>
+      <div :class="&quot;gap_2&quot;" />
+    </template>
+    "#);
+}
+
+#[test]
+fn escapes_ampersands_in_vue_attributes() {
+    let source = indoc! {r#"
+        <script setup>
+        import { css } from '@panda/css';
+        </script>
+
+        <template>
+          <div :class="css({ '& > p': { color: 'red' } })" />
+        </template>
+    "#};
+
+    assert_snapshot!(transform("src/App.vue", source).code, @r#"
+    <script setup>
+    </script>
+
+    <template>
+      <div :class="&quot;[&amp;_>_p]:color_red&quot;" />
+    </template>
+    "#);
+}
+
+#[test]
+fn escapes_each_vue_attribute_on_one_element() {
+    let source = indoc! {r#"
+        <script setup>
+        import { css } from '@panda/css';
+        </script>
+
+        <template>
+          <div
+            :class="css({ color: 'red' })"
+            :data-a='css({ color: "blue" })'
+            title="css({ color: 'green' })"
+          />
+        </template>
+    "#};
+
+    assert_snapshot!(transform("src/App.vue", source).code, @r#"
+    <script setup>
+    </script>
+
+    <template>
+      <div
+        :class="&quot;color_red&quot;"
+        :data-a='"color_blue"'
+        title="css({ color: 'green' })"
+      />
+    </template>
+    "#);
+}
+
+#[test]
+fn leaves_non_html_vue_templates_untouched() {
+    let source = indoc! {r#"
+        <script setup>
+        import { css } from '@panda/css';
+        </script>
+
+        <template lang="pug">
+        div(:class="css({ color: 'red' })")
+        </template>
+    "#};
+
+    let output = transform("src/App.vue", source);
+
+    assert!(!output.bailed);
+    assert!(
+        output
+            .code
+            .contains(r#"div(:class="css({ color: 'red' })")"#)
+    );
+}
+
+#[test]
+fn rewrites_quoted_svelte_attribute_expressions() {
+    let source = indoc! {r#"
+        <script>
+        import { css } from '@panda/css';
+        </script>
+
+        <div class="{css({ color: 'red' })}"></div>
+    "#};
+
+    assert_snapshot!(transform("src/App.svelte", source).code, @r#"
+    <script>
+    </script>
+
+    <div class="{"color_red"}"></div>
+    "#);
+}
+
+#[test]
+fn rewrites_svelte_module_and_instance_scripts() {
+    let source = indoc! {r#"
+        <script module>
+        import { css } from '@panda/css';
+        export const shared = css({ color: 'red' });
+        </script>
+
+        <script>
+        const local = css({ color: 'blue' });
+        </script>
+
+        <div class={[local, css({ marginTop: '4px' })]}>{shared}</div>
+    "#};
+
+    assert_snapshot!(transform("src/App.svelte", source).code, @r#"
+    <script module>
+    export const shared = "color_red";
+    </script>
+
+    <script>
+    const local = "color_blue";
+    </script>
+
+    <div class={[local, "margin-top_4px"]}>{shared}</div>
+    "#);
+}
+
+#[test]
+fn rewrites_astro_frontmatter_and_class_list() {
+    let source = indoc! {r#"
+        ---
+        import { css } from '@panda/css';
+        const title = css({ color: 'red' });
+        ---
+
+        <h1 class={title}>Title</h1>
+        <p class:list={[css({ marginTop: '4px' }), 'lead']}>Body</p>
+    "#};
+
+    assert_snapshot!(transform("src/Card.astro", source).code, @r#"
+    ---
+    const title = "color_red";
+    ---
+
+    <h1 class={title}>Title</h1>
+    <p class:list={["margin-top_4px", 'lead']}>Body</p>
+    "#);
+}
+
+#[test]
+fn leaves_astro_client_scripts_untouched() {
+    let source = indoc! {r#"
+        ---
+        import { css } from '@panda/css';
+        ---
+
+        <h1 class={css({ color: 'red' })}>Title</h1>
+        <script>
+          import { css } from '@panda/css';
+          document.body.className = css({ color: 'blue' });
+        </script>
+    "#};
+
+    assert_snapshot!(transform("src/Card.astro", source).code, @r#"
+    ---
+    ---
+
+    <h1 class={"color_red"}>Title</h1>
+    <script>
+      import { css } from '@panda/css';
+      document.body.className = css({ color: 'blue' });
+    </script>
+    "#);
+}

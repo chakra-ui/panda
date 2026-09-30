@@ -103,10 +103,14 @@ fn is_vue(path: &str) -> bool {
 
 fn escape_attribute_quote(quoted: &[QuotedExpression], at: u32, content: &str) -> String {
     let at = at as usize;
-    match quoted.iter().find(|expr| expr.start <= at && at < expr.end) {
-        Some(expr) if expr.quote == b'"' => content.replace('"', "&quot;"),
-        Some(_) => content.replace('\'', "&#39;"),
-        None => content.to_owned(),
+    let Some(expr) = quoted.iter().find(|expr| expr.start <= at && at < expr.end) else {
+        return content.to_owned();
+    };
+    let content = content.replace('&', "&amp;");
+    if expr.quote == b'"' {
+        content.replace('"', "&quot;")
+    } else {
+        content.replace('\'', "&#39;")
     }
 }
 
