@@ -1,11 +1,11 @@
 import { createUnplugin } from 'unplugin'
 import { INTERNAL_CSS_RESOLVED_ID } from './runtime/internal/ids'
 import { createPandaSourcePluginHooks, type PandaTransformerOptions } from './hooks'
-import { shouldTransform } from './transform'
+import { shouldTransform, stripVueBlockQuery } from './transform'
 
 export type { PandaTransformerOptions } from './hooks'
 
-export const pandaTransformer = createUnplugin<PandaTransformerOptions>((options) => {
+export const pandaTransformer = createUnplugin<PandaTransformerOptions>((options, meta) => {
   const {
     compiler: _compiler,
     transformer: _transformer,
@@ -22,15 +22,21 @@ export const pandaTransformer = createUnplugin<PandaTransformerOptions>((options
     getTransformer: options.getTransformer,
   }))
 
+  const isWebpackLike = meta.framework === 'webpack' || meta.framework === 'rspack'
+  const transformId = (id: string) => (isWebpackLike ? stripVueBlockQuery(id) : id)
+
   return {
     name: 'pandacss-transformer',
     enforce: 'pre',
     ...hooks,
+    transform(code, id) {
+      return hooks.transform.call(this, code, transformId(id))
+    },
     loadInclude(id) {
       return id === INTERNAL_CSS_RESOLVED_ID
     },
     transformInclude(id) {
-      return shouldTransform(id, transformOptions)
+      return shouldTransform(transformId(id), transformOptions)
     },
   }
 })
