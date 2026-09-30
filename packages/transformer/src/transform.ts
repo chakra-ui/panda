@@ -77,9 +77,18 @@ function toNativeOptions(options: TransformerOptions): TransformSourceOptions {
 const SOURCE_RE = /\.(c|m)?(t|j)sx?$/
 const SFC_RE = /\.(svelte|vue|astro)$/
 
-export function stripSfcQuery(id: string): string {
-  const path = id.split('?')[0] ?? id
-  return SFC_RE.test(path) ? path : id
+export function stripVueBlockQuery(id: string): string {
+  const queryStart = id.indexOf('?')
+  if (queryStart === -1) return id
+
+  const path = id.slice(0, queryStart)
+  if (!path.endsWith('.vue')) return id
+
+  const query = new URLSearchParams(id.slice(queryStart + 1))
+  const type = query.get('type')
+  return query.has('vue') && (type === 'script' || type === 'template' || type === 'style' || type === 'custom')
+    ? path
+    : id
 }
 
 export function shouldTransform(path: string, options: TransformerOptions = {}): boolean {

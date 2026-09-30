@@ -2,7 +2,7 @@ import type { Compiler, NativeSourceTransformer, TransformSourceResult } from '@
 import { describe, expect, it, vi } from 'vitest'
 import { runSourceTransform } from '../src/hooks'
 import { INTERNAL_CSS_IMPORT, INTERNAL_CSS_RESOLVED_ID } from '../src/runtime/internal/ids'
-import { createSourceTransformer, shouldTransform, stripSfcQuery, transformSource } from '../src/transform'
+import { createSourceTransformer, shouldTransform, stripVueBlockQuery, transformSource } from '../src/transform'
 
 describe('shouldTransform', () => {
   it('matches source files and ignores assets', () => {
@@ -23,14 +23,24 @@ describe('shouldTransform', () => {
     expect(shouldTransform('/project/src/Card.astro?astro&type=script&index=0&lang.ts')).toMatchInlineSnapshot(`false`)
   })
 
-  it('strips sub-request queries from single-file components only', () => {
-    expect(stripSfcQuery('/project/src/App.vue?vue&type=script&setup=true&lang=js')).toMatchInlineSnapshot(
+  it('strips vue-loader block queries without touching other resource queries', () => {
+    expect(stripVueBlockQuery('/project/src/App.vue?vue&type=script&setup=true&lang=js')).toMatchInlineSnapshot(
       `"/project/src/App.vue"`,
     )
-    expect(stripSfcQuery('/project/src/App.svelte?svelte&type=style')).toMatchInlineSnapshot(
-      `"/project/src/App.svelte"`,
+    expect(stripVueBlockQuery('/project/src/App.vue?type=style&vue&index=0')).toMatchInlineSnapshot(
+      `"/project/src/App.vue"`,
     )
-    expect(stripSfcQuery('/project/src/App.tsx?import')).toMatchInlineSnapshot(`"/project/src/App.tsx?import"`)
+    expect(stripVueBlockQuery('/project/src/App.vue?raw')).toMatchInlineSnapshot(`"/project/src/App.vue?raw"`)
+    expect(stripVueBlockQuery('/project/src/App.vue?url')).toMatchInlineSnapshot(`"/project/src/App.vue?url"`)
+    expect(stripVueBlockQuery('/project/src/App.vue?vue')).toMatchInlineSnapshot(`"/project/src/App.vue?vue"`)
+    expect(stripVueBlockQuery('/project/src/App.vue?vue&type=other')).toMatchInlineSnapshot(
+      `"/project/src/App.vue?vue&type=other"`,
+    )
+    expect(stripVueBlockQuery('/project/src/App.svelte?svelte&type=style')).toMatchInlineSnapshot(
+      `"/project/src/App.svelte?svelte&type=style"`,
+    )
+    expect(shouldTransform(stripVueBlockQuery('/project/src/App.vue?raw'))).toBe(false)
+    expect(shouldTransform(stripVueBlockQuery('/project/src/App.vue?vue&type=template'))).toBe(true)
   })
 
   it('respects include and exclude patterns', () => {

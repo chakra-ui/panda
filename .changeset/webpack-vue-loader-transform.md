@@ -3,4 +3,4 @@
 '@pandacss/webpack': patch
 ---
 
-`new PandaWebpackPlugin({ transform: true })` now rewrites static style calls in `.vue` files handled by `vue-loader`.
+Fix `new PandaWebpackPlugin({ transform: true })` to compile static style calls in `.vue` files handled by `vue-loader`.

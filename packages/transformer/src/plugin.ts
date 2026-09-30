@@ -1,7 +1,7 @@
 import { createUnplugin } from 'unplugin'
 import { INTERNAL_CSS_RESOLVED_ID } from './runtime/internal/ids'
 import { createPandaSourcePluginHooks, type PandaTransformerOptions } from './hooks'
-import { shouldTransform, stripSfcQuery } from './transform'
+import { shouldTransform, stripVueBlockQuery } from './transform'
 
 export type { PandaTransformerOptions } from './hooks'
 
@@ -22,8 +22,8 @@ export const pandaTransformer = createUnplugin<PandaTransformerOptions>((options
     getTransformer: options.getTransformer,
   }))
 
-  const loadsWholeSfc = meta.framework === 'webpack' || meta.framework === 'rspack'
-  const toId = (id: string) => (loadsWholeSfc ? stripSfcQuery(id) : id)
+  const loadsWholeVueSfc = meta.framework === 'webpack' || meta.framework === 'rspack'
+  const toId = (id: string) => (loadsWholeVueSfc ? stripVueBlockQuery(id) : id)
 
   return {
     name: 'pandacss-transformer',
