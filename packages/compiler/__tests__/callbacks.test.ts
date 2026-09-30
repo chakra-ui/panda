@@ -1300,6 +1300,21 @@ describe('Compiler callbacks', () => {
       `)
       expect(JSON.stringify(received)).not.toContain('conditional')
     })
+
+    it('extracts logical pattern props and ternary branches', () => {
+      const { atoms, received } = createStackCompiler()
+
+      expect(
+        atoms(`
+          const el = <>
+            <Stack gap={on && (flag ? '1px' : '3px')} />
+            <Stack gap={on || '4px'} />
+          </>
+          const cls = stack({ gap: on ?? '5px' })
+        `),
+      ).toEqual(['display:flex', 'gap:1px', 'gap:3px', 'gap:4px', 'gap:5px'])
+      expect(received.map((props) => (props as { gap: string }).gap).sort()).toEqual(['1px', '3px', '4px', '5px'])
+    })
   })
 
   it('caches pattern transform callback results across function calls and JSX components', () => {
