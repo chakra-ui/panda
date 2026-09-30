@@ -28,6 +28,40 @@ fn escapes_double_quotes_inside_vue_attributes() {
 }
 
 #[test]
+fn leaves_vue_v_pre_markup_literal_and_rewrites_following_bindings() {
+    let source = indoc! {r#"
+        <script setup>
+        import { css } from '@panda/css';
+        </script>
+
+        <template>
+          <div :class="css({ color: 'red' })" v-pre>
+            <span :class="css({ color: 'blue' })">{{ css({ marginTop: '4px' }) }}</span>
+            <img :class="css({ color: 'green' })">
+          </div>
+          <p :class="css({ color: 'purple' })" />
+          <div v-pre="" :class="css({ color: 'orange' })" />
+          <p :class="css({ color: 'black' })" />
+        </template>
+    "#};
+
+    assert_snapshot!(transform("src/App.vue", source).code, @r#"
+    <script setup>
+    </script>
+
+    <template>
+      <div :class="css({ color: 'red' })" v-pre>
+        <span :class="css({ color: 'blue' })">{{ css({ marginTop: '4px' }) }}</span>
+        <img :class="css({ color: 'green' })">
+      </div>
+      <p :class="&quot;color_purple&quot;" />
+      <div v-pre="" :class="css({ color: 'orange' })" />
+      <p :class="&quot;color_black&quot;" />
+    </template>
+    "#);
+}
+
+#[test]
 fn escapes_single_quotes_inside_vue_attributes() {
     let source = indoc! {r#"
         <script setup>

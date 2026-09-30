@@ -74,12 +74,14 @@ fn visit_block_expressions(
 ) {
     let bytes = source.as_bytes();
     let mut cursor = start;
+    let mut v_pre_depth = 0usize;
     while cursor < end {
         if starts_with(bytes, cursor, b"<!--") {
             cursor = find_bytes(bytes, b"-->", cursor + 4).map_or(end, |index| index + 3);
             continue;
         }
-        if starts_with(bytes, cursor, b"{{")
+        if v_pre_depth == 0
+            && starts_with(bytes, cursor, b"{{")
             && let Some(close) = find_vue_interpolation_end(source, cursor + 2, end)
         {
             visit(TemplateExpression {
@@ -95,7 +97,29 @@ fn visit_block_expressions(
         if bytes[cursor] == b'<'
             && let Some(tag_end) = find_tag_end(source, cursor + 1)
         {
-            visit_tag_expressions(source, cursor + 1, tag_end, visit);
+            let tag_start = cursor + 1;
+            let closing = bytes.get(tag_start) == Some(&b'/');
+            let name_start = tag_start + usize::from(closing);
+            let name_end = (name_start..tag_end)
+                .find(|&index| bytes[index].is_ascii_whitespace() || bytes[index] == b'/')
+                .unwrap_or(tag_end);
+            let name = source.get(name_start..name_end).unwrap_or_default();
+            if !name.is_empty() && name.as_bytes()[0].is_ascii_alphabetic() {
+                if closing {
+                    v_pre_depth = v_pre_depth.saturating_sub(1);
+                } else if v_pre_depth == 0 {
+                    let has_v_pre = visit_tag_expressions(source, tag_start, tag_end, visit);
+                    if has_v_pre
+                        && bytes.get(tag_end.saturating_sub(1)) != Some(&b'/')
+                        && !is_void_tag(name)
+                    {
+                        v_pre_depth = 1;
+                    }
+                } else if bytes.get(tag_end.saturating_sub(1)) != Some(&b'/') && !is_void_tag(name)
+                {
+                    v_pre_depth += 1;
+                }
+            }
             cursor = tag_end + 1;
             continue;
         }
@@ -103,14 +127,25 @@ fn visit_block_expressions(
     }
 }
 
+fn is_void_tag(name: &str) -> bool {
+    [
+        "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param",
+        "source", "track", "wbr",
+    ]
+    .iter()
+    .any(|void| name.eq_ignore_ascii_case(void))
+}
+
 fn visit_tag_expressions(
     source: &str,
     start: usize,
     end: usize,
     visit: &mut impl FnMut(TemplateExpression),
-) {
+) -> bool {
     let bytes = source.as_bytes();
     let mut cursor = start;
+    let mut v_pre = false;
+    let mut expressions = Vec::new();
     while cursor < end && !bytes[cursor].is_ascii_whitespace() {
         cursor += 1;
     }
@@ -143,6 +178,9 @@ fn visit_tag_expressions(
             cursor += 1;
         }
         let name_end = cursor;
+        if source.get(name_start..name_end) == Some("v-pre") {
+            v_pre = true;
+        }
         while cursor < end && bytes[cursor].is_ascii_whitespace() {
             cursor += 1;
         }
@@ -193,7 +231,7 @@ fn visit_tag_expressions(
             && let Some((expr_start, expr_end)) =
                 vue_expression_range(name, source, value_start, value_end)
         {
-            visit(TemplateExpression {
+            expressions.push(TemplateExpression {
                 start: expr_start,
                 end: expr_end,
                 before,
@@ -202,6 +240,13 @@ fn visit_tag_expressions(
             });
         }
     }
+
+    if !v_pre {
+        for expression in expressions {
+            visit(expression);
+        }
+    }
+    v_pre
 }
 
 fn vue_expression_range(

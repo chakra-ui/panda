@@ -4,5 +4,5 @@
 '@pandacss/compiler': patch
 ---
 
-`pandacss({ transform: true })` now rewrites static `css()`, `cva()`, `sva()` and pattern calls in `.svelte`, `.vue` and
-`.astro` files, so your components stop shipping the style runtime.
+Fix `pandacss({ transform: true })` to compile static style calls in `.svelte`, `.vue`, and `.astro` files during Vite
+builds.
