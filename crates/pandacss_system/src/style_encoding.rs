@@ -106,11 +106,15 @@ impl System {
     }
 
     fn is_style_prop(&self, key: &str) -> bool {
-        if is_css_property(key) || is_css_object_prop(key) {
+        if is_nested_style_prop(key) {
             return true;
         }
 
         if self.extractor_config.jsx.valid_style_props.contains(key) {
+            return true;
+        }
+
+        if is_css_property(key) {
             return true;
         }
 
@@ -143,7 +147,7 @@ impl System {
         for (key, value) in entries {
             if key == "css" {
                 collect_css_prop_layers(value, &mut css_layers);
-            } else if is_css_object_prop(key) {
+            } else if is_nested_style_prop(key) {
                 // `inputCss` and friends address a slot, not this element.
                 self.process_nested_css_prop(encoder, value, policy);
             } else {
@@ -440,7 +444,7 @@ impl System {
     }
 }
 
-fn is_css_object_prop(key: &str) -> bool {
+fn is_nested_style_prop(key: &str) -> bool {
     key == "css" || key.ends_with("Css")
 }
 
