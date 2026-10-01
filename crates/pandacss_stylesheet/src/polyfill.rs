@@ -1,6 +1,6 @@
-//! Cascade-layer polyfill — emit-time port of `@csstools/postcss-cascade-layers`.
+//! Cascade-layer polyfill — emit-time port of v1's cascade layers polyfill.
 //!
-//! Boosts need the full sheet (csstools): record [`SheetOp`]s via
+//! Boosts need the full sheet: record [`SheetOp`]s via
 //! [`CssWriter`](crate::writer::CssWriter), then analyze
 //! (`step = maxIds + 1`, nested preamble ranks) and flatten to flat CSS with
 //! compact `:not(#\##\#…)` amounts. Split reuses the merged [`AnalyzeResult`].
@@ -11,6 +11,7 @@ use std::ops::Range;
 use pandacss_config::CascadeLayers;
 
 use crate::StylesheetLayerRanges;
+use crate::selector_parts::{PartKind, selector_parts};
 
 const NOT_ID: &str = "#\\#";
 
@@ -367,23 +368,19 @@ pub(crate) fn rank_for_path(ranks: &HashMap<String, u32>, path: &str) -> u32 {
 
 #[must_use]
 pub(crate) fn adjust_selector_specificity(selector: &str, amount: u32) -> String {
-    if amount == 0 || selector.is_empty() {
+    if amount == 0 {
         return selector.to_owned();
     }
     let suffix = specificity_suffix_amount(amount);
-    if !selector.contains(',') {
-        return insert_specificity(selector, &suffix);
+    let points = insertion_points(selector);
+    let mut out = String::with_capacity(selector.len() + suffix.len() * points.len());
+    let mut copied = 0;
+    for point in points {
+        out.push_str(&selector[copied..point]);
+        out.push_str(&suffix);
+        copied = point;
     }
-
-    let mut out = String::with_capacity(selector.len() + suffix.len() * 2);
-    let mut first = true;
-    for part in split_selector_list(selector) {
-        if !first {
-            out.push(',');
-        }
-        first = false;
-        out.push_str(&insert_specificity(part, &suffix));
-    }
+    out.push_str(&selector[copied..]);
     out
 }
 
@@ -399,292 +396,91 @@ pub(crate) fn specificity_suffix_amount(amount: u32) -> String {
     format!(":not({inner})")
 }
 
-fn insert_specificity(selector: &str, suffix: &str) -> String {
-    let trimmed = selector.trim();
-    if trimmed.is_empty() {
-        return selector.to_owned();
-    }
-    let leading = &selector[..selector.len() - selector.trim_start().len()];
-    let trailing = &selector[leading.len() + trimmed.len()..];
-    let insert_at = insertion_index(trimmed);
-    let mut out = String::with_capacity(selector.len() + suffix.len());
-    out.push_str(leading);
-    out.push_str(&trimmed[..insert_at]);
-    out.push_str(suffix);
-    out.push_str(&trimmed[insert_at..]);
-    out.push_str(trailing);
-    out
-}
-
-fn insertion_index(selector: &str) -> usize {
-    let bytes = selector.as_bytes();
-    let mut i = 0;
-    let mut paren = 0_i32;
-    let mut bracket = 0_i32;
-    let mut quote: Option<u8> = None;
-
-    while i < bytes.len() {
-        let b = bytes[i];
-        if let Some(q) = quote {
-            if b == q && bytes.get(i.wrapping_sub(1)) != Some(&b'\\') {
-                quote = None;
-            }
-            i += 1;
-            continue;
-        }
-        match b {
-            b'"' | b'\'' => quote = Some(b),
-            b'(' => paren += 1,
-            b')' => paren -= 1,
-            b'[' => bracket += 1,
-            b']' => bracket -= 1,
-            _ if paren == 0 && bracket == 0 => {
-                if is_combinator_at(bytes, i) {
-                    return i;
+/// Where each complex selector takes its boost: before its first combinator or
+/// pseudo-element, else after its last compound.
+fn insertion_points(selector: &str) -> Vec<usize> {
+    let mut points = Vec::new();
+    let mut compound_end = None;
+    let mut placed = false;
+    for part in selector_parts(selector) {
+        match part.kind {
+            PartKind::Comma => {
+                if !placed {
+                    points.extend(compound_end);
                 }
-                // `:`/`::` are ASCII, so a real pseudo-element marker only ever
-                // starts at a char boundary — skip mid-character bytes here to
-                // avoid slicing `selector` off a UTF-8 boundary.
-                if selector.is_char_boundary(i) && is_pseudo_element_at(selector, i) {
-                    return i;
-                }
+                compound_end = None;
+                placed = false;
             }
-            _ => {}
-        }
-        i += 1;
-    }
-    selector.len()
-}
-
-fn is_combinator_at(bytes: &[u8], i: usize) -> bool {
-    match bytes[i] {
-        b'>' | b'+' | b'~' => true,
-        b' ' | b'\t' | b'\n' | b'\r' => {
-            let prev_non_ws = bytes[..i].iter().rposition(|c| !c.is_ascii_whitespace());
-            let next_non_ws = bytes[i + 1..]
-                .iter()
-                .position(|c| !c.is_ascii_whitespace())
-                .map(|p| i + 1 + p);
-            matches!((prev_non_ws, next_non_ws), (Some(_), Some(_)))
-        }
-        _ => false,
-    }
-}
-
-fn is_pseudo_element_at(selector: &str, i: usize) -> bool {
-    let rest = &selector[i..];
-    if let Some(stripped) = rest.strip_prefix("::") {
-        return starts_with_ident(stripped);
-    }
-    for name in [":before", ":after", ":first-line", ":first-letter"] {
-        // `.get()`, not indexing: `name.len()` is a fixed byte count that can
-        // land mid-character in `rest` even though `rest` itself starts at a
-        // valid boundary.
-        let Some(prefix) = rest.get(..name.len()) else {
-            continue;
-        };
-        if prefix.eq_ignore_ascii_case(name)
-            && !rest[name.len()..]
-                .chars()
-                .next()
-                .is_some_and(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
-        {
-            return true;
-        }
-    }
-    false
-}
-
-fn starts_with_ident(value: &str) -> bool {
-    value
-        .chars()
-        .next()
-        .is_some_and(|c| c.is_ascii_alphabetic() || c == '-' || c == '_')
-}
-
-fn split_selector_list(selector: &str) -> Vec<&str> {
-    let mut parts = Vec::new();
-    let mut start = 0;
-    let bytes = selector.as_bytes();
-    let mut paren = 0_i32;
-    let mut bracket = 0_i32;
-    let mut quote: Option<u8> = None;
-    for (i, &b) in bytes.iter().enumerate() {
-        if let Some(q) = quote {
-            if b == q && (i == 0 || bytes[i - 1] != b'\\') {
-                quote = None;
+            PartKind::Combinator | PartKind::Pseudo { element: true, .. } if !placed => {
+                points.push(part.span.start);
+                placed = true;
             }
-            continue;
-        }
-        match b {
-            b'"' | b'\'' => quote = Some(b),
-            b'(' => paren += 1,
-            b')' => paren -= 1,
-            b'[' => bracket += 1,
-            b']' => bracket -= 1,
-            b',' if paren == 0 && bracket == 0 => {
-                parts.push(&selector[start..i]);
-                start = i + 1;
-            }
-            _ => {}
+            _ => compound_end = Some(part.span.end),
         }
     }
-    parts.push(&selector[start..]);
-    parts
+    if !placed {
+        points.extend(compound_end);
+    }
+    points
 }
 
-/// Specificity **A** (ID column) for a selector, for polyfill `step = maxA + 1`.
-///
-/// Matches Selectors Level 4 for the functional pseudos users hit in `globalCss`:
-/// - `:where(...)` → always `0`
-/// - `:is()` / `:not()` / `:has()` / `:matches()` → max A of their arguments
-/// - selector lists (`a, b`) → max A across branches
+/// Specificity **A** (ID column) of a selector list, for polyfill
+/// `step = maxA + 1`: the max across its complex selectors.
 fn count_id_selectors(selector: &str) -> u32 {
-    split_selector_list(selector)
-        .into_iter()
-        .map(complex_selector_id_count)
-        .max()
-        .unwrap_or(0)
-}
-
-fn complex_selector_id_count(selector: &str) -> u32 {
-    let bytes = selector.as_bytes();
-    let mut count = 0_u32;
-    let mut i = 0;
-    let mut quote: Option<u8> = None;
-    let mut bracket = 0_i32;
-    while i < bytes.len() {
-        let b = bytes[i];
-        if let Some(q) = quote {
-            if b == q && bytes.get(i.wrapping_sub(1)) != Some(&b'\\') {
-                quote = None;
+    let mut max = 0;
+    let mut current = 0;
+    for part in selector_parts(selector) {
+        match part.kind {
+            PartKind::Comma => {
+                max = max.max(current);
+                current = 0;
             }
-            i += 1;
-            continue;
-        }
-        match b {
-            b'"' | b'\'' => {
-                quote = Some(b);
-                i += 1;
-            }
-            b'[' => {
-                bracket += 1;
-                i += 1;
-            }
-            b']' => {
-                bracket = (bracket - 1).max(0);
-                i += 1;
-            }
-            // `#` inside `[attr=#value]` is an attribute value, not an ID.
-            b'#' if bracket == 0 => {
-                if bytes.get(i + 1).is_some_and(|c| {
-                    c.is_ascii_alphanumeric() || *c == b'\\' || *c == b'-' || *c == b'_'
-                }) {
-                    count += 1;
-                }
-                i += 1;
-            }
-            b':' if bracket == 0 && selector.is_char_boundary(i) => {
-                if let Some((kind, args_start, args_end)) = functional_pseudo_at(selector, i) {
-                    let args = &selector[args_start..args_end];
-                    count += match kind {
-                        FunctionalPseudo::Where => 0,
-                        FunctionalPseudo::MaxArgs => count_id_selectors(args),
-                    };
-                    i = args_end + 1; // skip past closing `)`
-                } else {
-                    i += 1;
-                }
-            }
-            _ => i += 1,
-        }
-    }
-    count
-}
-
-#[derive(Clone, Copy)]
-enum FunctionalPseudo {
-    /// `:where(...)` — contributes zero specificity.
-    Where,
-    /// `:is` / `:not` / `:has` / `:matches` — max A of the argument list.
-    MaxArgs,
-}
-
-/// If `selector[i..]` starts a functional pseudo we care about, return
-/// `(kind, args_start, args_end)` where `args_end` is the index of `)`.
-fn functional_pseudo_at(selector: &str, i: usize) -> Option<(FunctionalPseudo, usize, usize)> {
-    let rest = &selector[i..];
-    // `::slotted()` etc. — not the matching pseudos we model.
-    if rest.starts_with("::") {
-        return None;
-    }
-    let after_colon = rest.strip_prefix(':')?;
-    let name_len = after_colon
-        .chars()
-        .take_while(|c| c.is_ascii_alphanumeric() || *c == '-' || *c == '_')
-        .map(char::len_utf8)
-        .sum::<usize>();
-    if name_len == 0 {
-        return None;
-    }
-    let name = &after_colon[..name_len];
-    let kind = if name.eq_ignore_ascii_case("where") {
-        FunctionalPseudo::Where
-    } else if name.eq_ignore_ascii_case("is")
-        || name.eq_ignore_ascii_case("not")
-        || name.eq_ignore_ascii_case("has")
-        || name.eq_ignore_ascii_case("matches")
-    {
-        FunctionalPseudo::MaxArgs
-    } else {
-        return None;
-    };
-    let after_name = &after_colon[name_len..];
-    let ws = after_name
-        .chars()
-        .take_while(char::is_ascii_whitespace)
-        .map(char::len_utf8)
-        .sum::<usize>();
-    let after_ws = &after_name[ws..];
-    if !after_ws.starts_with('(') {
-        return None;
-    }
-    let args_start = i + 1 + name_len + ws + 1; // past `:name (`
-    let args_end = find_matching_paren(selector.as_bytes(), args_start - 1)?;
-    Some((kind, args_start, args_end))
-}
-
-/// Index of the `)` that matches `bytes[open]` (`(`).
-fn find_matching_paren(bytes: &[u8], open: usize) -> Option<usize> {
-    if bytes.get(open) != Some(&b'(') {
-        return None;
-    }
-    let mut depth = 0_i32;
-    let mut quote: Option<u8> = None;
-    let mut bracket = 0_i32;
-    for (i, &b) in bytes.iter().enumerate().skip(open) {
-        if let Some(q) = quote {
-            if b == q && bytes.get(i.wrapping_sub(1)) != Some(&b'\\') {
-                quote = None;
-            }
-            continue;
-        }
-        match b {
-            b'"' | b'\'' => quote = Some(b),
-            b'[' => bracket += 1,
-            b']' => bracket = (bracket - 1).max(0),
-            b'(' if bracket == 0 => depth += 1,
-            b')' if bracket == 0 => {
-                depth -= 1;
-                if depth == 0 {
-                    return Some(i);
-                }
-            }
+            PartKind::Id => current += 1,
+            PartKind::Pseudo {
+                element,
+                name,
+                args: Some(args),
+            } => current += pseudo_argument_ids(element, name, args),
             _ => {}
         }
     }
-    None
+    max.max(current)
 }
+
+/// IDs a functional pseudo takes from its selector argument (Selectors 4).
+fn pseudo_argument_ids(element: bool, name: &str, args: &str) -> u32 {
+    let named = |candidates: &[&str]| candidates.iter().any(|c| name.eq_ignore_ascii_case(c));
+    if element {
+        return if named(&["slotted"]) {
+            count_id_selectors(args)
+        } else {
+            0
+        };
+    }
+    if named(&[
+        "is",
+        "matches",
+        "-moz-any",
+        "not",
+        "has",
+        "host",
+        "host-context",
+    ]) {
+        return count_id_selectors(args);
+    }
+    if named(&["nth-child", "nth-last-child"]) {
+        // `An+B of S` counts `S`.
+        return selector_parts(args)
+            .find(|part| {
+                part.kind == PartKind::Other && args[part.span.clone()].eq_ignore_ascii_case("of")
+            })
+            .map_or(0, |of| count_id_selectors(&args[of.span.end..]));
+    }
+    0
+}
+
+#[cfg(test)]
+mod boost_tests;
 
 #[cfg(test)]
 mod tests {
@@ -1011,32 +807,269 @@ mod tests {
         assert_eq!(count_id_selectors("[data-x]#real"), 1);
     }
 
-    // --- split_selector_list edge cases ---
+    // --- escaped class names ---
 
     #[test]
-    fn split_ignores_comma_inside_nested_parens() {
+    fn adjust_ignores_escaped_pseudo_element_in_class() {
         assert_eq!(
-            split_selector_list(":is(:where(.a, .b), .c), .d"),
-            vec![":is(:where(.a, .b), .c)", " .d"]
+            adjust_selector_specificity(
+                r".hover\:before\:opacity_0\.5:is(:hover, [data-hover])::before",
+                1
+            ),
+            r".hover\:before\:opacity_0\.5:is(:hover, [data-hover]):not(#\#)::before"
         );
     }
 
     #[test]
-    fn split_ignores_comma_inside_single_quoted_string() {
+    fn adjust_ignores_escaped_after_in_class() {
         assert_eq!(
-            split_selector_list("[data-x='a,b'], .y"),
-            vec!["[data-x='a,b']", " .y"]
+            adjust_selector_specificity(r".a\:after", 1),
+            r".a\:after:not(#\#)"
         );
     }
 
     #[test]
-    fn split_handles_no_commas() {
-        assert_eq!(split_selector_list(".a .b"), vec![".a .b"]);
+    fn adjust_ignores_escaped_double_colon_in_class() {
+        assert_eq!(
+            adjust_selector_specificity(r".a\:\:before", 1),
+            r".a\:\:before:not(#\#)"
+        );
     }
 
     #[test]
-    fn split_handles_trailing_comma_branch() {
-        assert_eq!(split_selector_list(".a,.b,"), vec![".a", ".b", ""]);
+    fn adjust_ignores_escaped_quote_in_class() {
+        assert_eq!(
+            adjust_selector_specificity(r#".before\:content_\"\"::before"#, 1),
+            r#".before\:content_\"\":not(#\#)::before"#
+        );
+    }
+
+    #[test]
+    fn adjust_ignores_escaped_single_quote_in_class() {
+        assert_eq!(
+            adjust_selector_specificity(r".a\'b .c", 1),
+            r".a\'b:not(#\#) .c"
+        );
+    }
+
+    #[test]
+    fn adjust_ignores_escaped_comma_in_class() {
+        assert_eq!(
+            adjust_selector_specificity(r".animation_fadeIn_1s\,_slideUp_1s", 1),
+            r".animation_fadeIn_1s\,_slideUp_1s:not(#\#)"
+        );
+    }
+
+    #[test]
+    fn adjust_splits_list_but_not_escaped_comma() {
+        assert_eq!(
+            adjust_selector_specificity(r".a\,b, .c", 1),
+            r".a\,b:not(#\#), .c:not(#\#)"
+        );
+    }
+
+    #[test]
+    fn adjust_ignores_escaped_combinators_in_class() {
+        assert_eq!(
+            adjust_selector_specificity(r".\[\&\>p\]\:mt_2 > p", 1),
+            r".\[\&\>p\]\:mt_2:not(#\#) > p"
+        );
+    }
+
+    #[test]
+    fn adjust_ignores_escaped_plus_and_tilde_in_class() {
+        assert_eq!(
+            adjust_selector_specificity(r".a\+b\~c", 1),
+            r".a\+b\~c:not(#\#)"
+        );
+    }
+
+    #[test]
+    fn adjust_ignores_escaped_parens_in_class() {
+        assert_eq!(
+            adjust_selector_specificity(r".w_calc\(100\%_-_2px\) .x", 1),
+            r".w_calc\(100\%_-_2px\):not(#\#) .x"
+        );
+    }
+
+    #[test]
+    fn adjust_ignores_unbalanced_escaped_paren_in_class() {
+        assert_eq!(
+            adjust_selector_specificity(r".a\( .b", 1),
+            r".a\(:not(#\#) .b"
+        );
+    }
+
+    #[test]
+    fn adjust_ignores_unbalanced_escaped_bracket_in_class() {
+        assert_eq!(
+            adjust_selector_specificity(r".a\[ .b", 1),
+            r".a\[:not(#\#) .b"
+        );
+    }
+
+    #[test]
+    fn adjust_ignores_escaped_space_in_class() {
+        assert_eq!(
+            adjust_selector_specificity(r".a\ b .c", 1),
+            r".a\ b:not(#\#) .c"
+        );
+    }
+
+    #[test]
+    fn adjust_ignores_escaped_backslash_in_class() {
+        assert_eq!(
+            adjust_selector_specificity(r".a\\ .b", 1),
+            r".a\\:not(#\#) .b"
+        );
+    }
+
+    #[test]
+    fn adjust_handles_important_suffix_class() {
+        assert_eq!(
+            adjust_selector_specificity(r".c_red\!", 1),
+            r".c_red\!:not(#\#)"
+        );
+    }
+
+    #[test]
+    fn adjust_handles_slash_and_percent_in_class() {
+        assert_eq!(
+            adjust_selector_specificity(r".bg_red\/50 .w_50\%", 1),
+            r".bg_red\/50:not(#\#) .w_50\%"
+        );
+    }
+
+    #[test]
+    fn adjust_keeps_hex_escape_terminator_with_its_class() {
+        assert_eq!(
+            adjust_selector_specificity(r".\31 0 .b", 1),
+            r".\31 0:not(#\#) .b"
+        );
+        assert_eq!(
+            adjust_selector_specificity(r".\000031  p", 1),
+            r".\000031 :not(#\#) p"
+        );
+    }
+
+    #[test]
+    fn adjust_handles_trailing_backslash() {
+        assert_eq!(adjust_selector_specificity(r".a\", 1), r".a\:not(#\#)");
+    }
+
+    #[test]
+    fn count_ignores_escaped_hash_in_class() {
+        assert_eq!(count_id_selectors(r".c_\#f00"), 0);
+        assert_eq!(count_id_selectors(r".c_\#FFFFFF4D .x"), 0);
+    }
+
+    #[test]
+    fn count_ignores_hash_after_escaped_quote() {
+        assert_eq!(count_id_selectors(r#".a\"b #c"#), 1);
+    }
+
+    #[test]
+    fn count_ignores_escaped_comma_between_ids() {
+        assert_eq!(count_id_selectors(r"#a\,#b"), 2);
+        assert_eq!(count_id_selectors(r"#a, #b"), 1);
+    }
+
+    #[test]
+    fn count_ignores_escaped_paren_before_where() {
+        assert_eq!(count_id_selectors(r".a\(:where(#b)"), 0);
+    }
+
+    // --- specificity of functional pseudos ---
+
+    #[test]
+    fn count_host_and_host_context_arguments() {
+        assert_eq!(count_id_selectors(":host(#a)"), 1);
+        assert_eq!(count_id_selectors(":host-context(#a #b)"), 2);
+        assert_eq!(count_id_selectors(":host"), 0);
+    }
+
+    #[test]
+    fn count_slotted_argument() {
+        assert_eq!(count_id_selectors("::slotted(#a)"), 1);
+        assert_eq!(count_id_selectors(".x::slotted(.a)"), 0);
+    }
+
+    #[test]
+    fn count_ignores_other_pseudo_element_arguments() {
+        assert_eq!(count_id_selectors("::part(a)"), 0);
+        assert_eq!(count_id_selectors("::view-transition-group(#a)"), 0);
+    }
+
+    #[test]
+    fn count_nth_child_of_selector() {
+        assert_eq!(count_id_selectors(":nth-child(2n+1 of #a)"), 1);
+        assert_eq!(count_id_selectors(":nth-last-child(odd OF #a, #b#c)"), 2);
+        assert_eq!(count_id_selectors(":nth-child(2n+1)"), 0);
+    }
+
+    #[test]
+    fn count_ignores_nth_of_type_argument() {
+        assert_eq!(count_id_selectors(":nth-of-type(2n+1)"), 0);
+    }
+
+    #[test]
+    fn count_moz_any_argument_but_not_webkit_any() {
+        assert_eq!(count_id_selectors(":-moz-any(#a, .b)"), 1);
+        assert_eq!(count_id_selectors(":-webkit-any(#a, .b)"), 0);
+        assert_eq!(count_id_selectors(":any(#a, .b)"), 0);
+    }
+
+    #[test]
+    fn count_pseudo_names_case_insensitively() {
+        assert_eq!(count_id_selectors(":IS(#a)"), 1);
+        assert_eq!(count_id_selectors(":WHERE(#a)"), 0);
+    }
+
+    #[test]
+    fn count_empty_pseudo_arguments() {
+        assert_eq!(count_id_selectors(":is()"), 0);
+        assert_eq!(count_id_selectors(":not()"), 0);
+    }
+
+    #[test]
+    fn count_unclosed_pseudo_argument() {
+        assert_eq!(count_id_selectors(":is(#a, #b#c"), 2);
+    }
+
+    #[test]
+    fn count_ids_in_every_compound_of_complex_selector() {
+        assert_eq!(count_id_selectors("#foo #bar target::before:hover"), 2);
+    }
+
+    #[test]
+    fn count_polyfill_boost_itself() {
+        assert_eq!(count_id_selectors(r".a:not(#\##\#)"), 2);
+    }
+
+    // --- selector list edge cases ---
+
+    #[test]
+    fn adjust_ignores_comma_inside_nested_parens() {
+        assert_eq!(
+            adjust_selector_specificity(":is(:where(.a, .b), .c), .d", 1),
+            r":is(:where(.a, .b), .c):not(#\#), .d:not(#\#)"
+        );
+    }
+
+    #[test]
+    fn adjust_ignores_comma_inside_single_quoted_string() {
+        assert_eq!(
+            adjust_selector_specificity("[data-x='a,b'], .y", 1),
+            r"[data-x='a,b']:not(#\#), .y:not(#\#)"
+        );
+    }
+
+    #[test]
+    fn adjust_skips_empty_trailing_branch() {
+        assert_eq!(
+            adjust_selector_specificity(".a,.b,", 1),
+            r".a:not(#\#),.b:not(#\#),"
+        );
     }
 
     // --- keyframes / non-selector-block at-rule detection ---
