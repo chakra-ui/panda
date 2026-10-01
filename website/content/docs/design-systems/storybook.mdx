@@ -11,15 +11,12 @@ This page covers the package's own stories. To add Panda to an app that already 
 
 ## Include the story files
 
-Panda only emits what it can see. Put stories on `include`.
+Panda only emits what it can see. Make sure `include` covers your stories. `src/**/*.{ts,tsx}` already matches
+`*.stories.tsx`, so you only need to add `.storybook` for decorators and previews.
 
 ```ts filename="packages/ds/panda.config.ts"
 export default defineConfig({
-  include: [
-    'src/**/*.{ts,tsx}',
-    '.storybook/**/*.{ts,tsx}',
-    'src/**/*.stories.tsx'
-  ]
+  include: ['src/**/*.{ts,tsx}', '.storybook/**/*.{ts,tsx}']
 })
 ```
 
@@ -50,7 +47,7 @@ If stories pass variants from controls, pre-generate them. Fine in Storybook. He
 
 ```ts filename="packages/ds/panda.config.ts"
 export default defineConfig({
-  include: ['src/**/*.{ts,tsx}', 'src/**/*.stories.tsx'],
+  include: ['src/**/*.{ts,tsx}'],
   staticCss: {
     recipes: '*'
   }
