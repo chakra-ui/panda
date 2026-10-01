@@ -1,5 +1,6 @@
 import type { Config } from '@pandacss/types'
-import { existsSync, realpathSync, statSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { existsSync, readFileSync, realpathSync, statSync } from 'node:fs'
 import { mkdir, unlink, writeFile } from 'node:fs/promises'
 import { builtinModules } from 'node:module'
 import { tmpdir } from 'node:os'
@@ -8,6 +9,7 @@ import { pathToFileURL } from 'node:url'
 import type { RolldownOutput } from 'rolldown'
 import { importMetaUrlPlugin } from './bundle-plugins'
 import { PandaError } from './error'
+import { readPandaVersion } from './version'
 
 const nodeBuiltins = new Set([...builtinModules, ...builtinModules.map((mod) => `node:${mod}`)])
 
@@ -41,11 +43,16 @@ interface BundledCode {
 }
 
 const bundleCache = new Map<string, BundledCode>()
+const pandaVersion = readPandaVersion()
 
 async function bundleCode(filepath: string, cwd: string): Promise<BundledCode> {
-  const key = `${cwd}\0${filepath}`
-  const cached = bundleCache.get(key)
-  if (cached && cached.stamp === dependencyStamp(cached.dependencies, cwd)) return cached
+  const key = `${pandaVersion}\0${cwd}\0${filepath}`
+  const cacheFile = diskCacheFile(key, cwd)
+  const cached = bundleCache.get(key) ?? readDiskCache(cacheFile)
+  if (cached && cached.stamp === dependencyStamp(cached.dependencies, cwd)) {
+    bundleCache.set(key, cached)
+    return cached
+  }
 
   const { rolldown } = await import('rolldown')
 
@@ -73,8 +80,33 @@ async function bundleCode(filepath: string, cwd: string): Promise<BundledCode> {
   const dependencies = collectDependencies(chunks.output, filepath, cwd)
   const stamp = dependencyStamp(dependencies, cwd)
   const bundled = { code: output.code, dependencies, stamp }
-  if (dependencies.length > 0 && !stamp.includes('missing')) bundleCache.set(key, bundled)
+  if (dependencies.length > 0 && !stamp.includes('missing')) {
+    bundleCache.set(key, bundled)
+    await writeDiskCache(cacheFile, bundled)
+  }
   return bundled
+}
+
+function diskCacheFile(key: string, cwd: string): string {
+  const hash = createHash('sha256').update(key).digest('hex').slice(0, 16)
+  return join(pandaCacheDir(cwd), 'bundles', `${hash}.json`)
+}
+
+function readDiskCache(file: string): BundledCode | undefined {
+  try {
+    const cached = JSON.parse(readFileSync(file, 'utf8')) as Partial<BundledCode>
+    const valid =
+      typeof cached.code === 'string' && Array.isArray(cached.dependencies) && typeof cached.stamp === 'string'
+    return valid ? (cached as BundledCode) : undefined
+  } catch {
+    return undefined
+  }
+}
+
+function writeDiskCache(file: string, bundled: BundledCode): Promise<void> {
+  return mkdir(dirname(file), { recursive: true })
+    .then(() => writeFile(file, JSON.stringify(bundled)))
+    .catch(() => undefined)
 }
 
 function dependencyStamp(dependencies: string[], cwd: string): string {
@@ -128,10 +160,12 @@ function isUnresolvedTempModule(error: unknown, target: string): boolean {
 
 function tempTargetFor(filepath: string): string | undefined {
   const unique = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
-  const name = `panda.config.bundled.${unique}.mjs`
-  const nodeModules = nearestNodeModules(dirname(filepath))
-  const base = nodeModules ? join(nodeModules, '.panda') : join(tmpdir(), 'panda-config')
-  return join(base, name)
+  return join(pandaCacheDir(dirname(filepath)), `panda.config.bundled.${unique}.mjs`)
+}
+
+function pandaCacheDir(start: string): string {
+  const nodeModules = nearestNodeModules(start)
+  return nodeModules ? join(nodeModules, '.panda') : join(tmpdir(), 'panda-config')
 }
 
 function nearestNodeModules(start: string): string | undefined {

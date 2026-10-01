@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -548,6 +548,42 @@ describe('loadConfig presets', () => {
     utimesSync(token, later, later)
 
     expect(brand(await loadConfig({ cwd }))).toEqual({ value: '#f00' })
+  })
+
+  test('reuses the bundled config across processes until a file changes', () => {
+    const cwd = writeTempProject({
+      'node_modules/.keep': '',
+      'preset.ts': `export default { theme: { tokens: { colors: { brand: { value: '#0f0' } } } } }`,
+      'panda.config.ts': `export default { outdir: 'styled-system', presets: ['./preset.ts'] }`,
+    })
+    const loadPath = process.cwd().endsWith(join('packages', 'config'))
+      ? join(process.cwd(), 'src/load.ts')
+      : join(process.cwd(), 'packages/config/src/load.ts')
+    const brandInFreshProcess = () => {
+      const script = `
+        import { loadConfig } from ${JSON.stringify(pathToFileURL(loadPath).href)}
+        const result = await loadConfig({ cwd: ${JSON.stringify(cwd)} })
+        console.log(result.config.theme.tokens.colors.brand.value)
+      `
+      return execFileSync(process.execPath, ['--import', 'tsx', '--input-type=module', '-e', script], {
+        encoding: 'utf8',
+      }).trim()
+    }
+
+    expect(brandInFreshProcess()).toBe('#0f0')
+
+    const bundles = join(cwd, 'node_modules/.panda/bundles')
+    for (const file of readdirSync(bundles)) {
+      const path = join(bundles, file)
+      writeFileSync(path, readFileSync(path, 'utf8').replaceAll('#0f0', '#00f'))
+    }
+    expect(brandInFreshProcess()).toBe('#00f')
+
+    const preset = join(cwd, 'preset.ts')
+    writeFileSync(preset, `export default { theme: { tokens: { colors: { brand: { value: '#f00' } } } } }`)
+    const later = new Date(Date.now() + 10_000)
+    utimesSync(preset, later, later)
+    expect(brandInFreshProcess()).toBe('#f00')
   })
 
   test('bundles a config that imports a CommonJS node_modules preset', async () => {

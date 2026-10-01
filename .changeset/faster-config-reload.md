@@ -4,4 +4,4 @@
 '@pandacss/compiler-wasm': patch
 ---
 
-Reloading the config in watch mode or the Vite plugin is faster. Presets and config files are only re-bundled when a file they import changes, and the compiler no longer copies the config back from the native engine on startup.
+Loading the config is faster, on cold CLI runs and on reloads in watch mode or the Vite plugin. Panda keeps the bundled config and presets in `node_modules/.panda` and only re-bundles them when a file they import changes.
