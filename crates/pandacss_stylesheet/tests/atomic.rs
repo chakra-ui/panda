@@ -4,6 +4,30 @@ use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 use crate::common::{compile_layer_css, compile_output, config};
 
 #[test]
+fn styled_default_props_do_not_emit_html_as_css() {
+    let config = config(serde_json::json!({
+        "jsxFramework": "react",
+        "importMap": { "jsx": ["@panda/jsx"], "recipe": ["@panda/recipes"] },
+        "theme": { "recipes": { "frame": { "base": { "display": "block" } } } }
+    }));
+    let source = indoc::indoc! {r"
+        import { styled } from '@panda/jsx';
+        import { frame } from '@panda/recipes';
+        import { ArkFrame } from '@ark-ui/react';
+        const srcDoc = '<html><head><style>body { margin: 0; }</style></head><body><div /></body></html>';
+        const StyledFrame = styled(ArkFrame, frame, {
+          defaultProps: { srcDoc, color: 'red' },
+          forwardProps: ['srcDoc'],
+        });
+    "};
+    let output = compile_output(&config, source, StylesheetOptions::default());
+    assert!(output.css.contains("color: red;"));
+    assert!(output.css.contains("display: block;"));
+    assert!(!output.css.contains("src-doc"));
+    assert!(!output.css.contains("</style>"));
+}
+
+#[test]
 fn emits_dynamic_atomic_css() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },

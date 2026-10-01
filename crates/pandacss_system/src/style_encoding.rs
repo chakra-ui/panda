@@ -66,7 +66,7 @@ impl System {
         }
     }
 
-    /// Encode style leftovers from inline `styled` `defaultProps`.
+    /// Encode style leftovers from `styled` `defaultProps`, excluding component props.
     #[doc(hidden)]
     pub fn process_inline_default_prop_styles(
         &self,
@@ -74,17 +74,28 @@ impl System {
         default_props: &Literal,
         variant_keys: &[(String, Literal)],
     ) {
-        if variant_keys.is_empty() {
-            self.process_style_props(encoder, default_props, ShorthandPolicy::UserFacing);
+        if let Literal::Conditional(branches) = default_props {
+            for branch in branches {
+                self.process_inline_default_prop_styles(encoder, branch, variant_keys);
+            }
             return;
         }
         let Some(entries) = literal_entries(default_props) else {
-            self.process_style_props(encoder, default_props, ShorthandPolicy::UserFacing);
             return;
         };
         let leftovers: Vec<(String, Literal)> = entries
             .iter()
             .filter(|(key, _)| variant_keys.iter().all(|(variant, _)| variant != key))
+            .filter(|(key, _)| {
+                self.extractor_config.jsx.valid_style_props.contains(key)
+                    || self
+                        .utility
+                        .as_ref()
+                        .is_some_and(|utility| utility.is_known(utility.canonical_property(key)))
+                    || is_css_prop(key)
+                    || key.starts_with("--")
+                    || key.contains(['&', '@'])
+            })
             .cloned()
             .collect();
         if !leftovers.is_empty() {

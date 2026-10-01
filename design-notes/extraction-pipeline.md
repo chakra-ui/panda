@@ -74,6 +74,11 @@ The second argument of `styled(tag, recipe, options)` resolves to a config recip
 import, a local alias of one (`const recipe = button`), or a single property on a recipe namespace import
 (`recipes.button`). Mutated bindings and deeper member chains do not resolve.
 
+`styled(tag, recipe, options)` routes `options.defaultProps` through recipe variant selection, then encodes only the
+remaining style props. Component defaults such as `srcDoc`, `title`, and `id` stay at runtime and never enter atoms or
+portable build info. Inline recipes and plain style objects apply the same filter, preserving registered utilities,
+conditions, custom properties, selectors, and `css` props.
+
 ## Transform facts
 
 The project transformer consumes compact owned facts from this parse instead of parsing source fragments again:

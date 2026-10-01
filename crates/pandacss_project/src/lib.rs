@@ -725,10 +725,10 @@ impl Project {
                         if let Some(style_props) =
                             compiled.recipe_style_props(&[recipe_name], default_props)
                         {
-                            self.system.process_style_props(
+                            self.system.process_inline_default_prop_styles(
                                 &mut encoder,
                                 &style_props,
-                                ShorthandPolicy::UserFacing,
+                                &[],
                             );
                         }
                         compiled.process_recipe_usage(
