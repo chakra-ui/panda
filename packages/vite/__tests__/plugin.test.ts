@@ -334,7 +334,8 @@ describe('@pandacss/vite', () => {
 
     await readCss(server)
     // Import analysis can't resolve the fixture's `@panda/css`; Panda's `pre` transform has already run by then.
-    await server.transformRequest('/App.tsx').catch(() => undefined)
+    // Browsers re-import edited modules with a `?t=` query.
+    await server.transformRequest('/App.tsx?t=1').catch(() => undefined)
 
     expect(warnings.filter((warning) => warning.includes('nested_property'))).toHaveLength(1)
   })

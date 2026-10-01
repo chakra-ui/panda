@@ -156,7 +156,7 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
           )
           if (sourceResult) {
             warnDiagnostics((message) => this.warn(message), sourceResult.diagnostics, 'while transforming source', {
-              file: id,
+              file: id.split('?')[0] ?? id,
               onlyNew: true,
             })
             return { code: sourceResult.code, map: sourceResult.map }
