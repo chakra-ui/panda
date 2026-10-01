@@ -574,11 +574,11 @@ fn emits_ts_source_types() {
     export type RecipeSelection<T extends RecipeVariantRecord> = string extends keyof T
       ? {}
       : {
-          [K in keyof T]?: StringToBoolean<keyof T[K]>
+          [K in keyof T]?: StringToBoolean<keyof T[K]> | undefined
         }
 
     export type RecipeCompoundSelection<T> = {
-      [K in keyof T]?: StringToBoolean<keyof T[K]> | Array<StringToBoolean<keyof T[K]>>
+      [K in keyof T]?: StringToBoolean<keyof T[K]> | Array<StringToBoolean<keyof T[K]>> | undefined
     }
 
     export interface RecipeDefinition<T extends RecipeVariantRecord = RecipeVariantRecord> {
