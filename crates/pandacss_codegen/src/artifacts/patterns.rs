@@ -3,6 +3,10 @@
 
 use std::collections::BTreeSet;
 
+use oxc_allocator::Allocator;
+use oxc_codegen::{Codegen, CodegenOptions, IndentChar};
+use oxc_parser::Parser;
+use oxc_span::SourceType;
 use pandacss_config::{
     PatternConfig, PatternPropertyConfig, PatternPropertyTypeKind, PatternTypeDefinition,
 };
@@ -500,8 +504,31 @@ fn pattern_config_source(pattern: &PatternConfig, meta: Option<&PatternCodegenMe
     meta.filter(|meta| !meta.config_source.trim().is_empty())
         .map_or_else(
             || fallback_pattern_config_source(pattern),
-            |meta| meta.config_source.clone(),
+            |meta| print_config_source(&meta.config_source),
         )
+}
+
+fn print_config_source(source: &str) -> String {
+    const PREFIX: &str = "export default ";
+    let program = format!("{PREFIX}{source}");
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, &program, SourceType::mjs()).parse();
+    if parsed.panicked || !parsed.errors.is_empty() {
+        return source.to_owned();
+    }
+    let printed = Codegen::new()
+        .with_options(CodegenOptions {
+            indent_char: IndentChar::Space,
+            indent_width: 2,
+            ..CodegenOptions::default()
+        })
+        .build(&parsed.program)
+        .code;
+    printed
+        .trim_end()
+        .strip_prefix(PREFIX)
+        .and_then(|expression| expression.strip_suffix(';'))
+        .map_or_else(|| source.to_owned(), str::to_owned)
 }
 
 fn fallback_pattern_config_source(pattern: &PatternConfig) -> String {

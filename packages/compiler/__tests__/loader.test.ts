@@ -53,13 +53,16 @@ describe('loadCompiler', () => {
       import { memo } from '../helpers';
       import { css } from '../css/index';
 
-      const stackConfig = {transform(props) {
-      	return {
-      		display: "flex",
-      		flexDirection: "column",
-      		gap: props.gap
-      	};
-      },defaultValues:{gap:'4'}}
+      const stackConfig = {
+        transform(props) {
+          return {
+            display: "flex",
+            flexDirection: "column",
+            gap: props.gap
+          };
+        },
+        defaultValues: { gap: "4" }
+      }
 
       export function stackRaw(styles) {
         const s = getPatternStyles(stackConfig, styles || {})
