@@ -24,7 +24,7 @@
     "test": "vitest",
     "test:compiler": "pnpm --filter @pandacss/compiler test:native",
     "codegen": "pnpm --filter=./sandbox/codegen",
-    "test:codegen": "pnpm codegen test && pnpm codegen typecheck",
+    "test:codegen": "pnpm codegen codegen && pnpm codegen test && pnpm codegen typecheck",
     "test-watch": "vitest --watch -u",
     "lint": "eslint packages",
     "prettier": "prettier --check packages",
