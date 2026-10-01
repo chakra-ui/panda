@@ -798,6 +798,64 @@ fn resolves_token_references_interpolated_in_longhand_values() {
 }
 
 #[test]
+fn resolves_negative_spacing_token_references_in_custom_properties() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": ["@panda/tokens"] },
+        "theme": { "tokens": { "spacing": { "2": { "value": "0.5rem" } } } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        concat!(
+            "import { css } from '@panda/css'\n",
+            "css({ '--offset': '{spacing.-2}' })\n",
+            "css({ '--gap': 'token(spacing.-2)' })\n",
+            "css({ '--inset': 'spacing.-2' })\n",
+            "css({ '--pos': '{spacing.2}' })",
+        ),
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .\--gap_token\(spacing\.-2\) {
+        --gap: calc(var(--spacing-2) * -1);
+      }
+      .\--inset_spacing\.-2 {
+        --inset: calc(var(--spacing-2) * -1);
+      }
+      .\--offset_\{spacing\.-2\} {
+        --offset: calc(var(--spacing-2) * -1);
+      }
+      .\--pos_\{spacing\.2\} {
+        --pos: var(--spacing-2);
+      }
+    }
+    ");
+}
+
+#[test]
+fn resolves_token_references_without_any_utilities() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": ["@panda/tokens"] },
+        "theme": { "tokens": { "colors": { "red": { "value": "#f00" } } } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'\ncss({ '--accent': '{colors.red}', color: '{colors.red}' })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .\--accent_\{colors\.red\} {
+        --accent: var(--colors-red);
+      }
+      .color_\{colors\.red\} {
+        color: var(--colors-red);
+      }
+    }
+    ");
+}
+
+#[test]
 fn escapes_unresolved_token_reference_values() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": ["@panda/tokens"] },

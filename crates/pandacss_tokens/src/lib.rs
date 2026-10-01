@@ -296,11 +296,11 @@ impl TokenDictionary {
         fallback
     }
 
-    /// Zero-allocation `token.var('path', fallback)` lookup.
+    /// `token.var('path')` lookup; negative tokens resolve to their `calc()` value.
     #[must_use]
     pub fn get_var_str<'a>(&'a self, path: &str, fallback: Option<&'a str>) -> Option<&'a str> {
         if let Some(token) = self.token(path) {
-            return Some(token.var.as_ref());
+            return Some(category_value(token));
         }
         fallback
     }

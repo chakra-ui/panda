@@ -2362,18 +2362,14 @@ impl<'a> EmitContext<'a> {
         raw: &str,
         value: Option<&AtomValue>,
     ) -> UtilityTransformResult {
-        if self.utility.should_transform(prop) {
-            // Class hashes by the resolved value (`#ef4444`), matching legacy and
-            // the runtime `token()` — `path` stays build-info only.
-            let class_input = value.and_then(|value| match value {
-                AtomValue::Token { value, .. } => Some(value.as_ref()),
-                _ => None,
-            });
-            return self
-                .utility
-                .transform_str_with_class(prop, raw, class_input);
-        }
-        default_transform(prop, raw)
+        // Class hashes by the resolved value (`#ef4444`), matching legacy and
+        // the runtime `token()` — `path` stays build-info only.
+        let class_input = value.and_then(|value| match value {
+            AtomValue::Token { value, .. } => Some(value.as_ref()),
+            _ => None,
+        });
+        self.utility
+            .transform_str_with_class(prop, raw, class_input)
     }
 
     /// [`Self::transform_atom`] with the JS transform's styles swapped in
@@ -2693,15 +2689,6 @@ fn composition_style_object<'a>(prop: &str, styles: &'a Literal) -> Option<&'a L
         return None;
     }
     Some(styles)
-}
-
-fn default_transform(prop: &str, raw: &str) -> UtilityTransformResult {
-    let class_name = format!("{}_{}", hyphenate_property(prop), without_space(raw));
-    UtilityTransformResult {
-        layer: None,
-        class_name,
-        styles: Literal::Object(vec![(prop.to_owned(), Literal::String(raw.to_owned()))]),
-    }
 }
 
 fn atom_value_to_string(value: &AtomValue) -> Option<Cow<'_, str>> {

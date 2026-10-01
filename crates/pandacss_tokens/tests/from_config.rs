@@ -765,6 +765,22 @@ fn snapshot_token_details(dict: &TokenDictionary) -> Vec<serde_json::Value> {
 }
 
 #[test]
+fn negative_spacing_token_var_resolves_to_its_calc_value() {
+    let dict = build_dictionary(json!({
+        "theme": { "tokens": { "spacing": { "2": { "value": "0.5rem" } } } }
+    }));
+
+    assert_eq!(
+        dict.get_var_str("spacing.-2", None),
+        Some("calc(var(--spacing-2) * -1)")
+    );
+    assert_eq!(
+        dict.get_var_str("spacing.2", None),
+        Some("var(--spacing-2)")
+    );
+}
+
+#[test]
 fn negative_spacing_covers_the_shapes_a_scale_can_take() {
     let dictionary = build_dictionary(json!({
         "theme": {
