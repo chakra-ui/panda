@@ -37,7 +37,7 @@ export const analyzeCommand = defineCommand({
     ...outputArgs(),
     ...traceArgs(),
   }),
-  run: async ({ args }) => setExitCode(await runAnalyze(parseCliFlags(analyzeFlagsSchema, args))),
+  run: async ({ args, rawArgs }) => setExitCode(await runAnalyze(parseCliFlags(analyzeFlagsSchema, args, rawArgs))),
 })
 
 export async function runAnalyze(flags: AnalyzeFlags = {}, output: OutputSink = consoleOutput): Promise<AnalyzeResult> {

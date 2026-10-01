@@ -49,16 +49,33 @@ export function includeArgs(): ArgsDef {
   }
 }
 
-/** Normalize `--include` (string, repeated array, or comma-separated) into a glob list. */
+/** Normalize `--include` (one glob per flag, repeatable) into a glob list. Commas are glob syntax, not separators. */
 export function normalizeInclude(value: unknown): string[] | undefined {
   if (value == null) return undefined
 
-  const globs = (Array.isArray(value) ? value : [value])
-    .flatMap((entry) => String(entry).split(','))
-    .map((entry) => entry.trim())
-    .filter(Boolean)
+  const globs = (Array.isArray(value) ? value : [value]).map((entry) => String(entry).trim()).filter(Boolean)
 
   return globs.length > 0 ? globs : undefined
+}
+
+const LIST_FLAGS = ['include', 'files']
+
+/** citty keeps only the last value of a repeated flag, so list flags are read from argv. */
+export function collectListFlags(rawArgs: readonly string[]): Record<string, string[]> {
+  const lists: Record<string, string[]> = {}
+  for (let index = 0; index < rawArgs.length; index++) {
+    const arg = rawArgs[index]!
+    if (arg === '--') break
+    for (const name of LIST_FLAGS) {
+      const flag = `--${name}`
+      if (arg === flag && index + 1 < rawArgs.length) {
+        ;(lists[name] ??= []).push(rawArgs[++index]!)
+      } else if (arg.startsWith(`${flag}=`)) {
+        ;(lists[name] ??= []).push(arg.slice(flag.length + 1))
+      }
+    }
+  }
+  return lists
 }
 
 /** `--spec` takes an optional path. citty has no optional-value type, so it is
@@ -93,8 +110,12 @@ export function runtimeArgs(): ArgsDef {
   }
 }
 
-export function parseCliFlags<TSchema extends FlagsSchema<Shape>>(schema: TSchema, args: unknown): FlagsInfer<TSchema> {
-  const flags = normalizeCliFlags(args)
+export function parseCliFlags<TSchema extends FlagsSchema<Shape>>(
+  schema: TSchema,
+  args: unknown,
+  rawArgs: readonly string[] = [],
+): FlagsInfer<TSchema> {
+  const flags = { ...normalizeCliFlags(args), ...collectListFlags(rawArgs) }
   // `schema`'s member access resolves through the `FlagsSchema<Shape>` bound, not
   // the caller's concrete shape — bridge back to the precise inferred type here.
   const result = schema.safeParse(flags) as ParseResult<FlagsInfer<TSchema>>

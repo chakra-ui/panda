@@ -61,8 +61,8 @@ function createBuildCommand(options: BuildCommandOptions) {
       description: options.description,
     },
     args: options.args ?? buildArgs,
-    run: async ({ args }) =>
-      setExitCode(await runBuild({ ...parseCliFlags(buildFlagsSchema, args), ...options.flags })),
+    run: async ({ args, rawArgs }) =>
+      setExitCode(await runBuild({ ...parseCliFlags(buildFlagsSchema, args, rawArgs), ...options.flags })),
   })
 }
 
