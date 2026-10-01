@@ -37,12 +37,19 @@ ESM.
 
 ### Build
 
-Your v1 `panda.config.ts` carries over. Regenerate:
+Your v1 `panda.config.ts` carries over. The first time, regenerate from a clean output folder:
 
 ```bash
-panda build    # codegen + cssgen in one pass
-panda dev      # rebuild on change
+panda build --clean      # codegen + cssgen in one pass
+panda codegen --clean    # or, if you only run codegen
+panda dev                # rebuild on change
 ```
+
+You only need `--clean` once. v2 doesn't delete files it no longer generates, and by default v1 wrote `.mjs` where v2
+writes `.js`. Vite resolves `index.mjs` before `index.js`, so a leftover v1 file can win over the new one.
+
+Missing `Flex` or other pattern components after that? Add `@pandacss/preset-base`. See
+[Presets aren't added for you](#presets-arent-added-for-you).
 
 The `panda` and `pandacss` binaries are the same as v1.
 
