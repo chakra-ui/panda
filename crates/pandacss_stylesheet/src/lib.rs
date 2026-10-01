@@ -8,6 +8,7 @@ mod numeric_value;
 mod polyfill;
 mod preflight;
 mod selector;
+mod selector_parts;
 mod sort;
 mod split_names;
 mod static_css;

@@ -127,7 +127,7 @@ selectors become ancestors, and pseudo-elements are emitted after pseudo-classes
 
 ## Cascade-layer polyfill
 
-With `polyfill` / `--polyfill`, emit is two-phase (csstools: boosts need the full sheet):
+With `polyfill` / `--polyfill`, emit is two-phase (boosts need the full sheet):
 
 1. **Record** — `CssWriter` stores `LayerEnter`/`LayerExit`, `Rule`, `Declaration`, `AtRule`, `Raw` (no `@layer`, no
    selector mutation). `Declaration` is for descriptors with no enclosing rule (`@font-face`/`@property`/
@@ -144,6 +144,14 @@ two blocks: normal gets `rank * step`, important gets `(max_rank - rank + 1) * s
 The `+ 1` keeps the last layer's important rules above unlayered `!important` CSS, as native layers do.
 `@keyframes` step selectors (`from`/`to`/`50%`) are never boosted — they aren't real selectors, and a `:not()` there
 drops the whole block in every browser.
+
+Selectors are read with `selector_parts`, which splits a selector list into top-level parts (comma, combinator, ID,
+pseudo, other) the way CSS tokenizes it: escapes, strings, and bracketed blocks stay inside their part. The boost goes
+before the first combinator or pseudo-element of each complex selector. `maxIds` follows Selectors 4: `:where()` adds
+nothing; `:is()`, `:not()`, `:has()`, `:host()`, `::slotted()`, and `:nth-child(… of S)` add their argument's IDs. A
+hand-written byte scan here broke on Panda's escaped class names (`.hover\:before`, `.c_\#f00`, `\,`), so new selector
+logic belongs in `selector_parts`, not in another scanner. `polyfill/boost_tests.rs` pins every selector shape to v1's
+PostCSS polyfill output.
 
 Native `@layer` emit is unchanged when polyfill is off. Split reuses the merged analyze result. Hosts keep the entry
 `@layer …;` as the injection marker, then call `compiler.stripLayerOrderStatements(css)` (Panda order lines only,

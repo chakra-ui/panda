@@ -340,7 +340,7 @@ fn polyfill_utilities_beat_base_even_with_more_ids() {
     let base_amount = boost_amount(base_line);
     let util_amount = boost_amount(util_line);
     let max_ids = 2_usize;
-    // csstools: later layer amount >= earlier amount + maxIds + 1
+    // v1: later layer amount >= earlier amount + maxIds + 1
     assert!(
         util_amount > base_amount + max_ids,
         "utilities {util_amount} > base {base_amount} + maxIds"
@@ -524,7 +524,7 @@ fn polyfill_inverts_important_priority_across_layers() {
 
 #[test]
 fn polyfill_inverts_important_priority_across_three_layers() {
-    // Same invariant as csstools' important.css fixture, extended to 3 real
+    // Same invariant as v1's important fixture, extended to 3 real
     // Panda layers: base < recipes < utilities for important priority.
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
@@ -945,6 +945,349 @@ fn polyfill_empty_stylesheet_does_not_panic() {
     )
     .css;
     assert!(!css.contains("@layer"));
+}
+
+fn escaped_class_config() -> pandacss_config::UserConfig {
+    config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": {
+            "hover": "&:is(:hover, [data-hover])",
+            "before": "&::before",
+            "after": "&::after",
+            "placeholder": "&::placeholder",
+            "groupHover": ".group:is(:hover) &",
+            "peerChecked": ".peer:is(:checked) ~ &"
+        },
+        "utilities": {
+            "color": { "className": "c" },
+            "opacity": { "className": "opacity" },
+            "content": { "className": "content" },
+            "animation": { "className": "animation" },
+            "width": { "className": "w" },
+            "gridTemplateColumns": { "className": "grid-tc" }
+        }
+    }))
+}
+
+fn polyfill_css(source: &str) -> String {
+    compile_output(
+        &escaped_class_config(),
+        &format!("import {{ css }} from '@panda/css'\n{source}"),
+        StylesheetOptions {
+            polyfill: true,
+            emit_layer_declaration: false,
+            ..StylesheetOptions::default()
+        },
+    )
+    .css
+}
+
+#[test]
+fn polyfill_ignores_escaped_pseudo_element_in_class_name() {
+    let css = polyfill_css("css({ _hover: { _before: { opacity: 0.5 } } })");
+    assert_snapshot!(css, @r"
+    :root:not(#\#) {
+      --made-with-panda: '🐼';
+    }
+    .hover\:before\:opacity_0\.5:is(:hover, [data-hover]):not(#\##\##\##\##\##\##\##\##\#)::before {
+      opacity: 0.5;
+    }
+    ");
+}
+
+#[test]
+fn polyfill_ignores_escaped_quote_in_class_name() {
+    let css = polyfill_css(r#"css({ _before: { content: '""' } })"#);
+    assert_snapshot!(css, @r#"
+    :root:not(#\#) {
+      --made-with-panda: '🐼';
+    }
+    .before\:content_\"\":not(#\##\##\##\##\##\##\##\##\#)::before {
+      content: "";
+    }
+    "#);
+}
+
+#[test]
+fn polyfill_ignores_escaped_comma_in_class_name() {
+    let css = polyfill_css("css({ animation: 'fadeIn 1s, slideUp 1s' })");
+    assert_snapshot!(css, @r"
+    :root:not(#\#) {
+      --made-with-panda: '🐼';
+    }
+    .animation_fadeIn_1s\,_slideUp_1s:not(#\##\##\##\##\##\##\##\##\#) {
+      animation: fadeIn 1s, slideUp 1s;
+    }
+    ");
+}
+
+#[test]
+fn polyfill_ignores_escaped_hash_in_class_name() {
+    let css = polyfill_css("css({ color: '#f00' })");
+    assert_snapshot!(css, @r"
+    :root:not(#\#) {
+      --made-with-panda: '🐼';
+    }
+    .c_\#f00:not(#\##\##\##\##\##\##\##\##\#) {
+      color: #f00;
+    }
+    ");
+}
+
+#[test]
+fn polyfill_ignores_escaped_after_in_class_name() {
+    let css = polyfill_css("css({ _hover: { _after: { color: 'red' } } })");
+    assert_snapshot!(css, @r"
+    :root:not(#\#) {
+      --made-with-panda: '🐼';
+    }
+    .hover\:after\:c_red:is(:hover, [data-hover]):not(#\##\##\##\##\##\##\##\##\#)::after {
+      color: red;
+    }
+    ");
+}
+
+#[test]
+fn polyfill_boosts_placeholder_before_the_pseudo_element() {
+    let css = polyfill_css("css({ _placeholder: { color: 'red' } })");
+    assert_snapshot!(css, @r"
+    :root:not(#\#) {
+      --made-with-panda: '🐼';
+    }
+    .placeholder\:c_red:not(#\##\##\##\##\##\##\##\##\#)::placeholder {
+      color: red;
+    }
+    ");
+}
+
+#[test]
+fn polyfill_boosts_group_condition_on_the_group() {
+    let css = polyfill_css("css({ _groupHover: { color: 'red' } })");
+    assert_snapshot!(css, @r"
+    :root:not(#\#) {
+      --made-with-panda: '🐼';
+    }
+    .group:is(:hover):not(#\##\##\##\##\##\##\##\##\#) .groupHover\:c_red {
+      color: red;
+    }
+    ");
+}
+
+#[test]
+fn polyfill_boosts_peer_condition_on_the_peer() {
+    let css = polyfill_css("css({ _peerChecked: { color: 'red' } })");
+    assert_snapshot!(css, @r"
+    :root:not(#\#) {
+      --made-with-panda: '🐼';
+    }
+    .peer:is(:checked):not(#\##\##\##\##\##\##\##\##\#) ~ .peerChecked\:c_red {
+      color: red;
+    }
+    ");
+}
+
+#[test]
+fn polyfill_keeps_escaped_comma_in_arbitrary_selector_class() {
+    let css = polyfill_css("css({ '& .a, & .b': { color: 'red' } })");
+    assert_snapshot!(css, @r"
+    :root:not(#\#) {
+      --made-with-panda: '🐼';
+    }
+    .\[\&_\.a\,_\&_\.b\]\:c_red:not(#\##\##\##\##\##\##\##\##\#) .a, .\[\&_\.a\,_\&_\.b\]\:c_red:not(#\##\##\##\##\##\##\##\##\#) .b {
+      color: red;
+    }
+    ");
+}
+
+#[test]
+fn polyfill_keeps_escaped_combinator_in_arbitrary_selector_class() {
+    let css = polyfill_css("css({ '& > p': { color: 'red' } })");
+    assert_snapshot!(css, @r"
+    :root:not(#\#) {
+      --made-with-panda: '🐼';
+    }
+    .\[\&_\>_p\]\:c_red:not(#\##\##\##\##\##\##\##\##\#) > p {
+      color: red;
+    }
+    ");
+}
+
+#[test]
+fn polyfill_boosts_important_class() {
+    let css = polyfill_css("css({ color: 'red !important' })");
+    assert_snapshot!(css, @r"
+    :root:not(#\#) {
+      --made-with-panda: '🐼';
+    }
+    .c_red\!:not(#\#) {
+      color: red !important;
+    }
+    ");
+}
+
+#[test]
+fn polyfill_keeps_escaped_parens_in_calc_class() {
+    let css = polyfill_css("css({ width: 'calc(100% - 2px)' })");
+    assert_snapshot!(css, @r"
+    :root:not(#\#) {
+      --made-with-panda: '🐼';
+    }
+    .w_calc\(100\%_-_2px\):not(#\##\##\##\##\##\##\##\##\#) {
+      width: calc(100% - 2px);
+    }
+    ");
+}
+
+#[test]
+fn polyfill_keeps_escaped_slash_in_fraction_class() {
+    let css = polyfill_css("css({ width: '1/2' })");
+    assert_snapshot!(css, @r"
+    :root:not(#\#) {
+      --made-with-panda: '🐼';
+    }
+    .w_1\/2:not(#\##\##\##\##\##\##\##\##\#) {
+      width: 1/2;
+    }
+    ");
+}
+
+#[test]
+fn polyfill_keeps_escaped_brackets_in_repeat_class() {
+    let css = polyfill_css("css({ gridTemplateColumns: 'repeat(2, [col] 1fr)' })");
+    assert_snapshot!(css, @r"
+    :root:not(#\#) {
+      --made-with-panda: '🐼';
+    }
+    .grid-tc_repeat\(2\,_\[col\]_1fr\):not(#\##\##\##\##\##\##\##\##\#) {
+      grid-template-columns: repeat(2, [col] 1fr);
+    }
+    ");
+}
+
+#[test]
+fn polyfill_ignores_escaped_quote_in_url_class() {
+    let css = polyfill_css(r#"css({ content: 'url("a.png")' })"#);
+    assert_snapshot!(css, @r#"
+    :root:not(#\#) {
+      --made-with-panda: '🐼';
+    }
+    .content_url\(\"a\.png\"\):not(#\##\##\##\##\##\##\##\##\#) {
+      content: url("a.png");
+    }
+    "#);
+}
+
+#[test]
+fn polyfill_boosts_hex_escaped_global_selector() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": { "color": { "className": "c" } },
+        "globalCss": { r".\31 0 .b": { "color": "blue" } }
+    }));
+    let css = compile_output(
+        &config,
+        "import { css } from '@panda/css'\ncss({ color: 'red' })",
+        StylesheetOptions {
+            polyfill: true,
+            emit_layer_declaration: false,
+            ..StylesheetOptions::default()
+        },
+    )
+    .css;
+    assert_snapshot!(css, @r"
+    :root:not(#\#) {
+      --made-with-panda: '🐼';
+    }
+    .\31 0:not(#\#) .b {
+      color: blue;
+    }
+    .c_red:not(#\##\##\##\##\##\##\##\##\#) {
+      color: red;
+    }
+    ");
+}
+
+#[test]
+fn polyfill_boosts_escaped_recipe_variant_class() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": { "before": "&::before" },
+        "utilities": { "width": { "className": "w" } },
+        "theme": {
+            "recipes": {
+                "bar": {
+                    "className": "bar",
+                    "variants": {
+                        "size": {
+                            "1/2": { "width": "50%", "_before": { "width": "1/2" } }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { bar } from '@panda/recipes'\nbar({ size: '1/2' })",
+        StylesheetOptions {
+            polyfill: true,
+            emit_layer_declaration: false,
+            ..StylesheetOptions::default()
+        },
+    )
+    .css;
+    assert_snapshot!(css, @r"
+    :root:not(#\#) {
+      --made-with-panda: '🐼';
+    }
+    .bar--size_1\/2:not(#\##\##\##\##\##\##\#) {
+      width: 50%;
+    }
+    .bar--size_1\/2:not(#\##\##\##\##\##\##\#)::before {
+      width: 1/2;
+    }
+    ");
+}
+
+#[test]
+fn polyfill_minifies_escaped_class_names() {
+    let css = compile_output(
+        &escaped_class_config(),
+        "import { css } from '@panda/css'\ncss({ _hover: { _before: { opacity: 0.5 } }, animation: 'fadeIn 1s, slideUp 1s' })",
+        StylesheetOptions {
+            polyfill: true,
+            minify: true,
+            emit_layer_declaration: false,
+            ..StylesheetOptions::default()
+        },
+    )
+    .css;
+    assert_snapshot!(css, @r":root:not(#\#){--made-with-panda:'🐼';}.animation_fadeIn_1s\,_slideUp_1s:not(#\##\##\##\##\##\##\##\##\#){animation:fadeIn 1s, slideUp 1s;}.hover\:before\:opacity_0\.5:is(:hover, [data-hover]):not(#\##\##\##\##\##\##\##\##\#)::before{opacity:0.5;}");
+}
+
+#[test]
+fn polyfill_split_boosts_escaped_class_names() {
+    let files = split_output(
+        &escaped_class_config(),
+        "import { css } from '@panda/css'\ncss({ color: '#f00', animation: 'fadeIn 1s, slideUp 1s' })",
+        StylesheetOptions {
+            polyfill: true,
+            ..StylesheetOptions::default()
+        },
+    );
+    let utilities = files
+        .iter()
+        .find(|file| file.path == "styles/utilities.css")
+        .map(|file| file.code.as_str())
+        .unwrap_or_default();
+    assert_snapshot!(utilities, @r"
+    .animation_fadeIn_1s\,_slideUp_1s:not(#\##\##\##\##\##\##\##\##\#) {
+      animation: fadeIn 1s, slideUp 1s;
+    }
+    .c_\#f00:not(#\##\##\##\##\##\##\##\##\#) {
+      color: #f00;
+    }
+    ");
 }
 
 #[test]
