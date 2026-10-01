@@ -15,7 +15,7 @@ export const doctorCommand = defineCommand({
     description: 'Validate Panda setup and print a project summary',
   },
   args: runtimeArgs,
-  run: async ({ args }) => setExitCode(await runDoctor(parseCliFlags(doctorFlagsSchema, args))),
+  run: async ({ args, rawArgs }) => setExitCode(await runDoctor(parseCliFlags(doctorFlagsSchema, args, rawArgs))),
 })
 
 export async function runDoctor(flags: DoctorFlags = {}, output: OutputSink = consoleOutput): Promise<DoctorResult> {

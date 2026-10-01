@@ -45,9 +45,9 @@ Most commands accept these flags.
 Commands that scan your source files (`dev`, `build`, `check`, `cssgen`, `analyze`, `debug`, `lib`, `buildinfo`) also
 take `--include`:
 
-| Flag               | Description                                                                          |
-| ------------------ | ------------------------------------------------------------------------------------ |
-| `--include <glob>` | Source globs to scan, replacing the config `include` list (repeat or comma-separate) |
+| Flag               | Description                                                                       |
+| ------------------ | --------------------------------------------------------------------------------- |
+| `--include <glob>` | Source globs to scan, replacing the config `include` list (repeat for more globs) |
 
 Commands that watch (`dev`, `build`, `codegen`, `cssgen`, `lib`) also take:
 
@@ -75,19 +75,19 @@ pnpm panda init --interactive
 pnpm panda init --postcss
 ```
 
-| Flag                          | Description                                                 | Related                                                      |
-| ----------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------ |
-| `--interactive, -i`           | Run the setup wizard                                        | -                                                            |
-| `--force, -f`                 | Overwrite an existing config file                           | -                                                            |
-| `--postcss, -p`               | Emit a [PostCSS](https://postcss.org/) config file          | -                                                            |
-| `--outdir <dir>`              | Output directory for generated files                        | [`config.outdir`](/docs/reference/config#outdir)             |
-| `--out-extension <ext>`       | Generated runtime file extension: `ts`, `js`, or `mjs`      | [`config.outExtension`](/docs/reference/config#outextension) |
-| `--jsx-framework <framework>` | JSX framework: `react`, `preact`, `vue`, or `solid`         | [`config.jsxFramework`](/docs/reference/config#jsxframework) |
-| `--jsx-style-props <mode>`    | JSX style props: `all`, `minimal`, or `none`                | -                                                            |
-| `--strict-tokens`             | Set `strictTokens` to `true`                                | [`config.strictTokens`](/docs/reference/config#stricttokens) |
-| `--skip-presets`              | Skip adding and installing the default presets              | -                                                            |
-| `--no-gitignore`              | Don't update `.gitignore` with the output directory         | -                                                            |
-| `--no-codegen`                | Don't run codegen after setup                               | -                                                            |
+| Flag                          | Description                                            | Related                                                      |
+| ----------------------------- | ------------------------------------------------------ | ------------------------------------------------------------ |
+| `--interactive, -i`           | Run the setup wizard                                   | -                                                            |
+| `--force, -f`                 | Overwrite an existing config file                      | -                                                            |
+| `--postcss, -p`               | Emit a [PostCSS](https://postcss.org/) config file     | -                                                            |
+| `--outdir <dir>`              | Output directory for generated files                   | [`config.outdir`](/docs/reference/config#outdir)             |
+| `--out-extension <ext>`       | Generated runtime file extension: `ts`, `js`, or `mjs` | [`config.outExtension`](/docs/reference/config#outextension) |
+| `--jsx-framework <framework>` | JSX framework: `react`, `preact`, `vue`, or `solid`    | [`config.jsxFramework`](/docs/reference/config#jsxframework) |
+| `--jsx-style-props <mode>`    | JSX style props: `all`, `minimal`, or `none`           | -                                                            |
+| `--strict-tokens`             | Set `strictTokens` to `true`                           | [`config.strictTokens`](/docs/reference/config#stricttokens) |
+| `--skip-presets`              | Skip adding and installing the default presets         | -                                                            |
+| `--no-gitignore`              | Don't update `.gitignore` with the output directory    | -                                                            |
+| `--no-codegen`                | Don't run codegen after setup                          | -                                                            |
 
 `panda init` also accepts the [shared flags](#shared-flags), except `--watch`, `--max-warnings`, and the tracing flags.
 

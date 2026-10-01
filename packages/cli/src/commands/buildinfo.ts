@@ -30,7 +30,7 @@ export const buildinfoCommand = defineCommand({
     ...outputArgs(),
     ...traceArgs(),
   }),
-  run: async ({ args }) => setExitCode(await runBuildinfo(parseCliFlags(buildinfoFlagsSchema, args))),
+  run: async ({ args, rawArgs }) => setExitCode(await runBuildinfo(parseCliFlags(buildinfoFlagsSchema, args, rawArgs))),
 })
 
 export async function runBuildinfo(

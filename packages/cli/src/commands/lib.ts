@@ -34,13 +34,13 @@ export const libCommand = defineCommand({
     files: {
       type: 'string',
       description:
-        'Re-extract fallback globs for consumers, relative to the output dir (comma-separated, or repeat the flag)',
+        'Re-extract fallback globs for consumers, relative to the output dir (repeat the flag for more globs)',
     },
     minify: { type: 'boolean', description: 'Minify the generated build info JSON', alias: 'm' },
     ...outputArgs(),
     ...traceArgs(),
   }),
-  run: async ({ args }) => setExitCode(await runLib(parseCliFlags(libFlagsSchema, args))),
+  run: async ({ args, rawArgs }) => setExitCode(await runLib(parseCliFlags(libFlagsSchema, args, rawArgs))),
 })
 
 export async function runLib(flags: LibFlags = {}, output: OutputSink = consoleOutput): Promise<LibResult> {
