@@ -262,7 +262,39 @@ describe('@pandacss/bun in Bun.build', () => {
 
     expect(warn.mock.calls[0]?.[0]).toContain(`while parsing ${project.path('src/app.ts')}`)
     expect(warn.mock.calls[0]?.[0]).toContain('js_parse_error')
+    expect(warn.mock.calls.filter(([message]) => String(message).includes('js_parse_error'))).toHaveLength(1)
     expect(result?.contents).toContain('.app { color: black }')
+  })
+
+  it('reports a broken nested style once when a transformed file is edited', async () => {
+    const project = createProject(`{ has: { svg: { color: 'red' } } }`)
+    dir = project.dir
+    const bun = await setupPlugin({ cwd: project.dir, transform: true })
+    await bun.load(project.path('src/app.ts'))
+
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    project.write('src/app.ts', app(`{ has: { svg: { color: 'blue' } } }`))
+    await bun.load(project.path('src/app.ts'))
+    await bun.load(project.path('src/index.css'))
+
+    const nested = warn.mock.calls.filter(([message]) => String(message).includes('nested_property'))
+    expect(nested).toHaveLength(1)
+    expect(nested[0]?.[0]).toContain(`while parsing ${project.path('src/app.ts')}`)
+  })
+
+  it('reports a broken nested style once when bun run reloads a transformed file', async () => {
+    const project = createProject(`{ has: { svg: { color: 'red' } } }`)
+    dir = project.dir
+    const bun = await setupPlugin({ cwd: project.dir, transform: true }, 'runtime')
+    await bun.load(project.path('src/app.ts'))
+
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    project.write('src/app.ts', app(`{ has: { svg: { color: 'blue' } } }`))
+    await bun.load(project.path('src/app.ts'))
+
+    const nested = warn.mock.calls.filter(([message]) => String(message).includes('nested_property'))
+    expect(nested).toHaveLength(1)
+    expect(nested[0]?.[0]).toContain(`while parsing ${project.path('src/app.ts')}`)
   })
 
   it('generates the stylesheet only after the rest of the rebuild has loaded', async () => {
