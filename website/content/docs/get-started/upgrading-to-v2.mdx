@@ -197,11 +197,11 @@ css({ color: 'red' })
 ```tsx
 // ❌ v1
 import { Box } from 'styled-system/jsx'
-<Box color="red.500" />
+;<Box color="red.500" />
 
 // ✅ v2
 import { css } from 'styled-system/css'
-<div class={css({ color: 'red.500' })} />
+;<div class={css({ color: 'red.500' })} />
 ```
 
 ### CLI commands and flags
@@ -286,6 +286,25 @@ css({ scrollbarWidth: 'thin' })
 
 If you passed a single color to `scrollbarColor`, move it to `scrollbarThumb`. `scrollbarColor` is now a raw two-value
 string (`'red transparent'`).
+
+### sizes.prose is narrower
+
+`@pandacss/preset-panda` changes `sizes.prose` from `65ch` to `60ch`. Styles such as `maxWidth: 'prose'` will use the
+narrower value. To keep the v1 width, override the token:
+
+```ts
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        sizes: {
+          prose: { value: '65ch' }
+        }
+      }
+    }
+  }
+})
+```
 
 ### No universal variable reset
 

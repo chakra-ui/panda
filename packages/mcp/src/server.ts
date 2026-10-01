@@ -4,6 +4,7 @@ import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js'
 import { createNodeDriver, type Driver } from '@pandacss/compiler'
 import { resolve } from 'node:path'
 import * as z from 'zod/v4'
+import pkg from '../package.json'
 
 const json = (data: unknown) => ({
   content: [{ type: 'text' as const, text: JSON.stringify(data) }],
@@ -24,7 +25,7 @@ export function createMcpServer(options: CreateMcpServerOptions) {
 
   const server = new McpServer({
     name: '@pandacss/mcp',
-    version: '1.0.0',
+    version: pkg.version,
   })
 
   // Create dynamic schemas from user's config
