@@ -36,6 +36,28 @@ transform_snapshot!(
 );
 
 transform_snapshot!(
+    dynamic_nullish_default_preserves_the_runtime_ternary,
+    r#"
+        import { css } from '@panda/css';
+
+        export function badge(data) {
+          const count = data.count ?? 0;
+
+          return css({ color: count > 0 ? 'green' : 'gray' });
+        }
+    "#,
+    true,
+    @r#"
+
+    export function badge(data) {
+      const count = data.count ?? 0;
+
+      return count > 0 ? "color_green" : "color_gray";
+    }
+    "#
+);
+
+transform_snapshot!(
     duplicate_object_keys_last_value_wins,
     r#"
         import { css } from '@panda/css';

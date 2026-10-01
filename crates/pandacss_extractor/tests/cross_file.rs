@@ -1355,6 +1355,57 @@ fn imported_pure_helper_object_return_spreads() {
 }
 
 #[test]
+fn imported_logical_defaults_keep_styles_without_making_comparisons_constant() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { color, styles, count, theme, extractedColor } from './values';
+            import { css } from '@panda/css';
+
+            css({ color });
+            css({ ...styles });
+            css({ color: count > 0 ? 'green' : 'gray' });
+            css({ color: theme.color, padding: theme.padding });
+            css({ color: extractedColor });
+        "},
+        &[(
+            "values.ts",
+            indoc::indoc! {r"
+                export const color = runtime.color ?? 'gray';
+                export const styles = { color: runtime.color ?? 'gray', padding: '4px' };
+                export const count = runtime.count ?? 0;
+                export { styles as theme };
+                export const { color: extractedColor } = styles;
+            "},
+        )],
+    );
+
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r"
+    calls:
+      - name: css
+        data:
+          - color: gray
+      - name: css
+        data:
+          - color: gray
+            padding: 4px
+      - name: css
+        data:
+          - color:
+              kind: conditional
+              branches:
+                - green
+                - gray
+      - name: css
+        data:
+          - color: gray
+            padding: 4px
+      - name: css
+        data:
+          - color: gray
+    ");
+}
+
+#[test]
 fn imported_conditional_object_keeps_encode_branches() {
     let (fs, main) = project(
         indoc::indoc! {r"

@@ -8,6 +8,32 @@ function pipeline(source: string) {
 }
 
 describe('compiler.extract → jsx', () => {
+  test('a runtime nullish default keeps both reachable JSX style branches', () => {
+    const source = `import { styled } from '@panda/jsx'
+
+export function Badge({ data }: { data: { count?: number } }) {
+  const count = data.count ?? 0
+
+  return <styled.span css={{ bg: count > 0 ? 'green.500' : 'gray.500' }} />
+}`
+
+    expect(pipeline(source).jsx.map(({ data }) => data)).toMatchInlineSnapshot(`
+      [
+        {
+          "css": {
+            "bg": {
+              "kind": "conditional",
+              "branches": [
+                "green.500",
+                "gray.500",
+              ],
+            },
+          },
+        },
+      ]
+    `)
+  })
+
   test('styled factory member: <styled.div color="red" />', () => {
     const source = "import { styled } from '@panda/jsx';\n<styled.div color='red' fontSize='lg' />"
     expect(pipeline(source).jsx).toMatchInlineSnapshot(`

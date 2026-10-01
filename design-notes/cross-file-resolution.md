@@ -4,11 +4,11 @@
 
 `CrossFileResolver` lets the same-file `Resolver` follow `import { x } from './tokens'` references and fold the imported
 value. Module resolution itself is delegated to `oxc_resolver` (relative paths, extension probing, tsconfig paths,
-package.json `exports`). On-disk importers resolve from the file path so auto-discovered tsconfig aliases apply;
-virtual importers fall back to directory resolution. The resolver keeps a validated cache across the compiler lifetime
-and pins analyzed exports in a short-lived `CrossFileSession`. `parseFiles()` shares one session, so each imported
-revision is read and validated once across the ordered batch. Files in that batch are already visible to the resolver,
-so registering each path does not retry every previously unresolved import. A later batch observes changed files on its
+package.json `exports`). On-disk importers resolve from the file path so auto-discovered tsconfig aliases apply; virtual
+importers fall back to directory resolution. The resolver keeps a validated cache across the compiler lifetime and pins
+analyzed exports in a short-lived `CrossFileSession`. `parseFiles()` shares one session, so each imported revision is
+read and validated once across the ordered batch. Files in that batch are already visible to the resolver, so
+registering each path does not retry every previously unresolved import. A later batch observes changed files on its
 first lookup.
 
 ## Cache shape
@@ -27,6 +27,7 @@ struct CachedFileExports {
 
 enum ExportEntry {
     Literal(Literal),
+    StyleFallback { value: Option<Literal>, fallback: Literal },
     PureFn(OwnedPureFn),
     Recipe(ExportedRecipe),
 }
@@ -34,9 +35,16 @@ enum ExportEntry {
 
 `path → (source hash, exported_name → folded literal or pure-fn descriptor, nested provenance)`.
 
+`StyleFallback` separates an extractable style from a known runtime value. For
+`export const color = runtime.color ?? 'gray'`, style extraction retains `gray`, but constant folding leaves `color`
+unresolved. Partially static objects also keep their known members in `value` and their style projection in `fallback`.
+Imported fallbacks become `StyleTree::OpenWithFallback`, so encoding can collect their CSS while transformation
+preserves the runtime value.
+
 The resolver reads and hashes the current source before using a cache entry. Matching source hashes avoid another parse
 and fold; changed sources replace the entry. Nested modules folded into this file (imported aliases used in an exported
-value) are stored as `deps` with the hash seen, `None` when the module could not be read. A dep hash miss busts the entry.
+value) are stored as `deps` with the hash seen, `None` when the module could not be read. A dep hash miss busts the
+entry.
 
 ## Barrels
 
@@ -103,12 +111,12 @@ refresh, so dev CSS keeps the old atom alongside the new one until the next full
 Host paths may not match the resolver's realpath form (`/var` vs `/private/var`). `dependency_key` normalizes through
 the resolver's filesystem. A deleted file canonicalizes its parent so unlink events still match.
 
-Failed resolutions are retained in the dependency graph and grouped by `(from_directory, specifier)`
-resolution context. When a new file enters the project, one fresh resolver checks each unique group once and the graph
-fans successful results out to every importer in that group. The long-lived resolver cache is then cleared and those
-importers are reported through `affectedFiles()`. Nested requests are also stored on cached exports, so creating a
-module behind a re-export invalidates the cached miss. A cold `parseFiles()` batch skips these retries because parsing
-a path does not create it on the filesystem; actual incremental additions keep the retry behavior.
+Failed resolutions are retained in the dependency graph and grouped by `(from_directory, specifier)` resolution context.
+When a new file enters the project, one fresh resolver checks each unique group once and the graph fans successful
+results out to every importer in that group. The long-lived resolver cache is then cleared and those importers are
+reported through `affectedFiles()`. Nested requests are also stored on cached exports, so creating a module behind a
+re-export invalidates the cached miss. A cold `parseFiles()` batch skips these retries because parsing a path does not
+create it on the filesystem; actual incremental additions keep the retry behavior.
 
 ## What folds
 
