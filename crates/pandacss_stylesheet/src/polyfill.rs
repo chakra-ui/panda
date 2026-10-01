@@ -259,12 +259,13 @@ fn specificity_amount(analyze: &AnalyzeResult, stack: &[String]) -> u32 {
     rank_for_stack(analyze, stack).map_or(0, |rank| rank.saturating_mul(analyze.step))
 }
 
-/// Inverse of [`specificity_amount`]: earliest layer gets the largest boost.
+/// Inverse of [`specificity_amount`], plus one step to beat unlayered `!important`.
 fn important_specificity_amount(analyze: &AnalyzeResult, stack: &[String]) -> u32 {
     rank_for_stack(analyze, stack).map_or(0, |rank| {
         analyze
             .max_rank
             .saturating_sub(rank)
+            .saturating_add(1)
             .saturating_mul(analyze.step)
     })
 }

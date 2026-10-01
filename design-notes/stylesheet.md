@@ -140,7 +140,8 @@ implicit final sublayer. Empty container layers do not consume a polyfill rank b
 emitted rules matters.
 
 `!important` reverses layer priority per spec, so a rule mixing important and non-important declarations splits into
-two blocks: normal gets `rank * step`, important gets `(max_rank - rank) * step` (`write_rule` in `polyfill.rs`).
+two blocks: normal gets `rank * step`, important gets `(max_rank - rank + 1) * step` (`write_rule` in `polyfill.rs`).
+The `+ 1` keeps the last layer's important rules above unlayered `!important` CSS, as native layers do.
 `@keyframes` step selectors (`from`/`to`/`50%`) are never boosted — they aren't real selectors, and a `:not()` there
 drops the whole block in every browser.
 

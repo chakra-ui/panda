@@ -597,17 +597,17 @@ fn polyfill_splits_mixed_important_and_normal_declarations_in_one_rule() {
         },
     )
     .css;
-    assert_snapshot!(css, @r#"
+    assert_snapshot!(css, @r"
     :root:not(#\#) {
       --made-with-panda: '🐼';
     }
     .target:not(#\#) {
       font-size: 12px;
     }
-    .target:not(#\##\##\##\##\##\##\##\#) {
+    .target:not(#\##\##\##\##\##\##\##\##\#) {
       color: red !important;
     }
-    "#);
+    ");
 }
 
 #[test]
@@ -742,7 +742,7 @@ fn polyfill_important_survives_minify() {
     .css;
     assert_snapshot!(
         css,
-        @r#":root:not(#\#){--made-with-panda:'🐼';}.target:not(#\##\##\##\##\##\##\##\#){color:red !important;}.c_blue\!{color:blue !important;}"#
+        @r":root:not(#\#){--made-with-panda:'🐼';}.target:not(#\##\##\##\##\##\##\##\##\#){color:red !important;}.c_blue\!:not(#\#){color:blue !important;}"
     );
 }
 
@@ -782,8 +782,8 @@ fn polyfill_recipe_split_inverts_important_priority() {
         .lines()
         .find(|l| l.contains(".button"))
         .expect(".button");
-    // recipes.base rank 3, max_rank 9 → important amount = (9-3)*step = 6.
-    assert_eq!(boost_amount(line), 6);
+    // recipes.base rank 3, max_rank 9 → important amount = (9-3+1)*step = 7.
+    assert_eq!(boost_amount(line), 7);
 }
 
 #[test]
@@ -945,4 +945,30 @@ fn polyfill_empty_stylesheet_does_not_panic() {
     )
     .css;
     assert!(!css.contains("@layer"));
+}
+
+#[test]
+fn polyfill_last_layer_important_still_beats_unlayered_important() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": { "color": { "className": "c" } }
+    }));
+    let css = compile_output(
+        &config,
+        "import { css } from '@panda/css'\ncss({ color: 'red !important' })",
+        StylesheetOptions {
+            polyfill: true,
+            emit_layer_declaration: false,
+            ..StylesheetOptions::default()
+        },
+    )
+    .css;
+    assert_snapshot!(css, @r"
+    :root:not(#\#) {
+      --made-with-panda: '🐼';
+    }
+    .c_red\!:not(#\#) {
+      color: red !important;
+    }
+    ");
 }
