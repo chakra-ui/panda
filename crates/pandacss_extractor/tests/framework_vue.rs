@@ -788,3 +788,127 @@ fn uppercase_component_extracts_with_jsx_framework() {
           height: "800"
     "#);
 }
+
+#[test]
+fn css_call_after_a_nested_template_is_extracted() {
+    let source = indoc! {r#"
+        <script setup lang="ts">
+        import { css } from '@panda/css';
+        </script>
+        <template>
+          <main>
+            <template v-if="true">
+              <p>Inside the nested template.</p>
+            </template>
+            <p :class="css({ bg: 'red.500' })">This background should be generated.</p>
+          </main>
+        </template>
+    "#};
+
+    let result = extract(source, "Nested.vue", &panda_config());
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          bg: red.500
+    jsx: []
+    ");
+}
+
+#[test]
+fn style_props_after_a_slot_template_are_extracted() {
+    let source = indoc! {r#"
+        <script setup>
+        import { Box } from '@panda/jsx';
+        </script>
+        <template>
+          <Box color="red">
+            <template #header="{ title }">
+              <h2>{{ title }}</h2>
+            </template>
+          </Box>
+          <Box padding="4px" />
+        </template>
+    "#};
+
+    let result = extract(source, "Slots.vue", &panda_jsx_config());
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls: []
+    jsx:
+      - name: Box
+        data:
+          color: red
+      - name: Box
+        data:
+          padding: 4px
+    ");
+}
+
+#[test]
+fn template_close_tags_in_comments_strings_and_interpolations_do_not_end_the_template() {
+    let source = indoc! {r#"
+        <script setup>
+        import { css } from '@panda/css';
+        </script>
+        <template>
+          <!-- </template> -->
+          <p title="</template>">{{ '</template>' }}</p>
+          <p :class="css({ color: 'red' })" />
+        </template>
+    "#};
+
+    let result = extract(source, "Strings.vue", &panda_config());
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+    jsx: []
+    ");
+}
+
+#[test]
+fn self_closing_nested_template_does_not_hide_later_styles() {
+    let source = indoc! {r#"
+        <script setup>
+        import { css } from '@panda/css';
+        </script>
+        <template>
+          <List>
+            <template #empty />
+          </List>
+          <p :class="css({ color: 'red' })" />
+        </template>
+    "#};
+
+    let result = extract(source, "SelfClosing.vue", &panda_config());
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+    jsx: []
+    ");
+}
+
+#[test]
+fn unclosed_root_template_still_extracts_up_to_the_first_close() {
+    let source = indoc! {r#"
+        <script setup>
+        import { css } from '@panda/css';
+        </script>
+        <template>
+          <template v-if="ok">
+            <p :class="css({ color: 'red' })" />
+          </template>
+    "#};
+
+    let result = extract(source, "Unclosed.vue", &panda_config());
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+    jsx: []
+    ");
+}

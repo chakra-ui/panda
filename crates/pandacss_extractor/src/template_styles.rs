@@ -5,8 +5,7 @@
 //! directly into the same `ExtractedJsx` shape the JSX visitor emits.
 
 use crate::adapter::{
-    SfcFormat, blank_like, copy_range, find_bytes, find_matching_brace, has_non_html_lang,
-    starts_with, tag_blocks,
+    SfcFormat, blank_like, copy_range, find_bytes, find_matching_brace, starts_with, tag_blocks,
 };
 use crate::{
     ExtractedJsx, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory, MatchedImport,
@@ -191,10 +190,7 @@ fn collect_vue_template_styles(
         config,
         context,
     };
-    for block in tag_blocks(source, "template") {
-        if has_non_html_lang(source, block.open_start, block.open_end) {
-            continue;
-        }
+    for block in crate::vue_adapter::vue_template_blocks(source) {
         collect_markup_range(
             source,
             block.content_start,
@@ -645,10 +641,8 @@ fn parse_expression_literal(
 fn template_markup_ranges(source: &str, format: SfcFormat) -> Vec<(u32, u32)> {
     let mut ranges = Vec::new();
     if matches!(format, SfcFormat::Vue) {
-        for block in tag_blocks(source, "template") {
-            if !has_non_html_lang(source, block.open_start, block.open_end) {
-                push_range(&mut ranges, block.content_start, block.content_end);
-            }
+        for block in crate::vue_adapter::vue_template_blocks(source) {
+            push_range(&mut ranges, block.content_start, block.content_end);
         }
         return ranges;
     }
