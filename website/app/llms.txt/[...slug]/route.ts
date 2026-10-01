@@ -20,7 +20,14 @@ export function generateStaticParams() {
     slug: [category]
   }))
 
-  return [...categoryParams, ...docsSource.generateParams()]
+  const pageParams = docsSource.generateParams()
+  const mdxParams = pageParams
+    .filter(({ slug }) => slug.length > 1)
+    .map(({ slug }) => ({
+      slug: [...slug.slice(0, -1), `${slug[slug.length - 1]}.mdx`]
+    }))
+
+  return [...categoryParams, ...pageParams, ...mdxParams]
 }
 
 export async function GET(request: Request, context: RouteContext) {
