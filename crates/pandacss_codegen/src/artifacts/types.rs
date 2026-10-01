@@ -183,7 +183,7 @@ fn condition_type_parts(
          export type ContainerName = {container_name}\n\
          export type CssContainer = ContainerName | `${{ContainerName}} / inline-size` | `${{ContainerName}} / size` | AnyString\n\n\
          export type Condition = keyof Conditions\n\n\
-         export type ConditionalValue<T> =\n  | T\n  | {array_member}\n  | {{ [K in Condition]?: ConditionalValue<T> }}"
+         export type ConditionalValue<T> =\n  | T\n  | {array_member}\n  | {{ [K in Condition]?: ConditionalValue<T> }}\n  | undefined"
     )]
 }
 

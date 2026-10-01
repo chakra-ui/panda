@@ -57,11 +57,11 @@ export type RecipeVariantRecord = Record<string, Record<string, SystemStyleObjec
 export type RecipeSelection<T extends RecipeVariantRecord> = string extends keyof T
   ? {}
   : {
-      [K in keyof T]?: StringToBoolean<keyof T[K]>
+      [K in keyof T]?: StringToBoolean<keyof T[K]> | undefined
     }
 
 export type RecipeCompoundSelection<T> = {
-  [K in keyof T]?: StringToBoolean<keyof T[K]> | Array<StringToBoolean<keyof T[K]>>
+  [K in keyof T]?: StringToBoolean<keyof T[K]> | Array<StringToBoolean<keyof T[K]>> | undefined
 }
 
 export interface RecipeDefinition<T extends RecipeVariantRecord = RecipeVariantRecord> {
@@ -141,7 +141,7 @@ fn variant_props_type(props_name: &str, variant_name: &str, has_compound_variant
     // The runtime rejects conditional variant values when compound variants exist.
     if has_compound_variants {
         return format!(
-            "export type {props_name} = {{\n  [K in keyof {variant_name}]?: {variant_name}[K]\n}}"
+            "export type {props_name} = {{\n  [K in keyof {variant_name}]?: {variant_name}[K] | undefined\n}}"
         );
     }
     format!(

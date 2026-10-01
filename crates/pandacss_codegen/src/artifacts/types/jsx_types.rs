@@ -314,7 +314,7 @@ export interface AsProps {{
 
 export interface __COMPONENT__<T extends ElementType, P extends AnyProps = {{}}> {{
   (props: JsxHTMLProps<{component_props} & UnstyledProps & AsProps, Assign<JsxStyleProps, P>>): {element_return}
-  displayName?: string | undefined
+  displayName?: string
 }}
 
 interface RuntimeRecipeFn {{

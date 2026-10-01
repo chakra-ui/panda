@@ -246,7 +246,7 @@ fn emits_ts_source_recipes() {
     }
 
     export type ButtonVariantProps = {
-      [K in keyof ButtonVariant]?: ButtonVariant[K]
+      [K in keyof ButtonVariant]?: ButtonVariant[K] | undefined
     }
 
     export type ButtonVariantMap = RecipeVariantMap<ButtonVariant>
@@ -267,7 +267,7 @@ fn emits_ts_source_recipes() {
     }
 
     export type CardVariantProps = {
-      [K in keyof CardVariant]?: CardVariant[K]
+      [K in keyof CardVariant]?: CardVariant[K] | undefined
     }
 
     export type CardVariantMap = RecipeVariantMap<CardVariant>
@@ -482,7 +482,7 @@ fn emits_js_runtime_and_declarations() {
     }
 
     export type ButtonVariantProps = {
-      [K in keyof ButtonVariant]?: ButtonVariant[K]
+      [K in keyof ButtonVariant]?: ButtonVariant[K] | undefined
     }
 
     export type ButtonVariantMap = RecipeVariantMap<ButtonVariant>
@@ -507,7 +507,7 @@ fn emits_js_runtime_and_declarations() {
     }
 
     export type CardVariantProps = {
-      [K in keyof CardVariant]?: CardVariant[K]
+      [K in keyof CardVariant]?: CardVariant[K] | undefined
     }
 
     export type CardVariantMap = RecipeVariantMap<CardVariant>
