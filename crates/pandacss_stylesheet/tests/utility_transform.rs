@@ -707,3 +707,39 @@ fn empty_transform_result_emits_nothing() {
     );
     assert_snapshot!(utilities, @"");
 }
+
+#[test]
+fn explicit_recipe_utility_overrides_a_composition_emitting_the_same_css_property() {
+    let cfg = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "utilities": { "fontWeight": {}, "weight": { "transform": { "kind": "js-callback", "id": "weight" } } },
+        "theme": {
+            "textStyles": { "body": { "value": { "weight": "bold" } } },
+            "recipes": {
+                "message": {
+                    "className": "message",
+                    "base": { "textStyle": "body", "fontWeight": "normal" }
+                }
+            }
+        }
+    }));
+    let css = compile_layer_with_transform(
+        &cfg,
+        "import { message } from '@panda/recipes'; message();",
+        &[StylesheetLayer::Recipes],
+        |prop, value, _| {
+            Ok((prop == "weight")
+                .then(|| Literal::Object(vec![decl("fontWeight", &atom_value_str(value))])))
+        },
+    );
+
+    assert_snapshot!(css, @r"
+    @layer recipes {
+      @layer base {
+        .message {
+          font-weight: normal;
+        }
+      }
+    }
+    ");
+}
