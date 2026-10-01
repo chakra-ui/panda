@@ -171,8 +171,12 @@ fn selector_has_multiple_ampersands(selector: &str) -> bool {
     crate::css_syntax::contains_multiple_code_bytes(selector, b'&')
 }
 
+/// A complex parent keeps `:is()` unless `&` leads the selector once.
 fn nesting_parent_substitution(parent: &str, selector: &str) -> String {
-    if parent_has_top_level_combinator(parent) && selector_has_multiple_ampersands(selector) {
+    let leading = selector.trim_start().starts_with('&');
+    if parent_has_top_level_combinator(parent)
+        && (!leading || selector_has_multiple_ampersands(selector))
+    {
         format!(":is({parent})")
     } else {
         parent.to_owned()

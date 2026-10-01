@@ -690,6 +690,150 @@ fn nested_pseudo_then_descendant_keeps_the_pseudo_on_the_parent() {
 ");
 }
 
+fn nesting_config() -> pandacss_config::UserConfig {
+    config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": {
+            "hover": "&:is(:hover, [data-hover])",
+            "focus": "&:is(:focus, [data-focus])",
+            "open": "&:is([open], [data-state=open])",
+            "before": "&::before",
+            "icon": "& :where(svg)",
+            "childIcon": "& > :is(svg, .lucide)",
+            "inB": "[data-b] &"
+        },
+        "utilities": { "color": { "className": "c" } }
+    }))
+}
+
+#[test]
+fn state_around_icon_keeps_the_state_on_the_parent() {
+    let css = compile_layer_css(
+        &nesting_config(),
+        "import { css } from '@panda/css'; css({ _hover: { _icon: { color: 'red' } } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .hover\:icon\:c_red:is(:hover, [data-hover]) :where(svg) {
+        color: red;
+      }
+    }
+    ");
+}
+
+#[test]
+fn icon_around_state_puts_the_state_on_the_icon() {
+    let css = compile_layer_css(
+        &nesting_config(),
+        "import { css } from '@panda/css'; css({ _icon: { _hover: { color: 'red' } } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .icon\:hover\:c_red :where(svg):is(:hover, [data-hover]) {
+        color: red;
+      }
+    }
+    ");
+}
+
+#[test]
+fn state_around_custom_child_condition_keeps_the_state_on_the_parent() {
+    let css = compile_layer_css(
+        &nesting_config(),
+        "import { css } from '@panda/css'; css({ _open: { _childIcon: { color: 'red' } } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .open\:childIcon\:c_red:is([open], [data-state=open]) > :is(svg, .lucide) {
+        color: red;
+      }
+    }
+    ");
+}
+
+#[test]
+fn raw_ancestor_around_registered_ancestor_nests_in_author_order() {
+    let css = compile_layer_css(
+        &nesting_config(),
+        "import { css } from '@panda/css'; css({ '[data-a] &': { _inB: { color: 'red' } } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      [data-b] :is([data-a] .\[\[data-a\]_\&\]\:inB\:c_red) {
+        color: red;
+      }
+    }
+    ");
+}
+
+#[test]
+fn registered_ancestor_around_raw_ancestor_nests_in_author_order() {
+    let css = compile_layer_css(
+        &nesting_config(),
+        "import { css } from '@panda/css'; css({ _inB: { '[data-a] &': { color: 'red' } } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      [data-a] :is([data-b] .inB\:\[\[data-a\]_\&\]\:c_red) {
+        color: red;
+      }
+    }
+    ");
+}
+
+#[test]
+fn states_on_one_element_keep_their_canonical_order() {
+    let css = compile_layer_css(
+        &nesting_config(),
+        "import { css } from '@panda/css'; css({ _focus: { _hover: { color: 'red' } } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .focus\:hover\:c_red:is(:hover, [data-hover]):is(:focus, [data-focus]) {
+        color: red;
+      }
+    }
+    ");
+}
+
+#[test]
+fn states_on_both_sides_of_icon_stay_on_their_element() {
+    let css = compile_layer_css(
+        &nesting_config(),
+        "import { css } from '@panda/css'; css({ _hover: { _icon: { _focus: { color: 'red' } } } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .hover\:icon\:focus\:c_red:is(:hover, [data-hover]) :where(svg):is(:focus, [data-focus]) {
+        color: red;
+      }
+    }
+    ");
+}
+
+#[test]
+fn pseudo_element_stays_last_under_a_state() {
+    let css = compile_layer_css(
+        &nesting_config(),
+        "import { css } from '@panda/css'; css({ _before: { _hover: { color: 'red' } } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .before\:hover\:c_red:is(:hover, [data-hover])::before {
+        color: red;
+      }
+    }
+    ");
+}
+
 #[test]
 fn escapes_leading_double_dash_class_names() {
     let config = config(serde_json::json!({
@@ -1416,17 +1560,17 @@ fn nested_child_selector_stacks_theme_and_direction_conditions() {
       .\[\&_\>_p\]\:left_20px > p {
         left: 20px;
       }
-      [data-theme=dark] .\[\&_\>_p\]\:dark\:bg_green500 > p, .dark .\[\&_\>_p\]\:dark\:bg_green500 > p, .\[\&_\>_p\]\:dark\:bg_green500 > p.dark, .\[\&_\>_p\]\:dark\:bg_green500 > p[data-theme=dark] {
+      [data-theme=dark] :is(.\[\&_\>_p\]\:dark\:bg_green500 > p), .dark :is(.\[\&_\>_p\]\:dark\:bg_green500 > p), .\[\&_\>_p\]\:dark\:bg_green500 > p.dark, .\[\&_\>_p\]\:dark\:bg_green500 > p[data-theme=dark] {
         bg: green500;
       }
-      [data-theme=light] .\[\&_\>_p\]\:light\:bg_red400 > p, .light .\[\&_\>_p\]\:light\:bg_red400 > p, .\[\&_\>_p\]\:light\:bg_red400 > p.light, .\[\&_\>_p\]\:light\:bg_red400 > p[data-theme=light] {
+      [data-theme=light] :is(.\[\&_\>_p\]\:light\:bg_red400 > p), .light :is(.\[\&_\>_p\]\:light\:bg_red400 > p), .\[\&_\>_p\]\:light\:bg_red400 > p.light, .\[\&_\>_p\]\:light\:bg_red400 > p[data-theme=light] {
         bg: red400;
       }
-      :where([dir=rtl], :dir(rtl)) .\[\&_\>_p\]\:rtl\:font_sans > p {
+      :where([dir=rtl], :dir(rtl)) :is(.\[\&_\>_p\]\:rtl\:font_sans > p) {
         font: sans;
       }
       @media (width >= 40rem) {
-        :where([dir=ltr], :dir(ltr)) [data-theme=dark] .\[\&_\>_p\]\:ltr\:dark\:sm\:hover\:font_serif > p:hover, :where([dir=ltr], :dir(ltr)) .dark .\[\&_\>_p\]\:ltr\:dark\:sm\:hover\:font_serif > p:hover, :where([dir=ltr], :dir(ltr)) .\[\&_\>_p\]\:ltr\:dark\:sm\:hover\:font_serif > p.dark:hover, :where([dir=ltr], :dir(ltr)) .\[\&_\>_p\]\:ltr\:dark\:sm\:hover\:font_serif > p[data-theme=dark]:hover {
+        [data-theme=dark] :is(:where([dir=ltr], :dir(ltr)) :is(.\[\&_\>_p\]\:ltr\:dark\:sm\:hover\:font_serif > p)):hover, .dark :is(:where([dir=ltr], :dir(ltr)) :is(.\[\&_\>_p\]\:ltr\:dark\:sm\:hover\:font_serif > p)):hover, :where([dir=ltr], :dir(ltr)) :is(.\[\&_\>_p\]\:ltr\:dark\:sm\:hover\:font_serif > p).dark:hover, :where([dir=ltr], :dir(ltr)) :is(.\[\&_\>_p\]\:ltr\:dark\:sm\:hover\:font_serif > p)[data-theme=dark]:hover {
           font: serif;
         }
       }
