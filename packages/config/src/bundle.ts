@@ -60,7 +60,7 @@ export async function bundleConfig<T extends Config = Config>(
 }
 
 async function loadTranspiled<T>(filepath: string, cwd: string): Promise<BundleConfigResult<T> | undefined> {
-  const file = isAbsolute(filepath) ? filepath : filepath.startsWith('.') ? join(cwd, filepath) : undefined
+  const file = localFile(filepath, cwd)
   if (!file || !existsSync(file) || !canTranspile(file)) return undefined
 
   try {
@@ -71,6 +71,12 @@ async function loadTranspiled<T>(filepath: string, cwd: string): Promise<BundleC
   } catch {
     return undefined
   }
+}
+
+function localFile(filepath: string, cwd: string): string | undefined {
+  if (isAbsolute(filepath)) return filepath
+  if (filepath.startsWith('.')) return join(cwd, filepath)
+  return undefined
 }
 
 export async function importInstalledConfig<T extends Config = Config>(
