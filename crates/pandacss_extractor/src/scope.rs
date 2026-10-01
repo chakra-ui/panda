@@ -671,9 +671,9 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             // Rehydrate from Literal (`Conditional` → `Branches`, no foreign spans).
             return match self.resolve_import_entry(symbol_id)? {
                 ExportEntry::Literal(value) => Some(literal_to_style_tree(value)),
-                ExportEntry::StyleFallback { fallback, .. } => Some(StyleTree::OpenWithFallback(
-                    Box::new(literal_to_style_tree(fallback)),
-                )),
+                ExportEntry::StyleFallback { style_value, .. } => Some(
+                    StyleTree::OpenWithFallback(Box::new(literal_to_style_tree(style_value))),
+                ),
                 ExportEntry::PureFn(_) | ExportEntry::Recipe(_) => None,
             };
         }
@@ -725,7 +725,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
     fn resolve_import_symbol(&self, symbol_id: SymbolId) -> Option<Literal> {
         match self.resolve_import_entry(symbol_id)? {
             ExportEntry::Literal(lit) => Some(lit),
-            ExportEntry::StyleFallback { value, .. } => value,
+            ExportEntry::StyleFallback { known_value, .. } => known_value,
             // A recipe is a function, not a value — only `.raw(props)` resolves it.
             ExportEntry::PureFn(_) | ExportEntry::Recipe(_) => None,
         }

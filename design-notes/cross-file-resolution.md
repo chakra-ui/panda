@@ -27,7 +27,7 @@ struct CachedFileExports {
 
 enum ExportEntry {
     Literal(Literal),
-    StyleFallback { value: Option<Literal>, fallback: Literal },
+    StyleFallback { known_value: Option<Literal>, style_value: Literal },
     PureFn(OwnedPureFn),
     Recipe(ExportedRecipe),
 }
@@ -37,9 +37,9 @@ enum ExportEntry {
 
 `StyleFallback` separates an extractable style from a known runtime value. For
 `export const color = runtime.color ?? 'gray'`, style extraction retains `gray`, but constant folding leaves `color`
-unresolved. Partially static objects also keep their known members in `value` and their style projection in `fallback`.
-Imported fallbacks become `StyleTree::OpenWithFallback`, so encoding can collect their CSS while transformation
-preserves the runtime value.
+unresolved. Partially static objects also keep their known members in `known_value` and their style projection in
+`style_value`. Imported fallbacks become `StyleTree::OpenWithFallback`, so encoding can collect their CSS while
+transformation preserves the runtime value.
 
 The resolver reads and hashes the current source before using a cache entry. Matching source hashes avoid another parse
 and fold; changed sources replace the entry. Nested modules folded into this file (imported aliases used in an exported

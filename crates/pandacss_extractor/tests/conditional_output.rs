@@ -2,7 +2,7 @@
 //! possible value as a `conditional` so each one gets CSS.
 
 use crate::common::{panda_config, panda_jsx_config};
-use indoc::indoc;
+use indoc::{formatdoc, indoc};
 use insta::assert_yaml_snapshot;
 use pandacss_extractor::{ExtractUsage, extract};
 
@@ -165,16 +165,13 @@ fn dynamic_logical_initializers_do_not_make_comparisons_constant() {
     let results: Vec<_> = ["??", "||", "&&"]
         .into_iter()
         .map(|operator| {
-            let source = format!(
-                indoc! {r"
+            let source = formatdoc! {r"
                 import {{ css }} from '@panda/css';
 
                 const count = data.count {operator} 0;
                 const alias = count;
                 css({{ color: alias > 0 ? 'green' : 'gray' }});
-            "},
-                operator = operator
-            );
+            ", operator = operator};
             let usage = run(&source);
 
             serde_json::json!({ "operator": operator, "data": usage.calls[0].data })
@@ -253,15 +250,12 @@ fn dynamic_logical_style_bindings_still_extract_the_fallback() {
     let results: Vec<_> = ["??", "||", "&&"]
         .into_iter()
         .map(|operator| {
-            let source = format!(
-                indoc! {r"
+            let source = formatdoc! {r"
                 import {{ css }} from '@panda/css';
 
                 const color = data.color {operator} 'gray';
                 css({{ color }});
-            "},
-                operator = operator
-            );
+            ", operator = operator};
             let usage = run(&source);
 
             serde_json::json!({ "operator": operator, "data": usage.calls[0].data })

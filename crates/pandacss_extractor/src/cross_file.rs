@@ -43,8 +43,8 @@ pub(crate) enum ExportEntry {
     Literal(Literal),
     /// Keep extractable styles separate from the value used in constant folding.
     StyleFallback {
-        value: Option<Literal>,
-        fallback: Literal,
+        known_value: Option<Literal>,
+        style_value: Literal,
     },
     PureFn(OwnedPureFn),
     Recipe(ExportedRecipe),
@@ -1110,9 +1110,10 @@ fn collect_from_var(
 
 #[must_use]
 fn exported_value(name: &str, resolver: &Resolver<'_, '_>) -> Option<ExportEntry> {
-    let value = resolver.resolve_root_name(name);
+    let known_value = resolver.resolve_root_name(name);
+
     if matches!(
-        &value,
+        &known_value,
         Some(
             Literal::String(_)
                 | Literal::Number(_)
@@ -1121,19 +1122,24 @@ fn exported_value(name: &str, resolver: &Resolver<'_, '_>) -> Option<ExportEntry
                 | Literal::Token { .. }
         )
     ) {
-        return value.map(ExportEntry::Literal);
+        return known_value.map(ExportEntry::Literal);
     }
 
-    let fallback = resolver
+    let Some(style_value) = resolver
         .resolve_root_style_tree(name)
-        .and_then(into_project_literal);
+        .and_then(into_project_literal)
+    else {
+        return known_value.map(ExportEntry::Literal);
+    };
 
-    match (value, fallback) {
-        (Some(value), Some(fallback)) if value == fallback => Some(ExportEntry::Literal(value)),
-        (value, Some(fallback)) => Some(ExportEntry::StyleFallback { value, fallback }),
-        (Some(value), None) => Some(ExportEntry::Literal(value)),
-        (None, None) => None,
+    if known_value.as_ref() == Some(&style_value) {
+        return Some(ExportEntry::Literal(style_value));
     }
+
+    Some(ExportEntry::StyleFallback {
+        known_value,
+        style_value,
+    })
 }
 
 fn collect_pattern_bindings(
