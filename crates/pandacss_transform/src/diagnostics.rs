@@ -6,6 +6,7 @@ use pandacss_shared::{Diagnostic, diagnostic_codes};
 use pandacss_system::{System, is_recipe_config, literal_entries};
 use pandacss_utility::ShorthandPolicy;
 
+use crate::plan::Rewrite;
 use crate::{TransformTargets, recipe_inline};
 
 pub(super) fn nested_property_diagnostics(
@@ -14,7 +15,14 @@ pub(super) fn nested_property_diagnostics(
     path: &str,
     extracted: &ExtractUsage,
     targets: &TransformTargets,
+    rewrites: &[Rewrite],
 ) -> Vec<Diagnostic> {
+    // A rewritten site encoded cleanly, so only sites left on the runtime need a second look.
+    let rewritten = |span: Span| {
+        rewrites
+            .iter()
+            .any(|rewrite| rewrite.start <= span.start && span.end <= rewrite.end)
+    };
     if extracted.calls.is_empty() && (!targets.jsx_enabled() || extracted.jsx.is_empty()) {
         return Vec::new();
     }
@@ -22,7 +30,7 @@ pub(super) fn nested_property_diagnostics(
     let mut encoder = Encoder::with_conditions(system.conditions().clone());
     let mut line_index = None;
 
-    for call in &extracted.calls {
+    for call in extracted.calls.iter().filter(|call| !rewritten(call.span)) {
         match call.category {
             MatchCategory::Css if targets.css_enabled() && !call.facts.raw => {
                 match call.name.as_str() {
@@ -83,7 +91,7 @@ pub(super) fn nested_property_diagnostics(
     }
 
     if targets.jsx_enabled() {
-        for jsx in &extracted.jsx {
+        for jsx in extracted.jsx.iter().filter(|jsx| !rewritten(jsx.span)) {
             let recipe_names = system.jsx_recipe_names(&jsx.name);
             if recipe_names.is_empty() {
                 system.process_style_props(&mut encoder, &jsx.data, ShorthandPolicy::UserFacing);

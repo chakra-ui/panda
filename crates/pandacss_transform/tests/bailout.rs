@@ -27,6 +27,21 @@ fn static_nested_properties_warn_even_when_no_rewrite_lands() {
 }
 
 #[test]
+fn nested_property_warns_next_to_a_call_that_still_rewrites() {
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        const good = css({ '&:has(svg)': { color: 'red' } });
+        const bad = css({ has: { svg: { color: 'red' } } });
+    "#};
+    let output = transform("src/button.ts", source);
+
+    assert!(output.changed);
+    assert_eq!(output.diagnostics.len(), 1);
+    assert_eq!(output.diagnostics[0].code, "nested_property");
+    assert!(output.diagnostics[0].message.contains("'&:has(svg)'"));
+}
+
+#[test]
 fn jsx_css_prop_warns_but_a_selector_does_not() {
     let source = indoc! {r#"
         import { Box } from '@panda/jsx';

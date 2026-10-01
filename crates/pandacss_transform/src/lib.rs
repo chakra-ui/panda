@@ -115,6 +115,7 @@ pub fn transform_source_with(
         path,
         &extracted,
         &options.targets,
+        &plan.rewrites,
     );
     let mut diagnostics = extracted.diagnostics;
     diagnostics.extend(nested_diagnostics);

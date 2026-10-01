@@ -493,8 +493,8 @@ fn property_nested_under_a_non_condition_key_warns() {
     );
     assert_snapshot!(summary(&report.diagnostics), @"
     Warning nested_property `has` in `has.svg.color` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use `'&:has(svg)'` instead. [76..115]
-    Warning nested_property `icon` in `icon._hover.color` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use a condition like `_hover` or a selector like `'& icon'` instead. [117..192]
-    Warning nested_property `svg` in `svg.color` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use a condition like `_hover` or a selector like `'& svg'` instead. [205..251]
+    Warning nested_property `icon` in `icon._hover.color` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use a condition or a selector like `'& icon'` instead. [117..192]
+    Warning nested_property `svg` in `svg.color` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use a condition or a selector like `'& svg'` instead. [205..251]
     ");
 }
 
@@ -532,7 +532,7 @@ fn config_recipe_with_a_property_nested_under_a_non_condition_key_warns() {
     }));
     assert_snapshot!(summary(project.diagnostics()), @"
     Warning nested_property theme.recipes.button: `has` in `has.svg.color` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use `'&:has(svg)'` instead.
-    Warning nested_property theme.slotRecipes.card: `svg` in `svg.color` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use a condition like `_hover` or a selector like `'& svg'` instead.
+    Warning nested_property theme.slotRecipes.card: `svg` in `svg.color` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use a condition or a selector like `'& svg'` instead.
     ");
 }
 

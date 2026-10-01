@@ -24,7 +24,7 @@ impl System {
             let argument = if leaf { "…" } else { nested };
             format!("`'&:{key}({argument})'`")
         } else {
-            format!("a condition like `_hover` or a selector like `'& {key}'`")
+            format!("a condition or a selector like `'& {key}'`")
         };
         format!(
             "`{key}` in `{path}` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use {fix} instead."
