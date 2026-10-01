@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, expectTypeOf, test } from 'vitest'
 import { button } from '../styled-system/recipes/button'
 import { buttonWithCompoundVariants } from '../styled-system/recipes/button-with-compound-variants'
 
@@ -103,5 +103,12 @@ describe('recipe', () => {
         "visual": "outline",
       }
     `)
+  })
+
+  test('variantMap values are typed without undefined', () => {
+    const visuals: readonly ('outline' | 'solid')[] = button.variantMap.visual
+
+    expectTypeOf(button.variantMap.visual).toEqualTypeOf<Array<'outline' | 'solid'>>()
+    expect(visuals).toEqual(['outline', 'solid'])
   })
 })

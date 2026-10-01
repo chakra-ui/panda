@@ -536,7 +536,7 @@ fn emits_ts_source_types() {
     export type RecipeVariant<T> = Required<NonNullable<RecipeVariantProps<T>>>
 
     export type RecipeVariantMap<Variant extends object> = {
-      [K in keyof Variant]-?: Array<Variant[K]>
+      [K in keyof Variant]-?: Array<Exclude<Variant[K], undefined>>
     }
 
     export type RecipeConfigVariantMap<T> = {
@@ -557,7 +557,7 @@ fn emits_ts_source_types() {
     export type SlotRecord<Slot extends string, Value> = Partial<Record<Slot, Value>>
 
     export interface SlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object> {
-      (props?: Props): SlotRecord<Slot, string>
+      (props?: Props): Record<Slot, string>
       __type: Props
       __slot: Slot
       variantMap: Map

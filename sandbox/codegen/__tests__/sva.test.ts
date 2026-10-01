@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, expectTypeOf, test } from 'vitest'
 import { sva } from '../styled-system/css/sva'
 
 describe('sva', () => {
@@ -97,5 +97,13 @@ describe('sva', () => {
         "visual": "unstyled",
       }
     `)
+  })
+
+  test('every slot class is typed as a string', () => {
+    const card = sva({ slots: ['root', 'title'], base: { root: { color: 'red' } } })
+    const result = card()
+
+    expectTypeOf(result.title).toEqualTypeOf<string>()
+    expect(result.title).toBeTypeOf('string')
   })
 })
