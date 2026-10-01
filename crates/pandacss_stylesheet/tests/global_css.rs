@@ -329,6 +329,41 @@ fn emits_global_css_from_serialized_config() {
 }
 
 #[test]
+fn global_css_nests_conditions_around_complex_selectors_like_css_nesting() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": {
+            "dark": ".dark &",
+            "hover": "&:is(:hover, [data-hover])",
+            "icon": "& :where(svg)"
+        },
+        "utilities": { "color": { "className": "c" } },
+        "globalCss": {
+            ".btn": { "_dark": { "color": "white" } },
+            ".card .title": {
+                "_dark": { "color": "white" },
+                "_hover": { "_icon": { "color": "red" } }
+            }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
+    assert_snapshot!(css, @"
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      .dark .btn, .dark :is(.card .title) {
+        color: white;
+      }
+      .card .title:is(:hover, [data-hover]) :where(svg) {
+        color: red;
+      }
+    }
+    ");
+}
+
+#[test]
 fn emits_global_css_direct_nesting_and_conditions() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
