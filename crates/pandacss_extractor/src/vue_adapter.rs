@@ -1,8 +1,9 @@
 //! Vue SFC source adapter.
 
 use crate::adapter::{
-    JsState, blank_like, copy_expression, copy_range, find_bytes, find_tag_end, finish_mask,
-    has_non_html_lang, starts_with, tag_blocks,
+    JsState, TagBlock, ascii_eq_ci, blank_like, copy_expression, copy_range, find_ascii_ci,
+    find_bytes, find_tag_end, finish_mask, has_non_html_lang, is_tag_name_boundary, starts_with,
+    tag_blocks, tag_blocks_with,
 };
 
 #[must_use]
@@ -57,11 +58,62 @@ struct TemplateExpression {
     quote: Option<u8>,
 }
 
-fn visit_template_expressions(source: &str, visit: &mut impl FnMut(TemplateExpression)) {
-    for block in tag_blocks(source, "template") {
-        if has_non_html_lang(source, block.open_start, block.open_end) {
+/// Nested `<template>` (slots, `v-if` groups) must not end the root block.
+pub(crate) fn vue_template_blocks(source: &str) -> Vec<TagBlock> {
+    tag_blocks_with(source, "template", |content_start| {
+        find_matching_template_close(source, content_start).or_else(|| {
+            find_ascii_ci(source, "</template>", content_start)
+                .map(|start| (start, start + "</template>".len()))
+        })
+    })
+    .into_iter()
+    .filter(|block| !has_non_html_lang(source, block.open_start, block.open_end))
+    .collect()
+}
+
+fn find_matching_template_close(source: &str, from: usize) -> Option<(usize, usize)> {
+    const TEMPLATE: &[u8] = b"template";
+    let bytes = source.as_bytes();
+    let mut depth = 1usize;
+    let mut cursor = from;
+    while cursor < bytes.len() {
+        if starts_with(bytes, cursor, b"<!--") {
+            cursor = find_bytes(bytes, b"-->", cursor + 4)? + 3;
             continue;
         }
+        if starts_with(bytes, cursor, b"{{")
+            && let Some(close) = find_vue_interpolation_end(source, cursor + 2, bytes.len())
+        {
+            cursor = close + 2;
+            continue;
+        }
+        let closing = bytes.get(cursor + 1) == Some(&b'/');
+        let name_start = cursor + 1 + usize::from(closing);
+        if bytes[cursor] != b'<' || !bytes.get(name_start).is_some_and(u8::is_ascii_alphabetic) {
+            cursor += 1;
+            continue;
+        }
+        let tag_end = find_tag_end(source, name_start)?;
+        let name_end = name_start + TEMPLATE.len();
+        let is_template = bytes
+            .get(name_start..name_end)
+            .is_some_and(|name| ascii_eq_ci(name, TEMPLATE))
+            && is_tag_name_boundary(bytes, name_end);
+        if is_template && closing {
+            depth -= 1;
+            if depth == 0 {
+                return Some((cursor, tag_end + 1));
+            }
+        } else if is_template && bytes[tag_end - 1] != b'/' {
+            depth += 1;
+        }
+        cursor = tag_end + 1;
+    }
+    None
+}
+
+fn visit_template_expressions(source: &str, visit: &mut impl FnMut(TemplateExpression)) {
+    for block in vue_template_blocks(source) {
         visit_block_expressions(source, block.content_start, block.content_end, visit);
     }
 }

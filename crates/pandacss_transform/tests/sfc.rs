@@ -422,3 +422,35 @@ fn keeps_astro_frontmatter_separate_from_template_expressions() {
     <p class={"color_red"}>x</p>
     "#);
 }
+
+#[test]
+fn rewrites_vue_bindings_after_a_nested_template() {
+    let source = indoc! {r#"
+        <script setup>
+        import { css } from '@panda/css';
+        </script>
+
+        <template>
+          <main>
+            <template v-if="ok">
+              <p :class="css({ color: 'red' })" />
+            </template>
+            <p :class="css({ color: 'blue' })" />
+          </main>
+        </template>
+    "#};
+
+    assert_snapshot!(transform("src/App.vue", source).code, @r#"
+    <script setup>
+    </script>
+
+    <template>
+      <main>
+        <template v-if="ok">
+          <p :class="&quot;color_red&quot;" />
+        </template>
+        <p :class="&quot;color_blue&quot;" />
+      </main>
+    </template>
+    "#);
+}

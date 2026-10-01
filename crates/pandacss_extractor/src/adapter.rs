@@ -140,10 +140,20 @@ fn trim_ascii(bytes: &[u8], mut start: usize, mut end: usize) -> (usize, usize) 
 }
 
 pub(crate) fn tag_blocks(source: &str, tag: &str) -> Vec<TagBlock> {
+    let close = format!("</{tag}>");
+    tag_blocks_with(source, tag, |content_start| {
+        find_ascii_ci(source, &close, content_start).map(|start| (start, start + close.len()))
+    })
+}
+
+pub(crate) fn tag_blocks_with(
+    source: &str,
+    tag: &str,
+    mut find_close: impl FnMut(usize) -> Option<(usize, usize)>,
+) -> Vec<TagBlock> {
     let mut blocks = Vec::new();
     let mut cursor = 0;
     let open = format!("<{tag}");
-    let close = format!("</{tag}>");
 
     while let Some(open_start) = find_ascii_ci(source, &open, cursor) {
         let name_end = open_start + open.len();
@@ -169,7 +179,7 @@ pub(crate) fn tag_blocks(source: &str, tag: &str) -> Vec<TagBlock> {
             continue;
         }
 
-        let Some(close_start) = find_ascii_ci(source, &close, content_start) else {
+        let Some((close_start, close_end)) = find_close(content_start) else {
             break;
         };
         blocks.push(TagBlock {
@@ -177,15 +187,15 @@ pub(crate) fn tag_blocks(source: &str, tag: &str) -> Vec<TagBlock> {
             open_end,
             content_start,
             content_end: close_start,
-            close_end: close_start + close.len(),
+            close_end,
         });
-        cursor = close_start + close.len();
+        cursor = close_end;
     }
 
     blocks
 }
 
-fn find_ascii_ci(source: &str, needle: &str, from: usize) -> Option<usize> {
+pub(crate) fn find_ascii_ci(source: &str, needle: &str, from: usize) -> Option<usize> {
     let haystack = source.as_bytes();
     let needle = needle.as_bytes();
     if needle.is_empty() || from >= haystack.len() || needle.len() > haystack.len() {
@@ -195,7 +205,7 @@ fn find_ascii_ci(source: &str, needle: &str, from: usize) -> Option<usize> {
     (from..=last).find(|&index| ascii_eq_ci(&haystack[index..index + needle.len()], needle))
 }
 
-fn ascii_eq_ci(left: &[u8], right: &[u8]) -> bool {
+pub(crate) fn ascii_eq_ci(left: &[u8], right: &[u8]) -> bool {
     left.len() == right.len()
         && left
             .iter()
@@ -203,7 +213,7 @@ fn ascii_eq_ci(left: &[u8], right: &[u8]) -> bool {
             .all(|(left, right)| left.eq_ignore_ascii_case(right))
 }
 
-fn is_tag_name_boundary(bytes: &[u8], index: usize) -> bool {
+pub(crate) fn is_tag_name_boundary(bytes: &[u8], index: usize) -> bool {
     match bytes.get(index) {
         None => true,
         Some(byte) => byte.is_ascii_whitespace() || matches!(*byte, b'>' | b'/' | b'\'' | b'"'),

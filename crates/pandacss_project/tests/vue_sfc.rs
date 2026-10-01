@@ -484,3 +484,34 @@ fn non_html_templates_are_skipped() {
     assert_eq!(report.css_calls, 0);
     assert!(project.atoms().is_empty());
 }
+
+#[test]
+fn css_after_a_nested_template_feeds_the_encoder() {
+    let mut project = create_project(json!({}));
+    let report = project.parse_file(
+        "App.vue",
+        indoc! {r#"
+            <script setup lang="ts">
+            import { css } from '@panda/css';
+            </script>
+            <template>
+              <main>
+                <template v-if="true">
+                  <p>Inside the nested template.</p>
+                </template>
+                <p :class="css({ bg: 'red.500' })">
+                  This background should be generated.
+                </p>
+              </main>
+            </template>
+        "#},
+    );
+
+    assert!(report.diagnostics.is_empty());
+    assert_eq!(report.css_calls, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @"
+    - prop: bg
+      value: red.500
+      conditions: []
+    ");
+}
