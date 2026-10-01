@@ -80,6 +80,17 @@ is pure overhead. Guards the condition-lookup cache in `pandacss_config::Theme` 
 
 See [`staticcss-build-cost.md`](./staticcss-build-cost.md) for the measured before/after.
 
+## Recipe compositions (`recipe_compositions`)
+
+```sh
+cargo run -p pandacss_bench --bin recipe_compositions --release
+BENCH_CSS_OUT=out.css cargo run -p pandacss_bench --bin recipe_compositions --release
+```
+
+Emits CSS for 300 recipes and 100 slot recipes that mix explicit properties with `textStyle` / `layerStyle`, across
+variants, compound variants, and conditions. Guards the cost of resolving explicit-over-composition precedence. Diff the
+saved CSS between branches to check that only values change, not rule order.
+
 ## Current Targets
 
 - `sandbox/vite-ts`: first baseline target because it is small, checked in, and exercises normal app extraction.
