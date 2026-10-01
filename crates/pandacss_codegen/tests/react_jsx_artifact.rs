@@ -231,7 +231,8 @@ fn react_types_include_jsx_factory_surface() {
     assert!(jsx.contains("export type Panda = JsxFactory & JsxElements"));
     assert!(jsx.contains("export type StyledVariantProps"));
     assert!(jsx.contains("T extends keyof JSX.IntrinsicElements"));
-    assert!(jsx.contains("ComponentProps<T> & UnstyledProps & AsProps & DataAttrs"));
+    assert!(jsx.contains("type BaseComponentProps<T extends ElementType> = ComponentProps<T> & UnstyledProps & AsProps\n"));
+    assert!(jsx.contains("defaultProps?: Partial<TProps> & DataAttrs"));
     assert!(!jsx.contains("ComponentPropsWithRef"));
     assert!(!jsx.contains("LibraryManagedAttributes"));
     assert!(index.contains("export * from './jsx'"));

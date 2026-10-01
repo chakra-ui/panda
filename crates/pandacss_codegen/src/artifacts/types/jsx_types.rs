@@ -138,7 +138,7 @@ export type ComponentProps<T extends ElementType> = T extends keyof JSX.Intrinsi
       ? Props
       : {}
 
-type BaseComponentProps<T extends ElementType> = ComponentProps<T> & UnstyledProps & AsProps & DataAttrs
+type BaseComponentProps<T extends ElementType> = ComponentProps<T> & UnstyledProps & AsProps
 
 export type __COMPONENT__Props<T extends ElementType, P extends AnyProps = {}> = JsxHTMLProps<
   BaseComponentProps<T>,
