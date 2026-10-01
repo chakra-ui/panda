@@ -27,7 +27,7 @@ import type { CompileInput, NativeCompilerOptions, NativeCompiler, RawCompiler, 
 export type * from '@pandacss/compiler-shared'
 export type * from './types'
 
-export { createUsageReport } from '@pandacss/compiler-shared'
+export { analyzeSources, createUsageReport } from '@pandacss/compiler-shared'
 export { NodeDriver, createNodeDriver } from './driver'
 export type { NodeDriverOptions, WriteDesignSystemLibOptions, WriteDesignSystemLibResult } from './driver'
 

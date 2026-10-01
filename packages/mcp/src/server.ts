@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js'
-import { createNodeDriver, type Driver } from '@pandacss/compiler'
+import { analyzeSources, createNodeDriver, type Driver } from '@pandacss/compiler'
 import { resolve } from 'node:path'
 import * as z from 'zod/v4'
 import pkg from '../package.json'
@@ -138,6 +138,30 @@ export function createMcpServer(options: CreateMcpServerOptions) {
     'get_config',
     { description: 'Get the resolved Panda CSS configuration including paths, JSX settings, and output options' },
     async () => json(driver.config),
+  )
+
+  server.registerTool(
+    'get_usage_report',
+    {
+      description:
+        'Scan project sources for token, recipe, utility, pattern, and keyframe usage, including unused configured names and source locations.',
+      inputSchema: {
+        scope: z
+          .enum(['all', 'tokens', 'recipes', 'utilities', 'patterns', 'keyframes'])
+          .optional()
+          .describe('Report scope (defaults to all)'),
+      },
+    },
+    async ({ scope }) => {
+      const { report, diagnostics } = analyzeSources(driver.compiler, driver.scan(), scope)
+
+      return {
+        ...json({ ...report, diagnostics }),
+        isError: diagnostics.some(
+          (diagnostic) => diagnostic.severity === 'error' || diagnostic.code === 'js_parse_error',
+        ),
+      }
+    },
   )
 
   return server

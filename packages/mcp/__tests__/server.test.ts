@@ -1,37 +1,10 @@
 // @vitest-environment node
 
-import { Client } from '@modelcontextprotocol/sdk/client/index.js'
-import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js'
-import type { Driver } from '@pandacss/compiler'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { expect, test } from 'vitest'
 import pkg from '../package.json'
-import { createMcpServer } from '../src/server'
-
-async function withClient(run: (client: Client) => Promise<void>) {
-  const driver = {
-    config: { theme: {} },
-    introspect: {
-      spec: { tokens: { categories: {} } },
-      recipes: () => [],
-      patterns: () => [],
-    },
-  } as unknown as Driver
-
-  const server = createMcpServer({ driver })
-  const client = new Client({ name: 'panda-mcp-test', version: '1.0.0' })
-  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
-
-  try {
-    await server.connect(serverTransport)
-    await client.connect(clientTransport)
-    await run(client)
-  } finally {
-    await client.close()
-    await server.close()
-  }
-}
+import { withClient } from './helpers'
 
 test('initialize reports the published package version', async () => {
   await withClient(async (client) => {
@@ -57,6 +30,7 @@ test('the documented tool list matches the tools exposed over MCP', async () => 
         "get_semantic_tokens",
         "get_text_styles",
         "get_tokens",
+        "get_usage_report",
       ]
     `)
 
