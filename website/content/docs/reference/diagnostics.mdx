@@ -68,6 +68,9 @@ The `code` is stable. Messages may be reworded between releases, so match on the
 ### Your source files
 
 - `unknown_condition` (warning): a condition like `_hovr` doesn't exist. The message suggests the closest match.
+- `nested_property` (warning): a style is nested under a key that isn't a condition or selector, like
+  `css({ has: { svg: { color: 'red' } } })`. Panda reads `has` as the CSS property, so the styles never apply. Use a
+  condition (`_hover`) or a selector with `&` (`'&:has(svg)'`, `'& svg'`). Also reported for config recipes.
 - `panda_call_unextractable` (warning): a style call got a value Panda can't read at build time, like
   `css(props.styles)` or `css({ [key]: 'red' })`. Pass a literal object instead, or generate the CSS with
   [`staticCss`](/docs/styling/static). Turned off when `jsxFramework` is set, since components often pass styles through

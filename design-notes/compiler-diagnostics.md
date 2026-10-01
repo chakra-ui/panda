@@ -39,6 +39,7 @@ Current codes:
 - `invalid_color_opacity_modifier`
 - `js_parse_error`
 - `layer_name_collision`
+- `nested_property`
 - `panda_call_unextractable`
 - `preset_resolution_failed`
 - `recipe_variant_dynamic`
