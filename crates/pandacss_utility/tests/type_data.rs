@@ -347,3 +347,56 @@ fn collapses_resolved_gradient_category_keys_for_typegen() {
     assert_eq!(gradient.literals, ["to-r"]);
     assert_eq!(gradient.alias, "BackgroundGradientValue");
 }
+
+#[test]
+fn literal_keys_do_not_imply_a_token_category() {
+    let utility = Utility::from_config_with_options(
+        &utility_config(json!({
+            "flex": {
+                "values": { "1": "1 1 0%", "auto": "1 1 auto" }
+            },
+            "border": { "values": "borders" },
+            "customBorder": {
+                "values": { "1": "var(--borders-1)", "none": "none" }
+            }
+        })),
+        UtilityOptions {
+            tokens: Some(Arc::new(
+                TokenDictionary::builder()
+                    .insert(Token::new(
+                        "borders.1",
+                        "1px solid",
+                        "var(--borders-1)",
+                        TokenCategory::Borders,
+                    ))
+                    .build(),
+            )),
+            ..UtilityOptions::default()
+        },
+    );
+
+    let types = utility.type_data();
+    let properties = ["flex", "border", "customBorder"].map(|name| {
+        let property = &types.properties[name];
+        json!({
+            "name": name,
+            "tokenCategory": property.token_category,
+            "literals": property.literals,
+        })
+    });
+
+    assert_yaml_snapshot!(properties, @r#"
+    - name: flex
+      tokenCategory: ~
+      literals:
+        - "1"
+        - auto
+    - name: border
+      tokenCategory: borders
+      literals: []
+    - name: customBorder
+      tokenCategory: borders
+      literals:
+        - none
+    "#);
+}

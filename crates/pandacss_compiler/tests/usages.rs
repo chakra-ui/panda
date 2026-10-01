@@ -950,3 +950,49 @@ fn collects_position_try_and_view_transition_styles_as_entries() {
     Utility CssCall ReportOnly color -> None path=color
     ");
 }
+
+#[test]
+fn inspection_and_compilation_share_file_local_condition_diagnostics() {
+    let source = indoc! {"
+        import { css } from '@panda/css'
+        css({ _hver: { color: 'red.500' } })
+        css({ _zzzzz: { color: 'red.500' } })
+    "};
+    let system = system();
+    let inspection = inspect_file_source(&system, "a.tsx", source);
+    let mut project = pandacss_project::Project::new(system);
+    let mut compiled = project.parse_file("a.tsx", source);
+    for diagnostic in &mut compiled.diagnostics {
+        diagnostic.file = None;
+    }
+
+    assert_eq!(inspection.diagnostics, compiled.diagnostics);
+    assert_yaml_snapshot!(inspection.diagnostics, @r#"
+    - code: unknown_condition
+      message: "unknown condition `_hver`, did you mean `_hover`?"
+      severity: warning
+      span:
+        start: 33
+        end: 69
+      location:
+        start:
+          line: 2
+          column: 1
+        end:
+          line: 2
+          column: 37
+    - code: unknown_condition
+      message: "unknown condition `_zzzzz`"
+      severity: warning
+      span:
+        start: 70
+        end: 107
+      location:
+        start:
+          line: 3
+          column: 1
+        end:
+          line: 3
+          column: 38
+    "#);
+}

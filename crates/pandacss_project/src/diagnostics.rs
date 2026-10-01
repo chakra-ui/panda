@@ -8,6 +8,25 @@ use rustc_hash::FxHashSet;
 
 use crate::ProjectConditionMatcher;
 
+/// Appends file-local style diagnostics shared by compilation and source inspection.
+pub fn append_usage_diagnostics(
+    system: &System,
+    calls: &[ExtractedCall],
+    jsx: &[ExtractedJsx],
+    line_index: &LineIndex<'_>,
+    out: &mut Vec<Diagnostic>,
+) {
+    if let Some(utility) = system.utility() {
+        if !utility.deprecated_props().is_empty() {
+            push_deprecated_utility_diagnostics(calls, jsx, utility, line_index, out);
+        }
+
+        push_invalid_color_opacity_modifier_diagnostics(calls, jsx, utility, line_index, out);
+    }
+
+    push_unknown_condition_diagnostics(calls, jsx, system.conditions(), line_index, out);
+}
+
 fn push_usage_diagnostics(
     calls: &[ExtractedCall],
     jsx: &[ExtractedJsx],
