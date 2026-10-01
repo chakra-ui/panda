@@ -29,13 +29,17 @@ pub(super) fn recipe_module(ctx: CodegenContext<'_>) -> Module {
         .with_import(type_import(
             &[
                 "AsProps",
-                "ComponentProps",
                 "DataAttrs",
+                "ElementType",
                 "JsxFactoryOptions",
+                "UnstyledProps",
             ],
             "../types/jsx",
         ))
-        .with_import(type_import(&["Component", "JSX"], "solid-js"));
+        .with_import(type_import(
+            &["Component", "ComponentProps", "JSX"],
+            "solid-js",
+        ));
 
     module
         .with_item(raw_runtime(create_recipe_context_runtime(&factory)))
@@ -79,14 +83,18 @@ pub(super) fn slot_recipe_module(ctx: CodegenContext<'_>) -> Module {
         .with_import(type_import(
             &[
                 "AsProps",
-                "ComponentProps",
                 "DataAttrs",
+                "ElementType",
                 "JsxFactoryOptions",
                 "MaybeAccessor",
+                "UnstyledProps",
             ],
             "../types/jsx",
         ))
-        .with_import(type_import(&["Component", "JSX"], "solid-js"));
+        .with_import(type_import(
+            &["Component", "ComponentProps", "JSX"],
+            "solid-js",
+        ));
 
     module
         .with_item(raw_runtime(create_slot_recipe_context_runtime(
@@ -321,12 +329,7 @@ export function createSlotRecipeContext(recipeInput) {
   }
 }"#;
 
-const CREATE_RECIPE_CONTEXT_TYPES: &str = r"interface UnstyledProps {
-  unstyled?: boolean | undefined
-}
-
-type ElementType = keyof JSX.IntrinsicElements | Component<any>
-type AnyRecipeDefinition = RecipeDefinition<RecipeVariantRecord>
+const CREATE_RECIPE_CONTEXT_TYPES: &str = r"type AnyRecipeDefinition = RecipeDefinition<RecipeVariantRecord>
 
 interface RuntimeRecipeFn {
   __type: any
@@ -363,12 +366,7 @@ export interface RecipeContext<R extends RecipeContextRecipe> {
 
 export declare function createRecipeContext<R extends RecipeContextRecipe>(recipe: R): RecipeContext<R>";
 
-const CREATE_SLOT_RECIPE_CONTEXT_TYPES: &str = r"interface UnstyledProps {
-  unstyled?: boolean | undefined
-}
-
-type ElementType = keyof JSX.IntrinsicElements | Component<any>
-type AnySlotRecipeDefinition = SlotRecipeDefinition<string, SlotRecipeVariantRecord<string>>
+const CREATE_SLOT_RECIPE_CONTEXT_TYPES: &str = r"type AnySlotRecipeDefinition = SlotRecipeDefinition<string, SlotRecipeVariantRecord<string>>
 
 interface RuntimeSlotRecipeFn {
   __type: any
