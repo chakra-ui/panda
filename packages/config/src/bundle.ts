@@ -1,15 +1,14 @@
 import type { Config } from '@pandacss/types'
-import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, realpathSync, statSync } from 'node:fs'
 import { mkdir, unlink, writeFile } from 'node:fs/promises'
 import { builtinModules } from 'node:module'
 import { tmpdir } from 'node:os'
-import { basename, dirname, isAbsolute, join, normalize, relative } from 'node:path'
+import { basename, dirname, extname, isAbsolute, join, normalize, relative, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import type { RolldownOutput } from 'rolldown'
 import { importMetaUrlPlugin } from './bundle-plugins'
 import { PandaError } from './error'
-import { readPandaVersion } from './version'
+import { tryResolveFrom } from './resolve'
 
 const nodeBuiltins = new Set([...builtinModules, ...builtinModules.map((mod) => `node:${mod}`)])
 
@@ -27,33 +26,6 @@ export async function bundleConfig<T extends Config = Config>(
   filepath: string,
   cwd: string,
 ): Promise<BundleConfigResult<T>> {
-  const { code, dependencies } = await bundleCode(filepath, cwd)
-  const mod = await loadBundledModule(filepath, code)
-  const hasDefaultExport = Object.prototype.hasOwnProperty.call(mod ?? {}, 'default')
-  const exported = hasDefaultExport ? mod.default : mod
-  const config = (hasDefaultExport && isPromiseLike(exported) ? await exported : exported) as T
-
-  return { config, dependencies: [...dependencies] }
-}
-
-interface BundledCode {
-  code: string
-  dependencies: string[]
-  stamp: string
-}
-
-const bundleCache = new Map<string, BundledCode>()
-const pandaVersion = readPandaVersion()
-
-async function bundleCode(filepath: string, cwd: string): Promise<BundledCode> {
-  const key = `${pandaVersion}\0${cwd}\0${filepath}`
-  const cacheFile = diskCacheFile(key, cwd)
-  const cached = bundleCache.get(key) ?? readDiskCache(cacheFile)
-  if (cached && cached.stamp === dependencyStamp(cached.dependencies, cwd)) {
-    bundleCache.set(key, cached)
-    return cached
-  }
-
   const { rolldown } = await import('rolldown')
 
   const build = await rolldown({
@@ -78,48 +50,46 @@ async function bundleCode(filepath: string, cwd: string): Promise<BundledCode> {
   }
 
   const dependencies = collectDependencies(chunks.output, filepath, cwd)
-  const stamp = dependencyStamp(dependencies, cwd)
-  const bundled = { code: output.code, dependencies, stamp }
-  if (dependencies.length > 0 && !stamp.includes('missing')) {
-    bundleCache.set(key, bundled)
-    await writeDiskCache(cacheFile, bundled)
-  }
-  return bundled
+  const mod = await loadBundledModule(filepath, output.code)
+
+  return { config: await configFromModule<T>(mod), dependencies }
 }
 
-function diskCacheFile(key: string, cwd: string): string {
-  const hash = createHash('sha256').update(key).digest('hex').slice(0, 16)
-  return join(pandaCacheDir(cwd), 'bundles', `${hash}.json`)
+export async function importInstalledConfig<T extends Config = Config>(
+  specifier: string,
+  cwd: string,
+): Promise<BundleConfigResult<T> | undefined> {
+  if (specifier.startsWith('.') || isAbsolute(specifier)) return undefined
+  const resolved = tryResolveFrom(specifier, cwd)
+  if (!resolved) return undefined
+  const file = canonical(resolved)
+  if (!file.includes(`${sep}node_modules${sep}`) || !isEsmFile(file)) return undefined
+
+  const mod = await import(/* @vite-ignore */ `${pathToFileURL(file).href}?mtime=${statSync(file).mtimeMs}`)
+  return { config: await configFromModule<T>(mod), dependencies: [normalize(relative(canonical(cwd), file))] }
 }
 
-function readDiskCache(file: string): BundledCode | undefined {
-  try {
-    const cached = JSON.parse(readFileSync(file, 'utf8')) as Partial<BundledCode>
-    const valid =
-      typeof cached.code === 'string' && Array.isArray(cached.dependencies) && typeof cached.stamp === 'string'
-    return valid ? (cached as BundledCode) : undefined
-  } catch {
-    return undefined
-  }
+async function configFromModule<T>(mod: Record<string, unknown>): Promise<T> {
+  const hasDefaultExport = Object.prototype.hasOwnProperty.call(mod ?? {}, 'default')
+  const exported = hasDefaultExport ? mod.default : mod
+  return (hasDefaultExport && isPromiseLike(exported) ? await exported : exported) as T
 }
 
-function writeDiskCache(file: string, bundled: BundledCode): Promise<void> {
-  return mkdir(dirname(file), { recursive: true })
-    .then(() => writeFile(file, JSON.stringify(bundled)))
-    .catch(() => undefined)
+function isEsmFile(file: string): boolean {
+  const extension = extname(file)
+  if (extension === '.mjs') return true
+  if (extension !== '.js') return false
+  return nearestPackageType(dirname(file)) === 'module'
 }
 
-function dependencyStamp(dependencies: string[], cwd: string): string {
-  const base = canonical(cwd)
-  return dependencies.map((dependency) => fileStamp(join(base, dependency))).join('|')
-}
-
-function fileStamp(path: string): string {
-  try {
-    const stat = statSync(path)
-    return `${stat.mtimeMs}:${stat.size}`
-  } catch {
-    return 'missing'
+function nearestPackageType(start: string): string | undefined {
+  let current = start
+  while (true) {
+    const candidate = join(current, 'package.json')
+    if (existsSync(candidate)) return (JSON.parse(readFileSync(candidate, 'utf8')) as { type?: string }).type
+    const parent = dirname(current)
+    if (parent === current) return undefined
+    current = parent
   }
 }
 
@@ -160,12 +130,10 @@ function isUnresolvedTempModule(error: unknown, target: string): boolean {
 
 function tempTargetFor(filepath: string): string | undefined {
   const unique = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
-  return join(pandaCacheDir(dirname(filepath)), `panda.config.bundled.${unique}.mjs`)
-}
-
-function pandaCacheDir(start: string): string {
-  const nodeModules = nearestNodeModules(start)
-  return nodeModules ? join(nodeModules, '.panda') : join(tmpdir(), 'panda-config')
+  const name = `panda.config.bundled.${unique}.mjs`
+  const nodeModules = nearestNodeModules(dirname(filepath))
+  const base = nodeModules ? join(nodeModules, '.panda') : join(tmpdir(), 'panda-config')
+  return join(base, name)
 }
 
 function nearestNodeModules(start: string): string | undefined {
