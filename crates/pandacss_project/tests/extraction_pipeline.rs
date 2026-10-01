@@ -693,24 +693,38 @@ fn jsx_factory_default_props_preserve_token_call_identity() {
 
 #[test]
 fn jsx_factory_default_props_extract_only_style_props() {
-    for style in ["frame", "{}", "{ base: {} }"] {
+    let recipe_or_styles = ["frame", "{}", "{ base: {} }"];
+
+    for recipe_or_style in recipe_or_styles {
         let mut project = create_project(json!({
             "jsxFramework": "react",
-            "theme": { "recipes": { "frame": { "base": {} } } },
-            "utilities": { "customStyle": { "className": "custom" } },
-            "conditions": { "hover": "&:hover" }
+            "theme": {
+                "recipes": {
+                    "frame": { "base": {} }
+                }
+            },
+            "utilities": {
+                "customStyle": { "className": "custom" }
+            },
+            "conditions": {
+                "hover": "&:hover"
+            }
         }));
+
         let source = indoc! {r"
             import { styled } from '@panda/jsx';
             import { frame } from '@panda/recipes';
             import { ArkFrame } from '@ark-ui/react';
+
             const srcDoc = '<html><head><style>body { margin: 0; }</style></head><body><div /></body></html>';
-            const StyledFrame = styled(ArkFrame, STYLE, {
+
+            const StyledFrame = styled(ArkFrame, RECIPE_OR_STYLES, {
               defaultProps: {
                 srcDoc,
                 title: 'Preview',
                 id: 'frame',
                 tabIndex: 0,
+
                 color: 'red',
                 customStyle: 'value',
                 _hover: { color: 'blue' },
@@ -719,27 +733,29 @@ fn jsx_factory_default_props_extract_only_style_props() {
               },
               forwardProps: ['srcDoc'],
             });
-        "}.replace("STYLE", style);
+        "}.replace("RECIPE_OR_STYLES", recipe_or_style);
+
         project.parse_file("frame.tsx", &source);
+
         insta::allow_duplicates! {
-        assert_yaml_snapshot!(sorted_atoms(&project), @r#"
-        - prop: "--frame-color"
-          value: red
-          conditions: []
-        - prop: color
-          value: red
-          conditions: []
-        - prop: color
-          value: blue
-          conditions:
-            - _hover
-        - prop: customStyle
-          value: value
-          conditions: []
-        - prop: marginTop
-          value: 8px
-          conditions: []
-        "#);
+            assert_yaml_snapshot!(sorted_atoms(&project), @r#"
+            - prop: "--frame-color"
+              value: red
+              conditions: []
+            - prop: color
+              value: red
+              conditions: []
+            - prop: color
+              value: blue
+              conditions:
+                - _hover
+            - prop: customStyle
+              value: value
+              conditions: []
+            - prop: marginTop
+              value: 8px
+              conditions: []
+            "#);
         }
     }
 }

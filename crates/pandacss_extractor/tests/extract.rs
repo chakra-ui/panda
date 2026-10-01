@@ -578,6 +578,48 @@ fn styled_with_imported_recipe_records_the_recipe_name() {
 }
 
 #[test]
+fn styled_calls_record_the_style_and_options_argument_positions() {
+    let source = indoc! {r"
+        import { styled } from '@panda/jsx';
+        import * as JSX from '@panda/jsx';
+        import { button } from '@panda/recipes';
+
+        styled('button', button, { defaultProps: { size: 'sm' } });
+        styled.button(button, { defaultProps: { size: 'sm' } });
+        JSX.styled('button', button, { defaultProps: { size: 'sm' } });
+    "};
+
+    let result = extract(source, "factory.tsx", &panda_jsx_config());
+    let layouts: Vec<_> = result
+        .calls
+        .iter()
+        .map(|call| {
+            (
+                &call.name,
+                call.jsx_factory_kind.style_arg_index(),
+                call.jsx_factory_kind.options_arg_index(),
+                &call.jsx_recipe_ident,
+            )
+        })
+        .collect();
+
+    assert_yaml_snapshot!(layouts, @r"
+    - - styled
+      - 1
+      - 2
+      - button
+    - - styled.button
+      - 0
+      - 1
+      - button
+    - - styled
+      - 1
+      - 2
+      - button
+    ");
+}
+
+#[test]
 fn styled_with_renamed_recipe_import_records_the_imported_name() {
     assert_eq!(
         styled_recipe_name(indoc! {r#"

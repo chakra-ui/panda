@@ -30,6 +30,32 @@ pub enum CallCalleeKind {
     StaticMember,
 }
 
+/// Argument layout of a styled factory call, derived from its Oxc callee.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum JsxFactoryCallKind {
+    /// `styled(tag, styles, options)`.
+    Direct,
+    /// `styled.div(styles, options)`.
+    Member,
+}
+
+impl JsxFactoryCallKind {
+    /// Position of the style object or recipe argument.
+    #[must_use]
+    pub const fn style_arg_index(self) -> usize {
+        match self {
+            Self::Direct => 1,
+            Self::Member => 0,
+        }
+    }
+
+    /// Position of the factory options argument.
+    #[must_use]
+    pub const fn options_arg_index(self) -> usize {
+        self.style_arg_index() + 1
+    }
+}
+
 /// Oxc-derived source facts consumed by the project transformer.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CallFacts {
@@ -75,6 +101,9 @@ pub struct ExtractedCall {
     /// argument is intentionally non-literal but still names a config recipe.
     #[serde(skip)]
     pub jsx_recipe_ident: Option<String>,
+    /// Styled factory argument layout; ignored for other call categories.
+    #[serde(skip)]
+    pub jsx_factory_kind: JsxFactoryCallKind,
     pub span: Span,
     /// Source span of each argument, from the AST — lets the transform locate an
     /// argument to rewrite without re-scanning the call for commas/parens.
@@ -233,6 +262,7 @@ struct ResolvedCallee<'a> {
     name: Cow<'a, str>,
     alias: &'a str,
     raw: bool,
+    jsx_factory_kind: JsxFactoryCallKind,
 }
 
 impl Extractor<'_, '_, '_> {
@@ -264,6 +294,7 @@ impl Extractor<'_, '_, '_> {
                     name: Cow::Borrowed(&matched.name),
                     alias: &matched.alias,
                     raw: false,
+                    jsx_factory_kind: JsxFactoryCallKind::Direct,
                 })
             }
             Expression::StaticMemberExpression(_) => {
@@ -287,6 +318,7 @@ impl Extractor<'_, '_, '_> {
                             name: Cow::Owned(member_display(&matched.name, &path)),
                             alias: &matched.alias,
                             raw: false,
+                            jsx_factory_kind: JsxFactoryCallKind::Member,
                         });
                     }
                     if path.as_slice() != ["raw"] || !matched.category.supports_raw() {
@@ -297,6 +329,7 @@ impl Extractor<'_, '_, '_> {
                         name: Cow::Borrowed(&matched.name),
                         alias: &matched.alias,
                         raw: true,
+                        jsx_factory_kind: JsxFactoryCallKind::Direct,
                     });
                 }
 
@@ -324,6 +357,7 @@ impl Extractor<'_, '_, '_> {
                     name: Cow::Borrowed(property),
                     alias: &matched.alias,
                     raw: raw_tail == ["raw"],
+                    jsx_factory_kind: JsxFactoryCallKind::Direct,
                 })
             }
             _ => None,
@@ -407,8 +441,9 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
             let raw = resolved.raw;
             let name = resolved.name.into_owned();
             let alias = resolved.alias.to_owned();
+            let jsx_factory_kind = resolved.jsx_factory_kind;
             let jsx_recipe_ident = (category == MatchCategory::Jsx)
-                .then(|| self.jsx_recipe_identifier(call))
+                .then(|| self.jsx_recipe_identifier(call, jsx_factory_kind))
                 .flatten();
 
             let style_args: Vec<Option<StyleTree>> = call
@@ -447,6 +482,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                     );
                 }
                 self.out.push(ExtractedCall {
+                    jsx_factory_kind,
                     category,
                     name,
                     alias,
@@ -537,8 +573,15 @@ fn collect_call_style_source_refs(
 }
 
 impl Extractor<'_, '_, '_> {
-    fn jsx_recipe_identifier(&self, call: &CallExpression<'_>) -> Option<String> {
-        let arg = call.arguments.get(1)?.as_expression()?;
+    fn jsx_recipe_identifier(
+        &self,
+        call: &CallExpression<'_>,
+        kind: JsxFactoryCallKind,
+    ) -> Option<String> {
+        let arg = call
+            .arguments
+            .get(kind.style_arg_index())?
+            .as_expression()?;
         self.recipe_name_from_expr(arg, &mut FxHashSet::default())
     }
 

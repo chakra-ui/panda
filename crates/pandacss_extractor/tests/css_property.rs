@@ -1,3 +1,4 @@
+use pandacss_extractor::{JsxExtractionConfig, JsxStyleProps};
 use pandacss_shared::css_properties::{css_property_names, is_css_property};
 
 #[test]
@@ -20,4 +21,26 @@ fn validates_css_prop_names() {
 
     assert!(!is_css_property("background-color"));
     assert!(!is_css_property("madeUp"));
+}
+
+#[test]
+fn custom_css_keys_follow_the_jsx_style_props_mode() {
+    for mode in [
+        JsxStyleProps::All,
+        JsxStyleProps::Minimal,
+        JsxStyleProps::None,
+    ] {
+        let config = JsxExtractionConfig {
+            style_props: mode,
+            valid_style_props: ["color".to_owned()].into_iter().collect(),
+            ..JsxExtractionConfig::default()
+        };
+
+        for key in ["--frame-color", "&:hover", "@media (min-width: 40rem)"] {
+            assert_eq!(
+                config.should_extract_prop("Frame", key),
+                mode == JsxStyleProps::All,
+            );
+        }
+    }
 }

@@ -5,6 +5,7 @@
 //! JSX-extraction settings) consumed downstream.
 
 use crate::{ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind, Resolver};
+use pandacss_shared::css_properties::is_css_property;
 use regex::{Regex, RegexSet};
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde::Serialize;
@@ -330,6 +331,7 @@ impl JsxExtractionConfig {
                 is_component_prop
                     || self.valid_style_props.is_empty()
                     || self.valid_style_props.contains(prop_name)
+                    || is_css_property(prop_name)
                     || prop_name == "css"
                     || prop_name.ends_with("Css")
             }

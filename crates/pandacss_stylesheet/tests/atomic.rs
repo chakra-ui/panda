@@ -4,56 +4,6 @@ use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 use crate::common::{compile_layer_css, compile_output, config};
 
 #[test]
-fn styled_default_props_extract_styles_and_recipe_variants() {
-    let config = config(serde_json::json!({
-        "jsxFramework": "react",
-        "importMap": { "jsx": ["@panda/jsx"], "recipe": ["@panda/recipes"] },
-        "theme": { "recipes": { "frame": {
-            "base": { "display": "block" },
-            "variants": { "size": {
-                "sm": { "padding": "2px" },
-                "md": { "padding": "8px" }
-            } },
-            "defaultVariants": { "size": "md" }
-        } } }
-    }));
-    let source = indoc::indoc! {r"
-        import { styled } from '@panda/jsx';
-        import { frame } from '@panda/recipes';
-        import { ArkFrame } from '@ark-ui/react';
-        const srcDoc = '<html><head><style>body { margin: 0; }</style></head><body><div /></body></html>';
-        const StyledFrame = styled(ArkFrame, frame, {
-          defaultProps: { srcDoc, size: 'sm', color: 'red' },
-          forwardProps: ['srcDoc'],
-        });
-    "};
-    let css = compile_layer_css(
-        &config,
-        source,
-        &[StylesheetLayer::Recipes, StylesheetLayer::Utilities],
-    );
-    assert_snapshot!(css, @r"
-    @layer recipes {
-      @layer base {
-        .frame {
-          display: block;
-        }
-      }
-      @layer variants {
-        .frame--size_sm {
-          padding: 2px;
-        }
-      }
-    }
-    @layer utilities {
-      .color_red {
-        color: red;
-      }
-    }
-    ");
-}
-
-#[test]
 fn emits_dynamic_atomic_css() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },

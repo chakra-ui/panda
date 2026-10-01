@@ -35,7 +35,10 @@ mod vue_adapter;
 
 use pandacss_literal::Literal;
 
-pub use calls::{CallCalleeKind, CallFacts, ExtractedCall, ExtractedCallsResult, extract_calls};
+pub use calls::{
+    CallCalleeKind, CallFacts, ExtractedCall, ExtractedCallsResult, JsxFactoryCallKind,
+    extract_calls,
+};
 pub use design_system_imports::{
     DesignSystemImportSelection, DesignSystemPackageQuery, DesignSystemUsage,
     collect_design_system_imports, collect_design_system_imports_for_packages,

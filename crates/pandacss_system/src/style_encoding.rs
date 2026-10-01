@@ -67,9 +67,9 @@ impl System {
         }
     }
 
-    /// Encode style leftovers from `styled` `defaultProps`, excluding component props.
+    /// Encode valid style props from `styled` defaults after recipe variant selection.
     #[doc(hidden)]
-    pub fn process_inline_default_prop_styles(
+    pub fn process_default_prop_styles(
         &self,
         encoder: &mut Encoder<ProjectConditionMatcher>,
         default_props: &Literal,
@@ -77,34 +77,46 @@ impl System {
     ) {
         if let Literal::Conditional(branches) = default_props {
             for branch in branches {
-                self.process_inline_default_prop_styles(encoder, branch, variant_keys);
+                self.process_default_prop_styles(encoder, branch, variant_keys);
             }
+
             return;
         }
+
         let Some(entries) = literal_entries(default_props) else {
             return;
         };
-        let leftovers: Vec<(String, Literal)> = entries
+
+        let style_props: Vec<(String, Literal)> = entries
             .iter()
             .filter(|(key, _)| variant_keys.iter().all(|(variant, _)| variant != key))
-            .filter(|(key, _)| {
-                self.extractor_config.jsx.valid_style_props.contains(key)
-                    || self
-                        .utility
-                        .as_ref()
-                        .is_some_and(|utility| utility.is_known(utility.canonical_property(key)))
-                    || is_css_prop(key)
-                    || is_css_property(key)
-            })
+            .filter(|(key, _)| self.is_style_prop(key))
             .cloned()
             .collect();
-        if !leftovers.is_empty() {
-            self.process_style_props(
-                encoder,
-                &Literal::Object(leftovers),
-                ShorthandPolicy::UserFacing,
-            );
+
+        if style_props.is_empty() {
+            return;
         }
+
+        self.process_style_props(
+            encoder,
+            &Literal::Object(style_props),
+            ShorthandPolicy::UserFacing,
+        );
+    }
+
+    fn is_style_prop(&self, key: &str) -> bool {
+        if is_css_property(key) || is_css_object_prop(key) {
+            return true;
+        }
+
+        if self.extractor_config.jsx.valid_style_props.contains(key) {
+            return true;
+        }
+
+        self.utility
+            .as_ref()
+            .is_some_and(|utility| utility.is_known(utility.canonical_property(key)))
     }
 
     #[doc(hidden)]
@@ -131,7 +143,7 @@ impl System {
         for (key, value) in entries {
             if key == "css" {
                 collect_css_prop_layers(value, &mut css_layers);
-            } else if is_css_prop(key) {
+            } else if is_css_object_prop(key) {
                 // `inputCss` and friends address a slot, not this element.
                 self.process_nested_css_prop(encoder, value, policy);
             } else {
@@ -428,7 +440,7 @@ impl System {
     }
 }
 
-fn is_css_prop(key: &str) -> bool {
+fn is_css_object_prop(key: &str) -> bool {
     key == "css" || key.ends_with("Css")
 }
 

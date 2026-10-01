@@ -277,6 +277,15 @@ impl RecipeRegistry {
         recipe_names: &[&str],
         props: &Literal,
     ) -> Option<Literal> {
+        if let Literal::Conditional(branches) = props {
+            let styles: Vec<Literal> = branches
+                .iter()
+                .filter_map(|branch| self.style_props_for_recipes(recipe_names, branch))
+                .collect();
+
+            return (!styles.is_empty()).then_some(Literal::Conditional(styles));
+        }
+
         let entries = literal_entries(props)?;
 
         let mut recipe_props = FxHashSet::default();

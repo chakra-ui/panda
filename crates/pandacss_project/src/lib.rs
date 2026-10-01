@@ -714,32 +714,39 @@ impl Project {
                     compiled.process_recipe_usage(&mut encoded_recipes, &call.name, arg);
                 }
                 (MatchCategory::Jsx, _) => {
-                    let mut args = data.into_iter();
-                    let arg = args.next().flatten();
-                    let second_arg = args.next().flatten();
-                    let third_arg = args.next().flatten();
-                    let default_props = default_props_from_options(third_arg.as_ref());
+                    let factory_kind = call.jsx_factory_kind;
+                    let style_arg = data
+                        .get(factory_kind.style_arg_index())
+                        .and_then(Option::as_ref)
+                        .or_else(|| data.first().and_then(Option::as_ref));
+                    let options = data
+                        .get(factory_kind.options_arg_index())
+                        .and_then(Option::as_ref);
+                    let default_props = default_props_from_options(options);
+
                     if let Some(recipe_name) = call.jsx_recipe_ident.as_deref()
                         && let Some(default_props) = default_props
                     {
                         if let Some(style_props) =
                             compiled.recipe_style_props(&[recipe_name], default_props)
                         {
-                            self.system.process_inline_default_prop_styles(
+                            self.system.process_default_prop_styles(
                                 &mut encoder,
                                 &style_props,
                                 &[],
                             );
                         }
+
                         compiled.process_recipe_usage(
                             &mut encoded_recipes,
                             recipe_name,
                             default_props,
                         );
+
                         report.jsx_usages += 1;
                         continue;
                     }
-                    let style = jsx_factory_static_style(second_arg.as_ref().or(arg.as_ref()));
+                    let style = jsx_factory_static_style(style_arg);
                     let mut inline_variant_keys: &[(String, Literal)] = &[];
                     match style {
                         Some(JsxFactoryStaticStyle::Style(style)) => {
@@ -771,7 +778,7 @@ impl Project {
                         None => {}
                     }
                     if let Some(default_props) = default_props {
-                        self.system.process_inline_default_prop_styles(
+                        self.system.process_default_prop_styles(
                             &mut encoder,
                             default_props,
                             inline_variant_keys,
