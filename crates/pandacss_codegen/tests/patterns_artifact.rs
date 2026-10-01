@@ -182,10 +182,10 @@ fn emits_ts_source() {
               gap: props.gap,
               alignItems: props.align,
               flexDirection: props.direction,
-              justifyContent: props.justify,
-            }
+              justifyContent: props.justify
+            };
           },
-          defaultValues: {"gap":"4"}
+          defaultValues: { "gap": "4" }
         }
 
         export interface StackProperties {
@@ -287,10 +287,10 @@ fn emits_js_runtime_and_declarations() {
               gap: props.gap,
               alignItems: props.align,
               flexDirection: props.direction,
-              justifyContent: props.justify,
-            }
+              justifyContent: props.justify
+            };
           },
-          defaultValues: {"gap":"4"}
+          defaultValues: { "gap": "4" }
         }
 
         export function stackRaw(styles) {
@@ -364,10 +364,10 @@ fn can_emit_import_extensions() {
               gap: props.gap,
               alignItems: props.align,
               flexDirection: props.direction,
-              justifyContent: props.justify,
-            }
+              justifyContent: props.justify
+            };
           },
-          defaultValues: {"gap":"4"}
+          defaultValues: { "gap": "4" }
         }
 
         export function stackRaw(styles) {
@@ -395,4 +395,34 @@ fn can_emit_import_extensions() {
         "}
         .trim()
     );
+}
+
+fn stack_js(config_source: &str) -> String {
+    let mut input = input();
+    input.patterns.insert(
+        "stack".into(),
+        PatternCodegenMeta {
+            config_source: config_source.into(),
+        },
+    );
+    let artifacts = ArtifactGraph.generate_all(
+        &input,
+        GenerateOptions {
+            format: CodegenFormat::Js,
+            import_extensions: false,
+        },
+    );
+    file(
+        artifact(&artifacts, ArtifactId::Patterns),
+        "patterns/stack.js",
+    )
+    .to_owned()
+}
+
+#[test]
+fn prints_the_transform_the_same_however_the_preset_was_loaded() {
+    let bundled = "{transform(props) {\n\t\treturn { content: \"\\\"\\\"\", ...props };\n\t}}";
+    let imported = "{\n  transform(props) {\n    return { content: '\"\"', ...props }\n  }\n}";
+
+    assert_eq!(stack_js(bundled), stack_js(imported));
 }
