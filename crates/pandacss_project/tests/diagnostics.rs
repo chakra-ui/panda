@@ -535,3 +535,19 @@ fn config_recipe_with_a_property_nested_under_a_non_condition_key_warns() {
     Warning nested_property theme.slotRecipes.card: `svg` in `svg.color` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use a condition like `_hover` or a selector like `'& svg'` instead.
     ");
 }
+
+#[test]
+fn nested_property_leaves_the_selector_argument_open_when_nothing_sits_between() {
+    let mut project = create_project(json!({
+        "conditions": { "hover": "&:hover" },
+        "utilities": { "color": { "className": "c" } }
+    }));
+    let report = project.parse_file(
+        "style.ts",
+        indoc! {r"
+            import { css } from '@panda/css';
+            css({ has: { color: 'red' } });
+        "},
+    );
+    assert_snapshot!(summary(&report.diagnostics), @"Warning nested_property `has` in `has.color` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use `'&:has(…)'` instead. [34..64]");
+}

@@ -20,7 +20,9 @@ impl System {
         let fix = if self.conditions.is_condition(&condition) {
             format!("`{condition}`")
         } else if matches!(&**key, "has" | "is" | "not" | "where") {
-            format!("`'&:{key}({nested})'`")
+            let leaf = path.rsplit('.').next() == Some(&**nested);
+            let argument = if leaf { "…" } else { nested };
+            format!("`'&:{key}({argument})'`")
         } else {
             format!("a condition like `_hover` or a selector like `'& {key}'`")
         };
