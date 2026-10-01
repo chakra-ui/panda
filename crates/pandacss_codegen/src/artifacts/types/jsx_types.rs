@@ -194,8 +194,8 @@ fn preact_jsx_type_code(component_name: &str, upper_name: &str, html_props_name:
         component_name,
         upper_name,
         html_props_name,
-        "export type ElementType = JSX.ElementType\n\nexport type ComponentPropsOf<T extends ElementType> = ComponentProps<T>",
-        "ComponentPropsOf<T>",
+        "export type ElementType = JSX.ElementType\n\nexport type { ComponentProps }",
+        "ComponentProps<T>",
         "JSX.Element",
         "keyof JSX.IntrinsicElements",
     )
@@ -206,8 +206,8 @@ fn solid_jsx_type_code(component_name: &str, upper_name: &str, html_props_name: 
         component_name,
         upper_name,
         html_props_name,
-        "export type ElementType = keyof JSX.IntrinsicElements | Component<any>\n\nexport type ComponentPropsOf<T extends ElementType> = ComponentProps<T>\n\nexport type MaybeAccessor<T> = T | Accessor<T>",
-        "ComponentPropsOf<T>",
+        "export type ElementType = keyof JSX.IntrinsicElements | Component<any>\n\nexport type { ComponentProps }\n\nexport type MaybeAccessor<T> = T | Accessor<T>",
+        "ComponentProps<T>",
         "JSX.Element",
         "keyof JSX.IntrinsicElements",
     );
@@ -223,7 +223,7 @@ fn vue_jsx_type_code(component_name: &str, upper_name: &str, html_props_name: &s
 
 export type ElementType = IntrinsicElement | Component
 
-export type ComponentPropsOf<T extends ElementType> = T extends IntrinsicElement
+export type ComponentProps<T extends ElementType> = T extends IntrinsicElement
   ? NativeElements[T]
   : T extends Component<infer Props>
     ? Props
@@ -239,12 +239,17 @@ export interface UnstyledProps {
   unstyled?: boolean | undefined
 }
 
+export interface VModelProps {
+  modelValue?: any
+  'onUpdate:modelValue'?: (value: any) => void
+}
+
 export interface AsProps {
   as?: ElementType | undefined
 }
 
 export interface __COMPONENT__<T extends ElementType, P extends AnyProps = {}> extends FunctionalComponent<
-  JsxHTMLProps<ComponentPropsOf<T> & UnstyledProps & AsProps, Assign<JsxStyleProps, P>>
+  JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, Assign<JsxStyleProps, P>>
 > {}
 
 interface RuntimeRecipeFn {
@@ -258,7 +263,7 @@ export interface JsxFactoryOptions<TProps extends AnyProps> {
   forwardProps?: string[]
 }
 
-export type JsxRecipeProps<T extends ElementType, P extends AnyProps> = JsxHTMLProps<ComponentPropsOf<T> & UnstyledProps & AsProps, P>
+export type JsxRecipeProps<T extends ElementType, P extends AnyProps> = JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, P>
 
 export type JsxElement<T extends ElementType, P extends AnyProps> = T extends __COMPONENT__<infer A, infer B>
   ? __COMPONENT__<A, Pretty<DistributiveUnion<P, B>>>
@@ -276,7 +281,7 @@ export type JsxElements = {
 
 export type __UPPER__ = JsxFactory & JsxElements
 
-export type __HTML_PROPS__<T extends ElementType> = JsxHTMLProps<ComponentPropsOf<T> & UnstyledProps & AsProps, JsxStyleProps>
+export type __HTML_PROPS__<T extends ElementType> = JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, JsxStyleProps>
 
 export type StyledVariantProps<T extends __COMPONENT__<any, any>> = T extends __COMPONENT__<any, infer Props> ? Props : never"#
         .to_owned();

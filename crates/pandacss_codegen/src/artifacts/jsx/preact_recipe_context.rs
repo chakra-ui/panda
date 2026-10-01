@@ -28,7 +28,13 @@ pub(super) fn recipe_module(ctx: CodegenContext<'_>) -> Module {
             "../types/system",
         ))
         .with_import(type_import(
-            &["AsProps", "DataAttrs", "JsxFactoryOptions"],
+            &[
+                "AsProps",
+                "DataAttrs",
+                "ElementType",
+                "JsxFactoryOptions",
+                "UnstyledProps",
+            ],
             "../types/jsx",
         ))
         .with_import(type_import(
@@ -74,7 +80,13 @@ pub(super) fn slot_recipe_module(ctx: CodegenContext<'_>) -> Module {
             "../types/system",
         ))
         .with_import(type_import(
-            &["AsProps", "DataAttrs", "JsxFactoryOptions"],
+            &[
+                "AsProps",
+                "DataAttrs",
+                "ElementType",
+                "JsxFactoryOptions",
+                "UnstyledProps",
+            ],
             "../types/jsx",
         ))
         .with_import(type_import(
@@ -247,12 +259,7 @@ export function createSlotRecipeContext(recipeInput) {
   }
 }"#;
 
-const CREATE_RECIPE_CONTEXT_TYPES: &str = r"interface UnstyledProps {
-  unstyled?: boolean | undefined
-}
-
-type ElementType = JSX.ElementType
-type AnyRecipeDefinition = RecipeDefinition<RecipeVariantRecord>
+const CREATE_RECIPE_CONTEXT_TYPES: &str = r"type AnyRecipeDefinition = RecipeDefinition<RecipeVariantRecord>
 
 interface RuntimeRecipeFn {
   __type: any
@@ -289,12 +296,7 @@ export interface RecipeContext<R extends RecipeContextRecipe> {
 
 export declare function createRecipeContext<R extends RecipeContextRecipe>(recipe: R): RecipeContext<R>";
 
-const CREATE_SLOT_RECIPE_CONTEXT_TYPES: &str = r"interface UnstyledProps {
-  unstyled?: boolean | undefined
-}
-
-type ElementType = JSX.ElementType
-type AnySlotRecipeDefinition = SlotRecipeDefinition<string, SlotRecipeVariantRecord<string>>
+const CREATE_SLOT_RECIPE_CONTEXT_TYPES: &str = r"type AnySlotRecipeDefinition = SlotRecipeDefinition<string, SlotRecipeVariantRecord<string>>
 
 interface RuntimeSlotRecipeFn {
   __type: any

@@ -85,21 +85,21 @@ fn emits_recipe_contexts_for_supported_non_react_frameworks() {
             "from 'preact';",
             "forwardRef(function WithContext",
             "forwardRef(function WithProvider",
-            "type ElementType = JSX.ElementType",
+            "ElementType, JsxFactoryOptions, UnstyledProps } from '../types/jsx'",
         ),
         (
             "solid",
             "from 'solid-js/web';",
             "createComponent(StyledComponent, props)",
             "createMemo(() =>",
-            "MaybeAccessor",
+            "import type { Component, ComponentProps, JSX } from 'solid-js'",
         ),
         (
             "vue",
             "from 'vue';",
             "const PropsContext = Symbol('PropsContext')",
             "provide(SlotStylesContext, resolvedSlots)",
-            "VModelProps",
+            "UnstyledProps, VModelProps } from '../types/jsx'",
         ),
     ] {
         let artifacts = ArtifactGraph.generate_all(
