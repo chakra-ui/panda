@@ -828,6 +828,30 @@ describe('loadConfig module loading', () => {
     expect(output).toEqual({ brands: ['#0f0', '#f00'], tracked: true, bundlerImports: [] })
   })
 
+  test.each([
+    { kind: '.cjs', file: 'tokens.cjs' },
+    { kind: '.js without "type": "module"', file: 'tokens.js' },
+  ])('re-reads a local CommonJS $kind file on every load', ({ file }) => {
+    const cwd = writeTempProject({
+      [file]: `module.exports = { brand: '#0f0' }`,
+      'panda.config.ts': `import tokens from './${file}'
+        export default { outdir: 'styled-system', theme: { tokens: { colors: { brand: { value: tokens.brand } } } } }`,
+    })
+
+    const output = loadInNode(
+      cwd,
+      `const { writeFileSync } = await import('node:fs')
+      const first = await loadConfig({ cwd })
+      writeFileSync(${JSON.stringify(join(cwd, file))}, "module.exports = { brand: '#f00' }")
+      const second = await loadConfig({ cwd })
+      console.log(JSON.stringify({
+        brands: [first, second].map((result) => result.config.theme.tokens.colors.brand.value),
+      }))`,
+    )
+
+    expect(output.brands).toEqual(['#0f0', '#f00'])
+  })
+
   test('falls back to the bundler for tsconfig paths', () => {
     const cwd = writeTempProject({
       'node_modules/.keep': '',
