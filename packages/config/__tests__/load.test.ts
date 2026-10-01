@@ -808,7 +808,7 @@ describe('loadConfig module loading', () => {
         export default { outdir: 'styled-system', theme: { tokens: { colors: { brand: { value: brand } } } } }`,
     })
     mkdirSync(join(cwd, 'node_modules/@acme'), { recursive: true })
-    symlinkSync(workspace, join(cwd, 'node_modules/@acme/tokens'), 'dir')
+    symlinkSync(workspace, join(cwd, 'node_modules/@acme/tokens'), 'junction')
 
     const output = loadInNode(
       cwd,
