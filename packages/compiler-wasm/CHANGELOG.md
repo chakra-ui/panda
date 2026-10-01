@@ -1,5 +1,31 @@
 # @pandacss/compiler-wasm
 
+## 2.1.0
+
+### Patch Changes
+
+- 5da09d9: Fix missing styles when a ternary tests a runtime value initialized with `??`, `||`, or `&&`. Keep both
+  reachable style branches instead of treating the fallback as a constant.
+- ee5c50b: Fix `prefer-token` false positives for token-valued ternaries and utilities such as `flex`. Report unknown
+  condition warnings through `extraction-diagnostics` in ESLint and Oxlint.
+- e5a80ea: Fix recipe properties being overridden by a `textStyle`, `layerStyle`, or `animationStyle` in the same
+  recipe. The property you set directly now always wins:
+
+  ```ts
+  // textStyles.body sets fontWeight: 'normal'
+  base: { textStyle: 'body', fontWeight: 'medium' } // now medium, was normal
+  ```
+
+- b44b8e2: Fix `styled()` emitting component defaults such as `srcDoc` as CSS, which could break Storybook and other CSS
+  builds.
+
+  Restore extraction for `styled.tag()` options, conditional recipe defaults, and custom CSS keys in JSX spreads.
+
+- Updated dependencies [cd08564]
+- Updated dependencies [1469790]
+  - @pandacss/compiler-shared@2.1.0
+  - @pandacss/types@2.1.0
+
 ## 2.0.1
 
 ### Patch Changes
