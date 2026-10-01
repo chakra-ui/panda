@@ -6,6 +6,7 @@
 
 use std::{borrow::Cow, ops::Range};
 
+use indexmap::IndexMap;
 use pandacss_config::{UserConfig, theme_condition_name};
 use pandacss_encoder::{
     Atom, AtomValue, ConditionSet, EncodedRecipesSnapshot, Encoder, RecipeStyleEntry,
@@ -36,11 +37,17 @@ use crate::grouped::{GroupNode, write_grouped_rules};
 use crate::numeric_value;
 use crate::sort::{SortContext, SortedAtom, condition_names};
 use crate::style_rules::{
-    Declaration, LoweredTarget, StyleRule, Target, append_declaration, append_declaration_run,
-    append_declarations, flush_pending_rule, push_grouped_rule, push_pending_rule, write_rule,
+    Declaration, ExpandedStyleEntry, LoweredTarget, StyleRule, Target, append_declaration,
+    append_declaration_run, append_declarations, push_grouped_rule, write_rule,
     write_with_wrappers,
 };
 use crate::writer::CssWriter;
+
+#[derive(Clone, Copy)]
+enum InheritedImportance {
+    Normal,
+    Important,
+}
 
 pub(crate) struct EmitOutput {
     pub css: String,
@@ -1186,13 +1193,11 @@ impl<'a> EmitContext<'a> {
             .chain(&recipes.variants)
             .chain(&recipes.compounds)
         {
-            let entries = self.expand_recipe_style_entries(&group.entries);
-            for entry in &entries {
-                let Some(declarations) = self.recipe_entry_declarations(entry) else {
-                    continue;
-                };
+            for rule in
+                self.recipe_group_rules(&group.class_name, &group.conditions, &group.entries)
+            {
                 Self::collect_declarations_usage(
-                    &declarations,
+                    &rule.declarations,
                     token_dictionary,
                     keyframes,
                     &mut marks,
@@ -1498,9 +1503,8 @@ impl<'a> EmitContext<'a> {
         keyframes: Option<&serde_json::Map<String, Value>>,
         marks: &mut UsageMarks,
     ) {
-        for entry in self.style_object_entries(styles) {
-            self.collect_style_entry_usage(&entry, important, token_dictionary, keyframes, marks);
-        }
+        let entries = self.style_object_entries(styles);
+        self.collect_style_entries_usage(&entries, important, token_dictionary, keyframes, marks);
     }
 
     fn collect_style_entries_usage(
@@ -1511,23 +1515,20 @@ impl<'a> EmitContext<'a> {
         keyframes: Option<&serde_json::Map<String, Value>>,
         marks: &mut UsageMarks,
     ) {
-        for entry in entries {
-            self.collect_style_entry_usage(entry, important, token_dictionary, keyframes, marks);
-        }
-    }
-
-    fn collect_style_entry_usage(
-        &self,
-        entry: &RecipeStyleEntry,
-        important: bool,
-        token_dictionary: Option<&TokenDictionary>,
-        keyframes: Option<&serde_json::Map<String, Value>>,
-        marks: &mut UsageMarks,
-    ) {
-        let Some(declarations) = self.style_entry_declarations(entry, important) else {
-            return;
+        let importance = if important {
+            InheritedImportance::Important
+        } else {
+            InheritedImportance::Normal
         };
-        Self::collect_declarations_usage(&declarations, token_dictionary, keyframes, marks);
+        let base_rule = LoweredTarget::new("&");
+        for rule in self.style_rules_for_entries(&[base_rule], entries, importance) {
+            Self::collect_declarations_usage(
+                &rule.declarations,
+                token_dictionary,
+                keyframes,
+                marks,
+            );
+        }
     }
 
     fn group_atoms(&self, atoms: &[SortedAtom<'_>]) -> GroupNode {
@@ -1703,30 +1704,55 @@ impl<'a> EmitContext<'a> {
         base_rules: &[LoweredTarget],
         important: bool,
     ) {
-        // Sorted recipe entries often lower to the same selector + wrapper
-        // target; keep that block pending so declarations coalesce in order.
-        let mut pending: Option<StyleRule> = None;
+        let importance = if important {
+            InheritedImportance::Important
+        } else {
+            InheritedImportance::Normal
+        };
+        for rule in self.style_rules_for_entries(base_rules, entries, importance) {
+            push_grouped_rule(grouped, &rule.target, rule.declarations);
+        }
+    }
+
+    #[must_use]
+    fn style_rules_for_entries(
+        &self,
+        base_rules: &[LoweredTarget],
+        entries: &[RecipeStyleEntry],
+        importance: InheritedImportance,
+    ) -> Vec<StyleRule> {
+        let mut rules: IndexMap<LoweredTarget, Vec<Declaration>, FxBuildHasher> =
+            IndexMap::default();
         let entries = self.expand_recipe_style_entries(entries);
-        for entry in self.sort.sorted_recipe_entries(&entries) {
-            let Some(declarations) = self.style_entry_declarations(entry.entry, important) else {
+
+        for entry in self.sort.sorted_expanded_entries(&entries) {
+            let Some(mut declarations) = self.style_entry_declarations(
+                entry.entry,
+                matches!(importance, InheritedImportance::Important),
+            ) else {
                 continue;
             };
             if declarations.is_empty() {
                 continue;
             }
+            for declaration in &mut declarations {
+                declaration.composition_depth = entry.composition_depth;
+            }
 
             for base_rule in base_rules {
                 for rule in self.lower_rule_conditions(base_rule, &entry.conditions) {
-                    push_pending_rule(&mut pending, rule, declarations.clone(), |previous| {
-                        push_grouped_rule(grouped, &previous.target, previous.declarations);
-                    });
+                    append_declarations(rules.entry(rule).or_default(), declarations.clone());
                 }
             }
         }
 
-        flush_pending_rule(pending, |pending| {
-            push_grouped_rule(grouped, &pending.target, pending.declarations);
-        });
+        rules
+            .into_iter()
+            .map(|(target, declarations)| StyleRule {
+                target,
+                declarations,
+            })
+            .collect()
     }
 
     fn declarations_from_literal(
@@ -2209,9 +2235,7 @@ impl<'a> EmitContext<'a> {
         }
     }
 
-    /// Emit one recipe class's rules. Entries are sorted then coalesced:
-    /// consecutive entries that resolve to the same rule target (selector +
-    /// wrappers) are merged into a single block rather than re-opening it.
+    /// Emit one recipe class after merging declarations by selector and wrappers.
     fn write_recipe_group(
         &self,
         writer: &mut CssWriter,
@@ -2219,7 +2243,18 @@ impl<'a> EmitContext<'a> {
         class_conditions: &[Box<str>],
         entries: &[RecipeStyleEntry],
     ) {
-        let mut pending: Option<StyleRule> = None;
+        for rule in self.recipe_group_rules(class_name, class_conditions, entries) {
+            write_rule(writer, &rule.target, &rule.declarations);
+        }
+    }
+
+    #[must_use]
+    fn recipe_group_rules(
+        &self,
+        class_name: &str,
+        class_conditions: &[Box<str>],
+        entries: &[RecipeStyleEntry],
+    ) -> Vec<StyleRule> {
         let class_conditions = condition_names(class_conditions);
         // Class conditions preserve runtime class-name order; rule conditions
         // are separately sorted for cascade before selector lowering.
@@ -2233,88 +2268,17 @@ impl<'a> EmitContext<'a> {
             &rule_conditions,
         );
 
-        let entries = self.expand_recipe_style_entries(entries);
-        for entry in self.sort.sorted_recipe_entries(&entries) {
-            let Some(declarations) = self.recipe_entry_declarations(entry.entry) else {
-                continue;
-            };
-            if declarations.is_empty() {
-                continue;
-            }
-
-            for base_rule in &base_rules {
-                for rule in self.lower_rule_conditions(base_rule, &entry.conditions) {
-                    push_pending_rule(&mut pending, rule, declarations.clone(), |previous| {
-                        write_rule(writer, &previous.target, &previous.declarations);
-                    });
-                }
-            }
-        }
-
-        flush_pending_rule(pending, |pending| {
-            write_rule(writer, &pending.target, &pending.declarations);
-        });
+        self.style_rules_for_entries(&base_rules, entries, InheritedImportance::Normal)
     }
 
-    fn expand_recipe_style_entries(&self, entries: &[RecipeStyleEntry]) -> Vec<RecipeStyleEntry> {
-        let mut explicit = Vec::new();
-        let mut compositions = Vec::new();
-        let mut explicit_seen = FxHashSet::default();
-        let mut composition_seen = FxHashSet::default();
-
+    #[must_use]
+    fn expand_recipe_style_entries(&self, entries: &[RecipeStyleEntry]) -> Vec<ExpandedStyleEntry> {
+        let mut expanded = FxHashSet::default();
+        let mut active = FxHashSet::default();
         for entry in entries {
-            let (seen, out) = if is_composition_prop(&entry.prop) {
-                (&mut composition_seen, &mut compositions)
-            } else {
-                (&mut explicit_seen, &mut explicit)
-            };
-            let mut active = FxHashSet::default();
-            self.expand_recipe_style_entry(entry, &mut active, seen, out);
+            self.expand_recipe_style_entry(entry, 0, &mut active, &mut expanded);
         }
-
-        if compositions.is_empty() || explicit.is_empty() {
-            compositions.extend(explicit);
-            return compositions;
-        }
-
-        let mut explicit_properties = FxHashMap::default();
-        for entry in &explicit {
-            let key = (
-                entry.prop.as_ref(),
-                self.sort.sorted_condition_names(&entry.conditions),
-            );
-            explicit_properties
-                .entry(key)
-                .and_modify(|important| *important |= entry.important)
-                .or_insert(entry.important);
-        }
-
-        // Resolve composition defaults before value sorting can reverse their precedence.
-        compositions.retain(|entry| {
-            let key = (
-                entry.prop.as_ref(),
-                self.sort.sorted_condition_names(&entry.conditions),
-            );
-            let Some(&explicit_important) = explicit_properties.get(&key) else {
-                return true;
-            };
-
-            entry.important && !explicit_important
-        });
-
-        compositions.extend(explicit);
-        compositions
-    }
-
-    fn push_recipe_style_entry(
-        entry: &RecipeStyleEntry,
-        seen: &mut FxHashSet<RecipeStyleEntry>,
-        out: &mut Vec<RecipeStyleEntry>,
-    ) {
-        let entry = entry.clone();
-        if seen.insert(entry.clone()) {
-            out.push(entry);
-        }
+        expanded.into_iter().collect()
     }
 
     fn recipe_style_expansion_key(entry: &RecipeStyleEntry) -> (Box<str>, AtomValue) {
@@ -2324,9 +2288,9 @@ impl<'a> EmitContext<'a> {
     fn expand_recipe_style_entry(
         &self,
         entry: &RecipeStyleEntry,
+        composition_depth: usize,
         active: &mut FxHashSet<(Box<str>, AtomValue)>,
-        seen: &mut FxHashSet<RecipeStyleEntry>,
-        out: &mut Vec<RecipeStyleEntry>,
+        out: &mut FxHashSet<ExpandedStyleEntry>,
     ) {
         let key = Self::recipe_style_expansion_key(entry);
         if !active.insert(key.clone()) {
@@ -2338,11 +2302,19 @@ impl<'a> EmitContext<'a> {
             .or_else(|| self.nested_utility_style_entries(entry.prop.as_ref(), &entry.value));
 
         let Some(entries) = expanded else {
-            Self::push_recipe_style_entry(entry, seen, out);
+            out.insert(ExpandedStyleEntry {
+                entry: entry.clone(),
+                composition_depth,
+            });
             active.remove(&key);
             return;
         };
 
+        let composition_depth = if is_composition_prop(&entry.prop) {
+            composition_depth + 1
+        } else {
+            composition_depth
+        };
         for mut next in entries {
             if !entry.conditions.is_empty() {
                 let mut conditions = entry.conditions.clone();
@@ -2350,13 +2322,9 @@ impl<'a> EmitContext<'a> {
                 next.conditions = conditions;
             }
             next.important = entry.important || next.important;
-            self.expand_recipe_style_entry(&next, active, seen, out);
+            self.expand_recipe_style_entry(&next, composition_depth, active, out);
         }
         active.remove(&key);
-    }
-
-    fn recipe_entry_declarations(&self, entry: &RecipeStyleEntry) -> Option<Vec<Declaration>> {
-        self.style_entry_declarations(entry, false)
     }
 
     fn style_entry_declarations(
@@ -2785,6 +2753,7 @@ fn declarations_from_entries(
                     prop: hyphenate_property(prop),
                     value: value.into_owned(),
                     important: important || value_important,
+                    composition_depth: 0,
                 },
             );
         }
