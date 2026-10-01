@@ -1,8 +1,57 @@
 use super::common::{
-    patterns_only_options, transform, transform_with_options, transform_with_shorthands,
+    patterns_only_options, project_with_jsx, transform, transform_with_options,
+    transform_with_project, transform_with_shorthands,
 };
 use indoc::indoc;
 use insta::assert_snapshot;
+
+#[test]
+fn static_nested_properties_warn_even_when_no_rewrite_lands() {
+    let source = indoc! {r#"
+        import { css, cva } from '@panda/css';
+        const a = css({ has: { svg: { color: 'red' } } });
+        const b = cva({ base: { has: { svg: { color: 'red' } } } });
+    "#};
+    let output = transform("src/button.ts", source);
+
+    assert!(!output.changed);
+    assert_eq!(output.code, source);
+    assert_eq!(output.diagnostics.len(), 2);
+    assert!(output.diagnostics.iter().all(|diagnostic| {
+        diagnostic.code == "nested_property"
+            && diagnostic.file.as_deref() == Some("src/button.ts")
+            && diagnostic.span.is_some()
+            && diagnostic.location.is_some()
+            && diagnostic.message.contains("'&:has(svg)'")
+    }));
+}
+
+#[test]
+fn jsx_css_prop_warns_but_a_selector_does_not() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        const bad = <Box css={{ has: { svg: { color: 'red' } } }} />;
+        const good = <Box css={{ '&:has(svg)': { color: 'red' } }} />;
+    "#};
+    let output = transform_with_project(&project_with_jsx(), "src/button.tsx", source);
+
+    assert_eq!(output.diagnostics.len(), 1);
+    assert_eq!(output.diagnostics[0].code, "nested_property");
+    assert!(output.diagnostics[0].message.contains("'&:has(svg)'"));
+}
+
+#[test]
+fn styled_factory_config_reports_nested_property() {
+    let source = indoc! {r#"
+        import { styled } from '@panda/jsx';
+        const Button = styled('button', { has: { svg: { color: 'red' } } });
+    "#};
+    let output = transform_with_project(&project_with_jsx(), "src/button.tsx", source);
+
+    assert_eq!(output.diagnostics.len(), 1);
+    assert_eq!(output.diagnostics[0].code, "nested_property");
+    assert!(output.diagnostics[0].message.contains("'&:has(svg)'"));
+}
 
 #[test]
 fn rewrites_finite_conditional_css_value_to_runtime_ternary() {

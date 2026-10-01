@@ -515,7 +515,7 @@ impl Project {
         for call in result.calls {
             push_nested_property_diagnostic(
                 &mut encoder,
-                compiled.conditions(),
+                compiled,
                 last_span.replace(call.span),
                 &line_index,
                 &mut report.diagnostics,
@@ -796,7 +796,7 @@ impl Project {
         for jsx in result.jsx {
             push_nested_property_diagnostic(
                 &mut encoder,
-                compiled.conditions(),
+                compiled,
                 last_span.replace(jsx.span),
                 &line_index,
                 &mut report.diagnostics,
@@ -849,7 +849,7 @@ impl Project {
 
         push_nested_property_diagnostic(
             &mut encoder,
-            compiled.conditions(),
+            compiled,
             last_span,
             &line_index,
             &mut report.diagnostics,

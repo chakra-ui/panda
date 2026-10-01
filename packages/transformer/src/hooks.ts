@@ -49,7 +49,7 @@ export function runSourceTransform(
     ctx.addWatchFile?.(dep)
   }
 
-  if (!result.changed) return null
+  if (!result.changed && result.diagnostics.length === 0) return null
 
   return {
     code: result.code,

@@ -8,6 +8,7 @@
 mod apply;
 mod css_keys;
 mod css_partial;
+mod diagnostics;
 mod helper;
 mod imports;
 mod js;
@@ -108,7 +109,15 @@ pub fn transform_source_with(
         let _span = tracing::trace_span!(target: "transform", "transform_plan").entered();
         plan::build_plan(system, source, &extracted, options, transforms.pattern)
     };
+    let nested_diagnostics = diagnostics::nested_property_diagnostics(
+        system,
+        source,
+        path,
+        &extracted,
+        &options.targets,
+    );
     let mut diagnostics = extracted.diagnostics;
+    diagnostics.extend(nested_diagnostics);
     diagnostics.extend(
         plan.hashed_recipe
             .map(|span| hashed_recipe_warning(path, span)),

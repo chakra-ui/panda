@@ -373,6 +373,29 @@ describe('@pandacss/vite design-system HMR', () => {
     `)
   })
 
+  it('warns when source transformation leaves a broken static call unchanged', async () => {
+    const { driver, pandacss } = await setup()
+    const plugin = pandacss({ transform: true }) as unknown as TestPlugin
+    const warn = vi.fn()
+    const code = "import { css } from '@panda/css'\nexport const cls = css({ has: { svg: { color: 'red' } } })"
+
+    driver.sourceTransformer.transformSource.mockReturnValueOnce({
+      code,
+      map: null,
+      changed: false,
+      bailed: true,
+      diagnostics: [{ code: 'nested_property', severity: 'warning', message: 'Use a selector instead.' }],
+      dependencies: [],
+      helper: { needsCx: false, needsAttachRecipe: false, needsMemoRecipe: false },
+    })
+
+    await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
+    const result = plugin.transform.handler.call({ addWatchFile: vi.fn(), warn }, code, '/project/src/app.tsx')
+
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('warning nested_property'))
+    expect(result).toEqual({ code, map: null })
+  })
+
   it('rebuilds the cached source transformer after a compiler reload', async () => {
     const { createSourceTransformer, driver, pandacss } = await setup()
     const plugin = pandacss({ transform: true }) as unknown as TestPlugin

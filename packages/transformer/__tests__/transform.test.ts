@@ -166,6 +166,35 @@ describe('transformSource', () => {
 })
 
 describe('runSourceTransform', () => {
+  it('returns warnings when a static call cannot be rewritten', () => {
+    const diagnostic: TransformSourceResult['diagnostics'][number] = {
+      code: 'nested_property',
+      severity: 'warning',
+      message: 'Use a selector instead.',
+    }
+    const source = "css({ has: { svg: { color: 'red' } } })"
+    const compiler = {
+      transformSource: vi.fn(() => ({
+        code: source,
+        map: null,
+        changed: false,
+        bailed: true,
+        diagnostics: [diagnostic],
+        dependencies: [],
+        helper: { needsCx: false, needsAttachRecipe: false, needsMemoRecipe: false },
+      })),
+    } as unknown as Compiler
+
+    expect(runSourceTransform({}, { compiler }, source, '/project/App.tsx')).toEqual({
+      code: source,
+      map: null,
+      changed: false,
+      bailed: true,
+      diagnostics: [diagnostic],
+      dependencies: [],
+    })
+  })
+
   it('returns diagnostics alongside transformed output and registers dependencies', () => {
     const addWatchFile = vi.fn()
     const diagnostic: TransformSourceResult['diagnostics'][number] = {

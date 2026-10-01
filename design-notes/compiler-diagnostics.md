@@ -92,6 +92,8 @@ Prefer emitting diagnostics at the layer that owns the facts:
   statically extracted.
 - The project owns diagnostics that require compiled project state, such as deprecated utility use and transform
   callback failures.
+- Project parsing and source transformation both report `nested_property` using the compiled `System`'s condition
+  names and shared message. A transform warning survives when its source text is unchanged.
 - The stylesheet owns CSS generation diagnostics, including static CSS authoring issues and unsupported stylesheet
   modes.
 

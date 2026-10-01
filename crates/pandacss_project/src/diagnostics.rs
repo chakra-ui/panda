@@ -1,4 +1,4 @@
-use pandacss_encoder::{ConditionMatcher, Encoder, NestedProperty};
+use pandacss_encoder::{ConditionMatcher, Encoder};
 use pandacss_extractor::{ExtractedCall, ExtractedJsx, LineIndex, MatchCategory, Span};
 use pandacss_literal::Literal;
 use pandacss_shared::{Diagnostic, diagnostic_codes};
@@ -160,7 +160,7 @@ fn unknown_condition_diagnostic(
 
 pub(super) fn push_nested_property_diagnostic(
     encoder: &mut Encoder<ProjectConditionMatcher>,
-    conditions: &ProjectConditionMatcher,
+    system: &System,
     span: Option<Span>,
     line_index: &LineIndex<'_>,
     out: &mut Vec<Diagnostic>,
@@ -170,7 +170,7 @@ pub(super) fn push_nested_property_diagnostic(
     };
     out.push(located_warning(
         diagnostic_codes::NESTED_PROPERTY,
-        nested_property_message(&nested, conditions),
+        system.nested_property_message(&nested),
         span,
         line_index,
     ));
@@ -180,13 +180,12 @@ pub(super) fn push_config_recipe_nested_property_diagnostics(
     system: &System,
     out: &mut Vec<Diagnostic>,
 ) {
-    let conditions = system.conditions();
-    let mut encoder = Encoder::with_conditions(conditions.clone());
+    let mut encoder = Encoder::with_conditions(system.conditions().clone());
     let mut push = |source: &str, encoder: &mut Encoder<ProjectConditionMatcher>| {
         if let Some(nested) = encoder.take_nested_property() {
             out.push(Diagnostic::warning(
                 diagnostic_codes::NESTED_PROPERTY,
-                format!("{source}: {}", nested_property_message(&nested, conditions)),
+                format!("{source}: {}", system.nested_property_message(&nested)),
             ));
         }
     };
@@ -198,24 +197,6 @@ pub(super) fn push_config_recipe_nested_property_diagnostics(
         system.process_slot_recipe_atoms(&mut encoder, recipe);
         push(&source, &mut encoder);
     }
-}
-
-pub(super) fn nested_property_message(
-    nested: &NestedProperty,
-    conditions: &ProjectConditionMatcher,
-) -> String {
-    let NestedProperty { key, nested, path } = nested;
-    let condition = format!("_{key}");
-    let fix = if conditions.is_condition(&condition) {
-        format!("`{condition}`")
-    } else if matches!(&**key, "has" | "is" | "not" | "where") {
-        format!("`'&:{key}({nested})'`")
-    } else {
-        format!("a condition like `_hover` or a selector like `'& {key}'`")
-    };
-    format!(
-        "`{key}` in `{path}` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use {fix} instead."
-    )
 }
 
 pub(super) fn push_invalid_color_opacity_modifier_diagnostics(
