@@ -81,7 +81,7 @@ async function registerTranspileHooks(): Promise<void> {
 }
 
 function sessionId(url: string | undefined): string | undefined {
-  if (!url?.startsWith('file:')) return undefined
+  if (!url?.startsWith('file:') || !url.includes(`${SESSION_PARAM}=`)) return undefined
   return new URL(url).searchParams.get(SESSION_PARAM) ?? undefined
 }
 
