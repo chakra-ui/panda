@@ -1,5 +1,88 @@
 # @pandacss/compiler
 
+## 2.1.0
+
+### Minor Changes
+
+- cd08564: Add `get_usage_report` to the MCP server for auditing tokens, recipes, utilities, patterns, and keyframes.
+  Add `analyzeSources` to share source analysis between the CLI and MCP server.
+
+### Patch Changes
+
+- 5da09d9: Fix missing styles when a ternary tests a runtime value initialized with `??`, `||`, or `&&`. Keep both
+  reachable style branches instead of treating the fallback as a constant.
+- ee5c50b: Fix `prefer-token` false positives for token-valued ternaries and utilities such as `flex`. Report unknown
+  condition warnings through `extraction-diagnostics` in ESLint and Oxlint.
+- ba062cd: Fix generated types rejecting `undefined` under `exactOptionalPropertyTypes`: recipe variant props and style
+  props like `css({ color: isActive ? 'red' : undefined })` now type-check, and Preact styled components work as JSX
+  elements with that option on.
+- ea34d1e: Fix recipe components like `<Card.Root>` getting no CSS when rendered in the same file that defines `Card`,
+  such as one built with `createSlotRecipeContext`.
+- 76c5e6a: Fix token references in values, as in 1.x:
+
+  - `css({ '--offset': '{spacing.-2}' })` now emits `calc(var(--spacing-2) * -1)` instead of an empty rule.
+  - References like `{colors.red}` resolve even when the config has no utilities (no preset).
+
+- bd891e8: Fix nested conditions applying in the wrong order. Hovering a button now recolors its icon again:
+
+  ```ts
+  css({ _hover: { _icon: { color: 'red' } } })
+  // before: .x :where(svg):hover  (only when the icon itself is hovered)
+  // after:  .x:hover :where(svg)
+  ```
+
+- 1469790: Warn when styles are nested under a key that isn't a condition or selector, like
+  `css({ has: { svg: { color: 'red' } } })`. These styles never applied; the new `nested_property` warning suggests a
+  fix, such as `'&:has(svg)'`.
+- 702ee2a: Fix `polyfill: true` producing broken CSS for class names with escaped characters such as `:`, `,`, `"`, or
+  `#`:
+
+  ```ts
+  css({ animation: 'fadeIn 1s, slideUp 1s' })
+  // before: .animation_fadeIn_1s\:not(#\#),_slideUp_1s:not(#\#)
+  // after:  .animation_fadeIn_1s\,_slideUp_1s:not(#\#)
+  ```
+
+- 4a781a0: Fix `polyfill: true` letting unlayered `!important` CSS override Panda's `!important` utilities. Every
+  layered `!important` rule now outranks unlayered ones, as native cascade layers do.
+- e5a80ea: Fix recipe properties being overridden by a `textStyle`, `layerStyle`, or `animationStyle` in the same
+  recipe. The property you set directly now always wins:
+
+  ```ts
+  // textStyles.body sets fontWeight: 'normal'
+  base: { textStyle: 'body', fontWeight: 'medium' } // now medium, was normal
+  ```
+
+- 916c77c: Fix two recipe type regressions: slot recipe calls like `card().root` are typed as `string` again, and
+  `variantMap` arrays no longer include `undefined`.
+- a37c416: Fix Solid components built with `createRecipeContext` / `createSlotRecipeContext` losing their prop types,
+  and remove type errors from the generated `jsx` types for Solid, Preact and Vue. `ComponentPropsOf` is now
+  `ComponentProps` in every framework.
+- b44b8e2: Fix `styled()` emitting component defaults such as `srcDoc` as CSS, which could break Storybook and other CSS
+  builds.
+
+  Restore extraction for `styled.tag()` options, conditional recipe defaults, and custom CSS keys in JSX spreads.
+
+- f4e1418: Fix `styled()` and recipe context components not being assignable to `ComponentType<Props>` when `Props` is
+  an interface, as in 1.x. `data-*` attributes still work in JSX and `defaultProps`.
+
+  ```tsx
+  interface IconProps {
+    size?: number
+  }
+  const RedIcon: ComponentType<IconProps> = styled(Icon, { base: { color: 'red.500' } })
+  ```
+
+- b198b21: Fix `createSlotRecipeContext` dropping `sva()` slot classes in React, Preact, and Vue. Parts of an
+  `sva({ className: 'card' })` recipe get `card__root`, `card__title`, … again, as in Solid and 1.x.
+- 0acc0dc: Fix styles in a Vue template being ignored when they came after a nested `<template>`, such as a `v-if` group
+  or a slot.
+- Updated dependencies [cd08564]
+- Updated dependencies [1469790]
+  - @pandacss/compiler-shared@2.1.0
+  - @pandacss/config@2.1.0
+  - @pandacss/types@2.1.0
+
 ## 2.0.1
 
 ### Patch Changes

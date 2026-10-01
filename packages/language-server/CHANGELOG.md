@@ -1,5 +1,32 @@
 # @pandacss/language-server
 
+## 2.1.0
+
+### Patch Changes
+
+- Updated dependencies [5da09d9]
+- Updated dependencies [ee5c50b]
+- Updated dependencies [ba062cd]
+- Updated dependencies [ea34d1e]
+- Updated dependencies [cd08564]
+- Updated dependencies [76c5e6a]
+- Updated dependencies [bd891e8]
+- Updated dependencies [1469790]
+- Updated dependencies [1469790]
+- Updated dependencies [702ee2a]
+- Updated dependencies [4a781a0]
+- Updated dependencies [e5a80ea]
+- Updated dependencies [916c77c]
+- Updated dependencies [a37c416]
+- Updated dependencies [b44b8e2]
+- Updated dependencies [f4e1418]
+- Updated dependencies [b198b21]
+- Updated dependencies [0acc0dc]
+  - @pandacss/compiler@2.1.0
+  - @pandacss/compiler-shared@2.1.0
+  - @pandacss/typescript-plugin@2.1.0
+  - @pandacss/types@2.1.0
+
 ## 2.0.1
 
 ### Patch Changes

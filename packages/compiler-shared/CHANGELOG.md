@@ -1,5 +1,18 @@
 # @pandacss/compiler-shared
 
+## 2.1.0
+
+### Minor Changes
+
+- cd08564: Add `get_usage_report` to the MCP server for auditing tokens, recipes, utilities, patterns, and keyframes.
+  Add `analyzeSources` to share source analysis between the CLI and MCP server.
+
+### Patch Changes
+
+- 1469790: The Vite and Bun plugins no longer print the same warning twice, once when a file is parsed and again when
+  the stylesheet is built.
+  - @pandacss/types@2.1.0
+
 ## 2.0.1
 
 ### Patch Changes
