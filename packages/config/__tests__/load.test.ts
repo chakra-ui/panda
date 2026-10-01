@@ -625,7 +625,7 @@ describe('loadConfig presets', () => {
       'panda.config.ts': `export default { outdir: 'styled-system', presets: ['linked-brand'] }`,
     })
     mkdirSync(join(cwd, 'node_modules'), { recursive: true })
-    symlinkSync(workspace, join(cwd, 'node_modules/linked-brand'), 'dir')
+    symlinkSync(workspace, join(cwd, 'node_modules/linked-brand'), 'junction')
 
     expect(brand(await loadConfig({ cwd }))).toBe('#0f0')
 
