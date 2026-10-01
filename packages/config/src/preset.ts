@@ -1,6 +1,6 @@
 import type { Config, UserConfig } from '@pandacss/types'
 import { normalize, relative } from 'node:path'
-import { bundleConfig } from './bundle'
+import { bundleConfig, importInstalledConfig } from './bundle'
 import {
   loadDesignSystemChain,
   withDesignSystemImportMap,
@@ -289,7 +289,9 @@ async function runPresetResolvedHooks(
 async function resolvePreset(preset: PresetEntry, cwd: string) {
   if (typeof preset === 'string') {
     try {
-      const result = await bundleConfig<ExtendableConfig>(preset, cwd)
+      const result =
+        (await importInstalledConfig<ExtendableConfig>(preset, cwd)) ??
+        (await bundleConfig<ExtendableConfig>(preset, cwd))
       return {
         config: ensureConfigObject(result.config, preset),
         dependencies: result.dependencies,
