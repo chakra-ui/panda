@@ -1,3 +1,4 @@
+import { parseArgs } from 'node:util'
 import type { ArgsDef } from 'citty'
 import type { FlagsInfer, FlagsSchema, Issue, ParseResult, Shape } from './flags-schema'
 
@@ -58,22 +59,23 @@ export function normalizeInclude(value: unknown): string[] | undefined {
   return globs.length > 0 ? globs : undefined
 }
 
-const LIST_FLAGS = ['include', 'files']
+const LIST_FLAG_OPTIONS = {
+  include: { type: 'string', multiple: true },
+  files: { type: 'string', multiple: true },
+} as const
 
 /** citty keeps only the last value of a repeated flag, so list flags are read from argv. */
 export function collectListFlags(rawArgs: readonly string[]): Record<string, string[]> {
+  const { values } = parseArgs({
+    args: [...rawArgs],
+    options: LIST_FLAG_OPTIONS,
+    strict: false,
+    allowPositionals: true,
+  })
   const lists: Record<string, string[]> = {}
-  for (let index = 0; index < rawArgs.length; index++) {
-    const arg = rawArgs[index]!
-    if (arg === '--') break
-    for (const name of LIST_FLAGS) {
-      const flag = `--${name}`
-      if (arg === flag && index + 1 < rawArgs.length) {
-        ;(lists[name] ??= []).push(rawArgs[++index]!)
-      } else if (arg.startsWith(`${flag}=`)) {
-        ;(lists[name] ??= []).push(arg.slice(flag.length + 1))
-      }
-    }
+  for (const name of Object.keys(LIST_FLAG_OPTIONS)) {
+    const entries = (values[name] as unknown[] | undefined)?.filter((entry) => typeof entry === 'string')
+    if (entries?.length) lists[name] = entries
   }
   return lists
 }
