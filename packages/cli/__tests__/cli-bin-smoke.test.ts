@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
@@ -10,6 +11,16 @@ const bin = resolve(root, 'packages/cli/bin.js')
 const version = readCliVersion()
 const describeBinSmoke =
   process.env.PANDA_CLI_BIN_SMOKE === '1' || process.env.npm_lifecycle_event === 'test:bin' ? describe : describe.skip
+
+function eagerImports(file: string, seen = new Set<string>()): Set<string> {
+  if (seen.has(file)) return seen
+  seen.add(file)
+  for (const [, specifier] of readFileSync(file, 'utf8').matchAll(/^import[^'"]*["']([^'"]+)["']/gm)) {
+    if (specifier!.startsWith('.')) eagerImports(resolve(dirname(file), specifier!), seen)
+    else seen.add(specifier!)
+  }
+  return seen
+}
 
 function runBin(args: string[]) {
   const result = spawnSync(process.execPath, [bin, ...args], {
@@ -44,5 +55,10 @@ describeBinSmoke('cli bin smoke', () => {
     expect(initHelp.exitCode).toBe(0)
     expect(initHelp.stdout).toContain('--skip-presets')
     expect(initHelp.stdout).not.toContain('--no-input')
+  })
+
+  it('loads init and debug dependencies only for those commands', () => {
+    const loaded = eagerImports(resolve(root, 'packages/cli/dist/cli-main.js'))
+    expect([...loaded].filter((id) => ['string-width', 'fflate', '@clack/prompts'].includes(id))).toEqual([])
   })
 })
