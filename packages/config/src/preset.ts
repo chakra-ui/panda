@@ -16,7 +16,7 @@ import { collectPluginHookHandlers, normalizeHook, type PluginHookEntry } from '
 import { collectPatternNames, collectRecipeNames } from './artifact-names'
 import { mergeConfigs, mergeConfigsWithSources, type SourcedConfig } from './merge'
 import { diffClassNameOptions, normalizeClassNameOptions, type NormalizedClassNameOptions } from './normalize'
-import { ensureConfigObject, errorMessage, isPlainObject, type ExtendableConfig } from './shared'
+import { clone, ensureConfigObject, errorMessage, isPlainObject, type ExtendableConfig } from './shared'
 import type { ConfigSources } from './sources'
 
 type PresetEntry = NonNullable<Config['presets']>[number]
@@ -272,7 +272,7 @@ async function runPresetResolvedHooks(
   source: ConfigSource,
   hooks: Array<PluginHookEntry<'preset:resolved'>>,
 ): Promise<ExtendableConfig> {
-  let current = preset
+  let current = hooks.length > 0 ? clone(preset) : preset
   const name = source.name ?? source.specifier ?? presetName(current) ?? 'unknown-preset'
 
   for (const entry of hooks) {

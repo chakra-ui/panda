@@ -585,6 +585,25 @@ describe('loadConfig presets', () => {
     expect(reloaded.dependencies).toContain(join('node_modules', 'brand-preset', 'index.js'))
   })
 
+  test('gives preset:resolved hooks a copy of an installed preset', async () => {
+    const cwd = writeTempProject({
+      'node_modules/brand-preset/package.json': JSON.stringify({
+        name: 'brand-preset',
+        type: 'module',
+        exports: './index.js',
+      }),
+      'node_modules/brand-preset/index.js': brandPreset('#0f0'),
+      'panda.config.ts': `export default {
+        outdir: 'styled-system',
+        presets: ['brand-preset'],
+        plugins: [{ name: 'suffix', hooks: { 'preset:resolved': ({ preset }) => { preset.theme.tokens.colors.brand.value += '!' } } }],
+      }`,
+    })
+
+    expect(brand(await loadConfig({ cwd }))).toBe('#0f0!')
+    expect(brand(await loadConfig({ cwd }))).toBe('#0f0!')
+  })
+
   test('bundles a CommonJS preset package given by name', async () => {
     const result = await loadTempConfig({
       'node_modules/cjs-brand/package.json': JSON.stringify({ name: 'cjs-brand', main: 'index.cjs' }),
