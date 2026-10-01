@@ -272,7 +272,7 @@ fn optimize_tokens_keeps_custom_property_direct_token_path_references() {
     }
     @layer utilities {
       .\--css-var_colors\.red\.300 {
-        --css-var: colors.red.300;
+        --css-var: var(--colors-red-300);
       }
       .color_var\(--css-var\) {
         color: var(--css-var);
@@ -312,7 +312,7 @@ fn optimize_tokens_keeps_custom_property_curly_token_modifier_references() {
     }
     @layer utilities {
       .\--css-var_\{colors\.red\.300\/40\} {
-        --css-var: {colors.red.300/40};
+        --css-var: color-mix(in oklab, var(--colors-red-300) 40%, transparent);
       }
       .color_var\(--css-var\) {
         color: var(--css-var);
