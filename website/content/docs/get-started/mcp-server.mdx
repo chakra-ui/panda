@@ -15,7 +15,8 @@ AI assistants can use to:
 - Look up design tokens and their values
 - Understand available component recipes and variants
 - Query layout patterns and their properties
-- Analyze token and recipe usage across your codebase
+- Inspect configured conditions, animations, and style compositions
+- Audit source usage and find unused tokens, recipes, patterns, and keyframes
 
 ## Quick Start
 
@@ -42,7 +43,7 @@ Once configured, your AI assistant will automatically have access to Panda CSS t
 
 - "What color tokens are available in my design system?"
 - "Show me the button recipe variants"
-- "Which tokens are unused in my codebase?"
+- "What text styles are available?"
 - "What breakpoints are defined?"
 
 ## CLI Commands
@@ -84,23 +85,28 @@ The MCP server can be used with AI assistants that support local stdio MCP serve
 
 The MCP server exposes these tools to AI assistants:
 
-| Tool                   | Description                                                         | Input                                     |
-| ---------------------- | ------------------------------------------------------------------- | ----------------------------------------- |
-| `get_tokens`           | Get design tokens with values, CSS variables, and usage examples    | `category?` - filter by token category    |
-| `get_semantic_tokens`  | Get semantic tokens with conditional values (dark mode, responsive) | `category?` - filter by token category    |
-| `get_color_palette`    | Get the complete color palette                                      | -                                         |
-| `get_recipes`          | Get component recipes with variants and default values              | `name?` - filter by recipe name           |
-| `get_patterns`         | Get layout patterns with properties and usage examples              | `name?` - filter by pattern name          |
-| `get_conditions`       | Get all conditions (breakpoints, pseudo-classes, color modes)       | -                                         |
-| `get_keyframes`        | Get keyframe animations defined in the theme                        | -                                         |
-| `get_text_styles`      | Get text style compositions for typography                          | -                                         |
-| `get_layer_styles`     | Get layer style compositions for visual styling                     | -                                         |
-| `get_animation_styles` | Get animation style compositions                                    | -                                         |
-| `get_config`           | Get the resolved Panda CSS configuration                            | -                                         |
-| `get_usage_report`     | Analyze token/recipe usage across the codebase                      | `scope?` - `'all'`, `'token'`, `'recipe'` |
+| Tool                   | Description                                                           | Input                                  |
+| ---------------------- | --------------------------------------------------------------------- | -------------------------------------- |
+| `get_tokens`           | Get design tokens with values, CSS variables, and usage examples      | `category?` - filter by token category |
+| `get_semantic_tokens`  | Get semantic tokens with conditional values (dark mode, responsive)   | `category?` - filter by token category |
+| `get_color_palette`    | Get the complete color palette                                        | -                                      |
+| `get_recipes`          | Get component recipes with variants and default values                | `name?` - filter by recipe name        |
+| `get_patterns`         | Get layout patterns with properties and usage examples                | `name?` - filter by pattern name       |
+| `get_conditions`       | Get all conditions (breakpoints, pseudo-classes, color modes)         | -                                      |
+| `get_keyframes`        | Get keyframe animations defined in the theme                          | -                                      |
+| `get_text_styles`      | Get text style compositions for typography                            | -                                      |
+| `get_layer_styles`     | Get layer style compositions for visual styling                       | -                                      |
+| `get_animation_styles` | Get animation style compositions                                      | -                                      |
+| `get_config`           | Get the resolved Panda CSS configuration                              | -                                      |
+| `get_usage_report`     | Scan source files for design-system usage and unused configured names | `scope?` - select a report scope       |
 
-The `get_usage_report` tool is particularly useful for auditing your design system, identifying unused tokens/recipes,
-and finding missing definitions.
+`get_usage_report` scans files matching your configured `include` and `exclude` paths on each call. Its optional `scope`
+accepts `all` (the default), `tokens`, `recipes`, `utilities`, `patterns`, or `keyframes`.
+
+Reports include usage counts, source locations, unused configured names, and diagnostics. Token reports also include raw
+values and token suggestions; recipe reports include variant usage. Reports with file-read errors or JavaScript parse
+errors are returned as MCP tool errors and may be incomplete. Other tools query your resolved design-system
+configuration.
 
 ## Configuration
 
@@ -195,11 +201,18 @@ The AI will use `get_tokens` with `category: "spacing"` to show you all spacing 
 
 The AI will use `get_recipes` with `name: "button"` to show variants and usage.
 
-### Finding Unused Tokens
+### Finding unused tokens
 
-> "Which design tokens are not being used in my codebase?"
+> "Which tokens aren't used in this project?"
 
-The AI will use `get_usage_report` with `scope: "token"` to identify unused tokens.
+The AI will use `get_usage_report` with `scope: "tokens"` to show token usage and unused configured tokens.
+
+### Auditing patterns and animations
+
+> "Where do we use the stack pattern?"
+
+The AI will use `get_usage_report` with `scope: "patterns"` to show pattern usage and source locations. Use
+`scope: "keyframes"` to audit animation references, or `scope: "all"` for all five usage categories.
 
 ### Checking Conditions
 
@@ -225,10 +238,7 @@ If tools aren't showing up in your AI assistant:
 2. Verify the config file is in the correct location
 3. Check the AI assistant's MCP documentation for any additional setup steps
 
-### Usage Report Empty
+### Usage report scans no files
 
-If `get_usage_report` returns empty results:
-
-1. Ensure your `include` paths in `panda.config.ts` cover your source files
-2. Run `pnpm panda codegen` to ensure the project is properly set up
-3. Verify files contain Panda CSS usage (css(), styled(), etc.)
+Check that the `include` paths in `panda.config.ts` cover your source files and that the MCP server starts from your
+project directory. Files matching `exclude` are not scanned.

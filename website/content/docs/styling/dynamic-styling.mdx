@@ -262,56 +262,44 @@ This will result in the following CSS:
 }
 ```
 
-### Static Expressions
+### Supported expressions
 
-Panda supports the use of functions to generate the style objects as long they are statically analyzable.
-
-You can only use functions that are defined in the ECMAScript spec such as `Math`, `Object`, `Array`, etc, to support
-the evaluation of basic expressions like this:
+Panda v2 can resolve literals, object spreads, property access, arithmetic, template strings, and simple pure helpers
+when their inputs are statically known. For example:
 
 ```ts
-import { cva } from '.panda/css'
+import { css } from '../styled-system/css'
 
-const getVariants = () => {
-  const spacingTokens = Object.entries({
-    sm: 'token(spacing.1)',
-    md: 'token(spacing.2)'
-  })
+const unit = 4
+const double = (value: number) => value * 2
 
-  // Generate variants programmatically
-  const variants = spacingTokens.map(([variant, token]) => [variant, { paddingX: token }])
-  return Object.fromEntries(variants)
-}
+const className = css({
+  padding: `${unit * 2}px`,
+  margin: `${double(unit)}px`
+})
+```
 
-const baseStyle = cva({
+Panda does not run a JavaScript interpreter. Calls to built-ins such as `Object.entries`, `Object.fromEntries`,
+`Array.prototype.map`, and `Math.max` are not evaluated during source extraction. A helper that uses those calls to
+construct styles or recipe variants will not produce the expected CSS.
+
+Write the variant object directly instead:
+
+```ts
+import { cva } from '../styled-system/css'
+
+const recipe = cva({
   variants: {
-    variant: getVariants()
+    size: {
+      sm: { paddingX: '1' },
+      md: { paddingX: '2' }
+    }
   }
 })
 ```
 
-This will generate the following variants object:
-
-```json
-{
-  "sm": { "paddingX": "token(spacing.1)" },
-  "md": { "paddingX": "token(spacing.2)" }
-}
-```
-
-And the following CSS
-
-```css
-@layer utilities {
-  .px_token\(spacing\.1\) {
-    padding-inline: var(--spacing-1);
-  }
-
-  .px_token\(spacing\.2\) {
-    padding-inline: var(--spacing-2);
-  }
-}
-```
+This limit applies to styles in your source files. Your `panda.config.ts` runs in Node, so you can still use built-ins
+there to construct configuration values.
 
 ## Runtime conditions
 
@@ -360,7 +348,7 @@ resulting in a css that looks like this:
     color: var(--colors-red-300);
   }
 
-  @media screen and (min-width: 768px) {
+  @media (width >= 48rem) {
     .hover\:md\:text_red\.400:where(:hover, [data-hover]) {
       color: var(--colors-red-400);
     }
@@ -382,12 +370,28 @@ resulting in a css that looks like this:
 Although you should have your styles inlined most of the time, maybe you want to store a value in a variable and re-use
 in multiple places. This should be fine as long as you keep it statically analyzable.
 
-Here's a short list of things to avoid:
+Panda v2 can resolve named imports of static values from other files, including values passed through re-exports. The
+imported value must still be statically analyzable:
 
-- Variables that are not defined in the same file
-- Variables resulting from a function call (e.g. `const color = getColor()`)
+```ts filename="theme.ts"
+export const brand = 'red.300'
+export const colorName = 'primary'
+```
 
-> If you don't know what value a variable holds with a quick glance, Panda won't be able to either.
+```ts filename="App.tsx"
+import { css } from '../styled-system/css'
+import { brand, colorName } from './theme'
+
+const colors = { primary: 'red.300', secondary: 'blue.300' }
+
+const className = css({
+  borderColor: brand,
+  color: colors[colorName]
+})
+```
+
+Avoid values supplied by React state, component props, or functions that need runtime data. Being imported from another
+file does not make a runtime value extractable.
 
 ```tsx
 import { css } from '../styled-system/css'
@@ -437,7 +441,7 @@ fallback. This is the perfect opportunity to use the [recipes](/docs/recipes/ato
 
 ```tsx
 import { useState } from 'react'
-import { cva } from '../styled-system/cva'
+import { cva } from '../styled-system/css'
 
 const sectionRecipe = cva({
   base: { color: 'gray.100' },
@@ -468,14 +472,14 @@ You can now :
 
 All of this with complete type-safety and without having to make drastic changes to the component.
 
-> Note that you can also [integrate this recipe directly into your theme](/docs/recipes/config-recipe) if you want to only
-> generate the CSS that you use, among other things
+> Note that you can also [integrate this recipe directly into your theme](/docs/recipes/config-recipe) if you want to
+> only generate the CSS that you use, among other things
 
 ## Config recipes
 
 Config recipes only emit CSS for variants Panda can statically analyze. `button({ size })` works at runtime, but you'll
-only get `defaultVariants` in the stylesheet unless you add [`staticCss`](/docs/styling/static#recipes) or
-use string literals in the call.
+only get `defaultVariants` in the stylesheet unless you add [`staticCss`](/docs/styling/static#recipes) or use string
+literals in the call.
 
 See [Dynamic variants](/docs/recipes/dynamic-variants).
 
@@ -505,6 +509,9 @@ const Button = () => {
 // ✅ Good: Referenced value
 <styled.div color={mainColor} />
 
+// ✅ Good: Imported static value (brand is a named constant from another file)
+<styled.div color={brand} />
+
 ```
 
 ### What you can't do
@@ -516,10 +523,10 @@ const Button = () => {
   return <styled.button color={color} />
 }
 
-// ❌ Avoid: Referenced value (not statically analyzable or from another file)
+// ❌ Avoid: Referenced value that depends on runtime data
 <styled.div color={getColor()} />
 <styled.div color={colors[getColorName()]} />
-<styled.div color={colors[colorFromAnotherFile]} />
+<styled.div color={colors[runtimeColorName]} />
 
 // ❌ renamed prop. See Extraction rules
 <CustomCircle circleSize="4" />

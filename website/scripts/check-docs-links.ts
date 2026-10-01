@@ -14,10 +14,12 @@ import fs from 'node:fs'
 import path from 'node:path'
 import GithubSlugger from 'github-slugger'
 import { docsTabs } from '../src/docs.config'
+import { maskFencedCode, nonDocLinkError } from './docs-link-checks'
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url))
 const DOCS_ROOT = path.resolve(SCRIPT_DIR, '../content/docs')
-const RAW_MARKDOWN_EXCEPTION_SLUG = 'tooling/llms-txt'
+const RAW_MARKDOWN_EXCEPTION_SLUG = 'get-started/llms-txt'
+const BLOG_ROOT = path.resolve(SCRIPT_DIR, '../content/blog')
 
 function walk(dir: string, out: string[] = []): string[] {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -46,13 +48,7 @@ function stripInlineMarkup(text: string): string {
 function headingIds(content: string): Set<string> {
   const slugger = new GithubSlugger()
   const ids = new Set<string>()
-  let inFence = false
-  for (const line of content.split('\n')) {
-    if (/^```/.test(line.trim())) {
-      inFence = !inFence
-      continue
-    }
-    if (inFence) continue
+  for (const line of maskFencedCode(content).split('\n')) {
     const m = line.match(/^#{1,6}\s+(.+?)\s*$/)
     if (m) ids.add(slugger.slug(stripInlineMarkup(m[1])))
   }
@@ -65,13 +61,24 @@ const headingsBySlug = new Map(
   files.map(file => [toSlug(file), headingIds(fs.readFileSync(file, 'utf8'))])
 )
 
+const blogHeadings = new Map(
+  walk(BLOG_ROOT).map(file => [
+    path
+      .relative(BLOG_ROOT, file)
+      .replace(/\.mdx$/, '')
+      .split(path.sep)
+      .join('/'),
+    headingIds(fs.readFileSync(file, 'utf8'))
+  ])
+)
+
 const linkRe = /\]\(((?:\/docs\/[^)#\s]+)?)(#[^)\s]*)?\)/g
 const errors: string[] = []
 let linksChecked = 0
 
 for (const file of files) {
   const slug = toSlug(file)
-  const content = fs.readFileSync(file, 'utf8')
+  const content = maskFencedCode(fs.readFileSync(file, 'utf8'))
   const re = new RegExp(linkRe)
   let m: RegExpExecArray | null
   while ((m = re.exec(content))) {
@@ -125,12 +132,11 @@ for (const file of files) {
   let mi: RegExpExecArray | null
   while ((mi = internalRe.exec(content))) {
     const [, pathPart, fragment] = mi
-    if (pathPart.startsWith('/docs/')) continue
-    if (/\.(png|jpe?g|gif|svg|webp|txt)$/.test(pathPart)) continue
+    const issue = nonDocLinkError(pathPart, fragment, blogHeadings)
+    if (!issue) continue
     const lineNo = content.slice(0, mi.index).split('\n').length
     errors.push(
-      `${slug}.mdx:${lineNo}  ${pathPart}${fragment ?? ''} — internal doc link must ` +
-        `start with /docs/ (routes live under /docs)`
+      `${slug}.mdx:${lineNo}  ${pathPart}${fragment ?? ''} — ${issue}`
     )
   }
 }

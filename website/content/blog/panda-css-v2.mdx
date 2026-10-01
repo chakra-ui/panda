@@ -489,8 +489,8 @@ calls into class strings, so the styling runtime drops out of your bundle. See
 
 Your `panda.config.ts` carries over. The `panda` and `pandacss` binaries are unchanged, `panda build` still runs codegen
 and CSS generation in one pass, and the CSS you get out stays in parity — except for a short list of deliberate changes
-below. Install it with `@pandacss/dev@latest`. All `@pandacss/*` packages move on one
-version, so don't mix a v1 package with a v2 one.
+below. Install it with `@pandacss/dev@latest`. All `@pandacss/*` packages move on one version, so don't mix a v1 package
+with a v2 one.
 
 ### Panda is now ESM-only
 
@@ -587,6 +587,9 @@ of `panda mcp`.
 ### A few CSS output changes
 
 These are intentional and worth knowing about before you diff your output:
+
+- **`sizes.prose` is narrower.** `@pandacss/preset-panda` changes it from `65ch` to `60ch`. Override the token to keep
+  the v1 width; see [Upgrading to v2](/docs/get-started/upgrading-to-v2#sizesprose-is-narrower).
 
 - **Border overrides sort by property, not source order.** All border shorthands now sit in one tier and all-sides wins.
   When an override must win, use the longhand — `borderInlineEndWidth: '0'` ranks above every shorthand. Padding,
