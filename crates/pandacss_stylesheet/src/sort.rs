@@ -142,16 +142,12 @@ impl<'a> SortContext<'a> {
 
     #[must_use]
     pub fn sorted_condition_names<'b>(&self, conditions: &'b [Box<str>]) -> Vec<&'b str> {
-        let mut out = condition_names(conditions);
-        out.sort_by(|a, b| compare_condition_names(self.config, a, b));
-        out
+        order_rule_conditions(self.config, &condition_names(conditions))
     }
 
     #[must_use]
     pub fn sorted_condition_refs<'b>(&self, conditions: &[&'b str]) -> Vec<&'b str> {
-        let mut out = conditions.to_vec();
-        out.sort_by(|a, b| compare_condition_names(self.config, a, b));
-        out
+        order_rule_conditions(self.config, conditions)
     }
 }
 
@@ -401,17 +397,77 @@ impl PartialOrd for SelectorKey {
     }
 }
 
-fn compare_condition_names(config: &UserConfig, a: &str, b: &str) -> Ordering {
-    // Nested-selector conditions with a descendant/child/sibling relationship
-    // are ORDER-SIGNIFICANT: `&:last-child` then `& .divider` must compose as
-    // `.cls:last-child .divider`, never `.cls .divider:last-child`. The
-    // pseudo-rank sort below would float `& .divider` (rank 0) ahead of
-    // `&:last-child` (rank > 0), relocating the pseudo onto the descendant.
-    // Keep author order whenever either side carries a relational combinator.
-    if condition_is_relational(config, a) || condition_is_relational(config, b) {
-        return Ordering::Equal;
-    }
+/// How a condition changes the selector it nests in.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum ConditionShape {
+    /// Only wraps the rule (`@media`, `@container`, …).
+    AtRule,
+    /// Adds to the subject compound (`&:hover`, `&[data-open]`).
+    Suffix,
+    /// Must end the compound (`&::before`).
+    PseudoElement,
+    /// Adds context or changes the subject (`.dark &`, `& :where(svg)`).
+    Barrier,
+}
 
+/// Compose conditions outer-to-inner like CSS nesting. Only adjacent suffixes
+/// reorder (they commute); pseudo-elements go last and at-rules after selectors.
+fn order_rule_conditions<'b>(config: &UserConfig, conditions: &[&'b str]) -> Vec<&'b str> {
+    let mut selectors = Vec::with_capacity(conditions.len());
+    let mut suffixes = Vec::new();
+    let mut pseudo_elements = Vec::new();
+    let mut at_rules = Vec::new();
+    let by_name = |a: &&str, b: &&str| compare_condition_names(config, a, b);
+
+    for &condition in conditions {
+        match condition_shape(config, condition) {
+            ConditionShape::AtRule => at_rules.push(condition),
+            ConditionShape::PseudoElement => pseudo_elements.push(condition),
+            ConditionShape::Suffix => suffixes.push(condition),
+            ConditionShape::Barrier => {
+                suffixes.sort_by(by_name);
+                selectors.append(&mut suffixes);
+                selectors.push(condition);
+            }
+        }
+    }
+    suffixes.sort_by(by_name);
+    selectors.append(&mut suffixes);
+    pseudo_elements.sort_by(by_name);
+    selectors.append(&mut pseudo_elements);
+    at_rules.sort_by(by_name);
+    selectors.append(&mut at_rules);
+    selectors
+}
+
+fn condition_shape(config: &UserConfig, condition: &str) -> ConditionShape {
+    let mut at_rules = Vec::new();
+    let mut selectors = Vec::new();
+    collect_condition_parts(config, condition, &mut at_rules, &mut selectors);
+    if selectors.is_empty() {
+        return ConditionShape::AtRule;
+    }
+    if selectors.iter().any(|selector| selector.pseudo_element) {
+        return ConditionShape::PseudoElement;
+    }
+    let is_suffix = |selector: &&str| {
+        let selector = selector.trim();
+        selector.starts_with('&')
+            && !crate::css_syntax::contains_multiple_code_bytes(selector, b'&')
+            && !selector_has_top_level_combinator(selector)
+    };
+    if selectors.iter().all(|selector| {
+        crate::selector::split_selector_list(&selector.raw)
+            .iter()
+            .all(is_suffix)
+    }) {
+        ConditionShape::Suffix
+    } else {
+        ConditionShape::Barrier
+    }
+}
+
+fn compare_condition_names(config: &UserConfig, a: &str, b: &str) -> Ordering {
     let (a_at_rules, a_selectors) = sorted_condition_parts(config, a);
     let (b_at_rules, b_selectors) = sorted_condition_parts(config, b);
 
@@ -429,43 +485,6 @@ fn sorted_condition_parts(
     at_rules.sort();
     selectors.sort();
     (at_rules, selectors)
-}
-
-/// True when `condition` is a raw nested selector, authored as an object key
-/// (not a registered breakpoint / container / named / theme condition), that
-/// nests its subject under a combinator (` `, `>`, `+`, `~`) relative to `&`.
-/// Reordering these would change the authored ancestor chain. A bare compound
-/// like `&:last-child` is not relational (the pseudo sits on the subject) and
-/// still sorts normally; named conditions (`_dark`, `_ltr`, …) keep their
-/// existing cascade sort.
-fn condition_is_relational(config: &UserConfig, condition: &str) -> bool {
-    if !condition_is_raw_selector(config, condition) {
-        return false;
-    }
-    let mut at_rules = Vec::new();
-    let mut selectors = Vec::new();
-    collect_condition_parts(config, condition, &mut at_rules, &mut selectors);
-    selectors
-        .iter()
-        .any(|selector| selector_has_top_level_combinator(&selector.raw))
-}
-
-/// A condition that resolves to its own literal text, not a breakpoint,
-/// container, registered, or theme condition — a raw selector authored
-/// directly as a nested object key (`&:last-child`, `& .divider`), whose
-/// author order is structurally significant.
-fn condition_is_raw_selector(config: &UserConfig, condition: &str) -> bool {
-    if config.breakpoint_condition(condition).is_some()
-        || config.container_condition(condition).is_some()
-        || config.theme_condition(condition).is_some()
-    {
-        return false;
-    }
-    let key = condition.trim_start_matches('_');
-    if config.conditions.contains_key(condition) || config.conditions.contains_key(key) {
-        return false;
-    }
-    crate::css_syntax::contains_code_byte(condition, b'&')
 }
 
 /// Scan for a combinator at bracket/paren depth zero. ` `/`>`/`+`/`~` separating
