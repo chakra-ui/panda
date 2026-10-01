@@ -33,8 +33,15 @@ struct Cx<'a> {
 /// file-local diagnostics. On-demand — not part of the build path.
 #[must_use]
 pub fn inspect_file_source(system: &System, path: &str, source: &str) -> FileInspectionResult {
-    let result = extract_verbose(source, path, system.extractor_config());
+    let mut result = extract_verbose(source, path, system.extractor_config());
     let line_index = LineIndex::new(source);
+    pandacss_project::append_usage_diagnostics(
+        system,
+        &result.calls,
+        &result.jsx,
+        &line_index,
+        &mut result.diagnostics,
+    );
     let dict = system.token_dictionary();
     let cx = Cx {
         utility: system.utility(),

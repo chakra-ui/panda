@@ -131,7 +131,13 @@ patterns less opaque for lint rules by adding typed projections for recipe varia
 
 ## File Inspection API
 
-`inspectFileSource` is the lint boundary. It is already a tooling API, so avoid a `target: "lint"` mode. Make the
+`inspectFileSource` is the lint boundary. Compilation and inspection share file-local checks for unknown conditions,
+deprecated utilities, and invalid color opacity modifiers. Token category inference compares both utility keys and their
+mapped token values, so fixed values such as `flex: "1"` do not become token-backed by name alone.
+
+`prefer-token` visits the branches of serialized conditional values without treating the `kind` tag as a style value.
+
+`inspectFileSource` is already a tooling API, so avoid a `target: "lint"` mode. Make the
 default shape useful for lint, formatting, and IDE features.
 
 Current shape:

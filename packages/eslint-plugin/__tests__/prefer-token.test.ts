@@ -7,7 +7,8 @@ const ruleTester = await createPandaRuleTester(`export default {
   theme: {
     tokens: {
       colors: { red: { 500: { value: '#f00' } } },
-      spacing: { 4: { value: '1rem' } },
+      spacing: { 2: { value: '0.5rem' }, 4: { value: '1rem' } },
+      borders: { 1: { value: '1px solid' } },
     },
     semanticTokens: {
       colors: { fg: { error: { value: '{colors.red.500}' } } },
@@ -17,11 +18,36 @@ const ruleTester = await createPandaRuleTester(`export default {
     color: { className: 'c', values: 'colors' },
     padding: { className: 'p', values: 'spacing', shorthand: 'p' },
     margin: { className: 'm', values: 'spacing', shorthand: 'm' },
+    border: { className: 'bd', values: 'borders' },
+    flex: { className: 'flex', values: { 1: '1 1 0%', auto: '1 1 auto' } },
   },
 }`)
 
 ruleTester.run('prefer-token', {
   valid: [
+    {
+      filename: 'app.tsx',
+      code: withCss("css({ color: cond ? '#abc' : 'fg.error' })"),
+      options: [{ allow: ['#abc'] }],
+    },
+    {
+      filename: 'app.tsx',
+      code: withCss("css({ color: cond ? '#abc' : 'fg.error' })"),
+      options: [{ categories: ['spacing'] }],
+    },
+    {
+      filename: 'app.tsx',
+      code: "import { styled } from '@panda/jsx'\nconst x = <styled.div color={cond ? 'red.500' : 'fg.error'} />",
+    },
+
+    { filename: 'app.tsx', code: withCss("css({ color: cond ? 'red.500' : 'fg.error' })") },
+    { filename: 'app.tsx', code: withCss("css({ padding: cond ? '2' : '4' })") },
+    { filename: 'app.tsx', code: withCss("css({ border: cond ? '1' : 'none' })") },
+    { filename: 'app.tsx', code: withCss("css({ color: { base: cond ? 'red.500' : 'fg.error' } })") },
+    { filename: 'app.tsx', code: withCss("css({ color: [cond ? 'red.500' : 'fg.error'] })") },
+    { filename: 'app.tsx', code: withCss("css({ color: cond ? 'red.500' : dynamic })") },
+    { filename: 'app.tsx', code: withCss("css({ flex: '1' })"), options: [{ categories: ['borders'] }] },
+
     { filename: 'app.tsx', code: withCss("css({ color: 'red.500', padding: '4' })") },
     { filename: 'app.tsx', code: withCss("css({ margin: 'auto' })") },
     { filename: 'app.tsx', code: withCss("css({ color: '#fff' })"), options: [{ allow: ['#fff'] }] },
@@ -29,6 +55,49 @@ ruleTester.run('prefer-token', {
     { filename: 'app.tsx', code: withCss("css({ color: '#fff' })"), options: [{ categories: ['spacing'] }] },
   ],
   invalid: [
+    {
+      filename: 'app.tsx',
+      code: withCss("css({ color: 'conditional' })"),
+      errors: [{ message: 'Use a colors token instead of the hardcoded value "conditional".', suggestions: [] }],
+    },
+
+    {
+      filename: 'app.tsx',
+      code: withCss("css({ color: cond ? 'fg.error' : 'fg.missing' })"),
+      errors: [{ message: 'Use a colors token instead of the hardcoded value "fg.missing".', suggestions: [] }],
+    },
+    {
+      filename: 'app.tsx',
+      code: withCss("css({ color: cond ? '#f00' : 'fg.error' })"),
+      errors: [{ message: 'Hardcoded colors value "#f00". Matching tokens: fg.error, red.500.', suggestions: [] }],
+    },
+    {
+      filename: 'app.tsx',
+      code: withCss("css({ color: { base: cond ? 'fg.error' : '#abc' } })"),
+      errors: [{ message: 'Use a colors token instead of the hardcoded value "#abc".', suggestions: [] }],
+    },
+    {
+      filename: 'app.tsx',
+      code: withCss("css({ color: [cond ? 'fg.error' : '#abc'] })"),
+      errors: [{ message: 'Use a colors token instead of the hardcoded value "#abc".', suggestions: [] }],
+    },
+
+    {
+      filename: 'app.tsx',
+      code: withCss("css({ color: cond ? 'fg.error' : '#abc' })"),
+      errors: [{ message: 'Use a colors token instead of the hardcoded value "#abc".', suggestions: [] }],
+    },
+    {
+      filename: 'app.tsx',
+      code: withCss("css({ color: cond ? '#abc' : 'red.500' })"),
+      errors: [{ message: 'Use a colors token instead of the hardcoded value "#abc".', suggestions: [] }],
+    },
+    {
+      filename: 'app.tsx',
+      code: withCss("css({ color: cond ? 'red.500' : (other ? 'fg.error' : '#abc') })"),
+      errors: [{ message: 'Use a colors token instead of the hardcoded value "#abc".', suggestions: [] }],
+    },
+
     // Lists matching tokens (semantic first) and offers each as a quick-fix.
     {
       filename: 'app.tsx',

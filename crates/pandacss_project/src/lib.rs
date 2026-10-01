@@ -26,11 +26,12 @@ mod dependency_graph;
 mod diagnostics;
 mod parsed_file;
 
+pub use diagnostics::append_usage_diagnostics;
+
 use dependency_graph::DependencyGraph;
 use diagnostics::{
     dynamic_style_value_diagnostic, push_config_recipe_nested_property_diagnostics,
-    push_deprecated_utility_diagnostics, push_invalid_color_opacity_modifier_diagnostics,
-    push_nested_property_diagnostic, push_unknown_condition_diagnostics,
+    push_nested_property_diagnostic,
 };
 
 use std::collections::BTreeMap;
@@ -466,28 +467,10 @@ impl Project {
 
         let mut diagnostics = result.diagnostics;
         let line_index = LineIndex::new(source);
-        if let Some(utility) = self.system.utility() {
-            if !utility.deprecated_props().is_empty() {
-                push_deprecated_utility_diagnostics(
-                    &result.calls,
-                    &result.jsx,
-                    utility,
-                    &line_index,
-                    &mut diagnostics,
-                );
-            }
-            push_invalid_color_opacity_modifier_diagnostics(
-                &result.calls,
-                &result.jsx,
-                utility,
-                &line_index,
-                &mut diagnostics,
-            );
-        }
-        push_unknown_condition_diagnostics(
+        append_usage_diagnostics(
+            &self.system,
             &result.calls,
             &result.jsx,
-            self.system.conditions(),
             &line_index,
             &mut diagnostics,
         );

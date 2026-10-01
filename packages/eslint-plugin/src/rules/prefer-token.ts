@@ -29,7 +29,14 @@ const MAX_LISTED = 3
 export function collectStrings(value: unknown, out: string[]): void {
   if (typeof value === 'string') out.push(value)
   else if (Array.isArray(value)) for (const item of value) collectStrings(item, out)
-  else if (value && typeof value === 'object') for (const item of Object.values(value)) collectStrings(item, out)
+  else if (value && typeof value === 'object') {
+    const folded = value as { kind?: unknown; branches?: unknown }
+    if (folded.kind === 'conditional' && Array.isArray(folded.branches)) {
+      collectStrings(folded.branches, out)
+    } else {
+      for (const item of Object.values(value)) collectStrings(item, out)
+    }
+  }
 }
 
 const label = (s: TokenSuggestion) => (s.conditional ? `${s.token} (themed)` : s.token)
