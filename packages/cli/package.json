@@ -34,8 +34,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format=esm --dts --no-splitting --shims && tsup src/cli-main.ts --format=esm --dts --no-splitting --shims --clean=false",
-    "build:fast": "tsup src/index.ts src/cli-main.ts --format=esm --no-dts --no-splitting --shims",
+    "build": "tsup src/index.ts --format=esm --dts --shims && tsup src/cli-main.ts --format=esm --dts --shims --clean=false",
+    "build:fast": "tsup src/index.ts src/cli-main.ts --format=esm --no-dts --shims",
     "dev": "pnpm build:fast --watch src",
     "test": "vitest run",
     "test:bin": "pnpm build:fast && vitest run __tests__/cli-bin-smoke.test.ts"
