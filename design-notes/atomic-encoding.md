@@ -53,7 +53,7 @@ runtime selectors.
 Rule selectors compose conditions outer-to-inner, like CSS nesting: `_hover` around `_icon` gives `.x:hover :where(svg)`.
 Only adjacent `&`-suffix conditions (`&:hover`, `&[data-open]`) are sorted, because they commute. Context or
 subject-changing conditions (`.dark &`, `& :where(svg)`) keep author order, pseudo-elements go last, and at-rules follow
-the selectors. As in LightningCSS, a complex parent keeps `:is()` unless `&` leads the selector: `.dark :is(.x > p)`.
+the selectors. A complex parent keeps `:is()` unless `&` leads the selector: `.dark :is(.x > p)`.
 
 Conversion is mechanical (`impl From<Atom> for RecipeStyleEntry`), keeping `(prop, value, conditions, important)` owned
 by `Atom`/`Encoder`. Recipe code keeps selection conditions on the surrounding `RecipeStyleGroup` rather than mutating
