@@ -1,5 +1,5 @@
 import type { Config } from '@pandacss/types'
-import { existsSync, realpathSync } from 'node:fs'
+import { existsSync, realpathSync, statSync } from 'node:fs'
 import { mkdir, unlink, writeFile } from 'node:fs/promises'
 import { builtinModules } from 'node:module'
 import { tmpdir } from 'node:os'
@@ -25,6 +25,28 @@ export async function bundleConfig<T extends Config = Config>(
   filepath: string,
   cwd: string,
 ): Promise<BundleConfigResult<T>> {
+  const { code, dependencies } = await bundleCode(filepath, cwd)
+  const mod = await loadBundledModule(filepath, code)
+  const hasDefaultExport = Object.prototype.hasOwnProperty.call(mod ?? {}, 'default')
+  const exported = hasDefaultExport ? mod.default : mod
+  const config = (hasDefaultExport && isPromiseLike(exported) ? await exported : exported) as T
+
+  return { config, dependencies: [...dependencies] }
+}
+
+interface BundledCode {
+  code: string
+  dependencies: string[]
+  stamp: string
+}
+
+const bundleCache = new Map<string, BundledCode>()
+
+async function bundleCode(filepath: string, cwd: string): Promise<BundledCode> {
+  const key = `${cwd}\0${filepath}`
+  const cached = bundleCache.get(key)
+  if (cached && cached.stamp === dependencyStamp(cached.dependencies, cwd)) return cached
+
   const { rolldown } = await import('rolldown')
 
   const build = await rolldown({
@@ -49,12 +71,24 @@ export async function bundleConfig<T extends Config = Config>(
   }
 
   const dependencies = collectDependencies(chunks.output, filepath, cwd)
-  const mod = await loadBundledModule(filepath, output.code)
-  const hasDefaultExport = Object.prototype.hasOwnProperty.call(mod ?? {}, 'default')
-  const exported = hasDefaultExport ? mod.default : mod
-  const config = (hasDefaultExport && isPromiseLike(exported) ? await exported : exported) as T
+  const stamp = dependencyStamp(dependencies, cwd)
+  const bundled = { code: output.code, dependencies, stamp }
+  if (dependencies.length > 0 && !stamp.includes('missing')) bundleCache.set(key, bundled)
+  return bundled
+}
 
-  return { config, dependencies }
+function dependencyStamp(dependencies: string[], cwd: string): string {
+  const base = canonical(cwd)
+  return dependencies.map((dependency) => fileStamp(join(base, dependency))).join('|')
+}
+
+function fileStamp(path: string): string {
+  try {
+    const stat = statSync(path)
+    return `${stat.mtimeMs}:${stat.size}`
+  } catch {
+    return 'missing'
+  }
 }
 
 /** Evaluate bundled ESM by writing a temp file (preferred) or a `data:` URL fallback. */

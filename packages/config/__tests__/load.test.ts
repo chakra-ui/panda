@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -526,6 +526,28 @@ describe('loadConfig presets', () => {
       expect.arrayContaining(['panda.config.ts', 'preset.ts', 'preset-token.ts', 'manual.txt']),
     )
     expect(new Set(result.dependencies).size).toBe(result.dependencies.length)
+  })
+
+  test('reloads a string preset when a file it imports changes', async () => {
+    const cwd = writeTempProject({
+      'preset-token.ts': `export const presetColor = '#0f0'`,
+      'preset.ts': `import { presetColor } from './preset-token'
+        export default { theme: { extend: { tokens: { colors: { brand: { value: presetColor } } } } } }`,
+      'panda.config.ts': `export default { outdir: 'styled-system', presets: ['./preset.ts'] }`,
+    })
+    const brand = (result: LoadConfigResult) => (result.config.theme as any).tokens.colors.brand
+
+    const first = await loadConfig({ cwd })
+    const second = await loadConfig({ cwd })
+    expect(brand(first)).toEqual({ value: '#0f0' })
+    expect(second.config).toEqual(first.config)
+
+    const token = join(cwd, 'preset-token.ts')
+    writeFileSync(token, `export const presetColor = '#f00'`)
+    const later = new Date(Date.now() + 10_000)
+    utimesSync(token, later, later)
+
+    expect(brand(await loadConfig({ cwd }))).toEqual({ value: '#f00' })
   })
 
   test('bundles a config that imports a CommonJS node_modules preset', async () => {
