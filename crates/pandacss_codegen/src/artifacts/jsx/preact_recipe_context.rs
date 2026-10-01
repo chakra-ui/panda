@@ -194,10 +194,16 @@ export function createSlotRecipeContext(recipeInput) {
     __RESOLVE_PROPS__
   }
 
+  const resolveSlots = (variantProps) => {
+    const styles = isConfigRecipe ? slotRecipeFn(variantProps) : slotRecipeFn.raw(variantProps)
+    if (!isConfigRecipe) styles._classNameMap = slotRecipeFn.classNameMap
+    return styles
+  }
+
   const withRootProvider = (Component, options) => {
     const WithRootProvider = (props) => {
       const [variantProps, otherProps] = slotRecipeFn.splitVariantProps(props)
-      const resolvedSlots = isConfigRecipe ? slotRecipeFn(variantProps) : slotRecipeFn.raw(variantProps)
+      const resolvedSlots = resolveSlots(variantProps)
       const mergedProps = options?.defaultProps ? Object.assign({}, options.defaultProps, otherProps) : otherProps
       return createElement(SlotStylesContext.Provider, {
         value: resolvedSlots,
@@ -213,7 +219,7 @@ export function createSlotRecipeContext(recipeInput) {
     const StyledComponent = __FACTORY__(Component, {}, options)
     const WithProvider = forwardRef(function WithProvider(props, ref) {
       const [variantProps, restProps] = slotRecipeFn.splitVariantProps(props)
-      const resolvedSlots = isConfigRecipe ? slotRecipeFn(variantProps) : slotRecipeFn.raw(variantProps)
+      const resolvedSlots = resolveSlots(variantProps)
       if (restProps.className == null && options?.defaultProps?.className) restProps.className = options.defaultProps.className
       const resolvedProps = resolveProps(restProps, resolvedSlots[slot])
       options?.forwardProps?.forEach((key) => {
@@ -223,6 +229,7 @@ export function createSlotRecipeContext(recipeInput) {
         value: resolvedSlots,
         children: createElement(StyledComponent, {
           ...resolvedProps,
+          className: cx(resolvedProps.className, resolvedSlots._classNameMap?.[slot]),
           'data-slot': slot,
           ref,
         }),
@@ -244,6 +251,7 @@ export function createSlotRecipeContext(recipeInput) {
       const resolvedProps = resolveProps(nextProps, resolvedSlots[slot])
       return createElement(StyledComponent, {
         ...resolvedProps,
+        className: cx(resolvedProps.className, resolvedSlots._classNameMap?.[slot]),
         'data-slot': slot,
         ref,
       })

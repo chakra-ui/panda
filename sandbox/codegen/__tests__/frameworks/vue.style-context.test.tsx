@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest'
 import { render } from '@testing-library/vue'
 import { createSlotRecipeContext } from '../../styled-system-vue/jsx'
 import { slotButton } from '../../styled-system-vue/recipes'
+import { sva } from '../../styled-system-vue/css'
 
 const { withProvider, withContext } = createSlotRecipeContext(slotButton)
 
@@ -103,5 +104,21 @@ describe('style context - vue', () => {
         visual="outline"
       />
     `)
+  })
+
+  test('an sva recipe adds its slot class to each part', () => {
+    const card = sva({ className: 'card', slots: ['root', 'title'], base: { title: { fontWeight: 'bold' } } })
+    const { withProvider: withCardProvider, withContext: withCardContext } = createSlotRecipeContext(card)
+    const CardRoot = withCardProvider('div', 'root')
+    const CardTitle = withCardContext('h2', 'title')
+
+    const { container } = render(
+      <CardRoot>
+        <CardTitle>Title</CardTitle>
+      </CardRoot>,
+    )
+
+    expect(container.querySelector('[data-slot=root]')?.classList.contains('card__root')).toBe(true)
+    expect(container.querySelector('[data-slot=title]')?.classList.contains('card__title')).toBe(true)
   })
 })

@@ -206,15 +206,18 @@ export function createSlotRecipeContext(recipeInput) {
     __RESOLVE_PROPS__
   }
 
+  const resolveSlots = (variantProps) => {
+    const styles = isConfigRecipe ? slotRecipeFn(variantProps) : slotRecipeFn.raw(variantProps)
+    if (!isConfigRecipe) styles._classNameMap = slotRecipeFn.classNameMap
+    return styles
+  }
+
   const withRootProvider = (Component, options) => {
     const WithRootProvider = defineComponent({
       props: slotRecipeFn.variantKeys,
       setup(props, { slots }) {
         const [variantProps, otherProps] = slotRecipeFn.splitVariantProps(props)
-        const resolvedSlots = computed(() => {
-          const styles = isConfigRecipe ? slotRecipeFn(variantProps) : slotRecipeFn.raw(variantProps)
-          return styles
-        })
+        const resolvedSlots = computed(() => resolveSlots(variantProps))
         provide(SlotStylesContext, resolvedSlots)
 
         const mergedProps = computed(() => {
@@ -245,14 +248,12 @@ export function createSlotRecipeContext(recipeInput) {
           const [variantProps, restProps] = slotRecipeFn.splitVariantProps(props.value)
           return { variantProps, restProps }
         })
-        const resolvedSlots = computed(() => {
-          const styles = isConfigRecipe ? slotRecipeFn(split.value.variantProps) : slotRecipeFn.raw(split.value.variantProps)
-          return styles
-        })
+        const resolvedSlots = computed(() => resolveSlots(split.value.variantProps))
         provide(SlotStylesContext, resolvedSlots)
 
         return () => {
           const resolvedProps = resolveProps(split.value.restProps, resolvedSlots.value[slot])
+          resolvedProps.class = cx(resolvedProps.class, resolvedSlots.value._classNameMap?.[slot])
           resolvedProps['data-slot'] = slot
           options?.forwardProps?.forEach((key) => {
             if (key in split.value.variantProps) resolvedProps[key] = split.value.variantProps[key]
@@ -282,6 +283,7 @@ export function createSlotRecipeContext(recipeInput) {
 
         return () => {
           const resolvedProps = resolveProps(props.value, resolvedSlots.value[slot])
+          resolvedProps.class = cx(resolvedProps.class, resolvedSlots.value._classNameMap?.[slot])
           resolvedProps['data-slot'] = slot
           return h(StyledComponent, resolvedProps, slots)
         }
