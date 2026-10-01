@@ -143,6 +143,14 @@ impl System {
         recipe_name: &str,
         selected: &Literal,
     ) {
+        if let Literal::Conditional(branches) = selected {
+            for branch in branches {
+                self.process_recipe_usage(encoded, recipe_name, branch);
+            }
+
+            return;
+        }
+
         encoded.process_usage(
             &self.recipes,
             recipe_name,

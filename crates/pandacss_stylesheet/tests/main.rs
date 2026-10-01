@@ -22,6 +22,7 @@ mod sort;
 mod split;
 mod static_css;
 mod static_patterns;
+mod styled_factory;
 mod themes;
 mod tokens;
 mod utility_layers;

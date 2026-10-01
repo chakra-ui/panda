@@ -74,6 +74,20 @@ The second argument of `styled(tag, recipe, options)` resolves to a config recip
 import, a local alias of one (`const recipe = button`), or a single property on a recipe namespace import
 (`recipes.button`). Mutated bindings and deeper member chains do not resolve.
 
+`styled(tag, recipe, options)` routes `options.defaultProps` through recipe variant selection, then encodes only the
+remaining style props. Component defaults such as `srcDoc`, `title`, and `id` stay at runtime and never enter atoms or
+portable build info. Inline recipes and plain style objects apply the same filter, preserving registered utilities,
+conditions, custom properties, selectors, and `css` props.
+
+The extractor records the factory argument layout from the Oxc callee: direct calls use `(tag, styles, options)`;
+member calls such as `styled.div` use `(styles, options)`. Recipe-name resolution and project encoding consume that
+same layout, so factory options never become style objects. Namespace direct calls such as `JSX.styled(...)` retain
+the direct layout even though their callee is a member expression.
+
+Object-level conditional defaults on imported recipes are processed branch by branch for both style props and recipe
+variant selection. JSX spreads use the shared CSS property predicate for arbitrary custom properties, selectors, and
+at-rule keys in `jsxStyleProps: 'all'`; strict prop allowlists and the `minimal`/`none` modes still take precedence.
+
 ## Transform facts
 
 The project transformer consumes compact owned facts from this parse instead of parsing source fragments again:
