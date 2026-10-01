@@ -35,10 +35,10 @@ jobs:
         include:
           - { target: aarch64-apple-darwin, runner: macos-latest }
           - { target: x86_64-apple-darwin, runner: macos-latest }
-          - { target: x86_64-unknown-linux-gnu, runner: ubuntu-latest, args: --use-napi-cross }
-          - { target: aarch64-unknown-linux-gnu, runner: ubuntu-latest, args: --use-napi-cross }
-          - { target: x86_64-unknown-linux-musl, runner: ubuntu-latest, zig: true, args: -x }
-          - { target: aarch64-unknown-linux-musl, runner: ubuntu-latest, zig: true, args: -x }
+          - { target: x86_64-unknown-linux-gnu, runner: ubuntu-24.04, args: --use-napi-cross }
+          - { target: aarch64-unknown-linux-gnu, runner: ubuntu-24.04, args: --use-napi-cross }
+          - { target: x86_64-unknown-linux-musl, runner: ubuntu-24.04, zig: true, args: -x }
+          - { target: aarch64-unknown-linux-musl, runner: ubuntu-24.04, zig: true, args: -x }
           - { target: x86_64-pc-windows-msvc, runner: windows-latest }
           - { target: aarch64-pc-windows-msvc, runner: windows-latest }
     steps:
@@ -102,7 +102,7 @@ jobs:
   build-wasm:
     name: Build wasm artifacts
     if: ${{ github.repository == 'chakra-ui/panda' || github.event_name == 'workflow_dispatch' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -135,7 +135,7 @@ jobs:
   build-wasi:
     name: Build wasi artifact
     if: ${{ github.repository == 'chakra-ui/panda' || github.event_name == 'workflow_dispatch' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -173,7 +173,7 @@ jobs:
       - build-native
       - build-wasm
       - build-wasi
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
       pull-requests: write
