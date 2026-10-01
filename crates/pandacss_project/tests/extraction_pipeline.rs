@@ -692,15 +692,11 @@ fn jsx_factory_default_props_preserve_token_call_identity() {
 }
 
 #[test]
-fn jsx_factory_default_props_ignore_component_props() {
-    for style in [
-        "frame",
-        "{ display: 'block' }",
-        "{ base: { display: 'block' } }",
-    ] {
+fn jsx_factory_default_props_extract_only_style_props() {
+    for style in ["frame", "{}", "{ base: {} }"] {
         let mut project = create_project(json!({
             "jsxFramework": "react",
-            "theme": { "recipes": { "frame": { "base": { "display": "block" } } } },
+            "theme": { "recipes": { "frame": { "base": {} } } },
             "utilities": { "customStyle": { "className": "custom" } },
             "conditions": { "hover": "&:hover" }
         }));
@@ -711,32 +707,40 @@ fn jsx_factory_default_props_ignore_component_props() {
             const srcDoc = '<html><head><style>body { margin: 0; }</style></head><body><div /></body></html>';
             const StyledFrame = styled(ArkFrame, STYLE, {
               defaultProps: {
-                srcDoc, title: 'Preview', id: 'frame', tabIndex: 0,
-                color: 'red', customStyle: 'value', _hover: { color: 'blue' },
-                css: { marginTop: '8px' }, '--frame-color': 'red',
+                srcDoc,
+                title: 'Preview',
+                id: 'frame',
+                tabIndex: 0,
+                color: 'red',
+                customStyle: 'value',
+                _hover: { color: 'blue' },
+                css: { marginTop: '8px' },
+                '--frame-color': 'red',
               },
               forwardProps: ['srcDoc'],
             });
         "}.replace("STYLE", style);
         project.parse_file("frame.tsx", &source);
-        let atoms = project.atoms();
-        for prop in ["srcDoc", "title", "id", "tabIndex"] {
-            assert!(
-                !atoms.iter().any(|atom| atom.prop() == prop),
-                "{style}: {prop}"
-            );
+        insta::allow_duplicates! {
+        assert_yaml_snapshot!(sorted_atoms(&project), @r#"
+        - prop: "--frame-color"
+          value: red
+          conditions: []
+        - prop: color
+          value: red
+          conditions: []
+        - prop: color
+          value: blue
+          conditions:
+            - _hover
+        - prop: customStyle
+          value: value
+          conditions: []
+        - prop: marginTop
+          value: 8px
+          conditions: []
+        "#);
         }
-        for prop in ["color", "customStyle", "marginTop", "--frame-color"] {
-            assert!(
-                atoms.iter().any(|atom| atom.prop() == prop),
-                "{style}: {prop}"
-            );
-        }
-        assert!(
-            atoms
-                .iter()
-                .any(|atom| atom.prop() == "color" && !atom.conditions().is_empty())
-        );
     }
 }
 

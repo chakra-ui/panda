@@ -2,6 +2,7 @@ use pandacss_encoder::{Atom, Encoder, compare_atoms_by_emit_order};
 use pandacss_extractor::{ExtractedJsx, JsxKind};
 use pandacss_literal::Literal;
 use pandacss_recipes::{Recipe, SlotRecipe};
+use pandacss_shared::css_properties::is_css_property;
 use pandacss_utility::{ShorthandPolicy, StyleNormalizer};
 
 use crate::{
@@ -93,8 +94,7 @@ impl System {
                         .as_ref()
                         .is_some_and(|utility| utility.is_known(utility.canonical_property(key)))
                     || is_css_prop(key)
-                    || key.starts_with("--")
-                    || key.contains(['&', '@'])
+                    || is_css_property(key)
             })
             .cloned()
             .collect();

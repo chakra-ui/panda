@@ -27,14 +27,30 @@ fn styled_default_props_extract_styles_and_recipe_variants() {
           forwardProps: ['srcDoc'],
         });
     "};
-    let output = compile_output(&config, source, StylesheetOptions::default());
-    assert!(output.css.contains("color: red;"));
-    assert!(output.css.contains("display: block;"));
-    assert!(output.css.contains("padding: 2px;"));
-    assert!(!output.css.contains("padding: 8px;"));
-    assert!(!output.css.contains("size: sm;"));
-    assert!(!output.css.contains("src-doc"));
-    assert!(!output.css.contains("</style>"));
+    let css = compile_layer_css(
+        &config,
+        source,
+        &[StylesheetLayer::Recipes, StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer recipes {
+      @layer base {
+        .frame {
+          display: block;
+        }
+      }
+      @layer variants {
+        .frame--size_sm {
+          padding: 2px;
+        }
+      }
+    }
+    @layer utilities {
+      .color_red {
+        color: red;
+      }
+    }
+    ");
 }
 
 #[test]
