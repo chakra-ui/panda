@@ -397,11 +397,6 @@ impl Extractor<'_, '_, '_> {
         root_ident: &'a IdentifierReference<'_>,
         path: &[&str],
     ) -> Option<ResolvedTag<'a>> {
-        if let Some(resolver) = self.ctx.resolver
-            && !resolver.is_import_binding(root_ident)
-        {
-            return None;
-        }
         let Some(matched) = self.ctx.aliases.get(root) else {
             let display = member_display(root, path);
             let is_configured_component = self.ctx.config.jsx.is_component_tag(&display);
@@ -423,6 +418,11 @@ impl Extractor<'_, '_, '_> {
             }
             return None;
         };
+        if let Some(resolver) = self.ctx.resolver
+            && !resolver.is_import_binding(root_ident)
+        {
+            return None;
+        }
         match matched.kind {
             ImportSpecifierKind::Named => {
                 // A named member tag is a Panda usage only for a factory or a

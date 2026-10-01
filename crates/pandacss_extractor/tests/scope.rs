@@ -792,6 +792,21 @@ fn jsx_tag_shadowed_by_param_is_not_extracted() {
     );
 }
 
+#[test]
+fn jsx_member_tag_shadowed_by_param_is_not_extracted() {
+    let src = indoc! {r"
+        import { styled } from '@panda/jsx';
+        function f(styled: any) {
+          return <styled.div color='red' />;
+        }
+    "};
+    let jsx = run_jsx(src).jsx;
+    assert!(
+        jsx.is_empty(),
+        "shadowed JSX member tag must not extract: {jsx:#?}"
+    );
+}
+
 // --- caching / cycle safety ---
 
 #[test]
