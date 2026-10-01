@@ -4,11 +4,18 @@ use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 use crate::common::{compile_layer_css, compile_output, config};
 
 #[test]
-fn styled_default_props_do_not_emit_html_as_css() {
+fn styled_default_props_extract_styles_and_recipe_variants() {
     let config = config(serde_json::json!({
         "jsxFramework": "react",
         "importMap": { "jsx": ["@panda/jsx"], "recipe": ["@panda/recipes"] },
-        "theme": { "recipes": { "frame": { "base": { "display": "block" } } } }
+        "theme": { "recipes": { "frame": {
+            "base": { "display": "block" },
+            "variants": { "size": {
+                "sm": { "padding": "2px" },
+                "md": { "padding": "8px" }
+            } },
+            "defaultVariants": { "size": "md" }
+        } } }
     }));
     let source = indoc::indoc! {r"
         import { styled } from '@panda/jsx';
@@ -16,13 +23,16 @@ fn styled_default_props_do_not_emit_html_as_css() {
         import { ArkFrame } from '@ark-ui/react';
         const srcDoc = '<html><head><style>body { margin: 0; }</style></head><body><div /></body></html>';
         const StyledFrame = styled(ArkFrame, frame, {
-          defaultProps: { srcDoc, color: 'red' },
+          defaultProps: { srcDoc, size: 'sm', color: 'red' },
           forwardProps: ['srcDoc'],
         });
     "};
     let output = compile_output(&config, source, StylesheetOptions::default());
     assert!(output.css.contains("color: red;"));
     assert!(output.css.contains("display: block;"));
+    assert!(output.css.contains("padding: 2px;"));
+    assert!(!output.css.contains("padding: 8px;"));
+    assert!(!output.css.contains("size: sm;"));
     assert!(!output.css.contains("src-doc"));
     assert!(!output.css.contains("</style>"));
 }
