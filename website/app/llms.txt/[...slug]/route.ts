@@ -20,28 +20,12 @@ export function generateStaticParams() {
     slug: [category]
   }))
 
-  const pageParams = docsSource.generateParams()
-  const mdxParams = pageParams
-    .filter(({ slug }) => slug.length > 1)
-    .map(({ slug }) => ({
-      slug: [...slug.slice(0, -1), `${slug[slug.length - 1]}.mdx`]
-    }))
-
-  return [...categoryParams, ...pageParams, ...mdxParams]
+  return [...categoryParams, ...docsSource.generateParams()]
 }
 
 export async function GET(request: Request, context: RouteContext) {
   const params = await context.params
-  let slugParts = params.slug
-
-  // Remove .mdx extension from the last part if present
-  const lastPart = slugParts[slugParts.length - 1]
-  if (lastPart.endsWith('.mdx')) {
-    slugParts = [
-      ...slugParts.slice(0, -1),
-      lastPart.slice(0, -4) // Remove .mdx
-    ]
-  }
+  const slugParts = params.slug
 
   // Check if this is a specific doc request (e.g., /installation/redwood)
   if (slugParts.length > 1) {
