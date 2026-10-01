@@ -1,8 +1,10 @@
 //! Internal style-rule model used by the emitter: rule identity, declarations,
-//! and write-time coalescing. Condition resolution lives in `conditions.rs`;
+//! and declaration merging. Condition resolution lives in `conditions.rs`;
 //! cascade ordering lives in `sort.rs`.
 
-use std::borrow::Cow;
+use std::{borrow::Cow, cmp::Reverse};
+
+use pandacss_encoder::RecipeStyleEntry;
 
 use crate::grouped::{GroupNode, GroupedDeclaration, RuleBody};
 use crate::writer::CssWriter;
@@ -22,7 +24,7 @@ pub(crate) enum Target<'a> {
 
 /// Ready-to-write selector plus enclosing at-rule wrappers. This is the
 /// lowered form, not a separate public stylesheet concept.
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub(crate) struct LoweredTarget {
     pub selector: String,
     pub wrappers: Vec<String>,
@@ -46,50 +48,32 @@ impl LoweredTarget {
     }
 }
 
+/// A flattened style value with its position in the composition hierarchy.
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub(crate) struct ExpandedStyleEntry {
+    pub entry: RecipeStyleEntry,
+    /// Zero for authored properties; each nested composition adds one.
+    pub composition_depth: usize,
+}
+
 #[derive(Clone)]
 pub(crate) struct Declaration {
     pub prop: String,
     pub value: String,
     pub important: bool,
+    /// Depth of the style value that produced this CSS declaration.
+    pub composition_depth: usize,
+}
+
+impl Declaration {
+    const fn priority(&self) -> (bool, Reverse<usize>) {
+        (self.important, Reverse(self.composition_depth))
+    }
 }
 
 pub(crate) struct StyleRule {
     pub target: LoweredTarget,
     pub declarations: Vec<Declaration>,
-}
-
-/// Keep adjacent rules with the same lowered target in one CSS block.
-pub(crate) fn push_pending_rule(
-    pending: &mut Option<StyleRule>,
-    target: LoweredTarget,
-    declarations: Vec<Declaration>,
-    mut flush: impl FnMut(StyleRule),
-) {
-    match pending {
-        Some(pending) if pending.target == target => {
-            append_declarations(&mut pending.declarations, declarations);
-        }
-        Some(_) => {
-            let previous = pending.take().expect("pending style rule");
-            flush(previous);
-            *pending = Some(StyleRule {
-                target,
-                declarations,
-            });
-        }
-        None => {
-            *pending = Some(StyleRule {
-                target,
-                declarations,
-            });
-        }
-    }
-}
-
-pub(crate) fn flush_pending_rule(pending: Option<StyleRule>, mut flush: impl FnMut(StyleRule)) {
-    if let Some(pending) = pending {
-        flush(pending);
-    }
 }
 
 pub(crate) fn push_grouped_rule(
@@ -182,8 +166,11 @@ pub(crate) fn append_declaration_run(target: &mut Vec<Declaration>, run: Vec<Dec
         return;
     };
 
-    // Importance outranks source order within one declaration block.
-    if target[first].important && !run.iter().any(|declaration| declaration.important) {
+    // Importance wins first, then properties from the nearer composition scope.
+    if run
+        .iter()
+        .all(|declaration| declaration.priority() < target[first].priority())
+    {
         return;
     }
 
@@ -208,6 +195,7 @@ mod tests {
             prop: prop.to_owned(),
             value: value.to_owned(),
             important,
+            composition_depth: 0,
         }
     }
 

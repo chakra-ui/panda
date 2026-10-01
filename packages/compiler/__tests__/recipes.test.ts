@@ -3,6 +3,64 @@ import { createCompiler } from '../src'
 import { createProject, importMap } from './test-utils'
 
 describe('Compiler recipes', () => {
+  it('keeps the explicit fontWeight when textStyle comes first', () => {
+    const compiler = createProject({
+      utilities: { fontWeight: { className: 'fw', values: 'fontWeights' } },
+      theme: {
+        tokens: {
+          fontWeights: {
+            normal: { value: '400' },
+            medium: { value: '500' },
+          },
+        },
+        textStyles: { body: { value: { fontWeight: 'normal' } } },
+        recipes: { message: { className: 'message', base: { textStyle: 'body', fontWeight: 'medium' } } },
+      },
+    })
+
+    compiler.parseFileSource('/Message.tsx', "import { message } from '@panda/recipes'; message()")
+
+    expect(compiler.getLayerCss({ layers: ['recipes'] }).css).toMatchInlineSnapshot(`
+      "@layer recipes {
+        @layer base {
+          .message {
+            font-weight: var(--font-weights-medium);
+          }
+        }
+      }
+      "
+    `)
+  })
+
+  it('keeps the explicit fontWeight when it comes before textStyle', () => {
+    const compiler = createProject({
+      utilities: { fontWeight: { className: 'fw', values: 'fontWeights' } },
+      theme: {
+        tokens: {
+          fontWeights: {
+            normal: { value: '400' },
+            medium: { value: '500' },
+          },
+        },
+        textStyles: { body: { value: { fontWeight: 'normal' } } },
+        recipes: { message: { className: 'message', base: { fontWeight: 'medium', textStyle: 'body' } } },
+      },
+    })
+
+    compiler.parseFileSource('/Message.tsx', "import { message } from '@panda/recipes'; message()")
+
+    expect(compiler.getLayerCss({ layers: ['recipes'] }).css).toMatchInlineSnapshot(`
+      "@layer recipes {
+        @layer base {
+          .message {
+            font-weight: var(--font-weights-medium);
+          }
+        }
+      }
+      "
+    `)
+  })
+
   it('records cva recipes', () => {
     const compiler = createProject()
     compiler.parseFileSource(
