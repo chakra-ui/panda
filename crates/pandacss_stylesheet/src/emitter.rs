@@ -2257,13 +2257,53 @@ impl<'a> EmitContext<'a> {
     }
 
     fn expand_recipe_style_entries(&self, entries: &[RecipeStyleEntry]) -> Vec<RecipeStyleEntry> {
-        let mut seen = FxHashSet::default();
-        let mut out = Vec::new();
+        let mut explicit = Vec::new();
+        let mut compositions = Vec::new();
+        let mut explicit_seen = FxHashSet::default();
+        let mut composition_seen = FxHashSet::default();
+
         for entry in entries {
+            let (seen, out) = if is_composition_prop(&entry.prop) {
+                (&mut composition_seen, &mut compositions)
+            } else {
+                (&mut explicit_seen, &mut explicit)
+            };
             let mut active = FxHashSet::default();
-            self.expand_recipe_style_entry(entry, &mut active, &mut seen, &mut out);
+            self.expand_recipe_style_entry(entry, &mut active, seen, out);
         }
-        out
+
+        if compositions.is_empty() || explicit.is_empty() {
+            compositions.extend(explicit);
+            return compositions;
+        }
+
+        let mut explicit_properties = FxHashMap::default();
+        for entry in &explicit {
+            let key = (
+                entry.prop.as_ref(),
+                self.sort.sorted_condition_names(&entry.conditions),
+            );
+            explicit_properties
+                .entry(key)
+                .and_modify(|important| *important |= entry.important)
+                .or_insert(entry.important);
+        }
+
+        // Resolve composition defaults before value sorting can reverse their precedence.
+        compositions.retain(|entry| {
+            let key = (
+                entry.prop.as_ref(),
+                self.sort.sorted_condition_names(&entry.conditions),
+            );
+            let Some(&explicit_important) = explicit_properties.get(&key) else {
+                return true;
+            };
+
+            entry.important && !explicit_important
+        });
+
+        compositions.extend(explicit);
+        compositions
     }
 
     fn push_recipe_style_entry(

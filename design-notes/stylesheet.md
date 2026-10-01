@@ -98,6 +98,11 @@ order so selectors match recipe runtime output. Rule conditions are sorted separ
 4. Property priority: broad shorthands before shorthand groups before longhands.
 5. Deterministic ties: property name, atom value key, rule conditions, then class conditions.
 
+Config recipe groups resolve composition defaults before final sorting. Explicit properties override matching leaves
+from `textStyle`, `layerStyle`, and `animationStyle` within the same condition path, regardless of their values or
+source key order. Important declarations still outrank normal declarations, and composition properties under other
+conditions remain intact. Regular and slot recipe groups share this rule for base, variant, and compound groups.
+
 Condition application is separate from sorting. At-rules become wrappers, `&` conditions rewrite selectors, plain
 selectors become ancestors, and pseudo-elements are emitted after pseudo-classes so selectors stay valid.
 
