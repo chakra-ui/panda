@@ -410,7 +410,7 @@ fn bare_condition_name_is_not_an_unknown_condition() {
             css({ print: { display: 'none' } });
         "},
     );
-    assert_snapshot!(summary(&report.diagnostics), @"");
+    assert_snapshot!(summary(&report.diagnostics), @"Warning nested_property `print` in `print.display` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use `_print` instead. [34..69]");
 }
 
 #[test]
@@ -472,4 +472,82 @@ fn source_read_failure_keeps_last_good_styles_and_reports_the_miss() {
     assert!(project.get_file("never.ts").is_none());
     assert!(project.remove_file("never.ts"));
     assert!(project.file_diagnostics().is_empty());
+}
+
+#[test]
+fn property_nested_under_a_non_condition_key_warns() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "conditions": { "hover": "&:hover" },
+        "utilities": { "color": { "className": "c" } }
+    }));
+    let report = project.parse_file(
+        "style.tsx",
+        indoc! {r"
+            import { css, cva } from '@panda/css';
+            import { styled } from '@panda/jsx';
+            css({ has: { svg: { color: 'red' } } });
+            cva({ variants: { size: { sm: { icon: { _hover: { color: 'red' } } } } } });
+            const el = <styled.div css={{ svg: { color: 'red' } }} />;
+        "},
+    );
+    assert_snapshot!(summary(&report.diagnostics), @"
+    Warning nested_property `has` in `has.svg.color` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use `'&:has(svg)'` instead. [76..115]
+    Warning nested_property `icon` in `icon._hover.color` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use a condition or a selector like `'& icon'` instead. [117..192]
+    Warning nested_property `svg` in `svg.color` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use a condition or a selector like `'& svg'` instead. [205..251]
+    ");
+}
+
+#[test]
+fn valid_nesting_does_not_warn() {
+    let mut project = create_project(json!({
+        "conditions": { "hover": "&:hover" },
+        "utilities": { "color": { "className": "c" } }
+    }));
+    let report = project.parse_file(
+        "style.ts",
+        indoc! {r"
+            import { css, cva } from '@panda/css';
+            css({ '& svg': { color: 'red' }, '&:has(svg)': { color: 'red' } });
+            css({ color: { base: 'red', _hover: 'blue' } });
+            cva({ base: { _hover: { color: 'red' } }, variants: { size: { sm: { color: 'red' } } } });
+        "},
+    );
+    assert_snapshot!(summary(&report.diagnostics), @"");
+}
+
+#[test]
+fn config_recipe_with_a_property_nested_under_a_non_condition_key_warns() {
+    let project = create_project(json!({
+        "conditions": { "hover": "&:hover" },
+        "utilities": { "color": { "className": "c" } },
+        "theme": {
+            "recipes": {
+                "button": { "className": "button", "base": { "has": { "svg": { "color": "red" } } } }
+            },
+            "slotRecipes": {
+                "card": { "className": "card", "slots": ["root"], "base": { "root": { "svg": { "color": "red" } } } }
+            }
+        }
+    }));
+    assert_snapshot!(summary(project.diagnostics()), @"
+    Warning nested_property theme.recipes.button: `has` in `has.svg.color` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use `'&:has(svg)'` instead.
+    Warning nested_property theme.slotRecipes.card: `svg` in `svg.color` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use a condition or a selector like `'& svg'` instead.
+    ");
+}
+
+#[test]
+fn nested_property_leaves_the_selector_argument_open_when_nothing_sits_between() {
+    let mut project = create_project(json!({
+        "conditions": { "hover": "&:hover" },
+        "utilities": { "color": { "className": "c" } }
+    }));
+    let report = project.parse_file(
+        "style.ts",
+        indoc! {r"
+            import { css } from '@panda/css';
+            css({ has: { color: 'red' } });
+        "},
+    );
+    assert_snapshot!(summary(&report.diagnostics), @"Warning nested_property `has` in `has.color` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use `'&:has(…)'` instead. [34..64]");
 }

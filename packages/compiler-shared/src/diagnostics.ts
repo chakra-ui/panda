@@ -97,3 +97,28 @@ function parseMaxWarnings(value: number | string | undefined): number | undefine
   const number = typeof value === 'number' ? value : Number(value)
   return Number.isFinite(number) && number >= 0 ? Math.floor(number) : undefined
 }
+
+export interface DiagnosticLogOptions {
+  file?: string
+  /** Skip lines this log already printed, for reports that repeat parse results (stylesheet build, source transform). */
+  onlyNew?: boolean
+}
+
+/** Formats diagnostics into build-plugin warnings and remembers what it printed. */
+export function createDiagnosticLog() {
+  const printed = new Set<string>()
+  return (
+    warn: (message: string) => void,
+    diagnostics: readonly Diagnostic[] | undefined,
+    context: string,
+    { file, onlyNew = false }: DiagnosticLogOptions = {},
+  ): void => {
+    const lines = (diagnostics ?? []).map((diagnostic) => formatDiagnostic(withDiagnosticFile(diagnostic, file)))
+    const shown = onlyNew ? lines.filter((line) => !printed.has(line)) : lines
+    for (const line of lines) printed.add(line)
+    if (!shown.length) return
+
+    const hidden = shown.length > 3 ? `\n...and ${shown.length - 3} more` : ''
+    warn(`panda: ${shown.length} diagnostic(s) ${context}\n${shown.slice(0, 3).join('\n')}${hidden}`)
+  }
+}

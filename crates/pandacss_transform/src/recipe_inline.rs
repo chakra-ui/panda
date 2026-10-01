@@ -667,7 +667,7 @@ fn is_jsx_factory_call(call: &pandacss_extractor::ExtractedCall) -> bool {
     )
 }
 
-fn styled_config_arg(call: &pandacss_extractor::ExtractedCall) -> Option<&Literal> {
+pub(crate) fn styled_config_arg(call: &pandacss_extractor::ExtractedCall) -> Option<&Literal> {
     match call.facts.callee_kind {
         pandacss_extractor::CallCalleeKind::Direct => {
             let tag = call.data.first().and_then(|arg| arg.as_ref())?;

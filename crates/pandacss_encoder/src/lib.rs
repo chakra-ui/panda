@@ -281,6 +281,14 @@ pub struct Encoder<C: ConditionMatcher> {
     conditions: C,
     atoms: FxHashSet<Atom>,
     nested_properties: bool,
+    nested_property: Option<NestedProperty>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NestedProperty {
+    pub key: Box<str>,
+    pub nested: Box<str>,
+    pub path: Box<str>,
 }
 
 impl<C: ConditionMatcher> Encoder<C> {
@@ -289,6 +297,7 @@ impl<C: ConditionMatcher> Encoder<C> {
             conditions,
             atoms: FxHashSet::default(),
             nested_properties: false,
+            nested_property: None,
         }
     }
 
@@ -298,6 +307,10 @@ impl<C: ConditionMatcher> Encoder<C> {
     #[must_use]
     pub fn has_nested_properties(&self) -> bool {
         self.nested_properties
+    }
+
+    pub fn take_nested_property(&mut self) -> Option<NestedProperty> {
+        self.nested_property.take()
     }
 
     /// Iteration order isn't stable — sort by `(prop, conditions, value)` for determinism.
@@ -415,7 +428,18 @@ impl<C: ConditionMatcher> Encoder<C> {
                 }
             }
             _ => {
-                self.nested_properties |= path.iter().filter(|s| !s.is_condition).nth(1).is_some();
+                let mut props = path.iter().filter(|s| !s.is_condition);
+                if let (Some(key), Some(nested)) = (props.next(), props.next()) {
+                    self.nested_properties = true;
+                    if self.nested_property.is_none() && !key.name.starts_with('_') {
+                        let path = path.iter().map(|s| s.name).collect::<Vec<_>>().join(".");
+                        self.nested_property = Some(NestedProperty {
+                            key: key.name.into(),
+                            nested: nested.name.into(),
+                            path: path.into(),
+                        });
+                    }
+                }
                 let prop = path.iter().find(|s| !s.is_condition).map(|s| s.name);
                 let normalized = match prop {
                     Some(prop) => norm.normalize_leaf(prop, value),

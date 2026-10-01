@@ -1,5 +1,5 @@
 import { createNodeDriver, type Diagnostic, type Driver } from '@pandacss/compiler'
-import { formatDiagnostic, withDiagnosticFile } from '@pandacss/compiler-shared'
+import { createDiagnosticLog, type DiagnosticLogOptions } from '@pandacss/compiler-shared'
 import {
   getInternalCssRuntimeSource,
   INTERNAL_CSS_IMPORT,
@@ -40,7 +40,8 @@ const INTERNAL_CSS_NAMESPACE = 'panda'
  * so only codegen and the optional source rewrite apply.
  */
 export function pandacss(options: PandaPluginOptions = {}): BunPlugin {
-  const prepare = createDriverLoader(options)
+  const warnDiagnostics = createWarnDiagnostics()
+  const prepare = createDriverLoader(options, warnDiagnostics)
 
   return {
     name: 'pandacss',
@@ -50,7 +51,7 @@ export function pandacss(options: PandaPluginOptions = {}): BunPlugin {
       const runtime = typeof build.onStart !== 'function'
 
       if (!runtime) {
-        build.onLoad({ filter: CSS_FILTER }, (args) => injectStylesheet(driver, args))
+        build.onLoad({ filter: CSS_FILTER }, (args) => injectStylesheet(driver, args, warnDiagnostics))
       }
       // Runtime plugins must answer every load they match, so without transform they get no source hook.
       if (runtime && !options.transform) return
@@ -60,12 +61,17 @@ export function pandacss(options: PandaPluginOptions = {}): BunPlugin {
         // Bun's dev server reloads edited modules one by one, so a repeat load means the file changed on disk.
         const changed = loaded.has(args.path)
         loaded.add(args.path)
-        return loadSource(driver, args.path, {
-          transform: options.transform === true,
-          sync: changed,
-          // Bun has no way to re-run the CSS file when JS changes, so the hot-reloaded module carries the styles.
-          devStyles: changed && !runtime,
-        })
+        return loadSource(
+          driver,
+          args.path,
+          {
+            transform: options.transform === true,
+            sync: changed,
+            // Bun has no way to re-run the CSS file when JS changes, so the hot-reloaded module carries the styles.
+            devStyles: changed && !runtime,
+          },
+          warnDiagnostics,
+        )
       })
 
       if (!options.transform) return
@@ -100,7 +106,7 @@ export async function register(options: PandaPluginOptions = {}): Promise<void> 
 export default pandacss()
 
 /** One driver per plugin. The first build creates it; later builds reload the config and re-parse sources. */
-function createDriverLoader(options: PandaPluginOptions) {
+function createDriverLoader(options: PandaPluginOptions, warnDiagnostics: WarnDiagnostics) {
   const { configPath, outdir } = options
   let driver: Driver | undefined
   let reportedDesignSystemDiagnostics: readonly Diagnostic[] | undefined
@@ -115,7 +121,7 @@ function createDriverLoader(options: PandaPluginOptions) {
     }
 
     for (const report of driver.parseFiles()) {
-      warnDiagnostics(report.diagnostics, `while parsing ${report.path}`, report.path)
+      warnDiagnostics(report.diagnostics, `while parsing ${report.path}`, { file: report.path })
     }
     if (driver.designSystemDiagnostics !== reportedDesignSystemDiagnostics) {
       reportedDesignSystemDiagnostics = driver.designSystemDiagnostics
@@ -125,7 +131,11 @@ function createDriverLoader(options: PandaPluginOptions) {
   }
 }
 
-async function injectStylesheet(driver: Driver, args: OnLoadArgs): Promise<OnLoadResult | undefined> {
+async function injectStylesheet(
+  driver: Driver,
+  args: OnLoadArgs,
+  warnDiagnostics: WarnDiagnostics,
+): Promise<OnLoadResult | undefined> {
   const source = await readFile(args.path, 'utf8')
   if (!driver.compiler.hasLayerDeclaration(source)) return
   // In a rebuild the edited modules must sync into the project before the stylesheet is generated.
@@ -133,7 +143,7 @@ async function injectStylesheet(driver: Driver, args: OnLoadArgs): Promise<OnLoa
 
   const polyfill = driver.config.polyfill === true
   const output = driver.cssgen({ emitLayerDeclaration: false, polyfill })
-  warnDiagnostics(output.diagnostics, 'while compiling the stylesheet')
+  warnDiagnostics(output.diagnostics, 'while compiling the stylesheet', { onlyNew: true })
 
   const entry = polyfill ? driver.compiler.stripLayerOrderStatements(source) : source
   return { contents: `${entry}\n${output.css}`, loader: 'css' }
@@ -143,19 +153,20 @@ async function loadSource(
   driver: Driver,
   path: string,
   options: { transform: boolean; sync: boolean; devStyles: boolean },
+  warnDiagnostics: WarnDiagnostics,
 ): Promise<OnLoadResult | undefined> {
   const source = await readFile(path, 'utf8')
 
   if (options.sync && driver.isSourceFile(path)) {
     driver.applyChange({ path, kind: 'change', content: source })
-    warnDiagnostics(driver.compiler.getFile(path)?.diagnostics, `while parsing ${path}`, path)
+    warnDiagnostics(driver.compiler.getFile(path)?.diagnostics, `while parsing ${path}`, { file: path })
   }
 
   let code = source
   if (options.transform) {
     const result = runSourceTransform({}, { compiler: driver.compiler }, source, path)
     if (result) {
-      warnDiagnostics(result.diagnostics, 'while transforming source', path)
+      warnDiagnostics(result.diagnostics, 'while transforming source', { file: path, onlyNew: true })
       code = result.code
     }
   }
@@ -194,12 +205,13 @@ function loaderFor(path: string): Loader {
   return 'js'
 }
 
-function warnDiagnostics(diagnostics: readonly Diagnostic[] | undefined, context: string, file?: string) {
-  if (!diagnostics?.length) return
-  const shown = diagnostics
-    .slice(0, 3)
-    .map((diagnostic) => formatDiagnostic(withDiagnosticFile(diagnostic, file)))
-    .join('\n')
-  const hidden = diagnostics.length > 3 ? `\n...and ${diagnostics.length - 3} more` : ''
-  console.warn(`panda: ${diagnostics.length} diagnostic(s) ${context}\n${shown}${hidden}`)
+type WarnDiagnostics = (
+  diagnostics: readonly Diagnostic[] | undefined,
+  context: string,
+  options?: DiagnosticLogOptions,
+) => void
+
+function createWarnDiagnostics(): WarnDiagnostics {
+  const log = createDiagnosticLog()
+  return (diagnostics, context, options) => log((message) => console.warn(message), diagnostics, context, options)
 }

@@ -130,7 +130,8 @@ A path with two non-condition keys, like `{ foo: { color: 'red' } }` where `foo`
 reading. The encoder keeps the outer key (`foo: red`, class `foo_red`); the styled-system runtime keeps the inner one
 and treats the outer as a condition (`color:foo_red`). Neither produces a working style. The encoder records the case
 (`Encoder::has_nested_properties`) and the source transform leaves such calls to the runtime; CSS emission ignores the
-flag.
+flag. The project reports each case as a `nested_property` warning (per call site, and per config recipe), skipping
+`_`-prefixed keys that `unknown_condition` already covers.
 
 ## Condition matcher
 

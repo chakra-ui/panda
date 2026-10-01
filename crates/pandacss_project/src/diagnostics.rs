@@ -1,7 +1,8 @@
-use pandacss_encoder::ConditionMatcher;
+use pandacss_encoder::{ConditionMatcher, Encoder};
 use pandacss_extractor::{ExtractedCall, ExtractedJsx, LineIndex, MatchCategory, Span};
 use pandacss_literal::Literal;
 use pandacss_shared::{Diagnostic, diagnostic_codes};
+use pandacss_system::System;
 use pandacss_utility::Utility;
 use rustc_hash::FxHashSet;
 
@@ -155,6 +156,47 @@ fn unknown_condition_diagnostic(
         span,
         line_index,
     )
+}
+
+pub(super) fn push_nested_property_diagnostic(
+    encoder: &mut Encoder<ProjectConditionMatcher>,
+    system: &System,
+    span: Option<Span>,
+    line_index: &LineIndex<'_>,
+    out: &mut Vec<Diagnostic>,
+) {
+    let (Some(nested), Some(span)) = (encoder.take_nested_property(), span) else {
+        return;
+    };
+    out.push(located_warning(
+        diagnostic_codes::NESTED_PROPERTY,
+        system.nested_property_message(&nested),
+        span,
+        line_index,
+    ));
+}
+
+pub(super) fn push_config_recipe_nested_property_diagnostics(
+    system: &System,
+    out: &mut Vec<Diagnostic>,
+) {
+    let mut encoder = Encoder::with_conditions(system.conditions().clone());
+    let mut push = |source: &str, encoder: &mut Encoder<ProjectConditionMatcher>| {
+        if let Some(nested) = encoder.take_nested_property() {
+            out.push(Diagnostic::warning(
+                diagnostic_codes::NESTED_PROPERTY,
+                format!("{source}: {}", system.nested_property_message(&nested)),
+            ));
+        }
+    };
+    for (source, _, recipe) in system.config_recipes() {
+        system.process_recipe_atoms(&mut encoder, recipe);
+        push(&source, &mut encoder);
+    }
+    for (source, _, recipe) in system.config_slot_recipes() {
+        system.process_slot_recipe_atoms(&mut encoder, recipe);
+        push(&source, &mut encoder);
+    }
 }
 
 pub(super) fn push_invalid_color_opacity_modifier_diagnostics(

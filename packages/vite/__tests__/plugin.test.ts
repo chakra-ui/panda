@@ -315,11 +315,29 @@ describe('@pandacss/vite', () => {
       "panda: 1 diagnostic(s) while parsing <root>/App.tsx
       warning js_parse_error <root>/App.tsx:3:55 Unexpected token. Panda could not fully parse this file; some styles may be missing."
     `)
+    await readCss(server)
+    expect(warnings.filter((message) => message.includes('js_parse_error'))).toHaveLength(1)
 
     writeFileSync(appFile, APP(`{ color: 'blue' }`))
     server.watcher.emit('change', appFile)
 
     expect(await waitForCss(server, 'blue')).toContain('blue')
+  })
+
+  it('reports a broken nested style once when the transform and the stylesheet both see it', async () => {
+    dir = createFixture(`{ has: { svg: { color: 'red' } } }`)
+    server = await startServer(dir, { transform: true })
+    const warnings: string[] = []
+    server.config.logger.warn = (message) => {
+      warnings.push(String(message))
+    }
+
+    await readCss(server)
+    // Import analysis can't resolve the fixture's `@panda/css`; Panda's `pre` transform has already run by then.
+    // Browsers re-import edited modules with a `?t=` query.
+    await server.transformRequest('/App.tsx?t=1').catch(() => undefined)
+
+    expect(warnings.filter((warning) => warning.includes('nested_property'))).toHaveLength(1)
   })
 
   it('re-parses sources after a config reload', async () => {

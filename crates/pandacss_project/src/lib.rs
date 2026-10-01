@@ -28,8 +28,9 @@ mod parsed_file;
 
 use dependency_graph::DependencyGraph;
 use diagnostics::{
-    dynamic_style_value_diagnostic, push_deprecated_utility_diagnostics,
-    push_invalid_color_opacity_modifier_diagnostics, push_unknown_condition_diagnostics,
+    dynamic_style_value_diagnostic, push_config_recipe_nested_property_diagnostics,
+    push_deprecated_utility_diagnostics, push_invalid_color_opacity_modifier_diagnostics,
+    push_nested_property_diagnostic, push_unknown_condition_diagnostics,
 };
 
 use std::collections::BTreeMap;
@@ -200,7 +201,8 @@ impl Project {
     )]
     pub fn new(system: System) -> Self {
         let system = Arc::new(system);
-        let config_diagnostics = system.diagnostics().to_vec();
+        let mut config_diagnostics = system.diagnostics().to_vec();
+        push_config_recipe_nested_property_diagnostics(&system, &mut config_diagnostics);
         let config_recipes = system
             .config_recipes()
             .map(|(source, index, recipe)| {
@@ -509,7 +511,16 @@ impl Project {
         let mut encoded_recipes = EncodedRecipes::new(compiled.optimize().smart_compound_variants);
         let empty_object = Literal::Object(Vec::new());
         let diagnose_unextractable_calls = !compiled.extractor_config().has_jsx_framework;
+        // Each call's warning is flushed when the next one starts, so `continue` can't skip it.
+        let mut last_span = None;
         for call in result.calls {
+            push_nested_property_diagnostic(
+                &mut encoder,
+                compiled,
+                last_span.replace(call.span),
+                &line_index,
+                &mut report.diagnostics,
+            );
             if diagnose_unextractable_calls
                 && call.category != MatchCategory::Recipe
                 && call.data.iter().any(Option::is_none)
@@ -784,6 +795,13 @@ impl Project {
         }
 
         for jsx in result.jsx {
+            push_nested_property_diagnostic(
+                &mut encoder,
+                compiled,
+                last_span.replace(jsx.span),
+                &line_index,
+                &mut report.diagnostics,
+            );
             let recipe_names = compiled.jsx_recipe_names(&jsx.name);
             if !recipe_names.is_empty() {
                 let _span = tracing::trace_span!(
@@ -830,6 +848,13 @@ impl Project {
             report.jsx_usages += 1;
         }
 
+        push_nested_property_diagnostic(
+            &mut encoder,
+            compiled,
+            last_span,
+            &line_index,
+            &mut report.diagnostics,
+        );
         let mut atoms = encoder.into_atoms();
         let mut utility_styles = FxHashMap::default();
         if let Some(transform) = utility_transform {

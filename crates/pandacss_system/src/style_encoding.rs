@@ -1,4 +1,6 @@
-use pandacss_encoder::{Atom, Encoder, compare_atoms_by_emit_order};
+use pandacss_encoder::{
+    Atom, ConditionMatcher, Encoder, NestedProperty, compare_atoms_by_emit_order,
+};
 use pandacss_extractor::{ExtractedJsx, JsxKind};
 use pandacss_literal::Literal;
 use pandacss_recipes::{Recipe, SlotRecipe};
@@ -10,6 +12,25 @@ use crate::{
 };
 
 impl System {
+    /// Describe a style path that cannot be encoded with the runtime's class names.
+    #[must_use]
+    pub fn nested_property_message(&self, nested: &NestedProperty) -> String {
+        let NestedProperty { key, nested, path } = nested;
+        let condition = format!("_{key}");
+        let fix = if self.conditions.is_condition(&condition) {
+            format!("`{condition}`")
+        } else if matches!(&**key, "has" | "is" | "not" | "where") {
+            let leaf = path.rsplit('.').next() == Some(&**nested);
+            let argument = if leaf { "…" } else { nested };
+            format!("`'&:{key}({argument})'`")
+        } else {
+            format!("a condition or a selector like `'& {key}'`")
+        };
+        format!(
+            "`{key}` in `{path}` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use {fix} instead."
+        )
+    }
+
     fn process_atomic(
         &self,
         encoder: &mut Encoder<ProjectConditionMatcher>,
