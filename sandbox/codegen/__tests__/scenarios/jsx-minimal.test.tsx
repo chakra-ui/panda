@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest'
 import { Box, Stack, styled } from '../../styled-system-jsx-minimal/jsx'
 import { render } from '@testing-library/react'
 import { buttonWithCompoundVariants } from '../../styled-system-jsx-minimal/recipes'
-import React from 'react'
+import React, { type ComponentType } from 'react'
 
 describe('styled factory with an inline recipe', () => {
   const Button = styled('button', {
@@ -350,5 +350,21 @@ describe('styled elements and patterns', () => {
       </div>
     `,
     )
+  })
+})
+
+describe('styled component types', () => {
+  interface IconProps {
+    size?: number
+    className?: string
+  }
+
+  const Icon = (props: IconProps) => <svg width={props.size} height={props.size} className={props.className} />
+
+  test('a styled component is assignable to ComponentType of its interface props', () => {
+    const RedIcon: ComponentType<IconProps> = styled(Icon, { base: { color: 'red.500' } })
+
+    const { container } = render(<RedIcon size={12} />)
+    expect(container.querySelector('svg')?.getAttribute('width')).toBe('12')
   })
 })

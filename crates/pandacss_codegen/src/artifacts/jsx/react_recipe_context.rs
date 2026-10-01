@@ -277,7 +277,7 @@ type RecipePropsOf<R extends RecipeContextRecipe> = R extends RuntimeRecipeFn
       : never
 
 type RecipeContextComponentProps<T extends ElementType, R extends RecipeContextRecipe> = JsxHTMLProps<
-  ComponentProps<T> & UnstyledProps & AsProps & DataAttrs,
+  ComponentProps<T> & UnstyledProps & AsProps,
   Assign<RecipePropsOf<R>, JsxStyleProps>
 >
 
@@ -327,7 +327,7 @@ interface WithProviderOptions<P = {}> {
 }
 
 type SlotRecipeProviderProps<T extends ElementType, R extends SlotRecipeContextInput> = JsxHTMLProps<
-  ComponentProps<T> & UnstyledProps & AsProps & DataAttrs,
+  ComponentProps<T> & UnstyledProps & AsProps,
   Assign<SlotRecipePropsOf<R>, JsxStyleProps>
 >
 
@@ -336,11 +336,11 @@ type SlotRecipeProviderComponent<T extends ElementType, R extends SlotRecipeCont
 ) => JSX.Element
 
 type SlotRecipeRootProviderComponent<T extends ElementType, R extends SlotRecipeContextInput> = (
-  props: ComponentProps<T> & UnstyledProps & DataAttrs & SlotRecipePropsOf<R>
+  props: ComponentProps<T> & UnstyledProps & SlotRecipePropsOf<R>
 ) => JSX.Element
 
 type SlotRecipeConsumerComponent<T extends ElementType> = (
-  props: JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps & DataAttrs, JsxStyleProps>
+  props: JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, JsxStyleProps>
 ) => JSX.Element
 
 export interface SlotRecipeContext<R extends SlotRecipeContextInput> {

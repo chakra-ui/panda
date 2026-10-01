@@ -318,7 +318,7 @@ type RecipePropsOf<R extends RecipeContextRecipe> = R extends RuntimeRecipeFn
       : never
 
 type RecipeContextComponent<T extends ElementType, R extends RecipeContextRecipe> = FunctionalComponent<
-  JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps & VModelProps & DataAttrs, Assign<RecipePropsOf<R>, JsxStyleProps>>
+  JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps & VModelProps, Assign<RecipePropsOf<R>, JsxStyleProps>>
 >
 
 export interface RecipeContext<R extends RecipeContextRecipe> {
@@ -363,15 +363,15 @@ interface WithProviderOptions<P = {}> {
 }
 
 type SlotRecipeProviderComponent<T extends ElementType, R extends SlotRecipeContextInput> = FunctionalComponent<
-  JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps & VModelProps & DataAttrs, Assign<SlotRecipePropsOf<R>, JsxStyleProps>>
+  JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps & VModelProps, Assign<SlotRecipePropsOf<R>, JsxStyleProps>>
 >
 
 type SlotRecipeRootProviderComponent<T extends ElementType, R extends SlotRecipeContextInput> = FunctionalComponent<
-  ComponentProps<T> & UnstyledProps & VModelProps & DataAttrs & SlotRecipePropsOf<R>
+  ComponentProps<T> & UnstyledProps & VModelProps & SlotRecipePropsOf<R>
 >
 
 type SlotRecipeConsumerComponent<T extends ElementType> = FunctionalComponent<
-  JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps & VModelProps & DataAttrs, JsxStyleProps>
+  JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps & VModelProps, JsxStyleProps>
 >
 
 export interface SlotRecipeContext<R extends SlotRecipeContextInput> {
