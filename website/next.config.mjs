@@ -11,7 +11,7 @@ const config = {
     return [
       {
         source: '/docs/:path*.mdx',
-        destination: '/llms.txt/:path*.mdx'
+        destination: '/llms.txt/:path*'
       }
     ]
   },
