@@ -7,6 +7,7 @@
     "barrel-cross-file": "tsx src/barrel-cross-file.ts",
     "baseline": "tsx src/baseline.ts",
     "binding-boundary": "tsx src/binding-boundary.ts",
+    "cold-start": "tsx src/cold-start.ts",
     "extract-compare": "tsx src/extract-compare.ts",
     "generated-types-perf": "tsx src/generated-types-perf.ts",
     "jsx-heavy-compare": "tsx src/jsx-heavy-compare.ts",

@@ -16,6 +16,18 @@ Legacy comparison pins live in this package (`@pandacss/node@1.12.0` and friends
 `pnpm --filter=./bench` so those npm versions resolve. Root vitest aliases `@pandacss/*` into `packages/*/src` and
 cannot see `@pandacss/node`.
 
+## CLI cold start (`cold-start`)
+
+```sh
+pnpm --filter @pandacss/compiler build:native
+pnpm --filter @pandacss/compiler --filter @pandacss/config --filter @pandacss/cli build
+pnpm --filter=./bench cold-start            # --runs 10 by default
+```
+
+Times real `panda` processes on a small project with no presets, `preset-base`, and `preset-base` + `preset-panda`,
+against the workspace packages. The presets are copied into `node_modules` the way an install lays them out, and each
+run is a fresh process. `node startup` is the floor a process pays before any Panda code runs.
+
 ## Runtime SSR benchmark (`runtime-css`)
 
 ```sh
