@@ -2,7 +2,7 @@
 //! possible value as a `conditional` so each one gets CSS.
 
 use crate::common::{panda_config, panda_jsx_config};
-use indoc::indoc;
+use indoc::{formatdoc, indoc};
 use insta::assert_yaml_snapshot;
 use pandacss_extractor::{ExtractUsage, extract};
 
@@ -159,6 +159,151 @@ fn ternary_in_jsx_attribute_emits_conditional() {
 }
 
 // --- logical && / || / ?? ---
+
+#[test]
+fn dynamic_logical_initializers_do_not_make_comparisons_constant() {
+    let results: Vec<_> = ["??", "||", "&&"]
+        .into_iter()
+        .map(|operator| {
+            let source = formatdoc! {r"
+                import {{ css }} from '@panda/css';
+
+                const count = data.count {operator} 0;
+                const alias = count;
+                css({{ color: alias > 0 ? 'green' : 'gray' }});
+            ", operator = operator};
+            let usage = run(&source);
+
+            serde_json::json!({ "operator": operator, "data": usage.calls[0].data })
+        })
+        .collect();
+
+    assert_yaml_snapshot!(results, @r#"
+    - operator: "??"
+      data:
+        - color:
+            kind: conditional
+            branches:
+              - green
+              - gray
+    - operator: "||"
+      data:
+        - color:
+            kind: conditional
+            branches:
+              - green
+              - gray
+    - operator: "&&"
+      data:
+        - color:
+            kind: conditional
+            branches:
+              - green
+              - gray
+    "#);
+}
+
+#[test]
+fn jsx_ternary_after_a_dynamic_nullish_default_keeps_both_branches() {
+    let source = indoc! {r"
+        import { styled } from '@panda/jsx';
+
+        export function Badge({ data }: { data: { count?: number } }) {
+          const count = data.count ?? 0;
+
+          return <styled.span css={{ bg: count > 0 ? 'green.500' : 'gray.500' }} />;
+        }
+    "};
+    let usage = run_jsx(source);
+
+    assert_yaml_snapshot!(usage.jsx[0].data, @r"
+    css:
+      bg:
+        kind: conditional
+        branches:
+          - green.500
+          - gray.500
+    ");
+}
+
+#[test]
+fn destructured_nullish_defaults_do_not_make_comparisons_constant() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const { count } = { count: data.count ?? 0, display: 'flex' };
+        css({ color: count > 0 ? 'green' : 'gray' });
+    "};
+    let usage = run(source);
+
+    assert_yaml_snapshot!(usage.calls[0].data, @r"
+    - color:
+        kind: conditional
+        branches:
+          - green
+          - gray
+    ");
+}
+
+#[test]
+fn dynamic_logical_style_bindings_still_extract_the_fallback() {
+    let results: Vec<_> = ["??", "||", "&&"]
+        .into_iter()
+        .map(|operator| {
+            let source = formatdoc! {r"
+                import {{ css }} from '@panda/css';
+
+                const color = data.color {operator} 'gray';
+                css({{ color }});
+            ", operator = operator};
+            let usage = run(&source);
+
+            serde_json::json!({ "operator": operator, "data": usage.calls[0].data })
+        })
+        .collect();
+
+    assert_yaml_snapshot!(results, @r#"
+    - operator: "??"
+      data:
+        - color: gray
+    - operator: "||"
+      data:
+        - color: gray
+    - operator: "&&"
+      data:
+        - color: gray
+    "#);
+}
+
+#[test]
+fn static_nullish_defaults_still_fold_with_javascript_semantics() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const count = null ?? 3;
+        const zero = 0 ?? 3;
+        const flag = false ?? true;
+        const empty = '' ?? 'fallback';
+        const missing = undefined ?? 'block';
+
+        css({
+          color: count > 0 ? 'green' : 'gray',
+          bg: zero > 0 ? 'green' : 'gray',
+          opacity: flag ? 1 : 0,
+          content: empty,
+          display: missing,
+        });
+    "};
+    let usage = run(source);
+
+    assert_yaml_snapshot!(usage.calls[0].data, @r#"
+    - color: green
+      bg: gray
+      opacity: 0
+      content: ""
+      display: block
+    "#);
+}
 
 #[test]
 fn logical_and_with_unresolvable_left_emits_right_operand() {

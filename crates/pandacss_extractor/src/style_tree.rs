@@ -505,6 +505,8 @@ fn lookup_style_member(object: &StyleTree, key: &str) -> Option<StyleTree> {
             let idx = key.parse::<usize>().ok()?;
             items.get(idx).cloned()
         }
+        StyleTree::OpenWithFallback(fallback) => lookup_style_member(fallback, key)
+            .map(|member| StyleTree::OpenWithFallback(Box::new(member))),
         _ => None,
     }
 }

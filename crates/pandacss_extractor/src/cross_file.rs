@@ -30,6 +30,7 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use crate::Literal;
 use crate::literal::expression_to_literal;
 use crate::pure_fn::{OwnedPureFn, lower_callable_expr, lower_function};
+use crate::style_tree::into_project_literal;
 use crate::{
     MatchCategory, MatchedImport, Matchers, TokenDictionary, collect_imports,
     extract::UnresolvedCrossFileDependency, imports::module_export_name, match_import_records,
@@ -40,6 +41,11 @@ use crate::{
 #[derive(Debug, Clone)]
 pub(crate) enum ExportEntry {
     Literal(Literal),
+    /// Keep extractable styles separate from the value used in constant folding.
+    StyleFallback {
+        known_value: Option<Literal>,
+        style_value: Literal,
+    },
     PureFn(OwnedPureFn),
     Recipe(ExportedRecipe),
 }
@@ -1063,14 +1069,11 @@ fn collect_from_named(
             module.re_exports.insert(exported, target);
             continue;
         }
-        let entry = resolver
-            .resolve_root_name(&local)
-            .map(ExportEntry::Literal)
-            .or_else(|| {
-                resolver
-                    .lookup_root_pure_fn(&local)
-                    .map(ExportEntry::PureFn)
-            });
+        let entry = exported_value(&local, resolver).or_else(|| {
+            resolver
+                .lookup_root_pure_fn(&local)
+                .map(ExportEntry::PureFn)
+        });
         if let Some(entry) = entry {
             module.exports.insert(exported, entry);
         }
@@ -1091,8 +1094,8 @@ fn collect_from_var(
             BindingPattern::BindingIdentifier(id) => {
                 if let Some(recipe) = exported_recipe(init, resolver, matched) {
                     out.insert(id.name.to_string(), ExportEntry::Recipe(recipe));
-                } else if let Some(value) = expression_to_literal(init, Some(resolver)) {
-                    out.insert(id.name.to_string(), ExportEntry::Literal(value));
+                } else if let Some(entry) = exported_value(id.name.as_str(), resolver) {
+                    out.insert(id.name.to_string(), entry);
                 } else if let Some(pure_fn) = lower_callable_expr(init, Some(resolver)) {
                     out.insert(id.name.to_string(), ExportEntry::PureFn(pure_fn));
                 }
@@ -1105,6 +1108,40 @@ fn collect_from_var(
     }
 }
 
+#[must_use]
+fn exported_value(name: &str, resolver: &Resolver<'_, '_>) -> Option<ExportEntry> {
+    let known_value = resolver.resolve_root_name(name);
+
+    if matches!(
+        &known_value,
+        Some(
+            Literal::String(_)
+                | Literal::Number(_)
+                | Literal::Bool(_)
+                | Literal::Null
+                | Literal::Token { .. }
+        )
+    ) {
+        return known_value.map(ExportEntry::Literal);
+    }
+
+    let Some(style_value) = resolver
+        .resolve_root_style_tree(name)
+        .and_then(into_project_literal)
+    else {
+        return known_value.map(ExportEntry::Literal);
+    };
+
+    if known_value.as_ref() == Some(&style_value) {
+        return Some(ExportEntry::Literal(style_value));
+    }
+
+    Some(ExportEntry::StyleFallback {
+        known_value,
+        style_value,
+    })
+}
+
 fn collect_pattern_bindings(
     pattern: &BindingPattern<'_>,
     resolver: &Resolver<'_, '_>,
@@ -1112,8 +1149,8 @@ fn collect_pattern_bindings(
 ) {
     match pattern {
         BindingPattern::BindingIdentifier(id) => {
-            if let Some(value) = resolver.resolve_root_name(id.name.as_str()) {
-                out.insert(id.name.to_string(), ExportEntry::Literal(value));
+            if let Some(entry) = exported_value(id.name.as_str(), resolver) {
+                out.insert(id.name.to_string(), entry);
             }
         }
         BindingPattern::ObjectPattern(object) => {

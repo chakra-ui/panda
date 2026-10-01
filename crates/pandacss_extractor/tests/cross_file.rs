@@ -1355,6 +1355,139 @@ fn imported_pure_helper_object_return_spreads() {
 }
 
 #[test]
+fn imported_logical_style_binding_keeps_its_fallback() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { color } from './values';
+            import { css } from '@panda/css';
+
+            css({ color });
+        "},
+        &[(
+            "values.ts",
+            indoc::indoc! {r"
+                export const color = runtime.color ?? 'gray';
+            "},
+        )],
+    );
+
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r"
+    calls:
+      - name: css
+        data:
+          - color: gray
+    ");
+}
+
+#[test]
+fn imported_partial_style_object_keeps_its_fallback_and_known_members() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { styles } from './values';
+            import { css } from '@panda/css';
+
+            css({ ...styles });
+        "},
+        &[(
+            "values.ts",
+            indoc::indoc! {r"
+                export const styles = { color: runtime.color ?? 'gray', padding: '4px' };
+            "},
+        )],
+    );
+
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r"
+    calls:
+      - name: css
+        data:
+          - color: gray
+            padding: 4px
+    ");
+}
+
+#[test]
+fn imported_logical_default_does_not_make_comparisons_constant() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { count } from './values';
+            import { css } from '@panda/css';
+
+            css({ color: count > 0 ? 'green' : 'gray' });
+        "},
+        &[(
+            "values.ts",
+            indoc::indoc! {r"
+                export const count = runtime.count ?? 0;
+            "},
+        )],
+    );
+
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r"
+    calls:
+      - name: css
+        data:
+          - color:
+              kind: conditional
+              branches:
+                - green
+                - gray
+    ");
+}
+
+#[test]
+fn imported_export_alias_keeps_style_members() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { theme } from './values';
+            import { css } from '@panda/css';
+
+            css({ color: theme.color, padding: theme.padding });
+        "},
+        &[(
+            "values.ts",
+            indoc::indoc! {r"
+                export const styles = { color: runtime.color ?? 'gray', padding: '4px' };
+                export { styles as theme };
+            "},
+        )],
+    );
+
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r"
+    calls:
+      - name: css
+        data:
+          - color: gray
+            padding: 4px
+    ");
+}
+
+#[test]
+fn imported_destructured_export_keeps_its_style_fallback() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { extractedColor } from './values';
+            import { css } from '@panda/css';
+
+            css({ color: extractedColor });
+        "},
+        &[(
+            "values.ts",
+            indoc::indoc! {r"
+                const styles = { color: runtime.color ?? 'gray', padding: '4px' };
+                export const { color: extractedColor } = styles;
+            "},
+        )],
+    );
+
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r"
+    calls:
+      - name: css
+        data:
+          - color: gray
+    ");
+}
+
+#[test]
 fn imported_conditional_object_keeps_encode_branches() {
     let (fs, main) = project(
         indoc::indoc! {r"

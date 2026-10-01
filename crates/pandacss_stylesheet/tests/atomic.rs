@@ -1,7 +1,39 @@
 use insta::assert_snapshot;
 use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
-use crate::common::{compile_layer_css, compile_output, config};
+use crate::common::{compile_layer_css, compile_output, compile_tsx_layer_css, config};
+
+#[test]
+fn emits_both_jsx_branches_after_a_dynamic_nullish_default() {
+    let config = config(serde_json::json!({
+        "jsxFramework": "react",
+        "importMap": { "jsx": ["@panda/jsx"] },
+        "utilities": {
+            "backgroundColor": { "className": "bg", "shorthand": "bg" }
+        }
+    }));
+    let source = indoc::indoc! {r"
+        import { styled } from '@panda/jsx';
+
+        export function Badge({ data }: { data: { count?: number } }) {
+          const count = data.count ?? 0;
+
+          return <styled.span css={{ bg: count > 0 ? 'green' : 'gray' }} />;
+        }
+    "};
+    let css = compile_tsx_layer_css(&config, source, &[StylesheetLayer::Utilities]);
+
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .bg_gray {
+        background-color: gray;
+      }
+      .bg_green {
+        background-color: green;
+      }
+    }
+    ");
+}
 
 #[test]
 fn emits_dynamic_atomic_css() {

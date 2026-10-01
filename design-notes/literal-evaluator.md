@@ -2,11 +2,11 @@
 
 ## Summary
 
-`pandacss_literal::Literal` is the host-neutral typed value the extractor reads out of source. Downstream
-transformation crates depend on `pandacss_literal` directly, so they do not pull in Oxc.
-`expression_to_literal(expr, resolver)` folds an Oxc expression into a `Literal` when it resolves to a static value. The
-fold rules match `ts-evaluator` semantics so the Rust extractor sees the same values the JS extractor sees — the goal is
-parity with the JS path before defaulting to Rust.
+`pandacss_literal::Literal` is the host-neutral typed value the extractor reads out of source. Downstream transformation
+crates depend on `pandacss_literal` directly, so they do not pull in Oxc. `expression_to_literal(expr, resolver)` folds
+an Oxc expression into a `Literal` when it resolves to a static value. The fold rules match `ts-evaluator` semantics so
+the Rust extractor sees the same values the JS extractor sees — the goal is parity with the JS path before defaulting to
+Rust.
 
 Simple pure helpers are an intentional extension of that surface: v1 folded them incidentally via `ts-evaluator`; v2
 lowers and applies a closed descriptor (`pure_fn.rs`) instead of running a JS interpreter.
@@ -28,8 +28,8 @@ pub enum Literal {
 Three notable choices:
 
 - **`Object` keeps keys in source order** as a `Vec`, not a map. Extraction never looks up by key; downstream code that
-  does can build whatever index it needs. The order matters because Panda's encoder reads the outermost non-condition key
-  as the property name.
+  does can build whatever index it needs. The order matters because Panda's encoder reads the outermost non-condition
+  key as the property name.
 - **`Number` is `f64`**, not split into int/float. JS only has one number type. The custom `Serialize` impl re-emits
   integers as `i64` when they fit (precision boundary at 2^53) to match the shape the JS extractor produces.
 - **`Conditional`** carries alternative branches from a non-foldable **ternary** (both sides resolved independently);
@@ -51,13 +51,14 @@ Production `extract()` paths always supply a `Resolver`, which unlocks identifie
   `TSInstantiationExpression`** — Syntactic no-ops; recurse on the inner expression.
 - **`UnaryExpression`** — `+`, `-`, `!`, `~`. Skips `typeof`, `void`, `delete`.
 - **`BinaryExpression`** — Arithmetic, comparison, equality. JS `+` keeps the string-vs-number split.
-- **`LogicalExpression`** — `&&`, `||`, `??`. Foldable left short-circuits; non-foldable left emits the right operand
-  (`cond && X` → `X`).
+- **`LogicalExpression`** — `&&`, `||`, `??`. Foldable left short-circuits; non-foldable left stays unresolved. Style
+  extraction separately collects the right operand through `StyleTree` (`cond && X` → `X`). A fallback is not a known
+  runtime value and must not make a later comparison or ternary test constant.
 - **`ConditionalExpression`** — Foldable test picks a branch; open test emits `Conditional` with both branches.
 - **`TemplateLiteral`** — Including tagged templates (tag identity ignored).
-- **`Identifier`** — Same-file `const` / `let` / `var` with literal initializer, never mutated. Free
-  global `undefined` folds to `Null` (parity with array slots and `null == undefined`); a shadowed
-  local named `undefined` that doesn't resolve stays open.
+- **`Identifier`** — Same-file `const` / `let` / `var` with literal initializer, never mutated. Free global `undefined`
+  folds to `Null` (parity with array slots and `null == undefined`); a shadowed local named `undefined` that doesn't
+  resolve stays open.
 - **`StaticMemberExpression`, `ComputedMemberExpression`** — After the object folds to a literal.
 - **Computed object keys** — When the key expression folds to a string or number (including nested condition objects).
 - **Object / array destructuring** — Renames, computed binding keys, defaults, and rest.
@@ -115,8 +116,8 @@ Edge-case drops worth noting: division by zero (`1 / 0` would be `Infinity` in J
 
 Captures that aren't parameters must already fold; they bake into the descriptor as `OwnedPureExpr::Value` at lower
 time. Lowering fails on async/generators, rest or destructured params, nested unknown calls, `this`, assignment, and
-other impure forms. Bare function values used without a call stay non-`Literal`, except factory
-`defaultProps` accessors (arrow / `function` / method), which are applied with no arguments.
+other impure forms. Bare function values used without a call stay non-`Literal`, except factory `defaultProps` accessors
+(arrow / `function` / method), which are applied with no arguments.
 
 Same-file bindings go through the resolver's `fn_cache`. Imported / re-exported helpers come from `CrossFileResolver` as
 `ExportEntry::PureFn` (see [cross-file-resolution](./cross-file-resolution.md)) — lowered while the export file's AST is
@@ -165,6 +166,7 @@ whole-value token paths — survive folding as text and are classified directly 
 ## Related
 
 - [extraction-pipeline](./extraction-pipeline.md)
-- [style-tree](./style-tree.md) — transform-facing IR (`Ternary` / `And` / spans); encode still uses `Literal` via `project_literal`
+- [style-tree](./style-tree.md) — transform-facing IR (`Ternary` / `And` / spans); encode still uses `Literal` via
+  `project_literal`
 - [cross-file-resolution](./cross-file-resolution.md)
 - [performance-budget](./performance-budget.md)
