@@ -1,4 +1,4 @@
-import type { ProjectCallbacks, ProjectHooks, TokenLookup } from '@pandacss/compiler-shared'
+import type { ProjectCallbacks, ProjectHooks, SerializedConfig, TokenLookup } from '@pandacss/compiler-shared'
 import {
   createTransformHelpers,
   getPatternDefaultValueRefsByTransformId,
@@ -12,6 +12,7 @@ import type { RawCompiler } from './index'
  *  validation + helper construction; only the instance plumbing lives here. */
 export function registerCallbacks(
   project: RawCompiler,
+  config: SerializedConfig,
   callbacks: ProjectCallbacks,
   hooks: ProjectHooks | undefined,
   tokenDictionary: TokenLookup | undefined,
@@ -22,11 +23,10 @@ export function registerCallbacks(
   const patternTransforms = callbacks['pattern.transform']
   const hasPatternTransforms = !!patternTransforms && Object.keys(patternTransforms).length > 0
 
-  const config = project.config()
-
   const patternDefaultValues = callbacks['pattern.defaultValues']
-  const patternDefaultValueRefs =
-    config && patternDefaultValues ? getPatternDefaultValueRefsByTransformId(config) : new Map<string, string>()
+  const patternDefaultValueRefs = patternDefaultValues
+    ? getPatternDefaultValueRefsByTransformId(config)
+    : new Map<string, string>()
   const { token, utils } = createTransformHelpers(tokenDictionary)
 
   if (hasPatternTransforms && !project.registerPatternTransform) {
