@@ -98,15 +98,15 @@ order so selectors match recipe runtime output. Rule conditions are sorted separ
 4. Property priority: broad shorthands before shorthand groups before longhands.
 5. Deterministic ties: property name, atom value key, rule conditions, then class conditions.
 
-Style expansion retains composition depth: authored properties start at zero, and entering each named composition
-adds one. Final declarations keep this depth through sorting. The shared declaration merger compares importance
-first, then prefers the nearer composition scope, then uses emission order for ties. This works on CSS properties
-after utility transforms and replaces whole fallback runs together.
+Style expansion retains composition depth: authored properties start at zero, and entering each named composition adds
+one. Final declarations keep this depth through sorting. The shared declaration merger compares importance first, then
+prefers the nearer composition scope, then uses emission order for ties. This works on CSS properties after utility
+transforms and replaces whole fallback runs together.
 
 Recipe and grouped-style emission use one collector keyed by the lowered selector and wrappers, so block conditions
 merge each target independently. Recipe and grouped-style token and keyframe pruning visit the collector's winning
-declarations too. Expansion owns cycle detection and keeps one set of flattened values with their composition depth; it does not decide
-property precedence.
+declarations too. Expansion owns cycle detection and keeps one set of flattened values with their composition depth; it
+does not decide property precedence.
 
 Condition application is separate from sorting. At-rules become wrappers, `&` conditions rewrite selectors, plain
 selectors become ancestors, and pseudo-elements are emitted after pseudo-classes so selectors stay valid.
