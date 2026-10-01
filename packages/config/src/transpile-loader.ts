@@ -1,13 +1,11 @@
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import * as nodeModule from 'node:module'
-import { extname, sep } from 'node:path'
+import { extname, join, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const SESSION_PARAM = 'panda-config'
 const TYPESCRIPT_EXTENSION = /\.[cm]?tsx?$/
 const RESOLVE_EXTENSIONS = ['.ts', '.tsx', '.mts', '.js', '.mjs']
-
-type Transform = typeof import('rolldown/utils').transformSync
 
 interface Session {
   files: Set<string>
@@ -15,7 +13,7 @@ interface Session {
 }
 
 const sessions = new Map<string, Session>()
-let transform: Transform | undefined
+let hooksRegistered: Promise<void> | undefined
 let nextSession = 0
 
 export function canTranspile(file: string): boolean {
@@ -26,7 +24,8 @@ export async function importTranspiled<T>(
   file: string,
   evaluate: (mod: Record<string, unknown>) => Promise<T>,
 ): Promise<{ value: T; files: string[] }> {
-  await registerTranspileHooks()
+  hooksRegistered ??= registerTranspileHooks()
+  await hooksRegistered
 
   const id = String(++nextSession)
   const session: Session = { files: new Set([file]), loaded: false }
@@ -41,8 +40,7 @@ export async function importTranspiled<T>(
 }
 
 async function registerTranspileHooks(): Promise<void> {
-  if (transform) return
-  transform = (await import('rolldown/utils')).transformSync
+  const { transformSync } = await import('rolldown/utils')
 
   nodeModule.registerHooks({
     resolve(specifier, context, nextResolve) {
@@ -73,7 +71,7 @@ async function registerTranspileHooks(): Promise<void> {
       const file = fileURLToPath(url)
       if (!TYPESCRIPT_EXTENSION.test(file)) return nextLoad(url, context)
 
-      const result = transform!(file, readFileSync(file, 'utf8'))
+      const result = transformSync(file, readFileSync(file, 'utf8'))
       if (result.errors.length > 0) throw result.errors[0]
       return { format: 'module', source: result.code, shortCircuit: true }
     },
@@ -105,7 +103,7 @@ function resolveRelative(specifier: string, parentURL: string): string | undefin
     base,
     ...RESOLVE_EXTENSIONS.map((extension) => base + extension),
     ...(extname(base) === '.js' ? [base.slice(0, -3) + '.ts'] : []),
-    ...RESOLVE_EXTENSIONS.map((extension) => `${base}/index${extension}`),
+    ...RESOLVE_EXTENSIONS.map((extension) => join(base, `index${extension}`)),
   ]
   return candidates.find((candidate) => existsSync(candidate) && statSync(candidate).isFile())
 }

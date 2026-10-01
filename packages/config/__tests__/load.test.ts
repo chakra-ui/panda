@@ -776,10 +776,11 @@ describe('loadConfig module loading', () => {
 
     const output = loadInNode(
       cwd,
-      `const first = await loadConfig({ cwd })
+      `const [first, concurrent] = await Promise.all([loadConfig({ cwd }), loadConfig({ cwd })])
       const second = await loadConfig({ cwd })
       console.log(JSON.stringify({
         tokens: second.config.theme.tokens,
+        concurrentBrand: concurrent.config.theme.tokens.colors.brand.value,
         dependencies: first.dependencies,
         evaluations: globalThis.__countedEvals,
         bundlerImports,
@@ -794,6 +795,7 @@ describe('loadConfig module loading', () => {
     expect(output.dependencies).toEqual(
       expect.arrayContaining(['panda.config.ts', 'theme.ts', join('tokens', 'index.ts'), 'radius.ts']),
     )
+    expect(output.concurrentBrand).toBe('#0f0')
     expect(output.evaluations).toBe(1)
     expect(output.bundlerImports).toEqual([])
   })
