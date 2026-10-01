@@ -159,6 +159,12 @@ npx -y @pandacss/mcp
 
 See [MCP server](/docs/get-started/mcp-server).
 
+### Compound variants are their own class
+
+v1 merged compound-variant styles into the `css` prop, so a `textStyle` in `css` replaced the compound's text style. v2
+emits each compound variant as its own class, so properties you don't override still apply. If you relied on the
+replacement, override those properties in `css` directly.
+
 ### Packages folded into the compiler
 
 These v1 internals are gone; their work lives in `@pandacss/compiler` now. Drop direct imports of `@pandacss/core`,
@@ -173,6 +179,65 @@ the compiler reads `.vue`, `.svelte`, and `.astro` files directly, so remove the
 Nine options are gone: `studio` (and its sub-options), `eject`, `emitTokensOnly`, `gitignore`, `clean`, `watch`, `poll`,
 `lightningcss`, and `browserslist`. `forceConsistentTypeExtension` is replaced by `forceImportExtension` — different
 semantics, not a rename. `outExtension` gains a `'ts'` value. See [Config](/docs/reference/config).
+
+### Presets aren't added for you
+
+v1 added `@pandacss/preset-base` unless you set `eject: true`, even when you listed your own presets. v2 adds nothing. A
+config that only lists its own presets loses the base utilities and conditions. It still builds, but with
+`unknown_condition` warnings. List the presets you need:
+
+```ts
+// ❌ v1: preset-base was added for you
+export default defineConfig({ presets: ['@acme/preset'] })
+
+// ✅ v2
+export default defineConfig({ presets: ['@pandacss/preset-base', '@acme/preset'] })
+```
+
+### theme.containerSizes is now theme.containers
+
+The old key is ignored without a warning, so every `@name/size` container condition stops working.
+
+```ts
+// ❌ v1
+theme: {
+  extend: {
+    containerSizes: {
+      sm: '384px'
+    }
+  }
+}
+
+// ✅ v2
+theme: {
+  extend: {
+    containers: {
+      sm: '384px'
+    }
+  }
+}
+```
+
+### Type imports moved
+
+`@pandacss/dev` only exports the `Config`, `Preset`, and `UserConfig` types. Import other config types from
+`@pandacss/types`:
+
+```ts
+// ❌ v1
+import type { RecipeConfig } from '@pandacss/dev'
+
+// ✅ v2
+import type { RecipeConfig } from '@pandacss/types'
+```
+
+Generated types changed too:
+
+- `Token` and `SizeToken` moved from `styled-system/tokens` to `styled-system/types`.
+- `types/prop-type` (`UtilityValues`) and `CssProperties` are gone. Use `SystemStyleObject` or `SystemProperties` from
+  `styled-system/types`.
+- The generated `RecipeConfig` and `SlotRecipeConfig` are now `RecipeDefinition` and `SlotRecipeDefinition`, without the
+  config fields (`className`, `jsx`, `staticCss`, `description`). Use `@pandacss/types` for the config shape.
 
 ### Template literal syntax is removed
 
@@ -211,6 +276,12 @@ import { css } from 'styled-system/css'
 Logging flags are consolidated: `--log-level silent|error|warn|info|debug` replaces `--silent`, `--quiet`, and
 `--verbose`. `--profile` replaces `--cpu-prof` and covers time in the Rust engine, not just the Node side. Shared flags
 are kebab-case (`--max-warnings`, `--watch-debounce`, …). See [CLI](/docs/reference/cli).
+
+`panda cssgen` no longer takes a positional glob. `panda cssgen "src/**/*.tsx"` ignores the glob and scans your whole
+`include` list. Use `--include` instead, and repeat it for more globs.
+
+`panda cssgen --minimal` now includes `staticCss` rules, because they live in the `recipes` and `utilities` layers.
+Per-package sheets built with `--minimal` repeat the static rules the host sheet already ships.
 
 ### Theme keys without `extend` replace less than they did
 
