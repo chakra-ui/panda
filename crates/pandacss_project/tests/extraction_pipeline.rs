@@ -1637,3 +1637,117 @@ fn a_jsx_css_prop_folds_a_nested_fallback_run() {
         - _hover
     "#);
 }
+
+#[test]
+fn slot_recipe_parts_rendered_in_the_file_that_defines_them_emit_recipe_css() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "theme": {
+            "slotRecipes": {
+                "card": {
+                    "className": "card",
+                    "slots": ["root", "title"],
+                    "base": { "root": { "borderWidth": "2px" }, "title": { "color": "red" } }
+                }
+            }
+        }
+    }));
+
+    let report = project.parse_file(
+        "card.tsx",
+        indoc! {r"
+            import { createSlotRecipeContext } from '@panda/jsx'
+            import { card } from '@panda/recipes'
+
+            const { withProvider, withContext } = createSlotRecipeContext(card)
+            export const Card = { Root: withProvider('div', 'root'), Title: withContext('h2', 'title') }
+
+            export const App = () => (
+              <Card.Root>
+                <Card.Title>x</Card.Title>
+              </Card.Root>
+            )
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 2);
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @"
+    base:
+      - recipe: card
+        slot: root
+        className: card__root
+        entries:
+          - prop: borderWidth
+            value: 2px
+            conditions: []
+      - recipe: card
+        slot: title
+        className: card__title
+        entries:
+          - prop: color
+            value: red
+            conditions: []
+    variants: []
+    atomic: []
+    ");
+}
+
+#[test]
+fn compiled_jsx_of_slot_recipe_parts_defined_in_the_same_file_emits_recipe_css() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "theme": {
+            "slotRecipes": {
+                "card": {
+                    "className": "card",
+                    "slots": ["root", "title"],
+                    "base": { "root": { "borderWidth": "2px" } }
+                }
+            }
+        }
+    }));
+
+    let report = project.parse_file(
+        "card.js",
+        indoc! {r"
+            import { jsx } from 'react/jsx-runtime'
+
+            const Card = { Root: () => null }
+            export const App = () => jsx(Card.Root, {})
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @"
+    base:
+      - recipe: card
+        slot: root
+        className: card__root
+        entries:
+          - prop: borderWidth
+            value: 2px
+            conditions: []
+    variants: []
+    atomic: []
+    ");
+}
+
+#[test]
+fn style_props_on_a_member_tag_with_a_local_root_feed_the_encoder() {
+    let mut project = create_project(json!({ "jsxFramework": "react" }));
+
+    let report = project.parse_file(
+        "app.tsx",
+        indoc! {r#"
+            const Foo = { Bar: () => null }
+            export const App = () => <Foo.Bar color="red" />
+        "#},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @"
+    - prop: color
+      value: red
+      conditions: []
+    ");
+}
