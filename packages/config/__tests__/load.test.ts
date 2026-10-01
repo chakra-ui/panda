@@ -736,6 +736,114 @@ describe('loadConfig presets', () => {
 })
 
 describe('loadConfig module loading', () => {
+  const loadPath = process.cwd().endsWith(join('packages', 'config'))
+    ? join(process.cwd(), 'src/load.ts')
+    : join(process.cwd(), 'packages/config/src/load.ts')
+
+  function loadInNode(cwd: string, body: string) {
+    const script = `
+      import { registerHooks } from 'node:module'
+      const bundlerImports = []
+      registerHooks({
+        resolve(specifier, context, next) {
+          if (specifier === 'rolldown') bundlerImports.push(specifier)
+          return next(specifier, context)
+        },
+      })
+      const { loadConfig } = await import(${JSON.stringify(pathToFileURL(loadPath).href)})
+      const cwd = ${JSON.stringify(cwd)}
+      ${body}
+    `
+    return JSON.parse(
+      execFileSync(process.execPath, ['--import', 'tsx', '--input-type=module', '-e', script], { encoding: 'utf8' }),
+    )
+  }
+
+  test('transpiles a TypeScript config file by file, without the bundler', () => {
+    const cwd = writeTempProject({
+      'node_modules/counted/package.json': JSON.stringify({ name: 'counted', type: 'module', exports: './index.js' }),
+      'node_modules/counted/index.js': `globalThis.__countedEvals = (globalThis.__countedEvals ?? 0) + 1
+        export const outdir = 'styled-system'`,
+      'theme.ts': `export enum Brand { Primary = '#0f0' }`,
+      'tokens/index.ts': `export const spacing = { sm: { value: '2px' } }`,
+      'radius.ts': `export const radius: string = '4px'`,
+      'panda.config.ts': `import { outdir } from 'counted'
+        import { Brand } from './theme'
+        import { spacing } from './tokens'
+        import { radius } from './radius.js'
+        export default { outdir, theme: { tokens: { colors: { brand: { value: Brand.Primary } }, radii: { sm: { value: radius } }, spacing } } }`,
+    })
+
+    const output = loadInNode(
+      cwd,
+      `const first = await loadConfig({ cwd })
+      const second = await loadConfig({ cwd })
+      console.log(JSON.stringify({
+        tokens: second.config.theme.tokens,
+        dependencies: first.dependencies,
+        evaluations: globalThis.__countedEvals,
+        bundlerImports,
+      }))`,
+    )
+
+    expect(output.tokens).toMatchObject({
+      colors: { brand: { value: '#0f0' } },
+      radii: { sm: { value: '4px' } },
+      spacing: { sm: { value: '2px' } },
+    })
+    expect(output.dependencies).toEqual(
+      expect.arrayContaining(['panda.config.ts', 'theme.ts', join('tokens', 'index.ts'), 'radius.ts']),
+    )
+    expect(output.evaluations).toBe(1)
+    expect(output.bundlerImports).toEqual([])
+  })
+
+  test('re-reads a workspace-linked package on every load', () => {
+    const workspace = writeTempProject({
+      'package.json': JSON.stringify({ name: '@acme/tokens', type: 'module', exports: './index.js' }),
+      'index.js': `export const brand = '#0f0'`,
+    })
+    const cwd = writeTempProject({
+      'panda.config.ts': `import { brand } from '@acme/tokens'
+        export default { outdir: 'styled-system', theme: { tokens: { colors: { brand: { value: brand } } } } }`,
+    })
+    mkdirSync(join(cwd, 'node_modules/@acme'), { recursive: true })
+    symlinkSync(workspace, join(cwd, 'node_modules/@acme/tokens'), 'dir')
+
+    const output = loadInNode(
+      cwd,
+      `const { writeFileSync } = await import('node:fs')
+      const first = await loadConfig({ cwd })
+      writeFileSync(${JSON.stringify(join(workspace, 'index.js'))}, "export const brand = '#f00'")
+      const second = await loadConfig({ cwd })
+      console.log(JSON.stringify({
+        brands: [first, second].map((result) => result.config.theme.tokens.colors.brand.value),
+        tracked: first.dependencies.some((dependency) => dependency.endsWith('index.js')),
+        bundlerImports,
+      }))`,
+    )
+
+    expect(output).toEqual({ brands: ['#0f0', '#f00'], tracked: true, bundlerImports: [] })
+  })
+
+  test('falls back to the bundler for tsconfig paths', () => {
+    const cwd = writeTempProject({
+      'node_modules/.keep': '',
+      'tsconfig.json': JSON.stringify({ compilerOptions: { baseUrl: '.', paths: { '@theme': ['./theme.ts'] } } }),
+      'theme.ts': `export const brand = '#0f0'`,
+      'panda.config.ts': `import { brand } from '@theme'
+        export default { outdir: 'styled-system', theme: { tokens: { colors: { brand: { value: brand } } } } }`,
+    })
+
+    const output = loadInNode(
+      cwd,
+      `const result = await loadConfig({ cwd })
+      console.log(JSON.stringify({ brand: result.config.theme.tokens.colors.brand.value, bundlerImports }))`,
+    )
+
+    expect(output).toEqual({ brand: '#0f0', bundlerImports: ['rolldown'] })
+  })
+
   test('loads configs that use local dynamic imports', () => {
     const dir = writeTempProject({
       'preset.ts': `export default {

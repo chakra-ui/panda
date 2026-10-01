@@ -9,6 +9,7 @@ import type { RolldownOutput } from 'rolldown'
 import { importMetaUrlPlugin } from './bundle-plugins'
 import { PandaError } from './error'
 import { tryResolveFrom } from './resolve'
+import { canTranspile, importTranspiled } from './transpile-loader'
 
 const nodeBuiltins = new Set([...builtinModules, ...builtinModules.map((mod) => `node:${mod}`)])
 
@@ -26,6 +27,9 @@ export async function bundleConfig<T extends Config = Config>(
   filepath: string,
   cwd: string,
 ): Promise<BundleConfigResult<T>> {
+  const transpiled = await loadTranspiled<T>(filepath, cwd)
+  if (transpiled) return transpiled
+
   const { rolldown } = await import('rolldown')
 
   const build = await rolldown({
@@ -53,6 +57,20 @@ export async function bundleConfig<T extends Config = Config>(
   const mod = await loadBundledModule(filepath, output.code)
 
   return { config: await configFromModule<T>(mod), dependencies }
+}
+
+async function loadTranspiled<T>(filepath: string, cwd: string): Promise<BundleConfigResult<T> | undefined> {
+  const file = isAbsolute(filepath) ? filepath : filepath.startsWith('.') ? join(cwd, filepath) : undefined
+  if (!file || !existsSync(file) || !canTranspile(file)) return undefined
+
+  try {
+    const { value, files } = await importTranspiled(file, configFromModule<T>)
+    const base = canonical(cwd)
+    const dependencies = new Set(files.map((dependency) => normalize(relative(base, canonical(dependency)))))
+    return { config: value, dependencies: Array.from(dependencies) }
+  } catch {
+    return undefined
+  }
 }
 
 export async function importInstalledConfig<T extends Config = Config>(
