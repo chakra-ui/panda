@@ -85,7 +85,7 @@ fn emits_recipe_contexts_for_supported_non_react_frameworks() {
             "from 'preact';",
             "forwardRef(function WithContext",
             "forwardRef(function WithProvider",
-            "ElementType, JsxFactoryOptions, UnstyledProps } from '../types/jsx'",
+            "ElementType, JsxFactoryOptions, UnstyledProps, WithForwardedProps } from '../types/jsx'",
         ),
         (
             "solid",
@@ -99,7 +99,7 @@ fn emits_recipe_contexts_for_supported_non_react_frameworks() {
             "from 'vue';",
             "const PropsContext = Symbol('PropsContext')",
             "provide(SlotStylesContext, resolvedSlots)",
-            "UnstyledProps, VModelProps } from '../types/jsx'",
+            "UnstyledProps, VModelProps, WithForwardedProps } from '../types/jsx'",
         ),
     ] {
         let artifacts = ArtifactGraph.generate_all(

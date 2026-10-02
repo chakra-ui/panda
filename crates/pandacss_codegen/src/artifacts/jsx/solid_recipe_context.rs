@@ -33,6 +33,7 @@ pub(super) fn recipe_module(ctx: CodegenContext<'_>) -> Module {
                 "ElementType",
                 "JsxFactoryOptions",
                 "UnstyledProps",
+                "WithForwardedProps",
             ],
             "../types/jsx",
         ))
@@ -88,6 +89,7 @@ pub(super) fn slot_recipe_module(ctx: CodegenContext<'_>) -> Module {
                 "JsxFactoryOptions",
                 "MaybeAccessor",
                 "UnstyledProps",
+                "WithForwardedProps",
             ],
             "../types/jsx",
         ))
@@ -348,18 +350,18 @@ type RecipePropsOf<R extends RecipeContextRecipe> = R extends RuntimeRecipeFn
 
 type RecipeContextComponentProps<T extends ElementType, R extends RecipeContextRecipe> = JsxHTMLProps<
   ComponentProps<T> & UnstyledProps & AsProps,
-  Assign<RecipePropsOf<R>, JsxStyleProps>
+  WithForwardedProps<Assign<RecipePropsOf<R>, JsxStyleProps>, T, F>
 >
 
-type RecipeContextComponent<T extends ElementType, R extends RecipeContextRecipe> = Component<
+type RecipeContextComponent<T extends ElementType, R extends RecipeContextRecipe, F extends string = never> = Component<
   RecipeContextComponentProps<T, R>
 >
 
 export interface RecipeContext<R extends RecipeContextRecipe> {
-  withContext: <T extends ElementType>(
+  withContext: <T extends ElementType, F extends string = never>(
     Component: T,
-    options?: JsxFactoryOptions<ComponentProps<T>> | undefined
-  ) => RecipeContextComponent<T, R>
+    options?: JsxFactoryOptions<ComponentProps<T>, F> | undefined
+  ) => RecipeContextComponent<T, R, F>
   PropsProvider: Component<Partial<RecipePropsOf<R>> & DataAttrs>
   usePropsContext: () => RecipePropsOf<R> | undefined
 }
@@ -396,16 +398,16 @@ interface WithProviderOptions<P> {
   defaultProps?: MaybeAccessor<Partial<P> & DataAttrs> | undefined
 }
 
-type SlotRecipeProviderComponent<T extends ElementType, R extends SlotRecipeContextInput> = Component<
-  JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, Assign<SlotRecipePropsOf<R>, JsxStyleProps>>
+type SlotRecipeProviderComponent<T extends ElementType, R extends SlotRecipeContextInput, F extends string = never> = Component<
+  JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, WithForwardedProps<Assign<SlotRecipePropsOf<R>, JsxStyleProps>, T, F>>
 >
 
 type SlotRecipeRootProviderComponent<T extends ElementType, R extends SlotRecipeContextInput> = Component<
   ComponentProps<T> & UnstyledProps & SlotRecipePropsOf<R>
 >
 
-type SlotRecipeConsumerComponent<T extends ElementType> = Component<
-  JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, JsxStyleProps>
+type SlotRecipeConsumerComponent<T extends ElementType, F extends string = never> = Component<
+  JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, WithForwardedProps<JsxStyleProps, T, F>>
 >
 
 export interface SlotRecipeContext<R extends SlotRecipeContextInput> {
@@ -413,16 +415,16 @@ export interface SlotRecipeContext<R extends SlotRecipeContextInput> {
     Component: T,
     options?: WithProviderOptions<ComponentProps<T>> | undefined
   ) => SlotRecipeRootProviderComponent<T, R>
-  withProvider: <T extends ElementType>(
+  withProvider: <T extends ElementType, F extends string = never>(
     Component: T,
     slot: SlotNameOf<R>,
-    options?: JsxFactoryOptions<ComponentProps<T>> | undefined
-  ) => SlotRecipeProviderComponent<T, R>
-  withContext: <T extends ElementType>(
+    options?: JsxFactoryOptions<ComponentProps<T>, F> | undefined
+  ) => SlotRecipeProviderComponent<T, R, F>
+  withContext: <T extends ElementType, F extends string = never>(
     Component: T,
     slot: SlotNameOf<R>,
-    options?: JsxFactoryOptions<ComponentProps<T>> | undefined
-  ) => SlotRecipeConsumerComponent<T>
+    options?: JsxFactoryOptions<ComponentProps<T>, F> | undefined
+  ) => SlotRecipeConsumerComponent<T, F>
 }
 
 export declare function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipe: R): SlotRecipeContext<R>";

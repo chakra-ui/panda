@@ -154,12 +154,22 @@ interface RuntimeRecipeFn {
   __type: any
 }
 
-export interface JsxFactoryOptions<TProps extends AnyProps> {
+export interface JsxFactoryOptions<TProps extends AnyProps, F extends string = string> {
   dataAttr?: boolean
   defaultProps?: Partial<TProps> & DataAttrs
   shouldForwardProp?: (prop: string, variantKeys: string[]) => boolean
-  forwardProps?: string[]
+  forwardProps?: readonly F[]
 }
+
+// Distributes over the few forwarded keys; never intersects the large key unions.
+type ForwardedStyleKeys<T extends ElementType, F extends string> = F extends keyof JsxStyleProps
+  ? F extends keyof ComponentProps<T> ? F : never
+  : never
+
+/** Props `S`, with each forwarded prop that shares a style prop's name typed from the component. */
+export type WithForwardedProps<S, T extends ElementType, F extends string> = [ForwardedStyleKeys<T, F>] extends [never]
+  ? S
+  : Assign<S, Pick<ComponentProps<T>, ForwardedStyleKeys<T, F>>>
 
 export type JsxRecipeProps<T extends ElementType, P extends AnyProps> = JsxHTMLProps<BaseComponentProps<T>, P>
 
@@ -169,8 +179,8 @@ export type JsxElement<T extends ElementType, P extends AnyProps> = T extends __
 
 export interface JsxFactory {
   <T extends ElementType>(component: T): __COMPONENT__<T, {}>
-  <T extends ElementType, P extends RecipeVariantRecord = {}>(component: T, recipe: RecipeDefinition<P>, options?: JsxFactoryOptions<JsxRecipeProps<T, RecipeSelection<P>>>): JsxElement<T, RecipeSelection<P>>
-  <T extends ElementType, P extends RuntimeRecipeFn>(component: T, recipeFn: P, options?: JsxFactoryOptions<JsxRecipeProps<T, P["__type"]>>): JsxElement<T, P["__type"]>
+  <T extends ElementType, P extends RecipeVariantRecord = {}, F extends string = never>(component: T, recipe: RecipeDefinition<P>, options?: JsxFactoryOptions<JsxRecipeProps<T, RecipeSelection<P>>, F>): JsxElement<T, WithForwardedProps<RecipeSelection<P>, T, F>>
+  <T extends ElementType, P extends RuntimeRecipeFn, F extends string = never>(component: T, recipeFn: P, options?: JsxFactoryOptions<JsxRecipeProps<T, P["__type"]>, F>): JsxElement<T, WithForwardedProps<P["__type"], T, F>>
 }
 
 export type JsxElements = {
@@ -256,12 +266,22 @@ interface RuntimeRecipeFn {
   __type: any
 }
 
-export interface JsxFactoryOptions<TProps extends AnyProps> {
+export interface JsxFactoryOptions<TProps extends AnyProps, F extends string = string> {
   dataAttr?: boolean
   defaultProps?: Partial<TProps> & DataAttrs
   shouldForwardProp?: (prop: string, variantKeys: string[]) => boolean
-  forwardProps?: string[]
+  forwardProps?: readonly F[]
 }
+
+// Distributes over the few forwarded keys; never intersects the large key unions.
+type ForwardedStyleKeys<T extends ElementType, F extends string> = F extends keyof JsxStyleProps
+  ? F extends keyof ComponentProps<T> ? F : never
+  : never
+
+/** Props `S`, with each forwarded prop that shares a style prop's name typed from the component. */
+export type WithForwardedProps<S, T extends ElementType, F extends string> = [ForwardedStyleKeys<T, F>] extends [never]
+  ? S
+  : Assign<S, Pick<ComponentProps<T>, ForwardedStyleKeys<T, F>>>
 
 export type JsxRecipeProps<T extends ElementType, P extends AnyProps> = JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, P>
 
@@ -271,8 +291,8 @@ export type JsxElement<T extends ElementType, P extends AnyProps> = T extends __
 
 export interface JsxFactory {
   <T extends ElementType>(component: T): __COMPONENT__<T, {}>
-  <T extends ElementType, P extends RecipeVariantRecord = {}>(component: T, recipe: RecipeDefinition<P>, options?: JsxFactoryOptions<JsxRecipeProps<T, RecipeSelection<P>>>): JsxElement<T, RecipeSelection<P>>
-  <T extends ElementType, P extends RuntimeRecipeFn>(component: T, recipeFn: P, options?: JsxFactoryOptions<JsxRecipeProps<T, P["__type"]>>): JsxElement<T, P["__type"]>
+  <T extends ElementType, P extends RecipeVariantRecord = {}, F extends string = never>(component: T, recipe: RecipeDefinition<P>, options?: JsxFactoryOptions<JsxRecipeProps<T, RecipeSelection<P>>, F>): JsxElement<T, WithForwardedProps<RecipeSelection<P>, T, F>>
+  <T extends ElementType, P extends RuntimeRecipeFn, F extends string = never>(component: T, recipeFn: P, options?: JsxFactoryOptions<JsxRecipeProps<T, P["__type"]>, F>): JsxElement<T, WithForwardedProps<P["__type"], T, F>>
 }
 
 export type JsxElements = {
@@ -326,12 +346,22 @@ interface RuntimeRecipeFn {{
   __type: any
 }}
 
-export interface JsxFactoryOptions<TProps extends AnyProps> {{
+export interface JsxFactoryOptions<TProps extends AnyProps, F extends string = string> {{
   dataAttr?: boolean
   defaultProps?: Partial<TProps> & DataAttrs
   shouldForwardProp?: (prop: string, variantKeys: string[]) => boolean
-  forwardProps?: string[]
+  forwardProps?: readonly F[]
 }}
+
+// Distributes over the few forwarded keys; never intersects the large key unions.
+type ForwardedStyleKeys<T extends ElementType, F extends string> = F extends keyof JsxStyleProps
+  ? F extends keyof {component_props} ? F : never
+  : never
+
+/** Props `S`, with each forwarded prop that shares a style prop's name typed from the component. */
+export type WithForwardedProps<S, T extends ElementType, F extends string> = [ForwardedStyleKeys<T, F>] extends [never]
+  ? S
+  : Assign<S, Pick<{component_props}, ForwardedStyleKeys<T, F>>>
 
 export type JsxRecipeProps<T extends ElementType, P extends AnyProps> = JsxHTMLProps<{component_props} & UnstyledProps & AsProps, P>
 
@@ -341,8 +371,8 @@ export type JsxElement<T extends ElementType, P extends AnyProps> = T extends __
 
 export interface JsxFactory {{
   <T extends ElementType>(component: T): __COMPONENT__<T, {{}}>
-  <T extends ElementType, P extends RecipeVariantRecord = {{}}>(component: T, recipe: RecipeDefinition<P>, options?: JsxFactoryOptions<JsxRecipeProps<T, RecipeSelection<P>>>): JsxElement<T, RecipeSelection<P>>
-  <T extends ElementType, P extends RuntimeRecipeFn>(component: T, recipeFn: P, options?: JsxFactoryOptions<JsxRecipeProps<T, P["__type"]>>): JsxElement<T, P["__type"]>
+  <T extends ElementType, P extends RecipeVariantRecord = {{}}, F extends string = never>(component: T, recipe: RecipeDefinition<P>, options?: JsxFactoryOptions<JsxRecipeProps<T, RecipeSelection<P>>, F>): JsxElement<T, WithForwardedProps<RecipeSelection<P>, T, F>>
+  <T extends ElementType, P extends RuntimeRecipeFn, F extends string = never>(component: T, recipeFn: P, options?: JsxFactoryOptions<JsxRecipeProps<T, P["__type"]>, F>): JsxElement<T, WithForwardedProps<P["__type"], T, F>>
 }}
 
 export type JsxElements = {{
