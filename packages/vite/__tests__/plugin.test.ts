@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -126,6 +126,23 @@ async function foldedButton(server: ViteDevServer, needle: string): Promise<stri
     await new Promise((done) => setTimeout(done, 100))
   }
   throw new Error(`timed out waiting for ${JSON.stringify(needle)} in the folded class`)
+}
+
+/** A workspace app at `apps/demo` whose config also includes `packages/ui/src` from outside its root. */
+function createMonorepoFixture(include: (root: string) => string) {
+  const root = realpathSync(mkdtempSync(join(tmpdir(), 'panda-vite-monorepo-')))
+  const app = join(root, 'apps', 'demo')
+  const ui = join(root, 'packages', 'ui', 'src')
+  mkdirSync(app, { recursive: true })
+  mkdirSync(ui, { recursive: true })
+  writeFileSync(
+    join(app, 'panda.config.ts'),
+    CONFIG.replace("include: ['**/*.tsx'],", `include: ['**/*.tsx', ${include(root)}],`),
+  )
+  writeFileSync(join(app, 'index.css'), ENTRY_CSS)
+  writeFileSync(join(app, 'App.tsx'), APP(`{ color: 'red' }`))
+  writeFileSync(join(ui, 'Card.tsx'), EXTRA(`{ color: 'chartreuse' }`))
+  return { root, app, ui }
 }
 
 describe('@pandacss/vite', () => {
@@ -367,5 +384,84 @@ describe('@pandacss/vite', () => {
       await new Promise((done) => setTimeout(done, 100))
     }
     throw new Error('timed out waiting for codegen in updated config outdir')
+  })
+})
+
+describe('@pandacss/vite with sources outside the root', () => {
+  let root: string | undefined
+  let server: ViteDevServer | undefined
+
+  afterEach(async () => {
+    await server?.close()
+    server = undefined
+    if (root) rmSync(root, { recursive: true, force: true })
+    root = undefined
+  })
+
+  it('regenerates CSS when a sibling package file included with ../ changes', async () => {
+    const fixture = createMonorepoFixture(() => `'../../packages/ui/src/**/*.tsx'`)
+    root = fixture.root
+    server = await startServer(fixture.app)
+    await waitForCss(server, 'chartreuse')
+
+    const card = join(fixture.ui, 'Card.tsx')
+    writeFileSync(card, EXTRA(`{ color: 'orchid' }`))
+    server.watcher.emit('change', card)
+
+    expect(await waitForCss(server, 'orchid')).toContain('orchid')
+  })
+
+  it('regenerates CSS when a sibling package file included with an absolute path changes', async () => {
+    const fixture = createMonorepoFixture((dir) => JSON.stringify(join(dir, 'packages/ui/src/**/*.tsx')))
+    root = fixture.root
+    server = await startServer(fixture.app)
+    await waitForCss(server, 'chartreuse')
+
+    const card = join(fixture.ui, 'Card.tsx')
+    writeFileSync(card, EXTRA(`{ color: 'orchid' }`))
+    server.watcher.emit('change', card)
+
+    expect(await waitForCss(server, 'orchid')).toContain('orchid')
+  })
+
+  it('adds CSS when a file is created in a sibling package included with ../', async () => {
+    const fixture = createMonorepoFixture(() => `'../../packages/ui/src/**/*.tsx'`)
+    root = fixture.root
+    server = await startServer(fixture.app)
+    await waitForCss(server, 'chartreuse')
+
+    const created = join(fixture.ui, 'Created.tsx')
+    writeFileSync(created, EXTRA(`{ color: 'peru' }`))
+    server.watcher.emit('add', created)
+
+    expect(await waitForCss(server, 'peru')).toContain('peru')
+  })
+
+  it('adds CSS when a file is created in a sibling package included with an absolute path', async () => {
+    const fixture = createMonorepoFixture((dir) => JSON.stringify(join(dir, 'packages/ui/src/**/*.tsx')))
+    root = fixture.root
+    server = await startServer(fixture.app)
+    await waitForCss(server, 'chartreuse')
+
+    const created = join(fixture.ui, 'Created.tsx')
+    writeFileSync(created, EXTRA(`{ color: 'peru' }`))
+    server.watcher.emit('add', created)
+
+    expect(await waitForCss(server, 'peru')).toContain('peru')
+  })
+
+  it('leaves files in other packages alone', async () => {
+    const fixture = createMonorepoFixture(() => `'../../packages/ui/src/**/*.tsx'`)
+    root = fixture.root
+    server = await startServer(fixture.app)
+    await waitForCss(server, 'chartreuse')
+
+    const other = join(fixture.root, 'packages', 'other', 'Other.tsx')
+    mkdirSync(join(fixture.root, 'packages', 'other'), { recursive: true })
+    writeFileSync(other, EXTRA(`{ color: 'peru' }`))
+    server.watcher.emit('add', other)
+    await new Promise((done) => setTimeout(done, 300))
+
+    expect(await readCss(server)).not.toContain('peru')
   })
 })

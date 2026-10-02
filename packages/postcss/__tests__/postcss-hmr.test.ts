@@ -128,6 +128,79 @@ describe('@pandacss/postcss HMR flow', () => {
   })
 })
 
+describe('@pandacss/postcss monorepo sources outside cwd', () => {
+  it('picks up edits and new files in a sibling package included with ../', async () => {
+    await expectSiblingPackageUpdates(() => `'../../packages/ui/src/**/*.tsx'`)
+  })
+
+  it('picks up edits and new files in a sibling package included with an absolute path', async () => {
+    await expectSiblingPackageUpdates((root) => JSON.stringify(join(root, 'packages/ui/src/**/*.tsx')))
+  })
+
+  it('watches the normalized sibling package directory', async () => {
+    const root = realpathSync(mkdtempSync(join(tmpdir(), 'panda-postcss-monorepo-')))
+    const cwd = join(root, 'apps/demo')
+
+    try {
+      writeMonorepo(root, `'../../packages/ui/src/**/*.tsx'`)
+      const cssPath = join(cwd, 'src/index.css')
+      const result = await postcss([pandacss({ cwd })]).process(CSS_ROOT, { from: cssPath })
+
+      expect(result.messages).toContainEqual(
+        expect.objectContaining({ type: 'dir-dependency', dir: join(root, 'packages/ui/src') }),
+      )
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+})
+
+async function expectSiblingPackageUpdates(include: (root: string) => string) {
+  const root = realpathSync(mkdtempSync(join(tmpdir(), 'panda-postcss-monorepo-')))
+  const cwd = join(root, 'apps/demo')
+
+  try {
+    writeMonorepo(root, include(root))
+    const cssPath = join(cwd, 'src/index.css')
+    const processor = postcss([pandacss({ cwd })])
+
+    const first = await processor.process(CSS_ROOT, { from: cssPath })
+    writeFileSync(join(root, 'packages/ui/src/Card.tsx'), appSource('44px'))
+    const edited = await processor.process(CSS_ROOT, { from: cssPath })
+    writeFileSync(join(root, 'packages/ui/src/Created.tsx'), appSource('33px'))
+    const created = await processor.process(CSS_ROOT, { from: cssPath })
+
+    expect(first.css).toContain('88px')
+    expect(edited.css).toContain('44px')
+    expect(created.css).toContain('33px')
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+}
+
+function writeMonorepo(root: string, include: string) {
+  writeFileTree(root, {
+    'apps/demo/panda.config.ts': `export default {
+  outdir: 'styled-system',
+  include: ['./src/**/*.tsx', ${include}],
+  importMap: {
+    css: ['@panda/css'],
+    recipe: ['@panda/recipes'],
+    pattern: ['@panda/patterns'],
+    jsx: ['@panda/jsx'],
+    tokens: ['@panda/tokens'],
+  },
+  utilities: {
+    padding: { className: 'p' },
+  },
+}
+`,
+    'apps/demo/src/index.css': CSS_ROOT,
+    'apps/demo/src/App.tsx': appSource('11px'),
+    'packages/ui/src/Card.tsx': appSource('88px'),
+  })
+}
+
 function appSource(padding: string) {
   return `import { css } from '@panda/css'
 

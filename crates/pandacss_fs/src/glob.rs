@@ -1,8 +1,9 @@
 use std::io;
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 
 use fast_glob::glob_match;
 
+use crate::path::to_forward_slash;
 use crate::{FileSystem, PathSystem};
 
 #[must_use]
@@ -20,17 +21,127 @@ pub fn normalize_glob_pattern(pattern: &str) -> &str {
     pattern.strip_prefix("./").unwrap_or(pattern)
 }
 
-pub(crate) fn matches_any(patterns: &[String], rel_bytes: &[u8]) -> bool {
-    patterns
-        .iter()
-        .any(|pat| glob_match(normalize_glob_pattern(pat).as_bytes(), rel_bytes))
+/// Resolves `.` and `..` by path components without touching the disk, keeping
+/// native separators. A leading `..` in a relative path is kept.
+pub(crate) fn lexical(path: &Path) -> PathBuf {
+    let mut out = PathBuf::new();
+    for component in path.components() {
+        match component {
+            Component::CurDir => {}
+            Component::ParentDir => {
+                if matches!(out.components().next_back(), Some(Component::Normal(_))) {
+                    out.pop();
+                } else if !out.has_root() {
+                    out.push("..");
+                }
+            }
+            other => out.push(other),
+        }
+    }
+    out
 }
 
-/// `path` relative to `cwd`, or `path` itself if it isn't a descendant.
-/// Shared by both walkers so entries stay matchable against `cwd`-relative
-/// patterns regardless of which root the walk started from.
-pub(crate) fn relative_to<'a>(path: &'a Path, cwd: &Path) -> &'a Path {
-    path.strip_prefix(cwd).unwrap_or(path)
+/// `path` relative to `base` (both lexical), with `..` once it leaves `base`.
+fn relative_lexical(path: &Path, base: &Path) -> PathBuf {
+    let path: Vec<Component> = path.components().collect();
+    let base: Vec<Component> = base.components().collect();
+    let common = path.iter().zip(&base).take_while(|(a, b)| a == b).count();
+    let mut out = PathBuf::new();
+    for _ in common..base.len() {
+        out.push("..");
+    }
+    for component in &path[common..] {
+        out.push(component);
+    }
+    out
+}
+
+/// One include or exclude glob. An absolute glob matches absolute paths; any
+/// other matches paths relative to `cwd`, so `../pkg/**` reaches a sibling.
+struct SourceGlob {
+    pattern: String,
+    absolute: bool,
+    /// Directory the walk starts from; an include only matches files under it.
+    root: PathBuf,
+}
+
+impl SourceGlob {
+    fn new(pattern: &str, cwd: &Path) -> Self {
+        let pattern = normalize_glob_pattern(pattern);
+        Self {
+            pattern: pattern.to_owned(),
+            absolute: Path::new(pattern).is_absolute(),
+            root: lexical(&cwd.join(base_dir(pattern))),
+        }
+    }
+
+    fn matches(&self, candidate: &Candidate) -> bool {
+        let target = if self.absolute {
+            &candidate.absolute
+        } else {
+            &candidate.relative
+        };
+        glob_match(self.pattern.as_bytes(), target.as_bytes())
+    }
+}
+
+/// A lexical path in both forms a [`SourceGlob`] can match.
+pub(crate) struct Candidate<'a> {
+    path: &'a Path,
+    relative: String,
+    absolute: String,
+}
+
+/// Decides which files count as sources. Shared by `scan()` and
+/// [`matches_globs`], so a watch event classifies a file the same way the walk
+/// found it.
+pub(crate) struct SourceMatcher {
+    cwd: PathBuf,
+    include: Vec<SourceGlob>,
+    exclude: Vec<SourceGlob>,
+}
+
+impl SourceMatcher {
+    pub(crate) fn new(opts: &GlobOptions) -> Self {
+        let cwd = lexical(&opts.cwd);
+        let include = opts
+            .include
+            .iter()
+            .map(|p| SourceGlob::new(p, &cwd))
+            .collect();
+        let exclude = effective_excludes(opts)
+            .iter()
+            .map(|p| SourceGlob::new(p, &cwd))
+            .collect();
+        Self {
+            cwd,
+            include,
+            exclude,
+        }
+    }
+
+    /// `path` must already be lexical (see [`lexical`]).
+    pub(crate) fn candidate<'a>(&self, path: &'a Path) -> Candidate<'a> {
+        Candidate {
+            path,
+            relative: to_forward_slash(&relative_lexical(path, &self.cwd)),
+            absolute: to_forward_slash(path),
+        }
+    }
+
+    pub(crate) fn is_excluded(&self, candidate: &Candidate) -> bool {
+        self.exclude.iter().any(|glob| glob.matches(candidate))
+    }
+
+    pub(crate) fn is_included(&self, candidate: &Candidate) -> bool {
+        self.include
+            .iter()
+            .any(|glob| candidate.path.starts_with(&glob.root) && glob.matches(candidate))
+    }
+
+    pub(crate) fn relative_path(&self, path: &Path) -> PathBuf {
+        relative_lexical(path, &self.cwd)
+    }
 }
 
 /// Mirrors `Runtime.fs.glob` from `@pandacss/types`.
@@ -59,22 +170,13 @@ impl Default for GlobOptions {
 
 /// Classifies one path against the discovery globs without walking the tree —
 /// the single-path companion to [`default_walk`], for one watch event rather
-/// than a full scan. A path outside `cwd` never matches.
+/// than a full scan. A relative `path` is resolved against `cwd`.
 #[must_use]
 pub fn matches_globs(path: &Path, opts: &GlobOptions) -> bool {
-    let rel = match path.strip_prefix(&opts.cwd) {
-        Ok(rel) => rel,
-        Err(_) if path.is_relative() => path,
-        Err(_) => return false, // outside cwd
-    };
-
-    let rel_str = rel.to_string_lossy();
-    let rel_bytes = rel_str.as_bytes();
-    let excludes = effective_excludes(opts);
-    if matches_any(&excludes, rel_bytes) {
-        return false;
-    }
-    matches_any(&opts.include, rel_bytes)
+    let path = lexical(&opts.cwd.join(path));
+    let matcher = SourceMatcher::new(opts);
+    let candidate = matcher.candidate(&path);
+    !matcher.is_excluded(&candidate) && matcher.is_included(&candidate)
 }
 
 /// Static directory prefix of a glob pattern, before the first glob token:
@@ -104,7 +206,8 @@ pub fn relative_glob(pattern: &str) -> &str {
     }
 }
 
-/// Resolve the static watch directory for `pattern` against `cwd`.
+/// Resolve the static watch directory for `pattern` against `cwd`, with `..`
+/// resolved so watchers report events under the same path `scan()` returns.
 /// Patterns without a static prefix watch `cwd` itself.
 #[must_use]
 pub fn resolve_glob_base(paths: &impl PathSystem, cwd: &str, pattern: &str) -> String {
@@ -112,7 +215,9 @@ pub fn resolve_glob_base(paths: &impl PathSystem, cwd: &str, pattern: &str) -> S
     if base.is_empty() {
         cwd.to_owned()
     } else {
-        paths.join(&[cwd, base])
+        lexical(Path::new(&paths.join(&[cwd, base])))
+            .to_string_lossy()
+            .into_owned()
     }
 }
 
@@ -125,7 +230,7 @@ pub fn walk_roots(opts: &GlobOptions) -> Vec<PathBuf> {
     let mut roots: Vec<PathBuf> = opts
         .include
         .iter()
-        .map(|pattern| opts.cwd.join(base_dir(pattern)))
+        .map(|pattern| lexical(&opts.cwd.join(base_dir(normalize_glob_pattern(pattern)))))
         .collect();
     roots.sort();
     roots.dedup();
@@ -152,8 +257,7 @@ pub(crate) fn default_walk<F: FileSystem + ?Sized>(
         return Ok(Vec::new());
     }
 
-    let excludes = effective_excludes(opts);
-
+    let matcher = SourceMatcher::new(opts);
     let mut results: Vec<PathBuf> = Vec::new();
     let mut stack: Vec<PathBuf> = walk_roots(opts);
 
@@ -173,21 +277,18 @@ pub(crate) fn default_walk<F: FileSystem + ?Sized>(
         };
 
         for entry in entries {
-            let rel = relative_to(&entry, &opts.cwd);
-            let rel_str = rel.to_string_lossy();
-            let rel_bytes = rel_str.as_bytes();
-
-            if matches_any(&excludes, rel_bytes) {
+            let candidate = matcher.candidate(&entry);
+            if matcher.is_excluded(&candidate) {
                 continue;
             }
             let meta = fs.metadata(&entry)?;
             if meta.is_dir() {
                 stack.push(entry);
-            } else if meta.is_file() && matches_any(&opts.include, rel_bytes) {
+            } else if meta.is_file() && matcher.is_included(&candidate) {
                 if opts.absolute {
                     results.push(entry);
                 } else {
-                    results.push(rel.to_path_buf());
+                    results.push(matcher.relative_path(&entry));
                 }
             }
         }

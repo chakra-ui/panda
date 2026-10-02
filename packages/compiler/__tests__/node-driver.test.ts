@@ -1286,6 +1286,84 @@ describe('createNodeDriver reload', () => {
   })
 })
 
+describe('NodeDriver with sources outside cwd', () => {
+  let root: string
+
+  beforeAll(() => {
+    root = realpathSync(mkdtempSync(join(tmpdir(), 'panda-driver-monorepo-')))
+  })
+
+  afterAll(() => {
+    rmSync(root, { recursive: true, force: true })
+  })
+
+  async function monorepoDriver(name: string, include: string) {
+    const dir = join(root, name)
+    writeFileTree(dir, {
+      'apps/demo/panda.config.ts': `export default {
+        include: ['./src/**/*.tsx', ${include.replace('<root>', dir)}],
+        importMap: { css: ['@panda/css'] },
+      }`,
+      'apps/demo/src/App.tsx': "import { css } from '@panda/css'; css({ color: 'red' })",
+      'packages/ui/src/Card.tsx': "import { css } from '@panda/css'; css({ color: 'chartreuse' })",
+      'packages/other/src/Other.tsx': "import { css } from '@panda/css'; css({ color: 'tomato' })",
+    })
+    const driver = await createNodeDriver({ cwd: join(dir, 'apps/demo') })
+    driver.parseFiles()
+    return { driver, ui: join(dir, 'packages/ui/src'), other: join(dir, 'packages/other/src') }
+  }
+
+  it('scans a ../ include into normalized paths', async () => {
+    const { driver, ui } = await monorepoDriver('scan-dotdot', "'../../packages/ui/src/**/*.tsx'")
+    expect(driver.scan()).toContain(join(ui, 'Card.tsx'))
+    expect(driver.scan().some((path) => path.includes('..'))).toBe(false)
+  })
+
+  it('treats files under a ../ include as sources', async () => {
+    const { driver, ui, other } = await monorepoDriver('source-dotdot', "'../../packages/ui/src/**/*.tsx'")
+    expect(driver.isSourceFile(join(ui, 'Card.tsx'))).toBe(true)
+    expect(driver.isSourceFile(join(ui, 'New.tsx'))).toBe(true)
+    expect(driver.isSourceFile(join(other, 'Other.tsx'))).toBe(false)
+  })
+
+  it('treats files under an absolute include outside cwd as sources', async () => {
+    const { driver, ui, other } = await monorepoDriver('source-absolute', "'<root>/packages/ui/src/**/*.tsx'")
+    expect(driver.isSourceFile(join(ui, 'Card.tsx'))).toBe(true)
+    expect(driver.isSourceFile(join(other, 'Other.tsx'))).toBe(false)
+  })
+
+  it('applies an edit to a sibling package file', async () => {
+    const { driver, ui } = await monorepoDriver('edit-dotdot', "'../../packages/ui/src/**/*.tsx'")
+    expect(driver.cssgen().css).toContain('chartreuse')
+
+    const card = join(ui, 'Card.tsx')
+    writeFileSync(card, "import { css } from '@panda/css'; css({ color: 'orchid' })")
+    expect(driver.applyChange({ path: card, kind: 'change' })).toBe(true)
+    expect(driver.cssgen().css).toContain('orchid')
+  })
+
+  it('adds a new sibling package file', async () => {
+    const { driver, ui } = await monorepoDriver('add-absolute', "'<root>/packages/ui/src/**/*.tsx'")
+    const created = join(ui, 'Created.tsx')
+    writeFileSync(created, "import { css } from '@panda/css'; css({ color: 'peru' })")
+    expect(driver.applyChange({ path: created, kind: 'add' })).toBe(true)
+    expect(driver.cssgen().css).toContain('peru')
+  })
+
+  it('ignores a new file in a package the config does not include', async () => {
+    const { driver, other } = await monorepoDriver('ignore-other', "'../../packages/ui/src/**/*.tsx'")
+    const created = join(other, 'Created.tsx')
+    writeFileSync(created, "import { css } from '@panda/css'; css({ color: 'sienna' })")
+    expect(driver.applyChange({ path: created, kind: 'add' })).toBe(false)
+    expect(driver.cssgen().css).not.toContain('sienna')
+  })
+
+  it('watches the normalized sibling package directory', async () => {
+    const { driver, ui } = await monorepoDriver('watch-dotdot', "'../../packages/ui/src/**/*.tsx'")
+    expect(driver.watchTargets().dirs.map((dir) => driver.resolvePath(dir))).toContain(ui)
+  })
+})
+
 /** A published `@acme/ds` design system: `panda lib` manifest, preset, and (optionally) build info. */
 function acmeDsPackage({ manifest, buildInfo }: { manifest?: Record<string, unknown>; buildInfo?: unknown }) {
   return {

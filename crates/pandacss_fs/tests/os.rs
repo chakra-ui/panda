@@ -124,3 +124,55 @@ fn create_dir_all_and_remove_dir_all() {
     osfs.remove_dir_all(&tmp.path().join("a")).unwrap();
     assert!(!tmp.path().join("a").exists());
 }
+
+#[test]
+fn glob_monorepo_parent_dir_include_returns_normalized_paths() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = tmp.path().canonicalize().unwrap();
+    fs::create_dir_all(root.join("apps/demo/src")).unwrap();
+    fs::create_dir_all(root.join("packages/ui/src")).unwrap();
+    fs::write(root.join("apps/demo/src/App.tsx"), "").unwrap();
+    fs::write(root.join("packages/ui/src/Card.tsx"), "").unwrap();
+
+    let opts = GlobOptions {
+        include: vec![
+            "src/**/*.tsx".into(),
+            "../../packages/ui/src/**/*.tsx".into(),
+        ],
+        cwd: root.join("apps/demo"),
+        absolute: true,
+        ..Default::default()
+    };
+    let mut results = OsFileSystem::default().glob(&opts).unwrap();
+    results.sort();
+
+    let card = root.join("packages/ui/src/Card.tsx");
+    assert_eq!(
+        results,
+        vec![root.join("apps/demo/src/App.tsx"), card.clone()]
+    );
+    assert!(pandacss_fs::matches_globs(&card, &opts));
+}
+
+#[test]
+fn glob_monorepo_absolute_include_outside_cwd() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = tmp.path().canonicalize().unwrap();
+    fs::create_dir_all(root.join("apps/demo")).unwrap();
+    fs::create_dir_all(root.join("packages/ui/src")).unwrap();
+    fs::write(root.join("packages/ui/src/Card.tsx"), "").unwrap();
+
+    let include = format!("{}/packages/ui/src/**/*.tsx", root.display());
+    let opts = GlobOptions {
+        include: vec![include],
+        cwd: root.join("apps/demo"),
+        absolute: true,
+        ..Default::default()
+    };
+    let card = root.join("packages/ui/src/Card.tsx");
+    assert_eq!(
+        OsFileSystem::default().glob(&opts).unwrap(),
+        vec![card.clone()]
+    );
+    assert!(pandacss_fs::matches_globs(&card, &opts));
+}

@@ -144,7 +144,9 @@ watch list — see [output-and-host-layer](./output-and-host-layer.md).
 2. Seed the queue with `walk_roots(opts)` rather than `cwd`. A root whose `read_dir` fails with `NotFound` or
    `PermissionDenied` is skipped (a hoisted base may not exist; missing dirs yield `[]`, matching `fast-glob`).
 3. For each entry, walked breadth-first:
-   - Compute path relative to `cwd` (patterns stay `cwd`-relative regardless of the start root).
+   - Match each glob against the path in its own form: absolute for an absolute glob, otherwise `cwd`-relative with
+     `..` once the path leaves `cwd`, so `../packages/ui/**` reaches a sibling package. An include only matches files
+     under its own walk root, so `**/*.tsx` never claims files outside `cwd`.
    - If any `exclude` pattern matches → prune. **Important: pruning at the dir level skips descending entirely**, so
      `node_modules/**` in `exclude` never enters the directory.
    - If entry is a dir → push to queue.
@@ -153,6 +155,10 @@ watch list — see [output-and-host-layer](./output-and-host-layer.md).
 
 The directory-pruning rule matters for performance. Without it, an exclude pattern for `node_modules/**` would still
 call `read_dir` on every nested directory before filtering — orders of magnitude slower on real projects.
+
+Roots and results are lexically normalized (`a/../b` → `b`). `SourceMatcher` holds these rules and is shared by both
+walkers and `matches_globs` (the single-path check behind `isSourceFile`), so a watch event classifies a file exactly
+as `scan()` found it.
 
 **`OsFileSystem` overrides `glob`** to run one `walkdir` per hoisted root instead of recursive `read_dir`. Same
 `fast-glob` matchers, faster directory traversal on native. The default walker stays in place for `MemoryFileSystem`

@@ -353,6 +353,42 @@ describe('@pandacss/bun in Bun.build', () => {
     expect((await bun.load(project.path('src/index.css')))?.contents).toContain('8px')
   })
 
+  it('refreshes the stylesheet after an edit in a sibling package included with ../', async () => {
+    await expectSiblingPackageRefresh(() => `'../../packages/ui/src/**/*.ts'`)
+  })
+
+  it('refreshes the stylesheet after an edit in a sibling package included with an absolute path', async () => {
+    await expectSiblingPackageRefresh((root) => JSON.stringify(join(root, 'packages/ui/src/**/*.ts')))
+  })
+
+  async function expectSiblingPackageRefresh(include: (root: string) => string) {
+    const root = realpathSync(mkdtempSync(join(tmpdir(), 'panda-bun-monorepo-')))
+    dir = root
+    const cwd = join(root, 'apps/demo')
+    const ui = join(root, 'packages/ui/src')
+    mkdirSync(join(cwd, 'src'), { recursive: true })
+    mkdirSync(ui, { recursive: true })
+    const card = (padding: string) =>
+      `import { css } from '@panda/css'\nexport const cls = css({ padding: '${padding}' })\n`
+    writeFileSync(
+      join(cwd, 'panda.config.ts'),
+      CONFIG.replace(
+        "include: ['src/**/*.{ts,tsx}'],",
+        `include: ['src/**/*.{ts,tsx}', ${include(root)}],\n  importMap: { css: ['@panda/css'], recipe: [], pattern: [], jsx: [], tokens: [] },`,
+      ),
+    )
+    writeFileSync(join(cwd, 'src/index.css'), ENTRY_CSS)
+    writeFileSync(join(ui, 'Card.ts'), card('4px'))
+
+    const bun = await setupPlugin({ cwd })
+    await bun.load(join(ui, 'Card.ts'))
+    expect((await bun.load(join(cwd, 'src/index.css')))?.contents).toContain('4px')
+
+    writeFileSync(join(ui, 'Card.ts'), card('8px'))
+    await bun.load(join(ui, 'Card.ts'))
+    expect((await bun.load(join(cwd, 'src/index.css')))?.contents).toContain('8px')
+  }
+
   it('picks up a config edit when the same plugin runs a second build', async () => {
     const project = createProject()
     dir = project.dir
