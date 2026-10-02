@@ -340,11 +340,15 @@ impl WasmCompiler {
         if self.inner.get_file(path).is_some() {
             return path.to_owned();
         }
-        let real = pandacss_fs::real_path(&self.fs, Path::new(path));
-        self.inner
-            .file_paths()
-            .find(|known| pandacss_fs::real_path(&self.fs, Path::new(known)) == real)
-            .map_or_else(|| path.to_owned(), str::to_owned)
+        let opts = pandacss_compiler::source_glob_options(
+            &self.user_config,
+            pandacss_compiler::SourceGlobOverrides::default(),
+        );
+        pandacss_fs::path_aliases(&self.fs, Path::new(path), &opts)
+            .into_iter()
+            .map(|alias| alias.to_string_lossy().into_owned())
+            .find(|alias| self.inner.get_file(alias).is_some())
+            .unwrap_or_else(|| path.to_owned())
     }
 
     #[wasm_bindgen(js_name = getFile)]

@@ -408,7 +408,8 @@ impl Compiler {
         reason = "NAPI requires owned arguments"
     )]
     pub fn resolve_source_path(&self, path: String) -> String {
-        resolve_tracked_path(&self.inner, &self.fs, path)
+        let opts = glob_options(&self.user_config, None);
+        resolve_tracked_path(&self.inner, &self.fs, &opts, path)
     }
 
     /// Per-file view; returns `null` when `path` isn't known.
@@ -484,14 +485,15 @@ impl Compiler {
 fn resolve_tracked_path(
     project: &pandacss_project::Project,
     fs: &impl pandacss_fs::FileSystem,
+    opts: &pandacss_fs::GlobOptions,
     path: String,
 ) -> String {
     if project.get_file(&path).is_some() {
         return path;
     }
-    let real = pandacss_fs::real_path(fs, std::path::Path::new(&path));
-    project
-        .file_paths()
-        .find(|known| pandacss_fs::real_path(fs, std::path::Path::new(known)) == real)
-        .map_or(path, str::to_owned)
+    pandacss_fs::path_aliases(fs, std::path::Path::new(&path), opts)
+        .into_iter()
+        .map(|alias| alias.to_string_lossy().into_owned())
+        .find(|alias| project.get_file(alias).is_some())
+        .unwrap_or(path)
 }

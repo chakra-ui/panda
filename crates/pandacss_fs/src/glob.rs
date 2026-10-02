@@ -253,6 +253,35 @@ pub fn matches_globs_in<F: FileSystem + ?Sized>(fs: &F, path: &Path, opts: &Glob
     is_source(&matcher, &real_path(fs, &lexical(&opts.cwd.join(path))))
 }
 
+/// Paths that may name the same file as `path`: as given, its real path, and
+/// that real path under each symlinked `cwd` or include root.
+#[must_use]
+pub fn path_aliases<F: FileSystem + ?Sized>(
+    fs: &F,
+    path: &Path,
+    opts: &GlobOptions,
+) -> Vec<PathBuf> {
+    let cwd = lexical(&opts.cwd);
+    let given = lexical(&cwd.join(path));
+    let real = real_path(fs, &given);
+    let roots = opts
+        .include
+        .iter()
+        .map(|pattern| lexical(&cwd.join(base_dir(&canonical_glob(pattern)))));
+    let mut aliases = vec![given, real.clone()];
+    for root in std::iter::once(cwd.clone()).chain(roots) {
+        let real_root = real_path(fs, &root);
+        if real_root == root {
+            continue;
+        }
+        if let Ok(rest) = real.strip_prefix(&real_root) {
+            aliases.push(root.join(rest));
+        }
+    }
+    aliases.dedup();
+    aliases
+}
+
 fn is_source(matcher: &SourceMatcher, path: &Path) -> bool {
     let candidate = matcher.candidate(path);
     !matcher.is_excluded(&candidate) && matcher.is_included(&candidate)

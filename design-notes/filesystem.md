@@ -158,8 +158,9 @@ call `read_dir` on every nested directory before filtering — orders of magnitu
 
 Roots and results are lexically normalized (`a/../b` → `b`). `SourceMatcher` holds these rules and is shared by both
 walkers and `matches_globs`, so a watch event classifies a file exactly as `scan()` found it. `isSourceFile` uses
-`matches_globs_in`, which compares real paths (like Tailwind's `@source`), and `resolveSourcePath` maps a symlinked
-spelling of a tracked file back to its entry. `scan()` keeps paths spelled under the `cwd` it was given.
+`matches_globs_in`, which compares real paths. `resolveSourcePath` maps a symlinked spelling of a tracked file back to
+its entry via `path_aliases`: the real path re-rooted under each symlinked root, so cost scales with roots, not files.
+`scan()` keeps paths spelled under the `cwd` it was given.
 
 **`OsFileSystem` overrides `glob`** to run one `walkdir` per hoisted root instead of recursive `read_dir`. Same
 `fast-glob` matchers, faster directory traversal on native. The default walker stays in place for `MemoryFileSystem`
