@@ -621,9 +621,9 @@ fn remove_empty_tokens(builder: &mut TokenDictionaryBuilder) {
 }
 
 /// For each concrete color token, emit virtual `colors.colorPalette.*`
-/// placeholders for every ancestor palette root and record palette -> (virtual
-/// var -> token var) mappings so `colorPalette="…"` can swap a whole palette
-/// in. Honors the `include`/`exclude` glob filters.
+/// placeholders for every selected palette above it and record palette ->
+/// (virtual var -> token var) mappings so `colorPalette="…"` can swap a whole
+/// palette in. A palette always maps its whole subtree.
 fn add_virtual_color_palette_tokens(
     builder: &mut TokenDictionaryBuilder,
     context: &BuildContext<'_>,
@@ -633,6 +633,7 @@ fn add_virtual_color_palette_tokens(
         return;
     }
 
+    let selected = selected_color_palettes(builder.tokens_mut(), options);
     let mut palette = PaletteAccumulator::default();
     let mut seen: FxHashSet<String> = FxHashSet::default();
 
@@ -646,20 +647,67 @@ fn add_virtual_color_palette_tokens(
             continue;
         };
 
-        let color_path_string = join_segments(color_path);
-        if !matches_color_palette_options(&color_path_string, options) {
+        let roots: Vec<usize> = (1..=color_path.len())
+            .filter(|&len| selected.contains(join_segments(&color_path[..len]).as_str()))
+            .collect();
+        if roots.is_empty() || !seen.insert(token.path.to_string()) {
             continue;
         }
 
-        if !seen.insert(token.path.to_string()) {
-            continue;
-        }
-
-        palette.collect_token(token, &segments, color_path, context);
-        token.set_extension("colorPalette", &color_path_string);
+        let default_root = default_palette_name(token, &segments)
+            .is_some_and(|name| selected.contains(name.as_str()));
+        palette.collect_token(token, &segments, color_path, &roots, default_root, context);
+        token.set_extension("colorPalette", join_segments(color_path));
     }
 
     palette.emit(builder, context);
+}
+
+/// Names `colorPalette` accepts: every color group, narrowed by `include` /
+/// `exclude`. An included name keeps its ancestors; an excluded one drops its
+/// descendants.
+fn selected_color_palettes(tokens: &[Token], options: &ColorPaletteOptions) -> FxHashSet<String> {
+    let mut groups: FxHashSet<String> = FxHashSet::default();
+    for token in tokens.iter().filter(|token| is_concrete_color(token)) {
+        let segments: Vec<&str> = token.path.split('.').collect();
+        if let Some(color_path) = color_palette_path_segments(&segments) {
+            for len in 1..=color_path.len() {
+                groups.insert(join_segments(&color_path[..len]));
+            }
+        }
+        groups.extend(default_palette_name(token, &segments));
+    }
+
+    let matches = |patterns: &[String], name: &str| {
+        patterns.iter().any(|pattern| wildcard_match(pattern, name))
+    };
+    let mut selected: FxHashSet<String> = if options.include.is_empty() {
+        groups
+    } else {
+        groups
+            .iter()
+            .filter(|name| matches(&options.include, name))
+            .flat_map(|name| ancestors_and_self(name))
+            .collect()
+    };
+    selected.retain(|name| {
+        !ancestors_and_self(name).any(|ancestor| matches(&options.exclude, &ancestor))
+    });
+    selected
+}
+
+/// A `DEFAULT` color is also a palette named by its full path, so
+/// `colorPalette="button.primary"` resolves bare `colorPalette` to it.
+fn default_palette_name(token: &Token, segments: &[&str]) -> Option<String> {
+    (token.extension("isDefault") == Some("true") && segments.len() > 2)
+        .then(|| join_segments(&segments[1..]))
+}
+
+/// `a.b.c` -> `a`, `a.b`, `a.b.c`.
+fn ancestors_and_self(name: &str) -> impl Iterator<Item = String> + '_ {
+    name.match_indices('.')
+        .map(|(index, _)| name[..index].to_owned())
+        .chain(std::iter::once(name.to_owned()))
 }
 
 fn is_concrete_color(token: &Token) -> bool {
@@ -675,16 +723,18 @@ struct PaletteAccumulator {
 }
 
 impl PaletteAccumulator {
-    /// Register `token` under every ancestor palette root
-    /// (`button.primary.500` -> roots `button`, `button.primary`).
+    /// Register `token` under each selected palette root, given as segment counts
+    /// (`button.primary.500` -> `1` for `button`, `2` for `button.primary`).
     fn collect_token(
         &mut self,
         token: &Token,
         segments: &[&str],
         color_path: &[&str],
+        roots: &[usize],
+        default_root: bool,
         context: &BuildContext<'_>,
     ) {
-        for root_len in 1..=color_path.len() {
+        for &root_len in roots {
             let virtual_path = virtual_color_palette_path(segments, root_len);
             let raw_virtual_var = css_var_variable(&virtual_path.replace('.', "-"), context);
             let palette_name = join_segments(&color_path[..root_len]);
@@ -693,14 +743,13 @@ impl PaletteAccumulator {
             self.mappings
                 .push((palette_name, raw_virtual_var, Arc::clone(&token.var)));
 
-            if root_len == 1 && token.extension("isDefault") == Some("true") {
+            if root_len == 1 && default_root {
                 self.collect_default_root(token, segments, context);
             }
         }
     }
 
-    /// A `DEFAULT` color also maps the bare `colors.colorPalette` root, so
-    /// `colorPalette="button"` resolves to the default shade directly.
+    /// Maps the bare `colors.colorPalette` root for a `DEFAULT` color's palette.
     fn collect_default_root(
         &mut self,
         token: &Token,
@@ -750,21 +799,6 @@ impl PaletteAccumulator {
 
 use crate::color_palette::{color_palette_path_segments, virtual_color_palette_path};
 use crate::join_segments;
-
-fn matches_color_palette_options(path: &str, options: &ColorPaletteOptions) -> bool {
-    if options
-        .exclude
-        .iter()
-        .any(|pattern| wildcard_match(pattern, path))
-    {
-        return false;
-    }
-    options.include.is_empty()
-        || options
-            .include
-            .iter()
-            .any(|pattern| wildcard_match(pattern, path))
-}
 
 /// Glob match for `*` (any run) and `?` (one char), backtracking on the last
 /// `*` so patterns like `button.*` match correctly.

@@ -404,3 +404,106 @@ fn the_same_config_produces_identical_bytes() {
         serde_json::to_string(&second).expect("serialize")
     );
 }
+
+/// The design-system document for a theme, with type data derived from its dictionary.
+fn palette_document(theme: &serde_json::Value) -> serde_json::Value {
+    let config = user_config(serde_json::json!({ "theme": theme }));
+    let dictionary = TokenDictionary::from_config(&config)
+        .expect("token dictionary should build")
+        .expect("config defines tokens");
+    let types = TypeData {
+        tokens: dictionary.type_data(),
+        ..TypeData::default()
+    };
+    document(&CodegenInput {
+        config,
+        types,
+        token_dictionary: pandacss_codegen::TokenDictionarySource::Provided(Some(Arc::new(
+            dictionary,
+        ))),
+        ..CodegenInput::default()
+    })
+}
+
+fn palettes(doc: &serde_json::Value) -> String {
+    serde_json::to_string(&doc["colorPalettes"]).expect("serialize")
+}
+
+#[test]
+fn lists_palettes_with_numeric_shades() {
+    let doc = palette_document(&serde_json::json!({
+        "tokens": { "colors": {
+            "blue": { "100": { "value": "#dbeafe" }, "500": { "value": "#3b82f6" } },
+            "red": { "500": { "value": "#ef4444" } }
+        } }
+    }));
+    assert_snapshot!(palettes(&doc), @r#"["blue","red"]"#);
+}
+
+#[test]
+fn lists_palettes_with_named_shades() {
+    let doc = palette_document(&serde_json::json!({
+        "tokens": { "colors": {
+            "brand": { "light": { "value": "#e0f2fe" }, "dark": { "value": "#075985" } }
+        } }
+    }));
+    assert_snapshot!(palettes(&doc), @r#"["brand"]"#);
+}
+
+#[test]
+fn lists_palettes_with_mixed_shades() {
+    let doc = palette_document(&serde_json::json!({
+        "tokens": { "colors": {
+            "gray": { "100": { "value": "#f3f4f6" }, "muted": { "value": "#9ca3af" } }
+        } }
+    }));
+    assert_snapshot!(palettes(&doc), @r#"["gray"]"#);
+}
+
+#[test]
+fn lists_a_single_color_token_as_a_palette() {
+    let doc = palette_document(&serde_json::json!({
+        "tokens": { "colors": { "primary": { "value": "#3b82f6" } } }
+    }));
+    assert_snapshot!(palettes(&doc), @r#"["primary"]"#);
+}
+
+#[test]
+fn lists_nested_groups_as_palettes() {
+    let doc = palette_document(&serde_json::json!({
+        "semanticTokens": { "colors": {
+            "blue": { "solid": { "bg": { "value": "#3b82f6" }, "fg": { "value": "white" } } }
+        } }
+    }));
+    assert_snapshot!(palettes(&doc), @r#"["blue","blue.solid"]"#);
+}
+
+#[test]
+fn lists_only_the_selected_palettes() {
+    let doc = palette_document(&serde_json::json!({
+        "colorPalette": { "exclude": ["*.*", "red"] },
+        "semanticTokens": { "colors": {
+            "blue": { "solid": { "bg": { "value": "#3b82f6" } } },
+            "red": { "solid": { "bg": { "value": "#ef4444" } } }
+        } }
+    }));
+    assert_snapshot!(palettes(&doc), @r#"["blue"]"#);
+}
+
+#[test]
+fn omits_palettes_when_generation_is_disabled() {
+    let doc = palette_document(&serde_json::json!({
+        "colorPalette": { "enabled": false },
+        "tokens": { "colors": { "red": { "500": { "value": "#ef4444" } } } }
+    }));
+    assert!(doc.get("colorPalettes").is_none());
+}
+
+#[test]
+fn keeps_virtual_palette_tokens_out_of_the_token_table() {
+    let doc = palette_document(&serde_json::json!({
+        "tokens": { "colors": { "red": { "500": { "value": "#ef4444" } } } }
+    }));
+    assert!(!doc["tokens"].to_string().contains("colorPalette"));
+    assert!(doc["tokens"].to_string().contains("red.500"));
+}

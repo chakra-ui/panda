@@ -337,6 +337,125 @@ fn conditional_only_semantic_color_joins_its_palette() {
     "##);
 }
 
+/// Palettes with flat steps plus nested variant groups with `DEFAULT`s.
+fn nested_palettes(color_palette: &serde_json::Value) -> TokenDictionary {
+    let palette = |name: &str| {
+        json!({
+            "1": { "value": format!("#{name}1") },
+            "a3": { "value": format!("#{name}a3") },
+            "solid": {
+                "bg": {
+                    "DEFAULT": { "value": format!("#{name}9") },
+                    "hover": { "value": format!("#{name}10") }
+                }
+            }
+        })
+    };
+    build_dictionary(json!({
+        "theme": {
+            "colorPalette": color_palette,
+            "semanticTokens": { "colors": { "red": palette("red"), "gray": palette("gray") } }
+        }
+    }))
+}
+
+fn palette_names(dict: &TokenDictionary) -> Vec<String> {
+    let mut names: Vec<String> = dict
+        .color_palettes()
+        .palettes()
+        .keys()
+        .map(ToString::to_string)
+        .collect();
+    names.sort();
+    names
+}
+
+#[test]
+fn every_color_group_is_a_palette_by_default() {
+    let dict = nested_palettes(&json!({}));
+    assert_yaml_snapshot!(palette_names(&dict), @"
+    - gray
+    - gray.solid
+    - gray.solid.bg
+    - red
+    - red.solid
+    - red.solid.bg
+    ");
+}
+
+#[test]
+fn included_palette_maps_its_flat_and_nested_tokens() {
+    let dict = nested_palettes(&json!({ "include": ["red"] }));
+    assert_yaml_snapshot!(snapshot_color_palettes(&dict), @r#"
+    red:
+      "--colors-color-palette-1": var(--colors-red-1)
+      "--colors-color-palette-a3": var(--colors-red-a3)
+      "--colors-color-palette-solid-bg": var(--colors-red-solid-bg)
+      "--colors-color-palette-solid-bg-hover": var(--colors-red-solid-bg-hover)
+    "#);
+}
+
+#[test]
+fn included_palette_does_not_make_its_nested_groups_palettes() {
+    let dict = nested_palettes(&json!({ "include": ["red", "gray"] }));
+    assert_yaml_snapshot!(palette_names(&dict), @"
+    - gray
+    - red
+    ");
+}
+
+#[test]
+fn excluding_nested_names_keeps_top_level_palettes_with_their_whole_subtree() {
+    let dict = nested_palettes(&json!({ "exclude": ["*.*"] }));
+    assert_yaml_snapshot!(snapshot_color_palettes(&dict), @r#"
+    gray:
+      "--colors-color-palette-1": var(--colors-gray-1)
+      "--colors-color-palette-a3": var(--colors-gray-a3)
+      "--colors-color-palette-solid-bg": var(--colors-gray-solid-bg)
+      "--colors-color-palette-solid-bg-hover": var(--colors-gray-solid-bg-hover)
+    red:
+      "--colors-color-palette-1": var(--colors-red-1)
+      "--colors-color-palette-a3": var(--colors-red-a3)
+      "--colors-color-palette-solid-bg": var(--colors-red-solid-bg)
+      "--colors-color-palette-solid-bg-hover": var(--colors-red-solid-bg-hover)
+    "#);
+}
+
+#[test]
+fn excluding_a_palette_drops_its_nested_palettes() {
+    let dict = nested_palettes(&json!({ "exclude": ["gray"] }));
+    assert_yaml_snapshot!(palette_names(&dict), @"
+    - red
+    - red.solid
+    - red.solid.bg
+    ");
+}
+
+#[test]
+fn including_a_nested_group_keeps_its_ancestor_palette() {
+    let dict = nested_palettes(&json!({ "include": ["red.solid"] }));
+    assert_yaml_snapshot!(snapshot_color_palettes(&dict), @r#"
+    red:
+      "--colors-color-palette-1": var(--colors-red-1)
+      "--colors-color-palette-a3": var(--colors-red-a3)
+      "--colors-color-palette-solid-bg": var(--colors-red-solid-bg)
+      "--colors-color-palette-solid-bg-hover": var(--colors-red-solid-bg-hover)
+    red.solid:
+      "--colors-color-palette-bg": var(--colors-red-solid-bg)
+      "--colors-color-palette-bg-hover": var(--colors-red-solid-bg-hover)
+    "#);
+}
+
+#[test]
+fn including_nested_groups_with_a_glob_keeps_the_root_palette() {
+    let dict = nested_palettes(&json!({ "include": ["red.*"] }));
+    assert_yaml_snapshot!(palette_names(&dict), @"
+    - red
+    - red.solid
+    - red.solid.bg
+    ");
+}
+
 fn snapshot_color_palettes(
     dict: &TokenDictionary,
 ) -> std::collections::BTreeMap<String, std::collections::BTreeMap<String, String>> {

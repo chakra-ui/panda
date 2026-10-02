@@ -440,6 +440,119 @@ fn emits_generated_color_palette_utility() {
 ");
 }
 
+fn nested_palette_config(color_palette: &serde_json::Value) -> pandacss_config::UserConfig {
+    config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "colorPalette": color_palette,
+            "semanticTokens": {
+                "colors": {
+                    "button": {
+                        "dark": { "value": "navy" },
+                        "light": {
+                            "DEFAULT": { "value": "skyblue" },
+                            "accent": {
+                                "DEFAULT": { "value": "cyan" },
+                                "secondary": { "value": "blue" }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "utilities": {
+            "color": { "className": "c", "values": "colors" },
+            "background": { "className": "bg", "values": "colors" }
+        }
+    }))
+}
+
+#[test]
+fn emits_nested_color_palettes() {
+    let css = compile_layer_css(
+        &nested_palette_config(&serde_json::json!({})),
+        "import { css } from '@panda/css'
+css({ colorPalette: 'button', color: 'colorPalette.light', background: 'colorPalette.light.accent.secondary' })
+css({ colorPalette: 'button.light', color: 'colorPalette.accent' })
+css({ colorPalette: 'button.light.accent', color: 'colorPalette.secondary' })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .bg_colorPalette\.light\.accent\.secondary {
+        background: var(--colors-color-palette-light-accent-secondary);
+      }
+      .c_colorPalette\.accent {
+        color: var(--colors-color-palette-accent);
+      }
+      .c_colorPalette\.light {
+        color: var(--colors-color-palette-light);
+      }
+      .c_colorPalette\.secondary {
+        color: var(--colors-color-palette-secondary);
+      }
+      .color-palette_button {
+        --colors-color-palette-dark: var(--colors-button-dark);
+        --colors-color-palette-light: var(--colors-button-light);
+        --colors-color-palette-light-accent: var(--colors-button-light-accent);
+        --colors-color-palette-light-accent-secondary: var(--colors-button-light-accent-secondary);
+      }
+      .color-palette_button\.light {
+        --colors-color-palette: var(--colors-button-light);
+        --colors-color-palette-accent: var(--colors-button-light-accent);
+        --colors-color-palette-accent-secondary: var(--colors-button-light-accent-secondary);
+      }
+      .color-palette_button\.light\.accent {
+        --colors-color-palette: var(--colors-button-light-accent);
+        --colors-color-palette-secondary: var(--colors-button-light-accent-secondary);
+      }
+    }
+    ");
+}
+
+#[test]
+fn emits_default_color_palette_for_bare_color_palette_token() {
+    let css = compile_layer_css(
+        &nested_palette_config(&serde_json::json!({})),
+        "import { css } from '@panda/css'; css({ colorPalette: 'button.light', background: 'colorPalette' })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .bg_colorPalette {
+        background: var(--colors-color-palette);
+      }
+      .color-palette_button\.light {
+        --colors-color-palette: var(--colors-button-light);
+        --colors-color-palette-accent: var(--colors-button-light-accent);
+        --colors-color-palette-accent-secondary: var(--colors-button-light-accent-secondary);
+      }
+    }
+    ");
+}
+
+#[test]
+fn included_color_palette_emits_its_nested_tokens() {
+    let css = compile_layer_css(
+        &nested_palette_config(&serde_json::json!({ "include": ["button"] })),
+        "import { css } from '@panda/css'; css({ colorPalette: 'button', color: 'colorPalette.light.accent.secondary' })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .c_colorPalette\.light\.accent\.secondary {
+        color: var(--colors-color-palette-light-accent-secondary);
+      }
+      .color-palette_button {
+        --colors-color-palette-dark: var(--colors-button-dark);
+        --colors-color-palette-light: var(--colors-button-light);
+        --colors-color-palette-light-accent: var(--colors-button-light-accent);
+        --colors-color-palette-light-accent-secondary: var(--colors-button-light-accent-secondary);
+      }
+    }
+    ");
+}
+
 #[test]
 fn resolves_negative_spacing_category_values_to_calc_values() {
     let config = config(serde_json::json!({

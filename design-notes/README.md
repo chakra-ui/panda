@@ -28,6 +28,8 @@ Some topics span several notes. Keep the detailed contract in one place and link
 
 - [Compiler lifecycle](./compiler-lifecycle.md) — end-to-end `createCompiler(config)` flow (construct → ingest → extract
   → encode → emit → output), build vs watch modes, and which phases are built vs deferred.
+- [Color palette selection](./color-palette-selection.md) — which names `colorPalette` accepts and which tokens
+  each maps.
 - [Crate layering](./crate-layering.md) — Tier 0/1/2/3 dependency model and what lives in each tier.
 - [Extraction pipeline](./extraction-pipeline.md) — single-parse flow from source to `ExtractUsage`, parse-error
   contract, fast paths.
