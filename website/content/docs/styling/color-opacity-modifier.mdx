@@ -53,13 +53,22 @@ css({
 
 ### Usage with virtual colors
 
-See [virtual colors](/docs/styling/virtual-color) for the full `colorPalette` API:
+Opacity modifiers work on [virtual colors](/docs/styling/virtual-color) in any color property:
 
 ```ts
 css({
   colorPalette: 'blue',
-  '--tint': '{colors.colorPalette.500/50}',
-  bg: 'var(--tint)'
+  bg: 'colorPalette.500/50'
+})
+```
+
+To use one inside another value, like a shadow or a gradient, store it in a CSS variable:
+
+```ts
+css({
+  colorPalette: 'blue',
+  '--ring': '{colors.colorPalette.500/50}',
+  boxShadow: '0 0 0 2px var(--ring)'
 })
 ```
 

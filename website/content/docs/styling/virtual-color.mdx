@@ -170,17 +170,28 @@ export const App = () => {
 
 ### With Opacity Modifiers
 
-See [using a custom property](/docs/styling/color-opacity-modifier#using-a-custom-property) for the
-`{colors.colorPalette…/opacity}` syntax on `--*` variables:
+Add `/opacity` to a virtual color in any color property:
 
 ```js
 import { css } from '../styled-system/css'
 
 const className = css({
   colorPalette: 'blue',
-  '--tint': '{colors.colorPalette.500/50}',
-  bg: 'var(--tint)',
+  bg: 'colorPalette.500/50',
   color: 'colorPalette.700'
+})
+```
+
+To use it inside another value, like a shadow or a gradient, store it in a CSS variable with the
+[token reference syntax](/docs/styling/color-opacity-modifier#using-a-custom-property):
+
+```js
+import { css } from '../styled-system/css'
+
+const className = css({
+  colorPalette: 'blue',
+  '--ring': '{colors.colorPalette.500/50}',
+  boxShadow: '0 0 0 2px var(--ring)'
 })
 ```
 
