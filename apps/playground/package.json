@@ -3,7 +3,7 @@
   "version": "0.1.3",
   "private": true,
   "scripts": {
-    "css:codegen": "pnpm panda codegen --silent",
+    "css:codegen": "pnpm panda codegen --log-level silent",
     "types:codegen": "tsx scripts/bundle-types.mts",
     "build": "pnpm db:generate && pnpm css:codegen && pnpm types:codegen && next build --webpack",
     "start": "next start",
@@ -28,7 +28,6 @@
     "@pandacss/preset-typography": "workspace:*",
     "@prisma/client": "5.9.1",
     "@textea/json-viewer": "4.0.1",
-    "lightningcss-wasm": "1.33.0",
     "merge-anything": "6.0.6",
     "monaco-editor": "0.56.0",
     "monaco-editor-auto-typings": "0.4.6",

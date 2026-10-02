@@ -320,9 +320,10 @@ export function SignInDialog() {
 ### Style context
 
 Threading `styles.trigger`, `styles.content`, and the rest through the markup works. If you use the Dialog in several
-places, wrap the [Ark UI] parts once with `createStyleContext`. It returns components with the recipe styles attached.
+places, wrap the [Ark UI] parts once with `createSlotRecipeContext`. It returns components with the recipe styles
+attached.
 
-`createStyleContext` comes from `styled-system/jsx`, which Panda only generates once `jsxFramework` is set. If you
+`createSlotRecipeContext` comes from `styled-system/jsx`, which Panda only generates once `jsxFramework` is set. If you
 haven't set it yet, add it to your `panda.config.ts`:
 
 ```ts
@@ -335,11 +336,11 @@ export default defineConfig({
 })
 ```
 
-`createStyleContext` gives you a few wrappers.
+`createSlotRecipeContext` gives you a few wrappers.
 
 ```ts
 // components/ui/dialog.css.ts
-const { withRootProvider, withProvider, withContext } = createStyleContext(dialog)
+const { withRootProvider, withProvider, withContext } = createSlotRecipeContext(dialog)
 ```
 
 - Use `withRootProvider` for the root part that when don't render a DOM node
@@ -353,10 +354,10 @@ it passes through:
 // components/ui/dialog.tsx
 import { Dialog as BaseDialog } from '@ark-ui/react/dialog'
 import { Portal } from '@ark-ui/react/portal'
-import { createStyleContext } from 'styled-system/jsx'
+import { createSlotRecipeContext } from 'styled-system/jsx'
 import { dialog } from './dialog.css'
 
-const { withRootProvider, withContext } = createStyleContext(dialog)
+const { withRootProvider, withContext } = createSlotRecipeContext(dialog)
 
 export const Dialog = {
   // Root renders no DOM element, so it only provides context
@@ -399,7 +400,7 @@ export function SignInDialog() {
 }
 ```
 
-[See the createStyleContext version on StackBlitz](https://stackblitz.com/edit/stackblitz-starters-adefjdhw?file=app%2Fdialog-with-context.tsx).
+[See how to use slot recipe context](/docs/recipes/slot-recipe-context).
 
 ## Next steps
 
@@ -408,7 +409,7 @@ layer. Style each part through `className`, then use `_checked`, `_open`, `_disa
 against [Ark UI]'s state attributes.
 
 For multi-part components, use a slot recipe. When you want reusable components, wrap that recipe with
-`createStyleContext`.
+`createSlotRecipeContext`.
 
 <Callout type="info">
 

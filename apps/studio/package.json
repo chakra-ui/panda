@@ -5,12 +5,12 @@
   "type": "module",
   "scripts": {
     "deps:build": "pnpm --filter \"@pandacss/compiler-shared...\" build",
-    "dev": "pnpm deps:build && prisma generate && nuxt prepare && panda codegen --silent && nuxt dev",
-    "build": "pnpm deps:build && prisma generate && nuxt prepare && panda codegen --silent && nuxt build",
+    "dev": "pnpm deps:build && prisma generate && nuxt prepare && panda codegen --log-level silent && nuxt dev",
+    "build": "pnpm deps:build && prisma generate && nuxt prepare && panda codegen --log-level silent && nuxt build",
     "link": "vercel link --scope chakra-ui --project panda-studio-v2 --yes",
     "deploy": "vercel deploy --cwd ../.. --scope chakra-ui --project panda-studio-v2 --prod --yes",
     "deploy:preview": "vercel deploy --cwd ../.. --scope chakra-ui --project panda-studio-v2 --yes",
-    "generate": "pnpm deps:build && panda codegen --silent && nuxt generate",
+    "generate": "pnpm deps:build && panda codegen --log-level silent && nuxt generate",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "test": "vitest run"

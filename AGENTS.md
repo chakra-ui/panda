@@ -57,7 +57,7 @@ with workspace support.
 2. **Design Tokens**: Type-safe design tokens defined in config
 3. **Recipes**: Reusable component style patterns (like variants)
 4. **Conditions**: Responsive and state-based styling (e.g., `_hover`, `md:`, `_dark`)
-5. **CSS Optimization**: Uses PostCSS (default) or LightningCSS (optional) for CSS processing
+5. **CSS Emission**: The Rust stylesheet crate emits CSS, with native formatting and adjacent rule merging
 
 ## Critical Rules
 
@@ -112,20 +112,19 @@ pnpm install --ignore-scripts
 pnpm update <package> --ignore-scripts
 ```
 
-**When updating PostCSS or browserslist-related packages:**
+**When updating CSS processing dependencies:**
 
 1. Update package.json versions
 2. Run `pnpm install --ignore-scripts`
 3. Run `cargo nextest run -p pandacss_stylesheet` and `sandbox/codegen` to verify CSS output unchanged
-4. Check for browserslist warnings in sandbox projects
+4. Check the affected bundler integrations and sandbox projects
 5. Create changeset if changes affect users
 
 ### Dependency Strategy
 
-- **PostCSS ecosystem**: Coordinate updates across all PostCSS plugins to avoid CSS output changes
-- **browserslist**: Updates affect `postcss-merge-rules` behavior - test thoroughly
-- **lightningcss**: not in the v2 workspace — the `pandacss_stylesheet` crate does native emission (minify parity is an
-  open follow-up)
+- **PostCSS integration**: `@pandacss/postcss` integrates the Rust compiler with PostCSS; it does not own CSS emission
+- **lightningcss**: used in compiler compatibility tests, not in the Rust emission pipeline. Full CSS-aware optimization
+  remains an open follow-up; see `design-notes/stylesheet.md`
 - **Workspace packages**: the `@pandacss/*` packages (cli, compiler, config, types, etc.) must stay in sync
 
 ## Common Workflows
@@ -221,8 +220,8 @@ The reader should understand what broke and why without opening a file.
 - Put caveats inline, not in a footer the reader never reaches.
 - A follow-up question is not a request for more detail. Answer what was asked.
 
-**Draw it when prose gets long.** If the explanation needs more than ~4 sentences, or crosses more than two hops, replace
-the prose with a diagram:
+**Draw it when prose gets long.** If the explanation needs more than ~4 sentences, or crosses more than two hops,
+replace the prose with a diagram:
 
 ```
 library                              consumer
@@ -251,7 +250,7 @@ ASCII in the terminal, mermaid in markdown docs. The diagram replaces the prose;
 1. Source scan + extraction → `crates/extractor` (Oxc)
 2. Style usage → atomic rules → `crates/encoder`
 3. Native CSS emission → `crates/stylesheet` (replaces the old PostCSS/lightningcss optimize path)
-4. Orchestration + caching → `crates/engine`, `crates/cache`
+4. Orchestration → `crates/pandacss_compiler`; project state and caches → `crates/pandacss_project`
 
 ### Adding a new styled-system function
 
@@ -259,19 +258,19 @@ A new factory in generated `styled-system` (`css`, `cva`, `sva`, `viewTransition
 every stage that sees call sites, or extract / transform / CSS emit will miss them. Use `viewTransition` or `cva` as a
 reference.
 
-| Stage                   | Where                                                                      | What to do                                                                                                                                                                                                      |
-| ----------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Allowlist / `importMap` | `pandacss_system` extractor config + `normalizeImportMap`                  | Add the call name under the right `MatchCategory`. New entrypoint → new `importMap` key + matcher; shared barrel → extend an existing category (like `viewTransition` on the css allowlist). |
-| Types                   | `packages/types` (+ codegen types if mirrored)                             | Public options / return types.                                                                                                                                                                                  |
-| Codegen                 | `pandacss_codegen` artifact + `css/index` barrel                           | Emit the factory. Reuse helpers (`toHash`, `memo`, …). Skip the artifact for syntaxes that don't support it.                                                                                                    |
-| Hash contract           | `pandacss_shared`                                                          | If runtime class names must match Rust emit, share one serialize/hash — don't fork two algorithms.                                                                                                              |
-| Extract / encode        | `pandacss_project` parse arm                                               | Turn matched calls into project IR.                                                                                                                                                                             |
-| Usages                  | `pandacss_project` usages walk                                             | Visit style slots so unused-keyframe / unused-token pruning still sees them.                                                                                                                                    |
-| Transform               | `pandacss_transform`                                                       | Rewrite static calls. Leave the runtime import for dynamic ones. Clean up dead imports when fully inlined.                                                                                                      |
-| Stylesheet              | `pandacss_stylesheet` (+ orchestration in `pandacss_compiler`)             | Emit CSS. Add insta snapshots.                                                                                                                                                                                  |
-| Design note             | `design-notes/` + index                                                    | API shape, non-goals, pipeline.                                                                                                                                                                                 |
-| Tests                   | crate tests + `sandbox/codegen` when user-facing                           | Extract, transform (rewrite + dead import), stylesheet, codegen artifact, sandbox.                                                                                                                              |
-| Changeset               | `.changeset/`                                                              | Short user-facing copy when the API ships.                                                                                                                                                                      |
+| Stage                   | Where                                                          | What to do                                                                                                                                                                                   |
+| ----------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Allowlist / `importMap` | `pandacss_system` extractor config + `normalizeImportMap`      | Add the call name under the right `MatchCategory`. New entrypoint → new `importMap` key + matcher; shared barrel → extend an existing category (like `viewTransition` on the css allowlist). |
+| Types                   | `packages/types` (+ codegen types if mirrored)                 | Public options / return types.                                                                                                                                                               |
+| Codegen                 | `pandacss_codegen` artifact + `css/index` barrel               | Emit the factory. Reuse helpers (`toHash`, `memo`, …). Skip the artifact for syntaxes that don't support it.                                                                                 |
+| Hash contract           | `pandacss_shared`                                              | If runtime class names must match Rust emit, share one serialize/hash — don't fork two algorithms.                                                                                           |
+| Extract / encode        | `pandacss_project` parse arm                                   | Turn matched calls into project IR.                                                                                                                                                          |
+| Usages                  | `pandacss_project` usages walk                                 | Visit style slots so unused-keyframe / unused-token pruning still sees them.                                                                                                                 |
+| Transform               | `pandacss_transform`                                           | Rewrite static calls. Leave the runtime import for dynamic ones. Clean up dead imports when fully inlined.                                                                                   |
+| Stylesheet              | `pandacss_stylesheet` (+ orchestration in `pandacss_compiler`) | Emit CSS. Add insta snapshots.                                                                                                                                                               |
+| Design note             | `design-notes/` + index                                        | API shape, non-goals, pipeline.                                                                                                                                                              |
+| Tests                   | crate tests + `sandbox/codegen` when user-facing               | Extract, transform (rewrite + dead import), stylesheet, codegen artifact, sandbox.                                                                                                           |
+| Changeset               | `.changeset/`                                                  | Short user-facing copy when the API ships.                                                                                                                                                   |
 
 Codegen alone ships a runtime function that Panda never extracts or emits CSS for. Extract/emit without transform leaves
 the factory call in the bundle. Full path: allowlist → types → codegen → extract → usages → transform → stylesheet →
@@ -291,7 +290,7 @@ tests → design note.
 - Compare expected vs received CSS output carefully
 - Look for media query ordering, selector merging, or whitespace changes
 - Identify which dependency update caused the change
-- Common culprits: `postcss-merge-rules`, `postcss-nested`, `browserslist`
+- Check Rust stylesheet changes and any downstream bundler CSS processing
 
 **Build failures:**
 
@@ -312,7 +311,7 @@ tests → design note.
 
 1. **Circular dependencies**: Be careful when adding imports between core packages
 2. **Browser compatibility**: Changes to browserslist affect CSS transformation
-3. **PostCSS plugin order**: Order matters in `optimize-postcss.ts`
+3. **CSS processing ownership**: Rust emits Panda CSS; bundlers may apply their own CSS processing afterward
 4. **Workspace protocol**: Internal packages use `workspace:*` in dependencies
 5. **Multiple package.json**: Each package has its own, plus root package.json
 6. **Sandbox warnings**: Even if main packages are fine, check sandbox projects for warnings
@@ -474,8 +473,8 @@ See `design-notes/rust-testing.md` for the full testing strategy.
   private helpers (rare), e.g. `pandacss_shared::unit_conversion::to_rem`, `pandacss_stylesheet::grouped`,
   `pandacss_stylesheet::sort`, `pandacss_system::recipes::compound_tests`.
 - **Consolidated harness** — `pandacss_stylesheet`, `pandacss_project`, `pandacss_transform`, `pandacss_extractor`, and
-  `pandacss_codegen` use one integration binary (`tests/main.rs` + `autotests = false` in `Cargo.toml`). Suite files
-  are submodules (`mod atomic;`, …), not separate binaries. Shared helpers live under `tests/common/` and are imported via
+  `pandacss_codegen` use one integration binary (`tests/main.rs` + `autotests = false` in `Cargo.toml`). Suite files are
+  submodules (`mod atomic;`, …), not separate binaries. Shared helpers live under `tests/common/` and are imported via
   `use crate::common::…`.
 - **Autodiscovered layout** — lighter crates (`pandacss_config`, `pandacss_encoder`, `pandacss_fs`, etc.) keep Cargo's
   default one-binary-per-`tests/*.rs` layout for targeted filtering without `main.rs` bookkeeping.

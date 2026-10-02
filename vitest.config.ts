@@ -16,7 +16,6 @@ export default defineConfig({
   test: {
     globals: true,
     testTimeout: 15_000,
-    setupFiles: [resolve('./tests-setup.ts')],
     hideSkippedTests: true,
     environment: 'happy-dom',
     // https://vitest.dev/config/#exclude defaults + non-workspace sandboxes
@@ -27,8 +26,7 @@ export default defineConfig({
       '**/.{idea,git,cache,output,temp}/**',
       '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
       'sandbox/codegen/__tests__/frameworks',
-      // playground and website are out of the workspace until migrated to the
-      // Rust compiler stack — their tests can't resolve deps from root.
+      // Apps and website use their own test commands and environments.
       'website/**',
       'apps/**',
       // Bun sandbox runs under `bun test`.

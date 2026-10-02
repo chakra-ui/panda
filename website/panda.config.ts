@@ -37,7 +37,7 @@ export default defineConfig({
   staticCss: {
     recipes: {
       // used in .mdx files, e.g. <Callout type="default" /> or with the blockquote sign like: `> Blabla`
-      // ts-morph can't parse MDX properly, so we need to specify it here
+      // MDX files are outside the source scan, so include their recipe variants here
       callout: [{ type: ['*'] }],
       docCard: [{ mode: ['*'] }],
       docNav: [{ kind: ['*'] }],
