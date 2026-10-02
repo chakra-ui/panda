@@ -228,10 +228,48 @@ function ButtonShowcase() {
 
 ## Configuration
 
-By default, color palette generation is enabled and includes all colors defined in your theme.
+By default, every color group in your theme is a palette. The examples below use this theme:
 
-You can control which colors are used to generate color palettes by configuring the `colorPalette` property in your
-theme.
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    semanticTokens: {
+      colors: {
+        gray: {
+          1: { value: '#fcfcfc' },
+          9: { value: '#8d8d8d' },
+          solid: {
+            bg: { value: '{colors.gray.9}' },
+            fg: { value: 'white' }
+          }
+        },
+        blue: {
+          1: { value: '#fbfdff' },
+          9: { value: '#0090ff' },
+          solid: {
+            bg: { value: '{colors.blue.9}' },
+            fg: { value: 'white' }
+          }
+        }
+      }
+    }
+  }
+})
+```
+
+It produces four palettes. A palette maps every token below it to a virtual `colorPalette.*` token:
+
+- `gray` and `blue`: `colorPalette.1`, `colorPalette.9`, `colorPalette.solid.bg`, `colorPalette.solid.fg`
+- `gray.solid` and `blue.solid`: `colorPalette.bg`, `colorPalette.fg`
+
+```tsx
+css({ colorPalette: 'blue', bg: 'colorPalette.solid.bg', color: 'colorPalette.solid.fg' })
+css({ colorPalette: 'blue.solid', bg: 'colorPalette.bg', color: 'colorPalette.fg' })
+```
+
+Use the `colorPalette` property in your theme to choose which palettes are generated.
 
 ### Disable Color Palette
 
@@ -251,7 +289,7 @@ export default defineConfig({
 
 ### Include Specific Colors
 
-To generate color palettes for only specific colors, use the `include` option:
+Use `include` to list the palettes you want:
 
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -259,26 +297,35 @@ import { defineConfig } from '@pandacss/dev'
 export default defineConfig({
   theme: {
     colorPalette: {
-      include: ['gray', 'blue', 'red']
+      include: ['gray']
     }
   }
 })
 ```
 
-This will only generate color palettes for `gray`, `blue`, and `red` colors, even if you have other colors defined in
-your theme.
+Only `gray` is a palette now, and it keeps all of its tokens, including the nested ones:
 
-**Glob patterns** are supported for nested tokens:
+```tsx
+css({ colorPalette: 'gray', bg: 'colorPalette.solid.bg', color: 'colorPalette.1' })
+```
+
+Nested groups are palettes too. Include them with a glob pattern:
 
 ```ts filename="panda.config.ts"
-colorPalette: {
-  include: ['gray.*', 'blue.*'] // Includes all nested tokens
-}
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    colorPalette: {
+      include: ['gray.*'] // gray and gray.solid
+    }
+  }
+})
 ```
 
 ### Exclude Specific Colors
 
-To exclude certain colors from color palette generation, use the `exclude` option:
+Use `exclude` to drop palettes. Excluding a palette also drops its nested groups:
 
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -286,17 +333,13 @@ import { defineConfig } from '@pandacss/dev'
 export default defineConfig({
   theme: {
     colorPalette: {
-      exclude: ['yellow', 'orange']
+      exclude: ['blue'] // gray and gray.solid remain
     }
   }
 })
 ```
 
-This will generate color palettes for all colors except `yellow` and `orange`.
-
-### Combination of Options
-
-You can combine the `enabled`, `include`, and `exclude` options as needed:
+`exclude` wins over `include`:
 
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -304,43 +347,35 @@ import { defineConfig } from '@pandacss/dev'
 export default defineConfig({
   theme: {
     colorPalette: {
-      enabled: true,
-      include: ['gray', 'blue', 'red', 'green'],
-      exclude: ['red'] // This will override the include for 'red'
+      include: ['gray', 'blue'],
+      exclude: ['blue'] // only gray
     }
   }
 })
 ```
 
-In this example, color palettes will be generated for `gray`, `blue`, and `green`, but not for `red` (since it's
-excluded).
+## Large Nested Themes
 
-## Nested Semantic Tokens
+Every nested group is a palette, so a theme with many nested groups per color (`gray.solid`, `gray.subtle`,
+`gray.surface`, …) can produce hundreds of palette names. With `strictTokens`, that union can make TypeScript report
+"Expression produces a union type that is too complex to represent" on components with spread props.
 
-If nested tokens show as raw paths (e.g., `colors.base.accent`) instead of CSS variables, use glob patterns:
+Exclude every nested name to keep only the top-level palettes:
 
 ```ts filename="panda.config.ts"
-semanticTokens: {
-  colors: {
-    button: {
-      primary: {
-        DEFAULT: { value: '{colors.blue.500}' },
-        hover: { value: '{colors.blue.600}' }
-      }
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    colorPalette: {
+      exclude: ['*.*'] // gray and blue, but not gray.solid or blue.solid
     }
   }
-},
-colorPalette: {
-  include: ['button.*']  // Include all nested paths
-}
+})
 ```
 
-Usage:
+Every virtual token still works through the top-level palette:
 
 ```tsx
-className={css({
-  colorPalette: 'button.primary',
-  bg: 'colorPalette',
-  _hover: { bg: 'colorPalette.hover' }
-})}
+css({ colorPalette: 'gray', bg: 'colorPalette.solid.bg', color: 'colorPalette.1' })
 ```
