@@ -157,8 +157,9 @@ The directory-pruning rule matters for performance. Without it, an exclude patte
 call `read_dir` on every nested directory before filtering — orders of magnitude slower on real projects.
 
 Roots and results are lexically normalized (`a/../b` → `b`). `SourceMatcher` holds these rules and is shared by both
-walkers and `matches_globs` (the single-path check behind `isSourceFile`), so a watch event classifies a file exactly
-as `scan()` found it.
+walkers and `matches_globs`, so a watch event classifies a file exactly as `scan()` found it. `isSourceFile` uses
+`matches_globs_in`, which compares real paths (like Tailwind's `@source`), and `resolveSourcePath` maps a symlinked
+spelling of a tracked file back to its entry. `scan()` keeps paths spelled under the `cwd` it was given.
 
 **`OsFileSystem` overrides `glob`** to run one `walkdir` per hoisted root instead of recursive `read_dir`. Same
 `fast-glob` matchers, faster directory traversal on native. The default walker stays in place for `MemoryFileSystem`

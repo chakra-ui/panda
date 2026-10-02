@@ -61,7 +61,7 @@ export function pandacss(options: PandaPluginOptions = {}): BunPlugin {
         // Bun's dev server reloads edited modules one by one, so a repeat load means the file changed on disk.
         const changed = loaded.has(args.path)
         loaded.add(args.path)
-        // A source created after startup was never scanned, so its first load syncs like an edit.
+        // A source created after startup syncs on its first load.
         const created = !changed && !driver.compiler.getFile(args.path) && driver.isSourceFile(args.path)
         return loadSource(
           driver,

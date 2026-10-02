@@ -261,6 +261,8 @@ export interface Compiler {
     packages: Array<{ packageRoots: string[]; excludeModules?: string[] }>,
   ): Array<string[] | null>
   isSourceFile(path: string): boolean
+  /** The tracked path for `path`, following symlinks. */
+  resolveSourcePath(path: string): string
   parseFiles(paths: string[]): ParseFileReport[]
   parseFile(path: string): ParseFileReport
   parseFileSource(path: string, source: string): ParseFileReport

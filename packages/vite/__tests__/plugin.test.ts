@@ -128,7 +128,7 @@ async function foldedButton(server: ViteDevServer, needle: string): Promise<stri
   throw new Error(`timed out waiting for ${JSON.stringify(needle)} in the folded class`)
 }
 
-/** A workspace app at `apps/demo` whose config also includes `packages/ui/src` from outside its root. */
+/** `apps/demo` including `packages/ui/src` from outside its root. */
 function createMonorepoFixture(include: (root: string) => string) {
   const root = realpathSync(mkdtempSync(join(tmpdir(), 'panda-vite-monorepo-')))
   const app = join(root, 'apps', 'demo')

@@ -42,7 +42,7 @@ function addPandaDependencies(
 
   const watchTargets = driver.watchTargets()
   for (const file of driver.scan()) watch(file)
-  // Source directories, so webpack reports files created after the first build.
+  // Lets webpack report newly created files.
   for (const dir of watchTargets.dirs) {
     loader.addContextDependency(driver.resolvePath(dir))
   }

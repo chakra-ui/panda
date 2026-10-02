@@ -65,7 +65,7 @@ export class PandaWebpackPlugin {
     let sourceDirChanged = false
 
     for (const file of changed) {
-      // Webpack reports a file created in a watched source directory as the directory itself.
+      // A new file is reported as its directory.
       if (sourceDirs.has(file)) {
         sourceDirChanged = true
         continue

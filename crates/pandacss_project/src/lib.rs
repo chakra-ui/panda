@@ -957,6 +957,10 @@ impl Project {
         true
     }
 
+    pub fn file_paths(&self) -> impl Iterator<Item = &str> + '_ {
+        self.files.keys().map(AsRef::as_ref)
+    }
+
     #[must_use]
     pub fn get_file<'a>(&'a self, path: &'a str) -> Option<ParsedFile<'a>> {
         let entry = self.files.get(path)?;

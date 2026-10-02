@@ -63,11 +63,11 @@ impl FileSystem for OsFileSystem {
             return Ok(Vec::new());
         }
 
-        let matcher = SourceMatcher::new(opts);
+        let matcher = SourceMatcher::new(opts, Path::to_path_buf);
         let mut results: Vec<PathBuf> = Vec::new();
 
         // Disjoint hoisted base dirs, so no path is visited twice.
-        for root in crate::glob::walk_roots(opts) {
+        for root in matcher.walk_roots() {
             // `filter_entry` prunes a directory before descending into it.
             let walker = WalkDir::new(&root)
                 .follow_links(true)

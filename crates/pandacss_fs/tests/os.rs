@@ -177,8 +177,7 @@ fn glob_monorepo_absolute_include_outside_cwd() {
     assert!(pandacss_fs::matches_globs(&card, &opts));
 }
 
-/// The temp dir with symlinks resolved (`/var` → `/private/var` on macOS). Windows
-/// canonical paths carry a `\\?\` prefix that globs can't express, so keep them as is.
+/// Real temp dir on unix; Windows canonical paths add a `\\?\` globs can't express.
 fn real_dir(path: &std::path::Path) -> PathBuf {
     if cfg!(windows) {
         path.to_path_buf()

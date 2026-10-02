@@ -21,8 +21,7 @@ pub fn normalize_glob_pattern(pattern: &str) -> &str {
     pattern.strip_prefix("./").unwrap_or(pattern)
 }
 
-/// Resolves `.` and `..` by path components without touching the disk, keeping
-/// native separators. A leading `..` in a relative path is kept.
+/// Resolves `.` and `..` without touching the disk.
 pub(crate) fn lexical(path: &Path) -> PathBuf {
     let mut out = PathBuf::new();
     for component in path.components() {
@@ -41,7 +40,7 @@ pub(crate) fn lexical(path: &Path) -> PathBuf {
     out
 }
 
-/// `path` relative to `base` (both lexical), with `..` once it leaves `base`.
+/// `path` relative to `base`, with `..` once it leaves `base`.
 fn relative_lexical(path: &Path, base: &Path) -> PathBuf {
     let path: Vec<Component> = path.components().collect();
     let base: Vec<Component> = base.components().collect();
@@ -56,25 +55,13 @@ fn relative_lexical(path: &Path, base: &Path) -> PathBuf {
     out
 }
 
-/// One include or exclude glob. An absolute glob matches absolute paths; any
-/// other matches paths relative to `cwd`, so `../pkg/**` reaches a sibling.
-struct SourceGlob {
+/// Matches absolute paths if absolute, else `cwd`-relative ones (with `..`).
+struct ExcludeGlob {
     pattern: String,
     absolute: bool,
-    /// Directory the walk starts from; an include only matches files under it.
-    root: PathBuf,
 }
 
-impl SourceGlob {
-    fn new(pattern: &str, cwd: &Path) -> Self {
-        let pattern = canonical_glob(pattern);
-        Self {
-            absolute: pattern.starts_with('/') || is_drive_path(&pattern),
-            root: lexical(&cwd.join(base_dir(&pattern))),
-            pattern,
-        }
-    }
-
+impl ExcludeGlob {
     fn matches(&self, candidate: &Candidate) -> bool {
         let target = if self.absolute {
             &candidate.absolute
@@ -85,8 +72,24 @@ impl SourceGlob {
     }
 }
 
-/// `pattern` with a Windows drive path (`C:\src\**`) in `/` form and `.`/`..`
-/// resolved in its static prefix, so `src/../lib/*.ts` matches `lib/a.ts`.
+/// The directory a walk starts from, and the glob below it.
+struct IncludeGlob {
+    root: PathBuf,
+    glob: String,
+}
+
+impl IncludeGlob {
+    fn matches(&self, path: &Path) -> bool {
+        match path.strip_prefix(&self.root) {
+            Ok(rest) if !rest.as_os_str().is_empty() => {
+                glob_match(self.glob.as_bytes(), to_forward_slash(rest).as_bytes())
+            }
+            _ => false,
+        }
+    }
+}
+
+/// `C:\` drive globs in `/` form, with `.`/`..` resolved in the static prefix.
 fn canonical_glob(pattern: &str) -> String {
     let pattern = if is_drive_path(pattern) {
         pattern.replace('\\', "/")
@@ -106,42 +109,89 @@ fn is_drive_path(pattern: &str) -> bool {
     matches!(pattern.as_bytes(), [drive, b':', b'/' | b'\\', ..] if drive.is_ascii_alphabetic())
 }
 
-/// A lexical path in both forms a [`SourceGlob`] can match.
+/// `realpath`; a missing file resolves its nearest existing parent.
+#[must_use]
+pub fn real_path<F: FileSystem + ?Sized>(fs: &F, path: &Path) -> PathBuf {
+    if let Ok(real) = fs.canonicalize(path) {
+        return strip_verbatim(real);
+    }
+    match (path.parent(), path.file_name()) {
+        (Some(parent), Some(name)) if !parent.as_os_str().is_empty() => {
+            real_path(fs, parent).join(name)
+        }
+        _ => path.to_path_buf(),
+    }
+}
+
+/// Drops the Windows `\\?\` prefix.
+fn strip_verbatim(path: PathBuf) -> PathBuf {
+    let text = path.to_string_lossy();
+    if let Some(rest) = text.strip_prefix(r"\\?\UNC\") {
+        return PathBuf::from(format!(r"\\{rest}"));
+    }
+    if let Some(rest) = text.strip_prefix(r"\\?\") {
+        return PathBuf::from(rest);
+    }
+    path
+}
+
 pub(crate) struct Candidate<'a> {
     path: &'a Path,
     relative: String,
     absolute: String,
 }
 
-/// Decides which files count as sources. Shared by `scan()` and
-/// [`matches_globs`], so a watch event classifies a file the same way the walk
-/// found it.
+/// Which files are sources; shared by `scan()` and [`matches_globs`].
 pub(crate) struct SourceMatcher {
     cwd: PathBuf,
-    include: Vec<SourceGlob>,
-    exclude: Vec<SourceGlob>,
+    include: Vec<IncludeGlob>,
+    exclude: Vec<ExcludeGlob>,
 }
 
 impl SourceMatcher {
-    pub(crate) fn new(opts: &GlobOptions) -> Self {
+    pub(crate) fn new(opts: &GlobOptions, resolve: impl Fn(&Path) -> PathBuf) -> Self {
         let cwd = lexical(&opts.cwd);
         let include = opts
             .include
             .iter()
-            .map(|p| SourceGlob::new(p, &cwd))
+            .map(|pattern| {
+                let pattern = canonical_glob(pattern);
+                IncludeGlob {
+                    root: resolve(&lexical(&cwd.join(base_dir(&pattern)))),
+                    glob: relative_glob(&pattern).to_owned(),
+                }
+            })
             .collect();
         let exclude = effective_excludes(opts)
             .iter()
-            .map(|p| SourceGlob::new(p, &cwd))
+            .map(|pattern| {
+                let pattern = canonical_glob(pattern);
+                ExcludeGlob {
+                    absolute: pattern.starts_with('/') || is_drive_path(&pattern),
+                    pattern,
+                }
+            })
             .collect();
         Self {
-            cwd,
+            cwd: resolve(&cwd),
             include,
             exclude,
         }
     }
 
-    /// `path` must already be lexical (see [`lexical`]).
+    pub(crate) fn walk_roots(&self) -> Vec<PathBuf> {
+        let mut roots: Vec<PathBuf> = self.include.iter().map(|glob| glob.root.clone()).collect();
+        roots.sort();
+        roots.dedup();
+        let mut scoped: Vec<PathBuf> = Vec::new();
+        for root in roots {
+            if !scoped.iter().any(|kept| root.starts_with(kept)) {
+                scoped.push(root);
+            }
+        }
+        scoped
+    }
+
     pub(crate) fn candidate<'a>(&self, path: &'a Path) -> Candidate<'a> {
         Candidate {
             path,
@@ -155,9 +205,7 @@ impl SourceMatcher {
     }
 
     pub(crate) fn is_included(&self, candidate: &Candidate) -> bool {
-        self.include
-            .iter()
-            .any(|glob| candidate.path.starts_with(&glob.root) && glob.matches(candidate))
+        self.include.iter().any(|glob| glob.matches(candidate.path))
     }
 
     pub(crate) fn relative_path(&self, path: &Path) -> PathBuf {
@@ -191,12 +239,22 @@ impl Default for GlobOptions {
 
 /// Classifies one path against the discovery globs without walking the tree —
 /// the single-path companion to [`default_walk`], for one watch event rather
-/// than a full scan. A relative `path` is resolved against `cwd`.
+/// than a full scan. Lexical; see [`matches_globs_in`] for symlinks.
 #[must_use]
 pub fn matches_globs(path: &Path, opts: &GlobOptions) -> bool {
-    let path = lexical(&opts.cwd.join(path));
-    let matcher = SourceMatcher::new(opts);
-    let candidate = matcher.candidate(&path);
+    let matcher = SourceMatcher::new(opts, Path::to_path_buf);
+    is_source(&matcher, &lexical(&opts.cwd.join(path)))
+}
+
+/// [`matches_globs`] on real paths, so symlinked spellings match.
+#[must_use]
+pub fn matches_globs_in<F: FileSystem + ?Sized>(fs: &F, path: &Path, opts: &GlobOptions) -> bool {
+    let matcher = SourceMatcher::new(opts, |path| real_path(fs, path));
+    is_source(&matcher, &real_path(fs, &lexical(&opts.cwd.join(path))))
+}
+
+fn is_source(matcher: &SourceMatcher, path: &Path) -> bool {
+    let candidate = matcher.candidate(path);
     !matcher.is_excluded(&candidate) && matcher.is_included(&candidate)
 }
 
@@ -227,9 +285,7 @@ pub fn relative_glob(pattern: &str) -> &str {
     }
 }
 
-/// Resolve the static watch directory for `pattern` against `cwd`, with `..`
-/// resolved so watchers report events under the same path `scan()` returns.
-/// Patterns without a static prefix watch `cwd` itself.
+/// The static watch directory for `pattern`, or `cwd` when it has none.
 #[must_use]
 pub fn resolve_glob_base(paths: &impl PathSystem, cwd: &str, pattern: &str) -> String {
     let pattern = canonical_glob(pattern);
@@ -284,9 +340,9 @@ pub(crate) fn default_walk<F: FileSystem + ?Sized>(
         return Ok(Vec::new());
     }
 
-    let matcher = SourceMatcher::new(opts);
+    let matcher = SourceMatcher::new(opts, Path::to_path_buf);
     let mut results: Vec<PathBuf> = Vec::new();
-    let mut stack: Vec<PathBuf> = walk_roots(opts);
+    let mut stack: Vec<PathBuf> = matcher.walk_roots();
 
     while let Some(dir) = stack.pop() {
         let entries = match fs.read_dir(&dir) {

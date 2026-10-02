@@ -15,8 +15,8 @@ mod os;
 
 pub use crate::file_system::FileSystem;
 pub use crate::glob::{
-    GlobOptions, base_dir, matches_globs, normalize_glob_pattern, relative_glob, resolve_glob_base,
-    walk_roots,
+    GlobOptions, base_dir, matches_globs, matches_globs_in, normalize_glob_pattern, real_path,
+    relative_glob, resolve_glob_base, walk_roots,
 };
 pub use crate::path::{normalize_lexical, to_forward_slash};
 pub use crate::path_system::{OsPathSystem, PathSystem, PosixPathSystem};

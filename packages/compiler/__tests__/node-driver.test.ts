@@ -1364,6 +1364,96 @@ describe('NodeDriver with sources outside cwd', () => {
   })
 })
 
+describe('NodeDriver with symlinked paths', () => {
+  let root: string
+  let link: string
+
+  beforeAll(() => {
+    root = realpathSync(mkdtempSync(join(tmpdir(), 'panda-driver-symlink-')))
+    link = `${root}-link`
+    symlinkSync(root, link, 'dir')
+  })
+
+  afterAll(() => {
+    rmSync(link, { force: true })
+    rmSync(root, { recursive: true, force: true })
+  })
+
+  const card = (color: string) => `import { css } from '@panda/css'; css({ color: '${color}' })`
+
+  function writeMonorepo(name: string, { linkPackage = false } = {}) {
+    const dir = join(root, name)
+    writeFileTree(dir, {
+      'apps/demo/panda.config.ts': `export default {
+        include: ['./src/**/*.tsx', '../../packages/ui/src/**/*.tsx'],
+        importMap: { css: ['@panda/css'] },
+      }`,
+      'apps/demo/src/App.tsx': card('red'),
+      [`${linkPackage ? 'real-ui' : 'packages/ui'}/src/Card.tsx`]: card('chartreuse'),
+    })
+    if (linkPackage) {
+      mkdirSync(join(dir, 'packages'))
+      symlinkSync(join(dir, 'real-ui'), join(dir, 'packages/ui'), 'dir')
+    }
+    return dir
+  }
+
+  async function expectEditAndAdd(cwd: string, eventDir: string, diskDir: string) {
+    const driver = await createNodeDriver({ cwd })
+    driver.parseFiles()
+    expect(driver.cssgen().css).toContain('chartreuse')
+
+    writeFileSync(join(diskDir, 'Card.tsx'), card('orchid'))
+    expect(driver.isSourceFile(join(eventDir, 'Card.tsx'))).toBe(true)
+    expect(driver.applyChange({ path: join(eventDir, 'Card.tsx'), kind: 'change' })).toBe(true)
+    expect(driver.cssgen().css).toContain('orchid')
+
+    writeFileSync(join(diskDir, 'Created.tsx'), card('peru'))
+    expect(driver.applyChange({ path: join(eventDir, 'Created.tsx'), kind: 'add' })).toBe(true)
+    expect(driver.cssgen().css).toContain('peru')
+
+    rmSync(join(diskDir, 'Card.tsx'))
+    expect(driver.applyChange({ path: join(eventDir, 'Card.tsx'), kind: 'unlink' })).toBe(true)
+    expect(driver.cssgen().css).not.toContain('orchid')
+  }
+
+  it('matches real-path events when cwd is a symlink', async () => {
+    writeMonorepo('cwd-link')
+    await expectEditAndAdd(
+      join(link, 'cwd-link/apps/demo'),
+      join(root, 'cwd-link/packages/ui/src'),
+      join(root, 'cwd-link/packages/ui/src'),
+    )
+  })
+
+  it('matches symlinked events when cwd is the real path', async () => {
+    writeMonorepo('event-link')
+    await expectEditAndAdd(
+      join(root, 'event-link/apps/demo'),
+      join(link, 'event-link/packages/ui/src'),
+      join(root, 'event-link/packages/ui/src'),
+    )
+  })
+
+  it('matches events through a symlinked package directory', async () => {
+    const dir = writeMonorepo('package-link', { linkPackage: true })
+    await expectEditAndAdd(join(dir, 'apps/demo'), join(dir, 'packages/ui/src'), join(dir, 'real-ui/src'))
+  })
+
+  it('matches events at the target of a symlinked package directory', async () => {
+    const dir = writeMonorepo('package-target', { linkPackage: true })
+    await expectEditAndAdd(join(dir, 'apps/demo'), join(dir, 'real-ui/src'), join(dir, 'real-ui/src'))
+  })
+
+  it('scans files under the cwd as given when cwd is a symlink', async () => {
+    writeMonorepo('scan-link')
+    const driver = await createNodeDriver({ cwd: join(link, 'scan-link/apps/demo') })
+    expect(driver.scan().filter((path) => path.endsWith('Card.tsx'))).toEqual([
+      join(link, 'scan-link/packages/ui/src/Card.tsx'),
+    ])
+  })
+})
+
 /** A published `@acme/ds` design system: `panda lib` manifest, preset, and (optionally) build info. */
 function acmeDsPackage({ manifest, buildInfo }: { manifest?: Record<string, unknown>; buildInfo?: unknown }) {
   return {
