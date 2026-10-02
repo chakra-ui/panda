@@ -348,13 +348,13 @@ type RecipePropsOf<R extends RecipeContextRecipe> = R extends RuntimeRecipeFn
       ? RecipeSelection<T>
       : never
 
-type RecipeContextComponentProps<T extends ElementType, R extends RecipeContextRecipe> = JsxHTMLProps<
+type RecipeContextComponentProps<T extends ElementType, R extends RecipeContextRecipe, F extends string> = JsxHTMLProps<
   ComponentProps<T> & UnstyledProps & AsProps,
   WithForwardedProps<Assign<RecipePropsOf<R>, JsxStyleProps>, T, F>
 >
 
 type RecipeContextComponent<T extends ElementType, R extends RecipeContextRecipe, F extends string = never> = Component<
-  RecipeContextComponentProps<T, R>
+  RecipeContextComponentProps<T, R, F>
 >
 
 export interface RecipeContext<R extends RecipeContextRecipe> {
