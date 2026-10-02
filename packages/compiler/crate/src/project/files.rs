@@ -219,7 +219,7 @@ impl Compiler {
     #[must_use]
     pub fn is_source_file(&self, path: String) -> bool {
         let opts = glob_options(&self.user_config, None);
-        pandacss_fs::matches_globs(std::path::Path::new(&path), &opts)
+        pandacss_fs::matches_globs_in(&self.fs, std::path::Path::new(&path), &opts)
     }
 
     /// Read + parse source paths from `scan()`. One report per requested path;
@@ -400,6 +400,18 @@ impl Compiler {
             .collect()
     }
 
+    /// The tracked path for `path`, following symlinks.
+    #[napi(js_name = resolveSourcePath)]
+    #[must_use]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn resolve_source_path(&self, path: String) -> String {
+        let opts = glob_options(&self.user_config, None);
+        resolve_tracked_path(&self.inner, &self.fs, &opts, path)
+    }
+
     /// Per-file view; returns `null` when `path` isn't known.
     #[napi(js_name = getFile)]
     #[must_use]
@@ -468,4 +480,20 @@ impl Compiler {
     pub fn dirname(&self, path: String) -> String {
         self.paths.dirname(&path)
     }
+}
+
+fn resolve_tracked_path(
+    project: &pandacss_project::Project,
+    fs: &impl pandacss_fs::FileSystem,
+    opts: &pandacss_fs::GlobOptions,
+    path: String,
+) -> String {
+    if project.get_file(&path).is_some() {
+        return path;
+    }
+    pandacss_fs::path_aliases(fs, std::path::Path::new(&path), opts)
+        .into_iter()
+        .map(|alias| alias.to_string_lossy().into_owned())
+        .find(|alias| project.get_file(alias).is_some())
+        .unwrap_or(path)
 }

@@ -99,7 +99,7 @@ impl WasmCompiler {
             &self.user_config,
             pandacss_compiler::SourceGlobOverrides::default(),
         );
-        pandacss_fs::matches_globs(std::path::Path::new(path), &opts)
+        pandacss_fs::matches_globs_in(&self.fs, std::path::Path::new(path), &opts)
     }
 
     /// Read + parse source paths from `scan()`. One report per requested path;
@@ -333,6 +333,24 @@ impl WasmCompiler {
     ///
     /// # Errors
     /// Returns a JS error if serializing fails.
+    /// The tracked path for `path`, following symlinks.
+    #[wasm_bindgen(js_name = resolveSourcePath)]
+    #[must_use]
+    pub fn resolve_source_path(&self, path: &str) -> String {
+        if self.inner.get_file(path).is_some() {
+            return path.to_owned();
+        }
+        let opts = pandacss_compiler::source_glob_options(
+            &self.user_config,
+            pandacss_compiler::SourceGlobOverrides::default(),
+        );
+        pandacss_fs::path_aliases(&self.fs, Path::new(path), &opts)
+            .into_iter()
+            .map(|alias| alias.to_string_lossy().into_owned())
+            .find(|alias| self.inner.get_file(alias).is_some())
+            .unwrap_or_else(|| path.to_owned())
+    }
+
     #[wasm_bindgen(js_name = getFile)]
     pub fn get_file(&self, path: &str) -> Result<JsValue, JsValue> {
         let Some(file) = self.inner.get_file(path) else {

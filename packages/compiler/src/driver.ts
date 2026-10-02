@@ -293,7 +293,7 @@ export class NodeDriver extends BaseDriver {
   }
 
   applyChange(change: SourceChange): boolean {
-    return this.applySourceChange(change, 'project')
+    return this.applySourceChange({ ...change, path: this.compiler.resolveSourcePath(change.path) }, 'project')
   }
 
   private applySourceChange(change: SourceChange, admission: 'project' | 'design-system'): boolean {

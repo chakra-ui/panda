@@ -61,14 +61,16 @@ export function pandacss(options: PandaPluginOptions = {}): BunPlugin {
         // Bun's dev server reloads edited modules one by one, so a repeat load means the file changed on disk.
         const changed = loaded.has(args.path)
         loaded.add(args.path)
+        // A source created after startup syncs on its first load.
+        const created = !changed && !driver.compiler.getFile(args.path) && driver.isSourceFile(args.path)
         return loadSource(
           driver,
           args.path,
           {
             transform: options.transform === true,
-            sync: changed,
+            sync: changed || created,
             // Bun has no way to re-run the CSS file when JS changes, so the hot-reloaded module carries the styles.
-            devStyles: changed && !runtime,
+            devStyles: (changed || created) && !runtime,
           },
           warnDiagnostics,
         )

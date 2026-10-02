@@ -121,6 +121,7 @@ export declare class WasmCompiler {
   joinPath(parts: string[]): string
   dirname(path: string): string
   isSourceFile(path: string): boolean
+  resolveSourcePath(path: string): string
   parseFiles(paths: string[]): ParseFileReport[]
   layers(): LayerNames
   hasLayerDeclaration(css: string): boolean

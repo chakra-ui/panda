@@ -7,7 +7,7 @@ use oxc_resolver::{FileMetadata, FileSystem as OxcResolverFileSystem, FileSystem
 use walkdir::WalkDir;
 
 use crate::FileSystem;
-use crate::glob::{GlobOptions, effective_excludes, matches_any, relative_to};
+use crate::glob::{GlobOptions, SourceMatcher};
 
 /// Native filesystem impl. Reads delegate to `oxc_resolver::FileSystemOs`, writes
 /// call `std::fs` directly, and `glob` overrides the default walker with `walkdir`.
@@ -63,24 +63,17 @@ impl FileSystem for OsFileSystem {
             return Ok(Vec::new());
         }
 
-        let excludes = effective_excludes(opts);
-
+        let matcher = SourceMatcher::new(opts, Path::to_path_buf);
         let mut results: Vec<PathBuf> = Vec::new();
 
         // Disjoint hoisted base dirs, so no path is visited twice.
-        for root in crate::glob::walk_roots(opts) {
+        for root in matcher.walk_roots() {
             // `filter_entry` prunes a directory before descending into it.
             let walker = WalkDir::new(&root)
                 .follow_links(true)
                 .into_iter()
                 .filter_entry(|entry| {
-                    let rel = relative_to(entry.path(), &opts.cwd);
-                    let rel_str = rel.to_string_lossy();
-                    if rel_str.is_empty() {
-                        return true; // root
-                    }
-                    let rel_bytes = rel_str.as_bytes();
-                    !matches_any(&excludes, rel_bytes)
+                    entry.depth() == 0 || !matcher.is_excluded(&matcher.candidate(entry.path()))
                 });
 
             for entry in walker {
@@ -104,15 +97,11 @@ impl FileSystem for OsFileSystem {
                     continue;
                 }
 
-                let rel = relative_to(entry.path(), &opts.cwd);
-                let rel_str = rel.to_string_lossy();
-                let rel_bytes = rel_str.as_bytes();
-
-                if matches_any(&opts.include, rel_bytes) {
+                if matcher.is_included(&matcher.candidate(entry.path())) {
                     if opts.absolute {
                         results.push(entry.path().to_path_buf());
                     } else {
-                        results.push(rel.to_path_buf());
+                        results.push(matcher.relative_path(entry.path()));
                     }
                 }
             }
