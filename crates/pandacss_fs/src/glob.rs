@@ -249,6 +249,9 @@ pub fn matches_globs(path: &Path, opts: &GlobOptions) -> bool {
 /// [`matches_globs`] on real paths, so symlinked spellings match.
 #[must_use]
 pub fn matches_globs_in<F: FileSystem + ?Sized>(fs: &F, path: &Path, opts: &GlobOptions) -> bool {
+    if matches_globs(path, opts) {
+        return true;
+    }
     let matcher = SourceMatcher::new(opts, |path| real_path(fs, path));
     is_source(&matcher, &real_path(fs, &lexical(&opts.cwd.join(path))))
 }
