@@ -3,7 +3,7 @@ use pandacss_stylesheet::{
     StylesheetLayer, StylesheetOptions, has_layer_declaration, strip_layer_order_statements,
 };
 
-use crate::common::{compile_css, compile_output, config};
+use crate::common::{compile_css, compile_output, config, split_output};
 
 #[test]
 fn default_layer_names_emit_unchanged_preamble() {
@@ -41,6 +41,93 @@ fn can_omit_layer_order_declaration() {
     );
     assert!(output.css.starts_with("@layer base {"));
     assert!(output.layer_css(StylesheetLayer::Base).is_some());
+}
+
+fn recipe_config() -> pandacss_config::UserConfig {
+    config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": { "color": { "className": "c" }, "padding": { "className": "p" } },
+        "theme": {
+            "recipes": {
+                "button": {
+                    "className": "button",
+                    "variants": { "size": { "sm": { "padding": "1px" } } },
+                    "compoundVariants": [{ "size": "sm", "css": { "color": "blue" } }]
+                }
+            },
+            "slotRecipes": {
+                "card": { "className": "card", "slots": ["root"], "base": { "root": { "color": "red" } } }
+            }
+        }
+    }))
+}
+
+const RECIPE_SOURCE: &str =
+    "import { button, card } from '@panda/recipes'\nbutton({ size: 'sm' })\ncard()";
+
+fn layer_statements(css: &str) -> String {
+    css.lines()
+        .filter(|line| line.trim_start().starts_with("@layer"))
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+#[test]
+fn host_declared_layers_still_get_the_recipe_sublayer_order() {
+    let output = compile_output(
+        &recipe_config(),
+        RECIPE_SOURCE,
+        StylesheetOptions {
+            emit_layer_declaration: false,
+            ..StylesheetOptions::default()
+        },
+    );
+    assert_snapshot!(layer_statements(&output.css), @"
+    @layer recipes.base, recipes.slots, recipes.variants, recipes.compound_variants;
+    @layer recipes.slots.base, recipes.slots.variants, recipes.slots.compound_variants;
+    @layer base {
+    @layer recipes {
+      @layer variants {
+      @layer compound_variants {
+    @layer recipes.slots {
+      @layer base {
+    ");
+}
+
+#[test]
+fn host_declared_layers_without_recipes_get_no_order_statements() {
+    let config = config(serde_json::json!({
+        "globalCss": { "body": { "margin": "0" } }
+    }));
+    let output = compile_output(
+        &config,
+        "",
+        StylesheetOptions {
+            emit_layer_declaration: false,
+            ..StylesheetOptions::default()
+        },
+    );
+    assert!(!output.css.contains("recipes.base"));
+}
+
+#[test]
+fn split_entry_declares_the_recipe_sublayer_order_when_the_host_declares_layers() {
+    let files = split_output(
+        &recipe_config(),
+        RECIPE_SOURCE,
+        StylesheetOptions {
+            emit_layer_declaration: false,
+            ..StylesheetOptions::default()
+        },
+    );
+    let entry = files
+        .iter()
+        .find(|file| file.path == "styles.css")
+        .expect("styles.css entry");
+    assert_snapshot!(layer_statements(&entry.code), @"
+    @layer recipes.base, recipes.slots, recipes.variants, recipes.compound_variants;
+    @layer recipes.slots.base, recipes.slots.variants, recipes.slots.compound_variants;
+    ");
 }
 
 #[test]

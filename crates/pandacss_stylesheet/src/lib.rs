@@ -517,10 +517,7 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Sp
     if !index.is_empty() {
         index.push('\n');
     }
-    if options.emit_layer_declaration
-        && !options.polyfill
-        && layer_selected(StylesheetLayer::Recipes)
-    {
+    if !options.polyfill && layer_selected(StylesheetLayer::Recipes) {
         for declaration in cascade::CascadePlan::internal_declarations(&input.config.layers) {
             index.push_str("@layer ");
             index.push_str(&declaration.join(", "));
