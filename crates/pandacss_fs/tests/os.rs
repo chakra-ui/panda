@@ -128,7 +128,7 @@ fn create_dir_all_and_remove_dir_all() {
 #[test]
 fn glob_monorepo_parent_dir_include_returns_normalized_paths() {
     let tmp = tempfile::tempdir().unwrap();
-    let root = tmp.path().canonicalize().unwrap();
+    let root = real_dir(tmp.path());
     fs::create_dir_all(root.join("apps/demo/src")).unwrap();
     fs::create_dir_all(root.join("packages/ui/src")).unwrap();
     fs::write(root.join("apps/demo/src/App.tsx"), "").unwrap();
@@ -157,7 +157,7 @@ fn glob_monorepo_parent_dir_include_returns_normalized_paths() {
 #[test]
 fn glob_monorepo_absolute_include_outside_cwd() {
     let tmp = tempfile::tempdir().unwrap();
-    let root = tmp.path().canonicalize().unwrap();
+    let root = real_dir(tmp.path());
     fs::create_dir_all(root.join("apps/demo")).unwrap();
     fs::create_dir_all(root.join("packages/ui/src")).unwrap();
     fs::write(root.join("packages/ui/src/Card.tsx"), "").unwrap();
@@ -175,4 +175,14 @@ fn glob_monorepo_absolute_include_outside_cwd() {
         vec![card.clone()]
     );
     assert!(pandacss_fs::matches_globs(&card, &opts));
+}
+
+/// The temp dir with symlinks resolved (`/var` → `/private/var` on macOS). Windows
+/// canonical paths carry a `\\?\` prefix that globs can't express, so keep them as is.
+fn real_dir(path: &std::path::Path) -> PathBuf {
+    if cfg!(windows) {
+        path.to_path_buf()
+    } else {
+        path.canonicalize().unwrap()
+    }
 }

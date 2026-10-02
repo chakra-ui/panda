@@ -29,7 +29,10 @@ export default function pandaCssLoader(this: LoaderContext<PandaCssLoaderOptions
   return `${entry}\n${output.css}`
 }
 
-function addPandaDependencies(loader: Pick<LoaderContext<PandaCssLoaderOptions>, 'addDependency'>, driver: Driver) {
+function addPandaDependencies(
+  loader: Pick<LoaderContext<PandaCssLoaderOptions>, 'addDependency' | 'addContextDependency'>,
+  driver: Driver,
+) {
   const seen = new Set<string>()
   const watch = (file: string) => {
     if (seen.has(file)) return
@@ -37,8 +40,13 @@ function addPandaDependencies(loader: Pick<LoaderContext<PandaCssLoaderOptions>,
     loader.addDependency(file)
   }
 
+  const watchTargets = driver.watchTargets()
   for (const file of driver.scan()) watch(file)
-  for (const dep of driver.watchTargets().config) {
+  // Source directories, so webpack reports files created after the first build.
+  for (const dir of watchTargets.dirs) {
+    loader.addContextDependency(driver.resolvePath(dir))
+  }
+  for (const dep of watchTargets.config) {
     watch(driver.resolvePath(dep))
   }
   if (driver.configPath) {

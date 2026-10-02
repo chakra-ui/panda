@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -46,18 +46,17 @@ function startWatch(app: string) {
     plugins: [new PandaWebpackPlugin({ cwd: app })],
     infrastructureLogging: { level: 'none' },
   })
+  if (!compiler) throw new Error('webpack returned no compiler')
   const watching = compiler.watch({ aggregateTimeout: 50 }, (error, stats) => {
     if (error || stats?.hasErrors()) throw error ?? new Error(stats?.toString('errors-only'))
   })
-  const bundle = () => readFileSync(join(app, 'dist', 'main.js'), 'utf8')
-  return { watching, bundle }
+  return { watching, bundlePath: join(app, 'dist', 'main.js') }
 }
 
-async function expectBundle(read: () => string, text: string) {
+async function waitForBundle(file: string, text: string): Promise<string> {
   for (let attempt = 0; attempt < 60; attempt++) {
-    try {
-      if (read().includes(text)) return
-    } catch {}
+    const bundle = existsSync(file) ? readFileSync(file, 'utf8') : ''
+    if (bundle.includes(text)) return bundle
     await new Promise((done) => setTimeout(done, 100))
   }
   throw new Error(`timed out waiting for ${text} in the bundle`)
@@ -74,11 +73,11 @@ describe('@pandacss/webpack watch mode in a monorepo', () => {
     root = undefined
   })
 
-  it('rebuilds CSS after an edit in a sibling package included with ../', async () => {
+  it('rebuilds CSS for edits and new files in a sibling package included with ../', async () => {
     await expectSiblingPackageRebuild(() => `'../../packages/ui/src/**/*.tsx'`)
   })
 
-  it('rebuilds CSS after an edit in a sibling package included with an absolute path', async () => {
+  it('rebuilds CSS for edits and new files in a sibling package included with an absolute path', async () => {
     await expectSiblingPackageRebuild((dir) => JSON.stringify(join(dir, 'packages/ui/src/**/*.tsx')))
   })
 
@@ -88,8 +87,15 @@ describe('@pandacss/webpack watch mode in a monorepo', () => {
     const started = startWatch(fixture.app)
     watching = started.watching
 
-    await expectBundle(started.bundle, 'chartreuse')
+    expect(await waitForBundle(started.bundlePath, 'chartreuse')).toContain('chartreuse')
     writeFileSync(join(fixture.ui, 'Card.tsx'), card('orchid'))
-    await expectBundle(started.bundle, 'orchid')
+    expect(await waitForBundle(started.bundlePath, 'orchid')).toContain('orchid')
+
+    writeFileSync(join(fixture.ui, 'Created.tsx'), card('peru'))
+    expect(await waitForBundle(started.bundlePath, 'peru')).toContain('peru')
+
+    mkdirSync(join(fixture.ui, 'nested'))
+    writeFileSync(join(fixture.ui, 'nested', 'Deep.tsx'), card('olive'))
+    expect(await waitForBundle(started.bundlePath, 'olive')).toContain('olive')
   }
 })

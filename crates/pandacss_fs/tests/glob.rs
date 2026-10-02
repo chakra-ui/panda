@@ -1122,10 +1122,16 @@ mod panda {
     }
 
     #[test]
-    fn dot_slash_only_stripped_at_start_not_mid_path() {
-        // The `.` inside `a/./b` is literal — only a *leading* `./` is normalized.
+    fn dot_segments_mid_path_resolve_like_fast_glob() {
         let fs = MemoryFileSystem::from_entries([("/proj/src/a.tsx", ""), ("/proj/x/a.tsx", "")]);
-        assert!(glob_abs(&fs, "/proj", &["src/./**/*.tsx"]).is_empty());
+        assert_eq!(
+            glob_abs(&fs, "/proj", &["src/./**/*.tsx"]),
+            vec![PathBuf::from("/proj/src/a.tsx")]
+        );
+        assert_eq!(
+            glob_abs(&fs, "/proj", &["src/../x/*.tsx"]),
+            vec![PathBuf::from("/proj/x/a.tsx")]
+        );
     }
 
     #[test]
@@ -1251,6 +1257,19 @@ mod panda {
     }
 
     #[test]
+    fn parent_dir_in_the_middle_of_an_include_finds_files() {
+        let results = glob_abs(
+            &monorepo(),
+            "/repo/apps/demo",
+            &["src/../../../packages/ui/src/Card.tsx"],
+        );
+        assert_eq!(
+            results,
+            vec![PathBuf::from("/repo/packages/ui/src/Card.tsx")]
+        );
+    }
+
+    #[test]
     fn scan_and_watch_classification_agree() {
         let fs = monorepo();
         let files = [
@@ -1261,11 +1280,12 @@ mod panda {
             "/repo/packages/ui/node_modules/dep/index.tsx",
             "/repo/packages/other/src/Other.tsx",
         ];
-        let configs: [&[&str]; 4] = [
+        let configs: [&[&str]; 5] = [
             &["src/**/*.tsx"],
             &["**/*.tsx"],
             &["src/**/*.{ts,tsx}", "../../packages/ui/**/*.tsx"],
             &["/repo/packages/**/*.tsx", "/repo/apps/demo/src/**/*.tsx"],
+            &["src/../../../packages/ui/src/*.tsx"],
         ];
         for include in configs {
             let opts = GlobOptions {

@@ -6,6 +6,7 @@ const CSS_ROOT = '@layer reset, base, tokens, recipes, utilities;'
 interface LoaderThis {
   getOptions: () => { getDriver: () => unknown }
   addDependency: (file: string) => void
+  addContextDependency: (dir: string) => void
   emitWarning: (error: Error) => void
 }
 
@@ -18,12 +19,14 @@ describe('@pandacss/webpack design-system watch', () => {
   it('registers design-system artifacts and source files from the CSS root', async () => {
     const { driver, pandaCssLoader } = await setupLoader()
     const addDependency = vi.fn()
+    const addContextDependency = vi.fn()
     const emitWarning = vi.fn()
 
     const result = pandaCssLoader.call(
       {
         getOptions: () => ({ getDriver: () => driver }),
         addDependency,
+        addContextDependency,
         emitWarning,
       } satisfies LoaderThis,
       CSS_ROOT,
@@ -39,6 +42,7 @@ describe('@pandacss/webpack design-system watch', () => {
         "/project/node_modules/@acme/ds/src/button.css.ts",
       ]
     `)
+    expect(addContextDependency.mock.calls.map(([dir]) => dir)).toEqual(['/project/src'])
     expect(driver.cssgen).toHaveBeenCalledWith({ emitLayerDeclaration: false, polyfill: false })
     expect(emitWarning).toHaveBeenCalledWith(
       expect.objectContaining({

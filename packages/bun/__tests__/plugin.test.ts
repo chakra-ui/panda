@@ -353,11 +353,11 @@ describe('@pandacss/bun in Bun.build', () => {
     expect((await bun.load(project.path('src/index.css')))?.contents).toContain('8px')
   })
 
-  it('refreshes the stylesheet after an edit in a sibling package included with ../', async () => {
+  it('refreshes the stylesheet for edits and new files in a sibling package included with ../', async () => {
     await expectSiblingPackageRefresh(() => `'../../packages/ui/src/**/*.ts'`)
   })
 
-  it('refreshes the stylesheet after an edit in a sibling package included with an absolute path', async () => {
+  it('refreshes the stylesheet for edits and new files in a sibling package included with an absolute path', async () => {
     await expectSiblingPackageRefresh((root) => JSON.stringify(join(root, 'packages/ui/src/**/*.ts')))
   })
 
@@ -387,7 +387,22 @@ describe('@pandacss/bun in Bun.build', () => {
     writeFileSync(join(ui, 'Card.ts'), card('8px'))
     await bun.load(join(ui, 'Card.ts'))
     expect((await bun.load(join(cwd, 'src/index.css')))?.contents).toContain('8px')
+
+    writeFileSync(join(ui, 'Created.ts'), card('12px'))
+    await bun.load(join(ui, 'Created.ts'))
+    expect((await bun.load(join(cwd, 'src/index.css')))?.contents).toContain('12px')
   }
+
+  it('adds the styles of a source file created after the build started', async () => {
+    const project = createProject(`{ padding: '4px' }`)
+    dir = project.dir
+    const bun = await setupPlugin({ cwd: project.dir })
+    await bun.load(project.path('src/app.ts'))
+    expect((await bun.load(project.path('src/index.css')))?.contents).toContain('4px')
+    project.write('src/created.ts', app(`{ padding: '13px' }`))
+    await bun.load(project.path('src/created.ts'))
+    expect((await bun.load(project.path('src/index.css')))?.contents).toContain('13px')
+  })
 
   it('picks up a config edit when the same plugin runs a second build', async () => {
     const project = createProject()

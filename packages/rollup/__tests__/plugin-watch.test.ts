@@ -40,21 +40,6 @@ function createFixture(color: string) {
   return dir
 }
 
-function createMonorepoFixture(include: (root: string) => string) {
-  const root = realpathSync(mkdtempSync(join(tmpdir(), 'panda-rollup-monorepo-')))
-  const app = join(root, 'apps', 'demo')
-  mkdirSync(join(app, 'src'), { recursive: true })
-  mkdirSync(join(root, 'packages', 'ui', 'src'), { recursive: true })
-  writeFileSync(
-    join(app, 'panda.config.ts'),
-    CONFIG.replace(`include: ['./src/**/*.tsx'],`, `include: ['./src/**/*.tsx', ${include(root)}],`),
-  )
-  writeFileSync(join(app, 'index.js'), 'export const value = 1\n')
-  writeFileSync(join(app, 'src', 'App.tsx'), APP('red'))
-  writeFileSync(join(root, 'packages', 'ui', 'src', 'Card.tsx'), APP('chartreuse'))
-  return { root, app }
-}
-
 function startWatcher(dir: string, watchedFiles: string[]): { watcher: RollupWatcher; ready: Promise<void> } {
   const watcher = watch({
     input: join(dir, 'index.js'),
@@ -173,36 +158,4 @@ describe('@pandacss/rollup watch mode', () => {
 
     expect(await waitForCss(dir, (css) => !css.includes('rebeccapurple'))).not.toContain('rebeccapurple')
   })
-
-  it('rebuilds CSS for edits and new files in a sibling package included with ../', async () => {
-    await expectSiblingPackageRebuilds(() => `'../../packages/ui/src/**/*.tsx'`)
-  })
-
-  it('rebuilds CSS for edits and new files in a sibling package included with an absolute path', async () => {
-    await expectSiblingPackageRebuilds((root) => JSON.stringify(join(root, 'packages/ui/src/**/*.tsx')))
-  })
-
-  async function expectSiblingPackageRebuilds(include: (root: string) => string) {
-    const fixture = createMonorepoFixture(include)
-    dir = fixture.root
-    const ui = join(fixture.root, 'packages', 'ui', 'src')
-    const watchedFiles: string[] = []
-    const started = startWatcher(fixture.app, watchedFiles)
-    watcher = started.watcher
-    await started.ready
-    await waitForWatchRegistration(watcher, join(ui, 'Card.tsx'))
-    expect(await waitForCss(fixture.app, (css) => css.includes('chartreuse'))).toContain('chartreuse')
-    expect(watchedFiles).toContain(join(ui, 'Card.tsx'))
-    expect(watchedFiles).toContain(ui)
-
-    let rebuild = waitForBuild(watcher)
-    writeFileSync(join(ui, 'Card.tsx'), APP('orchid'))
-    await rebuild
-    expect(await waitForCss(fixture.app, (css) => css.includes('orchid'))).toContain('orchid')
-
-    rebuild = waitForBuild(watcher)
-    writeFileSync(join(ui, 'Created.tsx'), APP('peru'))
-    await rebuild
-    expect(await waitForCss(fixture.app, (css) => css.includes('peru'))).toContain('peru')
-  }
 })

@@ -185,3 +185,84 @@ fn relative_path_resolves_against_cwd() {
     assert!(matches_globs(Path::new("src/App.tsx"), &o));
     assert!(!matches_globs(Path::new("../other/src/App.tsx"), &o));
 }
+
+#[test]
+fn parent_dir_in_the_middle_of_an_include_resolves() {
+    let o = opts(
+        "/repo/apps/demo",
+        &["src/../../../packages/ui/src/*.tsx"],
+        &[],
+    );
+    assert!(matches_globs(
+        Path::new("/repo/packages/ui/src/Card.tsx"),
+        &o
+    ));
+    assert!(!matches_globs(Path::new("/repo/apps/demo/src/App.tsx"), &o));
+}
+
+#[test]
+fn current_dir_segments_in_an_include_resolve() {
+    let o = opts("/proj", &["./src/./components/**/*.tsx"], &[]);
+    assert!(matches_globs(
+        Path::new("/proj/src/components/Button.tsx"),
+        &o
+    ));
+}
+
+#[test]
+fn parent_dir_in_an_absolute_include_resolves() {
+    let o = opts(
+        "/repo/apps/demo",
+        &["/repo/apps/../packages/ui/src/**/*.tsx"],
+        &[],
+    );
+    assert!(matches_globs(
+        Path::new("/repo/packages/ui/src/Card.tsx"),
+        &o
+    ));
+}
+
+#[test]
+fn literal_file_include_matches() {
+    let o = opts("/repo/apps/demo", &["../../packages/ui/src/Card.tsx"], &[]);
+    assert!(matches_globs(
+        Path::new("/repo/packages/ui/src/Card.tsx"),
+        &o
+    ));
+    assert!(!matches_globs(
+        Path::new("/repo/packages/ui/src/Other.tsx"),
+        &o
+    ));
+}
+
+#[cfg(windows)]
+#[test]
+fn windows_drive_include_with_backslashes_matches() {
+    let o = opts(
+        r"C:\repo\apps\demo",
+        &[r"C:\repo\packages\ui\src\**\*.tsx"],
+        &[],
+    );
+    assert!(matches_globs(
+        Path::new(r"C:\repo\packages\ui\src\Card.tsx"),
+        &o
+    ));
+    assert!(!matches_globs(
+        Path::new(r"C:\repo\packages\other\Card.tsx"),
+        &o
+    ));
+}
+
+#[cfg(windows)]
+#[test]
+fn windows_parent_dir_include_matches_backslash_path() {
+    let o = opts(
+        r"C:\repo\apps\demo",
+        &["../../packages/ui/src/**/*.tsx"],
+        &[],
+    );
+    assert!(matches_globs(
+        Path::new(r"C:\repo\packages\ui\src\Card.tsx"),
+        &o
+    ));
+}

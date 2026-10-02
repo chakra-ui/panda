@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use pandacss_fs::{OsPathSystem, PosixPathSystem, base_dir, relative_glob, resolve_glob_base};
 
 #[test]
@@ -83,12 +85,12 @@ fn resolves_the_watch_base_against_cwd() {
 #[test]
 fn monorepo_parent_dir_watch_base_is_normalized() {
     assert_eq!(
-        resolve_glob_base(
+        Path::new(&resolve_glob_base(
             &OsPathSystem,
             "/repo/apps/demo",
             "../../packages/ui/src/**/*.tsx"
-        ),
-        "/repo/packages/ui/src"
+        )),
+        Path::new("/repo/packages/ui/src")
     );
     assert_eq!(
         resolve_glob_base(
@@ -103,11 +105,24 @@ fn monorepo_parent_dir_watch_base_is_normalized() {
 #[test]
 fn absolute_watch_base_ignores_cwd() {
     assert_eq!(
-        resolve_glob_base(
+        Path::new(&resolve_glob_base(
             &OsPathSystem,
             "/repo/apps/demo",
             "/repo/packages/ui/src/**/*.tsx"
-        ),
-        "/repo/packages/ui/src"
+        )),
+        Path::new("/repo/packages/ui/src")
+    );
+}
+
+#[cfg(windows)]
+#[test]
+fn windows_drive_watch_base_accepts_backslashes() {
+    assert_eq!(
+        Path::new(&resolve_glob_base(
+            &OsPathSystem,
+            r"C:\repo\apps\demo",
+            r"C:\repo\packages\ui\src\**\*.tsx"
+        )),
+        Path::new(r"C:\repo\packages\ui\src")
     );
 }

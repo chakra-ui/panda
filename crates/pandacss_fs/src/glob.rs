@@ -3,7 +3,7 @@ use std::path::{Component, Path, PathBuf};
 
 use fast_glob::glob_match;
 
-use crate::path::to_forward_slash;
+use crate::path::{normalize_posix, to_forward_slash};
 use crate::{FileSystem, PathSystem};
 
 #[must_use]
@@ -67,11 +67,11 @@ struct SourceGlob {
 
 impl SourceGlob {
     fn new(pattern: &str, cwd: &Path) -> Self {
-        let pattern = normalize_glob_pattern(pattern);
+        let pattern = canonical_glob(pattern);
         Self {
-            pattern: pattern.to_owned(),
-            absolute: Path::new(pattern).is_absolute(),
-            root: lexical(&cwd.join(base_dir(pattern))),
+            absolute: pattern.starts_with('/') || is_drive_path(&pattern),
+            root: lexical(&cwd.join(base_dir(&pattern))),
+            pattern,
         }
     }
 
@@ -83,6 +83,27 @@ impl SourceGlob {
         };
         glob_match(self.pattern.as_bytes(), target.as_bytes())
     }
+}
+
+/// `pattern` with a Windows drive path (`C:\src\**`) in `/` form and `.`/`..`
+/// resolved in its static prefix, so `src/../lib/*.ts` matches `lib/a.ts`.
+fn canonical_glob(pattern: &str) -> String {
+    let pattern = if is_drive_path(pattern) {
+        pattern.replace('\\', "/")
+    } else {
+        pattern.to_owned()
+    };
+    let pattern = normalize_glob_pattern(&pattern);
+    let base = base_dir(pattern);
+    match normalize_posix(base).as_str() {
+        _ if base.is_empty() => pattern.to_owned(),
+        "." => relative_glob(pattern).to_owned(),
+        base => format!("{base}/{}", relative_glob(pattern)),
+    }
+}
+
+fn is_drive_path(pattern: &str) -> bool {
+    matches!(pattern.as_bytes(), [drive, b':', b'/' | b'\\', ..] if drive.is_ascii_alphabetic())
 }
 
 /// A lexical path in both forms a [`SourceGlob`] can match.
@@ -211,13 +232,19 @@ pub fn relative_glob(pattern: &str) -> &str {
 /// Patterns without a static prefix watch `cwd` itself.
 #[must_use]
 pub fn resolve_glob_base(paths: &impl PathSystem, cwd: &str, pattern: &str) -> String {
-    let base = base_dir(pattern);
+    let pattern = canonical_glob(pattern);
+    let base = base_dir(&pattern);
     if base.is_empty() {
-        cwd.to_owned()
+        return cwd.to_owned();
+    }
+    let joined = paths.join(&[cwd, base]);
+    if joined
+        .split(['/', '\\'])
+        .any(|part| part == "." || part == "..")
+    {
+        lexical(Path::new(&joined)).to_string_lossy().into_owned()
     } else {
-        lexical(Path::new(&paths.join(&[cwd, base])))
-            .to_string_lossy()
-            .into_owned()
+        joined
     }
 }
 
@@ -230,7 +257,7 @@ pub fn walk_roots(opts: &GlobOptions) -> Vec<PathBuf> {
     let mut roots: Vec<PathBuf> = opts
         .include
         .iter()
-        .map(|pattern| lexical(&opts.cwd.join(base_dir(normalize_glob_pattern(pattern)))))
+        .map(|pattern| lexical(&opts.cwd.join(base_dir(&canonical_glob(pattern)))))
         .collect();
     roots.sort();
     roots.dedup();

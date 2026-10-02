@@ -61,7 +61,16 @@ export class PandaWebpackPlugin {
       if (driver.isSourceFile(file)) driver.applyChange({ path: file, kind: 'unlink' })
     }
 
+    const sourceDirs = new Set(driver.watchTargets().dirs.map((dir) => driver.resolvePath(dir)))
+    let sourceDirChanged = false
+
     for (const file of changed) {
+      // Webpack reports a file created in a watched source directory as the directory itself.
+      if (sourceDirs.has(file)) {
+        sourceDirChanged = true
+        continue
+      }
+
       const designSystemFile = driver.isDesignSystemFile?.(file) ?? false
       if (designSystemFile) {
         const synced = await driver.syncDesignSystemFileChange({ path: file, kind: 'change' })
@@ -73,6 +82,12 @@ export class PandaWebpackPlugin {
         configChanged = true
       } else if (driver.isSourceFile(file)) {
         driver.applyChange({ path: file, kind: 'change' })
+      }
+    }
+
+    if (sourceDirChanged) {
+      for (const file of driver.scan()) {
+        if (!driver.compiler.getFile(file)) driver.applyChange({ path: file, kind: 'add' })
       }
     }
 
