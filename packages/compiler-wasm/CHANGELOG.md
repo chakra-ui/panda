@@ -1,5 +1,55 @@
 # @pandacss/compiler-wasm
 
+## 2.1.1
+
+### Patch Changes
+
+- 576c72a: `colorPalette.include` and `exclude` now pick palettes by name, and each palette keeps all of its tokens.
+  Themes with many nested groups can drop nested palettes from the `strictTokens` union without losing any virtual
+  token:
+
+  ```ts
+  export default defineConfig({
+    theme: {
+      // `gray` stays a palette with colorPalette.1 and colorPalette.solid.bg; `gray.solid` is dropped
+      colorPalette: { exclude: ['*.*'] },
+    },
+  })
+  ```
+
+- a63cb20: With the Vite, PostCSS, webpack, or Bun plugins, your stylesheet only needs the top-level layer order. Slot
+  recipes no longer override recipe variants:
+
+  ```css
+  @layer reset, base, tokens, recipes, utilities;
+  ```
+
+  If you added `@layer recipes.base, …` lines as a workaround, you can remove them.
+
+- 24718f4: Fix dev and watch mode ignoring edits and new files matched by an `include` glob outside the project root,
+  such as a sibling package in a monorepo:
+
+  ```ts
+  include: ['./src/**/*.tsx', '../../packages/ui/src/**/*.tsx']
+  ```
+
+- b220f62: `strictTokens` now accepts common CSS keywords that have no token to replace them, like `maxWidth: 'none'`,
+  `filter: 'none'`, `fill: 'none'` and `float: 'left'`. `transitionProperty` also accepts any property name or list,
+  like `'opacity, transform'`.
+- 24718f4: Fix watch mode ignoring changes when a file is reported through a symlink, such as a symlinked project folder
+  or a pnpm workspace package.
+- 8b6f7e0: `forwardProps` now types a forwarded prop from the wrapped component when it shares a name with a style prop,
+  so a component's own `position` or `translate` prop no longer conflicts with the CSS one:
+
+  ```tsx
+  const Handle = withContext(ImageCropper.Handle, 'handle', { forwardProps: ['position'] })
+
+  <Handle position="ne" /> // typed as the component's `position`, not CSS `position`
+  ```
+
+  - @pandacss/compiler-shared@2.1.1
+  - @pandacss/types@2.1.1
+
 ## 2.1.0
 
 ### Patch Changes
