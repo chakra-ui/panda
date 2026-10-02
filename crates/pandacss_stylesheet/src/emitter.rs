@@ -122,8 +122,9 @@ pub(crate) fn emit(input: EmitInput<'_>, options: EmitOptions) -> EmitOutput {
     };
     let mut layer_ranges = StylesheetLayerRanges::default();
 
-    if emit_layer_declaration && !polyfill {
-        write_layer_order(&mut writer, layers, minify);
+    if !polyfill && (emit_layer_declaration || has_recipe_rules(recipes)) {
+        // The host's stylesheet declares the public layers; recipe sub-layer order is ours.
+        write_layer_order(&mut writer, layers, minify, emit_layer_declaration);
         writer.newline();
     }
 
@@ -617,10 +618,13 @@ fn write_layer_order(
     writer: &mut CssWriter,
     layers: &pandacss_config::CascadeLayers,
     minify: bool,
+    public_layers: bool,
 ) {
-    write_layer_declaration(writer, &layers.declaration_names());
-    if !minify {
-        writer.newline();
+    if public_layers {
+        write_layer_declaration(writer, &layers.declaration_names());
+        if !minify {
+            writer.newline();
+        }
     }
     let declarations = crate::cascade::CascadePlan::internal_declarations(layers);
     for (index, declaration) in declarations.iter().enumerate() {
