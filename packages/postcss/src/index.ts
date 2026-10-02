@@ -128,7 +128,7 @@ function ensureCodegen(state: DriverState, options: { cwd: string; outdir: strin
   const outdirKey = state.driver.getOutdir(options.outdir)
   if (state.generatedOutdirs.has(outdirKey)) return
 
-  state.driver.codegen({ cwd: options.cwd, outdir: options.outdir })
+  if (state.driver.needsCodegen(options.outdir)) state.driver.codegen({ cwd: options.cwd, outdir: options.outdir })
   state.generatedOutdirs.add(outdirKey)
 }
 

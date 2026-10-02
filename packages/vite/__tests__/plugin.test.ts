@@ -1,6 +1,6 @@
-import { existsSync, mkdtempSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { createServer, type ViteDevServer } from 'vite'
 import { pandacss } from '../src'
@@ -368,4 +368,57 @@ describe('@pandacss/vite', () => {
     }
     throw new Error('timed out waiting for codegen in updated config outdir')
   })
+
+  it('skips codegen but still serves CSS when importMap points to an installed package', async () => {
+    dir = createFixture(`{ color: 'red' }`, "export default { include: ['**/*.tsx'], importMap: '@acme/ds' }")
+    writeTree(dir, {
+      'App.tsx': "import { css } from '@acme/ds/css'\ncss({ color: 'red' })",
+      'node_modules/@acme/ds/package.json': JSON.stringify({ name: '@acme/ds' }),
+    })
+    server = await startServer(dir)
+
+    expect(await readCss(server)).toContain('red')
+    expect(existsSync(join(dir, 'styled-system'))).toBe(false)
+  })
+
+  it('writes the local outdir for a designSystem app, even with a styled-system package installed', async () => {
+    dir = createFixture(`{ color: 'red' }`, "export default { designSystem: '@acme/ds', include: ['**/*.tsx'] }")
+    writeTree(dir, {
+      ...designSystemPackage(),
+      'node_modules/styled-system/package.json': JSON.stringify({ name: 'styled-system' }),
+    })
+    server = await startServer(dir)
+    await readCss(server)
+
+    expect(existsSync(join(dir, 'styled-system', 'css', 'index.js'))).toBe(true)
+  })
 })
+
+function writeTree(root: string, files: Record<string, string>) {
+  for (const [path, content] of Object.entries(files)) {
+    mkdirSync(dirname(join(root, path)), { recursive: true })
+    writeFileSync(join(root, path), content)
+  }
+}
+
+function designSystemPackage(): Record<string, string> {
+  return {
+    'node_modules/@acme/ds/package.json': JSON.stringify({
+      name: '@acme/ds',
+      version: '1.0.0',
+      exports: { './panda/*': './dist/panda/*' },
+    }),
+    'node_modules/@acme/ds/dist/panda/lib.json': JSON.stringify({
+      schemaVersion: 1,
+      name: '@acme/ds',
+      version: '1.0.0',
+      panda: '^2.0.0',
+      preset: './preset.mjs',
+      buildInfo: './buildinfo.json',
+      files: ['./**/*.js'],
+    }),
+    'node_modules/@acme/ds/dist/panda/preset.mjs': `export default ${JSON.stringify({ jsxFramework: 'react' })}`,
+    'node_modules/@acme/ds/dist/comp.js': "import { css } from '@acme/ds/css'\ncss({ color: 'rebeccapurple' })",
+    'node_modules/@acme/ds/dist/panda/buildinfo.json': JSON.stringify({ schemaVersion: 999, modules: {}, atoms: [] }),
+  }
+}

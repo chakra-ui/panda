@@ -51,7 +51,7 @@ export function pandacss(options: PandaRollupOptions = {}): Plugin[] {
     if (!ready) {
       ready = (async () => {
         driver = await createNodeDriver({ cwd, configPath })
-        driver.codegen({ cwd, outdir })
+        if (driver.needsCodegen(outdir)) driver.codegen({ cwd, outdir })
         driver.parseFiles()
       })()
     }
@@ -82,11 +82,11 @@ export function pandacss(options: PandaRollupOptions = {}): Plugin[] {
       const designSystemFile = driver.isDesignSystemFile(id)
       if (designSystemFile) {
         const changed = await driver.syncDesignSystemFileChange(sourceChange)
-        if (changed && designSystemFile === 'artifact') driver.codegen({ cwd, outdir })
+        if (changed && designSystemFile === 'artifact' && driver.needsCodegen(outdir)) driver.codegen({ cwd, outdir })
       } else if (driver.isConfigFile(id)) {
         const diff = await driver.reload()
         if (diff.hasChanged) {
-          driver.codegen({ cwd, outdir })
+          if (driver.needsCodegen(outdir)) driver.codegen({ cwd, outdir })
           driver.parseFiles()
         }
       } else if (driver.isSourceFile(id)) {

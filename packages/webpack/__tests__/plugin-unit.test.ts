@@ -209,6 +209,7 @@ function createMockDriver() {
     ],
     applyChange: vi.fn(() => true),
     codegen: vi.fn(),
+    needsCodegen: vi.fn(() => true),
     cssgen: vi.fn(() => ({ css: '.fs_20px { font-size: 20px }', diagnostics: [] })),
     designSystemWatchTargets: vi.fn(() => [
       {

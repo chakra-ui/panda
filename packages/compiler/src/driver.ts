@@ -50,6 +50,7 @@ import {
   treeshakeKeyFromSelections,
   designSystemDependencies,
 } from './design-system'
+import { isExternalImportMap } from './external-import-map'
 import { createProjectFromLoadedConfig, treeshakeDesignSystemEnabled } from './tooling/create-project'
 
 export interface NodeDriverOptions {
@@ -156,6 +157,16 @@ export class NodeDriver extends BaseDriver {
 
   get config() {
     return this.#loaded.config
+  }
+
+  override needsCodegen(outdir?: string): boolean {
+    const config = this.#loaded.config
+    return !isExternalImportMap({
+      cwd: typeof config.cwd === 'string' ? config.cwd : this.#options.cwd,
+      outdir: this.getOutdir(outdir),
+      importMap: config.importMap,
+      designSystem: config.designSystem !== undefined || (this.#loaded.metadata?.designSystem?.length ?? 0) > 0,
+    })
   }
 
   get configPath() {

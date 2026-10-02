@@ -218,6 +218,7 @@ function createDriver(diagnostics: Array<{ severity: 'error' | 'info' | 'warning
     configPath: '/project/panda.config.ts',
     applyChange: vi.fn(),
     codegen: vi.fn(),
+    needsCodegen: vi.fn(() => true),
     parseFiles: vi.fn(),
     scan: vi.fn(() => ['/project/src/app.tsx']),
     cssgen: vi.fn(() => ({ css: '.generated { color: red }', diagnostics })),

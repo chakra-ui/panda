@@ -40,7 +40,7 @@ export class PandaWebpackPlugin {
     if (!this.#ready) {
       this.#ready = (async () => {
         const driver = await createNodeDriver({ cwd, configPath: this.#options.configPath })
-        driver.codegen({ cwd, outdir: this.#options.outdir })
+        if (driver.needsCodegen(this.#options.outdir)) driver.codegen({ cwd, outdir: this.#options.outdir })
         driver.parseFiles()
         this.#driver = driver
       })()
@@ -79,7 +79,7 @@ export class PandaWebpackPlugin {
     if (configChanged) {
       const diff = await driver.reload()
       if (diff.hasChanged) {
-        driver.codegen({ cwd, outdir: this.#options.outdir })
+        if (driver.needsCodegen(this.#options.outdir)) driver.codegen({ cwd, outdir: this.#options.outdir })
         driver.parseFiles()
         designSystemChanged = true
       }
