@@ -120,6 +120,37 @@ fn expands_static_css_color_opacity_modifiers() {
 }
 
 #[test]
+fn expands_static_css_color_palettes() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "300": { "value": "#fca5a5" }, "500": { "value": "#ef4444" } },
+                    "blue": { "300": { "value": "#93c5fd" }, "500": { "value": "#3b82f6" } }
+                }
+            }
+        },
+        "staticCss": {
+            "css": [{ "properties": { "colorPalette": ["red", "blue"] } }]
+        }
+    }));
+    let css = compile_layer_css(&config, "", &[StylesheetLayer::Utilities]);
+    assert_snapshot!(css, @"
+    @layer utilities {
+      .color-palette_blue {
+        --colors-color-palette-300: var(--colors-blue-300);
+        --colors-color-palette-500: var(--colors-blue-500);
+      }
+      .color-palette_red {
+        --colors-color-palette-300: var(--colors-red-300);
+        --colors-color-palette-500: var(--colors-red-500);
+      }
+    }
+    ");
+}
+
+#[test]
 fn expands_static_css_responsive_breakpoints() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
