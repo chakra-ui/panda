@@ -863,6 +863,63 @@ fn strict_tokens_keep_per_category_globals() {
     ));
 }
 
+#[test]
+fn strict_tokens_accept_property_keywords_per_member() {
+    let colors = |name: &str| UtilityPropertyTypeData {
+        token_category: Some("colors".into()),
+        ..utility(name, name, "ColorsValue")
+    };
+    let mut input = utilities_input(
+        vec![
+            colors("color"),
+            colors("fill"),
+            UtilityPropertyTypeData {
+                token_category: Some("sizes".into()),
+                ..utility("maxWidth", "maxWidth", "MaxWidthValue")
+            },
+            UtilityPropertyTypeData {
+                token_category: Some("sizes".into()),
+                ..utility("maxW", "maxWidth", "MaxWidthValue")
+            },
+            utility("rotate", "rotate", "RotateValue"),
+            utility("rotateX", "rotate", "RotateValue"),
+            utility(
+                "transitionProperty",
+                "transitionProperty",
+                "TransitionPropertyValue",
+            ),
+        ],
+        vec![
+            value_alias(
+                "ColorsValue",
+                vec![ValueTypePart::TokenCategory("colors".into())],
+            ),
+            value_alias(
+                "MaxWidthValue",
+                vec![ValueTypePart::TokenCategory("sizes".into())],
+            ),
+            value_alias("RotateValue", vec![ValueTypePart::Literal("auto".into())]),
+        ],
+    );
+    input.types.utilities.shorthands = BTreeMap::from([("maxW".into(), "maxWidth".into())]);
+    input.types.options.strict_tokens = true;
+
+    let system = system_types(&input);
+
+    assert!(system.contains(r"  color?: ConditionalValue<ColorsValue>"));
+    assert!(system.contains(r#"  fill?: ConditionalValue<ColorsValue | WithEscapeHatch<"none">>"#));
+    assert!(
+        system.contains(r#"  maxW?: ConditionalValue<MaxWidthValue | WithEscapeHatch<"none">>"#)
+    );
+    assert!(
+        system.contains(r#"  rotate?: ConditionalValue<RotateValue | WithEscapeHatch<"none">>"#)
+    );
+    assert!(system.contains(r"  rotateX?: ConditionalValue<RotateValue>"));
+    assert!(system.contains(
+        r#"  transitionProperty?: ConditionalValue<TransitionPropertyValue | WithEscapeHatch<"all" | "none"> | AnyString>"#
+    ));
+}
+
 fn float_with_explicit_property_input() -> CodegenInput {
     utilities_input(
         vec![UtilityPropertyTypeData {

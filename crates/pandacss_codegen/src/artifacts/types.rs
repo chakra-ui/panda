@@ -385,13 +385,75 @@ fn should_strict_narrow_native_property(
         && matches!(entry.keywords_open(), Some(false))
 }
 
+const STRICT_TOKEN_KEYWORDS: &[(&str, &[&str])] = &[
+    ("animationName", &["none"]),
+    ("backdropFilter", &["none"]),
+    ("boxShadow", &["none"]),
+    ("fill", &["none"]),
+    ("filter", &["none"]),
+    (
+        "flexBasis",
+        &[
+            "auto",
+            "content",
+            "fit-content",
+            "max-content",
+            "min-content",
+        ],
+    ),
+    (
+        "float",
+        &["inline-end", "inline-start", "left", "none", "right"],
+    ),
+    ("gridAutoColumns", &["auto", "max-content", "min-content"]),
+    ("gridAutoRows", &["auto", "max-content", "min-content"]),
+    ("maxBlockSize", &["none"]),
+    ("maxHeight", &["none"]),
+    ("maxInlineSize", &["none"]),
+    ("maxWidth", &["none"]),
+    ("rotate", &["none"]),
+    ("scale", &["none"]),
+    ("stroke", &["none"]),
+    ("textShadow", &["none"]),
+    ("transitionProperty", &["all", "none"]),
+    ("translate", &["none"]),
+];
+
+const STRICT_TOKEN_OPEN_PROPERTIES: &[&str] = &["transitionProperty"];
+
+fn strict_token_keywords(
+    property: &UtilityPropertyTypeData,
+    shorthands: &BTreeMap<String, String>,
+) -> Option<(&'static [&'static str], bool)> {
+    let target = shorthands
+        .get(&property.name)
+        .unwrap_or(&property.name)
+        .as_str();
+    if property.css_property.as_deref().unwrap_or(target) != target {
+        return None;
+    }
+    let keywords = STRICT_TOKEN_KEYWORDS
+        .iter()
+        .find(|(name, _)| *name == target)
+        .map(|(_, keywords)| *keywords)?;
+    Some((keywords, STRICT_TOKEN_OPEN_PROPERTIES.contains(&target)))
+}
+
 fn utility_system_property_type(
     property: &UtilityPropertyTypeData,
+    shorthands: &BTreeMap<String, String>,
     options: pandacss_config::TypegenOptions,
 ) -> String {
     let alias = property.alias.as_str();
     if options.strict_tokens {
-        return alias.to_owned();
+        return match strict_token_keywords(property, shorthands) {
+            Some((keywords, open)) => format!(
+                "{alias} | WithEscapeHatch<{}>{}",
+                data_type::literals_union(keywords),
+                if open { " | AnyString" } else { "" }
+            ),
+            None => alias.to_owned(),
+        };
     }
 
     if property.token_category.is_some() {
@@ -499,7 +561,7 @@ fn build_system_properties_members(
         {
             overrides.insert(
                 property.name.as_str(),
-                utility_system_property_type(property, options),
+                utility_system_property_type(property, &data.shorthands, options),
             );
         }
     }
