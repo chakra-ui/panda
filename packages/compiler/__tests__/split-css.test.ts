@@ -57,8 +57,8 @@ describe('compiler.getSplitCss()', () => {
       "@layer reset, base, tokens,
              recipes,
              utilities;
-      @layer recipes.base, recipes.slots, recipes.variants, recipes.compound_variants;
-      @layer recipes.slots.base, recipes.slots.variants, recipes.slots.compound_variants;
+      @layer recipes { @layer base, slots, variants, compound_variants; }
+      @layer recipes.slots { @layer base, variants, compound_variants; }
       @import './styles/global.css';
       @import './styles/tokens.css';
       @import './styles/utilities.css';

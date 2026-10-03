@@ -626,9 +626,9 @@ fn write_layer_order(
             writer.newline();
         }
     }
-    let declarations = crate::cascade::CascadePlan::internal_declarations(layers);
+    let declarations = crate::cascade::CascadePlan::internal_declarations(layers, minify);
     for (index, declaration) in declarations.iter().enumerate() {
-        write_layer_declaration(writer, declaration);
+        writer.write_str(declaration);
         if !minify && index + 1 < declarations.len() {
             writer.newline();
         }

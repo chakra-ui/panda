@@ -44,8 +44,8 @@ describe('Compiler', () => {
     expect(compiler.compile()).toMatchInlineSnapshot(`
       {
         "css": "@layer reset, base, tokens, recipes, utilities;
-      @layer recipes.base, recipes.slots, recipes.variants, recipes.compound_variants;
-      @layer recipes.slots.base, recipes.slots.variants, recipes.slots.compound_variants;
+      @layer recipes { @layer base, slots, variants, compound_variants; }
+      @layer recipes.slots { @layer base, variants, compound_variants; }
       @layer base {
         :root {
           --made-with-panda: '🐼';
@@ -71,12 +71,12 @@ describe('Compiler', () => {
         },
         "layerRanges": {
           "base": {
-            "start": 213,
-            "end": 274,
+            "start": 183,
+            "end": 244,
           },
           "utilities": {
-            "start": 274,
-            "end": 371,
+            "start": 244,
+            "end": 341,
           },
         },
         "diagnostics": [],
@@ -186,8 +186,8 @@ describe('Compiler', () => {
     })
     expect(compiler.compile().css).toMatchInlineSnapshot(`
       "@layer reset, base, tokens, recipes, utilities;
-      @layer recipes.base, recipes.slots, recipes.variants, recipes.compound_variants;
-      @layer recipes.slots.base, recipes.slots.variants, recipes.slots.compound_variants;
+      @layer recipes { @layer base, slots, variants, compound_variants; }
+      @layer recipes.slots { @layer base, variants, compound_variants; }
       @layer base {
         :root {
           --made-with-panda: '🐼';
@@ -316,8 +316,8 @@ describe('Compiler', () => {
     })
     expect(output.css).toMatchInlineSnapshot(`
       "@layer reset, base, tokens, recipes, utilities;
-      @layer recipes.base, recipes.slots, recipes.variants, recipes.compound_variants;
-      @layer recipes.slots.base, recipes.slots.variants, recipes.slots.compound_variants;
+      @layer recipes { @layer base, slots, variants, compound_variants; }
+      @layer recipes.slots { @layer base, variants, compound_variants; }
       @layer base {
         :root {
           --made-with-panda: '🐼';
@@ -531,8 +531,8 @@ describe('Compiler', () => {
 
     expect(compiler.compile().css).toMatchInlineSnapshot(`
       "@layer reset, base, tokens, recipes, utilities;
-      @layer recipes.base, recipes.slots, recipes.variants, recipes.compound_variants;
-      @layer recipes.slots.base, recipes.slots.variants, recipes.slots.compound_variants;
+      @layer recipes { @layer base, slots, variants, compound_variants; }
+      @layer recipes.slots { @layer base, variants, compound_variants; }
       @layer base {
         :root {
           --made-with-panda: '🐼';
@@ -592,8 +592,8 @@ describe('Compiler', () => {
 
     expect(compiler.compile().css).toMatchInlineSnapshot(`
       "@layer reset, base, tokens, recipes, utilities;
-      @layer recipes.base, recipes.slots, recipes.variants, recipes.compound_variants;
-      @layer recipes.slots.base, recipes.slots.variants, recipes.slots.compound_variants;
+      @layer recipes { @layer base, slots, variants, compound_variants; }
+      @layer recipes.slots { @layer base, variants, compound_variants; }
       @layer base {
         :root {
           --made-with-panda: '🐼';
