@@ -185,10 +185,10 @@ fn crlf_line_endings_are_kept() {
 
 #[test]
 fn multi_byte_text_keeps_offsets() {
-    let source = r#"<p>héllo → {css({ content: '"ü"' })} 日本</p>"#;
+    let source = "<p>héllo → {css({ content: '\u{201c}ü\u{201d}' })} 日本</p>";
     assert_eq!(
         lowered(source).canvas,
-        r#"[             ,css({ content: '"ü"' })            ]"#
+        "[             ,css({ content: '\u{201c}ü\u{201d}' })            ]"
     );
 }
 
