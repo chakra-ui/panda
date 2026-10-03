@@ -48,6 +48,8 @@ Some topics span several notes. Keep the detailed contract in one place and link
 
 - [Filesystem](./filesystem.md) — `pandacss_fs` trait, os/memory impls, glob via `fast-glob`, WASM compat.
 - [Literal evaluator](./literal-evaluator.md) — what folds vs what doesn't (literals, pure helpers, token/raw calls).
+- [Astro parser](./astro-parser.md) — `.astro` parsed by Astro's own parser (`withastro/oxc` fork) in `pandacss_astro`,
+  lowered to a same-offset JS program for Oxc 0.130; lowering rules, conformance corpus, rollout.
 - [StyleTree](./style-tree.md) — span-backed transform IR for `css()` / JSX conditionals; `project_literal` for encode.
 - [Cross-file resolution](./cross-file-resolution.md) — `CrossFileResolver`, cache shape (`Literal` | `PureFn` plus
   provenance hashes), cycle guard, hash-keyed `Project` reverse index and host-driven affected-file refresh for watch.
