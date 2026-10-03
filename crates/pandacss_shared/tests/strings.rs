@@ -1,5 +1,6 @@
 use pandacss_shared::{
-    capitalize, closest_match, find_matching_paren, hyphenate_property, number_to_js_string,
+    capitalize, closest_match, composition_path, find_matching_paren, hyphenate_property,
+    number_to_js_string,
 };
 
 #[test]
@@ -67,4 +68,12 @@ fn closest_match_returns_none_when_nothing_is_close() {
 fn closest_match_prefers_the_smallest_distance() {
     // "_hoer" is distance 1 from "_hover", 2 from "_focus".
     assert_eq!(closest_match("_hoer", ["_focus", "_hover"]), Some("_hover"));
+}
+
+#[test]
+fn composition_path_drops_a_nested_default() {
+    assert_eq!(composition_path("", "body"), "body");
+    assert_eq!(composition_path("body", "compact"), "body.compact");
+    assert_eq!(composition_path("body", "DEFAULT"), "body");
+    assert_eq!(composition_path("", "DEFAULT"), "DEFAULT");
 }

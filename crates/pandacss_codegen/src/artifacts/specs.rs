@@ -118,11 +118,7 @@ fn collect_composition(prefix: &str, node: &Value, out: &mut BTreeMap<String, Op
         let Some(child_map) = child.as_object() else {
             continue;
         };
-        let name = if prefix.is_empty() {
-            key.clone()
-        } else {
-            format!("{prefix}.{key}")
-        };
+        let name = pandacss_shared::composition_path(prefix, key);
         if child_map.contains_key("value") {
             let description = child_map
                 .get("description")

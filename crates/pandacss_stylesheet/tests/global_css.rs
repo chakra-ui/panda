@@ -160,6 +160,37 @@ fn expands_global_css_composition_props_through_utilities() {
 }
 
 #[test]
+fn global_css_text_style_uses_the_nested_default() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "textStyles": {
+                "body": {
+                    "DEFAULT": { "value": { "fontSize": "16px", "lineHeight": "1.6" } },
+                    "compact": { "value": { "fontSize": "14px" } }
+                }
+            }
+        },
+        "globalCss": {
+            "p.lead": { "textStyle": "body" }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
+    assert_snapshot!(css, @r"
+@layer base {
+  :root {
+    --made-with-panda: '🐼';
+  }
+  p.lead {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+}
+");
+}
+
+#[test]
 fn skips_unknown_global_css_composition_values() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },

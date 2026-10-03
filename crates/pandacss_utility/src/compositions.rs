@@ -44,11 +44,7 @@ fn walk_tree(
     out: &mut FxHashMap<String, Literal>,
 ) {
     for (key, value) in node {
-        let path = if prefix.is_empty() {
-            key.clone()
-        } else {
-            format!("{prefix}.{key}")
-        };
+        let path = pandacss_shared::composition_path(prefix, key);
 
         match value {
             Value::Object(entries) => {
