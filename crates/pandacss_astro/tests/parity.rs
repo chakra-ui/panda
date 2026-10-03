@@ -336,6 +336,16 @@ const CASES: &[(&str, &str, &str)] = &[
         "}'a\\\nb' <p/>",
         "    \n   [   ]",
     ),
+    (
+        "regex_after_a_for_await_paren",
+        "<p>{(async () => { for await (x of y) /}/.test(z) })()}</p>",
+        "[  ,(async () => { for await (x of y) /}/.test(z) })()     ]",
+    ),
+    (
+        "template_literal_across_lines_in_type_arguments",
+        "<Foo<`a\n`>/>",
+        "[      \n    ]",
+    ),
 ];
 
 #[test]

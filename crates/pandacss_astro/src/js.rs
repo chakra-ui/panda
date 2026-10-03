@@ -57,7 +57,7 @@ fn is_js_whitespace(ch: char) -> bool {
     )
 }
 
-fn is_line_terminator(ch: char) -> bool {
+pub(crate) fn is_line_terminator(ch: char) -> bool {
     matches!(ch, '\n' | '\r' | '\u{2028}' | '\u{2029}')
 }
 
@@ -298,7 +298,14 @@ pub(crate) fn string_terminated(source: &str, token: Token) -> bool {
     scan_string(source, token.start).1
 }
 
+#[cfg(test)]
+thread_local! {
+    static REGEX_SCANS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
 fn scan_regex(source: &str, start: usize) -> (usize, bool) {
+    #[cfg(test)]
+    REGEX_SCANS.with(|scans| scans.set(scans.get() + 1));
     let mut position = start + 1;
     let mut in_class = false;
     let mut escaped = false;
@@ -341,9 +348,16 @@ pub fn find_closing_brace(source: &str, open: usize) -> Option<usize> {
     let mut operand = true;
     let mut after_member_dot = false;
     let mut after_control = false;
+    let mut no_regex_before = 0usize;
     loop {
-        let mut token = lexer.next_token(operand);
+        let restricted = operand && lexer.position() < no_regex_before;
+        let mut token = lexer.next_token(operand && !restricted);
+        if restricted && token.start >= no_regex_before && source[token.start..].starts_with('/') {
+            lexer.set_position(token.start);
+            token = lexer.next_token(true);
+        }
         if token.kind == TokenKind::Regex && !regex_terminated(source, token) {
+            no_regex_before = token.end;
             lexer.set_position(token.start + 1);
             token = Token {
                 kind: TokenKind::Punctuator,
@@ -368,7 +382,10 @@ pub fn find_closing_brace(source: &str, open: usize) -> Option<usize> {
             | TokenKind::String
             | TokenKind::Regex => false,
             TokenKind::Identifier => {
-                control = !after_member_dot && matches!(text, "if" | "while" | "for" | "with");
+                control = depth > 1
+                    && !after_member_dot
+                    && (matches!(text, "if" | "while" | "for" | "with")
+                        || (after_control && text == "await"));
                 !after_member_dot && OPERAND_KEYWORDS.contains(&text)
             }
             TokenKind::Punctuator => match text {
@@ -408,5 +425,27 @@ pub fn find_closing_brace(source: &str, open: usize) -> Option<usize> {
         };
         after_member_dot = member_dot;
         after_control = control;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{REGEX_SCANS, find_closing_brace};
+
+    fn regex_scans(source: &str) -> (Option<usize>, usize) {
+        REGEX_SCANS.with(|scans| scans.set(0));
+        let close = find_closing_brace(source, 0);
+        (close, REGEX_SCANS.with(std::cell::Cell::get))
+    }
+
+    #[test]
+    fn unterminated_regexes_on_one_line_are_scanned_once() {
+        let source = format!("{{{}", "/[".repeat(16_000));
+        assert_eq!(regex_scans(&source), (None, 2));
+    }
+
+    #[test]
+    fn a_regex_on_the_next_line_is_still_scanned() {
+        assert_eq!(regex_scans("{/[ /[\n/}/ }"), (Some(11), 4));
     }
 }

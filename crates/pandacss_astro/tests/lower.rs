@@ -351,6 +351,9 @@ fn deep_nesting_is_reported_not_a_crash() {
 #[test]
 fn inputs_astro_rejects_are_reported_and_keep_no_elements() {
     for source in [
+        "}// x\r/* y <p/>",
+        "}// x\u{2028}/* y <p/>",
+        "<!-- // x\r/* y > <p/>",
         "<p>{a ? /x\n/ : b}</p>",
         "<p>{a ? /x\r/ : b}</p>",
         "<p>{a ? /x\u{2028}/ : b}</p>",
@@ -391,6 +394,10 @@ fn unterminated_strings_are_fatal_in_expressions_and_skipped_in_drift() {
         "<p>{a ? \"x\n\" : b}</p>",
         "<p class={'x\n}/>",
         "<p class=`${'a\n'}`/>",
+        "<Foo<'a\n>/>",
+        "<Foo<\"a\r>/>",
+        "{<script></script 'a\n}",
+        "<div>{<script></script 'a\n}</div>",
     ] {
         let document = pandacss_astro::lower(source);
         assert!(!document.diagnostics.is_empty(), "{source:?}");

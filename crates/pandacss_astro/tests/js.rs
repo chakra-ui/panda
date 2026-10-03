@@ -168,6 +168,11 @@ fn slash_after_a_control_paren_is_a_regex() {
     closes_at_end("{(() => { while ((x)) /}/.test(y) })()}");
     assert_eq!(find_closing_brace("{f(x) /}/ 2}", 0), Some(7));
     assert_eq!(find_closing_brace("{a.if(x) /}/ 2}", 0), Some(10));
+    closes_at_end("{(async () => { for await (x of y) /}/.test(z) })()}");
+    assert_eq!(
+        find_closing_brace("{:else if (a) / 2 > b}<a href=\"/x\">y</a>{/if}", 0),
+        Some(21)
+    );
 }
 
 #[test]

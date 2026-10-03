@@ -74,7 +74,7 @@ impl<'s> Parser<'s> {
         let source: &'s str = self.source;
         let name = self.element_name(first)?;
         let name_text = &source[name.clone()];
-        let after_name = self.type_arguments(name.end);
+        let after_name = self.type_arguments(name.end)?;
         let (attributes, open_end) = self.attributes(after_name)?;
         let raw = name_text == "style"
             || attributes.iter().any(|attribute| {
@@ -205,7 +205,12 @@ impl<'s> Parser<'s> {
             next = Next::Child;
             match token.kind {
                 Kind::Eof => return Err(self.eof()),
-                Kind::CloseBrace | Kind::Junk => {
+                Kind::Junk => {
+                    let junk = self.token(token.start);
+                    self.check_terminated(junk)?;
+                    return Err(self.unexpected(token.start..token.end));
+                }
+                Kind::CloseBrace => {
                     return Err(self.unexpected(token.start..token.end));
                 }
                 Kind::Text => {
@@ -313,10 +318,10 @@ impl<'s> Parser<'s> {
         pos
     }
 
-    fn type_arguments(&mut self, pos: usize) -> usize {
+    fn type_arguments(&mut self, pos: usize) -> Parse<usize> {
         let open = self.token(pos);
         if &self.source[open.start..open.end] != "<" {
-            return pos;
+            return Ok(pos);
         }
         let first = self.token(open.end);
         if self.byte(first.start) == Some(b'>') {
@@ -324,7 +329,7 @@ impl<'s> Parser<'s> {
                 "Type argument list cannot be empty.",
                 open.start..first.start + 1,
             ));
-            return first.start + 1;
+            return Ok(first.start + 1);
         }
         let mut depth = 1usize;
         let mut cursor = open.end;
@@ -332,15 +337,18 @@ impl<'s> Parser<'s> {
             let token = self.token(cursor);
             let text = &self.source[token.start..token.end];
             match token.kind {
-                TokenKind::Identifier | TokenKind::String | TokenKind::Number => {}
+                TokenKind::Identifier | TokenKind::Number => {}
+                TokenKind::String | TokenKind::NoSubstitutionTemplate => {
+                    self.check_terminated(token)?;
+                }
                 TokenKind::Punctuator if text.starts_with('>') => {
                     for (index, byte) in text.bytes().enumerate() {
                         if byte != b'>' {
-                            return pos;
+                            return Ok(pos);
                         }
                         depth -= 1;
                         if depth == 0 {
-                            return token.start + index + 1;
+                            return Ok(token.start + index + 1);
                         }
                     }
                 }
@@ -364,7 +372,7 @@ impl<'s> Parser<'s> {
                             | "="
                             | "..."
                     ) => {}
-                _ => return pos,
+                _ => return Ok(pos),
             }
             cursor = token.end;
         }

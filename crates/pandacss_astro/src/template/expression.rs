@@ -1,5 +1,5 @@
-use super::{Fatal, Kind, Next, Parse, Parser, diagnostic, find, into_child, lexed, other};
-use crate::js::{Lexer, TokenKind, regex_terminated, string_terminated};
+use super::{Kind, Next, Parse, Parser, find, into_child, lexed, other};
+use crate::js::{Lexer, TokenKind};
 use crate::tree::{Child, ChildKind, Expression, Fragment, Markup};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -107,7 +107,11 @@ impl<'s> Parser<'s> {
             let pos = match token.kind {
                 Kind::Eof => return Err(self.eof()),
                 Kind::CloseBrace => break token.start,
-                Kind::Junk => token.end,
+                Kind::Junk => {
+                    let junk = self.token(token.start);
+                    self.check_terminated(junk)?;
+                    token.end
+                }
                 Kind::Text => {
                     let blank = self.bytes[token.start..token.end]
                         .iter()
@@ -232,20 +236,7 @@ impl<'s> Parser<'s> {
             if token.kind == TokenKind::Eof {
                 return Err(self.eof());
             }
-            let unterminated = match token.kind {
-                TokenKind::Regex if !regex_terminated(source, token) => {
-                    Some("Unterminated regular expression")
-                }
-                TokenKind::String if !string_terminated(source, token) => {
-                    Some("Unterminated string")
-                }
-                _ => None,
-            };
-            if let Some(message) = unterminated {
-                self.diagnostics
-                    .push(diagnostic(message, token.start..token.end));
-                return Err(Fatal);
-            }
+            self.check_terminated(token)?;
             let top = match until {
                 Until::Brace => scan.stack.is_empty(),
                 Until::Template => scan.stack == [Frame::Interpolation],
@@ -265,6 +256,10 @@ impl<'s> Parser<'s> {
             scan.last = token.end;
             match token.kind {
                 TokenKind::Identifier if pending == Pending::Member => scan.operand = false,
+                TokenKind::Identifier if pending == Pending::Control && text == "await" => {
+                    scan.pending = Pending::Control;
+                    scan.operand = true;
+                }
                 TokenKind::Identifier => match text {
                     "if" | "while" | "for" | "with" | "switch" | "catch" => {
                         scan.pending = Pending::Control;

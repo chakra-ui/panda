@@ -5,7 +5,7 @@ use std::ops::Range;
 
 use crate::AstroDiagnostic;
 use crate::frontmatter;
-use crate::js::{Lexer, Token, TokenKind, string_terminated};
+use crate::js::{Lexer, Token, TokenKind, is_line_terminator, regex_terminated, string_terminated};
 use crate::lower::offset;
 use crate::tree::{Child, ChildKind, Document, Element, Fragment, Markup};
 
@@ -261,6 +261,21 @@ impl<'s> Parser<'s> {
         token.end <= pos
     }
 
+    fn check_terminated(&mut self, token: Token) -> Parse<()> {
+        let text = &self.source[token.start..token.end];
+        let message = match token.kind {
+            TokenKind::String if !string_terminated(self.source, token) => "Unterminated string",
+            TokenKind::NoSubstitutionTemplate if !terminated(text) => "Unterminated template",
+            TokenKind::Regex if !regex_terminated(self.source, token) => {
+                "Unterminated regular expression"
+            }
+            _ => return Ok(()),
+        };
+        self.diagnostics
+            .push(diagnostic(message, token.start..token.end));
+        Err(Fatal)
+    }
+
     fn word_follows(&self, pos: usize) -> bool {
         self.source
             .get(pos..)
@@ -281,7 +296,7 @@ impl<'s> Parser<'s> {
                 rest.trim_start_matches(|ch: char| ch.is_whitespace() || ch == '\u{feff}');
             pos += rest.len() - trimmed.len();
             if trimmed.starts_with("//") {
-                pos += trimmed.find('\n').unwrap_or(trimmed.len());
+                pos += trimmed.find(is_line_terminator).unwrap_or(trimmed.len());
             } else if let Some(body) = trimmed.strip_prefix("/*") {
                 match body.find("*/") {
                     Some(index) => pos += index + 4,
