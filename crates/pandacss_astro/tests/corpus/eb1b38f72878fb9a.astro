@@ -1,0 +1,9 @@
+---
+interface MarkdownFrontmatter {
+    date: number;
+    image: string;
+    author: string;
+}
+let allPosts = Astro.fetchContent<MarkdownFrontmatter>('./post/*.md');
+---
+<div>testing</div>

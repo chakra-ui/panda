@@ -1,0 +1,12 @@
+{
+  () => {
+    @sealed
+    class Widget {
+      @log
+      render() {
+        return <Component />;
+      }
+    }
+    return new Widget().render();
+  }
+}

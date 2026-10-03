@@ -1,0 +1,9 @@
+---
+const foo = "bar";
+---
+<script is:inline data-astro-rerun define:vars={{ foo }}>
+  console.log(foo);
+</script>
+<script type="module" id="probe" nonce="abc" define:vars={{ foo }}>
+  console.log(foo);
+</script>

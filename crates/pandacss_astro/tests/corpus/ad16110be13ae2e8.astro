@@ -1,0 +1,7 @@
+<Card>
+  {groups.map((group, g) =>
+    group.items.map(async (item, i) => (
+      <div slot={`g${g}-i${i}`}>{await item}</div>
+    ))
+  )}
+</Card>

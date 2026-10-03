@@ -1,0 +1,12 @@
+---
+const groups = [[0, 1, 2], [3, 4, 5]];
+---
+<div>
+    {groups.map(items => {
+        return <ul>{
+            items.map(item => {
+                return <li>{item}</li>;
+            })
+        }</ul>
+    })}
+</div>

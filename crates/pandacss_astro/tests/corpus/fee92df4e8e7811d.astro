@@ -1,0 +1,44 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width" />
+        <title>Astro Multi Table</title>
+    </head>
+    <body>
+        <main>
+            <section>
+                {Array(3).fill(false).map((item, idx) => <div>
+                    <div class="row">
+                        {'a'}
+                        <table>
+                            <thead>
+                                <tr>
+                                    <>{Array(7).fill(false).map((entry, index) => <th>A</th>)}</>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>)}
+            </section>
+            <section>
+                <div class="row">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>B</th>
+                                <th>B</th>
+                                <th>B</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </body>
+</html>

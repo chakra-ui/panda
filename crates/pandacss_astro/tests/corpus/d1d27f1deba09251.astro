@@ -1,0 +1,8 @@
+---
+const items = [];
+---
+<ul>
+  {items.map(async (item) => <>
+    <li>{await render(item)}</li>
+  </>)}
+</ul>

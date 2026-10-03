@@ -1,0 +1,9 @@
+{
+  props.title && (
+    <>
+      <title>{props.title}</title>
+      <meta property="og:title" content={props.title} />
+      <meta name="twitter:title" content={props.title} />
+    </>
+  )
+}

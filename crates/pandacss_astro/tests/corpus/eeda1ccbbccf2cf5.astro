@@ -1,0 +1,816 @@
+---
+/**
+ * /reference/api/typescript/[package]/ — TypeScript package landing page.
+ *
+ * Lists all types, standalone functions, and enums grouped by module (namespace).
+ * Includes in-page search scoped to this package's types and members,
+ * and collapsible module sections.
+ */
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { tsModuleSlug, getTsModules, simplifyType } from '@utils/ts-modules';
+import { getTsApiReferenceSidebar } from '@utils/ts-api-sidebar';
+import {
+  getTsCallableIdentityKey,
+  getTsFunctionDisplayKind,
+  getTsFunctionDisplayLabel,
+} from '@utils/ts-api-function-kind';
+import { getTsItemSlug, getTsMethodSlug, getTsStandaloneFunctions, getTsTopLevelRouteItems } from '@utils/ts-api-routes';
+import InpageSearch from '@components/api-reference/InpageSearch.astro';
+import Breadcrumb from '@components/Breadcrumb.astro';
+
+export async function getStaticPaths() {
+  const packages = await getTsModules();
+  return packages.map(pkg => ({
+    params: { module: tsModuleSlug(pkg.data.package.name) },
+    props: { pkg: pkg.data },
+  }));
+}
+
+const { pkg } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const tsSidebar = await getTsApiReferenceSidebar({ packageName: pkg.package.name });
+const pkgSlug = tsModuleSlug(pkg.package.name);
+const isOfficial = pkg.package.name.startsWith('Aspire.');
+const topLevelItems = getTsTopLevelRouteItems(pkg);
+
+/* ── Flatten all items into a single sorted list ─────────────── */
+
+const allTypes = [
+  ...(pkg.handleTypes ?? []).map((item: any) => ({ item, _typeKind: 'handle' as const })),
+  ...(pkg.dtoTypes ?? []).map((item: any) => ({ item, _typeKind: 'dto' as const })),
+].sort((a: any, b: any) => a.item.name.localeCompare(b.item.name));
+
+const allEnums = [...(pkg.enumTypes ?? [])].sort((a: any, b: any) => a.name.localeCompare(b.name));
+
+const standaloneFunctions = getTsStandaloneFunctions(pkg)
+  .sort((a: any, b: any) => a.name.localeCompare(b.name));
+
+/* ── Stats ───────────────────────────────────────────────────── */
+const totalFunctionCount = standaloneFunctions.length;
+const totalTypeCount = allTypes.length + allEnums.length;
+
+/* ── Headings for right-side TOC ─────────────────────────────── */
+const headings: { depth: 2; slug: string; text: string }[] = [];
+if (allTypes.length > 0) headings.push({ depth: 2, slug: 'types', text: 'Types' });
+if (standaloneFunctions.length > 0) headings.push({ depth: 2, slug: 'functions', text: 'Functions' });
+if (allEnums.length > 0) headings.push({ depth: 2, slug: 'enums', text: 'Enums' });
+
+/* ── Build package-scoped search index ───────────────────────── */
+
+/** Extract namespace from a fully-qualified name. */
+function nsOf(fullName: string): string {
+  const lastDot = fullName.lastIndexOf('.');
+  return lastDot > 0 ? fullName.slice(0, lastDot) : fullName;
+}
+
+/** Extract module from a capabilityId. */
+function modOf(capId: string): string {
+  const slashIdx = capId.indexOf('/');
+  return slashIdx > 0 ? capId.slice(0, slashIdx) : capId;
+}
+
+interface PkgIndexEntry {
+  /** Short name */
+  n: string;
+  /** Fully-qualified name */
+  f: string;
+  /** Namespace / module */
+  ns: string;
+  /** Kind (handle, interface, dto, enum, function, method, property) */
+  k: string;
+  /** Summary text (first ~160 chars) */
+  s: string;
+  /** Parent type name (for members only) */
+  t?: string;
+  /** Resolved destination for the search result */
+  h?: string;
+}
+
+const pkgIndex: PkgIndexEntry[] = [];
+let memberCount = 0;
+const standaloneFunctionKeys = new Set(standaloneFunctions.map((fn: any) => getTsCallableIdentityKey(fn)));
+
+function capabilityKindToSearchKind(capKind: string): string {
+  switch (capKind) {
+    case 'PropertyGetter':
+    case 'PropertySetter':
+      return 'property';
+    case 'Method':
+    case 'InstanceMethod':
+      return 'method';
+    default:
+      return capKind.toLowerCase();
+  }
+}
+
+// Handle types
+for (const h of ((pkg.handleTypes ?? []) as any[])) {
+  const kind = h.isInterface ? 'interface' : 'handle';
+  const typeHref = `${base}/reference/api/typescript/${pkgSlug}/${getTsItemSlug(h, topLevelItems)}/`;
+  const methods = (h.capabilities ?? []).filter(
+    (cap: any) => cap.kind === 'Method' || cap.kind === 'InstanceMethod'
+  );
+
+  pkgIndex.push({
+    n: h.name,
+    f: h.fullName ?? h.name,
+    ns: nsOf(h.fullName ?? h.name),
+    k: kind,
+    s: (h.description ?? '').slice(0, 160),
+    h: typeHref,
+  });
+  // Index members from capabilities
+  for (const cap of (h.capabilities ?? [])) {
+    if ((cap.kind === 'Method' || cap.kind === 'InstanceMethod') && standaloneFunctionKeys.has(getTsCallableIdentityKey(cap))) {
+      continue;
+    }
+
+    memberCount++;
+    const memberName = cap.name ?? cap.capabilityId?.split('/').pop() ?? '';
+    const memberHref = cap.kind === 'Method' || cap.kind === 'InstanceMethod'
+      ? `${typeHref}${getTsMethodSlug(cap, methods, h.name)}/`
+      : typeHref;
+
+    pkgIndex.push({
+      n: memberName,
+      f: `${h.fullName ?? h.name}.${memberName}`,
+      ns: nsOf(h.fullName ?? h.name),
+      k: capabilityKindToSearchKind(cap.kind ?? 'method'),
+      s: (cap.description ?? '').slice(0, 160),
+      t: h.name,
+      h: memberHref,
+    });
+  }
+}
+
+// DTO types
+for (const d of ((pkg.dtoTypes ?? []) as any[])) {
+  pkgIndex.push({
+    n: d.name,
+    f: d.fullName ?? d.name,
+    ns: nsOf(d.fullName ?? d.name),
+    k: 'type',
+    s: (d.description ?? '').slice(0, 160),
+    h: `${base}/reference/api/typescript/${pkgSlug}/${getTsItemSlug(d, topLevelItems)}/`,
+  });
+}
+
+// Enum types
+for (const e of ((pkg.enumTypes ?? []) as any[])) {
+  pkgIndex.push({
+    n: e.name,
+    f: e.fullName ?? e.name,
+    ns: nsOf(e.fullName ?? e.name),
+    k: 'enum',
+    s: (e.description ?? '').slice(0, 160),
+    h: `${base}/reference/api/typescript/${pkgSlug}/${getTsItemSlug(e, topLevelItems)}/`,
+  });
+}
+
+// Standalone functions
+for (const f of (getTsStandaloneFunctions(pkg) as any[])) {
+  pkgIndex.push({
+    n: f.name,
+    f: f.qualifiedName ?? f.name,
+    ns: modOf(f.capabilityId ?? f.name),
+    k: getTsFunctionDisplayKind(f),
+    s: (f.description ?? '').slice(0, 160),
+    h: `${base}/reference/api/typescript/${pkgSlug}/${getTsItemSlug(f, topLevelItems)}/`,
+  });
+}
+
+const allKinds = [...new Set(pkgIndex.map(e => e.k))].sort();
+const pkgIndexJson = JSON.stringify(pkgIndex);
+const pkgName = pkg.package.name;
+---
+
+<StarlightPage
+  frontmatter={{
+    title: pkg.package.name,
+    description: `TypeScript API reference for ${pkg.package.name}`,
+    tableOfContents: false,
+    prev: false,
+    next: false,
+    pagefind: false,
+    pageActions: true,
+  }}
+  sidebar={tsSidebar}
+  headings={headings}
+>
+  <Breadcrumb crumbs={[
+    { label: 'Docs', href: `${base}/docs/`, icon: 'docs' },
+    { label: 'Reference', href: `${base}/reference/overview/` },
+    { label: 'Search TypeScript APIs', href: `${base}/reference/api/typescript/` },
+    { label: pkg.package.name },
+  ]} />
+
+  <div class="api-hero pkg-hero not-content">
+    {isOfficial && (
+      <div class="pkg-official-badge">
+        <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.521 2.624a2 2 0 0 1 2.958 0l1.02 1.12a2 2 0 0 0 1.572.651l1.513-.07a2 2 0 0 1 2.092 2.09l-.071 1.514a2 2 0 0 0 .651 1.572l1.12 1.02a2 2 0 0 1 0 2.958l-1.12 1.02a2 2 0 0 0-.651 1.572l.07 1.513a2 2 0 0 1-2.09 2.092l-1.514-.071a2 2 0 0 0-1.572.651l-1.02 1.12a2 2 0 0 1-2.958 0l-1.02-1.12a2 2 0 0 0-1.572-.651l-1.513.07a2 2 0 0 1-2.092-2.09l.071-1.514a2 2 0 0 0-.651-1.572l-1.12-1.02a2 2 0 0 1 0-2.958l1.12-1.02a2 2 0 0 0 .651-1.572l-.07-1.513a2 2 0 0 1 2.09-2.092l1.514.071a2 2 0 0 0 1.572-.651z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 12l2 2l4-4"/></svg>
+        Official
+      </div>
+    )}
+    <div class="pkg-hero-top">
+      <div class="pkg-hero-badges">
+        <code class="pkg-name">📦 {pkg.package.name}</code>
+        {pkg.package.version && <code class="pkg-version">v{pkg.package.version}</code>}
+      </div>
+    </div>
+    <div class="pkg-hero-bottom">
+      <div class="pkg-hero-stats">
+        <div class="pkg-stat">
+          <span class="pkg-stat-value">{totalFunctionCount}</span>
+          <span class="pkg-stat-label">Functions</span>
+        </div>
+        <div class="pkg-stat">
+          <span class="pkg-stat-value">{totalTypeCount}</span>
+          <span class="pkg-stat-label">Types</span>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Package-scoped search -->
+  <div class="pkg-search-section not-content">
+    <InpageSearch
+      id="pkg"
+      placeholder={`Search types, functions, members in ${pkg.package.name}...`}
+      kinds={allKinds}
+      defaultStatsText={`${totalTypeCount.toLocaleString()} types and ${memberCount.toLocaleString()} members`}
+      size="sm"
+    />
+  </div>
+
+  <!-- Flat type/function/enum listing (shown when not searching) -->
+  <div id="pkg-namespace-list" class="pkg-ns-list">
+    {/* Types (handles + DTOs) */}
+    {allTypes.length > 0 && (
+      <section>
+        <h2 id="types">Types</h2>
+        <div class="api-list not-content">
+          {allTypes.map((t: any) => (
+            <a href={`${base}/reference/api/typescript/${pkgSlug}/${getTsItemSlug(t.item, topLevelItems)}/`} class="api-list-item">
+              <div class="api-list-header">
+                <span class={`api-kind-pill ${t.item.isInterface ? 'kind-interface' : t._typeKind === 'dto' ? 'kind-struct' : 'kind-handle'}`}>
+                  {t.item.isInterface ? 'interface' : t._typeKind === 'dto' ? 'type' : 'handle'}
+                </span>
+                <code class="api-type-link">{t.item.name}</code>
+                {t._typeKind === 'handle' && (t.item.capabilities?.length ?? 0) > 0 && (
+                  <span class="api-mini-badge">{t.item.capabilities.length} members</span>
+                )}
+                {t._typeKind === 'dto' && (
+                  <span class="api-mini-badge">{t.item.fields?.length ?? 0} fields</span>
+                )}
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {/* Standalone functions */}
+    {standaloneFunctions.length > 0 && (
+      <section>
+        <h2 id="functions">Functions</h2>
+        <div class="api-list not-content">
+          {standaloneFunctions.map((f: any) => (
+            <a href={`${base}/reference/api/typescript/${pkgSlug}/${getTsItemSlug(f, topLevelItems)}/`} class="api-list-item">
+              <div class="api-list-header">
+                <span class="api-kind-pill kind-method">{getTsFunctionDisplayLabel(f).toLowerCase()}</span>
+                <code class="api-type-link">{f.name}</code>
+                {f.returnsBuilder && <span class="api-mini-badge">builder</span>}
+              </div>
+              {f.description && <div class="api-list-desc">{f.description}</div>}
+              {f.signature && (
+                <div class="api-fn-signature">
+                  <code>{f.signature}</code>
+                </div>
+              )}
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {/* Enums */}
+    {allEnums.length > 0 && (
+      <section>
+        <h2 id="enums">Enums</h2>
+        <div class="api-list not-content">
+          {allEnums.map((e: any) => (
+            <a href={`${base}/reference/api/typescript/${pkgSlug}/${getTsItemSlug(e, topLevelItems)}/`} class="api-list-item">
+              <div class="api-list-header">
+                <span class="api-kind-pill kind-enum">enum</span>
+                <code class="api-type-link">{e.name}</code>
+                <span class="api-mini-badge">{(e.members ?? []).length} values</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+  </div>
+</StarlightPage>
+
+<!-- Embed the package search index -->
+<script is:inline define:vars={{ pkgIndexJson, base, pkgName, typeCount: totalTypeCount, memberCount }}>
+  window.__pkgSearchIndex = JSON.parse(pkgIndexJson);
+  window.__pkgBase = base;
+  window.__pkgName = pkgName;
+  window.__pkgTypeCount = typeCount;
+  window.__pkgMemberCount = memberCount;
+</script>
+
+<script>
+  import '@components/api-reference/inpage-search-sync';
+
+  interface PkgIndexEntry {
+    n: string;
+    f: string;
+    ns: string;
+    k: string;
+    s: string;
+    t?: string;
+    h?: string;
+  }
+
+  const PAGE_SIZE = 10;
+  const DEBOUNCE_MS = 200;
+
+  /** Format a number with locale-aware grouping (e.g. 1,234). */
+  function fmtNum(n: number): string { return n.toLocaleString(); }
+
+  const KIND_COLORS: Record<string, string> = {
+    'handle': 'var(--api-kind-class)',
+    'interface': 'var(--api-kind-interface)',
+    'type': 'var(--api-kind-struct)',
+    'enum': 'var(--api-kind-enum)',
+    'function': '#3b82f6',
+    'method': '#3b82f6',
+    'property': '#10b981',
+  };
+
+  const TYPE_KINDS = new Set(['handle', 'interface', 'type', 'enum']);
+
+  class PkgSearchController {
+    private input: HTMLInputElement;
+    private resultsEl: HTMLElement;
+    private nsList: HTMLElement;
+    private status: HTMLElement;
+    private countEl: HTMLElement;
+    private filtersEl: HTMLElement;
+    private clearFiltersBtn: HTMLElement;
+    private index: PkgIndexEntry[];
+    private base: string;
+    private pkgName: string;
+    private debounceTimer: number | null = null;
+    private typeCount: number;
+    private memberCount: number;
+    private activeKinds = new Set<string>();
+    private lastScored: { entry: PkgIndexEntry; score: number }[] = [];
+    private lastTokens: string[] = [];
+    private visibleCount = 0;
+    private sync: any;
+
+    constructor() {
+      this.input = document.getElementById('pkg-search-input') as HTMLInputElement;
+      this.resultsEl = document.getElementById('pkg-search-results') as HTMLElement;
+      this.nsList = document.getElementById('pkg-namespace-list') as HTMLElement;
+      this.status = document.getElementById('pkg-search-status') as HTMLElement;
+      this.countEl = document.getElementById('pkg-search-count') as HTMLElement;
+      this.filtersEl = document.getElementById('pkg-kind-filters') as HTMLElement;
+      this.clearFiltersBtn = document.getElementById('pkg-clear-filters') as HTMLElement;
+      this.index = (window as any).__pkgSearchIndex ?? [];
+      this.base = (window as any).__pkgBase ?? '';
+      this.pkgName = (window as any).__pkgName ?? '';
+      this.typeCount = (window as any).__pkgTypeCount ?? 0;
+      this.memberCount = (window as any).__pkgMemberCount ?? 0;
+
+      this.sync = new (window as any).InpageSearchSync('pkg', () => this.clear());
+
+      this.init();
+      this.restoreFromUrl();
+    }
+
+    private init(): void {
+      this.input.addEventListener('input', () => this.handleInput());
+      this.input.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') this.clear();
+      });
+
+      this.filtersEl.querySelectorAll('.api-filter-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          const kind = (chip as HTMLElement).dataset.kind!;
+          if (this.activeKinds.has(kind)) {
+            this.activeKinds.delete(kind);
+            chip.classList.remove('active');
+            chip.setAttribute('aria-pressed', 'false');
+          } else {
+            this.activeKinds.add(kind);
+            chip.classList.add('active');
+            chip.setAttribute('aria-pressed', 'true');
+          }
+          this.clearFiltersBtn.style.display = this.activeKinds.size > 0 ? '' : 'none';
+          this.syncUrl();
+          this.applySearch();
+        });
+      });
+
+      this.clearFiltersBtn.addEventListener('click', () => {
+        this.activeKinds.clear();
+        this.filtersEl.querySelectorAll('.api-filter-chip').forEach(c => {
+          c.classList.remove('active');
+          c.setAttribute('aria-pressed', 'false');
+        });
+        this.clearFiltersBtn.style.display = 'none';
+        this.syncUrl();
+        this.applySearch();
+      });
+    }
+
+    private clear(): void {
+      this.input.value = '';
+      this.sync.updateClearButton();
+      this.syncUrl();
+      this.showNamespaces();
+    }
+
+    private showNamespaces(): void {
+      if (this.activeKinds.size > 0) {
+        this.search('');
+        return;
+      }
+      this.resultsEl.style.display = 'none';
+      this.resultsEl.innerHTML = '';
+      this.nsList.style.display = '';
+      this.countEl.textContent = `${fmtNum(this.typeCount)} types and ${fmtNum(this.memberCount)} members`;
+    }
+
+    private handleInput(): void {
+      if (this.debounceTimer) clearTimeout(this.debounceTimer);
+      this.debounceTimer = window.setTimeout(() => {
+        this.syncUrl();
+        this.applySearch();
+      }, DEBOUNCE_MS);
+    }
+
+    private syncUrl(): void {
+      this.sync.writeUrl(this.input.value.trim(), this.activeKinds);
+    }
+
+    private restoreFromUrl(): void {
+      const q = this.sync.readQuery();
+      const validKinds = new Set(
+        Array.from(this.filtersEl.querySelectorAll('.api-filter-chip'))
+          .map(c => (c as HTMLElement).dataset.kind!)
+      );
+      const kinds = this.sync.readKinds(validKinds);
+
+      if (q) {
+        this.input.value = q;
+        this.sync.updateClearButton();
+      }
+
+      if (kinds.size > 0) {
+        this.activeKinds = kinds;
+        this.filtersEl.querySelectorAll('.api-filter-chip').forEach(chip => {
+          const kind = (chip as HTMLElement).dataset.kind!;
+          if (kinds.has(kind)) {
+            chip.classList.add('active');
+            chip.setAttribute('aria-pressed', 'true');
+          }
+        });
+        this.clearFiltersBtn.style.display = '';
+      }
+
+      if (q || kinds.size > 0) {
+        this.applySearch();
+      }
+    }
+
+    private applySearch(): void {
+      const q = this.input.value.trim();
+      if (!q && this.activeKinds.size === 0) {
+        this.showNamespaces();
+        return;
+      }
+      this.search(q);
+    }
+
+    private search(query: string): void {
+      const tokens = query.toLowerCase().split(/\s+/).filter(Boolean);
+      const hasKindFilter = this.activeKinds.size > 0;
+
+      type Scored = { entry: PkgIndexEntry; score: number };
+      const scored: Scored[] = [];
+
+      for (const entry of this.index) {
+        if (hasKindFilter && !this.activeKinds.has(entry.k)) continue;
+
+        if (tokens.length === 0) {
+          scored.push({ entry, score: 50 });
+          continue;
+        }
+
+        const nameLower = entry.n.toLowerCase();
+        const fullLower = entry.f.toLowerCase();
+        const nsLower = entry.ns.toLowerCase();
+        const summaryLower = entry.s.toLowerCase();
+        const parentLower = entry.t?.toLowerCase() ?? '';
+
+        let score = 0;
+        for (const token of tokens) {
+          if (nameLower === token) {
+            score += 100;
+          } else if (nameLower.startsWith(token)) {
+            score += 60;
+          } else if (nameLower.includes(token)) {
+            score += 40;
+          } else if (this.camelMatch(entry.n, token)) {
+            score += 55;
+          } else if (fullLower.includes(token)) {
+            score += 30;
+          } else if (parentLower.includes(token)) {
+            score += 25;
+          } else if (nsLower.includes(token)) {
+            score += 20;
+          } else if (summaryLower.includes(token)) {
+            score += 10;
+          } else {
+            score = 0;
+            break;
+          }
+        }
+
+        if (score > 0 && !entry.t) score += 5;
+        if (score > 0) scored.push({ entry, score });
+      }
+
+      scored.sort((a, b) => b.score - a.score || a.entry.n.localeCompare(b.entry.n));
+
+      this.lastScored = scored;
+      this.lastTokens = tokens;
+      this.visibleCount = 0;
+
+      const total = scored.length;
+
+      this.nsList.style.display = 'none';
+      this.resultsEl.style.display = '';
+
+      if (total === 0) {
+        const hint = query
+          ? `No results for "<strong>${this.esc(query)}</strong>"`
+          : 'No results match the selected filters';
+        this.resultsEl.innerHTML = `
+          <div class="api-search-empty">
+            <p>${hint}</p>
+            <p class="api-search-empty-hint">Try a different name, module, or keyword.</p>
+          </div>`;
+        this.countEl.textContent = '0 results';
+        this.status.textContent = 'No results';
+        return;
+      }
+
+      this.resultsEl.innerHTML = '';
+      this.loadMore();
+    }
+
+    private loadMore(): void {
+      const total = this.lastScored.length;
+      const nextBatch = this.lastScored.slice(this.visibleCount, this.visibleCount + PAGE_SIZE);
+      this.visibleCount += nextBatch.length;
+
+      const existingBtn = this.resultsEl.querySelector('.api-load-more');
+      if (existingBtn) existingBtn.remove();
+
+      const fragment = document.createDocumentFragment();
+      for (const s of nextBatch) {
+        const div = document.createElement('div');
+        div.innerHTML = this.renderResult(s.entry, this.lastTokens);
+        while (div.firstChild) fragment.appendChild(div.firstChild);
+      }
+      this.resultsEl.appendChild(fragment);
+
+      this.countEl.textContent = this.visibleCount < total
+        ? `Showing ${fmtNum(this.visibleCount)} of ${fmtNum(total)} results`
+        : `${fmtNum(total)} result${total !== 1 ? 's' : ''}`;
+      this.status.textContent = this.countEl.textContent ?? '';
+
+      const remaining = total - this.visibleCount;
+      if (remaining > 0) {
+        const btn = document.createElement('button');
+        btn.className = 'api-load-more';
+        btn.type = 'button';
+        const nextCount = Math.min(remaining, PAGE_SIZE);
+        btn.textContent = `Show ${fmtNum(nextCount)} more of ${fmtNum(remaining)} remaining`;
+        btn.addEventListener('click', () => this.loadMore());
+        this.resultsEl.appendChild(btn);
+      }
+    }
+
+    private renderResult(entry: PkgIndexEntry, tokens: string[]): string {
+      const isMember = !!entry.t;
+      const isType = TYPE_KINDS.has(entry.k);
+      const kindClass = `kind-${entry.k.replace(/\s+/g, '-')}`;
+      const kindColor = KIND_COLORS[entry.k] ?? KIND_COLORS['handle'];
+
+      const href = entry.h ?? null;
+
+      const parentInfo = isMember
+        ? `<span class="api-result-parent">${this.esc(entry.t!)}</span><span class="api-result-dot">.</span>`
+        : '';
+
+      const fullName = isMember ? `${entry.t}.${entry.n}` : entry.n;
+      const tag = href ? 'a' : 'div';
+      const hrefAttr = href ? ` href="${this.esc(href)}"` : '';
+      return `<${tag}${hrefAttr} class="api-list-item api-search-result" title="${this.esc(fullName)}">
+        <div class="api-list-header">
+          <span class="api-result-name-wrap" title="${this.esc(fullName)}">
+            ${parentInfo}<span class="api-search-result-name" style="color: ${kindColor}">${this.highlight(entry.n, tokens)}</span>
+          </span>
+          <span class="api-kind-micro ${kindClass}">${this.esc(entry.k)}</span>
+          <div class="trailing">
+            <span class="api-list-meta">${this.esc(entry.ns)}</span>
+          </div>
+        </div>
+        ${entry.s ? `<div class="api-list-desc">${this.esc(entry.s)}</div>` : ''}
+      </${tag}>`;
+    }
+
+    private highlight(text: string, tokens: string[]): string {
+      if (!tokens.length) return this.esc(text);
+      const escaped = tokens.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+      const re = new RegExp(`(${escaped.join('|')})`, 'gi');
+      return text.replace(/[&<>"']/g, ch =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] ?? ch))
+        .replace(re, '<mark>$1</mark>');
+    }
+
+    private camelMatch(name: string, token: string): boolean {
+      const uppers = name.replace(/[^A-Z]/g, '').toLowerCase();
+      if (uppers.length < 2) return false;
+      return uppers.startsWith(token) || uppers.includes(token);
+    }
+
+    private esc(text: string): string {
+      return text.replace(/[&<>"']/g, ch =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] ?? ch));
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    new PkgSearchController();
+  });
+</script>
+
+<style>
+  /* ── Function signature ─────────────────────────────────────── */
+  .api-fn-signature {
+    margin-top: 0.35rem;
+    font-size: var(--api-text-sm, 0.8rem);
+    color: var(--sl-color-gray-3);
+  }
+  .api-fn-signature code {
+    font-size: inherit;
+    background: none;
+    padding: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* ── Hero card ──────────────────────────────────────────────── */
+  .pkg-hero {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: relative;
+  }
+  .pkg-official-badge {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.75rem 0.35rem 0.55rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #fff;
+    background: var(--aspire-color-purple, #512bd4);
+    border-radius: 2rem;
+    z-index: 1;
+    line-height: 1;
+  }
+  .pkg-official-badge svg {
+    width: 1.15rem;
+    height: 1.15rem;
+    stroke: #fff;
+    flex-shrink: 0;
+  }
+  .pkg-hero-top {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .pkg-hero-badges {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .pkg-version {
+    font-size: var(--api-text-sm);
+    font-weight: 600;
+    color: var(--sl-color-gray-2);
+    font-family: var(--sl-font-system-mono, monospace);
+  }
+  .pkg-name {
+    font-size: var(--api-text-md);
+    font-weight: 700;
+    color: var(--sl-color-text);
+    background: none;
+    padding: 0;
+  }
+  .pkg-hero-bottom {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .pkg-hero-stats {
+    display: flex;
+    gap: 2rem;
+  }
+  .pkg-stat {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+  }
+  .pkg-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--sl-color-text);
+    line-height: 1;
+  }
+  .pkg-stat-label {
+    font-size: var(--api-text-sm);
+    color: var(--sl-color-gray-3);
+    font-weight: 500;
+  }
+  .pkg-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* ── Package search section ──────────────────────────────────── */
+  .pkg-search-section {
+    margin-bottom: 1.5rem;
+  }
+
+  /* ── Namespace list ──────────────────────────────────────────── */
+  .pkg-ns-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  /* ── Responsive ──────────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    .pkg-official-badge {
+      top: 1rem;
+      right: 1rem;
+    }
+    .pkg-name {
+      width: 100%;
+    }
+    .pkg-hero-top {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .pkg-hero-bottom {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .pkg-hero-stats {
+      gap: 1.5rem;
+    }
+  }
+  @media (max-width: 480px) {
+    .pkg-official-badge {
+      top: 0.75rem;
+      right: 0.75rem;
+    }
+    .pkg-stat-value {
+      font-size: 1.25rem;
+    }
+    .pkg-hero-stats {
+      gap: 1rem;
+    }
+  }
+</style>

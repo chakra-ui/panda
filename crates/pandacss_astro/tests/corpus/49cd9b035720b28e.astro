@@ -1,0 +1,43 @@
+---
+import Header from '../../components/Header.jsx'
+import Footer from '../../components/Footer.astro'
+import ProductPageContent from '../../components/ProductPageContent.jsx';
+
+export async function getStaticPaths() {
+  let products = await fetch(`${import.meta.env.PUBLIC_NETLIFY_URL}/.netlify/functions/get-product-list`)
+    .then(res => res.json()).then((response) => {
+      console.log('--- built product pages ---')
+      return response.products.edges
+    });
+
+  return products.map((p, i) => {
+    return {
+      params: {pid: p.node.handle},
+      props: {product: p},
+    };
+  });
+}
+
+const { product } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shoperoni | Buy {product.node.title}</title>
+
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/style/global.css">
+</head>
+<body>
+  <Header />
+  <div class="product-page">
+    <article>
+      <ProductPageContent client:visible product={product.node} />
+    </article>
+  </div>
+  <Footer />
+</body>
+</html>

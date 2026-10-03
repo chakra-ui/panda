@@ -1,0 +1,11 @@
+---
+async function* stream() {
+  yield 1;
+  yield 2;
+}
+const nums = [];
+for await (const n of stream()) {
+  nums.push(n);
+}
+---
+<h1>{nums.join(', ')}</h1>

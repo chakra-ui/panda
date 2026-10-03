@@ -1,0 +1,10 @@
+---
+import Layout from './Layout.astro';
+---
+<Layout>
+  {items.map((item) => {
+outer: for (const x of nested) {
+  return (<div slot="content">{x}</div>);
+}
+  })}
+</Layout>

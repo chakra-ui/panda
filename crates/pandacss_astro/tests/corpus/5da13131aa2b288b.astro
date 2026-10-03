@@ -1,0 +1,6 @@
+---
+import Component from './Component.astro';
+---
+<Component>
+  {a ? (b ? <div slot="a">A</div> : <div slot="b">B</div>) : (c ? <div slot="c">C</div> : <div>Default</div>)}
+</Component>

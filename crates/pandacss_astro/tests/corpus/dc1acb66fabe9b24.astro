@@ -1,0 +1,23 @@
+
+---
+import One from '../components/one.jsx';
+import * as Two from '../components/two.jsx';
+import { Three } from '../components/three.tsx';
+import * as four from '../components/four.jsx';
+
+import * as Five from '../components/five.jsx';
+import { Six } from '../components/six.jsx';
+import Seven from '../components/seven.jsx';
+import * as eight from '../components/eight.jsx';
+---
+
+<One client:load />
+<Two.someName client:load />
+<Three client:load />
+<four.nested.deep.Component client:load />
+
+<!-- client only tests -->
+<Five.someName client:only />
+<Six client:only />
+<Seven client:only />
+<eight.nested.deep.Component client:only />

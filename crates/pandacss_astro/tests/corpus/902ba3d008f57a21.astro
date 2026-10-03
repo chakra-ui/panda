@@ -1,0 +1,9 @@
+---
+import Component from './Component.astro';
+---
+<Component prop="Example\nwith\nnew\nlines" />
+<Component prop={"One,\ntwo,\nthree."} />
+<Component prop={`One,\ntwo,\nthree.`} />
+<Component tabbed="a\tb" unicode="\u0041\x42" backslash="C:\Users\me" regex="^example\.com$" />
+<my-element data-x="a\nb" pattern="^example\.com$"></my-element>
+<div data-x="a\nb" pattern="^example\.com$"></div>

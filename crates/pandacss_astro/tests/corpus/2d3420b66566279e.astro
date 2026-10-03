@@ -1,0 +1,9 @@
+---
+const items = [1, 2, 3];
+---
+<ul>
+    {items.map(async (item) => {
+        const data = await fetch(`/api/${item}`);
+        return <li>{data}</li>;
+    })}
+</ul>

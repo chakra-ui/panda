@@ -1,0 +1,5 @@
+<Card>
+  {groups.map((group, g) => {
+    return group.items.map((item, i) => <div slot={`g${g}-i${i}`}>{item}</div>);
+  })}
+</Card>

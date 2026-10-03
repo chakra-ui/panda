@@ -1,0 +1,14 @@
+<Layout>
+   {
+      new Array(totalPages).fill(0).map((_, index) => {
+        const active = currentPage === index;
+        if (
+          totalPages > 25 &&
+          ( index < currentPage - offset ||
+            index > currentPage + offset)
+        ) {
+          return 'HAAAA';
+        }
+      })
+    }
+</Layout>

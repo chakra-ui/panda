@@ -1,0 +1,18 @@
+---
+import type { GetStaticPaths, MDXInstance } from "$data/shared";
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const articles = await Astro.glob<Article>("/content/articles/**/*.mdx");
+  return articles.map((article) => {
+    return { params: { slug: getSlugFromFile(article.file) } };
+  });
+};
+
+export interface Props {
+  article: MDXInstance<Article>;
+}
+
+const { article } = Astro.props;
+---
+
+<ArticleLayout article={article} />

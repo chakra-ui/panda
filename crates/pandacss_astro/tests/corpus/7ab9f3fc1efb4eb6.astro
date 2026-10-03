@@ -1,0 +1,8 @@
+---
+type Props<T extends Record<string, any>> = {
+  data: T;
+  render: (item: T) => string;
+};
+const { data, render } = Astro.props as Props<{ name: string }>;
+---
+<div>{render(data)}</div>

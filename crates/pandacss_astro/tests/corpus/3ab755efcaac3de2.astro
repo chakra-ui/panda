@@ -1,0 +1,8 @@
+---
+async function* stream() { yield 'a'; }
+---
+<Wrapper>{(async () => {
+  let out = '';
+  for await (const chunk of stream()) { out += chunk; }
+  return out;
+})()}</Wrapper>

@@ -1,0 +1,405 @@
+---
+        import CardSkeleton from "$components/card/CardSkeleton.astro"
+        import ReturnHome from "$components/controls/ReturnHome.astro"
+        import Layout from "$layouts/Layout.astro"
+
+        /**
+         * Catalogue page
+         */
+        const pageTitle = "Catalogue"
+        ---
+
+        <Layout
+	title={pageTitle}
+	description="Where I keep track of books, movies, songs, video games, and other media I consume."
+        >
+	<Fragment slot="head">
+		<link
+			rel="alternate"
+			type="text/plain"
+			href="/catalogue.llm"
+			title="Catalogue (LLM/plain-text)"
+		/>
+		<!-- Optionally hint crawlers via robots meta; human visitors won't see this. -->
+		<meta name="robots" content="index,follow" />
+	</Fragment>
+
+	<section>
+		<h1>{pageTitle}</h1>
+		<p>
+			Where I keep track of books, movies, songs, video games, and other media I
+			consume. Keep in mind that this is a personal catalogue, incomplete and
+			biased.
+		</p>
+		<p>
+			<ReturnHome /> - <a href="/2025/catalogue-astro-turso">Learn more</a> - <a
+				href="/catalogue/wrapped"
+				class="">Yearly Wrap</a
+			>
+		</p>
+	</section>
+	<section>
+		<form class="mb-5 grid grid-cols-2 gap-5 text-xs sm:grid-cols-3 sm:text-sm">
+			<div class="group col-span-2 flex items-center sm:col-span-3">
+				<i class="fas fa-search group-has-focus:text-primary mr-1.5"></i>
+				<input
+					id="query"
+					type="text"
+					placeholder="Search by title, author, keywords, etc."
+					class="group-has-focus:text-primary w-full truncate overflow-hidden border-b-[0.1rem] border-dotted whitespace-nowrap outline-hidden placeholder:truncate"
+				/>
+			</div>
+
+			<select id="source-filter" class="border-b-[0.1rem] border-dotted">
+				<option value="" selected>⭐ everything</option>
+				<option value="IGDB">🎮 video games</option>
+				<option value="BGG">🎲 board games</option>
+				<option value="TMDB_MOVIE">🎬 movies</option>
+				<option value="TMDB_TV">📺 shows</option>
+				<option value="SPOTIFY">💿 albums</option>
+			</select>
+
+			<select id="emotions-filter" class="border-b-[0.1rem] border-dotted">
+				<option value="" selected>🎭 all emotions</option>
+			</select>
+
+			<select
+				id="sort-filter"
+				class="col-span-2 border-b-[0.1rem] border-dotted sm:col-span-1"
+			>
+				<option value="date" selected>🗓️ by date</option>
+				<option value="rating">😍 by rating</option>
+			</select>
+
+			<!--
+			I'm not sure if I want this filter or not. It's useful, but I don't like the vibe.
+			So it's hidden for now, but I can still filter by rating using the URL parameter.
+			-->
+			<select id="rating-filter" class="hidden border-b-[0.1rem] border-dotted">
+				<option value="" selected>⭐ all ratings</option>
+				<option value="6">⭐ favorites</option>
+				<option value="5">😍 loved it</option>
+				<option value="4">😀 liked it</option>
+				<option value="3">😐 meh'd it</option>
+				<option value="2">🙁 disliked it</option>
+				<option value="1">😡 hated it</option>
+			</select>
+		</form>
+
+		<div id="reviews-container">
+			<CardSkeleton />
+		</div>
+		<button id="load-more" class="button" type="button"> Load more </button>
+		<side-note>
+			Images and data are fetched from <a href="https://igdb.com/"
+				><abbr title="The Internet Game Database">IGDB</abbr></a
+			> for video games, <a href="https://boardgamegeek.com"
+				><abbr title="Board Game Geek">BGG</abbr></a
+			> for board games, <a href="https://themoviedb.org/"
+				><abbr title="The Movie DataBase">TMDB</abbr></a
+			> for movies and shows, and <a href="https://spotify.com/">Spotify</a> for albums.
+			Their licenses apply.
+		</side-note>
+	</section>
+
+	<!-- Non-JS fallback: show a tiny link so text-only agents and no-JS users can reach LLM version -->
+	<noscript>
+		<p class="sr-only">
+			This page has a text-only version for crawlers and LLMs: <a
+				href="/catalogue.llm">/catalogue.llm</a
+			>
+		</p>
+	</noscript>
+
+	<script>
+		import type { Emotion } from "./api/catalogue/emotions"
+		import type { Review } from "./api/catalogue/reviews"
+		import { ReviewCard } from "../components/catalogue/ReviewCard.ts"
+		import { CardSkeleton } from "../components/card/CardSkeleton.ts"
+		import { ErrorState } from "../components/card/ErrorState.ts"
+		import { EmptyState } from "../components/card/EmptyState.ts"
+
+		/**
+		 * Sync filter & pagination state to the URL
+		 */
+		const PAGE_SIZE = 5
+		let currentOffset = 0
+
+		// Used so stale requests shouldn't win the race
+		let inflight: AbortController | null = null
+
+		function updateUrlNow(filters: ReturnType<typeof getFilterValues>) {
+			const params = new URLSearchParams()
+			if (filters.query) params.set("query", filters.query)
+			if (filters.rating) params.set("rating", filters.rating)
+			if (filters.source) params.set("source", filters.source)
+			if (filters.emotion) params.set("emotion", filters.emotion)
+			if (filters.sort && filters.sort !== "date")
+				params.set("sort", filters.sort)
+
+			history.replaceState(
+				null,
+				"",
+				`${location.pathname}${params.toString() ? "?" + params : ""}`,
+			)
+		}
+
+		// Fetch and display emotions, and populate the map
+		const allEmotionsMap = new Map<string | number, Emotion>()
+		async function loadEmotions() {
+			const select = document.getElementById("emotions-filter")
+			if (!select) return
+
+			// Reset to default option while loading
+			select.innerHTML = '<option value="" selected>🎭 all emotions</option>'
+
+			try {
+				const response = await fetch("/api/catalogue/emotions")
+				if (!response.ok)
+					throw new Error(
+						`HTTP ${response.status} ${response.statusText}:  ${response.text()}`,
+					)
+				const emotions: Emotion[] = await response.json()
+				const sortedEmotions = [...emotions].sort((a, b) =>
+					a.name.localeCompare(b.name),
+				)
+				// Build <option> elements
+				sortedEmotions.forEach((emotion: Emotion) => {
+					allEmotionsMap.set(emotion.id, emotion)
+
+					const opt = document.createElement("option")
+					opt.value = String(emotion.id)
+					opt.textContent = `${emotion.emoji} ${emotion.name}`
+					select.appendChild(opt)
+				})
+			} catch (err) {
+				console.error("Failed to load emotions:", err)
+				const fallback = document.createElement("option")
+				fallback.disabled = true
+				fallback.textContent = "⚠️ failed to load emotions"
+				select.appendChild(fallback)
+				throw err
+			}
+		}
+
+		// Get current filter values from the form
+		function getFilterValues() {
+			const queryInput = document.getElementById("query") as HTMLInputElement
+			const ratingFilter = document.getElementById(
+				"rating-filter",
+			) as HTMLSelectElement | null
+			const sourceFilter = document.getElementById(
+				"source-filter",
+			) as HTMLSelectElement
+			const emotionsFilter = document.getElementById(
+				"emotions-filter",
+			) as HTMLSelectElement
+			const sortFilter = document.getElementById(
+				"sort-filter",
+			) as HTMLSelectElement
+
+			return {
+				query: queryInput?.value || "",
+				rating: ratingFilter?.value || "", // Still usable from the URL
+				source: sourceFilter?.value || "",
+				emotion: emotionsFilter?.value || "",
+				sort: sortFilter?.value || "date",
+			}
+		}
+
+		// Fetch and display reviews, using the populated emotions map
+		async function loadReviews({ append = false } = {}) {
+			const filters = getFilterValues()
+			updateUrlNow(filters)
+
+			const container = document.getElementById("reviews-container")
+			if (!container) return
+
+			// Show loading state
+			const loadMoreBtn = document.getElementById("load-more")
+			if (append) {
+				if (loadMoreBtn) {
+					loadMoreBtn.classList.add("hidden")
+					const skeleton = new CardSkeleton()
+					skeleton.id = "load-more-skeleton"
+					container.appendChild(skeleton)
+				}
+			} else {
+				container.innerHTML = ""
+				container.appendChild(new CardSkeleton())
+			}
+
+			// Cancel older fetch (if any)
+			inflight?.abort()
+			inflight = new AbortController()
+
+			const params = new URLSearchParams()
+			if (filters.query) params.append("query", filters.query)
+			if (filters.rating) params.append("rating", filters.rating)
+			if (filters.source) params.append("source", filters.source)
+			if (filters.emotion) params.append("emotion", filters.emotion)
+			if (filters.sort && filters.sort !== "date")
+				params.append("sort", filters.sort)
+			params.set("limit", String(PAGE_SIZE))
+			params.set("offset", String(currentOffset))
+			const url = `/api/catalogue/reviews${params.toString() ? "?" + params.toString() : ""}`
+
+			try {
+				const response = await fetch(url, { signal: inflight.signal })
+				if (!response.ok)
+					throw new Error(
+						`HTTP ${response.status} ${response.statusText}:  ${response.text()}`,
+					)
+				const { reviews, hasMore } = (await response.json()) as {
+					reviews: Review[]
+					hasMore: boolean
+				}
+
+				if (!append) container.innerHTML = ""
+				else {
+					const skeleton = document.getElementById("load-more-skeleton")
+					if (skeleton) skeleton.remove()
+				}
+
+				if (reviews.length === 0 && !append) {
+					container.appendChild(new EmptyState())
+				} else {
+					reviews.forEach((review) => {
+						const reviewCard = new ReviewCard()
+						reviewCard.setReviewData(review, allEmotionsMap)
+						container.appendChild(reviewCard)
+					})
+				}
+
+				// Show or hide the load‑more button
+				if (loadMoreBtn) loadMoreBtn.classList.toggle("hidden", !hasMore)
+			} catch (error: any) {
+				if (append) {
+					const skeleton = document.getElementById("load-more-skeleton")
+					if (skeleton) skeleton.remove()
+					if (loadMoreBtn) loadMoreBtn.classList.remove("hidden")
+				}
+				if (error.name === "AbortError") return // out-of-date request
+				console.error("Failed to load reviews:", error)
+				container.innerHTML = ""
+				container.appendChild(new ErrorState())
+			}
+		}
+
+		// Add event listeners to form controls to trigger filtering
+		function setupFilterListeners() {
+			const queryInput = document.getElementById("query") as HTMLInputElement
+			const ratingFilter = document.getElementById(
+				"rating-filter",
+			) as HTMLSelectElement | null
+			const sourceFilter = document.getElementById(
+				"source-filter",
+			) as HTMLSelectElement
+			const emotionsFilter = document.getElementById(
+				"emotions-filter",
+			) as HTMLSelectElement
+			const sortFilter = document.getElementById(
+				"sort-filter",
+			) as HTMLSelectElement
+
+			// Use input event for text search with small delay
+			let debounceTimer: number | undefined
+			queryInput?.addEventListener("input", () => {
+				clearTimeout(debounceTimer)
+				debounceTimer = setTimeout(() => {
+					currentOffset = 0
+					loadReviews()
+				}, 200) as unknown as number
+			})
+
+			// Unified change handling
+			;[ratingFilter, sourceFilter, emotionsFilter, sortFilter].forEach((el) =>
+				el?.addEventListener("change", () => {
+					currentOffset = 0
+					loadReviews()
+				}),
+			)
+
+			// Load‑more button
+			document.getElementById("load-more")?.addEventListener("click", () => {
+				currentOffset += PAGE_SIZE
+				loadReviews({ append: true })
+			})
+		}
+
+		document.addEventListener("DOMContentLoaded", async () => {
+			try {
+				await loadEmotions()
+
+				// Prevent form submission (which would reload the page)
+				const form = document.querySelector("form")
+				form?.addEventListener("submit", (e) => {
+					e.preventDefault()
+				})
+
+				// Restore state from URL (if any)
+				const params = new URLSearchParams(location.search)
+				const queryInput = document.getElementById("query") as HTMLInputElement
+				const ratingFilter = document.getElementById(
+					"rating-filter",
+				) as HTMLSelectElement | null
+				const sourceFilter = document.getElementById(
+					"source-filter",
+				) as HTMLSelectElement
+				const emotionsFilter = document.getElementById(
+					"emotions-filter",
+				) as HTMLSelectElement
+				const sortFilter = document.getElementById(
+					"sort-filter",
+				) as HTMLSelectElement
+				if (params.has("query")) queryInput.value = params.get("query") ?? ""
+				if (params.has("rating") && ratingFilter)
+					ratingFilter.value = params.get("rating") ?? ""
+				if (params.has("source"))
+					sourceFilter.value = params.get("source") ?? ""
+				if (params.has("emotion"))
+					emotionsFilter.value = params.get("emotion") ?? ""
+				if (params.has("sort")) sortFilter.value = params.get("sort") ?? "date"
+				currentOffset = 0
+				await loadReviews()
+				setupFilterListeners()
+			} catch (error) {
+				console.error("Error initializing catalogue page:", error)
+			}
+		})
+
+		/**
+		 * Hidden function to update existing reviews with IGDB data
+		 * <button id="sync-igdb" class="text-primary hover:text-primary/80 text-xs underline">
+		 *	🔄 Sync IGDB covers
+		 * </button>
+		 */
+		document
+			.getElementById("sync-igdb")
+			?.addEventListener("click", async (e) => {
+				e.preventDefault()
+
+				const password = prompt("Catalogue password ?")
+				if (!password) return
+
+				try {
+					const res = await fetch("/api/catalogue/reviews", {
+						method: "PATCH",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ password, task: "syncIGDB" }),
+					})
+
+					const json = await res.json()
+					if (res.ok && json.ok) {
+						alert(`✅ ${json.updated} review(s) updated.`)
+						await loadReviews()
+					} else {
+						alert(`❌ ${json.error ?? res.status}`)
+					}
+				} catch (err) {
+					console.error(err)
+					alert("❌ Network or server error.")
+				}
+			})
+	</script>
+        </Layout>

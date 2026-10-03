@@ -1,0 +1,23 @@
+<Layout title="Welcome to Astro.">
+    <main>
+        <h1>Welcome to <span class="text-gradient">Astro</span></h1>
+        {
+            Object.entries(DUMMY_DATA).map(([dummyKey, dummyValue]) => {
+                return (
+                    <p>
+                        onlyp {dummyKey}
+                    </p>
+                    <h2>
+                        onlyh2 {dummyKey}
+                    </h2>
+                    <div>
+                        <h2>div+h2 {dummyKey}</h2>
+                    </div>
+                    <p>
+                        <h2>p+h2 {dummyKey}</h2>
+                    </p>
+                );
+            })
+        }
+    </main>
+</Layout>

@@ -1,0 +1,10 @@
+---
+if (broken) {
+  return Astro.redirect("/");
+}
+const fn = () => { return 1; };
+function inner() { return 2; }
+class C { method() { return 3; } }
+return "top";
+---
+<div/>

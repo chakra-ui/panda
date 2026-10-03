@@ -1,0 +1,5 @@
+<Card>
+  {items.map(function (item) {
+    return <div slot={`item-${item.id}`}>{item.name}</div>;
+  })}
+</Card>

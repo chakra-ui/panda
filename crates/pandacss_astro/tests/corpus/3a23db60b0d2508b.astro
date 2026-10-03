@@ -1,0 +1,3 @@
+<Card>
+  {a.map(async (x, i) => (await x.load()).map(async (y, j) => y.items.map(async (z, k) => <div slot={`s${i}-${j}-${k}`}>{await z}</div>)))}
+</Card>

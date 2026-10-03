@@ -1,0 +1,11 @@
+{
+  () => {
+    class Box {
+      constructor(private label: string) {}
+      render() {
+        return <Component label={this.label} />;
+      }
+    }
+    return new Box("hi").render();
+  }
+}

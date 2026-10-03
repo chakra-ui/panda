@@ -1,0 +1,10 @@
+---
+import Card from './card.astro';
+import Meta from './meta.astro';
+const { meta } = Astro.props;
+---
+<Card>
+  {meta ? <Meta items={meta} slot={meta ? "meta" : ""} /> : null}
+  <slot name="title" slot="title" />
+  <slot />
+</Card>

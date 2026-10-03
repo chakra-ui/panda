@@ -1,0 +1,6 @@
+---
+const items = [];
+---
+{items.map(async (item) => <>
+  <img src={item.cover} alt={await describe(item)} />
+</>)}

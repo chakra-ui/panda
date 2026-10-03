@@ -1,0 +1,11 @@
+{
+  () => {
+    abstract class Base<T> implements Foo {
+      abstract id: number;
+      make(x: T): unknown {
+        return <Component value={x} />;
+      }
+    }
+    return Base;
+  }
+}

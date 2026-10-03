@@ -1,0 +1,14 @@
+<Layout title="Welcome to Astro.">
+    <main>
+        <Layout title="switch bug">
+            {components.map((component, i) => {
+                switch(component) {
+                    case "Hero":
+                        return <div>Hero</div>
+                    case "Component2":
+                        return <div>Component2</div>
+                }
+            })}
+        </Layout>
+    </main>
+</Layout>

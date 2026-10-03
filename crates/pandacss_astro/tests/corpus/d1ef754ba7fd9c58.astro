@@ -1,0 +1,8 @@
+---
+import Comp from './Comp.astro';
+---
+<div>{(() => {
+  outer: for (const item of items) {
+return (<Comp />);
+  }
+})()}</div>

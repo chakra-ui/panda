@@ -1,0 +1,8 @@
+---
+import Comp from './Comp.astro';
+---
+<div>{(() => {
+  while (hasNext()) {
+return (<Comp />);
+  }
+})()}</div>

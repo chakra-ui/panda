@@ -1,0 +1,6 @@
+---
+async function* g() { yield 1; }
+const nums = [];
+for await (const n of g()) { nums.push(n); }
+---
+<h1>{nums.join(',')}</h1>

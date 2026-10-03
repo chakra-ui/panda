@@ -1,0 +1,10 @@
+---
+const items = [{name: "a", active: true}, {name: "b", active: false}];
+---
+<ul>
+{items.map(item =>
+item.active
+  ? <li class="active">{item.name}</li>
+  : <li class="inactive">{item.name}</li>
+)}
+</ul>

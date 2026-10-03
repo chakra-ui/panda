@@ -1,0 +1,11 @@
+---
+const type = "foo";
+---
+{
+  () => {
+    function render(type: string) {
+      return <Component />;
+    }
+    return render(type);
+  }
+}

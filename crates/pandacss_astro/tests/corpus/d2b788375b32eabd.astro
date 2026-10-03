@@ -1,0 +1,6 @@
+---
+const item = { cover: '/cover.jpg' };
+---
+{item.cover && <>
+  <img src={item.cover} alt={await describe(item.cover)} />
+</>}

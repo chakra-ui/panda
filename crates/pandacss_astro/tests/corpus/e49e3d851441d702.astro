@@ -1,0 +1,15 @@
+---
+const items = [1, 2, 3];
+---
+<ul>
+{items.map(x => {
+switch (x) {
+case 1:
+return <li>one</li>;
+case 2:
+return <li>two</li>;
+default:
+return <li>other</li>;
+}
+})}
+</ul>

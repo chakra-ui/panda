@@ -1,0 +1,6 @@
+---
+interface Props {
+  items: Array<{ id: number; nested: Map<string, Set<number>> }>;
+}
+---
+<ul>{Astro.props.items.map(i => <li>{i.id}</li>)}</ul>

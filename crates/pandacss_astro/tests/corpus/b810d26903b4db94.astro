@@ -1,0 +1,79 @@
+---
+import BaseHead, { type Props as HeadProps } from '~/components/BaseHead.astro';
+import Footer from '~/components/Footer.astro';
+import Header from '~/components/Header.astro';
+import HeaderDrawerContent from '~/components/HeaderDrawerContent.astro';
+import HeaderNav from '~/components/HeaderNav.astro';
+import SkipLink from '~/components/SkipLink.astro';
+import '~/styles/tailwind.css';
+
+interface Props extends HeadProps {
+	class?: string;
+	bgClass?: string;
+}
+
+const { bgClass = 'bg-black', ...head } = Astro.props;
+---
+
+<!doctype html>
+<html
+	lang="en"
+	class:list={[
+		'astro-gray-700 overflow-x-clip break-words text-astro-gray-100 [color-scheme:dark] [word-break:break-word]',
+		bgClass,
+		Astro.props.class,
+	]}
+>
+	<head>
+		<BaseHead {...head} />
+	</head>
+	<body class="flex min-h-screen max-w-screen flex-col overflow-x-clip">
+		<SkipLink />
+		<div
+			id="nav"
+			class:list={{
+				'inset-x-0 top-0 z-20 max-h-screen': true,
+				'bg-black/30': true,
+			}}
+		>
+			<Header>
+				<HeaderNav />
+				<HeaderDrawerContent slot="drawer" />
+			</Header>
+		</div>
+
+		<slot name="subnav" />
+
+		<main id="main" class="relative z-10 flex flex-1 flex-col">
+			<slot />
+		</main>
+		<Footer {bgClass} />
+	</body>
+</html>
+
+<style>
+	:root.disclosure-open {
+		overflow-y: hidden;
+	}
+	body::before {
+		content: '';
+		position: fixed;
+		display: block;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 11;
+		background: #0d0f14;
+		pointer-events: none;
+		opacity: 0;
+		transition: opacity 400ms cubic-bezier(0.23, 1, 0.32, 1);
+	}
+	:root.disclosure-open body::before {
+		opacity: 1;
+	}
+
+	:root.disclosure-open #nav {
+		overflow-y: auto;
+	}
+</style>

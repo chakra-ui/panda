@@ -1,0 +1,9 @@
+---
+const items = [1, 2, 3];
+---
+<ul>
+{items.map(item => {
+const doubled = item * 2;
+return <li>{doubled}</li>;
+})}
+</ul>

@@ -1,0 +1,10 @@
+<style>
+  .message { color: red; }
+</style>
+<style is:inline>
+  .inline { color: blue; }
+</style>
+<script>console.log('before')</script>
+<script is:inline>console.log('inline')</script>
+<div class="message">Content</div>
+<script>console.log('after')</script>

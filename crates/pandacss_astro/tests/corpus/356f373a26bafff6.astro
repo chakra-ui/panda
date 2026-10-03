@@ -1,0 +1,5 @@
+---
+const image = './penguin.png';
+const canonicalURL = new URL('http://example.com');
+---
+{image && (<meta property="og:image" content={new URL(image, canonicalURL)}>)}

@@ -1,0 +1,25 @@
+---
+interface LocalImageProps
+  extends Omit<HTMLAttributes, 'src' | 'width' | 'height'>,
+    Omit<TransformOptions, 'src'>,
+    Pick<astroHTML.JSX.ImgHTMLAttributes, 'loading' | 'decoding'> {
+  src: ImageMetadata | Promise<{ default: ImageMetadata }>;
+  alt: string;
+  sizes: HTMLImageElement['sizes'];
+  widths: number[];
+  formats?: OutputFormat[];
+}
+interface RemoteImageProps
+  extends Omit<HTMLAttributes, 'src' | 'width' | 'height'>,
+    TransformOptions,
+    Pick<ImgHTMLAttributes, 'loading' | 'decoding'> {
+  src: string;
+  alt: string;
+  sizes: HTMLImageElement['sizes'];
+  widths: number[];
+  aspectRatio: TransformOptions['aspectRatio'];
+  formats?: OutputFormat[];
+  background: TransformOptions['background'];
+}
+export type Props = LocalImageProps | RemoteImageProps;
+---

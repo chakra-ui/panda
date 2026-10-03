@@ -1,0 +1,12 @@
+---
+import Layout from './Layout.astro';
+---
+<Layout>
+  {items.map((item) => {
+try {
+  return (<div slot="content">ok</div>);
+} catch (e) {
+  return (<div slot="error">{e}</div>);
+}
+  })}
+</Layout>

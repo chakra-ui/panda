@@ -1,0 +1,11 @@
+---
+import Comp from './Comp.astro';
+---
+<div>{(() => {
+  for (let i = 0; i < items.length; i++) {
+if (items[i].match) {
+  return (<Comp />);
+}
+  }
+  return null;
+})()}</div>

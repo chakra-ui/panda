@@ -1,0 +1,15 @@
+---
+import { Component } from './Component';
+const className = 'dynamic';
+---
+<Component className="static">Static</Component>
+<Component className={className}>Expression</Component>
+<Component {className}>Shorthand</Component>
+<custom-element className="custom">Custom element</custom-element>
+<style>
+	.static,
+	.dynamic,
+	.custom {
+		color: blue;
+	}
+</style>
