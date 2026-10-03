@@ -445,7 +445,8 @@ With an overlay, `panda codegen` writes into the app `styled-system`:
 Name collisions between the app and the design system surface as `design_system_artifact_conflict` (warning); the app
 wins. A DS `package.json` missing an `exports` subpath the overlay needs (`./helpers`, `./css`, `./css/*`, `./recipes`,
 `./patterns`, `./jsx`, `./jsx/*`, …) surfaces `design_system_export_missing` (error) instead of a silent bundler
-failure. `panda lib` syncs those styled-system category exports (including `./jsx` / `./jsx/*` when JSX artifacts
+failure. `./jsx` / `./jsx/*` are only required when `jsxFramework` is set; without it no JSX artifacts exist on either
+side. `panda lib` syncs those styled-system category exports (including `./jsx` / `./jsx/*` when JSX artifacts
 exist). Nested chains skip the overlay entirely and emit the full local tree — merge and hydrate from the earlier
 phases still apply.
 

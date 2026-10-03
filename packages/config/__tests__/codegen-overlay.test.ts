@@ -299,7 +299,34 @@ describe('collectExportMissingDiagnostics', () => {
     expect(messages).not.toContain('./recipes')
   })
 
-  test('reports missing ./jsx exports when the design system owns patterns', () => {
+  test('reports missing ./jsx exports when a react design system owns patterns', () => {
+    const diagnostics = collectExportMissingDiagnostics(
+      {
+        designSystem: [
+          ds({
+            name: '@acme/ds',
+            specifier: '@acme/ds',
+            patternNames: ['stack'],
+            packageExports: {
+              '.': './index.js',
+              './helpers': './helpers/index.js',
+              './css': './css/index.js',
+              './css/*': './css/*.js',
+              './patterns': './patterns/index.js',
+            },
+          }),
+        ],
+      },
+      'react',
+    )
+
+    const messages = diagnostics.map((d) => d.message).join('\n')
+    expect(messages).toContain('./patterns/*')
+    expect(messages).toContain('./jsx')
+    expect(messages).toContain('./jsx/*')
+  })
+
+  test('does not require ./jsx when the app has no jsxFramework', () => {
     const diagnostics = collectExportMissingDiagnostics({
       designSystem: [
         ds({
@@ -312,15 +339,14 @@ describe('collectExportMissingDiagnostics', () => {
             './css': './css/index.js',
             './css/*': './css/*.js',
             './patterns': './patterns/index.js',
+            './patterns/*': './patterns/*.js',
           },
         }),
       ],
+      overlayInput: { authored: NOTHING_AUTHORED, compatible: true },
     })
 
-    const messages = diagnostics.map((d) => d.message).join('\n')
-    expect(messages).toContain('./patterns/*')
-    expect(messages).toContain('./jsx')
-    expect(messages).toContain('./jsx/*')
+    expect(diagnostics).toEqual([])
   })
 
   test('returns nothing without a single-level overlay', () => {

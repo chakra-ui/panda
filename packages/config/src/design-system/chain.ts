@@ -134,7 +134,10 @@ export function collectArtifactConflicts(metadata: DesignSystemMetadata | undefi
     .filter((entry) => entry.recipes.length > 0 || entry.patterns.length > 0)
 }
 
-export function collectExportMissingDiagnostics(metadata: DesignSystemMetadata | undefined): Diagnostic[] {
+export function collectExportMissingDiagnostics(
+  metadata: DesignSystemMetadata | undefined,
+  jsxFramework?: string,
+): Diagnostic[] {
   const overlay = buildCodegenOverlay(metadata)
   if (!overlay) return []
 
@@ -152,7 +155,8 @@ export function collectExportMissingDiagnostics(metadata: DesignSystemMetadata |
   }
   const appPatterns = metadata?.userPatternNames?.length ?? 0
   const dsPatterns = ds.patternNames?.length ?? 0
-  if (overlay.ownedPatterns.length > 0 || (overlay.virtualizeCss && (appPatterns > 0 || dsPatterns > 0))) {
+  const hasPatterns = overlay.ownedPatterns.length > 0 || (overlay.virtualizeCss && (appPatterns > 0 || dsPatterns > 0))
+  if (jsxFramework && hasPatterns) {
     required.push('./jsx', './jsx/*')
   }
 
