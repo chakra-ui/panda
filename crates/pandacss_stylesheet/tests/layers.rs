@@ -11,8 +11,8 @@ fn default_layer_names_emit_unchanged_preamble() {
     let css = compile_css(&config, "");
     assert_snapshot!(css, @"
     @layer reset, base, tokens, recipes, utilities;
-    @layer recipes.base, recipes.slots, recipes.variants, recipes.compound_variants;
-    @layer recipes.slots.base, recipes.slots.variants, recipes.slots.compound_variants;
+    @layer recipes { @layer base, slots, variants, compound_variants; }
+    @layer recipes.slots { @layer base, variants, compound_variants; }
     @layer base {
       :root {
         --made-with-panda: '🐼';
@@ -83,8 +83,8 @@ fn host_declared_layers_still_get_the_recipe_sublayer_order() {
         },
     );
     assert_snapshot!(layer_statements(&output.css), @"
-    @layer recipes.base, recipes.slots, recipes.variants, recipes.compound_variants;
-    @layer recipes.slots.base, recipes.slots.variants, recipes.slots.compound_variants;
+    @layer recipes { @layer base, slots, variants, compound_variants; }
+    @layer recipes.slots { @layer base, variants, compound_variants; }
     @layer base {
     @layer recipes {
       @layer variants {
@@ -92,6 +92,23 @@ fn host_declared_layers_still_get_the_recipe_sublayer_order() {
     @layer recipes.slots {
       @layer base {
     ");
+}
+
+#[test]
+fn minified_output_declares_the_recipe_sublayer_order_as_nested_statements() {
+    let output = compile_output(
+        &recipe_config(),
+        RECIPE_SOURCE,
+        StylesheetOptions {
+            emit_layer_declaration: false,
+            minify: true,
+            ..StylesheetOptions::default()
+        },
+    );
+    assert!(output.css.starts_with(
+        "@layer recipes{@layer base, slots, variants, compound_variants;}\
+         @layer recipes.slots{@layer base, variants, compound_variants;}"
+    ));
 }
 
 #[test]
@@ -107,7 +124,7 @@ fn host_declared_layers_without_recipes_get_no_order_statements() {
             ..StylesheetOptions::default()
         },
     );
-    assert!(!output.css.contains("recipes.base"));
+    assert!(!output.css.contains("compound_variants"));
 }
 
 #[test]
@@ -125,8 +142,8 @@ fn split_entry_declares_the_recipe_sublayer_order_when_the_host_declares_layers(
         .find(|file| file.path == "styles.css")
         .expect("styles.css entry");
     assert_snapshot!(layer_statements(&entry.code), @"
-    @layer recipes.base, recipes.slots, recipes.variants, recipes.compound_variants;
-    @layer recipes.slots.base, recipes.slots.variants, recipes.slots.compound_variants;
+    @layer recipes { @layer base, slots, variants, compound_variants; }
+    @layer recipes.slots { @layer base, variants, compound_variants; }
     ");
 }
 
@@ -141,8 +158,8 @@ fn partial_rename_keeps_other_defaults() {
     let lines: Vec<&str> = css.lines().take(4).collect();
     assert_snapshot!(lines.join("\n"), @"
     @layer preflight, base, tokens, recipes, utilities;
-    @layer recipes.base, recipes.slots, recipes.variants, recipes.compound_variants;
-    @layer recipes.slots.base, recipes.slots.variants, recipes.slots.compound_variants;
+    @layer recipes { @layer base, slots, variants, compound_variants; }
+    @layer recipes.slots { @layer base, variants, compound_variants; }
     @layer preflight {
     ");
 }
@@ -173,8 +190,8 @@ fn full_rename_reflects_in_preamble_and_all_blocks() {
     );
     assert_snapshot!(openers.join("\n"), @"
     @layer r, b, t, rc, u;
-    @layer rc.base, rc.slots, rc.variants, rc.compound_variants;
-    @layer rc.slots.base, rc.slots.variants, rc.slots.compound_variants;
+    @layer rc { @layer base, slots, variants, compound_variants; }
+    @layer rc.slots { @layer base, variants, compound_variants; }
     @layer r {
     @layer b {
     @layer t {

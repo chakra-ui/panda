@@ -518,10 +518,11 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Sp
         index.push('\n');
     }
     if !options.polyfill && layer_selected(StylesheetLayer::Recipes) {
-        for declaration in cascade::CascadePlan::internal_declarations(&input.config.layers) {
-            index.push_str("@layer ");
-            index.push_str(&declaration.join(", "));
-            index.push_str(";\n");
+        for declaration in
+            cascade::CascadePlan::internal_declarations(&input.config.layers, options.minify)
+        {
+            index.push_str(&declaration);
+            index.push('\n');
         }
     }
     if !imports.is_empty() {
