@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/language-server",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Language Server Protocol server for Panda CSS config authoring",
   "keywords": [
     "language-server",
