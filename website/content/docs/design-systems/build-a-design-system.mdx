@@ -183,10 +183,15 @@ is absent:
     "./tokens": {
       "types": "./styled-system/tokens/index.d.ts",
       "default": "./styled-system/tokens/index.js"
+    },
+    "./types": {
+      "types": "./styled-system/types/index.d.ts"
     }
   }
 }
 ```
+
+`./types` has no runtime code. It's there so packages built on your design system can annotate the recipes they export.
 
 Don't hand-edit the generated subpaths. The next `panda lib` run overwrites them anyway.
 

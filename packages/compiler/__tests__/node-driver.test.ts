@@ -801,6 +801,21 @@ describe('NodeDriver writeDesignSystemLib', () => {
     )
   })
 
+  it('exports ./types so design systems can annotate exported recipes', async () => {
+    dir = createLibProject()
+
+    const driver = await createNodeDriver({ cwd: dir })
+    driver.codegen()
+    await driver.writeDesignSystemLib()
+
+    const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
+    expect(pkg.exports['./types']).toMatchInlineSnapshot(`
+      {
+        "types": "./styled-system/types/index.d.ts",
+      }
+    `)
+  })
+
   it('preserves an existing string root export', async () => {
     dir = createLibProject()
     writeFileTree(dir, {
