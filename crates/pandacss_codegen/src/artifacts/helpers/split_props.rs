@@ -90,8 +90,8 @@ pub(super) fn split_props() -> Item {
 
             if (keyCount === 1) {
               const matcher = keys[0]
-              const picked: Record<string, any> = Object.create(null)
-              const rest: Record<string, any> = Object.create(null)
+              const picked: Record<string, any> = {}
+              const rest: Record<string, any> = {}
 
               if (Array.isArray(matcher)) {
                 const keyMap = getSplitPropsKeyMap(matcher as string[])
@@ -124,7 +124,7 @@ pub(super) fn split_props() -> Item {
             }
 
             const out: any[] = new Array(keyCount + 1)
-            for (let i = 0; i <= keyCount; i++) out[i] = Object.create(null)
+            for (let i = 0; i <= keyCount; i++) out[i] = {}
             const rest = out[keyCount]
 
             for (let i = 0; i < propKeys.length; i++) {

@@ -186,7 +186,7 @@ Extract reads the prop as written. A rename like `circleSize` to `size` does not
 
 ## Marking objects with raw()
 
-`{fn}.raw()` is an identity function. It only hints the compiler to extract the object.
+`{fn}.raw()` returns a plain style object and marks it for the compiler to extract.
 
 It can be useful, for example, in Storybook args or custom react props.
 

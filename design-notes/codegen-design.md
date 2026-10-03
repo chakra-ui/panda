@@ -265,7 +265,8 @@ The runtime helper bodies are written for generated bundle size and hot-path beh
 
 - short local aliases where they reduce repeated property reads,
 - `for` loops in hot paths,
-- `Object.create(null)` for dictionary-like output objects,
+- `Object.create(null)` for internal lookup maps; objects handed back to user code (`.raw()`, `splitProps`) stay plain
+  `{}` so `toStrictEqual`, `hasOwnProperty`, and string coercion behave,
 - `arguments` in local function expressions when it avoids rest array allocation,
 - no large shared framework dependency.
 

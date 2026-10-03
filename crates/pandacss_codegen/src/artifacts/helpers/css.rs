@@ -14,7 +14,7 @@ pub(super) fn to_responsive_object() -> Item {
         ],
         TsType::Raw("Record<string, any>".into()),
         indoc! {r"
-            const out = Object.create(null)
+            const out: Record<string, any> = {}
             for (let i = 0; i < values.length; i++) {
               if (values[i] != null) out[breakpoints[i]] = values[i]
             }
