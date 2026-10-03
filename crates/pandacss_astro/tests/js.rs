@@ -127,3 +127,45 @@ fn unterminated_tokens_run_to_the_end_without_panicking() {
         token(TokenKind::Eof, 4, 4)
     );
 }
+
+#[test]
+fn regexes_and_line_comments_end_at_line_terminators() {
+    for terminator in ["\n", "\r", "\u{2028}", "\u{2029}"] {
+        let regex = format!("/x{terminator}/");
+        assert_eq!(
+            Lexer::new(&regex, 0).next_token(true),
+            token(TokenKind::Regex, 0, 2),
+            "{regex:?}"
+        );
+        let comment = format!("// c{terminator}x");
+        let x = comment.len() - 1;
+        assert_eq!(
+            Lexer::new(&comment, 0).next_token(true),
+            token(TokenKind::Identifier, x, x + 1),
+            "{comment:?}"
+        );
+        closes_at_end(&format!("{{x // }}{terminator}}}"));
+    }
+    assert_eq!(
+        Lexer::new("/[x\n]/", 0).next_token(true),
+        token(TokenKind::Regex, 0, 3)
+    );
+    assert_eq!(
+        Lexer::new("/\\\n/", 0).next_token(true),
+        token(TokenKind::Regex, 0, 2)
+    );
+}
+
+#[test]
+fn svelte_block_close_ends_at_its_own_brace_since_an_unterminated_regex_is_division() {
+    assert_eq!(find_closing_brace("{/if}\n<p>{a}</p>", 0), Some(4));
+    assert_eq!(find_closing_brace("{a ? /x\n/ : b}", 0), Some(13));
+}
+
+#[test]
+fn slash_after_a_control_paren_is_a_regex() {
+    closes_at_end("{(() => { if (x) /}/.test(y) })()}");
+    closes_at_end("{(() => { while ((x)) /}/.test(y) })()}");
+    assert_eq!(find_closing_brace("{f(x) /}/ 2}", 0), Some(7));
+    assert_eq!(find_closing_brace("{a.if(x) /}/ 2}", 0), Some(10));
+}

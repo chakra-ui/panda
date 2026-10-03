@@ -218,6 +218,38 @@ mod tests {
     }
 
     #[test]
+    fn carriage_return_ends_a_string_and_a_regex() {
+        assert_eq!(
+            fences("---\nconst s = 'a\r---\n<p/>"),
+            Some((3..17, 17, 21))
+        );
+        assert_eq!(
+            fences("---\nconst r = /x\r---\n<p/>"),
+            Some((3..17, 17, 21))
+        );
+    }
+
+    #[test]
+    fn regex_flags_are_skipped_and_the_fence_closes_after_them() {
+        assert_eq!(
+            fences("---\nconst r = /x/g---\n<p/>"),
+            Some((3..18, 18, 22))
+        );
+    }
+
+    #[test]
+    fn block_comment_leaves_the_regex_flag_unchanged() {
+        assert_eq!(
+            fences("---\nconst r = a /* c */ /x---/\n---\n<p/>"),
+            Some((3..26, 26, 29))
+        );
+        assert_eq!(
+            fences("---\nconst r = /* c */ /x---/\n---\n<p/>"),
+            Some((3..29, 29, 33))
+        );
+    }
+
+    #[test]
     fn lone_carriage_return_after_the_fence_is_body_text() {
         assert_eq!(fences("---\n---\r<p/>"), Some((3..4, 4, 7)));
         assert_eq!(fences("---\n---\r\n<p/>"), Some((3..4, 4, 9)));

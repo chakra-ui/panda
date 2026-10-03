@@ -347,3 +347,46 @@ fn deep_nesting_is_reported_not_a_crash() {
         );
     }
 }
+
+#[test]
+fn inputs_astro_rejects_are_reported_and_keep_no_elements() {
+    for source in [
+        "<p>{a ? /x\n/ : b}</p>",
+        "<p>{a ? /x\r/ : b}</p>",
+        "<p>{a ? /x\u{2028}/ : b}</p>",
+        "<p>{a ? /[x\n]/ : b}</p>",
+        "<p>{a ? /\\\n/ : b}</p>",
+        "<p>{/x\n}</p>",
+        "<p class={/x\n}/>",
+        "}0b2 <p/>",
+        "}0o9 <p/>",
+        "}0B2 <p/>",
+        "}0O8 <p/>",
+        "}0o78 <p/>",
+        "}0b_1 <p/>",
+        "}0b <p/>",
+        "}0x <p/>",
+        "}1.toString <p/>",
+        "}0b2 <p/><b/>",
+        "<p 0b2/>",
+        "<p 0o8/>",
+        "<!-- 0b2 > <p/>",
+        "<!-- 0x > <p/>",
+        "<p class=`${a;}`/>",
+        "<p class=`${a,}`/>",
+        "<p class=`${a;}${b}`/>",
+        "<p class=`${a}${b,}`/>",
+    ] {
+        let document = pandacss_astro::lower(source);
+        assert!(!document.diagnostics.is_empty(), "{source:?}");
+        assert!(document.elements.is_empty(), "{source:?}");
+    }
+}
+
+#[test]
+fn many_unclosed_comments_after_markup_stay_linear() {
+    let source = format!("{{c && {}1}}", "<a/> <!-- 1, ".repeat(20_000));
+    let started = std::time::Instant::now();
+    let _ = pandacss_astro::lower(&source);
+    assert!(started.elapsed() < std::time::Duration::from_secs(5));
+}

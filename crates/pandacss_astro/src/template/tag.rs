@@ -595,12 +595,19 @@ fn name_terminator(byte: u8) -> bool {
 pub(super) fn valid_number(text: &str) -> bool {
     let text = text.strip_suffix('n').unwrap_or(text);
     let bytes = text.as_bytes();
-    if bytes.len() > 1 && bytes[0] == b'0' && bytes[1].is_ascii_alphabetic() {
+    let radix_digit: Option<fn(&u8) -> bool> = match (bytes.first(), bytes.get(1)) {
+        (Some(b'0'), Some(b'x' | b'X')) => Some(u8::is_ascii_hexdigit),
+        (Some(b'0'), Some(b'b' | b'B')) => Some(|byte| matches!(byte, b'0' | b'1')),
+        (Some(b'0'), Some(b'o' | b'O')) => Some(|byte| matches!(byte, b'0'..=b'7')),
+        _ => None,
+    };
+    if let Some(radix_digit) = radix_digit {
         let digits = &text[2..];
         return !digits.is_empty()
             && digits
                 .bytes()
-                .all(|byte| byte.is_ascii_hexdigit() || byte == b'_')
+                .all(|byte| radix_digit(&byte) || byte == b'_')
+            && !digits.starts_with('_')
             && !digits.ends_with('_');
     }
     let (mantissa, exponent) = match text.find(['e', 'E']) {

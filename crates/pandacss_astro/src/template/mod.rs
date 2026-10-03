@@ -21,6 +21,7 @@ pub(crate) fn parse(source: &str) -> Document {
         open: Vec::new(),
         foreign: false,
         depth: 0,
+        comment_close: None,
     };
     let body = parser.body(start);
     Document {
@@ -96,6 +97,7 @@ struct Parser<'s> {
     open: Vec<Range<usize>>,
     foreign: bool,
     depth: usize,
+    comment_close: Option<(usize, Option<usize>)>,
 }
 
 const MAX_DEPTH: usize = 256;
@@ -238,7 +240,11 @@ impl Parser<'_> {
             TokenKind::String if !terminated(text) => "Unterminated string",
             TokenKind::NoSubstitutionTemplate if !terminated(text) => "Unterminated template",
             TokenKind::Number if !tag::valid_number(text) || self.word_follows(token.end) => {
-                "Invalid characters after number"
+                self.diagnostics.push(diagnostic(
+                    "Invalid characters after number",
+                    token.start..token.end,
+                ));
+                return true;
             }
             _ => return token.end <= pos,
         };

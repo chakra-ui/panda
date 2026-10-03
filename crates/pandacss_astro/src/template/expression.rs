@@ -1,5 +1,5 @@
-use super::{Kind, Next, Parse, Parser, into_child, lexed, other};
-use crate::js::{Lexer, TokenKind};
+use super::{Fatal, Kind, Next, Parse, Parser, diagnostic, find, into_child, lexed, other};
+use crate::js::{Lexer, TokenKind, regex_terminated};
 use crate::tree::{Child, ChildKind, Expression, Fragment, Markup};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -232,13 +232,25 @@ impl<'s> Parser<'s> {
             if token.kind == TokenKind::Eof {
                 return Err(self.eof());
             }
-            if until == Until::Brace && scan.stack.is_empty() {
-                if text == ";" || (text == "}" && scan.prev == Prev::Comma) {
-                    return Err(self.unexpected(token.start..token.end));
-                }
-                if text == "}" {
-                    return Ok((scan.expression(token.start), token.start));
-                }
+            if token.kind == TokenKind::Regex && !regex_terminated(source, token) {
+                self.diagnostics.push(diagnostic(
+                    "Unterminated regular expression",
+                    token.start..token.end,
+                ));
+                return Err(Fatal);
+            }
+            let top = match until {
+                Until::Brace => scan.stack.is_empty(),
+                Until::Template => scan.stack == [Frame::Interpolation],
+            };
+            if top
+                && token.kind == TokenKind::Punctuator
+                && (text == ";" || (text == "}" && scan.prev == Prev::Comma))
+            {
+                return Err(self.unexpected(token.start..token.end));
+            }
+            if until == Until::Brace && top && text == "}" {
+                return Ok((scan.expression(token.start), token.start));
             }
             let pending = std::mem::replace(&mut scan.pending, Pending::Nothing);
             let prev = std::mem::replace(&mut scan.prev, Prev::Other);
@@ -399,12 +411,31 @@ impl<'s> Parser<'s> {
         }
     }
 
-    fn sibling_ahead(&self, lt: usize) -> bool {
+    fn sibling_ahead(&mut self, lt: usize) -> bool {
         let after = self.token(lt + 1);
         if self.byte(after.start) == Some(b'>') || after.kind == TokenKind::Identifier {
             return true;
         }
-        self.comment(lt + 1).is_some()
+        self.bytes
+            .get(lt + 1..)
+            .is_some_and(|rest| rest.starts_with(b"!--"))
+            && self.comment_close_from(lt + 4).is_some()
+    }
+
+    fn comment_close_from(&mut self, from: usize) -> Option<usize> {
+        if let Some((searched, close)) = self.comment_close
+            && searched <= from
+            && close.is_none_or(|close| close >= from)
+        {
+            return close;
+        }
+        let close = self
+            .bytes
+            .get(from..)
+            .and_then(|rest| find(rest, b"-->"))
+            .map(|index| from + index);
+        self.comment_close = Some((from, close));
+        close
     }
 
     fn group(&mut self, markup: &mut Vec<Markup>, first_lt: usize) -> Parse<usize> {

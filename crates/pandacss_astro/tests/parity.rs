@@ -271,6 +271,46 @@ const CASES: &[(&str, &str, &str)] = &[
         "<!-- header -->\n---\nimport { css } from 'x';\n---\n<p class={css({ color: 'red' })} />\n",
         "[              \n   \n       , css            \n   \n         ,css({ color: 'red' })    \n]",
     ),
+    (
+        "line_comment_ends_at_carriage_return",
+        "<p>{a // x\r}</p>",
+        "[  ,a     \r     ]",
+    ),
+    (
+        "line_comment_ends_at_crlf",
+        "<p>{a // x\r\n}</p>",
+        "[  ,a     \r\n     ]",
+    ),
+    (
+        "line_comment_ends_at_line_separator",
+        "<p>{a // x\u{2028}}</p>",
+        "[  ,a             ]",
+    ),
+    (
+        "line_comment_ends_at_paragraph_separator",
+        "<p>{a // x\u{2029}}</p>",
+        "[  ,a             ]",
+    ),
+    (
+        "regex_after_a_control_paren",
+        "<p>{(() => { if (x) /}/.test(y) })()}</p>",
+        "[  ,(() => { if (x) /}/.test(y) })()     ]",
+    ),
+    ("binary_number_in_drift", "}0b1 <p/>", "     [   ]"),
+    ("octal_number_in_drift", "}0o7 <p/>", "     [   ]"),
+    ("binary_bigint_in_drift", "}0b1n <p/>", "      [   ]"),
+    ("hex_number_in_drift", "}0x1f <p/>", "      [   ]"),
+    ("zero_with_exponent_in_drift", "}0e5 <p/>", "     [   ]"),
+    (
+        "comma_sequence_in_a_template_attribute",
+        "<p class=`${a, b}`/>",
+        "[       ,`${a, b}`  ]",
+    ),
+    (
+        "semicolon_in_a_block_inside_a_template_attribute",
+        "<p class=`${() => {a;}}`/>",
+        "[       ,`${() => {a;}}`  ]",
+    ),
 ];
 
 #[test]

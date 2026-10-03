@@ -57,6 +57,10 @@ fn is_js_whitespace(ch: char) -> bool {
     )
 }
 
+fn is_line_terminator(ch: char) -> bool {
+    matches!(ch, '\n' | '\r' | '\u{2028}' | '\u{2029}')
+}
+
 fn is_identifier_start(ch: char) -> bool {
     ch.is_ascii_alphabetic()
         || ch == '_'
@@ -168,8 +172,8 @@ impl<'a> Lexer<'a> {
             self.eat_while(is_js_whitespace);
             match (self.byte(0), self.byte(1)) {
                 (Some(b'/'), Some(b'/')) => {
-                    let rest = &self.source.as_bytes()[self.position..];
-                    self.position += rest.iter().position(|&b| b == b'\n').unwrap_or(rest.len());
+                    let rest = &self.source[self.position..];
+                    self.position += rest.find(is_line_terminator).unwrap_or(rest.len());
                 }
                 (Some(b'/'), Some(b'*')) => {
                     let rest = &self.source[self.position + 2..];
@@ -248,28 +252,7 @@ impl<'a> Lexer<'a> {
     }
 
     fn regex(&mut self) {
-        let bytes = self.source.as_bytes();
-        self.position += 1;
-        let mut in_class = false;
-        while let Some(&byte) = bytes.get(self.position) {
-            self.position += 1;
-            match byte {
-                b'\\' => self.position += 1,
-                b'[' => in_class = true,
-                b']' => in_class = false,
-                b'/' if !in_class => {
-                    while bytes
-                        .get(self.position)
-                        .is_some_and(u8::is_ascii_alphabetic)
-                    {
-                        self.position += 1;
-                    }
-                    break;
-                }
-                _ => {}
-            }
-        }
-        self.clamp();
+        self.position = scan_regex(self.source, self.position).0;
     }
 
     fn punctuator(&mut self) {
@@ -301,17 +284,62 @@ impl<'a> Lexer<'a> {
     }
 }
 
+fn scan_regex(source: &str, start: usize) -> (usize, bool) {
+    let mut position = start + 1;
+    let mut in_class = false;
+    let mut escaped = false;
+    for (offset, ch) in source[position..].char_indices() {
+        if is_line_terminator(ch) {
+            return (start + 1 + offset, false);
+        }
+        position = start + 1 + offset + ch.len_utf8();
+        if escaped {
+            escaped = false;
+            continue;
+        }
+        match ch {
+            '\\' => escaped = true,
+            '[' => in_class = true,
+            ']' => in_class = false,
+            '/' if !in_class => {
+                let bytes = source.as_bytes();
+                while bytes.get(position).is_some_and(u8::is_ascii_alphabetic) {
+                    position += 1;
+                }
+                return (position, true);
+            }
+            _ => {}
+        }
+    }
+    (position, false)
+}
+
+pub(crate) fn regex_terminated(source: &str, token: Token) -> bool {
+    scan_regex(source, token.start).1
+}
+
 #[must_use]
 pub fn find_closing_brace(source: &str, open: usize) -> Option<usize> {
     let mut lexer = Lexer::new(source, open + 1);
     let mut depth = 1usize;
     let mut interpolations: Vec<usize> = Vec::new();
+    let mut parens: Vec<bool> = Vec::new();
     let mut operand = true;
     let mut after_member_dot = false;
+    let mut after_control = false;
     loop {
-        let token = lexer.next_token(operand);
+        let mut token = lexer.next_token(operand);
+        if token.kind == TokenKind::Regex && !regex_terminated(source, token) {
+            lexer.set_position(token.start + 1);
+            token = Token {
+                kind: TokenKind::Punctuator,
+                start: token.start,
+                end: token.start + 1,
+            };
+        }
         let text = &source[token.start..token.end];
         let mut member_dot = false;
+        let mut control = false;
         operand = match token.kind {
             TokenKind::Eof => return None,
             TokenKind::TemplateHead => {
@@ -325,7 +353,10 @@ pub fn find_closing_brace(source: &str, open: usize) -> Option<usize> {
             | TokenKind::Number
             | TokenKind::String
             | TokenKind::Regex => false,
-            TokenKind::Identifier => !after_member_dot && OPERAND_KEYWORDS.contains(&text),
+            TokenKind::Identifier => {
+                control = !after_member_dot && matches!(text, "if" | "while" | "for" | "with");
+                !after_member_dot && OPERAND_KEYWORDS.contains(&text)
+            }
             TokenKind::Punctuator => match text {
                 "{" => {
                     depth += 1;
@@ -349,7 +380,12 @@ pub fn find_closing_brace(source: &str, open: usize) -> Option<usize> {
                         false
                     }
                 }
-                ")" | "]" => false,
+                "(" => {
+                    parens.push(after_control);
+                    true
+                }
+                ")" => parens.pop().unwrap_or(false),
+                "]" => false,
                 _ => {
                     member_dot = text == "." || text == "?.";
                     true
@@ -357,5 +393,6 @@ pub fn find_closing_brace(source: &str, open: usize) -> Option<usize> {
             },
         };
         after_member_dot = member_dot;
+        after_control = control;
     }
 }
