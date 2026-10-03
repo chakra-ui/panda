@@ -3,5 +3,5 @@
 '@pandacss/compiler-wasm': patch
 ---
 
-Colors with an opacity modifier and `!important` or `!`, like `brand.500/60 !important`, no longer warn about an invalid
-opacity modifier.
+Fixed an issue where a color with an opacity modifier and `!important` or `!`, like `brand.500/60 !important`, warned
+about an invalid opacity modifier.
