@@ -130,7 +130,8 @@ use `optimize` or a PostCSS plugin to mutate CSS. Vite and PostCSS fire it throu
 ## Native Plugins
 
 Built-in SFC adapters (`vue`, `svelte`, `astro`) are native source-transform plugins: they run in Rust with no JS
-boundary. The Astro adapter's tokenizer is described in [astro-parser](./astro-parser.md). Third-party JS transforms use filtered `parser:before`.
+boundary. The Astro adapter's tokenizer is described in [astro-parser](./astro-parser.md). Third-party JS transforms use
+filtered `parser:before`.
 
 ## Source Spans
 

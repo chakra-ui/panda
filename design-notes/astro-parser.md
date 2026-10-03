@@ -228,9 +228,9 @@ switch must not be slower without a recorded decision, per [performance budget](
 
 - **Corpus.** 4,323 files: 3,772 accepted, 551 rejected, 0 deviations from Astro's parser.
 - **Bench.** `cargo run --release -p pandacss_bench --bin astro_extract --locked -- 20` over 2,636 files: 6.94 ms per
-  pass with the old adapter, 4.90 ms with the tokenizer.
-- **`compiler.node`.** 7,853,968 bytes after. Before: about 7.4 MB on `upstream/v2` (rounded by `ls -h`, exact bytes not
-  captured).
+  pass with the old adapter, 4.90 ms with the tokenizer (the 6.94 ms figure is from an earlier run on the old adapter).
+- **compiler.node.** 7,853,968 bytes with the tokenizer. The size before was not measured on a matching base, so no
+  delta is claimed.
 - **End to end.** `sandbox/astro/src/pages/syntax.astro` builds with `astro build`. `panda cssgen` on `upstream/v2`
   warns `js_parse_error` and emits none of `c_red`, `c_orange`, `c_teal`, `c_pink`; on this branch it reports no
   diagnostics and emits all four.
