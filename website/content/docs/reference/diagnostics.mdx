@@ -169,7 +169,7 @@ Setup (all errors):
 - `design_system_duplicate_name`, `design_system_name_collision`: two design systems have the same name.
 - `design_system_unsupported_specifier`: a specifier like `workspace:` isn't supported.
 - `design_system_export_missing`: the package is missing one of its generated `styled-system` exports. Rebuild it with
-  `panda lib`.
+  `panda lib`. Which exports are needed depends on the app: `./jsx` only when `jsxFramework` is set.
 - `design_system_version_mismatch`: the package was built with an incompatible version of `panda lib`. Upgrade or
   rebuild it.
 - `design_system_peer_range_unsatisfied`: the package requires a Panda version you don't have installed.

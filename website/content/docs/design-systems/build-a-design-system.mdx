@@ -144,7 +144,7 @@ the app's theme, and replays `buildinfo.json`. The app gets your styles without 
 
 `panda lib` also syncs `package.json` exports for you. Your `"."` entry stays untouched. Everything else is generated
 fresh each run. Only categories your package actually uses show up, so this walkthrough has no patterns and `./patterns`
-is absent:
+is absent. `./jsx` and `./jsx/*` appear only when `jsxFramework` is set:
 
 ```json filename="packages/ds/package.json"
 {
