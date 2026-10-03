@@ -1,4 +1,4 @@
-import { execFileSync } from 'node:child_process'
+import { execFileSync, spawnSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -740,7 +740,7 @@ describe('loadConfig module loading', () => {
     ? join(process.cwd(), 'src/load.ts')
     : join(process.cwd(), 'packages/config/src/load.ts')
 
-  function loadInNode(cwd: string, body: string) {
+  function runInNode(cwd: string, body: string, env: Record<string, string> = {}) {
     const script = `
       import { registerHooks } from 'node:module'
       const bundlerImports = []
@@ -754,9 +754,16 @@ describe('loadConfig module loading', () => {
       const cwd = ${JSON.stringify(cwd)}
       ${body}
     `
-    return JSON.parse(
-      execFileSync(process.execPath, ['--import', 'tsx', '--input-type=module', '-e', script], { encoding: 'utf8' }),
-    )
+    const result = spawnSync(process.execPath, ['--import', 'tsx', '--input-type=module', '-e', script], {
+      encoding: 'utf8',
+      env: { ...process.env, ...env },
+    })
+    if (result.status !== 0) throw new Error(result.stderr)
+    return result
+  }
+
+  function loadInNode(cwd: string, body: string) {
+    return JSON.parse(runInNode(cwd, body).stdout)
   }
 
   test('transpiles a TypeScript config file by file, without the bundler', () => {
@@ -850,6 +857,213 @@ describe('loadConfig module loading', () => {
     )
 
     expect(output.brands).toEqual(['#0f0', '#f00'])
+  })
+
+  const reportLoadError = `let message
+      try {
+        await loadConfig({ cwd })
+      } catch (error) {
+        message = error.message
+      }
+      console.log(JSON.stringify({ message, evaluations: globalThis.__configEvals, bundlerImports }))`
+
+  test('reports an error thrown by the config without running it again', () => {
+    const cwd = writeTempProject({
+      'panda.config.ts': `globalThis.__configEvals = (globalThis.__configEvals ?? 0) + 1
+        throw new Error('broken config')`,
+    })
+
+    const output = loadInNode(cwd, reportLoadError)
+
+    expect(output).toEqual({ message: 'broken config', evaluations: 1, bundlerImports: [] })
+  })
+
+  test('reports an error thrown by a file the config imports without running it again', () => {
+    const cwd = writeTempProject({
+      'theme.ts': `globalThis.__configEvals = (globalThis.__configEvals ?? 0) + 1
+        throw new Error('broken theme')`,
+      'panda.config.ts': `import './theme'
+        export default { outdir: 'styled-system' }`,
+    })
+
+    const output = loadInNode(cwd, reportLoadError)
+
+    expect(output).toEqual({ message: 'broken theme', evaluations: 1, bundlerImports: [] })
+  })
+
+  test('reports an error thrown by a bundled config without running it again', () => {
+    const cwd = writeTempProject({
+      'node_modules/.keep': '',
+      'panda.config.cts': `globalThis.__configEvals = (globalThis.__configEvals ?? 0) + 1
+        throw new Error('broken bundled config')`,
+    })
+
+    const output = loadInNode(cwd, reportLoadError)
+
+    expect(output).toEqual({ message: 'broken bundled config', evaluations: 1, bundlerImports: ['rolldown'] })
+  })
+
+  const reportBrand = `const result = await loadConfig({ cwd })
+      console.log(JSON.stringify({
+        brand: result.config.theme.tokens.colors.brand.value,
+        evaluations: globalThis.__configEvals,
+        bundlerImports,
+      }))`
+
+  test('loads an installed CommonJS preset with an __esModule default before running the config', () => {
+    const cwd = writeTempProject({
+      'node_modules/cjs-preset/package.json': JSON.stringify({ name: 'cjs-preset', main: 'index.js' }),
+      'node_modules/cjs-preset/index.js': `Object.defineProperty(exports, '__esModule', { value: true })
+        exports.default = (color) => ({ theme: { tokens: { colors: { brand: { value: color } } } } })`,
+      'panda.config.ts': `import preset from 'cjs-preset'
+        globalThis.__configEvals = (globalThis.__configEvals ?? 0) + 1
+        export default { outdir: 'styled-system', presets: [preset('#0f0')] }`,
+    })
+
+    const output = loadInNode(cwd, reportBrand)
+
+    expect(output).toEqual({ brand: '#0f0', evaluations: 1, bundlerImports: ['rolldown'] })
+  })
+
+  test('loads an installed CommonJS package that exports a plain object', () => {
+    const cwd = writeTempProject({
+      'node_modules/cjs-tokens/package.json': JSON.stringify({ name: 'cjs-tokens', main: 'index.js' }),
+      'node_modules/cjs-tokens/index.js': `module.exports = { brand: '#0f0' }`,
+      'panda.config.ts': `import tokens from 'cjs-tokens'
+        globalThis.__configEvals = (globalThis.__configEvals ?? 0) + 1
+        export default { outdir: 'styled-system', theme: { tokens: { colors: { brand: { value: tokens.brand } } } } }`,
+    })
+
+    const output = loadInNode(cwd, reportBrand)
+
+    expect(output).toEqual({ brand: '#0f0', evaluations: 1, bundlerImports: ['rolldown'] })
+  })
+
+  test('loads a local JSON file imported without an import attribute', () => {
+    const cwd = writeTempProject({
+      'node_modules/.keep': '',
+      'tokens.json': JSON.stringify({ brand: '#0f0' }),
+      'panda.config.ts': `import tokens from './tokens.json'
+        globalThis.__configEvals = (globalThis.__configEvals ?? 0) + 1
+        export default { outdir: 'styled-system', theme: { tokens: { colors: { brand: { value: tokens.brand } } } } }`,
+    })
+
+    const output = loadInNode(cwd, reportBrand)
+
+    expect(output).toMatchObject({ brand: '#0f0', evaluations: 1 })
+  })
+
+  test('re-reads a local JSON file imported with an import attribute', () => {
+    const cwd = writeTempProject({
+      'tokens.json': JSON.stringify({ brand: '#0f0' }),
+      'panda.config.ts': `import tokens from './tokens.json' with { type: 'json' }
+        export default { outdir: 'styled-system', theme: { tokens: { colors: { brand: { value: tokens.brand } } } } }`,
+    })
+
+    const output = loadInNode(
+      cwd,
+      `const { writeFileSync } = await import('node:fs')
+      const first = await loadConfig({ cwd })
+      writeFileSync(${JSON.stringify(join(cwd, 'tokens.json'))}, JSON.stringify({ brand: '#f00' }))
+      const second = await loadConfig({ cwd })
+      console.log(JSON.stringify({
+        brands: [first, second].map((result) => result.config.theme.tokens.colors.brand.value),
+        tracked: first.dependencies.includes('tokens.json'),
+        bundlerImports,
+      }))`,
+    )
+
+    expect(output).toEqual({ brands: ['#0f0', '#f00'], tracked: true, bundlerImports: [] })
+  })
+
+  test('re-reads a local ESM .mjs file on every load', () => {
+    const cwd = writeTempProject({
+      'tokens.mjs': `export const brand = '#0f0'`,
+      'panda.config.ts': `import { brand } from './tokens.mjs'
+        export default { outdir: 'styled-system', theme: { tokens: { colors: { brand: { value: brand } } } } }`,
+    })
+
+    const output = loadInNode(
+      cwd,
+      `const { writeFileSync } = await import('node:fs')
+      const first = await loadConfig({ cwd })
+      writeFileSync(${JSON.stringify(join(cwd, 'tokens.mjs'))}, "export const brand = '#f00'")
+      const second = await loadConfig({ cwd })
+      console.log(JSON.stringify({
+        brands: [first, second].map((result) => result.config.theme.tokens.colors.brand.value),
+        bundlerImports,
+      }))`,
+    )
+
+    expect(output).toEqual({ brands: ['#0f0', '#f00'], bundlerImports: [] })
+  })
+
+  test('reports an error thrown by an installed package without running the config again', () => {
+    const cwd = writeTempProject({
+      'node_modules/broken-preset/package.json': JSON.stringify({
+        name: 'broken-preset',
+        type: 'module',
+        exports: './index.js',
+      }),
+      'node_modules/broken-preset/index.js': `throw new Error('broken preset')`,
+      'panda.config.ts': `import 'broken-preset'
+        globalThis.__configEvals = (globalThis.__configEvals ?? 0) + 1
+        export default { outdir: 'styled-system' }`,
+    })
+
+    const output = loadInNode(cwd, reportLoadError)
+
+    expect(output).toEqual({ message: 'broken preset', bundlerImports: [] })
+  })
+
+  test('uses Node builtins and the real import.meta.url in the config', () => {
+    const cwd = writeTempProject({
+      'brand.txt': '#0f0',
+      'panda.config.ts': `import { readFileSync } from 'node:fs'
+        const brand = readFileSync(new URL('./brand.txt', import.meta.url), 'utf8')
+        export default { outdir: 'styled-system', theme: { tokens: { colors: { brand: { value: brand } } } } }`,
+    })
+
+    const output = loadInNode(cwd, reportBrand)
+
+    expect(output).toEqual({ brand: '#0f0', bundlerImports: [] })
+  })
+
+  test('re-reads a file the config imports dynamically', () => {
+    const cwd = writeTempProject({
+      'theme.ts': `export const brand = '#0f0'`,
+      'panda.config.ts': `const { brand } = await import('./theme')
+        export default { outdir: 'styled-system', theme: { tokens: { colors: { brand: { value: brand } } } } }`,
+    })
+
+    const output = loadInNode(
+      cwd,
+      `const { writeFileSync } = await import('node:fs')
+      const first = await loadConfig({ cwd })
+      writeFileSync(${JSON.stringify(join(cwd, 'theme.ts'))}, "export const brand = '#f00'")
+      const second = await loadConfig({ cwd })
+      console.log(JSON.stringify({
+        brands: [first, second].map((result) => result.config.theme.tokens.colors.brand.value),
+        bundlerImports,
+      }))`,
+    )
+
+    expect(output).toEqual({ brands: ['#0f0', '#f00'], bundlerImports: [] })
+  })
+
+  test('logs why it fell back to the bundler with NODE_DEBUG=panda', () => {
+    const cwd = writeTempProject({
+      'node_modules/.keep': '',
+      'tsconfig.json': JSON.stringify({ compilerOptions: { baseUrl: '.', paths: { '@theme': ['./theme.ts'] } } }),
+      'theme.ts': `export const brand = '#0f0'`,
+      'panda.config.ts': `import { brand } from '@theme'
+        export default { outdir: 'styled-system', theme: { tokens: { colors: { brand: { value: brand } } } } }`,
+    })
+
+    const { stderr } = runInNode(cwd, `await loadConfig({ cwd })`, { NODE_DEBUG: 'panda' })
+
+    expect(stderr).toContain('loading panda.config.ts with the bundler')
+    expect(stderr).toContain('"@theme"')
   })
 
   test('falls back to the bundler for tsconfig paths', () => {
