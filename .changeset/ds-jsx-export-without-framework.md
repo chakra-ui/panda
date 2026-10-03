@@ -4,4 +4,4 @@
 ---
 
 Apps using a `designSystem` without `jsxFramework` no longer fail codegen with `design_system_export_missing` for
-`./jsx`. The `./jsx` exports are only required when JSX is enabled.
+`./jsx`. With `jsxFramework` set, a missing `./jsx` export is now reported even when the design system has no patterns.

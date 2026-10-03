@@ -326,6 +326,57 @@ describe('collectExportMissingDiagnostics', () => {
     expect(messages).toContain('./jsx/*')
   })
 
+  test('reports missing ./jsx exports when a react design system has no patterns', () => {
+    const diagnostics = collectExportMissingDiagnostics(
+      {
+        designSystem: [
+          ds({
+            name: '@acme/ds',
+            specifier: '@acme/ds',
+            packageExports: {
+              '.': './index.js',
+              './helpers': './helpers/index.js',
+              './css': './css/index.js',
+              './css/*': './css/*.js',
+            },
+          }),
+        ],
+        overlayInput: { authored: NOTHING_AUTHORED, compatible: true },
+      },
+      'react',
+    )
+
+    const messages = diagnostics.map((d) => d.message).join('\n')
+    expect(messages).toContain('"./jsx"')
+    expect(messages).toContain('"./jsx/*"')
+  })
+
+  test('does not require ./jsx for a jsxFramework without generated jsx', () => {
+    const diagnostics = collectExportMissingDiagnostics(
+      {
+        designSystem: [
+          ds({
+            name: '@acme/ds',
+            specifier: '@acme/ds',
+            patternNames: ['stack'],
+            packageExports: {
+              '.': './index.js',
+              './helpers': './helpers/index.js',
+              './css': './css/index.js',
+              './css/*': './css/*.js',
+              './patterns': './patterns/index.js',
+              './patterns/*': './patterns/*.js',
+            },
+          }),
+        ],
+        overlayInput: { authored: NOTHING_AUTHORED, compatible: true },
+      },
+      'qwik',
+    )
+
+    expect(diagnostics).toEqual([])
+  })
+
   test('does not require ./jsx when the app has no jsxFramework', () => {
     const diagnostics = collectExportMissingDiagnostics({
       designSystem: [
