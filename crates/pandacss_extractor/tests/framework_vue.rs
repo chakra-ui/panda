@@ -960,3 +960,21 @@ fn comment_marker_inside_script_does_not_hide_the_template() {
     jsx: []
     ");
 }
+
+#[test]
+fn unclosed_script_runs_to_the_end_of_the_file() {
+    let source = indoc! {r#"
+        <script setup>
+        import { css } from '@panda/css';
+        const a = css({ color: 'red' });
+
+        <template>
+          <p :class="css({ color: 'blue' })" />
+        </template>
+    "#};
+    let result = extract(source, "Card.vue", &panda_config());
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls: []
+    jsx: []
+    ");
+}

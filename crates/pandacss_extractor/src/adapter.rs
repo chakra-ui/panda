@@ -236,16 +236,34 @@ pub(crate) fn tag_blocks_with(
     let open = format!("<{tag}");
     let bytes = source.as_bytes();
 
+    let raw_names: Vec<&str> = ["script", "style"]
+        .into_iter()
+        .filter(|raw| !raw.eq_ignore_ascii_case(tag))
+        .collect();
+    let raw_opens: Vec<String> = raw_names.iter().map(|raw| format!("<{raw}")).collect();
+    let mut open_cache = Scan::default();
+    let mut comment_cache = Scan::default();
+    let mut raw_caches = vec![Scan::default(); raw_names.len()];
+
     loop {
-        let open_start = find_tag_open(source, &open, cursor);
-        let comment = find_bytes(bytes, b"<!--", cursor);
-        let raw = ["script", "style"]
-            .into_iter()
-            .filter(|raw| !raw.eq_ignore_ascii_case(tag))
-            .filter_map(|raw| {
-                find_tag_open(source, &format!("<{raw}"), cursor).map(|start| (start, raw))
-            })
-            .min();
+        let open_start = cached(&mut open_cache, cursor, || {
+            find_tag_open(source, &open, cursor)
+        });
+        let comment = cached(&mut comment_cache, cursor, || {
+            count_scan();
+            find_bytes(bytes, b"<!--", cursor)
+        });
+        let mut raw: Option<(usize, &str)> = None;
+        for (index, raw_open) in raw_opens.iter().enumerate() {
+            let found = cached(&mut raw_caches[index], cursor, || {
+                find_tag_open(source, raw_open, cursor)
+            });
+            if let Some(start) = found
+                && raw.is_none_or(|(best, _)| start < best)
+            {
+                raw = Some((start, raw_names[index]));
+            }
+        }
 
         let next = [open_start, comment, raw.map(|(start, _)| start)]
             .into_iter()
@@ -309,7 +327,33 @@ pub(crate) fn tag_blocks_with(
     blocks
 }
 
+#[derive(Clone, Copy, Default)]
+struct Scan {
+    done: bool,
+    position: Option<usize>,
+}
+
+fn cached(slot: &mut Scan, cursor: usize, scan: impl FnOnce() -> Option<usize>) -> Option<usize> {
+    if slot.done && slot.position.is_none_or(|position| position >= cursor) {
+        return slot.position;
+    }
+    slot.position = scan();
+    slot.done = true;
+    slot.position
+}
+
+#[cfg(test)]
+thread_local! {
+    static SCANS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
+fn count_scan() {
+    #[cfg(test)]
+    SCANS.with(|scans| scans.set(scans.get() + 1));
+}
+
 fn find_tag_open(source: &str, open: &str, from: usize) -> Option<usize> {
+    count_scan();
     let mut cursor = from;
     while let Some(start) = find_ascii_ci(source, open, cursor) {
         if is_tag_name_boundary(source.as_bytes(), start + open.len()) {
@@ -439,7 +483,35 @@ pub(crate) fn find_bytes(bytes: &[u8], needle: &[u8], from: usize) -> Option<usi
 
 #[cfg(test)]
 mod tests {
-    use super::SfcFormat;
+    use super::{SCANS, SfcFormat, tag_blocks};
+
+    #[test]
+    fn block_finding_scans_linearly_over_many_comments() {
+        let mut source = String::from("<script>const a = 1;</script>\n");
+        for _ in 0..10_000 {
+            source.push_str("<!-- c -->\n");
+        }
+        source.push_str("<template><p/></template>\n");
+        SCANS.with(|scans| scans.set(0));
+        let blocks = tag_blocks(&source, "template");
+        let scans = SCANS.with(std::cell::Cell::get);
+        assert_eq!(blocks.len(), 1);
+        assert!(scans < 20_000, "{scans} scans");
+    }
+
+    #[test]
+    fn comment_marker_in_style_body_does_not_hide_later_script() {
+        let source = "<style>.a::after { content: '<!--' }</style>\n<script>const a = 1;</script>";
+        assert_eq!(tag_blocks(source, "script").len(), 1);
+        assert_eq!(tag_blocks(source, "style").len(), 1);
+    }
+
+    #[test]
+    fn comment_marker_in_script_body_does_not_hide_later_style() {
+        let source = "<script>const m = '<!--';</script>\n<style>.a { color: red }</style>";
+        assert_eq!(tag_blocks(source, "style").len(), 1);
+        assert_eq!(tag_blocks(source, "script").len(), 1);
+    }
 
     #[test]
     fn sfc_formats_are_resolved_from_the_extension() {
