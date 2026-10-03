@@ -29,7 +29,7 @@ pub(super) fn compact() -> Item {
         vec![Param::typed("v", TsType::Raw("T".into()))],
         TsType::Raw("Partial<T>".into()),
         indoc! {r"
-            const out = Object.create(null)
+            const out: Record<string, any> = {}
             if (!v) return out
             for (const k in v) {
               if (v[k] !== void 0) out[k] = v[k]
@@ -242,9 +242,9 @@ pub(super) fn walk_object() -> Item {
             const inner = (value: any, path: string[] = []) => {
               if (!value || typeof value !== "object") return fn(value, path)
               if (stop?.(value, path)) return fn(value, path)
-              const out: any = Array.isArray(value) ? [] : Object.create(null)
+              const out: any = Array.isArray(value) ? [] : {}
               for (const prop in value) {
-                if (!HAS_OWN.call(value, prop)) continue
+                if (!HAS_OWN.call(value, prop) || prop === "__proto__") continue
                 const key = getKey?.(prop, value[prop]) ?? prop
                 path.push(key)
                 const next = inner(value[prop], path)
@@ -282,7 +282,7 @@ pub(super) fn merge_props() -> Item {
         )],
         TsType::Raw("Record<string, any>".into()),
         indoc! {r#"
-            const out = Object.create(null)
+            const out: Record<string, any> = {}
             for (const obj of src) {
               if (!obj) continue
               for (const k in obj) {
