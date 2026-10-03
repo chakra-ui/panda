@@ -55,6 +55,27 @@ fn attribute_and_children_expressions_extract() {
 }
 
 #[test]
+fn regex_brace_in_template_expression_does_not_truncate_expression() {
+    let source = indoc! {r"
+        ---
+        import { css } from '@panda/css';
+        ---
+
+        <p class={/\}/.test(value) ? css({ color: 'red' }) : ''} />
+    "};
+
+    let result = extract(source, "page.astro", &panda_config());
+    assert!(result.diagnostics.is_empty());
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+    jsx: []
+    ");
+}
+
+#[test]
 fn frontmatter_const_resolves_in_template() {
     let source = indoc! {r"
         ---

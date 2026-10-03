@@ -262,12 +262,30 @@ pub(crate) fn find_matching_brace(source: &str, open: usize) -> Option<usize> {
     None
 }
 
-#[derive(Default)]
 pub(crate) struct JsState {
     quote: Option<u8>,
     line_comment: bool,
     block_comment: bool,
     escaped: bool,
+    regex_start: RegexStart,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum RegexStart {
+    Allowed,
+    Disallowed,
+}
+
+impl Default for JsState {
+    fn default() -> Self {
+        Self {
+            quote: None,
+            line_comment: false,
+            block_comment: false,
+            escaped: false,
+            regex_start: RegexStart::Allowed,
+        }
+    }
 }
 
 impl JsState {
@@ -310,11 +328,106 @@ impl JsState {
             *index += 2;
             return true;
         }
+        if byte == b'/' && self.regex_start == RegexStart::Allowed {
+            // A regex literal can contain braces which must not affect the
+            // surrounding SFC expression boundary.
+            *index += 1;
+            let mut in_character_class = false;
+            let mut escaped = false;
+            while *index < bytes.len() {
+                let current = bytes[*index];
+                *index += 1;
+                if escaped {
+                    escaped = false;
+                } else if current == b'\\' {
+                    escaped = true;
+                } else if current == b'[' {
+                    in_character_class = true;
+                } else if current == b']' {
+                    in_character_class = false;
+                } else if current == b'/' && !in_character_class {
+                    while *index < bytes.len() && bytes[*index].is_ascii_alphabetic() {
+                        *index += 1;
+                    }
+                    break;
+                } else if matches!(current, b'\n' | b'\r') {
+                    break;
+                }
+            }
+            self.regex_start = RegexStart::Disallowed;
+            return true;
+        }
         if matches!(byte, b'\'' | b'"' | b'`') {
             self.quote = Some(byte);
+            self.regex_start = RegexStart::Disallowed;
             *index += 1;
             return true;
         }
+        if byte.is_ascii_whitespace() {
+            *index += 1;
+            return true;
+        }
+        if byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$' {
+            // `return`, `throw`, and similar keywords may be followed by a
+            // regex literal; ordinary identifiers and literals may not.
+            let start = *index;
+            while *index < bytes.len()
+                && (bytes[*index].is_ascii_alphanumeric() || matches!(bytes[*index], b'_' | b'$'))
+            {
+                *index += 1;
+            }
+            self.regex_start = if matches!(
+                &bytes[start..*index],
+                b"return"
+                    | b"throw"
+                    | b"case"
+                    | b"delete"
+                    | b"void"
+                    | b"typeof"
+                    | b"instanceof"
+                    | b"in"
+                    | b"of"
+                    | b"yield"
+                    | b"await"
+            ) {
+                RegexStart::Allowed
+            } else {
+                RegexStart::Disallowed
+            };
+            return true;
+        }
+        if starts_with(bytes, *index, b"++") || starts_with(bytes, *index, b"--") {
+            // Postfix increment/decrement ends an expression, so a following
+            // slash is division rather than the start of a regex literal.
+            self.regex_start = RegexStart::Disallowed;
+            *index += 2;
+            return true;
+        }
+        self.regex_start = if matches!(
+            byte,
+            b'{' | b'('
+                | b'['
+                | b','
+                | b':'
+                | b';'
+                | b'='
+                | b'!'
+                | b'?'
+                | b'&'
+                | b'|'
+                | b'+'
+                | b'-'
+                | b'*'
+                | b'%'
+                | b'^'
+                | b'~'
+                | b'<'
+                | b'>'
+        ) {
+            RegexStart::Allowed
+        } else {
+            RegexStart::Disallowed
+        };
         false
     }
 }
