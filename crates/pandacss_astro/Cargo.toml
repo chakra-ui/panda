@@ -7,13 +7,6 @@ repository.workspace = true
 rust-version.workspace = true
 publish = false
 
-[dependencies]
-astro_oxc_allocator = { workspace = true }
-astro_oxc_ast = { workspace = true }
-astro_oxc_ast_visit = { workspace = true }
-astro_oxc_parser = { workspace = true }
-astro_oxc_span = { workspace = true }
-
 [dev-dependencies]
 indoc = { workspace = true }
 insta = { workspace = true }

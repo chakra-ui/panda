@@ -277,14 +277,8 @@ fn elements_record_every_attribute_form() {
 }
 
 #[test]
-fn astro_parse_errors_are_reported_with_original_spans() {
+fn stray_closing_tag_and_unclosed_element_are_reported() {
     let document = pandacss_astro::lower("<div></span>");
-    assert!(
-        document
-            .elements
-            .iter()
-            .all(|element| element.name.start < element.name.end)
-    );
     let errors: Vec<_> = document
         .diagnostics
         .iter()
@@ -299,11 +293,37 @@ fn astro_parse_errors_are_reported_with_original_spans() {
             ),
         ),
         (
-            "Unexpected token",
+            "Unexpected end of file",
             Some(
                 12..12,
             ),
         ),
     ]
     "#);
+}
+
+#[test]
+fn top_level_closing_tag_ends_the_template() {
+    let source = "<img></img>x<p class={css({ color: 'red' })}/>";
+    let document = lowered(source);
+    assert!(document.diagnostics.is_empty());
+    assert!(!document.canvas.contains("css"));
+}
+
+#[test]
+fn math_turns_the_next_braces_into_text() {
+    let source = "<math>{a}</math>{z}<p/>{w}";
+    assert_snapshot!(show(&lowered(source).canvas), @"|[                      ,w ]");
+}
+
+#[test]
+fn markup_first_container_spans_to_the_closing_brace() {
+    let source = "{<a/> <b/>}";
+    assert_snapshot!(show(&lowered(source).canvas), @"|[[        ]]");
+}
+
+#[test]
+fn generic_arrow_is_not_markup() {
+    let source = "{f(<T,>(x: T) => x)}";
+    assert_snapshot!(show(&lowered(source).canvas), @"|[f(<T,>(x: T) => x) ]");
 }

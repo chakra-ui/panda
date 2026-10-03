@@ -1,6 +1,5 @@
 use std::ops::Range;
 
-#[allow(dead_code, reason = "wired into lower() in the next commit")]
 pub(crate) struct Frontmatter {
     pub(crate) content: Range<usize>,
     pub(crate) close: usize,
@@ -19,7 +18,6 @@ enum State {
     Class,
 }
 
-#[allow(dead_code, reason = "wired into lower() in the next commit")]
 pub(crate) fn scan(source: &str) -> Option<Frontmatter> {
     let bytes = source.as_bytes();
     let open = find_opening_fence(bytes)?;
