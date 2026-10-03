@@ -13,5 +13,4 @@ loads the code for `init` and `debug`.
 
 - `@pandacss/preset-base`, `@pandacss/preset-panda` and `@pandacss/preset-typography` are now ESM-only, like the rest of
   v2.
-- Generated `styled-system/patterns` files are reformatted once, so their output no longer depends on how a preset was
-  loaded.
+- Generated `styled-system/patterns` files are reformatted once.
