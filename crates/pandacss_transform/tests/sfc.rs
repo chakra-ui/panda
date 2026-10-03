@@ -493,3 +493,24 @@ fn astro_rewrites_keep_crlf_and_non_ascii_offsets() {
         "---\r\n\r\n---\r\n<p>café — 日本</p>\r\n<p class={\"color_red\"} />\r\n"
     );
 }
+
+#[test]
+fn helper_import_lands_inside_a_directive_only_astro_frontmatter() {
+    let source = "---\n'use client'\n---\n<p class={__pcx('a')} />\n";
+    let output = pandacss_transform::sync_internal_css_import(
+        source,
+        "a.astro",
+        &pandacss_transform::TransformHelperFacts {
+            needs_cx: true,
+            ..Default::default()
+        },
+        pandacss_transform::HelperCxMode::Auto,
+    );
+    assert_snapshot!(output, @"
+    ---
+    'use client'
+    import { cx as __pcx } from '@pandacss-internal/css';
+    ---
+    <p class={__pcx('a')} />
+    ");
+}

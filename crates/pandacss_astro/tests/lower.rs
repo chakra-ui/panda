@@ -18,7 +18,7 @@ fn frontmatter_is_copied_and_opens_the_template_array() {
     |
     |import { css } from '@panda/css';
     |const a = css({ color: 'red' });
-    |;[
+    |0;[
     |         ,a
     |]
     ");
@@ -43,7 +43,7 @@ fn fence_inside_a_template_literal_does_not_close_the_frontmatter() {
     |---
     |<div />`;
     |const before = css({ color: 'red' });
-    |;[
+    |0;[
     |           ,before  ,sample
     |]
     ");
@@ -54,7 +54,7 @@ fn fences_on_the_same_line_and_text_before_them() {
     let source = "hello\n--- const a = 1 ---\n<p />";
     assert_snapshot!(show(&lowered(source).canvas), @r"
     |
-    |    const a = 1 ;[
+    |    const a = 1;[
     |     ]
     ");
 }
@@ -76,7 +76,7 @@ fn frontmatter_only_file() {
     assert_snapshot!(show(&lowered(source).canvas), @r"
     |
     |const a = 1
-    |;[
+    |0;[
     |]
     ");
 }
@@ -116,7 +116,7 @@ fn script_tag_named_in_a_frontmatter_comment() {
     |
     |// The <script> below hydrates the list.
     |const a = css({ color: 'red' });
-    |;[
+    |0;[
     |         ,a
     |
     |
@@ -179,7 +179,7 @@ fn crlf_line_endings_are_kept() {
     let source = "---\r\nconst a = css({ color: 'red' });\r\n---\r\n<p class={a}>é</p>\r\n";
     assert_eq!(
         lowered(source).canvas,
-        "   \r\nconst a = css({ color: 'red' });\r\n;[ \r\n         ,a        \r\n]"
+        "   \r\nconst a = css({ color: 'red' });\r\n0;[\r\n         ,a        \r\n]"
     );
 }
 

@@ -281,6 +281,7 @@ fn string_literal_expr(expr: &Expression<'_>) -> Option<String> {
 pub(crate) fn collect_parser_diagnostics(
     errors: &[OxcDiagnostic],
     source: &str,
+    limit: u32,
 ) -> Vec<Diagnostic> {
     parse_error_diagnostics(
         errors.iter().map(|error| {
@@ -288,8 +289,10 @@ pub(crate) fn collect_parser_diagnostics(
                 &error.message[..],
                 error.labels.as_ref().and_then(|labels| {
                     labels.first().map(|label| Span {
-                        start: u32::try_from(label.offset()).unwrap_or(0),
-                        end: u32::try_from(label.offset() + label.len()).unwrap_or(0),
+                        start: u32::try_from(label.offset()).unwrap_or(0).min(limit),
+                        end: u32::try_from(label.offset() + label.len())
+                            .unwrap_or(0)
+                            .min(limit),
                     })
                 }),
             )

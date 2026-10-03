@@ -38,6 +38,7 @@ pub(crate) struct AdaptedSource<'a> {
     pub(crate) code: Cow<'a, str>,
     pub(crate) astro_elements: Vec<pandacss_astro::AstroElement>,
     astro_diagnostics: Vec<pandacss_astro::AstroDiagnostic>,
+    source_len: usize,
 }
 
 impl<'a> AdaptedSource<'a> {
@@ -52,6 +53,7 @@ impl<'a> AdaptedSource<'a> {
                     code: Cow::Owned(document.canvas),
                     astro_elements: document.elements,
                     astro_diagnostics: document.diagnostics,
+                    source_len: source.len(),
                 };
             }
             Some(SfcFormat::Vue) => Cow::Owned(crate::vue_adapter::mask_vue(source)),
@@ -63,6 +65,7 @@ impl<'a> AdaptedSource<'a> {
             code,
             astro_elements: Vec::new(),
             astro_diagnostics: Vec::new(),
+            source_len: source.len(),
         }
     }
 
@@ -84,19 +87,20 @@ impl<'a> AdaptedSource<'a> {
 
     #[must_use]
     pub(crate) fn parse_diagnostics(&self, errors: &[OxcDiagnostic]) -> Vec<Diagnostic> {
+        let limit = u32::try_from(self.source_len).unwrap_or(u32::MAX);
         let mut diagnostics = crate::imports::parse_error_diagnostics(
             self.astro_diagnostics.iter().map(|diagnostic| {
                 (
                     diagnostic.message.as_str(),
                     diagnostic.span.as_ref().map(|span| Span {
-                        start: span.start,
-                        end: span.end,
+                        start: span.start.min(limit),
+                        end: span.end.min(limit),
                     }),
                 )
             }),
             &self.code,
         );
-        diagnostics.extend(crate::collect_parser_diagnostics(errors, &self.code));
+        diagnostics.extend(crate::collect_parser_diagnostics(errors, &self.code, limit));
         diagnostics
     }
 }

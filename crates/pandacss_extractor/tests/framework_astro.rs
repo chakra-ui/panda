@@ -516,7 +516,7 @@ fn astro_parse_errors_are_reported_at_their_source() {
 }
 
 #[test]
-fn every_corpus_input_astro_accepts_extracts_without_warnings() {
+fn every_corpus_input_astro_accepts_extracts_without_parse_errors() {
     let corpus = concat!(
         env!("CARGO_MANIFEST_DIR"),
         "/../pandacss_astro/tests/corpus"
@@ -547,4 +547,38 @@ fn every_corpus_input_astro_accepts_extracts_without_warnings() {
     }
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     assert!(checked > 3700, "only {checked} accepted inputs checked");
+}
+
+#[test]
+fn import_spans_stop_before_the_closing_fence() {
+    let source = "---\nimport { css } from '@panda/css'\n---\n<p/>";
+    let imports = scan_imports(source, "page.astro").imports;
+    let span = imports[0].span;
+    assert!(source[span.start as usize..span.end as usize].ends_with('\''));
+}
+
+#[test]
+fn frontmatter_and_fences_on_one_line_extract_the_template_call() {
+    let source = "--- import { css } from '@panda/css' ---\n<p class={css({ color: 'red' })} />";
+    let result = extract(source, "page.astro", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+    jsx: []
+    ");
+}
+
+#[test]
+fn diagnostic_spans_stay_inside_the_source() {
+    let source = "---\nconst a = 1\n---\n<p>{a +}</p>\n";
+    let result = extract(source, "page.astro", &panda_config());
+    assert!(!result.diagnostics.is_empty());
+    for diagnostic in &result.diagnostics {
+        if let Some(span) = &diagnostic.span {
+            assert!(span.end as usize <= source.len(), "{span:?}");
+        }
+    }
 }

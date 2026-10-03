@@ -112,8 +112,7 @@ impl Lowering<'_> {
                 let close = frontmatter.span.end as usize - 3;
                 let open = find(self.source, b"---").map_or(close, |index| index + 3);
                 self.copy(open..close);
-                self.canvas[close] = b';';
-                self.canvas[close + 1] = b'[';
+                self.end_frontmatter(close);
                 true
             } else if let Some(open) = root
                 .body
@@ -127,6 +126,24 @@ impl Lowering<'_> {
             };
         self.children(&root.body);
         opened
+    }
+
+    fn end_frontmatter(&mut self, close: usize) {
+        let mut cursor = close;
+        while cursor > 0 && matches!(self.source[cursor - 1], b' ' | b'\t') {
+            cursor -= 1;
+        }
+        if cursor == 0 || matches!(self.source[cursor - 1], b'\n' | b'\r') {
+            self.canvas[close] = b'0';
+            self.canvas[close + 1] = b';';
+            self.canvas[close + 2] = b'[';
+        } else if cursor < close {
+            self.canvas[close - 1] = b';';
+            self.canvas[close] = b'[';
+        } else {
+            self.canvas[close] = b';';
+            self.canvas[close + 1] = b'[';
+        }
     }
 
     fn children(&mut self, children: &[JSXChild<'_>]) {

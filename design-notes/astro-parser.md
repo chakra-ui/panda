@@ -70,7 +70,7 @@ Every canvas byte below `source.len()` is one of:
 
 - copied from the source;
 - blanked to a space, with newlines kept;
-- one byte of `, ; [ ]` written over a non-line-break byte.
+- one byte of `0 , ; [ ]` written over a non-line-break byte.
 
 One `]` may be appended after `source.len()`. No offset in the source moves, so the extractor's spans, the transform's
 span-based rewrites, and the scope and cross-file code that slice the source by span all keep working. This follows the
@@ -117,7 +117,7 @@ Elements become array literals of their expressions. JS stays where it is.
 
 | Node                                                           | Canvas                                                                                                 |
 | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| Content before the opening fence, the fences                   | Blank. The closing fence's first byte becomes `;` and the next `[`, opening the template array.        |
+| Content before the opening fence, the fences                   | Blank. The fence is replaced by `0;[` when only spaces or tabs precede it on its line, so ASI ends the last statement before `0`. Otherwise `;[` goes on the last space or tab before the fence, or on the fence's first two bytes. `[` opens the template array. |
 | Frontmatter                                                    | Copied as-is. Top-level `return` stays allowed.                                                        |
 | No frontmatter                                                 | The first non-line-break byte of the template becomes `[`.                                             |
 | End of file                                                    | `]` appended when an array was opened.                                                                 |

@@ -18,7 +18,7 @@ pub fn check_offsets(source: &str, canvas: &str) -> Result<(), String> {
     for (index, (original, lowered)) in source.bytes().zip(canvas.bytes()).enumerate() {
         let line_break = matches!(original, b'\n' | b'\r');
         let allowed = original == lowered
-            || (!line_break && matches!(lowered, b' ' | b',' | b';' | b'[' | b']'));
+            || (!line_break && matches!(lowered, b' ' | b'0' | b',' | b';' | b'[' | b']'));
         if !allowed {
             return Err(format!(
                 "byte {index} changed from {original:?} to {lowered:?}"

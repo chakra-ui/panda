@@ -55,8 +55,7 @@ impl Lowering<'_> {
         let opened = if let Some(frontmatter) = &document.frontmatter {
             let close = frontmatter.close;
             self.copy(frontmatter.content.start..close);
-            self.put(close, b';');
-            self.put(close + 1, b'[');
+            self.end_frontmatter(close);
             true
         } else if let Some(open) = document
             .body
@@ -70,6 +69,24 @@ impl Lowering<'_> {
         };
         self.children(&document.body);
         opened
+    }
+
+    fn end_frontmatter(&mut self, close: usize) {
+        let mut cursor = close;
+        while cursor > 0 && matches!(self.source[cursor - 1], b' ' | b'\t') {
+            cursor -= 1;
+        }
+        if cursor == 0 || matches!(self.source[cursor - 1], b'\n' | b'\r') {
+            self.put(close, b'0');
+            self.put(close + 1, b';');
+            self.put(close + 2, b'[');
+        } else if cursor < close {
+            self.put(close - 1, b';');
+            self.put(close, b'[');
+        } else {
+            self.put(close, b';');
+            self.put(close + 1, b'[');
+        }
     }
 
     fn children(&mut self, children: &[Child]) {
