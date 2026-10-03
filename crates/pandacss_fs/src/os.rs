@@ -73,7 +73,10 @@ impl FileSystem for OsFileSystem {
                 .follow_links(true)
                 .into_iter()
                 .filter_entry(|entry| {
-                    entry.depth() == 0 || !matcher.is_excluded(&matcher.candidate(entry.path()))
+                    entry.depth() == 0
+                        || (!matcher.is_excluded(&matcher.candidate(entry.path()))
+                            && (!entry.file_type().is_dir()
+                                || matcher.may_include_under(entry.path())))
                 });
 
             for entry in walker {

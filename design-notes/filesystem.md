@@ -149,7 +149,10 @@ watch list — see [output-and-host-layer](./output-and-host-layer.md).
      under its own walk root, so `**/*.tsx` never claims files outside `cwd`.
    - If any `exclude` pattern matches → prune. **Important: pruning at the dir level skips descending entirely**, so
      `node_modules/**` in `exclude` never enters the directory.
-   - If entry is a dir → push to queue.
+   - If entry is a dir → push to queue only when some include could match a file below it
+     (`SourceMatcher::may_include_under`, matched one path segment at a time; `**` or a brace holding `/` keeps it).
+     `../*/src/*.ts` never enters `../*/node_modules`, so pnpm workspace links aren't followed into an exponential
+     number of paths.
    - Else if any `include` pattern matches → add to results.
 4. Sort results for determinism.
 
