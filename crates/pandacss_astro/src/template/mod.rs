@@ -5,7 +5,7 @@ use std::ops::Range;
 
 use crate::AstroDiagnostic;
 use crate::frontmatter;
-use crate::js::{Lexer, Token, TokenKind};
+use crate::js::{Lexer, Token, TokenKind, string_terminated};
 use crate::lower::offset;
 use crate::tree::{Child, ChildKind, Document, Element, Fragment, Markup};
 
@@ -14,15 +14,7 @@ pub(crate) fn parse(source: &str) -> Document {
     let start = frontmatter
         .as_ref()
         .map_or(0, |frontmatter| frontmatter.body);
-    let mut parser = Parser {
-        source,
-        bytes: source.as_bytes(),
-        diagnostics: Vec::new(),
-        open: Vec::new(),
-        foreign: false,
-        depth: 0,
-        comment_close: None,
-    };
+    let mut parser = Parser::new(source);
     let body = parser.body(start);
     Document {
         frontmatter,
@@ -98,11 +90,27 @@ struct Parser<'s> {
     foreign: bool,
     depth: usize,
     comment_close: Option<(usize, Option<usize>)>,
+    #[cfg(test)]
+    comment_scans: usize,
 }
 
 const MAX_DEPTH: usize = 256;
 
-impl Parser<'_> {
+impl<'s> Parser<'s> {
+    fn new(source: &'s str) -> Self {
+        Parser {
+            source,
+            bytes: source.as_bytes(),
+            diagnostics: Vec::new(),
+            open: Vec::new(),
+            foreign: false,
+            depth: 0,
+            comment_close: None,
+            #[cfg(test)]
+            comment_scans: 0,
+        }
+    }
+
     fn body(&mut self, start: usize) -> Vec<Child> {
         let mut children = Vec::new();
         let mut pos = start;
@@ -237,7 +245,7 @@ impl Parser<'_> {
                 }
                 return true;
             }
-            TokenKind::String if !terminated(text) => "Unterminated string",
+            TokenKind::String if !string_terminated(self.source, token) => "Unterminated string",
             TokenKind::NoSubstitutionTemplate if !terminated(text) => "Unterminated template",
             TokenKind::Number if !tag::valid_number(text) || self.word_follows(token.end) => {
                 self.diagnostics.push(diagnostic(

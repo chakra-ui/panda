@@ -384,9 +384,27 @@ fn inputs_astro_rejects_are_reported_and_keep_no_elements() {
 }
 
 #[test]
-fn many_unclosed_comments_after_markup_stay_linear() {
-    let source = format!("{{c && {}1}}", "<a/> <!-- 1, ".repeat(20_000));
-    let started = std::time::Instant::now();
-    let _ = pandacss_astro::lower(&source);
-    assert!(started.elapsed() < std::time::Duration::from_secs(5));
+fn unterminated_strings_are_fatal_in_expressions_and_skipped_in_drift() {
+    for source in [
+        "<p>{a ? 'x\n' : b}</p>",
+        "<p>{a ? 'x\r' : b}</p>",
+        "<p>{a ? \"x\n\" : b}</p>",
+        "<p class={'x\n}/>",
+        "<p class=`${'a\n'}`/>",
+    ] {
+        let document = pandacss_astro::lower(source);
+        assert!(!document.diagnostics.is_empty(), "{source:?}");
+        assert!(document.elements.is_empty(), "{source:?}");
+    }
+    for (source, element) in [
+        ("}'a\n<p/>", 5..6),
+        ("}\"a\r<p/>", 5..6),
+        ("<!-- 'a\n> <p/>", 11..12),
+    ] {
+        let document = pandacss_astro::lower(source);
+        assert_eq!(document.diagnostics.len(), 1, "{source:?}");
+        assert_eq!(document.diagnostics[0].message, "Unterminated string");
+        let names: Vec<_> = document.elements.iter().map(|e| e.name.clone()).collect();
+        assert_eq!(names, vec![element], "{source:?}");
+    }
 }

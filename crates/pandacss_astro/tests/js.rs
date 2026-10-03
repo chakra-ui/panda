@@ -169,3 +169,34 @@ fn slash_after_a_control_paren_is_a_regex() {
     assert_eq!(find_closing_brace("{f(x) /}/ 2}", 0), Some(7));
     assert_eq!(find_closing_brace("{a.if(x) /}/ 2}", 0), Some(10));
 }
+
+#[test]
+fn strings_end_before_a_line_break_unless_it_is_escaped() {
+    for terminator in ["\n", "\r"] {
+        let source = format!("'x{terminator}'");
+        assert_eq!(
+            Lexer::new(&source, 0).next_token(true),
+            token(TokenKind::String, 0, 2),
+            "{source:?}"
+        );
+    }
+    assert_eq!(
+        Lexer::new("'x\u{2028}'", 0).next_token(true),
+        token(TokenKind::String, 0, 6)
+    );
+    for continuation in ["\\\n", "\\\r\n", "\\\r"] {
+        let source = format!("'x{continuation}y' z");
+        let end = source.len() - 2;
+        assert_eq!(
+            Lexer::new(&source, 0).next_token(true),
+            token(TokenKind::String, 0, end),
+            "{source:?}"
+        );
+    }
+}
+
+#[test]
+fn unterminated_string_closes_at_the_first_brace_after_the_line_break() {
+    assert_eq!(find_closing_brace("{a ? 'x\n} : 1}", 0), Some(8));
+    closes_at_end("{a ? 'x\\\n}' : 1}");
+}

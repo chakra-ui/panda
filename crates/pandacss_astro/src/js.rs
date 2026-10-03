@@ -119,7 +119,7 @@ impl<'a> Lexer<'a> {
             self.number();
             TokenKind::Number
         } else if ch == '\'' || ch == '"' {
-            self.string(ch);
+            self.string();
             TokenKind::String
         } else if ch == '`' {
             self.position += 1;
@@ -208,18 +208,8 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    fn string(&mut self, quote: char) {
-        let bytes = self.source.as_bytes();
-        self.position += 1;
-        while let Some(&byte) = bytes.get(self.position) {
-            self.position += 1;
-            if byte == b'\\' {
-                self.position += 1;
-            } else if byte == quote as u8 {
-                break;
-            }
-        }
-        self.clamp();
+    fn string(&mut self) {
+        self.position = scan_string(self.source, self.position).0;
     }
 
     fn template(&mut self, start: usize, interpolated: TokenKind) -> Token {
@@ -282,6 +272,30 @@ impl<'a> Lexer<'a> {
     fn clamp(&mut self) {
         self.set_position(self.position);
     }
+}
+
+fn scan_string(source: &str, start: usize) -> (usize, bool) {
+    let bytes = source.as_bytes();
+    let quote = bytes[start];
+    let mut position = start + 1;
+    while let Some(&byte) = bytes.get(position) {
+        match byte {
+            b'\n' | b'\r' => return (position, false),
+            b'\\' => {
+                position += match (bytes.get(position + 1), bytes.get(position + 2)) {
+                    (Some(b'\r'), Some(b'\n')) => 3,
+                    _ => 2,
+                };
+            }
+            _ if byte == quote => return (position + 1, true),
+            _ => position += 1,
+        }
+    }
+    (source.len(), false)
+}
+
+pub(crate) fn string_terminated(source: &str, token: Token) -> bool {
+    scan_string(source, token.start).1
 }
 
 fn scan_regex(source: &str, start: usize) -> (usize, bool) {

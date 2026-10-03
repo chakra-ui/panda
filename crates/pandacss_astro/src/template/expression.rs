@@ -1,5 +1,5 @@
 use super::{Fatal, Kind, Next, Parse, Parser, diagnostic, find, into_child, lexed, other};
-use crate::js::{Lexer, TokenKind, regex_terminated};
+use crate::js::{Lexer, TokenKind, regex_terminated, string_terminated};
 use crate::tree::{Child, ChildKind, Expression, Fragment, Markup};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -232,11 +232,18 @@ impl<'s> Parser<'s> {
             if token.kind == TokenKind::Eof {
                 return Err(self.eof());
             }
-            if token.kind == TokenKind::Regex && !regex_terminated(source, token) {
-                self.diagnostics.push(diagnostic(
-                    "Unterminated regular expression",
-                    token.start..token.end,
-                ));
+            let unterminated = match token.kind {
+                TokenKind::Regex if !regex_terminated(source, token) => {
+                    Some("Unterminated regular expression")
+                }
+                TokenKind::String if !string_terminated(source, token) => {
+                    Some("Unterminated string")
+                }
+                _ => None,
+            };
+            if let Some(message) = unterminated {
+                self.diagnostics
+                    .push(diagnostic(message, token.start..token.end));
                 return Err(Fatal);
             }
             let top = match until {
@@ -429,6 +436,10 @@ impl<'s> Parser<'s> {
         {
             return close;
         }
+        #[cfg(test)]
+        {
+            self.comment_scans += 1;
+        }
         let close = self
             .bytes
             .get(from..)
@@ -485,5 +496,32 @@ impl<'s> Parser<'s> {
             children,
         }));
         Ok(end)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Parser;
+
+    #[test]
+    fn unclosed_comments_after_markup_search_for_the_close_once() {
+        let source = format!("{{c && {}1}}", "<a/> <!-- 1, ".repeat(1_000));
+        let mut parser = Parser::new(&source);
+        let _ = parser.body(0);
+        assert!(parser.diagnostics.is_empty());
+        assert_eq!(parser.comment_scans, 1);
+    }
+
+    #[test]
+    fn cached_comment_close_is_reused_until_it_falls_behind() {
+        let source = "a --> b --> c";
+        let mut parser = Parser::new(source);
+        assert_eq!(parser.comment_close_from(0), Some(2));
+        assert_eq!(parser.comment_close_from(1), Some(2));
+        assert_eq!(parser.comment_scans, 1);
+        assert_eq!(parser.comment_close_from(3), Some(8));
+        assert_eq!(parser.comment_close_from(9), None);
+        assert_eq!(parser.comment_close_from(10), None);
+        assert_eq!(parser.comment_scans, 3);
     }
 }

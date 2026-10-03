@@ -311,6 +311,31 @@ const CASES: &[(&str, &str, &str)] = &[
         "<p class=`${() => {a;}}`/>",
         "[       ,`${() => {a;}}`  ]",
     ),
+    (
+        "line_separator_inside_a_string",
+        "<p>{a ? 'x\u{2028}' : b}</p>",
+        "[  ,a ? 'x\u{2028}' : b     ]",
+    ),
+    (
+        "string_line_continuation_lf",
+        "<p>{a ? 'x\\\ny' : b}</p>",
+        "[  ,a ? 'x\\\ny' : b     ]",
+    ),
+    (
+        "string_line_continuation_crlf",
+        "<p>{a ? 'x\\\r\ny' : b}</p>",
+        "[  ,a ? 'x\\\r\ny' : b     ]",
+    ),
+    (
+        "string_line_continuation_cr",
+        "<p>{a ? 'x\\\ry' : b}</p>",
+        "[  ,a ? 'x\\\ry' : b     ]",
+    ),
+    (
+        "string_line_continuation_in_drift",
+        "}'a\\\nb' <p/>",
+        "    \n   [   ]",
+    ),
 ];
 
 #[test]
