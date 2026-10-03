@@ -1,3 +1,6 @@
+mod frontmatter;
+pub mod js;
+
 use std::ops::Range;
 
 use astro_oxc_allocator::Allocator;
