@@ -632,3 +632,39 @@ fn hoisted_declarations_keep_crlf_inside_an_astro_frontmatter() {
         output.code
     );
 }
+
+#[test]
+fn helper_import_does_not_open_a_second_fence_when_the_frontmatter_is_unclosed() {
+    let output = sync_astro("---\nconst a = 1\n<p class={__pcx('a')} />\n");
+    assert_eq!(
+        output,
+        "---\nimport { cx as __pcx } from '@pandacss-internal/css';\nconst a = 1\n<p class={__pcx('a')} />\n"
+    );
+}
+
+#[test]
+fn helper_import_creates_the_frontmatter_after_a_leading_bom() {
+    let output = sync_astro("\u{feff}<p class={__pcx('a')} />\n");
+    assert_eq!(
+        output,
+        "\u{feff}---\nimport { cx as __pcx } from '@pandacss-internal/css';\n---\n<p class={__pcx('a')} />\n"
+    );
+}
+
+#[test]
+fn helper_import_keeps_lone_cr_line_endings_in_an_astro_frontmatter() {
+    let output = sync_astro("---\rconst a = 1\r---\r<p class={__pcx('a')} />\r");
+    assert_eq!(
+        output,
+        "---\rimport { cx as __pcx } from '@pandacss-internal/css';\rconst a = 1\r---\r<p class={__pcx('a')} />\r"
+    );
+}
+
+#[test]
+fn helper_import_creates_a_lone_cr_frontmatter_when_the_astro_file_has_none() {
+    let output = sync_astro("<p class={__pcx('a')} />\r<b />\r");
+    assert_eq!(
+        output,
+        "---\rimport { cx as __pcx } from '@pandacss-internal/css';\r---\r<p class={__pcx('a')} />\r<b />\r"
+    );
+}

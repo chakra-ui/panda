@@ -86,7 +86,7 @@ pub(crate) fn build_transform_edits(
     }
 
     let at = imports::internal_css_import_insertion_point(&plan.module);
-    if is_astro(path) {
+    if imports::is_astro_path(path) {
         let content = [hoisted, import_line]
             .into_iter()
             .flatten()
@@ -110,12 +110,6 @@ pub(crate) fn build_transform_edits(
     }
 
     edits
-}
-
-fn is_astro(path: &str) -> bool {
-    std::path::Path::new(path)
-        .extension()
-        .is_some_and(|extension| extension.eq_ignore_ascii_case("astro"))
 }
 
 fn is_vue(path: &str) -> bool {
@@ -242,8 +236,8 @@ fn separated_import(
     module: &pandacss_extractor::ModuleFacts,
     content: String,
 ) -> String {
-    let eol = if is_astro(path) && source_uses_crlf(source) {
-        "\r\n"
+    let eol = if imports::is_astro_path(path) {
+        imports::line_ending(source)
     } else {
         "\n"
     };
@@ -267,12 +261,6 @@ fn separated_import(
     } else {
         format!("{eol}{content}")
     }
-}
-
-fn source_uses_crlf(source: &str) -> bool {
-    source
-        .find('\n')
-        .is_some_and(|index| index > 0 && source.as_bytes()[index - 1] == b'\r')
 }
 
 #[cfg(test)]

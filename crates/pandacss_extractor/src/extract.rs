@@ -83,7 +83,6 @@ pub struct ModuleFacts {
     pub local_call_bindings: Vec<crate::LocalCallBinding>,
     /// Safe helper-import insertion point after a hashbang/directive prologue.
     pub after_directives: u32,
-    /// An Astro file with no frontmatter: a helper import needs a new fenced block at the top.
     pub needs_frontmatter: bool,
     /// Whether `import_bindings` came from an Oxc semantic pass.
     pub symbols_resolved: bool,

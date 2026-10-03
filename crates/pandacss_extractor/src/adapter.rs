@@ -33,12 +33,24 @@ impl SfcFormat {
     }
 }
 
+fn unclosed_fence_end(source: &str) -> Option<u32> {
+    let bom = if source.starts_with('\u{feff}') { 3 } else { 0 };
+    let trimmed = source[bom..].trim_start();
+    let start = source.len() - trimmed.len();
+    trimmed
+        .starts_with("---")
+        .then(|| u32::try_from(start + 3).ok())
+        .flatten()
+}
+
 pub(crate) struct AdaptedSource<'a> {
     pub(crate) format: Option<SfcFormat>,
     pub(crate) code: Cow<'a, str>,
     pub(crate) astro_elements: Vec<pandacss_astro::AstroElement>,
     astro_diagnostics: Vec<pandacss_astro::AstroDiagnostic>,
     astro_frontmatter: Option<std::ops::Range<u32>>,
+    astro_open_fence: Option<u32>,
+    astro_bom: u32,
     source_len: usize,
 }
 
@@ -54,6 +66,12 @@ impl<'a> AdaptedSource<'a> {
                     code: Cow::Owned(document.canvas),
                     astro_elements: document.elements,
                     astro_diagnostics: document.diagnostics,
+                    astro_open_fence: if document.frontmatter.is_none() {
+                        unclosed_fence_end(source)
+                    } else {
+                        None
+                    },
+                    astro_bom: if source.starts_with('\u{feff}') { 3 } else { 0 },
                     astro_frontmatter: document.frontmatter,
                     source_len: source.len(),
                 };
@@ -68,6 +86,8 @@ impl<'a> AdaptedSource<'a> {
             astro_elements: Vec::new(),
             astro_diagnostics: Vec::new(),
             astro_frontmatter: None,
+            astro_open_fence: None,
+            astro_bom: 0,
             source_len: source.len(),
         }
     }
@@ -77,20 +97,18 @@ impl<'a> AdaptedSource<'a> {
         if self.format != Some(SfcFormat::Astro) || after_directives != 0 {
             return (after_directives, false);
         }
-        let Some(frontmatter) = &self.astro_frontmatter else {
-            return (0, true);
+        let content_start = match (&self.astro_frontmatter, self.astro_open_fence) {
+            (Some(frontmatter), _) => frontmatter.start,
+            (None, Some(fence)) => fence,
+            (None, None) => return (self.astro_bom, true),
         };
-        let start = frontmatter.start as usize;
-        let rest = self.code.get(start..).unwrap_or_default();
+        let rest = self.code.get(content_start as usize..).unwrap_or_default();
         let skipped = if rest.starts_with("\r\n") {
             2
         } else {
             usize::from(rest.starts_with(['\n', '\r']))
         };
-        (
-            frontmatter.start + u32::try_from(skipped).unwrap_or(0),
-            false,
-        )
+        (content_start + u32::try_from(skipped).unwrap_or(0), false)
     }
 
     #[must_use]
