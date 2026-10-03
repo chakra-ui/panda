@@ -321,6 +321,122 @@ fn invalid_color_opacity_modifier_emits_warning_with_span() {
 }
 
 #[test]
+fn important_color_with_opacity_modifier_does_not_warn() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "conditions": { "hover": "&:hover" },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "300": { "value": "#fca5a5" } }
+                },
+                "opacity": {
+                    "half": { "value": "0.5" }
+                }
+            }
+        },
+        "utilities": {
+            "backgroundColor": {
+                "className": "bg",
+                "shorthand": "bg",
+                "values": "colors"
+            }
+        }
+    }));
+    let report = project.parse_file(
+        "style.ts",
+        indoc! {r"
+            import { css } from '@panda/css';
+            css({ bg: 'red.300/60 !important' });
+            css({ bg: 'red.300/40!' });
+            css({ bg: 'red.300/70!important' });
+            css({ bg: 'red.300/20   !important' });
+            css({ bg: 'red.300/half !important' });
+        "},
+    );
+
+    assert!(
+        report.diagnostics.is_empty(),
+        "{}",
+        summary(&report.diagnostics)
+    );
+}
+
+#[test]
+fn important_color_with_opacity_modifier_in_jsx_and_conditions_does_not_warn() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "conditions": { "hover": "&:hover" },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "300": { "value": "#fca5a5" } }
+                },
+                "opacity": {
+                    "half": { "value": "0.5" }
+                }
+            }
+        },
+        "utilities": {
+            "backgroundColor": {
+                "className": "bg",
+                "shorthand": "bg",
+                "values": "colors"
+            }
+        }
+    }));
+    let report = project.parse_file(
+        "style.tsx",
+        indoc! {r"
+            import { css } from '@panda/css';
+            import { styled } from '@panda/jsx';
+            css({ bg: { base: 'red.300/60 !important', _hover: 'red.300/40!' } });
+            const el = <styled.div bg='red.300/50!' />;
+        "},
+    );
+
+    assert!(
+        report.diagnostics.is_empty(),
+        "{}",
+        summary(&report.diagnostics)
+    );
+}
+
+#[test]
+fn unknown_opacity_modifier_with_important_still_warns() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "conditions": { "hover": "&:hover" },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "300": { "value": "#fca5a5" } }
+                },
+                "opacity": {
+                    "half": { "value": "0.5" }
+                }
+            }
+        },
+        "utilities": {
+            "backgroundColor": {
+                "className": "bg",
+                "shorthand": "bg",
+                "values": "colors"
+            }
+        }
+    }));
+    let report = project.parse_file(
+        "style.ts",
+        indoc! {r"
+            import { css } from '@panda/css';
+            css({ bg: 'red.300/bogus !important' });
+        "},
+    );
+
+    assert_snapshot!(summary(&report.diagnostics), @"Warning invalid_color_opacity_modifier Color value `red.300/bogus !important` has an invalid opacity modifier; expected a number (e.g. `40`) or an opacity token (e.g. `half`) [34..73]");
+}
+
+#[test]
 fn css_color_function_slash_alpha_does_not_warn() {
     let mut project = create_project(json!({
         "theme": {
