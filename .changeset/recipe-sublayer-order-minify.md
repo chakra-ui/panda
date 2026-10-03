@@ -3,5 +3,4 @@
 '@pandacss/compiler-wasm': patch
 ---
 
-Fixed an issue where slot recipes overrode recipe variants in production builds minified with Lightning CSS, the default
-in Vite 8.
+Fixed slot recipes overriding recipe variants in minified production builds, like Vite 8's default build.
