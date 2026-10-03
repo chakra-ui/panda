@@ -39,9 +39,20 @@ fn main() {
     let root = PathBuf::from(std::env::args().nth(1).expect("corpus root"));
     let mut files = Vec::new();
     walk(&root, &mut files);
-    files.sort();
+    let mut entries: Vec<(String, PathBuf)> = files
+        .into_iter()
+        .map(|path| {
+            let relative = path
+                .strip_prefix(&root)
+                .unwrap()
+                .to_string_lossy()
+                .replace('\\', "/");
+            (relative, path)
+        })
+        .collect();
+    entries.sort_by(|a, b| a.0.cmp(&b.0));
     let mut out = String::new();
-    for path in files {
+    for (relative, path) in entries {
         let source = std::fs::read_to_string(&path).unwrap();
         let document = lower(&source);
         let status = if document.diagnostics.is_empty() {
@@ -49,11 +60,6 @@ fn main() {
         } else {
             "rejected"
         };
-        let relative = path
-            .strip_prefix(&root)
-            .unwrap()
-            .to_string_lossy()
-            .replace('\\', "/");
         let _ = writeln!(
             out,
             "{relative}\t{status}\t{:016x}\t{:016x}",

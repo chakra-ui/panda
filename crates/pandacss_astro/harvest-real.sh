@@ -12,7 +12,7 @@ for pin in astro:4c1470a starlight:e45162c; do
   rev="${pin##*:}"
   git clone -q --filter=blob:none "https://github.com/withastro/$repo" "$work/$repo"
   git -C "$work/$repo" checkout -q "$rev"
-  (cd "$work/$repo" && find . -type f -name '*.astro' -not -path '*/node_modules/*') | while read -r file; do
+  (cd "$work/$repo" && find . -type f -name '*.astro' -not -path '*/node_modules/*') | while IFS= read -r file; do
     mkdir -p "$out/$repo/$(dirname "$file")"
     cp "$work/$repo/$file" "$out/$repo/$file"
   done
