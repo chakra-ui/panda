@@ -119,8 +119,8 @@ That writes `.panda/trace.json` (open it in `chrome://tracing` or [ui.perfetto.d
 
 ## Narrow include
 
-Extraction time scales with how many files [`include`](/docs/reference/config#include) matches. A file with no Panda
-import is cheap after parse, but it still gets parsed. Keep the glob tight: skip tests, Storybook, and generated output
+Extraction time scales with how many files [`include`](/docs/reference/config#include) matches. A file that never uses
+Panda is cheap after parse, but it still gets parsed. Keep the glob tight: skip tests, Storybook, and generated output
 unless they call `css()` themselves.
 
 ```ts filename="panda.config.ts"

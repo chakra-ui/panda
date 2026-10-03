@@ -92,9 +92,9 @@ export function Button(props: ComponentPropsWithoutRef<'button'>) {
 export { Button } from './button/button'
 ```
 
-Inside the package, `Button` imports from the local `styled-system`. Once published, consumers of this walkthrough just
-import `Button` itself from `@acme/ds`. An app that also wants your `css()` or `cva()` directly, to build its own
-components on the same tokens, can import those from `@acme/ds/css` too, covered in
+Inside the package, `Button` imports from the local `styled-system`. Once published, consumers of this walkthrough get
+`Button` itself from `@acme/ds`. An app that also wants your `css()` or `cva()` directly, to build its own components on
+the same tokens, can import those from `@acme/ds/css` too, covered in
 [Consume with Panda](/docs/design-systems/consume-with-panda).
 
 ## Set up package.json
