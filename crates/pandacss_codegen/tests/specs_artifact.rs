@@ -191,7 +191,10 @@ fn rich_input() -> CodegenInput {
             "keyframes": { "spin": { "to": { "transform": "rotate(360deg)" } } },
             "textStyles": {
                 "body": { "description": "Paragraph copy", "value": { "fontSize": "1rem" } },
-                "heading": { "lg": { "value": { "fontSize": "2rem" } } }
+                "heading": {
+                    "DEFAULT": { "value": { "fontSize": "1.5rem" } },
+                    "lg": { "value": { "fontSize": "2rem" } }
+                }
             },
             "layerStyles": { "card": { "value": { "background": "white" } } },
             "animationStyles": { "fade": { "value": { "animation": "fade 1s" } } },
@@ -310,6 +313,7 @@ fn recipes_patterns_and_composition_styles_are_listed() {
         "body": {
           "description": "Paragraph copy"
         },
+        "heading": {},
         "heading.lg": {}
       },
       "layerStyles": {

@@ -786,6 +786,40 @@ fn emits_config_slot_recipe_css_with_responsive_then_condition_variant_order() {
 }
 
 #[test]
+fn recipe_base_text_style_uses_the_nested_default() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "textStyles": {
+                "body": {
+                    "DEFAULT": { "value": { "fontSize": "16px", "lineHeight": "1.6" } },
+                    "compact": { "value": { "fontSize": "14px" } }
+                }
+            },
+            "recipes": {
+                "prose": { "className": "prose", "base": { "textStyle": "body" } }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { prose } from '@panda/recipes'; prose()",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @r"
+    @layer recipes {
+      @layer base {
+        .prose {
+          font-size: 16px;
+          line-height: 1.6;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
 fn composition_with_conditional_values_in_recipe_base_keeps_responsive_props() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },

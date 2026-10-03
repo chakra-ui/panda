@@ -32,6 +32,214 @@ fn text_style_emits_class_with_resolved_styles_in_compositions_sublayer() {
 }
 
 #[test]
+fn text_style_parent_key_uses_its_nested_default() {
+    let cfg = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "textStyles": {
+                "body": {
+                    "DEFAULT": { "value": { "fontSize": "16px", "lineHeight": "1.6" } },
+                    "compact": { "value": { "fontSize": "14px", "lineHeight": "1.5" } }
+                }
+            }
+        }
+    }));
+    let utilities = compile_layer_css(
+        &cfg,
+        "import { css } from '@panda/css';\ncss({ textStyle: 'body' });\ncss({ textStyle: 'body.compact' });",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(utilities, @r"
+    @layer utilities {
+      @layer compositions {
+        .textStyle_body {
+          font-size: 16px;
+          line-height: 1.6;
+        }
+        .textStyle_body\.compact {
+          font-size: 14px;
+          line-height: 1.5;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn top_level_default_text_style_keeps_its_name() {
+    let cfg = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": { "textStyles": { "DEFAULT": { "value": { "fontSize": "15px" } } } }
+    }));
+    let utilities = compile_layer_css(
+        &cfg,
+        "import { css } from '@panda/css';\ncss({ textStyle: 'DEFAULT' });",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(utilities, @r"
+    @layer utilities {
+      @layer compositions {
+        .textStyle_DEFAULT {
+          font-size: 15px;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn deeply_nested_text_style_default_is_reached_through_its_parent() {
+    let cfg = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": { "textStyles": { "heading": { "h1": { "DEFAULT": { "value": { "fontSize": "32px", "fontWeight": "bold" } }, "light": { "value": { "fontSize": "32px", "fontWeight": "light" } } } } } }
+    }));
+    let utilities = compile_layer_css(
+        &cfg,
+        "import { css } from '@panda/css';\ncss({ textStyle: 'heading.h1' });\ncss({ textStyle: 'heading.h1.light' });",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(utilities, @r"
+    @layer utilities {
+      @layer compositions {
+        .textStyle_heading\.h1 {
+          font-size: 32px;
+          font-weight: bold;
+        }
+        .textStyle_heading\.h1\.light {
+          font-size: 32px;
+          font-weight: light;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn default_in_the_middle_of_a_text_style_path_is_skipped() {
+    let cfg = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": { "textStyles": { "mid": { "DEFAULT": { "inner": { "value": { "letterSpacing": "1px" } } } } } }
+    }));
+    let utilities = compile_layer_css(
+        &cfg,
+        "import { css } from '@panda/css';\ncss({ textStyle: 'mid.inner' });\ncss({ textStyle: 'mid.DEFAULT.inner' });",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(utilities, @r"
+    @layer utilities {
+      @layer compositions {
+        .textStyle_mid\.inner {
+          letter-spacing: 1px;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn explicit_default_text_style_path_is_not_a_name() {
+    let cfg = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": { "textStyles": { "body": { "DEFAULT": { "value": { "fontSize": "16px" } } } } }
+    }));
+    let utilities = compile_layer_css(
+        &cfg,
+        "import { css } from '@panda/css';\ncss({ textStyle: 'body.DEFAULT' });",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(utilities, @r"
+    
+    ");
+}
+
+#[test]
+fn layer_style_parent_key_uses_its_nested_default() {
+    let cfg = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": { "layerStyles": { "card": { "DEFAULT": { "value": { "background": "white", "borderRadius": "4px" } }, "muted": { "value": { "background": "gray" } } } } }
+    }));
+    let utilities = compile_layer_css(
+        &cfg,
+        "import { css } from '@panda/css';\ncss({ layerStyle: 'card' });\ncss({ layerStyle: 'card.muted' });",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(utilities, @r"
+    @layer utilities {
+      @layer compositions {
+        .layerStyle_card {
+          background: white;
+          border-radius: 4px;
+        }
+        .layerStyle_card\.muted {
+          background: gray;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn animation_style_parent_key_uses_its_nested_default() {
+    let cfg = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": { "animationStyles": { "fade": { "DEFAULT": { "value": { "animationName": "fade", "animationDuration": "1s" } }, "slow": { "value": { "animationName": "fade", "animationDuration": "3s" } } } } }
+    }));
+    let utilities = compile_layer_css(
+        &cfg,
+        "import { css } from '@panda/css';\ncss({ animationStyle: 'fade' });\ncss({ animationStyle: 'fade.slow' });",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(utilities, @r"
+    @layer utilities {
+      @layer compositions {
+        .animationStyle_fade {
+          animation-duration: 1s;
+          animation-name: fade;
+        }
+        .animationStyle_fade\.slow {
+          animation-duration: 3s;
+          animation-name: fade;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn responsive_nested_default_text_style_emits_media_query() {
+    let cfg = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "breakpoints": { "md": "768px" },
+            "textStyles": {
+                "body": {
+                    "DEFAULT": { "value": { "fontSize": { "base": "14px", "md": "18px" } } }
+                }
+            }
+        }
+    }));
+    let utilities = compile_layer_css(
+        &cfg,
+        "import { css } from '@panda/css';\ncss({ textStyle: 'body' });",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(utilities, @r"
+    @layer utilities {
+      @layer compositions {
+        .textStyle_body {
+          font-size: 14px;
+        }
+        @media (width >= 48rem) {
+          .textStyle_body {
+            font-size: 18px;
+          }
+        }
+      }
+    }
+    ");
+}
+
+#[test]
 fn layer_style_and_animation_style_get_their_own_classes_in_same_sublayer() {
     let cfg = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },

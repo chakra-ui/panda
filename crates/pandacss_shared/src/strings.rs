@@ -205,3 +205,15 @@ pub fn find_matching_paren(value: &str) -> Option<usize> {
     }
     None
 }
+
+/// Dotted name of a nested theme style; a nested `DEFAULT` takes its parent's name.
+#[must_use]
+pub fn composition_path(prefix: &str, key: &str) -> String {
+    if prefix.is_empty() {
+        key.to_owned()
+    } else if key == "DEFAULT" {
+        prefix.to_owned()
+    } else {
+        format!("{prefix}.{key}")
+    }
+}
