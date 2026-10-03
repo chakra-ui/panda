@@ -106,4 +106,20 @@ describe('sva', () => {
     expectTypeOf(result.title).toEqualTypeOf<string>()
     expect(result.title).toBeTypeOf('string')
   })
+
+  test('accepts slots declared as const and keeps their names typed', () => {
+    const slots = ['root', 'label'] as const
+    const field = sva({ slots, base: { root: { color: 'red' }, label: { color: 'blue' } } })
+
+    expectTypeOf<keyof ReturnType<typeof field>>().toEqualTypeOf<'root' | 'label'>()
+    expect(field()).toMatchInlineSnapshot(`
+      {
+        "label": "c_blue",
+        "root": "c_red",
+      }
+    `)
+
+    // @ts-expect-error `icon` is not one of the slots
+    sva({ slots, base: { icon: { color: 'red' } } })
+  })
 })

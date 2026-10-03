@@ -85,6 +85,36 @@ fn rewrites_inline_sva_to_a_specialized_function() {
 }
 
 #[test]
+fn rewrites_inline_sva_with_slots_declared_as_const() {
+    let source = indoc! {r#"
+        import { sva } from '@panda/css';
+        const slots = ['root', 'trigger'] as const;
+        export const tabs = sva({
+          slots,
+          base: {
+            root: { display: 'flex' },
+            trigger: { cursor: 'pointer' },
+          },
+        });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
+    const slots = ['root', 'trigger'] as const;
+    export const tabs = /* @__PURE__ */ __pr((p = {}) => ({ root: "d_flex", trigger: "cursor_pointer" }), {
+      slots,
+      base: {
+        root: { display: 'flex' },
+        trigger: { cursor: 'pointer' },
+      },
+    }, [], {}, {});
+    "#);
+}
+
+#[test]
 fn specializes_sva_class_names_without_a_recipe_runtime() {
     let source = indoc! {r#"
         import { sva } from '@panda/css';
