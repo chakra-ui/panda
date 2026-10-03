@@ -10,7 +10,8 @@ use pandacss_config::{
 };
 use pandacss_literal::Literal;
 use pandacss_shared::{
-    css_escape, hyphenate_property, number_to_js_string, split_important, to_hash, without_space,
+    css_escape, hyphenate_property, number_to_js_string, split_important, to_hash,
+    without_important, without_space,
 };
 use pandacss_tokens::{TokenCategory, TokenDictionary};
 use rustc_hash::{FxHashMap, FxHashSet};
@@ -511,9 +512,10 @@ impl Utility {
     /// Whether `value` has an opacity modifier that can't resolve to `color-mix`.
     #[must_use]
     pub fn is_invalid_color_opacity_modifier(&self, value: &str) -> bool {
-        split_top_level_slash(value).is_some()
+        let value = without_important(value);
+        split_top_level_slash(&value).is_some()
             && self.tokens.is_some()
-            && self.color_mix_category_value(value).is_none()
+            && self.color_mix_category_value(&value).is_none()
     }
 
     fn default_style(&self, prop: &str, value: &Literal) -> Literal {
