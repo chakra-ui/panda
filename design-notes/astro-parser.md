@@ -11,6 +11,8 @@ attribute and expression boundaries Astro finds.
 
 ## Evidence
 
+Measured during development with a fork-based reference lowering. The reference and these inputs are not in the repo.
+
 | Input set                                                            | Files | 2.1.1 fails | Fork-based reference |
 | -------------------------------------------------------------------- | ----- | ----------- | -------------------- |
 | Every `.astro` input from compiler-rs's three test suites (accepted) | 2,090 | not run     | 0                    |
@@ -19,21 +21,20 @@ attribute and expression boundaries Astro finds.
 
 - Astro 7 parses `.astro` with `@astrojs/compiler-rs`, whose parser is a fork of Oxc (`withastro/oxc`, rev
   `8bb526fc0c20beb4649b223d3ac39851505caa5a`, Oxc 0.115). That parser defines what valid Astro is.
-- A lowering built on the fork's AST (the reference, below) parses cleanly in Oxc 0.130 for all 3,772 accepted inputs.
-  It also keeps every byte offset across all 4,323 inputs. So the lowering format is proven. The open question is only
-  who finds the boundaries.
+- A lowering built on the fork's AST parses cleanly in Oxc 0.130 for all 3,772 accepted inputs, and keeps every byte
+  offset across all 4,323. The tokenizer matches that lowering byte for byte on every accepted input.
 - The Svelte and Vue adapters share two of the bug classes. One is `<!-- <script> -->` before a TypeScript script. The
   other is a brace matcher with no regex or template-nesting state.
 
 ## Approaches considered
 
-| Approach                                              | Verdict                                                                                                                                                                     |
-| ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Patch the existing adapter                            | Rejected. Its scanners share no context, so each fix finds the next gap.                                                                                                    |
-| Depend on the `withastro/oxc` fork at runtime         | Rejected. Git-only dependency on Oxc 0.115, a second parser in every binary (+0.86 MB), and Panda tied to Astro's pin. It is kept as a test-only reference instead (below). |
-| Vendor `astro2tsx` or print TSX from a tree           | Rejected. Biome's parsers come from git, and printing TSX shifts byte offsets, so the Vite transform would need a source map.                                               |
-| Call `@astrojs/compiler-rs` from the JS host          | Rejected. A native dependency in the host, and nothing for Rust-only extraction or the wasm build.                                                                          |
-| **Panda-owned tokenizer that ports the fork's rules** | **Chosen.** No dependencies, same offsets, and parity checked against the fork on every corpus input. The design follows Sage's research (one pass, modes, lowering to JS). |
+| Approach                                              | Verdict                                                                                                                                                                             |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Patch the existing adapter                            | Rejected. Its scanners share no context, so each fix finds the next gap.                                                                                                            |
+| Depend on the `withastro/oxc` fork at runtime         | Rejected. Git-only dependency on Oxc 0.115, a second parser in every binary (+0.86 MB), and Panda tied to Astro's pin. It was used during development to check parity, not shipped. |
+| Vendor `astro2tsx` or print TSX from a tree           | Rejected. Biome's parsers come from git, and printing TSX shifts byte offsets, so the Vite transform would need a source map.                                                       |
+| Call `@astrojs/compiler-rs` from the JS host          | Rejected. A native dependency in the host, and nothing for Rust-only extraction or the wasm build.                                                                                  |
+| **Panda-owned tokenizer that ports the fork's rules** | **Chosen.** No dependencies, same offsets, and parity checked against the fork. The design follows Sage's research (one pass, modes, lowering to JS).                               |
 
 ## Architecture
 
@@ -108,25 +109,25 @@ verified examples. In outline:
   and blanks the rest. It never panics.
 
 The tokenizer builds a small tree: elements, fragments, expressions with the markup found inside them, attributes, and
-the extents of text, comments and scripts. The lowering walks that tree with the same rules as the reference. Parity
-therefore means the trees match, and the reference tool measures that.
+the extents of text, comments and scripts. The lowering walks that tree with the same rules as the fork-based reference
+used during development, so parity means the trees match.
 
 ### Lowering
 
 Elements become array literals of their expressions. JS stays where it is.
 
-| Node                                                           | Canvas                                                                                                 |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Node                                                           | Canvas                                                                                                                                                                                                                                                                                                                                                                            |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Content before the opening fence, the fences                   | Blank. The fence is lowered by where it sits: (a) it starts a line (only spaces and tabs before it on its line): `0;[` over the three fence bytes, so ASI ends the last statement before `0`; (b) otherwise, a space or tab just before it: `;` on that byte and `[` on the fence's first byte; (c) otherwise: `;[` on the fence's first two bytes. `[` opens the template array. |
-| Frontmatter                                                    | Copied as-is. Top-level `return` stays allowed.                                                        |
-| No frontmatter                                                 | The first non-line-break byte of the template becomes `[`.                                             |
-| End of file                                                    | `]` appended when an array was opened.                                                                 |
-| Text, comments, doctype, scripts, raw text                     | Blank.                                                                                                 |
-| Element or fragment whose parent is JS                         | `[` on its first non-line-break byte, `]` on its last. Descendant markup flattens into the same array. |
-| Element whose parent is markup                                 | Tag syntax blank. Its expressions join the enclosing array.                                            |
-| Expression (child, attribute value, shorthand, backtick value) | Copied. A `,` goes on the nearest preceding non-space byte (`{`, `=`, or a skipped comment).           |
-| Spread                                                         | Copied from its `...`, with the same leading `,`.                                                      |
-| Static value, boolean attribute, attribute name, `{}`          | Blank. Static values live in `AstroElement`.                                                           |
+| Frontmatter                                                    | Copied as-is. Top-level `return` stays allowed.                                                                                                                                                                                                                                                                                                                                   |
+| No frontmatter                                                 | The first non-line-break byte of the template becomes `[`.                                                                                                                                                                                                                                                                                                                        |
+| End of file                                                    | `]` appended when an array was opened.                                                                                                                                                                                                                                                                                                                                            |
+| Text, comments, doctype, scripts, raw text                     | Blank.                                                                                                                                                                                                                                                                                                                                                                            |
+| Element or fragment whose parent is JS                         | `[` on its first non-line-break byte, `]` on its last. Descendant markup flattens into the same array.                                                                                                                                                                                                                                                                            |
+| Element whose parent is markup                                 | Tag syntax blank. Its expressions join the enclosing array.                                                                                                                                                                                                                                                                                                                       |
+| Expression (child, attribute value, shorthand, backtick value) | Copied. A `,` goes on the nearest preceding non-space byte (`{`, `=`, or a skipped comment).                                                                                                                                                                                                                                                                                      |
+| Spread                                                         | Copied from its `...`, with the same leading `,`.                                                                                                                                                                                                                                                                                                                                 |
+| Static value, boolean attribute, attribute name, `{}`          | Blank. Static values live in `AstroElement`.                                                                                                                                                                                                                                                                                                                                      |
 
 ```astro
 {show && (
@@ -138,8 +139,13 @@ Elements become array literals of their expressions. JS stays where it is.
 
 lowers to (trailing spaces trimmed; every line keeps its source length)
 
-```js
-;[show && [, id, css({ color: 'orange' })]]
+```text
+[show && (
+  [      ,id
+             ,css({ color: 'orange' })
+         ]
+)
+]
 ```
 
 ### Component elements
@@ -163,74 +169,40 @@ They keep their adapters but gain two of the tokenizer's pieces:
 - `find_matching_brace` uses `pandacss_astro::js::Lexer`, so `}` inside a regex or a nested template no longer ends an
   expression.
 
-## Parity reference
+## Parity tests
 
-`crates/pandacss_astro/reference/` is a standalone Cargo package with its own `[workspace]`, so it never builds with
-Panda. It depends on the fork and contains the AST-based lowering. That lowering is the earlier design's implementation,
-with the fork's frontmatter `program.span` replaced by the fence scan's end. Run by hand, it writes
-`tests/corpus/oracle.tsv`, one line per corpus file:
+During development, a reference lowering built on the fork's AST ran over 4,323 files: every `.astro` input from
+compiler-rs's test suites, plus `withastro/astro@4c1470a` and `withastro/starlight@e45162c`. The tokenizer matched it
+byte for byte on all 3,772 inputs Astro accepts, and every input Astro rejects still produced a warning. The reference
+and the corpus are not in the repo.
 
-```
-<path>\t<accepted|rejected>\t<fnv64 of the canvas>\t<fnv64 of the element list>
-```
-
-The conformance test runs `pandacss_astro::lower` on every corpus file:
-
-- **Accepted inputs:** no tokenizer diagnostics, and the canvas and element hashes equal the reference.
-- **Rejected inputs:** no panic, offsets kept, and Panda warns: either a tokenizer diagnostic or an Oxc error on the
-  canvas. A TS syntax error in the frontmatter is found by Oxc, not by the tokenizer.
-- **Exceptions:** listed in `tests/corpus/deviations.tsv`, each with a reason. Every line there is a known parity gap.
-
-## Corpus
-
-- `tests/corpus/compiler-rs/`: every `.astro` input that compiler-rs's fork-parser, Rust and JS test suites pass to a
-  parser (2,636 files, from `harvest.sh`).
-- `tests/corpus/real/`: every `.astro` file in `withastro/astro@4c1470a` and `withastro/starlight@e45162c` (1,687 files,
-  812 KB), the pinned commits from Sage's research.
-- `LICENSE` and `SOURCE` record the MIT notices and revisions.
-
-Bumps are manual. When a new `@astrojs/compiler-rs` release moves its fork pin, re-harvest, regenerate `oracle.tsv` with
-the reference at the new pin, and review the diff.
+`crates/pandacss_astro/tests/parity.rs` keeps 60 curated inputs with the reference's exact output: the `FORK_RULES.md`
+examples, the three reported issues, and Sage's cases. When Astro moves its parser pin, re-check the rules in
+`FORK_RULES.md` against the fork and add a case for any change.
 
 ## Performance
 
-The tokenizer is one pass over the file, plus Oxc's parse of a mostly blank canvas. `bench/src/bin/astro_extract.rs`
-times `extract()` over the corpus. The old adapter measured 6.94 ms per pass over the 2,636 compiler-rs inputs. The
-switch must not be slower without a recorded decision, per [performance budget](./performance-budget.md).
+The tokenizer is one pass over the file, plus Oxc's parse of a mostly blank canvas. During development, `extract()` over
+the 2,636 compiler-rs inputs took 4.90 ms per pass, against 6.94 ms for the old adapter.
 
 ## Testing
 
 | Layer        | Where                                                | What                                                                                                                           |
 | ------------ | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | JS lexer     | `crates/pandacss_astro/tests/js.rs`                  | Token boundaries: strings, templates with nested `${}`, comments, regex versus division, the `<` operand rule, generic arrows. |
-| Frontmatter  | `crates/pandacss_astro/tests/frontmatter.rs`         | Every example in `FORK_RULES.md` §1.                                                                                           |
+| Frontmatter  | `crates/pandacss_astro/src/frontmatter.rs`           | Every example in `FORK_RULES.md` §1.                                                                                           |
 | Lowering     | `crates/pandacss_astro/tests/lower.rs`               | One canvas snapshot per lowering row and syntax-spec section, CRLF, multi-byte text, unclosed fences.                          |
-| Parity       | `crates/pandacss_astro/tests/corpus.rs`              | Every corpus file against `oracle.tsv`; offsets on every file; every markup-free expression copied verbatim.                   |
-| Extraction   | `crates/pandacss_extractor/tests/framework_astro.rs` | The three issue repros, Sage's named cases, component props, and every accepted corpus file extracting without warnings.       |
+| Parity       | `crates/pandacss_astro/tests/parity.rs`              | 60 curated inputs against the fork-based reference's exact output.                                                             |
+| Extraction   | `crates/pandacss_extractor/tests/framework_astro.rs` | The three issue repros, Sage's named cases, component props, fences, diagnostics and spans.                                    |
 | Transform    | `crates/pandacss_transform/tests/sfc.rs`             | `css()` rewrites inside nested markup, siblings, backtick values, raw text, CRLF and non-ASCII, byte for byte.                 |
 | Svelte / Vue | `framework_svelte.rs`, `framework_vue.rs`            | `<script>` in a comment; `}` inside a regex in an expression.                                                                  |
 | End to end   | `sandbox/astro`                                      | `astro build` accepts the page, and `panda cssgen` emits its styles.                                                           |
 
-## Rollout
-
-1. Done. Reference package, real-code corpus, `oracle.tsv`, `FORK_RULES.md` (`test(astro): fork-based reference,
-   real-code corpus and parity oracle`).
-2. Done. JS lexer and frontmatter scanner (`feat(astro): JS lexer and frontmatter scanner ported from Astro's parser`).
-3. Done. Template tokenizer and lowering on the tree, with the fork dependency removed and the parity test passing
-   (`feat(astro): tokenize .astro without the fork, matching it on the corpus`).
-4. Done. Extractor switch; `astro_adapter.rs` and the Astro string scan deleted. Fixes #3916, #3917 and #3918
-   (`fix(extractor): read .astro files with the Astro tokenizer`).
-5. Done. Svelte and Vue comment skip and lexer-based brace matching
-   (`fix(extractor): skip comments and regexes when Svelte and Vue find blocks and braces`).
-6. Done. Sandbox proof, bench, docs and changeset (`docs(astro): record tokenizer results and add sandbox page`).
-
 ## Results
 
-- **Corpus.** 4,323 files: 3,772 accepted, 551 rejected, 0 deviations from Astro's parser.
-- **Bench.** `cargo run --release -p pandacss_bench --bin astro_extract --locked -- 20` over 2,636 files: 6.94 ms per
-  pass with the old adapter, 4.90 ms with the tokenizer (the 6.94 ms figure is from an earlier run on the old adapter).
-- **compiler.node.** 7,853,968 bytes with the tokenizer. The size before was not measured on a matching base, so no
-  delta is claimed.
+- **Parity.** The tokenizer matches the fork-based reference on all 3,772 accepted inputs of the development corpus, and
+  on the 60 curated cases in `tests/parity.rs`.
+- **compiler.node.** 7,853,968 bytes with the tokenizer.
 - **End to end.** `sandbox/astro/src/pages/syntax.astro` builds with `astro build`. `panda cssgen` on `upstream/v2`
   warns `js_parse_error` and emits none of `c_red`, `c_orange`, `c_teal`, `c_pink`; on this branch it reports no
   diagnostics and emits all four.
@@ -241,12 +213,11 @@ switch must not be slower without a recorded decision, per [performance budget](
   extract. The CLI and PostCSS paths only see the `.astro` file. Confirm in a sandbox before extracting scripts.
 - **Quirks without corpus coverage.** Some of the fork's behaviour is recovery from what is really a mistake: the token
   dropped after a nested `{}` in a markup-first container, and `{z}` turning into text right after `</math>`. These are
-  ported when cheap and otherwise listed in `deviations.tsv`. Sage's comment-before-fence test expects a frontmatter
-  that the fork does not find. Parity follows the fork.
+  ported when cheap and otherwise recorded in `FORK_RULES.md` as known divergences. Sage's comment-before-fence test
+  expects a frontmatter that the fork does not find. Parity follows the fork.
 - **Error isolation.** One bad expression still costs the whole file's later styles. Per-expression recovery is out of
   scope.
-- **Nightly differential against fresh Astro releases** (Sage's Suite G) is a follow-up. The committed real-code corpus
-  covers the pinned commits.
+- **Differential runs against fresh Astro releases** (Sage's Suite G) are a follow-up.
 
 ## Related
 

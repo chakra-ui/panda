@@ -1,9 +1,0 @@
----
-import Layout from './Layout.astro';
----
-<Layout>
-  {hasItems
-? items.map((item) => (<div slot="content">{item}</div>))
-: <div slot="empty">No items</div>
-  }
-</Layout>

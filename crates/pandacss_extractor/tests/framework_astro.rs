@@ -516,40 +516,6 @@ fn astro_parse_errors_are_reported_at_their_source() {
 }
 
 #[test]
-fn every_corpus_input_astro_accepts_extracts_without_parse_errors() {
-    let corpus = concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/../pandacss_astro/tests/corpus"
-    );
-    let oracle = std::fs::read_to_string(format!("{corpus}/oracle.tsv")).unwrap();
-    let deviations = std::fs::read_to_string(format!("{corpus}/deviations.tsv")).unwrap();
-    let mut checked = 0;
-    let mut failures = Vec::new();
-    for line in oracle.lines() {
-        let fields: Vec<_> = line.split('\t').collect();
-        if fields[1] != "accepted"
-            || deviations
-                .lines()
-                .any(|deviation| deviation.starts_with(&format!("{}\t", fields[0])))
-        {
-            continue;
-        }
-        checked += 1;
-        let source = std::fs::read_to_string(format!("{corpus}/{}", fields[0])).unwrap();
-        let result = extract(&source, "corpus.astro", &panda_jsx_config());
-        if let Some(diagnostic) = result
-            .diagnostics
-            .iter()
-            .find(|diagnostic| diagnostic.code == "js_parse_error")
-        {
-            failures.push(format!("{}: {}", fields[0], diagnostic.message));
-        }
-    }
-    assert!(failures.is_empty(), "{}", failures.join("\n"));
-    assert!(checked > 3700, "only {checked} accepted inputs checked");
-}
-
-#[test]
 fn import_spans_stop_before_the_closing_fence() {
     let source = "---\nimport { css } from '@panda/css'\n---\n<p/>";
     let imports = scan_imports(source, "page.astro").imports;

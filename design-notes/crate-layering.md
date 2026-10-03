@@ -25,9 +25,8 @@ diverge.
 `pandacss_literal` owns the host-neutral extracted value tree shared by parsing, recipes, encoding, utility metadata,
 and project transforms. Keeping this IR below the process crates prevents leaf data crates from pulling Oxc machinery.
 
-`pandacss_astro` tokenizes `.astro` the way Astro's parser does and lowers it to a JS program at the same byte offsets.
-It has no dependencies; a fork-based reference in `crates/pandacss_astro/reference/` (outside the workspace) checks
-parity on the corpus. See [astro-parser](./astro-parser.md).
+`pandacss_astro` tokenizes `.astro` the way Astro's parser does and lowers it to a JS program at the same byte
+offsets. It has no dependencies. See [astro-parser](./astro-parser.md).
 
 ### Tier 1 — leaf data + parsing
 

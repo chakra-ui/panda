@@ -92,7 +92,7 @@ body_start = close+3, plus 1 if next is '\n', or plus 2 if next is "\r\n"   (lon
 - The frontmatter is parsed as TS + JSX (TSX), with `return` allowed. It is re-parsed with space padding, so
   `program.span = [0 .. content_end)`. **When that TS parse hits a fatal error, `program.span` is `[0..0)`**. Example:
   `---\nconst x = (\n---` → program `[0..0)`, frontmatter `[0..19)`. Take `content_end` from the fence scan, not from
-  `program.span`. `reference/src/lib.rs` already uses the fence-scan end.
+  `program.span`. Panda's lowering uses the fence-scan end.
 
 ## 2. Body child dispatch
 
@@ -288,7 +288,7 @@ it. If parity is required, replicate "the top-level child becomes a dummy and no
   content). A void element with `is:raw` (`<img is:raw>`) never consumes its `>`, so it's fatal when nested.
 - Not found: usually fatal (`<style>a{`), but the fork's recovery sometimes accepts the file. `<style><style>` is
   accepted. Panda reports `Unexpected end of file` and drops the top-level child instead. This is a known fail-safe
-  divergence: no corpus file has an unclosed raw-text element.
+  divergence: no real file in the development corpus has an unclosed raw-text element.
 - **Foreign content: only `math`** (Identifier, exact; jsx.rs:845-850). It is not raw. While it's open (not
   self-closing), the child lexer runs in foreign mode for all descendants: `{` and `}` are text and a text run ends only
   at `<`. Tags still parse.
@@ -426,7 +426,7 @@ Attributes go through the normal attribute loop and are lowered normally. Then a
 - Not found: usually fatal (`<script>a`), but the fork's recovery sometimes accepts the file:
   `<div><script></div><p class={x}/>`, `{<script>}<p class={b}/>`, `{c && <script>}` and `<script>x/>` are all
   accepted. Panda does not port that recovery. It reports `Unexpected end of file` and drops the top-level child. This
-  is a known fail-safe divergence: no corpus file has an unclosed `<script>`.
+  is a known fail-safe divergence: no real file in the development corpus has an unclosed `<script>`.
 - Element: opening `[< .. content_start)`, closing `[content_end .. end)`, name `[<+1 .. <+7)`.
 
 ### What the child is (`is_raw_text_script`, jsx.rs:804-842)
@@ -473,7 +473,7 @@ After a **nested** `</script>` (jsx.rs:999-1007), the next token is read by the 
   between attributes, after `{`, inside expressions, inside closing tags, and in drift mode.
 - **Empty containers** produce no lowering (EmptyExpression), but their bytes are inside the container span.
 
-## What the lowering consumes (`reference/src/lib.rs`)
+## What the lowering consumes
 
 The tokenizer must reproduce these spans:
 
@@ -481,7 +481,7 @@ The tokenizer must reproduce these spans:
 - Attributes:
   - name span (for an expression shorthand, the trimmed expression span);
   - value: Boolean; Static (quoted → inner span, unquoted → value span); Expression (container expression span,
-    template span, or element/fragment value span); Empty; Spread (argument span; the reference widens it back to `...`).
+    template span, or element/fragment value span); Empty; Spread (argument span; the lowering widens it back to `...`).
 - Container expression spans, then every JSXElement or JSXFragment reachable inside JS (including implicit fragments,
   per §6).
 - Text, AstroScript, comment, doctype, and raw-text content are blanked and only need their extents. The frontmatter
@@ -540,8 +540,8 @@ The tokenizer must reproduce these spans:
    current top-level child with nothing.
    - Raw-text closing failures keep a partial node in the fork.
    - The frontmatter `program.span` becomes `[0..0)` on a fatal TS parse, which only a real TS parser can detect.
-     Recommendation: change the reference lowering to use the fence-scan `content_end` instead of `program.span.end`,
-     so the port doesn't need a TS parser.
+     Panda's lowering uses the fence-scan `content_end` instead of `program.span.end`, so the port doesn't need a TS
+     parser.
 6. **Attribute token boundaries through the JS lexer.** Whitespace skipping uses JS whitespace (NBSP, U+FEFF, Zs)
    while name bytes use the raw table. Number-led names like `1x` are fatal. Strings and templates in name position
    are re-read as names.

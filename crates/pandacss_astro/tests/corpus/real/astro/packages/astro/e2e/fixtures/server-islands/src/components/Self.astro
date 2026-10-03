@@ -1,8 +1,0 @@
----
-import Self from './Self.astro';
-
-const now = Date();
----
-
-<p class="now">{now}</p>
-{!Astro.props.stop && <Self stop server:defer />}
