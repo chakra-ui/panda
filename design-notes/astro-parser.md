@@ -177,7 +177,8 @@ with the fork's frontmatter `program.span` replaced by the fence scan's end. Run
 The conformance test runs `pandacss_astro::lower` on every corpus file:
 
 - **Accepted inputs:** no tokenizer diagnostics, and the canvas and element hashes equal the reference.
-- **Rejected inputs:** no panic, offsets kept, and at least one diagnostic.
+- **Rejected inputs:** no panic, offsets kept, and Panda warns: either a tokenizer diagnostic or an Oxc error on the
+  canvas. A TS syntax error in the frontmatter is found by Oxc, not by the tokenizer.
 - **Exceptions:** listed in `tests/corpus/deviations.tsv`, each with a reason. Every line there is a known parity gap.
 
 ## Corpus
