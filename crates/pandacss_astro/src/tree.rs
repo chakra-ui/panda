@@ -24,6 +24,7 @@ pub(crate) struct Element {
     pub(crate) opening: Range<usize>,
     pub(crate) attributes: Vec<Attribute>,
     pub(crate) children: Vec<Child>,
+    pub(crate) script: Option<Range<usize>>,
 }
 
 pub(crate) struct Fragment {

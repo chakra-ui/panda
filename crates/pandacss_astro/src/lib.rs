@@ -11,6 +11,7 @@ pub struct AstroDocument {
     pub canvas: String,
     pub frontmatter: Option<Range<u32>>,
     pub elements: Vec<AstroElement>,
+    pub scripts: Vec<Range<u32>>,
     pub diagnostics: Vec<AstroDiagnostic>,
 }
 

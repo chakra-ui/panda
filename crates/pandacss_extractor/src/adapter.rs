@@ -47,6 +47,7 @@ pub(crate) struct AdaptedSource<'a> {
     pub(crate) format: Option<SfcFormat>,
     pub(crate) code: Cow<'a, str>,
     pub(crate) astro_elements: Vec<pandacss_astro::AstroElement>,
+    pub(crate) astro_scripts: Vec<std::ops::Range<u32>>,
     astro_diagnostics: Vec<pandacss_astro::AstroDiagnostic>,
     astro_frontmatter: Option<std::ops::Range<u32>>,
     astro_open_fence: Option<u32>,
@@ -65,6 +66,7 @@ impl<'a> AdaptedSource<'a> {
                     format,
                     code: Cow::Owned(document.canvas),
                     astro_elements: document.elements,
+                    astro_scripts: document.scripts,
                     astro_diagnostics: document.diagnostics,
                     astro_open_fence: if document.frontmatter.is_none() {
                         unclosed_fence_end(source)
@@ -84,6 +86,7 @@ impl<'a> AdaptedSource<'a> {
             format,
             code,
             astro_elements: Vec::new(),
+            astro_scripts: Vec::new(),
             astro_diagnostics: Vec::new(),
             astro_frontmatter: None,
             astro_open_fence: None,
@@ -193,6 +196,17 @@ pub(crate) fn blank_like(source: &str) -> Vec<u8> {
             _ => b' ',
         })
         .collect()
+}
+
+pub(crate) fn astro_script_module(source: &str, script: &std::ops::Range<u32>) -> String {
+    let mut mask = blank_like(source);
+    copy_range(
+        &mut mask,
+        source,
+        script.start as usize,
+        script.end as usize,
+    );
+    finish_mask(mask)
 }
 
 pub(crate) fn finish_mask(mask: Vec<u8>) -> String {

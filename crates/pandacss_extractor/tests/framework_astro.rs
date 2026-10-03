@@ -548,3 +548,123 @@ fn diagnostic_spans_stay_inside_the_source() {
         }
     }
 }
+
+#[test]
+fn client_script_calls_extract_after_the_template() {
+    let source = indoc! {r"
+        ---
+        import { css } from '@panda/css';
+        const title = css({ color: 'blue' });
+        ---
+
+        <p class={css({ color: 'green' })}>hi</p>
+        <script>
+          import { css } from '@panda/css';
+          const el = document.querySelector('p');
+          el.className = css({ color: 'red' });
+        </script>
+    "};
+
+    let result = extract(source, "page.astro", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: blue
+      - name: css
+        data:
+          color: green
+      - name: css
+        data:
+          color: red
+    jsx: []
+    ");
+}
+
+#[test]
+fn client_script_extracts_without_a_frontmatter_import() {
+    let source = indoc! {r"
+        <p>hi</p>
+        <script>
+          import { css } from '@panda/css';
+          document.body.className = css({ color: 'red' });
+        </script>
+    "};
+
+    let result = extract(source, "page.astro", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+    jsx: []
+    ");
+}
+
+#[test]
+fn inline_script_calls_are_not_extracted() {
+    let source = indoc! {r"
+        <script is:inline>
+          import { css } from '@panda/css';
+          document.body.className = css({ color: 'red' });
+        </script>
+    "};
+
+    let result = extract(source, "page.astro", &panda_config());
+    assert!(result.calls.is_empty());
+}
+
+#[test]
+fn typed_client_script_extracts() {
+    let source = indoc! {r"
+        <script>
+          import { css } from '@panda/css';
+          type Tone = 'red' | 'blue';
+          const tone: Tone = 'red';
+          document.body.className = css({ color: 'red' });
+        </script>
+    "};
+
+    let result = extract(source, "page.astro", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+    jsx: []
+    ");
+}
+
+#[test]
+fn broken_client_script_warns_and_frontmatter_still_extracts() {
+    let source = indoc! {r"
+        ---
+        import { css } from '@panda/css';
+        const title = css({ color: 'blue' });
+        ---
+
+        <script>
+          const = ;
+        </script>
+    "};
+
+    let result = extract(source, "page.astro", &panda_config());
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.code == "js_parse_error"),
+        "{:?}",
+        result.diagnostics
+    );
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: blue
+    jsx: []
+    ");
+}

@@ -424,3 +424,47 @@ fn reports_the_frontmatter_content_range() {
     assert_eq!(&source[3..16], "\nconst a = 1\n");
     assert_eq!(common::lowered("<p/>").frontmatter, None);
 }
+
+fn script_contents(source: &str) -> Vec<&str> {
+    lowered(source)
+        .scripts
+        .into_iter()
+        .map(|range| &source[range.start as usize..range.end as usize])
+        .collect()
+}
+
+#[test]
+fn bare_script_is_extractable() {
+    assert_eq!(script_contents("<p/>\n<script>a()</script>"), ["a()"]);
+}
+
+#[test]
+fn module_script_is_extractable() {
+    assert_eq!(
+        script_contents(r#"<script type="module">a()</script>"#),
+        ["a()"]
+    );
+}
+
+#[test]
+fn json_script_is_not_extractable() {
+    assert!(script_contents(r#"<script type="application/json">{"a":1}</script>"#).is_empty());
+}
+
+#[test]
+fn inline_script_is_not_extractable() {
+    assert!(script_contents("<script is:inline>a()</script>").is_empty());
+}
+
+#[test]
+fn define_vars_script_is_not_extractable() {
+    assert!(script_contents("<script define:vars={{a}}>a()</script>").is_empty());
+}
+
+#[test]
+fn nested_script_is_extractable() {
+    assert_eq!(
+        script_contents("<script>a()</script><div><script>b()</script></div>"),
+        ["a()", "b()"]
+    );
+}

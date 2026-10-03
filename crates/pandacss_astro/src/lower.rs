@@ -8,6 +8,7 @@ pub(crate) fn lower(source: &str, document: Document) -> AstroDocument {
         source: source.as_bytes(),
         canvas: blank(source),
         elements: Vec::new(),
+        scripts: Vec::new(),
     };
     let opened = lowering.root(&document);
     let mut canvas = lowering.canvas;
@@ -16,6 +17,8 @@ pub(crate) fn lower(source: &str, document: Document) -> AstroDocument {
     }
     let mut elements = lowering.elements;
     elements.sort_by_key(|element| element.opening.start);
+    let mut scripts = lowering.scripts;
+    scripts.sort_by_key(|script| script.start);
     let frontmatter = document
         .frontmatter
         .as_ref()
@@ -24,6 +27,7 @@ pub(crate) fn lower(source: &str, document: Document) -> AstroDocument {
         frontmatter,
         canvas: String::from_utf8_lossy(&canvas).into_owned(),
         elements,
+        scripts,
         diagnostics: document.diagnostics,
     }
 }
@@ -53,6 +57,7 @@ struct Lowering<'s> {
     source: &'s [u8],
     canvas: Vec<u8>,
     elements: Vec<AstroElement>,
+    scripts: Vec<Range<u32>>,
 }
 
 impl Lowering<'_> {
@@ -147,6 +152,9 @@ impl Lowering<'_> {
                 opening: range(&element.opening),
                 attributes,
             });
+        }
+        if let Some(script) = &element.script {
+            self.scripts.push(range(script));
         }
         self.children(&element.children);
     }

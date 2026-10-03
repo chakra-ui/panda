@@ -102,6 +102,7 @@ impl<'s> Parser<'s> {
                     opening: lt..end,
                     attributes,
                     children,
+                    script: None,
                 };
                 return Ok(Parsed {
                     markup: element_markup(lt..close_end, element),
@@ -115,6 +116,7 @@ impl<'s> Parser<'s> {
             opening: lt..gt_end,
             attributes,
             children: Vec::new(),
+            script: None,
         };
         Ok(Parsed {
             markup: element_markup(lt..gt_end, element),
@@ -550,8 +552,8 @@ impl<'s> Parser<'s> {
     fn script_at(&mut self, lt: usize, name_start: usize, top: bool) -> Parse<Parsed> {
         let name = name_start..name_start + 6;
         let (attributes, open_end) = self.attributes(name.end)?;
-        let (opening, end, children, next) = match open_end {
-            OpenEnd::SelfClose(end) => (lt..end, end, Vec::new(), Next::Child),
+        let (opening, end, children, next, content) = match open_end {
+            OpenEnd::SelfClose(end) => (lt..end, end, Vec::new(), Next::Child, None),
             OpenEnd::Open(content) => {
                 let Some(index) = self
                     .bytes
@@ -576,20 +578,69 @@ impl<'s> Parser<'s> {
                         (name.end, Next::Js)
                     }
                 };
-                (lt..content, end, vec![other(lt)], next)
+                (
+                    lt..content,
+                    end,
+                    vec![other(lt)],
+                    next,
+                    Some(content..content_end),
+                )
             }
         };
+        let script = content.filter(|_| self.bundled(&attributes));
         let element = Element {
             name,
             opening,
             attributes,
             children,
+            script,
         };
         Ok(Parsed {
             markup: element_markup(lt..end, element),
             end,
             next,
         })
+    }
+}
+
+const SCRIPT_TYPES: [&str; 6] = [
+    "text/javascript",
+    "text/ecmascript",
+    "application/javascript",
+    "application/ecmascript",
+    "application/x-javascript",
+    "module",
+];
+
+impl Parser<'_> {
+    fn bundled(&self, attributes: &[Attribute]) -> bool {
+        let named = |attribute: &Attribute, expected: &str| {
+            attribute
+                .name
+                .as_ref()
+                .is_some_and(|name| &self.source[name.clone()] == expected)
+        };
+        if attributes
+            .iter()
+            .any(|attribute| named(attribute, "is:inline") || named(attribute, "define:vars"))
+        {
+            return false;
+        }
+        match attributes.iter().find(|attribute| named(attribute, "type")) {
+            None => true,
+            Some(Attribute {
+                value: Value::Static { span, quoted },
+                ..
+            }) => {
+                let value = if *quoted {
+                    &self.source[span.start + 1..span.end.saturating_sub(1)]
+                } else {
+                    &self.source[span.clone()]
+                };
+                SCRIPT_TYPES.contains(&value)
+            }
+            Some(_) => false,
+        }
     }
 }
 

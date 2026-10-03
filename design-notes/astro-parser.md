@@ -155,6 +155,20 @@ through the existing `TemplateLiteralIndex` at the attribute's expression span o
 through one path, including components nested inside expressions, and `pandacss_transform` already treats those
 `FrameworkTemplate` records like JSX elements.
 
+### Client scripts
+
+`AstroDocument.scripts` holds the content range of each `<script>` Astro bundles as a client module: one with no `type`,
+or a JavaScript `type` or `module` (`FORK_RULES.md` §7), and no `is:inline` or `define:vars`. Astro ships those two as
+they are, so they can't import the styled-system.
+
+Extraction parses each script as its own TypeScript module, on a canvas that is blank except for that script, so spans
+stay original. The script matches its own imports, and its calls and parse warnings join the file's result after the
+template's. This runs only in the CSS extraction path. The transform's extraction skips it, so script bodies are never
+rewritten and keep their runtime `css()` call.
+
+There's no double count. The Vite plugin skips module ids with a query, so Astro's `?astro&type=script` modules never
+reach it, and the CLI and PostCSS only see the `.astro` file.
+
 ### Diagnostics
 
 For `.astro`, the file's parse diagnostics are the tokenizer's diagnostics plus any Oxc errors from parsing the canvas.
@@ -195,6 +209,7 @@ the 2,636 compiler-rs inputs took 4.90 ms per pass, against 6.94 ms for the old 
 | Parity       | `crates/pandacss_astro/tests/parity.rs`              | 60 curated inputs against the fork-based reference's exact output.                                                             |
 | Extraction   | `crates/pandacss_extractor/tests/framework_astro.rs` | The three issue repros, Sage's named cases, component props, fences, diagnostics and spans.                                    |
 | Transform    | `crates/pandacss_transform/tests/sfc.rs`             | `css()` rewrites inside nested markup, siblings, backtick values, raw text, CRLF and non-ASCII, byte for byte.                 |
+| Scripts      | `tests/lower.rs`, `framework_astro.rs`               | Which scripts count, call order, each script's own imports, TypeScript, a broken script's warning.                             |
 | Svelte / Vue | `framework_svelte.rs`, `framework_vue.rs`            | `<script>` in a comment; `}` inside a regex in an expression.                                                                  |
 | End to end   | `sandbox/astro`                                      | `astro build` accepts the page, and `panda cssgen` emits its styles.                                                           |
 
@@ -209,8 +224,6 @@ the 2,636 compiler-rs inputs took 4.90 ms per pass, against 6.94 ms for the old 
 
 ## Unresolved Questions
 
-- **Client scripts.** Astro hands each `<script>` to Vite as a virtual module, which the Vite plugin may already
-  extract. The CLI and PostCSS paths only see the `.astro` file. Confirm in a sandbox before extracting scripts.
 - **Quirks without corpus coverage.** Some of the fork's behaviour is recovery from what is really a mistake: the token
   dropped after a nested `{}` in a markup-first container, and `{z}` turning into text right after `</math>`. These are
   ported when cheap and otherwise recorded in `FORK_RULES.md` as known divergences. Sage's comment-before-fence test
