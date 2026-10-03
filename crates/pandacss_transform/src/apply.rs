@@ -61,38 +61,61 @@ pub(crate) fn build_transform_edits(
         ));
     }
 
-    if !plan.hoisted.is_empty() {
-        edits.push(Edit::Insert {
-            at: imports::internal_css_import_insertion_point(&plan.module),
-            content: plan.hoisted.iter().enumerate().fold(
-                String::new(),
-                |mut out, (index, value)| {
-                    out.push_str("const ");
-                    out.push_str(&super::plan::hoisted_name(index));
-                    out.push_str(" = ");
-                    out.push_str(value);
-                    out.push_str(";\n");
-                    out
-                },
-            ),
-        });
-    }
+    let hoisted = (!plan.hoisted.is_empty()).then(|| {
+        plan.hoisted
+            .iter()
+            .enumerate()
+            .fold(String::new(), |mut out, (index, value)| {
+                out.push_str("const ");
+                out.push_str(&super::plan::hoisted_name(index));
+                out.push_str(" = ");
+                out.push_str(value);
+                out.push_str(";\n");
+                out
+            })
+    });
 
+    let mut import_line = None;
     if plan.module.symbols_resolved || helper_facts_required(&plan.helper) {
         edits.extend(imports::plan_internal_css_import_removals(
             source,
             &plan.module,
         ));
         let helper = helper_facts_with_live_references(&plan.helper, &plan.module, &plan.rewrites);
-        if let Some(content) = helper::plan_internal_css_import_line(&helper, helper_cx) {
+        import_line = helper::plan_internal_css_import_line(&helper, helper_cx);
+    }
+
+    let at = imports::internal_css_import_insertion_point(&plan.module);
+    if is_astro(path) {
+        let content = [hoisted, import_line]
+            .into_iter()
+            .flatten()
+            .collect::<String>();
+        if !content.is_empty() {
             edits.push(Edit::Insert {
-                at: imports::internal_css_import_insertion_point(&plan.module),
+                at,
+                content: separated_import(source, path, &plan.module, content),
+            });
+        }
+    } else {
+        if let Some(content) = hoisted {
+            edits.push(Edit::Insert { at, content });
+        }
+        if let Some(content) = import_line {
+            edits.push(Edit::Insert {
+                at,
                 content: separated_import(source, path, &plan.module, content),
             });
         }
     }
 
     edits
+}
+
+fn is_astro(path: &str) -> bool {
+    std::path::Path::new(path)
+        .extension()
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("astro"))
 }
 
 fn is_vue(path: &str) -> bool {
@@ -219,10 +242,7 @@ fn separated_import(
     module: &pandacss_extractor::ModuleFacts,
     content: String,
 ) -> String {
-    let is_astro = std::path::Path::new(path)
-        .extension()
-        .is_some_and(|extension| extension.eq_ignore_ascii_case("astro"));
-    let eol = if is_astro && source_uses_crlf(source) {
+    let eol = if is_astro(path) && source_uses_crlf(source) {
         "\r\n"
     } else {
         "\n"
@@ -378,6 +398,65 @@ mod tests {
         import { cx as __pcx } from '@pandacss-internal/css';
         export const cls = "color_red";
         "#);
+    }
+
+    fn astro_plan(needs_frontmatter: bool, after_directives: u32) -> TransformPlan {
+        TransformPlan {
+            rewrites: Vec::new(),
+            dependencies: Vec::new(),
+            helper: TransformHelperFacts {
+                needs_cx: true,
+                needs_attach_recipe: false,
+                needs_memo_recipe: false,
+            },
+            module: ModuleFacts {
+                imports: Vec::new(),
+                import_bindings: Vec::new(),
+                local_call_bindings: Vec::new(),
+                after_directives,
+                needs_frontmatter,
+                symbols_resolved: false,
+            },
+            bailed: false,
+            hashed_recipe: None,
+            hoisted: vec!["{ a: \"b\" }".to_owned()],
+        }
+    }
+
+    #[test]
+    fn hoisted_declarations_and_helper_share_one_new_astro_frontmatter() {
+        let system = test_system();
+        let source = "<p class={__ps0.a} />\n";
+        let edits = build_transform_edits(
+            &system,
+            "src/a.astro",
+            source,
+            &astro_plan(true, 0),
+            HelperCxMode::Auto,
+        );
+
+        assert_snapshot!(project_edits(source, &edits), @r#"
+        ---
+        const __ps0 = { a: "b" };
+        import { cx as __pcx } from '@pandacss-internal/css';
+        ---
+        <p class={__ps0.a} />
+        "#);
+    }
+
+    #[test]
+    fn hoisted_declarations_alone_create_one_crlf_astro_frontmatter() {
+        let system = test_system();
+        let source = "<p class={__ps0.a} />\r\n<b />\r\n";
+        let mut plan = astro_plan(true, 0);
+        plan.helper = TransformHelperFacts::default();
+        let edits =
+            build_transform_edits(&system, "src/a.astro", source, &plan, HelperCxMode::Auto);
+
+        assert_eq!(
+            project_edits(source, &edits),
+            "---\r\nconst __ps0 = { a: \"b\" };\r\n---\r\n<p class={__ps0.a} />\r\n<b />\r\n"
+        );
     }
 
     #[test]

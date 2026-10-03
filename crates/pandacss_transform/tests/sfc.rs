@@ -597,3 +597,38 @@ fn removing_an_import_before_a_bare_closing_fence_keeps_the_fence() {
         "---\n---\n<p class={\"color_red\"} />\n"
     );
 }
+
+const TABS: &str = "import { sva } from '@panda/css';\nexport const tabs = sva({ slots: ['root', 'trigger'], className: 'tabs', base: { root: { display: 'flex' }, trigger: { color: 'red' } }, variants: { size: { sm: { trigger: { padding: '4px' } }, lg: { trigger: { padding: '8px' } } } }, defaultVariants: { size: 'sm' } });\n";
+
+#[test]
+fn hoisted_declarations_land_inside_an_existing_astro_frontmatter() {
+    let source = "---\nimport { tabs } from './tabs';\nconst classes = tabs({ size: 'lg' });\n---\n<p class={classes.root} />\n";
+    let output =
+        super::common::transform_cross_file("src/a.astro", source, &[("src/tabs.ts", TABS)]);
+    assert_snapshot!(output.code, @r#"
+    ---
+    const __ps0 = { root: "d_flex tabs__root", trigger: "color_red padding_8px tabs__trigger" };
+    import { tabs } from './tabs';
+    const classes = __ps0;
+    ---
+    <p class={classes.root} />
+    "#);
+}
+
+#[test]
+fn hoisted_declarations_keep_crlf_inside_an_astro_frontmatter() {
+    let source = "---\r\nimport { tabs } from './tabs';\r\nconst classes = tabs({ size: 'lg' });\r\n---\r\n<p class={classes.root} />\r\n";
+    let output =
+        super::common::transform_cross_file("src/a.astro", source, &[("src/tabs.ts", TABS)]);
+    assert!(
+        output.code.starts_with("---\r\nconst __ps0 = "),
+        "{:?}",
+        output.code
+    );
+    assert_eq!(
+        output.code.matches('\n').count(),
+        output.code.matches("\r\n").count(),
+        "{:?}",
+        output.code
+    );
+}
