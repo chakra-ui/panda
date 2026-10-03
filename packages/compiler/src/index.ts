@@ -112,8 +112,12 @@ function build(config: SerializedConfig, callbacks: ProjectCallbacks, options?: 
   assertNativeBinding(callbacks, options?.hooks)
 
   const prepared = prepareCompilerConfig(config)
-  const compiler = nativeCompilerFromConfig(prepared, toNativeOptions(options), createUtilityValuesCallbacks(callbacks))
-  registerCallbacks(compiler, callbacks, options?.hooks, compiler.tokenDictionary?.())
+  const compiler = nativeCompilerFromConfig(
+    JSON.stringify(prepared),
+    toNativeOptions(options),
+    createUtilityValuesCallbacks(callbacks),
+  )
+  registerCallbacks(compiler, prepared, callbacks, options?.hooks, compiler.tokenDictionary?.())
   attachFileSystem(compiler)
   attachPathSystem(compiler)
   attachBuildInfo(compiler)

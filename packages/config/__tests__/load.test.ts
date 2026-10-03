@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -526,6 +526,111 @@ describe('loadConfig presets', () => {
       expect.arrayContaining(['panda.config.ts', 'preset.ts', 'preset-token.ts', 'manual.txt']),
     )
     expect(new Set(result.dependencies).size).toBe(result.dependencies.length)
+  })
+
+  test('reloads a string preset when a file it imports changes', async () => {
+    const cwd = writeTempProject({
+      'preset-token.ts': `export const presetColor = '#0f0'`,
+      'preset.ts': `import { presetColor } from './preset-token'
+        export default { theme: { extend: { tokens: { colors: { brand: { value: presetColor } } } } } }`,
+      'panda.config.ts': `export default { outdir: 'styled-system', presets: ['./preset.ts'] }`,
+    })
+    const brand = (result: LoadConfigResult) => (result.config.theme as any).tokens.colors.brand
+
+    const first = await loadConfig({ cwd })
+    const second = await loadConfig({ cwd })
+    expect(brand(first)).toEqual({ value: '#0f0' })
+    expect(second.config).toEqual(first.config)
+
+    const token = join(cwd, 'preset-token.ts')
+    writeFileSync(token, `export const presetColor = '#f00'`)
+    const later = new Date(Date.now() + 10_000)
+    utimesSync(token, later, later)
+
+    expect(brand(await loadConfig({ cwd }))).toEqual({ value: '#f00' })
+  })
+
+  const brandPreset = (color: string) =>
+    `export default { theme: { tokens: { colors: { brand: { value: '${color}' } } } } }`
+  const brand = (result: LoadConfigResult) => (result.config.theme as any).tokens.colors.brand.value
+  const touch = (path: string) => {
+    const later = new Date(Date.now() + 10_000)
+    utimesSync(path, later, later)
+  }
+
+  test('imports an installed ESM preset package once until it is reinstalled', async () => {
+    const evaluated = (color: string) =>
+      `globalThis.__brandPresetEvals = (globalThis.__brandPresetEvals ?? 0) + 1\n${brandPreset(color)}`
+    const cwd = writeTempProject({
+      'node_modules/brand-preset/package.json': JSON.stringify({
+        name: 'brand-preset',
+        type: 'module',
+        exports: './index.js',
+      }),
+      'node_modules/brand-preset/index.js': evaluated('#0f0'),
+      'panda.config.ts': `export default { outdir: 'styled-system', presets: ['brand-preset'] }`,
+    })
+    const evals = () => (globalThis as { __brandPresetEvals?: number }).__brandPresetEvals
+
+    expect(brand(await loadConfig({ cwd }))).toBe('#0f0')
+    expect(brand(await loadConfig({ cwd }))).toBe('#0f0')
+    expect(evals()).toBe(1)
+
+    const entry = join(cwd, 'node_modules/brand-preset/index.js')
+    writeFileSync(entry, evaluated('#f00'))
+    touch(entry)
+    const reloaded = await loadConfig({ cwd })
+    expect(brand(reloaded)).toBe('#f00')
+    expect(evals()).toBe(2)
+    expect(reloaded.dependencies).toContain(join('node_modules', 'brand-preset', 'index.js'))
+  })
+
+  test('gives preset:resolved hooks a copy of an installed preset', async () => {
+    const cwd = writeTempProject({
+      'node_modules/brand-preset/package.json': JSON.stringify({
+        name: 'brand-preset',
+        type: 'module',
+        exports: './index.js',
+      }),
+      'node_modules/brand-preset/index.js': brandPreset('#0f0'),
+      'panda.config.ts': `export default {
+        outdir: 'styled-system',
+        presets: ['brand-preset'],
+        plugins: [{ name: 'suffix', hooks: { 'preset:resolved': ({ preset }) => { preset.theme.tokens.colors.brand.value += '!' } } }],
+      }`,
+    })
+
+    expect(brand(await loadConfig({ cwd }))).toBe('#0f0!')
+    expect(brand(await loadConfig({ cwd }))).toBe('#0f0!')
+  })
+
+  test('bundles a CommonJS preset package given by name', async () => {
+    const result = await loadTempConfig({
+      'node_modules/cjs-brand/package.json': JSON.stringify({ name: 'cjs-brand', main: 'index.cjs' }),
+      'node_modules/cjs-brand/index.cjs': `module.exports = { theme: { tokens: { colors: { brand: { value: '#0f0' } } } } }`,
+      'panda.config.ts': `export default { outdir: 'styled-system', presets: ['cjs-brand'] }`,
+    })
+
+    expect(brand(result)).toBe('#0f0')
+  })
+
+  test('bundles a workspace-linked preset so edits to its imports show up', async () => {
+    const workspace = writeTempProject({
+      'package.json': JSON.stringify({ name: 'linked-brand', type: 'module', exports: './index.js' }),
+      'tokens.js': `export const color = '#0f0'`,
+      'index.js': `import { color } from './tokens.js'
+        export default { theme: { tokens: { colors: { brand: { value: color } } } } }`,
+    })
+    const cwd = writeTempProject({
+      'panda.config.ts': `export default { outdir: 'styled-system', presets: ['linked-brand'] }`,
+    })
+    mkdirSync(join(cwd, 'node_modules'), { recursive: true })
+    symlinkSync(workspace, join(cwd, 'node_modules/linked-brand'), 'junction')
+
+    expect(brand(await loadConfig({ cwd }))).toBe('#0f0')
+
+    writeFileSync(join(workspace, 'tokens.js'), `export const color = '#f00'`)
+    expect(brand(await loadConfig({ cwd }))).toBe('#f00')
   })
 
   test('bundles a config that imports a CommonJS node_modules preset', async () => {

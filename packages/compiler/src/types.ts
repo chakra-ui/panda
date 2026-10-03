@@ -179,7 +179,7 @@ export interface RawCompiler
 
 export interface CompilerConstructor {
   fromConfig(
-    config: SerializedConfig,
+    configJson: string,
     options?: NativeCompilerOptions,
     utilityValuesCallbacks?: Record<
       string,

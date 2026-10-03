@@ -1,13 +1,14 @@
 import type { Config } from '@pandacss/types'
-import { existsSync, realpathSync } from 'node:fs'
+import { existsSync, readFileSync, realpathSync, statSync } from 'node:fs'
 import { mkdir, unlink, writeFile } from 'node:fs/promises'
 import { builtinModules } from 'node:module'
 import { tmpdir } from 'node:os'
-import { basename, dirname, isAbsolute, join, normalize, relative } from 'node:path'
+import { basename, dirname, extname, isAbsolute, join, normalize, relative, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import type { RolldownOutput } from 'rolldown'
 import { importMetaUrlPlugin } from './bundle-plugins'
 import { PandaError } from './error'
+import { tryResolveFrom } from './resolve'
 
 const nodeBuiltins = new Set([...builtinModules, ...builtinModules.map((mod) => `node:${mod}`)])
 
@@ -50,11 +51,46 @@ export async function bundleConfig<T extends Config = Config>(
 
   const dependencies = collectDependencies(chunks.output, filepath, cwd)
   const mod = await loadBundledModule(filepath, output.code)
+
+  return { config: await configFromModule<T>(mod), dependencies }
+}
+
+export async function importInstalledConfig<T extends Config = Config>(
+  specifier: string,
+  cwd: string,
+): Promise<BundleConfigResult<T> | undefined> {
+  if (specifier.startsWith('.') || isAbsolute(specifier)) return undefined
+  const resolved = tryResolveFrom(specifier, cwd)
+  if (!resolved) return undefined
+  const file = canonical(resolved)
+  if (!file.includes(`${sep}node_modules${sep}`) || !isEsmFile(file)) return undefined
+
+  const mod = await import(/* @vite-ignore */ `${pathToFileURL(file).href}?mtime=${statSync(file).mtimeMs}`)
+  return { config: await configFromModule<T>(mod), dependencies: [normalize(relative(canonical(cwd), file))] }
+}
+
+async function configFromModule<T>(mod: Record<string, unknown>): Promise<T> {
   const hasDefaultExport = Object.prototype.hasOwnProperty.call(mod ?? {}, 'default')
   const exported = hasDefaultExport ? mod.default : mod
-  const config = (hasDefaultExport && isPromiseLike(exported) ? await exported : exported) as T
+  return (hasDefaultExport && isPromiseLike(exported) ? await exported : exported) as T
+}
 
-  return { config, dependencies }
+function isEsmFile(file: string): boolean {
+  const extension = extname(file)
+  if (extension === '.mjs') return true
+  if (extension !== '.js') return false
+  return nearestPackageType(dirname(file)) === 'module'
+}
+
+function nearestPackageType(start: string): string | undefined {
+  let current = start
+  while (true) {
+    const candidate = join(current, 'package.json')
+    if (existsSync(candidate)) return (JSON.parse(readFileSync(candidate, 'utf8')) as { type?: string }).type
+    const parent = dirname(current)
+    if (parent === current) return undefined
+    current = parent
+  }
 }
 
 /** Evaluate bundled ESM by writing a temp file (preferred) or a `data:` URL fallback. */
