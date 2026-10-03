@@ -1046,18 +1046,205 @@ fn pure_helper_object_return_spreads_into_jsx() {
 }
 
 #[test]
-fn pure_helper_body_object_spread_does_not_fold() {
-    // The helper's inner spread doesn't fold; the static siblings still extract.
+fn pure_helper_body_object_spread_folds() {
     let src = indoc! {r"
         import { css } from '@panda/css';
         const base = { color: 'red' };
         const getStyles = () => ({ ...base, padding: '20px' });
         css({ ...getStyles(), margin: '8px' });
     "};
-    let json = serde_json::to_value(&run(src).calls[0].data[0]).unwrap();
-    assert_eq!(json["margin"], "8px");
-    assert!(json.get("color").is_none());
-    assert!(json.get("padding").is_none());
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"
+    color: red
+    padding: 20px
+    margin: 8px
+    ");
+}
+
+#[test]
+fn pure_helper_spreads_a_param_object() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const withPadding = (base: object) => ({ ...base, padding: '20px' });
+        css(withPadding({ color: 'red' }));
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"
+    color: red
+    padding: 20px
+    ");
+}
+
+#[test]
+fn pure_helper_conditional_spread_folds_both_ways() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const tone = (on: boolean) => ({ ...(on && { color: 'red' }), padding: '4px' });
+        css(tone(true));
+        css(tone(false));
+    "};
+    let calls = run(src).calls;
+    assert_yaml_snapshot!(calls[0].data[0], @"
+    color: red
+    padding: 4px
+    ");
+    assert_yaml_snapshot!(calls[1].data[0], @"padding: 4px");
+}
+
+#[test]
+fn pure_helper_string_spread_does_not_fold() {
+    // Spreading a string yields index keys in JS; that is not a style object.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const chars = (value: string) => ({ ...value });
+        css({ ...chars('ab'), margin: '8px' });
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"margin: 8px");
+}
+
+#[test]
+fn pure_helper_local_const_folds() {
+    let src = indoc! {r#"
+        import { css } from '@panda/css';
+        function withLocal(color: string) {
+          const rule = { color };
+          return { "& .local": rule };
+        }
+        css({ ...withLocal("red"), "& .literal": { color: "green" } });
+    "#};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @r#"
+    "& .local":
+      color: red
+    "& .literal":
+      color: green
+    "#);
+}
+
+#[test]
+fn pure_helper_arrow_block_with_locals_folds() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const card = (tone: string) => {
+          const border = `1px solid ${tone}`;
+          return { border, color: tone };
+        };
+        css(card('red'));
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"
+    border: 1px solid red
+    color: red
+    ");
+}
+
+#[test]
+fn pure_helper_chained_and_typed_locals_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function card(tone: string) {
+          const shade: string = `${tone}.500`;
+          const rule: { color: string } = { color: shade };
+          return { '& .card': rule };
+        }
+        css(card('red'));
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @r#"
+    "& .card":
+      color: red.500
+    "#);
+}
+
+#[test]
+fn pure_helper_let_local_folds() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function card(tone: string) {
+          let rule = { color: tone };
+          return rule;
+        }
+        css(card('red'));
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"color: red");
+}
+
+#[test]
+fn pure_helper_local_shadows_an_outer_binding() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const color = 'blue';
+        function card(tone: string) {
+          const color = tone;
+          return { color };
+        }
+        css(card('red'));
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"color: red");
+}
+
+#[test]
+fn pure_helper_var_local_does_not_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function card(tone: string) {
+          var rule = { color: tone };
+          return rule;
+        }
+        css({ ...card('red'), margin: '8px' });
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"margin: 8px");
+}
+
+#[test]
+fn pure_helper_local_without_initializer_does_not_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function card(tone: string) {
+          let rule;
+          return { color: tone };
+        }
+        css({ ...card('red'), margin: '8px' });
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"margin: 8px");
+}
+
+#[test]
+fn pure_helper_destructured_local_folds() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function card(options: { tone: string; size?: string }) {
+          const { tone, size = 'sm' } = options;
+          return { color: tone, fontSize: size };
+        }
+        css(card({ tone: 'red' }));
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"
+    color: red
+    fontSize: sm
+    ");
+}
+
+#[test]
+fn pure_helper_statement_before_return_does_not_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function card(tone: string) {
+          if (!tone) return {};
+          return { color: tone };
+        }
+        css({ ...card('red'), margin: '8px' });
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"margin: 8px");
+}
+
+#[test]
+fn pure_helper_reassigned_let_does_not_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function card(tone: string) {
+          let color = tone;
+          color = 'blue';
+          return { color };
+        }
+        css({ ...card('red'), margin: '8px' });
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"margin: 8px");
 }
 
 #[test]
@@ -1088,15 +1275,72 @@ fn pure_helper_local_alias_does_not_fold() {
 }
 
 #[test]
-fn nested_pure_call_in_body_does_not_fold() {
-    // Nested calls are rejected even when the callee is itself pure.
+fn nested_pure_call_in_body_folds() {
     let src = indoc! {r"
         import { css } from '@panda/css';
         const inner = () => 'red';
         const outer = () => inner();
         css({ color: outer() });
     "};
-    assert!(run(src).calls.is_empty());
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"color: red");
+}
+
+#[test]
+fn nested_pure_call_passes_params_through() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const rule = (color: string) => ({ color });
+        const card = (tone: string) => ({ '& .card': rule(tone), '& .badge': rule(`${tone}.700`) });
+        css(card('red'));
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @r#"
+    "& .card":
+      color: red
+    "& .badge":
+      color: red.700
+    "#);
+}
+
+#[test]
+fn nested_pure_call_in_a_local_folds() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function rule(color: string) {
+          return { color };
+        }
+        function card(tone: string) {
+          const base = rule(tone);
+          return { ...base, padding: '4px' };
+        }
+        css(card('red'));
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"
+    color: red
+    padding: 4px
+    ");
+}
+
+#[test]
+fn nested_unknown_call_in_body_does_not_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        import { lookup } from 'somewhere';
+        const card = (tone: string) => ({ color: lookup(tone) });
+        css({ ...card('red'), margin: '8px' });
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"margin: 8px");
+}
+
+#[test]
+fn recursive_pure_helper_does_not_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const depth = (n: number): string => (n > 0 ? depth(n - 1) : 'red');
+        const ping = (n: number): string => (n > 0 ? pong(n - 1) : 'red');
+        const pong = (n: number): string => ping(n);
+        css({ color: depth(2), bg: ping(2), margin: '8px' });
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"margin: 8px");
 }
 
 #[test]
@@ -1161,17 +1405,139 @@ fn async_pure_helper_does_not_fold() {
 }
 
 #[test]
-fn destructured_param_helper_does_not_fold() {
+fn destructured_param_helper_folds() {
     let src = indoc! {r"
         import { css } from '@panda/css';
         const f = ({ color }: { color: string }) => color;
         css({ color: f({ color: 'red' }) });
     "};
-    assert!(run(src).calls.is_empty());
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"color: red");
 }
 
 #[test]
-fn multi_statement_body_helper_does_not_fold() {
+fn destructured_param_renames_and_defaults_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const text = ({ tone: color, size = 'md' }: { tone: string; size?: string }) => ({ color, fontSize: size });
+        css(text({ tone: 'red' }));
+        css(text({ tone: 'blue', size: 'lg' }));
+    "};
+    let calls = run(src).calls;
+    assert_yaml_snapshot!(calls[0].data[0], @"
+    color: red
+    fontSize: md
+    ");
+    assert_yaml_snapshot!(calls[1].data[0], @"
+    color: blue
+    fontSize: lg
+    ");
+}
+
+#[test]
+fn destructured_param_with_a_default_object_folds_without_args() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const text = ({ size = 'md' }: { size?: string } = {}) => ({ fontSize: size });
+        css(text());
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"fontSize: md");
+}
+
+#[test]
+fn nested_destructured_param_folds() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const text = ({ colors: { fg, bg = 'white' } }: { colors: { fg: string; bg?: string } }) => ({ color: fg, bg });
+        css(text({ colors: { fg: 'red' } }));
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"
+    color: red
+    bg: white
+    ");
+}
+
+#[test]
+fn destructured_default_reads_an_earlier_binding() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const card = ({ tone, border = tone }: { tone: string; border?: string }) => ({ color: tone, borderColor: border });
+        css(card({ tone: 'red' }));
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"
+    color: red
+    borderColor: red
+    ");
+}
+
+#[test]
+fn destructured_missing_key_is_undefined() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const text = ({ tone, size }: { tone: string; size?: string }) => ({ color: tone, fontSize: size });
+        css(text({ tone: 'red' }));
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"
+    color: red
+    fontSize: ~
+    ");
+}
+
+#[test]
+fn plain_and_destructured_params_mix() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const tone = (base: string, { shade = '500' }: { shade?: string } = {}) => `${base}.${shade}`;
+        css({ color: tone('red'), bg: tone('blue', { shade: '700' }) });
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"
+    color: red.500
+    bg: blue.700
+    ");
+}
+
+#[test]
+fn destructured_rest_param_does_not_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const text = ({ tone, ...rest }: { tone: string }) => ({ color: tone, ...rest });
+        css({ ...text({ tone: 'red' }), margin: '8px' });
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"margin: 8px");
+}
+
+#[test]
+fn computed_key_destructured_param_does_not_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const key = 'tone';
+        const text = ({ [key]: color }: Record<string, string>) => ({ color });
+        css({ ...text({ tone: 'red' }), margin: '8px' });
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"margin: 8px");
+}
+
+#[test]
+fn array_destructured_param_does_not_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const text = ([color]: string[]) => ({ color });
+        css({ ...text(['red']), margin: '8px' });
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"margin: 8px");
+}
+
+#[test]
+fn destructuring_null_does_not_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const text = ({ tone }: { tone: string }) => ({ color: tone });
+        css({ ...text(null as any), margin: '8px' });
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"margin: 8px");
+}
+
+#[test]
+fn multi_statement_body_helper_folds() {
     let src = indoc! {r"
         import { css } from '@panda/css';
         function f() {
@@ -1180,7 +1546,7 @@ fn multi_statement_body_helper_does_not_fold() {
         }
         css({ color: f() });
     "};
-    assert!(run(src).calls.is_empty());
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"color: red");
 }
 
 #[test]
@@ -1409,4 +1775,137 @@ fn chained_element_access_on_resolved_object() {
     "};
     let json = serde_json::to_value(&run(src).calls[0].data[0]).unwrap();
     assert_eq!(json["color"], "#ef4444");
+}
+
+fn helper_warnings(usage: &ExtractUsage) -> String {
+    usage
+        .diagnostics
+        .iter()
+        .filter(|d| d.code == "pure_helper_unevaluated")
+        .map(|d| d.message.clone())
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+#[test]
+fn unevaluated_helper_with_static_args_warns_once() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function card(tone: string) {
+          if (!tone) return {};
+          return { color: tone };
+        }
+        css({ ...card('red'), margin: '8px' });
+    "};
+    assert_snapshot!(helper_warnings(&run(src)), @"`card(...)` can't be evaluated at build time, so its styles were not extracted. Keep the helper to `const` declarations and one `return`, or write the styles inline.");
+}
+
+#[test]
+fn unevaluated_helper_with_dynamic_args_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function card(tone: string) {
+          if (!tone) return {};
+          return { color: tone };
+        }
+        export const make = (tone: string) => css({ ...card(tone), margin: '8px' });
+    "};
+    assert_snapshot!(helper_warnings(&run(src)), @"");
+}
+
+#[test]
+fn evaluated_helper_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function card(tone: string) {
+          const rule = { color: tone };
+          return rule;
+        }
+        css({ ...card('red'), margin: '8px' });
+    "};
+    assert_snapshot!(helper_warnings(&run(src)), @"");
+}
+
+#[test]
+fn builtin_and_dynamic_token_calls_do_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        import { token } from '@panda/tokens';
+        export const make = (path: string) =>
+          css({ color: token(path), ...Object.fromEntries([['margin', '8px']]) });
+    "};
+    assert_snapshot!(helper_warnings(&run(src)), @"");
+}
+
+#[test]
+fn component_destructured_prop_default_is_extracted() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        export function Button({ tone, size = 'xs' }: { tone: string; size?: string }) {
+          return css({ color: tone, fontSize: size });
+        }
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"fontSize: xs");
+}
+
+#[test]
+fn component_plain_param_default_is_extracted() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        export const text = (size = 'md') => css({ fontSize: size });
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"fontSize: md");
+}
+
+#[test]
+fn component_nested_and_object_defaults_are_extracted() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        export function Card({ space: { x = '4' } = {}, size = 'xl' }: { space?: { x?: string }; size?: string } = {}) {
+          return css({ paddingInline: x, fontSize: size });
+        }
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @r#"
+    paddingInline: "4"
+    fontSize: xl
+    "#);
+}
+
+#[test]
+fn component_destructured_local_default_is_extracted() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        export function Card(props: { size?: string }) {
+          const { size = 'lg' } = props;
+          return css({ fontSize: size });
+        }
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"fontSize: lg");
+}
+
+#[test]
+fn component_prop_default_in_a_style_prop_is_extracted() {
+    let src = indoc! {r"
+        import { Box } from '@panda/jsx';
+        export const Tag = ({ size = 'sm' }: { size?: string }) => <Box fontSize={size} />;
+    "};
+    assert_yaml_snapshot!(run_jsx(src).jsx[0].data, @"fontSize: sm");
+}
+
+#[test]
+fn prop_default_is_not_a_known_value_in_a_ternary() {
+    // The caller can pass another `size`, so both branches stay.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        export function Button({ size = 'xs' }: { size?: string }) {
+          return css({ color: size === 'xs' ? 'red' : 'blue' });
+        }
+    "};
+    assert_yaml_snapshot!(run(src).calls[0].data[0], @"
+    color:
+      kind: conditional
+      branches:
+        - red
+        - blue
+    ");
 }

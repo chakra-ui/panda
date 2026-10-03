@@ -4,10 +4,13 @@
 //! [`OwnedPureExpr`] can be applied with folded arguments at extract time —
 //! same-file or across files (via the cross-file export cache).
 
+use std::sync::Arc;
+
 use oxc_ast::ast::{
     ArrayExpressionElement, ArrowFunctionExpression, BinaryOperator, BindingPattern,
     CallExpression, Expression, FormalParameters, Function, FunctionBody, LogicalOperator,
-    ObjectPropertyKind, PropertyKey, PropertyKind, Statement, UnaryOperator,
+    ObjectPattern, ObjectPropertyKind, PropertyKey, PropertyKind, Statement, UnaryOperator,
+    VariableDeclarationKind,
 };
 
 use crate::literal::{collapse_whitespace, expression_to_literal, less_than, loose_eq, strict_eq};
@@ -20,6 +23,8 @@ pub(crate) struct OwnedPureFn {
     pub(crate) param_count: usize,
     /// Optional folded default for each param slot (`None` = required).
     pub(crate) defaults: Vec<Option<OwnedPureExpr>>,
+    /// `const` / `let` bindings before the `return`, evaluated in order into the slots after the params.
+    pub(crate) locals: Vec<OwnedPureExpr>,
     pub(crate) body: OwnedPureExpr,
 }
 
@@ -53,8 +58,13 @@ pub(crate) enum OwnedPureExpr {
         consequent: Box<OwnedPureExpr>,
         alternate: Box<OwnedPureExpr>,
     },
-    Object(Vec<(OwnedKey, OwnedPureExpr)>),
+    Object(Vec<OwnedObjectEntry>),
     Array(Vec<OwnedPureExpr>),
+    /// Call to another pure callable, applied with the lowered arguments.
+    Call {
+        func: Arc<OwnedPureFn>,
+        args: Vec<OwnedPureExpr>,
+    },
     Member {
         object: Box<OwnedPureExpr>,
         prop: String,
@@ -63,6 +73,22 @@ pub(crate) enum OwnedPureExpr {
         object: Box<OwnedPureExpr>,
         index: Box<OwnedPureExpr>,
     },
+    /// Destructuring read: a missing key is `undefined`, unlike [`Self::Member`].
+    Read {
+        object: Box<OwnedPureExpr>,
+        key: String,
+    },
+    /// Destructuring default: `fallback` when `value` is `undefined`.
+    Default {
+        value: Box<OwnedPureExpr>,
+        fallback: Box<OwnedPureExpr>,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) enum OwnedObjectEntry {
+    Property(OwnedKey, OwnedPureExpr),
+    Spread(OwnedPureExpr),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -136,13 +162,12 @@ pub(crate) fn lower_arrow(
     if arrow.r#async {
         return None;
     }
-    let (param_count, defaults) = lower_params(&arrow.params, resolver)?;
-    let body_expr = callable_body_expression(&arrow.body, arrow.expression)?;
-    let params = param_names(&arrow.params)?;
-    let body = lower_expr(body_expr, &params, resolver)?;
+    let (defaults, mut slots) = lower_params(&arrow.params, resolver)?;
+    let body = lower_body(&arrow.body, arrow.expression, &mut slots, resolver)?;
     Some(OwnedPureFn {
-        param_count,
+        param_count: defaults.len(),
         defaults,
+        locals: slots.locals,
         body,
     })
 }
@@ -155,13 +180,12 @@ pub(crate) fn lower_function(
         return None;
     }
     let body = func.body.as_ref()?;
-    let (param_count, defaults) = lower_params(&func.params, resolver)?;
-    let body_expr = callable_body_expression(body, false)?;
-    let params = param_names(&func.params)?;
-    let body = lower_expr(body_expr, &params, resolver)?;
+    let (defaults, mut slots) = lower_params(&func.params, resolver)?;
+    let body = lower_body(body, false, &mut slots, resolver)?;
     Some(OwnedPureFn {
-        param_count,
+        param_count: defaults.len(),
         defaults,
+        locals: slots.locals,
         body,
     })
 }
@@ -177,6 +201,10 @@ pub(crate) fn apply_pure_fn(func: &OwnedPureFn, args: &[Literal]) -> Option<Lite
         } else {
             return None;
         }
+    }
+    for local in &func.locals {
+        let value = eval_expr(local, &bound)?;
+        bound.push(value);
     }
     eval_expr(&func.body, &bound)
 }
@@ -194,59 +222,147 @@ pub(crate) fn fold_call_args(
     Some(args)
 }
 
-fn callable_body_expression<'a>(
-    body: &'a FunctionBody<'a>,
-    is_expression_arrow: bool,
-) -> Option<&'a Expression<'a>> {
-    if is_expression_arrow {
-        // `() => expr` — body is a single ExpressionStatement.
-        match body.statements.as_slice() {
-            [Statement::ExpressionStatement(stmt)] => Some(&stmt.expression),
-            _ => None,
+/// Bindings in evaluation order: params, then locals. `names[i]` names slot `i`; a destructured
+/// param or initializer gets an unnamed slot so its pattern reads it once.
+struct Slots {
+    names: Vec<String>,
+    locals: Vec<OwnedPureExpr>,
+}
+
+impl Slots {
+    fn push_local(&mut self, name: String, value: OwnedPureExpr) -> usize {
+        self.names.push(name);
+        self.locals.push(value);
+        self.names.len() - 1
+    }
+
+    /// Bind `pattern` to `source`: plain names, defaults, and (nested) object patterns.
+    /// Rest elements, computed keys, and array patterns don't lower.
+    fn bind_pattern(
+        &mut self,
+        pattern: &BindingPattern<'_>,
+        source: OwnedPureExpr,
+        resolver: Option<&Resolver<'_, '_>>,
+    ) -> Option<()> {
+        match pattern {
+            BindingPattern::BindingIdentifier(id) => {
+                self.push_local(id.name.to_string(), source);
+            }
+            BindingPattern::AssignmentPattern(assignment) => {
+                let fallback = lower_expr(&assignment.right, &self.names, resolver)?;
+                let value = OwnedPureExpr::Default {
+                    value: Box::new(source),
+                    fallback: Box::new(fallback),
+                };
+                self.bind_pattern(&assignment.left, value, resolver)?;
+            }
+            BindingPattern::ObjectPattern(object) => {
+                let slot = match source {
+                    OwnedPureExpr::Param(slot) => slot,
+                    other => self.push_local(String::new(), other),
+                };
+                self.bind_object(object, slot, resolver)?;
+            }
+            BindingPattern::ArrayPattern(_) => return None,
         }
-    } else {
-        // `{ return expr; }` — exactly one return, no other statements.
-        match body.statements.as_slice() {
-            [Statement::ReturnStatement(ret)] => ret.argument.as_ref(),
-            _ => None,
+        Some(())
+    }
+
+    fn bind_object(
+        &mut self,
+        object: &ObjectPattern<'_>,
+        slot: usize,
+        resolver: Option<&Resolver<'_, '_>>,
+    ) -> Option<()> {
+        if object.rest.is_some() {
+            return None;
         }
+        for property in &object.properties {
+            if property.computed {
+                return None;
+            }
+            let OwnedKey::Static(key) = lower_key(&property.key, false, &self.names, resolver)?
+            else {
+                return None;
+            };
+            let read = OwnedPureExpr::Read {
+                object: Box::new(OwnedPureExpr::Param(slot)),
+                key,
+            };
+            self.bind_pattern(&property.value, read, resolver)?;
+        }
+        Some(())
     }
 }
 
-fn param_names(params: &FormalParameters<'_>) -> Option<Vec<String>> {
+/// Lower `() => expr`, or a block of `const` / `let` declarations followed by one `return`.
+fn lower_body(
+    body: &FunctionBody<'_>,
+    is_expression_arrow: bool,
+    slots: &mut Slots,
+    resolver: Option<&Resolver<'_, '_>>,
+) -> Option<OwnedPureExpr> {
+    if is_expression_arrow {
+        let [Statement::ExpressionStatement(stmt)] = body.statements.as_slice() else {
+            return None;
+        };
+        return lower_expr(&stmt.expression, &slots.names, resolver);
+    }
+
+    let (Statement::ReturnStatement(ret), declarations) = body.statements.split_last()? else {
+        return None;
+    };
+    for statement in declarations {
+        let Statement::VariableDeclaration(declaration) = statement else {
+            return None;
+        };
+        if !matches!(
+            declaration.kind,
+            VariableDeclarationKind::Const | VariableDeclarationKind::Let
+        ) {
+            return None;
+        }
+        for declarator in &declaration.declarations {
+            let init = lower_expr(declarator.init.as_ref()?, &slots.names, resolver)?;
+            slots.bind_pattern(&declarator.id, init, resolver)?;
+        }
+    }
+    lower_expr(ret.argument.as_ref()?, &slots.names, resolver)
+}
+
+/// Lower params into one slot each, then bind destructured params into locals.
+fn lower_params(
+    params: &FormalParameters<'_>,
+    resolver: Option<&Resolver<'_, '_>>,
+) -> Option<(Vec<Option<OwnedPureExpr>>, Slots)> {
     if params.rest.is_some() {
         return None;
     }
     let mut names = Vec::with_capacity(params.items.len());
-    for item in &params.items {
-        match &item.pattern {
-            BindingPattern::BindingIdentifier(id) => names.push(id.name.to_string()),
-            _ => return None,
-        }
-    }
-    Some(names)
-}
-
-fn lower_params(
-    params: &FormalParameters<'_>,
-    resolver: Option<&Resolver<'_, '_>>,
-) -> Option<(usize, Vec<Option<OwnedPureExpr>>)> {
-    if params.rest.is_some() {
-        return None;
-    }
     let mut defaults = Vec::with_capacity(params.items.len());
-    let names = param_names(params)?;
+    for item in &params.items {
+        // Defaults may only reference earlier params + closed captures.
+        defaults.push(match &item.initializer {
+            Some(init) => Some(lower_expr(init, &names, resolver)?),
+            None => None,
+        });
+        names.push(match &item.pattern {
+            BindingPattern::BindingIdentifier(id) => id.name.to_string(),
+            BindingPattern::ObjectPattern(_) => String::new(),
+            _ => return None,
+        });
+    }
+
+    let mut slots = Slots {
+        names,
+        locals: Vec::new(),
+    };
     for (index, item) in params.items.iter().enumerate() {
-        match &item.initializer {
-            None => defaults.push(None),
-            Some(init) => {
-                // Defaults may only reference earlier params + closed captures.
-                let earlier = &names[..index];
-                defaults.push(Some(lower_expr(init, earlier, resolver)?));
-            }
+        if let BindingPattern::ObjectPattern(object) = &item.pattern {
+            slots.bind_object(object, index, resolver)?;
         }
     }
-    Some((names.len(), defaults))
+    Some((defaults, slots))
 }
 
 #[allow(
@@ -275,7 +391,7 @@ fn lower_expr(
 
         Expression::Identifier(ident) => {
             let name = ident.name.as_str();
-            if let Some(index) = params.iter().position(|p| p == name) {
+            if let Some(index) = params.iter().rposition(|p| p == name) {
                 return Some(OwnedPureExpr::Param(index));
             }
             // Bake closed captures.
@@ -356,7 +472,10 @@ fn lower_expr(
             let mut entries = Vec::with_capacity(obj.properties.len());
             for prop in &obj.properties {
                 match prop {
-                    ObjectPropertyKind::SpreadProperty(_) => return None,
+                    ObjectPropertyKind::SpreadProperty(spread) => {
+                        let value = lower_expr(&spread.argument, params, resolver)?;
+                        entries.push(OwnedObjectEntry::Spread(value));
+                    }
                     ObjectPropertyKind::ObjectProperty(p) => {
                         if p.method || p.kind != PropertyKind::Init {
                             return None;
@@ -372,7 +491,7 @@ fn lower_expr(
                         } else {
                             lower_expr(&p.value, params, resolver)?
                         };
-                        entries.push((key, value));
+                        entries.push(OwnedObjectEntry::Property(key, value));
                     }
                 }
             }
@@ -416,7 +535,22 @@ fn lower_expr(
             })
         }
 
-        // Calls, nested functions, mutation, and other impure/unsupported forms.
+        Expression::CallExpression(call) => {
+            if call.optional {
+                return None;
+            }
+            let func = resolver?.lookup_callable(&call.callee)?;
+            let mut args = Vec::with_capacity(call.arguments.len());
+            for arg in &call.arguments {
+                args.push(lower_expr(arg.as_expression()?, params, resolver)?);
+            }
+            Some(OwnedPureExpr::Call {
+                func: Arc::new(func),
+                args,
+            })
+        }
+
+        // Unknown calls, nested functions, mutation, and other impure/unsupported forms.
         _ => None,
     }
 }
@@ -426,7 +560,7 @@ fn lower_shorthand_value(
     params: &[String],
     resolver: Option<&Resolver<'_, '_>>,
 ) -> Option<OwnedPureExpr> {
-    if let Some(index) = params.iter().position(|p| p == name) {
+    if let Some(index) = params.iter().rposition(|p| p == name) {
         return Some(OwnedPureExpr::Param(index));
     }
     let lit = resolver?.resolve_root_name(name)?;
@@ -554,15 +688,39 @@ fn eval_expr(expr: &OwnedPureExpr, args: &[Literal]) -> Option<Literal> {
         }
         OwnedPureExpr::Object(entries) => {
             let mut out = Vec::with_capacity(entries.len());
-            for (key, value) in entries {
-                let key_name = match key {
-                    OwnedKey::Static(s) => s.clone(),
-                    OwnedKey::Computed(e) => eval_expr(e, args)?.to_property_key()?,
-                };
-                let value = eval_expr(value, args)?;
-                Literal::upsert_object_entry(&mut out, key_name, value);
+            for entry in entries {
+                match entry {
+                    OwnedObjectEntry::Property(key, value) => {
+                        let key_name = match key {
+                            OwnedKey::Static(s) => s.clone(),
+                            OwnedKey::Computed(e) => eval_expr(e, args)?.to_property_key()?,
+                        };
+                        let value = eval_expr(value, args)?;
+                        Literal::upsert_object_entry(&mut out, key_name, value);
+                    }
+                    // JS spreads nothing from `null`, booleans, and numbers (`...(on && rule)`).
+                    OwnedObjectEntry::Spread(value) => match eval_expr(value, args)? {
+                        Literal::Object(spread) => {
+                            for (key, value) in spread {
+                                Literal::upsert_object_entry(&mut out, key, value);
+                            }
+                        }
+                        Literal::Null | Literal::Bool(_) | Literal::Number(_) => {}
+                        _ => return None,
+                    },
+                }
             }
             Some(Literal::Object(out))
+        }
+        OwnedPureExpr::Call {
+            func,
+            args: call_args,
+        } => {
+            let mut values = Vec::with_capacity(call_args.len());
+            for arg in call_args {
+                values.push(eval_expr(arg, args)?);
+            }
+            apply_pure_fn(func, &values)
         }
         OwnedPureExpr::Array(items) => {
             let mut out = Vec::with_capacity(items.len());
@@ -581,6 +739,15 @@ fn eval_expr(expr: &OwnedPureExpr, args: &[Literal]) -> Option<Literal> {
             let key = index.to_property_key()?;
             object.get_member(&key)
         }
+        OwnedPureExpr::Read { object, key } => match eval_expr(object, args)? {
+            // Destructuring `null` / `undefined` throws in JS.
+            Literal::Null | Literal::Conditional(_) => None,
+            object => Some(object.get_member(key).unwrap_or(Literal::Null)),
+        },
+        OwnedPureExpr::Default { value, fallback } => match eval_expr(value, args)? {
+            Literal::Null => eval_expr(fallback, args),
+            value => Some(value),
+        },
     }
 }
 

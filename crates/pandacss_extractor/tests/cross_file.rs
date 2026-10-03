@@ -1232,6 +1232,110 @@ fn imported_pure_arrow_call_folds() {
 }
 
 #[test]
+fn imported_pure_helper_with_locals_folds() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { card } from './helpers';
+            import { css } from '@panda/css';
+            css(card('red'));
+        "},
+        &[(
+            "helpers.ts",
+            indoc::indoc! {r"
+                export function card(tone: string) {
+                  const rule = { color: tone };
+                  return { '& .card': rule };
+                }
+            "},
+        )],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r#"
+    calls:
+      - name: css
+        data:
+          - "& .card":
+              color: red
+    "#);
+}
+
+#[test]
+fn imported_pure_helper_calling_another_file_folds() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { card } from './card';
+            import { rule } from './rule';
+            import { css } from '@panda/css';
+            const badge = (tone: string) => ({ '& .badge': rule(tone) });
+            css({ ...card('red'), ...badge('blue') });
+        "},
+        &[
+            (
+                "card.ts",
+                "import { rule } from './rule';\nexport const card = (tone: string) => ({ '& .card': rule(tone) });\n",
+            ),
+            (
+                "rule.ts",
+                "export const rule = (color: string) => ({ color });\n",
+            ),
+        ],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r#"
+    calls:
+      - name: css
+        data:
+          - "& .card":
+              color: red
+            "& .badge":
+              color: blue
+    "#);
+}
+
+#[test]
+fn imported_destructured_helper_folds() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { text } from './helpers';
+            import { css } from '@panda/css';
+            css(text({ tone: 'red' }));
+        "},
+        &[(
+            "helpers.ts",
+            "export const text = ({ tone, size = 'md' }: { tone: string; size?: string }) => ({ color: tone, fontSize: size });\n",
+        )],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @"
+    calls:
+      - name: css
+        data:
+          - color: red
+            fontSize: md
+    ");
+}
+
+#[test]
+fn imported_unevaluated_helper_warns() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { card } from './helpers';
+            import { css } from '@panda/css';
+            css({ ...card('red'), margin: '8px' });
+        "},
+        &[(
+            "helpers.ts",
+            indoc::indoc! {r"
+                export function card(tone: string) {
+                  if (!tone) return {};
+                  return { color: tone };
+                }
+            "},
+        )],
+    );
+    let usage = run(&fs, &main);
+    let codes: Vec<_> = usage.diagnostics.iter().map(|d| d.code.as_str()).collect();
+    assert_eq!(codes, ["pure_helper_unevaluated"]);
+}
+
+#[test]
 fn imported_group_hover_helper_folds_computed_key() {
     let (fs, main) = project(
         indoc::indoc! {r"
