@@ -10,7 +10,6 @@
 //! for tooling and parity tests.
 
 mod adapter;
-mod astro_adapter;
 mod calls;
 mod cross_file;
 mod design_system_imports;
@@ -88,7 +87,6 @@ pub use transform_facts::{
 
 // Internal-only: keep `VisitorContext` accessible to sibling modules but out
 // of the public API.
-pub(crate) use adapter::adapt_source;
 pub(crate) use matcher::VisitorContext;
 pub(crate) use scope::Resolver;
 pub use source::LineIndex;

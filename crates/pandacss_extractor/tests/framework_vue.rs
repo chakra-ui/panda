@@ -912,3 +912,69 @@ fn unclosed_root_template_still_extracts_up_to_the_first_close() {
     jsx: []
     ");
 }
+
+#[test]
+fn script_tag_inside_an_html_comment_is_not_a_block() {
+    let source = indoc! {r#"
+        <!-- <script> -->
+        <script setup lang="ts">
+        import { css } from '@panda/css';
+        type Log = { id: number };
+        const a = css({ color: 'red' });
+        </script>
+    "#};
+    let result = extract(source, "Card.vue", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+    jsx: []
+    ");
+}
+
+#[test]
+fn comment_marker_inside_script_does_not_hide_the_template() {
+    let source = indoc! {r#"
+        <script setup>
+        import { css } from '@panda/css';
+        const marker = '<!--';
+        const a = css({ color: 'red' });
+        </script>
+
+        <template>
+          <p :class="css({ color: 'blue' })" />
+        </template>
+    "#};
+    let result = extract(source, "Card.vue", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+      - name: css
+        data:
+          color: blue
+    jsx: []
+    ");
+}
+
+#[test]
+fn unclosed_script_runs_to_the_end_of_the_file() {
+    let source = indoc! {r#"
+        <script setup>
+        import { css } from '@panda/css';
+        const a = css({ color: 'red' });
+
+        <template>
+          <p :class="css({ color: 'blue' })" />
+        </template>
+    "#};
+    let result = extract(source, "Card.vue", &panda_config());
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls: []
+    jsx: []
+    ");
+}

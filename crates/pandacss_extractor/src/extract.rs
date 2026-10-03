@@ -15,13 +15,12 @@ use crate::source_refs::StyleSourceRef;
 use crate::{
     CrossFileSession, Diagnostic, ExportInfo, ExtractedCall, ExtractedJsx, ExtractorConfig,
     ImportRecord, Literal, MatchCategory, MatchedImport, Span, VisitorContext, collect_imports,
-    collect_parser_diagnostics, match_import_records_resolved,
+    match_import_records_resolved,
 };
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Comment, Program};
 use oxc_ast_visit::Visit as _;
 use oxc_parser::Parser;
-use oxc_span::SourceType;
 use rustc_hash::FxHashSet;
 use serde::Serialize;
 
@@ -84,6 +83,7 @@ pub struct ModuleFacts {
     pub local_call_bindings: Vec<crate::LocalCallBinding>,
     /// Safe helper-import insertion point after a hashbang/directive prologue.
     pub after_directives: u32,
+    pub needs_frontmatter: bool,
     /// Whether `import_bindings` came from an Oxc semantic pass.
     pub symbols_resolved: bool,
 }
@@ -467,12 +467,99 @@ struct RunExtractOptions<'session, 'callback> {
     retain_transform_facts: bool,
 }
 
+fn run_extract(
+    source: &str,
+    path: &str,
+    config: &ExtractorConfig,
+    options: RunExtractOptions<'_, '_>,
+) -> ExtractResult {
+    let adapted = crate::adapter::AdaptedSource::new(source, path);
+    let mut result = run_extract_adapted(source, &adapted, path, config, options);
+    if !options.retain_transform_facts && !adapted.astro_scripts.is_empty() {
+        for script in &adapted.astro_scripts {
+            extract_astro_script(source, script, path, config, options, &mut result);
+        }
+        result.token_refs = dedupe_token_refs(std::mem::take(&mut result.token_refs));
+    }
+    result
+}
+
+fn extract_astro_script(
+    raw_source: &str,
+    script: &std::ops::Range<u32>,
+    path: &str,
+    config: &ExtractorConfig,
+    options: RunExtractOptions<'_, '_>,
+    result: &mut ExtractResult,
+) {
+    let allocator = Allocator::default();
+    let source = crate::adapter::astro_script_module(raw_source, script);
+    let parser_return = Parser::new(
+        &allocator,
+        &source,
+        oxc_span::SourceType::ts().with_module(true),
+    )
+    .parse();
+    let limit = u32::try_from(source.len()).unwrap_or(u32::MAX);
+    result.diagnostics.extend(crate::collect_parser_diagnostics(
+        &parser_return.errors,
+        &source,
+        limit,
+    ));
+    let imports = collect_imports(&parser_return.program);
+    let matched = match_file_imports(config, path, &imports, options.cross_file);
+    if !should_collect_calls(&matched, config) {
+        return;
+    }
+    let line_index = crate::LineIndex::new(&source);
+    let cross_file_context = options
+        .cross_file
+        .map(crate::cross_file::CrossFileContext::new);
+    let resolver = Resolver::build(crate::scope::ResolverBuildInput {
+        program: &parser_return.program,
+        matched: &matched,
+        matchers: Some(&config.matchers),
+        tokens: config.token_dictionary.as_deref(),
+        prefix: config.class_name_prefix.as_str(),
+        cross_file: cross_file_context.as_ref(),
+        source_path: Some(std::path::PathBuf::from(path)),
+        line_index: Some(&line_index),
+        pattern_raw_transform: options.pattern_raw_transform,
+        recipe_raw_resolve: options.recipe_raw_resolve,
+    });
+    let ctx = VisitorContext::new(&matched, config).with_resolver(&resolver);
+    let (calls, diagnostics, token_refs, style_source_refs) = if options.verbose {
+        collect_calls_verbose(&parser_return.program, &ctx, &line_index)
+    } else {
+        let (calls, diagnostics, token_refs) =
+            collect_calls_with_token_refs(&parser_return.program, &ctx, &line_index, false);
+        (calls, diagnostics, token_refs, Vec::new())
+    };
+    result.calls.extend(calls);
+    result.diagnostics.extend(diagnostics);
+    result.diagnostics.extend(resolver.take_diagnostics());
+    result.token_refs.extend(token_refs);
+    result.token_refs.extend(resolver.take_token_refs());
+    result.style_source_refs.extend(style_source_refs);
+    for dependency in resolver.take_cross_file_deps() {
+        if !result.dependencies.contains(&dependency) {
+            result.dependencies.push(dependency);
+        }
+    }
+    for dependency in resolver.take_unresolved_cross_file_deps() {
+        if !result.unresolved_dependencies.contains(&dependency) {
+            result.unresolved_dependencies.push(dependency);
+        }
+    }
+}
+
 #[allow(
     clippy::too_many_lines,
     reason = "single-parse pipeline stays readable as one ordered function; splitting would scatter the per-stage span+record pairs across helpers"
 )]
-fn run_extract(
+fn run_extract_adapted(
     source: &str,
+    adapted: &crate::adapter::AdaptedSource<'_>,
     path: &str,
     config: &ExtractorConfig,
     options: RunExtractOptions<'_, '_>,
@@ -486,17 +573,14 @@ fn run_extract(
     } = options;
     let allocator = Allocator::default();
     let raw_source = source;
-    let format = crate::adapter::SfcFormat::from_path(path);
-    let source = crate::adapt_source(source, format);
-    let source = source.as_ref();
-    let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
+    let source = adapted.code.as_ref();
     let parser_return = {
         let _span = tracing::trace_span!("oxc_parse", path = path).entered();
-        Parser::new(&allocator, source, source_type)
-            .with_options(crate::adapter::parse_options_for(format))
+        Parser::new(&allocator, source, adapted.source_type(path))
+            .with_options(adapted.parse_options())
             .parse()
     };
-    let mut diagnostics = collect_parser_diagnostics(&parser_return.errors, source);
+    let mut diagnostics = adapted.parse_diagnostics(&parser_return.errors);
     let imports = {
         let span = tracing::trace_span!(target: "extract", "scan_imports", import_count = tracing::field::Empty);
         let _entered = span.enter();
@@ -504,7 +588,8 @@ fn run_extract(
         span.record("import_count", imports.len());
         imports
     };
-    let after_directives = module_after_directives(&parser_return.program, source);
+    let (after_directives, needs_frontmatter) =
+        adapted.astro_insertion(module_after_directives(&parser_return.program, source));
     let matched = {
         let span = tracing::trace_span!(target: "extract", "match_imports", matched_count = tracing::field::Empty);
         let _entered = span.enter();
@@ -544,6 +629,7 @@ fn run_extract(
                 import_bindings: Vec::new(),
                 local_call_bindings: Vec::new(),
                 after_directives,
+                needs_frontmatter,
                 symbols_resolved: false,
             }
         } else {
@@ -628,6 +714,7 @@ fn run_extract(
         let _entered = span.enter();
         let templates = crate::template_styles::collect_template_styles(
             raw_source,
+            adapted,
             path,
             &matched,
             config,
@@ -662,6 +749,7 @@ fn run_extract(
             imports,
             local_call_bindings,
             after_directives,
+            needs_frontmatter,
             symbols_resolved: true,
         }
     } else {
@@ -691,15 +779,14 @@ fn run_extract(
 #[must_use]
 pub fn analyze_module(source: &str, path: &str) -> ModuleFacts {
     let allocator = Allocator::default();
-    let format = crate::adapter::SfcFormat::from_path(path);
-    let adapted = crate::adapt_source(source, format);
-    let source = adapted.as_ref();
-    let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
-    let parser_return = Parser::new(&allocator, source, source_type)
-        .with_options(crate::adapter::parse_options_for(format))
+    let adapted = crate::adapter::AdaptedSource::new(source, path);
+    let source = adapted.code.as_ref();
+    let parser_return = Parser::new(&allocator, source, adapted.source_type(path))
+        .with_options(adapted.parse_options())
         .parse();
     let imports = collect_imports(&parser_return.program);
-    let after_directives = module_after_directives(&parser_return.program, source);
+    let (after_directives, needs_frontmatter) =
+        adapted.astro_insertion(module_after_directives(&parser_return.program, source));
     let matched = Vec::new();
     let resolver = Resolver::build(crate::scope::ResolverBuildInput {
         program: &parser_return.program,
@@ -719,6 +806,7 @@ pub fn analyze_module(source: &str, path: &str) -> ModuleFacts {
         import_bindings,
         local_call_bindings: Vec::new(),
         after_directives,
+        needs_frontmatter,
         symbols_resolved: true,
     }
 }

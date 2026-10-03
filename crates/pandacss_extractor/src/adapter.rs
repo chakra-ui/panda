@@ -3,7 +3,11 @@
 use std::borrow::Cow;
 use std::path::Path;
 
+use oxc_diagnostics::OxcDiagnostic;
 use oxc_parser::ParseOptions;
+use oxc_span::SourceType;
+
+use crate::{Diagnostic, Span};
 
 /// Single-file-component container format, resolved once per file from its
 /// extension. Distinct from the template `Framework` dialect: Astro is its own
@@ -29,23 +33,120 @@ impl SfcFormat {
     }
 }
 
-/// Astro frontmatter is a render-function body, so a top-level `return` is valid
-/// there but a hard error in the bare module we mask it into. Allow it for `.astro`.
-#[must_use]
-pub(crate) fn parse_options_for(format: Option<SfcFormat>) -> ParseOptions {
-    ParseOptions {
-        allow_return_outside_function: matches!(format, Some(SfcFormat::Astro)),
-        ..ParseOptions::default()
-    }
+fn unclosed_fence_end(source: &str) -> Option<u32> {
+    let bom = if source.starts_with('\u{feff}') { 3 } else { 0 };
+    let trimmed = source[bom..].trim_start();
+    let start = source.len() - trimmed.len();
+    trimmed
+        .starts_with("---")
+        .then(|| u32::try_from(start + 3).ok())
+        .flatten()
 }
 
-#[must_use]
-pub(crate) fn adapt_source(source: &str, format: Option<SfcFormat>) -> Cow<'_, str> {
-    match format {
-        Some(SfcFormat::Vue) => Cow::Owned(crate::vue_adapter::mask_vue(source)),
-        Some(SfcFormat::Svelte) => Cow::Owned(crate::svelte_adapter::mask_svelte(source)),
-        Some(SfcFormat::Astro) => Cow::Owned(crate::astro_adapter::mask_astro(source)),
-        None => Cow::Borrowed(source),
+pub(crate) struct AdaptedSource<'a> {
+    pub(crate) format: Option<SfcFormat>,
+    pub(crate) code: Cow<'a, str>,
+    pub(crate) astro_elements: Vec<pandacss_astro::AstroElement>,
+    pub(crate) astro_scripts: Vec<std::ops::Range<u32>>,
+    astro_diagnostics: Vec<pandacss_astro::AstroDiagnostic>,
+    astro_frontmatter: Option<std::ops::Range<u32>>,
+    astro_open_fence: Option<u32>,
+    astro_bom: u32,
+    source_len: usize,
+}
+
+impl<'a> AdaptedSource<'a> {
+    #[must_use]
+    pub(crate) fn new(source: &'a str, path: &str) -> Self {
+        let format = SfcFormat::from_path(path);
+        let code = match format {
+            Some(SfcFormat::Astro) => {
+                let document = pandacss_astro::lower(source);
+                return Self {
+                    format,
+                    code: Cow::Owned(document.canvas),
+                    astro_elements: document.elements,
+                    astro_scripts: document.scripts,
+                    astro_diagnostics: document.diagnostics,
+                    astro_open_fence: if document.frontmatter.is_none() {
+                        unclosed_fence_end(source)
+                    } else {
+                        None
+                    },
+                    astro_bom: if source.starts_with('\u{feff}') { 3 } else { 0 },
+                    astro_frontmatter: document.frontmatter,
+                    source_len: source.len(),
+                };
+            }
+            Some(SfcFormat::Vue) => Cow::Owned(crate::vue_adapter::mask_vue(source)),
+            Some(SfcFormat::Svelte) => Cow::Owned(crate::svelte_adapter::mask_svelte(source)),
+            None => Cow::Borrowed(source),
+        };
+        Self {
+            format,
+            code,
+            astro_elements: Vec::new(),
+            astro_scripts: Vec::new(),
+            astro_diagnostics: Vec::new(),
+            astro_frontmatter: None,
+            astro_open_fence: None,
+            astro_bom: 0,
+            source_len: source.len(),
+        }
+    }
+
+    #[must_use]
+    pub(crate) fn astro_insertion(&self, after_directives: u32) -> (u32, bool) {
+        if self.format != Some(SfcFormat::Astro) || after_directives != 0 {
+            return (after_directives, false);
+        }
+        let content_start = match (&self.astro_frontmatter, self.astro_open_fence) {
+            (Some(frontmatter), _) => frontmatter.start,
+            (None, Some(fence)) => fence,
+            (None, None) => return (self.astro_bom, true),
+        };
+        let rest = self.code.get(content_start as usize..).unwrap_or_default();
+        let skipped = if rest.starts_with("\r\n") {
+            2
+        } else {
+            usize::from(rest.starts_with(['\n', '\r']))
+        };
+        (content_start + u32::try_from(skipped).unwrap_or(0), false)
+    }
+
+    #[must_use]
+    pub(crate) fn source_type(&self, path: &str) -> SourceType {
+        match self.format {
+            Some(SfcFormat::Astro) => SourceType::tsx().with_module(true),
+            _ => SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx()),
+        }
+    }
+
+    #[must_use]
+    pub(crate) fn parse_options(&self) -> ParseOptions {
+        ParseOptions {
+            allow_return_outside_function: matches!(self.format, Some(SfcFormat::Astro)),
+            ..ParseOptions::default()
+        }
+    }
+
+    #[must_use]
+    pub(crate) fn parse_diagnostics(&self, errors: &[OxcDiagnostic]) -> Vec<Diagnostic> {
+        let limit = u32::try_from(self.source_len).unwrap_or(u32::MAX);
+        let mut diagnostics = crate::imports::parse_error_diagnostics(
+            self.astro_diagnostics.iter().map(|diagnostic| {
+                (
+                    diagnostic.message.as_str(),
+                    diagnostic.span.as_ref().map(|span| Span {
+                        start: span.start.min(limit),
+                        end: span.end.min(limit),
+                    }),
+                )
+            }),
+            &self.code,
+        );
+        diagnostics.extend(crate::collect_parser_diagnostics(errors, &self.code, limit));
+        diagnostics
     }
 }
 
@@ -95,6 +196,17 @@ pub(crate) fn blank_like(source: &str) -> Vec<u8> {
             _ => b' ',
         })
         .collect()
+}
+
+pub(crate) fn astro_script_module(source: &str, script: &std::ops::Range<u32>) -> String {
+    let mut mask = blank_like(source);
+    copy_range(
+        &mut mask,
+        source,
+        script.start as usize,
+        script.end as usize,
+    );
+    finish_mask(mask)
 }
 
 pub(crate) fn finish_mask(mask: Vec<u8>) -> String {
@@ -154,14 +266,66 @@ pub(crate) fn tag_blocks_with(
     let mut blocks = Vec::new();
     let mut cursor = 0;
     let open = format!("<{tag}");
+    let bytes = source.as_bytes();
 
-    while let Some(open_start) = find_ascii_ci(source, &open, cursor) {
-        let name_end = open_start + open.len();
-        if !is_tag_name_boundary(source.as_bytes(), name_end) {
-            cursor = name_end;
+    let raw_names: Vec<&str> = ["script", "style"]
+        .into_iter()
+        .filter(|raw| !raw.eq_ignore_ascii_case(tag))
+        .collect();
+    let raw_opens: Vec<String> = raw_names.iter().map(|raw| format!("<{raw}")).collect();
+    let mut open_cache = Scan::default();
+    let mut comment_cache = Scan::default();
+    let mut raw_caches = vec![Scan::default(); raw_names.len()];
+
+    loop {
+        let open_start = cached(&mut open_cache, cursor, || {
+            find_tag_open(source, &open, cursor)
+        });
+        let comment = cached(&mut comment_cache, cursor, || {
+            count_scan();
+            find_bytes(bytes, b"<!--", cursor)
+        });
+        let mut raw: Option<(usize, &str)> = None;
+        for (index, raw_open) in raw_opens.iter().enumerate() {
+            let found = cached(&mut raw_caches[index], cursor, || {
+                find_tag_open(source, raw_open, cursor)
+            });
+            if let Some(start) = found
+                && raw.is_none_or(|(best, _)| start < best)
+            {
+                raw = Some((start, raw_names[index]));
+            }
+        }
+
+        let next = [open_start, comment, raw.map(|(start, _)| start)]
+            .into_iter()
+            .flatten()
+            .min();
+        let Some(next) = next else {
+            break;
+        };
+
+        if comment == Some(next) {
+            cursor = find_bytes(bytes, b"-->", next + 4).map_or(source.len(), |end| end + 3);
+            continue;
+        }
+        if let Some((start, raw)) = raw.filter(|&(start, _)| start == next) {
+            let name_end = start + raw.len() + 1;
+            let Some(open_end) = find_tag_end(source, name_end) else {
+                break;
+            };
+            if bytes.get(open_end.saturating_sub(1)) == Some(&b'/') {
+                cursor = open_end + 1;
+                continue;
+            }
+            let close = format!("</{raw}>");
+            cursor = find_ascii_ci(source, &close, open_end + 1)
+                .map_or(source.len(), |close_start| close_start + close.len());
             continue;
         }
 
+        let open_start = next;
+        let name_end = open_start + open.len();
         let Some(open_end) = find_tag_end(source, name_end) else {
             break;
         };
@@ -193,6 +357,43 @@ pub(crate) fn tag_blocks_with(
     }
 
     blocks
+}
+
+#[derive(Clone, Copy, Default)]
+struct Scan {
+    done: bool,
+    position: Option<usize>,
+}
+
+fn cached(slot: &mut Scan, cursor: usize, scan: impl FnOnce() -> Option<usize>) -> Option<usize> {
+    if slot.done && slot.position.is_none_or(|position| position >= cursor) {
+        return slot.position;
+    }
+    slot.position = scan();
+    slot.done = true;
+    slot.position
+}
+
+#[cfg(test)]
+thread_local! {
+    static SCANS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
+fn count_scan() {
+    #[cfg(test)]
+    SCANS.with(|scans| scans.set(scans.get() + 1));
+}
+
+fn find_tag_open(source: &str, open: &str, from: usize) -> Option<usize> {
+    count_scan();
+    let mut cursor = from;
+    while let Some(start) = find_ascii_ci(source, open, cursor) {
+        if is_tag_name_boundary(source.as_bytes(), start + open.len()) {
+            return Some(start);
+        }
+        cursor = start + open.len();
+    }
+    None
 }
 
 pub(crate) fn find_ascii_ci(source: &str, needle: &str, from: usize) -> Option<usize> {
@@ -238,28 +439,7 @@ pub(crate) fn find_tag_end(source: &str, from: usize) -> Option<usize> {
 }
 
 pub(crate) fn find_matching_brace(source: &str, open: usize) -> Option<usize> {
-    let bytes = source.as_bytes();
-    let mut depth = 0usize;
-    let mut index = open;
-    let mut state = JsState::default();
-
-    while index < bytes.len() {
-        if index != open && state.step(bytes, &mut index) {
-            continue;
-        }
-        match bytes[index] {
-            b'{' => depth += 1,
-            b'}' => {
-                depth = depth.saturating_sub(1);
-                if depth == 0 {
-                    return Some(index);
-                }
-            }
-            _ => {}
-        }
-        index += 1;
-    }
-    None
+    pandacss_astro::js::find_closing_brace(source, open)
 }
 
 #[derive(Default)]
@@ -335,7 +515,35 @@ pub(crate) fn find_bytes(bytes: &[u8], needle: &[u8], from: usize) -> Option<usi
 
 #[cfg(test)]
 mod tests {
-    use super::SfcFormat;
+    use super::{SCANS, SfcFormat, tag_blocks};
+
+    #[test]
+    fn block_finding_scans_linearly_over_many_comments() {
+        let mut source = String::from("<script>const a = 1;</script>\n");
+        for _ in 0..10_000 {
+            source.push_str("<!-- c -->\n");
+        }
+        source.push_str("<template><p/></template>\n");
+        SCANS.with(|scans| scans.set(0));
+        let blocks = tag_blocks(&source, "template");
+        let scans = SCANS.with(std::cell::Cell::get);
+        assert_eq!(blocks.len(), 1);
+        assert!(scans < 20_000, "{scans} scans");
+    }
+
+    #[test]
+    fn comment_marker_in_style_body_does_not_hide_later_script() {
+        let source = "<style>.a::after { content: '<!--' }</style>\n<script>const a = 1;</script>";
+        assert_eq!(tag_blocks(source, "script").len(), 1);
+        assert_eq!(tag_blocks(source, "style").len(), 1);
+    }
+
+    #[test]
+    fn comment_marker_in_script_body_does_not_hide_later_style() {
+        let source = "<script>const m = '<!--';</script>\n<style>.a { color: red }</style>";
+        assert_eq!(tag_blocks(source, "style").len(), 1);
+        assert_eq!(tag_blocks(source, "script").len(), 1);
+    }
 
     #[test]
     fn sfc_formats_are_resolved_from_the_extension() {

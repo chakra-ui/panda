@@ -454,3 +454,217 @@ fn rewrites_vue_bindings_after_a_nested_template() {
     </template>
     "#);
 }
+
+#[test]
+fn astro_components_stay_and_nested_css_calls_rewrite() {
+    let source = indoc! {r#"
+        ---
+        import { css } from '@panda/css';
+        import { Box } from '@panda/jsx';
+        const show = true;
+        ---
+        <Box color="red" p="2">top</Box>
+        {show && <Box color="blue" p="3">inner</Box>}
+        {show && (<div><!-- note --><p class={css({ color: 'green' })} /></div>)}
+        {show && <b class={css({ color: 'red' })} /><i class={css({ color: 'blue' })} />}
+        {show && <p title={`${css({ color: 'teal' })}`} />}
+        <div is:raw>{css({ color: 'pink' })}</div>
+    "#};
+
+    assert_snapshot!(transform("src/Card.astro", source).code, @r#"
+    ---
+    import { Box } from '@panda/jsx';
+    const show = true;
+    ---
+    <Box color="red" p="2">top</Box>
+    {show && <Box color="blue" p="3">inner</Box>}
+    {show && (<div><!-- note --><p class={"color_green"} /></div>)}
+    {show && <b class={"color_red"} /><i class={"color_blue"} />}
+    {show && <p title={`${"color_teal"}`} />}
+    <div is:raw>{css({ color: 'pink' })}</div>
+    "#);
+}
+
+#[test]
+fn astro_rewrites_keep_crlf_and_non_ascii_offsets() {
+    let source = "---\r\nimport { css } from '@panda/css';\r\n---\r\n<p>café — 日本</p>\r\n<p class={css({ color: 'red' })} />\r\n";
+    assert_eq!(
+        transform("src/Card.astro", source).code,
+        "---\r\n\r\n---\r\n<p>café — 日本</p>\r\n<p class={\"color_red\"} />\r\n"
+    );
+}
+
+#[test]
+fn helper_import_lands_inside_a_directive_only_astro_frontmatter() {
+    let source = "---\n'use client'\n---\n<p class={__pcx('a')} />\n";
+    let output = pandacss_transform::sync_internal_css_import(
+        source,
+        "a.astro",
+        &pandacss_transform::TransformHelperFacts {
+            needs_cx: true,
+            ..Default::default()
+        },
+        pandacss_transform::HelperCxMode::Auto,
+    );
+    assert_snapshot!(output, @"
+    ---
+    'use client'
+    import { cx as __pcx } from '@pandacss-internal/css';
+    ---
+    <p class={__pcx('a')} />
+    ");
+}
+
+fn sync_astro(source: &str) -> String {
+    pandacss_transform::sync_internal_css_import(
+        source,
+        "a.astro",
+        &pandacss_transform::TransformHelperFacts {
+            needs_cx: true,
+            ..Default::default()
+        },
+        pandacss_transform::HelperCxMode::Auto,
+    )
+}
+
+#[test]
+fn helper_import_lands_inside_an_astro_frontmatter_without_imports() {
+    let output = sync_astro("---\nconst a = 1\n---\n<p class={__pcx('a')} />\n");
+    assert_snapshot!(output, @"
+    ---
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const a = 1
+    ---
+    <p class={__pcx('a')} />
+    ");
+}
+
+#[test]
+fn helper_import_creates_a_frontmatter_when_the_astro_file_has_none() {
+    let output = sync_astro("<p class={__pcx('a')} />\n");
+    assert_snapshot!(output, @"
+    ---
+    import { cx as __pcx } from '@pandacss-internal/css';
+    ---
+    <p class={__pcx('a')} />
+    ");
+}
+
+#[test]
+fn helper_import_breaks_the_line_when_code_shares_the_opening_fence() {
+    let output = sync_astro("---const a = 1\n---\n<p class={__pcx('a')} />\n");
+    assert_snapshot!(output, @"
+    ---
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const a = 1
+    ---
+    <p class={__pcx('a')} />
+    ");
+}
+
+#[test]
+fn helper_import_keeps_crlf_in_an_astro_frontmatter() {
+    let output = sync_astro("---\r\nconst a = 1\r\n---\r\n<p class={__pcx('a')} />\r\n");
+    assert_eq!(
+        output,
+        "---\r\nimport { cx as __pcx } from '@pandacss-internal/css';\r\nconst a = 1\r\n---\r\n<p class={__pcx('a')} />\r\n"
+    );
+}
+
+#[test]
+fn helper_import_creates_a_crlf_frontmatter_when_the_astro_file_has_none() {
+    let output = sync_astro("<p class={__pcx('a')} />\r\n<b />\r\n");
+    assert_eq!(
+        output,
+        "---\r\nimport { cx as __pcx } from '@pandacss-internal/css';\r\n---\r\n<p class={__pcx('a')} />\r\n<b />\r\n"
+    );
+}
+
+#[test]
+fn narrowing_an_import_before_a_bare_closing_fence_keeps_crlf() {
+    let source = "---\r\nimport { css, cva } from '@panda/css'---\r\n<p class={css({ color: 'red' })} />\r\n";
+    assert_eq!(
+        transform("src/Card.astro", source).code,
+        "---\r\nimport { cva } from '@panda/css';\r\n---\r\n<p class={\"color_red\"} />\r\n"
+    );
+}
+
+#[test]
+fn removing_an_import_before_a_bare_closing_fence_keeps_the_fence() {
+    let source = "---\nimport { css } from '@panda/css'---\n<p class={css({ color: 'red' })} />\n";
+    assert_eq!(
+        transform("src/Card.astro", source).code,
+        "---\n---\n<p class={\"color_red\"} />\n"
+    );
+}
+
+const TABS: &str = "import { sva } from '@panda/css';\nexport const tabs = sva({ slots: ['root', 'trigger'], className: 'tabs', base: { root: { display: 'flex' }, trigger: { color: 'red' } }, variants: { size: { sm: { trigger: { padding: '4px' } }, lg: { trigger: { padding: '8px' } } } }, defaultVariants: { size: 'sm' } });\n";
+
+#[test]
+fn hoisted_declarations_land_inside_an_existing_astro_frontmatter() {
+    let source = "---\nimport { tabs } from './tabs';\nconst classes = tabs({ size: 'lg' });\n---\n<p class={classes.root} />\n";
+    let output =
+        super::common::transform_cross_file("src/a.astro", source, &[("src/tabs.ts", TABS)]);
+    assert_snapshot!(output.code, @r#"
+    ---
+    const __ps0 = { root: "d_flex tabs__root", trigger: "color_red padding_8px tabs__trigger" };
+    import { tabs } from './tabs';
+    const classes = __ps0;
+    ---
+    <p class={classes.root} />
+    "#);
+}
+
+#[test]
+fn hoisted_declarations_keep_crlf_inside_an_astro_frontmatter() {
+    let source = "---\r\nimport { tabs } from './tabs';\r\nconst classes = tabs({ size: 'lg' });\r\n---\r\n<p class={classes.root} />\r\n";
+    let output =
+        super::common::transform_cross_file("src/a.astro", source, &[("src/tabs.ts", TABS)]);
+    assert!(
+        output.code.starts_with("---\r\nconst __ps0 = "),
+        "{:?}",
+        output.code
+    );
+    assert_eq!(
+        output.code.matches('\n').count(),
+        output.code.matches("\r\n").count(),
+        "{:?}",
+        output.code
+    );
+}
+
+#[test]
+fn helper_import_does_not_open_a_second_fence_when_the_frontmatter_is_unclosed() {
+    let output = sync_astro("---\nconst a = 1\n<p class={__pcx('a')} />\n");
+    assert_eq!(
+        output,
+        "---\nimport { cx as __pcx } from '@pandacss-internal/css';\nconst a = 1\n<p class={__pcx('a')} />\n"
+    );
+}
+
+#[test]
+fn helper_import_creates_the_frontmatter_after_a_leading_bom() {
+    let output = sync_astro("\u{feff}<p class={__pcx('a')} />\n");
+    assert_eq!(
+        output,
+        "\u{feff}---\nimport { cx as __pcx } from '@pandacss-internal/css';\n---\n<p class={__pcx('a')} />\n"
+    );
+}
+
+#[test]
+fn helper_import_keeps_lone_cr_line_endings_in_an_astro_frontmatter() {
+    let output = sync_astro("---\rconst a = 1\r---\r<p class={__pcx('a')} />\r");
+    assert_eq!(
+        output,
+        "---\rimport { cx as __pcx } from '@pandacss-internal/css';\rconst a = 1\r---\r<p class={__pcx('a')} />\r"
+    );
+}
+
+#[test]
+fn helper_import_creates_a_lone_cr_frontmatter_when_the_astro_file_has_none() {
+    let output = sync_astro("<p class={__pcx('a')} />\r<b />\r");
+    assert_eq!(
+        output,
+        "---\rimport { cx as __pcx } from '@pandacss-internal/css';\r---\r<p class={__pcx('a')} />\r<b />\r"
+    );
+}

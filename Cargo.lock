@@ -1147,6 +1147,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "pandacss_astro"
+version = "0.0.0"
+dependencies = [
+ "indoc",
+ "insta",
+ "oxc_allocator",
+ "oxc_parser",
+ "oxc_span",
+]
+
+[[package]]
 name = "pandacss_bench"
 version = "0.0.0"
 dependencies = [
@@ -1256,6 +1267,7 @@ dependencies = [
  "oxc_semantic",
  "oxc_span",
  "oxc_syntax",
+ "pandacss_astro",
  "pandacss_config",
  "pandacss_fs",
  "pandacss_literal",

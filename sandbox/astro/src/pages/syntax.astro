@@ -1,0 +1,31 @@
+---
+import { css } from '../../styled-system/css'
+const sample = `---
+const x = 1;
+---
+<div />`
+const show = true
+const id = 'x'
+const items = ['a', 'b']
+// The <script> below logs the list.
+---
+
+<pre class={css({ color: 'red' })}>{sample}</pre>
+{show && (
+  <div {id}>
+    <!-- note -->
+    <p class={css({ color: 'orange' })}>5 < 10</p>
+    <input type="text">
+  </div>
+)}
+{items.map((item) => <span class={css({ color: 'teal' })}>{item}</span>)}
+<p class={css({ color: 'pink' })} data-id=12 title=`a ${id}`>after</p>
+<script>
+  type Log = { id: number }
+  const log: Log = { id: 1 }
+  console.log(log)
+</script>
+<script>
+  import { css } from '../../styled-system/css'
+  document.querySelector('pre')?.classList.add(css({ color: 'navy' }))
+</script>

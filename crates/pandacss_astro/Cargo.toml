@@ -1,0 +1,18 @@
+[package]
+name = "pandacss_astro"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+publish = false
+
+[dev-dependencies]
+indoc = { workspace = true }
+insta = { workspace = true }
+oxc_allocator = { workspace = true }
+oxc_parser = { workspace = true }
+oxc_span = { workspace = true }
+
+[lints]
+workspace = true
