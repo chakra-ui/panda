@@ -286,7 +286,9 @@ it. If parity is required, replicate "the top-level child becomes a dummy and no
   - The content becomes one Text child, only when it's non-empty.
 - Raw-text detection only applies when the tag isn't explicitly self-closed (`<style/>`, `<p is:raw/>` have no
   content). A void element with `is:raw` (`<img is:raw>`) never consumes its `>`, so it's fatal when nested.
-- Not found (`<style>a{` EOF) → fatal.
+- Not found: usually fatal (`<style>a{`), but the fork's recovery sometimes accepts the file. `<style><style>` is
+  accepted. Panda reports `Unexpected end of file` and drops the top-level child instead. This is a known fail-safe
+  divergence: no corpus file has an unclosed raw-text element.
 - **Foreign content: only `math`** (Identifier, exact; jsx.rs:845-850). It is not raw. While it's open (not
   self-closing), the child lexer runs in foreign mode for all descendants: `{` and `}` are text and a text run ends only
   at `<`. Tags still parse.
@@ -421,7 +423,10 @@ Attributes go through the normal attribute loop and are lowered normally. Then a
 - Closing tag:
   - Top level: up to the first `>` byte after `</script`, anywhere (`</script\n>` works). Then the child lexer.
   - Nested: tokens `<`, `/`, one JS token, then an optional `>`.
-- Not found → fatal (the nested case leaves partial garbage).
+- Not found: usually fatal (`<script>a`), but the fork's recovery sometimes accepts the file:
+  `<div><script></div><p class={x}/>`, `{<script>}<p class={b}/>`, `{c && <script>}` and `<script>x/>` are all
+  accepted. Panda does not port that recovery. It reports `Unexpected end of file` and drops the top-level child. This
+  is a known fail-safe divergence: no corpus file has an unclosed `<script>`.
 - Element: opening `[< .. content_start)`, closing `[content_end .. end)`, name `[<+1 .. <+7)`.
 
 ### What the child is (`is_raw_text_script`, jsx.rs:804-842)

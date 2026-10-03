@@ -41,6 +41,10 @@ impl<'s> Parser<'s> {
     }
 
     pub(super) fn fragment(&mut self, lt: usize, content: usize) -> Parse<Parsed> {
+        self.nested(lt, |this| this.fragment_at(lt, content))
+    }
+
+    fn fragment_at(&mut self, lt: usize, content: usize) -> Parse<Parsed> {
         let (children, closing) = self.children(content)?;
         let end = match closing {
             Closing::Fragment(span) => span.end,
@@ -63,22 +67,28 @@ impl<'s> Parser<'s> {
     }
 
     pub(super) fn element(&mut self, lt: usize, first: Token) -> Parse<Parsed> {
+        self.nested(lt, |this| this.element_at(lt, first))
+    }
+
+    fn element_at(&mut self, lt: usize, first: Token) -> Parse<Parsed> {
         let source: &'s str = self.source;
-        let name = self.element_name(first);
+        let name = self.element_name(first)?;
         let name_text = &source[name.clone()];
         let after_name = self.type_arguments(name.end);
         let (attributes, open_end) = self.attributes(after_name)?;
-        let gt_end = match open_end {
-            OpenEnd::SelfClose(end) => end,
-            OpenEnd::Open(end) if VOID.contains(&name_text) => end,
+        let raw = name_text == "style"
+            || attributes.iter().any(|attribute| {
+                attribute
+                    .name
+                    .as_ref()
+                    .is_some_and(|span| &source[span.clone()] == "is:raw")
+            });
+        let (gt_end, next) = match open_end {
+            OpenEnd::SelfClose(end) => (end, Next::Child),
+            OpenEnd::Open(end) if VOID.contains(&name_text) => {
+                (end, if raw { Next::Stuck } else { Next::Child })
+            }
             OpenEnd::Open(end) => {
-                let raw = name_text == "style"
-                    || attributes.iter().any(|attribute| {
-                        attribute
-                            .name
-                            .as_ref()
-                            .is_some_and(|span| &source[span.clone()] == "is:raw")
-                    });
                 self.open.push(name.clone());
                 let result = if raw {
                     self.raw_children(&name, end)
@@ -109,7 +119,7 @@ impl<'s> Parser<'s> {
         Ok(Parsed {
             markup: element_markup(lt..gt_end, element),
             end: gt_end,
-            next: Next::Child,
+            next,
         })
     }
 
@@ -164,7 +174,7 @@ impl<'s> Parser<'s> {
         if name_token.kind != TokenKind::Identifier {
             return Err(self.unexpected(name_token.start..name_token.end));
         }
-        let closing_name = self.element_name(name_token);
+        let closing_name = self.element_name(name_token)?;
         let gt = self.token(closing_name.end);
         if self.byte(gt.start) != Some(b'>') {
             return Err(self.unexpected(gt.start..gt.end));
@@ -188,6 +198,9 @@ impl<'s> Parser<'s> {
         let mut pos = start;
         let mut next = Next::Child;
         loop {
+            if next == Next::Stuck {
+                return Err(self.unexpected(pos - 1..pos));
+            }
             let token = self.read(pos, next);
             next = Next::Child;
             match token.kind {
@@ -207,6 +220,9 @@ impl<'s> Parser<'s> {
                 Kind::Angle => {
                     let after = self.token(token.start + 1);
                     match self.byte(after.start) {
+                        Some(b'/' | b'!') if after.end != after.start + 1 => {
+                            return Err(self.unexpected(after.start..after.end));
+                        }
                         Some(b'/') => match self.closing(after.start + 1)? {
                             Ok(closing) => return Ok((children, closing)),
                             Err(end) => pos = end,
@@ -249,7 +265,7 @@ impl<'s> Parser<'s> {
         if token.kind != TokenKind::Identifier {
             return Err(self.unexpected(token.start..token.end));
         }
-        let name = self.element_name(token);
+        let name = self.element_name(token)?;
         let gt = self.token(name.end);
         if self.byte(gt.start) != Some(b'>') {
             return Err(self.unexpected(gt.start..gt.end));
@@ -264,7 +280,7 @@ impl<'s> Parser<'s> {
         Ok(Ok(Closing::Element { name, end }))
     }
 
-    fn element_name(&self, first: Token) -> Range<usize> {
+    fn element_name(&mut self, first: Token) -> Parse<Range<usize>> {
         let start = first.start;
         let mut end = self.name_segment_end(first.end);
         loop {
@@ -274,11 +290,11 @@ impl<'s> Parser<'s> {
             }
             let member = self.token(dot.end);
             if member.kind != TokenKind::Identifier {
-                break;
+                return Err(self.unexpected(member.start..member.end));
             }
             end = self.name_segment_end(member.end);
         }
-        start..end
+        Ok(start..end)
     }
 
     fn name_segment_end(&self, start: usize) -> usize {
@@ -297,10 +313,18 @@ impl<'s> Parser<'s> {
         pos
     }
 
-    fn type_arguments(&self, pos: usize) -> usize {
+    fn type_arguments(&mut self, pos: usize) -> usize {
         let open = self.token(pos);
         if &self.source[open.start..open.end] != "<" {
             return pos;
+        }
+        let first = self.token(open.end);
+        if self.byte(first.start) == Some(b'>') {
+            self.diagnostics.push(diagnostic(
+                "Type argument list cannot be empty.",
+                open.start..first.start + 1,
+            ));
+            return first.start + 1;
         }
         let mut depth = 1usize;
         let mut cursor = open.end;
@@ -480,7 +504,14 @@ impl<'s> Parser<'s> {
                 Ok((Value::Expression(expression), close + 1))
             }
             Some(b'<') => match self.tag(pos)? {
-                Some(parsed) => Ok((Value::Markup(parsed.markup), parsed.end)),
+                Some(parsed) => {
+                    let end = if parsed.next == Next::Stuck {
+                        parsed.end - 1
+                    } else {
+                        parsed.end
+                    };
+                    Ok((Value::Markup(parsed.markup), end))
+                }
                 None => Err(self.unexpected(pos..pos + 1)),
             },
             Some(_) => {
@@ -557,7 +588,7 @@ fn name_terminator(byte: u8) -> bool {
     )
 }
 
-fn valid_number(text: &str) -> bool {
+pub(super) fn valid_number(text: &str) -> bool {
     let text = text.strip_suffix('n').unwrap_or(text);
     let bytes = text.as_bytes();
     if bytes.len() > 1 && bytes[0] == b'0' && bytes[1].is_ascii_alphabetic() {

@@ -23,7 +23,7 @@ pub(crate) fn lower(source: &str, document: Document) -> AstroDocument {
     }
 }
 
-fn offset(index: usize) -> u32 {
+pub(crate) fn offset(index: usize) -> u32 {
     u32::try_from(index).unwrap_or(u32::MAX)
 }
 
@@ -108,7 +108,7 @@ impl Lowering<'_> {
                 }
                 Value::Empty => AstroAttributeValue::Empty,
                 Value::Markup(markup) => {
-                    let span = markup_span(markup);
+                    let span = markup.span();
                     self.lead(span.start);
                     self.markup(markup);
                     AstroAttributeValue::Expression(range(&span))
@@ -230,12 +230,5 @@ impl Lowering<'_> {
         if let Some(slot) = self.canvas.get_mut(index) {
             *slot = byte;
         }
-    }
-}
-
-fn markup_span(markup: &Markup) -> Range<usize> {
-    match markup {
-        Markup::Element { span, .. } => span.clone(),
-        Markup::Fragment(fragment) => fragment.span.clone(),
     }
 }

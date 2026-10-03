@@ -327,3 +327,21 @@ fn generic_arrow_is_not_markup() {
     let source = "{f(<T,>(x: T) => x)}";
     assert_snapshot!(show(&lowered(source).canvas), @"|[f(<T,>(x: T) => x) ]");
 }
+
+#[test]
+fn deep_nesting_is_reported_not_a_crash() {
+    for source in [
+        "<a>".repeat(100_000),
+        "<>".repeat(100_000),
+        format!("{{{}", "<a b={".repeat(100_000)),
+        "{<a>".repeat(100_000),
+    ] {
+        let document = pandacss_astro::lower(&source);
+        assert!(
+            document
+                .diagnostics
+                .iter()
+                .any(|d| d.message == "Nesting too deep")
+        );
+    }
+}

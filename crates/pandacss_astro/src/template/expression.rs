@@ -1,4 +1,4 @@
-use super::{Kind, Next, Parse, Parser, find, into_child, lexed, other};
+use super::{Kind, Next, Parse, Parser, into_child, lexed, other};
 use crate::js::{Lexer, TokenKind};
 use crate::tree::{Child, ChildKind, Expression, Fragment, Markup};
 
@@ -19,6 +19,7 @@ enum Prev {
     BlockOpen,
     BlockClose,
     Keyword,
+    Comma,
     Other,
 }
 
@@ -27,6 +28,7 @@ enum Pending {
     Nothing,
     Member,
     Control,
+    Unary,
     Markup,
 }
 
@@ -67,6 +69,10 @@ impl Scan {
 
 impl<'s> Parser<'s> {
     pub(super) fn container(&mut self, open: usize) -> Parse<(Child, usize)> {
+        self.nested(open, |this| this.container_at(open))
+    }
+
+    fn container_at(&mut self, open: usize) -> Parse<(Child, usize)> {
         let first = Lexer::new(self.source, open + 1).next_token(true);
         if &self.source[first.start..first.end] == "..." {
             let (expression, close) = self.js_expression(first.end)?;
@@ -165,10 +171,7 @@ impl<'s> Parser<'s> {
                 })
             }
         };
-        let span = match &node {
-            Markup::Element { span, .. } => span.clone(),
-            Markup::Fragment(fragment) => fragment.span.clone(),
-        };
+        let span = node.span();
         let child = Child {
             start: open,
             kind: ChildKind::Expression(Expression {
@@ -203,11 +206,15 @@ impl<'s> Parser<'s> {
         self.js_scan(start, Until::Template)
     }
 
+    fn js_scan(&mut self, start: usize, until: Until) -> Parse<(Expression, usize)> {
+        self.nested(start, |this| this.js_scan_at(start, until))
+    }
+
     #[allow(
         clippy::too_many_lines,
         reason = "one token loop keeps the operand and bracket state in one place"
     )]
-    fn js_scan(&mut self, start: usize, until: Until) -> Parse<(Expression, usize)> {
+    fn js_scan_at(&mut self, start: usize, until: Until) -> Parse<(Expression, usize)> {
         let source: &'s str = self.source;
         let mut lexer = Lexer::new(source, start);
         let mut scan = Scan {
@@ -225,8 +232,13 @@ impl<'s> Parser<'s> {
             if token.kind == TokenKind::Eof {
                 return Err(self.eof());
             }
-            if until == Until::Brace && text == "}" && scan.stack.is_empty() {
-                return Ok((scan.expression(token.start), token.start));
+            if until == Until::Brace && scan.stack.is_empty() {
+                if text == ";" || (text == "}" && scan.prev == Prev::Comma) {
+                    return Err(self.unexpected(token.start..token.end));
+                }
+                if text == "}" {
+                    return Ok((scan.expression(token.start), token.start));
+                }
             }
             let pending = std::mem::replace(&mut scan.pending, Pending::Nothing);
             let prev = std::mem::replace(&mut scan.prev, Prev::Other);
@@ -243,8 +255,13 @@ impl<'s> Parser<'s> {
                         scan.operand = true;
                         scan.prev = Prev::Keyword;
                     }
-                    "return" | "typeof" | "void" | "delete" | "await" | "yield" | "new" | "in"
-                    | "of" | "instanceof" | "case" | "throw" | "extends" => scan.operand = true,
+                    "typeof" | "void" | "delete" | "await" | "yield" | "new" => {
+                        scan.operand = true;
+                        scan.pending = Pending::Unary;
+                    }
+                    "return" | "in" | "of" | "instanceof" | "case" | "throw" | "extends" => {
+                        scan.operand = true;
+                    }
                     _ => scan.operand = false,
                 },
                 TokenKind::TemplateHead => {
@@ -256,10 +273,15 @@ impl<'s> Parser<'s> {
                         let Some(parsed) = self.tag(token.start)? else {
                             return Err(self.unexpected(token.start..token.end));
                         };
+                        if parsed.next == Next::Stuck {
+                            return Err(self.unexpected(parsed.end - 1..parsed.end));
+                        }
                         scan.last = parsed.end;
                         scan.markup.push(parsed.markup);
                         scan.operand = false;
-                        scan.pending = Pending::Markup;
+                        if pending != Pending::Unary {
+                            scan.pending = Pending::Markup;
+                        }
                         lexer.set_position(parsed.end);
                     }
                     "<" if pending == Pending::Markup && self.sibling_ahead(token.start) => {
@@ -339,7 +361,14 @@ impl<'s> Parser<'s> {
                         scan.operand = true;
                         scan.prev = Prev::Semicolon;
                     }
+                    "++" | "--" | "!" | "+" | "-" | "~" if scan.operand => {
+                        scan.pending = Pending::Unary;
+                    }
                     "++" | "--" | "!" => {}
+                    "," => {
+                        scan.operand = true;
+                        scan.prev = Prev::Comma;
+                    }
                     _ => scan.operand = true,
                 },
                 _ => scan.operand = false,
@@ -375,19 +404,15 @@ impl<'s> Parser<'s> {
         if self.byte(after.start) == Some(b'>') || after.kind == TokenKind::Identifier {
             return true;
         }
-        self.bytes
-            .get(lt + 1..)
-            .is_some_and(|rest| rest.starts_with(b"!--") && find(&rest[3..], b"-->").is_some())
+        self.comment(lt + 1).is_some()
     }
 
     fn group(&mut self, markup: &mut Vec<Markup>, first_lt: usize) -> Parse<usize> {
         let Some(lhs) = markup.pop() else {
             return Ok(first_lt);
         };
-        let (start, mut end) = match &lhs {
-            Markup::Element { span, .. } => (span.start, span.end),
-            Markup::Fragment(fragment) => (fragment.span.start, fragment.span.end),
-        };
+        let span = lhs.span();
+        let (start, mut end) = (span.start, span.end);
         let mut siblings = Vec::new();
         let mut lt = first_lt;
         loop {
@@ -406,6 +431,9 @@ impl<'s> Parser<'s> {
                 let Some(parsed) = self.tag_at(lt, after)? else {
                     break;
                 };
+                if parsed.next == Next::Stuck {
+                    return Err(self.unexpected(parsed.end - 1..parsed.end));
+                }
                 end = parsed.end;
                 siblings.push(into_child(parsed.markup));
             }

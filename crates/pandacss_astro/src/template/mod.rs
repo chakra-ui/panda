@@ -6,6 +6,7 @@ use std::ops::Range;
 use crate::AstroDiagnostic;
 use crate::frontmatter;
 use crate::js::{Lexer, Token, TokenKind};
+use crate::lower::offset;
 use crate::tree::{Child, ChildKind, Document, Element, Fragment, Markup};
 
 pub(crate) fn parse(source: &str) -> Document {
@@ -19,6 +20,7 @@ pub(crate) fn parse(source: &str) -> Document {
         diagnostics: Vec::new(),
         open: Vec::new(),
         foreign: false,
+        depth: 0,
     };
     let body = parser.body(start);
     Document {
@@ -37,6 +39,7 @@ enum Next {
     Child,
     Foreign,
     Js,
+    Stuck,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -92,7 +95,10 @@ struct Parser<'s> {
     diagnostics: Vec<AstroDiagnostic>,
     open: Vec<Range<usize>>,
     foreign: bool,
+    depth: usize,
 }
+
+const MAX_DEPTH: usize = 256;
 
 impl Parser<'_> {
     fn body(&mut self, start: usize) -> Vec<Child> {
@@ -150,6 +156,9 @@ impl Parser<'_> {
         let after = self.token(lt + 1);
         match self.byte(after.start) {
             None => Err(self.eof()),
+            Some(b'/' | b'!') if after.end != after.start + 1 => {
+                Err(self.unexpected(after.start..after.end))
+            }
             Some(b'/') => Ok(Top::End),
             Some(b'!') => Ok(self.top_bang(after.start)),
             Some(b'>') => {
@@ -174,23 +183,26 @@ impl Parser<'_> {
         }
     }
 
-    fn top_bang(&self, bang: usize) -> Top {
+    fn top_bang(&mut self, bang: usize) -> Top {
+        if let Some(end) = self.comment(bang) {
+            return Top::Other(end);
+        }
         let rest = &self.bytes[bang..];
-        if rest.starts_with(b"!--") {
-            if let Some(index) = find(&self.bytes[bang + 3..], b"-->") {
-                return Top::Other(bang + 3 + index + 3);
-            }
-        } else if let Some(index) = rest.iter().position(|&byte| byte == b'>') {
+        if !rest.starts_with(b"!--")
+            && let Some(index) = rest.iter().position(|&byte| byte == b'>')
+        {
             return Top::Other(bang + index + 1);
         }
         let mut pos = bang;
         loop {
             let token = self.token(pos);
-            match token.kind {
-                TokenKind::Eof => return Top::End,
-                _ if self.byte(token.start) == Some(b'>') => return Top::Drift(token.start + 1),
-                _ => pos = token.end,
+            if self.lex_error(pos, token) {
+                return Top::End;
             }
+            if self.byte(token.start) == Some(b'>') {
+                return Top::Drift(token.start + 1);
+            }
+            pos = token.end;
         }
     }
 
@@ -198,31 +210,91 @@ impl Parser<'_> {
         let mut pos = start;
         loop {
             let token = self.token(pos);
-            let text = &self.source[token.start..token.end];
-            match token.kind {
-                TokenKind::Eof => return None,
-                TokenKind::Punctuator if text == "<" => {
-                    return Some(lexed(Kind::Angle, token.start, token.end));
-                }
-                TokenKind::Punctuator if text == "{" => {
-                    return Some(lexed(Kind::OpenBrace, token.start, token.end));
-                }
-                TokenKind::String if !terminated(text) => {
-                    self.diagnostics
-                        .push(diagnostic("Unterminated string", token.start..token.end));
-                }
-                _ => {}
-            }
-            if token.end <= pos {
+            if self.lex_error(pos, token) {
                 return None;
+            }
+            let text = &self.source[token.start..token.end];
+            if token.kind == TokenKind::Punctuator && text == "<" {
+                return Some(lexed(Kind::Angle, token.start, token.end));
+            }
+            if token.kind == TokenKind::Punctuator && text == "{" {
+                return Some(lexed(Kind::OpenBrace, token.start, token.end));
             }
             pos = token.end;
         }
     }
 
+    fn lex_error(&mut self, pos: usize, token: Token) -> bool {
+        let text = &self.source[token.start..token.end];
+        let message = match token.kind {
+            TokenKind::Eof => {
+                if let Some(comment) = self.open_comment(pos) {
+                    let end = self.bytes.len();
+                    self.diagnostics
+                        .push(diagnostic("Unterminated comment", comment..end));
+                }
+                return true;
+            }
+            TokenKind::String if !terminated(text) => "Unterminated string",
+            TokenKind::NoSubstitutionTemplate if !terminated(text) => "Unterminated template",
+            TokenKind::Number if !tag::valid_number(text) || self.word_follows(token.end) => {
+                "Invalid characters after number"
+            }
+            _ => return token.end <= pos,
+        };
+        self.diagnostics
+            .push(diagnostic(message, token.start..token.end));
+        token.end <= pos
+    }
+
+    fn word_follows(&self, pos: usize) -> bool {
+        self.source
+            .get(pos..)
+            .and_then(|rest| rest.chars().next())
+            .is_some_and(|ch| {
+                ch == '_'
+                    || ch == '$'
+                    || ch == '\\'
+                    || (!ch.is_ascii() && !ch.is_whitespace() && ch != '\u{feff}')
+            })
+    }
+
+    fn open_comment(&self, start: usize) -> Option<usize> {
+        let mut pos = start;
+        loop {
+            let rest = self.source.get(pos..)?;
+            let trimmed =
+                rest.trim_start_matches(|ch: char| ch.is_whitespace() || ch == '\u{feff}');
+            pos += rest.len() - trimmed.len();
+            if trimmed.starts_with("//") {
+                pos += trimmed.find('\n').unwrap_or(trimmed.len());
+            } else if let Some(body) = trimmed.strip_prefix("/*") {
+                match body.find("*/") {
+                    Some(index) => pos += index + 4,
+                    None => return Some(pos),
+                }
+            } else {
+                return None;
+            }
+        }
+    }
+
+    fn nested<T>(&mut self, at: usize, parse: impl FnOnce(&mut Self) -> Parse<T>) -> Parse<T> {
+        if self.depth >= MAX_DEPTH {
+            let end = (at + 1).min(self.bytes.len());
+            self.diagnostics
+                .push(diagnostic("Nesting too deep", at.min(end)..end));
+            return Err(Fatal);
+        }
+        self.depth += 1;
+        let result = parse(self);
+        self.depth -= 1;
+        result
+    }
+
     fn read(&self, pos: usize, next: Next) -> Lexed {
         match next {
-            Next::Child => self.child_token(pos, self.foreign),
+            Next::Child | Next::Stuck => self.child_token(pos, self.foreign),
             Next::Foreign => self.child_token(pos, true),
             Next::Js => {
                 let token = self.token(pos);
@@ -261,7 +333,7 @@ impl Parser<'_> {
         while let Some(&byte) = self.bytes.get(pos) {
             match byte {
                 b'<' if !valid_angle_only || self.markup_angle(pos) => return pos,
-                b'{' | b'}' if !foreign => return pos,
+                b'{' | b'}' if !foreign || valid_angle_only => return pos,
                 _ => pos += 1,
             }
         }
@@ -316,7 +388,6 @@ fn terminated(text: &str) -> bool {
 }
 
 fn diagnostic(message: &str, span: Range<usize>) -> AstroDiagnostic {
-    let offset = |index: usize| u32::try_from(index).unwrap_or(u32::MAX);
     AstroDiagnostic {
         message: message.to_owned(),
         span: Some(offset(span.start)..offset(span.end)),

@@ -44,6 +44,15 @@ pub(crate) enum Markup {
     Fragment(Fragment),
 }
 
+impl Markup {
+    pub(crate) fn span(&self) -> Range<usize> {
+        match self {
+            Markup::Element { span, .. } => span.clone(),
+            Markup::Fragment(fragment) => fragment.span.clone(),
+        }
+    }
+}
+
 pub(crate) struct Attribute {
     pub(crate) name: Option<Range<usize>>,
     pub(crate) value: Value,
