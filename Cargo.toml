@@ -28,7 +28,13 @@ oxc_resolver = "11.19.1"
 oxc_semantic = "0.130.0"
 oxc_span = "0.130.0"
 oxc_syntax = "0.130.0"
+astro_oxc_allocator = { package = "oxc_allocator", git = "https://github.com/withastro/oxc", rev = "8bb526fc0c20beb4649b223d3ac39851505caa5a" }
+astro_oxc_ast = { package = "oxc_ast", git = "https://github.com/withastro/oxc", rev = "8bb526fc0c20beb4649b223d3ac39851505caa5a" }
+astro_oxc_ast_visit = { package = "oxc_ast_visit", git = "https://github.com/withastro/oxc", rev = "8bb526fc0c20beb4649b223d3ac39851505caa5a" }
+astro_oxc_parser = { package = "oxc_parser", git = "https://github.com/withastro/oxc", rev = "8bb526fc0c20beb4649b223d3ac39851505caa5a", features = ["astro"] }
+astro_oxc_span = { package = "oxc_span", git = "https://github.com/withastro/oxc", rev = "8bb526fc0c20beb4649b223d3ac39851505caa5a" }
 pandacss_config = { path = "crates/pandacss_config" }
+pandacss_astro = { path = "crates/pandacss_astro" }
 pandacss_compiler = { path = "crates/pandacss_compiler" }
 pandacss_codegen = { path = "crates/pandacss_codegen" }
 pandacss_encoder = { path = "crates/pandacss_encoder" }

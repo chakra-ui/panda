@@ -11,7 +11,7 @@ accidentally coupling a leaf crate to walker machinery.
 
 ### Tier 0 — infrastructure
 
-`pandacss_fs`, `pandacss_shared`, `pandacss_literal`, `pandacss_tracing`.
+`pandacss_fs`, `pandacss_shared`, `pandacss_literal`, `pandacss_tracing`, `pandacss_astro`.
 
 `pandacss_fs` is the filesystem abstraction with `os` / `memory` feature-gated impls. Core crates depend on the
 `FileSystem` trait, never `std::fs` directly, so the same code compiles to `wasm32-unknown-unknown`. See
@@ -24,6 +24,10 @@ diverge.
 
 `pandacss_literal` owns the host-neutral extracted value tree shared by parsing, recipes, encoding, utility metadata,
 and project transforms. Keeping this IR below the process crates prevents leaf data crates from pulling Oxc machinery.
+
+`pandacss_astro` parses `.astro` with Astro's own parser (the `withastro/oxc` fork) and lowers it to a JS program at the
+same byte offsets. It is the only crate that depends on the fork, and its API carries no fork types. See
+[astro-parser](./astro-parser.md).
 
 ### Tier 1 — leaf data + parsing
 

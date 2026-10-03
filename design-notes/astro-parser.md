@@ -60,34 +60,18 @@ pandacss_extractor  (Oxc 0.130, unchanged visitors)
 
 ### Crate boundary
 
-`crates/pandacss_astro` is a Tier 1 parsing crate. It depends on the fork crates and nothing in Panda. Its public API
+`crates/pandacss_astro` is a Tier 0 crate. It depends on the fork crates and nothing in Panda. Its public API
 has no fork types: byte ranges, strings and small enums only. `pandacss_extractor` is its only dependent. Fork
 dependencies are declared once in the workspace `Cargo.toml` under renamed keys (`astro_oxc_parser`, `astro_oxc_ast`, …)
 so they can't be confused with Panda's Oxc.
 
 ```rust
-pub struct AstroDocument {
-    pub canvas: String,
-    pub elements: Vec<AstroElement>,
-    pub scripts: Vec<AstroScript>,
-    pub diagnostics: Vec<AstroDiagnostic>,
-}
-
-pub struct AstroElement {
-    pub name: Range<u32>,
-    pub attributes: Vec<AstroAttribute>,
-    pub self_closing: bool,
-}
-
-pub enum AstroAttributeValue {
-    Boolean,
-    Static { value: Range<u32> },
-    Expression { expression: Range<u32> },
-    Shorthand { expression: Range<u32> },
-    Spread { expression: Range<u32> },
-    TemplateLiteral { expression: Range<u32> },
-    Empty,
-}
+pub fn lower(source: &str) -> AstroDocument;
+pub struct AstroDocument { pub canvas: String, pub elements: Vec<AstroElement>, pub diagnostics: Vec<AstroDiagnostic> }
+pub struct AstroElement { pub name: Range<u32>, pub opening: Range<u32>, pub attributes: Vec<AstroAttribute> }
+pub struct AstroAttribute { pub name: Option<Range<u32>>, pub value: AstroAttributeValue }
+pub enum AstroAttributeValue { Boolean, Static(Range<u32>), Expression(Range<u32>), Spread(Range<u32>), Empty }
+pub struct AstroDiagnostic { pub message: String, pub span: Option<Range<u32>> }
 ```
 
 ### Offset invariant
@@ -96,6 +80,7 @@ Every byte of the canvas below `source.len()` is either copied from the source, 
 replaced by one byte of punctuation. Closing punctuation may be appended after `source.len()`. No offset in the source
 moves, so the extractor's spans, the transform's span-based rewrites, and the scope and cross-file code that slice the
 source by span all keep working. This follows the byte-offset rule in [hooks](./hooks.md#source-spans): no position map.
+Line breaks are never overwritten; brackets go on the first and last non-line-break byte of a range.
 
 ### Lowering
 
@@ -167,8 +152,8 @@ questions.
 ### Diagnostics
 
 Fork parse errors map to the existing `js_parse_error` diagnostic with original-source spans. The canvas must parse with
-zero errors by construction. A canvas error is a lowering bug: the conformance suite fails on it, and a `debug_assert`
-catches it in development. When the fork reports `panicked`, Panda still lowers the partial tree and emits the
+zero errors by construction. A canvas error is a lowering bug: the conformance corpus enforces it: every input Astro
+accepts must lower to a canvas Oxc 0.130 parses with zero errors. When the fork reports `panicked`, Panda still lowers the partial tree and emits the
 diagnostic, matching the [parse-error contract](./extraction-pipeline.md#parse-error-contract).
 
 ### Svelte and Vue
@@ -180,7 +165,7 @@ fixes the Svelte and Vue form of the `<script>`-in-a-comment bug.
 
 - Workspace `Cargo.toml` pins the fork to the revision compiler-rs uses in its latest release.
 - `deny.toml` adds `allow-git = ["https://github.com/withastro/oxc"]`; `unknown-git` stays `deny`.
-- Renovate tracks the `@astrojs/compiler-rs` release; each bump moves the pin and re-runs the conformance suite.
+- Bumps are manual: when a new `@astrojs/compiler-rs` release moves its fork pin, run `crates/pandacss_astro/harvest.sh <new tag> crates/pandacss_astro/tests/corpus`, move the pin in the workspace `Cargo.toml`, and run the corpus tests.
 - `--locked` builds, NAPI, and `compiler-wasm` (`wasm32-unknown-unknown`) all build from the same lockfile entry.
 
 ## Performance
