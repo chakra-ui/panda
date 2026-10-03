@@ -1,8 +1,11 @@
-The .astro files in this directory are test inputs collected from the test suites of
-https://github.com/withastro/compiler-rs and https://github.com/withastro/oxc (see SOURCE).
+The .astro files in compiler-rs/ are test inputs collected from the test suites of
+https://github.com/withastro/compiler-rs and https://github.com/withastro/oxc (see compiler-rs/SOURCE).
+The .astro files in real/ are copied from https://github.com/withastro/astro and https://github.com/withastro/starlight (see real/SOURCE).
 
 compiler-rs: MIT License, Copyright (c) 2026 Astro contributors (https://github.com/withastro/compiler/graphs/contributors)
 oxc: MIT License, Copyright (c) 2024-present VoidZero Inc. & Contributors
+astro: MIT License, Copyright (c) 2021 Fred K. Schott
+starlight: MIT License, Copyright (c) 2023 Astro contributors (https://github.com/withastro/starlight/graphs/contributors)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the "Software"), to deal in the Software without restriction, including without limitation the

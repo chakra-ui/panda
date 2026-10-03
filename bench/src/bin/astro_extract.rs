@@ -16,7 +16,7 @@ fn main() {
         .unwrap_or(20);
     let dir = concat!(
         env!("CARGO_MANIFEST_DIR"),
-        "/../crates/pandacss_astro/tests/corpus"
+        "/../crates/pandacss_astro/tests/corpus/compiler-rs"
     );
     let sources: Vec<String> = fs::read_dir(dir)
         .unwrap()

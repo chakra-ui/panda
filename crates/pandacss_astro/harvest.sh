@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Rebuilds tests/corpus from every .astro input that withastro/compiler-rs and
 # its Oxc fork feed their parsers while running their own test suites.
-# Usage: harvest.sh <compiler-rs ref> <output dir>
+# Usage: harvest.sh <compiler-rs ref> <output dir, e.g. tests/corpus/compiler-rs>
 set -euo pipefail
 
 ref="${1:?compiler-rs git ref, e.g. @astrojs/compiler-rs@0.5.1}"

@@ -1,0 +1,14 @@
+[package]
+name = "pandacss_astro_reference"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[dependencies]
+astro_oxc_allocator = { package = "oxc_allocator", git = "https://github.com/withastro/oxc", rev = "8bb526fc0c20beb4649b223d3ac39851505caa5a" }
+astro_oxc_ast = { package = "oxc_ast", git = "https://github.com/withastro/oxc", rev = "8bb526fc0c20beb4649b223d3ac39851505caa5a" }
+astro_oxc_ast_visit = { package = "oxc_ast_visit", git = "https://github.com/withastro/oxc", rev = "8bb526fc0c20beb4649b223d3ac39851505caa5a" }
+astro_oxc_span = { package = "oxc_span", git = "https://github.com/withastro/oxc", rev = "8bb526fc0c20beb4649b223d3ac39851505caa5a" }
+astro_oxc_parser = { package = "oxc_parser", git = "https://github.com/withastro/oxc", rev = "8bb526fc0c20beb4649b223d3ac39851505caa5a", features = ["astro"] }
