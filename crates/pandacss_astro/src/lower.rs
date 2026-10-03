@@ -16,7 +16,12 @@ pub(crate) fn lower(source: &str, document: Document) -> AstroDocument {
     }
     let mut elements = lowering.elements;
     elements.sort_by_key(|element| element.opening.start);
+    let frontmatter = document
+        .frontmatter
+        .as_ref()
+        .map(|frontmatter| range(&frontmatter.content));
     AstroDocument {
+        frontmatter,
         canvas: String::from_utf8_lossy(&canvas).into_owned(),
         elements,
         diagnostics: document.diagnostics,

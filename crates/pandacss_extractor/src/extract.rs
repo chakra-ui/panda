@@ -83,6 +83,8 @@ pub struct ModuleFacts {
     pub local_call_bindings: Vec<crate::LocalCallBinding>,
     /// Safe helper-import insertion point after a hashbang/directive prologue.
     pub after_directives: u32,
+    /// An Astro file with no frontmatter: a helper import needs a new fenced block at the top.
+    pub needs_frontmatter: bool,
     /// Whether `import_bindings` came from an Oxc semantic pass.
     pub symbols_resolved: bool,
 }
@@ -501,7 +503,8 @@ fn run_extract(
         span.record("import_count", imports.len());
         imports
     };
-    let after_directives = module_after_directives(&parser_return.program, source);
+    let (after_directives, needs_frontmatter) =
+        adapted.astro_insertion(module_after_directives(&parser_return.program, source));
     let matched = {
         let span = tracing::trace_span!(target: "extract", "match_imports", matched_count = tracing::field::Empty);
         let _entered = span.enter();
@@ -541,6 +544,7 @@ fn run_extract(
                 import_bindings: Vec::new(),
                 local_call_bindings: Vec::new(),
                 after_directives,
+                needs_frontmatter,
                 symbols_resolved: false,
             }
         } else {
@@ -660,6 +664,7 @@ fn run_extract(
             imports,
             local_call_bindings,
             after_directives,
+            needs_frontmatter,
             symbols_resolved: true,
         }
     } else {
@@ -695,7 +700,8 @@ pub fn analyze_module(source: &str, path: &str) -> ModuleFacts {
         .with_options(adapted.parse_options())
         .parse();
     let imports = collect_imports(&parser_return.program);
-    let after_directives = module_after_directives(&parser_return.program, source);
+    let (after_directives, needs_frontmatter) =
+        adapted.astro_insertion(module_after_directives(&parser_return.program, source));
     let matched = Vec::new();
     let resolver = Resolver::build(crate::scope::ResolverBuildInput {
         program: &parser_return.program,
@@ -715,6 +721,7 @@ pub fn analyze_module(source: &str, path: &str) -> ModuleFacts {
         import_bindings,
         local_call_bindings: Vec::new(),
         after_directives,
+        needs_frontmatter,
         symbols_resolved: true,
     }
 }

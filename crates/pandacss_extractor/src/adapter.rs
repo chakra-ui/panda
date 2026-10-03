@@ -38,6 +38,7 @@ pub(crate) struct AdaptedSource<'a> {
     pub(crate) code: Cow<'a, str>,
     pub(crate) astro_elements: Vec<pandacss_astro::AstroElement>,
     astro_diagnostics: Vec<pandacss_astro::AstroDiagnostic>,
+    astro_frontmatter: Option<std::ops::Range<u32>>,
     source_len: usize,
 }
 
@@ -53,6 +54,7 @@ impl<'a> AdaptedSource<'a> {
                     code: Cow::Owned(document.canvas),
                     astro_elements: document.elements,
                     astro_diagnostics: document.diagnostics,
+                    astro_frontmatter: document.frontmatter,
                     source_len: source.len(),
                 };
             }
@@ -65,8 +67,30 @@ impl<'a> AdaptedSource<'a> {
             code,
             astro_elements: Vec::new(),
             astro_diagnostics: Vec::new(),
+            astro_frontmatter: None,
             source_len: source.len(),
         }
+    }
+
+    #[must_use]
+    pub(crate) fn astro_insertion(&self, after_directives: u32) -> (u32, bool) {
+        if self.format != Some(SfcFormat::Astro) || after_directives != 0 {
+            return (after_directives, false);
+        }
+        let Some(frontmatter) = &self.astro_frontmatter else {
+            return (0, true);
+        };
+        let start = frontmatter.start as usize;
+        let rest = self.code.get(start..).unwrap_or_default();
+        let skipped = if rest.starts_with("\r\n") {
+            2
+        } else {
+            usize::from(rest.starts_with(['\n', '\r']))
+        };
+        (
+            frontmatter.start + u32::try_from(skipped).unwrap_or(0),
+            false,
+        )
     }
 
     #[must_use]

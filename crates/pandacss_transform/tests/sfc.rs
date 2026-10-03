@@ -514,3 +514,86 @@ fn helper_import_lands_inside_a_directive_only_astro_frontmatter() {
     <p class={__pcx('a')} />
     ");
 }
+
+fn sync_astro(source: &str) -> String {
+    pandacss_transform::sync_internal_css_import(
+        source,
+        "a.astro",
+        &pandacss_transform::TransformHelperFacts {
+            needs_cx: true,
+            ..Default::default()
+        },
+        pandacss_transform::HelperCxMode::Auto,
+    )
+}
+
+#[test]
+fn helper_import_lands_inside_an_astro_frontmatter_without_imports() {
+    let output = sync_astro("---\nconst a = 1\n---\n<p class={__pcx('a')} />\n");
+    assert_snapshot!(output, @"
+    ---
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const a = 1
+    ---
+    <p class={__pcx('a')} />
+    ");
+}
+
+#[test]
+fn helper_import_creates_a_frontmatter_when_the_astro_file_has_none() {
+    let output = sync_astro("<p class={__pcx('a')} />\n");
+    assert_snapshot!(output, @"
+    ---
+    import { cx as __pcx } from '@pandacss-internal/css';
+    ---
+    <p class={__pcx('a')} />
+    ");
+}
+
+#[test]
+fn helper_import_breaks_the_line_when_code_shares_the_opening_fence() {
+    let output = sync_astro("---const a = 1\n---\n<p class={__pcx('a')} />\n");
+    assert_snapshot!(output, @"
+    ---
+    import { cx as __pcx } from '@pandacss-internal/css';
+    const a = 1
+    ---
+    <p class={__pcx('a')} />
+    ");
+}
+
+#[test]
+fn helper_import_keeps_crlf_in_an_astro_frontmatter() {
+    let output = sync_astro("---\r\nconst a = 1\r\n---\r\n<p class={__pcx('a')} />\r\n");
+    assert_eq!(
+        output,
+        "---\r\nimport { cx as __pcx } from '@pandacss-internal/css';\r\nconst a = 1\r\n---\r\n<p class={__pcx('a')} />\r\n"
+    );
+}
+
+#[test]
+fn helper_import_creates_a_crlf_frontmatter_when_the_astro_file_has_none() {
+    let output = sync_astro("<p class={__pcx('a')} />\r\n<b />\r\n");
+    assert_eq!(
+        output,
+        "---\r\nimport { cx as __pcx } from '@pandacss-internal/css';\r\n---\r\n<p class={__pcx('a')} />\r\n<b />\r\n"
+    );
+}
+
+#[test]
+fn narrowing_an_import_before_a_bare_closing_fence_keeps_crlf() {
+    let source = "---\r\nimport { css, cva } from '@panda/css'---\r\n<p class={css({ color: 'red' })} />\r\n";
+    assert_eq!(
+        transform("src/Card.astro", source).code,
+        "---\r\nimport { cva } from '@panda/css';\r\n---\r\n<p class={\"color_red\"} />\r\n"
+    );
+}
+
+#[test]
+fn removing_an_import_before_a_bare_closing_fence_keeps_the_fence() {
+    let source = "---\nimport { css } from '@panda/css'---\n<p class={css({ color: 'red' })} />\n";
+    assert_eq!(
+        transform("src/Card.astro", source).code,
+        "---\n---\n<p class={\"color_red\"} />\n"
+    );
+}

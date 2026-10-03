@@ -408,3 +408,12 @@ fn unterminated_strings_are_fatal_in_expressions_and_skipped_in_drift() {
         assert_eq!(names, vec![element], "{source:?}");
     }
 }
+
+#[test]
+fn reports_the_frontmatter_content_range() {
+    let source = "---\nconst a = 1\n---\n<p/>";
+    let document = common::lowered(source);
+    assert_eq!(document.frontmatter, Some(3..16));
+    assert_eq!(&source[3..16], "\nconst a = 1\n");
+    assert_eq!(common::lowered("<p/>").frontmatter, None);
+}

@@ -9,6 +9,7 @@ use std::ops::Range;
 #[derive(Debug)]
 pub struct AstroDocument {
     pub canvas: String,
+    pub frontmatter: Option<Range<u32>>,
     pub elements: Vec<AstroElement>,
     pub diagnostics: Vec<AstroDiagnostic>,
 }

@@ -101,11 +101,24 @@ fn plan_import_edit(
         return Some(Edit::Remove { start, end });
     }
 
+    let mut content = format_import(record, &live_specifiers);
+    if dashes_were_trimmed(source, record.span) && source.contains("\r\n") {
+        content = content.replace('\n', "\r\n");
+    }
+
     Some(Edit::Update {
         start,
         end,
-        content: format_import(record, &live_specifiers),
+        content,
     })
+}
+
+fn dashes_were_trimmed(source: &str, span: Span) -> bool {
+    usize::try_from(span.end)
+        .ok()
+        .and_then(|end| end.checked_sub(1))
+        .and_then(|index| source.as_bytes().get(index))
+        == Some(&b'-')
 }
 
 fn import_line_remove(source: &str, span: Span) -> Edit {
@@ -264,6 +277,7 @@ mod tests {
             }],
             local_call_bindings: Vec::new(),
             after_directives: 0,
+            needs_frontmatter: false,
             symbols_resolved,
         }
     }

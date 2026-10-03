@@ -87,7 +87,7 @@ pub(crate) fn build_transform_edits(
         if let Some(content) = helper::plan_internal_css_import_line(&helper, helper_cx) {
             edits.push(Edit::Insert {
                 at: imports::internal_css_import_insertion_point(&plan.module),
-                content: separated_import(source, &plan.module, content),
+                content: separated_import(source, path, &plan.module, content),
             });
         }
     }
@@ -184,7 +184,7 @@ pub(crate) fn apply_helper_sync(
     if let Some(content) = helper::plan_internal_css_import_line(&helper, helper_cx) {
         edits.push(Edit::Insert {
             at: imports::internal_css_import_insertion_point(&module),
-            content: separated_import(source, &module, content),
+            content: separated_import(source, path, &module, content),
         });
     }
     apply_edits(source, path, &edits).0
@@ -215,12 +215,29 @@ fn helper_facts_with_live_references(
 
 fn separated_import(
     source: &str,
+    path: &str,
     module: &pandacss_extractor::ModuleFacts,
     content: String,
 ) -> String {
+    let is_astro = std::path::Path::new(path)
+        .extension()
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("astro"));
+    let eol = if is_astro && source_uses_crlf(source) {
+        "\r\n"
+    } else {
+        "\n"
+    };
+    if module.needs_frontmatter {
+        return format!("---{eol}{}---{eol}", content.replace('\n', eol));
+    }
     let at = usize::try_from(imports::internal_css_import_insertion_point(module))
         .unwrap_or(source.len())
         .min(source.len());
+    let content = if eol == "\n" {
+        content
+    } else {
+        content.replace('\n', eol)
+    };
     if at == 0
         || source
             .get(..at)
@@ -228,8 +245,14 @@ fn separated_import(
     {
         content
     } else {
-        format!("\n{content}")
+        format!("{eol}{content}")
     }
+}
+
+fn source_uses_crlf(source: &str) -> bool {
+    source
+        .find('\n')
+        .is_some_and(|index| index > 0 && source.as_bytes()[index - 1] == b'\r')
 }
 
 #[cfg(test)]
@@ -304,6 +327,7 @@ mod tests {
                 }],
                 local_call_bindings: Vec::new(),
                 after_directives: 0,
+                needs_frontmatter: false,
                 symbols_resolved: false,
             },
             bailed: false,
@@ -338,6 +362,7 @@ mod tests {
                 import_bindings: Vec::new(),
                 local_call_bindings: Vec::new(),
                 after_directives: 0,
+                needs_frontmatter: false,
                 symbols_resolved: false,
             },
             bailed: false,
@@ -386,6 +411,7 @@ mod tests {
                 }],
                 local_call_bindings: Vec::new(),
                 after_directives: 0,
+                needs_frontmatter: false,
                 symbols_resolved: false,
             },
             bailed: false,
