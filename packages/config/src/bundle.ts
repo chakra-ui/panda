@@ -1,14 +1,20 @@
 import type { Config } from '@pandacss/types'
-import { existsSync, readFileSync, realpathSync, statSync } from 'node:fs'
+import { existsSync, realpathSync, statSync } from 'node:fs'
 import { mkdir, unlink, writeFile } from 'node:fs/promises'
 import { builtinModules } from 'node:module'
 import { tmpdir } from 'node:os'
 import { basename, dirname, extname, isAbsolute, join, normalize, relative, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { debuglog } from 'node:util'
 import type { RolldownOutput } from 'rolldown'
 import { importMetaUrlPlugin } from './bundle-plugins'
 import { PandaError } from './error'
-import { tryResolveFrom } from './resolve'
+import { nearestPackageType, tryResolveFrom } from './resolve'
+import { errorMessage } from './shared'
+import { canTranspile, importTranspiled, isLoaderFailure } from './transpile-loader'
+
+/** `NODE_DEBUG=panda` prints why a config fell back to the bundler. */
+const debug = debuglog('panda')
 
 const nodeBuiltins = new Set([...builtinModules, ...builtinModules.map((mod) => `node:${mod}`)])
 
@@ -26,6 +32,9 @@ export async function bundleConfig<T extends Config = Config>(
   filepath: string,
   cwd: string,
 ): Promise<BundleConfigResult<T>> {
+  const transpiled = await loadTranspiled<T>(filepath, cwd)
+  if (transpiled) return transpiled
+
   const { rolldown } = await import('rolldown')
 
   const build = await rolldown({
@@ -55,6 +64,29 @@ export async function bundleConfig<T extends Config = Config>(
   return { config: await configFromModule<T>(mod), dependencies }
 }
 
+async function loadTranspiled<T>(filepath: string, cwd: string): Promise<BundleConfigResult<T> | undefined> {
+  const file = localFile(filepath, cwd)
+  if (!file || !existsSync(file) || !canTranspile(file)) return undefined
+
+  try {
+    const { value, files } = await importTranspiled(file, configFromModule<T>)
+    const base = canonical(cwd)
+    const dependencies = new Set(files.map((dependency) => normalize(relative(base, canonical(dependency)))))
+    return { config: value, dependencies: Array.from(dependencies) }
+  } catch (error) {
+    // Errors the config throws surface as is; only a loader failure retries with the bundler.
+    if (!isLoaderFailure(error)) throw error
+    debug('loading %s with the bundler: %s', relative(cwd, file) || file, errorMessage(error))
+    return undefined
+  }
+}
+
+function localFile(filepath: string, cwd: string): string | undefined {
+  if (isAbsolute(filepath)) return filepath
+  if (filepath.startsWith('.')) return join(cwd, filepath)
+  return undefined
+}
+
 export async function importInstalledConfig<T extends Config = Config>(
   specifier: string,
   cwd: string,
@@ -82,44 +114,32 @@ function isEsmFile(file: string): boolean {
   return nearestPackageType(dirname(file)) === 'module'
 }
 
-function nearestPackageType(start: string): string | undefined {
-  let current = start
-  while (true) {
-    const candidate = join(current, 'package.json')
-    if (existsSync(candidate)) return (JSON.parse(readFileSync(candidate, 'utf8')) as { type?: string }).type
-    const parent = dirname(current)
-    if (parent === current) return undefined
-    current = parent
-  }
-}
-
 /** Evaluate bundled ESM by writing a temp file (preferred) or a `data:` URL fallback. */
 async function loadBundledModule(filepath: string, code: string): Promise<Record<string, unknown>> {
   const target = tempTargetFor(filepath)
 
-  let evalError: unknown
-
-  if (target) {
+  if (target && (await writeTempModule(target, code))) {
     try {
-      await mkdir(dirname(target), { recursive: true })
-      await writeFile(target, code)
-      try {
-        return (await import(/* @vite-ignore */ pathToFileURL(target).href)) as Record<string, unknown>
-      } finally {
-        void unlink(target).catch(() => undefined)
-      }
+      return (await import(/* @vite-ignore */ pathToFileURL(target).href)) as Record<string, unknown>
     } catch (error) {
-      // Keep config evaluation errors: they name real paths, unlike the data: URL retry.
-      if (!isUnresolvedTempModule(error, target)) evalError = error
+      // The config's own errors surface here; only a temp file that vanished retries below.
+      if (!isUnresolvedTempModule(error, target)) throw error
+    } finally {
+      void unlink(target).catch(() => undefined)
     }
   }
 
   const dataUrl = `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
+  return (await import(/* @vite-ignore */ dataUrl)) as Record<string, unknown>
+}
 
+async function writeTempModule(target: string, code: string): Promise<boolean> {
   try {
-    return (await import(/* @vite-ignore */ dataUrl)) as Record<string, unknown>
-  } catch (error) {
-    throw evalError ?? error
+    await mkdir(dirname(target), { recursive: true })
+    await writeFile(target, code)
+    return true
+  } catch {
+    return false
   }
 }
 
