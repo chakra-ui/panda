@@ -199,6 +199,16 @@ fn top_level_for_await_parses_as_a_module() {
 }
 
 #[test]
+fn unclosed_frontmatter_fence_is_template_text() {
+    let document = lowered("---\nconst a = 1");
+    assert!(document.diagnostics.is_empty());
+    assert_snapshot!(show(&document.canvas), @r"
+    |[
+    |           ]
+    ");
+}
+
+#[test]
 fn elements_record_every_attribute_form() {
     let source = "<Box {id} title=`a ${id}` data-id=12 color=\"red\" {...rest} e={} disabled />";
     let document = lowered(source);
