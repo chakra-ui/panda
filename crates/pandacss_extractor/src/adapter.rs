@@ -212,6 +212,14 @@ pub(crate) fn tag_blocks_with(
     let open = format!("<{tag}");
 
     while let Some(open_start) = find_ascii_ci(source, &open, cursor) {
+        if let Some(comment) =
+            find_bytes(source.as_bytes(), b"<!--", cursor).filter(|&comment| comment < open_start)
+        {
+            cursor = find_bytes(source.as_bytes(), b"-->", comment + 4)
+                .map_or(source.len(), |end| end + 3);
+            continue;
+        }
+
         let name_end = open_start + open.len();
         if !is_tag_name_boundary(source.as_bytes(), name_end) {
             cursor = name_end;
@@ -294,28 +302,7 @@ pub(crate) fn find_tag_end(source: &str, from: usize) -> Option<usize> {
 }
 
 pub(crate) fn find_matching_brace(source: &str, open: usize) -> Option<usize> {
-    let bytes = source.as_bytes();
-    let mut depth = 0usize;
-    let mut index = open;
-    let mut state = JsState::default();
-
-    while index < bytes.len() {
-        if index != open && state.step(bytes, &mut index) {
-            continue;
-        }
-        match bytes[index] {
-            b'{' => depth += 1,
-            b'}' => {
-                depth = depth.saturating_sub(1);
-                if depth == 0 {
-                    return Some(index);
-                }
-            }
-            _ => {}
-        }
-        index += 1;
-    }
-    None
+    pandacss_astro::js::find_closing_brace(source, open)
 }
 
 #[derive(Default)]

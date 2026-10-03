@@ -533,3 +533,45 @@ fn uppercase_component_extracts_with_jsx_framework() {
           height: "800"
     "#);
 }
+
+#[test]
+fn script_tag_inside_an_html_comment_is_not_a_block() {
+    let source = indoc! {r#"
+        <!-- <script> -->
+        <script lang="ts">
+        import { css } from '@panda/css';
+        type Log = { id: number };
+        const a = css({ color: 'red' });
+        </script>
+    "#};
+    let result = extract(source, "Card.svelte", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+    jsx: []
+    ");
+}
+
+#[test]
+fn closing_brace_inside_a_regex_does_not_end_the_expression() {
+    let source = indoc! {r"
+        <script>
+        import { css } from '@panda/css';
+        </script>
+
+        <p>{'a}b'.replace(/}/g, '')}</p>
+        <p class={css({ color: 'red' })}>x</p>
+    "};
+    let result = extract(source, "Card.svelte", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+    jsx: []
+    ");
+}
