@@ -210,22 +210,48 @@ pub(crate) fn tag_blocks_with(
     let mut blocks = Vec::new();
     let mut cursor = 0;
     let open = format!("<{tag}");
+    let bytes = source.as_bytes();
 
-    while let Some(open_start) = find_ascii_ci(source, &open, cursor) {
-        if let Some(comment) =
-            find_bytes(source.as_bytes(), b"<!--", cursor).filter(|&comment| comment < open_start)
-        {
-            cursor = find_bytes(source.as_bytes(), b"-->", comment + 4)
-                .map_or(source.len(), |end| end + 3);
+    loop {
+        let open_start = find_tag_open(source, &open, cursor);
+        let comment = find_bytes(bytes, b"<!--", cursor);
+        let raw = ["script", "style"]
+            .into_iter()
+            .filter(|raw| !raw.eq_ignore_ascii_case(tag))
+            .filter_map(|raw| {
+                find_tag_open(source, &format!("<{raw}"), cursor).map(|start| (start, raw))
+            })
+            .min();
+
+        let next = [open_start, comment, raw.map(|(start, _)| start)]
+            .into_iter()
+            .flatten()
+            .min();
+        let Some(next) = next else {
+            break;
+        };
+
+        if comment == Some(next) {
+            cursor = find_bytes(bytes, b"-->", next + 4).map_or(source.len(), |end| end + 3);
+            continue;
+        }
+        if let Some((start, raw)) = raw.filter(|&(start, _)| start == next) {
+            let name_end = start + raw.len() + 1;
+            let Some(open_end) = find_tag_end(source, name_end) else {
+                break;
+            };
+            if bytes.get(open_end.saturating_sub(1)) == Some(&b'/') {
+                cursor = open_end + 1;
+                continue;
+            }
+            let close = format!("</{raw}>");
+            cursor = find_ascii_ci(source, &close, open_end + 1)
+                .map_or(source.len(), |close_start| close_start + close.len());
             continue;
         }
 
+        let open_start = next;
         let name_end = open_start + open.len();
-        if !is_tag_name_boundary(source.as_bytes(), name_end) {
-            cursor = name_end;
-            continue;
-        }
-
         let Some(open_end) = find_tag_end(source, name_end) else {
             break;
         };
@@ -257,6 +283,17 @@ pub(crate) fn tag_blocks_with(
     }
 
     blocks
+}
+
+fn find_tag_open(source: &str, open: &str, from: usize) -> Option<usize> {
+    let mut cursor = from;
+    while let Some(start) = find_ascii_ci(source, open, cursor) {
+        if is_tag_name_boundary(source.as_bytes(), start + open.len()) {
+            return Some(start);
+        }
+        cursor = start + open.len();
+    }
+    None
 }
 
 pub(crate) fn find_ascii_ci(source: &str, needle: &str, from: usize) -> Option<usize> {

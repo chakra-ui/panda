@@ -933,3 +933,30 @@ fn script_tag_inside_an_html_comment_is_not_a_block() {
     jsx: []
     ");
 }
+
+#[test]
+fn comment_marker_inside_script_does_not_hide_the_template() {
+    let source = indoc! {r#"
+        <script setup>
+        import { css } from '@panda/css';
+        const marker = '<!--';
+        const a = css({ color: 'red' });
+        </script>
+
+        <template>
+          <p :class="css({ color: 'blue' })" />
+        </template>
+    "#};
+    let result = extract(source, "Card.vue", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+      - name: css
+        data:
+          color: blue
+    jsx: []
+    ");
+}

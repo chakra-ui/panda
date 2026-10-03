@@ -575,3 +575,32 @@ fn closing_brace_inside_a_regex_does_not_end_the_expression() {
     jsx: []
     ");
 }
+
+#[test]
+fn comment_marker_inside_script_does_not_hide_the_markup() {
+    let source = indoc! {r"
+        <script>
+        import { css } from '@panda/css';
+        const marker = '<!--';
+        const a = css({ color: 'red' });
+        </script>
+
+        <p class={css({ color: 'blue' })}>x</p>
+
+        <style>
+          .a { color: red }
+        </style>
+    "};
+    let result = extract(source, "Card.svelte", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+      - name: css
+        data:
+          color: blue
+    jsx: []
+    ");
+}
