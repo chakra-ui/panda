@@ -264,30 +264,158 @@ This will result in the following CSS:
 
 ### Supported expressions
 
-Panda v2 can resolve literals, object spreads, property access, arithmetic, template strings, and simple pure helpers
-when their inputs are statically known. For example:
+Panda resolves an expression when every value it depends on is known at build time.
+
+#### Literals and arithmetic
 
 ```ts
 import { css } from '../styled-system/css'
 
 const unit = 4
-const double = (value: number) => value * 2
 
-const className = css({
-  padding: `${unit * 2}px`,
-  margin: `${double(unit)}px`
-})
+css({ padding: `${unit * 2}px`, opacity: unit > 2 ? 1 : 0.5 })
 ```
 
-Panda does not run a JavaScript interpreter. Calls to built-ins such as `Object.entries`, `Object.fromEntries`,
-`Array.prototype.map`, and `Math.max` are not evaluated during source extraction. A helper that uses those calls to
-construct styles or recipe variants will not produce the expected CSS.
+#### Constants and destructuring
 
-Write the variant object directly instead:
+```ts
+import { css } from '../styled-system/css'
+
+const colors = { text: 'gray.900', muted: 'gray.500' } as const
+const { muted } = colors
+
+css({ color: colors.text, borderColor: muted })
+```
+
+#### Spreads and computed keys
+
+```ts
+import { css } from '../styled-system/css'
+
+const base = { display: 'flex', gap: '2' }
+const state = 'hover'
+
+css({ ...base, [`&:${state}`]: { gap: '3' } })
+```
+
+#### Enums and `satisfies`
+
+```ts
+import { css } from '../styled-system/css'
+
+enum Size {
+  Small = '8px',
+  Large = '16px'
+}
+const card = { padding: Size.Large } satisfies { padding: string }
+
+css({ ...card, margin: Size.Small })
+```
+
+#### Imports from other files
+
+```ts filename="theme.ts"
+export const brand = { primary: 'red.500' }
+export const spacing = (step: number) => `${step * 4}px`
+```
+
+```ts filename="button.ts"
+import { css } from '../styled-system/css'
+import { brand, spacing } from './theme'
+
+css({ bg: brand?.primary, paddingInline: spacing(3) })
+```
+
+#### Tokens and raw styles
+
+```ts
+import { css } from '../styled-system/css'
+import { token } from '../styled-system/tokens'
+
+const focus = css.raw({ outlineWidth: '2px' })
+
+css({ ...focus, boxShadow: `0 0 0 1px ${token('colors.blue.500')}` })
+```
+
+#### Default values
+
+Panda generates the CSS for a parameter's default value, including destructured props:
+
+```tsx
+import { css } from '../styled-system/css'
+
+function Button({ size = 'md' }: { size?: string }) {
+  return <button className={css({ fontSize: size })} />
+}
+```
+
+A value passed by the caller isn't known at build time. Use [recipes](/docs/recipes/overview) or
+[`staticCss`](/docs/styling/static) to generate CSS for the other values.
+
+#### Helper functions
+
+A helper can destructure its parameters, declare local `const` or `let` values before its `return`, spread objects, and
+call other helpers:
+
+```ts
+import { css } from '../styled-system/css'
+
+const rule = (color: string) => ({ color })
+
+function card({ tone, size = 'md' }: { tone: string; size?: string }) {
+  const border = `1px solid ${tone}`
+  return { border, fontSize: size, ...rule(tone), '& .badge': rule(`${tone}.700`) }
+}
+
+css(card({ tone: 'red' }))
+```
+
+### Unsupported expressions
+
+Panda does not run a JavaScript interpreter, so it only evaluates helpers made of `const` / `let` declarations and one
+`return`. When a helper can't be evaluated, its styles aren't extracted and Panda warns with `pure_helper_unevaluated`.
+The rest of the style object still works.
+
+#### Control flow
+
+`if` statements, loops, and more than one `return` aren't evaluated. Use a ternary instead:
+
+```ts
+// ❌
+function card(tone: string) {
+  if (!tone) return {}
+  return { color: tone }
+}
+
+// ✅
+const card = (tone: string) => (tone ? { color: tone } : {})
+```
+
+#### Rest and array patterns
+
+Destructuring with `...rest` or an array pattern isn't evaluated. Name each value instead:
+
+```ts
+// ❌
+const badge = ({ tone, ...rest }: { tone: string; size: string }) => ({ color: tone, fontSize: rest.size })
+
+// ✅
+const badge = ({ tone, size }: { tone: string; size: string }) => ({ color: tone, fontSize: size })
+```
+
+#### Built-in functions
+
+Calls to built-ins such as `Object.entries`, `Object.fromEntries`, `Array.prototype.map`, and `Math.max` aren't
+evaluated. Write the styles out instead:
 
 ```ts
 import { cva } from '../styled-system/css'
 
+// ❌
+const sizes = (keys: string[]) => Object.fromEntries(keys.map(key => [key, { paddingX: key }]))
+const recipe = cva({ variants: { size: sizes(['1', '2']) } })
+
+// ✅
 const recipe = cva({
   variants: {
     size: {

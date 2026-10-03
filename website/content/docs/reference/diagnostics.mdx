@@ -75,6 +75,10 @@ The `code` is stable. Messages may be reworded between releases, so match on the
   `css(props.styles)` or `css({ [key]: 'red' })`. Pass a literal object instead, or generate the CSS with
   [`staticCss`](/docs/styling/static). Turned off when `jsxFramework` is set, since components often pass styles through
   props.
+- `pure_helper_unevaluated` (warning): a helper called with static arguments, like `css(card('red'))`, has a body Panda
+  can't evaluate, such as an `if` statement or a call to `Array.prototype.map`. Its styles are skipped. Keep the helper
+  to `const` declarations and one `return`, or write the styles inline. See
+  [unsupported expressions](/docs/styling/dynamic-styling#unsupported-expressions).
 - `imported_recipe_raw_dynamic` (warning): `button.raw({ size })` with a dynamic `size`, where `button` is a `cva` from
   another file. Pass literal variant values, or call `.raw()` in the file that defines the recipe.
 - `invalid_color_opacity_modifier` (warning): `bg: 'red/abc'`. Use a number (`red/40`) or an opacity token (`red/half`).

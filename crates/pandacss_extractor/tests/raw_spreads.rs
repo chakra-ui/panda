@@ -273,7 +273,7 @@ fn css_raw_nullish_spreads_are_ignored() {
 }
 
 #[test]
-fn css_raw_function_return_spread_is_dropped() {
+fn css_raw_function_return_spread_folds() {
     let src = indoc! {r"
         import { css } from '@panda/css';
         const baseStyles = css.raw({ display: 'flex', gap: '10px' });
@@ -291,7 +291,10 @@ fn css_raw_function_return_spread_is_dropped() {
     "};
     let calls = run(src).calls;
     assert_yaml_snapshot!(calls.last().expect("final css call").data, @"
-    - _hover:
+    - display: flex
+      gap: 10px
+      padding: 20px
+      _hover:
         display: flex
         gap: 10px
         background: gray.100

@@ -79,7 +79,7 @@ Production `extract()` paths always supply a `Resolver`, which unlocks identifie
 - Objects where _every_ member is unresolvable (a partially-static object keeps the static members; see the lenient
   `ObjectExpression` rule above — this matches the JS extractor, e.g. `sva({ slots: [...anatomy.keys()], base })` keeps
   `base` and infers slots).
-- Impure or unsupported callables (async/generator, rest/destructured params, nested unknown calls, `this`, assignment,
+- Impure or unsupported callables (async/generator, rest params or patterns, nested unknown calls, `this`, assignment,
   `Math.random`, etc.). Bare function values (`css({ color: getColor })` without a call) stay non-Literal.
 - BigInt, template literal types, unary-prefixed type literals.
 - Anything we don't recognize yet (`typeof`, `Object.keys`, enums whose declaration site isn't a `VariableDeclarator`,
@@ -114,14 +114,27 @@ Edge-case drops worth noting: division by zero (`1 / 0` would be `Infinity` in J
 2. Fold each argument to a `Literal`.
 3. Apply the body with those args.
 
-Captures that aren't parameters must already fold; they bake into the descriptor as `OwnedPureExpr::Value` at lower
-time. Lowering fails on async/generators, rest or destructured params, nested unknown calls, `this`, assignment, and
-other impure forms. Bare function values used without a call stay non-`Literal`, except factory `defaultProps` accessors
-(arrow / `function` / method), which are applied with no arguments.
+- **Body:** an expression arrow, or `const` / `let` declarations then one `return`. Params and locals share one slot
+  list, evaluated in order.
+- **Destructuring:** params and declarations can destructure objects (renames, nested patterns, defaults). Each name is
+  a `Read` of its source slot; a missing key is `undefined`. Defaults also apply to `null`, since both fold to
+  `Literal::Null`.
+- **Spreads and calls:** body spreads merge objects. A call to another pure callable lowers to `OwnedPureExpr::Call`;
+  `fn_cache` `InProgress` rejects recursion.
+- **Doesn't lower:** async/generators, rest params and patterns, computed keys, array patterns, `var`, other statements
+  (`if`, loops), unknown or member calls, `this`, assignment. Captures must already fold (baked as `Value`).
+- **Warning:** a call with folded args whose callee doesn't lower reports `pure_helper_unevaluated` once. Imported
+  callees are kept as `ExportEntry::UnevaluatedFn` for this. Panda imports and member calls never warn.
+- Bare function values stay non-`Literal`, except `defaultProps` accessors, applied with no arguments.
 
 Same-file bindings go through the resolver's `fn_cache`. Imported / re-exported helpers come from `CrossFileResolver` as
 `ExportEntry::PureFn` (see [cross-file-resolution](./cross-file-resolution.md)) — lowered while the export file's AST is
 live, then applied at the call site with local args.
+
+## Binding defaults
+
+A param or destructured binding that doesn't fold but has a default resolves to `OpenWithFallback(default)` in the
+StyleTree path, like `size ?? 'md'`. Style extraction emits the default; constant folding still treats it as unknown.
 
 ## Scope resolution (`Resolver`)
 
