@@ -503,7 +503,7 @@ impl<'s> Parser<'s> {
                 let (expression, close) = self.js_expression(pos + 1)?;
                 Ok((Value::Expression(expression), close + 1))
             }
-            Some(b'<') => match self.tag(pos)? {
+            Some(b'<') => match self.nested(pos, |this| this.tag(pos))? {
                 Some(parsed) => {
                     let end = if parsed.next == Next::Stuck {
                         parsed.end - 1
@@ -536,6 +536,10 @@ impl<'s> Parser<'s> {
     }
 
     pub(super) fn script(&mut self, lt: usize, name_start: usize, top: bool) -> Parse<Parsed> {
+        self.nested(lt, |this| this.script_at(lt, name_start, top))
+    }
+
+    fn script_at(&mut self, lt: usize, name_start: usize, top: bool) -> Parse<Parsed> {
         let name = name_start..name_start + 6;
         let (attributes, open_end) = self.attributes(name.end)?;
         let (opening, end, children, next) = match open_end {

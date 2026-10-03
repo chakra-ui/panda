@@ -335,6 +335,8 @@ fn deep_nesting_is_reported_not_a_crash() {
         "<>".repeat(100_000),
         format!("{{{}", "<a b={".repeat(100_000)),
         "{<a>".repeat(100_000),
+        "<script a=".repeat(100_000),
+        format!("{{{}", "<script a=".repeat(100_000)),
     ] {
         let document = pandacss_astro::lower(&source);
         assert!(
