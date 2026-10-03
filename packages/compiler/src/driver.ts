@@ -791,6 +791,10 @@ function styledSystemExports(compiler: Compiler, base: string, styledDir: string
       entries[`./${category}/*`] = typesGlob ? { types: typesGlob, default: runtimeGlob } : runtimeGlob
     }
   }
+
+  // Types-only: annotating exported recipes needs `SlotRecipeRuntimeFn` and friends.
+  const types = find(compiler.path.join([styledDir, 'types']), ['index.d.mts', 'index.d.ts'])
+  if (types) entries['./types'] = { types: rel(types) }
   return entries
 }
 
