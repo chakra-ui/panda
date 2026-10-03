@@ -3,7 +3,11 @@
 use std::borrow::Cow;
 use std::path::Path;
 
+use oxc_diagnostics::OxcDiagnostic;
 use oxc_parser::ParseOptions;
+use oxc_span::SourceType;
+
+use crate::{Diagnostic, Span};
 
 /// Single-file-component container format, resolved once per file from its
 /// extension. Distinct from the template `Framework` dialect: Astro is its own
@@ -29,23 +33,71 @@ impl SfcFormat {
     }
 }
 
-/// Astro frontmatter is a render-function body, so a top-level `return` is valid
-/// there but a hard error in the bare module we mask it into. Allow it for `.astro`.
-#[must_use]
-pub(crate) fn parse_options_for(format: Option<SfcFormat>) -> ParseOptions {
-    ParseOptions {
-        allow_return_outside_function: matches!(format, Some(SfcFormat::Astro)),
-        ..ParseOptions::default()
-    }
+pub(crate) struct AdaptedSource<'a> {
+    pub(crate) format: Option<SfcFormat>,
+    pub(crate) code: Cow<'a, str>,
+    pub(crate) astro_elements: Vec<pandacss_astro::AstroElement>,
+    astro_diagnostics: Vec<pandacss_astro::AstroDiagnostic>,
 }
 
-#[must_use]
-pub(crate) fn adapt_source(source: &str, format: Option<SfcFormat>) -> Cow<'_, str> {
-    match format {
-        Some(SfcFormat::Vue) => Cow::Owned(crate::vue_adapter::mask_vue(source)),
-        Some(SfcFormat::Svelte) => Cow::Owned(crate::svelte_adapter::mask_svelte(source)),
-        Some(SfcFormat::Astro) => Cow::Owned(crate::astro_adapter::mask_astro(source)),
-        None => Cow::Borrowed(source),
+impl<'a> AdaptedSource<'a> {
+    #[must_use]
+    pub(crate) fn new(source: &'a str, path: &str) -> Self {
+        let format = SfcFormat::from_path(path);
+        let code = match format {
+            Some(SfcFormat::Astro) => {
+                let document = pandacss_astro::lower(source);
+                return Self {
+                    format,
+                    code: Cow::Owned(document.canvas),
+                    astro_elements: document.elements,
+                    astro_diagnostics: document.diagnostics,
+                };
+            }
+            Some(SfcFormat::Vue) => Cow::Owned(crate::vue_adapter::mask_vue(source)),
+            Some(SfcFormat::Svelte) => Cow::Owned(crate::svelte_adapter::mask_svelte(source)),
+            None => Cow::Borrowed(source),
+        };
+        Self {
+            format,
+            code,
+            astro_elements: Vec::new(),
+            astro_diagnostics: Vec::new(),
+        }
+    }
+
+    #[must_use]
+    pub(crate) fn source_type(&self, path: &str) -> SourceType {
+        match self.format {
+            Some(SfcFormat::Astro) => SourceType::tsx().with_module(true),
+            _ => SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx()),
+        }
+    }
+
+    #[must_use]
+    pub(crate) fn parse_options(&self) -> ParseOptions {
+        ParseOptions {
+            allow_return_outside_function: matches!(self.format, Some(SfcFormat::Astro)),
+            ..ParseOptions::default()
+        }
+    }
+
+    #[must_use]
+    pub(crate) fn parse_diagnostics(&self, errors: &[OxcDiagnostic]) -> Vec<Diagnostic> {
+        let mut diagnostics = crate::imports::parse_error_diagnostics(
+            self.astro_diagnostics.iter().map(|diagnostic| {
+                (
+                    diagnostic.message.as_str(),
+                    diagnostic.span.as_ref().map(|span| Span {
+                        start: span.start,
+                        end: span.end,
+                    }),
+                )
+            }),
+            &self.code,
+        );
+        diagnostics.extend(crate::collect_parser_diagnostics(errors, &self.code));
+        diagnostics
     }
 }
 

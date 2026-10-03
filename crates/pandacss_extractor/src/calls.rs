@@ -18,7 +18,7 @@ use oxc_ast::ast::{Argument, CallExpression, Expression, IdentifierReference};
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_semantic::SymbolId;
-use oxc_span::{GetSpan, SourceType};
+use oxc_span::GetSpan;
 use rustc_hash::FxHashSet;
 use serde::Serialize;
 use std::borrow::Cow;
@@ -138,12 +138,10 @@ pub fn extract_calls(
     config: &ExtractorConfig,
 ) -> ExtractedCallsResult {
     let allocator = Allocator::default();
-    let format = crate::adapter::SfcFormat::from_path(path);
-    let source = crate::adapt_source(source, format);
-    let source = source.as_ref();
-    let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
-    let parser_return = Parser::new(&allocator, source, source_type)
-        .with_options(crate::adapter::parse_options_for(format))
+    let adapted = crate::adapter::AdaptedSource::new(source, path);
+    let source = adapted.code.as_ref();
+    let parser_return = Parser::new(&allocator, source, adapted.source_type(path))
+        .with_options(adapted.parse_options())
         .parse();
 
     let cross_file = config
@@ -169,10 +167,7 @@ pub fn extract_calls(
     let line_index = crate::LineIndex::new(source);
     let (calls, diagnostics) = collect_calls_inner(&parser_return.program, &ctx, Some(&line_index));
     let mut diagnostics = diagnostics;
-    diagnostics.extend(crate::collect_parser_diagnostics(
-        &parser_return.errors,
-        source,
-    ));
+    diagnostics.extend(adapted.parse_diagnostics(&parser_return.errors));
     ExtractedCallsResult { calls, diagnostics }
 }
 

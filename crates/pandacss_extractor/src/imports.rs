@@ -12,7 +12,6 @@ use oxc_ast::ast::{
 use oxc_ast_visit::{Visit, walk};
 use oxc_diagnostics::OxcDiagnostic;
 use oxc_parser::Parser;
-use oxc_span::SourceType;
 use serde::Serialize;
 
 #[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq, Hash)]
@@ -89,17 +88,15 @@ pub fn scan_imports_with(
     options: ScanImportsOptions,
 ) -> ImportScanResult {
     let allocator = Allocator::default();
-    let format = crate::adapter::SfcFormat::from_path(path);
-    let source = crate::adapt_source(source, format);
-    let source = source.as_ref();
-    let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
-    let parser_return = Parser::new(&allocator, source, source_type)
-        .with_options(crate::adapter::parse_options_for(format))
+    let adapted = crate::adapter::AdaptedSource::new(source, path);
+    let source = adapted.code.as_ref();
+    let parser_return = Parser::new(&allocator, source, adapted.source_type(path))
+        .with_options(adapted.parse_options())
         .parse();
 
     ImportScanResult {
         imports: collect_imports_with(&parser_return.program, options),
-        diagnostics: collect_parser_diagnostics(&parser_return.errors, source),
+        diagnostics: adapted.parse_diagnostics(&parser_return.errors),
     }
 }
 
@@ -285,25 +282,39 @@ pub(crate) fn collect_parser_diagnostics(
     errors: &[OxcDiagnostic],
     source: &str,
 ) -> Vec<Diagnostic> {
-    if errors.is_empty() {
+    parse_error_diagnostics(
+        errors.iter().map(|error| {
+            (
+                &error.message[..],
+                error.labels.as_ref().and_then(|labels| {
+                    labels.first().map(|label| Span {
+                        start: u32::try_from(label.offset()).unwrap_or(0),
+                        end: u32::try_from(label.offset() + label.len()).unwrap_or(0),
+                    })
+                }),
+            )
+        }),
+        source,
+    )
+}
+
+pub(crate) fn parse_error_diagnostics<'m>(
+    errors: impl IntoIterator<Item = (&'m str, Option<Span>)>,
+    source: &str,
+) -> Vec<Diagnostic> {
+    let mut errors = errors.into_iter().peekable();
+    if errors.peek().is_none() {
         return Vec::new();
     }
     let line_index = crate::LineIndex::new(source);
     errors
-        .iter()
-        .map(|error| {
-            let span = error.labels.as_ref().and_then(|labels| {
-                labels.first().map(|label| Span {
-                    start: u32::try_from(label.offset()).unwrap_or(0),
-                    end: u32::try_from(label.offset() + label.len()).unwrap_or(0),
-                })
-            });
+        .map(|(message, span)| {
             let location = span.map(|s| line_index.locate_range(s.start, s.end));
             // A parse error warns rather than aborts the build; the bundler reports real
             // syntax errors. `--max-warnings 0` restores strict failure.
             let message = format!(
                 "{}. Panda could not fully parse this file; some styles may be missing.",
-                error.message.to_string().trim_end_matches('.')
+                message.trim_end_matches('.')
             );
             let mut diagnostic = Diagnostic::warning(diagnostic_codes::JS_PARSE_ERROR, message);
             diagnostic.span = span;

@@ -15,13 +15,12 @@ use crate::source_refs::StyleSourceRef;
 use crate::{
     CrossFileSession, Diagnostic, ExportInfo, ExtractedCall, ExtractedJsx, ExtractorConfig,
     ImportRecord, Literal, MatchCategory, MatchedImport, Span, VisitorContext, collect_imports,
-    collect_parser_diagnostics, match_import_records_resolved,
+    match_import_records_resolved,
 };
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Comment, Program};
 use oxc_ast_visit::Visit as _;
 use oxc_parser::Parser;
-use oxc_span::SourceType;
 use rustc_hash::FxHashSet;
 use serde::Serialize;
 
@@ -486,17 +485,15 @@ fn run_extract(
     } = options;
     let allocator = Allocator::default();
     let raw_source = source;
-    let format = crate::adapter::SfcFormat::from_path(path);
-    let source = crate::adapt_source(source, format);
-    let source = source.as_ref();
-    let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
+    let adapted = crate::adapter::AdaptedSource::new(source, path);
+    let source = adapted.code.as_ref();
     let parser_return = {
         let _span = tracing::trace_span!("oxc_parse", path = path).entered();
-        Parser::new(&allocator, source, source_type)
-            .with_options(crate::adapter::parse_options_for(format))
+        Parser::new(&allocator, source, adapted.source_type(path))
+            .with_options(adapted.parse_options())
             .parse()
     };
-    let mut diagnostics = collect_parser_diagnostics(&parser_return.errors, source);
+    let mut diagnostics = adapted.parse_diagnostics(&parser_return.errors);
     let imports = {
         let span = tracing::trace_span!(target: "extract", "scan_imports", import_count = tracing::field::Empty);
         let _entered = span.enter();
@@ -628,6 +625,7 @@ fn run_extract(
         let _entered = span.enter();
         let templates = crate::template_styles::collect_template_styles(
             raw_source,
+            &adapted,
             path,
             &matched,
             config,
@@ -691,12 +689,10 @@ fn run_extract(
 #[must_use]
 pub fn analyze_module(source: &str, path: &str) -> ModuleFacts {
     let allocator = Allocator::default();
-    let format = crate::adapter::SfcFormat::from_path(path);
-    let adapted = crate::adapt_source(source, format);
-    let source = adapted.as_ref();
-    let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
-    let parser_return = Parser::new(&allocator, source, source_type)
-        .with_options(crate::adapter::parse_options_for(format))
+    let adapted = crate::adapter::AdaptedSource::new(source, path);
+    let source = adapted.code.as_ref();
+    let parser_return = Parser::new(&allocator, source, adapted.source_type(path))
+        .with_options(adapted.parse_options())
         .parse();
     let imports = collect_imports(&parser_return.program);
     let after_directives = module_after_directives(&parser_return.program, source);

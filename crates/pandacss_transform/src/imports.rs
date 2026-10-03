@@ -118,6 +118,9 @@ fn import_line_range(source: &str, span: Span) -> (u32, u32) {
     let mut end = usize::try_from(span.end)
         .unwrap_or(source.len())
         .min(source.len());
+    while end > 0 && source.as_bytes().get(end - 1) == Some(&b'-') {
+        end -= 1;
+    }
     if end < source.len() && source.as_bytes().get(end) == Some(&b';') {
         end += 1;
     }

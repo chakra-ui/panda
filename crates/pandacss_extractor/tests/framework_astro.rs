@@ -274,3 +274,277 @@ fn uppercase_component_extracts_with_jsx_framework() {
           height: "800"
     "#);
 }
+
+#[test]
+fn fence_inside_a_frontmatter_string_keeps_the_frontmatter_open() {
+    let source = indoc! {r#"
+        ---
+        import { css } from "@panda/css";
+        const sample = `---
+        const x = 1;
+        ---
+        <div />`;
+        const before = css({ color: "red" });
+        const after = css({ color: "blue" });
+        ---
+
+        <pre class={before}>{sample}</pre>
+        <p class={after}>after</p>
+        <p class={css({ color: "green" })}>template</p>
+    "#};
+    let result = extract(source, "index.astro", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+      - name: css
+        data:
+          color: blue
+      - name: css
+        data:
+          color: green
+    jsx: []
+    ");
+}
+
+#[test]
+fn shorthand_attribute_inside_an_expression_parses() {
+    let source = indoc! {r#"
+        ---
+        import { css } from "@panda/css";
+        import Panel from "./Panel.astro";
+        const show = true;
+        const id = "x";
+        ---
+
+        {show && (
+          <Panel {id}>
+            <p class={css({ color: "orange" })}>inside</p>
+          </Panel>
+        )}
+        <p class={css({ color: "pink" })}>after</p>
+    "#};
+    let result = extract(source, "index.astro", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: orange
+      - name: css
+        data:
+          color: pink
+    jsx: []
+    ");
+}
+
+#[test]
+fn script_tag_named_in_a_frontmatter_comment_parses() {
+    let source = indoc! {r#"
+        ---
+        import { css } from "@panda/css";
+        // The <script> below hydrates the list.
+        const a = css({ color: "red" });
+        ---
+        <p class={a}>t</p>
+        <p class={css({ color: "teal" })}>t</p>
+        <script>
+          type Log = { id: number };
+          const x = 1;
+        </script>
+    "#};
+    let result = extract(source, "index.astro", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+      - name: css
+        data:
+          color: teal
+    jsx: []
+    ");
+}
+
+#[test]
+fn astro_only_markup_inside_expressions_extracts() {
+    let source = indoc! {r#"
+        ---
+        import { css } from '@panda/css';
+        const show = true;
+        const id = 'x';
+        const items = ['a'];
+        ---
+        {show && (<div><!-- note --><p class={css({ color: 'red' })} /></div>)}
+        {show && <div data-id=123 class={css({ color: 'blue' })} />}
+        {show && <div title=`${css({ color: 'green' })}` />}
+        {show && (<div><input type="text"><p class={css({ color: 'teal' })} /></div>)}
+        {show && <p class={css({ color: 'pink' })}>5 < 10</p>}
+        {show && <b /><i class={css({ color: 'gray' })} />}
+        {show && <div class:list={['a']} set:html={id} @click="x" class={css({ color: 'navy' })} />}
+        {items.map((item) => <li class={css({ color: 'maroon' })}>{item}</li>)}
+        <p>{'a}b'.replace(/}/g, '')}</p>
+        <p>Don't miss https://x.dev</p>
+        <math><mi>{R}^{2x}</mi></math>
+        <div is:raw>{not js <%}</div>
+        <p class={css({ color: 'olive' })} />
+    "#};
+    let result = extract(source, "page.astro", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+      - name: css
+        data:
+          color: blue
+      - name: css
+        data:
+          color: green
+      - name: css
+        data:
+          color: teal
+      - name: css
+        data:
+          color: pink
+      - name: css
+        data:
+          color: gray
+      - name: css
+        data:
+          color: navy
+      - name: css
+        data:
+          color: maroon
+      - name: css
+        data:
+          color: olive
+    jsx: []
+    ");
+}
+
+#[test]
+fn frontmatter_fences_on_one_line_and_text_before_them() {
+    let source = "notes\n--- import { css } from '@panda/css'; const a = css({ color: 'red' }) ---\n<p class={a} />";
+    let result = extract(source, "page.astro", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+    jsx: []
+    ");
+}
+
+#[test]
+fn comment_before_the_fence_means_no_frontmatter_like_astro() {
+    let source = "<!-- header -->\n---\nimport { css } from '@panda/css';\n---\n<p class={css({ color: 'red' })} />\n";
+    let result = extract(source, "page.astro", &panda_config());
+    assert!(result.calls.is_empty());
+}
+
+#[test]
+fn components_inside_expressions_and_astro_attribute_forms() {
+    let source = indoc! {r#"
+        ---
+        import { Box } from '@panda/jsx';
+        const show = true;
+        const color = 'red';
+        ---
+        <Box {color} p=4 m=`2` />
+        {show && <Box color="blue" />}
+    "#};
+    let result = extract(source, "page.astro", &panda_jsx_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @r#"
+    calls: []
+    jsx:
+      - name: Box
+        data:
+          color: red
+          p: "4"
+          m: "2"
+      - name: Box
+        data:
+          color: blue
+    "#);
+}
+
+#[test]
+fn frontmatter_jsx_still_extracts() {
+    let source = indoc! {r#"
+        ---
+        import { Box } from '@panda/jsx';
+        const badge = <Box color="red" />;
+        ---
+        {badge}
+    "#};
+    let result = extract(source, "page.astro", &panda_jsx_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls: []
+    jsx:
+      - name: Box
+        data:
+          color: red
+    ");
+}
+
+#[test]
+fn top_level_for_await_extracts() {
+    let source = "---\nconst stream = [];\nfor await (const n of stream) {}\n---\n<p />\n";
+    let result = extract(source, "page.astro", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+}
+
+#[test]
+fn astro_parse_errors_are_reported_at_their_source() {
+    let source = "---\nimport { css } from '@panda/css';\n---\n<p class={css({ color: 'red' })} />\n<div></span>\n";
+    let result = extract(source, "page.astro", &panda_config());
+    let first = result
+        .diagnostics
+        .first()
+        .expect("a parse error is reported");
+    let span = first.span.as_ref().expect("diagnostic has a span");
+    assert_snapshot!(&source[span.start as usize..span.end as usize], @"span");
+    assert_eq!(result.calls.len(), 1);
+}
+
+#[test]
+fn every_corpus_input_astro_accepts_extracts_without_warnings() {
+    let corpus = concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../pandacss_astro/tests/corpus"
+    );
+    let oracle = std::fs::read_to_string(format!("{corpus}/oracle.tsv")).unwrap();
+    let deviations = std::fs::read_to_string(format!("{corpus}/deviations.tsv")).unwrap();
+    let mut checked = 0;
+    let mut failures = Vec::new();
+    for line in oracle.lines() {
+        let fields: Vec<_> = line.split('\t').collect();
+        if fields[1] != "accepted"
+            || deviations
+                .lines()
+                .any(|deviation| deviation.starts_with(&format!("{}\t", fields[0])))
+        {
+            continue;
+        }
+        checked += 1;
+        let source = std::fs::read_to_string(format!("{corpus}/{}", fields[0])).unwrap();
+        let result = extract(&source, "corpus.astro", &panda_jsx_config());
+        if let Some(diagnostic) = result
+            .diagnostics
+            .iter()
+            .find(|diagnostic| diagnostic.code == "js_parse_error")
+        {
+            failures.push(format!("{}: {}", fields[0], diagnostic.message));
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    assert!(checked > 3700, "only {checked} accepted inputs checked");
+}

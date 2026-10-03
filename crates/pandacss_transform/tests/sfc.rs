@@ -454,3 +454,42 @@ fn rewrites_vue_bindings_after_a_nested_template() {
     </template>
     "#);
 }
+
+#[test]
+fn astro_components_stay_and_nested_css_calls_rewrite() {
+    let source = indoc! {r#"
+        ---
+        import { css } from '@panda/css';
+        import { Box } from '@panda/jsx';
+        const show = true;
+        ---
+        <Box color="red" p="2">top</Box>
+        {show && <Box color="blue" p="3">inner</Box>}
+        {show && (<div><!-- note --><p class={css({ color: 'green' })} /></div>)}
+        {show && <b class={css({ color: 'red' })} /><i class={css({ color: 'blue' })} />}
+        {show && <p title={`${css({ color: 'teal' })}`} />}
+        <div is:raw>{css({ color: 'pink' })}</div>
+    "#};
+
+    assert_snapshot!(transform("src/Card.astro", source).code, @r#"
+    ---
+    import { Box } from '@panda/jsx';
+    const show = true;
+    ---
+    <Box color="red" p="2">top</Box>
+    {show && <Box color="blue" p="3">inner</Box>}
+    {show && (<div><!-- note --><p class={"color_green"} /></div>)}
+    {show && <b class={"color_red"} /><i class={"color_blue"} />}
+    {show && <p title={`${"color_teal"}`} />}
+    <div is:raw>{css({ color: 'pink' })}</div>
+    "#);
+}
+
+#[test]
+fn astro_rewrites_keep_crlf_and_non_ascii_offsets() {
+    let source = "---\r\nimport { css } from '@panda/css';\r\n---\r\n<p>café — 日本</p>\r\n<p class={css({ color: 'red' })} />\r\n";
+    assert_eq!(
+        transform("src/Card.astro", source).code,
+        "---\r\n\r\n---\r\n<p>café — 日本</p>\r\n<p class={\"color_red\"} />\r\n"
+    );
+}

@@ -1267,6 +1267,7 @@ dependencies = [
  "oxc_semantic",
  "oxc_span",
  "oxc_syntax",
+ "pandacss_astro",
  "pandacss_config",
  "pandacss_fs",
  "pandacss_literal",
