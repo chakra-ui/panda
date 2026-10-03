@@ -117,7 +117,7 @@ Elements become array literals of their expressions. JS stays where it is.
 
 | Node                                                           | Canvas                                                                                                 |
 | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| Content before the opening fence, the fences                   | Blank. The fence is replaced by `0;[` when only spaces or tabs precede it on its line, so ASI ends the last statement before `0`. Otherwise `;[` goes on the last space or tab before the fence, or on the fence's first two bytes. `[` opens the template array. |
+| Content before the opening fence, the fences                   | Blank. The fence is lowered by where it sits: (a) it starts a line (only spaces and tabs before it on its line): `0;[` over the three fence bytes, so ASI ends the last statement before `0`; (b) otherwise, a space or tab just before it: `;` on that byte and `[` on the fence's first byte; (c) otherwise: `;[` on the fence's first two bytes. `[` opens the template array. |
 | Frontmatter                                                    | Copied as-is. Top-level `return` stays allowed.                                                        |
 | No frontmatter                                                 | The first non-line-break byte of the template becomes `[`.                                             |
 | End of file                                                    | `]` appended when an array was opened.                                                                 |
@@ -213,12 +213,27 @@ switch must not be slower without a recorded decision, per [performance budget](
 
 ## Rollout
 
-1. Reference package, real-code corpus, `oracle.tsv`, `FORK_RULES.md`.
-2. JS lexer and frontmatter scanner.
-3. Template tokenizer and lowering on the tree, with the fork dependency removed and the parity test passing.
-4. Extractor switch; delete `astro_adapter.rs` and the Astro string scan. Fixes #3916, #3917 and #3918.
-5. Svelte and Vue: comment skip and lexer-based brace matching.
-6. Sandbox proof, bench, docs and changeset.
+1. Done. Reference package, real-code corpus, `oracle.tsv`, `FORK_RULES.md` (`test(astro): fork-based reference,
+   real-code corpus and parity oracle`).
+2. Done. JS lexer and frontmatter scanner (`feat(astro): JS lexer and frontmatter scanner ported from Astro's parser`).
+3. Done. Template tokenizer and lowering on the tree, with the fork dependency removed and the parity test passing
+   (`feat(astro): tokenize .astro without the fork, matching it on the corpus`).
+4. Done. Extractor switch; `astro_adapter.rs` and the Astro string scan deleted. Fixes #3916, #3917 and #3918
+   (`fix(extractor): read .astro files with the Astro tokenizer`).
+5. Done. Svelte and Vue comment skip and lexer-based brace matching
+   (`fix(extractor): skip comments and regexes when Svelte and Vue find blocks and braces`).
+6. Done. Sandbox proof, bench, docs and changeset (`docs(astro): record tokenizer results and add sandbox page`).
+
+## Results
+
+- **Corpus.** 4,323 files: 3,772 accepted, 551 rejected, 0 deviations from Astro's parser.
+- **Bench.** `cargo run --release -p pandacss_bench --bin astro_extract --locked -- 20` over 2,636 files: 6.94 ms per
+  pass with the old adapter, 4.90 ms with the tokenizer.
+- **`compiler.node`.** 7,853,968 bytes after. Before: about 7.4 MB on `upstream/v2` (rounded by `ls -h`, exact bytes not
+  captured).
+- **End to end.** `sandbox/astro/src/pages/syntax.astro` builds with `astro build`. `panda cssgen` on `upstream/v2`
+  warns `js_parse_error` and emits none of `c_red`, `c_orange`, `c_teal`, `c_pink`; on this branch it reports no
+  diagnostics and emits all four.
 
 ## Unresolved Questions
 

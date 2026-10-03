@@ -108,8 +108,10 @@ These records use spans and small enums rather than cloned Oxc nodes, so the all
 import-reference list. Import cleanup compares semantic reference spans with rewrite spans; a rewrite also lists source
 spans copied into its output so nested live references are preserved.
 
-Vue, Svelte, and Astro still scan their markup grammar in native adapters because Oxc parses JavaScript, not the outer
-template language. Expressions copied into the adapted program reuse the original parse and resolver.
+Vue and Svelte scan their markup grammar in native adapters because Oxc parses JavaScript, not the outer template
+language. Astro is tokenized by `pandacss_astro`, which ports Astro's parser rules and lowers the file to a same-offset
+program; see [astro-parser](./astro-parser.md). Expressions copied into the adapted program reuse the original parse and
+resolver.
 
 ## Parse-error contract
 
