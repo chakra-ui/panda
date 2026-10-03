@@ -79,7 +79,7 @@ export type SlotRecipeVariantRecord<Slot extends string> = Record<string, Record
 
 export interface SlotRecipeDefinition<Slot extends string = string, T extends SlotRecipeVariantRecord<Slot> = SlotRecipeVariantRecord<Slot>> {
   className?: string
-  slots: Slot[]
+  slots: readonly Slot[]
   base?: SlotRecord<Slot, SystemStyleObject>
   variants?: T
   defaultVariants?: RecipeSelection<T>

@@ -596,7 +596,7 @@ fn emits_ts_source_types() {
 
     export interface SlotRecipeDefinition<Slot extends string = string, T extends SlotRecipeVariantRecord<Slot> = SlotRecipeVariantRecord<Slot>> {
       className?: string
-      slots: Slot[]
+      slots: readonly Slot[]
       base?: SlotRecord<Slot, SystemStyleObject>
       variants?: T
       defaultVariants?: RecipeSelection<T>
