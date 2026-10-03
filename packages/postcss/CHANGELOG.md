@@ -1,5 +1,22 @@
 # @pandacss/postcss
 
+## 2.1.2
+
+### Patch Changes
+
+- Updated dependencies [db5d9b7]
+- Updated dependencies [30465d3]
+- Updated dependencies [e3fd924]
+- Updated dependencies [ddc34f9]
+- Updated dependencies [145f6d2]
+- Updated dependencies [164508e]
+- Updated dependencies [43cfcc1]
+- Updated dependencies [802eb61]
+- Updated dependencies [22ba83d]
+- Updated dependencies [f33fb6c]
+  - @pandacss/compiler@2.1.2
+  - @pandacss/compiler-shared@2.1.2
+
 ## 2.1.1
 
 ### Patch Changes

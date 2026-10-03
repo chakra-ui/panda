@@ -1,5 +1,32 @@
 # @pandacss/cli
 
+## 2.1.2
+
+### Patch Changes
+
+- 30465d3: `panda` starts faster. Installed presets load with Node instead of being re-bundled on every run, and a build
+  no longer loads the code for `init` and `debug`.
+
+  - `@pandacss/preset-base`, `@pandacss/preset-panda` and `@pandacss/preset-typography` are now ESM-only, like the rest
+    of v2.
+  - Generated `styled-system/patterns` files are reformatted once.
+
+- Updated dependencies [69ccc9f]
+- Updated dependencies [db5d9b7]
+- Updated dependencies [30465d3]
+- Updated dependencies [e3fd924]
+- Updated dependencies [ddc34f9]
+- Updated dependencies [145f6d2]
+- Updated dependencies [164508e]
+- Updated dependencies [43cfcc1]
+- Updated dependencies [802eb61]
+- Updated dependencies [22ba83d]
+- Updated dependencies [f33fb6c]
+  - @pandacss/config@2.1.2
+  - @pandacss/compiler@2.1.2
+  - @pandacss/compiler-shared@2.1.2
+  - @pandacss/types@2.1.2
+
 ## 2.1.1
 
 ### Patch Changes

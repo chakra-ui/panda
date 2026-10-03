@@ -1,5 +1,38 @@
 # @pandacss/compiler-wasm
 
+## 2.1.2
+
+### Patch Changes
+
+- 30465d3: `panda` starts faster. Installed presets load with Node instead of being re-bundled on every run, and a build
+  no longer loads the code for `init` and `debug`.
+
+  - `@pandacss/preset-base`, `@pandacss/preset-panda` and `@pandacss/preset-typography` are now ESM-only, like the rest
+    of v2.
+  - Generated `styled-system/patterns` files are reformatted once.
+
+- 145f6d2: Fixed an issue where a color with an opacity modifier and `!important` or `!`, like
+  `brand.500/60 !important`, warned about an invalid opacity modifier.
+- 164508e: Style helpers can now destructure their parameters, declare local `const` / `let` values, spread objects, and
+  call other helpers, and Panda still extracts their styles. A helper Panda can't evaluate now warns with
+  `pure_helper_unevaluated` instead of silently skipping its styles.
+
+  Default values of parameters and destructured props, like `function Button({ size = 'md' })`, generate CSS again.
+
+- 802eb61: Fixed slot recipes overriding recipe variants in minified production builds, like Vite 8's default build.
+- 22ba83d: You can pass a readonly `slots` array to `sva()` again. A `slots` array declared `as const` no longer fails
+  with TS4104, so you can reuse it in your own types:
+
+  ```ts
+  const slots = ['root', 'label'] as const
+  type Slot = (typeof slots)[number]
+
+  const field = sva({ slots, base: { root: { color: 'red' }, label: { color: 'blue' } } })
+  ```
+
+  - @pandacss/compiler-shared@2.1.2
+  - @pandacss/types@2.1.2
+
 ## 2.1.1
 
 ### Patch Changes
