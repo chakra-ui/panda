@@ -4,13 +4,15 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use oxc_resolver::{FileMetadata, FileSystem as OxcResolverFileSystem, FileSystemOs, ResolveError};
+use rustc_hash::FxHashSet;
 use walkdir::WalkDir;
 
 use crate::FileSystem;
 use crate::glob::{GlobOptions, SourceMatcher};
 
 /// Native filesystem impl. Reads delegate to `oxc_resolver::FileSystemOs`, writes
-/// call `std::fs` directly, and `glob` overrides the default walker with `walkdir`.
+/// call `std::fs` directly, and `glob` overrides the default walker with `walkdir`,
+/// entering each real directory once however many symlinks lead to it.
 #[derive(Clone)]
 pub struct OsFileSystem(Arc<FileSystemOs>);
 
@@ -64,51 +66,112 @@ impl FileSystem for OsFileSystem {
         }
 
         let matcher = SourceMatcher::new(opts, Path::to_path_buf);
-        let mut results: Vec<PathBuf> = Vec::new();
+        let mut walk = Walk {
+            matcher: &matcher,
+            absolute: opts.absolute,
+            visited: FxHashSet::default(),
+            links: Vec::new(),
+            results: Vec::new(),
+        };
 
-        // Disjoint hoisted base dirs, so no path is visited twice.
+        // Per root: plain directories first, so a file is reported under its real
+        // spelling; then each symlinked directory whose target wasn't visited.
         for root in matcher.walk_roots() {
-            // `filter_entry` prunes a directory before descending into it.
-            let walker = WalkDir::new(&root)
-                .follow_links(true)
-                .into_iter()
-                .filter_entry(|entry| {
-                    entry.depth() == 0 || !matcher.is_excluded(&matcher.candidate(entry.path()))
-                });
-
-            for entry in walker {
-                // Tolerate permission/missing-dir errors mid-walk; fail on anything else.
-                let entry = match entry {
-                    Ok(e) => e,
-                    Err(err)
-                        if err.io_error().is_some_and(|e| {
-                            matches!(
-                                e.kind(),
-                                io::ErrorKind::PermissionDenied | io::ErrorKind::NotFound
-                            )
-                        }) =>
-                    {
-                        continue;
-                    }
-                    Err(err) => return Err(io::Error::other(err)),
-                };
-
-                if !entry.file_type().is_file() {
-                    continue;
-                }
-
-                if matcher.is_included(&matcher.candidate(entry.path())) {
-                    if opts.absolute {
-                        results.push(entry.path().to_path_buf());
-                    } else {
-                        results.push(matcher.relative_path(entry.path()));
-                    }
+            let Ok(real) = std::fs::canonicalize(&root) else {
+                continue;
+            };
+            walk.visited.clear();
+            walk.tree(&root, &real)?;
+            while !walk.links.is_empty() {
+                let mut links = std::mem::take(&mut walk.links);
+                links.sort();
+                for (link, real) in links {
+                    walk.tree(&link, &real)?;
                 }
             }
         }
 
+        let mut results = walk.results;
         results.sort();
         Ok(results)
+    }
+}
+
+struct Walk<'a> {
+    matcher: &'a SourceMatcher,
+    absolute: bool,
+    visited: FxHashSet<PathBuf>,
+    links: Vec<(PathBuf, PathBuf)>,
+    results: Vec<PathBuf>,
+}
+
+impl Walk<'_> {
+    /// Walks `start` without following symlinks; `real` is its canonical path.
+    fn tree(&mut self, start: &Path, real: &Path) -> io::Result<()> {
+        if !self.visited.insert(real.to_path_buf()) {
+            return Ok(());
+        }
+        let matcher = self.matcher;
+        let visited = &mut self.visited;
+        // `filter_entry` prunes a directory before descending into it.
+        let walker = WalkDir::new(start).into_iter().filter_entry(|entry| {
+            if entry.depth() == 0 || matcher.is_excluded(&matcher.candidate(entry.path())) {
+                return entry.depth() == 0;
+            }
+            if !entry.file_type().is_dir() {
+                return true;
+            }
+            matcher.may_include_under(entry.path())
+                && entry
+                    .path()
+                    .strip_prefix(start)
+                    .is_ok_and(|rest| visited.insert(real.join(rest)))
+        });
+
+        for entry in walker {
+            // Tolerate permission/missing-dir errors mid-walk; fail on anything else.
+            let entry = match entry {
+                Ok(e) => e,
+                Err(err)
+                    if err.io_error().is_some_and(|e| {
+                        matches!(
+                            e.kind(),
+                            io::ErrorKind::PermissionDenied | io::ErrorKind::NotFound
+                        )
+                    }) =>
+                {
+                    continue;
+                }
+                Err(err) => return Err(io::Error::other(err)),
+            };
+
+            let path = entry.path();
+            let is_file = if entry.path_is_symlink() && entry.depth() > 0 {
+                let Ok(target) = std::fs::metadata(path) else {
+                    continue;
+                };
+                if target.is_dir() {
+                    if matcher.may_include_under(path)
+                        && let Ok(real) = std::fs::canonicalize(path)
+                    {
+                        self.links.push((path.to_path_buf(), real));
+                    }
+                    continue;
+                }
+                target.is_file()
+            } else {
+                entry.file_type().is_file()
+            };
+
+            if is_file && matcher.is_included(&matcher.candidate(path)) {
+                self.results.push(if self.absolute {
+                    path.to_path_buf()
+                } else {
+                    matcher.relative_path(path)
+                });
+            }
+        }
+        Ok(())
     }
 }
 

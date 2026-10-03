@@ -87,6 +87,42 @@ impl IncludeGlob {
             _ => false,
         }
     }
+
+    /// Whether a file under `dir` could match, so `../*/src/*.ts` never walks `../*/node_modules`.
+    fn may_match_under(&self, dir: &Path) -> bool {
+        if self.root.starts_with(dir) {
+            return true;
+        }
+        let Ok(rest) = dir.strip_prefix(&self.root) else {
+            return false;
+        };
+        if has_slash_in_braces(&self.glob) {
+            return true;
+        }
+        let mut segments = self.glob.split('/');
+        for name in rest {
+            match segments.next() {
+                Some(segment) if segment.contains("**") => return true,
+                Some(segment) if glob_match(segment.as_bytes(), name.as_encoded_bytes()) => {}
+                _ => return false,
+            }
+        }
+        segments.next().is_some()
+    }
+}
+
+/// `{src,lib/ui}/*.ts` can't be matched one path segment at a time.
+fn has_slash_in_braces(glob: &str) -> bool {
+    let mut depth = 0usize;
+    for byte in glob.bytes() {
+        match byte {
+            b'{' => depth += 1,
+            b'}' => depth = depth.saturating_sub(1),
+            b'/' if depth > 0 => return true,
+            _ => {}
+        }
+    }
+    false
 }
 
 /// `C:\` drive globs in `/` form, with `.`/`..` resolved in the static prefix.
@@ -206,6 +242,10 @@ impl SourceMatcher {
 
     pub(crate) fn is_included(&self, candidate: &Candidate) -> bool {
         self.include.iter().any(|glob| glob.matches(candidate.path))
+    }
+
+    pub(crate) fn may_include_under(&self, dir: &Path) -> bool {
+        self.include.iter().any(|glob| glob.may_match_under(dir))
     }
 
     pub(crate) fn relative_path(&self, path: &Path) -> PathBuf {
@@ -398,7 +438,9 @@ pub(crate) fn default_walk<F: FileSystem + ?Sized>(
             }
             let meta = fs.metadata(&entry)?;
             if meta.is_dir() {
-                stack.push(entry);
+                if matcher.may_include_under(&entry) {
+                    stack.push(entry);
+                }
             } else if meta.is_file() && matcher.is_included(&candidate) {
                 if opts.absolute {
                     results.push(entry);
