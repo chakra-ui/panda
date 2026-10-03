@@ -42,9 +42,6 @@ importers:
       rimraf:
         specifier: 5.0.10
         version: 5.0.10
-      ts-morph:
-        specifier: 28.0.0
-        version: 28.0.0
       tsup:
         specifier: 8.5.1
         version: 8.5.1(@swc/core@1.16.1(@swc/helpers@0.5.23))(jiti@2.7.0)(postcss@8.5.14)(supports-color@10.2.2)(tsx@4.20.6)(typescript@6.0.3)(yaml@2.8.1)
@@ -127,9 +124,6 @@ importers:
       '@textea/json-viewer':
         specifier: 4.0.1
         version: 4.0.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@10.2.2))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@10.2.2))(@types/react@19.2.18)(react@19.2.8)(supports-color@10.2.2))(@mui/material@6.5.0(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@10.2.2))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@10.2.2))(@types/react@19.2.18)(react@19.2.8)(supports-color@10.2.2))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@types/react@19.2.18)(immer@9.0.21)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      lightningcss-wasm:
-        specifier: 1.33.0
-        version: 1.33.0
       merge-anything:
         specifier: 6.0.6
         version: 6.0.6
@@ -337,6 +331,9 @@ importers:
       react-dom:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
+      ts-morph:
+        specifier: 28.0.0
+        version: 28.0.0
 
   packages/bun:
     dependencies:
@@ -12626,12 +12623,6 @@ packages:
     cpu: [x64]
     os: [linux]
     libc: [musl]
-
-  lightningcss-wasm@1.33.0:
-    resolution: {integrity: sha512-OLAtqEyInBSVWjPrTjpLzcZUMUHO0q+2PFBXKr86nxZOu0P38givj/ZMtRaZ0d38pMTb9wQx+LtaLtHclv+sEA==}
-    engines: {node: '>= 12.0.0'}
-    bundledDependencies:
-      - napi-wasm
 
   lightningcss-win32-arm64-msvc@1.31.1:
     resolution: {integrity: sha512-aJReEbSEQzx1uBlQizAOBSjcmr9dCdL3XuC/6HLXAxmtErsj2ICo5yYggg1qOODQMtnjNQv2UHb9NpOuFtYe4w==}
@@ -31180,8 +31171,6 @@ snapshots:
 
   lightningcss-linux-x64-musl@1.33.0:
     optional: true
-
-  lightningcss-wasm@1.33.0: {}
 
   lightningcss-win32-arm64-msvc@1.31.1:
     optional: true

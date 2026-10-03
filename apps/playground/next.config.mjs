@@ -17,7 +17,6 @@ const nextConfig = {
     config.resolve.alias = {
       ...config.resolve.alias,
       '@vue/compiler-sfc': '@vue/compiler-sfc/dist/compiler-sfc.esm-browser.js',
-      lightningcss: 'lightningcss-wasm',
     }
 
     if (!isServer) {

@@ -278,14 +278,70 @@ import { css } from 'styled-system/css'
 
 ### CLI commands and flags
 
-`panda inspect`, `panda validate`, and `panda info` are removed. Use `panda doctor` (add `--json` for scripts).
+Check your package scripts as well as your config. The CLI no longer accepts several v1 commands and flags. Use
+`panda doctor` to check your setup, and add `--json` for scripts.
 
-Logging flags are consolidated: `--log-level silent|error|warn|info|debug` replaces `--silent`, `--quiet`, and
-`--verbose`. `--profile` replaces `--cpu-prof` and covers time in the Rust engine, not just the Node side. Shared flags
-are kebab-case (`--max-warnings`, `--watch-debounce`, …). See [CLI](/docs/reference/cli).
+#### Replace removed commands
 
-`panda cssgen` no longer takes a positional glob. `panda cssgen "src/**/*.tsx"` ignores the glob and scans your whole
-`include` list. Use `--include` instead, and repeat it for more globs.
+| v1 command                                           | v2 replacement                                                                                                       |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `panda spec`                                         | `panda codegen --spec`, or `--spec=./design-system.json` for a custom path                                           |
+| `panda ship`                                         | `panda lib` to publish a design system; `panda buildinfo --outfile ./dist/panda.buildinfo.json` for build info alone |
+| `panda emit-pkg`                                     | Removed. `panda lib` manages design-system package exports; review other runtime package exports yourself            |
+| `panda studio` (including `--build` and `--preview`) | Use the hosted [Studio](https://studio.panda-css.com/)                                                               |
+
+`--spec` also works on `panda build` and `panda lib`. It writes one design-system document instead of the v1 spec files.
+See [Codegen](/docs/reference/cli#codegen).
+
+#### Replace logging and profiling flags
+
+`--silent` is now `--log-level silent`. Update scripts such as:
+
+```json
+// v1
+{ "scripts": { "prepare": "panda codegen --silent" } }
+
+// v2
+{ "scripts": { "prepare": "panda codegen --log-level silent" } }
+```
+
+Use `--log-level error` if you want errors to remain visible. `silent` also suppresses normal diagnostic output. The
+available levels are `silent`, `error`, `warn`, `info`, and `debug`.
+
+`--profile` replaces `--cpu-prof` and includes time in the Rust engine. It writes `trace.json` and `timings.json`, not a
+Node `.cpuprofile`; update any scripts that read the old profile. Shared flags use kebab-case (`--max-warnings`,
+`--watch-debounce`, …). See [CLI](/docs/reference/cli).
+
+#### Replace positional globs with --include
+
+`panda`, `panda cssgen`, `panda analyze`, and `panda debug` no longer take a positional glob. Use `--include`, and
+repeat it for more globs:
+
+```bash
+# v1
+panda cssgen "src/**/*.tsx"
+
+# v2
+panda cssgen --include "src/**/*.tsx" --include "components/**/*.tsx"
+```
+
+A positional glob on bare `panda` is treated as a command name. On `cssgen`, `analyze`, and `debug`, it does not
+restrict the scan; Panda uses your configured `include` list instead.
+
+`panda cssgen tokens` (and `preflight`, `static`, `global`, or `keyframes`) no longer selects an individual artifact.
+Generate the full stylesheet, or use `panda cssgen --splitting` and import the layers you need.
+
+#### Update output and build flags
+
+| v1 flag                                           | v2 replacement                                                                                  |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `panda -o dist`                                   | `panda --outdir dist`. On the full build, `-o` now means `--outfile`, a CSS file path           |
+| `panda --preflight`, `--hash`, `--exclude` / `-e` | Set `preflight`, `hash`, and `exclude` in `panda.config.ts`                                     |
+| `panda --minify` / `-m`                           | Set `minify` in config, or run `panda cssgen --minify`                                          |
+| `panda cssgen -m`                                 | Use the full `--minify` flag                                                                    |
+| `panda cssgen --clean`                            | Use `panda build --clean` or `panda codegen --clean` to clean generated output                  |
+| `--poll` / `-p`                                   | Remove it; watching has no polling flag. `--watch-debounce` changes rebuild timing, not polling |
+| `--lightningcss`, `--emitTokensOnly`              | Remove them; these flags have no v2 equivalent                                                  |
 
 `panda cssgen --minimal` now includes `staticCss` rules, because they live in the `recipes` and `utilities` layers.
 Per-package sheets built with `--minimal` repeat the static rules the host sheet already ships.
