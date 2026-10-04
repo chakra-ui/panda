@@ -295,6 +295,8 @@ Under the hood:
 - Atoms attach to synthetic files `buildinfo:{name}` (re-hydrating the same `name` replaces that layer).
 - Recipe snapshots store in `hydrated_recipes` keyed by `name` and **merge** into the emit snapshot at CSS generation.
 - Atom dedup is content-addressed — identical atoms from two libs collapse to one utility class.
+- Identical recipe groups (same recipe, slot, class, conditions and entries) collapse to their last position; groups
+  that differ stay separate so a later override still wins by order.
 
 Tree-shaking is **per artifact, per module key**: `modulesFor(uiInfo, ['Card'])` → ui module keys; base modules need a
 separate `modulesFor(baseInfo, …)` pass when the app imports base components directly or via re-exports ui does not

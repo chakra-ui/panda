@@ -1499,6 +1499,11 @@ impl Project {
         snapshot.variants.extend(local.variants);
         snapshot.compounds.extend(local.compounds);
         snapshot.atomic.extend(local.atomic);
+        if !self.hydrated_recipe_order.is_empty() {
+            retain_last_identical_groups(&mut snapshot.base);
+            retain_last_identical_groups(&mut snapshot.variants);
+            retain_last_identical_groups(&mut snapshot.compounds);
+        }
         self.encoded_recipes_snapshot_cache = Some(snapshot);
     }
 
@@ -2053,6 +2058,28 @@ fn jsx_factory_static_style(config: Option<&Literal>) -> Option<JsxFactoryStatic
     } else {
         JsxFactoryStaticStyle::Style(config)
     })
+}
+
+fn retain_last_identical_groups(groups: &mut Vec<RecipeStyleGroupSnapshot>) {
+    let mut keep = {
+        let mut seen = FxHashSet::default();
+        groups
+            .iter()
+            .rev()
+            .map(|group| {
+                seen.insert((
+                    &*group.recipe,
+                    group.slot.as_str(),
+                    &*group.class_name,
+                    &group.conditions[..],
+                    &group.entries[..],
+                ))
+            })
+            .collect::<Vec<_>>()
+    };
+    keep.reverse();
+    let mut keep = keep.into_iter();
+    groups.retain(|_| keep.next().unwrap_or(true));
 }
 
 /// Runs the JS transform per atom without decomposing it. The returned style
