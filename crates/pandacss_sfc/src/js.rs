@@ -339,8 +339,108 @@ pub(crate) fn regex_terminated(source: &str, token: Token) -> bool {
     scan_regex(source, token.start).1
 }
 
+/// The tokens in `start..end` outside any bracket or `${}`. Strings, templates,
+/// regexes and comments are single tokens, so a quote or bracket inside one
+/// never shifts what counts as top level.
+#[must_use]
+pub fn top_level_tokens(source: &str, start: usize, end: usize) -> Vec<Token> {
+    let mut lexer = Lexer::new(source, start);
+    let mut depth = 0usize;
+    let mut interpolations: Vec<usize> = Vec::new();
+    let mut operand = true;
+    let mut tokens = Vec::new();
+    let mut after_member_dot = false;
+    loop {
+        let mut token = lexer.next_token(operand);
+        if token.kind == TokenKind::Eof || token.start >= end {
+            return tokens;
+        }
+        if token.kind == TokenKind::Regex && !regex_terminated(source, token) {
+            lexer.set_position(token.start + 1);
+            token = Token {
+                kind: TokenKind::Punctuator,
+                start: token.start,
+                end: token.start + 1,
+            };
+        }
+        let text = &source[token.start..token.end];
+        let top = depth == 0 && interpolations.is_empty();
+        operand = match token.kind {
+            TokenKind::TemplateHead => {
+                interpolations.push(depth);
+                true
+            }
+            TokenKind::Identifier => !after_member_dot && OPERAND_KEYWORDS.contains(&text),
+            TokenKind::Punctuator => match text {
+                "(" | "[" | "{" => {
+                    depth += 1;
+                    true
+                }
+                "}" if interpolations.last() == Some(&depth) => {
+                    lexer.set_position(token.start);
+                    let piece = lexer.continue_template();
+                    if piece.kind == TokenKind::TemplateTail {
+                        interpolations.pop();
+                        false
+                    } else {
+                        true
+                    }
+                }
+                ")" | "]" | "}" => {
+                    depth = depth.saturating_sub(1);
+                    false
+                }
+                "++" | "--" | "!" if !operand => false,
+                _ => true,
+            },
+            _ => false,
+        };
+        after_member_dot = token.kind == TokenKind::Punctuator && matches!(text, "." | "?.");
+        if top && token.kind != TokenKind::TemplateHead {
+            tokens.push(token);
+        }
+    }
+}
+
 #[must_use]
 pub fn find_closing_brace(source: &str, open: usize) -> Option<usize> {
+    plain_closing_brace(source.as_bytes(), open).or_else(|| lexed_closing_brace(source, open))
+}
+
+/// Without `/` or a backtick there is no regex, comment or template, so quotes
+/// and braces alone decide the close. `None` hands the scan to the lexer.
+fn plain_closing_brace(bytes: &[u8], open: usize) -> Option<usize> {
+    let mut depth = 1usize;
+    let mut index = open + 1;
+    while let Some(&byte) = bytes.get(index) {
+        match byte {
+            b'/' | b'`' => return None,
+            b'\'' | b'"' => loop {
+                index += 1;
+                match *bytes.get(index)? {
+                    b'\\' if !matches!(bytes.get(index + 1), Some(b'\n' | b'\r') | None) => {
+                        index += 1;
+                    }
+                    b'\\' | b'\n' | b'\r' => return None,
+                    quote if quote == byte => break,
+                    _ => {}
+                }
+            },
+            b'{' => depth += 1,
+            b'}' => {
+                depth -= 1;
+                if depth == 0 {
+                    return Some(index);
+                }
+            }
+            _ => {}
+        }
+        index += 1;
+    }
+    None
+}
+
+fn lexed_closing_brace(source: &str, open: usize) -> Option<usize> {
     let mut lexer = Lexer::new(source, open + 1);
     let mut depth = 1usize;
     let mut interpolations: Vec<usize> = Vec::new();
@@ -417,6 +517,8 @@ pub fn find_closing_brace(source: &str, open: usize) -> Option<usize> {
                 }
                 ")" => parens.pop().unwrap_or(false),
                 "]" => false,
+                // Postfix `++`/`--` and the TS non-null `!` keep the operand they follow.
+                "++" | "--" | "!" if !operand => false,
                 _ => {
                     member_dot = text == "." || text == "?.";
                     true
@@ -430,12 +532,36 @@ pub fn find_closing_brace(source: &str, open: usize) -> Option<usize> {
 
 #[cfg(test)]
 mod tests {
-    use super::{REGEX_SCANS, find_closing_brace};
+    use super::{REGEX_SCANS, lexed_closing_brace, plain_closing_brace};
 
     fn regex_scans(source: &str) -> (Option<usize>, usize) {
         REGEX_SCANS.with(|scans| scans.set(0));
-        let close = find_closing_brace(source, 0);
+        let close = lexed_closing_brace(source, 0);
         (close, REGEX_SCANS.with(std::cell::Cell::get))
+    }
+
+    #[test]
+    fn the_plain_scan_agrees_with_the_lexer_whenever_it_answers() {
+        const ALPHABET: &[u8] = b"{}{}''\"\"\\ab1(.)=+;,\n\r/`$ ";
+        let mut seed = 0x2545_f491_4f6c_dd1du64;
+        let mut next = move || {
+            seed ^= seed << 13;
+            seed ^= seed >> 7;
+            seed ^= seed << 17;
+            usize::try_from(seed % 1024).unwrap_or(0)
+        };
+        let mut answered = 0;
+        for _ in 0..50_000 {
+            let mut source = String::from("{");
+            for _ in 0..next() % 24 {
+                source.push(char::from(ALPHABET[next() % ALPHABET.len()]));
+            }
+            if let Some(close) = plain_closing_brace(source.as_bytes(), 0) {
+                answered += 1;
+                assert_eq!(lexed_closing_brace(&source, 0), Some(close), "{source:?}");
+            }
+        }
+        assert!(answered > 1_000, "{answered}");
     }
 
     #[test]

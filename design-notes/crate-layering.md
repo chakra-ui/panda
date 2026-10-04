@@ -11,7 +11,7 @@ accidentally coupling a leaf crate to walker machinery.
 
 ### Tier 0 — infrastructure
 
-`pandacss_fs`, `pandacss_shared`, `pandacss_literal`, `pandacss_tracing`, `pandacss_astro`.
+`pandacss_fs`, `pandacss_shared`, `pandacss_literal`, `pandacss_tracing`, `pandacss_sfc`.
 
 `pandacss_fs` is the filesystem abstraction with `os` / `memory` feature-gated impls. Core crates depend on the
 `FileSystem` trait, never `std::fs` directly, so the same code compiles to `wasm32-unknown-unknown`. See
@@ -25,15 +25,16 @@ diverge.
 `pandacss_literal` owns the host-neutral extracted value tree shared by parsing, recipes, encoding, utility metadata,
 and project transforms. Keeping this IR below the process crates prevents leaf data crates from pulling Oxc machinery.
 
-`pandacss_astro` tokenizes `.astro` the way Astro's parser does and lowers it to a JS program at the same byte
-offsets. It has no dependencies. See [astro-parser](./astro-parser.md).
+`pandacss_sfc` turns framework containers (Astro, Vue, Svelte) into a JS program at the same byte offsets, with one
+shared JS lexer. Astro is tokenized the way Astro's parser does. It has no dependencies and no Oxc; the extractor parses
+its output. See [astro-parser](./astro-parser.md).
 
 ### Tier 1 — leaf data + parsing
 
 `pandacss_config`, `pandacss_tokens`, `pandacss_recipes`.
 
-Pure data models with parsing from serializable config or `pandacss_literal::Literal` to typed shapes. No traversal,
-no encoding, no I/O. `pandacss_config::UserConfig` is the canonical resolved config input consumed by project/system
+Pure data models with parsing from serializable config or `pandacss_literal::Literal` to typed shapes. No traversal, no
+encoding, no I/O. `pandacss_config::UserConfig` is the canonical resolved config input consumed by project/system
 construction.
 
 ### Tier 2 — process
@@ -83,10 +84,10 @@ from a `&System`, so hosts can transform without project state. See [transformer
 The compiler crate is the host-neutral application layer. Its `css`, `codegen`, and `views` modules compose project
 state with stylesheet emission, artifact generation, and host-facing derived data; it also owns host policy (config
 setup, the transform-callback runtime and its memoization keys, output writing) and tooling views
-(`inspect_file_source`, token suggestions).
-Native and WASM bindings bridge callbacks, serialize results, and perform IO; neither binding reimplements compiler
-policy. This keeps project state, CSS emission, code generation, and filesystem primitives as independent lower-level
-concerns while making their composition explicit in one higher-level crate.
+(`inspect_file_source`, token suggestions). Native and WASM bindings bridge callbacks, serialize results, and perform
+IO; neither binding reimplements compiler policy. This keeps project state, CSS emission, code generation, and
+filesystem primitives as independent lower-level concerns while making their composition explicit in one higher-level
+crate.
 
 ### Future crates
 

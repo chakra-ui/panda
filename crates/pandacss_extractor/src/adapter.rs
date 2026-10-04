@@ -1,4 +1,4 @@
-//! Shared source-adapter helpers for non-JS containers.
+//! Resolves a file's SFC format and lowers it through `pandacss_sfc` for Oxc.
 
 use std::borrow::Cow;
 use std::path::Path;
@@ -8,6 +8,7 @@ use oxc_parser::ParseOptions;
 use oxc_span::SourceType;
 
 use crate::{Diagnostic, Span};
+use pandacss_sfc::markup::TagBlock;
 
 /// Single-file-component container format, resolved once per file from its
 /// extension. Distinct from the template `Framework` dialect: Astro is its own
@@ -46,12 +47,19 @@ fn unclosed_fence_end(source: &str) -> Option<u32> {
 pub(crate) struct AdaptedSource<'a> {
     pub(crate) format: Option<SfcFormat>,
     pub(crate) code: Cow<'a, str>,
-    pub(crate) astro_elements: Vec<pandacss_astro::AstroElement>,
+    pub(crate) astro_elements: Vec<pandacss_sfc::astro::AstroElement>,
     pub(crate) astro_scripts: Vec<std::ops::Range<u32>>,
-    astro_diagnostics: Vec<pandacss_astro::AstroDiagnostic>,
+    astro_diagnostics: Vec<pandacss_sfc::astro::AstroDiagnostic>,
     astro_frontmatter: Option<std::ops::Range<u32>>,
     astro_open_fence: Option<u32>,
     astro_bom: u32,
+    /// Vue with `<script lang="tsx">`; every other mask parses as TypeScript.
+    jsx: bool,
+    /// Svelte and Vue blocks, found once while masking and reused by the
+    /// template style scan.
+    pub(crate) scripts: Vec<TagBlock>,
+    pub(crate) styles: Vec<TagBlock>,
+    pub(crate) templates: Vec<TagBlock>,
     source_len: usize,
 }
 
@@ -59,10 +67,10 @@ impl<'a> AdaptedSource<'a> {
     #[must_use]
     pub(crate) fn new(source: &'a str, path: &str) -> Self {
         let format = SfcFormat::from_path(path);
-        let code = match format {
+        match format {
             Some(SfcFormat::Astro) => {
-                let document = pandacss_astro::lower(source);
-                return Self {
+                let document = pandacss_sfc::astro::lower(source);
+                Self {
                     format,
                     code: Cow::Owned(document.canvas),
                     astro_elements: document.elements,
@@ -75,22 +83,67 @@ impl<'a> AdaptedSource<'a> {
                     },
                     astro_bom: if source.starts_with('\u{feff}') { 3 } else { 0 },
                     astro_frontmatter: document.frontmatter,
+                    jsx: true,
+                    scripts: Vec::new(),
+                    styles: Vec::new(),
+                    templates: Vec::new(),
                     source_len: source.len(),
-                };
+                }
             }
-            Some(SfcFormat::Vue) => Cow::Owned(crate::vue_adapter::mask_vue(source)),
-            Some(SfcFormat::Svelte) => Cow::Owned(crate::svelte_adapter::mask_svelte(source)),
-            None => Cow::Borrowed(source),
-        };
+            Some(SfcFormat::Vue) => {
+                let scripts = pandacss_sfc::vue::script_blocks(source);
+                let templates = pandacss_sfc::vue::template_blocks(source);
+                let code = pandacss_sfc::vue::mask_with(source, &scripts, &templates);
+                let jsx = pandacss_sfc::vue::scripts_use_jsx(source, &scripts);
+                Self::masked(format, code, jsx, scripts, Vec::new(), templates, source)
+            }
+            Some(SfcFormat::Svelte) => {
+                let blocks = pandacss_sfc::svelte::blocks(source);
+                let code = pandacss_sfc::svelte::mask_with(source, &blocks);
+                Self::masked(
+                    format,
+                    code,
+                    false,
+                    blocks.scripts,
+                    blocks.styles,
+                    Vec::new(),
+                    source,
+                )
+            }
+            None => Self::masked(
+                format,
+                source,
+                false,
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                source,
+            ),
+        }
+    }
+
+    fn masked(
+        format: Option<SfcFormat>,
+        code: impl Into<Cow<'a, str>>,
+        jsx: bool,
+        scripts: Vec<TagBlock>,
+        styles: Vec<TagBlock>,
+        templates: Vec<TagBlock>,
+        source: &str,
+    ) -> Self {
         Self {
             format,
-            code,
+            code: code.into(),
             astro_elements: Vec::new(),
             astro_scripts: Vec::new(),
             astro_diagnostics: Vec::new(),
             astro_frontmatter: None,
             astro_open_fence: None,
             astro_bom: 0,
+            jsx,
+            scripts,
+            styles,
+            templates,
             source_len: source.len(),
         }
     }
@@ -118,7 +171,11 @@ impl<'a> AdaptedSource<'a> {
     pub(crate) fn source_type(&self, path: &str) -> SourceType {
         match self.format {
             Some(SfcFormat::Astro) => SourceType::tsx().with_module(true),
-            _ => SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx()),
+            Some(SfcFormat::Vue | SfcFormat::Svelte) if self.jsx => {
+                SourceType::tsx().with_module(true)
+            }
+            Some(SfcFormat::Vue | SfcFormat::Svelte) => SourceType::ts().with_module(true),
+            None => SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx()),
         }
     }
 
@@ -150,400 +207,9 @@ impl<'a> AdaptedSource<'a> {
     }
 }
 
-/// `true` when a Vue `<template lang="…">` attribute names something other than
-/// HTML (`pug`, etc.) — such templates aren't scanned by either the mask or the
-/// template-style collector. `start`/`end` bound the opening tag's attribute text.
-#[must_use]
-pub(crate) fn has_non_html_lang(source: &str, start: usize, end: usize) -> bool {
-    let Some(attrs) = source.get(start..=end) else {
-        return false;
-    };
-    let lower = attrs.to_ascii_lowercase();
-    let Some(lang_index) = lower.find("lang") else {
-        return false;
-    };
-    let after_lang = lang_index + "lang".len();
-    let Some(rest) = lower.get(after_lang..) else {
-        return false;
-    };
-    if !rest.trim_start().starts_with('=') {
-        return false;
-    }
-    let value = rest
-        .trim_start()
-        .trim_start_matches('=')
-        .trim_start()
-        .trim_matches(|ch| ch == '"' || ch == '\'' || ch == '>' || ch == '/')
-        .split_ascii_whitespace()
-        .next()
-        .unwrap_or_default();
-    !matches!(value, "" | "html")
-}
-
-pub(crate) struct TagBlock {
-    pub(crate) open_start: usize,
-    pub(crate) open_end: usize,
-    pub(crate) content_start: usize,
-    pub(crate) content_end: usize,
-    pub(crate) close_end: usize,
-}
-
-pub(crate) fn blank_like(source: &str) -> Vec<u8> {
-    source
-        .bytes()
-        .map(|byte| match byte {
-            b'\n' | b'\r' => byte,
-            _ => b' ',
-        })
-        .collect()
-}
-
-pub(crate) fn astro_script_module(source: &str, script: &std::ops::Range<u32>) -> String {
-    let mut mask = blank_like(source);
-    copy_range(
-        &mut mask,
-        source,
-        script.start as usize,
-        script.end as usize,
-    );
-    finish_mask(mask)
-}
-
-pub(crate) fn finish_mask(mask: Vec<u8>) -> String {
-    String::from_utf8(mask).expect("source mask remains valid utf-8")
-}
-
-pub(crate) fn copy_range(mask: &mut [u8], source: &str, start: usize, end: usize) {
-    if start >= end || end > source.len() {
-        return;
-    }
-    mask[start..end].copy_from_slice(&source.as_bytes()[start..end]);
-}
-
-pub(crate) fn copy_expression(
-    mask: &mut [u8],
-    source: &str,
-    start: usize,
-    end: usize,
-    before: usize,
-    after: usize,
-) {
-    let (start, end) = trim_ascii(source.as_bytes(), start, end);
-    if start >= end {
-        return;
-    }
-    if before < mask.len() {
-        mask[before] = b'(';
-    }
-    if after < mask.len() {
-        mask[after] = b')';
-    }
-    copy_range(mask, source, start, end);
-}
-
-fn trim_ascii(bytes: &[u8], mut start: usize, mut end: usize) -> (usize, usize) {
-    while start < end && bytes[start].is_ascii_whitespace() {
-        start += 1;
-    }
-    while end > start && bytes[end - 1].is_ascii_whitespace() {
-        end -= 1;
-    }
-    (start, end)
-}
-
-pub(crate) fn tag_blocks(source: &str, tag: &str) -> Vec<TagBlock> {
-    let close = format!("</{tag}>");
-    tag_blocks_with(source, tag, |content_start| {
-        find_ascii_ci(source, &close, content_start).map(|start| (start, start + close.len()))
-    })
-}
-
-pub(crate) fn tag_blocks_with(
-    source: &str,
-    tag: &str,
-    mut find_close: impl FnMut(usize) -> Option<(usize, usize)>,
-) -> Vec<TagBlock> {
-    let mut blocks = Vec::new();
-    let mut cursor = 0;
-    let open = format!("<{tag}");
-    let bytes = source.as_bytes();
-
-    let raw_names: Vec<&str> = ["script", "style"]
-        .into_iter()
-        .filter(|raw| !raw.eq_ignore_ascii_case(tag))
-        .collect();
-    let raw_opens: Vec<String> = raw_names.iter().map(|raw| format!("<{raw}")).collect();
-    let mut open_cache = Scan::default();
-    let mut comment_cache = Scan::default();
-    let mut raw_caches = vec![Scan::default(); raw_names.len()];
-
-    loop {
-        let open_start = cached(&mut open_cache, cursor, || {
-            find_tag_open(source, &open, cursor)
-        });
-        let comment = cached(&mut comment_cache, cursor, || {
-            count_scan();
-            find_bytes(bytes, b"<!--", cursor)
-        });
-        let mut raw: Option<(usize, &str)> = None;
-        for (index, raw_open) in raw_opens.iter().enumerate() {
-            let found = cached(&mut raw_caches[index], cursor, || {
-                find_tag_open(source, raw_open, cursor)
-            });
-            if let Some(start) = found
-                && raw.is_none_or(|(best, _)| start < best)
-            {
-                raw = Some((start, raw_names[index]));
-            }
-        }
-
-        let next = [open_start, comment, raw.map(|(start, _)| start)]
-            .into_iter()
-            .flatten()
-            .min();
-        let Some(next) = next else {
-            break;
-        };
-
-        if comment == Some(next) {
-            cursor = find_bytes(bytes, b"-->", next + 4).map_or(source.len(), |end| end + 3);
-            continue;
-        }
-        if let Some((start, raw)) = raw.filter(|&(start, _)| start == next) {
-            let name_end = start + raw.len() + 1;
-            let Some(open_end) = find_tag_end(source, name_end) else {
-                break;
-            };
-            if bytes.get(open_end.saturating_sub(1)) == Some(&b'/') {
-                cursor = open_end + 1;
-                continue;
-            }
-            let close = format!("</{raw}>");
-            cursor = find_ascii_ci(source, &close, open_end + 1)
-                .map_or(source.len(), |close_start| close_start + close.len());
-            continue;
-        }
-
-        let open_start = next;
-        let name_end = open_start + open.len();
-        let Some(open_end) = find_tag_end(source, name_end) else {
-            break;
-        };
-        let content_start = open_end + 1;
-        let self_closing = source.as_bytes().get(open_end.saturating_sub(1)) == Some(&b'/');
-        if self_closing {
-            blocks.push(TagBlock {
-                open_start,
-                open_end,
-                content_start,
-                content_end: content_start,
-                close_end: content_start,
-            });
-            cursor = content_start;
-            continue;
-        }
-
-        let Some((close_start, close_end)) = find_close(content_start) else {
-            break;
-        };
-        blocks.push(TagBlock {
-            open_start,
-            open_end,
-            content_start,
-            content_end: close_start,
-            close_end,
-        });
-        cursor = close_end;
-    }
-
-    blocks
-}
-
-#[derive(Clone, Copy, Default)]
-struct Scan {
-    done: bool,
-    position: Option<usize>,
-}
-
-fn cached(slot: &mut Scan, cursor: usize, scan: impl FnOnce() -> Option<usize>) -> Option<usize> {
-    if slot.done && slot.position.is_none_or(|position| position >= cursor) {
-        return slot.position;
-    }
-    slot.position = scan();
-    slot.done = true;
-    slot.position
-}
-
-#[cfg(test)]
-thread_local! {
-    static SCANS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
-}
-
-fn count_scan() {
-    #[cfg(test)]
-    SCANS.with(|scans| scans.set(scans.get() + 1));
-}
-
-fn find_tag_open(source: &str, open: &str, from: usize) -> Option<usize> {
-    count_scan();
-    let mut cursor = from;
-    while let Some(start) = find_ascii_ci(source, open, cursor) {
-        if is_tag_name_boundary(source.as_bytes(), start + open.len()) {
-            return Some(start);
-        }
-        cursor = start + open.len();
-    }
-    None
-}
-
-pub(crate) fn find_ascii_ci(source: &str, needle: &str, from: usize) -> Option<usize> {
-    let haystack = source.as_bytes();
-    let needle = needle.as_bytes();
-    if needle.is_empty() || from >= haystack.len() || needle.len() > haystack.len() {
-        return None;
-    }
-    let last = haystack.len().saturating_sub(needle.len());
-    (from..=last).find(|&index| ascii_eq_ci(&haystack[index..index + needle.len()], needle))
-}
-
-pub(crate) fn ascii_eq_ci(left: &[u8], right: &[u8]) -> bool {
-    left.len() == right.len()
-        && left
-            .iter()
-            .zip(right)
-            .all(|(left, right)| left.eq_ignore_ascii_case(right))
-}
-
-pub(crate) fn is_tag_name_boundary(bytes: &[u8], index: usize) -> bool {
-    match bytes.get(index) {
-        None => true,
-        Some(byte) => byte.is_ascii_whitespace() || matches!(*byte, b'>' | b'/' | b'\'' | b'"'),
-    }
-}
-
-pub(crate) fn find_tag_end(source: &str, from: usize) -> Option<usize> {
-    let bytes = source.as_bytes();
-    let mut quote = None;
-    let mut index = from;
-    while index < bytes.len() {
-        let byte = bytes[index];
-        match quote {
-            Some(current) if byte == current => quote = None,
-            None if byte == b'\'' || byte == b'"' => quote = Some(byte),
-            None if byte == b'>' => return Some(index),
-            Some(_) | None => {}
-        }
-        index += 1;
-    }
-    None
-}
-
-pub(crate) fn find_matching_brace(source: &str, open: usize) -> Option<usize> {
-    pandacss_astro::js::find_closing_brace(source, open)
-}
-
-#[derive(Default)]
-pub(crate) struct JsState {
-    quote: Option<u8>,
-    line_comment: bool,
-    block_comment: bool,
-    escaped: bool,
-}
-
-impl JsState {
-    pub(crate) fn step(&mut self, bytes: &[u8], index: &mut usize) -> bool {
-        let byte = bytes[*index];
-        if self.line_comment {
-            if byte == b'\n' {
-                self.line_comment = false;
-            }
-            *index += 1;
-            return true;
-        }
-        if self.block_comment {
-            if starts_with(bytes, *index, b"*/") {
-                self.block_comment = false;
-                *index += 2;
-            } else {
-                *index += 1;
-            }
-            return true;
-        }
-        if let Some(quote) = self.quote {
-            if self.escaped {
-                self.escaped = false;
-            } else if byte == b'\\' {
-                self.escaped = true;
-            } else if byte == quote {
-                self.quote = None;
-            }
-            *index += 1;
-            return true;
-        }
-        if starts_with(bytes, *index, b"//") {
-            self.line_comment = true;
-            *index += 2;
-            return true;
-        }
-        if starts_with(bytes, *index, b"/*") {
-            self.block_comment = true;
-            *index += 2;
-            return true;
-        }
-        if matches!(byte, b'\'' | b'"' | b'`') {
-            self.quote = Some(byte);
-            *index += 1;
-            return true;
-        }
-        false
-    }
-}
-
-pub(crate) fn starts_with(bytes: &[u8], index: usize, needle: &[u8]) -> bool {
-    bytes
-        .get(index..index.saturating_add(needle.len()))
-        .is_some_and(|slice| slice == needle)
-}
-
-pub(crate) fn find_bytes(bytes: &[u8], needle: &[u8], from: usize) -> Option<usize> {
-    if needle.is_empty() || from >= bytes.len() || needle.len() > bytes.len() {
-        return None;
-    }
-    let last = bytes.len().saturating_sub(needle.len());
-    (from..=last).find(|&index| starts_with(bytes, index, needle))
-}
-
 #[cfg(test)]
 mod tests {
-    use super::{SCANS, SfcFormat, tag_blocks};
-
-    #[test]
-    fn block_finding_scans_linearly_over_many_comments() {
-        let mut source = String::from("<script>const a = 1;</script>\n");
-        for _ in 0..10_000 {
-            source.push_str("<!-- c -->\n");
-        }
-        source.push_str("<template><p/></template>\n");
-        SCANS.with(|scans| scans.set(0));
-        let blocks = tag_blocks(&source, "template");
-        let scans = SCANS.with(std::cell::Cell::get);
-        assert_eq!(blocks.len(), 1);
-        assert!(scans < 20_000, "{scans} scans");
-    }
-
-    #[test]
-    fn comment_marker_in_style_body_does_not_hide_later_script() {
-        let source = "<style>.a::after { content: '<!--' }</style>\n<script>const a = 1;</script>";
-        assert_eq!(tag_blocks(source, "script").len(), 1);
-        assert_eq!(tag_blocks(source, "style").len(), 1);
-    }
-
-    #[test]
-    fn comment_marker_in_script_body_does_not_hide_later_style() {
-        let source = "<script>const m = '<!--';</script>\n<style>.a { color: red }</style>";
-        assert_eq!(tag_blocks(source, "style").len(), 1);
-        assert_eq!(tag_blocks(source, "script").len(), 1);
-    }
+    use super::SfcFormat;
 
     #[test]
     fn sfc_formats_are_resolved_from_the_extension() {

@@ -604,3 +604,236 @@ fn comment_marker_inside_script_does_not_hide_the_markup() {
     jsx: []
     ");
 }
+
+#[test]
+fn style_call_after_a_closed_if_block_on_the_same_line_extracts() {
+    let source = indoc! {r"
+        <script>
+        import { css } from '@panda/css';
+        </script>
+
+        {#if open}<span>x</span>{/if}<div class={css({ color: 'red' })}>a</div>
+        {#each items as item}<li>{item}</li>{/each}
+    "};
+    let result = extract(source, "Card.svelte", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+    jsx: []
+    ");
+}
+
+#[test]
+fn division_after_a_postfix_increment_keeps_the_style_call() {
+    let source = indoc! {r"
+        <script>
+        import { css } from '@panda/css';
+        let n = 1;
+        </script>
+
+        <div class={css({ color: 'red', opacity: n++ / 2 })}/>
+        <div class={css({ color: 'blue' })}/>
+    "};
+    let result = extract(source, "Card.svelte", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+      - name: css
+        data:
+          color: blue
+    jsx: []
+    ");
+}
+
+#[test]
+fn regex_brace_at_the_start_of_an_attribute_expression_keeps_the_style_call() {
+    let source = indoc! {r"
+        <script>
+        import { css } from '@panda/css';
+        </script>
+
+        <p class={/\}/.test(value) ? css({ color: 'red' }) : ''} />
+        <p class={css({ color: 'blue' })} />
+    "};
+    let result = extract(source, "Card.svelte", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+      - name: css
+        data:
+          color: blue
+    jsx: []
+    ");
+}
+
+fn svelte_calls(source: &str) -> Vec<String> {
+    let result = extract(source, "Card.svelte", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    result
+        .calls
+        .iter()
+        .map(|call| source[call.span.start as usize..call.span.end as usize].to_owned())
+        .collect()
+}
+
+#[test]
+fn negated_attribute_expression_keeps_its_style_call() {
+    let source = indoc! {r"
+        <script>
+        import { css } from '@panda/css';
+        </script>
+
+        <button disabled={!ready} class={!ready ? css({ opacity: 0.5 }) : ''}>go</button>
+    "};
+    assert_eq!(svelte_calls(source), ["css({ opacity: 0.5 })"]);
+}
+
+#[test]
+fn declaration_tags_extract_their_style_calls() {
+    let source = indoc! {r"
+        <script>
+        import { css } from '@panda/css';
+        </script>
+
+        {#if open}
+          {const panel = css({ padding: '4' })}
+          {let count = $state(0), doubled = $derived(count * 2)}
+          <div class={panel}>{doubled}</div>
+        {/if}
+    "};
+    assert_eq!(svelte_calls(source), ["css({ padding: '4' })"]);
+}
+
+#[test]
+fn comment_before_an_expression_is_not_a_block_closer() {
+    let source = indoc! {r"
+        <script>
+        import { css } from '@panda/css';
+        </script>
+
+        <p>{/** @type {any} */ (value).name}</p>
+        <p class={css({ color: 'red' })}>x</p>
+    "};
+    assert_eq!(svelte_calls(source), ["css({ color: 'red' })"]);
+}
+
+#[test]
+fn script_in_svelte_head_is_page_markup_not_component_code() {
+    let source = indoc! {r#"
+        <script>
+        import { css } from '@panda/css';
+        </script>
+
+        <svelte:head>
+          <script type="application/ld+json">{ "@type": "Thing" }</script>
+        </svelte:head>
+        <p class={css({ color: 'red' })}>x</p>
+    "#};
+    assert_eq!(svelte_calls(source), ["css({ color: 'red' })"]);
+}
+
+#[test]
+fn angle_bracket_type_assertion_in_the_script_parses_as_typescript() {
+    let source = indoc! {r"
+        <script lang='ts'>
+        import { css } from '@panda/css';
+        const flag = <boolean>true;
+        </script>
+
+        <p class={flag ? css({ color: 'red' }) : ''}>x</p>
+    "};
+    assert_eq!(svelte_calls(source), ["css({ color: 'red' })"]);
+}
+
+#[test]
+fn style_close_tag_with_whitespace_still_ends_the_style() {
+    let source = "<script>\nimport { css } from '@panda/css';\n</script>\n<style>\n.a { color: red }\n</style   \n>\n<p class={css({ color: 'red' })}>x</p>\n";
+    assert_eq!(svelte_calls(source), ["css({ color: 'red' })"]);
+}
+
+#[test]
+fn unclosed_brace_stops_reading_without_hanging() {
+    let source = format!(
+        "<script>\nimport {{ css }} from '@panda/css';\n</script>\n<p class={{css({{ color: 'red' }})}}>x</p>\n{}",
+        "<p>{ a </p>".repeat(20_000)
+    );
+    let result = extract(&source, "Card.svelte", &panda_config());
+    assert_eq!(result.calls.len(), 1);
+}
+
+#[test]
+fn thousands_of_expressions_extract_without_nesting_into_a_call_chain() {
+    let source = format!(
+        "<script>\nimport {{ css }} from '@panda/css';\n</script>\n{}<p class={{css({{ color: 'red' }})}}>x</p>\n",
+        "<p>{a}{b}</p> {c}".repeat(20_000)
+    );
+    let result = extract(&source, "Card.svelte", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_eq!(result.calls.len(), 1);
+}
+
+#[test]
+fn quote_inside_a_comment_does_not_hide_the_each_separator() {
+    let source = indoc! {r#"
+        <script>import { css } from '@panda/css';</script>
+        {#each [css({ color: 'red' })] /* " */ as {x = 1}}
+          <p>{x}</p>
+        {/each}
+    "#};
+    assert_eq!(svelte_calls(source), ["css({ color: 'red' })"]);
+}
+
+#[test]
+fn block_keywords_inside_comments_and_regexes_are_not_separators() {
+    let source = indoc! {r#"
+        <script>import { css } from '@panda/css';</script>
+        {#each items.filter((i) => /"/.test(i)) /* as nope */ as item}
+          <p class={css({ color: 'red' })}>{item}</p>
+        {/each}
+        {#await load(/* then */ css({ color: 'blue' })) then value}<p>{value}</p>{/await}
+        {#each items as item}{@const { a = '=' } = css({ color: 'green' })}<p>{a}</p>{/each}
+    "#};
+    assert_eq!(
+        svelte_calls(source),
+        [
+            "css({ color: 'red' })",
+            "css({ color: 'blue' })",
+            "css({ color: 'green' })"
+        ]
+    );
+}
+
+#[test]
+fn style_props_after_a_block_closer_on_the_same_line_extract() {
+    let source = indoc! {r#"
+        <script>
+        import { Box } from '@panda/jsx';
+        </script>
+
+        {#if open}<span>a</span>{/if}<Box color="red" />
+        {#each items as item}<b>{item}</b>{/each}<Box color="blue" />
+    "#};
+    let result = extract(source, "Card.svelte", &panda_jsx_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    let colors: Vec<_> = result
+        .jsx
+        .iter()
+        .map(|jsx| format!("{:?}", jsx.data))
+        .collect();
+    assert_eq!(colors.len(), 2, "{colors:?}");
+}
+
+#[test]
+fn member_keyword_before_division_does_not_hide_the_each_separator() {
+    let source = "<script>import { css } from '@panda/css'; const obj = {of: 2};</script>\n{#each obj.of / 2 ? [css({color:'red'})] : [] as {x = 1}}<p>{x}</p>{/each}";
+    assert_eq!(svelte_calls(source), ["css({color:'red'})"]);
+}

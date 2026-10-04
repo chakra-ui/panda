@@ -4,10 +4,7 @@
 //! `<Box color="red" />` are not JS expressions, so they are collected
 //! directly into the same `ExtractedJsx` shape the JSX visitor emits.
 
-use crate::adapter::{
-    AdaptedSource, SfcFormat, blank_like, copy_range, find_bytes, find_matching_brace, starts_with,
-    tag_blocks,
-};
+use crate::adapter::{AdaptedSource, SfcFormat};
 use crate::{
     ExtractedJsx, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory, MatchedImport,
     Span,
@@ -19,7 +16,11 @@ use oxc_ast::ast::{BindingPattern, Expression, Program, Statement, VariableDecla
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
-use pandacss_astro::{AstroAttributeValue, AstroElement};
+use pandacss_sfc::astro::{AstroAttributeValue, AstroElement};
+use pandacss_sfc::js::find_closing_brace as find_matching_brace;
+use pandacss_sfc::markup::{
+    Expressions, MarkupWalker, blank_like, copy_range, find_bytes, finish_mask, starts_with,
+};
 use rustc_hash::FxHashMap;
 use std::borrow::Cow;
 
@@ -65,12 +66,14 @@ pub(crate) fn collect_template_styles(
     };
 
     let context_source = match format {
-        SfcFormat::Vue | SfcFormat::Svelte => Cow::Owned(mask_script_blocks(source)),
+        SfcFormat::Vue | SfcFormat::Svelte => {
+            Cow::Owned(mask_script_blocks(source, &adapted.scripts))
+        }
         SfcFormat::Astro => Cow::Borrowed(adapted.code.as_ref()),
     };
     let mut literal_index = TemplateLiteralIndex {
         resolver,
-        ranges: template_markup_ranges(source, adapted),
+        ranges: MarkupRanges::new(template_markup_ranges(source, adapted)),
         literals: FxHashMap::default(),
     };
     literal_index.visit_program(program);
@@ -89,6 +92,7 @@ pub(crate) fn collect_template_styles(
             SfcFormat::Vue => Framework::Vue,
             SfcFormat::Svelte | SfcFormat::Astro => Framework::Svelte,
         },
+        adapted,
         matched,
         config,
         context: &context,
@@ -100,12 +104,12 @@ pub(crate) fn collect_template_styles(
     }
 }
 
-fn mask_script_blocks(source: &str) -> String {
+fn mask_script_blocks(source: &str, scripts: &[pandacss_sfc::markup::TagBlock]) -> String {
     let mut mask = blank_like(source);
-    for block in tag_blocks(source, "script") {
+    for block in scripts {
         copy_range(&mut mask, source, block.content_start, block.content_end);
     }
-    crate::adapter::finish_mask(mask)
+    finish_mask(mask)
 }
 
 struct TemplateContext<'a> {
@@ -121,17 +125,43 @@ struct TemplateContext<'a> {
 
 struct TemplateLiteralIndex<'resolver, 'ast, 'callback> {
     resolver: &'resolver crate::Resolver<'ast, 'callback>,
-    ranges: Vec<(u32, u32)>,
+    ranges: MarkupRanges,
     literals: FxHashMap<(u32, u32), Literal>,
+}
+
+/// Ranges sorted by start with a running max of their ends, so a containment
+/// query is one binary search even when Astro attribute ranges nest.
+struct MarkupRanges {
+    starts: Vec<u32>,
+    max_ends: Vec<u32>,
+}
+
+impl MarkupRanges {
+    fn new(mut ranges: Vec<(u32, u32)>) -> Self {
+        ranges.sort_unstable();
+        let mut max_end = 0;
+        let (starts, max_ends) = ranges
+            .into_iter()
+            .map(|(start, end)| {
+                max_end = max_end.max(end);
+                (start, max_end)
+            })
+            .unzip();
+        Self { starts, max_ends }
+    }
+
+    fn contains(&self, start: u32, end: u32) -> bool {
+        let count = self
+            .starts
+            .partition_point(|&range_start| range_start <= start);
+        count > 0 && self.max_ends[count - 1] >= end
+    }
 }
 
 impl<'ast> Visit<'ast> for TemplateLiteralIndex<'_, 'ast, '_> {
     fn visit_expression(&mut self, expression: &Expression<'ast>) {
         let span = expression.span();
-        if self
-            .ranges
-            .iter()
-            .any(|(start, end)| *start <= span.start && *end >= span.end)
+        if self.ranges.contains(span.start, span.end)
             && let Some(literal) = expression_to_literal(expression, Some(self.resolver))
         {
             self.literals.insert((span.start, span.end), literal);
@@ -142,6 +172,7 @@ impl<'ast> Visit<'ast> for TemplateLiteralIndex<'_, 'ast, '_> {
 
 struct TemplateScan<'a> {
     framework: Framework,
+    adapted: &'a AdaptedSource<'a>,
     matched: &'a [MatchedImport],
     config: &'a ExtractorConfig,
     context: &'a TemplateContext<'a>,
@@ -149,7 +180,7 @@ struct TemplateScan<'a> {
 
 fn collect_vue_template_styles(source: &str, scan: &TemplateScan<'_>) -> Vec<ExtractedJsx> {
     let mut out = Vec::new();
-    for block in crate::vue_adapter::vue_template_blocks(source) {
+    for block in &scan.adapted.templates {
         collect_markup_range(
             source,
             block.content_start,
@@ -162,8 +193,8 @@ fn collect_vue_template_styles(source: &str, scan: &TemplateScan<'_>) -> Vec<Ext
 }
 
 fn collect_svelte_template_styles(source: &str, scan: &TemplateScan<'_>) -> Vec<ExtractedJsx> {
-    let scripts = tag_blocks(source, "script");
-    let styles = tag_blocks(source, "style");
+    let scripts = &scan.adapted.scripts;
+    let styles = &scan.adapted.styles;
     let mut excluded = Vec::with_capacity(scripts.len() + styles.len());
     excluded.extend(
         scripts
@@ -269,45 +300,76 @@ fn collect_markup_range(
     out: &mut Vec<ExtractedJsx>,
 ) {
     let bytes = source.as_bytes();
+    let expressions = match scan.framework {
+        Framework::Vue => Expressions::Interpolations,
+        Framework::Svelte => Expressions::Braces,
+    };
+    let mut walker = MarkupWalker::new(source, expressions);
     let mut cursor = start;
     while cursor < end {
         if starts_with(bytes, cursor, b"<!--") {
             cursor = find_bytes(bytes, b"-->", cursor + 4).map_or(end, |index| index + 3);
             continue;
         }
-        if bytes[cursor] == b'<'
-            && let Some(next) = collect_tag(source, cursor, end, scan, out)
+        if bytes[cursor] == b'{'
+            && let Some(expression_end) = walker.skip_expression(cursor)
         {
-            cursor = next;
+            cursor = expression_end;
             continue;
+        }
+        if bytes[cursor] == b'<' {
+            match collect_tag(source, cursor, end, &mut walker, scan, out) {
+                Tag::Collected(next) => {
+                    cursor = next;
+                    continue;
+                }
+                Tag::Text => {}
+                // An unclosed quote or brace: the framework rejects the file.
+                Tag::Unclosed => return,
+            }
         }
         cursor += 1;
     }
+}
+
+enum Tag {
+    Collected(usize),
+    Text,
+    Unclosed,
 }
 
 fn collect_tag(
     source: &str,
     tag_start: usize,
     limit: usize,
+    walker: &mut MarkupWalker<'_>,
     scan: &TemplateScan<'_>,
     out: &mut Vec<ExtractedJsx>,
-) -> Option<usize> {
+) -> Tag {
     let bytes = source.as_bytes();
-    let first = *bytes.get(tag_start + 1)?;
-    if matches!(first, b'/' | b'!' | b'?') {
-        return None;
+    let Some(&first) = bytes.get(tag_start + 1) else {
+        return Tag::Text;
+    };
+    if !first.is_ascii_alphabetic() {
+        return Tag::Text;
     }
-
-    let tag_end = find_markup_tag_end(source, tag_start + 1, limit)?;
+    let Some(tag_end) = walker
+        .tag_end(tag_start + 1)
+        .filter(|&tag_end| tag_end < limit)
+    else {
+        return Tag::Unclosed;
+    };
     let name_start = tag_start + 1;
     let name_end = read_tag_name(bytes, name_start, tag_end);
-    if name_end == name_start {
-        return Some(tag_end + 1);
-    }
-    let tag_name = source.get(name_start..name_end)?;
+    let Some(tag_name) = source
+        .get(name_start..name_end)
+        .filter(|name| !name.is_empty())
+    else {
+        return Tag::Collected(tag_end + 1);
+    };
     let Some(resolved) = resolve_template_tag(tag_name, scan.matched, scan.config, scan.framework)
     else {
-        return Some(tag_end + 1);
+        return Tag::Collected(tag_end + 1);
     };
 
     let mut entries = Vec::new();
@@ -332,7 +394,7 @@ fn collect_tag(
         },
     );
 
-    Some(tag_end + 1)
+    Tag::Collected(tag_end + 1)
 }
 
 fn push_template_jsx(
@@ -467,8 +529,7 @@ fn collect_attrs(
 
         if matches!(scan.framework, Framework::Svelte)
             && bytes[cursor] == b'{'
-            && let Some(close) = find_matching_brace(source, cursor)
-            && close <= end
+            && let Some(close) = find_matching_brace(&source[..end], cursor)
         {
             if let Some(expr) = svelte_spread_expr(source, cursor + 1, close) {
                 merge_spread_with_context(expr, scan.config, scan.context, tag_name, entries);
@@ -679,7 +740,7 @@ fn template_markup_ranges(source: &str, adapted: &AdaptedSource<'_>) -> Vec<(u32
     let mut ranges = Vec::new();
     match adapted.format {
         Some(SfcFormat::Vue) => {
-            for block in crate::vue_adapter::vue_template_blocks(source) {
+            for block in &adapted.templates {
                 push_range(&mut ranges, block.content_start, block.content_end);
             }
         }
@@ -695,14 +756,12 @@ fn template_markup_ranges(source: &str, adapted: &AdaptedSource<'_>) -> Vec<(u32
             }
         }
         Some(SfcFormat::Svelte) | None => {
-            let mut excluded = Vec::new();
-            for tag in ["script", "style"] {
-                excluded.extend(
-                    tag_blocks(source, tag)
-                        .into_iter()
-                        .map(|block| (block.open_start, block.close_end)),
-                );
-            }
+            let mut excluded: Vec<_> = adapted
+                .scripts
+                .iter()
+                .chain(&adapted.styles)
+                .map(|block| (block.open_start, block.close_end))
+                .collect();
             excluded.sort_unstable();
             let mut cursor = 0;
             for (start, end) in excluded {
@@ -781,8 +840,7 @@ fn read_attr_value<'a>(
     }
     if matches!(framework, Framework::Svelte)
         && bytes[*cursor] == b'{'
-        && let Some(close) = find_matching_brace(source, *cursor)
-        && close <= end
+        && let Some(close) = find_matching_brace(&source[..end], *cursor)
     {
         let value = source.get(*cursor + 1..close).unwrap_or_default();
         *cursor = close + 1;
@@ -864,24 +922,4 @@ fn skip_ws_and_tag_comments(bytes: &[u8], cursor: &mut usize, end: usize) {
         }
         break;
     }
-}
-
-fn find_markup_tag_end(source: &str, from: usize, limit: usize) -> Option<usize> {
-    let bytes = source.as_bytes();
-    let mut quote = None;
-    let mut brace_depth = 0usize;
-    let mut index = from;
-    while index < limit {
-        let byte = bytes[index];
-        match quote {
-            Some(current) if byte == current => quote = None,
-            None if byte == b'\'' || byte == b'"' => quote = Some(byte),
-            None if byte == b'{' => brace_depth += 1,
-            None if byte == b'}' => brace_depth = brace_depth.saturating_sub(1),
-            None if byte == b'>' && brace_depth == 0 => return Some(index),
-            Some(_) | None => {}
-        }
-        index += 1;
-    }
-    None
 }

@@ -3,8 +3,8 @@ use std::ops::Range;
 use super::{
     Kind, Next, Parse, Parsed, Parser, diagnostic, element_markup, find, fragment_markup, other,
 };
+use crate::astro::tree::{Attribute, Child, Element, Expression, Value};
 use crate::js::{Token, TokenKind};
-use crate::tree::{Attribute, Child, Element, Expression, Value};
 
 const VOID: [&str; 14] = [
     "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source",
@@ -255,12 +255,11 @@ impl<'s> Parser<'s> {
         }
     }
 
-    pub(super) fn comment(&self, bang: usize) -> Option<usize> {
-        let rest = self.bytes.get(bang..)?;
-        if !rest.starts_with(b"!--") {
+    pub(super) fn comment(&mut self, bang: usize) -> Option<usize> {
+        if !self.bytes.get(bang..)?.starts_with(b"!--") {
             return None;
         }
-        find(&rest[3..], b"-->").map(|index| bang + 3 + index + 3)
+        self.comment_close_from(bang + 3).map(|close| close + 3)
     }
 
     fn closing(&mut self, start: usize) -> Parse<Result<Closing, usize>> {

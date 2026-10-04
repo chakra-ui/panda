@@ -1,5 +1,5 @@
 [package]
-name = "pandacss_astro"
+name = "pandacss_sfc"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

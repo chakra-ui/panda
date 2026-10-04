@@ -3,7 +3,7 @@ mod common;
 use common::{lowered, show};
 use indoc::indoc;
 use insta::{assert_debug_snapshot, assert_snapshot};
-use pandacss_astro::AstroAttributeValue;
+use pandacss_sfc::astro::AstroAttributeValue;
 
 #[test]
 fn frontmatter_is_copied_and_opens_the_template_array() {
@@ -278,7 +278,7 @@ fn elements_record_every_attribute_form() {
 
 #[test]
 fn stray_closing_tag_and_unclosed_element_are_reported() {
-    let document = pandacss_astro::lower("<div></span>");
+    let document = pandacss_sfc::astro::lower("<div></span>");
     let errors: Vec<_> = document
         .diagnostics
         .iter()
@@ -338,13 +338,11 @@ fn deep_nesting_is_reported_not_a_crash() {
         "<script a=".repeat(100_000),
         format!("{{{}", "<script a=".repeat(100_000)),
     ] {
-        let document = pandacss_astro::lower(&source);
-        assert!(
-            document
-                .diagnostics
-                .iter()
-                .any(|d| d.message == "Nesting too deep")
-        );
+        let document = pandacss_sfc::astro::lower(&source);
+        assert!(document.diagnostics.iter().any(|d| {
+            d.message
+                .starts_with("Markup is nested more than 4096 levels deep")
+        }));
     }
 }
 
@@ -380,7 +378,7 @@ fn inputs_astro_rejects_are_reported_and_keep_no_elements() {
         "<p class=`${a;}${b}`/>",
         "<p class=`${a}${b,}`/>",
     ] {
-        let document = pandacss_astro::lower(source);
+        let document = pandacss_sfc::astro::lower(source);
         assert!(!document.diagnostics.is_empty(), "{source:?}");
         assert!(document.elements.is_empty(), "{source:?}");
     }
@@ -399,7 +397,7 @@ fn unterminated_strings_are_fatal_in_expressions_and_skipped_in_drift() {
         "{<script></script 'a\n}",
         "<div>{<script></script 'a\n}</div>",
     ] {
-        let document = pandacss_astro::lower(source);
+        let document = pandacss_sfc::astro::lower(source);
         assert!(!document.diagnostics.is_empty(), "{source:?}");
         assert!(document.elements.is_empty(), "{source:?}");
     }
@@ -408,7 +406,7 @@ fn unterminated_strings_are_fatal_in_expressions_and_skipped_in_drift() {
         ("}\"a\r<p/>", 5..6),
         ("<!-- 'a\n> <p/>", 11..12),
     ] {
-        let document = pandacss_astro::lower(source);
+        let document = pandacss_sfc::astro::lower(source);
         assert_eq!(document.diagnostics.len(), 1, "{source:?}");
         assert_eq!(document.diagnostics[0].message, "Unterminated string");
         let names: Vec<_> = document.elements.iter().map(|e| e.name.clone()).collect();
@@ -467,4 +465,40 @@ fn nested_script_is_extractable() {
         script_contents("<script>a()</script><div><script>b()</script></div>"),
         ["a()", "b()"]
     );
+}
+
+#[test]
+fn elements_nested_past_the_stack_limit_are_all_lowered() {
+    let depth = 1_000;
+    let source = format!("{}{}", "<div a={x}>".repeat(depth), "</div>".repeat(depth));
+    let document = lowered(&source);
+    assert!(
+        document.diagnostics.is_empty(),
+        "{:?}",
+        document.diagnostics
+    );
+    assert_eq!(document.elements.len(), depth);
+}
+
+#[test]
+fn nesting_past_the_hard_limit_reports_the_limit_once() {
+    let depth = 5_000;
+    let source = format!(
+        "<p a={{x}}/>{}{}",
+        "<div>".repeat(depth),
+        "</div>".repeat(depth)
+    );
+    let document = pandacss_sfc::astro::lower(&source);
+    let messages: Vec<_> = document
+        .diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.message.as_str())
+        .collect();
+    assert_eq!(
+        messages,
+        [
+            "Markup is nested more than 4096 levels deep, so the template from here on is not extracted."
+        ]
+    );
+    assert_eq!(document.elements.len(), 1);
 }

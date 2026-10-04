@@ -1,5 +1,4 @@
 mod frontmatter;
-pub mod js;
 mod lower;
 mod template;
 mod tree;

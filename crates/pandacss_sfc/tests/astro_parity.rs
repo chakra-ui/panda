@@ -352,7 +352,7 @@ const CASES: &[(&str, &str, &str)] = &[
 fn lowers_like_astros_parser_on_curated_inputs() {
     let mut failures = Vec::new();
     for (name, source, expected) in CASES {
-        let document = pandacss_astro::lower(source);
+        let document = pandacss_sfc::astro::lower(source);
         if let Some(diagnostic) = document.diagnostics.first() {
             failures.push(format!("{name}: rejected: {}", diagnostic.message));
         } else if document.canvas != *expected {

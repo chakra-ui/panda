@@ -3,24 +3,58 @@ mod tag;
 
 use std::ops::Range;
 
-use crate::AstroDiagnostic;
-use crate::frontmatter;
+use crate::astro::AstroDiagnostic;
+use crate::astro::frontmatter;
+use crate::astro::lower::offset;
+use crate::astro::tree::{Child, ChildKind, Document, Element, Fragment, Markup};
 use crate::js::{Lexer, Token, TokenKind, is_line_terminator, regex_terminated, string_terminated};
-use crate::lower::offset;
-use crate::tree::{Child, ChildKind, Document, Element, Fragment, Markup};
+
+/// Nesting allowed on the caller's stack. Real templates stay far below it.
+const MAX_DEPTH: usize = 128;
 
 pub(crate) fn parse(source: &str) -> Document {
+    let (document, too_deep) = parse_with_depth(source, MAX_DEPTH);
+    if too_deep && let Some((deep, _)) = parse_on_deep_stack(source) {
+        return deep;
+    }
+    document
+}
+
+/// A file nested past `MAX_DEPTH` is parsed again on a thread with a large
+/// stack, so only that rare file pays for the thread.
+#[cfg(not(target_family = "wasm"))]
+fn parse_on_deep_stack(source: &str) -> Option<(Document, bool)> {
+    const DEEP_MAX_DEPTH: usize = 4_096;
+    const DEEP_STACK: usize = 64 * 1024 * 1024;
+    std::thread::scope(|scope| {
+        std::thread::Builder::new()
+            .stack_size(DEEP_STACK)
+            .spawn_scoped(scope, || parse_with_depth(source, DEEP_MAX_DEPTH))
+            .ok()?
+            .join()
+            .ok()
+    })
+}
+
+#[cfg(target_family = "wasm")]
+fn parse_on_deep_stack(_source: &str) -> Option<(Document, bool)> {
+    None
+}
+
+fn parse_with_depth(source: &str, max_depth: usize) -> (Document, bool) {
     let frontmatter = frontmatter::scan(source);
     let start = frontmatter
         .as_ref()
         .map_or(0, |frontmatter| frontmatter.body);
     let mut parser = Parser::new(source);
+    parser.max_depth = max_depth;
     let body = parser.body(start);
-    Document {
+    let document = Document {
         frontmatter,
         body,
         diagnostics: parser.diagnostics,
-    }
+    };
+    (document, parser.too_deep)
 }
 
 struct Fatal;
@@ -89,12 +123,12 @@ struct Parser<'s> {
     open: Vec<Range<usize>>,
     foreign: bool,
     depth: usize,
+    max_depth: usize,
+    too_deep: bool,
     comment_close: Option<(usize, Option<usize>)>,
     #[cfg(test)]
     comment_scans: usize,
 }
-
-const MAX_DEPTH: usize = 256;
 
 impl<'s> Parser<'s> {
     fn new(source: &'s str) -> Self {
@@ -105,6 +139,8 @@ impl<'s> Parser<'s> {
             open: Vec::new(),
             foreign: false,
             depth: 0,
+            max_depth: MAX_DEPTH,
+            too_deep: false,
             comment_close: None,
             #[cfg(test)]
             comment_scans: 0,
@@ -309,10 +345,15 @@ impl<'s> Parser<'s> {
     }
 
     fn nested<T>(&mut self, at: usize, parse: impl FnOnce(&mut Self) -> Parse<T>) -> Parse<T> {
-        if self.depth >= MAX_DEPTH {
+        if self.depth >= self.max_depth {
             let end = (at + 1).min(self.bytes.len());
+            let message = format!(
+                "Markup is nested more than {} levels deep, so the template from here on is not extracted.",
+                self.max_depth
+            );
             self.diagnostics
-                .push(diagnostic("Nesting too deep", at.min(end)..end));
+                .push(diagnostic(&message, at.min(end)..end));
+            self.too_deep = true;
             return Err(Fatal);
         }
         self.depth += 1;

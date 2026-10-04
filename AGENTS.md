@@ -30,6 +30,7 @@ with workspace support.
 
 /crates/           # Rust workspace — the v2 Oxc-based compiler engine
   /extractor/      # Oxc-based AST scanning + extraction
+  /sfc/            # Astro/Vue/Svelte containers lowered to same-offset JS (no Oxc)
   /literal/        # Host-neutral extracted value IR
   /encoder/        # Style usage → atomic rules
   /stylesheet/     # Native CSS emission (replaces planned emitter/optimizer split)

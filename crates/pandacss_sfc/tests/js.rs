@@ -1,4 +1,4 @@
-use pandacss_astro::js::{Lexer, Token, TokenKind, find_closing_brace};
+use pandacss_sfc::js::{Lexer, Token, TokenKind, find_closing_brace};
 
 fn token(kind: TokenKind, start: usize, end: usize) -> Token {
     Token { kind, start, end }

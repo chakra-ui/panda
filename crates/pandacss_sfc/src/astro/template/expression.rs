@@ -1,12 +1,13 @@
 use super::{Kind, Next, Parse, Parser, find, into_child, lexed, other};
+use crate::astro::tree::{Child, ChildKind, Expression, Fragment, Markup};
 use crate::js::{Lexer, TokenKind};
-use crate::tree::{Child, ChildKind, Expression, Fragment, Markup};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Frame {
-    Paren { control: bool },
+    Paren { control: bool, function: bool },
     Bracket,
     Brace { block: bool },
+    FunctionBody,
     Interpolation,
 }
 
@@ -19,6 +20,7 @@ enum Prev {
     BlockOpen,
     BlockClose,
     Keyword,
+    FunctionParams,
     Comma,
     Other,
 }
@@ -30,6 +32,7 @@ enum Pending {
     Control,
     Unary,
     Markup,
+    Function,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -256,6 +259,10 @@ impl<'s> Parser<'s> {
             scan.last = token.end;
             match token.kind {
                 TokenKind::Identifier if pending == Pending::Member => scan.operand = false,
+                TokenKind::Identifier if pending == Pending::Function => {
+                    scan.pending = Pending::Function;
+                    scan.operand = false;
+                }
                 TokenKind::Identifier if pending == Pending::Control && text == "await" => {
                     scan.pending = Pending::Control;
                     scan.operand = true;
@@ -275,6 +282,16 @@ impl<'s> Parser<'s> {
                     }
                     "return" | "in" | "of" | "instanceof" | "case" | "throw" | "extends" => {
                         scan.operand = true;
+                    }
+                    // A function expression's body is a value, so `/` after it is division.
+                    "function"
+                        if !matches!(
+                            prev,
+                            Prev::Semicolon | Prev::BlockOpen | Prev::BlockClose | Prev::Keyword
+                        ) =>
+                    {
+                        scan.pending = Pending::Function;
+                        scan.operand = false;
                     }
                     _ => scan.operand = false,
                 },
@@ -304,18 +321,24 @@ impl<'s> Parser<'s> {
                         scan.operand = false;
                         lexer.set_position(end);
                     }
+                    "*" if pending == Pending::Function => scan.pending = Pending::Function,
                     "(" => {
                         scan.stack.push(Frame::Paren {
                             control: pending == Pending::Control,
+                            function: pending == Pending::Function,
                         });
                         scan.operand = true;
                     }
                     ")" => {
-                        let Some(Frame::Paren { control }) = scan.stack.pop() else {
+                        let Some(Frame::Paren { control, function }) = scan.stack.pop() else {
                             return Err(self.unexpected(token.start..token.end));
                         };
                         scan.operand = control;
-                        scan.prev = Prev::CloseParen;
+                        scan.prev = if function {
+                            Prev::FunctionParams
+                        } else {
+                            Prev::CloseParen
+                        };
                     }
                     "[" => {
                         scan.stack.push(Frame::Bracket);
@@ -326,6 +349,11 @@ impl<'s> Parser<'s> {
                             return Err(self.unexpected(token.start..token.end));
                         }
                         scan.operand = false;
+                    }
+                    "{" if prev == Prev::FunctionParams => {
+                        scan.stack.push(Frame::FunctionBody);
+                        scan.operand = true;
+                        scan.prev = Prev::BlockOpen;
                     }
                     "{" => {
                         let block = matches!(
@@ -361,6 +389,7 @@ impl<'s> Parser<'s> {
                                 scan.prev = Prev::BlockClose;
                             }
                         }
+                        Some(Frame::FunctionBody) => scan.operand = false,
                         _ => return Err(self.unexpected(token.start..token.end)),
                     },
                     "." | "?." => {
@@ -424,7 +453,7 @@ impl<'s> Parser<'s> {
             && self.comment_close_from(lt + 4).is_some()
     }
 
-    fn comment_close_from(&mut self, from: usize) -> Option<usize> {
+    pub(super) fn comment_close_from(&mut self, from: usize) -> Option<usize> {
         if let Some((searched, close)) = self.comment_close
             && searched <= from
             && close.is_none_or(|close| close >= from)
@@ -504,6 +533,22 @@ mod tests {
         let mut parser = Parser::new(&source);
         let _ = parser.body(0);
         assert!(parser.diagnostics.is_empty());
+        assert_eq!(parser.comment_scans, 1);
+    }
+
+    #[test]
+    fn unclosed_comments_at_the_top_level_search_for_the_close_once() {
+        let source = "<!-- >".repeat(1_000);
+        let mut parser = Parser::new(&source);
+        let _ = parser.body(0);
+        assert_eq!(parser.comment_scans, 1);
+    }
+
+    #[test]
+    fn unclosed_comments_inside_an_expression_search_for_the_close_once() {
+        let source = format!("{{<a/>{}}}", "<!-- x ".repeat(1_000));
+        let mut parser = Parser::new(&source);
+        let _ = parser.body(0);
         assert_eq!(parser.comment_scans, 1);
     }
 

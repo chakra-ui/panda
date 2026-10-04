@@ -7,7 +7,7 @@ use string_wizard::{MagicString, MagicStringOptions, SourceMapOptions};
 use super::helper;
 use super::imports;
 use super::plan::{HelperCxMode, Rewrite, TransformPlan};
-use pandacss_extractor::QuotedExpression;
+use pandacss_sfc::vue::QuotedExpression;
 use pandacss_system::System;
 
 /// One edit recorded against the original source indices.
@@ -38,7 +38,7 @@ pub(crate) fn build_transform_edits(
 ) -> Vec<Edit> {
     let mut edits = Vec::new();
     let quoted = if is_vue(path) {
-        pandacss_extractor::vue_quoted_expressions(source)
+        pandacss_sfc::vue::quoted_expressions(source)
     } else {
         Vec::new()
     };

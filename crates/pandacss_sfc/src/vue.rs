@@ -1,20 +1,26 @@
 //! Vue SFC source adapter.
 
-use crate::adapter::{
-    JsState, TagBlock, ascii_eq_ci, blank_like, copy_expression, copy_range, find_ascii_ci,
-    find_bytes, find_tag_end, finish_mask, has_non_html_lang, is_tag_name_boundary, starts_with,
-    tag_blocks, tag_blocks_with,
+use crate::markup::{
+    Expressions, Forward, TagBlock, ascii_eq_ci, attribute_value, blank_like, copy_expression,
+    copy_range, find_bytes, find_close_tag, find_tag_end, finish_mask, is_tag_name_boundary,
+    raw_blocks, starts_with, tag_blocks_with,
 };
 
 #[must_use]
-pub(crate) fn mask_vue(source: &str) -> String {
+pub fn mask(source: &str) -> String {
+    mask_with(source, &script_blocks(source), &template_blocks(source))
+}
+
+/// [`mask`] with the script and template blocks the caller already found.
+#[must_use]
+pub fn mask_with(source: &str, scripts: &[TagBlock], templates: &[TagBlock]) -> String {
     let mut mask = blank_like(source);
 
-    for block in tag_blocks(source, "script") {
+    for block in scripts {
         copy_range(&mut mask, source, block.content_start, block.content_end);
     }
 
-    visit_template_expressions(source, &mut |expr| {
+    visit_template_expressions(source, templates, &mut |expr| {
         copy_expression(
             &mut mask,
             source,
@@ -36,9 +42,9 @@ pub struct QuotedExpression {
 }
 
 #[must_use]
-pub fn vue_quoted_expressions(source: &str) -> Vec<QuotedExpression> {
+pub fn quoted_expressions(source: &str) -> Vec<QuotedExpression> {
     let mut quoted = Vec::new();
-    visit_template_expressions(source, &mut |expr| {
+    visit_template_expressions(source, &template_blocks(source), &mut |expr| {
         if let Some(quote) = expr.quote {
             quoted.push(QuotedExpression {
                 start: expr.start,
@@ -58,14 +64,42 @@ struct TemplateExpression {
     quote: Option<u8>,
 }
 
-/// Nested `<template>` (slots, `v-if` groups) must not end the root block.
-pub(crate) fn vue_template_blocks(source: &str) -> Vec<TagBlock> {
-    tag_blocks_with(source, "template", |content_start| {
-        find_matching_template_close(source, content_start).or_else(|| {
-            find_ascii_ci(source, "</template>", content_start)
-                .map(|start| (start, start + "</template>".len()))
+/// The SFC's own `<script>` blocks. Vue ignores a `<script>` inside the template.
+#[must_use]
+pub fn script_blocks(source: &str) -> Vec<TagBlock> {
+    raw_blocks(source, Expressions::Interpolations, "template").scripts
+}
+
+/// Whether a script opts into JSX with `lang="jsx"` or `lang="tsx"`. Template
+/// expressions never hold JSX, so otherwise the mask parses as TypeScript and
+/// `<T>value` stays a type assertion.
+#[must_use]
+pub fn uses_jsx(source: &str) -> bool {
+    scripts_use_jsx(source, &script_blocks(source))
+}
+
+/// [`uses_jsx`] over script blocks the caller already found.
+#[must_use]
+pub fn scripts_use_jsx(source: &str, scripts: &[TagBlock]) -> bool {
+    scripts.iter().any(|block| {
+        attribute_value(&source[block.open_start..block.open_end], "lang").is_some_and(|lang| {
+            lang.eq_ignore_ascii_case("jsx") || lang.eq_ignore_ascii_case("tsx")
         })
     })
+}
+
+/// Nested `<template>` (slots, `v-if` groups) must not end the root block.
+#[must_use]
+pub fn template_blocks(source: &str) -> Vec<TagBlock> {
+    tag_blocks_with(
+        source,
+        "template",
+        Expressions::Interpolations,
+        |content_start| {
+            find_matching_template_close(source, content_start)
+                .or_else(|| find_close_tag(source, "template", content_start))
+        },
+    )
     .into_iter()
     .filter(|block| !has_non_html_lang(source, block.open_start, block.open_end))
     .collect()
@@ -76,13 +110,14 @@ fn find_matching_template_close(source: &str, from: usize) -> Option<(usize, usi
     let bytes = source.as_bytes();
     let mut depth = 1usize;
     let mut cursor = from;
+    let mut interpolation_close = Forward::default();
     while cursor < bytes.len() {
         if starts_with(bytes, cursor, b"<!--") {
             cursor = find_bytes(bytes, b"-->", cursor + 4)? + 3;
             continue;
         }
         if starts_with(bytes, cursor, b"{{")
-            && let Some(close) = find_vue_interpolation_end(source, cursor + 2, bytes.len())
+            && let Some(close) = interpolation_close.find(bytes, b"}}", cursor + 2)
         {
             cursor = close + 2;
             continue;
@@ -112,8 +147,12 @@ fn find_matching_template_close(source: &str, from: usize) -> Option<(usize, usi
     None
 }
 
-fn visit_template_expressions(source: &str, visit: &mut impl FnMut(TemplateExpression)) {
-    for block in vue_template_blocks(source) {
+fn visit_template_expressions(
+    source: &str,
+    templates: &[TagBlock],
+    visit: &mut impl FnMut(TemplateExpression),
+) {
+    for block in templates {
         visit_block_expressions(source, block.content_start, block.content_end, visit);
     }
 }
@@ -127,6 +166,7 @@ fn visit_block_expressions(
     let bytes = source.as_bytes();
     let mut cursor = start;
     let mut v_pre_depth = 0usize;
+    let mut interpolation_close = Forward::default();
     while cursor < end {
         if starts_with(bytes, cursor, b"<!--") {
             cursor = find_bytes(bytes, b"-->", cursor + 4).map_or(end, |index| index + 3);
@@ -134,7 +174,9 @@ fn visit_block_expressions(
         }
         if v_pre_depth == 0
             && starts_with(bytes, cursor, b"{{")
-            && let Some(close) = find_vue_interpolation_end(source, cursor + 2, end)
+            && let Some(close) = interpolation_close
+                .find(bytes, b"}}", cursor + 2)
+                .filter(|&close| close < end)
         {
             visit(TemplateExpression {
                 start: cursor + 2,
@@ -146,7 +188,12 @@ fn visit_block_expressions(
             cursor = close + 2;
             continue;
         }
+        // Like Vue's tokenizer, `<` starts a tag only before a letter, `/` or `!`;
+        // `a < b` is text.
         if bytes[cursor] == b'<'
+            && bytes
+                .get(cursor + 1)
+                .is_some_and(|next| next.is_ascii_alphabetic() || matches!(next, b'/' | b'!'))
             && let Some(tag_end) = find_tag_end(source, cursor + 1)
         {
             let tag_start = cursor + 1;
@@ -328,25 +375,30 @@ fn vue_expression_range(
     is_expression.then_some((start, end))
 }
 
+/// The iterated source of `v-for`: after the first `in` or `of` with whitespace
+/// on both sides, like Vue's `forAliasRE`, so `' in '` inside the source stays.
 fn v_for_source_range(source: &str, start: usize, end: usize) -> Option<(usize, usize)> {
-    let value = source.get(start..end)?;
-    let separator = value.rfind(" in ").or_else(|| value.rfind(" of "))?;
-    let expr_start = start + separator + 4;
-    (expr_start < end).then_some((expr_start, end))
+    let bytes = source.as_bytes();
+    (start + 1..end.saturating_sub(3)).find_map(|index| {
+        let keyword = bytes.get(index..index + 2)?;
+        let separated = bytes[index - 1].is_ascii_whitespace()
+            && bytes[index + 2].is_ascii_whitespace()
+            && (keyword == b"in" || keyword == b"of");
+        if !separated {
+            return None;
+        }
+        let expr_start = (index + 2..end).find(|&at| !bytes[at].is_ascii_whitespace())?;
+        Some((expr_start, end))
+    })
 }
 
-fn find_vue_interpolation_end(source: &str, from: usize, end: usize) -> Option<usize> {
-    let bytes = source.as_bytes();
-    let mut index = from;
-    let mut state = JsState::default();
-    while index + 1 < end {
-        if state.step(bytes, &mut index) {
-            continue;
-        }
-        if starts_with(bytes, index, b"}}") {
-            return Some(index);
-        }
-        index += 1;
-    }
-    None
+/// `true` when a Vue `<template lang="…">` names something other than HTML
+/// (`pug`, etc.); such templates aren't scanned. `start`/`end` bound the
+/// opening tag.
+#[must_use]
+pub fn has_non_html_lang(source: &str, start: usize, end: usize) -> bool {
+    source
+        .get(start..=end)
+        .and_then(|opening| attribute_value(opening, "lang"))
+        .is_some_and(|lang| !lang.is_empty() && !lang.eq_ignore_ascii_case("html"))
 }

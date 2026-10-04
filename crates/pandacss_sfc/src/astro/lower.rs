@@ -1,7 +1,9 @@
 use std::ops::Range;
 
-use crate::tree::{Attribute, Child, ChildKind, Document, Element, Expression, Markup, Value};
-use crate::{AstroAttribute, AstroAttributeValue, AstroDocument, AstroElement};
+use crate::astro::tree::{
+    Attribute, Child, ChildKind, Document, Element, Expression, Markup, Value,
+};
+use crate::astro::{AstroAttribute, AstroAttributeValue, AstroDocument, AstroElement};
 
 pub(crate) fn lower(source: &str, document: Document) -> AstroDocument {
     let mut lowering = Lowering {
@@ -25,7 +27,8 @@ pub(crate) fn lower(source: &str, document: Document) -> AstroDocument {
         .map(|frontmatter| range(&frontmatter.content));
     AstroDocument {
         frontmatter,
-        canvas: String::from_utf8_lossy(&canvas).into_owned(),
+        canvas: String::from_utf8(canvas)
+            .unwrap_or_else(|error| String::from_utf8_lossy(error.as_bytes()).into_owned()),
         elements,
         scripts,
         diagnostics: document.diagnostics,
@@ -40,17 +43,17 @@ fn range(span: &Range<usize>) -> Range<u32> {
     offset(span.start)..offset(span.end)
 }
 
+/// One spare byte, so appending the closing `]` never reallocates the canvas.
 fn blank(source: &str) -> Vec<u8> {
-    source
-        .bytes()
-        .map(|byte| {
-            if matches!(byte, b'\n' | b'\r') {
-                byte
-            } else {
-                b' '
-            }
-        })
-        .collect()
+    let mut canvas = Vec::with_capacity(source.len() + 1);
+    canvas.extend(source.bytes().map(|byte| {
+        if matches!(byte, b'\n' | b'\r') {
+            byte
+        } else {
+            b' '
+        }
+    }));
+    canvas
 }
 
 struct Lowering<'s> {

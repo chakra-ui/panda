@@ -1,9 +1,9 @@
 use std::ops::Range;
 
 pub(crate) struct Document {
-    pub(crate) frontmatter: Option<crate::frontmatter::Frontmatter>,
+    pub(crate) frontmatter: Option<crate::astro::frontmatter::Frontmatter>,
     pub(crate) body: Vec<Child>,
-    pub(crate) diagnostics: Vec<crate::AstroDiagnostic>,
+    pub(crate) diagnostics: Vec<crate::astro::AstroDiagnostic>,
 }
 
 pub(crate) struct Child {

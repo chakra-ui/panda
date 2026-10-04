@@ -70,19 +70,19 @@ positives on shadowed names.
 Unresolved symbols (free variables) conservatively count as imports. Such names typically refer to globals or implicit
 imports the binder can't see; downstream alias lookup by name is authoritative.
 
-The second argument of `styled(tag, recipe, options)` resolves to a config recipe name when it is a named recipe
-import, a local alias of one (`const recipe = button`), or a single property on a recipe namespace import
-(`recipes.button`). Mutated bindings and deeper member chains do not resolve.
+The second argument of `styled(tag, recipe, options)` resolves to a config recipe name when it is a named recipe import,
+a local alias of one (`const recipe = button`), or a single property on a recipe namespace import (`recipes.button`).
+Mutated bindings and deeper member chains do not resolve.
 
 `styled(tag, recipe, options)` routes `options.defaultProps` through recipe variant selection, then encodes only the
 remaining style props. Component defaults such as `srcDoc`, `title`, and `id` stay at runtime and never enter atoms or
 portable build info. Inline recipes and plain style objects apply the same filter, preserving registered utilities,
 conditions, custom properties, selectors, and `css` props.
 
-The extractor records the factory argument layout from the Oxc callee: direct calls use `(tag, styles, options)`;
-member calls such as `styled.div` use `(styles, options)`. Recipe-name resolution and project encoding consume that
-same layout, so factory options never become style objects. Namespace direct calls such as `JSX.styled(...)` retain
-the direct layout even though their callee is a member expression.
+The extractor records the factory argument layout from the Oxc callee: direct calls use `(tag, styles, options)`; member
+calls such as `styled.div` use `(styles, options)`. Recipe-name resolution and project encoding consume that same
+layout, so factory options never become style objects. Namespace direct calls such as `JSX.styled(...)` retain the
+direct layout even though their callee is a member expression.
 
 Object-level conditional defaults on imported recipes are processed branch by branch for both style props and recipe
 variant selection. JSX spreads use the shared CSS property predicate for arbitrary custom properties, selectors, and
@@ -92,26 +92,25 @@ at-rule keys in `jsxStyleProps: 'all'`; strict prop allowlists and the `minimal`
 
 The project transformer consumes compact owned facts from this parse instead of parsing source fragments again:
 
-- `ModuleFacts` keeps imports, resolved import-reference spans, `local_call_bindings` (same-file
-  bindings whose initializer is a collected Panda call, plus plain `binding(...)` reference sites from
-  Oxc `Semantic`), and the directive-prologue boundary.
-- `CallFacts` keeps callee shape, argument spans, expression facts, and the grammar context for replacing the call
-  with an object literal. Oxc semantic ancestors identify statement starts, including concise arrow bodies and
-  expressions whose first token comes from the call. Local and imported recipe raw calls carry the same context.
+- `ModuleFacts` keeps imports, resolved import-reference spans, `local_call_bindings` (same-file bindings whose
+  initializer is a collected Panda call, plus plain `binding(...)` reference sites from Oxc `Semantic`), and the
+  directive-prologue boundary.
+- `CallFacts` keeps callee shape, argument spans, expression facts, and the grammar context for replacing the call with
+  an object literal. Oxc semantic ancestors identify statement starts, including concise arrow bodies and expressions
+  whose first token comes from the call. Local and imported recipe raw calls carry the same context.
 - `JsxSourceFacts` and `JsxAttr` keep element/runtime shape, property facts, and cooked values.
-- `ExpressionFacts` keeps only the kinds, precedence, static keys, and branch structure needed by rewrites.
-  Includes `static_scalar_key` (the JavaScript key spelling of a static string, boolean, or number, derived from
-  parsed Oxc values) and `parenthesize_for_logical_and` for re-emitting conditions as `cond && class`.
+- `ExpressionFacts` keeps only the kinds, precedence, static keys, and branch structure needed by rewrites. Includes
+  `static_scalar_key` (the JavaScript key spelling of a static string, boolean, or number, derived from parsed Oxc
+  values) and `parenthesize_for_logical_and` for re-emitting conditions as `cond && class`.
 
 These records use spans and small enums rather than cloned Oxc nodes, so the allocator still drops after extraction.
 `extract_transform` retains them; the regular extraction path skips their recursive payload and semantic
 import-reference list. Import cleanup compares semantic reference spans with rewrite spans; a rewrite also lists source
 spans copied into its output so nested live references are preserved.
 
-Vue and Svelte scan their markup grammar in native adapters because Oxc parses JavaScript, not the outer template
-language. Astro is tokenized by `pandacss_astro`, which ports Astro's parser rules and lowers the file to a same-offset
-program; see [astro-parser](./astro-parser.md). Expressions copied into the adapted program reuse the original parse and
-resolver.
+Oxc parses JavaScript, not the outer template language, so `pandacss_sfc` lowers each container first. Vue and Svelte
+mask their markup into a same-offset program; Astro is tokenized with Astro's parser rules and lowered the same way; see
+[astro-parser](./astro-parser.md). Expressions copied into the adapted program reuse the original parse and resolver.
 
 ## Parse-error contract
 
