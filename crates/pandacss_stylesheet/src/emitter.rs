@@ -1595,6 +1595,7 @@ impl<'a> EmitContext<'a> {
                 declarations.clone()
             } else if let Some(declarations) =
                 Self::declarations_from_literal(&result.styles, atom.important(), numeric_hint)
+                    .filter(|declarations| !declarations.is_empty())
             {
                 declarations
             } else {
@@ -2395,6 +2396,9 @@ impl<'a> EmitContext<'a> {
         let mut result = self.transform_atom(prop, raw, Some(value));
         if let Some(styles) = self.utility_style_override(prop, value) {
             result.styles = styles.clone();
+        } else if matches!(value, AtomValue::Bool(false)) {
+            // Without a transform, `false` is `{ prop: false }`, which writes nothing.
+            result.styles = Literal::Object(Vec::new());
         }
         result
     }
@@ -2710,7 +2714,8 @@ fn atom_value_to_string(value: &AtomValue) -> Option<Cow<'_, str>> {
             Some(Cow::Borrowed(value))
         }
         AtomValue::Bool(true) => Some(Cow::Borrowed("true")),
-        AtomValue::Bool(false) | AtomValue::Null => None,
+        AtomValue::Bool(false) => Some(Cow::Borrowed("false")),
+        AtomValue::Null => None,
     }
 }
 
