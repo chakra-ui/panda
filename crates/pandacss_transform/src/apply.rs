@@ -7,7 +7,7 @@ use string_wizard::{MagicString, MagicStringOptions, SourceMapOptions};
 use super::helper;
 use super::imports;
 use super::plan::{HelperCxMode, Rewrite, TransformPlan};
-use pandacss_extractor::QuotedExpression;
+use pandacss_sfc::vue::QuotedExpression;
 use pandacss_system::System;
 
 /// One edit recorded against the original source indices.
@@ -38,7 +38,7 @@ pub(crate) fn build_transform_edits(
 ) -> Vec<Edit> {
     let mut edits = Vec::new();
     let quoted = if is_vue(path) {
-        pandacss_extractor::vue_quoted_expressions(source)
+        pandacss_sfc::vue::quoted_expressions(source)
     } else {
         Vec::new()
     };
@@ -61,33 +61,50 @@ pub(crate) fn build_transform_edits(
         ));
     }
 
-    if !plan.hoisted.is_empty() {
-        edits.push(Edit::Insert {
-            at: imports::internal_css_import_insertion_point(&plan.module),
-            content: plan.hoisted.iter().enumerate().fold(
-                String::new(),
-                |mut out, (index, value)| {
-                    out.push_str("const ");
-                    out.push_str(&super::plan::hoisted_name(index));
-                    out.push_str(" = ");
-                    out.push_str(value);
-                    out.push_str(";\n");
-                    out
-                },
-            ),
-        });
-    }
+    let hoisted = (!plan.hoisted.is_empty()).then(|| {
+        plan.hoisted
+            .iter()
+            .enumerate()
+            .fold(String::new(), |mut out, (index, value)| {
+                out.push_str("const ");
+                out.push_str(&super::plan::hoisted_name(index));
+                out.push_str(" = ");
+                out.push_str(value);
+                out.push_str(";\n");
+                out
+            })
+    });
 
+    let mut import_line = None;
     if plan.module.symbols_resolved || helper_facts_required(&plan.helper) {
         edits.extend(imports::plan_internal_css_import_removals(
             source,
             &plan.module,
         ));
         let helper = helper_facts_with_live_references(&plan.helper, &plan.module, &plan.rewrites);
-        if let Some(content) = helper::plan_internal_css_import_line(&helper, helper_cx) {
+        import_line = helper::plan_internal_css_import_line(&helper, helper_cx);
+    }
+
+    let at = imports::internal_css_import_insertion_point(&plan.module);
+    if imports::is_astro_path(path) {
+        let content = [hoisted, import_line]
+            .into_iter()
+            .flatten()
+            .collect::<String>();
+        if !content.is_empty() {
             edits.push(Edit::Insert {
-                at: imports::internal_css_import_insertion_point(&plan.module),
-                content: separated_import(source, &plan.module, content),
+                at,
+                content: separated_import(source, path, &plan.module, content),
+            });
+        }
+    } else {
+        if let Some(content) = hoisted {
+            edits.push(Edit::Insert { at, content });
+        }
+        if let Some(content) = import_line {
+            edits.push(Edit::Insert {
+                at,
+                content: separated_import(source, path, &plan.module, content),
             });
         }
     }
@@ -184,7 +201,7 @@ pub(crate) fn apply_helper_sync(
     if let Some(content) = helper::plan_internal_css_import_line(&helper, helper_cx) {
         edits.push(Edit::Insert {
             at: imports::internal_css_import_insertion_point(&module),
-            content: separated_import(source, &module, content),
+            content: separated_import(source, path, &module, content),
         });
     }
     apply_edits(source, path, &edits).0
@@ -215,12 +232,26 @@ fn helper_facts_with_live_references(
 
 fn separated_import(
     source: &str,
+    path: &str,
     module: &pandacss_extractor::ModuleFacts,
     content: String,
 ) -> String {
+    let eol = if imports::is_astro_path(path) {
+        imports::line_ending(source)
+    } else {
+        "\n"
+    };
+    if module.needs_frontmatter {
+        return format!("---{eol}{}---{eol}", content.replace('\n', eol));
+    }
     let at = usize::try_from(imports::internal_css_import_insertion_point(module))
         .unwrap_or(source.len())
         .min(source.len());
+    let content = if eol == "\n" {
+        content
+    } else {
+        content.replace('\n', eol)
+    };
     if at == 0
         || source
             .get(..at)
@@ -228,7 +259,7 @@ fn separated_import(
     {
         content
     } else {
-        format!("\n{content}")
+        format!("{eol}{content}")
     }
 }
 
@@ -304,6 +335,7 @@ mod tests {
                 }],
                 local_call_bindings: Vec::new(),
                 after_directives: 0,
+                needs_frontmatter: false,
                 symbols_resolved: false,
             },
             bailed: false,
@@ -338,6 +370,7 @@ mod tests {
                 import_bindings: Vec::new(),
                 local_call_bindings: Vec::new(),
                 after_directives: 0,
+                needs_frontmatter: false,
                 symbols_resolved: false,
             },
             bailed: false,
@@ -353,6 +386,65 @@ mod tests {
         import { cx as __pcx } from '@pandacss-internal/css';
         export const cls = "color_red";
         "#);
+    }
+
+    fn astro_plan(needs_frontmatter: bool, after_directives: u32) -> TransformPlan {
+        TransformPlan {
+            rewrites: Vec::new(),
+            dependencies: Vec::new(),
+            helper: TransformHelperFacts {
+                needs_cx: true,
+                needs_attach_recipe: false,
+                needs_memo_recipe: false,
+            },
+            module: ModuleFacts {
+                imports: Vec::new(),
+                import_bindings: Vec::new(),
+                local_call_bindings: Vec::new(),
+                after_directives,
+                needs_frontmatter,
+                symbols_resolved: false,
+            },
+            bailed: false,
+            hashed_recipe: None,
+            hoisted: vec!["{ a: \"b\" }".to_owned()],
+        }
+    }
+
+    #[test]
+    fn hoisted_declarations_and_helper_share_one_new_astro_frontmatter() {
+        let system = test_system();
+        let source = "<p class={__ps0.a} />\n";
+        let edits = build_transform_edits(
+            &system,
+            "src/a.astro",
+            source,
+            &astro_plan(true, 0),
+            HelperCxMode::Auto,
+        );
+
+        assert_snapshot!(project_edits(source, &edits), @r#"
+        ---
+        const __ps0 = { a: "b" };
+        import { cx as __pcx } from '@pandacss-internal/css';
+        ---
+        <p class={__ps0.a} />
+        "#);
+    }
+
+    #[test]
+    fn hoisted_declarations_alone_create_one_crlf_astro_frontmatter() {
+        let system = test_system();
+        let source = "<p class={__ps0.a} />\r\n<b />\r\n";
+        let mut plan = astro_plan(true, 0);
+        plan.helper = TransformHelperFacts::default();
+        let edits =
+            build_transform_edits(&system, "src/a.astro", source, &plan, HelperCxMode::Auto);
+
+        assert_eq!(
+            project_edits(source, &edits),
+            "---\r\nconst __ps0 = { a: \"b\" };\r\n---\r\n<p class={__ps0.a} />\r\n<b />\r\n"
+        );
     }
 
     #[test]
@@ -386,6 +478,7 @@ mod tests {
                 }],
                 local_call_bindings: Vec::new(),
                 after_directives: 0,
+                needs_frontmatter: false,
                 symbols_resolved: false,
             },
             bailed: false,

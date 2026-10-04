@@ -1259,6 +1259,7 @@ dependencies = [
  "pandacss_config",
  "pandacss_fs",
  "pandacss_literal",
+ "pandacss_sfc",
  "pandacss_shared",
  "pandacss_tokens",
  "regex",
@@ -1326,6 +1327,17 @@ dependencies = [
  "rustc-hash",
  "serde",
  "tracing",
+]
+
+[[package]]
+name = "pandacss_sfc"
+version = "0.0.0"
+dependencies = [
+ "indoc",
+ "insta",
+ "oxc_allocator",
+ "oxc_parser",
+ "oxc_span",
 ]
 
 [[package]]
@@ -1422,6 +1434,7 @@ dependencies = [
  "pandacss_literal",
  "pandacss_project",
  "pandacss_recipes",
+ "pandacss_sfc",
  "pandacss_shared",
  "pandacss_system",
  "pandacss_utility",

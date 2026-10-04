@@ -912,3 +912,294 @@ fn unclosed_root_template_still_extracts_up_to_the_first_close() {
     jsx: []
     ");
 }
+
+#[test]
+fn script_tag_inside_an_html_comment_is_not_a_block() {
+    let source = indoc! {r#"
+        <!-- <script> -->
+        <script setup lang="ts">
+        import { css } from '@panda/css';
+        type Log = { id: number };
+        const a = css({ color: 'red' });
+        </script>
+    "#};
+    let result = extract(source, "Card.vue", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+    jsx: []
+    ");
+}
+
+#[test]
+fn comment_marker_inside_script_does_not_hide_the_template() {
+    let source = indoc! {r#"
+        <script setup>
+        import { css } from '@panda/css';
+        const marker = '<!--';
+        const a = css({ color: 'red' });
+        </script>
+
+        <template>
+          <p :class="css({ color: 'blue' })" />
+        </template>
+    "#};
+    let result = extract(source, "Card.vue", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+      - name: css
+        data:
+          color: blue
+    jsx: []
+    ");
+}
+
+#[test]
+fn unclosed_script_runs_to_the_end_of_the_file() {
+    let source = indoc! {r#"
+        <script setup>
+        import { css } from '@panda/css';
+        const a = css({ color: 'red' });
+
+        <template>
+          <p :class="css({ color: 'blue' })" />
+        </template>
+    "#};
+    let result = extract(source, "Card.vue", &panda_config());
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls: []
+    jsx: []
+    ");
+}
+
+#[test]
+fn comment_marker_in_an_attribute_does_not_hide_the_script() {
+    let source = indoc! {r#"
+        <template><div :class="css({ color: 'red' })" title="<!--">x</div></template>
+        <script setup>
+        import { css } from '@panda/css';
+        </script>
+    "#};
+    let result = extract(source, "Card.vue", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+    jsx: []
+    ");
+}
+
+#[test]
+fn an_interpolation_ends_at_the_first_closing_braces_like_vue() {
+    let source = indoc! {r#"
+        <template>
+          <p>{{ count }}}}</p>
+          <p :class="css({ color: 'red' })">x</p>
+        </template>
+        <script setup>
+        import { css } from '@panda/css';
+        </script>
+    "#};
+    let result = extract(source, "Card.vue", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+    jsx: []
+    ");
+}
+
+#[test]
+fn regex_brace_at_the_start_of_a_bound_attribute_keeps_the_style_call() {
+    let source = indoc! {r#"
+        <template>
+          <p :class="/\}/.test(value) ? css({ color: 'red' }) : ''" />
+          <p>{{ /\}/.test(value) ? 'a' : 'b' }}</p>
+          <p :class="css({ color: 'blue' })" />
+        </template>
+        <script setup>
+        import { css } from '@panda/css';
+        </script>
+    "#};
+    let result = extract(source, "Card.vue", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+      - name: css
+        data:
+          color: blue
+    jsx: []
+    ");
+}
+
+fn vue_calls(source: &str) -> Vec<String> {
+    let result = extract(source, "Card.vue", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    result
+        .calls
+        .iter()
+        .map(|call| source[call.span.start as usize..call.span.end as usize].to_owned())
+        .collect()
+}
+
+#[test]
+fn less_than_inside_an_interpolation_does_not_hide_the_script() {
+    let source = indoc! {r#"
+        <template>
+          <p>{{ value.includes('<T') ? 'a' : 'b' }}</p>
+          <p :class="css({ color: 'red' })">x</p>
+        </template>
+        <script setup>
+        import { css } from '@panda/css';
+        </script>
+    "#};
+    assert_eq!(vue_calls(source), ["css({ color: 'red' })"]);
+}
+
+#[test]
+fn bare_less_than_in_text_keeps_the_next_component_bindings() {
+    let source = indoc! {r#"
+        <template>
+          a < b <Comp v-bind="css({ color: 'red' })" />
+        </template>
+        <script setup>
+        import { css } from '@panda/css';
+        </script>
+    "#};
+    assert_eq!(vue_calls(source), ["css({ color: 'red' })"]);
+}
+
+#[test]
+fn v_for_source_with_in_inside_a_string_extracts() {
+    let source = indoc! {r#"
+        <template>
+          <li v-for="item in items.filter((i) => i.tag !== ' in ')" :class="css({ color: 'red' })">x</li>
+        </template>
+        <script setup>
+        import { css } from '@panda/css';
+        </script>
+    "#};
+    assert_eq!(vue_calls(source), ["css({ color: 'red' })"]);
+}
+
+#[test]
+fn tsx_script_setup_keeps_its_jsx() {
+    let source = indoc! {r#"
+        <script setup lang="tsx">
+        import { css } from '@panda/css';
+        const Icon = () => <svg class={css({ color: 'red' })} />;
+        </script>
+        <template><Icon /></template>
+    "#};
+    assert_eq!(vue_calls(source), ["css({ color: 'red' })"]);
+}
+
+#[test]
+fn script_inside_the_template_is_not_component_code() {
+    let source = indoc! {r#"
+        <template>
+          <div><script>{ "not": "module code" }</script></div>
+          <p :class="css({ color: 'red' })">x</p>
+        </template>
+        <script setup>
+        import { css } from '@panda/css';
+        </script>
+    "#};
+    assert_eq!(vue_calls(source), ["css({ color: 'red' })"]);
+}
+
+#[test]
+fn unclosed_interpolations_do_not_slow_extraction() {
+    let source = format!(
+        "<template><p :class=\"css({{ color: 'red' }})\">x</p>{}</template>\n<script setup>\nimport {{ css }} from '@panda/css';\n</script>\n",
+        "{{ a ".repeat(50_000)
+    );
+    let result = extract(&source, "Card.vue", &panda_config());
+    assert_eq!(result.calls.len(), 1);
+}
+
+#[test]
+fn thousands_of_interpolations_extract_without_nesting_into_a_call_chain() {
+    let source = format!(
+        "<template>{}<p :class=\"css({{ color: 'red' }})\">x</p></template>\n<script setup>\nimport {{ css }} from '@panda/css';\n</script>\n",
+        "<p>{{a}}{{b}}</p> {{ c }}".repeat(20_000)
+    );
+    let result = extract(&source, "Card.vue", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_eq!(result.calls.len(), 1);
+}
+
+#[test]
+fn a_script_ending_without_a_semicolon_does_not_call_the_first_binding() {
+    let source = indoc! {r#"
+        <script setup>
+        import { css } from '@panda/css';
+        const styles = css
+        </script>
+        <template><p :class="css({ color: 'red' })">x</p></template>
+    "#};
+    let result = extract(source, "Card.vue", &panda_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+    jsx: []
+    ");
+}
+
+#[test]
+fn tsx_lang_attribute_is_read_like_html() {
+    for opening in [
+        r#"<script lang = "tsx">"#,
+        "<script lang=tsx>",
+        "<script setup\n  lang='jsx'>",
+    ] {
+        let source = format!(
+            "{opening}\nimport {{ css }} from '@panda/css'\nconst el = <p class={{css({{ color: 'red' }})}} />\n</script>\n<template><p /></template>\n"
+        );
+        assert_eq!(vue_calls(&source), ["css({ color: 'red' })"], "{opening}");
+    }
+}
+
+#[test]
+fn a_data_language_attribute_does_not_mark_the_template_as_pug() {
+    let source = indoc! {r#"
+        <template data-language="pug"><p :class="css({ color: 'red' })">x</p></template>
+        <script setup>
+        import { css } from '@panda/css';
+        </script>
+    "#};
+    assert_eq!(vue_calls(source), ["css({ color: 'red' })"]);
+}
+
+#[test]
+fn custom_tag_names_with_script_prefix_do_not_hide_real_scripts() {
+    for tag in ["script_foo", "scriptあ", "style_foo", "styleあ"] {
+        let source = format!(
+            "<template><{tag}></{tag}><p :class=\"css({{color:'red'}})\"/></template><script setup>;import {{css}} from '@panda/css';</script>"
+        );
+        let result = extract(&source, "page.vue", &panda_config());
+        assert!(
+            result.diagnostics.is_empty(),
+            "{tag}: {:?}",
+            result.diagnostics
+        );
+        assert_eq!(result.calls.len(), 1, "{tag}");
+    }
+}

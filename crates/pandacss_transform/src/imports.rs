@@ -43,7 +43,7 @@ pub(crate) fn plan_panda_import_edits(
             continue;
         }
         if let ImportKind::Value = record.kind
-            && let Some(edit) = plan_import_edit(source, module, rewrites, record)
+            && let Some(edit) = plan_import_edit(source, path, module, rewrites, record)
         {
             edits.push(edit);
         }
@@ -80,6 +80,7 @@ pub(crate) fn internal_css_import_insertion_point(module: &ModuleFacts) -> u32 {
 
 fn plan_import_edit(
     source: &str,
+    path: &str,
     module: &ModuleFacts,
     rewrites: &[Rewrite],
     record: &ImportRecord,
@@ -101,11 +102,41 @@ fn plan_import_edit(
         return Some(Edit::Remove { start, end });
     }
 
+    let mut content = format_import(record, &live_specifiers);
+    if is_astro_path(path) && dashes_were_trimmed(source, record.span) {
+        let eol = line_ending(source);
+        if eol != "\n" {
+            content = content.replace('\n', eol);
+        }
+    }
+
     Some(Edit::Update {
         start,
         end,
-        content: format_import(record, &live_specifiers),
+        content,
     })
+}
+
+pub(crate) fn is_astro_path(path: &str) -> bool {
+    std::path::Path::new(path)
+        .extension()
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("astro"))
+}
+
+pub(crate) fn line_ending(source: &str) -> &'static str {
+    match source.find(['\r', '\n']) {
+        Some(index) if source[index..].starts_with("\r\n") => "\r\n",
+        Some(index) if source.as_bytes()[index] == b'\r' => "\r",
+        _ => "\n",
+    }
+}
+
+fn dashes_were_trimmed(source: &str, span: Span) -> bool {
+    usize::try_from(span.end)
+        .ok()
+        .and_then(|end| end.checked_sub(1))
+        .and_then(|index| source.as_bytes().get(index))
+        == Some(&b'-')
 }
 
 fn import_line_remove(source: &str, span: Span) -> Edit {
@@ -118,6 +149,9 @@ fn import_line_range(source: &str, span: Span) -> (u32, u32) {
     let mut end = usize::try_from(span.end)
         .unwrap_or(source.len())
         .min(source.len());
+    while end > 0 && source.as_bytes().get(end - 1) == Some(&b'-') {
+        end -= 1;
+    }
     if end < source.len() && source.as_bytes().get(end) == Some(&b';') {
         end += 1;
     }
@@ -261,6 +295,7 @@ mod tests {
             }],
             local_call_bindings: Vec::new(),
             after_directives: 0,
+            needs_frontmatter: false,
             symbols_resolved,
         }
     }

@@ -32,6 +32,7 @@ serde_json = { workspace = true }
 rustc-hash = { workspace = true }
 regex = { workspace = true }
 smallvec = { workspace = true }
+pandacss_sfc = { workspace = true }
 pandacss_fs = { workspace = true }
 pandacss_literal = { workspace = true }
 pandacss_shared = { workspace = true }

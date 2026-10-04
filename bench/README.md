@@ -72,11 +72,10 @@ pnpm --filter @pandacss/transformer build:fast   # the transformer and its inter
 pnpm --filter=./bench recipe-runtime             # CALLS=200000, RENDERS=20000 by default
 ```
 
-Runs each recipe two ways — the styled-system `cva`/`sva` and the transformer's specialized output — and checks
-both return the same classes before timing them. Sections: recipe
-calls per workload, the internal `cx` against a plain join, bundle bytes, and `styled()` configs rendered with
-`react-dom/server`. The transformer and `rolldown` load from `packages/transformer`, so the bench adds no dependencies
-of its own.
+Runs each recipe two ways — the styled-system `cva`/`sva` and the transformer's specialized output — and checks both
+return the same classes before timing them. Sections: recipe calls per workload, the internal `cx` against a plain join,
+bundle bytes, and `styled()` configs rendered with `react-dom/server`. The transformer and `rolldown` load from
+`packages/transformer`, so the bench adds no dependencies of its own.
 
 ## staticCss condition sweep (`static_css_conditions`)
 
@@ -102,6 +101,19 @@ BENCH_CSS_OUT=out.css cargo run -p pandacss_bench --bin recipe_compositions --re
 Emits CSS for 300 recipes and 100 slot recipes that mix explicit properties with `textStyle` / `layerStyle`, across
 variants, compound variants, and conditions. Guards the cost of resolving explicit-over-composition precedence. Diff the
 saved CSS between branches to check that only values change, not rule order.
+
+## SFC extraction (`sfc_extract`)
+
+```sh
+cargo run -p pandacss_bench --bin sfc_extract --release
+ONLY=astro-scripts cargo run -p pandacss_bench --bin sfc_extract --release
+```
+
+Extracts generated `.astro`, `.svelte` and `.vue` files at 25, 100 and 400 KB, `.astro` files with 0, 1, 10 and 100
+client scripts (with and without Panda imports), nesting depth, unclosed comments, and a mid-edit typo (an unclosed `{`
+in Svelte, unclosed `{{` in Vue). Each fixture asserts it extracts calls without warnings, and the script fixtures
+assert the exact count: the template's calls plus one per Panda script. `usPerKb` should stay flat across sizes of one
+scenario; a rise means a scan grew faster than the file.
 
 ## Current Targets
 

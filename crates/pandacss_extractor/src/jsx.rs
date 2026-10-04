@@ -22,7 +22,6 @@ use oxc_ast::ast::{
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
-use oxc_span::SourceType;
 use serde::Serialize;
 use smallvec::SmallVec;
 use std::borrow::Cow;
@@ -145,12 +144,10 @@ pub fn extract_jsx(
 
     let allocator = Allocator::default();
     let raw_source = source;
-    let format = crate::adapter::SfcFormat::from_path(path);
-    let source = crate::adapt_source(source, format);
-    let source = source.as_ref();
-    let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
-    let parser_return = Parser::new(&allocator, source, source_type)
-        .with_options(crate::adapter::parse_options_for(format))
+    let adapted = crate::adapter::AdaptedSource::new(source, path);
+    let source = adapted.code.as_ref();
+    let parser_return = Parser::new(&allocator, source, adapted.source_type(path))
+        .with_options(adapted.parse_options())
         .parse();
 
     let cross_file = config
@@ -176,6 +173,7 @@ pub fn extract_jsx(
     let mut jsx = collect_jsx(&parser_return.program, &ctx, true);
     jsx.extend(crate::template_styles::collect_template_styles(
         raw_source,
+        &adapted,
         path,
         matched,
         config,
@@ -185,7 +183,7 @@ pub fn extract_jsx(
     ));
     ExtractedJsxResult {
         jsx,
-        diagnostics: crate::collect_parser_diagnostics(&parser_return.errors, source),
+        diagnostics: adapted.parse_diagnostics(&parser_return.errors),
     }
 }
 
