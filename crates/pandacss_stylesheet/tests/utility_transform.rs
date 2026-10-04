@@ -743,3 +743,156 @@ fn explicit_recipe_utility_overrides_a_composition_emitting_the_same_css_propert
     }
     ");
 }
+
+#[test]
+fn boolean_utility_emits_false_value_inside_condition() {
+    let cfg = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": { "breakpoints": { "md": "768px" } },
+        "utilities": {
+            "srOnly": {
+                "className": "sr",
+                "values": { "type": "boolean" },
+                "transform": { "kind": "js-callback", "id": "srOnly" }
+            }
+        }
+    }));
+    let utilities = compile_layer_with_transform(
+        &cfg,
+        "import { css } from '@panda/css'; css({ srOnly: true, md: { srOnly: false } });",
+        &[StylesheetLayer::Utilities],
+        |_prop, resolved, _original| {
+            let position = if matches!(resolved, AtomValue::Bool(true)) {
+                "absolute"
+            } else {
+                "static"
+            };
+            Ok(Some(Literal::Object(vec![decl("position", position)])))
+        },
+    );
+    assert_snapshot!(utilities, @r"
+    @layer utilities {
+      .sr_true {
+        position: absolute;
+      }
+      @media (width >= 48rem) {
+        .md\:sr_false {
+          position: static;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn false_on_a_plain_css_property_emits_no_rule() {
+    let cfg = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] }
+    }));
+    let utilities = compile_layer_with_transform(
+        &cfg,
+        "import { css } from '@panda/css'; css({ color: 'red', _hover: { color: false } });",
+        &[StylesheetLayer::Utilities],
+        |_prop, _resolved, _original| Ok(None),
+    );
+    assert_snapshot!(utilities, @r"
+    @layer utilities {
+      .color_red {
+        color: red;
+      }
+    }
+    ");
+}
+
+#[test]
+fn false_returned_inside_a_nested_transform_selector_emits_nothing() {
+    let cfg = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "linkStyle": {
+                "className": "link",
+                "values": { "type": "boolean" },
+                "transform": { "kind": "js-callback", "id": "linkStyle" }
+            }
+        }
+    }));
+    let utilities = compile_layer_with_transform(
+        &cfg,
+        "import { css } from '@panda/css'; css({ linkStyle: true });",
+        &[StylesheetLayer::Utilities],
+        |_prop, _resolved, _original| {
+            Ok(Some(Literal::Object(vec![
+                decl("color", "blue"),
+                (
+                    "&:hover".to_owned(),
+                    Literal::Object(vec![("textDecoration".to_owned(), Literal::Bool(false))]),
+                ),
+            ])))
+        },
+    );
+    assert_snapshot!(utilities, @"
+    @layer utilities {
+      .link_true {
+        color: blue;
+      }
+    }
+    ");
+}
+
+#[test]
+fn recipe_with_false_on_a_plain_css_property_emits_no_declaration() {
+    let cfg = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "recipes": {
+                "label": { "className": "label", "base": { "color": false, "fontSize": "12px" } }
+            }
+        }
+    }));
+    let recipes = compile_layer_with_transform(
+        &cfg,
+        "import { label } from '@panda/recipes'; label();",
+        &[StylesheetLayer::Recipes],
+        |_prop, _resolved, _original| Ok(None),
+    );
+    assert_snapshot!(recipes, @"
+    @layer recipes {
+      @layer base {
+        .label {
+          font-size: 12px;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn global_css_utility_whose_transform_returns_nothing_emits_no_declaration() {
+    let cfg = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "globalCss": { ".card": { "srOnly": "maybe", "fontSize": "12px" } },
+        "utilities": {
+            "srOnly": {
+                "className": "sr",
+                "values": { "type": "boolean" },
+                "transform": { "kind": "js-callback", "id": "srOnly" }
+            }
+        }
+    }));
+    let base = compile_layer_with_transform(
+        &cfg,
+        "",
+        &[StylesheetLayer::Base],
+        |_prop, _resolved, _original| Ok(Some(Literal::Object(Vec::new()))),
+    );
+    assert_snapshot!(base, @"
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      .card {
+        font-size: 12px;
+      }
+    }
+    ");
+}

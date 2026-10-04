@@ -1788,7 +1788,7 @@ impl Project {
         for (prop, value) in self.hydrated_transform_keys(utility) {
             let resolved = resolved_atom_value(Some(utility), &prop, &value);
             match transform(&prop, &resolved, &value) {
-                Ok(Some(styles)) if !is_empty_style_object(&styles) => {
+                Ok(Some(styles)) => {
                     overrides.insert((prop, value), styles);
                 }
                 Ok(_) => {}
@@ -1883,7 +1883,8 @@ impl Project {
         };
         let resolved = resolved_atom_value(Some(utility), canonical, &original);
         match transform(canonical, &resolved, &original) {
-            Ok(Some(styles)) if !is_empty_style_object(&styles) => {
+            // A `{}` result is kept so the emitter writes nothing for it.
+            Ok(Some(styles)) => {
                 out.insert((Box::from(canonical), original), styles);
             }
             Ok(_) => {}
