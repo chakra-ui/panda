@@ -1461,3 +1461,67 @@ fn animation_style_expands_in_place() {
     }
     ");
 }
+
+#[test]
+fn compositions_expand_in_place_inside_conditions() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "conditions": { "hover": "&:hover" },
+        "utilities": { "color": { "className": "c" } },
+        "theme": {
+            "breakpoints": { "md": "768px" },
+            "textStyles": {
+                "body": { "value": { "color": "gray" } },
+                "link": { "value": { "color": "gray", "_hover": { "color": "navy" } } }
+            },
+            "recipes": {
+                "hoverStyleLast": { "className": "hover-style-last", "base": { "_hover": { "color": "blue", "textStyle": "body" } } },
+                "hoverStyleFirst": { "className": "hover-style-first", "base": { "_hover": { "textStyle": "body", "color": "blue" } } },
+                "mdStyleLast": { "className": "md-style-last", "base": { "md": { "color": "blue", "textStyle": "body" } } },
+                "mdStyleFirst": { "className": "md-style-first", "base": { "md": { "textStyle": "body", "color": "blue" } } },
+                "ownHoverLast": { "className": "own-hover-last", "base": { "_hover": { "color": "blue" }, "textStyle": "link" } },
+                "ownHoverFirst": { "className": "own-hover-first", "base": { "textStyle": "link", "_hover": { "color": "blue" } } }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { hoverStyleLast, hoverStyleFirst, mdStyleLast, mdStyleFirst, ownHoverLast, ownHoverFirst } from '@panda/recipes'; hoverStyleLast(); hoverStyleFirst(); mdStyleLast(); mdStyleFirst(); ownHoverLast(); ownHoverFirst();",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .hover-style-first:hover {
+          color: blue;
+        }
+        .hover-style-last:hover {
+          color: gray;
+        }
+        @media (width >= 48rem) {
+          .md-style-first {
+            color: blue;
+          }
+        }
+        @media (width >= 48rem) {
+          .md-style-last {
+            color: gray;
+          }
+        }
+        .own-hover-first {
+          color: gray;
+        }
+        .own-hover-first:hover {
+          color: blue;
+        }
+        .own-hover-last {
+          color: gray;
+        }
+        .own-hover-last:hover {
+          color: navy;
+        }
+      }
+    }
+    ");
+}
