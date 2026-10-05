@@ -38,7 +38,7 @@ use crate::numeric_value;
 use crate::sort::{SortContext, SortedAtom, condition_names};
 use crate::style_rules::{
     Declaration, LoweredTarget, StyleRule, Target, append_declaration, append_declaration_run,
-    append_declarations, push_grouped_rule, write_rule, write_with_wrappers,
+    append_declarations, push_grouped_rule, write_with_wrappers,
 };
 use crate::writer::CssWriter;
 
@@ -2239,16 +2239,9 @@ impl<'a> EmitContext<'a> {
         }
     }
 
-    /// Emit one recipe class after merging declarations by selector and wrappers.
-    fn write_recipe_group(
-        &self,
-        writer: &mut CssWriter,
-        class_name: &str,
-        class_conditions: &[Box<str>],
-        entries: &[RecipeStyleEntry],
-    ) {
-        for rule in self.recipe_group_rules(class_name, class_conditions, entries) {
-            write_rule(writer, &rule.target, &rule.declarations);
+    fn collect_recipe_group(&self, grouped: &mut GroupNode, group: &RecipeStyleGroupSnapshot) {
+        for rule in self.recipe_group_rules(&group.class_name, &group.conditions, &group.entries) {
+            push_grouped_rule(grouped, &rule.target, rule.declarations);
         }
     }
 
@@ -2652,10 +2645,12 @@ fn write_recipe_group_layer(
     if groups.is_empty() {
         return;
     }
+    let mut grouped = GroupNode::default();
+    for group in groups {
+        cx.collect_recipe_group(&mut grouped, group);
+    }
     writer.layer(layer_name, |writer| {
-        for group in groups {
-            cx.write_recipe_group(writer, &group.class_name, &group.conditions, &group.entries);
-        }
+        write_grouped_rules(writer, &mut grouped);
     });
 }
 

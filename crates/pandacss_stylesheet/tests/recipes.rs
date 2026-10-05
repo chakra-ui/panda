@@ -57,10 +57,7 @@ fn same_depth_compositions_follow_authored_order() {
     assert_snapshot!(css, @"
     @layer recipes {
       @layer base {
-        .reverse {
-          color: initial;
-        }
-        .reverse:hover {
+        .reverse, .reverse:hover {
           color: initial;
         }
         .swatch {
@@ -931,10 +928,10 @@ fn composition_with_conditional_values_in_recipe_base_keeps_responsive_props() {
         StylesheetOptions::default(),
     )
     .get_layer_css(&[StylesheetLayer::Recipes]);
-    assert_snapshot!(css, @r"
+    assert_snapshot!(css, @"
     @layer recipes {
       @layer base {
-        .inlined {
+        .inlined, .viaTextStyle {
           font-family: Montserrat, sans-serif;
           font-size: 14px;
           font-style: normal;
@@ -942,32 +939,13 @@ fn composition_with_conditional_values_in_recipe_base_keeps_responsive_props() {
           line-height: 18px;
         }
         @media (width >= 30rem) {
-          .inlined {
+          .inlined, .viaTextStyle {
             font-size: 16px;
             line-height: 20px;
           }
         }
         @media (width >= 80rem) {
-          .inlined {
-            font-size: 20px;
-            line-height: 26px;
-          }
-        }
-        .viaTextStyle {
-          font-family: Montserrat, sans-serif;
-          font-size: 14px;
-          font-style: normal;
-          font-weight: 500;
-          line-height: 18px;
-        }
-        @media (width >= 30rem) {
-          .viaTextStyle {
-            font-size: 16px;
-            line-height: 20px;
-          }
-        }
-        @media (width >= 80rem) {
-          .viaTextStyle {
+          .inlined, .viaTextStyle {
             font-size: 20px;
             line-height: 26px;
           }
@@ -1297,13 +1275,10 @@ fn composition_overrides_merge_each_branch_of_a_block_condition() {
     )
     .get_layer_css(&[StylesheetLayer::Recipes]);
 
-    assert_snapshot!(css, @r"
+    assert_snapshot!(css, @"
     @layer recipes {
       @layer base {
-        .message:focus {
-          font-weight: 400;
-        }
-        .message:hover {
+        .message:focus, .message:hover {
           font-weight: 400;
         }
       }
@@ -1496,20 +1471,7 @@ fn compositions_expand_in_place_inside_conditions() {
         .hover-style-first:hover {
           color: blue;
         }
-        .hover-style-last:hover {
-          color: gray;
-        }
-        @media (width >= 48rem) {
-          .md-style-first {
-            color: blue;
-          }
-        }
-        @media (width >= 48rem) {
-          .md-style-last {
-            color: gray;
-          }
-        }
-        .own-hover-first {
+        .hover-style-last:hover, .own-hover-first {
           color: gray;
         }
         .own-hover-first:hover {
@@ -1520,6 +1482,61 @@ fn compositions_expand_in_place_inside_conditions() {
         }
         .own-hover-last:hover {
           color: navy;
+        }
+        @media (width >= 48rem) {
+          .md-style-first {
+            color: blue;
+          }
+          .md-style-last {
+            color: gray;
+          }
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn recipes_on_the_same_breakpoint_share_one_media_block_after_plain_rules() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "utilities": { "padding": { "className": "p" } },
+        "theme": {
+            "breakpoints": { "md": "768px" },
+            "recipes": {
+                "button": {
+                    "className": "button",
+                    "variants": {
+                        "size": { "sm": { "padding": "4px", "md": { "padding": "8px" } } },
+                        "variant": { "solid": { "padding": "2px" } }
+                    }
+                },
+                "badge": {
+                    "className": "badge",
+                    "variants": { "size": { "sm": { "md": { "padding": "8px" } } } }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { button, badge } from '@panda/recipes'; button({ size: 'sm', variant: 'solid' }); badge({ size: 'sm' });",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer variants {
+        .button--size_sm {
+          padding: 4px;
+        }
+        .button--variant_solid {
+          padding: 2px;
+        }
+        @media (width >= 48rem) {
+          .badge--size_sm, .button--size_sm {
+            padding: 8px;
+          }
         }
       }
     }

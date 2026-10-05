@@ -3,7 +3,7 @@ use pandacss_encoder::{
 };
 use pandacss_extractor::{ExtractedJsx, JsxKind};
 use pandacss_literal::Literal;
-use pandacss_recipes::{Recipe, SlotRecipe};
+use pandacss_recipes::{Recipe, SlotRecipe, VariantGroup};
 use pandacss_shared::css_properties::is_css_property;
 use pandacss_utility::{ShorthandPolicy, StyleNormalizer};
 
@@ -94,11 +94,11 @@ impl System {
         &self,
         encoder: &mut Encoder<ProjectConditionMatcher>,
         default_props: &Literal,
-        variant_keys: &[(String, Literal)],
+        variants: &[VariantGroup],
     ) {
         if let Literal::Conditional(branches) = default_props {
             for branch in branches {
-                self.process_default_prop_styles(encoder, branch, variant_keys);
+                self.process_default_prop_styles(encoder, branch, variants);
             }
 
             return;
@@ -110,7 +110,7 @@ impl System {
 
         let style_props: Vec<(String, Literal)> = entries
             .iter()
-            .filter(|(key, _)| variant_keys.iter().all(|(variant, _)| variant != key))
+            .filter(|(key, _)| variants.iter().all(|variant| variant.name != *key))
             .filter(|(key, _)| self.is_style_prop(key))
             .cloned()
             .collect();

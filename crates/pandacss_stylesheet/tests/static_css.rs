@@ -547,10 +547,7 @@ fn expands_static_css_recipe_conditions_and_responsive() {
     assert_snapshot!(css, @r"
     @layer recipes {
       @layer variants {
-        .button--size_sm {
-          padding: 8px;
-        }
-        .hover\:button--size_sm:hover {
+        .button--size_sm, .hover\:button--size_sm:hover {
           padding: 8px;
         }
         @media (width >= 48rem) {

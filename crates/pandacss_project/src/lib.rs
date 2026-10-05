@@ -741,7 +741,7 @@ impl Project {
                         continue;
                     }
                     let style = jsx_factory_static_style(style_arg);
-                    let mut inline_variant_keys: &[(String, Literal)] = &[];
+                    let mut inline_recipe = None;
                     match style {
                         Some(JsxFactoryStaticStyle::Style(style)) => {
                             self.system.process_style_props(
@@ -754,29 +754,34 @@ impl Project {
                             let Some(recipe) = Recipe::from_literal(config) else {
                                 continue;
                             };
-                            inline_variant_keys = recipe_variant_entries(config).unwrap_or(&[]);
                             self.system.process_recipe_atoms(&mut encoder, &recipe);
-                            self.inline_recipes.insert(
-                                RecipeKey {
-                                    file: Arc::clone(&path_key),
-                                    span_start: call.span.start,
-                                },
-                                recipe,
-                            );
-                            self.inline_recipe_spans
-                                .entry(Arc::clone(&path_key))
-                                .or_default()
-                                .push(call.span.start);
+                            inline_recipe = Some(recipe);
                         }
                         None if default_props.is_none() => continue,
                         None => {}
                     }
                     if let Some(default_props) = default_props {
+                        let variants = inline_recipe
+                            .as_ref()
+                            .map_or(&[][..], |recipe| recipe.variants.as_slice());
                         self.system.process_default_prop_styles(
                             &mut encoder,
                             default_props,
-                            inline_variant_keys,
+                            variants,
                         );
+                    }
+                    if let Some(recipe) = inline_recipe {
+                        self.inline_recipes.insert(
+                            RecipeKey {
+                                file: Arc::clone(&path_key),
+                                span_start: call.span.start,
+                            },
+                            recipe,
+                        );
+                        self.inline_recipe_spans
+                            .entry(Arc::clone(&path_key))
+                            .or_default()
+                            .push(call.span.start);
                     }
                     report.jsx_usages += 1;
                 }
@@ -1499,6 +1504,9 @@ impl Project {
         snapshot.variants.extend(local.variants);
         snapshot.compounds.extend(local.compounds);
         snapshot.atomic.extend(local.atomic);
+        if !self.hydrated_recipe_order.is_empty() {
+            snapshot.retain_last_identical_groups();
+        }
         self.encoded_recipes_snapshot_cache = Some(snapshot);
     }
 
@@ -2027,13 +2035,6 @@ fn default_props_from_options(options: Option<&Literal>) -> Option<&Literal> {
     literal_entries(options?)?
         .iter()
         .find_map(|(key, value)| (key == "defaultProps").then_some(value))
-}
-
-fn recipe_variant_entries(config: &Literal) -> Option<&[(String, Literal)]> {
-    literal_entries(config)?
-        .iter()
-        .find(|(key, _)| key == "variants")
-        .and_then(|(_, value)| literal_entries(value))
 }
 
 fn jsx_factory_static_style(config: Option<&Literal>) -> Option<JsxFactoryStaticStyle<'_>> {

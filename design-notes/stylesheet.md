@@ -25,6 +25,9 @@ Owned:
 - Adjacent rule merging: consecutive compatibility-safe selectors with an identical declaration block collapse into one
   comma-joined selector list. Selectors using `:has()`, pseudo-elements, vendor pseudos, or other explicitly
   compatibility-sensitive syntax remain isolated. Merging is adjacency-only.
+- Recipe sub-layers (`base`, `variants`, `compound_variants`) go through the same grouping as atomic styles: plain rules
+  first, then one block per shared `@media`/`@supports` wrapper, sorted by breakpoint. This matches v1's
+  `sortMediaQueries` pass, so a responsive variant style wins over a plain one in the same sub-layer.
 
 Not owned:
 

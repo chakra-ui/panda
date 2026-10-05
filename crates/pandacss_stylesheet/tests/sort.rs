@@ -645,11 +645,7 @@ fn coalesces_recipe_entries_with_matching_pseudo_targets() {
     assert_snapshot!(css, @r"
     @layer recipes {
       @layer variants {
-        .button--size_sm {
-          padding: 8px;
-          padding-top: 4px;
-        }
-        .hover\:button--size_sm:hover {
+        .button--size_sm, .hover\:button--size_sm:hover {
           padding: 8px;
           padding-top: 4px;
         }
@@ -750,11 +746,7 @@ fn keeps_mixed_recipe_targets_separate_while_coalescing_each_target() {
     assert_snapshot!(css, @r"
     @layer recipes {
       @layer variants {
-        .button--size_sm {
-          padding: 8px;
-          padding-top: 4px;
-        }
-        .hover\:button--size_sm:hover {
+        .button--size_sm, .hover\:button--size_sm:hover {
           padding: 8px;
           padding-top: 4px;
         }
