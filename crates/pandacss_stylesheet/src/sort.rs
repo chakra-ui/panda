@@ -11,8 +11,6 @@ use std::cmp::Ordering;
 use pandacss_config::{ConditionQuery, UserConfig};
 use pandacss_encoder::{Atom, RecipeStyleEntry, atom_value_sort_key};
 
-use crate::style_rules::ExpandedStyleEntry;
-
 const PSEUDO_PRIORITIES: &[(&str, u16)] = &[
     (":is", 40),
     (":where", 40),
@@ -78,7 +76,6 @@ pub struct SortedAtom<'a> {
 pub struct SortedRecipeEntry<'a> {
     pub entry: &'a RecipeStyleEntry,
     pub conditions: Vec<&'a str>,
-    pub composition_depth: usize,
 }
 
 impl<'a> SortContext<'a> {
@@ -123,39 +120,12 @@ impl<'a> SortContext<'a> {
         &self,
         entries: &'a [RecipeStyleEntry],
     ) -> Vec<SortedRecipeEntry<'a>> {
-        self.sorted_style_entries(entries.iter().map(|entry| (entry, 0)))
-    }
-
-    /// Keep composition provenance while sorting flattened style values.
-    #[must_use]
-    pub fn sorted_expanded_entries(
-        &self,
-        entries: &'a [ExpandedStyleEntry],
-    ) -> Vec<SortedRecipeEntry<'a>> {
-        self.sorted_style_entries(
-            entries
-                .iter()
-                .map(|entry| (&entry.entry, entry.composition_depth)),
-        )
-    }
-
-    #[must_use]
-    fn sorted_style_entries(
-        &self,
-        entries: impl Iterator<Item = (&'a RecipeStyleEntry, usize)>,
-    ) -> Vec<SortedRecipeEntry<'a>> {
         let mut out = entries
-            .map(|(entry, composition_depth)| {
+            .iter()
+            .map(|entry| {
                 let conditions = self.sorted_condition_names(&entry.conditions);
                 let key = CssRuleKey::new(self.config, &conditions, &entry.prop);
-                (
-                    SortedRecipeEntry {
-                        entry,
-                        conditions,
-                        composition_depth,
-                    },
-                    key,
-                )
+                (SortedRecipeEntry { entry, conditions }, key)
             })
             .collect::<Vec<_>>();
         out.sort_by(|a, b| {

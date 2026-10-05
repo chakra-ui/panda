@@ -128,12 +128,20 @@ describe('recipe utility order', () => {
     ])
   })
 
-  it.each([
-    [{ display: 'block', layerStyle: 'column' }, 'block'],
-    [{ layerStyle: 'column', display: 'block' }, 'block'],
-  ])('keeps explicit display ahead of a layout style in either key order: %j', (style, expected) => {
-    const compiler = createLayout(style, { layerStyles: { column: { value: { stack: true } } } })
-    expect(declarations(recipeCss(compiler), '.layout')).toEqual([`display: ${expected}`])
+  it('lets a layout style written after display override it', () => {
+    const compiler = createLayout(
+      { display: 'block', layerStyle: 'column' },
+      { layerStyles: { column: { value: { stack: true } } } },
+    )
+    expect(declarations(recipeCss(compiler), '.layout')).toEqual(['display: flex'])
+  })
+
+  it('lets display written after a layout style override it', () => {
+    const compiler = createLayout(
+      { layerStyle: 'column', display: 'block' },
+      { layerStyles: { column: { value: { stack: true } } } },
+    )
+    expect(declarations(recipeCss(compiler), '.layout')).toEqual(['display: block'])
   })
 
   it('lets display override stack inside a named layout style', () => {
