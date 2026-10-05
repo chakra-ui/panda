@@ -43,8 +43,8 @@
     "node": ">=22"
   },
   "dependencies": {
-    "@changesets/changelog-github": "0.7.0",
-    "@changesets/cli": "2.29.8",
+    "@changesets/changelog-github": "1.0.1",
+    "@changesets/cli": "3.0.3",
     "@projectwallace/format-css": "^2.0.0",
     "concurrently": "9.2.4",
     "cross-env": "10.1.0",
