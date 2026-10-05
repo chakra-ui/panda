@@ -26,7 +26,7 @@ const App = () => {
   return (
     <div
       className={css({
-        // ❌ Avoid: the value of color is only known at runtime
+        // ❌ Avoid: Panda can't determine the value of color at runtime
         color
       })}
     />
@@ -170,7 +170,7 @@ import { useState } from 'react'
 const App = () => {
   const [color, setColor] = useState('blue.300')
 
-  // ❌ Avoid: the value of color is only known at runtime
+  // ❌ Avoid: Panda can't determine the value of color at runtime
   return (
     <Card color={color}>
       <p>Some content</p>
