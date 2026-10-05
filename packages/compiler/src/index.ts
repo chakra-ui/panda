@@ -32,6 +32,14 @@ export { NodeDriver, createNodeDriver } from './driver'
 export type { NodeDriverOptions, WriteDesignSystemLibOptions, WriteDesignSystemLibResult } from './driver'
 
 const binding = loadNativeBinding() ?? fallback
+
+// Nothing else stops env-started tracing; finish the trace on exit.
+if (process.env.PANDA_TRACE?.trim()) {
+  process.once('exit', () => {
+    binding.flushTracing?.()
+    binding.shutdownTracing?.()
+  })
+}
 const nativeCompilerFromConfig =
   'fromConfig' in binding.Compiler && typeof binding.Compiler.fromConfig === 'function'
     ? binding.Compiler.fromConfig.bind(binding.Compiler)
