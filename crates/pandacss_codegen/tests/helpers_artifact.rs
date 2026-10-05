@@ -256,7 +256,7 @@ fn css_var_prefix_is_used_by_to_css_var_and_color_mix() {
     }
     "#);
     assert_snapshot!(function_block(source, "colorMix"), @r#"
-    export function colorMix(tokens: Record<string, string>, path: string): string | undefined {
+    export function colorMix(tokens: Record<string, string>, path: string, resolveVar?: (path: string) => string): string | undefined {
       const colorPrefix = "colors."
       if (!path.startsWith(colorPrefix)) return
 
@@ -271,7 +271,7 @@ fn css_var_prefix_is_used_by_to_css_var_and_color_mix() {
       const percent = opacity === undefined ? Number(rawOpacity) : Number(opacity) * 100
       if (Number.isNaN(percent)) return
 
-      return "color-mix(in oklab, " + toCssVar(colorPath) + " " + percent + "%, transparent)"
+      return "color-mix(in oklab, " + (resolveVar || toCssVar)(colorPath) + " " + percent + "%, transparent)"
     }
     "#);
 }

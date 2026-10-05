@@ -464,42 +464,40 @@ fn css_var(name: &str, context: &BuildContext<'_>) -> String {
 }
 
 fn css_var_variable(name: &str, context: &BuildContext<'_>) -> String {
-    if context.hash {
-        let hash = to_hash(name);
-        let prefix = context.prefix.unwrap_or_default();
-        let mut out =
-            String::with_capacity(2 + prefix.len() + usize::from(!prefix.is_empty()) + hash.len());
-        out.push_str("--");
+    css_var_name(name, context.prefix, context.hash)
+}
+
+/// `--{prefix-}name` for a token name whose path dots are already dashes.
+#[must_use]
+pub fn css_var_name(name: &str, prefix: Option<&str>, hash: bool) -> String {
+    let prefix = prefix.unwrap_or_default();
+    let mut out =
+        String::with_capacity(2 + prefix.len() + usize::from(!prefix.is_empty()) + name.len());
+    out.push_str("--");
+    if hash {
         if !prefix.is_empty() {
             out.push_str(prefix);
             out.push('-');
         }
-        out.push_str(&hash);
-        out
+        out.push_str(&to_hash(name));
     } else {
-        let prefix = context.prefix.unwrap_or_default();
-        let mut out =
-            String::with_capacity(2 + prefix.len() + usize::from(!prefix.is_empty()) + name.len());
-        out.push_str("--");
         if !prefix.is_empty() {
             push_css_var_name(&mut out, prefix);
             out.push('-');
         }
         push_css_var_name(&mut out, name);
-        out
     }
+    out
 }
 
-fn push_css_var_name(out: &mut String, value: &str) {
+/// Escapes like v1's `cssVar`: characters from U+0081 up, including astral
+/// ones such as emoji, stay unescaped.
+pub fn push_css_var_name(out: &mut String, value: &str) {
     for ch in value.chars() {
         if ch.is_ascii_uppercase() {
             out.push('-');
             out.push(ch.to_ascii_lowercase());
-        } else if ch.is_ascii_alphanumeric()
-            || ch == '_'
-            || ch == '-'
-            || ('\u{0081}'..='\u{ffff}').contains(&ch)
-        {
+        } else if ch.is_ascii_alphanumeric() || ch == '_' || ch == '-' || ch >= '\u{0081}' {
             out.push(ch);
         } else {
             out.push('\\');

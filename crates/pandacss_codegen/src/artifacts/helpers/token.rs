@@ -3,6 +3,7 @@
 //! prefix-aware implementation in helpers while each app ships its own token map.
 
 use indoc::indoc;
+use pandacss_tokens::push_css_var_name;
 
 use crate::{Block, CodegenContext, FunctionDecl, Item, ItemNode, Param, Stmt, TsType};
 
@@ -40,6 +41,7 @@ pub(super) fn color_mix() -> Item {
         vec![
             Param::typed("tokens", TsType::Raw("Record<string, string>".into())),
             Param::typed("path", TsType::Ref("string".into())),
+            Param::optional("resolveVar", TsType::Raw("(path: string) => string".into())),
         ],
         TsType::Raw("string | undefined".into()),
         indoc! {r#"
@@ -57,13 +59,13 @@ pub(super) fn color_mix() -> Item {
             const percent = opacity === undefined ? Number(rawOpacity) : Number(opacity) * 100
             if (Number.isNaN(percent)) return
 
-            return "color-mix(in oklab, " + toCssVar(colorPath) + " " + percent + "%, transparent)"
+            return "color-mix(in oklab, " + (resolveVar || toCssVar)(colorPath) + " " + percent + "%, transparent)"
         "#}
         .trim(), // indoc strips shared indent; emitter adds the function-body indent.
     )
 }
 
-/// The constant `var(--{prefix-}` segment, mirroring `pandacss_tokens::css_var_variable`.
+/// The constant `var(--{prefix-}` segment, mirroring `pandacss_tokens::css_var_name`.
 fn var_prefix(prefix: &str, hash: bool) -> String {
     let mut out = String::from("\"var(--");
     if !prefix.is_empty() {
@@ -76,25 +78,6 @@ fn var_prefix(prefix: &str, hash: bool) -> String {
     }
     out.push('"');
     out
-}
-
-/// Mirrors `pandacss_tokens::push_css_var_name`; `toCssVar` applies the same rules at runtime.
-fn push_css_var_name(out: &mut String, value: &str) {
-    for ch in value.chars() {
-        if ch.is_ascii_uppercase() {
-            out.push('-');
-            out.push(ch.to_ascii_lowercase());
-        } else if ch.is_ascii_alphanumeric()
-            || ch == '_'
-            || ch == '-'
-            || ('\u{0081}'..='\u{ffff}').contains(&ch)
-        {
-            out.push(ch);
-        } else {
-            out.push('\\');
-            out.push(ch);
-        }
-    }
 }
 
 fn helper_function(name: &str, params: Vec<Param>, return_type: TsType, body: &str) -> Item {
