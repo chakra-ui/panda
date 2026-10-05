@@ -267,7 +267,7 @@ jobs:
         id: changesets
         if: >-
           ${{ github.repository == 'chakra-ui/panda' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
-        uses: changesets/action@v1
+        uses: changesets/action@v2.1.2
         with:
           publish: pnpm release
         env:
