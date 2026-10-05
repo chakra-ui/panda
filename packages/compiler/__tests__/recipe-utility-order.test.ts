@@ -302,3 +302,53 @@ describe('recipe utility order', () => {
     expect(declarations(css, '.layout--size_lg')).toEqual(['display: grid'])
   })
 })
+
+describe('variables reset and set by utilities (#3938)', () => {
+  function swatchCss() {
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          utilities: {
+            resetTone: { className: 'reset-tone', transform: { kind: 'js-callback', id: 'resetTone' } },
+            tone: { className: 'tone', transform: { kind: 'js-callback', id: 'tone' } },
+          },
+          theme: {
+            recipes: {
+              swatch: {
+                className: 'swatch',
+                base: { color: 'var(--tone, black)' },
+                variants: {
+                  tone: {
+                    green: { resetTone: true, tone: 'green' },
+                    red: { resetTone: true, tone: 'red' },
+                  },
+                },
+              },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            resetTone: (value) => (value ? { '--tone': 'initial' } : {}),
+            tone: (value) => ({ '--tone': value }),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+    compiler.parseFileSource(
+      '/virtual/swatch.ts',
+      "import { swatch } from '@panda/recipes'; swatch({ tone: 'green' }); swatch({ tone: 'red' })",
+    )
+    return compiler.getLayerCss({ layers: ['recipes'] }).css
+  }
+
+  it('lets the later modifier override the reset whatever its value', () => {
+    const css = swatchCss()
+    expect(declarations(css, '.swatch--tone_green')).toEqual(['--tone: green'])
+    expect(declarations(css, '.swatch--tone_red')).toEqual(['--tone: red'])
+  })
+})
