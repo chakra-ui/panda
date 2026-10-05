@@ -1837,6 +1837,125 @@
         }
       ],
       "calls": []
+    },
+    {
+      "name": "invalid reference definition",
+      "source": "[text]: /asset.png <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 19
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "expression destination",
+      "source": "[ref]: {css({color:\"wrong\"})}\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 31
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "prose reference punctuation",
+      "source": "Text [label]: value <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 20
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "quoted ampersands",
+      "source": "<Box color=\"&amp;red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 0
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "inline siblings",
+      "source": "Text <Box color=\"red\" /><Box color=\"green\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 5
+        },
+        {
+          "name": "Box",
+          "start": 24
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "empty reference destination",
+      "source": "[label]:\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 10
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "definition in a paragraph",
+      "source": "Paragraph\n[label]: /asset.png <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 30
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "unicode reference label",
+      "source": "[界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界]: {css({color:\"wrong\"})}\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 1528
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "BOM import",
+      "source": "﻿import { css } from \"@panda/css\";\n\n{css({color:\"red\"})}",
+      "elements": [],
+      "calls": [
+        [
+          39,
+          57
+        ]
+      ]
+    },
+    {
+      "name": "BOM flow tag then import",
+      "source": "﻿<Box />\nimport { css } from \"@panda/css\";\n\n{css({color:\"red\"})}",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 3
+        }
+      ],
+      "calls": [
+        [
+          47,
+          65
+        ]
+      ]
     }
   ]
 }

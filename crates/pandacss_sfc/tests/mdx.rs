@@ -4,7 +4,27 @@ use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use pandacss_sfc::mdx::lower;
-use serde_json::json;
+use serde::Deserialize;
+
+#[derive(Deserialize)]
+struct Corpus {
+    parser: String,
+    cases: Vec<Case>,
+}
+
+#[derive(Deserialize)]
+struct Case {
+    name: String,
+    source: String,
+    elements: Vec<Element>,
+    calls: Vec<(u32, u32)>,
+}
+
+#[derive(Debug, Deserialize, PartialEq)]
+struct Element {
+    name: String,
+    start: u32,
+}
 
 #[derive(Default)]
 struct Calls(Vec<(u32, u32)>);
@@ -21,16 +41,17 @@ fn extraction_boundaries_match_the_official_mdx_parser() {
     let corpus_text = std::env::var("PANDA_MDX_CORPUS")
         .ok()
         .map(|path| std::fs::read_to_string(path).unwrap());
-    let corpus: serde_json::Value = serde_json::from_str(
+    let corpus: Corpus = serde_json::from_str(
         corpus_text
             .as_deref()
             .unwrap_or(include_str!("fixtures/mdx-parity.json")),
     )
     .unwrap();
+    assert_eq!(corpus.parser, "@mdx-js/mdx@3.1.1");
     let mut failures = Vec::new();
-    for case in corpus["cases"].as_array().unwrap() {
-        let source = case["source"].as_str().unwrap();
-        let name = case["name"].as_str().unwrap();
+    for case in &corpus.cases {
+        let source = case.source.as_str();
+        let name = case.name.as_str();
         let document = lower(source);
         if !document.diagnostics.is_empty() {
             failures.push(format!("{name}: {:?}", document.diagnostics));
@@ -43,25 +64,25 @@ fn extraction_boundaries_match_the_official_mdx_parser() {
             failures.push(format!("{name}: {:?}\n{}", parsed.errors, document.canvas));
             continue;
         }
-        let elements: Vec<_> = document.elements.iter().map(|element|
-            json!({"name": &source[element.name.start as usize..element.name.end as usize], "start": element.opening.start})
-        ).collect();
-        if json!(elements) != case["elements"] {
+        let elements: Vec<_> = document
+            .elements
+            .iter()
+            .map(|element| Element {
+                name: source[element.name.start as usize..element.name.end as usize].to_owned(),
+                start: element.opening.start,
+            })
+            .collect();
+        if elements != case.elements {
             failures.push(format!(
-                "{name}: elements {} != {}",
-                json!(elements),
-                case["elements"]
+                "{name}: elements {elements:?} != {:?}",
+                case.elements
             ));
         }
         let mut calls = Calls::default();
         calls.visit_program(&parsed.program);
         calls.0.sort_unstable();
-        if json!(calls.0) != case["calls"] {
-            failures.push(format!(
-                "{name}: calls {} != {}",
-                json!(calls.0),
-                case["calls"]
-            ));
+        if calls.0 != case.calls {
+            failures.push(format!("{name}: calls {:?} != {:?}", calls.0, case.calls));
         }
     }
     assert!(failures.is_empty(), "{}", failures.join("\n"));

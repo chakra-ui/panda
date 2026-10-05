@@ -105,7 +105,7 @@ pub(crate) fn collect_template_styles(
         SfcFormat::Vue => collect_vue_template_styles(source, &scan),
         SfcFormat::Svelte => collect_svelte_template_styles(source, &scan),
         SfcFormat::Astro | SfcFormat::Mdx => {
-            collect_astro_template_styles(source, &adapted.astro_elements, &scan)
+            collect_markup_template_styles(source, &adapted.template_elements, &scan)
         }
     }
 }
@@ -259,7 +259,7 @@ fn collect_svelte_template_styles(source: &str, scan: &TemplateScan<'_>) -> Vec<
     out
 }
 
-fn collect_astro_template_styles(
+fn collect_markup_template_styles(
     source: &str,
     elements: &[AstroElement],
     scan: &TemplateScan<'_>,
@@ -802,7 +802,7 @@ fn template_markup_ranges(source: &str, adapted: &AdaptedSource<'_>) -> Vec<(u32
             }
         }
         Some(SfcFormat::Astro | SfcFormat::Mdx) => {
-            for element in &adapted.astro_elements {
+            for element in &adapted.template_elements {
                 for attribute in &element.attributes {
                     if let AstroAttributeValue::Expression(expression)
                     | AstroAttributeValue::Spread(expression) = &attribute.value

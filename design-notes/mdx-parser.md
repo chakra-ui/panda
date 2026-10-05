@@ -4,6 +4,19 @@ Panda previously sent raw `.mdx` documents to Oxc as TSX, so Markdown could prev
 This prototype addresses [issue #3948](https://github.com/chakra-ui/panda/issues/3948) through the existing container
 adapter in `pandacss_sfc`. Files already covered by `include` require no additional configuration.
 
+## Ownership
+
+| Module              | Responsibility                                                                        |
+| ------------------- | ------------------------------------------------------------------------------------- |
+| `mdx.rs`            | Scan the document in source order; collect tags, attributes, and diagnostics          |
+| `mdx/markdown.rs`   | Skip Markdown examples and destinations; own inline-code/image caches and line lookup |
+| `mdx/javascript.rs` | Find JavaScript island boundaries with the shared lexer; leave validation to Oxc      |
+| `mdx/canvas.rs`     | Build same-offset JavaScript; own synthetic array and module separators               |
+
+The canvas has one tail state: empty, expression array, or module declaration. It closes an array before copying a
+module and separates a module from the next array. The scanner cannot independently mutate that punctuation or hold
+conflicting array/module state.
+
 ## Extraction contract
 
 The adapter retains module imports/exports, JavaScript expressions, and component opening-tag attributes. Existing
@@ -45,6 +58,9 @@ inline-code encounter; common delimiter lengths use a small array. Failed image-
 lookahead is bounded to avoid repeated suffix scans. Multiline exports reuse the shared JavaScript lexer and brace
 matcher. Normal `.ts`/`.tsx` sources continue through their existing path.
 
+Tag line lookup advances through previously unread bytes rather than searching the same paragraph backwards for every
+tag. Dense single-line JSX is included in the benchmark to guard this path.
+
 See the [benchmark report](./bench/mdx-3948.md) for measured latency, allocations, watch behavior, and acceptance gates.
 These gates are local regression criteria, not universal latency guarantees.
 
@@ -57,9 +73,16 @@ the official parser in the local check. Extraction tests cover static/dynamic at
 comments, entities, diagnostics, and original offsets; compiler tests cover CSS generation and watch replacement.
 
 This is an extraction adapter, not a complete MDX validator or compiler. It does not execute remark/rehype plugins or
-custom syntax transformations. Parity is checked for extraction boundaries rather than every Markdown AST node. Before
-shipping, expand coverage for third-party documentation corpora, reference links/images, entity sets, and
-plugin-transformed syntax. Existing CSS output snapshots must remain unchanged.
+custom syntax transformations. Parity is checked for extraction boundaries rather than every Markdown AST node.
+
+**Confirmed merge blocker:** reference-style images do not resolve their labels, so JSX in their alt text can be
+extracted as a live component. For example, `![<Box color="wrong" />][image]` followed by `[image]: /asset.png`
+currently extracts `wrong`; the official parser treats the label as image text. Correct handling needs document-wide
+definition resolution, including definitions outside code examples and forward references. Keep that responsibility in
+the Markdown layer rather than teaching the style collector about image syntax.
+
+Before shipping, resolve that gap and expand third-party corpus, entity, and plugin-transformed syntax coverage.
+Existing CSS output snapshots must remain unchanged.
 
 ## Related
 

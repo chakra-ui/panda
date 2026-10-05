@@ -1,9 +1,0 @@
-{"scenario":"tsx-1","bytes":185,"iterations":300,"medianUs":4.25,"p95Us":4.417,"peakHeapBytes":38089,"allocatedBytes":39017,"allocations":65,"retainedGrowthBytes":0,"calls":1,"diagnostics":0}
-{"scenario":"mdx-1","bytes":245,"iterations":300,"medianUs":43.167,"p95Us":45.042,"peakHeapBytes":60945,"allocatedBytes":360345,"allocations":503,"retainedGrowthBytes":0,"calls":1,"diagnostics":0}
-{"scenario":"tsx-20","bytes":1952,"iterations":300,"medianUs":34.417,"p95Us":35.958,"peakHeapBytes":110038,"allocatedBytes":134510,"allocations":439,"retainedGrowthBytes":0,"calls":20,"diagnostics":0}
-{"scenario":"mdx-20","bytes":3589,"iterations":300,"medianUs":685.75,"p95Us":775.833,"peakHeapBytes":949761,"allocatedBytes":5607076,"allocations":7436,"retainedGrowthBytes":0,"calls":20,"diagnostics":0}
-{"scenario":"tsx-200","bytes":18692,"iterations":106,"medianUs":333.375,"p95Us":340.625,"peakHeapBytes":917810,"allocatedBytes":1166250,"allocations":3875,"retainedGrowthBytes":0,"calls":200,"diagnostics":0}
-{"scenario":"mdx-200","bytes":35269,"iterations":56,"medianUs":7931.374999999999,"p95Us":8613.5,"peakHeapBytes":9696449,"allocatedBytes":55770256,"allocations":72476,"retainedGrowthBytes":0,"calls":200,"diagnostics":0}
-{"scenario":"mdx-unclosed-25k","bytes":25670,"iterations":77,"medianUs":2227.541,"p95Us":2318.083,"peakHeapBytes":2670502,"allocatedBytes":57991754,"allocations":19300,"retainedGrowthBytes":0,"calls":0,"diagnostics":1}
-{"scenario":"mdx-unclosed-100k","bytes":102470,"iterations":20,"medianUs":10249.375,"p95Us":16245.083,"peakHeapBytes":10611622,"allocatedBytes":231813194,"allocations":76902,"retainedGrowthBytes":0,"calls":0,"diagnostics":1}
-{"scenario":"mdx-unclosed-400k","bytes":409670,"iterations":20,"medianUs":38898.667,"p95Us":67852.834,"peakHeapBytes":42376102,"allocatedBytes":927098954,"allocations":307304,"retainedGrowthBytes":0,"calls":0,"diagnostics":1}

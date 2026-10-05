@@ -16,12 +16,15 @@ const input = JSON.parse(await readFile(inputPath, 'utf8'))
 let skipped = 0
 const output = []
 for (const { name, source } of input) {
+  // MDX drops a leading BOM; translate its parser offsets back to the authored document.
+  const bomLength = source.startsWith('\uFEFF') ? 1 : 0
   let tree
   try {
-    const parseSource = source.replace(
-      /^(?:---\r?\n[\s\S]*?\r?\n---|\+\+\+\r?\n[\s\S]*?\r?\n\+\+\+)(?:\r?\n|$)/,
-      (match) => match.replace(/[^\r\n]/g, ' '),
-    )
+    const parseSource = source
+      .slice(bomLength)
+      .replace(/^(?:---\r?\n[\s\S]*?\r?\n---|\+\+\+\r?\n[\s\S]*?\r?\n\+\+\+)(?:\r?\n|$)/, (match) =>
+        match.replace(/[^\r\n]/g, ' '),
+      )
     tree = createProcessor().parse(parseSource)
   } catch (error) {
     if (process.argv.includes('--allow-invalid')) {
@@ -30,7 +33,7 @@ for (const { name, source } of input) {
     }
     throw new Error(`${name}: ${error}`, { cause: error })
   }
-  const byte = (offset) => Buffer.byteLength(source.slice(0, offset))
+  const byte = (offset) => Buffer.byteLength(source.slice(0, offset + bomLength))
   const elements = []
   const calls = []
   const visitJs = (node) => {

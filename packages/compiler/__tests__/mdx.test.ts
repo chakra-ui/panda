@@ -29,3 +29,19 @@ test('MDX source rewriting stays disabled while extraction is experimental', () 
   expect(result.changed).toBe(false)
   expect(result.bailed).toBe(true)
 })
+
+test('native MDX handles a BOM and keeps JSX after an invalid reference definition', () => {
+  const compiler = createProject()
+  const extracted = compiler.extractFileSource(
+    'references.mdx',
+    `\uFEFFimport { css } from '@panda/css';
+import { Box } from '@panda/jsx';
+
+[text]: /asset.png <Box color="red" />
+
+{css({ color: 'blue' })}`,
+  )
+  expect(extracted.diagnostics).toEqual([])
+  expect(extracted.calls.map((call) => call.data)).toEqual([[{ kind: 'value', value: { color: 'blue' } }]])
+  expect(extracted.jsx.map((jsx) => jsx.data)).toEqual([{ color: 'red' }])
+})

@@ -8,52 +8,24 @@
 //! MDX extraction costs versus equivalent live TSX, including transient heap usage.
 use pandacss_extractor::{ExtractorConfig, Matcher, Matchers, NameMatcher, extract};
 use serde_json::json;
-use std::{
-    alloc::{GlobalAlloc, Layout, System},
-    sync::atomic::{AtomicUsize, Ordering},
-    time::Instant,
-};
+use std::{sync::atomic::Ordering, time::Instant};
 
-struct CountingAllocator;
-static LIVE: AtomicUsize = AtomicUsize::new(0);
-static PEAK: AtomicUsize = AtomicUsize::new(0);
-static ALLOCATED: AtomicUsize = AtomicUsize::new(0);
-static COUNT: AtomicUsize = AtomicUsize::new(0);
-fn allocated(size: usize) {
-    let live = LIVE.fetch_add(size, Ordering::Relaxed) + size;
-    PEAK.fetch_max(live, Ordering::Relaxed);
-    ALLOCATED.fetch_add(size, Ordering::Relaxed);
-    COUNT.fetch_add(1, Ordering::Relaxed);
-}
-// SAFETY: every operation delegates the caller's pointer/layout unchanged to System.
-unsafe impl GlobalAlloc for CountingAllocator {
-    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        // SAFETY: GlobalAlloc's caller provides a valid layout.
-        let pointer = unsafe { System.alloc(layout) };
-        if !pointer.is_null() {
-            allocated(layout.size());
-        }
-        pointer
-    }
-    unsafe fn dealloc(&self, pointer: *mut u8, layout: Layout) {
-        LIVE.fetch_sub(layout.size(), Ordering::Relaxed);
-        // SAFETY: the pointer and layout are the original System allocation.
-        unsafe { System.dealloc(pointer, layout) };
-    }
-    unsafe fn realloc(&self, pointer: *mut u8, layout: Layout, size: usize) -> *mut u8 {
-        // SAFETY: caller supplies the live allocation and a valid new size.
-        let next = unsafe { System.realloc(pointer, layout, size) };
-        if !next.is_null() {
-            LIVE.fetch_sub(layout.size(), Ordering::Relaxed);
-            allocated(size);
-        }
-        next
-    }
-}
-#[global_allocator]
-static GLOBAL: CountingAllocator = CountingAllocator;
+#[path = "mdx_extract/allocations.rs"]
+mod allocations;
+use allocations::{ALLOCATION_COUNT, LIVE_BYTES, PEAK_BYTES, TOTAL_ALLOCATED_BYTES};
 
-fn config() -> ExtractorConfig {
+const EXTRACTION_WARMUP: usize = 30;
+const EXTRACTION_BYTE_BUDGET: usize = 2_000_000;
+const MIN_EXTRACTION_SAMPLES: usize = 20;
+const MAX_EXTRACTION_SAMPLES: usize = 300;
+const WATCH_WARMUP: usize = 100;
+const WATCH_UPDATES: usize = 1000;
+const PROJECT_FILES: usize = 200;
+const MDX_PROJECT_FILES: usize = PROJECT_FILES / 10;
+const BUILD_WARMUP: usize = 20;
+const BUILD_SAMPLES: usize = 100;
+
+fn extractor_config() -> ExtractorConfig {
     ExtractorConfig::new(Matchers {
         css: Matcher {
             modules: vec!["@panda/css".into()],
@@ -69,7 +41,7 @@ fn config() -> ExtractorConfig {
 }
 const IMPORTS: &str = "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n";
 const JSX: &str = "<Box color=\"red\" css={{padding:'4'}}><span className={css({color:'blue'})}>text</span></Box>";
-fn fixtures(count: usize) -> (String, String) {
+fn equivalent_sources(count: usize) -> (String, String) {
     let mut mdx = IMPORTS.to_owned();
     let mut tsx = format!("{IMPORTS}export default <>\n");
     for _ in 0..count {
@@ -82,51 +54,78 @@ fn fixtures(count: usize) -> (String, String) {
     tsx.push_str("</>;\n");
     (mdx, tsx)
 }
-fn measure(name: &str, source: &str, path: &str, expected: Option<usize>) {
-    let config = config();
+#[derive(Clone, Copy)]
+enum ExtractionExpectation {
+    CallsAndElements(usize),
+    Elements(usize),
+    Diagnostics,
+}
+
+fn measure_extraction(name: &str, source: &str, path: &str, expected: ExtractionExpectation) {
+    let config = extractor_config();
     let first = extract(source, path, &config);
-    if let Some(count) = expected {
+    if !matches!(expected, ExtractionExpectation::Diagnostics) {
         assert!(
             first.diagnostics.is_empty(),
             "{name}: {:?}",
             first.diagnostics
         );
-        assert_eq!(first.calls.len(), count);
-        assert_eq!(first.jsx.len(), count);
+    }
+    match expected {
+        ExtractionExpectation::CallsAndElements(count) => {
+            assert_eq!(first.calls.len(), count);
+            assert_eq!(first.jsx.len(), count);
+        }
+        ExtractionExpectation::Elements(count) => {
+            assert!(first.calls.is_empty());
+            assert_eq!(first.jsx.len(), count);
+        }
+        ExtractionExpectation::Diagnostics => assert!(!first.diagnostics.is_empty()),
     }
     let calls = first.calls.len();
     let diagnostics = first.diagnostics.len();
     drop(first);
-    for _ in 0..30 {
+    for _ in 0..EXTRACTION_WARMUP {
         drop(std::hint::black_box(extract(source, path, &config)));
     }
-    let before = LIVE.load(Ordering::Relaxed);
-    PEAK.store(before, Ordering::Relaxed);
-    let bytes_before = ALLOCATED.load(Ordering::Relaxed);
-    let count_before = COUNT.load(Ordering::Relaxed);
+    let before = LIVE_BYTES.load(Ordering::Relaxed);
+    PEAK_BYTES.store(before, Ordering::Relaxed);
+    let bytes_before = TOTAL_ALLOCATED_BYTES.load(Ordering::Relaxed);
+    let count_before = ALLOCATION_COUNT.load(Ordering::Relaxed);
     drop(std::hint::black_box(extract(source, path, &config)));
-    let peak = PEAK.load(Ordering::Relaxed).saturating_sub(before);
-    let allocated_bytes = ALLOCATED.load(Ordering::Relaxed) - bytes_before;
-    let allocations = COUNT.load(Ordering::Relaxed) - count_before;
-    let iterations = (2_000_000 / source.len()).clamp(20, 300);
+    let peak = PEAK_BYTES.load(Ordering::Relaxed).saturating_sub(before);
+    let allocated_bytes = TOTAL_ALLOCATED_BYTES.load(Ordering::Relaxed) - bytes_before;
+    let allocation_count = ALLOCATION_COUNT.load(Ordering::Relaxed) - count_before;
+    let iterations = (EXTRACTION_BYTE_BUDGET / source.len())
+        .clamp(MIN_EXTRACTION_SAMPLES, MAX_EXTRACTION_SAMPLES);
     let mut samples = Vec::with_capacity(iterations);
-    let retained_before = LIVE.load(Ordering::Relaxed);
+    let retained_before = LIVE_BYTES.load(Ordering::Relaxed);
     for _ in 0..iterations {
         let start = Instant::now();
         drop(std::hint::black_box(extract(source, path, &config)));
         samples.push(start.elapsed().as_secs_f64() * 1e6);
     }
-    let retained_growth = LIVE.load(Ordering::Relaxed).saturating_sub(retained_before);
+    let retained_growth = LIVE_BYTES.load(Ordering::Relaxed) as i128 - retained_before as i128;
     samples.sort_by(f64::total_cmp);
     println!(
         "{}",
-        json!({"scenario":name, "bytes":source.len(), "iterations":iterations,
-        "medianUs":samples[iterations/2], "p95Us":samples[iterations*95/100], "peakHeapBytes":peak,
-        "allocatedBytes":allocated_bytes, "allocations":allocations, "retainedGrowthBytes":retained_growth,
-        "calls":calls, "diagnostics":diagnostics})
+        json!({
+            "scenario": name,
+            "allocationTracking": allocations::is_enabled(),
+            "bytes": source.len(),
+            "iterations": iterations,
+            "medianUs": samples[iterations / 2],
+            "p95Us": samples[iterations * 95 / 100],
+            "peakHeapBytes": allocations::is_enabled().then_some(peak),
+            "allocatedBytes": allocations::is_enabled().then_some(allocated_bytes),
+            "allocations": allocations::is_enabled().then_some(allocation_count),
+            "retainedGrowthBytes": allocations::is_enabled().then_some(retained_growth),
+            "calls": calls,
+            "diagnostics": diagnostics,
+        })
     );
 }
-fn watch_config() -> pandacss_config::UserConfig {
+fn project_config() -> pandacss_config::UserConfig {
     serde_json::from_value(json!({
         "outdir": "styled-system", "jsxFramework": "react",
         "importMap": { "css": ["@panda/css"], "jsx": ["@panda/jsx"] },
@@ -136,8 +135,8 @@ fn watch_config() -> pandacss_config::UserConfig {
     .expect("valid benchmark config")
 }
 
-fn measure_watch(name: &str, source: &str, path: &str) {
-    let config = watch_config();
+fn measure_changed_file_updates(name: &str, source: &str, path: &str) {
+    let config = project_config();
     let system = pandacss_system::System::new(config.clone()).expect("valid system");
     let mut project = pandacss_project::Project::new(system);
     let changed = source.replace("red", "teal");
@@ -162,36 +161,50 @@ fn measure_watch(name: &str, source: &str, path: &str) {
             "{name}: {:?}",
             output.diagnostics
         );
-        std::hint::black_box(output);
+        output
     };
-    for iteration in 0..100 {
-        step(iteration);
+    for (iteration, expected, removed) in [(0, "red", "teal"), (1, "teal", "red")] {
+        let output = step(iteration);
+        assert!(output.css.contains(expected));
+        assert!(!output.css.contains(removed));
+        assert!(!output.css.contains("wrong"));
     }
-    let before = LIVE.load(Ordering::Relaxed);
-    PEAK.store(before, Ordering::Relaxed);
+    for iteration in 0..WATCH_WARMUP {
+        drop(std::hint::black_box(step(iteration)));
+    }
+    let before = LIVE_BYTES.load(Ordering::Relaxed);
+    PEAK_BYTES.store(before, Ordering::Relaxed);
     let start = Instant::now();
-    for iteration in 0..1000 {
-        step(iteration);
+    for iteration in 0..WATCH_UPDATES {
+        drop(std::hint::black_box(step(iteration)));
     }
     let elapsed = start.elapsed();
-    let after = LIVE.load(Ordering::Relaxed);
+    let after = LIVE_BYTES.load(Ordering::Relaxed);
     println!(
         "{}",
-        json!({ "scenario": name, "updates": 1000,
-        "usPerUpdate": elapsed.as_secs_f64() * 1e6 / 1000.0,
-        "steadyHeapBytes": after, "retainedGrowthBytes": after.saturating_sub(before),
-        "peakAdditionalHeapBytes": PEAK.load(Ordering::Relaxed).saturating_sub(before) })
+        json!({
+            "scenario": name,
+            "allocationTracking": allocations::is_enabled(),
+            "updates": WATCH_UPDATES,
+            "usPerUpdate": elapsed.as_secs_f64() * 1e6 / WATCH_UPDATES as f64,
+            "steadyHeapBytes": allocations::is_enabled().then_some(after),
+            "retainedGrowthBytes": allocations::is_enabled().then_some(after as i128 - before as i128),
+            "peakAdditionalHeapBytes": allocations::is_enabled().then_some(PEAK_BYTES.load(Ordering::Relaxed).saturating_sub(before)),
+        })
     );
 }
 
-fn measure_builds() {
-    let (mdx, tsx) = fixtures(1);
-    let config = watch_config();
-    let cases = [("tsx-project-200", 0), ("mixed-project-10pct-mdx", 20)];
+fn measure_mixed_project() {
+    let (mdx, tsx) = equivalent_sources(1);
+    let config = project_config();
+    let cases = [
+        ("tsx-project-200", 0),
+        ("mixed-project-10pct-mdx", MDX_PROJECT_FILES),
+    ];
     let paths: Vec<Vec<_>> = cases
         .iter()
         .map(|(_, mdx_files)| {
-            (0..200)
+            (0..PROJECT_FILES)
                 .map(|index| {
                     format!(
                         "/src/doc{index}.{}",
@@ -222,20 +235,23 @@ fn measure_builds() {
         );
         std::hint::black_box(output);
     };
-    for _ in 0..20 {
+    for _ in 0..BUILD_WARMUP {
         build(0);
         build(1);
     }
     let peaks: Vec<_> = (0..2)
         .map(|case| {
-            let before = LIVE.load(Ordering::Relaxed);
-            PEAK.store(before, Ordering::Relaxed);
+            let before = LIVE_BYTES.load(Ordering::Relaxed);
+            PEAK_BYTES.store(before, Ordering::Relaxed);
             build(case);
-            PEAK.load(Ordering::Relaxed).saturating_sub(before)
+            PEAK_BYTES.load(Ordering::Relaxed).saturating_sub(before)
         })
         .collect();
-    let mut samples = [Vec::new(), Vec::new()];
-    for round in 0..100 {
+    let mut samples = [
+        Vec::with_capacity(BUILD_SAMPLES),
+        Vec::with_capacity(BUILD_SAMPLES),
+    ];
+    for round in 0..BUILD_SAMPLES {
         for order in 0..2 {
             let case = (round + order) % 2;
             let start = Instant::now();
@@ -247,59 +263,97 @@ fn measure_builds() {
         samples[case].sort_by(f64::total_cmp);
         println!(
             "{}",
-            json!({ "scenario": name, "files": 200, "mdxFiles": mdx_files,
-            "medianUs": samples[case][50], "peakHeapBytes": peaks[case], "sampling": "alternating" })
+            json!({
+                "scenario": name,
+                "allocationTracking": allocations::is_enabled(),
+                "files": PROJECT_FILES,
+                "mdxFiles": mdx_files,
+                "medianUs": samples[case][BUILD_SAMPLES / 2],
+                "peakHeapBytes": allocations::is_enabled().then_some(peaks[case]),
+                "sampling": "alternating",
+            })
         );
     }
 }
 
 fn main() {
-    if std::env::args().any(|arg| arg == "--esm-stress") {
+    let args: Vec<_> = std::env::args().skip(1).collect();
+    if args.iter().any(|arg| arg == "--timing") {
+        allocations::disable();
+    }
+    if args.iter().any(|arg| arg == "--dense-inline") {
+        for count in [100, 1000, 4000] {
+            let source = format!("{IMPORTS}Text {}", "<Box color=\"red\" />".repeat(count));
+            measure_extraction(
+                &format!("mdx-inline-{count}"),
+                &source,
+                "inline.mdx",
+                ExtractionExpectation::Elements(count),
+            );
+        }
+        return;
+    }
+    if args.iter().any(|arg| arg == "--esm-stress") {
         for lines in [20, 80, 320] {
             let source = format!(
                 "{IMPORTS}export const entries = {{\n\n{}}};\n\n{JSX}\n",
                 "a: 'x',\n\n".repeat(lines)
             );
-            measure(
+            measure_extraction(
                 &format!("mdx-export-{lines}"),
                 &source,
                 "exports.mdx",
-                Some(1),
+                ExtractionExpectation::CallsAndElements(1),
             );
         }
         return;
     }
-    if std::env::args().any(|arg| arg == "--mixed") {
-        measure_builds();
+    if args.iter().any(|arg| arg == "--mixed") {
+        measure_mixed_project();
         return;
     }
-    if std::env::args().any(|arg| arg == "--watch") {
-        let (mdx, tsx) = fixtures(20);
-        measure_watch("tsx-watch", &tsx, "doc.tsx");
-        measure_watch("mdx-watch", &mdx, "doc.mdx");
+    if args.iter().any(|arg| arg == "--watch") {
+        let (mdx, tsx) = equivalent_sources(20);
+        measure_changed_file_updates("tsx-watch", &tsx, "doc.tsx");
+        measure_changed_file_updates("mdx-watch", &mdx, "doc.mdx");
         return;
     }
-    let baseline = std::env::args().any(|arg| arg == "--baseline");
+    let baseline = args.iter().any(|arg| arg == "--baseline");
     for count in [1, 20, 200] {
-        let (mdx, tsx) = fixtures(count);
-        measure(&format!("tsx-{count}"), &tsx, "doc.tsx", Some(count));
+        let (mdx, tsx) = equivalent_sources(count);
+        measure_extraction(
+            &format!("tsx-{count}"),
+            &tsx,
+            "doc.tsx",
+            ExtractionExpectation::CallsAndElements(count),
+        );
         if !baseline {
-            measure(&format!("mdx-{count}"), &mdx, "doc.mdx", Some(count));
+            measure_extraction(
+                &format!("mdx-{count}"),
+                &mdx,
+                "doc.mdx",
+                ExtractionExpectation::CallsAndElements(count),
+            );
         }
     }
     if !baseline {
         for count in [20, 200] {
             let source = format!("{IMPORTS}{}", "<Box color={unknown} css={unknownStyles}><span className={css({color:'blue'})} /></Box>\n\n".repeat(count));
-            measure(
+            measure_extraction(
                 &format!("mdx-dynamic-{count}"),
                 &source,
                 "dynamic.mdx",
-                Some(count),
+                ExtractionExpectation::CallsAndElements(count),
             );
         }
         for kb in [25, 100, 400] {
             let malformed = format!("{IMPORTS}{{{}", "a } b { ".repeat(kb * 1024 / 8));
-            measure(&format!("mdx-unclosed-{kb}k"), &malformed, "bad.mdx", None);
+            measure_extraction(
+                &format!("mdx-unclosed-{kb}k"),
+                &malformed,
+                "bad.mdx",
+                ExtractionExpectation::Diagnostics,
+            );
         }
     }
 }

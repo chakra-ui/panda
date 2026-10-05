@@ -362,5 +362,45 @@
   {
     "name": "ESM does not interrupt prose",
     "source": "A paragraph that continues on the next line:\nimport it from [`recipes/`](url) instead.\n\n<Box color=\"red\" />"
+  },
+  {
+    "name": "invalid reference definition",
+    "source": "[text]: /asset.png <Box color=\"red\" />"
+  },
+  {
+    "name": "expression destination",
+    "source": "[ref]: {css({color:\"wrong\"})}\n\n<Box color=\"red\" />"
+  },
+  {
+    "name": "prose reference punctuation",
+    "source": "Text [label]: value <Box color=\"red\" />"
+  },
+  {
+    "name": "quoted ampersands",
+    "source": "<Box color=\"&amp;red\" />"
+  },
+  {
+    "name": "inline siblings",
+    "source": "Text <Box color=\"red\" /><Box color=\"green\" />"
+  },
+  {
+    "name": "empty reference destination",
+    "source": "[label]:\n\n<Box color=\"red\" />"
+  },
+  {
+    "name": "definition in a paragraph",
+    "source": "Paragraph\n[label]: /asset.png <Box color=\"red\" />"
+  },
+  {
+    "name": "unicode reference label",
+    "source": "[界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界]: {css({color:\"wrong\"})}\n\n<Box color=\"red\" />"
+  },
+  {
+    "name": "BOM import",
+    "source": "﻿import { css } from \"@panda/css\";\n\n{css({color:\"red\"})}"
+  },
+  {
+    "name": "BOM flow tag then import",
+    "source": "﻿<Box />\nimport { css } from \"@panda/css\";\n\n{css({color:\"red\"})}"
   }
 ]

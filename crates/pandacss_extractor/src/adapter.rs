@@ -49,7 +49,7 @@ fn unclosed_fence_end(source: &str) -> Option<u32> {
 pub(crate) struct AdaptedSource<'a> {
     pub(crate) format: Option<SfcFormat>,
     pub(crate) code: Cow<'a, str>,
-    pub(crate) astro_elements: Vec<pandacss_sfc::astro::AstroElement>,
+    pub(crate) template_elements: Vec<pandacss_sfc::TemplateElement>,
     pub(crate) astro_scripts: Vec<std::ops::Range<u32>>,
     mdx_diagnostics: Vec<Diagnostic>,
     astro_diagnostics: Vec<pandacss_sfc::astro::AstroDiagnostic>,
@@ -77,7 +77,7 @@ impl<'a> AdaptedSource<'a> {
                 Self {
                     format,
                     code: Cow::Owned(document.canvas),
-                    astro_elements: document.elements,
+                    template_elements: document.elements,
                     astro_scripts: document.scripts,
                     mdx_diagnostics: Vec::new(),
                     astro_diagnostics: document.diagnostics,
@@ -107,7 +107,7 @@ impl<'a> AdaptedSource<'a> {
                     Vec::new(),
                     source,
                 );
-                adapted.astro_elements = document.elements;
+                adapted.template_elements = document.elements;
                 adapted.mdx_diagnostics = crate::imports::parse_error_diagnostics(
                     document.diagnostics.iter().map(|diagnostic| {
                         (
@@ -166,7 +166,7 @@ impl<'a> AdaptedSource<'a> {
         Self {
             format,
             code: code.into(),
-            astro_elements: Vec::new(),
+            template_elements: Vec::new(),
             astro_scripts: Vec::new(),
             mdx_diagnostics: Vec::new(),
             astro_diagnostics: Vec::new(),

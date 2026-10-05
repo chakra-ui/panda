@@ -95,6 +95,28 @@ fn handles_inline_siblings_markdown_children_and_expression_jsx() {
     assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
     assert!(result.calls.is_empty());
     assert_eq!(result.jsx.len(), 6);
+    assert_yaml_snapshot!(extract_shape(&result), @r#"
+    calls: []
+    jsx:
+      - name: Box
+        data:
+          color: blue
+      - name: Box
+        data:
+          color: red
+      - name: Box
+        data:
+          color: green
+      - name: Box
+        data:
+          padding: "2"
+      - name: Box
+        data:
+          margin: "4"
+      - name: Box
+        data:
+          gap: "1"
+    "#);
 }
 
 #[test]
@@ -191,6 +213,11 @@ fn uses_the_shared_parse_for_comments_dynamic_props_and_entities() {
     let result = extract(source, "shared.mdx", &panda_jsx_config());
     assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
     assert_eq!(result.calls.len(), 1);
+    assert_eq!(result.jsx.len(), 2);
+    assert_eq!(
+        result.jsx[1].data,
+        pandacss_literal::Literal::Object(vec![])
+    );
     assert_eq!(
         result.jsx[0].data,
         pandacss_literal::Literal::Object(vec![
@@ -230,4 +257,39 @@ fn semicolonless_exports_and_expression_spans_keep_the_original_positions() {
         &source[result.calls[0].span.start as usize..result.calls[0].span.end as usize],
         "css({color})"
     );
+}
+
+#[test]
+fn keeps_live_jsx_after_invalid_reference_definitions() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+
+        [text]: /asset.png <Box color="red" />
+    "#};
+    let result = extract(source, "reference.mdx", &panda_jsx_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_yaml_snapshot!(extract_shape(&result), @r#"
+    calls: []
+    jsx:
+      - name: Box
+        data:
+          color: red
+    "#);
+}
+
+#[test]
+fn extracts_dense_inline_tags_with_original_spans() {
+    let source = format!(
+        "import {{ Box }} from '@panda/jsx';\n\nText {}",
+        "<Box color=\"red\" />".repeat(4000)
+    );
+    let result = extract(&source, "dense.mdx", &panda_jsx_config());
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_eq!(result.jsx.len(), 4000);
+    for element in &result.jsx {
+        assert_eq!(
+            &source[element.span.start as usize..element.span.end as usize],
+            "<Box color=\"red\" />"
+        );
+    }
 }
