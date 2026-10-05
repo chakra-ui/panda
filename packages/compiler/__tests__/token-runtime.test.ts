@@ -87,6 +87,66 @@ describe.each(variableConfigs)('generated token runtime: $name', ({ prefix, hash
     }
   })
 
+  it('distinguishes dotted keys from nested keys with identical lookup paths', async () => {
+    const dottedCompiler = createTransformProject({
+      outExtension: 'mjs',
+      prefix,
+      hash,
+      theme: {
+        tokens: {
+          sizes: {
+            '1.5': { value: '0.5rem' },
+          },
+          colors: {
+            'brand.primary': { value: '#ff0000' },
+          },
+        },
+      },
+    })
+    const nestedCompiler = createTransformProject({
+      outExtension: 'mjs',
+      prefix,
+      hash,
+      theme: {
+        tokens: {
+          sizes: {
+            '1': {
+              '5': { value: '0.5rem' },
+            },
+          },
+          colors: {
+            brand: {
+              primary: { value: '#ff0000' },
+            },
+          },
+        },
+      },
+    })
+    const dotted = await loadGeneratedModule<TokenRuntime>(dottedCompiler, { entry: 'tokens/index.mjs' })
+    const nested = await loadGeneratedModule<TokenRuntime>(nestedCompiler, { entry: 'tokens/index.mjs' })
+    const dottedCss = dottedCompiler.compile({ emitLayerDeclaration: false }).css
+    const nestedCss = nestedCompiler.compile({ emitLayerDeclaration: false }).css
+
+    for (const path of ['sizes.1.5', 'colors.brand.primary']) {
+      const dottedReference = dotted.token.var(path)
+      const nestedReference = nested.token.var(path)
+      expect(dottedReference).not.toBe(nestedReference)
+
+      const dottedVariable = dottedReference.slice('var('.length, -1)
+      const nestedVariable = nestedReference.slice('var('.length, -1)
+      expect(dottedCss).toContain(`${dottedVariable}:`)
+      expect(nestedCss).toContain(`${nestedVariable}:`)
+    }
+
+    if (hash === false) {
+      const namePrefix = prefix.cssVar ? `${prefix.cssVar}-` : ''
+      expect(dotted.token.var('sizes.1.5')).toBe(String.raw`var(--${namePrefix}sizes-1\.5)`)
+      expect(nested.token.var('sizes.1.5')).toBe(`var(--${namePrefix}sizes-1-5)`)
+      expect(dotted.token.var('colors.brand.primary')).toBe(String.raw`var(--${namePrefix}colors-brand\.primary)`)
+      expect(nested.token.var('colors.brand.primary')).toBe(`var(--${namePrefix}colors-brand-primary)`)
+    }
+  })
+
   it('keeps negative values separate from variable references, matching v1', () => {
     for (const name of ['1.5', '4']) {
       const positiveReference = token.var(`spacing.${name}`)
