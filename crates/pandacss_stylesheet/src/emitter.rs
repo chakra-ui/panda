@@ -9,8 +9,8 @@ use std::{borrow::Cow, ops::Range};
 use indexmap::IndexMap;
 use pandacss_config::{UserConfig, theme_condition_name};
 use pandacss_encoder::{
-    Atom, AtomValue, ConditionSet, EncodedRecipesSnapshot, Encoder, RecipeStyleEntry,
-    RecipeStyleGroupSnapshot,
+    Atom, AtomValue, AuthoredOrder, ConditionSet, EncodedRecipesSnapshot, Encoder,
+    RecipeStyleEntry, RecipeStyleGroupSnapshot,
 };
 use pandacss_literal::Literal;
 use pandacss_shared::{
@@ -1742,6 +1742,7 @@ impl<'a> EmitContext<'a> {
             }
             for declaration in &mut declarations {
                 declaration.composition_depth = entry.composition_depth;
+                declaration.authored_order = entry.entry.authored_order;
             }
 
             for base_rule in base_rules {
@@ -2278,12 +2279,14 @@ impl<'a> EmitContext<'a> {
 
     #[must_use]
     fn expand_recipe_style_entries(&self, entries: &[RecipeStyleEntry]) -> Vec<ExpandedStyleEntry> {
-        let mut expanded = FxHashSet::default();
+        let mut expanded = Vec::new();
         let mut active = FxHashSet::default();
+        let mut entries: Vec<_> = entries.iter().collect();
+        entries.sort_by_key(|entry| entry.authored_order);
         for entry in entries {
             self.expand_recipe_style_entry(entry, 0, &mut active, &mut expanded);
         }
-        expanded.into_iter().collect()
+        expanded
     }
 
     fn recipe_style_expansion_key(entry: &RecipeStyleEntry) -> (Box<str>, AtomValue) {
@@ -2295,7 +2298,7 @@ impl<'a> EmitContext<'a> {
         entry: &RecipeStyleEntry,
         composition_depth: usize,
         active: &mut FxHashSet<(Box<str>, AtomValue)>,
-        out: &mut FxHashSet<ExpandedStyleEntry>,
+        out: &mut Vec<ExpandedStyleEntry>,
     ) {
         let key = Self::recipe_style_expansion_key(entry);
         if !active.insert(key.clone()) {
@@ -2307,8 +2310,11 @@ impl<'a> EmitContext<'a> {
             .or_else(|| self.nested_utility_style_entries(entry.prop.as_ref(), &entry.value));
 
         let Some(entries) = expanded else {
-            out.insert(ExpandedStyleEntry {
-                entry: entry.clone(),
+            out.push(ExpandedStyleEntry {
+                entry: RecipeStyleEntry {
+                    authored_order: AuthoredOrder::leaf(out.len()),
+                    ..entry.clone()
+                },
                 composition_depth,
             });
             active.remove(&key);
@@ -2485,12 +2491,7 @@ impl<'a> EmitContext<'a> {
     fn style_object_entries(&self, styles: &Literal) -> Vec<RecipeStyleEntry> {
         let normalizer = StyleNormalizer::internal(Some(self.utility), &self.breakpoints);
         let mut encoder = Encoder::with_conditions(self.conditions.clone());
-        encoder.process_atomic_with(styles, &normalizer);
-        encoder
-            .into_atoms()
-            .into_iter()
-            .map(RecipeStyleEntry::from)
-            .collect()
+        encoder.recipe_entries_with(styles, &normalizer)
     }
 
     fn composition_style_entries_for_value(
@@ -2763,6 +2764,7 @@ fn declarations_from_entries(
                     value: value.into_owned(),
                     important: important || value_important,
                     composition_depth: 0,
+                    authored_order: AuthoredOrder::leaf(0),
                 },
             );
         }

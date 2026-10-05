@@ -100,8 +100,14 @@ order so selectors match recipe runtime output. Rule conditions are sorted separ
 
 Style expansion retains composition depth: authored properties start at zero, and entering each named composition adds
 one. Final declarations keep this depth through sorting. The shared declaration merger compares importance first, then
-prefers the nearer composition scope, then uses emission order for ties. This works on CSS properties after utility
-transforms and replaces whole fallback runs together.
+prefers the nearer composition scope, then uses authored leaf order for ties. Recipe entries retain their authored
+order through callback transforms; composition expansion walks those entries and each composition's children in order
+and assigns a flattened sequence before deterministic CSS sorting. This works on CSS properties after utility
+transforms and replaces whole fallback runs together. Atomic class ordering is unchanged.
+
+When static CSS contributes another fragment to an existing recipe class, emission appends that fragment after the
+existing group's leaves. Ordinals from independent snapshots are not compared directly. This happens only in the
+temporary emit snapshot; usage caches and watch refcounts retain their canonical per-group entry identities.
 
 Recipe and grouped-style emission use one collector keyed by the lowered selector and wrappers, so block conditions
 merge each target independently. Recipe and grouped-style token and keyframe pruning visit the collector's winning

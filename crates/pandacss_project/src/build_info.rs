@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use pandacss_encoder::{
-    Atom, AtomValue, ConditionList, EncodedRecipesSnapshot, RecipeStyleEntry,
+    Atom, AtomValue, AuthoredOrder, ConditionList, EncodedRecipesSnapshot, RecipeStyleEntry,
     RecipeStyleGroupSnapshot,
 };
 use pandacss_extractor::{
@@ -26,7 +26,7 @@ use pandacss_system::EncodedRecipes;
 
 /// Bumped when the on-disk shape changes; a consumer with a different
 /// `SCHEMA_VERSION` falls back to re-extracting the library's source.
-pub const SCHEMA_VERSION: u32 = 6;
+pub const SCHEMA_VERSION: u32 = 7;
 
 /// Synthetic file-key prefix for atoms hydrated from a parent design system.
 /// Excluded from serialized build info so a published artifact carries only
@@ -268,12 +268,17 @@ impl Interner {
     }
 
     fn build_recipe_group(&mut self, group: &RecipeStyleGroupSnapshot) -> BuildRecipeGroup {
+        let mut entries: Vec<_> = group.entries.iter().collect();
+        entries.sort_by_key(|entry| entry.authored_order);
         BuildRecipeGroup {
             r: self.intern(&group.recipe),
             slot: group.slot.as_str().map(|slot| self.intern(slot)),
             cls: self.intern(&group.class_name),
             cond: group.conditions.iter().map(|c| self.intern(c)).collect(),
-            entries: group.entries.iter().map(|e| self.build_entry(e)).collect(),
+            entries: entries
+                .into_iter()
+                .map(|entry| self.build_entry(entry))
+                .collect(),
         }
     }
 
@@ -320,12 +325,17 @@ fn conditions_from_build(indices: &[u32], strings: &[String]) -> Option<Conditio
     indices.iter().map(|idx| string_at(strings, *idx)).collect()
 }
 
-fn entry_from_build(build: &BuildAtom, strings: &[String]) -> Option<RecipeStyleEntry> {
+fn entry_from_build(
+    build: &BuildAtom,
+    strings: &[String],
+    authored_order: AuthoredOrder,
+) -> Option<RecipeStyleEntry> {
     Some(RecipeStyleEntry {
         prop: string_at(strings, build.p)?,
         value: value_from_build(&build.v, strings)?,
         conditions: conditions_from_build(&build.c, strings)?,
         important: build.i,
+        authored_order,
     })
 }
 
@@ -338,8 +348,12 @@ fn group_from_build(
         None => serde_json::Value::Null,
     };
     let mut entries = Vec::with_capacity(build.entries.len());
-    for entry in &build.entries {
-        entries.push(entry_from_build(entry, strings)?);
+    for (index, entry) in build.entries.iter().enumerate() {
+        entries.push(entry_from_build(
+            entry,
+            strings,
+            AuthoredOrder::leaf(index),
+        )?);
     }
     Some(RecipeStyleGroupSnapshot {
         recipe: string_at(strings, build.r)?,

@@ -770,7 +770,7 @@ fn keeps_mixed_recipe_targets_separate_while_coalescing_each_target() {
 }
 
 #[test]
-fn coalesces_duplicate_recipe_declarations_by_css_property() {
+fn later_recipe_key_wins_when_shorthand_and_longhand_share_a_property() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
         "utilities": {
@@ -798,7 +798,7 @@ fn coalesces_duplicate_recipe_declarations_by_css_property() {
     @layer recipes {
       @layer base {
         .button {
-          background-color: red;
+          background-color: blue;
         }
       }
     }

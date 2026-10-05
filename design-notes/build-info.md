@@ -31,7 +31,7 @@ recomputed on hydrate.
 
 ```jsonc
 {
-  "schemaVersion": 5,
+  "schemaVersion": 7,
   "panda": "^2.0.0",                               // peer range (collision guard); author-supplied
   "configFingerprint": "cfg1-…",                          // engine fingerprint of output-affecting config
   "strings": ["color", "red", "padding", "4px", "colors.brand", "vt_xxx"], // intern table
@@ -51,6 +51,11 @@ A value is a bare index (string), `{ t, v }` (token path + resolved value), or `
 px-driving type tag). Full atom/recipe data is kept (not pre-built CSS) so the consumer re-emits with **token identity**
 preserved instead of reducing tokens to opaque CSS values. Top-level `tokenRefs` entries point into `strings`; each
 module's `tokenRefs` entries point into that top-level array, preserving import-based tree-shaking.
+
+Recipe `entries` arrays carry authored leaf order. Hydration assigns local order from each array's position so utilities
+that expand to the same CSS property resolve exactly as in the producer, without redundant wire metadata. Atomic
+entries keep their existing identity and sorting. This ordering contract bumped `SCHEMA_VERSION` from 6 to 7; older
+artifacts must be regenerated or fall back to source extraction rather than silently reuse the former sorted order.
 
 **Token definitions are not in build info.** The artifact carries token _usage_ (path + producer-resolved value at
 extraction time); the consumer's **tokens layer** still comes from its own config (typically the lib preset merged in

@@ -753,9 +753,10 @@ fn extend_recipe_groups(
             if index < target_len {
                 merges.push((index, group.entries.clone()));
             } else {
-                additions[index - target_len]
-                    .entries
-                    .extend(group.entries.iter().cloned());
+                pandacss_encoder::append_in_authored_order(
+                    &mut additions[index - target_len].entries,
+                    group.entries.clone(),
+                );
             }
         } else {
             indexes.insert(key, target_len + additions.len());
@@ -765,7 +766,7 @@ fn extend_recipe_groups(
 
     drop(indexes);
     for (index, entries) in merges {
-        target[index].entries.extend(entries);
+        pandacss_encoder::append_in_authored_order(&mut target[index].entries, entries);
     }
     target.extend(additions);
 }

@@ -4,6 +4,77 @@ use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 use crate::common::{compile_output, config};
 
 #[test]
+fn recipe_shorthand_conflicts_follow_authored_order() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "utilities": { "color": { "className": "c", "shorthand": "tone" } },
+        "theme": { "recipes": {
+            "swatch": { "className": "swatch", "base": { "color": "red", "tone": "green" } },
+            "reverse": { "className": "reverse", "base": { "tone": "green", "color": "red" } }
+        } }
+    }));
+    let css = compile_output(
+        &config,
+        "import { swatch, reverse } from '@panda/recipes'; swatch(); reverse();",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .reverse {
+          color: red;
+        }
+        .swatch {
+          color: green;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn same_depth_compositions_follow_authored_order() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "conditions": { "hover": "&:hover" },
+        "utilities": { "color": { "className": "c" } },
+        "theme": {
+            "textStyles": { "reset": { "value": { "color": "initial", "_hover": { "color": "initial" } } } },
+            "layerStyles": { "tone": { "value": { "color": "green", "_hover": { "color": "red" } } } },
+            "recipes": {
+                "swatch": { "className": "swatch", "base": { "textStyle": "reset", "layerStyle": "tone" } },
+                "reverse": { "className": "reverse", "base": { "layerStyle": "tone", "textStyle": "reset" } }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { swatch, reverse } from '@panda/recipes'; swatch(); reverse();",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .reverse {
+          color: initial;
+        }
+        .reverse:hover {
+          color: initial;
+        }
+        .swatch {
+          color: green;
+        }
+        .swatch:hover {
+          color: red;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
 fn emits_config_recipe_css() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
