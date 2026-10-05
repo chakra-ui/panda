@@ -852,27 +852,30 @@ fn negative_spacing_keeps_fractional_names_intact() {
 #[test]
 fn runtime_negative_spacing_variables_match_v1_without_changing_style_values() {
     let dict = build_dictionary(json!({
-        "theme": { "tokens": { "spacing": { "1.5": { "value": "0.375rem" } } } }
+        "theme": {
+            "tokens": {
+                "spacing": {
+                    "1.5": { "value": "0.375rem" }
+                }
+            }
+        }
     }));
-    assert_eq!(
-        dict.runtime_var_str("spacing.1.5", None),
-        Some("var(--spacing-1\\.5)")
-    );
-    assert_eq!(
-        dict.runtime_var_str("spacing.-1.5", None),
-        Some("var(--spacing-1\\.5)")
-    );
+    let variable = r"var(--spacing-1\.5)";
+    let negative_value = format!("calc({variable} * -1)");
+
+    assert_eq!(dict.runtime_var_str("spacing.1.5", None), Some(variable));
+    assert_eq!(dict.runtime_var_str("spacing.-1.5", None), Some(variable));
     assert_eq!(
         dict.get_var_str("spacing.-1.5", None),
-        Some("calc(var(--spacing-1\\.5) * -1)")
+        Some(negative_value.as_str())
     );
     assert_eq!(
         dict.runtime_value_str("spacing.-1.5", None),
-        Some("calc(var(--spacing-1\\.5) * -1)")
+        Some(negative_value.as_str())
     );
     assert_eq!(
         dict.runtime_var_str("spacing.-1.5", Some("ignored")),
-        Some("var(--spacing-1\\.5)")
+        Some(variable)
     );
     assert_eq!(
         dict.runtime_var_str("spacing.missing", Some("fallback")),

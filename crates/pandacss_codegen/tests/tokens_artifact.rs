@@ -1,9 +1,13 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, sync::Arc};
 
 use crate::common::{artifact, file, paths, user_config};
 use insta::assert_snapshot;
-use pandacss_codegen::{ArtifactGraph, ArtifactId, CodegenInput, GenerateOptions};
+use pandacss_codegen::{
+    ArtifactGraph, ArtifactId, CodegenInput, GenerateOptions, TokenDictionarySource,
+};
 use pandacss_config::{CodegenFormat, TokenTypeData, TypeData, UserConfig};
+use pandacss_tokens::TokenDictionary;
+use serde_json::json;
 
 fn config() -> UserConfig {
     user_config(serde_json::json!({ "prefix": { "cssVar": "pd" } }))
@@ -116,24 +120,26 @@ fn emits_js_runtime_and_declarations() {
 
 #[test]
 fn preserves_dotted_token_keys_from_the_compiled_dictionary() {
-    let config = user_config(serde_json::json!({
-        "theme": { "tokens": { "spacing": {
-            "1.5": { "value": "0.375rem" },
-            "4": { "value": "1rem" }
-        } } }
+    let config = user_config(json!({
+        "theme": {
+            "tokens": {
+                "spacing": {
+                    "1.5": { "value": "0.375rem" },
+                    "4": { "value": "1rem" }
+                }
+            }
+        }
     }));
-    let dictionary = pandacss_tokens::TokenDictionary::from_config(&config)
-        .unwrap()
-        .unwrap();
+    let dictionary = TokenDictionary::from_config(&config)
+        .expect("valid token config")
+        .expect("spacing tokens");
     let input = CodegenInput {
         config,
         types: TypeData {
             tokens: dictionary.type_data(),
             ..TypeData::default()
         },
-        token_dictionary: pandacss_codegen::TokenDictionarySource::Provided(Some(
-            std::sync::Arc::new(dictionary),
-        )),
+        token_dictionary: TokenDictionarySource::Provided(Some(Arc::new(dictionary))),
         ..CodegenInput::default()
     };
     let artifacts = ArtifactGraph.generate_all(
@@ -144,9 +150,20 @@ fn preserves_dotted_token_keys_from_the_compiled_dictionary() {
         },
     );
     let code = file(artifact(&artifacts, ArtifactId::Tokens), "tokens/index.mjs");
-    assert!(code.contains(r#""spacing.1.5":"var(--spacing-1\\.5)""#));
-    assert!(code.contains(r#""spacing.-1.5":"var(--spacing-1\\.5)""#));
-    assert!(code.contains(r#""spacing.-4":"var(--spacing-4)""#));
+    let expected_variables = [
+        ("spacing.1.5", r"var(--spacing-1\.5)"),
+        ("spacing.-1.5", r"var(--spacing-1\.5)"),
+        ("spacing.-4", "var(--spacing-4)"),
+    ];
+    for (path, reference) in expected_variables {
+        let serialized_path = serde_json::to_string(path).unwrap();
+        let serialized_reference = serde_json::to_string(reference).unwrap();
+        let expected_entry = format!("{serialized_path}:{serialized_reference}");
+        assert!(
+            code.contains(&expected_entry),
+            "missing reference for {path}"
+        );
+    }
     assert!(code.contains("colorMix(tokens, path, resolveVar)"));
     assert!(code.contains("tokens[path] === undefined ? fallback : resolveVar(path)"));
 }

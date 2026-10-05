@@ -1,21 +1,40 @@
-import { describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { loadGeneratedModule } from './generated-runtime'
 import { createTransformProject } from './test-utils'
 
-interface TokenRuntime {
-  token: ((path: string, fallback?: string) => string) & {
-    var: (path: string, fallback?: string) => string
-  }
+interface TokenFunction {
+  (path: string, fallback?: string): string
+  var(path: string, fallback?: string): string
 }
 
-describe('generated token runtime', () => {
-  it.each([
-    { prefix: {}, hash: false },
-    { prefix: { cssVar: 'panda' }, hash: false },
-    { prefix: {}, hash: { cssVar: true } },
-    { prefix: { cssVar: 'panda' }, hash: { cssVar: true } },
-  ])('matches emitted variables for dotted keys with %j', async ({ prefix, hash }) => {
-    const compiler = createTransformProject({
+interface TokenRuntime {
+  token: TokenFunction
+}
+
+const variableConfigs = [
+  { name: 'ordinary variables', prefix: {}, hash: false },
+  { name: 'prefixed variables', prefix: { cssVar: 'panda' }, hash: false },
+  { name: 'hashed variables', prefix: {}, hash: { cssVar: true } },
+  { name: 'prefixed hashed variables', prefix: { cssVar: 'panda' }, hash: { cssVar: true } },
+]
+
+const tokenPaths = [
+  'spacing.1.5',
+  'spacing.nested.1.5',
+  'spacing.4',
+  'spacing.-1.5',
+  'spacing.-4',
+  'colors.brand.primary',
+  'spacing.small.gap',
+]
+
+describe.each(variableConfigs)('generated token runtime: $name', ({ prefix, hash }) => {
+  let compiler: ReturnType<typeof createTransformProject>
+  let token: TokenFunction
+  let css: string
+
+  beforeAll(async () => {
+    compiler = createTransformProject({
       outExtension: 'mjs',
       prefix,
       hash,
@@ -23,47 +42,75 @@ describe('generated token runtime', () => {
         tokens: {
           spacing: {
             '1.5': { value: '0.375rem' },
-            nested: { '1.5': { value: '0.5rem' } },
+            nested: {
+              '1.5': { value: '0.5rem' },
+            },
             '4': { value: '1rem' },
           },
-          colors: { 'brand.primary': { value: '#ff0000' } },
+          colors: {
+            'brand.primary': { value: '#ff0000' },
+          },
         },
         semanticTokens: {
-          spacing: { 'small.gap': { value: { base: '{spacing.1.5}', _dark: '{spacing.4}' } } },
+          spacing: {
+            'small.gap': {
+              value: { base: '{spacing.1.5}', _dark: '{spacing.4}' },
+            },
+          },
         },
       },
     })
-    const { token } = await loadGeneratedModule<TokenRuntime>(compiler, { entry: 'tokens/index.mjs' })
-    const css = compiler.compile({ emitLayerDeclaration: false }).css
+    const runtime = await loadGeneratedModule<TokenRuntime>(compiler, { entry: 'tokens/index.mjs' })
+    token = runtime.token
+    css = compiler.compile({ emitLayerDeclaration: false }).css
+  })
 
-    for (const path of [
-      'spacing.1.5',
-      'spacing.nested.1.5',
-      'spacing.4',
-      'spacing.-1.5',
-      'spacing.-4',
-      'colors.brand.primary',
-      'spacing.small.gap',
-    ]) {
-      const source = `import { token } from '@panda/tokens'; export const value = token.var('${path}')`
-      const transformed = compiler.transformSource({ path: '/virtual/token.ts', source })
-      expect(transformed.code).toContain(JSON.stringify(token.var(path)))
-      expect(css).toContain(`${token.var(path).slice(4, -1)}:`)
-      expect(token.var(path, 'ignored')).toBe(token.var(path))
+  it('returns variables declared in the emitted CSS', () => {
+    for (const path of tokenPaths) {
+      const reference = token.var(path)
+      const variableName = reference.slice('var('.length, -1)
+      expect(css).toContain(`${variableName}:`)
     }
+
     if (hash === false) {
       const namePrefix = prefix.cssVar ? `${prefix.cssVar}-` : ''
       expect(token.var('spacing.1.5')).toBe(String.raw`var(--${namePrefix}spacing-1\.5)`)
     }
+  })
+
+  it('inlines the same references as the generated runtime', () => {
+    for (const path of tokenPaths) {
+      const source = ["import { token } from '@panda/tokens'", `export const value = token.var('${path}')`].join('\n')
+      const transformed = compiler.transformSource({ path: '/virtual/token.ts', source })
+      const expectedLiteral = JSON.stringify(token.var(path))
+      expect(transformed.code).toContain(expectedLiteral)
+    }
+  })
+
+  it('keeps negative values separate from variable references, matching v1', () => {
+    for (const name of ['1.5', '4']) {
+      const positiveReference = token.var(`spacing.${name}`)
+      expect(token.var(`spacing.-${name}`)).toBe(positiveReference)
+      expect(token(`spacing.-${name}`)).toBe(`calc(${positiveReference} * -1)`)
+    }
     expect(token('spacing.1.5')).toBe('0.375rem')
-    expect(token.var('spacing.-1.5')).toBe(token.var('spacing.1.5'))
-    expect(token('spacing.-1.5')).toBe(`calc(${token.var('spacing.1.5')} * -1)`)
-    expect(token.var('spacing.-4')).toBe(token.var('spacing.4'))
-    expect(token('spacing.-4')).toBe(`calc(${token.var('spacing.4')} * -1)`)
+  })
+
+  it('returns the active variable for conditional tokens', () => {
     expect(token('spacing.small.gap')).toBe(token.var('spacing.small.gap'))
-    expect(token('colors.brand.primary/50')).toBe(
-      `color-mix(in oklab, ${token.var('colors.brand.primary')} 50%, transparent)`,
-    )
+  })
+
+  it('uses the dotted color key reference in opacity modifiers', () => {
+    const colorReference = token.var('colors.brand.primary')
+    const expectedMix = `color-mix(in oklab, ${colorReference} 50%, transparent)`
+    expect(token('colors.brand.primary/50')).toBe(expectedMix)
+  })
+
+  it('uses the fallback only when the token is missing', () => {
+    for (const path of tokenPaths) {
+      expect(token.var(path, 'ignored')).toBe(token.var(path))
+    }
     expect(token.var('spacing.missing', 'fallback')).toBe('fallback')
+    expect(token.var('spacing.missing')).toBeUndefined()
   })
 })
