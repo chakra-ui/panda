@@ -89,20 +89,6 @@ pub(crate) fn push_grouped_rule(
     );
 }
 
-pub(crate) fn write_rule(
-    writer: &mut CssWriter,
-    rule: &LoweredTarget,
-    declarations: &[Declaration],
-) {
-    write_with_wrappers(writer, &rule.wrappers, |writer| {
-        writer.rule(&rule.selector, |writer| {
-            for declaration in declarations {
-                writer.declaration(&declaration.prop, &declaration.value, declaration.important);
-            }
-        });
-    });
-}
-
 pub(crate) fn write_with_wrappers(
     writer: &mut CssWriter,
     wrappers: &[String],
