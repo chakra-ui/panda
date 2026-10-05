@@ -60,14 +60,16 @@ fn emits_ts_source_tokens() {
 
     const tokens: Record<string, string> = {"colors.primary":"","colors.red.500":"#ef4444","opacity.half":"0.5","spacing.4":"1rem"}
 
+    const resolveVar = toCssVar
+
     export const token: TokenFn = /* @__PURE__ */ Object.assign(
       function token(path: string, fallback?: string) {
         const value = tokens[path]
-        return value === undefined ? colorMix(tokens, path) || fallback : value || toCssVar(path)
+        return value === undefined ? colorMix(tokens, path, resolveVar) || fallback : value || resolveVar(path)
       },
       {
         var: function tokenVar(path: string, fallback?: string) {
-          return tokens[path] === undefined ? fallback : toCssVar(path)
+          return tokens[path] === undefined ? fallback : resolveVar(path)
         },
       },
     )
@@ -94,14 +96,16 @@ fn emits_js_runtime_and_declarations() {
 
     const tokens = {"colors.primary":"","colors.red.500":"#ef4444","opacity.half":"0.5","spacing.4":"1rem"}
 
+    const resolveVar = toCssVar
+
     export const token = /* @__PURE__ */ Object.assign(
       function token(path, fallback) {
         const value = tokens[path]
-        return value === undefined ? colorMix(tokens, path) || fallback : value || toCssVar(path)
+        return value === undefined ? colorMix(tokens, path, resolveVar) || fallback : value || resolveVar(path)
       },
       {
         var: function tokenVar(path, fallback) {
-          return tokens[path] === undefined ? fallback : toCssVar(path)
+          return tokens[path] === undefined ? fallback : resolveVar(path)
         },
       },
     )

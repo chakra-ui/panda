@@ -25,7 +25,7 @@ mod svg;
 pub use builder::TokenDictionaryBuilder;
 pub use category::TokenCategory;
 pub use color_palette::ColorPaletteView;
-pub use from_config::TokenDictionaryOptions;
+pub use from_config::{TokenDictionaryOptions, css_var_name, push_css_var_name};
 pub use token::{Token, TokenExtensions};
 
 // === Type Definitions ===

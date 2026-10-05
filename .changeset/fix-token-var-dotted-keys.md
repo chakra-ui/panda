@@ -8,3 +8,5 @@ variables, including when hashing is enabled.
 
 Restore v1 behavior for negative spacing: `token.var()` returns the original positive variable, while `token()` keeps
 returning the negated value.
+
+Emoji in token keys are no longer escaped in CSS variable names, matching v1.

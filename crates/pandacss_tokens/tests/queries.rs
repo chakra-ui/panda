@@ -713,11 +713,7 @@ fn sanitize_css_var_name(out: &mut String, value: &str) {
         if ch.is_ascii_uppercase() {
             out.push('-');
             out.push(ch.to_ascii_lowercase());
-        } else if ch.is_ascii_alphanumeric()
-            || ch == '_'
-            || ch == '-'
-            || ('\u{0081}'..='\u{ffff}').contains(&ch)
-        {
+        } else if ch.is_ascii_alphanumeric() || ch == '_' || ch == '-' || ch >= '\u{0081}' {
             out.push(ch);
         } else {
             out.push('\\');

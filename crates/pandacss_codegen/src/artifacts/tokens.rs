@@ -3,12 +3,12 @@
 //!
 //! Path → CSS-var (`toCssVar`) and opacity-modifier (`colorMix`) helpers live in
 //! `helpers` so overlay apps share one prefix-aware implementation while each
-//! app still emits its own token map.
+//! app still emits its own token map. Paths whose variable `toCssVar` can't
+//! rebuild (dotted keys, negative spacing) get an entry in `tokenVars`.
 
 use std::collections::BTreeMap;
 
-use pandacss_shared::to_hash;
-use pandacss_tokens::TokenDictionary;
+use pandacss_tokens::{TokenDictionary, css_var_name};
 
 use crate::{
     Artifact, ArtifactId, CodegenContext, ConstDecl, DependencySet, Expr, ImportDecl, Item,
@@ -48,19 +48,7 @@ fn module(ctx: CodegenContext<'_>) -> Module {
     let tokens =
         serde_json::to_string(&ctx.types.tokens.values).expect("token values should serialize");
 
-    let vars = variable_overrides(ctx);
-    let token_export = if vars.is_empty() {
-        TOKEN_EXPORT.to_owned()
-    } else {
-        TOKEN_EXPORT
-            .replace("toCssVar(path)", "resolveVar(path)")
-            .replace(
-                "colorMix(tokens, path)",
-                "colorMix(tokens, path, resolveVar)",
-            )
-    };
-
-    let mut module = Module::new()
+    Module::new()
         .with_import(ImportDecl::value(
             ["colorMix", "toCssVar"],
             &ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
@@ -69,21 +57,28 @@ fn module(ctx: CodegenContext<'_>) -> Module {
         .with_item(Item::ty(ItemNode::RawStmt(TOKEN_FN_TYPE.into())))
         .with_item(Item::runtime(ItemNode::RawStmt(format!(
             "const tokens: Record<string, string> = {tokens}"
-        ))));
-    if !vars.is_empty() {
-        let vars = serde_json::to_string(&vars).expect("token variables should serialize");
-        module = module.with_item(Item::runtime(ItemNode::RawStmt(format!(
-            "const tokenVars: Record<string, string> = {vars}\nconst resolveVar = (path: string) => tokenVars[path] || toCssVar(path)"
-        ))));
+        ))))
+        .with_item(Item::runtime(ItemNode::RawStmt(resolve_var(
+            &variable_overrides(ctx),
+        ))))
+        .with_item(Item::both(ItemNode::Const(ConstDecl {
+            exported: true,
+            declare: false,
+            name: "token".into(),
+            type_annotation: Some(TsType::Ref("TokenFn".into())),
+            init: Some(Expr::Raw(TOKEN_EXPORT.into())),
+            js_doc: None,
+        })))
+}
+
+fn resolve_var(overrides: &BTreeMap<String, String>) -> String {
+    if overrides.is_empty() {
+        return "const resolveVar = toCssVar".to_owned();
     }
-    module.with_item(Item::both(ItemNode::Const(ConstDecl {
-        exported: true,
-        declare: false,
-        name: "token".into(),
-        type_annotation: Some(TsType::Ref("TokenFn".into())),
-        init: Some(Expr::Raw(token_export)),
-        js_doc: None,
-    })))
+    let overrides = serde_json::to_string(overrides).expect("token variables should serialize");
+    format!(
+        "const tokenVars: Record<string, string> = {overrides}\nconst resolveVar = (path: string) => tokenVars[path] || toCssVar(path)"
+    )
 }
 
 fn variable_overrides(ctx: CodegenContext<'_>) -> BTreeMap<String, String> {
@@ -116,24 +111,12 @@ fn variable_overrides(ctx: CodegenContext<'_>) -> BTreeMap<String, String> {
 }
 
 fn derived_variable(ctx: CodegenContext<'_>, path: &str) -> String {
-    let name = path.replace('.', "-");
-    let prefix = ctx.config.prefix.css_var().unwrap_or_default();
-    let mut out = String::from("var(--");
-    if ctx.config.hash.css_var() {
-        if !prefix.is_empty() {
-            out.push_str(prefix);
-            out.push('-');
-        }
-        out.push_str(&to_hash(&name));
-    } else {
-        if !prefix.is_empty() {
-            super::helpers::push_css_var_name(&mut out, prefix);
-            out.push('-');
-        }
-        super::helpers::push_css_var_name(&mut out, &name);
-    }
-    out.push(')');
-    out
+    let name = css_var_name(
+        &path.replace('.', "-"),
+        ctx.config.prefix.css_var(),
+        ctx.config.hash.css_var(),
+    );
+    format!("var({name})")
 }
 
 const TOKEN_FN_TYPE: &str = r"interface TokenFn {
@@ -144,11 +127,11 @@ const TOKEN_FN_TYPE: &str = r"interface TokenFn {
 const TOKEN_EXPORT: &str = r"/* @__PURE__ */ Object.assign(
   function token(path: string, fallback?: string) {
     const value = tokens[path]
-    return value === undefined ? colorMix(tokens, path) || fallback : value || toCssVar(path)
+    return value === undefined ? colorMix(tokens, path, resolveVar) || fallback : value || resolveVar(path)
   },
   {
     var: function tokenVar(path: string, fallback?: string) {
-      return tokens[path] === undefined ? fallback : toCssVar(path)
+      return tokens[path] === undefined ? fallback : resolveVar(path)
     },
   },
 )";

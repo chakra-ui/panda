@@ -9,8 +9,6 @@ mod object;
 mod split_props;
 mod token;
 
-pub(super) use token::push_css_var_name;
-
 use crate::{
     Artifact, ArtifactFile, ArtifactId, CodegenContext, DependencySet, ExportDecl, Item, ItemNode,
     Module, RuntimeImport,
