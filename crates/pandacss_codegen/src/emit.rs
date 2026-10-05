@@ -8,6 +8,7 @@ use crate::ast::{
     ImportSpecifier, InterfaceDecl, Item, ItemNode, ItemRole, JsDoc, JsxAttr, JsxElement, JsxName,
     ObjectProp, Param, Stmt, TsMember, TsMemberName, TsType, TypeAliasDecl,
 };
+use crate::ts_declarations::typescript_declarations;
 use crate::ts_erase::{erase_typescript_block, erase_typescript_expr, erase_typescript_program};
 use pandacss_config::CodegenFormat;
 
@@ -131,34 +132,49 @@ fn print_module_with_format(
         Other,
     }
 
-    let mut lines: Vec<(PrintedLineKind, String)> = Vec::new();
+    let items = module
+        .items
+        .iter()
+        .filter(|item| should_print_item(item, target))
+        .map(|item| {
+            let kind = match item.node {
+                ItemNode::Export(_) => PrintedLineKind::Export,
+                _ => PrintedLineKind::Other,
+            };
+            (kind, print_item(item, target, import_extensions, format))
+        })
+        .collect::<Vec<_>>();
 
-    lines.extend(
+    // Typed sources import types their runtime bodies need; `.d.ts` keeps only the used ones.
+    let prune_unused = matches!(target, EmitTarget::Dts)
+        && module
+            .items
+            .iter()
+            .any(|item| matches!(item.node, ItemNode::TypedSource(_)));
+    let used_imports = prune_unused.then(|| {
+        let body = items
+            .iter()
+            .map(|(_, line)| line.as_str())
+            .collect::<Vec<_>>();
         module
             .imports
             .iter()
-            .filter(|import| should_print_import(import, target))
-            .map(|import| {
-                (
-                    PrintedLineKind::Import,
-                    print_import(import, target, import_extensions, format),
-                )
-            }),
-    );
+            .filter_map(|import| retain_used_specifiers(import, &body))
+            .collect::<Vec<_>>()
+    });
+    let imports = used_imports.as_deref().unwrap_or(&module.imports);
 
-    lines.extend(
-        module
-            .items
-            .iter()
-            .filter(|item| should_print_item(item, target))
-            .map(|item| {
-                let kind = match item.node {
-                    ItemNode::Export(_) => PrintedLineKind::Export,
-                    _ => PrintedLineKind::Other,
-                };
-                (kind, print_item(item, target, import_extensions, format))
-            }),
-    );
+    let mut lines: Vec<(PrintedLineKind, String)> = imports
+        .iter()
+        .filter(|import| should_print_import(import, target))
+        .map(|import| {
+            (
+                PrintedLineKind::Import,
+                print_import(import, target, import_extensions, format),
+            )
+        })
+        .collect();
+    lines.extend(items);
 
     // Only `.d.ts` drops blank lines — a type-stripped runtime item leaves one behind.
     let lines = lines
@@ -184,6 +200,35 @@ fn print_module_with_format(
     }
 
     output.trim().to_string()
+}
+
+/// `import`, minus the specifiers no declaration in `body` refers to; `None` when none are left.
+fn retain_used_specifiers(import: &ImportDecl, body: &[&str]) -> Option<ImportDecl> {
+    let specifiers = import
+        .specifiers
+        .iter()
+        .filter(|specifier| {
+            let local = match specifier {
+                ImportSpecifier::Named(name) | ImportSpecifier::Namespace(name) => name,
+                ImportSpecifier::NamedAlias { local, .. } => local,
+            };
+            body.iter().any(|text| contains_identifier(text, local))
+        })
+        .cloned()
+        .collect::<Vec<_>>();
+    (!specifiers.is_empty()).then(|| ImportDecl {
+        specifiers,
+        ..import.clone()
+    })
+}
+
+fn contains_identifier(text: &str, name: &str) -> bool {
+    let is_ident = |c: char| c.is_ascii_alphanumeric() || c == '_' || c == '$';
+    text.match_indices(name).any(|(at, _)| {
+        let before = text[..at].chars().next_back();
+        let after = text[at + name.len()..].chars().next();
+        !before.is_some_and(is_ident) && !after.is_some_and(is_ident)
+    })
 }
 
 fn should_print_import(import: &ImportDecl, target: EmitTarget) -> bool {
@@ -296,6 +341,11 @@ fn print_item(
                 code.clone()
             }
         }
+        ItemNode::TypedSource(code) => match target {
+            EmitTarget::SourceTs => code.clone(),
+            EmitTarget::RuntimeJs => erase_typescript_program(code),
+            EmitTarget::Dts => typescript_declarations(code),
+        },
     }
 }
 

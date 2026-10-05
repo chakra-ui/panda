@@ -1,5 +1,5 @@
-use super::jsx_helper::{raw_runtime, raw_type, type_import, value_import};
-use crate::{CodegenContext, ImportDecl, Module, RuntimeImport};
+use super::jsx_helper::{type_import, value_import};
+use crate::{CodegenContext, ImportDecl, Item, Module, RuntimeImport};
 
 pub(super) fn module(
     ctx: CodegenContext<'_>,
@@ -24,40 +24,77 @@ pub(super) fn module(
             "./helper",
         ))
         .with_import(ImportDecl::value(["isCssProperty"], "./is-valid-prop"))
-        .with_import(type_import(&[upper], "../types/jsx"))
-        .with_item(raw_runtime(
-            FACTORY_RUNTIME
-                .replace("__FACTORY__", factory)
-                .replace("__COMPONENT__", component),
+        .with_import(type_import(
+            &[
+                "ElementType",
+                "ForwardRefExoticComponent",
+                "ReactNode",
+                "RefAttributes",
+            ],
+            "react",
         ))
-        .with_item(raw_type(format!("export declare const {factory}: {upper}")))
+        .with_import(type_import(
+            &["JsxRecipeFn", "ShouldForwardProp", "StyledMarkers"],
+            "./helper",
+        ))
+        .with_import(type_import(&["RecipeDefinition"], "../types/recipe"))
+        .with_import(type_import(&[upper], "../types/jsx"))
+        .with_item(Item::typed_source(
+            FACTORY_SOURCE
+                .replace("__FACTORY__", factory)
+                .replace("__COMPONENT__", component)
+                .replace("__UPPER__", upper),
+        ))
 }
 
-const FACTORY_RUNTIME: &str = r"function styledFn(BaseComponent, recipeOrConfig = {}, options = {}) {
-  const recipeFn = recipeOrConfig.__cva__ || recipeOrConfig.__recipe__ ? recipeOrConfig : cva(recipeOrConfig)
+/// Typed factory runtime, shared with Preact (which swaps `createElement` for `h`).
+pub(super) const FACTORY_SOURCE: &str = r"type Props = Record<string, unknown>
+
+type StyledProps = {
+  as?: ElementType
+  unstyled?: boolean
+  children?: ReactNode
+  className?: string
+}
+
+interface StyledOptions {
+  shouldForwardProp?: ShouldForwardProp
+  forwardProps?: readonly string[]
+  dataAttr?: boolean
+  defaultProps?: Props
+}
+
+type StyledBase = ElementType & StyledMarkers & { __base__?: ElementType }
+
+type StyledComponentFn = ForwardRefExoticComponent<StyledProps & RefAttributes<unknown>> & StyledMarkers
+
+type RecipeInput = JsxRecipeFn | Props
+
+function styledFn(BaseComponent: StyledBase, recipeOrConfig: RecipeInput = {}, options: StyledOptions = {}): StyledComponentFn {
+  const recipeFn = recipeOrConfig.__cva__ || recipeOrConfig.__recipe__ ? recipeOrConfig as JsxRecipeFn : cva(recipeOrConfig as RecipeDefinition) as unknown as JsxRecipeFn
   const composedRecipeFn = composeCvaFn(BaseComponent.__cva__, recipeFn)
   const getRaw = composedRecipeFn.__memoizedRaw__ || composedRecipeFn.raw
   const variantKeys = composedRecipeFn.variantKeys
   const variantSet = new Set(variantKeys)
-  const forwardFn = options.shouldForwardProp || ((prop) => !variantSet.has(prop) && !isCssProperty(prop))
+  const forwardFn = options.shouldForwardProp || ((prop: string) => !variantSet.has(prop) && !isCssProperty(prop))
   const forwardProps = options.forwardProps
   const forwardPropSet = forwardProps?.length ? new Set(forwardProps) : void 0
   const shouldForwardProp = forwardPropSet
-    ? (prop) => forwardPropSet.has(prop) || forwardFn(prop, variantKeys)
-    : (prop) => forwardFn(prop, variantKeys)
+    ? (prop: string) => forwardPropSet.has(prop) || forwardFn(prop, variantKeys)
+    : (prop: string) => forwardFn(prop, variantKeys)
 
-  const dataProps = options.dataAttr && recipeOrConfig.__name__ ? { 'data-recipe': recipeOrConfig.__name__ } : {}
+  const dataProps: Props = options.dataAttr && recipeOrConfig.__name__ ? { 'data-recipe': recipeOrConfig.__name__ } : {}
   const defaultProps = Object.assign(dataProps, options.defaultProps)
   const hasDefaultProps = Object.keys(defaultProps).length > 0
 
   const shouldForward = composeShouldForwardProps(BaseComponent, shouldForwardProp)
-  const DefaultElement = BaseComponent.__base__ || BaseComponent
+  const DefaultElement: ElementType = BaseComponent.__base__ || BaseComponent
 
-  const __COMPONENT__ = /* @__PURE__ */ forwardRef(function __COMPONENT__(props, ref) {
+  const __COMPONENT__ = /* @__PURE__ */ forwardRef<unknown, StyledProps>(function __COMPONENT__(props, ref) {
     const Element = props.as === void 0 ? DefaultElement : props.as
     const unstyled = props.unstyled
     const children = props.children
-    let combinedProps = props
+    let combinedProps: StyledProps = props
     if (hasDefaultProps) {
       const { as, unstyled, children, ...restProps } = props
       combinedProps = Object.assign({}, defaultProps, restProps)
@@ -94,7 +131,7 @@ const FACTORY_RUNTIME: &str = r"function styledFn(BaseComponent, recipeOrConfig 
       ...htmlProps,
       className,
     }, children ?? combinedProps.children)
-  })
+  }) as StyledComponentFn
 
   const name = getDisplayName(DefaultElement)
   __COMPONENT__.displayName = `__FACTORY__.${name}`
@@ -105,17 +142,17 @@ const FACTORY_RUNTIME: &str = r"function styledFn(BaseComponent, recipeOrConfig 
   return __COMPONENT__
 }
 
-function createJsxFactory() {
-  const cache = new Map()
+function createJsxFactory(): __UPPER__ {
+  const cache = new Map<PropertyKey, StyledComponentFn>()
   return new Proxy(styledFn, {
     apply(_, __, args) {
-      return styledFn(...args)
+      return styledFn(...args as Parameters<typeof styledFn>)
     },
     get(_, el) {
-      if (!cache.has(el)) cache.set(el, styledFn(el))
+      if (!cache.has(el)) cache.set(el, styledFn(el as StyledBase))
       return cache.get(el)
     },
-  })
+  }) as unknown as __UPPER__
 }
 
-export const __FACTORY__ = /* @__PURE__ */ createJsxFactory()";
+export const __FACTORY__: __UPPER__ = /* @__PURE__ */ createJsxFactory()";

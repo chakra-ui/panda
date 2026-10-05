@@ -26,7 +26,7 @@ use crate::{
     graph::{GenerateOptions, emit_module_files},
 };
 
-use self::jsx_helper::{raw_runtime, raw_type, type_import};
+use self::jsx_helper::type_import;
 
 #[must_use]
 pub fn generate_is_valid_prop(
@@ -300,33 +300,26 @@ fn is_valid_prop_module(ctx: CodegenContext<'_>) -> Module {
             &["DistributiveOmit", "JsxStyleProps"],
             "../types/system",
         ))
-        .with_item(raw_runtime(is_valid_prop_runtime(ctx)))
-        .with_item(raw_type(
-            r"declare const isCssProperty: (value: string) => boolean
-
-type CssPropKey = keyof JsxStyleProps
-type OmittedCssProps<T> = DistributiveOmit<T, CssPropKey>
-
-declare const splitCssProps: <T>(props: T) => [JsxStyleProps, OmittedCssProps<T>]
-
-export { isCssProperty, splitCssProps }",
-        ))
+        .with_item(Item::typed_source(is_valid_prop_source(ctx)))
 }
 
-fn is_valid_prop_runtime(ctx: CodegenContext<'_>) -> String {
+fn is_valid_prop_source(ctx: CodegenContext<'_>) -> String {
     let props = css_prop_names(ctx);
     let props = serde_json::to_string(&props).expect("css prop names should serialize");
 
     format!(
-        r#"const cssPropertySet = new Set({props})
+        r#"const cssPropertySet = new Set<string>({props})
 const cssPropertySelectorRe = /&|@/
 
-export function isCssProperty(value) {{
+type CssPropKey = keyof JsxStyleProps
+type OmittedCssProps<T> = DistributiveOmit<T, CssPropKey>
+
+export function isCssProperty(value: string): boolean {{
   return cssPropertySet.has(value) || value.startsWith("--") || cssPropertySelectorRe.test(value)
 }}
 
-export function splitCssProps(props) {{
-  return splitProps(props, isCssProperty)
+export function splitCssProps<T>(props: T): [JsxStyleProps, OmittedCssProps<T>] {{
+  return splitProps(props as Record<string, unknown>, isCssProperty) as [JsxStyleProps, OmittedCssProps<T>]
 }}"#
     )
 }

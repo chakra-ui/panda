@@ -220,6 +220,22 @@ const mergeCss = function () {
 
 The TS source stays readable and typecheckable. The JS output stays compact.
 
+### Typed sources
+
+`Item::typed_source` (`ItemNode::TypedSource`) holds a whole TypeScript fragment that is the only source for all three
+outputs:
+
+- `.ts`: printed as written.
+- `.js` / `.mjs`: types erased by `ts_erase`. Erasure drops a removed declaration's JSDoc and trailing blank lines, and
+  the parentheses around a cast identifier (`(styled as T)[tag]` → `styled[tag]`).
+- `.d.ts`: derived with Oxc isolated declarations (`ts_declarations`), so exports need explicit annotations. A missing
+  annotation panics in debug builds. Type imports the declarations don't reference are dropped.
+
+The JSX artifacts (factory, helpers, `is-valid-prop`, patterns, recipe contexts) use typed sources for all four
+frameworks, so their runtime and `.d.ts` can't drift. Keep casts inside call arguments or at the end of an expression,
+where erasure leaves the JS byte-identical. Verify a change by regenerating with `outExtension: "ts"` and running
+`deno check` on the output.
+
 ## Import Specifiers
 
 The emitter supports two policies:

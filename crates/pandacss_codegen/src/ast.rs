@@ -141,6 +141,13 @@ impl Item {
     pub fn raw_stmt(code: &str) -> Self {
         Self::runtime(ItemNode::RawStmt(code.into()))
     }
+
+    /// Typed TypeScript that is the single source for all three outputs: printed as-is
+    /// in `.ts`, type-erased in `.js`, and reduced to its declarations in `.d.ts`.
+    #[must_use]
+    pub fn typed_source(code: impl Into<String>) -> Self {
+        Self::both(ItemNode::TypedSource(code.into()))
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -159,6 +166,7 @@ pub enum ItemNode {
     Assignment(Assignment),
     Export(ExportDecl),
     RawStmt(String),
+    TypedSource(String),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

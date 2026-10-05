@@ -1,7 +1,7 @@
 use pandacss_config::{JsxStylePropsConfig, PatternConfig};
 
-use super::jsx_helper::{raw_runtime, raw_type, type_import, value_import};
-use crate::{CodegenContext, ImportDecl, Module, RuntimeImport};
+use super::jsx_helper::{type_import, value_import};
+use crate::{CodegenContext, ImportDecl, Item, Module, RuntimeImport};
 
 pub(super) fn module(ctx: CodegenContext<'_>, name: &str, pattern: &PatternConfig) -> Module {
     let factory = factory_name(ctx);
@@ -31,27 +31,28 @@ pub(super) fn module(ctx: CodegenContext<'_>, name: &str, pattern: &PatternConfi
     }
 
     module
-        .with_item(raw_runtime(pattern_runtime_body(
-            &meta.jsx_name,
-            &factory,
-            &meta.jsx_element,
-            &meta.raw_name,
-            &pattern_keys_json,
-            style_props(ctx),
-        )))
-        .with_item(raw_type(format!(
-            "export interface {component_props} extends {props_name}, DistributiveOmit<{html_props}<{jsx_element:?}>, {omit_keys}> {{}}\n\nexport declare const {jsx_name}: FunctionalComponent<{component_props}>",
+        .with_item(Item::typed_source(format!(
+            "export interface {component_props} extends {props_name}, DistributiveOmit<{html_props}<{jsx_element:?}>, {omit_keys}> {{}}\n\n{runtime}",
             component_props = meta.component_props,
             props_name = meta.props_name,
             html_props = meta.html_props,
             jsx_element = meta.jsx_element,
             omit_keys = meta.omit_keys,
-            jsx_name = meta.jsx_name,
+            runtime = pattern_runtime_body(
+                &meta.jsx_name,
+                &meta.component_props,
+                &factory,
+                &meta.jsx_element,
+                &meta.raw_name,
+                &pattern_keys_json,
+                style_props(ctx),
+            ),
         )))
 }
 
 fn pattern_runtime_body(
     jsx_name: &str,
+    component_props: &str,
     factory: &str,
     jsx_element: &str,
     style_getter: &str,
@@ -89,14 +90,14 @@ fn pattern_runtime_body(
     };
 
     format!(
-        r"export const {jsx_name} = /* @__PURE__ */ defineComponent({{
+        r"export const {jsx_name}: FunctionalComponent<{component_props}> = /* @__PURE__ */ defineComponent({{
   name: {jsx_name:?},
   inheritAttrs: false,
   props: {pattern_keys_json},
   setup(props, {{ attrs, slots }}) {{
     {body}
   }}
-}})"
+}}) as unknown as FunctionalComponent<{component_props}>"
     )
 }
 
