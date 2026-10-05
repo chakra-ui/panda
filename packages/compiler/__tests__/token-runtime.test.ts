@@ -40,6 +40,8 @@ describe('generated token runtime', () => {
       'spacing.1.5',
       'spacing.nested.1.5',
       'spacing.4',
+      'spacing.-1.5',
+      'spacing.-4',
       'colors.brand.primary',
       'spacing.small.gap',
     ]) {
@@ -54,8 +56,10 @@ describe('generated token runtime', () => {
       expect(token.var('spacing.1.5')).toBe(String.raw`var(--${namePrefix}spacing-1\.5)`)
     }
     expect(token('spacing.1.5')).toBe('0.375rem')
-    expect(token.var('spacing.-1.5')).toBe(`calc(${token.var('spacing.1.5')} * -1)`)
-    expect(token.var('spacing.-4')).toBe(`calc(${token.var('spacing.4')} * -1)`)
+    expect(token.var('spacing.-1.5')).toBe(token.var('spacing.1.5'))
+    expect(token('spacing.-1.5')).toBe(`calc(${token.var('spacing.1.5')} * -1)`)
+    expect(token.var('spacing.-4')).toBe(token.var('spacing.4'))
+    expect(token('spacing.-4')).toBe(`calc(${token.var('spacing.4')} * -1)`)
     expect(token('spacing.small.gap')).toBe(token.var('spacing.small.gap'))
     expect(token('colors.brand.primary/50')).toBe(
       `color-mix(in oklab, ${token.var('colors.brand.primary')} 50%, transparent)`,

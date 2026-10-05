@@ -109,7 +109,7 @@ fn variable_overrides(ctx: CodegenContext<'_>) -> BTreeMap<String, String> {
         .values
         .keys()
         .filter_map(|path| {
-            let var = dictionary.get_var_str(path, None)?;
+            let var = dictionary.runtime_var_str(path, None)?;
             (var != derived_variable(ctx, path)).then(|| (path.clone(), var.to_owned()))
         })
         .collect()

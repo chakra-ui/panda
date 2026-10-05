@@ -13,6 +13,7 @@
     "jsx-heavy-compare": "tsx src/jsx-heavy-compare.ts",
     "recipe-runtime": "tsx src/recipe-runtime.ts",
     "runtime-css": "tsx src/runtime-css.ts",
+    "token-runtime-parity": "tsx --tsconfig tsconfig.json src/token-runtime-parity.ts",
     "token-dictionary-compare": "tsx --tsconfig tsconfig.json src/token-dictionary-compare.ts",
     "transform-audit": "tsx src/transform-audit.ts"
   },

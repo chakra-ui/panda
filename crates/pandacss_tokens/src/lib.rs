@@ -296,7 +296,7 @@ impl TokenDictionary {
         fallback
     }
 
-    /// `token.var('path')` lookup; negative tokens resolve to their `calc()` value.
+    /// Variable reference for style values; negative spacing resolves to `calc()`.
     #[must_use]
     pub fn get_var_str<'a>(&'a self, path: &str, fallback: Option<&'a str>) -> Option<&'a str> {
         if let Some(token) = self.token(path) {
@@ -315,6 +315,31 @@ impl TokenDictionary {
     #[must_use]
     pub fn get_var(&self, path: &str, fallback: Option<&str>) -> Option<String> {
         self.get_var_str(path, fallback).map(str::to_owned)
+    }
+
+    /// Runtime `token.var()` reference, matching v1: negative spacing uses the
+    /// original positive token's variable rather than its negated style value.
+    #[must_use]
+    pub fn runtime_var_str<'a>(&'a self, path: &str, fallback: Option<&'a str>) -> Option<&'a str> {
+        let Some(token) = self.token(path) else {
+            return fallback;
+        };
+        let token = if token.extension("isNegative") == Some("true") {
+            let Some(original) = token
+                .extension("originalPath")
+                .and_then(|path| self.token(path))
+            else {
+                return fallback;
+            };
+            original
+        } else {
+            token
+        };
+        if token.var.is_empty() {
+            fallback
+        } else {
+            Some(token.var.as_ref())
+        }
     }
 
     /// Runtime `token()` value. Conditional tokens must keep their own variable

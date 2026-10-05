@@ -1275,7 +1275,7 @@ fn token_call_resolution(
     fallback: Option<&str>,
 ) -> Option<TokenCallResolution> {
     if is_var {
-        let value = dict.get_var(path, fallback)?;
+        let value = dict.runtime_var_str(path, fallback)?.to_owned();
         return Some(TokenCallResolution {
             value,
             ref_path: path.to_owned(),

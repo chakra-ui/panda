@@ -848,3 +848,35 @@ fn negative_spacing_keeps_fractional_names_intact() {
     assert_eq!(half.extension("prop"), Some("-0.5"));
     assert_eq!(half.extension("originalPath"), Some("spacing.0.5"));
 }
+
+#[test]
+fn runtime_negative_spacing_variables_match_v1_without_changing_style_values() {
+    let dict = build_dictionary(json!({
+        "theme": { "tokens": { "spacing": { "1.5": { "value": "0.375rem" } } } }
+    }));
+    assert_eq!(
+        dict.runtime_var_str("spacing.1.5", None),
+        Some("var(--spacing-1\\.5)")
+    );
+    assert_eq!(
+        dict.runtime_var_str("spacing.-1.5", None),
+        Some("var(--spacing-1\\.5)")
+    );
+    assert_eq!(
+        dict.get_var_str("spacing.-1.5", None),
+        Some("calc(var(--spacing-1\\.5) * -1)")
+    );
+    assert_eq!(
+        dict.runtime_value_str("spacing.-1.5", None),
+        Some("calc(var(--spacing-1\\.5) * -1)")
+    );
+    assert_eq!(
+        dict.runtime_var_str("spacing.-1.5", Some("ignored")),
+        Some("var(--spacing-1\\.5)")
+    );
+    assert_eq!(
+        dict.runtime_var_str("spacing.missing", Some("fallback")),
+        Some("fallback")
+    );
+    assert_eq!(dict.runtime_var_str("spacing.missing", None), None);
+}

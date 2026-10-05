@@ -145,6 +145,8 @@ fn preserves_dotted_token_keys_from_the_compiled_dictionary() {
     );
     let code = file(artifact(&artifacts, ArtifactId::Tokens), "tokens/index.mjs");
     assert!(code.contains(r#""spacing.1.5":"var(--spacing-1\\.5)""#));
+    assert!(code.contains(r#""spacing.-1.5":"var(--spacing-1\\.5)""#));
+    assert!(code.contains(r#""spacing.-4":"var(--spacing-4)""#));
     assert!(code.contains("colorMix(tokens, path, resolveVar)"));
     assert!(code.contains("tokens[path] === undefined ? fallback : resolveVar(path)"));
 }
