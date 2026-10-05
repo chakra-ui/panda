@@ -3,5 +3,5 @@
 '@pandacss/compiler-wasm': patch
 ---
 
-Recipes on the same breakpoint now share one `@media` block, written after the plain recipe rules as in v1, so a
-responsive variant style wins over a plain one.
+Recipe CSS is now grouped like atomic CSS, with shared media queries and merged rules, for smaller output that matches
+v1's ordering.
