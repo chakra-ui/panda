@@ -77,32 +77,51 @@ fn app_using_a_design_system_recipe_emits_each_rule_once() {
 }
 
 #[test]
-fn app_overriding_a_design_system_recipe_keeps_both_rules_with_its_own_last() {
-    let css = app_recipes_css(
-        &chip_config("red"),
-        &chip_config("blue"),
-        "import { chip } from '@panda/recipes';\nexport const App = () => <div className={chip({ size: 'sm' })} />;",
-    );
-    assert_snapshot!(css, @"
-    @layer recipes {
-      @layer base {
-        .chip {
-          gap: 4px;
-          align-items: center;
-          color: red;
-          display: inline-flex;
+fn app_using_a_design_system_slot_recipe_emits_each_rule_once() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "theme": {
+            "slotRecipes": {
+                "card": {
+                    "className": "card",
+                    "slots": ["root", "title"],
+                    "base": {
+                        "root": { "display": "flex", "gap": "8px" },
+                        "title": { "fontWeight": "600", "fontSize": "14px" }
+                    },
+                    "variants": { "size": { "sm": { "root": { "padding": "4px", "borderRadius": "4px" } } } }
+                }
+            }
         }
-        .chip {
-          gap: 4px;
-          align-items: center;
-          color: blue;
-          display: inline-flex;
+    }));
+    let usage = "import { card } from '@panda/recipes';\ncard({ size: 'sm' });";
+    let design_system = project(&config, "card.tsx", usage);
+    let build_info = design_system.build_info("^2.0.0".into());
+
+    let mut app = project(&config, "app.tsx", usage);
+    assert!(app.hydrate("@acme/ds", &build_info, None));
+    let snapshots = app.stylesheet_snapshots(&config);
+    let css = pandacss_stylesheet::compile(
+        project_input(&config, &snapshots),
+        &StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes.slots {
+      @layer base {
+        .card__root {
+          gap: 8px;
+          display: flex;
+        }
+        .card__title {
+          font-size: 14px;
+          font-weight: 600;
         }
       }
       @layer variants {
-        .chip--size_sm {
-          font-size: 12px;
-          height: 24px;
+        .card__root--size_sm {
+          padding: 4px;
+          border-radius: 4px;
         }
       }
     }
