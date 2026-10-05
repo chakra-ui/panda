@@ -91,10 +91,13 @@ pub struct RecipeStyleEntry {
     pub conditions: SmallVec<[Box<str>; INLINE_CONDS]>,
     #[serde(skip_serializing_if = "is_false")]
     pub important: bool,
+    #[serde(skip)]
+    pub authored_order: AuthoredOrder,
 }
 
-impl From<Atom> for RecipeStyleEntry {
-    fn from(atom: Atom) -> Self {
+impl RecipeStyleEntry {
+    #[must_use]
+    pub fn new(atom: Atom, authored_order: AuthoredOrder) -> Self {
         let Atom {
             prop,
             value,
@@ -107,8 +110,63 @@ impl From<Atom> for RecipeStyleEntry {
             value,
             conditions,
             important,
+            authored_order,
         }
     }
+}
+
+/// Leaf position in the authored style, then position in its utility transform output.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct AuthoredOrder {
+    leaf: usize,
+    output: usize,
+}
+
+impl AuthoredOrder {
+    #[must_use]
+    pub const fn leaf(index: usize) -> Self {
+        Self {
+            leaf: index,
+            output: 0,
+        }
+    }
+
+    #[must_use]
+    pub const fn output(self, index: usize) -> Self {
+        Self {
+            leaf: self.leaf,
+            output: index,
+        }
+    }
+
+    #[must_use]
+    pub const fn after(self, count: usize) -> Self {
+        Self {
+            leaf: self.leaf + count,
+            output: self.output,
+        }
+    }
+}
+
+pub fn append_in_authored_order(
+    target: &mut Vec<RecipeStyleEntry>,
+    mut fragment: Vec<RecipeStyleEntry>,
+) {
+    let start = target
+        .iter()
+        .map(|entry| entry.authored_order.leaf + 1)
+        .max()
+        .unwrap_or(0);
+    fragment.sort_by_key(|entry| entry.authored_order);
+    target.extend(
+        fragment
+            .into_iter()
+            .enumerate()
+            .map(|(index, entry)| RecipeStyleEntry {
+                authored_order: AuthoredOrder::leaf(start + index),
+                ..entry
+            }),
+    );
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -280,6 +338,7 @@ impl NormalizeAtomic for NoNormalize {}
 pub struct Encoder<C: ConditionMatcher> {
     conditions: C,
     atoms: FxHashSet<Atom>,
+    ordered_atoms: Option<Vec<Atom>>,
     nested_properties: bool,
     nested_property: Option<NestedProperty>,
 }
@@ -296,6 +355,7 @@ impl<C: ConditionMatcher> Encoder<C> {
         Self {
             conditions,
             atoms: FxHashSet::default(),
+            ordered_atoms: None,
             nested_properties: false,
             nested_property: None,
         }
@@ -332,6 +392,24 @@ impl<C: ConditionMatcher> Encoder<C> {
 
     pub fn reserve(&mut self, additional: usize) {
         self.atoms.reserve(additional);
+    }
+
+    /// Uses the shared normalized walker while retaining every recipe leaf in authored order.
+    #[must_use]
+    pub fn recipe_entries_with<'a, N: NormalizeAtomic>(
+        &mut self,
+        style: &'a Literal,
+        norm: &'a N,
+    ) -> Vec<RecipeStyleEntry> {
+        self.ordered_atoms = Some(Vec::new());
+        self.process_atomic_with(style, norm);
+        self.ordered_atoms
+            .take()
+            .unwrap_or_default()
+            .into_iter()
+            .enumerate()
+            .map(|(index, atom)| RecipeStyleEntry::new(atom, AuthoredOrder::leaf(index)))
+            .collect()
     }
 
     /// Walks a style object, emitting one atom per leaf. Mirrors `processAtomic` in the JS encoder.
@@ -447,7 +525,11 @@ impl<C: ConditionMatcher> Encoder<C> {
                 };
 
                 if let Some(atom) = Self::atom_from_path(path, normalized.as_ref()) {
-                    self.atoms.insert(atom);
+                    if let Some(ordered) = &mut self.ordered_atoms {
+                        ordered.push(atom);
+                    } else {
+                        self.atoms.insert(atom);
+                    }
                 }
             }
         }

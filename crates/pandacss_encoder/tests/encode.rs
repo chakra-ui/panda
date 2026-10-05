@@ -3,9 +3,64 @@
 
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
-use pandacss_encoder::{Atom, ConditionSet, Encoder};
+use pandacss_encoder::{Atom, AuthoredOrder, ConditionSet, Encoder};
 use pandacss_extractor::{ExtractorConfig, Matcher, Matchers, NameMatcher, extract};
 use pandacss_recipes::{Recipe, SlotRecipe};
+
+#[test]
+fn recipe_encoding_keeps_repeated_values_in_authored_order() {
+    struct DisplayShorthand;
+    impl pandacss_encoder::NormalizeAtomic for DisplayShorthand {
+        fn resolve_key<'a>(&'a self, key: &'a str) -> &'a str {
+            if key == "d" { "display" } else { key }
+        }
+    }
+
+    let style = first_arg(
+        "import { css } from '@panda/css'; css({ display: 'grid', d: 'flex', _hover: { display: 'block' }, '&': { display: 'grid' } });",
+        "css",
+    );
+    let mut encoder = encoder_with_breakpoints(&["_hover", "&"]);
+    let entries = encoder.recipe_entries_with(&style, &DisplayShorthand);
+    assert_yaml_snapshot!(entries, @r#"
+    - prop: display
+      value: grid
+      conditions: []
+    - prop: display
+      value: flex
+      conditions: []
+    - prop: display
+      value: block
+      conditions:
+        - _hover
+    - prop: display
+      value: grid
+      conditions:
+        - "&"
+    "#);
+    assert_eq!(
+        entries
+            .iter()
+            .map(|entry| entry.authored_order)
+            .collect::<Vec<_>>(),
+        (0..4).map(AuthoredOrder::leaf).collect::<Vec<_>>(),
+    );
+    assert!(encoder.atoms().is_empty());
+}
+
+#[test]
+fn recipe_order_collection_does_not_change_atomic_deduplication() {
+    let style = first_arg(
+        "import { css } from '@panda/css'; css({ display: 'grid' });",
+        "css",
+    );
+    let mut encoder = encoder_with_breakpoints(&[]);
+    encoder.process_atomic(&style);
+    let entries = encoder.recipe_entries_with(&style, &pandacss_encoder::NoNormalize);
+    encoder.process_atomic(&style);
+    assert_eq!(entries.len(), 1);
+    assert_eq!(encoder.atoms().len(), 1);
+}
 
 fn css_matchers() -> Matchers {
     Matchers {

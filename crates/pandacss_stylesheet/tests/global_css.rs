@@ -787,3 +787,34 @@ fn feature_selector_does_not_invalidate_a_duplicate_fallback_rule() {
     }
     ");
 }
+
+#[test]
+fn global_css_text_style_expands_in_place() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "textStyles": { "body": { "value": { "color": "gray", "fontSize": "14px" } } }
+        },
+        "globalCss": {
+            "p.style-last": { "color": "blue", "textStyle": "body" },
+            "p.style-first": { "textStyle": "body", "color": "blue" }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
+    assert_snapshot!(css, @"
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      p.style-last {
+        color: gray;
+        font-size: 14px;
+      }
+      p.style-first {
+        color: blue;
+        font-size: 14px;
+      }
+    }
+    ");
+}

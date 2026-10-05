@@ -32,7 +32,7 @@ describe('Compiler recipes', () => {
     `)
   })
 
-  it('keeps the explicit fontWeight when it comes before textStyle', () => {
+  it('lets a textStyle written after fontWeight override it', () => {
     const compiler = createProject({
       utilities: { fontWeight: { className: 'fw', values: 'fontWeights' } },
       theme: {
@@ -53,7 +53,7 @@ describe('Compiler recipes', () => {
       "@layer recipes {
         @layer base {
           .message {
-            font-weight: var(--font-weights-medium);
+            font-weight: var(--font-weights-normal);
           }
         }
       }

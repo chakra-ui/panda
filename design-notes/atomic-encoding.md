@@ -39,6 +39,7 @@ pub struct RecipeStyleEntry {
     pub value: AtomValue,
     pub conditions: SmallVec<[Box<str>; INLINE_CONDS]>,
     pub important: bool,
+    pub authored_order: (usize, usize),
 }
 ```
 
@@ -55,9 +56,20 @@ Only adjacent `&`-suffix conditions (`&:hover`, `&[data-open]`) are sorted, beca
 subject-changing conditions (`.dark &`, `& :where(svg)`) keep author order, pseudo-elements go last, and at-rules follow
 the selectors. A complex parent keeps `:is()` unless `&` leads the selector: `.dark :is(.x > p)`.
 
-Conversion is mechanical (`impl From<Atom> for RecipeStyleEntry`), keeping `(prop, value, conditions, important)` owned
-by `Atom`/`Encoder`. Recipe code keeps selection conditions on the surrounding `RecipeStyleGroup` rather than mutating
-the entry chain.
+`Encoder::recipe_entries_with` uses the same normalized walker with ordered leaf collection instead of atomic dedup.
+It assigns each `RecipeStyleEntry` its `authored_order`, including repeated identical leaves, so a later utility can
+override an earlier utility after both resolve to the same CSS property. Atomic encoding keeps its unordered hash set;
+recipe ordering allocates only when callers opt into ordered collection. Recipe code keeps selection conditions on the
+surrounding `RecipeStyleGroup` rather than mutating the entry chain.
+
+Compound clauses that share a class receive disjoint authored leaf ranges once during registry resolution, in config
+order. Repeated usages and watch refcounts reuse that canonical identity; they never rebase entries according to file
+visitation order. Portable build info stores each group's entries in authored order, using the array itself as the
+ordering contract rather than serializing the internal ordinal.
+
+The internal order is `(authored leaf, callback output leaf)`. Callback expansion keeps the original leaf's position
+and orders its output beneath that position, so two usages selecting different subsets of same-class compounds still
+share stable cache keys. Flattening callback results into one dense sequence per usage would lose that identity.
 
 ## Walker
 
@@ -177,7 +189,7 @@ non-condition keys (no `_`) are unaffected — they stay on the property path.
 ## Config recipe serialization
 
 Recipe `base` blocks and variant option styles pass through the same path as `css()` calls:
-`Encoder::process_atomic_with(style, &StyleNormalizer)`, then map each `Atom` → `RecipeStyleEntry`. This mirrors legacy
+`Encoder::recipe_entries_with(style, &StyleNormalizer)`. This mirrors legacy
 `StyleEncoder.hashStyleObject` (which serialized atomics, recipe base, and variant selections) — Rust keeps no separate
 recipe walker.
 
@@ -255,8 +267,10 @@ call JS), so its result is carried to emit, not decomposed:
 - **Emit.** `transform_atom_styles` swaps the styles into the `transform_str` result (className/layer stay in one
   place). Flat objects emit as direct declarations (source order); nested ones (conditions / child selectors) take the
   composition grouping path (`style_object_entries`).
-- **Recipes** re-encode the resolved object through the `Encoder` into `RecipeStyleEntry`s (no per-utility class —
-  entries flatten into the recipe).
+- **Recipes** transform entries in authored order and re-encode the resolved object through the ordered `Encoder`
+  path into `RecipeStyleEntry`s. Callback output order stays inside the originating utility's place; a fresh leaf
+  sequence within that utility survives nested conditions and repeated values (no per-utility class — entries flatten
+  into the recipe).
 
 ## Related
 

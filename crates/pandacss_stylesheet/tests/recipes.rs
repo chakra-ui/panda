@@ -4,6 +4,77 @@ use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 use crate::common::{compile_output, config};
 
 #[test]
+fn recipe_shorthand_conflicts_follow_authored_order() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "utilities": { "color": { "className": "c", "shorthand": "tone" } },
+        "theme": { "recipes": {
+            "swatch": { "className": "swatch", "base": { "color": "red", "tone": "green" } },
+            "reverse": { "className": "reverse", "base": { "tone": "green", "color": "red" } }
+        } }
+    }));
+    let css = compile_output(
+        &config,
+        "import { swatch, reverse } from '@panda/recipes'; swatch(); reverse();",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .reverse {
+          color: red;
+        }
+        .swatch {
+          color: green;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn same_depth_compositions_follow_authored_order() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "conditions": { "hover": "&:hover" },
+        "utilities": { "color": { "className": "c" } },
+        "theme": {
+            "textStyles": { "reset": { "value": { "color": "initial", "_hover": { "color": "initial" } } } },
+            "layerStyles": { "tone": { "value": { "color": "green", "_hover": { "color": "red" } } } },
+            "recipes": {
+                "swatch": { "className": "swatch", "base": { "textStyle": "reset", "layerStyle": "tone" } },
+                "reverse": { "className": "reverse", "base": { "layerStyle": "tone", "textStyle": "reset" } }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { swatch, reverse } from '@panda/recipes'; swatch(); reverse();",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .reverse {
+          color: initial;
+        }
+        .reverse:hover {
+          color: initial;
+        }
+        .swatch {
+          color: green;
+        }
+        .swatch:hover {
+          color: red;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
 fn emits_config_recipe_css() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
@@ -907,7 +978,7 @@ fn composition_with_conditional_values_in_recipe_base_keeps_responsive_props() {
 }
 
 #[test]
-fn explicit_recipe_property_overrides_text_style_before_value_sorting() {
+fn text_style_expands_in_place_so_the_later_key_wins() {
     let config = config(serde_json::json!({
         "importMap": { "recipe": ["@panda/recipes"] },
         "utilities": {
@@ -925,12 +996,12 @@ fn explicit_recipe_property_overrides_text_style_before_value_sorting() {
                 "body": { "value": { "fontWeight": "normal" } }
             },
             "recipes": {
-                "lose": {
-                    "className": "lose",
+                "propertyAfter": {
+                    "className": "property-after",
                     "base": { "textStyle": "body", "fontWeight": "medium" }
                 },
-                "win": {
-                    "className": "win",
+                "propertyBefore": {
+                    "className": "property-before",
                     "base": { "fontWeight": "semibold", "textStyle": "body" }
                 }
             }
@@ -938,19 +1009,19 @@ fn explicit_recipe_property_overrides_text_style_before_value_sorting() {
     }));
     let css = compile_output(
         &config,
-        "import { lose, win } from '@panda/recipes'; lose(); win();",
+        "import { propertyAfter, propertyBefore } from '@panda/recipes'; propertyAfter(); propertyBefore();",
         StylesheetOptions::default(),
     )
     .get_layer_css(&[StylesheetLayer::Recipes]);
 
-    assert_snapshot!(css, @r"
+    assert_snapshot!(css, @"
     @layer recipes {
       @layer base {
-        .lose {
+        .property-after {
           font-weight: var(--font-weights-medium);
         }
-        .win {
-          font-weight: var(--font-weights-semibold);
+        .property-before {
+          font-weight: var(--font-weights-normal);
         }
       }
     }
@@ -1271,6 +1342,184 @@ fn composition_overrides_preserve_the_whole_explicit_fallback_run() {
         .message {
           color: blue;
           color: oklch(55% 0.18 250);
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn text_style_written_after_a_property_overrides_it() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "utilities": { "color": { "className": "c" } },
+        "theme": {
+            "textStyles": { "body": { "value": { "color": "gray", "fontSize": "14px" } } },
+            "recipes": {
+                "styleLast": { "className": "style-last", "base": { "color": "blue", "textStyle": "body" } },
+                "styleFirst": { "className": "style-first", "base": { "textStyle": "body", "color": "blue" } }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { styleLast, styleFirst } from '@panda/recipes'; styleLast(); styleFirst();",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .style-first {
+          color: blue;
+          font-size: 14px;
+        }
+        .style-last {
+          color: gray;
+          font-size: 14px;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn nested_compositions_expand_in_place() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "utilities": { "color": { "className": "c" } },
+        "theme": {
+            "textStyles": { "body": { "value": { "color": "gray" } } },
+            "layerStyles": {
+                "ownColorLast": { "value": { "textStyle": "body", "color": "red" } },
+                "ownColorFirst": { "value": { "color": "red", "textStyle": "body" } }
+            },
+            "recipes": {
+                "last": { "className": "last", "base": { "layerStyle": "ownColorLast" } },
+                "first": { "className": "first", "base": { "layerStyle": "ownColorFirst" } }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { last, first } from '@panda/recipes'; last(); first();",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .first {
+          color: gray;
+        }
+        .last {
+          color: red;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn animation_style_expands_in_place() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "theme": {
+            "animationStyles": {
+                "fadeIn": { "value": { "animationDuration": "300ms", "animationName": "fade" } }
+            },
+            "recipes": {
+                "styleLast": {
+                    "className": "style-last",
+                    "base": { "animationDuration": "1s", "animationStyle": "fadeIn" }
+                },
+                "styleFirst": {
+                    "className": "style-first",
+                    "base": { "animationStyle": "fadeIn", "animationDuration": "1s" }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { styleLast, styleFirst } from '@panda/recipes'; styleLast(); styleFirst();",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .style-first {
+          animation-duration: 1s;
+          animation-name: fade;
+        }
+        .style-last {
+          animation-duration: 300ms;
+          animation-name: fade;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn compositions_expand_in_place_inside_conditions() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "conditions": { "hover": "&:hover" },
+        "utilities": { "color": { "className": "c" } },
+        "theme": {
+            "breakpoints": { "md": "768px" },
+            "textStyles": {
+                "body": { "value": { "color": "gray" } },
+                "link": { "value": { "color": "gray", "_hover": { "color": "navy" } } }
+            },
+            "recipes": {
+                "hoverStyleLast": { "className": "hover-style-last", "base": { "_hover": { "color": "blue", "textStyle": "body" } } },
+                "hoverStyleFirst": { "className": "hover-style-first", "base": { "_hover": { "textStyle": "body", "color": "blue" } } },
+                "mdStyleLast": { "className": "md-style-last", "base": { "md": { "color": "blue", "textStyle": "body" } } },
+                "mdStyleFirst": { "className": "md-style-first", "base": { "md": { "textStyle": "body", "color": "blue" } } },
+                "ownHoverLast": { "className": "own-hover-last", "base": { "_hover": { "color": "blue" }, "textStyle": "link" } },
+                "ownHoverFirst": { "className": "own-hover-first", "base": { "textStyle": "link", "_hover": { "color": "blue" } } }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { hoverStyleLast, hoverStyleFirst, mdStyleLast, mdStyleFirst, ownHoverLast, ownHoverFirst } from '@panda/recipes'; hoverStyleLast(); hoverStyleFirst(); mdStyleLast(); mdStyleFirst(); ownHoverLast(); ownHoverFirst();",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .hover-style-first:hover {
+          color: blue;
+        }
+        .hover-style-last:hover {
+          color: gray;
+        }
+        @media (width >= 48rem) {
+          .md-style-first {
+            color: blue;
+          }
+        }
+        @media (width >= 48rem) {
+          .md-style-last {
+            color: gray;
+          }
+        }
+        .own-hover-first {
+          color: gray;
+        }
+        .own-hover-first:hover {
+          color: blue;
+        }
+        .own-hover-last {
+          color: gray;
+        }
+        .own-hover-last:hover {
+          color: navy;
         }
       }
     }

@@ -2,9 +2,9 @@
 //! and declaration merging. Condition resolution lives in `conditions.rs`;
 //! cascade ordering lives in `sort.rs`.
 
-use std::{borrow::Cow, cmp::Reverse};
+use std::borrow::Cow;
 
-use pandacss_encoder::RecipeStyleEntry;
+use pandacss_encoder::AuthoredOrder;
 
 use crate::grouped::{GroupNode, GroupedDeclaration, RuleBody};
 use crate::writer::CssWriter;
@@ -48,26 +48,17 @@ impl LoweredTarget {
     }
 }
 
-/// A flattened style value with its position in the composition hierarchy.
-#[derive(Clone, PartialEq, Eq, Hash)]
-pub(crate) struct ExpandedStyleEntry {
-    pub entry: RecipeStyleEntry,
-    /// Zero for authored properties; each nested composition adds one.
-    pub composition_depth: usize,
-}
-
 #[derive(Clone)]
 pub(crate) struct Declaration {
     pub prop: String,
     pub value: String,
     pub important: bool,
-    /// Depth of the style value that produced this CSS declaration.
-    pub composition_depth: usize,
+    pub authored_order: AuthoredOrder,
 }
 
 impl Declaration {
-    const fn priority(&self) -> (bool, Reverse<usize>) {
-        (self.important, Reverse(self.composition_depth))
+    const fn priority(&self) -> (bool, AuthoredOrder) {
+        (self.important, self.authored_order)
     }
 }
 
@@ -166,7 +157,7 @@ pub(crate) fn append_declaration_run(target: &mut Vec<Declaration>, run: Vec<Dec
         return;
     };
 
-    // Importance wins first, then properties from the nearer composition scope.
+    // Importance wins first, then authored order.
     if run
         .iter()
         .all(|declaration| declaration.priority() < target[first].priority())
@@ -184,6 +175,8 @@ pub(crate) fn append_declaration_run(target: &mut Vec<Declaration>, run: Vec<Dec
 mod tests {
     use insta::assert_yaml_snapshot;
 
+    use pandacss_encoder::AuthoredOrder;
+
     use super::{Declaration, append_declaration, append_declaration_run};
 
     fn declaration(value: &str, important: bool) -> Declaration {
@@ -195,7 +188,7 @@ mod tests {
             prop: prop.to_owned(),
             value: value.to_owned(),
             important,
-            composition_depth: 0,
+            authored_order: AuthoredOrder::leaf(0),
         }
     }
 
