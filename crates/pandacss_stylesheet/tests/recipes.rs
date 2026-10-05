@@ -1419,3 +1419,45 @@ fn nested_compositions_expand_in_place() {
     }
     ");
 }
+
+#[test]
+fn animation_style_expands_in_place() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "theme": {
+            "animationStyles": {
+                "fadeIn": { "value": { "animationDuration": "300ms", "animationName": "fade" } }
+            },
+            "recipes": {
+                "styleLast": {
+                    "className": "style-last",
+                    "base": { "animationDuration": "1s", "animationStyle": "fadeIn" }
+                },
+                "styleFirst": {
+                    "className": "style-first",
+                    "base": { "animationStyle": "fadeIn", "animationDuration": "1s" }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { styleLast, styleFirst } from '@panda/recipes'; styleLast(); styleFirst();",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .style-first {
+          animation-duration: 1s;
+          animation-name: fade;
+        }
+        .style-last {
+          animation-duration: 300ms;
+          animation-name: fade;
+        }
+      }
+    }
+    ");
+}
