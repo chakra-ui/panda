@@ -179,6 +179,58 @@ pub struct EncodedRecipesSnapshot {
     pub atomic: Vec<Atom>,
 }
 
+impl EncodedRecipesSnapshot {
+    /// Drops a recipe group when an identical one comes later, so the last copy keeps its place.
+    pub fn retain_last_identical_groups(&mut self) {
+        retain_last_identical_groups(&mut self.base);
+        retain_last_identical_groups(&mut self.variants);
+        retain_last_identical_groups(&mut self.compounds);
+    }
+}
+
+fn retain_last_identical_groups(groups: &mut Vec<RecipeStyleGroupSnapshot>) {
+    let mut seen = FxHashSet::default();
+    let keep = groups
+        .iter()
+        .rev()
+        .map(|group| seen.insert(recipe_group_key(group)))
+        .collect::<Vec<_>>();
+    let mut keep = keep.into_iter().rev();
+    groups.retain(|_| keep.next().unwrap_or(true));
+}
+
+type RecipeDeclarationKey<'a> = (&'a str, &'a AtomValue, &'a [Box<str>], bool);
+type RecipeGroupKey<'a> = (
+    &'a str,
+    Option<&'a str>,
+    &'a str,
+    &'a [Box<str>],
+    Vec<RecipeDeclarationKey<'a>>,
+);
+
+/// Declarations in authored order, so copies numbered or sorted differently still match.
+fn recipe_group_key(group: &RecipeStyleGroupSnapshot) -> RecipeGroupKey<'_> {
+    let mut entries = group.entries.iter().collect::<Vec<_>>();
+    entries.sort_by_key(|entry| entry.authored_order);
+    (
+        &group.recipe,
+        group.slot.as_str(),
+        &group.class_name,
+        &group.conditions,
+        entries
+            .into_iter()
+            .map(|entry| {
+                (
+                    &*entry.prop,
+                    &entry.value,
+                    &entry.conditions[..],
+                    entry.important,
+                )
+            })
+            .collect(),
+    )
+}
+
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RecipeStyleGroupSnapshot {
