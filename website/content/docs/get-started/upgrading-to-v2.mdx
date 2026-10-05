@@ -450,6 +450,35 @@ This needs `@property` (Chrome 85+, Safari 16.4+, Firefox 128+); older browsers 
 mis-render them. Set `optimize.propertyFallback: true` to also seed the defaults as plain declarations for the variables
 your project uses.
 
+## Panda follows imports
+
+In v1, a style value imported from another file produced no CSS. Panda saw `brand`, couldn't follow the import, and
+skipped the property. v2 follows the import, reads the value, and generates the rule.
+
+```ts filename="theme.ts"
+export const brand = 'red.500'
+export const gutter = '4'
+```
+
+```tsx filename="button.tsx"
+import { css } from '../styled-system/css'
+import { brand, gutter } from './theme'
+
+// ❌ v1: no CSS for either property
+// ✅ v2: background: var(--colors-red-500) and padding-inline: var(--spacing-4)
+css({ bg: brand, px: gutter })
+```
+
+Panda follows named imports, re-exports, `export *` barrels, and tsconfig path aliases. Imported helper functions and
+`css.raw()` styles work too, as long as the result is static.
+
+If you added `staticCss` entries or copied a value inline only because v1 couldn't see the import, you can remove them.
+
+Two forms still aren't followed: default imports (`import theme from './theme'`) and namespace imports
+(`import * as theme from './theme'`). Use a named import instead. Values that only exist at runtime, like props or
+state, never produce CSS from any file. See
+[Imports from other files](/docs/styling/dynamic-styling#imports-from-other-files).
+
 ## What's new you'll want
 
 Beyond parity, v2 adds features worth turning on:
@@ -463,8 +492,7 @@ Beyond parity, v2 adds features worth turning on:
   [View transitions](/docs/styling/view-transition).
 - **`positionTry()`.** Define CSS anchor-positioning fallbacks with a typed, tree-shaken factory. Replaces the removed
   `globalPositionTry` config. See [Position try](/docs/styling/position-try).
-- **Cross-file composition and source transforms.** Compose `css.raw()` styles across files, and let bundler plugins
-  rewrite static `css()` calls with `transform: true`.
+- **Source transforms.** Let bundler plugins rewrite static `css()` calls with `transform: true`.
 - **Smaller `.d.ts`.** `cva` / `sva` return types key on a clean props type, which unblocks `isolatedDeclarations`. See
   [Isolated declarations](/docs/design-systems/isolated-declarations).
 - **Design systems.** `panda lib` publishes a component library; apps consume it with the `designSystem` config field.
