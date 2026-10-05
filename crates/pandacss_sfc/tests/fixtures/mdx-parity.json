@@ -1,0 +1,1842 @@
+{
+  "parser": "@mdx-js/mdx@3.1.1",
+  "cases": [
+    {
+      "name": "jsx",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "inline",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\nText <Box color=\"red\" /> text.",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 74
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "siblings",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" /><Box color=\"blue\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 88
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "fragment",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<><Box color=\"red\" /><Box color=\"blue\" /></>",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 71
+        },
+        {
+          "name": "Box",
+          "start": 90
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "member",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box.Root color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box.Root",
+          "start": 69
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "attr expression",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box css={{color:\"red\"}} {...{padding:\"2\"}} />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "boolean attr",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box hidden />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "multiline attrs",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box\n color=\"red\"\n css={{margin: \"2\"}}\n/>",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "comments",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n{/* <Box color=\"wrong\" /> css({color:\"wrong\"}) */}\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 121
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "expression",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n{css({color:\"red\"})}",
+      "elements": [],
+      "calls": [
+        [
+          70,
+          88
+        ]
+      ]
+    },
+    {
+      "name": "objects",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n{{a: css({color:\"red\"}), b: css({color:\"blue\"})}}",
+      "elements": [],
+      "calls": [
+        [
+          74,
+          92
+        ],
+        [
+          97,
+          116
+        ]
+      ]
+    },
+    {
+      "name": "jsx expression",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n{true && <Box css={{color:\"red\"}} />}",
+      "elements": [],
+      "calls": []
+    },
+    {
+      "name": "complex JSX expression",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n{[1].map(x => <Box css={{color:\"red\"}} title=\"}\" />)}",
+      "elements": [],
+      "calls": [
+        [
+          70,
+          121
+        ]
+      ]
+    },
+    {
+      "name": "regex",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n{/}/.test(\"}\") && css({color:\"red\"})}",
+      "elements": [],
+      "calls": [
+        [
+          70,
+          83
+        ],
+        [
+          87,
+          105
+        ]
+      ]
+    },
+    {
+      "name": "division",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n{2 / 2 && css({color:\"red\"})}",
+      "elements": [],
+      "calls": [
+        [
+          79,
+          97
+        ]
+      ]
+    },
+    {
+      "name": "nested templates",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n{`a ${`${css({color:\"red\"})}`}`}",
+      "elements": [],
+      "calls": [
+        [
+          78,
+          96
+        ]
+      ]
+    },
+    {
+      "name": "backticks",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 93
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "double backticks",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n``a `<Box color=\"wrong\" />` `` <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 100
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "unmatched ticks",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n`unmatched <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 80
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "cross line code",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n`first\n<Box color=\"wrong\" /> last`\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 105
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "code at block boundary",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\nText `unmatched\n<Box color=\"red\" />\n`",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 85
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "fenced",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n```jsx\n<Box color=\"wrong\" />\n{css({color:\"wrong\"})}\n```\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 126
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "long fence",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n````jsx\n```\n<Box color=\"wrong\" />\n````\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 109
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "unclosed fence",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n```jsx\n<Box color=\"wrong\" />",
+      "elements": [],
+      "calls": []
+    },
+    {
+      "name": "four indent fence",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n    ```jsx\n    <Box color=\"wrong\" />\n    ```\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 115
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "quote fence exits container",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n> ```jsx\n> <Box color=\"wrong\" />\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 103
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "list fence exits container",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n- ```jsx\n  <Box color=\"wrong\" />\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 103
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "list fence",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n- ```jsx\n  <Box color=\"wrong\" />\n  ```\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 109
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "quoted JSX",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n> <Box\n> color=\"red\"\n> css={{padding:\"2\"}}\n> />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 71
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "quoted expr",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n> {css({\n> color:\"red\"\n> })}",
+      "elements": [],
+      "calls": [
+        [
+          72,
+          96
+        ]
+      ]
+    },
+    {
+      "name": "nested quote",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n> > <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 73
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "ordered list",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n1. <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 72
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "escaped",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n\\<Box color=\"wrong\" /> and \\{css(\\{color:\"wrong\"\\})\\}",
+      "elements": [],
+      "calls": []
+    },
+    {
+      "name": "escaped code closer",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n`<Box color=\"wrong\" />\\`\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 95
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "link label JSX",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n[<Box color=\"red\" />](url)",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 70
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "link destination JSX",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n[x](<Box color=\"wrong\" />)\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 97
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "link destination expr",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n[x](https://example.com/{css({color:\"wrong\"})})\n\n{css({color:\"red\"})}",
+      "elements": [],
+      "calls": [
+        [
+          119,
+          137
+        ]
+      ]
+    },
+    {
+      "name": "link title JSX",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n[x](url '<Box color=\"wrong\" />')\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 103
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "image label JSX",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n![<Box color=\"wrong\" />](url)\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 100
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "image label expr",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n![{css({color:\"wrong\"})}](url)\n\n{css({color:\"red\"})}",
+      "elements": [],
+      "calls": [
+        [
+          102,
+          120
+        ]
+      ]
+    },
+    {
+      "name": "link definition",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n[ref]: /{css({color:\"wrong\"})}\n\n{css({color:\"red\"})}",
+      "elements": [],
+      "calls": [
+        [
+          102,
+          120
+        ]
+      ]
+    },
+    {
+      "name": "exports",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\nexport const styles = {color:\"red\"};\n\n<Box {...styles} />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 107
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "ASI",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\nexport const color = \"red\"\n\n{css({color})}",
+      "elements": [],
+      "calls": [
+        [
+          98,
+          110
+        ]
+      ]
+    },
+    {
+      "name": "blank line export",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\nexport const color =\n\n\"red\"\n\n{css({color})}",
+      "elements": [],
+      "calls": [
+        [
+          99,
+          111
+        ]
+      ]
+    },
+    {
+      "name": "blank line import",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\nimport {\n\ncss as other\n\n} from \"@panda/css\";\n\n{other({color:\"red\"})}",
+      "elements": [],
+      "calls": [
+        [
+          116,
+          136
+        ]
+      ]
+    },
+    {
+      "name": "export default JSX",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\nexport default () => <Box css={{color:\"red\"}} />\n\n<Box color=\"blue\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 119
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "prose children",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\">\n\n## Heading\n\n`<Box color=\"wrong\" />`\n\n{css({color:\"blue\"})}\n\n</Box>",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        }
+      ],
+      "calls": [
+        [
+          126,
+          145
+        ]
+      ]
+    },
+    {
+      "name": "unicode",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n# Café 🐼\n\n<Box color=\"red\" /> {css({color:\"blue\"})}",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 83
+        }
+      ],
+      "calls": [
+        [
+          104,
+          123
+        ]
+      ]
+    },
+    {
+      "name": "CRLF",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box\r\n color=\"red\"\r\n css={{margin:\"2\"}}\r\n/>",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "empty",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n",
+      "elements": [],
+      "calls": []
+    },
+    {
+      "name": "combined-0",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\nText <Box color=\"red\" /> text.\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />\n\nText <Box color=\"red\" /> text.\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 95
+        },
+        {
+          "name": "Box",
+          "start": 146
+        },
+        {
+          "name": "Box",
+          "start": 172
+        },
+        {
+          "name": "Box",
+          "start": 199
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "combined-1",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n{css({color:\"red\"})}\n\n<><Box color=\"red\" /><Box color=\"blue\" /></>\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 114
+        },
+        {
+          "name": "Box",
+          "start": 133
+        },
+        {
+          "name": "Box",
+          "start": 182
+        },
+        {
+          "name": "Box",
+          "start": 227
+        }
+      ],
+      "calls": [
+        [
+          91,
+          109
+        ]
+      ]
+    },
+    {
+      "name": "combined-2",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n```jsx\n<Box color=\"wrong\" />\n{css({color:\"wrong\"})}\n```\n\n<Box color=\"red\" />\n\n<Box color=\"red\" />\n\n<Box color=\"red\">\n\n## Heading\n\n`<Box color=\"wrong\" />`\n\n{css({color:\"blue\"})}\n\n</Box>\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 147
+        },
+        {
+          "name": "Box",
+          "start": 168
+        },
+        {
+          "name": "Box",
+          "start": 189
+        },
+        {
+          "name": "Box",
+          "start": 276
+        }
+      ],
+      "calls": [
+        [
+          246,
+          265
+        ]
+      ]
+    },
+    {
+      "name": "combined-3",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />\n\n{css({color:\"red\"})}\n\n{css({color:\"red\"})}\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 114
+        },
+        {
+          "name": "Box",
+          "start": 203
+        }
+      ],
+      "calls": [
+        [
+          136,
+          154
+        ],
+        [
+          158,
+          176
+        ]
+      ]
+    },
+    {
+      "name": "combined-4",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n{{a: css({color:\"red\"}), b: css({color:\"blue\"})}}\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />\n\n{{a: css({color:\"red\"}), b: css({color:\"blue\"})}}\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 165
+        },
+        {
+          "name": "Box",
+          "start": 237
+        }
+      ],
+      "calls": [
+        [
+          95,
+          113
+        ],
+        [
+          118,
+          137
+        ],
+        [
+          191,
+          209
+        ],
+        [
+          214,
+          233
+        ]
+      ]
+    },
+    {
+      "name": "combined-5",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n<><Box color=\"red\" /><Box color=\"blue\" /></>\n\n<><Box color=\"red\" /><Box color=\"blue\" /></>\n\n<Box color=\"red\" />\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 92
+        },
+        {
+          "name": "Box",
+          "start": 111
+        },
+        {
+          "name": "Box",
+          "start": 138
+        },
+        {
+          "name": "Box",
+          "start": 157
+        },
+        {
+          "name": "Box",
+          "start": 182
+        },
+        {
+          "name": "Box",
+          "start": 227
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "combined-6",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n<Box color=\"red\">\n\n## Heading\n\n`<Box color=\"wrong\" />`\n\n{css({color:\"blue\"})}\n\n</Box>\n\n<Box color=\"red\" />\n\n```jsx\n<Box color=\"wrong\" />\n{css({color:\"wrong\"})}\n```\n\n<Box color=\"red\" />\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 90
+        },
+        {
+          "name": "Box",
+          "start": 177
+        },
+        {
+          "name": "Box",
+          "start": 255
+        },
+        {
+          "name": "Box",
+          "start": 276
+        }
+      ],
+      "calls": [
+        [
+          147,
+          166
+        ]
+      ]
+    },
+    {
+      "name": "combined-7",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n<Box color=\"red\" />\n\n{css({color:\"red\"})}\n\n<><Box color=\"red\" /><Box color=\"blue\" /></>\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 90
+        },
+        {
+          "name": "Box",
+          "start": 135
+        },
+        {
+          "name": "Box",
+          "start": 154
+        },
+        {
+          "name": "Box",
+          "start": 203
+        }
+      ],
+      "calls": [
+        [
+          112,
+          130
+        ]
+      ]
+    },
+    {
+      "name": "combined-8",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\nText <Box color=\"red\" /> text.\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />\n\nText <Box color=\"red\" /> text.\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 95
+        },
+        {
+          "name": "Box",
+          "start": 146
+        },
+        {
+          "name": "Box",
+          "start": 172
+        },
+        {
+          "name": "Box",
+          "start": 199
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "combined-9",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n{css({color:\"red\"})}\n\n<><Box color=\"red\" /><Box color=\"blue\" /></>\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 114
+        },
+        {
+          "name": "Box",
+          "start": 133
+        },
+        {
+          "name": "Box",
+          "start": 182
+        },
+        {
+          "name": "Box",
+          "start": 227
+        }
+      ],
+      "calls": [
+        [
+          91,
+          109
+        ]
+      ]
+    },
+    {
+      "name": "combined-10",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n```jsx\n<Box color=\"wrong\" />\n{css({color:\"wrong\"})}\n```\n\n<Box color=\"red\" />\n\n<Box color=\"red\" />\n\n<Box color=\"red\">\n\n## Heading\n\n`<Box color=\"wrong\" />`\n\n{css({color:\"blue\"})}\n\n</Box>\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 147
+        },
+        {
+          "name": "Box",
+          "start": 168
+        },
+        {
+          "name": "Box",
+          "start": 189
+        },
+        {
+          "name": "Box",
+          "start": 276
+        }
+      ],
+      "calls": [
+        [
+          246,
+          265
+        ]
+      ]
+    },
+    {
+      "name": "combined-11",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />\n\n{css({color:\"red\"})}\n\n{css({color:\"red\"})}\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 114
+        },
+        {
+          "name": "Box",
+          "start": 203
+        }
+      ],
+      "calls": [
+        [
+          136,
+          154
+        ],
+        [
+          158,
+          176
+        ]
+      ]
+    },
+    {
+      "name": "combined-12",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n{{a: css({color:\"red\"}), b: css({color:\"blue\"})}}\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />\n\n{{a: css({color:\"red\"}), b: css({color:\"blue\"})}}\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 165
+        },
+        {
+          "name": "Box",
+          "start": 237
+        }
+      ],
+      "calls": [
+        [
+          95,
+          113
+        ],
+        [
+          118,
+          137
+        ],
+        [
+          191,
+          209
+        ],
+        [
+          214,
+          233
+        ]
+      ]
+    },
+    {
+      "name": "combined-13",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n<><Box color=\"red\" /><Box color=\"blue\" /></>\n\n<><Box color=\"red\" /><Box color=\"blue\" /></>\n\n<Box color=\"red\" />\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 92
+        },
+        {
+          "name": "Box",
+          "start": 111
+        },
+        {
+          "name": "Box",
+          "start": 138
+        },
+        {
+          "name": "Box",
+          "start": 157
+        },
+        {
+          "name": "Box",
+          "start": 182
+        },
+        {
+          "name": "Box",
+          "start": 227
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "combined-14",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n<Box color=\"red\">\n\n## Heading\n\n`<Box color=\"wrong\" />`\n\n{css({color:\"blue\"})}\n\n</Box>\n\n<Box color=\"red\" />\n\n```jsx\n<Box color=\"wrong\" />\n{css({color:\"wrong\"})}\n```\n\n<Box color=\"red\" />\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 90
+        },
+        {
+          "name": "Box",
+          "start": 177
+        },
+        {
+          "name": "Box",
+          "start": 255
+        },
+        {
+          "name": "Box",
+          "start": 276
+        }
+      ],
+      "calls": [
+        [
+          147,
+          166
+        ]
+      ]
+    },
+    {
+      "name": "combined-15",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n<Box color=\"red\" />\n\n{css({color:\"red\"})}\n\n<><Box color=\"red\" /><Box color=\"blue\" /></>\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 90
+        },
+        {
+          "name": "Box",
+          "start": 135
+        },
+        {
+          "name": "Box",
+          "start": 154
+        },
+        {
+          "name": "Box",
+          "start": 203
+        }
+      ],
+      "calls": [
+        [
+          112,
+          130
+        ]
+      ]
+    },
+    {
+      "name": "combined-16",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\nText <Box color=\"red\" /> text.\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />\n\nText <Box color=\"red\" /> text.\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 95
+        },
+        {
+          "name": "Box",
+          "start": 146
+        },
+        {
+          "name": "Box",
+          "start": 172
+        },
+        {
+          "name": "Box",
+          "start": 199
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "combined-17",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n{css({color:\"red\"})}\n\n<><Box color=\"red\" /><Box color=\"blue\" /></>\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 114
+        },
+        {
+          "name": "Box",
+          "start": 133
+        },
+        {
+          "name": "Box",
+          "start": 182
+        },
+        {
+          "name": "Box",
+          "start": 227
+        }
+      ],
+      "calls": [
+        [
+          91,
+          109
+        ]
+      ]
+    },
+    {
+      "name": "combined-18",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n```jsx\n<Box color=\"wrong\" />\n{css({color:\"wrong\"})}\n```\n\n<Box color=\"red\" />\n\n<Box color=\"red\" />\n\n<Box color=\"red\">\n\n## Heading\n\n`<Box color=\"wrong\" />`\n\n{css({color:\"blue\"})}\n\n</Box>\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 147
+        },
+        {
+          "name": "Box",
+          "start": 168
+        },
+        {
+          "name": "Box",
+          "start": 189
+        },
+        {
+          "name": "Box",
+          "start": 276
+        }
+      ],
+      "calls": [
+        [
+          246,
+          265
+        ]
+      ]
+    },
+    {
+      "name": "combined-19",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />\n\n{css({color:\"red\"})}\n\n{css({color:\"red\"})}\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 114
+        },
+        {
+          "name": "Box",
+          "start": 203
+        }
+      ],
+      "calls": [
+        [
+          136,
+          154
+        ],
+        [
+          158,
+          176
+        ]
+      ]
+    },
+    {
+      "name": "combined-20",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n{{a: css({color:\"red\"}), b: css({color:\"blue\"})}}\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />\n\n{{a: css({color:\"red\"}), b: css({color:\"blue\"})}}\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 165
+        },
+        {
+          "name": "Box",
+          "start": 237
+        }
+      ],
+      "calls": [
+        [
+          95,
+          113
+        ],
+        [
+          118,
+          137
+        ],
+        [
+          191,
+          209
+        ],
+        [
+          214,
+          233
+        ]
+      ]
+    },
+    {
+      "name": "combined-21",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n<><Box color=\"red\" /><Box color=\"blue\" /></>\n\n<><Box color=\"red\" /><Box color=\"blue\" /></>\n\n<Box color=\"red\" />\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 92
+        },
+        {
+          "name": "Box",
+          "start": 111
+        },
+        {
+          "name": "Box",
+          "start": 138
+        },
+        {
+          "name": "Box",
+          "start": 157
+        },
+        {
+          "name": "Box",
+          "start": 182
+        },
+        {
+          "name": "Box",
+          "start": 227
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "combined-22",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n<Box color=\"red\">\n\n## Heading\n\n`<Box color=\"wrong\" />`\n\n{css({color:\"blue\"})}\n\n</Box>\n\n<Box color=\"red\" />\n\n```jsx\n<Box color=\"wrong\" />\n{css({color:\"wrong\"})}\n```\n\n<Box color=\"red\" />\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 90
+        },
+        {
+          "name": "Box",
+          "start": 177
+        },
+        {
+          "name": "Box",
+          "start": 255
+        },
+        {
+          "name": "Box",
+          "start": 276
+        }
+      ],
+      "calls": [
+        [
+          147,
+          166
+        ]
+      ]
+    },
+    {
+      "name": "combined-23",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n<Box color=\"red\" />\n\n{css({color:\"red\"})}\n\n<><Box color=\"red\" /><Box color=\"blue\" /></>\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 90
+        },
+        {
+          "name": "Box",
+          "start": 135
+        },
+        {
+          "name": "Box",
+          "start": 154
+        },
+        {
+          "name": "Box",
+          "start": 203
+        }
+      ],
+      "calls": [
+        [
+          112,
+          130
+        ]
+      ]
+    },
+    {
+      "name": "combined-24",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\nText <Box color=\"red\" /> text.\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />\n\nText <Box color=\"red\" /> text.\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 95
+        },
+        {
+          "name": "Box",
+          "start": 146
+        },
+        {
+          "name": "Box",
+          "start": 172
+        },
+        {
+          "name": "Box",
+          "start": 199
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "combined-25",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n{css({color:\"red\"})}\n\n<><Box color=\"red\" /><Box color=\"blue\" /></>\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 114
+        },
+        {
+          "name": "Box",
+          "start": 133
+        },
+        {
+          "name": "Box",
+          "start": 182
+        },
+        {
+          "name": "Box",
+          "start": 227
+        }
+      ],
+      "calls": [
+        [
+          91,
+          109
+        ]
+      ]
+    },
+    {
+      "name": "combined-26",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n```jsx\n<Box color=\"wrong\" />\n{css({color:\"wrong\"})}\n```\n\n<Box color=\"red\" />\n\n<Box color=\"red\" />\n\n<Box color=\"red\">\n\n## Heading\n\n`<Box color=\"wrong\" />`\n\n{css({color:\"blue\"})}\n\n</Box>\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 147
+        },
+        {
+          "name": "Box",
+          "start": 168
+        },
+        {
+          "name": "Box",
+          "start": 189
+        },
+        {
+          "name": "Box",
+          "start": 276
+        }
+      ],
+      "calls": [
+        [
+          246,
+          265
+        ]
+      ]
+    },
+    {
+      "name": "combined-27",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />\n\n{css({color:\"red\"})}\n\n{css({color:\"red\"})}\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 114
+        },
+        {
+          "name": "Box",
+          "start": 203
+        }
+      ],
+      "calls": [
+        [
+          136,
+          154
+        ],
+        [
+          158,
+          176
+        ]
+      ]
+    },
+    {
+      "name": "combined-28",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n{{a: css({color:\"red\"}), b: css({color:\"blue\"})}}\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />\n\n{{a: css({color:\"red\"}), b: css({color:\"blue\"})}}\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 165
+        },
+        {
+          "name": "Box",
+          "start": 237
+        }
+      ],
+      "calls": [
+        [
+          95,
+          113
+        ],
+        [
+          118,
+          137
+        ],
+        [
+          191,
+          209
+        ],
+        [
+          214,
+          233
+        ]
+      ]
+    },
+    {
+      "name": "combined-29",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n<><Box color=\"red\" /><Box color=\"blue\" /></>\n\n<><Box color=\"red\" /><Box color=\"blue\" /></>\n\n<Box color=\"red\" />\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 92
+        },
+        {
+          "name": "Box",
+          "start": 111
+        },
+        {
+          "name": "Box",
+          "start": 138
+        },
+        {
+          "name": "Box",
+          "start": 157
+        },
+        {
+          "name": "Box",
+          "start": 182
+        },
+        {
+          "name": "Box",
+          "start": 227
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "combined-30",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n<Box color=\"red\">\n\n## Heading\n\n`<Box color=\"wrong\" />`\n\n{css({color:\"blue\"})}\n\n</Box>\n\n<Box color=\"red\" />\n\n```jsx\n<Box color=\"wrong\" />\n{css({color:\"wrong\"})}\n```\n\n<Box color=\"red\" />\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 90
+        },
+        {
+          "name": "Box",
+          "start": 177
+        },
+        {
+          "name": "Box",
+          "start": 255
+        },
+        {
+          "name": "Box",
+          "start": 276
+        }
+      ],
+      "calls": [
+        [
+          147,
+          166
+        ]
+      ]
+    },
+    {
+      "name": "combined-31",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n<Box color=\"red\" />\n\n{css({color:\"red\"})}\n\n<><Box color=\"red\" /><Box color=\"blue\" /></>\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 90
+        },
+        {
+          "name": "Box",
+          "start": 135
+        },
+        {
+          "name": "Box",
+          "start": 154
+        },
+        {
+          "name": "Box",
+          "start": 203
+        }
+      ],
+      "calls": [
+        [
+          112,
+          130
+        ]
+      ]
+    },
+    {
+      "name": "combined-32",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\nText <Box color=\"red\" /> text.\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />\n\nText <Box color=\"red\" /> text.\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 95
+        },
+        {
+          "name": "Box",
+          "start": 146
+        },
+        {
+          "name": "Box",
+          "start": 172
+        },
+        {
+          "name": "Box",
+          "start": 199
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "combined-33",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n{css({color:\"red\"})}\n\n<><Box color=\"red\" /><Box color=\"blue\" /></>\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 114
+        },
+        {
+          "name": "Box",
+          "start": 133
+        },
+        {
+          "name": "Box",
+          "start": 182
+        },
+        {
+          "name": "Box",
+          "start": 227
+        }
+      ],
+      "calls": [
+        [
+          91,
+          109
+        ]
+      ]
+    },
+    {
+      "name": "combined-34",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n```jsx\n<Box color=\"wrong\" />\n{css({color:\"wrong\"})}\n```\n\n<Box color=\"red\" />\n\n<Box color=\"red\" />\n\n<Box color=\"red\">\n\n## Heading\n\n`<Box color=\"wrong\" />`\n\n{css({color:\"blue\"})}\n\n</Box>\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 147
+        },
+        {
+          "name": "Box",
+          "start": 168
+        },
+        {
+          "name": "Box",
+          "start": 189
+        },
+        {
+          "name": "Box",
+          "start": 276
+        }
+      ],
+      "calls": [
+        [
+          246,
+          265
+        ]
+      ]
+    },
+    {
+      "name": "combined-35",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />\n\n{css({color:\"red\"})}\n\n{css({color:\"red\"})}\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 114
+        },
+        {
+          "name": "Box",
+          "start": 203
+        }
+      ],
+      "calls": [
+        [
+          136,
+          154
+        ],
+        [
+          158,
+          176
+        ]
+      ]
+    },
+    {
+      "name": "combined-36",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n{{a: css({color:\"red\"}), b: css({color:\"blue\"})}}\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />\n\n{{a: css({color:\"red\"}), b: css({color:\"blue\"})}}\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 165
+        },
+        {
+          "name": "Box",
+          "start": 237
+        }
+      ],
+      "calls": [
+        [
+          95,
+          113
+        ],
+        [
+          118,
+          137
+        ],
+        [
+          191,
+          209
+        ],
+        [
+          214,
+          233
+        ]
+      ]
+    },
+    {
+      "name": "combined-37",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n<><Box color=\"red\" /><Box color=\"blue\" /></>\n\n<><Box color=\"red\" /><Box color=\"blue\" /></>\n\n<Box color=\"red\" />\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 92
+        },
+        {
+          "name": "Box",
+          "start": 111
+        },
+        {
+          "name": "Box",
+          "start": 138
+        },
+        {
+          "name": "Box",
+          "start": 157
+        },
+        {
+          "name": "Box",
+          "start": 182
+        },
+        {
+          "name": "Box",
+          "start": 227
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "combined-38",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n<Box color=\"red\">\n\n## Heading\n\n`<Box color=\"wrong\" />`\n\n{css({color:\"blue\"})}\n\n</Box>\n\n<Box color=\"red\" />\n\n```jsx\n<Box color=\"wrong\" />\n{css({color:\"wrong\"})}\n```\n\n<Box color=\"red\" />\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 90
+        },
+        {
+          "name": "Box",
+          "start": 177
+        },
+        {
+          "name": "Box",
+          "start": 255
+        },
+        {
+          "name": "Box",
+          "start": 276
+        }
+      ],
+      "calls": [
+        [
+          147,
+          166
+        ]
+      ]
+    },
+    {
+      "name": "combined-39",
+      "source": "import { css } from '@panda/css';\nimport { Box } from '@panda/jsx';\n\n<Box color=\"red\" />\n\n<Box color=\"red\" />\n\n{css({color:\"red\"})}\n\n<><Box color=\"red\" /><Box color=\"blue\" /></>\n\n`<Box color=\"wrong\" />` <Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 69
+        },
+        {
+          "name": "Box",
+          "start": 90
+        },
+        {
+          "name": "Box",
+          "start": 135
+        },
+        {
+          "name": "Box",
+          "start": 154
+        },
+        {
+          "name": "Box",
+          "start": 203
+        }
+      ],
+      "calls": [
+        [
+          112,
+          130
+        ]
+      ]
+    },
+    {
+      "name": "ESM does not interrupt prose",
+      "source": "A paragraph that continues on the next line:\nimport it from [`recipes/`](url) instead.\n\n<Box color=\"red\" />",
+      "elements": [
+        {
+          "name": "Box",
+          "start": 88
+        }
+      ],
+      "calls": []
+    }
+  ]
+}

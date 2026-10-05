@@ -8,6 +8,9 @@ rust-version.workspace = true
 publish = false
 
 [dev-dependencies]
+serde_json = { workspace = true }
+oxc_ast = { workspace = true }
+oxc_ast_visit = { workspace = true }
 indoc = { workspace = true }
 insta = { workspace = true }
 oxc_allocator = { workspace = true }

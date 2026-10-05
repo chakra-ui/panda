@@ -24,7 +24,7 @@ pub struct Lexer<'a> {
     position: usize,
 }
 
-const OPERAND_KEYWORDS: [&str; 14] = [
+pub(crate) const OPERAND_KEYWORDS: [&str; 14] = [
     "return",
     "typeof",
     "void",

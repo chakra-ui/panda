@@ -179,3 +179,57 @@ fn compile_keyframes_uses_the_shared_prepared_stylesheet() {
     assert!(output.css.contains("@keyframes spin"));
     assert!(output.diagnostics.is_empty());
 }
+
+#[test]
+fn mdx_styles_emit_and_refresh_without_emitting_code_examples() {
+    let config: pandacss_config::UserConfig = serde_json::from_value(json!({
+        "outdir": "styled-system",
+        "jsxFramework": "react",
+        "importMap": { "css": ["@panda/css"], "jsx": ["@panda/jsx"] },
+        "utilities": {
+            "color": { "className": "color" },
+            "gap": { "className": "gap" }
+        },
+        "patterns": { "box": { "jsx": ["Box"] } }
+    }))
+    .expect("valid config");
+    let system = System::new(config.clone()).expect("valid system");
+    let mut project = Project::new(system);
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        import { Box } from '@panda/jsx';
+
+        # Badge
+
+        ```jsx
+        <Box color="orange" />
+        ```
+
+        <Box gap="2" color="red">
+          <span className={css({ color: 'blue' })}>solid</span>
+        </Box>
+    "#};
+    project.parse_file("/src/badge.mdx", source);
+    let output = compile_css(
+        &mut project,
+        &config,
+        None,
+        None,
+        &CssOutputOptions::default(),
+    );
+    assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics);
+    assert!(output.css.contains("color: red"), "{}", output.css);
+    assert!(output.css.contains("color: blue"));
+    assert!(output.css.contains("gap: 2"));
+    assert!(!output.css.contains("orange"));
+    project.parse_file("/src/badge.mdx", &source.replace("'blue'", "'teal'"));
+    let output = compile_css(
+        &mut project,
+        &config,
+        None,
+        None,
+        &CssOutputOptions::default(),
+    );
+    assert!(output.css.contains("color: teal"));
+    assert!(!output.css.contains("color: blue"));
+}

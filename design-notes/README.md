@@ -50,6 +50,8 @@ Some topics span several notes. Keep the detailed contract in one place and link
 - [Literal evaluator](./literal-evaluator.md) — what folds vs what doesn't (literals, pure helpers, token/raw calls).
 - [Astro parser](./astro-parser.md) — Panda-owned `.astro` tokenizer in `pandacss_sfc` that ports Astro's parser rules
   and lowers to a same-offset JS program; parity checked against Astro's parser during development.
+- [MDX extraction](./mdx-parser.md) — Markdown exclusions and JSX/JavaScript islands lowered for one Oxc parse,
+  extraction parity coverage, and performance expectations.
 - [StyleTree](./style-tree.md) — span-backed transform IR for `css()` / JSX conditionals; `project_literal` for encode.
 - [Cross-file resolution](./cross-file-resolution.md) — `CrossFileResolver`, cache shape (`Literal` | `PureFn` plus
   provenance hashes), cycle guard, hash-keyed `Project` reverse index and host-driven affected-file refresh for watch.
