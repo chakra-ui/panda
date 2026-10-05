@@ -296,8 +296,8 @@ Under the hood:
 - Recipe snapshots store in `hydrated_recipes` keyed by `name` and **merge** into the emit snapshot at CSS generation.
 - Atom dedup is content-addressed — identical atoms from two libs collapse to one utility class.
 - Identical recipe groups (same recipe, slot, class, conditions, and declarations in authored order) collapse to their
-  last position; groups that differ stay separate so a later override still wins by order. Build info and the app number
-  and sort entries differently, so the comparison ignores both.
+  last position. Build info and the app number and sort entries differently, so the comparison ignores both. What should
+  happen when a design system and the app disagree about one recipe isn't designed yet.
 
 Tree-shaking is **per artifact, per module key**: `modulesFor(uiInfo, ['Card'])` → ui module keys; base modules need a
 separate `modulesFor(baseInfo, …)` pass when the app imports base components directly or via re-exports ui does not
