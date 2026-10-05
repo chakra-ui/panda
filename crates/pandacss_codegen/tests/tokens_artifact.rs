@@ -113,3 +113,38 @@ fn emits_js_runtime_and_declarations() {
     export declare const token: TokenFn;
     ");
 }
+
+#[test]
+fn preserves_dotted_token_keys_from_the_compiled_dictionary() {
+    let config = user_config(serde_json::json!({
+        "theme": { "tokens": { "spacing": {
+            "1.5": { "value": "0.375rem" },
+            "4": { "value": "1rem" }
+        } } }
+    }));
+    let dictionary = pandacss_tokens::TokenDictionary::from_config(&config)
+        .unwrap()
+        .unwrap();
+    let input = CodegenInput {
+        config,
+        types: TypeData {
+            tokens: dictionary.type_data(),
+            ..TypeData::default()
+        },
+        token_dictionary: pandacss_codegen::TokenDictionarySource::Provided(Some(
+            std::sync::Arc::new(dictionary),
+        )),
+        ..CodegenInput::default()
+    };
+    let artifacts = ArtifactGraph.generate_all(
+        &input,
+        GenerateOptions {
+            format: CodegenFormat::Mjs,
+            import_extensions: true,
+        },
+    );
+    let code = file(artifact(&artifacts, ArtifactId::Tokens), "tokens/index.mjs");
+    assert!(code.contains(r#""spacing.1.5":"var(--spacing-1\\.5)""#));
+    assert!(code.contains("colorMix(tokens, path, resolveVar)"));
+    assert!(code.contains("tokens[path] === undefined ? fallback : resolveVar(path)"));
+}

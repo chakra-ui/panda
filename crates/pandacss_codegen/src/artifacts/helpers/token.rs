@@ -40,6 +40,7 @@ pub(super) fn color_mix() -> Item {
         vec![
             Param::typed("tokens", TsType::Raw("Record<string, string>".into())),
             Param::typed("path", TsType::Ref("string".into())),
+            Param::optional("resolveVar", TsType::Raw("(path: string) => string".into())),
         ],
         TsType::Raw("string | undefined".into()),
         indoc! {r#"
@@ -57,7 +58,7 @@ pub(super) fn color_mix() -> Item {
             const percent = opacity === undefined ? Number(rawOpacity) : Number(opacity) * 100
             if (Number.isNaN(percent)) return
 
-            return "color-mix(in oklab, " + toCssVar(colorPath) + " " + percent + "%, transparent)"
+            return "color-mix(in oklab, " + (resolveVar || toCssVar)(colorPath) + " " + percent + "%, transparent)"
         "#}
         .trim(), // indoc strips shared indent; emitter adds the function-body indent.
     )
@@ -79,7 +80,7 @@ fn var_prefix(prefix: &str, hash: bool) -> String {
 }
 
 /// Mirrors `pandacss_tokens::push_css_var_name`; `toCssVar` applies the same rules at runtime.
-fn push_css_var_name(out: &mut String, value: &str) {
+pub(in crate::artifacts) fn push_css_var_name(out: &mut String, value: &str) {
     for ch in value.chars() {
         if ch.is_ascii_uppercase() {
             out.push('-');

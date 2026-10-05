@@ -176,6 +176,15 @@ once folded, the **path is erased** from the extracted literal. The `Resolver` t
 reference forms — bare category values (`color: 'red.300'`, incl. `/opacity` modifiers), curly `{colors.red.200}`, and
 whole-value token paths — survive folding as text and are classified directly from the extracted value.
 
+## Generated token runtime parity
+
+The generated `token()` and `token.var()` runtime must use the same variable names as the dictionary used by the literal
+evaluator. A dotted path loses the boundary between nested keys and dots inside a key (`spacing.1.5` can contain the
+single key `1.5`), so replacing every dot with a dash cannot reconstruct every name. The tokens artifact stores
+dictionary overrides for references that differ from `toCssVar(path)`, including hashed names and negative spacing
+expressions. Conditional values and opacity modifiers use the same local resolver. Overrides stay in the app's tokens
+artifact so a design-system consumer can keep sharing the base helpers.
+
 ## Related
 
 - [extraction-pipeline](./extraction-pipeline.md)
