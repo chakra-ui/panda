@@ -60,11 +60,12 @@ turns a file into same-offset JS and knows nothing about Oxc; the extractor pars
 ```rust
 // pandacss_sfc::astro
 pub fn lower(source: &str) -> AstroDocument;
-pub struct AstroDocument { pub canvas: String, pub elements: Vec<AstroElement>, pub diagnostics: Vec<AstroDiagnostic> }
-pub struct AstroElement { pub name: Range<u32>, pub opening: Range<u32>, pub attributes: Vec<AstroAttribute> }
-pub struct AstroAttribute { pub name: Option<Range<u32>>, pub value: AstroAttributeValue }
-pub enum AstroAttributeValue { Boolean, Static(Range<u32>), Expression(Range<u32>), Spread(Range<u32>), Empty }
-pub struct AstroDiagnostic { pub message: String, pub span: Option<Range<u32>> }
+pub struct AstroDocument { pub canvas: String, pub elements: Vec<TemplateElement>, pub diagnostics: Vec<ContainerDiagnostic> }
+// pandacss_sfc::template — shared with the MDX lowerer
+pub struct TemplateElement { pub name: Range<u32>, pub opening: Range<u32>, pub attributes: Vec<TemplateAttribute> }
+pub struct TemplateAttribute { pub name: Option<Range<u32>>, pub value: TemplateAttributeValue }
+pub enum TemplateAttributeValue { Boolean, Static(Range<u32>), Expression(Range<u32>), Spread(Range<u32>), Empty }
+pub struct ContainerDiagnostic { pub message: String, pub span: Option<Range<u32>> }
 // pandacss_sfc::js — the JS lexer, shared by all three frameworks
 ```
 
@@ -108,7 +109,7 @@ verified examples. In outline:
   its children are read as template children. Sibling elements group into an implicit fragment exactly where the fork
   groups them.
 - **Fatal conditions.** Where the fork stops parsing (an unclosed element, a stray `}` inside an element, `{a b}`, and
-  the others in `FORK_RULES.md`), the tokenizer records an `AstroDiagnostic`. It keeps the earlier top-level siblings
+  the others in `FORK_RULES.md`), the tokenizer records a `ContainerDiagnostic`. It keeps the earlier top-level siblings
   and blanks the rest. It never panics.
 
 The tokenizer builds a small tree: elements, fragments, expressions with the markup found inside them, attributes, and
@@ -130,7 +131,7 @@ Elements become array literals of their expressions. JS stays where it is.
 | Element whose parent is markup                                 | Tag syntax blank. Its expressions join the enclosing array.                                                                                                                                                                                                                                                                                                                       |
 | Expression (child, attribute value, shorthand, backtick value) | Copied. A `,` goes on the nearest preceding non-space byte (`{`, `=`, or a skipped comment).                                                                                                                                                                                                                                                                                      |
 | Spread                                                         | Copied from its `...`, with the same leading `,`.                                                                                                                                                                                                                                                                                                                                 |
-| Static value, boolean attribute, attribute name, `{}`          | Blank. Static values live in `AstroElement`.                                                                                                                                                                                                                                                                                                                                      |
+| Static value, boolean attribute, attribute name, `{}`          | Blank. Static values live in `TemplateElement`.                                                                                                                                                                                                                                                                                                                                   |
 
 ```astro
 {show && (
