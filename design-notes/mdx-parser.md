@@ -66,22 +66,23 @@ These gates are local regression criteria, not universal latency guarantees.
 
 ## Validation and remaining scope
 
-The checked-in parity corpus compares named JSX elements and JavaScript call spans against `@mdx-js/mdx` 3.1.1. Run
-`node bench/scripts/mdx-parity.mjs` from the repository root to regenerate it using the installed website dependency.
-The Rust test can read a larger generated corpus via `PANDA_MDX_CORPUS`. The 151 repository MDX documents also matched
-the official parser in the local check. Extraction tests cover static/dynamic attributes, spreads, imports, exports,
-comments, entities, diagnostics, and original offsets; compiler tests cover CSS generation and watch replacement.
+The inline boundary snapshots in `crates/pandacss_sfc/tests/mdx/` record the named JSX elements and JavaScript
+call spans reported by `@mdx-js/mdx` 3.1.1. Each test keeps its source beside its expected output; cases are grouped
+by JSX, expressions, Markdown exclusions, modules, mixed documents, and byte offsets. The original 101-case corpus
+contained 32 duplicate documents; all 69 distinct cases remain covered. The 151 repository MDX documents also matched
+the official parser in the initial local check. Extraction tests cover static/dynamic attributes, spreads, imports,
+exports, comments, entities, diagnostics, and original offsets; compiler tests cover CSS generation and watch replacement.
 
 This is an extraction adapter, not a complete MDX validator or compiler. It does not execute remark/rehype plugins or
 custom syntax transformations. Parity is checked for extraction boundaries rather than every Markdown AST node.
 
-**Confirmed merge blocker:** reference-style images do not resolve their labels, so JSX in their alt text can be
+**Known over-extraction limitation:** reference-style images do not resolve their labels, so JSX in their alt text can be
 extracted as a live component. For example, `![<Box color="wrong" />][image]` followed by `[image]: /asset.png`
 currently extracts `wrong`; the official parser treats the label as image text. Correct handling needs document-wide
 definition resolution, including definitions outside code examples and forward references. Keep that responsibility in
 the Markdown layer rather than teaching the style collector about image syntax.
 
-Before shipping, resolve that gap and expand third-party corpus, entity, and plugin-transformed syntax coverage.
+Follow up with reference-image resolution and broader third-party corpus, entity, and plugin-transformed syntax coverage.
 Existing CSS output snapshots must remain unchanged.
 
 ## Related
