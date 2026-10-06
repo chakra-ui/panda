@@ -384,12 +384,18 @@ pub(super) fn without_space() -> Item {
     )
 }
 
+pub(super) fn important_regex() -> Item {
+    Item::runtime(ItemNode::RawStmt(
+        r"const IMPORTANT_REGEX = /\s*!(important)?\s*$/i".into(),
+    ))
+}
+
 pub(super) fn is_important() -> Item {
     helper_function(
         "isImportant",
         vec![Param::typed("value", TsType::Ref("unknown".into()))],
         TsType::Bool,
-        r#"return typeof value === "string" ? /\s*!(important)?\s*$/i.test(value) : false"#,
+        r#"return typeof value === "string" ? IMPORTANT_REGEX.test(value) : false"#,
         [],
     )
 }
@@ -400,7 +406,7 @@ pub(super) fn without_important() -> Item {
         vec![Param::typed("value", TsType::Ref("T".into()))],
         TsType::Ref("T".into()),
         indoc! {r#"
-            return (typeof value === "string" ? value.replace(/\s*!(important)?\s*$/i, "").trim() : value) as T
+            return (typeof value === "string" ? value.replace(IMPORTANT_REGEX, "").trim() : value) as T
         "#}
         .trim(),
         ["T extends string | number | boolean"],

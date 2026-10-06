@@ -146,16 +146,20 @@ fn emits_ts_source() {
     assert_snapshot!(file(patterns, "patterns/runtime.ts"), @r#"
     import { mapObject, withDefaults } from '../helpers';
 
+    const cssFunctionRe = /^(min|max|clamp|calc)\(.*\)/
+    const cssVarRe = /^var\(--.+\)$/
+    const cssUnitRe = /^[+-]?[0-9]*.?[0-9]+(?:[eE][+-]?[0-9]+)?(?:cm|mm|Q|in|pc|pt|px|em|ex|ch|rem|lh|rlh|vw|vh|vmin|vmax|vb|vi|svw|svh|lvw|lvh|dvw|dvh|cqw|cqh|cqi|cqb|cqmin|cqmax|%)$/
+
     export function isCssFunction(v: unknown): boolean {
-      return typeof v === "string" && /^(min|max|clamp|calc)\(.*\)/.test(v)
+      return typeof v === "string" && cssFunctionRe.test(v)
     }
 
     export function isCssVar(v: unknown): boolean {
-      return typeof v === "string" && /^var\(--.+\)$/.test(v)
+      return typeof v === "string" && cssVarRe.test(v)
     }
 
     export function isCssUnit(v: unknown): boolean {
-      return typeof v === "string" && /^[+-]?[0-9]*.?[0-9]+(?:[eE][+-]?[0-9]+)?(?:cm|mm|Q|in|pc|pt|px|em|ex|ch|rem|lh|rlh|vw|vh|vmin|vmax|vb|vi|svw|svh|lvw|lvh|dvw|dvh|cqw|cqh|cqi|cqb|cqmin|cqmax|%)$/.test(v)
+      return typeof v === "string" && cssUnitRe.test(v)
     }
 
     export const patternFns: Record<string, (...args: any[]) => any> = { map: mapObject, isCssFunction, isCssVar, isCssUnit }
@@ -253,16 +257,20 @@ fn emits_js_runtime_and_declarations() {
     assert_snapshot!(file(patterns, "patterns/runtime.js"), @r#"
     import { mapObject, withDefaults } from '../helpers';
 
+    const cssFunctionRe = /^(min|max|clamp|calc)\(.*\)/
+    const cssVarRe = /^var\(--.+\)$/
+    const cssUnitRe = /^[+-]?[0-9]*.?[0-9]+(?:[eE][+-]?[0-9]+)?(?:cm|mm|Q|in|pc|pt|px|em|ex|ch|rem|lh|rlh|vw|vh|vmin|vmax|vb|vi|svw|svh|lvw|lvh|dvw|dvh|cqw|cqh|cqi|cqb|cqmin|cqmax|%)$/
+
     export function isCssFunction(v) {
-      return typeof v === "string" && /^(min|max|clamp|calc)\(.*\)/.test(v)
+      return typeof v === "string" && cssFunctionRe.test(v)
     }
 
     export function isCssVar(v) {
-      return typeof v === "string" && /^var\(--.+\)$/.test(v)
+      return typeof v === "string" && cssVarRe.test(v)
     }
 
     export function isCssUnit(v) {
-      return typeof v === "string" && /^[+-]?[0-9]*.?[0-9]+(?:[eE][+-]?[0-9]+)?(?:cm|mm|Q|in|pc|pt|px|em|ex|ch|rem|lh|rlh|vw|vh|vmin|vmax|vb|vi|svw|svh|lvw|lvh|dvw|dvh|cqw|cqh|cqi|cqb|cqmin|cqmax|%)$/.test(v)
+      return typeof v === "string" && cssUnitRe.test(v)
     }
 
     export const patternFns = { map: mapObject, isCssFunction, isCssVar, isCssUnit }
