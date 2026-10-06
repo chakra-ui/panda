@@ -218,10 +218,27 @@ fn mdx_styles_emit_and_refresh_without_emitting_code_examples() {
         &CssOutputOptions::default(),
     );
     assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics);
-    assert!(output.css.contains("color: red"), "{}", output.css);
-    assert!(output.css.contains("color: blue"));
-    assert!(output.css.contains("gap: 2"));
-    assert!(!output.css.contains("orange"));
+    insta::assert_snapshot!(output.css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer recipes { @layer base, slots, variants, compound_variants; }
+    @layer recipes.slots { @layer base, variants, compound_variants; }
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    @layer utilities {
+      .gap_2 {
+        gap: 2px;
+      }
+      .color_blue {
+        color: blue;
+      }
+      .color_red {
+        color: red;
+      }
+    }
+    ");
     project.parse_file("/src/badge.mdx", &source.replace("'blue'", "'teal'"));
     let output = compile_css(
         &mut project,
@@ -230,6 +247,26 @@ fn mdx_styles_emit_and_refresh_without_emitting_code_examples() {
         None,
         &CssOutputOptions::default(),
     );
-    assert!(output.css.contains("color: teal"));
-    assert!(!output.css.contains("color: blue"));
+    assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics);
+    insta::assert_snapshot!(output.css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer recipes { @layer base, slots, variants, compound_variants; }
+    @layer recipes.slots { @layer base, variants, compound_variants; }
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    @layer utilities {
+      .gap_2 {
+        gap: 2px;
+      }
+      .color_red {
+        color: red;
+      }
+      .color_teal {
+        color: teal;
+      }
+    }
+    ");
 }
