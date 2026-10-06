@@ -93,7 +93,7 @@ pub fn transform_source_with(
         None => source,
     };
 
-    // MDX extraction lowers markup attributes; source rewriting needs its own contract.
+    // MDX support is extraction-only; leave its source unchanged.
     if std::path::Path::new(path)
         .extension()
         .is_some_and(|extension| extension.eq_ignore_ascii_case("mdx"))

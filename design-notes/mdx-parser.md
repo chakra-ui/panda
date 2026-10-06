@@ -44,8 +44,8 @@ JSX inside JavaScript remains JSX for Oxc. Attribute expressions use the shared 
 dynamic value never triggers a second parse of the document. Quoted attributes decode XML/numeric entities using Oxc's
 existing entity table.
 
-MDX source rewriting deliberately bails with the source unchanged. Rewriting synthetic arrays back into an MDX document
-needs a separate contract and tests; extraction and CSS generation do not depend on it.
+MDX support is extraction-only. Source transforms are unsupported and return the source unchanged with `bailed: true`.
+Extraction and CSS generation work independently of source rewriting; MDX transforms are outside the current scope.
 
 ## Cost and design choice
 

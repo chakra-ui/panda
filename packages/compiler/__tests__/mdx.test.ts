@@ -22,7 +22,7 @@ test('native extraction reads live MDX styles and skips code examples', () => {
   expect(extracted.jsx.map((jsx) => jsx.data)).toEqual([{ color: 'red' }])
 })
 
-test('MDX source rewriting stays disabled while extraction is experimental', () => {
+test('MDX support is extraction-only and leaves source unchanged', () => {
   const compiler = createTransformProject()
   const result = compiler.transformSource({ path: 'badge.mdx', source })
   expect(result.code).toBe(source)
