@@ -6,15 +6,15 @@ adapter in `pandacss_sfc`. Files already covered by `include` require no additio
 
 ## Ownership
 
-| Module              | Responsibility                                                                        |
-| ------------------- | ------------------------------------------------------------------------------------- |
-| `mdx.rs`            | Scan the document in source order; collect tags, attributes, and diagnostics          |
-| `mdx/markdown.rs`   | Skip Markdown examples and destinations; own inline-code/image caches and line lookup |
-| `mdx/javascript.rs` | Find JavaScript island boundaries with the shared lexer; leave validation to Oxc      |
-| `mdx/canvas.rs`     | Build same-offset JavaScript; own synthetic array and module separators               |
+| Module                       | Responsibility                                                                         |
+| ---------------------------- | -------------------------------------------------------------------------------------- |
+| `mdx.rs`                     | Scan the document in source order; collect tags, attributes, and diagnostics           |
+| `mdx/markdown.rs`            | Skip Markdown examples and destinations; own inline-code/image caches and line lookup  |
+| `mdx/javascript.rs`          | Find JavaScript island boundaries with the shared lexer; leave validation to Oxc       |
+| `mdx/extraction_source.rs`   | Build same-offset JavaScript; own synthetic array and module separators                |
 
-The canvas has one tail state: empty, expression array, or module declaration. It closes an array before copying a
-module and separates a module from the next array. The scanner cannot independently mutate that punctuation or hold
+The extraction source has one tail state: empty, expression array, or module declaration. It closes an array before
+copying a module and separates a module from the next array. The scanner cannot independently mutate that punctuation or hold
 conflicting array/module state.
 
 ## Extraction contract
@@ -26,9 +26,9 @@ frontmatter, escapes, and link destinations are excluded. Code examples must nev
 ```mermaid
 flowchart LR
     MDX[MDX source] --> Scan[Scan Markdown exclusions and JSX attributes]
-    Scan --> Canvas[Same-offset JavaScript canvas]
+    Scan --> ExtractionSource[Same-offset JavaScript for extraction]
     Scan --> Attrs[Attribute spans]
-    Canvas --> Oxc[One Oxc parse and literal evaluation]
+    ExtractionSource --> Oxc[One Oxc parse and literal evaluation]
     Oxc --> Collect[Existing style collection]
     Attrs --> Collect
     Collect --> CSS[Existing encoding and CSS emission]
@@ -37,7 +37,7 @@ flowchart LR
 Byte offsets stay tied to the original source, including UTF-8 and CRLF. Expressions become entries in a synthetic
 array, avoiding extra scopes and preserving identifier lookup. Arrays split around module declarations. A separator
 after a semicolonless export uses an existing blank byte; in the tightest case it replaces a newline. Diagnostics
-therefore resolve their line/column against the original document rather than the canvas.
+therefore resolve their line/column against the original document rather than the extraction source.
 
 Opening tags use the existing Astro attribute-span representation, exported under container-neutral aliases. Embedded
 JSX inside JavaScript remains JSX for Oxc. Attribute expressions use the shared parse's literal cache. A missing or
@@ -53,7 +53,7 @@ An initial full Markdown AST prototype used `markdown-rs` and embedded-JavaScrip
 initial extraction tests, but allocating a Markdown tree and repeatedly parsing expressions cost substantially more time
 and memory than TSX. The final adapter adds no runtime dependency and performs no JavaScript parsing itself.
 
-The scanner stores source spans, its canvas, and open-tag state. Inline backtick runs are indexed lazily on the first
+The scanner stores source spans, its extraction source, and open-tag state. Inline backtick runs are indexed lazily on the first
 inline-code encounter; common delimiter lengths use a small array. Failed image-label searches are cached and tag
 lookahead is bounded to avoid repeated suffix scans. Multiline exports reuse the shared JavaScript lexer and brace
 matcher. Normal `.ts`/`.tsx` sources continue through their existing path.

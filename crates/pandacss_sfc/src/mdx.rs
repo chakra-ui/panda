@@ -4,12 +4,12 @@ use std::ops::Range;
 
 use crate::js::find_closing_brace;
 
-mod canvas;
+mod extraction_source;
 mod javascript;
 mod markdown;
 
 use crate::{ContainerDiagnostic, TemplateAttribute, TemplateAttributeValue, TemplateElement};
-use canvas::Canvas;
+use extraction_source::ExtractionSource;
 use javascript::module_end;
 use markdown::{
     Images, InlineCode, LineCursor, LinePrefix, fenced_code_end, frontmatter_end, line_end,
@@ -18,8 +18,8 @@ use markdown::{
 
 /// Same-offset JavaScript and component attributes retained from an MDX document.
 pub struct MdxDocument {
-    /// JavaScript canvas. Markdown and JSX tag syntax are blanked.
-    pub canvas: String,
+    /// JavaScript used for extraction, with Markdown and JSX tag syntax blanked.
+    pub extraction_source: String,
     /// Component opening tags and attributes in source order.
     pub elements: Vec<TemplateElement>,
     /// Container syntax errors; embedded JavaScript is checked by the caller.
@@ -33,7 +33,7 @@ pub fn lower(source: &str) -> MdxDocument {
     let mut scanner = Scanner::new(source);
     scanner.scan();
     MdxDocument {
-        canvas: scanner.canvas.finish(),
+        extraction_source: scanner.extraction_source.finish(),
         elements: scanner.elements,
         diagnostics: scanner.diagnostics,
     }
@@ -48,7 +48,7 @@ fn span(range: Range<usize>) -> Range<u32> {
 
 struct Scanner<'s> {
     source: &'s str,
-    canvas: Canvas,
+    extraction_source: ExtractionSource,
     elements: Vec<TemplateElement>,
     diagnostics: Vec<ContainerDiagnostic>,
     inline_code: InlineCode,
@@ -69,7 +69,7 @@ impl<'source> Scanner<'source> {
         };
         Self {
             source,
-            canvas: Canvas::new(source),
+            extraction_source: ExtractionSource::new(source),
             elements: Vec::new(),
             diagnostics: Vec::new(),
             inline_code: InlineCode::default(),
@@ -171,7 +171,8 @@ impl<'source> Scanner<'source> {
             && self.is_esm(line.end)
         {
             let end = module_end(self.source, line.end);
-            self.canvas.push_module(self.source, line.end..end);
+            self.extraction_source
+                .push_module(self.source, line.end..end);
             self.cursor = end;
             return true;
         }
@@ -203,7 +204,7 @@ impl<'source> Scanner<'source> {
     }
 
     fn copy_expression(&mut self, start: usize, content: Range<usize>, close: usize) {
-        self.canvas
+        self.extraction_source
             .push_expression(self.source, start, content.clone(), close);
         self.strip_blockquote_prefixes(content);
     }
@@ -222,7 +223,7 @@ impl<'source> Scanner<'source> {
             }
             let line = prefix(bytes, cursor);
             if line.quotes == self.quote_depth {
-                self.canvas.clear(cursor..line.end);
+                self.extraction_source.clear(cursor..line.end);
             }
         }
     }

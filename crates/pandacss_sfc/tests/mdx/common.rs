@@ -42,15 +42,19 @@ pub(super) fn boundaries(source: &str) -> Boundaries<'_> {
         "{:?}",
         document.diagnostics
     );
-    assert_eq!(document.canvas.len(), source.len(), "original byte length");
+    assert_eq!(
+        document.extraction_source.len(),
+        source.len(),
+        "original byte length"
+    );
 
     let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, &document.canvas, SourceType::tsx()).parse();
+    let parsed = Parser::new(&allocator, &document.extraction_source, SourceType::tsx()).parse();
     assert!(
         parsed.errors.is_empty(),
         "{:?}\n{}",
         parsed.errors,
-        document.canvas
+        document.extraction_source
     );
 
     let elements = document

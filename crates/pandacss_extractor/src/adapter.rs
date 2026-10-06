@@ -100,7 +100,7 @@ impl<'a> AdaptedSource<'a> {
                 let document = pandacss_sfc::mdx::lower(source);
                 let mut adapted = Self::masked(
                     format,
-                    document.canvas,
+                    document.extraction_source,
                     true,
                     Vec::new(),
                     Vec::new(),

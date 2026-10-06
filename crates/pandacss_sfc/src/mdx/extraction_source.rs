@@ -10,12 +10,12 @@ enum Tail {
     Module { end: usize },
 }
 
-pub(super) struct Canvas {
+pub(super) struct ExtractionSource {
     bytes: Vec<u8>,
     tail: Tail,
 }
 
-impl Canvas {
+impl ExtractionSource {
     pub(super) fn new(source: &str) -> Self {
         Self {
             bytes: source
