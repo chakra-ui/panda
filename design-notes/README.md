@@ -126,12 +126,6 @@ Some topics span several notes. Keep the detailed contract in one place and link
   name, why `breakpoints` is the exception, and why extends are not collected and applied last.
 - [Panda lint plugins](./lint-plugins.md) — ESLint and Oxlint plugins backed by shared internal utilities,
   compiler-backed source inspection, and `inspectFileSource`.
-- [Config authoring language service](./config-authoring-language-service.md) — preset-aware editor intelligence for
-  `panda.config.*` without ambient generated types.
-- [Language service implementation](./language-service-implementation.md) — `compiler/tooling` subpath,
-  `@pandacss/typescript-plugin` (classic tsserver plugin) + `@pandacss/language-server` (LSP) shipping together in Phase
-  1 over one shared core — TypeScript 7 (Corsa/`tsgo`) drops the classic plugin API, so both transports are built now
-  instead of deferring the LSP.
 
 ### Testing
 

@@ -513,31 +513,6 @@ importers:
         specifier: 9.39.5
         version: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)
 
-  packages/language-server:
-    dependencies:
-      '@pandacss/compiler':
-        specifier: workspace:*
-        version: link:../compiler
-      '@pandacss/compiler-shared':
-        specifier: workspace:*
-        version: link:../compiler-shared
-      '@pandacss/types':
-        specifier: workspace:*
-        version: link:../types
-      '@pandacss/typescript-plugin':
-        specifier: workspace:*
-        version: link:../typescript-plugin
-      vscode-languageserver:
-        specifier: ^9.0.1
-        version: 9.0.1
-      vscode-languageserver-textdocument:
-        specifier: ^1.0.14
-        version: 1.0.14
-    devDependencies:
-      '@pandacss/dev':
-        specifier: workspace:*
-        version: link:../dev
-
   packages/mcp:
     dependencies:
       '@modelcontextprotocol/sdk':
@@ -639,25 +614,6 @@ importers:
       pkg-types:
         specifier: 2.3.0
         version: 2.3.0
-
-  packages/typescript-plugin:
-    dependencies:
-      '@pandacss/compiler':
-        specifier: workspace:*
-        version: link:../compiler
-      '@pandacss/compiler-shared':
-        specifier: workspace:*
-        version: link:../compiler-shared
-      '@pandacss/types':
-        specifier: workspace:*
-        version: link:../types
-    devDependencies:
-      '@pandacss/dev':
-        specifier: workspace:*
-        version: link:../dev
-      typescript:
-        specifier: 6.0.3
-        version: 6.0.3
 
   packages/vite:
     dependencies:
@@ -1054,21 +1010,6 @@ importers:
       '@types/react-dom':
         specifier: 19.2.7
         version: 19.2.7(@types/react@19.2.18)
-      typescript:
-        specifier: 6.0.3
-        version: 6.0.3
-
-  sandbox/language-service:
-    devDependencies:
-      '@pandacss/dev':
-        specifier: workspace:*
-        version: link:../../packages/dev
-      '@pandacss/language-server':
-        specifier: workspace:*
-        version: link:../../packages/language-server
-      '@pandacss/typescript-plugin':
-        specifier: workspace:*
-        version: link:../../packages/typescript-plugin
       typescript:
         specifier: 6.0.3
         version: 6.0.3
@@ -17349,23 +17290,6 @@ packages:
         optional: true
       jsdom:
         optional: true
-
-  vscode-jsonrpc@8.2.0:
-    resolution: {integrity: sha512-C+r0eKJUIfiDIfwJhria30+TYWPtuHJXHtI7J0YlOmKAo7ogxP20T0zxB7HZQIFhIyvoBPwWskjxrvAtfjyZfA==}
-    engines: {node: '>=14.0.0'}
-
-  vscode-languageserver-protocol@3.17.5:
-    resolution: {integrity: sha512-mb1bvRJN8SVznADSGWM9u/b07H7Ecg0I3OgXDuLdn307rl/J3A9YD6/eYOssqhecL27hK1IPZAsaqh00i/Jljg==}
-
-  vscode-languageserver-textdocument@1.0.14:
-    resolution: {integrity: sha512-EQyqJMi552E4ZTf46izQ4Fj6XquqxCySR3J5ZSD1SisMf6RfpeOWHxGBE8Gr6V0/3GHIGdAzDn8F8+1nTGCnoQ==}
-
-  vscode-languageserver-types@3.17.5:
-    resolution: {integrity: sha512-Ld1VelNuX9pdF39h2Hgaeb5hEZM2Z3jUrrMgWQAu82jMtZp7p3vJT3BzToKtZI7NgQssZje5o0zryOrhQvzQAg==}
-
-  vscode-languageserver@9.0.1:
-    resolution: {integrity: sha512-woByF3PDpkHFUreUa7Hos7+pUWdeWMXRd26+ZX2A8cFx6v/JPTtd4/uN0/jB6XQHYaOlHbio03NTHCqrgG5n7g==}
-    hasBin: true
 
   vue-bundle-renderer@2.3.2:
     resolution: {integrity: sha512-BtazFw0lm3N/ZE4+tre2g8G+c5wolfizu+e5jxZAcao0gcy5KJei9Yopl1svDato2poeFldVLfmLMk57Sg8rLg==}
@@ -37222,21 +37146,6 @@ snapshots:
       jsdom: 27.2.0(supports-color@10.2.2)
     transitivePeerDependencies:
       - msw
-
-  vscode-jsonrpc@8.2.0: {}
-
-  vscode-languageserver-protocol@3.17.5:
-    dependencies:
-      vscode-jsonrpc: 8.2.0
-      vscode-languageserver-types: 3.17.5
-
-  vscode-languageserver-textdocument@1.0.14: {}
-
-  vscode-languageserver-types@3.17.5: {}
-
-  vscode-languageserver@9.0.1:
-    dependencies:
-      vscode-languageserver-protocol: 3.17.5
 
   vue-bundle-renderer@2.3.2:
     dependencies:

@@ -44,8 +44,7 @@ following structure:
   - [`postcss`](packages/postcss), [`vite`](packages/vite), [`webpack`](packages/webpack), [`rollup`](packages/rollup),
     [`bun`](packages/bun): build integrations
   - [`transformer`](packages/transformer): source transforms used by the bundler plugins
-  - [`eslint-plugin`](packages/eslint-plugin), [`language-server`](packages/language-server),
-    [`typescript-plugin`](packages/typescript-plugin), [`mcp`](packages/mcp): editor, lint, and AI tooling
+  - [`eslint-plugin`](packages/eslint-plugin), [`mcp`](packages/mcp): lint and AI tooling
 - [`apps/`](apps): the [playground](apps/playground) and [Studio](apps/studio).
 - [`website/`](website): the docs site and blog.
 - [`sandbox/`](sandbox): example projects used as integration tests.

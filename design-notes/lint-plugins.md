@@ -65,8 +65,8 @@ the rule shape, not Chakra's TypeScript type-checker dependency.
 
 One public eslint package with two entry points (oxlint reuses the ESLint rules — see
 [Adapter Design](#adapter-design)). Shared inspection utilities live in **`@pandacss/compiler/tooling`** (a subpath on
-the existing compiler package) so eslint-plugin, language-server, and CLI config checks share one registry and one
-SpecIndex without new npm packages.
+the existing compiler package) so eslint-plugin and CLI config checks share one registry and one SpecIndex without new
+npm packages.
 
 ```txt
 @pandacss/compiler/tooling         # registry, spec index, file inspect, config token queries
@@ -75,7 +75,7 @@ SpecIndex without new npm packages.
 ```
 
 ```txt
-packages/compiler/src/tooling/*  # shared query core (see language-service-implementation.md)
+packages/compiler/src/tooling/*  # shared query core
 packages/eslint-plugin/src/core/*  # ESLint settings → compiler/tooling; thin linter facade
 packages/eslint-plugin/src/rules/* # rule modules (host-agnostic; used by both entries)
 packages/eslint-plugin/src/oxlint.ts
@@ -137,8 +137,8 @@ mapped token values, so fixed values such as `flex: "1"` do not become token-bac
 
 `prefer-token` visits the branches of serialized conditional values without treating the `kind` tag as a style value.
 
-`inspectFileSource` is already a tooling API, so avoid a `target: "lint"` mode. Make the
-default shape useful for lint, formatting, and IDE features.
+`inspectFileSource` is already a tooling API, so avoid a `target: "lint"` mode. Make the default shape useful for lint,
+formatting, and IDE features.
 
 Current shape:
 

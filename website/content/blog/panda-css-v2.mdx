@@ -32,8 +32,8 @@ Take a look at the difference:
 - **Design systems you can publish**: `panda lib` to author, `designSystem` to consume, with no re-extraction in the
   consuming app.
 - **New in the box**: new styled-system factories (`viewTransition()`, `firstThatWorks()`, `keyframes()`,
-  `positionTry()`), mask and scrollbar utilities, `@property`-registered variables, config completions in your editor, a
-  first-party ESLint plugin, a typography preset, and a rebuilt CLI.
+  `positionTry()`), mask and scrollbar utilities, `@property`-registered variables, a first-party ESLint plugin, a
+  typography preset, and a rebuilt CLI.
 - **ESM-only**, needs Node 22 or newer.
 
 Over the rest of this post, we'll walk you through why we decided to rewrite the compiler, what changed in terms of
@@ -430,26 +430,10 @@ You get rules like `no-invalid-token-paths`, `no-hardcoded-color` via `prefer-to
 toward semantic tokens when a matching category exists) and `no-descendant-selectors` (keeps every style scoped to its
 own element). The same rules run under [oxlint](https://oxc.rs) through a dedicated entry point.
 
-### Config completions in your editor
+### Typed config helpers
 
-Editing `panda.config.ts` now gets real completions, diagnostics, and hover for your design system — token, recipe,
-condition, and utility names, resolved through your actual config after presets merge rather than guessed from static
-types. It ships as a TypeScript language service plugin (`@pandacss/typescript-plugin`) and a standalone LSP server
-(`@pandacss/language-server`), so any tsserver-backed editor can pick it up. VS Code registers it for you; other editors
-add it to `compilerOptions.plugins`:
-
-```jsonc
-// tsconfig.json
-{
-  "compilerOptions": {
-    "plugins": [{ "name": "@pandacss/typescript-plugin" }]
-  }
-}
-```
-
-Config authoring also picks up the typed `define*` helpers the rest of the config already had — `defineConditions` and
-`definePositionTry` join `defineTokens`, `defineRecipe`, and friends, so custom conditions and anchor fallbacks get the
-same autocomplete and type-checking when you author them outside `defineConfig`.
+`defineConditions` and `definePositionTry` join `defineTokens`, `defineRecipe`, and friends, so custom conditions and
+anchor fallbacks get the same autocomplete and type-checking when you author them outside `defineConfig`.
 
 ### A typography preset
 
