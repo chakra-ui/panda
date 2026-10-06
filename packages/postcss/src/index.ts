@@ -68,9 +68,10 @@ const pandacss: PluginCreator<PluginOptions> = (options: PluginOptions = {}) => 
     emitDiagnostics(root, result, driver.designSystemDiagnostics ?? [])
 
     if (polyfill) {
-      const stripped = driver.compiler.stripLayerOrderStatements(inputCss)
-      root.removeAll()
-      root.append(helpers.postcss.parse(stripped, { from: fileName }))
+      root.each((node) => {
+        if (node.type !== 'atrule' || node.name !== 'layer' || node.nodes) return
+        if (driver.compiler.hasLayerDeclaration(`${node.toString()};`)) node.remove()
+      })
     }
 
     const output = driver.cssgen({ emitLayerDeclaration: false, polyfill })

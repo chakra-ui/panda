@@ -121,6 +121,37 @@ describe('@pandacss/postcss', () => {
     `)
   })
 
+  it('strips the layer order statement without resetting node sources when polyfilled', async () => {
+    const { driver, pandacss } = await setup()
+    driver.config.polyfill = true
+
+    const imported = postcss.parse('@font-face { src: url(../fonts/a.woff2) }', { from: '/project/vendor/lib.css' })
+    const inlineImport = {
+      postcssPlugin: 'inline-import',
+      Once(root: postcss.Root) {
+        root.prepend(imported.nodes)
+      },
+    }
+
+    const result = await postcss([inlineImport, pandacss({ cwd: PROJECT_CWD })]).process(
+      `${CSS_ROOT}\n@layer vendor;`,
+      { from: '/project/styles.css' },
+    )
+
+    const sources: string[] = []
+    result.root.walkDecls('src', (decl) => {
+      sources.push(decl.source?.input.file ?? '')
+    })
+
+    expect(sources).toEqual(['/project/vendor/lib.css'])
+    expect(driver.cssgen).toHaveBeenCalledWith({ emitLayerDeclaration: false, polyfill: true })
+    expect(result.css).toMatchInlineSnapshot(`
+      "@font-face { src: url(../fonts/a.woff2) }
+      @layer vendor;
+      .text_red { color: red }"
+    `)
+  })
+
   it('emits compiler warnings with severity and code', async () => {
     const { driver, run } = await setup()
     driver.cssgen.mockReturnValueOnce({
