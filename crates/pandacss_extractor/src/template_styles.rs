@@ -16,11 +16,11 @@ use oxc_ast::ast::{BindingPattern, Expression, Program, Statement, VariableDecla
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
-use pandacss_sfc::astro::{AstroAttributeValue, AstroElement};
 use pandacss_sfc::js::find_closing_brace as find_matching_brace;
 use pandacss_sfc::markup::{
     Expressions, MarkupWalker, blank_like, copy_range, find_bytes, finish_mask, starts_with,
 };
+use pandacss_sfc::{TemplateAttributeValue, TemplateElement};
 use rustc_hash::FxHashMap;
 use std::borrow::Cow;
 
@@ -69,16 +69,20 @@ pub(crate) fn collect_template_styles(
         SfcFormat::Vue | SfcFormat::Svelte => {
             Cow::Owned(mask_script_blocks(source, &adapted.scripts))
         }
-        SfcFormat::Astro => Cow::Borrowed(adapted.code.as_ref()),
+        SfcFormat::Astro | SfcFormat::Mdx => Cow::Borrowed(adapted.code.as_ref()),
     };
     let mut literal_index = TemplateLiteralIndex {
         resolver,
+        format,
+        source: adapted.code.as_ref(),
+        last_container: None,
         ranges: MarkupRanges::new(template_markup_ranges(source, adapted)),
         literals: FxHashMap::default(),
     };
     literal_index.visit_program(program);
     let context = TemplateContext {
         source: context_source.as_ref(),
+        format,
         raw_source: source,
         path,
         matched,
@@ -90,7 +94,7 @@ pub(crate) fn collect_template_styles(
     let scan = TemplateScan {
         framework: match format {
             SfcFormat::Vue => Framework::Vue,
-            SfcFormat::Svelte | SfcFormat::Astro => Framework::Svelte,
+            SfcFormat::Svelte | SfcFormat::Astro | SfcFormat::Mdx => Framework::Svelte,
         },
         adapted,
         matched,
@@ -100,7 +104,9 @@ pub(crate) fn collect_template_styles(
     match format {
         SfcFormat::Vue => collect_vue_template_styles(source, &scan),
         SfcFormat::Svelte => collect_svelte_template_styles(source, &scan),
-        SfcFormat::Astro => collect_astro_template_styles(source, &adapted.astro_elements, &scan),
+        SfcFormat::Astro | SfcFormat::Mdx => {
+            collect_markup_template_styles(source, &adapted.template_elements, &scan)
+        }
     }
 }
 
@@ -113,6 +119,7 @@ fn mask_script_blocks(source: &str, scripts: &[pandacss_sfc::markup::TagBlock]) 
 }
 
 struct TemplateContext<'a> {
+    format: SfcFormat,
     source: &'a str,
     raw_source: &'a str,
     path: &'a str,
@@ -127,6 +134,9 @@ struct TemplateLiteralIndex<'resolver, 'ast, 'callback> {
     resolver: &'resolver crate::Resolver<'ast, 'callback>,
     ranges: MarkupRanges,
     literals: FxHashMap<(u32, u32), Literal>,
+    format: SfcFormat,
+    source: &'resolver str,
+    last_container: Option<usize>,
 }
 
 /// Ranges sorted by start with a running max of their ends, so a containment
@@ -161,6 +171,33 @@ impl MarkupRanges {
 impl<'ast> Visit<'ast> for TemplateLiteralIndex<'_, 'ast, '_> {
     fn visit_expression(&mut self, expression: &Expression<'ast>) {
         let span = expression.span();
+        if self.format == SfcFormat::Mdx {
+            let count = self
+                .ranges
+                .starts
+                .partition_point(|&start| start <= span.start);
+            if count > 0
+                && self.ranges.max_ends[count - 1] >= span.end
+                && self.last_container != Some(count - 1)
+            {
+                self.last_container = Some(count - 1);
+                let range = (
+                    self.ranges.starts[count - 1],
+                    self.ranges.max_ends[count - 1],
+                );
+                let mut lexer = pandacss_sfc::js::Lexer::new(
+                    &self.source[..range.1 as usize],
+                    span.end as usize,
+                );
+                if lexer.next_token(false).kind == pandacss_sfc::js::TokenKind::Eof
+                    && let Some(literal) = expression_to_literal(expression, Some(self.resolver))
+                {
+                    self.literals.insert(range, literal);
+                }
+            }
+            walk::walk_expression(self, expression);
+            return;
+        }
         if self.ranges.contains(span.start, span.end)
             && let Some(literal) = expression_to_literal(expression, Some(self.resolver))
         {
@@ -222,9 +259,9 @@ fn collect_svelte_template_styles(source: &str, scan: &TemplateScan<'_>) -> Vec<
     out
 }
 
-fn collect_astro_template_styles(
+fn collect_markup_template_styles(
     source: &str,
-    elements: &[AstroElement],
+    elements: &[TemplateElement],
     scan: &TemplateScan<'_>,
 ) -> Vec<ExtractedJsx> {
     let slice = |range: &std::ops::Range<u32>| source.get(range.start as usize..range.end as usize);
@@ -241,7 +278,7 @@ fn collect_astro_template_styles(
         let mut entries = Vec::new();
         for attribute in &element.attributes {
             let value = match &attribute.value {
-                AstroAttributeValue::Spread(expression) => {
+                TemplateAttributeValue::Spread(expression) => {
                     if let Some(expression) = slice(expression) {
                         merge_spread_with_context(
                             expression,
@@ -253,13 +290,13 @@ fn collect_astro_template_styles(
                     }
                     continue;
                 }
-                AstroAttributeValue::Empty => continue,
-                AstroAttributeValue::Boolean => AttrValue::Bool,
-                AstroAttributeValue::Static(value) => match slice(value) {
+                TemplateAttributeValue::Empty => continue,
+                TemplateAttributeValue::Boolean => AttrValue::Bool,
+                TemplateAttributeValue::Static(value) => match slice(value) {
                     Some(value) => AttrValue::Static(value),
                     None => continue,
                 },
-                AstroAttributeValue::Expression(expression) => match slice(expression) {
+                TemplateAttributeValue::Expression(expression) => match slice(expression) {
                     Some(expression) => AttrValue::Expr(expression),
                     None => continue,
                 },
@@ -267,6 +304,20 @@ fn collect_astro_template_styles(
             let Some(name) = attribute.name.as_ref().and_then(slice) else {
                 continue;
             };
+            if scan.context.format == SfcFormat::Mdx
+                && let AttrValue::Static(raw) = value
+            {
+                let cooked = decode_mdx_attribute(raw);
+                merge_svelte_attr(
+                    name,
+                    AttrValue::Static(&cooked),
+                    scan.config,
+                    scan.context,
+                    &resolved.name,
+                    &mut entries,
+                );
+                continue;
+            }
             merge_attr(
                 name,
                 value,
@@ -698,6 +749,12 @@ fn parse_expression_literal(
     context: Option<&TemplateContext<'_>>,
 ) -> Option<Literal> {
     if let Some(context) = context
+        && context.format == SfcFormat::Mdx
+    {
+        let span = source_span(context.raw_source, source)?;
+        return context.literals.get(&(span.start, span.end)).cloned();
+    }
+    if let Some(context) = context
         && let Some(span) = source_span(context.raw_source, source)
         && let Some(literal) = context.literals.get(&(span.start, span.end))
     {
@@ -744,11 +801,11 @@ fn template_markup_ranges(source: &str, adapted: &AdaptedSource<'_>) -> Vec<(u32
                 push_range(&mut ranges, block.content_start, block.content_end);
             }
         }
-        Some(SfcFormat::Astro) => {
-            for element in &adapted.astro_elements {
+        Some(SfcFormat::Astro | SfcFormat::Mdx) => {
+            for element in &adapted.template_elements {
                 for attribute in &element.attributes {
-                    if let AstroAttributeValue::Expression(expression)
-                    | AstroAttributeValue::Spread(expression) = &attribute.value
+                    if let TemplateAttributeValue::Expression(expression)
+                    | TemplateAttributeValue::Spread(expression) = &attribute.value
                     {
                         ranges.push((expression.start, expression.end));
                     }
@@ -922,4 +979,42 @@ fn skip_ws_and_tag_comments(bytes: &[u8], cursor: &mut usize, end: usize) {
         }
         break;
     }
+}
+
+fn decode_mdx_attribute(source: &str) -> Cow<'_, str> {
+    if !source.contains('&') {
+        return Cow::Borrowed(source);
+    }
+    let mut output = String::with_capacity(source.len());
+    let mut rest = source;
+    while let Some(start) = rest.find('&') {
+        output.push_str(&rest[..start]);
+        rest = &rest[start..];
+        let entity = rest[1..]
+            .find(|ch: char| ch == ';' || ch == '&' || ch.is_whitespace())
+            .map(|end| end + 1)
+            .filter(|&end| rest.as_bytes()[end] == b';')
+            .and_then(|end| {
+                let name = &rest[1..end];
+                let decoded = if let Some(hex) =
+                    name.strip_prefix("#x").or_else(|| name.strip_prefix("#X"))
+                {
+                    u32::from_str_radix(hex, 16).ok().and_then(char::from_u32)
+                } else if let Some(decimal) = name.strip_prefix('#') {
+                    decimal.parse::<u32>().ok().and_then(char::from_u32)
+                } else {
+                    oxc_syntax::xml_entities::XML_ENTITIES.get(name).copied()
+                };
+                decoded.map(|ch| (end, ch))
+            });
+        if let Some((end, ch)) = entity {
+            output.push(ch);
+            rest = &rest[end + 1..];
+        } else {
+            output.push('&');
+            rest = &rest[1..];
+        }
+    }
+    output.push_str(rest);
+    Cow::Owned(output)
 }

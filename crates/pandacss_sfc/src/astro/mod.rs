@@ -5,41 +5,15 @@ mod tree;
 
 use std::ops::Range;
 
+use crate::{ContainerDiagnostic, TemplateElement};
+
 #[derive(Debug)]
 pub struct AstroDocument {
     pub canvas: String,
     pub frontmatter: Option<Range<u32>>,
-    pub elements: Vec<AstroElement>,
+    pub elements: Vec<TemplateElement>,
     pub scripts: Vec<Range<u32>>,
-    pub diagnostics: Vec<AstroDiagnostic>,
-}
-
-#[derive(Debug)]
-pub struct AstroElement {
-    pub name: Range<u32>,
-    pub opening: Range<u32>,
-    pub attributes: Vec<AstroAttribute>,
-}
-
-#[derive(Debug)]
-pub struct AstroAttribute {
-    pub name: Option<Range<u32>>,
-    pub value: AstroAttributeValue,
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum AstroAttributeValue {
-    Boolean,
-    Static(Range<u32>),
-    Expression(Range<u32>),
-    Spread(Range<u32>),
-    Empty,
-}
-
-#[derive(Debug)]
-pub struct AstroDiagnostic {
-    pub message: String,
-    pub span: Option<Range<u32>>,
+    pub diagnostics: Vec<ContainerDiagnostic>,
 }
 
 #[must_use]

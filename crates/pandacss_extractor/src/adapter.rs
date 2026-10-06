@@ -18,6 +18,7 @@ pub(crate) enum SfcFormat {
     Vue,
     Svelte,
     Astro,
+    Mdx,
 }
 
 impl SfcFormat {
@@ -28,6 +29,7 @@ impl SfcFormat {
             ("vue", Self::Vue),
             ("svelte", Self::Svelte),
             ("astro", Self::Astro),
+            ("mdx", Self::Mdx),
         ]
         .into_iter()
         .find_map(|(candidate, format)| extension.eq_ignore_ascii_case(candidate).then_some(format))
@@ -47,9 +49,10 @@ fn unclosed_fence_end(source: &str) -> Option<u32> {
 pub(crate) struct AdaptedSource<'a> {
     pub(crate) format: Option<SfcFormat>,
     pub(crate) code: Cow<'a, str>,
-    pub(crate) astro_elements: Vec<pandacss_sfc::astro::AstroElement>,
+    pub(crate) template_elements: Vec<pandacss_sfc::TemplateElement>,
     pub(crate) astro_scripts: Vec<std::ops::Range<u32>>,
-    astro_diagnostics: Vec<pandacss_sfc::astro::AstroDiagnostic>,
+    mdx_diagnostics: Vec<Diagnostic>,
+    astro_diagnostics: Vec<pandacss_sfc::ContainerDiagnostic>,
     astro_frontmatter: Option<std::ops::Range<u32>>,
     astro_open_fence: Option<u32>,
     astro_bom: u32,
@@ -61,6 +64,7 @@ pub(crate) struct AdaptedSource<'a> {
     pub(crate) styles: Vec<TagBlock>,
     pub(crate) templates: Vec<TagBlock>,
     source_len: usize,
+    original: &'a str,
 }
 
 impl<'a> AdaptedSource<'a> {
@@ -73,8 +77,9 @@ impl<'a> AdaptedSource<'a> {
                 Self {
                     format,
                     code: Cow::Owned(document.canvas),
-                    astro_elements: document.elements,
+                    template_elements: document.elements,
                     astro_scripts: document.scripts,
+                    mdx_diagnostics: Vec::new(),
                     astro_diagnostics: document.diagnostics,
                     astro_open_fence: if document.frontmatter.is_none() {
                         unclosed_fence_end(source)
@@ -88,7 +93,34 @@ impl<'a> AdaptedSource<'a> {
                     styles: Vec::new(),
                     templates: Vec::new(),
                     source_len: source.len(),
+                    original: source,
                 }
+            }
+            Some(SfcFormat::Mdx) => {
+                let document = pandacss_sfc::mdx::lower(source);
+                let mut adapted = Self::masked(
+                    format,
+                    document.extraction_source,
+                    true,
+                    Vec::new(),
+                    Vec::new(),
+                    Vec::new(),
+                    source,
+                );
+                adapted.template_elements = document.elements;
+                adapted.mdx_diagnostics = crate::imports::parse_error_diagnostics(
+                    document.diagnostics.iter().map(|diagnostic| {
+                        (
+                            diagnostic.message.as_str(),
+                            diagnostic.span.as_ref().map(|span| Span {
+                                start: span.start,
+                                end: span.end,
+                            }),
+                        )
+                    }),
+                    source,
+                );
+                adapted
             }
             Some(SfcFormat::Vue) => {
                 let scripts = pandacss_sfc::vue::script_blocks(source);
@@ -129,13 +161,14 @@ impl<'a> AdaptedSource<'a> {
         scripts: Vec<TagBlock>,
         styles: Vec<TagBlock>,
         templates: Vec<TagBlock>,
-        source: &str,
+        source: &'a str,
     ) -> Self {
         Self {
             format,
             code: code.into(),
-            astro_elements: Vec::new(),
+            template_elements: Vec::new(),
             astro_scripts: Vec::new(),
+            mdx_diagnostics: Vec::new(),
             astro_diagnostics: Vec::new(),
             astro_frontmatter: None,
             astro_open_fence: None,
@@ -145,6 +178,7 @@ impl<'a> AdaptedSource<'a> {
             styles,
             templates,
             source_len: source.len(),
+            original: source,
         }
     }
 
@@ -170,7 +204,7 @@ impl<'a> AdaptedSource<'a> {
     #[must_use]
     pub(crate) fn source_type(&self, path: &str) -> SourceType {
         match self.format {
-            Some(SfcFormat::Astro) => SourceType::tsx().with_module(true),
+            Some(SfcFormat::Astro | SfcFormat::Mdx) => SourceType::tsx().with_module(true),
             Some(SfcFormat::Vue | SfcFormat::Svelte) if self.jsx => {
                 SourceType::tsx().with_module(true)
             }
@@ -202,7 +236,17 @@ impl<'a> AdaptedSource<'a> {
             }),
             &self.code,
         );
-        diagnostics.extend(crate::collect_parser_diagnostics(errors, &self.code, limit));
+        diagnostics.extend(self.mdx_diagnostics.iter().cloned());
+        let diagnostic_source = if self.format == Some(SfcFormat::Mdx) {
+            self.original
+        } else {
+            &self.code
+        };
+        diagnostics.extend(crate::collect_parser_diagnostics(
+            errors,
+            diagnostic_source,
+            limit,
+        ));
         diagnostics
     }
 }

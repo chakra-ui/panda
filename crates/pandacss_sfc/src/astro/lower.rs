@@ -1,9 +1,10 @@
 use std::ops::Range;
 
+use crate::astro::AstroDocument;
 use crate::astro::tree::{
     Attribute, Child, ChildKind, Document, Element, Expression, Markup, Value,
 };
-use crate::astro::{AstroAttribute, AstroAttributeValue, AstroDocument, AstroElement};
+use crate::{TemplateAttribute, TemplateAttributeValue, TemplateElement};
 
 pub(crate) fn lower(source: &str, document: Document) -> AstroDocument {
     let mut lowering = Lowering {
@@ -59,7 +60,7 @@ fn blank(source: &str) -> Vec<u8> {
 struct Lowering<'s> {
     source: &'s [u8],
     canvas: Vec<u8>,
-    elements: Vec<AstroElement>,
+    elements: Vec<TemplateElement>,
     scripts: Vec<Range<u32>>,
 }
 
@@ -120,37 +121,37 @@ impl Lowering<'_> {
             let value = match value {
                 Value::Spread(expression) => {
                     self.spread(expression);
-                    attributes.push(AstroAttribute {
+                    attributes.push(TemplateAttribute {
                         name: None,
-                        value: AstroAttributeValue::Spread(range(&expression.span)),
+                        value: TemplateAttributeValue::Spread(range(&expression.span)),
                     });
                     continue;
                 }
-                Value::Boolean => AstroAttributeValue::Boolean,
-                Value::Static { span, quoted } => AstroAttributeValue::Static(if *quoted {
+                Value::Boolean => TemplateAttributeValue::Boolean,
+                Value::Static { span, quoted } => TemplateAttributeValue::Static(if *quoted {
                     offset(span.start + 1)..offset(span.end.saturating_sub(1))
                 } else {
                     range(span)
                 }),
                 Value::Expression(expression) => {
                     self.container(expression);
-                    AstroAttributeValue::Expression(range(&expression.span))
+                    TemplateAttributeValue::Expression(range(&expression.span))
                 }
-                Value::Empty => AstroAttributeValue::Empty,
+                Value::Empty => TemplateAttributeValue::Empty,
                 Value::Markup(markup) => {
                     let span = markup.span();
                     self.lead(span.start);
                     self.markup(markup);
-                    AstroAttributeValue::Expression(range(&span))
+                    TemplateAttributeValue::Expression(range(&span))
                 }
             };
-            attributes.push(AstroAttribute {
+            attributes.push(TemplateAttribute {
                 name: name.as_ref().map(range),
                 value,
             });
         }
         if element.name.start < element.name.end {
-            self.elements.push(AstroElement {
+            self.elements.push(TemplateElement {
                 name: range(&element.name),
                 opening: range(&element.opening),
                 attributes,

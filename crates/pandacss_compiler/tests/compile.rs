@@ -179,3 +179,70 @@ fn compile_keyframes_uses_the_shared_prepared_stylesheet() {
     assert!(output.css.contains("@keyframes spin"));
     assert!(output.diagnostics.is_empty());
 }
+
+#[test]
+fn mdx_styles_emit_and_refresh_without_emitting_code_examples() {
+    let config: pandacss_config::UserConfig = serde_json::from_value(json!({
+        "outdir": "styled-system",
+        "jsxFramework": "react",
+        "importMap": { "css": ["@panda/css"], "jsx": ["@panda/jsx"] },
+        "utilities": {
+            "color": { "className": "color" },
+            "gap": { "className": "gap" }
+        },
+        "patterns": { "box": { "jsx": ["Box"] } }
+    }))
+    .expect("valid config");
+    let system = System::new(config.clone()).expect("valid system");
+    let mut project = Project::new(system);
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        import { Box } from '@panda/jsx';
+
+        # Badge
+
+        ```jsx
+        <Box color="orange" />
+        ```
+
+        <Box gap="2" color="red">
+          <span className={css({ color: 'blue' })}>solid</span>
+        </Box>
+    "#};
+    let options = CssOutputOptions {
+        layers: Some(vec!["utilities".to_owned()]),
+        ..Default::default()
+    };
+    project.parse_file("/src/badge.mdx", source);
+    let output = compile_layers(&mut project, &config, None, None, &options);
+    assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics);
+    insta::assert_snapshot!(output.css, @"
+    @layer utilities {
+      .gap_2 {
+        gap: 2px;
+      }
+      .color_blue {
+        color: blue;
+      }
+      .color_red {
+        color: red;
+      }
+    }
+    ");
+    project.parse_file("/src/badge.mdx", &source.replace("'blue'", "'teal'"));
+    let output = compile_layers(&mut project, &config, None, None, &options);
+    assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics);
+    insta::assert_snapshot!(output.css, @"
+    @layer utilities {
+      .gap_2 {
+        gap: 2px;
+      }
+      .color_red {
+        color: red;
+      }
+      .color_teal {
+        color: teal;
+      }
+    }
+    ");
+}

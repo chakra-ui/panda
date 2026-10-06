@@ -1390,7 +1390,7 @@ describe('NodeDriver with symlinked paths', () => {
   })
 
   afterAll(() => {
-    rmSync(link, { force: true })
+    unlinkSync(link)
     rmSync(root, { recursive: true, force: true })
   })
 

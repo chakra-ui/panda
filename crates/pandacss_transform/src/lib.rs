@@ -93,6 +93,22 @@ pub fn transform_source_with(
         None => source,
     };
 
+    // MDX support is extraction-only; leave its source unchanged.
+    if std::path::Path::new(path)
+        .extension()
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("mdx"))
+    {
+        return TransformOutput {
+            code: source.to_owned(),
+            map: None,
+            changed: false,
+            bailed: true,
+            diagnostics: Vec::new(),
+            dependencies: Vec::new(),
+            helper: TransformHelperFacts::default(),
+        };
+    }
+
     let extracted = {
         let _span = tracing::trace_span!(target: "transform", "transform_extract").entered();
         let mut resolve_recipe_raw = |factory: &str, definition: &Literal, props: &Literal| {

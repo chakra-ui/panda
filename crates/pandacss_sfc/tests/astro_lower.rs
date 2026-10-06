@@ -3,7 +3,7 @@ mod common;
 use common::{lowered, show};
 use indoc::indoc;
 use insta::{assert_debug_snapshot, assert_snapshot};
-use pandacss_sfc::astro::AstroAttributeValue;
+use pandacss_sfc::TemplateAttributeValue;
 
 #[test]
 fn frontmatter_is_copied_and_opens_the_template_array() {
@@ -221,11 +221,11 @@ fn elements_record_every_attribute_form() {
         .iter()
         .map(|attribute| {
             let value = match &attribute.value {
-                AstroAttributeValue::Static(range) => format!("static {}", slice(range)),
-                AstroAttributeValue::Expression(range) => format!("expression {}", slice(range)),
-                AstroAttributeValue::Spread(range) => format!("spread {}", slice(range)),
-                AstroAttributeValue::Boolean => "boolean".to_owned(),
-                AstroAttributeValue::Empty => "empty".to_owned(),
+                TemplateAttributeValue::Static(range) => format!("static {}", slice(range)),
+                TemplateAttributeValue::Expression(range) => format!("expression {}", slice(range)),
+                TemplateAttributeValue::Spread(range) => format!("spread {}", slice(range)),
+                TemplateAttributeValue::Boolean => "boolean".to_owned(),
+                TemplateAttributeValue::Empty => "empty".to_owned(),
             };
             (attribute.name.as_ref().map(slice), value)
         })

@@ -4,5 +4,11 @@
 pub mod astro;
 pub mod js;
 pub mod markup;
+pub mod mdx;
 pub mod svelte;
+pub mod template;
 pub mod vue;
+
+pub use template::{
+    ContainerDiagnostic, TemplateAttribute, TemplateAttributeValue, TemplateElement,
+};

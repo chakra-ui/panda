@@ -1,14 +1,22 @@
+// @vitest-environment node
 import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { beforeAll, describe, expect, test } from 'vitest'
 import { usage } from '../fixtures/hash/usage'
+
+const root = fileURLToPath(new URL('../..', import.meta.url))
 
 let selectors: Set<string>
 
 beforeAll(() => {
   const out = 'styled-system-hash/styles.css'
-  execFileSync('pnpm', ['panda', 'cssgen', '--config', 'panda.hash.config.ts', '-o', out], { stdio: 'ignore' })
-  selectors = new Set([...readFileSync(out, 'utf8').matchAll(/\.([\w-]+)/g)].map((m) => m[1]))
+  execFileSync('pnpm', ['panda', 'cssgen', '--config', 'panda.hash.config.ts', '-o', out], {
+    cwd: root,
+    stdio: 'ignore',
+  })
+  selectors = new Set([...readFileSync(join(root, out), 'utf8').matchAll(/\.([\w-]+)/g)].map((m) => m[1]))
 })
 
 const missingFromCss = (value: string | Record<string, string>) => {
