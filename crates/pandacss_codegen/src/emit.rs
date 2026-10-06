@@ -161,13 +161,8 @@ fn print_module_with_format(
         return String::new();
     }
 
-    // Typed sources import types their runtime bodies need; `.d.ts` keeps only the used ones.
-    let prune_unused = matches!(target, EmitTarget::Dts)
-        && module
-            .items
-            .iter()
-            .any(|item| matches!(item.node, ItemNode::TypedSource(_)));
-    let used_imports = prune_unused.then(|| {
+    // Implementations import types their bodies need; `.d.ts` keeps only the used ones.
+    let used_imports = matches!(target, EmitTarget::Dts).then(|| {
         let body = items
             .iter()
             .map(|(_, line)| line.as_str())

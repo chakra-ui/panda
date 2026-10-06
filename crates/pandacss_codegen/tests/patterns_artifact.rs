@@ -317,7 +317,6 @@ fn emits_js_runtime_and_declarations() {
     assert_eq!(
         file(patterns, "patterns/stack.d.ts"),
         indoc! {r#"
-        import type { PatternRuntimeConfig } from '../types/pattern';
         import type { SystemProperties, SystemStyleObject } from '../types/system';
 
         export interface StackProperties {

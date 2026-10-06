@@ -20,9 +20,9 @@ fn emits_ts_source_sva() {
     import { getSlotRecipes, memo, splitProps, toVariantMap, withDefaults } from '../helpers';
     import { cva } from './cva';
     import { cx } from './cx';
-    import type { SlotRecipeCreatorFn } from '../types/recipe';
+    import type { RecipeConfigVariantMap, RecipeSelection, SlotRecipeCreatorFn, SlotRecipeDefinition, SlotRecipeRuntimeFn, SlotRecipeVariantRecord } from '../types/recipe';
 
-    export const sva: SlotRecipeCreatorFn = (config) => {
+    export const sva: SlotRecipeCreatorFn = <Slot extends string, T extends SlotRecipeVariantRecord<Slot>>(config: SlotRecipeDefinition<Slot, T>) => {
       const slotRecipes = getSlotRecipes(config)
       const slots: Array<[string, any]> = []
       for (const slot in slotRecipes) slots.push([slot, cva(slotRecipes[slot])])
@@ -65,7 +65,7 @@ fn emits_ts_source_sva() {
         getVariantProps(props: Record<string, any>) {
           return withDefaults(defaultVariants, props)
         },
-      }) as never
+      }) as unknown as SlotRecipeRuntimeFn<Slot, RecipeSelection<T>, RecipeConfigVariantMap<T>>
     }
     ");
 }
