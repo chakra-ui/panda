@@ -133,7 +133,9 @@ fn emits_ts_source_recipes() {
         },
         utility: {
           prefix: classPrefix,
-          toHash,
+          toHash(path: string[], hashFn: any) {
+            return hashFn(path.join(":"))
+          },
           transform(prop: string, value: string) {
             return { className: value === "__ignore__" ? className : `${className}--${prop}_${withoutSpace(value)}` }
           },
@@ -363,7 +365,9 @@ fn emits_js_runtime_and_declarations() {
         },
         utility: {
           prefix: classPrefix,
-          toHash,
+          toHash(path, hashFn) {
+            return hashFn(path.join(":"))
+          },
           transform(prop, value) {
             return { className: value === "__ignore__" ? className : `${className}--${prop}_${withoutSpace(value)}` }
           },
@@ -562,5 +566,7 @@ fn wires_class_name_hash_into_runtime() {
     );
     let recipes = artifact(&artifacts, ArtifactId::Recipes);
 
-    assert!(file(recipes, "recipes/runtime.ts").contains("hash: true"));
+    let runtime = file(recipes, "recipes/runtime.ts");
+    assert!(runtime.contains("hash: true"));
+    assert!(runtime.contains("return hashFn(path.join(\":\"))"));
 }

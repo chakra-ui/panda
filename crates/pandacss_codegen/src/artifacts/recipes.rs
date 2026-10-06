@@ -447,7 +447,9 @@ export function createRecipe(config: Record<string, any>) {
     },
     utility: {
       prefix: classPrefix,
-      toHash,
+      toHash(path: string[], hashFn: any) {
+        return hashFn(path.join(":"))
+      },
       transform(prop: string, value: string) {
         return { className: value === "__ignore__" ? className : `${className}--${prop}__SEPARATOR__${withoutSpace(value)}` }
       },
