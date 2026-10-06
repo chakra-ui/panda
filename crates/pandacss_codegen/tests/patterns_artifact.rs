@@ -145,6 +145,7 @@ fn emits_ts_source() {
     );
     assert_snapshot!(file(patterns, "patterns/runtime.ts"), @r#"
     import { mapObject, withDefaults } from '../helpers';
+    import type { PatternHelpers } from '../types/pattern';
 
     const CSS_FUNCTION_REGEX = /^(min|max|clamp|calc)\(.*\)/
     const CSS_VAR_REGEX = /^var\(--.+\)$/
@@ -162,7 +163,7 @@ fn emits_ts_source() {
       return typeof v === "string" && CSS_UNIT_REGEX.test(v)
     }
 
-    export const patternFns: Record<string, (...args: any[]) => any> = { map: mapObject, isCssFunction, isCssVar, isCssUnit }
+    export const patternFns: PatternHelpers = { map: mapObject, isCssFunction, isCssVar, isCssUnit }
 
     export function getPatternStyles(pattern: Record<string, any>, styles: Record<string, any>): Record<string, any> {
       if (!pattern?.defaultValues) return styles
@@ -173,6 +174,7 @@ fn emits_ts_source() {
     assert_eq!(
         file(patterns, "patterns/stack.ts"),
         indoc! {r#"
+        // @ts-nocheck
         import { getPatternStyles, patternFns } from './runtime';
         import { memo } from '../helpers';
         import { css } from '../css/index';
@@ -219,7 +221,7 @@ fn emits_ts_source() {
 
         export const stack: StackPatternFn = /* @__PURE__ */ Object.assign(/* @__PURE__ */ memo(function stack(styles = {}) {
           return css(stackRaw(styles))
-        }), { raw: stackRaw, propKeys: ["align","direction","gap","justify"] })
+        }), { raw: stackRaw, propKeys: ["align","direction","gap","justify"] as Array<keyof StackProperties> })
         "#}
         .trim()
     );

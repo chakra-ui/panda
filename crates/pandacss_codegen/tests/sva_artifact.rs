@@ -65,7 +65,7 @@ fn emits_ts_source_sva() {
         getVariantProps(props: Record<string, any>) {
           return withDefaults(defaultVariants, props)
         },
-      })
+      }) as never
     }
     ");
 }

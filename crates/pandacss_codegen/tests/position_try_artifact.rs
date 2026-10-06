@@ -24,7 +24,7 @@ fn emits_ts_source_position_try() {
 
     export const positionTry: PositionTryFn = (options) => {
       const prefix = null
-      const wrap = (base) => '--' + (prefix ? prefix + '-' + base : base)
+      const wrap = (base: string) => '--' + (prefix ? prefix + '-' + base : base)
       if (typeof options === 'string') {
         return wrap('pt_' + options)
       }

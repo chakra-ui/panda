@@ -108,5 +108,5 @@ const SVA_IMPL: &str = r"(config) => {
     getVariantProps(props: Record<string, any>) {
       return withDefaults(defaultVariants, props)
     },
-  })
+  }) as never
 }";

@@ -236,6 +236,10 @@ frameworks, so their runtime and `.d.ts` can't drift. Keep casts inside call arg
 where erasure leaves the JS byte-identical. Verify a change by regenerating with `outExtension: "ts"` and running
 `deno check` on the output.
 
+Pattern files embed the config's `transform` as plain JavaScript (types are gone once the config is loaded), so in `.ts`
+output they start with `// @ts-nocheck` (`Module::with_source_pragma`). The pragma only suppresses errors; the exported
+pattern types still reach users. Everything else Panda generates type-checks under `strict`.
+
 ## Import Specifiers
 
 The emitter supports two policies:

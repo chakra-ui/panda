@@ -75,9 +75,12 @@ pub fn emit_module(module: &Module, mode: EmitMode) -> PrintedFiles {
         EmitMode::SourceTs {
             import_extensions, ..
         } => PrintedFiles {
-            source_ts: Some(with_directive(
+            source_ts: Some(with_source_pragma(
                 module,
-                print_module(module, EmitTarget::SourceTs, import_extensions),
+                with_directive(
+                    module,
+                    print_module(module, EmitTarget::SourceTs, import_extensions),
+                ),
             )),
             runtime: None,
             types: None,
@@ -103,6 +106,14 @@ pub fn emit_module(module: &Module, mode: EmitMode) -> PrintedFiles {
                 Some(format),
             )),
         },
+    }
+}
+
+/// Prepends the `.ts`-only pragma comment, ahead of any directive.
+fn with_source_pragma(module: &Module, code: String) -> String {
+    match module.source_pragma.as_deref() {
+        Some(pragma) => format!("{pragma}\n{code}"),
+        None => code,
     }
 }
 
@@ -144,6 +155,11 @@ fn print_module_with_format(
             (kind, print_item(item, target, import_extensions, format))
         })
         .collect::<Vec<_>>();
+
+    // A `.d.ts` with no declarations would only re-state imports.
+    if matches!(target, EmitTarget::Dts) && items.iter().all(|(_, line)| line.is_empty()) {
+        return String::new();
+    }
 
     // Typed sources import types their runtime bodies need; `.d.ts` keeps only the used ones.
     let prune_unused = matches!(target, EmitTarget::Dts)

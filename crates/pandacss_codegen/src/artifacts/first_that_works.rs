@@ -101,4 +101,4 @@ const FIRST_THAT_WORKS_FN_TYPE: &str = "<
   sixth?: F,
 ) => T extends FirstThatWorksMember ? A | B | C | D | E | F : FirstThatWorksMemberOf<T>";
 
-const FIRST_THAT_WORKS_IMPL: &str = "(...values: any[]) => `__FN__(${values.join('__SEP__')})`";
+const FIRST_THAT_WORKS_IMPL: &str = "(...values: Array<FirstThatWorksMember | undefined>) => `__FN__(${values.join('__SEP__')})` as never";

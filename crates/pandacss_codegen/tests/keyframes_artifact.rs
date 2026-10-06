@@ -24,7 +24,7 @@ fn emits_ts_source_keyframes() {
 
     export const keyframes: KeyframesFn = (keyframe) => {
       const prefix = null
-      const wrap = (base) => (prefix ? prefix + '-' + base : base)
+      const wrap = (base: string) => (prefix ? prefix + '-' + base : base)
       const block = keyframe && typeof keyframe === 'object' ? keyframe : {}
       return wrap('kf_' + toHash(stableStringify(block)))
     }

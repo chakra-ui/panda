@@ -22,7 +22,7 @@ fn emits_ts_source_cva() {
     import type { RecipeCreatorFn } from '../types/recipe';
 
     export const cva: RecipeCreatorFn = (config) => {
-      const defaults = (c: Record<string, any>) => ({ base: {}, variants: {}, defaultVariants: {}, compoundVariants: [], ...c })
+      const defaults = (c: Record<string, any>): Record<string, any> => ({ base: {}, variants: {}, defaultVariants: {}, compoundVariants: [], ...c })
       const { base, variants, defaultVariants, compoundVariants } = defaults(config)
 
       const getVariantProps = (props: Record<string, any>) => withDefaults(defaultVariants, props)
@@ -67,7 +67,7 @@ fn emits_ts_source_cva() {
           return splitProps(props, variantKeys)
         },
         getVariantProps,
-      })
+      }) as never
     }
 
     export type { RecipeVariant, RecipeVariantProps } from '../types/recipe';

@@ -71,7 +71,7 @@ fn module(ctx: CodegenContext<'_>) -> Module {
 }
 
 const CVA_IMPL: &str = r"(config) => {
-  const defaults = (c: Record<string, any>) => ({ base: {}, variants: {}, defaultVariants: {}, compoundVariants: [], ...c })
+  const defaults = (c: Record<string, any>): Record<string, any> => ({ base: {}, variants: {}, defaultVariants: {}, compoundVariants: [], ...c })
   const { base, variants, defaultVariants, compoundVariants } = defaults(config)
 
   const getVariantProps = (props: Record<string, any>) => withDefaults(defaultVariants, props)
@@ -116,5 +116,5 @@ const CVA_IMPL: &str = r"(config) => {
       return splitProps(props, variantKeys)
     },
     getVariantProps,
-  })
+  }) as never
 }";

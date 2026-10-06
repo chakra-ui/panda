@@ -8,6 +8,8 @@ pub struct Module {
     pub items: Vec<Item>,
     /// First line of runtime output (e.g. `"use client"`). Never emitted in `.d.ts`.
     pub directive: Option<String>,
+    /// Leading comment for `.ts` output only (e.g. `// @ts-nocheck`).
+    pub source_pragma: Option<String>,
 }
 
 impl Module {
@@ -19,6 +21,12 @@ impl Module {
     #[must_use]
     pub fn with_directive(mut self, directive: impl Into<String>) -> Self {
         self.directive = Some(directive.into());
+        self
+    }
+
+    #[must_use]
+    pub fn with_source_pragma(mut self, pragma: impl Into<String>) -> Self {
+        self.source_pragma = Some(pragma.into());
         self
     }
 
