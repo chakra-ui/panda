@@ -46,11 +46,9 @@ pub(super) fn prefix(bytes: &[u8], start: usize) -> LinePrefix {
             break;
         }
     }
-    if matches!(bytes.get(end), Some(b'-' | b'+' | b'*'))
-        && bytes.get(end + 1).is_some_and(u8::is_ascii_whitespace)
-    {
+    if matches!(bytes.get(end), Some(b'-' | b'+' | b'*')) && list_marker_ends(bytes, end + 1) {
         let list_start = end;
-        end += 2;
+        end += 1 + usize::from(matches!(bytes.get(end + 1), Some(b' ' | b'\t')));
         container = true;
         while bytes.get(end).is_some_and(|b| matches!(b, b' ' | b'\t')) {
             end += 1;
@@ -63,9 +61,9 @@ pub(super) fn prefix(bytes: &[u8], start: usize) -> LinePrefix {
         }
         if end > digits
             && matches!(bytes.get(end), Some(b'.' | b')'))
-            && bytes.get(end + 1).is_some_and(u8::is_ascii_whitespace)
+            && list_marker_ends(bytes, end + 1)
         {
-            end += 2;
+            end += 1 + usize::from(matches!(bytes.get(end + 1), Some(b' ' | b'\t')));
             container = true;
             while bytes.get(end).is_some_and(|b| matches!(b, b' ' | b'\t')) {
                 end += 1;
@@ -82,6 +80,11 @@ pub(super) fn prefix(bytes: &[u8], start: usize) -> LinePrefix {
         container,
         list_width,
     }
+}
+
+// An empty item (`-` at end of line) must not consume the line break.
+fn list_marker_ends(bytes: &[u8], at: usize) -> bool {
+    matches!(bytes.get(at), None | Some(b' ' | b'\t' | b'\r' | b'\n'))
 }
 
 struct BacktickRun {

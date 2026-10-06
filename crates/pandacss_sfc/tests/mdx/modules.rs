@@ -117,3 +117,47 @@ fn esm_does_not_interrupt_prose() {
     calls: []
     "#);
 }
+
+#[test]
+fn keeps_content_after_exports_with_dynamic_imports() {
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        import { Box } from '@panda/jsx';
+        export const loaded = await import('./x');
+
+        <Box color="red" />
+
+        {css({color:'blue'})}
+    "#};
+    assert_yaml_snapshot!(boundaries(source), @r#"
+    elements:
+      - name: Box
+        start: 112
+    calls:
+      - source: "css({color:'blue'})"
+        start: 134
+        end: 153
+    "#);
+}
+
+#[test]
+fn keeps_content_after_exports_with_import_meta() {
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        import { Box } from '@panda/jsx';
+        export const url = import.meta.url;
+
+        <Box color="red" />
+
+        {css({color:'blue'})}
+    "#};
+    assert_yaml_snapshot!(boundaries(source), @r#"
+    elements:
+      - name: Box
+        start: 105
+    calls:
+      - source: "css({color:'blue'})"
+        start: 127
+        end: 146
+    "#);
+}

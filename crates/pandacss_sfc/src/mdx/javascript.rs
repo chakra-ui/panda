@@ -49,7 +49,11 @@ pub(super) fn module_end(source: &str, start: usize) -> usize {
                 true
             }
             TokenKind::Identifier => {
-                if depth == 0 && text == "import" {
+                // `import(...)` and `import.meta` have no `from` source to wait for.
+                if depth == 0
+                    && text == "import"
+                    && !source[token.end..].trim_start().starts_with(['(', '.'])
+                {
                     import_source = true;
                 }
                 matches!(

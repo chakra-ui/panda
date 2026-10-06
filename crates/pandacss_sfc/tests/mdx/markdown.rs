@@ -495,3 +495,31 @@ fn keeps_jsx_after_reference_like_paragraph_content() {
     calls: []
     "#);
 }
+
+#[test]
+fn excludes_fenced_code_after_empty_bullet_item() {
+    let source = indoc! {"
+        -
+        ```js
+        {css({color:'red'})}
+        ```
+    "};
+    assert_yaml_snapshot!(boundaries(source), @"
+    elements: []
+    calls: []
+    ");
+}
+
+#[test]
+fn excludes_fenced_code_after_empty_ordered_item() {
+    let source = indoc! {"
+        1.
+        ```js
+        {css({color:'red'})}
+        ```
+    "};
+    assert_yaml_snapshot!(boundaries(source), @"
+    elements: []
+    calls: []
+    ");
+}
