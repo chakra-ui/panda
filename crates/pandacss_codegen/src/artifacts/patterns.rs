@@ -216,9 +216,9 @@ fn runtime_module(ctx: CodegenContext<'_>) -> Module {
         ))
         .with_item(Item::runtime(ItemNode::RawStmt(
             indoc::indoc! {r"
-                const cssFunctionRe = /^(min|max|clamp|calc)\(.*\)/
-                const cssVarRe = /^var\(--.+\)$/
-                const cssUnitRe = /^[+-]?[0-9]*.?[0-9]+(?:[eE][+-]?[0-9]+)?(?:cm|mm|Q|in|pc|pt|px|em|ex|ch|rem|lh|rlh|vw|vh|vmin|vmax|vb|vi|svw|svh|lvw|lvh|dvw|dvh|cqw|cqh|cqi|cqb|cqmin|cqmax|%)$/
+                const CSS_FUNCTION_REGEX = /^(min|max|clamp|calc)\(.*\)/
+                const CSS_VAR_REGEX = /^var\(--.+\)$/
+                const CSS_UNIT_REGEX = /^[+-]?[0-9]*.?[0-9]+(?:[eE][+-]?[0-9]+)?(?:cm|mm|Q|in|pc|pt|px|em|ex|ch|rem|lh|rlh|vw|vh|vmin|vmax|vb|vi|svw|svh|lvw|lvh|dvw|dvh|cqw|cqh|cqi|cqb|cqmin|cqmax|%)$/
             "}
             .trim()
             .into(),
@@ -227,19 +227,19 @@ fn runtime_module(ctx: CodegenContext<'_>) -> Module {
             "isCssFunction",
             vec![Param::typed("v", TsType::Unknown)],
             TsType::Bool,
-            r#"return typeof v === "string" && cssFunctionRe.test(v)"#,
+            r#"return typeof v === "string" && CSS_FUNCTION_REGEX.test(v)"#,
         ))
         .with_item(runtime_function(
             "isCssVar",
             vec![Param::typed("v", TsType::Unknown)],
             TsType::Bool,
-            r#"return typeof v === "string" && cssVarRe.test(v)"#,
+            r#"return typeof v === "string" && CSS_VAR_REGEX.test(v)"#,
         ))
         .with_item(runtime_function(
             "isCssUnit",
             vec![Param::typed("v", TsType::Unknown)],
             TsType::Bool,
-            r#"return typeof v === "string" && cssUnitRe.test(v)"#,
+            r#"return typeof v === "string" && CSS_UNIT_REGEX.test(v)"#,
         ))
         .with_item(Item::runtime(ItemNode::Const(ConstDecl {
             exported: true,
