@@ -466,7 +466,9 @@ export function createRecipe<R = RuntimeRecipe>(config: Record<string, any>): R 
     },
     utility: {
       prefix: classPrefix,
-      toHash,
+      toHash(path: string[], hashFn: (value: string) => string) {
+        return hashFn(path.join(":"))
+      },
       transform(prop: string, value: string) {
         return { className: value === "__ignore__" ? className : `${className}--${prop}__SEPARATOR__${withoutSpace(value)}` }
       },

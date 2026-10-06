@@ -241,7 +241,7 @@ function createCssContext() {
     utility: {
       prefix: __PREFIX__,
       hasShorthand: __HAS_SHORTHAND__,
-      toHash(path: string[], hashFn: any) {
+      toHash(path: string[], hashFn: (value: string) => string) {
         return hashFn(path.join(":"))
       },
       transform(prop: string, value: string) {

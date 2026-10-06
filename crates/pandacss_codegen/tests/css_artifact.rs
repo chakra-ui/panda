@@ -111,7 +111,7 @@ fn emits_ts_source_css() {
         utility: {
           prefix: null,
           hasShorthand: true,
-          toHash(path: string[], hashFn: any) {
+          toHash(path: string[], hashFn: (value: string) => string) {
             return hashFn(path.join(":"))
           },
           transform(prop: string, value: string) {
