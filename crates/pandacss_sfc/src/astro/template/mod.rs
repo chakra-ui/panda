@@ -3,7 +3,7 @@ mod tag;
 
 use std::ops::Range;
 
-use crate::astro::AstroDiagnostic;
+use crate::ContainerDiagnostic;
 use crate::astro::frontmatter;
 use crate::astro::lower::offset;
 use crate::astro::tree::{Child, ChildKind, Document, Element, Fragment, Markup};
@@ -119,7 +119,7 @@ enum Mode {
 struct Parser<'s> {
     source: &'s str,
     bytes: &'s [u8],
-    diagnostics: Vec<AstroDiagnostic>,
+    diagnostics: Vec<ContainerDiagnostic>,
     open: Vec<Range<usize>>,
     foreign: bool,
     depth: usize,
@@ -457,8 +457,8 @@ fn terminated(text: &str) -> bool {
     bytes.len() >= 2 && bytes.first() == bytes.last()
 }
 
-fn diagnostic(message: &str, span: Range<usize>) -> AstroDiagnostic {
-    AstroDiagnostic {
+fn diagnostic(message: &str, span: Range<usize>) -> ContainerDiagnostic {
+    ContainerDiagnostic {
         message: message.to_owned(),
         span: Some(offset(span.start)..offset(span.end)),
     }

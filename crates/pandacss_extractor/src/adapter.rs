@@ -52,7 +52,7 @@ pub(crate) struct AdaptedSource<'a> {
     pub(crate) template_elements: Vec<pandacss_sfc::TemplateElement>,
     pub(crate) astro_scripts: Vec<std::ops::Range<u32>>,
     mdx_diagnostics: Vec<Diagnostic>,
-    astro_diagnostics: Vec<pandacss_sfc::astro::AstroDiagnostic>,
+    astro_diagnostics: Vec<pandacss_sfc::ContainerDiagnostic>,
     astro_frontmatter: Option<std::ops::Range<u32>>,
     astro_open_fence: Option<u32>,
     astro_bom: u32,

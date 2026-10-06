@@ -3,5 +3,5 @@
 '@pandacss/compiler-wasm': patch
 ---
 
-Fix style extraction from `.mdx` files in `include`. Extract live JSX style props and `css()` calls while skipping
-Markdown code examples.
+Add style extraction for `.mdx` files in `include`. Panda now extracts JSX style props and `css()` calls from MDX while
+skipping code examples in Markdown.

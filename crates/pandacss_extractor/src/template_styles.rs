@@ -16,11 +16,11 @@ use oxc_ast::ast::{BindingPattern, Expression, Program, Statement, VariableDecla
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
-use pandacss_sfc::astro::{AstroAttributeValue, AstroElement};
 use pandacss_sfc::js::find_closing_brace as find_matching_brace;
 use pandacss_sfc::markup::{
     Expressions, MarkupWalker, blank_like, copy_range, find_bytes, finish_mask, starts_with,
 };
+use pandacss_sfc::{TemplateAttributeValue, TemplateElement};
 use rustc_hash::FxHashMap;
 use std::borrow::Cow;
 
@@ -261,7 +261,7 @@ fn collect_svelte_template_styles(source: &str, scan: &TemplateScan<'_>) -> Vec<
 
 fn collect_markup_template_styles(
     source: &str,
-    elements: &[AstroElement],
+    elements: &[TemplateElement],
     scan: &TemplateScan<'_>,
 ) -> Vec<ExtractedJsx> {
     let slice = |range: &std::ops::Range<u32>| source.get(range.start as usize..range.end as usize);
@@ -278,7 +278,7 @@ fn collect_markup_template_styles(
         let mut entries = Vec::new();
         for attribute in &element.attributes {
             let value = match &attribute.value {
-                AstroAttributeValue::Spread(expression) => {
+                TemplateAttributeValue::Spread(expression) => {
                     if let Some(expression) = slice(expression) {
                         merge_spread_with_context(
                             expression,
@@ -290,13 +290,13 @@ fn collect_markup_template_styles(
                     }
                     continue;
                 }
-                AstroAttributeValue::Empty => continue,
-                AstroAttributeValue::Boolean => AttrValue::Bool,
-                AstroAttributeValue::Static(value) => match slice(value) {
+                TemplateAttributeValue::Empty => continue,
+                TemplateAttributeValue::Boolean => AttrValue::Bool,
+                TemplateAttributeValue::Static(value) => match slice(value) {
                     Some(value) => AttrValue::Static(value),
                     None => continue,
                 },
-                AstroAttributeValue::Expression(expression) => match slice(expression) {
+                TemplateAttributeValue::Expression(expression) => match slice(expression) {
                     Some(expression) => AttrValue::Expr(expression),
                     None => continue,
                 },
@@ -804,8 +804,8 @@ fn template_markup_ranges(source: &str, adapted: &AdaptedSource<'_>) -> Vec<(u32
         Some(SfcFormat::Astro | SfcFormat::Mdx) => {
             for element in &adapted.template_elements {
                 for attribute in &element.attributes {
-                    if let AstroAttributeValue::Expression(expression)
-                    | AstroAttributeValue::Spread(expression) = &attribute.value
+                    if let TemplateAttributeValue::Expression(expression)
+                    | TemplateAttributeValue::Spread(expression) = &attribute.value
                     {
                         ranges.push((expression.start, expression.end));
                     }

@@ -1,7 +1,7 @@
 # MDX extraction
 
 Panda previously sent raw `.mdx` documents to Oxc as TSX, so Markdown could prevent live styles from being extracted.
-This prototype addresses [issue #3948](https://github.com/chakra-ui/panda/issues/3948) through the existing container
+This adapter addresses [issue #3948](https://github.com/chakra-ui/panda/issues/3948) through the existing container
 adapter in `pandacss_sfc`. Files already covered by `include` require no additional configuration.
 
 ## Ownership
@@ -49,7 +49,7 @@ Extraction and CSS generation work independently of source rewriting; MDX transf
 
 ## Cost and design choice
 
-An initial full Markdown AST prototype used `markdown-rs` and embedded-JavaScript validation callbacks. It passed the
+An initial full Markdown AST version used `markdown-rs` and embedded-JavaScript validation callbacks. It passed the
 initial extraction tests, but allocating a Markdown tree and repeatedly parsing expressions cost substantially more time
 and memory than TSX. The final adapter adds no runtime dependency and performs no JavaScript parsing itself.
 
