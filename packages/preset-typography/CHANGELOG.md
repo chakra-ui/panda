@@ -1,5 +1,18 @@
 # @pandacss/preset-typography
 
+## 2.1.2
+
+### Patch Changes
+
+- 30465d3: `panda` starts faster. Installed presets load with Node instead of being re-bundled on every run, and a build
+  no longer loads the code for `init` and `debug`.
+
+  - `@pandacss/preset-base`, `@pandacss/preset-panda` and `@pandacss/preset-typography` are now ESM-only, like the rest
+    of v2.
+  - Generated `styled-system/patterns` files are reformatted once.
+
+- @pandacss/types@2.1.2
+
 ## 2.1.1
 
 ### Patch Changes

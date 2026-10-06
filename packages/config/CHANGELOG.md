@@ -1,5 +1,23 @@
 # @pandacss/config
 
+## 2.1.2
+
+### Patch Changes
+
+- 69ccc9f: `panda.config.ts` loads faster, and an error in your config is reported once instead of running the config
+  again.
+- db5d9b7: Fixed issue where `panda codegen` failed with `design_system_export_missing` for `./jsx` when using a
+  `designSystem` without `jsxFramework`.
+- 30465d3: `panda` starts faster. Installed presets load with Node instead of being re-bundled on every run, and a build
+  no longer loads the code for `init` and `debug`.
+
+  - `@pandacss/preset-base`, `@pandacss/preset-panda` and `@pandacss/preset-typography` are now ESM-only, like the rest
+    of v2.
+  - Generated `styled-system/patterns` files are reformatted once.
+
+- @pandacss/compiler-shared@2.1.2
+  - @pandacss/types@2.1.2
+
 ## 2.1.1
 
 ### Patch Changes

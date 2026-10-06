@@ -1,5 +1,91 @@
 # @pandacss/compiler
 
+## 2.1.2
+
+### Patch Changes
+
+- 7f36e78: Fixed styles going missing in Astro, Svelte and Vue files when the markup uses syntax Panda didn't read
+  correctly, such as a regex or comment inside an expression. `css()` calls in Astro client `<script>` blocks now get
+  their CSS too.
+- d941e4a: Fixed a boolean utility's `false` value, like `md: { srOnly: false }`, missing from the stylesheet.
+- b8e2b5b: Fixed recipe rules being emitted twice when both your app and a `designSystem` package use the same recipe.
+- db5d9b7: Fixed issue where `panda codegen` failed with `design_system_export_missing` for `./jsx` when using a
+  `designSystem` without `jsxFramework`.
+- 30465d3: `panda` starts faster. Installed presets load with Node instead of being re-bundled on every run, and a build
+  no longer loads the code for `init` and `debug`.
+
+  - `@pandacss/preset-base`, `@pandacss/preset-panda` and `@pandacss/preset-typography` are now ESM-only, like the rest
+    of v2.
+  - Generated `styled-system/patterns` files are reformatted once.
+
+- d8c494c: Fix `token.var()` references for token keys containing dots, such as `spacing.1.5`, so they match the emitted
+  CSS variables, including when hashing is enabled.
+
+  Restore v1 behavior for negative spacing: `token.var()` returns the original positive variable, while `token()` keeps
+  returning the negated value.
+
+  Emoji in token keys are no longer escaped in CSS variable names, matching v1.
+
+- e3fd924: File discovery no longer walks into directories that no `include` pattern can match, and enters each real
+  directory once however many symlinks lead to it. In pnpm workspaces, `../*/src/*.ts` and `../**/src/*.ts` includes no
+  longer hang following linked packages, and each file is scanned once instead of once per link path.
+- b806435: Generated pattern and style helpers no longer recreate their regular expressions on every call.
+- 645d370: Fixed generated code failing to type-check with `outExtension: 'ts'`. `styled-system` now passes a strict
+  type check for React, Preact, Solid, and Vue, and the JSX declarations use far fewer `any` types.
+- ddc34f9: `panda lib` now exports `./types`, so packages built on a design system can annotate their recipes and emit
+  `.d.ts` files.
+- 4842f3c: Add style extraction for `.mdx` files in `include`. Panda now extracts JSX style props and `css()` calls from
+  MDX while skipping code examples in Markdown.
+- 145f6d2: Fixed an issue where a color with an opacity modifier and `!important` or `!`, like
+  `brand.500/60 !important`, warned about an invalid opacity modifier.
+- 85fb637: Fixed trace files written with the `PANDA_TRACE` environment variable being cut short. The trace now finishes
+  when the process exits, including in the Vite and PostCSS plugins.
+- 164508e: Style helpers can now destructure their parameters, declare local `const` / `let` values, spread objects, and
+  call other helpers, and Panda still extracts their styles. A helper Panda can't evaluate now warns with
+  `pure_helper_unevaluated` instead of silently skipping its styles.
+
+  Default values of parameters and destructured props, like `function Button({ size = 'md' })`, generate CSS again.
+
+- 43cfcc1: Fixed issue where `css.raw()`, `cva().raw()`, `sva().raw()`, and `splitCssProps()` returned null-prototype
+  objects, which broke `toStrictEqual`, `hasOwnProperty`, and string coercion.
+- 42ff936: Fixed config recipes throwing `TypeError: v.charCodeAt is not a function` when `hash: true` is set.
+- b8e2b5b: Recipe CSS is now grouped like atomic CSS, with shared media queries and merged rules, for smaller output
+  that matches v1's ordering.
+- 802eb61: Fixed slot recipes overriding recipe variants in minified production builds, like Vite 8's default build.
+- 3f41f62: In recipes and `globalCss`, the later key now wins when two keys set the same CSS property, as in v1.
+
+  - Shorthands and utilities follow key order: `{ bgColor: 'red', backgroundColor: 'blue' }` gives `blue`.
+  - `textStyle`, `layerStyle` and `animationStyle` expand in place, so a property must come after them to override them:
+
+    ```ts
+    { color: 'blue', textStyle: 'body' } // the text style's color
+    { textStyle: 'body', color: 'blue' } // blue
+    ```
+
+  - Design systems need to rerun `panda lib` to regenerate their build info.
+
+- a1c495c: Fixed a TypeScript error when passing `css` or style props in the `styled` factory's `defaultProps`. The
+  styles were already applied at runtime, only the types rejected them.
+- 22ba83d: You can pass a readonly `slots` array to `sva()` again. A `slots` array declared `as const` no longer fails
+  with TS4104, so you can reuse it in your own types:
+
+  ```ts
+  const slots = ['root', 'label'] as const
+  type Slot = (typeof slots)[number]
+
+  const field = sva({ slots, base: { root: { color: 'red' }, label: { color: 'blue' } } })
+  ```
+
+- f33fb6c: Fixed issue where a nested `DEFAULT` in `textStyles`, `layerStyles`, or `animationStyles` wasn't reachable
+  through its parent key, so `textStyle: 'body'` emitted no CSS and the type listed `"body.DEFAULT"` instead of
+  `"body"`.
+- Updated dependencies [69ccc9f]
+- Updated dependencies [db5d9b7]
+- Updated dependencies [30465d3]
+  - @pandacss/config@2.1.2
+  - @pandacss/compiler-shared@2.1.2
+  - @pandacss/types@2.1.2
+
 ## 2.1.1
 
 ### Patch Changes
