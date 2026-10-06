@@ -35,7 +35,7 @@ fn drops_type_only_statements() {
         erase(
             "import type { A } from './a'\ninterface B { x: string }\ntype C = B\nexport const d = 1"
         ),
-        "\n\n\nexport const d = 1"
+        "export const d = 1"
     );
 }
 
@@ -223,7 +223,7 @@ fn keeps_a_value_import_next_to_an_inline_type_specifier() {
 fn keeps_a_value_export_next_to_an_inline_type_specifier() {
     assert_eq!(
         erase("const a = 1\ntype B = string\nexport { a, type B }"),
-        "const a = 1\n\nexport { a }"
+        "const a = 1\nexport { a }"
     );
 }
 
@@ -231,15 +231,37 @@ fn keeps_a_value_export_next_to_an_inline_type_specifier() {
 fn drops_an_export_type_statement() {
     assert_eq!(
         erase("export type { A } from './a'\nexport const b = 1"),
-        "\nexport const b = 1"
+        "export const b = 1"
     );
+}
+
+#[test]
+fn drops_a_removed_interface_with_its_doc_comment() {
+    assert_eq!(
+        erase("/** Docs. */\nexport interface A {\n  x: string\n}\n\nexport const b = 1"),
+        "export const b = 1"
+    );
+}
+
+#[test]
+fn drops_parentheses_around_a_cast_identifier() {
+    assert_eq!(
+        erase("(styled as Record<string, unknown>)[tag] = styled(tag)"),
+        "styled[tag] = styled(tag)"
+    );
+}
+
+#[test]
+fn keeps_parentheses_around_a_cast_expression() {
+    assert_eq!(erase("(a.b as T).c"), "(a.b).c");
+    assert_eq!(erase("(a || b as T).c"), "(a || b).c");
 }
 
 #[test]
 fn drops_an_ambient_declaration() {
     assert_eq!(
         erase("declare function f(): void\nexport const g = 1"),
-        "\nexport const g = 1"
+        "export const g = 1"
     );
 }
 

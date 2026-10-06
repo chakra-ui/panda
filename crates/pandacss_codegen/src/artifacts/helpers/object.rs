@@ -30,11 +30,11 @@ pub(super) fn compact() -> Item {
         TsType::Raw("Partial<T>".into()),
         indoc! {r"
             const out: Record<string, any> = {}
-            if (!v) return out
+            if (!v) return out as Partial<T>
             for (const k in v) {
               if (v[k] !== void 0) out[k] = v[k]
             }
-            return out
+            return out as Partial<T>
         "}
         .trim(),
         ["T extends Record<string, unknown>"],

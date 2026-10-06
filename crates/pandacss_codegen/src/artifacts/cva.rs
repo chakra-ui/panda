@@ -55,7 +55,17 @@ fn module(ctx: CodegenContext<'_>) -> Module {
             &ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
         ))
         .with_import(ImportDecl::value(["css", "mergeCss"], "./css"))
-        .with_import(ImportDecl::ty(["RecipeCreatorFn"], "../types/recipe"))
+        .with_import(ImportDecl::ty(
+            [
+                "RecipeConfigVariantMap",
+                "RecipeCreatorFn",
+                "RecipeDefinition",
+                "RecipeRuntimeFn",
+                "RecipeSelection",
+                "RecipeVariantRecord",
+            ],
+            "../types/recipe",
+        ))
         .with_item(Item::both(ItemNode::Const(ConstDecl {
             exported: true,
             declare: false,
@@ -70,8 +80,8 @@ fn module(ctx: CodegenContext<'_>) -> Module {
         })))
 }
 
-const CVA_IMPL: &str = r"(config) => {
-  const defaults = (c: Record<string, any>) => ({ base: {}, variants: {}, defaultVariants: {}, compoundVariants: [], ...c })
+const CVA_IMPL: &str = r"<T extends RecipeVariantRecord>(config: RecipeDefinition<T>) => {
+  const defaults = (c: Record<string, any>): Record<string, any> => ({ base: {}, variants: {}, defaultVariants: {}, compoundVariants: [], ...c })
   const { base, variants, defaultVariants, compoundVariants } = defaults(config)
 
   const getVariantProps = (props: Record<string, any>) => withDefaults(defaultVariants, props)
@@ -116,5 +126,5 @@ const CVA_IMPL: &str = r"(config) => {
       return splitProps(props, variantKeys)
     },
     getVariantProps,
-  })
+  }) as unknown as RecipeRuntimeFn<RecipeSelection<T>, RecipeConfigVariantMap<T>>
 }";

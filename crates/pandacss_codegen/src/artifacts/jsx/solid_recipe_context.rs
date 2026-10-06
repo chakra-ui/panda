@@ -1,7 +1,7 @@
 use pandacss_config::JsxStylePropsConfig;
 
-use super::jsx_helper::{raw_runtime, raw_type, type_import, value_import};
-use crate::{CodegenContext, ImportDecl, Module, RuntimeImport};
+use super::jsx_helper::{type_import, value_import};
+use crate::{CodegenContext, ImportDecl, Item, Module, RuntimeImport};
 
 pub(super) fn recipe_module(ctx: CodegenContext<'_>) -> Module {
     let factory = factory_name(ctx);
@@ -42,9 +42,10 @@ pub(super) fn recipe_module(ctx: CodegenContext<'_>) -> Module {
             "solid-js",
         ));
 
-    module
-        .with_item(raw_runtime(create_recipe_context_runtime(&factory)))
-        .with_item(raw_type(CREATE_RECIPE_CONTEXT_TYPES))
+    module.with_item(Item::typed_source(
+        format!("{CREATE_RECIPE_CONTEXT_TYPES}\n\n{CREATE_RECIPE_CONTEXT_RUNTIME}")
+            .replace("__FACTORY__", &factory),
+    ))
 }
 
 pub(super) fn slot_recipe_module(ctx: CodegenContext<'_>) -> Module {
@@ -78,7 +79,12 @@ pub(super) fn slot_recipe_module(ctx: CodegenContext<'_>) -> Module {
             "../types/recipe",
         ))
         .with_import(type_import(
-            &["Assign", "JsxHTMLProps", "JsxStyleProps"],
+            &[
+                "Assign",
+                "JsxHTMLProps",
+                "JsxStyleProps",
+                "SystemStyleObject",
+            ],
             "../types/system",
         ))
         .with_import(type_import(
@@ -94,20 +100,14 @@ pub(super) fn slot_recipe_module(ctx: CodegenContext<'_>) -> Module {
             "../types/jsx",
         ))
         .with_import(type_import(
-            &["Component", "ComponentProps", "JSX"],
+            &["Accessor", "Component", "ComponentProps", "Context", "JSX"],
             "solid-js",
         ));
 
-    module
-        .with_item(raw_runtime(create_slot_recipe_context_runtime(
-            &factory,
-            style_props(ctx),
-        )))
-        .with_item(raw_type(CREATE_SLOT_RECIPE_CONTEXT_TYPES))
-}
-
-fn create_recipe_context_runtime(factory: &str) -> String {
-    CREATE_RECIPE_CONTEXT_RUNTIME.replace("__FACTORY__", factory)
+    module.with_item(Item::typed_source(format!(
+        "{CREATE_SLOT_RECIPE_CONTEXT_TYPES}\n\n{}",
+        create_slot_recipe_context_runtime(&factory, style_props(ctx))
+    )))
 }
 
 fn create_slot_recipe_context_runtime(factory: &str, mode: JsxStylePropsConfig) -> String {
@@ -118,35 +118,37 @@ fn create_slot_recipe_context_runtime(factory: &str, mode: JsxStylePropsConfig) 
 
 fn slot_resolve_props(mode: JsxStylePropsConfig) -> &'static str {
     match mode {
-        JsxStylePropsConfig::All => "return { ...slotStyles, ...restProps }",
+        JsxStylePropsConfig::All => "return { ...slotStyles as SystemStyleObject, ...restProps }",
         JsxStylePropsConfig::Minimal => {
-            "return { ...restProps, css: css.raw(slotStyles, restProps.css) }"
+            "return { ...restProps, css: css.raw(slotStyles as SystemStyleObject, restProps.css as SystemStyleObject) }"
         }
         JsxStylePropsConfig::None => {
-            "return { ...restProps, class: cx(css(slotStyles), restProps.class) }"
+            "return { ...restProps, class: cx(css(slotStyles as SystemStyleObject), restProps.class as string) }"
         }
     }
 }
 
-const CREATE_RECIPE_CONTEXT_RUNTIME: &str = r"function resolveRecipe(recipe) {
+const CREATE_RECIPE_CONTEXT_RUNTIME: &str = r"type Props = Record<string, unknown>
+
+function resolveRecipe(recipe: unknown): RecipeContextRecipe {
   if (recipe == null) throw new Error('createRecipeContext requires a recipe')
-  if (typeof recipe === 'function') return recipe
+  if (typeof recipe === 'function') return recipe as RecipeContextRecipe
   throw new Error('createRecipeContext requires a recipe')
 }
 
-export function createRecipeContext(recipeInput) {
+export function createRecipeContext<R extends RecipeContextRecipe>(recipeInput: R): RecipeContext<R> {
   const recipe = resolveRecipe(recipeInput)
-  const PropsContext = createContext(undefined)
+  const PropsContext = createContext<Props | undefined>(undefined)
   const usePropsContext = () => useContext(PropsContext)
 
-  const withContext = (Component, options) => {
-    const StyledComponent = __FACTORY__(Component, recipe, options)
-    const componentName = getDisplayName(Component)
+  const withContext = (Component: ElementType, options?: JsxFactoryOptions<Props>) => {
+    const StyledComponent = __FACTORY__(Component, recipe as AnyRecipeDefinition, options)
+    const componentName = getDisplayName(Component as Parameters<typeof getDisplayName>[0])
 
-    const WithContext = (inProps) => {
+    const WithContext = (inProps: Props) => {
       const propsContext = usePropsContext()
       const props = propsContext ? mergeProps(propsContext, inProps) : inProps
-      return createComponent(StyledComponent, props)
+      return createComponent(StyledComponent as Component<Props>, props)
     }
 
     WithContext.displayName = `withContext(${componentName})`
@@ -157,12 +159,36 @@ export function createRecipeContext(recipeInput) {
     withContext,
     PropsProvider: PropsContext.Provider,
     usePropsContext,
-  }
+  } as unknown as RecipeContext<R>
 }";
 
-const CREATE_SLOT_RECIPE_CONTEXT_RUNTIME: &str = r#"function createSafeContext(contextName) {
-  const Context = createContext(undefined)
-  const useStyleContext = (componentName, slot) => {
+const CREATE_SLOT_RECIPE_CONTEXT_RUNTIME: &str = r#"type Props = Record<string, unknown>
+
+type SlotStyles = Record<string, unknown> & { _classNameMap?: Record<string, string> }
+
+interface SlotRecipeShape {
+  splitVariantProps?: unknown
+  slots?: unknown
+  config?: AnySlotRecipeDefinition
+  __recipe__?: unknown
+  __name__?: string
+}
+
+interface SlotRecipeRuntime {
+  (props?: Props): SlotStyles
+  raw(props?: Props): SlotStyles
+  splitVariantProps(props: Props): [Props, Props]
+  classNameMap?: Record<string, string>
+}
+
+interface SlotOptions {
+  defaultProps?: Props | (() => Props)
+  forwardProps?: readonly string[]
+}
+
+function createSafeContext(contextName: string): [Context<SlotStyles | undefined>, (componentName: string, slot: string) => SlotStyles] {
+  const Context = createContext<SlotStyles | undefined>(undefined)
+  const useStyleContext = (componentName: string, slot: string) => {
     const context = useContext(Context)
     if (context === undefined) {
       const componentInfo = componentName ? `Component "${componentName}"` : 'A component'
@@ -174,44 +200,44 @@ const CREATE_SLOT_RECIPE_CONTEXT_RUNTIME: &str = r#"function createSafeContext(c
   return [Context, useStyleContext]
 }
 
-function resolveSlotRecipe(recipe) {
+function resolveSlotRecipe(recipe: SlotRecipeShape | null | undefined): SlotRecipeShape {
   if (recipe == null) throw new Error('createSlotRecipeContext requires a slot recipe')
   if (typeof recipe.splitVariantProps === 'function') return recipe
   if (recipe.slots) return recipe
   throw new Error('createSlotRecipeContext requires a slot recipe')
 }
 
-export function createSlotRecipeContext(recipeInput) {
-  const recipe = resolveSlotRecipe(recipeInput)
+export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipeInput: R): SlotRecipeContext<R> {
+  const recipe = resolveSlotRecipe(recipeInput as SlotRecipeShape)
   const isRuntimeRecipe = typeof recipe.splitVariantProps === 'function'
   const isConfigRecipe = isRuntimeRecipe && recipe.__recipe__ !== undefined
   const recipeName = isRuntimeRecipe && recipe.__name__ ? recipe.__name__ : undefined
   const contextName = recipeName ? `createSlotRecipeContext("${recipeName}")` : 'createSlotRecipeContext'
   const [SlotStylesContext, useSlotStylesContext] = createSafeContext(contextName)
-  const slotRecipeFn = isRuntimeRecipe ? recipe : sva(recipe.config ?? recipe)
+  const slotRecipeFn = isRuntimeRecipe ? recipe as SlotRecipeRuntime : sva(recipe.config ?? recipe as AnySlotRecipeDefinition) as unknown as SlotRecipeRuntime
 
-  const resolveProps = (props, slotStyles) => {
+  const resolveProps = (props: Props, slotStyles: unknown): Props => {
     const { unstyled, ...restProps } = props
     if (unstyled) return restProps
-    if (isConfigRecipe) return { ...restProps, class: cx(slotStyles, restProps.class) }
+    if (isConfigRecipe) return { ...restProps, class: cx(slotStyles as string, restProps.class as string) }
     __RESOLVE_PROPS__
   }
 
-  const createDefaultProps = (options) => {
+  const createDefaultProps = (options?: SlotOptions): Accessor<Props | undefined> => {
     const defaults = options?.defaultProps
     return typeof defaults === 'function' ? createMemo(defaults) : () => defaults
   }
 
-  const resolveSlots = (variantProps) => {
+  const resolveSlots = (variantProps: Props) => {
     const styles = isConfigRecipe ? slotRecipeFn(variantProps) : slotRecipeFn.raw(variantProps)
     if (!isConfigRecipe) styles._classNameMap = slotRecipeFn.classNameMap
     return styles
   }
 
-  const withRootProvider = (Component, options) => {
-    const WithRootProvider = (props) => {
+  const withRootProvider = (Component: ElementType, options?: SlotOptions) => {
+    const WithRootProvider = (props: Props) => {
       const [variantProps, otherProps] = slotRecipeFn.splitVariantProps(props)
-      const [local, propsWithoutChildren] = splitProps(otherProps, ['children'])
+      const [local, propsWithoutChildren]: [Props, Props] = splitProps(otherProps, ['children'])
 
       const resolvedSlots = createMemo(() => {
         return resolveSlots(variantProps)
@@ -230,7 +256,7 @@ export function createSlotRecipeContext(recipeInput) {
         },
         get children() {
           return createComponent(
-            Component,
+            Component as Component<Props>,
             mergeProps(mergedProps, {
               get children() {
                 return local.children ?? defaultProps()?.children
@@ -240,18 +266,18 @@ export function createSlotRecipeContext(recipeInput) {
         },
       })
     }
-    const componentName = getDisplayName(Component)
+    const componentName = getDisplayName(Component as Parameters<typeof getDisplayName>[0])
     WithRootProvider.displayName = `withRootProvider(${componentName})`
     return WithRootProvider
   }
 
-  const withProvider = (Component, slot, options) => {
-    const StyledComponent = __FACTORY__(Component, {}, options)
-    const WithProvider = (props) => {
+  const withProvider = (Component: ElementType, slot: string, options?: SlotOptions) => {
+    const StyledComponent = __FACTORY__(Component, {}, options as JsxFactoryOptions<Props>)
+    const WithProvider = (props: Props) => {
       const [variantProps, restProps] = slotRecipeFn.splitVariantProps(props)
-      const [local, propsWithoutChildren] = splitProps(restProps, ['children'])
+      const [local, propsWithoutChildren]: [Props, Props] = splitProps(restProps, ['children'])
 
-      const forwardedProps = {}
+      const forwardedProps: Props = {}
       options?.forwardProps?.forEach((key) => {
         if (key in variantProps) {
           Object.defineProperty(forwardedProps, key, { get: () => variantProps[key], enumerable: true })
@@ -268,7 +294,7 @@ export function createSlotRecipeContext(recipeInput) {
         const propsWithClass = defaults ? { ...defaults, ...propsWithoutChildren } : propsWithoutChildren
         const slots = resolvedSlots()
         const resolved = resolveProps(propsWithClass, slots[slot])
-        resolved.class = cx(resolved.class, slots._classNameMap?.[slot])
+        resolved.class = cx(resolved.class as string, slots._classNameMap?.[slot])
         resolved['data-slot'] = slot
         return resolved
       })
@@ -279,7 +305,7 @@ export function createSlotRecipeContext(recipeInput) {
         },
         get children() {
           return createComponent(
-            StyledComponent,
+            StyledComponent as Component<Props>,
             mergeProps(resolvedProps, forwardedProps, {
               get children() {
                 return local.children ?? defaultProps()?.children
@@ -289,30 +315,30 @@ export function createSlotRecipeContext(recipeInput) {
         },
       })
     }
-    const componentName = getDisplayName(Component)
+    const componentName = getDisplayName(Component as Parameters<typeof getDisplayName>[0])
     WithProvider.displayName = `withProvider(${componentName})`
     return WithProvider
   }
 
-  const withContext = (Component, slot, options) => {
-    const StyledComponent = __FACTORY__(Component, {}, options)
-    const componentName = getDisplayName(Component)
-    const WithContext = (props) => {
+  const withContext = (Component: ElementType, slot: string, options?: SlotOptions) => {
+    const StyledComponent = __FACTORY__(Component, {}, options as JsxFactoryOptions<Props>)
+    const componentName = getDisplayName(Component as Parameters<typeof getDisplayName>[0])
+    const WithContext = (props: Props) => {
       const resolvedSlots = useSlotStylesContext(componentName, slot)
-      const [local, propsWithoutChildren] = splitProps(props, ['children'])
+      const [local, propsWithoutChildren]: [Props, Props] = splitProps(props, ['children'])
       const defaultProps = createDefaultProps(options)
 
       const resolvedProps = createMemo(() => {
         const defaults = defaultProps()
         const propsWithClass = defaults ? { ...defaults, ...propsWithoutChildren } : propsWithoutChildren
         const resolved = resolveProps(propsWithClass, resolvedSlots[slot])
-        resolved.class = cx(resolved.class, resolvedSlots._classNameMap?.[slot])
+        resolved.class = cx(resolved.class as string, resolvedSlots._classNameMap?.[slot])
         resolved['data-slot'] = slot
         return resolved
       })
 
       return createComponent(
-        StyledComponent,
+        StyledComponent as Component<Props>,
         mergeProps(resolvedProps, {
           get children() {
             return local.children ?? defaultProps()?.children
@@ -328,14 +354,14 @@ export function createSlotRecipeContext(recipeInput) {
     withRootProvider,
     withProvider,
     withContext,
-  }
+  } as unknown as SlotRecipeContext<R>
 }"#;
 
 const CREATE_RECIPE_CONTEXT_TYPES: &str = r"type AnyRecipeDefinition = RecipeDefinition<RecipeVariantRecord>
 
 interface RuntimeRecipeFn {
-  __type: any
-  (props?: any): string
+  __type: unknown
+  (props?: never): string
 }
 
 type RecipeContextRecipe = RecipeRuntimeFn<any, any> | RuntimeRecipeFn | AnyRecipeDefinition
@@ -364,16 +390,14 @@ export interface RecipeContext<R extends RecipeContextRecipe> {
   ) => RecipeContextComponent<T, R, F>
   PropsProvider: Component<Partial<RecipePropsOf<R>> & DataAttrs>
   usePropsContext: () => RecipePropsOf<R> | undefined
-}
-
-export declare function createRecipeContext<R extends RecipeContextRecipe>(recipe: R): RecipeContext<R>";
+}";
 
 const CREATE_SLOT_RECIPE_CONTEXT_TYPES: &str = r"type AnySlotRecipeDefinition = SlotRecipeDefinition<string, SlotRecipeVariantRecord<string>>
 
 interface RuntimeSlotRecipeFn {
-  __type: any
+  __type: unknown
   __slot: string
-  (props?: any): any
+  (props?: never): unknown
 }
 
 type SlotRecipeContextInput = SlotRecipeRuntimeFn<string, any, any> | RuntimeSlotRecipeFn | AnySlotRecipeDefinition
@@ -425,9 +449,7 @@ export interface SlotRecipeContext<R extends SlotRecipeContextInput> {
     slot: SlotNameOf<R>,
     options?: JsxFactoryOptions<ComponentProps<T>, F> | undefined
   ) => SlotRecipeConsumerComponent<T, F>
-}
-
-export declare function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipe: R): SlotRecipeContext<R>";
+}";
 
 fn factory_name(ctx: CodegenContext<'_>) -> String {
     ctx.jsx_factory().to_owned()

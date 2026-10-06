@@ -33,7 +33,7 @@ pub(super) fn split_props_key_map() -> Item {
             indoc! {r"
                 let keyMap = splitPropsKeyMapCache.get(keys)
                 if (keyMap) return keyMap
-                keyMap = Object.create(null)
+                keyMap = Object.create(null) as Record<string, true>
                 for (let i = 0; i < keys.length; i++) keyMap[keys[i]] = true
                 splitPropsKeyMapCache.set(keys, keyMap)
                 return keyMap
