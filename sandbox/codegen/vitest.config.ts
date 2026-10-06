@@ -72,6 +72,12 @@ const options: TestUserConfig = {
       typecheck: { enabled: typecheck, include: ['**/__tests__/scenarios/format-names.{test,spec}.{j,t}s?(x)'] },
     },
   },
+  hash: {
+    test: {
+      include: ['**/__tests__/scenarios/hash.{test,spec}.{j,t}s?(x)'],
+      typecheck: { enabled: typecheck, include: ['**/__tests__/scenarios/hash.{test,spec}.{j,t}s?(x)'] },
+    },
+  },
   //
   preact: {
     plugins: [preact()],
