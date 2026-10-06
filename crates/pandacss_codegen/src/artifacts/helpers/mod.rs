@@ -62,7 +62,6 @@ pub fn module(ctx: CodegenContext<'_>) -> Module {
         .with_item(split_props::copy_split_prop())
         .with_item(split_props::split_props())
         .with_item(misc::normalize_html_props())
-        .with_item(misc::normalize_html_props_types())
         .with_item(misc::uniq())
         .with_item(misc::without_space())
         .with_item(misc::important_regex())

@@ -120,7 +120,7 @@ fn ts_helpers_include_memo_and_style_serializer() {
             hasLast && lastHash === void 0 && composedKey === lastKey ? lastValue : stringCache.get(composedKey)
           if (composedOut === void 0) {
             composedOut = fn(...args)
-            stringCache.set(composedKey, composedOut)
+            stringCache.set(composedKey, composedOut!)
             if (stringCache.size > 500) stringCache.delete(stringCache.keys().next().value as string)
           }
 
@@ -137,7 +137,7 @@ fn ts_helpers_include_memo_and_style_serializer() {
           }
           lastHash = void 0
           lastKey = composedKey
-          lastValue = composedOut
+          lastValue = composedOut!
           hasLast = true
           return composedOut
         }
