@@ -38,7 +38,7 @@ fn emits_ts_source_first_that_works() {
       sixth?: F,
     ) => T extends FirstThatWorksMember ? A | B | C | D | E | F : FirstThatWorksMemberOf<T>;
 
-    export const firstThatWorks: FirstThatWorksFn = (...values: any[]) => `firstThatWorks(${values.join(', ')})`
+    export const firstThatWorks: FirstThatWorksFn = (...values: Array<FirstThatWorksMember | undefined>) => `firstThatWorks(${values.join(', ')})` as never
     ");
 }
 

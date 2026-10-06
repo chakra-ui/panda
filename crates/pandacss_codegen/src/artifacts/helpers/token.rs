@@ -7,6 +7,12 @@ use pandacss_tokens::push_css_var_name;
 
 use crate::{Block, CodegenContext, FunctionDecl, Item, ItemNode, Param, Stmt, TsType};
 
+pub(super) fn css_var_char_regex() -> Item {
+    Item::runtime(ItemNode::RawStmt(
+        "const CSS_VAR_CHAR_REGEX = /[a-z0-9_-]/".into(),
+    ))
+}
+
 pub(super) fn to_css_var(ctx: CodegenContext<'_>) -> Item {
     let hash = ctx.config.hash.css_var();
     let prefix = ctx.config.prefix.css_var().unwrap_or_default();
@@ -20,7 +26,7 @@ pub(super) fn to_css_var(ctx: CodegenContext<'_>) -> Item {
             r#"let out = ""
 for (const ch of path.replaceAll(".", "-")) {{
   if (ch >= "A" && ch <= "Z") out += "-" + ch.toLowerCase()
-  else if (/[a-z0-9_-]/.test(ch) || ch >= "\u0081") out += ch
+  else if (CSS_VAR_CHAR_REGEX.test(ch) || ch >= "\u0081") out += ch
   else out += "\\" + ch
 }}
 return {var_prefix} + out + ")""#

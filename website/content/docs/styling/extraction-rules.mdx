@@ -26,7 +26,8 @@ export function Random(props) {
 <Random size="lg" />
 ```
 
-Extract sees `Random`, not `Button`. Export it as `Button`, or set `jsx: ['Random']`. That is
+Extract sees `Random`, not `Button`. Export it as `Button`, set `jsx: ['Random']`, or
+[pregenerate its variants with `staticCss`](/docs/recipes/jsx-tracking#skip-tracking-with-staticcss). That is
 [Tracking JSX](/docs/recipes/jsx-tracking).
 
 `cva` and `sva` do not need a matching tag. Defining them already emits every variant.

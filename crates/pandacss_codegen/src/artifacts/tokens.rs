@@ -134,4 +134,4 @@ const TOKEN_EXPORT: &str = r"/* @__PURE__ */ Object.assign(
       return tokens[path] === undefined ? fallback : resolveVar(path)
     },
   },
-)";
+) as TokenFn";

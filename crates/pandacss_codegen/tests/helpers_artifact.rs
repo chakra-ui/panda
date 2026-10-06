@@ -120,7 +120,7 @@ fn ts_helpers_include_memo_and_style_serializer() {
             hasLast && lastHash === void 0 && composedKey === lastKey ? lastValue : stringCache.get(composedKey)
           if (composedOut === void 0) {
             composedOut = fn(...args)
-            stringCache.set(composedKey, composedOut)
+            stringCache.set(composedKey, composedOut!)
             if (stringCache.size > 500) stringCache.delete(stringCache.keys().next().value as string)
           }
 
@@ -137,7 +137,7 @@ fn ts_helpers_include_memo_and_style_serializer() {
           }
           lastHash = void 0
           lastKey = composedKey
-          lastValue = composedOut
+          lastValue = composedOut!
           hasLast = true
           return composedOut
         }
@@ -249,7 +249,7 @@ fn css_var_prefix_is_used_by_to_css_var_and_color_mix() {
       let out = ""
       for (const ch of path.replaceAll(".", "-")) {
         if (ch >= "A" && ch <= "Z") out += "-" + ch.toLowerCase()
-        else if (/[a-z0-9_-]/.test(ch) || ch >= "\u0081") out += ch
+        else if (CSS_VAR_CHAR_REGEX.test(ch) || ch >= "\u0081") out += ch
         else out += "\\" + ch
       }
       return "var(--pd-" + out + ")"

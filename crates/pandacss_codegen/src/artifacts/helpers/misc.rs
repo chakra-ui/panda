@@ -253,7 +253,7 @@ pub(super) fn memo() -> Item {
                   hasLast && lastHash === void 0 && composedKey === lastKey ? lastValue : stringCache.get(composedKey)
                 if (composedOut === void 0) {
                   composedOut = fn(...args)
-                  stringCache.set(composedKey, composedOut)
+                  stringCache.set(composedKey, composedOut!)
                   if (stringCache.size > 500) stringCache.delete(stringCache.keys().next().value as string)
                 }
 
@@ -270,7 +270,7 @@ pub(super) fn memo() -> Item {
                 }
                 lastHash = void 0
                 lastKey = composedKey
-                lastValue = composedOut
+                lastValue = composedOut!
                 hasLast = true
                 return composedOut
               }
@@ -384,12 +384,18 @@ pub(super) fn without_space() -> Item {
     )
 }
 
+pub(super) fn important_regex() -> Item {
+    Item::runtime(ItemNode::RawStmt(
+        r"const IMPORTANT_REGEX = /\s*!(important)?\s*$/i".into(),
+    ))
+}
+
 pub(super) fn is_important() -> Item {
     helper_function(
         "isImportant",
         vec![Param::typed("value", TsType::Ref("unknown".into()))],
         TsType::Bool,
-        r#"return typeof value === "string" ? /\s*!(important)?\s*$/i.test(value) : false"#,
+        r#"return typeof value === "string" ? IMPORTANT_REGEX.test(value) : false"#,
         [],
     )
 }
@@ -400,7 +406,7 @@ pub(super) fn without_important() -> Item {
         vec![Param::typed("value", TsType::Ref("T".into()))],
         TsType::Ref("T".into()),
         indoc! {r#"
-            return (typeof value === "string" ? value.replace(/\s*!(important)?\s*$/i, "").trim() : value) as T
+            return (typeof value === "string" ? value.replace(IMPORTANT_REGEX, "").trim() : value) as T
         "#}
         .trim(),
         ["T extends string | number | boolean"],
@@ -408,7 +414,7 @@ pub(super) fn without_important() -> Item {
 }
 
 pub(super) fn normalize_html_props() -> Item {
-    Item::runtime(ItemNode::RawStmt(
+    Item::typed_source(
         indoc! {r"
             const htmlProps = ['htmlSize', 'htmlTranslate', 'htmlWidth', 'htmlHeight']
 
@@ -417,29 +423,15 @@ pub(super) fn normalize_html_props() -> Item {
             }
 
             // `Object.assign` keeps `.keys` inside a pure expression, so an unused helper tree-shakes away.
-            export const normalizeHTMLProps = /* @__PURE__ */ Object.assign(
-              function normalizeHTMLProps(props: Record<string, any>) {
+            export const normalizeHTMLProps: ((props: Record<string, unknown>) => Record<string, unknown>) & { keys: string[] } = /* @__PURE__ */ Object.assign(
+              function normalizeHTMLProps(props: Record<string, unknown>) {
                 return Object.fromEntries(Object.entries(props).map(([key, value]) => [convertHTMLProp(key), value]))
               },
               { keys: htmlProps },
             )
         "}
-        .trim()
-        .into(),
-    ))
-}
-
-pub(super) fn normalize_html_props_types() -> Item {
-    Item::ty(ItemNode::RawStmt(
-        indoc! {r"
-            export declare function normalizeHTMLProps(props: Record<string, any>): Record<string, any>
-            export declare namespace normalizeHTMLProps {
-              export const keys: string[]
-            }
-        "}
-        .trim()
-        .into(),
-    ))
+        .trim(),
+    )
 }
 
 fn helper_function<const N: usize>(

@@ -455,3 +455,35 @@ describe('styled elements and patterns', () => {
     )
   })
 })
+
+describe('styled factory with style defaultProps', () => {
+  test('css and style props in defaultProps of an inline recipe', () => {
+    const Card = styled('div', { base: { color: 'red.500' } }, { defaultProps: { css: { bg: 'blue.500' }, px: '2' } })
+
+    const { container } = render(<Card>card</Card>)
+    const { firstChild } = container as HTMLElement
+
+    expect(firstChild).toMatchInlineSnapshot(`
+      <div
+        class="c_red.500 px_2 bg_blue.500"
+      >
+        card
+      </div>
+    `)
+  })
+
+  test('css in defaultProps of a config recipe', () => {
+    const Button = styled('button', buttonWithCompoundVariants, { defaultProps: { css: { mx: '2' } } })
+
+    const { container } = render(<Button>Click me</Button>)
+    const { firstChild } = container as HTMLElement
+
+    expect(firstChild).toMatchInlineSnapshot(`
+      <button
+        class="button button--visual_unstyled mx_2"
+      >
+        Click me
+      </button>
+    `)
+  })
+})

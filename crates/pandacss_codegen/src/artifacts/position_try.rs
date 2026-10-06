@@ -82,7 +82,7 @@ fn position_try_fn_type(ctx: CodegenContext<'_>) -> String {
 
 const POSITION_TRY_IMPL: &str = r"(options) => {
   const prefix = __PREFIX__
-  const wrap = (base) => '--' + (prefix ? prefix + '-' + base : base)
+  const wrap = (base: string) => '--' + (prefix ? prefix + '-' + base : base)
   if (typeof options === 'string') {
     return wrap('pt_' + options)
   }

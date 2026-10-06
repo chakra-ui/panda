@@ -72,7 +72,7 @@ fn emits_ts_source_tokens() {
           return tokens[path] === undefined ? fallback : resolveVar(path)
         },
       },
-    )
+    ) as TokenFn
     "##);
 }
 

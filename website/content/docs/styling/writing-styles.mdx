@@ -272,6 +272,27 @@ You can also target children and siblings using the `&` syntax.
 We recommend not using descendant selectors as they can lead to specificity issues when managing style overrides.
 Colocating styles directly on the element is the preferred way of writing styles in Panda.
 
+### Overlapping selectors
+
+When two selectors have the same specificity, Panda orders them the same way every time, not by where you write them.
+Nest the more specific one so it always wins.
+
+```jsx
+// ❌ both selectors have equal specificity, so the winner doesn't depend on the order you write them
+css({
+  '& [data-state]': { color: 'gray.500' },
+  '& [data-state="open"]': { color: 'green.500' }
+})
+
+// ✅ nesting produces `[data-state][data-state="open"]`, which always wins
+css({
+  '& [data-state]': {
+    color: 'gray.500',
+    '&[data-state="open"]': { color: 'green.500' }
+  }
+})
+```
+
 ### Using Pseudo Props
 
 Panda provides a set of pseudo props that can be used to create nested styles. The pseudo props are prefixed with an

@@ -30,8 +30,8 @@ fn emits_ts_source_view_transition() {
         const base = 'vt_' + options
         return prefix ? prefix + '-' + base : base
       }
-      const slots = ['group', 'imagePair', 'old', 'new']
-      const filtered = {}
+      const slots: Array<keyof ViewTransitionStyleObject> = ['group', 'imagePair', 'old', 'new']
+      const filtered: Record<string, unknown> = {}
       if (options && typeof options === 'object') {
         for (const key of slots) {
           if (key in options) filtered[key] = options[key]
@@ -71,8 +71,8 @@ fn emits_prefixed_view_transition_runtime() {
         const base = 'vt_' + options
         return prefix ? prefix + '-' + base : base
       }
-      const slots = ['group', 'imagePair', 'old', 'new']
-      const filtered = {}
+      const slots: Array<keyof ViewTransitionStyleObject> = ['group', 'imagePair', 'old', 'new']
+      const filtered: Record<string, unknown> = {}
       if (options && typeof options === 'object') {
         for (const key of slots) {
           if (key in options) filtered[key] = options[key]

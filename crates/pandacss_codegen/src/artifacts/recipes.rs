@@ -421,7 +421,26 @@ fn compound_variants_json(
     )
 }
 
-const RECIPE_RUNTIME_TEMPLATE: &str = r#"function normalize(config: Record<string, any>) {
+const RECIPE_RUNTIME_TEMPLATE: &str = r#"type Props = Record<string, unknown>
+
+interface RecipeFields {
+  __name__: string
+  raw(props: Props): Props
+  variantKeys: string[]
+  variantMap: Record<string, string[]>
+  splitVariantProps(props: Props): unknown[]
+  getVariantProps(props?: Props): Props
+  __recipe__?: boolean
+  classNameMap?: Record<string, string>
+  __getCompoundVariantClasses__?: (props: Props) => string
+  merge?: (other: RuntimeRecipe) => RuntimeRecipe
+}
+
+type RuntimeRecipe = ((...args: any[]) => string) & RecipeFields
+
+type SlotRecipeRuntime = ((props?: Props) => Record<string, string>) & Partial<RecipeFields>
+
+function normalize(config: Record<string, any>) {
   const variantMap = config.variantMap ?? {}
   return {
     name: config.name,
@@ -434,7 +453,7 @@ const RECIPE_RUNTIME_TEMPLATE: &str = r#"function normalize(config: Record<strin
   }
 }
 
-export function createRecipe(config: Record<string, any>) {
+export function createRecipe<R = RuntimeRecipe>(config: Record<string, any>): R {
   const { name, className, variantMap, variantKeys, defaults, compounds } = normalize(config)
   const classPrefix = __PREFIX__
 
@@ -447,7 +466,9 @@ export function createRecipe(config: Record<string, any>) {
     },
     utility: {
       prefix: classPrefix,
-      toHash,
+      toHash(path: string[], hashFn: (value: string) => string) {
+        return hashFn(path.join(":"))
+      },
       transform(prop: string, value: string) {
         return { className: value === "__ignore__" ? className : `${className}--${prop}__SEPARATOR__${withoutSpace(value)}` }
       },
@@ -485,13 +506,13 @@ export function createRecipe(config: Record<string, any>) {
   }), name, variantKeys, variantMap, resolve)
   recipe.__recipe__ = true
   recipe.__getCompoundVariantClasses__ = compoundClasses
-  recipe.merge = function merge(other: any) {
+  recipe.merge = function merge(other: RuntimeRecipe) {
     return mergeRecipes(recipe, other)
   }
-  return recipe
+  return recipe as unknown as R
 }
 
-export function createSlotRecipe(config: Record<string, any>) {
+export function createSlotRecipe<R = SlotRecipeRuntime>(config: Record<string, any>): R {
   const { name, className, slots, variantMap, variantKeys, defaults, compounds } = normalize(config)
 
   const slotFns = slots.map(function toSlotRecipe(slot: string) {
@@ -508,43 +529,43 @@ export function createSlotRecipe(config: Record<string, any>) {
     const result: Record<string, any> = {}
     for (const [slot, slotFn] of slotFns) result[slot] = slotFn(props)
     return result
-  })
+  }) as SlotRecipeRuntime
   attach(recipe, name, variantKeys, variantMap, function getVariantProps(props: Record<string, any> = {}) {
     return withDefaults(defaults, props)
   })
   recipe.__recipe__ = false
   recipe.classNameMap = {}
-  return recipe
+  return recipe as unknown as R
 }
 
-function mergeRecipes(recipeA: any, recipeB: any) {
+function mergeRecipes(recipeA: RuntimeRecipe, recipeB: RuntimeRecipe | undefined): RuntimeRecipe {
   if (recipeA && !recipeB) return recipeA
   if (!recipeA && recipeB) return recipeB
-  function merged(...args: any[]) {
+  function merged(...args: unknown[]) {
     const classA = recipeA(...args)
-    const classB = recipeB(...args)
+    const classB = recipeB!(...args)
     return classA && classB ? `${classA} ${classB}` : classA || classB
   }
-  const variantKeys = uniq(recipeA.variantKeys, recipeB.variantKeys)
-  const variantMap: Record<string, any> = {}
-  for (const key of variantKeys) variantMap[key] = uniq(recipeA.variantMap[key], recipeB.variantMap[key])
-  attach(merged, `${recipeA.__name__} ${recipeB.__name__}`, variantKeys, variantMap, function getVariantProps(props: any) {
+  const variantKeys = uniq<string>(recipeA.variantKeys, recipeB!.variantKeys)
+  const variantMap: Record<string, string[]> = {}
+  for (const key of variantKeys) variantMap[key] = uniq<string>(recipeA.variantMap[key], recipeB!.variantMap[key])
+  attach(merged, `${recipeA.__name__} ${recipeB!.__name__}`, variantKeys, variantMap, function getVariantProps(props: Props) {
     return props
   })
   merged.__recipe__ = true
-  return merged
+  return merged as RuntimeRecipe
 }
 
-function attach(recipe: any, name: string, variantKeys: string[], variantMap: Record<string, any>, getVariantProps: any) {
+function attach<T extends object>(recipe: T & Partial<RecipeFields>, name: string, variantKeys: string[], variantMap: Record<string, string[]>, getVariantProps: RecipeFields['getVariantProps']): T & RecipeFields {
   recipe.__name__ = name
-  recipe.raw = function raw(props: any) {
+  recipe.raw = function raw(props: Props) {
     return props
   }
   recipe.variantKeys = variantKeys
   recipe.variantMap = variantMap
-  recipe.splitVariantProps = function splitVariantProps(props: any) {
+  recipe.splitVariantProps = function splitVariantProps(props: Props) {
     return splitProps(props, variantKeys)
   }
   recipe.getVariantProps = getVariantProps
-  return recipe
+  return recipe as T & RecipeFields
 }"#;
