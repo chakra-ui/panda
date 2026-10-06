@@ -17,13 +17,19 @@ use crate::{
 
 #[must_use]
 pub fn module(ctx: CodegenContext<'_>) -> Module {
-    Module::new()
+    let mut module = Module::new()
         .with_item(object::is_object())
         .with_item(object::has_own())
         .with_item(misc::is_base_condition())
         .with_item(misc::filter_base_conditions())
         .with_item(misc::to_hash())
-        .with_item(misc::stable_stringify())
+        .with_item(misc::stable_stringify());
+
+    if !ctx.config.hash.css_var() {
+        module = module.with_item(token::css_var_char_regex());
+    }
+
+    module
         .with_item(token::to_css_var(ctx))
         .with_item(token::color_mix())
         .with_item(object::compact())
@@ -59,6 +65,7 @@ pub fn module(ctx: CodegenContext<'_>) -> Module {
         .with_item(misc::normalize_html_props_types())
         .with_item(misc::uniq())
         .with_item(misc::without_space())
+        .with_item(misc::important_regex())
         .with_item(misc::is_important())
         .with_item(misc::without_important())
 }

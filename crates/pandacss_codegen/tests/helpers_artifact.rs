@@ -249,7 +249,7 @@ fn css_var_prefix_is_used_by_to_css_var_and_color_mix() {
       let out = ""
       for (const ch of path.replaceAll(".", "-")) {
         if (ch >= "A" && ch <= "Z") out += "-" + ch.toLowerCase()
-        else if (/[a-z0-9_-]/.test(ch) || ch >= "\u0081") out += ch
+        else if (CSS_VAR_CHAR_REGEX.test(ch) || ch >= "\u0081") out += ch
         else out += "\\" + ch
       }
       return "var(--pd-" + out + ")"
