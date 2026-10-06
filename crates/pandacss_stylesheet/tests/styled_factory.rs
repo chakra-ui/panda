@@ -235,3 +235,117 @@ fn jsx_spreads_emit_custom_properties_selectors_and_at_rules() {
     }
     ");
 }
+
+#[test]
+fn css_in_inline_recipe_default_props_emits_styles() {
+    let config = frame_config();
+
+    let source = indoc::indoc! {r"
+        import { styled } from '@panda/jsx';
+
+        const Card = styled('div', {
+          base: { display: 'flex' },
+          variants: { size: { sm: { padding: '2px' } } },
+        }, {
+          defaultProps: {
+            size: 'sm',
+            marginTop: '8px',
+            css: { color: 'red', '&:hover': { color: 'blue' } },
+          },
+        });
+    "};
+
+    let css = compile_layer_css(&config, source, &[StylesheetLayer::Utilities]);
+
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .padding_2px {
+        padding: 2px;
+      }
+      .color_red {
+        color: red;
+      }
+      .display_flex {
+        display: flex;
+      }
+      .margin-top_8px {
+        margin-top: 8px;
+      }
+      .\[\&\:hover\]\:color_blue:hover {
+        color: blue;
+      }
+    }
+    ");
+}
+
+#[test]
+fn css_array_in_config_recipe_default_props_emits_every_entry() {
+    let config = frame_config();
+
+    let source = indoc::indoc! {r"
+        import { styled } from '@panda/jsx';
+        import { frame } from '@panda/recipes';
+
+        const StyledFrame = styled('iframe', frame, {
+          defaultProps: {
+            size: 'sm',
+            css: [{ color: 'red' }, { marginTop: '8px' }],
+          },
+        });
+    "};
+
+    let css = compile_layer_css(
+        &config,
+        source,
+        &[StylesheetLayer::Recipes, StylesheetLayer::Utilities],
+    );
+
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .frame {
+          display: block;
+        }
+      }
+      @layer variants {
+        .frame--size_sm {
+          padding: 2px;
+        }
+      }
+    }
+    @layer utilities {
+      .color_red {
+        color: red;
+      }
+      .margin-top_8px {
+        margin-top: 8px;
+      }
+    }
+    ");
+}
+
+#[test]
+fn css_in_default_props_overrides_a_style_prop_for_the_same_property() {
+    let config = frame_config();
+
+    let source = indoc::indoc! {r"
+        import { styled } from '@panda/jsx';
+
+        const Card = styled('div', {}, {
+          defaultProps: {
+            color: 'red',
+            css: { color: 'blue' },
+          },
+        });
+    "};
+
+    let css = compile_layer_css(&config, source, &[StylesheetLayer::Utilities]);
+
+    assert_snapshot!(css, @"
+    @layer utilities {
+      .color_blue {
+        color: blue;
+      }
+    }
+    ");
+}
