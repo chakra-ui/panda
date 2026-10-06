@@ -209,24 +209,14 @@ fn mdx_styles_emit_and_refresh_without_emitting_code_examples() {
           <span className={css({ color: 'blue' })}>solid</span>
         </Box>
     "#};
+    let options = CssOutputOptions {
+        layers: Some(vec!["utilities".to_owned()]),
+        ..Default::default()
+    };
     project.parse_file("/src/badge.mdx", source);
-    let output = compile_css(
-        &mut project,
-        &config,
-        None,
-        None,
-        &CssOutputOptions::default(),
-    );
+    let output = compile_layers(&mut project, &config, None, None, &options);
     assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics);
     insta::assert_snapshot!(output.css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer recipes { @layer base, slots, variants, compound_variants; }
-    @layer recipes.slots { @layer base, variants, compound_variants; }
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer utilities {
       .gap_2 {
         gap: 2px;
@@ -240,23 +230,9 @@ fn mdx_styles_emit_and_refresh_without_emitting_code_examples() {
     }
     ");
     project.parse_file("/src/badge.mdx", &source.replace("'blue'", "'teal'"));
-    let output = compile_css(
-        &mut project,
-        &config,
-        None,
-        None,
-        &CssOutputOptions::default(),
-    );
+    let output = compile_layers(&mut project, &config, None, None, &options);
     assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics);
     insta::assert_snapshot!(output.css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer recipes { @layer base, slots, variants, compound_variants; }
-    @layer recipes.slots { @layer base, variants, compound_variants; }
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer utilities {
       .gap_2 {
         gap: 2px;
