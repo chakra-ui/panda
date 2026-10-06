@@ -447,7 +447,7 @@ export function createRecipe(config: Record<string, any>) {
     },
     utility: {
       prefix: classPrefix,
-      toHash(path: string[], hashFn: any) {
+      toHash(path: string[], hashFn: (value: string) => string) {
         return hashFn(path.join(":"))
       },
       transform(prop: string, value: string) {
