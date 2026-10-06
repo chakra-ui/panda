@@ -171,7 +171,7 @@ export type WithForwardedProps<S, T extends ElementType, F extends string> = [Fo
   ? S
   : Assign<S, Pick<ComponentProps<T>, ForwardedStyleKeys<T, F>>>
 
-export type JsxRecipeProps<T extends ElementType, P extends AnyProps> = JsxHTMLProps<BaseComponentProps<T>, P>
+export type JsxRecipeProps<T extends ElementType, P extends AnyProps> = JsxHTMLProps<BaseComponentProps<T>, Assign<JsxStyleProps, P>>
 
 export type JsxElement<T extends ElementType, P extends AnyProps> = T extends __COMPONENT__<infer A, infer B>
   ? __COMPONENT__<A, Assign<B, P>>
@@ -283,7 +283,7 @@ export type WithForwardedProps<S, T extends ElementType, F extends string> = [Fo
   ? S
   : Assign<S, Pick<ComponentProps<T>, ForwardedStyleKeys<T, F>>>
 
-export type JsxRecipeProps<T extends ElementType, P extends AnyProps> = JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, P>
+export type JsxRecipeProps<T extends ElementType, P extends AnyProps> = JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, Assign<JsxStyleProps, P>>
 
 export type JsxElement<T extends ElementType, P extends AnyProps> = T extends __COMPONENT__<infer A, infer B>
   ? __COMPONENT__<A, Pretty<DistributiveUnion<P, B>>>
@@ -363,7 +363,7 @@ export type WithForwardedProps<S, T extends ElementType, F extends string> = [Fo
   ? S
   : Assign<S, Pick<{component_props}, ForwardedStyleKeys<T, F>>>
 
-export type JsxRecipeProps<T extends ElementType, P extends AnyProps> = JsxHTMLProps<{component_props} & UnstyledProps & AsProps, P>
+export type JsxRecipeProps<T extends ElementType, P extends AnyProps> = JsxHTMLProps<{component_props} & UnstyledProps & AsProps, Assign<JsxStyleProps, P>>
 
 export type JsxElement<T extends ElementType, P extends AnyProps> = T extends __COMPONENT__<infer A, infer B>
   ? __COMPONENT__<A, Pretty<DistributiveUnion<P, B>>>
