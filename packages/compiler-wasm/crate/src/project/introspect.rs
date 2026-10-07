@@ -45,6 +45,7 @@ impl WasmCompiler {
             "cssValue": resolved.css_value.to_json(),
             "important": resolved.important,
             "source": pandacss_compiler::utility_value_source_json(resolved.source),
+            "tokens": resolved.tokens,
         });
 
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);

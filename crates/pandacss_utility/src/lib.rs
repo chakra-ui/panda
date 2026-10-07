@@ -13,7 +13,7 @@ use pandacss_shared::{
     css_escape, hyphenate_property, number_to_js_string, split_important, to_hash,
     without_important, without_space,
 };
-use pandacss_tokens::{TokenCategory, TokenDictionary};
+use pandacss_tokens::{Token, TokenCategory, TokenDictionary};
 use rustc_hash::{FxHashMap, FxHashSet};
 
 mod compositions;
@@ -26,7 +26,7 @@ pub use normalize::{ShorthandPolicy, StyleNormalizer};
 pub use runtime_class::runtime_class_name_for_atom;
 pub use token_ref::{expand_token_references_to_values, expand_token_references_to_vars};
 
-use token_ref::is_plain_token_path_like;
+use token_ref::{expand_token_references_to_vars_recording, is_plain_token_path_like};
 
 #[derive(Debug, Clone, Default)]
 pub struct Utility {
@@ -87,6 +87,8 @@ pub struct ResolvedUtilityValue {
     pub css_value: Literal,
     pub important: bool,
     pub source: UtilityValueSource,
+    /// Tokens Panda resolved for the value; handwritten `var(--…)` isn't counted.
+    pub tokens: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -358,9 +360,16 @@ impl Utility {
 
         let utility = self.resolve_shorthand(prop).to_owned();
 
-        let style_value = self.expand_reference_in_value(&arbitrary_value(raw));
-        let css_value = self.raw_property_value(&utility, &style_value);
+        let mut refs = Vec::new();
+        let style_value = self.expand_reference_recording(&arbitrary_value(raw), &mut refs);
+        let (css_value, property_token) = self.property_value(&utility, &style_value);
         let css_value_text = literal_to_class_value(&css_value)?;
+        if let Some(token) = property_token
+            && !refs.iter().any(|seen| seen.path == token.path)
+        {
+            refs.push(token);
+        }
+        let tokens = refs.iter().map(|token| token.path.to_string()).collect();
 
         let class_value = self.class_name_value(raw);
         let class_name = self.get_class_name(&utility, &class_value);
@@ -405,6 +414,7 @@ impl Utility {
             css_value,
             important,
             source,
+            tokens,
         })
     }
 
@@ -460,50 +470,59 @@ impl Utility {
     }
 
     fn raw_property_value(&self, prop: &str, value: &str) -> Literal {
+        self.property_value(prop, value).0
+    }
+
+    fn property_value(&self, prop: &str, value: &str) -> (Literal, Option<&Token>) {
         let Some(config) = self.properties.get(prop) else {
-            return Literal::String(value.to_owned());
+            return (Literal::String(value.to_owned()), None);
         };
 
-        if let Some(value) = config.values.get(value) {
-            return value.clone();
+        if let Some(mapped) = config.values.get(value) {
+            // Function-built maps (`theme('spacing')`) only keep the var.
+            let token = match (mapped, &self.tokens) {
+                (Literal::String(mapped), Some(tokens)) => tokens.token_by_reference(mapped),
+                _ => None,
+            };
+            return (mapped.clone(), token);
         }
 
         if config.values_category.as_deref() == Some("colors")
-            && let Some(value) = self.color_mix_category_value(value)
+            && let Some((value, token)) = self.color_mix_category_value(value)
         {
-            return Literal::String(value);
+            return (Literal::String(value), token);
         }
 
         if let Some(category) = &config.values_category
-            && let Some(value) = self.token_category_value(category, value)
+            && let Some(tokens) = &self.tokens
+            && let Some(token) = tokens.category_token(category, value)
+            && let Some(css) = tokens.get_var_str(&token.path, None)
         {
-            return Literal::String(value.to_owned());
+            return (Literal::String(css.to_owned()), Some(token));
         }
 
         if self.tokens.is_some()
             && config.values_category.is_some()
             && is_plain_token_path_like(value)
         {
-            return Literal::String(css_escape(value));
+            return (Literal::String(css_escape(value)), None);
         }
 
-        Literal::String(value.to_owned())
+        (Literal::String(value.to_owned()), None)
     }
 
-    fn token_category_value<'a>(&'a self, category: &str, value: &str) -> Option<&'a str> {
-        self.tokens.as_ref()?.category_value_str(category, value)
-    }
-
-    fn color_mix_category_value(&self, value: &str) -> Option<String> {
+    fn color_mix_category_value(&self, value: &str) -> Option<(String, Option<&Token>)> {
         let tokens = self.tokens.as_ref()?;
         let (color, opacity) = split_top_level_slash(value)?;
         let color = color.trim();
         let color_path = format!("colors.{color}");
-        if tokens.token(&color_path).is_some() {
+        if let Some(token) = tokens.token(&color_path) {
             let path = format!("{color_path}/{opacity}");
-            tokens.color_mix_str(&path)
-        } else if tokens.token(color).is_some() || !is_plain_token_path_like(color) {
-            tokens.color_mix_str(value)
+            Some((tokens.color_mix_str(&path)?, Some(token)))
+        } else if let Some(token) = tokens.token(color) {
+            Some((tokens.color_mix_str(value)?, Some(token)))
+        } else if !is_plain_token_path_like(color) {
+            Some((tokens.color_mix_str(value)?, None))
         } else {
             None
         }
@@ -577,6 +596,13 @@ impl Utility {
             return value.to_owned();
         };
         expand_token_references_to_vars(value, tokens)
+    }
+
+    fn expand_reference_recording<'a>(&'a self, value: &str, refs: &mut Vec<&'a Token>) -> String {
+        let Some(tokens) = &self.tokens else {
+            return value.to_owned();
+        };
+        expand_token_references_to_vars_recording(value, tokens, refs)
     }
 
     fn collect_shorthands(&mut self, property: &str, value: Option<&StringOrStringArray>) {

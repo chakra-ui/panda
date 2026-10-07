@@ -57,6 +57,8 @@ pub struct TokenDictionary {
     #[cfg_attr(feature = "serde", serde(skip))]
     by_var: FxHashMap<Arc<str>, usize>,
     #[cfg_attr(feature = "serde", serde(skip))]
+    by_reference: FxHashMap<Arc<str>, usize>,
+    #[cfg_attr(feature = "serde", serde(skip))]
     by_category: FxHashMap<TokenCategory, Vec<usize>>,
     #[cfg_attr(feature = "serde", serde(skip))]
     by_category_key: FxHashMap<TokenCategory, FxHashMap<Arc<str>, usize>>,
@@ -287,6 +289,14 @@ impl TokenDictionary {
         self.by_var.get(var).map(|&i| &self.tokens[i])
     }
 
+    /// Inverse of [`Self::get_var_str`].
+    #[must_use]
+    pub fn token_by_reference(&self, value: &str) -> Option<&Token> {
+        self.by_reference
+            .get(value.trim())
+            .map(|&i| &self.tokens[i])
+    }
+
     /// Zero-allocation `token('path', fallback)` lookup.
     #[must_use]
     pub fn get_str<'a>(&'a self, path: &str, fallback: Option<&'a str>) -> Option<&'a str> {
@@ -444,11 +454,17 @@ impl TokenDictionary {
 
     #[must_use]
     pub fn category_value_str(&self, category: &str, key: &str) -> Option<&str> {
+        self.category_token(category, key).map(category_value)
+    }
+
+    /// Token at a category-relative key (`spacing`, `-2` → `spacing.-2`).
+    #[must_use]
+    pub fn category_token(&self, category: &str, key: &str) -> Option<&Token> {
         let category = TokenCategory::from_path_segment(category);
         self.by_category_key
             .get(&category)?
             .get(key)
-            .map(|&i| category_value(&self.tokens[i]))
+            .map(|&i| &self.tokens[i])
     }
 
     // === Token Resolution & Metadata ===

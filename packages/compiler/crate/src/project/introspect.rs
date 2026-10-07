@@ -56,6 +56,7 @@ impl Compiler {
             css_value: resolved.css_value.to_json(),
             important: resolved.important,
             source: pandacss_compiler::utility_value_source_json(resolved.source),
+            tokens: resolved.tokens,
         }))
     }
 

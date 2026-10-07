@@ -392,6 +392,8 @@ export interface ResolvedUtilityValue {
   cssValue: UtilityResolvedScalar
   important: boolean
   source: UtilityValueSource
+  /** Tokens Panda resolved for the value; handwritten `var(--…)` isn't counted. */
+  tokens: string[]
 }
 
 export interface TokenSuggestion {
