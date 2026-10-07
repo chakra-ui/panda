@@ -73,9 +73,9 @@ gzip via `CompressionStream` / `DecompressionStream`. Key and payload encoded ba
 
 ## Studio — `apps/studio`
 
-- `server/api/handoff/index.post.ts` — accepts `{ iv, data }` (base64url), max 4,000,000 characters of `data` (Vercel's
-  body limit is 4.5 MB), stores in Redis with 120s TTL, returns `{ id }` (`nanoid(16)`). Rejects anything else with
-  400/413.
+- `server/api/handoff/index.post.ts` — accepts `{ iv, data }` (base64url), max 1,000,000 characters of `data`, stores in
+  Redis with 120s TTL, returns `{ id }` (`nanoid(16)`). Rejects anything else with 400/413. Rate limit: 20 handoffs per
+  client per minute (429); a Vercel WAF rule is the follow-up for IP-rotating abuse.
 - `server/api/handoff/[id].get.ts` — `GETDEL`; 404 when missing or expired.
 - `pages/view.vue` — when `?h` and `#k` are present: fetch, decrypt, `parseSpec`, `saveTokens`, clear usage, strip `h`
   and `k` from the URL with `history.replaceState`, render. On failure show "Link expired, run `panda studio` again".
