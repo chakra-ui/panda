@@ -707,3 +707,25 @@ fn styled_with_recipe_raw_member_records_no_recipe() {
         None
     );
 }
+
+#[test]
+fn parses_jsx_in_js_files() {
+    for path in ["page.js", "page.mjs", "page.cjs"] {
+        let usage = extract(
+            indoc! {r#"
+                import { Box } from "@panda/jsx"
+                export default function Page() {
+                  return <Box color="red" />
+                }
+            "#},
+            path,
+            &panda_jsx_config(),
+        );
+        assert!(
+            usage.diagnostics.is_empty(),
+            "{path}: {:?}",
+            usage.diagnostics
+        );
+        assert_eq!(usage.jsx.len(), 1, "{path}");
+    }
+}

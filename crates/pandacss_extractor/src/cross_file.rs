@@ -23,7 +23,6 @@ use oxc_ast::ast::{
 };
 use oxc_parser::Parser;
 use oxc_resolver::{ResolveOptions, ResolverGeneric, TsconfigDiscovery};
-use oxc_span::SourceType;
 use pandacss_fs::{FileSystem, to_forward_slash};
 use rustc_hash::{FxHashMap, FxHashSet};
 
@@ -473,7 +472,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
         prefix: &str,
     ) -> (ModuleExports, Provenance, UnresolvedDependencies) {
         let allocator = Allocator::default();
-        let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
+        let source_type = crate::adapter::source_type_from_path(path);
         let parser_return = Parser::new(&allocator, source, source_type).parse();
         let matched = matchers.map_or_else(Vec::new, |matchers| {
             let imports = collect_imports(&parser_return.program);
