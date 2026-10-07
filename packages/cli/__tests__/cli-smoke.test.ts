@@ -40,7 +40,7 @@ describe('cli smoke', () => {
     expect(normalizeCliOutput(result.stdout)).toMatchInlineSnapshot(`
       "Generate the panda system and CSS. Run with no subcommand for the full build. (panda v<version>)
 
-      USAGE panda [OPTIONS] init|dev|build|check|doctor|debug|buildinfo|lib|analyze|codegen|cssgen
+      USAGE panda [OPTIONS] init|dev|build|check|doctor|debug|buildinfo|lib|analyze|codegen|cssgen|studio
 
       OPTIONS
 
@@ -81,12 +81,13 @@ describe('cli smoke', () => {
       analyze Inspect Panda usage across project sources
       codegen Generate the panda system
       cssgen Generate CSS from project files
+      studio Open your design system in Panda Studio
 
       Use panda <command> --help for more information about a command.
 
       "
     `)
-    expect(result.stdout).toContain('init|dev|build|check|doctor|debug|buildinfo|lib|analyze|codegen|cssgen')
+    expect(result.stdout).toContain('init|dev|build|check|doctor|debug|buildinfo|lib|analyze|codegen|cssgen|studio')
     expect(result.stdout).toContain(`panda v${version}`)
     expect(result.stdout).not.toContain('inspect')
     expect(result.stdout).not.toContain('validate')

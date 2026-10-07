@@ -148,6 +148,11 @@ export type BuildFlags = FlagsInfer<typeof buildFlagsSchema>
 export type InitFlags = FlagsInfer<typeof initFlagsSchema>
 export type BuildinfoFlags = FlagsInfer<typeof buildinfoFlagsSchema>
 export type LibFlags = FlagsInfer<typeof libFlagsSchema>
+export const studioFlagsSchema = doctorFlagsSchema.extend({
+  open: booleanFlag,
+})
+export type StudioFlags = FlagsInfer<typeof studioFlagsSchema>
+
 export type DoctorFlags = FlagsInfer<typeof doctorFlagsSchema>
 export type DebugFlags = FlagsInfer<typeof debugFlagsSchema>
 type AnalyzeScopeRaw = FlagsInfer<typeof analyzeFlagsSchema>['scope']
@@ -224,6 +229,11 @@ export interface InitResult extends CommandResult {
   gitignoreWritten: boolean
   codegenFiles: string[]
   presetsInstalled: string[]
+}
+
+export interface StudioResult extends CommandResult {
+  url?: string
+  files: string[]
 }
 
 export interface DoctorResult extends CommandResult {
