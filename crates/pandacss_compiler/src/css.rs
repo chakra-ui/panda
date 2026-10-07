@@ -267,9 +267,14 @@ fn stylesheet_snapshots<'a>(
     project: &'a mut Project,
     user_config: &UserConfig,
     utility_transform: Option<&mut UtilityTransformFn<'_>>,
+    static_pattern_atoms: &[Atom],
 ) -> ProjectStylesheetSnapshots<'a> {
     if let Some(transform) = utility_transform {
-        project.stylesheet_snapshots_with_utility_transform(user_config, transform)
+        project.stylesheet_snapshots_with_utility_transform(
+            user_config,
+            transform,
+            static_pattern_atoms,
+        )
     } else {
         project.stylesheet_snapshots(user_config)
     }
@@ -295,7 +300,12 @@ fn prepare_stylesheet<'a>(
     utility_transform: Option<&mut UtilityTransformFn<'_>>,
     prelude: CompilePrelude,
 ) -> PreparedStylesheet<'a> {
-    let snapshots = stylesheet_snapshots(project, user_config, utility_transform);
+    let snapshots = stylesheet_snapshots(
+        project,
+        user_config,
+        utility_transform,
+        &prelude.static_pattern_atoms,
+    );
     PreparedStylesheet { prelude, snapshots }
 }
 

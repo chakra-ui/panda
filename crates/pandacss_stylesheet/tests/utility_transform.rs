@@ -51,6 +51,7 @@ where
     let snapshots = project.stylesheet_snapshots_with_utility_transform(
         cfg,
         &mut transform as &mut UtilityTransformFn<'_>,
+        &[],
     );
     pandacss_stylesheet::compile(
         project_input(cfg, &snapshots),

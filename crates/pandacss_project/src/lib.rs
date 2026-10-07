@@ -110,10 +110,8 @@ pub struct Project {
         Vec<Diagnostic>,
     )>,
     token_refs_snapshot_cache: Option<Vec<String>>,
-    /// Transform overrides for config-authored styles (`globalCss`, compositions);
-    /// the `bool` is whether a transform was present.
-    config_utility_styles_cache:
-        Option<(bool, FxHashMap<UtilityStyleKey, Literal>, Vec<Diagnostic>)>,
+    /// Transform overrides for config-authored styles (`globalCss`, compositions, `staticCss`).
+    config_utility_styles_cache: Option<ConfigUtilityStyles>,
     merged_utility_styles_snapshot_cache: Option<FxHashMap<UtilityStyleKey, Literal>>,
     parse_epoch: u64,
     dependencies: DependencyGraph,
@@ -1397,20 +1395,32 @@ impl Project {
         &mut self,
         user_config: &UserConfig,
         utility_transform: &mut UtilityTransformFn<'_>,
+        static_pattern_atoms: &[Atom],
     ) -> ProjectStylesheetSnapshots<'_> {
-        self.stylesheet_snapshots_inner(user_config, Some(utility_transform))
+        self.stylesheet_snapshots_inner(
+            user_config,
+            Some((utility_transform, static_pattern_atoms)),
+        )
     }
 
     fn stylesheet_snapshots_inner(
         &mut self,
         user_config: &UserConfig,
-        mut utility_transform: Option<&mut UtilityTransformFn<'_>>,
+        transform_input: Option<(&mut UtilityTransformFn<'_>, &[Atom])>,
     ) -> ProjectStylesheetSnapshots<'_> {
+        let (mut utility_transform, static_pattern_atoms) = match transform_input {
+            Some((transform, atoms)) => (Some(transform), atoms),
+            None => (None, &[][..]),
+        };
         self.refresh_atoms_snapshot();
         self.refresh_encoded_recipes_snapshot();
         self.refresh_token_refs_snapshot();
         self.refresh_static_encoded_recipes_snapshot(user_config, utility_transform.as_deref_mut());
-        self.refresh_config_utility_styles(user_config, utility_transform.as_deref_mut());
+        self.refresh_config_utility_styles(
+            user_config,
+            utility_transform.as_deref_mut(),
+            static_pattern_atoms,
+        );
         let (hydrated_styles, hydrated_diagnostics) =
             self.collect_hydrated_utility_styles(utility_transform);
         let use_merged_utility_styles = self.prepare_snapshot_utility_styles(&hydrated_styles);
@@ -1422,8 +1432,8 @@ impl Project {
             .static_encoded_recipes_snapshot_cache
             .as_ref()
             .map_or_else(Vec::new, |(_, _, _, diagnostics)| diagnostics.clone());
-        if let Some((_, _, config_diagnostics)) = &self.config_utility_styles_cache {
-            diagnostics.extend(config_diagnostics.iter().cloned());
+        if let Some(config_styles) = &self.config_utility_styles_cache {
+            diagnostics.extend(config_styles.diagnostics.iter().cloned());
         }
         diagnostics.extend(hydrated_diagnostics);
         diagnostics.extend(self.collect_unregistered_hydrated_utility_diagnostics());
@@ -1630,17 +1640,22 @@ impl Project {
         self.inline_keyframes_snapshot_cache = Some(by_name.into_values().collect());
     }
 
-    /// Recomputes `config_utility_styles_cache` when the transform presence changes.
+    /// Recomputes `config_utility_styles_cache` when the transform, `staticCss`, or static pattern atoms change.
     fn refresh_config_utility_styles(
         &mut self,
         user_config: &UserConfig,
         mut utility_transform: Option<&mut UtilityTransformFn<'_>>,
+        static_pattern_atoms: &[Atom],
     ) {
-        let cache_matches = self.config_utility_styles_cache.as_ref().is_some_and(
-            |(transformed, _, diagnostics)| {
-                *transformed == utility_transform.is_some() && diagnostics.is_empty()
-            },
-        );
+        let cache_matches = self
+            .config_utility_styles_cache
+            .as_ref()
+            .is_some_and(|cached| {
+                cached.transformed == utility_transform.is_some()
+                    && cached.diagnostics.is_empty()
+                    && cached.static_css == user_config.static_css
+                    && cached.static_pattern_atoms == static_pattern_atoms
+            });
         if cache_matches {
             return;
         }
@@ -1672,9 +1687,65 @@ impl Project {
                 &mut overrides,
                 &mut diagnostics,
             );
+            self.collect_static_css_overrides(
+                &user_config.static_css,
+                transform,
+                &mut overrides,
+                &mut diagnostics,
+            );
+            for atom in static_pattern_atoms {
+                self.transform_style_value(
+                    atom.prop(),
+                    atom.value().clone(),
+                    transform,
+                    &mut overrides,
+                    &mut diagnostics,
+                );
+            }
         }
-        self.config_utility_styles_cache =
-            Some((utility_transform.is_some(), overrides, diagnostics));
+        self.config_utility_styles_cache = Some(ConfigUtilityStyles {
+            transformed: utility_transform.is_some(),
+            static_css: user_config.static_css.clone(),
+            static_pattern_atoms: static_pattern_atoms.to_vec(),
+            overrides,
+            diagnostics,
+        });
+    }
+
+    fn collect_static_css_overrides(
+        &self,
+        static_css: &serde_json::Value,
+        transform: &mut UtilityTransformFn<'_>,
+        out: &mut FxHashMap<UtilityStyleKey, Literal>,
+        diagnostics: &mut Vec<Diagnostic>,
+    ) {
+        let Some(rules) = static_css.get("css").and_then(serde_json::Value::as_array) else {
+            return;
+        };
+        let Some(utility) = self.system.utility() else {
+            return;
+        };
+        for rule in rules {
+            for (property, values) in pandacss_config::static_css_rule_properties(rule) {
+                if !self.is_transform_utility(property) {
+                    continue;
+                }
+                let values = match values {
+                    serde_json::Value::Array(items) => items.as_slice(),
+                    value => std::slice::from_ref(value),
+                };
+                for value in values {
+                    if value.as_str() == Some("*") {
+                        for key in utility.property_keys(property) {
+                            let key = serde_json::Value::String(key);
+                            self.transform_style_leaf(property, &key, transform, out, diagnostics);
+                        }
+                    } else {
+                        self.transform_style_leaf(property, value, transform, out, diagnostics);
+                    }
+                }
+            }
+        }
     }
 
     /// Walks a composition config (`{ name: { value: styleObject } }`, nestable),
@@ -1707,15 +1778,15 @@ impl Project {
         let has_config_overrides = self
             .config_utility_styles_cache
             .as_ref()
-            .is_some_and(|(_, overrides, _)| !overrides.is_empty());
+            .is_some_and(|config_styles| !config_styles.overrides.is_empty());
         if !has_config_overrides && hydrated.is_empty() {
             self.merged_utility_styles_snapshot_cache = None;
             return false;
         }
 
         let mut merged = self.utility_styles_cache.clone();
-        if let Some((_, overrides, _)) = &self.config_utility_styles_cache {
-            for (key, styles) in overrides {
+        if let Some(config_styles) = &self.config_utility_styles_cache {
+            for (key, styles) in &config_styles.overrides {
                 merged.entry(key.clone()).or_insert_with(|| styles.clone());
             }
         }
@@ -1879,6 +1950,19 @@ impl Project {
         out: &mut FxHashMap<UtilityStyleKey, Literal>,
         diagnostics: &mut Vec<Diagnostic>,
     ) {
+        if let Some(original) = json_scalar_to_atom_value(value) {
+            self.transform_style_value(key, original, transform, out, diagnostics);
+        }
+    }
+
+    fn transform_style_value(
+        &self,
+        key: &str,
+        original: AtomValue,
+        transform: &mut UtilityTransformFn<'_>,
+        out: &mut FxHashMap<UtilityStyleKey, Literal>,
+        diagnostics: &mut Vec<Diagnostic>,
+    ) {
         let Some(utility) = self.system.utility() else {
             return;
         };
@@ -1886,9 +1970,6 @@ impl Project {
         if utility.callback_transform_id(canonical).is_none() {
             return;
         }
-        let Some(original) = json_scalar_to_atom_value(value) else {
-            return;
-        };
         let resolved = resolved_atom_value(Some(utility), canonical, &original);
         match transform(canonical, &resolved, &original) {
             // A `{}` result is kept so the emitter writes nothing for it.
@@ -2012,6 +2093,14 @@ impl Project {
 }
 
 /// Mirrors the emitter's `value_to_atom_value` so override keys match at lookup.
+struct ConfigUtilityStyles {
+    transformed: bool,
+    static_css: serde_json::Value,
+    static_pattern_atoms: Vec<Atom>,
+    overrides: FxHashMap<UtilityStyleKey, Literal>,
+    diagnostics: Vec<Diagnostic>,
+}
+
 fn json_scalar_to_atom_value(value: &serde_json::Value) -> Option<AtomValue> {
     match value {
         serde_json::Value::String(value) => Some(AtomValue::String(value.clone().into_boxed_str())),

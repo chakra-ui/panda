@@ -1636,6 +1636,7 @@ fn a_hydrated_atom_gets_its_transform_recomputed_by_the_consumer() {
     let snapshots = consumer.stylesheet_snapshots_with_utility_transform(
         &config,
         &mut transform as &mut UtilityTransformFn<'_>,
+        &[],
     );
 
     let style = snapshots
@@ -1727,6 +1728,7 @@ fn one_transform_result_covers_a_hydrated_atom_used_under_many_conditions() {
     let snapshots = consumer.stylesheet_snapshots_with_utility_transform(
         &config,
         &mut counting as &mut UtilityTransformFn<'_>,
+        &[],
     );
     assert_eq!(snapshots.utility_styles.len(), 1);
     drop(snapshots);
@@ -1784,6 +1786,7 @@ fn the_consumer_own_usage_wins_over_a_hydrated_atom_with_the_same_key() {
     let snapshots = consumer.stylesheet_snapshots_with_utility_transform(
         &config,
         &mut app_transform as &mut UtilityTransformFn<'_>,
+        &[],
     );
 
     let style = snapshots
@@ -1819,6 +1822,7 @@ fn a_module_filter_only_recomputes_transforms_for_imported_modules() {
     let snapshots = consumer.stylesheet_snapshots_with_utility_transform(
         &config,
         &mut transform as &mut UtilityTransformFn<'_>,
+        &[],
     );
 
     // Only the imported module's atom hydrates, so only its transform runs.

@@ -317,6 +317,20 @@ impl UserConfig {
     }
 }
 
+pub fn static_css_rule_properties(rule: &Value) -> impl Iterator<Item = (&String, &Value)> {
+    rule.get("properties")
+        .unwrap_or(rule)
+        .as_object()
+        .into_iter()
+        .flatten()
+        .filter(|(property, _)| {
+            !matches!(
+                property.as_str(),
+                "properties" | "conditions" | "responsive" | "recipes" | "patterns"
+            )
+        })
+}
+
 #[must_use]
 pub fn theme_condition_name(theme: &str) -> String {
     format!("_theme{}", capitalize_for_theme_condition(theme))
