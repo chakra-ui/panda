@@ -92,6 +92,7 @@ async function upload(studioUrl: string, json: string): Promise<string> {
     signal: AbortSignal.timeout(15_000),
   })
   if (!res.ok) throw new UploadRejected(`${res.status} ${res.statusText}`)
-  const { id } = (await res.json()) as { id: string }
+  const { id } = (await res.json()) as { id?: unknown }
+  if (typeof id !== 'string') throw new UploadRejected(`${res.status} invalid response`)
   return `${new URL(`/view?h=${encodeURIComponent(id)}`, studioUrl)}#k=${key}`
 }

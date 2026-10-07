@@ -18,7 +18,7 @@ afterEach(() => {
   vi.unstubAllEnvs()
 })
 
-async function fakeStudio(status = 200) {
+async function fakeStudio(status = 200, reply: unknown = { id: 'abcdefghijklmnop' }) {
   const received: SealedSpec[] = []
   server = createServer((req, res) => {
     let body = ''
@@ -26,7 +26,7 @@ async function fakeStudio(status = 200) {
     req.on('end', () => {
       received.push(JSON.parse(body))
       res.writeHead(status, { 'content-type': 'application/json' })
-      res.end(JSON.stringify({ id: 'abcdefghijklmnop' }))
+      res.end(JSON.stringify(reply))
     })
   })
   await new Promise<void>((resolve) => server!.listen(0, '127.0.0.1', resolve))
@@ -53,6 +53,7 @@ describe('studio command', () => {
     const written = readFileSync(join(dir, 'styled-system', 'specs', 'design-system.json'), 'utf8')
     const key = new URL(result.url!).hash.slice('#k='.length)
     expect(await openSpec(received[0]!, key)).toBe(written)
+    expect(JSON.stringify(received[0])).not.toContain(key)
   })
 
   it('prints only json and never opens with --json', async () => {
@@ -92,6 +93,20 @@ describe('studio command', () => {
     expect(result.files.some((file) => file.endsWith('design-system.json'))).toBe(true)
     expect(logs.join('\n')).toContain('rejected the upload (500')
     expect(logs.join('\n')).toContain('drop')
+  })
+
+  it('writes the spec file when the studio replies without an id', async () => {
+    dir = createFixture(CONFIG_WITH_TOKENS)
+    await fakeStudio(200, {})
+    const open = vi.fn()
+    const logs: string[] = []
+
+    const result = await runStudio({ cwd: dir }, { log: (message) => logs.push(message) }, open)
+
+    expect(result.ok).toBe(false)
+    expect(open).not.toHaveBeenCalled()
+    expect(result.files.some((file) => file.endsWith('design-system.json'))).toBe(true)
+    expect(logs.join('\n')).toContain('rejected the upload (200 invalid response')
   })
 
   it('writes the spec file when the studio is unreachable', async () => {
