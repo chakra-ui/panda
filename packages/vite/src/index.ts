@@ -1,13 +1,19 @@
 import { createNodeDriver, type Diagnostic, type Driver } from '@pandacss/compiler'
-import { createDiagnosticLog, type SourceChange } from '@pandacss/compiler-shared'
+import {
+  appendPandaStylesheet,
+  createDiagnosticLog,
+  findImportedLayerDeclaration,
+  type SourceChange,
+} from '@pandacss/compiler-shared'
 import {
   createPandaSourcePluginHooks,
   createSourceTransformer,
   runSourceTransform,
   type SourceTransformer,
 } from '@pandacss/transformer'
-import { extname } from 'node:path'
-import type { DevEnvironment, EnvironmentModuleNode, HotUpdateOptions, Plugin, ResolvedConfig } from 'vite'
+import { readFile } from 'node:fs/promises'
+import { extname, isAbsolute } from 'node:path'
+import type { DevEnvironment, EnvironmentModuleNode, HotUpdateOptions, Plugin, ResolvedConfig, Rollup } from 'vite'
 
 export interface PandaPluginOptions {
   /** Project root. Defaults to Vite's resolved `root`. */
@@ -27,7 +33,7 @@ export interface PandaPluginOptions {
  * Vite plugin for Panda CSS.
  * The CSS file declaring Panda layers is treated as the generated CSS root.
  */
-export function pandacss(options: PandaPluginOptions = {}): Plugin {
+export function pandacss(options: PandaPluginOptions = {}): Plugin[] {
   const { cwd: cwdOption, configPath, outdir: outdirOption, transform: transformEnabled = false } = options
   let driver: Driver | undefined
   let cwd = ''
@@ -116,7 +122,39 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
     return [...new Set([...invalidateRoots(environment), ...modules])]
   }
 
-  return {
+  const injectStylesheet = (ctx: Rollup.TransformPluginContext, code: string, id: string): Rollup.TransformResult => {
+    rootIds.add(id)
+    addPandaWatchFiles((file) => ctx.addWatchFile(file), id)
+    warnDesignSystemDiagnostics((message) => {
+      if (resolvedConfig) {
+        resolvedConfig.logger.warn(message)
+      } else {
+        ctx.warn(message)
+      }
+    })
+
+    const stylesheet = appendPandaStylesheet(driver!, code)
+    warnDiagnostics((message) => ctx.warn(message), stylesheet.diagnostics, 'while compiling the stylesheet', {
+      onlyNew: true,
+    })
+    return { code: stylesheet.code, map: null }
+  }
+
+  const importsLayerDeclaration = async (ctx: Rollup.TransformPluginContext, code: string, importer: string) => {
+    const imported = await findImportedLayerDeclaration(code, importer, {
+      resolve: async (specifier, from) => {
+        const resolved = await resolveCssImport(ctx, specifier, from)
+        const file = resolved && !resolved.external ? cleanId(resolved.id) : undefined
+        return file && isAbsolute(file) ? file : undefined
+      },
+      read: (file) => readFile(file, 'utf8'),
+      hasLayerDeclaration: (css) => driver!.compiler.hasLayerDeclaration(css),
+    })
+    for (const file of imported.files) ctx.addWatchFile(file)
+    return imported.found
+  }
+
+  const plugin: Plugin = {
     name: 'pandacss',
     enforce: 'pre',
 
@@ -163,27 +201,13 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
           }
         }
 
-        if (!driver || extname(id.split('?')[0] ?? id) !== '.css') return null
-        if (!driver.compiler.hasLayerDeclaration(code)) return null
+        if (!driver || extname(cleanId(id)) !== '.css') return null
+        if (driver.compiler.hasLayerDeclaration(code)) return injectStylesheet(this, code, id)
+        if (!code.includes('@import')) return null
 
-        rootIds.add(id)
-        addPandaWatchFiles((file) => this.addWatchFile(file), id)
-        warnDesignSystemDiagnostics((message) => {
-          if (resolvedConfig) {
-            resolvedConfig.logger.warn(message)
-          } else {
-            this.warn(message)
-          }
-        })
-
-        const polyfill = driver.config.polyfill === true
-        const output = driver.cssgen({ emitLayerDeclaration: false, polyfill })
-        warnDiagnostics((message) => this.warn(message), output.diagnostics, 'while compiling the stylesheet', {
-          onlyNew: true,
-        })
-
-        const entry = polyfill ? driver.compiler.stripLayerOrderStatements(code) : code
-        return { code: `${entry}\n${output.css}`, map: null }
+        return importsLayerDeclaration(this, code, cleanId(id)).then((found) =>
+          found ? injectStylesheet(this, code, id) : null,
+        )
       },
     },
 
@@ -236,6 +260,29 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
       return ctx.modules
     },
   }
+
+  const polyfillPlugin: Plugin = {
+    name: 'pandacss:polyfill',
+    transform(code, id) {
+      if (driver?.config.polyfill !== true || !rootIds.has(id)) return null
+      const stripped = driver.compiler.stripLayerOrderStatements(code)
+      return stripped === code ? null : { code: stripped, map: null }
+    },
+  }
+
+  return [plugin, polyfillPlugin]
+}
+
+function cleanId(id: string) {
+  return id.split('?')[0] ?? id
+}
+
+async function resolveCssImport(ctx: Rollup.TransformPluginContext, specifier: string, importer: string) {
+  if (!/^[./]/.test(specifier)) {
+    const relative = await ctx.resolve(`./${specifier}`, importer, { skipSelf: true })
+    if (relative) return relative
+  }
+  return ctx.resolve(specifier, importer, { skipSelf: true })
 }
 
 function isPandaFile(driver: Driver, file: string): boolean {

@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, mkdtempSync, realpathSync, renameSync, rmSync, w
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { createServer, type ViteDevServer } from 'vite'
+import { build, createServer, type Rollup, type ViteDevServer } from 'vite'
 import { pandacss } from '../src'
 
 const CONFIG = `export default {
@@ -463,5 +463,128 @@ describe('@pandacss/vite with sources outside the root', () => {
     await new Promise((done) => setTimeout(done, 300))
 
     expect(await readCss(server)).not.toContain('peru')
+  })
+})
+
+describe('@pandacss/vite with Panda layers in an @import-ed file', () => {
+  let dir: string | undefined
+  let server: ViteDevServer | undefined
+
+  afterEach(async () => {
+    await server?.close()
+    server = undefined
+    if (dir) rmSync(dir, { recursive: true, force: true })
+    dir = undefined
+  })
+
+  function createImportFixture(files: Record<string, string>, config = CONFIG) {
+    dir = createFixture(`{ color: 'red' }`, config)
+    for (const [path, content] of Object.entries(files)) {
+      mkdirSync(join(dir, path, '..'), { recursive: true })
+      writeFileSync(join(dir, path), content)
+    }
+    return dir
+  }
+
+  const POLYFILL_CONFIG = CONFIG.replace("  outdir: 'styled-system',", "  outdir: 'styled-system',\n  polyfill: true,")
+  const LAYERS = '@layer reset, base, tokens, recipes, utilities;'
+
+  it('injects the stylesheet into the file that imports the layer declaration', async () => {
+    createImportFixture({
+      'index.css': '@import "./styles/layers.css";\n.app { color: black }\n',
+      'styles/layers.css': LAYERS,
+    })
+    server = await startServer(dir!)
+
+    const css = await readCss(server)
+    expect(css).toContain('red')
+    expect(css).toContain('black')
+    expect(css.match(/@layer reset, base, tokens, recipes, utilities;/g)).toHaveLength(1)
+  })
+
+  it('follows nested and url() imports', async () => {
+    createImportFixture({
+      'index.css': '@import url("./styles/global.css");\n',
+      'styles/global.css': "@import './panda/layers.css';\n.global { color: navy }\n",
+      'styles/panda/layers.css': LAYERS,
+    })
+    server = await startServer(dir!)
+
+    const css = await readCss(server)
+    expect(css).toContain('red')
+    expect(css).toContain('navy')
+  })
+
+  it('resolves a bare import relative to the importing file first, like CSS does', async () => {
+    createImportFixture({ 'index.css': '@import "styles/layers.css";\n', 'styles/layers.css': LAYERS })
+    server = await startServer(dir!)
+
+    expect(await readCss(server)).toContain('red')
+  })
+
+  it('ignores a commented-out import', async () => {
+    createImportFixture({
+      'index.css': '/* @import "./styles/layers.css"; */\n.app { color: black }\n',
+      'styles/layers.css': LAYERS,
+    })
+    server = await startServer(dir!)
+
+    expect(await readCss(server)).not.toContain('red')
+  })
+
+  it('injects the stylesheet once the imported file gains the layer declaration', async () => {
+    createImportFixture({ 'index.css': '@import "./styles/layers.css";\n', 'styles/layers.css': '.layers {}\n' })
+    server = await startServer(dir!)
+    expect(await readCss(server)).not.toContain('red')
+
+    const layers = join(dir!, 'styles/layers.css')
+    writeFileSync(layers, LAYERS)
+    server.watcher.emit('change', layers)
+
+    expect(await waitForCss(server, 'red')).toContain('red')
+  })
+
+  it('strips the imported layer order and keeps imported url()s resolved when polyfilled', async () => {
+    createImportFixture(
+      {
+        'index.css': '@import "./styles/layers.css";\n@import "./vendor/css/lib.css";\n',
+        'styles/layers.css': LAYERS,
+        'vendor/css/lib.css': '@font-face { font-family: Lib; src: url(../fonts/lib.woff2) }\n',
+        'vendor/fonts/lib.woff2': 'font',
+      },
+      POLYFILL_CONFIG,
+    )
+    server = await startServer(dir!)
+
+    const css = await readCss(server)
+    expect(css).toContain('red')
+    expect(css).not.toContain('@layer reset')
+    expect(css).toContain('/vendor/fonts/lib.woff2')
+  })
+
+  it('strips the imported layer order in a production build when polyfilled', async () => {
+    createImportFixture(
+      {
+        'index.css': '@import "./styles/layers.css";\n@import "./vendor/css/lib.css";\n',
+        'styles/layers.css': LAYERS,
+        'vendor/css/lib.css': '@font-face { font-family: Lib; src: url(../fonts/lib.woff2) }\n',
+        'vendor/fonts/lib.woff2': 'font',
+        'main.ts': "import './index.css'\n",
+      },
+      POLYFILL_CONFIG,
+    )
+
+    const output = (await build({
+      root: dir,
+      logLevel: 'silent',
+      configFile: false,
+      plugins: [pandacss()],
+      build: { write: false, assetsInlineLimit: 0, rollupOptions: { input: join(dir!, 'main.ts') } },
+    })) as Rollup.RollupOutput
+    const css = output.output.find((file) => file.fileName.endsWith('.css')) as Rollup.OutputAsset
+
+    expect(css.source).toContain('red')
+    expect(css.source).not.toContain('@layer')
+    expect(css.source).toMatch(/url\(\/assets\/lib-[\w-]+\.woff2\)/)
   })
 })

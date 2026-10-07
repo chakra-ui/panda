@@ -1,5 +1,5 @@
 import { createNodeDriver, type Diagnostic, type Driver } from '@pandacss/compiler'
-import { createDiagnosticLog, type DiagnosticLogOptions } from '@pandacss/compiler-shared'
+import { appendPandaStylesheet, createDiagnosticLog, type DiagnosticLogOptions } from '@pandacss/compiler-shared'
 import {
   getInternalCssRuntimeSource,
   INTERNAL_CSS_IMPORT,
@@ -143,12 +143,9 @@ async function injectStylesheet(
   // In a rebuild the edited modules must sync into the project before the stylesheet is generated.
   await args.defer?.()
 
-  const polyfill = driver.config.polyfill === true
-  const output = driver.cssgen({ emitLayerDeclaration: false, polyfill })
-  warnDiagnostics(output.diagnostics, 'while compiling the stylesheet', { onlyNew: true })
-
-  const entry = polyfill ? driver.compiler.stripLayerOrderStatements(source) : source
-  return { contents: `${entry}\n${output.css}`, loader: 'css' }
+  const stylesheet = appendPandaStylesheet(driver, source)
+  warnDiagnostics(stylesheet.diagnostics, 'while compiling the stylesheet', { onlyNew: true })
+  return { contents: stylesheet.code, loader: 'css' }
 }
 
 async function loadSource(

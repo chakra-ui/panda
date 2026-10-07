@@ -1,5 +1,12 @@
 import type { Diagnostic, Driver } from '@pandacss/compiler'
-import { formatDiagnostic, withDiagnosticFile } from '@pandacss/compiler-shared'
+import {
+  appendPandaStylesheet,
+  findImportedLayerDeclaration,
+  formatDiagnostic,
+  withDiagnosticFile,
+} from '@pandacss/compiler-shared'
+import { readFile } from 'node:fs/promises'
+import { dirname } from 'node:path'
 import type { LoaderContext } from 'webpack'
 
 /** Options the plugin passes to this loader — a live handle to the driver. */
@@ -9,24 +16,51 @@ export interface PandaCssLoaderOptions {
 
 /**
  * `pre` loader for `.css` files. When a stylesheet declares Panda layers
- * (`@layer reset, base, …;`), append the generated CSS in-memory — the webpack
+ * (`@layer reset, base, …;`) or `@import`s a file that does, append the generated CSS in-memory — the webpack
  * analog of the Vite plugin's `.css` transform. No file is written to disk.
  * Registers project sources, config deps, and design-system watch targets so
  * webpack rebuilds this stylesheet when they change.
  */
-export default function pandaCssLoader(this: LoaderContext<PandaCssLoaderOptions>, source: string): string {
+export default function pandaCssLoader(this: LoaderContext<PandaCssLoaderOptions>, source: string): string | void {
   const driver = this.getOptions().getDriver()
-  if (!driver || !driver.compiler.hasLayerDeclaration(source)) return source
+  if (!driver) return source
+  if (driver.compiler.hasLayerDeclaration(source)) return injectStylesheet(this, driver, source)
+  if (!source.includes('@import')) return source
 
-  addPandaDependencies(this, driver)
-  warnDiagnostics(this, driver.designSystemDiagnostics, 'while loading the design system')
+  const callback = this.async()
+  importsLayerDeclaration(this, driver, source).then(
+    (found) => callback(null, found ? injectStylesheet(this, driver, source) : source),
+    (error: Error) => callback(error),
+  )
+}
 
-  const polyfill = driver.config.polyfill === true
-  const output = driver.cssgen({ emitLayerDeclaration: false, polyfill })
-  warnDiagnostics(this, output.diagnostics, 'while compiling the stylesheet')
+const CSS_RESOLVE_OPTIONS = {
+  dependencyType: 'css',
+  conditionNames: ['style', '...'],
+  mainFields: ['css', 'style', 'main', '...'],
+  mainFiles: ['index', '...'],
+  extensions: ['.css', '...'],
+  preferRelative: true,
+}
 
-  const entry = polyfill ? driver.compiler.stripLayerOrderStatements(source) : source
-  return `${entry}\n${output.css}`
+async function importsLayerDeclaration(loader: LoaderContext<PandaCssLoaderOptions>, driver: Driver, source: string) {
+  const resolve = loader.getResolve(CSS_RESOLVE_OPTIONS)
+  const imported = await findImportedLayerDeclaration(source, loader.resourcePath, {
+    resolve: (specifier, importer) => resolve(dirname(importer), specifier).catch(() => undefined),
+    read: (file) => readFile(file, 'utf8'),
+    hasLayerDeclaration: (css) => driver.compiler.hasLayerDeclaration(css),
+  })
+  for (const file of imported.files) loader.addDependency(file)
+  return imported.found
+}
+
+function injectStylesheet(loader: LoaderContext<PandaCssLoaderOptions>, driver: Driver, source: string) {
+  addPandaDependencies(loader, driver)
+  warnDiagnostics(loader, driver.designSystemDiagnostics, 'while loading the design system')
+
+  const stylesheet = appendPandaStylesheet(driver, source)
+  warnDiagnostics(loader, stylesheet.diagnostics, 'while compiling the stylesheet')
+  return stylesheet.code
 }
 
 function addPandaDependencies(

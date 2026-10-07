@@ -24,7 +24,7 @@ afterEach(() => {
 describe('@pandacss/vite design-system HMR', () => {
   it('watches design-system artifacts and source files from the CSS root', async () => {
     const { driver, pandacss } = await setup()
-    const plugin = pandacss() as unknown as TestPlugin
+    const plugin = pandacss()[0] as unknown as TestPlugin
     const addWatchFile = vi.fn()
 
     await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
@@ -53,7 +53,7 @@ describe('@pandacss/vite design-system HMR', () => {
       dirs: ['/project/src'],
       config: ['panda.config.ts'],
     })
-    const plugin = pandacss() as unknown as TestPlugin
+    const plugin = pandacss()[0] as unknown as TestPlugin
 
     await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
     plugin.transform.handler.call({ addWatchFile: vi.fn(), warn: vi.fn() }, CSS_ROOT, '/project/src/index.css')
@@ -63,7 +63,7 @@ describe('@pandacss/vite design-system HMR', () => {
 
   it('registers newly parsed files on later CSS transforms without re-adding known files', async () => {
     const { driver, pandacss } = await setup()
-    const plugin = pandacss() as unknown as TestPlugin
+    const plugin = pandacss()[0] as unknown as TestPlugin
     const addWatchFile = vi.fn()
     const ctx = { addWatchFile, warn: vi.fn() }
 
@@ -85,7 +85,7 @@ describe('@pandacss/vite design-system HMR', () => {
 
   it('reloads design-system changes before returning component HMR modules', async () => {
     const { driver, pandacss } = await setup()
-    const plugin = pandacss() as unknown as TestPlugin
+    const plugin = pandacss()[0] as unknown as TestPlugin
     const rootModule = { id: '/project/src/index.css' }
     const componentModule = { id: '/project/node_modules/@acme/ds/src/button.tsx' }
     const invalidateModule = vi.fn()
@@ -135,7 +135,7 @@ describe('@pandacss/vite design-system HMR', () => {
 
   it('regenerates codegen when a design-system artifact changes', async () => {
     const { driver, pandacss } = await setup()
-    const plugin = pandacss({ outdir: 'styled-system' }) as unknown as TestPlugin
+    const plugin = pandacss({ outdir: 'styled-system' })[0] as unknown as TestPlugin
     const environment = createEnvironment()
     driver.isDesignSystemFile.mockReturnValue('artifact')
     driver.syncDesignSystemFileChange.mockResolvedValue(true)
@@ -156,7 +156,7 @@ describe('@pandacss/vite design-system HMR', () => {
 
   it('skips codegen when a design-system artifact is unchanged', async () => {
     const { driver, pandacss } = await setup()
-    const plugin = pandacss() as unknown as TestPlugin
+    const plugin = pandacss()[0] as unknown as TestPlugin
     const environment = createEnvironment()
     driver.isDesignSystemFile.mockReturnValue('artifact')
     driver.syncDesignSystemFileChange.mockResolvedValue(false)
@@ -173,7 +173,7 @@ describe('@pandacss/vite design-system HMR', () => {
 
   it('skips codegen when a design-system source file changes', async () => {
     const { driver, pandacss } = await setup()
-    const plugin = pandacss() as unknown as TestPlugin
+    const plugin = pandacss()[0] as unknown as TestPlugin
     const environment = createEnvironment()
     driver.syncDesignSystemFileChange.mockResolvedValue(true)
 
@@ -197,7 +197,7 @@ describe('@pandacss/vite design-system HMR', () => {
 
   it('parses a newly created source file', async () => {
     const { driver, pandacss } = await setup()
-    const plugin = pandacss() as unknown as TestPlugin
+    const plugin = pandacss()[0] as unknown as TestPlugin
     const environment = createEnvironment()
     const read = vi.fn(async () => "export const cls = css({ color: 'red' })")
     driver.isSourceFile.mockReturnValue(true)
@@ -218,7 +218,7 @@ describe('@pandacss/vite design-system HMR', () => {
 
   it('re-parses an edited source file', async () => {
     const { driver, pandacss } = await setup()
-    const plugin = pandacss() as unknown as TestPlugin
+    const plugin = pandacss()[0] as unknown as TestPlugin
     const environment = createEnvironment()
     const read = vi.fn(async () => "export const cls = css({ color: 'red' })")
     driver.isSourceFile.mockReturnValue(true)
@@ -239,7 +239,7 @@ describe('@pandacss/vite design-system HMR', () => {
 
   it('drops a deleted source file without reading it', async () => {
     const { driver, pandacss } = await setup()
-    const plugin = pandacss() as unknown as TestPlugin
+    const plugin = pandacss()[0] as unknown as TestPlugin
     const environment = createEnvironment()
     const read = vi.fn(async () => "export const cls = css({ color: 'red' })")
     driver.isSourceFile.mockReturnValue(true)
@@ -259,7 +259,7 @@ describe('@pandacss/vite design-system HMR', () => {
 
   it('ignores a non-source file change in the SSR environment', async () => {
     const { driver, pandacss } = await setup()
-    const plugin = pandacss() as unknown as TestPlugin
+    const plugin = pandacss()[0] as unknown as TestPlugin
     const root = { id: '/project/src/index.css' }
     const client = { moduleGraph: {} }
     const ssr = {
@@ -284,7 +284,7 @@ describe('@pandacss/vite design-system HMR', () => {
 
   it('invalidates the SSR stylesheet root on a source delete without touching the shared driver', async () => {
     const { driver, pandacss } = await setup()
-    const plugin = pandacss() as unknown as TestPlugin
+    const plugin = pandacss()[0] as unknown as TestPlugin
     const root = { id: '/project/src/index.css' }
     const client = { moduleGraph: {} }
     const ssr = {
@@ -316,7 +316,7 @@ describe('@pandacss/vite design-system HMR', () => {
 
   it('skips source rewrite by default', async () => {
     const { createSourceTransformer, pandacss } = await setup()
-    const plugin = pandacss() as unknown as TestPlugin
+    const plugin = pandacss()[0] as unknown as TestPlugin
     const warn = vi.fn()
 
     await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
@@ -334,7 +334,7 @@ describe('@pandacss/vite design-system HMR', () => {
 
   it('warns on source-transform diagnostics and returns transformed code when enabled', async () => {
     const { createSourceTransformer, driver, pandacss } = await setup()
-    const plugin = pandacss({ transform: true }) as unknown as TestPlugin
+    const plugin = pandacss({ transform: true })[0] as unknown as TestPlugin
     const warn = vi.fn()
 
     driver.sourceTransformer.transformSource.mockReturnValueOnce({
@@ -375,7 +375,7 @@ describe('@pandacss/vite design-system HMR', () => {
 
   it('warns when source transformation leaves a broken static call unchanged', async () => {
     const { driver, pandacss } = await setup()
-    const plugin = pandacss({ transform: true }) as unknown as TestPlugin
+    const plugin = pandacss({ transform: true })[0] as unknown as TestPlugin
     const warn = vi.fn()
     const code = "import { css } from '@panda/css'\nexport const cls = css({ has: { svg: { color: 'red' } } })"
 
@@ -398,7 +398,7 @@ describe('@pandacss/vite design-system HMR', () => {
 
   it('rebuilds the cached source transformer after a compiler reload', async () => {
     const { createSourceTransformer, driver, pandacss } = await setup()
-    const plugin = pandacss({ transform: true }) as unknown as TestPlugin
+    const plugin = pandacss({ transform: true })[0] as unknown as TestPlugin
     const nextCompiler = { ...driver.compiler }
     const nextTransformer = {
       transformSource: vi.fn(() => ({
