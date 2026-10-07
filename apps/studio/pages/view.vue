@@ -2,7 +2,8 @@
 import { ref } from "vue";
 import * as s from "./view.styles";
 import { index, parseSpec, type DesignSystemIndex } from "~/utils/design-system";
-import { loadTokens, loadUsage, saveUsage, clearTokens } from "~/utils/idb";
+import { loadTokens, loadUsage, saveUsage, saveTokens, clearTokens } from "~/utils/idb";
+import { readHandoff, receiveHandoff } from "~/utils/handoff";
 import { droppedFiles } from "~/utils/dropped";
 import { useAnalyze } from "~/composables/useAnalyze";
 
@@ -14,10 +15,23 @@ useHead({
 const ds = ref<DesignSystemIndex | null>(null);
 const ready = ref(false);
 const usage = ref<unknown>(null);
+const expired = ref(false);
 
 const analyze = useAnalyze();
 
 onMounted(async () => {
+  const handoff = readHandoff(window.location);
+  if (handoff) {
+    const received = await receiveHandoff(handoff.id, handoff.key);
+    history.replaceState(null, "", "/view");
+    if (!received || !parseSpec(received).ok) {
+      expired.value = true;
+      return;
+    }
+    await clearTokens();
+    await saveTokens(received);
+  }
+
   const raw = await loadTokens();
   const result = raw ? parseSpec(raw) : null;
   if (!result?.ok) {
@@ -57,6 +71,9 @@ async function reset() {
     :analyze-href="'/analyze'"
     @reset="reset"
   />
+  <div v-else-if="expired" :class="s.loading">
+    This link has expired. Run <code>panda studio</code> again.
+  </div>
   <div v-else :class="s.loading">
     <img src="/panda.svg" alt="" :class="s.loadingLogo" />
     <span :class="s.loadingSpinner" />
