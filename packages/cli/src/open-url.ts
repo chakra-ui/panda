@@ -9,6 +9,6 @@ export function openUrl(url: string): void {
         : ['xdg-open', [url]]
 
   spawn(command, args, { stdio: 'ignore', detached: true, windowsVerbatimArguments: true })
-    .on('error', () => {})
+    .on('error', () => undefined)
     .unref()
 }
