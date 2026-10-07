@@ -7,8 +7,12 @@ export function readHandoff(location: { search: string; hash: string }): { id: s
 }
 
 export async function receiveHandoff(id: string, key: string, fetcher: typeof fetch = fetch): Promise<string | null> {
-  const res = await fetcher(`/api/handoff/${encodeURIComponent(id)}`);
-  if (!res.ok) return null;
-  const sealed = (await res.json()) as SealedSpec;
-  return openSpec(sealed, key).catch(() => null);
+  try {
+    const res = await fetcher(`/api/handoff/${encodeURIComponent(id)}`);
+    if (!res.ok) return null;
+    const sealed = (await res.json()) as SealedSpec;
+    return await openSpec(sealed, key);
+  } catch {
+    return null;
+  }
 }

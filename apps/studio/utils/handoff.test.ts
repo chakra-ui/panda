@@ -31,4 +31,16 @@ describe("receiveHandoff", () => {
     const { key } = await sealSpec(json);
     expect(await receiveHandoff("abc", key, respond(200, sealed))).toBeNull();
   });
+
+  it("returns null when the request fails", async () => {
+    const failing = async () => {
+      throw new TypeError("offline");
+    };
+    expect(await receiveHandoff("abc", "xyz", failing)).toBeNull();
+  });
+
+  it("returns null when the body is not JSON", async () => {
+    const html = async () => new Response("<html>", { status: 200 });
+    expect(await receiveHandoff("abc", "xyz", html)).toBeNull();
+  });
 });
