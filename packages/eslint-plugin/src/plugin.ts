@@ -80,11 +80,7 @@ const RAW_VALUE_KEYWORDS = new Set([
   'transparent',
 ])
 
-/**
- * A value is hardcoded when the compiler resolves it but the resulting CSS value
- * is not a `var(...)` token reference (and not a CSS-wide keyword). Checking for
- * `var(` is token-prefix agnostic.
- */
+/** Hardcoded: resolves to neither a token nor a CSS custom property. */
 function hardcodedValueClassifier(compiler: Project['compiler']): (prop: string, value: string) => boolean {
   const cache = new Map<string, boolean>()
   return (prop: string, value: string) => {
@@ -95,7 +91,8 @@ function hardcodedValueClassifier(compiler: Project['compiler']): (prop: string,
     let result = false
     if (!RAW_VALUE_KEYWORDS.has(value.trim().toLowerCase())) {
       const resolved = compiler.resolveUtilityValue({ prop, value })
-      result = resolved !== null && !String(resolved.cssValue).trimStart().startsWith('var(')
+      result =
+        resolved !== null && resolved.tokens.length === 0 && !String(resolved.cssValue).trimStart().startsWith('var(')
     }
     cache.set(key, result)
     return result

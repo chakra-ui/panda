@@ -162,6 +162,7 @@ fn resolve_utility_value_describes_class_and_css_value() {
                     "space",
                 ],
             },
+            tokens: [],
         },
         ResolvedUtilityValue {
             utility: "marginBottom",
@@ -176,6 +177,7 @@ fn resolve_utility_value_describes_class_and_css_value() {
                     "space",
                 ],
             },
+            tokens: [],
         },
         ResolvedUtilityValue {
             utility: "width",
@@ -185,6 +187,7 @@ fn resolve_utility_value_describes_class_and_css_value() {
             ),
             important: false,
             source: Arbitrary,
+            tokens: [],
         },
         ResolvedUtilityValue {
             utility: "width",
@@ -194,6 +197,7 @@ fn resolve_utility_value_describes_class_and_css_value() {
             ),
             important: true,
             source: Arbitrary,
+            tokens: [],
         },
         ResolvedUtilityValue {
             utility: "color",
@@ -203,6 +207,9 @@ fn resolve_utility_value_describes_class_and_css_value() {
             ),
             important: false,
             source: TokenReference,
+            tokens: [
+                "colors.red.500",
+            ],
         },
         ResolvedUtilityValue {
             utility: "zIndex",
@@ -214,6 +221,7 @@ fn resolve_utility_value_describes_class_and_css_value() {
             source: Literal {
                 aliases: [],
             },
+            tokens: [],
         },
     )
     "#,

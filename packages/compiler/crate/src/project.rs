@@ -142,6 +142,7 @@ pub struct ResolvedUtilityValue {
     pub css_value: serde_json::Value,
     pub important: bool,
     pub source: serde_json::Value,
+    pub tokens: Vec<String>,
 }
 
 #[napi(object)]

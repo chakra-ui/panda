@@ -163,11 +163,13 @@ impl TokenDictionaryBuilder {
         }
 
         let suggestion_index = build_suggestion_index(&self.tokens, &by_path, &by_path_condition);
+        let by_reference = build_reference_index(&self.tokens, &by_path);
 
         TokenDictionary {
             tokens: self.tokens,
             by_path,
             by_var,
+            by_reference,
             by_category,
             by_category_key,
             category_values_cache,
@@ -264,4 +266,17 @@ fn build_suggestion_index(
     }
 
     index
+}
+
+fn build_reference_index(
+    tokens: &[Token],
+    by_path: &FxHashMap<Arc<str>, usize>,
+) -> FxHashMap<Arc<str>, usize> {
+    by_path
+        .values()
+        .filter_map(|&i| {
+            let reference = category_value(&tokens[i]);
+            (!reference.is_empty()).then(|| (Arc::from(reference), i))
+        })
+        .collect()
 }
