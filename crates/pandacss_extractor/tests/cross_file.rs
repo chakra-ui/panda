@@ -253,6 +253,27 @@ fn named_const_import_resolves_to_value() {
 }
 
 #[test]
+fn const_imported_from_a_js_module_with_jsx_resolves_to_value() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { brand } from './theme';
+            import { css } from '@panda/css';
+            css({ color: brand });
+        "},
+        &[(
+            "theme.js",
+            "export const Badge = () => <span>new</span>;\nexport const brand = '#ef4444';\n",
+        )],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r##"
+    calls:
+      - name: css
+        data:
+          - color: "#ef4444"
+    "##);
+}
+
+#[test]
 fn imported_object_folds_member_access() {
     let (fs, main) = project(
         indoc::indoc! {r"
