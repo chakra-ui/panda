@@ -32,12 +32,12 @@ Same pattern as Excalidraw share links: the key lives only in the URL fragment, 
 
 ### Rejected
 
-| Option                           | Why not                                                                               |
-| -------------------------------- | ------------------------------------------------------------------------------------- |
-| Studio fetches from `127.0.0.1`  | Chrome 142+ Local Network Access prompt; Safari blocks http localhost from https.     |
-| Spec in the URL fragment, no API | Sample spec is ~18 KB gzipped + base64; Windows `start` caps command lines at 8191 chars. |
-| Plain relay (no encryption)      | Server would see private systems.                                                     |
-| CLI serves the studio UI         | We removed the bundled studio UI on purpose.                                          |
+| Option                           | Why not                                                                                                                                                                                                    |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Studio fetches from `127.0.0.1`  | Chrome 142+ Local Network Access prompt; Safari blocks http localhost from https.                                                                                                                          |
+| Spec in the URL fragment, no API | Sample spec is ~18 KB gzipped + base64; `cmd start` caps at 8,191 chars (a different launcher avoids it); the spec lands in browser history and pasted links. See [cli-studio-open](./cli-studio-open.md). |
+| Plain relay (no encryption)      | Server would see private systems.                                                                                                                                                                          |
+| CLI serves the studio UI         | We removed the bundled studio UI on purpose.                                                                                                                                                               |
 
 ## CLI — `packages/cli/src/commands/studio.ts`
 
@@ -54,39 +54,48 @@ panda studio [--cwd] [--config] [--no-open] [--json]
 Failure messages: `studio: couldn't reach <url>`, `studio: <url> rejected the upload (<status> <statusText>)`, and
 `studio: nothing to show, your config has no tokens (add a preset or theme tokens)`. The upload times out after 15s.
 
-Studio origin: `https://studio.panda-css.com` constant, overridable with `PANDA_STUDIO_URL` (for local dev and previews).
+Studio origin: `https://studio.panda-css.com` constant, overridable with `PANDA_STUDIO_URL` (for local dev and
+previews).
 
 Opening the browser: a few lines over `child_process` (`open` / `xdg-open` / `cmd /c start ""`). No new dependency.
 
 ### Driver
 
-`DriverBase.spec()` (`packages/compiler-shared/src/driver.ts`) generates the `specs` artifact then writes it. Split
-out `specJson(): string | undefined` that returns the first file's code with sources applied; `spec()` calls it then
-writes. `panda studio` calls `specJson()`.
+`DriverBase.spec()` (`packages/compiler-shared/src/driver.ts`) generates the `specs` artifact then writes it. Split out
+`specJson(): string | undefined` that returns the first file's code with sources applied; `spec()` calls it then writes.
+`panda studio` calls `specJson()`.
 
 ### Crypto
 
 `@pandacss/compiler-shared` exports `sealSpec(json)` / `openSpec(sealed, key)`, used by both the CLI and the studio so
-the format has one owner. Web APIs only (Node 22 has them globally): AES-GCM 256 with a 12-byte IV via
-`crypto.subtle`, gzip via `CompressionStream` / `DecompressionStream`. Key and payload encoded base64url.
+the format has one owner. Web APIs only (Node 22 has them globally): AES-GCM 256 with a 12-byte IV via `crypto.subtle`,
+gzip via `CompressionStream` / `DecompressionStream`. Key and payload encoded base64url.
 
 ## Studio — `apps/studio`
 
-- `server/api/handoff/index.post.ts` — accepts `{ iv, data }` (base64url), max 5 MB, stores in Redis with 120s TTL,
-  returns `{ id }` (`nanoid(16)`). Rejects anything else with 400/413.
+- `server/api/handoff/index.post.ts` — accepts `{ iv, data }` (base64url), max 4,000,000 characters of `data` (Vercel's
+  body limit is 4.5 MB), stores in Redis with 120s TTL, returns `{ id }` (`nanoid(16)`). Rejects anything else with
+  400/413.
 - `server/api/handoff/[id].get.ts` — `GETDEL`; 404 when missing or expired.
-- `pages/view.vue` — when `?h` and `#k` are present: fetch, decrypt, `parseSpec`, `saveTokens`, clear usage, strip
-  `h` and `k` from the URL with `history.replaceState`, render. On failure show "Link expired, run `panda studio`
-  again".
-- Store: Upstash Redis through the Vercel marketplace (`UPSTASH_REDIS_REST_URL` / `_TOKEN`). Postgres `Spec` stays
-  for the opt-in Share button only.
+- `pages/view.vue` — when `?h` and `#k` are present: fetch, decrypt, `parseSpec`, `saveTokens`, clear usage, strip `h`
+  and `k` from the URL with `history.replaceState`, render. On failure show "Link expired, run `panda studio` again".
+- Store: Upstash Redis through the Vercel marketplace (`UPSTASH_REDIS_REST_URL` / `_TOKEN`). Postgres `Spec` stays for
+  the opt-in Share button only.
 - CORS: none needed; the CLI isn't a browser.
+
+## Relationship to cli-studio-open
+
+This note takes a different transport for the same command. [cli-studio-open](./cli-studio-open.md) puts the
+brotli-compressed spec in the URL fragment with no server. That keeps the spec off any server, but the whole spec ends
+up in the URL: browser history, and anything the link is pasted into. It also has a size ceiling, and the truncated
+long-URL risk that note lists as unresolved. The relay sends only ciphertext, keeps the link short and single-use, and
+has no practical size ceiling. `--share` stays the existing opt-in public link flow and is not part of this command yet.
 
 ## Docs
 
 - `website/content/docs/theming/studio.mdx` — lead with `panda studio`; keep drag-and-drop as the manual path.
-- `website/content/docs/get-started/upgrading-to-v2.mdx` — the removed-commands table lists `panda studio`; reword
-  that row: `--build` / `--preview` are gone, `panda studio` now opens the hosted studio.
+- `website/content/docs/get-started/upgrading-to-v2.mdx` — the removed-commands table lists `panda studio`; reword that
+  row: `--build` / `--preview` are gone, `panda studio` now opens the hosted studio.
 
 ## Out of scope
 

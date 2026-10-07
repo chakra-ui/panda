@@ -118,8 +118,9 @@ Some topics span several notes. Keep the detailed contract in one place and link
 - [CLI studio open](./cli-studio-open.md) — proposed `panda studio`: open the hosted Studio with the spec in the URL
   fragment, why a local server is the wrong shape here, payload sizes against browser URL limits, and `--share` as the
   opt-in upload.
-- [`panda studio` command](./studio-command.md) — encrypted relay that opens the hosted Studio on your system: key in the
-  URL fragment, 120s single-read server copy, file fallback when the upload fails.
+- [`panda studio` command](./studio-command.md) — encrypted relay that opens the hosted Studio on your system: key in
+  the URL fragment, 120s single-read server copy, file fallback when the upload fails. Supersedes the transport proposed
+  in `cli-studio-open`.
 - [Transformer](./transformer/README.md) — Rust-core host-neutral source transforms: planning, printing, the private
   `cx` runtime module, and adapter boundaries for Vite, Rollup, Rolldown, webpack, and Rspack.
 - [Config loading](./config-loading-design.md) — `@pandacss/config`: bundle + serialize a user config into the

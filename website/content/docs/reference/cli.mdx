@@ -346,8 +346,9 @@ pnpm panda studio --no-open   # print the link only
 pnpm panda studio --json      # { "url": "…" }
 ```
 
-The design system is encrypted before upload and the key stays in the link. If the studio can't be reached, the command
-writes `styled-system/specs/design-system.json` so you can drop it in instead.
+The design system is encrypted before upload and the key stays in the link. If the studio can't be reached or rejects
+the upload, the command writes `styled-system/specs/design-system.json` so you can drop it in instead. It then exits
+with code 1, and `--json` includes an `error` field.
 
 `panda studio` accepts the [shared flags](#shared-flags).
 
