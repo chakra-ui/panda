@@ -7,7 +7,6 @@ const CSS_ROOT = '@layer reset, base, tokens, recipes, utilities;'
 interface MockDriver {
   compiler: {
     hasLayerDeclaration: ReturnType<typeof vi.fn>
-    stripLayerOrderStatements: ReturnType<typeof vi.fn>
     sources: ReturnType<typeof vi.fn>
   }
   config: { polyfill?: boolean }
@@ -148,6 +147,67 @@ describe('@pandacss/postcss', () => {
     expect(result.css).toMatchInlineSnapshot(`
       "@font-face { src: url(../fonts/a.woff2) }
       @layer vendor;
+      .text_red { color: red }"
+    `)
+  })
+
+  it('strips nested and repeated layer order statements when polyfilled', async () => {
+    const { driver, pandacss } = await setup()
+    driver.config.polyfill = true
+
+    const result = await postcss([pandacss({ cwd: PROJECT_CWD })]).process(
+      `${CSS_ROOT}\n@supports (display: grid) { ${CSS_ROOT} }\n@media print { ${CSS_ROOT} }`,
+      { from: '/project/styles.css' },
+    )
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@supports (display: grid) { }
+      @media print { }
+      .text_red { color: red }"
+    `)
+  })
+
+  it('keeps layer blocks and unrelated layer order statements when polyfilled', async () => {
+    const { driver, pandacss } = await setup()
+    driver.config.polyfill = true
+
+    const result = await postcss([pandacss({ cwd: PROJECT_CWD })]).process(
+      `@layer vendor, app;\n${CSS_ROOT}\n@layer reset, base;\n@layer app { .x { color: green } }`,
+      { from: '/project/styles.css' },
+    )
+
+    expect(result.css).toMatchInlineSnapshot(`
+      "@layer vendor, app;
+      @layer reset, base;
+      @layer app { .x { color: green } }
+      .text_red { color: red }"
+    `)
+  })
+
+  it('keeps the layer order statement when not polyfilled', async () => {
+    const { pandacss } = await setup()
+
+    const imported = postcss.parse('@font-face { src: url(../fonts/a.woff2) }', { from: '/project/vendor/lib.css' })
+    const inlineImport = {
+      postcssPlugin: 'inline-import',
+      Once(root: postcss.Root) {
+        root.prepend(imported.nodes)
+      },
+    }
+
+    const result = await postcss([inlineImport, pandacss({ cwd: PROJECT_CWD })]).process(CSS_ROOT, {
+      from: '/project/styles.css',
+    })
+
+    const sources: string[] = []
+    result.root.walkDecls('src', (decl) => {
+      sources.push(decl.source?.input.file ?? '')
+    })
+
+    expect(sources).toEqual(['/project/vendor/lib.css'])
+    expect(result.css).toMatchInlineSnapshot(`
+      "@font-face { src: url(../fonts/a.woff2) }
+      @layer reset, base, tokens, recipes, utilities;
       .text_red { color: red }"
     `)
   })
@@ -460,9 +520,6 @@ function createMockDriver(): MockDriver {
   return {
     compiler: {
       hasLayerDeclaration: vi.fn((css: string) => css.includes(CSS_ROOT)),
-      stripLayerOrderStatements: vi.fn((css: string) =>
-        css.replace(/@layer\s+reset,\s*base,\s*tokens,\s*recipes,\s*utilities;/g, ''),
-      ),
       // `sources()` returns `pattern` relative to `base` — a coherent (dir, glob) pair.
       sources: vi.fn(() => [{ base: '/project/src', pattern: '**/*.tsx' }]),
     },

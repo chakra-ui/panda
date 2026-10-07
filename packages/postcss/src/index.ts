@@ -68,9 +68,8 @@ const pandacss: PluginCreator<PluginOptions> = (options: PluginOptions = {}) => 
     emitDiagnostics(root, result, driver.designSystemDiagnostics ?? [])
 
     if (polyfill) {
-      root.each((node) => {
-        if (node.type !== 'atrule' || node.name !== 'layer' || node.nodes) return
-        if (driver.compiler.hasLayerDeclaration(`${node.toString()};`)) node.remove()
+      root.walkAtRules('layer', (node) => {
+        if (!node.nodes && driver.compiler.hasLayerDeclaration(`${node.toString()};`)) node.remove()
       })
     }
 
