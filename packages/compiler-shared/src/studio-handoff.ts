@@ -22,7 +22,10 @@ export async function openSpec(sealed: SealedSpec, key: string): Promise<string>
   return new TextDecoder().decode(await pipe(new Uint8Array(zipped), new DecompressionStream('gzip')))
 }
 
-async function pipe(bytes: Uint8Array<ArrayBuffer>, transform: CompressionStream | DecompressionStream): Promise<Uint8Array<ArrayBuffer>> {
+async function pipe(
+  bytes: Uint8Array<ArrayBuffer>,
+  transform: CompressionStream | DecompressionStream,
+): Promise<Uint8Array<ArrayBuffer>> {
   return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(transform)).arrayBuffer())
 }
 

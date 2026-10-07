@@ -28,7 +28,9 @@ describe('studio handoff', () => {
 
   it('rejects tampered data', async () => {
     const { sealed, key } = await sealSpec(json)
-    const flipped = (sealed.data[5] === 'A' ? 'B' : 'A')
-    await expect(openSpec({ ...sealed, data: sealed.data.slice(0, 5) + flipped + sealed.data.slice(6) }, key)).rejects.toThrow()
+    const flipped = sealed.data[5] === 'A' ? 'B' : 'A'
+    await expect(
+      openSpec({ ...sealed, data: sealed.data.slice(0, 5) + flipped + sealed.data.slice(6) }, key),
+    ).rejects.toThrow()
   })
 })
