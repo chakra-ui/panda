@@ -50,11 +50,19 @@ ruleTester.run('prefer-token', {
 
     { filename: 'app.tsx', code: withCss("css({ color: 'red.500', padding: '4' })") },
     { filename: 'app.tsx', code: withCss("css({ margin: 'auto' })") },
+    { filename: 'app.tsx', code: withCss("css({ color: 'red.500/40' })") },
+    { filename: 'app.tsx', code: withCss("css({ margin: '-2' })"), options: [{ categories: ['spacing'] }] },
     { filename: 'app.tsx', code: withCss("css({ color: '#fff' })"), options: [{ allow: ['#fff'] }] },
     // `categories` narrows scope: a hardcoded color is ignored when only spacing is enforced.
     { filename: 'app.tsx', code: withCss("css({ color: '#fff' })"), options: [{ categories: ['spacing'] }] },
   ],
   invalid: [
+    {
+      filename: 'app.tsx',
+      code: withCss("css({ margin: '[calc(2px * -1)]' })"),
+      options: [{ categories: ['spacing'] }],
+      errors: [{ message: 'Use a spacing token instead of the hardcoded value "[calc(2px * -1)]".', suggestions: [] }],
+    },
     {
       filename: 'app.tsx',
       code: withCss("css({ color: 'conditional' })"),

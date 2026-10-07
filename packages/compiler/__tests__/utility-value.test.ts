@@ -33,6 +33,7 @@ describe('compiler.resolveUtilityValue()', () => {
         key: '2',
         aliases: ['space'],
       },
+      tokens: [],
     })
 
     expect(compiler.resolveUtilityValue({ prop: 'marginBottom', value: '0.5rem' })).toEqual({
@@ -44,6 +45,7 @@ describe('compiler.resolveUtilityValue()', () => {
         type: 'literal',
         aliases: ['2', 'space'],
       },
+      tokens: [],
     })
 
     expect(compiler.resolveUtilityValue({ prop: 'minHeight', value: '100vh' })).toMatchObject({
@@ -90,6 +92,7 @@ describe('compiler.resolveUtilityValue()', () => {
       source: {
         type: 'arbitrary',
       },
+      tokens: [],
     })
 
     expect(compiler.resolveUtilityValue({ prop: 'color', value: '{colors.red.500}' })).toMatchObject({
@@ -99,6 +102,7 @@ describe('compiler.resolveUtilityValue()', () => {
       source: {
         type: 'token-reference',
       },
+      tokens: ['colors.red.500'],
     })
 
     expect(compiler.resolveUtilityValue({ prop: 'zIndex', value: '1002 !important' })).toMatchObject({
@@ -145,6 +149,7 @@ describe('compiler.resolveUtilityValue()', () => {
         type: 'literal',
         aliases: [],
       },
+      tokens: ['colors.red.300'],
     })
   })
 
@@ -170,6 +175,7 @@ describe('compiler.resolveUtilityValue()', () => {
         type: 'literal',
         aliases: [],
       },
+      tokens: [],
     })
   })
 

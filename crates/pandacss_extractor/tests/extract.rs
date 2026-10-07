@@ -707,3 +707,31 @@ fn styled_with_recipe_raw_member_records_no_recipe() {
         None
     );
 }
+
+const JSX_PAGE: &str = indoc! {r#"
+    import { Box } from "@panda/jsx"
+    export default function Page() {
+      return <Box color="red" />
+    }
+"#};
+
+#[test]
+fn jsx_in_a_js_file_is_extracted() {
+    let usage = extract(JSX_PAGE, "page.js", &panda_jsx_config());
+    assert!(usage.diagnostics.is_empty(), "{:?}", usage.diagnostics);
+    assert_eq!(usage.jsx.len(), 1);
+}
+
+#[test]
+fn jsx_in_an_mjs_file_is_extracted() {
+    let usage = extract(JSX_PAGE, "page.mjs", &panda_jsx_config());
+    assert!(usage.diagnostics.is_empty(), "{:?}", usage.diagnostics);
+    assert_eq!(usage.jsx.len(), 1);
+}
+
+#[test]
+fn jsx_in_a_cjs_file_is_extracted() {
+    let usage = extract(JSX_PAGE, "page.cjs", &panda_jsx_config());
+    assert!(usage.diagnostics.is_empty(), "{:?}", usage.diagnostics);
+    assert_eq!(usage.jsx.len(), 1);
+}

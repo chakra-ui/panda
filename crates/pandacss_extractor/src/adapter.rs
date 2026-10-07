@@ -209,7 +209,7 @@ impl<'a> AdaptedSource<'a> {
                 SourceType::tsx().with_module(true)
             }
             Some(SfcFormat::Vue | SfcFormat::Svelte) => SourceType::ts().with_module(true),
-            None => SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx()),
+            None => source_type_from_path(path),
         }
     }
 
@@ -249,6 +249,19 @@ impl<'a> AdaptedSource<'a> {
         ));
         diagnostics
     }
+}
+
+pub(crate) fn source_type_from_path(path: impl AsRef<std::path::Path>) -> SourceType {
+    SourceType::from_path(path).map_or_else(
+        |_| SourceType::tsx(),
+        |source_type| {
+            if source_type.is_javascript() {
+                source_type.with_jsx(true)
+            } else {
+                source_type
+            }
+        },
+    )
 }
 
 #[cfg(test)]

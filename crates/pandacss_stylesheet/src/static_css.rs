@@ -87,9 +87,6 @@ fn expand_css_rule(
     breakpoints: &[String],
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Vec<Literal> {
-    let Some(properties) = rule.get("properties").unwrap_or(rule).as_object() else {
-        return Vec::new();
-    };
     let mut conditions = string_array(rule.get("conditions"));
     if rule
         .get("responsive")
@@ -100,13 +97,7 @@ fn expand_css_rule(
     }
 
     let mut styles = Vec::new();
-    for (property, values) in properties {
-        if matches!(
-            property.as_str(),
-            "properties" | "conditions" | "responsive" | "recipes" | "patterns"
-        ) {
-            continue;
-        }
+    for (property, values) in pandacss_config::static_css_rule_properties(rule) {
         diagnostics::diagnose_property(property, utility, diagnostics);
         let values = static_values(values);
         let mut expanded = Vec::new();

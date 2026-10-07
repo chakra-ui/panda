@@ -194,25 +194,25 @@ fn config_utility_transform_failures_are_reported_and_retried_but_success_is_cac
     };
 
     let first = project
-        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform)
+        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform, &[])
         .diagnostics
         .iter()
         .map(|diagnostic| diagnostic.code.clone())
         .collect::<Vec<_>>();
     let second = project
-        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform)
+        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform, &[])
         .diagnostics
         .iter()
         .map(|diagnostic| diagnostic.code.clone())
         .collect::<Vec<_>>();
     let recovered = project
-        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform)
+        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform, &[])
         .diagnostics
         .iter()
         .map(|diagnostic| diagnostic.code.clone())
         .collect::<Vec<_>>();
     let cached = project
-        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform)
+        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform, &[])
         .diagnostics
         .iter()
         .map(|diagnostic| diagnostic.code.clone())
@@ -263,13 +263,13 @@ fn static_recipe_utility_transform_failures_are_reported_and_retried() {
     };
 
     let first = project
-        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform)
+        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform, &[])
         .diagnostics
         .iter()
         .map(|diagnostic| diagnostic.code.clone())
         .collect::<Vec<_>>();
     let second = project
-        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform)
+        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform, &[])
         .diagnostics
         .iter()
         .map(|diagnostic| diagnostic.code.clone())
