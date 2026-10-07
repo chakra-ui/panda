@@ -19,6 +19,7 @@ The commands are:
 | `panda cssgen`    | Generate CSS only                                            |
 | `panda analyze`   | Report token, recipe, and utility usage across your sources  |
 | `panda doctor`    | Validate your setup and print a project summary              |
+| `panda studio`    | Open your design system in the hosted Studio                 |
 | `panda debug`     | Dump resolved config and per-file extraction for bug reports |
 | `panda lib`       | Publish a design system other apps can consume               |
 | `panda buildinfo` | Write a portable `panda.buildinfo.json` only                 |
@@ -332,6 +333,23 @@ pnpm panda doctor --json
 ```
 
 `panda doctor` accepts the [shared flags](#shared-flags).
+
+---
+
+## studio
+
+Open your design system in [Studio](https://studio.panda-css.com/).
+
+```bash
+pnpm panda studio
+pnpm panda studio --no-open   # print the link only
+pnpm panda studio --json      # { "url": "…" }
+```
+
+The design system is encrypted before upload and the key stays in the link. If the studio can't be reached, the command
+writes `styled-system/specs/design-system.json` so you can drop it in instead.
+
+`panda studio` accepts the [shared flags](#shared-flags).
 
 ---
 
