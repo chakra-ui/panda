@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { openSpec, type SealedSpec } from '@pandacss/compiler-shared'
 import { runCodegen, runStudio } from '../src'
-import { CONFIG_WITH_TOKENS, cleanupFixture, createFixture } from './helpers'
+import { CONFIG, CONFIG_WITH_TOKENS, cleanupFixture, createFixture } from './helpers'
 
 let server: Server | undefined
 let dir: string | undefined
@@ -90,6 +90,7 @@ describe('studio command', () => {
     expect(result.ok).toBe(false)
     expect(open).not.toHaveBeenCalled()
     expect(result.files.some((file) => file.endsWith('design-system.json'))).toBe(true)
+    expect(logs.join('\n')).toContain('rejected the upload (500')
     expect(logs.join('\n')).toContain('drop')
   })
 
@@ -97,9 +98,25 @@ describe('studio command', () => {
     dir = createFixture(CONFIG_WITH_TOKENS)
     vi.stubEnv('PANDA_STUDIO_URL', 'http://127.0.0.1:1')
 
-    const result = await runStudio({ cwd: dir, logLevel: 'silent' }, undefined, vi.fn())
+    const logs: string[] = []
+
+    const result = await runStudio({ cwd: dir }, { log: (message) => logs.push(message) }, vi.fn())
 
     expect(result.ok).toBe(false)
+    expect(logs.join('\n')).toContain("couldn't reach http://127.0.0.1:1")
     expect(result.files.some((file) => file.endsWith('design-system.json'))).toBe(true)
+  })
+
+  it('explains an empty design system', async () => {
+    dir = createFixture(CONFIG)
+    const open = vi.fn()
+    const logs: string[] = []
+
+    const result = await runStudio({ cwd: dir }, { log: (message) => logs.push(message) }, open)
+
+    expect(result.ok).toBe(false)
+    expect(result.error).toContain('no tokens')
+    expect(logs.join('\n')).toContain('studio: nothing to show')
+    expect(open).not.toHaveBeenCalled()
   })
 })

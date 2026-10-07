@@ -234,6 +234,7 @@ export interface InitResult extends CommandResult {
 export interface StudioResult extends CommandResult {
   url?: string
   files: string[]
+  error?: string
 }
 
 export interface DoctorResult extends CommandResult {
