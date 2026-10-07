@@ -36,9 +36,8 @@ export async function takeHandoff(redis: Redis, id: string): Promise<Sealed | nu
 
 export async function allowHandoff(redis: Redis, client: string): Promise<boolean> {
   const key = `handoff-rate:${client}`
-  const count = Number(await redis(['INCR', key]))
-  if (count === 1) await redis(['EXPIRE', key, 60])
-  return count <= HANDOFF_LIMIT_PER_MINUTE
+  await redis(['SET', key, 0, 'EX', 60, 'NX'])
+  return Number(await redis(['INCR', key])) <= HANDOFF_LIMIT_PER_MINUTE
 }
 
 export function memoryRedis(now: () => number = Date.now): Redis {
@@ -48,9 +47,10 @@ export function memoryRedis(now: () => number = Date.now): Redis {
     if (entry && entry.expires <= now()) store.delete(key)
     return store.get(key)
   }
-  return async ([command, key, value, , seconds]) => {
+  return async ([command, key, value, , seconds, mode]) => {
     const name = String(key)
     if (command === 'SET') {
+      if (mode === 'NX' && live(name)) return null
       store.set(name, { value: String(value), expires: now() + Number(seconds) * 1000 })
       return 'OK'
     }
@@ -59,11 +59,6 @@ export function memoryRedis(now: () => number = Date.now): Redis {
       const count = Number(entry?.value ?? 0) + 1
       store.set(name, { value: String(count), expires: entry?.expires ?? Infinity })
       return count
-    }
-    if (command === 'EXPIRE') {
-      const entry = store.get(name)
-      if (entry) entry.expires = now() + Number(value) * 1000
-      return entry ? 1 : 0
     }
     const entry = live(name)
     store.delete(name)

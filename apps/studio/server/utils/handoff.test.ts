@@ -65,4 +65,18 @@ describe('handoff', () => {
     now = 61_000
     expect(await allowHandoff(redis, '1.1.1.1')).toBe(true)
   })
+
+  it('resets the limit after a minute even if a store call failed', async () => {
+    let now = 0
+    let calls = 0
+    const store = memoryRedis(() => now)
+    const redis: typeof store = async (command) => {
+      if (++calls === 2) throw new Error('store unavailable')
+      return store(command)
+    }
+    await allowHandoff(redis, '1.1.1.1').catch(() => undefined)
+    for (let i = 0; i <= HANDOFF_LIMIT_PER_MINUTE; i++) await allowHandoff(redis, '1.1.1.1')
+    now = 61_000
+    expect(await allowHandoff(redis, '1.1.1.1')).toBe(true)
+  })
 })
