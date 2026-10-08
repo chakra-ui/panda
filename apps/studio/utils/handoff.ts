@@ -1,18 +1,13 @@
-import { openSpec, type SealedSpec } from '@pandacss/compiler-shared'
+import { decodeSpec } from "@pandacss/compiler-shared";
 
-export function readHandoff(location: { search: string; hash: string }): { id: string; key: string | null } | null {
-  const id = new URLSearchParams(location.search).get('h')
-  const key = new URLSearchParams(location.hash.slice(1)).get('k')
-  return id ? { id, key } : null
+export function readHandoff(location: { hash: string }): string | null {
+  return new URLSearchParams(location.hash.slice(1)).get("spec");
 }
 
-export async function receiveHandoff(id: string, key: string, fetcher: typeof fetch = fetch): Promise<string | null> {
+export async function receiveHandoff(encoded: string): Promise<string | null> {
   try {
-    const res = await fetcher(`/api/handoff/${encodeURIComponent(id)}`)
-    if (!res.ok) return null
-    const sealed = (await res.json()) as SealedSpec
-    return await openSpec(sealed, key)
+    return await decodeSpec(encoded);
   } catch {
-    return null
+    return null;
   }
 }

@@ -1,5 +1,5 @@
 import { defineCommand } from 'citty'
-import { sealSpec } from '@pandacss/compiler-shared'
+import { encodeSpec } from '@pandacss/compiler-shared'
 import { parseCliFlags, runtimeArgs } from '../args'
 import { runCommand } from '../run-command'
 import {
@@ -14,6 +14,7 @@ import { openUrl } from '../open-url'
 import { studioFlagsSchema, type StudioFlags, type StudioResult } from '../schema'
 
 const STUDIO_URL = 'https://studio.panda-css.com'
+const MAX_URL_LENGTH = 80_000
 
 export const studioCommand = defineCommand({
   meta: {
@@ -54,23 +55,25 @@ export async function runStudio(
         }
       }
 
-      try {
-        const url = await upload(studioUrl, json)
-        if (flags.open !== false && !shouldPrintJson(flags)) open(url)
-        return { data: { url, files: [] } }
-      } catch (error) {
-        const reason =
-          error instanceof UploadRejected
-            ? `${studioUrl} rejected the upload (${error.message})`
-            : `couldn't reach ${studioUrl}`
-        return { data: { files: driver.spec(), error: reason }, ok: false }
+      const url = `${new URL('/view', studioUrl)}#spec=${await encodeSpec(json)}`
+      if (url.length > MAX_URL_LENGTH) {
+        return {
+          data: {
+            files: driver.spec(),
+            error: `your design system is too large for a link (${url.length} characters)`,
+          },
+          ok: false,
+        }
       }
+
+      if (flags.open !== false && !shouldPrintJson(flags)) open(url)
+      return { data: { url, files: [] } }
     },
     renderHuman(ctx, result) {
       if (result.diagnostics.length > 0) renderCommandDiagnostics(result.diagnostics, ctx.output, flags, ctx.cwd)
       if (!shouldPrintHumanSummary(flags)) return
       if (result.url) {
-        ctx.output.log(`studio: ${result.url}`)
+        ctx.output.log(flags.open === false ? `studio: ${result.url}` : `studio: opened ${studioUrl} in your browser`)
         return
       }
       if (!result.error) return
@@ -79,20 +82,4 @@ export async function runStudio(
       ctx.output.log(lines.join('\n'))
     },
   }) as Promise<StudioResult>
-}
-
-class UploadRejected extends Error {}
-
-async function upload(studioUrl: string, json: string): Promise<string> {
-  const { sealed, key } = await sealSpec(json)
-  const res = await fetch(new URL('/api/handoff', studioUrl), {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(sealed),
-    signal: AbortSignal.timeout(15_000),
-  })
-  if (!res.ok) throw new UploadRejected(`${res.status} ${res.statusText}`)
-  const { id } = (await res.json()) as { id?: unknown }
-  if (typeof id !== 'string') throw new UploadRejected(`${res.status} invalid response`)
-  return `${new URL(`/view?h=${encodeURIComponent(id)}`, studioUrl)}#k=${key}`
 }

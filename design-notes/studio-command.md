@@ -5,39 +5,49 @@
 Today: run `panda codegen --spec`, find `styled-system/specs/design-system.json`, drag it onto the studio. Goal: one
 command, `panda studio`, opens the hosted studio already showing your system.
 
-Constraint (from Sage): we don't store user design systems. Private systems must be safe to send.
+Constraints: we don't store user design systems, and we don't pay for a service to move them.
 
-Success:
+## Approach: spec in the URL fragment
 
-- `panda studio` in any Panda project opens the browser on the rendered system, no file, no drag.
-- The studio server never sees a readable design system.
-- Works in Chrome, Safari, Firefox, on macOS, Linux, Windows, with no browser prompt.
-
-## Approach: encrypted relay
+This is the transport from [cli-studio-open](./cli-studio-open.md), with gzip instead of brotli.
 
 ```
 panda studio
-  │  spec JSON in memory → gzip → AES-GCM with a fresh random key
+  │  spec JSON in memory → gzip → base64url
   ▼
-POST <studio>/api/handoff   body: ciphertext + iv
-  │  server: SET handoff:<id> EX 600, returns { id }
-  ▼
-open <studio>/view?h=<id>#k=<key>          key is in the fragment, never sent to the server
+open <studio>/view#spec=<encoded>          the fragment is never sent to a server
   │
   ▼
-browser: GET /api/handoff/<id> (GETDEL) → decrypt → gunzip → parseSpec → saveTokens → render
+browser: decode → gunzip → parseSpec → saveTokens → strip the fragment → render
 ```
 
-Same pattern as Excalidraw share links: the key lives only in the URL fragment, the server holds bytes it can't read.
+Studio serves static pages for this flow. No API route, no storage, no rate limiting.
+
+### Why gzip, not brotli
+
+The browser has to decompress with `DecompressionStream`. Chromium doesn't support `'brotli'` there (checked on 149), so
+brotli would mean shipping a decoder in Studio. gzip works natively everywhere and in Node 22.
+
+### Size
+
+gzip + base64url is roughly 1.8× the brotli sizes measured in cli-studio-open: about 18 KB for presets only and 68 KB
+for the "huge" system (660 colors, 1,500 semantic tokens, 600 recipes). The CLI refuses links over 80,000 characters,
+Safari's documented ceiling, and falls back to writing the spec file with "drop it on <studio>". Navigating to a 1.5 MB
+fragment worked in both Chromium and WebKit under Playwright, so the cap is conservative.
+
+### Opening the browser
+
+`open` (macOS) and `xdg-open` (Linux) take the long URL as an argument. Windows `cmd /c start` caps the command line at
+8,191 characters, so on Windows the CLI writes `<tmpdir>/panda-studio.html`, which redirects to the URL, and opens that
+file instead.
 
 ### Rejected
 
-| Option                           | Why not                                                                                                                                                                                                    |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Studio fetches from `127.0.0.1`  | Chrome 142+ Local Network Access prompt; Safari blocks http localhost from https.                                                                                                                          |
-| Spec in the URL fragment, no API | Sample spec is ~18 KB gzipped + base64; `cmd start` caps at 8,191 chars (a different launcher avoids it); the spec lands in browser history and pasted links. See [cli-studio-open](./cli-studio-open.md). |
-| Plain relay (no encryption)      | Server would see private systems.                                                                                                                                                                          |
-| CLI serves the studio UI         | We removed the bundled studio UI on purpose.                                                                                                                                                               |
+| Option                          | Why not                                                                                   |
+| ------------------------------- | ----------------------------------------------------------------------------------------- |
+| Encrypted relay through Redis   | Needs a paid store and a deploy-order dependency for a file the browser can carry itself. |
+| Studio fetches from `127.0.0.1` | Chrome 142+ Local Network Access prompt; Safari blocks http localhost from https.         |
+| CLI serves the studio UI        | We removed the bundled studio UI on purpose.                                              |
 
 ## CLI — `packages/cli/src/commands/studio.ts`
 
@@ -45,73 +55,39 @@ Same pattern as Excalidraw share links: the key lives only in the URL fragment, 
 panda studio [--cwd] [--config] [--no-open] [--json]
 ```
 
-1. Load config, build the spec string in memory (no file written).
-2. Encrypt and POST. On success print the URL and open it unless `--no-open`.
-3. `--json` prints `{ "url": "…" }` and never opens.
-4. Upload fails (offline, 4xx/5xx, payload too large): write the spec with the existing `--spec` path, print the file
-   path and "drop it on <studio>", exit `1`.
+1. Load config, build the spec string in memory (`driver.specJson()`, no file written).
+2. Encode it into `<studio>/view#spec=…`. Open it unless `--no-open`; print `studio: opened <studio> in your browser`.
+3. `--no-open` prints the link. `--json` prints `{ "url": "…" }` and never opens.
+4. Over 80,000 characters: write the spec with the existing `--spec` path, print the file path and "drop it on
+   <studio>", exit `1`.
 
-Failure messages: `studio: couldn't reach <url>`, `studio: <url> rejected the upload (<status> <statusText>)`, and
-`studio: nothing to show, your config has no tokens (add a preset or theme tokens)`. The upload times out after 15s.
+Studio origin: `https://studio.panda-css.com`, overridable with `PANDA_STUDIO_URL` for local dev and previews.
 
-Studio origin: `https://studio.panda-css.com` constant, overridable with `PANDA_STUDIO_URL` (for local dev and
-previews).
+`@pandacss/compiler-shared` exports `encodeSpec(json)` / `decodeSpec(value)`, used by both the CLI and Studio so the
+format has one owner.
 
-Opening the browser: a few lines over `child_process` (`open` / `xdg-open` / `cmd /c start ""`). No new dependency.
+## Studio — `apps/studio/pages/view.vue`
 
-### Driver
+When `#spec=` is present: decode, `parseSpec`, `saveTokens`, `history.replaceState` to `/view`, render. A reload reads
+from IndexedDB like a dropped file. If decoding or parsing fails, show "This link is incomplete" with the command to
+copy and a link back to the drop page. gzip's checksum makes a truncated link fail loudly instead of rendering a partial
+system.
 
-`DriverBase.spec()` (`packages/compiler-shared/src/driver.ts`) generates the `specs` artifact then writes it. Split out
-`specJson(): string | undefined` that returns the first file's code with sources applied; `spec()` calls it then writes.
-`panda studio` calls `specJson()`.
+## Trade-offs
 
-### Crypto
-
-`@pandacss/compiler-shared` exports `sealSpec(json)` / `openSpec(sealed, key)`, used by both the CLI and the studio so
-the format has one owner. Web APIs only (Node 22 has them globally): AES-GCM 256 with a 12-byte IV via `crypto.subtle`,
-gzip via `CompressionStream` / `DecompressionStream`. Key and payload encoded base64url.
-
-## Studio — `apps/studio`
-
-- `server/api/handoff/index.post.ts` — accepts `{ iv, data }` (base64url), max 1,000,000 characters of `data`, stores in
-  Redis with a 600s TTL, returns `{ id }` (`nanoid(16)`). Rejects anything else with 400/413. Rate limit: 20 handoffs per
-  client per minute (429); a Vercel WAF rule is the follow-up for IP-rotating abuse.
-- `server/api/handoff/[id].get.ts` — `GETDEL`; 404 when missing or expired.
-- `pages/view.vue` — when `?h` and `#k` are present: fetch, decrypt, `parseSpec`, `saveTokens`, clear usage, strip `h`
-  and `k` from the URL with `history.replaceState`, render. On failure show "Link expired, run `panda studio` again".
-- Store: Upstash Redis through the Vercel marketplace (`UPSTASH_REDIS_REST_URL` / `_TOKEN`). Postgres `Spec` stays for
-  the opt-in Share button only.
-- CORS: none needed; the CLI isn't a browser.
-
-## Relationship to cli-studio-open
-
-This note takes a different transport for the same command. [cli-studio-open](./cli-studio-open.md) puts the
-brotli-compressed spec in the URL fragment with no server. That keeps the spec off any server, but the whole spec ends
-up in the URL: browser history, and anything the link is pasted into. It also has a size ceiling, and the truncated
-long-URL risk that note lists as unresolved. The relay sends only ciphertext, keeps the link short and single-use, and
-has no practical size ceiling. `--share` stays the existing opt-in public link flow and is not part of this command yet.
-
-## Docs
-
-- `website/content/docs/theming/studio.mdx` — lead with `panda studio`; keep drag-and-drop as the manual path.
-- `website/content/docs/get-started/upgrading-to-v2.mdx` — the removed-commands table lists `panda studio`; reword that
-  row: `--build` / `--preview` are gone, `panda studio` now opens the hosted studio.
+- The full spec is in the link, so it lands in local browser history and anywhere the link is pasted. Studio strips it
+  from the address bar after loading.
+- Systems past the cap use the file fallback.
 
 ## Out of scope
 
-- Live reload on config change (re-upload + page poll). Add when asked.
-- Analyze usage from the CLI.
-- Self-hosted studio.
+- Live reload on config change.
+- `--share` (public `/s/<slug>` link through the existing `POST /api/specs`) and `--analyze`.
 
 ## Testing
 
-- CLI: unit test that encrypt → decrypt (with the browser-side helper) round-trips a spec; command test with a stub
-  server for success, upload failure fallback, `--json`, `--no-open`.
-- Studio: vitest for the handoff handlers with an in-memory Redis stub (TTL, single read, size limit) and for the
-  decrypt helper.
-- Manual proof: `panda studio` in `sandbox/vite-ts` against `PANDA_STUDIO_URL=http://localhost:3000`, then against a
-  Vercel preview; check Chrome, Safari, Firefox.
-
-## Open
-
-- Does `panda-studio-v2` have a Redis store attached? If not, someone with chakra-ui Vercel access adds Upstash.
+- `compiler-shared`: encode/decode round-trip, base64url alphabet, truncated and invalid input reject.
+- CLI: link shape and decoded content match `panda codegen --spec`, `--json`, `--no-open`, too-large fallback, empty
+  config.
+- Studio: fragment parsing and decode failure.
+- Manual: `panda studio` in `sandbox/vite-ts` against `PANDA_STUDIO_URL=http://localhost:3000`.

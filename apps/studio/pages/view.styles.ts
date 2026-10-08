@@ -24,7 +24,7 @@ export const loadingSpinner = css({
   animation: "spin 0.7s linear infinite",
 });
 
-export const expired = css({
+export const invalid = css({
   minH: "60vh",
   maxW: "420px",
   mx: "auto",
@@ -38,16 +38,16 @@ export const expired = css({
   fontFamily: "body",
 });
 
-export const expiredIcon = css({ color: "faint", mb: "1" });
+export const invalidIcon = css({ color: "faint", mb: "1" });
 
-export const expiredTitle = css({
+export const invalidTitle = css({
   fontFamily: "display",
   fontSize: "24px",
   fontWeight: "700",
   letterSpacing: "-0.02em",
 });
 
-export const expiredBody = css({ fontSize: "14.5px", color: "muted", lineHeight: "1.6" });
+export const invalidBody = css({ fontSize: "14.5px", color: "muted", lineHeight: "1.6" });
 
 export const command = css({
   display: "flex",

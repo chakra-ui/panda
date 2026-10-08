@@ -6,8 +6,8 @@ description: See your design system in the browser. No install, no account.
 [Studio](https://studio.panda-css.com/) renders your design system: every token, theme and condition, laid out the way
 each category deserves. Run `panda studio` in your project and it opens with your system loaded.
 
-`panda studio` encrypts your design system before it leaves your machine. The studio holds the encrypted copy for two
-minutes at most and deletes it once your browser reads it; the key stays in the link and never reaches the server.
+`panda studio` packs your design system into the link itself, after the `#`. Browsers never send that part to a server,
+so your system goes straight from your machine to your browser.
 
 Prefer files? Run `panda codegen --spec` to write `styled-system/specs/design-system.json` and drop it in, or the whole
 `styled-system/` folder. Nothing leaves your browser.
