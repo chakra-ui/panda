@@ -92,7 +92,7 @@ fn emits_recipe_contexts_for_supported_non_react_frameworks() {
             "from 'solid-js/web';",
             "createComponent(StyledComponent, props)",
             "createMemo(() =>",
-            "import type { Component, ComponentProps } from 'solid-js'",
+            "import type { Component, ComponentProps, ContextProviderComponent } from 'solid-js'",
         ),
         (
             "vue",
@@ -199,7 +199,9 @@ fn solid_slot_recipe_context_supports_function_default_props() {
     assert!(
         code.contains("typeof defaults === 'function' ? createMemo(defaults) : () => defaults")
     );
-    assert!(code.contains("const propsWithClass = defaults ? { ...defaults, ...propsWithoutChildren } : propsWithoutChildren"));
+    assert!(code.contains(
+        "const propsWithClass = defaults ? mergeProps(defaults, propsWithoutChildren) : propsWithoutChildren"
+    ));
     assert!(code.contains("const slots = resolvedSlots()"));
     assert!(code.contains("const resolved = resolveProps(propsWithClass, slots[slot])"));
     assert!(code.contains("return local.children ?? defaultProps()?.children"));

@@ -883,3 +883,70 @@ fn runtime_negative_spacing_variables_match_v1_without_changing_style_values() {
     );
     assert_eq!(dict.runtime_var_str("spacing.missing", None), None);
 }
+
+#[test]
+fn custom_token_categories_are_collected() {
+    let dict = build_dictionary(json!({
+        "theme": {
+            "tokens": {
+                "colors": { "red": { "value": "rebeccapurple" } },
+                "foobar": {
+                    "example": { "value": "test" },
+                    "count": { "value": 2 }
+                }
+            },
+            "semanticTokens": {
+                "foobar": {
+                    "accent": {
+                        "value": { "base": "{foobar.example}", "_dark": "dark" }
+                    }
+                }
+            }
+        }
+    }));
+
+    assert_yaml_snapshot!(snapshot_tokens(&dict), @r#"
+    - path: colors.red
+      value: rebeccapurple
+      var: var(--colors-red)
+      category: colors
+      condition: ~
+      deprecated: false
+      description: ~
+    - path: foobar.example
+      value: test
+      var: var(--foobar-example)
+      category: foobar
+      condition: ~
+      deprecated: false
+      description: ~
+    - path: foobar.count
+      value: "2"
+      var: var(--foobar-count)
+      category: foobar
+      condition: ~
+      deprecated: false
+      description: ~
+    - path: foobar.accent
+      value: var(--foobar-example)
+      var: var(--foobar-accent)
+      category: foobar
+      condition: ~
+      deprecated: false
+      description: ~
+    - path: foobar.accent
+      value: dark
+      var: var(--foobar-accent)
+      category: foobar
+      condition: _dark
+      deprecated: false
+      description: ~
+    - path: colors.colorPalette
+      value: var(--colors-color-palette)
+      var: var(--colors-color-palette)
+      category: colors
+      condition: ~
+      deprecated: false
+      description: ~
+    "#);
+}

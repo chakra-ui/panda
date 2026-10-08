@@ -40,8 +40,8 @@ describe('variant props accept undefined under exactOptionalPropertyTypes', () =
   })
 
   test('styled component variant prop', () => {
-    const Button = styled('button', button)
-    const props: Parameters<typeof Button>[0] = { visual }
+    const _Button = styled('button', button)
+    const props: Parameters<typeof _Button>[0] = { visual }
     expect(props).toEqual({ visual: undefined })
   })
 })

@@ -8,13 +8,17 @@ pub(super) fn recipe_module(ctx: CodegenContext<'_>) -> Module {
     let factory = factory_name(ctx);
     let module = Module::new()
         .with_import(value_import(&["createContext"], "preact"))
+        .with_import(type_import(&["Provider"], "preact"))
         .with_import(value_import(&["useContext"], "preact/hooks"))
         .with_import(value_import(
             &["createElement", "forwardRef"],
             "preact/compat",
         ))
         .with_import(value_import(&[factory.as_str()], "./factory"))
-        .with_import(ImportDecl::value(["getDisplayName"], "./helper"))
+        .with_import(ImportDecl::value(
+            ["getDisplayName", "mergeDefaultProps"],
+            "./helper",
+        ))
         .with_import(type_import(
             &[
                 "RecipeDefinition",
@@ -58,7 +62,7 @@ pub(super) fn slot_recipe_module(ctx: CodegenContext<'_>) -> Module {
     };
     let module = Module::new()
         .with_import(value_import(&["createContext"], "preact"))
-        .with_import(type_import(&["Context"], "preact"))
+        .with_import(type_import(&["Context", "Provider"], "preact"))
         .with_import(value_import(&["useContext"], "preact/hooks"))
         .with_import(value_import(
             &["createElement", "forwardRef"],
@@ -69,7 +73,10 @@ pub(super) fn slot_recipe_module(ctx: CodegenContext<'_>) -> Module {
             &ctx.runtime_import(RuntimeImport::CssIndex, "../css/index"),
         ))
         .with_import(value_import(&[factory.as_str()], "./factory"))
-        .with_import(ImportDecl::value(["getDisplayName"], "./helper"))
+        .with_import(ImportDecl::value(
+            ["getDisplayName", "mergeDefaultProps"],
+            "./helper",
+        ))
         .with_import(type_import(
             &[
                 "RecipeSelection",
@@ -141,7 +148,7 @@ export interface RecipeContext<R extends RecipeContextRecipe> {
     Component: T,
     options?: JsxFactoryOptions<ComponentProps<T>, F> | undefined
   ) => RecipeContextComponent<T, R, F>
-  PropsProvider: ComponentType<Partial<RecipePropsOf<R>> & DataAttrs>
+  PropsProvider: Provider<Partial<RecipePropsOf<R>> & DataAttrs>
   usePropsContext: () => RecipePropsOf<R> | undefined
 }";
 
@@ -202,6 +209,8 @@ export interface SlotRecipeContext<R extends SlotRecipeContextInput> {
     slot: SlotNameOf<R>,
     options?: JsxFactoryOptions<ComponentProps<T>, F> | undefined
   ) => SlotRecipeConsumerComponent<T, F>
+  PropsProvider: Provider<Partial<SlotRecipePropsOf<R>> & DataAttrs>
+  usePropsContext: () => SlotRecipePropsOf<R> | undefined
 }";
 
 fn factory_name(ctx: CodegenContext<'_>) -> String {
