@@ -177,3 +177,49 @@ describe('style context - solid', () => {
     expect(div().getAttribute('visual')).toBe('solid')
   })
 })
+
+describe('style context defaultProps', () => {
+  test('an undefined prop keeps its default on withRootProvider', () => {
+    const { withRootProvider } = createSlotRecipeContext(slotButton)
+    const RootWithDefaults = withRootProvider((props: Record<string, unknown>) => <div {...props} />, {
+      defaultProps: { 'aria-label': 'Close' },
+    })
+
+    const { container } = render(() => <RootWithDefaults aria-label={undefined}>Close</RootWithDefaults>)
+
+    expect(container.firstChild).toMatchInlineSnapshot(`
+      <div
+        aria-label="Close"
+      >
+        Close
+      </div>
+    `)
+  })
+
+  test('an undefined prop keeps its default on withProvider and withContext', () => {
+    const RootWithDefaults = withProvider('div', 'root', { defaultProps: { 'aria-label': 'Close' } })
+    const LabelWithDefaults = withContext('span', 'root', { defaultProps: { 'aria-label': 'Label' } })
+
+    const { container } = render(() => (
+      <RootWithDefaults aria-label={undefined}>
+        <LabelWithDefaults aria-label={undefined}>Close</LabelWithDefaults>
+      </RootWithDefaults>
+    ))
+
+    expect(container.firstChild).toMatchInlineSnapshot(`
+      <div
+        aria-label="Close"
+        class="slot-button__root slot-button__root--visual_unstyled"
+        data-slot="root"
+      >
+        <span
+          aria-label="Label"
+          class="slot-button__root slot-button__root--visual_unstyled"
+          data-slot="root"
+        >
+          Close
+        </span>
+      </div>
+    `)
+  })
+})

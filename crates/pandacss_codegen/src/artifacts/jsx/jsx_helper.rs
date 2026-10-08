@@ -71,6 +71,15 @@ export const composeCvaFn = (cvaA: JsxRecipeFn | undefined, cvaB: JsxRecipeFn): 
   throw error
 }
 
+// Like React's defaultProps: an explicit `undefined` keeps the default.
+export function mergeDefaultProps(defaultProps: Props, props: Props): Props {
+  const merged: Props = Object.assign({}, defaultProps)
+  for (const key in props) {
+    if (props[key] !== undefined) merged[key] = props[key]
+  }
+  return merged
+}
+
 export const getDisplayName = (Component: string | { displayName?: string; name?: string } | undefined): string => {
   if (typeof Component === 'string') return Component
   return Component?.displayName || Component?.name || 'Component'

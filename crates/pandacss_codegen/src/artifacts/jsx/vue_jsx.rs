@@ -19,6 +19,7 @@ pub(super) fn module(
                 "composeShouldForwardProps",
                 "getDisplayName",
                 "serializeSplitStyles",
+                "mergeDefaultProps",
                 "splitJsxProps",
             ],
             "./helper",
@@ -83,7 +84,7 @@ function styledFn(Dynamic: StyledBase, configOrCva: RecipeInput = {}, options: S
       as: { type: [String, Object], default: __base__ },
     },
     setup(props: Props, { slots, attrs, emit }: SetupContext) {
-      const combinedProps = computed((): Props => Object.assign({}, defaultProps, attrs))
+      const combinedProps = computed((): Props => mergeDefaultProps(defaultProps, attrs))
       const splittedProps = computed(() => splitJsxProps(combinedProps.value, __shouldForwardProps__, variantSet, isCssProperty, true))
       const classes = computed(() => {
         const [_htmlProps, _forwardedProps, variantProps, propStyles, cssStyles] = splittedProps.value

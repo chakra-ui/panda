@@ -487,3 +487,26 @@ describe('styled factory with style defaultProps', () => {
     `)
   })
 })
+
+describe('styled factory defaultProps', () => {
+  test('an undefined prop keeps its default', () => {
+    const Button = styled('button', buttonWithCompoundVariants, {
+      defaultProps: { visual: 'solid', 'aria-label': 'Close' },
+    })
+
+    const { container } = render(
+      <Button visual={undefined} aria-label={undefined}>
+        Close
+      </Button>,
+    )
+
+    expect(container.firstChild).toMatchInlineSnapshot(`
+      <button
+        aria-label="Close"
+        class="button button--visual_solid button--compound__visual_solid"
+      >
+        Close
+      </button>
+    `)
+  })
+})

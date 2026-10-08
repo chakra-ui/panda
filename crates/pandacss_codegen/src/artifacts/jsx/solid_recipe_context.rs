@@ -247,7 +247,7 @@ export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipe
       const mergedProps = createMemo(() => {
         const defaults = defaultProps()
         if (!defaults) return propsWithoutChildren
-        return { ...defaults, ...propsWithoutChildren }
+        return mergeProps(defaults, propsWithoutChildren)
       })
 
       return createComponent(SlotStylesContext.Provider, {
@@ -291,7 +291,7 @@ export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipe
 
       const resolvedProps = createMemo(() => {
         const defaults = defaultProps()
-        const propsWithClass = defaults ? { ...defaults, ...propsWithoutChildren } : propsWithoutChildren
+        const propsWithClass = defaults ? mergeProps(defaults, propsWithoutChildren) : propsWithoutChildren
         const slots = resolvedSlots()
         const resolved = resolveProps(propsWithClass, slots[slot])
         resolved.class = cx(resolved.class as string, slots._classNameMap?.[slot])
@@ -330,7 +330,7 @@ export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipe
 
       const resolvedProps = createMemo(() => {
         const defaults = defaultProps()
-        const propsWithClass = defaults ? { ...defaults, ...propsWithoutChildren } : propsWithoutChildren
+        const propsWithClass = defaults ? mergeProps(defaults, propsWithoutChildren) : propsWithoutChildren
         const resolved = resolveProps(propsWithClass, resolvedSlots[slot])
         resolved.class = cx(resolved.class as string, resolvedSlots._classNameMap?.[slot])
         resolved['data-slot'] = slot

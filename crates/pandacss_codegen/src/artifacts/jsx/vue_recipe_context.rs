@@ -11,7 +11,10 @@ pub(super) fn recipe_module(ctx: CodegenContext<'_>) -> Module {
             "vue",
         ))
         .with_import(value_import(&[factory.as_str()], "./factory"))
-        .with_import(ImportDecl::value(["getDisplayName"], "./helper"))
+        .with_import(ImportDecl::value(
+            ["getDisplayName", "mergeDefaultProps"],
+            "./helper",
+        ))
         .with_import(type_import(
             &[
                 "RecipeDefinition",
@@ -72,7 +75,10 @@ pub(super) fn slot_recipe_module(ctx: CodegenContext<'_>) -> Module {
             &ctx.runtime_import(RuntimeImport::CssIndex, "../css/index"),
         ))
         .with_import(value_import(&[factory.as_str()], "./factory"))
-        .with_import(ImportDecl::value(["getDisplayName"], "./helper"))
+        .with_import(ImportDecl::value(
+            ["getDisplayName", "mergeDefaultProps"],
+            "./helper",
+        ))
         .with_import(type_import(
             &[
                 "RecipeSelection",
@@ -172,7 +178,7 @@ export function createRecipeContext<R extends RecipeContextRecipe>(recipeInput: 
         const propsContext = usePropsContext()
         const props = computed(() => {
           if (!propsContext) return { ...inProps, ...attrs }
-          return { ...propsContext.value, ...inProps, ...attrs }
+          return mergeDefaultProps(propsContext.value, { ...inProps, ...attrs })
         })
         return () => h(StyledComponent as Component, props.value, slots)
       },
@@ -255,18 +261,18 @@ export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipe
 
   const withRootProvider = (Component: ElementType, options?: SlotOptions) => {
     const WithRootProvider: Component & { displayName?: string } = defineComponent({
+      inheritAttrs: false,
       props: slotRecipeFn.variantKeys,
-      setup(props, { slots }) {
+      setup(props, { slots, attrs }) {
         const [variantProps, otherProps] = slotRecipeFn.splitVariantProps(props)
         const resolvedSlots = computed(() => resolveSlots(variantProps))
         provide(SlotStylesContext, resolvedSlots)
 
-        const mergedProps = computed(() => {
-          if (!options?.defaultProps) return otherProps
-          return { ...options.defaultProps, ...otherProps }
-        })
-
-        return () => h(Component as Component, mergedProps.value, slots)
+        return () => {
+          const ownProps = { ...otherProps, ...attrs }
+          const mergedProps = options?.defaultProps ? mergeDefaultProps(options.defaultProps, ownProps) : ownProps
+          return h(Component as Component, mergedProps, slots)
+        }
       },
     })
     const componentName = getDisplayName(Component as Parameters<typeof getDisplayName>[0])

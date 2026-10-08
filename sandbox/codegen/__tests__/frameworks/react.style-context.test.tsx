@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest'
 import { render } from '@testing-library/react'
 import React from 'react'
-import { createSlotRecipeContext } from '../../styled-system/jsx'
-import { slotButton } from '../../styled-system/recipes'
+import { createRecipeContext, createSlotRecipeContext } from '../../styled-system/jsx'
+import { buttonWithCompoundVariants, slotButton } from '../../styled-system/recipes'
 import { sva } from '../../styled-system/css'
 
 const { withProvider, withContext } = createSlotRecipeContext(slotButton)
@@ -116,5 +116,44 @@ describe('style context - react', () => {
 
     expect(container.querySelector('[data-slot=root]')?.classList.contains('card__root')).toBe(true)
     expect(container.querySelector('[data-slot=title]')?.classList.contains('card__title')).toBe(true)
+  })
+})
+
+describe('style context defaultProps', () => {
+  test('an undefined prop keeps its default on withRootProvider', () => {
+    const { withRootProvider } = createSlotRecipeContext(slotButton)
+    const RootWithDefaults = withRootProvider('div', { defaultProps: { 'aria-label': 'Close' } })
+
+    const { container } = render(<RootWithDefaults aria-label={undefined}>Close</RootWithDefaults>)
+
+    expect(container.firstChild).toMatchInlineSnapshot(`
+      <div
+        aria-label="Close"
+      >
+        Close
+      </div>
+    `)
+  })
+
+  test('an undefined prop keeps the value from PropsProvider', () => {
+    const { withContext, PropsProvider } = createRecipeContext(buttonWithCompoundVariants)
+    const Button = withContext('button')
+
+    const { container } = render(
+      <PropsProvider value={{ visual: 'solid', 'data-testid': 'close' }}>
+        <Button visual={undefined} data-testid={undefined}>
+          Close
+        </Button>
+      </PropsProvider>,
+    )
+
+    expect(container.querySelector('button')).toMatchInlineSnapshot(`
+      <button
+        class="button button--visual_solid button--compound__visual_solid"
+        data-testid="close"
+      >
+        Close
+      </button>
+    `)
   })
 })

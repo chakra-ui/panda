@@ -21,6 +21,7 @@ pub(super) fn module(
                 "composeShouldForwardProps",
                 "getDisplayName",
                 "serializeSplitStyles",
+                "mergeDefaultProps",
                 "splitJsxProps",
             ],
             "./helper",
