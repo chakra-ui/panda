@@ -420,8 +420,19 @@ pub(crate) fn less_than(a: &Literal, b: &Literal) -> Option<bool> {
     Some(l < r)
 }
 
+/// Folds a value that only picks a branch (ternary test, `&&` / `||` / `??` left).
+pub(crate) fn branch_test_to_literal(
+    expr: &Expression<'_>,
+    resolver: Option<&Resolver<'_, '_>>,
+) -> Option<Literal> {
+    match resolver {
+        Some(r) => r.in_branch_test(|| expression_to_literal(expr, resolver)),
+        None => expression_to_literal(expr, None),
+    }
+}
+
 fn eval_logical(l: &LogicalExpression<'_>, resolver: Option<&Resolver<'_, '_>>) -> Option<Literal> {
-    if let Some(left) = expression_to_literal(&l.left, resolver) {
+    if let Some(left) = branch_test_to_literal(&l.left, resolver) {
         return match l.operator {
             LogicalOperator::And => {
                 if left.is_truthy() {
@@ -454,7 +465,7 @@ fn eval_conditional(
     c: &ConditionalExpression<'_>,
     resolver: Option<&Resolver<'_, '_>>,
 ) -> Option<Literal> {
-    if let Some(test) = expression_to_literal(&c.test, resolver) {
+    if let Some(test) = branch_test_to_literal(&c.test, resolver) {
         return if test.is_truthy() {
             expression_to_literal(&c.consequent, resolver)
         } else {

@@ -8,7 +8,7 @@
 //! whole identifiers. Pure callables (`f()`, IIFEs, imported helpers) are
 //! lowered/applied via [`crate::pure_fn`] from [`Resolver::resolve_pure_call`].
 
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::path::PathBuf;
 
 use oxc_ast::AstKind;
@@ -77,6 +77,8 @@ pub(crate) struct Resolver<'a, 'cb> {
     diagnostics: RefCell<Vec<crate::Diagnostic>>,
     /// Call spans already reported as `pure_helper_unevaluated` (calls fold more than once).
     reported_unevaluated_calls: RefCell<FxHashSet<u32>>,
+    /// Nesting depth of branch tests, where an unevaluated helper only picks a branch.
+    branch_test_depth: Cell<u32>,
     token_refs: RefCell<Vec<TokenRef>>,
     imported_recipe_folds: RefCell<Vec<ImportedRecipeFold>>,
     /// Cross-file modules read during this file's extraction (nested re-export /
@@ -175,6 +177,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             line_index,
             diagnostics: RefCell::default(),
             reported_unevaluated_calls: RefCell::default(),
+            branch_test_depth: Cell::new(0),
             token_refs: RefCell::default(),
             imported_recipe_folds: RefCell::default(),
             cross_file_deps: RefCell::default(),
@@ -291,26 +294,36 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
 
     // === Pure Function Resolution ===
 
+    pub(crate) fn in_branch_test<T>(&self, eval: impl FnOnce() -> T) -> T {
+        self.branch_test_depth.set(self.branch_test_depth.get() + 1);
+        let out = eval();
+        self.branch_test_depth.set(self.branch_test_depth.get() - 1);
+        out
+    }
+
     /// Fold a pure local/imported callable: `f()`, `(() => 'x')()`, etc.
     pub(crate) fn resolve_pure_call(&self, call: &CallExpression<'_>) -> Option<Literal> {
         if call.optional {
             return None;
         }
-        let func = self.lookup_callable(&call.callee)?;
+        let Some(func) = self.lookup_callable(&call.callee) else {
+            self.report_unevaluated_helper(call);
+            return None;
+        };
         let args = fold_call_args(call, Some(self))?;
         apply_pure_fn(&func, &args)
     }
 
-    /// Warn when a style value comes from a helper Panda can't evaluate.
-    pub(crate) fn report_unevaluated_helper(&self, call: &CallExpression<'_>) {
+    /// Warn when a call has static arguments but its local or imported helper can't be lowered,
+    /// since its styles are otherwise dropped without a trace.
+    fn report_unevaluated_helper(&self, call: &CallExpression<'_>) {
+        if self.branch_test_depth.get() > 0 {
+            return;
+        }
         let Expression::Identifier(ident) = call.callee.get_inner_expression() else {
             return;
         };
-        if call.optional
-            || self.aliases.contains_key(ident.name.as_str())
-            || !self.is_unevaluated_helper(ident)
-            || self.lookup_callable(&call.callee).is_some()
-        {
+        if self.aliases.contains_key(ident.name.as_str()) || !self.is_unevaluated_helper(ident) {
             return;
         }
         if fold_call_args(call, Some(self)).is_none()
@@ -707,6 +720,11 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         let result = self.compute_symbol(symbol_id);
         let state = match &result {
             Some(lit) => ResolutionState::Resolved(lit.clone()),
+            // Re-resolve outside the test so a later style use can still warn.
+            None if self.branch_test_depth.get() > 0 => {
+                self.cache.borrow_mut().remove(&symbol_id);
+                return None;
+            }
             None => ResolutionState::Unresolvable,
         };
         self.cache.borrow_mut().insert(symbol_id, state);

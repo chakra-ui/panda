@@ -2071,6 +2071,85 @@ fn unevaluated_helper_left_of_nullish_keeps_fallback_without_warning() {
 }
 
 #[test]
+fn unevaluated_helper_in_a_template_value_warns() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function size(n: number) {
+          if (n < 0) return 0;
+          return n * 4;
+        }
+        css({ width: `${size(2)}px`, color: 'red' });
+    "};
+    assert_snapshot!(helper_warnings(&run(src)), @"`size(...)` can't be evaluated at build time, so its styles were not extracted. Keep the helper to `const` declarations and one `return`, or write the styles inline.");
+}
+
+#[test]
+fn unevaluated_helper_in_arithmetic_warns() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function size(n: number) {
+          if (n < 0) return 0;
+          return n * 4;
+        }
+        css({ width: size(2) * 4 });
+    "};
+    assert_snapshot!(helper_warnings(&run(src)), @"`size(...)` can't be evaluated at build time, so its styles were not extracted. Keep the helper to `const` declarations and one `return`, or write the styles inline.");
+}
+
+#[test]
+fn unevaluated_helper_in_string_concatenation_warns() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function size(n: number) {
+          if (n < 0) return 0;
+          return n * 4;
+        }
+        css({ width: size(2) + 'px' });
+    "};
+    assert_snapshot!(helper_warnings(&run(src)), @"`size(...)` can't be evaluated at build time, so its styles were not extracted. Keep the helper to `const` declarations and one `return`, or write the styles inline.");
+}
+
+#[test]
+fn negated_unevaluated_helper_warns() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function size(n: number) {
+          if (n < 0) return 0;
+          return n * 4;
+        }
+        css({ marginTop: -size(2) });
+    "};
+    assert_snapshot!(helper_warnings(&run(src)), @"`size(...)` can't be evaluated at build time, so its styles were not extracted. Keep the helper to `const` declarations and one `return`, or write the styles inline.");
+}
+
+#[test]
+fn hook_result_picking_a_template_part_does_not_warn() {
+    let src = indoc! {r"
+        import { createContext, useContext } from 'react';
+        import { css } from '@panda/css';
+        const ExpandedContext = createContext(false);
+        const useExpanded = () => useContext(ExpandedContext);
+        export const panel = () => css({ width: `${useExpanded() ? 8 : 4}px` });
+    "};
+    assert_snapshot!(helper_warnings(&run(src)), @"");
+}
+
+#[test]
+fn binding_used_as_a_test_then_as_a_value_warns() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function size(n: number) {
+          if (n < 0) return 0;
+          return n * 4;
+        }
+        const width = size(2);
+        css(width ? { color: 'red' } : { color: 'blue' });
+        css({ width: `${width}px` });
+    "};
+    assert_snapshot!(helper_warnings(&run(src)), @"`size(...)` can't be evaluated at build time, so its styles were not extracted. Keep the helper to `const` declarations and one `return`, or write the styles inline.");
+}
+
+#[test]
 fn component_destructured_prop_default_is_extracted() {
     let src = indoc! {r"
         import { css } from '@panda/css';

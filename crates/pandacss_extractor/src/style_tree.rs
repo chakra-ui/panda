@@ -5,7 +5,7 @@
 //! `design-notes/style-tree.md`.
 
 use oxc_ast::ast::{
-    ArrayExpression, ArrayExpressionElement, CallExpression, ChainElement, ChainExpression,
+    ArrayExpression, ArrayExpressionElement, ChainElement, ChainExpression,
     ComputedMemberExpression, Expression, LogicalOperator, ObjectExpression, ObjectProperty,
     ObjectPropertyKind, PropertyKind, StaticMemberExpression,
 };
@@ -13,7 +13,7 @@ use oxc_span::GetSpan;
 
 use pandacss_shared::Span;
 
-use crate::literal::{expression_to_literal, property_key_to_string};
+use crate::literal::{branch_test_to_literal, expression_to_literal, property_key_to_string};
 use crate::pure_fn::fold_accessor_expr;
 use crate::{Literal, Resolver, span_from_oxc};
 
@@ -364,7 +364,7 @@ pub(crate) fn expression_to_style_tree(
         }
 
         Expression::ConditionalExpression(c) => {
-            if let Some(test) = expression_to_literal(&c.test, resolver) {
+            if let Some(test) = branch_test_to_literal(&c.test, resolver) {
                 return if test.is_truthy() {
                     expression_to_style_tree(&c.consequent, resolver)
                 } else {
@@ -389,7 +389,7 @@ pub(crate) fn expression_to_style_tree(
         }
 
         Expression::LogicalExpression(l) => {
-            if let Some(left) = expression_to_literal(&l.left, resolver) {
+            if let Some(left) = branch_test_to_literal(&l.left, resolver) {
                 return match l.operator {
                     LogicalOperator::And => {
                         if left.is_truthy() {
@@ -440,7 +440,15 @@ pub(crate) fn expression_to_style_tree(
             .and_then(|r| r.resolve_identifier_style_tree(ident))
             .or_else(|| expression_to_literal(expr, resolver).map(literal_to_style_tree)),
 
-        Expression::CallExpression(call) => call_to_style_tree(expr, call, resolver),
+        Expression::CallExpression(call) => {
+            if let Some(r) = resolver
+                && let Some(tree) = r.resolve_raw_style_call_style_tree(call)
+            {
+                Some(tree)
+            } else {
+                expression_to_literal(expr, resolver).map(literal_to_style_tree)
+            }
+        }
 
         Expression::StaticMemberExpression(member) => static_member_to_style_tree(member, resolver),
         Expression::ComputedMemberExpression(member) => {
@@ -450,25 +458,6 @@ pub(crate) fn expression_to_style_tree(
 
         _ => expression_to_literal(expr, resolver).map(literal_to_style_tree),
     }
-}
-
-fn call_to_style_tree(
-    expr: &Expression<'_>,
-    call: &CallExpression<'_>,
-    resolver: Option<&Resolver<'_, '_>>,
-) -> Option<StyleTree> {
-    if let Some(r) = resolver
-        && let Some(tree) = r.resolve_raw_style_call_style_tree(call)
-    {
-        return Some(tree);
-    }
-    let tree = expression_to_literal(expr, resolver).map(literal_to_style_tree);
-    if tree.is_none()
-        && let Some(r) = resolver
-    {
-        r.report_unevaluated_helper(call);
-    }
-    tree
 }
 
 fn static_member_to_style_tree(
@@ -630,7 +619,7 @@ fn push_style_spread(
     let argument = argument.get_inner_expression();
     match argument {
         Expression::ConditionalExpression(c) => {
-            if let Some(test) = expression_to_literal(&c.test, resolver) {
+            if let Some(test) = branch_test_to_literal(&c.test, resolver) {
                 let branch = if test.is_truthy() {
                     &c.consequent
                 } else {
@@ -651,7 +640,7 @@ fn push_style_spread(
             });
         }
         Expression::LogicalExpression(l) => {
-            if let Some(left) = expression_to_literal(&l.left, resolver) {
+            if let Some(left) = branch_test_to_literal(&l.left, resolver) {
                 match l.operator {
                     LogicalOperator::And => {
                         if left.is_truthy() {
