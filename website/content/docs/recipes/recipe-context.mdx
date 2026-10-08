@@ -118,14 +118,23 @@ Skip the recipe classes. Style props, `css`, and `className` still apply. Same i
 </Button>
 ```
 
-## PropsProvider
+## Sharing variant props
 
-The `PropsProvider` lets you style a set of buttons, tags, or avatars as one group. Export it as `ButtonGroup`,
-`TagGroup`, or `AvatarGroup`. The group sets variant props once. Every `withContext` child picks them up.
+`PropsProvider` passes recipe props to every `withContext` child below it. It takes a `value`, so wrap it in your own
+group component, like `ButtonGroup`, `TagGroup`, or `AvatarGroup`. Split the variant props off for the provider and
+pass the rest to the element the group renders.
 
 ```tsx
 export const Button = withContext('button')
-export const ButtonGroup = PropsProvider
+
+export function ButtonGroup(props) {
+  const [variantProps, restProps] = buttonRecipe.splitVariantProps(props)
+  return (
+    <PropsProvider value={variantProps}>
+      <div role="group" {...restProps} />
+    </PropsProvider>
+  )
+}
 ```
 
 ```tsx
@@ -138,10 +147,9 @@ export const ButtonGroup = PropsProvider
 `Save` inherits `size="lg"` and `visual="outline"`. `Cancel` keeps the size and overrides `visual`. Incoming props
 win over the group.
 
-### Adding layout
+### Avatar group
 
-When the group also lays out its children, split recipe props off and put style props on `HStack`. Use `spaceX`, not
-`gap`, when the overlap needs to be negative.
+The group can render a layout component instead of a `div`.
 
 ```tsx
 import { HStack } from '../styled-system/jsx'
@@ -153,7 +161,7 @@ export const Avatar = withContext('div')
 export function AvatarGroup(props) {
   const [variantProps, restProps] = avatar.splitVariantProps(props)
   return (
-    <PropsProvider {...variantProps}>
+    <PropsProvider value={variantProps}>
       <HStack spaceX="-2" {...restProps} />
     </PropsProvider>
   )
@@ -171,7 +179,7 @@ export function AvatarGroup(props) {
 
 ### Config recipe
 
-Extract sees `size` on `ButtonGroup`, not on `Button`. A renamed export like `LinkButton` is the same miss. List every
+Panda sees `size` on `ButtonGroup`, not on `Button`. A renamed export like `LinkButton` is the same miss. List every
 tag that carries variant props, or the CSS is missing:
 
 ```ts
@@ -181,7 +189,6 @@ export const buttonRecipe = defineRecipe({
 })
 
 export const LinkButton = withContext('a')
-export const ButtonGroup = PropsProvider
 ```
 
 `cva` already emits every variant, so the extra names do not matter there. The full tag rule is on

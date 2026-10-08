@@ -157,3 +157,79 @@ describe('style context defaultProps', () => {
     `)
   })
 })
+
+describe('style context PropsProvider', () => {
+  test('PropsProvider sets variants and props on withProvider', () => {
+    const { withProvider, withContext, PropsProvider } = createSlotRecipeContext(slotButton)
+    const ButtonRoot = withProvider('div', 'root')
+    const ButtonLabel = withContext('span', 'root')
+
+    const { container } = render(
+      <PropsProvider value={{ visual: 'solid', 'data-testid': 'button' }}>
+        <ButtonRoot>
+          <ButtonLabel>Click me</ButtonLabel>
+        </ButtonRoot>
+      </PropsProvider>,
+    )
+
+    expect(container.querySelector('div')).toMatchInlineSnapshot(`
+      <div
+        class="slot-button__root slot-button__root--visual_solid"
+        data-slot="root"
+        data-testid="button"
+      >
+        <span
+          class="slot-button__root slot-button__root--visual_solid"
+          data-slot="root"
+        >
+          Click me
+        </span>
+      </div>
+    `)
+  })
+
+  test('passed props override PropsProvider', () => {
+    const { withProvider, PropsProvider } = createSlotRecipeContext(slotButton)
+    const ButtonRoot = withProvider('div', 'root')
+
+    const { container } = render(
+      <PropsProvider value={{ visual: 'solid' }}>
+        <ButtonRoot visual="outline">Click me</ButtonRoot>
+      </PropsProvider>,
+    )
+
+    expect(container.querySelector('div')).toMatchInlineSnapshot(`
+      <div
+        class="slot-button__root slot-button__root--visual_outline"
+        data-slot="root"
+      >
+        Click me
+      </div>
+    `)
+  })
+
+  test('PropsProvider sets variants on withRootProvider', () => {
+    const { withRootProvider, withContext, PropsProvider } = createSlotRecipeContext(slotButton)
+    const ButtonRoot = withRootProvider('div')
+    const ButtonLabel = withContext('span', 'root')
+
+    const { container } = render(
+      <PropsProvider value={{ visual: 'solid' }}>
+        <ButtonRoot>
+          <ButtonLabel>Click me</ButtonLabel>
+        </ButtonRoot>
+      </PropsProvider>,
+    )
+
+    expect(container.querySelector('div')).toMatchInlineSnapshot(`
+      <div>
+        <span
+          class="slot-button__root slot-button__root--visual_solid"
+          data-slot="root"
+        >
+          Click me
+        </span>
+      </div>
+    `)
+  })
+})

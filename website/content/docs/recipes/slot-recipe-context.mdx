@@ -219,9 +219,39 @@ const TabIndicator = withContext(Indicator, 'indicator', {
 
 Without that, `width` would be treated as a style prop.
 
+## Sharing variant props
+
+`PropsProvider` passes recipe props to every `withProvider` and `withRootProvider` part below it. Like the
+[recipe context `PropsProvider`](/docs/recipes/recipe-context#sharing-variant-props), it takes a `value`, so wrap it
+in your own group component that splits the variant props off for the provider.
+
+```tsx
+const { withProvider, withContext, PropsProvider } = createSlotRecipeContext(card)
+
+export function CardGroup(props) {
+  const [variantProps, restProps] = card.splitVariantProps(props)
+  return (
+    <PropsProvider value={variantProps}>
+      <div {...restProps} />
+    </PropsProvider>
+  )
+}
+```
+
+```tsx
+<CardGroup size="lg">
+  <Card.Root>...</Card.Root>
+  <Card.Root size="sm">...</Card.Root>
+</CardGroup>
+```
+
+The first card gets `size="lg"` from the group. The second overrides it. Each root passes its size to its own title and
+body through context. With a config slot recipe, add the group to the recipe's `jsx` list so its variants are
+extracted, as on [recipe context](/docs/recipes/recipe-context#config-recipe).
+
 ## Config recipe
 
-Extract sees `size` on `Card.Root`, not on Title or Body. A renamed export like `Panel` is the same miss. List every
+Panda sees `size` on `Card.Root`, not on Title or Body. A renamed export like `Panel` is the same miss. List every
 tag that carries variant props, or the CSS is missing:
 
 ```ts

@@ -92,7 +92,7 @@ fn emits_recipe_contexts_for_supported_non_react_frameworks() {
             "from 'solid-js/web';",
             "createComponent(StyledComponent, props)",
             "createMemo(() =>",
-            "import type { Component, ComponentProps } from 'solid-js'",
+            "import type { Component, ComponentProps, ContextProviderComponent } from 'solid-js'",
         ),
         (
             "vue",
