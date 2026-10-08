@@ -2,11 +2,11 @@ import { mkdtempSync, realpathSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import postcss, { type Root } from 'postcss'
-import { build, type Rollup } from 'vite'
+import { build, createServer, type Rollup } from 'vite'
 import { afterAll, describe, expect, it } from 'vitest'
 import pandacss from '../src'
 
-const FIXTURE = join(__dirname, 'fixtures/imported-font')
+const FIXTURE = join(__dirname, 'fixtures/imported-assets')
 const ENTRY = join(FIXTURE, 'src/index.css')
 const FONTS = join(FIXTURE, 'src/lib/fonts.css')
 const LAYER_ORDER = '@layer reset, base, tokens, recipes, utilities;'
@@ -36,6 +36,10 @@ function sourceFiles(root: Root) {
   )
 }
 
+function urls(css: string) {
+  return css.match(/url\([^)]*\)/g)?.map((url) => url.replace(/-[\w-]{8}\./, '-[hash].'))
+}
+
 async function viteBuild(polyfill: boolean) {
   const output = (await build({
     root: FIXTURE,
@@ -46,6 +50,21 @@ async function viteBuild(polyfill: boolean) {
   })) as Rollup.RollupOutput
   const css = output.output.find((file) => file.fileName.endsWith('.css'))
   return css?.type === 'asset' ? String(css.source) : ''
+}
+
+async function viteDev() {
+  const server = await createServer({
+    root: FIXTURE,
+    configFile: false,
+    logLevel: 'silent',
+    css: { postcss: { plugins: [plugin(true)] }, devSourcemap: true },
+    server: { port: 0, watch: null },
+  })
+  try {
+    return await server.transformRequest('/src/index.css?direct')
+  } finally {
+    await server.close()
+  }
 }
 
 describe('@pandacss/postcss imports', () => {
@@ -130,6 +149,19 @@ describe('@pandacss/postcss imports', () => {
     expect(result.css).not.toContain('@layer reset')
   })
 
+  it('maps imported rules to their own files under polyfill', async () => {
+    const root = inlinedEntry(LAYER_ORDER, '@font-face { src: url(../fonts/lib.woff2) }')
+
+    const result = await postcss([plugin(true)]).process(root, { from: ENTRY, to: ENTRY, map: { inline: false } })
+
+    expect(result.map.toJSON().sources).toMatchInlineSnapshot(`
+      [
+        "lib/fonts.css",
+        "index.css",
+      ]
+    `)
+  })
+
   it('ignores stylesheets without a Panda layer order', async () => {
     const css = '@layer theme, components;\n.card { padding: 0 }'
 
@@ -138,19 +170,41 @@ describe('@pandacss/postcss imports', () => {
     expect(result.css).toBe(css)
   })
 
-  it('resolves imported font urls in Vite with polyfill', async () => {
+  it('resolves imported urls in a Vite build with polyfill', async () => {
     const css = await viteBuild(true)
 
-    expect(css).toMatch(/url\(\/assets\/lib-[\w-]+\.woff2\)/)
-    expect(css).not.toContain('../fonts/lib.woff2')
+    expect(urls(css)).toMatchInlineSnapshot(`
+      [
+        "url(/assets/icon-[hash].svg)",
+        "url(/assets/lib-[hash].woff2)",
+      ]
+    `)
     expect(css).not.toContain('@layer reset')
     expect(css).toContain('.color_red')
   })
 
-  it('resolves imported font urls in Vite without polyfill', async () => {
+  it('resolves imported urls in a Vite build without polyfill', async () => {
     const css = await viteBuild(false)
 
-    expect(css).toMatch(/url\(\/assets\/lib-[\w-]+\.woff2\)/)
+    expect(urls(css)).toMatchInlineSnapshot(`
+      [
+        "url(/assets/icon-[hash].svg)",
+        "url(/assets/lib-[hash].woff2)",
+      ]
+    `)
     expect(css).toContain('.color_red')
+  })
+
+  it('resolves imported urls in the Vite dev server with polyfill', async () => {
+    const result = await viteDev()
+
+    expect(result?.code).not.toMatch(/url\(\.\.\//)
+    expect(result?.map && 'sources' in result.map ? result.map.sources : []).toMatchInlineSnapshot(`
+      [
+        "lib/deep/icons.css",
+        "lib/fonts.css",
+        "index.css",
+      ]
+    `)
   })
 })
