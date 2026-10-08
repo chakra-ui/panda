@@ -7,7 +7,6 @@ const CSS_ROOT = '@layer reset, base, tokens, recipes, utilities;'
 interface MockDriver {
   compiler: {
     hasLayerDeclaration: ReturnType<typeof vi.fn>
-    stripLayerOrderStatements: ReturnType<typeof vi.fn>
     sources: ReturnType<typeof vi.fn>
   }
   config: { polyfill?: boolean }
@@ -429,9 +428,6 @@ function createMockDriver(): MockDriver {
   return {
     compiler: {
       hasLayerDeclaration: vi.fn((css: string) => css.includes(CSS_ROOT)),
-      stripLayerOrderStatements: vi.fn((css: string) =>
-        css.replace(/@layer\s+reset,\s*base,\s*tokens,\s*recipes,\s*utilities;/g, ''),
-      ),
       // `sources()` returns `pattern` relative to `base` — a coherent (dir, glob) pair.
       sources: vi.fn(() => [{ base: '/project/src', pattern: '**/*.tsx' }]),
     },

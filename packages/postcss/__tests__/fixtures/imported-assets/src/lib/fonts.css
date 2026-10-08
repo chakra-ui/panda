@@ -1,0 +1,6 @@
+@import './deep/icons.css';
+
+@font-face {
+  font-family: Lib;
+  src: url(../fonts/lib.woff2);
+}

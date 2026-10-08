@@ -322,6 +322,8 @@ tests → design note.
    exit (see `exitOnDisconnect` in `packages/mcp/src/server.ts` — stdin `end`/`close` + `SIGINT`/`SIGTERM`/`SIGHUP`,
    matching popular servers like context7). Do **not** add `await new Promise(() => {})` keep-alive, or heavy
    `uncaughtException`/EPIPE guards — no reference/shadcn/context7 server does that.
+9. **PostCSS plugin edits the parsed `Root` in place**: never re-parse `root.toString()`. Rules inlined from `@import`
+   keep their own `source`, which bundlers use to rebase `url()`s and build source maps.
 
 ## Package Relationships
 
