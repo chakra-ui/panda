@@ -20,7 +20,7 @@ panda studio
   │  spec JSON in memory → gzip → AES-GCM with a fresh random key
   ▼
 POST <studio>/api/handoff   body: ciphertext + iv
-  │  server: SET handoff:<id> EX 120, returns { id }
+  │  server: SET handoff:<id> EX 600, returns { id }
   ▼
 open <studio>/view?h=<id>#k=<key>          key is in the fragment, never sent to the server
   │
@@ -74,7 +74,7 @@ gzip via `CompressionStream` / `DecompressionStream`. Key and payload encoded ba
 ## Studio — `apps/studio`
 
 - `server/api/handoff/index.post.ts` — accepts `{ iv, data }` (base64url), max 1,000,000 characters of `data`, stores in
-  Redis with 120s TTL, returns `{ id }` (`nanoid(16)`). Rejects anything else with 400/413. Rate limit: 20 handoffs per
+  Redis with a 600s TTL, returns `{ id }` (`nanoid(16)`). Rejects anything else with 400/413. Rate limit: 20 handoffs per
   client per minute (429); a Vercel WAF rule is the follow-up for IP-rotating abuse.
 - `server/api/handoff/[id].get.ts` — `GETDEL`; 404 when missing or expired.
 - `pages/view.vue` — when `?h` and `#k` are present: fetch, decrypt, `parseSpec`, `saveTokens`, clear usage, strip `h`

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   allowHandoff,
   HANDOFF_LIMIT_PER_MINUTE,
+  HANDOFF_TTL_SECONDS,
   MAX_HANDOFF_DATA,
   memoryRedis,
   parseSealed,
@@ -38,7 +39,7 @@ describe('handoff', () => {
     let now = 0
     const redis = memoryRedis(() => now)
     const id = await putHandoff(redis, sealed)
-    now = 121_000
+    now = (HANDOFF_TTL_SECONDS + 1) * 1000
     expect(await takeHandoff(redis, id)).toBeNull()
   })
 

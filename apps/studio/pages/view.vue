@@ -101,7 +101,7 @@ async function reset() {
     </svg>
     <h1 :class="s.expiredTitle">This link has expired</h1>
     <p :class="s.expiredBody">
-      Studio links open once and last two minutes. Run this in your project for a fresh one.
+      Studio links open once and last ten minutes. Run this in your project for a fresh one.
     </p>
     <div :class="s.command">
       <code><span :class="s.prompt">$</span> panda studio</code>

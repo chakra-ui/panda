@@ -6,7 +6,7 @@ export interface Sealed {
   data: string
 }
 
-export const HANDOFF_TTL_SECONDS = 120
+export const HANDOFF_TTL_SECONDS = 600
 export const MAX_HANDOFF_DATA = 1_000_000
 export const HANDOFF_LIMIT_PER_MINUTE = 20
 

@@ -42,7 +42,7 @@ Environment variables:
   diffs the whole schema and would otherwise drop the playground's tables.
 - `NUXT_PUBLIC_SITE_URL` — public origin for canonical and OG URLs.
 - `KV_REST_API_URL` / `KV_REST_API_TOKEN` — Upstash Redis for `panda studio` handoffs (or `UPSTASH_REDIS_REST_URL` /
-  `_TOKEN`). Holds encrypted payloads for 2 minutes; the server never has the key. Unset in dev uses an in-memory store.
+  `_TOKEN`). Holds encrypted payloads for 10 minutes; the server never has the key. Unset in dev uses an in-memory store.
 
 ## What it does
 
