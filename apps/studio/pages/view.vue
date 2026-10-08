@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import * as s from './view.styles'
+import { button } from 'styled-system/recipes'
 import { index, parseSpec, type DesignSystemIndex } from '~/utils/design-system'
 import { loadTokens, loadUsage, saveUsage, saveTokens, clearTokens } from '~/utils/idb'
 import { readHandoff, receiveHandoff } from '~/utils/handoff'
@@ -66,6 +67,14 @@ onMounted(async () => {
   }
 })
 
+const copied = ref(false)
+
+async function copyCommand() {
+  await navigator.clipboard.writeText('panda studio')
+  copied.value = true
+  setTimeout(() => (copied.value = false), 1500)
+}
+
 async function reset() {
   await clearTokens()
   await navigateTo('/')
@@ -74,7 +83,32 @@ async function reset() {
 
 <template>
   <TokenView v-if="ready && ds" :ds="ds" :usage="usage" :analyze-href="'/analyze'" @reset="reset" />
-  <div v-else-if="expired" :class="s.loading">This link has expired. Run <code>panda studio</code> again.</div>
+  <div v-else-if="expired" :class="s.expired">
+    <svg
+      :class="s.expiredIcon"
+      width="28"
+      height="28"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.6"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </svg>
+    <h1 :class="s.expiredTitle">This link has expired</h1>
+    <p :class="s.expiredBody">
+      Studio links open once and last two minutes. Run this in your project for a fresh one.
+    </p>
+    <div :class="s.command">
+      <code><span :class="s.prompt">$</span> panda studio</code>
+      <button type="button" :class="s.copy" @click="copyCommand">{{ copied ? 'Copied' : 'Copy' }}</button>
+    </div>
+    <NuxtLink to="/" :class="button({ variant: 'outline' })">Load a file instead</NuxtLink>
+  </div>
   <div v-else :class="s.loading">
     <img src="/panda.svg" alt="" :class="s.loadingLogo" />
     <span :class="s.loadingSpinner" />
