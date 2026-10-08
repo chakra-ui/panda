@@ -98,7 +98,10 @@ pub(super) fn slot_recipe_module(ctx: CodegenContext<'_>) -> Module {
             ],
             "../types/jsx",
         ))
-        .with_import(type_import(&["Context", "ElementType", "JSX"], "react"));
+        .with_import(type_import(
+            &["Context", "ElementType", "JSX", "Provider"],
+            "react",
+        ));
 
     module.with_item(Item::typed_source(create_slot_recipe_context_source(
         &factory,
@@ -275,6 +278,8 @@ export interface SlotRecipeContext<R extends SlotRecipeContextInput> {
     slot: SlotNameOf<R>,
     options?: JsxFactoryOptions<ComponentProps<T>, F> | undefined
   ) => SlotRecipeConsumerComponent<T, F>
+  PropsProvider: Provider<Partial<SlotRecipePropsOf<R>> & DataAttrs>
+  usePropsContext: () => SlotRecipePropsOf<R> | undefined
 }";
 
 /// Typed runtime, shared with Preact.
@@ -330,6 +335,10 @@ export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipe
   const recipeName = isRuntimeRecipe && recipe.__name__ ? recipe.__name__ : undefined
   const contextName = recipeName ? `createSlotRecipeContext("${recipeName}")` : 'createSlotRecipeContext'
   const [SlotStylesContext, useSlotStylesContext] = createSafeContext(contextName)
+  const PropsContext = createContext<Props | undefined>(undefined)
+  const usePropsContext = () => useContext(PropsContext)
+  const withPropsContext = (props: Props, propsContext: Props | undefined) =>
+    propsContext ? mergeDefaultProps(propsContext, props) : props
   const slotRecipeFn = isRuntimeRecipe ? recipe as SlotRecipeRuntime : sva(recipe.config ?? recipe as AnySlotRecipeDefinition) as unknown as SlotRecipeRuntime
 
   const resolveProps = (props: Props, slotStyles: unknown): Props => {
@@ -346,7 +355,8 @@ export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipe
   }
 
   const withRootProvider = (Component: ElementType, options?: SlotOptions) => {
-    const WithRootProvider = (props: Props) => {
+    const WithRootProvider = (inProps: Props) => {
+      const props = withPropsContext(inProps, usePropsContext())
       const [variantProps, otherProps] = slotRecipeFn.splitVariantProps(props)
       const resolvedSlots = resolveSlots(variantProps)
       const mergedProps = options?.defaultProps ? mergeDefaultProps(options.defaultProps, otherProps) : otherProps
@@ -362,7 +372,8 @@ export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipe
 
   const withProvider = (Component: ElementType, slot: string, options?: SlotOptions) => {
     const StyledComponent = __FACTORY__(Component, {}, options)
-    const WithProvider = forwardRef<unknown, Props>(function WithProvider(props, ref) {
+    const WithProvider = forwardRef<unknown, Props>(function WithProvider(inProps, ref) {
+      const props = withPropsContext(inProps, usePropsContext())
       const [variantProps, restProps] = slotRecipeFn.splitVariantProps(props)
       const resolvedSlots = resolveSlots(variantProps)
       if (restProps.className == null && options?.defaultProps?.className) restProps.className = options.defaultProps.className
@@ -409,5 +420,7 @@ export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipe
     withRootProvider,
     withProvider,
     withContext,
+    PropsProvider: PropsContext.Provider,
+    usePropsContext,
   } as unknown as SlotRecipeContext<R>
 }"#;

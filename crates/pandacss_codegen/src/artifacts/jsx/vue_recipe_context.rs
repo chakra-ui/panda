@@ -235,6 +235,19 @@ export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipe
   const recipeName = isRuntimeRecipe && recipe.__name__ ? recipe.__name__ : undefined
   const contextName = recipeName ? `createSlotRecipeContext("${recipeName}")` : 'createSlotRecipeContext'
   const slotRecipeFn = isRuntimeRecipe ? recipe as SlotRecipeRuntime : sva(recipe.config ?? recipe as AnySlotRecipeDefinition) as unknown as SlotRecipeRuntime
+  const PropsContext: InjectionKey<ComputedRef<Props>> = Symbol('PropsContext')
+  const usePropsContext = () => inject(PropsContext, undefined)
+  const withPropsContext = (props: Props, propsContext: ComputedRef<Props> | undefined) =>
+    propsContext ? mergeDefaultProps(propsContext.value, props) : props
+
+  const PropsProvider = defineComponent({
+    props: ['value'],
+    setup(props, { attrs, slots }) {
+      const value = computed(() => props.value ?? attrs)
+      provide(PropsContext, value)
+      return () => slots.default?.()
+    },
+  })
 
   function useSlotStylesContext(componentName: string, slot: string): ComputedRef<SlotStyles> {
     const context = inject(SlotStylesContext)
@@ -263,13 +276,14 @@ export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipe
     const WithRootProvider: Component & { displayName?: string } = defineComponent({
       inheritAttrs: false,
       props: slotRecipeFn.variantKeys,
-      setup(props, { slots, attrs }) {
-        const [variantProps, otherProps] = slotRecipeFn.splitVariantProps(props)
-        const resolvedSlots = computed(() => resolveSlots(variantProps))
+      setup(inProps, { slots, attrs }) {
+        const propsContext = usePropsContext()
+        const variantProps = computed(() => slotRecipeFn.splitVariantProps(withPropsContext({ ...inProps }, propsContext))[0])
+        const resolvedSlots = computed(() => resolveSlots(variantProps.value))
         provide(SlotStylesContext, resolvedSlots)
 
         return () => {
-          const ownProps = { ...otherProps, ...attrs }
+          const [, ownProps] = slotRecipeFn.splitVariantProps(withPropsContext({ ...inProps, ...attrs }, propsContext))
           const mergedProps = options?.defaultProps ? mergeDefaultProps(options.defaultProps, ownProps) : ownProps
           return h(Component as Component, mergedProps, slots)
         }
@@ -286,8 +300,9 @@ export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipe
       props: ['unstyled', ...slotRecipeFn.variantKeys],
       inheritAttrs: false,
       setup(inProps, { slots, attrs }) {
+        const propsContext = usePropsContext()
         const props = computed(() => {
-          const propsWithClass: Props = { ...inProps, ...attrs }
+          const propsWithClass: Props = withPropsContext({ ...inProps, ...attrs }, propsContext)
           propsWithClass.class = propsWithClass.class ?? options?.defaultProps?.class
           return propsWithClass
         })
@@ -344,6 +359,8 @@ export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipe
     withRootProvider,
     withProvider,
     withContext,
+    PropsProvider,
+    usePropsContext,
   } as unknown as SlotRecipeContext<R>
 }"#;
 
@@ -373,8 +390,8 @@ export interface RecipeContext<R extends RecipeContextRecipe> {
     Component: T,
     options?: JsxFactoryOptions<ComponentProps<T>, F> | undefined
   ) => RecipeContextComponent<T, R, F>
-  PropsProvider: FunctionalComponent<Partial<RecipePropsOf<R>> & DataAttrs>
-  usePropsContext: () => RecipePropsOf<R> | undefined
+  PropsProvider: FunctionalComponent<{ value: Partial<RecipePropsOf<R>> & DataAttrs }>
+  usePropsContext: () => ComputedRef<Partial<RecipePropsOf<R>> & DataAttrs> | undefined
 }";
 
 const CREATE_SLOT_RECIPE_CONTEXT_TYPES: &str = r"type AnySlotRecipeDefinition = SlotRecipeDefinition<string, SlotRecipeVariantRecord<string>>
@@ -434,6 +451,8 @@ export interface SlotRecipeContext<R extends SlotRecipeContextInput> {
     slot: SlotNameOf<R>,
     options?: JsxFactoryOptions<ComponentProps<T>, F> | undefined
   ) => SlotRecipeConsumerComponent<T, F>
+  PropsProvider: FunctionalComponent<{ value: Partial<SlotRecipePropsOf<R>> & DataAttrs }>
+  usePropsContext: () => ComputedRef<Partial<SlotRecipePropsOf<R>> & DataAttrs> | undefined
 }";
 
 fn factory_name(ctx: CodegenContext<'_>) -> String {
