@@ -1,7 +1,7 @@
 import { createNodeDriver } from '@pandacss/compiler'
 import { type Diagnostic, type Driver, formatDiagnostic, type SourceChange } from '@pandacss/compiler-shared'
 import { extname, normalize, resolve } from 'node:path'
-import type { ChildNode, Helpers, Message, Plugin, PluginCreator, Result, Root } from 'postcss'
+import type { AtRule, ChildNode, Helpers, Message, Plugin, PluginCreator, Result, Root } from 'postcss'
 import { readFileStamp } from './fs-stamp'
 
 const PLUGIN_NAME = 'pandacss'
@@ -35,8 +35,8 @@ const pandacss: PluginCreator<PluginOptions> = (options: PluginOptions = {}) => 
 
     if (shouldSkip(fileName, options.allow)) return
 
-    const inputCss = getInputCss(root, result)
-    if (!inputCss.includes('@layer')) return
+    const layerStatements = getLayerStatements(root)
+    if (layerStatements.length === 0) return
 
     const cwd = resolve(options.cwd ?? process.cwd())
     const key = getDriverKey(cwd, options.configPath)
@@ -60,17 +60,19 @@ const pandacss: PluginCreator<PluginOptions> = (options: PluginOptions = {}) => 
     const { driver } = state
     const polyfill = driver.config.polyfill === true
 
-    if (!driver.compiler.hasLayerDeclaration(inputCss)) return
+    const pandaLayerStatements = layerStatements.filter((node) =>
+      driver.compiler.hasLayerDeclaration(`@layer ${node.params};`),
+    )
+    if (pandaLayerStatements.length === 0) return
 
     ensureCodegen(state, { cwd, outdir: options.outdir })
     syncProjectSources(state)
     registerDependencies(driver, result, cwd, fileName)
     emitDiagnostics(root, result, driver.designSystemDiagnostics ?? [])
 
+    // In place: re-parsing would move `@import`-ed rules, and their `url()`s, into this file.
     if (polyfill) {
-      const stripped = driver.compiler.stripLayerOrderStatements(inputCss)
-      root.removeAll()
-      root.append(helpers.postcss.parse(stripped, { from: fileName }))
+      for (const node of pandaLayerStatements) node.remove()
     }
 
     const output = driver.cssgen({ emitLayerDeclaration: false, polyfill })
@@ -119,9 +121,12 @@ function getDriverKey(cwd: string, configPath: string | undefined) {
   return `${cwd}:${configPath ?? ''}`
 }
 
-function getInputCss(root: Root, result: Result) {
-  const opts = result.opts as Result['opts'] & { css?: string }
-  return opts.css ?? root.toString()
+function getLayerStatements(root: Root) {
+  const statements: AtRule[] = []
+  root.walkAtRules('layer', (node) => {
+    if (!node.nodes) statements.push(node)
+  })
+  return statements
 }
 
 function ensureCodegen(state: DriverState, options: { cwd: string; outdir: string | undefined }) {
