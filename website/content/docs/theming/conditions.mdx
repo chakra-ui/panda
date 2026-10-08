@@ -108,8 +108,8 @@ export default defineConfig({
 
 ## Combining multiple rules under one name
 
-Give a condition an array instead of a string, and every entry nests inside the last, all under the one condition
-name:
+Give a condition an object instead of a string. Each key nests inside the one above it, and `@slot` marks where the
+styles go:
 
 ```tsx
 import { defineConfig } from '@pandacss/dev'
@@ -117,7 +117,11 @@ import { defineConfig } from '@pandacss/dev'
 export default defineConfig({
   conditions: {
     extend: {
-      supportHover: ['@media (hover: hover) and (pointer: fine)', '&:hover']
+      supportHover: {
+        '@media (hover: hover) and (pointer: fine)': {
+          '&:hover': '@slot'
+        }
+      }
     }
   }
 })
@@ -137,7 +141,7 @@ generates:
 
 ```css
 @media (hover: hover) and (pointer: fine) {
-  &:hover {
+  .supportHover\:color_red:hover {
     color: red;
   }
 }
@@ -145,11 +149,11 @@ generates:
 
 ## One condition, several independent blocks
 
-The array form above nests every rule inside the previous one. Sometimes you need the opposite: one condition that
-emits multiple separate CSS blocks, each with its own at-rule, not nested inside each other. A common case is hover
-feedback on pointer devices and press feedback on touch devices, two different media queries, same condition name.
+The same object form can also emit separate CSS blocks, each with its own at-rule, not nested inside each other. A
+common case is hover feedback on pointer devices and press feedback on touch devices, two different media queries, same
+condition name.
 
-Use the object form with `@slot` markers. Each path from the root down to an `@slot` becomes its own CSS block:
+Each path from the root down to an `@slot` becomes its own CSS block:
 
 ```tsx
 import { defineConfig } from '@pandacss/dev'
@@ -195,8 +199,6 @@ generates two independent blocks:
 }
 ```
 
-An object with just one `@slot` path behaves the same as the array form above, this is the general case, the array
-form is the shorthand for the common single-block one.
 
 ## Container queries
 
