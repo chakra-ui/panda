@@ -19,6 +19,7 @@ pub(super) fn module(
                 "composeShouldForwardProps",
                 "getDisplayName",
                 "serializeSplitStyles",
+                "mergeDefaultProps",
                 "splitJsxProps",
             ],
             "./helper",
@@ -97,7 +98,7 @@ function styledFn(BaseComponent: StyledBase, recipeOrConfig: RecipeInput = {}, o
     let combinedProps: StyledProps = props
     if (hasDefaultProps) {
       const { as, unstyled, children, ...restProps } = props
-      combinedProps = Object.assign({}, defaultProps, restProps)
+      combinedProps = mergeDefaultProps(defaultProps, restProps)
     }
     const [htmlProps, forwardedProps, variantProps, propStyles, cssStyles, elementProps] = splitJsxProps(
       combinedProps,

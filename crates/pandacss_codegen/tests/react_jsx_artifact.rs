@@ -193,9 +193,9 @@ fn create_recipe_context_delegates_to_factory() {
         "jsx/create-recipe-context.mjs",
     );
 
-    assert!(code.contains("import { getDisplayName } from './helper'"));
+    assert!(code.contains("import { getDisplayName, mergeDefaultProps } from './helper'"));
     assert!(code.contains("const StyledComponent = panda(Component, recipe, options)"));
-    assert!(code.contains("Object.assign({}, propsContext, inProps)"));
+    assert!(code.contains("mergeDefaultProps(propsContext, inProps)"));
     assert!(!code.contains("createStyleContext"));
 }
 

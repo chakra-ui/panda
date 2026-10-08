@@ -79,3 +79,20 @@ describe('style context - preact', () => {
     expect(container.querySelector('[data-slot=title]')?.classList.contains('card__title')).toBe(true)
   })
 })
+
+describe('style context defaultProps', () => {
+  test('an undefined prop keeps its default on withRootProvider', () => {
+    const { withRootProvider } = createSlotRecipeContext(slotButton)
+    const RootWithDefaults = withRootProvider('div', { defaultProps: { 'aria-label': 'Close' } })
+
+    const { container } = render(<RootWithDefaults aria-label={undefined}>Close</RootWithDefaults>)
+
+    expect(container.firstChild).toMatchInlineSnapshot(`
+      <div
+        aria-label="Close"
+      >
+        Close
+      </div>
+    `)
+  })
+})

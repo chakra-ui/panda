@@ -12,7 +12,10 @@ pub(super) fn recipe_module(ctx: CodegenContext<'_>) -> Module {
             "react",
         ))
         .with_import(value_import(&[factory.as_str()], "./factory"))
-        .with_import(ImportDecl::value(["getDisplayName"], "./helper"))
+        .with_import(ImportDecl::value(
+            ["getDisplayName", "mergeDefaultProps"],
+            "./helper",
+        ))
         .with_import(type_import(
             &[
                 "RecipeDefinition",
@@ -62,7 +65,10 @@ pub(super) fn slot_recipe_module(ctx: CodegenContext<'_>) -> Module {
             &ctx.runtime_import(RuntimeImport::CssIndex, "../css/index"),
         ))
         .with_import(value_import(&[factory.as_str()], "./factory"))
-        .with_import(ImportDecl::value(["getDisplayName"], "./helper"))
+        .with_import(ImportDecl::value(
+            ["getDisplayName", "mergeDefaultProps"],
+            "./helper",
+        ))
         .with_import(type_import(
             &[
                 "RecipeSelection",
@@ -192,7 +198,7 @@ export function createRecipeContext<R extends RecipeContextRecipe>(recipeInput: 
 
     const WithContext = forwardRef<unknown, Props>(function WithContext(inProps, ref) {
       const propsContext = usePropsContext()
-      const props = propsContext ? Object.assign({}, propsContext, inProps) : inProps
+      const props = propsContext ? mergeDefaultProps(propsContext, inProps) : inProps
       return createElement(StyledComponent as ElementType, { ...props, ref })
     })
 
@@ -343,7 +349,7 @@ export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipe
     const WithRootProvider = (props: Props) => {
       const [variantProps, otherProps] = slotRecipeFn.splitVariantProps(props)
       const resolvedSlots = resolveSlots(variantProps)
-      const mergedProps = options?.defaultProps ? Object.assign({}, options.defaultProps, otherProps) : otherProps
+      const mergedProps = options?.defaultProps ? mergeDefaultProps(options.defaultProps, otherProps) : otherProps
       return createElement(SlotStylesContext.Provider, {
         value: resolvedSlots,
         children: createElement(Component, mergedProps),
