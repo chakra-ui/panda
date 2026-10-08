@@ -1357,6 +1357,30 @@ fn imported_unevaluated_helper_warns() {
 }
 
 #[test]
+fn imported_hook_picking_a_branch_does_not_warn() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { useExpanded } from './hooks';
+            import { css } from '@panda/css';
+            export const panel = () => css(useExpanded() ? { color: 'red' } : { color: 'blue' });
+        "},
+        &[(
+            "hooks.ts",
+            indoc::indoc! {r"
+                import { createContext, useContext } from 'react';
+                const ExpandedContext = createContext(false);
+                export function useExpanded() {
+                  if (typeof window === 'undefined') return false;
+                  return useContext(ExpandedContext);
+                }
+            "},
+        )],
+    );
+    let usage = run(&fs, &main);
+    assert!(usage.diagnostics.is_empty(), "{:?}", usage.diagnostics);
+}
+
+#[test]
 fn imported_group_hover_helper_folds_computed_key() {
     let (fs, main) = project(
         indoc::indoc! {r"

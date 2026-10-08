@@ -296,21 +296,21 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         if call.optional {
             return None;
         }
-        let Some(func) = self.lookup_callable(&call.callee) else {
-            self.report_unevaluated_helper(call);
-            return None;
-        };
+        let func = self.lookup_callable(&call.callee)?;
         let args = fold_call_args(call, Some(self))?;
         apply_pure_fn(&func, &args)
     }
 
-    /// Warn when a call has static arguments but its local or imported helper can't be lowered,
-    /// since its styles are otherwise dropped without a trace.
-    fn report_unevaluated_helper(&self, call: &CallExpression<'_>) {
+    /// Warn when a style value comes from a helper Panda can't evaluate.
+    pub(crate) fn report_unevaluated_helper(&self, call: &CallExpression<'_>) {
         let Expression::Identifier(ident) = call.callee.get_inner_expression() else {
             return;
         };
-        if self.aliases.contains_key(ident.name.as_str()) || !self.is_unevaluated_helper(ident) {
+        if call.optional
+            || self.aliases.contains_key(ident.name.as_str())
+            || !self.is_unevaluated_helper(ident)
+            || self.lookup_callable(&call.callee).is_some()
+        {
             return;
         }
         if fold_call_args(call, Some(self)).is_none()

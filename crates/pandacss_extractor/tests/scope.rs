@@ -1838,6 +1838,239 @@ fn builtin_and_dynamic_token_calls_do_not_warn() {
 }
 
 #[test]
+fn hook_result_picking_a_ternary_branch_does_not_warn() {
+    let src = indoc! {r"
+        import { createContext, useContext } from 'react';
+        import { css } from '@panda/css';
+        const ExpandedContext = createContext(false);
+        const useExpanded = () => useContext(ExpandedContext);
+        export function Panel() {
+          const expanded = useExpanded();
+          return css(expanded ? { color: 'red' } : { color: 'blue' });
+        }
+    "};
+    let usage = run(src);
+    assert_snapshot!(helper_warnings(&usage), @"");
+    assert_yaml_snapshot!(usage.calls[0].data[0], @"
+    kind: conditional
+    branches:
+      - color: red
+      - color: blue
+    ");
+}
+
+#[test]
+fn hook_result_guarding_a_style_does_not_warn() {
+    let src = indoc! {r"
+        import { createContext, useContext } from 'react';
+        import { css } from '@panda/css';
+        const ExpandedContext = createContext(false);
+        const useExpanded = () => useContext(ExpandedContext);
+        export const panel = () => css(useExpanded() && { color: 'red' });
+    "};
+    assert_snapshot!(helper_warnings(&run(src)), @"");
+}
+
+#[test]
+fn hook_result_in_a_comparison_does_not_warn() {
+    let src = indoc! {r"
+        import { createContext, useContext } from 'react';
+        import { css } from '@panda/css';
+        const ExpandedContext = createContext(false);
+        const useExpanded = () => useContext(ExpandedContext);
+        export const panel = () => css(useExpanded() === true ? { color: 'red' } : { color: 'blue' });
+    "};
+    assert_snapshot!(helper_warnings(&run(src)), @"");
+}
+
+#[test]
+fn hook_result_as_a_lookup_key_does_not_warn() {
+    let src = indoc! {r"
+        import { createContext, useContext } from 'react';
+        import { css } from '@panda/css';
+        const ExpandedContext = createContext(false);
+        const useExpanded = () => useContext(ExpandedContext);
+        const tones = { true: { color: 'red' }, false: { color: 'blue' } };
+        export const panel = () => css(tones[String(useExpanded())]);
+    "};
+    assert_snapshot!(helper_warnings(&run(src)), @"");
+}
+
+#[test]
+fn unevaluated_helper_passed_to_css_warns() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function card(tone: string) {
+          if (!tone) return {};
+          return { color: tone };
+        }
+        css(card('red'));
+    "};
+    assert_snapshot!(helper_warnings(&run(src)), @"`card(...)` can't be evaluated at build time, so its styles were not extracted. Keep the helper to `const` declarations and one `return`, or write the styles inline.");
+}
+
+#[test]
+fn unevaluated_helper_held_in_a_const_warns() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function card(tone: string) {
+          if (!tone) return {};
+          return { color: tone };
+        }
+        const styles = card('red');
+        css(styles);
+    "};
+    assert_snapshot!(helper_warnings(&run(src)), @"`card(...)` can't be evaluated at build time, so its styles were not extracted. Keep the helper to `const` declarations and one `return`, or write the styles inline.");
+}
+
+#[test]
+fn unevaluated_helper_as_a_property_value_warns() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function tone(name: string) {
+          if (name === 'danger') return 'red';
+          return 'blue';
+        }
+        css({ color: tone('danger') });
+    "};
+    assert_snapshot!(helper_warnings(&run(src)), @"`tone(...)` can't be evaluated at build time, so its styles were not extracted. Keep the helper to `const` declarations and one `return`, or write the styles inline.");
+}
+
+#[test]
+fn hook_result_picking_a_property_value_does_not_warn() {
+    let src = indoc! {r"
+        import { createContext, useContext } from 'react';
+        import { css } from '@panda/css';
+        const ExpandedContext = createContext(false);
+        const useExpanded = () => useContext(ExpandedContext);
+        export const panel = () => css({ color: useExpanded() ? 'red' : 'blue' });
+    "};
+    assert_snapshot!(helper_warnings(&run(src)), @"");
+}
+
+#[test]
+fn hook_result_picking_a_spread_does_not_warn() {
+    let src = indoc! {r"
+        import { createContext, useContext } from 'react';
+        import { css } from '@panda/css';
+        const ExpandedContext = createContext(false);
+        const useExpanded = () => useContext(ExpandedContext);
+        export const panel = () => css({ ...(useExpanded() ? { color: 'red' } : {}), margin: '8px' });
+    "};
+    assert_snapshot!(helper_warnings(&run(src)), @"");
+}
+
+#[test]
+fn hook_with_static_args_picking_a_branch_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function useBreakpoint(name: string) {
+          if (typeof window === 'undefined') return false;
+          return window.matchMedia(name).matches;
+        }
+        export const panel = () => css(useBreakpoint('md') ? { color: 'red' } : { color: 'blue' });
+    "};
+    assert_snapshot!(helper_warnings(&run(src)), @"");
+}
+
+#[test]
+fn hook_result_picking_a_jsx_style_prop_does_not_warn() {
+    let src = indoc! {r"
+        import { createContext, useContext } from 'react';
+        import { css } from '@panda/css';
+        const ExpandedContext = createContext(false);
+        const useExpanded = () => useContext(ExpandedContext);
+        import { Box } from '@panda/jsx';
+        export const Panel = () => <Box color={useExpanded() ? 'red' : 'blue'} />;
+    "};
+    assert_snapshot!(helper_warnings(&run_jsx(src)), @"");
+}
+
+#[test]
+fn unevaluated_helper_in_a_ternary_branch_warns() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function card(tone: string) {
+          if (!tone) return {};
+          return { color: tone };
+        }
+        export const panel = (flag: boolean) => css(flag ? card('red') : { color: 'blue' });
+    "};
+    assert_snapshot!(helper_warnings(&run(src)), @"`card(...)` can't be evaluated at build time, so its styles were not extracted. Keep the helper to `const` declarations and one `return`, or write the styles inline.");
+}
+
+#[test]
+fn unevaluated_helper_as_a_second_css_argument_warns() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function card(tone: string) {
+          if (!tone) return {};
+          return { color: tone };
+        }
+        css({ margin: '8px' }, card('red'));
+    "};
+    assert_snapshot!(helper_warnings(&run(src)), @"`card(...)` can't be evaluated at build time, so its styles were not extracted. Keep the helper to `const` declarations and one `return`, or write the styles inline.");
+}
+
+#[test]
+fn unevaluated_helper_in_a_jsx_style_prop_warns() {
+    let src = indoc! {r"
+        import { Box } from '@panda/jsx';
+        function tone(name: string) {
+          if (name === 'danger') return 'red';
+          return 'blue';
+        }
+        export const Alert = () => <Box color={tone('danger')} />;
+    "};
+    assert_snapshot!(helper_warnings(&run_jsx(src)), @"`tone(...)` can't be evaluated at build time, so its styles were not extracted. Keep the helper to `const` declarations and one `return`, or write the styles inline.");
+}
+
+#[test]
+fn each_unevaluated_helper_call_warns() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function card(tone: string) {
+          if (!tone) return {};
+          return { color: tone };
+        }
+        css(card('red'));
+        css({ ...card('blue') });
+    "};
+    assert_snapshot!(helper_warnings(&run(src)), @"
+    `card(...)` can't be evaluated at build time, so its styles were not extracted. Keep the helper to `const` declarations and one `return`, or write the styles inline.
+    `card(...)` can't be evaluated at build time, so its styles were not extracted. Keep the helper to `const` declarations and one `return`, or write the styles inline.
+    ");
+}
+
+#[test]
+fn optional_call_to_unevaluated_helper_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function card(tone: string) {
+          if (!tone) return {};
+          return { color: tone };
+        }
+        css(card?.('red'));
+    "};
+    assert_snapshot!(helper_warnings(&run(src)), @"");
+}
+
+#[test]
+fn unevaluated_helper_left_of_nullish_keeps_fallback_without_warning() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function card(tone: string) {
+          if (!tone) return {};
+          return { color: tone };
+        }
+        css(card('red') ?? { color: 'blue' });
+    "};
+    let usage = run(src);
+    assert_snapshot!(helper_warnings(&usage), @"");
+    assert_yaml_snapshot!(usage.calls[0].data[0], @"color: blue");
+}
+
+#[test]
 fn component_destructured_prop_default_is_extracted() {
     let src = indoc! {r"
         import { css } from '@panda/css';

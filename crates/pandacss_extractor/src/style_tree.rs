@@ -5,7 +5,7 @@
 //! `design-notes/style-tree.md`.
 
 use oxc_ast::ast::{
-    ArrayExpression, ArrayExpressionElement, ChainElement, ChainExpression,
+    ArrayExpression, ArrayExpressionElement, CallExpression, ChainElement, ChainExpression,
     ComputedMemberExpression, Expression, LogicalOperator, ObjectExpression, ObjectProperty,
     ObjectPropertyKind, PropertyKind, StaticMemberExpression,
 };
@@ -440,15 +440,7 @@ pub(crate) fn expression_to_style_tree(
             .and_then(|r| r.resolve_identifier_style_tree(ident))
             .or_else(|| expression_to_literal(expr, resolver).map(literal_to_style_tree)),
 
-        Expression::CallExpression(call) => {
-            if let Some(r) = resolver
-                && let Some(tree) = r.resolve_raw_style_call_style_tree(call)
-            {
-                Some(tree)
-            } else {
-                expression_to_literal(expr, resolver).map(literal_to_style_tree)
-            }
-        }
+        Expression::CallExpression(call) => call_to_style_tree(expr, call, resolver),
 
         Expression::StaticMemberExpression(member) => static_member_to_style_tree(member, resolver),
         Expression::ComputedMemberExpression(member) => {
@@ -458,6 +450,25 @@ pub(crate) fn expression_to_style_tree(
 
         _ => expression_to_literal(expr, resolver).map(literal_to_style_tree),
     }
+}
+
+fn call_to_style_tree(
+    expr: &Expression<'_>,
+    call: &CallExpression<'_>,
+    resolver: Option<&Resolver<'_, '_>>,
+) -> Option<StyleTree> {
+    if let Some(r) = resolver
+        && let Some(tree) = r.resolve_raw_style_call_style_tree(call)
+    {
+        return Some(tree);
+    }
+    let tree = expression_to_literal(expr, resolver).map(literal_to_style_tree);
+    if tree.is_none()
+        && let Some(r) = resolver
+    {
+        r.report_unevaluated_helper(call);
+    }
+    tree
 }
 
 fn static_member_to_style_tree(
