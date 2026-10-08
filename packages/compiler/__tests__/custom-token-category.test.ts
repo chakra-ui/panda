@@ -34,9 +34,19 @@ describe('custom token categories', () => {
 
     const css = compiler.getLayerCss({ layers: ['tokens'] }).css
 
-    expect(css).toContain('--icon-sizes-sm: 16px')
-    expect(css).toContain('--icon-sizes-button: var(--icon-sizes-sm)')
-    expect(css).toMatch(/\.dark[^{]*\{\s*--icon-sizes-button: 20px/)
+    expect(css).toMatchInlineSnapshot(`
+      "@layer tokens {
+        :where(:root, :host) {
+          --colors-red: rebeccapurple;
+          --icon-sizes-sm: 16px;
+          --icon-sizes-button: var(--icon-sizes-sm);
+        }
+        .dark {
+          --icon-sizes-button: 20px;
+        }
+      }
+      "
+    `)
   })
 
   it('resolves a token reference to a custom category', () => {
@@ -48,7 +58,14 @@ describe('custom token categories', () => {
 
     const css = compiler.getLayerCss({ layers: ['utilities'] }).css
 
-    expect(css).toContain('--size: var(--icon-sizes-sm)')
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .\\--size_\\{iconSizes\\.sm\\} {
+          --size: var(--icon-sizes-sm);
+        }
+      }
+      "
+    `)
   })
 
   it('resolves a custom utility bound to a custom category', () => {
@@ -57,20 +74,51 @@ describe('custom token categories', () => {
 
     const css = compiler.getLayerCss({ layers: ['utilities'] }).css
 
-    expect(css).toContain('width: var(--icon-sizes-sm)')
+    expect(css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .icon_sm {
+          width: var(--icon-sizes-sm);
+        }
+      }
+      "
+    `)
   })
 
   it('resolves token() at runtime', async () => {
     const { token } = await loadGeneratedModule<TokenRuntime>(build(), { entry: 'tokens/index.mjs' })
 
-    expect(token('iconSizes.sm')).toBe('16px')
-    expect(token.var('iconSizes.sm')).toBe('var(--icon-sizes-sm)')
+    expect({ value: token('iconSizes.sm'), var: token.var('iconSizes.sm') }).toMatchInlineSnapshot(`
+      {
+        "value": "16px",
+        "var": "var(--icon-sizes-sm)",
+      }
+    `)
   })
 
   it('includes the category in the generated Token type', () => {
     const types = generatedFile(build(), 'types/tokens.d.ts')
 
-    expect(types).toContain('export type IconSizeToken = "button" | "sm"')
-    expect(types).toContain('`iconSizes.${IconSizeToken}`')
+    expect(types).toMatchInlineSnapshot(`
+      "export type ColorToken = "colorPalette" | "red"
+
+      export type IconSizeToken = "button" | "sm"
+
+      export interface Tokens {
+        colors: ColorToken
+        iconSizes: IconSizeToken
+      }
+
+      export type Token = \`colors.\${ColorToken}\` | \`iconSizes.\${IconSizeToken}\`
+
+      export type ColorOpacityModifier = \`\${number}\`
+
+      export type ColorOpacityToken = \`colors.\${ColorToken}/\${ColorOpacityModifier}\`
+
+      export type TokenPath = Token | ColorOpacityToken
+
+      export type ColorPalette = "red"
+
+      export type TokenValue<T extends string> = T extends keyof Tokens ? Tokens[T] : never"
+    `)
   })
 })
