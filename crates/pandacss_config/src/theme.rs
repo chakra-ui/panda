@@ -296,6 +296,9 @@ pub struct Tokens {
     pub aspect_ratios: TokenGroup<String>,
     #[serde(default, rename = "containerNames")]
     pub container_names: TokenGroup<String>,
+    /// User-defined categories (`foobar`), keyed by category name.
+    #[serde(flatten)]
+    pub custom: IndexMap<String, TokenGroup<StringOrNumber>>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -347,6 +350,9 @@ pub struct SemanticTokens {
     pub aspect_ratios: TokenGroup<SemanticValue<String>>,
     #[serde(default, rename = "containerNames")]
     pub container_names: TokenGroup<SemanticValue<String>>,
+    /// User-defined categories (`foobar`), keyed by category name.
+    #[serde(flatten)]
+    pub custom: IndexMap<String, TokenGroup<SemanticValue<StringOrNumber>>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

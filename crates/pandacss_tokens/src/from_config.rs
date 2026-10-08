@@ -184,6 +184,18 @@ fn collect_tokens(
     }
 
     for_each_token_field!(collect);
+
+    for (category, group) in &tokens.custom {
+        let token_category = TokenCategory::from_path_segment(category);
+        collect_token_category(
+            builder,
+            context,
+            category,
+            &token_category,
+            group,
+            condition,
+        );
+    }
 }
 
 fn collect_semantic_tokens(
@@ -206,14 +218,26 @@ fn collect_semantic_tokens(
     }
 
     for_each_token_field!(collect);
+
+    for (category, group) in &tokens.custom {
+        let token_category = TokenCategory::from_path_segment(category);
+        collect_semantic_category(
+            builder,
+            context,
+            category,
+            &token_category,
+            group,
+            forced_condition,
+        );
+    }
 }
 
-fn collect_token_category<T: TokenValueString>(
+fn collect_token_category<'a, T: TokenValueString>(
     builder: &mut TokenDictionaryBuilder,
     context: &mut BuildContext<'_>,
-    category: &'static str,
+    category: &'a str,
     token_category: &TokenCategory,
-    group: &TokenGroup<T>,
+    group: &'a TokenGroup<T>,
     condition: Option<&str>,
 ) {
     walk_token_group(group, &mut vec![category], &mut |path, token| {
@@ -231,12 +255,12 @@ fn collect_token_category<T: TokenValueString>(
     });
 }
 
-fn collect_semantic_category<T: TokenValueString>(
+fn collect_semantic_category<'a, T: TokenValueString>(
     builder: &mut TokenDictionaryBuilder,
     context: &mut BuildContext<'_>,
-    category: &'static str,
+    category: &'a str,
     token_category: &TokenCategory,
-    group: &TokenGroup<SemanticValue<T>>,
+    group: &'a TokenGroup<SemanticValue<T>>,
     forced_condition: Option<&str>,
 ) {
     walk_token_group(group, &mut vec![category], &mut |path, token| {
