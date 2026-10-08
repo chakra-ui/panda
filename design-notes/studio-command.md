@@ -52,7 +52,7 @@ file instead.
 ## CLI — `packages/cli/src/commands/studio.ts`
 
 ```
-panda studio [--cwd] [--config] [--no-open] [--json]
+panda studio [--cwd] [--config] [--no-open] [--json] [--watch]
 ```
 
 1. Load config, build the spec string in memory (`driver.specJson()`, no file written).
@@ -68,10 +68,31 @@ format has one owner.
 
 ## Studio — `apps/studio/pages/view.vue`
 
-When `#spec=` is present: decode, `parseSpec`, `saveTokens`, `history.replaceState` to `/view`, render. A reload reads
-from IndexedDB like a dropped file. If decoding or parsing fails, show "This link is incomplete" with the command to
-copy and a link back to the drop page. gzip's checksum makes a truncated link fail loudly instead of rendering a partial
-system.
+When `#spec=` is present: decode, `parseSpec`, `saveTokens`, `router.replace` to `/view`, render. This runs in
+`onNuxtReady`, not `onMounted`: `/view` is prerendered, and Nuxt's router replays the initial URL during hydration,
+which would undo an earlier URL change and remount the page. A reload reads from IndexedDB like a dropped file. If
+decoding or parsing fails, show "This link is incomplete" with the command to copy and a link back to the drop page.
+gzip's checksum makes a truncated link fail loudly instead of rendering a partial system.
+
+## Watch — `packages/cli/src/studio-watch.ts`
+
+```
+panda studio --watch
+  │  serve http://127.0.0.1:<port>          page = full-size iframe of <studio>/view
+  │  GET /events (SSE)                      current spec, then one event per config change
+  ▼
+local page ──postMessage({ type: 'panda-studio:spec', json })──▶ framed /view
+```
+
+- The local page reads events from its own origin, so there's no cross-site request to `localhost` and no Local Network
+  Access prompt. It hands each spec to the iframe with `postMessage`, targeting Studio's origin.
+- A framed `/view` skips the fragment and IndexedDB paths. It posts `panda-studio:ready` to its parent on mount and
+  renders each spec it receives. It accepts messages only from `window.parent` on an `http://127.0.0.1:*` or
+  `http://localhost:*` origin.
+- Config changes go through `startProjectWatch` and `driver.reload()`, the same path as `codegen --watch`. Source
+  changes are ignored; the spec only depends on config.
+- Studio's prerendered pages send no CSP, so nothing blocks the iframe. If a `frame-ancestors` policy is added to
+  `/view` later, it must allow those two loopback origins.
 
 ## Trade-offs
 
@@ -81,7 +102,6 @@ system.
 
 ## Out of scope
 
-- Live reload on config change.
 - `--share` (public `/s/<slug>` link through the existing `POST /api/specs`) and `--analyze`.
 
 ## Testing
@@ -90,4 +110,7 @@ system.
 - CLI: link shape and decoded content match `panda codegen --spec`, `--json`, `--no-open`, too-large fallback, empty
   config.
 - Studio: fragment parsing and decode failure.
-- Manual: `panda studio` in `sandbox/vite-ts` against `PANDA_STUDIO_URL=http://localhost:3000`.
+- CLI watch: served page frames `/view`, `/events` streams the spec, a config change pushes an update.
+- Studio: watch messages only accepted from a loopback parent.
+- Manual: `panda studio` and `panda studio --watch` in `sandbox/vite-ts` against a production build of Studio
+  (`PANDA_STUDIO_URL=http://localhost:3000`), in Chromium and WebKit.

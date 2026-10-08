@@ -344,11 +344,15 @@ Open your design system in [Studio](https://studio.panda-css.com/).
 pnpm panda studio
 pnpm panda studio --no-open   # print the link only
 pnpm panda studio --json      # { "url": "…" }
+pnpm panda studio --watch     # keep Studio in sync with your config
 ```
 
 The design system travels in the link after the `#`, which browsers never send to a server. If it's too large to fit in
-a link, the command writes `styled-system/specs/design-system.json` so you can drop it in instead. It then exits with code
-1, and `--json` includes an `error` field.
+a link, the command writes `styled-system/specs/design-system.json` so you can drop it in instead. It then exits with
+code 1, and `--json` includes an `error` field.
+
+With `--watch`, the command serves a page at `http://127.0.0.1:<port>` that shows Studio and updates it each time you
+save your config. The design system still never leaves your machine. Press Ctrl+C to stop.
 
 `panda studio` accepts the [shared flags](#shared-flags).
 

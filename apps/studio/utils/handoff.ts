@@ -11,3 +11,14 @@ export async function receiveHandoff(encoded: string): Promise<string | null> {
     return null;
   }
 }
+
+const LOOPBACK = /^http:\/\/(127\.0\.0\.1|localhost):\d+$/;
+
+export function readWatchMessage(
+  event: Pick<MessageEvent, "origin" | "source" | "data">,
+  parent: unknown,
+): string | null {
+  if (event.source !== parent || !LOOPBACK.test(event.origin)) return null;
+  const { type, json } = event.data ?? {};
+  return type === "panda-studio:spec" && typeof json === "string" ? json : null;
+}

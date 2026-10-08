@@ -4,7 +4,7 @@ import * as s from "./view.styles";
 import { button } from "styled-system/recipes";
 import { index, parseSpec, type DesignSystemIndex } from "~/utils/design-system";
 import { loadTokens, loadUsage, saveUsage, saveTokens, clearTokens } from "~/utils/idb";
-import { readHandoff, receiveHandoff } from "~/utils/handoff";
+import { readHandoff, readWatchMessage, receiveHandoff } from "~/utils/handoff";
 import { droppedFiles } from "~/utils/dropped";
 import { useAnalyze } from "~/composables/useAnalyze";
 
@@ -19,17 +19,36 @@ const usage = ref<unknown>(null);
 const invalid = ref(false);
 
 const analyze = useAnalyze();
+const router = useRouter();
 
 const reloadOnNewLink = () => readHandoff(window.location) && location.reload();
-onUnmounted(() => window.removeEventListener("hashchange", reloadOnNewLink));
 
-onMounted(async () => {
+function onWatchMessage(event: MessageEvent) {
+  const json = readWatchMessage(event, window.parent);
+  const parsed = json ? parseSpec(json) : null;
+  if (!parsed?.ok) return;
+  ds.value = index(parsed.spec);
+  ready.value = true;
+}
+
+onUnmounted(() => {
+  window.removeEventListener("hashchange", reloadOnNewLink);
+  window.removeEventListener("message", onWatchMessage);
+});
+
+onNuxtReady(async () => {
+  if (window.parent !== window) {
+    window.addEventListener("message", onWatchMessage);
+    window.parent.postMessage({ type: "panda-studio:ready" }, "*");
+    return;
+  }
+
   window.addEventListener("hashchange", reloadOnNewLink);
   const handoff = readHandoff(window.location);
   let handedOff: DesignSystemIndex | null = null;
   if (handoff) {
     const received = await receiveHandoff(handoff);
-    history.replaceState(history.state, "", "/view");
+    await router.replace({ path: "/view" });
     const parsed = received ? parseSpec(received) : null;
     if (!received || !parsed?.ok) {
       invalid.value = true;

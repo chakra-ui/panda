@@ -150,6 +150,8 @@ export type BuildinfoFlags = FlagsInfer<typeof buildinfoFlagsSchema>
 export type LibFlags = FlagsInfer<typeof libFlagsSchema>
 export const studioFlagsSchema = doctorFlagsSchema.extend({
   open: booleanFlag,
+  watch: booleanFlag,
+  watchDebounce: numberLikeFlag,
 })
 export type StudioFlags = FlagsInfer<typeof studioFlagsSchema>
 

@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { readFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { decodeSpec } from '@pandacss/compiler-shared'
@@ -70,6 +70,42 @@ describe('studio command', () => {
     expect(result.files.some((file) => file.endsWith('design-system.json'))).toBe(true)
     expect(logs.join('\n')).toContain('too large for a link')
     expect(logs.join('\n')).toContain('drop')
+  })
+
+  it('serves a live studio page with --watch and pushes config changes', async () => {
+    dir = createFixture(CONFIG_WITH_TOKENS)
+    vi.stubEnv('PANDA_STUDIO_URL', 'http://127.0.0.1:3000')
+    const open = vi.fn()
+    const logs: string[] = []
+
+    const result = await runStudio({ cwd: dir, watch: true }, { log: (message) => logs.push(message) }, open)
+
+    try {
+      expect(result.ok).toBe(true)
+      expect(result.url).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/)
+      expect(open).toHaveBeenCalledWith(result.url)
+      expect(logs).toContain(`studio: ${result.url}`)
+
+      const page = await (await fetch(result.url!)).text()
+      expect(page).toContain('<iframe src="http://127.0.0.1:3000/view">')
+
+      const events = (await fetch(`${result.url}/events`)).body!.getReader()
+      const nextSpec = async () =>
+        JSON.parse(JSON.parse(new TextDecoder().decode((await events.read()).value).slice(6)))
+      expect((await nextSpec()).paths).toContain('colors.brand')
+
+      writeFileSync(
+        join(dir, 'panda.config.ts'),
+        pandaConfig("theme: { tokens: { colors: { accent: { value: '#0EA5E9' } } } },"),
+      )
+      const updated = await nextSpec()
+      expect(updated.paths).toContain('colors.accent')
+      expect(updated.paths).not.toContain('colors.brand')
+      expect(logs).toContain('studio: updated')
+      await events.cancel()
+    } finally {
+      await result.stop?.()
+    }
   })
 
   it('explains an empty design system', async () => {
