@@ -261,6 +261,25 @@ css`
 css({ color: 'red' })
 ```
 
+### Array conditions are deprecated
+
+Array conditions still work: Panda converts them to the object form and warns. Move to an object that nests each rule
+and ends in `'@slot'`:
+
+```ts
+// ❌ v1
+conditions: {
+  supportHover: ['@media (hover: hover)', '&:hover']
+}
+
+// ✅ v2
+conditions: {
+  supportHover: {
+    '@media (hover: hover)': { '&:hover': '@slot' }
+  }
+}
+```
+
 ### Qwik JSX is removed
 
 `jsxFramework: 'qwik'` no longer generates `styled`, `Box`, or pattern components. Drop the option and style with

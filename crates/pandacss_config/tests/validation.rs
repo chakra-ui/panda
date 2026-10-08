@@ -1,5 +1,7 @@
 use insta::assert_yaml_snapshot;
-use pandacss_config::{UserConfig, ValidationMode, validate_config, validate_config_value};
+use pandacss_config::{
+    UserConfig, ValidationMode, convert_array_conditions, validate_config, validate_config_value,
+};
 use serde_json::json;
 
 #[allow(
@@ -135,7 +137,7 @@ fn reports_array_conditions_and_accepts_block_form() {
 
     assert_yaml_snapshot!(diagnostics, @r#"
     - code: config_condition_array_unsupported
-      message: "Array conditions are not supported in v2: `conditions.hoverFine`. Use block form with `@slot` instead."
+      message: "Array conditions are deprecated in v2: `conditions.hoverFine` was converted automatically. Use block form with `@slot` instead."
       severity: warning
     "#);
 }
@@ -292,5 +294,57 @@ fn rejects_theme_names_that_cannot_be_an_attribute_value_or_condition_key() {
     - code: config_theme_name_invalid
       message: "Theme names may only use letters, digits, `-` and `_`: `acme@2`"
       severity: warning
+    "#);
+}
+
+#[allow(
+    clippy::needless_pass_by_value,
+    reason = "test helper takes owned json! values"
+)]
+fn converted_conditions(conditions: serde_json::Value) -> serde_json::Value {
+    let mut config = json!({ "conditions": conditions });
+    convert_array_conditions(&mut config);
+    config["conditions"].take()
+}
+
+#[test]
+fn v1_array_condition_converts_to_block_form() {
+    let conditions = converted_conditions(json!({
+        "hoverFine": ["@media (hover: hover)", "&:hover"],
+        "dark": ".dark &"
+    }));
+
+    assert_yaml_snapshot!(conditions, @r#"
+    hoverFine:
+      "@media (hover: hover)":
+        "&:hover": "@slot"
+    dark: ".dark &"
+    "#);
+}
+
+#[test]
+fn array_condition_puts_at_rules_first_like_v1() {
+    let conditions = converted_conditions(json!({
+        "hoverFine": ["&:hover", "@media (hover: hover)", "&:focus"]
+    }));
+
+    assert_yaml_snapshot!(conditions, @r#"
+    hoverFine:
+      "@media (hover: hover)":
+        "&:hover":
+          "&:focus": "@slot"
+    "#);
+}
+
+#[test]
+fn array_condition_puts_pseudo_elements_last_like_v1() {
+    let conditions = converted_conditions(json!({
+        "beforeHover": ["&::before", "&:hover"]
+    }));
+
+    assert_yaml_snapshot!(conditions, @r#"
+    beforeHover:
+      "&:hover":
+        "&::before": "@slot"
     "#);
 }

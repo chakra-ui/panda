@@ -28,7 +28,9 @@ pub use type_data::{
     TokenTypeData, TypeData, TypegenOptions, UtilityPropertyTypeData, UtilityTypeData,
     ValueAliasTypeData, ValueTypePart, VariantTypeData, token_category_type_name, value_alias_name,
 };
-pub use validate::{validate_config, validate_config_value, validation_mode_from_value};
+pub use validate::{
+    convert_array_conditions, validate_config, validate_config_value, validation_mode_from_value,
+};
 
 // === Type Aliases ===
 

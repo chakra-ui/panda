@@ -123,8 +123,8 @@ These cover [`firstThatWorks`](/docs/styling/first-that-works) fallbacks. No CSS
 - `config_breakpoint_units_mixed` (warning): breakpoints mix units, like `px` and `rem`. Use one.
 - `config_condition_selector_invalid` (warning): a condition selector is missing `&`, or a block condition doesn't end
   in `'@slot'`.
-- `config_condition_array_unsupported` (warning): array conditions were removed in v2. Use the block form ending in
-  `'@slot'`.
+- `config_condition_array_unsupported` (warning): array conditions are deprecated in v2 and converted automatically. Use
+  the block form ending in `'@slot'`.
 - `config_utility_values_invalid` (warning): a utility's `values` object contains style objects. Values must be strings,
   numbers, or booleans. Return styles from `transform`.
 - `config_theme_name_invalid` (warning): a `themes` key uses characters other than letters, digits, `-`, and `_`.
