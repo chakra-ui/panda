@@ -736,6 +736,100 @@ describe('loadConfig presets', () => {
 })
 
 describe('loadConfig module loading', () => {
+  test('loads tokens from a UI library without running its unused components', async () => {
+    const result = await loadTempConfig({
+      'node_modules/@acme/ds/package.json': JSON.stringify({
+        name: '@acme/ds',
+        type: 'module',
+        sideEffects: false,
+        exports: './index.js',
+      }),
+      'node_modules/@acme/ds/index.js': [
+        "export { colors } from './colors.js'",
+        "export { Button } from './button.js'",
+      ].join('\n'),
+      'node_modules/@acme/ds/colors.js': "export const colors = { brand: { value: '#0f0' } }",
+      'node_modules/@acme/ds/button.js': ['globalThis.__acmeButtonRan = true', 'export const Button = () => null'].join(
+        '\n',
+      ),
+      'panda.config.ts': [
+        "import { colors } from '@acme/ds'",
+        "export default { outdir: 'styled-system', theme: { tokens: { colors: { brand: { value: colors.brand.value + (globalThis.__acmeButtonRan ? ' button-ran' : '') } } } } }",
+      ].join('\n'),
+    })
+
+    expect((result.config.theme as any).tokens.colors.brand.value).toMatchInlineSnapshot(`"#0f0"`)
+  })
+
+  test('runs a side-effect import from the config even when the package declares no side effects', async () => {
+    const result = await loadTempConfig({
+      'node_modules/liar/package.json': JSON.stringify({
+        name: 'liar',
+        type: 'module',
+        sideEffects: false,
+        exports: { './setup': './setup.js' },
+      }),
+      'node_modules/liar/setup.js': "globalThis.__liarBrand = '#0f0'",
+      'panda.config.ts': [
+        "import 'liar/setup'",
+        "export default { outdir: 'styled-system', theme: { tokens: { colors: { brand: { value: globalThis.__liarBrand } } } } }",
+      ].join('\n'),
+    })
+
+    expect((result.config.theme as any).tokens.colors.brand.value).toMatchInlineSnapshot(`"#0f0"`)
+  })
+
+  test('runs a local side-effect import from the config', async () => {
+    const result = await loadTempConfig({
+      'register.ts': "globalThis.__localBrand = '#0f0'",
+      'panda.config.ts': [
+        "import './register'",
+        "export default { outdir: 'styled-system', theme: { tokens: { colors: { brand: { value: globalThis.__localBrand } } } } }",
+      ].join('\n'),
+    })
+
+    expect((result.config.theme as any).tokens.colors.brand.value).toMatchInlineSnapshot(`"#0f0"`)
+  })
+
+  test('keeps side effects of a package without a sideEffects field', async () => {
+    const result = await loadTempConfig({
+      'node_modules/plain/package.json': JSON.stringify({ name: 'plain', type: 'module', exports: './index.js' }),
+      'node_modules/plain/index.js': [
+        "export { colors } from './colors.js'",
+        "export { other } from './other.js'",
+      ].join('\n'),
+      'node_modules/plain/colors.js': "export const colors = { brand: { value: '#0f0' } }",
+      'node_modules/plain/other.js': ['globalThis.__plainOtherRan = true', 'export const other = 1'].join('\n'),
+      'panda.config.ts': [
+        "import { colors } from 'plain'",
+        "export default { outdir: 'styled-system', theme: { tokens: { colors: { brand: { value: colors.brand.value + (globalThis.__plainOtherRan ? ' other-ran' : '') } } } } }",
+      ].join('\n'),
+    })
+
+    expect((result.config.theme as any).tokens.colors.brand.value).toMatchInlineSnapshot(`"#0f0 other-ran"`)
+  })
+
+  test('reads one member of a namespace import', async () => {
+    const result = await loadTempConfig({
+      'node_modules/ns/package.json': JSON.stringify({
+        name: 'ns',
+        type: 'module',
+        sideEffects: false,
+        exports: './index.js',
+      }),
+      'node_modules/ns/index.js': [
+        "export const colors = { brand: { value: '#0f0' } }",
+        'export const unused = { big: true }',
+      ].join('\n'),
+      'panda.config.ts': [
+        "import * as ds from 'ns'",
+        "export default { outdir: 'styled-system', theme: { tokens: { colors: ds.colors } } }",
+      ].join('\n'),
+    })
+
+    expect((result.config.theme as any).tokens.colors.brand.value).toMatchInlineSnapshot(`"#0f0"`)
+  })
+
   test('bundles a design-system package the config imports instead of loading it module by module', () => {
     const components = Array.from({ length: 20 }, (_, index) => `component${index}`)
     const dir = writeTempProject({
