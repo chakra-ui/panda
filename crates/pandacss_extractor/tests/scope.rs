@@ -1777,18 +1777,19 @@ fn chained_element_access_on_resolved_object() {
     assert_eq!(json["color"], "#ef4444");
 }
 
-fn helper_warnings(usage: &ExtractUsage) -> String {
-    usage
-        .diagnostics
-        .iter()
-        .filter(|d| d.code == "pure_helper_unevaluated")
-        .map(|d| d.message.clone())
-        .collect::<Vec<_>>()
-        .join("\n")
+fn assert_no_helper_warning(usage: &ExtractUsage) {
+    assert!(
+        usage
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.code != "pure_helper_unevaluated"),
+        "{:?}",
+        usage.diagnostics
+    );
 }
 
 #[test]
-fn unevaluated_helper_with_static_args_warns_once() {
+fn unevaluated_helper_with_static_args_does_not_warn() {
     let src = indoc! {r"
         import { css } from '@panda/css';
         function card(tone: string) {
@@ -1797,7 +1798,7 @@ fn unevaluated_helper_with_static_args_warns_once() {
         }
         css({ ...card('red'), margin: '8px' });
     "};
-    assert_snapshot!(helper_warnings(&run(src)), @"`card(...)` can't be evaluated at build time, so its styles were not extracted. Keep the helper to `const` declarations and one `return`, or write the styles inline.");
+    assert_no_helper_warning(&run(src));
 }
 
 #[test]
@@ -1810,7 +1811,7 @@ fn unevaluated_helper_with_dynamic_args_does_not_warn() {
         }
         export const make = (tone: string) => css({ ...card(tone), margin: '8px' });
     "};
-    assert_snapshot!(helper_warnings(&run(src)), @"");
+    assert_no_helper_warning(&run(src));
 }
 
 #[test]
@@ -1823,7 +1824,7 @@ fn evaluated_helper_does_not_warn() {
         }
         css({ ...card('red'), margin: '8px' });
     "};
-    assert_snapshot!(helper_warnings(&run(src)), @"");
+    assert_no_helper_warning(&run(src));
 }
 
 #[test]
@@ -1834,7 +1835,535 @@ fn builtin_and_dynamic_token_calls_do_not_warn() {
         export const make = (path: string) =>
           css({ color: token(path), ...Object.fromEntries([['margin', '8px']]) });
     "};
-    assert_snapshot!(helper_warnings(&run(src)), @"");
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn hook_result_picking_a_ternary_branch_does_not_warn() {
+    let src = indoc! {r"
+        import { createContext, useContext } from 'react';
+        import { css } from '@panda/css';
+        const ExpandedContext = createContext(false);
+        const useExpanded = () => useContext(ExpandedContext);
+        export function Panel() {
+          const expanded = useExpanded();
+          return css(expanded ? { color: 'red' } : { color: 'blue' });
+        }
+    "};
+    let usage = run(src);
+    assert_no_helper_warning(&usage);
+    assert_yaml_snapshot!(usage.calls[0].data[0], @"
+    kind: conditional
+    branches:
+      - color: red
+      - color: blue
+    ");
+}
+
+#[test]
+fn hook_result_guarding_a_style_does_not_warn() {
+    let src = indoc! {r"
+        import { createContext, useContext } from 'react';
+        import { css } from '@panda/css';
+        const ExpandedContext = createContext(false);
+        const useExpanded = () => useContext(ExpandedContext);
+        export const panel = () => css(useExpanded() && { color: 'red' });
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn hook_result_in_a_comparison_does_not_warn() {
+    let src = indoc! {r"
+        import { createContext, useContext } from 'react';
+        import { css } from '@panda/css';
+        const ExpandedContext = createContext(false);
+        const useExpanded = () => useContext(ExpandedContext);
+        export const panel = () => css(useExpanded() === true ? { color: 'red' } : { color: 'blue' });
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn hook_result_as_a_lookup_key_does_not_warn() {
+    let src = indoc! {r"
+        import { createContext, useContext } from 'react';
+        import { css } from '@panda/css';
+        const ExpandedContext = createContext(false);
+        const useExpanded = () => useContext(ExpandedContext);
+        const tones = { true: { color: 'red' }, false: { color: 'blue' } };
+        export const panel = () => css(tones[String(useExpanded())]);
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn unevaluated_helper_passed_to_css_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function card(tone: string) {
+          if (!tone) return {};
+          return { color: tone };
+        }
+        css(card('red'));
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn unevaluated_helper_held_in_a_const_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function card(tone: string) {
+          if (!tone) return {};
+          return { color: tone };
+        }
+        const styles = card('red');
+        css(styles);
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn unevaluated_helper_as_a_property_value_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function tone(name: string) {
+          if (name === 'danger') return 'red';
+          return 'blue';
+        }
+        css({ color: tone('danger') });
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn hook_result_picking_a_property_value_does_not_warn() {
+    let src = indoc! {r"
+        import { createContext, useContext } from 'react';
+        import { css } from '@panda/css';
+        const ExpandedContext = createContext(false);
+        const useExpanded = () => useContext(ExpandedContext);
+        export const panel = () => css({ color: useExpanded() ? 'red' : 'blue' });
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn hook_result_picking_a_spread_does_not_warn() {
+    let src = indoc! {r"
+        import { createContext, useContext } from 'react';
+        import { css } from '@panda/css';
+        const ExpandedContext = createContext(false);
+        const useExpanded = () => useContext(ExpandedContext);
+        export const panel = () => css({ ...(useExpanded() ? { color: 'red' } : {}), margin: '8px' });
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn hook_with_static_args_picking_a_branch_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function useBreakpoint(name: string) {
+          if (typeof window === 'undefined') return false;
+          return window.matchMedia(name).matches;
+        }
+        export const panel = () => css(useBreakpoint('md') ? { color: 'red' } : { color: 'blue' });
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn hook_result_picking_a_jsx_style_prop_does_not_warn() {
+    let src = indoc! {r"
+        import { createContext, useContext } from 'react';
+        import { css } from '@panda/css';
+        const ExpandedContext = createContext(false);
+        const useExpanded = () => useContext(ExpandedContext);
+        import { Box } from '@panda/jsx';
+        export const Panel = () => <Box color={useExpanded() ? 'red' : 'blue'} />;
+    "};
+    assert_no_helper_warning(&run_jsx(src));
+}
+
+#[test]
+fn unevaluated_helper_in_a_ternary_branch_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function card(tone: string) {
+          if (!tone) return {};
+          return { color: tone };
+        }
+        export const panel = (flag: boolean) => css(flag ? card('red') : { color: 'blue' });
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn unevaluated_helper_as_a_second_css_argument_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function card(tone: string) {
+          if (!tone) return {};
+          return { color: tone };
+        }
+        css({ margin: '8px' }, card('red'));
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn unevaluated_helper_in_a_jsx_style_prop_does_not_warn() {
+    let src = indoc! {r"
+        import { Box } from '@panda/jsx';
+        function tone(name: string) {
+          if (name === 'danger') return 'red';
+          return 'blue';
+        }
+        export const Alert = () => <Box color={tone('danger')} />;
+    "};
+    assert_no_helper_warning(&run_jsx(src));
+}
+
+#[test]
+fn unevaluated_helper_calls_do_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function card(tone: string) {
+          if (!tone) return {};
+          return { color: tone };
+        }
+        css(card('red'));
+        css({ ...card('blue') });
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn optional_call_to_unevaluated_helper_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function card(tone: string) {
+          if (!tone) return {};
+          return { color: tone };
+        }
+        css(card?.('red'));
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn unevaluated_helper_left_of_nullish_keeps_fallback_without_warning() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function card(tone: string) {
+          if (!tone) return {};
+          return { color: tone };
+        }
+        css(card('red') ?? { color: 'blue' });
+    "};
+    let usage = run(src);
+    assert_no_helper_warning(&usage);
+    assert_yaml_snapshot!(usage.calls[0].data[0], @"color: blue");
+}
+
+#[test]
+fn unevaluated_helper_in_a_template_value_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function size(n: number) {
+          if (n < 0) return 0;
+          return n * 4;
+        }
+        css({ width: `${size(2)}px`, color: 'red' });
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn unevaluated_helper_in_arithmetic_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function size(n: number) {
+          if (n < 0) return 0;
+          return n * 4;
+        }
+        css({ width: size(2) * 4 });
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn unevaluated_helper_in_string_concatenation_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function size(n: number) {
+          if (n < 0) return 0;
+          return n * 4;
+        }
+        css({ width: size(2) + 'px' });
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn negated_unevaluated_helper_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function size(n: number) {
+          if (n < 0) return 0;
+          return n * 4;
+        }
+        css({ marginTop: -size(2) });
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn hook_result_picking_a_template_part_does_not_warn() {
+    let src = indoc! {r"
+        import { createContext, useContext } from 'react';
+        import { css } from '@panda/css';
+        const ExpandedContext = createContext(false);
+        const useExpanded = () => useContext(ExpandedContext);
+        export const panel = () => css({ width: `${useExpanded() ? 8 : 4}px` });
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn binding_used_as_a_test_then_as_a_value_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function size(n: number) {
+          if (n < 0) return 0;
+          return n * 4;
+        }
+        const width = size(2);
+        css(width ? { color: 'red' } : { color: 'blue' });
+        css({ width: `${width}px` });
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn partial_object_read_as_a_test_then_as_a_value_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function size(n: number) {
+          if (n < 0) return 0;
+          return n * 4;
+        }
+        const values = { width: size(2), label: 'card' };
+        css(values ? { color: 'red' } : { color: 'blue' });
+        css({ width: `${values.width}px`, color: 'green' });
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn partial_object_read_as_a_value_then_as_a_test_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function size(n: number) {
+          if (n < 0) return 0;
+          return n * 4;
+        }
+        const values = { width: size(2), label: 'card' };
+        css({ width: `${values.width}px`, color: 'green' });
+        css(values ? { color: 'red' } : { color: 'blue' });
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn array_read_as_a_test_then_as_a_value_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function size(n: number) {
+          if (n < 0) return 0;
+          return n * 4;
+        }
+        const sizes = [size(2), 8];
+        css(sizes ? { color: 'red' } : { color: 'blue' });
+        css({ width: `${sizes[0]}px` });
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn array_read_as_a_value_then_as_a_test_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function size(n: number) {
+          if (n < 0) return 0;
+          return n * 4;
+        }
+        const sizes = [size(2), 8];
+        css({ width: `${sizes[0]}px` });
+        css(sizes ? { color: 'red' } : { color: 'blue' });
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn nested_binding_read_as_a_test_then_as_a_value_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function size(n: number) {
+          if (n < 0) return 0;
+          return n * 4;
+        }
+        const width = size(2);
+        const values = { width, label: 'card' };
+        css(values ? { color: 'red' } : { color: 'blue' });
+        css({ width: values.width });
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn nested_binding_read_as_a_value_then_as_a_test_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function size(n: number) {
+          if (n < 0) return 0;
+          return n * 4;
+        }
+        const width = size(2);
+        const values = { width, label: 'card' };
+        css({ width: values.width });
+        css(values ? { color: 'red' } : { color: 'blue' });
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn helper_reading_an_outer_object_read_as_a_test_then_as_a_value_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function size(n: number) {
+          if (n < 0) return 0;
+          return n * 4;
+        }
+        const values = { width: size(2), label: 'card' };
+        const pickWidth = () => values.width;
+        css(pickWidth() ? { color: 'red' } : { color: 'blue' });
+        css({ width: pickWidth() });
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn helper_reading_an_outer_object_read_as_a_value_then_as_a_test_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function size(n: number) {
+          if (n < 0) return 0;
+          return n * 4;
+        }
+        const values = { width: size(2), label: 'card' };
+        const pickWidth = () => values.width;
+        css({ width: pickWidth() });
+        css(pickWidth() ? { color: 'red' } : { color: 'blue' });
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn hook_result_as_a_direct_lookup_key_does_not_warn() {
+    let src = indoc! {r"
+        import { createContext, useContext } from 'react';
+        import { css } from '@panda/css';
+        const ExpandedContext = createContext(false);
+        const useExpanded = () => useContext(ExpandedContext);
+        const tones = { true: { color: 'red' }, false: { color: 'blue' } };
+        export const panel = () => css(tones[useExpanded()]);
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn hook_result_as_an_optional_lookup_key_does_not_warn() {
+    let src = indoc! {r"
+        import { createContext, useContext } from 'react';
+        import { css } from '@panda/css';
+        const ExpandedContext = createContext(false);
+        const useExpanded = () => useContext(ExpandedContext);
+        const tones = { true: { color: 'red' }, false: { color: 'blue' } };
+        export const panel = () => css(tones?.[useExpanded()]);
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn unevaluated_helper_as_a_lookup_key_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function size(n: number) {
+          if (n < 0) return 0;
+          return n * 4;
+        }
+        const widths = { 8: { width: '8px' } };
+        css(widths[size(2)]);
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn unevaluated_helper_as_a_computed_style_key_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function selector(name: string) {
+          if (!name) return '&';
+          return `&[data-${name}]`;
+        }
+        css({ [selector('open')]: { color: 'red' } });
+    "};
+    assert_no_helper_warning(&run(src));
+}
+
+#[test]
+fn unsupported_helper_style_values_keep_static_siblings_without_warning() {
+    for width in [
+        "size(2)",
+        "`${size(2)}px`",
+        "size(2) + 'px'",
+        "size(2) * 4",
+        "-size(2)",
+    ] {
+        let source = format!(
+            "import {{ css }} from '@panda/css'; function size(n: number) {{ if (n < 0) return 0; return n * 4; }} css({{ width: {width}, color: 'red' }});"
+        );
+        let usage = run(&source);
+        assert!(
+            usage.diagnostics.is_empty(),
+            "{width}: {:?}",
+            usage.diagnostics
+        );
+        assert_eq!(
+            serde_json::to_value(&usage.calls[0].data[0]).unwrap(),
+            serde_json::json!({ "color": "red" }),
+            "{width}"
+        );
+    }
+}
+
+#[test]
+fn unsupported_helper_in_an_unselected_property_does_not_warn() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function size(n: number) {
+          if (n < 0) return 0;
+          return n * 4;
+        }
+        const values = { width: size(2), color: 'red' };
+        css({ color: values.color });
+    "};
+    let usage = run(src);
+    assert!(usage.diagnostics.is_empty());
+    assert_yaml_snapshot!(usage.calls[0].data[0], @"color: red");
 }
 
 #[test]

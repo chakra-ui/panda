@@ -123,8 +123,8 @@ Edge-case drops worth noting: division by zero (`1 / 0` would be `Infinity` in J
   `fn_cache` `InProgress` rejects recursion.
 - **Doesn't lower:** async/generators, rest params and patterns, computed keys, array patterns, `var`, other statements
   (`if`, loops), unknown or member calls, `this`, assignment. Captures must already fold (baked as `Value`).
-- **Warning:** a call with folded args whose callee doesn't lower reports `pure_helper_unevaluated` once. Imported
-  callees are kept as `ExportEntry::UnevaluatedFn` for this. Panda imports and member calls never warn.
+- **Unsupported helpers:** stay unresolved without a warning. Evaluating a binding can visit unrelated properties,
+  so an unresolved call alone doesn't prove that a selected style was omitted.
 - Bare function values stay non-`Literal`, except `defaultProps` accessors, applied with no arguments.
 
 Same-file bindings go through the resolver's `fn_cache`. Imported / re-exported helpers come from `CrossFileResolver` as
