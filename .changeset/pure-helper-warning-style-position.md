@@ -1,5 +1,7 @@
 ---
 '@pandacss/compiler': patch
+'@pandacss/compiler-wasm': patch
 ---
 
-Fix `pure_helper_unevaluated` warning on calls that only pick between styles, like `css(useExpanded() ? a : b)`.
+Remove `pure_helper_unevaluated` warnings, which could fail builds even when the selected styles were fully extracted.
+Fix duplicate `deprecated_token_used` warnings for the same token call.

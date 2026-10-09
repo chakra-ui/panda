@@ -1334,7 +1334,7 @@ fn imported_destructured_helper_folds() {
 }
 
 #[test]
-fn imported_unevaluated_helper_warns() {
+fn imported_unevaluated_helper_keeps_static_siblings_without_warning() {
     let (fs, main) = project(
         indoc::indoc! {r"
             import { card } from './helpers';
@@ -1352,8 +1352,8 @@ fn imported_unevaluated_helper_warns() {
         )],
     );
     let usage = run(&fs, &main);
-    let codes: Vec<_> = usage.diagnostics.iter().map(|d| d.code.as_str()).collect();
-    assert_eq!(codes, ["pure_helper_unevaluated"]);
+    assert!(usage.diagnostics.is_empty());
+    assert_yaml_snapshot!(usage.calls[0].data[0], @r#"margin: 8px"#);
 }
 
 #[test]

@@ -13,7 +13,7 @@ use oxc_span::GetSpan;
 
 use pandacss_shared::Span;
 
-use crate::literal::{branch_test_to_literal, expression_to_literal, property_key_to_string};
+use crate::literal::{expression_to_literal, property_key_to_string};
 use crate::pure_fn::fold_accessor_expr;
 use crate::{Literal, Resolver, span_from_oxc};
 
@@ -364,7 +364,7 @@ pub(crate) fn expression_to_style_tree(
         }
 
         Expression::ConditionalExpression(c) => {
-            if let Some(test) = branch_test_to_literal(&c.test, resolver) {
+            if let Some(test) = expression_to_literal(&c.test, resolver) {
                 return if test.is_truthy() {
                     expression_to_style_tree(&c.consequent, resolver)
                 } else {
@@ -389,7 +389,7 @@ pub(crate) fn expression_to_style_tree(
         }
 
         Expression::LogicalExpression(l) => {
-            if let Some(left) = branch_test_to_literal(&l.left, resolver) {
+            if let Some(left) = expression_to_literal(&l.left, resolver) {
                 return match l.operator {
                     LogicalOperator::And => {
                         if left.is_truthy() {
@@ -619,7 +619,7 @@ fn push_style_spread(
     let argument = argument.get_inner_expression();
     match argument {
         Expression::ConditionalExpression(c) => {
-            if let Some(test) = branch_test_to_literal(&c.test, resolver) {
+            if let Some(test) = expression_to_literal(&c.test, resolver) {
                 let branch = if test.is_truthy() {
                     &c.consequent
                 } else {
@@ -640,7 +640,7 @@ fn push_style_spread(
             });
         }
         Expression::LogicalExpression(l) => {
-            if let Some(left) = branch_test_to_literal(&l.left, resolver) {
+            if let Some(left) = expression_to_literal(&l.left, resolver) {
                 match l.operator {
                     LogicalOperator::And => {
                         if left.is_truthy() {

@@ -8,7 +8,7 @@
 //! whole identifiers. Pure callables (`f()`, IIFEs, imported helpers) are
 //! lowered/applied via [`crate::pure_fn`] from [`Resolver::resolve_pure_call`].
 
-use std::cell::{Cell, RefCell};
+use std::cell::RefCell;
 use std::path::PathBuf;
 
 use oxc_ast::AstKind;
@@ -75,10 +75,6 @@ pub(crate) struct Resolver<'a, 'cb> {
     source_path: Option<PathBuf>,
     line_index: Option<&'a crate::LineIndex<'a>>,
     diagnostics: RefCell<Vec<crate::Diagnostic>>,
-    /// Call spans already reported as `pure_helper_unevaluated` (calls fold more than once).
-    reported_unevaluated_calls: RefCell<FxHashSet<u32>>,
-    /// Nesting depth of branch tests, where an unevaluated helper only picks a branch.
-    branch_test_depth: Cell<u32>,
     token_refs: RefCell<Vec<TokenRef>>,
     imported_recipe_folds: RefCell<Vec<ImportedRecipeFold>>,
     /// Cross-file modules read during this file's extraction (nested re-export /
@@ -176,8 +172,6 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             source_path,
             line_index,
             diagnostics: RefCell::default(),
-            reported_unevaluated_calls: RefCell::default(),
-            branch_test_depth: Cell::new(0),
             token_refs: RefCell::default(),
             imported_recipe_folds: RefCell::default(),
             cross_file_deps: RefCell::default(),
@@ -294,89 +288,14 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
 
     // === Pure Function Resolution ===
 
-    pub(crate) fn in_branch_test<T>(&self, eval: impl FnOnce() -> T) -> T {
-        self.branch_test_depth.set(self.branch_test_depth.get() + 1);
-        let out = eval();
-        self.branch_test_depth.set(self.branch_test_depth.get() - 1);
-        out
-    }
-
     /// Fold a pure local/imported callable: `f()`, `(() => 'x')()`, etc.
     pub(crate) fn resolve_pure_call(&self, call: &CallExpression<'_>) -> Option<Literal> {
         if call.optional {
             return None;
         }
-        let Some(func) = self.lookup_callable(&call.callee) else {
-            self.report_unevaluated_helper(call);
-            return None;
-        };
+        let func = self.lookup_callable(&call.callee)?;
         let args = fold_call_args(call, Some(self))?;
         apply_pure_fn(&func, &args)
-    }
-
-    /// Warn when a call has static arguments but its local or imported helper can't be lowered,
-    /// since its styles are otherwise dropped without a trace.
-    fn report_unevaluated_helper(&self, call: &CallExpression<'_>) {
-        if self.branch_test_depth.get() > 0 {
-            return;
-        }
-        let Expression::Identifier(ident) = call.callee.get_inner_expression() else {
-            return;
-        };
-        if self.aliases.contains_key(ident.name.as_str()) || !self.is_unevaluated_helper(ident) {
-            return;
-        }
-        if fold_call_args(call, Some(self)).is_none()
-            || !self
-                .reported_unevaluated_calls
-                .borrow_mut()
-                .insert(call.span.start)
-        {
-            return;
-        }
-        let span = crate::span_from_oxc(call.span);
-        let mut diagnostic = crate::Diagnostic::warning(
-            crate::diagnostic_codes::PURE_HELPER_UNEVALUATED,
-            format!(
-                "`{}(...)` can't be evaluated at build time, so its styles were not extracted. \
-                 Keep the helper to `const` declarations and one `return`, or write the styles inline.",
-                ident.name
-            ),
-        );
-        diagnostic.span = Some(span);
-        diagnostic.location = self
-            .line_index
-            .map(|idx| idx.locate_range(span.start, span.end));
-        self.diagnostics.borrow_mut().push(diagnostic);
-    }
-
-    fn is_unevaluated_helper(&self, ident: &IdentifierReference<'_>) -> bool {
-        let Some(symbol_id) = self.symbol_for_identifier(ident) else {
-            return false;
-        };
-        if self
-            .semantic
-            .scoping()
-            .symbol_flags(symbol_id)
-            .contains(SymbolFlags::Import)
-        {
-            return matches!(
-                self.resolve_import_entry(symbol_id),
-                Some(ExportEntry::UnevaluatedFn)
-            );
-        }
-        match self.semantic.symbol_declaration(symbol_id).kind() {
-            AstKind::Function(_) => true,
-            AstKind::VariableDeclarator(declarator) => {
-                declarator.init.as_ref().is_some_and(|init| {
-                    matches!(
-                        init.get_inner_expression(),
-                        Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_)
-                    )
-                })
-            }
-            _ => false,
-        }
     }
 
     /// Root-scope pure fn lookup used when collecting re-exports.
@@ -452,7 +371,6 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
                 ExportEntry::PureFn(func) => Some(func),
                 ExportEntry::Literal(_)
                 | ExportEntry::StyleFallback { .. }
-                | ExportEntry::UnevaluatedFn
                 | ExportEntry::Recipe(_) => None,
             })
     }
@@ -669,6 +587,12 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
 
     fn record_deprecated_token(&self, path: &str, span: oxc_span::Span) {
         let span = crate::span_from_oxc(span);
+        if self.diagnostics.borrow().iter().any(|diagnostic| {
+            diagnostic.code == crate::diagnostic_codes::DEPRECATED_TOKEN_USED
+                && diagnostic.span == Some(span)
+        }) {
+            return;
+        }
         let location = self
             .line_index
             .map(|idx| idx.locate_range(span.start, span.end));
@@ -720,11 +644,6 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         let result = self.compute_symbol(symbol_id);
         let state = match &result {
             Some(lit) => ResolutionState::Resolved(lit.clone()),
-            // Re-resolve outside the test so a later style use can still warn.
-            None if self.branch_test_depth.get() > 0 => {
-                self.cache.borrow_mut().remove(&symbol_id);
-                return None;
-            }
             None => ResolutionState::Unresolvable,
         };
         self.cache.borrow_mut().insert(symbol_id, state);
@@ -761,9 +680,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
                 ExportEntry::StyleFallback { style_value, .. } => Some(
                     StyleTree::OpenWithFallback(Box::new(literal_to_style_tree(style_value))),
                 ),
-                ExportEntry::PureFn(_) | ExportEntry::UnevaluatedFn | ExportEntry::Recipe(_) => {
-                    None
-                }
+                ExportEntry::PureFn(_) | ExportEntry::Recipe(_) => None,
             };
         }
         if scoping.symbol_is_mutated(symbol_id) {
@@ -816,7 +733,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             ExportEntry::Literal(lit) => Some(lit),
             ExportEntry::StyleFallback { known_value, .. } => known_value,
             // A recipe is a function, not a value — only `.raw(props)` resolves it.
-            ExportEntry::PureFn(_) | ExportEntry::UnevaluatedFn | ExportEntry::Recipe(_) => None,
+            ExportEntry::PureFn(_) | ExportEntry::Recipe(_) => None,
         }
     }
 
