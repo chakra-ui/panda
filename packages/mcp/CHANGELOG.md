@@ -1,5 +1,19 @@
 # @pandacss/mcp
 
+## 2.2.0
+
+### Patch Changes
+
+- Updated dependencies [0a95d5d]
+- Updated dependencies [e71a5ed]
+- Updated dependencies [4bc239a]
+- Updated dependencies [e899f53]
+- Updated dependencies [9d5077d]
+- Updated dependencies [d5fb171]
+- Updated dependencies [da7c333]
+- Updated dependencies [1744ddd]
+  - @pandacss/compiler@2.2.0
+
 ## 2.1.2
 
 ### Patch Changes

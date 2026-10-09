@@ -1,5 +1,24 @@
 # @pandacss/eslint-plugin
 
+## 2.2.0
+
+### Patch Changes
+
+- 9d5077d: Fix `prefer-token` reporting negative spacing tokens (`marginTop: '-2'`) and color opacity modifiers
+  (`red.500/40`) as hardcoded values. `resolveUtilityValue()` now returns the `tokens` a value references.
+- Updated dependencies [0a95d5d]
+- Updated dependencies [e9d19e3]
+- Updated dependencies [e71a5ed]
+- Updated dependencies [4bc239a]
+- Updated dependencies [e899f53]
+- Updated dependencies [9d5077d]
+- Updated dependencies [d5fb171]
+- Updated dependencies [da7c333]
+- Updated dependencies [1744ddd]
+  - @pandacss/compiler@2.2.0
+  - @pandacss/config@2.2.0
+  - @pandacss/compiler-shared@2.2.0
+
 ## 2.1.2
 
 ### Patch Changes
