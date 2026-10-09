@@ -1,5 +1,52 @@
 # @pandacss/compiler
 
+## 2.2.0
+
+### Minor Changes
+
+- da7c333: Add `PropsProvider` and `usePropsContext` to `createSlotRecipeContext`. A group component can now set variant
+  props once for every compound component inside it. `PropsProvider` is typed to take a `value` in every framework.
+
+  ```tsx
+  const { PropsProvider } = createSlotRecipeContext(card)
+
+  function CardGroup(props) {
+    const [variantProps, restProps] = card.splitVariantProps(props)
+    return (
+      <PropsProvider value={variantProps}>
+        <div {...restProps} />
+      </PropsProvider>
+    )
+  }
+  ```
+
+  ```tsx
+  <CardGroup size="lg">
+    <Card.Root>...</Card.Root>
+    <Card.Root>...</Card.Root>
+  </CardGroup>
+  ```
+
+### Patch Changes
+
+- 0a95d5d: Convert v1 array conditions (`hover: ['@media (hover: hover)', '&:hover']`) to the `@slot` object form with a
+  warning, instead of failing to load the config.
+- e71a5ed: Fix tokens in custom categories (like `theme.tokens.iconSizes`) being dropped. They now emit CSS variables
+  and work with `{iconSizes.sm}`, `token()` and custom utilities, as in v1.
+- 4bc239a: Fix a prop passed as `undefined` overriding its value from `defaultProps` or `PropsProvider`.
+- e899f53: Fix `Unexpected JSX expression` warnings for JSX inside `.js`, `.mjs` and `.cjs` files. Styles in those files
+  are now extracted.
+- 9d5077d: Fix `prefer-token` reporting negative spacing tokens (`marginTop: '-2'`) and color opacity modifiers
+  (`red.500/40`) as hardcoded values. `resolveUtilityValue()` now returns the `tokens` a value references.
+- d5fb171: Remove `pure_helper_unevaluated` warnings, which could fail builds even when the selected styles were fully
+  extracted. Fix duplicate `deprecated_token_used` warnings for the same token call.
+- 1744ddd: Fix `staticCss` ignoring a custom utility's `transform`. Values generated through `staticCss.css` or
+  `staticCss.patterns` now emit the transformed styles instead of `example: b`.
+- Updated dependencies [e9d19e3]
+  - @pandacss/config@2.2.0
+  - @pandacss/compiler-shared@2.2.0
+  - @pandacss/types@2.2.0
+
 ## 2.1.2
 
 ### Patch Changes

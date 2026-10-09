@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/transformer",
-  "version": "2.1.2",
+  "version": "2.2.0",
   "description": "Source transformer facade for Panda CSS",
   "type": "module",
   "main": "./dist/index.js",
