@@ -48,6 +48,7 @@ export interface RunCommandOptions<TFlags extends CommonFlags, TData extends obj
   ): void
   /** Keep tracing open until `result.stop()` (watch mode). */
   keepTracing?: boolean
+  trackSources?: boolean
   /** `--profile` output location. Defaults to `.panda/trace.json` + `.panda/timings.json`. */
   profilePaths?: ProfilePaths
 }
@@ -63,6 +64,7 @@ export async function runCommand<TFlags extends CommonFlags, TData extends objec
     execute,
     renderHuman,
     keepTracing = false,
+    trackSources,
     profilePaths,
   } = options
 
@@ -137,7 +139,7 @@ export async function runCommand<TFlags extends CommonFlags, TData extends objec
           cwd,
           configPath: flags.config,
           include: normalizeInclude(flags.include),
-          trackSources: specRequested((flags as { spec?: boolean | string }).spec) ? true : undefined,
+          trackSources: trackSources || specRequested((flags as { spec?: boolean | string }).spec) ? true : undefined,
         }),
     })
   } catch (error) {

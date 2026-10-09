@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { buildCommand, buildSubcommand, checkCommand, devCommand } from '../src/commands/build'
 import { doctorCommand } from '../src/commands/doctor'
+import { studioCommand } from '../src/commands/studio'
 import { analyzeCommand } from '../src/commands/analyze'
 import { normalizeCliFlags } from '../src/args'
 import { normalizeRawArgs } from '../src/cli-main'
@@ -16,6 +17,7 @@ describe('cli main', () => {
     expect(checkCommand.meta).toMatchObject({ name: 'check' })
     expect(analyzeCommand.meta).toMatchObject({ name: 'analyze' })
     expect(doctorCommand.meta).toMatchObject({ name: 'doctor' })
+    expect(studioCommand.meta).toMatchObject({ name: 'studio' })
   })
 
   it('keeps a bare --spec from swallowing the flag after it', () => {

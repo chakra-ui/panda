@@ -302,12 +302,12 @@ Check your package scripts as well as your config. The CLI no longer accepts sev
 
 #### Replace removed commands
 
-| v1 command                                           | v2 replacement                                                                                                       |
-| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `panda spec`                                         | `panda codegen --spec`, or `--spec=./design-system.json` for a custom path                                           |
-| `panda ship`                                         | `panda lib` to publish a design system; `panda buildinfo --outfile ./dist/panda.buildinfo.json` for build info alone |
-| `panda emit-pkg`                                     | Removed. `panda lib` manages design-system package exports; review other runtime package exports yourself            |
-| `panda studio` (including `--build` and `--preview`) | Use the hosted [Studio](https://studio.panda-css.com/)                                                               |
+| v1 command                           | v2 replacement                                                                                                       |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `panda spec`                         | `panda codegen --spec`, or `--spec=./design-system.json` for a custom path                                           |
+| `panda ship`                         | `panda lib` to publish a design system; `panda buildinfo --outfile ./dist/panda.buildinfo.json` for build info alone |
+| `panda emit-pkg`                     | Removed. `panda lib` manages design-system package exports; review other runtime package exports yourself            |
+| `panda studio --build` / `--preview` | Removed. `panda studio` opens the hosted [Studio](https://studio.panda-css.com/) with your system loaded             |
 
 `--spec` also works on `panda build` and `panda lib`. It writes one design-system document instead of the v1 spec files.
 See [Codegen](/docs/reference/cli#codegen).
