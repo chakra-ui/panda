@@ -330,6 +330,72 @@ fn reverse_var_lookup() {
     assert!(dict.token_by_var("var(--nonexistent)").is_none());
 }
 
+#[test]
+fn reachable_values_follow_aliases_and_conditions() {
+    let dict = build_dictionary(json!({
+        "theme": {
+            "tokens": {
+                "animations": {
+                    "base": { "value": "pulse 2s infinite" },
+                    "fade": { "value": "fade 200ms" }
+                }
+            },
+            "semanticTokens": {
+                "animations": {
+                    "status": { "value": { "base": "{animations.base}", "_dark": "blink 4s infinite" } },
+                    "onlyDark": { "value": { "_dark": "{animations.fade}" } },
+                    "both": { "value": "{animations.status}, {animations.fade}" }
+                }
+            }
+        }
+    }));
+
+    assert_yaml_snapshot!(json!({
+        "status": dict.reachable_values("animations.status"),
+        "onlyDark": dict.reachable_values("animations.onlyDark"),
+        "both": dict.reachable_values("animations.both"),
+        "missing": dict.reachable_values("animations.missing"),
+    }), @r#"
+    status:
+      - var(--animations-base)
+      - pulse 2s infinite
+      - blink 4s infinite
+    onlyDark:
+      - var(--animations-fade)
+      - fade 200ms
+    both:
+      - "var(--animations-status), var(--animations-fade)"
+      - var(--animations-base)
+      - pulse 2s infinite
+      - blink 4s infinite
+      - fade 200ms
+    missing: []
+    "#);
+}
+
+#[test]
+fn reachable_values_stop_at_alias_cycles() {
+    let dict = TokenDictionary::builder()
+        .insert(t(
+            "animations.a",
+            "var(--animations-b)",
+            "var(--animations-a)",
+            TokenCategory::Animations,
+        ))
+        .insert(t(
+            "animations.b",
+            "spin 1s, var(--animations-a)",
+            "var(--animations-b)",
+            TokenCategory::Animations,
+        ))
+        .build();
+
+    assert_eq!(
+        dict.reachable_values("animations.a"),
+        ["var(--animations-b)", "spin 1s, var(--animations-a)"]
+    );
+}
+
 // --- conditional precedence ---
 
 #[test]

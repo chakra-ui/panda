@@ -934,6 +934,7 @@ fn capacity_hint(atoms: &[&Atom], recipes: &EncodedRecipesSnapshot) -> usize {
 struct UsageMarks {
     token_vars: FxHashSet<String>,
     keyframes: FxHashSet<String>,
+    animation_vars: FxHashSet<String>,
     /// A registration stays alive when its variable is written, not just read —
     /// `inherits: false` matters for a var that is only ever set.
     declared_vars: FxHashSet<String>,
@@ -1102,6 +1103,25 @@ fn collect_keyframe_refs(
     }
 }
 
+/// `animation: 'fadeIn'` emits `var(--animations-fade-in)`; the keyframe name is in the token value.
+fn collect_token_keyframe_refs(
+    token_dictionary: Option<&TokenDictionary>,
+    keyframes: Option<&serde_json::Map<String, Value>>,
+    marks: &mut UsageMarks,
+) {
+    let (Some(token_dictionary), Some(_)) = (token_dictionary, keyframes) else {
+        return;
+    };
+    for var in &marks.animation_vars {
+        let Some(token) = token_dictionary.token_by_var(&format!("var({var})")) else {
+            continue;
+        };
+        for value in token_dictionary.reachable_values(&token.path) {
+            collect_keyframe_refs(value, keyframes, &mut marks.keyframes);
+        }
+    }
+}
+
 fn is_animation_property(prop: &str) -> bool {
     matches!(prop, "animation" | "animation-name")
 }
@@ -1214,6 +1234,7 @@ impl<'a> EmitContext<'a> {
             keyframes,
             &mut marks,
         );
+        collect_token_keyframe_refs(token_dictionary, keyframes, &mut marks);
 
         marks
     }
@@ -1495,6 +1516,8 @@ impl<'a> EmitContext<'a> {
         }
         if is_animation_property(prop) {
             collect_keyframe_refs(value, keyframes, &mut marks.keyframes);
+            collect_css_var_refs(value, &mut marks.animation_vars);
+            collect_token_reference_vars(value, token_dictionary, &mut marks.animation_vars);
         }
     }
 

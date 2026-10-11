@@ -464,6 +464,82 @@ fn compile_keyframes_honors_remove_unused() {
 }
 
 #[test]
+fn optimize_keyframes_keeps_names_referenced_through_animation_tokens() {
+    let config = config(serde_json::json!({
+        "optimize": { "removeUnusedKeyframes": true },
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "animation": { "className": "animation", "values": "animations" }
+        },
+        "theme": {
+            "keyframes": {
+                "fade": { "to": { "opacity": "0" } },
+                "slide": { "to": { "transform": "none" } },
+                "wobble": { "to": { "rotate": "3deg" } },
+                "unused": { "to": { "opacity": "1" } }
+            },
+            "tokens": {
+                "animations": {
+                    "fadeIn": { "value": "fade 200ms ease-out" },
+                    "both": { "value": "slide 300ms, fade 300ms" },
+                    "idle": { "value": "wobble 1s infinite" }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { css } from '@panda/css'; css({ animation: 'fadeIn' }); css({ animation: 'both' });",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Tokens, StylesheetLayer::Utilities]);
+
+    assert!(css.contains("@keyframes fade"), "{css}");
+    assert!(css.contains("@keyframes slide"), "{css}");
+    assert!(!css.contains("@keyframes wobble"), "{css}");
+    assert!(!css.contains("@keyframes unused"), "{css}");
+}
+
+#[test]
+fn optimize_keyframes_keeps_names_referenced_through_semantic_animation_tokens() {
+    let config = config(serde_json::json!({
+        "optimize": { "removeUnusedKeyframes": true },
+        "conditions": { "dark": ".dark &" },
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "animation": { "className": "animation", "values": "animations" }
+        },
+        "theme": {
+            "keyframes": {
+                "pulse": { "to": { "opacity": "0.5" } },
+                "blink": { "to": { "opacity": "0" } },
+                "unused": { "to": { "opacity": "1" } }
+            },
+            "tokens": {
+                "animations": {
+                    "base": { "value": "pulse 2s infinite" }
+                }
+            },
+            "semanticTokens": {
+                "animations": {
+                    "status": { "value": { "base": "{animations.base}", "_dark": "blink 4s infinite" } }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { css } from '@panda/css'; css({ animation: 'status' });",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Tokens, StylesheetLayer::Utilities]);
+
+    assert!(css.contains("@keyframes pulse"), "{css}");
+    assert!(css.contains("@keyframes blink"), "{css}");
+    assert!(!css.contains("@keyframes unused"), "{css}");
+}
+
+#[test]
 fn compile_keyframes_empty_when_none_defined() {
     let config = config(serde_json::json!({}));
     let css = compile_keyframes_output(

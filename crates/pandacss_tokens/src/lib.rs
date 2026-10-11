@@ -297,6 +297,41 @@ impl TokenDictionary {
             .map(|&i| &self.tokens[i])
     }
 
+    /// Values of `path` under every condition, plus those of the tokens they alias.
+    #[must_use]
+    pub fn reachable_values(&self, path: &str) -> Vec<&str> {
+        let mut seen = FxHashSet::default();
+        let mut values = Vec::new();
+        if let Some(token) = self.token(path) {
+            self.collect_reachable_values(&token.path, &mut seen, &mut values);
+        }
+        values
+    }
+
+    fn collect_reachable_values<'a>(
+        &'a self,
+        path: &'a str,
+        seen: &mut FxHashSet<&'a str>,
+        values: &mut Vec<&'a str>,
+    ) {
+        if !seen.insert(path) {
+            return;
+        }
+        let base = self.token(path).filter(|token| token.condition.is_none());
+        let conditional = self
+            .conditions_order
+            .iter()
+            .filter_map(|condition| self.token_with_condition(path, condition));
+        for token in base.into_iter().chain(conditional) {
+            values.push(&token.value);
+            for name in css_var_names(&token.value) {
+                if let Some(alias) = self.token_by_var(&format!("var({name})")) {
+                    self.collect_reachable_values(&alias.path, seen, values);
+                }
+            }
+        }
+    }
+
     /// Zero-allocation `token('path', fallback)` lookup.
     #[must_use]
     pub fn get_str<'a>(&'a self, path: &str, fallback: Option<&'a str>) -> Option<&'a str> {
@@ -677,6 +712,16 @@ pub(crate) fn join_segments(segments: &[&str]) -> String {
 
 pub(crate) fn raw_css_var(value: &str) -> Option<&str> {
     value.strip_prefix("var(")?.strip_suffix(')')
+}
+
+fn css_var_names(value: &str) -> impl Iterator<Item = &str> {
+    value
+        .match_indices("var(")
+        .filter_map(move |(start, open)| {
+            let rest = &value[start + open.len()..];
+            let name = rest[..rest.find([',', ')']).unwrap_or(rest.len())].trim();
+            name.starts_with("--").then_some(name)
+        })
 }
 
 /// Shared by [`TokenDictionary::color_mix_str`] and `from_config`'s

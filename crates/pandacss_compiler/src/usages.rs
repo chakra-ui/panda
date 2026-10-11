@@ -736,6 +736,8 @@ fn walk_prop(
             // tokens and keyframes look unused and get pruned.
             let members = parse_first_that_works_value(raw).unwrap_or_else(|| vec![raw.as_str()]);
 
+            let is_animation = matches!(canonical, "animation" | "animationName");
+            let mut token_paths = Vec::new();
             // A `Literal::Token` already has its path via `token_refs`, so skip
             // the category-relative heuristic to avoid duplicate sites.
             if let Some(dict) = cx.tokens
@@ -750,25 +752,46 @@ fn walk_prop(
                         let path = format!("{category}.{}", strip_modifier(member));
                         if dict.token(&path).is_some() {
                             sites.push(site(UsageKind::Token, &path, range));
+                            if is_animation {
+                                token_paths.push(path);
+                            }
                         }
                     }
                     collect_token_refs(member, dict, &mut |path| {
                         sites.push(site(UsageKind::Token, path, range));
+                        if is_animation {
+                            token_paths.push(path.to_owned());
+                        }
                     });
                 }
+            }
+            if is_animation && let Literal::Token { path, .. } = value {
+                token_paths.push(path.clone());
             }
 
             // Match each whitespace/comma-separated word against the keyframe
             // set, catching shorthands (`spin 1s linear`) and lists (`spin, fade`).
-            if matches!(canonical, "animation" | "animationName") {
+            if is_animation {
+                let mut named = Vec::new();
                 for word in members
                     .iter()
-                    .flat_map(|member| member.split([' ', ',']))
-                    .map(str::trim)
-                    .filter(|word| !word.is_empty())
+                    .flat_map(|member| keyframe_words(member, cx.keyframes))
                 {
-                    if cx.keyframes.contains(word) {
-                        sites.push(site(UsageKind::Keyframe, word, range));
+                    sites.push(site(UsageKind::Keyframe, word, range));
+                    named.push(word);
+                }
+                // `animation: 'fadeIn'` names a token; the keyframe is in its value.
+                if let Some(dict) = cx.tokens {
+                    for token_value in token_paths
+                        .iter()
+                        .flat_map(|path| dict.reachable_values(path))
+                    {
+                        for word in keyframe_words(token_value, cx.keyframes) {
+                            if !named.contains(&word) {
+                                sites.push(site(UsageKind::Keyframe, word, range));
+                                named.push(word);
+                            }
+                        }
                     }
                 }
             }
@@ -792,6 +815,16 @@ fn walk_prop(
         }
         Literal::Null => {}
     }
+}
+
+fn keyframe_words<'a>(
+    value: &'a str,
+    keyframes: &rustc_hash::FxHashSet<String>,
+) -> impl Iterator<Item = &'a str> {
+    value
+        .split([' ', ','])
+        .map(str::trim)
+        .filter(move |word| !word.is_empty() && keyframes.contains(*word))
 }
 
 /// Strips a trailing `/opacity` color modifier: `red.300/40` -> `red.300`.

@@ -657,6 +657,113 @@ fn animation_shorthand_captures_multiple_keyframes() {
     ");
 }
 
+fn system_with_animation_tokens() -> System {
+    system_with(json!({
+        "conditions": { "dark": ".dark &" },
+        "theme": {
+            "tokens": {
+                "animations": {
+                    "fadeIn": { "value": "fade 200ms ease-out" },
+                    "both": { "value": "slide 300ms, fade 300ms" },
+                    "pulse": { "value": "pulse 2s infinite" },
+                    "base": { "value": "pulse 2s infinite" }
+                }
+            },
+            "semanticTokens": {
+                "animations": {
+                    "status": { "value": { "base": "{animations.base}", "_dark": "blink 4s infinite" } }
+                }
+            },
+            "keyframes": {
+                "fade": { "from": {}, "to": {} },
+                "slide": { "from": {}, "to": {} },
+                "pulse": { "from": {}, "to": {} },
+                "blink": { "from": {}, "to": {} }
+            }
+        },
+        "utilities": {
+            "animation": { "className": "animation", "values": "animations" }
+        }
+    }))
+}
+
+#[test]
+fn animation_token_captures_keyframe_in_token_value() {
+    let result = inspect_file_source(
+        &system_with_animation_tokens(),
+        "a.tsx",
+        "import { css } from '@panda/css'\ncss({ animation: 'fadeIn' })",
+    );
+    assert_snapshot!(summary(&result), @r"
+    Property animation
+    Token animations.fadeIn
+    Keyframe fade
+    ");
+}
+
+#[test]
+fn animation_token_captures_every_keyframe_in_token_value() {
+    let result = inspect_file_source(
+        &system_with_animation_tokens(),
+        "a.tsx",
+        "import { css } from '@panda/css'\ncss({ animation: 'both' })",
+    );
+    assert_snapshot!(summary(&result), @r"
+    Property animation
+    Token animations.both
+    Keyframe slide
+    Keyframe fade
+    ");
+}
+
+#[test]
+fn semantic_animation_token_captures_keyframes_through_aliases_and_conditions() {
+    let result = inspect_file_source(
+        &system_with_animation_tokens(),
+        "a.tsx",
+        "import { css } from '@panda/css'\ncss({ animation: 'status' })",
+    );
+    assert_snapshot!(summary(&result), @r"
+    Property animation
+    Token animations.status
+    Keyframe pulse
+    Keyframe blink
+    ");
+}
+
+#[test]
+fn animation_token_named_like_its_keyframe_counts_the_keyframe_once() {
+    let result = inspect_file_source(
+        &system_with_animation_tokens(),
+        "a.tsx",
+        "import { css } from '@panda/css'\ncss({ animation: 'pulse' })",
+    );
+    assert_snapshot!(summary(&result), @r"
+    Property animation
+    Token animations.pulse
+    Keyframe pulse
+    ");
+}
+
+#[test]
+fn token_var_call_captures_keyframes_in_token_value() {
+    let result = inspect_file_source(
+        &system_with_animation_tokens(),
+        "a.tsx",
+        indoc! {r"
+            import { css } from '@panda/css'
+            import { token } from '@panda/tokens'
+            css({ animation: token.var('animations.status') })
+        "},
+    );
+    assert_snapshot!(summary(&result), @r"
+    Property animation
+    Keyframe pulse
+    Keyframe blink
+    Token animations.status
+    ");
+}
+
 #[test]
 fn inspection_collects_style_entries_for_cva_recipes() {
     let source = indoc! {r"
