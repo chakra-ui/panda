@@ -553,3 +553,33 @@ fn compile_keyframes_empty_when_none_defined() {
     .css;
     assert_eq!(css, "");
 }
+
+#[test]
+fn optimize_keyframes_keeps_names_referenced_through_global_css_token_references() {
+    let config = config(serde_json::json!({
+        "optimize": { "removeUnusedKeyframes": true },
+        "theme": {
+            "keyframes": {
+                "fade": { "to": { "opacity": "0" } },
+                "slide": { "to": { "transform": "none" } },
+                "unused": { "to": { "opacity": "1" } }
+            },
+            "tokens": {
+                "animations": {
+                    "fadeIn": { "value": "fade 200ms" },
+                    "slideIn": { "value": "slide 1s" }
+                }
+            }
+        },
+        "globalCss": {
+            ".a": { "animation": "{animations.fadeIn}" },
+            ".b": { "animation": "token(animations.slideIn)" }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Tokens, StylesheetLayer::Base]);
+
+    assert!(css.contains("@keyframes fade"), "{css}");
+    assert!(css.contains("@keyframes slide"), "{css}");
+    assert!(!css.contains("@keyframes unused"), "{css}");
+}

@@ -1517,7 +1517,6 @@ impl<'a> EmitContext<'a> {
         if is_animation_property(prop) {
             collect_keyframe_refs(value, keyframes, &mut marks.keyframes);
             collect_css_var_refs(value, &mut marks.animation_vars);
-            collect_token_reference_vars(value, token_dictionary, &mut marks.animation_vars);
         }
     }
 
