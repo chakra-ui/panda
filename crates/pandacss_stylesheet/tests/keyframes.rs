@@ -498,6 +498,33 @@ fn optimize_keyframes_keeps_names_referenced_through_animation_tokens() {
     assert!(css.contains("@keyframes slide"), "{css}");
     assert!(!css.contains("@keyframes wobble"), "{css}");
     assert!(!css.contains("@keyframes unused"), "{css}");
+    assert_snapshot!(css, @"
+    @layer tokens {
+      :where(:root, :host) {
+        --animations-fade-in: fade 200ms ease-out;
+        --animations-both: slide 300ms, fade 300ms;
+        --animations-idle: wobble 1s infinite;
+      }
+      @keyframes fade {
+        to {
+          opacity: 0;
+        }
+      }
+      @keyframes slide {
+        to {
+          transform: none;
+        }
+      }
+    }
+    @layer utilities {
+      .animation_both {
+        animation: var(--animations-both);
+      }
+      .animation_fadeIn {
+        animation: var(--animations-fade-in);
+      }
+    }
+    ");
 }
 
 #[test]
@@ -537,6 +564,32 @@ fn optimize_keyframes_keeps_names_referenced_through_semantic_animation_tokens()
     assert!(css.contains("@keyframes pulse"), "{css}");
     assert!(css.contains("@keyframes blink"), "{css}");
     assert!(!css.contains("@keyframes unused"), "{css}");
+    assert_snapshot!(css, @"
+    @layer tokens {
+      :where(:root, :host) {
+        --animations-base: pulse 2s infinite;
+        --animations-status: var(--animations-base);
+      }
+      .dark {
+        --animations-status: blink 4s infinite;
+      }
+      @keyframes pulse {
+        to {
+          opacity: 0.5;
+        }
+      }
+      @keyframes blink {
+        to {
+          opacity: 0;
+        }
+      }
+    }
+    @layer utilities {
+      .animation_status {
+        animation: var(--animations-status);
+      }
+    }
+    ");
 }
 
 #[test]
@@ -582,4 +635,33 @@ fn optimize_keyframes_keeps_names_referenced_through_global_css_token_references
     assert!(css.contains("@keyframes fade"), "{css}");
     assert!(css.contains("@keyframes slide"), "{css}");
     assert!(!css.contains("@keyframes unused"), "{css}");
+    assert_snapshot!(css, @"
+    @layer tokens {
+      :where(:root, :host) {
+        --animations-fade-in: fade 200ms;
+        --animations-slide-in: slide 1s;
+      }
+      @keyframes fade {
+        to {
+          opacity: 0;
+        }
+      }
+      @keyframes slide {
+        to {
+          transform: none;
+        }
+      }
+    }
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      .a {
+        animation: var(--animations-fade-in);
+      }
+      .b {
+        animation: var(--animations-slide-in);
+      }
+    }
+    ");
 }
