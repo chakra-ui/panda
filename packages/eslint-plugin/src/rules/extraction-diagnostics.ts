@@ -31,12 +31,14 @@ export function createExtractionDiagnosticsRule(options: ExtractionDiagnosticsRu
   }
 }
 
+const FILE_START = { start: { line: 1, column: 0 }, end: { line: 1, column: 0 } }
+
 export function reportDiagnostics(context: RuleContextWithReport, diagnostics: readonly Diagnostic[]): void {
   for (const diagnostic of diagnostics) {
     context.report({
       messageId: 'diagnostic',
       data: { message: diagnostic.message },
-      ...(diagnostic.location ? { loc: toEslintLoc(diagnostic.location) } : {}),
+      loc: diagnostic.location ? toEslintLoc(diagnostic.location) : FILE_START,
     })
   }
 }
