@@ -210,6 +210,38 @@ fn per_property_wildcard_expands_token_category_values() {
 }
 
 #[test]
+fn per_property_wildcard_keeps_nested_token_names_whole() {
+    let (project, config) = build(json!({
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "500": { "value": "#ef4444" } },
+                    "colors": { "grey50": { "value": "#f9fafb" } }
+                }
+            }
+        },
+        "patterns": {
+            "box": {
+                "properties": { "color": { "type": "token", "value": "colors" } }
+            }
+        },
+        "staticCss": {
+            "patterns": { "box": [{ "properties": { "color": ["*"] } }] }
+        }
+    }));
+    let mut transform = shorthand_to_css;
+    let (atoms, diagnostics) = project.static_pattern_atoms(&config, Some(&mut transform));
+    assert_snapshot!(summary(&atoms, &diagnostics), @"
+    atoms:
+      color: colorPalette.500
+      color: colorPalette.grey50
+      color: colors.grey50
+      color: red.500
+    diagnostics:
+    ");
+}
+
+#[test]
 fn per_property_wildcard_expands_property_type_values_from_value_field() {
     let (project, config) = build(json!({
         "utilities": {

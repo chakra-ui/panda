@@ -587,11 +587,7 @@ fn add_negative_spacing_tokens(builder: &mut TokenDictionaryBuilder) {
         // last dot would negate the tail of a dotted key: `spacing.0.5` is one
         // key and must become `spacing.-0.5`, not `spacing.0.-5`.
         let category = token.category.as_str();
-        let Some(name) = token
-            .path
-            .strip_prefix(category)
-            .and_then(|rest| rest.strip_prefix('.'))
-        else {
+        let Some(name) = token.name() else {
             continue;
         };
         if name.starts_with('-') {
