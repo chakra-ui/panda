@@ -134,7 +134,7 @@ export const debugFlagsSchema = infoFlagsSchema.extend({
 
 export const analyzeFlagsSchema = commonFlagsSchema.omit({ watch: true, watchDebounce: true }).extend({
   // One section of the report; omit it for every section (token/recipe are aliases)
-  scope: enumOf(['tokens', 'recipes', 'utilities', 'patterns', 'keyframes', 'token', 'recipe']),
+  scope: enumOf(['tokens', 'recipes', 'utilities', 'patterns', 'keyframes', 'compositions', 'token', 'recipe']),
   outfile: stringFlag,
   limit: numberLikeFlag,
   unused: booleanFlag,

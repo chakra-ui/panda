@@ -84,6 +84,60 @@ struct CompilePrelude {
     static_pattern_diagnostics: Vec<Diagnostic>,
 }
 
+/// Why a configured asset must be retained by usage reports.
+#[derive(Serialize)]
+pub struct UsageRequirement {
+    pub kind: &'static str,
+    pub name: String,
+    pub reasons: Vec<String>,
+}
+
+/// Required assets and diagnostics from preparing their styles, without CSS output.
+#[derive(Serialize)]
+pub struct UsageRequirements {
+    pub requirements: Vec<UsageRequirement>,
+    pub diagnostics: Vec<Diagnostic>,
+}
+
+/// Fresh source text supplied for an isolated requirements scan.
+#[derive(serde::Deserialize)]
+pub struct UsageSource {
+    pub path: String,
+    pub source: String,
+}
+
+/// Prepares selected styles using the same transforms and recipe selection as CSS compilation.
+#[must_use]
+pub fn collect_usage_requirements(
+    project: &mut Project,
+    user_config: &UserConfig,
+    pattern_transform: Option<&mut PatternTransformFn<'_>>,
+    utility_transform: Option<&mut UtilityTransformFn<'_>>,
+) -> UsageRequirements {
+    let prelude = compile_prelude(project, user_config, pattern_transform);
+    let prepared = prepare_stylesheet(project, user_config, utility_transform, prelude);
+    let output = pandacss_stylesheet::collect_style_requirements(&prepared.input(user_config));
+    let (static_diagnostics, diagnostics) = prepared.diagnostics(output.diagnostics);
+    let mut entries = std::collections::BTreeMap::<(_, _), BTreeSet<_>>::new();
+    for entry in output.requirements {
+        entries
+            .entry((entry.kind, entry.name))
+            .or_default()
+            .insert(entry.reason);
+    }
+    UsageRequirements {
+        requirements: entries
+            .into_iter()
+            .map(|((kind, name), reasons)| UsageRequirement {
+                kind,
+                name,
+                reasons: reasons.into_iter().collect(),
+            })
+            .collect(),
+        diagnostics: collect_output_diagnostics(project, static_diagnostics, diagnostics),
+    }
+}
+
 struct PreparedStylesheet<'a> {
     prelude: CompilePrelude,
     snapshots: ProjectStylesheetSnapshots<'a>,

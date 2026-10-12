@@ -9,6 +9,7 @@ import type {
   FileInspectionBatch,
   FileInspectionResult,
   SourceFileInput,
+  UsageRequirements,
   ParsedFileView,
   ParseFileReport,
   ProjectSummary,
@@ -302,6 +303,7 @@ export interface Compiler {
    */
   extractFileSource(path: string, source: string): ExtractResult
   inspectFile(input: SourceFileInput): FileInspectionResult
+  inspectUsageRequirements(files: SourceFileInput[]): UsageRequirements
   inspectFiles(files: SourceFileInput[]): FileInspectionBatch
   resolveUtilityValue(input: ResolveUtilityValueInput): ResolvedUtilityValue | null
   suggestTokens(prop: string, value: string): TokenSuggestion[]

@@ -1,6 +1,6 @@
 //! Position-carrying source inspection for tooling (reporting, lint, IDE).
 //! `inspect_file_source()` re-extracts a file and classifies each site (token,
-//! property, recipe, pattern, keyframe) using the engine's own token
+//! property, recipe, pattern, keyframe, composition) using the engine's own token
 //! dictionary, utilities, and keyframes.
 
 use pandacss_encoder::ConditionMatcher;
@@ -78,7 +78,7 @@ pub fn inspect_file_source(system: &System, path: &str, source: &str) -> FileIns
             MatchCategory::Pattern => sites.push(site(UsageKind::Pattern, &jsx.name, &range)),
             _ => {
                 if let Literal::Object(entries) = &jsx.data {
-                    walk_object(entries, &cx, &range, &mut sites);
+                    walk_jsx_style_props(entries, &cx, &range, &mut sites);
                     StyleEntryCollector {
                         cx: &cx,
                         span: jsx.span,
@@ -742,11 +742,11 @@ fn walk_prop(
                 && !matches!(value, Literal::Token { .. })
             {
                 for member in &members {
+                    let before = sites.len();
+                    let category = cx.utility.and_then(|utility| utility.token_category(prop));
                     // Bare category-relative value on a known utility, e.g.
                     // `color: 'red.300'` (optionally `red.300/40`).
-                    if let Some(utility) = cx.utility
-                        && let Some(category) = utility.token_category(prop)
-                    {
+                    if let Some(category) = category {
                         let path = format!("{category}.{}", strip_modifier(member));
                         if dict.token(&path).is_some() {
                             sites.push(site(UsageKind::Token, &path, range));
@@ -755,23 +755,23 @@ fn walk_prop(
                     collect_token_refs(member, dict, &mut |path| {
                         sites.push(site(UsageKind::Token, path, range));
                     });
-                }
-            }
-
-            // Match each whitespace/comma-separated word against the keyframe
-            // set, catching shorthands (`spin 1s linear`) and lists (`spin, fade`).
-            if matches!(canonical, "animation" | "animationName") {
-                for word in members
-                    .iter()
-                    .flat_map(|member| member.split([' ', ',']))
-                    .map(str::trim)
-                    .filter(|word| !word.is_empty())
-                {
-                    if cx.keyframes.contains(word) {
-                        sites.push(site(UsageKind::Keyframe, word, range));
+                    // Function-valued utilities (`marginTop: '8'`) have no category.
+                    if category.is_none()
+                        && sites.len() == before
+                        && let Some(resolved) = cx.utility.and_then(|utility| {
+                            utility
+                                .resolve_utility_value(prop, &Literal::String((*member).to_owned()))
+                        })
+                    {
+                        for path in &resolved.tokens {
+                            sites.push(site(UsageKind::Token, &positive_token(path, dict), range));
+                        }
                     }
                 }
             }
+
+            push_keyframe_sites(canonical, &members, cx, range, sites);
+            push_composition_sites(canonical, raw, cx, range, sites);
         }
         Literal::Number(_) | Literal::Bool(_) => {
             let canonical = cx
@@ -792,6 +792,73 @@ fn walk_prop(
         }
         Literal::Null => {}
     }
+}
+
+/// Keyframe names written in the value. A value that is an animation token reaches
+/// its keyframes through the token, which usage reports show as `via animations.*`.
+fn push_keyframe_sites(
+    prop: &str,
+    members: &[&str],
+    cx: &Cx,
+    range: &SourceRange,
+    sites: &mut Vec<UsageSite>,
+) {
+    if !matches!(prop, "animation" | "animationName") {
+        return;
+    }
+    let mut seen = rustc_hash::FxHashSet::default();
+    for member in members {
+        let is_token = cx.utility.is_some_and(|utility| {
+            utility
+                .resolve_utility_value(prop, &Literal::String((*member).to_owned()))
+                .is_some_and(|resolved| !resolved.tokens.is_empty())
+        });
+        if is_token {
+            continue;
+        }
+        pandacss_stylesheet::visit_animation_names(member, None, |name| {
+            if cx.keyframes.contains(name) && seen.insert(name.to_owned()) {
+                sites.push(site(UsageKind::Keyframe, name, range));
+            }
+        });
+    }
+}
+
+/// A configured `textStyle`/`layerStyle`/`animationStyle` value. What its styles
+/// use is reported as `via <group>.<name>`, not as references written here.
+fn push_composition_sites(
+    prop: &str,
+    value: &str,
+    cx: &Cx,
+    range: &SourceRange,
+    sites: &mut Vec<UsageSite>,
+) {
+    if !matches!(prop, "textStyle" | "layerStyle" | "animationStyle") {
+        return;
+    }
+    if cx
+        .utility
+        .is_some_and(|utility| utility.property_keys(prop).iter().any(|key| key == value))
+    {
+        sites.push(site(
+            UsageKind::Composition,
+            &format!("{prop}s.{value}"),
+            range,
+        ));
+    }
+}
+
+/// `spacing.-4` is derived from `spacing.4`; report the token the user configured.
+fn positive_token<'a>(path: &'a str, dict: &TokenDictionary) -> std::borrow::Cow<'a, str> {
+    if let Some((category, name)) = path.rsplit_once('.')
+        && let Some(positive) = name.strip_prefix('-')
+    {
+        let positive = format!("{category}.{positive}");
+        if dict.token(&positive).is_some() {
+            return positive.into();
+        }
+    }
+    path.into()
 }
 
 /// Strips a trailing `/opacity` color modifier: `red.300/40` -> `red.300`.

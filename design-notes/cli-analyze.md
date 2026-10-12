@@ -13,8 +13,8 @@ scope:
 ## Summary
 
 `panda analyze` returns a project-level usage report for Panda source usage: tokens, recipes, utilities, patterns, and
-keyframes. It is an observational command. It does not generate CSS, run codegen, mutate build caches, or write anything
-except explicit report outputs.
+keyframes, and compositions, counting uses from both source and config. It is an observational command. It does not
+generate CSS, run codegen, mutate build caches, or write anything except explicit report outputs.
 
 Keep the command name `analyze`. It is the v1 name, it reads as an action like the rest of the CLI, and it describes the
 work better than noun commands like `usage` or `report`. The output should be described as a **usage report**.
@@ -223,8 +223,8 @@ runCommand
   -> render human/json
 ```
 
-Do not call `driver.parseFiles()`, `driver.cssgen()`, or `codegen` from this command. Analyze reports source usage; it
-does not need emitted CSS.
+Do not call `driver.parseFiles()`, `driver.cssgen()`, or `codegen` from this command. Analyze prepares selected styles
+in an isolated project and does not need emitted CSS.
 
 Primary aggregation inputs:
 
@@ -355,3 +355,32 @@ previews can be added later behind an explicit opt-in if they prove useful.
 - [Panda lint plugins](./lint-plugins.md)
 - [Compiler diagnostics](./compiler-diagnostics.md)
 - [Output and host layer](./output-and-host-layer.md)
+
+## Uses from source and config
+
+A use is a source site or a config place. Reports show both in one row per name; there is no separate requirements
+table.
+
+```mermaid
+flowchart LR
+  src[source files] -->|inspectFiles| sites[usages: written names + positions]
+  cfg[globalCss, staticCss, selected recipes, globalVars] -->|inspectUsageRequirements| graph[place → asset graph]
+  graph -->|direct| places["globalCss, recipes.button"]
+  graph -->|expand token / keyframe / composition| via["via colors.brand"]
+  sites --> items[views.*.items]
+  places --> items
+  via --> items
+```
+
+- `usages` holds only names written in the file, with positions. Lint and IDE features read it, so a token inside a text
+  style is not reported at every `textStyle` site, and keyframes behind an animation token are not source sites.
+- `inspectUsageRequirements(files)` parses fresh sources in a project forked from the compiled system and reuses
+  stylesheet preparation without writing CSS. Each place records what it references directly. Each reached token,
+  keyframe, and composition is then expanded once, and what it pulls in is recorded as `via <asset>`.
+- Inline keyframes from source are not configured, so they get no row; what they reference is credited to the place that
+  used them.
+- `views.*.items[]` carry `uses` (source sites plus config places), `files` (source only), and `config` (places). A
+  direct `sources` place is dropped when the name already has a source site, and shown as `source styles` otherwise.
+- Unused lists and coverage count a name used when it has either kind of use. Unselected recipe definitions and
+  unreferenced semantic tokens create no uses.
+- Compositions (`textStyles`, `layerStyles`, `animationStyles`) are their own scope, named `<group>.<name>`.

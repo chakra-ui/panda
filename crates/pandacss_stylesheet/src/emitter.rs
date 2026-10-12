@@ -42,6 +42,9 @@ use crate::style_rules::{
 };
 use crate::writer::CssWriter;
 
+mod requirements;
+pub(super) use requirements::collect_style_requirements;
+
 #[derive(Clone, Copy)]
 enum InheritedImportance {
     Normal,
@@ -937,9 +940,38 @@ struct UsageMarks {
     /// A registration stays alive when its variable is written, not just read —
     /// `inherits: false` matters for a var that is only ever set.
     declared_vars: FxHashSet<String>,
+    report: Option<ReportMarks>,
+}
+
+/// Names only usage reports need; emission leaves them unset.
+#[derive(Default)]
+struct ReportMarks {
+    utilities: FxHashSet<String>,
+    compositions: FxHashSet<(&'static str, String)>,
 }
 
 impl UsageMarks {
+    fn for_report() -> Self {
+        Self {
+            report: Some(ReportMarks::default()),
+            ..Self::default()
+        }
+    }
+
+    fn mark_utility(&mut self, name: &str) {
+        if let Some(report) = &mut self.report {
+            report.utilities.insert(name.to_owned());
+        }
+    }
+
+    fn mark_composition(&mut self, prop: &str, value: &str) {
+        if let Some(report) = &mut self.report
+            && let Some(prop) = composition_prop(prop)
+        {
+            report.compositions.insert((prop, value.to_owned()));
+        }
+    }
+
     fn touches_var(&self, name: &str) -> bool {
         self.token_vars.contains(name) || self.declared_vars.contains(name)
     }
@@ -1085,21 +1117,18 @@ fn collect_value_token_refs(
 
 fn collect_keyframe_refs(
     value: &str,
+    tokens: Option<&TokenDictionary>,
     keyframes: Option<&serde_json::Map<String, Value>>,
     refs: &mut FxHashSet<String>,
 ) {
     let Some(keyframes) = keyframes else {
         return;
     };
-    for candidate in value
-        .split(|ch: char| ch.is_ascii_whitespace() || ch == ',')
-        .map(|part| part.trim_matches(|ch| matches!(ch, '"' | '\'')))
-        .filter(|part| !part.is_empty())
-    {
+    crate::visit_animation_names(value, tokens, |candidate| {
         if keyframes.contains_key(candidate) {
             refs.insert(candidate.to_owned());
         }
-    }
+    });
 }
 
 fn is_animation_property(prop: &str) -> bool {
@@ -1310,16 +1339,21 @@ impl<'a> EmitContext<'a> {
         keyframes: Option<&serde_json::Map<String, Value>>,
         marks: &mut UsageMarks,
     ) {
+        marks.mark_utility(self.utility.resolve_shorthand(atom.prop()));
         let raw = atom_value_to_string(atom.value());
         let Some(raw) = raw.as_deref() else {
             return;
         };
+        marks.mark_composition(atom.prop(), raw);
         // Expand like emission does, or a member's tokens look unused and get pruned.
         if let Some(members) = parse_first_that_works_value(raw)
             && let Some(declarations) =
                 self.first_that_works_declarations(atom.prop(), &members, atom.important())
         {
             Self::collect_declarations_usage(&declarations, token_dictionary, keyframes, marks);
+            return;
+        }
+        if is_composition_prop(atom.prop()) && marks.report.is_some() {
             return;
         }
         let result = self.transform_atom_styles(atom.prop(), raw, atom.value());
@@ -1381,6 +1415,11 @@ impl<'a> EmitContext<'a> {
             return;
         };
         for (key, value) in entries {
+            marks.mark_utility(self.utility.resolve_shorthand(key));
+            if is_composition_prop(key) && marks.report.is_some() {
+                visit_scalar_strings(value, &mut |name| marks.mark_composition(key, name));
+                continue;
+            }
             if let Some(style_entries) = self.composition_style_entries_for_value(key, value) {
                 self.collect_style_entries_usage(
                     &style_entries,
@@ -1488,13 +1527,16 @@ impl<'a> EmitContext<'a> {
         keyframes: Option<&serde_json::Map<String, Value>>,
         marks: &mut UsageMarks,
     ) {
+        marks.mark_utility(prop);
         collect_css_var_refs(value, &mut marks.token_vars);
         collect_token_reference_vars(value, token_dictionary, &mut marks.token_vars);
         if prop.starts_with("--") {
             marks.declared_vars.insert(prop.to_owned());
         }
         if is_animation_property(prop) {
-            collect_keyframe_refs(value, keyframes, &mut marks.keyframes);
+            // Reports reach token-held keyframes through the token instead.
+            let tokens = token_dictionary.filter(|_| marks.report.is_none());
+            collect_keyframe_refs(value, tokens, keyframes, &mut marks.keyframes);
         }
     }
 
@@ -2663,7 +2705,27 @@ fn write_token_var_rule(writer: &mut CssWriter, selector: &str, vars: &[TokenCss
 }
 
 fn is_composition_prop(prop: &str) -> bool {
-    matches!(prop, "textStyle" | "layerStyle" | "animationStyle")
+    composition_prop(prop).is_some()
+}
+
+fn composition_prop(prop: &str) -> Option<&'static str> {
+    ["textStyle", "layerStyle", "animationStyle"]
+        .into_iter()
+        .find(|name| *name == prop)
+}
+
+/// Visits every string leaf, so `{ base: 'sm', md: 'lg' }` yields both names.
+fn visit_scalar_strings(value: &Value, visit: &mut impl FnMut(&str)) {
+    match value {
+        Value::String(value) => visit(value),
+        Value::Array(items) => items
+            .iter()
+            .for_each(|item| visit_scalar_strings(item, visit)),
+        Value::Object(entries) => entries
+            .values()
+            .for_each(|item| visit_scalar_strings(item, visit)),
+        _ => {}
+    }
 }
 
 /// Whether a transform's styles nest further objects (a returned `_hover` or a

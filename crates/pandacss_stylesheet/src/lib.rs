@@ -1,3 +1,4 @@
+mod animation;
 mod cascade;
 mod conditions;
 mod css_syntax;
@@ -16,6 +17,7 @@ mod static_css_diagnostics;
 mod style_rules;
 mod writer;
 
+pub use animation::visit_animation_names;
 pub use emitter::UtilityStyleOverrides;
 pub use layers::{has_layer_declaration, strip_layer_order_statements};
 pub use pandacss_shared::{InlineKeyframe, PositionTryStyle, ViewTransitionStyle};
@@ -163,6 +165,43 @@ pub struct StylesheetInput<'a> {
     pub view_transitions: &'a [ViewTransitionStyle],
     pub position_try: &'a [PositionTryStyle],
     pub inline_keyframes: &'a [InlineKeyframe],
+}
+
+/// An asset required by a selected style root, without a fabricated source location.
+pub struct StyleRequirement {
+    pub kind: &'static str,
+    pub name: String,
+    pub reason: String,
+}
+
+/// Dependencies of selected styles, collected without writing CSS.
+pub struct StyleRequirements {
+    pub requirements: Vec<StyleRequirement>,
+    pub diagnostics: Vec<Diagnostic>,
+}
+
+/// Collects dependencies using the same static expansion and declaration lowering as emission.
+#[must_use]
+pub fn collect_style_requirements(input: &StylesheetInput<'_>) -> StyleRequirements {
+    let mut diagnostics = Vec::new();
+    let dictionary = resolve_token_dictionary(
+        input.config,
+        input.token_dictionary.clone(),
+        &mut diagnostics,
+    );
+    let utility = utility_from_config(input.config, dictionary.clone());
+    let generated = static_css::expand(
+        input.config,
+        &utility,
+        dictionary.as_deref(),
+        &mut diagnostics,
+    );
+    let requirements =
+        emitter::collect_style_requirements(input, &utility, dictionary.as_deref(), &generated);
+    StyleRequirements {
+        requirements,
+        diagnostics,
+    }
 }
 
 /// Whether the config requests any static CSS: top-level `staticCss.*` or

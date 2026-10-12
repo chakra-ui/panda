@@ -21,6 +21,38 @@ impl WasmCompiler {
             .map_err(|err| JsValue::from_str(&err.to_string()))
     }
 
+    /// Collect dependencies of styles selected by fresh sources and configuration.
+    ///
+    /// # Errors
+    /// Returns a JS error if the input or result cannot be serialized.
+    #[wasm_bindgen(js_name = inspectUsageRequirements)]
+    pub fn inspect_usage_requirements(&mut self, files: JsValue) -> Result<JsValue, JsValue> {
+        let files: Vec<pandacss_compiler::UsageSource> = serde_wasm_bindgen::from_value(files)
+            .map_err(|err| JsValue::from_str(&err.to_string()))?;
+        let mut project = self.inner.fork_empty();
+        let cache = std::mem::take(&mut self.callbacks.transform_cache);
+        for file in files {
+            super::files::parse_project_source(
+                &mut project,
+                &mut self.callbacks,
+                &file.path,
+                &file.source,
+                None,
+            );
+        }
+        let result = super::css::with_project_stylesheet_transforms(
+            &mut project,
+            &self.user_config,
+            &mut self.callbacks,
+            pandacss_compiler::collect_usage_requirements,
+        );
+        self.callbacks.transform_cache = cache;
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        result
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
     /// Resolve selector and CSS metadata for one utility value.
     ///
     /// # Errors

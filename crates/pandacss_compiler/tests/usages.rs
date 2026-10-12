@@ -617,6 +617,55 @@ fn animation_name_captures_keyframe() {
 }
 
 #[test]
+fn animation_tokens_are_token_usages_and_their_keyframes_are_not_written_here() {
+    let system = system_with(json!({
+        "utilities": { "animation": { "values": "animations" } },
+        "conditions": { "dark": "&[data-theme=dark]" },
+        "theme": {
+            "tokens": { "animations": {
+                "motion": { "value": "slide 300ms, fade 300ms" },
+                "pulse": { "value": "pulse 2s infinite" }
+            } },
+            "semanticTokens": { "animations": {
+                "alias": { "value": "{animations.motion}" },
+                "conditional": { "value": { "base": "{animations.alias}", "_dark": "{animations.pulse}" } }
+            } },
+            "keyframes": {
+                "motion": { "to": { "opacity": 0 } },
+                "slide": { "to": { "opacity": 1 } },
+                "fade": { "to": { "opacity": 1 } },
+                "pulse": { "to": { "opacity": 1 } }
+            }
+        }
+    }));
+    for (value, expected) in [
+        ("motion", vec!["Token animations.motion"]),
+        ("conditional", vec!["Token animations.conditional"]),
+        (
+            "slide 1s, pulse 2s",
+            vec!["Keyframe pulse", "Keyframe slide"],
+        ),
+    ] {
+        let source =
+            format!("import {{ css }} from '@panda/css'; css({{ animation: '{value}' }});");
+        let result = inspect_file_source(&system, "a.ts", &source);
+        let mut names = result
+            .usages
+            .iter()
+            .filter(|site| {
+                matches!(
+                    site.kind,
+                    pandacss_compiler::UsageKind::Keyframe | pandacss_compiler::UsageKind::Token
+                )
+            })
+            .map(|site| format!("{:?} {}", site.kind, site.name))
+            .collect::<Vec<_>>();
+        names.sort_unstable();
+        assert_eq!(names, expected, "{value}");
+    }
+}
+
+#[test]
 fn animation_name_captures_multiple_comma_separated_keyframes() {
     let result = inspect_file_source(
         &system(),
@@ -995,4 +1044,63 @@ fn inspection_and_compilation_share_file_local_condition_diagnostics() {
           line: 3
           column: 38
     "#);
+}
+
+#[test]
+fn composition_usage_reports_the_style_but_not_what_its_styles_use() {
+    let system = system_with(json!({
+        "utilities": { "color": { "values": "colors" } },
+        "theme": {
+            "tokens": { "colors": { "flash": { "value": "#f00" } } },
+            "keyframes": {
+                "enter": { "to": { "opacity": 1 } },
+                "flash": { "to": { "opacity": 1 } },
+                "spin": { "to": { "opacity": 1 } }
+            },
+            "textStyles": { "lead": { "value": { "fontSize": "20px" } } },
+            "animationStyles": { "entrance": { "value": {
+                "color": "flash",
+                "animationName": "enter, flash",
+                "_hover": { "animationName": { "base": "spin" } }
+            } } }
+        }
+    }));
+    let source = "import { css } from '@panda/css'; css({ animationStyle: 'entrance', textStyle: 'lead' }); css({ textStyle: 'missing' });";
+    let result = inspect_file_source(&system, "a.ts", source);
+    let mut sites = result
+        .usages
+        .iter()
+        .filter(|site| {
+            matches!(
+                site.kind,
+                pandacss_compiler::UsageKind::Keyframe
+                    | pandacss_compiler::UsageKind::Composition
+                    | pandacss_compiler::UsageKind::Token
+            )
+        })
+        .map(|site| format!("{:?} {}", site.kind, site.name))
+        .collect::<Vec<_>>();
+    sites.sort();
+    assert_eq!(
+        sites,
+        [
+            "Composition animationStyles.entrance",
+            "Composition textStyles.lead",
+        ]
+    );
+}
+
+#[test]
+fn tokens_inside_a_jsx_css_prop_are_source_usages() {
+    let source = indoc! {r"
+        import { Box } from '@panda/jsx'
+        const el = <Box css={{ color: 'red.500' }} inputCss={{ _hover: { color: 'red.500' } }} />
+    "};
+    let result = inspect_file_source(&system(), "a.tsx", source);
+    assert_snapshot!(summary(&result), @"
+    Property color
+    Token colors.red.500
+    Property color
+    Token colors.red.500
+    ");
 }

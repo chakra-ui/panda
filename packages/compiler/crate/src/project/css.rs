@@ -24,14 +24,29 @@ fn with_stylesheet_transforms<R>(
         Option<&mut pandacss_system::UtilityTransformFn<'_>>,
     ) -> R,
 ) -> R {
-    let has_pattern_transforms = compiler.callbacks.has_pattern_transforms();
-    let has_utility_transforms = compiler.callbacks.has_utility_transforms();
-    let Compiler {
-        inner,
-        user_config,
-        callbacks,
-        ..
-    } = compiler;
+    with_project_stylesheet_transforms(
+        &mut compiler.inner,
+        &compiler.user_config,
+        &mut compiler.callbacks,
+        env,
+        build,
+    )
+}
+
+pub(super) fn with_project_stylesheet_transforms<R>(
+    inner: &mut pandacss_project::Project,
+    user_config: &pandacss_config::UserConfig,
+    callbacks: &mut super::CallbackHost,
+    env: &Env,
+    build: impl FnOnce(
+        &mut pandacss_project::Project,
+        &pandacss_config::UserConfig,
+        Option<&mut pandacss_system::PatternTransformFn<'_>>,
+        Option<&mut pandacss_system::UtilityTransformFn<'_>>,
+    ) -> R,
+) -> R {
+    let has_pattern_transforms = callbacks.has_pattern_transforms();
+    let has_utility_transforms = callbacks.has_utility_transforms();
     let pattern_refs = &callbacks.pattern_transform_refs;
     let pattern_callbacks = &callbacks.pattern_transforms;
     let pattern_cache = &mut callbacks.transform_cache.pattern;

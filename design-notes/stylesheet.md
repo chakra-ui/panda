@@ -108,6 +108,12 @@ sequence. The shared declaration merger compares importance first, then that seq
 This works on CSS properties after utility transforms and replaces whole fallback runs together. It matches v1 config
 recipes.
 
+Unused-keyframe pruning follows animation values through token variables, aliases, conditional token values, and `var()`
+fallbacks. `visit_animation_names` owns that traversal in the stylesheet crate and guards against cycles. Variable names
+come from the token dictionary, so custom prefixes and hashing do not change dependency tracking. Usage reports
+(`collect_style_requirements`) skip that traversal and expand each token instead, so a keyframe is labelled
+`via animations.<name>`.
+
 Atomic styles (`css()`, `cva()`, style props) can't follow one object's key order, since their classes are shared across
 call sites. There a composition's class sits in `@layer compositions`, below direct property classes, so a direct
 property always wins.
