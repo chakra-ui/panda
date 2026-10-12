@@ -5,9 +5,20 @@ use indoc::indoc;
 use insta::{assert_snapshot, assert_yaml_snapshot};
 use serde_json::json;
 
-use pandacss_compiler::{FileInspectionResult, StyleEntryKind, inspect_file_source};
+use pandacss_compiler::{FileInspectionResult, StyleEntryKind};
+use pandacss_config::UserConfig;
 use pandacss_project::Span;
 use pandacss_system::System;
+
+/// A compiled system plus the config it came from, as the bindings hold them.
+struct Fixture {
+    system: System,
+    config: UserConfig,
+}
+
+fn inspect_file_source(fixture: &Fixture, path: &str, source: &str) -> FileInspectionResult {
+    pandacss_compiler::inspect_file_source(&fixture.system, &fixture.config, path, source)
+}
 
 /// One line per usage: `kind name` (ranges are covered by the binding tests).
 fn summary(result: &FileInspectionResult) -> String {
@@ -43,7 +54,7 @@ fn span_text(source: &str, span: Option<Span>) -> &str {
         .unwrap_or("")
 }
 
-fn system() -> System {
+fn system() -> Fixture {
     system_with(json!({
         "jsxFramework": "react",
         "theme": {
@@ -73,8 +84,12 @@ fn system() -> System {
     }))
 }
 
-fn system_with(overrides: serde_json::Value) -> System {
-    System::new(create_config(overrides)).expect("valid config")
+fn system_with(overrides: serde_json::Value) -> Fixture {
+    let config = create_config(overrides);
+    Fixture {
+        system: System::new(config.clone()).expect("valid config"),
+        config,
+    }
 }
 
 #[test]
@@ -1009,7 +1024,7 @@ fn inspection_and_compilation_share_file_local_condition_diagnostics() {
     "};
     let system = system();
     let inspection = inspect_file_source(&system, "a.tsx", source);
-    let mut project = pandacss_project::Project::new(system);
+    let mut project = pandacss_project::Project::new(system.system);
     let mut compiled = project.parse_file("a.tsx", source);
     for diagnostic in &mut compiled.diagnostics {
         diagnostic.file = None;

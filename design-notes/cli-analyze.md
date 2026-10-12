@@ -372,6 +372,13 @@ flowchart LR
   via --> items
 ```
 
+- Source sites and config places come from the same `StyleReferences` API in `pandacss_stylesheet` (see
+  [stylesheet](./stylesheet.md#style-references)), which lowers values the way the emitter does. There is one answer to
+  "what does `mt: '-4'` reference" (`spacing.4`), whether it is written in a file or in `globalCss`.
+- Utilities count by the key that is written. A property that only appears as another utility's output, such as
+  `textOverflow` from `truncate`, is not a use.
+- Tokens Panda derives (`colorPalette.*` virtual tokens, negative spacing like `spacing.-4`) are not listed as
+  configured; using one counts as using its source token.
 - `usages` holds only names written in the file, with positions. Lint and IDE features read it, so a token inside a text
   style is not reported at every `textStyle` site, and keyframes behind an animation token are not source sites.
 - `inspectUsageRequirements(files)` parses fresh sources in a project forked from the compiled system and reuses

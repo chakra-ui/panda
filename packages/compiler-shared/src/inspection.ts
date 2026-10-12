@@ -628,7 +628,7 @@ function addConfiguredTokens(facts: UsageReportFacts, spec: Spec, scope: UsageRe
   if (!includesScope(scope, 'tokens')) return ids
 
   for (const path of Object.keys(spec.tokens.values).sort()) {
-    if (isVirtualToken(path)) continue
+    if (isVirtualToken(path) || isNegativeOf(path, spec.tokens.values)) continue
 
     const category = tokenCategory(path)
     if (!category || !spec.tokens.categories[category]) continue
@@ -886,6 +886,13 @@ function countRecipeVariantValues(recipe: SpecRecipe | undefined): number {
 function tokenCategory(path: string): string | undefined {
   const index = path.indexOf('.')
   return index === -1 ? undefined : path.slice(0, index)
+}
+
+/** `spacing.-4` is generated from `spacing.4`; using it uses `spacing.4`. */
+function isNegativeOf(path: string, values: Record<string, string>): boolean {
+  const index = path.lastIndexOf('.')
+  const name = path.slice(index + 1)
+  return name.startsWith('-') && `${path.slice(0, index)}.${name.slice(1)}` in values
 }
 
 function isVirtualToken(path: string): boolean {

@@ -14,7 +14,12 @@ impl WasmCompiler {
     /// Returns a JS error if serialization fails.
     #[wasm_bindgen(js_name = inspectFileSource)]
     pub fn inspect_file_source(&self, path: &str, source: &str) -> Result<JsValue, JsValue> {
-        let result = pandacss_compiler::inspect_file_source(self.inner.system(), path, source);
+        let result = pandacss_compiler::inspect_file_source(
+            self.inner.system(),
+            &self.user_config,
+            path,
+            source,
+        );
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         result
             .serialize(&serializer)

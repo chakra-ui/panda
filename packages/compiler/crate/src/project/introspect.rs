@@ -23,7 +23,12 @@ impl Compiler {
         path: String,
         source: String,
     ) -> napi::Result<serde_json::Value> {
-        let result = pandacss_compiler::inspect_file_source(self.inner.system(), &path, &source);
+        let result = pandacss_compiler::inspect_file_source(
+            self.inner.system(),
+            &self.user_config,
+            &path,
+            &source,
+        );
         serde_json::to_value(&result).map_err(|err| napi::Error::from_reason(err.to_string()))
     }
 

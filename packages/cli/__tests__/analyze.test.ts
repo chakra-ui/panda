@@ -267,7 +267,7 @@ describe('cli analyze', () => {
       Tokens
       Category   Used            Top tokens    Raw values   Files
       colors     1/1 (100.00%)   red.500 (1)   0            1
-      spacing    1/2 (50.00%)    4 (2)         0            1
+      spacing    1/1 (100.00%)   4 (2)         0            1
 
       No config recipes used
 
