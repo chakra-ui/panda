@@ -339,3 +339,27 @@ test('margin and other function-valued utilities report the spacing tokens writt
     'spacing.6',
   ])
 })
+
+test('a semantic token defined only for a condition is used when config references it', () => {
+  const compiler = createPresetCompiler({
+    globalCss: { body: { color: 'onlyDark' } },
+    theme: {
+      extend: {
+        tokens: { colors: { night: { value: '#111' } } },
+        semanticTokens: { colors: { onlyDark: { value: { _dark: '{colors.night}' } } } },
+      },
+    },
+  })
+  const result = compiler.inspectUsageRequirements([])
+  const report = createUsageReport(compiler.inspectFiles([]), {
+    spec: compiler.spec(),
+    requirements: result.requirements,
+  })
+  expect(report.views?.tokens.unused).not.toContain('colors.onlyDark')
+  expect(report.views?.tokens.unused).not.toContain('colors.night')
+  expect(
+    result.requirements
+      .filter((entry) => entry.name === 'colors.onlyDark' || entry.name === 'colors.night')
+      .map((entry) => `${entry.name} <- ${entry.reasons.join(', ')}`),
+  ).toEqual(['colors.night <- via colors.onlyDark', 'colors.onlyDark <- globalCss'])
+})

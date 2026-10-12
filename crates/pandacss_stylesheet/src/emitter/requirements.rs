@@ -121,18 +121,14 @@ impl<'a, 'cx> RequirementGraph<'a, 'cx> {
     ) -> Self {
         let mut tokens = FxHashMap::<String, TokenNode>::default();
         if let Some(dictionary) = dictionary {
+            // Keyed by variable, so a token defined only under a condition still has a node.
             for token in dictionary.iter() {
-                if token.condition.is_none()
-                    && let Some(name) = raw_css_var_name(&token.var)
-                {
-                    tokens.insert(
-                        name.to_owned(),
-                        TokenNode {
-                            path: token.path.to_string(),
-                            values: Vec::new(),
-                            animation: token.category == TokenCategory::Animations,
-                        },
-                    );
+                if let Some(name) = raw_css_var_name(&token.var) {
+                    tokens.entry(name.to_owned()).or_insert_with(|| TokenNode {
+                        path: token.path.to_string(),
+                        values: Vec::new(),
+                        animation: token.category == TokenCategory::Animations,
+                    });
                 }
             }
             let vars = dictionary.css_vars_with_theme_filter(|_| true);

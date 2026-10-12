@@ -134,7 +134,8 @@ pub fn collect_usage_requirements(
                 reasons: reasons.into_iter().collect(),
             })
             .collect(),
-        diagnostics: collect_output_diagnostics(project, static_diagnostics, diagnostics),
+        // Config and per-file diagnostics already come from the compiler and source inspection.
+        diagnostics: static_diagnostics.into_iter().chain(diagnostics).collect(),
     }
 }
 

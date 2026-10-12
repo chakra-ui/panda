@@ -414,7 +414,6 @@ function applySummaryTotals(summary: UsageReportSummary, spec: Spec) {
 }
 
 function createTokenView(facts: UsageReportFacts, spec: Spec, config: Map<string, string[]>): TokenUsageReport {
-  const tokenById = new Map(facts.tokens.map((token) => [token.id, token]))
   const tokenUses = new Map<number, { uses: number; files: Set<number> }>()
 
   for (const usage of facts.tokenUsages) {
