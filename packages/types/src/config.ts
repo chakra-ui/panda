@@ -221,7 +221,7 @@ interface JsxOptions {
   /**
    * The style props allowed on generated JSX components
    * - When set to 'all', all style props are allowed.
-   * - When set to 'minimal', only the `css` prop is allowed.
+   * - When set to 'minimal', only the `css` prop, props ending in `Css`, and a pattern's or recipe's own props are allowed.
    * - When set to 'none', no style props are allowed and therefore the jsxFactory will not be importable.
    *
    * @default 'all'
