@@ -768,7 +768,52 @@ fn extend_recipe_groups(
     for (index, entries) in merges {
         pandacss_encoder::append_in_authored_order(&mut target[index].entries, entries);
     }
-    target.extend(additions);
+    insert_in_config_order(target, additions);
+}
+
+/// Places each new group before the first group of its recipe and conditions
+/// that comes later in the config, so later variants still win.
+fn insert_in_config_order(
+    target: &mut Vec<RecipeStyleGroupSnapshot>,
+    additions: Vec<RecipeStyleGroupSnapshot>,
+) {
+    if additions.is_empty() {
+        return;
+    }
+    let mut runs: FxHashMap<(&str, &[Box<str>]), Vec<usize>> = FxHashMap::default();
+    for (index, group) in target.iter().enumerate() {
+        runs.entry((&group.recipe, &group.conditions))
+            .or_default()
+            .push(index);
+    }
+    let mut slots = additions
+        .into_iter()
+        .map(|group| {
+            let slot =
+                runs.get(&(&*group.recipe, &*group.conditions))
+                    .map_or(target.len(), |indexes| {
+                        indexes
+                            .iter()
+                            .copied()
+                            .find(|&index| target[index].position > group.position)
+                            .unwrap_or_else(|| indexes[indexes.len() - 1] + 1)
+                    });
+            (slot, group)
+        })
+        .collect::<Vec<_>>();
+    drop(runs);
+    slots.sort_by_key(|(slot, _)| *slot);
+
+    let mut slots = slots.into_iter().peekable();
+    let mut merged = Vec::with_capacity(target.len() + slots.len());
+    for (index, group) in std::mem::take(target).into_iter().enumerate() {
+        while let Some((_, addition)) = slots.next_if(|(slot, _)| *slot == index) {
+            merged.push(addition);
+        }
+        merged.push(group);
+    }
+    merged.extend(slots.map(|(_, addition)| addition));
+    *target = merged;
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]

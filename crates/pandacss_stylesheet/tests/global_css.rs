@@ -144,19 +144,19 @@ fn expands_global_css_composition_props_through_utilities() {
     }));
     let css = compile_output(&config, "", StylesheetOptions::default())
         .get_layer_css(&[StylesheetLayer::Base]);
-    assert_snapshot!(css, @r"
-@layer base {
-  :root {
-    --made-with-panda: '🐼';
-  }
-  pre, code {
-    font-size: var(--font-sizes-sm);
-    line-height: var(--line-heights-tight);
-    background-color: var(--colors-red-500);
-    animation: fade-in 120ms ease;
-  }
-}
-");
+    assert_snapshot!(css, @"
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      pre, code {
+        animation: fade-in 120ms ease;
+        font-size: var(--font-sizes-sm);
+        line-height: var(--line-heights-tight);
+        background-color: var(--colors-red-500);
+      }
+    }
+    ");
 }
 
 #[test]
@@ -845,6 +845,38 @@ fn global_css_puts_shorthands_before_longhands_and_keeps_authored_order() {
         border-color: blue;
         z-index: 1;
         color: red;
+      }
+    }
+    ");
+}
+
+#[test]
+fn global_css_style_after_a_layer_style_overrides_it() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "borderColor": { "className": "bdc" },
+            "borderWidth": { "className": "bdw" }
+        },
+        "theme": {
+            "layerStyles": {
+                "card": { "value": { "borderWidth": "1px", "borderColor": "red" } }
+            }
+        },
+        "globalCss": {
+            ".card": { "layerStyle": "card", "borderColor": "blue" }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
+    assert_snapshot!(css, @"
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      .card {
+        border-width: 1px;
+        border-color: blue;
       }
     }
     ");

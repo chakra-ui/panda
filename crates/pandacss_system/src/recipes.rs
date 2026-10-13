@@ -1872,27 +1872,25 @@ fn sorted_group_snapshots<K: RecipeGroupKey>(
 ) -> Vec<RecipeStyleGroupSnapshot> {
     let mut out: Vec<_> = groups
         .iter()
-        .map(|(key, group)| {
-            let snapshot = RecipeStyleGroupSnapshot {
-                recipe: key.recipe().into(),
-                slot: key.slot().map_or(serde_json::Value::Null, |slot| {
-                    serde_json::Value::String(slot.to_string())
-                }),
-                class_name: group.class_name.clone(),
-                conditions: group.conditions.clone(),
-                entries: sorted_recipe_entries(&group.entries),
-            };
-            (group.position, snapshot)
+        .map(|(key, group)| RecipeStyleGroupSnapshot {
+            recipe: key.recipe().into(),
+            slot: key.slot().map_or(serde_json::Value::Null, |slot| {
+                serde_json::Value::String(slot.to_string())
+            }),
+            class_name: group.class_name.clone(),
+            conditions: group.conditions.clone(),
+            entries: sorted_recipe_entries(&group.entries),
+            position: group.position,
         })
         .collect();
-    out.sort_by(|(a_position, a), (b_position, b)| {
+    out.sort_by(|a, b| {
         a.recipe
             .cmp(&b.recipe)
             .then_with(|| a.conditions.cmp(&b.conditions))
-            .then_with(|| a_position.cmp(b_position))
+            .then_with(|| a.position.cmp(&b.position))
             .then_with(|| a.class_name.cmp(&b.class_name))
     });
-    out.into_iter().map(|(_, snapshot)| snapshot).collect()
+    out
 }
 
 fn sorted_atoms_vec(atoms: &FxHashSet<Atom>) -> Vec<Atom> {

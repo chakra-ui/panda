@@ -1601,6 +1601,52 @@ fn later_variants_in_the_config_override_earlier_ones() {
 }
 
 #[test]
+fn static_css_variants_keep_config_order_next_to_used_ones() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "padding": { "className": "p" }
+        },
+        "theme": {
+            "recipes": {
+                "button": {
+                    "className": "button",
+                    "variants": {
+                        "visual": { "solid": { "padding": "1px" }, "outline": { "padding": "2px" } },
+                        "size": { "sm": { "padding": "3px" }, "md": { "padding": "4px" } }
+                    },
+                    "staticCss": ["*"]
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { button } from '@panda/recipes'; export const App = ({ visual }) => button({ size: 'sm', visual })",
+        StylesheetOptions::default(),
+    )
+        .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer variants {
+        .button--visual_solid {
+          padding: 1px;
+        }
+        .button--visual_outline {
+          padding: 2px;
+        }
+        .button--size_sm {
+          padding: 3px;
+        }
+        .button--size_md {
+          padding: 4px;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
 fn recipe_styles_keep_authored_order_after_shorthands() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },

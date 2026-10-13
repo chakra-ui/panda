@@ -242,6 +242,9 @@ pub struct RecipeStyleGroupSnapshot {
     #[serde(skip_serializing_if = "is_empty_conditions")]
     pub conditions: SmallVec<[Box<str>; INLINE_CONDS]>,
     pub entries: Vec<RecipeStyleEntry>,
+    /// Config position, as in [`RecipeStyleGroup::position`].
+    #[serde(skip)]
+    pub position: [u32; 3],
 }
 
 impl Atom {

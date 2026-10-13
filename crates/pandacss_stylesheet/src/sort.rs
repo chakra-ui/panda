@@ -770,10 +770,24 @@ fn is_pseudo_element(selector: &str) -> bool {
     selector.contains("::")
 }
 
-/// Cascade rank of one property: shorthands before the longhands they expand.
-#[must_use]
-pub(crate) fn property_order(prop: &str) -> (u16, u8) {
-    (property_priority(prop), property_axis(prop))
+/// Cascade rank of one CSS declaration (`border-color`): shorthands before the longhands they expand.
+pub(crate) fn declaration_order(css_prop: &str) -> (u16, u8) {
+    if css_prop.starts_with("--") {
+        return (property_priority(css_prop), 2);
+    }
+    let mut prop = String::with_capacity(css_prop.len());
+    let mut upper = false;
+    for ch in css_prop.chars() {
+        if ch == '-' {
+            upper = true;
+        } else if upper {
+            prop.push(ch.to_ascii_uppercase());
+            upper = false;
+        } else {
+            prop.push(ch);
+        }
+    }
+    (property_priority(&prop), property_axis(&prop))
 }
 
 /// Order property names by the canonical emit cascade (breadth → axis → name).
