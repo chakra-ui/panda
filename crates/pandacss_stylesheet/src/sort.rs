@@ -130,6 +130,7 @@ impl<'a> SortContext<'a> {
             .collect::<Vec<_>>();
         out.sort_by(|a, b| {
             a.1.cmp(&b.1)
+                .then_with(|| a.0.entry.authored_order.cmp(&b.0.entry.authored_order))
                 .then_with(|| a.0.entry.prop.cmp(&b.0.entry.prop))
                 .then_with(|| {
                     atom_value_sort_key(&a.0.entry.value)
@@ -767,6 +768,12 @@ impl<'a> Iterator for PseudoClasses<'a> {
 
 fn is_pseudo_element(selector: &str) -> bool {
     selector.contains("::")
+}
+
+/// Cascade rank of one property: shorthands before the longhands they expand.
+#[must_use]
+pub(crate) fn property_order(prop: &str) -> (u16, u8) {
+    (property_priority(prop), property_axis(prop))
 }
 
 /// Order property names by the canonical emit cascade (breadth → axis → name).

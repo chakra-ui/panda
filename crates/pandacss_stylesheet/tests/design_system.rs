@@ -61,9 +61,9 @@ fn app_using_a_design_system_recipe_emits_each_rule_once() {
       @layer base {
         .chip {
           gap: 4px;
+          display: inline-flex;
           align-items: center;
           color: red;
-          display: inline-flex;
         }
       }
       @layer variants {
@@ -114,8 +114,8 @@ fn app_using_a_design_system_slot_recipe_emits_each_rule_once() {
           display: flex;
         }
         .card__title {
-          font-size: 14px;
           font-weight: 600;
+          font-size: 14px;
         }
       }
       @layer variants {

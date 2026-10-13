@@ -504,17 +504,17 @@ fn emits_global_css_nested_utility_transforms() {
     }));
     let css = compile_output(&config, "", StylesheetOptions::default())
         .get_layer_css(&[StylesheetLayer::Base]);
-    assert_snapshot!(css, @r"
-@layer base {
-  :root {
-    --made-with-panda: '🐼';
-  }
-  .btn:hover > :not([hidden]) ~ :not([hidden]) {
-    border-inline-end-width: 0px;
-    border-inline-start-width: 40px;
-  }
-}
-");
+    assert_snapshot!(css, @"
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      .btn:hover > :not([hidden]) ~ :not([hidden]) {
+        border-inline-start-width: 40px;
+        border-inline-end-width: 0px;
+      }
+    }
+    ");
 }
 
 #[test]
@@ -814,6 +814,37 @@ fn global_css_text_style_expands_in_place() {
       p.style-first {
         color: blue;
         font-size: 14px;
+      }
+    }
+    ");
+}
+
+#[test]
+fn global_css_puts_shorthands_before_longhands_and_keeps_authored_order() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "zIndex": { "className": "z" },
+            "color": { "className": "c" },
+            "borderColor": { "className": "bdc" },
+            "border": { "className": "bd" }
+        },
+        "globalCss": {
+            ".card": { "zIndex": "1", "color": "red", "borderColor": "blue", "border": "1px solid" }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
+    assert_snapshot!(css, @"
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      .card {
+        border: 1px solid;
+        border-color: blue;
+        z-index: 1;
+        color: red;
       }
     }
     ");

@@ -174,7 +174,7 @@ fn conditional_recipe_defaults_emit_styles_and_variants_from_both_branches() {
         &[StylesheetLayer::Recipes, StylesheetLayer::Utilities],
     );
 
-    assert_snapshot!(css, @r"
+    assert_snapshot!(css, @"
     @layer recipes {
       @layer base {
         .frame {
@@ -182,11 +182,11 @@ fn conditional_recipe_defaults_emit_styles_and_variants_from_both_branches() {
         }
       }
       @layer variants {
-        .frame--size_md {
-          padding: 8px;
-        }
         .frame--size_sm {
           padding: 2px;
+        }
+        .frame--size_md {
+          padding: 8px;
         }
       }
     }

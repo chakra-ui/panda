@@ -421,17 +421,17 @@ fn expands_static_css_recipe_wildcard() {
         }
       }
       @layer variants {
-        .button--size_md {
-          padding: 12px;
-        }
         .button--size_sm {
           padding: 8px;
         }
-        .button--variant_ghost {
-          background-color: transparent;
+        .button--size_md {
+          padding: 12px;
         }
         .button--variant_solid {
           background-color: blue;
+        }
+        .button--variant_ghost {
+          background-color: transparent;
         }
       }
     }
@@ -501,11 +501,11 @@ fn global_recipe_wildcard_overrides_recipe_level_static_css() {
     assert_snapshot!(css, @"
     @layer recipes {
       @layer variants {
-        .button--size_md {
-          padding: 12px;
-        }
         .button--size_sm {
           padding: 8px;
+        }
+        .button--size_md {
+          padding: 12px;
         }
       }
     }
@@ -597,19 +597,19 @@ fn expands_static_css_slot_recipe_wildcard() {
     assert_snapshot!(css, @"
     @layer recipes.slots {
       @layer base {
-        .checkbox__control {
-          display: inline-flex;
-        }
         .checkbox__root {
           display: flex;
         }
+        .checkbox__control {
+          display: inline-flex;
+        }
       }
       @layer variants {
-        .checkbox__control--size_sm {
-          padding: 2px;
-        }
         .checkbox__root--size_sm {
           padding: 4px;
+        }
+        .checkbox__control--size_sm {
+          padding: 2px;
         }
       }
     }
@@ -700,7 +700,7 @@ fn static_recipe_compositions_resolve_token_values() {
     }));
     let css = compile_output(&config, "", StylesheetOptions::default())
         .get_layer_css(&[StylesheetLayer::Recipes]);
-    assert_snapshot!(css, @r"
+    assert_snapshot!(css, @"
     @layer recipes {
       @layer base {
         .label {
@@ -714,8 +714,8 @@ fn static_recipe_compositions_resolve_token_values() {
       }
       @layer compound_variants {
         .label--compound__tone_danger {
-          animation-duration: var(--durations-fast);
           animation-name: fade-in;
+          animation-duration: var(--durations-fast);
         }
       }
     }
@@ -732,8 +732,8 @@ fn static_recipe_compositions_resolve_token_values() {
       }
       @layer compound_variants {
         .field__helper--compound__tone_danger {
-          animation-duration: var(--durations-fast);
           animation-name: fade-in;
+          animation-duration: var(--durations-fast);
         }
       }
     }

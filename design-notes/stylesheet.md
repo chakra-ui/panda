@@ -99,7 +99,12 @@ order so selectors match recipe runtime output. Rule conditions are sorted separ
    direction across every axis — `width`, `inline-size` (container queries), `height`, and `block-size`.
 3. Selector priority: pseudo selectors use the configured pseudo-class priority table.
 4. Property priority: broad shorthands before shorthand groups before longhands.
-5. Deterministic ties: property name, atom value key, rule conditions, then class conditions.
+5. Ties: recipe and grouped-style entries keep authored order; atoms fall back to property name, atom value key, rule
+   conditions, then class conditions.
+
+Config recipe groups follow config order, not class names: variants and their options as declared, slots in `slots`
+order, and compound variants in array order, so a later variant overrides an earlier one. `globalCss` and keyframe
+bodies use the same property priority: shorthands first, otherwise as authored. Both match v1.
 
 A recipe or global style expands each composition in place, like a spread: `{ color: 'blue', textStyle: 'body' }` takes
 the body's color, and `{ textStyle: 'body', color: 'blue' }` keeps blue. Recipe entries retain their authored order

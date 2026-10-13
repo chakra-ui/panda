@@ -109,6 +109,6 @@ describe('recipe', () => {
     const visuals: readonly ('outline' | 'solid')[] = button.variantMap.visual
 
     expectTypeOf(button.variantMap.visual).toEqualTypeOf<Array<'outline' | 'solid'>>()
-    expect(visuals).toEqual(['outline', 'solid'])
+    expect(visuals).toEqual(['solid', 'outline'])
   })
 })

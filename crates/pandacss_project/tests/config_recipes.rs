@@ -1009,22 +1009,22 @@ fn recipe_variant_runtime_ternaries_encode_all_literal_branches() {
         "},
     );
 
-    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r"
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @"
     base: []
     variants:
-      - recipe: button
-        slot: ~
-        className: button--size_md
-        entries:
-          - prop: fontSize
-            value: 16px
-            conditions: []
       - recipe: button
         slot: ~
         className: button--size_sm
         entries:
           - prop: fontSize
             value: 12px
+            conditions: []
+      - recipe: button
+        slot: ~
+        className: button--size_md
+        entries:
+          - prop: fontSize
+            value: 16px
             conditions: []
     atomic: []
     ");
@@ -1076,32 +1076,32 @@ fn using_a_recipe_emits_every_compound_variant_by_default() {
     variants:
       - recipe: badge
         slot: ~
-        className: badge--raised_true
-        entries:
-          - prop: boxShadow
-            value: md
-            conditions: []
-      - recipe: badge
-        slot: ~
         className: badge--size_sm
         entries:
           - prop: fontSize
             value: 12px
             conditions: []
-    compounds:
       - recipe: badge
         slot: ~
-        className: badge--compound__raised_true__size_md
+        className: badge--raised_true
         entries:
-          - prop: color
-            value: tomato
+          - prop: boxShadow
+            value: md
             conditions: []
+    compounds:
       - recipe: badge
         slot: ~
         className: badge--compound__raised_true__size_sm
         entries:
           - prop: color
             value: ButtonHighlight
+            conditions: []
+      - recipe: badge
+        slot: ~
+        className: badge--compound__raised_true__size_md
+        entries:
+          - prop: color
+            value: tomato
             conditions: []
     atomic: []
     ");
@@ -1154,17 +1154,17 @@ fn smart_compound_variants_emit_only_the_selected_combination() {
     variants:
       - recipe: badge
         slot: ~
-        className: badge--raised_true
-        entries:
-          - prop: boxShadow
-            value: md
-            conditions: []
-      - recipe: badge
-        slot: ~
         className: badge--size_sm
         entries:
           - prop: fontSize
             value: 12px
+            conditions: []
+      - recipe: badge
+        slot: ~
+        className: badge--raised_true
+        entries:
+          - prop: boxShadow
+            value: md
             conditions: []
     compounds:
       - recipe: badge
@@ -1363,17 +1363,17 @@ fn compound_variant_ignores_responsive_selection_conditions_by_default() {
     variants:
       - recipe: badge
         slot: ~
-        className: badge--raised_true
-        entries:
-          - prop: boxShadow
-            value: md
-            conditions: []
-      - recipe: badge
-        slot: ~
         className: badge--size_sm
         entries:
           - prop: fontSize
             value: 12px
+            conditions: []
+      - recipe: badge
+        slot: ~
+        className: badge--raised_true
+        entries:
+          - prop: boxShadow
+            value: md
             conditions: []
       - recipe: badge
         slot: ~
@@ -1440,17 +1440,17 @@ fn smart_compound_variant_inherits_the_responsive_condition_of_its_selection() {
     variants:
       - recipe: badge
         slot: ~
-        className: badge--raised_true
-        entries:
-          - prop: boxShadow
-            value: md
-            conditions: []
-      - recipe: badge
-        slot: ~
         className: badge--size_sm
         entries:
           - prop: fontSize
             value: 12px
+            conditions: []
+      - recipe: badge
+        slot: ~
+        className: badge--raised_true
+        entries:
+          - prop: boxShadow
+            value: md
             conditions: []
       - recipe: badge
         slot: ~
@@ -1526,21 +1526,21 @@ fn smart_compound_variant_combines_the_conditions_of_its_selections() {
             conditions: []
       - recipe: badge
         slot: ~
-        className: badge--raised_true
-        conditions:
-          - md
-        entries:
-          - prop: boxShadow
-            value: md
-            conditions: []
-      - recipe: badge
-        slot: ~
         className: badge--size_md
         conditions:
           - md
         entries:
           - prop: fontSize
             value: 16px
+            conditions: []
+      - recipe: badge
+        slot: ~
+        className: badge--raised_true
+        conditions:
+          - md
+        entries:
+          - prop: boxShadow
+            value: md
             conditions: []
     compounds:
       - recipe: badge
@@ -1596,22 +1596,22 @@ fn recipe_components_support_conditional_variants_and_style_props() {
       value: red
       conditions: []
     ");
-    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r"
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @"
     base: []
     variants:
-      - recipe: button
-        slot: ~
-        className: btn--raised_true
-        entries:
-          - prop: boxShadow
-            value: md
-            conditions: []
       - recipe: button
         slot: ~
         className: btn--size_sm
         entries:
           - prop: fontSize
             value: 12px
+            conditions: []
+      - recipe: button
+        slot: ~
+        className: btn--raised_true
+        entries:
+          - prop: boxShadow
+            value: md
             conditions: []
       - recipe: button
         slot: ~
@@ -1787,7 +1787,7 @@ fn slot_recipe_function_calls_support_conditional_variants() {
         "},
     );
 
-    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r"
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @"
     base: []
     variants:
       - recipe: tabs
@@ -1798,6 +1798,13 @@ fn slot_recipe_function_calls_support_conditional_variants() {
             value: 4px
             conditions: []
       - recipe: tabs
+        slot: trigger
+        className: tabs__trigger--size_sm
+        entries:
+          - prop: padding
+            value: 2px
+            conditions: []
+      - recipe: tabs
         slot: root
         className: tabs__root--size_md
         conditions:
@@ -1805,13 +1812,6 @@ fn slot_recipe_function_calls_support_conditional_variants() {
         entries:
           - prop: gap
             value: 8px
-            conditions: []
-      - recipe: tabs
-        slot: trigger
-        className: tabs__trigger--size_sm
-        entries:
-          - prop: padding
-            value: 2px
             conditions: []
       - recipe: tabs
         slot: trigger
@@ -2029,17 +2029,17 @@ fn using_a_slot_recipe_emits_every_compound_variant_by_default() {
     compounds:
       - recipe: tabs
         slot: trigger
-        className: tabs__trigger--compound__active_true__size_md
-        entries:
-          - prop: color
-            value: red
-            conditions: []
-      - recipe: tabs
-        slot: trigger
         className: tabs__trigger--compound__active_true__size_sm
         entries:
           - prop: color
             value: blue
+            conditions: []
+      - recipe: tabs
+        slot: trigger
+        className: tabs__trigger--compound__active_true__size_md
+        entries:
+          - prop: color
+            value: red
             conditions: []
     atomic: []
     "#);

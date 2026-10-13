@@ -224,11 +224,11 @@ fn transform_returning_a_child_selector_anchors_to_the_class() {
     );
     // Nested output sorts declarations (shared recipe/composition path); flat
     // output keeps source order.
-    assert_snapshot!(utilities, @r"
+    assert_snapshot!(utilities, @"
     @layer utilities {
       .space-x_4 > :not([hidden]) ~ :not([hidden]) {
-        margin-inline-end: 0px;
         margin-inline-start: var(--spacing-4);
+        margin-inline-end: 0px;
       }
     }
     ");

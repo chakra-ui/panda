@@ -464,7 +464,7 @@ fn jsx_factory_default_props_route_imported_recipe_usage() {
         - _hover
         - _dark
     ");
-    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r"
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @"
     base:
       - recipe: button
         slot: ~
@@ -476,17 +476,17 @@ fn jsx_factory_default_props_route_imported_recipe_usage() {
     variants:
       - recipe: button
         slot: ~
-        className: button--size_md
-        entries:
-          - prop: fontSize
-            value: 14px
-            conditions: []
-      - recipe: button
-        slot: ~
         className: button--size_sm
         entries:
           - prop: fontSize
             value: 12px
+            conditions: []
+      - recipe: button
+        slot: ~
+        className: button--size_md
+        entries:
+          - prop: fontSize
+            value: 14px
             conditions: []
       - recipe: button
         slot: ~
@@ -552,7 +552,7 @@ fn jsx_factory_default_props_resolve_namespace_and_local_recipe_idents() {
       value: red
       conditions: []
     ");
-    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r"
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @"
     base:
       - recipe: button
         slot: ~
@@ -564,17 +564,17 @@ fn jsx_factory_default_props_resolve_namespace_and_local_recipe_idents() {
     variants:
       - recipe: button
         slot: ~
-        className: button--size_md
-        entries:
-          - prop: fontSize
-            value: 14px
-            conditions: []
-      - recipe: button
-        slot: ~
         className: button--size_sm
         entries:
           - prop: fontSize
             value: 12px
+            conditions: []
+      - recipe: button
+        slot: ~
+        className: button--size_md
+        entries:
+          - prop: fontSize
+            value: 14px
             conditions: []
     atomic: []
     ");
@@ -1127,18 +1127,18 @@ fn bare_slot_recipe_component_in_vue_template_emits_recipe_css() {
     assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @"
     base:
       - recipe: custom
-        slot: label
-        className: custom__label
-        entries:
-          - prop: fontWeight
-            value: medium
-            conditions: []
-      - recipe: custom
         slot: root
         className: custom__root
         entries:
           - prop: background
             value: red
+            conditions: []
+      - recipe: custom
+        slot: label
+        className: custom__label
+        entries:
+          - prop: fontWeight
+            value: medium
             conditions: []
     variants:
       - recipe: custom

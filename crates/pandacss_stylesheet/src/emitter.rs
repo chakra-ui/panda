@@ -35,7 +35,7 @@ use crate::conditions::{
 };
 use crate::grouped::{GroupNode, write_grouped_rules};
 use crate::numeric_value;
-use crate::sort::{SortContext, SortedAtom, condition_names};
+use crate::sort::{SortContext, SortedAtom, condition_names, property_order};
 use crate::style_rules::{
     Declaration, LoweredTarget, StyleRule, Target, append_declaration, append_declaration_run,
     append_declarations, push_grouped_rule, write_with_wrappers,
@@ -1903,11 +1903,13 @@ impl<'a> EmitContext<'a> {
         // Walk one style object into buckets: direct declarations, composition/
         // nested-utility entries, nested selector/condition blocks, and
         // property-level conditional values.
-        let mut declarations = Vec::with_capacity(entries.len());
+        let mut keyed_declarations = Vec::with_capacity(entries.len());
         let mut nested_rules = Vec::new();
         let mut conditional_declarations = Vec::new();
         let mut composition_entries = Vec::new();
         for (key, value) in entries {
+            let mut declarations = Vec::new();
+            let order = property_order(self.utility.resolve_shorthand(key));
             if let Some(style_entries) = self.composition_style_entries_for_value(key, value) {
                 let (base, conditional): (Vec<_>, Vec<_>) = style_entries
                     .into_iter()
@@ -1919,6 +1921,7 @@ impl<'a> EmitContext<'a> {
                         append_declarations(&mut declarations, entry_declarations);
                     }
                 }
+                keyed_declarations.push((order, declarations));
                 composition_entries.extend(conditional);
                 continue;
             }
@@ -1951,6 +1954,7 @@ impl<'a> EmitContext<'a> {
                     &mut declarations,
                     &mut conditional_declarations,
                 ) {
+                    keyed_declarations.push((order, declarations));
                     continue;
                 }
                 if self.is_bare_nested_selector_key(key) {
@@ -1964,8 +1968,15 @@ impl<'a> EmitContext<'a> {
             }
 
             if let Some(entry_declarations) = self.serialized_property_declarations(key, value) {
-                append_declarations(&mut declarations, entry_declarations);
+                keyed_declarations.push((order, entry_declarations));
             }
+        }
+
+        // Shorthands before longhands, otherwise as authored, like recipe and atomic rules.
+        keyed_declarations.sort_by_key(|(order, _)| *order);
+        let mut declarations = Vec::with_capacity(keyed_declarations.len());
+        for (_, entry_declarations) in keyed_declarations {
+            append_declarations(&mut declarations, entry_declarations);
         }
 
         let base_rules = self.lower_resolved_selector(selector, conditions);

@@ -9,7 +9,7 @@ use pandacss_config::{
     PatternTypeData, PatternTypeDefinition, PrimitiveType, RESERVED_VALUE_ALIAS_NAMES,
     RecipeTypeData, RecipeTypeDefinition, SlotRecipeTypeDefinition, TokenCategoryTypeData,
     TokenTypeData, TypeData, UtilityPropertyTypeData, UtilityTypeData, ValueAliasTypeData,
-    ValueTypePart, VariantTypeData,
+    ValueTypePart, VariantTypeData, VariantTypeMap,
 };
 
 fn input() -> CodegenInput {
@@ -176,7 +176,7 @@ fn recipe_type_data() -> RecipeTypeData {
             RecipeTypeDefinition {
                 name: "button".into(),
                 type_name: "Button".into(),
-                variants: BTreeMap::from([
+                variants: VariantTypeMap::from_iter([
                     (
                         "size".into(),
                         VariantTypeData {
@@ -201,7 +201,7 @@ fn recipe_type_data() -> RecipeTypeData {
                 name: "card".into(),
                 type_name: "Card".into(),
                 slots: vec!["root".into(), "label".into()],
-                variants: BTreeMap::from([(
+                variants: VariantTypeMap::from_iter([(
                     "tone".into(),
                     VariantTypeData {
                         values: vec!["info".into(), "danger".into()],
