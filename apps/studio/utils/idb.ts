@@ -25,11 +25,12 @@ async function withStore<T>(
   });
 }
 
-export async function saveTokens(raw: string): Promise<void> {
+export async function saveTokens(raw: string): Promise<boolean> {
   try {
     await withStore("readwrite", (store) => store.put(raw, KEY));
+    return true;
   } catch {
-    return;
+    return false;
   }
 }
 

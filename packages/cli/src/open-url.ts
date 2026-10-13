@@ -13,8 +13,13 @@ export function openUrl(url: string): Promise<boolean> {
 
   return new Promise((resolve) => {
     const child = spawn(command, args, { stdio: 'ignore', detached: true, windowsVerbatimArguments: true })
-    child.on('spawn', () => resolve(true)).on('error', () => resolve(false))
-    child.unref()
+    const done = (opened: boolean) => {
+      clearTimeout(timer)
+      child.unref()
+      resolve(opened)
+    }
+    const timer = setTimeout(() => done(true), 3000)
+    child.on('error', () => done(false)).on('exit', (code) => done(code === 0))
   })
 }
 

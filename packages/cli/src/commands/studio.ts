@@ -117,10 +117,13 @@ export async function runStudio(
       onSourceChange: () => undefined,
       onConfigChange: async () => {
         const diff = await driver.reload()
+        if (!diff.hasChanged) return
         const json = driver.specJson()
-        if (!diff.hasChanged || !json) return
-        server!.update(json)
-        if (!shouldPrintJson(flags)) output.log('studio: updated')
+        if (json) server!.update(json)
+        if (shouldPrintJson(flags)) return
+        output.log(
+          json ? 'studio: updated' : 'studio: your config has no tokens, Studio keeps showing the last version',
+        )
       },
     })
 

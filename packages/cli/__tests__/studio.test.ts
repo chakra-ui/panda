@@ -106,6 +106,7 @@ describe('studio command', () => {
 
       const page = await (await fetch(result.url!)).text()
       expect(page).toContain('<iframe src="http://127.0.0.1:3000/view">')
+      expect(() => new Function(page.split('<script>')[1]!.split('</script>')[0]!)).not.toThrow()
 
       const events = (await fetch(`${result.url}/events`)).body!.getReader()
       const nextSpec = async () =>
@@ -120,6 +121,11 @@ describe('studio command', () => {
       expect(updated.paths).toContain('colors.accent')
       expect(updated.paths).not.toContain('colors.brand')
       expect(logs).toContain('studio: updated')
+
+      writeFileSync(join(dir, 'panda.config.ts'), CONFIG)
+      await vi.waitFor(() =>
+        expect(logs).toContain('studio: your config has no tokens, Studio keeps showing the last version'),
+      )
       await events.cancel()
     } finally {
       await result.stop?.()

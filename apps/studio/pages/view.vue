@@ -6,6 +6,7 @@ import { index, parseSpec, type DesignSystemIndex } from "~/utils/design-system"
 import { loadTokens, loadUsage, saveUsage, saveTokens, clearTokens } from "~/utils/idb";
 import { isWatchFrame, readHandoff, readWatchMessage, receiveHandoff } from "~/utils/handoff";
 import { droppedFiles } from "~/utils/dropped";
+import { toaster } from "~/utils/toaster";
 import { useAnalyze } from "~/composables/useAnalyze";
 
 useHead({
@@ -25,8 +26,16 @@ const reloadOnNewLink = () => readHandoff(window.location) && location.reload();
 
 function onWatchMessage(event: MessageEvent) {
   const json = readWatchMessage(event, window.parent);
-  const parsed = json ? parseSpec(json) : null;
-  if (!parsed?.ok) return;
+  if (!json) return;
+  const parsed = parseSpec(json);
+  if (!parsed.ok) {
+    if (ds.value) {
+      toaster.create({ type: "error", title: "Studio can't read the updated design system", description: parsed.error });
+    } else {
+      invalid.value = "unreadable";
+    }
+    return;
+  }
   ds.value = index(parsed.spec);
   ready.value = true;
 }
@@ -55,11 +64,13 @@ onNuxtReady(async () => {
       return;
     }
     handedOff = index(parsed.spec);
-    try {
-      await clearTokens();
-      await saveTokens(received);
-    } catch (error) {
-      console.warn("Studio couldn't save this design system for your next visit.", error);
+    await clearTokens();
+    if (!(await saveTokens(received))) {
+      toaster.create({
+        type: "error",
+        title: "Studio couldn't save this design system",
+        description: "Your browser blocked storage, so it will be gone after a reload. Run panda studio again to reopen it.",
+      });
     }
   }
 
@@ -92,16 +103,16 @@ onNuxtReady(async () => {
   }
 });
 
-const copied = ref(false);
+const copyLabel = ref("Copy");
 
 async function copyCommand() {
   try {
     await navigator.clipboard.writeText("panda studio");
+    copyLabel.value = "Copied";
   } catch {
-    return;
+    copyLabel.value = "Couldn't copy";
   }
-  copied.value = true;
-  setTimeout(() => (copied.value = false), 1500);
+  setTimeout(() => (copyLabel.value = "Copy"), 1500);
 }
 
 async function reset() {
@@ -142,7 +153,7 @@ async function reset() {
     <div :class="s.command">
       <code><span :class="s.prompt">$</span> panda studio</code>
       <button type="button" :class="s.copy" @click="copyCommand">
-        {{ copied ? "Copied" : "Copy" }}
+        {{ copyLabel }}
       </button>
     </div>
     <NuxtLink to="/" :class="button({ variant: 'outline' })">Load a file instead</NuxtLink>
