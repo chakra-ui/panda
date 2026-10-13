@@ -188,6 +188,7 @@ fn config() -> ExtractorConfig {
         component_regex_blocklist: Vec::new(),
         component_regex_blocklist_set: None,
         valid_style_props,
+        condition_names: FxHashSet::default(),
     })
     .with_jsx_framework(true)
 }

@@ -595,7 +595,10 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 ProjectionRetention::Discard
             };
             let (data, style) = project_style(style, retention);
-            let data = data.unwrap_or_else(|| Literal::Object(vec![]));
+            let mut data = data.unwrap_or_else(|| Literal::Object(vec![]));
+            if !panda_owned && !emit_empty {
+                self.ctx.config.jsx.retain_style_values(&mut data);
+            }
             let data_empty = matches!(&data, Literal::Object(entries) if entries.is_empty());
             if data_empty && !emit_empty {
                 walk::walk_jsx_element(self, jsx_el);

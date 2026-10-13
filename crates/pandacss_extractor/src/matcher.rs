@@ -5,6 +5,7 @@
 //! JSX-extraction settings) consumed downstream.
 
 use crate::{ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind, Resolver};
+use pandacss_literal::Literal;
 use pandacss_shared::css_properties::is_css_property;
 use regex::{Regex, RegexSet};
 use rustc_hash::{FxHashMap, FxHashSet};
@@ -269,6 +270,8 @@ pub struct JsxExtractionConfig {
     pub component_regex_blocklist: Vec<(Regex, Arc<FxHashSet<String>>)>,
     pub component_regex_blocklist_set: Option<RegexSet>,
     pub valid_style_props: FxHashSet<String>,
+    /// Configured condition names, so props on tags Panda doesn't own keep only style values.
+    pub condition_names: FxHashSet<String>,
 }
 
 impl JsxExtractionConfig {
@@ -340,6 +343,42 @@ impl JsxExtractionConfig {
             }
             JsxStyleProps::None => is_component_prop,
         }
+    }
+
+    /// Drops props whose value can't be a style, such as `columns={[{ header }]}` on a
+    /// component Panda doesn't own. Conditions and `css` props are kept as written.
+    pub(crate) fn retain_style_values(&self, data: &mut Literal) {
+        if let Literal::Object(entries) = data {
+            entries.retain(|(key, value)| {
+                key == "css"
+                    || key.ends_with("Css")
+                    || self.is_condition_key(key)
+                    || self.is_style_value(value)
+            });
+        }
+    }
+
+    fn is_style_value(&self, value: &Literal) -> bool {
+        match value {
+            Literal::Object(entries) => entries
+                .iter()
+                .all(|(key, value)| self.is_condition_key(key) && self.is_style_value(value)),
+            Literal::Array(items) => items
+                .iter()
+                .all(|item| !matches!(item, Literal::Array(_)) && self.is_style_value(item)),
+            Literal::Conditional(branches) => {
+                branches.iter().all(|branch| self.is_style_value(branch))
+            }
+            _ => true,
+        }
+    }
+
+    fn is_condition_key(&self, key: &str) -> bool {
+        key == "base"
+            || key.starts_with('_')
+            || key.starts_with('@')
+            || key.contains('&')
+            || self.condition_names.contains(key)
     }
 
     fn is_strict_component(&self, tag_name: &str) -> bool {

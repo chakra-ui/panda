@@ -469,6 +469,7 @@ fn jsx_extraction_config_from_definitions(
         component_regex_blocklist,
         component_regex_blocklist_set: None,
         valid_style_props,
+        condition_names: entries.condition_names.iter().cloned().collect(),
     }
     .with_regex_sets()
 }
