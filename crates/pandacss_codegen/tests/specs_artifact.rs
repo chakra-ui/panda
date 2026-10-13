@@ -326,18 +326,18 @@ fn recipes_patterns_and_composition_styles_are_listed() {
         "button": {
           "className": "btn",
           "variants": {
+            "size": {
+              "values": [
+                "sm",
+                "md"
+              ],
+              "allowsBoolean": false
+            },
             "disabled": {
               "values": [
                 "true"
               ],
               "allowsBoolean": true
-            },
-            "size": {
-              "values": [
-                "md",
-                "sm"
-              ],
-              "allowsBoolean": false
             }
           },
           "defaultVariants": {

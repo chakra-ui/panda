@@ -262,8 +262,8 @@ fn emits_config_recipe_css_with_nested_conditions() {
     @layer recipes {
       @layer base {
         .btn {
-          color: red;
           display: inline-flex;
+          color: red;
         }
         .btn:disabled:hover {
           background-color: initial;
@@ -669,19 +669,19 @@ fn prefixes_unhashed_recipe_class_names() {
     assert_snapshot!(css, @"
     @layer recipes.slots {
       @layer base {
-        .pd-checkbox__control {
-          display: inline-flex;
-        }
         .pd-checkbox__root {
           display: flex;
         }
+        .pd-checkbox__control {
+          display: inline-flex;
+        }
       }
       @layer variants {
-        .pd-checkbox__control--size_sm {
-          padding: 2px;
-        }
         .pd-checkbox__root--size_sm {
           padding: 4px;
+        }
+        .pd-checkbox__control--size_sm {
+          padding: 2px;
         }
       }
     }
@@ -726,19 +726,19 @@ fn emits_config_slot_recipe_css_in_slots_layer() {
     assert_snapshot!(css, @"
     @layer recipes.slots {
       @layer base {
-        .checkbox__control {
-          display: inline-flex;
-        }
         .checkbox__root {
           display: flex;
         }
+        .checkbox__control {
+          display: inline-flex;
+        }
       }
       @layer variants {
-        .checkbox__control--size_sm {
-          padding: 2px;
-        }
         .checkbox__root--size_sm {
           padding: 4px;
+        }
+        .checkbox__control--size_sm {
+          padding: 2px;
         }
       }
     }
@@ -1537,6 +1537,197 @@ fn recipes_on_the_same_breakpoint_share_one_media_block_after_plain_rules() {
           .badge--size_sm, .button--size_sm {
             padding: 8px;
           }
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn later_variants_in_the_config_override_earlier_ones() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "padding": { "className": "p" }
+        },
+        "theme": {
+            "recipes": {
+                "button": {
+                    "className": "button",
+                    "variants": {
+                        "visual": { "solid": { "padding": "1px" }, "outline": { "padding": "2px" } },
+                        "size": { "sm": { "padding": "3px" }, "lg": { "padding": "5px" }, "md": { "padding": "4px" } }
+                    },
+                    "compoundVariants": [
+                        { "visual": "outline", "size": "sm", "css": { "padding": "7px" } },
+                        { "visual": "solid", "size": "lg", "css": { "padding": "6px" } }
+                    ],
+                    "staticCss": ["*"]
+                }
+            }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer variants {
+        .button--visual_solid {
+          padding: 1px;
+        }
+        .button--visual_outline {
+          padding: 2px;
+        }
+        .button--size_sm {
+          padding: 3px;
+        }
+        .button--size_lg {
+          padding: 5px;
+        }
+        .button--size_md {
+          padding: 4px;
+        }
+      }
+      @layer compound_variants {
+        .button--compound__size_sm__visual_outline {
+          padding: 7px;
+        }
+        .button--compound__size_lg__visual_solid {
+          padding: 6px;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn static_css_variants_keep_config_order_next_to_used_ones() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "padding": { "className": "p" }
+        },
+        "theme": {
+            "recipes": {
+                "button": {
+                    "className": "button",
+                    "variants": {
+                        "visual": { "solid": { "padding": "1px" }, "outline": { "padding": "2px" } },
+                        "size": { "sm": { "padding": "3px" }, "md": { "padding": "4px" } }
+                    },
+                    "staticCss": ["*"]
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { button } from '@panda/recipes'; export const App = ({ visual }) => button({ size: 'sm', visual })",
+        StylesheetOptions::default(),
+    )
+        .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer variants {
+        .button--visual_solid {
+          padding: 1px;
+        }
+        .button--visual_outline {
+          padding: 2px;
+        }
+        .button--size_sm {
+          padding: 3px;
+        }
+        .button--size_md {
+          padding: 4px;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn recipe_styles_keep_authored_order_after_shorthands() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "zIndex": { "className": "z" },
+            "color": { "className": "c" },
+            "borderColor": { "className": "bdc" },
+            "border": { "className": "bd" }
+        },
+        "theme": {
+            "recipes": {
+                "button": {
+                    "className": "button",
+                    "base": { "zIndex": "1", "color": "red", "borderColor": "blue", "border": "1px solid" }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { button } from '@panda/recipes'; button()",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .button {
+          border: 1px solid;
+          border-color: blue;
+          z-index: 1;
+          color: red;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn slot_recipe_slots_emit_in_config_order() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "color": { "className": "c" },
+            "padding": { "className": "p" }
+        },
+        "theme": {
+            "slotRecipes": {
+                "card": {
+                    "className": "card",
+                    "slots": ["root", "body", "aside"],
+                    "base": { "aside": { "color": "green" }, "root": { "color": "red" }, "body": { "color": "blue" } },
+                    "variants": {
+                        "size": { "sm": { "body": { "padding": "1px" }, "root": { "padding": "2px" } } }
+                    },
+                    "staticCss": ["*"]
+                }
+            }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes.slots {
+      @layer base {
+        .card__root {
+          color: red;
+        }
+        .card__body {
+          color: blue;
+        }
+        .card__aside {
+          color: green;
+        }
+      }
+      @layer variants {
+        .card__root--size_sm {
+          padding: 2px;
+        }
+        .card__body--size_sm {
+          padding: 1px;
         }
       }
     }

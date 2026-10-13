@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use pandacss_config::{Deprecated, JsxSpecifier, PatternPropertyTypeData, VariantTypeData};
+use pandacss_config::{Deprecated, JsxSpecifier, PatternPropertyTypeData, VariantTypeMap};
 use pandacss_tokens::{TokenCategory, TokenDictionary};
 use serde_json::{Value, json};
 
@@ -204,7 +204,7 @@ fn slot_recipe_table(ctx: CodegenContext<'_>) -> Option<Value> {
     Some(Value::Object(rows.collect()))
 }
 
-fn variant_table(variants: &BTreeMap<String, VariantTypeData>) -> Value {
+fn variant_table(variants: &VariantTypeMap) -> Value {
     let rows = variants.iter().map(|(name, variant)| {
         (
             name.clone(),

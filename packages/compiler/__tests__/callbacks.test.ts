@@ -1943,20 +1943,20 @@ describe('Compiler callbacks', () => {
       "@layer utilities {
         .gradient-border_linear-gradient\\(to_right\\,_red\\,_blue\\) {
           --after-inset: calc(var(--gradient-border-width, 2px) + var(--gradient-border-offset, 0px) + 1px);
-          --gradient-border-end: calc(var(--gradient-border-start) + var(--gradient-border-width, 2px));
           --gradient-border-start: calc(var(--parent-h, 48px) / 2 + var(--gradient-border-offset, 0px));
+          --gradient-border-end: calc(var(--gradient-border-start) + var(--gradient-border-width, 2px));
         }
         .gradient-border_linear-gradient\\(to_right\\,_red\\,_blue\\)::after {
           inset: calc(var(--after-inset) * -1);
           background-position: center;
-          background-image: linear-gradient(to right, red, blue);
-          background-repeat: no-repeat;
-          background-size: cover;
           content: "";
           display: inline-block;
-          mask-image: radial-gradient(transparent calc(var(--gradient-border-start) - 1px), black var(--gradient-border-start), black var(--gradient-border-end), transparent calc(var(--gradient-border-end) + 1px));
-          pointer-events: none;
           position: absolute;
+          pointer-events: none;
+          background-image: linear-gradient(to right, red, blue);
+          mask-image: radial-gradient(transparent calc(var(--gradient-border-start) - 1px), black var(--gradient-border-start), black var(--gradient-border-end), transparent calc(var(--gradient-border-end) + 1px));
+          background-size: cover;
+          background-repeat: no-repeat;
         }
       }
       "

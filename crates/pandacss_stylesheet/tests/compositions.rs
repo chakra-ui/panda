@@ -193,12 +193,12 @@ fn animation_style_parent_key_uses_its_nested_default() {
     @layer utilities {
       @layer compositions {
         .animationStyle_fade {
-          animation-duration: 1s;
           animation-name: fade;
+          animation-duration: 1s;
         }
         .animationStyle_fade\.slow {
-          animation-duration: 3s;
           animation-name: fade;
+          animation-duration: 3s;
         }
       }
     }
@@ -257,12 +257,12 @@ fn layer_style_and_animation_style_get_their_own_classes_in_same_sublayer() {
         "import { css } from '@panda/css';\ncss({ layerStyle: 'card' });\ncss({ animationStyle: 'fadeIn' });",
         &[StylesheetLayer::Utilities],
     );
-    assert_snapshot!(utilities, @r"
+    assert_snapshot!(utilities, @"
     @layer utilities {
       @layer compositions {
         .animationStyle_fadeIn {
-          animation-duration: 300ms;
           animation-name: fadeIn;
+          animation-duration: 300ms;
         }
         .layerStyle_card {
           background: white;
@@ -379,8 +379,8 @@ fn composition_styles_resolve_token_categories_and_nested_conditions() {
           background-color: var(--colors-brand-500);
         }
         .textStyle_heading {
-          color: var(--colors-brand-500);
           font-size: var(--font-sizes-lg);
+          color: var(--colors-brand-500);
         }
         .textStyle_heading:is(:hover, [data-hover]) {
           color: var(--colors-brand-500);
