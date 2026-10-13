@@ -18,7 +18,6 @@ hooks.describe = describe
 hooks.it = it
 hooks.itOnly = it.only
 
-type RuleDefinition = Parameters<RuleTester['run']>[1]
 type RuleTests = Parameters<RuleTester['run']>[2]
 
 const ruleTester = new RuleTester({
@@ -39,7 +38,7 @@ export async function createPandaRuleTester(pandaConfig: string) {
   return {
     dir,
     run(ruleName: string, tests: RuleTests) {
-      ruleTester.run(ruleName, plugin.rules[ruleName] as unknown as RuleDefinition, tests)
+      ruleTester.run(ruleName, plugin.rules[ruleName], tests)
     },
   }
 }
