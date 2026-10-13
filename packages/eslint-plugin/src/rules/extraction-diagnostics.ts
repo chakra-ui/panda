@@ -1,5 +1,5 @@
 import type { Diagnostic } from '@pandacss/compiler'
-import { type Inspect, type RuleContextWithReport, type RuleModuleLike, toEslintLoc } from './shared'
+import { FILE_START_LOC, type Inspect, type RuleContextWithReport, type RuleModuleLike, toEslintLoc } from './shared'
 
 export const extractionDiagnosticsRuleName = 'extraction-diagnostics'
 
@@ -31,14 +31,12 @@ export function createExtractionDiagnosticsRule(options: ExtractionDiagnosticsRu
   }
 }
 
-const FILE_START = { start: { line: 1, column: 0 }, end: { line: 1, column: 0 } }
-
 export function reportDiagnostics(context: RuleContextWithReport, diagnostics: readonly Diagnostic[]): void {
   for (const diagnostic of diagnostics) {
     context.report({
       messageId: 'diagnostic',
       data: { message: diagnostic.message },
-      loc: diagnostic.location ? toEslintLoc(diagnostic.location) : FILE_START,
+      loc: diagnostic.location ? toEslintLoc(diagnostic.location) : FILE_START_LOC,
     })
   }
 }

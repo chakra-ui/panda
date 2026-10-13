@@ -1,5 +1,5 @@
 import { getContextFilename } from '../core'
-import type { Inspect, RuleModuleLike } from './shared'
+import { FILE_START_LOC, type Inspect, type RuleModuleLike } from './shared'
 
 export const fileNotIncludedRuleName = 'file-not-included'
 
@@ -41,7 +41,7 @@ export function createFileNotIncludedRule(options: FileNotIncludedRuleOptions): 
 
           context.report({
             messageId: 'notIncluded',
-            loc: { start: { line: 1, column: 0 }, end: { line: 1, column: 0 } },
+            loc: FILE_START_LOC,
           })
         },
       }

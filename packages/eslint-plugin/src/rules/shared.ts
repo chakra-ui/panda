@@ -66,6 +66,9 @@ export function byteToIndex(text: string, byteOffset: number): number {
   return text.length
 }
 
+/** For file-level reports with no source range. */
+export const FILE_START_LOC: ReportDescriptor['loc'] = { start: { line: 1, column: 0 }, end: { line: 1, column: 0 } }
+
 /** ESLint columns are 0-based; Panda source ranges are 1-based. */
 export function toEslintLoc(range: SourceRange): ReportDescriptor['loc'] {
   return {
