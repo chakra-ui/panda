@@ -24,7 +24,11 @@ async function load(raw: string) {
     error.value = result.error;
     return;
   }
-  await saveTokens(raw);
+  if (!(await saveTokens(raw))) {
+    error.value =
+      "Your browser blocked Studio from storing this design system. Allow site data for this page, or leave private browsing, and try again.";
+    return;
+  }
   await navigateTo("/view");
 }
 
