@@ -1,5 +1,5 @@
 <!-- Tracks: chakra-ui/panda#3508, #3510 (matchTag control), #3522 item 12 (scope note). -->
-<!-- Link the implementing PR here when it lands. -->
+<!-- Implemented in chakra-ui/panda#3989. -->
 
 # JSX Tag Matching (`jsxMatchTag`)
 
@@ -40,8 +40,7 @@ Rust-evaluated _filters_ (serialized data), not callback refs.
   field and the `ignore` action.
 - **Pattern-named components.** Teams want `MyButton`, `BrandButton` picked up without enumerating each. → drives
   `RegExp` `tag` matching.
-- **v1 `matchTagProp`.** Per-component control of which props are style props. → folded in as the per-rule `props` /
-  `ignoreProps`.
+- **v1 `matchTagProp`.** Per-component control of which props are style props. → folded in as the per-rule `props`.
 
 ## API
 
@@ -53,8 +52,7 @@ jsxMatchTag: [
   { from: '@acme/ui' }, // every component imported from @acme/ui
   { tag: /Button$/ }, // match by name pattern
   { from: '~/components', tag: 'Box' }, // scoped: Box, only from this module
-  { tag: 'Card', props: ['variant', 'size'] }, // match, extract ONLY these props (strict)
-  { tag: 'Avatar', ignoreProps: ['src', 'alt'] }, // match, all style props EXCEPT these
+  { tag: 'Card', props: ['padding', 'color'] }, // match, extract ONLY these style props
   { tag: 'Stack', ignore: true }, // never extract (beats Panda's own detection)
   { from: '@chakra-ui/react', ignore: true }, // ignore an entire package (the #3508 case)
 ]
@@ -64,11 +62,13 @@ Rule fields — `string` = exact, `RegExp` = pattern; all JSON-serializable:
 
 - `from` — import specifier the local binding was imported from.
 - `tag` — local JSX name as used in source.
-- `props` — allowlist of props to extract; **presence implies strict** (only these are extracted).
-- `ignoreProps` — props never extracted from this match.
+- `props` — extract only these style props.
 - `ignore: true` — exclude the tag entirely.
 
-A rule must carry at least `from` or `tag` (config-validation error otherwise).
+A rule must carry at least `from` or `tag`, and can't set both `props` and `ignore` (config errors otherwise).
+
+`ignoreProps` from the first draft was dropped. Data props that aren't styles are already skipped on components Panda
+doesn't own, and `ignore` covers whole third-party components. Add it if a real case needs it.
 
 ### Semantics
 
@@ -83,19 +83,18 @@ A rule must carry at least `from` or `tag` (config-validation error otherwise).
   first, specific refinements after**.
 - **Override.** Because user rules sit above the baseline, an `ignore` rule turns off a Panda-detected component (v1's
   `matchTagMode: 'override'`); a later include can turn it back on.
-- **Props come from the winning rule only.** The last matching include rule supplies the full prop config (`props` /
-  `ignoreProps`); configs are **not** merged across rules. Absent prop fields fall back to the global `jsxStyleProps`
-  mode; `props` present ⇒ strict (only those).
+- **Props come from the winning rule only.** `props` filters what Panda's own prop matching already extracted, so
+  `jsxStyleProps` and recipe/pattern props still apply first. Without `props`, nothing changes.
 - **`from` matches the literal import specifier** as written in the source — no barrel/re-export resolution (that needs
   module-graph walking, which the hot path avoids). Match the package/alias you import from; use a `RegExp` for subpaths
   (`/^~\/components/`). Relative specifiers (`./button`) are position-dependent — prefer `tag` or an alias.
-- **Preset merge.** Rules concatenate in config-resolution order with the app's rules last, so an app naturally
-  overrides preset-contributed rules — consistent with last-match-wins.
+- **Preset merge.** `jsxMatchTag` is a top-level key, so like every other top-level key the last config that sets it
+  replaces the list. A preset's rules don't carry into an app that sets its own.
 - Local, non-imported uppercase tags keep the native default (`is_uppercase_component_tag`) only after `jsxFramework`
   enables JSX extraction, unless a later `ignore` rule removes them.
 
 This one surface replaces all three v1 knobs: `matchTag` (include by name), `matchTagMode: 'override'` (`ignore`), and
-`matchTagProp` (`props` / `ignoreProps`).
+`matchTagProp` (`props`).
 
 ## Migration from v1
 
@@ -137,13 +136,8 @@ jsxMatchTag: [{ from: '@chakra-ui/react', ignore: true }]
 ```ts
 // v1 — Button only extracts variant/size
 configure({ matchTagProp: (tag, prop) => tag === 'Button' && ['variant', 'size'].includes(prop) })
-// v2 — strict allowlist
+// v2 — allowlist
 jsxMatchTag: [{ tag: 'Button', props: ['variant', 'size'] }]
-
-// v1 — Button extracts everything except src/alt
-configure({ matchTagProp: (tag, prop) => tag !== 'Button' || !['src', 'alt'].includes(prop) })
-// v2
-jsxMatchTag: [{ tag: 'Button', ignoreProps: ['src', 'alt'] }]
 ```
 
 **Mechanical checklist:**
@@ -151,7 +145,7 @@ jsxMatchTag: [{ tag: 'Button', ignoreProps: ['src', 'alt'] }]
 - Move the config out of `hooks['parser:before'].configure(...)` to the top-level `jsxMatchTag` key.
 - `matchTag` returning `true` for a tag/pattern → an include rule (`{ tag }` or `{ from }`).
 - `matchTagMode: 'override'` excluding a tag → an `{ ignore: true }` rule (no global mode switch in v2).
-- `matchTagProp` allowing a subset → `props`; denying a subset → `ignoreProps`.
+- `matchTagProp` allowing a subset → `props`. Denying a subset → list the props you keep in `props`.
 - Logic keyed on _where a component came from_ → `from` (previously only possible via a custom import-parsing plugin).
 
 **No v2 equivalent (by design):** a v1 `matchTag`/`matchTagProp` that ran _genuinely dynamic_ logic which can't be
@@ -161,40 +155,29 @@ patterns; if a real case can't, it's an issue to open, not a callback to reintro
 
 ## Internal design
 
-Because precedence is last-match-wins (not set membership), user rules compile into an **ordered** `Vec<CompiledRule>`
-evaluated as a cascade: `classify(tag, specifier)` scans rules, the last match decides include-vs-ignore and carries
-that rule's prop config. This sits _above_ Panda's existing baseline detection rather than replacing it — the scan is
-cheap (few rules, memoized per distinct `(tag, specifier)`, resolved per import binding not per element). The prop
-dimensions still reuse the existing `JsxExtractionConfig` concepts:
+```
+config snapshot ──► pandacss_config::JsxMatchTagRule      (tag/from reuse JsxSpecifier = string | SerializedRegex)
+                          │ pandacss_system::config::jsx_tag_rules — validate, compile regexes once
+                          ▼
+                    JsxExtractionConfig.tag_rules: Vec<JsxTagRule>
+                          │
+extract(file) ──► detect tag (Panda import / configured component / uppercase heuristic)
+                          │
+                          ▼
+                    tag_rule(tag, from) = rules.iter().rev().find(matches)
+                       ├─ Ignore         → not extracted (even Panda imports)
+                       ├─ Include(props) → extracted; `props` filters the style tree
+                       └─ no rule        → detection unchanged
+```
 
-| Rule piece              | Maps to (existing unless noted)                                  |
-| ----------------------- | ---------------------------------------------------------------- |
-| include `tag`           | `component_names` / `component_regexes`                          |
-| `props`                 | `component_props` / `component_regex_props` + `component_strict` |
-| `ignoreProps`           | `component_blocklist` / `component_regex_blocklist`              |
-| `ignore` (tag)          | **new** `tag_blocklist` / `tag_regex_blocklist`                  |
-| `from` (include/ignore) | resolved at import time (see Phase 2)                            |
-
-The bridge (`pandacss_system::config::jsx_extraction_config_from_definitions`) builds these from `config.jsxMatchTag`,
-reusing the existing `collect_jsx_strings` / `jsx_regexes` string-vs-regex helpers, then `.with_regex_sets()`.
-
-The only genuinely new field is a **tag blocklist**: `tag_blocklist: FxHashSet<String>` + `tag_regex_blocklist` + its
-`RegexSet`, with an `is_tag_blocklisted()` checked in `should_match_tag` **and** at the `is_component_tag` call sites in
-`jsx.rs` (so ignore beats configured patterns/recipes like `Stack`).
-
-### Phasing
-
-- **Phase 1 — name/pattern matching + `ignore` + `props`/`ignoreProps`.** Almost entirely wiring existing fields; adds
-  only the tag blocklist. No FFI, no import resolution.
-- **Phase 2 — `from` (import-source) matching.** The load-bearing piece for #3508. A `from` rule can't be decided from
-  the tag name; it needs the per-file import bindings, resolved at the **import-resolution stage** where Panda already
-  classifies its own imports (`match_imports`): for each `(localName, specifier)`, evaluate `from`/`tag` rules → add
-  `localName` to that file's matched set, or to a per-file ignore set (ignore wins). Phase 2 is **not optional** — the
-  primary migration case needs it — but it is sequenced after Phase 1.
-
-**Spike before Phase 2:** confirm exactly how v2 marks "imported-from-Panda" components per file relative to the global
-`JsxExtractionConfig`, so `from` rules slot into the same path rather than a parallel one (see
-[Extraction pipeline](./extraction-pipeline.md), [Cross-file resolution](./cross-file-resolution.md)).
+- One decision point per tag-resolution path: `Extractor::resolve_tag` (JSX elements and member tags),
+  `resolve_runtime_tag` (compiled `jsx()` calls), and `apply_template_tag_rule` (Vue/Svelte/Astro templates).
+- `from` reads a per-file map from local binding to import path, built from the import scan every file already runs.
+  It's built only when some rule uses `from`; member tags (`UI.Card`) use the root binding.
+- Rule lists are tiny, so a reverse linear scan per tag needs no cache or `RegexSet`.
+- `props` runs after Panda's prop matching, through `retain_style_tree_props`, instead of threading a new argument
+  through every `should_extract_prop` call.
+- An empty `jsxMatchTag` isn't serialized, so existing config fingerprints (and published build info) don't change.
 
 ## Interaction with local `styled()` chains
 

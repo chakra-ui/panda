@@ -94,6 +94,8 @@ pub struct UserConfig {
     pub jsx_factory: String,
     #[serde(default)]
     pub jsx_style_props: Option<JsxStylePropsConfig>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub jsx_match_tag: Vec<JsxMatchTagRule>,
     #[serde(default)]
     pub theme: Theme,
     #[serde(default)]
@@ -159,6 +161,7 @@ impl Default for UserConfig {
             jsx_framework: None,
             jsx_factory: default_jsx_factory(),
             jsx_style_props: None,
+            jsx_match_tag: Vec::new(),
             theme: Theme::default(),
             conditions: Conditions::default(),
             utilities: UtilityMap::default(),
@@ -853,6 +856,23 @@ impl JsxSpecifier {
             _ => None,
         }
     }
+}
+
+/// One `jsxMatchTag` rule. The last rule matching a JSX tag decides whether Panda extracts it.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct JsxMatchTagRule {
+    /// Tag name as written in source, such as `Button` or `UI.Button`.
+    #[serde(default)]
+    pub tag: Option<JsxSpecifier>,
+    /// Import path the tag (or its namespace) comes from, as written in source.
+    #[serde(default)]
+    pub from: Option<JsxSpecifier>,
+    /// Extract only these props.
+    #[serde(default)]
+    pub props: Option<Vec<String>>,
+    #[serde(default)]
+    pub ignore: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -909,6 +909,29 @@ Ex with 'none':
 <button className={css({ marginTop: '40px' })}>Click me</button>
 ```
 
+### jsxMatchTag
+
+**Type**: `Array<{ tag?: string | RegExp; from?: string | RegExp; props?: string[]; ignore?: boolean }>`
+
+Rules for which JSX components Panda reads style props from. The last rule that matches a component wins, over Panda's
+own detection.
+
+- `tag`: the component name as written, such as `Button` or `UI.Button`
+- `from`: the import path as written
+- `props`: read only these style props
+- `ignore`: never read style props from the component
+
+```js
+{
+  jsxMatchTag: [
+    { from: '@tanstack/react-table', ignore: true },
+    { tag: /Button$/, props: ['color'] }
+  ]
+}
+```
+
+See [extraction rules](/docs/styling/extraction-rules#choosing-which-components-panda-reads).
+
 ## Documentation options
 
 ### log level

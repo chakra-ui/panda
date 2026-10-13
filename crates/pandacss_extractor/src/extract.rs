@@ -591,7 +591,9 @@ fn extract_astro_script(
         pattern_raw_transform: options.pattern_raw_transform,
         recipe_raw_resolve: options.recipe_raw_resolve,
     });
-    let ctx = VisitorContext::new(&matched, config).with_resolver(&resolver);
+    let ctx = VisitorContext::new(&matched, config)
+        .with_resolver(&resolver)
+        .with_imports(&imports);
     let (calls, diagnostics, token_refs, style_source_refs) = if options.verbose {
         collect_calls_verbose(&parser_return.program, &ctx, line_index)
     } else {
@@ -732,7 +734,9 @@ fn run_extract_adapted(
             recipe_raw_resolve,
         })
     };
-    let ctx = VisitorContext::new(&matched, config).with_resolver(&resolver);
+    let ctx = VisitorContext::new(&matched, config)
+        .with_resolver(&resolver)
+        .with_imports(&imports);
 
     let (calls, call_diagnostics, mut token_refs, mut style_source_refs) =
         if consumes_imported_recipe || collects_calls {

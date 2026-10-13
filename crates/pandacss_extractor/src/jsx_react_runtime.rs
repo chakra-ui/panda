@@ -139,12 +139,15 @@ pub(crate) fn extract_call(
     let resolved = extractor.resolve_runtime_tag(component)?;
 
     let tag_name = resolved.name.as_ref();
-    let style = crate::style_tree::props_expression_to_style_tree(
+    let mut style = crate::style_tree::props_expression_to_style_tree(
         props,
         ctx.resolver,
         &ctx.config.jsx,
         tag_name,
     );
+    if let (Some(props), Some(tree)) = (resolved.props, style.as_mut()) {
+        crate::style_tree::retain_style_tree_props(tree, &|key| props.contains(key));
+    }
     let retain = extractor.retain_transform_facts;
     let retention = if retain {
         ProjectionRetention::Retain

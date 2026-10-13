@@ -242,6 +242,39 @@ interface JsxOptions {
    * ```
    */
   jsxStyleProps?: 'all' | 'minimal' | 'none'
+  /**
+   * Rules for which JSX components Panda extracts style props from.
+   * The last rule matching a component wins, over Panda's own detection.
+   *
+   * @example
+   * ```js
+   * jsxMatchTag: [
+   *   { from: '@tanstack/react-table', ignore: true },
+   *   { tag: /Button$/ },
+   *   { tag: 'Card', props: ['padding', 'color'] },
+   * ]
+   * ```
+   */
+  jsxMatchTag?: JsxMatchTagRule[]
+}
+
+export interface JsxMatchTagRule {
+  /**
+   * The component name as written in source, such as `Button` or `UI.Button`.
+   */
+  tag?: string | RegExp
+  /**
+   * The import path the component comes from, as written in source.
+   */
+  from?: string | RegExp
+  /**
+   * Extract only these style props.
+   */
+  props?: string[]
+  /**
+   * Never extract style props from matching components.
+   */
+  ignore?: boolean
 }
 
 interface CssgenOptions {
