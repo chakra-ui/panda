@@ -5,10 +5,16 @@ import { createExtractionDiagnosticsRule } from '../src'
 
 test('reports a diagnostic without a location at the top of the file', () => {
   const rule = createExtractionDiagnosticsRule({
-    inspect: () =>
-      ({
-        diagnostics: [{ code: 'file_level', message: 'file-level diagnostic', severity: 'warning' }],
-      }) as unknown as FileInspectionResult,
+    inspect: (): FileInspectionResult => ({
+      path: 'file.ts',
+      diagnostics: [{ code: 'file_level', message: 'file-level diagnostic', severity: 'warning' }],
+      usages: [],
+      calls: [],
+      jsx: [],
+      tokenRefs: [],
+      componentEntries: [],
+      styleEntries: [],
+    }),
   })
 
   const messages = new Linter().verify('const a = 1\n', {
