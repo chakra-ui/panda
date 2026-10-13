@@ -4,7 +4,7 @@ import * as s from "./view.styles";
 import { button } from "styled-system/recipes";
 import { index, parseSpec, type DesignSystemIndex } from "~/utils/design-system";
 import { loadTokens, loadUsage, saveUsage, saveTokens, clearTokens } from "~/utils/idb";
-import { readHandoff, readWatchMessage, receiveHandoff } from "~/utils/handoff";
+import { isWatchFrame, readHandoff, readWatchMessage, receiveHandoff } from "~/utils/handoff";
 import { droppedFiles } from "~/utils/dropped";
 import { useAnalyze } from "~/composables/useAnalyze";
 
@@ -16,7 +16,7 @@ useHead({
 const ds = ref<DesignSystemIndex | null>(null);
 const ready = ref(false);
 const usage = ref<unknown>(null);
-const invalid = ref(false);
+const invalid = ref<"incomplete" | "unreadable" | null>(null);
 
 const analyze = useAnalyze();
 const router = useRouter();
@@ -37,7 +37,7 @@ onUnmounted(() => {
 });
 
 onNuxtReady(async () => {
-  if (window.parent !== window) {
+  if (isWatchFrame(window, document.referrer)) {
     window.addEventListener("message", onWatchMessage);
     window.parent.postMessage({ type: "panda-studio:ready" }, "*");
     return;
@@ -51,14 +51,16 @@ onNuxtReady(async () => {
     await router.replace({ path: "/view" });
     const parsed = received ? parseSpec(received) : null;
     if (!received || !parsed?.ok) {
-      invalid.value = true;
+      invalid.value = received ? "unreadable" : "incomplete";
       return;
     }
     handedOff = index(parsed.spec);
     try {
       await clearTokens();
       await saveTokens(received);
-    } catch {}
+    } catch (error) {
+      console.warn("Studio couldn't save this design system for your next visit.", error);
+    }
   }
 
   if (handedOff) {
@@ -93,7 +95,11 @@ onNuxtReady(async () => {
 const copied = ref(false);
 
 async function copyCommand() {
-  await navigator.clipboard.writeText("panda studio");
+  try {
+    await navigator.clipboard.writeText("panda studio");
+  } catch {
+    return;
+  }
   copied.value = true;
   setTimeout(() => (copied.value = false), 1500);
 }
@@ -123,9 +129,15 @@ async function reset() {
       <path d="M12 8v4" />
       <path d="M12 16h.01" />
     </svg>
-    <h1 :class="s.invalidTitle">This link is incomplete</h1>
+    <h1 :class="s.invalidTitle">
+      {{ invalid === "incomplete" ? "This link is incomplete" : "Studio can't read this design system" }}
+    </h1>
     <p :class="s.invalidBody">
-      Part of it was likely cut off when it was copied. Run this in your project for a fresh one.
+      {{
+        invalid === "incomplete"
+          ? "Part of it was likely cut off when it was copied. Run this in your project for a fresh one."
+          : "It may come from a different Panda version than this Studio. Update Panda and run this in your project again."
+      }}
     </p>
     <div :class="s.command">
       <code><span :class="s.prompt">$</span> panda studio</code>

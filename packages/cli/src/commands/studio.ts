@@ -42,13 +42,13 @@ export const studioCommand = defineCommand({
 export async function runStudio(
   flags: StudioFlags = {},
   output: OutputSink = consoleOutput,
-  open: (url: string) => void = openUrl,
+  open: (url: string) => Promise<boolean> | boolean | void = openUrl,
 ): Promise<StudioResult> {
   const studioUrl = process.env.PANDA_STUDIO_URL ?? STUDIO_URL
   let server: StudioWatchServer | undefined
   let cwd = ''
 
-  const result = (await runCommand<StudioFlags, Pick<StudioResult, 'url' | 'files' | 'error'>>({
+  const result = (await runCommand<StudioFlags, Pick<StudioResult, 'url' | 'files' | 'error' | 'opened'>>({
     command: 'studio',
     flags,
     output,
@@ -67,8 +67,8 @@ export async function runStudio(
 
       if (flags.watch) {
         server = await serveStudio(studioUrl, json)
-        if (flags.open !== false && !shouldPrintJson(flags)) open(server.url)
-        return { data: { url: server.url, files: [] } }
+        const opened = flags.open !== false && !shouldPrintJson(flags) && (await open(server.url)) !== false
+        return { data: { url: server.url, files: [], opened } }
       }
 
       const url = `${new URL('/view', studioUrl)}#spec=${await encodeSpec(json)}`
@@ -82,15 +82,18 @@ export async function runStudio(
         }
       }
 
-      if (flags.open !== false && !shouldPrintJson(flags)) open(url)
-      return { data: { url, files: [] } }
+      const opened = flags.open !== false && !shouldPrintJson(flags) && (await open(url)) !== false
+      return { data: { url, files: [], opened } }
     },
     renderHuman(ctx, result) {
       if (result.diagnostics.length > 0) renderCommandDiagnostics(result.diagnostics, ctx.output, flags, ctx.cwd)
       if (!shouldPrintHumanSummary(flags)) return
       if (result.url) {
-        const opened = flags.open !== false && !flags.watch
-        ctx.output.log(opened ? `studio: opened ${studioUrl} in your browser` : `studio: ${result.url}`)
+        const failedToOpen = flags.open !== false && !result.opened
+        if (failedToOpen) ctx.output.log('studio: could not open a browser, open this link instead')
+        ctx.output.log(
+          result.opened && !flags.watch ? `studio: opened ${studioUrl} in your browser` : `studio: ${result.url}`,
+        )
         if (flags.watch) ctx.output.log('studio: watching your config, press Ctrl+C to stop')
         return
       }
@@ -117,7 +120,7 @@ export async function runStudio(
         const json = driver.specJson()
         if (!diff.hasChanged || !json) return
         server!.update(json)
-        output.log('studio: updated')
+        if (!shouldPrintJson(flags)) output.log('studio: updated')
       },
     })
 

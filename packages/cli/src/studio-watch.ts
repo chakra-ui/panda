@@ -12,7 +12,12 @@ export async function serveStudio(studioUrl: string, json: string): Promise<Stud
   const send = (res: ServerResponse) => res.write(`data: ${JSON.stringify(latest)}\n\n`)
   const page = studioPage(studioUrl)
 
+  let host = ''
   const server = createServer((req, res) => {
+    if (req.headers.host !== host) {
+      res.writeHead(403).end()
+      return
+    }
     if (req.url === '/events') {
       res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache' })
       clients.add(res)
@@ -30,9 +35,10 @@ export async function serveStudio(studioUrl: string, json: string): Promise<Stud
 
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
   const { port } = server.address() as { port: number }
+  host = `127.0.0.1:${port}`
 
   return {
-    url: `http://127.0.0.1:${port}`,
+    url: `http://${host}`,
     update(json) {
       latest = json
       clients.forEach(send)

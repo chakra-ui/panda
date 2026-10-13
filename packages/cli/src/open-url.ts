@@ -3,7 +3,7 @@ import { writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-export function openUrl(url: string): void {
+export function openUrl(url: string): Promise<boolean> {
   const [command, args] =
     process.platform === 'darwin'
       ? ['open', [url]]
@@ -11,9 +11,11 @@ export function openUrl(url: string): void {
         ? ['cmd', ['/c', 'start', '""', `"${redirectFile(url)}"`]]
         : ['xdg-open', [url]]
 
-  spawn(command, args, { stdio: 'ignore', detached: true, windowsVerbatimArguments: true })
-    .on('error', () => undefined)
-    .unref()
+  return new Promise((resolve) => {
+    const child = spawn(command, args, { stdio: 'ignore', detached: true, windowsVerbatimArguments: true })
+    child.on('spawn', () => resolve(true)).on('error', () => resolve(false))
+    child.unref()
+  })
 }
 
 function redirectFile(url: string): string {

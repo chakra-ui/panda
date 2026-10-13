@@ -235,6 +235,7 @@ export interface InitResult extends CommandResult {
 
 export interface StudioResult extends CommandResult {
   url?: string
+  opened?: boolean
   files: string[]
   error?: string
 }

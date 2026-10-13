@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { readFileSync, writeFileSync } from 'node:fs'
+import { request } from 'node:http'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { decodeSpec } from '@pandacss/compiler-shared'
@@ -57,6 +58,17 @@ describe('studio command', () => {
     expect(logs.join('\n')).toBe(`studio: ${result.url}`)
   })
 
+  it('prints the link when the browser cannot be opened', async () => {
+    dir = createFixture(CONFIG_WITH_TOKENS)
+    const logs: string[] = []
+
+    const result = await runStudio({ cwd: dir }, { log: (message) => logs.push(message) }, async () => false)
+
+    expect(result.ok).toBe(true)
+    expect(result.opened).toBe(false)
+    expect(logs).toEqual(['studio: could not open a browser, open this link instead', `studio: ${result.url}`])
+  })
+
   it('writes the spec file when the link would be too long', async () => {
     const colors = Array.from({ length: 4000 }, (_, i) => `c${i}: { value: '#${i.toString(16).padStart(6, '0')}' }`)
     dir = createFixture(pandaConfig(`theme: { tokens: { colors: { ${colors.join(', ')} } } },`))
@@ -85,6 +97,12 @@ describe('studio command', () => {
       expect(result.url).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/)
       expect(open).toHaveBeenCalledWith(result.url)
       expect(logs).toContain(`studio: ${result.url}`)
+
+      const { port } = new URL(result.url!)
+      const status = await new Promise((resolve) =>
+        request({ port, path: '/events', headers: { host: 'evil.example' } }, (res) => resolve(res.statusCode)).end(),
+      )
+      expect(status).toBe(403)
 
       const page = await (await fetch(result.url!)).text()
       expect(page).toContain('<iframe src="http://127.0.0.1:3000/view">')

@@ -1,6 +1,6 @@
 import { encodeSpec } from "@pandacss/compiler-shared";
 import { describe, expect, it } from "vitest";
-import { readHandoff, readWatchMessage, receiveHandoff } from "./handoff";
+import { isWatchFrame, readHandoff, readWatchMessage, receiveHandoff } from "./handoff";
 
 const json = JSON.stringify({ schemaVersion: 1, paths: ["colors.brand"] });
 
@@ -48,5 +48,22 @@ describe("readWatchMessage", () => {
   it("ignores other message shapes", () => {
     expect(receive("http://127.0.0.1:5173", { type: "other" })).toBeNull();
     expect(receive("http://127.0.0.1:5173", null)).toBeNull();
+  });
+});
+
+describe("isWatchFrame", () => {
+  const framed = { parent: {} };
+
+  it("is true inside a loopback parent", () => {
+    expect(isWatchFrame(framed, "http://127.0.0.1:5173/")).toBe(true);
+    expect(isWatchFrame(framed, "http://localhost:4000/")).toBe(true);
+  });
+
+  it("is false for other embedders or a top-level window", () => {
+    expect(isWatchFrame(framed, "https://example.com/")).toBe(false);
+    expect(isWatchFrame(framed, "")).toBe(false);
+    const top = { parent: null as unknown };
+    top.parent = top;
+    expect(isWatchFrame(top, "http://127.0.0.1:5173/")).toBe(false);
   });
 });

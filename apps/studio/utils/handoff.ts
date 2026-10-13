@@ -14,6 +14,11 @@ export async function receiveHandoff(encoded: string): Promise<string | null> {
 
 const LOOPBACK = /^http:\/\/(127\.0\.0\.1|localhost):\d+$/;
 
+export function isWatchFrame(win: { parent: unknown }, referrer: string): boolean {
+  if (win.parent === win || !referrer) return false;
+  return LOOPBACK.test(new URL(referrer).origin);
+}
+
 export function readWatchMessage(
   event: Pick<MessageEvent, "origin" | "source" | "data">,
   parent: unknown,
