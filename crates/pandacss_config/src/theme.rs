@@ -216,7 +216,7 @@ pub struct RecipeConfig {
     #[serde(default)]
     pub base: Option<StyleConfig>,
     #[serde(default)]
-    pub variants: BTreeMap<String, BTreeMap<String, StyleConfig>>,
+    pub variants: IndexMap<String, IndexMap<String, StyleConfig>>,
     #[serde(default, rename = "defaultVariants")]
     pub default_variants: BTreeMap<String, VariantSelection>,
     #[serde(default, rename = "compoundVariants")]

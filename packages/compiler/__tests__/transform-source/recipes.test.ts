@@ -195,7 +195,7 @@ describe('compiler.transformSource: config recipe calls', () => {
 
     const result = recipeCompiler.transformSource({ path: 'src/button.tsx', source })
     expect(result.code).toMatchInlineSnapshot(
-      `"export const cls = "button button--block_true button--size_md button--variant_solid""`,
+      `"export const cls = "button button--size_md button--variant_solid button--block_true""`,
     )
   })
 
@@ -214,7 +214,7 @@ describe('compiler.transformSource: config recipe calls', () => {
 
     const result = recipeCompiler.transformSource({ path: 'src/badge.tsx', source })
     expect(result.code).toMatchInlineSnapshot(
-      `"export const cls = "badge badge--raised_true badge--size_sm badge--compound__raised_true__size_sm""`,
+      `"export const cls = "badge badge--size_sm badge--raised_true badge--compound__raised_true__size_sm""`,
     )
   })
 
@@ -226,7 +226,7 @@ describe('compiler.transformSource: config recipe calls', () => {
 
     const result = recipeCompiler.transformSource({ path: 'src/badge.tsx', source })
     expect(result.code).toMatchInlineSnapshot(
-      `"export const cls = "badge badge--raised_true badge--size_md badge--compound__raised_true__size_md""`,
+      `"export const cls = "badge badge--size_md badge--raised_true badge--compound__raised_true__size_md""`,
     )
   })
 
@@ -237,7 +237,7 @@ describe('compiler.transformSource: config recipe calls', () => {
     )
 
     const result = recipeCompiler.transformSource({ path: 'src/badge.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`"export const cls = "badge badge--raised_false badge--size_sm""`)
+    expect(result.code).toMatchInlineSnapshot(`"export const cls = "badge badge--size_sm badge--raised_false""`)
   })
 
   test('rewrites two recipe calls in one file', () => {
@@ -357,7 +357,7 @@ describe('compiler.transformSource: smartCompoundVariants recipe calls', () => {
 
     const result = smartCompiler.transformSource({ path: 'src/badge.tsx', source })
     expect(result.code).toMatchInlineSnapshot(
-      `"export const cls = "badge badge--raised_true badge--size_sm badge--compound__raised_true__size_sm""`,
+      `"export const cls = "badge badge--size_sm badge--raised_true badge--compound__raised_true__size_sm""`,
     )
   })
 
@@ -368,7 +368,7 @@ describe('compiler.transformSource: smartCompoundVariants recipe calls', () => {
     )
 
     const result = smartCompiler.transformSource({ path: 'src/badge.tsx', source })
-    expect(result.code).toMatchInlineSnapshot(`"export const cls = "badge badge--raised_true badge--size_lg""`)
+    expect(result.code).toMatchInlineSnapshot(`"export const cls = "badge badge--size_lg badge--raised_true""`)
   })
 })
 

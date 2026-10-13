@@ -125,7 +125,7 @@ impl TokenDictionaryBuilder {
                 if !token.var.is_empty() {
                     by_var.entry(Arc::clone(&token.var)).or_insert(i);
                 }
-                if let Some(key) = token.path.split_once('.').map(|(_, key)| key) {
+                if let Some(key) = token.name() {
                     by_category_key
                         .entry(token.category.clone())
                         .or_default()
@@ -138,7 +138,7 @@ impl TokenDictionaryBuilder {
                         .or_insert_with(|| Arc::from(category_value(token)));
                 }
             } else {
-                if let Some(key) = token.path.split_once('.').map(|(_, key)| key) {
+                if let Some(key) = token.name() {
                     by_category_key
                         .entry(token.category.clone())
                         .or_default()

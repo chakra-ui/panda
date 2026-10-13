@@ -7,6 +7,8 @@ import { type PandaLintSettings, type RuleContextLike, resolvePandaSettings } fr
 export interface SourceCodeLike {
   text?: string
   getText?: () => string
+  // ESLint's binary SourceCode has `body` instead of `text`.
+  body?: Uint8Array
 }
 
 export interface LintRuleContextLike extends RuleContextLike {

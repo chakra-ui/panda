@@ -5,6 +5,72 @@ Each package keeps its own changelog. Start with [`@pandacss/dev`](./packages/de
 
 For Panda 1.x and earlier, see the [v1 changelog](https://github.com/chakra-ui/panda/blob/v1/CHANGELOG.md).
 
+## [2.2.0](#2.2.0) - 2026-10-09
+
+### Added
+
+- `createSlotRecipeContext` now returns `PropsProvider` and `usePropsContext`, like `createRecipeContext`. A group
+  component can set variant props once for every compound component inside it:
+
+  ```tsx
+  const { PropsProvider } = createSlotRecipeContext(card)
+
+  function CardGroup(props) {
+    const [variantProps, restProps] = card.splitVariantProps(props)
+    return (
+      <PropsProvider value={variantProps}>
+        <div {...restProps} />
+      </PropsProvider>
+    )
+  }
+  ```
+
+### Changed
+
+- `PropsProvider` is typed to take a `value` in every framework, matching what it reads at runtime. In Vue,
+  `<PropsProvider size="lg">` still works but now needs `value={{ size: 'lg' }}` to type-check, and `usePropsContext` is
+  typed as the `ComputedRef` it returns.
+- The `pure_helper_unevaluated` warning added in 2.1.2 is removed. It could fail builds with `--max-warnings 0` even
+  when every style was extracted, for example when a hook's result only picked between two style objects.
+
+### Performance
+
+- `panda.config.ts` loads faster when it imports a large package, like a design system. Only the parts you import are
+  loaded: a config importing tokens from `@mantine/core` went from 284 ms to 135 ms. This replaces 2.1.2's config
+  loader, which loaded every file of such packages one by one.
+
+### Fixed
+
+#### CSS output
+
+- Fix tokens in custom categories, like `theme.tokens.iconSizes`, being dropped. They emit CSS variables again and work
+  with `{iconSizes.sm}`, `token()` and custom utilities, as in v1.
+- Fix `staticCss` ignoring a custom utility's `transform`. Values from `staticCss.css` and `staticCss.patterns` now emit
+  the transformed styles.
+- Fix `polyfill: true` in `@pandacss/postcss` breaking relative `url()`s, like fonts and images, and source maps in
+  stylesheets pulled in with `@import`.
+
+#### Config
+
+- Fix v1 array conditions, like `hover: ['@media (hover: hover)', '&:hover']`, failing to load. They're converted to the
+  `@slot` object form with a deprecation warning.
+- Fix a config failing to load when it imports tokens from a UI library whose components use `window`.
+
+#### Extraction
+
+- Fix `Unexpected JSX expression` warnings, and missing styles, for JSX in `.js`, `.mjs` and `.cjs` files.
+- Fix `deprecated_token_used` being reported twice for the same token.
+
+#### Codegen and types
+
+- Fix a prop passed as `undefined`, like `size={props.size}`, overriding its value from `defaultProps` or
+  `PropsProvider`. It now keeps the default, like React's `defaultProps`.
+
+#### Tooling
+
+- Fix the ESLint `prefer-token` rule reporting negative spacing tokens (`marginTop: '-2'`) and color opacity modifiers
+  (`red.500/40`) as hardcoded values.
+
 ## [2.1.2](#2.1.2) - 2026-10-06
 
 ### Added

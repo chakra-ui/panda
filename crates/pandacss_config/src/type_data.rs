@@ -7,6 +7,7 @@
 
 use std::collections::BTreeMap;
 
+use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -210,7 +211,7 @@ pub struct RecipeTypeData {
 pub struct RecipeTypeDefinition {
     pub name: String,
     pub type_name: String,
-    pub variants: BTreeMap<String, VariantTypeData>,
+    pub variants: VariantTypeMap,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub deprecated: Option<Deprecated>,
 }
@@ -221,10 +222,13 @@ pub struct SlotRecipeTypeDefinition {
     pub name: String,
     pub type_name: String,
     pub slots: Vec<String>,
-    pub variants: BTreeMap<String, VariantTypeData>,
+    pub variants: VariantTypeMap,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub deprecated: Option<Deprecated>,
 }
+
+/// Variant names to their values, in config order.
+pub type VariantTypeMap = IndexMap<String, VariantTypeData>;
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -317,12 +321,11 @@ impl RecipeConfig {
         }
     }
 
-    fn variant_type_data(&self) -> BTreeMap<String, VariantTypeData> {
+    fn variant_type_data(&self) -> VariantTypeMap {
         self.variants
             .iter()
             .map(|(name, values)| {
-                let mut values = values.keys().cloned().collect::<Vec<_>>();
-                values.sort();
+                let values = values.keys().cloned().collect::<Vec<_>>();
                 let allows_boolean = values
                     .iter()
                     .any(|value| value == "true" || value == "false");

@@ -1,5 +1,28 @@
 # @pandacss/cli
 
+## 2.2.0
+
+### Patch Changes
+
+- e9d19e3: Improve config loading:
+
+  - Faster when `panda.config.ts` imports a large package, like a design system. Only the parts you import are loaded.
+  - Importing tokens from a UI library whose components use `window` no longer fails.
+
+- Updated dependencies [0a95d5d]
+- Updated dependencies [e9d19e3]
+- Updated dependencies [e71a5ed]
+- Updated dependencies [4bc239a]
+- Updated dependencies [e899f53]
+- Updated dependencies [9d5077d]
+- Updated dependencies [d5fb171]
+- Updated dependencies [da7c333]
+- Updated dependencies [1744ddd]
+  - @pandacss/compiler@2.2.0
+  - @pandacss/config@2.2.0
+  - @pandacss/compiler-shared@2.2.0
+  - @pandacss/types@2.2.0
+
 ## 2.1.2
 
 ### Patch Changes

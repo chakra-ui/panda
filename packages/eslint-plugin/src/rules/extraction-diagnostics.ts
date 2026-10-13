@@ -1,5 +1,5 @@
 import type { Diagnostic } from '@pandacss/compiler'
-import { type Inspect, type RuleContextWithReport, type RuleModuleLike, toEslintLoc } from './shared'
+import { FILE_START_LOC, type Inspect, type RuleContextWithReport, type RuleModuleLike, toEslintLoc } from './shared'
 
 export const extractionDiagnosticsRuleName = 'extraction-diagnostics'
 
@@ -36,7 +36,7 @@ export function reportDiagnostics(context: RuleContextWithReport, diagnostics: r
     context.report({
       messageId: 'diagnostic',
       data: { message: diagnostic.message },
-      ...(diagnostic.location ? { loc: toEslintLoc(diagnostic.location) } : {}),
+      loc: diagnostic.location ? toEslintLoc(diagnostic.location) : FILE_START_LOC,
     })
   }
 }

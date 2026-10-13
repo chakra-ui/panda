@@ -1,24 +1,30 @@
 import type { FileInspectionResult, SourceRange } from '@pandacss/compiler'
 import type { LintRuleContextLike } from '../core'
 
+export interface RuleTextEdit {
+  range: [number, number]
+  text: string
+}
+
 export interface RuleFixer {
-  replaceTextRange(range: [number, number], text: string): unknown
+  replaceTextRange(range: [number, number], text: string): RuleTextEdit
 }
 
 export interface SuggestionDescriptor {
   desc: string
-  fix: (fixer: RuleFixer) => unknown
+  fix: (fixer: RuleFixer) => RuleTextEdit | null
 }
 
 export interface ReportDescriptor {
   messageId: string
   data?: Record<string, string>
-  loc?: {
+  // Required: ESLint throws when a report has neither `node` nor `loc`.
+  loc: {
     start: { line: number; column: number }
     end: { line: number; column: number }
   }
   suggest?: SuggestionDescriptor[]
-  fix?: (fixer: RuleFixer) => unknown
+  fix?: (fixer: RuleFixer) => RuleTextEdit | null
 }
 
 export interface RuleContextWithReport extends LintRuleContextLike {
@@ -59,6 +65,9 @@ export function byteToIndex(text: string, byteOffset: number): number {
   }
   return text.length
 }
+
+/** For file-level reports with no source range. */
+export const FILE_START_LOC: ReportDescriptor['loc'] = { start: { line: 1, column: 0 }, end: { line: 1, column: 0 } }
 
 /** ESLint columns are 0-based; Panda source ranges are 1-based. */
 export function toEslintLoc(range: SourceRange): ReportDescriptor['loc'] {

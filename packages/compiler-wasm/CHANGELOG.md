@@ -1,5 +1,14 @@
 # @pandacss/compiler-wasm
 
+## 2.2.0
+
+### Patch Changes
+
+- d5fb171: Remove `pure_helper_unevaluated` warnings, which could fail builds even when the selected styles were fully
+  extracted. Fix duplicate `deprecated_token_used` warnings for the same token call.
+- @pandacss/compiler-shared@2.2.0
+  - @pandacss/types@2.2.0
+
 ## 2.1.2
 
 ### Patch Changes

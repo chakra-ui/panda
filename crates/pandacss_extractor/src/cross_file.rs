@@ -46,8 +46,6 @@ pub(crate) enum ExportEntry {
         style_value: Literal,
     },
     PureFn(OwnedPureFn),
-    /// An exported function whose body can't be lowered; kept so call sites can warn.
-    UnevaluatedFn,
     Recipe(ExportedRecipe),
 }
 
@@ -1045,10 +1043,10 @@ fn collect_from_named(
             return;
         }
         Some(Declaration::FunctionDeclaration(func)) => {
-            if let Some(id) = &func.id {
-                let entry = lower_function(func, Some(resolver))
-                    .map_or(ExportEntry::UnevaluatedFn, ExportEntry::PureFn);
-                out.insert(id.name.to_string(), entry);
+            if let Some(id) = &func.id
+                && let Some(pure_fn) = lower_function(func, Some(resolver))
+            {
+                out.insert(id.name.to_string(), ExportEntry::PureFn(pure_fn));
             }
             return;
         }
@@ -1101,8 +1099,6 @@ fn collect_from_var(
                     out.insert(id.name.to_string(), entry);
                 } else if let Some(pure_fn) = lower_callable_expr(init, Some(resolver)) {
                     out.insert(id.name.to_string(), ExportEntry::PureFn(pure_fn));
-                } else if is_function_expression(init) {
-                    out.insert(id.name.to_string(), ExportEntry::UnevaluatedFn);
                 }
             }
             BindingPattern::ObjectPattern(_) | BindingPattern::ArrayPattern(_) => {
@@ -1178,11 +1174,4 @@ fn collect_pattern_bindings(
             collect_pattern_bindings(&assignment.left, resolver, out);
         }
     }
-}
-
-fn is_function_expression(expr: &Expression<'_>) -> bool {
-    matches!(
-        expr.get_inner_expression(),
-        Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_)
-    )
 }

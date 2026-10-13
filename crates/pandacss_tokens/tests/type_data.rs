@@ -67,3 +67,41 @@ fn type_data_exposes_deprecation_flag_and_message() {
     colors.old: true
     "###);
 }
+
+#[test]
+fn token_named_after_its_own_category_keeps_the_category_in_its_type() {
+    let dict = TokenDictionary::builder()
+        .insert(Token::new(
+            "colors.colors.grey50",
+            "#f9fafb",
+            "var(--colors-colors\\.grey50)",
+            TokenCategory::Colors,
+        ))
+        .insert(Token::new(
+            "colors.brand.grey100",
+            "#f2f4f6",
+            "var(--colors-brand\\.grey100)",
+            TokenCategory::Colors,
+        ))
+        .insert(Token::new(
+            "spacing.spacing.1",
+            "4px",
+            "var(--spacing-spacing\\.1)",
+            TokenCategory::Spacing,
+        ))
+        .build();
+
+    assert_yaml_snapshot!(json!(dict.type_data().categories), @"
+    colors:
+      name: colors
+      typeName: ColorToken
+      values:
+        - brand.grey100
+        - colors.grey50
+    spacing:
+      name: spacing
+      typeName: SpacingToken
+      values:
+        - spacing.1
+    ");
+}

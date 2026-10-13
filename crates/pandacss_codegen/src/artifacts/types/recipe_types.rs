@@ -1,6 +1,4 @@
-use std::collections::BTreeMap;
-
-use pandacss_config::VariantTypeData;
+use pandacss_config::{VariantTypeData, VariantTypeMap};
 
 use crate::artifacts::ts_string::{quote_member, string_literal, string_union, type_raw};
 use crate::{ImportDecl, Module};
@@ -93,7 +91,7 @@ export interface SlotRecipeCreatorFn {
 pub(crate) fn concrete_recipe_types(
     type_name: &str,
     slots: Option<&[String]>,
-    variants: &BTreeMap<String, VariantTypeData>,
+    variants: &VariantTypeMap,
     has_compound_variants: bool,
 ) -> Vec<String> {
     let variant_name = format!("{type_name}Variant");
@@ -123,7 +121,7 @@ pub(crate) fn concrete_recipe_types(
     out
 }
 
-fn variant_type(type_name: &str, variants: &BTreeMap<String, VariantTypeData>) -> String {
+fn variant_type(type_name: &str, variants: &VariantTypeMap) -> String {
     if variants.is_empty() {
         return format!("export type {type_name} = {{}}");
     }

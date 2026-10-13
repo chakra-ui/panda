@@ -110,11 +110,11 @@ fn compiles_realistic_static_dynamic_tokens_global_and_recipes() {
         }
       }
       @layer variants {
-        .button--tone_solid {
-          background-color: var(--colors-red-500);
-        }
         .button--size_sm {
           padding: 4px;
+        }
+        .button--tone_solid {
+          background-color: var(--colors-red-500);
         }
       }
     }

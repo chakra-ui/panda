@@ -262,8 +262,8 @@ fn emits_ts_source_recipes() {
     import type { RecipeRuntimeFn, RecipeVariantMap } from '../types/recipe';
 
     export type ButtonVariant = {
+      size?: "sm" | "md"
       disabled?: boolean
-      size?: "md" | "sm"
     }
 
     export type ButtonVariantProps = {
@@ -274,7 +274,7 @@ fn emits_ts_source_recipes() {
 
     export type ButtonRecipe = RecipeRuntimeFn<ButtonVariantProps, ButtonVariantMap>
 
-    const buttonConfig = {"name":"button","className":"btn","defaultVariants":{"size":"sm"},"compoundVariants":[{"disabled":true,"size":["sm","md"],"className":"btn--compound__disabled_true__size_sm|md"}],"variantMap":{"disabled":["false","true"],"size":["md","sm"]}}
+    const buttonConfig = {"name":"button","className":"btn","defaultVariants":{"size":"sm"},"compoundVariants":[{"disabled":true,"size":["sm","md"],"className":"btn--compound__disabled_true__size_sm|md"}],"variantMap":{"size":["sm","md"],"disabled":["true","false"]}}
 
     export const button: ButtonRecipe = /* @__PURE__ */ createRecipe(buttonConfig)
     "#);
@@ -284,7 +284,7 @@ fn emits_ts_source_recipes() {
     import type { SlotRecipeRuntimeFn, RecipeVariantMap } from '../types/recipe';
 
     export type CardVariant = {
-      tone?: "danger" | "info"
+      tone?: "info" | "danger"
     }
 
     export type CardVariantProps = {
@@ -297,7 +297,7 @@ fn emits_ts_source_recipes() {
 
     export type CardRecipe = SlotRecipeRuntimeFn<CardSlot, CardVariantProps, CardVariantMap>
 
-    const cardConfig = {"name":"card","slots":["root","label"],"compoundVariants":[{"tone":"info","classNames":{"root":"card__root--compound__tone_info","label":"card__label--compound__tone_info"}}],"variantMap":{"tone":["danger","info"]}}
+    const cardConfig = {"name":"card","slots":["root","label"],"compoundVariants":[{"tone":"info","classNames":{"root":"card__root--compound__tone_info","label":"card__label--compound__tone_info"}}],"variantMap":{"tone":["info","danger"]}}
 
     export const card: CardRecipe = /* @__PURE__ */ createSlotRecipe(cardConfig)
     "#);
@@ -491,7 +491,7 @@ fn emits_js_runtime_and_declarations() {
     assert_snapshot!(file(recipes, "recipes/button.mjs"), @r#"
     import { createRecipe } from './runtime.mjs';
 
-    const buttonConfig = {"name":"button","className":"btn","defaultVariants":{"size":"sm"},"compoundVariants":[{"disabled":true,"size":["sm","md"],"className":"btn--compound__disabled_true__size_sm|md"}],"variantMap":{"disabled":["false","true"],"size":["md","sm"]}}
+    const buttonConfig = {"name":"button","className":"btn","defaultVariants":{"size":"sm"},"compoundVariants":[{"disabled":true,"size":["sm","md"],"className":"btn--compound__disabled_true__size_sm|md"}],"variantMap":{"size":["sm","md"],"disabled":["true","false"]}}
 
     export const button = /* @__PURE__ */ createRecipe(buttonConfig)
     "#);
@@ -499,8 +499,8 @@ fn emits_js_runtime_and_declarations() {
     import type { RecipeRuntimeFn, RecipeVariantMap } from '../types/recipe.mjs';
 
     export type ButtonVariant = {
+      size?: "sm" | "md"
       disabled?: boolean
-      size?: "md" | "sm"
     }
 
     export type ButtonVariantProps = {
@@ -516,7 +516,7 @@ fn emits_js_runtime_and_declarations() {
     assert_snapshot!(file(recipes, "recipes/card.mjs"), @r#"
     import { createSlotRecipe } from './runtime.mjs';
 
-    const cardConfig = {"name":"card","slots":["root","label"],"compoundVariants":[{"tone":"info","classNames":{"root":"card__root--compound__tone_info","label":"card__label--compound__tone_info"}}],"variantMap":{"tone":["danger","info"]}}
+    const cardConfig = {"name":"card","slots":["root","label"],"compoundVariants":[{"tone":"info","classNames":{"root":"card__root--compound__tone_info","label":"card__label--compound__tone_info"}}],"variantMap":{"tone":["info","danger"]}}
 
     export const card = /* @__PURE__ */ createSlotRecipe(cardConfig)
     "#);
@@ -524,7 +524,7 @@ fn emits_js_runtime_and_declarations() {
     import type { SlotRecipeRuntimeFn, RecipeVariantMap } from '../types/recipe.mjs';
 
     export type CardVariant = {
-      tone?: "danger" | "info"
+      tone?: "info" | "danger"
     }
 
     export type CardVariantProps = {

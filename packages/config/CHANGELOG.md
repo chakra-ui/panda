@@ -1,5 +1,17 @@
 # @pandacss/config
 
+## 2.2.0
+
+### Patch Changes
+
+- e9d19e3: Improve config loading:
+
+  - Faster when `panda.config.ts` imports a large package, like a design system. Only the parts you import are loaded.
+  - Importing tokens from a UI library whose components use `window` no longer fails.
+
+- @pandacss/compiler-shared@2.2.0
+  - @pandacss/types@2.2.0
+
 ## 2.1.2
 
 ### Patch Changes

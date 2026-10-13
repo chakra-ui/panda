@@ -3,7 +3,7 @@
 
 use std::collections::BTreeMap;
 
-use pandacss_config::{CompoundVariantConfig, RecipeConfig, VariantSelection, VariantTypeData};
+use pandacss_config::{CompoundVariantConfig, RecipeConfig, VariantSelection, VariantTypeMap};
 use pandacss_shared::{compound_class_name, file_stem, js_ident, number_to_js_string, pascal_case};
 use serde_json::{Map, Value};
 
@@ -139,7 +139,7 @@ fn recipe_module(
         ("createRecipe", "RecipeRuntimeFn")
     };
 
-    let empty = BTreeMap::new();
+    let empty = VariantTypeMap::default();
     let variants = recipe_variant_data(ctx, name, slot).unwrap_or(&empty);
     let slots = slot.then_some(recipe.slots.as_slice());
     let type_code = crate::artifacts::types::concrete_recipe_types(
@@ -182,7 +182,7 @@ fn recipe_variant_data<'a>(
     ctx: CodegenContext<'a>,
     name: &str,
     slot: bool,
-) -> Option<&'a BTreeMap<String, VariantTypeData>> {
+) -> Option<&'a VariantTypeMap> {
     if slot {
         ctx.types
             .recipes
@@ -277,7 +277,7 @@ fn recipe_config_code(
         );
     }
 
-    let variant_map = variant_map.map_or_else(BTreeMap::new, variant_map_json);
+    let variant_map = variant_map.map(variant_map_json).unwrap_or_default();
     if !variant_map.is_empty() {
         config.insert(
             "variantMap".into(),
@@ -304,10 +304,10 @@ fn recipe_runtime_code(ctx: CodegenContext<'_>) -> String {
         .replace("__HASH__", hash)
 }
 
-fn variant_map_json(variants: &BTreeMap<String, VariantTypeData>) -> BTreeMap<String, Vec<String>> {
+fn variant_map_json(variants: &VariantTypeMap) -> serde_json::Map<String, serde_json::Value> {
     variants
         .iter()
-        .map(|(name, data)| (name.clone(), data.values.clone()))
+        .map(|(name, data)| (name.clone(), data.values.clone().into()))
         .collect()
 }
 

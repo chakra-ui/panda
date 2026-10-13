@@ -130,6 +130,7 @@ impl<'a> SortContext<'a> {
             .collect::<Vec<_>>();
         out.sort_by(|a, b| {
             a.1.cmp(&b.1)
+                .then_with(|| a.0.entry.authored_order.cmp(&b.0.entry.authored_order))
                 .then_with(|| a.0.entry.prop.cmp(&b.0.entry.prop))
                 .then_with(|| {
                     atom_value_sort_key(&a.0.entry.value)
@@ -767,6 +768,26 @@ impl<'a> Iterator for PseudoClasses<'a> {
 
 fn is_pseudo_element(selector: &str) -> bool {
     selector.contains("::")
+}
+
+/// Cascade rank of one CSS declaration (`border-color`): shorthands before the longhands they expand.
+pub(crate) fn declaration_order(css_prop: &str) -> (u16, u8) {
+    if css_prop.starts_with("--") {
+        return (property_priority(css_prop), 2);
+    }
+    let mut prop = String::with_capacity(css_prop.len());
+    let mut upper = false;
+    for ch in css_prop.chars() {
+        if ch == '-' {
+            upper = true;
+        } else if upper {
+            prop.push(ch.to_ascii_uppercase());
+            upper = false;
+        } else {
+            prop.push(ch);
+        }
+    }
+    (property_priority(&prop), property_axis(&prop))
 }
 
 /// Order property names by the canonical emit cascade (breadth → axis → name).

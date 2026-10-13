@@ -361,6 +361,7 @@ fn group_from_build(
         class_name: string_at(strings, build.cls)?,
         conditions: conditions_from_build(&build.cond, strings)?,
         entries,
+        position: [0; 3],
     })
 }
 

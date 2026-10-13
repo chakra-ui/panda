@@ -35,7 +35,7 @@ use crate::conditions::{
 };
 use crate::grouped::{GroupNode, write_grouped_rules};
 use crate::numeric_value;
-use crate::sort::{SortContext, SortedAtom, condition_names};
+use crate::sort::{SortContext, SortedAtom, condition_names, declaration_order};
 use crate::style_rules::{
     Declaration, LoweredTarget, StyleRule, Target, append_declaration, append_declaration_run,
     append_declarations, push_grouped_rule, write_with_wrappers,
@@ -1967,6 +1967,9 @@ impl<'a> EmitContext<'a> {
                 append_declarations(&mut declarations, entry_declarations);
             }
         }
+
+        // After overrides resolve: shorthands before longhands, otherwise as authored.
+        declarations.sort_by_cached_key(|declaration| declaration_order(&declaration.prop));
 
         let base_rules = self.lower_resolved_selector(selector, conditions);
 

@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use pandacss_config::{Deprecated, JsxSpecifier, PatternPropertyTypeData, VariantTypeData};
+use pandacss_config::{Deprecated, JsxSpecifier, PatternPropertyTypeData, VariantTypeMap};
 use pandacss_tokens::{TokenCategory, TokenDictionary};
 use serde_json::{Value, json};
 
@@ -204,7 +204,7 @@ fn slot_recipe_table(ctx: CodegenContext<'_>) -> Option<Value> {
     Some(Value::Object(rows.collect()))
 }
 
-fn variant_table(variants: &BTreeMap<String, VariantTypeData>) -> Value {
+fn variant_table(variants: &VariantTypeMap) -> Value {
     let rows = variants.iter().map(|(name, variant)| {
         (
             name.clone(),
@@ -314,8 +314,8 @@ fn render_order(dictionary: &TokenDictionary) -> Vec<(&TokenCategory, Vec<&str>)
             let paths: Vec<&str> = dictionary
                 .iter_category(category)
                 .filter(|token| token.condition.is_none())
+                .filter(|token| !is_color_palette(token.name().unwrap_or(&token.path)))
                 .map(|token| token.path.as_ref())
-                .filter(|path| !is_color_palette(category_relative_path(path, category)))
                 .filter(|path| seen.insert(*path))
                 .collect();
             (category, paths)
@@ -494,12 +494,6 @@ fn categories(dictionary: &TokenDictionary) -> impl Iterator<Item = &TokenCatego
 
 fn is_color_palette(name: &str) -> bool {
     name == COLOR_PALETTE || name.starts_with(COLOR_PALETTE_PREFIX)
-}
-
-fn category_relative_path<'a>(path: &'a str, category: &TokenCategory) -> &'a str {
-    path.strip_prefix(category.as_str())
-        .and_then(|rest| rest.strip_prefix('.'))
-        .unwrap_or(path)
 }
 
 fn resolve_value(dictionary: &TokenDictionary, value: &str) -> String {

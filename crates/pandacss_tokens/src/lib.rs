@@ -63,6 +63,7 @@ pub struct TokenDictionary {
     #[cfg_attr(feature = "serde", serde(skip))]
     by_category_key: FxHashMap<TokenCategory, FxHashMap<Arc<str>, usize>>,
     #[cfg_attr(feature = "serde", serde(skip))]
+    /// Keyed by [`Token::name`], not the full path.
     category_values_cache: FxHashMap<TokenCategory, FxHashMap<Arc<str>, Arc<str>>>,
     #[cfg_attr(feature = "serde", serde(skip))]
     by_condition: FxHashMap<Arc<str>, Vec<usize>>,
@@ -497,7 +498,7 @@ impl TokenDictionary {
 
     #[must_use]
     pub fn token_metadata(&self, token: &Token, modifier: Option<String>) -> ResolvedTokenPath {
-        let category_path = category_relative_path(&token.path, &token.category).to_owned();
+        let category_path = token.name().unwrap_or(&token.path).to_owned();
         ResolvedTokenPath {
             path: token.path.to_string(),
             category: token.category.clone(),
@@ -644,12 +645,6 @@ pub(crate) fn parse_token_ref(original_value: Option<&str>) -> Option<&str> {
         .strip_prefix('{')
         .and_then(|rest| rest.strip_suffix('}'))
         .filter(|inner| !inner.is_empty() && !inner.contains('{'))
-}
-
-fn category_relative_path<'a>(path: &'a str, category: &TokenCategory) -> &'a str {
-    path.strip_prefix(category.as_str())
-        .and_then(|rest| rest.strip_prefix('.'))
-        .unwrap_or(path)
 }
 
 fn split_modifier(value: &str) -> (&str, Option<&str>) {
