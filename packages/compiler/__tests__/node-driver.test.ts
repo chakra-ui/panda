@@ -1299,6 +1299,38 @@ describe('createNodeDriver reload', () => {
         }
       `)
   })
+
+  it('watches the new preset after switching to one with the same values', async () => {
+    const presetDir = mkdtempSync(join(tmpdir(), 'panda-driver-reload-preset-'))
+    const preset = "export default { theme: { tokens: { colors: { brand: { value: 'red' } } } } }"
+    const config = (file: string) =>
+      [`import preset from './${file}'`, 'export default { presets: [preset], include: [] }'].join('\n')
+    writeFileTree(presetDir, {
+      'preset-a.ts': preset,
+      'preset-b.ts': preset,
+      'panda.config.ts': config('preset-a'),
+    })
+
+    try {
+      const driver = await createNodeDriver({ cwd: presetDir })
+      writeFileTree(presetDir, { 'panda.config.ts': config('preset-b') })
+      const diff = await driver.reload()
+
+      expect({ hasChanged: diff.hasChanged, dependencies: driver.configDependencies.sort() }).toMatchInlineSnapshot(`
+        {
+          "hasChanged": false,
+          "dependencies": [
+            "panda.config.ts",
+            "preset-b.ts",
+          ],
+        }
+      `)
+      expect(driver.isConfigFile(join(presetDir, 'preset-b.ts'))).toBe(true)
+      expect(driver.isConfigFile(join(presetDir, 'preset-a.ts'))).toBe(false)
+    } finally {
+      rmSync(presetDir, { recursive: true, force: true })
+    }
+  })
 })
 
 describe('NodeDriver with sources outside cwd', () => {

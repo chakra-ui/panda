@@ -51,6 +51,19 @@ test('answers with the new value after editing a token in an imported preset', a
   }, driver)
 })
 
+test('picks up edits to a preset swapped in with the same values', async () => {
+  await withClient(async (client) => {
+    writeFileSync(join(dir, 'other-preset.ts'), preset('400'))
+    writeFileSync(join(dir, 'panda.config.ts'), config.replace("'./preset'", "'./other-preset'"))
+    await call(client, 'get_tokens', { category: 'zIndex' })
+
+    writeFileSync(join(dir, 'other-preset.ts'), preset('1000'))
+
+    const after = await call(client, 'get_tokens', { category: 'zIndex' })
+    expect(JSON.parse(after.text).values['zIndex.devtools']).toBe('1000')
+  }, driver)
+})
+
 test('accepts a token category added after the server started', async () => {
   await withClient(async (client) => {
     writeFileSync(
