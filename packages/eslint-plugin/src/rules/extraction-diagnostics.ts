@@ -1,5 +1,6 @@
 import type { Diagnostic } from '@pandacss/compiler'
 import { FILE_START_LOC, type Inspect, type RuleContextWithReport, type RuleModuleLike, toEslintLoc } from './shared'
+import { unknownTokenReferenceCode } from './tokens'
 
 export const extractionDiagnosticsRuleName = 'extraction-diagnostics'
 
@@ -24,7 +25,10 @@ export function createExtractionDiagnosticsRule(options: ExtractionDiagnosticsRu
         Program() {
           const inspection = options.inspect(context)
           if (!inspection) return
-          reportDiagnostics(context, inspection.diagnostics)
+          reportDiagnostics(
+            context,
+            inspection.diagnostics.filter((diagnostic) => diagnostic.code !== unknownTokenReferenceCode),
+          )
         },
       }
     },

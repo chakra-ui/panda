@@ -132,6 +132,14 @@ export interface StyleValueSpanRef {
   value: string
   span: Span
   token?: TokenValueRef
+  references?: StyleValueTokenRef[]
+}
+
+export interface StyleValueTokenRef {
+  path: string
+  resolved: boolean
+  span: Span
+  range: SourceRange
 }
 
 export interface TokenValueRef {

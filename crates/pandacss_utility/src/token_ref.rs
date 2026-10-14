@@ -2,6 +2,7 @@
 //! resolution into CSS vars or raw token values.
 
 use std::borrow::Cow;
+use std::ops::Range;
 
 use pandacss_shared::{css_escape, find_matching_paren};
 use pandacss_tokens::{Token, TokenDictionary};
@@ -146,6 +147,86 @@ fn replace_token_functions<'t>(
 
     out.push_str(rest);
     out
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TokenReference<'a> {
+    pub path: &'a str,
+    pub range: Range<usize>,
+    pub resolved: bool,
+}
+
+#[must_use]
+pub fn token_references<'a>(value: &'a str, tokens: &TokenDictionary) -> Vec<TokenReference<'a>> {
+    let mut out = Vec::new();
+    collect_wrapped_references(value, tokens, &mut out);
+    collect_function_references(value, 0..value.len(), tokens, &mut out);
+    out.sort_by_key(|reference| reference.range.start);
+    out
+}
+
+fn collect_wrapped_references<'a>(
+    value: &'a str,
+    tokens: &TokenDictionary,
+    out: &mut Vec<TokenReference<'a>>,
+) {
+    let mut cursor = 0;
+    while let Some(open) = value[cursor..].find('{') {
+        let start = cursor + open + 1;
+        let Some(len) = value[start..].find('}') else {
+            return;
+        };
+        let end = start + len;
+        if let Some(reference) = reference_in(value, start..end, tokens)
+            && (reference.resolved || is_token_path_like(&value[start..end]))
+        {
+            out.push(reference);
+        }
+        cursor = end + 1;
+    }
+}
+
+fn collect_function_references<'a>(
+    value: &'a str,
+    within: Range<usize>,
+    tokens: &TokenDictionary,
+    out: &mut Vec<TokenReference<'a>>,
+) {
+    let mut cursor = within.start;
+    while let Some(found) = value[cursor..within.end].find("token(") {
+        let start = cursor + found + "token(".len();
+        let Some(len) = find_matching_paren(&value[start..within.end]) else {
+            return;
+        };
+        let end = start + len;
+        let (path, fallback) = split_token_args(&value[start..end]);
+        if let Some(reference) = reference_in(value, start..start + path.len(), tokens) {
+            out.push(reference);
+        }
+        if let Some(fallback) = fallback {
+            collect_function_references(value, end - fallback.len()..end, tokens, out);
+        }
+        cursor = end + 1;
+    }
+}
+
+fn reference_in<'a>(
+    value: &'a str,
+    range: Range<usize>,
+    tokens: &TokenDictionary,
+) -> Option<TokenReference<'a>> {
+    let raw = &value[range.clone()];
+    let raw = split_top_level_slash(raw).map_or(raw, |(path, _)| path);
+    let path = raw.trim();
+    if path.is_empty() {
+        return None;
+    }
+    let start = range.start + (raw.len() - raw.trim_start().len());
+    Some(TokenReference {
+        path,
+        range: start..start + path.len(),
+        resolved: tokens.token(path).is_some(),
+    })
 }
 
 fn unresolved_wrapped_reference(path: &str) -> String {

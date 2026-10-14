@@ -21,6 +21,7 @@ pandacss_literal = { workspace = true }
 pandacss_recipes = { workspace = true }
 pandacss_shared = { workspace = true }
 pandacss_system = { workspace = true }
+pandacss_tokens = { workspace = true }
 pandacss_utility = { workspace = true }
 rustc-hash = { workspace = true }
 serde = { workspace = true }

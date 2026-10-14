@@ -125,7 +125,8 @@ path, so the setup is identical.
 
 These rules are on in `recommended`:
 
-- `no-invalid-token-paths` (error) — a token reference that doesn't exist, e.g. `token('colors.ghost')`.
+- `no-invalid-token-paths` (error) — a token reference that doesn't exist, e.g. `token('colors.ghost')` or
+  `'1px solid {colors.ghost}'`.
 - `no-invalid-nesting` (error) — a nested selector missing `&` (`':hover'` instead of `'&:hover'`), which Panda silently
   ignores. Suggests prefixing `&`.
 - `file-not-included` (error) — a file uses Panda but sits outside your config `include`, so its styles never get

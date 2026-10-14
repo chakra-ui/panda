@@ -996,3 +996,42 @@ fn inspection_and_compilation_share_file_local_condition_diagnostics() {
           column: 38
     "#);
 }
+
+#[test]
+fn inspection_locates_token_references_inside_style_values() {
+    let source = indoc! {r"
+        import { css } from '@panda/css'
+        import { Box } from '@panda/jsx'
+        const shadow = '0 0 0 1px {colors.fromVariable}'
+        css({
+          color: '{colors.red.500} {colors.missing/50}',
+          padding: `calc(token(spacing.gap) + 2px)`,
+          boxShadow: shadow,
+          _hover: { color: '1px solid token(colors.red.300, {colors.fallback})' },
+        })
+        const J = () => <Box color='{colors.jsx}' />
+    "};
+    let result = inspect_file_source(&system(), "a.tsx", source);
+
+    let refs = result
+        .style_entries
+        .iter()
+        .flat_map(|entry| &entry.value_spans)
+        .flat_map(|leaf| &leaf.references)
+        .map(|reference| {
+            let at = &source[reference.span.start as usize..reference.span.end as usize];
+            format!("{} resolved={} at={at}", reference.path, reference.resolved)
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    assert_snapshot!(refs, @"
+    colors.red.500 resolved=true at=colors.red.500
+    colors.missing resolved=false at=colors.missing
+    spacing.gap resolved=false at=spacing.gap
+    colors.fromVariable resolved=false at=shadow
+    colors.red.300 resolved=true at=colors.red.300
+    colors.fallback resolved=false at=colors.fallback
+    colors.jsx resolved=false at=colors.jsx
+    ");
+}

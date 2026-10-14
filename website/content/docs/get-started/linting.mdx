@@ -105,14 +105,22 @@ These catch code that silently produces no CSS, or the wrong CSS. The recommende
 
 #### no-invalid-token-paths
 
-A token reference that doesn't resolve is emitted as a literal CSS value, not an error.
+A token reference that doesn't resolve is emitted as a literal CSS value, not an error. The rule checks `token()`
+calls and the `{…}` and `token(…)` references inside style values, including composite values like shadows, borders,
+and `calc()`.
 
 ```tsx
-// ❌ 'red.1000' is not in the theme
-css({ color: 'red.1000' })
+// ❌ 'colors.ghost' and 'sizes.ghost' are not in the theme
+css({
+  boxShadow: '0 0 0 1px {colors.ghost}',
+  width: 'calc(token(sizes.ghost) + 2px)',
+})
 
 // ✅
-css({ color: 'red.500' })
+css({
+  boxShadow: '0 0 0 1px {colors.red.500}',
+  width: 'calc(token(sizes.4) + 2px)',
+})
 ```
 
 #### no-invalid-nesting

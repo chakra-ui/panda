@@ -16,6 +16,7 @@ ruleTester.run('extraction-diagnostics', {
       code: withCss("css({ _hover: { color: 'red' }, _custom: { color: 'blue' }, md: { color: 'green' } })"),
     },
     { filename: 'app.tsx', code: "const x = { _hver: { color: 'red' } }" },
+    { filename: 'app.tsx', code: withCss("css({ color: '{colors.missing}' })") },
   ],
   invalid: [
     {

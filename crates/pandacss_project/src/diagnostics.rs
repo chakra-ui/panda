@@ -3,7 +3,8 @@ use pandacss_extractor::{ExtractedCall, ExtractedJsx, LineIndex, MatchCategory, 
 use pandacss_literal::Literal;
 use pandacss_shared::{Diagnostic, diagnostic_codes};
 use pandacss_system::System;
-use pandacss_utility::Utility;
+use pandacss_tokens::TokenDictionary;
+use pandacss_utility::{Utility, token_references};
 use rustc_hash::FxHashSet;
 
 use crate::ProjectConditionMatcher;
@@ -25,6 +26,10 @@ pub fn append_usage_diagnostics(
     }
 
     push_unknown_condition_diagnostics(calls, jsx, system.conditions(), line_index, out);
+
+    if let Some(tokens) = system.token_dictionary() {
+        push_unknown_token_reference_diagnostics(calls, jsx, &tokens, line_index, out);
+    }
 }
 
 fn push_usage_diagnostics(
@@ -277,6 +282,63 @@ fn invalid_color_opacity_modifier_diagnostic(
         format!(
             "Color value `{value}` has an invalid opacity modifier; expected a number (e.g. `40`) or an opacity token (e.g. `half`)"
         ),
+        span,
+        line_index,
+    )
+}
+
+fn push_unknown_token_reference_diagnostics(
+    calls: &[ExtractedCall],
+    jsx: &[ExtractedJsx],
+    tokens: &TokenDictionary,
+    line_index: &LineIndex<'_>,
+    out: &mut Vec<Diagnostic>,
+) {
+    push_usage_diagnostics(
+        calls,
+        jsx,
+        line_index,
+        out,
+        |literal, seen| collect_unknown_token_references(literal, tokens, seen),
+        unknown_token_reference_diagnostic,
+    );
+}
+
+fn collect_unknown_token_references(
+    value: &Literal,
+    tokens: &TokenDictionary,
+    out: &mut Vec<String>,
+) {
+    match value {
+        Literal::String(text) => {
+            for reference in token_references(text, tokens) {
+                if !reference.resolved && !out.iter().any(|path| path == reference.path) {
+                    out.push(reference.path.to_owned());
+                }
+            }
+        }
+        Literal::Object(entries) => {
+            for (_, child) in entries {
+                collect_unknown_token_references(child, tokens, out);
+            }
+        }
+        Literal::Array(items) | Literal::Conditional(items) => {
+            for item in items {
+                collect_unknown_token_references(item, tokens, out);
+            }
+        }
+        Literal::Token { .. } | Literal::Number(_) | Literal::Bool(_) | Literal::Null => {}
+    }
+}
+
+fn unknown_token_reference_diagnostic(
+    path: &str,
+    span: Span,
+    line_index: &LineIndex<'_>,
+) -> Diagnostic {
+    located_warning(
+        diagnostic_codes::UNKNOWN_TOKEN_REFERENCE,
+        format!("Token `{path}` was not found. Check the path or add the token to your theme."),
         span,
         line_index,
     )

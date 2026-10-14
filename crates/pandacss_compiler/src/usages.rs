@@ -10,13 +10,13 @@ use pandacss_extractor::{
 use pandacss_literal::Literal;
 use pandacss_shared::parse_first_that_works_value;
 use pandacss_tokens::{TokenCategory, TokenDictionary, TokenSuggestion};
-use pandacss_utility::Utility;
+use pandacss_utility::{Utility, token_references};
 use rustc_hash::FxHashMap;
 
 use crate::inspection::{
     FileInspectionResult, StyleEntryInput, StyleEntryKind, StyleEntryOwner, StyleEntryRef,
-    StyleEntrySyntax, UsageKind, UsageSite, ValueSpanRef, call_view, component_entry, jsx_view,
-    style_entry, token_ref_site, token_value_ref,
+    StyleEntrySyntax, UsageKind, UsageSite, ValueSpanRef, ValueTokenRef, call_view,
+    component_entry, jsx_view, style_entry, token_ref_site, token_value_ref,
 };
 use pandacss_encoder::ConditionSet;
 use pandacss_extractor::{SourceRange, Span};
@@ -644,10 +644,14 @@ impl StyleEntryCollector<'_, '_> {
                         .zip(token_category)
                         .and_then(|(dict, category)| dict.resolve_token_path(category, text))
                         .map(token_value_ref);
+                    let references = self.cx.tokens.map_or_else(Vec::new, |dict| {
+                        value_token_refs(self.line_index, span, text, dict)
+                    });
                     out.push(ValueSpanRef {
                         value: text.clone(),
                         span,
                         token,
+                        references,
                     });
                 }
             }
@@ -792,6 +796,39 @@ fn walk_prop(
         }
         Literal::Null => {}
     }
+}
+
+fn value_token_refs(
+    line_index: &LineIndex<'_>,
+    span: Span,
+    text: &str,
+    dict: &TokenDictionary,
+) -> Vec<ValueTokenRef> {
+    let start = span.start as usize;
+    let literal = line_index
+        .source()
+        .get(start..span.end as usize)
+        .unwrap_or_default();
+    let base = literal.find(text).map(|at| start + at);
+    token_references(text, dict)
+        .into_iter()
+        .map(|reference| {
+            let span = base
+                .and_then(|base| {
+                    Some(Span {
+                        start: u32::try_from(base + reference.range.start).ok()?,
+                        end: u32::try_from(base + reference.range.end).ok()?,
+                    })
+                })
+                .unwrap_or(span);
+            ValueTokenRef {
+                path: reference.path.to_owned(),
+                resolved: reference.resolved,
+                span,
+                range: line_index.locate_range(span.start, span.end),
+            }
+        })
+        .collect()
 }
 
 /// Strips a trailing `/opacity` color modifier: `red.300/40` -> `red.300`.
