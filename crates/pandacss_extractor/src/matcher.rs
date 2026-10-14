@@ -5,6 +5,7 @@
 //! JSX-extraction settings) consumed downstream.
 
 use crate::{ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind, Resolver};
+use pandacss_literal::Literal;
 use pandacss_shared::css_properties::is_css_property;
 use regex::{Regex, RegexSet};
 use rustc_hash::{FxHashMap, FxHashSet};
@@ -269,6 +270,39 @@ pub struct JsxExtractionConfig {
     pub component_regex_blocklist: Vec<(Regex, Arc<FxHashSet<String>>)>,
     pub component_regex_blocklist_set: Option<RegexSet>,
     pub valid_style_props: FxHashSet<String>,
+    /// Configured condition names, so props on tags Panda doesn't own keep only style values.
+    pub condition_names: FxHashSet<String>,
+    /// `jsxMatchTag` rules, in config order. The last match wins.
+    pub tag_rules: Vec<JsxTagRule>,
+}
+
+#[derive(Debug, Clone)]
+pub enum NamePattern {
+    Exact(String),
+    Regex(Regex),
+}
+
+impl NamePattern {
+    fn matches(&self, value: &str) -> bool {
+        match self {
+            Self::Exact(name) => name == value,
+            Self::Regex(regex) => regex.is_match(value),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct JsxTagRule {
+    pub tag: Option<NamePattern>,
+    pub from: Option<NamePattern>,
+    pub action: JsxTagAction,
+}
+
+#[derive(Debug, Clone)]
+pub enum JsxTagAction {
+    Ignore,
+    /// Extract the tag; `Some` keeps only these style props.
+    Include(Option<Arc<FxHashSet<String>>>),
 }
 
 impl JsxExtractionConfig {
@@ -342,6 +376,63 @@ impl JsxExtractionConfig {
         }
     }
 
+    /// The action of the last `jsxMatchTag` rule matching `tag`, imported from `from`.
+    #[must_use]
+    pub fn tag_rule(&self, tag: &str, from: Option<&str>) -> Option<&JsxTagAction> {
+        self.tag_rules
+            .iter()
+            .rev()
+            .find(|rule| {
+                rule.tag.as_ref().is_none_or(|pattern| pattern.matches(tag))
+                    && rule
+                        .from
+                        .as_ref()
+                        .is_none_or(|pattern| from.is_some_and(|from| pattern.matches(from)))
+            })
+            .map(|rule| &rule.action)
+    }
+
+    #[must_use]
+    pub fn tag_rules_use_from(&self) -> bool {
+        self.tag_rules.iter().any(|rule| rule.from.is_some())
+    }
+
+    /// Drops props whose value can't be a style, such as `columns={[{ header }]}` on a
+    /// component Panda doesn't own. Conditions and `css` props are kept as written.
+    pub(crate) fn retain_style_values(&self, data: &mut Literal) {
+        if let Literal::Object(entries) = data {
+            entries.retain(|(key, value)| {
+                key == "css"
+                    || key.ends_with("Css")
+                    || self.is_condition_key(key)
+                    || self.is_style_value(value)
+            });
+        }
+    }
+
+    fn is_style_value(&self, value: &Literal) -> bool {
+        match value {
+            Literal::Object(entries) => entries
+                .iter()
+                .all(|(key, value)| self.is_condition_key(key) && self.is_style_value(value)),
+            Literal::Array(items) => items
+                .iter()
+                .all(|item| !matches!(item, Literal::Array(_)) && self.is_style_value(item)),
+            Literal::Conditional(branches) => {
+                branches.iter().all(|branch| self.is_style_value(branch))
+            }
+            _ => true,
+        }
+    }
+
+    fn is_condition_key(&self, key: &str) -> bool {
+        key == "base"
+            || key.starts_with('_')
+            || key.starts_with('@')
+            || key.contains('&')
+            || self.condition_names.contains(key)
+    }
+
     fn is_strict_component(&self, tag_name: &str) -> bool {
         if self.component_strict.contains(tag_name) {
             return true;
@@ -388,7 +479,7 @@ impl JsxExtractionConfig {
     }
 }
 
-fn is_uppercase_component_tag(tag_name: &str) -> bool {
+pub(crate) fn is_uppercase_component_tag(tag_name: &str) -> bool {
     tag_name
         .chars()
         .next()
@@ -461,6 +552,8 @@ pub(crate) struct VisitorContext<'a, 'cb> {
     /// that skip semantic-build cost; `Some` for the combined `extract()`
     /// hot path.
     pub resolver: Option<&'a Resolver<'a, 'cb>>,
+    /// Local binding → import path. Filled only when a `jsxMatchTag` rule uses `from`.
+    pub import_sources: FxHashMap<&'a str, &'a str>,
 }
 
 impl<'a, 'cb> VisitorContext<'a, 'cb> {
@@ -469,7 +562,15 @@ impl<'a, 'cb> VisitorContext<'a, 'cb> {
             aliases: matched.iter().map(|m| (m.alias.as_str(), m)).collect(),
             config,
             resolver: None,
+            import_sources: FxHashMap::default(),
         }
+    }
+
+    pub(crate) fn with_imports(mut self, imports: &'a [ImportRecord]) -> Self {
+        if self.config.jsx.tag_rules_use_from() {
+            self.import_sources = crate::imports::import_sources(imports);
+        }
+        self
     }
 
     pub(crate) fn with_resolver(mut self, resolver: &'a Resolver<'a, 'cb>) -> Self {

@@ -139,12 +139,15 @@ pub(crate) fn extract_call(
     let resolved = extractor.resolve_runtime_tag(component)?;
 
     let tag_name = resolved.name.as_ref();
-    let style = crate::style_tree::props_expression_to_style_tree(
+    let mut style = crate::style_tree::props_expression_to_style_tree(
         props,
         ctx.resolver,
         &ctx.config.jsx,
         tag_name,
     );
+    if let (Some(props), Some(tree)) = (resolved.props, style.as_mut()) {
+        crate::style_tree::retain_style_tree_props(tree, &|key| props.contains(key));
+    }
     let retain = extractor.retain_transform_facts;
     let retention = if retain {
         ProjectionRetention::Retain
@@ -152,7 +155,10 @@ pub(crate) fn extract_call(
         ProjectionRetention::Discard
     };
     let (data, style) = project_style(style, retention);
-    let data = data.unwrap_or_else(|| Literal::Object(vec![]));
+    let mut data = data.unwrap_or_else(|| Literal::Object(vec![]));
+    if !resolved.panda_owned && !resolved.emit_empty {
+        ctx.config.jsx.retain_style_values(&mut data);
+    }
     let data_empty = matches!(&data, Literal::Object(entries) if entries.is_empty());
     if data_empty && !resolved.emit_empty {
         return None;

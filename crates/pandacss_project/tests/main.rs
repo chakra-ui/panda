@@ -8,6 +8,7 @@ mod cross_file_watch;
 mod deprecation;
 mod diagnostics;
 mod extraction_pipeline;
+mod jsx_match_tag;
 mod lifecycle;
 mod parsed_file;
 mod patterns;

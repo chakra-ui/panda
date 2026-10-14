@@ -615,6 +615,22 @@ fn property_nested_under_a_non_condition_key_warns() {
 }
 
 #[test]
+fn data_prop_on_a_panda_component_still_warns() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "utilities": { "columns": { "className": "columns" } }
+    }));
+    let report = project.parse_file(
+        "style.tsx",
+        indoc! {r"
+            import { styled } from '@panda/jsx';
+            const el = <styled.div columns={{ header: 'Name' }} />;
+        "},
+    );
+    assert_snapshot!(summary(&report.diagnostics), @"Warning nested_property `columns` in `columns.header` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use a condition or a selector like `'& columns'` instead. [48..91]");
+}
+
+#[test]
 fn valid_nesting_does_not_warn() {
     let mut project = create_project(json!({
         "conditions": { "hover": "&:hover" },

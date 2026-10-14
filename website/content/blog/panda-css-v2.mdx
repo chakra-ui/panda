@@ -535,7 +535,7 @@ matched by component name, a pattern, or the module a component is imported from
 
 ```ts
 export default defineConfig({
-  jsxMatchTag: [{ pattern: '^(Flex|Stack|Box)$' }, { from: '@acme/ui', props: ['padding', 'color'] }]
+  jsxMatchTag: [{ tag: /^(Flex|Stack|Box)$/ }, { from: '@acme/ui', props: ['padding', 'color'] }]
 })
 ```
 

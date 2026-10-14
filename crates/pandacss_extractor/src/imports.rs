@@ -12,6 +12,7 @@ use oxc_ast::ast::{
 use oxc_ast_visit::{Visit, walk};
 use oxc_diagnostics::OxcDiagnostic;
 use oxc_parser::Parser;
+use rustc_hash::FxHashMap;
 use serde::Serialize;
 
 #[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq, Hash)]
@@ -101,6 +102,21 @@ pub fn scan_imports_with(
 }
 
 #[must_use]
+/// Local binding → import path as written, for `jsxMatchTag` `from` rules.
+pub(crate) fn import_sources(records: &[ImportRecord]) -> FxHashMap<&str, &str> {
+    records
+        .iter()
+        .filter(|record| !record.type_only)
+        .flat_map(|record| {
+            record
+                .specifiers
+                .iter()
+                .filter(|specifier| !specifier.type_only)
+                .map(|specifier| (specifier.local.as_str(), record.module.as_str()))
+        })
+        .collect()
+}
+
 pub(crate) fn collect_imports(program: &Program<'_>) -> Vec<ImportRecord> {
     collect_imports_with(program, ScanImportsOptions::default())
 }

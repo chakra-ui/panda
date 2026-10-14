@@ -107,6 +107,28 @@ fn implicit_uppercase_component_extracts_valid_style_props() {
 }
 
 #[test]
+fn data_props_on_components_panda_does_not_own_are_not_extracted() {
+    let mut jsx = JsxExtractionConfig::default();
+    jsx.valid_style_props.insert("columns".into());
+    jsx.valid_style_props.insert("right".into());
+    jsx.condition_names.insert("md".into());
+
+    let source = indoc! {r"
+        import { jsx } from 'react/jsx-runtime';
+        const COLS = [{ header: 'Name' }];
+        const a = <DataTable columns={COLS} right={{ base: '1px', md: '2px' }} />;
+        const b = jsx(DataTable, { columns: COLS });
+    "};
+    let result = extract_with_jsx_config(source, &[], jsx);
+
+    assert_eq!(result.jsx.len(), 1);
+    assert_eq!(
+        result.jsx[0].data.to_json(),
+        json!({ "right": { "base": "1px", "md": "2px" } })
+    );
+}
+
+#[test]
 fn compiled_react_runtime_css_prop_extracts_inline_identifier_and_spread_values() {
     let source = indoc! {r"
         import { Fragment, jsx, jsxs } from 'react/jsx-runtime';

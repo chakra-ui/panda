@@ -6,8 +6,8 @@
 
 use crate::adapter::{AdaptedSource, SfcFormat};
 use crate::{
-    ExtractedJsx, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory, MatchedImport,
-    Span,
+    ExtractedJsx, ExtractorConfig, ImportSpecifierKind, JsxTagAction, Literal, MatchCategory,
+    MatchedImport, Span,
     jsx::{merge_style_prop, merge_style_props},
     literal::expression_to_literal,
 };
@@ -40,6 +40,8 @@ struct ResolvedTemplateTag<'a> {
     emit_empty: bool,
     /// Mirrors `ResolvedTag::panda_owned` — matched Panda import vs name-only.
     panda_owned: bool,
+    /// Mirrors `ResolvedTag::props`.
+    props: Option<&'a rustc_hash::FxHashSet<String>>,
 }
 
 #[must_use]
@@ -91,7 +93,13 @@ pub(crate) fn collect_template_styles(
         literals: literal_index.literals,
         retain_transform_facts,
     };
+    let imports = if config.jsx.tag_rules_use_from() {
+        crate::imports::collect_imports(program)
+    } else {
+        Vec::new()
+    };
     let scan = TemplateScan {
+        import_sources: crate::imports::import_sources(&imports),
         framework: match format {
             SfcFormat::Vue => Framework::Vue,
             SfcFormat::Svelte | SfcFormat::Astro | SfcFormat::Mdx => Framework::Svelte,
@@ -208,6 +216,7 @@ impl<'ast> Visit<'ast> for TemplateLiteralIndex<'_, 'ast, '_> {
 }
 
 struct TemplateScan<'a> {
+    import_sources: FxHashMap<&'a str, &'a str>,
     framework: Framework,
     adapted: &'a AdaptedSource<'a>,
     matched: &'a [MatchedImport],
@@ -418,8 +427,8 @@ fn collect_tag(
     else {
         return Tag::Collected(tag_end + 1);
     };
-    let Some(resolved) = resolve_template_tag(tag_name, scan.matched, scan.config, scan.framework)
-    else {
+    let detected = resolve_template_tag(tag_name, scan.matched, scan.config, scan.framework);
+    let Some(resolved) = apply_template_tag_rule(detected, tag_name, scan) else {
         return Tag::Collected(tag_end + 1);
     };
 
@@ -432,6 +441,9 @@ fn collect_tag(
         resolved.name.as_ref(),
         &mut entries,
     );
+    if let Some(props) = resolved.props {
+        entries.retain(|(key, _)| props.contains(key));
+    }
 
     push_template_jsx(
         out,
@@ -456,11 +468,14 @@ fn push_template_jsx(
     entries: Vec<(String, Literal)>,
     tag_span: Span,
 ) {
-    if entries.is_empty() && !resolved.emit_empty {
+    let mut data = Literal::Object(entries);
+    if !resolved.panda_owned && !resolved.emit_empty {
+        scan.config.jsx.retain_style_values(&mut data);
+    }
+    if matches!(&data, Literal::Object(entries) if entries.is_empty()) && !resolved.emit_empty {
         return;
     }
     let kind = crate::jsx::jsx_kind(&scan.config.matchers, &resolved.name, &resolved.alias);
-    let data = Literal::Object(entries);
     let retain = scan.context.retain_transform_facts;
     let style = retain.then(|| crate::style_tree::literal_to_style_tree(data.clone()));
     out.push(ExtractedJsx {
@@ -488,6 +503,35 @@ fn push_template_jsx(
     });
 }
 
+/// Mirrors `Extractor::apply_tag_rule`. Lowercase tags are elements, so rules skip them.
+fn apply_template_tag_rule<'a>(
+    detected: Option<ResolvedTemplateTag<'a>>,
+    tag_name: &'a str,
+    scan: &TemplateScan<'a>,
+) -> Option<ResolvedTemplateTag<'a>> {
+    let jsx = &scan.config.jsx;
+    if jsx.tag_rules.is_empty() || !crate::matcher::is_uppercase_component_tag(tag_name) {
+        return detected;
+    }
+    let root = tag_name.split_once('.').map_or(tag_name, |(root, _)| root);
+    match jsx.tag_rule(tag_name, scan.import_sources.get(root).copied()) {
+        None => detected,
+        Some(JsxTagAction::Ignore) => None,
+        Some(JsxTagAction::Include(props)) => {
+            let mut resolved = detected.unwrap_or(ResolvedTemplateTag {
+                category: MatchCategory::Jsx,
+                name: Cow::Borrowed(tag_name),
+                alias: Cow::Borrowed(tag_name),
+                emit_empty: false,
+                panda_owned: false,
+                props: None,
+            });
+            resolved.props = props.as_deref();
+            Some(resolved)
+        }
+    }
+}
+
 fn resolve_template_tag<'a>(
     tag_name: &'a str,
     matched: &'a [MatchedImport],
@@ -511,6 +555,7 @@ fn resolve_template_tag<'a>(
                         alias: Cow::Borrowed(&item.alias),
                         emit_empty: true,
                         panda_owned: true,
+                        props: None,
                     });
                 }
             }
@@ -523,6 +568,7 @@ fn resolve_template_tag<'a>(
                         alias: Cow::Borrowed(&item.alias),
                         emit_empty: true,
                         panda_owned: true,
+                        props: None,
                     });
                 }
             }
@@ -540,6 +586,7 @@ fn resolve_template_tag<'a>(
             alias: Cow::Borrowed(tag_name),
             emit_empty: config.jsx.is_component_tag(tag_name),
             panda_owned: false,
+            props: None,
         });
     }
 
@@ -556,6 +603,7 @@ fn resolve_template_tag<'a>(
                 alias: Cow::Borrowed(tag_name),
                 emit_empty: true,
                 panda_owned: false,
+                props: None,
             });
         }
     }
