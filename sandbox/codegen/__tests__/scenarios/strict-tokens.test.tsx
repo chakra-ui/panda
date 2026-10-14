@@ -12,6 +12,9 @@ const cropper = sva({
 })
 const { withContext, withProvider } = createSlotRecipeContext(cropper)
 
+// Module scope: TS2590 only surfaces on the first instantiation of the type
+const Swatch = styled('input', {}, { forwardProps: ['color'] })
+
 describe('forwardProps with strictTokens', () => {
   test('types a forwarded prop from the component', () => {
     const Handle = withContext(HandlePart, 'handle', { forwardProps: ['position'] })
@@ -37,5 +40,11 @@ describe('forwardProps with strictTokens', () => {
     assertType(<Root position="e" />)
     const StyledHandle = styled(HandlePart, { base: {} }, { forwardProps: ['position'] })
     assertType(<StyledHandle position="n" />)
+  })
+
+  test('forwards a style prop on an element with many props', () => {
+    assertType(<Swatch color="red" />)
+    // @ts-expect-error `color` is typed from the input element
+    assertType(<Swatch color={3} />)
   })
 })
