@@ -74,8 +74,8 @@ export const showcases: Showcase[] = [
     image: '/showcase/cool-contrast.png'
   },
   {
-    name: 'Cerberus Design System',
-    description: 'Guarding brand integrity with a flexible design system',
+    name: 'Cerberus UI Platform',
+    description: 'Improving React development for humans and agents.',
     url: 'https://cerberus.digitalu.design/',
     image: '/showcase/cerberus.png'
   }
