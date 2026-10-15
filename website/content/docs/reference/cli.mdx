@@ -27,20 +27,21 @@ The commands are:
 
 Most commands accept these flags.
 
-| Flag                   | Description                                                                      |
-| ---------------------- | -------------------------------------------------------------------------------- |
-| `--cwd <dir>`          | Current working directory                                                        |
-| `--config, -c <path>`  | Path to the Panda config file                                                    |
-| `--json`               | Print the result as JSON (for scripts)                                           |
-| `--format <format>`    | Diagnostic output format: `human`, `pretty`, `json`, or `github`                 |
-| `--log-level <level>`  | Output level: `silent`, `error`, `warn`, `info`, or `debug`                      |
-| `--max-warnings <n>`   | Fail when warning diagnostics exceed this count                                  |
-| `--logfile <file>`     | Write human output to a log file                                                 |
-| `--no-color`           | Disable ANSI colors (or set the `NO_COLOR` environment variable)                 |
-| `--profile`            | Capture compiler timings — see [Profiling a slow build](#profiling-a-slow-build) |
-| `--trace`              | Enable compiler tracing                                                          |
-| `--trace-output <fmt>` | Trace output: `fmt` or `chrome-json`                                             |
-| `--trace-file <file>`  | Trace output file for `chrome-json` tracing                                      |
+| Flag                   | Description                                                                      | Related                              |
+| ---------------------- | -------------------------------------------------------------------------------- | ------------------------------------ |
+| `--cwd <dir>`          | Current working directory                                                        |                                      |
+| `--config, -c <path>`  | Path to the Panda config file                                                    |                                      |
+| `--json`               | Print the result as JSON (for scripts)                                           |                                      |
+| `--format <format>`    | Diagnostic output format: `human`, `pretty`, `json`, or `github`                 |                                      |
+| `--log-level <level>`  | Output level: `silent`, `error`, `warn`, `info`, or `debug`                      |                                      |
+| `--max-warnings <n>`   | Fail when warning diagnostics exceed this count                                  |                                      |
+| `--logfile <file>`     | Write human output to a log file                                                 |                                      |
+| `--no-color`           | Disable ANSI colors (or set the `NO_COLOR` environment variable)                 |                                      |
+| `--profile`            | Capture compiler timings — see [Profiling a slow build](#profiling-a-slow-build) |                                      |
+| `--spec <path>`        | Also write the design system spec, optionally to a path                          | [JSON Spec](/docs/theming/json-spec) |
+| `--trace`              | Enable compiler tracing                                                          |                                      |
+| `--trace-output <fmt>` | Trace output: `fmt` or `chrome-json`                                             |                                      |
+| `--trace-file <file>`  | Trace output file for `chrome-json` tracing                                      |                                      |
 
 Commands that scan your source files (`dev`, `build`, `check`, `cssgen`, `analyze`, `debug`, `lib`, `buildinfo`) also
 take `--include`:
@@ -262,29 +263,29 @@ The main `styles.css` declares the layers and imports each layer file (but not t
 /* styled-system/styles.css */
 @layer reset, base, tokens, recipes, utilities;
 
-@import './styles/reset.css';
-@import './styles/global.css';
-@import './styles/tokens.css';
-@import './styles/recipes.css';
-@import './styles/utilities.css';
+@import "./styles/reset.css";
+@import "./styles/global.css";
+@import "./styles/tokens.css";
+@import "./styles/recipes.css";
+@import "./styles/utilities.css";
 ```
 
 You then choose how to import them:
 
 ```css
 /* Option 1: Import everything (default) */
-@import './styled-system/styles.css';
+@import "./styled-system/styles.css";
 
 /* Option 2: Import specific layers only */
-@import './styled-system/styles/tokens.css';
-@import './styled-system/styles/utilities.css';
+@import "./styled-system/styles/tokens.css";
+@import "./styled-system/styles/utilities.css";
 
 /* Option 3: Import specific recipes */
-@import './styled-system/styles/recipes/button.css';
-@import './styled-system/styles/recipes/card.css';
+@import "./styled-system/styles/recipes/button.css";
+@import "./styled-system/styles/recipes/card.css";
 
 /* Option 4: Import a specific theme (when using multiple themes) */
-@import './styled-system/styles/themes/oceanic.css';
+@import "./styled-system/styles/themes/oceanic.css";
 ```
 
 ---
