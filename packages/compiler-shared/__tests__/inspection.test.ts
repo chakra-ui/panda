@@ -93,6 +93,38 @@ function condense(report: UsageReport) {
 }
 
 describe('createUsageReport', () => {
+  test('counts pattern calls and components without counting their props as patterns', () => {
+    const report = createUsageReport({
+      sourceCount: 1,
+      files: [
+        file({
+          usages: [{ kind: 'pattern', name: 'stack', range: line1 }],
+          componentEntries: [{ kind: 'jsx-pattern', name: 'Stack', pattern: 'stack', span, range: line2 }],
+          styleEntries: [
+            styleEntry({ kind: 'pattern-prop', syntax: 'pattern-call', name: 'gap', path: ['gap'], sourceValue: '4' }),
+            styleEntry({
+              kind: 'pattern-prop',
+              syntax: 'pattern-call',
+              name: 'direction',
+              path: ['direction'],
+              sourceValue: 'row',
+            }),
+            styleEntry({
+              kind: 'pattern-prop',
+              syntax: 'jsx-prop',
+              range: line2,
+              name: 'gap',
+              path: ['gap'],
+              sourceValue: '4',
+            }),
+          ],
+        }),
+      ],
+    })
+    expect(report.summary.patterns).toEqual({ used: 2, unique: 1 })
+    expect(report.usages.map((usage) => usage.name)).toEqual(['stack', 'stack'])
+  })
+
   test('summarizes usage directly from file inspection results', () => {
     const inspection: FileInspectionBatch = {
       sourceCount: 1,
@@ -101,6 +133,7 @@ describe('createUsageReport', () => {
           usages: [
             { kind: 'token', name: 'colors.red.500', range: line1 },
             { kind: 'keyframe', name: 'spin', range: line1 },
+            { kind: 'pattern', name: 'stack', range: line2 },
           ],
           componentEntries: [{ kind: 'jsx-recipe', name: 'button', span, range: line1 }],
           styleEntries: [
@@ -110,7 +143,7 @@ describe('createUsageReport', () => {
               syntax: 'pattern-call',
               owner: { kind: 'call', index: 1 },
               range: line2,
-              name: 'stack',
+              name: 'gap',
               path: ['gap'],
               sourceValue: '4',
             }),

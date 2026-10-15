@@ -508,8 +508,7 @@ interface VisitedUsage {
   range: SourceRange
 }
 
-// Recipe-variant style entries are not visited: a variant selection belongs to
-// the recipe call or JSX element that is already counted.
+// Recipe variants and pattern props belong to calls or JSX elements already counted.
 function visitUsage(file: FileInspectionResult, visit: (entry: VisitedUsage) => void): void {
   for (const usage of file.usages) {
     if (usage.kind === 'token') visit({ scope: 'tokens', name: usage.name, range: usage.range })
@@ -531,7 +530,6 @@ function visitUsage(file: FileInspectionResult, visit: (entry: VisitedUsage) => 
     if (style.kind === 'utility') {
       visit({ scope: 'utilities', name: style.canonicalName ?? style.name, range: style.range })
     }
-    if (style.kind === 'pattern-prop') visit({ scope: 'patterns', name: style.name, range: style.range })
   }
 }
 
