@@ -261,6 +261,10 @@ export class NodeDriver extends BaseDriver {
       this.#designSystemFileKinds = undefined
       this.#sourceGeneration++
       this.#treeshakeSyncedGeneration = -1
+    } else {
+      // Same resolved config can still come from different files (e.g. swapped presets).
+      this.#loaded = { ...this.#loaded, dependencies: next.dependencies }
+      this.#configFilePaths = undefined
     }
     return designSystemArtifactsChanged && !diff.hasChanged ? { ...diff, hasChanged: true } : diff
   }

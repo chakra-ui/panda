@@ -2,6 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js'
 import { analyzeSources, createNodeDriver, type Driver } from '@pandacss/compiler'
+import { statSync } from 'node:fs'
 import { resolve } from 'node:path'
 import * as z from 'zod/v4'
 import pkg from '../package.json'
@@ -20,127 +21,139 @@ export interface CreateMcpServerOptions {
  */
 export function createMcpServer(options: CreateMcpServerOptions) {
   const { driver } = options
-  const spec = driver.introspect.spec
-  const theme = (driver.config.theme ?? {}) as Record<string, unknown>
+  const syncConfig = createConfigSync(driver)
 
   const server = new McpServer({
     name: '@pandacss/mcp',
     version: pkg.version,
   })
 
-  // Create dynamic schemas from user's config
-  const tokenCategories = Object.keys(spec.tokens.categories) as [string, ...string[]]
-  const recipeNames = driver.introspect.recipes() as [string, ...string[]]
-  const patternNames = driver.introspect.patterns() as [string, ...string[]]
+  const theme = () => (driver.config.theme ?? {}) as Record<string, unknown>
 
-  const tokenCategorySchema = (tokenCategories.length ? z.enum(tokenCategories) : z.string())
-    .optional()
-    .describe('Filter by token category')
+  // Names stay plain strings: the config can change while the server runs, and an enum would be stale.
+  const nameSchema = (description: string) => z.string().optional().describe(description)
 
-  const recipeNameSchema = recipeNames.length
-    ? z.enum(recipeNames).optional().describe('Filter by recipe name')
-    : z.string().optional().describe('Filter by recipe name')
-
-  const patternNameSchema = patternNames.length
-    ? z.enum(patternNames).optional().describe('Filter by pattern name')
-    : z.string().optional().describe('Filter by pattern name')
+  const unknownName = (kind: string, name: string, known: string[]) => ({
+    content: [{ type: 'text' as const, text: `Unknown ${kind} "${name}". Available: ${known.join(', ') || 'none'}` }],
+    isError: true,
+  })
 
   const pickCategory = (record: Record<string, unknown>, category: string | undefined) =>
     category ? { [category]: record[category] } : record
 
-  // Register tools
-  server.registerTool(
+  // Reload the config if it changed on disk before every tool call.
+  const tool: typeof server.registerTool = (name, config, handler) =>
+    server.registerTool(name, config, (async (...args: unknown[]) => {
+      await syncConfig()
+      return (handler as (...args: unknown[]) => unknown)(...args)
+    }) as typeof handler)
+
+  tool(
     'get_tokens',
     {
       description: 'Get all design tokens with their values, CSS variables, and usage examples',
-      inputSchema: { category: tokenCategorySchema },
+      inputSchema: { category: nameSchema('Filter by token category') },
     },
     async ({ category }) => {
-      const categories = category ? { [category]: spec.tokens.categories[category] } : spec.tokens.categories
+      const { tokens } = driver.introspect.spec
+      if (category && !(category in tokens.categories)) {
+        return unknownName('token category', category, Object.keys(tokens.categories))
+      }
+      const categories = category ? { [category]: tokens.categories[category] } : tokens.categories
       const values = category
-        ? Object.fromEntries(Object.entries(spec.tokens.values).filter(([path]) => path.startsWith(`${category}.`)))
-        : spec.tokens.values
-      return json({ categories, values, deprecated: Object.keys(spec.tokens.deprecated) })
+        ? Object.fromEntries(Object.entries(tokens.values).filter(([path]) => path.startsWith(`${category}.`)))
+        : tokens.values
+      return json({ categories, values, deprecated: Object.keys(tokens.deprecated) })
     },
   )
 
-  server.registerTool(
+  tool(
     'get_semantic_tokens',
     {
       description: 'Get semantic tokens with their conditional values (responsive, color modes)',
-      inputSchema: { category: tokenCategorySchema },
+      inputSchema: { category: nameSchema('Filter by token category') },
     },
     async ({ category }) => {
-      const semanticTokens = (theme.semanticTokens ?? {}) as Record<string, unknown>
+      const categories = Object.keys(driver.introspect.spec.tokens.categories)
+      if (category && !categories.includes(category)) return unknownName('token category', category, categories)
+      const semanticTokens = (theme().semanticTokens ?? {}) as Record<string, unknown>
       return json(pickCategory(semanticTokens, category))
     },
   )
 
-  server.registerTool(
+  tool(
     'get_recipes',
     {
       description: 'Get component recipes with their variants, default values, and usage examples',
-      inputSchema: { name: recipeNameSchema },
+      inputSchema: { name: nameSchema('Filter by recipe name') },
     },
     async ({ name }) => {
-      const { recipes, slotRecipes } = spec
-      if (name) {
-        return json({
-          recipes: pickCategory(recipes, name in recipes ? name : undefined),
-          slotRecipes: pickCategory(slotRecipes, name in slotRecipes ? name : undefined),
-        })
+      const { recipes, slotRecipes } = driver.introspect.spec
+      if (!name) return json({ recipes, slotRecipes })
+      if (!(name in recipes) && !(name in slotRecipes)) {
+        return unknownName('recipe', name, driver.introspect.recipes())
       }
-      return json({ recipes, slotRecipes })
+      return json({
+        recipes: pickCategory(recipes, name in recipes ? name : undefined),
+        slotRecipes: pickCategory(slotRecipes, name in slotRecipes ? name : undefined),
+      })
     },
   )
 
-  server.registerTool(
+  tool(
     'get_patterns',
     {
       description: 'Get layout patterns with their properties and usage examples',
-      inputSchema: { name: patternNameSchema },
+      inputSchema: { name: nameSchema('Filter by pattern name') },
     },
-    async ({ name }) => json(pickCategory(spec.patterns, name)),
+    async ({ name }) => {
+      const { patterns } = driver.introspect.spec
+      if (name && !(name in patterns)) return unknownName('pattern', name, driver.introspect.patterns())
+      return json(pickCategory(patterns, name))
+    },
   )
 
-  server.registerTool(
+  tool(
     'get_conditions',
     { description: 'Get all conditions (breakpoints, pseudo-classes, color modes) and their CSS values' },
-    async () => json({ ...spec.conditions, definitions: theme.conditions ?? driver.config.conditions ?? {} }),
+    async () =>
+      json({
+        ...driver.introspect.spec.conditions,
+        definitions: theme().conditions ?? driver.config.conditions ?? {},
+      }),
   )
 
-  server.registerTool('get_keyframes', { description: 'Get keyframe animations defined in the theme' }, async () =>
-    json(theme.keyframes ?? {}),
+  tool('get_keyframes', { description: 'Get keyframe animations defined in the theme' }, async () =>
+    json(theme().keyframes ?? {}),
   )
 
-  server.registerTool('get_text_styles', { description: 'Get text style compositions for typography' }, async () =>
-    json(theme.textStyles ?? {}),
+  tool('get_text_styles', { description: 'Get text style compositions for typography' }, async () =>
+    json(theme().textStyles ?? {}),
   )
 
-  server.registerTool(
-    'get_layer_styles',
-    { description: 'Get layer style compositions for visual styling' },
-    async () => json(theme.layerStyles ?? {}),
+  tool('get_layer_styles', { description: 'Get layer style compositions for visual styling' }, async () =>
+    json(theme().layerStyles ?? {}),
   )
 
-  server.registerTool('get_animation_styles', { description: 'Get animation style compositions' }, async () =>
-    json(theme.animationStyles ?? {}),
+  tool('get_animation_styles', { description: 'Get animation style compositions' }, async () =>
+    json(theme().animationStyles ?? {}),
   )
 
-  server.registerTool('get_color_palette', { description: 'Get the color palette with all color values' }, async () =>
-    json({
-      colorPalettes: spec.tokens.colorPalettes,
-      colors: Object.fromEntries(Object.entries(spec.tokens.values).filter(([path]) => path.startsWith('colors.'))),
-    }),
-  )
+  tool('get_color_palette', { description: 'Get the color palette with all color values' }, async () => {
+    const { tokens } = driver.introspect.spec
+    return json({
+      colorPalettes: tokens.colorPalettes,
+      colors: Object.fromEntries(Object.entries(tokens.values).filter(([path]) => path.startsWith('colors.'))),
+    })
+  })
 
-  server.registerTool(
+  tool(
     'get_config',
     { description: 'Get the resolved Panda CSS configuration including paths, JSX settings, and output options' },
     async () => json(driver.config),
   )
 
-  server.registerTool(
+  tool(
     'get_usage_report',
     {
       description:
@@ -165,6 +178,50 @@ export function createMcpServer(options: CreateMcpServerOptions) {
   )
 
   return server
+}
+
+/** Reloads the driver when the config file or any file it imports changed on disk since the last check. */
+function createConfigSync(driver: Driver) {
+  const readConfigStamp = () => {
+    const paths = driver.configPath ? [driver.configPath] : []
+    for (const dep of driver.configDependencies ?? []) paths.push(driver.resolvePath(dep))
+    for (const target of driver.designSystemWatchTargets?.() ?? []) {
+      paths.push(target.manifestPath, target.buildInfoPath, target.presetPath)
+    }
+    return paths.map(fileStamp).join('|')
+  }
+
+  let lastLoadedStamp = readConfigStamp()
+  let pending: Promise<void> | undefined
+
+  async function reloadIfChanged() {
+    const nextStamp = readConfigStamp()
+    if (nextStamp === lastLoadedStamp) return
+
+    await driver.reload()
+
+    // Keep the pre-reload stamp so edits made during the reload are detected next time.
+    lastLoadedStamp = nextStamp
+  }
+
+  return function syncConfig() {
+    if (pending) return pending
+
+    pending = reloadIfChanged().finally(() => {
+      pending = undefined
+    })
+
+    return pending
+  }
+}
+
+function fileStamp(path: string) {
+  try {
+    const stat = statSync(path)
+    return `${path}:${stat.mtimeMs}:${stat.size}`
+  } catch {
+    return `${path}:missing`
+  }
 }
 
 export interface StartMcpServerOptions {
