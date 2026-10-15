@@ -263,29 +263,29 @@ The main `styles.css` declares the layers and imports each layer file (but not t
 /* styled-system/styles.css */
 @layer reset, base, tokens, recipes, utilities;
 
-@import "./styles/reset.css";
-@import "./styles/global.css";
-@import "./styles/tokens.css";
-@import "./styles/recipes.css";
-@import "./styles/utilities.css";
+@import './styles/reset.css';
+@import './styles/global.css';
+@import './styles/tokens.css';
+@import './styles/recipes.css';
+@import './styles/utilities.css';
 ```
 
 You then choose how to import them:
 
 ```css
 /* Option 1: Import everything (default) */
-@import "./styled-system/styles.css";
+@import './styled-system/styles.css';
 
 /* Option 2: Import specific layers only */
-@import "./styled-system/styles/tokens.css";
-@import "./styled-system/styles/utilities.css";
+@import './styled-system/styles/tokens.css';
+@import './styled-system/styles/utilities.css';
 
 /* Option 3: Import specific recipes */
-@import "./styled-system/styles/recipes/button.css";
-@import "./styled-system/styles/recipes/card.css";
+@import './styled-system/styles/recipes/button.css';
+@import './styled-system/styles/recipes/card.css';
 
 /* Option 4: Import a specific theme (when using multiple themes) */
-@import "./styled-system/styles/themes/oceanic.css";
+@import './styled-system/styles/themes/oceanic.css';
 ```
 
 ---
