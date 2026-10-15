@@ -1,5 +1,19 @@
 # @pandacss/mcp
 
+## 2.3.0
+
+### Patch Changes
+
+- 1fb2ee8: Pick up config and preset changes without restarting the MCP server.
+- Updated dependencies [1fb2ee8]
+- Updated dependencies [36b18da]
+- Updated dependencies [8c179ea]
+- Updated dependencies [f01a419]
+- Updated dependencies [f01a419]
+- Updated dependencies [d1ee159]
+- Updated dependencies [93269f5]
+  - @pandacss/compiler@2.3.0
+
 ## 2.2.0
 
 ### Patch Changes

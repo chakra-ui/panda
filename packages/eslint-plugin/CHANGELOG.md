@@ -1,5 +1,24 @@
 # @pandacss/eslint-plugin
 
+## 2.3.0
+
+### Patch Changes
+
+- 78eed7e: Fix type errors when using `recommended()` in `eslint.config.ts`, and fix the `extraction-diagnostics` rule
+  crashing ESLint when a diagnostic has no location.
+- 93269f5: Report missing tokens in style strings during linting and `panda cssgen`, including references with
+  fallbacks. Check pattern style props with rules such as `prefer-token`.
+- Updated dependencies [1fb2ee8]
+- Updated dependencies [36b18da]
+- Updated dependencies [8c179ea]
+- Updated dependencies [f01a419]
+- Updated dependencies [f01a419]
+- Updated dependencies [d1ee159]
+- Updated dependencies [93269f5]
+  - @pandacss/compiler@2.3.0
+  - @pandacss/compiler-shared@2.3.0
+  - @pandacss/config@2.3.0
+
 ## 2.2.0
 
 ### Patch Changes
