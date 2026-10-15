@@ -140,6 +140,10 @@ CSS property and utility registries. Variant ownership checks borrow the compile
 new set for each call or element. The factory argument indexes come from Oxc extraction, including member factories such
 as `styled.div`.
 
+Style paths borrow object keys and retain numeric array indexes in a small inline buffer. Owned path strings are
+created only for inspection; reference lookups create them after finding a token reference. Strings without `{` or
+`token(` skip reference scanning.
+
 Inspection joins those style paths to verbose extractor provenance. Embedded references become inspection records
 directly, rather than synthetic extractor `token()` calls. Reference offsets are precise when the decoded value occurs
 verbatim inside its source expression; escaped or folded values fall back to that expression's span. Builds use the same

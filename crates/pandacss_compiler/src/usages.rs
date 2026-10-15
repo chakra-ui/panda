@@ -22,8 +22,8 @@ use crate::inspection::{
 use pandacss_encoder::ConditionSet;
 use pandacss_extractor::{SourceRange, Span};
 use pandacss_system::{
-    SourceStyleKind, System, visit_call_style_objects, visit_call_style_strings,
-    visit_jsx_style_strings,
+    SourceStyleKind, SourceStylePathSegment, System, visit_call_style_objects,
+    visit_call_style_strings, visit_jsx_style_strings,
 };
 
 struct Cx<'a> {
@@ -236,7 +236,12 @@ fn collect_call_styles(
         } else if kind != SourceStyleKind::Pattern {
             walk_object(entries, ctx.cx, &range, accum.sites);
         }
-        collector.collect(entries, syntax, &mut path.to_vec(), accum.style_entries);
+        collector.collect(
+            entries,
+            syntax,
+            &mut path.iter().map(ToString::to_string).collect(),
+            accum.style_entries,
+        );
     });
 }
 
@@ -631,13 +636,13 @@ fn style_value_token_refs(
         return Vec::new();
     };
     let mut out = Vec::new();
-    let mut collect = |kind, index, owner_span, path: &[String], text: &str| {
+    let mut collect = |kind, index, owner_span, path: &[SourceStylePathSegment<'_>], text: &str| {
         let references = token_references(text, &dict);
         if references.is_empty() {
             return;
         }
         let leaf = source_refs
-            .get(&(kind, index, path.to_vec()))
+            .get(&(kind, index, path.iter().map(ToString::to_string).collect()))
             .and_then(|source_ref| source_ref.value_span);
         let base = leaf.and_then(|leaf| {
             let literal = source.get(leaf.start as usize..leaf.end as usize)?;

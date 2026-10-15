@@ -1278,3 +1278,24 @@ fn lint_keeps_each_missing_token_reference_even_with_a_fallback() {
         .collect();
     assert_eq!(warnings.len(), 1);
 }
+
+#[test]
+fn inspection_retains_reference_locations_through_indexed_style_paths() {
+    let source = indoc! {r"
+        import { css, cva, sva } from '@panda/css'
+        import { styled, Box } from '@panda/jsx'
+        css({padding: ['{spacing.first}', '{spacing.second}']})
+        cva({compoundVariants: [{tone: 'a', css: {color: '{colors.compound}'}}]})
+        sva({slots: ['root'], variants: {tone: {a: {root: {color: '{colors.slot}'}}}}})
+        styled.div({}, {defaultProps: {color: '{colors.default}'}})
+        const J = () => <Box css={[{color: '{colors.jsx}'}]} />
+    "};
+    let inspection = inspect_file_source(&system(), "a.tsx", source);
+    assert_eq!(inspection.token_refs.len(), 6);
+    for reference in inspection.token_refs {
+        assert_eq!(
+            &source[reference.span.start as usize..reference.span.end as usize],
+            reference.path
+        );
+    }
+}

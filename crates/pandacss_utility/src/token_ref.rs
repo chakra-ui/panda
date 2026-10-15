@@ -154,6 +154,9 @@ pub fn token_references<'a>(
     value: &'a str,
     tokens: &TokenDictionary,
 ) -> Vec<(&'a str, Range<usize>)> {
+    if !value.contains('{') && !value.contains("token(") {
+        return Vec::new();
+    }
     let mut out = Vec::new();
     collect_wrapped_references(value, tokens, &mut out);
     collect_function_references(value, 0..value.len(), &mut out);

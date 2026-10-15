@@ -10,6 +10,25 @@ use smallvec::SmallVec;
 use crate::System;
 
 type Entries = [(String, Literal)];
+type StylePath<'a> = SmallVec<[SourceStylePathSegment<'a>; 8]>;
+
+/// A borrowed object key or an array index in an extracted style value.
+#[derive(Clone, Copy)]
+pub enum SourceStylePathSegment<'a> {
+    /// An object key borrowed from the extracted value.
+    Key(&'a str),
+    /// An array index, formatted only when inspection needs an owned path.
+    Index(usize),
+}
+
+impl std::fmt::Display for SourceStylePathSegment<'_> {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Key(key) => formatter.write_str(key),
+            Self::Index(index) => index.fmt(formatter),
+        }
+    }
+}
 
 /// The interpretation of a source object's keys.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -26,9 +45,9 @@ pub enum SourceStyleKind {
 
 /// Visits style objects in a call, retaining their extraction paths.
 /// Recipe selectors, factory options, and named-factory arguments are metadata.
-pub fn visit_call_style_objects(
-    call: &ExtractedCall,
-    mut visit: impl FnMut(SourceStyleKind, &[String], &Entries),
+pub fn visit_call_style_objects<'a>(
+    call: &'a ExtractedCall,
+    mut visit: impl FnMut(SourceStyleKind, &[SourceStylePathSegment<'a>], &'a Entries),
 ) {
     let object = |index| {
         call.data
@@ -36,7 +55,7 @@ pub fn visit_call_style_objects(
             .and_then(Option::as_ref)
             .and_then(entries)
     };
-    let mut path = Vec::new();
+    let mut path = StylePath::new();
     match (call.category, call.name.as_str()) {
         (MatchCategory::Css, "css") => {
             for value in call.data.iter().flatten() {
@@ -62,7 +81,7 @@ pub fn visit_call_style_objects(
                         continue;
                     }
                     if let Some(style) = entries(value) {
-                        path.push(key.clone());
+                        path.push(SourceStylePathSegment::Key(key));
                         visit(SourceStyleKind::Css, &path, style);
                         path.pop();
                     }
@@ -87,7 +106,7 @@ pub fn visit_call_style_objects(
                 .and_then(|options| field(options, "defaultProps"))
                 .and_then(entries)
             {
-                path.push("defaultProps".to_owned());
+                path.push(SourceStylePathSegment::Key("defaultProps"));
                 visit(SourceStyleKind::Jsx, &path, props);
             }
         }
@@ -100,17 +119,17 @@ pub fn visit_call_style_objects(
     }
 }
 
-fn visit_style_objects(
-    value: &Literal,
+fn visit_style_objects<'a>(
+    value: &'a Literal,
     kind: SourceStyleKind,
-    path: &mut Vec<String>,
-    visit: &mut impl FnMut(SourceStyleKind, &[String], &Entries),
+    path: &mut StylePath<'a>,
+    visit: &mut impl FnMut(SourceStyleKind, &[SourceStylePathSegment<'a>], &'a Entries),
 ) {
     match value {
         Literal::Object(entries) => visit(kind, path, entries),
         Literal::Array(items) => {
             for (index, nested) in items.iter().enumerate() {
-                path.push(index.to_string());
+                path.push(SourceStylePathSegment::Index(index));
                 visit_style_objects(nested, kind, path, visit);
                 path.pop();
             }
@@ -137,22 +156,22 @@ fn field<'a>(entries: &'a Entries, name: &str) -> Option<&'a Literal> {
         .find_map(|(key, value)| (key == name).then_some(value))
 }
 
-fn visit_recipe(
-    config: &Entries,
+fn visit_recipe<'a>(
+    config: &'a Entries,
     slotted: bool,
-    path: &mut Vec<String>,
-    visit: &mut impl FnMut(SourceStyleKind, &[String], &Entries),
+    path: &mut StylePath<'a>,
+    visit: &mut impl FnMut(SourceStyleKind, &[SourceStylePathSegment<'a>], &'a Entries),
 ) {
     for (key, value) in config {
-        path.push(key.clone());
+        path.push(SourceStylePathSegment::Key(key));
         match (key.as_str(), value) {
             ("base", _) => visit_recipe_style(value, slotted, path, visit),
             ("variants", Literal::Object(variants)) => {
                 for (variant, options) in variants {
                     if let Literal::Object(options) = options {
-                        path.push(variant.clone());
+                        path.push(SourceStylePathSegment::Key(variant));
                         for (option, style) in options {
-                            path.push(option.clone());
+                            path.push(SourceStylePathSegment::Key(option));
                             visit_recipe_style(style, slotted, path, visit);
                             path.pop();
                         }
@@ -163,8 +182,8 @@ fn visit_recipe(
             ("compoundVariants", Literal::Array(compounds)) => {
                 for (index, compound) in compounds.iter().enumerate() {
                     if let Some(css) = entries(compound).and_then(|item| field(item, "css")) {
-                        path.push(index.to_string());
-                        path.push("css".to_owned());
+                        path.push(SourceStylePathSegment::Index(index));
+                        path.push(SourceStylePathSegment::Key("css"));
                         visit_recipe_style(css, slotted, path, visit);
                         path.pop();
                         path.pop();
@@ -177,17 +196,17 @@ fn visit_recipe(
     }
 }
 
-fn visit_recipe_style(
-    value: &Literal,
+fn visit_recipe_style<'a>(
+    value: &'a Literal,
     slotted: bool,
-    path: &mut Vec<String>,
-    visit: &mut impl FnMut(SourceStyleKind, &[String], &Entries),
+    path: &mut StylePath<'a>,
+    visit: &mut impl FnMut(SourceStyleKind, &[SourceStylePathSegment<'a>], &'a Entries),
 ) {
     let Some(style) = entries(value) else { return };
     if slotted {
         for (slot, value) in style {
             if let Some(style) = entries(value) {
-                path.push(slot.clone());
+                path.push(SourceStylePathSegment::Key(slot));
                 visit(SourceStyleKind::Recipe, path, style);
                 path.pop();
             }
@@ -199,10 +218,10 @@ fn visit_recipe_style(
 
 /// Visits authored string values in the semantic style sections of a call.
 /// Builds need no source provenance; inspection joins the paths to verbose extraction.
-pub fn visit_call_style_strings(
+pub fn visit_call_style_strings<'a>(
     system: &System,
-    call: &ExtractedCall,
-    mut visit: impl FnMut(&[String], &str),
+    call: &'a ExtractedCall,
+    mut visit: impl FnMut(&[SourceStylePathSegment<'a>], &str),
 ) {
     let variants = call
         .jsx_recipe_ident
@@ -218,17 +237,17 @@ pub fn visit_call_style_strings(
                 pattern_properties,
             },
             style,
-            &mut path.to_vec(),
+            &mut StylePath::from_slice(path),
             &mut visit,
         );
     });
 }
 
 /// Visits JSX style values while excluding ordinary props and recipe selectors.
-pub fn visit_jsx_style_strings(
+pub fn visit_jsx_style_strings<'a>(
     system: &System,
-    jsx: &ExtractedJsx,
-    mut visit: impl FnMut(&[String], &str),
+    jsx: &'a ExtractedJsx,
+    mut visit: impl FnMut(&[SourceStylePathSegment<'a>], &str),
 ) {
     let Some(style) = entries(&jsx.data) else {
         return;
@@ -251,7 +270,7 @@ pub fn visit_jsx_style_strings(
             pattern_properties: system.patterns.property_styles(&jsx.name),
         },
         style,
-        &mut Vec::new(),
+        &mut StylePath::new(),
         &mut visit,
     );
 }
@@ -283,12 +302,12 @@ impl StringStyleScope<'_> {
     }
 }
 
-fn visit_object_strings(
+fn visit_object_strings<'a>(
     system: &System,
     scope: StringStyleScope<'_>,
-    style: &Entries,
-    path: &mut Vec<String>,
-    visit: &mut impl FnMut(&[String], &str),
+    style: &'a Entries,
+    path: &mut StylePath<'a>,
+    visit: &mut impl FnMut(&[SourceStylePathSegment<'a>], &str),
 ) {
     for (key, value) in style {
         if scope.kind == SourceStyleKind::Jsx
@@ -299,7 +318,7 @@ fn visit_object_strings(
         {
             continue;
         }
-        path.push(key.clone());
+        path.push(SourceStylePathSegment::Key(key));
         if matches!(scope.kind, SourceStyleKind::Jsx | SourceStyleKind::Pattern)
             && (key == "css" || key.ends_with("Css"))
         {
@@ -325,12 +344,12 @@ fn visit_object_strings(
     }
 }
 
-fn visit_nested_style_strings(
+fn visit_nested_style_strings<'a>(
     system: &System,
     scope: StringStyleScope<'_>,
-    value: &Literal,
-    path: &mut Vec<String>,
-    visit: &mut impl FnMut(&[String], &str),
+    value: &'a Literal,
+    path: &mut StylePath<'a>,
+    visit: &mut impl FnMut(&[SourceStylePathSegment<'a>], &str),
 ) {
     match value {
         Literal::Object(entries) => {
@@ -338,7 +357,7 @@ fn visit_nested_style_strings(
         }
         Literal::Array(items) => {
             for (index, nested) in items.iter().enumerate() {
-                path.push(index.to_string());
+                path.push(SourceStylePathSegment::Index(index));
                 visit_nested_style_strings(system, scope, nested, path, visit);
                 path.pop();
             }
@@ -352,23 +371,23 @@ fn visit_nested_style_strings(
     }
 }
 
-fn visit_literal_strings(
-    value: &Literal,
-    path: &mut Vec<String>,
-    visit: &mut impl FnMut(&[String], &str),
+fn visit_literal_strings<'a>(
+    value: &'a Literal,
+    path: &mut StylePath<'a>,
+    visit: &mut impl FnMut(&[SourceStylePathSegment<'a>], &str),
 ) {
     match value {
         Literal::String(text) => visit(path, text),
         Literal::Object(entries) => {
             for (key, nested) in entries {
-                path.push(key.clone());
+                path.push(SourceStylePathSegment::Key(key));
                 visit_literal_strings(nested, path, visit);
                 path.pop();
             }
         }
         Literal::Array(items) => {
             for (index, nested) in items.iter().enumerate() {
-                path.push(index.to_string());
+                path.push(SourceStylePathSegment::Index(index));
                 visit_literal_strings(nested, path, visit);
                 path.pop();
             }
