@@ -214,6 +214,8 @@ fn token_references_report_each_reference_with_its_source_range() {
         "{colors.missing",
         "var(--colors-red-500)",
         "url(/img.v2.png)",
+        "url(/a/mytoken(1).png)",
+        "my-token(colors.missing) (token(colors.missing))",
     ];
 
     let found = values
@@ -247,5 +249,27 @@ fn token_references_report_each_reference_with_its_source_range() {
     {colors.missing -> []
     var(--colors-red-500) -> []
     url(/img.v2.png) -> []
+    url(/a/mytoken(1).png) -> []
+    my-token(colors.missing) (token(colors.missing)) -> [colors.missing resolved=false]
     "#);
+}
+
+#[test]
+fn token_function_inside_a_longer_name_is_left_alone() {
+    let tokens = TokenDictionary::builder()
+        .insert(Token::new(
+            "colors.red.500",
+            "#f00",
+            "var(--colors-red-500)",
+            TokenCategory::Colors,
+        ))
+        .build();
+
+    assert_eq!(
+        pandacss_utility::expand_token_references_to_vars(
+            "url(/a/mytoken(1).png) my-token(colors.red.500) token(colors.red.500)",
+            &tokens,
+        ),
+        "url(/a/mytoken(1).png) my-token(colors.red.500) var(--colors-red-500)",
+    );
 }

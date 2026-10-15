@@ -69,34 +69,10 @@ pub fn inspect_file_source(system: &System, path: &str, source: &str) -> FileIns
         for (index, call) in result.calls.iter().enumerate() {
             collect_call_styles(call, index, &call_ctx, &mut accum);
         }
-    }
-
-    for (index, jsx) in result.jsx.iter().enumerate() {
-        let range = line_index.locate_range(jsx.span.start, jsx.span.end);
-        component_entries.push(component_entry(system, jsx, &range));
-        match jsx.category {
-            MatchCategory::Recipe => sites.push(site(UsageKind::Recipe, &jsx.name, &range)),
-            MatchCategory::Pattern => sites.push(site(UsageKind::Pattern, &jsx.name, &range)),
-            _ => {
-                if let Literal::Object(entries) = &jsx.data {
-                    walk_object(entries, &cx, &range, &mut sites);
-                    StyleEntryCollector {
-                        cx: &cx,
-                        span: jsx.span,
-                        range,
-                        line_index: &line_index,
-                        source_refs: &source_refs,
-                        owner_kind: StyleSourceOwnerKind::Jsx,
-                        owner_index: u32::try_from(index).unwrap_or(u32::MAX),
-                    }
-                    .collect(
-                        entries,
-                        StyleEntrySyntax::JsxProp,
-                        &mut Vec::new(),
-                        &mut style_entries,
-                    );
-                }
-            }
+        for (index, jsx) in result.jsx.iter().enumerate() {
+            let range = line_index.locate_range(jsx.span.start, jsx.span.end);
+            component_entries.push(component_entry(system, jsx, &range));
+            collect_jsx_styles(jsx, index, range, &call_ctx, &mut accum);
         }
     }
 
@@ -108,7 +84,7 @@ pub fn inspect_file_source(system: &System, path: &str, source: &str) -> FileIns
         sites.push(site(UsageKind::Token, &token_ref.path, &range));
     }
     let value_token_refs = cx.tokens.map_or_else(Vec::new, |dict| {
-        style_value_token_refs(&result.calls, &result.jsx, source, &source_refs, dict)
+        style_value_token_refs(&style_entries, source, dict)
     });
     let token_refs = result
         .token_refs
@@ -346,9 +322,59 @@ fn collect_call_styles(
             accum
                 .sites
                 .push(site(UsageKind::Pattern, &call.name, &range));
+            for index in 0..call.data.len() {
+                if let Some(entries) = call_object(call, index) {
+                    collector.collect(
+                        entries,
+                        StyleEntrySyntax::PatternCall,
+                        &mut Vec::new(),
+                        accum.style_entries,
+                    );
+                }
+            }
         }
         _ => {}
     }
+}
+
+fn collect_jsx_styles(
+    jsx: &ExtractedJsx,
+    index: usize,
+    range: SourceRange,
+    ctx: &CallStyleCtx<'_, '_>,
+    accum: &mut InspectAccum<'_>,
+) {
+    match jsx.category {
+        MatchCategory::Recipe => {
+            accum.sites.push(site(UsageKind::Recipe, &jsx.name, &range));
+            return;
+        }
+        MatchCategory::Pattern => accum
+            .sites
+            .push(site(UsageKind::Pattern, &jsx.name, &range)),
+        _ => {}
+    }
+    let Literal::Object(entries) = &jsx.data else {
+        return;
+    };
+    if jsx.category != MatchCategory::Pattern {
+        walk_object(entries, ctx.cx, &range, accum.sites);
+    }
+    StyleEntryCollector {
+        cx: ctx.cx,
+        span: jsx.span,
+        range,
+        line_index: ctx.line_index,
+        source_refs: ctx.source_refs,
+        owner_kind: StyleSourceOwnerKind::Jsx,
+        owner_index: u32::try_from(index).unwrap_or(u32::MAX),
+    }
+    .collect(
+        entries,
+        StyleEntrySyntax::JsxProp,
+        &mut Vec::new(),
+        accum.style_entries,
+    );
 }
 
 /// The object literal at argument `index` of an extracted call, if present.
@@ -831,105 +857,36 @@ fn collect_token_refs(raw: &str, dict: &TokenDictionary, emit: &mut impl FnMut(&
 }
 
 fn style_value_token_refs(
-    calls: &[ExtractedCall],
-    jsx: &[ExtractedJsx],
+    style_entries: &[StyleEntryRef],
     source: &str,
-    source_refs: &FxHashMap<SourceRefKey, &StyleSourceRef>,
     dict: &TokenDictionary,
 ) -> Vec<TokenRef> {
     let mut out = Vec::new();
-    let owners = calls
-        .iter()
-        .enumerate()
-        .flat_map(|(index, call)| {
-            call.data
-                .iter()
-                .flatten()
-                .map(move |data| (StyleSourceOwnerKind::Call, index, call.span, data))
-        })
-        .chain(
-            jsx.iter()
-                .enumerate()
-                .map(|(index, jsx)| (StyleSourceOwnerKind::Jsx, index, jsx.span, &jsx.data)),
-        );
-    for (kind, index, span, data) in owners {
-        ValueTokenRefs {
-            source,
-            source_refs,
-            dict,
-            owner: (kind, u32::try_from(index).unwrap_or(u32::MAX)),
-            owner_span: span,
+    for leaf in style_entries.iter().flat_map(|entry| &entry.value_spans) {
+        let start = leaf.span.start as usize;
+        let base = source
+            .get(start..leaf.span.end as usize)
+            .and_then(|literal| literal.find(leaf.value.as_str()))
+            .map(|offset| start + offset);
+        for (path, range) in token_references(&leaf.value, dict) {
+            let span = base
+                .and_then(|base| {
+                    Some(Span {
+                        start: u32::try_from(base + range.start).ok()?,
+                        end: u32::try_from(base + range.end).ok()?,
+                    })
+                })
+                .unwrap_or(leaf.span);
+            out.push(TokenRef {
+                path: path.to_owned(),
+                span,
+                needs_css_var: true,
+                is_var: false,
+                value: None,
+            });
         }
-        .collect(data, &mut Vec::new(), &mut out);
     }
     out
-}
-
-struct ValueTokenRefs<'a> {
-    source: &'a str,
-    source_refs: &'a FxHashMap<SourceRefKey, &'a StyleSourceRef>,
-    dict: &'a TokenDictionary,
-    owner: (StyleSourceOwnerKind, u32),
-    owner_span: Span,
-}
-
-impl ValueTokenRefs<'_> {
-    fn collect(&self, value: &Literal, path: &mut Vec<String>, out: &mut Vec<TokenRef>) {
-        match value {
-            Literal::String(text) => {
-                let references = token_references(text, self.dict);
-                if references.is_empty() {
-                    return;
-                }
-                let leaf = self
-                    .source_refs
-                    .get(&(self.owner.0, self.owner.1, path.clone()))
-                    .and_then(|source_ref| source_ref.value_span);
-                let base = leaf.and_then(|leaf| {
-                    let literal = self.source.get(leaf.start as usize..leaf.end as usize)?;
-                    Some(leaf.start as usize + literal.find(text.as_str())?)
-                });
-                for (reference, range) in references {
-                    let span = base
-                        .and_then(|base| {
-                            Some(Span {
-                                start: u32::try_from(base + range.start).ok()?,
-                                end: u32::try_from(base + range.end).ok()?,
-                            })
-                        })
-                        .or(leaf)
-                        .unwrap_or(self.owner_span);
-                    out.push(TokenRef {
-                        path: reference.to_owned(),
-                        span,
-                        needs_css_var: true,
-                        is_var: false,
-                        value: None,
-                    });
-                }
-            }
-            Literal::Object(entries) => {
-                for (key, nested) in entries {
-                    path.push(key.clone());
-                    self.collect(nested, path, out);
-                    path.pop();
-                }
-            }
-            Literal::Array(items) => {
-                for (index, nested) in items.iter().enumerate() {
-                    path.push(index.to_string());
-                    self.collect(nested, path, out);
-                    path.pop();
-                }
-            }
-            Literal::Conditional(items) => {
-                for nested in items {
-                    self.collect(nested, path, out);
-                }
-            }
-            Literal::Token { .. } | Literal::Number(_) | Literal::Bool(_) | Literal::Null => {}
-        }
-    }
 }
 
 /// A key that nests a style object rather than naming a property: a

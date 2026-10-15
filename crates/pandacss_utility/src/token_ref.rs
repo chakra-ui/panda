@@ -108,7 +108,7 @@ fn replace_token_functions<'t>(
     let mut out = String::with_capacity(value.len());
     let mut rest = value;
 
-    while let Some(start) = rest.find("token(") {
+    while let Some(start) = find_token_call(rest) {
         out.push_str(&rest[..start]);
 
         let after_open = &rest[start + "token(".len()..];
@@ -188,7 +188,7 @@ fn collect_function_references<'a>(
     out: &mut Vec<(&'a str, Range<usize>)>,
 ) {
     let mut cursor = within.start;
-    while let Some(found) = value[cursor..within.end].find("token(") {
+    while let Some(found) = find_token_call(&value[cursor..within.end]) {
         let start = cursor + found + "token(".len();
         let Some(len) = find_matching_paren(&value[start..within.end]) else {
             return;
@@ -201,6 +201,18 @@ fn collect_function_references<'a>(
         }
         cursor = end + 1;
     }
+}
+
+fn find_token_call(value: &str) -> Option<usize> {
+    value
+        .match_indices("token(")
+        .map(|(index, _)| index)
+        .find(|&index| {
+            !value[..index]
+                .bytes()
+                .next_back()
+                .is_some_and(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'-'))
+        })
 }
 
 fn reference_in(value: &str, range: Range<usize>) -> Option<(&str, Range<usize>)> {

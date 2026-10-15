@@ -122,8 +122,16 @@ ruleTester.run('no-invalid-token-paths', {
     },
     {
       filename: 'app.tsx',
-      code: ["import { stack } from '@panda/patterns'", "stack({ gap: '{sizes.patternGap}' })"].join('\n'),
-      errors: [{ ...notFound('sizes.patternGap'), line: 2, column: 16, endLine: 2, endColumn: 32 }],
+      code: [
+        "import { stack } from '@panda/patterns'",
+        "import { Stack } from '@panda/jsx'",
+        "stack({ gap: '{sizes.patternGap}' })",
+        "const J = () => <Stack gap='{sizes.jsxPatternGap}' />",
+      ].join('\n'),
+      errors: [
+        { ...notFound('sizes.patternGap'), line: 3, column: 16, endLine: 3, endColumn: 32 },
+        { ...notFound('sizes.jsxPatternGap'), line: 4, column: 30, endLine: 4, endColumn: 49 },
+      ],
     },
   ],
 })
