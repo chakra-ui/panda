@@ -88,9 +88,9 @@ describe('@pandacss/postcss', () => {
 
     expect(driver.codegen).toHaveBeenCalledWith({ cwd: PROJECT_CWD, outdir: undefined })
     expect(driver.scan).toHaveBeenCalledTimes(1)
-    expect(driver.applyChanges).toHaveBeenCalledWith([{ path: '/project/src/App.tsx', kind: 'add' }])
+    expect(driver.parseFiles).toHaveBeenCalledTimes(1)
+    expect(driver.applyChanges).not.toHaveBeenCalled()
     expect(driver.syncDesignSystemSources).toHaveBeenCalledTimes(1)
-    expect(driver.parseFiles).not.toHaveBeenCalled()
     expect(driver.cssgen).toHaveBeenCalledWith({ emitLayerDeclaration: false, polyfill: false })
     expect(result.css).toMatchInlineSnapshot(
       `"@layer reset, base, tokens, recipes, utilities;.text_red { color: red }"`,
@@ -338,9 +338,8 @@ describe('@pandacss/postcss', () => {
     await processor.process(CSS_ROOT, { from: '/project/styles.css' })
     await processor.process(CSS_ROOT, { from: '/project/styles.css' })
 
-    expect(driver.applyChanges).toHaveBeenCalledTimes(1)
-    expect(driver.applyChanges).toHaveBeenCalledWith([{ path: '/project/src/App.tsx', kind: 'add' }])
-    expect(driver.parseFiles).not.toHaveBeenCalled()
+    expect(driver.parseFiles).toHaveBeenCalledTimes(1)
+    expect(driver.applyChanges).not.toHaveBeenCalled()
   })
 
   it('refreshes a source file when its stamp changes', async () => {
@@ -356,8 +355,9 @@ describe('@pandacss/postcss', () => {
     stamp = '2:10'
     await processor.process(CSS_ROOT, { from: '/project/styles.css' })
 
-    expect(driver.applyChanges).toHaveBeenNthCalledWith(1, [{ path: '/project/src/App.tsx', kind: 'add' }])
-    expect(driver.applyChanges).toHaveBeenNthCalledWith(2, [{ path: '/project/src/App.tsx', kind: 'change' }])
+    expect(driver.parseFiles).toHaveBeenCalledTimes(1)
+    expect(driver.applyChanges).toHaveBeenCalledTimes(1)
+    expect(driver.applyChanges).toHaveBeenCalledWith([{ path: '/project/src/App.tsx', kind: 'change' }])
   })
 
   it('removes source files that disappear from the scan', async () => {
@@ -370,11 +370,9 @@ describe('@pandacss/postcss', () => {
     await processor.process(CSS_ROOT, { from: '/project/styles.css' })
     await processor.process(CSS_ROOT, { from: '/project/styles.css' })
 
-    expect(driver.applyChanges).toHaveBeenNthCalledWith(1, [
-      { path: '/project/src/App.tsx', kind: 'add' },
-      { path: '/project/src/Card.tsx', kind: 'add' },
-    ])
-    expect(driver.applyChanges).toHaveBeenNthCalledWith(2, [{ path: '/project/src/Card.tsx', kind: 'unlink' }])
+    expect(driver.parseFiles).toHaveBeenCalledTimes(1)
+    expect(driver.applyChanges).toHaveBeenCalledTimes(1)
+    expect(driver.applyChanges).toHaveBeenCalledWith([{ path: '/project/src/Card.tsx', kind: 'unlink' }])
   })
 
   it('serializes concurrent transforms for the same driver key', async () => {
